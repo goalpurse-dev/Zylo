@@ -1,0 +1,327 @@
+# Blocky Stories: Phase 0 audit and plan
+
+Date: 2026-10-06. Scope: [roblox-scope.md](roblox-scope.md). Read-only audit of AI Fruit Story v2 on branch
+`laptop-transfer` (`56b2265`), and the plan for serving Fruit and Blocky Stories from one engine.
+Nothing was changed and no paid call was made. Line numbers are as of that commit.
+
+## 1. Fruit v2 status
+
+- **a) Pushed and merged.** Fruit v2 is on `origin/main` (tip `c027734`, 2026-10-06), which is
+  production. This folder's branch `laptop-transfer` (`56b2265`) is pushed and in sync.
+  `git diff origin/main HEAD` shows no Fruit difference; the only extra work on
+  `laptop-transfer` is the email outbox and Long Form emails. Branches `fruit-v2` and
+  `release/fruit-v2` are fully merged and stale.
+- **b) Live for everyone.** `global_feature_flags.fruit_v2` is `true` in the live database
+  (read today; set 2026-09-30 22:41 UTC). `VITE_FRUIT_V2=false` is the only off switch in a
+  build. **v1 is not removed**: `AIFruitStoryV1` and `src/components/viral-tools/ai-fruit-story/`
+  (5,933 lines) are still in the code, reachable only if the switch is turned off.
+- **c) Left on the launch checklist:**
+  - Rollout: done.
+  - v1 removal and retiring the v1 tool keys and three v1 edge functions: not done.
+  - Small faces / human listener: fixed in the picture builder, re-checked on 3 paid pictures
+    (stage 3j), and an automatic picture check with one free redraw now catches human heads.
+  - Logo issue: "plain unbranded props, no logos" is in both the picture and the clip prompt.
+    I found no recorded run that checked it works.
+  - Mobile QA: a scripted pass at 390 px ran on 2026-09-30. No record of a hand pass on a phone.
+  - `/blog/ai-fruit-story-pricing` still describes v1 costs; `TUTORIAL_URL` is unset.
+- **d) Yes.** `node --test tests/fruit*.test.mjs`: 173 pass, 0 fail (19 files).
+  Render worker: 32 pass, 0 fail. Run today on `laptop-transfer`.
+- **e) Known issues** (none blocks Blocky Stories):
+  - Wan 2.6 Flash's content filter blocks some clips (an audit script for it,
+    `scripts/fruit-story/wanFilterAudit.mjs`, is uncommitted in this folder and isn't mine).
+  - The first five ideas are the same on every visit (the seed counter restarts at 0), and
+    nothing excludes ideas the user already made.
+  - Signed-out visitors probably see error banners for ideas and the library (read from code,
+    not confirmed in a browser).
+  - "Make scene pictures" on a draft has no client balance check (the server refuses correctly).
+  - V4 lines: the 9-word budget needs a 6 s clip on Veo, so V4 stories lean on the repair pass.
+  - 16:9 has unit tests only; no paid 16:9 run is on record.
+  - Six fruit test files read `data/fruit-characters/library.json`, which is not in git, so
+    they fail on a fresh clone.
+- **f) Recommendation: build Blocky Stories now, in parallel.** Fruit's launch is done; what's
+  left is cleanup. Build on `laptop-transfer` in this folder, behind a new `blocky_v1` flag that
+  is off for everyone. A separate branch would mean switching branches under the other sessions
+  that share this folder. One caveat: anyone who pushes `laptop-transfer` also pushes the Blocky
+  commits to the Vercel preview. That is harmless while the flag is off, and main only receives
+  what is picked onto it.
+
+## 2. Map of Fruit v2
+
+Marks: **AS-IS** (reuse untouched), **CONFIG** (needs niche config), **FRUIT** (fruit-only).
+
+UI, in `src/components/viral-tools/ai-fruit-story-v2/`:
+
+| Area | Files | Mark |
+|---|---|---|
+| Page + state | `FruitStoryV2Page.jsx`, `hooks/useFruitV2Flow.js` | CONFIG (copy, niche passed down) |
+| Story step | `builder/StoryStep.jsx`, `ScriptEditor.jsx`, `rules.js`, `script/parseScript.js` | CONFIG (copy only); parser AS-IS |
+| Settings, pipeline | `builder/SettingsFields.jsx`, `Pipeline.jsx`, `BuilderPanel.jsx` | AS-IS logic, CONFIG for the title lines |
+| Scenes + clips | `workspace/StoryBoard.jsx`, `dialogs/SceneDialogs.jsx` | CONFIG (overlay text field) |
+| Final video | `workspace/FinalView.jsx` AS-IS; `FinalExtras.jsx` CONFIG (upload pack fields) |
+| Series | `builder/SeriesPanels.jsx`, `workspace/SeriesViews.jsx` | AS-IS; copy from `constants.js` |
+| Copy | `constants.js` | CONFIG (split generic from niche copy) |
+| Data contract | `api/fruitStoryV2Api.js`, `api/supabaseAdapter.js` | CONFIG (niche on 4 calls) |
+| Library | `hooks/useCharacters.js` CONFIG (cache per niche); `dialogs/CharacterLibraryDialog.jsx`, `shared/Avatar.jsx` AS-IS |
+| Prices | `pricing/fruitV2Estimates.js`, `useFruitV2Prices.js` | CONFIG (tool keys) |
+| Out-of-credit (client) | `hooks/useAccount.js`, `shared/NoCreditsModal.jsx` | AS-IS |
+| Fruit only | `api/legacyStories.js`, `api/mock/libraryData.js`, `src/pages/workspace/AIFruitStory.jsx`, `src/data/fruitStoryPages.js`, `AIFruitStoryLanding.jsx` | FRUIT |
+| Shared kit | `src/components/ui/zyvo/` (15 files, no fruit strings) | AS-IS |
+
+Server, in `supabase/functions/_shared/fruit/` unless noted:
+
+| Area | Files | Mark |
+|---|---|---|
+| Story writer | `planner.js`, `plannerService.js`, `llm.js` | `planner.js` CONFIG; rest AS-IS |
+| Script editor | `scriptReview.js` | CONFIG (2 sentences) |
+| Idea generator | `supabase/seeds/fruit_ideas.sql` (1,065 hand-written ideas), RPC `fruit_pick_ideas` | FRUIT (no AI writes ideas today) |
+| Scene pictures | `pictures.js` CONFIG; `fruitLooks.js` FRUIT; `wording.js`, `shots.js` AS-IS |
+| Picture check | `pictureCheck.js` | CONFIG (hardest: the checks are about fruit heads) |
+| Clips | `clips.js` CONFIG (2 words); `duration.js`, `clipCheck.js`, `spoken.js`, `captionWords.js` AS-IS |
+| Character library | table `fruit_characters`, bucket `public-assets/fruit-characters/`, `scripts/fruit-characters/` | table CONFIG; scripts FRUIT |
+| Series | `series.js` CONFIG; `plates.js` CONFIG (extend to single stories); `castRules.js` CONFIG |
+| Final video (Fly) | `final.js`, `render-worker/src/fruitFinal.mjs`, `fruitFinalPlan.mjs` | AS-IS |
+| Captions | `render-worker/src/fruitCaptions.mjs` | CONFIG (add overlay text) |
+| Pricing | `tool_prices` rows, RPC `fruit_charge_step`, `steps.js`, `models.js` | AS-IS; 4 new price rows |
+| Out-of-credit guard | `alerts.js`, table `fruit_provider_alerts` | AS-IS |
+| Engine | `engine.js`, `storyState.js`, `supabaseStore.js`, `runware.js`, `validation.js`, `limits.js` | AS-IS |
+| Upload text | `uploadPackage.js` | CONFIG |
+| Entry points | `fruit-story-api/index.ts` CONFIG; `fruit-worker/index.ts` AS-IS |
+
+## 3. Niche config (recommended) vs copying the folders
+
+**Recommended: one niche key plus one config module per niche.**
+
+- **Database** (one additive migration): `niche text NOT NULL DEFAULT 'fruit'` on
+  `fruit_stories`, `fruit_series`, `fruit_characters`, `fruit_ideas`. The unique first-name
+  index becomes unique per niche. Scenes get an `overlay jsonb` column. Table names stay.
+- **Server:** `_shared/fruit/niches/fruit.js` and `niches/blocky.js`. Each holds the style
+  block, the "who is this character" wording, the head/body rule, the negative list, writer
+  and editor rules, the picture-check spec, the idea source, location handling, overlays
+  on/off, upload-pack format and price keys. Builders take the niche; the story row decides it.
+- **API:** the same `fruit-story-api`. `niche` rides on `listCharacters`, `getIdeas`,
+  `createStory` and `createSeriesPlan`; a missing value means `fruit`. While Blocky is in
+  testing the server also checks the `blocky_v1` flag (today flags are checked in the browser only).
+- **Client:** `FruitStoryV2Page` takes a niche object (copy, example video, price keys, feature
+  switches). A new page `src/pages/workspace/BlockyStories.jsx` renders it on its own route.
+- **Proof that Fruit doesn't change:** before any refactor, a new test records Fruit's exact
+  prompts (picture, clip, writer, series, editor, upload text) for fixed inputs. It must stay
+  byte-identical afterwards, along with the 173 existing tests. New story fields appear only
+  for non-fruit stories, because one test asserts the exact Fruit story shape.
+
+**Copying the folders** means about 4,600 lines of UI plus the whole backend, including the
+charging, refund and reconciler code, a second set of tables and a second cron. Fruit would be
+untouched on day one, but every later fix has to be made twice and the money path exists twice.
+
+**Recommendation: niche config**, with two exceptions that stay as separate files: the
+SEO/landing pages and the library build scripts.
+
+## 4. Blocky gaps (Part C and Part E)
+
+| Item | Where it lives | Effort |
+|---|---|---|
+| C1 Idea engine: 10 engines, 5 per batch, rotation, banned plots | New `niches/blocky/ideas.js` + an AI call per batch (about $0.01) + validation in code | 1.5 days |
+| C1 Used-ideas memory | New table `fruit_idea_history` (user, niche, engine, title, premise); recent rows go to the writer | 0.5 day |
+| C2 Script rules | Niche block in `planner.js` and `scriptReview.js`; "max 2 speaking" already holds (one speaker per scene) | 1 day |
+| C3 Avatar library (24) | `fruit_characters` rows with `niche = 'blocky'`; a roster file + the existing generator with a blocky prompt | 1.5 days + your review |
+| C3 Users' own avatars | Owner column, create flow, checks | 3–4 days, later phase |
+| C4 Location lock | Preset list in the niche config, one plate each; `plates.js` already passes a plate as the last reference picture for series, extend it to single stories and custom locations | 1.5 days |
+| C5 Style lock | Constants in `niches/blocky.js`; blocky picture-check spec | 1 day |
+| C6 No text + caption overlays | Prompts already forbid text and logos. New: `overlay` per scene from the writer, an editable field on the scene card, drawn by `fruitCaptions.mjs` on Fly (needs a Fly image deploy) | 2 days |
+| C7 Brand + kid safety | Writer rules, a code check for banned names in scripts and user prompts, in-app name without "Roblox" | 0.5–1 day |
+| E Upload pack | `uploadPackage.js` already writes title, caption, pinned comment and hashtags, with copy buttons in `FinalExtras.jsx`. Add: YouTube title with the 100-char cap and count, description under 500, tags capped at 500, TikTok caption under 150; caps enforced in code | 1 day |
+
+## 5. Layout
+
+Confirmed, no change needed. `FruitStoryV2Page.jsx:316-345`: the builder is first, 420–460 px
+wide on the left; the result section fills the right; idle shows Recent creations for paid
+users. Mobile has two sticky tabs, "Build" and a second one labelled "Recent" when idle and
+"Your video" once a story exists; footers sit above the bottom nav.
+
+## 6. Test plan ($5 cap)
+
+Measured costs used: picture $0.035 (Nano Banana 2 Lite), Wan 2.6 Flash $0.0504/s, Seedance
+2.0 Mini $0.0817/s, Veo 3.1 Fast $0.15/s. Nano Banana Pro is about $0.134 a picture (list
+price, not yet measured on our account). One attempt per test, no automatic retries.
+
+| # | Test | Cost | Running total |
+|---|---|---|---|
+| 1 | Lip sync: 3 first-frame pictures of decal-face avatars + 3 × 5 s clips on V2 Wan. One line uses words like "admin", "ban", "hack" to see if Wan's filter objects | $0.86 | $0.86 |
+| 1b | Only if V2 fails: one 5 s Seedance clip ($0.41) and one 4 s Veo clip ($0.60) | $1.01 | $1.87 |
+| 2 | Avatars: 6 on Nano Banana 2 Lite ($0.21) vs 3 on Pro ($0.40). Half the prompts say "Roblox-style", half only "blocky toy figure", to see which avoids logos | $0.61 | $1.47 / $2.48 |
+| 3 | 1 location plate + 4 scene pictures in it, using test 2's avatars | $0.18 | $1.65 / $2.66 |
+| 4 | One full 30 s story on V2 (Fruit's cost $1.78; plus plates, ideas, upload pack) | $1.90 | $3.55 / $4.56 |
+
+Total: **$3.55** if V2 passes, **$4.56** if test 1b is needed. Both are under $5.
+
+Test 1 needs no new backend: the deployed worker already has no-charge test actions for raw
+pictures and Wan clips. Tests 3 and 4 need the niche build. Test 4 creates one story on your
+account; you can run it by hand instead if you prefer.
+
+One-time libraries (outside the $5): 24 avatars on Lite about **$0.81** (about $1.05 with
+redos); on Pro about $3.20 ($4.20 with redos). 12 locations in 9:16 about **$0.42** ($0.55
+with redos); both shapes doubles it. The 6 Lite avatars from test 2 can count toward the 24.
+
+## 7. Phases to launch
+
+| # | Phase | Effort | Paid cost | Stop for you |
+|---|---|---|---|---|
+| 0 | This audit | done | $0 | approve plan |
+| 1 | Lip-sync test (test 1, 1b if needed) | 0.5 day | $0.86–1.87 | **yes: go / no-go** |
+| 2 | Niche seam: prompt snapshot test, migration, `niches/fruit.js`, API + client niche, flag, hidden route. Fruit unchanged | 2.5 days | $0 | migration shown before it's applied |
+| 3 | Blocky content: style lock, writer/editor rules, safety, picture check, 24-avatar roster (text). Tests 2 and 3 | 3 days | $0.79 | **yes: Lite or Pro, look approved** |
+| 4 | Libraries: 24 avatars + 12 locations | 1.5 days | ≈ $1.25–1.60 | **yes: review sheet** |
+| 5 | Idea engine + used-ideas memory | 2 days | ≈ $0.05 | no |
+| 6 | Location lock for single stories + caption overlays on Fly | 3.5 days | ≈ $0.10 | Fly deploy needs your OK |
+| 7 | Upload pack | 1 day | ≈ $0.01 | no |
+| 8 | UI skin: copy, idea cards with emotion, overlay field, mobile pass at 390 px | 2 days | $0 | no |
+| 9 | Full 30 s story (test 4) | 0.5 day | $1.90 | **yes: watch it** |
+| 10 | Soft launch: flag for testers, menu/home entries (about 15 files), price rows, pricing page, SEO page "Roblox-style animation", example videos | 3 days | example videos ≈ $2 each | **yes: before any push** |
+| later | Users' own avatars; 16:9; V3/V4 story checks | 4+ days | as tested | |
+
+About 20 working days. Paid tests $3.55–4.56, plus libraries about $1.25–1.60.
+
+**What I'd do differently from the scope:**
+
+1. **Lip-sync test before any building**, not only before other paid work. It needs no new
+   backend, and a fail changes or ends the project.
+2. **Word budget.** Fruit's rule gives about 9 words per 5 s scene, so 60 s is about 108 words,
+   not 130–155. Reaching 130–155 needs 6 s clips, and 12 of those is 72 paid seconds for a 60 s
+   video. Start with Fruit's rule; try 11-word lines in the 30 s test.
+3. **Overlays in fixed spots** (name tag top centre, chat top left, countdown top right) rather
+   than on a blank glowing shape in the picture. The camera pushes in during a clip, so a drawn
+   shape moves and the text won't stay on it, and the clip model may fill the shape with fake
+   letters. Test 3 tries one picture with a blank shape to check.
+4. **9:16 only at first.** Reference pictures are portrait, series already forces 9:16, and
+   16:9 has never had a paid run.
+5. **Own price rows** (`image:blocky-story`, `video:blocky-story-v2/v3/v4`) with Fruit's values,
+   so Blocky's price and margin can move without touching Fruit.
+6. **Ideas free, with a rate limit.** Each batch costs us about $0.01; Fruit's ideas cost nothing.
+7. **Voices are descriptions, not fixed voices.** The video model invents the voice in every
+   clip, so an avatar can sound a little different between clips. Same as Fruit today.
+
+---
+
+## Appendix: details for later phases
+
+### A. Data contract (`api/fruitStoryV2Api.js`)
+
+Every call is a POST to the edge function `fruit-story-api` with `{ action, ...args }`
+(`api/supabaseAdapter.js:12-40`). No request carries a niche or template key today.
+
+| Call | Server side | Niche needed |
+|---|---|---|
+| `listCharacters()` | `fruit_characters`, active rows, 5-minute cache | yes (filter) |
+| `getIdeas({seed})` | RPC `fruit_pick_ideas` over `fruit_ideas` | yes (Blocky: AI idea engine) |
+| `createStory(input)` | writer, RPC `fruit_create_story` | yes (stored on the row) |
+| `createSeriesPlan(input)` | series writer, `fruit_series` | yes (stored on the row) |
+| `generateScenePictures`, `editScene`, `regenerateScene`, `regenerateSceneFree` | `runStep` → `fruit_charge_step` → `fruit-worker` | no (read from the story) |
+| `animateAll`, `regenerateClip` | same | no |
+| `buildFinal(storyId, {captions, partLabel, endCard})` | starts a Fly machine | no |
+| `uploadPackage(storyId)` | small model, saved in `fruit_stories.upload_package` | no |
+| `getStory`, `subscribeStory`, `getSeries`, `listSeries`, `listRecent({type})` | reads + realtime | `listSeries` / `listRecent`: yes (filter) |
+
+Contract drift to tidy in the niche-seam phase: `regenerateSceneFree` and `uploadPackage` are
+missing from the adapter typedef, and the UI reads `story.readOnly`, `item.legacy`,
+`series.bible` and `character.collection`, which the typedefs don't list.
+
+Module-level singletons that block two niches in one browser session:
+`useCharacters.js:4` (one cached library), `promptHandoff.js:27` (key `zyvo_prefill_fruit_story`),
+`supabaseAdapter.js:108-112` (always merges v1 stories into Recent).
+
+### B. Database
+
+Tables: `fruit_stories`, `fruit_story_scenes`, `fruit_jobs`, `fruit_charges`,
+`fruit_credit_ledger`, `fruit_ai_calls`, `fruit_series`, `fruit_series_episodes`, `fruit_ideas`,
+`fruit_characters`, `fruit_provider_alerts`, `fruit_test_overrides`. Flags:
+`global_feature_flags`, `user_feature_flags` (read by the browser only; the API never checks them).
+
+Constraints a second niche runs into:
+- `fruit_characters_first_name_key`: first names are unique across the whole table
+  (`20260927104458_fruit_characters.sql:46`).
+- `fruit_characters`: `fruit NOT NULL`, `gender IN ('female','male')`, `age BETWEEN 19 AND 70`.
+- `fruit_story_scenes.speaker_id` is a foreign key to `fruit_characters(id)`, so Blocky avatars
+  must live in the same table.
+- `fruit_pick_ideas` and the API's `library()` have no niche or collection filter.
+
+Library storage: looks are text columns (`fruit`, `face`, `build`, `outfit`), the voice is the
+text column `voice_style`, and the locked picture is a public file at
+`public-assets/fruit-characters/<collection>/<id>-a<attempt>.jpg` (768×1376), with its URL in
+`ref_image_url`. Pictures get the character references through `inputs.referenceImages`
+(speaker first, then the location plate; the model accepts 14). Clips get no references, only
+the scene picture as the first frame.
+
+### C. Where the fruit wording sits
+
+| File | Fruit-specific part | How easy to swap |
+|---|---|---|
+| `planner.js` `SYSTEM` :81-156 | "anthropomorphic fruit characters", fruit puns, the no-hair rule, same-fruit rule, UK roadman | one constant, fruit sentences mixed into generic rules: split into core + niche block |
+| `planner.js` `characterBlock` :158-161 | `a <age> <fruit> woman/man` | one function |
+| `series.js` :13-42 | intro sentence, no-hair rule, `the <fruit> woman` | constant + one line |
+| `scriptReview.js` :25-69 | "fruit characters", hair/skin clause | constant + one line |
+| `pictures.js` | `STYLE` :51, `NEGATIVE` :52 and :78 (ends "no human skin, no human heads, no hair"), `fruitHeads` :34-42, `who` :80, `referenceLine` :55-64, `buildEditPrompt` :137 | style and negative are constants; the rest is woven through `build` |
+| `pictureCheck.js` | system prompt, `hasFruitHead`, verdict fails human heads and hair | deeply woven; give each niche its own check spec |
+| `clips.js` :35, :38 | `the <fruit> woman/man` | two interpolations; `NO_CUT`, camera and audio lines are generic |
+| `castRules.js` :44-53 | look-alike means same fruit | one rule |
+| `uploadPackage.js` :10-15 | "anthropomorphic fruit characters", `#fruitdrama` | one constant |
+| `errors.js` :17, :31; `alerts.js` :41 | "AI Fruit Story" in messages | strings |
+
+Generic already: the voice rule (voice says how it sounds, the scene sets the emotion), the
+safety rules, the banned-phrase lists, the no-text and no-logo sentences, the content-filter rewrite.
+
+### D. Rules the scope refers to
+
+- Scenes: `min(24, max(3, round(lengthSec / 5)))` (`planner.js:79`); lengths 15–120 s in 5 s steps.
+- Speech: 2.6 words per second plus a 0.8 s buffer; each clip is rounded up to a whole second
+  the model allows (`duration.js:5-34`). V4 allows only 4, 6 or 8 s.
+- Line budget: 9 words per line at every length (`planner.js:27-28`); limits 3–16 words.
+- Locations: 1–3 per story, each with a description, time of day and lighting. Single stories
+  keep them consistent by text only. Series also make one empty-set picture per location
+  (`plates.js`) and pass it as the last reference.
+- 16:9 works end to end on the server; the UI forces 9:16 for series episodes.
+
+### E. Where a new tool is registered (there is no single registry)
+
+`src/App.jsx:25, 907`; `components/workspace/CreateMenu.jsx:11-27`; `toolshell.jsx:78-89`;
+`MobileBottomNav.jsx:166-176`; `pages/workspace/layout.jsx:154-164`; `data/routeSeoPolicy.js:21`;
+`components/home-v2/HomeV2Sections.jsx:129, 368`; `ZyvoSuiteCarousel.jsx:15`; `WhatsHot.jsx:42-49`;
+`toprow.jsx:39-41`; `footer.jsx:56, 161`; `public-gallery/gallery.jsx:41-51`;
+`seo/PublicContentLayout.jsx:9`; `pages/workspace/HomeV2.jsx:40-41`; the paywall feature lists in
+`FaceAsmrPaywall.jsx:15-28` and `TwoAmPaywall.jsx:15-28`. Pricing display:
+`lib/pricingOutputs.js:62-93, 185-206`, `components/pricing/OutputTables.jsx`, `PlanCards.jsx`,
+`PlanFinder.jsx`. SEO: `data/publicSeoMetadata.js`, `data/structuredData.js`,
+`scripts/generateSitemap.js`, `scripts/validateSeoIndexing.js`, `vercel.json`.
+
+### F. Tests and test tooling
+
+- Fruit tests: `node --test tests/fruit*.test.mjs` (173). Render worker:
+  `cd render-worker && node --test test/*.test.mjs` (32). Everything: `npm test`.
+- Tests that pin exact source text or shapes, so the niche work must add rather than rewrite:
+  `fruitGlobalSwitch` (exact lines in `src/lib/featureFlags.js` and `AIFruitStory.jsx`),
+  `fruitBackendUnits` (exact Fruit story shape), `fruitStoryV2` (the Fruit price keys),
+  `fruitStoryPages` (reads source of `useFruitV2Flow.js`, `App.jsx`, the landing page),
+  `pricingPage` (exact text in `pricingOutputs.js`).
+- `scripts/fruit-characters/export.mjs` writes into the v2 folder (`api/mock/libraryData.js`),
+  so that folder shouldn't move.
+- Paid test guard: `scripts/fruit-story/paidGuard.mjs`. Paid calls throw unless
+  `FRUIT_ALLOW_PAID=1`, and each run reserves against a stage cap. Fruit's caps are spent;
+  Blocky needs its own stage keys and its own $5 ledger.
+- Reusable for test 1: the worker's no-charge actions `picture_test`, `raw_test` and `raw_poll`
+  (`fruit-worker/index.ts:195-280`; Wan 2.6 Flash is on the allow-list), plus
+  `test3eConfirm.mjs` as the template and `frames3e.mjs` for frame strips.
+- Reusable for the libraries: `scripts/fruit-characters/generate.mjs` (`--cap` required, a
+  ledger per attempt), `sheet.mjs`, `retry.mjs`, `upload.mjs`, `export.mjs`. They are bound to
+  fruit through `prompt.mjs` and the `data/fruit-characters/` paths.
+
+### G. Measured costs
+
+| Item | Cost | Source |
+|---|---|---|
+| Nano Banana 2 Lite picture | $0.0346 (live average $0.0368) | `fruit-v2-phase3-results.md`, `data/fruit-phase3/margins.json` |
+| Nano Banana Pro picture | about $0.134, list price, not measured on our account | web list price |
+| Wan 2.6 Flash, 720p with sound | $0.0504 per second | 18 clips |
+| Seedance 2.0 Mini, 720p | $0.0817 per second | 3 clips |
+| Veo 3.1 Fast, 720p with sound | $0.15 per second | 1 clip |
+| Story script | $0.010–0.017 | measured |
+| Picture check / upload text / final video | about $0.001 each | measured |
+| Full 30 s V2 story | $1.78, 179 credits charged | 2026-09-30 run |
+| One credit | $0.02133 (cheapest plan credit) | `docs/phase7/pricing-proposal.md` |
