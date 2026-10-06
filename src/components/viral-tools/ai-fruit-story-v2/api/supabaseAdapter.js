@@ -36,6 +36,11 @@ async function call(action, body = {}) {
   }
   const json = await res.json().catch(() => null);
   if (!json?.ok) throw new FruitApiError(json?.code ?? "SERVER_FAILED", json?.message ?? "Something went wrong on our side. Try again.");
+  // A request for a template other than Fruit must be answered for that template.
+  // A server that doesn't know templates yet ignores `niche` and answers with
+  // Fruit's library, ideas and stories: show nothing rather than those.
+  const asked = body.niche ?? body.input?.niche;
+  if (asked && json.niche !== asked) throw new FruitApiError("STAGE_NOT_READY", "This template isn't switched on yet.");
   return json.data;
 }
 

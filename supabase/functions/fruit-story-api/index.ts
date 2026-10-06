@@ -75,7 +75,7 @@ const RATE = {
   series: { bucket: "fruit-v2:series", limit: 5 },
 } as const;
 
-type Ctx = { userId: string; plan: string; body: any };
+type Ctx = { userId: string; plan: string; body: any; niche?: string };
 
 /* ─── helpers ─────────────────────────────────────────────────────────── */
 
@@ -117,6 +117,7 @@ async function requestNiche(ctx: Ctx, value: unknown = ctx.body?.niche): Promise
   const niche = nicheIdFrom(value);
   if (!niche) throw fruitError("VALIDATION", "That template doesn't exist.");
   await requireNicheAccess(ctx.userId, niche);
+  ctx.niche = niche;   // echoed in the reply (see the entry), so the browser knows the answer is this template's
   return niche;
 }
 
@@ -652,8 +653,12 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", user.id).maybeSingle();
     const plan = String(profile?.plan_code ?? "free").toLowerCase().trim();
-    const data = await handler({ userId: user.id, plan, body });
-    return reply({ ok: true, data });
+    const ctx: Ctx = { userId: user.id, plan, body };
+    const data = await handler(ctx);
+    // A template other than Fruit is named in its answer. A server from before
+    // templates ignores `niche` and would answer with Fruit's data; the browser
+    // refuses any answer that doesn't name the template it asked for.
+    return reply({ ok: true, data, ...(ctx.niche && ctx.niche !== DEFAULT_NICHE ? { niche: ctx.niche } : {}) });
   } catch (e) {
     const err = e instanceof FruitError ? e : fromDbError(e);
     if (!(e instanceof FruitError)) console.error("[fruit-story-api] unexpected:", (e as Error)?.message ?? e);

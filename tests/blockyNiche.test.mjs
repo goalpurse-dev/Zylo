@@ -52,7 +52,7 @@ test("Fruit overrides nothing: it is the engine's built-in wording and price row
 test("another niche never gets Fruit's wording by accident: a missing rule set throws", () => {
   for (const part of ["writer", "series", "review", "check", "upload"]) {
     assert.equal(NICHES.blocky[part], null, `${part} is not written yet`);
-    assert.throws(() => hooksOf("blocky", part), new RegExp(`Blocky Stories has no ${part} rules yet`));
+    assert.throws(() => hooksOf("blocky", part), new RegExp(`${NICHES.blocky.name} has no ${part} rules yet`));
   }
   const cast = [AVATARS[0], AVATARS[1]];
   assert.throws(() => buildPlannerPrompt({ source: "prompt", cast, lengthSec: 15, quality: "v2", prompt: "A trade goes wrong.", niche: "blocky" }), /no writer rules yet/);
@@ -171,6 +171,10 @@ test("the API: lists are one template's, a story keeps its template, a hidden te
   assert.match(api, /global_feature_flags"\)\.select\("enabled"\)\.eq\("key", flag\)/);
   assert.match(api, /user_feature_flags"\)\.select\("flags"\)\.eq\("user_id", userId\)/);
   assert.match(api, /requireReady\(niche\);/);
+  // An answer for another template names it; Fruit's answer is the same envelope as before.
+  assert.match(api, /return reply\(\{ ok: true, data, \.\.\.\(ctx\.niche && ctx\.niche !== DEFAULT_NICHE \? \{ niche: ctx\.niche \} : \{\}\) \}\);/);
+  const adapter = fs.readFileSync(new URL("../src/components/viral-tools/ai-fruit-story-v2/api/supabaseAdapter.js", import.meta.url), "utf8");
+  assert.match(adapter, /if \(asked && json\.niche !== asked\) throw new FruitApiError\("STAGE_NOT_READY"/, "the browser refuses an answer that isn't for the template it asked for");
   // Fruit's idea call is the same call as before (no p_niche), so it works on either side of the migration.
   assert.match(api, /\.\.\.\(niche === DEFAULT_NICHE \? \{\} : \{ p_niche: niche \}\)/);
 });

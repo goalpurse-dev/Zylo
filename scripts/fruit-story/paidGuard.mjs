@@ -84,7 +84,8 @@ const BLOCKY_LEDGER = path.join(ROOT, "data/blocky-tests/spend.json");
 export const BLOCKY_TOTAL_USD = 5.0;
 // lipsync: test 1, 3 pictures + 3 × 5 s Wan2.6 Flash clips (approved 2026-10-06).
 // tiers: test 1b, picture C again on V3 (Seedance 2.0 Mini, 5 s) and V4 (Veo 3.1 Fast, 6 s) (approved 2026-10-06).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4 });
+// thumb: 2 menu thumbnail options. looks: tests 2 and 3 (avatars on Lite vs Pro, one location plate + 4 scene pictures) (approved 2026-10-06).
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 0.8 });
 
 export function openBlockyBudget(stage) {
   return budgetOn({ file: BLOCKY_LEDGER, caps: BLOCKY_STAGE_CAPS_USD, total: BLOCKY_TOTAL_USD, totalName: "Blocky", outside: new Set() }, stage);

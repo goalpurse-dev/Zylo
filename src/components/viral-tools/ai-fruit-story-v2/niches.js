@@ -9,6 +9,7 @@
 // (supabase/functions/_shared/fruit/niches/).
 import { createContext, useContext } from "react";
 import { EXAMPLE_VIDEO } from "./constants";
+import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "../../../data/blockyStories";
 
 export const FRUIT_NICHE = Object.freeze({
   id: "fruit",
@@ -30,12 +31,12 @@ export const FRUIT_NICHE = Object.freeze({
 
 export const BLOCKY_NICHE = Object.freeze({
   id: "blocky",
-  name: "Blocky Stories",
+  name: BLOCKY_STORIES_NAME,
   tagline: "Blocky avatar stories, made in minutes",
   hero: ["Blocky stories that talk.", "Made in minutes."],
-  path: "/workspace/blocky-stories",
-  /** Hidden until launch: the route and the API both need this flag. */
-  flag: "blocky_v1",
+  path: BLOCKY_STORIES_PATH,
+  /** Hidden until launch: the route, the menus and the API all need this flag. */
+  flag: BLOCKY_STORIES_FLAG,
   priceKey: "blocky-story",
   aspects: ["9:16"],
   example: null,

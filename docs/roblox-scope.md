@@ -228,5 +228,13 @@ Made on 2026-10-06, after the lip-sync test (Phase 1 passed: GO ON V2):
 15. Two-avatar shots: carry over Fruit's picture check + one free redraw for full-body
     shots with small faces.
 
+Made on 2026-10-06, with Phase 2 approved:
+
+16. Blocky avatars have NO age and NO gender, anywhere: the library row leaves both empty
+    (the database refuses a Blocky row that has either), and no prompt names one.
+17. The new fruit-story-api and fruit-worker are deployed ONCE, at the end of Phase 3,
+    followed by a Fruit check. Until then the live API does not know templates, and the
+    Blocky page shows nothing rather than Fruit data.
+
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

@@ -11,6 +11,8 @@
 //  - The library face (decision 10): a solid dark open-mouth shape and oval
 //    eyes, a flat decal on a cube head. Flat cartoon teeth are fine; realistic
 //    3D teeth, lips, tongue or nose are not (decision 11).
+import { BLOCKY_STORIES_NAME } from "./names.js";
+
 const KIND = "a blocky toy avatar";
 const voiceOf = (c) => c.voice_style ?? c.voiceStyle;
 const toneOf = (emotion) => { const e = String(emotion ?? "").trim().toLowerCase(); return `${/^[aeiou]/.test(e) ? "an" : "a"} ${e} tone`; };
@@ -24,7 +26,7 @@ const NEGATIVE_SHORT = "No text or readable writing, no logos, no watermark, no 
 
 export const BLOCKY = Object.freeze({
   id: "blocky",
-  name: "Blocky Stories",
+  name: BLOCKY_STORIES_NAME,
   /** Hidden until launch: the browser and the API both check this flag. */
   flag: "blocky_v1",
   /** Ideas are written per batch from the 10 story engines (scope C1). Not built yet. */
