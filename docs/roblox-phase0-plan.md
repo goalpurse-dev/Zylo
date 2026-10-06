@@ -18,6 +18,19 @@ Since this plan was written:
   drew a brick-toy minifigure; "studded bricks" drew that toy's baseplate floor in all three;
   Wan drew its own subtitles in 1 clip; flat teeth appeared in 2 clips; the two-avatar picture
   came out full body. 11-word lines fill a 5 s clip to the last frame.
+- Test 1b (same clip C on the other tiers, `scripts/blocky/test1bTiers.mjs`): V3 = Seedance 2.0
+  Mini ran for $0.4084 and is about the same as V2 on decal faces (lip sync 3/5, flat decal 3/5),
+  with a harder camera push-in. V4 = Veo 3.1 Fast has NOT run: the worker's no-charge test action
+  only accepts it from commit `e1428a9` on, and that needs `fruit-worker` deployed.
+- Phase 2 (niche seam) is built up to the migration, which is NOT applied:
+  `supabase/migrations/20261006190000_story_niches.sql`. Order when it goes live: the migration
+  first, then `fruit-story-api` and `fruit-worker` (the new API filters every list by niche, so it
+  needs the columns). Fruit's prompts are pinned by `tests/fruitPromptSnapshot.test.mjs`.
+  Blocky is not `ready` yet: its writer, series, editor, picture-check and upload rules are
+  Phase 3, and until then the API refuses to write a Blocky story.
+- Still Fruit-worded inside the shared UI (for the UI skin phase): the story step's heading and
+  placeholders, the script examples, the series questions, openers and tones, the upgrade copy,
+  and the server messages in `errors.js`. Menu entries, thumbnail and landing page: not built.
 
 ## 1. Fruit v2 status
 
