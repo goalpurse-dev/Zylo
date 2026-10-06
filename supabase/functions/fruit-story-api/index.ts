@@ -23,6 +23,7 @@ import { setupsFor } from "../_shared/fruit/series.js";
 import { createSupabaseMedia } from "../_shared/fruit/supabaseStore.js";
 import { transcriptsForClips } from "../_shared/fruit/captionWords.js";
 import { spokenDiff } from "../_shared/fruit/spoken.js";
+import { remakeStats } from "../_shared/fruit/clipCheck.js";
 import { writeUploadPackage } from "../_shared/fruit/uploadPackage.js";
 import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
@@ -422,16 +423,27 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
         const t = transcripts[i];
         if (!t?.words?.length) return;
         c.words = t.words;
-        if (!spokenDiff(c.line, t.text).same) c.caption = String(t.text).trim();
+        // Only when the difference matters (a dropped name, another word): a slur keeps the written line.
+        if (spokenDiff(c.line, t.text).matters) c.caption = String(t.text).trim();
       });
     }
+    // The clip check's log for this story: how many clips were made again, and what that and the checks cost.
+    let clipCheck: any = null;
+    try {
+      const [{ data: jobs }, { data: calls }] = await Promise.all([
+        admin.from("fruit_jobs").select("id, kind, error").eq("story_id", storyId).eq("kind", "clip"),
+        admin.from("fruit_ai_calls").select("job_id, purpose, ok, cost_usd, attempt").eq("story_id", storyId).in("purpose", ["clip", "caption_words", "clip_frame", "clip_frame_check"]),
+      ]);
+      clipCheck = remakeStats(jobs ?? [], calls ?? []);
+      console.log(`[fruit-story-api] clip check ${storyId}: ${clipCheck.remade} of ${clipCheck.clips} clips remade ($${clipCheck.remakeCostUsd}), checks $${clipCheck.checkCostUsd}`);
+    } catch (e) { console.error("[fruit-story-api] clip check stats:", (e as Error)?.message ?? e); }
     const moved = must(await admin.from("fruit_stories")
       .update({ status: "building", final_status: "building", final_captions: captions, final_part_label: partLabel, final_end_card: endCard, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
       .eq("id", storyId).in("status", ["clips_ready", "final_ready"]).select("id"));
     if (!moved.length) throw fruitError("WRONG_STATUS");
     must(await admin.from("fruit_ai_calls").insert({
       id: callId, user_id: userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
-      request: { ...job, auto: Boolean(opts.auto), clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null, ...(c.caption ? { caption: c.caption } : {}) })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
+      request: { ...job, auto: Boolean(opts.auto), clipCheck, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null, ...(c.caption ? { caption: c.caption } : {}) })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
     }));
 
     const t0 = Date.now();
