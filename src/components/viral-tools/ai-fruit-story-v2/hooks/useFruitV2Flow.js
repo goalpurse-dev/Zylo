@@ -392,6 +392,8 @@ export default function useFruitV2Flow(account, characters = []) {
     openSeries, startEpisode, startEpisodeStory, backToSeries, allSeries, episodeEstimate,
     updateEpisode: (patch) => setSeries((s) => ({ ...s, episode: { ...s.episode, ...patch } })),
     story, storyStatus: live.status, reloadStory: live.reload, quotes, recent,
+    // No video of their own yet: the settings step suggests a short first one.
+    firstVideo: recentTab === "single" && recent.status === "ready" && recent.items.length === 0,
     acting, actionError, clearError, captionsBusy,
     pipeline: { onMakePictures: makePictures, onAnimate: animate, onMakeFinal: makeFinal, onDownload: download, onNewStory: newStory, onBackToSeries: backToSeries, onAddCredits: () => setNoCredits({ needed: animateAllPrice(story, quotes.prices) ?? 0 }) },
     setCaptions, setFinalOption, downloadCover,
