@@ -53,6 +53,7 @@ const BillingCancel = lazy(() => import("./pages/billing/Cancel.jsx"));
 const HelpCenter = lazy(() => import("./pages/help/HelpCenter"));
 const Feedback = lazy(() => import("./pages/help/Feedback"));
 const FeedbackAnalytics = lazy(() => import("./pages/admin/FeedbackAnalytics"));
+const OpsPage = lazy(() => import("./pages/admin/Ops"));
 const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
 // already lazy
@@ -1016,6 +1017,7 @@ return (
        
      
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
+          <Route path="/admin/ops" element={<OpsPage />} />
 
         
           <Route path="/home" element={<Navigate to="/" replace />} />
