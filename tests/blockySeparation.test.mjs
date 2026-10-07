@@ -6,6 +6,8 @@
 //   3. Fruit's files are exactly main's: Blocky's branch changes none of them
 //      (one allowed file: the README note about the duplicated provider files).
 //   4. An env file with keys can't be committed.
+//   5. A fix to Fruit's engine never goes unnoticed: Fruit's twin files carry the fingerprint the README
+//      recorded when the two engines were last compared.
 //
 // So Blocky can be changed and deployed with no way of breaking Fruit, and
 // deploying Blocky never needs a Fruit function to be redeployed.
@@ -16,6 +18,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { envFilesInGit, isSecretEnvFile } from "../scripts/blocky/checkEnvNotStaged.mjs";
+import { README as BLOCKY_README, fingerprint, listedCommits, readMark } from "../scripts/blocky/fruitFixes.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 1 << 26 }).split("\n").map((l) => l.trim()).filter(Boolean);
@@ -127,4 +130,18 @@ test("an env file with keys can't be committed", () => {
   // … and no env file is tracked or staged right now (the pre-commit hook runs the same check).
   assert.deepEqual(envFilesInGit(), { tracked: [], staged: [] });
   assert.match(read(".githooks/pre-commit"), /checkEnvNotStaged\.mjs/);
+});
+
+test("a change to Fruit's engine is ported to Blocky's copy, or recorded, before anything else", () => {
+  // Standing rule (owner, 2026-10-07). This fails in whatever session changed one of Fruit's twin files:
+  //   node scripts/blocky/fruitFixes.mjs          lists the Fruit commits since the last comparison
+  //   port the fix to Blocky's twin with its tests (or note why Blocky doesn't need it), add a row to
+  //   the README's "Fixes ported from Fruit" table, then: node scripts/blocky/fruitFixes.mjs --mark
+  const mark = readMark();
+  assert.ok(mark, `${BLOCKY_README} has its "Last compared with Fruit" line`);
+  assert.equal(fingerprint(), mark.fingerprint, `Fruit's engine files changed since they were last compared with Blocky's (${mark.date}, ${mark.commit}). Run: node scripts/blocky/fruitFixes.mjs`);
+  // The table lists at least the first ported fix, each row with a real commit.
+  const listed = listedCommits();
+  assert.ok(listed.includes("e1e1583"));
+  for (const sha of listed) assert.doesNotThrow(() => git("cat-file", "-e", `${sha}^{commit}`), `${sha} is a commit`);
 });

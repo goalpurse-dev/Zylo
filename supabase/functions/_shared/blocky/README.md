@@ -39,6 +39,27 @@ Also duplicated outside this folder: `render-worker/src/blockyFinal.mjs`,
 `blocky_refund_job`, `blocky_complete_job`, `blocky_refresh_story_status`,
 `blocky_create_story` (twins: `fruit_*`).
 
+## Fixes ported from Fruit
+
+Standing rule (owner, 2026-10-07): whenever AI Fruit Story's engine gets a fix,
+in this session or any other, check whether Blocky's copy has the same fault
+and port the fix with its tests. Every one is listed here, newest first, so it
+is always plain what Blocky has and what it is missing. A Fruit change that
+Blocky does not need is listed too, with the reason.
+
+| Date ported | Fruit commit | What the fix does | In Blocky | Live on `blocky-worker` / `blocky-story-api` |
+|---|---|---|---|---|
+| 2026-10-07 | `e1e1583` (main, 2026-10-07) | A job is given up on after 30 minutes, not 8 (picture) or 12 (clip): Runware delivered clips after we had refunded them. A status read the provider fumbles (429, 5xx, a balance refusal) is "no news yet", not a failed job: the job used to be sent again and paid twice. A balance refusal from our provider account waits and is retried every 5 minutes for 30 minutes before the refund. | `engine.js`, `tests/blockyEngine.test.mjs`, `tests/blockyProviderGuard.test.mjs` (commit `f4c5408`) | yes: both deployed 2026-10-07, 20:09 and 20:12 UTC, checked file by file against the branch |
+
+Last compared with Fruit: 2026-10-07, Fruit at commit `f4c5408`, fingerprint `9ac0ea04aa424ab4`
+
+How it is kept: `tests/blockySeparation.test.mjs` fails as soon as one of
+Fruit's twin files differs from that fingerprint, in whatever session changed
+it. Then: `node scripts/blocky/fruitFixes.mjs` lists the Fruit commits since
+the last comparison; port the fix with its tests (or note why it does not
+apply), add a row above, and run `node scripts/blocky/fruitFixes.mjs --mark`.
+Deploying the ported fix to Blocky's functions needs the owner's go.
+
 ## Blocky's own (no twin)
 
 `look.js` (what an avatar is and how the world looks), `rules.js` (writer,
