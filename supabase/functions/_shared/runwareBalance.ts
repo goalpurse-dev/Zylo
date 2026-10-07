@@ -24,10 +24,13 @@ export const OUT_OF_BALANCE = /insufficient|not enough (?:credit|balance|fund)|l
 
 export type GuardRow = { threshold_usd: number; balance_usd: number | null; checked_at: string | null; paused: boolean; paused_since: string | null; alerted_at: string | null };
 
-/** Pure: what a fresh balance reading means. A failed reading keeps the last state (never pause on our own API hiccup). */
-export function guardDecision(row: GuardRow, balance: number | null, now: string): { paused: boolean; pausedSince: string | null; alert: boolean; resumed: boolean } {
+/** Pure: what a fresh balance reading means. A failed reading keeps the last state (never pause on our own API hiccup).
+ *  reserveUsd (2026-10-07): what the work already in flight will still cost. Runware holds that back
+ *  ("reserved for requests in progress"), so the money that counts is the balance MINUS it: on 6-7 Oct
+ *  the balance read $5.54, above the threshold, while every new request was refused. */
+export function guardDecision(row: GuardRow, balance: number | null, now: string, reserveUsd = 0): { paused: boolean; pausedSince: string | null; alert: boolean; resumed: boolean } {
   if (balance == null || !Number.isFinite(balance)) return { paused: row.paused, pausedSince: row.paused_since, alert: false, resumed: false };
-  const paused = balance < Number(row.threshold_usd);
+  const paused = balance - Math.max(0, reserveUsd) < Number(row.threshold_usd);
   return { paused, pausedSince: paused ? row.paused_since ?? now : null, alert: paused && !row.paused, resumed: !paused && row.paused };
 }
 /** Pure: is the cached reading still fresh? */
@@ -50,6 +53,28 @@ export async function readRunwareBalance(apiKey: string, baseUrl = `${(Deno.env.
 
 const alertAdmin = (subject: string, text: string) => sendAdminAlert(subject, text, "runware-guard");
 
+// What the provider work in flight will still cost, in USD (an estimate, on the safe side).
+// A credit we charge costs us about half the cheapest credit we sell ($0.02133): prices are ~2 x cost.
+export const PROVIDER_USD_PER_CREDIT = 0.0107;
+export const SCENE_USD = 0.006;           // one Long Form scene: draw + checks + upscale
+export function reserveFor(inFlight: { jobCredits: number; fruitCredits: number; scenes: number }): number {
+  return Number((inFlight.jobCredits * PROVIDER_USD_PER_CREDIT + inFlight.fruitCredits * PROVIDER_USD_PER_CREDIT + inFlight.scenes * SCENE_USD).toFixed(4));
+}
+export async function inFlightReserveUsd(admin: SupabaseClient, now = new Date().toISOString()): Promise<{ usd: number; jobs: number; fruit: number; scenes: number }> {
+  try {
+    const [jobs, fruit, scenes] = await Promise.all([
+      admin.from("jobs").select("charge_credits").in("status", ["running", "processing"]).gt("lease_expires_at", now).limit(300),
+      admin.from("fruit_jobs").select("credits").in("status", ["submitting", "submitted"]).limit(300),
+      admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "rendering").gt("lease_until", now),
+    ]);
+    const sum = (rows: any[] | null, k: string) => (rows ?? []).reduce((a, r) => a + Number(r?.[k] ?? 0), 0);
+    const inFlight = { jobCredits: sum(jobs.data as any, "charge_credits"), fruitCredits: sum(fruit.data as any, "credits"), scenes: scenes.count ?? 0 };
+    return { usd: reserveFor(inFlight), jobs: (jobs.data ?? []).length, fruit: (fruit.data ?? []).length, scenes: inFlight.scenes };
+  } catch {
+    return { usd: 0, jobs: 0, fruit: 0, scenes: 0 };
+  }
+}
+
 /** Before drawing: { paused, balance }. Never throws (a guard failure must not stop drawing). */
 export async function checkRunwareGuard(admin: SupabaseClient, now = new Date().toISOString()): Promise<{ paused: boolean; balance: number | null }> {
   try {
@@ -58,12 +83,13 @@ export async function checkRunwareGuard(admin: SupabaseClient, now = new Date().
     if (isFresh(row.checked_at, now)) return { paused: row.paused, balance: row.balance_usd };
     const key = Deno.env.get("RUNWARE_API_KEY") ?? "";
     const balance = key ? await readRunwareBalance(key) : null;
-    const d = guardDecision(row as GuardRow, balance, now);
+    const reserve = await inFlightReserveUsd(admin, now);
+    const d = guardDecision(row as GuardRow, balance, now, reserve.usd);
     await admin.from("provider_balance_guard").update({
       balance_usd: balance ?? row.balance_usd, checked_at: now, paused: d.paused, paused_since: d.pausedSince,
       last_error: balance == null ? "balance read failed" : null, updated_at: now, ...(d.alert ? { alerted_at: now } : {}),
     }).eq("provider", "runware");
-    if (d.alert) await alertAdmin(`Zyvo: Runware balance low ($${balance?.toFixed(2)}) — drawing paused`, `The Runware balance is $${balance?.toFixed(2)}, below the $${Number(row.threshold_usd).toFixed(2)} threshold, so Long Form scene drawing is paused. Queued scenes wait (nothing fails) and users see "Drawing is paused for a moment, your video continues automatically".\n\nTop up Runware (or turn on auto-reload in the Runware dashboard). Drawing resumes by itself within about a minute of the balance going back above $${Number(row.threshold_usd).toFixed(2)}.\n\nThreshold: update public.provider_balance_guard set threshold_usd = <usd> where provider = 'runware';`);
+    if (d.alert) await alertAdmin(`Zyvo: Runware balance low ($${balance?.toFixed(2)}) — new work paused`, `The Runware balance is $${balance?.toFixed(2)} with about $${reserve.usd.toFixed(2)} already needed by work in flight (${reserve.jobs} jobs, ${reserve.fruit} Fruit jobs, ${reserve.scenes} scenes): less than the $${Number(row.threshold_usd).toFixed(2)} threshold is free, so new image and video work is paused (Long Form scenes, the image and video tools). Queued scenes wait (nothing fails) and users see "Drawing is paused for a moment, your video continues automatically".\n\nTop up Runware (or turn on auto-reload in the Runware dashboard). Drawing resumes by itself within about a minute of the balance going back above $${Number(row.threshold_usd).toFixed(2)}.\n\nThreshold: update public.provider_balance_guard set threshold_usd = <usd> where provider = 'runware';`);
     if (d.resumed) console.log(`[runware-guard] resumed at $${balance}`);
     return { paused: d.paused, balance: balance ?? row.balance_usd };
   } catch (e) {

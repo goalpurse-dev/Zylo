@@ -209,3 +209,37 @@ Deno.test("an image request the provider did not take (429 / 503 'high demand') 
   assertMatch(img, /"task_submit_response_lost"/);
   assert(!/CREATE_RETRY_STATUS = new Set\(\[[^\]]*(500|502|504)/.test(img), "an answer that may mean 'taken' is not retried");
 });
+
+// ---------------- Part 4: never run dry, know first ----------------
+import { guardDecision, reserveFor, PROVIDER_USD_PER_CREDIT } from "../../supabase/functions/_shared/runwareBalance.ts";
+
+Deno.test("the balance guard counts the work in flight: 6-7 Oct's $5.54 with requests in progress is a PAUSE, not 'above the threshold'", () => {
+  const now = "2026-10-06T23:01:00.000Z";
+  const row = { threshold_usd: 15, balance_usd: 40, checked_at: null, paused: false, paused_since: null, alerted_at: null };
+  // $40 in the account, nothing running: fine.
+  assertEquals(guardDecision(row, 40, now, 0).paused, false);
+  // $40 in the account, $30 of it already needed by clips being made: only $10 is free -> pause, alert once.
+  const reserve = reserveFor({ jobCredits: 2400, fruitCredits: 400, scenes: 6 });
+  assert(reserve > 29 && reserve < 31, String(reserve));
+  assertEquals(guardDecision(row, 40, now, reserve), { paused: true, pausedSince: now, alert: true, resumed: false });
+  // The night of the outage, with the old $3 threshold: $5.54 read as fine. Counting what was in flight it is not.
+  assertEquals(guardDecision({ ...row, threshold_usd: 3 }, 5.54, now, 0).paused, false);
+  assertEquals(guardDecision({ ...row, threshold_usd: 3 }, 5.54, now, 3).paused, true);
+  // A balance that can't be read never pauses or resumes anything.
+  assertEquals(guardDecision({ ...row, paused: true, paused_since: "x" }, null, now, 99).paused, true);
+  assertEquals(PROVIDER_USD_PER_CREDIT, 0.0107);
+  const g = read("supabase/functions/_shared/runwareBalance.ts");
+  assertMatch(g, /const d = guardDecision\(row as GuardRow, balance, now, reserve\.usd\);/);
+});
+
+Deno.test("the admin page's data: the owner only, read-only, never an email or a prompt", () => {
+  const o = read("supabase/functions/ops-status/index.ts");
+  assertMatch(o, /if \(!adminEmails\(\)\.includes\(String\(user\.email \?\? ""\)\.toLowerCase\(\)\)\) return err\(req, "Not allowed", 403\);/);
+  assertMatch(o, /\[Deno\.env\.get\("ALERT_EMAIL"\), Deno\.env\.get\("CONTACT_TO_EMAIL"\), \.\.\.\(Deno\.env\.get\("ADMIN_EMAILS"\) \?\? ""\)\.split\(","\)\]/);
+  assert(!/\.(insert|update|delete|upsert)\(|\.rpc\(/.test(o), "it changes nothing");
+  assert(!/select\("[^"]*\b(email|prompt|input|settings)\b/.test(o), "no personal data is read");
+  assert(o.includes("return ok(req, { ok: true, at: now, provider, failures, stuck, today });"), "the four parts the page shows");
+  const page = read("src/pages/admin/Ops.jsx");
+  for (const id of ["ops-provider", "ops-failures", "ops-stuck", "ops-today", "ops-denied"]) assert(page.includes(`"${id}"`), id);
+  assertMatch(read("src/App.jsx"), /<Route path="\/admin\/ops" element=\{<OpsPage \/>\} \/>/);
+});
