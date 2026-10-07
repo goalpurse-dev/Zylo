@@ -11,6 +11,7 @@ import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
 import PastDueNotice from "../../components/billing/PastDueNotice.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 import { COOKIE_CONSENT_EVENT, hasCookieConsent } from "../../lib/cookieConsent";
+import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "../../data/blockyStories";
 
 // A logged-out visitor has no profile to remember "seen" on: it is kept in this browser.
 const WHATS_NEW_GUEST_KEY = `zyvo:whats-new:seen:${LONG_FORM_ANNOUNCEMENT}`;
@@ -162,6 +163,7 @@ useEffect(() => {
     "/workspace/viral-script": "Video Generator",
     "/workspace/skeleton-shorts": "Skeleton Shorts",
     "/workspace/ai-fruit-story": "AI Fruit Story",
+    [BLOCKY_STORIES_PATH]: BLOCKY_STORIES_NAME,
     "/workspace/face-asmr": "Face ASMR",
     "/workspace/micro-camera-animal": "Micro Camera",
     "/workspace/clay-rescue":        "Clay Rescue",

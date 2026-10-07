@@ -1,0 +1,317 @@
+NEW TEMPLATE: ROBLOX-STYLE TALKING AVATAR STORIES (working name "Blocky Stories").
+This message is the FULL SCOPE of the project, then Phase 0. Phase 0 is READ-ONLY:
+no code changes, no paid calls. First save this whole scope, unchanged, to
+docs/roblox-scope.md so every later phase can read it.
+
+═══════════════════════════════
+PART A — WHAT WE'RE BUILDING
+═══════════════════════════════
+A new short-form template where users make 15s-2min vertical videos of Roblox-style blocky
+avatars acting out a story and TALKING (lip-synced dialogue). Think of the viral "Roblox story"
+Shorts: fake admin pranks, glitches, server rules, trades gone wrong, all ending on a twist.
+
+The competitor is Korpi AI, where users copy-paste scripts from ChatGPT/Claude by hand. We do
+the whole thing in one place: ideas, script, characters, scenes, talking clips, final video,
+and the YouTube upload text.
+
+THE KEY DECISION: this is AI Fruit Story v2 with a new skin. Fruit v2 already has everything
+the core flow needs (idea / describe / own script tabs, single + series, scene pictures with
+edit/regenerate, V2/V3/V4 lip-sync clips, final video on Fly with captions, pricing, the
+out-of-credit guard). Reuse it as much as possible. Do NOT rebuild what already works.
+Fruit's behavior and tests must stay exactly the same.
+
+═══════════════════════════════
+PART B — USER FLOW (same layout as Fruit v2)
+═══════════════════════════════
+Top of builder: "Single video / Series" toggle.
+
+STEP 1 — STORY, three tabs:
+- Pick an idea: 5 idea cards (hook title, 2-3 sentence premise, dominant emotion, suggested
+  cast from the avatar library) + "New ideas" button.
+- Describe it: pick 1-3 avatars, type an idea (max 1000 chars), Zyvo writes the full script.
+- My own script: pick avatars, rows of speaker + line, used exactly as written.
+
+STEP 2 — SETTINGS: quality V2/V3/V4 (locked by plan, same as Fruit), length slider, 9:16
+(and 16:9 if Fruit supports it), live cost card, "Make scene pictures" button with its price.
+The user only pays for video after approving the pictures.
+
+STEP 3 — SCENES: storyboard grid. Each card: picture, speaker + line, on-screen caption
+(if any), Edit / Regenerate with price. Users can customize every scene separately.
+
+STEP 4 — CLIPS: each clip plays inline, "Regenerate clip" with price.
+
+STEP 5 — FINAL VIDEO: player, captions toggle, Download, plus the UPLOAD PACK (Part E).
+
+SERIES: same as Fruit v2 (series plan with episodes and cliffhangers, episodes unlock in
+order, same cast every episode).
+
+═══════════════════════════════
+PART C — WHAT'S NEW FOR ROBLOX
+═══════════════════════════════
+1. IDEA ENGINE. Ideas come from 10 narrative engines:
+   1 forbidden power with a hidden cost
+   2 a glitch/exploit that reveals something it shouldn't
+   3 a prank or scheme that spirals out of control
+   4 a countdown / ticking clock
+   5 a hidden villain or admin abusing power on players
+   6 a moral dilemma with no clean right answer
+   7 a secret about the character's own avatar/account
+   8 a trade/deal that costs more than expected
+   9 a server rule that turns sinister if broken
+   10 a transformation (avatar, skin, identity) that changes who they become
+   Each batch = 5 ideas from 5 DIFFERENT engines. "New ideas" uses the other 5, then
+   rotates. Keep a per-user USED IDEAS memory and pass recent ones to the writer so it never
+   repeats or lightly rewords them. Banned overused plots: power-copying, the invisible-friend
+   glitch, generic "prank on mom/sibling", "hacker steals everything" with no twist,
+   "I played as a noob for a day" kindness lessons.
+   Every idea must: hook in the first 2 seconds (open mid-action or mid-mystery), rest on ONE
+   "what happens if" premise clear from the title alone, escalate every scene, end on a twist
+   or gut-punch line, have ONE dominant emotion (curiosity, dread, injustice, satisfaction,
+   or shock), and be doable in 1-3 locations with 2-3 characters.
+
+2. SCRIPT RULES (story writer):
+   - Feels native to Roblox: obbies, admin commands, servers, trades, leaderboards, NPCs,
+     badges, spawn pads, kill bricks, gamepasses, lag, rejoining.
+   - First line drops the viewer mid-conflict. No "hi guys", no slow setup.
+   - Dialogue sounds spoken: contractions, interruptions, reactions, varied line lengths.
+   - Every scene raises the stakes. The LAST line is the most quotable line in the video.
+   - Word budget ~2.5 spoken words per second of video (60s = 130-155 words).
+   - Scene count scales with length, using Fruit v2's existing rules.
+   - Exact names: character and location names are spelled identically everywhere.
+   - Max 3 characters visible per scene, max 2 speaking.
+
+3. AVATAR LIBRARY: blocky avatars with a locked look and voice, like the 170 fruits.
+   Start with ~24 that contrast strongly in color and silhouette (include a plain default
+   "noob" avatar, since it's a key story archetype). Each avatar: one-word name, look
+   description (skin color, hair, face decal, shirt with a simple shape and no words,
+   pants, ONE signature accessory), voice describing only how it SOUNDS (the scene decides
+   the emotion, same fix as Fruit), and role tags. LATER phase: users create their own
+   avatar and save it to their library.
+
+4. LOCATION LOCK: a preset library of ~12 common locations (e.g. Town Square, Spawn Area,
+   Lava Obby, Obby Tower, School Hallway, Café, Trading Plaza, Admin Room), each with one
+   reference picture made once. Stories use 1-3 locations. The location's reference picture
+   is passed to every scene picture in that location so it looks the same every time.
+   Custom locations get one reference picture made per story.
+
+5. STYLE LOCK: one fixed style block for every picture and clip: 3D classic blocky
+   Roblox-style avatars (cube heads, rectangular torsos, block arms and legs, smooth matte
+   plastic, simple flat 2D face decals), chunky low-poly world built from studded bricks,
+   bright clean soft-shadow lighting, playful game-world look, no morphing, no extra limbs,
+   identical proportions and outfits throughout. No neon purple/cyan cyberpunk default look.
+
+6. NO READABLE TEXT IN PICTURES OR CLIPS. AI garbles letters. If the story needs text
+   (an "OWNER" tag, chat messages, a countdown), the picture shows a blank glowing shape in
+   that spot, and the real words are stored as a per-scene CAPTION OVERLAY that the Fly
+   final-video step draws on top. No logos at all (the Fruit test drew an Apple logo).
+
+7. BRAND + KID SAFETY: never show the Roblox logo, real game names or logos, real YouTubers
+   or real usernames. "Exploits" and "hacks" are story devices only, never real working ones.
+   Kid-safe: no blood, gore, real-world weapons, romance, or dangerous real-world stunts.
+   Don't use "Roblox" in the template's in-app name (trademark); the SEO page can say
+   "Roblox-style animation".
+
+═══════════════════════════════
+PART D — MODELS + PRICES
+═══════════════════════════════
+- Scene pictures, edits, location references: Nano Banana 2 Lite (same as Fruit).
+- Avatar library: Nano Banana 2 Lite unless the comparison test shows Pro is clearly better.
+- Clips: same tiers as Fruit: V2 Wan2.6 Flash (Seedance 2.0 Mini fallback), V3 Seedance 2.0
+  Mini, V4 Veo 3.1 Fast. Same no-cut rule and speaker-faces-camera framing.
+- Prices: same as Fruit (4 credits per picture/edit, 5/9/16 credits per second for V2/V3/V4)
+  unless Roblox tests show a different real cost.
+- THE BIG RISK: lip sync on flat decal faces. The model may animate the mouth badly or turn
+  it into a realistic mouth. This is the FIRST paid test, before any other paid work.
+
+═══════════════════════════════
+PART E — UPLOAD PACK (final screen)
+═══════════════════════════════
+One cheap text call after the final video:
+- YouTube title: hard cap 100 chars incl. hashtags, strongest hook in the first 40 chars,
+  2-4 search keywords woven in naturally, teases the twist without spoiling it. Show the count.
+- Description under 500 chars: hook + keywords, a comment-bait question, 3-5 hashtags.
+- Tags: comma-separated, priority order, hard cap 500 chars.
+- Pinned comment: one debate question that splits viewers into two sides.
+- TikTok/Reels caption under 150 chars + 3-5 hashtags.
+Each with a copy button.
+
+═══════════════════════════════
+PART F — DESIGN + LAYOUT
+═══════════════════════════════
+- Lime visual family, same as Fruit v2 (#BEF264 and the existing tokens in
+  docs/zyvo-design-tokens.md). Reuse the shared components in src/components/ui/zyvo/.
+- DESKTOP: builder on the LEFT, results on the RIGHT (Recent creations when idle).
+- MOBILE: Build / Your video tabs, no nested scroll areas, nothing hidden behind the bottom
+  nav. Same fixes as Fruit v2.
+
+═══════════════════════════════
+PART G — WORKING RULES (every phase)
+═══════════════════════════════
+- Local only, never push, unless I say so. Commit in small logical steps.
+- Paid calls OFF by default. Total Roblox testing budget: $5 hard cap. Every paid step
+  states its estimated cost first, and the running total is reported after it.
+- Stop for my input only at the checkpoints I mark.
+- Fruit tests must pass after every change.
+
+═══════════════════════════════
+PHASE 0 — READ-ONLY AUDIT + PLAN
+═══════════════════════════════
+Write the result to docs/roblox-phase0-plan.md.
+
+1. FRUIT V2 STATUS. Answer each:
+   a) Is Fruit v2 pushed/merged, or still local? Which commit/branch?
+   b) Is it live for everyone, or still behind the flag? Is v1 removed?
+   c) What's left on the Fruit launch checklist (mobile QA, rollout, v1 removal, the picture
+      prompt re-check for small faces and the human listener, the logo issue)?
+   d) Do all fruit tests pass? Report the count.
+   e) Any known bugs or open issues?
+   f) Your recommendation: finish Fruit's launch first, or build Roblox on the same branch
+      in parallel? Which branch should Roblox build on?
+2. MAP FRUIT V2: list the files for the UI, the data contract (fruitStoryV2Api.js), story
+   writer, idea generator, scene picture prompts, clip prompts, character library (schema +
+   storage), series, final video (Fly), captions, pricing, and the out-of-credit guard.
+   Mark each one REUSE AS-IS / NEEDS NICHE CONFIG / FRUIT-ONLY.
+3. NICHE CONFIG: propose the smallest change that lets one engine serve Fruit and Roblox
+   (e.g. a niche key on stories/series rows + one config module per niche: style lock, idea
+   engines, writer rules, library source, voice rules, location handling, caption overlays,
+   upload pack, price keys). Compare it with copying the Fruit v2 folders and recommend one.
+   Fruit's behavior must not change.
+4. ROBLOX GAPS: for each item in Part C and Part E, say where it lives and estimate the effort.
+5. LAYOUT: confirm Fruit v2's desktop puts the builder left and results right. If not,
+   say what changes.
+6. TEST PLAN: the cheapest test order under the $5 cap, with the cost of each test.
+   Test 1 must be the lip-sync check (3 x 5s clips on V2 Wan with blocky decal-face avatars).
+   Also include: 6 avatars on Nano Banana 2 Lite vs 3 on Pro, 1 location + 4 scene pictures,
+   V3/V4 single clips only if V2 fails, then one full 30s story on V2. Separately, estimate
+   the one-time cost of the 24-avatar and 12-location libraries.
+7. PHASES: the full phase list from here to launch, with effort and cost for each, and
+   anything you'd do differently from this scope.
+
+REPORT: a summary of 30 lines or fewer (Fruit status answers first) + the doc paths.
+
+═══════════════════════════════
+DECISIONS
+═══════════════════════════════
+Made on 2026-10-06, after Phase 0 (docs/roblox-phase0-plan.md). Where a decision differs
+from the text above, the decision wins.
+
+1. Lip-sync test first: yes. It runs before any building.
+2. Word budget: use Fruit's rule. Try 11-word lines in the 30 s story test later.
+3. Overlays: fixed screen spots only (name tag top centre, chat top left, countdown top right).
+   NO blank glowing shapes in pictures at all. That test is dropped.
+4. 9:16 only at first.
+5. Own price rows (image:blocky-story, video:blocky-story-v2/v3/v4) with Fruit's values.
+6. Ideas are free, with a rate limit of 30 batches per user per day.
+7. Voices are text descriptions, same as Fruit.
+8. SEPARATE TEMPLATES: Blocky Stories is its own template, not a mode inside AI Fruit Story.
+   Own route, own entry in the toolshell, CreateMenu, mobile nav and home carousel (hidden
+   behind the blocky_v1 flag until launch), own thumbnail, own landing/SEO page.
+   Users must never see Fruit characters, ideas, series or recent creations inside Blocky,
+   or the other way around: listCharacters, getIdeas, listSeries and listRecent always
+   filter by niche. Only the engine underneath is shared.
+
+Made on 2026-10-06, after the lip-sync test (Phase 1 passed: GO ON V2):
+
+9.  Video tiers come from Fruit: V2 Wan 2.6 Flash, V3 Seedance 2.0 Mini, V4 Veo 3.1 Fast,
+    same per-second prices, own price rows.
+10. Library face = B: solid dark open-mouth shape that changes shape when speaking,
+    oval eyes, flat decal on a cube head. Eyes and mouth shape are locked per avatar.
+    Flat eyebrow lines MAY be added per scene for emotion (angry, worried, shocked).
+11. Teeth: flat cartoon teeth are OK. Realistic 3D teeth, lips, tongue or nose = fail.
+12. STYLE LOCK FIX (LEGO look must never appear): remove "studded bricks" and "studs" from
+    every prompt. Use "smooth matte plastic blocks and simple geometric parts". Add to the
+    negative list: no studs, no studded baseplates, no round minifigure heads, no neck
+    studs, no claw hands, no brick-toy minifigures.
+13. Noob avatar: classic noob colours (yellow cube head and arms, blue torso, green legs),
+    face B, no cap. If it still comes out as a minifigure, change its colours.
+14. Clip check: add "text, subtitles or captions on screen" as a fail with one free remake.
+15. Two-avatar shots: carry over Fruit's picture check + one free redraw for full-body
+    shots with small faces.
+
+Made on 2026-10-06, with Phase 2 approved:
+
+16. Blocky avatars have NO age and NO gender, anywhere: the library row leaves both empty
+    (the database refuses a Blocky row that has either), and no prompt names one.
+17. The new fruit-story-api and fruit-worker are deployed ONCE, at the end of Phase 3,
+    followed by a Fruit check. Until then the live API does not know templates, and the
+    Blocky page shows nothing rather than Fruit data.
+
+Made on 2026-10-06, after the look checkpoint (tests 2 and 3):
+
+18. WORDING: "a blocky game avatar", never "a blocky toy avatar", everywhere: reference
+    prompts, scene prompts, clip prompts, thumbnail prompts and the "(a blocky game avatar)"
+    tag after each name. "Toy" pulled in brick-toy minifigures. (This replaces "toy" in the
+    EXTRA RULE below.) The style line says "Roblox-style"; "blocky toy figure" lost test 2.
+19. BODY CONSTRUCTION, as a positive description, word for word in every reference prompt and
+    in the scene style block:
+    "Body construction: the torso is one plain rectangular box. Each arm is one straight
+    rectangular block with a flat square end — no hands, no fingers, no grip. The two legs are
+    two separate straight rectangular blocks side by side, each half the torso's width,
+    attached flat to the bottom of the torso — no hip piece, no notch between them, no
+    separate feet. The cube head sits directly on top of the torso — no neck."
+20. BODY TEMPLATE (the Lite Noob as "Image 1 shows the body construction to copy exactly;
+    ignore its colours, face and outfit"): TESTED AND NOT USED. It copied the Noob's own
+    flaws (rounded head, small hand blocks, the notch between the legs).
+21. PICTURE CHECK: besides full-body shots, a shot whose speaker's cube head is under about
+    1/5 of the frame height fails, with one free redraw (the line in code is 22%, as for Fruit).
+22. KEEP AS BUILT: the location lock, thumbnail option 2, the "couldn't load" guard on the
+    Blocky page.
+23. UPLOAD PACK: "Roblox" is allowed as a search keyword in titles, tags and hashtags. Real
+    game names, logos and creators stay banned.
+24. LEAVE-OUT LIST: keep naming the minifigure parts (claw hands, brick-toy minifigures, round
+    minifigure heads, neck studs). The one re-test picture without them still had the hip
+    notch; the four with them did not.
+
+Decisions of 2026-10-06 (the separation). These replace decision 8's "only the engine
+underneath is shared" and decision 17's deploy order:
+
+25. SEPARATE PRODUCT: Blocky Stories shares NO code with AI Fruit Story. Its own engine
+    (`supabase/functions/_shared/blocky/`), its own functions (`blocky-story-api`,
+    `blocky-worker`), its own tables and functions in the database (`blocky_*`), its own page
+    folder, its own final-video builder. Deploying Blocky never needs a Fruit function to be
+    redeployed. A test fails if Blocky ever imports from Fruit or Fruit from Blocky, and if any
+    Fruit file differs from main. The duplicated provider files are listed in a README in
+    both engine folders: a provider or model change is made in both.
+26. FRUIT'S DATABASE GOES BACK: the template columns added to Fruit's tables (migration
+    20261006190000) are undone, in one transaction, shown before it is applied, at a quiet
+    time, with the smoke check and the rolled-back dry run before and after. The Blocky price
+    rows and the `blocky_v1` switch stay.
+27. (replaced by 32) SQL that waits for the owner's go lives in `supabase/pending/`, not in
+    `supabase/migrations/`.
+28. (replaced by 32) A commit that contains an env file with keys is refused (pre-commit hook).
+29. ONE BALANCE: Blocky charges the same credit balance as Fruit, through the same
+    `deduct_credits`, with the same row locking, so two charges at the same moment can never
+    spend the same credits. Pinned by `tests/blockyCreditLocking.test.mjs`; the two-connection
+    race is `scripts/blocky/chargeLocking.mjs` on a throwaway account (decision 35).
+30. AN AVATAR HAS NO AGE AND NO GENDER COLUMN at all (`blocky_characters`): the extra rule
+    below is now a property of the table, not a default.
+31. VEO AND NANO BANANA PRO TESTS run on `blocky-worker`'s own test list. The Veo line in
+    `fruit-worker` and the Pro line in the picture proxy are reverted on the branch (the live
+    picture proxy v44 keeps its Pro line: it was deployed by the owner and is left as is).
+
+Decisions of 2026-10-07 (how Blocky runs):
+
+32. BLOCKY RUNS THE WAY FRUIT DOES. No Docker, no local database, no tunnel, no separate
+    keys. The site runs on localhost (`npm run dev`) and calls Blocky's own functions on the real
+    project, behind `blocky_v1` (on for the owner's account only). Every provider key, the Fly
+    token and the Fly app are the ones Fruit already uses (Supabase secrets are project-wide).
+    The one new secret is `BLOCKY_WORKER_SECRET`, a random string (not a provider key), in
+    Supabase secrets and in the database vault. The final video uses the same Fly app with its
+    own image tag, `blocky-final`; the `fruit-final` image is never rebuilt for Blocky.
+33. PAID CALLS OFF BY DEFAULT, AND A DAILY CAP. A Blocky bug could spend real provider money,
+    so Blocky makes no paid call unless `blocky_settings.paid_calls` is true, and stops for the
+    day when today's spend reaches `blocky_settings.daily_cap_usd` ($3.00 to start with; the day
+    runs from 00:00 UTC). A step that would pass the cap is refused before it is charged; jobs
+    still waiting when the switch goes off are refunded. The owner turns it on and off:
+    `node scripts/blocky/paid.mjs on | off | status | cap 3`, or the row in the Supabase table
+    editor. If the state can't be read, paid calls are off.
+34. TEMPORARY AVATARS: Noob, Vex and Lux from the Nano Banana Pro test pictures are loaded so a
+    first story can be made (`scripts/blocky/seedTemporaryAvatars.mjs`). They are marked
+    `temporary = true` in `blocky_characters` and stored under `blocky/library/temporary/`; the
+    real library replaces them in place.
+35. THE RACE TEST runs on the real database on a throwaway account
+    (`scripts/blocky/chargeLocking.mjs`): it calls no provider, compares every other balance
+    before and after, and deletes the account and its rows.
+
+EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
+avatar". The age column gets a neutral default for niche 'blocky'.

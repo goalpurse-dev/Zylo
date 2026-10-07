@@ -1,0 +1,3801 @@
+{
+ "constraints": [
+  {
+   "def": "CHECK ((provider = ANY (ARRAY['runware'::text, 'anthropic'::text, 'openai'::text, 'fly'::text])))",
+   "name": "fruit_ai_calls_provider_check",
+   "table": "fruit_ai_calls",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (job_id) REFERENCES fruit_jobs(id) ON DELETE SET NULL",
+   "name": "fruit_ai_calls_job_id_fkey",
+   "table": "fruit_ai_calls",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (scene_id) REFERENCES fruit_story_scenes(id) ON DELETE SET NULL",
+   "name": "fruit_ai_calls_scene_id_fkey",
+   "table": "fruit_ai_calls",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (series_id) REFERENCES fruit_series(id) ON DELETE SET NULL",
+   "name": "fruit_ai_calls_series_id_fkey",
+   "table": "fruit_ai_calls",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE SET NULL",
+   "name": "fruit_ai_calls_story_id_fkey",
+   "table": "fruit_ai_calls",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL",
+   "name": "fruit_ai_calls_user_id_fkey",
+   "table": "fruit_ai_calls",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_ai_calls_pkey",
+   "table": "fruit_ai_calls",
+   "type": "p"
+  },
+  {
+   "def": "CHECK (((age >= 19) AND (age <= 70)))",
+   "name": "fruit_characters_age_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((collection ~ '^[a-z][a-z0-9-]{0,39}$'::text))",
+   "name": "fruit_characters_collection_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((gender = ANY (ARRAY['female'::text, 'male'::text])))",
+   "name": "fruit_characters_gender_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((hue >= 0) AND (hue <= 360)))",
+   "name": "fruit_characters_hue_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((id ~ '^[a-z][a-z0-9-]{0,39}$'::text))",
+   "name": "fruit_characters_id_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length(name) >= 1) AND (length(name) <= 60)))",
+   "name": "fruit_characters_name_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((niche = ANY (ARRAY['fruit'::text, 'blocky'::text])))",
+   "name": "fruit_characters_niche_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((((niche = 'fruit'::text) AND (age IS NOT NULL) AND (gender IS NOT NULL)) OR ((niche = 'blocky'::text) AND (age IS NULL) AND (gender IS NULL))))",
+   "name": "fruit_characters_person_by_niche",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((ref_image_url ~ '^https://'::text))",
+   "name": "fruit_characters_ref_image_url_check",
+   "table": "fruit_characters",
+   "type": "c"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_characters_pkey",
+   "table": "fruit_characters",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((credits >= 0))",
+   "name": "fruit_charges_credits_check",
+   "table": "fruit_charges",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((step = ANY (ARRAY['pictures'::text, 'edit'::text, 'regenerate'::text, 'retry_picture'::text, 'animate'::text, 'reclip'::text, 'free_regenerate'::text])))",
+   "name": "fruit_charges_step_check",
+   "table": "fruit_charges",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE CASCADE",
+   "name": "fruit_charges_story_id_fkey",
+   "table": "fruit_charges",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_charges_user_id_fkey",
+   "table": "fruit_charges",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_charges_pkey",
+   "table": "fruit_charges",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((credits >= 0))",
+   "name": "fruit_credit_ledger_credits_check",
+   "table": "fruit_credit_ledger",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((operation = ANY (ARRAY['charge'::text, 'refund'::text])))",
+   "name": "fruit_credit_ledger_operation_check",
+   "table": "fruit_credit_ledger",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (charge_id) REFERENCES fruit_charges(id) ON DELETE SET NULL",
+   "name": "fruit_credit_ledger_charge_id_fkey",
+   "table": "fruit_credit_ledger",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (job_id) REFERENCES fruit_jobs(id) ON DELETE SET NULL",
+   "name": "fruit_credit_ledger_job_id_fkey",
+   "table": "fruit_credit_ledger",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE SET NULL",
+   "name": "fruit_credit_ledger_story_id_fkey",
+   "table": "fruit_credit_ledger",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_credit_ledger_user_id_fkey",
+   "table": "fruit_credit_ledger",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_credit_ledger_pkey",
+   "table": "fruit_credit_ledger",
+   "type": "p"
+  },
+  {
+   "def": "UNIQUE (idempotency_key)",
+   "name": "fruit_credit_ledger_idempotency_key_key",
+   "table": "fruit_credit_ledger",
+   "type": "u"
+  },
+  {
+   "def": "CHECK (((cardinality(cast_ids) >= 2) AND (cardinality(cast_ids) <= 3)))",
+   "name": "fruit_ideas_cast_ids_check",
+   "table": "fruit_ideas",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((id ~ '^[a-z0-9][a-z0-9-]{0,79}$'::text))",
+   "name": "fruit_ideas_id_check",
+   "table": "fruit_ideas",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((niche = ANY (ARRAY['fruit'::text, 'blocky'::text])))",
+   "name": "fruit_ideas_niche_check",
+   "table": "fruit_ideas",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length(summary) >= 1) AND (length(summary) <= 200)))",
+   "name": "fruit_ideas_summary_check",
+   "table": "fruit_ideas",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length(title) >= 1) AND (length(title) <= 80)))",
+   "name": "fruit_ideas_title_check",
+   "table": "fruit_ideas",
+   "type": "c"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_ideas_pkey",
+   "table": "fruit_ideas",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((credits >= 0))",
+   "name": "fruit_jobs_credits_check",
+   "table": "fruit_jobs",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((kind = ANY (ARRAY['image'::text, 'clip'::text])))",
+   "name": "fruit_jobs_kind_check",
+   "table": "fruit_jobs",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((status = ANY (ARRAY['queued'::text, 'submitting'::text, 'submitted'::text, 'provider_done'::text, 'succeeded'::text, 'failed'::text, 'canceled'::text])))",
+   "name": "fruit_jobs_status_check",
+   "table": "fruit_jobs",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (charge_id) REFERENCES fruit_charges(id)",
+   "name": "fruit_jobs_charge_id_fkey",
+   "table": "fruit_jobs",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (scene_id) REFERENCES fruit_story_scenes(id) ON DELETE CASCADE",
+   "name": "fruit_jobs_scene_id_fkey",
+   "table": "fruit_jobs",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE CASCADE",
+   "name": "fruit_jobs_story_id_fkey",
+   "table": "fruit_jobs",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (test_override_id) REFERENCES fruit_test_overrides(id)",
+   "name": "fruit_jobs_test_override_id_fkey",
+   "table": "fruit_jobs",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_jobs_user_id_fkey",
+   "table": "fruit_jobs",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_jobs_pkey",
+   "table": "fruit_jobs",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((provider = ANY (ARRAY['runware'::text, 'anthropic'::text, 'openai'::text])))",
+   "name": "fruit_provider_alerts_provider_check",
+   "table": "fruit_provider_alerts",
+   "type": "c"
+  },
+  {
+   "def": "PRIMARY KEY (provider)",
+   "name": "fruit_provider_alerts_pkey",
+   "table": "fruit_provider_alerts",
+   "type": "p"
+  },
+  {
+   "def": "CHECK (((cardinality(cast_ids) >= 2) AND (cardinality(cast_ids) <= 5)))",
+   "name": "fruit_series_cast_ids_check",
+   "table": "fruit_series",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length(concept) >= 1) AND (length(concept) <= 1000)))",
+   "name": "fruit_series_concept_check",
+   "table": "fruit_series",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((episode_count >= 3) AND (episode_count <= 10)))",
+   "name": "fruit_series_episode_count_check",
+   "table": "fruit_series",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((niche = ANY (ARRAY['fruit'::text, 'blocky'::text])))",
+   "name": "fruit_series_niche_check",
+   "table": "fruit_series",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_series_user_id_fkey",
+   "table": "fruit_series",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_series_pkey",
+   "table": "fruit_series",
+   "type": "p"
+  },
+  {
+   "def": "CHECK (((number >= 1) AND (number <= 10)))",
+   "name": "fruit_series_episodes_number_check",
+   "table": "fruit_series_episodes",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (series_id) REFERENCES fruit_series(id) ON DELETE CASCADE",
+   "name": "fruit_series_episodes_series_id_fkey",
+   "table": "fruit_series_episodes",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE SET NULL",
+   "name": "fruit_series_episodes_story_id_fkey",
+   "table": "fruit_series_episodes",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_series_episodes_user_id_fkey",
+   "table": "fruit_series_episodes",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (series_id, number)",
+   "name": "fruit_series_episodes_pkey",
+   "table": "fruit_series_episodes",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((aspect = ANY (ARRAY['9:16'::text, '16:9'::text])))",
+   "name": "fruit_stories_aspect_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((cardinality(cast_ids) >= 1) AND (cardinality(cast_ids) <= 5)))",
+   "name": "fruit_stories_cast_ids_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((series_id IS NULL) = (episode_number IS NULL)))",
+   "name": "fruit_stories_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((final_status = ANY (ARRAY['none'::text, 'building'::text, 'ready'::text, 'failed'::text])))",
+   "name": "fruit_stories_final_status_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length_sec >= 5) AND (length_sec <= 180)))",
+   "name": "fruit_stories_length_sec_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((niche = ANY (ARRAY['fruit'::text, 'blocky'::text])))",
+   "name": "fruit_stories_niche_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((quality = ANY (ARRAY['v2'::text, 'v3'::text, 'v4'::text])))",
+   "name": "fruit_stories_quality_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((source = ANY (ARRAY['idea'::text, 'prompt'::text, 'script'::text, 'episode'::text])))",
+   "name": "fruit_stories_source_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'pictures'::text, 'pictures_ready'::text, 'animating'::text, 'clips_ready'::text, 'building'::text, 'final_ready'::text, 'failed'::text])))",
+   "name": "fruit_stories_status_check",
+   "table": "fruit_stories",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (series_id) REFERENCES fruit_series(id) ON DELETE SET NULL",
+   "name": "fruit_stories_series_id_fkey",
+   "table": "fruit_stories",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_stories_user_id_fkey",
+   "table": "fruit_stories",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_stories_pkey",
+   "table": "fruit_stories",
+   "type": "p"
+  },
+  {
+   "def": "CHECK ((speaker_id = ANY (present_ids)))",
+   "name": "fruit_story_scenes_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((clip_status = ANY (ARRAY['none'::text, 'queued'::text, 'generating'::text, 'ready'::text, 'failed'::text])))",
+   "name": "fruit_story_scenes_clip_status_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((duration_sec >= 1) AND (duration_sec <= 15)))",
+   "name": "fruit_story_scenes_duration_sec_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((idx >= 0) AND (idx <= 39)))",
+   "name": "fruit_story_scenes_idx_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((image_check = ANY (ARRAY['none'::text, 'passed'::text, 'failed'::text])))",
+   "name": "fruit_story_scenes_image_check_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK ((image_status = ANY (ARRAY['queued'::text, 'generating'::text, 'ready'::text, 'failed'::text])))",
+   "name": "fruit_story_scenes_image_status_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((length(line) >= 1) AND (length(line) <= 400)))",
+   "name": "fruit_story_scenes_line_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((\"overlay\" IS NULL) OR (jsonb_typeof(\"overlay\") = 'object'::text)))",
+   "name": "fruit_story_scenes_overlay_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "CHECK (((cardinality(present_ids) >= 1) AND (cardinality(present_ids) <= 3)))",
+   "name": "fruit_story_scenes_present_ids_check",
+   "table": "fruit_story_scenes",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (speaker_id) REFERENCES fruit_characters(id)",
+   "name": "fruit_story_scenes_speaker_id_fkey",
+   "table": "fruit_story_scenes",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE CASCADE",
+   "name": "fruit_story_scenes_story_id_fkey",
+   "table": "fruit_story_scenes",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_story_scenes_user_id_fkey",
+   "table": "fruit_story_scenes",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_story_scenes_pkey",
+   "table": "fruit_story_scenes",
+   "type": "p"
+  },
+  {
+   "def": "UNIQUE (story_id, idx)",
+   "name": "fruit_story_scenes_story_id_idx_key",
+   "table": "fruit_story_scenes",
+   "type": "u"
+  },
+  {
+   "def": "CHECK ((expires_at <= (created_at + '02:00:00'::interval)))",
+   "name": "fruit_test_overrides_check",
+   "table": "fruit_test_overrides",
+   "type": "c"
+  },
+  {
+   "def": "FOREIGN KEY (story_id) REFERENCES fruit_stories(id) ON DELETE CASCADE",
+   "name": "fruit_test_overrides_story_id_fkey",
+   "table": "fruit_test_overrides",
+   "type": "f"
+  },
+  {
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+   "name": "fruit_test_overrides_user_id_fkey",
+   "table": "fruit_test_overrides",
+   "type": "f"
+  },
+  {
+   "def": "PRIMARY KEY (id)",
+   "name": "fruit_test_overrides_pkey",
+   "table": "fruit_test_overrides",
+   "type": "p"
+  }
+ ],
+ "counts": {
+  "blocky_ai_calls": 4,
+  "characters": 170,
+  "characters_by_niche": {
+   "fruit": 170
+  },
+  "duplicate_first_names": 0,
+  "ideas_by_niche": {
+   "fruit": 1080
+  },
+  "null_age_or_gender": 0,
+  "scenes_with_overlay": 0,
+  "series_by_niche": {
+   "fruit": 7
+  },
+  "stories_by_niche": {
+   "fruit": 22
+  }
+ },
+ "cron": [
+  {
+   "active": true,
+   "command": "select private.trigger_fruit_reconcile();",
+   "name": "fruit-story-reconcile",
+   "schedule": "20 seconds"
+  }
+ ],
+ "flags": [
+  {
+   "enabled": false,
+   "key": "blocky_v1",
+   "note": "Blocky Stories for everyone. false = hidden (accounts with a per-user blocky_v1 flag still get it).",
+   "updated_at": "2026-10-06T19:05:06.348073+00:00"
+  },
+  {
+   "enabled": true,
+   "key": "fruit_v2",
+   "note": "AI Fruit Story v2 for everyone. false = old tool (per-user fruit_v2 flags still get v2).",
+   "updated_at": "2026-09-30T22:41:20.673367+00:00"
+  }
+ ],
+ "functions": [
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_block_client_writes()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF current_user IN ('anon', 'authenticated') THEN\n    RAISE EXCEPTION 'FRUIT_READ_ONLY' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'DELETE' THEN\n    RETURN OLD;\n  END IF;\n  -- Tables with an updated_at column pass 'touch' as the trigger argument.\n  IF TG_OP = 'UPDATE' AND TG_NARGS > 0 AND TG_ARGV[0] = 'touch' THEN\n    NEW.updated_at := now();\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+   "name": "fruit_block_client_writes",
+   "owner": "postgres",
+   "secdef": false
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_characters_block_client_writes()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  IF current_user IN ('anon', 'authenticated') THEN\n    RAISE EXCEPTION 'FRUIT_CHARACTERS_READ_ONLY' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'DELETE' THEN\n    RETURN OLD;\n  END IF;\n  NEW.updated_at := now();\n  RETURN NEW;\nEND;\n$function$\n",
+   "name": "fruit_characters_block_client_writes",
+   "owner": "postgres",
+   "secdef": false
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_user_id uuid, p_story_id uuid, p_step text, p_from_statuses text[], p_to_status text, p_items jsonb",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_charge_step(p_user_id uuid, p_story_id uuid, p_step text, p_from_statuses text[], p_to_status text, p_items jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_story     public.fruit_stories%ROWTYPE;\n  v_plan      text;\n  v_item      jsonb;\n  v_credits   integer;\n  v_total     integer := 0;\n  v_min_plan  text;\n  v_charge_id uuid := gen_random_uuid();\n  v_job_id    uuid;\n  v_scene     public.fruit_story_scenes%ROWTYPE;\n  v_jobs      jsonb := '[]'::jsonb;\n  v_priced    jsonb := '[]'::jsonb;\n  v_override  uuid;\nBEGIN\n  IF p_items IS NULL OR jsonb_typeof(p_items) <> 'array' OR jsonb_array_length(p_items) = 0 OR jsonb_array_length(p_items) > 40 THEN\n    RAISE EXCEPTION 'VALIDATION: items must be a non-empty array of at most 40' USING ERRCODE = '22023';\n  END IF;\n\n  SELECT * INTO v_story FROM public.fruit_stories WHERE id = p_story_id AND deleted_at IS NULL FOR UPDATE;\n  IF NOT FOUND OR v_story.user_id <> p_user_id THEN\n    RAISE EXCEPTION 'NOT_FOUND' USING ERRCODE = 'P0002';\n  END IF;\n  IF NOT (v_story.status = ANY (p_from_statuses)) THEN\n    RAISE EXCEPTION 'WRONG_STATUS: story is %', v_story.status USING ERRCODE = '55000';\n  END IF;\n\n  SELECT plan_code INTO v_plan FROM public.profiles WHERE id = p_user_id;\n\n  FOR v_item IN SELECT value FROM jsonb_array_elements(p_items) LOOP\n    IF (v_item->>'kind') NOT IN ('image', 'clip') OR jsonb_typeof(v_item->'request') <> 'object' THEN\n      RAISE EXCEPTION 'VALIDATION: bad item' USING ERRCODE = '22023';\n    END IF;\n    SELECT * INTO v_scene FROM public.fruit_story_scenes WHERE id = (v_item->>'scene_id')::uuid AND story_id = p_story_id FOR UPDATE;\n    IF NOT FOUND THEN\n      RAISE EXCEPTION 'NOT_FOUND: scene' USING ERRCODE = 'P0002';\n    END IF;\n    SELECT min_plan INTO v_min_plan FROM public.tool_prices WHERE tool_key = v_item->>'tool_key' AND active;\n    IF public.fruit_plan_rank(v_plan) < GREATEST(1, public.fruit_plan_rank(v_min_plan)) THEN\n      -- A single-item step may use one unexpired, unused admin test override.\n      IF jsonb_array_length(p_items) = 1 THEN\n        SELECT id INTO v_override FROM public.fruit_test_overrides\n        WHERE user_id = p_user_id AND story_id = p_story_id AND tool_key = v_item->>'tool_key'\n          AND used_at IS NULL AND expires_at > now()\n        ORDER BY created_at LIMIT 1 FOR UPDATE;\n      END IF;\n      IF v_override IS NULL THEN\n        RAISE EXCEPTION 'PLAN_UPGRADE_REQUIRED: %', COALESCE(v_min_plan, 'starter') USING ERRCODE = '42501';\n      END IF;\n    END IF;\n    v_credits := public.compute_tool_price(v_item->>'tool_key', COALESCE(v_item->'price_input', '{}'::jsonb));\n    IF v_credits IS NULL THEN\n      RAISE EXCEPTION 'NO_SERVER_PRICE: %', v_item->>'tool_key' USING ERRCODE = '22023';\n    END IF;\n    -- Free regenerate: once, for a picture our automatic check flagged.\n    IF p_step = 'free_regenerate' THEN\n      IF jsonb_array_length(p_items) <> 1 OR v_item->>'kind' <> 'image' OR v_scene.image_check <> 'failed' OR v_scene.free_regen_used THEN\n        RAISE EXCEPTION 'WRONG_STATUS: no free regenerate for this scene' USING ERRCODE = '55000';\n      END IF;\n      v_credits := 0;\n    END IF;\n    v_total := v_total + v_credits;\n    v_priced := v_priced || jsonb_build_array(v_item || jsonb_build_object('credits', v_credits));\n  END LOOP;\n\n  IF v_total > 0 THEN\n    PERFORM public.deduct_credits(p_user_id, v_total);\n  END IF;\n\n  INSERT INTO public.fruit_charges (id, user_id, story_id, step, credits)\n  VALUES (v_charge_id, p_user_id, p_story_id, p_step, v_total);\n\n  FOR v_item IN SELECT value FROM jsonb_array_elements(v_priced) LOOP\n    v_job_id := gen_random_uuid();\n    INSERT INTO public.fruit_jobs (id, user_id, story_id, scene_id, charge_id, kind, tool_key, price_input, credits, request, test_override_id)\n    VALUES (v_job_id, p_user_id, p_story_id, (v_item->>'scene_id')::uuid, v_charge_id, v_item->>'kind',\n            v_item->>'tool_key', COALESCE(v_item->'price_input', '{}'::jsonb), (v_item->>'credits')::integer, v_item->'request', v_override);\n    INSERT INTO public.fruit_credit_ledger (user_id, story_id, charge_id, job_id, operation, credits, idempotency_key, reason)\n    VALUES (p_user_id, p_story_id, v_charge_id, v_job_id, 'charge', (v_item->>'credits')::integer, 'job:' || v_job_id || ':charge', p_step);\n\n    IF v_item->>'kind' = 'image' THEN\n      UPDATE public.fruit_story_scenes\n      SET image_status = 'queued', image_job_id = v_job_id, image_prompt = COALESCE(v_item->>'prompt', image_prompt),\n          error_code = NULL, error = NULL, image_check = 'none', image_check_notes = NULL,\n          free_regen_used = free_regen_used OR p_step = 'free_regenerate'\n      WHERE id = (v_item->>'scene_id')::uuid;\n    ELSE\n      UPDATE public.fruit_story_scenes\n      SET clip_status = 'queued', clip_job_id = v_job_id, clip_prompt = COALESCE(v_item->>'prompt', clip_prompt),\n          duration_sec = COALESCE((v_item->'price_input'->>'durationSec')::smallint, duration_sec),\n          error_code = NULL, error = NULL\n      WHERE id = (v_item->>'scene_id')::uuid;\n    END IF;\n    v_jobs := v_jobs || jsonb_build_array(jsonb_build_object('job_id', v_job_id, 'scene_id', v_item->>'scene_id', 'credits', (v_item->>'credits')::integer));\n  END LOOP;\n\n  IF v_override IS NOT NULL THEN\n    UPDATE public.fruit_test_overrides SET used_at = now(), used_by_job = v_job_id WHERE id = v_override;\n  END IF;\n\n  UPDATE public.fruit_stories SET status = p_to_status, error_code = NULL, error = NULL WHERE id = p_story_id;\n\n  RETURN jsonb_build_object('charge_id', v_charge_id, 'credits', v_total, 'jobs', v_jobs, 'test_override_id', v_override);\nEND;\n$function$\n",
+   "name": "fruit_charge_step",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_job_id uuid, p_stored_url text, p_cost_usd numeric, p_result jsonb",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_complete_job(p_job_id uuid, p_stored_url text, p_cost_usd numeric, p_result jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE v_job public.fruit_jobs%ROWTYPE;\nBEGIN\n  SELECT * INTO v_job FROM public.fruit_jobs WHERE id = p_job_id FOR UPDATE;\n  IF NOT FOUND OR v_job.status IN ('succeeded', 'failed', 'canceled') OR v_job.refunded_at IS NOT NULL THEN\n    RETURN false;\n  END IF;\n  UPDATE public.fruit_jobs\n  SET status = 'succeeded', stored_url = p_stored_url, result = COALESCE(p_result, result),\n      cost_usd = cost_usd + COALESCE(p_cost_usd, 0), finished_at = now(), lease_until = NULL\n  WHERE id = p_job_id;\n  IF v_job.kind = 'image' THEN\n    UPDATE public.fruit_story_scenes SET image_status = 'ready', image_url = p_stored_url, error_code = NULL, error = NULL\n    WHERE id = v_job.scene_id AND image_job_id = p_job_id;\n  ELSE\n    UPDATE public.fruit_story_scenes SET clip_status = 'ready', clip_url = p_stored_url, error_code = NULL, error = NULL\n    WHERE id = v_job.scene_id AND clip_job_id = p_job_id;\n  END IF;\n  PERFORM public.fruit_refresh_story_status(v_job.story_id);\n  RETURN true;\nEND;\n$function$\n",
+   "name": "fruit_complete_job",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_user_id uuid, p_story jsonb, p_scenes jsonb, p_call_ids uuid[]",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_create_story(p_user_id uuid, p_story jsonb, p_scenes jsonb, p_call_ids uuid[] DEFAULT '{}'::uuid[])\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_id    uuid := gen_random_uuid();\r\n  v_scene jsonb;\r\n  v_idx   integer := 0;\r\nBEGIN\r\n  IF p_scenes IS NULL OR jsonb_typeof(p_scenes) <> 'array' OR jsonb_array_length(p_scenes) < 1 OR jsonb_array_length(p_scenes) > 40 THEN\r\n    RAISE EXCEPTION 'VALIDATION: 1 to 40 scenes' USING ERRCODE = '22023';\r\n  END IF;\r\n\r\n  INSERT INTO public.fruit_stories (id, user_id, source, input, title, cast_ids, quality, length_sec, aspect, locations, planner, series_id, episode_number, niche)\r\n  VALUES (\r\n    v_id, p_user_id, p_story->>'source', COALESCE(p_story->'input', '{}'::jsonb), COALESCE(p_story->>'title', ''),\r\n    ARRAY(SELECT jsonb_array_elements_text(p_story->'cast_ids')), p_story->>'quality', (p_story->>'length_sec')::smallint,\r\n    p_story->>'aspect', COALESCE(p_story->'locations', '[]'::jsonb), COALESCE(p_story->'planner', '{}'::jsonb),\r\n    NULLIF(p_story->>'series_id', '')::uuid, NULLIF(p_story->>'episode_number', '')::smallint,\r\n    COALESCE(NULLIF(p_story->>'niche', ''), 'fruit')\r\n  );\r\n\r\n  FOR v_scene IN SELECT value FROM jsonb_array_elements(p_scenes) LOOP\r\n    INSERT INTO public.fruit_story_scenes (story_id, user_id, idx, title, speaker_id, line, present_ids, location_id, action, emotion, shot, placement, duration_sec)\r\n    VALUES (\r\n      v_id, p_user_id, v_idx, COALESCE(v_scene->>'title', ''), v_scene->>'speaker_id', v_scene->>'line',\r\n      ARRAY(SELECT jsonb_array_elements_text(v_scene->'present_ids')), v_scene->>'location_id',\r\n      COALESCE(v_scene->>'action', ''), COALESCE(v_scene->>'emotion', ''), COALESCE(v_scene->>'shot', ''),\r\n      COALESCE(v_scene->>'placement', ''), (v_scene->>'duration_sec')::smallint\r\n    );\r\n    v_idx := v_idx + 1;\r\n  END LOOP;\r\n\r\n  IF p_story->>'series_id' IS NOT NULL THEN\r\n    UPDATE public.fruit_series_episodes SET story_id = v_id\r\n    WHERE series_id = (p_story->>'series_id')::uuid AND number = (p_story->>'episode_number')::smallint AND user_id = p_user_id;\r\n  END IF;\r\n\r\n  IF cardinality(p_call_ids) > 0 THEN\r\n    UPDATE public.fruit_ai_calls SET story_id = v_id WHERE id = ANY (p_call_ids) AND user_id = p_user_id;\r\n  END IF;\r\n  RETURN v_id;\r\nEND;\r\n$function$\n",
+   "name": "fruit_create_story",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_seed text, p_count integer, p_niche text",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_pick_ideas(p_seed text, p_count integer DEFAULT 5, p_niche text DEFAULT 'fruit'::text)\n RETURNS SETOF fruit_ideas\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT * FROM public.fruit_ideas WHERE active AND niche = COALESCE(p_niche, 'fruit')\r\n  ORDER BY md5(id || ':' || coalesce(p_seed, '')) LIMIT LEAST(GREATEST(p_count, 1), 20)\r\n$function$\n",
+   "name": "fruit_pick_ideas",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_plan text",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_plan_rank(p_plan text)\n RETURNS integer\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  SELECT CASE lower(coalesce(p_plan, 'free'))\n    WHEN 'starter' THEN 1 WHEN 'affiliate' THEN 1 WHEN 'pro' THEN 2 WHEN 'generative' THEN 3 ELSE 0 END\n$function$\n",
+   "name": "fruit_plan_rank",
+   "owner": "postgres",
+   "secdef": false
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_provider text, p_code text, p_message text, p_context jsonb",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_raise_provider_alert(p_provider text, p_code text, p_message text, p_context jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE v_prev timestamptz; v_notify boolean;\nBEGIN\n  SELECT last_seen_at INTO v_prev FROM public.fruit_provider_alerts WHERE provider = p_provider FOR UPDATE;\n  v_notify := v_prev IS NULL OR v_prev < now() - interval '1 hour';\n  INSERT INTO public.fruit_provider_alerts AS a (provider, code, message, context, count, opened_at, last_seen_at, notified_at)\n  VALUES (p_provider, left(coalesce(p_code, ''), 200), left(coalesce(p_message, ''), 1000), coalesce(p_context, '{}'::jsonb), 1, now(), now(), CASE WHEN v_notify THEN now() END)\n  ON CONFLICT (provider) DO UPDATE SET\n    code = EXCLUDED.code, message = EXCLUDED.message, context = EXCLUDED.context,\n    count = CASE WHEN v_notify THEN 1 ELSE a.count + 1 END,\n    opened_at = CASE WHEN v_notify THEN now() ELSE a.opened_at END,\n    last_seen_at = now(),\n    notified_at = CASE WHEN v_notify THEN now() ELSE a.notified_at END;\n  RETURN v_notify;\nEND;\n$function$\n",
+   "name": "fruit_raise_provider_alert",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_story_id uuid",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_refresh_story_status(p_story_id uuid)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE v_status text;\nBEGIN\n  SELECT status INTO v_status FROM public.fruit_stories WHERE id = p_story_id FOR UPDATE;\n  IF v_status = 'pictures' AND NOT EXISTS (\n    SELECT 1 FROM public.fruit_story_scenes WHERE story_id = p_story_id AND image_status IN ('queued', 'generating')\n  ) THEN\n    UPDATE public.fruit_stories SET status = 'pictures_ready' WHERE id = p_story_id;\n    RETURN 'pictures_ready';\n  END IF;\n  IF v_status = 'animating' AND NOT EXISTS (\n    SELECT 1 FROM public.fruit_story_scenes WHERE story_id = p_story_id AND clip_status IN ('queued', 'generating')\n  ) THEN\n    UPDATE public.fruit_stories SET status = 'clips_ready' WHERE id = p_story_id;\n    RETURN 'clips_ready';\n  END IF;\n  RETURN v_status;\nEND;\n$function$\n",
+   "name": "fruit_refresh_story_status",
+   "owner": "postgres",
+   "secdef": true
+  },
+  {
+   "acl": "{postgres=X/postgres,service_role=X/postgres}",
+   "args": "p_job_id uuid, p_error_code text, p_error text, p_cost_usd numeric",
+   "def": "CREATE OR REPLACE FUNCTION public.fruit_refund_job(p_job_id uuid, p_error_code text, p_error text, p_cost_usd numeric DEFAULT 0)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE v_job public.fruit_jobs%ROWTYPE;\nBEGIN\n  SELECT * INTO v_job FROM public.fruit_jobs WHERE id = p_job_id FOR UPDATE;\n  IF NOT FOUND OR v_job.status IN ('succeeded', 'failed', 'canceled') OR v_job.refunded_at IS NOT NULL THEN\n    RETURN false;\n  END IF;\n  IF v_job.credits > 0 THEN\n    UPDATE public.profiles\n    SET credit_balance = credit_balance + v_job.credits,\n        credits_spent_today = GREATEST(0, COALESCE(credits_spent_today, 0) - v_job.credits)\n    WHERE id = v_job.user_id;\n  END IF;\n  INSERT INTO public.fruit_credit_ledger (user_id, story_id, charge_id, job_id, operation, credits, idempotency_key, reason)\n  VALUES (v_job.user_id, v_job.story_id, v_job.charge_id, p_job_id, 'refund', v_job.credits, 'job:' || p_job_id || ':refund', p_error_code)\n  ON CONFLICT (idempotency_key) DO NOTHING;\n  UPDATE public.fruit_jobs\n  SET status = 'failed', error_code = p_error_code, error = p_error, refunded_at = now(), finished_at = now(),\n      lease_until = NULL, cost_usd = cost_usd + COALESCE(p_cost_usd, 0)\n  WHERE id = p_job_id;\n  IF v_job.kind = 'image' THEN\n    UPDATE public.fruit_story_scenes SET image_status = 'failed', error_code = p_error_code, error = p_error\n    WHERE id = v_job.scene_id AND image_job_id = p_job_id;\n  ELSE\n    UPDATE public.fruit_story_scenes SET clip_status = 'failed', error_code = p_error_code, error = p_error\n    WHERE id = v_job.scene_id AND clip_job_id = p_job_id;\n  END IF;\n  PERFORM public.fruit_refresh_story_status(v_job.story_id);\n  RETURN true;\nEND;\n$function$\n",
+   "name": "fruit_refund_job",
+   "owner": "postgres",
+   "secdef": true
+  }
+ ],
+ "grants": [
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "grantee": "anon",
+   "privilege": "SELECT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_characters"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_charges"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "grantee": "anon",
+   "privilege": "SELECT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_ideas"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_jobs"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_series"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_stories"
+  },
+  {
+   "grantee": "authenticated",
+   "privilege": "SELECT",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "DELETE",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "INSERT",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "REFERENCES",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "SELECT",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRIGGER",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "TRUNCATE",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "postgres",
+   "privilege": "UPDATE",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "DELETE",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "INSERT",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "REFERENCES",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "SELECT",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRIGGER",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "TRUNCATE",
+   "table": "fruit_test_overrides"
+  },
+  {
+   "grantee": "service_role",
+   "privilege": "UPDATE",
+   "table": "fruit_test_overrides"
+  }
+ ],
+ "indexes": [
+  {
+   "def": "CREATE INDEX fruit_ai_calls_job_idx ON public.fruit_ai_calls USING btree (job_id) WHERE (job_id IS NOT NULL)",
+   "name": "fruit_ai_calls_job_idx",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "def": "CREATE INDEX fruit_ai_calls_story_idx ON public.fruit_ai_calls USING btree (story_id, created_at)",
+   "name": "fruit_ai_calls_story_idx",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "def": "CREATE INDEX fruit_characters_list_idx ON public.fruit_characters USING btree (collection, sort_order) WHERE active",
+   "name": "fruit_characters_list_idx",
+   "table": "fruit_characters"
+  },
+  {
+   "def": "CREATE UNIQUE INDEX fruit_characters_niche_first_name_key ON public.fruit_characters USING btree (niche, first_name)",
+   "name": "fruit_characters_niche_first_name_key",
+   "table": "fruit_characters"
+  },
+  {
+   "def": "CREATE INDEX fruit_characters_niche_list_idx ON public.fruit_characters USING btree (niche, sort_order) WHERE active",
+   "name": "fruit_characters_niche_list_idx",
+   "table": "fruit_characters"
+  },
+  {
+   "def": "CREATE INDEX fruit_credit_ledger_user_idx ON public.fruit_credit_ledger USING btree (user_id, created_at DESC)",
+   "name": "fruit_credit_ledger_user_idx",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "def": "CREATE INDEX fruit_jobs_open_idx ON public.fruit_jobs USING btree (status, next_attempt_at) WHERE (status = ANY (ARRAY['queued'::text, 'submitting'::text, 'submitted'::text, 'provider_done'::text]))",
+   "name": "fruit_jobs_open_idx",
+   "table": "fruit_jobs"
+  },
+  {
+   "def": "CREATE INDEX fruit_jobs_story_idx ON public.fruit_jobs USING btree (story_id, kind, status)",
+   "name": "fruit_jobs_story_idx",
+   "table": "fruit_jobs"
+  },
+  {
+   "def": "CREATE UNIQUE INDEX fruit_jobs_task_uuid_key ON public.fruit_jobs USING btree (task_uuid) WHERE (task_uuid IS NOT NULL)",
+   "name": "fruit_jobs_task_uuid_key",
+   "table": "fruit_jobs"
+  },
+  {
+   "def": "CREATE INDEX fruit_series_user_created_idx ON public.fruit_series USING btree (user_id, created_at DESC) WHERE (deleted_at IS NULL)",
+   "name": "fruit_series_user_created_idx",
+   "table": "fruit_series"
+  },
+  {
+   "def": "CREATE INDEX fruit_series_user_niche_idx ON public.fruit_series USING btree (user_id, niche, created_at DESC) WHERE (deleted_at IS NULL)",
+   "name": "fruit_series_user_niche_idx",
+   "table": "fruit_series"
+  },
+  {
+   "def": "CREATE UNIQUE INDEX fruit_stories_episode_key ON public.fruit_stories USING btree (series_id, episode_number) WHERE ((series_id IS NOT NULL) AND (deleted_at IS NULL))",
+   "name": "fruit_stories_episode_key",
+   "table": "fruit_stories"
+  },
+  {
+   "def": "CREATE INDEX fruit_stories_user_created_idx ON public.fruit_stories USING btree (user_id, created_at DESC) WHERE (deleted_at IS NULL)",
+   "name": "fruit_stories_user_created_idx",
+   "table": "fruit_stories"
+  },
+  {
+   "def": "CREATE INDEX fruit_stories_user_niche_idx ON public.fruit_stories USING btree (user_id, niche, created_at DESC) WHERE (deleted_at IS NULL)",
+   "name": "fruit_stories_user_niche_idx",
+   "table": "fruit_stories"
+  },
+  {
+   "def": "CREATE INDEX fruit_story_scenes_story_idx ON public.fruit_story_scenes USING btree (story_id, idx)",
+   "name": "fruit_story_scenes_story_idx",
+   "table": "fruit_story_scenes"
+  }
+ ],
+ "policies": [
+  {
+   "cmd": "SELECT",
+   "name": "fruit_characters_public_read",
+   "permissive": "PERMISSIVE",
+   "qual": "active",
+   "roles": [
+    "anon",
+    "authenticated"
+   ],
+   "table": "fruit_characters",
+   "with_check": null
+  },
+  {
+   "cmd": "SELECT",
+   "name": "fruit_ideas_public_read",
+   "permissive": "PERMISSIVE",
+   "qual": "active",
+   "roles": [
+    "anon",
+    "authenticated"
+   ],
+   "table": "fruit_ideas",
+   "with_check": null
+  },
+  {
+   "cmd": "SELECT",
+   "name": "fruit_series_select_own",
+   "permissive": "PERMISSIVE",
+   "qual": "((user_id = auth.uid()) AND (deleted_at IS NULL))",
+   "roles": [
+    "authenticated"
+   ],
+   "table": "fruit_series",
+   "with_check": null
+  },
+  {
+   "cmd": "SELECT",
+   "name": "fruit_series_episodes_select_own",
+   "permissive": "PERMISSIVE",
+   "qual": "(user_id = auth.uid())",
+   "roles": [
+    "authenticated"
+   ],
+   "table": "fruit_series_episodes",
+   "with_check": null
+  },
+  {
+   "cmd": "SELECT",
+   "name": "fruit_stories_select_own",
+   "permissive": "PERMISSIVE",
+   "qual": "((user_id = auth.uid()) AND (deleted_at IS NULL))",
+   "roles": [
+    "authenticated"
+   ],
+   "table": "fruit_stories",
+   "with_check": null
+  },
+  {
+   "cmd": "SELECT",
+   "name": "fruit_story_scenes_select_own",
+   "permissive": "PERMISSIVE",
+   "qual": "(user_id = auth.uid())",
+   "roles": [
+    "authenticated"
+   ],
+   "table": "fruit_story_scenes",
+   "with_check": null
+  }
+ ],
+ "prices": [
+  {
+   "active": true,
+   "allowed_durations": null,
+   "allowed_sizes": [
+    "768x1376",
+    "1376x768"
+   ],
+   "credits_per_second": null,
+   "flat_credits": 4,
+   "min_plan": "starter",
+   "notes": "Blocky Stories scene picture / edit / regenerate: Nano Banana 2 Lite ($0.035 each)",
+   "requires_sound": null,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "image:blocky-story",
+   "updated_at": "2026-10-06T19:05:06.348073+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": null,
+   "allowed_sizes": [
+    "768x1376",
+    "1376x768"
+   ],
+   "credits_per_second": null,
+   "flat_credits": 4,
+   "min_plan": "starter",
+   "notes": "AI Fruit Story v2 scene picture / edit / regenerate: Nano Banana 2 Lite ($0.035 each)",
+   "requires_sound": null,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "image:fruit-story",
+   "updated_at": "2026-09-30T14:35:02.64028+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 5,
+   "flat_credits": null,
+   "min_plan": "starter",
+   "notes": "Blocky Stories V2 clip: Wan2.6 Flash 720p, i2v, audio ($0.050/s); falls back once to Seedance 2.0 Mini",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:blocky-story-v2",
+   "updated_at": "2026-10-06T19:05:06.348073+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 9,
+   "flat_credits": null,
+   "min_plan": "pro",
+   "notes": "Blocky Stories V3 clip: Seedance 2.0 Mini 720p, i2v, audio ($0.082/s)",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:blocky-story-v3",
+   "updated_at": "2026-10-06T19:05:06.348073+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    6,
+    8
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 16,
+   "flat_credits": null,
+   "min_plan": "generative",
+   "notes": "Blocky Stories V4 clip: Veo 3.1 Fast 720p, i2v, audio ($0.15/s)",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:blocky-story-v4",
+   "updated_at": "2026-10-06T19:05:06.348073+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 5,
+   "flat_credits": null,
+   "min_plan": "starter",
+   "notes": "AI Fruit Story v2 V2 clip: Wan2.6 Flash 720p, i2v, audio ($0.050/s); falls back once to Seedance 2.0 Mini",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:fruit-story-v2",
+   "updated_at": "2026-09-30T14:35:02.64028+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 9,
+   "flat_credits": null,
+   "min_plan": "pro",
+   "notes": "AI Fruit Story v2 V3 clip: Seedance 2.0 Mini 720p, i2v, audio ($0.082/s)",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:fruit-story-v3",
+   "updated_at": "2026-09-30T14:35:02.64028+00:00"
+  },
+  {
+   "active": true,
+   "allowed_durations": [
+    4,
+    6,
+    8
+   ],
+   "allowed_sizes": [
+    "720x1280",
+    "1280x720"
+   ],
+   "credits_per_second": 16,
+   "flat_credits": null,
+   "min_plan": "generative",
+   "notes": "AI Fruit Story v2 V4 clip: Veo 3.1 Fast 720p, i2v, audio ($0.15/s)",
+   "requires_sound": true,
+   "size_tiers": null,
+   "sound_credits_per_second": null,
+   "tool_key": "video:fruit-story-v4",
+   "updated_at": "2026-09-30T14:35:02.64028+00:00"
+  }
+ ],
+ "publications": [
+  {
+   "pub": "supabase_realtime",
+   "table": "fruit_stories"
+  },
+  {
+   "pub": "supabase_realtime",
+   "table": "fruit_story_scenes"
+  }
+ ],
+ "replica_identity": [
+  {
+   "ident": "d",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_characters"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_charges"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_ideas"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_jobs"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_provider_alerts"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_series"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_stories"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "ident": "d",
+   "table": "fruit_test_overrides"
+  }
+ ],
+ "tables": [
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "series_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "scene_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "job_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "provider",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "model",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "purpose",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "1",
+     "generated": "",
+     "identity": "",
+     "name": "attempt",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "request",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "response",
+     "notnull": false,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "http_status",
+     "notnull": false,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ok",
+     "notnull": false,
+     "type": "boolean"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cost_usd",
+     "notnull": false,
+     "type": "numeric(12,6)"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "input_tokens",
+     "notnull": false,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "output_tokens",
+     "notnull": false,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cache_read_tokens",
+     "notnull": false,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cache_write_tokens",
+     "notnull": false,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "latency_ms",
+     "notnull": false,
+     "type": "integer"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "completed_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_ai_calls",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "name",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "lower(split_part(name, ' '::text, 1))",
+     "generated": "s",
+     "identity": "",
+     "name": "first_name",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "'core'::text",
+     "generated": "",
+     "identity": "",
+     "name": "collection",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "fruit",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "emoji",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "hue",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "gender",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "age",
+     "notnull": false,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "tag",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "role",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'{}'::text[]",
+     "generated": "",
+     "identity": "",
+     "name": "story_types",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": "'{}'::text[]",
+     "generated": "",
+     "identity": "",
+     "name": "settings",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "voice_style",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "face",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "build",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "outfit",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_image_url",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_image_path",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_width",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_height",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_model",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_seed",
+     "notnull": false,
+     "type": "bigint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_prompt",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "ref_cost_usd",
+     "notnull": false,
+     "type": "numeric(10,6)"
+    },
+    {
+     "default": "true",
+     "generated": "",
+     "identity": "",
+     "name": "active",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "sort_order",
+     "notnull": true,
+     "type": "integer"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "'fruit'::text",
+     "generated": "",
+     "identity": "",
+     "name": "niche",
+     "notnull": true,
+     "type": "text"
+    }
+   ],
+   "comment": "AI Fruit Story character library. Public read; written only by SQL/service_role (seed).",
+   "force_rls": false,
+   "name": "fruit_characters",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "step",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "credits",
+     "notnull": true,
+     "type": "integer"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_charges",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "nextval('fruit_credit_ledger_id_seq'::regclass)",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "bigint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "charge_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "job_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "operation",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "credits",
+     "notnull": true,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "idempotency_key",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "reason",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_credit_ledger",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "title",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "summary",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cast_ids",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_type",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'core'::text",
+     "generated": "",
+     "identity": "",
+     "name": "collection",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "true",
+     "generated": "",
+     "identity": "",
+     "name": "active",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "'fruit'::text",
+     "generated": "",
+     "identity": "",
+     "name": "niche",
+     "notnull": true,
+     "type": "text"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_ideas",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "scene_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "charge_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "kind",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "tool_key",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "price_input",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "credits",
+     "notnull": true,
+     "type": "integer"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "request",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": "'queued'::text",
+     "generated": "",
+     "identity": "",
+     "name": "status",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "attempt",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": "3",
+     "generated": "",
+     "identity": "",
+     "name": "max_attempts",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "task_uuid",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "next_attempt_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "lease_until",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "submitted_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "provider_done_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "finished_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "result",
+     "notnull": false,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "output_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "stored_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "cost_usd",
+     "notnull": true,
+     "type": "numeric(12,6)"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error_code",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "refunded_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "test_override_id",
+     "notnull": false,
+     "type": "uuid"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_jobs",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "provider",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "code",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "message",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'{}'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "context",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "count",
+     "notnull": true,
+     "type": "integer"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "opened_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "last_seen_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "notified_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_provider_alerts",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "title",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "logline",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "concept",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cast_ids",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "tone",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "opener",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "episode_count",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": "'{}'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "bible",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "deleted_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "'fruit'::text",
+     "generated": "",
+     "identity": "",
+     "name": "niche",
+     "notnull": true,
+     "type": "text"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_series",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "series_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "number",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "title",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "summary",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cliffhanger",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_series_episodes",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "source",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'{}'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "input",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "title",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cast_ids",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "quality",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "length_sec",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "aspect",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'draft'::text",
+     "generated": "",
+     "identity": "",
+     "name": "status",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'[]'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "locations",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "series_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "episode_number",
+     "notnull": false,
+     "type": "smallint"
+    },
+    {
+     "default": "'none'::text",
+     "generated": "",
+     "identity": "",
+     "name": "final_status",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "final_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "true",
+     "generated": "",
+     "identity": "",
+     "name": "final_captions",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": "0",
+     "generated": "",
+     "identity": "",
+     "name": "final_trimmed_sec",
+     "notnull": true,
+     "type": "numeric(6,2)"
+    },
+    {
+     "default": "'{}'::numeric[]",
+     "generated": "",
+     "identity": "",
+     "name": "final_trimmed_per_clip",
+     "notnull": true,
+     "type": "numeric(6,2)[]"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "final_error",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "final_requested_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error_code",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "deleted_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "'{}'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "planner",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "final_call_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": "'{}'::jsonb",
+     "generated": "",
+     "identity": "",
+     "name": "cast_roles",
+     "notnull": true,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "end_state",
+     "notnull": false,
+     "type": "jsonb"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "upload_package",
+     "notnull": false,
+     "type": "jsonb"
+    },
+    {
+     "default": "false",
+     "generated": "",
+     "identity": "",
+     "name": "final_part_label",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": "false",
+     "generated": "",
+     "identity": "",
+     "name": "final_end_card",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "cover_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "'fruit'::text",
+     "generated": "",
+     "identity": "",
+     "name": "niche",
+     "notnull": true,
+     "type": "text"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_stories",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "idx",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "title",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "speaker_id",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "line",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "present_ids",
+     "notnull": true,
+     "type": "text[]"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "location_id",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "action",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "emotion",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "shot",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "duration_sec",
+     "notnull": true,
+     "type": "smallint"
+    },
+    {
+     "default": "'queued'::text",
+     "generated": "",
+     "identity": "",
+     "name": "image_status",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "image_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "image_prompt",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "image_job_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": "'none'::text",
+     "generated": "",
+     "identity": "",
+     "name": "clip_status",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "clip_url",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "clip_prompt",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "clip_job_id",
+     "notnull": false,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error_code",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "error",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "updated_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": "''::text",
+     "generated": "",
+     "identity": "",
+     "name": "placement",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "'none'::text",
+     "generated": "",
+     "identity": "",
+     "name": "image_check",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "image_check_notes",
+     "notnull": false,
+     "type": "text"
+    },
+    {
+     "default": "false",
+     "generated": "",
+     "identity": "",
+     "name": "free_regen_used",
+     "notnull": true,
+     "type": "boolean"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "overlay",
+     "notnull": false,
+     "type": "jsonb"
+    }
+   ],
+   "comment": null,
+   "force_rls": false,
+   "name": "fruit_story_scenes",
+   "rls": true
+  },
+  {
+   "columns": [
+    {
+     "default": "gen_random_uuid()",
+     "generated": "",
+     "identity": "",
+     "name": "id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "user_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "story_id",
+     "notnull": true,
+     "type": "uuid"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "tool_key",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "reason",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "created_by",
+     "notnull": true,
+     "type": "text"
+    },
+    {
+     "default": "now()",
+     "generated": "",
+     "identity": "",
+     "name": "created_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "expires_at",
+     "notnull": true,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "used_at",
+     "notnull": false,
+     "type": "timestamp with time zone"
+    },
+    {
+     "default": null,
+     "generated": "",
+     "identity": "",
+     "name": "used_by_job",
+     "notnull": false,
+     "type": "uuid"
+    }
+   ],
+   "comment": "Admin-only, single-use, auto-expiring permission for ONE Fruit job above the user's plan (testing). Never changes the profile or Stripe.",
+   "force_rls": false,
+   "name": "fruit_test_overrides",
+   "rls": true
+  }
+ ],
+ "triggers": [
+  {
+   "def": "CREATE TRIGGER zzz_fruit_ai_calls_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_ai_calls FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes()",
+   "name": "zzz_fruit_ai_calls_guard",
+   "table": "fruit_ai_calls"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_characters_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_characters FOR EACH ROW EXECUTE FUNCTION fruit_characters_block_client_writes()",
+   "name": "zzz_fruit_characters_guard",
+   "table": "fruit_characters"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_charges_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_charges FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes()",
+   "name": "zzz_fruit_charges_guard",
+   "table": "fruit_charges"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_credit_ledger_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_credit_ledger FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes()",
+   "name": "zzz_fruit_credit_ledger_guard",
+   "table": "fruit_credit_ledger"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_ideas_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_ideas FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_ideas_guard",
+   "table": "fruit_ideas"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_jobs_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_jobs FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_jobs_guard",
+   "table": "fruit_jobs"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_series_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_series FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_series_guard",
+   "table": "fruit_series"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_series_episodes_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_series_episodes FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_series_episodes_guard",
+   "table": "fruit_series_episodes"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_stories_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_stories FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_stories_guard",
+   "table": "fruit_stories"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_story_scenes_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_story_scenes FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes('touch')",
+   "name": "zzz_fruit_story_scenes_guard",
+   "table": "fruit_story_scenes"
+  },
+  {
+   "def": "CREATE TRIGGER zzz_fruit_test_overrides_guard BEFORE INSERT OR DELETE OR UPDATE ON public.fruit_test_overrides FOR EACH ROW EXECUTE FUNCTION fruit_block_client_writes()",
+   "name": "zzz_fruit_test_overrides_guard",
+   "table": "fruit_test_overrides"
+  }
+ ]
+}
