@@ -161,18 +161,28 @@ Return only the JSON object.`;
 /* ─── The picture check (pictureCheck.js) ─────────────────────────────── */
 
 /**
- * The speaker's cube head must be at least this share of the frame height: a
- * little above a fifth (decision 21). Below it the
- * picture fails and is redrawn once, free, whatever the crop: a "close-up"
- * that came back cropped at the thighs fails on the head size alone.
+ * The speaker's cube head must be at least this share of the frame height.
+ * Below it the picture fails and is redrawn once, free, whatever the crop: a
+ * "close-up" that came back cropped at the thighs fails on the head size alone.
+ * 18 since 2026-10-08 (decision 36; it was 22): in the first real story two
+ * pictures measured "about 20%" were flagged and looked fine.
  */
-export const MIN_HEAD_PERCENT = 22;
+export const MIN_HEAD_PERCENT = 18;
 export const BODY_CUTS = ["shoulders", "chest", "waist", "knees", "feet", "unknown"];
 const TOO_WIDE = new Set(["knees", "feet"]);
 
+/**
+ * A clip must carry no words of its own: the final video draws the ONE caption
+ * track. Wan sometimes draws subtitles into a clip while the line is spoken
+ * (2 of 4 clips in the first real story), and they are gone again by the last
+ * frame, so the clip check also looks at two frames from the middle of the line.
+ */
+export const DRAWN_TEXT_PROBLEM = "the video model drew its own subtitles into the clip";
+
 export const CHECK_SYSTEM = "You check pictures for an animated series where every character is a BLOCKY GAME AVATAR: a cube head, a rectangular torso, block arms and legs, smooth matte plastic, and a flat 2D face printed on the front of the head. Look at the whole picture carefully and answer the questions exactly. Small blurred figures far in the background are NOT characters in the scene: count them only where asked. Answer only with the JSON object.";
 
-export function checkSchema() {
+/** speech: a clip check with the second picture (two frames from the middle of the line), which adds drawnText. */
+export function checkSchema({ speech = false } = {}) {
   const ch = { name: { type: "string" }, visible: { type: "boolean" }, isBlockyAvatar: { type: "boolean" } };
   const props = {
     characters: { type: "array", items: { type: "object", additionalProperties: false, required: Object.keys(ch), properties: ch } },
@@ -186,6 +196,7 @@ export function checkSchema() {
     logos: { type: "boolean" },
     speakerHeadPercent: { type: "integer" },
     speakerShownTo: { type: "string", enum: BODY_CUTS },
+    ...(speech ? { drawnText: { type: "string" } } : {}),
     notes: { type: "string" },
   };
   return { type: "object", additionalProperties: false, required: Object.keys(props), properties: props };
@@ -193,9 +204,10 @@ export function checkSchema() {
 
 /**
  * @param {{name:string, look?:string}[]} expected avatars meant to be in the frame
- * @param {{speaker?:string}} [o] the speaking avatar's name (scene pictures)
+ * @param {{speaker?:string, speech?:boolean}} [o] speaker: the speaking avatar's name (scene pictures);
+ *   speech: a SECOND picture is attached, two frames from the middle of the clip (clip checks)
  */
-export function checkPrompt(expected, { speaker = null } = {}) {
+export function checkPrompt(expected, { speaker = null, speech = false } = {}) {
   return [
     `This picture should show exactly ${expected.length} blocky game avatar${expected.length > 1 ? "s" : ""}:`,
     ...expected.map((c) => `- ${c.name}: ${c.look ?? KIND}`),
@@ -214,6 +226,7 @@ export function checkPrompt(expected, { speaker = null } = {}) {
     speaker
       ? `speakerShownTo: the lowest part of ${speaker}'s body that is inside the picture: shoulders, chest, waist, knees or feet. If you can see their feet or the floor under them, answer feet.`
       : "speakerShownTo: unknown.",
+    ...(speech ? ["drawnText: every question above is about the FIRST picture. A SECOND picture is attached: two earlier moments of the same clip, side by side, taken while the line is being spoken. Copy any words, subtitles, captions or lyrics drawn anywhere on that second picture, exactly as you read them; an empty string if there are none. Plain shapes on clothes are not text."] : []),
     "notes: one short sentence on anything wrong, or an empty string.",
   ].join("\n");
 }
@@ -245,6 +258,8 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
   const text = String(data?.readableText ?? "").trim();
   if (text.replace(/[^\p{L}\p{N}]/gu, "").length >= 2) { problems.push(`text on screen ("${text.slice(0, 40)}")`); fixes.push("No text anywhere: no subtitles, captions, name tags, chat boxes, signs or numbers."); }
   if (data?.logos === true) { problems.push("a logo or brand mark in the picture"); fixes.push("No logos or brand marks: plain unbranded props."); }
+  const drawn = String(data?.drawnText ?? "").trim();
+  if (drawn.replace(/[^\p{L}\p{N}]/gu, "").length >= 2) { problems.push(`${DRAWN_TEXT_PROBLEM} ("${drawn.slice(0, 60)}")`); fixes.push("No subtitles, captions or words drawn in the clip."); }
   const head = Number(data?.speakerHeadPercent);
   const small = Number.isFinite(head) && head > 0 && head < MIN_HEAD_PERCENT;
   if (framing && speaker && (small || TOO_WIDE.has(data?.speakerShownTo))) {

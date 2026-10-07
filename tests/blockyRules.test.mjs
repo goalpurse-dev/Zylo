@@ -195,13 +195,13 @@ test("the picture check: what fails a Blocky picture, and what doesn't", () => {
   assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).problems[0], /Vex is too small in the frame \(head about 14% of the height\)/);
   assert.match(v({ speakerHeadPercent: 30, speakerShownTo: "feet" }).problems[0], /shown full body/);
   assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).fixes[0], /tight chest-up shot of Vex, the cube head filling a third of the frame height/);
-  // Decision 21: a head under about a fifth of the frame height fails, whatever the crop says (a "close-up" cropped at the thighs).
+  // Decisions 21 and 36: a head under 18% of the frame height fails, whatever the crop says (a "close-up" cropped at the thighs).
   const thighs = v({ speakerHeadPercent: 15, speakerShownTo: "waist" });
   assert.equal(thighs.ok, false);
   assert.match(thighs.problems[0], /Vex is too small in the frame \(head about 15% of the height\)/);
-  assert.equal(v({ speakerHeadPercent: 19, speakerShownTo: "chest" }).ok, false, "19% fails");
-  assert.equal(v({ speakerHeadPercent: 21, speakerShownTo: "chest" }).ok, false, "the line is a little above a fifth (22%)");
-  assert.equal(v({ speakerHeadPercent: 22, speakerShownTo: "waist" }).ok, true);
+  assert.equal(v({ speakerHeadPercent: 17, speakerShownTo: "chest" }).ok, false, "17% fails");
+  assert.equal(v({ speakerHeadPercent: 18, speakerShownTo: "waist" }).ok, true, "the line is 18% (it was 22% until the first real story)");
+  assert.equal(v({ speakerHeadPercent: 20, speakerShownTo: "chest" }).ok, true, "the two pictures of the first real story, measured at about 20%, pass now");
   assert.equal(verdict(answer({ speakerHeadPercent: 12, speakerShownTo: "feet" }), expected, { speaker: "Vex", framing: false }).ok, true, "a clip's last frame is not judged on framing");
   // The questions ask about flat teeth the way decision 11 puts it: flat is fine, 3D is not.
   const text = prompt(expected, { speaker: "Vex" });

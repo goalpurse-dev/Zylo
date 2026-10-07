@@ -234,7 +234,9 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
 
       </div>
 
-      {scene.imageCheck?.status === "failed" && scene.imageStatus === "ready" && (
+      {/* Our check flagged the picture after its one automatic redraw. Shown only while the story is at the
+          picture step: once the scene is being animated or has its clip, the picture is behind us. */}
+      {scene.imageCheck?.status === "failed" && scene.imageStatus === "ready" && !inClips && scene.clipStatus === "none" && (
         <div role="alert" className="mx-2 mt-2 rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-100">
           <span className="font-black">Our check found a problem:</span> {scene.imageCheck.notes || "something looks off"}.
           {scene.imageCheck.freeRegenerate && !inClips && onRegenerateFree && (

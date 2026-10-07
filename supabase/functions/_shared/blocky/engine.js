@@ -241,13 +241,17 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
         }
       }
     }
-    // Clip check, once per clip: did the voice say the line, and is the last
-    // frame still clean (no human, no new character, no writing)? A clip that
-    // fails is made again ONCE on the same job (our cost); a remade clip is
-    // kept as it is. A check that can't run never blocks the clip.
-    if (job.kind === "clip" && !remadeBefore(job)) {
+    // Clip check: did the voice say the line, and are its frames clean (no
+    // human, no new character, no writing, no subtitles the model drew
+    // itself)? A clip that fails is made again ONCE on the same job (our
+    // cost). A remade clip is never made a third time, but its frames are
+    // still looked at, so the final video knows whether the clip carries drawn
+    // words (it then leaves its own caption off that clip). A check that
+    // can't run never blocks the clip.
+    if (job.kind === "clip") {
+      const remade = remadeBefore(job);
       let words = null;
-      if (checkClipWords) {
+      if (!remade && checkClipWords) {
         try { words = await checkClipWords(job, storedUrl); } catch (err) { log.error?.(`[blocky] clip word check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
       }
       if (words && !words.ok && (await remake(job, words.problems))) return "remade";

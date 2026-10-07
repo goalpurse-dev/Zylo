@@ -1,7 +1,7 @@
 // Browser check of the Blocky Stories menu entries on a running dev server ($0):
 //   flag ON  (signed in as the owner, whose blocky_v1 flag is on): the entry is in the desktop
 //            Short Form panel and the mobile Short Form menu, right after AI Fruit Story, and the page opens;
-//   flag OFF (signed out): no entry anywhere, and the route lands on Home.
+//   flag OFF (signed out): no entry anywhere, and the route lands on the home page, "/".
 // Screenshots at 1440 and 390 px.
 //   node scripts/blocky/qaMenus.mjs <outDir> [baseUrl]
 import fs from "fs";
@@ -85,6 +85,6 @@ console.log(JSON.stringify(out, null, 1));
 const on = Object.entries(out).filter(([k]) => k.endsWith("flag-on")).map(([, v]) => v);
 const off = Object.entries(out).filter(([k]) => k.endsWith("flag-off")).map(([, v]) => v);
 const ok = on.every((v) => v.inMenu && v.rightAfterFruit && v.thumbnailLoaded && v.routeLandsOn === "/workspace/blocky-stories" && v.builderTitle === BLOCKY_STORIES_NAME && v.fruitCharactersShown === 0)
-  && off.every((v) => !v.inMenu && v.routeLandsOn !== "/workspace/blocky-stories" && !v.builderTitle);
+  && off.every((v) => !v.inMenu && v.routeLandsOn === "/" && !v.builderTitle);
 console.log(ok ? "PASS" : "FAIL");
 process.exitCode = ok ? 0 : 1;

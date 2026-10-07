@@ -12,7 +12,7 @@ const BlockyStoriesPage = lazy(() => import("../../components/viral-tools/blocky
  * /workspace/blocky-stories — Blocky Stories. Hidden until launch: it opens
  * only when the global switch public.global_feature_flags.blocky_v1 is on or
  * the user's own blocky_v1 flag is on (src/lib/featureFlags.js). Everyone else
- * lands on Home, as if the page didn't exist. The API checks the same flag.
+ * lands on the home page ("/"), as if the page didn't exist. The API checks the same flag.
  */
 export default function BlockyStories() {
   const { user, loading: authLoading } = useAuth();
@@ -26,5 +26,5 @@ export default function BlockyStories() {
     );
   }
   if (authLoading || flag.loading) return <div className="min-h-full w-full bg-[#0B0D0F]" />;
-  return <Navigate to="/workspace" replace />;
+  return <Navigate to="/" replace />;
 }

@@ -313,5 +313,22 @@ Decisions of 2026-10-07 (how Blocky runs):
     (`scripts/blocky/chargeLocking.mjs`): it calls no provider, compares every other balance
     before and after, and deletes the account and its rows.
 
+Decisions of 2026-10-08 (after the first real story):
+
+36. PICTURE CHECK: the speaker's head must be at least 18% of the frame height (it was 22%;
+    replaces the number in decision 21). A flagged picture is redrawn once automatically before
+    the user ever sees it; a warning is shown only if the redraw is flagged too, and only while
+    the story is at the picture step: it is gone once the scene is being animated.
+37. ONE CAPTION TRACK. The video model sometimes draws its own subtitles into a clip although
+    the prompt forbids them (2 of 4 clips in the first story). So: the Wan request also says it
+    in its negative prompt; the clip check looks at two frames from the middle of the line and
+    a clip with drawn words is made again once at our cost; and a clip that still carries drawn
+    words gets no caption of ours in the final video. The download is the file the player shows.
+38. LENGTH is a ceiling: the clips add up to at most the chosen length and may be a second or
+    two shorter (each clip is as long as its line needs; the user pays only for the seconds
+    made). 18 s for a 20 s story is as designed; the settings step says so.
+39. A visitor who can't have the Blocky page (signed out, or without the switch) lands on the
+    home page, "/".
+
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

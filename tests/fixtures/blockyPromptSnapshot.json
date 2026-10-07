@@ -147,6 +147,7 @@
    "taskType": "videoInference",
    "model": "alibaba:wan@2.6-flash",
    "positivePrompt": "Noob, the blocky game avatar facing the camera, says in a bright, small, slightly wobbly voice, delivered in a panicked tone: \"No way.\" Only Noob speaks, the flat mouth decal on Noob's face changing shape in sync with every word. Vex (the blocky game avatar) stays silent with the mouth decal closed and still, reacting only with small head movements. Positions: Noob stands by the fountain; Vex stands behind, by a stall. Noob holds up a small glowing gold cube. Camera: a slow push-in toward the speaker. One continuous shot, no cuts. The speaker keeps facing the camera until the line ends. Keep every character, outfit and the setting exactly as in the first frame. The faces stay flat 2D decals on cube heads: no realistic 3D mouth, teeth, lips, tongue or nose. The bodies stay rigid blocky game avatars: no bending, warping or melting, no extra limbs, no human skin. Audio: only Noob's voice saying the line, with quiet room tone. No music. No subtitles, captions or on-screen text. Plain unbranded props, no logos.",
+   "negativePrompt": "subtitles, captions, closed captions, on-screen text, words, letters, typography, lyrics, karaoke text, speech bubbles, watermark, logo",
    "width": 720,
    "height": 1280,
    "duration": 4,
@@ -369,6 +370,98 @@
      "feet",
      "unknown"
     ]
+   },
+   "notes": {
+    "type": "string"
+   }
+  }
+ },
+ "check/clip frame + speech frames": "This picture should show exactly 2 blocky game avatars:\n- Vex: a white cube head and white block arms, a crimson red torso with one yellow lightning-bolt shape, black block legs, and a tall black top hat\n- Noob: a bright yellow cube head and bright yellow block arms, a plain royal blue torso with no shape on it, green block legs\ncharacters: for each one listed, is it visible, and is it a blocky game avatar (a cube head with a flat printed face, block body)?\nmainFigures: how many figures are really in the scene (foreground or middle ground, in focus, large enough to see a face). Count every one, listed or not.\nbackgroundFigures: how many small or blurred figures are far in the background.\nhumanFigures: how many figures ANYWHERE in the picture are human or have a human head, face, skin or hair instead of a blocky game-avatar body.\nbrickToyLook: true if anything looks like a brick-toy construction set: round studs on bricks or on the floor, a studded baseplate, a round or cylinder minifigure head, a stud on top of a head or a neck, or C-shaped claw hands. Flat smooth blocks are fine.\nrealisticFace: true if any face has realistic 3D teeth, lips, a tongue or a nose modelled into the head. A flat printed mouth is fine, also with flat cartoon teeth; flat eyebrow lines are fine.\nduplicates: names of listed characters that are drawn more than once as main figures (an empty list if none).\nreadableText: any words, names, letters or numbers a viewer could read ANYWHERE in the picture (a subtitle or caption, a name tag over a head, a chat box, a sign, a screen, clothes), copied as you read them; an empty string if there are none. Plain shapes on a shirt (a star, a circle, a bolt) are not text.\nlogos: true if there is a logo or a brand mark anywhere.\nspeakerHeadPercent: 0.\nspeakerShownTo: unknown.\ndrawnText: every question above is about the FIRST picture. A SECOND picture is attached: two earlier moments of the same clip, side by side, taken while the line is being spoken. Copy any words, subtitles, captions or lyrics drawn anywhere on that second picture, exactly as you read them; an empty string if there are none. Plain shapes on clothes are not text.\nnotes: one short sentence on anything wrong, or an empty string.",
+ "check/schema + speech frames": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "characters",
+   "mainFigures",
+   "backgroundFigures",
+   "humanFigures",
+   "brickToyLook",
+   "realisticFace",
+   "duplicates",
+   "readableText",
+   "logos",
+   "speakerHeadPercent",
+   "speakerShownTo",
+   "drawnText",
+   "notes"
+  ],
+  "properties": {
+   "characters": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "name",
+      "visible",
+      "isBlockyAvatar"
+     ],
+     "properties": {
+      "name": {
+       "type": "string"
+      },
+      "visible": {
+       "type": "boolean"
+      },
+      "isBlockyAvatar": {
+       "type": "boolean"
+      }
+     }
+    }
+   },
+   "mainFigures": {
+    "type": "integer"
+   },
+   "backgroundFigures": {
+    "type": "integer"
+   },
+   "humanFigures": {
+    "type": "integer"
+   },
+   "brickToyLook": {
+    "type": "boolean"
+   },
+   "realisticFace": {
+    "type": "boolean"
+   },
+   "duplicates": {
+    "type": "array",
+    "items": {
+     "type": "string"
+    }
+   },
+   "readableText": {
+    "type": "string"
+   },
+   "logos": {
+    "type": "boolean"
+   },
+   "speakerHeadPercent": {
+    "type": "integer"
+   },
+   "speakerShownTo": {
+    "type": "string",
+    "enum": [
+     "shoulders",
+     "chest",
+     "waist",
+     "knees",
+     "feet",
+     "unknown"
+    ]
+   },
+   "drawnText": {
+    "type": "string"
    },
    "notes": {
     "type": "string"

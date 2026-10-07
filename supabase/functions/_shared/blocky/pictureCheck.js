@@ -17,8 +17,8 @@
 // The questions, the answer shape and the verdict are in rules.js.
 import { callLlm } from "./llm.js";
 import { BLOCKY_MODELS } from "./models.js";
-import { BODY_CUTS, CHECK_SYSTEM, MIN_HEAD_PERCENT, checkPrompt, checkSchema, verdictOf } from "./rules.js";
-export { BODY_CUTS, CHECK_SYSTEM, MIN_HEAD_PERCENT, checkPrompt, checkSchema, verdictOf };
+import { BODY_CUTS, CHECK_SYSTEM, DRAWN_TEXT_PROBLEM, MIN_HEAD_PERCENT, checkPrompt, checkSchema, verdictOf } from "./rules.js";
+export { BODY_CUTS, CHECK_SYSTEM, DRAWN_TEXT_PROBLEM, MIN_HEAD_PERCENT, checkPrompt, checkSchema, verdictOf };
 
 export const CHECK_PURPOSE = "picture_check";
 export const CLIP_FRAME_PURPOSE = "clip_frame_check";
@@ -29,17 +29,24 @@ export const CLIP_FRAME_PURPOSE = "clip_frame_check";
  * ids: {user_id, story_id, scene_id, job_id} for the log row.
  * @param {object} o  speaker: the speaking character's name; purpose: CHECK_PURPOSE or CLIP_FRAME_PURPOSE
  *   (a clip's last frame is not judged on framing: the camera has moved by then)
+ *   speechFramesUrl: a clip check's second picture, two frames from the middle of the line, looked at for
+ *   subtitles the video model drew itself (they are usually gone by the last frame)
  */
-export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, ids, fetchLlm = callLlm }) {
+export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, speechFramesUrl = null, ids, fetchLlm = callLlm }) {
   const model = BLOCKY_MODELS.small;
   const t0 = Date.now();
   const framing = purpose === CHECK_PURPOSE && Boolean(speaker);
-  const user = [{ type: "input_text", text: checkPrompt(expected, { speaker: framing ? speaker : null }) }, { type: "input_image", image_url: imageUrl, detail: "high" }];
+  const speech = Boolean(speechFramesUrl);
+  const user = [
+    { type: "input_text", text: checkPrompt(expected, { speaker: framing ? speaker : null, speech }) },
+    { type: "input_image", image_url: imageUrl, detail: "high" },
+    ...(speech ? [{ type: "input_image", image_url: speechFramesUrl, detail: "high" }] : []),
+  ];
   try {
-    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: CHECK_SYSTEM, user, schema: checkSchema(), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
+    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: CHECK_SYSTEM, user, schema: checkSchema({ speech }), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
     const verdict = verdictOf(r.data, expected, { speaker, framing, missingOk: purpose === CLIP_FRAME_PURPOSE });
     await admin.from("blocky_ai_calls").insert({
-      ...ids, provider: model.provider, model: model.model, purpose, request: { imageUrl, expected, speaker },
+      ...ids, provider: model.provider, model: model.model, purpose, request: { imageUrl, expected, speaker, ...(speech ? { speechFramesUrl } : {}) },
       response: { answer: r.data, verdict }, http_status: r.httpStatus, ok: true, cost_usd: r.costUsd,
       input_tokens: r.usage?.inputTokens ?? null, output_tokens: r.usage?.outputTokens ?? null, latency_ms: r.latencyMs ?? null, completed_at: new Date().toISOString(),
     });

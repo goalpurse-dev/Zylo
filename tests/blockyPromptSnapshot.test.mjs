@@ -73,6 +73,9 @@ function build() {
   s["check/picture"] = checkPrompt(I.checkExpected, { speaker: "Vex" });
   s["check/clip frame"] = checkPrompt(I.checkExpected);
   s["check/schema"] = checkSchema();
+  // A clip check with the second picture (two frames from the middle of the line): one more question, one more field.
+  s["check/clip frame + speech frames"] = checkPrompt(I.checkExpected, { speech: true });
+  s["check/schema + speech frames"] = checkSchema({ speech: true });
   s["check/verdict"] = verdictOf(I.checkAnswer, I.checkExpected, { speaker: "Vex" });
   s["upload/system"] = PACKAGE_SYSTEM;
   s["upload/schema"] = packageSchema();
@@ -94,7 +97,7 @@ const recorded = JSON.parse(fs.readFileSync(FILE, "utf8"));
 
 test("the snapshot covers every Blocky prompt, and nothing is built that isn't recorded", () => {
   assert.deepEqual(Object.keys(now).sort(), Object.keys(recorded).sort());
-  assert.equal(Object.keys(recorded).length, 76);
+  assert.equal(Object.keys(recorded).length, 78);
 });
 
 for (const key of Object.keys(recorded)) {

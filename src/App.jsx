@@ -906,7 +906,7 @@ return (
   <Route path="/workspace/video-generator" element={<Video />} />
   <Route path="/workspace/viral-script" element={<Script />} />
   <Route path="/workspace/viral-score" element={<ViralScore />} />
-  <Route path="/workspace/lip-sync"    element={<Navigate to="/workspace" replace />} />
+  <Route path="/workspace/lip-sync"    element={<Navigate to="/" replace />} />
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path={BLOCKY_STORIES_PATH} element={<BlockyStories />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />

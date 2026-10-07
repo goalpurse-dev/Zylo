@@ -20,7 +20,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors } from "../shared/cors.ts";
 import { BlockyError, MESSAGES, errorBody, fromDbError, blockyError } from "../_shared/blocky/errors.js";
 import { episodeStatuses, spentFromLedger, stepBlocker, toRecentSingle, toStory } from "../_shared/blocky/storyState.js";
-import { FINAL_MACHINE, buildFinalJob, coverScene, finalMachineConfig, finalPath, overlayTexts, storyUpdateForReport } from "../_shared/blocky/final.js";
+import { FINAL_MACHINE, buildFinalJob, coverScene, finalMachineConfig, finalPath, overlayTexts, scenesWithDrawnText, storyUpdateForReport } from "../_shared/blocky/final.js";
+import { DRAWN_TEXT_PROBLEM } from "../_shared/blocky/pictureCheck.js";
 import { sameToken, webhookToken } from "../_shared/blocky/runware.js";
 import { providerOnHold } from "../_shared/blocky/alerts.js";
 import { ensurePlates, lastEndOf, plateOf } from "../_shared/blocky/plates.js";
@@ -472,6 +473,13 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
         // Only when the difference matters (a dropped name, another word): a slur keeps the written line.
         if (spokenDiff(c.line, t.text).matters) c.caption = String(t.text).trim();
       });
+      // ONE caption track, always. A clip the video model drew its own subtitles into gets no caption of
+      // ours on top (an empty caption: the builder then draws nothing for that clip, and still trims by its words).
+      const { data: clipJobs } = await admin.from("blocky_jobs").select("id, attempt").eq("story_id", storyId).eq("kind", "clip");
+      const { data: frameChecks } = await admin.from("blocky_ai_calls").select("job_id, attempt, created_at, response").eq("story_id", storyId).eq("purpose", "clip_frame_check");
+      const drawn = scenesWithDrawnText(ordered.map((s: any) => ({ id: s.id, clip_job_id: s.clip_job_id })), clipJobs ?? [], frameChecks ?? [], DRAWN_TEXT_PROBLEM);
+      job.clips.forEach((c: any, i: number) => { if (drawn.has(ordered[i].id)) { c.caption = ""; c.drawnText = true; } });
+      if (drawn.size) console.log(`[blocky-story-api] final ${storyId}: ${drawn.size} clip(s) carry subtitles drawn by the video model; our caption is left off them`);
     }
     // The clip check's log for this story: how many clips were made again, and what that and the checks cost.
     let clipCheck: any = null;
@@ -489,7 +497,7 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     if (!moved.length) throw blockyError("WRONG_STATUS");
     must(await admin.from("blocky_ai_calls").insert({
       id: callId, user_id: userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
-      request: { ...job, auto: Boolean(opts.auto), clipCheck, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null, ...(c.caption ? { caption: c.caption } : {}) })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
+      request: { ...job, auto: Boolean(opts.auto), clipCheck, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null, ...(c.caption ? { caption: c.caption } : {}), ...(c.drawnText ? { drawnText: true, caption: "" } : {}) })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
     }));
 
     const t0 = Date.now();

@@ -78,7 +78,7 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
         <p className="mt-2 text-[10px] leading-relaxed text-white/30">
           {scriptScenes
             ? `Set by your script: ${scriptScenes.count} lines, about ${formatLength(lengthSec)}.`
-            : `About ${est.sceneCount} scenes. Each scene is one character saying one line.`}
+            : `About ${est.sceneCount} scenes. Each scene is one character saying one line. The video is never longer than this and can be a second or two shorter: you pay only for the seconds made.`}
         </p>
       </div>
 

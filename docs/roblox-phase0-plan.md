@@ -107,6 +107,13 @@ Since this plan was written:
   NOT have these three changes yet (see `_shared/blocky/README.md`: a fix in one almost always
   belongs in the other).
 
+- 2026-10-08: the first real story worked end to end ("The Fake Admin Meets The Owner", 4 scenes,
+  106 credits, $1.20 at the providers, final video 17.6 s). Found and fixed in code (decisions 36
+  to 39): two caption lines at once (the video model's own subtitles under ours), picture warnings
+  at 20% against a 22% line and still shown while animating, the signed-out redirect to a dead
+  address. The same caption fault exists in AI Fruit Story's engine (same clip prompt, same
+  last-frame-only check); Fruit's files are not Blocky's to change.
+
 ## Blocky UI/UX list (not built yet)
 
 Things to design and build in the UI phase (phase 8), kept here so none is forgotten:

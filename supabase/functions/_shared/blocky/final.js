@@ -37,6 +37,31 @@ export function buildFinalJob({ story, scenes, callId, captions, uploadUrl, call
   };
 }
 
+/**
+ * The scenes whose clip carries words the video model drew itself. The final
+ * video then leaves its own caption off those clips, so there is never more
+ * than ONE caption line on screen (pictureCheck.js#DRAWN_TEXT_PROBLEM).
+ *   scenes: [{id, clip_job_id}]
+ *   jobs:   the story's clip jobs, [{id, attempt}]
+ *   checks: blocky_ai_calls rows of the clip frame check, [{job_id, attempt, created_at, response: {verdict: {problems}}}]
+ * The check that counts is the newest one for the clip's CURRENT attempt. When that
+ * attempt was never checked (the frame machine failed) but an earlier attempt of
+ * the same clip had drawn words, the clip counts as carrying them: one caption
+ * too few is the safe side, two at once never happens.
+ */
+export function scenesWithDrawnText(scenes, jobs, checks, problem) {
+  const flagged = (row) => (row?.response?.verdict?.problems ?? []).some((p) => String(p).includes(problem));
+  const out = new Set();
+  for (const scene of scenes ?? []) {
+    const job = (jobs ?? []).find((j) => j.id === scene.clip_job_id);
+    if (!job) continue;
+    const mine = (checks ?? []).filter((c) => c.job_id === job.id).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    const current = mine.filter((c) => Number(c.attempt) === Number(job.attempt)).at(-1);
+    if (current ? flagged(current) : mine.some(flagged)) out.add(scene.id);
+  }
+  return out;
+}
+
 /** Machines API body: the render-worker image, run once, destroyed after. */
 export function finalMachineConfig({ image, job }) {
   return {

@@ -26,7 +26,7 @@ import { BlockyError, MESSAGES } from "../_shared/blocky/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/blocky/final.js";
 import { raiseProviderAlert } from "../_shared/blocky/alerts.js";
 import { checkPicture } from "../_shared/blocky/pictureCheck.js";
-import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath } from "../_shared/blocky/clipCheck.js";
+import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath, speechFramesPath } from "../_shared/blocky/clipCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/blocky/clips.js";
 import { buildPictureRequest, withRedrawHint } from "../_shared/blocky/pictures.js";
 import { rewriteClipPrompt } from "../_shared/blocky/smallTasks.js";
@@ -108,10 +108,18 @@ const engine = createEngine({
     const path = framePath(job.user_id, job.story_id, job.id, job.attempt);
     const { data: signed, error } = await admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true });
     if (error || !signed?.signedUrl) return null;
-    const frameJob = { jobId: job.id, clipUrl: storedUrl, uploadUrl: signed.signedUrl, callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`, token: await webhookToken(WORKER_SECRET, `frame:${job.id}`) };
+    // Two frames from the middle of the line too: subtitles the video model drew itself show there, not in the last frame.
+    const speechPath = speechFramesPath(job.user_id, job.story_id, job.id, job.attempt);
+    const { data: speechSigned } = await admin.storage.from("generated").createSignedUploadUrl(speechPath, { upsert: true });
+    const durationSec = Number(job.request?.duration) || 0;
+    const withSpeech = Boolean(speechSigned?.signedUrl) && durationSec > 0;
+    const frameJob = {
+      jobId: job.id, clipUrl: storedUrl, uploadUrl: signed.signedUrl, callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`, token: await webhookToken(WORKER_SECRET, `frame:${job.id}`),
+      ...(withSpeech ? { speechUploadUrl: speechSigned!.signedUrl, durationSec } : {}),
+    };
     const { data: call } = await admin.from("blocky_ai_calls").insert({
       user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id, provider: "fly", model: "shared-cpu-2x", purpose: "clip_frame",
-      attempt: job.attempt, request: { clipUrl: storedUrl, path },
+      attempt: job.attempt, request: { clipUrl: storedUrl, path, ...(withSpeech ? { speechPath } : {}) },
     }).select("id").single();
     const res = await fetch(`https://api.machines.dev/v1/apps/${FLY_APP}/machines`, {
       method: "POST", headers: { Authorization: `Bearer ${FLY_API_TOKEN}`, "Content-Type": "application/json" },
@@ -123,7 +131,7 @@ const engine = createEngine({
       if (call?.id) await admin.from("blocky_ai_calls").update({ ok: false, http_status: res.status, error: `machine start: ${detail}`, cost_usd: 0, completed_at: new Date().toISOString() }).eq("id", call.id);
       return null;
     }
-    return { path, callId: call?.id ?? null };
+    return { path, callId: call?.id ?? null, ...(withSpeech ? { speechPath } : {}) };
   },
   checkClipFrame: async (job: any, frame: any) => {
     const { expected } = await sceneCast(job.scene_id);
@@ -132,7 +140,9 @@ const engine = createEngine({
     if (!expected.length) return null;
     return checkClipFrame({
       admin, apiKey: OPENAI_API_KEY, frameUrl: admin.storage.from("generated").getPublicUrl(frame.path).data.publicUrl, expected,
-      ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
+      speechUrl: frame.speechPath ? admin.storage.from("generated").getPublicUrl(frame.speechPath).data.publicUrl : null,
+      // attempt: the final video trusts only the check of the clip's current attempt (final.js#scenesWithDrawnText)
+      ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id, attempt: job.attempt },
     });
   },
   // The story's last clip is ready: build the final video without waiting for the button.
