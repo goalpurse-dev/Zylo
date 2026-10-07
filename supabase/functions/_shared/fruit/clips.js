@@ -58,13 +58,21 @@ export function buildClipPrompt({ scene, library, quality = "v2" }) {
   throw new Error(`clip prompt over ${CLIP_PROMPT_MAX} chars even at the shortest tier`);
 }
 
+/**
+ * What a clip must never draw. The clip prompt already says "No subtitles, captions or on-screen text", and
+ * Wan still draws subtitles into some clips; Wan also takes a negative prompt (500 characters at most), so
+ * the same is said there too. (Accepted by Runware; in one test it did not stop the subtitles by itself:
+ * the clip check and the final video's guarantee are what protect.)
+ */
+export const NO_DRAWN_TEXT = "subtitles, captions, closed captions, on-screen text, words, letters, typography, lyrics, karaoke text, speech bubbles, watermark, logo";
+
 /** The Runware task for one clip, per model (request shapes match the ones live in production). */
 export function clipTask({ quality, prompt, imageUrl, aspect, durationSec }) {
   const m = videoModel(quality);
   const [width, height] = m.sizes[aspect];
   if (m.audio === "alibaba") {
     return {
-      taskType: "videoInference", model: m.air, positivePrompt: prompt, width, height, duration: durationSec,
+      taskType: "videoInference", model: m.air, positivePrompt: prompt, negativePrompt: NO_DRAWN_TEXT, width, height, duration: durationSec,
       numberResults: 1, outputType: "URL", outputFormat: "MP4",
       providerSettings: { alibaba: { audio: true } },
       inputs: { frameImages: [imageUrl] },

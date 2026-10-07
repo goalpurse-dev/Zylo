@@ -28,5 +28,17 @@ Also duplicated outside this folder: `render-worker/src/fruitFinal.mjs`,
 `fruit_refund_job`, `fruit_complete_job`, `fruit_refresh_story_status`,
 `fruit_create_story` (twins: `blocky_*`).
 
-This note is the only file Blocky Stories added to this folder. It is not
-imported by anything, so it is not part of any deployed function.
+## Fixes ported from Blocky to Fruit
+
+The two engines are separate copies, so a fix never travels on its own. Fixes
+that started in Fruit and went to Blocky are listed in
+`../blocky/README.md` ("Fixes ported from Fruit"). Fixes that started in
+Blocky and came here are listed below, newest first. A port into Fruit is
+made only on the owner's request, and deployed only on the owner's go.
+
+| Date ported | Blocky commit | What the fix does | In Fruit | Live on `fruit-worker` / `fruit-story-api` |
+|---|---|---|---|---|
+| 2026-10-08 | `2935ffa` (laptop-transfer) | ONE caption track. The video model (Wan) sometimes draws its own subtitles into a clip although the prompt forbids them; the final video then drew ours on top (two lines at once). Now: the Wan request also carries a negative prompt against drawn text; the clip check looks at two frames from the middle of the line (the model's subtitles are gone by the last frame) and a clip with drawn words is made again once at our cost; a remade clip is looked at again; a clip that still carries drawn words gets no caption of ours in the final video. Not ported: Blocky's extra try on the next clip model. | `clips.js`, `clipCheck.js`, `pictureCheck.js`, `engine.js`, `final.js`, `fruit-worker/index.ts`, `fruit-story-api/index.ts`, `tests/fruitOneCaptionTrack.test.mjs`, `tests/fruitQualityRules.test.mjs` | NO: on the branch only. Fruit's live functions are still main's; they are deployed on the owner's go, at a quiet time with no Fruit job in flight |
+
+This README is not imported by anything, so it is not part of any deployed
+function.

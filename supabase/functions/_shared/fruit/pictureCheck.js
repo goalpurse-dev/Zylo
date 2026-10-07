@@ -34,9 +34,19 @@ export const MIN_HEAD_PERCENT = 22;
 export const BODY_CUTS = ["shoulders", "chest", "waist", "knees", "feet", "unknown"];
 const TOO_WIDE = new Set(["knees", "feet"]);
 
+/**
+ * A clip must carry no words of its own: the final video draws the ONE caption
+ * track. Wan sometimes draws subtitles into a clip while the line is spoken
+ * (found in Blocky Stories' first real story, 2026-10-08; the clip prompt is
+ * the same here), and they are gone again by the last frame, so the clip check
+ * also looks at two frames from the middle of the line.
+ */
+export const DRAWN_TEXT_PROBLEM = "the video model drew its own subtitles into the clip";
+
 export const CHECK_SYSTEM = "You check pictures for an animated series where every character is an anthropomorphic FRUIT: a body with a whole fruit as the head (a mango head, a pineapple head...). Leaf crowns, stems and spikes are part of the fruit, not hair. Look at the whole picture carefully and answer the questions exactly. Framed photos or posters on a wall, faces on a screen or monitor, and small blurred figures far in the background are NOT characters in the scene: count them only where asked. Answer only with the JSON object.";
 
-export function checkSchema() {
+/** speech: a clip check with the second picture (two frames from the middle of the line), which adds drawnText. */
+export function checkSchema({ speech = false } = {}) {
   const ch = { name: { type: "string" }, visible: { type: "boolean" }, hasFruitHead: { type: "boolean" } };
   const props = {
     characters: { type: "array", items: { type: "object", additionalProperties: false, required: Object.keys(ch), properties: ch } },
@@ -48,6 +58,7 @@ export function checkSchema() {
     readableText: { type: "string" },
     speakerHeadPercent: { type: "integer" },
     speakerShownTo: { type: "string", enum: BODY_CUTS },
+    ...(speech ? { drawnText: { type: "string" } } : {}),
     notes: { type: "string" },
   };
   return { type: "object", additionalProperties: false, required: Object.keys(props), properties: props };
@@ -55,9 +66,10 @@ export function checkSchema() {
 
 /**
  * @param {{name:string, fruit:string}[]} expected characters meant to be in the frame
- * @param {{speaker?:string}} [o] the speaking character's name (scene pictures)
+ * @param {{speaker?:string, speech?:boolean}} [o] speaker: the speaking character's name (scene pictures);
+ *   speech: a SECOND picture is attached, two frames from the middle of the clip (clip checks)
  */
-export function checkPrompt(expected, { speaker = null } = {}) {
+export function checkPrompt(expected, { speaker = null, speech = false } = {}) {
   return [
     `This picture should show exactly ${expected.length} character${expected.length > 1 ? "s" : ""}, each with a fruit head:`,
     // The exact look from the library: Kai is a GREEN young coconut (a check told only
@@ -76,6 +88,7 @@ export function checkPrompt(expected, { speaker = null } = {}) {
     speaker
       ? `speakerShownTo: the lowest part of ${speaker}'s body that is inside the picture: shoulders, chest, waist, knees or feet. If you can see their shoes or the floor under them, answer feet.`
       : "speakerShownTo: unknown.",
+    ...(speech ? ["drawnText: every question above is about the FIRST picture. A SECOND picture is attached: two earlier moments of the same clip, side by side, taken while the line is being spoken. Copy any words, subtitles, captions or lyrics drawn anywhere on that second picture, exactly as you read them; an empty string if there are none. Plain shapes on clothes are not text."] : []),
     "notes: one short sentence on anything wrong, or an empty string.",
   ].join("\n");
 }
@@ -105,6 +118,8 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
   if (twice.length) { problems.push(`${twice.join(" and ")} drawn twice`); fixes.push("Each character appears exactly once."); }
   const text = String(data?.readableText ?? "").trim();
   if (text.replace(/[^a-z0-9]/gi, "").length >= 2) { problems.push(`readable writing in the picture ("${text.slice(0, 40)}")`); fixes.push("No readable writing anywhere: blank signs, blank mugs, blank screens, plain clothes."); }
+  const drawn = String(data?.drawnText ?? "").trim();
+  if (drawn.replace(/[^\p{L}\p{N}]/gu, "").length >= 2) { problems.push(`${DRAWN_TEXT_PROBLEM} ("${drawn.slice(0, 60)}")`); fixes.push("No subtitles, captions or words drawn in the clip."); }
   const head = Number(data?.speakerHeadPercent);
   const small = Number.isFinite(head) && head > 0 && head < MIN_HEAD_PERCENT;
   if (framing && speaker && (small || TOO_WIDE.has(data?.speakerShownTo))) {
@@ -120,17 +135,24 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
  * ids: {user_id, story_id, scene_id, job_id} for the log row.
  * @param {object} o  speaker: the speaking character's name; purpose: CHECK_PURPOSE or CLIP_FRAME_PURPOSE
  *   (a clip's last frame is not judged on framing: the camera has moved by then)
+ *   speechFramesUrl: a clip check's second picture, two frames from the middle of the line, looked at for
+ *   subtitles the video model drew itself (they are usually gone by the last frame)
  */
-export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, ids, fetchLlm = callLlm }) {
+export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, speechFramesUrl = null, ids, fetchLlm = callLlm }) {
   const model = FRUIT_MODELS.small;
   const t0 = Date.now();
   const framing = purpose === CHECK_PURPOSE && Boolean(speaker);
-  const user = [{ type: "input_text", text: checkPrompt(expected, { speaker: framing ? speaker : null }) }, { type: "input_image", image_url: imageUrl, detail: "high" }];
+  const speech = Boolean(speechFramesUrl);
+  const user = [
+    { type: "input_text", text: checkPrompt(expected, { speaker: framing ? speaker : null, speech }) },
+    { type: "input_image", image_url: imageUrl, detail: "high" },
+    ...(speech ? [{ type: "input_image", image_url: speechFramesUrl, detail: "high" }] : []),
+  ];
   try {
-    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: CHECK_SYSTEM, user, schema: checkSchema(), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
+    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: CHECK_SYSTEM, user, schema: checkSchema({ speech }), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
     const verdict = verdictOf(r.data, expected, { speaker, framing, missingOk: purpose === CLIP_FRAME_PURPOSE });
     await admin.from("fruit_ai_calls").insert({
-      ...ids, provider: model.provider, model: model.model, purpose, request: { imageUrl, expected, speaker },
+      ...ids, provider: model.provider, model: model.model, purpose, request: { imageUrl, expected, speaker, ...(speech ? { speechFramesUrl } : {}) },
       response: { answer: r.data, verdict }, http_status: r.httpStatus, ok: true, cost_usd: r.costUsd,
       input_tokens: r.usage?.inputTokens ?? null, output_tokens: r.usage?.outputTokens ?? null, latency_ms: r.latencyMs ?? null, completed_at: new Date().toISOString(),
     });

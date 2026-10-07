@@ -51,7 +51,11 @@ Blocky does not need is listed too, with the reason.
 |---|---|---|---|---|
 | 2026-10-07 | `e1e1583` (main, 2026-10-07) | A job is given up on after 30 minutes, not 8 (picture) or 12 (clip): Runware delivered clips after we had refunded them. A status read the provider fumbles (429, 5xx, a balance refusal) is "no news yet", not a failed job: the job used to be sent again and paid twice. A balance refusal from our provider account waits and is retried every 5 minutes for 30 minutes before the refund. | `engine.js`, `tests/blockyEngine.test.mjs`, `tests/blockyProviderGuard.test.mjs` (commit `f4c5408`) | yes: both deployed 2026-10-07, 20:09 and 20:12 UTC, checked file by file against the branch |
 
-Last compared with Fruit: 2026-10-07, Fruit at commit `f4c5408`, fingerprint `9ac0ea04aa424ab4`
+Fixes that went the other way, from Blocky into Fruit (only on the owner's
+request), are listed in `../fruit/README.md` ("Fixes ported from Blocky to
+Fruit"). First one: the one-caption-track fix, 2026-10-08.
+
+Last compared with Fruit: 2026-10-07, Fruit at commit `e8d8c67`, fingerprint `fd0d892194019fcc`
 
 How it is kept: `tests/blockySeparation.test.mjs` fails as soon as one of
 Fruit's twin files differs from that fingerprint, in whatever session changed

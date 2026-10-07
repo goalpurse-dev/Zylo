@@ -3,8 +3,8 @@
 //   1. Nothing of Blocky's imports from Fruit's folders, or names a Fruit
 //      table, RPC, function or storage folder.
 //   2. Nothing of Fruit's imports from Blocky's folders.
-//   3. Fruit's files are exactly main's: Blocky's branch changes none of them
-//      (one allowed file: the README note about the duplicated provider files).
+//   3. Fruit's files are main's, except the changes the owner asked for by name
+//      (the README note, and the one-caption-track fix ported from Blocky).
 //   4. An env file with keys can't be committed.
 //   5. A fix to Fruit's engine never goes unnoticed: Fruit's twin files carry the fingerprint the README
 //      recorded when the two engines were last compared.
@@ -60,8 +60,23 @@ const FRUIT = [
   "public/lp/fruit",
   "tests/helpers/fruitMemoryStore.mjs",
 ];
-/** The one file Blocky's branch adds inside a Fruit folder: the owner asked for this note. It is imported by nothing, so it is in no deployed function. */
-const ALLOWED_IN_FRUIT = ["supabase/functions/_shared/fruit/README.md"];
+/**
+ * The only ways this branch may differ from main inside Fruit's folders, each one asked for by the owner:
+ *   - the README note (2026-10-06): imported by nothing, so in no deployed function;
+ *   - the one-caption-track fix ported from Blocky (2026-10-08; fruit/README.md "Fixes ported from Blocky
+ *     to Fruit"). Deployed to Fruit's functions only on the owner's go.
+ * Any other difference fails. Once this branch is merged into main the list is simply not needed.
+ */
+const ALLOWED_IN_FRUIT = [
+  "supabase/functions/_shared/fruit/README.md",
+  "supabase/functions/_shared/fruit/clips.js",
+  "supabase/functions/_shared/fruit/clipCheck.js",
+  "supabase/functions/_shared/fruit/pictureCheck.js",
+  "supabase/functions/_shared/fruit/engine.js",
+  "supabase/functions/_shared/fruit/final.js",
+  "supabase/functions/fruit-worker/index.ts",
+  "supabase/functions/fruit-story-api/index.ts",
+];
 
 const CODE = /\.(js|jsx|mjs|ts|tsx)$/;
 function filesUnder(rel) {
@@ -109,7 +124,7 @@ test("Fruit imports nothing from Blocky", () => {
   for (const f of files) for (const spec of importsOf(read(f))) assert.doesNotMatch(spec, /blocky/i, `${f} imports ${spec}`);
 });
 
-test("Fruit's files are exactly main's: an empty diff, and nothing added", (t) => {
+test("Fruit's files are main's, except the changes the owner asked for by name", (t) => {
   let base;
   try { [base] = git("merge-base", "HEAD", "origin/main"); } catch { /* no origin/main here */ }
   if (!base) return t.skip("origin/main is not fetched here");
@@ -118,8 +133,10 @@ test("Fruit's files are exactly main's: an empty diff, and nothing added", (t) =
   const added = git("ls-files", "--others", "--exclude-standard", "--", ...FRUIT).filter((f) => !allowed.has(f));
   assert.deepEqual(changed, [], "changed against main");
   assert.deepEqual(added, [], "new files in Fruit's folders");
-  // The allowed note is a note: Markdown, loaded by nothing.
-  for (const f of ALLOWED_IN_FRUIT) assert.match(f, /\.md$/);
+  // The approved code change is the caption fix and nothing else: each changed Fruit file mentions it.
+  for (const f of git("diff", "--name-only", base, "--", ...FRUIT).filter((x) => allowed.has(x) && !/\.md$/.test(x))) {
+    assert.match(read(f), /drawn|speech|negativePrompt/i, `${f} differs from main for the caption fix`);
+  }
 });
 
 test("an env file with keys can't be committed", () => {
