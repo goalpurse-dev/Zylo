@@ -191,9 +191,9 @@ Deno.test("wiring: the worker climbs the ladder, keeps the step on the row, and 
   assertMatch(w, /const contract = rung !== "normal" \|\| textFree \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
   assertMatch(w, /signal: AbortSignal\.timeout\(PROVIDER_TIMEOUT_MS\)/);
   // Deferred: the row keeps its lease for the wait, the attempt is not counted, the step is kept.
-  assertMatch(w, /lease_until: new Date\(Date\.now\(\) \+ deferS \* 1000\)\.toISOString\(\), attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "retry", ladder: ladderState \}/);
+  assertMatch(w, /lease_until: new Date\(Date\.now\(\) \+ deferS \* 1000\)\.toISOString\(\), attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "retry", ladder: ladderState, /);
   // Out of balance: back to the queue with the step kept.
-  assertMatch(w, /status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "provider_balance", ladder: ladderState \}/);
+  assertMatch(w, /status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "provider_balance", ladder: ladderState, /);
   // Covered: failed on the row (the card says "Try again (free)"), logged, a paid redraw refunded.
   assertMatch(w, /status: "failed", error: "image_failed", cost_usd: costUsd, qa: \{ covered: true,/);
   assertEquals(w.match(/"scene_covered"/g)?.length, 2, "the ladder's end and the unexpected-error path");
@@ -221,17 +221,21 @@ Deno.test("the provider is DOWN (every step failed, nothing finished anywhere la
   const NOW = Date.parse("2026-10-07T01:00:00.000Z");
   const all504 = ["x 504", "x 504", "x 504", "x 504", "safe: x 504", "backup: TimeoutError: aborted"];
   assert(providerOnly(all504));
-  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: null, nowMs: NOW }), { kind: "wait", outage: { count: 1, since: "2026-10-07T01:00:00.000Z" } });
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, pendingOthers: 5, outage: null, nowMs: NOW }), { kind: "wait", outage: { count: 1, since: "2026-10-07T01:00:00.000Z" } });
   // Other scenes ARE being drawn: it is this scene, so it is covered.
-  assertEquals(outageDecision({ failures: all504, readyLately: 3, outage: null, nowMs: NOW }).kind, "cover");
+  assertEquals(outageDecision({ failures: all504, readyLately: 3, pendingOthers: 5, outage: null, nowMs: NOW }).kind, "cover");
+  // The only scene left is covered at once: a finished video never waits for one picture.
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, pendingOthers: 0, outage: null, nowMs: NOW }).kind, "cover");
   // A scene refused for what it shows, or failing our own checks, is never an outage.
-  assertEquals(outageDecision({ failures: ["x 504", "safe: image_failed", "backup: image_failed"], readyLately: 0, outage: null, nowMs: NOW }).kind, "cover");
+  assertEquals(outageDecision({ failures: ["x 504", "safe: image_failed", "backup: image_failed"], readyLately: 0, pendingOthers: 5, outage: null, nowMs: NOW }).kind, "cover");
   assert(!providerOnly(["Error: prompt check: relative_reference", "safe: x 504"]));
   // It does not wait for ever: a few rounds, six hours at most, then it is covered (and the run can end / refund).
-  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: { count: OUTAGE_MAX_REQUEUES, since: "2026-10-07T00:10:00.000Z" }, nowMs: NOW }).kind, "cover");
-  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: { count: 1, since: new Date(NOW - OUTAGE_MAX_S * 1000 - 1000).toISOString() }, nowMs: NOW }).kind, "cover");
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, pendingOthers: 5, outage: { count: OUTAGE_MAX_REQUEUES, since: "2026-10-07T00:10:00.000Z" }, nowMs: NOW }).kind, "cover");
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, pendingOthers: 5, outage: { count: 1, since: new Date(NOW - OUTAGE_MAX_S * 1000 - 1000).toISOString() }, nowMs: NOW }).kind, "cover");
   const w = read("supabase/functions/render-long-form-scene/index.ts");
   assertMatch(w, /status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "provider_outage", outage: od\.outage,/);
+  // The count survives a deferred retry and a balance wait (the chaos run found it was being lost: a scene could wait for ever).
+  assertEquals(w.match(/ladder: ladderState, \.\.\.keepOutage \}/g)?.length, 2);
   assertMatch(w, /await markProviderDown\(admin, /);
 });
 
@@ -260,6 +264,11 @@ Deno.test("the run's end: failed scenes get ONE free second pass; with not one s
   assertEquals(decideScenes(scenesInput({ ready: 8, failed: 2 })).action, { kind: "retry_failed", planId: "p1" });
   assertEquals(decideScenes(scenesInput({ ready: 8, failed: 2 }, { secondPassAt: T })).action.kind, "done", "one pass, never a loop");
   assertEquals(decideScenes(scenesInput({ ready: 0, failed: 10 }, { secondPassAt: T })).action, { kind: "fail", reason: "no scene could be drawn" });
+  // No scene finished for six hours (a provider that stays down, our balance left empty): the drawing stops waiting.
+  const stuck = (h: number, scenes: any = {}) => decideScenes({ ...scenesInput({ queued: 6, ready: 4, lastProgressAt: new Date(Date.parse(T) - h * 3600 * 1000).toISOString() }, scenes) }).action.kind;
+  assertEquals([stuck(5), stuck(6.1), stuck(6.1, { gaveUpAt: T })], ["draw", "give_up_drawing", "draw"]);
+  assertEquals(decideScenes(scenesInput({ ready: 4, failed: 6 }, { gaveUpAt: T })).action.kind, "done", "no second pass after giving up");
+  assertEquals(decideScenes(scenesInput({ ready: 0, failed: 10 }, { gaveUpAt: T })).action.kind, "fail");
   // A redraw of single scenes on a finished video ends as before (no second pass, never a refund of the whole video).
   assertEquals(decideScenes(scenesInput({ ready: 9, failed: 1 }, { regenerating: true })).action.kind, "done");
   const a = read("supabase/functions/advance-long-form-autopilot/index.ts");

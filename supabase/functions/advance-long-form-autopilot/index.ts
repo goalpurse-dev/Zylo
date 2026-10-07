@@ -92,6 +92,14 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
       for (let i = 0; i < Math.min(rows.length, 6); i++) background(dispatchScene(owner));
       break;
     }
+    case "give_up_drawing": {
+      // No scene finished for six hours: stop waiting. The scenes still waiting are closed as
+      // failed; the next tick ends the run (covered scenes, or the whole hold back if none exists).
+      (sc as any).gaveUpAt = now;
+      const { data: closed } = await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", lease_until: null, qa: { covered: true, gaveUp: true } }).eq("project_id", projectId).eq("beat_plan_version_id", a.planId).eq("is_current", true).in("status", ["queued", "rendering"]).select("id");
+      await logEvent("advance-long-form-autopilot", "error", "scenes_gave_up", { projectId, closed: closed?.length ?? 0 });
+      break;
+    }
     case "retry_failed": {
       // One free second pass: the failed scenes go back to the queue from the first step.
       (sc as any).secondPassAt = now;

@@ -115,8 +115,10 @@ export const OUTAGE_MAX_REQUEUES = 6;
 export const OUTAGE_MAX_S = 6 * 3600;
 export type OutageState = { count: number; since: string } | null | undefined;
 export const providerOnly = (failures: string[]) => failures.length > 0 && failures.every((f) => classifyFailure(f.replace(/^(?:safe|backup): /, "")) === "provider");
-export function outageDecision(a: { failures: string[]; readyLately: number; outage: OutageState; nowMs: number }): { kind: "cover" } | { kind: "wait"; outage: { count: number; since: string } } {
-  if (!providerOnly(a.failures) || a.readyLately > 0) return { kind: "cover" };
+// pendingOthers: the project's other scenes still queued or being drawn. A scene that is the only
+// one left is covered at once (waiting would hold a finished video up for one picture).
+export function outageDecision(a: { failures: string[]; readyLately: number; pendingOthers: number; outage: OutageState; nowMs: number }): { kind: "cover" } | { kind: "wait"; outage: { count: number; since: string } } {
+  if (!providerOnly(a.failures) || a.readyLately > 0 || a.pendingOthers <= 0) return { kind: "cover" };
   const since = a.outage?.since ?? new Date(a.nowMs).toISOString();
   const count = Number(a.outage?.count ?? 0);
   if (count >= OUTAGE_MAX_REQUEUES || a.nowMs - Date.parse(since) > OUTAGE_MAX_S * 1000) return { kind: "cover" };

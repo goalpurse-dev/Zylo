@@ -222,6 +222,8 @@ async function drawScene(scene: any) {
   const outOfBalance = out.kind === "balance" ? out.message : null;
   const deferS = out.kind === "deferred" ? out.waitS : null;
   const ladderState = { step: ladder.step, checks: ladder.checks, failures: failures.slice(-12) };
+  // How often this scene already waited for the provider: kept through every wait (or it would wait for ever).
+  const keepOutage = scene.qa?.outage ? { outage: scene.qa.outage } : {};
   if (used && used !== "normal") await logEvent("render-long-form-scene", "warn", used === "backup" ? "scene_backup_model" : "scene_safe_fallback", { projectId, sceneId: scene.id, beat: beat.sequence, failures, ...(used === "backup" ? { model: cfg.model } : {}) });
   else if (used && failures.length) await logEvent("render-long-form-scene", "info", "scene_retried_ok", { projectId, sceneId: scene.id, beat: beat.sequence, step: ladder.step, failures });
 
@@ -231,14 +233,14 @@ async function drawScene(scene: any) {
   const notCounted = Math.max(0, Number(scene.attempts ?? 1) - 1);
   if (outOfBalance) {
     // Our Runware account can't pay: the scene WAITS (back to queued, attempt not counted) and drawing pauses.
-    await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_balance", ladder: ladderState } }).eq("id", scene.id);
+    await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_balance", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
     await markOutOfBalance(admin, outOfBalance);
     return { failed: false, waiting: true };
   }
   if (deferS != null) {
     // The next step (or its wait) doesn't fit in this worker: the row keeps its lease until the
     // wait is over, then the watchdog queues it and the next worker carries on from qa.ladder.step.
-    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + deferS * 1000).toISOString(), attempts: notCounted, cost_usd: costUsd, qa: { waiting: "retry", ladder: ladderState } }).eq("id", scene.id);
+    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + deferS * 1000).toISOString(), attempts: notCounted, cost_usd: costUsd, qa: { waiting: "retry", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
     await logEvent("render-long-form-scene", "info", "scene_retry_deferred", { projectId, sceneId: scene.id, beat: beat.sequence, step: ladder.step, waitS: deferS, last: failures.at(-1) ?? null });
     return { failed: false, waiting: true };
   }
@@ -247,7 +249,8 @@ async function drawScene(scene: any) {
     // the scene goes back to the queue from the first step and drawing pauses, then resumes by itself.
     if (canDefer && out.kind === "covered") {
       const { count: readyLately } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "ready").gte("ready_at", new Date(Date.now() - OUTAGE_WINDOW_S * 1000).toISOString());
-      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now() });
+      const { count: pendingOthers } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("project_id", projectId).eq("is_current", true).in("status", ["queued", "rendering"]).neq("id", scene.id);
+      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, pendingOthers: pendingOthers ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now() });
       if (od.kind === "wait") {
         await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_outage", outage: od.outage, lastFailures: ladderState.failures.slice(-3) } }).eq("id", scene.id);
         await markProviderDown(admin, ladderState.failures.at(-1) ?? "provider error");
