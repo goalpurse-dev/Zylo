@@ -120,15 +120,30 @@ const toCharacter = (c: any) => ({
   voiceStyle: c.voice_style, roleTags: c.role_tags, refImageUrl: c.ref_image_url,
 });
 
+/** A switch is on for everyone (global_feature_flags) or for this account (user_feature_flags). No row = off. */
+async function switchedOn(userId: string, flag: string) {
+  const [g, u] = await Promise.all([
+    admin.from("global_feature_flags").select("enabled").eq("key", flag).maybeSingle(),
+    admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
+  ]);
+  return g.data?.enabled === true || u.data?.flags?.[flag] === true;
+}
+
 /** While Blocky Stories is in testing it exists only for accounts with the switch on; for everyone else it isn't there. */
 const FLAG = "blocky_v1";
 async function requireSwitchedOn(userId: string) {
-  const [g, u] = await Promise.all([
-    admin.from("global_feature_flags").select("enabled").eq("key", FLAG).maybeSingle(),
-    admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
-  ]);
-  if (g.data?.enabled === true || u.data?.flags?.[FLAG] === true) return;
+  if (await switchedOn(userId, FLAG)) return;
   throw blockyError("NOT_FOUND", "This page doesn't exist.");
+}
+
+/**
+ * Series has its own switch, off for everyone until single stories pass the quality review
+ * (src/data/blockyStories.js#BLOCKY_SERIES_FLAG). Every series action is refused without it.
+ */
+const SERIES_FLAG = "blocky_series_v1";
+async function requireSeries(userId: string) {
+  if (await switchedOn(userId, SERIES_FLAG)) return;
+  throw blockyError("STAGE_NOT_READY", "Series aren't switched on yet. Make a single video.");
 }
 
 async function rateLimit(userId: string, kind: keyof typeof RATE) {
@@ -207,6 +222,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const rows = await library();
     const lib = new Map(rows.map((c: any) => [c.id, c]));
     const raw = ctx.body?.input;
+    if (raw?.source === "episode") await requireSeries(ctx.userId);
     if (raw?.source === "idea") throw blockyError("STAGE_NOT_READY", "Story ideas aren't switched on yet. Write your own story or paste a script.");
     const input = validateCreateStory(raw, lib, () => null);
     const [need, planName] = QUALITY_PLAN[input.quality];
@@ -498,6 +514,7 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
 Object.assign(ACTIONS, {
   /** Free: the series outline (title, logline, bible with fixed roles, episodes with cliffhangers). */
   async createSeriesPlan(ctx) {
+    await requireSeries(ctx.userId);
     requirePaid(ctx);
     const lib = await libraryMap();
     const input = validateSeriesPlan(ctx.body?.input, lib);
@@ -530,18 +547,20 @@ Object.assign(ACTIONS, {
   },
 
   async getSeries(ctx) {
+    await requireSeries(ctx.userId);
     await rateLimit(ctx.userId, "read");
     return seriesView(ctx.userId, validateId(ctx.body?.seriesId, "series"));
   },
 
   async listSeries(ctx) {
+    await requireSeries(ctx.userId);
     await rateLimit(ctx.userId, "read");
     return listSeriesCards(ctx.userId);
   },
 
   async listRecent(ctx) {
     await rateLimit(ctx.userId, "read");
-    if (ctx.body?.type === "series") return listSeriesCards(ctx.userId);
+    if (ctx.body?.type === "series") { await requireSeries(ctx.userId); return listSeriesCards(ctx.userId); }
     const rows = must(await admin.from("blocky_stories").select("*").eq("user_id", ctx.userId).is("series_id", null).is("deleted_at", null)
       .neq("status", "draft").order("created_at", { ascending: false }).limit(30));
     if (!rows.length) return [];

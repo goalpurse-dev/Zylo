@@ -36,6 +36,10 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.title = await p.locator('section[aria-label="Story builder"] h1').first().innerText().catch(() => null);
   row.methods = await p.locator('[aria-label="How do you want to start?"] button').allInnerTexts().catch(() => []);
   row.couldntLoad = await p.getByText(/couldn.t load/i).count();
+  // Series is behind its own switch (off): no "Single video / Series" choice in the builder, no "Series" tab in Recent creations.
+  row.builderSeriesTab = await p.locator('[aria-label="What are you making?"]').count();
+  row.recentSeriesTab = await p.locator('[aria-label="Show"]').count();
+  row.seriesWordOnPage = await p.getByText(/\bseries\b/i).count();
   await p.screenshot({ path: path.join(outDir, `page-${name}.png`) });
   // The library: opened from "Add character".
   await p.getByRole("button", { name: /Add character/ }).first().click();
@@ -63,6 +67,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
 await browser.close();
 console.log(JSON.stringify(out, null, 1));
 const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-stories" && v.title === "Blocky Stories" && v.couldntLoad === 0
+  && v.builderSeriesTab === 0 && v.recentSeriesTab === 0 && v.seriesWordOnPage === 0
   && JSON.stringify(v.libraryNames) === JSON.stringify(["Noob", "Vex", "Lux"]) && v.libraryPictures === 3 && v.settingsHeading === 1 && v.shapeChoice === 0
   && v.costText && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);
 console.log(ok ? "PASS" : "FAIL");

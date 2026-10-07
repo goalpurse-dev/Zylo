@@ -25,8 +25,16 @@ const library = await api(owner.accessToken, "listCharacters");
 ok("the owner's account reads the avatar library", library.ok && library.data.length >= 3, library.ok ? library.data.map((c) => c.name).join(", ") : `${library.code}: ${library.message}`);
 ok("an avatar has no age and no gender", library.ok && library.data.every((c) => !("age" in c) && !("gender" in c) && c.look && c.voiceStyle && /^https:\/\//.test(c.refImageUrl)));
 const recent = await api(owner.accessToken, "listRecent", { type: "single" });
-const series = await api(owner.accessToken, "listSeries");
-ok("recent creations and series load (empty lists are fine)", recent.ok && series.ok && Array.isArray(recent.data) && Array.isArray(series.data), `${recent.data?.length} stories, ${series.data?.length} series`);
+ok("recent creations load (an empty list is fine)", recent.ok && Array.isArray(recent.data), `${recent.data?.length} stories`);
+// Series is behind its own switch, off for everyone: every series action is refused, for the owner too.
+const seriesCalls = await Promise.all([
+  api(owner.accessToken, "listSeries"),
+  api(owner.accessToken, "listRecent", { type: "series" }),
+  api(owner.accessToken, "getSeries", { seriesId: crypto.randomUUID() }),
+  api(owner.accessToken, "createSeriesPlan", { input: { concept: "A fake admin takes over the server", castIds: ["noob", "vex"], opener: "Banned in front of the whole server", tone: "Loud and dramatic", episodeCount: 3 } }),
+  api(owner.accessToken, "createStory", { input: { source: "episode", seriesId: crypto.randomUUID(), episodeNumber: 1, quality: "v2", lengthSec: 20, aspect: "9:16" } }),
+]);
+ok("series is switched off: listing, opening, planning a series and starting an episode are all refused", seriesCalls.every((r) => r.code === "STAGE_NOT_READY"), seriesCalls.map((r) => r.code).join(", "));
 const ideas = await api(owner.accessToken, "getIdeas", { seed: 0 });
 ok("ideas answer that they aren't switched on yet", ideas.code === "STAGE_NOT_READY", `${ideas.code}`);
 

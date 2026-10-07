@@ -12,8 +12,9 @@ const RECENT_TABS = [
  *   viewer "guest"  → the example video + "Sign up to make your own"
  *   viewer "noPlan" → the example video + "Get a plan to make videos like this"
  *   viewer "paid"   → their history; with none yet, "Make your first story" + the example
+ * showSeries false (series is behind its own switch): no "Series" tab, single videos only.
  */
-export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle, onOpenSeries, showHero = true, viewer = "paid", onSignUp, onGetPlan, onStart }) {
+export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle, onOpenSeries, showHero = true, showSeries = true, viewer = "paid", onSignUp, onGetPlan, onStart }) {
   const paid = viewer === "paid";
   return (
     <div className="flex flex-col gap-6">
@@ -45,9 +46,9 @@ export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle,
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h3 id="fv2-recent-title" className="text-[14px] font-black text-white">Recent creations</h3>
-            <p className="mt-0.5 text-[10px] font-semibold text-white/30">Pick up any story or series where you left off.</p>
+            <p className="mt-0.5 text-[10px] font-semibold text-white/30">{showSeries ? "Pick up any story or series where you left off." : "Pick up any story where you left off."}</p>
           </div>
-          <SegmentedControl ariaLabel="Show" options={RECENT_TABS} value={recentTab} onChange={onRecentTab} className="w-full sm:w-[240px]" />
+          {showSeries && <SegmentedControl ariaLabel="Show" options={RECENT_TABS} value={recentTab} onChange={onRecentTab} className="w-full sm:w-[240px]" />}
         </div>
 
         {recent.status === "error" ? (

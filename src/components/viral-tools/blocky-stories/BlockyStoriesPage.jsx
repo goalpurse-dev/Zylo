@@ -6,6 +6,8 @@ import NoCreditsModal from "../shared/NoCreditsModal";
 import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDialog, cx } from "../../ui/zyvo";
 import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
 import { PRICING_PLANS } from "../../../lib/pricingOutputs";
+import { useFeatureFlag } from "../../../lib/featureFlags";
+import { BLOCKY_SERIES_FLAG } from "../../../data/blockyStories";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
 import { EpisodeCard, SeriesList, SeriesPlanPanel, SeriesWizard } from "./builder/SeriesPanels";
@@ -38,7 +40,11 @@ export default function BlockyStoriesPage() {
   const account = useAccount();
   const characters = useCharacters();
   const flow = useBlockyFlow(account, characters.characters);
-  const { mode, single, series, story } = flow;
+  // Series has its own switch (off for everyone until single stories pass the quality review): without it
+  // the page is single videos only. Nothing of series is removed, it is just never shown or started.
+  const seriesOn = useFeatureFlag(BLOCKY_SERIES_FLAG, account.user?.id).enabled;
+  const { single, series, story } = flow;
+  const mode = seriesOn ? flow.mode : "single";
   const byId = characters.byId;
   // Keep the last "Who is …?" name so the dialog title doesn't blank while it closes.
   const lastAssigning = useRef(null);
@@ -49,9 +55,9 @@ export default function BlockyStoriesPage() {
   const currentEpisode = flow.seriesData?.episodes.find((e) => e.number === series.episodeNumber) ?? null;
 
   // ── Left panel ─────────────────────────────────────────────────────────
-  const modeToggle = (
+  const modeToggle = seriesOn ? (
     <SegmentedControl size="lg" ariaLabel="What are you making?" options={MODES} value={mode} onChange={flow.changeMode} disabled={Boolean(flow.acting)} />
-  );
+  ) : null;
   let top = modeToggle;
   let bodyKey = "";
   let body = null;
@@ -244,7 +250,7 @@ export default function BlockyStoriesPage() {
           isEpisode={isEpisodeStory}
           series={flow.seriesData}
           onCaptions={flow.setCaptions}
-          onFinalOption={flow.setFinalOption}
+          onFinalOption={seriesOn ? flow.setFinalOption : undefined}
           onDownloadCover={flow.downloadCover}
           onDownload={flow.pipeline.onDownload}
           onNextEpisode={flow.startEpisode}
@@ -285,6 +291,7 @@ export default function BlockyStoriesPage() {
         recentTab={flow.recentTab}
         onRecentTab={flow.setRecentTab}
         recent={flow.recent}
+        showSeries={seriesOn}
         onOpenSingle={flow.openSingle}
         onOpenSeries={flow.openSeries}
         viewer={account.viewer}
