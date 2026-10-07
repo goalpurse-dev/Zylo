@@ -86,6 +86,12 @@ Since this plan was written:
   390 px. Not done yet on the real project: a real story end to end (the owner makes the first
   one by hand), so Runware's callbacks to `blocky-worker` and the `blocky-final` build have not
   run for real. The Fruit undo is still in `supabase/pending/`, for the owner to apply.
+- 2026-10-07, later: all Blocky work is on `laptop-transfer` (the owner's working branch, where
+  `npm run dev` runs). `parked/blocky-stories` was merged into it with a plain merge and then
+  deleted; the earlier notes above that name `parked/blocky-stories` are history. The state of
+  `laptop-transfer` before the merge is the tag `backup/laptop-transfer-before-blocky-2026-10-07`.
+  A push of `laptop-transfer` builds a Vercel Preview, never Production (only `main` does).
+  No separate branches, worktrees or copies from now on.
 - Phase 3 (the look) stopped at the review of 2026-10-06 and continues after the separation:
   the Pro reference pilot with the head / tongue / front-view / blocky-hair fixes, the 24
   references, the scene re-test, 5 real stories from the writer. The Veo clip of test 1b runs
