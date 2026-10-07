@@ -10,6 +10,15 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin as sendAdminAlert } from "./adminAlert.ts";
 
 export const BALANCE_CACHE_S = 60;
+// 2026-10-07: after the provider REFUSED us the pause is held this long before the balance is
+// read again. On 6-7 Oct the balance read $5.54 (above the threshold) while Runware refused every
+// draw ("reserved for requests in progress"), so the guard resumed every minute for six hours.
+export const REFUSAL_HOLD_S = 300;
+// One alert email per pause reason per hour at most (a long outage is not an email every 5 minutes).
+export const ALERT_EVERY_S = 3600;
+/** checked_at for a held pause: the guard treats the reading as fresh until the hold is over. */
+export const heldUntil = (now: string, holdS = REFUSAL_HOLD_S) => new Date(Date.parse(now) + Math.max(0, holdS - BALANCE_CACHE_S) * 1000).toISOString();
+export const mayAlert = (alertedAt: string | null | undefined, now: string) => !alertedAt || Date.parse(now) - Date.parse(alertedAt) >= ALERT_EVERY_S * 1000;
 /** Words Runware uses when OUR account can't pay (same as the Fruit guard). */
 export const OUT_OF_BALANCE = /insufficient|not enough (?:credit|balance|fund)|low balance|out of credit|payment.?required|credit balance|available balance/i;
 
@@ -65,7 +74,18 @@ export async function checkRunwareGuard(admin: SupabaseClient, now = new Date().
 
 /** A Runware "insufficient balance" refusal: pause now (the next check re-reads the balance after the cache window). */
 export async function markOutOfBalance(admin: SupabaseClient, message: string, now = new Date().toISOString()) {
-  const { data: row } = await admin.from("provider_balance_guard").select("paused, paused_since").eq("provider", "runware").maybeSingle();
-  await admin.from("provider_balance_guard").update({ paused: true, paused_since: row?.paused_since ?? now, checked_at: now, last_error: message.slice(0, 300), updated_at: now, ...(row?.paused ? {} : { alerted_at: now }) }).eq("provider", "runware");
-  if (!row?.paused) await alertAdmin("Zyvo: Runware refused a scene (out of balance) — drawing paused", `Runware refused a Long Form scene: ${message.slice(0, 300)}\n\nDrawing is paused; queued scenes wait and resume by themselves once the balance is topped up.`);
+  const { data: row } = await admin.from("provider_balance_guard").select("paused, paused_since, alerted_at").eq("provider", "runware").maybeSingle();
+  const alert = !row?.paused && mayAlert(row?.alerted_at, now);
+  await admin.from("provider_balance_guard").update({ paused: true, paused_since: row?.paused_since ?? now, checked_at: heldUntil(now), last_error: message.slice(0, 300), updated_at: now, ...(alert ? { alerted_at: now } : {}) }).eq("provider", "runware");
+  if (alert) await alertAdmin("Zyvo: Runware refused a scene (out of balance) — drawing paused", `Runware refused a Long Form scene: ${message.slice(0, 300)}\n\nDrawing is paused; queued scenes wait and resume by themselves once the balance is topped up (it is checked again every 5 minutes).`);
+}
+
+/** The provider is DOWN (every step of a scene failed and no scene anywhere finished lately):
+ *  drawing pauses for REFUSAL_HOLD_S, scenes wait in the queue, then it tries again by itself. */
+export async function markProviderDown(admin: SupabaseClient, message: string, now = new Date().toISOString()) {
+  const { data: row } = await admin.from("provider_balance_guard").select("paused, paused_since, alerted_at").eq("provider", "runware").maybeSingle();
+  if (!row) return;
+  const alert = mayAlert(row.alerted_at, now);
+  await admin.from("provider_balance_guard").update({ paused: true, paused_since: row.paused_since ?? now, checked_at: heldUntil(now), last_error: `outage: ${message}`.slice(0, 300), updated_at: now, ...(alert ? { alerted_at: now } : {}) }).eq("provider", "runware");
+  if (alert) await alertAdmin("Zyvo: Runware is failing every scene — drawing paused", `Every step of a Long Form scene failed (retries, safe prompt, backup model) and no scene has finished in the last few minutes, so this looks like a Runware outage, not one bad scene.\n\nLast error: ${message.slice(0, 300)}\n\nDrawing is paused for 5 minutes at a time and tries again by itself. Scenes wait in the queue (nothing fails, nothing is charged twice). Users see "Drawing is paused for a moment, your video continues automatically".`);
 }

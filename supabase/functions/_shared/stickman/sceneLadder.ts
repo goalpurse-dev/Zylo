@@ -106,6 +106,23 @@ export async function climbLadder<T extends { failed: boolean }>(o: {
   }
 }
 
+// The ladder ended with nothing drawn. One bad scene is COVERED. But when every failure was the
+// provider's and no scene anywhere finished lately, the provider is down: covering would turn an
+// outage into a video of still pictures at full price. Then the scene goes back to the queue and
+// drawing pauses (runwareBalance.markProviderDown), a few times at most and for OUTAGE_MAX_S at most.
+export const OUTAGE_WINDOW_S = 300;
+export const OUTAGE_MAX_REQUEUES = 6;
+export const OUTAGE_MAX_S = 6 * 3600;
+export type OutageState = { count: number; since: string } | null | undefined;
+export const providerOnly = (failures: string[]) => failures.length > 0 && failures.every((f) => classifyFailure(f.replace(/^(?:safe|backup): /, "")) === "provider");
+export function outageDecision(a: { failures: string[]; readyLately: number; outage: OutageState; nowMs: number }): { kind: "cover" } | { kind: "wait"; outage: { count: number; since: string } } {
+  if (!providerOnly(a.failures) || a.readyLately > 0) return { kind: "cover" };
+  const since = a.outage?.since ?? new Date(a.nowMs).toISOString();
+  const count = Number(a.outage?.count ?? 0);
+  if (count >= OUTAGE_MAX_REQUEUES || a.nowMs - Date.parse(since) > OUTAGE_MAX_S * 1000) return { kind: "cover" };
+  return { kind: "wait", outage: { count: count + 1, since } };
+}
+
 // Does the wait + the next step still fit in this worker? If not it is deferred.
 export function fitsInProcess(elapsedS: number, waitS: number, canDefer: boolean): "run" | "defer" | "stop" {
   const need = elapsedS + waitS + STEP_RESERVE_S;

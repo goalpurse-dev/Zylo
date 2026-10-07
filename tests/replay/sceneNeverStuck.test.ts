@@ -211,3 +211,59 @@ Deno.test("wiring: the worker climbs the ladder, keeps the step on the row, and 
   const ui = read("src/pages/workspace/long-form/scenes.jsx");
   assertMatch(ui, /Try again \(free\)/);
 });
+
+// ---------------- an outage is waited out; one bad scene is covered; no scene at all is refunded ----------------
+import { outageDecision, OUTAGE_MAX_REQUEUES, OUTAGE_MAX_S, providerOnly } from "../../supabase/functions/_shared/stickman/sceneLadder.ts";
+import { decideScenes, type ScenesInput } from "../../supabase/functions/_shared/stickman/scenes.ts";
+import { heldUntil, isFresh, mayAlert, REFUSAL_HOLD_S, guardDecision as guard } from "../../supabase/functions/_shared/runwareBalance.ts";
+
+Deno.test("the provider is DOWN (every step failed, nothing finished anywhere lately): the scene waits, it is not covered", () => {
+  const NOW = Date.parse("2026-10-07T01:00:00.000Z");
+  const all504 = ["x 504", "x 504", "x 504", "x 504", "safe: x 504", "backup: TimeoutError: aborted"];
+  assert(providerOnly(all504));
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: null, nowMs: NOW }), { kind: "wait", outage: { count: 1, since: "2026-10-07T01:00:00.000Z" } });
+  // Other scenes ARE being drawn: it is this scene, so it is covered.
+  assertEquals(outageDecision({ failures: all504, readyLately: 3, outage: null, nowMs: NOW }).kind, "cover");
+  // A scene refused for what it shows, or failing our own checks, is never an outage.
+  assertEquals(outageDecision({ failures: ["x 504", "safe: image_failed", "backup: image_failed"], readyLately: 0, outage: null, nowMs: NOW }).kind, "cover");
+  assert(!providerOnly(["Error: prompt check: relative_reference", "safe: x 504"]));
+  // It does not wait for ever: a few rounds, six hours at most, then it is covered (and the run can end / refund).
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: { count: OUTAGE_MAX_REQUEUES, since: "2026-10-07T00:10:00.000Z" }, nowMs: NOW }).kind, "cover");
+  assertEquals(outageDecision({ failures: all504, readyLately: 0, outage: { count: 1, since: new Date(NOW - OUTAGE_MAX_S * 1000 - 1000).toISOString() }, nowMs: NOW }).kind, "cover");
+  const w = read("supabase/functions/render-long-form-scene/index.ts");
+  assertMatch(w, /status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "provider_outage", outage: od\.outage,/);
+  assertMatch(w, /await markProviderDown\(admin, /);
+});
+
+Deno.test("a refusal holds the pause for 5 minutes (on 6-7 Oct it resumed every minute for six hours); one alert an hour at most", () => {
+  const now = "2026-10-07T01:00:00.000Z";
+  const until = heldUntil(now);
+  assertEquals(REFUSAL_HOLD_S, 300);
+  // The guard treats the held reading as fresh, so nothing is claimed, until the hold is over.
+  assert(isFresh(until, "2026-10-07T01:04:50.000Z"));
+  assert(!isFresh(until, "2026-10-07T01:05:01.000Z"));
+  // After the hold a fresh balance decides again (above the threshold: resume by itself).
+  assertEquals(guard({ threshold_usd: 15, balance_usd: 40, checked_at: until, paused: true, paused_since: now, alerted_at: now }, 40, "2026-10-07T01:05:05.000Z").resumed, true);
+  assertEquals(guard({ threshold_usd: 15, balance_usd: 9, checked_at: until, paused: true, paused_since: now, alerted_at: now }, 9, "2026-10-07T01:05:05.000Z").paused, true);
+  assert(mayAlert(null, now) && !mayAlert("2026-10-07T00:30:00.000Z", now) && mayAlert("2026-10-06T23:59:00.000Z", now));
+  const g = read("supabase/functions/_shared/runwareBalance.ts");
+  assertEquals(g.match(/checked_at: heldUntil\(now\)/g)?.length, 2, "an out-of-balance refusal and an outage both hold");
+});
+
+const T = "2026-10-07T01:00:00.000Z";
+const scenesInput = (images: Partial<ScenesInput["images"]>, scenes: any = {}): ScenesInput => ({
+  now: T, scenes: { status: "running", startedAt: T, resumes: 0, dispatched: {}, ...scenes }, bible: { id: "b", status: "frozen", created_at: T },
+  plan: { id: "p1", status: "ready", created_at: T, beatCount: 10 }, images: { queued: 0, rendering: 0, renderingExpired: [], ready: 0, failed: 0, total: 10, ...images }, tier: "V2",
+});
+
+Deno.test("the run's end: failed scenes get ONE free second pass; with not one scene drawn the run fails (and the hold goes back)", () => {
+  assertEquals(decideScenes(scenesInput({ ready: 8, failed: 2 })).action, { kind: "retry_failed", planId: "p1" });
+  assertEquals(decideScenes(scenesInput({ ready: 8, failed: 2 }, { secondPassAt: T })).action.kind, "done", "one pass, never a loop");
+  assertEquals(decideScenes(scenesInput({ ready: 0, failed: 10 }, { secondPassAt: T })).action, { kind: "fail", reason: "no scene could be drawn" });
+  // A redraw of single scenes on a finished video ends as before (no second pass, never a refund of the whole video).
+  assertEquals(decideScenes(scenesInput({ ready: 9, failed: 1 }, { regenerating: true })).action.kind, "done");
+  const a = read("supabase/functions/advance-long-form-autopilot/index.ts");
+  assertMatch(a, /case "retry_failed": \{[\s\S]{0,300}\(sc as any\)\.secondPassAt = now;[\s\S]{0,400}\.eq\("is_current", true\)\.eq\("status", "failed"\)/);
+  // The failed run goes through the one place that gives the whole hold back when no scene exists.
+  assertMatch(a, /await logEvent\("advance-long-form-autopilot", "error", "scenes_failed"[\s\S]{0,400}await releaseIfNoVideoPossible\(projectId, ap, a\.reason, now\);/);
+});

@@ -26,8 +26,12 @@ Deno.test("chain: bible (if needed) -> beat plan -> create scenes -> draw 6 at a
   assertEquals(decideScenes(input({ nowS: 180, plan: plan(), images: { ...noImages, queued: 114, rendering: 6, total: 120 } })).action.kind, "wait");
   assertEquals((decideScenes(input({ nowS: 185, plan: plan(), images: { ...noImages, queued: 113, rendering: 5, ready: 2, total: 120 } })).action as any).slots, 1);
   // Every scene settled (a failed scene is flagged on the review page, not a run failure).
-  const done = decideScenes(input({ nowS: 400, plan: plan(), images: { ...noImages, ready: 118, failed: 2, total: 120 } }));
+  // 2026-10-07: the failed ones get one free second pass first; after it the run is done with them covered.
+  const settled = { ...noImages, ready: 118, failed: 2, total: 120 };
+  assertEquals(decideScenes(input({ nowS: 400, plan: plan(), images: settled })).action, { kind: "retry_failed", planId: "p1" });
+  const done = decideScenes(input({ nowS: 600, plan: plan(), scenes: { secondPassAt: at(400) } as any, images: settled }));
   assertEquals(done.action.kind, "done");
+  assertEquals(decideScenes(input({ nowS: 400, plan: plan(), images: { ...noImages, ready: 120, total: 120 } })).action.kind, "done");
 });
 
 Deno.test("watchdog: a stalled beat plan or bible is resumed, then the run stops with a clear Retry", () => {

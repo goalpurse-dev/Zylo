@@ -92,6 +92,14 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
       for (let i = 0; i < Math.min(rows.length, 6); i++) background(dispatchScene(owner));
       break;
     }
+    case "retry_failed": {
+      // One free second pass: the failed scenes go back to the queue from the first step.
+      (sc as any).secondPassAt = now;
+      const { data: again } = await admin.from("long_form_scene_images").update({ status: "queued", error: null, lease_until: null, attempts: 0, qa: { secondPass: true } }).eq("project_id", projectId).eq("beat_plan_version_id", a.planId).eq("is_current", true).eq("status", "failed").select("id");
+      await logEvent("advance-long-form-autopilot", "warn", "scenes_second_pass", { projectId, scenes: again?.length ?? 0 });
+      for (let i = 0; i < Math.min(again?.length ?? 0, 6); i++) background(dispatchScene(owner));
+      break;
+    }
     case "draw": {
       if (a.requeue.length) await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null }).in("id", a.requeue).eq("status", "rendering");
       if (a.fail.length) await admin.from("long_form_scene_images").update({ status: "failed", error: "stalled", lease_until: null }).in("id", a.fail).eq("status", "rendering");

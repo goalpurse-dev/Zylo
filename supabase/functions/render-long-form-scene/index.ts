@@ -30,9 +30,9 @@ import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
 import { needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
-import { BACKUP_TIER, climbLadder, ladderOf, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
+import { BACKUP_TIER, climbLadder, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
 import { mandatoryStatIntent } from "../_shared/stickman/headlines.ts";
-import { checkRunwareGuard, markOutOfBalance } from "../_shared/runwareBalance.ts";
+import { checkRunwareGuard, markOutOfBalance, markProviderDown } from "../_shared/runwareBalance.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
@@ -243,6 +243,18 @@ async function drawScene(scene: any) {
     return { failed: false, waiting: true };
   }
   if (!r || r.failed || !used) {
+    // Every step failed. One bad scene is covered (below); a provider that is DOWN is waited out:
+    // the scene goes back to the queue from the first step and drawing pauses, then resumes by itself.
+    if (canDefer && out.kind === "covered") {
+      const { count: readyLately } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "ready").gte("ready_at", new Date(Date.now() - OUTAGE_WINDOW_S * 1000).toISOString());
+      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now() });
+      if (od.kind === "wait") {
+        await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_outage", outage: od.outage, lastFailures: ladderState.failures.slice(-3) } }).eq("id", scene.id);
+        await markProviderDown(admin, ladderState.failures.at(-1) ?? "provider error");
+        await logEvent("render-long-form-scene", "warn", "scene_waits_for_provider", { projectId, sceneId: scene.id, beat: beat.sequence, outage: od.outage, last: ladderState.failures.at(-1) ?? null });
+        return { failed: false, waiting: true };
+      }
+    }
     // COVERED: every step failed. The scene is marked failed; the picture before it stays on
     // screen over its time (the edit does it), so the video, the editor and Publish never wait.
     await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { covered: true, steps: r?.log.map((l) => l.step) ?? [], failures: ladderState.failures, ladder: ladderState, wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);

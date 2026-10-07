@@ -49,6 +49,10 @@ export type ScenesRecord = {
   planId?: string | null;
   failedReason?: string | null;
   doneAt?: string | null;
+  // 2026-10-07: the failed scenes of the first run were queued once more (free) before the run ended.
+  secondPassAt?: string | null;
+  // A redraw of single scenes on a finished run (update-long-form-scene).
+  regenerating?: boolean;
 };
 
 export type ScenesInput = {
@@ -67,6 +71,7 @@ export type ScenesAction =
   | { kind: "build_beats"; resume: boolean }
   | { kind: "create_scenes"; planId: string }
   | { kind: "draw"; planId: string; slots: number; requeue: string[]; fail: string[] }
+  | { kind: "retry_failed"; planId: string }
   | { kind: "wait" }
   | { kind: "done" }
   | { kind: "fail"; reason: string };
@@ -141,7 +146,16 @@ export function decideScenes(input: ScenesInput): ScenesDecision {
   const active = img.rendering - img.renderingExpired.length;
   const queued = img.queued + requeue.length;
   const eta = drawingEta(queued + active, input.tier);
-  if (queued === 0 && active === 0) return base({ kind: "done" }, "done", [0, 0]);
+  if (queued === 0 && active === 0) {
+    // 2026-10-07, the first run only (a redraw of single scenes ends as before):
+    //   - scenes that could not be drawn get ONE more free pass before the run ends (most
+    //     failures are a provider's bad few minutes; the scene card would only say "Try again");
+    //   - if then NOT ONE scene exists there is no video to make: the run fails and the whole
+    //     hold goes back by itself. Otherwise the run is done and the failed scenes are covered.
+    if (!sc.regenerating && img.failed > 0 && !sc.secondPassAt) return base({ kind: "retry_failed", planId: plan.id }, "drawing", drawingEta(img.failed, input.tier));
+    if (!sc.regenerating && img.total > 0 && img.ready === 0) return base({ kind: "fail", reason: "no scene could be drawn" }, "drawing", [0, 0]);
+    return base({ kind: "done" }, "done", [0, 0]);
+  }
   const slots = Math.max(0, Math.min(queued, SCENE_CONCURRENCY - active));
   if (slots === 0 && !requeue.length && !fail.length) return base({ kind: "wait" }, "drawing", eta);
   return base({ kind: "draw", planId: plan.id, slots, requeue, fail }, "drawing", eta);
