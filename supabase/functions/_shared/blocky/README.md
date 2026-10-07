@@ -55,7 +55,7 @@ Fixes that went the other way, from Blocky into Fruit (only on the owner's
 request), are listed in `../fruit/README.md` ("Fixes ported from Blocky to
 Fruit"). First one: the one-caption-track fix, 2026-10-08.
 
-Last compared with Fruit: 2026-10-07, Fruit at commit `cd9efd0`, fingerprint `fd0d892194019fcc`
+Last compared with Fruit: 2026-10-07, Fruit at commit `cbb630b`, fingerprint `e344c3d827c29e9f`
 
 How it is kept: `tests/blockySeparation.test.mjs` fails as soon as one of
 Fruit's twin files differs from that fingerprint, in whatever session changed
