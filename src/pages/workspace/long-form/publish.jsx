@@ -110,7 +110,9 @@ function RenderCard({ projectId, autopilot }) {
         {video?.videoUrl || video?.previewUrl ? <Player video={video} />
           : <div className="grid h-full place-items-center px-4 text-center text-[13px] text-white/45">{status === "rendering" ? "Your video is being rendered…" : "Render your video to watch it here."}</div>}
       </div>
-      {status === "failed" && <div data-testid="render-failed" className="mt-3 flex items-start gap-2 rounded-lg border border-red-300/30 bg-red-400/10 px-3 py-2 text-[12.5px] text-red-100"><AlertTriangle className="mt-px h-4 w-4 shrink-0" /><span>{job.reason} <span className="text-red-200/70">Retry is free.</span></span></div>}
+      {/* A render that failed on our side is being fixed and starts again by itself: calm words, never a raw error. */}
+      {status === "failed" && job.fixing && <div data-testid="render-fixing" className="mt-3 flex items-start gap-2 rounded-lg border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2 text-[12.5px] text-amber-100"><RefreshCw className="mt-px h-4 w-4 shrink-0" /><span>{job.reason}</span></div>}
+      {status === "failed" && !job.fixing && <div data-testid="render-failed" className="mt-3 flex items-start gap-2 rounded-lg border border-red-300/30 bg-red-400/10 px-3 py-2 text-[12.5px] text-red-100"><AlertTriangle className="mt-px h-4 w-4 shrink-0" /><span>{job.reason} <span className="text-red-200/70">Retry is free.</span></span></div>}
       {status === "rendering" && (live ? (
         <div className="mt-3 grid gap-2" data-testid="render-progress">
           <div className="flex justify-between text-[12.5px] text-white/70"><span>{STAGE[job.stage] ?? "Rendering…"}</span><span className="tabular-nums">{job.progress}%</span></div>

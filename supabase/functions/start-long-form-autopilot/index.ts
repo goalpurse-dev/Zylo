@@ -13,6 +13,7 @@ import { requireUser } from "../shared/auth.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { fetchActiveGenerationProfile, isStickmanProfile } from "../_shared/stickman/recipeProfile.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
+import { REFUNDED_COPY } from "../_shared/stickman/autopilot.ts";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
@@ -33,6 +34,13 @@ Deno.serve(async (req) => {
   const now = new Date().toISOString();
   const current = project.autopilot as any;
   let autopilot: any;
+  // 2026-10-07: a run that could not make a video gives its whole hold back at once.
+  // Continuing that project would then make a video nobody paid for, so every
+  // retry / regenerate on it is refused with a plain message (start a new video).
+  if (body?.retry === true || body?.regenerateScript === true) {
+    const { data: hold } = await admin.from("long_form_project_reservations").select("status").eq("project_id", projectId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (hold?.status === "released") return err(req, REFUNDED_COPY, 409, { code: "HOLD_RELEASED" });
+  }
   if (body?.scenes === true) {
     // Phase 6c: "Continue to Scenes" (after Listen & change) -> bible -> beat
     // director -> draw every scene, server-side. { scenes, retry } is the free

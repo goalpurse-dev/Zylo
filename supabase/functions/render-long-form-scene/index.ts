@@ -10,7 +10,12 @@
 // the renderer scales it at render time. Credits are drawn from the project's
 // reservation per finished scene. Every finished scene nudges the autopilot,
 // which dispatches the next one at once; the cron watchdog re-queues a scene
-// whose worker died (lease expired) once, then marks it failed.
+// whose worker died (lease expired), then marks it failed.
+//
+// 2026-10-07, a scene never fails on its first error (stickman/sceneLadder.ts):
+// retries with growing waits -> the safe prompt -> a backup model -> COVERED
+// (marked failed; the picture before it stays on screen, so nothing waits).
+// A failed UPSCALE never fails a scene: one retry, then the original picture is kept.
 //
 // POST { projectId, userId, sceneId? }
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -22,11 +27,12 @@ import { codeCheckImage, imageDHash } from "../_shared/stickman/imageChecks.ts";
 import { overlayText, scaleLayer, type OverlayLayer } from "../_shared/stickman/textOverlay.ts";
 import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
 import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
-import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
+import { SCENE_LEASE_S, SCENES_TOTAL_MAX } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
-import { DRAW_ATTEMPTS, needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
+import { needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
+import { BACKUP_TIER, climbLadder, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
 import { mandatoryStatIntent } from "../_shared/stickman/headlines.ts";
-import { checkRunwareGuard, markOutOfBalance, OUT_OF_BALANCE } from "../_shared/runwareBalance.ts";
+import { checkRunwareGuard, markOutOfBalance, markProviderDown } from "../_shared/runwareBalance.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
@@ -39,9 +45,10 @@ const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: 
 const FONT_URL = `${SUPABASE_URL}/storage/v1/object/public/generated/assets/fonts/LilitaOne-Regular.ttf`;
 let fontBytes: Uint8Array | null = null;
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const fetchBytes = async (url: string) => { const r = await fetch(url); if (!r.ok) throw new Error(`fetch ${r.status}`); return new Uint8Array(await r.arrayBuffer()); };
 const runware = async (task: any) => {
-  const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }) });
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }), signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS) });
   const j: any = await r.json().catch(() => null);
   if (!j?.ok) throw new Error(`runware ${r.status}: ${JSON.stringify(j?.error ?? j).slice(0, 160)}`);
   return j as { result: { imageURL: string; cost: number | null }; latencyMs: number };
@@ -98,7 +105,8 @@ async function refundSceneAddon(scene: any) {
 async function drawScene(scene: any) {
   const projectId = scene.project_id;
   const tier = scene.tier as "V2" | "V3" | "V4";
-  const cfg = STICKMAN_RENDER_TIERS[tier];
+  // The tier the picture is really drawn on: the scene's own, or the backup model's at the last step.
+  let cfg = STICKMAN_RENDER_TIERS[tier];
   const { data: plan } = await admin.from("long_form_beat_plan_versions").select("id, production_bible_id").eq("id", scene.beat_plan_version_id).single();
   const { data: bible } = await admin.from("long_form_production_bibles").select("bible").eq("id", plan.production_bible_id).single();
   const { data: beats } = await admin.from("long_form_beats").select("sequence, start_word, end_word, start_ms, end_ms, narration_text, contract").eq("beat_plan_version_id", plan.id).order("sequence");
@@ -119,6 +127,7 @@ async function drawScene(scene: any) {
 
   let original: { url: string; bytes: Uint8Array } | null = null;
   let masterUrl: string | null = null;
+  let upscaleSkipped: string | null = null;
   let layer: OverlayLayer | null = null;
   let textBlocked = false;
   // real: the provider returned the price (Runware `cost`) or the real token usage (OpenAI) — not an estimate.
@@ -128,8 +137,8 @@ async function drawScene(scene: any) {
   const timings: Record<string, number> = {};
   const timed = async <T>(k: string, f: () => Promise<T>): Promise<T> => { const s = Date.now(); try { return await f(); } finally { timings[k] = (timings[k] ?? 0) + Date.now() - s; } };
 
-  const deps: Parameters<typeof renderBeat>[2] = {
-    compile: (c) => { const p = compileBeatPrompt({ ...beat, contract: c }, set, { plantFrame, ...compileOptionsFor(tier, c) }); if (p.lintErrors.length) throw new Error(`prompt check: ${p.lintErrors.join("; ")}`); return p; },
+  const depsFor = (drawTier: "V2" | "V3" | "V4"): Parameters<typeof renderBeat>[2] => ({
+    compile: (c) => { const p = compileBeatPrompt({ ...beat, contract: c }, set, { plantFrame, ...compileOptionsFor(drawTier, c) }); if (p.lintErrors.length) throw new Error(`prompt check: ${p.lintErrors.join("; ")}`); return p; },
     render: async (task) => { const res = await timed("renderMs", () => runware(task)); costs.push({ stage: "images", model: task.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null }); return { imageURL: res.result.imageURL, cost: Number(res.result.cost ?? 0) }; },
     codeCheck: async (url) => {
       const bytes = await timed("fetchOriginalMs", () => fetchBytes(url));
@@ -150,12 +159,28 @@ async function drawScene(scene: any) {
       if (singleFrame) { try { const c = await codeCheckImage(bytes, { width: cfg.width, height: cfg.height }); if (c.splitAt != null) return { ...q, split: true }; } catch { /* optional */ } }
       return q;
     },
+    // A scene never fails because only the upscale failed: one retry, then the
+    // original (non-upscaled) picture is kept and the scene goes on. Logged, to see how often.
     postProcess: async (url) => {
-      const up = DEFAULT_POSTPROCESS.upscale[tier];
-      const res = await timed("upscaleMs", () => runware({ taskType: "upscale", model: up.model, upscaleFactor: up.factor, inputs: { image: url }, outputType: "URL", outputFormat: "JPG", outputQuality: 95, includeCost: true }));
-      costs.push({ stage: "image_upscale", model: up.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null });
-      masterUrl = res.result.imageURL;
-      return { bytes: await timed("fetchMasterMs", () => fetchBytes(res.result.imageURL)), cost: Number(res.result.cost ?? 0) };
+      const up = DEFAULT_POSTPROCESS.upscale[drawTier];
+      masterUrl = null; upscaleSkipped = null;
+      const errors: string[] = [];
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const res = await timed("upscaleMs", () => runware({ taskType: "upscale", model: up.model, upscaleFactor: up.factor, inputs: { image: url }, outputType: "URL", outputFormat: "JPG", outputQuality: 95, includeCost: true }));
+          costs.push({ stage: "image_upscale", model: up.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null });
+          const bytes = await timed("fetchMasterMs", () => fetchBytes(res.result.imageURL));
+          masterUrl = res.result.imageURL;
+          return { bytes, cost: Number(res.result.cost ?? 0) };
+        } catch (e) {
+          errors.push(String(e).slice(0, 160));
+          if (attempt === 1) await sleep(2000);
+        }
+      }
+      upscaleSkipped = errors.at(-1) ?? "upscale failed";
+      await logEvent("render-long-form-scene", "warn", "scene_upscale_skipped", { projectId, sceneId: scene.id, beat: beat.sequence, tier: drawTier, model: up.model, errors });
+      const kept = original && (original as any).url === url && (original as any).bytes?.length ? (original as any).bytes as Uint8Array : await fetchBytes(url);
+      return { bytes: kept, cost: 0 };
     },
     // The text is an editable layer, placed on the small original (cheap), scaled to 1920x1080.
     // Text upgrade: the contract's style (BIG STAT / QUESTION / CALLOUT / HEADLINE),
@@ -169,44 +194,85 @@ async function drawScene(scene: any) {
       textBlocked = p.blocked;
       return bytes;
     },
-  };
-  // Never leave a hole: the normal prompt twice (a prompt check or a provider error), then ONE
-  // last draw from a simplified safe contract (no in-scene text; words go to the overlay).
+  });
+  // Never leave a hole, never stop on the first error (stickman/sceneLadder.ts): the normal
+  // prompt, 3 retries with growing waits, the simplified safe prompt (no in-scene text; words
+  // go to the overlay), then the safe prompt on the backup model. The step is kept on the row.
   let r: Awaited<ReturnType<typeof renderBeat>> | null = null;
-  let usedFallback = false;
+  let used: RungKind | null = null;
   // V2: a scene built around a screen/card/label is drawn text-free from the start (words -> overlay).
   const textFree = needsTextFreeComposition(tier, beat.contract, set);
-  const failures: string[] = [];
-  for (const a of DRAW_ATTEMPTS) {
-    const contract = a.fallback || textFree ? safeFallbackContract(beat.contract, set) : beat.contract;
-    try {
-      r = await renderBeat(tier, { startMs: beat.startMs, contract }, deps);
-      if (!r.failed) { usedFallback = a.fallback; break; }
-      failures.push(a.fallback ? "fallback: image_failed" : "image_failed");
-    } catch (e) {
-      r = null;
-      failures.push(`${a.fallback ? "fallback: " : ""}${String(e).slice(0, 200)}`);
-    }
-  }
-  if (usedFallback) await logEvent("render-long-form-scene", "warn", "scene_safe_fallback", { projectId, sceneId: scene.id, beat: beat.sequence, failures });
+  const ladder = ladderOf(scene.qa);
+  const failures = ladder.failures;
+  // Only a current scene is watched by the autopilot; a split scene's own picture does all its steps here.
+  const canDefer = scene.is_current !== false;
+  const out = await climbLadder({
+    state: ladder, canDefer, sleep, elapsedS: () => (Date.now() - t0) / 1000,
+    draw: (rung) => {
+      const drawTier = rung === "backup" ? BACKUP_TIER[tier] : tier;
+      cfg = STICKMAN_RENDER_TIERS[drawTier];
+      const contract = rung !== "normal" || textFree ? safeFallbackContract(beat.contract, set) : beat.contract;
+      return renderBeat(drawTier, { startMs: beat.startMs, contract }, depsFor(drawTier));
+    },
+    // Still this worker's scene: the watchdog must not hand it to a second one.
+    renewLease: async () => { await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + SCENE_LEASE_S * 1000).toISOString() }).eq("id", scene.id).eq("status", "rendering"); },
+  });
+  r = out.result;
+  used = out.kind === "drawn" ? out.rung : null;
+  const outOfBalance = out.kind === "balance" ? out.message : null;
+  const deferS = out.kind === "deferred" ? out.waitS : null;
+  const ladderState = { step: ladder.step, checks: ladder.checks, failures: failures.slice(-12) };
+  // How often this scene already waited for the provider: kept through every wait (or it would wait for ever).
+  const keepOutage = scene.qa?.outage ? { outage: scene.qa.outage } : {};
+  if (used && used !== "normal") await logEvent("render-long-form-scene", "warn", used === "backup" ? "scene_backup_model" : "scene_safe_fallback", { projectId, sceneId: scene.id, beat: beat.sequence, failures, ...(used === "backup" ? { model: cfg.model } : {}) });
+  else if (used && failures.length) await logEvent("render-long-form-scene", "info", "scene_retried_ok", { projectId, sceneId: scene.id, beat: beat.sequence, step: ladder.step, failures });
 
   for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, estimated: !c.real, sourceTable: "long_form_scene_images", sourceId: scene.id });
-  // Every attempt's spend (failed tries included).
-  const costUsd = Number(costs.reduce((a, c) => a + c.usd, 0).toFixed(5));
-  const outOfBalance = failures.find((f) => OUT_OF_BALANCE.test(f));
-  if ((!r || r.failed) && outOfBalance) {
+  // Every attempt's spend (failed tries included, and the tries of earlier workers on this scene).
+  const costUsd = Number((Number(scene.cost_usd ?? 0) + costs.reduce((a, c) => a + c.usd, 0)).toFixed(5));
+  const notCounted = Math.max(0, Number(scene.attempts ?? 1) - 1);
+  if (outOfBalance) {
     // Our Runware account can't pay: the scene WAITS (back to queued, attempt not counted) and drawing pauses.
-    await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: Math.max(0, Number(scene.attempts ?? 1) - 1), qa: { waiting: "provider_balance" } }).eq("id", scene.id);
+    await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_balance", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
     await markOutOfBalance(admin, outOfBalance);
     return { failed: false, waiting: true };
   }
-  if (!r || r.failed) {
-    await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r?.log.map((l) => l.step) ?? [], failures, wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
+  if (deferS != null) {
+    // The next step (or its wait) doesn't fit in this worker: the row keeps its lease until the
+    // wait is over, then the watchdog queues it and the next worker carries on from qa.ladder.step.
+    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + deferS * 1000).toISOString(), attempts: notCounted, cost_usd: costUsd, qa: { waiting: "retry", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
+    await logEvent("render-long-form-scene", "info", "scene_retry_deferred", { projectId, sceneId: scene.id, beat: beat.sequence, step: ladder.step, waitS: deferS, last: failures.at(-1) ?? null });
+    return { failed: false, waiting: true };
+  }
+  if (!r || r.failed || !used) {
+    // Every step failed. One bad scene is covered (below); a provider that is DOWN is waited out:
+    // the scene goes back to the queue from the first step and drawing pauses, then resumes by itself.
+    if (canDefer && out.kind === "covered") {
+      const { count: readyLately } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "ready").gte("ready_at", new Date(Date.now() - OUTAGE_WINDOW_S * 1000).toISOString());
+      const { count: pendingOthers } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("project_id", projectId).eq("is_current", true).in("status", ["queued", "rendering"]).neq("id", scene.id);
+      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, pendingOthers: pendingOthers ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now() });
+      if (od.kind === "wait") {
+        await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_outage", outage: od.outage, lastFailures: ladderState.failures.slice(-3) } }).eq("id", scene.id);
+        await markProviderDown(admin, ladderState.failures.at(-1) ?? "provider error");
+        await logEvent("render-long-form-scene", "warn", "scene_waits_for_provider", { projectId, sceneId: scene.id, beat: beat.sequence, outage: od.outage, last: ladderState.failures.at(-1) ?? null });
+        return { failed: false, waiting: true };
+      }
+    }
+    // COVERED: every step failed. The scene is marked failed; the picture before it stays on
+    // screen over its time (the edit does it), so the video, the editor and Publish never wait.
+    await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { covered: true, steps: r?.log.map((l) => l.step) ?? [], failures: ladderState.failures, ladder: ladderState, wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
+    await logEvent("render-long-form-scene", "error", "scene_covered", { projectId, sceneId: scene.id, beat: beat.sequence, tier, failures: ladderState.failures, costUsd });
     await refundSceneAddon(scene);
     return { failed: true };
   }
+  const usedFallback = used !== "normal";
   const path = `long-form/scenes/${projectId}/${String(beat.sequence).padStart(3, "0")}-v${scene.version}.jpg`;
-  const { error: upErr } = await timed("uploadMs", () => admin.storage.from("generated").upload(path, r.base, { contentType: "image/jpeg", upsert: true }));
+  let upErr: any = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    ({ error: upErr } = await timed("uploadMs", () => admin.storage.from("generated").upload(path, r!.base, { contentType: "image/jpeg", upsert: true })));
+    if (!upErr) break;
+    if (attempt < 3) await sleep(attempt * 2000);
+  }
   if (upErr) throw new Error(`upload: ${upErr.message}`);
   const imageUrl = admin.storage.from("generated").getPublicUrl(path).data.publicUrl;
   const soft = r.log.some((l) => l.qa?.soft && !l.qa?.pass);
@@ -233,7 +299,7 @@ async function drawScene(scene: any) {
   await admin.from("long_form_scene_images").update({
     status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
     warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : []), ...((r as any).split ? ["split_frame"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
-    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(textFree ? { textFree: true } : {}), ...(usedFallback ? { safeFallback: true, failures } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
+    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(textFree ? { textFree: true } : {}), ...(usedFallback ? { safeFallback: true } : {}), ...(used === "backup" ? { backupModel: cfg.model } : {}), ...(failures.length ? { failures: ladderState.failures, ladderStep: ladder.step } : {}), ...(upscaleSkipped ? { upscaleSkipped } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
   return { failed: false, billed };
 }
@@ -247,6 +313,9 @@ Deno.serve(async (req) => {
   // Runware balance guard: below the threshold nothing is claimed — queued scenes wait, then resume.
   const guard = await checkRunwareGuard(admin);
   if (guard.paused) return ok(req, { ok: true, claimed: false, paused: true });
+  // The cap across ALL videos (config LONG_FORM_SCENES_TOTAL): over it, this scene waits in the queue.
+  const { count: drawingNow } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "rendering").gt("lease_until", new Date().toISOString());
+  if ((drawingNow ?? 0) >= SCENES_TOTAL_MAX) return ok(req, { ok: true, claimed: false, busy: true });
   const { data: claimed, error } = await admin.rpc("claim_long_form_scene_image", { p_project_id: projectId, p_scene_id: body?.sceneId ?? null, p_lease_seconds: SCENE_LEASE_S });
   if (error) return err(req, "claim failed", 500, { reason: error.message });
   const scene = (claimed ?? [])[0];
@@ -256,7 +325,8 @@ Deno.serve(async (req) => {
       console.error("[render-long-form-scene]", scene.id, String(e));
       // A first-pass scene is never charged (the fixed quote); a paid redraw is refunded. The watchdog
       // does not retry an explicit failure; the review page offers a free Regenerate for failed scenes.
-      await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", qa: { error: String(e).slice(0, 300) }, lease_until: null }).eq("id", scene.id);
+      await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", qa: { covered: true, error: String(e).slice(0, 300) }, lease_until: null }).eq("id", scene.id);
+      await logEvent("render-long-form-scene", "error", "scene_covered", { projectId, sceneId: scene.id, beat: scene.beat_sequence, tier: scene.tier, failures: [String(e).slice(0, 300)], unexpected: true });
       await refundSceneAddon(scene);
     })
     .finally(() => nudgeAutopilot(projectId));

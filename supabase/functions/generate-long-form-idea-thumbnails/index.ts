@@ -99,6 +99,10 @@ Deno.serve(async (req) => {
   const ridesFreeIdeaBatch = belongsToRealBatch && !session.last_idea_batch_thumbnails_claimed;
   const isFreeRetry = isRetry && belongsToRealBatch;
   const charge = ridesFreeIdeaBatch || isFreeRetry ? 0 : REFRESH_THUMBNAILS_COST;
+  // 2026-10-08: a paid refresh is one purchase of up to ten pictures. Its jobs carry this id, so
+  // generation-sweeper can give the credits back by itself when EVERY picture of it failed
+  // (it used to keep the 2 credits whatever happened). Free batches and free retries carry none.
+  const refreshId = charge > 0 ? crypto.randomUUID() : null;
 
   if (charge > 0) {
     const { error: chargeError } = await admin.rpc("deduct_credits", { uid: user.id, amount: charge });
@@ -137,7 +141,7 @@ Deno.serve(async (req) => {
       tool_key: THUMBNAIL_IMAGE_TOOL_KEY,
       project_id: null,
       prompt,
-      settings: { tool_key: THUMBNAIL_IMAGE_TOOL_KEY, credits: 0, priceUSD: 0, creation_type: "photo" },
+      settings: { tool_key: THUMBNAIL_IMAGE_TOOL_KEY, credits: 0, priceUSD: 0, creation_type: "photo", ...(refreshId ? { thumb_refresh_id: refreshId, thumb_refresh_credits: charge } : {}) },
       input: {
         tool: "image",
         subject: prompt,
@@ -175,6 +179,13 @@ Deno.serve(async (req) => {
     await logEvent(SOURCE, "error", "job_insert_failed", { userId: user.id, discoverySessionId, message: insertError.message });
     await refundIfCharged("job_insert_failed");
     return err(req, "Could not create thumbnail jobs", 500);
+  }
+
+  // The refresh's own charge, on the credit ledger (against its first job), so the refund that
+  // may follow has a charge to stand against. The key makes it once.
+  if (refreshId) {
+    const { error: ledgerError } = await admin.from("generation_credit_ledger").insert({ job_id: jobs[0].jobId, user_id: user.id, operation: "charge", amount: charge, idempotency_key: `thumb_refresh:${refreshId}:charge` });
+    if (ledgerError) await logEvent(SOURCE, "warn", "refresh_ledger_failed", { userId: user.id, discoverySessionId, message: ledgerError.message });
   }
 
   // Account-level ledger row (no project yet): the jobs pipeline does not

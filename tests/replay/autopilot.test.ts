@@ -41,10 +41,11 @@ Deno.test("watchdog: no heartbeat for expected + 90 s -> resume from the checkpo
   assertEquals(decideAutopilot(input({ nowS: 700, plan, research: research({ status: "ready" }), script: script({ status: "failed" }) })).action.kind, "start_script");
 });
 
-Deno.test("after 2 failed resumes -> a clear failed state (Retry is free), never an endless loop", () => {
+Deno.test("after MAX_RESUMES stalled resumes -> a clear failed state, never an endless loop", () => {
+  assertEquals(MAX_RESUMES, 3);
   const d = decideAutopilot(input({ nowS: 900, plan, research: research(), autopilot: { resumes: MAX_RESUMES } as any }));
   assertEquals(d.action.kind, "fail");
-  assert((d.action as any).reason.includes("after 2 resumes"));
+  assert((d.action as any).reason.includes("after 3 resumes"));
   const failed = decideAutopilot(input({ nowS: 950, plan, autopilot: { status: "failed", failedReason: "x" } as any }));
   assertEquals(failed.action.kind, "fail");
 });

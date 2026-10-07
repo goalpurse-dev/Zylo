@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-// sceneFallback.ts — never leave a hole in a video. When a scene fails to draw
-// twice, render-long-form-scene makes ONE last draw from this simplified, safe
-// contract: the same idea shown through people, poses and plain objects, with
+// sceneFallback.ts — never leave a hole in a video. When a scene keeps failing
+// to draw (stickman/sceneLadder.ts), render-long-form-scene draws it from this
+// simplified, safe contract (then once more on the backup model): the same idea shown through people, poses and plain objects, with
 // nothing that carries writing (screens, cards, labels, signs, papers...), a
 // generic single-frame composition, and any words moved into the code overlay
 // (the HEADLINE text layer) instead of the picture.
@@ -63,5 +63,3 @@ export function safeFallbackContract(c: any, set: SetLike): any {
   };
 }
 
-// The draw plan for one scene: the normal prompt twice, then the safe one once.
-export const DRAW_ATTEMPTS: { fallback: boolean }[] = [{ fallback: false }, { fallback: false }, { fallback: true }];

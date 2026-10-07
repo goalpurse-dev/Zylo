@@ -32,15 +32,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUserOrAutopilot } from "../shared/auth.ts";
 import { computeScriptInputHash, computeRequestHash, synthesizeNarrationAudio, mapAlignmentToNarration, DEFAULT_ELEVENLABS_VOICE_SETTINGS, decodeBase64Native, narrationLeaseMs, NARRATION_MAX_ATTEMPTS } from "../_shared/stickman/narrationAudio.ts";
+import { classifyNarrationFailure, decideNarrationFailure, narrationAlert, NARRATION_QUICK_RETRY_WAIT_S, NARRATION_QUICK_RETRY_WITHIN_S } from "../_shared/stickman/narrationRetry.ts";
+import { alertAdmin } from "../_shared/adminAlert.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost, narrationCost } from "../_shared/costLedger.ts";
 import { releaseReservationIfActive, settleReservationIfActive } from "../_shared/longFormReservations.ts";
-import { chargeAddon, voiceRerecordCredits } from "../_shared/stickman/addons.ts";
+import { refundAddon, chargeAddon, voiceRerecordCredits } from "../_shared/stickman/addons.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ELEVENLABS_KEY = Deno.env.get("ELEVENLABS_KEY") ?? "";
 const SETTLE_AT_RENDER = (Deno.env.get("LONG_FORM_SETTLE_AT_RENDER") ?? "").trim().toLowerCase() === "true";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Phase 6d-1: cost = the credits ElevenLabs reports in its character-cost
 // header x ELEVENLABS_USD_PER_CREDIT (costLedger.ts config); only when the
@@ -48,7 +51,16 @@ const SETTLE_AT_RENDER = (Deno.env.get("LONG_FORM_SETTLE_AT_RENDER") ?? "").trim
 
 async function doGeneration(admin: any, projectId: string, rowId: string, text: string, segments: { id: string; text: string }[], voiceId: string, voiceModel: string, voiceSettings: Record<string, unknown> | null, settleAtNarration = true) {
   try {
-    const synthesis = await synthesizeNarrationAudio({ elevenLabsKey: ELEVENLABS_KEY, text, voiceId, voiceModel, voiceSettings: voiceSettings ?? undefined });
+    // 2026-10-07: one quick retry here (a temporary error that failed fast); a provider that is
+    // really down pauses the row in the catch below (stickman/narrationRetry.ts).
+    const t0 = Date.now();
+    const call = () => synthesizeNarrationAudio({ elevenLabsKey: ELEVENLABS_KEY, text, voiceId, voiceModel, voiceSettings: voiceSettings ?? undefined });
+    const synthesis = await call().catch(async (e) => {
+      const fast = Date.now() - t0 < NARRATION_QUICK_RETRY_WITHIN_S * 1000;
+      if (!fast || classifyNarrationFailure(e instanceof Error ? e.message : String(e)) !== "transient") throw e;
+      await sleep(NARRATION_QUICK_RETRY_WAIT_S * 1000);
+      return await call();
+    });
     // Heartbeat: the provider answered — extend the lease while we save.
     const { data: cur } = await admin.from("long_form_narration_audio_versions").select("provider_metadata").eq("id", rowId).maybeSingle();
     const prevMeta = cur?.provider_metadata ?? {};
@@ -96,12 +108,40 @@ async function doGeneration(admin: any, projectId: string, rowId: string, text: 
     }
   } catch (e) {
     console.error("[generate-long-form-narration-audio] generation failed:", rowId, e);
+    const message = e instanceof Error ? e.message.slice(0, 300) : "UNKNOWN_ERROR";
+    const nowMs = Date.now();
+    const { data: cur } = await admin.from("long_form_narration_audio_versions").select("provider_metadata").eq("id", rowId).maybeSingle();
+    const meta = cur?.provider_metadata ?? {};
+    const d = decideNarrationFailure({ message, paused: meta.paused ?? null, nowMs });
+    if (d.kind === "pause") {
+      // PAUSED, never failed: the row stays "generating" and its lease runs until the next try;
+      // the voice watchdog resumes it. The pause is not one of the worker's attempts. The hold is untouched.
+      await admin.from("long_form_narration_audio_versions").update({
+        lease_until: new Date(nowMs + d.waitS * 1000).toISOString(), last_error_code: message.slice(0, 200), last_error_at: new Date(nowMs).toISOString(),
+        provider_metadata: { ...meta, attempts: Math.max(0, Number(meta.attempts ?? 1) - 1), phase: "paused", paused: { since: d.since, tries: d.tries, lastError: message.slice(0, 200), nextTryAt: new Date(nowMs + d.waitS * 1000).toISOString() } },
+      }).eq("id", rowId);
+      await logEvent("generate-long-form-narration-audio", "warn", "narration_paused", { projectId, rowId, tries: d.tries, waitS: d.waitS, since: d.since, error: message.slice(0, 200) });
+      if (d.alert) { const mail = narrationAlert(d.alert, { projectId, rowId, message, tries: d.tries }); await alertAdmin(mail.subject, mail.text, "narration"); }
+      return;
+    }
     await admin.from("long_form_narration_audio_versions").update({
-      status: "failed", last_error_code: e instanceof Error ? e.message.slice(0, 200) : "UNKNOWN_ERROR", last_error_at: new Date().toISOString(),
+      status: "failed", last_error_code: message.slice(0, 200), last_error_at: new Date().toISOString(),
     }).eq("id", rowId);
+    // A paid re-record (add-on, charged at the click) that fails is refunded exactly once.
+    const addon = Number(meta.addonCredits ?? 0);
+    if (addon > 0) {
+      await admin.from("long_form_narration_audio_versions").update({ provider_metadata: { ...meta, addonCredits: 0, addonRefunded: addon } }).eq("id", rowId);
+      const { data: owner } = await admin.from("long_form_projects").select("user_id").eq("id", projectId).maybeSingle();
+      if (owner) await refundAddon(admin, owner.user_id, addon, "voice_rerecord_failed", logEvent, { projectId, rowId });
+    }
     // Phase 0, Section B — a genuine provider/upload failure with nothing
     // produced is exactly "generation fails terminally before any spend."
-    await releaseReservationIfActive(admin, projectId, "narration_failed", logEvent);
+    // Only the project's FIRST voice: a failed re-record leaves the video (and its hold) as it was.
+    const { count: earlier } = await admin.from("long_form_narration_audio_versions").select("id", { count: "exact", head: true }).eq("project_id", projectId).in("status", ["ready", "alignment_failed"]);
+    if (!earlier) await releaseReservationIfActive(admin, projectId, "narration_failed", logEvent);
+    await logEvent("generate-long-form-narration-audio", "error", "narration_failed", { projectId, rowId, why: d.why, error: message.slice(0, 200), holdReleased: !earlier });
+    const mail = narrationAlert("failed", { projectId, rowId, message, tries: Number(meta.paused?.tries ?? 0) });
+    if (!earlier) await alertAdmin(mail.subject, mail.text, "narration");
   }
 }
 

@@ -319,7 +319,8 @@ test("LEGACY UNCHANGED: the legacy branch of every stage still calls the origina
   // Phase 1 FINAL: stageCritic goes through callStickmanModel (positional
   // instructions), which forwards a non-Claude model to callStructured with
   // the identical request shape — legacy still gets gpt-5-mini + CRITIC_INSTRUCTIONS.
-  assert.match(text, /const criticModel = isStickman \? STICKMAN_CRITIC_MODEL : OPENAI_MODEL;/);
+  // 2026-10-07: a Stickman version started on the backup model uses it (stickmanModel); legacy is untouched.
+  assert.match(text, /const criticModel = isStickman \? stickmanModel\(row, STICKMAN_CRITIC_MODEL\) : OPENAI_MODEL;/);
   assert.match(text, /isStickman \? STICKMAN_CRITIC_INSTRUCTIONS : CRITIC_INSTRUCTIONS,/);
   assert.match(text, /return await callStructured\(\{ model, store: false, instructions, input, text: \{ format: \{ type: "json_schema", name: schemaName, strict: true, schema \} \} \}, timeoutMs, usage\);/);
   assert.match(text, /isStickman \? STICKMAN_REVISION_INSTRUCTIONS : REVISION_INSTRUCTIONS/);

@@ -11,8 +11,10 @@
 //                      the server clock, "your edits aren't in this video yet",
 //                      the preview (640x360) as a signed URL for the player.
 //   download (user)  — a fresh signed URL for the FULL video (re-signed per click).
-//   watchdog (cron)  — a queued job with no machine, or a stale heartbeat,
-//                      gets a machine again (the claim RPC resumes it).
+//   watchdog (cron)  — a queued job with no machine, a job the worker put back
+//                      after a temporary error, or a stale heartbeat gets a NEW
+//                      machine (the claim RPC resumes it). A render that failed
+//                      for good is started again by itself (stickman/renderRetry.ts).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encodeHex } from "jsr:@std/encoding@1/hex";
@@ -27,6 +29,8 @@ import { ensureEdit } from "../_shared/stickman/editDoc.ts";
 import { fileSlug } from "../../../src/lib/publishText.js";
 import { chargeAddon, refundAddon, render1440Credits } from "../_shared/stickman/addons.ts";
 import { tierOf } from "../_shared/stickman/scenes.ts";
+import { decideRenderRestart, decideRenderWatch, RENDER_FIXING_COPY, RENDER_RESTART_WINDOW_S, RESTART_REFUSED, STALE_S } from "../_shared/stickman/renderRetry.ts";
+import { alertAdmin } from "../_shared/adminAlert.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -37,7 +41,6 @@ const FLY_APP = Deno.env.get("FLY_RENDER_APP") ?? "zyvo-render";
 const FLY_IMAGE = Deno.env.get("FLY_RENDER_IMAGE") ?? `registry.fly.io/${FLY_APP}:latest`;
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 const BUCKET = "long-form-renders";
-const STALE_S = 300, QUEUED_NO_MACHINE_S = 150;
 // Parallel render: up to N machines each render a chunk of the timeline (same total CPU).
 const RENDER_PARALLEL = Math.max(1, Math.min(4, Number(Deno.env.get("RENDER_PARALLEL") ?? "4")));
 const PARALLEL_MIN_FRAMES = 30 * 180; // under 3 minutes: one machine is fine
@@ -109,6 +112,8 @@ async function jobView(job: any, projectId: string) {
     queuedSeconds: Math.round((now - Date.parse(job.created_at)) / 1000), stale,
     previewUrl: proxy?.data?.signedUrl ?? null, videoUrl: full?.data?.signedUrl ?? null, durationMs: job.duration_ms, sizeBytes: job.size_bytes,
     reason: job.status === "failed" ? job.user_reason ?? "The video couldn't be rendered." : null, createdAt: job.created_at, finishedAt: job.finished_at,
+    // We failed it (not the user): it is being looked at and starts again by itself.
+    fixing: job.status === "failed" && job.user_reason === RENDER_FIXING_COPY,
   };
 }
 
@@ -147,47 +152,77 @@ Deno.serve(async (req) => {
   if (action === "watchdog") {
     if (!SECRET || req.headers.get("x-autopilot-secret") !== SECRET) return err(req, "Unauthorized", 401);
     const now = Date.now();
-    const { data: jobs } = await admin.from("long_form_render_jobs").select("id, status, heartbeat_at, dispatched_at, created_at, attempt, max_attempts, machine_id, parent_job_id").in("status", ["queued", "rendering"]);
+    const { data: jobs } = await admin.from("long_form_render_jobs").select("id, status, heartbeat_at, dispatched_at, created_at, updated_at, attempt, max_attempts, machine_id, parent_job_id, error_code").in("status", ["queued", "rendering"]);
     const out = [];
+    const finish = (jobId: string, errorCode: string) => fetch(`${SUPABASE_URL}/functions/v1/finish-long-form-render`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ jobId, outcome: "failed", terminal: true, errorCode }) }).then((r) => r.body?.cancel()).catch((e) => console.error("[render watchdog] finish", String(e)));
     for (const j of jobs ?? []) {
-      const dispatched = j.dispatched_at ? Date.parse(j.dispatched_at) : Date.parse(j.created_at);
-      const queuedLate = j.status === "queued" && now - dispatched > QUEUED_NO_MACHINE_S * 1000;
-      // A machine started but never claimed the job: the worker died at boot
-      // (bad image / missing secret). Re-sending would burn a machine every
-      // 150 s forever, so it waits for a human instead.
-      if (queuedLate && j.machine_id) {
-        const fail = { status: "failed", error_code: "WORKER_BOOT_FAILED", user_reason: "The render server couldn't start. We've been alerted — please try again later.", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-        await admin.from("long_form_render_jobs").update(fail).eq("id", j.id).eq("status", "queued");
-        // A chunk that never booted: its parallel render can't finish, so the parent (and its other chunks) fail too.
+      const d = decideRenderWatch(j as any, now);
+      if (d.kind === "none") continue;
+      if (d.kind === "fail") {
+        // No machine can finish it (it never booted, or it died on its last attempt). finish-long-form-render
+        // does the rest: the project's status, the owner's alert, the 1440p refund, the plain words for the user.
         if (j.parent_job_id) {
-          await admin.from("long_form_render_jobs").update(fail).eq("id", j.parent_job_id).in("status", ["waiting", "queued"]);
-          await admin.from("long_form_render_jobs").update(fail).eq("parent_job_id", j.parent_job_id).eq("status", "queued");
+          // A chunk: its parallel render can't finish, so the whole render fails (the chunks still queued too).
+          const gone = { status: "failed", error_code: d.code, finished_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+          await admin.from("long_form_render_jobs").update(gone).eq("id", j.id).in("status", ["queued", "rendering"]);
+          await admin.from("long_form_render_jobs").update(gone).eq("parent_job_id", j.parent_job_id).eq("status", "queued");
         }
-        await logEvent("long-form-render", "error", "render_boot_failed", { jobId: j.id, parentJobId: j.parent_job_id ?? null, machineId: j.machine_id });
-        // Phase 7: a paid add-on render (1440p) that never started is refunded exactly once.
-        const paidId = j.parent_job_id ?? j.id;
-        const { data: pj } = await admin.from("long_form_render_jobs").select("project_id, addon_credits").eq("id", paidId).maybeSingle();
-        const credits = Number(pj?.addon_credits ?? 0);
-        // Claim the refund (only one caller wins), then pay it back.
-        const { data: claimed } = credits > 0 ? await admin.from("long_form_render_jobs").update({ addon_credits: 0 }).eq("id", paidId).eq("addon_credits", credits).select("id") : { data: [] };
-        if (claimed?.length) {
-          const { data: owner } = await admin.from("long_form_projects").select("user_id").eq("id", pj!.project_id).maybeSingle();
-          if (owner) await refundAddon(admin, owner.user_id, credits, "render_1440p_boot_failed", logEvent, { projectId: pj!.project_id, jobId: paidId });
-        }
+        await logEvent("long-form-render", "error", d.code === "WORKER_BOOT_FAILED" ? "render_boot_failed" : "render_attempts_exhausted", { jobId: j.id, parentJobId: j.parent_job_id ?? null, machineId: j.machine_id, attempt: j.attempt });
+        await finish(j.parent_job_id ?? j.id, d.code);
+        out.push({ jobId: j.id, failed: d.code });
         continue;
       }
-      const needs = queuedLate || (j.status === "rendering" && (!j.heartbeat_at || now - Date.parse(j.heartbeat_at) > STALE_S * 1000) && j.attempt < j.max_attempts);
-      if (!needs) continue;
       const m = await startMachine(j.id);
-      await admin.from("long_form_render_jobs").update({ dispatched_at: new Date().toISOString(), machine_id: m.machineId ?? null }).eq("id", j.id);
-      await logEvent("long-form-render", "warn", "render_watchdog_dispatch", { jobId: j.id, status: j.status, ok: m.ok, reason: m.reason });
-      out.push({ jobId: j.id, ...m });
+      await admin.from("long_form_render_jobs").update({ dispatched_at: new Date().toISOString(), machine_id: m.machineId ?? null, ...(d.errorCode ? { error_code: d.errorCode } : {}) }).eq("id", j.id);
+      await logEvent("long-form-render", "warn", "render_watchdog_dispatch", { jobId: j.id, status: j.status, why: d.why, attempt: j.attempt, ok: m.ok, reason: m.reason });
+      out.push({ jobId: j.id, why: d.why, ...m });
     }
-    return ok(req, { ok: true, dispatched: out });
+
+    // A render that failed for good starts again by itself (after 10 minutes, then after an hour).
+    const restarted = [];
+    const since = new Date(now - RENDER_RESTART_WINDOW_S * 1000).toISOString();
+    const { data: failed } = await admin.from("long_form_render_jobs").select("id, project_id, finished_at, created_at, user_reason, error_code").eq("status", "failed").is("parent_job_id", null).gte("finished_at", since).order("created_at", { ascending: false }).limit(200);
+    const byProject = new Map<string, any[]>();
+    for (const f of failed ?? []) byProject.set(f.project_id, [...(byProject.get(f.project_id) ?? []), f]);
+    for (const [projectId, list] of byProject) {
+      const { data: newest } = await admin.from("long_form_render_jobs").select("id, status").eq("project_id", projectId).is("parent_job_id", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (!newest || newest.id !== list[0].id) continue; // a newer render exists (running, done, or the user's own retry)
+      // A job the claim RPC failed on its own (attempts used up) never went through finish: same handling now.
+      if (list[0].user_reason !== RENDER_FIXING_COPY && list[0].error_code === "ATTEMPTS_EXHAUSTED") {
+        await admin.from("long_form_render_jobs").update({ status: "rendering", finished_at: null }).eq("id", list[0].id).eq("status", "failed");
+        await finish(list[0].id, "ATTEMPTS_EXHAUSTED");
+        continue;
+      }
+      if (list[0].user_reason !== RENDER_FIXING_COPY) continue; // failed before this rule: left as it was
+      if (String(list[0].error_code ?? "").startsWith(RESTART_REFUSED)) continue; // tried, could not start: it waits for a person
+      const r = decideRenderRestart(list.length, list[0].finished_at, now);
+      if (r.kind !== "restart") continue;
+      // A project whose credits were given back is not rendered for free.
+      const { data: hold } = await admin.from("long_form_project_reservations").select("status").eq("project_id", projectId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (hold?.status === "released") continue;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/long-form-render`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json", "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "start", projectId }) }).catch(() => null);
+      const started = !!res?.ok;
+      const said = started ? "" : (await res?.text().catch(() => "") ?? "").slice(0, 200);
+      if (started) await res?.body?.cancel();
+      else {
+        // Never a restart attempt every minute: marked once, and the owner is told.
+        await admin.from("long_form_render_jobs").update({ error_code: `${RESTART_REFUSED}${String(list[0].error_code ?? "")}`.slice(0, 120) }).eq("id", list[0].id);
+        await alertAdmin("Zyvo: a failed render could not be restarted — needs you", `Project: ${projectId}\nFailed job: ${list[0].id}\nThe automatic restart was refused (${res?.status ?? "no answer"}): ${said}\n\nThe user still sees: "${RENDER_FIXING_COPY}"`, "render");
+      }
+      await logEvent("long-form-render", started ? "warn" : "error", "render_auto_restart", { projectId, afterJobId: list[0].id, number: r.number, started, status: res?.status ?? null });
+      restarted.push({ projectId, number: r.number, started });
+    }
+    return ok(req, { ok: true, dispatched: out, restarted });
   }
 
-  const { user, authError } = await requireUser(req);
-  if (!user) return err(req, authError || "Unauthorized", 401);
+  // "start" may also come from our own side (the autopilot secret or the service
+  // key): the render is started for the project's owner, always the included
+  // 1080p (never the paid 1440p add-on). Every other action needs the user.
+  const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${SERVICE_KEY}`;
+  const internal = trusted && action === "start";
+  const auth = internal ? { user: null as any, authError: null } : await requireUser(req);
+  let user: any = auth.user;
+  if (!user && !internal) return err(req, auth.authError || "Unauthorized", 401);
 
   // ---------------- list_done (Creations): the user's finished long-form videos ----------------
   if (action === "list_done") {
@@ -211,7 +246,8 @@ Deno.serve(async (req) => {
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId || !["start", "status", "download"].includes(action)) return err(req, "Bad request", 400);
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, selected_title, autopilot").eq("id", projectId).maybeSingle();
-  if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
+  if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
+  if (internal) user = { id: project.user_id };
   const { data: job } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
 
   if (action === "status") {
@@ -244,7 +280,7 @@ Deno.serve(async (req) => {
 
   // ---------------- start ----------------
   if (job && ["queued", "rendering", "waiting"].includes(job.status)) return ok(req, { ok: true, alreadyRunning: true, job: await jobView(job, projectId) });
-  const resolution = RESOLUTIONS[String(body?.resolution ?? "1080p")] ? String(body?.resolution ?? "1080p") : "1080p";
+  const resolution = !internal && RESOLUTIONS[String(body?.resolution ?? "1080p")] ? String(body?.resolution ?? "1080p") : "1080p";
   // No editor visit needed: the edit is created from the current scenes when
   // there is none, and its clips are put on the scenes' current pictures (a
   // scene redrawn since the last edit) before anything is rendered.
@@ -259,8 +295,9 @@ Deno.serve(async (req) => {
   const doc = edit.doc;
   const errors = validateEdit(doc);
   if (errors.length) return err(req, "This edit has a problem to fix first.", 422, { errors: errors.slice(0, 5) });
-  const missing = doc.clips.findIndex((c: any) => c.needsImage);
-  if (missing >= 0) return err(req, `Scene ${missing + 1} still needs its picture. Generate or replace it in the editor first.`, 409);
+  // 2026-10-07: a render is never refused for a scene's picture. A split half that
+  // has no picture of its own yet keeps showing the one it was split from; a scene
+  // that could not be drawn is already covered in the edit (stickmanEdit.js).
   const { data: narr } = await admin.from("long_form_narration_audio_versions").select("narration").eq("id", doc.audio.narrationId).maybeSingle();
   const words = flattenWords(narr?.narration ?? []);
   await fillCenterFlatness(doc.clips); // an edit saved before this existed
@@ -270,13 +307,13 @@ Deno.serve(async (req) => {
   // Full-res masters for the crop (never upsampled); the worker reads their size.
   const ids = [...new Set(edl.clips.map((c: any) => c.sceneId).filter(Boolean))];
   const { data: scenes } = ids.length ? await admin.from("long_form_scene_images").select("id, image_url, master_url, status, beat_sequence").in("id", ids) : { data: [] };
-  // A finished video never has an empty or failed scene in it.
-  const holes = (scenes ?? []).filter((s: any) => !s.image_url || s.status === "failed");
-  if (holes.length || (scenes ?? []).length < ids.length) {
-    const n = holes.length || ids.length - (scenes ?? []).length;
-    return err(req, `${n} scene${n === 1 ? "" : "s"} still need${n === 1 ? "s" : ""} a picture. Use \"Try again (free)\" on the Scenes page first.`, 409, { scenes: holes.map((s: any) => s.beat_sequence) });
-  }
-  const masterOf = new Map((scenes ?? []).map((s: any) => [s.id, s.master_url ?? null]));
+  // Every clip carries its own picture (validateEdit). A clip whose scene row has
+  // since failed or gone renders with that picture; only its full-res master is skipped.
+  const usable = (scenes ?? []).filter((s: any) => s.image_url && s.status === "ready");
+  const coveredNow = (doc.clips ?? []).filter((c: any) => c.covered).length;
+  const stale = ids.length - usable.length;
+  if (coveredNow || stale > 0) await logEvent("long-form-render", "warn", "render_with_covered_scenes", { projectId, covered: coveredNow, clipsWithoutACurrentScene: Math.max(0, stale) });
+  const masterOf = new Map(usable.map((s: any) => [s.id, s.master_url ?? null]));
   // (the worker falls back to the 1920x1080 picture if a master can't be fetched)
   for (const c of edl.clips) { const m = c.sceneId ? masterOf.get(c.sceneId) : null; if (m) c.masterImage = m; }
   if (edl.music) edl.musicVolumeExpr = musicVolumeExpr(edl.music);

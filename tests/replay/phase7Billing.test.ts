@@ -60,7 +60,10 @@ Deno.test("failed 1440p is refunded exactly once (claim, then refund)", async ()
   assertMatch(fin, /if \(owner && claimed\?\.length\) await refundAddon\(/);
   const start = read("supabase/functions/long-form-render/index.ts");
   assertMatch(start, /chargeAddon\(admin, user\.id, addonCredits, "render_1440p"/);
-  assertMatch(start, /\.eq\("addon_credits", credits\)\.select\("id"\)/, "the boot watchdog also claims before refunding");
+  // 2026-10-07: a render the watchdog fails (never booted, attempts used up) ends through the same
+  // finish path, so its 1440p refund is that one claim-then-refund (no second copy in the watchdog).
+  assertMatch(start, /await finish\(j\.parent_job_id \?\? j\.id, d\.code\);/);
+  assert(!/render_1440p_boot_failed/.test(start));
 });
 
 Deno.test("fixed quote: no per-scene charge on the first pass; settle the FULL quote only when the render is done", () => {

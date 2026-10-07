@@ -19,6 +19,7 @@ import LongFormWritingPage from "./writing";
 import { ScenesPage } from "./scenes.jsx";
 import { cachedStickmanProject, fetchStickmanFacts, invalidateStickmanCache } from "./StickmanRouteGuard";
 import { fetchActiveGenerationProfile } from "./productionProfile";
+import { RefundedNotice } from "./RefundedNotice.jsx";
 
 const STAGES = [
   { key: "script", label: "Writing script", icon: PenLine },
@@ -38,7 +39,13 @@ function VoiceStage({ projectId }) {
     const c = setInterval(() => setNow(Date.now()), 1000);
     return () => { alive = false; clearInterval(t); clearInterval(c); };
   }, [projectId]);
-  return <NarrationProgress serverStatus={status} nowMs={now} clockOffsetMs={offset.current} voiceId={status?.voice?.voiceId} locking={!status || status.status === "none"} />;
+  return (
+    <>
+      <NarrationProgress serverStatus={status} nowMs={now} clockOffsetMs={offset.current} voiceId={status?.voice?.voiceId} locking={!status || status.status === "none"} />
+      {/* The voice provider failed: the server waits and tries again by itself (never a failure). */}
+      {status?.paused && <p data-testid="voice-paused" className="mx-auto mt-3 flex max-w-[560px] items-center justify-center gap-2 rounded-xl border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2 text-[13px] text-amber-100"><RotateCw className="h-4 w-4 shrink-0" />{status.pausedMessage ?? "Paused for a moment, continues automatically."}</p>}
+    </>
+  );
 }
 
 export default function LongFormGenerating() {
@@ -71,6 +78,8 @@ export default function LongFormGenerating() {
 
   const stage = step?.stage ?? "script";
   const failed = step?.statusLabel === "Needs a retry";
+  // The video could not be made at all: the whole hold went back by itself (nothing to retry).
+  const refunded = !!project?.autopilot?.holdReleasedAt && project?.autopilot?.status === "failed";
   const stageIdx = STAGES.findIndex((s) => s.key === stage);
   const startedAt = project?.autopilot?.startedAt ? Date.parse(project.autopilot.startedAt) : null;
 
@@ -118,6 +127,8 @@ export default function LongFormGenerating() {
 
         {!project ? (
           <div className="zyvo-shimmer h-40 rounded-2xl bg-white/[0.03]" />
+        ) : refunded ? (
+          <RefundedNotice className="mx-auto max-w-[560px]" />
         ) : failed && stage !== "script" ? (
           <div className="mx-auto max-w-[560px] rounded-2xl border border-amber-300/25 bg-amber-300/[0.05] p-6 text-center">
             <p className="text-[16px] font-bold text-white">{stage === "voice" ? "The voiceover stopped" : "Drawing the scenes stopped"}</p>

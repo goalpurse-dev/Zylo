@@ -21,18 +21,28 @@ export const SCENES_STAGES: { key: ScenesStage | "finishing"; label: string }[] 
 
 // Measured (2026-09): beat plans 121-168 s ($0.18-0.25, 115-136 beats); V2
 // scenes 9.7 s median / 12.1 s p90 each, 136 scenes in 229 s at 6 at a time.
+// 2026-10-07, the provider concurrency caps (config, no redeploy of the rules needed):
+//   LONG_FORM_SCENES_PER_VIDEO  scenes of ONE video drawn at the same time (default 6, the measured value)
+//   LONG_FORM_SCENES_TOTAL      scenes of ALL videos drawn at the same time (default 30)
+// Work over a cap waits in the queue; it is never refused.
+const envInt = (name: string, def: number) => { try { const v = Number((globalThis as any).Deno?.env?.get(name)); return Number.isFinite(v) && v > 0 ? Math.floor(v) : def; } catch { return def; } };
+export const SCENES_TOTAL_MAX = envInt("LONG_FORM_SCENES_TOTAL", 30);
 export const SCENE_TIMING = {
   bibleS: [0, 90] as [number, number],       // normally frozen during the voice step already
   beatsS: [150, 240] as [number, number],   // 121-189 s measured (115-148 beats)
   // V3 measured on f90160bc (148 scenes): 9.6 s median, 17.2 s p90; V4 = V3 + best-of-2 on some beats.
   perSceneS: { V2: [9.7, 12.1], V3: [9.6, 17.2], V4: [14, 30] } as Record<string, [number, number]>,
-  concurrency: 6,
+  concurrency: envInt("LONG_FORM_SCENES_PER_VIDEO", 6),
 };
 export const SCENE_CONCURRENCY = SCENE_TIMING.concurrency;
-export const SCENE_LEASE_S = 150;           // one scene: render (+ retry) + upscale, well inside the edge wall clock
-export const SCENE_MAX_ATTEMPTS = 2;        // a scene whose worker died is re-queued once, then marked failed
+export const SCENE_LEASE_S = 150;           // one step of a scene: render (+ retry) + upscale; renewed per step (sceneLadder.ts)
+export const SCENE_MAX_ATTEMPTS = 3;        // a scene whose worker DIED is re-queued twice, then marked failed (a deferred retry is not a death)
 export const WATCHDOG_GRACE_S = 90;
 export const SCENES_MAX_RESUMES = 2;
+// 2026-10-07: drawing that made no progress for this long (a provider down, our balance empty)
+// stops waiting: the scenes still in the queue are closed, and the run ends as usual (with not
+// one scene drawn, every credit goes back by itself).
+export const SCENES_NO_PROGRESS_MAX_S = 6 * 3600;
 
 // Credits per image by tier (the same prices as the project quote: GENERATE v2=2 / v3=3 / v4=4).
 // Phase 7: scene REGENERATE add-on prices (~2x real cost at the cheapest $/credit).
@@ -49,6 +59,12 @@ export type ScenesRecord = {
   planId?: string | null;
   failedReason?: string | null;
   doneAt?: string | null;
+  // 2026-10-07: the failed scenes of the first run were queued once more (free) before the run ended.
+  secondPassAt?: string | null;
+  // Drawing was given up after SCENES_NO_PROGRESS_MAX_S without one scene finishing.
+  gaveUpAt?: string | null;
+  // A redraw of single scenes on a finished run (update-long-form-scene).
+  regenerating?: boolean;
 };
 
 export type ScenesInput = {
@@ -58,7 +74,8 @@ export type ScenesInput = {
   // Phase 6d-1: the bible build logged as started (the lock's, usually) and whether it ended.
   bibleBuild?: { startedAt: string; ended: "done" | "failed" | null; endedAt: string | null } | null;
   plan: { id: string; status: string; created_at: string; beatCount: number; errorCode?: string | null } | null;
-  images: { queued: number; rendering: number; renderingExpired: { id: string; attempts: number }[]; ready: number; failed: number; total: number };
+  // lastProgressAt: when a scene last finished (else when the scenes were created).
+  images: { queued: number; rendering: number; renderingExpired: { id: string; attempts: number }[]; ready: number; failed: number; total: number; lastProgressAt?: string | null };
   tier: string;
 };
 
@@ -67,6 +84,8 @@ export type ScenesAction =
   | { kind: "build_beats"; resume: boolean }
   | { kind: "create_scenes"; planId: string }
   | { kind: "draw"; planId: string; slots: number; requeue: string[]; fail: string[] }
+  | { kind: "retry_failed"; planId: string }
+  | { kind: "give_up_drawing"; planId: string }
   | { kind: "wait" }
   | { kind: "done" }
   | { kind: "fail"; reason: string };
@@ -141,7 +160,17 @@ export function decideScenes(input: ScenesInput): ScenesDecision {
   const active = img.rendering - img.renderingExpired.length;
   const queued = img.queued + requeue.length;
   const eta = drawingEta(queued + active, input.tier);
-  if (queued === 0 && active === 0) return base({ kind: "done" }, "done", [0, 0]);
+  if (queued === 0 && active === 0) {
+    // 2026-10-07, the first run only (a redraw of single scenes ends as before):
+    //   - scenes that could not be drawn get ONE more free pass before the run ends (most
+    //     failures are a provider's bad few minutes; the scene card would only say "Try again");
+    //   - if then NOT ONE scene exists there is no video to make: the run fails and the whole
+    //     hold goes back by itself. Otherwise the run is done and the failed scenes are covered.
+    if (!sc.regenerating && img.failed > 0 && !sc.secondPassAt && !sc.gaveUpAt) return base({ kind: "retry_failed", planId: plan.id }, "drawing", drawingEta(img.failed, input.tier));
+    if (!sc.regenerating && img.total > 0 && img.ready === 0) return base({ kind: "fail", reason: "no scene could be drawn" }, "drawing", [0, 0]);
+    return base({ kind: "done" }, "done", [0, 0]);
+  }
+  if (!sc.regenerating && !sc.gaveUpAt && img.lastProgressAt && now - ms(img.lastProgressAt) > SCENES_NO_PROGRESS_MAX_S * 1000) return base({ kind: "give_up_drawing", planId: plan.id }, "drawing", [0, 0]);
   const slots = Math.max(0, Math.min(queued, SCENE_CONCURRENCY - active));
   if (slots === 0 && !requeue.length && !fail.length) return base({ kind: "wait" }, "drawing", eta);
   return base({ kind: "draw", planId: plan.id, slots, requeue, fail }, "drawing", eta);

@@ -6,7 +6,8 @@
 // fallback draw, and the free "Try again" for failed scenes.
 import { assert, assertEquals, assertMatch } from "jsr:@std/assert@1";
 import { canonicalSetFromBible, compileBeatPrompt, stripWrittenText, unlabelProp } from "../../supabase/functions/_shared/stickman/promptCompiler.ts";
-import { DRAW_ATTEMPTS, safeFallbackContract, TEXT_BEARING } from "../../supabase/functions/_shared/stickman/sceneFallback.ts";
+import { safeFallbackContract, TEXT_BEARING } from "../../supabase/functions/_shared/stickman/sceneFallback.ts";
+import { SCENE_LADDER } from "../../supabase/functions/_shared/stickman/sceneLadder.ts";
 
 const read = (p: string) => Deno.readTextFileSync(new URL(`../../${p}`, import.meta.url));
 const SCREEN = "A smartphone confirmation screen showing the ticket title and bold price line with a prominent red label reading 'NON-REFUND' above a small purchase summary.";
@@ -49,13 +50,15 @@ Deno.test("safe fallback: same idea, nothing with writing, a plain composition, 
   assertMatch(c.visualConcept, /no screens, papers, cards, signs or anything with writing/);
   assert(TEXT_BEARING.test(CARD));
   assertEquals(compileBeatPrompt(beat(c), set, { noTextAnywhere: true }).lintErrors, []);
-  assertEquals(DRAW_ATTEMPTS.map((a) => a.fallback), [false, false, true]); // fails twice -> one safe draw
+  // 2026-10-07: the safe draw comes after the retries, and once more on the backup model (sceneNeverStuck.test.ts).
+  assertEquals(SCENE_LADDER.map((r) => r.kind), ["normal", "normal", "normal", "normal", "safe", "backup"]);
 });
 
-Deno.test("wiring: the worker falls back once; the render refuses holes; failed scenes say Try again (free)", () => {
+Deno.test("wiring: the worker falls back to the safe draw; the render covers holes; failed scenes say Try again (free)", () => {
   const w = read("supabase/functions/render-long-form-scene/index.ts");
-  assertMatch(w, /const contract = a\.fallback \|\| textFree \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
-  assertMatch(read("supabase/functions/long-form-render/index.ts"), /A finished video never has an empty or failed scene in it\./);
+  assertMatch(w, /const contract = rung !== "normal" \|\| textFree \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
+  // 2026-10-07: a failed scene no longer refuses the render; it is covered by the picture before it.
+  assertMatch(read("supabase/functions/long-form-render/index.ts"), /a render is never refused for a scene's picture/);
   const ui = read("src/pages/workspace/long-form/scenes.jsx");
   assertMatch(ui, /Try again \(free\)/);
   assertMatch(ui, /const flaggedCost = \(data\.counts\.flagged - failedFlagged\) \* data\.creditsPerScene;/);

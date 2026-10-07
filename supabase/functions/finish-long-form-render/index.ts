@@ -17,6 +17,8 @@ import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { applyRenderBilling } from "../_shared/longFormReservations.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
+import { alertAdmin } from "../_shared/adminAlert.ts";
+import { renderAlert, RENDER_FIXING_COPY, RENDER_RESTART_WINDOW_S } from "../_shared/stickman/renderRetry.ts";
 
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY, { auth: { persistSession: false } });
@@ -60,7 +62,11 @@ Deno.serve(async (req) => {
   }
 
   const terminal = b.terminal === true || job.attempt >= job.max_attempts;
-  const userReason = String(b.userReason ?? "The video couldn't be rendered. Your images and narration are saved — try rendering again.").slice(0, 300);
+  // 2026-10-07: a render that failed for good is OURS to fix. The user never reads the worker's
+  // reason or an error code: they read that it is being fixed and continues by itself (the
+  // watchdog starts it again); the owner gets the details by email.
+  const workerReason = b.userReason ? String(b.userReason).slice(0, 300) : null;
+  const userReason = terminal ? RENDER_FIXING_COPY : String(workerReason ?? "The video couldn't be rendered. Your images and narration are saved — try rendering again.").slice(0, 300);
   await admin.from("long_form_render_jobs").update({
     status: "failed", finished_at: now, updated_at: now, error_code: String(b.errorCode ?? "RENDER_FAILED").slice(0, 120), user_reason: userReason,
     compute_seconds: b.computeSeconds ?? null, compute_usd: b.computeUsd ?? null, checks: b.checks ?? null,
@@ -80,6 +86,13 @@ Deno.serve(async (req) => {
     const { data: claimed } = await admin.from("long_form_render_jobs").update({ addon_credits: 0 }).eq("id", job.id).gt("addon_credits", 0).select("id");
     if (owner && claimed?.length) await refundAddon(admin, owner.user_id, Number(job.addon_credits), "render_1440p_failed", logEvent, { projectId: job.project_id, jobId: job.id });
   }
-  await logEvent("finish-long-form-render", "error", "render_failed", { jobId: job.id, projectId: job.project_id, errorCode: b.errorCode, terminal, billing: billing.decision });
+  let alerted = false;
+  if (terminal) {
+    const since = new Date(Date.now() - RENDER_RESTART_WINDOW_S * 1000).toISOString();
+    const { count } = await admin.from("long_form_render_jobs").select("id", { count: "exact", head: true }).eq("project_id", job.project_id).is("parent_job_id", null).eq("status", "failed").gte("finished_at", since);
+    const mail = renderAlert({ projectId: job.project_id, jobId: job.id, errorCode: String(b.errorCode ?? "RENDER_FAILED"), workerReason, attempt: Number(job.attempt ?? 0), maxAttempts: Number(job.max_attempts ?? 0), failedToday: Math.max(1, count ?? 1) });
+    alerted = await alertAdmin(mail.subject, mail.text, "render");
+  }
+  await logEvent("finish-long-form-render", "error", "render_failed", { jobId: job.id, projectId: job.project_id, errorCode: b.errorCode, workerReason, terminal, alerted, billing: billing.decision });
   return ok(req, { ok: true, billing: billing.decision });
 });

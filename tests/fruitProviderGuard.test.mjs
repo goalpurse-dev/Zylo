@@ -30,7 +30,9 @@ test("LLM out-of-credit errors are spotted (Anthropic 400 credit balance, OpenAI
   assert.equal(llmOutOfBalance({ httpStatus: 529, response: { error: { type: "overloaded_error" } } }), false);
 });
 
-test("a clip refused for balance is refunded at once, no retry, no fallback, admin alerted once", async () => {
+// 2026-10-07: paused, not failed. It used to be refunded at once; Runware's refusal is often its
+// "reserved for requests in progress" throttle, over in minutes.
+test("a clip refused for balance WAITS (sent again every 5 min, no fallback), admin alerted once; refunded only after 30 min", async () => {
   const db = createMemoryDb();
   const sent = [];
   const alerts = [];
@@ -47,12 +49,23 @@ test("a clip refused for balance is refunded at once, no retry, no fallback, adm
   assert.equal(db.balance, 975);
   await eng.kick({ storyId });
   await eng.kick({ storyId });
-  const job = [...db.jobs.values()][0];
-  assert.deepEqual(sent.map((e) => e.model), ["wan"], "sent once: no retry, no Seedance fallback on the same account");
-  assert.equal(job.status, "failed");
-  assert.equal(job.error_code, "PROVIDER_UNAVAILABLE");
-  assert.equal(db.balance, 1000, "refunded in full");
+  let job = [...db.jobs.values()][0];
+  assert.deepEqual(sent.map((e) => e.model), ["wan"], "sent once so far: the next try waits 5 minutes");
+  assert.equal(job.status, "queued", "paused, not failed");
+  assert.equal(db.balance, 975, "nothing refunded while it waits");
   assert.equal(alerts.length, 1);
   assert.equal(alerts[0].code, "insufficientCredits");
+  // Every 5 minutes it is sent again; still refused: after 30 minutes of that it is refunded.
+  for (let t = 0; t < 5; t++) { db.advance(301); await eng.kick({ storyId }); }
+  job = [...db.jobs.values()][0];
+  assert.equal(job.status, "queued", "25 minutes in: still waiting");
+  assert.ok(sent.every((e) => e.model === "wan"), "never the fallback model on the same account");
+  db.advance(301); await eng.kick({ storyId });
+  db.advance(301); await eng.kick({ storyId });
+  job = [...db.jobs.values()][0];
+  assert.equal(job.status, "failed");
+  assert.equal(job.error_code, "PROVIDER_UNAVAILABLE");
+  assert.equal(db.balance, 1000, "refunded in full, once");
+  assert.equal(alerts.length, 1, "one alert for the whole wait");
   assert.match(MESSAGES.PROVIDER_UNAVAILABLE, /short break.*weren't charged/);
 });

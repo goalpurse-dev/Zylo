@@ -64,8 +64,9 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const projectId = String(body?.projectId ?? "").trim();
   const action = String(body?.action ?? "");
-  // Internal (server-side, the autopilot secret): generate/get for a project as its owner — never a user login.
-  const internal = !!SECRET && req.headers.get("x-autopilot-secret") === SECRET && ["get", "generate"].includes(action);
+  // Internal (server-side: the autopilot secret, or our own scripts with the service key): generate/get for a project as its owner — never a user login.
+  const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`;
+  const internal = trusted && ["get", "generate"].includes(action);
   const { user, authError } = internal ? { user: null, authError: null } : await requireUser(req);
   if (!internal && !user) return err(req, authError || "Unauthorized", 401);
   if (!projectId || !["get", "generate", "save"].includes(action)) return err(req, "Bad request", 400);

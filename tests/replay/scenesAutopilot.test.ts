@@ -26,8 +26,12 @@ Deno.test("chain: bible (if needed) -> beat plan -> create scenes -> draw 6 at a
   assertEquals(decideScenes(input({ nowS: 180, plan: plan(), images: { ...noImages, queued: 114, rendering: 6, total: 120 } })).action.kind, "wait");
   assertEquals((decideScenes(input({ nowS: 185, plan: plan(), images: { ...noImages, queued: 113, rendering: 5, ready: 2, total: 120 } })).action as any).slots, 1);
   // Every scene settled (a failed scene is flagged on the review page, not a run failure).
-  const done = decideScenes(input({ nowS: 400, plan: plan(), images: { ...noImages, ready: 118, failed: 2, total: 120 } }));
+  // 2026-10-07: the failed ones get one free second pass first; after it the run is done with them covered.
+  const settled = { ...noImages, ready: 118, failed: 2, total: 120 };
+  assertEquals(decideScenes(input({ nowS: 400, plan: plan(), images: settled })).action, { kind: "retry_failed", planId: "p1" });
+  const done = decideScenes(input({ nowS: 600, plan: plan(), scenes: { secondPassAt: at(400) } as any, images: settled }));
   assertEquals(done.action.kind, "done");
+  assertEquals(decideScenes(input({ nowS: 400, plan: plan(), images: { ...noImages, ready: 120, total: 120 } })).action.kind, "done");
 });
 
 Deno.test("watchdog: a stalled beat plan or bible is resumed, then the run stops with a clear Retry", () => {
@@ -54,8 +58,9 @@ Deno.test("6c e2e fixes: a plan that failed VALIDATION stops with Retry (no paid
   assertEquals(decideScenes(input({ nowS: 5, scenes: { retriedAt: at(0), dispatched: {} } as any, plan: null })).action, { kind: "build_beats", resume: false });
 });
 
-Deno.test("watchdog: a scene whose worker died is re-queued once, then marked failed (never a forever spinner)", () => {
-  const d = decideScenes(input({ nowS: 600, plan: plan(), images: { ...noImages, queued: 0, rendering: 2, renderingExpired: [{ id: "a", attempts: 1 }, { id: "b", attempts: 2 }], ready: 118, total: 120 } }));
+Deno.test("watchdog: a scene whose worker died is re-queued (twice), then marked failed (never a forever spinner)", () => {
+  // 2026-10-07: attempts count worker deaths only; a deferred retry (attempts 0, lease over) is queued again like any other.
+  const d = decideScenes(input({ nowS: 600, plan: plan(), images: { ...noImages, queued: 0, rendering: 2, renderingExpired: [{ id: "a", attempts: 2 }, { id: "b", attempts: 3 }], ready: 118, total: 120 } }));
   assertEquals(d.action, { kind: "draw", planId: "p1", slots: 1, requeue: ["a"], fail: ["b"] });
 });
 

@@ -8,7 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { commitWorkDone, settleIdleReservations } from "../_shared/longFormReservations.ts";
+import { closeReservation, commitWorkDone, settleIdleReservations } from "../_shared/longFormReservations.ts";
 import { decideAutopilot, decideNarration, FAILED_COPY, type AutopilotRecord } from "../_shared/stickman/autopilot.ts";
 import { loadAutopilotInput } from "../_shared/stickman/autopilotState.ts";
 import { decideScenes, type ScenesRecord } from "../_shared/stickman/scenes.ts";
@@ -92,6 +92,22 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
       for (let i = 0; i < Math.min(rows.length, 6); i++) background(dispatchScene(owner));
       break;
     }
+    case "give_up_drawing": {
+      // No scene finished for six hours: stop waiting. The scenes still waiting are closed as
+      // failed; the next tick ends the run (covered scenes, or the whole hold back if none exists).
+      (sc as any).gaveUpAt = now;
+      const { data: closed } = await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", lease_until: null, qa: { covered: true, gaveUp: true } }).eq("project_id", projectId).eq("beat_plan_version_id", a.planId).eq("is_current", true).in("status", ["queued", "rendering"]).select("id");
+      await logEvent("advance-long-form-autopilot", "error", "scenes_gave_up", { projectId, closed: closed?.length ?? 0 });
+      break;
+    }
+    case "retry_failed": {
+      // One free second pass: the failed scenes go back to the queue from the first step.
+      (sc as any).secondPassAt = now;
+      const { data: again } = await admin.from("long_form_scene_images").update({ status: "queued", error: null, lease_until: null, attempts: 0, qa: { secondPass: true } }).eq("project_id", projectId).eq("beat_plan_version_id", a.planId).eq("is_current", true).eq("status", "failed").select("id");
+      await logEvent("advance-long-form-autopilot", "warn", "scenes_second_pass", { projectId, scenes: again?.length ?? 0 });
+      for (let i = 0; i < Math.min(again?.length ?? 0, 6); i++) background(dispatchScene(owner));
+      break;
+    }
     case "draw": {
       if (a.requeue.length) await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null }).in("id", a.requeue).eq("status", "rendering");
       if (a.fail.length) await admin.from("long_form_scene_images").update({ status: "failed", error: "stalled", lease_until: null }).in("id", a.fail).eq("status", "rendering");
@@ -111,6 +127,8 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
       ap.status = "failed";
       ap.failedReason = a.reason;
       await logEvent("advance-long-form-autopilot", "error", "scenes_failed", { projectId, reason: a.reason, resumeLog: ap.resumeLog ?? [] });
+      await admin.from("long_form_projects").update({ autopilot: { ...ap, scenes: sc } }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, a.reason, now);
       break;
     case "wait":
       break;
@@ -122,6 +140,25 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
   await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId);
   if (a.kind !== "wait" && a.kind !== "draw") await logEvent("advance-long-form-autopilot", "info", `scenes_${a.kind}`, { projectId, stage: d.stage, drawn: d.drawn, total: d.total });
   return { projectId, action: `scenes_${a.kind}`, stage: d.stage, drawn: d.drawn, total: d.total };
+}
+
+// A run that stopped with NO finished scene can't become a video: the whole hold
+// goes back now (the SQL rule decides; a run with finished scenes keeps its hold
+// and its work). The user is never left to find a Retry button to get there.
+async function releaseIfNoVideoPossible(projectId: string, ap: any, reason: string, now: string) {
+  try {
+    const { data: failedByUs } = await admin.rpc("long_form_failed_by_us", { p_project_id: projectId });
+    if (failedByUs !== true) return;
+    const out: any = await closeReservation(admin, projectId, "failed_by_us", `autopilot_failed: ${reason}`, logEvent);
+    if (out?.found && out?.ok) {
+      ap.holdReleasedAt = now;
+      await logEvent("advance-long-form-autopilot", "warn", "hold_released_no_video", { projectId, reason, reserved: out.reservation?.reserved_credits ?? null });
+    } else {
+      // Already given back by the step that failed (the voice does it itself): the screen still says so.
+      const { data: hold } = await admin.from("long_form_project_reservations").select("status").eq("project_id", projectId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (hold?.status === "released") ap.holdReleasedAt = now;
+    }
+  } catch (e) { console.error("[autopilot] release hold", String(e)); }
 }
 
 const dispatchScene = (owner: { projectId: string; userId: string }) =>
@@ -155,7 +192,7 @@ async function advanceOne(projectId: string) {
     const row = await latestNarrationRow(projectId);
     const n = decideNarration({ now, narration: ap.narration, row });
     if (n.kind === "lock") {
-      ap.narration = { ...(ap.narration ?? {}), lockedAt: now, kicks: (ap.narration?.kicks ?? 0) + 1 };
+      ap.narration = { ...(ap.narration ?? {}), lockedAt: now, firstLockedAt: ap.narration?.firstLockedAt ?? now, kicks: (ap.narration?.kicks ?? 0) + 1 };
       const r = await callAsOwner("lock-long-form-script", owner);
       if (!r.ok) console.error("[autopilot] lock script", r.status, r.body);
     } else if (n.kind === "resume") {
@@ -169,10 +206,13 @@ async function advanceOne(projectId: string) {
       ap.status = "running";
       ap.scenes = { status: "running", startedAt: now, stage: "bible", resumes: 0, dispatched: ap.narration?.lockedAt ? { bible: ap.narration.lockedAt } : {} };
     } else if (n.kind === "done") {
-      // The voice failed: stop with a clear free Retry on the generating screen.
+      // The voice failed for good (after its pauses and retries): no voice, no video. The whole
+      // hold goes back by itself (nothing for the user to press) and the screen says so.
       ap.status = "failed";
       ap.failedReason = "the voiceover failed";
       ap.narration = { ...(ap.narration ?? {}), status: n.narrationStatus };
+      await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, "the voiceover failed", now);
     }
     ap.progressMax = 1;
     ap.heartbeatAt = now;
@@ -198,9 +238,13 @@ async function advanceOne(projectId: string) {
       break;
     }
     case "start_script": {
-      if (a.resume) log("writing restarted");
+      if (a.afterFailure) {
+        // A failed script written again: its own counter (never the stall budget).
+        ap.scriptRetries = (ap.scriptRetries ?? 0) + 1;
+        ap.resumeLog = [...(ap.resumeLog ?? []), { at: now, stage: d.workerStage, reason: a.backupModel ? "writing restarted on the backup model" : "writing restarted" }].slice(-10);
+      } else if (a.resume) log("writing restarted");
       ap.dispatched = { ...(ap.dispatched ?? {}), script: now };
-      const r = await callAsOwner("start-long-form-script", { ...owner, regenerate: a.resume });
+      const r = await callAsOwner("start-long-form-script", { ...owner, regenerate: a.resume, ...(a.backupModel ? { backupModel: true } : {}) });
       if (!r.ok) console.error("[autopilot] start script", r.status, r.body);
       break;
     }
@@ -216,6 +260,8 @@ async function advanceOne(projectId: string) {
       ap.status = "failed";
       ap.failedReason = a.reason;
       await logEvent("advance-long-form-autopilot", "error", "autopilot_failed", { projectId, reason: a.reason, resumeLog: ap.resumeLog ?? [] });
+      await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, a.reason, now);
       break;
     case "wait":
       break;
@@ -243,6 +289,15 @@ Deno.serve(async (req) => {
     try { narrationWatchdog = await sweepStalledNarration(); } catch (e) { console.error("[autopilot] narration watchdog", String(e)); }
     // Phase 6c safety rule: reservations idle for 7 days are auto-settled (unused credits refunded).
     try { idleSettle = await settleIdleReservations(admin, new Date().toISOString(), logEvent); } catch (e) { console.error("[autopilot] idle settle", String(e)); }
+    // The render watchdog's own cron only runs while a render is live. A render that FAILED is
+    // started again by that watchdog, so it is called from here while one is waiting (last 24 h).
+    try {
+      const { count } = await admin.from("long_form_render_jobs").select("id", { count: "exact", head: true }).eq("status", "failed").is("parent_job_id", null).gte("finished_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString());
+      if (count) background(fetch(fn("long-form-render"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "watchdog" }) }).then((r) => r.body?.cancel()));
+    } catch (e) { console.error("[autopilot] render sweep", String(e)); }
+    // Every tool outside Long Form: stuck jobs re-checked and refunded, lost queued jobs dispatched
+    // again, the failure rate watched (generation-sweeper). Each minute, never waited for.
+    background(fetch(fn("generation-sweeper"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: "{}" }).then((r) => r.body?.cancel()).catch(() => {}));
   }
   const results = [];
   for (const id of ids) {

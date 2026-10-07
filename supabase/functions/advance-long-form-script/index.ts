@@ -122,6 +122,9 @@ const STICKMAN_DEFAULT_MODEL = "claude-sonnet-5";
 const STICKMAN_DRAFT_MODEL = Deno.env.get("LONG_FORM_STICKMAN_DRAFT_MODEL") ?? STICKMAN_DEFAULT_MODEL;
 const STICKMAN_REVISION_MODEL = Deno.env.get("LONG_FORM_STICKMAN_REVISION_MODEL") ?? STICKMAN_DEFAULT_MODEL;
 const STICKMAN_CRITIC_MODEL = Deno.env.get("LONG_FORM_STICKMAN_CRITIC_MODEL") ?? STICKMAN_DEFAULT_MODEL;
+// A version started on the backup model (meta.modelOverride, see _shared/stickman/scriptModels.ts)
+// uses it for every Stickman stage; every other version uses the stage's own model.
+const stickmanModel = (row: any, stageModel: string): string => (typeof row?.meta?.modelOverride === "string" && row.meta.modelOverride ? row.meta.modelOverride : stageModel);
 
 // gpt-5.6-sol pricing (OpenAI, confirmed via developers.openai.com/api/docs/models/gpt-5.6-sol
 // as of Sep 2026) — promotional pricing OpenAI lists as available at least
@@ -615,7 +618,8 @@ function allUsableFactIds(pack: ScriptEvidencePack): string[] {
 // Everything in this section is plain code, never a model call. Anything
 // normal code can detect must never be spent on a Critic call to detect.
 
-type ValidationIssue = { code: string; message: string; segmentIds?: string[] };
+// quality: one of OUR narration-craft rules (never a reason to stop a paid run). waived: kept as a warning.
+type ValidationIssue = { code: string; message: string; segmentIds?: string[]; quality?: boolean; waived?: boolean };
 type ValidationResult = { errors: ValidationIssue[]; warnings: ValidationIssue[] };
 
 // Formulaic openers are fine occasionally — flagged only once they become a
@@ -949,7 +953,7 @@ function validateStickmanNarrationCraft(doc: any, pack: ScriptEvidencePack): Val
     // now read role from pack, never from doc.
     ...findListicleCloser(segments, pack.chapters),
     ...findTtsHygieneIssues(segments),
-    ...findScreenGraphicsNarration(segments),
+    ...findScreenGraphicsNarration(segments, [pack.centralQuestion, pack.viewerPromise, doc.title ?? ""].join(" ")),
     ...findPreviewEnumeration(segments),
     ...findStakesOrQuestionOverrun(segments, pack.chapters),
     ...findCallbackRecap(segments, pack.chapters),
@@ -993,12 +997,35 @@ function validateStickmanNarrationCraft(doc: any, pack: ScriptEvidencePack): Val
   return { errors, warnings };
 }
 
+// QUALITY vs STRUCTURAL (2026-10-07, after a paid run failed seven drafts on one craft rule):
+//   - validateScriptDocument's errors are STRUCTURAL (ids, order, facts, empty or oversized
+//     segments): a script with one can't be used, so the stage fails and is retried.
+//   - the Stickman narration-craft errors are QUALITY rules of our own. They earn the one
+//     repair; whatever is left after it is WAIVED: the rule's code goes on the document
+//     (waivedQualityRules), the finding stays as a warning, and the run goes on. A waived
+//     rule stays waived for that script (so later optional rewrites aren't thrown away for
+//     it); a rule a later rewrite newly breaks still rejects that rewrite.
 function validateWithStickmanExtras(doc: any, pack: ScriptEvidencePack, validFactIds: Set<string>, isStickman: boolean): ValidationResult {
   const base = validateScriptDocument(doc, pack, validFactIds);
   if (!isStickman) return base;
   const extra = validateStickmanNarrationCraft(doc, pack);
-  return { errors: [...base.errors, ...extra.errors], warnings: [...base.warnings, ...extra.warnings] };
+  const waived = new Set<string>(Array.isArray(doc?.waivedQualityRules) ? doc.waivedQualityRules : []);
+  const craft = extra.errors.map((e) => ({ ...e, quality: true }));
+  return {
+    errors: [...base.errors, ...craft.filter((e) => !waived.has(e.code))],
+    warnings: [...base.warnings, ...extra.warnings, ...craft.filter((e) => waived.has(e.code)).map((e) => ({ ...e, waived: true }))],
+  };
 }
+// Waives what is left of our quality rules on a document. Returns the document (with the
+// codes recorded), its new result and the findings that were waived.
+function waiveQualityRules(doc: any, result: ValidationResult, pack: ScriptEvidencePack, validFactIds: Set<string>): { doc: any; result: ValidationResult; waived: ValidationIssue[] } {
+  const waived = result.errors.filter((e) => e.quality);
+  if (!waived.length) return { doc, result, waived };
+  const next = { ...doc, waivedQualityRules: [...new Set([...(Array.isArray(doc?.waivedQualityRules) ? doc.waivedQualityRules : []), ...waived.map((e) => e.code)])] };
+  return { doc: next, result: validateWithStickmanExtras(next, pack, validFactIds, true), waived };
+}
+// A rewrite the model returns is a new object: it keeps the waivers of the script it rewrote.
+const keepWaivers = (next: any, prev: any) => (Array.isArray(prev?.waivedQualityRules) && prev.waivedQualityRules.length && next ? { ...next, waivedQualityRules: prev.waivedQualityRules } : next);
 
 /* ============================ Pass A — Draft ============================ */
 
@@ -1558,12 +1585,12 @@ function enrichStickmanDocument(scriptDocument: any, storyPlan: any) {
   };
 }
 
-async function runStickmanDraft(pack: ScriptEvidencePack, narrativeStrategy: any, storyPlan: any, niche: string | null, explanationDepth: string, usage: UsageTotals, repairNotes?: ValidationIssue[]) {
+async function runStickmanDraft(pack: ScriptEvidencePack, narrativeStrategy: any, storyPlan: any, niche: string | null, explanationDepth: string, usage: UsageTotals, repairNotes?: ValidationIssue[], model: string = STICKMAN_DRAFT_MODEL) {
   const chapterIds = pack.chapters.map((c) => c.chapterId);
   const factIds = allUsableFactIds(pack);
   const topicText = [storyPlan?.recommendedTitle, storyPlan?.viewerPromise, storyPlan?.hookConcept].filter(Boolean).join(" ");
   const draft = await callStickmanModel(
-    STICKMAN_DRAFT_MODEL,
+    model,
     exemplarOverlapsGoldTopic(topicText) ? STICKMAN_DRAFT_INSTRUCTIONS_LIONS_EXEMPLAR : STICKMAN_DRAFT_INSTRUCTIONS,
     stickmanDraftInput({ narrativeStrategy, storyPlan, pack, niche, explanationDepth, repairNotes }),
     buildStickmanDraftSchema(chapterIds, factIds),
@@ -1600,8 +1627,9 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
   const pack = buildEvidencePack(project, storyPlan, project.narrative_strategy, researchVersion.fact_graph, researchVersion.coverage);
   const usage = newUsageTotals();
   const explanationDepth = project.resolved_explanation_depth ?? "balanced";
+  const draftModel = stickmanModel(row, STICKMAN_DRAFT_MODEL);
   let draft = isStickman
-    ? await runStickmanDraft(pack, project.narrative_strategy, storyPlan, niche, explanationDepth, usage)
+    ? await runStickmanDraft(pack, project.narrative_strategy, storyPlan, niche, explanationDepth, usage, undefined, draftModel)
     : await runDraft(pack, project.narrative_strategy, storyPlan, usage);
   // Phase 1e — TTS hygiene auto-fix BEFORE the first validation pass ever
   // sees it (findTtsHygieneIssues is HARD; without this, a stray curly
@@ -1627,14 +1655,24 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
     const repairNotes = [...result.errors, ...lengthIssues];
     if (isStickman) draftRepairReasons = repairNotes.map((e: any) => e.code);
     draft = isStickman
-      ? await runStickmanDraft(pack, project.narrative_strategy, storyPlan, niche, explanationDepth, usage, repairNotes)
+      ? await runStickmanDraft(pack, project.narrative_strategy, storyPlan, niche, explanationDepth, usage, repairNotes, draftModel)
       : await runDraft(pack, project.narrative_strategy, storyPlan, usage, result.errors);
     if (isStickman) draft = sanitizeStickmanDocumentTtsHygiene(draft);
     result = validateWithStickmanExtras(draft, pack, factIdSet, isStickman);
   }
 
+  // Never stop a paid run on a quality rule: the repair above was its one chance.
+  // What is left of our own craft rules is waived (kept as warnings); only
+  // structural errors can still fail the draft.
+  let waivedAtDraft: ValidationIssue[] = [];
+  if (isStickman && result.errors.some((e) => e.quality)) {
+    const w = waiveQualityRules(draft, result, pack, factIdSet);
+    draft = w.doc; result = w.result; waivedAtDraft = w.waived;
+    await logEvent("advance-long-form-script", "warn", "script_quality_rules_waived", { projectId: row.project_id, scriptVersionId: row.id, stage: "draft", rules: [...new Set(w.waived.map((e) => e.code))], findings: w.waived.length, repairCalls });
+  }
+
   if (result.errors.length) {
-    const meta = mergeMeta(row.meta, usage, { repairCalls }, ledgerEntry("draft", usage.inputTokens, usage.outputTokens, 0, isStickman ? STICKMAN_DRAFT_MODEL : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
+    const meta = mergeMeta(row.meta, usage, { repairCalls }, ledgerEntry("draft", usage.inputTokens, usage.outputTokens, 0, isStickman ? draftModel : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
     // Phase 1c, Process Rule — an error code alone isn't enough to diagnose
     // a failure after the fact. Persist the exact failing validators, their
     // messages, and the offending segment text so this is reproducible
@@ -1659,7 +1697,7 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
     scriptDocument = enrichStickmanDocument(scriptDocument, storyPlan);
   }
 
-  const meta = mergeMeta(row.meta, usage, { repairCalls, ...(draftRepairReasons ? { draftRepairReasons } : {}) }, ledgerEntry("draft", usage.inputTokens, usage.outputTokens, 0, isStickman ? STICKMAN_DRAFT_MODEL : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
+  const meta = mergeMeta(row.meta, usage, { repairCalls, ...(draftRepairReasons ? { draftRepairReasons } : {}), ...(waivedAtDraft.length ? { waivedQualityRules: [...new Set(waivedAtDraft.map((e) => e.code))] } : {}) }, ledgerEntry("draft", usage.inputTokens, usage.outputTokens, 0, isStickman ? draftModel : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
   const intermediate = { ...(row.intermediate ?? {}), evidencePack: pack, draftWarnings: result.warnings };
 
   // Phase 1 FINAL, cost rule — "style/quality iterations: fixture replay,
@@ -1672,7 +1710,7 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
   if (isStickman && DRAFT_ONLY_TEST_MODE) {
     await admin
       .from("long_form_script_versions")
-      .update({ script_document: scriptDocument, generation_model: STICKMAN_DRAFT_MODEL, intermediate, meta, status: "needs_attention", last_error_code: "DRAFT_ONLY_TEST_MODE", stage: "finalizing", stage_attempt: 0, worker_lock_until: null })
+      .update({ script_document: scriptDocument, generation_model: draftModel, intermediate, meta, status: "needs_attention", last_error_code: "DRAFT_ONLY_TEST_MODE", stage: "finalizing", stage_attempt: 0, worker_lock_until: null })
       .eq("id", row.id);
     return;
   }
@@ -1681,7 +1719,7 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
   // accuracy check) before critic; legacy goes straight to critic, unchanged.
   await admin
     .from("long_form_script_versions")
-    .update({ script_document: scriptDocument, generation_model: isStickman ? STICKMAN_DRAFT_MODEL : OPENAI_MODEL, intermediate, meta, stage: isStickman ? "claim_verify" : "critic", stage_attempt: 0, worker_lock_until: null })
+    .update({ script_document: scriptDocument, generation_model: isStickman ? draftModel : OPENAI_MODEL, intermediate, meta, stage: isStickman ? "claim_verify" : "critic", stage_attempt: 0, worker_lock_until: null })
     .eq("id", row.id);
 }
 
@@ -2170,7 +2208,7 @@ async function stageCritic(admin: any, row: ScriptRow, _project: any, storyPlan:
   const segmentIds = (doc.narrationSegments ?? []).map((s: any) => s.id);
   const chapterIds = (storyPlan.chapters ?? []).map((c: any) => c.id);
 
-  const criticModel = isStickman ? STICKMAN_CRITIC_MODEL : OPENAI_MODEL;
+  const criticModel = isStickman ? stickmanModel(row, STICKMAN_CRITIC_MODEL) : OPENAI_MODEL;
   const critic = await callStickmanModel(
     criticModel,
     isStickman ? STICKMAN_CRITIC_INSTRUCTIONS : CRITIC_INSTRUCTIONS,
@@ -2560,8 +2598,8 @@ async function stageRevision(admin: any, row: ScriptRow, project: any, storyPlan
   let revisedDoc =
     routing === "full_rewrite"
       ? await runFullRewrite(pack, project.narrative_strategy, storyPlan, row.critic_result, usage, isStickman, niche, explanationDepth)
-      : await runSelectiveRevision(row.script_document, pack, row.critic_result, usage, isStickman ? STICKMAN_REVISION_INSTRUCTIONS : REVISION_INSTRUCTIONS, isStickman ? STICKMAN_REVISION_MODEL : OPENAI_MODEL);
-  if (isStickman) revisedDoc = sanitizeStickmanDocumentTtsHygiene(revisedDoc);
+      : await runSelectiveRevision(row.script_document, pack, row.critic_result, usage, isStickman ? STICKMAN_REVISION_INSTRUCTIONS : REVISION_INSTRUCTIONS, isStickman ? stickmanModel(row, STICKMAN_REVISION_MODEL) : OPENAI_MODEL);
+  if (isStickman) revisedDoc = keepWaivers(sanitizeStickmanDocumentTtsHygiene(revisedDoc), row.script_document);
 
   const factIdSet = new Set(allUsableFactIds(pack));
   let result = validateWithStickmanExtras(revisedDoc, pack, factIdSet, isStickman);
@@ -2600,7 +2638,7 @@ async function stageRevision(admin: any, row: ScriptRow, project: any, storyPlan
     // optional polish pass that didn't land. revisionValidationErrors is
     // persisted (never was before) so a real failure here is diagnosable
     // afterward instead of just a bare error code with no detail.
-    const meta = mergeMeta(row.meta, usage, { revisionKind: null, revisionFallbackReason: "revision_validation_failed" }, ledgerEntry(`revision_${routing}`, usage.inputTokens, usage.outputTokens, 0, isStickman ? STICKMAN_REVISION_MODEL : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
+    const meta = mergeMeta(row.meta, usage, { revisionKind: null, revisionFallbackReason: "revision_validation_failed" }, ledgerEntry(`revision_${routing}`, usage.inputTokens, usage.outputTokens, 0, isStickman ? stickmanModel(row, STICKMAN_REVISION_MODEL) : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
     const intermediate = { ...(row.intermediate ?? {}), revisionValidationErrors: result.errors };
     await admin
       .from("long_form_script_versions")
@@ -2617,7 +2655,7 @@ async function stageRevision(admin: any, row: ScriptRow, project: any, storyPlan
   if (isStickman && routing === "full_rewrite") {
     scriptDocument = enrichStickmanDocument(scriptDocument, storyPlan);
   }
-  const meta = mergeMeta(row.meta, usage, { revisionKind: routing }, ledgerEntry(`revision_${routing}`, usage.inputTokens, usage.outputTokens, 0, isStickman ? STICKMAN_REVISION_MODEL : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
+  const meta = mergeMeta(row.meta, usage, { revisionKind: routing }, ledgerEntry(`revision_${routing}`, usage.inputTokens, usage.outputTokens, 0, isStickman ? stickmanModel(row, STICKMAN_REVISION_MODEL) : OPENAI_MODEL, usage.cacheReadTokens, usage.cacheWriteTokens));
   const intermediate = { ...(row.intermediate ?? {}), revisionWarnings: result.warnings, ...(rolledBackSegmentIds.length ? { revisionRolledBackSegmentIds: rolledBackSegmentIds } : {}) };
   // Phase 1 FINAL — Stickman readiness is judged on the critic's score, but
   // the critic used to score only the PRE-revision draft: a real acceptance
@@ -2643,7 +2681,7 @@ async function stageRevision(admin: any, row: ScriptRow, project: any, storyPlan
   }
   await admin
     .from("long_form_script_versions")
-    .update({ script_document: scriptDocument, revision_model: isStickman ? STICKMAN_REVISION_MODEL : OPENAI_MODEL, intermediate, meta, stage: nextStage, stage_attempt: 0, worker_lock_until: null })
+    .update({ script_document: scriptDocument, revision_model: isStickman ? stickmanModel(row, STICKMAN_REVISION_MODEL) : OPENAI_MODEL, intermediate, meta, stage: nextStage, stage_attempt: 0, worker_lock_until: null })
     .eq("id", row.id);
 }
 
@@ -2765,7 +2803,7 @@ async function stageFinalizing(admin: any, row: ScriptRow, project: any, storyPl
       const usage = newUsageTotals();
       try {
         let expandedDoc = await runLengthExpansion(doc, pack, targetSegmentIds, usage, isStickman ? STICKMAN_EXPANSION_INSTRUCTIONS : EXPANSION_INSTRUCTIONS);
-        if (isStickman) expandedDoc = sanitizeStickmanDocumentTtsHygiene(expandedDoc);
+        if (isStickman) expandedDoc = keepWaivers(sanitizeStickmanDocumentTtsHygiene(expandedDoc), doc);
         const expandedResult = validateWithStickmanExtras(expandedDoc, pack, new Set(allUsableFactIds(pack)), isStickman);
         if (!expandedResult.errors.length) {
           doc = attachChapterMetrics({ ...expandedDoc, actualWords: computeActualWords(expandedDoc), estimatedDurationSeconds: computeEstimatedDurationSeconds(expandedDoc) });
@@ -2788,7 +2826,14 @@ async function stageFinalizing(admin: any, row: ScriptRow, project: any, storyPl
   }
 
   const factIdSet = new Set(allUsableFactIds(pack));
-  const result = validateWithStickmanExtras(doc, pack, factIdSet, isStickman);
+  let result = validateWithStickmanExtras(doc, pack, factIdSet, isStickman);
+  // The finished script is never thrown away for a quality rule (see validateWithStickmanExtras).
+  if (isStickman && result.errors.some((e) => e.quality)) {
+    const w = waiveQualityRules(doc, result, pack, factIdSet);
+    doc = w.doc; result = w.result;
+    meta = { ...(meta ?? {}), waivedQualityRules: doc.waivedQualityRules };
+    await logEvent("advance-long-form-script", "warn", "script_quality_rules_waived", { projectId: row.project_id, scriptVersionId: row.id, stage: "finalizing", rules: [...new Set(w.waived.map((e) => e.code))], findings: w.waived.length });
+  }
 
   const routing = row.intermediate?.criticRouting;
   const insufficientChapterIds: string[] = doc.insufficientEvidenceChapterIds ?? [];
@@ -2848,7 +2893,7 @@ async function stageFinalizing(admin: any, row: ScriptRow, project: any, storyPl
       const usage = newUsageTotals();
       try {
         let rewrittenDoc = await runConservativeRewrite(doc, pack, targetSegmentIds, row.critic_result?.issues ?? [], usage);
-        if (isStickman) rewrittenDoc = sanitizeStickmanDocumentTtsHygiene(rewrittenDoc);
+        if (isStickman) rewrittenDoc = keepWaivers(sanitizeStickmanDocumentTtsHygiene(rewrittenDoc), doc);
         const rewrittenResult = validateWithStickmanExtras(rewrittenDoc, pack, factIdSet, isStickman);
         if (!rewrittenResult.errors.length) {
           doc = attachChapterMetrics({ ...rewrittenDoc, actualWords: computeActualWords(rewrittenDoc), estimatedDurationSeconds: computeEstimatedDurationSeconds(rewrittenDoc) });
