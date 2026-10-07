@@ -62,6 +62,10 @@ function makeSb() {
 // it look like 13 independent image failures instead of one root cause. The
 // DB/logs now keep the real, specific code; only the user-facing message
 // stays friendly.
+// Task creation answers that mean "not taken, try later" (see the creation step).
+const CREATE_RETRY_STATUS = new Set([429, 503]);
+const CREATE_RETRY_WAITS_MS = [5_000, 20_000, 60_000];
+
 function stableImageFailure(raw: unknown): { code: string; message: string } {
   const value = String(raw ?? "");
   if (value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" || value === "REFERENCE_NOT_ACCESSIBLE" || value === "REFERENCE_IMAGE_EXPIRED") {
@@ -866,20 +870,35 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // Creation is deliberately single-attempt. If its response is lost after
   // acceptance, poll the reserved task ID instead of submitting another paid
   // generation.
+  //
+  // 2026-10-07: the one exception is an answer that says the task was NOT taken: 429 / 503
+  // ("temporarily unavailable due to high demand"). That is tried again after 5 s, 20 s and 60 s
+  // (plus jitter); on 7 Oct ten thumbnails were lost to one such answer with no second try.
+  // A lost response, or any other status, is still never resubmitted.
   let createResult: { ok: boolean; status: number; text: string; json: any } | null = null;
-  try {
-    createResult = await safeFetch(TASKS_URL, {
-      method:  "POST",
-      headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
-      body:    JSON.stringify([task]),
-    });
-  } catch (error) {
-    logEvent("warn", "task_submit_response_lost", {
-      jobId,
-      toolKey: airTag,
-      providerId: providerTaskId,
-      message: String((error as any)?.message ?? error),
-    });
+  for (let createTry = 0; ; createTry++) {
+    createResult = null;
+    try {
+      createResult = await safeFetch(TASKS_URL, {
+        method:  "POST",
+        headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
+        body:    JSON.stringify([task]),
+      });
+    } catch (error) {
+      logEvent("warn", "task_submit_response_lost", {
+        jobId,
+        toolKey: airTag,
+        providerId: providerTaskId,
+        message: String((error as any)?.message ?? error),
+      });
+    }
+    if (createResult && !createResult.ok && CREATE_RETRY_STATUS.has(createResult.status) && createTry < CREATE_RETRY_WAITS_MS.length) {
+      const waitMs = Math.round(CREATE_RETRY_WAITS_MS[createTry] * (1 + 0.25 * Math.random()));
+      logEvent("warn", "task_creation_retry", { jobId, toolKey: airTag, status: createResult.status, try: createTry + 1, waitMs });
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+    break;
   }
 
   if (createResult && (!createResult.ok || createResult.json?.errors?.length)) {

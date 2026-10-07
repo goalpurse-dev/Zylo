@@ -198,3 +198,14 @@ Deno.test("the money rules those tests assume are the database's own", () => {
   assertMatch(twoAm, /v_refund := public\.two_am_refund_for\(g\.reserved_credits, v_completed\);/);
   assertMatch(twoAm, /and created_at >= p_created_after/);
 });
+
+Deno.test("an image request the provider did not take (429 / 503 'high demand') is tried again; anything else is still never resubmitted", () => {
+  // 7 Oct 2026, 17:24 UTC: Runware answered ten thumbnail requests with 429 and all ten failed at once.
+  const img = read("supabase/functions/runware-image/index.ts");
+  assertMatch(img, /const CREATE_RETRY_STATUS = new Set\(\[429, 503\]\);/);
+  assertMatch(img, /const CREATE_RETRY_WAITS_MS = \[5_000, 20_000, 60_000\];/);
+  assertMatch(img, /if \(createResult && !createResult\.ok && CREATE_RETRY_STATUS\.has\(createResult\.status\) && createTry < CREATE_RETRY_WAITS_MS\.length\) \{/);
+  // A lost response (no answer at all) falls through to polling the reserved task id, as before.
+  assertMatch(img, /"task_submit_response_lost"/);
+  assert(!/CREATE_RETRY_STATUS = new Set\(\[[^\]]*(500|502|504)/.test(img), "an answer that may mean 'taken' is not retried");
+});
