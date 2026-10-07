@@ -297,13 +297,15 @@ test("stall check: a clip Runware lost is sent again once after 4 min, then refu
   assert.equal(db.balance, 1000, "refunded");
 });
 
-test("stall check: a clip Runware is still rendering is NOT sent twice; refunded at 12 min", async () => {
+// 2026-10-07: given up on at 30 min (it was 12). On 6-7 Oct Runware delivered six clips after the 12-minute refund.
+test("stall check: a clip Runware is still rendering is NOT sent twice; refunded at 30 min", async () => {
   const { db, engine, sent } = setup({ poll: (T) => ({ httpStatus: 200, body: { data: [{ taskType: "videoInference", taskUUID: T, status: "processing" }] } }) });
   const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
   clipStep(db, storyId);
   await engine.kick({ storyId });
-  for (let t = 0; t < 11; t++) { db.advance(60); await engine.reconcile(); }
-  assert.equal(sent.length, 1, "still rendering at 11 min: no second send");
+  assert.equal(TIMING.giveUpAfterSec.clip, 30 * 60);
+  for (let t = 0; t < 29; t++) { db.advance(60); await engine.reconcile(); }
+  assert.equal(sent.length, 1, "still rendering at 29 min: no second send, no refund");
   assert.equal([...db.jobs.values()][0].status, "submitted");
   db.advance(70);
   await engine.reconcile();
@@ -357,4 +359,22 @@ test("picture check: a passing picture completes normally; a check that can't ru
     assert.equal(await eng.onResult(sent[0].taskUUID, IMG(sent[0].taskUUID)), "completed");
     assert.equal(sent.length, 1);
   }
+});
+
+// 2026-10-07: a status read that fails says nothing about the clip.
+test("a status read the provider fumbles (503, 429, a balance refusal) is 'no news': the clip is not sent again, and its result is still taken", async () => {
+  let reads = 0;
+  const { db, engine, sent } = setup({ poll: (T) => (++reads <= 6 ? { httpStatus: reads % 2 ? 503 : 402, body: { errors: [{ code: "insufficientCredits", message: "Insufficient credits" }] } } : { httpStatus: 200, body: CLIP(T) }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  clipStep(db, storyId);
+  await engine.kick({ storyId });
+  for (let t = 0; t < 7; t++) { db.advance(120); await engine.reconcile(); }
+  assert.equal(sent.length, 1, "one paid clip, never a second under a new id");
+  assert.equal(db.balance, 975, "not refunded while it was still being made");
+  db.advance(120);
+  await engine.reconcile();
+  for (let t = 0; t < 4; t++) { db.advance(60); await engine.reconcile(); }
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.status, "succeeded", "the clip arrived on the next good read");
+  assert.equal(db.balance, 975, "paid for once");
 });
