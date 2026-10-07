@@ -559,6 +559,14 @@ async function completeRunwareImageJob(
     p_output: providerOutput,
     p_provider_task_id: providerTaskId,
   });
+  if (completed !== true) {
+    // The only way a live job is refused here is a charge that failed (no credits left):
+    // the job is ended with plain words instead of hanging at 98 %.
+    const { data: still } = await sb.from("jobs").select("status").eq("id", jobId).maybeSingle();
+    if (still && ["running", "processing"].includes(String(still.status))) {
+      await safeRpc(sb, "fail_and_refund_generation_job", { p_job_id: jobId, p_error_code: "INSUFFICIENT_CREDITS", p_error: "You don't have enough credits for this. Add credits and try again.", p_provider_task_id: null });
+    }
+  }
   if (completed === true) {
     const { data: completedJob } = await sb.from("jobs").select("user_id").eq("id", jobId).single();
     if (completedJob?.user_id) {

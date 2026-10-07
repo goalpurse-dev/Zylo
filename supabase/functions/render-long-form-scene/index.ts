@@ -27,7 +27,7 @@ import { codeCheckImage, imageDHash } from "../_shared/stickman/imageChecks.ts";
 import { overlayText, scaleLayer, type OverlayLayer } from "../_shared/stickman/textOverlay.ts";
 import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
 import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
-import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
+import { SCENE_LEASE_S, SCENES_TOTAL_MAX } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
 import { needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
 import { BACKUP_TIER, climbLadder, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
@@ -313,6 +313,9 @@ Deno.serve(async (req) => {
   // Runware balance guard: below the threshold nothing is claimed — queued scenes wait, then resume.
   const guard = await checkRunwareGuard(admin);
   if (guard.paused) return ok(req, { ok: true, claimed: false, paused: true });
+  // The cap across ALL videos (config LONG_FORM_SCENES_TOTAL): over it, this scene waits in the queue.
+  const { count: drawingNow } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "rendering").gt("lease_until", new Date().toISOString());
+  if ((drawingNow ?? 0) >= SCENES_TOTAL_MAX) return ok(req, { ok: true, claimed: false, busy: true });
   const { data: claimed, error } = await admin.rpc("claim_long_form_scene_image", { p_project_id: projectId, p_scene_id: body?.sceneId ?? null, p_lease_seconds: SCENE_LEASE_S });
   if (error) return err(req, "claim failed", 500, { reason: error.message });
   const scene = (claimed ?? [])[0];

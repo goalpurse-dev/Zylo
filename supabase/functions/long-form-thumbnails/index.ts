@@ -291,6 +291,36 @@ Deno.serve(async (req) => {
     }
   }
 
+  // 2026-10-07, internal: the watchdog for EVERY project (generation-sweeper calls it each minute).
+  // It used to run only when the user opened the page again: a paid draw that never finished kept
+  // its credits until then. Also: a failed image that still holds its charge is refunded.
+  if (action === "sweep_all") {
+    if (!SECRET || req.headers.get("x-autopilot-secret") !== SECRET) return err(req, "Unauthorized", 401);
+    // Only work made after the sweeper's cutoff (older rows are never touched without the owner's say).
+    const createdAfter = Number.isFinite(Date.parse(String(body?.createdAfter ?? ""))) ? new Date(String(body.createdAfter)).toISOString() : new Date(Date.now() - 86400_000).toISOString();
+    const { data: stuck } = await admin.from("long_form_thumbnails").select("*").in("status", ["queued", "rendering"]).not("prompt", "is", null).gte("created_at", createdAfter).lt("created_at", new Date(Date.now() - STUCK_MS).toISOString()).limit(60);
+    const { data: unpaid } = await admin.from("long_form_thumbnails").select("id, project_id, credits_charged").eq("status", "failed").gt("credits_charged", 0).gte("created_at", createdAfter).limit(60);
+    const projectIds = [...new Set([...(stuck ?? []), ...(unpaid ?? [])].map((r: any) => r.project_id))];
+    const { data: owners } = projectIds.length ? await admin.from("long_form_projects").select("id, user_id").in("id", projectIds) : { data: [] };
+    const ownerOf = new Map((owners ?? []).map((p: any) => [p.id, p.user_id]));
+    let swept = 0, refunded = 0;
+    for (const pid of projectIds) {
+      const owner = ownerOf.get(pid);
+      if (!owner) continue;
+      const rows = (stuck ?? []).filter((r: any) => r.project_id === pid);
+      if (rows.length && await sweepStuck(rows, owner)) swept += rows.length;
+      for (const r of (unpaid ?? []).filter((x: any) => x.project_id === pid)) {
+        // Claim the refund first (only one caller wins), then pay it back.
+        const { data: claimed } = await admin.from("long_form_thumbnails").update({ credits_charged: 0 }).eq("id", r.id).eq("credits_charged", r.credits_charged).select("id");
+        if (!claimed?.length) continue;
+        await admin.rpc("deduct_credits", { uid: owner, amount: -r.credits_charged });
+        await logEvent("long-form-thumbnails", "warn", "thumbnail_failed_refunded", { projectId: pid, id: r.id, credits: r.credits_charged });
+        refunded++;
+      }
+    }
+    return ok(req, { ok: true, swept, refunded });
+  }
+
   // Internal (the autopilot secret or the service role): the FREE retry, or a FREE re-made batch
   // (start + regenerate) for a project — never a user login, never a charge.
   const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${SERVICE_KEY}`;

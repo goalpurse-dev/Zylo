@@ -19,3 +19,18 @@ export async function alertAdmin(subject: string, text: string, tag = "alert"): 
     return false;
   }
 }
+
+// The same alert at most once per `everyS` (a long outage is one email, not one a minute).
+// The memory is the system log itself (source "ops-alert", event = key): no table of its own.
+export async function alertOnce(admin: any, key: string, everyS: number, subject: string, text: string): Promise<boolean> {
+  try {
+    const since = new Date(Date.now() - everyS * 1000).toISOString();
+    const { data: seen } = await admin.from("system_logs").select("id").eq("source", "ops-alert").eq("event", key).gte("created_at", since).limit(1);
+    if (seen?.length) return false;
+    await admin.from("system_logs").insert({ source: "ops-alert", level: "warn", event: key, message: subject.slice(0, 300), details: {} });
+    return await alertAdmin(subject, text, key);
+  } catch (e) {
+    console.error(`[ops-alert] ${key}:`, String(e));
+    return false;
+  }
+}

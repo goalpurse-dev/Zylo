@@ -1,6 +1,8 @@
 // supabase/functions/runware-video/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { plainJobError } from "../_shared/jobErrors.ts";
+import { markOutOfBalance } from "../_shared/runwareBalance.ts";
 import { launchRunwareVideo, pollRunware } from "./runware.ts";
 import { logEvent as persistLog } from "../_shared/systemLog.ts";
 import {
@@ -135,10 +137,14 @@ async function safeUpdateJob(
   patch: Record<string, unknown>,
 ) {
   if (patch.status === "failed") {
+    // jobs.error is shown to the user as it is: plain words only; the raw text stays in the log.
+    const raw = String(patch.error ?? "The provider couldn't complete this generation. Please try again.");
+    const shown = plainJobError(patch.error_code, raw);
+    if (shown !== raw) logEvent("warn", "job_failed_raw_reason", { jobId, code: patch.error_code ?? null, raw: raw.slice(0, 300) });
     const { error } = await sb.rpc("fail_and_refund_generation_job", {
       p_job_id: jobId,
       p_error_code: String(patch.error_code ?? "PROVIDER_GENERATION_FAILED"),
-      p_error: String(patch.error ?? "The provider couldn't complete this generation. Please try again."),
+      p_error: shown,
       p_provider_task_id: null,
     });
     if (error) console.error("[runware-video] atomic failure error:", error.message);
@@ -224,21 +230,35 @@ async function persistVideoResult(sb: SB, jobId: string, sourceUrl: string): Pro
 // Runware returns 402 "insufficientCredits" when their balance-based concurrency
 // throttle kicks in — NOT when the account is actually empty. Wait, then retry.
 const LAUNCH_RETRY_DELAY_MS = 3 * 60 * 1000; // 3 min
+// 2026-10-07: a temporary provider error at launch (504, 5xx, rate limit) used to fail the job
+// at once. It is tried again after 5 s, 20 s and 60 s (plus jitter) before it is given up.
+const TRANSIENT_LAUNCH = /\((?:429|500|502|503|504)\)/;
+const TRANSIENT_LAUNCH_WAITS_MS = [5_000, 20_000, 60_000];
 
 async function launchWithRetry(
   sb: SB,
   jobId: string,
   payload: any,
 ): Promise<string> {
+  let transientTries = 0;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const { jobId: providerJobId } = await launchRunwareVideo(payload);
       return String(providerJobId);
     } catch (e: any) {
       const msg = String(e?.message ?? "");
+      if (TRANSIENT_LAUNCH.test(msg) && transientTries < TRANSIENT_LAUNCH_WAITS_MS.length) {
+        const waitMs = Math.round(TRANSIENT_LAUNCH_WAITS_MS[transientTries++] * (1 + 0.25 * Math.random()));
+        logEvent("warn", "launch_transient_retry", { jobId, try: transientTries, waitMs, message: msg.slice(0, 160) });
+        await sleep(waitMs);
+        attempt--; // not one of the 402 attempts
+        continue;
+      }
       const is402 = msg.includes("(402)");
 
       if (!is402 || attempt >= 1) throw e;
+      // Runware refused us for balance: every Runware tool pauses for a few minutes and the owner is emailed (once an hour at most).
+      await markOutOfBalance(sb as any, `video launch refused: ${msg.slice(0, 200)}`).catch(() => {});
 
       logEvent("warn", "launch_402_retry", {
         jobId,

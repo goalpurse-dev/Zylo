@@ -561,6 +561,10 @@ export async function pollRunware(providerJobId: string, ourJobId?: string): Pro
   const { res, text, json } = await postJson(payload, ourJobId);
 
   if (!res.ok) {
+    // 2026-10-07: a status read that failed for a moment (rate limit, 5xx) says nothing about the
+    // video. It used to fail and refund a video that was still being made; now it is a poll error
+    // the caller counts and tries again.
+    if (res.status === 429 || res.status >= 500) throw new Error(`poll unavailable (${res.status})`);
     return {
       status: "failed",
       error: `poll failed (${res.status}): ${text}`,

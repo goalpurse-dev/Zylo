@@ -295,6 +295,9 @@ Deno.serve(async (req) => {
       const { count } = await admin.from("long_form_render_jobs").select("id", { count: "exact", head: true }).eq("status", "failed").is("parent_job_id", null).gte("finished_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString());
       if (count) background(fetch(fn("long-form-render"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "watchdog" }) }).then((r) => r.body?.cancel()));
     } catch (e) { console.error("[autopilot] render sweep", String(e)); }
+    // Every tool outside Long Form: stuck jobs re-checked and refunded, lost queued jobs dispatched
+    // again, the failure rate watched (generation-sweeper). Each minute, never waited for.
+    background(fetch(fn("generation-sweeper"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: "{}" }).then((r) => r.body?.cancel()).catch(() => {}));
   }
   const results = [];
   for (const id of ids) {

@@ -21,12 +21,18 @@ export const SCENES_STAGES: { key: ScenesStage | "finishing"; label: string }[] 
 
 // Measured (2026-09): beat plans 121-168 s ($0.18-0.25, 115-136 beats); V2
 // scenes 9.7 s median / 12.1 s p90 each, 136 scenes in 229 s at 6 at a time.
+// 2026-10-07, the provider concurrency caps (config, no redeploy of the rules needed):
+//   LONG_FORM_SCENES_PER_VIDEO  scenes of ONE video drawn at the same time (default 6, the measured value)
+//   LONG_FORM_SCENES_TOTAL      scenes of ALL videos drawn at the same time (default 30)
+// Work over a cap waits in the queue; it is never refused.
+const envInt = (name: string, def: number) => { try { const v = Number((globalThis as any).Deno?.env?.get(name)); return Number.isFinite(v) && v > 0 ? Math.floor(v) : def; } catch { return def; } };
+export const SCENES_TOTAL_MAX = envInt("LONG_FORM_SCENES_TOTAL", 30);
 export const SCENE_TIMING = {
   bibleS: [0, 90] as [number, number],       // normally frozen during the voice step already
   beatsS: [150, 240] as [number, number],   // 121-189 s measured (115-148 beats)
   // V3 measured on f90160bc (148 scenes): 9.6 s median, 17.2 s p90; V4 = V3 + best-of-2 on some beats.
   perSceneS: { V2: [9.7, 12.1], V3: [9.6, 17.2], V4: [14, 30] } as Record<string, [number, number]>,
-  concurrency: 6,
+  concurrency: envInt("LONG_FORM_SCENES_PER_VIDEO", 6),
 };
 export const SCENE_CONCURRENCY = SCENE_TIMING.concurrency;
 export const SCENE_LEASE_S = 150;           // one step of a scene: render (+ retry) + upscale; renewed per step (sceneLadder.ts)

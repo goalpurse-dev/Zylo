@@ -4,6 +4,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getProviderLink } from "../../../src/lib/providers.ts";
 import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
+import { PAUSED_COPY } from "../_shared/stuckJobs.ts";
+import { OUT_OF_CREDITS, plainJobError } from "../_shared/jobErrors.ts";
 import {
   ProviderReferenceError,
   friendlyReferenceMessage,
@@ -136,8 +139,9 @@ async function isToolAllowedForUser(
 type SB = ReturnType<typeof createClient>;
 
 async function failAndRefundJob(sb: SB, jobId: string, code: string, message: string) {
+  // jobs.error is shown to the user as it is: plain words only (the raw text is in the log lines around each call).
   return sb.rpc("fail_and_refund_generation_job", {
-    p_job_id: jobId, p_error_code: code, p_error: message, p_provider_task_id: null,
+    p_job_id: jobId, p_error_code: code, p_error: plainJobError(code, message), p_provider_task_id: null,
   });
 }
 
@@ -255,6 +259,22 @@ Deno.serve(async (req) => {
       }).catch(() => null);
       const payload = res ? await res.json().catch(() => ({ ok: false })) : { ok: false };
       return json(req, payload);
+    }
+
+    // 2026-10-07, the provider balance guard for every Runware tool: while new work is paused
+    // (our balance is below the threshold, or Runware just refused us) a queued job WAITS. It is
+    // not failed and nothing is charged; generation-sweeper dispatches it again once the pause is over.
+    if (jobId && !recoverExistingProvider) {
+      const { data: waiting } = await sbAdmin.from("jobs").select("status,tool_key").eq("id", jobId).maybeSingle();
+      const waitingFn = waiting?.tool_key ? getProviderLink(waiting.tool_key)?.edgeFn : null;
+      if (waiting?.status === "queued" && (waitingFn === "/functions/v1/runware-image" || waitingFn === "/functions/v1/runware-video")) {
+        const guard = await checkRunwareGuard(sbAdmin as any);
+        if (guard.paused) {
+          await sbAdmin.from("jobs").update({ retry_after: new Date().toISOString() }).eq("id", jobId).eq("status", "queued");
+          logEvent("warn", "provider_paused_job_waits", { jobId, toolKey: waiting.tool_key });
+          return json(req, { ok: true, status: "queued", paused: true, message: PAUSED_COPY }, 202);
+        }
+      }
     }
 
     // Explicit handoffs are the normal browser path. They must obey the same
@@ -435,6 +455,18 @@ Deno.serve(async (req) => {
         return fail(req, "Could not apply the server price", 500);
       }
       job.charge_credits = serverPrice;
+    }
+
+    // 2026-10-07: an image is charged when it is finished. A user who cannot pay for it used to
+    // get the picture drawn (we paid the provider), the charge then failed and the job hung at
+    // 98 % for ever (456 jobs since August). Now it is said at once, before any provider call.
+    if (job.type === "image" && !isReservationJob && Number(job.charge_credits ?? 0) > 0) {
+      const { data: payer } = await sbAdmin.from("profiles").select("credit_balance").eq("id", job.user_id).maybeSingle();
+      if (payer && Number(payer.credit_balance ?? 0) < Number(job.charge_credits)) {
+        logEvent("warn", "insufficient_credits_before_dispatch", { jobId, toolKey: job.tool_key, userId: job.user_id, price: job.charge_credits, balance: payer.credit_balance });
+        await failAndRefundJob(sbAdmin, jobId, "INSUFFICIENT_CREDITS", OUT_OF_CREDITS);
+        return fail(req, OUT_OF_CREDITS, 402);
+      }
     }
 
     // 30 Days reserves the full visual cost before child jobs are created.
