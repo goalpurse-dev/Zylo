@@ -45,9 +45,11 @@ Deno.test("a queued job nobody is working on is dispatched again; while the prov
   assertEquals(decide(queued, 1810), "refund", "30 minutes in the queue: ended, anything charged goes back");
   // Paused (balance guard): held, however old.
   assertEquals(decide(queued, 5000, { paused: true }), "hold");
-  // The sweeper stamps retry_after on every held job each minute, so after a 2-hour pause the job is young again.
-  assertEquals(decide({ ...queued, retry_after: at(7200) }, 7200 + 60), "none");
-  assertEquals(decide({ ...queued, retry_after: at(7200) }, 7200 + 130), "redispatch");
+  // The sweeper stamps retry_after on every held job each minute, so after a 2-hour pause the job is young again:
+  // it is dispatched on the next minute, and its 30-minute clock starts from the end of the pause.
+  assertEquals(decide({ ...queued, retry_after: at(7200) }, 7200 + 60), "redispatch");
+  assertEquals(decide({ ...queued, retry_after: at(7200) }, 7200 + 1700), "redispatch");
+  assertEquals(decide({ ...queued, retry_after: at(7200) }, 7200 + 1810), "refund");
   // A job backed off into the future is left alone.
   assertEquals(decide({ ...queued, retry_after: at(400) }, 300), "none");
 });
@@ -199,16 +201,8 @@ Deno.test("the money rules those tests assume are the database's own", () => {
   assertMatch(twoAm, /and created_at >= p_created_after/);
 });
 
-Deno.test("an image request the provider did not take (429 / 503 'high demand') is tried again; anything else is still never resubmitted", () => {
-  // 7 Oct 2026, 17:24 UTC: Runware answered ten thumbnail requests with 429 and all ten failed at once.
-  const img = read("supabase/functions/runware-image/index.ts");
-  assertMatch(img, /const CREATE_RETRY_STATUS = new Set\(\[429, 503\]\);/);
-  assertMatch(img, /const CREATE_RETRY_WAITS_MS = \[5_000, 20_000, 60_000\];/);
-  assertMatch(img, /if \(createResult && !createResult\.ok && CREATE_RETRY_STATUS\.has\(createResult\.status\) && createTry < CREATE_RETRY_WAITS_MS\.length\) \{/);
-  // A lost response (no answer at all) falls through to polling the reserved task id, as before.
-  assertMatch(img, /"task_submit_response_lost"/);
-  assert(!/CREATE_RETRY_STATUS = new Set\(\[[^\]]*(500|502|504)/.test(img), "an answer that may mean 'taken' is not retried");
-});
+// (The fixed 5 / 20 / 60 s retry for 429 / 503 that stood here was replaced on 2026-10-08 by the
+// per-model circuit breaker: see chaosOverload.test.ts.)
 
 // ---------------- Part 4: never run dry, know first ----------------
 import { guardDecision, reserveFor, PROVIDER_USD_PER_CREDIT } from "../../supabase/functions/_shared/runwareBalance.ts";

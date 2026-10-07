@@ -11,6 +11,7 @@
 // one worker's time is deferred: the row keeps its lease until the wait is over
 // and the watchdog hands it to the next worker, which carries on from that step.
 import { OUT_OF_BALANCE } from "../runwareBalance.ts";
+import { parseOverload } from "../modelOverload.ts";
 import type { Tier } from "./renderTiers.ts";
 
 export type RungKind = "normal" | "safe" | "backup";
@@ -35,11 +36,15 @@ export const STEP_RESERVE_S = 35;
 // A scene the watchdog cannot hand on (a split scene's own picture) does everything in one worker, up to this.
 export const HARD_BUDGET_S = 300;
 
-export type FailureKind = "balance" | "prompt" | "safety" | "check" | "provider";
+// overload (2026-10-08): the model answered "serviceOverloaded" with a retryAfter. Not a step of the
+// ladder and not a failure: the scene waits that long and the model's circuit breaker pauses the rest.
+export type FailureKind = "balance" | "overload" | "prompt" | "safety" | "check" | "provider";
+const OVERLOAD = /serviceOverloaded|service.?overload|overloaded|temporarily unavailable|high demand|at capacity|runware (?:429|503)\b/i;
 const SAFETY = /safety|moderat|nsfw|content[ _-]?polic|prohibited|inappropriate|sensitive|blocked|invalid\w*prompt|unsafe/i;
 export function classifyFailure(message: string): FailureKind {
   const m = String(message ?? "");
   if (OUT_OF_BALANCE.test(m)) return "balance";        // our account can't pay: the scene waits, drawing pauses
+  if (OVERLOAD.test(m)) return "overload";              // the model is overloaded: wait its retryAfter
   if (/prompt check:/i.test(m)) return "prompt";        // our own prompt rule: the same prompt fails the same way
   if (SAFETY.test(m)) return "safety";                  // the provider refused the picture
   if (/^image_failed$/.test(m)) return "check";         // our own image checks
@@ -57,7 +62,7 @@ export const ladderOf = (qa: any): LadderState => ({
 // A temporary provider error waits (the provider needs the time); a refusal of
 // the prompt goes straight to the safe prompt (waiting changes nothing), and so
 // does a picture that failed our own checks twice.
-export function nextRung(step: number, kind: Exclude<FailureKind, "balance">, checks: number, rand: () => number = Math.random): { covered: true } | { covered: false; step: number; waitS: number } {
+export function nextRung(step: number, kind: Exclude<FailureKind, "balance" | "overload">, checks: number, rand: () => number = Math.random): { covered: true } | { covered: false; step: number; waitS: number } {
   let next = step + 1;
   if ((kind === "prompt" || kind === "safety" || (kind === "check" && checks >= 2)) && next < SAFE_STEP) next = SAFE_STEP;
   if (next >= SCENE_LADDER.length) return { covered: true };
@@ -72,6 +77,7 @@ export type LadderOutcome<T> =
   | { kind: "drawn"; result: T; rung: RungKind }
   | { kind: "balance"; result: T | null; message: string }
   | { kind: "deferred"; result: T | null; waitS: number }
+  | { kind: "overloaded"; result: null; retryAfterS: number }
   | { kind: "covered"; result: T | null };
 export async function climbLadder<T extends { failed: boolean }>(o: {
   state: LadderState; canDefer: boolean;
@@ -89,10 +95,13 @@ export async function climbLadder<T extends { failed: boolean }>(o: {
       failure = "image_failed";
     } catch (e) {
       result = null;
-      failure = String(e).slice(0, 200);
+      const raw = String(e);
+      // Overloaded: the step and the failure count are left as they are (it is not one of the retries).
+      if (classifyFailure(raw) === "overload") return { kind: "overloaded", result: null, retryAfterS: parseOverload(0, raw).retryAfterS };
+      failure = raw.slice(0, 200);
     }
     s.failures.push(rung === "normal" ? failure : `${rung}: ${failure}`);
-    const kind = classifyFailure(failure);
+    const kind = classifyFailure(failure) as Exclude<FailureKind, "overload">;
     if (kind === "balance") return { kind: "balance", result, message: failure };
     if (kind === "check") s.checks++;
     const next = nextRung(s.step, kind, s.checks, o.rand);

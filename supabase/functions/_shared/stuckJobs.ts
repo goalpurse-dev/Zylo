@@ -31,11 +31,13 @@ export type StuckAction = "none" | "hold" | "redispatch" | "recheck" | "recheck_
 export function decideStuckJob(j: JobLite, nowMs: number, o: { paused: boolean; canRecheck: boolean }): StuckAction {
   if (j.status === "queued") {
     if (o.paused) return "hold";
-    // A held or backed-off job waits from its retry time, not from its creation.
-    const since = Math.max(Date.parse(j.created_at), j.retry_after ? Date.parse(j.retry_after) : 0);
-    const ageS = (nowMs - since) / 1000;
-    if (ageS >= REFUND_AFTER_S) return "refund";
-    return ageS >= REDISPATCH_QUEUED_AFTER_S ? "redispatch" : "none";
+    // A held, backed-off or overload-waiting job: nothing before its retry time; its refund clock
+    // runs from that time (a wait is never a failure), and once the wait is over it is dispatched
+    // on the next minute.
+    const created = Date.parse(j.created_at), retry = j.retry_after ? Date.parse(j.retry_after) : 0;
+    if (retry > nowMs) return "none";
+    if ((nowMs - Math.max(created, retry)) / 1000 >= REFUND_AFTER_S) return "refund";
+    return (nowMs - created) / 1000 >= REDISPATCH_QUEUED_AFTER_S ? "redispatch" : "none";
   }
   if (j.status === "running" || j.status === "processing") {
     const ageS = (nowMs - Date.parse(j.claimed_at ?? j.created_at)) / 1000;

@@ -129,9 +129,12 @@ export function DiscoveryLeftPanel({
 // Right panel: the results grid itself. 2 columns is the default and the
 // ceiling on ordinary desktops — cards stay premium and readable rather
 // than shrinking to fit more per row; only very wide screens step up to 3.
-export function DiscoveryResultsPanel({ ideas, selectedIdeaId, readyCount, pendingCount, failedCount, onUse, onDismiss }) {
+export function DiscoveryResultsPanel({ ideas, selectedIdeaId, readyCount, pendingCount, failedCount, highDemandCount = 0, onUse, onDismiss }) {
   let statusText = null;
-  if (pendingCount > 0) {
+  if (pendingCount > 0 && highDemandCount > 0) {
+    // The image model is busy: the server is waiting and carries on by itself.
+    statusText = `High demand, continuing in a moment · ${readyCount + failedCount}/${ideas.length}`;
+  } else if (pendingCount > 0) {
     statusText = `Rendering previews · ${readyCount + failedCount}/${ideas.length}`;
   } else if (failedCount > 0) {
     statusText = `${readyCount} ready · ${failedCount} unavailable`;

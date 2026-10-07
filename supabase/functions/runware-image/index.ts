@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { parseOverload, recordOverload, recordSuccess } from "../_shared/modelOverload.ts";
 import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
 import {
   ProviderReferenceError,
@@ -51,6 +52,25 @@ const CORS_HEADERS = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// The model answered "overloaded": this job WAITS (queued, uncharged, a fresh task id for its next
+// try), the model's breaker is opened for everyone, and the job comes back by itself when the wait is
+// over (generation-sweeper is the fallback). The user reads "High demand, continuing in a moment".
+async function waitForOverloadedModel(sb: ReturnType<typeof createClient>, jobId: string, airTag: string, retryAfterS: number, where: string, httpStatus: number | null) {
+  const breaker = await recordOverload(sb, airTag, retryAfterS, `${where}: serviceOverloaded, retryAfter ${retryAfterS}`);
+  const { data: row } = await sb.from("jobs").select("settings").eq("id", jobId).maybeSingle();
+  const settings: any = (row as any)?.settings ?? {};
+  const since = settings?.overload?.since ?? new Date().toISOString();
+  const { error } = await sb.from("jobs").update({
+    status: "queued", progress: 0, retry_after: breaker.until, provider_task_id: null, submission_state: "pending", lease_expires_at: null,
+    settings: { ...settings, provider_job_id: crypto.randomUUID(), waiting: "high_demand", overload: { since, waits: Number(settings?.overload?.waits ?? 0) + 1, retryAfterS } },
+  }).eq("id", jobId).in("status", ["running", "processing"]);
+  logEvent("warn", "model_overloaded_job_waits", { jobId, toolKey: airTag, where, httpStatus, retryAfterS, until: breaker.until, requeueError: error?.message ?? null });
+  const waitMs = (breaker.until ? Date.parse(breaker.until) - Date.now() : retryAfterS * 1000) + 1500 + Math.round(Math.random() * 3000);
+  if (waitMs > 110_000) return; // longer than this worker may stay: the sweeper dispatches it
+  await sleep(Math.max(0, waitMs));
+  await fetch(`${SUPABASE_URL}/functions/v1/job-worker`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ jobId }) }).then((r) => r.body?.cancel()).catch(() => {});
+}
+
 function makeSb() {
   return createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 }
@@ -62,10 +82,6 @@ function makeSb() {
 // it look like 13 independent image failures instead of one root cause. The
 // DB/logs now keep the real, specific code; only the user-facing message
 // stays friendly.
-// Task creation answers that mean "not taken, try later" (see the creation step).
-const CREATE_RETRY_STATUS = new Set([429, 503]);
-const CREATE_RETRY_WAITS_MS = [5_000, 20_000, 60_000];
-
 function stableImageFailure(raw: unknown): { code: string; message: string } {
   const value = String(raw ?? "");
   if (value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" || value === "REFERENCE_NOT_ACCESSIBLE" || value === "REFERENCE_IMAGE_EXPIRED") {
@@ -572,6 +588,8 @@ async function completeRunwareImageJob(
     }
   }
   if (completed === true) {
+    // A picture came back: the model's breaker (if it was open) lets one more request through at a time.
+    await recordSuccess(sb, toolKey).catch(() => {});
     const { data: completedJob } = await sb.from("jobs").select("user_id").eq("id", jobId).single();
     if (completedJob?.user_id) {
       const { data: profile } = await sb.from("profiles").select("plan_code").eq("id", completedJob.user_id).single();
@@ -871,34 +889,32 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // acceptance, poll the reserved task ID instead of submitting another paid
   // generation.
   //
-  // 2026-10-07: the one exception is an answer that says the task was NOT taken: 429 / 503
-  // ("temporarily unavailable due to high demand"). That is tried again after 5 s, 20 s and 60 s
-  // (plus jitter); on 7 Oct ten thumbnails were lost to one such answer with no second try.
-  // A lost response, or any other status, is still never resubmitted.
+  // 2026-10-08: an answer that says the model is OVERLOADED ("serviceOverloaded", 429 / 503, with a
+  // retryAfter) is not a failure and is not retried here: the job goes back to the queue until the
+  // provider's own retryAfter (+ jitter) is over, and the model's circuit breaker pauses every other
+  // request to it meanwhile (_shared/modelOverload.ts). A lost response is still never resubmitted.
   let createResult: { ok: boolean; status: number; text: string; json: any } | null = null;
-  for (let createTry = 0; ; createTry++) {
-    createResult = null;
-    try {
-      createResult = await safeFetch(TASKS_URL, {
-        method:  "POST",
-        headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
-        body:    JSON.stringify([task]),
-      });
-    } catch (error) {
-      logEvent("warn", "task_submit_response_lost", {
-        jobId,
-        toolKey: airTag,
-        providerId: providerTaskId,
-        message: String((error as any)?.message ?? error),
-      });
+  try {
+    createResult = await safeFetch(TASKS_URL, {
+      method:  "POST",
+      headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
+      body:    JSON.stringify([task]),
+    });
+  } catch (error) {
+    logEvent("warn", "task_submit_response_lost", {
+      jobId,
+      toolKey: airTag,
+      providerId: providerTaskId,
+      message: String((error as any)?.message ?? error),
+    });
+  }
+
+  if (createResult && (!createResult.ok || createResult.json?.errors?.length)) {
+    const overload = parseOverload(createResult.status, createResult.json ?? createResult.text);
+    if (overload.overloaded) {
+      await waitForOverloadedModel(sb, jobId, airTag, overload.retryAfterS, "create", createResult.status);
+      return;
     }
-    if (createResult && !createResult.ok && CREATE_RETRY_STATUS.has(createResult.status) && createTry < CREATE_RETRY_WAITS_MS.length) {
-      const waitMs = Math.round(CREATE_RETRY_WAITS_MS[createTry] * (1 + 0.25 * Math.random()));
-      logEvent("warn", "task_creation_retry", { jobId, toolKey: airTag, status: createResult.status, try: createTry + 1, waitMs });
-      await new Promise((resolve) => setTimeout(resolve, waitMs));
-      continue;
-    }
-    break;
   }
 
   if (createResult && (!createResult.ok || createResult.json?.errors?.length)) {
@@ -1006,6 +1022,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     }
 
     if (runwareError) {
+      // The task was taken and then dropped for load: the same wait as an overload at creation.
+      const overload = parseOverload(0, runwareError);
+      if (overload.overloaded && /overload|high demand|temporarily unavailable|capacity/i.test(`${runwareError.code ?? ""} ${runwareError.message ?? ""}`)) {
+        await waitForOverloadedModel(sb, jobId, airTag, overload.retryAfterS, "poll", null);
+        return;
+      }
       const message = `${runwareError.code ? `${runwareError.code}: ` : ""}${runwareError.message}`;
       logEvent("error", "provider_failed", { jobId, toolKey: airTag, poll: i, message });
       await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: message });
