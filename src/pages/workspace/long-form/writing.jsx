@@ -19,6 +19,7 @@ import { BookOpenCheck, Check, ChevronDown, FileText, Loader2, PenLine, RotateCw
 import { fetchLongFormProject } from "./project";
 import { LongFormCreationHeader } from "./shared";
 import { AUTOPILOT_POLL_MS, fetchAutopilotStatus, formatClock, formatEta, startAutopilot, watchProject } from "./autopilot";
+import { RefundedNotice } from "./RefundedNotice.jsx";
 import { cleanUserText } from "./textClean";
 import { displayTitle } from "./scriptReviewModel";
 
@@ -132,7 +133,8 @@ export default function LongFormWritingPage({ embedded = false, projectId: embed
             })}
           </ol>
 
-          {view?.status === "failed" && (
+          {view?.status === "failed" && view?.failed?.refunded && <RefundedNotice className="mt-6" message={view.failed.message} />}
+          {view?.status === "failed" && !view?.failed?.refunded && (
             <div className="mt-6 rounded-2xl border border-amber-300/25 bg-amber-300/[0.05] p-5">
               <p className="text-[15px] font-bold text-white">Something went wrong</p>
               <p className="mt-1 text-[13px] text-white/55">Your progress is saved — retrying picks up where it stopped. It's free.</p>
