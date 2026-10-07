@@ -329,6 +329,31 @@ Decisions of 2026-10-08 (after the first real story):
     made). 18 s for a 20 s story is as designed; the settings step says so.
 39. A visitor who can't have the Blocky page (signed out, or without the switch) lands on the
     home page, "/".
+40. CAPTION FALLBACK (adds to decision 37): a clip that still carries the model's drawn
+    subtitles after its one remake is made once more on the NEXT clip model at our cost
+    (V2 Wan → Seedance) and checked again. Only if that fails too is our caption left off for
+    that clip. V3 and V4 have no next model. Worst case extra per clip, all at our cost: one
+    remake (seconds × $0.0504) plus one Seedance clip (seconds × $0.0817): about $0.53 for a
+    4 s clip, $0.66 for 5 s. Measured 2026-10-08: Runware accepts the negative prompt, but the
+    test clip still had drawn subtitles, so the negative prompt alone is not the fix.
+41. STORY QUALITY. The writer plans before it writes and returns the plan: one premise that
+    starts "What happens if", ONE emotion (curiosity, dread, injustice, satisfaction, shock),
+    the twist, and the scene where the twist is said or seen; each scene says what it raises.
+    Code checks the plan (premise, emotion, reveal in the second half, lines that vary in
+    length, no near-repeats, nobody "typed" or "wrote" anything). The title teases and never
+    states the twist. Upload titles are one hook sentence with the keywords inside it, never
+    keywords after a dash, a bar or a colon (checked in code, one retry).
+42. THE QUALITY PASS: draft → the editor checks eleven rules → rewrite what fails → check
+    again, at most two rewrites, and the version with the fewest problems is kept. The editor
+    reads as a viewer: it sees the title, the lines and who is in each picture; the plan and
+    the roles are shown to it as writer's notes the viewer never sees. The editor is Claude
+    Sonnet (Haiku failed a script for "repeating" a role the viewer had never been told).
+    Measured on seven scripts: $0.033 to $0.10 each, $0.066 on average; the user is not
+    charged for the script.
+43. The same caption fault is fixed in AI Fruit Story on this branch (negative prompt, the
+    mid-line check, one remake, our caption left off as the last resort; not the next-model
+    step). It is deployed only on the owner's go, at a quiet time with no Fruit job in flight.
+44. Character cards are 9:16 portraits, in the library and under "Characters in this story".
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

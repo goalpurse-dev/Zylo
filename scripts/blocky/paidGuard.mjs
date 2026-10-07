@@ -25,7 +25,8 @@ export const BLOCKY_TOTAL_USD = 5.0;
 // thumb: 2 menu thumbnail options. looks: tests 2 and 3 (avatars on Lite vs Pro, one location plate + 4 scene pictures) (approved 2026-10-06).
 // looks was $0.80; lifted to $1.00 for the 4-picture re-test and the 3 Pro pictures on the corrected prompt (approved 2026-10-06).
 // captions: one 4 s Wan clip with the negative prompt against drawn subtitles (approved 2026-10-08, about $0.20).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3 });
+// stories: seven sample scripts, text only, for the story-quality review (approved 2026-10-08; about $0.05 each).
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7 });
 
 export class PaidCallBlocked extends Error {}
 

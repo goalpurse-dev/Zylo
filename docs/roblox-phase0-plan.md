@@ -451,6 +451,7 @@ safety rules, the banned-phrase lists, the no-text and no-logo sentences, the co
 | Seedance 2.0 Mini, 720p | $0.0817 per second | 3 clips |
 | Veo 3.1 Fast, 720p with sound | $0.15 per second | 1 clip |
 | Story script | $0.010–0.017 | measured |
+| Blocky script with the quality pass (draft, checks, up to two rewrites) | $0.033–0.10, average $0.066 | 7 scripts, 2026-10-08, `scripts/blocky/sampleStories.mjs` |
 | Picture check / upload text / final video | about $0.001 each | measured |
 | Full 30 s V2 story | $1.78, 179 credits charged | 2026-09-30 run |
 | One credit | $0.02133 (cheapest plan credit) | `docs/phase7/pricing-proposal.md` |
