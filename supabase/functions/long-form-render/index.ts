@@ -186,8 +186,14 @@ Deno.serve(async (req) => {
     return ok(req, { ok: true, dispatched: out });
   }
 
-  const { user, authError } = await requireUser(req);
-  if (!user) return err(req, authError || "Unauthorized", 401);
+  // "start" may also come from our own side (the autopilot secret or the service
+  // key): the render is started for the project's owner, always the included
+  // 1080p (never the paid 1440p add-on). Every other action needs the user.
+  const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${SERVICE_KEY}`;
+  const internal = trusted && action === "start";
+  const auth = internal ? { user: null as any, authError: null } : await requireUser(req);
+  let user: any = auth.user;
+  if (!user && !internal) return err(req, auth.authError || "Unauthorized", 401);
 
   // ---------------- list_done (Creations): the user's finished long-form videos ----------------
   if (action === "list_done") {
@@ -211,7 +217,8 @@ Deno.serve(async (req) => {
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId || !["start", "status", "download"].includes(action)) return err(req, "Bad request", 400);
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, selected_title, autopilot").eq("id", projectId).maybeSingle();
-  if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
+  if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
+  if (internal) user = { id: project.user_id };
   const { data: job } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
 
   if (action === "status") {
@@ -244,7 +251,7 @@ Deno.serve(async (req) => {
 
   // ---------------- start ----------------
   if (job && ["queued", "rendering", "waiting"].includes(job.status)) return ok(req, { ok: true, alreadyRunning: true, job: await jobView(job, projectId) });
-  const resolution = RESOLUTIONS[String(body?.resolution ?? "1080p")] ? String(body?.resolution ?? "1080p") : "1080p";
+  const resolution = !internal && RESOLUTIONS[String(body?.resolution ?? "1080p")] ? String(body?.resolution ?? "1080p") : "1080p";
   // No editor visit needed: the edit is created from the current scenes when
   // there is none, and its clips are put on the scenes' current pictures (a
   // scene redrawn since the last edit) before anything is rendered.
