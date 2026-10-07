@@ -64,7 +64,8 @@ const FRUIT = [
  * The only ways this branch may differ from main inside Fruit's folders, each one asked for by the owner:
  *   - the README note (2026-10-06): imported by nothing, so in no deployed function;
  *   - the one-caption-track fix ported from Blocky (2026-10-08; fruit/README.md "Fixes ported from Blocky
- *     to Fruit"). Deployed to Fruit's functions only on the owner's go.
+ *     to Fruit"), with its next-model step (a clip with drawn subtitles goes straight to the next clip
+ *     model; asked for on 2026-10-08). Deployed to Fruit's functions only on the owner's go.
  * Any other difference fails. Once this branch is merged into main the list is simply not needed.
  */
 const ALLOWED_IN_FRUIT = [
@@ -74,8 +75,10 @@ const ALLOWED_IN_FRUIT = [
   "supabase/functions/_shared/fruit/pictureCheck.js",
   "supabase/functions/_shared/fruit/engine.js",
   "supabase/functions/_shared/fruit/final.js",
+  "supabase/functions/_shared/fruit/supabaseStore.js",
   "supabase/functions/fruit-worker/index.ts",
   "supabase/functions/fruit-story-api/index.ts",
+  "tests/helpers/fruitMemoryStore.mjs",
 ];
 
 const CODE = /\.(js|jsx|mjs|ts|tsx)$/;

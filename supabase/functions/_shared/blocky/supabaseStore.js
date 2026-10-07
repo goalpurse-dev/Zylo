@@ -116,7 +116,7 @@ export function createSupabaseStore(admin) {
 
     // A clip that failed its check is made again ONCE on the same job (same
     // charge; the extra provider cost is ours). note marks it remade.
-    // request: only when the clip moves to another model (drawn subtitles twice: the tier's fallback model)
+    // request: only when the clip moves to another model (drawn subtitles: the tier's fallback model)
     async remakeClip(id, note, request = null) {
       const rows = must(await admin.from("blocky_jobs")
         .update({ status: "queued", next_attempt_at: new Date().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note, ...(request ? { request } : {}) })

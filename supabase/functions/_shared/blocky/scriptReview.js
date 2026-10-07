@@ -17,11 +17,14 @@ export const REVIEW_PURPOSE = "script_review";
 export const REVIEW_RULES = Object.freeze({
   firstLine: "the first line must be a hook: mid-action or mid-mystery, something at stake, at most two people named",
   escalation: "every scene must make it worse, weirder or higher stakes than the one before; no line just throws the last one back",
+  flip: "the twist must flip what the viewer assumed in the first lines; the villain admitting it is not a twist",
   twistShown: "the twist must be said out loud in a line or plainly seen in a picture, in the second half",
-  ending: "the last line must be the most quotable one and land the twist or name its price",
+  forced: "a proof or an action must force the twist out; nobody simply admits it",
+  ending: "something must change for someone on screen, and the winner's short last line lands it",
+  powers: "nobody does or threatens what their role can't do (a player can't ban; an admin can)",
   natural: "the lines must sound spoken and vary in length; nobody reports what they typed or wrote",
   inPicture: "everyone a line talks to, points at or describes must be in that scene's picture",
-  textMessage: "a text message read aloud gets its own line",
+  textMessage: "nothing in the story may need reading on screen, and nobody reads anything aloud",
   title: "the title must not give away the twist",
   heardOnce: "every line must land when heard once, out loud",
   premise: "nothing said may contradict what the pictures show",
@@ -52,13 +55,18 @@ export function buildReviewPrompt({ plan, cast, source, series }) {
     // What the viewer sees of each character. Their role in this story is in the writer's notes below: the viewer
     // doesn't know it unless a line says it (the editor once failed a reveal for "repeating" a role it had been shown).
     `CHARACTERS (as the viewer sees them):\n${cast.filter((c) => used.has(c.id)).map((c) => `- ${c.name}, blocky game avatar; looks like this in every scene: ${outfits[c.id] ?? c.look ?? "their usual look"}`).join("\n")}`,
-    `SCRIPT:\n${plan.scenes.map((s, i) => `${i + 1}. [in the picture: ${s.presentIds.map(name).join(", ")}; place: ${loc.get(s.locationId) ?? "?"}] ${name(s.speakerId)}: ${s.line}`).join("\n")}`,
+    // What the speaker is seen doing is part of the picture: a proof held up there is a proof the viewer sees.
+    `SCRIPT:\n${plan.scenes.map((s, i) => `${i + 1}. [in the picture: ${s.presentIds.map(name).join(", ")}; place: ${loc.get(s.locationId) ?? "?"}${s.action ? `; ${name(s.speakerId)} ${s.action}` : ""}] ${name(s.speakerId)}: ${s.line}`).join("\n")}`,
     [
       "WRITER'S NOTES (the viewer NEVER sees these; they are here so you can check that the story delivers them):",
       `premise: ${plan.premise || "(none given)"}`,
       `dominant emotion: ${plan.emotion || "(none given)"}`,
+      ...(plan.assumed ? [`what the viewer is meant to assume after the first two lines: ${plan.assumed}`] : []),
       `twist: ${plan.twist || "(none given)"}`,
       `the writer says the twist is revealed in scene ${plan.revealScene || "?"}`,
+      ...(plan.forcedBy ? [`the writer says this forces the twist out: ${plan.forcedBy}`] : []),
+      ...(plan.consequence ? [`the writer says this changes by the end: ${plan.consequence}`] : []),
+      ...(plan.winnerId ? [`the writer says the winner is: ${name(plan.winnerId)}`] : []),
       `roles: ${cast.filter((c) => used.has(c.id)).map((c) => `${c.name} is ${plan.roles?.[c.id] ?? c.tag}`).join("; ")}`,
       ...(plan.scenes.some((s) => s.raises) ? [`what each scene is meant to raise: ${plan.scenes.map((s, i) => `${i + 1}. ${s.raises || "?"}`).join(" ")}`] : []),
     ].join("\n"),

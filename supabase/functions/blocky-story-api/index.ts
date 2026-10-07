@@ -311,8 +311,8 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         title: plan.title, cast_ids: storyCast, quality: input.quality, aspect: input.aspect,
         length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations,
         // review: what the script editor found and whether the script was rewritten
-        // premise, emotion, twist: the plan behind the story (the upload text must never give the twist away)
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null },
+        // premise, emotion, twist...: the plan behind the story (the upload text must never give the twist away)
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, twists: plan.twists ?? null, forcedBy: plan.forcedBy ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({

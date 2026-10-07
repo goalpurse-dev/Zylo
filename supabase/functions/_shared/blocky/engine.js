@@ -192,7 +192,8 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
 
   /**
    * A clip's last frame arrived (or couldn't be made: ok false). A failed
-   * frame check remakes the clip once; anything else keeps it.
+   * frame check makes the clip again once (drawn subtitles: on the next clip
+   * model); anything else keeps it.
    */
   async function onClipFrame(jobId, ok) {
     const job = await store.jobById(jobId);
@@ -202,19 +203,21 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     if (ok && checkClipFrame) {
       try { verdict = await checkClipFrame(job, frame); } catch (err) { log.error?.(`[blocky] clip frame check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
     }
-    if (verdict && !verdict.ok && !remadeBefore(job) && (await remake(job, verdict.problems))) return "remade";
-    // Made again already and the video model drew its own subtitles AGAIN: one last try on the tier's
-    // next clip model (V2: Wan -> Seedance 2.0 Mini), at our cost. Only for drawn words, only once (the
-    // request is then the fallback's, and that has no fallback of its own). If that clip carries them
-    // too, it is kept and the final video leaves its own caption off it.
+    // The video model drew its own subtitles into the clip. The same model draws them again for the
+    // same line (the 2026-10-08 test clip did), so the clip goes STRAIGHT to the tier's next clip model
+    // (V2: Wan -> Seedance 2.0 Mini), once, at our cost: no remake on the same model first. The request
+    // is then the fallback's, and that has no fallback of its own, so this can't loop: if that clip
+    // carries them too, it is kept and the final video leaves its own caption off it. A tier with no
+    // next model (V3, V4) gets the one remake below instead.
     const drawn = Boolean(drawnTextProblem) && (verdict?.problems ?? []).some((p) => String(p).includes(drawnTextProblem));
-    if (verdict && !verdict.ok && drawn && remadeBefore(job) && fallbackClip) {
+    if (verdict && !verdict.ok && drawn && fallbackClip) {
       const next = fallbackClip(job.request);
-      if (next && (await store.remakeClip(job.id, `${REMAKE_NOTE} ${verdict.problems.join("; ")}; then on the next clip model`.slice(0, 500), next))) {
+      if (next && (await store.remakeClip(job.id, `${REMAKE_NOTE} on the next clip model: ${verdict.problems.join("; ")}`.slice(0, 500), next))) {
         await kick({ storyId: job.story_id });
         return "remade_on_fallback";
       }
     }
+    if (verdict && !verdict.ok && !remadeBefore(job) && (await remake(job, verdict.problems))) return "remade";
     return complete(job, frame.storedUrl);
   }
 
@@ -257,7 +260,8 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     // Clip check: did the voice say the line, and are its frames clean (no
     // human, no new character, no writing, no subtitles the model drew
     // itself)? A clip that fails is made again ONCE on the same job (our
-    // cost). A remade clip is never made a third time, but its frames are
+    // cost; one with drawn subtitles on the tier's next clip model, see
+    // onClipFrame). A remade clip's words are not checked again, but its frames are
     // still looked at, so the final video knows whether the clip carries drawn
     // words (it then leaves its own caption off that clip). A check that
     // can't run never blocks the clip.

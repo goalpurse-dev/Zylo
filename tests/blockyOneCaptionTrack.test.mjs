@@ -9,8 +9,10 @@
 // Three layers, each pinned here:
 //   1. Prevent: the Wan request also carries a negative prompt against drawn text.
 //   2. Detect: the clip check looks at two frames from the middle of the line; a
-//      clip with drawn words is made again once, at our cost, and the remade
-//      clip is looked at again (never made a third time).
+//      clip with drawn words is made again once, at our cost, on the tier's NEXT
+//      clip model (the same model draws them again for the same line; a tier
+//      with no next model gets one remake on its own), and that clip is looked
+//      at again.
 //   3. Guarantee: a clip that still carries drawn words gets NO caption of ours
 //      in the final video, so there is never more than one line on screen.
 // And the downloaded MP4 is the file the player shows.
@@ -118,7 +120,7 @@ function clipEngine(verdicts, { fallback = false } = {}) {
 const DRAWN = { ok: false, problems: [`${DRAWN_TEXT_PROBLEM} ("Freeze, I just typed ban Vex forever")`] };
 const FINE = { ok: true, problems: [] };
 
-test("2. a clip with drawn subtitles is made again once at our cost, and the new clip is looked at again", async () => {
+test("2. on a tier with no next clip model (V3, V4): a clip with drawn subtitles is made again once at our cost, and the new clip is looked at again", async () => {
   const t = clipEngine([DRAWN, FINE]);
   await t.engine.kick({ storyId: t.storyId });
   assert.equal(await t.engine.onResult(t.sent[0].taskUUID, CLIP(t.sent[0].taskUUID)), "frame_pending", "waits for its frames");
@@ -147,50 +149,53 @@ test("2. a remade clip that STILL has drawn subtitles is kept (never a third cli
   assert.equal(t.db.balance, 975);
 });
 
-test("2b. drawn subtitles twice on the same model: ONE more clip on the next model, at our cost, and that one is checked too", async () => {
-  const t = clipEngine([DRAWN, DRAWN, FINE], { fallback: true });
+test("2b. drawn subtitles: the clip goes STRAIGHT to the next clip model (no remake on the same one), and that clip is checked too", async () => {
+  const t = clipEngine([DRAWN, FINE], { fallback: true });
   await t.engine.kick({ storyId: t.storyId });
   await t.engine.onResult(t.sent[0].taskUUID, CLIP(t.sent[0].taskUUID));
-  assert.equal(await t.engine.onClipFrame(t.job().id, true), "remade");
-  await t.engine.onResult(t.sent[1].taskUUID, CLIP(t.sent[1].taskUUID));
   assert.equal(await t.engine.onClipFrame(t.job().id, true), "remade_on_fallback");
-  assert.deepEqual(t.sent.map((r) => r.model), ["wan", "wan", "seedance"], "the same model once more, then the next one");
-  assert.match(t.job().error, /then on the next clip model$/);
-  await t.engine.onResult(t.sent[2].taskUUID, CLIP(t.sent[2].taskUUID));
+  assert.deepEqual(t.sent.map((r) => r.model), ["wan", "seedance"], "never the same model again: it drew the same subtitles for the same line");
+  assert.ok(t.job().error.startsWith(`${REMAKE_NOTE} on the next clip model:`) && t.job().error.includes(DRAWN_TEXT_PROBLEM));
+  assert.notEqual(t.scene().clip_status, "ready", "the user never sees the clip with two captions");
+  await t.engine.onResult(t.sent[1].taskUUID, CLIP(t.sent[1].taskUUID));
   assert.equal(await t.engine.onClipFrame(t.job().id, true), "completed");
-  assert.deepEqual(t.frameChecks.map((c) => [c.attempt, c.model]), [[1, "wan"], [2, "wan"], [3, "seedance"]], "all three clips were looked at");
+  assert.deepEqual(t.frameChecks.map((c) => [c.attempt, c.model]), [[1, "wan"], [2, "seedance"]], "both clips were looked at");
   assert.equal(t.scene().clip_status, "ready");
-  assert.equal(t.db.balance, 975, "the user paid for one clip; the other two are ours");
+  assert.equal(t.db.balance, 975, "the user paid for one clip; the other one is ours");
 });
 
-test("2b. drawn subtitles on the next model too: the clip is kept, never a fourth, and the final video's guarantee takes over", async () => {
-  const t = clipEngine([DRAWN, DRAWN, DRAWN], { fallback: true });
+test("2b. drawn subtitles on the next model too: the clip is kept, never a third, and the final video's guarantee takes over", async () => {
+  const t = clipEngine([DRAWN, DRAWN], { fallback: true });
   await t.engine.kick({ storyId: t.storyId });
-  for (const expectNext of ["remade", "remade_on_fallback", "completed"]) {
+  for (const expectNext of ["remade_on_fallback", "completed"]) {
     const env = t.sent.at(-1);
     await t.engine.onResult(env.taskUUID, CLIP(env.taskUUID));
     assert.equal(await t.engine.onClipFrame(t.job().id, true), expectNext);
   }
-  assert.equal(t.sent.length, 3, "three clips at most");
+  assert.deepEqual(t.sent.map((r) => r.model), ["wan", "seedance"], "two clips at most");
   assert.equal(t.scene().clip_status, "ready");
   assert.equal(t.db.balance, 975);
 });
 
-test("2b. the next model is only for drawn subtitles: another fault after the remake keeps the clip, and a tier with no next model stops at two", async () => {
-  const other = clipEngine([{ ok: false, problems: ["last frame: 1 human figure in the picture"] }, { ok: false, problems: ["last frame: 1 human figure in the picture"] }], { fallback: true });
+test("2b. the next model is only for drawn subtitles: another fault is made again on the same model, once", async () => {
+  const HUMAN = { ok: false, problems: ["last frame: 1 human figure in the picture"] };
+  const other = clipEngine([HUMAN, HUMAN], { fallback: true });
   await other.engine.kick({ storyId: other.storyId });
   await other.engine.onResult(other.sent[0].taskUUID, CLIP(other.sent[0].taskUUID));
   assert.equal(await other.engine.onClipFrame(other.job().id, true), "remade");
   await other.engine.onResult(other.sent[1].taskUUID, CLIP(other.sent[1].taskUUID));
   assert.equal(await other.engine.onClipFrame(other.job().id, true), "completed");
-  assert.equal(other.sent.length, 2);
-  const noNext = clipEngine([DRAWN, DRAWN]);   // V3 and V4 have no next model
-  await noNext.engine.kick({ storyId: noNext.storyId });
-  await noNext.engine.onResult(noNext.sent[0].taskUUID, CLIP(noNext.sent[0].taskUUID));
-  await noNext.engine.onClipFrame(noNext.job().id, true);
-  await noNext.engine.onResult(noNext.sent[1].taskUUID, CLIP(noNext.sent[1].taskUUID));
-  assert.equal(await noNext.engine.onClipFrame(noNext.job().id, true), "completed");
-  assert.equal(noNext.sent.length, 2);
+  assert.deepEqual(other.sent.map((r) => r.model), ["wan", "wan"]);
+  // A clip remade for another fault whose new clip has drawn subtitles still gets its one try on the next model.
+  const both = clipEngine([HUMAN, DRAWN, FINE], { fallback: true });
+  await both.engine.kick({ storyId: both.storyId });
+  for (const expectNext of ["remade", "remade_on_fallback", "completed"]) {
+    const env = both.sent.at(-1);
+    await both.engine.onResult(env.taskUUID, CLIP(env.taskUUID));
+    assert.equal(await both.engine.onClipFrame(both.job().id, true), expectNext);
+  }
+  assert.deepEqual(both.sent.map((r) => r.model), ["wan", "wan", "seedance"]);
+  assert.equal(both.db.balance, 975);
 });
 
 test("3. guarantee: the final video leaves its caption off a clip that carries drawn words", () => {

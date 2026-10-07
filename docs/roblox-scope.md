@@ -354,6 +354,33 @@ Decisions of 2026-10-08 (after the first real story):
     mid-line check, one remake, our caption left off as the last resort; not the next-model
     step). It is deployed only on the owner's go, at a quiet time with no Fruit job in flight.
 44. Character cards are 9:16 portraits, in the library and under "Characters in this story".
+45. DRAWN SUBTITLES GO STRAIGHT TO THE NEXT MODEL (replaces the order in decision 40). The test
+    clip showed Wan drawing the same subtitles again for the same line, so there is no remake
+    on the same model: a clip with drawn subtitles is made once more on the next clip model
+    (V2 Wan → Seedance), then the "leave our caption off" guarantee. Worst case extra per clip,
+    at our cost: seconds × $0.0817 ($0.33 for 4 s, $0.41 for 5 s), down from $0.53 / $0.66.
+    V3 and V4 have no next model and keep one remake on their own model. The same order is in
+    Fruit's copy of the fix. Words that invite drawn text are banned from every spoken line
+    the writer writes and from every action line: type, typed, write, wrote, written, sign,
+    read, reads, message, chat, text, screen (and their other forms). Code refuses them; the
+    user's own script lines are theirs, but the action added to them is checked.
+46. THE TWIST. The writer returns what the opening makes the viewer assume, THREE twists that
+    flip it, and keeps the least expected. The shapes: the victim had the power, the trick
+    backfires on the trickster, the reward is the trap, the quiet one is the mastermind, the
+    rule was protecting them. "The villain admits it" is not a twist. A proof or an action
+    forces the twist out, never a free confession. Something changes for someone by the end and
+    the viewer sees or hears it. The last line belongs to whoever wins, 8 words or fewer
+    (code refuses more than 10 and a last line by anyone else).
+47. Characters only do what their role allows: a player can't ban, an admin can. No story
+    depends on reading something on screen (a leaderboard, a countdown number, a rule list):
+    it becomes an object, an event or a spoken line. The title shares no key word with the
+    twist, except a word the first line already says (checked in code).
+48. The writer is given four short example stories as the standard (one per twist shape) and
+    must never reuse their plots, objects or lines. The editor has fourteen rules and is strict
+    on three: the twist flips the assumption, a proof or action forces it out, and the ending
+    changes something (a deflating ending fails).
+49. 30 SECONDS is the default length (six scenes: hook, two steps up, the proof, the twist,
+    the last line). 20 seconds stays as the cheaper choice.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

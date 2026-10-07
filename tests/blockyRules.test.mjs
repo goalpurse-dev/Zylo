@@ -94,12 +94,29 @@ test("the writer: Blocky's own rules (scope C2)", () => {
     /contractions \("I'm", "you're", "don't"\), interruptions, reactions/,
     /VARY THE LENGTH: put a short punch \(3 to 5 words\) next to a longer line/,
     /No ping-pong\. A line never just throws the last line back/,
-    /Nobody reports what they typed, wrote or read/,
+    /NOTHING WRITTEN\. The video model draws words onto the picture when a line or an action mentions writing\. So no line and no action uses any of these words: type, typed, write, wrote, written, sign, read, reads, message, chat, text, screen\./,
+    /the pictures carry NO words and NO numbers\. The story never depends on something the viewer would have to read: a leaderboard, a countdown number, a rule list/,
+    // The twist round (decisions 46 to 48).
+    /assumed: ONE sentence: what the viewer believes after the first two lines/,
+    /twists: THREE different twists for this premise, one sentence each\. Each one FLIPS "assumed"/,
+    /the victim had the power all along; the trick backfires on the trickster; the reward is the trap; the quiet one is the mastermind; the rule was protecting them/,
+    /"The villain admits it", "it was a lie all along" and "it was harmless after all" are NOT twists/,
+    /forcedBy: what FORCES the twist out, on screen: a proof or an action/,
+    /NEVER a character who simply admits it, gives up, or explains because they were asked/,
+    /consequence: what CHANGES for whom by the last line, concretely/,
+    /Never "and then nothing happens", never a danger that turns out harmless/,
+    /winnerId: the cast id of whoever comes out on top\. They speak the LAST line/,
+    /Only an admin or the owner can ban, kick, mute, reset, freeze or teleport someone, or change the server\. A player can trade, build/,
+    /The LAST line belongs to the winner \(winnerId\)\. 8 words or fewer/,
+    /EXAMPLES OF THE STANDARD[^]*NEVER reuse these plots, their twists, their objects or their lines/,
+    /5\. NEWCOMER: Cute commands\. Want to see real ones\?/,
+    /It uses no key word from your twist, unless the first line already says that word/,
     /EVERY scene after it ESCALATES: worse, weirder or higher stakes than the scene before/,
-    /The TWIST is revealed on screen in revealScene: said in the line, or plainly seen in the picture/,
+    /The TWIST comes out on screen in revealScene, FORCED by your forcedBy/,
     /A twist that exists only in the roles, the title or your plan does not exist/,
-    /With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the turn .*, 4 the twist line/,
-    /The LAST line is the most quotable line in the video/,
+    /With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the proof appears and the twist is out, 4 the winner's line/,
+    /With 5 or more scenes: the hook; it gets worse twice, each time with something NEW; the proof appears; the twist is out; the winner's last line/,
+    /It is the most quotable line in the video: it lands the consequence like a punchline/,
     /premise: ONE sentence that starts "What happens if"/,
     /emotion: the ONE feeling the whole video runs on: curiosity, dread, injustice, satisfaction, shock\./,
     /It teases the premise and NEVER states the twist/,
@@ -123,7 +140,7 @@ test("the writer: Blocky's own rules (scope C2)", () => {
   assert.match(p.user, /Write exactly 6 scenes for a video of 30 seconds\..* every line AT MOST 9 words/);
 });
 
-test("the series planner and the script editor: Blocky's wording, eleven editor rules, one answer each", () => {
+test("the series planner and the script editor: Blocky's wording, fourteen editor rules, one answer each", () => {
   const s = buildSeriesPrompt({ concept: "A fake admin takes over an obby server.", cast: cast("vex", "noob", "zip"), opener: "Banned in front of everyone", tone: "tense and funny", episodeCount: 5 });
   assert.equal(s.system, SERIES_SYSTEM);
   assert.match(s.system, /blocky game avatars act out a story inside a blocky online game world/);

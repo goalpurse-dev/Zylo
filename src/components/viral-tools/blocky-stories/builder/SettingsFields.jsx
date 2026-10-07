@@ -1,7 +1,7 @@
 import QuotedCredits from "../../../pricing/QuotedCredits";
 import { CreditIcon, QualityCards, SectionLabel, SegmentedControl } from "../../../ui/zyvo";
 import { LIMITS } from "../api/blockyStoriesApi";
-import { ASPECTS, QUICK_LENGTHS, formatLength } from "../constants";
+import { ASPECTS, LENGTH_NOTES, QUICK_LENGTHS, formatLength } from "../constants";
 import { TIERS, TIER_IDS, estimateStory } from "../pricing/blockyEstimates";
 
 const TIER_LIST = TIER_IDS.map((id) => TIERS[id]);
@@ -65,6 +65,7 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
                   <span className="flex items-center gap-0.5 text-[10px] font-bold tabular-nums opacity-80">
                     <CreditIcon className="h-3 w-3" />{price == null ? "…" : `about ${price}`}
                   </span>
+                  {LENGTH_NOTES[sec] && <span className="text-[9px] font-bold uppercase tracking-wide opacity-70">{LENGTH_NOTES[sec]}</span>}
                 </button>
               );
             })}
@@ -72,7 +73,7 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
         )}
         {firstVideo && !scriptScenes && (
           <p className="mt-2 rounded-lg border border-lime-300/15 bg-lime-300/[0.06] px-2.5 py-2 text-[11px] font-semibold leading-relaxed text-lime-100/80">
-            For a first video, 20 to 30 seconds is best: it's finished in about 3 minutes and costs the least. You can always make a longer one next.
+            30 seconds gives the story room for a real twist. 20 seconds is the cheaper choice: it's finished in about 3 minutes.
           </p>
         )}
         <p className="mt-2 text-[10px] leading-relaxed text-white/30">

@@ -78,7 +78,7 @@ const engine = createEngine({
   },
   env: { get BLOCKY_PAID_CALLS() { return paidEnv(); }, webhookBase: `${SUPABASE_URL}/functions/v1/blocky-worker`, webhookSecret: WORKER_SECRET },
   // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini. So is a clip the
-  // video model drew its own subtitles into twice (the first time it is made again on the same model).
+  // video model drew its own subtitles into (straight to the next model, at our cost).
   fallbackClip: fallbackClipTask,
   drawnTextProblem: DRAWN_TEXT_PROBLEM,
   // Every scene picture: blocky avatars only, nobody extra up front, no brick-toy look, no text,

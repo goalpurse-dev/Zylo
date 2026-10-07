@@ -57,6 +57,13 @@ export const openersFor = (concept) => [...(OPENERS_BY_CONCEPT[String(concept ??
 
 /** Lengths offered as one-tap choices, each with its price; the slider still sets anything in between. */
 export const QUICK_LENGTHS = [20, 30, 45, 60];
+/**
+ * The length a new story starts on. 30 seconds is six scenes: room for the hook, two steps up, the
+ * proof, the twist and the last line. 20 seconds (four scenes) stays as the cheaper choice.
+ */
+export const DEFAULT_LENGTH_SEC = 30;
+/** The small word under a one-tap length. */
+export const LENGTH_NOTES = { 20: "Cheapest", 30: "Best story" };
 
 export const TONES = ["Loud and dramatic", "Petty and sarcastic", "Funny and chaotic", "Cold and quiet"];
 

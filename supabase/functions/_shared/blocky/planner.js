@@ -11,7 +11,7 @@ import { videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
 import { problemLines, reviewScript } from "./scriptReview.js";
-import { STORY_EMOTIONS, characterBlock, writerSystem } from "./rules.js";
+import { STORY_EMOTIONS, WRITTEN_WORDS, characterBlock, writerSystem } from "./rules.js";
 import { bannedNamesProblem } from "./safety.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
@@ -77,6 +77,22 @@ export function addressedIds(line, cast) {
   const text = String(line ?? "");
   return cast.filter((c) => callNames(c).some((n) => new RegExp(`(?:^|[,.!?;:]\\s+)${escapeRe(n)}(?=\\s*[,.!?]|\\s*$)`, "i").test(text))).map((c) => c.id);
 }
+
+/**
+ * Words that invite the video model to draw text into the clip (rules.js#WRITTEN_WORDS), with their other
+ * forms. Whole words only: "design" and "signal" are fine.
+ */
+export const WRITTEN_WORD = new RegExp("\\b(?:" + [...WRITTEN_WORDS, "types", "typing", "writes", "writing", "signs", "reading", "messages", "chats", "texts", "texted", "screens", "onscreen"].join("|") + ")\\b", "i");
+/** The last line belongs to the winner and is short: 8 words is the aim, this is the most code accepts. */
+export const LAST_LINE_MAX_WORDS = 10;
+/** A reveal that is "forced" by someone owning up is not forced. */
+const CONFESSION = /\b(?:admits?|admitting|confess(?:es|ing)?|owns up|comes? clean|tells? the truth|gives? up and)\b/i;
+/** Small words and world words that say nothing about a twist. */
+const PLAIN_WORDS = new Set(("the and for but not you your yours his her hers its our their them they she him who whom whose what when where why how that this these those with from into onto over under out off all any one two was were are has had have been being will would could should can did does just only really actually because every everyone nobody anyone someone somebody about after before while there here than then also still even ever never always turns turn turned real true truth secret secretly server game player players whole thing things").split(" "));
+const stem = (w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+/** The words of a sentence that carry its meaning, lower-cased and without a plural s. */
+export const keyWords = (text) => [...new Set(String(text ?? "").toLowerCase().replace(/[’']s\b/g, "").replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter((w) => w.length >= 3 && !PLAIN_WORDS.has(w)).map(stem))];
+const sameWord = (a, b) => a === b || (Math.min(a.length, b.length) >= 4 && (a.startsWith(b) || b.startsWith(a)));
 
 /** The quality pass rewrites a failing script at most this many times, checking it after each. */
 export const MAX_REWRITES = 2;
@@ -153,12 +169,19 @@ export function plannerSchema(castIds, { script = false } = {}) {
   return {
     type: "object",
     additionalProperties: false,
-    required: ["premise", "emotion", "twist", "revealScene", "title", "locations", "roles", "outfits", "scenes", "endState"],
+    required: ["premise", "emotion", "assumed", "twists", "twist", "forcedBy", "consequence", "winnerId", "revealScene", "title", "locations", "roles", "outfits", "scenes", "endState"],
     properties: {
       // The plan behind the story (rules.js "PLAN IT FIRST"): decided before the lines, checked by the editor.
       premise: { type: "string" },
       emotion: { type: "string", enum: [...STORY_EMOTIONS] },
+      // What the opening makes the viewer believe, three twists that turn it over, and the one kept (in this
+      // order, so the three are thought of before one is chosen and before a line is written).
+      assumed: { type: "string" },
+      twists: { type: "array", items: { type: "string" } },
       twist: { type: "string" },
+      forcedBy: { type: "string" },
+      consequence: { type: "string" },
+      winnerId: { type: "string", enum: castIds },
       revealScene: { type: "integer" },
       title: { type: "string" },
       outfits: {
@@ -251,6 +274,9 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (!action || words(action) > 14) errors.push(`scene ${n}: action must be 1 to 12 words`);
     const move = action.match(FULL_BODY);
     if (move) errors.push(`scene ${n}: the action "${action}" is a full-body move ("${move[0]}"); the picture is chest-up, so give an upper-body action instead (a look, a hand, a prop held up)`);
+    // Words about writing make the video model draw text into the clip (decision 45).
+    const written = action.match(WRITTEN_WORD);
+    if (written) errors.push(`scene ${n}: the action says "${written[0]}"; words about writing or reading make the video model draw text, so show an object or a gesture instead`);
     // Whoever the line talks to must be in the picture ("Relax, baby" was said to an empty chair).
     for (const id of addressedIds(line, cast)) {
       if (id !== speakerId && !present.includes(id)) errors.push(`scene ${n}: the line talks to ${cast.find((c) => c.id === id).name}, so ${id} must be in presentIds for this scene (or don't address them)`);
@@ -265,6 +291,8 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
       if (WRITTEN_ONLY.some((re) => re.test(line))) errors.push(`scene ${n}: the line must land when heard once, spoken aloud; don't rely on punctuation, spelling or reading a note or text word for word: "${line}"`);
       const hit = BANNED.find((b) => line.toLowerCase().includes(b));
       if (hit) errors.push(`scene ${n}: don't use the overused phrase "${hit}"`);
+      const drawn = String(line).match(WRITTEN_WORD);
+      if (drawn) errors.push(`scene ${n}: the line says "${drawn[0]}"; no line uses a word about writing or reading (${WRITTEN_WORDS.join(", ")}): the character says it or does it, and nothing is read on screen`);
     }
     // raises: what this scene makes worse, weirder or higher than the one before (for the editor; not stored on the scene)
     const raises = String(s?.raises ?? "").trim();
@@ -326,11 +354,32 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     // Spoken lines vary: a short punch next to a longer line, never a row of lines the same length.
     const counts = normalized.map((s) => words(s.line));
     if (n >= 4 && Math.max(...counts) - Math.min(...counts) < 3) errors.push(`the lines are all about the same length (${counts.join(", ")} words): put a short punch of 3 to 5 words next to a longer line`);
-    // Nobody reports what they typed: an order is spoken as an order (and "typed" lines made the video model draw subtitles).
-    normalized.forEach((s, i) => { if (/\b(?:i|we|you|he|she|they)\b[^.?!]{0,20}\b(?:typed|wrote|texted)\b/i.test(s.line)) errors.push(`scene ${i + 1}: nobody reports what they typed or wrote; the character says it as an order or does it`); });
+  }
+  // The twist behind a single story (an episode ends on its series' cliffhanger instead).
+  const assumed = String(out?.assumed ?? "").trim();
+  const twists = (Array.isArray(out?.twists) ? out.twists : []).map((x) => String(x ?? "").trim()).filter(Boolean);
+  const forcedBy = String(out?.forcedBy ?? "").trim();
+  const consequence = String(out?.consequence ?? "").trim();
+  const winnerId = castIds.includes(out?.winnerId) ? out.winnerId : "";
+  if (source !== "script" && source !== "episode") {
+    const last = normalized.at(-1);
+    if (words(assumed) < 4) errors.push("assumed: one sentence saying what the viewer believes after the first two lines");
+    if (twists.length !== 3 || new Set(twists.map((x) => x.toLowerCase())).size !== 3 || twists.some((x) => words(x) < 4)) errors.push("twists: exactly THREE different twists, one sentence each, before you choose one");
+    if (words(forcedBy) < 3) errors.push("forcedBy: the proof or the action on screen that forces the twist out");
+    else if (CONFESSION.test(forcedBy)) errors.push(`forcedBy: "${forcedBy}" is a confession; a proof or an action forces the twist out (something held up, something that obeys the wrong player, something that opens, locks or vanishes)`);
+    if (words(consequence) < 4) errors.push("consequence: what changes for whom by the last line (a real loss or a real win the viewer sees or hears)");
+    if (!winnerId) errors.push("winnerId: the cast id of whoever comes out on top");
+    else if (last && last.speakerId !== winnerId) errors.push(`the last line belongs to the winner (${winnerId}), not to ${last.speakerId}`);
+    if (last && words(last.line) > LAST_LINE_MAX_WORDS) errors.push(`the last line is ${words(last.line)} words; it is the punchline: 8 words or fewer`);
+    // The title teases: it shares no key word with the twist, except words the first line already says (or a name).
+    const known = new Set([...keyWords(normalized[0]?.line), ...cast.flatMap((c) => keyWords(c.name))]);
+    const fresh = keyWords(twist).filter((w) => ![...known].some((k) => sameWord(k, w)));
+    const shared = keyWords(title).find((w) => fresh.some((f) => sameWord(f, w)));
+    if (shared) errors.push(`title: "${title}" has "${shared}" from the twist; the title teases and shares no key word with the twist (a word the first line says is fine)`);
   }
   const plan = {
     ...(source !== "script" ? { premise, emotion, twist, revealScene } : {}),
+    ...(source !== "script" && source !== "episode" ? { assumed, twists, forcedBy, consequence, winnerId } : {}),
     roles,
     outfits,
     title,
@@ -393,7 +442,7 @@ export async function runPlanner(p) {
   let current = { data, plan: result.plan, problems: review.problems };
   try {
     for (let round = 1; round <= MAX_REWRITES && current.problems.length; round++) {
-      const rewriteUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(current.data)}\n\nA SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line; the viewer knows only the lines and the pictures) AND FOUND THESE PROBLEMS:\n- ${problemLines(current.problems).join("\n- ")}\n\nRewrite the script so every problem is fixed: change lines, who is in the picture, the title or the ending as needed. Keep what already works, keep the twist said out loud or plainly seen in revealScene, keep every rule above, and return the full corrected JSON.`;
+      const rewriteUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(current.data)}\n\nA SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line; the viewer knows only the lines and the pictures) AND FOUND THESE PROBLEMS:\n- ${problemLines(current.problems).join("\n- ")}\n\nRewrite the script so every problem is fixed: change lines, who is in the picture, the title or the ending as needed. If the twist itself is the problem, write three NEW twists and keep the least expected. Keep what already works, keep the twist forced out by a proof or an action in revealScene (nobody just admits it), keep the winner's short last line, keep every rule above, and return the full corrected JSON.`;
       const next = await p.llm({ system, user: rewriteUser, schema, name: "story_plan", purpose: "planner_rewrite" });
       calls.push(next);
       let nextData = next.data;

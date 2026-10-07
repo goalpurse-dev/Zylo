@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../api/blockyStoriesApi";
-import { IDEAS_ON, errorText } from "../constants";
+import { DEFAULT_LENGTH_SEC, IDEAS_ON, errorText } from "../constants";
 import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, sceneCountForLength } from "../pricing/blockyEstimates";
 import useBlockyPrices from "../pricing/useBlockyPrices";
 import { storyStepBlocker, wizardBlocker } from "../rules";
@@ -16,7 +16,7 @@ const NEW_SINGLE = {
   scriptText: "",
   scriptAssignments: {}, // written name (lowercase) → library character id, chosen by the user
   tierId: "v2",
-  lengthSec: 20,
+  lengthSec: DEFAULT_LENGTH_SEC,
   aspect: "9:16",
   storyId: null,
 };
