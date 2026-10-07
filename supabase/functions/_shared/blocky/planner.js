@@ -216,11 +216,18 @@ export function plannerSchema(castIds, { script = false } = {}) {
 const words = (s) => wordCount(s);
 
 /**
- * Validates planner output. Returns {plan, errors}; plan is normalized and, in
+ * Validates planner output. Returns {plan, errors, hard}; plan is normalized and, in
  * script mode, carries the user's lines unchanged.
+ *
+ * errors: everything the writer is asked to fix. hard: the part of it that makes a story
+ * unusable (format, safety, timing, who is in the picture). The rest are STYLE notes (lines
+ * all the same length, two lines that say the same, a last line that runs long, a title word
+ * from the twist, fewer than three twists drafted): the writer gets one chance to fix them,
+ * and what is left is the editor's business. A style note never fails a story.
  */
 export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [] }) {
   const errors = [];
+  const style = [];
   // No real platform, game, brand or creator names in anything the writer wrote (safety.js).
   const safe = (text, where) => { const problem = bannedNamesProblem(text, where); if (problem) errors.push(problem); };
   const castIds = cast.map((c) => c.id);
@@ -349,11 +356,11 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
       const a = bag(normalized[i].line), b = bag(normalized[j].line);
       const same = [...a].filter((w) => b.has(w)).length;
-      if (a.size >= 3 && b.size >= 3 && same / Math.min(a.size, b.size) >= 0.75) errors.push(`scenes ${i + 1} and ${j + 1} say almost the same thing: every scene must add something new (worse, weirder or higher stakes)`);
+      if (a.size >= 3 && b.size >= 3 && same / Math.min(a.size, b.size) >= 0.75) style.push(`scenes ${i + 1} and ${j + 1} say almost the same thing: every scene must add something new (worse, weirder or higher stakes)`);
     }
     // Spoken lines vary: a short punch next to a longer line, never a row of lines the same length.
     const counts = normalized.map((s) => words(s.line));
-    if (n >= 4 && Math.max(...counts) - Math.min(...counts) < 3) errors.push(`the lines are all about the same length (${counts.join(", ")} words): put a short punch of 3 to 5 words next to a longer line`);
+    if (n >= 4 && Math.max(...counts) - Math.min(...counts) < 3) style.push(`the lines are all about the same length (${counts.join(", ")} words): put a short punch of 3 to 5 words next to a longer line`);
   }
   // The twist behind a single story (an episode ends on its series' cliffhanger instead).
   const assumed = String(out?.assumed ?? "").trim();
@@ -364,18 +371,18 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   if (source !== "script" && source !== "episode") {
     const last = normalized.at(-1);
     if (words(assumed) < 4) errors.push("assumed: one sentence saying what the viewer believes after the first two lines");
-    if (twists.length !== 3 || new Set(twists.map((x) => x.toLowerCase())).size !== 3 || twists.some((x) => words(x) < 4)) errors.push("twists: exactly THREE different twists, one sentence each, before you choose one");
+    if (twists.length !== 3 || new Set(twists.map((x) => x.toLowerCase())).size !== 3 || twists.some((x) => words(x) < 4)) style.push("twists: exactly THREE different twists, one sentence each, before you choose one");
     if (words(forcedBy) < 3) errors.push("forcedBy: the proof or the action on screen that forces the twist out");
     else if (CONFESSION.test(forcedBy)) errors.push(`forcedBy: "${forcedBy}" is a confession; a proof or an action forces the twist out (something held up, something that obeys the wrong player, something that opens, locks or vanishes)`);
     if (words(consequence) < 4) errors.push("consequence: what changes for whom by the last line (a real loss or a real win the viewer sees or hears)");
     if (!winnerId) errors.push("winnerId: the cast id of whoever comes out on top");
     else if (last && last.speakerId !== winnerId) errors.push(`the last line belongs to the winner (${winnerId}), not to ${last.speakerId}`);
-    if (last && words(last.line) > LAST_LINE_MAX_WORDS) errors.push(`the last line is ${words(last.line)} words; it is the punchline: 8 words or fewer`);
+    if (last && words(last.line) > LAST_LINE_MAX_WORDS) style.push(`the last line is ${words(last.line)} words; it is the punchline: 8 words or fewer`);
     // The title teases: it shares no key word with the twist, except words the first line already says (or a name).
     const known = new Set([...keyWords(normalized[0]?.line), ...cast.flatMap((c) => keyWords(c.name))]);
     const fresh = keyWords(twist).filter((w) => ![...known].some((k) => sameWord(k, w)));
     const shared = keyWords(title).find((w) => fresh.some((f) => sameWord(f, w)));
-    if (shared) errors.push(`title: "${title}" has "${shared}" from the twist; the title teases and shares no key word with the twist (a word the first line says is fine)`);
+    if (shared) style.push(`title: "${title}" has "${shared}" from the twist; the title teases and shares no key word with the twist (a word the first line says is fine)`);
   }
   const plan = {
     ...(source !== "script" ? { premise, emotion, twist, revealScene } : {}),
@@ -392,7 +399,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     scenes: normalized.map((s, i) => ({ ...s, durationSec: durations[i] ?? null })),
     lengthSec: total,
   };
-  return { plan, errors: [...new Set(errors)] };
+  return { plan, errors: [...new Set([...errors, ...style])], hard: [...new Set(errors)] };
 }
 
 /**
@@ -419,9 +426,10 @@ export async function runPlanner(p) {
     calls.push(second);
     data = second.data;
     result = validatePlan(data, ctx);
-    if (result.errors.length) {
+    // Only what makes the story unusable fails it; a style note left after the repair goes to the editor.
+    if (result.hard.length) {
       const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502);
-      err.details = result.errors;
+      err.details = result.hard;
       err.calls = calls;
       throw err;
     }
@@ -453,7 +461,7 @@ export async function runPlanner(p) {
         nextData = repaired.data;
         rewritten = validatePlan(nextData, ctx);
       }
-      if (rewritten.errors.length) { outcome.note = "a rewrite broke the format; the best checked script was kept"; break; }
+      if (rewritten.hard.length) { outcome.note = "a rewrite broke the format; the best checked script was kept"; break; }
       const again = await reviewScript({ plan: rewritten.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
       const problems = again.skipped ? current.problems : again.problems;   // a check that couldn't run proves nothing
       outcome.rounds = round;

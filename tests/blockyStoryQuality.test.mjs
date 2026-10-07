@@ -143,6 +143,32 @@ test("the twist round in code: three twists, a forced reveal, a consequence, the
   assert.ok(validatePlan(stage("holds up a sign"), sctx).errors.some((e) => /the action says "sign"/.test(e)));
 });
 
+test("a style note never fails a story: it is sent back once, and what is left goes to the editor (2 of 5 stories were lost to 'the lines are all about the same length')", async () => {
+  const flat = good();
+  flat.scenes = [scene("vex", "Break one more rule and you're banned.", "a a"), scene("noob", "You can't ban me, only owners can.", "b b"), scene("vex", "Then watch me do it right now.", "c c"), scene("noob", "Go ahead, because I built this server.", "d d")];
+  const v = validatePlan(flat, ctx);
+  assert.ok(v.errors.some((e) => /the lines are all about the same length/.test(e)), "the writer is still told");
+  assert.deepEqual(v.hard, [], "but it is not what makes a story unusable");
+  // Each style note: told, never fatal.
+  for (const over of [{ title: "He Built It" }, { twists: ["Noob built the server and owns it."] }]) {
+    const r = validatePlan(good(over), ctx);
+    assert.ok(r.errors.length === 1 && r.hard.length === 0, JSON.stringify(over));
+  }
+  const echo = good();
+  echo.scenes[2] = scene("vex", "Break one more rule and you're banned, forever, Noob.", "the same threat again");
+  assert.deepEqual(validatePlan(echo, ctx).hard, []);
+  // A real fault is still fatal: a word about writing, the wrong winner, no premise.
+  for (const bad of [good({ winnerId: "vex" }), good({ premise: "A story." }), good({ forcedBy: "Vex admits it all" })]) assert.ok(validatePlan(bad, ctx).hard.length > 0);
+  // Through the planner: draft and repair both come back flat. The story is written anyway, and the editor reads it.
+  const f = fakes([flat, flat], [[]]);
+  const r = await run(f);
+  assert.deepEqual(f.log, ["planner", "planner_repair", "script_review"]);
+  assert.equal(r.plan.scenes.length, 4);
+  // A real fault left after the repair still fails the story, and says which.
+  const broken = fakes([good({ winnerId: "vex" }), good({ winnerId: "vex" })], [[]]);
+  await assert.rejects(run(broken), (e) => e.code === "PLANNER_FAILED" && /the last line belongs to the winner/.test(e.details.join(" ")));
+});
+
 test("the editor reads as a viewer: roles and the twist are notes the viewer never sees", () => {
   const { plan } = validatePlan(good(), ctx);
   const { system, user } = buildReviewPrompt({ plan, cast, source: "prompt" });
