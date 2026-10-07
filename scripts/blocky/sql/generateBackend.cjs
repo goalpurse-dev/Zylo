@@ -1,4 +1,4 @@
-// Wrote supabase/pending/20261026100000_blocky_stories_backend.sql (and its
+// Wrote supabase/migrations/20261026100000_blocky_stories_backend.sql (and its
 // rollback) from the LIVE definitions of AI Fruit Story's backend
 // (fruit_live_schema.json, read from the real database on 2026-10-06 with
 // readFruitLiveSchema.sql, which only reads), under Blocky's names.
@@ -10,7 +10,7 @@
 const fs = require("fs");
 const path = require("path");
 const schemaFile = path.join(__dirname, "fruit_live_schema.json");
-const outFile = process.argv[2] ?? "supabase/pending/20261026100000_blocky_stories_backend.sql";
+const outFile = process.argv[2] ?? "supabase/migrations/20261026100000_blocky_stories_backend.sql";
 const s = JSON.parse(fs.readFileSync(schemaFile, "utf8"));
 const rn = (t) => String(t)
   .replace(/x-fruit-worker-secret/g, "x-blocky-worker-secret")
@@ -62,7 +62,7 @@ p(`-- Blocky Stories: its own backend. Its own tables (blocky_*), functions,
 --   - blocky_settings: paid calls are OFF until the owner switches them on, and
 --     stop for the day at a spending cap ($3.00 to start with).
 --
--- Rollback: supabase/pending/20261026100000_blocky_stories_backend_rollback.sql
+-- Rollback: supabase/rollbacks/20261026100000_blocky_stories_backend_rollback.sql
 
 BEGIN;
 SET LOCAL lock_timeout = '5s';
@@ -304,7 +304,7 @@ p(`NOTIFY pgrst, 'reload schema';`, `COMMIT;`, "");
 fs.writeFileSync(outFile, out.join("\n"));
 
 // Rollback.
-fs.writeFileSync(outFile.replace(/\.sql$/, "_rollback.sql"), `-- Rollback for 20261026100000_blocky_stories_backend.sql: removes Blocky Stories' backend.
+fs.writeFileSync(process.argv[3] ?? "supabase/rollbacks/20261026100000_blocky_stories_backend_rollback.sql", `-- Rollback for 20261026100000_blocky_stories_backend.sql: removes Blocky Stories' backend.
 -- It deletes every Blocky story, scene, job, charge row and log row. Credits already
 -- charged stay charged (the balance is on profiles); refund by hand first if any are owed.
 -- It touches no AI Fruit Story object, and keeps the price rows and the blocky_v1 switch.

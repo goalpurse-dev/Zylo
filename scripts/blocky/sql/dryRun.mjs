@@ -1,4 +1,4 @@
-// Dry run of the SQL in supabase/pending/ in a throwaway in-process Postgres
+// Dry run of Blocky's backend SQL and the pending Fruit undo in a throwaway in-process Postgres
 // (PGlite). Nothing here touches a real database, and no key is needed.
 //   A. Blocky's backend, on a database with NO Fruit object at all: it
 //      installs, charges, refunds, refuses and rolls back on its own.
@@ -47,7 +47,7 @@ const USER = "11111111-1111-1111-1111-111111111111";
   console.log("\nA. Blocky's backend, on a database with no Fruit object");
   const db = new PGlite();
   await db.exec(PLATFORM);
-  await db.exec(sql("supabase/pending/20261026100000_blocky_stories_backend.sql"));
+  await db.exec(sql("supabase/migrations/20261026100000_blocky_stories_backend.sql"));
   ok("the backend SQL runs from start to finish", true);
   ok("no Fruit object exists in this database", (await one(db, "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'fruit%'")).n === 0 && (await one(db, "select count(*)::int n from pg_proc where proname like 'fruit%'")).n === 0);
   const tables = await one(db, "select count(*)::int n, bool_and(relrowsecurity) rls from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relname like 'blocky%'");
@@ -121,7 +121,7 @@ const USER = "11111111-1111-1111-1111-111111111111";
   ok("switched off again: nothing is allowed, whatever the cap", (await paid()).on === false && (await paid()).reason === "switch_off");
   ok("the switch is one row and can't become two", (await fails(db, "INSERT INTO public.blocky_settings (id) VALUES (true)", /duplicate key/)) === true && (await fails(db, "INSERT INTO public.blocky_settings (id) VALUES (false)", /check constraint/)) === true);
 
-  await db.exec(sql("supabase/pending/20261026100000_blocky_stories_backend_rollback.sql"));
+  await db.exec(sql("supabase/rollbacks/20261026100000_blocky_stories_backend_rollback.sql"));
   ok("the rollback removes every Blocky object and keeps the price rows", (await one(db, "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'blocky%'")).n === 0 && (await one(db, "select count(*)::int n from pg_proc where proname like 'blocky%' or proname = 'trigger_blocky_reconcile'")).n === 0 && (await one(db, "select count(*)::int n from public.tool_prices where tool_key like '%blocky%'")).n === 4);
   await db.close();
 }

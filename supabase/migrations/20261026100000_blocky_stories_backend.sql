@@ -32,7 +32,7 @@
 --   - blocky_settings: paid calls are OFF until the owner switches them on, and
 --     stop for the day at a spending cap ($3.00 to start with).
 --
--- Rollback: supabase/pending/20261026100000_blocky_stories_backend_rollback.sql
+-- Rollback: supabase/rollbacks/20261026100000_blocky_stories_backend_rollback.sql
 
 BEGIN;
 SET LOCAL lock_timeout = '5s';

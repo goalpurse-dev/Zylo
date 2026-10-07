@@ -405,6 +405,8 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     const blocker = stepBlocker("final", story, story.scenes);
     if (blocker) throw new BlockyError("WRONG_STATUS", blocker, 409);
     if (!FLY_API_TOKEN) throw blockyError("FINAL_FAILED");
+    // Free for the user, but the machine and the caption transcripts cost us a little: the switch and the cap cover them too.
+    await requirePaidCalls(SMALL_USD);
 
     // Series options: "Part N" at the start and an end card. On for episodes and off
     // for singles the first time; after that, whatever the user last chose.
@@ -444,7 +446,7 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     {
       const ordered = [...scenes].sort((a: any, b: any) => a.idx - b.idx);
       const transcripts = await transcriptsForClips({
-        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: !(await readPaidState(admin, ENV_PAID_CALLS)).on, userId, storyId,
+        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: false, userId, storyId,
         clips: ordered.map((s: any) => ({ sceneId: s.id, url: s.clip_url, durationSec: Number(s.duration_sec) })),
       });
       job.clips.forEach((c: any, i: number) => {

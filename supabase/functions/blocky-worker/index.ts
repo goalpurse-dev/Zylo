@@ -264,6 +264,7 @@ async function pictureTest(body: any) {
  * the callback. The frame lands at the returned url a few seconds later.
  */
 async function frameTest(body: any) {
+  if (paidOff()) throw new BlockyError("PAID_CALLS_DISABLED", "paid calls are off");
   if (!FLY_API_TOKEN) throw new BlockyError("VALIDATION", "FLY_API_TOKEN not set");
   if (typeof body?.clipUrl !== "string" || !body.clipUrl.startsWith(`${SUPABASE_URL}/storage/`)) throw new BlockyError("VALIDATION", "clipUrl must be a stored clip");
   const id = crypto.randomUUID();
