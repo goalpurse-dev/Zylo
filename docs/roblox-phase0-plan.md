@@ -75,6 +75,17 @@ Since this plan was written:
 - 2026-10-07: the Docker / local-stack plan is dropped (decision 32). Blocky runs the way
   Fruit does: the site on localhost, Blocky's own functions and tables on the real project.
   Paid calls are off by default with a $3.00 daily cap (decision 33).
+- 2026-10-07, on the real project: `20261026100000_blocky_stories_backend.sql` is APPLIED (12
+  `blocky_*` tables; Fruit's shape and row counts identical before and after).
+  `blocky-story-api` and `blocky-worker` are DEPLOYED (new functions; no Fruit function
+  redeployed). `BLOCKY_WORKER_SECRET` is set (Supabase secrets + vault, with the worker's
+  address), so the 20-second sweep works. The Fly image `zyvo-render:blocky-final` is built
+  (`fruit-final` untouched). Noob, Vex and Lux are loaded as temporary avatars. Paid calls are
+  OFF. Checks: `scripts/blocky/chargeLocking.mjs` 9 of 9 on a throwaway account;
+  `scripts/blocky/smokeBlockyLive.mjs` 14 of 14; `scripts/blocky/qaPage.mjs` PASS at 1440 and
+  390 px. Not done yet on the real project: a real story end to end (the owner makes the first
+  one by hand), so Runware's callbacks to `blocky-worker` and the `blocky-final` build have not
+  run for real. The Fruit undo is still in `supabase/pending/`, for the owner to apply.
 - Phase 3 (the look) stopped at the review of 2026-10-06 and continues after the separation:
   the Pro reference pilot with the head / tongue / front-view / blocky-hair fixes, the 24
   references, the scene re-test, 5 real stories from the writer. The Veo clip of test 1b runs
