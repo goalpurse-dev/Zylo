@@ -94,7 +94,7 @@ import { Link, NavLink } from "react-router-dom";
       shadow-lg
       cursor-pointer
     "
-    to="/workspace"
+    to="/"
   >
     {/* VIDEO BACKGROUND */}
     <video

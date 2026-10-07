@@ -151,7 +151,7 @@ export default function WhyYourPostsDontGoViral() {
             <p className="text-[#4A4A55]">
               Creators lean into this effect by generating cinematic visuals
               through{" "}
-              <Link to="/workspace" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI-powered platforms
               </Link>.
             </p>

@@ -57,13 +57,14 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
       {characters.status === "error" ? (
         <ErrorBanner action="Try again" onAction={characters.retry}>We couldn&apos;t load the character library.</ErrorBanner>
       ) : characters.status === "loading" ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Loading characters">
-          {Array.from({ length: 6 }, (_, i) => <div key={i} className="h-[150px] animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />)}
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-label="Loading characters">
+          {Array.from({ length: 6 }, (_, i) => <div key={i} className="aspect-[9/19] animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />)}
         </div>
       ) : list.length === 0 ? (
         <p className="py-8 text-center text-[12px] text-white/40">No characters match &ldquo;{query}&rdquo;.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        // Each avatar as a 9:16 portrait card: the whole reference picture, head to feet, never a chest-up crop.
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {list.map((c) => {
             const on = selectedIds.includes(c.id);
             const full = !pickOne && !on && selectedIds.length >= max;
@@ -81,7 +82,7 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
                   full && "opacity-40",
                 )}
               >
-                <img src={c.refImageUrl} alt="" className="aspect-[4/3] w-full rounded-lg bg-[#0D0F11] object-cover object-top" loading="lazy" />
+                <img src={c.refImageUrl} alt="" className="aspect-[9/16] w-full rounded-lg bg-white object-contain" loading="lazy" />
                 {on && (
                   <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-lime-300 text-[#11150D]" aria-hidden="true">
                     <Check className="h-3 w-3" />
