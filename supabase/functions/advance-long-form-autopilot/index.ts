@@ -137,6 +137,10 @@ async function releaseIfNoVideoPossible(projectId: string, ap: any, reason: stri
     if (out?.found && out?.ok) {
       ap.holdReleasedAt = now;
       await logEvent("advance-long-form-autopilot", "warn", "hold_released_no_video", { projectId, reason, reserved: out.reservation?.reserved_credits ?? null });
+    } else {
+      // Already given back by the step that failed (the voice does it itself): the screen still says so.
+      const { data: hold } = await admin.from("long_form_project_reservations").select("status").eq("project_id", projectId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (hold?.status === "released") ap.holdReleasedAt = now;
     }
   } catch (e) { console.error("[autopilot] release hold", String(e)); }
 }
@@ -172,7 +176,7 @@ async function advanceOne(projectId: string) {
     const row = await latestNarrationRow(projectId);
     const n = decideNarration({ now, narration: ap.narration, row });
     if (n.kind === "lock") {
-      ap.narration = { ...(ap.narration ?? {}), lockedAt: now, kicks: (ap.narration?.kicks ?? 0) + 1 };
+      ap.narration = { ...(ap.narration ?? {}), lockedAt: now, firstLockedAt: ap.narration?.firstLockedAt ?? now, kicks: (ap.narration?.kicks ?? 0) + 1 };
       const r = await callAsOwner("lock-long-form-script", owner);
       if (!r.ok) console.error("[autopilot] lock script", r.status, r.body);
     } else if (n.kind === "resume") {
@@ -186,10 +190,13 @@ async function advanceOne(projectId: string) {
       ap.status = "running";
       ap.scenes = { status: "running", startedAt: now, stage: "bible", resumes: 0, dispatched: ap.narration?.lockedAt ? { bible: ap.narration.lockedAt } : {} };
     } else if (n.kind === "done") {
-      // The voice failed: stop with a clear free Retry on the generating screen.
+      // The voice failed for good (after its pauses and retries): no voice, no video. The whole
+      // hold goes back by itself (nothing for the user to press) and the screen says so.
       ap.status = "failed";
       ap.failedReason = "the voiceover failed";
       ap.narration = { ...(ap.narration ?? {}), status: n.narrationStatus };
+      await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, "the voiceover failed", now);
     }
     ap.progressMax = 1;
     ap.heartbeatAt = now;
@@ -266,6 +273,12 @@ Deno.serve(async (req) => {
     try { narrationWatchdog = await sweepStalledNarration(); } catch (e) { console.error("[autopilot] narration watchdog", String(e)); }
     // Phase 6c safety rule: reservations idle for 7 days are auto-settled (unused credits refunded).
     try { idleSettle = await settleIdleReservations(admin, new Date().toISOString(), logEvent); } catch (e) { console.error("[autopilot] idle settle", String(e)); }
+    // The render watchdog's own cron only runs while a render is live. A render that FAILED is
+    // started again by that watchdog, so it is called from here while one is waiting (last 24 h).
+    try {
+      const { count } = await admin.from("long_form_render_jobs").select("id", { count: "exact", head: true }).eq("status", "failed").is("parent_job_id", null).gte("finished_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString());
+      if (count) background(fetch(fn("long-form-render"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "watchdog" }) }).then((r) => r.body?.cancel()));
+    } catch (e) { console.error("[autopilot] render sweep", String(e)); }
   }
   const results = [];
   for (const id of ids) {

@@ -13,6 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { narrationEtaSeconds } from "../_shared/stickman/narrationAudio.ts";
+import { NARRATION_PAUSED_COPY } from "../_shared/stickman/narrationRetry.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const admin = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -45,6 +46,9 @@ Deno.serve(async (req) => {
     characterCount: chars,
     attempt: Number(row?.provider_metadata?.attempts ?? 1),
     resuming: !!leaseExpired,
+    // 2026-10-07: the voice provider failed; the row waits and is tried again by itself (never "failed").
+    paused: row?.status === "generating" && row?.provider_metadata?.phase === "paused",
+    pausedMessage: row?.status === "generating" && row?.provider_metadata?.phase === "paused" ? NARRATION_PAUSED_COPY : null,
     voice: profile ? { voiceId: profile.voice_id, voiceModel: profile.voice_model } : null,
     error: row?.status === "failed" ? (row.last_error_code === "NARRATION_STALLED" ? "The voice generation stalled." : "The voice generation failed.") : null,
     providerCharacterCost: row?.provider_metadata?.providerCharacterCost ?? null,

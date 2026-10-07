@@ -30,9 +30,13 @@ Deno.test("watchdog: an expired lease is handed back to the generator (resume on
   assertEquals(narrationLeaseMs(8332), (hi + 90) * 1000);
 });
 
-Deno.test("no row after the lock: re-kick after 120 s, stop after 3 kicks (never loops forever)", () => {
+Deno.test("no row after the lock: re-kick after 120 s; after 3 kicks every 10 min, given up only after 6 hours (never loops forever)", () => {
   assertEquals(decideNarration({ now: at(NARRATION_KICK_AFTER_S + 1), narration: { lockedAt: at(0), kicks: 1 }, row: null }), { kind: "lock" });
-  assertEquals(decideNarration({ now: at(NARRATION_KICK_AFTER_S + 1), narration: { lockedAt: at(0), kicks: NARRATION_MAX_KICKS }, row: null }), { kind: "done", narrationStatus: "failed" });
+  // 2026-10-07: the quick kicks used up is no longer a failed video: slow kicks, then the 6-hour limit.
+  const slow = (nowS: number, lockedS: number) => decideNarration({ now: at(nowS), narration: { firstLockedAt: at(0), lockedAt: at(lockedS), kicks: NARRATION_MAX_KICKS }, row: null });
+  assertEquals(slow(500, 360), { kind: "wait" });
+  assertEquals(slow(360 + 601, 360), { kind: "lock" });
+  assertEquals(slow(6 * 3600 + 1, 6 * 3600 - 200), { kind: "done", narrationStatus: "failed" });
 });
 
 Deno.test("server-side recovery: cron sweeps expired narration leases; the page only displays", () => {

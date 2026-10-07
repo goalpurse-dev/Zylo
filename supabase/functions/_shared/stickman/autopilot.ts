@@ -214,7 +214,11 @@ export type NarrationAction =
   | { kind: "done"; narrationStatus: "ready" | "failed" };
 export const NARRATION_KICK_AFTER_S = 120;
 export const NARRATION_MAX_KICKS = 3;
-export function decideNarration(input: { now: string; narration?: { lockedAt?: string | null; kicks?: number } | null; row: NarrationRowLite }): NarrationAction {
+// 2026-10-07: after the quick kicks the voice is not given up on: it is started again every
+// 10 minutes for up to 6 hours (the voice provider or our lock step being down never fails a project).
+export const NARRATION_SLOW_KICK_S = 600;
+export const NARRATION_GIVE_UP_S = 6 * 3600;
+export function decideNarration(input: { now: string; narration?: { lockedAt?: string | null; kicks?: number; firstLockedAt?: string | null } | null; row: NarrationRowLite }): NarrationAction {
   const now = ms(input.now);
   const n = input.narration ?? {};
   const row = input.row;
@@ -224,7 +228,9 @@ export function decideNarration(input: { now: string; narration?: { lockedAt?: s
   // No row yet: lock (which kicks TTS), re-kick if nothing appeared, then stop.
   if (!n.lockedAt) return { kind: "lock" };
   if (now - ms(n.lockedAt) < NARRATION_KICK_AFTER_S * 1000) return { kind: "wait" };
-  return (n.kicks ?? 1) >= NARRATION_MAX_KICKS ? { kind: "done", narrationStatus: "failed" } : { kind: "lock" };
+  if ((n.kicks ?? 1) < NARRATION_MAX_KICKS) return { kind: "lock" };
+  if (now - ms(n.firstLockedAt ?? n.lockedAt) > NARRATION_GIVE_UP_S * 1000) return { kind: "done", narrationStatus: "failed" };
+  return now - ms(n.lockedAt) < NARRATION_SLOW_KICK_S * 1000 ? { kind: "wait" } : { kind: "lock" };
 }
 
 // The user-facing failure copy (never internal stage names).

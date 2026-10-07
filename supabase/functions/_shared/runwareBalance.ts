@@ -7,6 +7,7 @@
 // emailed once per pause; drawing resumes by itself once topped up.
 // A provider "insufficient balance" refusal also pauses at once (markOutOfBalance).
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { alertAdmin as sendAdminAlert } from "./adminAlert.ts";
 
 export const BALANCE_CACHE_S = 60;
 /** Words Runware uses when OUR account can't pay (same as the Fruit guard). */
@@ -38,15 +39,7 @@ export async function readRunwareBalance(apiKey: string, baseUrl = `${(Deno.env.
   }
 }
 
-async function alertAdmin(subject: string, text: string) {
-  const key = Deno.env.get("RESEND_API_KEY");
-  const to = Deno.env.get("ALERT_EMAIL") ?? Deno.env.get("CONTACT_TO_EMAIL");
-  if (!key || !to) { console.error(`[runware-guard] ${subject} (no ALERT_EMAIL to send to)`); return; }
-  await fetch("https://api.resend.com/emails", {
-    method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "Zyvo Alerts <hello@tryzyvo.com>", to, subject, text }), signal: AbortSignal.timeout(10_000),
-  }).catch((e) => console.error("[runware-guard] alert email failed:", String(e)));
-}
+const alertAdmin = (subject: string, text: string) => sendAdminAlert(subject, text, "runware-guard");
 
 /** Before drawing: { paused, balance }. Never throws (a guard failure must not stop drawing). */
 export async function checkRunwareGuard(admin: SupabaseClient, now = new Date().toISOString()): Promise<{ paused: boolean; balance: number | null }> {
