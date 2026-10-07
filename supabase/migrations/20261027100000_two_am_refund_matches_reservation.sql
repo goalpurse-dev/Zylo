@@ -9,7 +9,7 @@
 -- was reserved. Nothing else in the two functions changes. Balances are not
 -- touched by this migration (the account above keeps the 35 extra credits).
 --
--- NOT APPLIED. Shown for approval first.
+-- Applied to the real project on 7 Oct 2026 (approved), as a single file.
 
 create or replace function public.two_am_refund_for(p_reserved integer, p_completed integer)
 returns integer language sql immutable as $$

@@ -192,8 +192,8 @@ Deno.test("the money rules those tests assume are the database's own", () => {
   assertMatch(sql, /IF v_job\.status NOT IN \('queued','running','processing'\) OR/);
   assertMatch(sql, /IF \(v_job\.credits_charged_at IS NOT NULL OR COALESCE\(v_job\.charged,false\)\) AND v_job\.credits_refunded_at IS NULL THEN/);
   assertMatch(sql, /p_job_id::text \|\| ':refund'\) ON CONFLICT DO NOTHING;/);
-  // 2AM: a reservation nobody settled is settled by the server (pending approval).
-  const twoAm = read("supabase/pending/20261027110000_two_am_stale_reservations.sql");
+  // 2AM: a reservation nobody settled is settled by the server (applied 7 Oct 2026).
+  const twoAm = read("supabase/migrations/20261027110000_two_am_stale_reservations.sql");
   assertMatch(twoAm, /if v_open > 0 then continue; end if;/);
   assertMatch(twoAm, /v_refund := public\.two_am_refund_for\(g\.reserved_credits, v_completed\);/);
   assertMatch(twoAm, /and created_at >= p_created_after/);

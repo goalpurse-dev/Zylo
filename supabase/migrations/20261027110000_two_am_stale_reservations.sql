@@ -15,7 +15,7 @@
 -- (30 minutes), so a story with a stuck job is settled on the next minute.
 --
 -- Needs 20261027100000_two_am_refund_matches_reservation.sql (two_am_refund_for).
--- Service role only. NOT APPLIED. Shown for approval first.
+-- Service role only. Applied to the real project on 7 Oct 2026 (approved), as a single file.
 
 create or replace function public.release_stale_two_am_reservations(p_created_after timestamptz default '2026-10-07 00:00:00+00')
 returns setof public.two_am_generations
