@@ -266,8 +266,9 @@ Deno.serve(async (req) => {
   const doc = edit.doc;
   const errors = validateEdit(doc);
   if (errors.length) return err(req, "This edit has a problem to fix first.", 422, { errors: errors.slice(0, 5) });
-  const missing = doc.clips.findIndex((c: any) => c.needsImage);
-  if (missing >= 0) return err(req, `Scene ${missing + 1} still needs its picture. Generate or replace it in the editor first.`, 409);
+  // 2026-10-07: a render is never refused for a scene's picture. A split half that
+  // has no picture of its own yet keeps showing the one it was split from; a scene
+  // that could not be drawn is already covered in the edit (stickmanEdit.js).
   const { data: narr } = await admin.from("long_form_narration_audio_versions").select("narration").eq("id", doc.audio.narrationId).maybeSingle();
   const words = flattenWords(narr?.narration ?? []);
   await fillCenterFlatness(doc.clips); // an edit saved before this existed
@@ -277,13 +278,13 @@ Deno.serve(async (req) => {
   // Full-res masters for the crop (never upsampled); the worker reads their size.
   const ids = [...new Set(edl.clips.map((c: any) => c.sceneId).filter(Boolean))];
   const { data: scenes } = ids.length ? await admin.from("long_form_scene_images").select("id, image_url, master_url, status, beat_sequence").in("id", ids) : { data: [] };
-  // A finished video never has an empty or failed scene in it.
-  const holes = (scenes ?? []).filter((s: any) => !s.image_url || s.status === "failed");
-  if (holes.length || (scenes ?? []).length < ids.length) {
-    const n = holes.length || ids.length - (scenes ?? []).length;
-    return err(req, `${n} scene${n === 1 ? "" : "s"} still need${n === 1 ? "s" : ""} a picture. Use \"Try again (free)\" on the Scenes page first.`, 409, { scenes: holes.map((s: any) => s.beat_sequence) });
-  }
-  const masterOf = new Map((scenes ?? []).map((s: any) => [s.id, s.master_url ?? null]));
+  // Every clip carries its own picture (validateEdit). A clip whose scene row has
+  // since failed or gone renders with that picture; only its full-res master is skipped.
+  const usable = (scenes ?? []).filter((s: any) => s.image_url && s.status === "ready");
+  const coveredNow = (doc.clips ?? []).filter((c: any) => c.covered).length;
+  const stale = ids.length - usable.length;
+  if (coveredNow || stale > 0) await logEvent("long-form-render", "warn", "render_with_covered_scenes", { projectId, covered: coveredNow, clipsWithoutACurrentScene: Math.max(0, stale) });
+  const masterOf = new Map(usable.map((s: any) => [s.id, s.master_url ?? null]));
   // (the worker falls back to the 1920x1080 picture if a master can't be fetched)
   for (const c of edl.clips) { const m = c.sceneId ? masterOf.get(c.sceneId) : null; if (m) c.masterImage = m; }
   if (edl.music) edl.musicVolumeExpr = musicVolumeExpr(edl.music);

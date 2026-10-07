@@ -29,8 +29,8 @@ export const SCENE_TIMING = {
   concurrency: 6,
 };
 export const SCENE_CONCURRENCY = SCENE_TIMING.concurrency;
-export const SCENE_LEASE_S = 150;           // one scene: render (+ retry) + upscale, well inside the edge wall clock
-export const SCENE_MAX_ATTEMPTS = 2;        // a scene whose worker died is re-queued once, then marked failed
+export const SCENE_LEASE_S = 150;           // one step of a scene: render (+ retry) + upscale; renewed per step (sceneLadder.ts)
+export const SCENE_MAX_ATTEMPTS = 3;        // a scene whose worker DIED is re-queued twice, then marked failed (a deferred retry is not a death)
 export const WATCHDOG_GRACE_S = 90;
 export const SCENES_MAX_RESUMES = 2;
 

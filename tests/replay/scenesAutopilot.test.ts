@@ -54,8 +54,9 @@ Deno.test("6c e2e fixes: a plan that failed VALIDATION stops with Retry (no paid
   assertEquals(decideScenes(input({ nowS: 5, scenes: { retriedAt: at(0), dispatched: {} } as any, plan: null })).action, { kind: "build_beats", resume: false });
 });
 
-Deno.test("watchdog: a scene whose worker died is re-queued once, then marked failed (never a forever spinner)", () => {
-  const d = decideScenes(input({ nowS: 600, plan: plan(), images: { ...noImages, queued: 0, rendering: 2, renderingExpired: [{ id: "a", attempts: 1 }, { id: "b", attempts: 2 }], ready: 118, total: 120 } }));
+Deno.test("watchdog: a scene whose worker died is re-queued (twice), then marked failed (never a forever spinner)", () => {
+  // 2026-10-07: attempts count worker deaths only; a deferred retry (attempts 0, lease over) is queued again like any other.
+  const d = decideScenes(input({ nowS: 600, plan: plan(), images: { ...noImages, queued: 0, rendering: 2, renderingExpired: [{ id: "a", attempts: 2 }, { id: "b", attempts: 3 }], ready: 118, total: 120 } }));
   assertEquals(d.action, { kind: "draw", planId: "p1", slots: 1, requeue: ["a"], fail: ["b"] });
 });
 

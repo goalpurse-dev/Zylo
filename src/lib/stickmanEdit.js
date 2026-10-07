@@ -114,8 +114,41 @@ export function mixMotions(doc, { seed, reveals = [], sides = {} } = {}) {
     if (motion === p1 && motion === p2) motion = ["push_in", "pan_right", "pull_out", "pan_left"].find((m) => m !== motion && !(texts.length && m.startsWith("pan")) && !(texts.length && m === "pull_out")) ?? "hold";
     out.push({ motion, speed });
   });
-  return { ...doc, motion: { ...(doc.motion ?? {}), mode: "mix", intensity: doc.motion?.intensity ?? "normal" }, clips: doc.clips.map((c) => { const k = clips.findIndex((x) => x.id === c.id); return c.motionManual ? c : { ...c, motion: out[k].motion, motionSpeed: out[k].speed }; }) };
+  return coverMotions({ ...doc, motion: { ...(doc.motion ?? {}), mode: "mix", intensity: doc.motion?.intensity ?? "normal" }, clips: doc.clips.map((c) => { const k = clips.findIndex((x) => x.id === c.id); return c.motionManual ? c : { ...c, motion: out[k].motion, motionSpeed: out[k].speed }; }) });
 }
+
+// ---------------- covered scenes (2026-10-07) ----------------
+// A scene that could not be drawn (after every retry, the safe prompt and the
+// backup model) never holds the video up. It is COVERED: the picture before it
+// (the next one, for the very first scene) stays on screen over its time with a
+// different, gentle camera move, so the video plays through. The clip keeps the
+// failed scene's own number, so "Try again (free)" later puts the real picture in.
+export function coverMissingScenes(scenes) {
+  const sorted = [...scenes].sort((a, b) => a.startMs - b.startMs);
+  const firstReady = sorted.find((s) => s.imageUrl);
+  if (!firstReady) return [];
+  let prev = null;
+  return sorted.map((s) => {
+    if (s.imageUrl) { prev = s; return s; }
+    const from = prev ?? firstReady;
+    return { ...s, imageUrl: from.imageUrl, sceneId: from.sceneId ?? null, imageVersion: from.imageVersion ?? null, overlay: null, camera: null, covered: true, coveredBy: from.number };
+  });
+}
+// The move a covering clip makes: never the one the picture is already making.
+const COVER_MOVE = { push_in: "pan_right", pull_out: "pan_left", pan_left: "push_in", pan_right: "push_in", hold: "push_in" };
+export const COVER_MOTION_SPEED = 0.5;
+export function coverMotions(doc) {
+  if (!doc.clips.some((c) => c.covered)) return doc;
+  const order = [...doc.clips].sort((a, b) => a.startMs - b.startMs);
+  const moved = new Map();
+  order.forEach((c, i) => {
+    if (!c.covered || c.motionManual) return;
+    const before = i > 0 ? moved.get(order[i - 1].id)?.motion ?? order[i - 1].motion : null;
+    moved.set(c.id, { motion: COVER_MOVE[before] ?? "push_in", motionSpeed: COVER_MOTION_SPEED });
+  });
+  return { ...doc, clips: doc.clips.map((c) => (moved.has(c.id) ? { ...c, ...moved.get(c.id) } : c)) };
+}
+export const coveredClips = (doc) => (doc?.clips ?? []).filter((c) => c.covered);
 // "Apply to all": one move on every scene (per-scene choices cleared).
 export const setAllMotions = (doc, kind) => ({ ...doc, motion: { ...(doc.motion ?? {}), mode: kind }, clips: doc.clips.map((c) => ({ ...c, motion: kind, motionSpeed: 1, motionManual: false })) });
 export const setClipMotion = (doc, id, kind) => ({ ...doc, clips: doc.clips.map((c) => (c.id === id ? { ...c, motion: kind, motionSpeed: 1, motionManual: true } : c)) });
@@ -191,12 +224,13 @@ export function spacedStarts(starts, durationMs, words = []) {
 
 // The first edit of a project: the Scenes step's result, as a doc.
 export function buildInitialEdit({ scenes, words, audio, narrationId, seed = null, reveals = [], sides = {} }) {
-  const ready = [...scenes].filter((s) => s.imageUrl).sort((a, b) => a.startMs - b.startMs);
+  // Scenes with no picture are covered by the one before (coverMissingScenes), never dropped.
+  const ready = coverMissingScenes(scenes);
   const kept = spacedStarts(ready.map((s) => s.startMs), Math.round(audio.durationMs), words);
   const sorted = kept.map((k) => ready[k.index]);
   const clips = sorted.map((s, i) => {
     const startMs = kept[i].startMs;
-    return { id: newId("clip"), sceneId: s.sceneId ?? null, imageVersion: s.imageVersion ?? null, beatSequence: s.number, startMs, startWord: Math.max(0, wordAt(words, (i === 0 ? s.startMs : startMs) + 1)), image: s.imageUrl, narration: s.narration ?? "", motion: motionKindFromCamera(s.camera, i) };
+    return { id: newId("clip"), sceneId: s.sceneId ?? null, imageVersion: s.imageVersion ?? null, beatSequence: s.number, startMs, startWord: Math.max(0, wordAt(words, (i === 0 ? s.startMs : startMs) + 1)), image: s.imageUrl, narration: s.narration ?? "", motion: motionKindFromCamera(s.camera, i), ...(s.covered ? { covered: true, coveredBy: s.coveredBy } : {}) };
   });
   const ends = withEnds({ clips, audio });
   const texts = sorted.map((s, i) => textItemFromLayer(s.overlay, ends[i].startMs, ends[i].endMs)).filter(Boolean);
