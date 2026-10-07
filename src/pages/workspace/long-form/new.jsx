@@ -39,9 +39,10 @@ function capIdeas(ideas, selectedId, max) {
 // Adapts a real `jobs` row (the same shape every Zyvo image tool already
 // reads) into a conceptPreview patch.
 function applyJobRowToPreview(row) {
-  if (row.status === "succeeded") return { status: PREVIEW_STATUS.READY, imageUrl: row.result_url };
-  if (row.status === "failed" || row.status === "canceled") return { status: PREVIEW_STATUS.FAILED, imageUrl: null };
-  return { status: PREVIEW_STATUS.GENERATING, imageUrl: null };
+  if (row.status === "succeeded") return { status: PREVIEW_STATUS.READY, imageUrl: row.result_url, highDemand: false };
+  if (row.status === "failed" || row.status === "canceled") return { status: PREVIEW_STATUS.FAILED, imageUrl: null, highDemand: false };
+  // The image model is overloaded: the server waits and tries again by itself (never an error).
+  return { status: PREVIEW_STATUS.GENERATING, imageUrl: null, highDemand: row.status === "queued" && row.settings?.waiting === "high_demand" };
 }
 
 export default function LongFormNew() {
@@ -372,10 +373,10 @@ export default function LongFormNew() {
       const status = idea.conceptPreview.status;
       if (status === PREVIEW_STATUS.READY) acc.ready += 1;
       else if (status === PREVIEW_STATUS.FAILED) acc.failed += 1;
-      else acc.pending += 1;
+      else { acc.pending += 1; if (idea.conceptPreview.highDemand) acc.highDemand += 1; }
       return acc;
     },
-    { ready: 0, failed: 0, pending: 0 }
+    { ready: 0, failed: 0, pending: 0, highDemand: 0 }
   );
 
   return (
@@ -618,6 +619,7 @@ export default function LongFormNew() {
               readyCount={previewCounts.ready}
               pendingCount={previewCounts.pending}
               failedCount={previewCounts.failed}
+              highDemandCount={previewCounts.highDemand}
               onUse={handleUseIdea}
               onDismiss={handleDismissIdea}
             />
