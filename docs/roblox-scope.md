@@ -381,6 +381,19 @@ Decisions of 2026-10-08 (after the first real story):
     changes something (a deflating ending fails).
 49. 30 SECONDS is the default length (six scenes: hook, two steps up, the proof, the twist,
     the last line). 20 seconds stays as the cheaper choice.
+50. A STYLE NOTE NEVER FAILS A STORY. Lines all the same length, two lines that say the same,
+    a last line over 10 words, a title word from the twist, fewer than three twists drafted:
+    the writer is told once; what is left goes to the editor. Only a fault that makes the story
+    unusable (format, safety, timing, a word about writing, the wrong winner) can end in "We
+    couldn't write this story". Found in the twist round: 2 of 5 stories were lost to "the
+    lines are all about the same length".
+51. THE TWIST ROUND DID NOT PASS (2026-10-08; pass mark: average 7.5, none under 6). The same
+    five ideas at 30 seconds scored 7, 7, 7.5, 6.5 and 5 by my own reading: average 6.6, up
+    from 5.6. Section 3 (story ideas) waits for the owner. Still failing: the twist is carried
+    by a new rule of the world that appears at the reveal instead of something planted in the
+    first scenes; last lines explain the twist; one story blamed someone outside the cast; the
+    same speaker has three lines in a row; a premise about a number on screen lost its clarity
+    once the number was taken out.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
