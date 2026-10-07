@@ -157,7 +157,7 @@ p("");
 p(`/* ─── The money path and the story state ──────────────────────────────── */`, "");
 const sig = (f) => f.args.split(",").map((a) => a.trim().replace(/^p_\w+\s+/, "")).join(", ");
 // blocky_create_story: Fruit's body from before the template seam (20260930151906), under Blocky's names.
-const undo = fs.readFileSync("supabase/pending/20261026090000_story_niches_undo.sql", "utf8").replace(/\r\n/g, "\n");
+const undo = fs.readFileSync("supabase/migrations/20261026090000_story_niches_undo.sql", "utf8").replace(/\r\n/g, "\n");
 const a = undo.indexOf("CREATE OR REPLACE FUNCTION public.fruit_create_story");
 const b = undo.indexOf("$function$;", a) + "$function$;".length;
 if (a < 0 || b < a) throw new Error("create_story body");

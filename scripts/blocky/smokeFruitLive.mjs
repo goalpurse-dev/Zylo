@@ -27,7 +27,17 @@ if (recent.ok && recent.data[0]) {
   const story = await api("getStory", { storyId: recent.data[0].id });
   out.openNewestStory = story.ok ? `${story.data.status}, ${story.data.scenes.length} scenes` : `${story.code}: ${story.message}`;
 }
+if (series.ok && series.data[0]) {
+  const one = await api("getSeries", { seriesId: series.data[0].id });
+  out.openNewestSeries = one.ok ? `${one.data.episodes.length} episodes` : `${one.code}: ${one.message}`;
+}
+const recentSeries = await api("listRecent", { type: "series" });
+out.recentSeries = recentSeries.ok ? recentSeries.data.length : `${recentSeries.code}: ${recentSeries.message}`;
+// A second idea batch (another seed) must differ from the first: the picker really runs.
+const more = await api("getIdeas", { seed: 1 });
+out.secondIdeaBatchDiffers = more.ok && ideas.ok ? JSON.stringify(more.data.map((i) => i.id)) !== JSON.stringify(ideas.data.map((i) => i.id)) : `${more.code}: ${more.message}`;
 console.log(JSON.stringify(out, null, 1));
-const ok = out.characters === 170 && out.ideas === 5 && Number.isInteger(out.recentSingles) && Number.isInteger(out.series);
+const ok = out.characters === 170 && out.ideas === 5 && Number.isInteger(out.recentSingles) && Number.isInteger(out.series) && Number.isInteger(out.recentSeries)
+  && out.secondIdeaBatchDiffers === true && !/:/.test(String(out.openNewestStory ?? "")) && !/:/.test(String(out.openNewestSeries ?? ""));
 console.log(ok ? "PASS" : "FAIL");
 process.exitCode = ok ? 0 : 1;

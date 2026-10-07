@@ -24,7 +24,9 @@
 -- It gives up (and changes nothing) rather than wait more than 5 seconds for a
 -- lock, so it can never hold Fruit up.
 --
--- Rollback: supabase/pending/20261026090000_story_niches_undo_rollback.sql
+-- Applied to the real database on 2026-10-07 19:49 UTC (0 jobs in flight; smoke check and rolled-back
+-- story creation before and after).
+-- Rollback: supabase/rollbacks/20261026090000_story_niches_undo_rollback.sql
 -- (which is 20261006190000_story_niches.sql again).
 
 BEGIN;

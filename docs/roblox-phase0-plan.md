@@ -92,6 +92,35 @@ Since this plan was written:
   `laptop-transfer` before the merge is the tag `backup/laptop-transfer-before-blocky-2026-10-07`.
   A push of `laptop-transfer` builds a Vercel Preview, never Production (only `main` does).
   No separate branches, worktrees or copies from now on.
+- 2026-10-07, evening: the Fruit undo (`20261026090000_story_niches_undo.sql`) is APPLIED, 19:49
+  UTC, with 0 Fruit jobs in flight. Fruit's tables have no template or overlay column any more;
+  `fruit_pick_ideas` and `fruit_create_story` are the originals word for word; row counts are
+  unchanged; Fruit's live API and Blocky both pass their checks after it. Nothing waits in
+  `supabase/pending/`.
+- 2026-10-07, evening: series in Blocky is behind its own flag, `blocky_series_v1`, off for
+  everyone (no row, no account). The page shows single videos only and the API refuses every
+  series action. No series code is removed; it is designed properly after single stories pass
+  the quality review.
+- 2026-10-07, evening: main's "generation hardening" changed AI Fruit Story's `engine.js` (give up
+  after 30 minutes instead of 8 / 12; a failed status read is "no news", not a failed job; a
+  balance refusal waits and retries instead of refunding at once). Blocky's twin `engine.js` does
+  NOT have these three changes yet (see `_shared/blocky/README.md`: a fix in one almost always
+  belongs in the other).
+
+## Blocky UI/UX list (not built yet)
+
+Things to design and build in the UI phase (phase 8), kept here so none is forgotten:
+
+- **The page needs visuals** (owner, 2026-10-07; after the real avatar library is made). It should
+  not feel text-only:
+  - avatar pictures in the character picker (the chips and the "Choose your characters" row, not
+    only inside the library dialog);
+  - example story images or a preview on the right side, instead of the text-only "Make your first
+    story" box;
+  - the example video on the Recent panel (`EXAMPLE_VIDEO` in the page's `constants.js` is empty
+    until one is made).
+- Series: its own design pass before the `blocky_series_v1` flag is switched on.
+- Story ideas: the idea cards ("Pick an idea"), once the idea engine exists.
 - Phase 3 (the look) stopped at the review of 2026-10-06 and continues after the separation:
   the Pro reference pilot with the head / tongue / front-view / blocky-hair fixes, the 24
   references, the scene re-test, 5 real stories from the writer. The Veo clip of test 1b runs

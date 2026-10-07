@@ -180,7 +180,7 @@ const liveCalls = async (db) => {
   const callsBefore = await liveCalls(db);
   ok("before: the live calls work (5 ideas; a rolled-back story with 2 scenes)", callsBefore.ideas === 5 && callsBefore.scenes === 2);
 
-  await db.exec(sql("supabase/pending/20261026090000_story_niches_undo.sql"));
+  await db.exec(sql("supabase/migrations/20261026090000_story_niches_undo.sql"));
   const after = await shape(db);
   ok("the undo runs from start to finish, in its one transaction", true);
   ok("no template or overlay column is left", after.nicheColumns.length === 0, JSON.stringify(after.nicheColumns));
@@ -207,11 +207,11 @@ const liveCalls = async (db) => {
   ok(`the other ${others.length} Fruit functions are untouched (charge, refund, complete, status, guards, alert)`, same === others.length);
 
   // A second run changes nothing and fails nothing.
-  await db.exec(sql("supabase/pending/20261026090000_story_niches_undo.sql"));
+  await db.exec(sql("supabase/migrations/20261026090000_story_niches_undo.sql"));
   ok("running the undo a second time changes nothing and fails nothing", JSON.stringify(await shape(db)) === JSON.stringify(after));
 
   // And back: the rollback of the undo puts the columns back.
-  await db.exec(sql("supabase/pending/20261026090000_story_niches_undo_rollback.sql"));
+  await db.exec(sql("supabase/rollbacks/20261026090000_story_niches_undo_rollback.sql"));
   const back = await shape(db);
   ok("the undo's own rollback puts everything back", back.nicheColumns.join() === before.nicheColumns.join() && back.pickIdeas.join() === before.pickIdeas.join());
   await db.close();
@@ -219,7 +219,7 @@ const liveCalls = async (db) => {
   // Refusals: nothing changes when a row belongs to another template.
   const db2 = await seededReplica();
   await db2.exec(`INSERT INTO public.fruit_characters (id, name, niche, fruit, tag, role, voice_style, face, build, outfit, ref_image_url, ref_image_path, ref_width, ref_height, ref_model, ref_prompt) VALUES ('vex', 'Vex', 'blocky', 'avatar', 'Admin', 'r', 'v', 'f', 'b', 'o', 'https://example.test/vex.jpg', 'p', 768, 1376, 'm', 'p');`);
-  const refused = await fails(db2, sql("supabase/pending/20261026090000_story_niches_undo.sql"), /undo refused: 1 rows of fruit_characters belong to another template/);
+  const refused = await fails(db2, sql("supabase/migrations/20261026090000_story_niches_undo.sql"), /undo refused: 1 rows of fruit_characters belong to another template/);
   await db2.exec("ROLLBACK").catch(() => {});
   const still = await shape(db2);
   ok("with a row of another template: refused, and nothing at all changed", refused === true && still.nicheColumns.length === 5 && still.pickIdeas.join() === "p_seed text, p_count integer, p_niche text", String(refused));
