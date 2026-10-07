@@ -23,7 +23,13 @@ export const TIMING = Object.freeze({
   // task) → sent again once; still rendering → keep waiting (a resend would pay
   // twice and start from zero) until giveUpAfterSec, then refund.
   stallCheckSec: { image: 120, clip: 240 },
-  giveUpAfterSec: { image: 8 * 60, clip: 12 * 60 },
+  // 2026-10-07: 30 minutes for both (it was 8 and 12). On 6-7 Oct Runware delivered six clips
+  // AFTER we had given up on them and refunded: the user lost the clip and we paid for it.
+  giveUpAfterSec: { image: 30 * 60, clip: 30 * 60 },
+  // Our provider account refused us (balance): the job WAITS and is sent again every 5 minutes;
+  // only after 30 minutes of that is it refunded.
+  balanceHoldSec: 5 * 60,
+  balanceGiveUpSec: 30 * 60,
   storeGiveUpSec: 15 * 60,              // provider result we can't store (URL expires)
   // A provider_done job the first finalize didn't finish is picked up again after
   // this long. Clips take longer: their check listens to the clip first.
@@ -37,6 +43,8 @@ const failCode = (kind, cls) => cls.providerBalance ? "PROVIDER_UNAVAILABLE" : c
 
 /** Job note that marks a picture already redrawn after a failed check. */
 export const REDRAW_NOTE = "picture check, redrawn at our cost:";
+/** Job note of a job waiting for our provider balance; it carries when the wait began. */
+export const BALANCE_NOTE = "provider balance, waiting since";
 /** Job note that marks a clip already remade after a failed check (the wrong words, a human in the last frame). */
 export const REMAKE_NOTE = "clip check, remade at our cost:";
 
@@ -62,11 +70,16 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
   }
 
   async function fail(job, cls, { cost = 0, code, message } = {}) {
-    // Our provider account is out of balance: refund now (no retries, no
-    // fallback on the same account), tell the admin; the user retries later.
+    // Our provider account refused us for balance (no fallback on the same account). 2026-10-07:
+    // the job is PAUSED, not failed: it waits and is sent again every 5 minutes (Runware's refusal
+    // is often its "reserved for requests in progress" throttle, gone minutes later). The admin is
+    // told on the first refusal. Only after 30 minutes of waiting is it refunded.
     if (cls.providerBalance) {
+      const waiting = String(job.error ?? "").startsWith(BALANCE_NOTE);
+      const since = waiting ? String(job.error).slice(BALANCE_NOTE.length).trim() : now().toISOString();
+      if (!waiting && onProviderBalance) await onProviderBalance({ job, code, message }).catch((e) => log.error?.("[blocky] alert hook failed:", e?.message ?? e));
+      if (ageSec(now(), since) < TIMING.balanceGiveUpSec && (await store.requeueJob(job.id, job.task_uuid, TIMING.balanceHoldSec, `${BALANCE_NOTE} ${since}`, cost))) return "held";
       await store.refundJob(job.id, "PROVIDER_UNAVAILABLE", MESSAGES.PROVIDER_UNAVAILABLE, cost);
-      if (onProviderBalance) await onProviderBalance({ job, code, message }).catch((e) => log.error?.("[blocky] alert hook failed:", e?.message ?? e));
       return "refunded";
     }
     // A clip refused by the content filter gets ONE safe rewrite (the exact line kept), then fails.
@@ -271,7 +284,12 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
         continue;                                    // try again next minute
       }
       report.polled += 1;
-      const parsed = parseRunware(res.body, job.task_uuid, res.httpStatus);
+      // 2026-10-07: a status read the provider refused or fumbled (429, 5xx, a balance refusal) says
+      // nothing about the task. It used to count as the task failing: the job was sent again under a
+      // new id while the first one was still rendering (paid twice, the first result lost). Now it
+      // is "no news yet": asked again next time, given up on only by the clock below.
+      const readFailed = !(res.httpStatus >= 200 && res.httpStatus < 300);
+      const parsed = readFailed ? { state: "pending" } : parseRunware(res.body, job.task_uuid, res.httpStatus);
       const gaveUp = ageSec(t, job.submitted_at ?? job.lease_until) > TIMING.giveUpAfterSec[job.kind];
       const stalled = job.status === "submitted" && ageSec(t, job.submitted_at) > TIMING.stallCheckSec[job.kind];
       if (parsed.state === "success" || parsed.state === "error") {
