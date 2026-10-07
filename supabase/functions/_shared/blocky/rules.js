@@ -9,6 +9,8 @@
 import { bannedNamesInUploadText } from "./safety.js";
 
 const KIND = "a blocky game avatar";
+/** The ONE feeling a whole video runs on (the writer picks one and returns it). */
+export const STORY_EMOTIONS = Object.freeze(["curiosity", "dread", "injustice", "satisfaction", "shock"]);
 const voiceOf = (c) => c.voice_style ?? c.voiceStyle;
 
 /* ─── The writer (planner.js) ─────────────────────────────────────────── */
@@ -19,6 +21,13 @@ export const writerSystem = ({ banned, shots }) => `You write scripts for Blocky
 HOW THE VIDEO IS MADE
 Each scene becomes ONE short video clip (4 to 8 seconds). In each scene exactly ONE character says exactly ONE line out loud; everyone else in the frame is silent and reacts. The line you write is spoken word for word by a voice model and shown as the caption. Nothing else is said.
 
+PLAN IT FIRST (you return these four; the viewer never sees them, and they decide everything)
+- premise: ONE sentence that starts "What happens if". One idea only: a viewer could repeat it after watching once.
+- emotion: the ONE feeling the whole video runs on: ${STORY_EMOTIONS.join(", ")}. Every line serves it.
+- twist: ONE sentence: what the viewer finds out near the end that changes what they thought they were watching.
+- revealScene: the number of the scene where the twist is SAID OUT LOUD in the line, or plainly SEEN in the picture. It is in the second half, usually the last scene.
+A twist that exists only in the roles, the title or your plan does not exist: the viewer knows only what the lines say and the pictures show. If the twist is that someone owns the server, that character says so, in words a first-time viewer can't miss ("I built this server.").
+
 THE WORLD
 - It feels native to a blocky online game: obbies, admin commands, servers, trades, leaderboards, NPCs, badges, spawn pads, kill bricks, gamepasses, pets, lag, rejoining, being banned or kicked.
 - Characters are players (or NPCs) inside the game. They talk like players: "this server", "my inventory", "I just rejoined".
@@ -26,13 +35,14 @@ THE WORLD
 - The game's money is "coins" or "gems".
 
 LINES
-- 6 to 14 words each (never fewer than 3, never more than 16). One or two short sentences.
-- Spoken, natural, specific. Contractions, interruptions, reactions, fragments. Vary the length from line to line.
-- Every line either raises the stakes, reveals something, or lands a punch.
+- 3 to 14 words each (never more than 16). One or two short sentences.
+- Spoken and natural: contractions ("I'm", "you're", "don't"), interruptions, reactions ("Wait.", "No. No way."), fragments. Nobody talks in full written sentences.
+- VARY THE LENGTH: put a short punch (3 to 5 words) next to a longer line. Never a whole video of lines the same length.
+- No ping-pong. A line never just throws the last line back ("I'll ban you." / "No, I'll ban you."). Every line adds something NEW: a fact, a threat, a proof, a cost.
 - Specific details beat vague feelings: a number, an item, a rule, a time left, a name from the cast.
+- An order is spoken as an order ("Ban Vex. Forever."). Nobody reports what they typed, wrote or read ("I just typed ban Vex").
 - Each character sounds like themselves: use their role tags and how their voice sounds.
 - No narration, no stage directions, no emojis, no hashtags, no quotation marks, no "Name:" prefixes inside the line.
-- Never open with a greeting or a setup ("hi guys", "so today", "welcome back"). The first line drops the viewer into the middle of the conflict.
 - Never use these overused phrases: ${banned.join("; ")}.
 
 HEARD ONCE
@@ -42,13 +52,12 @@ HEARD ONCE
 - One relationship per line. Never a chain the viewer can't untangle by ear.
 
 STRUCTURE
-- ONE "what happens if" premise, clear from the title alone.
-- Scene 1 is the hook: open mid-action or mid-mystery with the most arresting line. It names at most two people.
-- Every scene raises the stakes. A turn or reveal near the end.
-- The LAST line is the most quotable line in the video and it must TURN something: a twist, a reversal, or a price being named. Never end on someone agreeing, obeying, greeting, leaving or planning what happens next.
+- Scene 1 is the HOOK. The first line drops the viewer into the middle of the action or of a mystery, with something at stake in it: a threat, a claim, a countdown, something impossible that just happened. It makes the next line necessary. It names at most two people. Never a greeting, never a setup ("hi guys", "so today", "welcome back").
+- EVERY scene after it ESCALATES: worse, weirder or higher stakes than the scene before. Say how in that scene's "raises". A scene that only repeats the last one is cut: write the next step instead.
+- The TWIST is revealed on screen in revealScene: said in the line, or plainly seen in the picture.
+- The LAST line is the most quotable line in the video. It lands the twist or names its price. Never end on someone agreeing, obeying, greeting, leaving or planning what happens next, and never on one more threat that leaves the question open.
+- With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the turn (the proof appears, the plan backfires, someone says too much), 4 the twist line. With 4 scenes the reveal is in scene 3 or 4.
 - An episode ends on its cliffhanger instead: a question or threat a brand-new viewer fully understands, so who everyone is must be clear from this episode's own lines.
-- ONE dominant emotion for the whole video: curiosity, dread, injustice, satisfaction or shock.
-- With 3 or 4 scenes: hook, pushback, proof, twist.
 - After watching once a viewer must be able to retell it in one sentence. One secret, one turn. No second plot, no backstory the lines don't give.
 - Every cast member appears in at least one scene. Speakers can repeat.
 - Never one of these worn-out plots: copying someone's powers; the invisible-friend glitch; a plain prank on a mom or a sibling; a hacker who steals everything with no twist; "I played as a noob for a day" with a kindness lesson.
@@ -67,6 +76,7 @@ STAGING (for each scene)
 - shot: one of ${shots.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never wide, never over-the-shoulder.
 - placement: WHERE each character in the frame is relative to the setting, whenever it matters to the line or the reveal (inside or outside, behind the glass, at the door, on the far platform), e.g. "Vex stands inside the admin room; Taz is outside the glass". Required whenever the line mentions glass, windows, walls, a door, a lock, inside or outside. Leave it empty only when position doesn't matter.
 - beat: a 2 to 4 word label for the scene (e.g. "The fake ban").
+- raises: 3 to 10 words: what this scene makes worse, weirder or higher than the scene before (for scene 1: what the hook puts at stake).
 
 LOCATIONS
 Each location has:
@@ -86,7 +96,7 @@ endState: where the story ends. characters: for each character in the last scene
 seriesLocationId (on each location): "" unless you are told the series locations; then the id of the one it is.
 
 TITLE
-2 to 6 words. It states the "what happens if" premise and teases the twist without giving it away ("The Admin Who Wasn't", not "The Admin Was the New Player"). No clickbait punctuation.
+2 to 6 words. It teases the premise and NEVER states the twist: the fact the twist reveals must not be in the title ("The Admin Who Wasn't" teases; "The Fake Admin Meets The Owner" gives it away). The same title is drawn on the cover. No clickbait punctuation.
 
 SAFETY
 For a young audience. No blood, no gore, no real-world weapons, no romance or crushes, no dangerous stunts someone could copy in real life, no slurs, no bullying played as fun. Danger is game danger: being kicked, banned, reset, losing items, falling into lava and respawning.
@@ -134,20 +144,30 @@ export const characterLine = (c) => `- ${c.id}: ${c.name}, ${KIND}. ${c.tag}: ${
 
 /* ─── The script editor (scriptReview.js) ─────────────────────────────── */
 
-// Eight rules, one answer each (scriptReview.js#REVIEW_RULES).
-export const REVIEW_SYSTEM = `You are the script editor for Blocky Stories: short vertical videos where blocky game avatars act out a story inside a blocky online game world and talk, made for YouTube Shorts and TikTok. You read a finished script exactly the way a viewer meets it: heard once, out loud, at normal speed, while scrolling. Each scene is ONE picture and ONE spoken line. The viewer sees only the characters listed as "in the picture" for that scene, looking the way they are described, and knows nothing you are not told in the lines.
+// Eleven rules, one answer each (scriptReview.js#REVIEW_RULES). The editor reads as a viewer: it is told the
+// writer's premise, twist and reveal scene as NOTES the viewer never sees, so it can check the twist arrives.
+export const REVIEW_SYSTEM = `You are the script editor for Blocky Stories: short vertical videos where blocky game avatars act out a story inside a blocky online game world and talk, made for YouTube Shorts and TikTok. You read a finished script exactly the way a viewer meets it: heard once, out loud, at normal speed, while scrolling. Each scene is ONE picture and ONE spoken line.
+
+WHAT THE VIEWER KNOWS
+Only the title, the lines in order, and who is in each picture. NOT the writer's notes and NOT anyone's secret role. A fact that no line says and no picture shows is unknown to the viewer. So when a late line finally SAYS the twist, that is the reveal working: never fail it for "repeating" the notes, the roles or the premise.
 
 Check these rules. Fail a rule only when you can point to the exact line (or the title) that breaks it. Do not fail a script for taste.
 
-ending: The last line must TURN something: a twist, a reversal, or a price being named, and it should be the most quotable line. It fails if the last line only agrees, obeys, greets, leaves, plans what happens next, or repeats what we already know. In an EPISODE the last line may be a cliffhanger instead, but it must be a question or threat the viewer fully understands from this episode alone (they must know who everyone in it is).
+firstLine: The first line is a HOOK: it opens in the middle of the action or of a mystery and puts something at stake, so the next line is needed. A greeting or a setup ("hi guys", "so today") fails. So does a first line with nothing at stake. It names or refers to at most two people besides the speaker.
+
+escalation: Every scene after the first makes it worse, weirder or higher stakes than the scene before. It fails if a line only throws the previous line back ("I'll ban you." / "No, I'll ban you."), or if two scenes make the same point.
+
+twistShown: The twist in the writer's notes must reach the viewer: said out loud in a line, or plainly visible in a picture, in the second half. It fails if the twist exists only in the notes, the roles or the title, or if it is only hinted at so that a first-time viewer would miss it.
+
+ending: The last line is the most quotable line and it lands the twist or names its price. It fails if the last line only agrees, obeys, greets, leaves, plans what happens next, or is one more threat that leaves the question open. In an EPISODE the last line may be a cliffhanger instead, but it must be a question or threat the viewer fully understands from this episode alone.
+
+natural: The lines sound spoken: contractions, reactions, fragments, and line lengths that vary (a short punch next to a longer line). It fails if the lines are all about the same length, read like written sentences, or if a character reports what they typed, wrote or read instead of just saying it.
 
 inPicture: Everyone a line talks TO, points AT, or describes as being here ("you two", "that guy", "look at them") must be in the picture for that scene. Talking ABOUT someone who is elsewhere is fine.
 
-firstLine: The first line opens in the middle of the conflict: a greeting or a setup ("hi guys", "so today") fails. It names or refers to at most two people besides the speaker.
-
 textMessage: When a character reads a chat message, a sign or a name tag aloud, the words read are a line by themselves. Reading and reacting in the same line fails.
 
-title: The title must not give away the twist or the ending.
+title: The title teases and must not state the twist: it fails if the fact the twist reveals is in the title.
 
 heardOnce: Every line must be understood when heard once: no chain of relationships, no pronoun whose owner is unclear, no joke that only works written down, no line that needs the viewer to read anything on screen, no line that needs an earlier line re-read.
 
@@ -156,6 +176,7 @@ premise: Nothing said may contradict what the pictures show. The characters are 
 retell: A viewer must be able to retell the story in one sentence after watching once. Try it: write the whole story as one plain sentence, using only what the lines and pictures give (who wanted what, and how it turned). It fails if you can't, if the sentence needs a fact the video never gives, or if it needs "and also" for a second plot. When it fails, the problem says what a viewer would be left asking.
 
 For each rule answer pass true or false. When false: scene is the scene number (0 for the title), problem says what is wrong in one plain sentence, and fix says what to change in one plain sentence. When true: scene 0 and empty strings.
+A fix must keep the twist revealed on screen: never suggest cutting or softening the line that says it, and never a fix that needs more scenes than the script has.
 Return only the JSON object.`;
 
 /* ─── The picture check (pictureCheck.js) ─────────────────────────────── */
@@ -274,8 +295,8 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
 export const UPLOAD_LIMITS = Object.freeze({ title: 100, hookChars: 40, description: 500, tags: 500, caption: 150, hashtagsMin: 3, hashtagsMax: 5 });
 
 export const UPLOAD_SYSTEM = `You write the upload text for a short vertical video (YouTube Shorts, TikTok, Reels) where blocky game avatars act out a story inside a blocky online game world and talk.
-- title: the YouTube title. AT MOST ${UPLOAD_LIMITS.title} characters in total, hashtags included. The strongest hook is in the first ${UPLOAD_LIMITS.hookChars} characters. Weave in 2 to 4 search keywords naturally (e.g. roblox story, admin prank, obby, trade, glitch: whichever fit this video). Tease the twist without spoiling it. Never the video title as given. No emojis.
-- description: UNDER ${UPLOAD_LIMITS.description} characters in total: the hook and the keywords in one or two sentences, then one question that makes viewers comment, then 3 to 5 hashtags at the end.
+- title: the YouTube title. It reads as a HOOK first: one sentence or question a scroller wants answered, with the strongest words in the first ${UPLOAD_LIMITS.hookChars} characters. 2 to 4 search keywords are PART of that sentence (e.g. roblox, admin, obby, trade, glitch: whichever fit this video), like "This Roblox admin banned the wrong player". NEVER a hook followed by a list of keywords after a dash, a colon or a bar ("… — roblox story admin prank" is wrong). Tease the twist without giving it away. AT MOST ${UPLOAD_LIMITS.title} characters in total, hashtags included. Never the video title as given. No emojis.
+- description: UNDER ${UPLOAD_LIMITS.description} characters in total: one or two real sentences that carry the hook with the keywords inside them (never a keyword list after a dash), then one question that makes viewers comment, then 3 to 5 hashtags at the end. It never gives away the twist.
 - tags: YouTube tags as ONE string, comma-separated, most important first, AT MOST ${UPLOAD_LIMITS.tags} characters in total. Lowercase, no # signs.
 - pinnedComment: ONE question for the creator to pin that splits viewers into two sides (e.g. "Was Vex right to ban them, or was it abuse?"). No hashtags.
 - caption: the TikTok and Reels caption, UNDER ${UPLOAD_LIMITS.caption} characters, no hashtags in it. For a series episode, end by pointing to the next episode (use its title when given).
@@ -310,6 +331,9 @@ export function cleanUpload(data) {
   const pkg = { title: text(data?.title), description: text(data?.description), tags: kept.join(", "), pinnedComment: text(data?.pinnedComment), caption: text(data?.caption), hashtags };
   if (!pkg.title) problems.push("title missing");
   if (pkg.title.length > UPLOAD_LIMITS.title) problems.push(`title is ${pkg.title.length} characters; the cap is ${UPLOAD_LIMITS.title}`);
+  // A hook with keywords bolted on after a dash, a bar or a colon ("… — roblox story admin prank") is not a title.
+  if (/\s[—–|]\s|\s-\s|:\s+[a-z]/.test(pkg.title.replace(/#\w+/g, ""))) problems.push("title: no keywords after a dash, a bar or a colon; write ONE hook sentence with the keywords inside it");
+  if (/\s[—–]\s[^.?!]*,[^.?!]*,/.test(pkg.description)) problems.push("description: no keyword list after a dash; put the keywords inside the sentences");
   if (!pkg.description) problems.push("description missing");
   if (pkg.description.length >= UPLOAD_LIMITS.description) problems.push(`description is ${pkg.description.length} characters; it must be under ${UPLOAD_LIMITS.description}`);
   if (!pkg.tags) problems.push("tags missing");

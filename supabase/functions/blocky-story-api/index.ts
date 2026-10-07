@@ -311,7 +311,8 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         title: plan.title, cast_ids: storyCast, quality: input.quality, aspect: input.aspect,
         length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations,
         // review: what the script editor found and whether the script was rewritten
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null },
+        // premise, emotion, twist: the plan behind the story (the upload text must never give the twist away)
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({
@@ -391,6 +392,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         title: row.title, episode,
         lines: [...scenes].sort((a: any, b: any) => a.idx - b.idx).map((s: any) => ({ speaker: nameOf(s.speaker_id), line: s.line })),
         roles: Object.fromEntries(Object.entries(row.cast_roles ?? {}).map(([id, role]) => [nameOf(id), role])),
+        twist: row.planner?.twist ?? undefined,
       },
       ids: { user_id: ctx.userId, story_id: storyId },
     }).catch((e: any) => { console.error("[blocky-story-api] upload package:", e?.message ?? e); throw new BlockyError("PACKAGE_FAILED", "We couldn't write the post text. Try again.", 502); });

@@ -89,13 +89,20 @@ test("the writer: Blocky's own rules (scope C2)", () => {
   // Scope C2, rule by rule.
   for (const must of [
     /obbies, admin commands, servers, trades, leaderboards, NPCs, badges, spawn pads, kill bricks, gamepasses/,
-    /The first line drops the viewer into the middle of the conflict/,
+    /The first line drops the viewer into the middle of the action or of a mystery, with something at stake/,
     /"hi guys"/,
-    /Contractions, interruptions, reactions, fragments\. Vary the length/,
-    /Every scene raises the stakes/,
+    /contractions \("I'm", "you're", "don't"\), interruptions, reactions/,
+    /VARY THE LENGTH: put a short punch \(3 to 5 words\) next to a longer line/,
+    /No ping-pong\. A line never just throws the last line back/,
+    /Nobody reports what they typed, wrote or read/,
+    /EVERY scene after it ESCALATES: worse, weirder or higher stakes than the scene before/,
+    /The TWIST is revealed on screen in revealScene: said in the line, or plainly seen in the picture/,
+    /A twist that exists only in the roles, the title or your plan does not exist/,
+    /With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the turn .*, 4 the twist line/,
     /The LAST line is the most quotable line in the video/,
-    /ONE "what happens if" premise, clear from the title alone/,
-    /ONE dominant emotion for the whole video: curiosity, dread, injustice, satisfaction or shock/,
+    /premise: ONE sentence that starts "What happens if"/,
+    /emotion: the ONE feeling the whole video runs on: curiosity, dread, injustice, satisfaction, shock\./,
+    /It teases the premise and NEVER states the twist/,
     /presentIds: who is in the frame, speaker included, 1 to 3 characters/,
     /exactly ONE character says exactly ONE line/,
     /copying someone's powers; the invisible-friend glitch; a plain prank on a mom or a sibling; a hacker who steals everything with no twist; "I played as a noob for a day"/,
@@ -116,7 +123,7 @@ test("the writer: Blocky's own rules (scope C2)", () => {
   assert.match(p.user, /Write exactly 6 scenes for a video of 30 seconds\..* every line AT MOST 9 words/);
 });
 
-test("the series planner and the script editor: Blocky's wording, eight editor rules, one answer each", () => {
+test("the series planner and the script editor: Blocky's wording, eleven editor rules, one answer each", () => {
   const s = buildSeriesPrompt({ concept: "A fake admin takes over an obby server.", cast: cast("vex", "noob", "zip"), opener: "Banned in front of everyone", tone: "tense and funny", episodeCount: 5 });
   assert.equal(s.system, SERIES_SYSTEM);
   assert.match(s.system, /blocky game avatars act out a story inside a blocky online game world/);
@@ -131,10 +138,16 @@ test("the series planner and the script editor: Blocky's wording, eight editor r
   assert.equal(r.system, REVIEW_SYSTEM);
   for (const id of Object.keys(REVIEW_RULES)) assert.match(r.system, new RegExp(`^${id}: `, "m"), `the editor checks ${id}`);
   assert.deepEqual(Object.keys(reviewSchema().properties), Object.keys(REVIEW_RULES), "one answer per rule");
-  assert.match(r.system, /a greeting or a setup \("hi guys", "so today"\) fails/);
+  assert.match(r.system, /A greeting or a setup \("hi guys", "so today"\) fails/);
+  // The editor reads as a viewer: it is not shown anyone's secret role as if the viewer knew it.
+  assert.match(r.system, /WHAT THE VIEWER KNOWS\nOnly the title, the lines in order, and who is in each picture\. NOT the writer's notes and NOT anyone's secret role/);
+  assert.match(r.system, /never fail it for "repeating" the notes, the roles or the premise/);
+  assert.match(r.system, /A fix must keep the twist revealed on screen/);
+  assert.match(r.user, /WRITER'S NOTES \(the viewer NEVER sees these/);
+  assert.ok(r.user.indexOf("roles: Vex is the fake admin") > r.user.indexOf("WRITER'S NOTES"), "roles are in the notes, not in what the viewer sees");
   assert.match(r.system, /names a real game, brand, creator or username/);
   assert.doesNotMatch(r.system, /fruit|Roblox/i);
-  assert.match(r.user, /- Vex, blocky game avatar; role here: the fake admin; wears in every scene: a white cube head/);
+  assert.match(r.user, /- Vex, blocky game avatar; looks like this in every scene: a white cube head/);
   assert.doesNotMatch(r.user, PERSON_WORDS);
 });
 
@@ -232,7 +245,9 @@ test("decision 14: text, subtitles or captions on a clip's last frame fail the c
 test("the upload pack: Part E's five texts, every cap enforced in code, real names refused", async () => {
   const [clean, system, schema] = [cleanPackage, PACKAGE_SYSTEM, packageSchema];
   assert.deepEqual(schema().required, ["title", "description", "tags", "pinnedComment", "caption", "hashtags"]);
-  assert.match(system, /AT MOST 100 characters in total, hashtags included\. The strongest hook is in the first 40 characters/);
+  assert.match(system, /It reads as a HOOK first: one sentence or question a scroller wants answered, with the strongest words in the first 40 characters/);
+  assert.match(system, /AT MOST 100 characters in total, hashtags included/);
+  assert.match(system, /NEVER a hook followed by a list of keywords after a dash, a colon or a bar/);
   assert.match(system, /UNDER 500 characters/);
   assert.match(system, /comma-separated, most important first, AT MOST 500 characters/);
   assert.match(system, /splits viewers into two sides/);
@@ -273,7 +288,7 @@ test("the upload pack: Part E's five texts, every cap enforced in code, real nam
   assert.equal(pkg.title, good.title);
   assert.equal(pkg.description, good.description);
   await assert.rejects(writeUploadPackage({ admin, apiKey: "k", input, ids: {}, fetchLlm: async () => ({ data: { ...good, title: "x".repeat(140) }, costUsd: 0.001, httpStatus: 200, usage: {} }) }), /title is 140 characters/);
-  assert.equal(logged.filter((r) => r.ok === false).length, 1);
+  assert.equal(logged.filter((r) => r.ok === false).length, 2, "a bad answer gets one more try, told what was wrong; both are logged");
 });
 
 test("scene pictures and clips: every wording fits its limit, carries the body text, and never says toy, an age or a gender", () => {

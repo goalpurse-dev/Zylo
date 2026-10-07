@@ -13,7 +13,10 @@ export const BLOCKY_MODELS = Object.freeze({
   ]),
   // Script editor: reads every finished script once before pictures are paid for
   // (scriptReview.js). A different, cheaper model than the writer: about $0.003 per review.
-  review: { provider: "anthropic", model: "claude-haiku-4-5-20251001" },
+  // Blocky (2026-10-08): the editor is the writer's model, not the cheaper one. In the first real story the
+  // cheaper editor failed a working reveal and its "fix" removed the twist; judging a story is the hard part.
+  // About $0.01 per check instead of $0.005.
+  review: { provider: "anthropic", model: "claude-sonnet-5" },
   // Small tasks: edit-instruction cleanup, content-policy rewrite.
   small: { provider: "openai", model: "gpt-5-mini" },
 

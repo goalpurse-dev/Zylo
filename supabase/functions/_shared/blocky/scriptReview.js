@@ -15,9 +15,12 @@ export const REVIEW_PURPOSE = "script_review";
 
 /** The rules, in the order the editor checks them. id → what the planner is told when it fails. */
 export const REVIEW_RULES = Object.freeze({
-  ending: "the last line must turn something",
+  firstLine: "the first line must be a hook: mid-action or mid-mystery, something at stake, at most two people named",
+  escalation: "every scene must make it worse, weirder or higher stakes than the one before; no line just throws the last one back",
+  twistShown: "the twist must be said out loud in a line or plainly seen in a picture, in the second half",
+  ending: "the last line must be the most quotable one and land the twist or name its price",
+  natural: "the lines must sound spoken and vary in length; nobody reports what they typed or wrote",
   inPicture: "everyone a line talks to, points at or describes must be in that scene's picture",
-  firstLine: "the first line names at most two people",
   textMessage: "a text message read aloud gets its own line",
   title: "the title must not give away the twist",
   heardOnce: "every line must land when heard once, out loud",
@@ -46,8 +49,19 @@ export function buildReviewPrompt({ plan, cast, source, series }) {
     source === "episode"
       ? `KIND: episode ${series?.episode?.number ?? ""} of a series. The last line must deliver this cliffhanger so that a new viewer understands it: ${series?.episode?.cliffhanger ?? "(the planned cliffhanger)"}`
       : "KIND: a single complete video (not an episode).",
-    `CHARACTERS:\n${cast.filter((c) => used.has(c.id)).map((c) => `- ${c.name}, blocky game avatar; role here: ${plan.roles?.[c.id] ?? c.tag}; wears in every scene: ${outfits[c.id] ?? c.look ?? "their usual look"}`).join("\n")}`,
+    // What the viewer sees of each character. Their role in this story is in the writer's notes below: the viewer
+    // doesn't know it unless a line says it (the editor once failed a reveal for "repeating" a role it had been shown).
+    `CHARACTERS (as the viewer sees them):\n${cast.filter((c) => used.has(c.id)).map((c) => `- ${c.name}, blocky game avatar; looks like this in every scene: ${outfits[c.id] ?? c.look ?? "their usual look"}`).join("\n")}`,
     `SCRIPT:\n${plan.scenes.map((s, i) => `${i + 1}. [in the picture: ${s.presentIds.map(name).join(", ")}; place: ${loc.get(s.locationId) ?? "?"}] ${name(s.speakerId)}: ${s.line}`).join("\n")}`,
+    [
+      "WRITER'S NOTES (the viewer NEVER sees these; they are here so you can check that the story delivers them):",
+      `premise: ${plan.premise || "(none given)"}`,
+      `dominant emotion: ${plan.emotion || "(none given)"}`,
+      `twist: ${plan.twist || "(none given)"}`,
+      `the writer says the twist is revealed in scene ${plan.revealScene || "?"}`,
+      `roles: ${cast.filter((c) => used.has(c.id)).map((c) => `${c.name} is ${plan.roles?.[c.id] ?? c.tag}`).join("; ")}`,
+      ...(plan.scenes.some((s) => s.raises) ? [`what each scene is meant to raise: ${plan.scenes.map((s, i) => `${i + 1}. ${s.raises || "?"}`).join(" ")}`] : []),
+    ].join("\n"),
   ];
   return { system: REVIEW_SYSTEM, user: parts.join("\n\n") };
 }

@@ -11,7 +11,7 @@ import { videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
 import { problemLines, reviewScript } from "./scriptReview.js";
-import { characterBlock, writerSystem } from "./rules.js";
+import { STORY_EMOTIONS, characterBlock, writerSystem } from "./rules.js";
 import { bannedNamesProblem } from "./safety.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
@@ -78,6 +78,9 @@ export function addressedIds(line, cast) {
   return cast.filter((c) => callNames(c).some((n) => new RegExp(`(?:^|[,.!?;:]\\s+)${escapeRe(n)}(?=\\s*[,.!?]|\\s*$)`, "i").test(text))).map((c) => c.id);
 }
 
+/** The quality pass rewrites a failing script at most this many times, checking it after each. */
+export const MAX_REWRITES = 2;
+
 export const sceneCountFor = (lengthSec) => Math.min(24, Math.max(3, Math.round(lengthSec / 5)));
 
 /** The writer's rules (rules.js), with the lists this file owns. */
@@ -143,14 +146,20 @@ export function plannerSchema(castIds, { script = false } = {}) {
     shot: { type: "string", enum: SPEAKING_SHOTS },
     placement: { type: "string" },
     beat: { type: "string" },
+    raises: { type: "string" },
   };
   const locProps = { id: { type: "string" }, description: { type: "string" }, timeOfDay: { type: "string" }, lighting: { type: "string" }, seriesLocationId: { type: "string" } };
   const endChar = { id: { type: "string", enum: castIds }, where: { type: "string" }, feeling: { type: "string" } };
   return {
     type: "object",
     additionalProperties: false,
-    required: ["title", "locations", "roles", "outfits", "scenes", "endState"],
+    required: ["premise", "emotion", "twist", "revealScene", "title", "locations", "roles", "outfits", "scenes", "endState"],
     properties: {
+      // The plan behind the story (rules.js "PLAN IT FIRST"): decided before the lines, checked by the editor.
+      premise: { type: "string" },
+      emotion: { type: "string", enum: [...STORY_EMOTIONS] },
+      twist: { type: "string" },
+      revealScene: { type: "integer" },
       title: { type: "string" },
       outfits: {
         type: "array",
@@ -251,13 +260,16 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (source !== "script") {
       safe(line, `scene ${n}`);
       const w = words(line);
-      if (w < LINE_WORDS.min || w > maxWords) errors.push(`scene ${n}: line must be ${LINE_WORDS.targetMin} to ${LINE_WORDS.targetMax} words (got ${w}): "${line}"`);
+      if (w < LINE_WORDS.min || w > maxWords) errors.push(`scene ${n}: line must be ${LINE_WORDS.min} to ${maxWords} words (got ${w}): "${line}"`);
       if (/["“”]|^\s*\w+\s*:|[#@]|\(|\)|\*/.test(line)) errors.push(`scene ${n}: the line must be plain spoken words (no quotes, names, hashtags or directions)`);
       if (WRITTEN_ONLY.some((re) => re.test(line))) errors.push(`scene ${n}: the line must land when heard once, spoken aloud; don't rely on punctuation, spelling or reading a note or text word for word: "${line}"`);
       const hit = BANNED.find((b) => line.toLowerCase().includes(b));
       if (hit) errors.push(`scene ${n}: don't use the overused phrase "${hit}"`);
     }
-    return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat };
+    // raises: what this scene makes worse, weirder or higher than the one before (for the editor; not stored on the scene)
+    const raises = String(s?.raises ?? "").trim();
+    if (source !== "script" && words(raises) < 2) errors.push(`scene ${n}: raises must say in 3 to 10 words what this scene makes worse, weirder or higher`);
+    return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat, ...(source !== "script" ? { raises } : {}) };
   });
   // The hook names at most two people besides the speaker.
   if (source !== "script" && normalized[0]) {
@@ -292,7 +304,33 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const text = String(o?.outfit ?? "").trim().replace(/\.$/, "");
     if (castIds.includes(o?.id) && words(text) >= 2 && words(text) <= 20 && text.length <= OUTFIT_MAX_CHARS && !outfits[o.id] && Object.keys(outfits).length < OUTFITS_MAX) outfits[o.id] = text;
   }
+  // The plan behind the story. The user's own script is staged as written, so it has none.
+  const premise = String(out?.premise ?? "").trim();
+  const twist = String(out?.twist ?? "").trim();
+  const emotion = STORY_EMOTIONS.includes(out?.emotion) ? out.emotion : "";
+  const revealScene = Number.isInteger(out?.revealScene) ? out.revealScene : 0;
+  if (source !== "script") {
+    const n = normalized.length;
+    if (words(premise) < 5 || !/^what happens if\b/i.test(premise)) errors.push('premise: one sentence that starts "What happens if"');
+    if (!emotion) errors.push(`emotion: exactly one of ${STORY_EMOTIONS.join(", ")}`);
+    if (words(twist) < 4) errors.push("twist: one sentence saying what the viewer finds out near the end");
+    // The reveal belongs to the second half: said in a line or seen in a picture there.
+    if (n && (revealScene < Math.max(2, Math.ceil(n / 2) + (n % 2 ? 0 : 1)) || revealScene > n)) errors.push(`revealScene: the scene (${Math.max(2, Math.ceil(n / 2) + (n % 2 ? 0 : 1))} to ${n}) where the twist is said out loud or plainly seen`);
+    // Two lines that say the same thing are one scene too many.
+    const bag = (line) => new Set(String(line).toLowerCase().replace(/[^\p{L}\p{N}' ]/gu, " ").split(/\s+/).filter((w) => w.length > 2));
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const a = bag(normalized[i].line), b = bag(normalized[j].line);
+      const same = [...a].filter((w) => b.has(w)).length;
+      if (a.size >= 3 && b.size >= 3 && same / Math.min(a.size, b.size) >= 0.75) errors.push(`scenes ${i + 1} and ${j + 1} say almost the same thing: every scene must add something new (worse, weirder or higher stakes)`);
+    }
+    // Spoken lines vary: a short punch next to a longer line, never a row of lines the same length.
+    const counts = normalized.map((s) => words(s.line));
+    if (n >= 4 && Math.max(...counts) - Math.min(...counts) < 3) errors.push(`the lines are all about the same length (${counts.join(", ")} words): put a short punch of 3 to 5 words next to a longer line`);
+    // Nobody reports what they typed: an order is spoken as an order (and "typed" lines made the video model draw subtitles).
+    normalized.forEach((s, i) => { if (/\b(?:i|we|you|he|she|they)\b[^.?!]{0,20}\b(?:typed|wrote|texted)\b/i.test(s.line)) errors.push(`scene ${i + 1}: nobody reports what they typed or wrote; the character says it as an order or does it`); });
+  }
   const plan = {
+    ...(source !== "script" ? { premise, emotion, twist, revealScene } : {}),
     roles,
     outfits,
     title,
@@ -342,26 +380,41 @@ export async function runPlanner(p) {
   const done = (plan, review) => ({ plan, calls, attempts: calls.length, review });
   if (!p.reviewLlm) return done(result.plan, null);
 
-  // The script editor reads it once, the way a viewer hears it (scriptReview.js).
-  // A failed review gets ONE rewrite; a rewrite that breaks the format gets one
-  // repair, and if that fails too the first (valid) script is kept. A story
-  // never fails because of the review.
+  // The quality pass (scriptReview.js): the editor reads the draft the way a viewer hears it and checks
+  // every rule; whatever fails is rewritten, and the rewrite is CHECKED AGAIN (it used to be returned
+  // unread: in the first real story the rewrite lost the reveal). At most MAX_REWRITES rewrites. The
+  // version with the fewest problems is returned. A rewrite that breaks the format gets one repair; a
+  // story never fails because of the review.
   const review = await reviewScript({ plan: result.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
-  if (review.ok) return done(result.plan, { ok: true, problems: [], rewritten: false, ...(review.skipped ? { skipped: review.skipped } : {}) });
-  const outcome = { ok: false, problems: review.problems, rewritten: false, before: { title: result.plan.title, lines: result.plan.scenes.map((s) => s.line) } };
+  if (review.ok) return done(result.plan, { ok: true, problems: [], rewritten: false, rounds: 0, ...(review.skipped ? { skipped: review.skipped } : {}) });
+  const linesOf = (plan) => ({ title: plan.title, lines: plan.scenes.map((s) => s.line) });
+  const outcome = { ok: false, problems: review.problems, rewritten: false, rounds: 0, before: linesOf(result.plan), history: [{ round: 0, ...linesOf(result.plan), problems: review.problems }] };
+  let best = { plan: result.plan, problems: review.problems };
+  let current = { data, plan: result.plan, problems: review.problems };
   try {
-    const rewriteUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nA SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line) AND FOUND THESE PROBLEMS:\n- ${problemLines(review.problems).join("\n- ")}\n\nRewrite the script so every problem is fixed: change lines, who is in the picture, the outfits, the title or the ending as needed. Keep what already works, keep every rule above, and return the full corrected JSON.`;
-    const third = await p.llm({ system, user: rewriteUser, schema, name: "story_plan", purpose: "planner_rewrite" });
-    calls.push(third);
-    let rewritten = validatePlan(third.data, ctx);
-    if (rewritten.errors.length) {
-      const fourth = await p.llm({ system, user: repairPrompt(third.data, rewritten.errors), schema, name: "story_plan", purpose: "planner_rewrite_repair" });
-      calls.push(fourth);
-      rewritten = validatePlan(fourth.data, ctx);
+    for (let round = 1; round <= MAX_REWRITES && current.problems.length; round++) {
+      const rewriteUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(current.data)}\n\nA SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line; the viewer knows only the lines and the pictures) AND FOUND THESE PROBLEMS:\n- ${problemLines(current.problems).join("\n- ")}\n\nRewrite the script so every problem is fixed: change lines, who is in the picture, the title or the ending as needed. Keep what already works, keep the twist said out loud or plainly seen in revealScene, keep every rule above, and return the full corrected JSON.`;
+      const next = await p.llm({ system, user: rewriteUser, schema, name: "story_plan", purpose: "planner_rewrite" });
+      calls.push(next);
+      let nextData = next.data;
+      let rewritten = validatePlan(nextData, ctx);
+      if (rewritten.errors.length) {
+        const repaired = await p.llm({ system, user: repairPrompt(nextData, rewritten.errors), schema, name: "story_plan", purpose: "planner_rewrite_repair" });
+        calls.push(repaired);
+        nextData = repaired.data;
+        rewritten = validatePlan(nextData, ctx);
+      }
+      if (rewritten.errors.length) { outcome.note = "a rewrite broke the format; the best checked script was kept"; break; }
+      const again = await reviewScript({ plan: rewritten.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
+      const problems = again.skipped ? current.problems : again.problems;   // a check that couldn't run proves nothing
+      outcome.rounds = round;
+      outcome.history.push({ round, ...linesOf(rewritten.plan), problems: again.skipped ? null : again.problems });
+      current = { data: nextData, plan: rewritten.plan, problems };
+      if (!again.skipped && again.problems.length < best.problems.length) best = { plan: rewritten.plan, problems: again.problems };
+      if (again.skipped) { outcome.note = `a rewrite could not be checked (${again.skipped}); the best checked script was kept`; break; }
     }
-    if (!rewritten.errors.length) return done(rewritten.plan, { ...outcome, rewritten: true });
-    return done(result.plan, { ...outcome, note: "the rewrite broke the format; the first script was kept" });
   } catch (e) {
-    return done(result.plan, { ...outcome, note: `the rewrite could not run (${String(e?.message ?? e).slice(0, 80)}); the first script was kept` });
+    outcome.note = `a rewrite could not run (${String(e?.message ?? e).slice(0, 80)}); the best checked script was kept`;
   }
+  return done(best.plan, { ...outcome, ok: best.problems.length === 0, rewritten: best.plan !== result.plan, left: best.problems });
 }
