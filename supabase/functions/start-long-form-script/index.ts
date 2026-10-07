@@ -21,6 +21,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUserOrAutopilot } from "../shared/auth.ts";
+import { STICKMAN_BACKUP_MODEL } from "../_shared/stickman/scriptModels.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -53,12 +54,14 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
 
-  const { user, authError } = await requireUserOrAutopilot(req);
+  const { user, authError, internal } = await requireUserOrAutopilot(req);
   if (!user) return err(req, authError || "Unauthorized", 401);
 
   const body = await req.json().catch(() => ({}));
   const projectId = String(body?.projectId ?? "").trim();
   const regenerate = body?.regenerate === true;
+  // Only our own autopilot may ask for the backup model (its last try after the default model failed).
+  const useBackupModel = internal === true && body?.backupModel === true;
   if (!projectId) return err(req, "Missing projectId", 400);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -134,7 +137,7 @@ Deno.serve(async (req) => {
 
   const { data: inserted, error: insertError } = await admin
     .from("long_form_script_versions")
-    .insert({ project_id: projectId, story_plan_version_id: storyPlanVersionId, research_version_id: researchVersionId, version: nextVersion, status: "drafting", stage: "draft" })
+    .insert({ project_id: projectId, story_plan_version_id: storyPlanVersionId, research_version_id: researchVersionId, version: nextVersion, status: "drafting", stage: "draft", ...(useBackupModel ? { meta: { modelOverride: STICKMAN_BACKUP_MODEL } } : {}) })
     .select("id, status, stage")
     .single();
 

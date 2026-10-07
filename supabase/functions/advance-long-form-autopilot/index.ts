@@ -8,7 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { commitWorkDone, settleIdleReservations } from "../_shared/longFormReservations.ts";
+import { closeReservation, commitWorkDone, settleIdleReservations } from "../_shared/longFormReservations.ts";
 import { decideAutopilot, decideNarration, FAILED_COPY, type AutopilotRecord } from "../_shared/stickman/autopilot.ts";
 import { loadAutopilotInput } from "../_shared/stickman/autopilotState.ts";
 import { decideScenes, type ScenesRecord } from "../_shared/stickman/scenes.ts";
@@ -111,6 +111,8 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
       ap.status = "failed";
       ap.failedReason = a.reason;
       await logEvent("advance-long-form-autopilot", "error", "scenes_failed", { projectId, reason: a.reason, resumeLog: ap.resumeLog ?? [] });
+      await admin.from("long_form_projects").update({ autopilot: { ...ap, scenes: sc } }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, a.reason, now);
       break;
     case "wait":
       break;
@@ -122,6 +124,21 @@ async function advanceScenes(projectId: string, project: any, ap: any, now: stri
   await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId);
   if (a.kind !== "wait" && a.kind !== "draw") await logEvent("advance-long-form-autopilot", "info", `scenes_${a.kind}`, { projectId, stage: d.stage, drawn: d.drawn, total: d.total });
   return { projectId, action: `scenes_${a.kind}`, stage: d.stage, drawn: d.drawn, total: d.total };
+}
+
+// A run that stopped with NO finished scene can't become a video: the whole hold
+// goes back now (the SQL rule decides; a run with finished scenes keeps its hold
+// and its work). The user is never left to find a Retry button to get there.
+async function releaseIfNoVideoPossible(projectId: string, ap: any, reason: string, now: string) {
+  try {
+    const { data: failedByUs } = await admin.rpc("long_form_failed_by_us", { p_project_id: projectId });
+    if (failedByUs !== true) return;
+    const out: any = await closeReservation(admin, projectId, "failed_by_us", `autopilot_failed: ${reason}`, logEvent);
+    if (out?.found && out?.ok) {
+      ap.holdReleasedAt = now;
+      await logEvent("advance-long-form-autopilot", "warn", "hold_released_no_video", { projectId, reason, reserved: out.reservation?.reserved_credits ?? null });
+    }
+  } catch (e) { console.error("[autopilot] release hold", String(e)); }
 }
 
 const dispatchScene = (owner: { projectId: string; userId: string }) =>
@@ -198,9 +215,13 @@ async function advanceOne(projectId: string) {
       break;
     }
     case "start_script": {
-      if (a.resume) log("writing restarted");
+      if (a.afterFailure) {
+        // A failed script written again: its own counter (never the stall budget).
+        ap.scriptRetries = (ap.scriptRetries ?? 0) + 1;
+        ap.resumeLog = [...(ap.resumeLog ?? []), { at: now, stage: d.workerStage, reason: a.backupModel ? "writing restarted on the backup model" : "writing restarted" }].slice(-10);
+      } else if (a.resume) log("writing restarted");
       ap.dispatched = { ...(ap.dispatched ?? {}), script: now };
-      const r = await callAsOwner("start-long-form-script", { ...owner, regenerate: a.resume });
+      const r = await callAsOwner("start-long-form-script", { ...owner, regenerate: a.resume, ...(a.backupModel ? { backupModel: true } : {}) });
       if (!r.ok) console.error("[autopilot] start script", r.status, r.body);
       break;
     }
@@ -216,6 +237,8 @@ async function advanceOne(projectId: string) {
       ap.status = "failed";
       ap.failedReason = a.reason;
       await logEvent("advance-long-form-autopilot", "error", "autopilot_failed", { projectId, reason: a.reason, resumeLog: ap.resumeLog ?? [] });
+      await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId); // the rule below reads the failed state
+      await releaseIfNoVideoPossible(projectId, ap, a.reason, now);
       break;
     case "wait":
       break;

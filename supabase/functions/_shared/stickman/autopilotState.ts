@@ -3,7 +3,7 @@
 // input, and turns them into the progress screen's REAL events (title
 // chosen, facts found + source name, live word count, claims checked).
 // Shared by advance-long-form-autopilot and get-long-form-autopilot-status.
-import { decideAutopilot, UI_STAGES, type AutopilotInput, type AutopilotRecord } from "./autopilot.ts";
+import { REFUNDED_COPY, decideAutopilot, UI_STAGES, type AutopilotInput, type AutopilotRecord } from "./autopilot.ts";
 
 export async function loadAutopilotInput(admin: any, projectId: string, now = new Date().toISOString()) {
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, autopilot, current_story_plan_version_id, current_script_version_id, resolved_length_minutes, custom_length_minutes, selected_title").eq("id", projectId).maybeSingle();
@@ -72,7 +72,7 @@ export function buildProgressView(loaded: NonNullable<Awaited<ReturnType<typeof 
     targetWords: minutes ? Math.round(minutes * 146.6) : null,
     plan: sp ? { title: sp.recommendedTitle ?? null, chapters: (sp.chapters ?? []).map((c: any) => ({ title: c.title, summary: c.summary, minutes: c.estimatedMinutes ?? null })) } : null,
     scriptVersionId: done ? (d.action as any).scriptVersionId : null,
-    failed: ap.status === "failed" ? { message: "Something went wrong while writing your script." } : null,
+    failed: ap.status === "failed" ? { message: ap.holdReleasedAt ? REFUNDED_COPY : "Something went wrong while writing your script.", refunded: !!ap.holdReleasedAt } : null,
     stale: d.stale,
   };
 }

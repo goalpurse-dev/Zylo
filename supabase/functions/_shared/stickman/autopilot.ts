@@ -11,8 +11,14 @@
 // every minute + direct dispatch). The same function drives the progress
 // screen (stage, honest ETA range, never-backwards progress) and the
 // WATCHDOG: a stage with no server heartbeat for (expected + 90 s) is
-// re-dispatched from its last checkpoint; after 2 failed resumes the run
-// stops in a clear "Something went wrong — Retry (free)" state.
+// re-dispatched from its last checkpoint, up to MAX_RESUMES times.
+//
+// 2026-10-07 (a user must never be left stuck):
+//   - a script that FAILED is written again up to SCRIPT_MAX_RETRIES times on
+//     the default model, then once more on the backup model;
+//   - when even that fails there is no script, so no video can be made: the
+//     run stops and the whole credit hold is released at once (the caller does
+//     it), with no Retry for the user to find and press.
 
 export type UiStage = "plan" | "research" | "write" | "verify" | "polish";
 export const UI_STAGES: { key: UiStage; label: string }[] = [
@@ -33,7 +39,8 @@ export const STAGE_SECONDS: Record<UiStage, [number, number]> = {
   polish: [60, 190],      // critic (+ fixing) + finalizing
 };
 export const WATCHDOG_GRACE_S = 90;
-export const MAX_RESUMES = 2;
+export const MAX_RESUMES = 3;
+export const SCRIPT_MAX_RETRIES = 3;
 
 // Worker stage -> UI stage.
 const RESEARCH_UI: Record<string, UiStage> = {};
@@ -64,6 +71,10 @@ export type AutopilotRecord = {
   // can send the script worker back to a draft/verify stage — 3f65a0c7 jumped from Polishing back).
   stageMax?: UiStage;
   failedReason?: string | null;
+  // Failed scripts written again in this run (the default model, then the backup model).
+  scriptRetries?: number;
+  // Set when the run ended with no video possible and the whole hold was given back.
+  holdReleasedAt?: string | null;
   doneAt?: string | null;
   scriptVersionId?: string | null;
   // Phase 6b: "narration" once the script is finished (lock -> voice).
@@ -82,7 +93,7 @@ export type AutopilotInput = {
 export type AutopilotAction =
   | { kind: "generate_plan"; resume: boolean }
   | { kind: "start_research"; resume: boolean }
-  | { kind: "start_script"; resume: boolean }
+  | { kind: "start_script"; resume: boolean; afterFailure?: boolean; backupModel?: boolean }
   | { kind: "resume_research" }
   | { kind: "resume_script" }
   | { kind: "wait" }
@@ -176,7 +187,14 @@ export function decideAutopilot(input: AutopilotInput): AutopilotDecision {
     return base({ kind: "wait" }, "write", "start", beat);
   }
   if (SCRIPT_DONE.has(s.status) && s.has_document) return base({ kind: "done", scriptVersionId: s.id }, "polish", "done", s.stage_started_at);
-  if (s.status === "failed") return resumeOr({ kind: "start_script", resume: true }, "write", "failed", s.stage_started_at ?? s.created_at, "writing failed");
+  if (s.status === "failed") {
+    // Written again: three more tries on the default model, then one on the backup model.
+    const tries = ap.scriptRetries ?? 0;
+    const beat = s.stage_started_at ?? s.created_at;
+    if (tries < SCRIPT_MAX_RETRIES) return base({ kind: "start_script", resume: true, afterFailure: true }, "write", "failed", beat, true);
+    if (tries === SCRIPT_MAX_RETRIES) return base({ kind: "start_script", resume: true, afterFailure: true, backupModel: true }, "write", "failed", beat, true);
+    return base({ kind: "fail", reason: `writing failed after ${SCRIPT_MAX_RETRIES} retries and the backup model` }, "write", "failed", beat, true);
+  }
   const ws = s.stage ?? "draft";
   const beat = s.stage_started_at ?? s.created_at;
   const ui = uiStageOf("script", ws);
@@ -211,3 +229,5 @@ export function decideNarration(input: { now: string; narration?: { lockedAt?: s
 
 // The user-facing failure copy (never internal stage names).
 export const FAILED_COPY = "Something went wrong while writing your script. Retry — it's free.";
+// When the run could not make a video at all and the hold was released.
+export const REFUNDED_COPY = "We couldn't make this video, so every credit for it is back in your account. Start it again whenever you like.";

@@ -521,14 +521,43 @@ export function findListicleCloser(segments: any[], chapters: { chapterId: strin
 // hear. This is a strictly different (and stricter) defect from the
 // imagination-crutch WARN below: describing a screen element is never
 // acceptable regardless of how it's introduced.
-const SCREEN_GRAPHICS_PATTERN = /\b(icons?|arrows?|split screen|on[\s-]screen|animat\w+|stickers?|graphics?|chart shows|map dotted|visually,)\b/i;
-export function findScreenGraphicsNarration(segments: any[]): CheckIssue[] {
+//
+// 2026-10-07 — the rule used to match the bare words (icons?|arrows?|animat\w+|
+// stickers?|graphics?). A paid video about medieval archers making ARROWS
+// failed it on all seven drafts: the word was the subject, not a graphic.
+// Those words are now a finding only when the narration TREATS them as a
+// graphic (it points, appears, sits on the map, the viewer is told to look at
+// it…), and never when the video's own subject contains the word.
+const SCREEN_PHRASES = /\b(split screen|on[\s-]screen|chart shows|map dotted|visually,)/i;
+const SCREEN_ANIMATION = /\banimat(?:es|ing)\b|\banimated\s+(?:map|diagram|chart|graphic|arrow|icon|timeline|line|list|sequence)s?\b|\b(?:this|the|our)\s+animation\b/i;
+// stem -> the word as written (singular/plural).
+const SCREEN_NOUNS: [string, string][] = [["icon", "icons?"], ["arrow", "arrows?"], ["sticker", "stickers?"], ["graphic", "graphics?"], ["animat", "animations?"]];
+const SCREEN_VERBS = "points?|pointing|shows?|showing|appears?|appearing|pops?\\s+up|popping\\s+up|flash(?:es|ing)?|highlights?|highlighting|indicat(?:es|ing)|labels?|labell?ing|slides?\\s+in|zooms?\\s+in|fades?\\s+in";
+const SCREEN_PLACES = "screen|map|chart|diagram|graph|timeline|picture|image|frame|chalkboard|whiteboard|list|photo|selfie";
+function screenNounPatterns(word: string): RegExp[] {
+  return [
+    // "a red arrow points to…", "the icon then appears"
+    new RegExp(`\\b${word}\\s+(?:(?:now|then|here|slowly|quickly)\\s+)?(?:${SCREEN_VERBS})\\b`, "i"),
+    // "the arrows on the map", "icons beside the chalkboard"
+    new RegExp(`\\b${word}\\s+(?:on|in|across|over|beside|next\\s+to|above|below)\\s+(?:(?:the|this|our|your|a)\\s+)?(?:${SCREEN_PLACES})\\b`, "i"),
+    // "picture arrows from the five icons", "watch the little sticker"
+    new RegExp(`\\b(?:picture|see|watch|notice|imagine|visuali[sz]e|look\\s+at)\\s+(?:\\w+\\s+){0,4}?${word}\\b`, "i"),
+    // "a dotted arrow", "the flashing icon"
+    new RegExp(`\\b(?:dotted|dashed|curved|animated|glowing|flashing|bold|little|tiny)\\s+${word}\\b`, "i"),
+  ];
+}
+// subjectText: the video's own subject (title, topic, promise). A word that is
+// part of the subject is never a screen graphic.
+export function findScreenGraphicsNarration(segments: any[], subjectText = ""): CheckIssue[] {
+  const subject = String(subjectText ?? "").toLowerCase();
+  const nouns = SCREEN_NOUNS.filter(([stem]) => !new RegExp(`\\b${stem}`, "i").test(subject)).flatMap(([, word]) => screenNounPatterns(word));
+  const animationIsSubject = /\banimat/i.test(subject);
   const issues: CheckIssue[] = [];
   for (const s of segments) {
     const text = s.text ?? "";
-    if (SCREEN_GRAPHICS_PATTERN.test(text)) {
-      const match = text.match(SCREEN_GRAPHICS_PATTERN);
-      issues.push({ code: "screen_graphics_narration", message: `Segment ${s.id} describes the screen/a graphic ("${match?.[0]}") instead of just stating the fact — visuals are a separate team's job.`, segmentIds: [s.id] });
+    const match = text.match(SCREEN_PHRASES) ?? (animationIsSubject ? null : text.match(SCREEN_ANIMATION)) ?? nouns.map((re) => text.match(re)).find(Boolean) ?? null;
+    if (match) {
+      issues.push({ code: "screen_graphics_narration", message: `Segment ${s.id} describes the screen/a graphic ("${match[0]}") instead of just stating the fact — visuals are a separate team's job.`, segmentIds: [s.id] });
     }
   }
   return issues;

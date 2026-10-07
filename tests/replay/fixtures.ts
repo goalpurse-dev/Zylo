@@ -84,3 +84,5 @@ export const revisionEntry = (patch: any) => entry(seq++, "revision", "anthropic
 export const verifyEntries = (n: number, responder = verifyResponder()): CassetteEntry[] =>
   Array.from({ length: n }, () => ({ ...entry(seq++, "claim_verify", "openai", "claim_verify", null), response: responder as any }));
 export const claimFixEntry = (patch: any) => entry(seq++, "claim_fix", "openai", "claim_fix", openAIJsonResponse(patch, { input_tokens: 3000, output_tokens: 2500 }));
+// The same draft answered by the OpenAI path (a version started on the backup model).
+export const draftEntryOpenAI = (draft: any) => entry(seq++, "draft", "openai", "stickman_script_draft", openAIJsonResponse(draft, { input_tokens: 20000, output_tokens: 10000 }));
