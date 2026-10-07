@@ -243,3 +243,25 @@ Deno.test("the admin page's data: the owner only, read-only, never an email or a
   for (const id of ["ops-provider", "ops-failures", "ops-stuck", "ops-today", "ops-denied"]) assert(page.includes(`"${id}"`), id);
   assertMatch(read("src/App.jsx"), /<Route path="\/admin\/ops" element=\{<OpsPage \/>\} \/>/);
 });
+
+// ---------------- a paid idea-thumbnail refresh whose pictures all failed is refunded ----------------
+import { thumbnailRefreshOwed } from "../../supabase/functions/_shared/stuckJobs.ts";
+
+Deno.test("idea thumbnails: 2 credits for a refresh come back when EVERY picture failed, once; one good picture keeps the charge", () => {
+  // 7 Oct 2026, 17:24 UTC: ten of ten pictures failed on one provider answer. A paid refresh kept its 2 credits.
+  assertEquals(thumbnailRefreshOwed(Array(10).fill("failed")), true);
+  assertEquals(thumbnailRefreshOwed(["failed", "canceled", "failed"]), true);
+  assertEquals(thumbnailRefreshOwed([...Array(9).fill("failed"), "succeeded"]), false, "the user got a picture");
+  assertEquals(thumbnailRefreshOwed([...Array(9).fill("failed"), "processing"]), false, "not yet: one is still being made");
+  assertEquals(thumbnailRefreshOwed([]), false);
+  const fn = read("supabase/functions/generate-long-form-idea-thumbnails/index.ts");
+  assertMatch(fn, /const refreshId = charge > 0 \? crypto\.randomUUID\(\) : null;/, "only a PAID refresh is tracked (free batches and free retries have nothing to give back)");
+  assertMatch(fn, /\.\.\.\(refreshId \? \{ thumb_refresh_id: refreshId, thumb_refresh_credits: charge \} : \{\}\)/);
+  const sw = read("supabase/functions/generation-sweeper/index.ts");
+  assertMatch(sw, /if \(!thumbnailRefreshOwed\(jobs\.map\(\(j\) => j\.status\)\)\) continue;/);
+  // The claim comes first and is unique: the credits are paid back only by the call that wrote the refund line.
+  const claim = sw.indexOf("idempotency_key: `thumb_refresh:${refreshId}:refund`"), pay = sw.indexOf('admin.rpc("deduct_credits", { uid: jobs[0].user_id, amount: -credits })');
+  assert(claim > 0 && pay > claim, "claim, then pay");
+  assertMatch(sw, /if \(claimError\) continue;/);
+  assertMatch(read("supabase/migrations/20260802010000_generation_job_safety.sql"), /UNIQUE\(idempotency_key\)/);
+});

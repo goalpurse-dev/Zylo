@@ -19,7 +19,7 @@ import { getProviderLink } from "../../../src/lib/providers.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
 import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
-import { decideStuckJob, failureRate, FAILURE_WINDOW_S, STUCK_COPY, STUCK_ERROR_CODE, SWEEP_CREATED_AFTER_DEFAULT } from "../_shared/stuckJobs.ts";
+import { decideStuckJob, thumbnailRefreshOwed, failureRate, FAILURE_WINDOW_S, STUCK_COPY, STUCK_ERROR_CODE, SWEEP_CREATED_AFTER_DEFAULT } from "../_shared/stuckJobs.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -80,6 +80,28 @@ async function sweepJobs(nowMs: number, paused: boolean) {
   return out;
 }
 
+// A paid idea-thumbnail refresh (2 credits for up to ten pictures) whose pictures ALL failed is
+// refunded, once. The claim is the ledger's unique key: only the call that writes the refund line
+// gives the credits back.
+async function sweepThumbnailRefreshes(nowMs: number) {
+  const { data: rows } = await admin.from("jobs").select("id, user_id, status, created_at, settings")
+    .not("settings->>thumb_refresh_id", "is", null).gte("created_at", new Date(Math.max(Date.parse(CREATED_AFTER), nowMs - 6 * 3600_000)).toISOString()).order("created_at").limit(600);
+  const groups = new Map<string, any[]>();
+  for (const r of rows ?? []) { const id = String(r.settings?.thumb_refresh_id); groups.set(id, [...(groups.get(id) ?? []), r]); }
+  let refunded = 0;
+  for (const [refreshId, jobs] of groups) {
+    if (!thumbnailRefreshOwed(jobs.map((j) => j.status))) continue;
+    const credits = Math.max(0, Number(jobs[0].settings?.thumb_refresh_credits ?? 0));
+    if (!credits) continue;
+    const { error: claimError } = await admin.from("generation_credit_ledger").insert({ job_id: jobs[0].id, user_id: jobs[0].user_id, operation: "refund", amount: credits, idempotency_key: `thumb_refresh:${refreshId}:refund` });
+    if (claimError) continue; // already refunded (the key is unique), or it could not be written: nothing is paid out
+    const { error: payError } = await admin.rpc("deduct_credits", { uid: jobs[0].user_id, amount: -credits });
+    await logEvent("generation-sweeper", payError ? "error" : "warn", payError ? "idea_thumbnails_refund_failed" : "idea_thumbnails_refunded", { userId: jobs[0].user_id, refreshId, pictures: jobs.length, creditsRefunded: credits, message: payError?.message ?? null });
+    if (!payError) refunded++;
+  }
+  return { refreshes: groups.size, refunded };
+}
+
 // 2AM: a reservation nobody settled (migration 20261027100000 adds the rule; before it is applied this is a no-op).
 async function sweepTwoAm() {
   const { data, error } = await admin.rpc("release_stale_two_am_reservations", { p_created_after: CREATED_AFTER });
@@ -119,6 +141,7 @@ Deno.serve(async (req) => {
 
   const jobs: any = await safe("jobs", () => sweepJobs(nowMs, guard.paused));
   const twoAm = await safe("two-am", sweepTwoAm);
+  const thumbRefreshes = await safe("thumbnail refreshes", () => sweepThumbnailRefreshes(nowMs));
   const thumbs = await safe("thumbnails", async () => (await post("long-form-thumbnails", { action: "sweep_all", createdAfter: CREATED_AFTER }, { ...serviceHeaders, "x-autopilot-secret": SECRET })).body);
   const rates: any = await safe("rates", () => failureRates(nowMs));
 
@@ -132,5 +155,5 @@ Deno.serve(async (req) => {
     await logEvent("generation-sweeper", "error", "failure_rate_high", { pipeline: name, share: Number(r.share.toFixed(3)), total: r.total });
     await alertOnce(admin, `failure_rate:${name}`, 1800, `Zyvo: ${Math.round(r.share * 100)} % of ${name} failed in the last 10 minutes`, `${Math.round(r.share * r.total)} of ${r.total} finished ${name} jobs failed in the last 10 minutes (alert above 20 %).\n\nFailed work is retried, worked around or refunded by itself; this email is so you know first. Check the provider's status page and the admin page (/admin/ops).`);
   }
-  return ok(req, { ok: true, createdAfter: CREATED_AFTER, paused: guard.paused, jobs, twoAm, thumbs, rates });
+  return ok(req, { ok: true, createdAfter: CREATED_AFTER, paused: guard.paused, jobs, twoAm, thumbRefreshes, thumbs, rates });
 });

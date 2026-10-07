@@ -46,6 +46,12 @@ export function decideStuckJob(j: JobLite, nowMs: number, o: { paused: boolean; 
   return "none";
 }
 
+// A paid idea-thumbnail refresh is owed back when every one of its pictures is finished and not
+// one succeeded. A picture still queued or running: not yet (the sweeper ends stuck ones at 30 min).
+export function thumbnailRefreshOwed(statuses: string[]): boolean {
+  return statuses.length > 0 && statuses.every((s) => s === "failed" || s === "canceled");
+}
+
 // Failures in the last window: worth an email? (enough work to mean something, and more than the share allowed)
 export const FAILURE_WINDOW_S = 600;
 export const FAILURE_SHARE = 0.2;
