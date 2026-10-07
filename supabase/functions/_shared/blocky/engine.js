@@ -58,8 +58,9 @@ const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 
 //   checkClipWords (optional) async (job, storedUrl) -> {ok, problems[]} | null   did the voice say the line (clipCheck.js)
 //   requestClipFrame (optional) async (job, storedUrl) -> {path, ...} | null   asks for the clip's last frame; the answer arrives at onClipFrame
 //   checkClipFrame (optional) async (job, frame) -> {ok, problems[]} | null   picture check on that frame
+//   drawnTextProblem (optional) the start of the problem text that means "the video model drew its own subtitles"
 //   onCompleted (optional) async (job) -> void   after a scene's picture or clip is ready
-export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, redrawRequest = null, checkClipWords = null, requestClipFrame = null, checkClipFrame = null, onCompleted = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
+export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, redrawRequest = null, checkClipWords = null, requestClipFrame = null, checkClipFrame = null, drawnTextProblem = null, onCompleted = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
   // Read each time it is asked: the switch and the daily cap can change between two jobs (spendGuard.js).
   const paidOff = () => String(env.BLOCKY_PAID_CALLS ?? "").toLowerCase() === "off";
 
@@ -202,6 +203,18 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       try { verdict = await checkClipFrame(job, frame); } catch (err) { log.error?.(`[blocky] clip frame check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
     }
     if (verdict && !verdict.ok && !remadeBefore(job) && (await remake(job, verdict.problems))) return "remade";
+    // Made again already and the video model drew its own subtitles AGAIN: one last try on the tier's
+    // next clip model (V2: Wan -> Seedance 2.0 Mini), at our cost. Only for drawn words, only once (the
+    // request is then the fallback's, and that has no fallback of its own). If that clip carries them
+    // too, it is kept and the final video leaves its own caption off it.
+    const drawn = Boolean(drawnTextProblem) && (verdict?.problems ?? []).some((p) => String(p).includes(drawnTextProblem));
+    if (verdict && !verdict.ok && drawn && remadeBefore(job) && fallbackClip) {
+      const next = fallbackClip(job.request);
+      if (next && (await store.remakeClip(job.id, `${REMAKE_NOTE} ${verdict.problems.join("; ")}; then on the next clip model`.slice(0, 500), next))) {
+        await kick({ storyId: job.story_id });
+        return "remade_on_fallback";
+      }
+    }
     return complete(job, frame.storedUrl);
   }
 

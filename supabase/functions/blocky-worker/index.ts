@@ -25,7 +25,7 @@ import { validateCreateStory } from "../_shared/blocky/validation.js";
 import { BlockyError, MESSAGES } from "../_shared/blocky/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/blocky/final.js";
 import { raiseProviderAlert } from "../_shared/blocky/alerts.js";
-import { checkPicture } from "../_shared/blocky/pictureCheck.js";
+import { DRAWN_TEXT_PROBLEM, checkPicture } from "../_shared/blocky/pictureCheck.js";
 import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath, speechFramesPath } from "../_shared/blocky/clipCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/blocky/clips.js";
 import { buildPictureRequest, withRedrawHint } from "../_shared/blocky/pictures.js";
@@ -77,8 +77,10 @@ const engine = createEngine({
     poll: (taskUUID: string) => runwarePost([getResponseTask(taskUUID)]),
   },
   env: { get BLOCKY_PAID_CALLS() { return paidEnv(); }, webhookBase: `${SUPABASE_URL}/functions/v1/blocky-worker`, webhookSecret: WORKER_SECRET },
-  // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini.
+  // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini. So is a clip the
+  // video model drew its own subtitles into twice (the first time it is made again on the same model).
   fallbackClip: fallbackClipTask,
+  drawnTextProblem: DRAWN_TEXT_PROBLEM,
   // Every scene picture: blocky avatars only, nobody extra up front, no brick-toy look, no text,
   // and the speaker chest-up (gpt-5-mini vision, logged; ours to pay).
   checkPicture: async (job: any, storedUrl: string) => {
