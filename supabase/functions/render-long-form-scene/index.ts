@@ -30,7 +30,9 @@ import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S, SCENES_TOTAL_MAX } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
 import { needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
-import { BACKUP_TIER, climbLadder, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
+import { BACKUP_TIER, climbLadder, HARD_BUDGET_S, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
+import { gate, overloadedTooLong, readBreaker, recordOverload, recordSuccess } from "../_shared/modelOverload.ts";
+import { alertOnce } from "../_shared/adminAlert.ts";
 import { mandatoryStatIntent } from "../_shared/stickman/headlines.ts";
 import { checkRunwareGuard, markOutOfBalance, markProviderDown } from "../_shared/runwareBalance.ts";
 import { logEvent } from "../_shared/systemLog.ts";
@@ -50,7 +52,8 @@ const fetchBytes = async (url: string) => { const r = await fetch(url); if (!r.o
 const runware = async (task: any) => {
   const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }), signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS) });
   const j: any = await r.json().catch(() => null);
-  if (!j?.ok) throw new Error(`runware ${r.status}: ${JSON.stringify(j?.error ?? j).slice(0, 160)}`);
+  // The provider's own status and the whole error (its retryAfter is read from it).
+  if (!j?.ok) throw new Error(`runware ${j?.status ?? r.status}: ${JSON.stringify(j?.error ?? j).slice(0, 400)}`);
   return j as { result: { imageURL: string; cost: number | null }; latencyMs: number };
 };
 
@@ -206,10 +209,31 @@ async function drawScene(scene: any) {
   const failures = ladder.failures;
   // Only a current scene is watched by the autopilot; a split scene's own picture does all its steps here.
   const canDefer = scene.is_current !== false;
-  const out = await climbLadder({
+  // 2026-10-08, an overloaded model (_shared/modelOverload.ts): while its circuit breaker is open this
+  // scene waits (the row keeps its lease until the pause is over; not an attempt, not a ladder step);
+  // it resumes 1 at a time, then 2, then normal. Overloaded for more than 5 minutes: this scene is
+  // drawn on the backup model (V2 <-> V3) and the owner is emailed.
+  const tierModel = STICKMAN_RENDER_TIERS[tier].model;
+  const breaker = await readBreaker(admin, tierModel);
+  const useBackupModel = overloadedTooLong(breaker, Date.now());
+  if (useBackupModel) {
+    const backupModel = STICKMAN_RENDER_TIERS[BACKUP_TIER[tier]].model;
+    await logEvent("render-long-form-scene", "warn", "overloaded_model_switched_to_backup", { projectId, sceneId: scene.id, beat: beat.sequence, from: tierModel, to: backupModel, since: breaker.since });
+    await alertOnce(admin, `overload_switch:${tierModel}`, 1800, `Zyvo: ${tierModel} has been overloaded for over 5 minutes — scenes use ${backupModel}`, `Runware keeps answering "serviceOverloaded" for the Long Form scene model ${tierModel} (since ${breaker.since ?? "?"}).\n\nNew scenes are drawn on its backup model ${backupModel} until it answers again. Nothing failed; videos keep going.`).catch(() => {});
+  } else if (canDefer) {
+    const { count: ahead } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "rendering").eq("tier", tier).gt("lease_until", new Date().toISOString()).lt("started_at", scene.started_at).is("qa->>waiting", null).neq("id", scene.id);
+    const g = gate(breaker, Date.now(), ahead ?? 0);
+    if (!g.allow) {
+      await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + g.waitS * 1000).toISOString(), attempts: Math.max(0, Number(scene.attempts ?? 1) - 1), qa: { ...(scene.qa ?? {}), waiting: "high_demand" } }).eq("id", scene.id);
+      return { failed: false, waiting: true };
+    }
+  }
+  // Drawing now: no longer "waiting" (the rows that wait are not counted as in flight).
+  if (scene.qa?.waiting) { const { waiting: _w, ...rest } = scene.qa; await admin.from("long_form_scene_images").update({ qa: rest }).eq("id", scene.id); }
+  const climb = () => climbLadder({
     state: ladder, canDefer, sleep, elapsedS: () => (Date.now() - t0) / 1000,
     draw: (rung) => {
-      const drawTier = rung === "backup" ? BACKUP_TIER[tier] : tier;
+      const drawTier = rung === "backup" || useBackupModel ? BACKUP_TIER[tier] : tier;
       cfg = STICKMAN_RENDER_TIERS[drawTier];
       const contract = rung !== "normal" || textFree ? safeFallbackContract(beat.contract, set) : beat.contract;
       return renderBeat(drawTier, { startMs: beat.startMs, contract }, depsFor(drawTier));
@@ -217,10 +241,24 @@ async function drawScene(scene: any) {
     // Still this worker's scene: the watchdog must not hand it to a second one.
     renewLease: async () => { await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + SCENE_LEASE_S * 1000).toISOString() }).eq("id", scene.id).eq("status", "rendering"); },
   });
+  let out: Awaited<ReturnType<typeof climb>> = await climb();
+  // Overloaded: the model's breaker is opened for everyone and this scene waits the provider's
+  // retryAfter (+ jitter). A scene the autopilot watches hands itself on; a split scene waits here.
+  let overloadWaitS: number | null = null;
+  while (out.kind === "overloaded") {
+    const opened = await recordOverload(admin, cfg.model, out.retryAfterS, `scene: serviceOverloaded, retryAfter ${out.retryAfterS}`);
+    const waitS = Math.max(1, Math.ceil(((opened.until ? Date.parse(opened.until) : Date.now()) - Date.now()) / 1000));
+    await logEvent("render-long-form-scene", "warn", "model_overloaded_scene_waits", { projectId, sceneId: scene.id, beat: beat.sequence, model: cfg.model, retryAfterS: out.retryAfterS, waitS });
+    if (canDefer) { overloadWaitS = waitS; break; }
+    if ((Date.now() - t0) / 1000 + waitS > HARD_BUDGET_S) { out = { kind: "covered", result: null }; break; }
+    await sleep(waitS * 1000);
+    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + SCENE_LEASE_S * 1000).toISOString() }).eq("id", scene.id).eq("status", "rendering");
+    out = await climb();
+  }
   r = out.result;
   used = out.kind === "drawn" ? out.rung : null;
   const outOfBalance = out.kind === "balance" ? out.message : null;
-  const deferS = out.kind === "deferred" ? out.waitS : null;
+  const deferS = out.kind === "deferred" ? out.waitS : overloadWaitS;
   const ladderState = { step: ladder.step, checks: ladder.checks, failures: failures.slice(-12) };
   // How often this scene already waited for the provider: kept through every wait (or it would wait for ever).
   const keepOutage = scene.qa?.outage ? { outage: scene.qa.outage } : {};
@@ -240,7 +278,7 @@ async function drawScene(scene: any) {
   if (deferS != null) {
     // The next step (or its wait) doesn't fit in this worker: the row keeps its lease until the
     // wait is over, then the watchdog queues it and the next worker carries on from qa.ladder.step.
-    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + deferS * 1000).toISOString(), attempts: notCounted, cost_usd: costUsd, qa: { waiting: "retry", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
+    await admin.from("long_form_scene_images").update({ lease_until: new Date(Date.now() + deferS * 1000).toISOString(), attempts: notCounted, cost_usd: costUsd, qa: { waiting: overloadWaitS != null ? "high_demand" : "retry", ladder: ladderState, ...keepOutage } }).eq("id", scene.id);
     await logEvent("render-long-form-scene", "info", "scene_retry_deferred", { projectId, sceneId: scene.id, beat: beat.sequence, step: ladder.step, waitS: deferS, last: failures.at(-1) ?? null });
     return { failed: false, waiting: true };
   }
@@ -301,6 +339,8 @@ async function drawScene(scene: any) {
     warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : []), ...((r as any).split ? ["split_frame"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
     qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(textFree ? { textFree: true } : {}), ...(usedFallback ? { safeFallback: true } : {}), ...(used === "backup" ? { backupModel: cfg.model } : {}), ...(failures.length ? { failures: ladderState.failures, ladderStep: ladder.step } : {}), ...(upscaleSkipped ? { upscaleSkipped } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
+  // A picture came back from this model: its breaker (if it was open) lets the next ones through, gradually.
+  await recordSuccess(admin, cfg.model).catch(() => {});
   return { failed: false, billed };
 }
 

@@ -186,12 +186,12 @@ Deno.test("wiring: the editor and the render never wait for a failed scene; a re
 
 Deno.test("wiring: the worker climbs the ladder, keeps the step on the row, and never fails a scene for its upscale", () => {
   const w = read("supabase/functions/render-long-form-scene/index.ts");
-  assertMatch(w, /const out = await climbLadder\(\{/);
-  assertMatch(w, /const drawTier = rung === "backup" \? BACKUP_TIER\[tier\] : tier;/);
+  assertMatch(w, /const climb = \(\) => climbLadder\(\{/);
+  assertMatch(w, /const drawTier = rung === "backup" \|\| useBackupModel \? BACKUP_TIER\[tier\] : tier;/);
   assertMatch(w, /const contract = rung !== "normal" \|\| textFree \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
   assertMatch(w, /signal: AbortSignal\.timeout\(PROVIDER_TIMEOUT_MS\)/);
   // Deferred: the row keeps its lease for the wait, the attempt is not counted, the step is kept.
-  assertMatch(w, /lease_until: new Date\(Date\.now\(\) \+ deferS \* 1000\)\.toISOString\(\), attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "retry", ladder: ladderState, /);
+  assertMatch(w, /lease_until: new Date\(Date\.now\(\) \+ deferS \* 1000\)\.toISOString\(\), attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: overloadWaitS != null \? "high_demand" : "retry", ladder: ladderState, /);
   // Out of balance: back to the queue with the step kept.
   assertMatch(w, /status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: \{ waiting: "provider_balance", ladder: ladderState, /);
   // Covered: failed on the row (the card says "Try again (free)"), logged, a paid redraw refunded.

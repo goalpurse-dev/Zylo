@@ -7,6 +7,8 @@ import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
 import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
 import { PAUSED_COPY } from "../_shared/stuckJobs.ts";
 import { OUT_OF_CREDITS, plainJobError } from "../_shared/jobErrors.ts";
+import { gate, HIGH_DEMAND_COPY, HIGH_DEMAND_ENDED_COPY, overBatchCap, overloadedTooLong, OVERLOAD_BACKUP_MODEL, OVERLOAD_GIVE_UP_S, OVERLOAD_SWITCH_AFTER_S, RAMP_RECHECK_S, readBreaker } from "../_shared/modelOverload.ts";
+import { alertOnce } from "../_shared/adminAlert.ts";
 import {
   ProviderReferenceError,
   friendlyReferenceMessage,
@@ -407,6 +409,63 @@ Deno.serve(async (req) => {
       return fail(req, "Unsupported provider", 400);
     }
 
+    // 2026-10-08, an overloaded model (_shared/modelOverload.ts). After the claim, before anything is sent:
+    //   - the model's circuit breaker: paused -> this job waits in the queue until the pause is over;
+    //     resuming -> 1 request at a time, then 2, then normal;
+    //   - one user's batch has at most 2 requests in flight to one model (ten thumbnails are no longer
+    //     fired in the same second);
+    //   - overloaded for more than 5 minutes -> the request goes to the model's backup, the owner is emailed.
+    // A waiting job is never failed and never charged; the user reads "High demand, continuing in a moment".
+    let overloadAirTag: string | null = null;
+    if (provider.edgeFn === "/functions/v1/runware-image" && !recoverExistingProvider) {
+      const nowMs = Date.now();
+      const jobSettings: any = job.settings ?? {};
+      const waitingSince = jobSettings?.overload?.since ? Date.parse(jobSettings.overload.since) : null;
+      if (waitingSince && nowMs - waitingSince > OVERLOAD_GIVE_UP_S * 1000) {
+        logEvent("error", "overload_wait_gave_up", { jobId, toolKey: job.tool_key, userId: job.user_id, waits: jobSettings?.overload?.waits ?? null });
+        await failAndRefundJob(sbAdmin, jobId, "PROVIDER_BUSY", HIGH_DEMAND_ENDED_COPY);
+        return fail(req, HIGH_DEMAND_ENDED_COPY, 503);
+      }
+      let model = provider.airTag;
+      let breaker = await readBreaker(sbAdmin, model);
+      const backup = OVERLOAD_BACKUP_MODEL[model] ?? null;
+      const stillClosed = !gate(breaker, nowMs, 0).allow;
+      if (backup && (overloadedTooLong(breaker, nowMs) || (stillClosed && waitingSince && nowMs - waitingSince > OVERLOAD_SWITCH_AFTER_S * 1000))) {
+        logEvent("warn", "overloaded_model_switched_to_backup", { jobId, toolKey: job.tool_key, from: model, to: backup, since: breaker.since });
+        await alertOnce(sbAdmin, `overload_switch:${model}`, 1800, `Zyvo: ${model} has been overloaded for over 5 minutes — new requests use ${backup}`, `Runware keeps answering "serviceOverloaded" for the image model ${model} (since ${breaker.since ?? "?"}).\n\nNew requests for it now go to its backup model ${backup} until it answers again. Nothing failed and nobody was charged for a picture they did not get; waiting users see "${HIGH_DEMAND_COPY}".\n\nTool: ${job.tool_key}`).catch(() => {});
+        overloadAirTag = backup;
+        model = backup;
+        breaker = await readBreaker(sbAdmin, model);
+      }
+      // Requests to this model already in flight, claimed before this one (the claim time orders them).
+      const { data: live } = await sbAdmin.from("jobs").select("id, user_id, claimed_at").eq("tool_key", job.tool_key).in("status", ["running", "processing"]).gt("lease_expires_at", new Date(nowMs).toISOString()).neq("id", jobId).limit(200);
+      const mine = Date.parse(job.claimed_at ?? new Date(nowMs).toISOString());
+      const ahead = (live ?? []).filter((r: any) => { const t = Date.parse(r.claimed_at ?? ""); return Number.isFinite(t) && (t < mine || (t === mine && String(r.id) < String(jobId))); });
+      const g = gate(breaker, nowMs, ahead.length);
+      const batchFull = overBatchCap(ahead.filter((r: any) => r.user_id === job.user_id).length);
+      if (!g.allow || batchFull) {
+        const waitS = !g.allow ? g.waitS : RAMP_RECHECK_S;
+        const hop = Number(body.hop ?? 0);
+        await sbAdmin.from("jobs").update({
+          status: "queued", progress: 0, retry_after: new Date(nowMs + waitS * 1000).toISOString(), lease_expires_at: null,
+          settings: { ...jobSettings, ...(!g.allow ? { waiting: "high_demand" } : {}) },
+        }).eq("id", jobId).eq("claimed_by", workerId).eq("status", "running");
+        logEvent(!g.allow ? "warn" : "info", !g.allow ? "model_overloaded_job_waits" : "batch_cap_job_waits", { jobId, toolKey: job.tool_key, model, why: !g.allow ? g.why : "batch", waitS, ahead: ahead.length });
+        // It comes back by itself; generation-sweeper is the fallback for a long wait or a lost call.
+        if (waitS <= 100 && hop < 80) {
+          EdgeRuntime.waitUntil((async () => {
+            await new Promise((resolve) => setTimeout(resolve, waitS * 1000 + 300 + Math.round(Math.random() * 1700)));
+            await fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
+              method: "POST",
+              headers: { "content-type": "application/json", "authorization": `Bearer ${SERVICE_ROLE_KEY}`, "apikey": SERVICE_ROLE_KEY },
+              body: JSON.stringify({ jobId, hop: hop + 1 }),
+            }).catch(() => null);
+          })());
+        }
+        return json(req, { ok: true, status: "queued", highDemand: !g.allow, message: !g.allow ? HIGH_DEMAND_COPY : "queued behind your other pictures" }, 202);
+      }
+    }
+
     // Plan gate — checked here (server-side, trusted DB read) so it can't be
     // bypassed by calling this function directly or skipping the client UI.
     // Runs before any charge or provider call, so a blocked request never
@@ -565,7 +624,7 @@ Deno.serve(async (req) => {
     ? {
         ...(providerInput ?? {}),
         jobId,
-        airTag: provider.airTag,
+        airTag: overloadAirTag ?? provider.airTag,
         prompt: job.prompt ?? providerInput?.subject ?? "",
         referenceImages,
         settings: {
@@ -579,7 +638,7 @@ Deno.serve(async (req) => {
     : {
         ...(providerInput ?? {}),
         jobId,
-        airTag: provider.airTag,
+        airTag: overloadAirTag ?? provider.airTag,
         prompt: job.prompt ?? providerInput?.subject ?? "",
         width: providerInput?.width,
         height: providerInput?.height,
@@ -598,7 +657,7 @@ Deno.serve(async (req) => {
       type: job.type,
       status: job.status,
       providerEdgeFn: provider.edgeFn,
-      airTag: provider.airTag,
+      airTag: overloadAirTag ?? provider.airTag,
     });
 
     // Fire the handoff without waiting for image/video generation to complete.
