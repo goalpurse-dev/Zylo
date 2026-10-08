@@ -474,6 +474,34 @@ Decisions of 2026-10-08 (after the first real story):
     as a model-written plan (`vettedPlans.js`, `scripts/blocky/importPlans.mjs`); an idea with
     a vetted plan shows it first, with two generated alternates. Free script generations are
     limited per user per day (proposed: 5). The tables for it wait in `supabase/pending/`.
+69. OWNER'S GO (2026-10-08): the story-options SQL is applied; 5 free writings and 20 idea
+    batches a day; the script's share is 15 credits. The share is one price row,
+    `script:blocky-story`, added to the "pictures" charge of a story we wrote (not the user's
+    own script, not a single picture's edit / regenerate / retry) and refunded when every
+    picture of that charge failed. Its SQL waits in `supabase/pending/`; the page reads the
+    same row, so until it is applied no share is shown and none is charged.
+70. THE PAGE (section 3): the Story step opens on "Ideas"; a batch is only written when the
+    user presses "Give me ideas" (no model call on page load). An idea or a description leads
+    to "Write 3 versions, free": the three cards appear with title and hook once the plan
+    step is done, and each fills in with its lines as it is written. "Use this version"
+    polishes that one and opens the storyboard, where "Make scene pictures" is the first
+    charge. The user's own script keeps the old one-click path.
+71. NEW CLIP MODELS, TESTED BUT NOT SWITCHED (owner's lineup, 2026-10-08): V2 Grok Imagine
+    Video 1.5 Lite at 480p (+ upscale to 720p), V2 fallback P-Video-2 at 720p (also the
+    drawn-subtitle fallback, instead of Wan → Seedance), V3 Veo 3.1 Lite at 720p, V4 stays Veo
+    3.1 Fast. One 6-second clip each on a real Blocky scene (`scripts/blocky/testClipModels.mjs`,
+    `data/blocky-tests/models/results.json`): all take 6 s and 9:16, all said the exact line,
+    none drew text. Measured cost per second: Grok $0.0217, P-Video-2 $0.0252, Veo 3.1 Lite
+    $0.05. Grok's "480p" comes back 400×736, and with a frame image it takes `resolution`,
+    not width/height. Runware's ByteDance upscaler has no output-size setting: it returned 4K,
+    cost $0.128 for 6 s and took 131 s, which doubles V2's cost. No live model changes until
+    the owner has watched the clips and said go; prices change only after the numbers are
+    approved.
+72. NO pricing.js EXISTS. `src/lib/pricing.ts` serves the image and video generators, the
+    enhancements and Long Form; neither Fruit nor Blocky reads it. Blocky's models are in
+    `_shared/blocky/models.js`, its real costs in `spendGuard.js`, its credit prices in its
+    own `tool_prices` rows. Proposed single source: a Blocky-only `_shared/blocky/pricing.js`
+    that those read, with a test that Fruit never imports it.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
