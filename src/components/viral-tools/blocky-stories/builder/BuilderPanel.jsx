@@ -13,18 +13,21 @@ export default function BuilderPanel({ top, children, footer, bodyKey }) {
   const panelRef = useRef(null);
   const footRef = useRef(null);
 
+  // A step with nothing to press yet has no footer bar at all.
+  const hasFooter = Boolean(footer);
   // Keep the body's bottom padding equal to the fixed footer's real height on
   // mobile, so the last control is never hidden behind it.
   useLayoutEffect(() => {
     const foot = footRef.current;
     const panel = panelRef.current;
-    if (!foot || !panel) return undefined;
+    if (!panel) return undefined;
+    if (!foot) { panel.style.setProperty("--fv2-foot", "0px"); return undefined; }
     const sync = () => panel.style.setProperty("--fv2-foot", `${Math.ceil(foot.getBoundingClientRect().height)}px`);
     sync();
     const observer = new ResizeObserver(sync);
     observer.observe(foot);
     return () => observer.disconnect();
-  }, []);
+  }, [hasFooter]);
 
   return (
     <section
@@ -60,12 +63,14 @@ export default function BuilderPanel({ top, children, footer, bodyKey }) {
         </AnimatePresence>
       </div>
 
-      <div
-        ref={footRef}
-        className="fixed bottom-[calc(78px+env(safe-area-inset-bottom))] left-0 right-0 z-[90] border-t border-white/[0.07] bg-[#0C0F0D]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:shrink-0 lg:bg-[#0C0F0D] lg:pb-3 lg:pt-2.5"
-      >
-        {footer}
-      </div>
+      {hasFooter && (
+        <div
+          ref={footRef}
+          className="fixed bottom-[calc(78px+env(safe-area-inset-bottom))] left-0 right-0 z-[90] border-t border-white/[0.07] bg-[#0C0F0D]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:shrink-0 lg:bg-[#0C0F0D] lg:pb-3 lg:pt-2.5"
+        >
+          {footer}
+        </div>
+      )}
     </section>
   );
 }

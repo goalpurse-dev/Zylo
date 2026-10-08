@@ -37,6 +37,9 @@ import VersionsView from "./workspace/VersionsView";
  * each view has a footer fixed above the bottom nav. At lg+, the builder
  * (420/460px) and the result view sit side by side and scroll on their own.
  */
+/** The step bar while three versions are showing: the second step is the pick, not the settings. */
+const VERSION_STEPS = SINGLE_STEPS.map((label, i) => (i === 1 ? "Your version" : label));
+
 export default function BlockyStoriesPage() {
   const navigate = useNavigate();
   const account = useAccount();
@@ -82,7 +85,7 @@ export default function BlockyStoriesPage() {
     } else if (flow.draft) {
       // Three versions are being written or waiting for a pick (the result view): what was asked for, and what comes next.
       const est = flow.singleEstimate;
-      top = <>{modeToggle}<StepBar steps={SINGLE_STEPS} current={1} /></>;
+      top = <>{modeToggle}<StepBar steps={VERSION_STEPS} current={1} /></>;
       bodyKey = "single-versions";
       body = (
         <>
@@ -92,7 +95,7 @@ export default function BlockyStoriesPage() {
             <p className="mt-2.5 text-[12.5px] font-bold text-white/80">{TIERS[single.tierId].label} · about {single.lengthSec} sec</p>
             <ol className="mt-2.5 flex flex-col gap-1.5 text-[11.5px] font-medium leading-relaxed text-white/50">
               <li>1. Pick a version. Writing is free.</li>
-              <li>2. Scene pictures: {est.pictures ?? "…"} credits. You check every picture.</li>
+              <li>2. Scene pictures{est.scriptShare ? ", script included" : ""}: {est.pictures ?? "…"} credits. You check every picture.</li>
               <li>3. Animate: about {est.video ?? "…"} credits, only when you say so.</li>
             </ol>
           </div>
@@ -122,14 +125,36 @@ export default function BlockyStoriesPage() {
           onAssignName={flow.startAssigning}
         />
       );
-      footer = (
-        <>
-          <PrimaryButton chevron disabled={Boolean(flow.storyBlocker)} onClick={() => flow.updateSingle({ step: "settings" })}>
-            Next: choose length and quality
-          </PrimaryButton>
-          {flow.storyBlocker && <FootNote>{flow.storyBlocker}</FootNote>}
-        </>
-      );
+      const est = flow.singleEstimate;
+      const short = est.total != null && est.total > account.balance;
+      if (single.method !== "idea") {
+        footer = (
+          <>
+            <PrimaryButton chevron disabled={Boolean(flow.storyBlocker)} onClick={() => flow.updateSingle({ step: "settings" })}>
+              Next: choose length and quality
+            </PrimaryButton>
+            {flow.storyBlocker && <FootNote>{flow.storyBlocker}</FootNote>}
+          </>
+        );
+      } else if (single.ideaId) {
+        // An idea leads straight to its three versions, at the length and quality that are set (changeable first).
+        footer = (
+          <>
+            {errorLine}
+            {short ? (
+              <PrimaryButton onClick={() => flow.setNoCredits({ needed: est.total })}>Add credits</PrimaryButton>
+            ) : (
+              <PrimaryButton busy={flow.acting === "versions" ? "Planning three versions…" : null} onClick={flow.startSingle}>Write 3 versions, free</PrimaryButton>
+            )}
+            <FootNote tone={short ? "warn" : "muted"}>
+              {short ? `The full video needs ${(est.total - account.balance).toLocaleString()} more credits. ` : `${TIERS[single.tierId].label}, about ${single.lengthSec} sec. `}
+              <button type="button" onClick={() => flow.updateSingle({ step: "settings" })} className={cx("rounded underline decoration-white/25 underline-offset-2 transition hover:text-lime-300", FOCUS)}>Change length or quality</button>
+            </FootNote>
+          </>
+        );
+      } else if (flow.actionError) {
+        footer = errorLine;   // nothing to press until an idea is picked: no bar, unless there is something to say
+      }
     } else {
       const est = flow.singleEstimate;
       const short = est.total != null && est.total > account.balance;

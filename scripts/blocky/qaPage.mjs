@@ -54,6 +54,8 @@ function fakeApi(ids) {
     async startDraft() { await wait(1500); return draft(); },
     async writeVersion(body) { await wait(body.n * 1800); state[body.n] = body.n === 3 ? "failed" : "ready"; return draft(); },
     async getDraft() { return draft(); },
+    // The pick: the polishing wait, then a refusal (a real pick makes a story; this check makes nothing).
+    async pickVersion() { await wait(2500); throw { code: "PLANNER_FAILED", message: "PLANNER_FAILED" }; },
   };
 }
 
@@ -76,7 +78,8 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
     fake ??= fakeApi(libraryIds);
     if (!fake[body.action]) return route.continue();
     faked.push(body.action);
-    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data: await fake[body.action](body) }) });
+    const answer = await fake[body.action](body).then((data) => ({ ok: true, data }), (e) => ({ ok: false, ...e }));
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(answer) });
   });
   const apiCalls = [];
   p.on("response", (r) => { if (/functions\/v1\/(blocky|fruit)/.test(r.url())) apiCalls.push(`${r.url().split("/functions/v1/")[1]} ${r.status()}`); });
@@ -95,6 +98,10 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.seriesWordOnPage = await p.getByText(/\bseries\b/i).count();
   // The page opens on Ideas, and no idea is asked for until the button is pressed.
   row.askIdeasButton = await p.getByRole("button", { name: "Give me ideas" }).count();
+  // It is a main button like the others (full width of its card, room around the words), and the Ideas tab has
+  // no "Next" bar: an idea leads to its three versions.
+  row.askIdeasBox = await p.getByRole("button", { name: "Give me ideas" }).evaluate((b) => { const r = b.getBoundingClientRect(); const range = document.createRange(); range.selectNodeContents(b); const s = range.getBoundingClientRect(); const cs = getComputedStyle(b.parentElement); const inner = b.parentElement.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); return { width: Math.round(r.width), height: Math.round(r.height), share: Math.round((r.width / inner) * 100), sideRoom: Math.round(Math.min(s.left - r.left, r.right - s.right)) }; }).catch(() => null);
+  row.nextOnIdeas = await p.getByRole("button", { name: /Next: choose length/ }).count();
   row.ideasAskedOnLoad = faked.includes("getIdeas");
   await p.screenshot({ path: path.join(outDir, `page-${name}.png`) });
   await p.locator('[aria-label="How do you want to start?"] button', { hasText: "Describe it" }).click();
@@ -124,9 +131,12 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   await p.waitForTimeout(1500);
   row.ideaCards = await p.locator('section[aria-label="Story builder"] button[aria-pressed]', { hasText: /Badge|Trade|Door|Seconds|Rule/ }).count();
   await p.screenshot({ path: path.join(outDir, `ideas-${name}.png`) });
+  row.barBeforePick = await p.getByRole("button", { name: /Write 3 versions|Next: choose length/ }).count();
   await p.locator('section[aria-label="Story builder"] button[aria-pressed]', { hasText: "The Owner's Badge" }).click();
-  await p.getByRole("button", { name: /Next: choose length and quality/ }).first().click();
-  await p.waitForTimeout(800);
+  await p.waitForTimeout(400);
+  row.nextAfterPick = await p.getByRole("button", { name: /Next: choose length/ }).count();
+  row.changeSettingsLink = await p.getByRole("button", { name: "Change length or quality" }).count();
+  await p.screenshot({ path: path.join(outDir, `idea-picked-${name}.png`) });
   await p.getByRole("button", { name: /Write 3 versions/ }).first().click();
   await p.waitForTimeout(700);
   row.planningHeading = await p.getByText("Planning three versions…").count();
@@ -143,6 +153,23 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.namedSpeakers = await p.getByText(/^(Noob|Vex): /).count();
   row.sideScroll = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   await p.screenshot({ path: path.join(outDir, `versions-${name}.png`), fullPage: true });
+  if (phone) {
+    // The page's own scroller: the second card, the failed one and the row under the cards.
+    for (const [i, top] of [[2, 900], [3, 99999]]) {
+      await p.evaluate((y) => document.getElementById("workspace-scroll")?.scrollTo(0, y), top);
+      await p.waitForTimeout(300);
+      await p.screenshot({ path: path.join(outDir, `versions-${name}-part${i}.png`) });
+    }
+    await p.evaluate(() => document.getElementById("workspace-scroll")?.scrollTo(0, 0));
+  }
+  await p.getByRole("button", { name: "Use this version" }).first().click();
+  await p.waitForTimeout(900);
+  row.polishing = await p.getByText("Polishing your pick…").count();
+  await p.screenshot({ path: path.join(outDir, `versions-picking-${name}.png`) });
+  await p.waitForTimeout(2600);
+  row.pickRefusedText = (await p.getByText(/couldn.t finish this version/).first().innerText().catch(() => null));
+  row.pickButtonsAfter = await p.getByRole("button", { name: "Use this version" }).count();
+  await p.screenshot({ path: path.join(outDir, `versions-pick-failed-${name}.png`) });
   row.faked = [...new Set(faked)];
   row.apiCalls = [...new Set(apiCalls)];
   row.pageErrors = errors;
@@ -155,6 +182,8 @@ const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-sto
   && v.builderSeriesTab === 0 && v.recentSeriesTab === 0 && v.seriesWordOnPage === 0
   && JSON.stringify(v.libraryNames) === JSON.stringify(["Noob", "Vex", "Lux"]) && v.libraryPictures === 3 && v.settingsHeading === 1 && v.shapeChoice === 0
   && v.askIdeasButton === 1 && v.ideasAskedOnLoad === false && /Write 3 versions/.test(v.writeButton) && v.ideaCards === 5
+  && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.changeSettingsLink === 1 && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
+  && v.polishing >= 1 && Boolean(v.pickRefusedText) && v.pickButtonsAfter === 2
   && v.planningHeading >= 1 && v.readyWhileWriting === 1 && v.pickHeading >= 1 && v.pickButtons === 2 && v.failedCard === 1 && v.leftToday === 1 && v.namedSpeakers === 12 && v.sideScroll === false
   && v.costText && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);
 console.log(ok ? "PASS" : "FAIL");

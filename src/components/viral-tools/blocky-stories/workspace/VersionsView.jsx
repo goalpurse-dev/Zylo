@@ -21,7 +21,7 @@ function useElapsed(running) {
   return sec;
 }
 
-function Steps({ stage }) {
+function Steps({ stage, busy }) {
   const steps = ["Plan the twist", "Write three versions", "You pick one"];
   return (
     <ol className="flex flex-wrap gap-1.5" aria-label="Where the writing is">
@@ -29,7 +29,7 @@ function Steps({ stage }) {
         const done = i < stage, now = i === stage;
         return (
           <li key={label} aria-current={now ? "step" : undefined} className={cx("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-bold", done ? "border-lime-300/30 bg-lime-300/[0.08] text-lime-200" : now ? "border-white/20 bg-white/[0.06] text-white" : "border-white/[0.07] text-white/35")}>
-            {done ? <Check className="h-3 w-3" aria-hidden="true" /> : now ? <span aria-hidden="true" className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-lime-300/20 border-t-lime-300/80 motion-reduce:animate-none" /> : <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-white/20" />}
+            {done ? <Check className="h-3 w-3" aria-hidden="true" /> : now && busy ? <span aria-hidden="true" className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-lime-300/20 border-t-lime-300/80 motion-reduce:animate-none" /> : <span aria-hidden="true" className={cx("h-1.5 w-1.5 rounded-full", now ? "bg-lime-300" : "bg-white/20")} />}
             {label}
           </li>
         );
@@ -123,7 +123,7 @@ export default function VersionsView({ draft, byId, picking, error, onPick, onNe
     <div className="flex flex-col gap-4">
       <WorkspaceHeader title={title} subtitle={subtitle} />
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-white/[0.07] bg-[#111315] px-4 py-3">
-        <Steps stage={picking ? 2 : stage} />
+        <Steps stage={picking ? 2 : stage} busy={planning || writing > 0 || Boolean(picking)} />
         {(planning || writing > 0 || picking) && (
           <p className="ml-auto text-[11px] font-semibold tabular-nums text-white/40" aria-live="polite">
             {elapsed} s · usually about {expected} s

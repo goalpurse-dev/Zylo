@@ -57,10 +57,10 @@ export default function StoryStep({ single, ideas, characters, scriptParse, onCh
 function IdeaPicker({ ideas, selectedId, byId, onPick, onAsk, onNewIdeas, onRetry }) {
   if (!ideas.asked) {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-4">
         <p className="text-[12.5px] font-medium leading-relaxed text-white/65">Five story ideas, each a different kind of story, with characters already picked. Tap one and you get three versions of it to choose from.</p>
-        <PrimaryButton size="sm" fullWidth={false} onClick={onAsk}>Give me ideas</PrimaryButton>
-        <p className="text-[10px] leading-relaxed text-white/30">Ideas are free.</p>
+        <PrimaryButton onClick={onAsk}>Give me ideas</PrimaryButton>
+        <p className="text-center text-[10px] font-semibold leading-relaxed text-white/35">Ideas are free.</p>
       </div>
     );
   }
