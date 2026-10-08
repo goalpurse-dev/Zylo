@@ -26,6 +26,7 @@ import { BlockyError, MESSAGES } from "../_shared/blocky/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/blocky/final.js";
 import { raiseProviderAlert } from "../_shared/blocky/alerts.js";
 import { DRAWN_TEXT_PROBLEM, checkPicture } from "../_shared/blocky/pictureCheck.js";
+import { inFrameIds } from "../_shared/blocky/shots.js";
 import { checkAvatar } from "../_shared/blocky/avatarCheck.js";
 import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath, speechFramesPath } from "../_shared/blocky/clipCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/blocky/clips.js";
@@ -83,13 +84,13 @@ const engine = createEngine({
   fallbackClip: fallbackClipTask,
   drawnTextProblem: DRAWN_TEXT_PROBLEM,
   // Every scene picture: blocky avatars only, nobody extra up front, no brick-toy look, no text,
-  // and the speaker chest-up (gpt-5-mini vision, logged; ours to pay).
+  // and the speaker framed as the scene's own shot asks (gpt-5-mini vision, logged; ours to pay).
   checkPicture: async (job: any, storedUrl: string) => {
     if (paidOff()) return null;
-    const { expected, speaker } = await sceneCast(job.scene_id);
+    const { expected, speaker, shot } = await sceneCast(job.scene_id);
     if (!expected.length) return null;
     return checkPicture({
-      admin, apiKey: OPENAI_API_KEY, imageUrl: storedUrl, expected, speaker,
+      admin, apiKey: OPENAI_API_KEY, imageUrl: storedUrl, expected, speaker, shot,
       ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
     });
   },
@@ -180,11 +181,13 @@ const engine = createEngine({
 
 /** Who should be in a scene's picture ({name, look}, in frame order) and who speaks. */
 async function sceneCast(sceneId: string) {
-  const { data: sc } = await admin.from("blocky_story_scenes").select("present_ids, speaker_id").eq("id", sceneId).single();
-  const { data: chars } = await admin.from("blocky_characters").select("id, name, look").in("id", sc?.present_ids ?? []);
+  const { data: sc } = await admin.from("blocky_story_scenes").select("present_ids, speaker_id, shot").eq("id", sceneId).single();
+  // Who is in the frame for this scene's shot (the speaker alone in a reaction shot), speaker first.
+  const ids: string[] = sc ? inFrameIds(sc) : [];
+  const { data: chars } = await admin.from("blocky_characters").select("id, name, look").in("id", ids);
   const byId = new Map((chars ?? []).map((c: any) => [c.id, c]));
-  const expected = (sc?.present_ids ?? []).map((id: string) => byId.get(id)).filter(Boolean).map((c: any) => ({ name: c.name, look: c.look }));
-  return { expected, speaker: (byId.get(sc?.speaker_id) as any)?.name ?? null };
+  const expected = ids.map((id: string) => byId.get(id)).filter(Boolean).map((c: any) => ({ name: c.name, look: c.look }));
+  return { expected, speaker: (byId.get(sc?.speaker_id) as any)?.name ?? null, shot: sc?.shot ?? null };
 }
 
 /**
@@ -308,6 +311,17 @@ async function avatarCheckTest(body: any) {
   const a = body?.avatar;
   if (typeof body?.imageUrl !== "string" || !body.imageUrl.startsWith("https://") || !a?.name || !a?.head || !a?.torso || !a?.legs || !a?.face) throw new BlockyError("VALIDATION", "imageUrl and avatar are needed");
   return await checkAvatar({ admin, apiKey: OPENAI_API_KEY, imageUrl: body.imageUrl, avatar: { name: String(a.name), head: String(a.head), torso: String(a.torso), legs: String(a.legs), accessory: a.accessory ? String(a.accessory) : null, face: String(a.face) } });
+}
+
+/**
+ * Admin test: the scene-picture check on one picture, judged against a shot (pictureCheck.js). No user
+ * charge; logged with its cost. body: {imageUrl, expected: [{name, look}], speaker, shot}
+ */
+async function pictureCheckTest(body: any) {
+  if (paidOff()) throw new BlockyError("PAID_CALLS_DISABLED", "paid calls are off");
+  const expected = (Array.isArray(body?.expected) ? body.expected : []).filter((c: any) => typeof c?.name === "string").slice(0, 3).map((c: any) => ({ name: c.name, look: typeof c.look === "string" ? c.look : undefined }));
+  if (typeof body?.imageUrl !== "string" || !body.imageUrl.startsWith("https://") || !expected.length) throw new BlockyError("VALIDATION", "imageUrl and expected are needed");
+  return await checkPicture({ admin, apiKey: OPENAI_API_KEY, imageUrl: body.imageUrl, expected, speaker: typeof body.speaker === "string" ? body.speaker : null, shot: typeof body.shot === "string" ? body.shot : null, ids: {} });
 }
 
 async function rawPoll(body: any) {
@@ -511,10 +525,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (["clip_test", "raw_test", "raw_poll", "picture_test", "frame_test", "avatar_check_test"].includes(action)) {
+  if (["clip_test", "raw_test", "raw_poll", "picture_test", "frame_test", "avatar_check_test", "picture_check_test"].includes(action)) {
     if (!sameToken((req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""), SERVICE_KEY)) return json({ ok: false }, 401);
     try {
-      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : action === "picture_test" ? pictureTest : action === "frame_test" ? frameTest : action === "avatar_check_test" ? avatarCheckTest : rawPoll;
+      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : action === "picture_test" ? pictureTest : action === "frame_test" ? frameTest : action === "avatar_check_test" ? avatarCheckTest : action === "picture_check_test" ? pictureCheckTest : rawPoll;
       return json({ ok: true, ...(await fn(body)) });
     } catch (e) {
       const fe = e as any;

@@ -36,9 +36,10 @@ export const BLOCKY_TOTAL_USD = Infinity;
 // twists6: the same five with the best of three plans on the plan model and a judge (approved 2026-10-08; at most $0.40 each).
 // plans: the plan step alone at low effort against medium, on the same five ideas (approved 2026-10-08; about $0.35).
 // library: the 52 reference pictures (owner, 2026-10-08): two on Nano Banana 2 Lite each, a Pro redo only when both fail; about $3.85 to $5.50. The first eight (wording a) cost $1.62 and were mostly drawn again, so the stage is $9.
+// shots: shot variety on one story (owner, 2026-10-08, at most $1): one script, a picture a scene, their checks, one redraw each at most.
 // klein: the avatar-library model test (owner, 2026-10-08): 12 FLUX.2 [klein] 9B pictures, their checks, one scene; about $0.12.
 // models: one 6 s test clip on each of the owner's three candidate clip models, plus the upscale (approved 2026-10-08; about $0.75, never over $3).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75, twists4: 0.75, twists5: 1.5, twists6: 2.0, plans: 0.8, models: 1.5, klein: 0.3, library: 9.0 });
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75, twists4: 0.75, twists5: 1.5, twists6: 2.0, plans: 0.8, models: 1.5, klein: 0.3, library: 9.0, shots: 1.0 });
 
 export class PaidCallBlocked extends Error {}
 

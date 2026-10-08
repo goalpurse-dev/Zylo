@@ -10,7 +10,7 @@ import { BlockyError } from "./errors.js";
 import { BUFFER_SEC, WORDS_PER_SECOND, clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { BLOCKY_MODELS, videoModel } from "./models.js";
 
-import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
+import { LEGACY_SHOTS, SPEAKING_SHOTS, directShots } from "./shots.js";
 import { problemLines, reviewScript } from "./scriptReview.js";
 import { WRITTEN_WORDS, characterBlock, writerSystem } from "./rules.js";
 import { FINAL_LINE_MAX_WORDS, PLAN_COUNT, PLAN_JUDGE_PURPOSE, TWIST_PLAN_PURPOSE, buildJudgePrompt, buildTwistPlanPrompt, judgeSchema, openerOf, pickPlan, splitPlans, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "./twists.js";
@@ -330,7 +330,6 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (present.length < 1 || present.length > 3) errors.push(`scene ${n}: 1 to 3 characters in frame (got ${present.length})`);
     for (const id of present) { if (!castIds.includes(id)) errors.push(`scene ${n}: "${id}" is not in the cast`); seen.add(id); }
     if (!locIds.has(s?.locationId)) errors.push(`scene ${n}: locationId "${s?.locationId}" is not one of the locations`);
-    if (!SPEAKING_SHOTS.includes(s?.shot)) errors.push(`scene ${n}: this scene has a spoken line, so use ${SPEAKING_SHOTS.join(", ")} with the speaker's face large (never wide or over-the-shoulder)`);
     const placement = String(s?.placement ?? "").trim();
     if (words(placement) > 30) errors.push(`scene ${n}: placement must be at most 30 words`);
     for (const g of PLACE_GROUPS) {
@@ -369,6 +368,8 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const raises = String(s?.raises ?? "").trim();
     return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat, ...(source !== "script" ? { raises } : {}) };
   });
+  // The mix of shots is made sure of here, in code (shots.js#directShots): never a fault, never a call.
+  directShots(normalized).forEach((d, i) => { normalized[i].shot = d.shot; });
   // The hook names at most two people besides the speaker.
   if (source !== "script" && normalized[0]) {
     const named = cast.filter((c) => c.id !== normalized[0].speakerId && callNames(c).some((nm) => new RegExp(`\\b${escapeRe(nm)}\\b`, "i").test(normalized[0].line)));

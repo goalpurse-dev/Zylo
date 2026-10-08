@@ -6,23 +6,18 @@ import { nextVideoModel, videoModel } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { clipDurationSec } from "./duration.js";
 import { withSubject } from "./wording.js";
-import { shotOf } from "./shots.js";
+import { inFrameIds, shotSpec } from "./shots.js";
 import { CLIP } from "./look.js";
 
 export const CLIP_PROMPT_MAX = SERVER_LIMITS.maxClipPromptChars;   // 1,500 (Veo accepts 3,000)
 
-const CAMERA_MOVE = {
-  "close-up": "a very slow push-in on the speaker's face",
-  "medium close-up": "a slow push-in toward the speaker",
-  "chest-up": "a gentle, slow dolly-in",
-};
 // Grok pushed in so hard that the listener left the frame (test clip, 2026-10-08): it gets a push-in that
 // barely moves. P-Video is calm by itself and gets the same words.
 export const GENTLE_CAMERA = "a very slow, slight push-in that stops early: every character stays fully in frame, at almost the same size, from the first frame to the last";
 // Veo 3.1 Lite cut to its own framing right after the first frame (same test): it keeps the picture's.
 export const LOCKED_CAMERA = "locked off on the first frame's exact framing for the whole clip: no zoom, no push-in, no pan, no re-framing, no new angle";
 /** The camera sentence for a model (pricing.js#CLIP_MODELS.camera): only "move" follows the shot. */
-const cameraFor = (model, shot) => (model.camera === "gentle" ? GENTLE_CAMERA : model.camera === "locked" ? LOCKED_CAMERA : CAMERA_MOVE[shotOf(shot)]);
+const cameraFor = (model, shot) => (model.camera === "gentle" ? GENTLE_CAMERA : model.camera === "locked" ? LOCKED_CAMERA : shotSpec(shot).camera);
 
 // What a model got wrong on a real Blocky scene, said to that model only, right after who speaks.
 const MODEL_NOTES = {
@@ -61,7 +56,8 @@ function build(tier, { scene, speaker, others, model }) {
 export function buildClipPrompt({ scene, library, quality = "v2" }) {
   const speaker = library.get(scene.speakerId);
   if (!speaker) throw new Error(`unknown character ${scene.speakerId}`);
-  const others = scene.presentIds.filter((id) => id !== scene.speakerId).map((id) => library.get(id)).filter(Boolean);
+  // Who is in the frame with the speaker (nobody in a reaction shot).
+  const others = inFrameIds(scene).slice(1).map((id) => library.get(id)).filter(Boolean);
   for (const tier of [0, 1, 2]) {
     const prompt = build(tier, { scene, speaker, others, model: videoModel(quality) });
     if (prompt.length <= CLIP_PROMPT_MAX) return prompt;

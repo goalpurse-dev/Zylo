@@ -7,6 +7,7 @@
 // No prompt ever describes a character with an age or as a kid, a child, a man
 // or a woman. A character is always "a blocky game avatar".
 import { bannedNamesInUploadText } from "./safety.js";
+import { shotOf, shotSpec } from "./shots.js";
 
 const KIND = "a blocky game avatar";
 /** The ONE feeling a whole video runs on (the writer picks one and returns it). */
@@ -90,7 +91,7 @@ STAGING (for each scene)
 - locationId: one of the story's locations. Use 1 to 3 locations per story and reuse them; don't jump around.
 - action: one small UPPER-BODY action for the speaker that fits a 4 to 8 second clip (up to 16 words): a look, a block arm raised, an item held up, a point. Start with the verb and don't name the speaker (e.g. "holds up a glowing gold cube"). The picture is chest-up, so never walking, running, jumping, climbing, kicking, standing up, sitting down, entering, leaving or any other full-body move: the obby run or the fall is talked about, not shown.
 - emotion: one or two words (e.g. "icy calm", "smug", "panicked"). This alone decides how the line is delivered; the voice notes only say how the character sounds.
-- shot: one of ${shots.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never wide, never over-the-shoulder.
+- shot: one of ${shots.join(", ")}. Mix them like a film does. Scene 1 is the wide shot: it shows the place and who is there. The reveal is a close-up. reaction is for a line that IS a reaction (shock, disbelief, a comeback): only the speaker is in the frame. over-the-shoulder is for one character facing another down, and needs a listener in the scene. chest-up and medium close-up are the plain shots between. Never the same shot three scenes in a row; at least three different shots in a story. In every shot the speaker faces the camera: every scene has a spoken line.
 - placement: WHERE each character in the frame is relative to the setting, whenever it matters to the line or the reveal (inside or outside, behind the glass, at the door, on the far platform), e.g. "Vex stands inside the admin room; Taz is outside the glass". Required whenever the line mentions glass, windows, walls, a door, a lock, inside or outside. Leave it empty only when position doesn't matter.
 - beat: a 2 to 4 word label for the scene (e.g. "The fake ban").
 - raises: 3 to 10 words: what this scene makes worse, weirder or higher than the scene before (for scene 1: what the hook puts at stake).
@@ -237,6 +238,7 @@ Return only the JSON object.`;
 export const MIN_HEAD_PERCENT = 18;
 export const BODY_CUTS = ["shoulders", "chest", "waist", "knees", "feet", "unknown"];
 const TOO_WIDE = new Set(["knees", "feet"]);
+const NOT_WIDE = new Set(["shoulders", "chest"]);
 
 /**
  * A clip must carry no words of its own: the final video draws the ONE caption
@@ -263,6 +265,7 @@ export function checkSchema({ speech = false } = {}) {
     logos: { type: "boolean" },
     speakerHeadPercent: { type: "integer" },
     speakerShownTo: { type: "string", enum: BODY_CUTS },
+    speakerHeadCut: { type: "boolean" },
     ...(speech ? { drawnText: { type: "string" } } : {}),
     notes: { type: "string" },
   };
@@ -274,11 +277,14 @@ export function checkSchema({ speech = false } = {}) {
  * @param {{speaker?:string, speech?:boolean}} [o] speaker: the speaking avatar's name (scene pictures);
  *   speech: a SECOND picture is attached, two frames from the middle of the clip (clip checks)
  */
-export function checkPrompt(expected, { speaker = null, speech = false } = {}) {
+export function checkPrompt(expected, { speaker = null, speech = false, shot = null } = {}) {
+  // In an over-the-shoulder shot the first listener is drawn from behind, on purpose.
+  const behind = speaker && shotOf(shot) === "over-the-shoulder" ? expected.find((c) => c.name !== speaker)?.name ?? null : null;
   return [
     `This picture should show exactly ${expected.length} blocky game avatar${expected.length > 1 ? "s" : ""}:`,
     ...expected.map((c) => `- ${c.name}: ${c.look ?? KIND}`),
     "characters: for each one listed, is it visible, and is it a blocky game avatar (a cube head with a flat printed face, block body)?",
+    ...(behind ? [`${behind} is meant to be seen from BEHIND at the near edge of the picture (the back of a cube head and a block shoulder, out of focus, no face): count that as visible and as a blocky game avatar.`] : []),
     "mainFigures: how many figures are really in the scene (foreground or middle ground, in focus, large enough to see a face). Count every one, listed or not.",
     "backgroundFigures: how many small or blurred figures are far in the background.",
     "humanFigures: how many figures ANYWHERE in the picture are human or have a human head, face, skin or hair instead of a blocky game-avatar body.",
@@ -288,11 +294,14 @@ export function checkPrompt(expected, { speaker = null, speech = false } = {}) {
     "readableText: any words, names, letters or numbers a viewer could read ANYWHERE in the picture (a subtitle or caption, a name tag over a head, a chat box, a sign, a screen, clothes), copied as you read them; an empty string if there are none. Plain shapes on a shirt (a star, a circle, a bolt) are not text.",
     "logos: true if there is a logo or a brand mark anywhere.",
     speaker
-      ? `speakerHeadPercent: ${speaker} is the speaker. Measure the height of ${speaker}'s cube head as a percentage of the full picture height, 0 to 100. A chest-up shot is about 30 to 45; a full-body shot is about 10 to 18.`
+      ? `speakerHeadPercent: ${speaker} is the speaker. Measure the height of ${speaker}'s cube head as a percentage of the full picture height, 0 to 100. A close-up is about 35 to 50; a chest-up shot is about 25 to 40; a full-body shot is about 10 to 18.`
       : "speakerHeadPercent: 0.",
     speaker
       ? `speakerShownTo: the lowest part of ${speaker}'s body that is inside the picture: shoulders, chest, waist, knees or feet. If you can see their feet or the floor under them, answer feet.`
       : "speakerShownTo: unknown.",
+    speaker
+      ? `speakerHeadCut: true if the top of ${speaker}'s head, or a hat, hair or accessory on it, is cut off by the edge of the picture.`
+      : "speakerHeadCut: false.",
     ...(speech ? ["drawnText: every question above is about the FIRST picture. A SECOND picture is attached: two earlier moments of the same clip, side by side, taken while the line is being spoken. Copy any words, subtitles, captions or lyrics drawn anywhere on that second picture, exactly as you read them; an empty string if there are none. Plain shapes on clothes are not text."] : []),
     "notes: one short sentence on anything wrong, or an empty string.",
   ].join("\n");
@@ -305,7 +314,7 @@ export function checkPrompt(expected, { speaker = null, speech = false } = {}) {
  * frame is checked with this too, so such a clip is made again once, free).
  * Decision 15: a full-body shot with a small face fails and is redrawn once, free.
  */
-export function verdictOf(data, expected, { speaker = null, framing = Boolean(speaker), missingOk = false } = {}) {
+export function verdictOf(data, expected, { speaker = null, framing = Boolean(speaker), missingOk = false, shot = null } = {}) {
   const problems = [];
   const fixes = [];
   const byName = new Map((data?.characters ?? []).map((c) => [String(c.name).toLowerCase(), c]));
@@ -327,11 +336,25 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
   if (data?.logos === true) { problems.push("a logo or brand mark in the picture"); fixes.push("No logos or brand marks: plain unbranded props."); }
   const drawn = String(data?.drawnText ?? "").trim();
   if (drawn.replace(/[^\p{L}\p{N}]/gu, "").length >= 2) { problems.push(`${DRAWN_TEXT_PROBLEM} ("${drawn.slice(0, 60)}")`); fixes.push("No subtitles, captions or words drawn in the clip."); }
+  // The framing, judged against the scene's own shot (shots.js): a wide shot must show the body and still
+  // keep the face large enough for lip sync; every other shot must not be a full-body picture.
+  const name = shotOf(shot);
+  const want = shotSpec(shot).check;
   const head = Number(data?.speakerHeadPercent);
-  const small = Number.isFinite(head) && head > 0 && head < MIN_HEAD_PERCENT;
-  if (framing && speaker && (small || TOO_WIDE.has(data?.speakerShownTo))) {
-    problems.push(small ? `${speaker} is too small in the frame (head about ${Math.round(head)}% of the height)` : `${speaker} is shown full body (down to the ${data.speakerShownTo}), not chest-up`);
-    fixes.push(`Reframe much closer: a tight chest-up shot of ${speaker}, the cube head filling a third of the frame height, cropped at the chest. No legs, no feet, no floor.`);
+  const small = Number.isFinite(head) && head > 0 && head < want.minHead;
+  const fullBody = TOO_WIDE.has(data?.speakerShownTo);
+  if (framing && speaker) {
+    if (want.fullBody === "never" && (small || fullBody)) {
+      problems.push(small ? `${speaker} is too small in the frame (head about ${Math.round(head)}% of the height)` : `${speaker} is shown full body (down to the ${data.speakerShownTo}), not ${name === "chest-up" ? "chest-up" : `as a ${name} shot`}`);
+      fixes.push(want.fix(speaker));
+    } else if (want.fullBody === "wanted" && (small || NOT_WIDE.has(data?.speakerShownTo))) {
+      problems.push(small ? `${speaker} is too small in the frame even for a wide shot (head about ${Math.round(head)}% of the height)` : `${speaker} is cropped at the ${data.speakerShownTo}, not shown full body as a wide shot`);
+      fixes.push(want.fix(speaker));
+    }
+    if (data?.speakerHeadCut === true) {
+      problems.push(`the top of ${speaker}'s head, or what is on it, is cut off by the frame`);
+      fixes.push(`Leave clear room above ${speaker}'s head: the whole head with its hat, hair or accessory is inside the frame.`);
+    }
   }
   return { ok: problems.length === 0, problems: [...new Set(problems)], fixes: [...new Set(fixes)] };
 }

@@ -6,30 +6,33 @@
 import { BLOCKY_MODELS } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { withSubject } from "./wording.js";
-import { shotOf } from "./shots.js";
+import { inFrameIds, shotSpec } from "./shots.js";
 import { PICTURE as LOOK } from "./look.js";
 
 export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 (Nano Banana accepts 45,000)
 
-const SHOT_TEXT = {
-  "close-up": "Close-up on the speaker's face and shoulders",
-  "medium close-up": "Medium close-up, chest up",
-  // "Medium/waist up" still gave full-body shots: say chest up.
-  "chest-up": "Chest-up shot on the speaker in the foreground, never full body",
-};
+/** The shot line of a scene (shots.js), with the speaker's and the first listener's names in it. */
+const shotText = (shot, speaker, others) => shotSpec(shot).picture.replace("{speaker}", speaker.name).replace("{listener}", others[0]?.name ?? "the listener");
 
-/** Shot line (older rows with wide / over-the-shoulder / two-shot are drawn chest-up). */
-const shotText = (shot) => SHOT_TEXT[shotOf(shot)];
-
-// Lip sync needs a big, clear mouth: chest up or closer, the speaker's head
-// a quarter to a third of the frame height, face toward the camera. The
-// picture model shrinks the speaker when everyone must fit side by side, and
-// turns them to profile when they "talk to" someone, so the speaker is staged
-// in front, facing the lens, and listeners go behind, smaller.
-/** Speaker in front and facing the camera; listeners behind, smaller. */
-function stage(speaker, others, short = false) {
+// Lip sync needs a clear mouth: in every shot the speaker's face is toward the
+// camera. The picture model shrinks the speaker when everyone must fit side by
+// side, and turns them to profile when they "talk to" someone, so the speaker
+// is staged in front, facing the lens, and listeners go behind (or, in an
+// over-the-shoulder shot, in front with their back to the camera).
+/** Who stands where, for the scene's shot. */
+function stage(speaker, others, short = false, shot = "chest-up") {
   if (!others.length) return `${speaker.name} is alone in the frame, body and face turned toward the camera.`;
   const names = others.map((c) => c.name).join(" and ");
+  if (shot === "wide") {
+    if (short) return `${speaker.name} in front, facing the camera; ${names} a step behind, whole in the frame.`;
+    return `Staging: ${speaker.name} stands in front, body and face turned toward the camera. ${names} ${others.length > 1 ? "stand" : "stands"} a step behind and to the side, whole in the frame, looking at ${speaker.name}.`;
+  }
+  if (shot === "over-the-shoulder") {
+    const [near, ...rest] = others;
+    const far = rest.length ? ` ${rest.map((c) => c.name).join(" and ")} ${rest.length > 1 ? "stand" : "stands"} further back behind ${speaker.name}, smaller.` : "";
+    if (short) return `${near.name} at the near edge with its back to the camera; ${speaker.name} beyond, facing the camera.${far}`;
+    return `Staging: ${near.name} stands at the near edge of the frame with its back to the camera, so only the back of its cube head and one block shoulder are seen, out of focus. ${speaker.name} stands beyond, body and face turned toward the camera.${far}`;
+  }
   if (short) return `${speaker.name} in front, facing the camera; ${names} behind, smaller.`;
   return `Staging: ${speaker.name} stands closest to the camera, body and face turned toward the camera (at most a slight three-quarter turn), large in the frame. ${names} ${others.length > 1 ? "are" : "is"} further back beside or behind ${speaker.name}, smaller and slightly softer, looking at ${speaker.name}.`;
 }
@@ -46,9 +49,9 @@ export function withRedrawHint(prompt, fixes) {
   return next.length <= PICTURE_PROMPT_MAX ? next : prompt;
 }
 
-/** Characters in frame, speaker first (image 1). */
+/** Characters in frame, speaker first (image 1): everyone present, or the speaker alone in a reaction shot. */
 export function frameCharacters(scene, library) {
-  const ids = [scene.speakerId, ...scene.presentIds.filter((id) => id !== scene.speakerId)];
+  const ids = inFrameIds(scene);
   return ids.map((id) => {
     const c = library.get(id);
     if (!c) throw new Error(`unknown character ${id}`);
@@ -64,9 +67,9 @@ function build(tier, { story, scene, cast, location }) {
     ? `Time of day: ${location.timeOfDay}${location.lighting ? `; lighting: ${location.lighting}` : ""}.${tier === 2 ? "" : " Keep exactly this time of day and lighting."}`
     : "";
   const parts = [
-    `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? LOOK.faceShort : LOOK.face}`,
+    `${aspect}. ${shotText(scene.shot, speaker, others)}. ${tier === 2 ? shotSpec(scene.shot).framingShort : shotSpec(scene.shot).framing}`,
     `${withSubject(LOOK.who(speaker), speaker, scene.action)}, ${LOOK.speaking(scene)}`,
-    stage(speaker, others, tier === 2),
+    stage(speaker, others, tier === 2, scene.shot),
     LOOK.heads(cast, tier === 2),
     others.length ? `${tier === 2 ? others.map((c) => c.name.split(" ")[0]).join(" and ") : listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
