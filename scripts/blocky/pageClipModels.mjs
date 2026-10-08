@@ -23,7 +23,7 @@ const perSec = (row, extra = 0) => `${usd(row.cost + extra)} = ${usd((row.cost +
 // render does for free.
 const copy = (key) => fs.copyFileSync(path.join(dir, `${key}.mp4`), path.join(outDir, "clips", `${key}.mp4`));
 const scaled = (from, to) => execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", path.join(dir, `${from}.mp4`), "-vf", "scale=720:-2:flags=lanczos", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-c:a", "copy", path.join(outDir, "clips", `${to}.mp4`)]);
-copy("grok"); copy("pvideo"); copy("veo"); scaled("grokUp", "grok-upscaled-720"); scaled("grok", "grok-resized-720");
+copy("grok"); copy("pvideo"); copy("veo"); if (it.grok720?.file) copy("grok720"); if (it.veo2?.file) copy("veo2"); scaled("grokUp", "grok-upscaled-720"); scaled("grok", "grok-resized-720");
 const strip = (key) => dataUri(path.join(dir, "frames", `${key}-strip.jpg`));
 const heard = (row) => `${row.heard.text} ${row.heard.problem ? `(${row.heard.problem})` : "(the exact line)"}`;
 const size = (row) => `${row.video.width} × ${row.video.height}, ${row.video.fps} frames a second, ${row.video.seconds} s, sound: ${row.video.audio ?? "none"}`;
@@ -33,6 +33,9 @@ const SCORES = {
   pvideo: { tone: "warn", mouth: 3, look: 3, motion: 3, sharp: 4, text: "none", note: "Sharp and calm, and the fastest. The mouth moves less (fewer shapes). From about 1.5 seconds Vex's eyes turn into slanted angry eyes and a small brow bump appears on the head, which the picture does not have. Noob stays as he was." },
   veo: { tone: "warn", mouth: 4.5, look: 2.5, motion: 4, sharp: 4, text: "none", note: "The liveliest acting, and a wide, clear mouth, but with teeth and a tongue. It re-frames the shot after the first frame (the whole hat is suddenly in view), and in the last second Vex's eyes become angry and Noob's smile turns into a frown: both faces end up different from the picture." },
 };
+// The two clips made after the go on the lineup, with the per-model wording now in clips.js.
+SCORES.grok720 = { tone: "good", mouth: 4.5, look: 4, motion: 4.5, sharp: 4, text: "none", note: "Native 720p with today's Grok wording. The camera fix works: the push-in is slight and Noob stays in frame, at the same size, to the last frame. Edges are clearly crisper than the 480p clip resized (eye outlines, the hat's rim, the mouth). The pale band in the mouth is still there: the scene picture this starts from already has an open mouth with a tongue (it was drawn from the first Pro reference of Vex), and the model animates what it is given. That is fixed in the pictures (the library's flat-mouth references), not in the clip prompt. Noob blinks once." };
+SCORES.veo2 = { tone: "warn", mouth: 0, look: 0, motion: 0, sharp: 0, text: "", note: "" };
 const scoreMeta = (s) => [["Mouth decal moves with the words", dots(s.mouth)], ["Keeps the exact look", dots(s.look)], ["Motion", dots(s.motion)], ["Sharpness", dots(s.sharp)], ["Drawn subtitles or text", s.text]];
 const card = (key, video, title, extra = {}) => ({
   video: `clips/${video}.mp4`, title, tone: SCORES[key].tone,
@@ -43,6 +46,7 @@ const cards = [
   { ...card("grok", "grok", "1a · Grok Imagine Video 1.5 Lite, raw 480p"), stripUri: await strip("grok") },
   { ...card("grok", "grok-upscaled-720", "1b · The same clip through the ByteDance upscaler", { heardKey: "grokUp", size: `the upscaler returned ${it.grokUp.video.width} × ${it.grokUp.video.height} (4K, ${it.grokUp.video.mb} MB); shown here scaled down to 720 wide`, time: `${it.grok.seconds} s + ${it.grokUp.seconds} s for the upscale`, cost: `${usd(it.grok.cost)} + ${usd(it.grokUp.cost)} for the upscale = ${usd((it.grok.cost + it.grokUp.cost) / 6)} a second`, scores: { sharp: 4.5 }, note: "Clearly sharper than the raw clip. But the upscaler has no setting for the size it returns: it made a 4K file, charged about as much as the clip itself and took over two minutes." }), tone: "warn" },
   { ...card("grok", "grok-resized-720", "1c · The same clip, plainly resized to 720 wide (free)", { size: "the raw 400 × 736 clip resized to 720 × 1324 by our own final render: no model, no cost, no wait", scores: { sharp: 3 }, note: "What the final video would show if the raw 480p clip were used as it is. Softer than 1b, a little cleaner than 1a at the same size." }) },
+  ...(it.grok720?.file ? [{ ...card("grok720", "grok720", "1d · NEW: Grok at native 720p, with the fixed camera wording"), stripUri: await strip("grok720") }] : []),
   { ...card("pvideo", "pvideo", "2 · P-Video-2, 720p"), stripUri: await strip("pvideo") },
   { ...card("veo", "veo", "3 · Veo 3.1 Lite, 720p"), stripUri: await strip("veo") },
 ];
@@ -78,15 +82,20 @@ const html = await renderResultsPage({
   sections: [
     { heading: "The first frame every clip started from", cards: [{ image: r.picture, title: "Scene 2 of the first real story", meta: [["Line", r.line], ["Words", String(r.line.split(" ").length)]], prompt: r.prompt }] },
     { heading: "The clips", text: "Watch them with sound. The small sheet under a clip shows it every half second.", cards },
+    ...(it.grok720?.file ? [{
+      heading: "NEW · Grok: 480p resized (top) against native 720p (bottom)", layout: "list",
+      text: `The same moment of both clips at 720 wide. Native 720p cost ${usd(it.grok720.cost)} for 6 seconds (${usd(it.grok720.cost / 6)} a second) against ${usd(it.grok.cost)} (${usd(it.grok.cost / 6)} a second) at 480p: ${usd((it.grok720.cost - it.grok.cost) / 6)} more a second, or about ${usd(((it.grok720.cost - it.grok.cost) / 6) * 30)} more for a 30-second story. It took ${it.grok720.seconds} s to make against ${it.grok.seconds} s, and came back ${it.grok720.video.width} × ${it.grok720.video.height}.`,
+      cards: [{ image: path.join(dir, "frames", "sharp-compare.jpg"), title: "Top: 480p resized by us (free). Bottom: native 720p." }],
+    }] : []),
     { heading: "Side by side", html: table },
     { heading: "Every half second: Grok (top), P-Video-2 (middle), Veo 3.1 Lite (bottom)", layout: "list", cards: [{ image: path.join(dir, "frames", "compare-rows.jpg"), title: "Twelve moments of each clip" }] },
   ],
   decisions: [
-    "<b>The upscaler.</b> Through the API it has no setting for the output size: it returned a 4K file, cost $0.128 for 6 seconds (as much as the clip) and took 131 seconds. Three ways forward: Grok at 480p with our own free resize (clip 1c); Grok at 720p natively (list price $0.03 a second, not tested yet: one more clip, about $0.19); or tell me how you set 720p in the playground and I look for that setting.",
-    "<b>Grok's camera.</b> It pushes in much harder than the prompt asks. Fixable in the prompt for this model, as was done for Seedance.",
-    "<b>P-Video-2 as the V2 fallback.</b> It works and is fast, but it changed Vex's eyes. Fine as a second try; it would not be my first choice.",
-    "<b>Veo 3.1 Lite for V3.</b> The most alive, but it re-frames the shot and changes both faces at the end, and draws teeth and a tongue. Worth one prompt pass before it becomes a paid tier.",
-    "<b>Go or no go</b> on switching Blocky's V2, V2 fallback and V3 to this lineup. Nothing is switched until you say so.",
+    "<b>Switched on your go (2026-10-08).</b> V2 is Grok 1.5 Lite at 480p with our own free resize, then P-Video-2. V3 is Veo 3.1 Lite, then P-Video-2. V4 is Veo 3.1 Fast, then Veo 3.1 Lite, then P-Video-2. A clip with drawn subtitles goes down the same chain. No upscaler.",
+    "<b>480p or native 720p for V2?</b> Clip 1d and the comparison above. 720p is clearly crisper on edges; it costs about a cent more a second (about 30 cents more for a 30-second story). V2 stays at 480p until you choose.",
+    "<b>Grok's camera: fixed.</b> In clip 1d the listener stays in frame for the whole clip.",
+    "<b>The pale band in the mouth: not fixed by the clip prompt.</b> It comes from the scene picture, which already has an open mouth with a tongue. The library's new references (flat mouth) are where it gets fixed.",
+    "<b>Veo 3.1 Lite after its prompt pass: one clip still to make</b> (about $0.30). It did not fit under today's $3 cap and is the first thing after the cap resets.",
   ],
 });
 fs.writeFileSync(path.join(outDir, "index.html"), html);

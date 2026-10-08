@@ -7,6 +7,11 @@
 // Nobody is charged credits (the worker's no-charge test action; every call is logged with its real cost).
 // No live model changes: models.js is not touched. ONE attempt per clip: a clip that was sent is never
 // sent again (a request refused before it reached the model is not an attempt).
+// After the owner's go on the lineup (2026-10-08), two more clips, each asked for by name, from the same scene
+// and line but with TODAY's clip builder (the per-model wording in clips.js):
+//   grok720  Grok at its native 720p: is it clearly sharper than the 480p clip resized?
+//   veo2     Veo 3.1 Lite after the prompt pass: the first frame's framing kept, faces unchanged, a flat mouth
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/testClipModels.mjs <ffmpegPath> grok720,veo2
 //   node scripts/blocky/testClipModels.mjs <ffmpegPath>                       prints the plan, sends nothing
 //   BLOCKY_ALLOW_PAID=1 node scripts/blocky/testClipModels.mjs <ffmpegPath>   runs it (about $0.75; stage cap $1.50)
 import fs from "fs";
@@ -15,8 +20,9 @@ import { execFileSync, spawnSync } from "child_process";
 import { ROOT, admin, rawTest, writeJson } from "./lib.mjs";
 import { openBlockyBudget, paidCallsAllowed } from "./paidGuard.mjs";
 import { spokenProblem } from "../../supabase/functions/_shared/blocky/spoken.js";
+import { buildClipRequest } from "../../supabase/functions/_shared/blocky/clips.js";
 
-const [ffmpeg] = process.argv.slice(2);
+const [ffmpeg, extraKeys = ""] = process.argv.slice(2);
 if (!ffmpeg || !fs.existsSync(ffmpeg)) { console.error("usage: node scripts/blocky/testClipModels.mjs <ffmpegPath>"); process.exit(2); }
 const OUT = "data/blocky-tests/models";
 const DIR = path.join(ROOT, OUT);
@@ -42,7 +48,22 @@ const ITEMS = [
 const UPSCALE = { key: "grokUp", label: "Grok clip through the ByteDance video upscaler", expectUsd: 0.2 };
 out.line = LINE; out.picture = scene.image_url; out.prompt = prompt; out.story = STORY;
 
+// The two later clips: the same scene and line through today's builder.
+const { data: full } = await db.from("blocky_story_scenes").select("*").eq("story_id", STORY).eq("idx", 1).single();
+const { data: chars } = await db.from("blocky_characters").select("*");
+const today = (quality) => buildClipRequest({
+  story: { aspect: "9:16", quality }, library: new Map(chars.map((c) => [c.id, c])), durationSec: 6,
+  scene: { speakerId: full.speaker_id, presentIds: full.present_ids, action: full.action, emotion: full.emotion, shot: full.shot, placement: full.placement, line: LINE, imageUrl: full.image_url },
+}).request;
+const EXTRA = [
+  { key: "grok720", label: "Grok Imagine Video 1.5 Lite, native 720p, today's prompt", expectUsd: 0.25, task: { ...today("v2"), resolution: "720p" } },
+  { key: "veo2", label: "Veo 3.1 Lite, 720p, after the prompt pass", expectUsd: 0.35, task: today("v3") },
+].filter((x) => extraKeys.split(",").includes(x.key));
 if (!paidCallsAllowed()) {
+  for (const x of EXTRA) console.log(`${x.key}: ${x.label}
+${JSON.stringify({ ...x.task, positivePrompt: "(below)" })}
+${x.task.positivePrompt}
+`);
   console.log(`Nothing was sent. Plan: one 6 s clip each on ${ITEMS.map((i) => i.label).join("; ")}; then the Grok clip through the upscaler.`);
   console.log(`Line (${LINE.split(" ").length} words): ${LINE}\nPicture: ${scene.image_url}\nList prices: ${ITEMS.map((i) => `${i.key} $${i.listUsd.toFixed(2)}`).join(", ")}, upscale a few cents. About $0.75 in all.`);
   process.exit(0);
@@ -68,7 +89,7 @@ async function run(key, label, task, expectUsd) {
 }
 await set(true);
 try {
-  for (const it of ITEMS) await run(it.key, it.label, it.task, it.expectUsd);
+  for (const it of [...ITEMS, ...EXTRA]) await run(it.key, it.label, it.task, it.expectUsd);
   const g = out.items.grok;
   if (g?.state === "success") await run(UPSCALE.key, UPSCALE.label, { taskType: "upscale", model: "bytedance:50@1", inputs: { video: g.url }, outputType: "URL", outputFormat: "MP4" }, UPSCALE.expectUsd);
 } finally {

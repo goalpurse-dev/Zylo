@@ -26,8 +26,11 @@ const cameraFor = (model, shot) => (model.camera === "gentle" ? GENTLE_CAMERA : 
 
 // What a model got wrong on a real Blocky scene, said to that model only, right after who speaks.
 const MODEL_NOTES = {
-  // Grok: pale teeth-like bands across the mouth decal for the first second and a half.
-  grok: "From the very first frame the mouth is one flat dark printed shape: no teeth, no pale bands or stripes across it, no tongue.",
+  // Grok: pale teeth-like bands across the mouth decal. Naming them ("no teeth, no pale bands") did not
+  // remove them in the 720p test clip (2026-10-08): the scene picture it started from already had an open
+  // mouth with a tongue, and the model animates what it is given. So the note says only what the mouth IS;
+  // the bands themselves are fixed in the pictures (the library's flat-mouth references). Not yet re-tested.
+  grok: "The mouth stays one flat, solid dark shape printed on the face like a sticker, from the first frame to the last.",
   // Veo 3.1 Lite: a mouth with teeth and a tongue, and both faces changed by the end (angry eyes, a frown).
   "veo-lite": "The mouth is a flat printed decal that only changes its outline: no teeth, no tongue, no inside of a mouth. Every face keeps the first frame's eyes, eyebrows and expression until the last frame; nothing on a face moves but the speaker's mouth decal.",
 };

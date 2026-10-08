@@ -58,12 +58,15 @@ const ROWS = [
   ["rex", "Rex", "dark green", "a yellow torso with three green stripe shapes", "brown", "a green dinosaur tail with small back spikes", "wide", "wide", "loud, cracking, rubbery", "Clown", "Presses every button, especially the red one", ["clown", "chaos", "friend"]],
 ];
 
-export const ROSTER = ROWS.map(([id, name, head, torso, legs, accessory, eyes, mouth, voice, tag, role, tags]) => {
+/** One row as an avatar (also used for the proposed rows in rosterProposal.mjs). */
+export const toAvatar = ([id, name, head, torso, legs, accessory, eyes, mouth, voice, tag, role, tags]) => {
+  if (!EYES[eyes] || !MOUTHS[mouth]) throw new Error(`${id}: unknown eyes or mouth`);
   const face = `${EYES[eyes]} and ${MOUTHS[mouth]}`;
   // The locked look, in the order the scope lists it: colour, face decal, shirt with a simple shape, legs, the one accessory.
   const look = `a ${head} cube head and ${head} block arms, ${torso}, ${legs} block legs${accessory ? `, and ${accessory}` : ""}`;
   return { id, name, head, torso, legs, accessory, eyes, mouth, face, look, voice, tag, role, tags };
-});
+};
+export const ROSTER = ROWS.map(toAvatar);
 
 /**
  * The reference picture of one avatar: full body on plain white, like the Fruit
