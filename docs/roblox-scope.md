@@ -394,6 +394,42 @@ Decisions of 2026-10-08 (after the first real story):
     first scenes; last lines explain the twist; one story blamed someone outside the cast; the
     same speaker has three lines in a row; a premise about a number on screen lost its clarity
     once the number was taken out.
+52. THE TWIST PLAN IS ITS OWN STEP, before any dialogue (`_shared/blocky/twists.js`). It locks:
+    the premise, a twist pattern from the library, the CLUE the viewer sees or hears in scene 1
+    or 2, the PAYOFF (the on-screen action in the reveal scene that uses the clue), who wins and
+    the final line (8 words or fewer). The writer delivers the plan and cannot change it; the
+    editor checks the script against it (the clue really is early, the payoff really happens).
+53. THE PATTERN LIBRARY: fourteen twist patterns, each with how to plant its clue in a blocky
+    game world. The plan step drafts three from different patterns and keeps one. The pattern is
+    stored on the story (`planner.patternId`) and the same user's next story takes another one.
+    The payoff must run on a mechanic every player already knows (owner power, admin power, a
+    pet obeys its owner, a key opens its door, a hazard resets, a trade is final, the holder has
+    the item) or on one the viewer is SHOWN working in scene 1 or 2; no object "decides".
+54. A premise that depends on something to read (a countdown number, a leaderboard, a rule
+    list) is turned into something visible at the plan step (`seenAs`): a ring of light that
+    changes colour, a podium with a gold marker. A rule or a name is simply said.
+55. ALSO IN THE WRITER'S RULES: no speaker has more than two lines in a row; every cause is
+    someone in the cast; the last line never explains the twist; an action is at most 16 words.
+    The editor's "role powers" check fails only when a power really works for someone who
+    can't have it. Rewriting stops as soon as a rewrite is no better than what there was.
+56. FORMAT AND COST. Answers must match the schema exactly (strict tool use), so no more
+    malformed drafts. A format repair and an editor's rewrite come back as a PATCH (only the
+    fields that change: about $0.01 instead of $0.022). Style notes never cost a call. ONLY A
+    SCRIPT OR PLAN THAT CAN'T BE USED FAILS A STORY (the wrong number of scenes, someone outside
+    the cast, a clip longer than quoted, a real name); a lesser fault is sent back twice at most
+    and then left to the editor. The schemas carry no cast ids, so the cached rules are shared
+    by every story. Measured on five scripts at 30 seconds: $0.054 to $0.137, average $0.086
+    (target: under $0.08; three of five were under).
+57. THE TEST LEDGER CAP is $10 (owner, 2026-10-08; it was $5). The daily cap stays $3.
+58. ROUND THREE DID NOT PASS (2026-10-08). My scores: 5, 7, 5, 6.5, 7: average 6.1, two under
+    6. Planted clues and paid-off payoffs are there now; what fails: the plan step still
+    reaches for a thing that enforces a rule by itself, one flip had no stakes, two lines went
+    to the wrong speaker or pronoun after a repair, and four of five last lines start "Guess".
+    Section 3 waits for the owner.
+59. AI Fruit Story's caption fix (decision 43, with the next-model step of decision 45) is LIVE
+    since 2026-10-08 09:11 UTC, deployed from this branch on the owner's go with no Fruit job
+    in flight and Fruit's smoke check passing before and after. It is not on main: a deploy of
+    Fruit's functions from main would take it out again.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
