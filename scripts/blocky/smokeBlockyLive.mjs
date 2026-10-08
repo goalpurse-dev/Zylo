@@ -36,7 +36,11 @@ const seriesCalls = await Promise.all([
 ]);
 ok("series is switched off: listing, opening, planning a series and starting an episode are all refused", seriesCalls.every((r) => r.code === "STAGE_NOT_READY"), seriesCalls.map((r) => r.code).join(", "));
 const ideas = await api(owner.accessToken, "getIdeas", { seed: 0 });
-ok("ideas answer that they aren't switched on yet", ideas.code === "STAGE_NOT_READY", `${ideas.code}`);
+ok("paid calls off: a batch of ideas is refused", ideas.code === "PAID_CALLS_DISABLED", `${ideas.code}`);
+// Three versions: nothing is planned with paid calls off, and nobody opens or picks from versions that aren't theirs.
+const versions = await api(owner.accessToken, "startDraft", { input: { source: "prompt", castIds: library.data?.slice(0, 2).map((c) => c.id), prompt: "Noob gets banned on an obby server for no reason, and the admin is not who they seem.", quality: "v2", lengthSec: 30, aspect: "9:16" } });
+const noDraft = await Promise.all(["getDraft", "writeVersion", "pickVersion"].map((action) => api(owner.accessToken, action, { draftId: crypto.randomUUID(), n: 1 })));
+ok("paid calls off: three versions are refused, and versions that don't exist can't be opened, written or picked", versions.code === "PAID_CALLS_DISABLED" && noDraft.every((r) => r.code === "NOT_FOUND"), `${versions.code}; ${noDraft.map((r) => r.code).join(", ")}`);
 
 const story = await api(owner.accessToken, "createStory", { input: { source: "prompt", castIds: library.data?.slice(0, 2).map((c) => c.id), prompt: "Noob gets banned on an obby server for no reason, and the admin is not who they seem.", quality: "v2", lengthSec: 15, aspect: "9:16" } });
 ok("paid calls off: writing a story is refused", story.code === "PAID_CALLS_DISABLED" && story.status === 503, `${story.code}: ${story.message}`);

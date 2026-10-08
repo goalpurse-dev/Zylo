@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../api/blockyStoriesApi";
 import { DEFAULT_LENGTH_SEC, IDEAS_ON, errorText } from "../constants";
-import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, sceneCountForLength } from "../pricing/blockyEstimates";
+import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, picturesStepPrice, sceneCountForLength } from "../pricing/blockyEstimates";
 import useBlockyPrices from "../pricing/useBlockyPrices";
 import { storyStepBlocker, wizardBlocker } from "../rules";
 import { parseScript } from "../script/parseScript";
@@ -154,6 +154,7 @@ export default function useBlockyFlow(account, characters = []) {
     tierId: single.tierId,
     prices: quotes.prices,
     sceneCount: scriptScenes?.count,
+    scripted: single.method !== "script",   // our writing is paid with the pictures; the user's own script isn't
   });
 
   // ── Three versions (an idea or a description; the user's own script is staged as it is) ──
@@ -258,9 +259,9 @@ export default function useBlockyFlow(account, characters = []) {
   // ── Pipeline (single video or episode) ─────────────────────────────────
   const makePictures = async () => {
     if (!story || !guard()) return;
-    const price = picturePrice(quotes.prices);
+    const price = picturesStepPrice(story, quotes.prices);
     const next = await run("pictures", () => api.generateScenePictures(story.id), "We couldn't start the scene pictures. Nothing was charged. Try again.");
-    if (next) { account.spend((price ?? 0) * story.scenes.length); live.replace(next); }
+    if (next) { account.spend(price ?? 0); live.replace(next); }
   };
 
   const animate = async () => {

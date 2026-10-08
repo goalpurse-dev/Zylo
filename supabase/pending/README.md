@@ -5,7 +5,12 @@ are kept out of `supabase/migrations/` on purpose, so `supabase db push` can
 never apply one by accident. When the owner approves a file, it is applied,
 checked, and only then moved to `supabase/migrations/` (same name).
 
-Nothing is waiting right now.
+Waiting:
+- `20261028100000_blocky_script_share.sql` (Blocky Stories: the script's share of the picture step, 15
+  credits. One new price row with a Blocky key in the shared `tool_prices` table, two columns on
+  `blocky_charges`, and the two Blocky functions that charge and refund). Written 2026-10-08. Until it is
+  applied the page shows no share and none is charged. Undo:
+  `supabase/rollbacks/20261028100000_blocky_script_share_rollback.sql`.
 
 Applied and moved out:
 - `20261027100000_blocky_story_options.sql` (Blocky Stories: the three versions a user chooses from, and

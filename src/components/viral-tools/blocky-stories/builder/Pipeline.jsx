@@ -1,7 +1,7 @@
 import { Check, Download } from "lucide-react";
 import { PrimaryButton, cx } from "../../../ui/zyvo";
 import { formatLength } from "../constants";
-import { TIERS, animateAllPrice, picturePrice, storyTotals } from "../pricing/blockyEstimates";
+import { TIERS, animateAllPrice, picturesStepPrice, scriptShare, storyTotals } from "../pricing/blockyEstimates";
 import { quoteFor } from "../pricing/useBlockyPrices";
 import { AvatarStack } from "../shared/Avatar";
 import { FootNote } from "./BuilderPanel";
@@ -98,14 +98,15 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
   const spent = Number.isFinite(story.spentCredits) ? story.spentCredits : null;
 
   if (story.status === "draft") {
-    const price = picturePrice(quotes.prices);
+    // One charge: every scene picture and, for a story we wrote, the script.
+    const share = scriptShare(quotes.prices, story.source !== "script");
     return (
       <>
-        <PrimaryButton price={quoteFor(quotes, price == null ? null : price * n)} priceOf={{ value: totals.total, approx: false }} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
+        <PrimaryButton price={quoteFor(quotes, picturesStepPrice(story, quotes.prices))} priceOf={{ value: totals.total, approx: false }} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
           Make scene pictures
         </PrimaryButton>
         <FootNote>
-          {totals.total != null ? `Full video: ${totals.total} credits. ${totals.pictures} now for the pictures, ${totals.video} when you animate, after you approve them.` : "You only pay for video after you approve the pictures."}
+          {totals.total != null ? `Full video: ${totals.total} credits. ${totals.pictures} now for the pictures${share ? " and the script" : ""}, ${totals.video} when you animate, after you approve them.` : "You only pay for video after you approve the pictures."}
         </FootNote>
       </>
     );

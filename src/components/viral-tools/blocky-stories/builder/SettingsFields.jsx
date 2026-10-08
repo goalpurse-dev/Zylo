@@ -14,7 +14,7 @@ const TIER_LIST = TIER_IDS.map((id) => TIERS[id]);
  */
 export default function SettingsFields({ value, onChange, allowedTiers, onLockedTier, quotes, balance, showAspect = true, scriptScenes = null, firstVideo = false }) {
   const est = scriptScenes
-    ? estimateStory({ lengthSec: scriptScenes.lengthSec, tierId: value.tierId, prices: quotes.prices, sceneCount: scriptScenes.count })
+    ? estimateStory({ lengthSec: scriptScenes.lengthSec, tierId: value.tierId, prices: quotes.prices, sceneCount: scriptScenes.count, scripted: false })
     : estimateStory({ lengthSec: value.lengthSec, tierId: value.tierId, prices: quotes.prices });
   const lengthSec = scriptScenes ? scriptScenes.lengthSec : value.lengthSec;
   const short = est.total != null && est.total > balance;
@@ -117,7 +117,7 @@ function CostCard({ est, lengthSec, tierId, quotes, balance, short, exact = fals
         </div>
         {status === "ready" && (
           <p className="mt-1 text-[11px] font-semibold leading-relaxed text-white/55">
-            {est.pictures} now for the {est.sceneCount} scene pictures, {about}{est.video} when you animate {formatLength(lengthSec)} of {TIERS[tierId].label} video.
+            {est.pictures} now for the {est.sceneCount} scene pictures{est.scriptShare ? " and the script" : ""}, {about}{est.video} when you animate {formatLength(lengthSec)} of {TIERS[tierId].label} video.
           </p>
         )}
         <p className="mt-2 text-[10px] leading-relaxed text-white/35">

@@ -4,7 +4,9 @@ import { clipDurationSec } from "../../../../../supabase/functions/_shared/block
 // ║                                                                        ║
 // ║ Every number comes from the server's tool_prices rows via             ║
 // ║ useToolPriceQuotes: image:blocky-story (flat per picture / edit /      ║
-// ║ regenerate) and video:blocky-story-v2/v3/v4 (credits per second).      ║
+// ║ regenerate), video:blocky-story-v2/v3/v4 (credits per second) and      ║
+// ║ script:blocky-story (the script's share, charged once with the scene   ║
+// ║ pictures of a story we wrote; see useBlockyPrices).                    ║
 // ║ We quote one allowed length per tier and divide, which gives the      ║
 // ║ row's exact per-second rate; each clip is then CEIL(rate × sec), the  ║
 // ║ same rule compute_tool_price charges. Only the whole-story video      ║
@@ -21,6 +23,7 @@ export const TIERS = {
 export const TIER_IDS = ["v2", "v3", "v4"];
 
 export const PICTURE_TOOL_KEY = "image:blocky-story";
+export const SCRIPT_TOOL_KEY = "script:blocky-story";
 const IMAGE_DIMS = { "9:16": [768, 1376], "16:9": [1376, 768] };
 
 /** Quote items (useToolPriceQuotes) for one aspect: the scene picture + each tier's clip. */
@@ -44,6 +47,23 @@ export function sceneCountForLength(lengthSec) {
 /** Exact server price of one scene picture (also edit / regenerate), or null. */
 export function picturePrice(prices) {
   return prices?.image ?? null;
+}
+
+/**
+ * The script's share of the picture step: writing is free, and a story we wrote pays for its script once, in
+ * the same charge as its scene pictures. 0 for the user's own script. null until the price has loaded.
+ */
+export function scriptShare(prices, scripted = true) {
+  if (!scripted) return 0;
+  return prices?.script ?? null;
+}
+
+/** What "Make scene pictures" charges for a story that exists: every picture, plus the script's share. */
+export function picturesStepPrice(story, prices) {
+  const picture = picturePrice(prices);
+  const share = scriptShare(prices, story?.source !== "script");
+  if (picture == null || share == null || !story?.scenes?.length) return null;
+  return picture * story.scenes.length + share;
 }
 
 /** Credits per second for a tier (exact: the quoted clip ÷ its length). */
@@ -75,18 +95,20 @@ export function animateAllPrice(story, prices) {
 
 /**
  * Settings-step estimate before anything is written.
- *   pictures: exact (scene count × picture price)
+ *   pictures: exact (scene count × picture price, plus the script's share unless it is the user's own script)
  *   video:    about lengthSec of the tier's video (estimate)
  * Returns null fields until prices load.
  */
-export function estimateStory({ lengthSec, tierId, prices, sceneCount }) {
+export function estimateStory({ lengthSec, tierId, prices, sceneCount, scripted = true }) {
   const scenes = sceneCount ?? sceneCountForLength(lengthSec);
   const picture = picturePrice(prices);
   const rate = perSecondRate(tierId, prices);
-  const pictures = picture == null ? null : scenes * picture;
+  const share = scriptShare(prices, scripted);
+  const pictures = picture == null || share == null ? null : scenes * picture + share;
   const video = rate == null ? null : Math.ceil(rate * lengthSec - 1e-9);
   return {
     sceneCount: scenes,
+    scriptShare: share,
     pictures,
     video,
     total: pictures == null || video == null ? null : pictures + video,
@@ -113,12 +135,12 @@ export function clipSecondsFor(line, tierId) {
 }
 
 /**
- * The whole video for a story that exists: pictures (one per scene) + every
- * clip at its planned length. Exact unless the user edits or regenerates.
+ * The whole video for a story that exists: pictures (one per scene, with the
+ * script's share) + every clip at its planned length. Exact unless the user
+ * edits or regenerates.
  */
 export function storyTotals(story, prices) {
-  const picture = picturePrice(prices);
   const video = animateAllPrice(story, prices);
-  const pictures = picture == null || !story?.scenes?.length ? null : picture * story.scenes.length;
+  const pictures = picturesStepPrice(story, prices);
   return { pictures, video, total: pictures == null || video == null ? null : pictures + video };
 }

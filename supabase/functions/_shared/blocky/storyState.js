@@ -103,6 +103,8 @@ export function toStory(row, sceneRows, spentCredits = null) {
   const story = {
     id: row.id,
     title: row.title,
+    // "script" = the user's own script: its picture step carries no script share (blockyEstimates.js).
+    source: row.source ?? null,
     castIds: row.cast_ids,
     castRoles: row.cast_roles ?? {},
     spentCredits,
