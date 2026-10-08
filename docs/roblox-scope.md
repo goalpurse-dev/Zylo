@@ -453,6 +453,27 @@ Decisions of 2026-10-08 (after the first real story):
     one of the user's last five stories (`planner.lastLine`).
 64. ROUND FOUR (2026-10-08), my scores: 5.5, 7.5, 6.5, 8, 7.5: average 7.0, one under 6. The
     pass mark (7.5, none under 6) is not met; it is the best round so far. Section 3 waits.
+    The owner scored it 6.7 and closed the scoring rounds: "the last gap" is closed by the user
+    choosing between three versions and by vetted plans.
+65. THE JUDGE'S SEVENTH POINT: motive (would each character really do this?). A plan under 3
+    on motive loses to any plan that is believable, like one with a thing that decides by
+    itself. Round four's badge-for-an-egg plan, judged again, got 23 of 35 with motive 2 and
+    lost. A plan the model writes may not use the example plans' own objects.
+66. THE PLAN STEP RUNS AT LOW EFFORT (it was medium). Same five ideas, same judge: low-effort
+    plans scored 31.2 of 35 on average, medium ones 30.0; the plan step costs about $0.03
+    instead of $0.09 and takes about 21 seconds instead of 46. A script now costs about
+    $0.11 and takes a little over a minute.
+67. THE SCRIPT'S COST GOES INTO THE PICTURE STEP (owner, 2026-10-08): scripts stay free; the
+    one charge for "Make scene pictures" covers the pictures and the script work, and the
+    price shown before is the price charged. A picture step that fails completely is refunded
+    whole. Regenerating one picture later stays at the per-picture price. Proposed amount:
+    15 credits on top of the pictures (waiting for the owner's yes before any price changes).
+68. SECTION 3 AS ONE FLOW: five idea cards → three versions of the story (title, hook, the
+    lines), shown as each is ready → the user picks one → only that one is polished → pictures.
+    Vetted plans: hand-written by the owner in a plain text format, checked by the same code
+    as a model-written plan (`vettedPlans.js`, `scripts/blocky/importPlans.mjs`); an idea with
+    a vetted plan shows it first, with two generated alternates. Free script generations are
+    limited per user per day (proposed: 5). The tables for it wait in `supabase/pending/`.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

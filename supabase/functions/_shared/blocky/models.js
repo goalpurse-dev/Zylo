@@ -21,8 +21,10 @@ export const BLOCKY_MODELS = Object.freeze({
   // one thing a story lives on, and three rounds on the writer's model averaged 5.6 to 6 of 10, so this one
   // step runs on the strongest model (owner, 2026-10-08). It is a few hundred words out, so the dearer
   // model adds about 3 cents a script. The judge that picks among the three is the review model above.
-  // effort: how hard it thinks before it answers (its thinking is billed as output).
-  twistPlan: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
+  // effort: how hard it thinks before it answers (its thinking is billed as output). LOW since 2026-10-08:
+  // on the same five ideas the judge scored low-effort plans 31.2 of 35 on average and medium ones 30.0,
+  // for about $0.03 instead of $0.09 and 21 seconds instead of 46 (scripts/blocky/comparePlans.mjs).
+  twistPlan: { provider: "anthropic", model: "claude-opus-5-5", effort: "low" },
   // Small tasks: edit-instruction cleanup, content-policy rewrite.
   small: { provider: "openai", model: "gpt-5-mini" },
 

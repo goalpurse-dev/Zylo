@@ -58,9 +58,9 @@ const goodPlan = (over = {}) => ({
   patternId: "quiet_power",
   twist: "Noob owns the game and has been letting the fake commands work.",
   mechanic: "owner_power",
-  clue: "While saying sorry, Noob turns a small gold key over in one hand.",
+  clue: "While saying sorry, Noob turns a small silver whistle over in one hand.",
   clueScene: 2,
-  payoff: "Noob holds the gold key up and Vex, floating helplessly, drops.",
+  payoff: "Noob holds the silver whistle up and Vex, floating helplessly, drops.",
   revealScene: 3,
   consequence: "Vex is kicked from the place he pretended to run.",
   winnerId: "noob",
@@ -80,9 +80,9 @@ const goodScript = (over = {}) => ({
   locations: [{ id: "loc1", description: "A spawn plaza built from smooth plastic blocks with a round fountain and plain market stalls", timeOfDay: "midday", lighting: "bright even daylight", seriesLocationId: "" }],
   scenes: [
     scene("vex", "Break one more rule and you're banned. Forever."),
-    scene("noob", "Okay. Sorry. I'll stay here.", "turns a small gold key over in one hand"),
-    scene("vex", "Wait. Why am I floating? Put me down!", "floats, both arms flailing, as the gold key is held up"),
-    scene("noob", "Cute commands. Want to see real ones?", "spins the gold key on one block hand"),
+    scene("noob", "Okay. Sorry. I'll stay here.", "turns a small silver whistle over in one hand"),
+    scene("vex", "Wait. Why am I floating? Put me down!", "floats, both arms flailing, as the silver whistle is held up"),
+    scene("noob", "Cute commands. Want to see real ones?", "spins the silver whistle on one block hand"),
   ],
   ...over,
 });
@@ -187,7 +187,7 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   has({ payoff: "Noob walks Vex over to the fountain and holds the key up." }, /clue and payoff are seen in a chest-up picture: no "walks"/);
   // Two good plans were refused for good by these checks: the NOUN "step", and a payoff that began "At zero, Vex".
   assert.deepEqual(planErrors({ clue: "Vex stands on the podium's gold top step while giving the order.", payoff: "At zero, Vex leans in to gloat and the ring of light clamps onto Vex's own head." }), []);
-  has({ payoff: "Vex steps back as Noob holds the gold key up high." }, /no "steps back"/);
+  has({ payoff: "Vex steps back as Noob holds the silver whistle up high." }, /no "steps back"/);
   // Only a plan the writer can't work from is fatal; how a sentence starts never is.
   const fatalOf = (over) => validateTwistPlan(goodPlan(over), planCtx).fatal;
   for (const lesser of [{ payoff: "The signpost beside Vex flashes red and locks a collar around his neck." }, { payoff: "Vex finally admits he was never an admin." }, { stakes: "" }, { finalLine: "Those were cute commands, do you want to see real ones?" }, { mechanic: "shown_in_scene_1" }]) assert.deepEqual(fatalOf(lesser), [], JSON.stringify(lesser));
@@ -196,7 +196,7 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   has({ payoff: "Noob points at the leaderboard, which shows Noob in first place." }, /payoff: it depends on "leaderboard", which a viewer would have to read; show an object, a light, a colour or a place instead/);
   has({ payoff: "Vex looks up as the number over his head reaches zero." }, /payoff: it depends on "number"/);
   has({ clue: "Noob is holding a sign with the owner's name." }, /clue: it says "sign"; nothing is written or read on screen/);
-  assert.deepEqual(planErrors({ seenAs: "the countdown is a ring of light over Vex's head that turns from green to red", payoff: "Noob holds the gold key up, the ring of light over Vex's head turns red and Vex drops." }), []);
+  assert.deepEqual(planErrors({ seenAs: "the countdown is a ring of light over Vex's head that turns from green to red", payoff: "Noob holds the silver whistle up, the ring of light over Vex's head turns red and Vex drops." }), []);
   // The final line: the winner's, eight words or fewer.
   assert.equal(FINAL_LINE_MAX_WORDS, 8);
   has({ finalLine: "Those were cute commands, do you want to see real ones?" }, /finalLine: the winner's last line, 8 words or fewer \(got 11\)/);
@@ -222,7 +222,7 @@ test("the writer is handed the locked plan, and a checklist of what code will re
   assert.match(block, /roles: vex is a player faking admin powers; noob is the quiet owner of the game/);
   assert.match(block, /the twist \(The quiet one has the real power\): Noob owns the game/);
   assert.match(block, /the twist \(The quiet one has the real power\): Noob owns the game and has been letting the fake commands work\.\nit works because: the owner's command, key or word works on anyone and anything, and outranks every admin\n/);
-  assert.match(block, /THE CLUE, planted in scene 2: While saying sorry, Noob turns a small gold key over in one hand\.\nTHE PAYOFF, in scene 3: Noob holds the gold key up and Vex, floating helplessly, drops\./);
+  assert.match(block, /THE CLUE, planted in scene 2: While saying sorry, Noob turns a small silver whistle over in one hand\.\nTHE PAYOFF, in scene 3: Noob holds the silver whistle up and Vex, floating helplessly, drops\./);
   assert.match(block, /the winner: noob \(Noob\), who speaks the last line\nthe final line: Cute commands\. Want to see real ones\?$/);
   assert.doesNotMatch(block, /on screen instead of anything to read/, "only when the idea had something to read");
   assert.match(twistPlanBlock({ ...twistPlan, seenAs: "a ring of light that turns red" }, cast), /on screen instead of anything to read: a ring of light that turns red/);
@@ -297,12 +297,12 @@ test("the script in code: it carries the plan, the winner has the short last lin
   // An action has room for a payoff, and no more.
   assert.equal(ACTION_MAX_WORDS, 18);
   const wordy = goodScript();
-  wordy.scenes[2] = scene("vex", "Wait. Why am I floating? Put me down!", "floats up with both block arms flailing wildly while the small gold key is slowly held up high beside the round fountain");
+  wordy.scenes[2] = scene("vex", "Wait. Why am I floating? Put me down!", "floats up with both block arms flailing wildly while the small silver whistle is slowly held up high beside the round fountain");
   assert.ok(check(wordy).hard.some((e) => /scene 3: action must be 1 to 16 words \(got 22\)/.test(e)));
   assert.deepEqual(check(wordy).fatal, []);
   // "tilts the head away" is not a walk; "steps back" is.
   const head = goodScript();
-  head.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "tilts the head away, eyes on the gold key");
+  head.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "tilts the head away, eyes on the silver whistle");
   assert.deepEqual(check(head).hard, []);
   head.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "steps back from the fountain");
   assert.ok(check(head).hard.some((e) => /is a full-body move \("steps back"\)/.test(e)));
@@ -310,7 +310,7 @@ test("the script in code: it carries the plan, the winner has the short last lin
 
 test("a style note never fails a story and never costs a call of its own", () => {
   const flat = goodScript();
-  flat.scenes = [scene("vex", "Break one more rule and you're banned."), scene("noob", "Okay, sorry, I'll stay right here.", "turns a small gold key over in one hand"), scene("vex", "Wait, why am I floating right now?"), scene("noob", "Cute commands. Want to see real ones?")];
+  flat.scenes = [scene("vex", "Break one more rule and you're banned."), scene("noob", "Okay, sorry, I'll stay right here.", "turns a small silver whistle over in one hand"), scene("vex", "Wait, why am I floating right now?"), scene("noob", "Cute commands. Want to see real ones?")];
   const v = check(flat);
   assert.ok(v.errors.some((e) => /the lines are all about the same length \(7, 6, 7, 7 words\)/.test(e)), "the writer is told when there is a rewrite anyway");
   assert.deepEqual(v.hard, [], "but it is not what makes a story unusable");
@@ -350,8 +350,8 @@ test("the editor checks the script against the plan, and reads as a viewer", () 
   assert.match(seen, /CHARACTERS \(as the viewer sees them\):\n- Vex, blocky game avatar; looks like this in every scene:/);
   assert.doesNotMatch(seen, /faking admin powers|the quiet owner|Noob owns the game/, "no role and no twist in what the viewer sees");
   // What the speaker is seen doing is part of the picture: the clue and the payoff are checked there.
-  assert.match(seen, /2\. \[in the picture: Vex, Noob; place: [^\]]*; Noob turns a small gold key over in one hand\] Noob: Okay\. Sorry\. I'll stay here\./);
-  assert.match(notes, /twist: Noob owns the game and has been letting the fake commands work\.\nTHE CLUE, planned for scene 2: While saying sorry, Noob turns a small gold key over in one hand\.\nTHE PAYOFF, planned for scene 3: Noob holds the gold key up and Vex, floating helplessly, drops\.\nwhat is meant to have changed by the end: Vex is kicked from the place he pretended to run\.\nthe winner, who speaks the last line: Noob\nroles: Vex is a player faking admin powers; Noob is the quiet owner of the game/);
+  assert.match(seen, /2\. \[in the picture: Vex, Noob; place: [^\]]*; Noob turns a small silver whistle over in one hand\] Noob: Okay\. Sorry\. I'll stay here\./);
+  assert.match(notes, /twist: Noob owns the game and has been letting the fake commands work\.\nTHE CLUE, planned for scene 2: While saying sorry, Noob turns a small silver whistle over in one hand\.\nTHE PAYOFF, planned for scene 3: Noob holds the silver whistle up and Vex, floating helplessly, drops\.\nwhat is meant to have changed by the end: Vex is kicked from the place he pretended to run\.\nthe winner, who speaks the last line: Noob\nroles: Vex is a player faking admin powers; Noob is the quiet owner of the game/);
   assert.match(system, /Be STRICT on clue, payoff, ending and voice[^]*The writer's notes hold the PLAN the script must deliver: check the script against it\./);
   // Round three: an admin said "That's not even a real rule" about his own rule, and someone asked "Why is it on
   // your head?" about the ring on their own head. The editor missed both.
@@ -432,7 +432,7 @@ test("the order of work: three plans, the judge, then the script that delivers t
   assert.equal(planCall.name, "twist_plans");
   assert.equal(planCall.strict, true);
   assert.deepEqual(planCall.use, BLOCKY_MODELS.twistPlan);
-  assert.deepEqual(BLOCKY_MODELS.twistPlan, { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" });
+  assert.deepEqual(BLOCKY_MODELS.twistPlan, { provider: "anthropic", model: "claude-opus-5-5", effort: "low" });
   assert.equal(planCall.maxOutputTokens, 10000, "the plan model thinks before it answers, and that counts against the limit");
   assert.notDeepEqual(BLOCKY_MODELS.twistPlan, BLOCKY_MODELS.planner, "only the plan step runs on the stronger model");
   assert.deepEqual(planCall.schema, twistPlanSchema());
@@ -444,7 +444,7 @@ test("the order of work: three plans, the judge, then the script that delivers t
   assert.equal(judgeCall.name, "plan_judge");
   assert.deepEqual(judgeCall.schema, judgeSchema());
   assert.match(judgeCall.user, /PLAN 1 \(The quiet one has the real power\)[^]*PLAN 2 \(The trick backfires on the trickster\)[^]*PLAN 3 \(It was a test, and the wrong one passed\)/);
-  assert.match(judgeCall.user, /clue, scene 2: While saying sorry, Noob turns a small gold key over in one hand\.\npayoff, scene 3: Noob holds the gold key up and Vex, floating helplessly, drops\./);
+  assert.match(judgeCall.user, /clue, scene 2: While saying sorry, Noob turns a small silver whistle over in one hand\.\npayoff, scene 3: Noob holds the silver whistle up and Vex, floating helplessly, drops\./);
   assert.match(judgeCall.user, /at stake: Noob's place on the server/);
   // What the judge made of the three stays with the story.
   assert.deepEqual([r.plan.judged.chosen, r.plan.judged.best, r.plan.judged.plans.length], [1, 1, 3]);
@@ -582,7 +582,7 @@ test("format: a fault in one scene is fixed by a PATCH (a few words back), a scr
   // One scene's action is a walk: a patch.
   const walk = goodScript();
   walk.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "steps back from the fountain");
-  const f = fakes({ twist_plan: [goodPlan()], planner: [walk], planner_patch: [{ title: "", scenes: [{ scene: 2, speakerId: "", line: "", presentIds: [], action: "turns a small gold key over in one hand", placement: "", emotion: "" }] }] });
+  const f = fakes({ twist_plan: [goodPlan()], planner: [walk], planner_patch: [{ title: "", scenes: [{ scene: 2, speakerId: "", line: "", presentIds: [], action: "turns a small silver whistle over in one hand", placement: "", emotion: "" }] }] });
   const r = await run(f);
   assert.deepEqual(f.log, ["twist_plan", "planner", "planner_patch", "script_review"]);
   const patchCall = f.asked[2];
@@ -591,7 +591,7 @@ test("format: a fault in one scene is fixed by a PATCH (a few words back), a scr
   assert.equal(patchCall.system, f.asked[1].system);
   assert.match(patchCall.user, /YOUR SCRIPT SO FAR:\n\{[^]*CODE CHECKED IT AND REFUSED IT FOR THESE REASONS:\n- scene 2: the action "steps back from the fountain" is a full-body move/);
   assert.match(patchCall.user, /Answer with story_patch: ONLY what must change\./);
-  assert.equal(r.plan.scenes[1].action, "turns a small gold key over in one hand");
+  assert.equal(r.plan.scenes[1].action, "turns a small silver whistle over in one hand");
   assert.equal(r.plan.scenes[1].line, "Okay. Sorry. I'll stay here.", "the rest of the scene is as it was");
   // A script with the wrong number of scenes can't be patched: it is written again, once.
   const short = goodScript({ scenes: goodScript().scenes.slice(0, 3) });
@@ -613,7 +613,7 @@ test("format: a fault in one scene is fixed by a PATCH (a few words back), a scr
   assert.deepEqual(broken.log, ["twist_plan", "planner", "planner_repair", "planner_repair_2"]);
   // Lines all about the same length: no repair call at all (2 of 5 round-two stories were lost to this one note).
   const flat = goodScript();
-  flat.scenes = [scene("vex", "Break one more rule and you're banned."), scene("noob", "Okay, sorry, I'll stay right here.", "turns a small gold key over in one hand"), scene("vex", "Wait, why am I floating right now?"), scene("noob", "Cute commands. Want to see real ones?")];
+  flat.scenes = [scene("vex", "Break one more rule and you're banned."), scene("noob", "Okay, sorry, I'll stay right here.", "turns a small silver whistle over in one hand"), scene("vex", "Wait, why am I floating right now?"), scene("noob", "Cute commands. Want to see real ones?")];
   const h = fakes({ twist_plan: [goodPlan()], planner: [flat] });
   await run(h);
   assert.deepEqual(h.log, ["twist_plan", "planner", "script_review"]);

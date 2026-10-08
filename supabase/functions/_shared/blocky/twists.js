@@ -130,6 +130,8 @@ const WHOLE_BODY = /\b(?:walks?|walking|runs?|running|steps? (?:in|back|closer|o
  * away for how a sentence starts.
  */
 const PLAN_FATAL = /^premise:|^emotion:|^assumed:|^patternId: one of|^twist:|^mechanic: one of|^clue: say exactly|^clueScene:|^payoff: the on-screen action|^revealScene:|^consequence:|^winnerId:|^title must be|don't name/;
+/** What the three example plans in the rules are built on. A plan the model writes never uses them. */
+const EXAMPLE_OBJECTS = /\b(?:gold(?:en)? key|pale ring|painted rock|gem bag)\b/i;
 /** A reveal that is "forced" by someone owning up is not forced. */
 const CONFESSION = /\b(?:admits?|admitting|confess(?:es|ing)?|owns up|comes? clean|tells? the truth|explains?)\b/i;
 
@@ -205,10 +207,11 @@ export function buildTwistPlanPrompt(p) {
 }
 
 /**
- * Checks the plan in code. Returns {plan, errors, fatal}; plan is normalized. errors: everything the
- * plan step is sent back for, once. fatal: the part of it that makes the plan unusable (PLAN_FATAL).
+ * Checks the plan in code. Returns {plan, errors, fatal}; plan is normalized. errors: everything that
+ * counts against the plan. fatal: the part of it that makes the plan unusable (PLAN_FATAL).
+ * generated: false for a plan the owner wrote by hand (vettedPlans.js): it may use what the examples use.
  */
-export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [], avoidOpeners = [] }) {
+export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [], avoidOpeners = [], generated = true }) {
   const errors = [];
   const words = (x) => wordCount(x);
   const text = (k) => String(out?.[k] ?? "").trim();
@@ -256,6 +259,11 @@ export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [], a
   }
   const read = payoff.match(TO_READ);
   if (read) errors.push(`payoff: it depends on "${read[0]}", which a viewer would have to read; show an object, a light, a colour or a place instead (your seenAs)`);
+
+  // The examples' own objects are theirs: a plan built on one of them is the example again (a low-effort
+  // plan gave the countdown story the gold key of example A).
+  const borrowed = generated ? [twist, clue, payoff].map((v) => v.match(EXAMPLE_OBJECTS)).find(Boolean) : null;
+  if (borrowed) errors.push(`the plan uses "${borrowed[0]}", which belongs to one of the example plans; plant something of this story's own`);
 
   const consequence = text("consequence");
   if (words(consequence) < 4) errors.push("consequence: what changes for whom by the last line (a real loss or a real win the viewer sees or hears)");
