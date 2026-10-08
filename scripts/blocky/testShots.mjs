@@ -71,9 +71,12 @@ try {
     budget.reserve(0.004, `check ${row.key}`);
     const ids = inFrameIds(scene);
     const r = await worker({ action: "picture_check_test", imageUrl: row.url, expected: ids.map((id) => ({ name: library.get(id).name, look: library.get(id).look })), speaker: library.get(scene.speakerId).name, shot: scene.shot });
-    budget.record(r.ok ? Number(r.costUsd ?? 0) : 0, `shots: check ${row.key}`, 0.004);
-    spent += r.ok ? Number(r.costUsd ?? 0) : 0;
-    row.verdict = r.ok ? { ok: r.ok === true && r.problems.length === 0, problems: r.problems, fixes: r.fixes } : { ok: null, problems: [`the check did not run: ${r.code}`], fixes: [] };
+    // The worker's answer carries the verdict's own ok (false for a picture that fails), so "it ran" is told
+    // by the problems list, not by ok.
+    const ran = Array.isArray(r.problems);
+    budget.record(ran ? Number(r.costUsd ?? 0) : 0, `shots: check ${row.key}`, 0.004);
+    spent += ran ? Number(r.costUsd ?? 0) : 0;
+    row.verdict = ran ? { ok: r.problems.length === 0, problems: r.problems, fixes: r.fixes ?? [] } : { ok: null, problems: [`the check did not run: ${r.code}`], fixes: [] };
     save();
     return row.verdict;
   }

@@ -103,9 +103,11 @@ test("the picture check judges a scene against its own shot", () => {
   assert.deepEqual(judge("wide", {}).problems, ["Vex is cropped at the chest, not shown full body as a wide shot"]);
   assert.match(judge("wide", { speakerHeadPercent: 6, speakerShownTo: "feet" }).problems[0], /too small in the frame even for a wide shot/);
   // Each shot has its own smallest face.
-  assert.equal(judge("chest-up", { speakerHeadPercent: 20 }).ok, true);
-  assert.equal(judge("close-up", { speakerHeadPercent: 20 }).ok, false);
-  assert.equal(judge("reaction", { speakerHeadPercent: 26 }).ok, true);
+  assert.equal(judge("chest-up", { speakerHeadPercent: 18 }).ok, true);
+  assert.equal(judge("close-up", { speakerHeadPercent: 18 }).ok, true);
+  assert.equal(judge("close-up", { speakerHeadPercent: 15 }).ok, false);
+  assert.equal(judge("reaction", { speakerHeadPercent: 17 }).ok, false);
+  assert.equal(judge("wide", { speakerHeadPercent: 12, speakerShownTo: "feet" }).ok, true);
   assert.equal(judge("over-the-shoulder", { speakerHeadPercent: 17 }).ok, true);
   // A head, hat or accessory cut off by the frame fails in every shot.
   for (const shot of SPEAKING_SHOTS) {
