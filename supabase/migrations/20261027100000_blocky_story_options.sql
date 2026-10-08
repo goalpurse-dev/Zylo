@@ -1,5 +1,5 @@
 -- Blocky Stories: three versions to choose from, and vetted story plans.
--- NOT APPLIED. Waiting for the owner's go (supabase/pending/README.md).
+-- Applied to the real database on 2026-10-08, on the owner's go.
 -- Blocky's own tables only: nothing here reads or changes an AI Fruit Story table.
 --
 -- blocky_plans    hand-written story plans the owner has vetted (scripts/blocky/importPlans.mjs).

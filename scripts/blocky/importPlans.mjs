@@ -4,7 +4,7 @@
 //   node scripts/blocky/importPlans.mjs my-plans.txt            check only: says which line of which plan to fix
 //   node scripts/blocky/importPlans.mjs my-plans.txt --write    also saves the plans that passed
 // Saving a plan with the same title again updates it. A plan with a problem is never saved.
-// --write needs the table blocky_plans (supabase/pending/20261027100000_blocky_story_options.sql, on the owner's go).
+// --write saves into the table blocky_plans (supabase/migrations/20261027100000_blocky_story_options.sql).
 import fs from "fs";
 import { readPlanFile } from "../../supabase/functions/_shared/blocky/vettedPlans.js";
 
@@ -22,5 +22,5 @@ const { admin } = await import("./lib.mjs");
 const db = admin();
 const rows = plans.map((p) => ({ slug: p.slug, title: p.title, hook: p.hook, story_type: p.type, plan: p, active: true }));
 const { data, error } = await db.from("blocky_plans").upsert(rows, { onConflict: "slug" }).select("slug");
-if (error) { console.error(`Not saved: ${error.message}${/blocky_plans/.test(error.message) ? " (the table is not there yet: its SQL waits in supabase/pending/)" : ""}`); process.exit(1); }
+if (error) { console.error(`Not saved: ${error.message}`); process.exit(1); }
 console.log(`Saved ${data.length} vetted plans.`);

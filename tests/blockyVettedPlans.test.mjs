@@ -89,14 +89,14 @@ test("each block is told exactly what to fix, by the same checks a model-written
   assert.deepEqual(parsePlanFile("\n\n# notes\n\ntitle: X\nhook: Y\n").map((b) => b.line), [5]);
 });
 
-test("the importer checks a file and writes nothing unless asked, and the SQL for its table waits for the owner", () => {
+test("the importer checks a file and writes nothing unless asked; its table is Blocky's own", () => {
   const script = fs.readFileSync(new URL("../scripts/blocky/importPlans.mjs", import.meta.url), "utf8");
   assert.match(script, /process\.argv\.includes\("--write"\)/);
   assert.match(script, /readPlanFile\(/);
-  const sql = fs.readFileSync(new URL("../supabase/pending/20261027100000_blocky_story_options.sql", import.meta.url), "utf8");
+  const sql = fs.readFileSync(new URL("../supabase/migrations/20261027100000_blocky_story_options.sql", import.meta.url), "utf8");
   assert.match(sql, /CREATE TABLE public\.blocky_plans/);
   assert.match(sql, /CREATE TABLE public\.blocky_drafts/);
   assert.match(sql, /CREATE POLICY blocky_drafts_select_own ON public\.blocky_drafts FOR SELECT TO authenticated USING \(\(user_id = auth\.uid\(\)\)\)/);
   assert.doesNotMatch(sql, /fruit_/i, "Blocky's own tables only");
-  assert.ok(!fs.existsSync(new URL("../supabase/migrations/20261027100000_blocky_story_options.sql", import.meta.url)), "not applied: it is in supabase/pending/ until the owner says go");
+  assert.ok(!fs.existsSync(new URL("../supabase/pending/20261027100000_blocky_story_options.sql", import.meta.url)), "applied on the owner's go (2026-10-08) and moved out of supabase/pending/");
 });
