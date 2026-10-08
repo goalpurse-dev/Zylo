@@ -40,14 +40,17 @@ const STAGE = ROUND === 1 ? "stories" : `twists${ROUND}`;
 const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : 0.15;
 const out = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, "utf8")) : { stories: {} };
 for (const i of AGAIN.length ? IDEAS : []) if (out.stories[i.key.replace("b-", "-")]?.state !== "failed") throw new Error(`${i.key}: its first try did not fail, so it is not written again`);
-const todo = IDEAS.filter((i) => !out.stories[i.key]);
+// --limit=1: only the next story of the round (the first one is looked at before the other four are paid for).
+const LIMIT = Number((process.argv.find((a) => a.startsWith("--limit=")) ?? "--limit=99").slice(8));
+const todo = IDEAS.filter((i) => !out.stories[i.key]).slice(0, LIMIT);
 if (!todo.length) { console.log("All stories are already on record."); process.exit(0); }
 const db = admin();
 const names = Object.fromEntries((await db.from("blocky_characters").select("id, name")).data.map((c) => [c.id, c.name]));
 const budget = openBlockyBudget(STAGE);
 const set = async (on) => { const { error } = await db.from("blocky_settings").update({ paid_calls: on }).eq("id", true); if (error) throw new Error(error.message); };
 await set(true);
-let lastPattern = null;
+// The round is one user's stories in a row, also when it is run in two goes.
+let lastPattern = ROUND_1.slice(0, 5).map((i) => { const name = i.key.split("-")[0]; return out.stories[`r${ROUND}-${name}-30`]?.patternId ?? out.stories[`r${ROUND}b-${name}-30`]?.patternId; }).filter(Boolean).at(-1) ?? null;
 try {
   for (const idea of todo) {
     budget.reserve(EXPECT_USD, idea.key);

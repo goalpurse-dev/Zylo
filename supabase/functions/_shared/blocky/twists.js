@@ -58,15 +58,15 @@ WHAT YOU DECIDE, IN THIS ORDER
 - consequence: what CHANGES for whom by the last line: someone loses or gains something real (banned, trapped, robbed, kicked, freed, crowned), on screen.
 - winnerId: whoever comes out on top. They speak the last line.
 - finalLine: the winner's last line, ${FINAL_LINE_MAX_WORDS} words or fewer, spoken and natural. It LANDS the consequence like a punchline; it never explains how the twist works, because the payoff already showed it ("Only his first owner. Guess that's me." explains. "He always comes home full." lands).
-- title: 2 to 6 words. It teases the premise and uses no key word from the twist.
+- title: 2 to 6 words. It teases the premise and never states the twist.
 
 THE TEST OF A FAIR TWIST (check your plan against each)
 1. It FLIPS "assumed": who had the power, who was being tricked, what the prize or the rule really was.
-2. It needs NO new rule of the world at the reveal. Everything it uses is on screen by scene 2. If explaining it needs a sentence like "it turns out it only works when...", the twist is not planted: make that thing the clue, or take another pattern.
+2. It needs NO new rule of the world at the reveal. Everything it uses is on screen by scene 2. If explaining it needs a sentence like "it turns out it only works when...", the twist is not planted: make that thing the clue, or take another pattern. No OBJECT decides anything: a hammer, a board, a door, a vault or a crown that suddenly chooses, bans, judges or opens "for the right one" IS a new rule, unless scene 1 or 2 already showed it doing exactly that. The twist is something a CHARACTER did, owns, knew or is.
 3. Every cause is a cast member. Nobody outside the cast did it, set it up or is to blame.
 4. Somebody pays or somebody wins something real, on screen. A danger that turns out harmless is not a twist. "The villain admits it" is not a twist.
 5. A viewer can retell the whole story in one sentence.
-6. The clue and the payoff can be SEEN in a chest-up picture of one or two avatars (something held, worn, standing beside them, happening to them) or HEARD in a line. Nothing to read.
+6. The clue and the payoff can be SEEN in a chest-up picture of one or two avatars (something held, worn, standing beside them, happening to them) or HEARD in a line. Nothing to read. One plain sentence each, 20 words or fewer: each has to fit into one scene.
 
 THE PATTERN LIBRARY (take the one that best fits this premise and these characters)
 ${TWIST_PATTERNS.map((p) => `- ${p.id}: ${p.name}. ${p.flip} Plant the clue: ${p.clue}`).join("\n")}
@@ -89,11 +89,6 @@ const TO_READ = /\b(?:numbers?|digits?|letters|name ?tags?|usernames?|leaderboar
 const WRITTEN = new RegExp("\\b(?:" + [...WRITTEN_WORDS, "types", "typing", "writes", "writing", "signs", "reading", "messages", "chats", "texts", "screens"].join("|") + ")\\b", "i");
 /** A reveal that is "forced" by someone owning up is not forced. */
 const CONFESSION = /\b(?:admits?|admitting|confess(?:es|ing)?|owns up|comes? clean|tells? the truth|explains?)\b/i;
-const PLAIN = new Set(("the and for but not you your yours his her hers its our their them they she him who whom whose what when where why how that this these those with from into onto over under out off all any one two was were are has had have been being will would could should can did does just only really actually because every everyone nobody anyone someone somebody about after before while there here than then also still even ever never always turns turn turned real true truth secret secretly server game player players whole thing things happens").split(" "));
-const stem = (w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
-/** The words of a sentence that carry its meaning, lower-cased and without a plural s. */
-export const keyWords = (text) => [...new Set(String(text ?? "").toLowerCase().replace(/[’']s\b/g, "").replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter((w) => w.length >= 3 && !PLAIN.has(w)).map(stem))];
-const sameWord = (a, b) => a === b || (Math.min(a.length, b.length) >= 4 && (a.startsWith(b) || b.startsWith(a)));
 
 /** The scenes the reveal may be in: the second half, and never the last scene (that one is the winner's line). */
 export function revealRange(sceneCount) {
@@ -103,7 +98,9 @@ export function revealRange(sceneCount) {
 }
 
 /** Strict-mode JSON schema: every property required, no extra keys, no number limits (code checks those). */
-export function twistPlanSchema(castIds) {
+export function twistPlanSchema() {
+  // No cast ids in the schema: it is part of the cached prefix, which is then the same for every story.
+  // Code checks the ids against the cast (validateTwistPlan).
   const s = { type: "string" };
   return {
     type: "object",
@@ -113,7 +110,7 @@ export function twistPlanSchema(castIds) {
       premise: s,
       seenAs: s,
       emotion: { type: "string", enum: [...STORY_EMOTIONS] },
-      roles: { type: "array", items: { type: "object", additionalProperties: false, required: ["id", "role"], properties: { id: { type: "string", enum: castIds }, role: s } } },
+      roles: { type: "array", items: { type: "object", additionalProperties: false, required: ["id", "role"], properties: { id: s, role: s } } },
       assumed: s,
       candidates: { type: "array", items: { type: "object", additionalProperties: false, required: ["patternId", "twist"], properties: { patternId: { type: "string", enum: [...TWIST_PATTERN_IDS] }, twist: s } } },
       patternId: { type: "string", enum: [...TWIST_PATTERN_IDS] },
@@ -123,7 +120,7 @@ export function twistPlanSchema(castIds) {
       payoff: s,
       revealScene: { type: "integer" },
       consequence: s,
-      winnerId: { type: "string", enum: castIds },
+      winnerId: s,
       finalLine: s,
       title: s,
     },
@@ -197,11 +194,8 @@ export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [] })
 
   const title = text("title");
   if (title.length < 2 || title.length > 60 || words(title) > 8) errors.push(`title must be 2 to 6 words (got "${title}")`);
-  // The title teases: no key word from the twist, unless the premise or a name already has it.
-  const known = [...keyWords(premise), ...cast.flatMap((c) => keyWords(c.name))];
-  const fresh = keyWords(twist).filter((w) => !known.some((k) => sameWord(k, w)));
-  const shared = keyWords(title).find((w) => fresh.some((f) => sameWord(f, w)));
-  if (shared) errors.push(`title: "${title}" has "${shared}" from the twist; the title teases and shares no key word with the twist`);
+  // Whether the title gives the twist away is the editor's to judge (its "title" rule). A code check on shared
+  // words sent a good plan back for "The Rule Nobody Read", which costs more than it is worth.
   for (const [k, v] of [["premise", premise], ["twist", twist], ["clue", clue], ["payoff", payoff], ["finalLine", finalLine], ["title", title]]) safe(v, k);
 
   // Each character's role in this story (shown on the cast chips). Cosmetic: never fails a plan.

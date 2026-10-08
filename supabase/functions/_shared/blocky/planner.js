@@ -85,6 +85,15 @@ export function addressedIds(line, cast) {
  * forms. Whole words only: "design" and "signal" are fine.
  */
 export const WRITTEN_WORD = new RegExp("\\b(?:" + [...WRITTEN_WORDS, "types", "typing", "writes", "writing", "signs", "reading", "messages", "chats", "texts", "texted", "screens", "onscreen"].join("|") + ")\\b", "i");
+/** A scene's action: this many words at most (the rules say 16; a payoff has to fit in it). */
+export const ACTION_MAX_WORDS = 18;
+/** A script with a fault is sent back at most this many times (as a patch when the fault is in single scenes). */
+export const MAX_REPAIRS = 2;
+/**
+ * The faults that make a script UNUSABLE: it can't be staged, it would cost more than the user was quoted,
+ * or it names something real. Anything else that is still wrong after the repairs is the editor's.
+ */
+const FATAL = /^write exactly \d+ scenes|^use 1 to 3 locations|^location |is not in the cast|the speaker must be in presentIds|characters in frame \(got|is not one of the locations|this scene has a spoken line|: line must be \d+ to \d+ words|the line must be plain spoken words|^the clips add up to \d+ seconds but|^title must be|don't name/;
 /** The quality pass rewrites a failing script at most this many times, checking it after each. */
 export const MAX_REWRITES = 2;
 
@@ -148,7 +157,7 @@ export function buildPlannerPrompt(p) {
       `- Exactly ${count} scenes.${plan ? ` Scene ${plan.clueScene} plants the clue. Scene ${plan.revealScene}'s action shows the payoff and its line names what just happened. Scene ${count} is ${plan.winnerId} saying the final line (${FINAL_LINE_MAX_WORDS} words or fewer).` : ""}`,
       "- No speaker has more than two lines in a row.",
       `- At least one line of 5 words or fewer and at least one of ${Math.max(7, words - 1)} or more. None over ${words}.`,
-      "- Every action is upper body only: a look, an arm, a hand, something held, worn or pointed at. Never stepping, walking, backing away, turning to go, jumping, kneeling, entering or leaving.",
+      "- Every action is 16 words or fewer and upper body only: a look, an arm, a hand, something held, worn or pointed at. Never stepping, walking, backing away, turning to go, jumping, kneeling, entering or leaving.",
       `- No line and no action uses any of: ${WRITTEN_WORDS.join(", ")}.`,
       "- A line that mentions a door, glass, a window, a wall, inside or outside has a placement that uses the same word.",
     ].join("\n"));
@@ -163,10 +172,13 @@ export function buildPlannerPrompt(p) {
  *   planned: a single story with a twist plan (twists.js): the title and the roles come with the plan.
  *   neither: an episode of a series.
  */
-export function plannerSchema(castIds, { script = false, planned = false } = {}) {
+export function plannerSchema(_castIds, { script = false, planned = false } = {}) {
+  // No cast ids in the schema: the tools are part of the cached prefix, and with ids in them the rules were
+  // cached per cast instead of once for every story. Code checks every id against the cast (validatePlan).
+  const castId = { type: "string" };
   const sceneProps = {
-    ...(script ? {} : { speakerId: { type: "string", enum: castIds }, line: { type: "string" } }),
-    presentIds: { type: "array", items: { type: "string", enum: castIds } },
+    ...(script ? {} : { speakerId: castId, line: { type: "string" } }),
+    presentIds: { type: "array", items: castId },
     locationId: { type: "string" },
     action: { type: "string" },
     emotion: { type: "string" },
@@ -176,7 +188,7 @@ export function plannerSchema(castIds, { script = false, planned = false } = {})
     raises: { type: "string" },
   };
   const locProps = { id: { type: "string" }, description: { type: "string" }, timeOfDay: { type: "string" }, lighting: { type: "string" }, seriesLocationId: { type: "string" } };
-  const endChar = { id: { type: "string", enum: castIds }, where: { type: "string" }, feeling: { type: "string" } };
+  const endChar = { id: castId, where: { type: "string" }, feeling: { type: "string" } };
   return {
     type: "object",
     additionalProperties: false,
@@ -190,12 +202,12 @@ export function plannerSchema(castIds, { script = false, planned = false } = {})
       ...(planned ? {} : {
         roles: {
           type: "array",
-          items: { type: "object", additionalProperties: false, required: ["id", "role"], properties: { id: { type: "string", enum: castIds }, role: { type: "string" } } },
+          items: { type: "object", additionalProperties: false, required: ["id", "role"], properties: { id: castId, role: { type: "string" } } },
         },
       }),
       outfits: {
         type: "array",
-        items: { type: "object", additionalProperties: false, required: ["id", "outfit"], properties: { id: { type: "string", enum: castIds }, outfit: { type: "string" } } },
+        items: { type: "object", additionalProperties: false, required: ["id", "outfit"], properties: { id: castId, outfit: { type: "string" } } },
       },
       scenes: {
         type: "array",
@@ -224,9 +236,9 @@ export const PATCH_TOOL = "story_patch";
  * instead of the whole script again: the whole script was most of the cost).
  * An empty string, or an empty list for presentIds, means "keep it".
  */
-export function patchSchema(castIds) {
+export function patchSchema() {
   const s = { type: "string" };
-  const sceneProps = { scene: { type: "integer" }, speakerId: { type: "string", enum: [...castIds, ""] }, line: s, presentIds: { type: "array", items: { type: "string", enum: castIds } }, action: s, placement: s, emotion: s };
+  const sceneProps = { scene: { type: "integer" }, speakerId: s, line: s, presentIds: { type: "array", items: s }, action: s, placement: s, emotion: s };
   return {
     type: "object",
     additionalProperties: false,
@@ -260,8 +272,12 @@ const words = (s) => wordCount(s);
  * Validates planner output. Returns {plan, errors, hard}; plan is normalized and, in
  * script mode, carries the user's lines unchanged.
  *
- * errors: everything the writer is asked to fix. hard: the part of it that makes a story
- * unusable (format, safety, timing, who is in the picture). The rest are STYLE notes (lines
+ * errors: everything the writer could be told. hard: the faults it is sent back for (at most
+ * MAX_REPAIRS times). fatal: the part of hard that makes a story UNUSABLE (the wrong number of
+ * scenes, someone who is not in the cast, a place that does not exist, a clip longer than the
+ * user was quoted for, a real brand): only these can end in "We couldn't write this story". A
+ * fault that is still there after the repairs and is not fatal (a full-body action, the same
+ * speaker three scenes in a row) goes to the editor instead. The rest are STYLE notes (lines
  * all the same length, two lines that say the same): they never cost a call of their own and
  * never fail a story; they are handed to the writer together with the editor's findings.
  * ctx.twistPlan: the locked plan of a single story; its title, roles and twist are the story's.
@@ -318,8 +334,9 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     }
     const action = String(s?.action ?? "").trim();
     const emotion = String(s?.emotion ?? "").trim();
-    const beat = String(s?.beat ?? "").trim();
-    if (!action || words(action) > 14) errors.push(`scene ${n}: action must be 1 to 12 words`);
+    // A label for the scene card: never a reason to send a script back.
+    const beat = String(s?.beat ?? "").trim().split(/\s+/).filter(Boolean).slice(0, 5).join(" ") || `Scene ${n}`;
+    if (!action || words(action) > ACTION_MAX_WORDS) errors.push(`scene ${n}: action must be 1 to 16 words (got ${words(action)})`);
     const move = action.match(FULL_BODY);
     if (move) errors.push(`scene ${n}: the action "${action}" is a full-body move ("${move[0]}"); the picture is chest-up, so give an upper-body action instead (a look, a hand, a prop held up)`);
     // Words about writing make the video model draw text into the clip (decision 45).
@@ -330,7 +347,6 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
       if (id !== speakerId && !present.includes(id)) errors.push(`scene ${n}: the line talks to ${cast.find((c) => c.id === id).name}, so ${id} must be in presentIds for this scene (or don't address them)`);
     }
     if (!emotion || words(emotion) > 3) errors.push(`scene ${n}: emotion must be 1 or 2 words`);
-    if (!beat || words(beat) > 5) errors.push(`scene ${n}: beat must be 2 to 4 words`);
     if (source !== "script") {
       safe(line, `scene ${n}`);
       const w = words(line);
@@ -342,9 +358,9 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
       const drawn = String(line).match(WRITTEN_WORD);
       if (drawn) errors.push(`scene ${n}: the line says "${drawn[0]}"; no line uses a word about writing or reading (${WRITTEN_WORDS.join(", ")}): the character says it or does it, and nothing is read on screen`);
     }
-    // raises: what this scene makes worse, weirder or higher than the one before (for the editor; not stored on the scene)
+    // raises: what this scene makes worse, weirder or higher than the one before (a note for the editor; not
+    // stored on the scene, so an empty one is never a fault)
     const raises = String(s?.raises ?? "").trim();
-    if (source !== "script" && words(raises) < 2) errors.push(`scene ${n}: raises must say in 3 to 10 words what this scene makes worse, weirder or higher`);
     return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat, ...(source !== "script" ? { raises } : {}) };
   });
   // The hook names at most two people besides the speaker.
@@ -422,7 +438,8 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     scenes: normalized.map((s, i) => ({ ...s, durationSec: durations[i] ?? null })),
     lengthSec: total,
   };
-  return { plan, errors: [...new Set([...errors, ...style])], hard: [...new Set(errors)] };
+  const hard = [...new Set(errors)];
+  return { plan, errors: [...new Set([...errors, ...style])], hard, fatal: hard.filter((e) => FATAL.test(e)) };
 }
 
 /** Hard faults a patch can fix: they are about one scene's line, speaker, action, placement or who is in the picture, or about how long the lines run. */
@@ -459,7 +476,7 @@ async function planTwist(p, sceneCount, calls) {
  *   A single story (idea or prompt): 1. the twist plan (planTwist); 2. the script that delivers it;
  *   3. the editor checks the script against the plan, and what fails is rewritten and checked again.
  *   The user's own script: staged only. An episode of a series: written from the series' plan.
- * A format fault gets ONE repair; an editor's finding gets at most MAX_REWRITES rewrites, and the
+ * A fault code finds is sent back at most MAX_REPAIRS times; an editor's finding gets at most MAX_REWRITES rewrites, and the
  * rewriting stops as soon as a rewrite is no better than what there was. Repairs and rewrites come
  * back as PATCHES (patchSchema): only the fields that change.
  * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?, avoidPatterns?}
@@ -476,7 +493,7 @@ export async function runPlanner(p) {
   const twistPlan = planned ? await planTwist(p, sceneCount, calls) : null;
   const { system, user } = buildPlannerPrompt({ ...p, twistPlan });
   const castIds = p.cast.map((c) => c.id);
-  const tools = [{ name: WRITE_TOOL, schema: plannerSchema(castIds, { script, planned }) }, { name: PATCH_TOOL, schema: patchSchema(castIds) }];
+  const tools = [{ name: WRITE_TOOL, schema: plannerSchema(castIds, { script, planned }) }, { name: PATCH_TOOL, schema: patchSchema() }];
   const ask = (name, text, purpose) => p.llm({ system, user: text, schema: tools.find((t) => t.name === name).schema, name, tools, strict: true, purpose });
   const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id), twistPlan };
   const fail = (details) => { const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502); err.details = details; err.calls = calls; return err; };
@@ -487,22 +504,24 @@ export async function runPlanner(p) {
   calls.push(first);
   let data = first.data;
   let result = validatePlan(data, ctx);
-  // A format fault gets one repair: a patch when the faults are about single scenes, the whole script again
-  // when it is broken as a whole. Style notes alone never cost a call: they go along with the editor's findings.
-  if (result.hard.length) {
+  // A fault is sent back at most MAX_REPAIRS times: as a patch when it is about single scenes, the whole
+  // script again when it is broken as a whole. Style notes alone never cost a call: they go along with the
+  // editor's findings. Only what makes the story UNUSABLE fails it (validatePlan's fatal); a lesser fault
+  // that is still there goes to the editor with the style notes.
+  for (let i = 1; i <= MAX_REPAIRS && result.hard.length; i++) {
+    const nth = i === 1 ? "" : `_${i}`;
     if (result.hard.every((e) => PATCHABLE.test(e)) && Array.isArray(data?.scenes) && data.scenes.length === sceneCount) {
-      const fix = await ask(PATCH_TOOL, patchPrompt(data, "CODE CHECKED IT AND REFUSED IT FOR THESE REASONS:", result.errors), "planner_patch");
+      const fix = await ask(PATCH_TOOL, patchPrompt(data, "CODE CHECKED IT AND REFUSED IT FOR THESE REASONS:", result.errors), `planner_patch${nth}`);
       calls.push(fix);
       data = applyPatch(data, fix.data, { script });
     } else {
-      const again = await ask(WRITE_TOOL, `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${result.errors.join("\n- ")}`, "planner_repair");
+      const again = await ask(WRITE_TOOL, `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${result.errors.join("\n- ")}`, `planner_repair${nth}`);
       calls.push(again);
       data = again.data;
     }
     result = validatePlan(data, ctx);
-    // Only what makes the story unusable fails it; a style note left after the repair goes to the editor.
-    if (result.hard.length) throw fail(result.hard);
   }
+  if (result.fatal.length) throw fail(result.fatal);
   const done = (plan, review) => ({ plan, calls, attempts: calls.length, review });
   if (!p.reviewLlm) return done(result.plan, null);
 
@@ -514,7 +533,7 @@ export async function runPlanner(p) {
   const linesOf = (plan) => ({ title: plan.title, lines: plan.scenes.map((s) => s.line) });
   const outcome = { ok: false, problems: review.problems, rewritten: false, rounds: 0, before: linesOf(result.plan), history: [{ round: 0, ...linesOf(result.plan), problems: review.problems }] };
   let best = { plan: result.plan, problems: review.problems };
-  let current = { data, plan: result.plan, problems: review.problems, style: result.errors.filter((e) => !result.hard.includes(e)) };
+  let current = { data, plan: result.plan, problems: review.problems, style: result.errors };
   try {
     for (let round = 1; round <= MAX_REWRITES && current.problems.length; round++) {
       const lead = "A SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line; the viewer knows only the lines and the pictures), CHECKED IT AGAINST THE PLAN, AND FOUND:";
@@ -523,13 +542,14 @@ export async function runPlanner(p) {
       calls.push(next);
       let nextData = applyPatch(current.data, next.data, { script });
       let rewritten = validatePlan(nextData, ctx);
-      if (rewritten.hard.length) {
+      // A fault the rewrite brought in gets one patch (a fault that was already there has had its repairs).
+      if (rewritten.hard.some((e) => !current.style.includes(e))) {
         const repaired = await ask(PATCH_TOOL, patchPrompt(nextData, "CODE CHECKED IT AND REFUSED IT FOR THESE REASONS:", rewritten.hard), "planner_rewrite_repair");
         calls.push(repaired);
         nextData = applyPatch(nextData, repaired.data, { script });
         rewritten = validatePlan(nextData, ctx);
       }
-      if (rewritten.hard.length) { outcome.note = "a rewrite broke the format; the best checked script was kept"; break; }
+      if (rewritten.fatal.length) { outcome.note = "a rewrite broke the format; the best checked script was kept"; break; }
       const again = await reviewScript({ plan: rewritten.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
       outcome.rounds = round;
       outcome.history.push({ round, ...linesOf(rewritten.plan), problems: again.skipped ? null : again.problems });
@@ -538,7 +558,7 @@ export async function runPlanner(p) {
       if (better) best = { plan: rewritten.plan, problems: again.problems };
       // A rewrite that reads no better than what there was: more of them would only cost more.
       if (!better) { if (again.problems.length) outcome.note = "a rewrite was no better; the best checked script was kept"; break; }
-      current = { data: nextData, plan: rewritten.plan, problems: again.problems, style: rewritten.errors.filter((e) => !rewritten.hard.includes(e)) };
+      current = { data: nextData, plan: rewritten.plan, problems: again.problems, style: rewritten.errors };
     }
   } catch (e) {
     outcome.note = `a rewrite could not run (${String(e?.message ?? e).slice(0, 80)}); the best checked script was kept`;

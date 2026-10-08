@@ -20,11 +20,14 @@
 //     line never explains the twist;
 //   - FORMAT: answers must match the schema exactly (strict tool use), style
 //     notes never cost a call, and repairs and rewrites come back as PATCHES;
-//     a rewrite that is no better ends the rewriting.
+//     a rewrite that is no better ends the rewriting;
+//   - only a script that is UNUSABLE fails a story (the first story of round
+//     three was lost to an action two words too long and an empty label): a
+//     lesser fault is repaired twice at most and then left to the editor.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MAX_REWRITES, PATCH_TOOL, WRITE_TOOL, WRITTEN_WORD, applyPatch, buildPlannerPrompt, patchSchema, plannerSchema, runPlanner, validatePlan } from "../supabase/functions/_shared/blocky/planner.js";
-import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, buildTwistPlanPrompt, keyWords, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
+import { ACTION_MAX_WORDS, MAX_REPAIRS, MAX_REWRITES, PATCH_TOOL, WRITE_TOOL, WRITTEN_WORD, applyPatch, buildPlannerPrompt, patchSchema, plannerSchema, runPlanner, validatePlan } from "../supabase/functions/_shared/blocky/planner.js";
+import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, buildTwistPlanPrompt, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
 import { REVIEW_RULES, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/blocky/scriptReview.js";
 import { REVIEW_SYSTEM, STORY_EMOTIONS, WRITTEN_WORDS, cleanUpload } from "../supabase/functions/_shared/blocky/rules.js";
 import { callLlm } from "../supabase/functions/_shared/blocky/llm.js";
@@ -129,7 +132,9 @@ test("the twist plan: its schema asks for the thinking before the choice, and a 
   before("premise", "seenAs"); before("assumed", "candidates"); before("candidates", "patternId"); before("twist", "clue"); before("clue", "payoff"); before("payoff", "finalLine"); before("finalLine", "title");
   assert.deepEqual(schema.properties.patternId.enum, [...TWIST_PATTERN_IDS]);
   assert.deepEqual(schema.properties.emotion.enum, [...STORY_EMOTIONS]);
-  assert.deepEqual(schema.properties.winnerId.enum, ["vex", "noob"]);
+  // No cast ids in a schema: it is part of the cached prefix, which is then the same for every story.
+  assert.ok(!JSON.stringify([twistPlanSchema(["vex", "noob"]), plannerSchema(["vex", "noob"], { planned: true }), patchSchema()]).includes("vex"));
+  assert.deepEqual(schema.properties.winnerId, { type: "string" });
   const { plan, errors } = validateTwistPlan(goodPlan(), planCtx);
   assert.deepEqual(errors, []);
   assert.deepEqual([plan.patternId, plan.clueScene, plan.revealScene, plan.winnerId, plan.finalLine], ["quiet_power", 2, 3, "noob", "Cute commands. Want to see real ones?"]);
@@ -173,11 +178,14 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   has({ finalLine: "Check the chat. You're gone." }, /finalLine: it says "chat"/);
   has({ winnerId: "taz" }, /^winnerId:/);
   has({ consequence: "Nothing." }, /^consequence:/);
-  // The title teases: no key word from the twist, unless the premise or a name has it.
-  assert.deepEqual(keyWords("Vex is making up rules on the spot because there is no actual rule list"), ["vex", "making", "rule", "spot", "actual", "list"]);
-  has({ title: "The Noob Who Owns It" }, /title: "The Noob Who Owns It" has "own" from the twist/);
-  assert.deepEqual(planErrors({ title: "Fake Admin Powers" }), [], "words of the premise are fine");
+  // The title: its length and no real names in code; whether it gives the twist away is the editor's to judge
+  // (a word check sent a good plan back for "The Rule Nobody Read").
+  assert.deepEqual(planErrors({ title: "The Rule Nobody Read" }), []);
+  has({ title: "A Title That Just Goes On And On And On" }, /title must be 2 to 6 words/);
   has({ title: "Just Like Roblox" }, /title/);
+  // What a fair twist is: nothing new at the reveal, and no object that suddenly decides.
+  assert.match(PLAN_SYSTEM, /No OBJECT decides anything: a hammer, a board, a door, a vault or a crown that suddenly chooses, bans, judges or opens "for the right one" IS a new rule/);
+  assert.match(PLAN_SYSTEM, /The twist is something a CHARACTER did, owns, knew or is./);
 });
 
 test("the writer is handed the locked plan, and a checklist of what code will refuse", () => {
@@ -197,7 +205,7 @@ test("the writer is handed the locked plan, and a checklist of what code will re
   assert.match(list, /Exactly 4 scenes\. Scene 2 plants the clue\. Scene 3's action shows the payoff and its line names what just happened\. Scene 4 is noob saying the final line \(8 words or fewer\)\./);
   assert.match(list, /No speaker has more than two lines in a row\./);
   assert.match(list, /At least one line of 5 words or fewer and at least one of 8 or more\. None over 9\./);
-  assert.match(list, /Every action is upper body only[^]*Never stepping, walking, backing away/);
+  assert.match(list, /Every action is 16 words or fewer and upper body only[^]*Never stepping, walking, backing away/);
   assert.match(list, /No line and no action uses any of: type, typed, write, wrote, written, sign, read, reads, message, chat, text, screen\./);
   // The user's own script has no plan and no checklist for lines it did not write.
   const own = buildPlannerPrompt({ source: "script", cast, lengthSec: 15, quality: "v2", script: [{ speakerId: "vex", line: "Who gave you admin?" }, { speakerId: "noob", line: "You did." }] });
@@ -244,6 +252,27 @@ test("the script in code: it carries the plan, the winner has the short last lin
   const acted = goodScript();
   acted.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "types a command on a floating keyboard");
   assert.ok(check(acted).hard.some((e) => /scene 2: the action says "types"; words about writing or reading make the video model draw text/.test(e)));
+  // What is FATAL and what is only sent back: the story above is usable with any of these faults.
+  for (const usable of [wrong, long, run, typed, acted]) assert.deepEqual(check(usable).fatal, []);
+  const short = goodScript({ scenes: goodScript().scenes.slice(0, 3) });
+  assert.ok(check(short).fatal.some((e) => /write exactly 4 scenes \(got 3\)/.test(e)));
+  const stranger = goodScript();
+  stranger.scenes[1] = { ...scene("taz", "Okay. Sorry. I'll stay here."), presentIds: ["taz", "vex"] };
+  assert.ok(check(stranger).fatal.some((e) => /scene 2: speaker "taz" is not in the cast/.test(e)), "the schema no longer lists the cast, so code does");
+  const nowhere = goodScript();
+  nowhere.scenes[0] = { ...nowhere.scenes[0], locationId: "the plaza" };
+  assert.ok(check(nowhere).fatal.some((e) => /locationId "the plaza" is not one of the locations/.test(e)));
+  // Labels nobody sees are never a fault (an empty "raises" helped lose a story).
+  const bare = goodScript();
+  bare.scenes = bare.scenes.map((s) => ({ ...s, raises: "", beat: "" }));
+  assert.deepEqual(check(bare).errors, []);
+  assert.deepEqual(check(bare).plan.scenes.map((s) => s.title), ["Scene 1", "Scene 2", "Scene 3", "Scene 4"]);
+  // An action has room for a payoff, and no more.
+  assert.equal(ACTION_MAX_WORDS, 18);
+  const wordy = goodScript();
+  wordy.scenes[2] = scene("vex", "Wait. Why am I floating? Put me down!", "floats up with both block arms flailing wildly while the small gold key is slowly held up high beside the round fountain");
+  assert.ok(check(wordy).hard.some((e) => /scene 3: action must be 1 to 16 words \(got 22\)/.test(e)));
+  assert.deepEqual(check(wordy).fatal, []);
   // "tilts the head away" is not a walk; "steps back" is.
   const head = goodScript();
   head.scenes[1] = scene("noob", "Okay. Sorry. I'll stay here.", "tilts the head away, eyes on the gold key");
@@ -388,9 +417,18 @@ test("format: a fault in one scene is fixed by a PATCH (a few words back), a scr
   await run(g);
   assert.deepEqual(g.log, ["twist_plan", "planner", "planner_repair", "script_review"]);
   assert.equal(g.asked[2].name, WRITE_TOOL);
-  // Still unusable after its one repair: the story fails, and says why.
-  const still = fakes({ twist_plan: [goodPlan()], planner: [walk], planner_patch: [NO_CHANGE] });
-  await assert.rejects(run(still), (e) => e.code === "PLANNER_FAILED" && /full-body move/.test(e.details.join(" ")));
+  // A fault is sent back twice at most. One that is still there and leaves the story USABLE does not fail it:
+  // the editor gets it (the first story of round three was thrown away for an action two words too long).
+  assert.equal(MAX_REPAIRS, 2);
+  const still = fakes({ twist_plan: [goodPlan()], planner: [walk], planner_patch: [NO_CHANGE], planner_patch_2: [NO_CHANGE], planner_rewrite: [NO_CHANGE] }, [["natural"], ["natural"]]);
+  const kept = await run(still);
+  assert.deepEqual(still.log, ["twist_plan", "planner", "planner_patch", "planner_patch_2", "script_review", "planner_rewrite", "script_review"]);
+  assert.equal(kept.plan.scenes[1].action, "steps back from the fountain");
+  assert.match(still.asked[4].user, /- scene 2: the action "steps back from the fountain" is a full-body move/, "the writer is told again when the editor asks for a rewrite");
+  // A script that is UNUSABLE after both repairs fails the story, and says why.
+  const broken = fakes({ twist_plan: [goodPlan()], planner: [short], planner_repair: [short], planner_repair_2: [short] });
+  await assert.rejects(run(broken), (e) => e.code === "PLANNER_FAILED" && /write exactly 4 scenes \(got 3\)/.test(e.details.join(" ")));
+  assert.deepEqual(broken.log, ["twist_plan", "planner", "planner_repair", "planner_repair_2"]);
   // Lines all about the same length: no repair call at all (2 of 5 round-two stories were lost to this one note).
   const flat = goodScript();
   flat.scenes = [scene("vex", "Break one more rule and you're banned."), scene("noob", "Okay, sorry, I'll stay right here.", "turns a small gold key over in one hand"), scene("vex", "Wait, why am I floating right now?"), scene("noob", "Cute commands. Want to see real ones?")];
@@ -451,8 +489,9 @@ test("the quality pass keeps the best version: a rewrite that reads worse than t
   assert.equal(r.plan.scenes[3].line, "Cute commands. Want to see real ones?", "the payoff's punchline is not lost to a worse rewrite");
   assert.deepEqual([r.review.ok, r.review.rewritten], [false, false]);
   assert.deepEqual(r.review.left.map((p) => p.rule), ["title"]);
-  // A rewrite that breaks the format gets one patch; if that fails too, the best checked script is kept.
-  const g = fakes({ twist_plan: [goodPlan()], planner: [goodScript()], planner_rewrite: [lastLine("Those were cute commands, want to see real ones?")], planner_rewrite_repair: [NO_CHANGE] }, [["ending"]]);
+  // A rewrite that makes the script unusable gets one patch; if that fails too, the best checked script is kept.
+  const stranger = { title: "", scenes: [{ scene: 4, speakerId: "taz", line: "", presentIds: [], action: "", placement: "", emotion: "" }] };
+  const g = fakes({ twist_plan: [goodPlan()], planner: [goodScript()], planner_rewrite: [stranger], planner_rewrite_repair: [NO_CHANGE] }, [["ending"]]);
   const kept = await run(g);
   assert.deepEqual(g.log, ["twist_plan", "planner", "script_review", "planner_rewrite", "planner_rewrite_repair"]);
   assert.equal(kept.review.note, "a rewrite broke the format; the best checked script was kept");
