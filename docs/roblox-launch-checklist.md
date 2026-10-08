@@ -22,9 +22,11 @@ See "The final test" at the end. Launch only after it passes.
      first days and raise the number if it trips for that reason.
    - The alarm's email goes to the address in the `CONTACT_TO_EMAIL` secret (or `BLOCKY_ALERT_EMAIL`
      if that is set). Check it is an inbox the owner reads.
-2. **The alarm on /admin/ops.** Not built: the admin page and its `ops-status` function are shared
-   with the other tools, so the card needs the owner's go. Until then the alarm is the email, and
-   `node scripts/blocky/paid.mjs status` shows the numbers and any alert.
+2. **The alarm on /admin/ops.** Built (2026-10-08): the card "Blocky Stories · alarm" shows the paid
+   switch, what users cost us against what they were charged in 24 hours, and any open alert. The
+   card reaches the live website with the merge in step 3; `node scripts/blocky/paid.mjs status`
+   shows the same numbers. The alarm itself is checked while a story is being made (it runs inside
+   the sweep of jobs in flight); the card's numbers are read fresh every time it is opened.
 3. **Merge `laptop-transfer` into `main`** (a pull request; the owner looks at the file list first).
    Merging to main is what deploys the website. Blocky's two functions, its tables, its price rows and
    its render image are already live, so the merge only brings the page and the menu entries.
@@ -48,8 +50,7 @@ See "The final test" at the end. Launch only after it passes.
   has been made with it. The owner tests V3 on localhost before it goes to anyone else.
 - **Pictures, clips and videos open for anyone who has their exact address.** They sit in a public
   folder under a long random name; nobody can list them, and the tables and the API show them only to
-  their owner (`privacyCheck.mjs`). Making them private means changing the storage folder that the
-  other tools use too: a separate decision.
+  their owner (`privacyCheck.mjs`). The owner, 2026-10-08: they stay public with random names for now.
 - **Redraws are ours to pay.** In the shot test 4 of 6 first pictures failed their check and were drawn
   again once (about $0.035 each, not in the 2× prices). Watch the real rate after launch.
 - **Prices** are 2× our real cost at $1 = €0.894: `node scripts/blocky/priceOptions.mjs` prints them
@@ -65,8 +66,9 @@ costs about $1.35 of ours and 103 credits; the whole test about $3 to $4.
 
 1. Open `/workspace/blocky-stories` on the computer. The page opens on **Ideas**, and nothing loads
    until you press **Give me ideas**.
-2. Press it. Five ideas with characters from the new library. Pick one: the bar offers
-   **Write 3 versions, free**.
+2. Press it. Five ideas with characters from the new library. Pick one: the bar shows the
+   **quality** (V2 / V3 / V4) and the **length** (20 sec to 1 min) with the full cost, and under
+   them **Write 3 versions, free**.
 3. Press it. Three cards appear, then fill in one by one. Read them; press **Use this version**.
 4. The storyboard opens with **Make scene pictures** and its cost (31 credits for 30 seconds).
    Press it. Check the balance went down by exactly that.

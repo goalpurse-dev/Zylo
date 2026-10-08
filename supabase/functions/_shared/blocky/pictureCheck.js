@@ -12,8 +12,8 @@
 //   - a realistic 3D mouth, teeth, lips, tongue or nose on a face
 //   - the same cast member drawn twice, or an extra character up front
 //   - any text on screen (decision 14), or a logo
-//   - the speaker too small: cube head under about a fifth of the frame
-//     height, or shown down to the knees or feet (decisions 15 and 21)
+//   - the speaker too small for the scene's shot (shots.js: each shot has its
+//     own smallest head), or a wide shot that is cropped at the chest
 // The questions, the answer shape and the verdict are in rules.js.
 import { callLlm } from "./llm.js";
 import { BLOCKY_MODELS } from "./models.js";

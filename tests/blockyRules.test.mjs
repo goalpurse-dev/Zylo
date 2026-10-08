@@ -9,7 +9,7 @@ import { BANNED, SYSTEM, buildPlannerPrompt, validatePlan } from "../supabase/fu
 import { SPEAKING_SHOTS } from "../supabase/functions/_shared/blocky/shots.js";
 import { SERIES_SYSTEM, buildSeriesPrompt } from "../supabase/functions/_shared/blocky/series.js";
 import { REVIEW_RULES, REVIEW_SYSTEM, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/blocky/scriptReview.js";
-import { CHECK_SYSTEM, CLIP_FRAME_PURPOSE, checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/functions/_shared/blocky/pictureCheck.js";
+import { CHECK_SYSTEM, CLIP_FRAME_PURPOSE, MIN_HEAD_PERCENT, checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/functions/_shared/blocky/pictureCheck.js";
 import { PACKAGE_SYSTEM, cleanPackage, packageSchema, writeUploadPackage } from "../supabase/functions/_shared/blocky/uploadPackage.js";
 import { validateCreateStory, validateSeriesPlan } from "../supabase/functions/_shared/blocky/validation.js";
 import { buildScenePrompt, PICTURE_PROMPT_MAX, scenePromptLengths } from "../supabase/functions/_shared/blocky/pictures.js";
@@ -217,17 +217,16 @@ test("the picture check: what fails a Blocky picture, and what doesn't", () => {
   assert.match(v({ humanFigures: 1 }).problems[0], /1 human figure/);
   assert.match(v({ logos: true }).problems[0], /logo/);
   assert.match(v({ characters: [{ name: "Vex", visible: true, isBlockyAvatar: false }, { name: "Noob", visible: true, isBlockyAvatar: true }] }).problems[0], /Vex is not drawn as a blocky game avatar/);
-  // Decision 15: a full-body two-avatar shot with small faces is redrawn once.
-  assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).problems[0], /Vex is too small in the frame \(head about 14% of the height\)/);
-  assert.match(v({ speakerHeadPercent: 30, speakerShownTo: "feet" }).problems[0], /shown full body/);
-  assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).fixes[0], /tight chest-up shot of Vex, the cube head filling a third of the frame height/);
-  // Decisions 21 and 36: a head under 18% of the frame height fails, whatever the crop says (a "close-up" cropped at the thighs).
-  const thighs = v({ speakerHeadPercent: 15, speakerShownTo: "waist" });
-  assert.equal(thighs.ok, false);
-  assert.match(thighs.problems[0], /Vex is too small in the frame \(head about 15% of the height\)/);
-  assert.equal(v({ speakerHeadPercent: 17, speakerShownTo: "chest" }).ok, false, "17% fails");
-  assert.equal(v({ speakerHeadPercent: 18, speakerShownTo: "waist" }).ok, true, "the line is 18% (it was 22% until the first real story)");
-  assert.equal(v({ speakerHeadPercent: 20, speakerShownTo: "chest" }).ok, true, "the two pictures of the first real story, measured at about 20%, pass now");
+  // Decision 15: a two-avatar shot with small faces is redrawn once.
+  assert.equal(v({ speakerHeadPercent: 9, speakerShownTo: "feet" }).problems[0], "Vex may be a little far from the camera for a chest-up shot (the head is about 9% of the picture's height)");
+  assert.match(v({ speakerHeadPercent: 9, speakerShownTo: "feet" }).fixes[0], /tight chest-up shot of Vex, the cube head filling a third of the frame height/);
+  // Decision 96: the head size is the measure, and the line is 12% for chest-up (it was 18, and 22 before):
+  // the owner's final test had right pictures measured at 12 to 15%. The crop alone fails nothing.
+  assert.equal(v({ speakerHeadPercent: 11, speakerShownTo: "chest" }).ok, false, "11% fails");
+  assert.equal(v({ speakerHeadPercent: 12, speakerShownTo: "waist" }).ok, true, "the line is 12%");
+  assert.equal(v({ speakerHeadPercent: 15, speakerShownTo: "feet" }).ok, true, "the pictures of the final test, measured at about 15%, pass now");
+  assert.equal(v({ speakerHeadPercent: 30, speakerShownTo: "feet" }).ok, true, "a large head never fails on the crop");
+  assert.equal(MIN_HEAD_PERCENT, 12);
   assert.equal(verdict(answer({ speakerHeadPercent: 12, speakerShownTo: "feet" }), expected, { speaker: "Vex", framing: false }).ok, true, "a clip's last frame is not judged on framing");
   // The questions ask about flat teeth the way decision 11 puts it: flat is fine, 3D is not.
   const text = prompt(expected, { speaker: "Vex" });

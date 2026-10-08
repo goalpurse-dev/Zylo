@@ -3,7 +3,7 @@
 // job that is sent too often. No provider and no database: the numbers are given.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, USER_DAILY_USD, inFlightUsd, isUserSpend, judgeSpend, runSpendWatch, usdOfCredits, userBudget } from "../supabase/functions/_shared/blocky/spendWatch.js";
+import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, USER_DAILY_USD, inFlightUsd, isUserSpend, judgeSpend, opsCard, runSpendWatch, usdOfCredits, userBudget } from "../supabase/functions/_shared/blocky/spendWatch.js";
 import { MESSAGES } from "../supabase/functions/_shared/blocky/errors.js";
 
 test("the cap per user: $20 of our real cost a day, counted with what is still running and what the step adds", () => {
@@ -98,4 +98,24 @@ test("a retry alert is written and emailed, and pauses nothing; a watch that can
   assert.match(admin.log.alerts[0].p_message, /job-1 \(9\)/);
   assert.equal(sent.length, 1);
   assert.equal(await runSpendWatch(fakeAdmin(), {}, { read: async () => { throw new Error("database down"); } }), null);
+});
+
+test("the alarm card on /admin/ops: the switch, the numbers, and only the alerts that are open", () => {
+  const now = new Date("2026-10-09T12:00:00Z");
+  const paidOn = { on: true, reason: null, spentUsd: 3.2, inFlightUsd: 0.5, capUsd: 999999.99 };
+  const quiet = opsCard({ paid: paidOn, numbers: { since: "2026-10-08T12:00:00Z", spendUsd: 3.2, chargedCredits: 300 }, now });
+  assert.deepEqual([quiet.paidCalls, quiet.offReason, quiet.alerts.length, quiet.today.capUsd], [true, null, 0, null], "no cap is shown as none, not as a number");
+  assert.deepEqual([quiet.watch.spendUsd, quiet.watch.chargedCredits, quiet.watch.alarmAtUsd, quiet.limits.userDailyUsd], [3.2, 300, AHEAD_ALARM_USD, USER_DAILY_USD]);
+  assert.ok(quiet.watch.aheadUsd < 0, "a healthy day: charges are ahead of spend");
+  // A spend alarm: open until paid calls are switched back on by hand, however old it is.
+  const spend = { provider: SPEND_ALERT, message: "ahead", opened_at: "2026-10-07T10:00:00Z", last_seen_at: "2026-10-07T10:00:00Z", count: 3 };
+  const retry = { provider: RETRY_ALERT, message: "job-1 (9)", opened_at: "2026-10-09T11:00:00Z", last_seen_at: "2026-10-09T11:00:00Z", count: 1 };
+  const paused = opsCard({ paid: { on: false, reason: "switch_off", spentUsd: 40, inFlightUsd: 0, capUsd: 25 }, numbers: { spendUsd: 40, chargedCredits: 103, jobs: [{ id: "job-1", attempt: 9 }] }, alerts: [spend, retry], now });
+  assert.deepEqual([paused.paidCalls, paused.offReason, paused.today.capUsd, paused.watch.retried], [false, "switch_off", 25, 1]);
+  assert.deepEqual(paused.alerts.map((a) => [a.kind, a.message, a.count]), [["spend", "ahead", 3], ["retries", "job-1 (9)", 1]]);
+  // Cleared after it was last seen: gone. Seen again after the clearing: back.
+  assert.deepEqual(opsCard({ paid: paidOn, numbers: {}, alerts: [spend], clearedAt: "2026-10-08T09:00:00Z", now }).alerts, []);
+  assert.equal(opsCard({ paid: paidOn, numbers: {}, alerts: [{ ...spend, last_seen_at: "2026-10-09T09:00:00Z" }], clearedAt: "2026-10-08T09:00:00Z", now }).alerts.length, 1);
+  // A retry alert is shown for a day.
+  assert.deepEqual(opsCard({ paid: paidOn, numbers: {}, alerts: [{ ...retry, last_seen_at: "2026-10-08T11:00:00Z" }], now }).alerts, []);
 });

@@ -12,7 +12,7 @@ import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
 import { AvatarStack } from "./shared/Avatar";
 import { EpisodeCard, SeriesList, SeriesPlanPanel, SeriesWizard } from "./builder/SeriesPanels";
-import SettingsFields from "./builder/SettingsFields";
+import SettingsFields, { QuickSettings } from "./builder/SettingsFields";
 import StoryStep from "./builder/StoryStep";
 import CharacterLibraryDialog from "./dialogs/CharacterLibraryDialog";
 import SceneActionDialog from "./dialogs/SceneDialogs";
@@ -129,6 +129,7 @@ export default function BlockyStoriesPage() {
       const short = est.total != null && est.total > account.balance;
       // The user's own script goes on to the settings; an idea or a description leads straight to its three versions.
       const versionsReady = single.method === "idea" ? Boolean(single.ideaId) : !flow.storyBlocker;
+      const quickSettings = <QuickSettings value={single} onChange={flow.updateSingle} allowedTiers={account.allowedTiers} onLockedTier={flow.setUpgradeTier} quotes={flow.quotes} />;
       if (single.method === "script") {
         footer = (
           <>
@@ -139,19 +140,22 @@ export default function BlockyStoriesPage() {
           </>
         );
       } else if (versionsReady) {
-        // The three versions are written at the length and quality that are set (changeable first).
+        // Quality and length are chosen here, in view, before anything is written: the length decides the script.
         footer = (
           <>
             {errorLine}
+            {quickSettings}
             {short ? (
               <PrimaryButton onClick={() => flow.setNoCredits({ needed: est.total })}>Add credits</PrimaryButton>
             ) : (
               <PrimaryButton busy={flow.acting === "versions" ? "Planning three versions…" : null} onClick={flow.startSingle}>Write 3 versions, free</PrimaryButton>
             )}
-            <FootNote tone={short ? "warn" : "muted"}>
-              {short ? `The full video needs ${(est.total - account.balance).toLocaleString()} more credits. ` : `${TIERS[single.tierId].label}, about ${single.lengthSec} sec. `}
-              <button type="button" onClick={() => flow.updateSingle({ step: "settings" })} className={cx("rounded underline decoration-white/25 underline-offset-2 transition hover:text-lime-300", FOCUS)}>Change length or quality</button>
-            </FootNote>
+            {/* On a phone the bar stays short: the button says "free" and the cost line says the rest. */}
+            <div className={short ? undefined : "hidden lg:block"}>
+              <FootNote tone={short ? "warn" : "muted"}>
+                {short ? `The full video needs ${(est.total - account.balance).toLocaleString()} more credits. Pick a shorter length or V2, or add credits.` : "Writing is free. You pay for the pictures after you pick a version, and for the video only when you animate."}
+              </FootNote>
+            </div>
           </>
         );
       } else if (single.method === "prompt") {
@@ -159,6 +163,7 @@ export default function BlockyStoriesPage() {
         footer = (
           <>
             {errorLine}
+            {quickSettings}
             <PrimaryButton disabled>Write 3 versions, free</PrimaryButton>
             <FootNote>{flow.storyBlocker}</FootNote>
           </>

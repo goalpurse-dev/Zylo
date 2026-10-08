@@ -133,17 +133,31 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.nextOnDescribe = await p.getByRole("button", { name: /Next: choose length/ }).count();
   await p.waitForTimeout(600);   // the library dialog's closing animation
   await p.screenshot({ path: path.join(outDir, `describe-${name}.png`) });
-  await p.getByRole("button", { name: "Change length or quality" }).first().click();
+  // Quality and length are chosen right above the button: V2 and 30 seconds to start with, and the full cost.
+  const quick = async () => ({
+    quality: await p.locator('[aria-labelledby="bq-quality"] button').evaluateAll((bs) => bs.map((b) => `${b.innerText.split("\n")[0].trim()}${b.getAttribute("aria-pressed") === "true" ? "*" : ""}`)),
+    length: await p.locator('[aria-labelledby="bq-length"] button').evaluateAll((bs) => bs.map((b) => `${b.innerText.trim()}${b.getAttribute("aria-pressed") === "true" ? "*" : ""}`)),
+    cost: Number(((await p.locator('section[aria-label="Story builder"]').innerText()).match(/Full video:\s*about\s*([\d,]+)/)?.[1] ?? "").replace(",", "")) || null,
+    above: await p.evaluate(() => { const q = document.querySelector('[aria-labelledby="bq-length"]')?.getBoundingClientRect(); const w = [...document.querySelectorAll("button")].find((b) => /Write 3 versions/.test(b.textContent))?.getBoundingClientRect(); return q && w ? q.bottom <= w.top && w.top - q.bottom < 80 && q.top >= 0 && w.bottom <= innerHeight : false; }),
+  });
+  row.quickDescribe = await quick();
+  await p.locator('[aria-labelledby="bq-length"] button', { hasText: "20 sec" }).click();
+  await p.waitForTimeout(300);
+  row.quickAt20 = await quick();
+  await p.locator('[aria-labelledby="bq-length"] button', { hasText: "30 sec" }).click();
+  await p.waitForTimeout(300);
+  // The user's own script still goes through the settings step.
+  await p.locator('[aria-label="How do you want to start?"] button', { hasText: "My own script" }).click();
+  await p.locator("textarea").first().fill("Noob: Who gave you admin?\nVex: Nobody. I took it.\nNoob: Then I'm taking it back.");
+  await p.waitForTimeout(500);
+  row.scriptNext = await p.getByRole("button", { name: /Next: choose length and quality/ }).count();
+  await p.locator('[aria-label="How do you want to start?"] button', { hasText: "Describe it" }).click();
   await p.waitForTimeout(2500);
   // Settings: prices come from the server (quote_tool_prices); nothing is charged for looking.
-  row.settingsHeading = await p.getByText("How should it look?").count();
-  row.shapeChoice = await p.locator('[aria-label="Video shape"]').count();
   row.writeButton = (await p.getByRole("button", { name: /Write 3 versions/ }).first().innerText().catch(() => "")).replace(/\s+/g, " ");
-  row.costText = (await p.locator('section[aria-label="Story builder"]').innerText()).match(/Pictures \((\d+)\) are made after you pick a version, and the rest \(about (\d+)\)/)?.slice(1, 3) ?? null;
   await p.screenshot({ path: path.join(outDir, `settings-${name}.png`) });
 
   // Ideas and the three versions (answered by this script, see fakeApi).
-  await p.getByRole("button", { name: "Back", exact: true }).first().click();
   await p.locator('[aria-label="How do you want to start?"] button', { hasText: "Ideas" }).click();
   await p.getByRole("button", { name: "Give me ideas" }).click();
   await p.waitForTimeout(1500);
@@ -153,7 +167,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   await p.locator('section[aria-label="Story builder"] button[aria-pressed]', { hasText: "The Owner's Badge" }).click();
   await p.waitForTimeout(400);
   row.nextAfterPick = await p.getByRole("button", { name: /Next: choose length/ }).count();
-  row.changeSettingsLink = await p.getByRole("button", { name: "Change length or quality" }).count();
+  row.quickIdea = await quick();
   await p.screenshot({ path: path.join(outDir, `idea-picked-${name}.png`) });
   await p.getByRole("button", { name: /Write 3 versions/ }).first().click();
   await p.waitForTimeout(700);
@@ -262,11 +276,13 @@ const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-sto
   && v.libraryNames.length === 52 && v.libraryNames.slice(0, 3).join() === "Noob,Vex,Taz" && v.libraryPictures >= 6
   && v.finalHeading >= 1 && v.videoWhole && v.finalOrder && v.finalLayout.downloadButtons === 1 && v.finalLayout.copyButtons >= 3 && v.finalLayout.captionsToggle >= 1
   && v.viewButtons >= 3 && v.viewerOpen === 1 && v.viewerImage?.inside && v.viewerNext === 1 && v.viewerClosed
-  && /^Make scene pictures \d+( credits)?$/.test(v.makeButton) && /credits now for the \d+ pictures/.test(v.makeNote) && v.settingsHeading === 1 && v.shapeChoice === 0
+  && /^Make scene pictures \d+( credits)?$/.test(v.makeButton) && /credits now for the \d+ pictures/.test(v.makeNote) && v.scriptNext === 1
   && v.askIdeasButton === 1 && v.ideasAskedOnLoad === false && /Write 3 versions/.test(v.writeButton) && v.ideaCards === 5
-  && v.writeOnDescribe === 1 && v.nextOnDescribe === 0 && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.changeSettingsLink === 1 && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
+  && v.writeOnDescribe === 1 && v.nextOnDescribe === 0 && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.quickDescribe.quality.join() === "V2*,V3,V4" && v.quickDescribe.length.join() === "20 sec,30 sec*,45 sec,1 min" && v.quickDescribe.cost > 0 && v.quickDescribe.above
+  && v.quickAt20.length.join() === "20 sec*,30 sec,45 sec,1 min" && v.quickAt20.cost > 0 && v.quickAt20.cost < v.quickDescribe.cost
+  && v.quickIdea.quality.join() === "V2*,V3,V4" && v.quickIdea.length.join() === "20 sec,30 sec*,45 sec,1 min" && v.quickIdea.above && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
   && v.polishing >= 1 && Boolean(v.pickRefusedText) && v.pickButtonsAfter === 2
   && v.planningHeading >= 1 && v.readyWhileWriting === 1 && v.pickHeading >= 1 && v.pickButtons === 2 && v.failedCard === 1 && v.leftToday === 1 && v.namedSpeakers === 12 && v.sideScroll === false
-  && v.costText && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);
+  && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);
 console.log(ok ? "PASS" : "FAIL");
 process.exitCode = ok ? 0 : 1;

@@ -495,7 +495,7 @@
    "Vex drawn twice",
    "text on screen (\"ADMIN\")",
    "a logo or brand mark in the picture",
-   "Vex is too small in the frame (head about 14% of the height)"
+   "Vex may be a little far from the camera for a chest-up shot (the head is about 9% of the picture's height)"
   ],
   "fixes": [
    "Vex is a blocky game avatar: a cube head with a flat printed face, a rectangular torso, block arms and legs.",

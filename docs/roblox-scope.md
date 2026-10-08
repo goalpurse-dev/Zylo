@@ -610,6 +610,23 @@ Decisions of 2026-10-08 (after the first real story):
     Seven failure drills, simulated (`tests/blockyDrills.test.mjs`), each end in a finished
     step or a full refund. `scripts/blocky/privacyCheck.mjs`: 26 of 26. The launch checklist
     and the owner's final test are in `docs/roblox-launch-checklist.md`.
+96. LENGTH AND QUALITY IN VIEW (owner, 2026-10-08, after the final test: "I went straight from
+    picking an idea to Write 3 versions without ever seeing a quality or length choice"). In
+    Ideas and Describe it the choice sits right above the button: quality V2 / V3 / V4 and
+    length 20 sec / 30 sec / 45 sec / 1 min, V2 and 30 sec selected, with the full cost of what
+    is selected. The small "Change length or quality" link is gone. My own script still goes
+    through the settings step. Checked at 1440 and 390 px (`qaPage.mjs`).
+97. THE SIZE RULE, PER SHOT (owner, 2026-10-08: scenes that looked fine showed "too small in
+    the frame (head about 15%)" after the redraw). The check reads a head smaller than the eye
+    does: the owner's right pictures measured 12 to 15%. The smallest head is now 8% wide, 10%
+    over the shoulder, 12% chest-up, medium close-up and reaction, 14% close-up (it was 10, 16
+    and 18). How far down the body goes no longer fails a close shot (the check said "knees"
+    for right pictures). What is left is worded as what was measured ("may be a little far
+    from the camera"), and the page shows it as "Worth a quick look", not as a problem.
+98. AFTER THE OUTAGE (owner, 2026-10-08): the Blocky and Fruit sweeps run every 30 seconds
+    (they ran every 20; migration `20261031100000_story_sweeps_30s.sql`). The Blocky alarm
+    card is on /admin/ops (the page calls `blocky-story-api` `opsStatus`, owner only: the
+    shared `ops-status` function is untouched). Files stay public under random names for now.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

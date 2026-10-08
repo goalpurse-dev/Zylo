@@ -100,6 +100,39 @@ export async function readSpendWatch(admin, now = new Date()) {
   };
 }
 
+/**
+ * What the owner's page shows for Blocky (/admin/ops): the paid switch, the alarm's own numbers, and the
+ * alerts that are open. A spend alert is open until paid calls are switched back on by hand (paid.mjs on
+ * writes SPEND_CLEARED); a retry alert is shown for WATCH_HOURS. Pure: the reads are in readOpsCard.
+ * @param {{paid: object, numbers: object, alerts?: object[], clearedAt?: string|null, now?: Date}} o
+ */
+export function opsCard({ paid, numbers, alerts = [], clearedAt = null, now = new Date() }) {
+  const v = judgeSpend(numbers);
+  const at = (iso) => new Date(iso).getTime();
+  const open = (a) => (a.provider === SPEND_ALERT ? !clearedAt || at(a.last_seen_at) > at(clearedAt) : a.provider === RETRY_ALERT && now.getTime() - at(a.last_seen_at) < WATCH_HOURS * 3600_000);
+  const capUsd = Number(paid?.capUsd);
+  return {
+    at: now.toISOString(),
+    paidCalls: Boolean(paid?.on),
+    offReason: paid?.on ? null : paid?.reason ?? "switch_off",
+    today: { spentUsd: round(Number(paid?.spentUsd) || 0), inFlightUsd: round(Number(paid?.inFlightUsd) || 0), capUsd: Number.isFinite(capUsd) && capUsd < 100000 ? capUsd : null },
+    watch: { since: numbers.since ?? null, hours: WATCH_HOURS, spendUsd: v.spendUsd, chargedCredits: v.chargedCredits, chargedUsd: v.chargedUsd, aheadUsd: v.aheadUsd, alarmAtUsd: AHEAD_ALARM_USD, retried: v.retried.length },
+    limits: { userDailyUsd: USER_DAILY_USD, maxJobAttempts: MAX_JOB_ATTEMPTS },
+    alerts: alerts.filter(open).map((a) => ({ kind: a.provider === SPEND_ALERT ? "spend" : "retries", message: a.message, since: a.opened_at ?? null, lastSeen: a.last_seen_at, count: Number(a.count) || 0 })),
+  };
+}
+
+/** Reads what opsCard needs. readPaid: () => the paid switch's state (spendGuard.js#readPaidState). */
+export async function readOpsCard(admin, readPaid, now = new Date()) {
+  const [paid, numbers, { data: rows, error }] = await Promise.all([
+    readPaid(),
+    readSpendWatch(admin, now),
+    admin.from("blocky_provider_alerts").select("provider, message, opened_at, last_seen_at, count").in("provider", [SPEND_ALERT, RETRY_ALERT, SPEND_CLEARED]),
+  ]);
+  if (error) throw new Error(error.message);
+  return opsCard({ paid, numbers, alerts: (rows ?? []).filter((r) => r.provider !== SPEND_CLEARED), clearedAt: (rows ?? []).find((r) => r.provider === SPEND_CLEARED)?.last_seen_at ?? null, now });
+}
+
 async function email(env, subject, text) {
   if (!env?.RESEND_API_KEY || !env?.ALERT_EMAIL) return false;
   const res = await fetch("https://api.resend.com/emails", {

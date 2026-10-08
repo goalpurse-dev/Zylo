@@ -43,13 +43,43 @@ function StuckTable({ title, rows, cols }) {
   );
 }
 
+// Blocky Stories' alarm (its own function, blocky-story-api: the same owner check on the server). The switch
+// for paid calls, what users cost us against what they were charged, and any open alert.
+function BlockyCard({ b }) {
+  if (!b) return <Card title="Blocky Stories · alarm" testid="ops-blocky"><p className="text-[14px] text-white/60">Couldn't load Blocky's numbers.</p></Card>;
+  const w = b.watch;
+  const spendAlert = b.alerts.find((a) => a.kind === "spend");
+  const off = { switch_off: "switched off", cap_reached: "today's cap is reached", unreadable: "the switch couldn't be read" }[b.offReason] ?? "switched off";
+  return (
+    <Card title="Blocky Stories · alarm" tone={spendAlert ? "bad" : b.alerts.length ? "warn" : "plain"} testid="ops-blocky">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat label="Paid calls" value={b.paidCalls ? "On" : spendAlert ? "Paused" : "Off"} sub={b.paidCalls ? "stories can be made" : spendAlert ? "paused by the alarm" : off} />
+        <Stat label={`Spent on users · last ${w.hours} h`} value={money(w.spendUsd)} sub={`all of Blocky today, tests too: ${money(b.today.spentUsd)}${b.today.inFlightUsd > 0 ? ` · ${money(b.today.inFlightUsd)} running` : ""}`} />
+        <Stat label="Charged to users" value={money(w.chargedUsd)} sub={`${num(w.chargedCredits)} credits, net of refunds`} />
+        <Stat label="Spend ahead of charges" value={w.aheadUsd > 0 ? money(w.aheadUsd) : "None"} sub={`the alarm pauses paid calls above ${money(w.alarmAtUsd)}`} />
+      </div>
+      {b.alerts.length === 0 && <p className="mt-3 text-[12.5px] text-white/55">No alarm. Limits: {money(b.limits.userDailyUsd)} of our cost per user per day; {b.today.capUsd == null ? "no daily cap on Blocky as a whole" : `${money(b.today.capUsd)} a day for Blocky as a whole`}.</p>}
+      {b.alerts.map((a) => (
+        <p key={a.kind} className={`mt-3 text-[12.5px] ${a.kind === "spend" ? "text-red-200" : "text-amber-200"}`}>
+          {a.kind === "spend" ? "Spending alarm" : "A job keeps being sent again"} (last seen {new Date(a.lastSeen).toLocaleString()}): {a.message}
+          {a.kind === "spend" && " Paid calls stay off until you switch them back on."}
+        </p>
+      ))}
+    </Card>
+  );
+}
+
 export default function Ops() {
   const [data, setData] = useState(null);
+  const [blocky, setBlocky] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | denied | error
   const load = useCallback(async () => {
     const { data: d, error } = await supabase.functions.invoke("ops-status", { body: {} });
     if (error) { const status = error?.context?.status; setState(status === 401 || status === 403 ? "denied" : "error"); return; }
     setData(d); setState("ok");
+    // Blocky's card has its own source; a failure there never hides the rest of the page.
+    const { data: b, error: blockyError } = await supabase.functions.invoke("blocky-story-api", { body: { action: "opsStatus" } });
+    setBlocky(!blockyError && b?.ok ? b.data : null);
   }, []);
   useEffect(() => { document.title = "Ops | Zyvo"; load(); const t = setInterval(load, 30_000); return () => clearInterval(t); }, [load]);
 
@@ -80,6 +110,8 @@ export default function Ops() {
         {p.paused && p.lastError && <p className="mt-3 text-[12.5px] text-red-200">Why: {p.lastError}</p>}
         {p.providerUsageToday && <p className="mt-3 text-[12.5px] text-white/55">Runware's own count for today: {num(p.providerUsageToday.requests)} requests, {num(p.providerUsageToday.credits)} in its usage units.</p>}
       </Card>
+
+      <BlockyCard b={blocky} />
 
       <Card title="Failures per hour · last 24 hours" testid="ops-failures">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">

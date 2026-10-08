@@ -43,7 +43,7 @@ import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
 import { COST_USD, SMALL_USD, WRITER_USD, estimateUsd, readPaidState } from "../_shared/blocky/spendGuard.js";
-import { userBudget, userSpendToday } from "../_shared/blocky/spendWatch.js";
+import { readOpsCard, userBudget, userSpendToday } from "../_shared/blocky/spendWatch.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -87,6 +87,11 @@ const RATE = {
 } as const;
 
 type Ctx = { userId: string; plan: string; body: any };
+
+function adminEmails(): string[] {
+  return [Deno.env.get("ALERT_EMAIL"), Deno.env.get("CONTACT_TO_EMAIL"), ...(Deno.env.get("ADMIN_EMAILS") ?? "").split(",")]
+    .map((e) => String(e ?? "").trim().toLowerCase()).filter(Boolean);
+}
 
 /**
  * Paid calls are OFF unless the switch is on and today's spend, with what this
@@ -855,6 +860,13 @@ Deno.serve(async (req) => {
     }
     const { data: { user }, error } = await admin.auth.getUser(token);
     if (error || !user) throw blockyError("UNAUTHORIZED");
+
+    // The owner's page (/admin/ops): Blocky's alarm card. Read-only, and only for the site owner: the same
+    // rule as ops-status (ALERT_EMAIL, else CONTACT_TO_EMAIL, or listed in ADMIN_EMAILS).
+    if (body?.action === "opsStatus") {
+      if (!adminEmails().includes(String(user.email ?? "").toLowerCase())) throw new BlockyError("FORBIDDEN", "Not allowed.", 403);
+      return reply({ ok: true, data: await readOpsCard(admin, () => readPaidState(admin, ENV_PAID_CALLS, 0)) });
+    }
 
     const handler = ACTIONS[body?.action];
     if (!handler) throw new BlockyError("VALIDATION", "Unknown action.", 400);

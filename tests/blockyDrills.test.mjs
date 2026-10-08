@@ -159,7 +159,7 @@ test("drill 7, the tab is closed in the middle of a story: the server finishes t
   clips(db, storyId);
   await engine.kick({ storyId });
   db.advance(TIMING.pollAfterSec.clip + 1);
-  await engine.reconcile();   // the sweep, every 20 seconds while anything is in flight
+  await engine.reconcile();   // the sweep, every 30 seconds while anything is in flight
   assertNotStuck(db, storyId, { finished: 6 });
   assert.deepEqual(finalsStarted, [storyId], "the last clip starts the final video without a click");
 });

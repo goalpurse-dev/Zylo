@@ -23,7 +23,11 @@ const HEAD_ROOM = "The whole head, with its hat or accessory, is inside the fram
  *   framing   the framing sentence (full wording) and its short form
  *   camera    the camera move for clip models that follow the shot (clips.js)
  *   check     what the picture check holds the speaker to: the smallest cube head as a share of the frame
- *             height, whether a full body is the point (wide), not allowed (the others), and the redraw's fix
+ *             height (as the check MEASURES it), whether a full body is the point (wide), and the redraw's fix.
+ *             The sizes were set from the owner's final test (2026-10-08): the check reads a head smaller than
+ *             the eye does, and pictures it measured at 12 to 15% (over-the-shoulder, reaction, three in the
+ *             frame) looked right. Each line sits under what a right picture of that shot measured, and over
+ *             the one picture that really was too far away (8%).
  *   alone     only the speaker is in the frame, whoever else is in the scene
  *   needsListener  the shot needs a second character in the scene
  */
@@ -33,21 +37,21 @@ export const SHOTS = Object.freeze({
     framing: `Framing: full body. Every character stands whole inside the frame, the place clearly seen around them. The speaker's cube head is about a sixth of the frame height, the face decal sharp, toward the camera. ${HEAD_ROOM}`,
     framingShort: "Full body in the place; the speaker in front, the face decal sharp, toward the camera, the whole head in frame.",
     camera: "a slow, steady push-in from the wide view toward the speaker",
-    check: Object.freeze({ minHead: 10, fullBody: "wanted", fix: (s) => `Reframe as a wide shot: ${s} from head to feet in the front of the frame, the cube head about a sixth of the frame height, the face sharp and toward the camera, the place clearly seen around.` }),
+    check: Object.freeze({ minHead: 8, fullBody: "wanted", fix: (s) => `Reframe as a wide shot: ${s} from head to feet in the front of the frame, the cube head about a sixth of the frame height, the face sharp and toward the camera, the place clearly seen around.` }),
   }),
   "chest-up": Object.freeze({
     picture: "Chest-up shot on the speaker in the foreground, never full body",
     framing: `Framing: chest up on the speaker; the cube head is a quarter to a third of the frame height, the face decal sharp. Keep the place as a soft background. ${HEAD_ROOM}`,
     framingShort: "Chest up on the speaker, never full body; the face decal large, sharp, toward the camera, the whole head in frame.",
     camera: "a gentle, slow dolly-in",
-    check: Object.freeze({ minHead: 18, fullBody: "never", fix: (s) => `Reframe much closer: a tight chest-up shot of ${s}, the cube head filling a third of the frame height, cropped at the chest. No legs, no feet, no floor.` }),
+    check: Object.freeze({ minHead: 12, fullBody: "never", fix: (s) => `Reframe much closer: a tight chest-up shot of ${s}, the cube head filling a third of the frame height, cropped at the chest. No legs, no feet, no floor.` }),
   }),
   "medium close-up": Object.freeze({
     picture: "Medium close-up, chest up",
     framing: `Framing: chest up or closer on the speaker, never full body; the cube head is a third of the frame height, the face decal sharp. Keep the place as a soft background. ${HEAD_ROOM}`,
     framingShort: "Chest up or closer on the speaker, never full body; the face decal large, sharp, toward the camera, the whole head in frame.",
     camera: "a slow push-in toward the speaker",
-    check: Object.freeze({ minHead: 18, fullBody: "never", fix: (s) => `Reframe much closer: a medium close-up of ${s}, the cube head filling a third of the frame height, cropped at the chest. No legs, no feet, no floor.` }),
+    check: Object.freeze({ minHead: 12, fullBody: "never", fix: (s) => `Reframe much closer: a medium close-up of ${s}, the cube head filling a third of the frame height, cropped at the chest. No legs, no feet, no floor.` }),
   }),
   "close-up": Object.freeze({
     picture: "Close-up on the speaker's face and shoulders",
@@ -56,7 +60,7 @@ export const SHOTS = Object.freeze({
     camera: "a very slow push-in on the speaker's face",
     // The same smallest head as chest-up: with a hat in frame a head is rarely over a third of the height, and the
     // check measured a clear close-up at 18 (the shot test of 2026-10-08).
-    check: Object.freeze({ minHead: 18, fullBody: "never", fix: (s) => `Reframe as a close-up: only the head and shoulders of ${s}, the cube head about a third of the frame height, the whole head with its hat or accessory still inside the frame.` }),
+    check: Object.freeze({ minHead: 14, fullBody: "never", fix: (s) => `Reframe as a close-up: only the head and shoulders of ${s}, the cube head about a third of the frame height, the whole head with its hat or accessory still inside the frame.` }),
   }),
   reaction: Object.freeze({
     picture: "Reaction shot: {speaker} alone, head and shoulders, caught in the middle of a reaction",
@@ -64,7 +68,7 @@ export const SHOTS = Object.freeze({
     framingShort: "Head and shoulders of the speaker, alone, mid-reaction; the face decal large, sharp, toward the camera, the whole head in frame.",
     camera: "almost still, with a slight handheld drift",
     alone: true,
-    check: Object.freeze({ minHead: 18, fullBody: "never", fix: (s) => `Reframe as a reaction shot: only the head and shoulders of ${s}, alone, the cube head about a third of the frame height, the whole head with its hat or accessory still inside the frame.` }),
+    check: Object.freeze({ minHead: 12, fullBody: "never", fix: (s) => `Reframe as a reaction shot: only the head and shoulders of ${s}, alone, the cube head about a third of the frame height, the whole head with its hat or accessory still inside the frame.` }),
   }),
   "over-the-shoulder": Object.freeze({
     picture: "Over-the-shoulder shot: the camera looks past {listener}, seen from behind at the near edge of the frame, at {speaker}, who faces the camera chest-up beyond",
@@ -72,7 +76,7 @@ export const SHOTS = Object.freeze({
     framingShort: "Past the back of the listener's cube head at the near edge, the speaker chest-up beyond, face sharp, toward the camera, the whole head in frame.",
     camera: "a very slow push-in past the shoulder toward the speaker",
     needsListener: true,
-    check: Object.freeze({ minHead: 16, fullBody: "never", fix: (s) => `Reframe as an over-the-shoulder shot: the back of the listener's cube head at the near edge, and ${s} chest-up beyond, facing the camera, the cube head a quarter of the frame height. No legs, no feet, no floor.` }),
+    check: Object.freeze({ minHead: 10, fullBody: "never", fix: (s) => `Reframe as an over-the-shoulder shot: the back of the listener's cube head at the near edge, and ${s} chest-up beyond, facing the camera, the cube head a quarter of the frame height. No legs, no feet, no floor.` }),
   }),
 });
 

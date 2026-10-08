@@ -27,6 +27,9 @@ try {
     const leaked = JSON.stringify(r.data ?? "").includes(story.id) || JSON.stringify(r.data ?? "").includes("/blocky/");
     ok(`the API: ${action} gives the second account nothing of the owner's`, !r.ok && !leaked, `${r.code}`);
   }
+  // The owner's alarm card (/admin/ops) is for the site owner only.
+  const card = await api(other.accessToken, "opsStatus", {});
+  ok("the API: the alarm card is refused to the second account", !card.ok && !JSON.stringify(card.data ?? "").includes("spendUsd"), `${card.code}`);
   // 2. Straight at the tables, with the second account's own sign-in (row-level security is the guard).
   for (const [table, column] of [["blocky_stories", "id"], ["blocky_story_scenes", "story_id"], ["blocky_jobs", "story_id"], ["blocky_charges", "story_id"], ["blocky_credit_ledger", "story_id"], ["blocky_ai_calls", "story_id"]]) {
     const r = await other.client.from(table).select("*").eq(column, story.id);

@@ -229,15 +229,15 @@ Return only the JSON object.`;
 /* ─── The picture check (pictureCheck.js) ─────────────────────────────── */
 
 /**
- * The speaker's cube head must be at least this share of the frame height.
- * Below it the picture fails and is redrawn once, free, whatever the crop: a
- * "close-up" that came back cropped at the thighs fails on the head size alone.
- * 18 since 2026-10-08 (decision 36; it was 22): in the first real story two
- * pictures measured "about 20%" were flagged and looked fine.
+ * The speaker's cube head must be at least this share of the frame height in a
+ * chest-up picture; every shot has its own line (shots.js#SHOTS.check.minHead).
+ * Below it the picture is redrawn once, free. 12 since the owner's final test
+ * (2026-10-08; it was 18, and 22 before): pictures measured at 12 to 15% were
+ * flagged and looked right. How far down the body the picture goes no longer
+ * fails a close shot: the check answered "knees" for pictures that were right.
  */
-export const MIN_HEAD_PERCENT = 18;
+export const MIN_HEAD_PERCENT = 12;
 export const BODY_CUTS = ["shoulders", "chest", "waist", "knees", "feet", "unknown"];
-const TOO_WIDE = new Set(["knees", "feet"]);
 const NOT_WIDE = new Set(["shoulders", "chest"]);
 
 /**
@@ -336,23 +336,24 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
   if (data?.logos === true) { problems.push("a logo or brand mark in the picture"); fixes.push("No logos or brand marks: plain unbranded props."); }
   const drawn = String(data?.drawnText ?? "").trim();
   if (drawn.replace(/[^\p{L}\p{N}]/gu, "").length >= 2) { problems.push(`${DRAWN_TEXT_PROBLEM} ("${drawn.slice(0, 60)}")`); fixes.push("No subtitles, captions or words drawn in the clip."); }
-  // The framing, judged against the scene's own shot (shots.js): a wide shot must show the body and still
-  // keep the face large enough for lip sync; every other shot must not be a full-body picture.
+  // The framing, judged against the scene's own shot (shots.js): the speaker's head must not be under the
+  // shot's own size, and a wide shot must show the body. The words are for the user, who may well find the
+  // picture fine: they say what we measured, not that something is wrong.
   const name = shotOf(shot);
   const want = shotSpec(shot).check;
   const head = Number(data?.speakerHeadPercent);
   const small = Number.isFinite(head) && head > 0 && head < want.minHead;
-  const fullBody = TOO_WIDE.has(data?.speakerShownTo);
+  const measured = `the head is about ${Math.round(head)}% of the picture's height`;
   if (framing && speaker) {
-    if (want.fullBody === "never" && (small || fullBody)) {
-      problems.push(small ? `${speaker} is too small in the frame (head about ${Math.round(head)}% of the height)` : `${speaker} is shown full body (down to the ${data.speakerShownTo}), not ${name === "chest-up" ? "chest-up" : `as a ${name} shot`}`);
+    if (want.fullBody === "never" && small) {
+      problems.push(`${speaker} may be a little far from the camera for ${/^[aeiou]/.test(name) ? "an" : "a"} ${name} shot (${measured})`);
       fixes.push(want.fix(speaker));
     } else if (want.fullBody === "wanted" && (small || NOT_WIDE.has(data?.speakerShownTo))) {
-      problems.push(small ? `${speaker} is too small in the frame even for a wide shot (head about ${Math.round(head)}% of the height)` : `${speaker} is cropped at the ${data.speakerShownTo}, not shown full body as a wide shot`);
+      problems.push(small ? `${speaker} may be a little small in the picture, even for a wide shot (${measured})` : `${speaker} is framed closer than a wide shot (cropped at the ${data.speakerShownTo})`);
       fixes.push(want.fix(speaker));
     }
     if (data?.speakerHeadCut === true) {
-      problems.push(`the top of ${speaker}'s head, or what is on it, is cut off by the frame`);
+      problems.push(`the top of ${speaker}'s head, or what is on it, may be cut off by the edge of the picture`);
       fixes.push(`Leave clear room above ${speaker}'s head: the whole head with its hat, hair or accessory is inside the frame.`);
     }
   }

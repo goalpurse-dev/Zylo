@@ -54,7 +54,7 @@ export const reviewPlan = {
 export const checkExpected = [{ name: "Vex", look: avatar("vex").look }, { name: "Noob", look: avatar("noob").look }];
 export const checkAnswer = {
   characters: [{ name: "Vex", visible: true, isBlockyAvatar: false }], mainFigures: 3, backgroundFigures: 0, humanFigures: 1, brickToyLook: true, realisticFace: true,
-  duplicates: ["Vex"], readableText: "ADMIN", logos: true, speakerHeadPercent: 14, speakerShownTo: "feet", notes: "",
+  duplicates: ["Vex"], readableText: "ADMIN", logos: true, speakerHeadPercent: 9, speakerShownTo: "feet", notes: "",
 };
 export const uploadInput = { title: "The Admin Who Wasn't", lines: [{ speaker: "Vex", line: solo.line }], roles: { Vex: "the fake admin" }, episode: { number: 2, seriesTitle: "The Second Admin", nextNumber: 3, nextTitle: "The Real One" } };
 export const uploadAnswer = {

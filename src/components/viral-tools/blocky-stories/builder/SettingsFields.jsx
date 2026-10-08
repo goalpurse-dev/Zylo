@@ -1,5 +1,6 @@
 import QuotedCredits from "../../../pricing/QuotedCredits";
-import { CreditIcon, QualityCards, SectionLabel, SegmentedControl } from "../../../ui/zyvo";
+import { Lock } from "lucide-react";
+import { CreditIcon, FOCUS, QualityCards, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
 import { LIMITS } from "../api/blockyStoriesApi";
 import { ASPECTS, LENGTH_NOTES, QUICK_LENGTHS, formatLength } from "../constants";
 import { TIERS, TIER_IDS, estimateStory } from "../pricing/blockyEstimates";
@@ -92,6 +93,53 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
 
       <CostCard est={est} lengthSec={lengthSec} tierId={value.tierId} quotes={quotes} balance={balance} short={short} exact={Boolean(scriptScenes)} />
     </>
+  );
+}
+
+/**
+ * Quality and length, chosen right above the "Write 3 versions" button (the length decides the script, so it
+ * is picked before writing): three quality buttons, the four common lengths, and the full cost of what is
+ * selected. V2 and 30 seconds are selected to start with (useBlockyFlow#NEW_SINGLE).
+ */
+export function QuickSettings({ value, onChange, allowedTiers, onLockedTier, quotes }) {
+  const est = estimateStory({ lengthSec: value.lengthSec, tierId: value.tierId, prices: quotes.prices });
+  const choice = (selected, locked = false) => cx(
+    "flex min-w-0 flex-1 flex-col items-center justify-center rounded-lg border px-1 py-1.5 leading-tight transition",
+    FOCUS,
+    selected ? "border-lime-300/60 bg-lime-300/[0.12] text-lime-200" : locked ? "border-white/[0.06] bg-white/[0.02] text-white/35 hover:border-white/15" : "border-white/[0.08] bg-white/[0.035] text-white/75 hover:border-white/25",
+  );
+  return (
+    <div className="mb-2.5 flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
+        <span id="bq-quality" className="w-[52px] shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-white/40">Quality</span>
+        <div className="flex min-w-0 flex-1 gap-1.5" role="group" aria-labelledby="bq-quality">
+          {TIER_LIST.map((tier) => {
+            const locked = !allowedTiers.includes(tier.id);
+            return (
+              <button key={tier.id} type="button" aria-pressed={value.tierId === tier.id} aria-label={`${tier.label}, ${tier.tag}${locked ? ", needs a higher plan" : ""}`} onClick={() => (locked ? onLockedTier(tier.id) : onChange({ tierId: tier.id }))} className={choice(value.tierId === tier.id, locked)}>
+                <span className="flex items-center gap-1 text-[12px] font-black">{locked && <Lock className="h-3 w-3" aria-hidden="true" />}{tier.label}</span>
+                <span className="text-[9px] font-bold opacity-70">{tier.tag}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span id="bq-length" className="w-[52px] shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-white/40">Length</span>
+        <div className="flex min-w-0 flex-1 gap-1.5" role="group" aria-labelledby="bq-length">
+          {QUICK_LENGTHS.map((sec) => (
+            <button key={sec} type="button" aria-pressed={value.lengthSec === sec} onClick={() => onChange({ lengthSec: sec })} className={choice(value.lengthSec === sec)}>
+              <span className="text-[12px] font-black">{formatLength(sec)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="flex flex-wrap items-center gap-x-1.5 text-[11px] font-semibold leading-relaxed text-white/55" aria-live="polite">
+        <span className="font-black text-white">Full video:</span>
+        <span className="flex items-center gap-1 font-black tabular-nums text-lime-300">about <CreditIcon className="h-3.5 w-3.5" /><QuotedCredits status={quotes.status === "error" ? "error" : est.total == null ? "loading" : "ready"} value={est.total} onRetry={quotes.retry} /></span>
+        {est.total != null && <span>({est.pictures} for the pictures and script, about {est.video} for {formatLength(value.lengthSec)} of {TIERS[value.tierId].label} video)</span>}
+      </p>
+    </div>
   );
 }
 

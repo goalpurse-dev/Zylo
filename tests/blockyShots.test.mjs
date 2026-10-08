@@ -24,7 +24,7 @@ test("the shots: wide, chest-up, close-up, over-the-shoulder, reaction and mediu
     assert.match(s.framing, /face decal sharp/, shot);
     assert.match(s.framing, /The whole head, with its hat or accessory, is inside the frame\./, shot);
     assert.match(s.framingShort, /whole head in frame/, shot);
-    assert.ok(s.check.minHead >= 10 && typeof s.check.fix("Vex") === "string");
+    assert.ok(s.check.minHead >= 8 && typeof s.check.fix("Vex") === "string");
   }
   assert.equal(shotOf("medium two-shot"), "chest-up", "an older row's shot is drawn chest-up");
   assert.equal(shotSpec(undefined), SHOTS["chest-up"]);
@@ -88,31 +88,40 @@ test("the picture check judges a scene against its own shot", () => {
   const expected = [{ name: "Vex" }, { name: "Noob" }];
   const seen = (over) => ({ characters: [{ name: "Vex", visible: true, isBlockyAvatar: true }, { name: "Noob", visible: true, isBlockyAvatar: true }], mainFigures: 2, backgroundFigures: 0, humanFigures: 0, brickToyLook: false, realisticFace: false, duplicates: [], readableText: "", logos: false, speakerHeadPercent: 30, speakerShownTo: "chest", speakerHeadCut: false, notes: "", ...over });
   const judge = (shot, over) => verdictOf(seen(over), expected, { speaker: "Vex", shot });
-  // A full-body picture: right for a wide shot, wrong for every other shot.
-  const fullBody = { speakerHeadPercent: 15, speakerShownTo: "feet" };
+  // A picture from far away: right for a wide shot, too far for every other shot.
+  const fullBody = { speakerHeadPercent: 9, speakerShownTo: "feet" };
   assert.equal(judge("wide", fullBody).ok, true);
   for (const shot of SPEAKING_SHOTS.filter((s) => s !== "wide")) {
     const v = judge(shot, fullBody);
     assert.equal(v.ok, false, shot);
     assert.ok(v.fixes.includes(SHOTS[shot].check.fix("Vex")), `${shot}: the redraw is told its own shot`);
   }
-  assert.match(judge("chest-up", fullBody).problems[0], /Vex is too small in the frame \(head about 15% of the height\)/);
-  assert.match(judge("close-up", { speakerHeadPercent: 30, speakerShownTo: "feet" }).problems[0], /shown full body \(down to the feet\), not as a close-up shot/);
+  // The words say what was measured and leave the verdict to the user's eye.
+  assert.equal(judge("chest-up", fullBody).problems[0], "Vex may be a little far from the camera for a chest-up shot (the head is about 9% of the picture's height)");
+  assert.equal(judge("over-the-shoulder", fullBody).problems[0], "Vex may be a little far from the camera for an over-the-shoulder shot (the head is about 9% of the picture's height)");
+  for (const shot of SPEAKING_SHOTS) for (const p of [...judge(shot, { ...fullBody, speakerHeadPercent: 5 }).problems, ...judge(shot, { speakerHeadCut: true }).problems]) assert.doesNotMatch(p, /too small|problem|wrong|fail|not shown/, p);
+  // The owner's final test (2026-10-08): these were flagged at "head about 15%" and looked right. They pass,
+  // as measured: an over-the-shoulder at 12 and 15, a reaction at 14 and 15, three in the frame at 15.
+  for (const [shot, head, shownTo] of [["over-the-shoulder", 12, "knees"], ["over-the-shoulder", 15, "knees"], ["reaction", 14, "knees"], ["reaction", 15, "knees"], ["medium close-up", 15, "feet"], ["medium close-up", 15, "waist"], ["chest-up", 15, "feet"]]) {
+    assert.equal(judge(shot, { speakerHeadPercent: head, speakerShownTo: shownTo }).ok, true, `${shot} at ${head}%, shown to the ${shownTo}`);
+  }
+  // How far down the body goes no longer fails a close shot: the head size is the measure.
+  assert.equal(judge("close-up", { speakerHeadPercent: 30, speakerShownTo: "feet" }).ok, true);
+  // The one picture of the shot test that really was too far away (8%) still gets its redraw.
+  assert.equal(judge("close-up", { speakerHeadPercent: 8, speakerShownTo: "knees" }).ok, false);
   // A chest-up picture: right for chest-up, not a wide shot.
   assert.equal(judge("chest-up", {}).ok, true);
-  assert.deepEqual(judge("wide", {}).problems, ["Vex is cropped at the chest, not shown full body as a wide shot"]);
-  assert.match(judge("wide", { speakerHeadPercent: 6, speakerShownTo: "feet" }).problems[0], /too small in the frame even for a wide shot/);
-  // Each shot has its own smallest face.
-  assert.equal(judge("chest-up", { speakerHeadPercent: 18 }).ok, true);
-  assert.equal(judge("close-up", { speakerHeadPercent: 18 }).ok, true);
-  assert.equal(judge("close-up", { speakerHeadPercent: 15 }).ok, false);
-  assert.equal(judge("reaction", { speakerHeadPercent: 17 }).ok, false);
-  assert.equal(judge("wide", { speakerHeadPercent: 12, speakerShownTo: "feet" }).ok, true);
-  assert.equal(judge("over-the-shoulder", { speakerHeadPercent: 17 }).ok, true);
+  assert.deepEqual(judge("wide", {}).problems, ["Vex is framed closer than a wide shot (cropped at the chest)"]);
+  assert.equal(judge("wide", { speakerHeadPercent: 6, speakerShownTo: "feet" }).problems[0], "Vex may be a little small in the picture, even for a wide shot (the head is about 6% of the picture's height)");
+  // Each shot has its own smallest face: 8 wide, 10 over the shoulder, 12 chest-up, medium close-up and reaction, 14 close-up.
+  for (const [shot, min] of [["wide", 8], ["over-the-shoulder", 10], ["chest-up", 12], ["medium close-up", 12], ["reaction", 12], ["close-up", 14]]) {
+    const at = (head) => judge(shot, { speakerHeadPercent: head, speakerShownTo: shot === "wide" ? "feet" : "chest" }).ok;
+    assert.deepEqual([SHOTS[shot].check.minHead, at(min), at(min - 1)], [min, true, false], shot);
+  }
   // A head, hat or accessory cut off by the frame fails in every shot.
   for (const shot of SPEAKING_SHOTS) {
     const v = judge(shot, { ...(shot === "wide" ? fullBody : {}), speakerHeadCut: true });
-    assert.deepEqual([v.ok, v.problems.at(-1)], [false, "the top of Vex's head, or what is on it, is cut off by the frame"], shot);
+    assert.deepEqual([v.ok, v.problems.at(-1)], [false, "the top of Vex's head, or what is on it, may be cut off by the edge of the picture"], shot);
     assert.match(v.fixes.at(-1), /the whole head with its hat, hair or accessory is inside the frame/);
   }
   // No shot given (an older caller): judged as chest-up, as before. A clip's last frame is not judged on framing.

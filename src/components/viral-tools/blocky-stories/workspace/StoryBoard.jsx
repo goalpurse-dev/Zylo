@@ -249,14 +249,15 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
 
       </div>
 
-      {/* Our check flagged the picture after its one automatic redraw. Shown only while the story is at the
-          picture step: once the scene is being animated or has its clip, the picture is behind us. */}
+      {/* Our check noted something after the picture's one automatic redraw. A note, not an alarm: the check
+          is stricter than the eye, so the user decides. Shown only while the story is at the picture step:
+          once the scene is being animated or has its clip, the picture is behind us. */}
       {scene.imageCheck?.status === "failed" && scene.imageStatus === "ready" && !inClips && scene.clipStatus === "none" && (
-        <div role="alert" className="mx-2 mt-2 rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-100">
-          <span className="font-black">Our check found a problem:</span> {scene.imageCheck.notes || "something looks off"}.
+        <div role="status" className="mx-2 mt-2 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-white/65">
+          <span className="font-black text-white/85">Worth a quick look:</span> {scene.imageCheck.notes || "something may be off"}. If it looks right to you, carry on.
           {scene.imageCheck.freeRegenerate && !inClips && onRegenerateFree && (
-            <button type="button" onClick={onRegenerateFree} disabled={freeBusy} className={cx("mt-1.5 block w-full rounded-lg bg-amber-300 px-2 py-1.5 text-[11px] font-black text-[#1b1406] transition enabled:hover:bg-amber-200 disabled:opacity-50", FOCUS)}>
-              {freeBusy ? "Starting…" : "Regenerate free (once)"}
+            <button type="button" onClick={onRegenerateFree} disabled={freeBusy} className={cx("mt-1.5 block w-full rounded-lg border border-white/15 bg-white/[0.07] px-2 py-1.5 text-[11px] font-black text-white transition enabled:hover:bg-white/[0.12] disabled:opacity-50", FOCUS)}>
+              {freeBusy ? "Starting…" : "Redraw it free (once)"}
             </button>
           )}
         </div>
