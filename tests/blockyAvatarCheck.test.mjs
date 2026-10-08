@@ -59,8 +59,10 @@ test("the reference prompt carries the four fixes: cube head with flat faces, fr
   for (const a of ROSTER) {
     const p = avatarPrompt(a);
     assert.match(p, /seen straight from the front/, a.id);
-    assert.match(p, /The head is a cube: six flat faces and straight edges/, a.id);
-    assert.match(p, /no teeth, no tongue/, a.id);
+    assert.match(p, /The head is a cube, as wide as it is tall and deep, with six flat faces and straight edges/, a.id);
+    assert.match(p, /one flat shape filled edge to edge with a single dark colour/, a.id);
+    assert.doesNotMatch(p, /open mouth/, `${a.id}: an open mouth is what got a tongue drawn into it`);
+    assert.match(p, /no realistic 3D teeth, lips, tongue or nose/, a.id);
     if (a.accessory) assert.match(p, /built from a few simple solid blocks with flat faces/, a.id);
     else assert.doesNotMatch(p, /Hair, hats and every accessory/, a.id);
     assert.match(p, /Body construction: the torso is one plain rectangular box/, a.id);

@@ -566,6 +566,25 @@ Decisions of 2026-10-08 (after the first real story):
     the user's own script still goes through "Next: choose length and quality".
 87. V3 STAYS WITH THE OWNER until the owner has watched the Veo 3.1 Lite clip made after the
     prompt pass; that clip is made first thing after the daily cap resets.
+88. EVERY BLOCKY PRICE IS 2× OUR REAL COST (owner, 2026-10-08), at 1 credit = €0.024 (Starter:
+    €18 for 750 credits), no VAT in it. The basis, the costs and the prices are in `pricing.js`
+    (`BASIS`, `realCostUsd`, `priceCredits`); `tests/blockyPricing.test.mjs` holds every price to
+    2×. A picture 3 credits, the script share 13, V2 2.4, V3 3.75 and V4 11.25 credits a second
+    (`20261030100000_blocky_prices_2x.sql`). A 30-second story: V2 103, V3 144, V4 369 credits.
+    On yearly plans a credit is worth 2.0 cents, so the user pays about 1.7× our cost.
+    `node scripts/blocky/priceOptions.mjs` prints the tables. Option A (decision 81) lasted a
+    few hours.
+89. NO DAILY CAP AND NO TEST-LEDGER TOTAL WHILE WE BUILD (owner, 2026-10-08). The paid-calls
+    switch works as before. `docs/roblox-launch-checklist.md` starts with "Put the daily
+    spending cap back before real users get access".
+90. V3's test clip is skipped: the owner tests V3 on localhost (replaces decision 87's clip).
+91. THE REFERENCE PROMPT'S SECOND WORDING ("b", 2026-10-08). The first library run, on the
+    wording with the four fixes, was stopped after 8 avatars: a tongue inside most mouths, on
+    Lite and on Pro alike, so the Pro redo fired for nearly every avatar (2 of 8 passed; $1.62).
+    Wording b never says "open mouth" and says what the mouth, the head and the torso print
+    ARE. One test picture each of six avatars: no tongue in any, 3 of 6 pass the check. The
+    library is drawn with wording b. Also seen once on wording a: a square torso shape turned
+    into a tilted square with a hole (it reads as a real logo), which the check did not flag.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

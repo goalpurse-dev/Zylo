@@ -27,16 +27,24 @@ const save = () => writeJson(`${OUT}/results.json`, out);
 const arg = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
 const maxUsd = Number(arg("--max-usd") ?? Infinity);
 const only = arg("--only")?.split(",") ?? null;
+// A round is one wording of the reference prompt: "a" was the first run (2026-10-08); "t" is a small test of
+// wording b; "b" is the run with it. A picture's key carries its round, so no picture is ever sent twice.
+const ROUND = arg("--round") ?? "a";
+const WORDING = ROUND === "a" ? "a" : "b";
+const redo = arg("--redo")?.split(",") ?? [];
+const noPro = process.argv.includes("--no-pro");
 
 export const LITE = { key: "lite", label: "Nano Banana 2 Lite", model: "google:nano-banana@2-lite", expectUsd: 0.04 };
 export const PRO = { key: "pro", label: "Nano Banana Pro", model: "google:4@2", expectUsd: 0.15 };
 const CHECK_USD = 0.003;
-const VERSIONS = 2;
+const VERSIONS = Number(arg("--versions") ?? 2);
 // The three whose library pictures were made before the fixes go first.
 const FIRST = ["noob", "vex", "lux"];
 const order = [...FIRST.map((id) => ROSTER.find((a) => a.id === id)), ...ROSTER.filter((a) => !FIRST.includes(a.id))].filter((a) => !only || only.includes(a.id));
 const avatarFor = (a) => ({ name: a.name, head: a.head, torso: a.torso, legs: a.legs, accessory: a.accessory, face: a.face });
-const done = (a) => Boolean(out.avatars[a.id]?.done);
+// Done: made in this round, or made earlier and passing the check (unless it is named in --redo).
+const done = (a) => { const v = out.avatars[a.id]; return Boolean(v?.done) && !redo.includes(a.id) && (v.round === ROUND || (v.ok && ROUND !== "t")); };
+const tag = ROUND === "a" ? "" : `${ROUND}-`;
 const worstCase = VERSIONS * (LITE.expectUsd + CHECK_USD) + PRO.expectUsd + CHECK_USD;
 
 if (!paidCallsAllowed()) {
@@ -61,7 +69,7 @@ async function picture(a, key, engine) {
   budget.reserve(engine.expectUsd, key);
   const row = (out.items[key] = { key, id: a.id, model: engine.model, engine: engine.key, state: "sent", at: new Date().toISOString() });
   save();
-  const task = { taskType: "imageInference", model: engine.model, positivePrompt: avatarPrompt(a), width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95 };
+  const task = { taskType: "imageInference", model: engine.model, positivePrompt: avatarPrompt(a, { wording: WORDING }), width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95 };
   const r = await rawTest(task, `blocky-library-${key}`, { everyMs: 2500, timeoutMs: 4 * 60_000 });
   if (r.state === "refused") {   // nothing was sent: not an attempt
     delete out.items[key];
@@ -91,8 +99,10 @@ async function check(a, key) {
   return out.checks[key];
 }
 async function avatar(a) {
-  const keys = Array.from({ length: VERSIONS }, (_, k) => `${a.id}-lite-${k + 1}`);
-  await Promise.all(keys.map((k) => picture(a, k, LITE)));
+  // A test picture on the same wording counts as one of the avatar's versions: it is not drawn again.
+  const kept = WORDING === "b" && ROUND !== "t" && out.items[`${a.id}-t-lite-1`]?.url ? [`${a.id}-t-lite-1`] : [];
+  const keys = [...kept, ...Array.from({ length: Math.max(0, VERSIONS - kept.length) }, (_, k) => `${a.id}-${tag}lite-${k + 1}`)];
+  await Promise.all(keys.filter((k) => !kept.includes(k)).map((k) => picture(a, k, LITE)));
   if (stopped) return;
   await Promise.all(keys.map((k) => check(a, k)));
   if (stopped) return;
@@ -100,19 +110,20 @@ async function avatar(a) {
   let picked = pickBest(verdicts) >= 0 ? keys[pickBest(verdicts)] : null;
   let model = LITE;
   // Both failed (or neither came out): once more, on Pro.
-  if (!verdicts.some((v) => v?.ok)) {
-    const key = `${a.id}-pro-1`;
+  if (!noPro && !verdicts.some((v) => v?.ok)) {
+    const key = `${a.id}-${tag}pro-1`;
     await picture(a, key, PRO);
     if (stopped) return;
     await check(a, key);
     if (stopped) return;
     const pro = out.checks[key]?.verdict ?? null;
     const best = pickBest([...verdicts, pro]);
-    if (best === VERSIONS) { picked = key; model = PRO; }
+    if (best === keys.length) { picked = key; model = PRO; }
     else if (best >= 0) picked = keys[best];
   }
   const v = picked ? out.checks[picked]?.verdict : null;
-  out.avatars[a.id] = { done: true, picked, model: picked ? model.label : null, score: v?.score ?? null, ok: Boolean(v?.ok), problems: v?.problems ?? [], at: new Date().toISOString() };
+  if (ROUND === "t") { (out.tests ??= {})[a.id] = { picked, score: v?.score ?? null, ok: Boolean(v?.ok), problems: v?.problems ?? [] }; save(); console.log(`${a.name} (test): ${picked}, ${v?.score}${v?.ok ? "" : " FAILS"}: ${(v?.problems ?? []).join("; ")}`); return; }
+  out.avatars[a.id] = { done: true, round: ROUND, picked, model: picked ? model.label : null, score: v?.score ?? null, ok: Boolean(v?.ok), problems: v?.problems ?? [], at: new Date().toISOString() };
   save();
   console.log(`${a.name}: ${picked ? `${picked} (${model.label}), ${v.score}${v.ok ? "" : " FAILS"}${v.problems.length ? `: ${v.problems.join("; ")}` : ""}` : "no usable picture"}`);
 }

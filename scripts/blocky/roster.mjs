@@ -108,15 +108,17 @@ export const ROSTER = ROWS.map(toAvatar);
  *   template: Image 1 is a body to copy (the Lite Noob reference); the caller sends that picture first.
  *   minifigure: also name the minifigure parts in the leave-out list.
  */
-export function avatarPrompt(a, { template = REF_DEFAULTS.template, minifigure = REF_DEFAULTS.minifigure } = {}) {
+export function avatarPrompt(a, { template = REF_DEFAULTS.template, minifigure = REF_DEFAULTS.minifigure, wording = REF_DEFAULTS.wording } = {}) {
+  const b = wording === "b";
   return [
     `Full-body 3D character reference of ${a.name}, a blocky game avatar. Centered on a pure white background, entire body visible from head to feet, standing straight, ${FRONT_VIEW}, block arms relaxed at the sides.`,
     template ? BODY_TEMPLATE_LINE : "",
     `${a.name} has ${a.look}.`,
-    CUBE_HEAD,
-    `The face is a flat decal printed on the front of the cube head: ${a.face}. ${FLAT_MOUTH} No nose, no eyebrows, no ears.`,
+    b ? CUBE_HEAD_B : CUBE_HEAD,
+    // Wording b never says "open mouth": an open mouth is what got a tongue drawn into it.
+    `The face is a flat decal printed on the front of the cube head: ${b ? a.face.replace(" open mouth", " mouth") : a.face}. ${b ? FLAT_MOUTH_B : FLAT_MOUTH} No nose, no eyebrows, no ears.`,
     ...(a.accessory ? [BLOCKY_PARTS] : []),
-    "The torso shape is a plain flat print, no words.",
+    b ? TORSO_PRINT_B : "The torso shape is a plain flat print, no words.",
     BLOCKY_BODY,
     REF_STYLE,
     "Soft even studio lighting, a subtle contact shadow under the feet, a clean readable silhouette, 9:16 vertical framing.",
@@ -130,6 +132,14 @@ export const FRONT_VIEW = "seen straight from the front at eye level, the head s
 export const CUBE_HEAD = "The head is a cube: six flat faces and straight edges, not a sphere, a cylinder or a rounded blob.";
 /** The mouth: one flat printed shape. */
 export const FLAT_MOUTH = "The mouth is one flat printed shape: no teeth, no tongue, no lips, no depth.";
+/**
+ * Wording b (2026-10-08, after the first library pictures): the same three things said by what they ARE.
+ * The first run drew a tongue inside most mouths, narrow or rounded heads, and once turned a square torso
+ * shape into a tilted square with a hole in it, which reads as a real logo.
+ */
+export const CUBE_HEAD_B = "The head is a cube, as wide as it is tall and deep, with six flat faces and straight edges.";
+export const FLAT_MOUTH_B = "The mouth is one flat shape filled edge to edge with a single dark colour, like a cut-out sticker: nothing is drawn inside it.";
+export const TORSO_PRINT_B = "The torso shape is a plain, solid, upright flat print with no hole in it and no words.";
 /** Hair and accessories are blocks too, never strands, fur or cloth. */
 export const BLOCKY_PARTS = "Hair, hats and every accessory are built from a few simple solid blocks with flat faces and straight edges: no hair strands, no fur, no cloth folds.";
 export const REF_STYLE = "Style: a 3D classic blocky Roblox-style avatar in smooth matte plastic with a simple flat 2D face decal.";
@@ -141,5 +151,7 @@ export const BODY_TEMPLATE_LINE = "Image 1 shows the body construction to copy e
  *     flaws (a rounded head, small hand blocks, the notch between the legs);
  *   minifigure true: the one picture that left the minifigure parts unnamed still had the hip
  *     notch, and the four that named them did not, so naming them does not prime them.
+ *   wording "b" (2026-10-08): the first library pictures, on wording a, had a tongue inside most mouths;
+ *     one test picture each of six avatars on wording b had none.
  */
-export const REF_DEFAULTS = { template: false, minifigure: true };
+export const REF_DEFAULTS = { template: false, minifigure: true, wording: "b" };

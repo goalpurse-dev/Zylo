@@ -30,7 +30,7 @@ test("an avatar: a one-word name that is no real game, brand or creator, no age 
     assert.doesNotMatch(`${a.torso} ${a.accessory ?? ""}`, /\b(letter|word|text|number|logo|brand)\b/i, a.id);
     assert.equal(a.tags.length, 3);
     const p = avatarPrompt(a);
-    assert.ok(p.length < 2000, `${a.id}: the reference prompt fits (${p.length})`);
+    assert.ok(p.length < 2100, `${a.id}: the reference prompt fits (${p.length})`);
   }
 });
 

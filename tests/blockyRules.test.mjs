@@ -60,7 +60,8 @@ test("the classic noob (decision 13): yellow head and arms, blue torso, green le
 test("an avatar's reference prompt: full body on white, the locked look, the body-construction text, never 'toy'", () => {
   for (const a of ROSTER) {
     const p = avatarPrompt(a);
-    assert.ok(p.includes(`${a.name} has ${a.look}.`) && p.includes(a.face));
+    // The face is the avatar's own; the reference prompt says "mouth", never "open mouth" (wording b).
+    assert.ok(p.includes(`${a.name} has ${a.look}.`) && p.includes(a.face.replace(" open mouth", " mouth")));
     assert.ok(p.includes(BLOCKY_BODY), "decision 19: the body is described by what it IS");
     assert.match(p, /Style: a 3D classic blocky Roblox-style avatar/, "the wording test 2 picked");
     assert.doesNotMatch(p.replace(/no brick-toy minifigures/, ""), /toy/i, "decision 18: never 'toy'");
@@ -68,10 +69,10 @@ test("an avatar's reference prompt: full body on white, the locked look, the bod
     assert.match(p, /no studs, no studded baseplates, no round minifigure heads, no neck studs, no claw hands, no brick-toy minifigures/);
     assert.doesNotMatch(p.replace(/no studs, no studded baseplates/, "").replace(/no neck studs/, ""), /\bstud(s|ded)?\b/i, "studs only as something to leave out");
     assert.doesNotMatch(p, PERSON_WORDS);
-    assert.ok(p.length < 2000);
+    assert.ok(p.length < 2100);
   }
   // The re-test's result is the default: no body template, the minifigure parts named in the leave-out list.
-  assert.deepEqual(REF_DEFAULTS, { template: false, minifigure: true });
+  assert.deepEqual(REF_DEFAULTS, { template: false, minifigure: true, wording: "b" });
   const vex = ROSTER.find((a) => a.id === "vex");
   assert.ok(!avatarPrompt(vex).includes(BODY_TEMPLATE_LINE));
   // The two switches the re-test compared change exactly one thing each.

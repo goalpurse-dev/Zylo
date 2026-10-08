@@ -9,11 +9,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CLIP_MODELS, CLIP_SIZES, PICTURE, PRICE_ROWS, SCRIPT, TIERS, TIER_IDS, modelByAir, nextModel, tierGuardPerSec, tierModel } from "../supabase/functions/_shared/blocky/pricing.js";
+import { BASIS, CLIP_MODELS, CLIP_SIZES, PICTURE, PRICE_ROWS, SCRIPT, TIERS, TIER_IDS, markupOf, modelByAir, nextModel, priceCredits, realCostUsd, tierGuardPerSec, tierModel } from "../supabase/functions/_shared/blocky/pricing.js";
 import { BLOCKY_MODELS, videoModel } from "../supabase/functions/_shared/blocky/models.js";
 import { COST_USD } from "../supabase/functions/_shared/blocky/spendGuard.js";
 import { clipTask, fallbackClipTask, firstFrameOf, GENTLE_CAMERA, LOCKED_CAMERA } from "../supabase/functions/_shared/blocky/clips.js";
-import { TIERS as PAGE_TIERS, PICTURE_TOOL_KEY, SCRIPT_TOOL_KEY } from "../src/components/viral-tools/blocky-stories/pricing/blockyEstimates.js";
+import { TIERS as PAGE_TIERS, PICTURE_TOOL_KEY, SCRIPT_TOOL_KEY, clipPrice as pageClipPrice } from "../src/components/viral-tools/blocky-stories/pricing/blockyEstimates.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), "utf8");
@@ -53,10 +53,39 @@ test("the credits in pricing.js are the credits the price rows charge", () => {
     assert.equal(row.flatCredits, want.flatCredits ?? null, `${want.toolKey} flat credits`);
     assert.equal(row.creditsPerSecond, want.creditsPerSecond ?? null, `${want.toolKey} credits per second`);
   }
-  assert.equal(PICTURE.credits, 4);
-  assert.equal(SCRIPT.credits, 15);
-  // The owner's option A (2026-10-08).
-  assert.deepEqual(TIER_IDS.map((id) => TIERS[id].creditsPerSec), [4, 8, 16]);
+  assert.equal(PICTURE.credits, 3);
+  assert.equal(SCRIPT.credits, 13);
+  assert.deepEqual(TIER_IDS.map((id) => TIERS[id].creditsPerSec), [2.4, 3.75, 11.25]);
+});
+
+test("every price is 2× our real cost (owner, 2026-10-08): never more than 1% under, and no more over than rounding to whole credits needs", () => {
+  assert.deepEqual({ markup: BASIS.markup, eurPerCredit: BASIS.eurPerCredit }, { markup: 2, eurPerCredit: 0.024 });
+  // The script's share and a picture: the smallest whole number of credits that is at least 2×.
+  for (const [name, credits, costUsd] of [["picture", PICTURE.credits, realCostUsd.picture()], ["script", SCRIPT.credits, realCostUsd.script()]]) {
+    assert.ok(markupOf(credits, costUsd) >= 2, `${name}: ${markupOf(credits, costUsd).toFixed(3)}×`);
+    assert.ok(markupOf(credits - 1, costUsd) < 2, `${name}: one credit less would be under 2×`);
+  }
+  for (const id of TIER_IDS) {
+    // Every clip length the tier's model makes.
+    for (const s of tierModel(id).durations) {
+      const m = markupOf(priceCredits.clip(id, s), realCostUsd.clip(id, s));
+      assert.ok(m >= 1.98 && m <= 2.12, `${id} ${s} s clip: ${m.toFixed(3)}×`);
+    }
+    // A whole 30-second story, and a 36-second one (clips of 6 s, the usual length on V3 and V4).
+    for (const [seconds, clipSec] of [[30, 5], [36, 6]]) {
+      const m = markupOf(priceCredits.story(id, seconds, clipSec), realCostUsd.story(id, seconds, clipSec));
+      assert.ok(m >= 2 && m <= 2.12, `${id} ${seconds} s story: ${m.toFixed(3)}×`);
+    }
+    // The page reads the exact rate back from one quote: rate × the quoted length is a whole number.
+    assert.ok(Number.isInteger(Math.round(TIERS[id].creditsPerSec * PAGE_TIERS[id].quoteSec * 1e6) / 1e6), `${id}: the rate is exact at ${PAGE_TIERS[id].quoteSec} s`);
+  }
+  assert.deepEqual(TIER_IDS.map((id) => priceCredits.story(id)), [103, 145, 373]);
+});
+
+test("the page prices a clip exactly as the server does, with rates that are not whole numbers", () => {
+  // What the server quotes for each tier's quoted length (CEIL(rate × seconds)), as the page receives it.
+  const prices = Object.fromEntries(TIER_IDS.map((id) => [`clip:${id}`, Math.ceil(TIERS[id].creditsPerSec * PAGE_TIERS[id].quoteSec - 1e-9)]));
+  for (const id of TIER_IDS) for (const s of tierModel(id).durations) assert.equal(pageClipPrice(id, s, prices), priceCredits.clip(id, s), `${id} ${s} s`);
 });
 
 test("the smoke check compares the same list with the live rows", () => {
