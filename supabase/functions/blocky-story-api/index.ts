@@ -34,7 +34,11 @@ import { writeUploadPackage } from "../_shared/blocky/uploadPackage.js";
 import { BLOCKY_MODELS } from "../_shared/blocky/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/blocky/validation.js";
 import { planStep } from "../_shared/blocky/steps.js";
-import { planSeries, planStory } from "../_shared/blocky/plannerService.js";
+import { planSeries, planStory, planStoryVersions, polishStoryVersion, writeIdeas, writeStoryVersion } from "../_shared/blocky/plannerService.js";
+import { DAILY_DRAFTS, DAILY_IDEA_BATCHES, IDEAS_PER_BATCH, IDEAS_PURPOSE, ideaFromPlan } from "../_shared/blocky/ideas.js";
+import { draftView, shouldWrite, vettedToTwistPlan } from "../_shared/blocky/drafts.js";
+import { sceneCountFor } from "../_shared/blocky/planner.js";
+import { bannedNamesMessage } from "../_shared/blocky/safety.js";
 import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
@@ -204,6 +208,38 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   return toStory(fresh.row, fresh.scenes, fresh.spent);
 }
 
+/**
+ * What is kept of the writing on a story: the model, its calls and cost, the editor's verdict, and the twist
+ * plan (twists.js). The upload text must never give the twist away; patternId is what the user's next story
+ * avoids; lastLine is how the next ones may not start; judged is what the judge made of the three plans.
+ */
+function plannerRecord(plan: any, m: { model: any; attempts: number; callIds: string[]; costUsd: number; review: unknown }) {
+  return {
+    provider: m.model.provider, model: m.model.model, attempts: m.attempts, callIds: m.callIds, costUsd: m.costUsd, review: m.review ?? null,
+    premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null,
+    patternId: plan.patternId ?? null, mechanic: plan.mechanic ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null,
+    consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null, stakes: plan.stakes ?? null,
+    lastLine: plan.scenes?.at(-1)?.line ?? null, judged: plan.judged ?? null,
+  };
+}
+
+/** Midnight UTC today: the free daily limits count from here. */
+const dayStart = () => { const d = new Date(); d.setUTCHours(0, 0, 0, 0); return d.toISOString(); };
+async function draftsToday(userId: string) {
+  const { count } = await admin.from("blocky_drafts").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", dayStart());
+  return count ?? 0;
+}
+async function loadDraft(userId: string, draftId: string) {
+  const row = must(await admin.from("blocky_drafts").select("*").eq("id", draftId).eq("user_id", userId).maybeSingle());
+  if (!row) throw new BlockyError("NOT_FOUND", "These versions don't exist anymore. Write new ones.", 404);
+  return row;
+}
+/** What the writer is told about a draft: what the plan step was told. */
+function draftPlannerInput(row: any, lib: Map<string, any>) {
+  const i = row.input;
+  return { source: i.source, cast: i.castIds.map((id: string) => lib.get(id)), lengthSec: i.lengthSec, quality: i.quality, prompt: i.prompt ?? undefined, idea: i.idea ?? undefined, avoidOpeners: i.avoidOpeners ?? [] };
+}
+
 /* ─── actions ─────────────────────────────────────────────────────────── */
 
 const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
@@ -212,10 +248,156 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     return (await library()).map(toCharacter);
   },
 
-  /** The idea engine (ten story engines, five ideas a batch, the used-ideas memory) is its own phase: not built yet. */
+  /**
+   * "Give me ideas": five idea cards, from five different story types. Free, with a daily limit. Vetted
+   * plans (the owner's hand-written ones) come first; the rest are written by the small model.
+   */
   async getIdeas(ctx) {
+    requirePaid(ctx);
     await rateLimit(ctx.userId, "read");
-    throw blockyError("STAGE_NOT_READY", "Story ideas aren't switched on yet. Write your own story or paste a script.");
+    const seed = Math.max(0, Math.floor(Number(ctx.body?.seed) || 0));
+    const rows = await library();
+    const { count } = await admin.from("blocky_ai_calls").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("purpose", IDEAS_PURPOSE).gte("created_at", dayStart());
+    if ((count ?? 0) >= DAILY_IDEA_BATCHES) throw blockyError("DAILY_LIMIT", `That's today's ${DAILY_IDEA_BATCHES} batches of ideas. Describe your own story, or come back tomorrow.`);
+    // Up to two vetted plans a batch, a different pair each time.
+    const plans = must(await admin.from("blocky_plans").select("slug, title, hook, story_type, plan").eq("active", true).order("slug"));
+    const vetted = plans.length ? [0, 1].map((k) => plans[(seed * 2 + k) % plans.length]).filter((p: any, i: number, all: any[]) => all.indexOf(p) === i).map((p: any) => ideaFromPlan(p, rows)).filter(Boolean) : [];
+    await requirePaidCalls(SMALL_USD);
+    const recent = must(await admin.from("blocky_stories").select("title").eq("user_id", ctx.userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(15));
+    const written = await writeIdeas({ admin, env: LLM_ENV, userId: ctx.userId, library: rows, seed, avoidTitles: [...recent.map((s: any) => s.title), ...vetted.map((v: any) => v.title)] });
+    const taken = new Set(vetted.map((v: any) => v.type));
+    return [...vetted, ...written.ideas.filter((i: any) => !taken.has(i.type))].slice(0, IDEAS_PER_BATCH);
+  },
+
+  /**
+   * "Write me three versions": the plan step (three plans and the judge), saved as a draft whose three cards
+   * are then written one by one (writeVersion). Free for the user; DAILY_DRAFTS a day.
+   * body.input: {source: "prompt", prompt, castIds, quality, lengthSec, aspect}
+   *           | {source: "idea", ideaId, idea: {title, hook, summary}, castIds, quality, lengthSec, aspect}
+   */
+  async startDraft(ctx) {
+    requirePaid(ctx);
+    const rows = await library();
+    const lib = new Map(rows.map((c: any) => [c.id, c]));
+    const raw = ctx.body?.input;
+    if (raw?.source !== "prompt" && raw?.source !== "idea") throw blockyError("VALIDATION", "Pick an idea or describe a story.");
+    const input = validateCreateStory(raw, lib, () => ({ castIds: raw?.castIds }));
+    const [need, planName] = QUALITY_PLAN[input.quality];
+    if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw blockyError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
+    await rateLimit(ctx.userId, "story");
+    const used = await draftsToday(ctx.userId);
+    if (used >= DAILY_DRAFTS) throw blockyError("DAILY_LIMIT", `You've had today's ${DAILY_DRAFTS} free story writings. They start again at midnight UTC. Your own script still works.`);
+    // An idea: its words are the story's description; a vetted one also brings its plan.
+    let idea: any = null;
+    let vettedRow: any = null;
+    if (input.source === "idea") {
+      const title = String(raw?.idea?.title ?? "").trim().slice(0, 80);
+      const summary = String(raw?.idea?.summary ?? "").trim().slice(0, 400);
+      if (title.length < 2 || summary.length < 10) throw blockyError("VALIDATION", "That idea isn't available anymore. Pick another one.");
+      const named = bannedNamesMessage(`${title} ${summary}`);
+      if (named) throw blockyError("VALIDATION", named);
+      idea = { title, summary };
+      if (String(input.ideaId).startsWith("plan:")) vettedRow = must(await admin.from("blocky_plans").select("id, slug, title, hook, plan").eq("slug", String(input.ideaId).slice(5)).eq("active", true).maybeSingle());
+    }
+    await requirePaidCalls(WRITER_USD);
+    if (await providerOnHold(admin, BLOCKY_MODELS.planner.provider)) throw blockyError("PROVIDER_UNAVAILABLE");
+    const cast = input.castIds.map((id: string) => lib.get(id));
+    const recent = must(await admin.from("blocky_stories").select("planner").eq("user_id", ctx.userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(5));
+    const avoidOpeners = recent.map((s: any) => s?.planner?.lastLine ?? s?.planner?.finalLine).filter((x: unknown) => typeof x === "string" && x);
+    const sceneCount = sceneCountFor(input.lengthSec);
+    const vetted = vettedRow ? vettedToTwistPlan(vettedRow.plan, cast, sceneCount) : null;
+    // The pattern of the user's last story and, with a vetted plan, that plan's own: the generated ones differ.
+    const avoidPatterns = [typeof recent?.[0]?.planner?.patternId === "string" ? recent[0].planner.patternId : null, vetted?.patternId].filter(Boolean);
+    const plannerInput = { source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality, prompt: input.prompt, idea, avoidPatterns, avoidOpeners: [...avoidOpeners, ...(vetted ? [vetted.finalLine] : [])] };
+    const planned = await planStoryVersions({ admin, env: LLM_ENV, userId: ctx.userId, plannerInput });
+    const chosen = vetted ? [vetted, ...planned.plans.slice(0, 2)] : planned.plans.slice(0, 3);
+    const versions = chosen.map((plan: any, i: number) => ({ n: i + 1, status: "writing", vetted: Boolean(plan.vetted), title: plan.title, hook: plan.hook, plan }));
+    const row = must(await admin.from("blocky_drafts").insert({
+      user_id: ctx.userId, status: "writing", plan_id: vettedRow?.id ?? null, versions, judged: planned.judged, cost_usd: planned.costUsd, call_ids: planned.callIds,
+      input: { source: input.source, ideaId: input.ideaId ?? null, idea, prompt: input.prompt ?? null, castIds: input.castIds, quality: input.quality, lengthSec: input.lengthSec, aspect: input.aspect, avoidOpeners },
+    }).select("*").single());
+    return draftView(row, Math.max(0, DAILY_DRAFTS - used - 1));
+  },
+
+  /** One version's script: the draft with its repairs, without the editor's pass. The page asks for all three at once. */
+  async writeVersion(ctx) {
+    requirePaid(ctx);
+    await rateLimit(ctx.userId, "step");
+    const n = Number(ctx.body?.n);
+    let row = await loadDraft(ctx.userId, validateId(ctx.body?.draftId));
+    const version = (row.versions ?? []).find((v: any) => v.n === n);
+    if (!version) throw blockyError("VALIDATION", "That version doesn't exist.");
+    if (row.status === "picked" || !shouldWrite(version)) return draftView(row);   // done, or another call is writing it
+    await requirePaidCalls(SMALL_USD * 4);
+    const setVersion = async (v: any, costUsd = 0, callIds: string[] = []) => must(await admin.rpc("blocky_set_draft_version", { p_draft_id: row.id, p_version: v, p_cost_usd: costUsd, p_call_ids: callIds }));
+    await setVersion({ ...version, startedAt: new Date().toISOString() });
+    const lib = new Map((await library()).map((c: any) => [c.id, c]));
+    try {
+      const w = await writeStoryVersion({ admin, env: LLM_ENV, userId: ctx.userId, plannerInput: draftPlannerInput(row, lib), twistPlan: version.plan });
+      row = await setVersion({
+        ...version, status: "ready", startedAt: null, title: w.plan.title, lengthSec: w.plan.lengthSec, faults: w.faults,
+        lines: w.plan.scenes.map((s: any) => ({ speakerId: s.speakerId, line: s.line })), script: w.data,
+      }, w.costUsd, w.callIds);
+    } catch (e) {
+      const fe = e as any;
+      console.error(`[blocky-story-api] version ${n} of draft ${row.id} failed:`, fe?.code ?? fe?.message, JSON.stringify(fe?.details ?? null).slice(0, 300));
+      row = await setVersion({ ...version, status: "failed", startedAt: null, error: String(fe?.code ?? "PLANNER_FAILED") }, Number(fe?.costUsd ?? 0), fe?.callIds ?? []);
+      if (fe?.code === "PROVIDER_UNAVAILABLE" || fe?.code === "PAID_CALLS_DISABLED") throw e;
+    }
+    return draftView(row);
+  },
+
+  /** The draft as it is now (the page's resume after a reload, and its check while versions are being written). */
+  async getDraft(ctx) {
+    await rateLimit(ctx.userId, "read");
+    const row = await loadDraft(ctx.userId, validateId(ctx.body?.draftId));
+    return draftView(row, Math.max(0, DAILY_DRAFTS - (await draftsToday(ctx.userId))));
+  },
+
+  /**
+   * The user picked a version: the editor polishes that one (and only that one), and it becomes the story.
+   * Nothing is charged: the picture step's price covers the script.
+   */
+  async pickVersion(ctx) {
+    requirePaid(ctx);
+    await rateLimit(ctx.userId, "story");
+    const n = Number(ctx.body?.n);
+    const draft = await loadDraft(ctx.userId, validateId(ctx.body?.draftId));
+    if (draft.status === "picked" && draft.story_id) {   // picked before (a double click, a reload): the story it became
+      const { row, scenes, spent } = await loadStory(ctx.userId, draft.story_id);
+      return toStory(row, scenes, spent);
+    }
+    const version = (draft.versions ?? []).find((v: any) => v.n === n);
+    if (!version || version.status !== "ready" || !version.script) throw blockyError("VALIDATION", "That version isn't ready. Pick one that is.");
+    await requirePaidCalls(SMALL_USD * 6);
+    const lib = new Map((await library()).map((c: any) => [c.id, c]));
+    const i = draft.input;
+    const polished = await polishStoryVersion({ admin, env: LLM_ENV, userId: ctx.userId, plannerInput: draftPlannerInput(draft, lib), twistPlan: version.plan, data: version.script });
+    const plan = { ...polished.plan, judged: draft.judged ?? null };
+    const callIds = [...(draft.call_ids ?? []), ...polished.callIds];
+    const costUsd = Number((Number(draft.cost_usd ?? 0) + polished.costUsd).toFixed(6));
+    const roles: Record<string, string> = {};
+    for (const id of i.castIds) roles[id] = plan.roles?.[id] || lib.get(id)?.tag || "";
+    const storyId = must(await admin.rpc("blocky_create_story", {
+      p_user_id: ctx.userId,
+      p_story: {
+        source: i.source,
+        input: { source: i.source, ideaId: i.ideaId ?? null, prompt: i.prompt ?? i.idea?.summary ?? null, script: null, draftId: draft.id, version: n },
+        title: plan.title, cast_ids: i.castIds, quality: i.quality, aspect: i.aspect,
+        length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations: plan.locations,
+        planner: plannerRecord(plan, { model: BLOCKY_MODELS.planner, attempts: callIds.length, callIds, costUsd, review: polished.review }),
+        series_id: null, episode_number: null,
+      },
+      p_scenes: plan.scenes.map((sc: any) => ({
+        title: sc.title, speaker_id: sc.speakerId, line: sc.line, present_ids: sc.presentIds, location_id: sc.locationId,
+        action: sc.action, emotion: sc.emotion, shot: sc.shot, placement: sc.placement, duration_sec: sc.durationSec,
+      })),
+      p_call_ids: callIds,
+    }));
+    must(await admin.from("blocky_stories").update({ cast_roles: roles, end_state: plan.endState ?? null }).eq("id", storyId).select("id"));
+    must(await admin.from("blocky_drafts").update({ status: "picked", picked: n, story_id: storyId, cost_usd: costUsd, call_ids: callIds }).eq("id", draft.id).select("id"));
+    const { row, scenes, spent } = await loadStory(ctx.userId, storyId);
+    return toStory(row, scenes, spent);
   },
 
   async createStory(ctx) {
@@ -224,7 +406,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const lib = new Map(rows.map((c: any) => [c.id, c]));
     const raw = ctx.body?.input;
     if (raw?.source === "episode") await requireSeries(ctx.userId);
-    if (raw?.source === "idea") throw blockyError("STAGE_NOT_READY", "Story ideas aren't switched on yet. Write your own story or paste a script.");
+    if (raw?.source === "idea") throw blockyError("VALIDATION", "Pick an idea and choose one of its three versions.");   // ideas are written as three versions (startDraft)
     const input = validateCreateStory(raw, lib, () => null);
     const [need, planName] = QUALITY_PLAN[input.quality];
     if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw blockyError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
@@ -318,9 +500,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         // review: what the script editor found and whether the script was rewritten
         // premise, twist, patternId, clue, payoff...: the twist plan behind the story (twists.js). The upload text must
         // never give the twist away, and patternId is what the user's next story avoids.
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, patternId: plan.patternId ?? null, mechanic: plan.mechanic ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null, stakes: plan.stakes ?? null,
-          // the last line as written (the next stories start theirs differently), and what the judge made of the three plans
-          lastLine: plan.scenes?.at(-1)?.line ?? null, judged: plan.judged ?? null },
+        planner: plannerRecord(plan, { model, attempts, callIds, costUsd, review }),
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({

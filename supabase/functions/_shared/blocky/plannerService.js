@@ -3,7 +3,8 @@
 // exact request, response, tokens and real cost, and returns the plan.
 // Used by blocky-story-api (createStory) and blocky-worker (blind test).
 import { callLlm, LlmError } from "./llm.js";
-import { runPlanner, runTwistPlan } from "./planner.js";
+import { planVersions, polishVersion, runPlanner, runTwistPlan, writeVersion } from "./planner.js";
+import { IDEAS_PURPOSE, buildIdeasPrompt, ideasSchema, typesForBatch, validateIdeas } from "./ideas.js";
 import { runSeriesPlanner } from "./series.js";
 import { reviewScript } from "./scriptReview.js";
 import { BLOCKY_MODELS } from "./models.js";
@@ -82,6 +83,51 @@ export async function planStory({ admin, env, userId, plannerInput, model = BLOC
   } catch (e) {
     if (e instanceof BlockyError) { Object.assign(e, done()); throw e; }
     throw new BlockyError("PLANNER_FAILED", undefined, 502);
+  }
+}
+
+/** The three stages of "three versions" (planner.js), each with its calls logged and its cost added up. */
+async function staged(o, work) {
+  const { llm, done } = loggedLlm({ admin: o.admin, env: o.env, userId: o.userId, model: BLOCKY_MODELS.planner, purposePrefix: o.purposePrefix ?? "", seriesId: null });
+  const reviewOn = String(o.env.BLOCKY_SCRIPT_REVIEW ?? "").toLowerCase() !== "off";
+  const reviewLlm = reviewOn ? (x) => llm({ ...x, use: BLOCKY_MODELS.review, maxOutputTokens: 2500, strict: true }) : undefined;
+  try {
+    const { calls: _calls, ...out } = await work({ ...o.plannerInput, llm, reviewLlm });
+    return { ...out, ...done() };
+  } catch (e) {
+    if (e instanceof BlockyError) { Object.assign(e, done()); throw e; }
+    throw new BlockyError("PLANNER_FAILED", undefined, 502);
+  }
+}
+/** Stage 1: the plans the three story cards are written from, best first. → {plans, judged, callIds, costUsd} */
+export const planStoryVersions = (o) => staged(o, (p) => planVersions(p));
+/** Stage 2: one plan's script, without the editor's pass. → {data, plan, faults, callIds, costUsd} */
+export const writeStoryVersion = (o) => staged(o, (p) => writeVersion(p, o.twistPlan));
+/** Stage 3: the editor's pass over the picked version. → {plan, review, callIds, costUsd} */
+export const polishStoryVersion = (o) => staged(o, (p) => polishVersion(p, o.twistPlan, o.data));
+
+/**
+ * "Give me ideas": one batch of idea cards from the small model, logged with its real cost.
+ * A batch with fewer than three usable ideas is asked for once more, told what was wrong.
+ * @returns {{ideas: object[], callIds, costUsd}}
+ */
+export async function writeIdeas({ admin, env, userId, library, seed = 0, avoidTitles = [] }) {
+  const { llm, done } = loggedLlm({ admin, env, userId, model: BLOCKY_MODELS.small, purposePrefix: "", seriesId: null });
+  const types = typesForBatch(seed);
+  const { system, user } = buildIdeasPrompt({ library, types, avoidTitles });
+  const ask = (text) => llm({ system, user: text, schema: ideasSchema(), name: "story_ideas", purpose: IDEAS_PURPOSE, maxOutputTokens: 4000 });
+  try {
+    const first = await ask(user);
+    let best = validateIdeas(first.data, { library, types, seed });
+    if (best.ideas.length < 3) {
+      const second = validateIdeas((await ask(`${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(first.data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return all ${types.length} ideas again:\n- ${best.errors.join("\n- ")}`)).data, { library, types, seed });
+      if (second.ideas.length > best.ideas.length) best = second;
+    }
+    if (!best.ideas.length) throw new BlockyError("PLANNER_FAILED", "We couldn't come up with ideas just now. Try again, or describe your own story.", 502);
+    return { ideas: best.ideas, ...done() };
+  } catch (e) {
+    if (e instanceof BlockyError) { Object.assign(e, done()); throw e; }
+    throw new BlockyError("PLANNER_FAILED", "We couldn't come up with ideas just now. Try again, or describe your own story.", 502);
   }
 }
 
