@@ -93,6 +93,7 @@ ${MECHANICS.slice(0, 7).map((m) => `    ${m.id}: ${m.how}`).join("\n")}
 - winnerId: whoever comes out on top: by the last line they HAVE something the other one lost or wanted. They speak the last line.
 - finalLine: the winner's last line, ${FINAL_LINE_MAX_WORDS} words or fewer, spoken and natural, something only THIS character would say at THIS moment. It LANDS the consequence like a punchline; it never explains how the twist works, because the payoff already showed it ("Only his first owner. Guess that's me." explains. "He always comes home full." lands). It never starts with "Guess", and the three plans' final lines start with three different words.
 - title: 2 to 6 words. It teases the premise and never states the twist.
+- hook: ONE line (6 to 16 words) for this version's story card: what makes someone want to watch THIS version. It hints that something is not what it seems and never says what. The three hooks differ.
 
 THE TEST OF A FAIR TWIST (the judge checks each plan against every point)
 1. It FLIPS "assumed": who had the power, who was being tricked, what the prize or the rule really was.
@@ -168,6 +169,7 @@ export function twistPlanSchema() {
     winnerId: s,
     finalLine: s,
     title: s,
+    hook: s,
   };
   return {
     type: "object",
@@ -290,7 +292,9 @@ export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [], a
     const role = String(r?.role ?? "").trim().replace(/\.$/, "");
     if (castIds.includes(r?.id) && role && words(role) <= 10) roles[r.id] = role;
   }
-  const plan = { premise, seenAs: text("seenAs"), emotion, roles, assumed, stakes, patternId, twist, mechanic, clue, clueScene, payoff, revealScene, consequence, winnerId, finalLine, title };
+  // The line on the story card. A missing one is never a fault: the premise stands in.
+  const hook = words(text("hook")) >= 4 && words(text("hook")) <= 24 ? text("hook") : premise.replace(/^what happens if\s+/i, "").replace(/[?.]$/, "");
+  const plan = { hook, premise, seenAs: text("seenAs"), emotion, roles, assumed, stakes, patternId, twist, mechanic, clue, clueScene, payoff, revealScene, consequence, winnerId, finalLine, title };
   const all = [...new Set(errors)];
   return { plan, errors: all, fatal: all.filter((e) => PLAN_FATAL.test(e)) };
 }
@@ -380,7 +384,7 @@ export function buildJudgePrompt({ cast, source, idea, prompt, sceneCount, plans
  * A plan that can't be used is never picked. Among the others: a plan the judge scores under NO_MAGIC_MIN
  * on noMagic or on motive comes after every plan that isn't; then the highest total, less 2 for each fault code found;
  * then the judge's own pick; then the order they were written in.
- * @returns {{index, plan, ranking: {index, total, noMagic, faults, usable}[], best, why} | null}
+ * @returns {{index, plan, ranking: {index, total, noMagic, faults, usable}[], order: number[] (best first), best, why} | null}
  */
 export function pickPlan(candidates, verdict) {
   const clamp = (v) => (Number.isInteger(v) ? Math.min(5, Math.max(1, v)) : 0);
@@ -397,7 +401,7 @@ export function pickPlan(candidates, verdict) {
   const order = [...ranking].sort((a, b) => { const x = rank(a), y = rank(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return y[i] - x[i]; return 0; });
   const top = order[0];
   if (!top || !top.usable) return null;
-  return { index: top.index, plan: candidates[top.index].plan, ranking, best: best >= 0 ? best : null, why: String(verdict?.why ?? "").slice(0, 300) };
+  return { index: top.index, plan: candidates[top.index].plan, ranking, order: order.map((r) => r.index), best: best >= 0 ? best : null, why: String(verdict?.why ?? "").slice(0, 300) };
 }
 
 /** The first word of a line, lower-cased: two last lines "start the same" when this is the same. */

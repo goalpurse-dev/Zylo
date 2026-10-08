@@ -512,7 +512,7 @@ async function planTwist(p, sceneCount, calls) {
     ...pick.plan,
     // What the judge made of the three, kept with the story: which plans there were, their scores, which was kept.
     judged: {
-      chosen: pick.index + 1, best: pick.best === null ? null : pick.best + 1, why: pick.why, ...(judgeNote ? { note: judgeNote } : {}),
+      chosen: pick.index + 1, best: pick.best === null ? null : pick.best + 1, why: pick.why, order: pick.order, ...(judgeNote ? { note: judgeNote } : {}),
       plans: candidates.map((c, i) => ({ patternId: c.plan.patternId, title: c.plan.title, twist: c.plan.twist, clue: c.plan.clue, payoff: c.plan.payoff, finalLine: c.plan.finalLine, faults: c.errors, ...(pick.ranking[i] ?? {}) })),
     },
   };
@@ -530,26 +530,11 @@ export async function runTwistPlan(p) {
   return { plan, plans, calls };
 }
 
-/**
- * Writes a story.
- *   A single story (idea or prompt): 1. the twist plan (planTwist); 2. the script that delivers it;
- *   3. the editor checks the script against the plan, and what fails is rewritten and checked again.
- *   The user's own script: staged only. An episode of a series: written from the series' plan.
- * A fault code finds is sent back at most MAX_REPAIRS times; an editor's finding gets at most MAX_REWRITES rewrites, and the
- * rewriting stops as soon as a rewrite is no better than what there was. Repairs and rewrites come
- * back as PATCHES (patchSchema): only the fields that change.
- * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?, avoidPatterns?, avoidOpeners?}
- *   llm({system, user, schema, name, tools?, strict?, purpose, maxOutputTokens?}) -> {data, costUsd, ...}  (logs its own call)
- *   reviewLlm: the same shape, on the review model
- * @returns {{plan, calls: object[], attempts: number, review: object|null}}
- *   review: {ok, problems:[{rule, scene, problem, fix}], rewritten, rounds, left, before?, history?, note?, skipped?}
- */
-export async function runPlanner(p) {
+/** What every call about one script shares: its rules, its two tools, the code checks, and how a patch is asked for. */
+function scriptWriter(p, twistPlan, calls) {
   const script = p.source === "script";
-  const planned = p.source === "idea" || p.source === "prompt";
-  const calls = [];
+  const planned = Boolean(twistPlan);
   const sceneCount = script ? p.script.length : sceneCountFor(p.lengthSec);
-  const twistPlan = planned ? await planTwist(p, sceneCount, calls) : null;
   const { system, user } = buildPlannerPrompt({ ...p, twistPlan });
   const castIds = p.cast.map((c) => c.id);
   const tools = [{ name: WRITE_TOOL, schema: plannerSchema(castIds, { script, planned }) }, { name: PATCH_TOOL, schema: patchSchema() }];
@@ -558,7 +543,11 @@ export async function runPlanner(p) {
   const fail = (details) => { const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502); err.details = details; err.calls = calls; return err; };
   const PATCH_HOW = `Answer with ${PATCH_TOOL}: ONLY what must change. For each scene that changes: its number and the new value of each field that changes. Every other field stays an empty string (presentIds: an empty list), which means "keep it". title: an empty string unless the title itself must change. Change nothing that was not asked for. If a scene goes to another speaker, give that scene a NEW line this character would say: a speaker change without a new line is ignored.`;
   const patchPrompt = (data, lead, problems) => `${user}\n\nYOUR SCRIPT SO FAR:\n${JSON.stringify(data)}\n\n${lead}\n- ${problems.join("\n- ")}\n\n${PATCH_HOW}`;
+  return { script, sceneCount, user, ask, ctx, fail, patchPrompt, calls };
+}
 
+/** A script's first draft with its repairs (no editor). Returns {data, result}: the writer's answer and validatePlan's verdict on it. */
+async function draftScript({ script, sceneCount, user, ask, ctx, fail, patchPrompt, calls }) {
   const first = await ask(WRITE_TOOL, user, "planner");
   calls.push(first);
   let data = first.data;
@@ -581,14 +570,16 @@ export async function runPlanner(p) {
     result = validatePlan(data, ctx);
   }
   if (result.fatal.length) throw fail(result.fatal);
-  const done = (plan, review) => ({ plan, calls, attempts: calls.length, review });
-  if (!p.reviewLlm) return done(result.plan, null);
+  return { data, result };
+}
 
+/** The editor's pass over a script: what fails is rewritten as a patch and checked again. Returns {plan, review}. */
+async function polishScript({ script, ask, ctx, patchPrompt, calls }, p, twistPlan, data, result) {
   // The quality pass (scriptReview.js): the editor reads the draft the way a viewer hears it and checks it
   // against the plan; whatever fails is rewritten (as a patch) and CHECKED AGAIN. The version with the fewest
   // problems is returned; a story never fails because of the review.
   const review = await reviewScript({ plan: result.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
-  if (review.ok) return done(result.plan, { ok: true, problems: [], rewritten: false, rounds: 0, ...(review.skipped ? { skipped: review.skipped } : {}) });
+  if (review.ok) return { plan: result.plan, review: { ok: true, problems: [], rewritten: false, rounds: 0, ...(review.skipped ? { skipped: review.skipped } : {}) } };
   const linesOf = (plan) => ({ title: plan.title, lines: plan.scenes.map((s) => s.line) });
   const outcome = { ok: false, problems: review.problems, rewritten: false, rounds: 0, before: linesOf(result.plan), history: [{ round: 0, ...linesOf(result.plan), problems: review.problems }] };
   let best = { plan: result.plan, problems: review.problems };
@@ -622,5 +613,68 @@ export async function runPlanner(p) {
   } catch (e) {
     outcome.note = `a rewrite could not run (${String(e?.message ?? e).slice(0, 80)}); the best checked script was kept`;
   }
-  return done(best.plan, { ...outcome, ok: best.problems.length === 0, rewritten: best.plan !== result.plan, left: best.problems });
+  return { plan: best.plan, review: { ...outcome, ok: best.problems.length === 0, rewritten: best.plan !== result.plan, left: best.problems } };
+}
+
+/**
+ * Writes a story.
+ *   A single story (idea or prompt): 1. the twist plan (planTwist); 2. the script that delivers it;
+ *   3. the editor checks the script against the plan, and what fails is rewritten and checked again.
+ *   The user's own script: staged only. An episode of a series: written from the series' plan.
+ * A fault code finds is sent back at most MAX_REPAIRS times; an editor's finding gets at most MAX_REWRITES rewrites, and the
+ * rewriting stops as soon as a rewrite is no better than what there was. Repairs and rewrites come
+ * back as PATCHES (patchSchema): only the fields that change.
+ * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?, avoidPatterns?, avoidOpeners?}
+ *   llm({system, user, schema, name, tools?, strict?, purpose, maxOutputTokens?}) -> {data, costUsd, ...}  (logs its own call)
+ *   reviewLlm: the same shape, on the review model
+ * @returns {{plan, calls: object[], attempts: number, review: object|null}}
+ *   review: {ok, problems:[{rule, scene, problem, fix}], rewritten, rounds, left, before?, history?, note?, skipped?}
+ */
+export async function runPlanner(p) {
+  const calls = [];
+  const planned = p.source === "idea" || p.source === "prompt";
+  // p.twistPlan: a plan that is already there (a vetted one, or the version the user picked).
+  const twistPlan = planned ? (p.twistPlan ?? await planTwist(p, sceneCountFor(p.lengthSec), calls)) : null;
+  const w = scriptWriter(p, twistPlan, calls);
+  const { data, result } = await draftScript(w);
+  if (!p.reviewLlm) return { plan: result.plan, calls, attempts: calls.length, review: null };
+  const { plan, review } = await polishScript(w, p, twistPlan, data, result);
+  return { plan, calls, attempts: calls.length, review };
+}
+
+/**
+ * Stage 1 of "three versions": the plans a story's cards are written from, best first by the judge
+ * (a plan the writer can't work from is left out). Usually three; never none (planTwist throws then).
+ * @returns {{plans: object[], judged: object, calls: object[]}}
+ */
+export async function planVersions(p) {
+  const calls = [];
+  let all = [];
+  const kept = await planTwist({ ...p, onPlans: (c) => { all = c; } }, sceneCountFor(p.lengthSec), calls);
+  const plans = (kept.judged.order ?? []).map((i) => all[i]).filter((c) => c && c.fatal.length === 0).map((c) => ({ ...c.plan, faults: c.errors }));
+  return { plans, judged: kept.judged, calls };
+}
+
+/**
+ * Stage 2: one plan's script, as a draft with its format repairs and WITHOUT the editor's pass (only the
+ * version the user picks is polished). data is the writer's own answer, kept for polishVersion.
+ * @returns {{data: object, plan: object, faults: string[], calls: object[]}}
+ */
+export async function writeVersion(p, twistPlan) {
+  const calls = [];
+  const { data, result } = await draftScript(scriptWriter(p, twistPlan, calls));
+  return { data, plan: result.plan, faults: result.errors, calls };
+}
+
+/**
+ * Stage 3: the editor's pass over the version the user picked (p.reviewLlm), from the data writeVersion kept.
+ * @returns {{plan: object, review: object|null, calls: object[]}}
+ */
+export async function polishVersion(p, twistPlan, data) {
+  const calls = [];
+  const w = scriptWriter(p, twistPlan, calls);
+  const result = validatePlan(data, w.ctx);
+  if (result.fatal.length) throw w.fail(result.fatal);
+  if (!p.reviewLlm) return { plan: result.plan, review: null, calls };
+  return { ...(await polishScript(w, p, twistPlan, data, result)), calls };
 }
