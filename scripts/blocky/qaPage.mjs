@@ -115,7 +115,12 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   for (const who of ["Noob", "Vex"]) await dialog.locator("button[aria-pressed]", { hasText: who }).first().click().catch(() => {});
   await dialog.getByRole("button", { name: "Done" }).click().catch(() => {});
   await p.locator("#fv2-prompt").fill("Noob trades a starter pet for Vex's rarest item, and the pet turns out to be the server's owner.");
-  await p.getByRole("button", { name: /Next: choose length and quality/ }).first().click();
+  // "Describe it" offers the three versions straight away, like Ideas; the settings are one link away.
+  row.writeOnDescribe = await p.getByRole("button", { name: /Write 3 versions/ }).count();
+  row.nextOnDescribe = await p.getByRole("button", { name: /Next: choose length/ }).count();
+  await p.waitForTimeout(600);   // the library dialog's closing animation
+  await p.screenshot({ path: path.join(outDir, `describe-${name}.png`) });
+  await p.getByRole("button", { name: "Change length or quality" }).first().click();
   await p.waitForTimeout(2500);
   // Settings: prices come from the server (quote_tool_prices); nothing is charged for looking.
   row.settingsHeading = await p.getByText("How should it look?").count();
@@ -182,7 +187,7 @@ const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-sto
   && v.builderSeriesTab === 0 && v.recentSeriesTab === 0 && v.seriesWordOnPage === 0
   && JSON.stringify(v.libraryNames) === JSON.stringify(["Noob", "Vex", "Lux"]) && v.libraryPictures === 3 && v.settingsHeading === 1 && v.shapeChoice === 0
   && v.askIdeasButton === 1 && v.ideasAskedOnLoad === false && /Write 3 versions/.test(v.writeButton) && v.ideaCards === 5
-  && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.changeSettingsLink === 1 && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
+  && v.writeOnDescribe === 1 && v.nextOnDescribe === 0 && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.changeSettingsLink === 1 && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
   && v.polishing >= 1 && Boolean(v.pickRefusedText) && v.pickButtonsAfter === 2
   && v.planningHeading >= 1 && v.readyWhileWriting === 1 && v.pickHeading >= 1 && v.pickButtons === 2 && v.failedCard === 1 && v.leftToday === 1 && v.namedSpeakers === 12 && v.sideScroll === false
   && v.costText && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);

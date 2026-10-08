@@ -127,7 +127,9 @@ export default function BlockyStoriesPage() {
       );
       const est = flow.singleEstimate;
       const short = est.total != null && est.total > account.balance;
-      if (single.method !== "idea") {
+      // The user's own script goes on to the settings; an idea or a description leads straight to its three versions.
+      const versionsReady = single.method === "idea" ? Boolean(single.ideaId) : !flow.storyBlocker;
+      if (single.method === "script") {
         footer = (
           <>
             <PrimaryButton chevron disabled={Boolean(flow.storyBlocker)} onClick={() => flow.updateSingle({ step: "settings" })}>
@@ -136,8 +138,8 @@ export default function BlockyStoriesPage() {
             {flow.storyBlocker && <FootNote>{flow.storyBlocker}</FootNote>}
           </>
         );
-      } else if (single.ideaId) {
-        // An idea leads straight to its three versions, at the length and quality that are set (changeable first).
+      } else if (versionsReady) {
+        // The three versions are written at the length and quality that are set (changeable first).
         footer = (
           <>
             {errorLine}
@@ -150,6 +152,15 @@ export default function BlockyStoriesPage() {
               {short ? `The full video needs ${(est.total - account.balance).toLocaleString()} more credits. ` : `${TIERS[single.tierId].label}, about ${single.lengthSec} sec. `}
               <button type="button" onClick={() => flow.updateSingle({ step: "settings" })} className={cx("rounded underline decoration-white/25 underline-offset-2 transition hover:text-lime-300", FOCUS)}>Change length or quality</button>
             </FootNote>
+          </>
+        );
+      } else if (single.method === "prompt") {
+        // A description that isn't ready yet: the same button, off, with what is missing.
+        footer = (
+          <>
+            {errorLine}
+            <PrimaryButton disabled>Write 3 versions, free</PrimaryButton>
+            <FootNote>{flow.storyBlocker}</FootNote>
           </>
         );
       } else if (flow.actionError) {

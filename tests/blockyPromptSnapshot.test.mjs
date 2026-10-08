@@ -110,7 +110,7 @@ const recorded = JSON.parse(fs.readFileSync(FILE, "utf8"));
 
 test("the snapshot covers every Blocky prompt, and nothing is built that isn't recorded", () => {
   assert.deepEqual(Object.keys(now).sort(), Object.keys(recorded).sort());
-  assert.equal(Object.keys(recorded).length, 83);
+  assert.equal(Object.keys(recorded).length, 111);
 });
 
 for (const key of Object.keys(recorded)) {

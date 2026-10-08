@@ -543,6 +543,29 @@ Decisions of 2026-10-08 (after the first real story):
 80. 52 AVATARS PROPOSED, NOT APPROVED (`scripts/blocky/rosterProposal.mjs`): the 24 in the
     roster and 28 new, each with its own name, role, personality line, voice, main colour and
     signature accessory. No picture is made from the list until the owner approves it.
+81. OPTION A PRICES ARE LIVE (owner, 2026-10-08): V2 4, V3 8, V4 16 credits a second
+    (`20261029100000_blocky_prices_option_a.sql`, the same numbers in `pricing.js`). V3's row
+    allows only 4, 6 and 8 seconds. A 30-second V2 story is 159 credits (39 for the pictures
+    and the script, 120 for the video).
+82. V2 IS GROK AT NATIVE 720p (owner, 2026-10-08): $0.0317 a second, 704 × 1280.
+83. THE FILL-THE-FRAME RENDER IS ON FLY, under Blocky's own image tag `blocky-final` only
+    (owner's go, 2026-10-08). The `fruit-final` and `latest` tags kept their digests
+    (`scripts/blocky/flyImageTags.mjs` before and after); Fruit's render files equal main's.
+84. THE LIBRARY IS DRAWN ON NANO BANANA 2 LITE, NOT PRO (owner, 2026-10-08): two pictures of
+    each avatar with today's reference prompt, the reference check picks the better one; an
+    avatar whose two pictures both fail is drawn once more on Pro. Noob, Vex and Lux are redone
+    the same way. The owner reviews the full sheet (every avatar, its score, the model that
+    made it) before anything goes live (`makeLibrary.mjs`, `pageLibrary.mjs`). No second
+    Klein round, no separate Pro test.
+85. THE LIST OF 52 IS APPROVED with one change: Glitch's legs are orange (cyan with magenta
+    is the neon pair banned everywhere else). The 28 new rows are in `roster.mjs`. To keep
+    the roster's own rules for 52 avatars, a sixth eye shape was added (a face is shared by
+    at most two avatars) and six of the new voices lost an emotion word (a voice says how it
+    sounds; the scene decides the emotion).
+86. "DESCRIBE IT" LEADS STRAIGHT TO THE THREE VERSIONS, like Ideas (owner, 2026-10-08). Only
+    the user's own script still goes through "Next: choose length and quality".
+87. V3 STAYS WITH THE OWNER until the owner has watched the Veo 3.1 Lite clip made after the
+    prompt pass; that clip is made first thing after the daily cap resets.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

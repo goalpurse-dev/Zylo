@@ -1,4 +1,4 @@
-// The Blocky Stories avatar library, as text: 24 avatars with a locked look
+// The Blocky Stories avatar library, as text: 52 avatars with a locked look
 // and a voice (docs/roblox-scope.md C3 and decisions 10, 13, 16).
 //
 // Rules every entry follows:
@@ -8,7 +8,8 @@
 //    and never change; a scene may add flat eyebrow lines for emotion;
 //  - a head/arm colour, a torso with ONE simple shape (no words, no logos),
 //    legs, and ONE signature accessory, chosen so that any two avatars differ
-//    in colour AND in silhouette;
+//    in colour AND in silhouette: no two share a head colour or an accessory, and an accessory is
+//    worn, never held, and never a weapon;
 //  - the voice says only how it SOUNDS; the scene decides the emotion;
 //  - the classic noob (decision 13): yellow cube head and arms, blue torso,
 //    green legs, face B, no cap and no accessory.
@@ -21,6 +22,7 @@ const EYES = {
   wide: "two solid black oval eyes set wide apart",
   close: "two small solid black oval eyes set close together",
   tall: "two tall narrow solid black oval eyes",
+  square: "two solid black rounded-square eyes",
 };
 const MOUTHS = {
   half: "one solid dark half-circle open mouth",
@@ -56,9 +58,39 @@ const ROWS = [
   ["baron", "Baron", "maroon", "a gold torso with one black bow-tie shape", "black", "a gold chain with one big plain round medallion", "oval", "small", "plummy, slow, rounded", "Rich trader", "Buys the server and reads nobody the terms", ["rich", "scammer", "boss"]],
   ["echo", "Echo", "navy blue", "a pale yellow torso with one navy spiral shape", "white", "a white bandana tied around the head", "tall", "half", "hollow, even, distant", "Ghost player", "Was banned long ago and is still here", ["ghost", "mystery", "friend"]],
   ["rex", "Rex", "dark green", "a yellow torso with three green stripe shapes", "brown", "a green dinosaur tail with small back spikes", "wide", "wide", "loud, cracking, rubbery", "Clown", "Presses every button, especially the red one", ["clown", "chaos", "friend"]],
+  // The 28 added on 2026-10-08 (the owner approved the list of 52; Glitch's legs are orange, not magenta:
+  // cyan with magenta is the neon pair that is banned everywhere else).
+  ["moxie", "Moxie", "salmon pink", "a white torso with one red heart shape", "navy blue", "a big red bow block on top of the head", "round", "wide", "bright, bold, bouncy", "Streamer", "Films everything and narrates it wrong", ["streamer", "show-off", "friend"]],
+  ["bolt", "Bolt", "cobalt blue", "a silver grey torso with one orange hexagon shape", "dark grey", "a red propeller cap", "tall", "wide", "buzzy, eager, quick", "Mechanic", "Fixes the game and breaks it better", ["mechanic", "tinkerer", "helper"]],
+  ["sable", "Sable", "chocolate brown", "a cream torso with one orange egg shape", "dark brown", "two tall brown rabbit-ear blocks", "close", "small", "soft, hushed, careful", "Pet collector", "Hatches every egg and trades none", ["pet collector", "hoarder", "kind"]],
+  ["tusk", "Tusk", "rust orange", "a dark brown torso with one white tooth shape", "black", "a grey helmet with two white horn blocks", "close", "wide", "big, hoarse, hearty", "Clan leader", "Recruits everyone and promotes nobody", ["clan leader", "boss", "loud"]],
+  ["marlo", "Marlo", "sand tan", "a brown torso with one gold horseshoe shape", "dark blue", "a wide brown cowboy hat", "oval", "wedge", "slow, dry, drawling", "Sheriff", "Appointed to the job by nobody and takes it seriously", ["sheriff", "rule keeper", "self-appointed"]],
+  ["brine", "Brine", "seafoam green", "a black torso with one white anchor shape", "dark red", "a black three-cornered pirate hat", "wide", "wedge", "gravelly, sing-song, loud", "Treasure hunter", "Digs up the whole map for one chest", ["treasure hunter", "greedy", "explorer"]],
+  ["fizz", "Fizz", "violet", "an orange torso with one white rectangle shape", "purple", "a tall pointed purple cone hat", "round", "drop", "sparkly, fast, breathless", "Event host", "Starts the countdown and changes the rules mid-round", ["event host", "countdown", "chaos"]],
+  ["pebble", "Pebble", "khaki", "a grey torso with two white dot shapes", "olive green", "a grey beanie with a white pom-pom block", "oval", "small", "sleepy, slow, mumbly", "AFK player", "Never moves and somehow wins", ["afk", "lucky", "mystery"]],
+  ["ziggy", "Ziggy", "chartreuse", "a black torso with one white chevron shape", "purple", "a tall green mohawk block", "round", "wedge", "sharp, cocky, clipped", "Racer", "Takes every shortcut, including the banned one", ["racer", "cheater", "rival"]],
+  ["opal", "Opal", "cream", "a pale blue torso with one gold drop shape", "white", "a gold halo ring floating above the head", "round", "wedge", "clear, even, bell-like", "Honest trader", "Gives fair deals and nobody believes it", ["honest", "trader", "too good"]],
+  ["grim", "Grim", "brick red", "a black torso with one orange X shape", "dark grey", "two small black horn blocks", "close", "wedge", "sneering, nasal, quick", "Griefer", "Breaks what others build and calls it art", ["griefer", "villain", "troublemaker"]],
+  ["lark", "Lark", "periwinkle", "a white torso with one blue cloud shape", "light grey", "two small white block wings on the back", "tall", "small", "airy, high, floating", "Fly hacker", "Floats over every wall and says it's lag", ["fly hacker", "cheater", "liar"]],
+  ["orbit", "Orbit", "silver", "a navy blue torso with one orange rocket shape", "white", "a red jetpack with two nozzles", "wide", "half", "crisp, bright, radio-like", "Beta tester", "Plays the update before it exists", ["beta tester", "insider", "pro"]],
+  ["basil", "Basil", "olive green", "a cream torso with one brown book shape", "brown", "a flat square black graduation cap", "close", "half", "patient, precise, kindly", "Tutorial guide", "Explains every step and skips the one that matters", ["tutorial guide", "teacher", "helper"]],
+  ["glitch", "Glitch", "cyan", "a black torso with one white hourglass shape", "orange", "an orange traffic cone on the head", "wide", "drop", "stuttering, jumpy, bright", "Lagger", "Arrives three seconds after everything happened", ["lagger", "glitch", "unlucky"]],
+  ["pogo", "Pogo", "mustard yellow", "a red torso with one white target shape", "blue", "an upside-down silver bucket on the head", "round", "wide", "loud, bright, tumbling", "First-day player", "Presses the wrong button with full confidence", ["new player", "clumsy", "lucky"]],
+  ["wren", "Wren", "peach", "a teal torso with one white double-arrow shape", "black", "a long dark red ponytail block", "tall", "drop", "tight, focused, fast", "Speedrunner", "Knows the record to the hundredth and hates yours", ["speedrunner", "pro", "rival"]],
+  ["clove", "Clove", "plum", "a white torso with one orange paint-drop shape", "dark grey", "a black beret", "oval", "drop", "slow, warm, drawn-out", "Decorator", "Redesigns your base while you're still in it", ["decorator", "artist", "bossy"]],
+  ["comet", "Comet", "indigo", "a white torso with one gold starburst shape", "pale blue", "one gold spiral horn on the forehead", "tall", "drop", "sparkling, proud, quick", "Rare hunter", "Owns the rarest pet and keeps checking it's still there", ["rare hunter", "collector", "anxious"]],
+  ["mako", "Mako", "denim blue", "a pale grey torso with two white triangle shapes", "dark blue", "a grey shark fin on the back", "close", "wedge", "low, hungry, grinning", "Tagger", "Always 'it', always right behind you", ["tagger", "chaser", "hunter"]],
+  ["knox", "Knox", "emerald green", "a tan torso with one brown tower shape", "dark green", "a brown turtle-shell block on the back", "oval", "drop", "slow, stubborn, steady", "Defender", "Guards one spot all game and calls it strategy", ["defender", "camper", "stubborn"]],
+  ["twig", "Twig", "bronze", "a dark green torso with one white tree shape", "brown", "two branching brown antler blocks", "close", "drop", "woody, slow, creaky", "Forest guide", "Leads you the long way on purpose", ["guide", "nature", "trickster"]],
+  ["morel", "Morel", "copper", "a white torso with one red dot shape", "tan", "a wide red mushroom-cap hat with white dots", "square", "small", "tiny, squeaky, polite", "Secret keeper", "Knows the hidden room and whispers the wrong way", ["secret", "shy", "mystery"]],
+  ["ruse", "Ruse", "pale lemon", "a black torso with one white coin shape", "grey", "a grey-and-black ringed tail", "square", "wedge", "smooth, quick, too friendly", "Scammer", "Trust-trades first and logs off second", ["scammer", "thief", "liar"]],
+  ["zen", "Zen", "gold", "a white torso with one black mountain shape", "black", "a black top-knot bun block", "square", "half", "quiet, level, unhurried", "Parkour master", "Has never fallen and has never explained", ["parkour", "master", "mentor"]],
+  ["cog", "Cog", "dusty lilac", "a grey torso with one yellow key shape", "dark grey", "a big brass wind-up key on the back", "wide", "small", "ticking, even, flat", "Bot", "Farms coins all night and says 'gg' at random", ["bot", "afk farmer", "npc"]],
+  ["widget", "Widget", "wine red", "a white torso with one yellow lightbulb shape", "grey", "a glowing yellow lightbulb block on top of the head", "tall", "half", "squeaky, rapid, breathless", "Inventor", "Has a plan, a backup plan and no brakes", ["inventor", "schemer", "friend"]],
+  ["petal", "Petal", "amber", "a green torso with one pink flower shape", "dark green", "a pink flower block with five petal blocks on top of the head", "wide", "small", "sweet, light, humming", "Gardener", "Grows the best base and guards it like a dragon", ["gardener", "builder", "protective"]],
 ];
 
-/** One row as an avatar (also used for the proposed rows in rosterProposal.mjs). */
+/** One row as an avatar. */
 export const toAvatar = ([id, name, head, torso, legs, accessory, eyes, mouth, voice, tag, role, tags]) => {
   if (!EYES[eyes] || !MOUTHS[mouth]) throw new Error(`${id}: unknown eyes or mouth`);
   const face = `${EYES[eyes]} and ${MOUTHS[mouth]}`;

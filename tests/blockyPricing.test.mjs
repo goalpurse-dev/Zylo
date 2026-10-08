@@ -33,7 +33,8 @@ function rowsFromMigrations() {
     for (const m of sql.matchAll(/INSERT INTO public\.tool_prices \(tool_key, credits_per_second, flat_credits,[^)]*\)\s*VALUES \('([a-z]+:blocky-story[a-z0-9-]*)',\s*([^,]+),\s*([^,]+),/g)) {
       if (!rows.has(m[1])) rows.set(m[1], { creditsPerSecond: num(m[2]), flatCredits: num(m[3]) });   // ON CONFLICT DO NOTHING: the first one stands
     }
-    for (const m of sql.matchAll(/UPDATE public\.tool_prices\s+SET ([^;]*?)\s+WHERE tool_key = '([a-z]+:blocky-story[a-z0-9-]*)'/g)) {
+    // One statement: SET … up to its own WHERE (a note may hold a semicolon, so the statement isn't cut at one).
+    for (const m of sql.matchAll(/UPDATE public\.tool_prices\s+SET ((?:(?!WHERE tool_key)[\s\S])*?)\s+WHERE tool_key = '([a-z]+:blocky-story[a-z0-9-]*)'/g)) {
       const row = rows.get(m[2]) ?? {};
       const per = /credits_per_second = ([\d.]+|NULL)/i.exec(m[1]); const flat = /flat_credits = ([\d.]+|NULL)/i.exec(m[1]);
       if (per) row.creditsPerSecond = num(per[1]);
@@ -54,6 +55,8 @@ test("the credits in pricing.js are the credits the price rows charge", () => {
   }
   assert.equal(PICTURE.credits, 4);
   assert.equal(SCRIPT.credits, 15);
+  // The owner's option A (2026-10-08).
+  assert.deepEqual(TIER_IDS.map((id) => TIERS[id].creditsPerSec), [4, 8, 16]);
 });
 
 test("the smoke check compares the same list with the live rows", () => {
@@ -113,7 +116,7 @@ test("the chains are safe: they end, the next model can make the same clip, and 
 test("a clip request per model, and the request that follows it when it fails", () => {
   const args = { prompt: "Vex says: \"No.\" Camera: a slow push-in toward the speaker. One continuous shot.", imageUrl: "https://example.test/scene.jpg", aspect: "9:16", durationSec: 6 };
   const grok = clipTask({ quality: "v2", ...args });
-  assert.deepEqual(grok, { taskType: "videoInference", model: "xai:grok-imagine@video-1.5-lite", positivePrompt: args.prompt, duration: 6, numberResults: 1, outputType: "URL", outputFormat: "MP4", resolution: "480p", inputs: { frameImages: [{ image: args.imageUrl, frame: "first" }] } });
+  assert.deepEqual(grok, { taskType: "videoInference", model: "xai:grok-imagine@video-1.5-lite", positivePrompt: args.prompt, duration: 6, numberResults: 1, outputType: "URL", outputFormat: "MP4", resolution: "720p", inputs: { frameImages: [{ image: args.imageUrl, frame: "first" }] } });
   assert.ok(!("width" in grok) && !("height" in grok), "Grok refuses a size next to a frame image");
   const afterGrok = fallbackClipTask(grok);
   assert.equal(afterGrok.model, "prunaai:p-video@2");

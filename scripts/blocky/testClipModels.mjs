@@ -87,13 +87,15 @@ async function run(key, label, task, expectUsd) {
   console.log(`${key}: ${r.state} $${r.cost.toFixed(4)} in ${r.seconds}s${r.error ? ` (${r.error})` : ""}`);
   return row;
 }
-await set(true);
+// The switch is put back as it was found: if the owner has paid calls on for their own testing, they stay on.
+const { data: found } = await db.from("blocky_settings").select("paid_calls").eq("id", true).single();
+if (!found.paid_calls) await set(true);
 try {
   for (const it of [...ITEMS, ...EXTRA]) await run(it.key, it.label, it.task, it.expectUsd);
   const g = out.items.grok;
   if (g?.state === "success") await run(UPSCALE.key, UPSCALE.label, { taskType: "upscale", model: "bytedance:50@1", inputs: { video: g.url }, outputType: "URL", outputFormat: "MP4" }, UPSCALE.expectUsd);
 } finally {
-  await set(false);
+  if (!found.paid_calls) await set(false);
 }
 
 // What each file is: size, frame rate, length, sound (from ffmpeg's own report), and frame sheets to judge by eye.

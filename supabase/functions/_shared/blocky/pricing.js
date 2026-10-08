@@ -35,9 +35,10 @@ const seconds = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => fr
  *   promptMax     the longest prompt the model takes
  */
 export const CLIP_MODELS = Object.freeze({
-  // Owner's choice for V2 (2026-10-08): the best voice of the three tested and good lip sync. Measured on one
-  // 6 s clip: $0.13. "480p" comes back 400×736 from a 9:16 picture; the final render scales it to 720p.
-  "grok-1.5-lite": Object.freeze({ name: "Grok Imagine Video 1.5 Lite", air: "xai:grok-imagine@video-1.5-lite", request: "grok", resolution: "480p", durations: seconds(4, 15), costPerSec: 0.0217, camera: "gentle", promptMax: 1500 }),
+  // Owner's choice for V2 (2026-10-08): the best voice of the three tested and good lip sync, at its native
+  // 720p (704×1280 from a 9:16 picture; the final render fills 720×1280). Measured on one 6 s clip: $0.19.
+  // At "480p" it cost $0.0217 a second and came back 400×736, clearly softer: the owner chose 720p.
+  "grok-1.5-lite": Object.freeze({ name: "Grok Imagine Video 1.5 Lite", air: "xai:grok-imagine@video-1.5-lite", request: "grok", resolution: "720p", durations: seconds(4, 15), costPerSec: 0.0317, camera: "gentle", promptMax: 1500 }),
   // The second try on every tier: another provider, fast (19 s for 6 s), calm camera. Measured: $0.151 for 6 s at 720p (704×1280).
   "p-video-2": Object.freeze({ name: "P-Video-2", air: "prunaai:p-video@2", request: "pvideo", resolution: "720p", durations: seconds(4, 15), costPerSec: 0.0252, camera: "gentle", promptMax: 1500 }),
   // V3. Measured: $0.30 for 6 s at 720p. It re-frames and changes faces unless told not to (camera "locked").
@@ -50,9 +51,11 @@ export const CLIP_MODELS = Object.freeze({
  * The quality tiers. chain: the model that makes the clip, then the ones tried in turn when a clip fails,
  * times out or comes back with drawn subtitles. The user pays the tier's price whichever model made the clip.
  */
+// Credits a second: the owner's "option A" of 2026-10-08 (V2 4, V3 8, V4 16; they were 5, 9 and 16 with the
+// old models). scripts/blocky/priceOptions.mjs prints what a 30-second story costs us and earns at these.
 export const TIERS = Object.freeze({
-  v2: Object.freeze({ toolKey: "video:blocky-story-v2", creditsPerSec: 5, minPlan: "starter", chain: Object.freeze(["grok-1.5-lite", "p-video-2"]) }),
-  v3: Object.freeze({ toolKey: "video:blocky-story-v3", creditsPerSec: 9, minPlan: "pro", chain: Object.freeze(["veo-3.1-lite", "p-video-2"]) }),
+  v2: Object.freeze({ toolKey: "video:blocky-story-v2", creditsPerSec: 4, minPlan: "starter", chain: Object.freeze(["grok-1.5-lite", "p-video-2"]) }),
+  v3: Object.freeze({ toolKey: "video:blocky-story-v3", creditsPerSec: 8, minPlan: "pro", chain: Object.freeze(["veo-3.1-lite", "p-video-2"]) }),
   // Two more tries, the last one at another provider: a Google outage never leaves V4 without one.
   v4: Object.freeze({ toolKey: "video:blocky-story-v4", creditsPerSec: 16, minPlan: "generative", chain: Object.freeze(["veo-3.1-fast", "veo-3.1-lite", "p-video-2"]) }),
 });

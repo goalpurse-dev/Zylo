@@ -20,8 +20,9 @@ const eurPerCredit = (plan) => plans[plan].monthly / plans[plan].credits;
 const costNow = (id, perSec = tierModel(id).costPerSec) => SCRIPT.costUsd + SCENES * PICTURE.costUsd + SECONDS * perSec + OTHER_USD;
 const SCENARIOS = [
   { key: "before", label: "Before (old models, old prices)", perSec: { v2: 5, v3: 9, v4: 16 }, script: 0, cost: { v2: 0.11 + SCENES * PICTURE.costUsd + SECONDS * 0.0504 + OTHER_USD, v3: 0.11 + SCENES * PICTURE.costUsd + SECONDS * 0.0817 + OTHER_USD, v4: 0.11 + SCENES * PICTURE.costUsd + SECONDS * 0.15 + OTHER_USD } },
-  { key: "today", label: "Today (new models, same prices + script share)", perSec: Object.fromEntries(TIER_IDS.map((id) => [id, TIERS[id].creditsPerSec])), script: SCRIPT.credits },
-  { key: "a", label: "Option A: keep a healthy margin", perSec: { v2: 4, v3: 8, v4: 16 }, script: SCRIPT.credits },
+  { key: "today", label: "New models at the old prices + script share", perSec: { v2: 5, v3: 9, v4: 16 }, script: SCRIPT.credits },
+  // Option A is what the owner picked on 2026-10-08: it is read from pricing.js, so this row is always the live price.
+  { key: "a", label: "Option A: keep a healthy margin (LIVE, from pricing.js)", perSec: Object.fromEntries(TIER_IDS.map((id) => [id, TIERS[id].creditsPerSec])), script: SCRIPT.credits },
   { key: "b", label: "Option B: more videos per plan", perSec: { v2: 3, v3: 6, v4: 15 }, script: SCRIPT.credits },
 ];
 const eur = (n) => `€${n.toFixed(2)}`;
@@ -54,5 +55,4 @@ console.log("30-second stories a month");
 console.log(`| Plan | Tier | ${out.scenarios.map((s) => s.key === "before" ? "Before" : s.key === "today" ? "Today" : s.key === "a" ? "Option A" : "Option B").join(" | ")} |`);
 console.log("|---|---|---|---|---|---|");
 for (const plan of Object.keys(PLAN_TIERS)) for (const id of PLAN_TIERS[plan]) console.log(`| ${plan} (€${plans[plan].monthly}, ${plans[plan].credits} credits) | ${id.toUpperCase()} | ${out.scenarios.map((s) => s.stories[plan][id]).join(" | ")} |`);
-const grok720 = SCRIPT.costUsd + SCENES * PICTURE.costUsd + SECONDS * 0.0317 + OTHER_USD;
-console.log(`\nV2 at native 720p instead of 480p: our cost ${usd(grok720)} = ${eur(grok720 * EUR_PER_USD)} a story instead of ${usd(costNow("v2"))} (${CLIP_MODELS["grok-1.5-lite"].name}, measured $0.0317 a second against $0.0217).`);
+console.log(`\nV2 is ${CLIP_MODELS["grok-1.5-lite"].name} at ${CLIP_MODELS["grok-1.5-lite"].resolution}: $${CLIP_MODELS["grok-1.5-lite"].costPerSec} a second (at 480p it was $0.0217).`);

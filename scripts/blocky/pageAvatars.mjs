@@ -1,5 +1,5 @@
 // Review page for the avatar-library test (testAvatarModels.mjs) and the proposed list of 52 avatars
-// (rosterProposal.mjs): FLUX.2 [klein] 9B against the library's Nano Banana Pro pictures, the reference
+// (roster.mjs): FLUX.2 [klein] 9B against the library's Nano Banana Pro pictures, the reference
 // check's verdict on each, one scene made from the Klein pictures, and the list to approve.
 //   node scripts/blocky/pageAvatars.mjs <outDir>     writes <outDir>/index.html
 import fs from "fs";
@@ -7,7 +7,9 @@ import path from "path";
 import { renderResultsPage } from "./resultsPage.mjs";
 import { ROOT } from "./lib.mjs";
 import { ROSTER, avatarPrompt } from "./roster.mjs";
-import { FULL_ROSTER, PROPOSED } from "./rosterProposal.mjs";
+// The 24 of the first roster, then the 28 the owner approved on 2026-10-08.
+const FULL_ROSTER = ROSTER;
+const PROPOSED = ROSTER.slice(24);
 
 const [outDir] = process.argv.slice(2);
 const dir = path.join(ROOT, "data/blocky-tests/klein");
@@ -85,7 +87,7 @@ const html = await renderResultsPage({
       cards: [{ title: "Sent to Klein exactly like this, 768 × 1376, 4 steps", prompt: avatarPrompt(ROSTER.find((a) => a.id === "vex")) }],
     },
     {
-      heading: `The list to approve: ${FULL_ROSTER.length} avatars (the ${ROSTER.length} already in the roster and ${PROPOSED.length} new)`,
+      heading: `The list: ${FULL_ROSTER.length} avatars (the first ${ROSTER.length - PROPOSED.length} and ${PROPOSED.length} new), approved on 2026-10-08 with Glitch's legs orange`,
       text: "Every avatar has its own name, role, personality line, voice, main colour and signature accessory: no two share a colour or an accessory, so each silhouette is its own. Names are invented or everyday words, checked against the banned real names. Accessories are worn, never held, and none is a weapon. No picture is made from this list until you approve it.",
       html: rosterTable,
     },

@@ -1,5 +1,5 @@
 // Blocky Stories' own rules (supabase/functions/_shared/blocky/: rules.js,
-// safety.js, look.js) and the 24-avatar roster (scripts/blocky/roster.mjs).
+// safety.js, look.js) and the avatar roster (scripts/blocky/roster.mjs).
 // Offline: prompts are built and answers are checked, nothing is sent.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -25,8 +25,8 @@ const cast = (...ids) => ids.map((id) => LIB.get(id));
 // Nothing a model reads about a character may give an age or a gender.
 const PERSON_WORDS = /\b(\d+-year-old|years? old|aged \d+|woman|women|man|men|boys?|girls?|kids?|child|children|teen(ager)?s?|his|her|he|she)\b/i;
 
-test("the roster: 24 one-word avatars, all different, none with an age or a gender", () => {
-  assert.equal(ROSTER.length, 24);
+test("the roster: 52 one-word avatars, all different, none with an age or a gender", () => {
+  assert.equal(ROSTER.length, 52);
   for (const a of ROSTER) {
     assert.match(a.name, /^[A-Z][a-z]+$/, `${a.name} is one word`);
     assert.equal(a.id, a.name.toLowerCase());
@@ -39,10 +39,10 @@ test("the roster: 24 one-word avatars, all different, none with an age or a gend
     // The voice says how it sounds; the scene decides the emotion.
     assert.doesNotMatch(a.voice, /\b(angry|furious|sad|happy|cheerful|scared|excited|worried|shocked|panicked|smug|unsure|confident|bossy|teasing|calm|dreamy|goofy|gentle|grand)\b/i, `${a.id}: voice has no emotion`);
   }
-  for (const key of ["id", "name", "head", "voice", "torso"]) assert.equal(new Set(ROSTER.map((a) => a[key])).size, 24, `every ${key} is different`);
+  for (const key of ["id", "name", "head", "voice", "torso"]) assert.equal(new Set(ROSTER.map((a) => a[key])).size, 52, `every ${key} is different`);
   const accessories = ROSTER.map((a) => a.accessory).filter(Boolean);
-  assert.equal(accessories.length, 23, "everyone but the noob has ONE signature accessory");
-  assert.equal(new Set(accessories).size, 23, "and no two share one (silhouette contrast)");
+  assert.equal(accessories.length, 51, "everyone but the noob has ONE signature accessory");
+  assert.equal(new Set(accessories).size, 51, "and no two share one (silhouette contrast)");
   // The exact face (eyes + mouth) is shared by at most two avatars, and never by two with a similar colour.
   const faces = new Map();
   for (const a of ROSTER) faces.set(`${a.eyes}+${a.mouth}`, [...(faces.get(`${a.eyes}+${a.mouth}`) ?? []), a.id]);
