@@ -220,7 +220,10 @@ async function clipTest(body: any) {
  * Poll with raw_poll ({kind: "image"} for a picture).
  */
 const TEST_MODELS: Record<string, Set<string>> = {
-  videoInference: new Set(["alibaba:wan@2.6-flash", "bytedance:seedance@2.0-mini", "google:3@3"]),
+  // The last three and the upscaler: candidates the owner chose on 2026-10-08, allowed HERE for test clips
+  // only (scripts/blocky/testClipModels.mjs). No story uses them until models.js says so.
+  videoInference: new Set(["alibaba:wan@2.6-flash", "bytedance:seedance@2.0-mini", "google:3@3", "xai:grok-imagine@video-1.5-lite", "prunaai:p-video@2", "google:veo@3.1-lite"]),
+  upscale: new Set(["bytedance:50@1"]),
   imageInference: new Set(["google:nano-banana@2-lite", "google:4@2"]),
 };
 async function rawTest(body: any) {
