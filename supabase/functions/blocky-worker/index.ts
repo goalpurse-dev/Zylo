@@ -35,6 +35,7 @@ import { rewriteClipPrompt } from "../_shared/blocky/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/blocky/runware.js";
 import { BLOCKY_MODELS, videoModel } from "../_shared/blocky/models.js";
 import { readPaidState } from "../_shared/blocky/spendGuard.js";
+import { runSpendWatch } from "../_shared/blocky/spendWatch.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -550,7 +551,9 @@ Deno.serve(async (req) => {
   if (!sameToken(req.headers.get("x-blocky-worker-secret") ?? "", WORKER_SECRET)) return json({ ok: false }, 401);
   try {
     if (action === "kick") return json({ ok: true, ...(await engine.kick({ storyId: typeof body?.storyId === "string" ? body.storyId : null })) });
-    if (action === "reconcile") return json({ ok: true, ...(await engine.reconcile()), finalsTimedOut: await failStaleFinals() });
+    // The sweep also runs the spending watch (spendWatch.js): spend ahead of what users were charged pauses
+    // paid calls and emails the admin; a job sent too often is reported.
+    if (action === "reconcile") return json({ ok: true, ...(await engine.reconcile()), finalsTimedOut: await failStaleFinals(), watch: await runSpendWatch(admin, ALERT_ENV) });
     return json({ ok: false, error: "unknown action" }, 400);
   } catch (e) {
     console.error(`[blocky-worker] ${action} failed:`, (e as Error)?.message ?? e);
