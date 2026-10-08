@@ -93,9 +93,9 @@ const html = await renderResultsPage({
     },
   ],
   decisions: [
-    "<b>Klein or Pro for the library.</b> By your rule (\"if Klein matches Pro, use it; if not, use Pro\"): Pro. One thing could still change that, for about 3 cents: Klein seems to draw the very parts the prompt tells it to leave out (the prompt names clip hands, neck studs and minifigures in its leave-out list). A second round with a prompt that only says what the body IS would show whether Klein can do it at all. Say if you want it.",
-    "<b>Pro pictures with the four fixes.</b> The three Pro pictures in the library were made before the fixes (Vex's rounded head and tongue, Lux turned to the side). A fair like-for-like is three Pro pictures with today's prompt: about $0.40.",
-    `<b>The list of ${FULL_ROSTER.length}.</b> Approve it, or tell me which names, roles, colours or accessories to change. On Pro the ${FULL_ROSTER.length} pictures are about $${(FULL_ROSTER.length * 0.134).toFixed(2)} at one each, or about $${(FULL_ROSTER.length * 0.134 * 2).toFixed(2)} at two each with the check picking the better one.`,
+    "<b>Decided (2026-10-08): the library is drawn on Nano Banana 2 Lite</b>, two pictures of each avatar with this reference prompt, and the reference check picks the better one. An avatar whose two pictures both fail is drawn once more on Nano Banana Pro. Noob, Vex and Lux are redone the same way. No second Klein round and no separate Pro test.",
+    "<b>Decided: the list of 52 is approved</b>, with Glitch's legs orange instead of magenta. It is in the roster now. Two things were adjusted to keep the roster's own rules: 15 of the new avatars got a different eye or mouth shape (a face is shared by at most two avatars), and six voices lost an emotion word (a voice says how it sounds).",
+    "<b>Next:</b> the full library sheet, every avatar with its check score and the model that made it, for your review before anything goes live.",
   ],
 });
 fs.writeFileSync(path.join(outDir, "index.html"), html);
