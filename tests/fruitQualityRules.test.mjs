@@ -353,8 +353,12 @@ test("clip check: the last frame is asked for, the clip waits, and a human in th
   assert.equal(await engine.finalize({ ...db.jobs.get(jobId) }), "frame_pending", "the reconciler waits too");
   assert.equal(await engine.onClipFrame(jobId, true), "remade");
   assert.match(db.jobs.get(jobId).error, /last frame: 1 human head/);
-  assert.equal(await engine.onResult(sent[1].taskUUID, CLIP(sent[1].taskUUID)), "completed", "the remade clip is kept without another check");
-  assert.equal(frames.length, 1);
+  // 2026-10-08: the remade clip's frames are looked at too (never to make a third clip: so the final video
+  // knows whether the clip carries subtitles the video model drew itself, and leaves its own caption off it).
+  assert.equal(await engine.onResult(sent[1].taskUUID, CLIP(sent[1].taskUUID)), "frame_pending", "the remade clip waits for its frames");
+  assert.equal(frames.length, 2);
+  assert.equal(await engine.onClipFrame(jobId, true), "completed", "it is kept whatever the check says");
+  assert.equal(sent.length, 2, "never a third clip");
   assert.equal(await engine.onClipFrame(jobId, true), "ignored", "a late frame report changes nothing");
 });
 
