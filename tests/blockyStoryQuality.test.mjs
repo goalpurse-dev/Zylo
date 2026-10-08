@@ -35,7 +35,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ACTION_MAX_WORDS, MAX_REPAIRS, MAX_REWRITES, PATCH_TOOL, WRITE_TOOL, WRITTEN_WORD, applyPatch, buildPlannerPrompt, patchSchema, plannerSchema, runPlanner, validatePlan } from "../supabase/functions/_shared/blocky/planner.js";
-import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, JUDGE_CRITERIA, JUDGE_SYSTEM, MECHANICS, MECHANIC_IDS, NO_MAGIC_MIN, PLAN_COUNT, buildTwistPlanPrompt, judgeSchema, openerOf, pickPlan, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
+import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, JUDGE_CRITERIA, JUDGE_SYSTEM, GATE_CRITERIA, MECHANICS, MECHANIC_IDS, NO_MAGIC_MIN, PLAN_COUNT, buildTwistPlanPrompt, judgeSchema, openerOf, pickPlan, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
 import { REVIEW_RULES, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/blocky/scriptReview.js";
 import { REVIEW_SYSTEM, STORY_EMOTIONS, WRITTEN_WORDS, cleanUpload } from "../supabase/functions/_shared/blocky/rules.js";
 import { callLlm } from "../supabase/functions/_shared/blocky/llm.js";
@@ -375,10 +375,10 @@ function threeOf(a = goodPlan(), b = altB(), c = altC()) {
   const strip = ({ premise: _p, seenAs: _s, emotion: _e, ...rest }) => rest;
   return { premise: a.premise, seenAs: a.seenAs, emotion: a.emotion, plans: [a, b, c].map(strip) };
 }
-/** A judge's answer: totals[i] spread over the six points for plan i+1 (30 = all fives), and its own pick. */
-function judgeSays(totals = [30, 18, 18], best = 1, noMagic = []) {
-  const KEYS = ["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic"];
-  const score = (total, i) => { const each = Math.floor(total / 6); const extra = total - each * 6; return { plan: i + 1, ...Object.fromEntries(KEYS.map((k, n) => [k, each + (n < extra ? 1 : 0)])), ...(noMagic[i] ? { noMagic: noMagic[i] } : {}), note: "" }; };
+/** A judge's answer: totals[i] spread over the seven points for plan i+1 (35 = all fives), and its own pick. */
+function judgeSays(totals = [30, 18, 18], best = 1, noMagic = [], motive = []) {
+  const KEYS = ["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic", "motive"];
+  const score = (total, i) => { const each = Math.floor(total / 7); const extra = total - each * 7; return { plan: i + 1, ...Object.fromEntries(KEYS.map((k, n) => [k, each + (n < extra ? 1 : 0)])), ...(noMagic[i] ? { noMagic: noMagic[i] } : {}), ...(motive[i] ? { motive: motive[i] } : {}), note: "" }; };
   return { scores: totals.map(score), best, why: "the clue is in plain sight and the payoff uses it" };
 }
 
@@ -459,7 +459,11 @@ test("the order of work: three plans, the judge, then the script that delivers t
 });
 
 test("best of three: the judge scores six points a plan, and the fairest plan is the one that is written", async () => {
-  assert.deepEqual([...JUDGE_CRITERIA], ["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic"]);
+  assert.deepEqual([...JUDGE_CRITERIA], ["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic", "motive"]);
+  assert.deepEqual([...GATE_CRITERIA], ["noMagic", "motive"]);
+  // Motive (round four: an admin traded away his badge for an egg, and the plan tied for the top score).
+  assert.match(JUDGE_SYSTEM, /motive: every character does what someone in their place, wanting what they want, would really do[^]*an admin trades away the badge that gives him his power for an egg/);
+  assert.match(PLAN_SYSTEM, /Everyone acts in character. Nobody gives up their power, their best item or the win unless the viewer can see why they would/);
   assert.equal(PLAN_COUNT, 3);
   for (const k of JUDGE_CRITERIA) assert.match(JUDGE_SYSTEM, new RegExp(`^- ${k}: `, "m"), k);
   assert.match(JUDGE_SYSTEM, /noMagic: nothing "decides" by itself[^]*1: an object, a light, a ring, a board, a door or a rule suddenly chooses, bans, judges or changes its target, or a rule of the world appears only at the reveal/);
@@ -474,8 +478,12 @@ test("best of three: the judge scores six points a plan, and the fairest plan is
   assert.equal(pickPlan(three, judgeSays([24, 24, 18], 3)).index, 0);
   // A thing that "decides" by itself: a plan under 3 on noMagic loses to any plan that isn't, whatever its total.
   assert.equal(NO_MAGIC_MIN, 3);
-  assert.equal(pickPlan(three, judgeSays([29, 20, 18], 1, [1, 4, 4])).index, 1, "29 points with a magic object lose to 20 without");
+  assert.equal(pickPlan(three, judgeSays([33, 24, 22], 1, [1, 4, 4])).index, 1, "29 points with a magic object lose to 24 without");
   assert.equal(pickPlan(three, judgeSays([29, 20, 18], 1, [2, 2, 2])).index, 0, "when all three have one, the best of them");
+  // The same for motive: a plan nobody would act out loses to any plan that is believable.
+  const believable = [goodPlan(), altB(), altC()].map((p) => validateTwistPlan(p, planCtx));
+  assert.equal(pickPlan(believable, judgeSays([33, 24, 21], 1, [], [1, 4, 4])).index, 1, "the badge-for-an-egg trade loses with 29 points to 24");
+  assert.equal(pickPlan(believable, judgeSays([33, 24, 21], 1, [], [3, 4, 4])).index, 0, "believable with a little goodwill is enough");
   // Each fault code found counts 2 points against a plan.
   const faulty = [validateTwistPlan(goodPlan({ payoff: "The signpost beside Vex flashes red and locks a collar around his neck.", finalLine: "Guess that rule was yours." }), planCtx), ...three.slice(1)];
   assert.equal(faulty[0].errors.length, 2);

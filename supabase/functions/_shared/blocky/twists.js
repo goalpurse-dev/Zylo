@@ -99,6 +99,7 @@ THE TEST OF A FAIR TWIST (the judge checks each plan against every point)
 2. It needs NO new rule of the world at the reveal. Everything it uses is on screen by scene 2. If explaining it needs a sentence like "it turns out it only works when...", the twist is not planted: make that thing the clue, or take another pattern. No OBJECT decides anything: a hammer, a board, a post, a door, a vault or a crown that suddenly chooses, bans, judges, flashes or opens "for the right one" IS a new rule, unless scene 1 or 2 already showed it doing exactly that (mechanic shown_in_scene_1 or 2). The twist is something a CHARACTER did, owns, knew or is, and the payoff is that character DOING it: the payoff sentence starts with their name.
 3. Every cause is a cast member. Nobody outside the cast did it, set it up or is to blame, and no crowd, "other players" or "everyone" reacts, protests or decides anything: only the cast is on screen, so the consequence happens TO a cast member and is DONE by a cast member.
 4. Somebody pays or somebody wins something real, on screen. A danger that turns out harmless is not a twist. "The villain admits it" is not a twist.
+7. Everyone acts in character. Nobody gives up their power, their best item or the win unless the viewer can see why they would: an admin does not trade away the badge that makes him an admin.
 5. A viewer can retell the whole story in one sentence.
 6. The clue and the payoff can be SEEN in a chest-up picture of one or two avatars (something held, worn, standing beside them, happening to them) or HEARD in a line. Nothing to read, and nobody walks, runs, climbs or drags anyone. One plain sentence each, 20 words or fewer: each has to fit into one scene.
 
@@ -310,9 +311,14 @@ export function twistPlanBlock(plan, cast) {
 /* ─── Best of three: the judge ────────────────────────────────────────── */
 
 export const PLAN_JUDGE_PURPOSE = "plan_judge";
-/** What the judge scores each plan on, 1 to 5 (the owner's six, 2026-10-08). */
-export const JUDGE_CRITERIA = Object.freeze(["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic"]);
-/** A plan the judge scores below this on noMagic is only kept if all three are. */
+/** What the judge scores each plan on, 1 to 5: the owner's six (2026-10-08) and "motive", added after round four. */
+export const JUDGE_CRITERIA = Object.freeze(["cluePlanted", "payoffUsesClue", "stakes", "flip", "retell", "noMagic", "motive"]);
+/**
+ * The two points a plan can't make up for elsewhere: a plan the judge scores below NO_MAGIC_MIN on one of
+ * them is only kept if all three plans are. (Round four's weakest story had an admin trade away his badge
+ * for an egg and still tied for the top score.)
+ */
+export const GATE_CRITERIA = Object.freeze(["noMagic", "motive"]);
 export const NO_MAGIC_MIN = 3;
 
 export const JUDGE_SYSTEM = `You judge three plans for ONE Blocky Story and say which is the fairest. A Blocky Story is a short vertical video where blocky game avatars talk inside a blocky online game world: one chest-up picture and one spoken line per scene, seen once, by someone scrolling. The plan decides the twist; a writer turns the winning plan into dialogue afterwards.
@@ -324,6 +330,7 @@ Score each plan from 1 to 5 on each of these. Be hard: 3 means "it works", 5 is 
 - flip: the twist turns over what the viewer assumed (who had the power, who was being tricked, what the prize or the rule really was). Low if it is the first thing a viewer would guess, or if it only confirms that the villain was a villain.
 - retell: after one watch a viewer could retell the whole story in one sentence. Low if it needs two ideas, or a fact the video never gives.
 - noMagic: nothing "decides" by itself. 5: a character does it, with what was planted, by something every player already knows (an owner's or an admin's power, a pet obeys its owner, a key opens its own door, a hazard resets whoever touches it, a trade is final, whoever holds an item has it). 3: it runs on something the viewer plainly SAW working in scene 1 or 2. 1: an object, a light, a ring, a board, a door or a rule suddenly chooses, bans, judges or changes its target, or a rule of the world appears only at the reveal.
+- motive: every character does what someone in their place, wanting what they want, would really do. 5: each action is the obvious thing for that character. 3: believable with a little goodwill. 1: the story only works because someone acts against their own interest or their role for no reason the viewer can see (an admin trades away the badge that gives him his power for an egg; someone simply hands the hero the win).
 
 Then: best is the number of the plan you would make into a video, and why says it in one sentence. If two are close, take the one a viewer would send to a friend.
 Return only the JSON object.`;
@@ -363,7 +370,7 @@ export function buildJudgePrompt({ cast, source, idea, prompt, sceneCount, plans
  * Picks the plan to write. candidates: [{plan, errors, fatal}] in the order written (validateTwistPlan);
  * verdict: the judge's answer, or null when the judge could not be asked (then code alone decides).
  * A plan that can't be used is never picked. Among the others: a plan the judge scores under NO_MAGIC_MIN
- * on noMagic comes after every plan that isn't; then the highest total, less 2 for each fault code found;
+ * on noMagic or on motive comes after every plan that isn't; then the highest total, less 2 for each fault code found;
  * then the judge's own pick; then the order they were written in.
  * @returns {{index, plan, ranking: {index, total, noMagic, faults, usable}[], best, why} | null}
  */
@@ -375,9 +382,10 @@ export function pickPlan(candidates, verdict) {
     const s = byPlan.get(index + 1);
     const scores = s ? Object.fromEntries(JUDGE_CRITERIA.map((k) => [k, clamp(s[k])])) : null;
     const total = scores ? JUDGE_CRITERIA.reduce((sum, k) => sum + scores[k], 0) : 0;
-    return { index, usable: c.fatal.length === 0, total, scores, noMagic: scores ? scores.noMagic : null, faults: c.errors.length, note: String(s?.note ?? "").slice(0, 200) };
+    const gated = scores ? GATE_CRITERIA.some((k) => scores[k] < NO_MAGIC_MIN) : false;
+    return { index, usable: c.fatal.length === 0, total, scores, noMagic: scores ? scores.noMagic : null, motive: scores ? scores.motive : null, gated, faults: c.errors.length, note: String(s?.note ?? "").slice(0, 200) };
   });
-  const rank = (r) => [r.usable ? 1 : 0, r.noMagic === null || r.noMagic >= NO_MAGIC_MIN ? 1 : 0, r.total - 2 * r.faults, r.index === best ? 1 : 0, -r.index];
+  const rank = (r) => [r.usable ? 1 : 0, r.gated ? 0 : 1, r.total - 2 * r.faults, r.index === best ? 1 : 0, -r.index];
   const order = [...ranking].sort((a, b) => { const x = rank(a), y = rank(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return y[i] - x[i]; return 0; });
   const top = order[0];
   if (!top || !top.usable) return null;

@@ -19,7 +19,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createEngine } from "../_shared/blocky/engine.js";
 import { createSupabaseMedia, createSupabaseStore } from "../_shared/blocky/supabaseStore.js";
 import { getResponseTask, sameToken, webhookToken } from "../_shared/blocky/runware.js";
-import { planSeries, planStory, reviewStoredScript } from "../_shared/blocky/plannerService.js";
+import { planOnly, planSeries, planStory, reviewStoredScript } from "../_shared/blocky/plannerService.js";
 import { setupsFor } from "../_shared/blocky/series.js";
 import { validateCreateStory } from "../_shared/blocky/validation.js";
 import { BlockyError, MESSAGES } from "../_shared/blocky/errors.js";
@@ -31,7 +31,7 @@ import { buildClipRequest, fallbackClipTask } from "../_shared/blocky/clips.js";
 import { buildPictureRequest, withRedrawHint } from "../_shared/blocky/pictures.js";
 import { rewriteClipPrompt } from "../_shared/blocky/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/blocky/runware.js";
-import { videoModel } from "../_shared/blocky/models.js";
+import { BLOCKY_MODELS, videoModel } from "../_shared/blocky/models.js";
 import { readPaidState } from "../_shared/blocky/spendGuard.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -334,6 +334,29 @@ async function plannerTest(body: any) {
   return out;
 }
 
+/**
+ * Admin test: the plan step alone (three plans and the judge), no script.
+ * body: {input: as planner_test, effort?: "low"|"medium"|"high", rawPlans?: a plan step's answer to judge again,
+ *        avoidPatterns?, avoidOpeners?}
+ */
+async function planTest(body: any) {
+  const { data: rows, error } = await admin.from("blocky_characters").select("*").eq("active", true);
+  if (error) throw new Error(error.message);
+  const lib = new Map(rows.map((c: any) => [c.id, c]));
+  const input = validateCreateStory(body?.input, lib, () => null);
+  const effort = ["low", "medium", "high"].includes(body?.effort) ? body.effort : null;
+  return planOnly({
+    admin, userId: null, env: TEST_ENV(),
+    plannerInput: {
+      source: input.source, cast: input.castIds.map((id: string) => lib.get(id)), lengthSec: input.lengthSec, quality: input.quality, prompt: input.prompt,
+      avoidPatterns: Array.isArray(body?.avoidPatterns) ? body.avoidPatterns.filter((x: unknown) => typeof x === "string").slice(0, 3) : [],
+      avoidOpeners: Array.isArray(body?.avoidOpeners) ? body.avoidOpeners.filter((x: unknown) => typeof x === "string").slice(0, 5) : [],
+      ...(effort ? { planModel: { ...BLOCKY_MODELS.twistPlan, effort } } : {}),
+      ...(body?.rawPlans && typeof body.rawPlans === "object" ? { rawPlans: body.rawPlans } : {}),
+    },
+  });
+}
+
 const TEST_ENV = () => ({ ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "", OPENAI_API_KEY, BLOCKY_PAID_CALLS: paidEnv() });
 
 /**
@@ -483,10 +506,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (action === "planner_test" || action === "series_test" || action === "review_test") {
+  if (action === "planner_test" || action === "series_test" || action === "review_test" || action === "plan_test") {
     if (!sameToken((req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""), SERVICE_KEY)) return json({ ok: false }, 401);
     try {
-      const fn = action === "series_test" ? seriesTest : action === "review_test" ? reviewTest : plannerTest;
+      const fn = action === "series_test" ? seriesTest : action === "review_test" ? reviewTest : action === "plan_test" ? planTest : plannerTest;
       return json({ ok: true, ...(await fn(body)) });
     } catch (e) {
       const fe = e as any;

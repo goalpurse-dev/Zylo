@@ -31,7 +31,8 @@ export const BLOCKY_TOTAL_USD = 10.0;
 // twists4: the same five ideas with the twist plan as its own step, final code (approved 2026-10-08; target under $0.08 each, at most $0.15).
 // twists5: shake-down of the best-of-three step (one story; the plan model refused the request format and the writer's model planned instead).
 // twists6: the same five with the best of three plans on the plan model and a judge (approved 2026-10-08; at most $0.40 each).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75, twists4: 0.75, twists5: 1.5, twists6: 2.0 });
+// plans: the plan step alone at low effort against medium, on the same five ideas (approved 2026-10-08; about $0.35).
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75, twists4: 0.75, twists5: 1.5, twists6: 2.0, plans: 0.8 });
 
 export class PaidCallBlocked extends Error {}
 

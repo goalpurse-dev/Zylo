@@ -3,7 +3,7 @@
 // exact request, response, tokens and real cost, and returns the plan.
 // Used by blocky-story-api (createStory) and blocky-worker (blind test).
 import { callLlm, LlmError } from "./llm.js";
-import { runPlanner } from "./planner.js";
+import { runPlanner, runTwistPlan } from "./planner.js";
 import { runSeriesPlanner } from "./series.js";
 import { reviewScript } from "./scriptReview.js";
 import { BLOCKY_MODELS } from "./models.js";
@@ -79,6 +79,23 @@ export async function planStory({ admin, env, userId, plannerInput, model = BLOC
     const reviewLlm = reviewOn ? (o) => llm({ ...o, use: BLOCKY_MODELS.review, maxOutputTokens: 2500, strict: true }) : undefined;
     const { plan, attempts, review } = await runPlanner({ ...plannerInput, llm, reviewLlm });
     return { plan, attempts, review, ...done(), model };
+  } catch (e) {
+    if (e instanceof BlockyError) { Object.assign(e, done()); throw e; }
+    throw new BlockyError("PLANNER_FAILED", undefined, 502);
+  }
+}
+
+/**
+ * Admin test: the plan step alone (three plans and the judge), no script. plannerInput may carry planModel
+ * (another model or effort) or rawPlans (plans written before, to be judged again).
+ */
+export async function planOnly({ admin, env, userId, plannerInput, purposePrefix = "blind_test:" }) {
+  const { llm, done } = loggedLlm({ admin, env, userId, model: BLOCKY_MODELS.planner, purposePrefix, seriesId: null });
+  const t0 = Date.now();
+  try {
+    const reviewLlm = (o) => llm({ ...o, use: BLOCKY_MODELS.review, maxOutputTokens: 2500, strict: true });
+    const { plan, plans } = await runTwistPlan({ ...plannerInput, llm, reviewLlm });
+    return { plan, plans, ms: Date.now() - t0, ...done() };
   } catch (e) {
     if (e instanceof BlockyError) { Object.assign(e, done()); throw e; }
     throw new BlockyError("PLANNER_FAILED", undefined, 502);

@@ -465,17 +465,23 @@ async function planTwist(p, sceneCount, calls) {
   const fail = (details) => { const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502); err.details = details; err.calls = calls; return err; };
   // The three plans are written by the plan model (models.js#twistPlan, stronger than the writer's). If that
   // model can't be reached, the writer's own model plans instead: a story is never lost to the better model.
-  let use = BLOCKY_MODELS.twistPlan;
+  // p.planModel: another plan model or effort for this one story (the worker's plan test).
+  let use = p.planModel ?? BLOCKY_MODELS.twistPlan;
   const ask = (text, purpose) => p.llm({ system, user: text, schema, name: "twist_plans", strict: true, purpose, maxOutputTokens: use ? 10000 : 3500, ...(use ? { use } : {}) });   // the plan model thinks first, and that counts
   let answer;
-  try {
-    answer = await ask(user, TWIST_PLAN_PURPOSE);
-  } catch (e) {
-    if (!use || e?.code === "PROVIDER_UNAVAILABLE" || e?.code === "PAID_CALLS_DISABLED") throw e;
-    use = null;
-    answer = await ask(user, `${TWIST_PLAN_PURPOSE}_fallback`);
+  if (p.rawPlans) {
+    // Plans that were written before (the worker's judge test): only checked and judged again.
+    answer = { data: p.rawPlans };
+  } else {
+    try {
+      answer = await ask(user, TWIST_PLAN_PURPOSE);
+    } catch (e) {
+      if (!use || e?.code === "PROVIDER_UNAVAILABLE" || e?.code === "PAID_CALLS_DISABLED") throw e;
+      use = null;
+      answer = await ask(user, `${TWIST_PLAN_PURPOSE}_fallback`);
+    }
+    calls.push(answer);
   }
-  calls.push(answer);
   const check = (data) => splitPlans(data).map((raw) => validateTwistPlan(raw, ctx));
   let candidates = check(answer.data);
   // Not one plan the writer could work from: once more, told why. (A plan with a lesser fault is not sent
@@ -501,6 +507,7 @@ async function planTwist(p, sceneCount, calls) {
   }
   const pick = pickPlan(candidates, verdict);
   if (!pick) throw fail(["no usable plan"]);
+  if (p.onPlans) p.onPlans(candidates.map((c) => ({ plan: c.plan, errors: c.errors, fatal: c.fatal })));
   return {
     ...pick.plan,
     // What the judge made of the three, kept with the story: which plans there were, their scores, which was kept.
@@ -509,6 +516,18 @@ async function planTwist(p, sceneCount, calls) {
       plans: candidates.map((c, i) => ({ patternId: c.plan.patternId, title: c.plan.title, twist: c.plan.twist, clue: c.plan.clue, payoff: c.plan.payoff, finalLine: c.plan.finalLine, faults: c.errors, ...(pick.ranking[i] ?? {}) })),
     },
   };
+}
+
+/**
+ * The plan step alone: three plans and the judge's verdict, no script. For the worker's tests (comparing
+ * plan models and effort levels, or judging plans again that were written before: p.rawPlans).
+ * @returns {{plan, plans: {plan, errors, fatal}[], calls}}
+ */
+export async function runTwistPlan(p) {
+  const calls = [];
+  let plans = [];
+  const plan = await planTwist({ ...p, onPlans: (all) => { plans = all; } }, sceneCountFor(p.lengthSec), calls);
+  return { plan, plans, calls };
 }
 
 /**
