@@ -258,7 +258,7 @@ async function pictureTest(body: any) {
   // refOverrides {avatarId: url}: the scene with other reference pictures for those avatars (the library test).
   const refs = body?.refOverrides && typeof body.refOverrides === "object" ? body.refOverrides : {};
   const built = buildPictureRequest({
-    story: { aspect: story.aspect, locations: story.locations }, library: new Map((rows ?? []).map((c: any) => [c.id, typeof refs[c.id] === "string" && /^https:///.test(refs[c.id]) ? { ...c, ref_image_url: refs[c.id] } : c])), mode: "new",
+    story: { aspect: story.aspect, locations: story.locations }, library: new Map((rows ?? []).map((c: any) => [c.id, typeof refs[c.id] === "string" && refs[c.id].startsWith("https://") ? { ...c, ref_image_url: refs[c.id] } : c])), mode: "new",
     scene: { speakerId: sc.speaker_id, presentIds: sc.present_ids, action: sc.action, emotion: sc.emotion, shot: sc.shot, placement: sc.placement, locationId: sc.location_id },
   });
   const taskUUID = crypto.randomUUID();
@@ -306,7 +306,7 @@ async function frameTest(body: any) {
 async function avatarCheckTest(body: any) {
   if (paidOff()) throw new BlockyError("PAID_CALLS_DISABLED", "paid calls are off");
   const a = body?.avatar;
-  if (typeof body?.imageUrl !== "string" || !/^https:///.test(body.imageUrl) || !a?.name || !a?.head || !a?.torso || !a?.legs || !a?.face) throw new BlockyError("VALIDATION", "imageUrl and avatar are needed");
+  if (typeof body?.imageUrl !== "string" || !body.imageUrl.startsWith("https://") || !a?.name || !a?.head || !a?.torso || !a?.legs || !a?.face) throw new BlockyError("VALIDATION", "imageUrl and avatar are needed");
   return await checkAvatar({ admin, apiKey: OPENAI_API_KEY, imageUrl: body.imageUrl, avatar: { name: String(a.name), head: String(a.head), torso: String(a.torso), legs: String(a.legs), accessory: a.accessory ? String(a.accessory) : null, face: String(a.face) } });
 }
 
