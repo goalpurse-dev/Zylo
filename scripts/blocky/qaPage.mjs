@@ -1,8 +1,11 @@
 // Browser check of the Blocky Stories page on a running dev server, signed in
 // as the owner ($0: it never presses a button that writes or makes anything).
 // It checks that the page talks to the live Blocky functions: the three
-// avatars load in the library, the Story step offers "Describe it" and "My own
-// script", and the Settings step shows real prices from the server.
+// avatars load in the library, the Story step offers "Ideas", "Describe it"
+// and "My own script", and the Settings step shows real prices from the server.
+// Then the ideas and the three versions, with the four writing actions answered
+// by this script instead of the server (no model call, nothing saved): the idea
+// cards, the cards filling in one by one, and the pick buttons.
 // Screenshots at 1440 and 390 px.
 //   node scripts/blocky/qaPage.mjs <outDir> [baseUrl]
 import fs from "fs";
@@ -20,11 +23,61 @@ const ref = new URL(SUPABASE_URL).hostname.split(".")[0];
 const browser = await chromium.launch();
 const out = {};
 
+// The writing actions, answered here. Everything else goes to the live function.
+const LINES = [
+  ["I found the owner's badge. Now I ban whoever I want.", "That badge only works for the owner, Vex."],
+  ["Watch me. Noob, you're banned in three, two...", "Read the back of it first."],
+  ["It says: property of Noob. Wait.", "I made this server, Vex. Hand it over."],
+];
+function fakeApi(ids) {
+  // ids fills in when the library has loaded: read it when asked, not now. [0] is Noob, [1] is Vex.
+  const lines = () => LINES.flatMap(([x, y]) => [{ speakerId: ids[1], line: x }, { speakerId: ids[0], line: y }]);
+  const version = (n, status) => ({
+    n, status, vetted: n === 1,
+    title: ["The Owner's Badge", "Banned in Three", "Read the Back"][n - 1],
+    hook: ["Vex finds a badge that can ban anyone. It isn't Vex's.", "A countdown to a ban that hits the wrong avatar.", "The smallest print on the badge decides everything."][n - 1],
+    lines: status === "ready" ? lines() : [], lengthSec: status === "ready" ? 30 : null,
+    ...(status === "failed" ? { error: "We couldn't write this version. Pick another one, or write three new ones." } : {}),
+  });
+  const state = { 1: "writing", 2: "writing", 3: "writing" };
+  const draft = () => ({ id: "00000000-0000-4000-8000-000000000001", status: "writing", picked: null, storyId: null, versions: [1, 2, 3].map((n) => version(n, state[n])), left: 4 });
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  return {
+    async getIdeas() {
+      await wait(600);
+      return ["The Owner's Badge", "One Trade Too Many", "The Glitched Door", "Ten Seconds Left", "The New Rule"].map((title, i) => ({
+        id: i === 0 ? "plan:owners-badge" : `idea:0:t${i}`, vetted: i === 0, type: `t${i}`, title, castIds: i % 2 ? [ids[1], ids[0]] : [ids[0], ids[1]],
+        hook: ["Vex finds a badge that can ban anyone.", "Noob trades a pet for the rarest item on the server.", "A door that only opens for avatars who lost.", "The round ends in ten seconds and nobody has the key.", "A new server rule, and only one avatar read it."][i],
+        summary: "A short story with a twist in the second half and a last line the winner gets.",
+      }));
+    },
+    async startDraft() { await wait(1500); return draft(); },
+    async writeVersion(body) { await wait(body.n * 1800); state[body.n] = body.n === 3 ? "failed" : "ready"; return draft(); },
+    async getDraft() { return draft(); },
+  };
+}
+
 for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", { width: 390, height: 844 }]]) {
   const phone = viewport.width < 500;
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: phone ? 2 : 1, isMobile: phone, hasTouch: phone });
   await ctx.addInitScript(([key, value]) => { localStorage.setItem(key, value); localStorage.setItem("zyvo_cookie_consent", "declined"); }, [`sb-${ref}-auth-token`, JSON.stringify(session)]);
   const p = await ctx.newPage();
+  const libraryIds = [];
+  let fake = null;
+  const faked = [];
+  await p.route("**/functions/v1/blocky-story-api", async (route) => {
+    const body = route.request().postDataJSON?.() ?? {};
+    if (body.action === "listCharacters") {
+      const res = await route.fetch();
+      const json = await res.json().catch(() => null);
+      for (const c of json?.data ?? []) libraryIds.push(c.id);
+      return route.fulfill({ response: res });
+    }
+    fake ??= fakeApi(libraryIds);
+    if (!fake[body.action]) return route.continue();
+    faked.push(body.action);
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data: await fake[body.action](body) }) });
+  });
   const apiCalls = [];
   p.on("response", (r) => { if (/functions\/v1\/(blocky|fruit)/.test(r.url())) apiCalls.push(`${r.url().split("/functions/v1/")[1]} ${r.status()}`); });
   const errors = [];
@@ -40,7 +93,11 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.builderSeriesTab = await p.locator('[aria-label="What are you making?"]').count();
   row.recentSeriesTab = await p.locator('[aria-label="Show"]').count();
   row.seriesWordOnPage = await p.getByText(/\bseries\b/i).count();
+  // The page opens on Ideas, and no idea is asked for until the button is pressed.
+  row.askIdeasButton = await p.getByRole("button", { name: "Give me ideas" }).count();
+  row.ideasAskedOnLoad = faked.includes("getIdeas");
   await p.screenshot({ path: path.join(outDir, `page-${name}.png`) });
+  await p.locator('[aria-label="How do you want to start?"] button', { hasText: "Describe it" }).click();
   // The library: opened from "Add character".
   await p.getByRole("button", { name: /Add character/ }).first().click();
   await p.waitForTimeout(1200);
@@ -56,9 +113,37 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   // Settings: prices come from the server (quote_tool_prices); nothing is charged for looking.
   row.settingsHeading = await p.getByText("How should it look?").count();
   row.shapeChoice = await p.locator('[aria-label="Video shape"]').count();
-  row.makeButton = (await p.getByRole("button", { name: /Make scene pictures/ }).first().innerText().catch(() => "")).replace(/\s+/g, " ");
-  row.costText = (await p.locator('section[aria-label="Story builder"]').innerText()).match(/Pictures now \((\d+)\), the rest \(about (\d+)\)/)?.slice(1, 3) ?? null;
+  row.writeButton = (await p.getByRole("button", { name: /Write 3 versions/ }).first().innerText().catch(() => "")).replace(/\s+/g, " ");
+  row.costText = (await p.locator('section[aria-label="Story builder"]').innerText()).match(/Pictures \((\d+)\) are made after you pick a version, and the rest \(about (\d+)\)/)?.slice(1, 3) ?? null;
   await p.screenshot({ path: path.join(outDir, `settings-${name}.png`) });
+
+  // Ideas and the three versions (answered by this script, see fakeApi).
+  await p.getByRole("button", { name: "Back", exact: true }).first().click();
+  await p.locator('[aria-label="How do you want to start?"] button', { hasText: "Ideas" }).click();
+  await p.getByRole("button", { name: "Give me ideas" }).click();
+  await p.waitForTimeout(1500);
+  row.ideaCards = await p.locator('section[aria-label="Story builder"] button[aria-pressed]', { hasText: /Badge|Trade|Door|Seconds|Rule/ }).count();
+  await p.screenshot({ path: path.join(outDir, `ideas-${name}.png`) });
+  await p.locator('section[aria-label="Story builder"] button[aria-pressed]', { hasText: "The Owner's Badge" }).click();
+  await p.getByRole("button", { name: /Next: choose length and quality/ }).first().click();
+  await p.waitForTimeout(800);
+  await p.getByRole("button", { name: /Write 3 versions/ }).first().click();
+  await p.waitForTimeout(700);
+  row.planningHeading = await p.getByText("Planning three versions…").count();
+  await p.screenshot({ path: path.join(outDir, `versions-planning-${name}.png`) });
+  await p.waitForTimeout(3200);   // version 1 is in, 2 and 3 are still being written
+  row.readyWhileWriting = await p.getByRole("button", { name: "Use this version" }).count();
+  row.writingHeading = (await p.getByText(/Writing… \d of 3 ready/).first().innerText().catch(() => null));
+  await p.screenshot({ path: path.join(outDir, `versions-writing-${name}.png`), fullPage: true });
+  await p.waitForTimeout(4500);
+  row.pickHeading = await p.getByText("Pick your version").count();
+  row.pickButtons = await p.getByRole("button", { name: "Use this version" }).count();
+  row.failedCard = await p.getByText("We couldn't write this version.").count();
+  row.leftToday = await p.getByText("4 free writings left today").count();
+  row.namedSpeakers = await p.getByText(/^(Noob|Vex): /).count();
+  row.sideScroll = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  await p.screenshot({ path: path.join(outDir, `versions-${name}.png`), fullPage: true });
+  row.faked = [...new Set(faked)];
   row.apiCalls = [...new Set(apiCalls)];
   row.pageErrors = errors;
   out[name] = row;
@@ -69,6 +154,8 @@ console.log(JSON.stringify(out, null, 1));
 const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-stories" && v.title === "Blocky Stories" && v.couldntLoad === 0
   && v.builderSeriesTab === 0 && v.recentSeriesTab === 0 && v.seriesWordOnPage === 0
   && JSON.stringify(v.libraryNames) === JSON.stringify(["Noob", "Vex", "Lux"]) && v.libraryPictures === 3 && v.settingsHeading === 1 && v.shapeChoice === 0
+  && v.askIdeasButton === 1 && v.ideasAskedOnLoad === false && /Write 3 versions/.test(v.writeButton) && v.ideaCards === 5
+  && v.planningHeading >= 1 && v.readyWhileWriting === 1 && v.pickHeading >= 1 && v.pickButtons === 2 && v.failedCard === 1 && v.leftToday === 1 && v.namedSpeakers === 12 && v.sideScroll === false
   && v.costText && v.apiCalls.some((c) => /^blocky-story-api 200/.test(c)) && !v.apiCalls.some((c) => /^fruit/.test(c)) && v.pageErrors.length === 0);
 console.log(ok ? "PASS" : "FAIL");
 process.exitCode = ok ? 0 : 1;

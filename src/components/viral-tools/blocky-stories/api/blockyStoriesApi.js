@@ -179,6 +179,10 @@ import { createSupabaseAdapter } from "./supabaseAdapter.js";
  * @property {() => Promise<Character[]>} listCharacters
  * @property {(opts: {seed?: number}) => Promise<Idea[]>} getIdeas  Exactly 5 per call
  * @property {(input: CreateStoryInput) => Promise<Story>} createStory
+ * @property {(input: object) => Promise<Draft>} startDraft  Plans three versions of a story (free; a daily limit)
+ * @property {(draftId: string, n: number) => Promise<Draft>} writeVersion  Writes one version's lines
+ * @property {(draftId: string) => Promise<Draft>} getDraft
+ * @property {(draftId: string, n: number) => Promise<Story>} pickVersion  Polishes the picked version; it becomes the story
  * @property {(storyId: string) => Promise<Story>} generateScenePictures
  * @property {(sceneId: string, instruction: string) => Promise<Story>} editScene
  * @property {(sceneId: string, prompt: string) => Promise<Story>} regenerateScene
@@ -213,6 +217,15 @@ export const listCharacters = () => current().listCharacters();
 export const getIdeas = (opts = {}) => current().getIdeas(opts);
 /** @param {CreateStoryInput} input @returns {Promise<Story>} */
 export const createStory = (input) => current().createStory(input);
+/**
+ * Three versions of a story to choose from.
+ * @typedef {{n: number, status: "writing"|"ready"|"failed", vetted: boolean, title: string, hook: string, lines: {speakerId: string, line: string}[], lengthSec: number|null, error?: string}} Version
+ * @typedef {{id: string, status: "writing"|"ready"|"failed"|"picked", versions: Version[], picked: number|null, storyId: string|null, left?: number}} Draft
+ */
+export const startDraft = (input) => current().startDraft(input);
+export const writeVersion = (draftId, n) => current().writeVersion(draftId, n);
+export const getDraft = (draftId) => current().getDraft(draftId);
+export const pickVersion = (draftId, n) => current().pickVersion(draftId, n);
 /** @param {string} storyId @returns {Promise<Story>} */
 export const generateScenePictures = (storyId) => current().generateScenePictures(storyId);
 /** @param {string} sceneId @param {string} instruction @returns {Promise<Story>} */

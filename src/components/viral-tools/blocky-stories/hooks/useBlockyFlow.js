@@ -19,7 +19,18 @@ const NEW_SINGLE = {
   lengthSec: DEFAULT_LENGTH_SEC,
   aspect: "9:16",
   storyId: null,
+  draft: null,   // the three versions being written or waiting for a pick: {status: "planning"} then the server's draft
 };
+
+const DRAFT_KEY = "blocky:draft";
+const remember = (id) => { try { if (id) localStorage.setItem(DRAFT_KEY, id); else localStorage.removeItem(DRAFT_KEY); } catch { /* private window: the versions are simply not kept over a reload */ } };
+const remembered = () => { try { return localStorage.getItem(DRAFT_KEY); } catch { return null; } };
+/** Three answers can arrive in any order: a version that is done never goes back to "writing". */
+const mergeDraft = (prev, next) => (!prev?.versions || prev.id !== next.id ? next : {
+  ...next,
+  versions: next.versions.map((v) => { const old = prev.versions.find((x) => x.n === v.n); return old && old.status !== "writing" && v.status === "writing" ? old : v; }),
+  left: next.left ?? prev.left,
+});
 
 const NEW_DRAFT = { concept: "", castIds: [], opener: "", openerCustom: "", tone: "", episodeCount: 8 };
 
@@ -49,7 +60,7 @@ function useAsyncList(loader, deps, enabled = true) {
     setState((s) => ({ status: "loading", items: s.items }));
     loader().then(
       (items) => { if (active) setState({ status: "ready", items }); },
-      () => { if (active) setState((s) => ({ status: "error", items: s.items })); },
+      (err) => { if (active) setState((s) => ({ status: "error", items: s.items, error: errorText(err, null) })); },
     );
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +78,10 @@ export default function useBlockyFlow(account, characters = []) {
   const [recentTab, setRecentTab] = useState("single");
   const [single, setSingle] = useState(NEW_SINGLE);
   const [series, setSeries] = useState(NEW_SERIES);
-  const [ideaSeed, setIdeaSeed] = useState(0);
+  // Ideas are written by a model, so a batch is only made when the user asks for one. The first batch starts
+  // somewhere new on every visit.
+  const [ideaSeed, setIdeaSeed] = useState(() => Math.floor(Math.random() * 1000));
+  const [ideasAsked, setIdeasAsked] = useState(false);
   const [library, setLibrary] = useState(null); // "single" | "series" | null
   const [assigning, setAssigning] = useState(null); // script name being matched to a character
   const [sceneDialog, setSceneDialog] = useState(null); // { kind, sceneId }
@@ -83,7 +97,7 @@ export default function useBlockyFlow(account, characters = []) {
   const story = live.story;
   const quotes = useBlockyPrices(story?.aspect ?? (mode === "single" ? single.aspect : "9:16"));
 
-  const ideas = useAsyncList(() => api.getIdeas({ seed: ideaSeed }), [ideaSeed], IDEAS_ON);
+  const ideas = useAsyncList(() => api.getIdeas({ seed: ideaSeed }), [ideaSeed], IDEAS_ON && ideasAsked);
   // Only real, signed-in history: guests see the example video instead.
   const recent = useAsyncList(() => api.listRecent({ type: recentTab }), [recentTab, refreshKey], !activeStoryId && (Boolean(account.user) || account.isPreview));
   const seriesList = useAsyncList(() => api.listSeries(), [refreshKey], mode === "series");
@@ -142,8 +156,80 @@ export default function useBlockyFlow(account, characters = []) {
     sceneCount: scriptScenes?.count,
   });
 
+  // ── Three versions (an idea or a description; the user's own script is staged as it is) ──
+  const [picking, setPicking] = useState(null);
+  const setDraft = (fn) => setSingle((s) => ({ ...s, draft: typeof fn === "function" ? fn(s.draft) : fn }));
+  // Every version that is not written yet is asked for now, all at once; each card fills in as its answer lands.
+  const asking = useRef(new Set());   // "draftId:n" of the versions this page is waiting for
+  const writeMissing = (draft) => {
+    for (const v of draft.versions.filter((x) => x.status === "writing")) {
+      const key = `${draft.id}:${v.n}`;
+      if (asking.current.has(key)) continue;
+      asking.current.add(key);
+      const failed = (d) => (d?.id === draft.id ? { ...d, versions: d.versions.map((x) => (x.n === v.n && x.status === "writing" ? { ...x, status: "failed", error: "We couldn't write this version. Pick another one, or write three new ones." } : x)) } : d);
+      api.writeVersion(draft.id, v.n).then(
+        (next) => setDraft((d) => (d?.id === next.id ? mergeDraft(d, next) : d)),
+        // The answer got lost: the server may still have finished it. What it says now counts.
+        () => api.getDraft(draft.id).then((next) => setDraft((d) => (d?.id === next.id ? failed(mergeDraft(d, next)) : d)), () => setDraft(failed)),
+      ).finally(() => asking.current.delete(key));
+    }
+  };
+  // A version another tab (or the page before a reload) asked for is not ours to wait on: look again every few
+  // seconds while any card is still being written. The server decides whether a stuck one is started again.
+  const draftId = single.draft?.id ?? null;
+  const stillWriting = single.draft?.versions?.some((v) => v.status === "writing") ?? false;
+  useEffect(() => {
+    if (!draftId || !stillWriting) return undefined;
+    const t = setInterval(() => {
+      api.getDraft(draftId).then((next) => { setDraft((d) => (d?.id === next.id ? mergeDraft(d, next) : d)); writeMissing(next); }, () => {});
+    }, 8000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftId, stillWriting]);
+  const startVersions = async () => {
+    if (!guard()) return;
+    const idea = single.method === "idea" ? ideas.items.find((i) => i.id === single.ideaId) : null;
+    const before = single.draft?.id ? single.draft : null;   // "three new ones": the old three stay if the new plan fails
+    setTab("result");   // phones: jump to the cards while the twist is planned
+    setDraft({ status: "planning", versions: [] });
+    const draft = await run("versions", () => api.startDraft({
+      source: single.method, quality: single.tierId, lengthSec: single.lengthSec, aspect: single.aspect, castIds: single.castIds,
+      ...(idea ? { ideaId: idea.id, idea: { title: idea.title, hook: idea.hook, summary: idea.summary } } : { prompt: single.prompt.trim() }),
+    }), "We couldn't plan this story. Nothing was charged. Try again.");
+    if (!draft) { setDraft(before); if (!before) setTab("build"); return; }   // failed: the error is on the Build tab (or above the old three)
+    remember(draft.id);
+    setDraft(draft);
+    writeMissing(draft);
+  };
+  const pickVersion = async (n) => {
+    if (!single.draft?.id || picking) return;
+    setPicking(n);
+    const made = await run("pick", () => api.pickVersion(single.draft.id, n), "We couldn't finish this version. Nothing was charged. Try again.");
+    setPicking(null);
+    if (!made) return;
+    remember(null);
+    live.replace(made);
+    setSingle((s) => ({ ...s, storyId: made.id, draft: null }));
+  };
+  const leaveVersions = () => { remember(null); clearError(); setSingle((s) => ({ ...s, draft: null, step: "story" })); setTab("build"); };
+  // A reload in the middle: the versions are still on the server.
+  useEffect(() => {
+    const id = account.user ? remembered() : null;
+    if (!id) return;
+    api.getDraft(id).then(
+      (draft) => {
+        if (draft.status === "picked" || draft.status === "failed") { remember(null); return; }
+        setSingle((s) => (s.storyId || s.draft ? s : { ...s, draft, step: "settings" }));
+        writeMissing(draft);
+      },
+      () => remember(null),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(account.user)]);
+
   const startSingle = async () => {
     if (!guard()) return;
+    if (single.method !== "script") return startVersions();
     const pictures = singleEstimate.pictures;
     if (singleEstimate.total != null && singleEstimate.total > account.balance) { setNoCredits({ needed: singleEstimate.total }); return; }
     setTab("result");   // phones: jump to the storyboard while the script is written
@@ -370,7 +456,12 @@ export default function useBlockyFlow(account, characters = []) {
     mode, changeMode, tab, setTab, recentTab, setRecentTab,
     single, updateSingle, singleEstimate, scriptScenes, scriptParse, storyBlocker, startSingle, newStory, openSingle,
     assigning, startAssigning: setAssigning, cancelAssigning: () => setAssigning(null), assignName,
-    ideas: { ...ideas, seed: ideaSeed }, newIdeas: () => { setIdeaSeed((n) => n + 1); updateSingle({ ideaId: null }); },
+    ideas: { ...ideas, seed: ideaSeed, asked: ideasAsked },
+    askIdeas: () => { if (guard()) setIdeasAsked(true); },
+    newIdeas: () => { setIdeaSeed((n) => n + 1); updateSingle({ ideaId: null }); },
+    // An idea brings its own characters.
+    pickIdea: (idea) => updateSingle({ ideaId: idea.id, castIds: idea.castIds }),
+    draft: single.draft, picking, pickVersion, newVersions: startVersions, leaveVersions,
     series, seriesData, seriesStatus: activeSeries.status, retrySeries: activeSeries.retry, seriesList,
     updateDraft, newSeries, wizardNext, wizardBack, wizardBlocker: wizardBlocker(series.wizardStep, series.draft), createPlan,
     openSeries, startEpisode, startEpisodeStory, backToSeries, allSeries, episodeEstimate,

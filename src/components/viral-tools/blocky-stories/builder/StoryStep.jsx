@@ -1,5 +1,5 @@
 import { Plus, RefreshCw } from "lucide-react";
-import { ErrorBanner, FOCUS, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
+import { ErrorBanner, FOCUS, PrimaryButton, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
 import { LIMITS } from "../api/blockyStoriesApi";
 import { IDEAS_ON, STORY_METHODS } from "../constants";
 import { AvatarStack, CastChip } from "../shared/Avatar";
@@ -10,10 +10,10 @@ const INPUT =
   "w-full rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-lime-300/35 focus:ring-1 focus:ring-lime-300/30";
 
 /** Step 1: describe a story or write a script (and, once the idea engine is on, pick an idea). */
-export default function StoryStep({ single, ideas, characters, scriptParse, onChange, onNewIdeas, onRetryIdeas, onOpenLibrary, onAssignName }) {
+export default function StoryStep({ single, ideas, characters, scriptParse, onChange, onPickIdea, onAskIdeas, onNewIdeas, onRetryIdeas, onOpenLibrary, onAssignName }) {
   return (
     <>
-      <StepHeading title="What's the story?" subtitle={IDEAS_ON ? "Pick a ready idea, describe your own, or paste a finished script." : "Describe your own, or paste a finished script."} />
+      <StepHeading title="What's the story?" subtitle={IDEAS_ON ? "Pick an idea, describe your own, or paste a finished script." : "Describe your own, or paste a finished script."} />
       <SegmentedControl
         ariaLabel="How do you want to start?"
         options={STORY_METHODS}
@@ -21,7 +21,7 @@ export default function StoryStep({ single, ideas, characters, scriptParse, onCh
         onChange={(method) => onChange({ method })}
       />
       {single.method === "idea" && (
-        <IdeaPicker ideas={ideas} selectedId={single.ideaId} byId={characters.byId} onPick={(ideaId) => onChange({ ideaId })} onNewIdeas={onNewIdeas} onRetry={onRetryIdeas} />
+        <IdeaPicker ideas={ideas} selectedId={single.ideaId} byId={characters.byId} onPick={onPickIdea} onAsk={onAskIdeas} onNewIdeas={onNewIdeas} onRetry={onRetryIdeas} />
       )}
       {single.method === "prompt" && (
         <>
@@ -37,7 +37,7 @@ export default function StoryStep({ single, ideas, characters, scriptParse, onCh
               placeholder="e.g. Noob trades a starter pet for Lux's rarest item, and the pet turns out to be the server's owner."
               className={cx(INPUT, "min-h-[120px] resize-none")}
             />
-            <p className="mt-2 text-[10px] leading-relaxed text-white/30">We write the full script from this. You can check every scene before animating.</p>
+            <p className="mt-2 text-[10px] leading-relaxed text-white/30">We write three versions from this, each with a different twist. You pick one before any picture is made.</p>
           </div>
         </>
       )}
@@ -54,7 +54,16 @@ export default function StoryStep({ single, ideas, characters, scriptParse, onCh
   );
 }
 
-function IdeaPicker({ ideas, selectedId, byId, onPick, onNewIdeas, onRetry }) {
+function IdeaPicker({ ideas, selectedId, byId, onPick, onAsk, onNewIdeas, onRetry }) {
+  if (!ideas.asked) {
+    return (
+      <div className="flex flex-col items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-4">
+        <p className="text-[12.5px] font-medium leading-relaxed text-white/65">Five story ideas, each a different kind of story, with characters already picked. Tap one and you get three versions of it to choose from.</p>
+        <PrimaryButton size="sm" fullWidth={false} onClick={onAsk}>Give me ideas</PrimaryButton>
+        <p className="text-[10px] leading-relaxed text-white/30">Ideas are free.</p>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="mb-2 flex items-end justify-between gap-3 lg:mb-1.5">
@@ -66,15 +75,15 @@ function IdeaPicker({ ideas, selectedId, byId, onPick, onNewIdeas, onRetry }) {
           className={cx("flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-bold text-white/45 transition hover:text-lime-300 disabled:opacity-40", FOCUS)}
         >
           <RefreshCw className={cx("h-3 w-3", ideas.status === "loading" && "animate-spin motion-reduce:animate-none")} aria-hidden="true" />
-          New ideas
+          More ideas
         </button>
       </div>
       {ideas.status === "error" ? (
-        <ErrorBanner action="Try again" onAction={onRetry}>We couldn&apos;t load ideas. Check your connection and try again.</ErrorBanner>
+        <ErrorBanner action="Try again" onAction={onRetry}>{ideas.error || "We couldn't get ideas just now. Try again, or describe your own story."}</ErrorBanner>
       ) : ideas.status === "loading" && !ideas.items.length ? (
-        <div className="flex flex-col gap-1.5" aria-label="Loading ideas">
+        <div className="flex flex-col gap-1.5" aria-label="Thinking of ideas">
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="h-[74px] animate-pulse rounded-xl border border-white/[0.07] bg-white/[0.035] motion-reduce:animate-none" />
+            <div key={i} className="h-[96px] animate-pulse rounded-xl border border-white/[0.07] bg-white/[0.035] motion-reduce:animate-none" />
           ))}
         </div>
       ) : (
@@ -86,22 +95,26 @@ function IdeaPicker({ ideas, selectedId, byId, onPick, onNewIdeas, onRetry }) {
                 key={idea.id}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => onPick(idea.id)}
+                onClick={() => onPick(idea)}
                 className={cx(
                   "grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 rounded-xl border px-3 py-2.5 text-left transition",
                   FOCUS,
                   selected ? "border-lime-300/45 bg-lime-300/[0.09]" : "border-white/[0.07] bg-white/[0.035] hover:border-lime-300/25 hover:bg-white/[0.055]",
                 )}
               >
-                <span className={cx("text-[13px] font-black", selected ? "text-lime-300" : "text-white")}>{idea.title}</span>
+                <span className={cx("flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[13px] font-black", selected ? "text-lime-300" : "text-white")}>
+                  {idea.title}
+                  {idea.vetted && <span className="rounded-md bg-lime-300/[0.12] px-1.5 py-0.5 text-[9.5px] font-black text-lime-200">Editor&apos;s pick</span>}
+                </span>
                 <AvatarStack ids={idea.castIds} byId={byId} size="h-6 w-6" />
-                <span className="col-span-2 text-[11px] font-medium leading-relaxed text-white/50">{idea.summary}</span>
+                {idea.hook && <span className="col-span-2 text-[12px] font-semibold leading-relaxed text-white/75">{idea.hook}</span>}
+                <span className="col-span-2 text-[11px] font-medium leading-relaxed text-white/45">{idea.summary}</span>
               </button>
             );
           })}
         </div>
       )}
-      <p className="mt-2 text-[10px] leading-relaxed text-white/30">Every idea uses characters from the library, so they always look the same.</p>
+      <p className="mt-2 text-[10px] leading-relaxed text-white/30">Pick one and you get three versions of it to choose from. Ideas are free.</p>
     </div>
   );
 }

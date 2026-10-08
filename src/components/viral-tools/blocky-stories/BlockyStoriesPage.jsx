@@ -10,6 +10,7 @@ import { useFeatureFlag } from "../../../lib/featureFlags";
 import { BLOCKY_SERIES_FLAG } from "../../../data/blockyStories";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
+import { AvatarStack } from "./shared/Avatar";
 import { EpisodeCard, SeriesList, SeriesPlanPanel, SeriesWizard } from "./builder/SeriesPanels";
 import SettingsFields from "./builder/SettingsFields";
 import StoryStep from "./builder/StoryStep";
@@ -24,6 +25,7 @@ import FinalView from "./workspace/FinalView";
 import IdleView from "./workspace/IdleView";
 import { Roadmap, SeriesPreview, WritingPlan } from "./workspace/SeriesViews";
 import StoryBoard, { WritingBoard } from "./workspace/StoryBoard";
+import VersionsView from "./workspace/VersionsView";
 
 /**
  * Blocky Stories (lime). Rendered by /workspace/blocky-stories when the
@@ -77,6 +79,31 @@ export default function BlockyStoriesPage() {
       bodyKey = "single-pipeline";
       body = story ? <PipelineSummary story={story} byId={byId} /> : <LoadingOrError status={flow.storyStatus} onRetry={flow.reloadStory} what="this video" />;
       footer = story ? pipelineFooter : <PrimaryButton variant="secondary" onClick={flow.newStory}>Start a new story</PrimaryButton>;
+    } else if (flow.draft) {
+      // Three versions are being written or waiting for a pick (the result view): what was asked for, and what comes next.
+      const est = flow.singleEstimate;
+      top = <>{modeToggle}<StepBar steps={SINGLE_STEPS} current={1} /></>;
+      bodyKey = "single-versions";
+      body = (
+        <>
+          <StepHeading title="Pick your version" subtitle="Three versions of your story, each with a different twist. Read them and pick the one you'd watch." />
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-3">
+            <AvatarStack ids={single.castIds} byId={byId} />
+            <p className="mt-2.5 text-[12.5px] font-bold text-white/80">{TIERS[single.tierId].label} · about {single.lengthSec} sec</p>
+            <ol className="mt-2.5 flex flex-col gap-1.5 text-[11.5px] font-medium leading-relaxed text-white/50">
+              <li>1. Pick a version. Writing is free.</li>
+              <li>2. Scene pictures: {est.pictures ?? "…"} credits. You check every picture.</li>
+              <li>3. Animate: about {est.video ?? "…"} credits, only when you say so.</li>
+            </ol>
+          </div>
+        </>
+      );
+      footer = (
+        <>
+          <PrimaryButton className="lg:hidden" chevron onClick={() => flow.setTab("result")}>See your three versions</PrimaryButton>
+          <PrimaryButton variant="secondary" onClick={flow.leaveVersions} disabled={Boolean(flow.picking)}>Change the story</PrimaryButton>
+        </>
+      );
     } else if (single.step === "story") {
       top = <>{modeToggle}<StepBar steps={SINGLE_STEPS} current={0} /></>;
       bodyKey = "single-story";
@@ -87,6 +114,8 @@ export default function BlockyStoriesPage() {
           characters={characters}
           scriptParse={flow.scriptParse}
           onChange={flow.updateSingle}
+          onPickIdea={flow.pickIdea}
+          onAskIdeas={flow.askIdeas}
           onNewIdeas={flow.newIdeas}
           onRetryIdeas={flow.ideas.retry}
           onOpenLibrary={() => flow.openLibrary("single")}
@@ -129,14 +158,22 @@ export default function BlockyStoriesPage() {
             <PrimaryButton variant="secondary" fullWidth={false} className="shrink-0 px-5" onClick={() => flow.updateSingle({ step: "story" })} disabled={Boolean(flow.acting)}>Back</PrimaryButton>
             {short ? (
               <PrimaryButton className="flex-1" onClick={() => flow.setNoCredits({ needed: est.total })}>Add credits</PrimaryButton>
-            ) : (
+            ) : single.method === "script" ? (
               <PrimaryButton className="flex-1" price={quoteFor(flow.quotes, est.pictures)} priceOf={{ value: est.total, approx: !flow.scriptScenes }} busy={flow.acting === "start" ? "Writing your script…" : null} onClick={flow.startSingle}>
                 Make scene pictures
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton className="flex-1" busy={flow.acting === "versions" ? "Planning three versions…" : null} onClick={flow.startSingle}>
+                Write 3 versions, free
               </PrimaryButton>
             )}
           </div>
           <FootNote tone={short ? "warn" : "muted"}>
-            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this video. Pick a shorter length or V2, or add credits.` : `Pictures now (${est.pictures ?? "…"}), the rest (about ${est.video ?? "…"}) only when you animate, after you've approved the pictures.`}
+            {short
+              ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this video. Pick a shorter length or V2, or add credits.`
+              : single.method === "script"
+                ? `Pictures now (${est.pictures ?? "…"}), the rest (about ${est.video ?? "…"}) only when you animate, after you've approved the pictures.`
+                : `Writing is free. Pictures (${est.pictures ?? "…"}) are made after you pick a version, and the rest (about ${est.video ?? "…"}) only when you animate.`}
           </FootNote>
         </>
       );
@@ -232,7 +269,11 @@ export default function BlockyStoriesPage() {
   let resultFooter = null;
   const storyExpected = (mode === "single" && single.storyId) || (mode === "series" && series.view === "episode" && series.storyId);
 
-  if (flow.acting === "start" && !story) {
+  if (mode === "single" && !single.storyId && flow.draft) {
+    // Three versions of the story: the cards fill in as each is written. Nothing is charged until one is picked and its pictures are made.
+    resultTabLabel = "Your story";
+    result = <VersionsView draft={flow.draft} byId={byId} picking={flow.picking} error={flow.acting ? null : flow.actionError} onPick={flow.pickVersion} onNew={flow.newVersions} onBack={flow.leaveVersions} />;
+  } else if (flow.acting === "start" && !story) {
     // The script is being written: show the storyboard right away.
     resultTabLabel = "Your video";
     result = mode === "series"

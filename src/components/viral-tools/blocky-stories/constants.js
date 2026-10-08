@@ -5,7 +5,7 @@
  * ideas) is its own phase. Until it is built the Story step offers
  * "Describe it" and "My own script" only, and no idea is ever asked for.
  */
-export const IDEAS_ON = false;
+export const IDEAS_ON = true;
 
 export const SINGLE_STEPS = ["Story", "Settings", "Scenes", "Clips", "Final video"];
 
@@ -17,7 +17,7 @@ export function stepForStatus(status) {
 }
 
 export const STORY_METHODS = [
-  ...(IDEAS_ON ? [{ value: "idea", label: "Pick an idea" }] : []),
+  ...(IDEAS_ON ? [{ value: "idea", label: "Ideas" }] : []),
   { value: "prompt", label: "Describe it" },
   { value: "script", label: "My own script" },
 ];
