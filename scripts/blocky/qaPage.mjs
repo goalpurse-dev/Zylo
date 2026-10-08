@@ -67,6 +67,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   const libraryIds = [];
   let fake = null;
   const faked = [];
+  let storyMode = null;
   await p.route("**/functions/v1/blocky-story-api", async (route) => {
     const body = route.request().postDataJSON?.() ?? {};
     if (body.action === "listCharacters") {
@@ -74,6 +75,18 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
       const json = await res.json().catch(() => null);
       for (const c of json?.data ?? []) libraryIds.push(c.id);
       return route.fulfill({ response: res });
+    }
+    // The owner's real story, as it is (the final page) or as it was earlier (storyMode): read only.
+    if (body.action === "getStory" && storyMode) {
+      const res = await route.fetch();
+      const json = await res.json().catch(() => null);
+      const s = json?.data;
+      if (!s) return route.fulfill({ response: res });
+      const noFinal = { ...s.final, status: "none", url: null, coverUrl: null };
+      const data = storyMode === "pictures_ready"
+        ? { ...s, status: "pictures_ready", final: noFinal, scenes: s.scenes.map((x) => ({ ...x, clipStatus: "none", clipUrl: null })) }
+        : { ...s, status: "draft", spentCredits: 0, final: noFinal, scenes: s.scenes.map((x) => ({ ...x, imageStatus: "none", imageUrl: null, clipStatus: "none", clipUrl: null })) };
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
     }
     fake ??= fakeApi(libraryIds);
     if (!fake[body.action]) return route.continue();
@@ -175,6 +188,67 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   row.pickRefusedText = (await p.getByText(/couldn.t finish this version/).first().innerText().catch(() => null));
   row.pickButtonsAfter = await p.getByRole("button", { name: "Use this version" }).count();
   await p.screenshot({ path: path.join(outDir, `versions-pick-failed-${name}.png`) });
+  // The final page: the owner's finished story, opened from Recent creations.
+  const openStory = async () => {
+    // The versions from the part above are remembered by the page: forget them, so it opens on Recent creations.
+    await p.evaluate(() => localStorage.removeItem("blocky:draft"));
+    await p.goto(`${base}/workspace/blocky-stories`, { waitUntil: "domcontentloaded" });
+    await p.waitForTimeout(4000);
+    if (phone) await p.getByRole("tab", { name: "Recent" }).click().catch(() => p.getByRole("button", { name: "Recent" }).first().click());
+    await p.getByRole("button", { name: "Open", exact: true }).first().click();
+    await p.waitForTimeout(3000);
+  };
+  const barsBottom = phone ? 78 : 0;   // the phone's bottom navigation
+  await openStory();
+  row.finalHeading = await p.getByText("Your video is ready").count();
+  await p.locator('section[aria-label="Post text"] button[aria-label^="Copy"]').first().waitFor({ timeout: 15000 }).catch(() => {});   // the saved post text is read from the server
+  row.finalLayout = await p.evaluate((bottomBar) => {
+    const box = (el) => { const r = el?.getBoundingClientRect(); return r ? { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), height: Math.round(r.height) } : null; };
+    const video = box(document.querySelector("video"));
+    const download = box([...document.querySelectorAll("button")].find((b) => /Download video/.test(b.textContent)));
+    const post = box(document.querySelector('section[aria-label="Post text"]'));
+    const fixed = [...document.querySelectorAll("div.fixed")].map((d) => d.getBoundingClientRect()).filter((r) => r.height > 0 && r.height < 200 && r.top > innerHeight / 2 && r.width > innerWidth * 0.8);
+    const covered = Math.max(bottomBar, ...fixed.map((r) => innerHeight - r.top));
+    return { video, download, post, viewport: [innerWidth, innerHeight], covered, downloadButtons: [...document.querySelectorAll("button")].filter((b) => /Download video/.test(b.textContent)).length,
+      copyButtons: document.querySelectorAll('section[aria-label="Post text"] button[aria-label^="Copy"]').length, captionsToggle: document.querySelectorAll('[aria-label="Captions"]').length };
+  }, barsBottom);
+  const L = row.finalLayout;
+  // The whole video is on the screen (above anything fixed to the bottom); beside it on a wide screen, above the rest on a phone.
+  row.videoWhole = Boolean(L.video) && L.video.top >= 0 && L.video.bottom <= L.viewport[1] - L.covered && L.video.left >= 0 && L.video.right <= L.viewport[0];
+  row.finalOrder = phone ? (L.video.bottom <= L.download.top && L.download.bottom <= L.post.top) : (L.download.left >= L.video.right && L.post.left >= L.video.right);
+  await p.screenshot({ path: path.join(outDir, `final-${name}.png`) });
+  if (phone) {
+    for (const [i, top] of [[2, 520], [3, 99999]]) { await p.evaluate((y) => document.getElementById("workspace-scroll")?.scrollTo(0, y), top); await p.waitForTimeout(300); await p.screenshot({ path: path.join(outDir, `final-${name}-part${i}.png`) }); }
+  }
+  // The storyboard with the same story's pictures: tap one to see it big, move to the next, close.
+  storyMode = "pictures_ready";
+  await openStory();
+  row.viewButtons = await p.getByRole("button", { name: /^See scene \d+ big$/ }).count();
+  await p.screenshot({ path: path.join(outDir, `storyboard-${name}.png`) });
+  await p.getByRole("button", { name: "See scene 1 big" }).click();
+  await p.waitForTimeout(500);
+  row.viewerOpen = await p.getByRole("dialog", { name: /Scene 1 of \d+, picture/ }).count();
+  row.viewerImage = await p.locator('[role="dialog"] img').evaluate((img) => { const r = img.getBoundingClientRect(); return { width: Math.round(r.width), height: Math.round(r.height), inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth }; }).catch(() => null);
+  await p.screenshot({ path: path.join(outDir, `viewer-${name}.png`) });
+  if (phone) {
+    // A swipe to the left: the next scene.
+    await p.locator('[role="dialog"] img').evaluate((img) => {
+      const box = img.parentElement; const t = (type, x) => box.dispatchEvent(new TouchEvent(type, { bubbles: true, touches: type === "touchend" ? [] : [new Touch({ identifier: 1, target: box, clientX: x, clientY: 400 })], changedTouches: [new Touch({ identifier: 1, target: box, clientX: x, clientY: 400 })] }));
+      t("touchstart", 300); t("touchend", 80);
+    });
+  } else await p.keyboard.press("ArrowRight");
+  await p.waitForTimeout(400);
+  row.viewerNext = await p.getByRole("dialog", { name: /Scene 2 of \d+, picture/ }).count();
+  await p.keyboard.press("Escape");
+  await p.waitForTimeout(300);
+  row.viewerClosed = (await p.locator('[role="dialog"][aria-modal="true"]').count()) === 0;
+  // A draft of the same story: the one button that starts the pictures, and what it says.
+  storyMode = "draft";
+  await openStory();
+  row.makeButton = (await p.getByRole("button", { name: /Make scene pictures/ }).first().innerText().catch(() => "")).replace(/\s+/g, " ").trim();
+  row.makeNote = (await p.getByText(/credits now for the \d+ pictures/).first().innerText().catch(() => "")).replace(/\s+/g, " ").trim();
+  await p.screenshot({ path: path.join(outDir, `draft-${name}.png`) });
+  storyMode = null;
   row.faked = [...new Set(faked)];
   row.apiCalls = [...new Set(apiCalls)];
   row.pageErrors = errors;
@@ -185,7 +259,10 @@ await browser.close();
 console.log(JSON.stringify(out, null, 1));
 const ok = Object.values(out).every((v) => v.landedOn === "/workspace/blocky-stories" && v.title === "Blocky Stories" && v.couldntLoad === 0
   && v.builderSeriesTab === 0 && v.recentSeriesTab === 0 && v.seriesWordOnPage === 0
-  && JSON.stringify(v.libraryNames) === JSON.stringify(["Noob", "Vex", "Lux"]) && v.libraryPictures === 3 && v.settingsHeading === 1 && v.shapeChoice === 0
+  && v.libraryNames.length === 52 && v.libraryNames.slice(0, 3).join() === "Noob,Vex,Taz" && v.libraryPictures >= 6
+  && v.finalHeading >= 1 && v.videoWhole && v.finalOrder && v.finalLayout.downloadButtons === 1 && v.finalLayout.copyButtons >= 3 && v.finalLayout.captionsToggle >= 1
+  && v.viewButtons >= 3 && v.viewerOpen === 1 && v.viewerImage?.inside && v.viewerNext === 1 && v.viewerClosed
+  && /^Make scene pictures \d+( credits)?$/.test(v.makeButton) && /credits now for the \d+ pictures/.test(v.makeNote) && v.settingsHeading === 1 && v.shapeChoice === 0
   && v.askIdeasButton === 1 && v.ideasAskedOnLoad === false && /Write 3 versions/.test(v.writeButton) && v.ideaCards === 5
   && v.writeOnDescribe === 1 && v.nextOnDescribe === 0 && v.nextOnIdeas === 0 && v.barBeforePick === 0 && v.nextAfterPick === 0 && v.changeSettingsLink === 1 && v.askIdeasBox?.share >= 95 && v.askIdeasBox?.sideRoom >= 16
   && v.polishing >= 1 && Boolean(v.pickRefusedText) && v.pickButtonsAfter === 2

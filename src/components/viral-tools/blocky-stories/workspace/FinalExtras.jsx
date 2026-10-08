@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Check, Copy, Download } from "lucide-react";
-import { FOCUS, PrimaryButton, Toggle, cx } from "../../../ui/zyvo";
+import { Check, Copy } from "lucide-react";
+import { FOCUS, Toggle, cx } from "../../../ui/zyvo";
 import { uploadPackage } from "../api/blockyStoriesApi";
 
 /** Copy one field; falls back to selecting the text when the clipboard is refused. */
@@ -54,29 +54,30 @@ export function UploadPackage({ storyId }) {
     ["Hashtags", (state.pkg.hashtags ?? []).join(" "), null],
   ].filter(([, text]) => text) : [];
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-[#111315] p-4">
-      <h3 className="text-[14px] font-black text-white">Post it</h3>
-      <p className="mt-1 text-[12px] leading-relaxed text-white/50">A title, description and tags for YouTube, a caption for TikTok and Reels, a comment to pin, and hashtags. Copy and paste when you upload.</p>
-      {state.status === "loading" && <div className="mt-3 h-24 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" aria-label="Writing your post text" />}
+    <section aria-label="Post text" className="rounded-2xl border border-white/[0.07] bg-[#111315] p-3.5">
+      <h3 className="text-[13px] font-black text-white">Post text</h3>
+      <p className="text-[11px] leading-relaxed text-white/45">Copy and paste when you upload.</p>
+      {state.status === "loading" && <div className="mt-2.5 h-20 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" aria-label="Writing your post text" />}
       {state.status === "error" && (
-        <p className="mt-3 text-[12px] text-orange-200">
+        <p className="mt-2.5 text-[12px] text-orange-200">
           We couldn&apos;t write the post text. <button type="button" onClick={() => setAttempt((n) => n + 1)} className={cx("font-bold underline", FOCUS)}>Try again</button>
         </p>
       )}
       {rows.length > 0 && (
-        <dl className="mt-3 flex flex-col gap-2">
+        <dl className="mt-2.5 flex flex-col divide-y divide-white/[0.06]">
           {rows.map(([label, text, size]) => (
-            <div key={label} data-copy-row className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2">
-              <div className="flex items-center justify-between gap-2">
-                <dt className="text-[10px] font-black uppercase tracking-[0.12em] text-white/40">{label}{size && <span className="ml-2 font-semibold normal-case tracking-normal text-white/25">{size}</span>}</dt>
-                <CopyButton text={text} label={label.toLowerCase()} />
+            <div key={label} data-copy-row className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 py-2 first:pt-0 last:pb-0">
+              <div className="min-w-0">
+                <dt className="text-[9.5px] font-black uppercase tracking-[0.12em] text-white/40">{label}{size && <span className="ml-2 font-semibold normal-case tracking-normal text-white/25">{size}</span>}</dt>
+                {/* Three lines at most on the page; the copy button always copies all of it. */}
+                <dd data-copy-text title={text} className="mt-0.5 select-text text-[12px] font-semibold leading-snug text-white/85" style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 3, overflow: "hidden" }}>{text}</dd>
               </div>
-              <dd data-copy-text className="mt-1 select-text text-[12px] font-semibold leading-relaxed text-white/85">{text}</dd>
+              <CopyButton text={text} label={label.toLowerCase()} />
             </div>
           ))}
         </dl>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -97,22 +98,6 @@ export function SeriesOptions({ story, busy, onChange }) {
           <Toggle checked={Boolean(story.final.endCard)} onChange={(v) => onChange({ endCard: v })} label="End card" disabled={busy} />
         </label>
       </div>
-    </div>
-  );
-}
-
-/** The cover: the most dramatic scene with the title, same layout across a series. */
-export function CoverImage({ story, onDownload }) {
-  if (!story.final.coverUrl) return null;
-  return (
-    <div className="rounded-2xl border border-white/[0.07] bg-[#111315] p-4">
-      <h3 className="text-[14px] font-black text-white">Cover image</h3>
-      <p className="mt-1 text-[12px] leading-relaxed text-white/50">The most dramatic scene with the title. Use it as the video cover or thumbnail.</p>
-      <img src={story.final.coverUrl} alt={`Cover: ${story.title}`} className={cx("mx-auto mt-3 rounded-xl object-cover", story.aspect === "16:9" ? "aspect-video w-full" : "aspect-[9/16] w-full max-w-[200px]")} loading="lazy" />
-      <PrimaryButton variant="secondary" className="mt-3" onClick={onDownload}>
-        <Download className="h-4 w-4" aria-hidden="true" />
-        Download cover
-      </PrimaryButton>
     </div>
   );
 }

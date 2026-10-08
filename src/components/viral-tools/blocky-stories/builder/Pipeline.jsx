@@ -102,11 +102,12 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
     const share = scriptShare(quotes.prices, story.source !== "script");
     return (
       <>
-        <PrimaryButton price={quoteFor(quotes, picturesStepPrice(story, quotes.prices))} priceOf={{ value: totals.total, approx: false }} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
+        {/* One label and what it costs now; the rest of the sum is the small line below. */}
+        <PrimaryButton price={quoteFor(quotes, picturesStepPrice(story, quotes.prices))} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
           Make scene pictures
         </PrimaryButton>
         <FootNote>
-          {totals.total != null ? `Full video: ${totals.total} credits. ${totals.pictures} now for the pictures${share ? " and the script" : ""}, ${totals.video} when you animate, after you approve them.` : "You only pay for video after you approve the pictures."}
+          {totals.total != null ? `${totals.pictures} credits now for the ${n} pictures${share ? " and the script" : ""}. The video is ${totals.video} more, only when you animate (${totals.total} in all).` : "You only pay for video after you approve the pictures."}
         </FootNote>
       </>
     );
@@ -176,15 +177,10 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
   if (story.status === "final_ready") {
     return (
       <>
-      <div className="flex gap-2">
-        <PrimaryButton variant="secondary" className="flex-1" onClick={isEpisode ? handlers.onBackToSeries : handlers.onNewStory}>
-          {isEpisode ? "Back to series" : "New story"}
-        </PrimaryButton>
-        <PrimaryButton className="flex-1" onClick={handlers.onDownload}>
-          <Download className="h-4 w-4" aria-hidden="true" />
-          Download video
-        </PrimaryButton>
-      </div>
+      {/* Download is next to the video (FinalView); here only the way on. */}
+      <PrimaryButton variant="secondary" onClick={isEpisode ? handlers.onBackToSeries : handlers.onNewStory}>
+        {isEpisode ? "Back to series" : "New story"}
+      </PrimaryButton>
       </>
     );
   }

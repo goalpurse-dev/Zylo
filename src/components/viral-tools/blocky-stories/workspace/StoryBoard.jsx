@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion as Motion, useReducedMotion } from "framer-motion";
-import { AlertTriangle, ChevronDown, Film, Pencil, RefreshCw } from "lucide-react";
+import { AlertTriangle, ChevronDown, Film, Maximize2, Pencil, RefreshCw } from "lucide-react";
 import { CreditIcon, FOCUS, ProgressBar, cx } from "../../../ui/zyvo";
 import { clipPrice, picturePrice } from "../pricing/blockyEstimates";
 import { AvatarStack } from "../shared/Avatar";
 import WorkspaceHeader from "./WorkspaceHeader";
+import SceneViewer from "../dialogs/SceneViewer";
 
 const COPY = {
   pictures: ["Painting your scenes", "You can keep using the page while this runs."],
@@ -24,6 +25,8 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
   const [title, subtitle] = COPY[story.status] ?? COPY.pictures;
   const failedPictures = story.scenes.filter((s) => s.imageStatus === "failed").length;
   const failedClips = story.scenes.filter((s) => s.clipStatus === "failed").length;
+  // The scene shown big (its index), or null.
+  const [viewing, setViewing] = useState(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -61,9 +64,11 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
             onRegenerateClip={() => onRegenerateClip(scene)}
             onRegenerateFree={onRegenerateFree ? () => onRegenerateFree(scene) : null}
             freeBusy={acting === `free-${scene.id}`}
+            onView={() => setViewing(scene.index)}
           />
         ))}
       </div>
+      {viewing != null && <SceneViewer scenes={story.scenes} index={viewing} byId={byId} aspect={story.aspect} onIndex={setViewing} onClose={() => setViewing(null)} />}
     </div>
   );
 }
@@ -131,7 +136,7 @@ function CharacterRefs({ castIds, byId, roles = {} }) {
   );
 }
 
-function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, onRegenerateClip, onRegenerateFree, freeBusy }) {
+function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, onRegenerateClip, onRegenerateFree, freeBusy, onView }) {
   const reduce = useReducedMotion();
   // Remember whether this picture was being painted while we watched, so the
   // "developing" reveal only plays for pictures that just arrived.
@@ -181,6 +186,16 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
               animate={{ opacity: 1, filter: "blur(0px) saturate(1) brightness(1)", scale: 1 }}
               transition={{ duration: reduce ? 0.2 : 1, ease: "easeOut" }}
             />
+          )
+        )}
+        {/* See it big: a tap on a picture, or the corner button on a clip (a tap on a clip plays it). */}
+        {scene.imageStatus === "ready" && scene.imageUrl && (
+          scene.clipStatus === "ready" && scene.clipUrl ? (
+            <button type="button" onClick={onView} aria-label={`See clip ${number} big`} className={cx("absolute right-1.5 top-1.5 z-10 grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/55 text-white transition hover:bg-black/75", FOCUS)}>
+              <Maximize2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          ) : (
+            <button type="button" onClick={onView} aria-label={`See scene ${number} big`} className={cx("absolute inset-0 z-10 cursor-zoom-in rounded-xl", FOCUS)} />
           )
         )}
 
