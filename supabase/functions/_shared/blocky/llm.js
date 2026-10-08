@@ -8,6 +8,7 @@
 export const LLM_PRICES = Object.freeze({
   "claude-sonnet-5": { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 },
   // The twist plan only (models.js#twistPlan). The figures the Long Form code records for this model.
+  // Its thinking is billed as output.
   "claude-opus-5-5": { input: 4.0, output: 20.0, cacheRead: 0.4, cacheWrite: 5.0 },
   "claude-haiku-4-5-20251001": { input: 1.0, output: 5.0, cacheRead: 0.1, cacheWrite: 1.25 },
   "gpt-5.6-sol": { input: 5.0, output: 30.0, cacheRead: 0.5, cacheWrite: 0 },
@@ -52,7 +53,40 @@ export async function callLlm(opts) {
   return opts.provider === "anthropic" ? callAnthropic(opts) : callOpenAI({ ...opts, schema: opts.tools?.find((t) => t.name === opts.name)?.schema ?? opts.schema });
 }
 
-async function callAnthropic({ model, apiKey, system, user, schema, name, tools = null, strict = false, maxOutputTokens = 6000, timeoutMs = 90_000 }) {
+/**
+ * Models that refuse a forced tool call because their thinking is always on (the API answers 400:
+ * 'tool_choice: type "tool" and "any" are not supported for this model'). They return the answer as JSON
+ * text in the schema's shape instead: structured outputs, output_config.format.
+ */
+const JSON_OUTPUT_MODELS = /^claude-opus-5/;
+
+/**
+ * effort (JSON-output models only): how hard the model thinks before it answers ("low", "medium", "high").
+ * Its thinking is billed as output and counts against maxOutputTokens.
+ */
+async function callAnthropicJson({ model, apiKey, system, user, schema, effort = null, maxOutputTokens = 8000, timeoutMs = 120_000 }) {
+  const request = {
+    model,
+    max_tokens: maxOutputTokens,
+    system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],   // fixed rules: cached
+    messages: [{ role: "user", content: user }],
+    output_config: { format: { type: "json_schema", schema }, ...(effort ? { effort } : {}) },
+  };
+  const { httpStatus, response, latencyMs } = await post("https://api.anthropic.com/v1/messages", { "x-api-key": apiKey, "anthropic-version": "2023-06-01" }, request, timeoutMs);
+  const u = response?.usage ?? {};
+  const usage = { inputTokens: u.input_tokens ?? 0, outputTokens: u.output_tokens ?? 0, cacheReadTokens: u.cache_read_input_tokens ?? 0, cacheWriteTokens: u.cache_creation_input_tokens ?? 0 };
+  const base = { request, response, httpStatus, latencyMs, usage, costUsd: llmCostUsd(model, usage) };
+  if (httpStatus >= 400) throw new LlmError(`anthropic ${httpStatus}`, base);
+  if (response?.stop_reason === "max_tokens") throw new LlmError("anthropic output truncated", base);
+  if (response?.stop_reason === "refusal") throw new LlmError("anthropic refused", base);
+  const text = (response?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
+  let data;
+  try { data = JSON.parse(text); } catch { throw new LlmError("anthropic returned no JSON", base); }
+  return { ...base, data };
+}
+
+async function callAnthropic({ model, apiKey, system, user, schema, name, tools = null, strict = false, effort = null, maxOutputTokens = 6000, timeoutMs = 90_000 }) {
+  if (JSON_OUTPUT_MODELS.test(model)) return callAnthropicJson({ model, apiKey, system, user, schema: tools?.find((t) => t.name === name)?.schema ?? schema, effort, ...(maxOutputTokens > 6000 ? { maxOutputTokens } : {}) });
   const build = (isStrict) => ({
     model,
     max_tokens: maxOutputTokens,

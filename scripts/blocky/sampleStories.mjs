@@ -39,7 +39,7 @@ const AGAIN = (process.argv.find((a) => a.startsWith("--again=")) ?? "").slice(8
 const IDEAS = ROUND === 1 ? ROUND_1 : ROUND_1.slice(0, 5).filter((i) => !AGAIN.length || AGAIN.includes(i.key.split("-")[0])).map((i) => ({ ...i, key: `r${ROUND}${AGAIN.length ? "b" : ""}-${i.key.replace(/-\d+$/, "")}-30`, lengthSec: 30 }));
 const STAGE = ROUND === 1 ? "stories" : `twists${ROUND}`;
 // worst case: a draft, two rewrites, a repair or two and three checks (the twist round's prompts are longer)
-const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : ROUND < 5 ? 0.15 : 0.3;
+const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : ROUND < 5 ? 0.15 : ROUND === 5 ? 0.3 : 0.4;
 const out = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, "utf8")) : { stories: {} };
 for (const i of AGAIN.length ? IDEAS : []) if (out.stories[i.key.replace("b-", "-")]?.state !== "failed") throw new Error(`${i.key}: its first try did not fail, so it is not written again`);
 // --limit=1: only the next story of the round (the first one is looked at before the other four are paid for).

@@ -432,7 +432,8 @@ test("the order of work: three plans, the judge, then the script that delivers t
   assert.equal(planCall.name, "twist_plans");
   assert.equal(planCall.strict, true);
   assert.deepEqual(planCall.use, BLOCKY_MODELS.twistPlan);
-  assert.deepEqual(BLOCKY_MODELS.twistPlan, { provider: "anthropic", model: "claude-opus-5-5" });
+  assert.deepEqual(BLOCKY_MODELS.twistPlan, { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" });
+  assert.equal(planCall.maxOutputTokens, 10000, "the plan model thinks before it answers, and that counts against the limit");
   assert.notDeepEqual(BLOCKY_MODELS.twistPlan, BLOCKY_MODELS.planner, "only the plan step runs on the stronger model");
   assert.deepEqual(planCall.schema, twistPlanSchema());
   assert.match(planCall.user, /This user's last story used: backfire\. Take three other patterns\./);
@@ -725,6 +726,36 @@ test("the model call: strict answers, both tools in a fixed order, and one more 
   } finally {
     globalThis.fetch = realFetch;
     console.error = realError;
+  }
+});
+
+test("the plan model refuses a forced tool call, so it answers as JSON in the schema's shape (structured outputs)", async () => {
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  const answer = (status, body) => ({ status, text: async () => JSON.stringify(body) });
+  const plans = threeOf();
+  try {
+    globalThis.fetch = async (url, init) => { sent.push(JSON.parse(init.body)); return answer(200, { content: [{ type: "thinking", thinking: "" }, { type: "text", text: JSON.stringify(plans) }], usage: { input_tokens: 600, output_tokens: 3000, cache_read_input_tokens: 0, cache_creation_input_tokens: 5000 }, stop_reason: "end_turn" }); };
+    const r = await callLlm({ provider: "anthropic", model: "claude-opus-5-5", apiKey: "k", system: "S", user: "U", name: "twist_plans", schema: twistPlanSchema(), strict: true, effort: "medium", maxOutputTokens: 10000 });
+    assert.deepEqual(r.data, plans);
+    assert.deepEqual(Object.keys(sent[0]).sort(), ["max_tokens", "messages", "model", "output_config", "system"], "no tools and no tool_choice: this model refuses a forced tool");
+    assert.deepEqual(sent[0].output_config, { format: { type: "json_schema", schema: twistPlanSchema() }, effort: "medium" });
+    assert.equal(sent[0].max_tokens, 10000);
+    assert.deepEqual(sent[0].system, [{ type: "text", text: "S", cache_control: { type: "ephemeral" } }]);
+    // Its thinking is billed as output: 600 in at $4, 5000 cached in at $5, 3000 out at $20 per million.
+    assert.equal(r.costUsd, Number(((600 * 4 + 5000 * 5 + 3000 * 20) / 1e6).toFixed(6)));
+    // A refusal, a cut-off answer or an answer that is not JSON is an error (the planner then uses the writer's model).
+    for (const [body, message] of [[{ content: [], stop_reason: "refusal", usage: {} }, /refused/], [{ content: [{ type: "text", text: "{" }], stop_reason: "max_tokens", usage: {} }, /truncated/], [{ content: [{ type: "text", text: "not json" }], stop_reason: "end_turn", usage: {} }, /no JSON/]]) {
+      globalThis.fetch = async () => answer(200, body);
+      await assert.rejects(callLlm({ provider: "anthropic", model: "claude-opus-5-5", apiKey: "k", system: "S", user: "U", name: "twist_plans", schema: twistPlanSchema() }), message);
+    }
+    // The writer's model is called as before: a forced, strict tool.
+    sent.length = 0;
+    globalThis.fetch = async (url, init) => { sent.push(JSON.parse(init.body)); return answer(200, { content: [{ type: "tool_use", input: plans }], usage: {}, stop_reason: "tool_use" }); };
+    await callLlm({ provider: "anthropic", model: "claude-sonnet-5", apiKey: "k", system: "S", user: "U", name: "twist_plans", schema: twistPlanSchema(), strict: true, effort: "medium" });
+    assert.ok(sent[0].tools && sent[0].tool_choice && !("output_config" in sent[0]));
+  } finally {
+    globalThis.fetch = realFetch;
   }
 });
 

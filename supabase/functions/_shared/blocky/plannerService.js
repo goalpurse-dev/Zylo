@@ -31,7 +31,7 @@ function loggedLlm({ admin, env, userId, model: defaultModel, purposePrefix, ser
     const t0 = Date.now();
     const model = use ?? defaultModel;
     try {
-      const r = await callLlm({ provider: model.provider, model: model.model, apiKey: keyFor(model), system, user, schema, name, ...(tools ? { tools } : {}), ...(strict ? { strict } : {}), ...(maxOutputTokens ? { maxOutputTokens } : {}) });
+      const r = await callLlm({ provider: model.provider, model: model.model, apiKey: keyFor(model), system, user, schema, name, ...(tools ? { tools } : {}), ...(strict ? { strict } : {}), ...(model.effort ? { effort: model.effort } : {}), ...(maxOutputTokens ? { maxOutputTokens } : {}) });
       costUsd += r.costUsd;
       callIds.push(await logCall(admin, {
         user_id: userId, series_id: seriesId, provider: model.provider, model: model.model, purpose: purposePrefix + purpose,

@@ -466,7 +466,7 @@ async function planTwist(p, sceneCount, calls) {
   // The three plans are written by the plan model (models.js#twistPlan, stronger than the writer's). If that
   // model can't be reached, the writer's own model plans instead: a story is never lost to the better model.
   let use = BLOCKY_MODELS.twistPlan;
-  const ask = (text, purpose) => p.llm({ system, user: text, schema, name: "twist_plans", strict: true, purpose, maxOutputTokens: 3500, ...(use ? { use } : {}) });
+  const ask = (text, purpose) => p.llm({ system, user: text, schema, name: "twist_plans", strict: true, purpose, maxOutputTokens: use ? 10000 : 3500, ...(use ? { use } : {}) });   // the plan model thinks first, and that counts
   let answer;
   try {
     answer = await ask(user, TWIST_PLAN_PURPOSE);
