@@ -20,7 +20,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createEngine, REMAKE_NOTE } from "../supabase/functions/_shared/blocky/engine.js";
-import { NO_DRAWN_TEXT, clipTask } from "../supabase/functions/_shared/blocky/clips.js";
+import { clipTask } from "../supabase/functions/_shared/blocky/clips.js";
 import { CLIP_FRAME_PURPOSE, DRAWN_TEXT_PROBLEM, checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/functions/_shared/blocky/pictureCheck.js";
 import { FRAME_SCRIPT, checkClipFrame, framePath, speechFramesPath } from "../supabase/functions/_shared/blocky/clipCheck.js";
 import { buildFinalJob, scenesWithDrawnText } from "../supabase/functions/_shared/blocky/final.js";
@@ -36,14 +36,9 @@ const clean = (over = {}) => ({
   speakerHeadPercent: 0, speakerShownTo: "unknown", drawnText: "", notes: "", ...over,
 });
 
-test("1. prevent: the Wan clip request says 'no drawn text' in its negative prompt too; the other tiers are unchanged", () => {
-  const args = { prompt: "p", imageUrl: "https://example.test/scene.jpg", aspect: "9:16", durationSec: 5 };
-  const wan = clipTask({ quality: "v2", ...args });
-  assert.equal(wan.negativePrompt, NO_DRAWN_TEXT);
-  assert.match(NO_DRAWN_TEXT, /subtitles, captions/);
-  assert.ok(NO_DRAWN_TEXT.length <= 500, "Wan takes at most 500 characters there");
-  assert.ok(!("negativePrompt" in clipTask({ quality: "v3", ...args })) && !("negativePrompt" in clipTask({ quality: "v4", ...args })));
-  // The clip prompt itself still forbids them.
+test("1. prevent: every clip prompt forbids drawn text (none of the clip models in use takes a negative prompt)", () => {
+  const args = { prompt: "p", imageUrl: "https://example.test/scene.jpg", aspect: "9:16", durationSec: 6 };
+  for (const quality of ["v2", "v3", "v4"]) assert.ok(!("negativePrompt" in clipTask({ quality, ...args })), quality);
   assert.match(read("supabase/functions/_shared/blocky/clips.js"), /No subtitles, captions or on-screen text\./);
 });
 

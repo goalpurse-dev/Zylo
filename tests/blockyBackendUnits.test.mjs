@@ -182,8 +182,9 @@ test("paid calls: off unless the switch says on; a step's cost is estimated befo
   const picture = { kind: "image", tool_key: "image:blocky-story", price_input: { width: 768, height: 1376 } };
   const clip = (tier) => ({ kind: "clip", tool_key: `video:blocky-story-${tier}`, price_input: { durationSec: 5 } });
   assert.equal(estimateUsd([picture, picture, picture, picture]), 0.16);
-  assert.equal(estimateUsd(Array.from({ length: 4 }, () => clip("v2"))), 1.008);
-  assert.equal(estimateUsd([clip("v3")]), 0.4085);
+  // A tier's second is counted at the dearest model of its chain (pricing.js): V2 0.0252 (P-Video-2), V3 0.05, V4 0.15.
+  assert.equal(estimateUsd(Array.from({ length: 4 }, () => clip("v2"))), 0.504);
+  assert.equal(estimateUsd([clip("v3")]), 0.25);
   assert.equal(estimateUsd([clip("v4")]), 0.75);
   assert.equal(estimateUsd([{ kind: "clip", tool_key: "video:something-new", price_input: {} }]), 15 * COST_USD.clipPerSec.v4, "an unknown clip is assumed to be the dearest and the longest");
   assert.equal(estimateUsd([]), 0);

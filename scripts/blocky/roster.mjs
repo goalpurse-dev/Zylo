@@ -75,10 +75,12 @@ export const ROSTER = ROWS.map(([id, name, head, torso, legs, accessory, eyes, m
  */
 export function avatarPrompt(a, { template = REF_DEFAULTS.template, minifigure = REF_DEFAULTS.minifigure } = {}) {
   return [
-    `Full-body 3D character reference of ${a.name}, a blocky game avatar. Centered on a pure white background, entire body visible from head to feet, standing straight facing the camera, block arms relaxed at the sides.`,
+    `Full-body 3D character reference of ${a.name}, a blocky game avatar. Centered on a pure white background, entire body visible from head to feet, standing straight, ${FRONT_VIEW}, block arms relaxed at the sides.`,
     template ? BODY_TEMPLATE_LINE : "",
     `${a.name} has ${a.look}.`,
-    `The face is a flat decal printed on the front of the cube head: ${a.face}. No nose, no eyebrows, no ears.`,
+    CUBE_HEAD,
+    `The face is a flat decal printed on the front of the cube head: ${a.face}. ${FLAT_MOUTH} No nose, no eyebrows, no ears.`,
+    ...(a.accessory ? [BLOCKY_PARTS] : []),
     "The torso shape is a plain flat print, no words.",
     BLOCKY_BODY,
     REF_STYLE,
@@ -86,6 +88,15 @@ export function avatarPrompt(a, { template = REF_DEFAULTS.template, minifigure =
     `No text, no letters, no numbers, no logos, no background, no props, no extra characters, no extra limbs, ${noBrickToy({ minifigure })}, no human face or skin, no realistic 3D teeth, lips, tongue or nose.`,
   ].filter(Boolean).join(" ");
 }
+// The four fixes from the owner's review of the first Pro references (2026-10-06; wording 2026-10-08):
+/** Front view. */
+export const FRONT_VIEW = "seen straight from the front at eye level, the head square to the camera, not turned";
+/** The head: a cube with flat faces (one Pro reference came out with a rounded head). */
+export const CUBE_HEAD = "The head is a cube: six flat faces and straight edges, not a sphere, a cylinder or a rounded blob.";
+/** The mouth: one flat printed shape. */
+export const FLAT_MOUTH = "The mouth is one flat printed shape: no teeth, no tongue, no lips, no depth.";
+/** Hair and accessories are blocks too, never strands, fur or cloth. */
+export const BLOCKY_PARTS = "Hair, hats and every accessory are built from a few simple solid blocks with flat faces and straight edges: no hair strands, no fur, no cloth folds.";
 export const REF_STYLE = "Style: a 3D classic blocky Roblox-style avatar in smooth matte plastic with a simple flat 2D face decal.";
 /** How the body template is labelled when it is sent as the first reference image (decision 20). */
 export const BODY_TEMPLATE_LINE = "Image 1 shows the body construction to copy exactly; ignore its colours, face and outfit.";

@@ -1,4 +1,5 @@
 import { clipDurationSec } from "../../../../../supabase/functions/_shared/blocky/duration.js";
+import { CLIP_SIZES, PICTURE, SCRIPT, TIERS as PRICED_TIERS, TIER_IDS, tierModel } from "../../../../../supabase/functions/_shared/blocky/pricing.js";
 // ╔════════════════════════════════════════════════════════════════════════╗
 // ║ BLOCKY STORIES — PRICES (the ONLY price file)                          ║
 // ║                                                                        ║
@@ -14,16 +15,23 @@ import { clipDurationSec } from "../../../../../supabase/functions/_shared/block
 // ║ decided by the lines).                                                 ║
 // ╚════════════════════════════════════════════════════════════════════════╝
 
-/** Quality tiers: server tool keys, the clip length each is quoted at, and the lengths the model accepts (models.js). */
-export const TIERS = {
-  v2: { id: "v2", label: "V2", tag: "Fast & cheap", minPlan: "starter", toolKey: "video:blocky-story-v2", quoteSec: 5, durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
-  v3: { id: "v3", label: "V3", tag: "Sharper", minPlan: "pro", toolKey: "video:blocky-story-v3", quoteSec: 5, durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
-  v4: { id: "v4", label: "V4", tag: "Best quality", minPlan: "generative", toolKey: "video:blocky-story-v4", quoteSec: 4, durations: [4, 6, 8], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
+// The tiers themselves (tool keys, plans, the lengths each tier's clip model accepts, the size a clip is priced
+// at) come from the engine's pricing.js, the one place for Blocky's models and prices. This file adds what
+// only the page needs: the name on the card, and the clip length each tier is quoted at.
+const TAGS = { v2: "Fast & cheap", v3: "Sharper", v4: "Best quality" };
+const tierFor = (id) => {
+  const durations = [...tierModel(id).durations];
+  return {
+    id, label: id.toUpperCase(), tag: TAGS[id], minPlan: PRICED_TIERS[id].minPlan, toolKey: PRICED_TIERS[id].toolKey,
+    quoteSec: durations.includes(5) ? 5 : durations[0], durations, dims: CLIP_SIZES,
+  };
 };
-export const TIER_IDS = ["v2", "v3", "v4"];
+/** Quality tiers: server tool keys, the clip length each is quoted at, and the lengths the model accepts. */
+export const TIERS = Object.fromEntries(TIER_IDS.map((id) => [id, tierFor(id)]));
+export { TIER_IDS };
 
-export const PICTURE_TOOL_KEY = "image:blocky-story";
-export const SCRIPT_TOOL_KEY = "script:blocky-story";
+export const PICTURE_TOOL_KEY = PICTURE.toolKey;
+export const SCRIPT_TOOL_KEY = SCRIPT.toolKey;
 const IMAGE_DIMS = { "9:16": [768, 1376], "16:9": [1376, 768] };
 
 /** Quote items (useToolPriceQuotes) for one aspect: the scene picture + each tier's clip. */

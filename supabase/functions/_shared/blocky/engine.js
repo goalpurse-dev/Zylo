@@ -94,8 +94,9 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       await store.requeueJob(job.id, job.task_uuid, delay, `${code ?? "error"}: ${message ?? ""}`.slice(0, 500), cost);
       return "requeued";
     }
-    // Giving up on this model: a clip gets one re-send on its tier's fallback model
-    // (V2: Wan2.6 Flash -> Seedance 2.0 Mini). The fallback request has no fallback, so this can't loop.
+    // Giving up on this model: the clip is re-sent on the next model of its tier's chain (pricing.js:
+    // V2 Grok -> P-Video-2; V3 Veo 3.1 Lite -> P-Video-2; V4 Veo 3.1 Fast -> Veo 3.1 Lite -> P-Video-2).
+    // The last model of a chain has no next one, so this can't loop.
     const fallback = job.kind === "clip" && fallbackClip ? fallbackClip(job.request) : null;
     if (fallback && (await store.replaceRequest(job.id, job.task_uuid, fallback, cost, `fallback after ${code ?? "error"}: ${message ?? ""}`.slice(0, 500)))) {
       return "fallback";
@@ -205,10 +206,9 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     }
     // The video model drew its own subtitles into the clip. The same model draws them again for the
     // same line (the 2026-10-08 test clip did), so the clip goes STRAIGHT to the tier's next clip model
-    // (V2: Wan -> Seedance 2.0 Mini), once, at our cost: no remake on the same model first. The request
-    // is then the fallback's, and that has no fallback of its own, so this can't loop: if that clip
-    // carries them too, it is kept and the final video leaves its own caption off it. A tier with no
-    // next model (V3, V4) gets the one remake below instead.
+    // (the same chains as a failed clip, pricing.js), at our cost: no remake on the same model first.
+    // The last model of a chain has no next one, so this can't loop: if its clip carries them too, it is
+    // kept and the final video leaves its own caption off it.
     const drawn = Boolean(drawnTextProblem) && (verdict?.problems ?? []).some((p) => String(p).includes(drawnTextProblem));
     if (verdict && !verdict.ok && drawn && fallbackClip) {
       const next = fallbackClip(job.request);

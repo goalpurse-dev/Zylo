@@ -8,6 +8,7 @@
 //   - the worker refuses callers without its secret, and refuses a test run while paid calls are off.
 //   node scripts/blocky/smokeBlockyLive.mjs
 import { SUPABASE_URL, admin, anonKey, api, userSession, worker } from "./lib.mjs";
+import { PRICE_ROWS } from "../../supabase/functions/_shared/blocky/pricing.js";
 
 const db = admin();
 const results = [];
@@ -74,6 +75,14 @@ const hook = await fetch(`${SUPABASE_URL}/functions/v1/blocky-worker?action=webh
 ok("the worker refuses a forged result", hook.status === 401, `HTTP ${hook.status}`);
 const test = await worker({ action: "raw_test", label: "smoke", task: { taskType: "imageInference", model: "google:nano-banana@2-lite", positivePrompt: "smoke", width: 768, height: 1376 } });
 ok("paid calls off: the worker refuses a test picture", test.code === "PAID_CALLS_DISABLED", `${test.code}`);
+
+// The live price rows say what pricing.js says (the one place for Blocky's models and prices).
+{
+  const { data: rows, error } = await admin().from("tool_prices").select("tool_key, flat_credits, credits_per_second, min_plan, active").like("tool_key", "%:blocky-story%");
+  const live = new Map((rows ?? []).map((r) => [r.tool_key, r]));
+  const wrong = PRICE_ROWS.filter((w) => { const r = live.get(w.toolKey); return !r || !r.active || (r.flat_credits ?? null) !== (w.flatCredits ?? null) || (r.credits_per_second == null ? null : Number(r.credits_per_second)) !== (w.creditsPerSecond ?? null) || r.min_plan !== w.minPlan; });
+  ok("the live price rows are the ones in pricing.js", !error && wrong.length === 0 && live.size === PRICE_ROWS.length, error?.message ?? (wrong.length ? `differ: ${wrong.map((w) => w.toolKey).join(", ")}` : [...live.values()].map((r) => `${r.tool_key.replace(":blocky-story", "")}=${r.flat_credits ?? `${Number(r.credits_per_second)}/s`}`).join(", ")));
+}
 
 const after = { calls: await count("blocky_ai_calls"), stories: await count("blocky_stories"), charges: await count("blocky_charges") };
 ok("nothing was sent to a provider, written or charged", JSON.stringify(after) === JSON.stringify(before) && (await balance()) === credits, `${JSON.stringify(after)}, balance unchanged`);

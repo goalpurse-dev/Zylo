@@ -26,6 +26,7 @@ import { BlockyError, MESSAGES } from "../_shared/blocky/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/blocky/final.js";
 import { raiseProviderAlert } from "../_shared/blocky/alerts.js";
 import { DRAWN_TEXT_PROBLEM, checkPicture } from "../_shared/blocky/pictureCheck.js";
+import { checkAvatar } from "../_shared/blocky/avatarCheck.js";
 import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath, speechFramesPath } from "../_shared/blocky/clipCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/blocky/clips.js";
 import { buildPictureRequest, withRedrawHint } from "../_shared/blocky/pictures.js";
@@ -77,7 +78,7 @@ const engine = createEngine({
     poll: (taskUUID: string) => runwarePost([getResponseTask(taskUUID)]),
   },
   env: { get BLOCKY_PAID_CALLS() { return paidEnv(); }, webhookBase: `${SUPABASE_URL}/functions/v1/blocky-worker`, webhookSecret: WORKER_SECRET },
-  // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini. So is a clip the
+  // A clip that finally fails is re-sent on the next model of its tier (pricing.js). So is a clip the
   // video model drew its own subtitles into (straight to the next model, at our cost).
   fallbackClip: fallbackClipTask,
   drawnTextProblem: DRAWN_TEXT_PROBLEM,
@@ -215,16 +216,15 @@ async function clipTest(body: any) {
 /**
  * Test runs: one picture or clip sent straight to Runware (no user charge),
  * every call logged with its real cost. Only these models: the three clip
- * tiers (V2 Wan 2.6 Flash, V3 Seedance 2.0 Mini, V4 Veo 3.1 Fast) and the two
+ * tiers (pricing.js) and the two
  * picture models (Nano Banana 2 Lite, Nano Banana Pro). Service role only.
  * Poll with raw_poll ({kind: "image"} for a picture).
  */
 const TEST_MODELS: Record<string, Set<string>> = {
-  // The last three and the upscaler: candidates the owner chose on 2026-10-08, allowed HERE for test clips
-  // only (scripts/blocky/testClipModels.mjs). No story uses them until models.js says so.
+  // The clip models in use (pricing.js) and the two they replaced on 2026-10-08, for test clips.
   videoInference: new Set(["alibaba:wan@2.6-flash", "bytedance:seedance@2.0-mini", "google:3@3", "xai:grok-imagine@video-1.5-lite", "prunaai:p-video@2", "google:veo@3.1-lite"]),
-  upscale: new Set(["bytedance:50@1"]),
-  imageInference: new Set(["google:nano-banana@2-lite", "google:4@2"]),
+  // Nano Banana 2 Lite and Pro, and FLUX.2 [klein] 9B (and its KV variant): the avatar-library test of 2026-10-08.
+  imageInference: new Set(["google:nano-banana@2-lite", "google:4@2", "runware:400@2", "runware:400@6"]),
 };
 async function rawTest(body: any) {
   if (paidOff()) throw new BlockyError("PAID_CALLS_DISABLED", "paid calls are off");
@@ -255,8 +255,10 @@ async function pictureTest(body: any) {
   if (!sc) throw new BlockyError("NOT_FOUND", "scene");
   const { data: story } = await admin.from("blocky_stories").select("*").eq("id", sc.story_id).single();
   const { data: rows } = await admin.from("blocky_characters").select("*");
+  // refOverrides {avatarId: url}: the scene with other reference pictures for those avatars (the library test).
+  const refs = body?.refOverrides && typeof body.refOverrides === "object" ? body.refOverrides : {};
   const built = buildPictureRequest({
-    story: { aspect: story.aspect, locations: story.locations }, library: new Map((rows ?? []).map((c: any) => [c.id, c])), mode: "new",
+    story: { aspect: story.aspect, locations: story.locations }, library: new Map((rows ?? []).map((c: any) => [c.id, typeof refs[c.id] === "string" && /^https:///.test(refs[c.id]) ? { ...c, ref_image_url: refs[c.id] } : c])), mode: "new",
     scene: { speakerId: sc.speaker_id, presentIds: sc.present_ids, action: sc.action, emotion: sc.emotion, shot: sc.shot, placement: sc.placement, locationId: sc.location_id },
   });
   const taskUUID = crypto.randomUUID();
@@ -295,6 +297,17 @@ async function frameTest(body: any) {
   });
   const machine = await res.json().catch(() => null);
   return { started: res.ok, status: res.status, ms: Date.now() - t0, jobId, url: admin.storage.from("generated").getPublicUrl(path).data.publicUrl, machineId: machine?.id ?? null, error: res.ok ? null : JSON.stringify(machine).slice(0, 300) };
+}
+
+/**
+ * Admin test: the avatar-reference check on one picture (avatarCheck.js). No user charge; logged with its cost.
+ * body: {imageUrl, avatar: {name, head, torso, legs, accessory, face}} (scripts/blocky/roster.mjs)
+ */
+async function avatarCheckTest(body: any) {
+  if (paidOff()) throw new BlockyError("PAID_CALLS_DISABLED", "paid calls are off");
+  const a = body?.avatar;
+  if (typeof body?.imageUrl !== "string" || !/^https:///.test(body.imageUrl) || !a?.name || !a?.head || !a?.torso || !a?.legs || !a?.face) throw new BlockyError("VALIDATION", "imageUrl and avatar are needed");
+  return await checkAvatar({ admin, apiKey: OPENAI_API_KEY, imageUrl: body.imageUrl, avatar: { name: String(a.name), head: String(a.head), torso: String(a.torso), legs: String(a.legs), accessory: a.accessory ? String(a.accessory) : null, face: String(a.face) } });
 }
 
 async function rawPoll(body: any) {
@@ -498,10 +511,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (["clip_test", "raw_test", "raw_poll", "picture_test", "frame_test"].includes(action)) {
+  if (["clip_test", "raw_test", "raw_poll", "picture_test", "frame_test", "avatar_check_test"].includes(action)) {
     if (!sameToken((req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""), SERVICE_KEY)) return json({ ok: false }, 401);
     try {
-      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : action === "picture_test" ? pictureTest : action === "frame_test" ? frameTest : rawPoll;
+      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : action === "picture_test" ? pictureTest : action === "frame_test" ? frameTest : action === "avatar_check_test" ? avatarCheckTest : rawPoll;
       return json({ ok: true, ...(await fn(body)) });
     } catch (e) {
       const fe = e as any;
