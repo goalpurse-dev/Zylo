@@ -429,7 +429,30 @@ Decisions of 2026-10-08 (after the first real story):
 59. AI Fruit Story's caption fix (decision 43, with the next-model step of decision 45) is LIVE
     since 2026-10-08 09:11 UTC, deployed from this branch on the owner's go with no Fruit job
     in flight and Fruit's smoke check passing before and after. It is not on main: a deploy of
-    Fruit's functions from main would take it out again.
+    Fruit's functions from main would take it out again. Pull request #1 (branch
+    `fruit-caption-fix`, the 12 Fruit files only) brings it to main; merged on the owner's go.
+60. BEST OF THREE PLANS (owner, 2026-10-08, after round three scored 5.6 / 6.1). The plan step
+    writes THREE complete plans for a story, each on a different pattern, and a judge (the
+    editor's model) scores each from 1 to 5 on six points: the clue is planted early, the
+    payoff uses the clue, the stakes are clear, the twist flips what the viewer assumed, a
+    viewer could retell it in one sentence, and nothing "decides" by itself. The fairest is
+    written. A plan under 3 on the last point loses to any plan that is not; each fault code
+    finds counts 2 points against a plan; a plan the writer can't work from is never picked.
+    The three plans and their scores are kept on the story (`planner.judged`).
+61. THE PLAN STEP RUNS ON A STRONGER MODEL: Claude Opus 5.5 (`models.js#twistPlan`), medium
+    effort; everything else stays on Claude Sonnet 5. Opus refuses a forced tool call (its
+    thinking is always on), so it is asked through structured outputs. If it can't be reached
+    the writer's model plans instead; if the judge can't be asked, code decides. Measured on
+    five scripts: the plan step costs $0.07 to $0.11 (it was $0.012 to $0.024), the judge
+    $0.009; a script costs $0.16 to $0.21, average $0.175 (it was $0.086), and takes about 95
+    to 110 seconds.
+62. A scene goes to another speaker only together with a NEW line of their own (a repair once
+    put one character's line into another's mouth). The editor has a fifteenth rule, "voice":
+    would this character say this, with I, my, you and your pointing at the right one.
+63. No last line starts with "Guess", and none starts with the same word as the last line of
+    one of the user's last five stories (`planner.lastLine`).
+64. ROUND FOUR (2026-10-08), my scores: 5.5, 7.5, 6.5, 8, 7.5: average 7.0, one under 6. The
+    pass mark (7.5, none under 6) is not met; it is the best round so far. Section 3 waits.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
