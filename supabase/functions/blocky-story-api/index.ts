@@ -266,15 +266,16 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     }
 
     const cast = input.castIds.map((id: string) => lib.get(id));
-    // The twist pattern of this user's last story: the plan step takes another one, so nobody gets the
-    // same kind of twist twice in a row.
-    const { data: lastStory } = await admin.from("blocky_stories").select("planner").eq("user_id", ctx.userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
-    const avoidPatterns = typeof lastStory?.planner?.patternId === "string" ? [lastStory.planner.patternId] : [];
+    // This user's recent stories: the plan step takes another twist pattern than the last one, so nobody
+    // gets the same kind of twist twice in a row, and no last line starts like one of the last five.
+    const { data: recent } = await admin.from("blocky_stories").select("planner").eq("user_id", ctx.userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(5);
+    const avoidPatterns = typeof recent?.[0]?.planner?.patternId === "string" ? [recent[0].planner.patternId] : [];
+    const avoidOpeners = (recent ?? []).map((s: any) => s?.planner?.lastLine ?? s?.planner?.finalLine).filter((x: unknown) => typeof x === "string" && x);
     const { plan, attempts, review, callIds, costUsd, model } = await planStory({
       admin, env: LLM_ENV, userId: ctx.userId, seriesId: series?.id ?? null,
       plannerInput: {
         source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality,
-        prompt: input.prompt, script: input.script, series, avoidPatterns,
+        prompt: input.prompt, script: input.script, series, avoidPatterns, avoidOpeners,
       },
     });
     // An episode's cast is the characters it uses (a series of five often plays an
@@ -317,7 +318,9 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         // review: what the script editor found and whether the script was rewritten
         // premise, twist, patternId, clue, payoff...: the twist plan behind the story (twists.js). The upload text must
         // never give the twist away, and patternId is what the user's next story avoids.
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, patternId: plan.patternId ?? null, mechanic: plan.mechanic ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null },
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, patternId: plan.patternId ?? null, mechanic: plan.mechanic ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null, stakes: plan.stakes ?? null,
+          // the last line as written (the next stories start theirs differently), and what the judge made of the three plans
+          lastLine: plan.scenes?.at(-1)?.line ?? null, judged: plan.judged ?? null },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({

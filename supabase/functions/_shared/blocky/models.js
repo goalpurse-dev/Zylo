@@ -17,6 +17,11 @@ export const BLOCKY_MODELS = Object.freeze({
   // cheaper editor failed a working reveal and its "fix" removed the twist; judging a story is the hard part.
   // About $0.01 per check instead of $0.005.
   review: { provider: "anthropic", model: "claude-sonnet-5" },
+  // The twist plan (twists.js): three complete plans for one story, before any dialogue. The twist is the
+  // one thing a story lives on, and three rounds on the writer's model averaged 5.6 to 6 of 10, so this one
+  // step runs on the strongest model (owner, 2026-10-08). It is a few hundred words out, so the dearer
+  // model adds about 3 cents a script. The judge that picks among the three is the review model above.
+  twistPlan: { provider: "anthropic", model: "claude-opus-5-5" },
   // Small tasks: edit-instruction cleanup, content-policy rewrite.
   small: { provider: "openai", model: "gpt-5-mini" },
 

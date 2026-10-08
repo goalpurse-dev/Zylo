@@ -42,7 +42,7 @@ export const writerInputs = {
 export const twistPlan = {
   premise: "What happens if a new player is banned by an admin nobody has seen before.", seenAs: "", emotion: "satisfaction",
   roles: { vex: "the fake admin, a player", noob: "the new player, the real owner", taz: "a player watching" }, assumed: "Vex is an admin and Noob is about to be banned.",
-  candidates: [{ patternId: "quiet_power", twist: "Noob owns the server and lets the ban run." }, { patternId: "backfire", twist: "The ban lands on whoever says it." }, { patternId: "test", twist: "Taz was choosing the next admin." }],
+  stakes: "Noob's place on the server",
   patternId: "quiet_power", twist: "Noob owns the server and has been letting the fake commands work.", mechanic: "owner_power", clue: "Noob turns a small gold key over in one hand while saying sorry.", clueScene: 2,
   payoff: "Noob holds the gold key up and Vex, floating, drops.", revealScene: 5, consequence: "Vex is kicked from the server he pretended to run.", winnerId: "noob", finalLine: "Cute commands. Want to see real ones?", title: "The Admin Who Wasn't",
 };

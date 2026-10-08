@@ -8,12 +8,12 @@
 // where, doing what), and the code copies the lines in unchanged.
 import { BlockyError } from "./errors.js";
 import { BUFFER_SEC, WORDS_PER_SECOND, clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
-import { videoModel } from "./models.js";
+import { BLOCKY_MODELS, videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
 import { problemLines, reviewScript } from "./scriptReview.js";
 import { WRITTEN_WORDS, characterBlock, writerSystem } from "./rules.js";
-import { FINAL_LINE_MAX_WORDS, TWIST_PLAN_PURPOSE, buildTwistPlanPrompt, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "./twists.js";
+import { FINAL_LINE_MAX_WORDS, PLAN_COUNT, PLAN_JUDGE_PURPOSE, TWIST_PLAN_PURPOSE, buildJudgePrompt, buildTwistPlanPrompt, judgeSchema, openerOf, pickPlan, splitPlans, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "./twists.js";
 import { bannedNamesProblem } from "./safety.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
@@ -156,6 +156,7 @@ export function buildPlannerPrompt(p) {
       "BEFORE YOU ANSWER, CHECK EACH OF THESE (code refuses a draft that breaks one):",
       `- Exactly ${count} scenes.${plan ? ` Scene ${plan.clueScene} plants the clue. Scene ${plan.revealScene}'s action shows the payoff and its line names what just happened. Scene ${count} is ${plan.winnerId} saying the final line (${FINAL_LINE_MAX_WORDS} words or fewer).` : ""}`,
       "- No speaker has more than two lines in a row.",
+      ...(plan ? [`- The last line does not start with "Guess"${(p.avoidOpeners ?? []).length ? ` or with: ${[...new Set(p.avoidOpeners.map(openerOf).filter(Boolean))].join(", ")}` : ""}.`] : []),
       "- No action shows or mentions anyone who is not in that scene's presentIds, and nobody outside the cast.",
       `- At least one line of 5 words or fewer and at least one of ${Math.max(7, words - 1)} or more. None over ${words}.`,
       "- Every action is 16 words or fewer and upper body only: a look, an arm, a hand, something held, worn or pointed at. Never stepping, walking, backing away, turning to go, jumping, kneeling, entering or leaving.",
@@ -256,10 +257,14 @@ export function applyPatch(data, patch, { script = false } = {}) {
   for (const c of Array.isArray(patch?.scenes) ? patch.scenes : []) {
     const target = Number.isInteger(c?.scene) ? next.scenes[c.scene - 1] : null;
     if (!target) continue;
-    for (const key of ["action", "placement", "emotion", ...(script ? [] : ["line", "speakerId"])]) {
+    for (const key of ["action", "placement", "emotion", ...(script ? [] : ["line"])]) {
       const value = String(c?.[key] ?? "").trim();
       if (value) target[key] = value;
     }
+    // A scene goes to another speaker only together with a NEW line: a line moved into another mouth is how
+    // an admin came to say "That's not even a real rule" about his own rule (round three).
+    const speaker = script ? "" : String(c?.speakerId ?? "").trim();
+    if (speaker && (speaker === target.speakerId || String(c?.line ?? "").trim())) target.speakerId = speaker;
     if (Array.isArray(c?.presentIds) && c.presentIds.length) target.presentIds = [...new Set(c.presentIds)];
     // Whoever speaks is in the picture.
     if (target.speakerId && Array.isArray(target.presentIds) && !target.presentIds.includes(target.speakerId)) target.presentIds = [target.speakerId, ...target.presentIds].slice(0, 3);
@@ -283,7 +288,7 @@ const words = (s) => wordCount(s);
  * never fail a story; they are handed to the writer together with the editor's findings.
  * ctx.twistPlan: the locked plan of a single story; its title, roles and twist are the story's.
  */
-export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [], twistPlan: ctxPlan = null }) {
+export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [], twistPlan: ctxPlan = null, avoidOpeners = [] }) {
   const errors = [];
   const style = [];
   // No real platform, game, brand or creator names in anything the writer wrote (safety.js).
@@ -415,7 +420,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     // Nobody talks three scenes in a row: the other one answers, reacts or tries something.
     for (let i = 2; i < n; i++) {
       if (normalized[i].speakerId === normalized[i - 1].speakerId && normalized[i].speakerId === normalized[i - 2].speakerId) {
-        errors.push(`scene ${i + 1}: ${normalized[i].speakerId} speaks three scenes in a row (${i - 1} to ${i + 1}); give one of them to someone else in the picture (a reaction, an answer, a try)`);
+        errors.push(`scene ${i + 1}: ${normalized[i].speakerId} speaks three scenes in a row (${i - 1} to ${i + 1}); give one of them to someone else in the picture, with a NEW line of their own (a reaction, an answer, a try)`);
         break;
       }
     }
@@ -423,10 +428,13 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   if (twistPlan) {
     const last = normalized.at(-1);
     if (last && last.speakerId !== twistPlan.winnerId) errors.push(`scene ${normalized.length}: the last line belongs to the winner (${twistPlan.winnerId}), not to ${last.speakerId}`);
+    const opener = openerOf(last?.line);
+    if (opener === "guess") errors.push(`scene ${normalized.length}: the last line starts with "Guess"; start it with something only ${twistPlan.winnerId} would say`);
+    else if (opener && avoidOpeners.map(openerOf).includes(opener)) errors.push(`scene ${normalized.length}: the last line starts with "${opener}", like the last line of one of this user's recent stories; start it differently`);
     if (last && words(last.line) > FINAL_LINE_MAX_WORDS) errors.push(`scene ${normalized.length}: the last line is ${words(last.line)} words; it is the punchline: ${FINAL_LINE_MAX_WORDS} words or fewer (the plan's final line: ${twistPlan.finalLine})`);
   }
   const plan = {
-    ...(twistPlan ? { premise: twistPlan.premise, emotion: twistPlan.emotion, assumed: twistPlan.assumed, patternId: twistPlan.patternId, twist: twistPlan.twist, mechanic: twistPlan.mechanic, clue: twistPlan.clue, clueScene: twistPlan.clueScene, payoff: twistPlan.payoff, revealScene: twistPlan.revealScene, consequence: twistPlan.consequence, winnerId: twistPlan.winnerId, finalLine: twistPlan.finalLine, seenAs: twistPlan.seenAs, candidates: twistPlan.candidates } : {}),
+    ...(twistPlan ? { premise: twistPlan.premise, emotion: twistPlan.emotion, assumed: twistPlan.assumed, patternId: twistPlan.patternId, twist: twistPlan.twist, mechanic: twistPlan.mechanic, clue: twistPlan.clue, clueScene: twistPlan.clueScene, payoff: twistPlan.payoff, revealScene: twistPlan.revealScene, consequence: twistPlan.consequence, winnerId: twistPlan.winnerId, finalLine: twistPlan.finalLine, seenAs: twistPlan.seenAs, stakes: twistPlan.stakes, judged: twistPlan.judged ?? null } : {}),
     roles: twistPlan ? { ...twistPlan.roles } : roles,
     outfits,
     title,
@@ -447,30 +455,60 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
 const PATCHABLE = /^scene \d+:(?!.*(?:locationId|this scene has a spoken line|beat must be))|^the clips add up|^cast member /;
 
 /**
- * Step 1 of a single story: the twist plan (twists.js), with one repair. It is
- * a small call (a short prompt, a few hundred words back).
+ * Step 1 of a single story: THREE twist plans (twists.js) on the plan model, and a judge that keeps the
+ * fairest one. Returns the kept plan, with what the judge made of all three.
  */
 async function planTwist(p, sceneCount, calls) {
-  const { system, user } = buildTwistPlanPrompt({ source: p.source, cast: p.cast, idea: p.idea, prompt: p.prompt, sceneCount, lengthSec: p.lengthSec, avoidPatterns: p.avoidPatterns });
-  const schema = twistPlanSchema(p.cast.map((c) => c.id));
-  const ctx = { cast: p.cast, sceneCount, avoidPatterns: p.avoidPatterns ?? [] };
-  const ask = (text, purpose) => p.llm({ system, user: text, schema, name: "twist_plan", strict: true, purpose, maxOutputTokens: 2000 });
-  const first = await ask(user, TWIST_PLAN_PURPOSE);
-  calls.push(first);
-  let r = validateTwistPlan(first.data, ctx);
-  if (r.errors.length) {
-    const second = await ask(`${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(first.data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${r.errors.join("\n- ")}`, `${TWIST_PLAN_PURPOSE}_repair`);
-    calls.push(second);
-    r = validateTwistPlan(second.data, ctx);
-    // Only a plan the writer can't work from ends the story; a lesser fault has had its one repair.
-    if (r.fatal.length) {
-      const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502);
-      err.details = r.fatal;
-      err.calls = calls;
-      throw err;
+  const ctx = { cast: p.cast, sceneCount, avoidPatterns: p.avoidPatterns ?? [], avoidOpeners: p.avoidOpeners ?? [] };
+  const { system, user } = buildTwistPlanPrompt({ source: p.source, cast: p.cast, idea: p.idea, prompt: p.prompt, sceneCount, lengthSec: p.lengthSec, avoidPatterns: ctx.avoidPatterns, avoidOpeners: ctx.avoidOpeners });
+  const schema = twistPlanSchema();
+  const fail = (details) => { const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502); err.details = details; err.calls = calls; return err; };
+  // The three plans are written by the plan model (models.js#twistPlan, stronger than the writer's). If that
+  // model can't be reached, the writer's own model plans instead: a story is never lost to the better model.
+  let use = BLOCKY_MODELS.twistPlan;
+  const ask = (text, purpose) => p.llm({ system, user: text, schema, name: "twist_plans", strict: true, purpose, maxOutputTokens: 3500, ...(use ? { use } : {}) });
+  let answer;
+  try {
+    answer = await ask(user, TWIST_PLAN_PURPOSE);
+  } catch (e) {
+    if (!use || e?.code === "PROVIDER_UNAVAILABLE" || e?.code === "PAID_CALLS_DISABLED") throw e;
+    use = null;
+    answer = await ask(user, `${TWIST_PLAN_PURPOSE}_fallback`);
+  }
+  calls.push(answer);
+  const check = (data) => splitPlans(data).map((raw) => validateTwistPlan(raw, ctx));
+  let candidates = check(answer.data);
+  // Not one plan the writer could work from: once more, told why. (A plan with a lesser fault is not sent
+  // back: the judge sees it, it counts against the plan, and the editor checks the script anyway.)
+  if (!candidates.some((c) => c.fatal.length === 0)) {
+    const why = candidates.length ? candidates.map((c, i) => `plan ${i + 1}: ${c.fatal.join("; ")}`) : [`write exactly ${PLAN_COUNT} plans`];
+    const again = await ask(`${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(answer.data)}\n\nNONE OF THE PLANS CAN BE USED. Fix every problem and return all ${PLAN_COUNT} plans again in full:\n- ${why.join("\n- ")}`, `${TWIST_PLAN_PURPOSE}_repair`);
+    calls.push(again);
+    candidates = check(again.data);
+    if (!candidates.some((c) => c.fatal.length === 0)) throw fail(candidates.flatMap((c, i) => c.fatal.map((f) => `plan ${i + 1}: ${f}`)));
+  }
+  // The judge (the editor's model) scores each plan on the six points; code keeps the fairest (pickPlan).
+  // A judge that can't be asked never blocks a story: code then decides alone.
+  let verdict = null;
+  let judgeNote = null;
+  if (p.reviewLlm && candidates.filter((c) => c.fatal.length === 0).length > 1) {
+    try {
+      const j = buildJudgePrompt({ cast: p.cast, source: p.source, idea: p.idea, prompt: p.prompt, sceneCount, plans: candidates.map((c) => c.plan) });
+      verdict = (await p.reviewLlm({ system: j.system, user: j.user, schema: judgeSchema(), name: "plan_judge", purpose: PLAN_JUDGE_PURPOSE, review: true })).data;
+    } catch (e) {
+      judgeNote = `the judge could not be asked (${String(e?.message ?? e).slice(0, 80)}); code chose`;
     }
   }
-  return r.plan;
+  const pick = pickPlan(candidates, verdict);
+  if (!pick) throw fail(["no usable plan"]);
+  return {
+    ...pick.plan,
+    // What the judge made of the three, kept with the story: which plans there were, their scores, which was kept.
+    judged: {
+      chosen: pick.index + 1, best: pick.best === null ? null : pick.best + 1, why: pick.why, ...(judgeNote ? { note: judgeNote } : {}),
+      plans: candidates.map((c, i) => ({ patternId: c.plan.patternId, title: c.plan.title, twist: c.plan.twist, clue: c.plan.clue, payoff: c.plan.payoff, finalLine: c.plan.finalLine, faults: c.errors, ...(pick.ranking[i] ?? {}) })),
+    },
+  };
 }
 
 /**
@@ -481,7 +519,7 @@ async function planTwist(p, sceneCount, calls) {
  * A fault code finds is sent back at most MAX_REPAIRS times; an editor's finding gets at most MAX_REWRITES rewrites, and the
  * rewriting stops as soon as a rewrite is no better than what there was. Repairs and rewrites come
  * back as PATCHES (patchSchema): only the fields that change.
- * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?, avoidPatterns?}
+ * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?, avoidPatterns?, avoidOpeners?}
  *   llm({system, user, schema, name, tools?, strict?, purpose, maxOutputTokens?}) -> {data, costUsd, ...}  (logs its own call)
  *   reviewLlm: the same shape, on the review model
  * @returns {{plan, calls: object[], attempts: number, review: object|null}}
@@ -497,9 +535,9 @@ export async function runPlanner(p) {
   const castIds = p.cast.map((c) => c.id);
   const tools = [{ name: WRITE_TOOL, schema: plannerSchema(castIds, { script, planned }) }, { name: PATCH_TOOL, schema: patchSchema() }];
   const ask = (name, text, purpose) => p.llm({ system, user: text, schema: tools.find((t) => t.name === name).schema, name, tools, strict: true, purpose });
-  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id), twistPlan };
+  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id), twistPlan, avoidOpeners: p.avoidOpeners ?? [] };
   const fail = (details) => { const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502); err.details = details; err.calls = calls; return err; };
-  const PATCH_HOW = `Answer with ${PATCH_TOOL}: ONLY what must change. For each scene that changes: its number and the new value of each field that changes. Every other field stays an empty string (presentIds: an empty list), which means "keep it". title: an empty string unless the title itself must change. Change nothing that was not asked for.`;
+  const PATCH_HOW = `Answer with ${PATCH_TOOL}: ONLY what must change. For each scene that changes: its number and the new value of each field that changes. Every other field stays an empty string (presentIds: an empty list), which means "keep it". title: an empty string unless the title itself must change. Change nothing that was not asked for. If a scene goes to another speaker, give that scene a NEW line this character would say: a speaker change without a new line is ignored.`;
   const patchPrompt = (data, lead, problems) => `${user}\n\nYOUR SCRIPT SO FAR:\n${JSON.stringify(data)}\n\n${lead}\n- ${problems.join("\n- ")}\n\n${PATCH_HOW}`;
 
   const first = await ask(WRITE_TOOL, user, "planner");

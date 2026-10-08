@@ -25,6 +25,7 @@ export const REVIEW_RULES = Object.freeze({
   cast: "every cause is someone in the cast; nobody outside it is blamed or spoken to",
   powers: "nobody really does what their role can't (a player's ban never works; an admin's does)",
   natural: "the lines must sound spoken and vary in length; no speaker has three lines in a row",
+  voice: "every line must be something THIS speaker would say here, with I, my, you and your pointing at the right one",
   inPicture: "everyone a line talks to, points at or describes must be in that scene's picture",
   textMessage: "nothing in the story may need reading on screen, and nobody reads anything aloud",
   title: "the title must not give away the twist",

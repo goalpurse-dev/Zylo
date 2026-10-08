@@ -8,6 +8,8 @@
 // Round 3 (decision 52): the same five again, now with the twist plan as its own step. They are written
 // as ONE user's five stories in a row: each is told the twist pattern of the one before, as the live
 // page does, so no pattern comes twice in a row.
+// Round 5 (decision 60): best of three plans on the plan model, with a judge. Each story is also told how
+// the last lines of the ones before it start, so the five end on five different openings.
 // Paid calls are switched on for the run and off again whatever happens.
 //   BLOCKY_ALLOW_PAID=1 node scripts/blocky/sampleStories.mjs            (round 1)
 //   BLOCKY_ALLOW_PAID=1 node scripts/blocky/sampleStories.mjs --round=2
@@ -37,7 +39,7 @@ const AGAIN = (process.argv.find((a) => a.startsWith("--again=")) ?? "").slice(8
 const IDEAS = ROUND === 1 ? ROUND_1 : ROUND_1.slice(0, 5).filter((i) => !AGAIN.length || AGAIN.includes(i.key.split("-")[0])).map((i) => ({ ...i, key: `r${ROUND}${AGAIN.length ? "b" : ""}-${i.key.replace(/-\d+$/, "")}-30`, lengthSec: 30 }));
 const STAGE = ROUND === 1 ? "stories" : `twists${ROUND}`;
 // worst case: a draft, two rewrites, a repair or two and three checks (the twist round's prompts are longer)
-const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : 0.15;
+const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : ROUND < 5 ? 0.15 : 0.3;
 const out = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, "utf8")) : { stories: {} };
 for (const i of AGAIN.length ? IDEAS : []) if (out.stories[i.key.replace("b-", "-")]?.state !== "failed") throw new Error(`${i.key}: its first try did not fail, so it is not written again`);
 // --limit=1: only the next story of the round (the first one is looked at before the other four are paid for).
@@ -48,6 +50,8 @@ const db = admin();
 const names = Object.fromEntries((await db.from("blocky_characters").select("id, name")).data.map((c) => [c.id, c.name]));
 const budget = openBlockyBudget(STAGE);
 const set = async (on) => { const { error } = await db.from("blocky_settings").update({ paid_calls: on }).eq("id", true); if (error) throw new Error(error.message); };
+// The last lines of this round's stories so far (the next one starts differently).
+const roundStories = () => ROUND_1.slice(0, 5).map((i) => { const name = i.key.split("-")[0]; return out.stories[`r${ROUND}-${name}-30`]?.lines ? out.stories[`r${ROUND}-${name}-30`] : out.stories[`r${ROUND}b-${name}-30`]; }).filter((s) => s?.lines?.length);
 await set(true);
 // The round is one user's stories in a row, also when it is run in two goes.
 let lastPattern = ROUND_1.slice(0, 5).map((i) => { const name = i.key.split("-")[0]; return out.stories[`r${ROUND}-${name}-30`]?.patternId ?? out.stories[`r${ROUND}b-${name}-30`]?.patternId; }).filter(Boolean).at(-1) ?? null;
@@ -57,7 +61,7 @@ try {
     out.stories[idea.key] = { ...idea, state: "sent", at: new Date().toISOString() };
     writeJson(`${OUT}/results.json`, out);
     const t0 = Date.now();
-    const r = await worker({ action: "planner_test", model: BLOCKY_MODELS.planner, input: { source: "prompt", castIds: idea.castIds, prompt: idea.prompt, quality: "v2", lengthSec: idea.lengthSec, aspect: "9:16" }, ...(lastPattern ? { avoidPatterns: [lastPattern] } : {}) });
+    const r = await worker({ action: "planner_test", model: BLOCKY_MODELS.planner, input: { source: "prompt", castIds: idea.castIds, prompt: idea.prompt, quality: "v2", lengthSec: idea.lengthSec, aspect: "9:16" }, ...(lastPattern ? { avoidPatterns: [lastPattern] } : {}), ...(ROUND >= 5 ? { avoidOpeners: roundStories().map((s) => s.lines.at(-1).line).slice(-5) } : {}) });
     const row = out.stories[idea.key];
     row.seconds = Math.round((Date.now() - t0) / 1000);
     row.avoided = lastPattern;
@@ -66,6 +70,7 @@ try {
       const p = r.plan;
       lastPattern = p.patternId ?? lastPattern;
       Object.assign(row, {
+        stakes: p.stakes ?? null, mechanic: p.mechanic ?? null, judged: p.judged ?? null,
         patternId: p.patternId ?? null, seenAs: p.seenAs ?? null, clue: p.clue ?? null, clueScene: p.clueScene ?? null, payoff: p.payoff ?? null, finalLine: p.finalLine ?? null, candidates: p.candidates ?? null,
         state: "written", cost: Number(r.costUsd ?? 0), calls: r.attempts, title: p.title, premise: p.premise, emotion: p.emotion, assumed: p.assumed ?? null, twists: p.twists ?? null, twist: p.twist, forcedBy: p.forcedBy ?? null, consequence: p.consequence ?? null, winner: names[p.winnerId] ?? p.winnerId ?? null, revealScene: p.revealScene, lengthSec_made: p.lengthSec,
         roles: Object.fromEntries(Object.entries(p.roles ?? {}).map(([id, role]) => [names[id] ?? id, role])),

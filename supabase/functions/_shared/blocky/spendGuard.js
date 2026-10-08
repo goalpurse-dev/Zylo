@@ -18,7 +18,7 @@
 /** What one picture and one second of each clip tier cost us (USD, measured; rounded up for pictures). */
 export const COST_USD = Object.freeze({ image: 0.04, clipPerSec: Object.freeze({ v2: 0.0504, v3: 0.0817, v4: 0.15 }) });
 /** One story script with its edit pass, a series plan, an edit instruction clean-up, an upload text: rounded up. */
-export const WRITER_USD = 0.05;
+export const WRITER_USD = 0.15;   // three plans on the plan model, the judge, the script, the editor, a rewrite
 export const SMALL_USD = 0.01;
 
 /** What a step's items are expected to cost us, before it is charged (steps.js#planStep items). */

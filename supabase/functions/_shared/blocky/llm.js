@@ -7,6 +7,8 @@
 // USD per 1M tokens (confirmed Sep 2026; same figures the Long Form code uses).
 export const LLM_PRICES = Object.freeze({
   "claude-sonnet-5": { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 },
+  // The twist plan only (models.js#twistPlan). The figures the Long Form code records for this model.
+  "claude-opus-5-5": { input: 4.0, output: 20.0, cacheRead: 0.4, cacheWrite: 5.0 },
   "claude-haiku-4-5-20251001": { input: 1.0, output: 5.0, cacheRead: 0.1, cacheWrite: 1.25 },
   "gpt-5.6-sol": { input: 5.0, output: 30.0, cacheRead: 0.5, cacheWrite: 0 },
   "gpt-5-mini": { input: 0.25, output: 2.0, cacheRead: 0.025, cacheWrite: 0 },

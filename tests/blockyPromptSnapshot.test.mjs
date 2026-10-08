@@ -18,7 +18,7 @@ import { ROSTER, avatarPrompt } from "../scripts/blocky/roster.mjs";
 import { buildScenePrompt, buildPictureRequest, buildEditPrompt, scenePromptLengths, withRedrawHint } from "../supabase/functions/_shared/blocky/pictures.js";
 import { buildClipPrompt, buildClipRequest, fallbackClipTask } from "../supabase/functions/_shared/blocky/clips.js";
 import { buildPlannerPrompt } from "../supabase/functions/_shared/blocky/planner.js";
-import { buildTwistPlanPrompt } from "../supabase/functions/_shared/blocky/twists.js";
+import { buildJudgePrompt, buildTwistPlanPrompt } from "../supabase/functions/_shared/blocky/twists.js";
 import { buildSeriesPrompt } from "../supabase/functions/_shared/blocky/series.js";
 import { buildReviewPrompt } from "../supabase/functions/_shared/blocky/scriptReview.js";
 import { PACKAGE_SYSTEM, cleanPackage, packagePrompt, packageSchema } from "../supabase/functions/_shared/blocky/uploadPackage.js";
@@ -65,7 +65,12 @@ function build() {
     if (name === "idea") s["writer/system"] = p.system;
     s[`writer/${name}`] = p.user;
     if (planned) {
-      const t = buildTwistPlanPrompt({ ...rest, cast: cast(castIds), sceneCount: p.sceneCount, ...(name === "prompt" ? { avoidPatterns: ["backfire"] } : {}) });
+      const t = buildTwistPlanPrompt({ ...rest, cast: cast(castIds), sceneCount: p.sceneCount, ...(name === "prompt" ? { avoidPatterns: ["backfire"], avoidOpeners: ["He always comes home full."] } : {}) });
+      if (name === "idea") {
+        const j = buildJudgePrompt({ ...rest, cast: cast(castIds), sceneCount: p.sceneCount, plans: [I.twistPlan, { ...I.twistPlan, patternId: "backfire", finalLine: "Thanks for the hat." }, { ...I.twistPlan, patternId: "test" }] });
+        s["plan judge/system"] = j.system;
+        s["plan judge/prompt"] = j.user;
+      }
       if (name === "idea") s["twist plan/system"] = t.system;
       s[`twist plan/${name}`] = t.user;
     }
@@ -105,7 +110,7 @@ const recorded = JSON.parse(fs.readFileSync(FILE, "utf8"));
 
 test("the snapshot covers every Blocky prompt, and nothing is built that isn't recorded", () => {
   assert.deepEqual(Object.keys(now).sort(), Object.keys(recorded).sort());
-  assert.equal(Object.keys(recorded).length, 81);
+  assert.equal(Object.keys(recorded).length, 83);
 });
 
 for (const key of Object.keys(recorded)) {
