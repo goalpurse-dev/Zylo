@@ -15,7 +15,7 @@
 // Plain JS so node tests and Deno share it.
 import { transcriptsForClips } from "./captionWords.js";
 import { spokenProblem } from "./spoken.js";
-import { CLIP_FRAME_PURPOSE, checkPicture } from "./pictureCheck.js";
+import { CLIP_FRAME_PURPOSE, DRAWN_TEXT_PROBLEM, checkPicture } from "./pictureCheck.js";
 import { REMAKE_NOTE } from "./engine.js";
 
 /**
@@ -56,12 +56,16 @@ export async function checkClipWords({ admin, apiKey, paidOff = false, userId, s
 }
 
 /** Looks at a clip's last frame: fruit heads, no humans, nobody new, no writing. Framing is not judged (the camera has moved). */
-export async function checkClipFrame({ admin, apiKey, frameUrl, expected, ids, fetchLlm }) {
-  const v = await checkPicture({ admin, apiKey, imageUrl: frameUrl, expected, purpose: CLIP_FRAME_PURPOSE, ids, ...(fetchLlm ? { fetchLlm } : {}) });
-  return { ok: v.ok, problems: v.problems.map((p) => `last frame: ${p}`) };
+// speechUrl: two frames from the middle of the line, looked at for subtitles the video model drew itself.
+export async function checkClipFrame({ admin, apiKey, frameUrl, speechUrl = null, expected, ids, fetchLlm }) {
+  const v = await checkPicture({ admin, apiKey, imageUrl: frameUrl, expected, purpose: CLIP_FRAME_PURPOSE, speechFramesUrl: speechUrl, ids, ...(fetchLlm ? { fetchLlm } : {}) });
+  // Words the model drew itself are seen in the middle of the clip, not in its last frame.
+  return { ok: v.ok, problems: v.problems.map((p) => (p.startsWith(DRAWN_TEXT_PROBLEM) ? p : `last frame: ${p}`)) };
 }
 
 export const framePath = (userId, storyId, jobId, attempt) => `fruit/${userId}/${storyId}/${jobId}-a${attempt}-last.jpg`;
+/** Two frames from the middle of the line, side by side: where subtitles drawn by the video model show. */
+export const speechFramesPath = (userId, storyId, jobId, attempt) => `fruit/${userId}/${storyId}/${jobId}-a${attempt}-speech.jpg`;
 
 /**
  * What the frame machine runs (node 22 + ffmpeg, the final-video image): get
@@ -91,6 +95,18 @@ export async function frameMain() {
       if (!put.ok) throw new Error(`upload ${put.status}`);
     } else if (job.saveTo) {
       fs.copyFileSync(out, job.saveTo);   // local test
+    }
+    // Two frames from the middle of the line (30% and 60% of the clip), side by side: subtitles the video
+    // model drew itself are on screen there and gone by the last frame.
+    const length = Number(job.durationSec) || 0;
+    if (length > 0 && (job.speechUploadUrl || job.speechSaveTo)) {
+      const speech = path.join(dir, "speech.jpg");
+      execFileSync(process.env.FFMPEG || "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(length * 0.3), "-i", src, "-ss", String(length * 0.6), "-i", src,
+        "-filter_complex", "[0:v]scale=-2:720[a];[1:v]scale=-2:720[b];[a][b]hstack=inputs=2", "-frames:v", "1", "-q:v", "4", speech]);
+      if (job.speechUploadUrl) {
+        const put = await fetch(job.speechUploadUrl, { method: "PUT", headers: { "Content-Type": "image/jpeg", "x-upsert": "true" }, body: fs.readFileSync(speech), signal: AbortSignal.timeout(60000) });
+        if (!put.ok) throw new Error(`speech frames upload ${put.status}`);
+      } else fs.copyFileSync(speech, job.speechSaveTo);   // local test
     }
     ok = true;
   } catch (e) {

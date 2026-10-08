@@ -93,10 +93,11 @@ export function createMemoryDb({ balance = 1000 } = {}) {
       setScene(j, { image_status: "queued", ...(request ? { image_prompt: request.positivePrompt } : {}) });
       return true;
     },
-    async remakeClip(jobId, note) {
+    // request: only when the clip moves to the next clip model (drawn subtitles)
+    async remakeClip(jobId, note, request = null) {
       const j = db.jobs.get(jobId);
       if (!j || j.status !== "provider_done" || j.kind !== "clip") return false;
-      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note });
+      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note, ...(request ? { request } : {}) });
       setScene(j, { clip_status: "queued" });
       return true;
     },
