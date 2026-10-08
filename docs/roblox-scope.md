@@ -585,6 +585,31 @@ Decisions of 2026-10-08 (after the first real story):
     ARE. One test picture each of six avatars: no tongue in any, 3 of 6 pass the check. The
     library is drawn with wording b. Also seen once on wording a: a square torso shape turned
     into a tilted square with a hole (it reads as a real logo), which the check did not flag.
+92. THE LIBRARY OF 52 IS LIVE (owner, 2026-10-08: "as they are now, no redos"), drawn on Lite
+    with wording b (16 of the picked pictures are from the Pro redo); the three temporary
+    avatars are replaced. The wording, the 2× prices and the $1 = €0.894 rate are confirmed.
+93. SHOT VARIETY (owner, 2026-10-08). Shots: wide, chest-up, medium close-up, close-up,
+    reaction, over-the-shoulder (`shots.js`, the one place for each shot's picture wording,
+    framing, camera and check). The writer picks; `directShots` makes sure of the mix in code:
+    scene 1 wide (the only wide one), never the same shot three times in a row, three
+    different shots in a story of five scenes or more. In every shot the speaker faces the
+    camera and the whole head with its hat is in frame. A reaction shot has only the speaker
+    in frame. The picture check judges a scene against its own shot and fails a cut-off head.
+    One-story test ($0.50): the mix came out wide → chest-up → close-up → reaction → close-up
+    → chest-up; 2 of 6 first pictures passed, 4 were drawn again once with the check's fix.
+94. UI (owner, 2026-10-08): the final page shows the whole video with Download, Captions and
+    Cover beside it and a compact post text with copy buttons (on a phone: video, actions,
+    post text); a tap on a scene picture (the corner button on a clip) opens it big, with
+    arrows, arrow keys and a swipe between scenes; "Make scene pictures" shows one label and
+    its cost, with the sum in the small line under it.
+95. SAFETY (owner, 2026-10-08; `spendWatch.js`). No global cap on normal use. A cap per user:
+    $20 of our real cost a day, refused before any charge. The alarm: spend more than $10
+    ahead of what users were charged in 24 hours pauses paid calls, writes an alert and emails
+    the admin; a job sent more than 6 times is reported. `paid.mjs status` shows it and
+    `paid.mjs on` clears it. The /admin/ops card is NOT built (shared code: waits for a go).
+    Seven failure drills, simulated (`tests/blockyDrills.test.mjs`), each end in a finished
+    step or a full refund. `scripts/blocky/privacyCheck.mjs`: 26 of 26. The launch checklist
+    and the owner's final test are in `docs/roblox-launch-checklist.md`.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
