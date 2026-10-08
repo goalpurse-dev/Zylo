@@ -502,6 +502,47 @@ Decisions of 2026-10-08 (after the first real story):
     `_shared/blocky/models.js`, its real costs in `spendGuard.js`, its credit prices in its
     own `tool_prices` rows. Proposed single source: a Blocky-only `_shared/blocky/pricing.js`
     that those read, with a test that Fruit never imports it.
+73. THE NEW CLIP LINEUP IS IN (owner's go, 2026-10-08). `_shared/blocky/pricing.js` is the one
+    place for Blocky's models, fallback chains, our cost per second and the credit prices;
+    `models.js`, the spend guard and the page read it; `tests/blockyPricing.test.mjs` compares
+    it with the price rows and proves nothing outside Blocky imports it; the live smoke check
+    compares the real rows. Chains: V2 Grok 1.5 Lite (480p) → P-Video-2; V3 Veo 3.1 Lite →
+    P-Video-2; V4 Veo 3.1 Fast → Veo 3.1 Lite → P-Video-2. A failed or timed-out clip and a
+    clip with drawn subtitles go down the same chain. No upscaler: the final render brings
+    every clip to 720 × 1280. Per-model clip wording (`clips.js`): Grok a slight push-in that
+    keeps everyone in frame; Veo 3.1 Lite a locked frame, faces as in the first frame, a flat
+    mouth, and its prompt sent as written. V3's clips now come in 4, 6 or 8 seconds like V4's.
+74. THE SCRIPT SHARE SQL IS APPLIED (owner's go, 2026-10-08). The owner confirmed both
+    choices: the user's own script pays no share; after a picture step that failed completely
+    (and was refunded whole) the share is not charged again on the single-picture retries.
+75. IDEAS TAB (owner, 2026-10-08): "Give me ideas" is a full main button; the Ideas tab has
+    no "Next" bar; a picked idea offers "Write 3 versions, free" at once, with the length and
+    quality it will use and a link to change them. "Describe it" still goes through the
+    settings step.
+76. AVATAR LIBRARY: KLEIN FAILED THE TEST, SO PRO (owner's rule: "if Klein matches Pro, use
+    it; if not, use Pro"). FLUX.2 [klein] 9B (`runware:400@2`, $0.00078 a picture), four
+    pictures each of Noob, Vex and Lux with the reference prompt: right colours, cube heads,
+    front view and flat faces, but every body is a brick-toy figure (clip hands 9 of 10, a
+    neck 10 of 10, a hip piece or feet 10 of 10), and the parts carry into a scene made from
+    them. The reference prompt has the four fixes (cube head with flat faces, front view, a
+    flat mouth with no tongue, blocky hair and accessories). `avatarCheck.js` scores a
+    reference picture and picks the best of several. The three Pro pictures in the library
+    were made before the fixes.
+77. GROK AT NATIVE 720p (one test clip): 704 × 1280, $0.19 for 6 s ($0.0317 a second against
+    $0.0217 at 480p), 25 s to make, clearly crisper edges. V2 stays at 480p until the owner
+    chooses. The camera fix works. The pale band in the mouth is NOT fixed by the clip prompt:
+    the scene picture already has an open mouth with a tongue; it is fixed in the pictures.
+    The Veo 3.1 Lite clip after its prompt pass did not fit under the day's $3 cap.
+78. THE FINAL RENDER FILLS THE FRAME (written and tested, NOT on Fly yet: the render image is
+    shared with AI Fruit Story's render, so its deploy waits for the owner's go). Clips that
+    take their size from the picture are a little narrower than 9:16; fitting them inside
+    720 × 1280 left thin black bars at the sides. Filling crops about 3% of the height.
+79. PRICE OPTIONS, NOT CHANGED (`scripts/blocky/priceOptions.mjs`): A keeps a healthy margin
+    (V2 4, V3 8, V4 16 credits a second), B gives more videos (3, 6, 15). Prices change only
+    when the owner picks.
+80. 52 AVATARS PROPOSED, NOT APPROVED (`scripts/blocky/rosterProposal.mjs`): the 24 in the
+    roster and 28 new, each with its own name, role, personality line, voice, main colour and
+    signature accessory. No picture is made from the list until the owner approves it.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

@@ -34,7 +34,9 @@ test("segment args: trimmed, 720p, 30 fps, captions from an ASS file with the bu
   const a = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0.5, end: 3.25, aspect: "9:16", assFile: "/w/cap-0.ass", fontsDir: "/fonts" });
   const vf = a[a.indexOf("-vf") + 1];
   assert.deepEqual(a.slice(a.indexOf("-ss"), a.indexOf("-ss") + 4), ["-ss", "0.500", "-to", "3.250"]);
-  assert.match(vf, /^scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280/);
+  // Fills the frame and crops what sticks out (no black bars beside a clip that is a little narrower than 9:16).
+  assert.match(vf, /^scale=720:1280:force_original_aspect_ratio=increase:flags=lanczos,crop=720:1280,setsar=1/);
+  assert.doesNotMatch(vf, /pad=/);
   assert.ok(vf.endsWith("fps=30,ass='/w/cap-0.ass':fontsdir='/fonts',format=yuv420p"), vf);
   assert.ok(a.includes("0:a:0"));
   const win = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0, end: 1, aspect: "9:16", assFile: "C:\\t\\cap.ass" });

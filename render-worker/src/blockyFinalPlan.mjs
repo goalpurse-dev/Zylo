@@ -81,7 +81,7 @@ export function trimWindow(silences, durationSec, { lastWordEnd = null, voiceEnd
   return { start: r(start), end: r(end), trimmedSec: r(durationSec - (end - start)), speech: { start: r(soundStart), end: r(speechEnd) }, holdSec: r(holdSec), ...(byWords ? { by: "words" } : {}) };
 }
 
-/** Output frame per aspect (the clips' own 720p size). */
+/** Output frame per aspect: every clip is brought to it, whatever size its model made (Grok at 480p: 400×736; P-Video-2: 704×1280). */
 export const FRAME = { "9:16": [720, 1280], "16:9": [1280, 720] };
 
 /**
@@ -95,8 +95,11 @@ export function segmentArgs({ input, output, start, end, aspect, assFile = null,
   // holdSec: freeze the last frame that long after the clip ends (the closing beat), with silence under it.
   const hold = holdSec > 0.02 ? holdSec.toFixed(3) : null;
   const vf = [
-    `scale=${w}:${h}:force_original_aspect_ratio=decrease`,
-    `pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:color=black`,
+    // Fill the frame and crop the little that sticks out. The clip models that take their size from the
+    // picture come back slightly narrower than 9:16; fitting them inside the frame left thin black bars at
+    // the sides (12 px for Grok's 400×736). Filling loses about 3% of the height instead, top and bottom.
+    `scale=${w}:${h}:force_original_aspect_ratio=increase:flags=lanczos`,
+    `crop=${w}:${h}`,
     "setsar=1",
     `fps=${FPS}`,
     ...(hold ? [`tpad=stop_mode=clone:stop_duration=${hold}`] : []),
