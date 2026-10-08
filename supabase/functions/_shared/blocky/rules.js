@@ -218,7 +218,7 @@ premise: Nothing said may contradict what the pictures show. The characters are 
 
 retell: A viewer must be able to retell the story in one sentence after watching once. Try it: write the whole story as one plain sentence, using only what the lines and pictures give (who wanted what, and how it turned). It fails if you can't, if the sentence needs a fact the video never gives, or if it needs "and also" for a second plot. When it fails, the problem says what a viewer would be left asking.
 
-For each rule answer pass true or false. When false: scene is the scene number (0 for the title), problem says what is wrong in one plain sentence, and fix says what to change in one plain sentence. When true: scene 0 and empty strings.
+For each rule answer pass true or false. When false: scene is the scene number (0 for the title), problem says what is wrong in one plain sentence, and fix says what to change in one plain sentence (25 words at most each). When true: scene 0 and empty strings.
 If the notes give no clue and no payoff (the user's own script, or an episode of a series), pass clue and payoff.
 A fix keeps the plan: the same twist, the same clue, the same payoff, the same winner. Never a fix that needs more scenes than the script has. A fix never asks a character to admit, confess or explain: it names what must be seen or said instead, and in which scene.
 Return only the JSON object.`;

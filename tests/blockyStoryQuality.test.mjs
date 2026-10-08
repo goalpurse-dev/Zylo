@@ -27,7 +27,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ACTION_MAX_WORDS, MAX_REPAIRS, MAX_REWRITES, PATCH_TOOL, WRITE_TOOL, WRITTEN_WORD, applyPatch, buildPlannerPrompt, patchSchema, plannerSchema, runPlanner, validatePlan } from "../supabase/functions/_shared/blocky/planner.js";
-import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, buildTwistPlanPrompt, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
+import { FINAL_LINE_MAX_WORDS, PLAN_SYSTEM, TWIST_PATTERNS, TWIST_PATTERN_IDS, MECHANICS, MECHANIC_IDS, buildTwistPlanPrompt, revealRange, twistPlanBlock, twistPlanSchema, validateTwistPlan } from "../supabase/functions/_shared/blocky/twists.js";
 import { REVIEW_RULES, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/blocky/scriptReview.js";
 import { REVIEW_SYSTEM, STORY_EMOTIONS, WRITTEN_WORDS, cleanUpload } from "../supabase/functions/_shared/blocky/rules.js";
 import { callLlm } from "../supabase/functions/_shared/blocky/llm.js";
@@ -53,6 +53,7 @@ const goodPlan = (over = {}) => ({
   ],
   patternId: "quiet_power",
   twist: "Noob owns the game and has been letting the fake commands work.",
+  mechanic: "owner_power",
   clue: "While saying sorry, Noob turns a small gold key over in one hand.",
   clueScene: 2,
   payoff: "Noob holds the gold key up and Vex, floating helplessly, drops.",
@@ -129,7 +130,7 @@ test("the twist plan: its schema asks for the thinking before the choice, and a 
   const schema = twistPlanSchema(["vex", "noob"]);
   const order = Object.keys(schema.properties);
   const before = (a, b) => assert.ok(order.indexOf(a) < order.indexOf(b), `${a} before ${b}`);
-  before("premise", "seenAs"); before("assumed", "candidates"); before("candidates", "patternId"); before("twist", "clue"); before("clue", "payoff"); before("payoff", "finalLine"); before("finalLine", "title");
+  before("premise", "seenAs"); before("assumed", "candidates"); before("candidates", "patternId"); before("twist", "mechanic"); before("mechanic", "clue"); before("clue", "payoff"); before("payoff", "finalLine"); before("finalLine", "title");
   assert.deepEqual(schema.properties.patternId.enum, [...TWIST_PATTERN_IDS]);
   assert.deepEqual(schema.properties.emotion.enum, [...STORY_EMOTIONS]);
   // No cast ids in a schema: it is part of the cached prefix, which is then the same for every story.
@@ -167,11 +168,21 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   has({ payoff: "Noob explains that he owns the game." }, /is someone owning up or explaining/);
   has({ revealScene: 4 }, /revealScene: scene 3 \(the second half, and never the last scene: that one is the winner's line\)/);
   has({ revealScene: 2 }, /revealScene: scene 3/);
+  // The payoff runs on something every player knows, or on something the viewer was SHOWN early; and it is a
+  // character doing it, never an object deciding (round three's first story: a signpost that banned the admin).
+  assert.deepEqual(MECHANIC_IDS, ["owner_power", "admin_power", "pet_obeys_owner", "key_opens", "hazard_resets", "trade_is_final", "holder_has_it", "shown_in_scene_1", "shown_in_scene_2"]);
+  for (const m of MECHANICS.slice(0, 7)) assert.ok(PLAN_SYSTEM.includes(`    ${m.id}: ${m.how}`), m.id);
+  assert.match(PLAN_SYSTEM, /or shown_in_scene_1 \/ shown_in_scene_2: something else, which the viewer SEES working in that scene before it matters\. Then that sighting IS your clue, and clueScene is that scene\. There is no third kind\./);
+  has({ mechanic: "magic" }, /^mechanic: one of owner_power, admin_power/);
+  has({ mechanic: "shown_in_scene_1" }, /mechanic: shown_in_scene_1 means the viewer sees it working in scene 1, and that sighting is the clue: clueScene must be 1/);
+  assert.deepEqual(planErrors({ mechanic: "shown_in_scene_2" }), []);
+  has({ payoff: "The signpost beside Vex flashes red and locks a collar around his neck." }, /payoff: start the sentence with the name of the character who DOES it \(Vex or Noob\); an object never acts on its own/);
+  has({ payoff: "Noob walks Vex over to the fountain and holds the key up." }, /clue and payoff are seen in a chest-up picture: no "walks"/);
   // Nothing to read: no number, no leaderboard, no sign in what is planted or paid off.
-  has({ payoff: "The leaderboard shows Noob in first place." }, /payoff: it depends on "leaderboard", which a viewer would have to read; show an object, a light, a colour or a place instead/);
-  has({ payoff: "The number over Vex's head reaches zero." }, /payoff: it depends on "number"/);
+  has({ payoff: "Noob points at the leaderboard, which shows Noob in first place." }, /payoff: it depends on "leaderboard", which a viewer would have to read; show an object, a light, a colour or a place instead/);
+  has({ payoff: "Vex looks up as the number over his head reaches zero." }, /payoff: it depends on "number"/);
   has({ clue: "Noob is holding a sign with the owner's name." }, /clue: it says "sign"; nothing is written or read on screen/);
-  assert.deepEqual(planErrors({ seenAs: "the countdown is a ring of light over Vex's head that turns from green to red", payoff: "The ring of light over Vex's head turns red and Vex drops." }), []);
+  assert.deepEqual(planErrors({ seenAs: "the countdown is a ring of light over Vex's head that turns from green to red", payoff: "Noob holds the gold key up, the ring of light over Vex's head turns red and Vex drops." }), []);
   // The final line: the winner's, eight words or fewer.
   assert.equal(FINAL_LINE_MAX_WORDS, 8);
   has({ finalLine: "Those were cute commands, do you want to see real ones?" }, /finalLine: the winner's last line, 8 words or fewer \(got 11\)/);
@@ -184,8 +195,8 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   has({ title: "A Title That Just Goes On And On And On" }, /title must be 2 to 6 words/);
   has({ title: "Just Like Roblox" }, /title/);
   // What a fair twist is: nothing new at the reveal, and no object that suddenly decides.
-  assert.match(PLAN_SYSTEM, /No OBJECT decides anything: a hammer, a board, a door, a vault or a crown that suddenly chooses, bans, judges or opens "for the right one" IS a new rule/);
-  assert.match(PLAN_SYSTEM, /The twist is something a CHARACTER did, owns, knew or is./);
+  assert.match(PLAN_SYSTEM, /No OBJECT decides anything: a hammer, a board, a post, a door, a vault or a crown that suddenly chooses, bans, judges, flashes or opens "for the right one" IS a new rule/);
+  assert.match(PLAN_SYSTEM, /The twist is something a CHARACTER did, owns, knew or is, and the payoff is that character DOING it: the payoff sentence starts with their name\./);
 });
 
 test("the writer is handed the locked plan, and a checklist of what code will refuse", () => {
@@ -196,6 +207,7 @@ test("the writer is handed the locked plan, and a checklist of what code will re
   assert.match(block, /^THE PLAN \(locked: deliver it, do not change it\)\npremise: What happens if a player fakes admin powers/);
   assert.match(block, /roles: vex is a player faking admin powers; noob is the quiet owner of the game/);
   assert.match(block, /the twist \(The quiet one has the real power\): Noob owns the game/);
+  assert.match(block, /the twist \(The quiet one has the real power\): Noob owns the game and has been letting the fake commands work\.\nit works because: the owner's command, key or word works on anyone and anything, and outranks every admin\n/);
   assert.match(block, /THE CLUE, planted in scene 2: While saying sorry, Noob turns a small gold key over in one hand\.\nTHE PAYOFF, in scene 3: Noob holds the gold key up and Vex, floating helplessly, drops\./);
   assert.match(block, /the winner: noob \(Noob\), who speaks the last line\nthe final line: Cute commands\. Want to see real ones\?$/);
   assert.doesNotMatch(block, /on screen instead of anything to read/, "only when the idea had something to read");
@@ -204,6 +216,7 @@ test("the writer is handed the locked plan, and a checklist of what code will re
   const list = p.user.slice(p.user.indexOf("BEFORE YOU ANSWER"));
   assert.match(list, /Exactly 4 scenes\. Scene 2 plants the clue\. Scene 3's action shows the payoff and its line names what just happened\. Scene 4 is noob saying the final line \(8 words or fewer\)\./);
   assert.match(list, /No speaker has more than two lines in a row\./);
+  assert.match(list, /No action shows or mentions anyone who is not in that scene's presentIds, and nobody outside the cast\./);
   assert.match(list, /At least one line of 5 words or fewer and at least one of 8 or more\. None over 9\./);
   assert.match(list, /Every action is 16 words or fewer and upper body only[^]*Never stepping, walking, backing away/);
   assert.match(list, /No line and no action uses any of: type, typed, write, wrote, written, sign, read, reads, message, chat, text, screen\./);

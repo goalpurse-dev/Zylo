@@ -27,8 +27,9 @@ export const BLOCKY_TOTAL_USD = 10.0;
 // captions: one 4 s Wan clip with the negative prompt against drawn subtitles (approved 2026-10-08, about $0.20).
 // stories: seven sample scripts, text only, for the story-quality review (approved 2026-10-08; about $0.05 each).
 // twists2: the same five ideas again at 30 seconds after the twist round (approved 2026-10-08; at most $0.20 each).
-// twists3: the same five again with the twist plan as its own step (approved 2026-10-08; target under $0.08 each, at most $0.15).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75 });
+// twists3: shake-down of the twist plan step on the first idea (two tries; the first ended without a story).
+// twists4: the same five ideas with the twist plan as its own step, final code (approved 2026-10-08; target under $0.08 each, at most $0.15).
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75, twists4: 0.75 });
 
 export class PaidCallBlocked extends Error {}
 

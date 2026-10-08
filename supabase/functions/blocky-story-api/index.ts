@@ -317,7 +317,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         // review: what the script editor found and whether the script was rewritten
         // premise, twist, patternId, clue, payoff...: the twist plan behind the story (twists.js). The upload text must
         // never give the twist away, and patternId is what the user's next story avoids.
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, patternId: plan.patternId ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null },
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, premise: plan.premise ?? null, emotion: plan.emotion ?? null, twist: plan.twist ?? null, revealScene: plan.revealScene ?? null, assumed: plan.assumed ?? null, patternId: plan.patternId ?? null, mechanic: plan.mechanic ?? null, clue: plan.clue ?? null, clueScene: plan.clueScene ?? null, payoff: plan.payoff ?? null, consequence: plan.consequence ?? null, winnerId: plan.winnerId ?? null, finalLine: plan.finalLine ?? null, seenAs: plan.seenAs ?? null },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({

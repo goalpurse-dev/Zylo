@@ -156,6 +156,7 @@ export function buildPlannerPrompt(p) {
       "BEFORE YOU ANSWER, CHECK EACH OF THESE (code refuses a draft that breaks one):",
       `- Exactly ${count} scenes.${plan ? ` Scene ${plan.clueScene} plants the clue. Scene ${plan.revealScene}'s action shows the payoff and its line names what just happened. Scene ${count} is ${plan.winnerId} saying the final line (${FINAL_LINE_MAX_WORDS} words or fewer).` : ""}`,
       "- No speaker has more than two lines in a row.",
+      "- No action shows or mentions anyone who is not in that scene's presentIds, and nobody outside the cast.",
       `- At least one line of 5 words or fewer and at least one of ${Math.max(7, words - 1)} or more. None over ${words}.`,
       "- Every action is 16 words or fewer and upper body only: a look, an arm, a hand, something held, worn or pointed at. Never stepping, walking, backing away, turning to go, jumping, kneeling, entering or leaving.",
       `- No line and no action uses any of: ${WRITTEN_WORDS.join(", ")}.`,
@@ -425,7 +426,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (last && words(last.line) > FINAL_LINE_MAX_WORDS) errors.push(`scene ${normalized.length}: the last line is ${words(last.line)} words; it is the punchline: ${FINAL_LINE_MAX_WORDS} words or fewer (the plan's final line: ${twistPlan.finalLine})`);
   }
   const plan = {
-    ...(twistPlan ? { premise: twistPlan.premise, emotion: twistPlan.emotion, assumed: twistPlan.assumed, patternId: twistPlan.patternId, twist: twistPlan.twist, clue: twistPlan.clue, clueScene: twistPlan.clueScene, payoff: twistPlan.payoff, revealScene: twistPlan.revealScene, consequence: twistPlan.consequence, winnerId: twistPlan.winnerId, finalLine: twistPlan.finalLine, seenAs: twistPlan.seenAs, candidates: twistPlan.candidates } : {}),
+    ...(twistPlan ? { premise: twistPlan.premise, emotion: twistPlan.emotion, assumed: twistPlan.assumed, patternId: twistPlan.patternId, twist: twistPlan.twist, mechanic: twistPlan.mechanic, clue: twistPlan.clue, clueScene: twistPlan.clueScene, payoff: twistPlan.payoff, revealScene: twistPlan.revealScene, consequence: twistPlan.consequence, winnerId: twistPlan.winnerId, finalLine: twistPlan.finalLine, seenAs: twistPlan.seenAs, candidates: twistPlan.candidates } : {}),
     roles: twistPlan ? { ...twistPlan.roles } : roles,
     outfits,
     title,
