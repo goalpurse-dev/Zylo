@@ -462,9 +462,10 @@ async function planTwist(p, sceneCount, calls) {
     const second = await ask(`${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(first.data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${r.errors.join("\n- ")}`, `${TWIST_PLAN_PURPOSE}_repair`);
     calls.push(second);
     r = validateTwistPlan(second.data, ctx);
-    if (r.errors.length) {
+    // Only a plan the writer can't work from ends the story; a lesser fault has had its one repair.
+    if (r.fatal.length) {
       const err = new BlockyError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502);
-      err.details = r.errors;
+      err.details = r.fatal;
       err.calls = calls;
       throw err;
     }

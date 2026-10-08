@@ -178,6 +178,13 @@ test("the twist plan in code: a planted clue, a payoff that is an action, nothin
   assert.deepEqual(planErrors({ mechanic: "shown_in_scene_2" }), []);
   has({ payoff: "The signpost beside Vex flashes red and locks a collar around his neck." }, /payoff: start the sentence with the name of the character who DOES it \(Vex or Noob\); an object never acts on its own/);
   has({ payoff: "Noob walks Vex over to the fountain and holds the key up." }, /clue and payoff are seen in a chest-up picture: no "walks"/);
+  // Two good plans were refused for good by these checks: the NOUN "step", and a payoff that began "At zero, Vex".
+  assert.deepEqual(planErrors({ clue: "Vex stands on the podium's gold top step while giving the order.", payoff: "At zero, Vex leans in to gloat and the ring of light clamps onto Vex's own head." }), []);
+  has({ payoff: "Vex steps back as Noob holds the gold key up high." }, /no "steps back"/);
+  // Only a plan the writer can't work from is fatal; how a sentence starts never is.
+  const fatalOf = (over) => validateTwistPlan(goodPlan(over), planCtx).fatal;
+  for (const lesser of [{ payoff: "The signpost beside Vex flashes red and locks a collar around his neck." }, { payoff: "Vex finally admits he was never an admin." }, { candidates: [] }, { finalLine: "Those were cute commands, do you want to see real ones?" }, { mechanic: "shown_in_scene_1" }]) assert.deepEqual(fatalOf(lesser), [], JSON.stringify(lesser));
+  for (const unusable of [{ winnerId: "taz" }, { clueScene: 3 }, { revealScene: 4 }, { premise: "A story." }, { payoff: "" }, { title: "Just Like Roblox" }]) assert.ok(fatalOf(unusable).length > 0, JSON.stringify(unusable));
   // Nothing to read: no number, no leaderboard, no sign in what is planted or paid off.
   has({ payoff: "Noob points at the leaderboard, which shows Noob in first place." }, /payoff: it depends on "leaderboard", which a viewer would have to read; show an object, a light, a colour or a place instead/);
   has({ payoff: "Vex looks up as the number over his head reaches zero." }, /payoff: it depends on "number"/);
@@ -399,14 +406,19 @@ test("the order of work: the twist plan, then the script that delivers it, then 
   assert.deepEqual(writeCall.schema, plannerSchema(["vex", "noob"], { planned: true }));
 });
 
-test("a plan that breaks a rule is sent back once; a plan that still does ends the story before any dialogue is paid for", async () => {
+test("a plan that breaks a rule is sent back once; only a plan that can't be used ends the story", async () => {
   const f = fakes({ twist_plan: [goodPlan({ clueScene: 3 })], twist_plan_repair: [goodPlan()], planner: [goodScript()] });
   await run(f);
   assert.deepEqual(f.log, ["twist_plan", "twist_plan_repair", "planner", "script_review"]);
   assert.match(f.asked[1].user, /IT HAS THESE PROBLEMS\. Fix every one and return the full corrected JSON:\n- clueScene: 1 or 2/);
-  const bad = fakes({ twist_plan: [goodPlan({ payoff: "Vex admits it all in the end." })], twist_plan_repair: [goodPlan({ payoff: "Vex admits it all in the end." })] });
-  await assert.rejects(run(bad), (e) => e.code === "PLANNER_FAILED" && /is someone owning up or explaining/.test(e.details.join(" ")));
-  assert.deepEqual(bad.log, ["twist_plan", "twist_plan_repair"], "no script was written from a bad plan");
+  // A plan with a lesser fault after its one repair is still written from: the editor checks the payoff anyway.
+  const lesser = fakes({ twist_plan: [goodPlan({ payoff: "Vex admits it all in the end." })], twist_plan_repair: [goodPlan({ payoff: "Vex admits it all in the end." })], planner: [goodScript()] });
+  await run(lesser);
+  assert.deepEqual(lesser.log, ["twist_plan", "twist_plan_repair", "planner", "script_review"]);
+  // A plan the writer can't work from ends the story before any dialogue is paid for.
+  const bad = fakes({ twist_plan: [goodPlan({ winnerId: "taz" })], twist_plan_repair: [goodPlan({ winnerId: "taz" })] });
+  await assert.rejects(run(bad), (e) => e.code === "PLANNER_FAILED" && /winnerId: the cast id of whoever comes out on top/.test(e.details.join(" ")));
+  assert.deepEqual(bad.log, ["twist_plan", "twist_plan_repair"], "no script was written from an unusable plan");
 });
 
 test("format: a fault in one scene is fixed by a PATCH (a few words back), a script broken as a whole is written again, and a style note costs nothing", async () => {

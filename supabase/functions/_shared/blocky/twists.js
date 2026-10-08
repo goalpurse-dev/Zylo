@@ -111,7 +111,13 @@ Return only the JSON object for the requested schema.`;
 const TO_READ = /\b(?:numbers?|digits?|letters|name ?tags?|usernames?|leaderboards?|scoreboards?|rule ?lists?|scores?)\b/i;
 const WRITTEN = new RegExp("\\b(?:" + [...WRITTEN_WORDS, "types", "typing", "writes", "writing", "signs", "reading", "messages", "chats", "texts", "screens"].join("|") + ")\\b", "i");
 /** What a chest-up picture can't show. */
-const WHOLE_BODY = /\b(?:walks?|walking|runs?|running|steps?|stepping|jumps?|jumping|climbs?|climbing|chases?|drags?|dragging|marches|carries|kneels?)\b/i;
+const WHOLE_BODY = /\b(?:walks?|walking|runs?|running|steps? (?:in|back|closer|over|up to|toward|towards|forward|away|out)|jumps?|jumping|climbs?|climbing|chases?|drags?|dragging|marches|carries|kneels?)\b/i;
+/**
+ * The faults that make a plan UNUSABLE (the writer could not work from it, or it names something real).
+ * Any other fault is sent back once and then left to the writer and the editor: a plan is never thrown
+ * away for how a sentence starts.
+ */
+const PLAN_FATAL = /^premise:|^emotion:|^assumed:|^patternId: one of|^twist:|^mechanic: one of|^clue: say exactly|^clueScene:|^payoff: the on-screen action|^revealScene:|^consequence:|^winnerId:|^title must be|don't name/;
 /** A reveal that is "forced" by someone owning up is not forced. */
 const CONFESSION = /\b(?:admits?|admitting|confess(?:es|ing)?|owns up|comes? clean|tells? the truth|explains?)\b/i;
 
@@ -168,7 +174,10 @@ export function buildTwistPlanPrompt(p) {
   return { system: PLAN_SYSTEM, user: parts.join("\n\n") };
 }
 
-/** Checks the plan in code. Returns {plan, errors}; plan is normalized. */
+/**
+ * Checks the plan in code. Returns {plan, errors, fatal}; plan is normalized. errors: everything the
+ * plan step is sent back for, once. fatal: the part of it that makes the plan unusable (PLAN_FATAL).
+ */
 export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [] }) {
   const errors = [];
   const words = (x) => wordCount(x);
@@ -206,7 +215,7 @@ export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [] })
   if (words(payoff) < 5) errors.push("payoff: the on-screen action in the reveal scene that uses the clue");
   else if (CONFESSION.test(payoff)) errors.push(`payoff: "${payoff}" is someone owning up or explaining; the payoff is an ACTION that uses the clue (something held up, something that obeys the wrong player, something that opens, locks or vanishes)`);
   // The payoff is a CHARACTER doing something, seen chest-up: it starts with a cast member's name.
-  else if (!cast.some((c) => new RegExp(`^(?:the\\s+)?${c.name.split(/\s+/)[0]}\\b`, "i").test(payoff))) errors.push(`payoff: start the sentence with the name of the character who DOES it (${cast.map((c) => c.name).join(" or ")}); an object never acts on its own`);
+  else if (!cast.some((c) => new RegExp(`^(?:[^,.]{0,30},\\s*)?(?:the\\s+)?${c.name.split(/\s+/)[0]}\\b`, "i").test(payoff))) errors.push(`payoff: start the sentence with the name of the character who DOES it (${cast.map((c) => c.name).join(" or ")}); an object never acts on its own`);
   const moved = [clue, payoff].map((v) => v.match(WHOLE_BODY)).find(Boolean);
   if (moved) errors.push(`clue and payoff are seen in a chest-up picture: no "${moved[0]}"; make it something held, worn, pointed at or happening to them`);
   if (revealScene < min || revealScene > max) errors.push(`revealScene: ${min === max ? `scene ${min}` : `scene ${min} to ${max}`} (the second half, and never the last scene: that one is the winner's line)`);
@@ -240,7 +249,8 @@ export function validateTwistPlan(out, { cast, sceneCount, avoidPatterns = [] })
     if (castIds.includes(r?.id) && role && words(role) <= 10) roles[r.id] = role;
   }
   const plan = { premise, seenAs: text("seenAs"), emotion, roles, assumed, candidates, patternId, twist, mechanic, clue, clueScene, payoff, revealScene, consequence, winnerId, finalLine, title };
-  return { plan, errors: [...new Set(errors)] };
+  const all = [...new Set(errors)];
+  return { plan, errors: all, fatal: all.filter((e) => PLAN_FATAL.test(e)) };
 }
 
 /** The locked plan as the writer is given it. */
