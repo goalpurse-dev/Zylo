@@ -35,7 +35,7 @@ const prompt = job.request.positivePrompt.replace(`"${scene.line}"`, `"${LINE}"`
 const frame = { frameImages: [{ image: scene.image_url, frame: "first" }] };
 const base = { taskType: "videoInference", positivePrompt: prompt, duration: 6, inputs: frame, outputType: "URL", outputFormat: "MP4", numberResults: 1 };
 const ITEMS = [
-  { key: "grok", label: "Grok Imagine Video 1.5 Lite, 480p", listUsd: 6 * 0.02 + 0.01, expectUsd: 0.16, task: { ...base, model: "xai:grok-imagine@video-1.5-lite", width: 480, height: 848 } },
+  { key: "grok", label: "Grok Imagine Video 1.5 Lite, 480p", listUsd: 6 * 0.02 + 0.01, expectUsd: 0.16, task: { ...base, model: "xai:grok-imagine@video-1.5-lite", resolution: "480p" } },   // with a frame image the size comes from the image; width/height are refused
   { key: "pvideo", label: "P-Video-2, 720p", listUsd: 0.15, expectUsd: 0.35, task: { ...base, model: "prunaai:p-video@2", resolution: "720p", settings: { audio: true } } },
   { key: "veo", label: "Veo 3.1 Lite, 720p", listUsd: 6 * 0.05, expectUsd: 0.35, task: { ...base, model: "google:veo@3.1-lite", width: 720, height: 1280, providerSettings: { google: { generateAudio: true } } } },
 ];
@@ -50,11 +50,14 @@ if (!paidCallsAllowed()) {
 fs.mkdirSync(path.join(DIR, "frames"), { recursive: true });
 const budget = openBlockyBudget("models");
 const set = async (on) => { const { error } = await db.from("blocky_settings").update({ paid_calls: on }).eq("id", true); if (error) throw new Error(error.message); };
-const attempted = (row) => row && ["success", "error", "timeout"].includes(row.state);
+// A request refused for its parameters never reached the model (no clip, no cost): not an attempt.
+const refused = (row) => row?.state === "error" && !row.cost && /conflictParameters|invalid|unsupported|missing/i.test(row.error ?? "");
+const attempted = (row) => row && ["success", "error", "timeout"].includes(row.state) && !refused(row);
 async function run(key, label, task, expectUsd) {
   if (attempted(out.items[key])) { console.log(`${key}: already sent (${out.items[key].state}); not sent again`); return out.items[key]; }
   budget.reserve(expectUsd, key);
-  out.items[key] = { key, label, model: task.model, task, state: "sent", at: new Date().toISOString() }; save();
+  const before = refused(out.items[key]) ? [...(out.items[key].refusals ?? []), out.items[key].error] : [];
+  out.items[key] = { key, label, model: task.model, task, state: "sent", at: new Date().toISOString(), ...(before.length ? { refusals: before } : {}) }; save();
   const r = await rawTest(task, `blocky-models-${key}`, { everyMs: 2000 });
   const row = Object.assign(out.items[key], { state: r.state, cost: r.cost, seconds: r.seconds, error: r.error ?? null, url: r.url ?? null });
   budget.record(r.cost, `models: ${label} (${r.state})`, expectUsd);
