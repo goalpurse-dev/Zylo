@@ -26,11 +26,12 @@ function loggedLlm({ admin, env, userId, model: defaultModel, purposePrefix, ser
   let costUsd = 0;
 
   // use: another model for this one call (the script review runs on BLOCKY_MODELS.review)
-  const llm = async ({ system, user, schema, name, purpose, use = null, maxOutputTokens }) => {
+  // tools, strict: see llm.js#callLlm (the writer's two tools; answers that match the schema exactly)
+  const llm = async ({ system, user, schema, name, purpose, use = null, maxOutputTokens, tools = null, strict = false }) => {
     const t0 = Date.now();
     const model = use ?? defaultModel;
     try {
-      const r = await callLlm({ provider: model.provider, model: model.model, apiKey: keyFor(model), system, user, schema, name, ...(maxOutputTokens ? { maxOutputTokens } : {}) });
+      const r = await callLlm({ provider: model.provider, model: model.model, apiKey: keyFor(model), system, user, schema, name, ...(tools ? { tools } : {}), ...(strict ? { strict } : {}), ...(maxOutputTokens ? { maxOutputTokens } : {}) });
       costUsd += r.costUsd;
       callIds.push(await logCall(admin, {
         user_id: userId, series_id: seriesId, provider: model.provider, model: model.model, purpose: purposePrefix + purpose,
@@ -65,7 +66,8 @@ function loggedLlm({ admin, env, userId, model: defaultModel, purposePrefix, ser
  * @param {object} o.admin     service-role supabase client
  * @param {object} o.env       {ANTHROPIC_API_KEY, OPENAI_API_KEY, BLOCKY_PAID_CALLS}
  * @param {string|null} o.userId
- * @param {object} o.plannerInput  buildPlannerPrompt input minus llm (source, cast rows, lengthSec, quality, idea/prompt/script/series)
+ * @param {object} o.plannerInput  buildPlannerPrompt input minus llm (source, cast rows, lengthSec, quality, idea/prompt/script/series,
+ *                                 avoidPatterns: the twist pattern of this user's last story)
  * @param {{provider:string, model:string}} [o.model]  defaults to BLOCKY_MODELS.planner
  * @param {string} [o.purposePrefix]  e.g. "blind_test:"
  */
@@ -74,7 +76,7 @@ export async function planStory({ admin, env, userId, plannerInput, model = BLOC
   try {
     // The script review (and one rewrite) is on unless BLOCKY_SCRIPT_REVIEW=off.
     const reviewOn = String(env.BLOCKY_SCRIPT_REVIEW ?? "").toLowerCase() !== "off";
-    const reviewLlm = reviewOn ? (o) => llm({ ...o, use: BLOCKY_MODELS.review, maxOutputTokens: 2000 }) : undefined;
+    const reviewLlm = reviewOn ? (o) => llm({ ...o, use: BLOCKY_MODELS.review, maxOutputTokens: 2500, strict: true }) : undefined;
     const { plan, attempts, review } = await runPlanner({ ...plannerInput, llm, reviewLlm });
     return { plan, attempts, review, ...done(), model };
   } catch (e) {

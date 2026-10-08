@@ -1,7 +1,9 @@
 // Script review for Blocky Stories: one cheap read of a finished script by
 // a second model, the way a viewer meets it (heard once, one picture per
-// line), before any picture is paid for. A failed review gets ONE rewrite by
-// the planner (planner.js#runPlanner); a review that can't run never blocks.
+// line), before any picture is paid for. It checks the script against the
+// twist plan (twists.js): the clue is really in scene 1 or 2, the payoff really
+// happens and uses it. What fails is rewritten by the planner
+// (planner.js#runPlanner) and checked again; a review that can't run never blocks.
 //
 // Why: the launch review (Oct 2026) found 6 of 13 stories ended on a setup
 // line, 3 opened on someone who wasn't in the picture, and one had an
@@ -17,12 +19,12 @@ export const REVIEW_PURPOSE = "script_review";
 export const REVIEW_RULES = Object.freeze({
   firstLine: "the first line must be a hook: mid-action or mid-mystery, something at stake, at most two people named",
   escalation: "every scene must make it worse, weirder or higher stakes than the one before; no line just throws the last one back",
-  flip: "the twist must flip what the viewer assumed in the first lines; the villain admitting it is not a twist",
-  twistShown: "the twist must be said out loud in a line or plainly seen in a picture, in the second half",
-  forced: "a proof or an action must force the twist out; nobody simply admits it",
-  ending: "something must change for someone on screen, and the winner's short last line lands it",
-  powers: "nobody does or threatens what their role can't do (a player can't ban; an admin can)",
-  natural: "the lines must sound spoken and vary in length; nobody reports what they typed or wrote",
+  clue: "the plan's clue must really be in scene 1 or 2, in the line or in what is seen, without being explained",
+  payoff: "the plan's payoff must happen on screen in the reveal scene, use the clue, and be named by the line; nobody admits or explains",
+  ending: "something must change for someone on screen, and the winner's last line (8 words or fewer) lands it without explaining the twist",
+  cast: "every cause is someone in the cast; nobody outside it is blamed or spoken to",
+  powers: "nobody really does what their role can't (a player's ban never works; an admin's does)",
+  natural: "the lines must sound spoken and vary in length; no speaker has three lines in a row",
   inPicture: "everyone a line talks to, points at or describes must be in that scene's picture",
   textMessage: "nothing in the story may need reading on screen, and nobody reads anything aloud",
   title: "the title must not give away the twist",
@@ -63,10 +65,10 @@ export function buildReviewPrompt({ plan, cast, source, series }) {
       `dominant emotion: ${plan.emotion || "(none given)"}`,
       ...(plan.assumed ? [`what the viewer is meant to assume after the first two lines: ${plan.assumed}`] : []),
       `twist: ${plan.twist || "(none given)"}`,
-      `the writer says the twist is revealed in scene ${plan.revealScene || "?"}`,
-      ...(plan.forcedBy ? [`the writer says this forces the twist out: ${plan.forcedBy}`] : []),
-      ...(plan.consequence ? [`the writer says this changes by the end: ${plan.consequence}`] : []),
-      ...(plan.winnerId ? [`the writer says the winner is: ${name(plan.winnerId)}`] : []),
+      ...(plan.clue ? [`THE CLUE, planned for scene ${plan.clueScene}: ${plan.clue}`] : []),
+      ...(plan.payoff ? [`THE PAYOFF, planned for scene ${plan.revealScene}: ${plan.payoff}`] : plan.revealScene ? [`the writer says the twist is revealed in scene ${plan.revealScene}`] : []),
+      ...(plan.consequence ? [`what is meant to have changed by the end: ${plan.consequence}`] : []),
+      ...(plan.winnerId ? [`the winner, who speaks the last line: ${name(plan.winnerId)}`] : []),
       `roles: ${cast.filter((c) => used.has(c.id)).map((c) => `${c.name} is ${plan.roles?.[c.id] ?? c.tag}`).join("; ")}`,
       ...(plan.scenes.some((s) => s.raises) ? [`what each scene is meant to raise: ${plan.scenes.map((s, i) => `${i + 1}. ${s.raises || "?"}`).join(" ")}`] : []),
     ].join("\n"),

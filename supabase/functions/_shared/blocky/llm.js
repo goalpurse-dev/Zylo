@@ -38,23 +38,37 @@ async function post(url, headers, body, timeoutMs) {
 
 /**
  * @param {{provider:"anthropic"|"openai", model:string, apiKey:string, system:string, user:string,
- *          schema:object, name:string, maxOutputTokens?:number, timeoutMs?:number}} opts
+ *          schema:object, name:string, maxOutputTokens?:number, timeoutMs?:number,
+ *          tools?: {name:string, schema:object}[], strict?: boolean}} opts
+ *   tools:  every tool the calls of one piece of work use, always in the same order; name picks the one to
+ *           answer with. The cached prefix is the tools and then the system prompt, so a second call that
+ *           answers with another tool still reads the cache.
+ *   strict: the answer must match the schema exactly (Anthropic's strict tool use). Without it the writer
+ *           left fields out or wrapped a list in a string in 2 of 5 drafts, each a paid repair.
  */
 export async function callLlm(opts) {
-  return opts.provider === "anthropic" ? callAnthropic(opts) : callOpenAI(opts);
+  return opts.provider === "anthropic" ? callAnthropic(opts) : callOpenAI({ ...opts, schema: opts.tools?.find((t) => t.name === opts.name)?.schema ?? opts.schema });
 }
 
-async function callAnthropic({ model, apiKey, system, user, schema, name, maxOutputTokens = 6000, timeoutMs = 90_000 }) {
-  const request = {
+async function callAnthropic({ model, apiKey, system, user, schema, name, tools = null, strict = false, maxOutputTokens = 6000, timeoutMs = 90_000 }) {
+  const build = (isStrict) => ({
     model,
     max_tokens: maxOutputTokens,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],   // fixed rules: cached
     messages: [{ role: "user", content: user }],
-    tools: [{ name, description: "Return the result.", input_schema: schema }],
+    tools: (tools ?? [{ name, schema }]).map((t) => ({ name: t.name, description: "Return the result.", input_schema: t.schema, ...(isStrict ? { strict: true } : {}) })),
     tool_choice: { type: "tool", name },
-  };
-  const { httpStatus, response, latencyMs } = await post("https://api.anthropic.com/v1/messages",
-    { "x-api-key": apiKey, "anthropic-version": "2023-06-01" }, request, timeoutMs);
+  });
+  const send = (body) => post("https://api.anthropic.com/v1/messages", { "x-api-key": apiKey, "anthropic-version": "2023-06-01" }, body, timeoutMs);
+  let request = build(strict);
+  let { httpStatus, response, latencyMs } = await send(request);
+  // The request was refused as written (a schema strict mode can't take, for one): once more without strict.
+  // A refused request costs nothing, and the answer is checked in code either way.
+  if (strict && httpStatus === 400) {
+    console.error(`[blocky] strict tool use refused for ${name}: ${JSON.stringify(response?.error ?? response).slice(0, 300)}`);
+    request = build(false);
+    ({ httpStatus, response, latencyMs } = await send(request));
+  }
   const u = response?.usage ?? {};
   const usage = { inputTokens: u.input_tokens ?? 0, outputTokens: u.output_tokens ?? 0, cacheReadTokens: u.cache_read_input_tokens ?? 0, cacheWriteTokens: u.cache_creation_input_tokens ?? 0 };
   const base = { request, response, httpStatus, latencyMs, usage, costUsd: llmCostUsd(model, usage) };

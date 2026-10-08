@@ -18,6 +18,7 @@ import { ROSTER, avatarPrompt } from "../scripts/blocky/roster.mjs";
 import { buildScenePrompt, buildPictureRequest, buildEditPrompt, scenePromptLengths, withRedrawHint } from "../supabase/functions/_shared/blocky/pictures.js";
 import { buildClipPrompt, buildClipRequest, fallbackClipTask } from "../supabase/functions/_shared/blocky/clips.js";
 import { buildPlannerPrompt } from "../supabase/functions/_shared/blocky/planner.js";
+import { buildTwistPlanPrompt } from "../supabase/functions/_shared/blocky/twists.js";
 import { buildSeriesPrompt } from "../supabase/functions/_shared/blocky/series.js";
 import { buildReviewPrompt } from "../supabase/functions/_shared/blocky/scriptReview.js";
 import { PACKAGE_SYSTEM, cleanPackage, packagePrompt, packageSchema } from "../supabase/functions/_shared/blocky/uploadPackage.js";
@@ -58,9 +59,16 @@ function build() {
   };
   for (const [name, w] of Object.entries(I.writerInputs)) {
     const { castIds, ...rest } = w;
-    const p = buildPlannerPrompt({ ...rest, cast: cast(castIds) });
+    // A single story is written from its twist plan (twists.js); a script and an episode have none.
+    const planned = name === "idea" || name === "prompt";
+    const p = buildPlannerPrompt({ ...rest, cast: cast(castIds), ...(planned ? { twistPlan: I.twistPlan } : {}) });
     if (name === "idea") s["writer/system"] = p.system;
     s[`writer/${name}`] = p.user;
+    if (planned) {
+      const t = buildTwistPlanPrompt({ ...rest, cast: cast(castIds), sceneCount: p.sceneCount, ...(name === "prompt" ? { avoidPatterns: ["backfire"] } : {}) });
+      if (name === "idea") s["twist plan/system"] = t.system;
+      s[`twist plan/${name}`] = t.user;
+    }
   }
   { const { castIds, ...rest } = I.seriesInput; const p = buildSeriesPrompt({ ...rest, cast: cast(castIds) }); s["series/system"] = p.system; s["series/prompt"] = p.user; }
   {
@@ -97,7 +105,7 @@ const recorded = JSON.parse(fs.readFileSync(FILE, "utf8"));
 
 test("the snapshot covers every Blocky prompt, and nothing is built that isn't recorded", () => {
   assert.deepEqual(Object.keys(now).sort(), Object.keys(recorded).sort());
-  assert.equal(Object.keys(recorded).length, 78);
+  assert.equal(Object.keys(recorded).length, 81);
 });
 
 for (const key of Object.keys(recorded)) {

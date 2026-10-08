@@ -5,6 +5,9 @@
 // story already in the results is never asked for again, and none is picked
 // or dropped afterwards.
 // Round 2 (decision 46, the twist round): the same five ideas at 30 seconds, after the twist rules.
+// Round 3 (decision 52): the same five again, now with the twist plan as its own step. They are written
+// as ONE user's five stories in a row: each is told the twist pattern of the one before, as the live
+// page does, so no pattern comes twice in a row.
 // Paid calls are switched on for the run and off again whatever happens.
 //   BLOCKY_ALLOW_PAID=1 node scripts/blocky/sampleStories.mjs            (round 1)
 //   BLOCKY_ALLOW_PAID=1 node scripts/blocky/sampleStories.mjs --round=2
@@ -34,7 +37,7 @@ const AGAIN = (process.argv.find((a) => a.startsWith("--again=")) ?? "").slice(8
 const IDEAS = ROUND === 1 ? ROUND_1 : ROUND_1.slice(0, 5).filter((i) => !AGAIN.length || AGAIN.includes(i.key.split("-")[0])).map((i) => ({ ...i, key: `r${ROUND}${AGAIN.length ? "b" : ""}-${i.key.replace(/-\d+$/, "")}-30`, lengthSec: 30 }));
 const STAGE = ROUND === 1 ? "stories" : `twists${ROUND}`;
 // worst case: a draft, two rewrites, a repair or two and three checks (the twist round's prompts are longer)
-const EXPECT_USD = ROUND === 1 ? 0.09 : 0.2;
+const EXPECT_USD = ROUND === 1 ? 0.09 : ROUND === 2 ? 0.2 : 0.15;
 const out = fs.existsSync(FILE) ? JSON.parse(fs.readFileSync(FILE, "utf8")) : { stories: {} };
 for (const i of AGAIN.length ? IDEAS : []) if (out.stories[i.key.replace("b-", "-")]?.state !== "failed") throw new Error(`${i.key}: its first try did not fail, so it is not written again`);
 const todo = IDEAS.filter((i) => !out.stories[i.key]);
@@ -44,19 +47,23 @@ const names = Object.fromEntries((await db.from("blocky_characters").select("id,
 const budget = openBlockyBudget(STAGE);
 const set = async (on) => { const { error } = await db.from("blocky_settings").update({ paid_calls: on }).eq("id", true); if (error) throw new Error(error.message); };
 await set(true);
+let lastPattern = null;
 try {
   for (const idea of todo) {
     budget.reserve(EXPECT_USD, idea.key);
     out.stories[idea.key] = { ...idea, state: "sent", at: new Date().toISOString() };
     writeJson(`${OUT}/results.json`, out);
     const t0 = Date.now();
-    const r = await worker({ action: "planner_test", model: BLOCKY_MODELS.planner, input: { source: "prompt", castIds: idea.castIds, prompt: idea.prompt, quality: "v2", lengthSec: idea.lengthSec, aspect: "9:16" } });
+    const r = await worker({ action: "planner_test", model: BLOCKY_MODELS.planner, input: { source: "prompt", castIds: idea.castIds, prompt: idea.prompt, quality: "v2", lengthSec: idea.lengthSec, aspect: "9:16" }, ...(lastPattern ? { avoidPatterns: [lastPattern] } : {}) });
     const row = out.stories[idea.key];
     row.seconds = Math.round((Date.now() - t0) / 1000);
+    row.avoided = lastPattern;
     if (!r.ok) Object.assign(row, { state: "failed", error: `${r.code}: ${r.message}`, details: r.details ?? null, cost: Number(r.costUsd ?? 0) });
     else {
       const p = r.plan;
+      lastPattern = p.patternId ?? lastPattern;
       Object.assign(row, {
+        patternId: p.patternId ?? null, seenAs: p.seenAs ?? null, clue: p.clue ?? null, clueScene: p.clueScene ?? null, payoff: p.payoff ?? null, finalLine: p.finalLine ?? null, candidates: p.candidates ?? null,
         state: "written", cost: Number(r.costUsd ?? 0), calls: r.attempts, title: p.title, premise: p.premise, emotion: p.emotion, assumed: p.assumed ?? null, twists: p.twists ?? null, twist: p.twist, forcedBy: p.forcedBy ?? null, consequence: p.consequence ?? null, winner: names[p.winnerId] ?? p.winnerId ?? null, revealScene: p.revealScene, lengthSec_made: p.lengthSec,
         roles: Object.fromEntries(Object.entries(p.roles ?? {}).map(([id, role]) => [names[id] ?? id, role])),
         lines: p.scenes.map((s) => ({ speaker: names[s.speakerId] ?? s.speakerId, line: s.line, words: s.line.split(/\s+/).length, seconds: s.durationSec, raises: s.raises, action: s.action, shot: s.shot, with: s.presentIds.map((id) => names[id] ?? id) })),

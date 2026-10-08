@@ -326,6 +326,8 @@ async function plannerTest(body: any) {
     plannerInput: {
       source: input.source, cast: input.castIds.map((id: string) => lib.get(id)), lengthSec: input.lengthSec, quality: input.quality,
       idea: idea ? { title: idea.title, summary: idea.summary } : undefined, prompt: input.prompt, script: input.script,
+      // as if this were the user's next story after one that used these twist patterns
+      avoidPatterns: Array.isArray(body?.avoidPatterns) ? body.avoidPatterns.filter((x: unknown) => typeof x === "string").slice(0, 3) : [],
     },
   });
   return out;

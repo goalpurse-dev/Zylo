@@ -96,29 +96,24 @@ test("the writer: Blocky's own rules (scope C2)", () => {
     /No ping-pong\. A line never just throws the last line back/,
     /NOTHING WRITTEN\. The video model draws words onto the picture when a line or an action mentions writing\. So no line and no action uses any of these words: type, typed, write, wrote, written, sign, read, reads, message, chat, text, screen\./,
     /the pictures carry NO words and NO numbers\. The story never depends on something the viewer would have to read: a leaderboard, a countdown number, a rule list/,
-    // The twist round (decisions 46 to 48).
-    /assumed: ONE sentence: what the viewer believes after the first two lines/,
-    /twists: THREE different twists for this premise, one sentence each\. Each one FLIPS "assumed"/,
-    /the victim had the power all along; the trick backfires on the trickster; the reward is the trap; the quiet one is the mastermind; the rule was protecting them/,
-    /"The villain admits it", "it was a lie all along" and "it was harmless after all" are NOT twists/,
-    /forcedBy: what FORCES the twist out, on screen: a proof or an action/,
-    /NEVER a character who simply admits it, gives up, or explains because they were asked/,
-    /consequence: what CHANGES for whom by the last line, concretely/,
-    /Never "and then nothing happens", never a danger that turns out harmless/,
-    /winnerId: the cast id of whoever comes out on top\. They speak the LAST line/,
+    // The writer delivers a locked twist plan (decision 52); the plan itself is twists.js.
+    /THE PLAN COMES FIRST \(it is locked: you deliver it, you do not change it\)/,
+    /The CLUE goes into the scene the plan names \(scene 1 or 2\)[^]*The viewer can notice it and does NOT understand it yet/,
+    /The PAYOFF happens in the scene the plan names: write it into that scene's action, and that scene's line names what just happened/,
+    /Nobody confesses and nobody explains\. The twist comes out because the payoff happens/,
+    /Every cause is someone in the cast\. Nobody outside the cast did it, set it up, is blamed or is spoken to/,
+    /A twist that exists only in the plan does not exist/,
+    /No speaker has more than TWO lines in a row/,
+    /Never an explanation of the twist \("Only his first owner\. Guess that's me\." explains; "He always comes home full\." lands\)/,
     /Only an admin or the owner can ban, kick, mute, reset, freeze or teleport someone, or change the server\. A player can trade, build/,
-    /The LAST line belongs to the winner \(winnerId\)\. 8 words or fewer/,
-    /EXAMPLES OF THE STANDARD[^]*NEVER reuse these plots, their twists, their objects or their lines/,
-    /5\. NEWCOMER: Cute commands\. Want to see real ones\?/,
-    /It uses no key word from your twist, unless the first line already says that word/,
+    /The LAST line belongs to the winner\. 8 words or fewer/,
+    /TWO PLANS, DELIVERED[^]*NEVER reuse these plots, their objects or their lines/,
+    /6\. NEWCOMER: Cute commands\. Want to see real ones\?/,
     /EVERY scene after it ESCALATES: worse, weirder or higher stakes than the scene before/,
-    /The TWIST comes out on screen in revealScene, FORCED by your forcedBy/,
-    /A twist that exists only in the roles, the title or your plan does not exist/,
-    /With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the proof appears and the twist is out, 4 the winner's line/,
-    /With 5 or more scenes: the hook; it gets worse twice, each time with something NEW; the proof appears; the twist is out; the winner's last line/,
-    /It is the most quotable line in the video: it lands the consequence like a punchline/,
-    /premise: ONE sentence that starts "What happens if"/,
-    /emotion: the ONE feeling the whole video runs on: curiosity, dread, injustice, satisfaction, shock\./,
+    /The CLUE is planted early and the PAYOFF comes in the plan's reveal scene/,
+    /With 3 or 4 scenes there is no room to waste: 1 the hook, 2 it gets worse, 3 the payoff and the twist is out, 4 the winner's line/,
+    /With 5 or more scenes: the hook; it gets worse twice, each time with something NEW; the payoff and the twist is out; the loser's reaction if there is room; the winner's last line/,
+    /It is the most quotable line in the video\./,
     /It teases the premise and NEVER states the twist/,
     /presentIds: who is in the frame, speaker included, 1 to 3 characters/,
     /exactly ONE character says exactly ONE line/,
@@ -159,7 +154,7 @@ test("the series planner and the script editor: Blocky's wording, fourteen edito
   // The editor reads as a viewer: it is not shown anyone's secret role as if the viewer knew it.
   assert.match(r.system, /WHAT THE VIEWER KNOWS\nOnly the title, the lines in order, and who is in each picture\. NOT the writer's notes and NOT anyone's secret role/);
   assert.match(r.system, /never fail it for "repeating" the notes, the roles or the premise/);
-  assert.match(r.system, /A fix must keep the twist revealed on screen/);
+  assert.match(r.system, /A fix keeps the plan: the same twist, the same clue, the same payoff, the same winner/);
   assert.match(r.user, /WRITER'S NOTES \(the viewer NEVER sees these/);
   assert.ok(r.user.indexOf("roles: Vex is the fake admin") > r.user.indexOf("WRITER'S NOTES"), "roles are in the notes, not in what the viewer sees");
   assert.match(r.system, /names a real game, brand, creator or username/);

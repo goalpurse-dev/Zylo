@@ -4,7 +4,7 @@
 //
 // Paid calls are BLOCKED unless BLOCKY_ALLOW_PAID=1 is set for that one run.
 // Every paid call must reserve() its expected cost first: the reservation is
-// refused if it would pass the stage cap or the $5 total. Real costs are
+// refused if it would pass the stage cap or the $10 total. Real costs are
 // recorded in data/blocky-tests/spend.json (local, git-excluded).
 //
 //   const budget = openBlockyBudget("looks");
@@ -18,8 +18,8 @@ import { fileURLToPath } from "url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const LEDGER = path.join(ROOT, "data/blocky-tests/spend.json");
 
-/** The whole Blocky test budget (hard cap, set by the owner). */
-export const BLOCKY_TOTAL_USD = 5.0;
+/** The whole Blocky test budget (hard cap, set by the owner: $5 at first, $10 since 2026-10-08 "so we don't stop mid-round"). */
+export const BLOCKY_TOTAL_USD = 10.0;
 // lipsync: test 1, 3 pictures + 3 × 5 s Wan2.6 Flash clips (approved 2026-10-06).
 // tiers: test 1b, picture C again on V3 (Seedance 2.0 Mini, 5 s) and V4 (Veo 3.1 Fast, 6 s) (approved 2026-10-06).
 // thumb: 2 menu thumbnail options. looks: tests 2 and 3 (avatars on Lite vs Pro, one location plate + 4 scene pictures) (approved 2026-10-06).
@@ -27,7 +27,8 @@ export const BLOCKY_TOTAL_USD = 5.0;
 // captions: one 4 s Wan clip with the negative prompt against drawn subtitles (approved 2026-10-08, about $0.20).
 // stories: seven sample scripts, text only, for the story-quality review (approved 2026-10-08; about $0.05 each).
 // twists2: the same five ideas again at 30 seconds after the twist round (approved 2026-10-08; at most $0.20 each).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0 });
+// twists3: the same five again with the twist plan as its own step (approved 2026-10-08; target under $0.08 each, at most $0.15).
+export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0, captions: 0.3, stories: 0.7, twists2: 1.0, twists3: 0.75 });
 
 export class PaidCallBlocked extends Error {}
 
