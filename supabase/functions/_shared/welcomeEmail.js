@@ -1,9 +1,12 @@
-export function welcomeEmail(userEmail) {
-  return {
-    from: "Niko from Zyvo <niko@tryzyvo.com>",
-    to: userEmail,
-    subject: "You’ve got 3 free image generations waiting",
-    html: `
+// The welcome email: one per account, sent by the send-welcome-email function.
+// The footer (why, unsubscribe, company line) comes from _shared/emailRules.js.
+import { APP_URL } from "./emailRules.js";
+
+export const WELCOME_SUBJECT = "You’ve got 3 free image generations waiting";
+export const WELCOME_WHY = "You're getting this because you created a Zyvo account.";
+
+export function welcomeEmail(footer) {
+  const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;background:#0f1117;color:white;border-radius:16px">
       <h1 style="color:white;margin-bottom:12px;">Welcome to Zyvo 🚀</h1>
 
@@ -38,7 +41,7 @@ export function welcomeEmail(userEmail) {
 
       <div style="text-align:center;margin:32px 0;">
         <a
-          href="https://tryzyvo.com/workspace?source=welcome"
+          href="${APP_URL}/workspace?source=welcome"
           style="background:#7A3BFF;color:white;padding:14px 28px;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;display:inline-block;"
         >
           Use My Free Generations
@@ -56,7 +59,8 @@ export function welcomeEmail(userEmail) {
       <p style="color:#9ca3af;font-size:14px;">
         — Niko, Founder of Zyvo
       </p>
+      ${footer.html}
     </div>
-    `
-  };
+    `;
+  return { html };
 }

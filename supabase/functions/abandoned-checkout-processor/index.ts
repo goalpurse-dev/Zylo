@@ -1,6 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { REPLY_TO, SENDERS } from "../_shared/emailRules.js";
+import { claimEmail, FINAL_REASONS, releaseEmail, sendClaimedEmail } from "../_shared/userEmail.ts";
 
 /* =================== CONFIG =================== */
 // Independently verified trigger path (Phase 6) — this secret is checked
@@ -13,7 +15,6 @@ const CRON_SECRET = Deno.env.get("ABANDONED_CHECKOUT_CRON_SECRET") ?? "";
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET_KEY")!;
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 
 // Optional. If unset, the "discount" A/B arm is skipped and every claimed
 // send falls back to the "credits" arm instead — this system never sends a
@@ -101,7 +102,8 @@ function pickIncentive(checkoutId: string): Incentive {
 }
 
 /* =================== Email templates =================== */
-function wrap(inner: string) {
+// The footer (why, unsubscribe, company line) comes from _shared/emailRules.js when the email is sent.
+function wrap(inner: string, footerHtml: string) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f0f0f2;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f2;padding:40px 16px;">
   <tr><td align="center"><table role="presentation" width="100%" style="max-width:520px;">
@@ -111,6 +113,7 @@ function wrap(inner: string) {
   <tr><td style="background:#ffffff;padding:32px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;border-radius:0 0 12px 12px;">
   ${inner}
   </td></tr>
+  <tr><td>${footerHtml}</td></tr>
   </table></td></tr></table></body></html>`;
 }
 function ctaButton(url: string, label: string) {
@@ -123,26 +126,26 @@ function ctaButton(url: string, label: string) {
 function emailOne(name: string, ctaUrl: string) {
   return {
     subject: "did you mean to leave this open?",
-    html: wrap(`
+    inner: `
       <p>Hi ${name},</p>
       <p>You started setting up Zyvo a few minutes ago and it looks like the checkout didn't finish.</p>
       <p>No pressure — just picking up right where you left off:</p>
       ${ctaButton(ctaUrl, "Continue checkout →")}
       <p style="margin-top:20px;font-size:13px;color:#888;">If something broke on our end, just reply to this email.</p>
-    `),
+    `,
   };
 }
 function emailTwo(name: string, ctaUrl: string) {
   return {
     subject: "what Zyvo actually does for you",
-    html: wrap(`
+    inner: `
       <p>Hey ${name},</p>
       <p>Still thinking it over? Fair — here's what people usually ask before finishing setup:</p>
       <p style="margin:0 0 6px;"><b>"Is it worth it?"</b> — most people replace 2-3 separate tools with Zyvo and post more often because there's no more back-and-forth between apps.</p>
       <p style="margin:0 0 6px;"><b>"Can I cancel anytime?"</b> — yes, one click, no retention flow.</p>
       <p>Your checkout is still saved:</p>
       ${ctaButton(ctaUrl, "Finish setting up →")}
-    `),
+    `,
   };
 }
 function emailThree(name: string, ctaUrl: string, incentive: Incentive) {
@@ -152,7 +155,7 @@ function emailThree(name: string, ctaUrl: string, incentive: Incentive) {
       : `<p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:28px;font-weight:800;color:#1a1a1a;">+${incentive.amount} bonus credits</p>`;
   return {
     subject: incentive.type === "discount" ? "a discount to finish setting up" : "some bonus credits, on us",
-    html: wrap(`
+    inner: `
       <p>Hi ${name},</p>
       <p>Last note on this from me — here's something to make finishing worthwhile:</p>
       <div style="padding:20px 24px;background:#f6f2ff;border-radius:12px;border:1px solid rgba(122,59,255,0.2);text-align:center;margin:16px 0;">
@@ -160,43 +163,42 @@ function emailThree(name: string, ctaUrl: string, incentive: Incentive) {
       </div>
       ${ctaButton(ctaUrl, "Claim & continue →")}
       <p style="margin-top:20px;font-size:12px;color:#888;">This is the last email in this sequence.</p>
-    `),
+    `,
   };
 }
 
+// A checkout reminder is marketing: it is claimed at the email gate as
+// "marketing" (the database refuses unless email_updates = true) and sent
+// through _shared/userEmail.ts, which adds the unsubscribe link and headers.
+const reminderKind = (checkoutId: string, stage: number) => `checkout:${checkoutId}:${stage}`;
+const REMINDER_WHY = "You're getting this because you started a checkout on Zyvo and product emails are turned on for your account.";
+
 async function sendEmail(
+  claimId: number,
   to: string,
+  userId: string,
   checkoutId: string,
   stage: number,
   subject: string,
-  html: string,
+  inner: string,
 ): Promise<boolean> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Niko from Zyvo <niko@tryzyvo.com>",
-      to,
-      subject,
-      html,
-      reply_to: "niko@tryzyvo.com",
-      // Consumed by the Resend webhook (Phase 8) to attribute clicks/opens
-      // back to this checkout + stage. Resend tag values must be
-      // alphanumeric/underscore/dash only.
-      tags: [
-        { name: "checkout_id", value: checkoutId },
-        { name: "stage", value: String(stage) },
-      ],
-    }),
+  return await sendClaimedEmail(sb, {
+    claimId,
+    to,
+    userId,
+    from: SENDERS.founder,
+    replyTo: REPLY_TO.founder,
+    subject,
+    why: REMINDER_WHY,
+    render: (footer) => ({ html: wrap(inner, footer.html) }),
+    // Consumed by the Resend webhook (Phase 8) to attribute clicks/opens
+    // back to this checkout + stage. Resend tag values must be
+    // alphanumeric/underscore/dash only.
+    tags: [
+      { name: "checkout_id", value: checkoutId },
+      { name: "stage", value: String(stage) },
+    ],
   });
-  if (!res.ok) {
-    console.error("[abandoned-checkout-processor] Resend send failed:", await res.text());
-    return false;
-  }
-  return true;
 }
 
 /* =================== CTA resolution (Phase 5 step 6) =================== */
@@ -230,7 +232,7 @@ async function handleRequest(req: Request): Promise<Response> {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  const summary = { claimed: 0, sent: 0, converted_before_send: 0, skipped_cooldown: 0, skipped_superseded: 0, errors: 0 };
+  const summary = { claimed: 0, sent: 0, converted_before_send: 0, skipped_cooldown: 0, skipped_superseded: 0, skipped_no_consent: 0, errors: 0 };
 
   const { data: claimed, error: claimErr } = await sb.rpc("claim_due_abandoned_checkouts", {
     p_limit: CLAIM_BATCH_SIZE,
@@ -243,6 +245,7 @@ async function handleRequest(req: Request): Promise<Response> {
   summary.claimed = claimed?.length ?? 0;
 
   for (const claimedRow of claimed ?? []) {
+    let emailClaimId: number | null = null; // an email-gate claim that has not become a sent email yet
     try {
       // Step 1: re-read fresh (the claim itself is already a fresh read,
       // but re-reading defends against anything that changed in the moment
@@ -330,24 +333,38 @@ async function handleRequest(req: Request): Promise<Response> {
         continue;
       }
 
-      // Consent check — preserves existing behavior: only an explicit
-      // `false` blocks sending; null/never-set defaults to allowed.
-      let consent: boolean | null = null;
-      if (row.user_id) {
-        const { data: prof } = await sb.from("profiles").select("email_updates").eq("id", row.user_id).maybeSingle();
-        consent = prof?.email_updates ?? null;
-      } else {
-        const { data: prof } = await sb.from("profiles").select("email_updates").ilike("email", escapeIlike(row.email)).maybeSingle();
-        consent = prof?.email_updates ?? null;
-      }
-      if (consent === false) {
+      // Consent check — a reminder goes ONLY to an account that turned product
+      // emails ON (email_updates = true). "Never answered" (null), "no" (false)
+      // and a checkout with no account all end the sequence without an email.
+      const finishWithoutEmail = async (why: string) => {
         await sb.from("abandoned_checkouts").update({
           status: "finished", processing_started_at: null, updated_at: new Date().toISOString(),
         }).eq("id", row.id);
+        await sb.from("abandoned_checkout_events").insert({
+          checkout_id: row.id, event_type: "email_not_sent", stage: (row.recovery_stage ?? 0) + 1, metadata: { reason: why },
+        });
+        summary.skipped_no_consent++;
+      };
+      const { data: prof } = row.user_id
+        ? await sb.from("profiles").select("id, email_updates").eq("id", row.user_id).maybeSingle()
+        : await sb.from("profiles").select("id, email_updates").ilike("email", escapeIlike(row.email)).maybeSingle();
+      if (prof?.email_updates !== true) {
+        await finishWithoutEmail("email_updates_not_on");
         continue;
       }
 
       const nextStage = (row.recovery_stage ?? 0) + 1; // 1, 2, or 3
+
+      // The email gate, before anything is minted at Stripe: suppressed
+      // address, consent (checked again in the database), once per stage, and
+      // the 3-emails-a-day ceiling per address.
+      const claim = await claimEmail(sb, row.email, reminderKind(row.id, nextStage), "marketing");
+      if (!claim.ok) {
+        if (FINAL_REASONS.has(claim.reason)) await finishWithoutEmail(claim.reason);
+        else { await sb.rpc("release_abandoned_checkout_claim", { p_id: row.id }); summary.errors++; } // daily limit or gate down: a later run tries again
+        continue;
+      }
+      emailClaimId = claim.id;
       const name = (row.email || "").split("@")[0].replace(/[._-]/g, " ").trim() || "there";
       const incentive = nextStage === 3 ? pickIncentive(row.id) : null;
 
@@ -355,6 +372,8 @@ async function handleRequest(req: Request): Promise<Response> {
       const { url: ctaUrl, mintedSessionId, mintedSession } = await resolveCtaUrl(row, sOk ? liveSession : null, incentive);
       if (!ctaUrl) {
         console.error("[abandoned-checkout-processor] could not resolve a CTA url for row", row.id);
+        await releaseEmail(sb, claim.id);
+        emailClaimId = null;
         await sb.rpc("release_abandoned_checkout_claim", { p_id: row.id });
         summary.errors++;
         continue;
@@ -387,7 +406,8 @@ async function handleRequest(req: Request): Promise<Response> {
         nextStage === 2 ? emailTwo(name, ctaUrl) :
         emailThree(name, ctaUrl, incentive!);
 
-      const sent = await sendEmail(row.email, row.id, nextStage, tpl.subject, tpl.html);
+      const sent = await sendEmail(claim.id, row.email, prof.id, row.id, nextStage, tpl.subject, tpl.inner); // a failed send releases its own claim
+      emailClaimId = null;
       if (!sent) {
         await sb.rpc("release_abandoned_checkout_claim", { p_id: row.id });
         summary.errors++;
@@ -413,6 +433,7 @@ async function handleRequest(req: Request): Promise<Response> {
       summary.sent++;
     } catch (rowErr) {
       console.error("[abandoned-checkout-processor] row processing threw:", rowErr);
+      if (emailClaimId !== null) await releaseEmail(sb, emailClaimId).catch(() => {});
       await sb.rpc("release_abandoned_checkout_claim", { p_id: claimedRow.id }).catch(() => {});
       summary.errors++;
     }

@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { readFirstTouch } from "../lib/firstTouch";
 import { authError, formatCountdown } from "../lib/authErrors";
+import { checkSignupEmail } from "../lib/emailCheck";
 import { useCooldown } from "../hooks/useCooldown";
 import ForgotPassword from "./auth/ForgotPassword.jsx";
 import Logo from "../assets/Logo.png";
@@ -67,6 +68,9 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
     setError("");
     setSuccess("");
     if (isSignup) {
+      // A typo, a throwaway inbox or a domain with no mail server never becomes an account.
+      const check = await checkSignupEmail(email);
+      if (!check.ok) { setError(check.message); setLoading(false); return; }
       const firstTouch = readFirstTouch();
       rememberReturn();
       const { data, error } = await supabase.auth.signUp({

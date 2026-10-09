@@ -32,14 +32,19 @@ test("no file in api/ sends email on load, and every sender is a handler that ch
   }
 });
 
-test("the welcome endpoint emails the signed-in account's own address and nothing else", () => {
-  const src = read("api/send-welcome-email.js");
-  assert.doesNotMatch(src, /req\.body/, "nothing in the request body is read: no address, no user id");
-  assert.match(src, /req\.headers\?\.authorization/);
-  assert.match(src, /return res\.status\(401\)\.json\(\{ error: "Not signed in" \}\);/);
-  assert.match(src, /welcomeEmail\(user\.email\)/);
-  assert.match(src, /\.eq\("id", user\.id\)\s*\.eq\("welcome_email_sent", false\)/, "the flag is claimed before sending: one email per account");
+test("the welcome email is sent by an edge function, to the signed-in account's own address and nothing else", () => {
+  // 2026-10-09: the Vercel endpoint is gone; nothing in api/ sends email any more.
+  for (const f of ["send-welcome-email.js", "welcomeEmail.js"]) assert.ok(!existsSync(join(root, "api", f)), `api/${f} must not exist`);
+  for (const f of apiFiles) assert.doesNotMatch(read(`api/${f}`), /resend\.emails\.send|api\.resend\.com|nodemailer/, `api/${f} must not send email`);
+  const src = read("supabase/functions/send-welcome-email/index.ts");
+  assert.doesNotMatch(src, /req\.json\(\)|req\.text\(\)|req\.formData\(\)/, "nothing in the request body is read: no address, no user id");
+  assert.match(src, /req\.headers\.get\("authorization"\)/);
+  assert.match(src, /admin\.auth\.getUser\(token\)/);
+  assert.match(src, /return err\(req, "Not signed in", 401\);/);
+  assert.match(src, /\.eq\("id", user\.id\)\.eq\("welcome_email_sent", false\)/, "the flag is claimed before sending: one email per account");
+  assert.match(src, /claimEmail\(admin, address\.email, "welcome", "account"\)/, "and the email gate is asked before the send");
   const auth = read("src/lib/auth.js");
+  assert.match(auth, /supabase\.functions\.invoke\("send-welcome-email"/);
   assert.match(auth, /Authorization: `Bearer \$\{data\.session\.access_token\}`/);
-  assert.doesNotMatch(auth, /user_id: data\.user\.id|email: data\.user\.email/, "the app no longer sends an address or a user id");
+  assert.doesNotMatch(auth, /\/api\/send-welcome-email|user_id: data\.user\.id|email: data\.user\.email/, "the app no longer sends an address or a user id");
 });

@@ -177,6 +177,16 @@ verify_jwt = false
 [functions.email-unsubscribe]
 verify_jwt = false
 
+# Asked by the sign-up screens before an account exists (no user JWT). Reads
+# and writes nothing: it only says whether an address can receive email.
+[functions.check-email]
+verify_jwt = false
+
+# The welcome email of the signed-in user: the gateway checks the user's JWT
+# and the function reads the user from it again.
+[functions.send-welcome-email]
+verify_jwt = true
+
 # Billing functions called by the signed-in app: the gateway checks the user's
 # JWT before the function runs (and the function reads the user from it again).
 [functions.create-checkout-session]

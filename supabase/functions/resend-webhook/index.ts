@@ -1,14 +1,21 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logEvent } from "../_shared/systemLog.ts";
+import { stopReason } from "../_shared/emailRules.js";
+
+// What Resend tells us about emails we sent (webhook registered at Resend for
+// email.bounced, email.complained and email.suppressed; signed with
+// RESEND_WEBHOOK_SECRET):
+//   1. bounces and spam complaints switch that address OFF (below, stopReason)
+//   2. clicks/opens of checkout reminders are recorded (Phase 8)
 
 /* =================== Phase 8: click/open attribution =================== */
 // Optional and strictly additive — this function never gates or blocks the
 // core recovery system (checkout_started/email_sent/converted events are
 // already written directly by create-checkout-session, stripe-webhook, and
-// the processor). If this endpoint isn't registered in Resend yet, or the
-// signing secret isn't configured, click/open tracking just doesn't happen
-// — nothing else breaks.
+// the processor). If the signing secret isn't configured, every request is
+// refused (401) and nothing else breaks.
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -37,8 +44,10 @@ async function verifySvixSignature(
   return svixSignature.split(" ").some((entry) => entry.split(",")[1] === expected);
 }
 
-function tagValue(tags: any[] | undefined, name: string): string | null {
-  return tags?.find((t) => t?.name === name)?.value ?? null;
+// Resend sends tags as [{name, value}] on some events and as {name: value} on others.
+function tagValue(tags: any, name: string): string | null {
+  if (Array.isArray(tags)) return tags.find((t) => t?.name === name)?.value ?? null;
+  return tags?.[name] ?? null;
 }
 
 async function handleRequest(req: Request): Promise<Response> {
@@ -66,6 +75,27 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   const type: string = event?.type ?? "";
+
+  // A hard bounce or a spam complaint: stop writing to that address. It goes on
+  // email_suppressions (the email gate then refuses it for good) and its profile
+  // is switched OFF (email_updates = false). A soft bounce (full inbox, server
+  // busy) changes nothing: Resend retries those itself.
+  const stop = stopReason(type, event?.data);
+  if (stop) {
+    const recipients: string[] = [event?.data?.to ?? []].flat().filter((a: unknown) => typeof a === "string");
+    for (const address of recipients) {
+      const { data: switchedOff, error } = await sb.rpc("suppress_email", { p_email: address, p_reason: stop, p_source: "resend-webhook" });
+      if (error) {
+        // 500: Resend delivers the event again later, so a bounce is never lost.
+        console.error("[resend-webhook] suppress_email failed:", error.message);
+        return new Response(JSON.stringify({ error: "could not record the event" }), { status: 500 });
+      }
+      await logEvent("resend-webhook", "warn", stop === "complained" ? "email_complaint_switched_off" : "email_bounce_switched_off", {
+        domain: String(address).split("@")[1] ?? null, profilesSwitchedOff: switchedOff ?? 0, resendEmailId: event?.data?.email_id ?? null,
+      });
+    }
+  }
+
   const tags = event?.data?.tags;
   const checkoutId = tagValue(tags, "checkout_id");
   const stage = tagValue(tags, "stage");

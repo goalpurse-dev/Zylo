@@ -1,27 +1,20 @@
-// Long Form launch email — send ONLY to profiles with email_updates = true
-// (emails/sendLongFormLaunch.js does the sending; nothing here sends).
-// Usage: const { subject, html, text, headers } = LongFormLaunchEmail({ name, unsubscribeUrl, oneClickUrl });
-//        await resend.emails.send({ from, to, subject, html, text, headers });
-// unsubscribeUrl / oneClickUrl: emails/unsubscribeLink.js (signed per user).
+// Long Form launch email: the template only. Nothing here sends.
+// emails/sendLongFormLaunch.js sends it through emails/marketing.js, which
+// decides who may get it and adds the sender, the unsubscribe headers and the
+// footer (why, unsubscribe link, company line: _shared/emailRules.js).
+// Usage: const { subject, html, text } = LongFormLaunchEmail({ name, footer, unsubscribeUrl });
 
-const APP = "https://tryzyvo.com";
+const APP = "https://www.tryzyvo.com";
 // The Long Form lobby (src/pages/workspace/long-form/index.jsx). Public: a
 // signed-out reader sees it too and is asked to sign in only to create.
 const LONG_FORM_URL = `${APP}/long-form`;
-const PRICING_URL = `${APP}/workspace/pricing`;
+const PRICING_URL = `${APP}/pricing`;
 const UTM = "utm_source=email&utm_medium=launch&utm_campaign=long_form_launch";
 const link = (url, content) => `${url}${url.includes("?") ? "&" : "?"}${UTM}&utm_content=${content}`;
 
 // The "What's new" popup's 3 fanned hunting thumbnails, 1120×600 palette PNG (~96 KB):
 // public/email/long-form-hero.png, built by scripts/buildEmailHero.mjs. Live once the frontend is deployed.
 const HERO_IMG = `${APP}/email/long-form-hero.png`;
-
-// Required by anti-spam law (CAN-SPAM, and good practice under GDPR/ePrivacy):
-// the sender's business name and a valid postal address. Fill in the company name and the
-// page with the company details (the send script warns while [brackets] remain).
-export const FOOTER_ADDRESS = "Zyvo · [COMPANY NAME] ·  · tryzyvo.com/[page with company details]";
-// The original template placeholder: the send script refuses to send while the footer is this.
-export const FOOTER_PLACEHOLDER = "Zyvo · [Company name, street address, city, country]";
 
 const VIDEOS = [
   {
@@ -68,8 +61,8 @@ const videoCard = (v, i) => `
     </a>
   </td>`;
 
-export function LongFormLaunchEmail({ name, unsubscribeUrl, oneClickUrl = unsubscribeUrl }) {
-  if (!unsubscribeUrl) throw new Error("LongFormLaunchEmail needs an unsubscribeUrl");
+export function LongFormLaunchEmail({ name, footer, unsubscribeUrl }) {
+  if (!footer?.html || !unsubscribeUrl) throw new Error("LongFormLaunchEmail needs the footer and the unsubscribeUrl from emails/marketing.js");
   const hi = name ? `Hey ${esc(name.split(" ")[0])},` : "Hey,";
 
   const subject = "Your next YouTube video, made for you 🎬";
@@ -166,12 +159,7 @@ export function LongFormLaunchEmail({ name, unsubscribeUrl, oneClickUrl = unsubs
   </td></tr>
 
   <!-- Footer -->
-  <tr><td style="padding:24px 8px 0 8px;text-align:center;font:400 12px/1.6 ${FONT};color:#6B707C;">
-    You're getting this because product updates are turned on for your Zyvo account.<br>
-    <a href="${unsubscribeUrl}" style="color:#6B707C;text-decoration:underline;">Unsubscribe from updates</a>
-    &nbsp;·&nbsp; <a href="${APP}" style="color:#6B707C;text-decoration:underline;">tryzyvo.com</a><br>
-    ${esc(FOOTER_ADDRESS)}
-  </td></tr>
+  <tr><td>${footer.html}</td></tr>
 
 </table>
 </td></tr>
@@ -196,18 +184,7 @@ See plans: ${link(PRICING_URL, "see_plans_text")}
 
 Make your first video: ${link(LONG_FORM_URL, "text")}
 
-Unsubscribe from updates: ${unsubscribeUrl}
-${FOOTER_ADDRESS}`;
+${footer.text}`;
 
-  return {
-    subject,
-    html,
-    text,
-    // One-click unsubscribe (RFC 8058) — Gmail and Yahoo require this for bulk senders.
-    // oneClickUrl accepts the POST directly; the footer link opens the tryzyvo.com page.
-    headers: {
-      "List-Unsubscribe": `<${oneClickUrl}>`,
-      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-    },
-  };
+  return { subject, html, text };
 }

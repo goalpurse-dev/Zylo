@@ -1,6 +1,7 @@
 // src/lib/auth.js (helpers stay here)
 import { supabase } from "./supabaseClient";
 import { readFirstTouch } from "./firstTouch";
+import { checkSignupEmail } from "./emailCheck";
 
 function firstTouchSignUpOptions() {
   const firstTouch = readFirstTouch();
@@ -19,22 +20,22 @@ function firstTouchSignUpOptions() {
 // src/lib/auth.js
 export async function signUpWithEmailPassword(email, password) {
 
+  // A typo, a throwaway inbox or a domain with no mail server never becomes an account.
+  const check = await checkSignupEmail(email);
+  if (!check.ok) throw new Error(check.message);
+
   const { data, error } = await supabase.auth.signUp({ email, password, options: firstTouchSignUpOptions() });
 
   if (error) throw error;
 
   // ✅ ONLY SEND HERE (not in Signup.jsx)
-  // The endpoint emails the signed-in account's own address: it takes the
-  // session token, not an address. No session yet (email confirmation pending)
-  // means no call.
+  // The send-welcome-email function emails the signed-in account's own address:
+  // it takes the session token, not an address. No session yet (email
+  // confirmation pending) means no call.
   if (data?.user && data.session?.access_token) {
     try {
-      await fetch("/api/send-welcome-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${data.session.access_token}`,
-        },
+      await supabase.functions.invoke("send-welcome-email", {
+        headers: { Authorization: `Bearer ${data.session.access_token}` },
       });
     } catch (err) {
       console.error("Welcome email failed:", err);
