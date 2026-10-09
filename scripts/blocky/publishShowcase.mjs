@@ -7,7 +7,9 @@ import fs from "fs";
 import path from "path";
 import { SUPABASE_URL, admin } from "./lib.mjs";
 
-const IDS = ["no-hats-allowed", "the-fake-admin"];   // the same ids as SHOWCASE
+// The page's showcase (constants.js#SHOWCASE), and Home's Blocky section (src/data/homeContent.js#BLOCKY_TEMPLATE:
+// four short clips without sound).
+const IDS = ["no-hats-allowed", "the-fake-admin", "home-no-hats-1", "home-no-hats-2", "home-no-hats-3", "home-fake-admin"];
 const [dir] = process.argv.slice(2);
 if (!dir) { console.error("Usage: node scripts/blocky/publishShowcase.mjs <folder>"); process.exit(1); }
 const files = IDS.flatMap((id) => [[`${id}.mp4`, "video/mp4"], [`${id}.jpg`, "image/jpeg"]]);

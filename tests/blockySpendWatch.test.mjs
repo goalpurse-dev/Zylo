@@ -234,3 +234,30 @@ test("the upgrade popup's lines say what each plan really unlocks", async () => 
   const page = (await import("node:fs")).readFileSync(new URL("../src/components/viral-tools/blocky-stories/BlockyStoriesPage.jsx", import.meta.url), "utf8");
   assert.doesNotMatch(page, /UpgradeDialog/, "the page has the one popup only");
 });
+
+test("Blocky is on Home only while it is switched on for everyone (the global switch; an account's own doesn't count)", async () => {
+  const fs = await import("node:fs");
+  const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), "utf8").replace(/\r\n/g, "\n");
+  const home = read("src/pages/workspace/HomeV2.jsx");
+  // No user is passed to the switch: only the global row can turn it on.
+  assert.match(home, /const blockyLive = useFeatureFlag\(BLOCKY_STORIES_FLAG, null\)\.enabled;/);
+  assert.equal(home.split("BLOCKY_TEMPLATE").length - 1, 2, "imported, and used once");
+  assert.match(home, /\{blockyLive && <FeaturedTemplate template=\{BLOCKY_TEMPLATE\} testId="featured-blocky" \/>\}/);
+  assert.match(home, /items=\{suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive \}\)\}/);
+  // Its own section comes right before the featured one (Cartoon Drive By).
+  assert.ok(home.indexOf("featured-blocky") < home.indexOf("<FeaturedTemplate />") && home.indexOf("featured-blocky") > home.indexOf("ZyvoSuiteCarousel title="));
+  const sections = read("src/components/home-v2/HomeV2Sections.jsx");
+  assert.match(sections, /export function suiteTemplates\(now = Date\.now\(\), \{ blocky = false \} = \{\}\) \{/, "off unless asked for");
+  assert.match(sections, /const all = blocky \? \[\{ name: BLOCKY_TEMPLATE\.name, path: BLOCKY_TEMPLATE\.path, \.\.\.BLOCKY_TEMPLATE\.suite \}, \.\.\.TEMPLATES\] : TEMPLATES;/);
+  assert.doesNotMatch(sections.slice(sections.indexOf("const TEMPLATES = ["), sections.indexOf("];", sections.indexOf("const TEMPLATES = ["))), /blocky/i, "never in the list that always shows");
+  const content = read("src/data/homeContent.js");
+  const block = content.slice(content.indexOf("export const BLOCKY_TEMPLATE"));
+  assert.match(block, /name: BLOCKY_STORIES_NAME,\n  path: BLOCKY_STORIES_PATH,/);
+  const ids = [...block.match(/examples: \[([^\]]+)\]/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(ids.length, 4);
+  // Every clip on Home is one the publish script knows (cut clean, no sound), from Blocky's own folder.
+  const publish = read("scripts/blocky/publishShowcase.mjs");
+  for (const id of ids) assert.ok(publish.includes(`"${id}"`), id);
+  assert.match(content, /const BLOCKY_SHOWCASE = `\$\{import\.meta\.env\.VITE_SUPABASE_URL\}\/storage\/v1\/object\/public\/generated\/blocky\/showcase`;/);
+  assert.ok(fs.existsSync(new URL("../public/templates/BLOCKY/thumbnail-home.webp", import.meta.url)), "the card's picture is in the repo");
+});

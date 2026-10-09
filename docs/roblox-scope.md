@@ -666,6 +666,18 @@ Decisions of 2026-10-08 (after the first real story):
     decision 100 ("You need at least the Starter plan to continue"). Also confirmed by the
     owner: the bug alarm stays; a signed-out visitor on a phone lands on the videos; V2 shows
     open to the free plan.
+103. BLOCKY ON HOME (owner, 2026-10-09). Two places on the home page, both ONLY while the
+    global `blocky_v1` switch is on (an account's own switch doesn't count on Home, so the
+    live site shows nothing before launch, the owner included): a card at the front of the
+    "short form suite" row, and a "Blocky Stories" section directly above Cartoon Drive By,
+    built by the same component (`FeaturedTemplate`: title left, "Try Template" right, a row
+    of tall clips playing without sound, looping). Four clips cut from the owner's own test
+    videos, none with a video model's own subtitles: three parts of "No Hats Allowed" and the
+    two clean middle scenes of the first story. Everything links to /workspace/blocky-stories,
+    where a signed-out visitor gets the signed-out view. Settings: `src/data/homeContent.js#
+    BLOCKY_TEMPLATE`; check: `scripts/blocky/qaHome.mjs`. Home's prerendered snapshot is made
+    at build time, so the section is in the page's first HTML only from the first build after
+    launch; the page itself shows it as soon as the switch is on.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

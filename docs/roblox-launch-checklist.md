@@ -48,6 +48,9 @@ See "The final test" at the end. Launch only after it passes.
      signed-out visitors);
    - open `/workspace/blocky-stories` signed out and as an account that is not the owner's, on a
      phone too: the two videos play, and the buttons open the sign-up or the upgrade popup;
+   - open the home page signed out: Blocky Stories leads the "short form suite" row and has its
+     own section above Cartoon Drive By; both lead to the signed-out Blocky view
+     (`node scripts/blocky/qaHome.mjs <folder>` checks it on localhost);
    - `node scripts/blocky/paid.mjs status` a few times in the first hours.
 
 ## Known and accepted, or still open

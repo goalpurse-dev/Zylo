@@ -8,11 +8,16 @@ import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx"
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
-import { HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE, HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
+import { BLOCKY_STORIES_FLAG } from "../../data/blockyStories";
+import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 
 export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
+  // Blocky Stories is on Home only once it is switched on for EVERYONE (the global blocky_v1 switch). No
+  // user is passed on purpose: an account's own switch doesn't count here, so nothing shows before launch.
+  const blockyLive = useFeatureFlag(BLOCKY_STORIES_FLAG, null).enabled;
 
   useEffect(() => {
     fetchShowcase("home").then(setLongFormCreations);
@@ -36,12 +41,15 @@ export default function HomeV2() {
 
       {/* Short Form: the "short form suite" coverflow is the templates section */}
       <div className="mt-12">
-        <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
+        <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates(Date.now(), { blocky: blockyLive })} subtitle="Short Form templates for TikTok, Reels & Shorts" />
         <p className="mt-5 px-4 text-center text-[13px] text-white/55 md:px-[50px]" data-testid="home-fruit-link">
           New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.
           <span className="mt-1 block text-white/45" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
         </p>
       </div>
+
+      {/* Blocky Stories' own section, right above the featured template and built the same way (launched only). */}
+      {blockyLive && <FeaturedTemplate template={BLOCKY_TEMPLATE} testId="featured-blocky" />}
 
       {/* Featured template (src/data/homeContent.js: FEATURED_TEMPLATE) */}
       <FeaturedTemplate />
