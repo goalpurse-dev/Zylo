@@ -1,0 +1,154 @@
+import { clipDurationSec } from "../../../../../supabase/functions/_shared/blocky/duration.js";
+import { CLIP_SIZES, PICTURE, SCRIPT, TIERS as PRICED_TIERS, TIER_IDS, tierModel } from "../../../../../supabase/functions/_shared/blocky/pricing.js";
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ BLOCKY STORIES — PRICES (the ONLY price file)                          ║
+// ║                                                                        ║
+// ║ Every number comes from the server's tool_prices rows via             ║
+// ║ useToolPriceQuotes: image:blocky-story (flat per picture / edit /      ║
+// ║ regenerate), video:blocky-story-v2/v3/v4 (credits per second) and      ║
+// ║ script:blocky-story (the script's share, charged once with the scene   ║
+// ║ pictures of a story we wrote; see useBlockyPrices).                    ║
+// ║ We quote one allowed length per tier and divide, which gives the      ║
+// ║ row's exact per-second rate; each clip is then CEIL(rate × sec), the  ║
+// ║ same rule compute_tool_price charges. Only the whole-story video      ║
+// ║ figure before the script exists is an estimate (clip lengths are      ║
+// ║ decided by the lines).                                                 ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+// The tiers themselves (tool keys, plans, the lengths each tier's clip model accepts, the size a clip is priced
+// at) come from the engine's pricing.js, the one place for Blocky's models and prices. This file adds what
+// only the page needs: the name on the card, and the clip length each tier is quoted at.
+const TAGS = { v2: "Fast & cheap", v3: "Sharper", v4: "Best quality" };
+const tierFor = (id) => {
+  const durations = [...tierModel(id).durations];
+  return {
+    id, label: id.toUpperCase(), tag: TAGS[id], minPlan: PRICED_TIERS[id].minPlan, toolKey: PRICED_TIERS[id].toolKey,
+    quoteSec: durations.includes(5) ? 5 : durations[0], durations, dims: CLIP_SIZES,
+  };
+};
+/** Quality tiers: server tool keys, the clip length each is quoted at, and the lengths the model accepts. */
+export const TIERS = Object.fromEntries(TIER_IDS.map((id) => [id, tierFor(id)]));
+export { TIER_IDS };
+
+export const PICTURE_TOOL_KEY = PICTURE.toolKey;
+export const SCRIPT_TOOL_KEY = SCRIPT.toolKey;
+const IMAGE_DIMS = { "9:16": [768, 1376], "16:9": [1376, 768] };
+
+/** Quote items (useToolPriceQuotes) for one aspect: the scene picture + each tier's clip. */
+export function priceItems(aspect = "9:16") {
+  const [iw, ih] = IMAGE_DIMS[aspect] ?? IMAGE_DIMS["9:16"];
+  return [
+    { id: "image", tool_key: PICTURE_TOOL_KEY, input: { width: iw, height: ih } },
+    ...TIER_IDS.map((id) => {
+      const tier = TIERS[id];
+      const [width, height] = tier.dims[aspect] ?? tier.dims["9:16"];
+      return { id: `clip:${id}`, tool_key: tier.toolKey, input: { durationSec: tier.quoteSec, withSound: true, width, height } };
+    }),
+  ];
+}
+
+/** Scenes for a length: one line each, about 5 s per line. */
+export function sceneCountForLength(lengthSec) {
+  return Math.max(3, Math.round(lengthSec / 5));
+}
+
+/** Exact server price of one scene picture (also edit / regenerate), or null. */
+export function picturePrice(prices) {
+  return prices?.image ?? null;
+}
+
+/**
+ * The script's share of the picture step: writing is free, and a story we wrote pays for its script once, in
+ * the same charge as its scene pictures. 0 for the user's own script. null until the price has loaded.
+ */
+export function scriptShare(prices, scripted = true) {
+  if (!scripted) return 0;
+  return prices?.script ?? null;
+}
+
+/** What "Make scene pictures" charges for a story that exists: every picture, plus the script's share. */
+export function picturesStepPrice(story, prices) {
+  const picture = picturePrice(prices);
+  const share = scriptShare(prices, story?.source !== "script");
+  if (picture == null || share == null || !story?.scenes?.length) return null;
+  return picture * story.scenes.length + share;
+}
+
+/** Credits per second for a tier (exact: the quoted clip ÷ its length). */
+export function perSecondRate(tierId, prices) {
+  const tier = TIERS[tierId];
+  const quoted = prices?.[`clip:${tierId}`];
+  if (!tier || quoted == null) return null;
+  return quoted / tier.quoteSec;
+}
+
+/** One clip of durationSec on a tier, exactly as the server charges it. */
+export function clipPrice(tierId, durationSec, prices) {
+  const rate = perSecondRate(tierId, prices);
+  if (rate == null) return null;
+  return Math.ceil(rate * durationSec - 1e-9);
+}
+
+/** Animate every scene of a story (sum of its clips). */
+export function animateAllPrice(story, prices) {
+  if (!story?.scenes?.length) return null;
+  let total = 0;
+  for (const scene of story.scenes) {
+    const price = clipPrice(story.quality, scene.durationSec, prices);
+    if (price == null) return null;
+    total += price;
+  }
+  return total;
+}
+
+/**
+ * Settings-step estimate before anything is written.
+ *   pictures: exact (scene count × picture price, plus the script's share unless it is the user's own script)
+ *   video:    about lengthSec of the tier's video (estimate)
+ * Returns null fields until prices load.
+ */
+export function estimateStory({ lengthSec, tierId, prices, sceneCount, scripted = true }) {
+  const scenes = sceneCount ?? sceneCountForLength(lengthSec);
+  const picture = picturePrice(prices);
+  const rate = perSecondRate(tierId, prices);
+  const share = scriptShare(prices, scripted);
+  const pictures = picture == null || share == null ? null : scenes * picture + share;
+  const video = rate == null ? null : Math.ceil(rate * lengthSec - 1e-9);
+  return {
+    sceneCount: scenes,
+    scriptShare: share,
+    pictures,
+    video,
+    total: pictures == null || video == null ? null : pictures + video,
+  };
+}
+
+/**
+ * About how many stories of lengthSec a month of credits makes on a tier
+ * (pictures + video at the live prices). null until prices load.
+ */
+export function videosPerMonth(planCredits, lengthSec, tierId, prices) {
+  const { total } = estimateStory({ lengthSec, tierId, prices });
+  return total ? Math.floor(planCredits / total) : null;
+}
+
+/**
+ * Clip seconds for one line on a tier: the SAME rule the server uses to size
+ * and charge the clip (speech at 2.6 words/s + 0.8 s, snapped up to the
+ * model's allowed lengths), so a script's price here is what gets charged.
+ */
+export function clipSecondsFor(line, tierId) {
+  const allowed = TIERS[tierId]?.durations ?? TIERS.v2.durations;
+  try { return clipDurationSec(line, allowed); } catch { return allowed.at(-1); }
+}
+
+/**
+ * The whole video for a story that exists: pictures (one per scene, with the
+ * script's share) + every clip at its planned length. Exact unless the user
+ * edits or regenerates.
+ */
+export function storyTotals(story, prices) {
+  const video = animateAllPrice(story, prices);
+  const pictures = picturesStepPrice(story, prices);
+  return { pictures, video, total: pictures == null || video == null ? null : pictures + video };
+}

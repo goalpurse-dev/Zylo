@@ -131,7 +131,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
             <p className="text-[#4A4A55]">
               Clear direction beats long descriptions. This is why creators
               reuse the same prompt framework repeatedly inside one{" "}
-              <Link to="/workspace" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI workspace
               </Link>.
             </p>

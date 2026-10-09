@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Clapperboard, Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
+import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
 import { isLongFormNew, trackLaunch } from "../launch/launch";
 
 /* ─── Workspace pop-up menu (image + video) ──────────────────────────────── */
@@ -168,6 +169,7 @@ export default function MobileBottomNav({ hidden }) {
     location.pathname.startsWith("/workspace/thirty-days") ||
     location.pathname.startsWith("/workspace/cartoon-drive-by") ||
     location.pathname.startsWith("/workspace/ai-fruit-story") ||
+    location.pathname.startsWith(BLOCKY_STORIES_PATH) ||
     location.pathname.startsWith("/workspace/face-asmr") ||
     location.pathname.startsWith("/workspace/micro-camera-animal") ||
     location.pathname.startsWith("/workspace/clay-rescue") ||

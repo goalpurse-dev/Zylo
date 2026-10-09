@@ -11,7 +11,7 @@ import { ShowcaseRow } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import { coverFor, fetchProjectCovers, projectTitle } from "../../pages/workspace/long-form/projectCovers";
 import { NeutralCover } from "../../pages/workspace/long-form/shared";
-import { FEATURED_TEMPLATE, HIDDEN_TEMPLATES } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE, FEATURED_TEMPLATE, HIDDEN_TEMPLATES } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
@@ -375,17 +375,20 @@ const TEMPLATES = [
   { name: "Face ASMR", desc: "Viral face reveal ASMR videos", image: "/face/face-preview.png", path: "/workspace/face-asmr", addedAt: "2026-05-24" },
   { name: "Kit Swap", desc: "Swap a player's kit for any country", image: "/template/kit-swap/preview.png", path: "/workspace/kit-swap", addedAt: "2026-07-12" },
 ];
-export function suiteTemplates(now = Date.now()) {
-  return TEMPLATES.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
+// blocky: Blocky Stories is switched on for everyone. Its card then leads the row (the newest template).
+export function suiteTemplates(now = Date.now(), { blocky = false } = {}) {
+  const all = blocky ? [{ name: BLOCKY_TEMPLATE.name, path: BLOCKY_TEMPLATE.path, ...BLOCKY_TEMPLATE.suite }, ...TEMPLATES] : TEMPLATES;
+  return all.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
 }
 
 /* ─── Featured Short Form template (under the short form suite) ─── */
-export function FeaturedTemplate() {
-  const t = FEATURED_TEMPLATE;
+// template: another template shown the same way (Blocky Stories, right above this one, once it is launched).
+export function FeaturedTemplate({ template = FEATURED_TEMPLATE, testId = "featured-template" }) {
+  const t = template;
   if (!t?.examples?.length) return null;
   const track = () => trackLaunch("featured_template", { placement: "home_featured", target: t.path });
   return (
-    <section className={`relative mt-10 w-full overflow-hidden py-8 md:py-10 ${SECTION_X}`} data-testid="featured-template">
+    <section className={`relative mt-10 w-full overflow-hidden py-8 md:py-10 ${SECTION_X}`} data-testid={testId}>
       <div className="pointer-events-none absolute inset-x-[8%] top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       <div className="relative mx-auto max-w-[1380px]">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3 md:mb-6">

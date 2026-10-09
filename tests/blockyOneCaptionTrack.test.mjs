@@ -1,0 +1,232 @@
+// A Blocky video has exactly ONE caption track: the one the final video draws.
+//
+// The first real story (2026-10-08) showed two caption lines at once. Cause:
+// the video model (Wan) drew its own subtitles into 2 of the 4 clips, although
+// the clip prompt forbids them, and the final video then drew its captions on
+// top. The clip check missed them because it looked only at the last frame,
+// where the model's subtitles are already gone.
+//
+// Three layers, each pinned here:
+//   1. Prevent: the Wan request also carries a negative prompt against drawn text.
+//   2. Detect: the clip check looks at two frames from the middle of the line; a
+//      clip with drawn words is made again once, at our cost, on the tier's NEXT
+//      clip model (the same model draws them again for the same line; a tier
+//      with no next model gets one remake on its own), and that clip is looked
+//      at again.
+//   3. Guarantee: a clip that still carries drawn words gets NO caption of ours
+//      in the final video, so there is never more than one line on screen.
+// And the downloaded MP4 is the file the player shows.
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { createEngine, REMAKE_NOTE } from "../supabase/functions/_shared/blocky/engine.js";
+import { clipTask } from "../supabase/functions/_shared/blocky/clips.js";
+import { CLIP_FRAME_PURPOSE, DRAWN_TEXT_PROBLEM, checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/functions/_shared/blocky/pictureCheck.js";
+import { FRAME_SCRIPT, checkClipFrame, framePath, speechFramesPath } from "../supabase/functions/_shared/blocky/clipCheck.js";
+import { buildFinalJob, scenesWithDrawnText } from "../supabase/functions/_shared/blocky/final.js";
+import { createMemoryDb } from "./helpers/blockyMemoryStore.mjs";
+
+const read = (rel) => fs.readFileSync(new URL(`../${rel}`, import.meta.url), "utf8");
+const CLIP = (taskUUID) => ({ data: [{ taskType: "videoInference", taskUUID, status: "success", videoURL: `https://vm.runware.ai/${taskUUID}.mp4`, cost: 0.2 }] });
+const ACK = (taskUUID) => ({ data: [{ taskType: "videoInference", taskUUID }] });
+const expected = [{ name: "Noob", look: "a bright yellow cube head" }, { name: "Vex", look: "a white cube head and a tall black top hat" }];
+const clean = (over = {}) => ({
+  characters: [{ name: "Noob", visible: true, isBlockyAvatar: true }, { name: "Vex", visible: true, isBlockyAvatar: true }],
+  mainFigures: 2, backgroundFigures: 0, humanFigures: 0, brickToyLook: false, realisticFace: false, duplicates: [], readableText: "", logos: false,
+  speakerHeadPercent: 0, speakerShownTo: "unknown", drawnText: "", notes: "", ...over,
+});
+
+test("1. prevent: every clip prompt forbids drawn text (none of the clip models in use takes a negative prompt)", () => {
+  const args = { prompt: "p", imageUrl: "https://example.test/scene.jpg", aspect: "9:16", durationSec: 6 };
+  for (const quality of ["v2", "v3", "v4"]) assert.ok(!("negativePrompt" in clipTask({ quality, ...args })), quality);
+  assert.match(read("supabase/functions/_shared/blocky/clips.js"), /No subtitles, captions or on-screen text\./);
+});
+
+test("2. detect: the clip check gets a second picture (two frames from the middle of the line) and one more question", async () => {
+  // Only clip checks with the second picture ask it; a scene picture's check is unchanged.
+  assert.ok(!("drawnText" in checkSchema().properties) && !/drawnText/.test(checkPrompt(expected, { speaker: "Noob" })));
+  assert.ok(checkSchema({ speech: true }).required.includes("drawnText"));
+  assert.match(checkPrompt(expected, { speech: true }), /drawnText: every question above is about the FIRST picture\. A SECOND picture is attached: two earlier moments of the same clip, side by side, taken while the line is being spoken\./);
+  // The verdict: words the model drew fail the clip, whatever the last frame looks like.
+  const bad = verdictOf(clean({ drawnText: "Freeze,\nI just typed ban Vex forever" }), expected, { missingOk: true });
+  assert.equal(bad.ok, false);
+  assert.ok(bad.problems[0].startsWith(DRAWN_TEXT_PROBLEM));
+  assert.equal(verdictOf(clean({ drawnText: "" }), expected, { missingOk: true }).ok, true);
+  assert.equal(verdictOf(clean({ drawnText: "-" }), expected, { missingOk: true }).ok, true, "a stray mark is not words");
+  // Through the check: both pictures are sent, the speech one second, and the call is logged with the verdict.
+  const logged = [];
+  const admin = { from: () => ({ insert: async (row) => { logged.push(row); return {}; } }) };
+  let sent;
+  const v = await checkClipFrame({
+    admin, apiKey: "k", frameUrl: "https://cdn.test/last.jpg", speechUrl: "https://cdn.test/speech.jpg", expected, ids: { job_id: "j1", attempt: 1 },
+    fetchLlm: async (req) => { sent = req; return { data: clean({ drawnText: "Wrong, I just typed ban Noob for real" }), costUsd: 0.002, httpStatus: 200, usage: {} }; },
+  });
+  assert.deepEqual(sent.user.filter((p) => p.type === "input_image").map((p) => p.image_url), ["https://cdn.test/last.jpg", "https://cdn.test/speech.jpg"]);
+  assert.ok(sent.schema.required.includes("drawnText"));
+  assert.equal(v.ok, false);
+  assert.ok(v.problems[0].startsWith(DRAWN_TEXT_PROBLEM), "not blamed on the last frame");
+  assert.equal(logged[0].purpose, CLIP_FRAME_PURPOSE);
+  assert.equal(logged[0].attempt, 1, "the attempt is logged, so the final video can tell which clip the check was for");
+  assert.ok(logged[0].response.verdict.problems[0].startsWith(DRAWN_TEXT_PROBLEM));
+  // Without the second picture (an older frame, a failed upload) the check still runs as before.
+  const plain = await checkPicture({ admin, apiKey: "k", imageUrl: "https://cdn.test/last.jpg", expected, purpose: CLIP_FRAME_PURPOSE, ids: {}, fetchLlm: async (req) => { assert.equal(req.user.filter((p) => p.type === "input_image").length, 1); return { data: clean(), costUsd: 0.001, httpStatus: 200, usage: {} }; } });
+  assert.equal(plain.ok, true);
+});
+
+test("2. detect: the frame machine also takes two frames from the middle of the clip, to their own file", () => {
+  assert.equal(framePath("u", "s", "j", 2), "blocky/u/s/j-a2-last.jpg");
+  assert.equal(speechFramesPath("u", "s", "j", 2), "blocky/u/s/j-a2-speech.jpg");
+  // The script the machine runs: 30% and 60% of the clip, side by side, uploaded to the second address.
+  assert.match(FRAME_SCRIPT, /String\(length \* 0\.3\)[^]*String\(length \* 0\.6\)[^]*hstack=inputs=2/);
+  assert.match(FRAME_SCRIPT, /job\.speechUploadUrl/);
+  // blocky-worker asks for both and passes both to the check, with the attempt.
+  const worker = read("supabase/functions/blocky-worker/index.ts");
+  assert.match(worker, /speechFramesPath\(job\.user_id, job\.story_id, job\.id, job\.attempt\)/);
+  assert.match(worker, /speechUrl: frame\.speechPath \?/);
+  assert.match(worker, /job_id: job\.id, attempt: job\.attempt \}/);
+});
+
+/** An engine whose frame check answers from `verdicts` (one per attempt, in order). */
+function clipEngine(verdicts, { fallback = false } = {}) {
+  const db = createMemoryDb({ balance: 1000 });
+  const sent = [];
+  const frameChecks = [];
+  let n = 0;
+  const engine = createEngine({
+    store: db.store,
+    runware: { submit: async (env) => { sent.push(env); return { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+    media: { store: async ({ path }) => `https://cdn.test/${path}` },
+    env: { BLOCKY_PAID_CALLS: "", webhookBase: "https://fn.test/blocky-worker", webhookSecret: "s3cret" },
+    checkClipWords: async () => ({ ok: true, problems: [] }),
+    requestClipFrame: async (job) => ({ path: `frames/${job.id}-a${job.attempt}-last.jpg`, speechPath: `frames/${job.id}-a${job.attempt}-speech.jpg`, callId: null }),
+    checkClipFrame: async (job, frame) => { frameChecks.push({ attempt: job.attempt, speechPath: frame.speechPath, model: job.request.model }); return verdicts[frameChecks.length - 1]; },
+    drawnTextProblem: DRAWN_TEXT_PROBLEM,
+    // The tier's next clip model, as clips.js#fallbackClipTask gives it: null once the request already is the fallback.
+    ...(fallback ? { fallbackClip: (request) => (request.model === "wan" ? { ...request, model: "seedance" } : null) } : {}),
+    now: () => db.clock(),
+    uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
+    log: { error() {} },
+  });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  const [scene] = [...db.scenes.values()];
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 25, request: { taskType: "videoInference", model: "wan", positivePrompt: "p", duration: 5 } }] });
+  return { db, engine, sent, frameChecks, storyId, job: () => [...db.jobs.values()][0], scene: () => [...db.scenes.values()][0] };
+}
+const DRAWN = { ok: false, problems: [`${DRAWN_TEXT_PROBLEM} ("Freeze, I just typed ban Vex forever")`] };
+const FINE = { ok: true, problems: [] };
+
+test("2. on a tier with no next clip model (V3, V4): a clip with drawn subtitles is made again once at our cost, and the new clip is looked at again", async () => {
+  const t = clipEngine([DRAWN, FINE]);
+  await t.engine.kick({ storyId: t.storyId });
+  assert.equal(await t.engine.onResult(t.sent[0].taskUUID, CLIP(t.sent[0].taskUUID)), "frame_pending", "waits for its frames");
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "remade");
+  assert.ok(t.job().error.startsWith(REMAKE_NOTE) && t.job().error.includes(DRAWN_TEXT_PROBLEM));
+  assert.notEqual(t.scene().clip_status, "ready", "the user never sees the clip with two captions: it goes straight back to being made");
+  assert.equal(t.sent.length, 2, "one remake");
+  assert.equal(t.db.balance, 975, "the user paid for one clip");
+  // The remade clip: its frames are checked too, so the final video knows what it carries.
+  assert.equal(await t.engine.onResult(t.sent[1].taskUUID, CLIP(t.sent[1].taskUUID)), "frame_pending");
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "completed");
+  assert.deepEqual(t.frameChecks.map((c) => c.attempt), [1, 2]);
+  assert.ok(t.frameChecks.every((c) => /-speech\.jpg$/.test(c.speechPath)), "the check is given the mid-line frames");
+  assert.equal(t.scene().clip_status, "ready");
+});
+
+test("2. a remade clip that STILL has drawn subtitles is kept (never a third clip), and its check is on record", async () => {
+  const t = clipEngine([DRAWN, DRAWN]);
+  await t.engine.kick({ storyId: t.storyId });
+  await t.engine.onResult(t.sent[0].taskUUID, CLIP(t.sent[0].taskUUID));
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "remade");
+  await t.engine.onResult(t.sent[1].taskUUID, CLIP(t.sent[1].taskUUID));
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "completed");
+  assert.equal(t.sent.length, 2, "made twice, never three times");
+  assert.equal(t.frameChecks.length, 2);
+  assert.equal(t.db.balance, 975);
+});
+
+test("2b. drawn subtitles: the clip goes STRAIGHT to the next clip model (no remake on the same one), and that clip is checked too", async () => {
+  const t = clipEngine([DRAWN, FINE], { fallback: true });
+  await t.engine.kick({ storyId: t.storyId });
+  await t.engine.onResult(t.sent[0].taskUUID, CLIP(t.sent[0].taskUUID));
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "remade_on_fallback");
+  assert.deepEqual(t.sent.map((r) => r.model), ["wan", "seedance"], "never the same model again: it drew the same subtitles for the same line");
+  assert.ok(t.job().error.startsWith(`${REMAKE_NOTE} on the next clip model:`) && t.job().error.includes(DRAWN_TEXT_PROBLEM));
+  assert.notEqual(t.scene().clip_status, "ready", "the user never sees the clip with two captions");
+  await t.engine.onResult(t.sent[1].taskUUID, CLIP(t.sent[1].taskUUID));
+  assert.equal(await t.engine.onClipFrame(t.job().id, true), "completed");
+  assert.deepEqual(t.frameChecks.map((c) => [c.attempt, c.model]), [[1, "wan"], [2, "seedance"]], "both clips were looked at");
+  assert.equal(t.scene().clip_status, "ready");
+  assert.equal(t.db.balance, 975, "the user paid for one clip; the other one is ours");
+});
+
+test("2b. drawn subtitles on the next model too: the clip is kept, never a third, and the final video's guarantee takes over", async () => {
+  const t = clipEngine([DRAWN, DRAWN], { fallback: true });
+  await t.engine.kick({ storyId: t.storyId });
+  for (const expectNext of ["remade_on_fallback", "completed"]) {
+    const env = t.sent.at(-1);
+    await t.engine.onResult(env.taskUUID, CLIP(env.taskUUID));
+    assert.equal(await t.engine.onClipFrame(t.job().id, true), expectNext);
+  }
+  assert.deepEqual(t.sent.map((r) => r.model), ["wan", "seedance"], "two clips at most");
+  assert.equal(t.scene().clip_status, "ready");
+  assert.equal(t.db.balance, 975);
+});
+
+test("2b. the next model is only for drawn subtitles: another fault is made again on the same model, once", async () => {
+  const HUMAN = { ok: false, problems: ["last frame: 1 human figure in the picture"] };
+  const other = clipEngine([HUMAN, HUMAN], { fallback: true });
+  await other.engine.kick({ storyId: other.storyId });
+  await other.engine.onResult(other.sent[0].taskUUID, CLIP(other.sent[0].taskUUID));
+  assert.equal(await other.engine.onClipFrame(other.job().id, true), "remade");
+  await other.engine.onResult(other.sent[1].taskUUID, CLIP(other.sent[1].taskUUID));
+  assert.equal(await other.engine.onClipFrame(other.job().id, true), "completed");
+  assert.deepEqual(other.sent.map((r) => r.model), ["wan", "wan"]);
+  // A clip remade for another fault whose new clip has drawn subtitles still gets its one try on the next model.
+  const both = clipEngine([HUMAN, DRAWN, FINE], { fallback: true });
+  await both.engine.kick({ storyId: both.storyId });
+  for (const expectNext of ["remade", "remade_on_fallback", "completed"]) {
+    const env = both.sent.at(-1);
+    await both.engine.onResult(env.taskUUID, CLIP(env.taskUUID));
+    assert.equal(await both.engine.onClipFrame(both.job().id, true), expectNext);
+  }
+  assert.deepEqual(both.sent.map((r) => r.model), ["wan", "wan", "seedance"]);
+  assert.equal(both.db.balance, 975);
+});
+
+test("3. guarantee: the final video leaves its caption off a clip that carries drawn words", () => {
+  const scenes = [{ id: "s1", clip_job_id: "j1" }, { id: "s2", clip_job_id: "j2" }, { id: "s3", clip_job_id: "j3" }, { id: "s4", clip_job_id: "j4" }];
+  const jobs = [{ id: "j1", attempt: 2 }, { id: "j2", attempt: 1 }, { id: "j3", attempt: 2 }, { id: "j4", attempt: 2 }];
+  const check = (job_id, attempt, problems, created_at) => ({ job_id, attempt, created_at, response: { verdict: { ok: !problems.length, problems } } });
+  const drawn = [`${DRAWN_TEXT_PROBLEM} ("Freeze")`];
+  const checks = [
+    check("j1", 1, drawn, "2026-10-08T10:00:00Z"), check("j1", 2, [], "2026-10-08T10:02:00Z"),      // remade, and the new clip is clean
+    check("j2", 1, [], "2026-10-08T10:00:00Z"),                                                     // clean from the start
+    check("j3", 1, drawn, "2026-10-08T10:00:00Z"), check("j3", 2, drawn, "2026-10-08T10:02:00Z"),   // remade, still drawn
+    check("j4", 1, drawn, "2026-10-08T10:00:00Z"),                                                  // remade, but the new clip was never checked
+  ];
+  assert.deepEqual([...scenesWithDrawnText(scenes, jobs, checks, DRAWN_TEXT_PROBLEM)].sort(), ["s3", "s4"]);
+  assert.equal(scenesWithDrawnText(scenes, jobs, [], DRAWN_TEXT_PROBLEM).size, 0, "no checks on record: captions as usual");
+  // A clip the user regenerated is a new job: the old job's checks no longer count.
+  assert.equal(scenesWithDrawnText([{ id: "s3", clip_job_id: "j9" }], [{ id: "j9", attempt: 1 }], checks, DRAWN_TEXT_PROBLEM).size, 0);
+
+  // What blocky-story-api does with it, and what the builder does with an empty caption.
+  const api = read("supabase/functions/blocky-story-api/index.ts");
+  assert.match(api, /scenesWithDrawnText\(ordered\.map\(\(s: any\) => \(\{ id: s\.id, clip_job_id: s\.clip_job_id \}\)\), clipJobs \?\? \[\], frameChecks \?\? \[\], DRAWN_TEXT_PROBLEM\)/);
+  assert.match(api, /if \(drawn\.has\(ordered\[i\]\.id\)\) \{ c\.caption = ""; c\.drawnText = true; \}/);
+  const builder = read("render-worker/src/blockyFinal.mjs");
+  assert.match(builder, /const captionText = clip\.caption \?\? clip\.line;\s+if \(job\.captions && captionText\) \{/, "an empty caption draws nothing for that clip (and \"\" is kept: ?? only falls back for a missing one)");
+  // The job itself: one line per clip, and nothing else that could draw text.
+  const job = buildFinalJob({ story: { id: "st", aspect: "9:16" }, callId: "c", captions: true, uploadUrl: "u", callbackUrl: "cb", token: "t", scenes: [{ idx: 0, clip_status: "ready", clip_url: "https://cdn.test/1.mp4", line: "One." }, { idx: 1, clip_status: "ready", clip_url: "https://cdn.test/2.mp4", line: "Two." }] });
+  assert.deepEqual(job.clips, [{ url: "https://cdn.test/1.mp4", line: "One." }, { url: "https://cdn.test/2.mp4", line: "Two." }]);
+  assert.ok(!("overlays" in job), "no Part label or end card unless asked for");
+});
+
+test("the player and the download are the same file, and nothing is drawn over the player", () => {
+  const view = read("src/components/viral-tools/blocky-stories/workspace/FinalView.jsx");
+  const flow = read("src/components/viral-tools/blocky-stories/hooks/useBlockyFlow.js");
+  assert.match(view, /<video[^>]*\s+src=\{story\.final\.url\}/s, "the player shows the final file");
+  assert.match(flow, /saveMediaToDevice\(\{ url: story\.final\.url, filename: `\$\{name\}\.mp4`/, "the download saves that same file");
+  assert.doesNotMatch(view, /<track\b|scene\.line|\.line\}/, "no caption overlay or subtitle track on the player: captions live in the file only");
+  // Captions on or off is a rebuild of the file, not an overlay.
+  assert.match(read("supabase/functions/blocky-story-api/index.ts"), /startFinal\(ctx\.userId, storyId, \{ captions: ctx\.body\?\.captions !== false/);
+});

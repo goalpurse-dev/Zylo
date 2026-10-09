@@ -112,7 +112,7 @@ export default function HowToGoViralWithAI() {
             </p>
             <p className="text-[#4A4A55] text-[15px] leading-relaxed">
               This is why creators using{" "}
-              <Link to="/workspace" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo's creative workspace
               </Link>{" "}
               are seeing 3–10x the organic reach they got with traditional content.
@@ -261,7 +261,7 @@ export default function HowToGoViralWithAI() {
               </div>
             </div>
             <Link
-              to="/workspace"
+              to="/"
               className="inline-block rounded-xl bg-[#7A3BFF] px-10 py-4 text-white font-semibold hover:opacity-90 transition text-[15px]"
             >
               Start Creating on Zyvo →

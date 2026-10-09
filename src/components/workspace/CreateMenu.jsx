@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Pin, X } from "lucide-react";
@@ -6,6 +6,9 @@ import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
+import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
+import { useAuth } from "../../context/AuthContext";
+import { useFeatureFlag } from "../../lib/featureFlags";
 
 // ─── Add new tools here as they launch ───────────────────────────────────────
 export const CREATE_TOOLS = [
@@ -99,6 +102,27 @@ export const CREATE_TOOLS = [
     color: "#bef264",
   },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
+].map((tool) => ({
+  ...tool,
+  seoVisibility: getWorkspaceRouteSeoPolicy(tool.path)?.seoVisibility || "noindex",
+}));
+
+// Templates that exist only for accounts whose flag is on (hidden until
+// launch). They are NOT in CREATE_TOOLS, so nothing that lists every tool can
+// show them by accident; useShortFormTools() adds each one right after the
+// tool named in `after`.
+export const FLAGGED_CREATE_TOOLS = [
+  {
+    id: "blocky-stories",
+    label: BLOCKY_STORIES_NAME,
+    sublabel: "",
+    path: BLOCKY_STORIES_PATH,
+    preview: BLOCKY_STORIES_THUMBNAIL,
+    previewPosition: "object-center",
+    color: "#bef264",
+    flag: BLOCKY_STORIES_FLAG,
+    after: "ai-fruit-story",
+  },
 ].map((tool) => ({
   ...tool,
   seoVisibility: getWorkspaceRouteSeoPolicy(tool.path)?.seoVisibility || "noindex",
@@ -366,16 +390,37 @@ function ToolGridItem({ tool, active, onClick, pinned, onTogglePin, pinDisabled 
 // The Short Form menu's tools: hidden ones (by label) come from src/data/homeContent.js.
 const MENU_TOOLS = CREATE_TOOLS.filter((t) => !HIDDEN_SHORT_FORM_TOOLS.includes(t.label));
 
+/**
+ * The Short Form tools this viewer gets: MENU_TOOLS, plus each flagged
+ * template whose flag is on for them (their own flag or the global switch),
+ * placed right after the tool it belongs next to. Flag off = not in the list.
+ */
+export function useShortFormTools() {
+  const auth = useAuth();
+  const blocky = useFeatureFlag(BLOCKY_STORIES_FLAG, auth?.user?.id);
+  return useMemo(() => {
+    const on = { [BLOCKY_STORIES_FLAG]: blocky.enabled };
+    const tools = [...MENU_TOOLS];
+    for (const extra of FLAGGED_CREATE_TOOLS) {
+      if (!on[extra.flag]) continue;
+      const at = tools.findIndex((t) => t.id === extra.after);
+      tools.splice(at < 0 ? tools.length : at + 1, 0, extra);
+    }
+    return tools;
+  }, [blocky.enabled]);
+}
+
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */
 export function DesktopCreatePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const tools = useShortFormTools();
   const go = (path) => { onClose(); navigate(path); };
 
   return (
     <DesktopPanel open={open} onClose={onClose} title="Short Form" subtitle="Choose a tool to start" sectionLabel="Viral Tools" grid>
-      {MENU_TOOLS.map((tool) => (
+      {tools.map((tool) => (
         <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
       ))}
       <div className="mt-0.5 rounded-[14px] border border-dashed border-white/[0.07] py-5 text-center">
@@ -422,7 +467,8 @@ export const WORKSPACE_TOOLS = [
   },
 ];
 
-export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...WORKSPACE_TOOLS, ...PUBLISH_TOOLS];
+// Flagged tools can be pinned too; the shell shows a pinned one only while its flag is on.
+export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS, ...WORKSPACE_TOOLS, ...PUBLISH_TOOLS];
 
 export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
@@ -457,6 +503,7 @@ export function DesktopPublishPanel({ open, onClose, pinnedIds = [], onTogglePin
 export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const tools = useShortFormTools();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -510,7 +557,7 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-            {MENU_TOOLS.map((tool, i) => (
+            {tools.map((tool, i) => (
               <button
                 key={tool.id}
                 type="button"

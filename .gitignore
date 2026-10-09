@@ -16,3 +16,6 @@ art-review/
 # Long Form launch email: local send log + preview
 emails/.sent/
 emails/.preview/
+
+# Any other local env file with keys
+.env.*.local

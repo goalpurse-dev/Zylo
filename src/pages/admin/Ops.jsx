@@ -43,13 +43,73 @@ function StuckTable({ title, rows, cols }) {
   );
 }
 
+// Blocky Stories' limit and alarm (its own function, blocky-story-api: the same owner check on the server).
+// The 3-hour window against its limit, with the limit changed right here; the switch for paid calls; what
+// users cost us against what they were charged; and any open alert.
+function BlockyCard({ b, onChange }) {
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [note, setNote] = useState(null);
+  if (!b) return <Card title="Blocky Stories · limit and alarm" testid="ops-blocky"><p className="text-[14px] text-white/60">Couldn't load Blocky's numbers.</p></Card>;
+  const w = b.watch;
+  const win = b.window;
+  const spendAlert = b.alerts.find((a) => a.kind === "spend");
+  const off = { switch_off: "switched off", cap_reached: "today's cap is reached", unreadable: "the switch couldn't be read" }[b.offReason] ?? "switched off";
+  const share = Math.min(100, Math.round((win.usedUsd / win.capUsd) * 100));
+  const save = async (e) => {
+    e.preventDefault();
+    const usd = Number(draft);
+    if (!(usd >= win.range.min && usd <= win.range.max)) { setNote(`Enter a number of dollars between ${win.range.min} and ${num(win.range.max)}.`); return; }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("blocky-story-api", { body: { action: "opsSetWindowCap", usd } });
+    setSaving(false);
+    if (error || !data?.ok) { setNote("Couldn't save the limit. Try again."); return; }
+    setDraft("");
+    setNote(`Saved. The limit is ${money(data.data.window.capUsd)} per ${data.data.window.hours} hours, in force now.`);
+    onChange(data.data);
+  };
+  const ALERTS = { spend: ["Spending alarm", "text-red-200"], retries: ["A job keeps being sent again", "text-amber-200"], window: ["The limit was reached: users saw \"High demand right now\"", "text-amber-200"] };
+  return (
+    <Card title="Blocky Stories · limit and alarm" tone={spendAlert ? "bad" : b.alerts.length || win.full ? "warn" : "plain"} testid="ops-blocky">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat label={`All users · last ${win.hours} hours`} value={`${money(win.usedUsd)} of ${money(win.capUsd)}`} sub={win.full ? "at the limit: new stories wait" : `${money(win.leftUsd)} left${win.runningUsd > 0 ? ` · ${money(win.runningUsd)} of it still running` : ""}`} />
+        <Stat label="Paid calls" value={b.paidCalls ? "On" : spendAlert ? "Paused" : "Off"} sub={b.paidCalls ? "stories can be made" : spendAlert ? "paused by the alarm" : off} />
+        <Stat label={`Spent on users · last ${w.hours} h`} value={money(w.spendUsd)} sub={`charged ${money(w.chargedUsd)} (${num(w.chargedCredits)} credits)`} />
+        <Stat label="Spend ahead of charges" value={w.aheadUsd > 0 ? money(w.aheadUsd) : "None"} sub={`the alarm pauses paid calls above ${money(w.alarmAtUsd)}`} />
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]" role="img" aria-label={`${share} % of the ${win.hours}-hour limit used`}>
+        <div className={`h-full rounded-full ${win.full ? "bg-amber-300" : "bg-lime-300"}`} style={{ width: `${Math.max(share, win.usedUsd > 0 ? 2 : 0)}%` }} />
+      </div>
+      <form onSubmit={save} className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <label htmlFor="ops-blocky-limit" className="font-semibold text-white">Limit per {win.hours} hours, all Blocky users together:</label>
+        <span className="flex items-center gap-1">
+          $<input id="ops-blocky-limit" data-testid="ops-blocky-limit" type="number" inputMode="decimal" min={win.range.min} max={win.range.max} step="1" value={draft} onChange={(e) => { setDraft(e.target.value); setNote(null); }} placeholder={String(win.capUsd)} className="w-24 rounded-lg border border-white/15 bg-white/[0.05] px-2 py-1.5 tabular-nums text-white outline-none focus:border-lime-300/60" />
+        </span>
+        <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set limit"}</button>
+        {note && <span role="status" className="text-white/60">{note}</span>}
+      </form>
+      <p className="mt-2 text-[12.5px] text-white/50">At the limit, new stories see "High demand right now, please try again shortly", nothing is charged, stories in progress finish, and you get an email. Also in force: {money(b.limits.userDailyUsd)} of our cost per user per day. All of Blocky today, tests too: {money(b.today.spentUsd)}.</p>
+      {b.alerts.map((a) => (
+        <p key={a.kind} className={`mt-3 text-[12.5px] ${ALERTS[a.kind]?.[1] ?? "text-amber-200"}`}>
+          {ALERTS[a.kind]?.[0] ?? "Alert"} (last seen {new Date(a.lastSeen).toLocaleString()}): {a.message}
+          {a.kind === "spend" && " Paid calls stay off until you switch them back on."}
+        </p>
+      ))}
+    </Card>
+  );
+}
+
 export default function Ops() {
   const [data, setData] = useState(null);
+  const [blocky, setBlocky] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | denied | error
   const load = useCallback(async () => {
     const { data: d, error } = await supabase.functions.invoke("ops-status", { body: {} });
     if (error) { const status = error?.context?.status; setState(status === 401 || status === 403 ? "denied" : "error"); return; }
     setData(d); setState("ok");
+    // Blocky's card has its own source; a failure there never hides the rest of the page.
+    const { data: b, error: blockyError } = await supabase.functions.invoke("blocky-story-api", { body: { action: "opsStatus" } });
+    setBlocky(!blockyError && b?.ok ? b.data : null);
   }, []);
   useEffect(() => { document.title = "Ops | Zyvo"; load(); const t = setInterval(load, 30_000); return () => clearInterval(t); }, [load]);
 
@@ -80,6 +140,8 @@ export default function Ops() {
         {p.paused && p.lastError && <p className="mt-3 text-[12.5px] text-red-200">Why: {p.lastError}</p>}
         {p.providerUsageToday && <p className="mt-3 text-[12.5px] text-white/55">Runware's own count for today: {num(p.providerUsageToday.requests)} requests, {num(p.providerUsageToday.credits)} in its usage units.</p>}
       </Card>
+
+      <BlockyCard b={blocky} onChange={setBlocky} />
 
       <Card title="Failures per hour · last 24 hours" testid="ops-failures">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">

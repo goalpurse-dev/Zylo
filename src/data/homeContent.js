@@ -1,4 +1,5 @@
 // Home and navigation settings you can edit without touching the page code.
+import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "./blockyStories.js";
 
 // The previous Home (src/pages/workspace/home.jsx) stays available for one
 // release: set to true to show it at "/" again. Delete the old
@@ -35,4 +36,19 @@ export const FEATURED_TEMPLATE = {
     { image: `${SHOWCASE}/featured/cartoon-drive-by/plane-window-v2.webp` },
     { video: `${SHOWCASE}/featured/cartoon-drive-by/seashell-village.mp4`, poster: `${SHOWCASE}/featured/cartoon-drive-by/seashell-village.webp` }, // made with the template itself (V2)
   ],
+};
+
+// Blocky Stories on Home: its own section right above the featured template, built by the same component,
+// and one card at the front of the "short form suite" row. Both show ONLY while Blocky is switched on for
+// everyone (the global blocky_v1 switch; an account's own switch doesn't count on Home), so nothing of it
+// is on the live site before launch. The four clips are cut from the owner's own test videos, without
+// sound, and none carries a video model's own subtitles (scripts/blocky/publishShowcase.mjs).
+const BLOCKY_SHOWCASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/generated/blocky/showcase`;
+export const BLOCKY_TEMPLATE = {
+  name: BLOCKY_STORIES_NAME,
+  path: BLOCKY_STORIES_PATH,
+  eyebrow: "New template",
+  examples: ["home-no-hats-1", "home-fake-admin", "home-no-hats-2", "home-no-hats-3"].map((id) => ({ video: `${BLOCKY_SHOWCASE}/${id}.mp4`, poster: `${BLOCKY_SHOWCASE}/${id}.jpg` })),
+  // The card in the "short form suite" row. NEW for 30 days from addedAt, like every card there.
+  suite: { desc: "Blocky avatars act out your story, and talk", image: "/templates/BLOCKY/thumbnail-home.webp", addedAt: "2026-10-09" },
 };

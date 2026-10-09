@@ -1,3 +1,5 @@
+import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "./blockyStories.js";
+
 export const SITE_URL = "https://www.tryzyvo.com";
 
 // Central indexing policy for application/workspace routes. These entries are
@@ -19,6 +21,7 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/viral-score", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo Viral Score" },
   { path: "/workspace/lip-sync", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo Lip Sync" },
   { path: "/workspace/ai-fruit-story", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/ai-fruit-story-maker", title: "Zyvo AI Fruit Story" },
+  { path: BLOCKY_STORIES_PATH, seoVisibility: "noindex", routeType: "paid-template", title: `Zyvo ${BLOCKY_STORIES_NAME}` },
   { path: "/workspace/face-asmr", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/face-asmr-maker", title: "Zyvo Face ASMR" },
   { path: "/workspace/skeleton-shorts", seoVisibility: "noindex", routeType: "credit-template", title: "Zyvo Skeleton Shorts" },
   { path: "/workspace/micro-camera-animal", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/micro-camera-animal-maker", title: "Zyvo Micro Camera Animal" },

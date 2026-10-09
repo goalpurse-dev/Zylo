@@ -3,7 +3,8 @@ import { createElement, useEffect, useState } from "react";
 import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
 import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
-import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
+import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
+import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
 import "../../styles/workspace-shell.css";
 import { NewBadge } from "../launch/LaunchUI.jsx";
 import { isLongFormNew, trackLaunch } from "../launch/launch";
@@ -72,6 +73,7 @@ export default function ToolShell({ onClose }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [pinnedIds, setPinnedIds] = useState(getInitialPinnedTools);
+  const shortFormTools = useShortFormTools();
 
   const isActive = (path) => location.pathname.startsWith(path);
   const anyPanelOpen = createOpen || workspaceOpen;
@@ -80,6 +82,7 @@ export default function ToolShell({ onClose }) {
     isActive("/workspace/thirty-days") ||
     isActive("/workspace/cartoon-drive-by") ||
     isActive("/workspace/ai-fruit-story") ||
+    isActive(BLOCKY_STORIES_PATH) ||
     isActive("/workspace/face-asmr") ||
     isActive("/workspace/micro-camera-animal") ||
     isActive("/workspace/clay-rescue") ||
@@ -129,7 +132,9 @@ export default function ToolShell({ onClose }) {
 
   const pinnedTools = pinnedIds
     .map((id) => ALL_PINNABLE_TOOLS.find((tool) => tool.id === id))
-    .filter(Boolean);
+    .filter(Boolean)
+    // A flagged template stays pinned only while its flag is on for this viewer.
+    .filter((tool) => !tool.flag || shortFormTools.some((t) => t.id === tool.id));
   const pinLimitReached = pinnedIds.length >= 4;
 
   return (

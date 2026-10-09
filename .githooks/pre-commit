@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuses a commit that contains an env file with keys (.env, .env.local, .env.blocky.local, ...).
+# Turn it on once per clone: git config core.hooksPath .githooks
+exec node scripts/blocky/checkEnvNotStaged.mjs
