@@ -678,6 +678,19 @@ Decisions of 2026-10-08 (after the first real story):
     BLOCKY_TEMPLATE`; check: `scripts/blocky/qaHome.mjs`. Home's prerendered snapshot is made
     at build time, so the section is in the page's first HTML only from the first build after
     launch; the page itself shows it as soon as the switch is on.
+104. LAUNCHED (owner's go, 2026-10-09). `laptop-transfer` merged into `main` by pull request
+    #2 (a plain merge, commit `83b057b`); Vercel's Production build of it finished at about
+    14:44 UTC. At 14:50 UTC paid calls were switched on and the global `blocky_v1` switch was
+    turned on (`20261102100000_blocky_v1_on.sql`; the rollback file switches it off again).
+    The owner's own `blocky_v1` switch is left on: if the global one is ever turned off in an
+    emergency, the owner still sees Blocky to look into it. Series stays off (no
+    `blocky_series_v1` row, and no account has it). Limits as set: $20 per rolling 3 hours for
+    all of Blocky, $20 per user per day, the bug alarm at $10 ahead. Checked on the live site
+    at 1440 and 390 px (`scripts/blocky/qaLive.mjs`, 37 of 37): Home's card and section, the
+    signed-out view with sign-up on every button, a free account signed in through the site's
+    own form (ideas work, the upgrade popup after that, refused by the server too, no
+    /admin/ops), and Fruit, Long Form and Blocky opening for the owner. Privacy 32 of 32, now
+    also with a paying second account. Live functions equal main.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

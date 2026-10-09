@@ -21,11 +21,22 @@ const made = await db.auth.admin.createUser({ email, password: `${crypto.randomU
 if (made.error) { console.error(`Couldn't make the second account: ${made.error.message}`); process.exit(1); }
 try {
   const other = await userSession(email);
-  // 1. Through Blocky's own API.
+  // 1. Through Blocky's own API: first as it is (the free plan), then with a paid plan (no credits), which
+  // gets it past the plan check so that only "this story isn't yours" can stop it.
+  for (const plan of ["free", "starter"]) {
+  if (plan !== "free") {
+    const set = await db.from("profiles").update({ plan_code: plan }).eq("id", made.data.user.id).select("id");
+    if (set.error || !set.data?.length) { ok(`the second account on the ${plan} plan`, false, set.error?.message ?? "no profile row"); continue; }
+  }
   for (const [action, body] of [["getStory", { storyId: story.id }], ["listRecent", { type: "single" }], ["uploadPackage", { storyId: story.id }], ["generateScenePictures", { storyId: story.id }], ["buildFinal", { storyId: story.id }]]) {
     const r = await api(other.accessToken, action, body);
     const leaked = JSON.stringify(r.data ?? "").includes(story.id) || JSON.stringify(r.data ?? "").includes("/blocky/");
-    ok(`the API: ${action} gives the second account nothing of the owner's`, !r.ok && !leaked, `${r.code}`);
+    // Since launch Blocky is on for every account, so a second account's OWN list is answered: it must be
+    // its own (empty, the account is new) and carry nothing of the owner's. Everything aimed at the owner's
+    // story is still refused.
+    const ownEmptyList = action === "listRecent" && r.ok === true && Array.isArray(r.data) && r.data.length === 0;
+    ok(`the API (${plan} plan): ${action} gives the second account nothing of the owner's`, (!r.ok || ownEmptyList) && !leaked && (plan === "free" || r.ok || r.code === "NOT_FOUND"), r.ok ? `its own list: ${r.data?.length ?? "?"} stories` : `${r.code}`);
+  }
   }
   // The owner's alarm card (/admin/ops) is for the site owner only.
   const card = await api(other.accessToken, "opsStatus", {});

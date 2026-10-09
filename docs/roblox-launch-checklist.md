@@ -1,5 +1,18 @@
 # Blocky Stories: launch checklist
 
+**Launched on 2026-10-09** (decision 104 in `docs/roblox-scope.md`): merged to main by pull request #2,
+paid calls on and the global `blocky_v1` switch on since 14:50 UTC. What follows is the list as it was
+walked through, kept for the next launch and for switching off.
+
+**To switch Blocky off in a hurry:** `node scripts/blocky/paid.mjs off` stops all spending at once (nothing new
+is made; jobs that were waiting are refunded). To hide Blocky from everyone as well, run
+`supabase/rollbacks/20261102100000_blocky_v1_on_rollback.sql`.
+
+**After launch, on the live site:** `node scripts/blocky/qaLive.mjs <folder>` (about 2 cents: two real
+batches of ideas for a throwaway free account), `node scripts/blocky/privacyCheck.mjs`,
+`node scripts/blocky/verifyLive.mjs`, `node scripts/blocky/paid.mjs status`. The smoke check and the plan
+check need paid calls OFF, so they are for before a launch or a quiet moment, not for a live day.
+
 What happens at launch, in order, and what must be true before it. Nothing here is done until the
 owner says so. Items are added as they come up; launch prep walks through every one.
 
