@@ -186,13 +186,16 @@ test("the API: free with a daily limit, one writer per version, a pick that can'
   for (const action of ["getIdeas", "startDraft", "writeVersion", "getDraft", "pickVersion"]) assert.match(api, new RegExp(`  async ${action}\\(ctx\\) \\{`), action);
   // The limits, counted from midnight UTC.
   assert.match(api, /if \(used >= DAILY_DRAFTS\) throw blockyError\("DAILY_LIMIT"/);
-  assert.match(api, /if \(\(count \?\? 0\) >= DAILY_IDEA_BATCHES\) throw blockyError\("DAILY_LIMIT"/);
+  assert.match(api, /const batches = PAID_PLANS\.has\(ctx\.plan\) \? DAILY_IDEA_BATCHES : FREE_IDEA_BATCHES;/);
+  assert.match(api, /if \(\(count \?\? 0\) >= batches\) throw blockyError\("DAILY_LIMIT"/);
   assert.match(api, /const dayStart = \(\) => \{ const d = new Date\(\); d\.setUTCHours\(0, 0, 0, 0\); return d\.toISOString\(\); \};/);
   // Paid calls obey the switch and the daily cap like every other step.
   for (const action of ["getIdeas", "startDraft", "writeVersion", "pickVersion"]) {
     const body = api.slice(api.indexOf(`  async ${action}(ctx) {`), api.indexOf("\n  },", api.indexOf(`  async ${action}(ctx) {`)));
     assert.match(body, /await requirePaidCalls\(/, `${action} asks the paid switch`);
-    assert.match(body, /requirePaid\(ctx\);/, `${action} needs a paid plan`);
+    // Ideas are open to the free plan (owner, 2026-10-09); everything after an idea needs a plan.
+    if (action === "getIdeas") assert.doesNotMatch(body, /requirePaid\(ctx\);/, "ideas work on the free plan");
+    else assert.match(body, /requirePaid\(ctx\);/, `${action} needs a paid plan`);
   }
   // A vetted plan shows first, with two generated ones; otherwise the judge's best three.
   assert.match(api, /const chosen = vetted \? \[vetted, \.\.\.planned\.plans\.slice\(0, 2\)\] : planned\.plans\.slice\(0, 3\);/);

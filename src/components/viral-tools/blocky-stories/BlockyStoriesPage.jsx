@@ -1,13 +1,12 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import FaceAsmrPaywall from "../face-asmr/FaceAsmrPaywall";
+import AuthModal from "../../AuthModal";
 import NoCreditsModal from "../shared/NoCreditsModal";
 import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDialog, cx } from "../../ui/zyvo";
 import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
-import { PRICING_PLANS } from "../../../lib/pricingOutputs";
 import { useFeatureFlag } from "../../../lib/featureFlags";
-import { BLOCKY_SERIES_FLAG } from "../../../data/blockyStories";
+import { BLOCKY_SERIES_FLAG, BLOCKY_STORIES_PATH } from "../../../data/blockyStories";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
 import { AvatarStack } from "./shared/Avatar";
@@ -19,7 +18,7 @@ import SceneActionDialog from "./dialogs/SceneDialogs";
 import useAccount from "./hooks/useAccount";
 import useCharacters from "./hooks/useCharacters";
 import useBlockyFlow from "./hooks/useBlockyFlow";
-import { TIERS, videosPerMonth } from "./pricing/blockyEstimates";
+import { TIERS } from "./pricing/blockyEstimates";
 import { quoteFor } from "./pricing/useBlockyPrices";
 import FinalView from "./workspace/FinalView";
 import IdleView from "./workspace/IdleView";
@@ -126,14 +125,15 @@ export default function BlockyStoriesPage() {
         />
       );
       const est = flow.singleEstimate;
-      const short = est.total != null && est.total > account.balance;
+      // Not enough credits is a paid user's question: with no plan the button leads to the sign-up or the plan popup.
+      const short = account.viewer === "paid" && est.total != null && est.total > account.balance;
       // The user's own script goes on to the settings; an idea or a description leads straight to its three versions.
       const versionsReady = single.method === "idea" ? Boolean(single.ideaId) : !flow.storyBlocker;
       const quickSettings = <QuickSettings value={single} onChange={flow.updateSingle} allowedTiers={account.allowedTiers} onLockedTier={flow.setUpgradeTier} quotes={flow.quotes} />;
       if (single.method === "script") {
         footer = (
           <>
-            <PrimaryButton chevron disabled={Boolean(flow.storyBlocker)} onClick={() => flow.updateSingle({ step: "settings" })}>
+            <PrimaryButton chevron disabled={Boolean(flow.storyBlocker)} onClick={flow.continueToSettings}>
               Next: choose length and quality
             </PrimaryButton>
             {flow.storyBlocker && <FootNote>{flow.storyBlocker}</FootNote>}
@@ -173,7 +173,8 @@ export default function BlockyStoriesPage() {
       }
     } else {
       const est = flow.singleEstimate;
-      const short = est.total != null && est.total > account.balance;
+      // Not enough credits is a paid user's question: with no plan the button leads to the sign-up or the plan popup.
+      const short = account.viewer === "paid" && est.total != null && est.total > account.balance;
       top = <>{modeToggle}<StepBar steps={SINGLE_STEPS} current={1} /></>;
       bodyKey = "single-settings";
       body = (
@@ -306,7 +307,8 @@ export default function BlockyStoriesPage() {
 
   // ── Right panel ────────────────────────────────────────────────────────
   let result;
-  let resultTabLabel = "Recent";
+  // With no plan the result side is the showcase: real videos, and the way in.
+  let resultTabLabel = account.viewer === "paid" ? "Recent" : "Examples";
   let resultFooter = null;
   const storyExpected = (mode === "single" && single.storyId) || (mode === "series" && series.view === "episode" && series.storyId);
 
@@ -377,8 +379,9 @@ export default function BlockyStoriesPage() {
         onOpenSingle={flow.openSingle}
         onOpenSeries={flow.openSeries}
         viewer={account.viewer}
-        onSignUp={() => navigate("/signup")}
-        onGetPlan={account.paywall.show}
+        onSignUp={() => flow.setGate("signup")}
+        onUpgrade={() => navigate("/pricing")}
+        onLookAround={() => flow.setTab("build")}
         onStart={() => { if (mode !== "single") flow.changeMode("single"); flow.setTab("build"); }}
       />
     );
@@ -470,14 +473,23 @@ export default function BlockyStoriesPage() {
         creditBalance={account.balance}
         variant="lime"
       />
-      <FaceAsmrPaywall
-        open={account.paywall.open}
-        onClose={account.paywall.close}
-        isGuest={account.paywall.guest}
-        dismissable
-        toolName="Blocky Stories"
-        previewSrc=""
-        planLines={paywallLines(flow.quotes.prices)}
+      {/* A signed-out visitor pressed a button that makes or continues something: the app's own sign-up popup. */}
+      {flow.gate === "signup" && (
+        <AuthModal
+          mode="signup"
+          title="Sign up to create your own"
+          subtitle="Free to join. Your Blocky story is a few minutes away."
+          returnTo={BLOCKY_STORIES_PATH}
+          onClose={() => flow.setGate(null)}
+        />
+      )}
+      {/* The free plan pressed a button past the ideas. */}
+      <UpgradeDialog
+        open={flow.gate === "plan"}
+        onClose={() => flow.setGate(null)}
+        title="You need at least the Starter plan to continue"
+        body="Story ideas are free to try. Writing your story, its scene pictures and the video start on the Starter plan."
+        requiredPlan="starter"
       />
     </>
   );
@@ -504,18 +516,3 @@ function LoadingOrError({ status, onRetry, what }) {
   );
 }
 
-/**
- * Paywall lines per plan from the live prices: about how many 20-second
- * stories a month of credits makes, on each tier the plan includes.
- * null (line dropped) until prices load; nothing is guessed.
- */
-function paywallLines(prices) {
-  const n = (plan, tier) => videosPerMonth(PRICING_PLANS[plan].credits, 20, tier, prices);
-  const line = (plan, tiers) => {
-    const counts = tiers.map((t) => [t, n(plan, t)]);
-    if (counts.some(([, c]) => c == null)) return null;
-    const [[, first], ...rest] = counts;
-    return `About ${first} Blocky Stories videos of 20 s / month on V2${rest.map(([t, c]) => `, or ${c} on ${t.toUpperCase()}`).join("")}`;
-  };
-  return { starter: line("starter", ["v2"]), pro: line("pro", ["v2", "v3"]), generative: line("generative", ["v2", "v3", "v4"]) };
-}

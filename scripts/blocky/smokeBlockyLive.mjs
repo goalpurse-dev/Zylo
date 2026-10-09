@@ -47,7 +47,8 @@ const story = await api(owner.accessToken, "createStory", { input: { source: "pr
 ok("paid calls off: writing a story is refused", story.code === "PAID_CALLS_DISABLED" && story.status === 503, `${story.code}: ${story.message}`);
 const named = await api(owner.accessToken, "createStory", { input: { source: "prompt", castIds: library.data?.slice(0, 2).map((c) => c.id), prompt: "Noob gets banned in Brookhaven for no reason.", quality: "v2", lengthSec: 15, aspect: "9:16" } });
 ok("a real game's name in the story is refused with a plain message", named.code === "VALIDATION" && /Leave out "Brookhaven"/.test(named.message ?? ""), `${named.code}: ${named.message}`);
-const none = await fetch(`${SUPABASE_URL}/functions/v1/blocky-story-api`, { method: "POST", headers: { apikey: anonKey(), Authorization: `Bearer ${anonKey()}`, "Content-Type": "application/json" }, body: JSON.stringify({ action: "listCharacters" }) });
+const none = await fetch(`${SUPABASE_URL}/functions/v1/blocky-story-api`, { method: "POST", headers: { apikey: anonKey(), Authorization: `Bearer ${anonKey()}`, "Content-Type": "application/json" }, body: JSON.stringify({ action: "getIdeas", seed: 1 }) });
+// (The avatar library opens for signed-out visitors once Blocky is on for everyone: planGateCheck.mjs covers both states.)
 ok("no sign-in: refused", none.status === 401, `HTTP ${none.status}`);
 
 // An account without the switch.

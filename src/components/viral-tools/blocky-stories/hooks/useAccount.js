@@ -22,14 +22,14 @@ function cachePlan(userId, code) {
 }
 
 /**
- * Plan, paywall and credit balance.
+ * Who is looking, their plan and their credit balance.
  *
- * Plan from profiles (the paywall opens when a guest or free plan tries to
- * make something), balance from useProfileCredits: the one credit balance the
- * whole app shares.
+ * Plan from profiles, balance from useProfileCredits: the one credit balance the
+ * whole app shares. What a guest or the free plan may do is decided where the
+ * buttons are (useBlockyFlow#guard) and again on the server.
  *
- * preview ({ plan, credits }), for tests: no sign-in, no paywall, a local
- * balance that spend() lowers so "not enough credits" can be tested.
+ * preview ({ plan, credits }), for tests: no sign-in, a local balance that
+ * spend() lowers so "not enough credits" can be tested.
  */
 export default function useAccount(preview) {
   const { user, loading: authLoading } = useAuth();
@@ -41,13 +41,11 @@ export default function useAccount(preview) {
     if (!user) return "guest";
     return cachedPlan(user.id) ?? null;
   });
-  const [paywall, setPaywall] = useState({ open: false, guest: false });
 
   useEffect(() => {
     if (preview || authLoading) return undefined;
     if (!user) {
       setPlanCode("guest");
-      setPaywall({ open: false, guest: true });   // guests see the example first; the paywall opens on an action
       return undefined;
     }
     let active = true;
@@ -57,14 +55,14 @@ export default function useAccount(preview) {
       const code = String(data?.plan_code || "free").toLowerCase();
       cachePlan(user.id, code);
       setPlanCode(code);
-      // Only guests and the free plan are gated.
-      setPaywall({ open: false, guest: false });   // free plan: the example + "Get a plan"; opens on an action
     });
     return () => { active = false; };
   }, [preview, authLoading, user]);
 
   const needsUpgrade = !preview && (planCode === "guest" || planCode === "free");
-  const allowedTiers = getAllowedVideoModels(planCode ?? "starter", MIN_PLAN);
+  // A guest and the free plan see V2 open and V3, V4 locked, like Starter: what stops them is the button
+  // (sign up, or get a plan), not three locks. Paid plans: Starter V2, Pro V2 and V3, Generative all three.
+  const allowedTiers = getAllowedVideoModels(needsUpgrade ? "starter" : planCode ?? "starter", MIN_PLAN);
 
   const spend = useCallback((amount) => {
     if (preview && Number.isFinite(amount)) setPreviewBalance((b) => Math.max(0, b - amount));
@@ -73,17 +71,12 @@ export default function useAccount(preview) {
   return {
     user,
     isPreview: Boolean(preview),
-    /** Who is looking: "guest" | "noPlan" | "paid" (dev preview counts as paid). */
-    viewer: preview ? (preview.viewer ?? "paid") : !user ? "guest" : planCode === "free" ? "noPlan" : "paid",
+    /** Who is looking: "guest" | "noPlan" | "paid" (dev preview counts as paid; so does anyone until the sign-in is known). */
+    viewer: preview ? (preview.viewer ?? "paid") : authLoading ? "paid" : !user ? "guest" : planCode === "free" ? "noPlan" : "paid",
     planCode,
     allowedTiers,
     needsUpgrade,
     balance: preview ? previewBalance : realBalance,
     spend,
-    paywall: {
-      ...paywall,
-      show: () => setPaywall({ open: true, guest: planCode === "guest" }),
-      close: () => setPaywall((p) => ({ ...p, open: false })),
-    },
   };
 }

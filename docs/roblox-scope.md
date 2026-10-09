@@ -627,6 +627,35 @@ Decisions of 2026-10-08 (after the first real story):
     (they ran every 20; migration `20261031100000_story_sweeps_30s.sql`). The Blocky alarm
     card is on /admin/ops (the page calls `blocky-story-api` `opsStatus`, owner only: the
     shared `ops-status` function is untouched). Files stay public under random names for now.
+99. BLOCKY'S ONE LIMIT (owner, 2026-10-09: "no global spend limit anywhere. Instead, one limit
+    for Blocky only: $20 of our real cost per rolling 3 hours, across all Blocky users
+    combined. Keep the per-user $20/day too"). `spendWatch.js`: `WINDOW_HOURS = 3`, the number
+    in `blocky_settings.window_cap_usd` ($20; the owner changes it on the /admin/ops card,
+    $1 to $5,000, in force on the next request). At the limit anything NEW (ideas, three
+    versions, a story from a script, the first paid step of a story) is refused before any
+    charge with "High demand right now, please try again shortly"; a draft being written and a
+    story that has been paid for go on to their final video; the owner is emailed, once an hour
+    at most. The old daily cap stays unset. The bug alarm (spend $10 ahead of charges) is not a
+    spending limit and stays.
+100. VIEWS BY WHO IS LOOKING (owner, 2026-10-09: "make people want to sign up and upgrade, not
+    block them coldly"). Signed out: two real videos playing on the result side ("No Hats
+    Allowed" whole; of the first story only its two clean middle scenes), "Sign up to create
+    your own", the page is open to look around (the avatar library too, once Blocky is on for
+    everyone), and any button that makes or continues something opens the sign-up popup. Free
+    plan: the same videos, "Upgrade your plan to make videos like these" with a button to the
+    pricing page; ideas work (3 batches a day); anything further opens "You need at least the
+    Starter plan to continue". Paid: Starter V2, Pro V2 and V3, Generative all three; a tier
+    above the plan stays in view with a lock and "Available on Pro" / "Available on
+    Generative" and opens the upgrade popup. The server refuses the same things: the tier is
+    checked when a story is written and again before every charge
+    (`scripts/blocky/planGateCheck.mjs`, 24 checks; `scripts/blocky/qaViews.mjs` for the page).
+101. BLOCKY'S ALERTS WERE NEVER WRITTEN (found 2026-10-09 by the live drill of the limit). The
+    alerts table accepted provider names only, so the rows for the spend alarm, the retry
+    alert and the limit were refused, the refusal was swallowed, and no email went out (the
+    alarm did still pause paid calls). Fixed: the table accepts Blocky's four alert names
+    (`20261101110000_blocky_alert_names.sql`), one writer logs a refused row
+    (`spendWatch.js#raiseAlert`), and a test keeps the names and the table rule in step.
+    Lesson: a guard that writes to the database gets one live drill, not only a stand-in.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

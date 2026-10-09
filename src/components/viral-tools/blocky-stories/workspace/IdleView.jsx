@@ -1,6 +1,7 @@
 import { Film, PlayCircle, Sparkles } from "lucide-react";
 import { ErrorBanner, PrimaryButton, ProgressBar, SegmentedControl } from "../../../ui/zyvo";
-import { EXAMPLE_VIDEO, TUTORIAL_URL, formatLength, timeAgo } from "../constants";
+import { TUTORIAL_URL, formatLength, timeAgo } from "../constants";
+import Showcase from "./Showcase";
 
 const RECENT_TABS = [
   { value: "single", label: "Single videos" },
@@ -8,13 +9,13 @@ const RECENT_TABS = [
 ];
 
 /**
- * Right panel when nothing is being made: hero + Recent creations.
- *   viewer "guest"  → the example video + "Sign up to make your own"
- *   viewer "noPlan" → the example video + "Get a plan to make videos like this"
- *   viewer "paid"   → their history; with none yet, "Make your first story" + the example
+ * Right panel when nothing is being made: hero, then the showcase or Recent creations.
+ *   viewer "guest"  → real videos playing + "Sign up to create your own" (the sign-up popup)
+ *   viewer "noPlan" → the same videos + "Upgrade your plan to make videos like these" (the pricing page)
+ *   viewer "paid"   → their history; with none yet, the videos + "Make your first story"
  * showSeries false (series is behind its own switch): no "Series" tab, single videos only.
  */
-export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle, onOpenSeries, showHero = true, showSeries = true, viewer = "paid", onSignUp, onGetPlan, onStart }) {
+export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle, onOpenSeries, showHero = true, showSeries = true, viewer = "paid", onSignUp, onUpgrade, onStart, onLookAround }) {
   const paid = viewer === "paid";
   return (
     <div className="flex flex-col gap-6">
@@ -28,17 +29,31 @@ export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle,
             Blocky stories that talk.<br />
             <span className="text-lime-300">Made in minutes.</span>
           </h2>
-          <p className="mt-2 max-w-[620px] text-[12px] font-medium leading-relaxed text-white/45">
-            Describe a story or paste your own script. You check every scene picture before anything is animated, and you only pay for video once you&apos;re happy.
+          {/* With the showcase under it, a phone keeps this short so the button is on the first screen. */}
+          <p className={`mt-2 max-w-[620px] text-[12px] font-medium leading-relaxed text-white/45 ${paid ? "" : "hidden sm:block"}`}>
+            Pick an idea, describe a story or paste your own script. You check every scene picture before anything is animated, and you only pay for video once you&apos;re happy.
           </p>
         </div>
       )}
 
-      {!paid && (
-        <ExampleVideo
-          heading={viewer === "guest" ? "See what you can make" : "Made with Blocky Stories"}
-          action={viewer === "guest" ? "Sign up to make your own" : "Get a plan to make videos like this"}
-          onAction={viewer === "guest" ? onSignUp : onGetPlan}
+      {viewer === "guest" && (
+        <Showcase
+          message="Sign up to create your own"
+          sub="Free to join. Pick your characters, pick a story, and watch them act it out."
+          action="Sign up"
+          onAction={onSignUp}
+          secondary="Look around first"
+          onSecondary={onLookAround}
+        />
+      )}
+      {viewer === "noPlan" && (
+        <Showcase
+          message="Upgrade your plan to make videos like these"
+          sub="Story ideas are free to try. Videos start on the Starter plan."
+          action="Upgrade"
+          onAction={onUpgrade}
+          secondary="Try the free story ideas"
+          onSecondary={onLookAround}
         />
       )}
 
@@ -66,7 +81,7 @@ export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle,
               </div>
             </div>
           ) : (
-            <ExampleVideo heading="Make your first story" sub={EXAMPLE_VIDEO ? "Here's one we made. Yours shows up here when it's done." : "Yours shows up here when it's done."} action="Make your first story" onAction={onStart} />
+            <Showcase message="Make your first story" sub="Here are two we made. Yours shows up here when it's done." action="Make your first story" onAction={onStart} />
           )
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -87,29 +102,6 @@ export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle,
   );
 }
 
-/** The example video card with one call to action. Until there is an example video it shows the text and the button only. */
-function ExampleVideo({ heading, sub, action, onAction }) {
-  return (
-    <section aria-label={heading} className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:flex-row sm:items-center sm:p-4">
-      {EXAMPLE_VIDEO && <video
-        src={EXAMPLE_VIDEO.url}
-        poster={EXAMPLE_VIDEO.poster}
-        controls
-        playsInline
-        preload="none"
-        className="order-2 aspect-[9/16] w-full max-w-[220px] self-center rounded-xl bg-black object-cover sm:order-1 sm:max-w-[240px] sm:self-auto"
-        aria-label={`Example video: ${EXAMPLE_VIDEO.title}`}
-      />}
-      <div className="order-1 flex min-w-0 flex-col gap-2 sm:order-2">
-        <h3 className="text-[16px] font-black text-white">{heading}</h3>
-        <p className="text-[12px] font-semibold leading-relaxed text-white/45">
-          {sub ?? (EXAMPLE_VIDEO ? <>&ldquo;{EXAMPLE_VIDEO.title}&rdquo;: {EXAMPLE_VIDEO.blurb}</> : "Describe a story or paste your own script.")}
-        </p>
-        {onAction && <div className="pt-1"><PrimaryButton onClick={onAction}>{action}</PrimaryButton></div>}
-      </div>
-    </section>
-  );
-}
 
 function RecentCard({ item, onOpen }) {
   const isSeries = item.type === "series";

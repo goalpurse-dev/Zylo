@@ -1,11 +1,9 @@
 import QuotedCredits from "../../../pricing/QuotedCredits";
-import { Lock } from "lucide-react";
-import { CreditIcon, FOCUS, QualityCards, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
+import { CreditIcon, FOCUS, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
 import { LIMITS } from "../api/blockyStoriesApi";
 import { ASPECTS, LENGTH_NOTES, QUICK_LENGTHS, formatLength } from "../constants";
-import { TIERS, TIER_IDS, estimateStory } from "../pricing/blockyEstimates";
-
-const TIER_LIST = TIER_IDS.map((id) => TIERS[id]);
+import { TIERS, estimateStory } from "../pricing/blockyEstimates";
+import QualityChoice from "./QualityChoice";
 
 /**
  * Quality, length, shape and the cost card. Shared by single videos and
@@ -22,15 +20,10 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
 
   return (
     <>
-      <QualityCards
-        label="Video quality"
-        hint="Changes the video model"
-        tiers={TIER_LIST}
-        value={value.tierId}
-        allowedIds={allowedTiers}
-        onChange={(tierId) => onChange({ tierId })}
-        onLockedClick={(tier) => onLockedTier(tier.id)}
-      />
+      <div>
+        <SectionLabel hint="Changes the video model"><span id="bs-quality">Video quality</span></SectionLabel>
+        <QualityChoice size="lg" value={value.tierId} allowed={allowedTiers} onChange={onChange} onLocked={onLockedTier} labelledBy="bs-quality" />
+      </div>
 
       <div>
         <SectionLabel htmlFor="fv2-length" hint={formatLength(lengthSec)}>Length</SectionLabel>
@@ -99,30 +92,21 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
 /**
  * Quality and length, chosen right above the "Write 3 versions" button (the length decides the script, so it
  * is picked before writing): three quality buttons, the four common lengths, and the full cost of what is
- * selected. V2 and 30 seconds are selected to start with (useBlockyFlow#NEW_SINGLE).
+ * selected. V2 and 30 seconds are selected to start with (useBlockyFlow#NEW_SINGLE). A tier above the plan
+ * stays in view with a lock (QualityChoice).
  */
 export function QuickSettings({ value, onChange, allowedTiers, onLockedTier, quotes }) {
   const est = estimateStory({ lengthSec: value.lengthSec, tierId: value.tierId, prices: quotes.prices });
-  const choice = (selected, locked = false) => cx(
+  const choice = (selected) => cx(
     "flex min-w-0 flex-1 flex-col items-center justify-center rounded-lg border px-1 py-1.5 leading-tight transition",
     FOCUS,
-    selected ? "border-lime-300/60 bg-lime-300/[0.12] text-lime-200" : locked ? "border-white/[0.06] bg-white/[0.02] text-white/35 hover:border-white/15" : "border-white/[0.08] bg-white/[0.035] text-white/75 hover:border-white/25",
+    selected ? "border-lime-300/60 bg-lime-300/[0.12] text-lime-200" : "border-white/[0.08] bg-white/[0.035] text-white/75 hover:border-white/25",
   );
   return (
     <div className="mb-2.5 flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
         <span id="bq-quality" className="w-[52px] shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-white/40">Quality</span>
-        <div className="flex min-w-0 flex-1 gap-1.5" role="group" aria-labelledby="bq-quality">
-          {TIER_LIST.map((tier) => {
-            const locked = !allowedTiers.includes(tier.id);
-            return (
-              <button key={tier.id} type="button" aria-pressed={value.tierId === tier.id} aria-label={`${tier.label}, ${tier.tag}${locked ? ", needs a higher plan" : ""}`} onClick={() => (locked ? onLockedTier(tier.id) : onChange({ tierId: tier.id }))} className={choice(value.tierId === tier.id, locked)}>
-                <span className="flex items-center gap-1 text-[12px] font-black">{locked && <Lock className="h-3 w-3" aria-hidden="true" />}{tier.label}</span>
-                <span className="text-[9px] font-bold opacity-70">{tier.tag}</span>
-              </button>
-            );
-          })}
-        </div>
+        <QualityChoice value={value.tierId} allowed={allowedTiers} onChange={onChange} onLocked={onLockedTier} labelledBy="bq-quality" />
       </div>
       <div className="flex items-center gap-2">
         <span id="bq-length" className="w-[52px] shrink-0 text-[10px] font-black uppercase tracking-[0.1em] text-white/40">Length</span>

@@ -20,14 +20,15 @@ class BlockyApiError extends Error {
   }
 }
 
-async function call(action, body = {}) {
+/** guestOk: a signed-out visitor may ask too (the avatar library only; the server decides). */
+async function call(action, body = {}, { guestOk = false } = {}) {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new BlockyApiError("UNAUTHORIZED", "Sign in to continue.");
+  if (!session?.access_token && !guestOk) throw new BlockyApiError("UNAUTHORIZED", "Sign in to continue.");
   let res;
   try {
     res = await fetch(FUNCTION_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}`, apikey: ANON_KEY },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ANON_KEY}`, apikey: ANON_KEY },
       body: JSON.stringify({ action, ...body }),
     });
   } catch {
@@ -41,7 +42,7 @@ async function call(action, body = {}) {
 /** @returns {import("./blockyStoriesApi.js").BlockyStoriesAdapter} */
 export function createSupabaseAdapter() {
   return {
-    listCharacters: () => call("listCharacters"),
+    listCharacters: () => call("listCharacters", {}, { guestOk: true }),
     getIdeas: ({ seed } = {}) => call("getIdeas", { seed }),
     createStory: (input) => call("createStory", { input }),
     startDraft: (input) => call("startDraft", { input }),

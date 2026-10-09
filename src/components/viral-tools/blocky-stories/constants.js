@@ -104,8 +104,16 @@ export function errorText(error, fallback) {
   return message;
 }
 
-/** The example video on the Recent panel: {title, blurb, url, poster}. None yet: it is made once the look is approved. */
-export const EXAMPLE_VIDEO = null;
+/**
+ * The showcase on the result side (workspace/Showcase.jsx): real Blocky Stories videos from the owner's own
+ * tests, re-encoded small. "No Hats Allowed" whole; of the first story only its two middle scenes (its first
+ * and last carried the video model's own subtitles under ours). Files: scripts/blocky/publishShowcase.mjs.
+ */
+const SHOWCASE_BASE = `${String(import.meta.env?.VITE_SUPABASE_URL ?? "").replace(/\/+$/, "")}/storage/v1/object/public/generated/blocky/showcase`;
+export const SHOWCASE = [
+  { id: "no-hats-allowed", title: "No Hats Allowed", length: "20 sec" },
+  { id: "the-fake-admin", title: "The Fake Admin", length: "9 sec" },
+].map((v) => ({ ...v, url: `${SHOWCASE_BASE}/${v.id}.mp4`, poster: `${SHOWCASE_BASE}/${v.id}.jpg` }));
 
 /** YouTube tutorial link for the Recent panel. Set it and a "Watch the tutorial" link appears. */
 export const TUTORIAL_URL = null;

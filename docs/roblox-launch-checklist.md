@@ -11,10 +11,11 @@ See "The final test" at the end. Launch only after it passes.
 
 1. **Spending limits: say them out loud first.** (Owner, 2026-10-08: "remind me of it during launch
    prep".) What is in force today:
-   - No global daily cap and no test-ledger total ("No global hard cap on normal use", 2026-10-08).
-     The earlier item "Put the daily spending cap back before real users get access" is replaced by
-     the two below, unless the owner wants a global cap as well:
-     `node scripts/blocky/paid.mjs cap <usd>` (it was $3 a day; `cap none` is set now).
+   - **Blocky's one limit: $20 of our real cost for all users together in any 3 hours** (owner,
+     2026-10-09). At the limit new stories see "High demand right now, please try again shortly",
+     nothing is charged, stories in progress finish, and the owner gets an email. The owner raises
+     it on /admin/ops (the Blocky card) as users grow; $20 is roughly 15 V2 videos of 30 seconds
+     in 3 hours. There is no daily cap (the old one stays unset).
    - A cap per user: $20 of our real cost per user per day (`spendWatch.js#USER_DAILY_USD`).
    - The bug alarm: provider spend more than $10 ahead of what users were charged in 24 hours
      switches paid calls OFF, writes an alert and emails the admin (`AHEAD_ALARM_USD`). With many
@@ -22,8 +23,9 @@ See "The final test" at the end. Launch only after it passes.
      first days and raise the number if it trips for that reason.
    - The alarm's email goes to the address in the `CONTACT_TO_EMAIL` secret (or `BLOCKY_ALERT_EMAIL`
      if that is set). Check it is an inbox the owner reads.
-2. **The alarm on /admin/ops.** Built (2026-10-08): the card "Blocky Stories · alarm" shows the paid
-   switch, what users cost us against what they were charged in 24 hours, and any open alert. The
+2. **The card on /admin/ops.** Built: "Blocky Stories · limit and alarm" shows the last 3 hours
+   against the limit (with a box to change the limit), the paid switch, what users cost us against
+   what they were charged in 24 hours, and any open alert. The
    card reaches the live website with the merge in step 3; `node scripts/blocky/paid.mjs status`
    shows the same numbers. The alarm itself is checked while a story is being made (it runs inside
    the sweep of jobs in flight); the card's numbers are read fresh every time it is opened.
@@ -41,7 +43,11 @@ See "The final test" at the end. Launch only after it passes.
    - `node scripts/blocky/verifyLive.mjs` (the live functions are the repo's);
    - `node scripts/blocky/smokeBlockyLive.mjs` needs paid calls OFF, so run it just before step 4;
    - `node scripts/blocky/privacyCheck.mjs` (a second account sees nothing of another's);
-   - open `/workspace/blocky-stories` as an account that is not the owner's, on a phone too;
+   - `node scripts/blocky/planGateCheck.mjs` (who may ask for what, by plan; needs paid calls OFF,
+     so run it with the smoke check; after step 5 it also checks that the avatar library opens for
+     signed-out visitors);
+   - open `/workspace/blocky-stories` signed out and as an account that is not the owner's, on a
+     phone too: the two videos play, and the buttons open the sign-up or the Starter popup;
    - `node scripts/blocky/paid.mjs status` a few times in the first hours.
 
 ## Known and accepted, or still open

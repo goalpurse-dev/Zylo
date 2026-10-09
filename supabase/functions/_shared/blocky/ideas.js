@@ -13,6 +13,8 @@ export const IDEAS_PER_BATCH = 5;
 export const IDEAS_PURPOSE = "ideas";
 /** Free, with a limit: this many idea batches and this many "write me three versions" a user a day (UTC). */
 export const DAILY_IDEA_BATCHES = 20;
+/** The free plan may ask for ideas too, a few times a day: a taste of what a plan makes. */
+export const FREE_IDEA_BATCHES = 3;
 export const DAILY_DRAFTS = 5;
 
 /**

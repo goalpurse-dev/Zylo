@@ -87,6 +87,7 @@ export default function useBlockyFlow(account, characters = []) {
   const [sceneDialog, setSceneDialog] = useState(null); // { kind, sceneId }
   const [upgradeTier, setUpgradeTier] = useState(null);
   const [noCredits, setNoCredits] = useState(null); // { needed }
+  const [gate, setGate] = useState(null); // "signup" (a guest pressed a button) | "plan" (the free plan did) | null
   const [acting, setActing] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [captionsBusy, setCaptionsBusy] = useState(false);
@@ -120,10 +121,21 @@ export default function useBlockyFlow(account, characters = []) {
   const setTab = useCallback((next) => { setTabState(next); scrollPageTop(); }, []);
   const clearError = () => setActionError(null);
 
-  const guard = () => {
-    if (account.needsUpgrade) { account.paywall.show(); return false; }
+  // Who may press what (the server refuses the same things): a signed-out visitor looks around, and any
+  // button that makes or continues something opens the sign-up popup; the free plan may ask for ideas, and
+  // everything after that asks for a plan.
+  const guard = (what = "make") => {
+    if (account.viewer === "guest") { setGate("signup"); return false; }
+    if (account.viewer === "noPlan" && what !== "ideas") { setGate("plan"); return false; }
     return true;
   };
+  // A signed-out visitor on a phone lands on the videos, not on a form.
+  const landed = useRef(false);
+  useEffect(() => {
+    if (landed.current || account.viewer !== "guest") return;
+    landed.current = true;
+    setTabState("result");
+  }, [account.viewer]);
 
   const run = async (name, fn, fallback) => {
     setActing(name);
@@ -458,7 +470,9 @@ export default function useBlockyFlow(account, characters = []) {
     single, updateSingle, singleEstimate, scriptScenes, scriptParse, storyBlocker, startSingle, newStory, openSingle,
     assigning, startAssigning: setAssigning, cancelAssigning: () => setAssigning(null), assignName,
     ideas: { ...ideas, seed: ideaSeed, asked: ideasAsked },
-    askIdeas: () => { if (guard()) setIdeasAsked(true); },
+    askIdeas: () => { if (guard("ideas")) setIdeasAsked(true); },
+    continueToSettings: () => { if (guard()) updateSingle({ step: "settings" }); },
+    gate, setGate,
     newIdeas: () => { setIdeaSeed((n) => n + 1); updateSingle({ ideaId: null }); },
     // An idea brings its own characters.
     pickIdea: (idea) => updateSingle({ ideaId: idea.id, castIds: idea.castIds }),

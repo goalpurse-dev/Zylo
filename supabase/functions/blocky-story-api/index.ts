@@ -35,7 +35,7 @@ import { BLOCKY_MODELS } from "../_shared/blocky/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/blocky/validation.js";
 import { planStep } from "../_shared/blocky/steps.js";
 import { planSeries, planStory, planStoryVersions, polishStoryVersion, writeIdeas, writeStoryVersion } from "../_shared/blocky/plannerService.js";
-import { DAILY_DRAFTS, DAILY_IDEA_BATCHES, IDEAS_PER_BATCH, IDEAS_PURPOSE, ideaFromPlan } from "../_shared/blocky/ideas.js";
+import { DAILY_DRAFTS, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH, IDEAS_PURPOSE, ideaFromPlan } from "../_shared/blocky/ideas.js";
 import { draftView, shouldWrite, vettedToTwistPlan } from "../_shared/blocky/drafts.js";
 import { sceneCountFor } from "../_shared/blocky/planner.js";
 import { bannedNamesMessage } from "../_shared/blocky/safety.js";
@@ -43,7 +43,7 @@ import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
 import { COST_USD, SMALL_USD, WRITER_USD, estimateUsd, readPaidState } from "../_shared/blocky/spendGuard.js";
-import { readOpsCard, userBudget, userSpendToday } from "../_shared/blocky/spendWatch.js";
+import { cleanWindowCap, noteWindowHit, readOpsCard, readWindow, userBudget, userSpendToday, windowBudget } from "../_shared/blocky/spendWatch.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -94,15 +94,27 @@ function adminEmails(): string[] {
 }
 
 /**
- * Paid calls are OFF unless the switch is on and today's spend, with what this
- * step is expected to cost us, stays under the daily cap. Read fresh every
- * time, so turning the switch off works at once. Nothing is charged on a refusal.
+ * Paid calls are OFF unless the switch is on. Then Blocky's one limit (spendWatch.js): what all users
+ * together cost us in the last 3 hours. At the limit anything NEW is refused with "High demand right
+ * now" and the owner is emailed; a step of something already under way (inProgress: a draft being
+ * written, a story that has been paid for) goes on, so nobody is left with half a video. Then the cap
+ * per user. Read fresh every time. Nothing is charged on a refusal.
  */
-async function requirePaidCalls(addUsd: number, userId: string | null = null) {
+async function requirePaidCalls(addUsd: number, userId: string | null = null, { inProgress = false } = {}) {
   const state = await readPaidState(admin, ENV_PAID_CALLS, addUsd);
   if (!state.on) {
     console.log(`[blocky-story-api] paid call refused: ${state.reason} (spent $${state.spentUsd}, running $${state.inFlightUsd}, next $${addUsd}, cap $${state.capUsd})`);
     throw blockyError(state.reason === "cap_reached" ? "DAILY_CAP_REACHED" : "PAID_CALLS_DISABLED");
+  }
+  if (!inProgress) {
+    const budget = windowBudget({ ...(await readWindow(admin)), addUsd });
+    if (!budget.ok) {
+      console.log(`[blocky-story-api] 3-hour limit: used $${budget.usedUsd}, next $${addUsd}, limit $${budget.capUsd}`);
+      // The alert row and the owner's email (once an hour at most), before the refusal goes out: left to run
+      // behind the response it was cut off (the live drill, 2026-10-09). It never throws.
+      await noteWindowHit(admin, LLM_ENV, budget);
+      throw blockyError("HIGH_DEMAND");
+    }
   }
   // The cap per user (spendWatch.js): our real cost one account may cause in a day. Refused before any charge.
   if (userId) {
@@ -147,6 +159,11 @@ async function switchedOn(userId: string, flag: string) {
     admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
   ]);
   return g.data?.enabled === true || u.data?.flags?.[flag] === true;
+}
+
+async function globallyOn(flag: string) {
+  const { data } = await admin.from("global_feature_flags").select("enabled").eq("key", flag).maybeSingle();
+  return data?.enabled === true;
 }
 
 /** While Blocky Stories is in testing it exists only for accounts with the switch on; for everyone else it isn't there. */
@@ -208,13 +225,17 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   await rateLimit(ctx.userId, "step");
   // Out-of-credit guard: while Runware just refused us for balance, don't charge for work that can't run.
   if (await providerOnHold(admin, "runware")) throw blockyError("PROVIDER_UNAVAILABLE");
-  const { row, scenes } = await loadStory(ctx.userId, storyId);
+  const { row, scenes, spent } = await loadStory(ctx.userId, storyId);
+  // The story's quality against the plan as it is now (a plan can change after a story was written):
+  // refused here, before the pictures of a video the plan can't animate are charged.
+  const [need, planName] = QUALITY_PLAN[row.quality] ?? QUALITY_PLAN.v4;
+  if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw blockyError("PLAN_UPGRADE_REQUIRED", `${String(row.quality).toUpperCase()} needs the ${planName} plan.`);
   // locations: builder only, not the contract
   const story: any = { ...toStory(row, scenes), locations: row.locations };
   const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
   const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, staging, ...extra });
   // The switch and the daily cap, with what this step will cost us, before anything is charged.
-  await requirePaidCalls(estimateUsd(plan.items), ctx.userId);
+  await requirePaidCalls(estimateUsd(plan.items), ctx.userId, { inProgress: spent > 0 });
   must(await admin.rpc("blocky_charge_step", {
     p_user_id: ctx.userId, p_story_id: storyId, p_step: plan.step, p_from_statuses: plan.from, p_to_status: plan.to, p_items: plan.items,
   }));
@@ -268,12 +289,14 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
    * plans (the owner's hand-written ones) come first; the rest are written by the small model.
    */
   async getIdeas(ctx) {
-    requirePaid(ctx);
+    // The free plan may ask for ideas too (owner, 2026-10-09): they are cheap and show what is possible.
+    // Everything after an idea (three versions, pictures, video) needs a plan.
+    const batches = PAID_PLANS.has(ctx.plan) ? DAILY_IDEA_BATCHES : FREE_IDEA_BATCHES;
     await rateLimit(ctx.userId, "read");
     const seed = Math.max(0, Math.floor(Number(ctx.body?.seed) || 0));
     const rows = await library();
     const { count } = await admin.from("blocky_ai_calls").select("id", { count: "exact", head: true }).eq("user_id", ctx.userId).eq("purpose", IDEAS_PURPOSE).gte("created_at", dayStart());
-    if ((count ?? 0) >= DAILY_IDEA_BATCHES) throw blockyError("DAILY_LIMIT", `That's today's ${DAILY_IDEA_BATCHES} batches of ideas. Describe your own story, or come back tomorrow.`);
+    if ((count ?? 0) >= batches) throw blockyError("DAILY_LIMIT", PAID_PLANS.has(ctx.plan) ? `That's today's ${batches} batches of ideas. Describe your own story, or come back tomorrow.` : `That's today's ${batches} free batches of ideas. Upgrade to turn one into a video, or come back tomorrow.`);
     // Up to two vetted plans a batch, a different pair each time.
     const plans = must(await admin.from("blocky_plans").select("slug, title, hook, story_type, plan").eq("active", true).order("slug"));
     const vetted = plans.length ? [0, 1].map((k) => plans[(seed * 2 + k) % plans.length]).filter((p: any, i: number, all: any[]) => all.indexOf(p) === i).map((p: any) => ideaFromPlan(p, rows)).filter(Boolean) : [];
@@ -343,7 +366,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const version = (row.versions ?? []).find((v: any) => v.n === n);
     if (!version) throw blockyError("VALIDATION", "That version doesn't exist.");
     if (row.status === "picked" || !shouldWrite(version)) return draftView(row);   // done, or another call is writing it
-    await requirePaidCalls(SMALL_USD * 4, ctx.userId);
+    await requirePaidCalls(SMALL_USD * 4, ctx.userId, { inProgress: true });   // the three versions were started: they are finished
     const setVersion = async (v: any, costUsd = 0, callIds: string[] = []) => must(await admin.rpc("blocky_set_draft_version", { p_draft_id: row.id, p_version: v, p_cost_usd: costUsd, p_call_ids: callIds }));
     await setVersion({ ...version, startedAt: new Date().toISOString() });
     const lib = new Map((await library()).map((c: any) => [c.id, c]));
@@ -384,7 +407,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     }
     const version = (draft.versions ?? []).find((v: any) => v.n === n);
     if (!version || version.status !== "ready" || !version.script) throw blockyError("VALIDATION", "That version isn't ready. Pick one that is.");
-    await requirePaidCalls(SMALL_USD * 6, ctx.userId);
+    await requirePaidCalls(SMALL_USD * 6, ctx.userId, { inProgress: true });
     const lib = new Map((await library()).map((c: any) => [c.id, c]));
     const i = draft.input;
     const polished = await polishStoryVersion({ admin, env: LLM_ENV, userId: ctx.userId, plannerInput: draftPlannerInput(draft, lib), twistPlan: version.plan, data: version.script });
@@ -542,7 +565,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const sceneId = validateId(ctx.body?.sceneId, "scene");
     const raw = validateEditInstruction(ctx.body?.instruction);
     requirePaid(ctx);
-    await requirePaidCalls(SMALL_USD, ctx.userId);
+    await requirePaidCalls(SMALL_USD, ctx.userId, { inProgress: true });   // an edit inside a story that exists
     const { row } = await loadSceneStory(ctx.userId, sceneId);
     const instruction = await cleanEditInstruction({ admin, env: LLM_ENV, userId: ctx.userId, storyId: row.id, sceneId, instruction: raw });
     return runStep(ctx, "edit", row.id, { sceneId, instruction });
@@ -580,7 +603,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const { row, scenes } = await loadStory(ctx.userId, storyId);
     if (row.upload_package && !ctx.body?.refresh) return row.upload_package;
     if (row.status !== "final_ready") throw new BlockyError("WRONG_STATUS", "Make the final video first.", 409);
-    await requirePaidCalls(SMALL_USD);   // not under the cap per user: the post text belongs to a finished video
+    await requirePaidCalls(SMALL_USD, null, { inProgress: true });   // not under the caps: the post text belongs to a finished video
     const lib = await libraryMap();
     const nameOf = (id: string) => lib.get(id)?.name ?? id;
     let episode: any = null;
@@ -628,7 +651,7 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     if (blocker) throw new BlockyError("WRONG_STATUS", blocker, 409);
     if (!FLY_API_TOKEN) throw blockyError("FINAL_FAILED");
     // Free for the user, but the machine and the caption transcripts cost us a little: the switch and the cap cover them too.
-    await requirePaidCalls(SMALL_USD);   // not under the cap per user: the final video finishes what the user already paid for
+    await requirePaidCalls(SMALL_USD, null, { inProgress: true });   // not under the caps: the final video finishes what the user already paid for
 
     // Series options: "Part N" at the start and an end card. On for episodes and off
     // for singles the first time; after that, whatever the user last chose.
@@ -859,12 +882,26 @@ Deno.serve(async (req) => {
       return reply({ ok: true, data: await autoFinal(validateId(body?.storyId)) });
     }
     const { data: { user }, error } = await admin.auth.getUser(token);
-    if (error || !user) throw blockyError("UNAUTHORIZED");
+    if (error || !user) {
+      // A signed-out visitor may look around the page before signing up: the avatar library opens for
+      // them, and nothing else does. Only once Blocky is switched on for everyone.
+      if (body?.action === "listCharacters" && await globallyOn(FLAG)) return reply({ ok: true, data: (await library()).map(toCharacter) });
+      throw blockyError("UNAUTHORIZED");
+    }
 
     // The owner's page (/admin/ops): Blocky's alarm card. Read-only, and only for the site owner: the same
     // rule as ops-status (ALERT_EMAIL, else CONTACT_TO_EMAIL, or listed in ADMIN_EMAILS).
     if (body?.action === "opsStatus") {
       if (!adminEmails().includes(String(user.email ?? "").toLowerCase())) throw new BlockyError("FORBIDDEN", "Not allowed.", 403);
+      return reply({ ok: true, data: await readOpsCard(admin, () => readPaidState(admin, ENV_PAID_CALLS, 0)) });
+    }
+    // The owner raises (or lowers) Blocky's 3-hour limit from that card. It takes effect on the next request.
+    if (body?.action === "opsSetWindowCap") {
+      if (!adminEmails().includes(String(user.email ?? "").toLowerCase())) throw new BlockyError("FORBIDDEN", "Not allowed.", 403);
+      const usd = cleanWindowCap(body?.usd);
+      if (usd == null) throw new BlockyError("VALIDATION", "The limit is a number of dollars between 1 and 5,000.", 400);
+      must(await admin.from("blocky_settings").update({ window_cap_usd: usd, updated_at: new Date().toISOString() }).eq("id", true).select("id"));
+      console.log(`[blocky-story-api] 3-hour limit set to $${usd} by the owner`);
       return reply({ ok: true, data: await readOpsCard(admin, () => readPaidState(admin, ENV_PAID_CALLS, 0)) });
     }
 

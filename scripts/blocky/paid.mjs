@@ -11,7 +11,7 @@
 // blocky_settings → paid_calls (true / false) and daily_cap_usd.
 // "Today" runs from 00:00 UTC. It takes effect on the next request.
 import { admin } from "./lib.mjs";
-import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, SPEND_CLEARED, USER_DAILY_USD, WATCH_HOURS, judgeSpend, readSpendWatch } from "../../supabase/functions/_shared/blocky/spendWatch.js";
+import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, SPEND_CLEARED, USER_DAILY_USD, WATCH_HOURS, WINDOW_HOURS, judgeSpend, readSpendWatch, readWindow, windowBudget } from "../../supabase/functions/_shared/blocky/spendWatch.js";
 
 const [command = "status", value] = process.argv.slice(2);
 const NO_CAP_USD = 999999.99;
@@ -22,7 +22,8 @@ const set = async (patch) => { const { error } = await db.from("blocky_settings"
 if (command === "on") {
   await set({ paid_calls: true });
   // Switching on by hand also clears a spend alarm: the watch looks at what is spent and charged from now on.
-  await db.rpc("blocky_raise_provider_alert", { p_provider: SPEND_CLEARED, p_code: "CLEARED", p_message: "paid calls switched on by the owner", p_context: {} });
+  const cleared = await db.rpc("blocky_raise_provider_alert", { p_provider: SPEND_CLEARED, p_code: "CLEARED", p_message: "paid calls switched on by the owner", p_context: {} });
+  if (cleared.error) console.error(`The alarm could not be marked as cleared: ${cleared.error.message}`);
 }
 else if (command === "off") await set({ paid_calls: false });
 else if (command === "cap") {
@@ -37,9 +38,12 @@ if (error) fail(`Couldn't read the setting: ${error.message}`);
 const usd = (n) => `$${Number(n).toFixed(2)}`;
 console.log(`Paid calls: ${s.paid_calls ? "ON" : "OFF"}`);
 const capped = Number(s.cap_usd) < NO_CAP_USD;
-console.log(`Daily cap: ${capped ? usd(s.cap_usd) : "NONE (build and test only)"}. Spent today (since 00:00 UTC): ${usd(s.spent_usd)}${Number(s.in_flight_usd) > 0 ? `, plus about ${usd(s.in_flight_usd)} still running` : ""}.`);
+console.log(`Daily cap: ${capped ? usd(s.cap_usd) : "none (the 3-hour limit below is the one limit)"}. Spent today (since 00:00 UTC): ${usd(s.spent_usd)}${Number(s.in_flight_usd) > 0 ? `, plus about ${usd(s.in_flight_usd)} still running` : ""}.`);
 console.log(s.on ? (capped ? `Blocky can make paid calls: ${usd(Number(s.cap_usd) - Number(s.spent_usd) - Number(s.in_flight_usd))} left today.` : "Blocky can make paid calls, with no daily limit.") : s.reason === "cap_reached" ? "Blocky is STOPPED for today: the daily cap is reached." : "Blocky makes no paid call.");
 
+// Blocky's one limit: all users together, the last 3 hours (raised on /admin/ops).
+const win = windowBudget(await readWindow(db));
+console.log(`Last ${WINDOW_HOURS} hours, all users together: ${usd(win.usedUsd)} of the ${usd(win.capUsd)} limit${win.ok ? `, ${usd(win.leftUsd)} left` : ": AT THE LIMIT, new stories see \"High demand right now\""}.`);
 // The spending watch (spendWatch.js): what users cost us and were charged, and any alarm.
 const watch = judgeSpend(await readSpendWatch(db));
 console.log(`Last ${WATCH_HOURS} hours, users only: ${usd(watch.spendUsd)} spent at providers, ${watch.chargedCredits} credits charged (worth ${usd(watch.chargedUsd)}): ${watch.aheadUsd > 0 ? `${usd(watch.aheadUsd)} AHEAD of charges` : "charges are ahead of spend, as they should be"}. The alarm goes at ${usd(AHEAD_ALARM_USD)} ahead and pauses paid calls. Cap per user: ${usd(USER_DAILY_USD)} of our cost a day.`);
