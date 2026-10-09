@@ -14,7 +14,7 @@ export class BlockyError extends Error {
 
 export const MESSAGES = Object.freeze({
   UNAUTHORIZED: "Sign in to continue.",
-  PLAN_UPGRADE_REQUIRED: "You need at least the Starter plan to continue.",
+  PLAN_UPGRADE_REQUIRED: "Upgrade your plan to continue.",
   INSUFFICIENT_CREDITS: "You don't have enough credits for this. Nothing was charged.",
   RATE_LIMITED: "You're going a bit fast. Try again in a minute.",
   NOT_FOUND: "This video doesn't exist anymore.",

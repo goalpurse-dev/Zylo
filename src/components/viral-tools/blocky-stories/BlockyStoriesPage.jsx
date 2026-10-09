@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import AuthModal from "../../AuthModal";
 import NoCreditsModal from "../shared/NoCreditsModal";
-import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDialog, cx } from "../../ui/zyvo";
-import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
+import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, cx } from "../../ui/zyvo";
+import { MODES, SINGLE_STEPS, stepForStatus } from "./constants";
 import { useFeatureFlag } from "../../../lib/featureFlags";
 import { BLOCKY_SERIES_FLAG, BLOCKY_STORIES_PATH } from "../../../data/blockyStories";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
@@ -14,6 +14,7 @@ import { EpisodeCard, SeriesList, SeriesPlanPanel, SeriesWizard } from "./builde
 import SettingsFields, { QuickSettings } from "./builder/SettingsFields";
 import StoryStep from "./builder/StoryStep";
 import CharacterLibraryDialog from "./dialogs/CharacterLibraryDialog";
+import PlansDialog from "./dialogs/PlansDialog";
 import SceneActionDialog from "./dialogs/SceneDialogs";
 import useAccount from "./hooks/useAccount";
 import useCharacters from "./hooks/useCharacters";
@@ -53,6 +54,11 @@ export default function BlockyStoriesPage() {
   // Keep the last "Who is …?" name so the dialog title doesn't blank while it closes.
   const lastAssigning = useRef(null);
   if (flow.assigning) lastAssigning.current = flow.assigning;
+  // The upgrade popup: a locked tier was pressed, or the free plan pressed a button past the ideas. What it
+  // was opened for is kept while it closes, so its lines don't change on the way out.
+  const plansOpen = Boolean(flow.upgradeTier) || flow.gate === "plan";
+  const plansTier = useRef(null);
+  if (plansOpen) plansTier.current = flow.upgradeTier;
 
   const isEpisodeStory = mode === "series" && series.view === "episode" && Boolean(story);
   const nextEpisode = flow.seriesData?.episodes.find((e) => e.status === "next") ?? null;
@@ -459,12 +465,11 @@ export default function BlockyStoriesPage() {
         onClose={flow.closeSceneDialog}
         onSubmit={flow.submitSceneDialog}
       />
-      <UpgradeDialog
-        open={Boolean(flow.upgradeTier)}
-        onClose={() => flow.setUpgradeTier(null)}
-        title={UPGRADE_COPY[flow.upgradeTier]?.title ?? ""}
-        body={UPGRADE_COPY[flow.upgradeTier]?.body ?? ""}
-        requiredPlan={flow.upgradeTier ? TIERS[flow.upgradeTier].minPlan : null}
+      <PlansDialog
+        open={plansOpen}
+        onClose={() => { flow.setUpgradeTier(null); if (flow.gate === "plan") flow.setGate(null); }}
+        tierId={plansTier.current}
+        planCode={account.planCode}
       />
       <NoCreditsModal
         open={Boolean(flow.noCredits)}
@@ -483,14 +488,6 @@ export default function BlockyStoriesPage() {
           onClose={() => flow.setGate(null)}
         />
       )}
-      {/* The free plan pressed a button past the ideas. */}
-      <UpgradeDialog
-        open={flow.gate === "plan"}
-        onClose={() => flow.setGate(null)}
-        title="You need at least the Starter plan to continue"
-        body="Story ideas are free to try. Writing your story, its scene pictures and the video start on the Starter plan."
-        requiredPlan="starter"
-      />
     </>
   );
 }

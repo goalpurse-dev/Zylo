@@ -1,8 +1,10 @@
 // Browser check of what each kind of visitor sees on the Blocky Stories page, on a running dev server ($0:
 // every action that writes or makes anything is answered here, never by the server).
 //   guest       signed out: the showcase, "Sign up to create your own", and the sign-up popup on any button
-//   free        the showcase, "Upgrade your plan…", ideas work, anything further asks for the Starter plan
+//   free        the showcase, "Upgrade your plan…" with "See plans", ideas work, anything further opens the upgrade popup
 //   starter     V2 open; V3 and V4 locked ("Available on Pro" / "Available on Generative") with the upgrade popup
+//               (one popup everywhere: "Upgrade your plan to continue", what each plan unlocks, "See plans";
+//               a locked tier highlights the plans that include it)
 //   pro         V2 and V3 open; V4 locked
 //   generative  all three open
 // The plan views are the owner's session with the plan answered here (the page reads it from the profile);
@@ -86,11 +88,23 @@ async function open(view, name, viewport) {
     await p.waitForTimeout(600);
   };
   const sideScroll = () => p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-  return { p, ctx, phone, calls, errors, shot, tab, showcase, tiers, pickIdea, sideScroll };
+  // The upgrade popup as it stands: its title, its three lines, which plans are highlighted, its button.
+  const popup = async () => ({
+    shown: await p.getByRole("heading", { name: PLANS_TITLE }).count(),
+    lines: await p.locator("[data-plan]").evaluateAll((rows) => rows.map((r) => r.innerText.replace(/\s+/g, " ").replace(/, includes V\d/, "").trim())),
+    highlighted: await p.locator('[data-plan][data-included="true"]').evaluateAll((rows) => rows.map((r) => r.dataset.plan)),
+    button: (await p.getByRole("link", { name: "See plans" }).innerText().catch(() => "")).trim(),
+    href: await p.getByRole("link", { name: "See plans" }).getAttribute("href").catch(() => null),
+    notNow: await p.getByRole("button", { name: "Not now" }).count(),
+    namesAPlan: await p.getByRole("link", { name: /Upgrade to/ }).count(),
+    inside: await p.evaluate(() => { const d = document.querySelector('[data-testid="plans-dialog"]')?.getBoundingClientRect(); return d ? d.top >= 0 && d.bottom <= innerHeight && d.left >= 0 && d.right <= innerWidth : false; }),
+  });
+  return { p, ctx, phone, calls, errors, shot, tab, showcase, tiers, pickIdea, sideScroll, popup };
 }
 
 const SIGNUP = "Free to join. Your Blocky story is a few minutes away.";
-const NEED_STARTER = "You need at least the Starter plan to continue";
+const PLANS_TITLE = "Upgrade your plan to continue";
+const LINES = ["Starter: V2 videos", "Pro: V2 + V3 (sharper)", "Generative: V2 + V3 + V4 (best quality)"];
 
 for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", { width: 390, height: 844 }]]) {
   // ── Signed out ──
@@ -153,27 +167,27 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
     await v.tab("Examples");
     row.showcase = await v.showcase();
     row.message = await p.getByRole("heading", { name: "Upgrade your plan to make videos like these" }).count();
-    row.upgradeButton = await p.locator('section[aria-label="Videos made with Blocky Stories"]').getByRole("button", { name: "Upgrade", exact: true }).count();
+    row.upgradeButton = await p.locator('section[aria-label="Videos made with Blocky Stories"]').getByRole("button", { name: "See plans", exact: true }).count();
     await v.shot("1-landing");
     await v.tab("Build");
     await v.pickIdea();
     row.ideasAsked = v.calls.includes("getIdeas");
-    row.popupAfterIdeas = await p.getByText(NEED_STARTER).count();
+    row.popupAfterIdeas = await p.getByText(PLANS_TITLE).count();
     row.tiers = await v.tiers();
     await v.shot("2-ideas-work");
     await p.getByRole("button", { name: /Write 3 versions/ }).click();
-    row.popup = await p.getByText(NEED_STARTER).count();
-    row.popupButton = await p.getByRole("link", { name: /Upgrade to Starter/ }).getAttribute("href").catch(() => null);
-    await v.shot("3-starter-popup");
+    row.popup = await v.popup();
+    await v.shot("3-upgrade-popup");
     await p.getByRole("button", { name: "Not now" }).click();
     await p.waitForTimeout(400);
     await p.locator('[aria-labelledby="bq-quality"] button', { hasText: "V3" }).click();
-    row.lockedPopup = await p.getByText("V3 is a Pro feature").count();
+    row.lockedPopup = await v.popup();
+    await v.shot("4-v3-popup");
     await p.getByRole("button", { name: "Not now" }).click();
     row.startDraftCalled = v.calls.includes("startDraft");
     // The button under the videos goes to the pricing page.
     await v.tab("Examples");
-    await p.locator('section[aria-label="Videos made with Blocky Stories"]').getByRole("button", { name: "Upgrade", exact: true }).click();
+    await p.locator('section[aria-label="Videos made with Blocky Stories"]').getByRole("button", { name: "See plans", exact: true }).click();
     await p.waitForURL(/\/pricing/, { timeout: 15_000 }).catch(() => {});
     row.upgradeGoesTo = new URL(p.url()).pathname;
     row.sideScroll = await v.sideScroll();
@@ -188,14 +202,13 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
     row.showcaseForPaid = (await v.showcase()).videos;   // a paid user sees their own stories, not the showcase
     await v.pickIdea();
     row.tiers = await v.tiers();
-    row.gateOnIdeas = (await p.getByText(NEED_STARTER).count()) + (await p.getByText(SIGNUP).count());
+    row.gateOnIdeas = (await p.getByText(PLANS_TITLE).count()) + (await p.getByText(SIGNUP).count());
     await v.shot("1-tiers");
     row.popups = {};
     let n = 2;
     for (const tier of locked) {
       await p.locator('[aria-labelledby="bq-quality"] button', { hasText: tier }).click();
-      const title = tier === "V3" ? "V3 is a Pro feature" : "V4 is a Generative feature";
-      row.popups[tier] = { shown: await p.getByText(title).count(), button: (await p.getByRole("link", { name: /Upgrade to/ }).innerText().catch(() => "")).trim(), href: await p.getByRole("link", { name: /Upgrade to/ }).getAttribute("href").catch(() => null) };
+      row.popups[tier] = await v.popup();
       await v.shot(`${n++}-${tier.toLowerCase()}-popup`);
       await p.getByRole("button", { name: "Not now" }).click();
       await p.waitForTimeout(400);
@@ -211,7 +224,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
     await p.getByRole("button", { name: /Write 3 versions/ }).click();
     await p.waitForTimeout(1200);
     row.writeReachedServer = v.calls.includes("startDraft");
-    row.gateOnWrite = (await p.getByText(NEED_STARTER).count()) + (await p.getByText(SIGNUP).count());
+    row.gateOnWrite = (await p.getByText(PLANS_TITLE).count()) + (await p.getByText(SIGNUP).count());
     row.sideScroll = await v.sideScroll();
     row.pageErrors = v.errors;
     await v.ctx.close();
@@ -222,6 +235,10 @@ console.log(JSON.stringify(out, null, 1));
 
 const tiersAre = (got, want) => JSON.stringify(got) === JSON.stringify(want);
 const LOCK3 = "V3 Available on Pro", LOCK4 = "V4 Available on Generative";
+// The popup is right: the title, the three lines (the user's own plan marked), the highlighted plans,
+// "See plans" to the pricing page, "Not now", no plan named on a button, and all of it inside the screen.
+const good = (x, highlighted, yours = null) => x.shown === 1 && JSON.stringify(x.lines).toLowerCase() === JSON.stringify(LINES.map((l) => (yours && l.startsWith(yours + ":") ? l + " Your plan" : l))).toLowerCase()
+  && JSON.stringify(x.highlighted) === JSON.stringify(highlighted) && x.button === "See plans" && x.href === "/pricing" && x.notNow === 1 && x.namesAPlan === 0 && x.inside;
 const checks = [];
 for (const name of ["1440", "390"]) {
   const g = out[`guest-${name}`], f = out[`free-${name}`], s = out[`starter-${name}`], pr = out[`pro-${name}`], ge = out[`generative-${name}`];
@@ -230,11 +247,12 @@ for (const name of ["1440", "390"]) {
     [`guest ${name}: every button opens the sign-up popup`, g.popupFromShowcase === 1 && g.popupFromIdeas === 1 && g.popupFromWrite === 1 && g.popupFromScript === 1],
     [`guest ${name}: looks around (the library opens), and nothing is asked of the server but the library`, g.libraryAvatars === 52 && g.calls.join() === "listCharacters"],
     [`guest ${name}: V2 open, V3 and V4 locked with where they start`, tiersAre(g.tiers, ["V2 Fast & cheap*", LOCK3, LOCK4])],
-    [`free ${name}: the showcase with "Upgrade your plan…" and the button to pricing`, f.showcase.videos === 2 && f.message === 1 && f.upgradeButton === 1 && f.upgradeGoesTo === "/pricing"],
+    [`free ${name}: the showcase with "Upgrade your plan…" and "See plans" to the pricing page`, f.showcase.videos === 2 && f.message === 1 && f.upgradeButton === 1 && f.upgradeGoesTo === "/pricing"],
     [`free ${name}: ideas work`, f.ideasAsked && f.popupAfterIdeas === 0],
-    [`free ${name}: writing asks for the Starter plan, with a button to pricing, and nothing reaches the server`, f.popup === 1 && f.popupButton === "/pricing" && f.startDraftCalled === false && f.lockedPopup === 1],
-    [`starter ${name}: V2 only`, tiersAre(s.tiers, ["V2 Fast & cheap*", LOCK3, LOCK4]) && s.popups.V3.shown === 1 && s.popups.V3.button === "Upgrade to Pro" && s.popups.V4.shown === 1 && s.popups.V4.button === "Upgrade to Generative" && s.popups.V3.href === "/pricing" && s.selected === "V2 Fast & cheap*"],
-    [`pro ${name}: V2 and V3`, tiersAre(pr.tiers, ["V2 Fast & cheap*", "V3 Sharper", LOCK4]) && pr.popups.V4.shown === 1 && pr.selected === "V3 Sharper*" && pr.cost > s.cost],
+    [`free ${name}: writing opens the upgrade popup (three plans, none pushed, "See plans"), and nothing reaches the server`, good(f.popup, []) && f.startDraftCalled === false],
+    [`free ${name}: a locked tier highlights the plans that include it`, good(f.lockedPopup, ["pro", "generative"])],
+    [`starter ${name}: V2 only`, tiersAre(s.tiers, ["V2 Fast & cheap*", LOCK3, LOCK4]) && good(s.popups.V3, ["pro", "generative"], "Starter") && good(s.popups.V4, ["generative"], "Starter") && s.selected === "V2 Fast & cheap*"],
+    [`pro ${name}: V2 and V3`, tiersAre(pr.tiers, ["V2 Fast & cheap*", "V3 Sharper", LOCK4]) && good(pr.popups.V4, ["generative"], "Pro") && pr.selected === "V3 Sharper*" && pr.cost > s.cost],
     [`generative ${name}: all three`, tiersAre(ge.tiers, ["V2 Fast & cheap*", "V3 Sharper", "V4 Best quality"]) && ge.selected === "V4 Best quality*" && ge.cost > pr.cost && Object.keys(ge.popups).length === 0],
     [`paid plans ${name}: no gate, and writing goes on to the server`, [s, pr, ge].every((x) => x.gateOnIdeas === 0 && x.gateOnWrite === 0 && x.writeReachedServer && x.showcaseForPaid === 0)],
     [`${name}: no sideways scroll and no page errors in any view`, [g, f, s, pr, ge].every((x) => !x.sideScroll && x.pageErrors.length === 0)],

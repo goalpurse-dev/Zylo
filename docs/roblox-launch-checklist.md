@@ -47,7 +47,7 @@ See "The final test" at the end. Launch only after it passes.
      so run it with the smoke check; after step 5 it also checks that the avatar library opens for
      signed-out visitors);
    - open `/workspace/blocky-stories` signed out and as an account that is not the owner's, on a
-     phone too: the two videos play, and the buttons open the sign-up or the Starter popup;
+     phone too: the two videos play, and the buttons open the sign-up or the upgrade popup;
    - `node scripts/blocky/paid.mjs status` a few times in the first hours.
 
 ## Known and accepted, or still open

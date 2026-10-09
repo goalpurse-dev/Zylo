@@ -177,7 +177,7 @@ test("the API: what the limit stops, what goes on, and who may ask for what", as
   assert.ok(guard.indexOf('throw blockyError("HIGH_DEMAND")') > 0 && guard.indexOf('throw blockyError("HIGH_DEMAND")') < guard.indexOf('throw blockyError("USER_DAILY_LIMIT")'));
   const { MESSAGES } = await import("../supabase/functions/_shared/blocky/errors.js");
   assert.equal(MESSAGES.HIGH_DEMAND, "High demand right now, please try again shortly. Nothing was charged.");
-  assert.equal(MESSAGES.PLAN_UPGRADE_REQUIRED, "You need at least the Starter plan to continue.");
+  assert.equal(MESSAGES.PLAN_UPGRADE_REQUIRED, "Upgrade your plan to continue.", "no plan is pushed: the popup lists all three");
   // Tiers by plan, on the server: when a story is written (both ways in) and again before every charge.
   assert.match(api, /const PLAN_RANK: Record<string, number> = \{ starter: 1, affiliate: 1, pro: 2, generative: 3 \};/);
   assert.match(api, /const QUALITY_PLAN: Record<string, \[number, string\]> = \{ v2: \[1, "Starter"\], v3: \[2, "Pro"\], v4: \[3, "Generative"\] \};/);
@@ -212,4 +212,25 @@ test("the alerts table accepts every alert name Blocky writes (it refused them a
   } finally { console.error = keep; }
   assert.match(errors[0], /ALERT ROW NOT WRITTEN \(blocky:spend\): violates check constraint/);
   assert.equal(await raiseAlert({ rpc: async () => ({ data: true, error: null }) }, SPEND_ALERT, "X", "m"), true);
+});
+
+test("the upgrade popup's lines say what each plan really unlocks", async () => {
+  const { TIERS, TIER_IDS } = await import("../supabase/functions/_shared/blocky/pricing.js");
+  const src = (await import("node:fs")).readFileSync(new URL("../src/components/viral-tools/blocky-stories/constants.js", import.meta.url), "utf8");
+  const block = src.slice(src.indexOf("export const PLAN_UNLOCKS = ["), src.indexOf("];", src.indexOf("export const PLAN_UNLOCKS = [")));
+  const rows = [...block.matchAll(/\{ id: "(\w+)", name: "(\w+)", unlocks: "([^"]+)", tiers: \[([^\]]*)\] \}/g)].map((m) => ({ id: m[1], name: m[2], unlocks: m[3], tiers: m[4].split(",").map((s) => s.trim().replace(/"/g, "")) }));
+  assert.deepEqual(rows.map((r) => r.id), ["starter", "pro", "generative"]);
+  const rank = { starter: 1, pro: 2, generative: 3 };
+  for (const row of rows) {
+    assert.deepEqual(row.tiers, TIER_IDS.filter((id) => rank[TIERS[id].minPlan] <= rank[row.id]), `${row.name}: the tiers its plan may use`);
+    for (const id of TIER_IDS) assert.equal(row.unlocks.includes(id.toUpperCase()), row.tiers.includes(id), `${row.name}: the line names ${id.toUpperCase()} only if the plan has it`);
+  }
+  assert.deepEqual(rows.map((r) => r.unlocks), ["V2 videos", "V2 + V3 (sharper)", "V2 + V3 + V4 (best quality)"]);
+  // One popup, no plan named on its button.
+  const dialog = (await import("node:fs")).readFileSync(new URL("../src/components/viral-tools/blocky-stories/dialogs/PlansDialog.jsx", import.meta.url), "utf8");
+  assert.match(dialog, />Upgrade your plan to continue</);
+  assert.match(dialog, /<a href="\/pricing"[^>]*>\s*See plans\s*<\/a>/);
+  assert.doesNotMatch(dialog, /Upgrade to /);
+  const page = (await import("node:fs")).readFileSync(new URL("../src/components/viral-tools/blocky-stories/BlockyStoriesPage.jsx", import.meta.url), "utf8");
+  assert.doesNotMatch(page, /UpgradeDialog/, "the page has the one popup only");
 });

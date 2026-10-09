@@ -67,10 +67,15 @@ export const LENGTH_NOTES = { 20: "Cheapest", 30: "Best story" };
 
 export const TONES = ["Loud and dramatic", "Petty and sarcastic", "Funny and chaotic", "Cold and quiet"];
 
-export const UPGRADE_COPY = {
-  v3: { title: "V3 is a Pro feature", body: "V3 animates every scene with sharper, steadier motion. It's available starting on the Pro plan." },
-  v4: { title: "V4 is a Generative feature", body: "V4 animates every scene with the most natural motion and voices. It's available on the Generative plan." },
-};
+/**
+ * What each plan unlocks in Blocky Stories, one short line each (dialogs/PlansDialog.jsx). The tiers are the
+ * ones whose smallest plan is this plan or a lower one (pricing.js#TIERS.minPlan; a test keeps them in step).
+ */
+export const PLAN_UNLOCKS = [
+  { id: "starter", name: "Starter", unlocks: "V2 videos", tiers: ["v2"] },
+  { id: "pro", name: "Pro", unlocks: "V2 + V3 (sharper)", tiers: ["v2", "v3"] },
+  { id: "generative", name: "Generative", unlocks: "V2 + V3 + V4 (best quality)", tiers: ["v2", "v3", "v4"] },
+];
 
 /** "45 sec", "1 min", "1 min 30 sec" */
 export function formatLength(sec) {

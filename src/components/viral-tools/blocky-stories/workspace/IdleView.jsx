@@ -11,7 +11,7 @@ const RECENT_TABS = [
 /**
  * Right panel when nothing is being made: hero, then the showcase or Recent creations.
  *   viewer "guest"  → real videos playing + "Sign up to create your own" (the sign-up popup)
- *   viewer "noPlan" → the same videos + "Upgrade your plan to make videos like these" (the pricing page)
+ *   viewer "noPlan" → the same videos + "Upgrade your plan to make videos like these", "See plans" (the pricing page)
  *   viewer "paid"   → their history; with none yet, the videos + "Make your first story"
  * showSeries false (series is behind its own switch): no "Series" tab, single videos only.
  */
@@ -50,7 +50,7 @@ export default function IdleView({ recentTab, onRecentTab, recent, onOpenSingle,
         <Showcase
           message="Upgrade your plan to make videos like these"
           sub="Story ideas are free to try. Videos start on the Starter plan."
-          action="Upgrade"
+          action="See plans"
           onAction={onUpgrade}
           secondary="Try the free story ideas"
           onSecondary={onLookAround}

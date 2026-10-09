@@ -656,6 +656,16 @@ Decisions of 2026-10-08 (after the first real story):
     (`20261101110000_blocky_alert_names.sql`), one writer logs a refused row
     (`spendWatch.js#raiseAlert`), and a test keeps the names and the table rule in step.
     Lesson: a guard that writes to the database gets one live drill, not only a stand-in.
+102. ONE UPGRADE POPUP, NO PLAN PUSHED (owner, 2026-10-09: "don't push users to one plan").
+    Every upgrade popup is `dialogs/PlansDialog.jsx`: the title "Upgrade your plan to
+    continue", one line per plan with what it unlocks (Starter: V2 videos; Pro: V2 + V3
+    (sharper); Generative: V2 + V3 + V4 (best quality)), the button "See plans" to the pricing
+    page, and "Not now". A locked tier that was pressed highlights the plans that include it;
+    the user's own plan is marked. The button under the showcase says "See plans" too, and the
+    server's refusal reads "Upgrade your plan to continue." This replaces the wording of
+    decision 100 ("You need at least the Starter plan to continue"). Also confirmed by the
+    owner: the bug alarm stays; a signed-out visitor on a phone lands on the videos; V2 shows
+    open to the free plan.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
