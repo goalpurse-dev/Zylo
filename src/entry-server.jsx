@@ -13,7 +13,9 @@ import App from "./App.jsx";
 // when it is larger than progressiveChunkSize (12.8 kB): the page arrives as
 // a spinner plus a hidden block that an inline script swaps in ~300 ms later.
 // With `inline` the finished content is written in place, so the first paint
-// is the real page. Opt-in per page (publicSeoMetadata.js `inlineContent`).
+// is the real page. scripts/generateSeoHtml.js asks for it on every page: the
+// inline script also holds the strings "/$" and "/&", which Google crawled
+// as links. (Hydrating a page is a separate opt-in: `inlineContent`.)
 export function renderApp(pathname, { inline = false } = {}) {
   return new Promise((resolve, reject) => {
     let html = "";

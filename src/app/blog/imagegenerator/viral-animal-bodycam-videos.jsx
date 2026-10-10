@@ -8,7 +8,7 @@ const related = [
     title: "Micro Camera Animal Maker: How It Works & Why It Goes Viral",
     description: "Everything you need to know about how AI generates convincing animal bodycam POV scenes and why the format is dominating TikTok in 2026.",
     date: "27.05.2026",
-    slug: "/blog/micro-camera-animal-maker",
+    slug: "/micro-camera-animal-maker",
   },
   {
     title: "Why Face ASMR Videos Go Viral on TikTok (2026)",

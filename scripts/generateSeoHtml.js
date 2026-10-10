@@ -206,6 +206,7 @@ function validate({ pathname, seoVisibility, head, innerHtml, finalHtml }) {
   if (!/^<!DOCTYPE html>/i.test(finalHtml)) errors.push("the page does not start with <!DOCTYPE html>");
   if ((finalHtml.match(/<title>/gi) || []).length !== 1) errors.push("title tag count != 1 in final HTML");
   if ((finalHtml.match(/rel="canonical"/gi) || []).length !== 1) errors.push("canonical tag count != 1 in final HTML");
+  if (finalHtml.includes('"/$"') || finalHtml.includes('"/&"')) errors.push("the page carries React's inline script with the strings /$ and /& (Google crawls them as links)");
   return errors;
 }
 
@@ -244,7 +245,10 @@ async function main() {
   for (const { pathname, seoVisibility } of jobs) {
     completed += 1;
     try {
-      const innerHtml = await renderApp(pathname, { inline: Boolean(getPublicSeoMetadata(pathname)?.inlineContent) });
+      // Every page is written with its content in place (see renderApp). Otherwise React adds an inline
+      // script that moves the content in, and that script holds the strings "/$" and "/&", which
+      // Google read as links and crawled as https://www.tryzyvo.com/$ and /&.
+      const innerHtml = await renderApp(pathname, { inline: true });
       const head = buildHead({ pathname, seoVisibility, innerHtml });
       const withHead = injectHead(template, head);
       const finalHtml = withHead.replace('<div id="root"></div>', `<div id="root">${innerHtml}</div>`);

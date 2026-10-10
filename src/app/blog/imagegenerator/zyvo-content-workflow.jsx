@@ -50,19 +50,19 @@ const STAGES = [
     n: "2",
     title: "Connect",
     desc: "Link your Instagram, TikTok, and YouTube accounts once — every account you connect becomes available across the rest of the workspace.",
-    links: [{ label: "Zyvo Connections", href: "/connections" }],
+    links: [{ label: "Zyvo Connections", href: "/" }],
   },
   {
     n: "3",
     title: "Publish",
     desc: "Schedule your generated content to one or all three platforms from a single dashboard, up to 28 days in advance.",
-    links: [{ label: "Zyvo Publish", href: "/publish" }],
+    links: [{ label: "Zyvo Publish", href: "/" }],
   },
   {
     n: "4",
     title: "Measure",
     desc: "Check your connected YouTube channel's performance — views, watch time, subscriber growth — to decide what to generate next.",
-    links: [{ label: "Zyvo Stats", href: "/stats" }],
+    links: [{ label: "Zyvo Stats", href: "/" }],
   },
 ];
 

@@ -71,9 +71,9 @@ const GUIDES = {
       ["Should every creator use a daily posting schedule?", "No. The best schedule is the one you can sustain without lowering content quality."],
     ],
     links: [
-      ["/publish", "Explore Zyvo Publish", "See the complete multi-platform scheduling workflow."],
+      ["/", "Explore Zyvo Publish", "See the complete multi-platform scheduling workflow."],
       ["/blog/28-day-social-media-content-calendar", "Build a 28-day content calendar", "Turn a realistic weekly cadence into a full monthly plan."],
-      ["/stats", "Use analytics to plan the next batch", "Track YouTube views, watch time, subscribers, and top videos."],
+      ["/", "Use analytics to plan the next batch", "Track YouTube views, watch time, subscribers, and top videos."],
     ],
     cta: "Start scheduling your videos",
   },
@@ -130,8 +130,8 @@ const GUIDES = {
       ["Does cross-posting hurt reach?", "Cross-posting itself is a distribution method. Content quality, packaging, audience fit, and platform requirements still determine performance."],
     ],
     links: [
-      ["/connections", "Connect all three platforms", "Prepare Instagram, TikTok, and YouTube as publishing destinations."],
-      ["/publish", "Open the multi-platform publisher", "Choose one video and prepare every destination together."],
+      ["/", "Connect all three platforms", "Prepare Instagram, TikTok, and YouTube as publishing destinations."],
+      ["/", "Open the multi-platform publisher", "Choose one video and prepare every destination together."],
       ["/blog/social-media-automation-for-creators", "Automate the repeatable work", "Build a controlled publishing system without losing oversight."],
     ],
     cta: "Cross-post your next video",
@@ -189,7 +189,7 @@ const GUIDES = {
       ["Can Zyvo schedule a full month?", "Zyvo supports planning eligible posts up to 28 days ahead."],
     ],
     links: [
-      ["/publish", "Open the 28-day publishing calendar", "Place finished videos into a clear multi-platform queue."],
+      ["/", "Open the 28-day publishing calendar", "Place finished videos into a clear multi-platform queue."],
       ["/blog/social-media-scheduler-for-creators", "Choose a creator scheduler", "Learn which scheduling features matter for short-form video."],
       ["/blog/short-form-video-metrics-that-matter", "Review the right metrics", "Use performance signals to improve the next seven days."],
       ["/blog/what-is-zyvo-publish", "What is Zyvo Publish?", "The full guide to scheduling and posting explained."],
@@ -251,8 +251,8 @@ const GUIDES = {
       ["Is social media automation only for teams?", "No. Solo creators often gain the most because every repeated upload competes directly with their creation time."],
     ],
     links: [
-      ["/publish", "Use controlled publishing automation", "Review each post, then publish now or plan it ahead."],
-      ["/connections", "Manage destination accounts", "Keep Instagram, TikTok, and YouTube connections organized."],
+      ["/", "Use controlled publishing automation", "Review each post, then publish now or plan it ahead."],
+      ["/", "Manage destination accounts", "Keep Instagram, TikTok, and YouTube connections organized."],
       ["/blog/one-click-publishing-playbook", "Read the consistency playbook", "See why a repeatable system matters more than one lucky spike."],
     ],
     cta: "Automate your publishing workflow",
@@ -310,8 +310,8 @@ const GUIDES = {
       ["Does Zyvo Stats track YouTube analytics?", "Yes. Connected YouTube channels can show views, watch time, subscriber growth, average view duration, trends, and video-level performance."],
     ],
     links: [
-      ["/stats", "Open Zyvo Stats", "Review connected YouTube performance in one focused dashboard."],
-      ["/connections", "Connect your YouTube channel", "Authorize the channel used by publishing and analytics."],
+      ["/", "Open Zyvo Stats", "Review connected YouTube performance in one focused dashboard."],
+      ["/", "Connect your YouTube channel", "Authorize the channel used by publishing and analytics."],
       ["/blog/short-form-video-metrics-that-matter", "Learn which metrics matter", "Turn raw numbers into a repeatable review framework."],
       ["/blog/what-is-zyvo-stats", "What is Zyvo Stats?", "The full guide to the analytics dashboard explained."],
     ],
@@ -370,7 +370,7 @@ const GUIDES = {
       ["How often should creators review analytics?", "A weekly review is frequent enough to guide the next content batch without reacting emotionally to every early fluctuation."],
     ],
     links: [
-      ["/stats", "Track YouTube creator metrics", "See views, watch time, subscribers, duration, trends, and video details."],
+      ["/", "Track YouTube creator metrics", "See views, watch time, subscribers, duration, trends, and video details."],
       ["/blog/youtube-analytics-for-creators", "Read the YouTube analytics guide", "Understand how the core channel metrics work together."],
       ["/blog/28-day-social-media-content-calendar", "Apply insights to the next 28 days", "Turn performance patterns into a practical content calendar."],
       ["/blog/tiktok-algorithm-explained", "What actually gets videos seen", "The signals that consistently correlate with reach on TikTok."],
@@ -451,7 +451,7 @@ export default function CreatorGrowthGuide({ slug }) {
   if (!guide) return null;
   const primaryToolPath = slug === "youtube-analytics-for-creators" || slug === "short-form-video-metrics-that-matter"
     ? "/workspace/stats"
-    : "/workspace/publish";
+    : "/";
 
   return (
     <div className="min-h-screen bg-[#F7F5FA] text-[#110829]">
@@ -543,7 +543,7 @@ export default function CreatorGrowthGuide({ slug }) {
           <h2 className="text-[30px] font-black">Create, publish, measure, repeat.</h2>
           <p className="mx-auto mt-3 max-w-xl text-[15px] leading-7 text-white/55">Move from the next idea to a scheduled post, then bring real performance signals back into the next creative decision.</p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/workspace/publish" className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold">Open Publish</Link>
+            <Link to="/" className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold">Open Publish</Link>
             <Link to="/workspace/stats" className="rounded-xl border border-white/10 bg-white/[0.06] px-6 py-3 text-[14px] font-bold">Open Stats</Link>
           </div>
         </section>

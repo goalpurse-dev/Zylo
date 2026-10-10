@@ -16,6 +16,26 @@
       "statusCode": 301
     },
     {
+      "source": "/workspace/publish",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/publish",
+      "destination": "/",
+      "statusCode": 302
+    },
+    {
+      "source": "/stats",
+      "destination": "/",
+      "statusCode": 302
+    },
+    {
+      "source": "/connections",
+      "destination": "/",
+      "statusCode": 302
+    },
+    {
       "source": "/blog/ai-visual-styles-most-engagementd",
       "destination": "/blog/ai-visual-styles-most-engagement",
       "permanent": true
@@ -39,6 +59,36 @@
       "source": "/blog/ai-fruit-story-maker",
       "destination": "/ai-fruit-story-maker",
       "permanent": true
+    },
+    {
+      "source": "/blog/ai-image-generator-dark-moody-cinematic",
+      "destination": "/blog/ai-image-generator-for-dark-visuals",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/clean-product-backgrounds",
+      "destination": "/blog/best-ai-product-backgrounds-to-use",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-product-photography-ecommerce",
+      "destination": "/blog/best-ai-tools-for-ecommerce",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/micro-camera-animal-maker",
+      "destination": "/micro-camera-animal-maker",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/face-asmr-maker",
+      "destination": "/face-asmr-maker",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/clay-rescue-ai-video-maker",
+      "destination": "/clay-rescue-maker",
+      "statusCode": 301
     },
     {
       "source": "/blog/ai-fruit-story-series-universe",

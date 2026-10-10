@@ -90,7 +90,7 @@ export default function FAQ() {
         {/* Bottom CTA */}
         <div className="mt-8 flex justify-center">
           <Link
-            to="/contact"
+            to="/support/contact"
             aria-label="Go to contact page"
             className="relative inline-flex items-center rounded-full p-[2px]
                        bg-gradient-to-r from-[#1677FF] to-[#7A3BFF]

@@ -8,7 +8,7 @@ const related = [
     title: "Face ASMR Maker: How to Create Viral Face ASMR Videos with AI in 2026",
     description: "Upload any face, pick a satisfying texture scene, and Zyvo generates a full ASMR video — no editing, no filming, ready to post in minutes.",
     date: "24.05.2026",
-    slug: "/blog/face-asmr-maker",
+    slug: "/face-asmr-maker",
   },
   {
     title: "Why Face ASMR Videos Go Viral on TikTok (2026)",
@@ -20,7 +20,7 @@ const related = [
     title: "Micro Camera Animal Maker: How It Works & Why It Goes Viral",
     description: "Everything about how AI generates convincing animal bodycam POV scenes and why the format is dominating TikTok in 2026.",
     date: "27.05.2026",
-    slug: "/blog/micro-camera-animal-maker",
+    slug: "/micro-camera-animal-maker",
   },
 ];
 

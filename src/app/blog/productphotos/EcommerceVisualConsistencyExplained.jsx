@@ -216,7 +216,7 @@ export default function EcommerceVisualConsistencyExplained() {
               Try Zyvo Product Photos
             </Link>
             <Link
-              to="/workspace/library"
+              to="/workspace/creations"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white border border-gray-200 text-gray-800 hover:opacity-90 transition"
             >
               Explore Background Styles

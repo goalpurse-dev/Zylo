@@ -108,7 +108,7 @@ export default function HowOftenShouldYouPost() {
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Plan a Cadence You Can Keep</h2>
             <Link
-              to="/publish"
+              to="/"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Explore Zyvo Publish →

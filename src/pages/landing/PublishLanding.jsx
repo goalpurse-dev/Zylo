@@ -1,5 +1,6 @@
 ﻿import { createElement, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { publicRobotsFor } from "../../data/routeSeoPolicy.js";
 import publishCalendarVisual from "../../assets/blog/publish/publish-landing-hero-wide.png";
 import publishAnalyticsVisual from "../../assets/blog/publish/analytics-landing-hero-wide.png";
 import publishHubVisual from "../../assets/blog/publish/publish-hub-square.png";
@@ -164,7 +165,7 @@ export default function PublishLanding() {
 
     upsertMeta("name", "description", description);
     upsertMeta("name", "keywords", "social media scheduler, social media publishing tool, schedule social media posts, Instagram scheduler, TikTok scheduler, YouTube scheduler, cross post social media, video scheduling tool");
-    upsertMeta("name", "robots", "index, follow, max-image-preview:large");
+    upsertMeta("name", "robots", publicRobotsFor("/publish")); // noindex while Publish is unreleased (routeSeoPolicy.js)
     upsertMeta("property", "og:title", "Zyvo Publish â€” Social Media Scheduler for Short-Form Video");
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:type", "website");

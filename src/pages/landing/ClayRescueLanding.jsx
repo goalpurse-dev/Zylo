@@ -7,9 +7,28 @@
  */
 
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+
+// "The 7-second structure", "Why visible fixes matter" and the scenario ideas
+// came from the old /blog/clay-rescue-ai-video-maker article, which now 301s
+// here (vercel.json).
+const SEVEN_SECONDS = [
+  { time: "0-2s", title: "Show the problem clearly", detail: "The viewer immediately understands what is wrong: water is rising, fire is spreading, traffic is trapped, or villagers are in danger." },
+  { time: "2-3s", title: "Bring in the giant hand", detail: "The hand enters the frame as the miracle solution. This is the scroll-stop moment." },
+  { time: "3-5s", title: "Apply the simple fix", detail: "The fix must physically change the scene. The road opens, water disappears, flame goes out, or the obstacle moves." },
+  { time: "5-7s", title: "Let the clay people react", detail: "The final two seconds are for relief, happiness, waving, hugging, or celebration after the rescue is complete." },
+];
+
+const SCENARIO_IDEAS = [
+  "Giant hole in the road fixed by a sticker patch",
+  "Train stuck under fallen rock fixed by two fingers lifting the rock",
+  "Tiny village drowning in bubbles fixed by a pin popping the pile",
+  "Overflowing fountain fixed by a sponge dropped into the water",
+  "Broken bridge fixed by a popsicle stick placed across it",
+  "Giant leaf blocking crops fixed by a hand lifting it away",
+];
 
 const EXAMPLES = [
   { title: "Tiny village fire", image: "/clayrescue/scene1fix.webp", label: "Water rescue" },
@@ -222,17 +241,63 @@ export default function ClayRescueLanding() {
 
       <section className="py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="text-center text-[28px] font-black tracking-tight sm:text-[36px]">The 7-Second Structure That Works</h2>
+          <p className="mx-auto mb-8 mt-3 max-w-2xl text-center text-[15px] leading-relaxed text-white/45">
+            The strongest Clay Rescue clips use a tight 7-second format:
+          </p>
+          <ol className="grid gap-4 sm:grid-cols-2">
+            {SEVEN_SECONDS.map((item) => (
+              <li key={item.time} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <p className="mb-1 text-[12px] font-bold text-purple-300">{item.time}</p>
+                <h3 className="mb-2 text-[15px] font-bold text-white">{item.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white/42">{item.detail}</p>
+              </li>
+            ))}
+          </ol>
+
+          <h2 className="mb-4 mt-14 text-center text-[28px] font-black tracking-tight sm:text-[36px]">Why Visible Fixes Matter</h2>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            AI video can easily show action without consequence: a bucket pours, but the flood remains; a finger touches a grape, but the grape never moves. That breaks the story. Clay Rescue works only when each action produces a result the viewer can read instantly.
+          </p>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            Zyvo's Clay Rescue maker is designed around that rule. Every scene prompt asks for a before state, a hand action, a solved state, and a reaction state. This makes the final celebration feel earned.
+          </p>
+          <p className="text-[15px] leading-relaxed text-white/50">
+            The fix has to work on screen. The water must extinguish the fire. The sponge must absorb and remove the flood. The fork must lift the pizza slice away. The clay people should only react after the danger is gone, because the emotional payoff depends on the viewer seeing the rescue succeed.
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-[#0d0d11] py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-8 text-center text-[28px] font-black tracking-tight sm:text-[36px]">Scenario Ideas That Fit the Format</h2>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {SCENARIO_IDEAS.map((idea) => (
+              <li key={idea} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5 text-[14px] leading-relaxed text-white/60">
+                {idea}
+              </li>
+            ))}
+          </ul>
+          <h3 className="mb-3 mt-10 text-[18px] font-bold text-white">Start with a simple rescue</h3>
+          <p className="text-[15px] leading-relaxed text-white/50">
+            The best first Clay Rescue video is not complicated. Pick one problem, one object, and one clear fix. A flood plus sponge. A fire plus water. A stuck runway plus spoon. If the audience understands the rescue with no explanation, the clip has a stronger chance of holding attention.
+          </p>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
           <h2 className="mb-8 text-center text-[26px] font-black tracking-tight sm:text-[34px]">Clay Rescue Guides</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { title: "Clay Rescue AI Video Maker: How It Works", desc: "A complete breakdown of the Clay Rescue format, the scene structure, and why the fix must visibly solve the crisis.", slug: "/blog/clay-rescue-ai-video-maker" },
               { title: "Why Giant Hand Rescue Videos Go Viral", desc: "The retention psychology behind tiny-world disasters, simple fixes, and clay people reactions.", slug: "/blog/why-giant-hand-rescue-videos-go-viral" },
+              { title: "20 Clay Rescue Video Ideas You Can Generate Right Now", desc: "Twenty real crisis-and-fix pairs, ready to generate today.", slug: "/blog/clay-rescue-video-ideas" },
             ].map((post) => (
-              <button key={post.slug} onClick={() => navigate(post.slug)} className="rounded-[18px] border border-white/[0.07] bg-white/[0.03] p-6 text-left transition hover:border-purple-400/30 hover:bg-white/[0.05]">
+              <Link key={post.slug} to={post.slug} className="block rounded-[18px] border border-white/[0.07] bg-white/[0.03] p-6 text-left transition hover:border-purple-400/30 hover:bg-white/[0.05]">
                 <h3 className="mb-2 text-[16px] font-bold text-white">{post.title}</h3>
                 <p className="text-[13px] leading-relaxed text-white/42">{post.desc}</p>
                 <span className="mt-4 inline-block text-[12px] font-bold text-purple-300">Read article</span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import ToolLink from "../seo/ToolLink.jsx";
 import { motion as Motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -97,7 +97,7 @@ function MobileSuiteCard({ item, variant = "rail" }) {
   const isGrid = variant === "grid";
 
   return (
-    <Link
+    <ToolLink
       to={item.path}
       draggable={false}
       className={`group/card relative block overflow-hidden border border-white/10 bg-[#101312] text-left shadow-[0_16px_38px_rgba(0,0,0,0.36)] ${
@@ -119,7 +119,7 @@ function MobileSuiteCard({ item, variant = "rail" }) {
       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-2 text-white">
         <span className="truncate text-[15px] font-extrabold leading-none">{item.name}</span>
       </div>
-    </Link>
+    </ToolLink>
   );
 }
 
@@ -133,11 +133,11 @@ function SuiteCard({ item, offset, active, onClick }) {
   const widthCompensation = 1 + Math.min(abs * 0.025, 0.08);
   const { height: faceHeight, top: faceTop } = faceMetrics(offset);
 
-  // A real link to the tool. Only the centred card navigates on a plain
+  // A real link (ToolLink: href is the public page, a click opens the tool). Only the centred card navigates on a plain
   // click; a side card first turns the carousel to itself (onClick cancels
   // the navigation), exactly as before.
   return (
-    <Link
+    <ToolLink
       to={item.path}
       draggable={false}
       data-suite-card
@@ -187,7 +187,7 @@ function SuiteCard({ item, offset, active, onClick }) {
           </span>
         )}
       </div>
-    </Link>
+    </ToolLink>
   );
 }
 

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor, BRAND } from "../src/data/structuredData.js";
-import { HOME_SEO, getWorkspaceRouteSeoPolicy, getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data/routeSeoPolicy.js";
+import { HOME_SEO, getWorkspaceRouteSeoPolicy, getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes, publicLandingFor } from "../src/data/routeSeoPolicy.js";
 
 // Home lives at the site root ("/"): public, prerendered, canonical
 // https://www.tryzyvo.com/. /workspace/home is only a 301 to it.
@@ -83,13 +83,45 @@ test("Home's cards are real links crawlers can follow (path, What's new, niches,
   assert.match(home, /testId="path-long"[\s\S]{0,120}to="\/long-form" onClick=\{\(\) => trackLaunch\("try_long_form", \{ placement: "home_hero" \}\)\}/);
   assert.match(home, /if \(to\) return <Link to=\{to\} draggable=\{false\} onClick=\{onClick\}/);
   assert.match(home, /testId="wn-long-form"[\s\S]{0,200}to="\/long-form"/);
-  assert.match(home, /<Link key=\{n\.id\} to=\{`\/long-form\/create\?niche=\$\{n\.id\}`\}/);
-  assert.match(home, /<Link to=\{t\.path\} onClick=\{track\}/);
+  // Niche cards link to /long-form; the click opens the (noindex) setup with the niche picked.
+  assert.match(home, /<Link key=\{n\.id\} to="\/long-form" draggable=\{false\} onClick=\{\(event\) => openNiche\(event, n\.id\)\}/);
+  assert.match(home, /event\.preventDefault\(\);\s+navigate\(`\/long-form\/create\?niche=\$\{id\}`\);/);
+  assert.doesNotMatch(home, /to=\{`\/long-form\/create/);
+  assert.match(home, /<ToolLink to=\{t\.path\} onClick=\{track\}/);
   const suite = read("src/components/workspace/ZyvoSuiteCarousel.jsx");
   assert.ok(!/useNavigate|<button\s+onClick=\{onClick\}/.test(suite), "template cards are links, not buttons");
-  assert.equal((suite.match(/<Link\s+to=\{item\.path\}/g) || []).length, 2, "mobile card and carousel card");
+  assert.equal((suite.match(/<ToolLink\s+to=\{item\.path\}/g) || []).length, 2, "mobile card and carousel card");
   // A side card still turns the carousel instead of navigating.
   assert.match(suite, /if \(Math\.abs\(item\.offset\) < 0\.32\) return;[^\n]*\n\s+event\.preventDefault\(\);/);
+});
+
+test("Home's template links and the blog footer point at indexable pages, not the noindex tool pages", () => {
+  const sitemap = read("public/sitemap.xml");
+  const inSitemap = (path) => sitemap.includes(`<loc>${SITE_URL}${path}</loc>`);
+  // ToolLink: href = the tool's public page, a plain click opens the tool, a cancelled click does nothing.
+  const link = read("src/components/seo/ToolLink.jsx");
+  assert.match(link, /const landing = publicLandingFor\(to\);/);
+  assert.match(link, /if \(!landing \|\| event\.defaultPrevented\) return;/);
+  assert.match(link, /event\.preventDefault\(\);\s+navigate\(to\);/);
+  assert.match(link, /<Link to=\{landing \?\? to\} onClick=\{open\}/);
+  for (const [tool, landing] of [
+    ["/workspace/clay-rescue", "/clay-rescue-maker"], ["/workspace/two-am", "/2am-worlds-ai-generator"],
+    ["/workspace/micro-camera-animal", "/micro-camera-animal-maker"], ["/workspace/cartoon-drive-by", "/cartoon-drive-by-video-maker"],
+    ["/workspace/behind-the-scenes", "/behind-the-scenes-video-maker"], ["/workspace/ai-fruit-story", "/ai-fruit-story-maker"],
+    ["/workspace/face-asmr", "/face-asmr-maker"], ["/workspace/kit-swap", "/kit-swap-ai"], ["/workspace/thirty-days", "/30-days-video-maker"],
+  ]) assert.equal(publicLandingFor(tool), landing);
+  // Every public page a tool points at is a real, indexable page.
+  for (const { path, publicLanding } of getNoindexWorkspaceRoutes()) {
+    if (publicLanding) assert.ok(inSitemap(publicLanding), `${path} -> ${publicLanding} is in the sitemap`);
+  }
+  assert.equal(publicLandingFor("/workspace/video-generator"), null, "no public page yet: the card keeps its tool link");
+  // The blog footer (two layouts): no /workspace/ link, and every link it has is in the sitemap or a help page.
+  const footer = read("src/components/workspace/footer.jsx");
+  assert.doesNotMatch(footer, /to="\/workspace\//);
+  assert.equal((footer.match(/to="\/image-generator"/g) || []).length, 2);
+  for (const [, to] of footer.matchAll(/<Link to="([^"]+)"/g)) {
+    assert.ok(inSitemap(to) || /^\/(support|help)(\/|$)/.test(to), `footer link ${to}`);
+  }
 });
 
 test("brand search: ZyvoAI is in Home's own text once, and blog brand links go to the homepage", () => {

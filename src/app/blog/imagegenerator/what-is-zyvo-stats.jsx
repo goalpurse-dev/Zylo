@@ -133,7 +133,7 @@ export default function WhatIsZyvoStats() {
               Connect your YouTube channel and see your dashboard.
             </p>
             <Link
-              to="/stats"
+              to="/"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Open Zyvo Stats →

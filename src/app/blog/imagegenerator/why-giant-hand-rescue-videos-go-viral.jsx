@@ -8,7 +8,7 @@ const related = [
     title: "Clay Rescue AI Video Maker: Create Viral Giant Hand Rescue Videos",
     description: "How the Clay Rescue maker builds miniature disasters, visible fixes, and satisfying clay people reactions.",
     date: "01.06.2026",
-    slug: "/blog/clay-rescue-ai-video-maker",
+    slug: "/clay-rescue-maker",
   },
   {
     title: "Why Face ASMR Videos Go Viral on TikTok in 2026",
@@ -144,7 +144,7 @@ export default function WhyGiantHandRescueVideosGoViral() {
               Clay Rescue is early enough that creators can still define the niche. The format is faceless, repeatable, visual, and easy for viewers in any language to understand. That combination is rare.
             </p>
             <p className="mb-6 leading-relaxed text-[#4A4A55]">
-              To build your first one, read the full <Link to="/blog/clay-rescue-ai-video-maker" className="font-semibold text-[#7A3BFF] hover:underline">Clay Rescue AI video maker guide</Link>, then open the workspace and generate a rescue where the fix clearly solves the problem before the clay people celebrate.
+              To build your first one, read the full <Link to="/clay-rescue-maker" className="font-semibold text-[#7A3BFF] hover:underline">Clay Rescue AI video maker guide</Link>, then open the workspace and generate a rescue where the fix clearly solves the problem before the clay people celebrate.
             </p>
           </article>
 

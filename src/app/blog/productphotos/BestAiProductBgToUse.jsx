@@ -22,16 +22,16 @@ const related = [
     slug: "/blog/shopify-product-photo-best-practices",
   },
   {
-    title: "AI Product Photography for Ecommerce",
-    description: "How brands replace studios with AI",
-    date: "08.01.2026",
-    slug: "/blog/ai-product-photography-ecommerce",
+    title: "Best AI Tools for Ecommerce Product Photography",
+    description: "Top AI tools to create high-quality ecommerce product images fast.",
+    date: "09.01.2026",
+    slug: "/blog/best-ai-tools-for-ecommerce",
   },
   {
-    title: "How to Create Clean Product Backgrounds",
-    description: "Backgrounds that increase trust & sales",
-    date: "05.01.2026",
-    slug: "/blog/clean-product-backgrounds",
+    title: "AI Background Removal for Product Photos",
+    description: "Remove backgrounds instantly for clean, professional product images.",
+    date: "17.01.2026",
+    slug: "/blog/ai-background-removal-for-product-photos",
   },
 ];
 export default function BlogBestAIProductBackgrounds() {
@@ -175,7 +175,7 @@ export default function BlogBestAIProductBackgrounds() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/workspace/library"
+              to="/workspace/creations"
               className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90"
             >
               See example layouts →
@@ -302,7 +302,7 @@ export default function BlogBestAIProductBackgrounds() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
-             to="/workspace/library"
+             to="/workspace/creations"
               className="inline-flex items-center justify-center rounded-2xl bg-[#7A3BFF] px-6 py-3 text-base font-semibold hover:opacity-90"
             >
               Try backgrounds now →

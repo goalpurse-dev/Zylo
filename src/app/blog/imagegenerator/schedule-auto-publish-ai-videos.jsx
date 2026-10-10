@@ -83,7 +83,7 @@ export default function ScheduleAutoPublishAIVideos() {
             Most creators stall out at the same step: they finish a batch of videos and then manually download, re-upload, and caption each one on every platform. It's tedious enough that posting becomes irregular — and irregular posting is the single biggest killer of algorithmic reach.
           </p>
           <p className="text-[17px] text-[#4A4A55] leading-relaxed">
-            Zyvo's <Link to="/workspace/publish" className="text-[#7A3BFF] font-semibold hover:underline">Publish workspace</Link> removes that friction. Connect your accounts once, queue up your videos, and Zyvo posts them automatically at the times you choose — even while you're asleep.
+            Zyvo's <Link to="/" className="text-[#7A3BFF] font-semibold hover:underline">Publish workspace</Link> removes that friction. Connect your accounts once, queue up your videos, and Zyvo posts them automatically at the times you choose — even while you're asleep.
           </p>
         </section>
 
@@ -185,7 +185,7 @@ export default function ScheduleAutoPublishAIVideos() {
             Connect your accounts, build your queue, and let Zyvo post while you focus on making the next video.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/workspace/publish" className="inline-block bg-[#7A3BFF] text-white font-semibold text-[16px] px-8 py-4 rounded-xl hover:bg-[#6930e8] transition">
+            <Link to="/" className="inline-block bg-[#7A3BFF] text-white font-semibold text-[16px] px-8 py-4 rounded-xl hover:bg-[#6930e8] transition">
               Open Publish →
             </Link>
             <Link to="/workspace/video-generator" className="inline-block bg-white/10 text-white font-semibold text-[16px] px-8 py-4 rounded-xl hover:bg-white/20 transition">

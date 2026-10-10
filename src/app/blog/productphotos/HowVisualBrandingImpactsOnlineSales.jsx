@@ -17,10 +17,10 @@ const related = [
     slug: "/blog/shopify-product-photo-best-practices",
   },
   {
-    title: "AI Product Photography for Ecommerce",
-    description: "How brands replace studios with AI",
-    date: "08.01.2026",
-    slug: "/blog/ai-product-photography-ecommerce",
+    title: "Best AI Tools for Ecommerce Product Photography",
+    description: "Top AI tools to create high-quality ecommerce product images fast.",
+    date: "09.01.2026",
+    slug: "/blog/best-ai-tools-for-ecommerce",
   },
   {
     title: "Product Photography Mistakes Ecommerce Brands Make",
@@ -57,7 +57,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
                 Improve your visuals
               </Link>
               <Link
-                to="/workspace/library"
+                to="/workspace/creations"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 See examples
@@ -101,7 +101,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
               <Link to="/signup" className="text-[#7A3BFF] font-medium">
                 Fix your first impression →
               </Link>
-              <Link to="/workspace/library" className="text-[#492399] font-medium">
+              <Link to="/workspace/creations" className="text-[#492399] font-medium">
                 See branding examples →
               </Link>
             </div>
@@ -190,7 +190,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
               <Link to="/" className="text-[#7A3BFF] font-medium">
                 Make your brand recognizable →
               </Link>
-              <Link to="/workspace/library" className="text-[#7A3BFF] font-medium">
+              <Link to="/workspace/creations" className="text-[#7A3BFF] font-medium">
                 See visual branding tools →
               </Link>
               <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium">

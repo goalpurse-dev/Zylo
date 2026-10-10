@@ -16,16 +16,16 @@ const related = [
     slug: "/blog/shopify-product-photo-best-practices",
   },
   {
-    title: "AI Product Photography for Ecommerce",
-    description: "How brands replace studios with AI",
-    date: "08.01.2026",
-    slug: "/blog/ai-product-photography-ecommerce",
+    title: "Best AI Product Photo Generator in 2026 (Free + Ecommerce Guide)",
+    description: "Generate studio-quality product photos, remove backgrounds, and create social media content — free to start.",
+    date: "17.04.2026",
+    slug: "/blog/ai-product-photo-generator",
   },
   {
-    title: "How to Create Clean Product Backgrounds",
-    description: "Backgrounds that increase trust & sales",
-    date: "05.01.2026",
-    slug: "/blog/clean-product-backgrounds",
+    title: "Best AI Product Backgrounds to Use",
+    description: "High-converting background styles for modern product photos.",
+    date: "15.01.2026",
+    slug: "/blog/best-ai-product-backgrounds-to-use",
   },
 ];
 

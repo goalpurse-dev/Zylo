@@ -144,7 +144,7 @@ export default function bg() {
 
       <div className="flex justify-center mt-12">
        <Link
-       to="/workspace/library"
+       to="/workspace/creations"
        className="bg-[#1A1D2B] border-[#1F2230] border-2 text-[#E6E8EE] rounded-lg px-6 py-2">Browse All</Link> 
       </div>
 

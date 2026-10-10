@@ -15,10 +15,10 @@ const related = [
     slug: "/blog/shopify-product-photo-best-practices",
   },
   {
-    title: "AI Product Photography for Ecommerce",
-    description: "How brands replace studios with AI",
-    date: "08.01.2026",
-    slug: "/blog/ai-product-photography-ecommerce",
+    title: "Best AI Tools for Ecommerce Product Photography",
+    description: "Top AI tools to create high-quality ecommerce product images fast.",
+    date: "09.01.2026",
+    slug: "/blog/best-ai-tools-for-ecommerce",
   },
   {
     title: "Best AI Product Backgrounds to use",

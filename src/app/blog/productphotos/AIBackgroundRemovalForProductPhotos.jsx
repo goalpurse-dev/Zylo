@@ -15,10 +15,10 @@ const related = [
     slug: "/blog/shopify-product-photo-best-practices",
   },
   {
-    title: "AI Product Photography for Ecommerce",
-    description: "How brands replace studios with AI",
-    date: "08.01.2026",
-    slug: "/blog/ai-product-photography-ecommerce",
+    title: "Best AI Tools for Ecommerce Product Photography",
+    description: "Top AI tools to create high-quality ecommerce product images fast.",
+    date: "09.01.2026",
+    slug: "/blog/best-ai-tools-for-ecommerce",
   },
   {
     title: "Product Photography Mistakes Ecommerce Brands Make",
@@ -56,7 +56,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
                 Try AI background removal
               </Link>
               <Link
-                to="/workspace/library"
+                to="/workspace/creations"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 See examples
@@ -217,7 +217,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
                 Try Zyvo
               </Link>
               <Link
-                to="/workspace/library"
+                to="/workspace/creations"
                 className="px-8 py-3 rounded-full border border-black/15 font-semibold hover:bg-black/5"
               >
                 View examples

@@ -123,7 +123,9 @@ test("fast first paint: content inline, hydrated (not redrawn), app script after
   assert.match(entry, /document\.documentElement\.dataset\.hydrate === "true" && container\.firstElementChild\) \{\s+ReactDOM\.hydrateRoot\(container, app/);
   assert.match(entry, /\} else \{\s+ReactDOM\.createRoot\(container\)\.render\(app\);/, "every other page keeps the client render");
   const gen = read("scripts/generateSeoHtml.js");
-  assert.match(gen, /renderApp\(pathname, \{ inline: Boolean\(getPublicSeoMetadata\(pathname\)\?\.inlineContent\) \}\)/);
+  // Every page is written with its content in place: React's inline swap script holds "/$" and "/&", which Google crawled as links.
+  assert.match(gen, /renderApp\(pathname, \{ inline: true \}\)/);
+  assert.match(gen, /finalHtml\.includes\('"\/\$"'\) \|\| finalHtml\.includes\('"\/&"'\)/);
   assert.match(gen, /if \(head\.hydrate\) html = deferAppScript\(html\);/);
   assert.match(gen, /supportedEntryTypes[\s\S]*largest-contentful-paint[\s\S]*setTimeout\(go,3000\)/);
   // A hydrated route must not be lazy: a pending chunk + any state update makes React redraw the page.

@@ -143,7 +143,7 @@ export default function AIFruitStoryInstagramYouTubeShorts() {
               <li>Track which platform each series performs best on — some drama types travel better on one platform than another.</li>
             </ol>
             <p className="mt-4 text-[17px] leading-relaxed">
-              If you're publishing regularly across platforms, a scheduling tool like <Link to="/publish" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo Publish</Link> can prepare one video for Instagram, TikTok, and YouTube from a single workflow instead of three separate uploads.
+              If you're publishing regularly across platforms, a scheduling tool like <Link to="/" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo Publish</Link> can prepare one video for Instagram, TikTok, and YouTube from a single workflow instead of three separate uploads.
             </p>
           </section>
 

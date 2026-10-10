@@ -23,8 +23,9 @@ const back = async (page) => { await page.goto(`${ORIGIN}/`, { waitUntil: "load"
   const { ctx, page } = await open({ width: 1440, height: 900 });
   await page.screenshot({ path: `${OUT}/home-links-desktop.png` });
   out.tags = await page.evaluate(() => Object.fromEntries(["path-short", "path-long", "wn-long-form", "wn-showcase", "wn-tutorial", "wn-earn"].map((id) => { const el = document.querySelector(`[data-testid="${id}"]`); return [id, el ? `${el.tagName.toLowerCase()} ${el.getAttribute("href") ?? ""}`.trim() : null]; })));
-  out.nicheLinks = await page.locator('[data-testid="niche-row"] a[href^="/long-form/create?niche="]').count();
-  out.templateLinks = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href^="/workspace/"]')].map((a) => a.getAttribute("href")))].length);
+  out.nicheLinks = await page.locator('[data-testid="niche-row"] a[href="/long-form"]').count();
+  // Template cards: the href is the tool's public page where it has one (ToolLink), the click opens the tool.
+  out.templateHrefs = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[data-suite-card]')].map((a) => a.getAttribute("href")))]);
 
   await page.getByTestId("path-long").click();
   await page.waitForTimeout(1500);
@@ -72,7 +73,7 @@ const back = async (page) => { await page.goto(`${ORIGIN}/`, { waitUntil: "load"
 {
   const { ctx, page } = await open({ width: 390, height: 844 }, true);
   await page.screenshot({ path: `${OUT}/home-links-mobile.png` });
-  const card = page.locator('a[href="/workspace/ai-fruit-story"]').first();
+  const card = page.locator('a[href="/ai-fruit-story-maker"]:visible').first();
   await card.scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
   await page.screenshot({ path: `${OUT}/home-links-mobile-templates.png` });

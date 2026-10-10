@@ -8,7 +8,7 @@ const related = [
     title: "Face ASMR Maker: How It Works & Why It Goes Viral",
     description: "Everything you need to know about how AI face ASMR videos are made and what makes them hit millions of views.",
     date: "24.05.2026",
-    slug: "/blog/face-asmr-maker",
+    slug: "/face-asmr-maker",
   },
   {
     title: "How to Make Viral AI TikTok Videos in 2026 (Step-by-Step)",

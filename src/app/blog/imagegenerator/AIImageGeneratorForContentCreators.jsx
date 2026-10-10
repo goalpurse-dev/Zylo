@@ -127,7 +127,7 @@ export default function AIImageGeneratorForContentCreators() {
             </p>
             <p className="text-[#4A4A55]">
               When you generate inside a single{" "}
-              <Link to="/worspace/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI workspace
               </Link>, maintaining brand consistency becomes effortless.
             </p>

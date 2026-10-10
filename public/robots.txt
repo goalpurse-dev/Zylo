@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /settings
 Disallow: /auth/
+Disallow: /*?prompt=
 
 Sitemap: https://www.tryzyvo.com/sitemap.xml

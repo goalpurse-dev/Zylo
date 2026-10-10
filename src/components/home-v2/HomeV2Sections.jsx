@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ToolLink from "../seo/ToolLink.jsx";
 import { useReducedMotion } from "framer-motion";
 import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
@@ -328,6 +329,15 @@ export function HowItWorks({ className = "" }) {
 
 export function LongFormSection() {
   const navigate = useNavigate();
+  // A niche card's link is /long-form, the page crawlers follow: the setup
+  // (/long-form/create?niche=<id>) is noindex (routeSeoPolicy.js). A plain
+  // click still opens the setup with that niche picked.
+  const openNiche = (event, id) => {
+    trackLaunch("niche_pick", { placement: "home", target: id });
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    navigate(`/long-form/create?niche=${id}`);
+  };
   return (
     <section className={`mt-12 w-full ${SECTION_X}`} data-testid="long-form-section">
       <SectionHeader title="Make a YouTube video with Long Form" subtitle="8–15 minute explainers. You pick the idea, Zyvo does the rest." badge={isLongFormNew() ? <NewPill /> : null}
@@ -343,7 +353,7 @@ export function LongFormSection() {
       </div>
       <div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:-mx-[50px] md:scroll-px-[50px] md:gap-4 md:px-[50px] [&::-webkit-scrollbar]:hidden" data-testid="niche-row">
         {ALL_NICHES.map((n) => (
-          <Link key={n.id} to={`/long-form/create?niche=${n.id}`} draggable={false} onClick={() => trackLaunch("niche_pick", { placement: "home", target: n.id })}
+          <Link key={n.id} to="/long-form" draggable={false} onClick={(event) => openNiche(event, n.id)}
             className="group block w-[190px] shrink-0 snap-start text-left md:w-[232px]">
             <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-lime-300/45">
               <img {...optImg(`/images/niches/${n.id}.webp`, "232px", 480)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
@@ -405,19 +415,19 @@ export function FeaturedTemplate({ template = FEATURED_TEMPLATE, testId = "featu
             </div>
             <h2 className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">{t.name}</h2>
           </div>
-          <Link to={t.path} onClick={track} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
+          <ToolLink to={t.path} onClick={track} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
             Try Template <ArrowRight className="h-4 w-4" />
-          </Link>
+          </ToolLink>
         </div>
         <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:gap-3 sm:px-0 [&::-webkit-scrollbar]:hidden">
           {t.examples.map((ex) => (
-            <Link key={ex.video ?? ex.image} to={t.path} draggable={false} onClick={track} aria-label={`Try the ${t.name} template`}
+            <ToolLink key={ex.video ?? ex.image} to={t.path} draggable={false} onClick={track} aria-label={`Try the ${t.name} template`}
               className="group relative block aspect-[9/16] w-[clamp(150px,52vw,220px)] shrink-0 snap-start overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#0d0f10] text-left shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 sm:w-[240px] lg:w-[280px]">
               {ex.video
                 ? <LazyLoopVideo src={ex.video} poster={ex.poster} className="absolute inset-0" />
                 : <img src={ex.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />}
               <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-1 ring-inset ring-white/[0.06]" />
-            </Link>
+            </ToolLink>
           ))}
         </div>
       </div>

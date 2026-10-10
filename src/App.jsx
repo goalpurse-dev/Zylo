@@ -285,20 +285,14 @@ const CrossPromoteZyvoFormats = lazy(() => import("./app/blog/imagegenerator/cro
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
-const PublishLanding = lazy(() => import("./pages/landing/PublishLanding.jsx"));
-const StatsLanding = lazy(() => import("./pages/landing/StatsLanding.jsx"));
-const ConnectionsLanding = lazy(() => import("./pages/landing/ConnectionsLanding.jsx"));
 const CreatorGrowthGuide = lazy(() => import("./app/blog/CreatorGrowthGuide.jsx"));
 const SeoLandingPage = lazy(() => import("./pages/seo/SeoLandingPage.jsx"));
 const TwoAmBlogGuide = lazy(() => import("./app/blog/TwoAmBlogGuide.jsx"));
-const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
 const HowToStartAsmrChannel = lazy(() => import("./app/blog/imagegenerator/how-to-start-asmr-channel-with-ai.jsx"));
 const BestFaceAsmrVideoIdeas = lazy(() => import("./app/blog/imagegenerator/best-face-asmr-video-ideas-2026.jsx"));
-const MicroCameraAnimalMakerBlog = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-maker.jsx"));
 const ViralAnimalBodycamVideos = lazy(() => import("./app/blog/imagegenerator/viral-animal-bodycam-videos.jsx"));
-const ClayRescueMakerBlog = lazy(() => import("./app/blog/imagegenerator/clay-rescue-ai-video-maker.jsx"));
 const GiantHandRescueVideosBlog = lazy(() => import("./app/blog/imagegenerator/why-giant-hand-rescue-videos-go-viral.jsx"));
 const AIFruitStoryCharacterIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-ideas.jsx"));
 const BestAiVideoGeneratorsTiktok = lazy(() => import("./app/blog/imagegenerator/best-ai-video-generators-tiktok.jsx"));
@@ -819,20 +813,21 @@ return (
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
-         <Route path="/publish" element={<PublishLanding />} />
-         <Route path="/stats" element={<StatsLanding />} />
-         <Route path="/connections" element={<ConnectionsLanding />} />
+         {/* Publish, Stats and Connections are not released yet: their landing pages (pages/landing/) go Home. vercel.json does the same for a direct visit. */}
+         <Route path="/publish" element={<Navigate to="/" replace />} />
+         <Route path="/stats" element={<Navigate to="/" replace />} />
+         <Route path="/connections" element={<Navigate to="/" replace />} />
          <Route path="/2am-worlds-ai-generator" element={<SeoLandingPage slug="2am-worlds-ai-generator" />} />
          <Route path="/2am-creature-town-ai-generator" element={<SeoLandingPage slug="2am-creature-town-ai-generator" />} />
          <Route path="/2am-ninja-city-ai-generator" element={<SeoLandingPage slug="2am-ninja-city-ai-generator" />} />
-         <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
+         <Route path="/blog/face-asmr-maker" element={<Navigate to="/face-asmr-maker" replace />} />
          <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
          <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
          <Route path="/blog/how-to-start-asmr-channel-with-ai" element={<HowToStartAsmrChannel />} />
          <Route path="/blog/best-face-asmr-video-ideas-2026" element={<BestFaceAsmrVideoIdeas />} />
-         <Route path="/blog/micro-camera-animal-maker" element={<MicroCameraAnimalMakerBlog />} />
+         <Route path="/blog/micro-camera-animal-maker" element={<Navigate to="/micro-camera-animal-maker" replace />} />
          <Route path="/blog/viral-animal-bodycam-videos" element={<ViralAnimalBodycamVideos />} />
-         <Route path="/blog/clay-rescue-ai-video-maker" element={<ClayRescueMakerBlog />} />
+         <Route path="/blog/clay-rescue-ai-video-maker" element={<Navigate to="/clay-rescue-maker" replace />} />
          <Route path="/blog/why-giant-hand-rescue-videos-go-viral" element={<GiantHandRescueVideosBlog />} />
          <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
          <Route path="/blog/best-ai-video-generators-tiktok" element={<BestAiVideoGeneratorsTiktok />} />

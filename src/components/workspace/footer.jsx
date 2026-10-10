@@ -20,21 +20,14 @@ export default function Footer() {
 
           <div className="flex flex-row flex-wrap justify-center gap-8">
 
-            {/* Zylo */}
+            {/* Tools: public pages only (the /workspace/ tool pages are noindex) */}
             <div className="flex flex-col gap-3 mt-10 mr-4">
               <h3 className="cursor-default text-[22px] font-extrabold text-white">Tools</h3>
 
-              <Link to="/workspace/image-generator" className="text-[12px] hover:underline">
+              <Link to="/image-generator" className="text-[12px] hover:underline">
                 Image Generator
               </Link>
 
-               <Link to="/workspace/video-generator" className="text-[12px] hover:underline">
-                Video Generator
-              </Link>
-
-              <Link to="/workspace/creations" className="text-[12px] hover:underline">
-                Creations
-              </Link>
               <Link to="/ai-stickman-video-generator" className="text-[12px] hover:underline">
                 AI Stickman Video Generator
               </Link>
@@ -131,15 +124,8 @@ export default function Footer() {
             <div className="flex flex-col gap-3">
               <h3 className="cursor-default text-xl font-extrabold text-white">Tools</h3>
 
-               <Link to="/workspace/image-generator" className="hover:underline">
+               <Link to="/image-generator" className="hover:underline">
                 Image Generator
-              </Link>
-               <Link to="/workspace/video-generator" className="hover:underline">
-                Video Generator
-              </Link>
-
-              <Link to="/workspace/creations" className="hover:underline">
-                Creations
               </Link>
               <Link to="/ai-stickman-video-generator" className="hover:underline">
                 AI Stickman Video Generator

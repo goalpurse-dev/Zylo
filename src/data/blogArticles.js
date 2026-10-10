@@ -42,8 +42,7 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": { "name": "Zyvo Publish", "href": "/publish" }
+    "popular": false
   },
   {
     "title": "What Is Zyvo Stats? Understanding Your YouTube Analytics",
@@ -55,8 +54,7 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": { "name": "Zyvo Stats", "href": "/stats" }
+    "popular": false
   },
   {
     "title": "What Is Zyvo Connections? Managing Your Social Accounts",
@@ -68,8 +66,7 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": { "name": "Zyvo Connections", "href": "/connections" }
+    "popular": false
   },
   {
     "title": "The Complete Zyvo Content Workflow: From Idea to Published Post",
@@ -1382,27 +1379,6 @@ export const blogArticles = [
     }
   },
   {
-    "title": "Face ASMR Maker: Create Viral Face ASMR Videos with AI in 2026",
-    "slug": "/blog/face-asmr-maker",
-    "description": "How the Face ASMR maker works and why creators are hitting millions of views by placing any face into satisfying ASMR texture scenes.",
-    "image": "/legacy-blog-assets/dubai.png",
-    "category": "AI Video",
-    "tags": [
-      "face",
-      "asmr",
-      "maker",
-      "ai-video"
-    ],
-    "publishedAt": "2026-05-23T21:00:00.000Z",
-    "updatedAt": "2026-05-23T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Face ASMR Maker",
-      "href": "/face-asmr-maker"
-    }
-  },
-  {
     "title": "Why Face ASMR Videos Go Viral on TikTok in 2026",
     "slug": "/blog/viral-face-asmr-videos",
     "description": "The psychology behind ASMR virality, the face recognition scroll-stop, and the exact strategy creators use to build audiences fast.",
@@ -2257,29 +2233,6 @@ export const blogArticles = [
     }
   },
   {
-    "title": "Clay Rescue AI Video Maker: Create Viral Giant Hand Rescue Videos",
-    "slug": "/blog/clay-rescue-ai-video-maker",
-    "description": "How to create tiny clay rescue videos with clear disasters, visible giant hand fixes, and emotional clay people reactions.",
-    "image": "/clayrescue/smallpreview.webp",
-    "category": "AI Video",
-    "tags": [
-      "clay",
-      "rescue",
-      "ai",
-      "video",
-      "maker",
-      "ai-video"
-    ],
-    "publishedAt": "2026-05-31T21:00:00.000Z",
-    "updatedAt": "2026-05-31T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Clay Rescue AI Video Maker",
-      "href": "/clay-rescue-maker"
-    }
-  },
-  {
     "title": "Why Giant Hand Rescue Videos Go Viral on TikTok in 2026",
     "slug": "/blog/why-giant-hand-rescue-videos-go-viral",
     "description": "The retention psychology behind miniature disasters, simple visible fixes, and celebration payoffs in Clay Rescue videos.",
@@ -2316,11 +2269,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-01T21:00:00.000Z",
     "updatedAt": "2026-07-01T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Publish",
-      "href": "/publish"
-    }
+    "popular": false
   },
   {
     "title": "Social Media Scheduler for Creators: The Complete 2026 Guide",
@@ -2338,11 +2287,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Publish",
-      "href": "/publish"
-    }
+    "popular": false
   },
   {
     "title": "How to Cross-Post to Instagram, TikTok, and YouTube in 2026",
@@ -2361,11 +2306,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Publish",
-      "href": "/publish"
-    }
+    "popular": false
   },
   {
     "title": "How to Build a 28-Day Social Media Content Calendar",
@@ -2384,11 +2325,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Publish",
-      "href": "/publish"
-    }
+    "popular": false
   },
   {
     "title": "Social Media Automation for Creators Without Losing Control",
@@ -2423,11 +2360,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Stats",
-      "href": "/stats"
-    }
+    "popular": false
   },
   {
     "title": "Short-Form Video Metrics That Actually Matter in 2026",
@@ -2446,11 +2379,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Stats",
-      "href": "/stats"
-    }
+    "popular": false
   },
   {
     "title": "One-Click Publishing: Why Posting Consistency Beats Virality in 2026",
@@ -2468,11 +2397,7 @@ export const blogArticles = [
     "publishedAt": "2026-07-01T21:00:00.000Z",
     "updatedAt": "2026-07-01T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "Zyvo Publish",
-      "href": "/publish"
-    }
+    "popular": false
   },
   {
     "title": "How to Go Viral With AI in 2026: The Complete Strategy",
@@ -3966,8 +3891,7 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T21:00:00.000Z",
     "updatedAt": "2026-08-21T21:00:00.000Z",
     "featured": false,
-    "popular": false,
-    "relatedTool": { "name": "Zyvo Publish", "href": "/publish" }
+    "popular": false
   },
   {
     "title": "How to Cross-Promote Between Zyvo Formats: Turn One Audience Into Many",

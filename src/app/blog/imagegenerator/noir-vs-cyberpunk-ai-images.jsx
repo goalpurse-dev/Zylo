@@ -17,9 +17,9 @@ const related = [
   },
   {
     title: "AI Image Generator for Dark, Moody & Cinematic Visuals",
-    description: "How to get a consistently dark, atmospheric result from a prompt.",
-    date: "12.06.2026",
-    slug: "/blog/ai-image-generator-dark-moody-cinematic",
+    description: "Discover dark, moody & cinematic visual styles and how to use them.",
+    date: "13.03.2026",
+    slug: "/blog/ai-image-generator-for-dark-visuals",
   },
 ];
 

@@ -112,10 +112,6 @@ export const PUBLIC_SEO_METADATA = {
     "Best Face ASMR Video Ideas for 2026",
     "Explore Face ASMR video concepts, hooks, and visual variations for creating distinctive short-form content in 2026.",
   ),
-  "/blog/clay-rescue-ai-video-maker": blog(
-    "Clay Rescue AI Video Maker Guide",
-    "Learn how to create stylized clay rescue videos with AI, from the initial scenario and visual setup to a vertical social-ready result.",
-  ),
   "/blog/free-ai-image-generator": blog(
     "Free AI Image Generator Guide",
     "Learn what to look for in a free AI image generator and how to get more useful results from prompts, styles, and aspect ratios.",
@@ -561,6 +557,26 @@ export const PUBLIC_SEO_METADATA = {
     image: `${SITE_URL}/lp/fruit/og-ai-fruit-story.jpg`,
     imageSize: [1200, 630],
     modified: "2026-10-05", // bump when the page changes: it becomes the sitemap's lastmod
+  },
+  // The three "maker" blog copies 301 to these pages (vercel.json), which now
+  // carry the copies' unique sections.
+  "/micro-camera-animal-maker": {
+    title: "Micro Camera Animal Maker – AI Animal Bodycam Videos | Zyvo",
+    description: "Type any small animal and Zyvo makes micro-camera POV bodycam scenes as it goes underground. 15 or 30 second vertical videos for TikTok, Reels and Shorts.",
+    type: "website",
+    modified: "2026-10-10",
+  },
+  "/face-asmr-maker": {
+    title: "Face ASMR Maker – Create Face ASMR Videos with AI | Zyvo",
+    description: "Upload a face photo, pick a texture background, and Zyvo makes a vertical Face ASMR video of 3, 6 or 9 scenes for TikTok, Reels and Shorts. No editing needed.",
+    type: "website",
+    modified: "2026-10-10",
+  },
+  "/clay-rescue-maker": {
+    title: "Clay Rescue AI Video Maker – Giant Hand Rescue Videos | Zyvo",
+    description: "Make Clay Rescue videos with AI: tiny clay people face a fire, flood or broken bridge, a giant hand applies one visible fix, then they celebrate. 9:16 clips.",
+    type: "website",
+    modified: "2026-10-10",
   },
   "/cartoon-drive-by-video-maker": {
     title: "Cartoon Drive-By Video Maker – Create Nostalgic AI Videos | Zyvo",

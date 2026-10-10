@@ -12,9 +12,27 @@
  */
 
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+
+// "Which animals work best", "Why it goes viral" and "Tips" came from the old
+// /blog/micro-camera-animal-maker article, which now 301s here (vercel.json).
+const BEST_ANIMALS = [
+  { animal: "Ant", why: "The most searched animal bodycam on TikTok. The colony structure, narrow tunnels, and the ant's methodical movement create a hypnotic rhythm that keeps viewers watching." },
+  { animal: "Beetle", why: "The armoured body and the way beetles navigate through soil creates dramatic tension. Viewers stay to see what the beetle does next." },
+  { animal: "Mole", why: "The mole's powerful digging motion and the rapidly changing underground terrain creates incredible visual variety across scenes." },
+  { animal: "Worm", why: "Surprisingly popular — the worm's movement through tight soil passages is deeply satisfying in a way that reliably triggers ASMR-adjacent responses." },
+  { animal: "Termite", why: "Colony videos perform especially well — the density of termites in a single shot creates visual complexity that makes viewers rewatch." },
+];
+
+const VIEW_TIPS = [
+  { tip: "Start mid-action", detail: "Don't show the animal on the surface — begin the first scene underground, already in motion. This skips the 'setup' and drops viewers straight into the experience." },
+  { tip: "Use a text hook", detail: "Overlay 'POV: You're an ant going home' or 'We put a camera on a beetle' in the first 0.5 seconds. The hook gets front-loaded in the video and improves rewatch." },
+  { tip: "Post in batches", detail: "Post 3 different animals on the same day to test which species performs best with your audience. Double down on the winner." },
+  { tip: "Use trending audio", detail: "Pair the video with trending sounds on TikTok. The visual content is strong enough that the audio doesn't need to match — it just needs to be trending." },
+  { tip: "Reply to comments with new videos", detail: "When viewers comment 'Do a spider next!' or 'What about a mole?', reply with a video. TikTok massively boosts comment-reply videos." },
+];
 
 const ANIMALS = [
   { label: "Ant",     views: "4.2M", image: "/viral-builder/micro-camera/image2.webp"  },
@@ -27,7 +45,7 @@ const ANIMALS = [
 
 const HOW_STEPS = [
   { n: "01", title: "Type your animal",       desc: "Enter any small animal — ant, beetle, worm, termite, spider, mole, cricket, or anything else. Zyvo builds a unique reference character for it." },
-  { n: "02", title: "Choose your video length", desc: "Pick 15 seconds (3 scenes) or 30 seconds (6 scenes). Each scene is a distinct POV bodycam clip as the animal descends underground." },
+  { n: "02", title: "Choose your video length", desc: "Pick 15 seconds (3 scenes) or 30 seconds (6 scenes). Each scene is a distinct POV bodycam clip as the animal descends underground. Shorter videos work better for TikTok hook tests; longer ones tend to do better on YouTube Shorts and Reels, where watch-time matters more." },
   { n: "03", title: "AI mounts the camera",   desc: "Zyvo generates a custom micro-camera mounted on the animal's body and creates cinematic underground POV scenes consistent across every clip." },
   { n: "04", title: "Download & post",        desc: "Every scene renders as a vertical 9:16 video ready for TikTok, Reels, and Shorts. Download each clip individually or as a full sequence." },
 ];
@@ -281,6 +299,53 @@ export default function MicroCameraAnimalLanding() {
         </div>
       </section>
 
+      {/* ── WHICH ANIMALS + WHY IT GOES VIRAL ── */}
+      <section className="bg-[#0c0c0f] py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-3 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            Which Animals Work Best?
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-center text-[15px] leading-relaxed text-white/45">
+            All small animals work, but some consistently outperform others in terms of engagement. Here's what creators have found:
+          </p>
+          <ul className="space-y-3">
+            {BEST_ANIMALS.map((item) => (
+              <li key={item.animal} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <h3 className="mb-1.5 text-[15px] font-bold text-white">{item.animal}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{item.why}</p>
+              </li>
+            ))}
+          </ul>
+
+          <h2 className="mb-4 mt-14 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            Why the Format Goes Viral
+          </h2>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            The Micro Camera Animal format hits several of TikTok's core virality triggers simultaneously. First, it satisfies deep curiosity — most people have never seen the world from an insect's perspective, and the format delivers exactly that fantasy. Second, the underground setting creates mystery: viewers keep watching to see what the animal encounters next. Third, the macro textures and narrow lighting trigger ASMR-like physiological responses that boost watch-time significantly.
+          </p>
+          <p className="text-[15px] leading-relaxed text-white/50">
+            High watch-time combined with the novelty of the format signals to the algorithm that the content is worth distributing. Humans are deeply curious about animal perspectives: seeing the world from an ant's point of view triggers the same instinct that drives us to watch wildlife documentaries — but compressed into a short clip that ends before you can scroll away.
+          </p>
+        </div>
+      </section>
+
+      {/* ── TIPS ── */}
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-8 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            Tips for Getting Maximum Views
+          </h2>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {VIEW_TIPS.map((item) => (
+              <li key={item.tip} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <h3 className="mb-1.5 text-[15px] font-bold text-white">{item.tip}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{item.detail}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ── BLOG LINKS ── */}
       <section className="bg-[#0c0c0f] py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-6">
@@ -289,15 +354,15 @@ export default function MicroCameraAnimalLanding() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { title: "Micro Camera Animal Maker: How It Works & Why It Goes Viral", desc: "Everything you need to know about how AI generates convincing animal bodycam POV scenes and why the format is dominating TikTok in 2026.", slug: "/blog/micro-camera-animal-maker" },
               { title: "Why Animal Bodycam Videos Go Viral on TikTok (2026)", desc: "The psychology of curiosity-driven content, the underground POV effect, and the exact creator strategy behind millions of views.", slug: "/blog/viral-animal-bodycam-videos" },
-            ].map((a, i) => (
-              <button key={i} onClick={() => navigate(a.slug)}
-                className="group text-left rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-6 hover:border-purple-500/30 hover:bg-white/[0.04] transition">
+              { title: "15 Micro Camera Animal Video Ideas You Can Generate Right Now", desc: "Seven real animals, each with its own underground world, with real video ideas for every one.", slug: "/blog/micro-camera-animal-video-ideas" },
+            ].map((a) => (
+              <Link key={a.slug} to={a.slug}
+                className="group block text-left rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-6 hover:border-purple-500/30 hover:bg-white/[0.04] transition">
                 <h3 className="mb-2 text-[15px] font-bold text-white group-hover:text-purple-300 transition">{a.title}</h3>
                 <p className="text-[13px] text-white/40 leading-relaxed">{a.desc}</p>
                 <span className="mt-4 inline-block text-[12px] font-semibold text-purple-400">Read article →</span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>

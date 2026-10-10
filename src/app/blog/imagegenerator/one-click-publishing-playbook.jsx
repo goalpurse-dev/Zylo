@@ -104,7 +104,7 @@ export default function OneClickPublishingPlaybook() {
             <div className="my-10 rounded-2xl border border-purple-200 bg-purple-50 p-6">
               <p className="mb-2 text-[15px] font-bold text-[#7A3BFF]">Build Your Posting Queue in Zyvo</p>
               <p className="mb-4 text-[14px] text-[#4A4A55]">Connect Instagram, TikTok, and YouTube, plan supported posts up to 28 days ahead, and let Zyvo handle the publishing work while you make the next video.</p>
-              <Link to="/workspace/publish" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white transition hover:opacity-90">
+              <Link to="/" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white transition hover:opacity-90">
                 Open Publish
               </Link>
             </div>
@@ -146,7 +146,7 @@ export default function OneClickPublishingPlaybook() {
               />
             </div>
             <img src={calendarSquareVisual} alt="A planned 28-day social media content calendar" className="aspect-square w-full rounded-2xl border border-[#E5E0F5] object-cover shadow-sm" loading="lazy" />
-            <Link to="/workspace/publish" className="block rounded-2xl bg-[#7A3BFF] p-5 text-center text-[14px] font-bold text-white shadow-[0_4px_20px_rgba(122,59,255,0.35)] transition hover:opacity-90">
+            <Link to="/" className="block rounded-2xl bg-[#7A3BFF] p-5 text-center text-[14px] font-bold text-white shadow-[0_4px_20px_rgba(122,59,255,0.35)] transition hover:opacity-90">
               Set Up Your Queue
             </Link>
           </aside>

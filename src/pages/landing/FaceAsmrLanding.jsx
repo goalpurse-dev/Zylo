@@ -12,9 +12,35 @@
  */
 
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+
+// "Why these backgrounds work", "How many scenes", "Which faces" and "How to
+// post" came from the old /blog/face-asmr-maker article, which now 301s here
+// (vercel.json). No named people: this page shows faces as "Face 1…8".
+const BACKGROUND_REASONS = [
+  { title: "White Marble", why: "Clean, premium feel. The white-on-white contrast makes the face stand out dramatically. Stops the scroll immediately. The most shared background in the category." },
+  { title: "Black Marble", why: "Dark luxury aesthetic. Works especially well with lighter skin tones and dramatic lighting. High perceived production value." },
+  { title: "Frosted Glass", why: "The translucency creates a mysterious, ethereal quality. Viewers are drawn in by the unclear-but-familiar visual. Huge watch-to-end rate." },
+  { title: "Dark Walnut Wood", why: "Warm organic texture. Works well in 'chill' ASMR contexts. High rewatch rate from the satisfying grain pattern of the wood." },
+  { title: "Polished Concrete", why: "Industrial minimalism. Trending heavily in 2026 aesthetic content. Unusual enough to stop the scroll — familiar enough to feel premium." },
+];
+
+const FACE_TYPES = [
+  { title: "Athletes", why: "Massive existing fanbases mean content spreads into fan communities instantly. Sports ASMR is a huge niche." },
+  { title: "Musicians & artists", why: "Their fans engage hard on anything that features them — including ASMR content." },
+  { title: "Creators & influencers", why: "A well-known creator's face makes content that their own audience will find and share." },
+  { title: "Your own face", why: "Self-portrait ASMR is growing rapidly. Creators who use their own photos build a distinct identity in the format." },
+];
+
+const POSTING_TIPS = [
+  { title: "Post daily.", detail: "ASMR content has a long shelf life — videos continue getting recommended weeks after posting. Accounts that post every day compound their reach faster than anything else." },
+  { title: "Name the person in the caption.", detail: "A caption with the person's name does better than a generic one: the name is what fans search for and share." },
+  { title: "Use the right hashtags.", detail: "#asmr #faceasmr #asmrvideo #asmrtiktok #viralASMR — keep it to 5 focused tags." },
+  { title: "Post at peak ASMR hours.", detail: "Late evening (9pm–midnight) is when ASMR content gets the highest completion rates. Viewers are winding down and ASMR fits the mood." },
+  { title: "Build series.", detail: "Part 1, Part 2, Part 3 of the same face creates algorithmic compounding — when someone watches Part 3, the algorithm recommends Part 1. Watch time stacks." },
+];
 
 const BACKGROUNDS = [
   { preview: "/face/cleanwhitemarbe.png",   label: "White Marble",    views: "3.2M" },
@@ -313,30 +339,113 @@ export default function FaceAsmrLanding() {
         </div>
       </section>
 
-      {/* ── BLOG LINKS — internal linking for SEO ── */}
+      {/* ── WHAT IT IS + WHY THE BACKGROUNDS WORK ── */}
       <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-4 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            What Is a Face ASMR Video?
+          </h2>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            A Face ASMR video places a real face — a celebrity, athlete, creator, or anyone — into a series of satisfying texture close-up scenes. White marble. Black marble. Frosted glass. Dark walnut wood. The camera hovers over these surfaces in slow, hypnotic clips while the face is seamlessly embedded into each scene through AI.
+          </p>
+          <p className="text-[15px] leading-relaxed text-white/50">
+            The format combines two proven virality engines: ASMR content (which has among the highest completion rates of any video category) and face recognition (which instantly hooks viewers who recognize the person). Together they create a video that stops the scroll, holds attention, and generates shares.
+          </p>
+
+          <h2 className="mb-3 mt-14 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            The Best Backgrounds for Face ASMR Videos
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-center text-[15px] leading-relaxed text-white/45">
+            Not all textures perform equally. Here are the top-performing backgrounds and why they work:
+          </p>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {BACKGROUND_REASONS.map((item) => (
+              <li key={item.title} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <h3 className="mb-1.5 text-[15px] font-bold text-white">{item.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{item.why}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── HOW MANY SCENES + WHICH FACES ── */}
+      <section className="bg-[#0c0c0f] py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-4 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            How Many Scenes Should You Generate?
+          </h2>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            Zyvo supports three video lengths: <strong className="text-white/80">15 seconds (3 scenes)</strong>, <strong className="text-white/80">30 seconds (6 scenes)</strong>, and <strong className="text-white/80">45 seconds (9 scenes)</strong>. Each scene is a standalone ASMR clip with the face placed into the chosen texture background.
+          </p>
+          <p className="mb-4 text-[15px] leading-relaxed text-white/50">
+            For TikTok, 30–45 seconds is the sweet spot. The algorithm heavily rewards videos that hold 80%+ of viewers to the end, and ASMR content does exactly that — the hypnotic quality makes viewers stay even after the "point" of the video is already clear.
+          </p>
+          <p className="text-[15px] leading-relaxed text-white/50">
+            For Instagram Reels, 15-second versions perform well for rapid posting cadence. When you're building an audience, posting twice a day with shorter videos consistently outperforms one long video per week.
+          </p>
+
+          <h2 className="mb-3 mt-14 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            Which Faces Get the Most Views?
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-center text-[15px] leading-relaxed text-white/45">
+            Viewer curiosity drives the first watch. Recognition drives the share. Here's how different face categories perform:
+          </p>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {FACE_TYPES.map((item) => (
+              <li key={item.title} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <h3 className="mb-1.5 text-[15px] font-bold text-white">{item.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{item.why}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── HOW TO POST ── */}
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="mb-3 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
+            How to Post Face ASMR Videos for Maximum Reach
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-center text-[15px] leading-relaxed text-white/45">
+            The video alone isn't the whole strategy. Here's what the top-performing accounts do:
+          </p>
+          <ul className="space-y-3">
+            {POSTING_TIPS.map((item) => (
+              <li key={item.title} className="rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-5">
+                <h3 className="mb-1.5 text-[15px] font-bold text-white">{item.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{item.detail}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── BLOG LINKS — internal linking for SEO ── */}
+      <section className="bg-[#0c0c0f] py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 md:px-6">
           <h2 className="mb-8 text-center text-[24px] font-black tracking-tight sm:text-[30px]">
             Learn More About Face ASMR
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { title: "Face ASMR Maker: How It Works & Why It Goes Viral", desc: "Everything you need to know about how AI face ASMR videos are made and what makes them hit millions of views.", slug: "/blog/face-asmr-maker" },
               { title: "Why Face ASMR Videos Go Viral on TikTok (2026)", desc: "The psychology behind ASMR virality, the face reveal element, and the exact strategy creators use to grow fast.", slug: "/blog/viral-face-asmr-videos" },
-            ].map((a, i) => (
-              <button key={i} onClick={() => navigate(a.slug)}
-                className="group text-left rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-6 hover:border-purple-500/30 hover:bg-white/[0.04] transition">
+              { title: "Best Face ASMR Video Ideas for 2026", desc: "Face ASMR video concepts, hooks, and visual variations for creating distinctive short-form content.", slug: "/blog/best-face-asmr-video-ideas-2026" },
+            ].map((a) => (
+              <Link key={a.slug} to={a.slug}
+                className="group block text-left rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-6 hover:border-purple-500/30 hover:bg-white/[0.04] transition">
                 <h3 className="mb-2 text-[15px] font-bold text-white group-hover:text-purple-300 transition">{a.title}</h3>
                 <p className="text-[13px] text-white/40 leading-relaxed">{a.desc}</p>
                 <span className="mt-4 inline-block text-[12px] font-semibold text-purple-400">Read article →</span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── FAQ — H2 ── */}
-      <section className="bg-[#0c0c0f] py-16 md:py-20">
+      <section className="py-16 md:py-20">
         <div className="mx-auto max-w-3xl px-4 md:px-6">
           <h2 className="mb-10 text-center text-[26px] font-black tracking-tight sm:text-[34px]">
             Frequently Asked Questions
@@ -356,7 +465,7 @@ export default function FaceAsmrLanding() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-16 md:py-20">
+      <section className="bg-[#0c0c0f] py-16 md:py-20">
         <div className="mx-auto max-w-2xl px-4 md:px-6 text-center">
           <h2 className="mb-4 text-[28px] font-black tracking-tight sm:text-[38px]">
             Make Your First Face ASMR Video<br />

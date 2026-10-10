@@ -27,15 +27,23 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/micro-camera-animal", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/micro-camera-animal-maker", title: "Zyvo Micro Camera Animal" },
   { path: "/workspace/clay-rescue", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/clay-rescue-maker", title: "Zyvo Clay Rescue" },
   { path: "/workspace/ai-cooking-matic", seoVisibility: "noindex", routeType: "credit-template", title: "Zyvo AI Cooking Matic" },
-  { path: "/workspace/kit-swap", seoVisibility: "noindex", routeType: "paid-template", title: "Zyvo Kit Swap" },
+  { path: "/workspace/kit-swap", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/kit-swap-ai", title: "Zyvo Kit Swap" },
   { path: "/workspace/two-am", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/2am-worlds-ai-generator", title: "Zyvo 2AM Worlds" },
   { path: "/workspace/thirty-days", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/30-days-video-maker", title: "Zyvo 30 Days Video Maker" },
   { path: "/workspace/cartoon-drive-by", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/cartoon-drive-by-video-maker", title: "Zyvo Cartoon Drive-By" },
   { path: "/workspace/behind-the-scenes", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/behind-the-scenes-video-maker", title: "Zyvo Behind the Scenes" },
-  { path: "/workspace/publishv", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/publish", title: "Zyvo Publish" },
-  { path: "/workspace/stats", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/stats", title: "Zyvo Stats" },
-  { path: "/workspace/connections", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/connections", title: "Zyvo Connections" },
+  { path: "/workspace/publishv", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Publish" },
+  { path: "/workspace/stats", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Stats" },
+  { path: "/workspace/connections", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Connections" },
   { path: "/workspace/image-gen-test", seoVisibility: "noindex", routeType: "test", title: "Zyvo Image Generator Test" },
+  // The Long Form setup, also opened as /long-form/create?niche=<id>. Without
+  // its own snapshot every one of those URLs served Home's HTML (Home's title,
+  // canonical "/"), which Google read as copies of the homepage.
+  { path: "/long-form/create", seoVisibility: "noindex", routeType: "credit-application", publicLanding: "/ai-stickman-video-generator", title: "Zyvo Long Form Video Setup" },
+  // Publish, Stats and Connections are not released yet: their landing pages (/publish, /stats,
+  // /connections) redirect Home (vercel.json, App.jsx) and no tool above points at them. To release
+  // one: remove its redirect in both files, put its publicLanding back on the tool above, and add it
+  // to REQUIRED_PUBLIC_PAGES in scripts/generateSitemap.js.
   // The public pricing page (was /workspace/pricing: 301 in vercel.json).
   {
     path: "/pricing",
@@ -48,6 +56,17 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
 
 export function getWorkspaceRouteSeoPolicy(pathname) {
   return WORKSPACE_ROUTE_SEO_POLICIES.find((policy) => policy.path === pathname) || null;
+}
+
+// The indexable page of a tool ("/workspace/clay-rescue" -> "/clay-rescue-maker"),
+// null when it has none. Links from public pages use it (components/seo/ToolLink.jsx).
+export function publicLandingFor(pathname) {
+  return getWorkspaceRouteSeoPolicy(pathname)?.publicLanding || null;
+}
+
+// The robots tag of a public page: "index" unless the page is listed above as noindex.
+export function publicRobotsFor(pathname) {
+  return getWorkspaceRouteSeoPolicy(pathname)?.seoVisibility === "noindex" ? "noindex, follow" : "index, follow, max-image-preview:large";
 }
 
 export function getNoindexWorkspaceRoutes() {

@@ -4,6 +4,7 @@ import PublicContentHeader from "./PublicContentHeader.jsx";
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../../data/publicSeoMetadata.js";
 import { structuredDataFor } from "../../data/structuredData.js";
 import { useSEO } from "../../hooks/useSEO.js";
+import { publicRobotsFor } from "../../data/routeSeoPolicy.js";
 
 const TEMPLATE_PREFIXES = [
   { prefixes: ["/ai-fruit-story-maker", "/blog/viral-ai-fruit", "/blog/ai-fruit", "/blog/best-ai-fruit", "/blog/how-to-go-viral-tiktok-fruit"], id: "ai-fruit-story" },
@@ -37,7 +38,7 @@ function usePublicMetadataGuard(pathname, canonical) {
     };
 
     setHeadValue('link[rel="canonical"]', "link", "href", canonical, { rel: "canonical" });
-    setHeadValue('meta[name="robots"]', "meta", "content", "index, follow, max-image-preview:large", { name: "robots" });
+    setHeadValue('meta[name="robots"]', "meta", "content", publicRobotsFor(pathname), { name: "robots" });
     setHeadValue('meta[property="og:url"]', "meta", "content", canonical, { property: "og:url" });
 
     const improveLegacyMetadata = () => {
