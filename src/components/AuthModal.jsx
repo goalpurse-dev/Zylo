@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { readFirstTouch } from "../lib/firstTouch";
-import { authError, formatCountdown } from "../lib/authErrors";
+import { authError, formatCountdown, isEmailNotConfirmed } from "../lib/authErrors";
+import ConfirmEmailNotice from "./auth/ConfirmEmailNotice.jsx";
 import { checkSignupEmail } from "../lib/emailCheck";
 import { useCooldown } from "../hooks/useCooldown";
 import ForgotPassword from "./auth/ForgotPassword.jsx";
@@ -40,9 +41,11 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
   const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
   const isSignup = mode === "signup";
+  const [confirmFor, setConfirmFor] = useState(""); // this address still has to be confirmed
   const fail = (failed) => {
     const problem = authError(failed);
     if (problem.rateLimited) cooldown.start(problem.waitSeconds);
+    else if (isEmailNotConfirmed(failed)) setConfirmFor(email);
     else setError(problem.message);
   };
 
@@ -67,6 +70,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
     setLoading(true);
     setError("");
     setSuccess("");
+    setConfirmFor("");
     if (isSignup) {
       // A typo, a throwaway inbox or a domain with no mail server never becomes an account.
       const check = await checkSignupEmail(email);
@@ -90,7 +94,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
       });
       if (error) fail(error);
       else if (data.session) { onSignUp?.(); onClose(true); } // confirmations off — signed in immediately
-      else setSuccess("Check your email to confirm your account.");
+      else setConfirmFor(email); // "Confirm email" is on in Supabase: the link in the email signs them in
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) fail(error);
@@ -217,6 +221,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
             {success && <p className="text-emerald-400 text-xs">{success}</p>}
+            {confirmFor && <ConfirmEmailNotice email={confirmFor} />}
             {cooldown.secondsLeft > 0 && <p role="status" className="text-white/55 text-xs">Too many tries in a short time. It's nothing you did.</p>}
 
             <button

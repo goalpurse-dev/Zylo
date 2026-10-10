@@ -6,6 +6,7 @@ import OAuthButton from "../components/auth/OAuthButton";
 import { signUpWithEmailPassword, signInWithGoogle } from "../lib/auth";
 import { authError, formatCountdown } from "../lib/authErrors";
 import { useCooldown } from "../hooks/useCooldown";
+import ConfirmEmailNotice from "../components/auth/ConfirmEmailNotice.jsx";
 
  import v32 from "../assets/symbols/bg.mp4"
 
@@ -22,11 +23,12 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [confirmFor, setConfirmFor] = useState(""); // the account exists; this address still has to be confirmed
   const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
 async function handleSubmit(e) {
   e.preventDefault();
-  setErr(""); setMsg(""); setLoading(true);
+  setErr(""); setMsg(""); setConfirmFor(""); setLoading(true);
 
   try {
     const res = await signUpWithEmailPassword(email, password);
@@ -43,11 +45,12 @@ async function handleSubmit(e) {
       if (res.session) {
         navigate("/");
       } else {
-        setMsg("Account created. Check your email to confirm before logging in.");
+        setConfirmFor(email);
       }
 
     } else {
-      setMsg("Account created. Check your email to confirm before logging in.");
+      // "Confirm email" is on in Supabase: no session until the link in the email is opened.
+      setConfirmFor(email);
     }
 
   } catch (e2) {
@@ -108,6 +111,7 @@ async function handleSubmit(e) {
 
                 {err && <p className="text-sm text-red-600">{err}</p>}
                 {msg && <p className="text-sm text-green-600">{msg}</p>}
+                {confirmFor && <ConfirmEmailNotice email={confirmFor} tone="light" />}
               </form>
 
               <div className="mt-3 text-sm text-black/70">

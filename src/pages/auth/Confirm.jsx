@@ -51,6 +51,11 @@ export default function Confirm() {
         // With "secure email change" on, Supabase asks both addresses: the first link gives no session yet.
         setStage(data?.session || data?.user ? "email_changed" : "email_change_pending");
       } else {
+        // A confirmed sign-up: the welcome email, once per account (the function
+        // keeps its own flag and mails the signed-in account's own address).
+        if ((type === "signup" || type === "email") && data?.session?.access_token) {
+          supabase.functions.invoke("send-welcome-email", { headers: { Authorization: `Bearer ${data.session.access_token}` } }).catch(() => {});
+        }
         navigate("/", { replace: true });
       }
     })();

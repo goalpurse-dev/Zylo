@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
 import { signInWithEmailPassword, signInWithGoogle } from "../lib/auth";
-import { authError, formatCountdown } from "../lib/authErrors";
+import { authError, formatCountdown, isEmailNotConfirmed } from "../lib/authErrors";
+import ConfirmEmailNotice from "../components/auth/ConfirmEmailNotice.jsx";
 import { useCooldown } from "../hooks/useCooldown";
 
 // Use your actual asset import (matches your pattern)
@@ -23,11 +24,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const [confirmFor, setConfirmFor] = useState(""); // this address still has to be confirmed
   const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
+    setConfirmFor("");
     setLoading(true);
     try {
       await signInWithEmailPassword(email, password);
@@ -35,6 +38,7 @@ export default function Login() {
     } catch (e2) {
       const problem = authError(e2, "Login failed.");
       if (problem.rateLimited) cooldown.start(problem.waitSeconds);
+      else if (isEmailNotConfirmed(e2)) setConfirmFor(email);
       else setErr(problem.message);
     } finally {
       setLoading(false);
@@ -107,6 +111,7 @@ export default function Login() {
                 {cooldown.secondsLeft > 0 && <p role="status" className="text-sm text-black/60">Too many tries in a short time. It's nothing you did.</p>}
 
                 {err && <p className="text-sm text-red-600">{err}</p>}
+                {confirmFor && <ConfirmEmailNotice email={confirmFor} tone="light" />}
               </form>
 
               {/* Create account */}

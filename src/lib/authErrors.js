@@ -32,6 +32,11 @@ const BY_TEXT = [
   [/auth session missing|session.*not.*found/i, "session_not_found"],
 ];
 
+/** A sign-in refused because the address was never confirmed: the screen offers to send the link again. */
+export function isEmailNotConfirmed(error) {
+  return error?.code === "email_not_confirmed" || /email not confirmed/i.test(String(error?.message ?? ""));
+}
+
 export function authError(error, fallback = "Something went wrong. Try again.") {
   const text = String(error?.message ?? "");
   const code = error?.code ?? BY_TEXT.find(([re]) => re.test(text))?.[1] ?? null;

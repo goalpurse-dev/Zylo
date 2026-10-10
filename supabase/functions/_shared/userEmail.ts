@@ -1,11 +1,14 @@
 // deno-lint-ignore-file no-explicit-any
 // _shared/userEmail.ts — the ONLY way an edge function emails a user.
 //
-// Every email first passes the database gate claim_email_send (migration
-// 20261103100000_email_guard.sql): suppressed addresses get nothing, marketing
-// needs email_updates = true, the same email is sent once, and no address gets
-// more than 3 emails in 24 hours. Then it goes out with a signed unsubscribe
-// link, the one-click List-Unsubscribe headers and the shared footer.
+// Every email first passes the database gate claim_email_send (migrations
+// 20261103100000_email_guard.sql and 20261104100000_email_guard_limits.sql):
+// suppressed addresses get nothing; the same email is sent once; marketing
+// needs email_updates = true, at most 1 per address in 24 hours and none in
+// the first 24 hours after sign-up; account emails ("your video is ready",
+// the welcome email) are counted on their own, so marketing never uses up
+// their room. Then it goes out with a signed unsubscribe link, the one-click
+// List-Unsubscribe headers and the shared footer.
 // Owner alerts (adminAlert.ts) don't come through here: they go to ALERT_EMAIL only.
 import { APP_URL, emailFooter } from "./emailRules.js";
 

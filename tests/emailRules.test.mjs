@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APP_URL, COMPANY_FOOTER, REPLY_TO, SENDERS, checkEmailAddress, domainSuggestion, emailFooter, emailProblemMessage, stopReason } from "../supabase/functions/_shared/emailRules.js";
+import { APP_URL, COMPANY_ADDRESS, COMPANY_CONTACT, COMPANY_FOOTER, COMPANY_NAME, REPLY_TO, SENDERS, checkEmailAddress, domainSuggestion, emailFooter, emailProblemMessage, stopReason } from "../supabase/functions/_shared/emailRules.js";
 import { welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
 import { LongFormLaunchEmail } from "../emails/LongFormLaunchEmail.js";
 import { campaignBlockers, campaignMessage, DEFAULT_PER_RUN, MAX_PER_RUN } from "../emails/marketing.js";
@@ -61,13 +61,19 @@ test("both senders ask the gate before Resend, and give the claim back when the 
   assert.ok(DEFAULT_PER_RUN <= 200 && MAX_PER_RUN <= 1000, "a run is a few hundred emails, never the whole list");
 });
 
-test("the gate's rules are in the database: suppressed, consent, once, 3 a day", () => {
+test("the gate's rules are in the database: suppressed, consent, once; marketing 1 a day and never on sign-up day; account emails counted on their own", () => {
   const sql = read("supabase/migrations/20261103100000_email_guard.sql");
   assert.match(sql, /create unique index if not exists email_sends_email_kind_key on public\.email_sends \(email, kind\)/, "the same email twice to one address cannot be stored");
-  for (const reason of ["suppressed", "no_consent", "already_sent", "daily_limit", "bad_address"]) assert.match(sql, new RegExp(`'reason', '${reason}'`));
-  assert.match(sql, /p_category = 'marketing' and not exists \(\s*select 1 from profiles where lower\(btrim\(email\)\) = v_email and email_updates is true/, "marketing needs email_updates = true: null and false are both a no");
-  assert.match(sql, /case when p_category = 'test' then 20 else 3 end/, "the ceiling is a constant in the function, not a parameter");
-  assert.match(sql, /pg_advisory_xact_lock/);
+  // The function in force is the newest one (2026-10-10, the owner's limits).
+  const gate = read("supabase/migrations/20261104100000_email_guard_limits.sql");
+  assert.match(gate, /create or replace function public\.claim_email_send\(p_email text, p_kind text, p_category text\)/);
+  for (const reason of ["suppressed", "no_consent", "signed_up_today", "already_sent", "daily_limit", "bad_address"]) assert.match(gate, new RegExp(`'reason', '${reason}'`));
+  assert.match(gate, /select max\(created_at\) into v_signed_up\s+from profiles where lower\(btrim\(email\)\) = v_email and email_updates is true;\s+if v_signed_up is null then\s+return jsonb_build_object\('ok', false, 'reason', 'no_consent'\)/, "marketing needs email_updates = true: null and false are both a no");
+  assert.match(gate, /if v_signed_up > now\(\) - interval '24 hours' then\s+return jsonb_build_object\('ok', false, 'reason', 'signed_up_today'\)/, "no marketing in the first 24 hours after sign-up");
+  assert.match(gate, /and category = p_category\s+and sent_at > now\(\) - interval '24 hours'/, "each category has its own count: marketing never uses up the room of account emails");
+  assert.match(gate, /case p_category when 'marketing' then 1 when 'account' then 10 else 20 end/, "the ceilings are constants in the function, not parameters");
+  assert.match(gate, /pg_advisory_xact_lock/);
+  assert.match(gate, /revoke all on function public\.claim_email_send\(text, text, text\) from public, anon, authenticated/);
   assert.match(sql, /update profiles set email_updates = false where lower\(btrim\(email\)\) = v_email and email_updates is true/, "suppress_email switches the profile OFF");
   assert.match(sql, /revoke all on function public\.claim_email_send\(text, text, text\) from public, anon, authenticated/);
   for (const t of ["email_suppressions", "email_sends"]) assert.match(sql, new RegExp(`alter table public\\.${t} enable row level security`));
@@ -113,20 +119,22 @@ test("senders: marketing on mail.tryzyvo.com only", () => {
   assert.doesNotMatch(sample.html.replace(/<[^>]+>/g, " "), /\[[A-Za-z][^\]]{2,60}\]/, "no template placeholder reaches a reader");
 });
 
-test("the footer: why, unsubscribe, and the company line when it is set; campaigns refuse without it", () => {
+test("the footer: why, unsubscribe, and the company line", () => {
   const f = emailFooter({ unsubscribeUrl: "https://www.tryzyvo.com/unsubscribe?u=1&t=2", why: "You're getting this because you created a Zyvo account." });
   assert.match(f.html, /You&#39;re getting this because you created a Zyvo account\./);
   assert.match(f.html, /<a href="https:\/\/www\.tryzyvo\.com\/unsubscribe\?u=1&amp;t=2"[^>]*>Unsubscribe<\/a>/);
   assert.match(f.text, /Unsubscribe: https:\/\/www\.tryzyvo\.com\/unsubscribe\?u=1&t=2/);
   assert.throws(() => emailFooter({ why: "x" }), /unsubscribeUrl/);
   assert.equal(APP_URL, "https://www.tryzyvo.com");
-  if (COMPANY_FOOTER) {
-    assert.doesNotMatch(COMPANY_FOOTER, /[[\]]/, "a real company line, not a placeholder");
-    assert.ok(f.html.includes(COMPANY_FOOTER.replace(/&/g, "&amp;")) && f.text.endsWith(COMPANY_FOOTER));
-    assert.deepEqual(campaignBlockers({ EMAIL_UNSUBSCRIBE_SECRET: "s", SUPABASE_URL: "u" }), []);
-  } else {
-    assert.match(campaignBlockers({ EMAIL_UNSUBSCRIBE_SECRET: "s", SUPABASE_URL: "u" })[0], /COMPANY_FOOTER is empty/, "no company line, no campaign");
-  }
+  // The company line: the name, the postal address once there is one (ONE place: COMPANY_ADDRESS), the support address.
+  assert.equal(COMPANY_NAME, "ZyvoAI");
+  assert.equal(COMPANY_FOOTER, [COMPANY_NAME, COMPANY_ADDRESS, COMPANY_CONTACT].filter(Boolean).join(" · "));
+  if (!COMPANY_ADDRESS) assert.equal(COMPANY_FOOTER, "ZyvoAI · support@tryzyvo.com");
+  assert.doesNotMatch(COMPANY_FOOTER, /[[\]]/, "a real company line, not a placeholder");
+  assert.ok(f.html.includes(COMPANY_FOOTER) && f.text.endsWith(COMPANY_FOOTER));
+  // 2026-10-10: a missing postal address no longer blocks a campaign (the owner's decision); missing keys still do.
+  assert.deepEqual(campaignBlockers({ EMAIL_UNSUBSCRIBE_SECRET: "s", SUPABASE_URL: "u" }), []);
+  assert.match(campaignBlockers({ SUPABASE_URL: "u" })[0], /EMAIL_UNSUBSCRIBE_SECRET is missing/);
   assert.match(read("emails/marketing.js"), /const blockers = campaignBlockers\(\);\s*if \(blockers\.length\) return \{ sent: false/);
   assert.match(welcomeEmail(f).html, /Unsubscribe<\/a>/, "the welcome email carries the footer");
 });
@@ -150,4 +158,25 @@ test("sign-up address check: typos, throwaway inboxes and non-addresses are refu
   assert.match(read("src/lib/auth.js"), /const check = await checkSignupEmail\(email\);\s*if \(!check\.ok\) throw new Error\(check\.message\);\s*const \{ data, error \} = await supabase\.auth\.signUp/);
   assert.match(read("src/components/AuthModal.jsx"), /const check = await checkSignupEmail\(email\);\s*if \(!check\.ok\) \{ setError\(check\.message\); setLoading\(false\); return; \}/);
   assert.ok(existsSync(join(root, "supabase/functions/check-email/index.ts")));
+});
+
+test("Confirm email: the template links to /auth/confirm, the screens say 'check your inbox' with a resend, the welcome email follows the confirmation", () => {
+  const html = read("supabase/templates/confirmation.html");
+  const link = "{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email";
+  assert.equal(html.split(link).length - 1, 2, "the link is on the button and once more as text to copy");
+  assert.ok(html.includes(`<a href="${link}"`) && html.includes(">Confirm my email</a>"));
+  assert.ok(html.includes("<title>Confirm your email for Zyvo</title>") && html.includes("Subject: Confirm your email for Zyvo -->"));
+  assert.doesNotMatch(html, /supabase\.co|ConfirmationURL/, "no supabase.co address");
+  assert.deepEqual([...html.matchAll(/\{\{ \.(\w+) \}\}/g)].map((m) => m[1]).filter((v) => !["SiteURL", "TokenHash", "Email"].includes(v)), [], "only variables Supabase fills in");
+  // /auth/confirm signs the visitor in, then asks for the welcome email (once per account, by the function's own flag).
+  const confirm = read("src/pages/auth/Confirm.jsx");
+  assert.ok(confirm.includes('"email"') && confirm.includes('"signup"'));
+  assert.ok(confirm.includes('if ((type === "signup" || type === "email") && data?.session?.access_token)'));
+  assert.ok(confirm.includes('supabase.functions.invoke("send-welcome-email"'));
+  // No session after sign-up, or a sign-in refused as "not confirmed": the notice with "Send it again".
+  const notice = read("src/components/auth/ConfirmEmailNotice.jsx");
+  assert.ok(notice.includes('supabase.auth.resend({') && notice.includes('type: "signup"'));
+  assert.ok(notice.includes("Check your spam folder too."));
+  for (const f of ["src/pages/Signup.jsx", "src/pages/Login.jsx", "src/components/AuthModal.jsx"]) assert.ok(read(f).includes("<ConfirmEmailNotice email={confirmFor}"), `${f} shows the notice`);
+  for (const f of ["src/pages/Login.jsx", "src/components/AuthModal.jsx"]) assert.ok(read(f).includes("isEmailNotConfirmed("), `${f}: a sign-in before confirming offers the link again`);
 });

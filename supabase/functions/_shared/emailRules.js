@@ -3,12 +3,16 @@
 // (emails/marketing.js) and the sign-up screens (src/lib/emailCheck.js) all read
 // this one file, so a sender, a footer or an address rule changes in one place.
 
-// Required by anti-spam law (CAN-SPAM; good practice under GDPR/ePrivacy): the
-// sender's business name and a valid postal address, on one line, e.g.
-//   "Example Oy, Esimerkkikatu 1, 00100 Helsinki, Finland"
-// While this is empty, campaign scripts refuse to send (emails/marketing.js) and
-// the automatic emails go out without the line.
-export const COMPANY_FOOTER = "";
+// Who sends the email: the last line of every footer.
+// COMPANY_ADDRESS is the ONE place to add a postal address later (a PO box is
+// fine), e.g. "PL 123, 00101 Helsinki, Finland": it then appears in every email
+// after the next deploy of the email functions. Anti-spam law (CAN-SPAM) asks
+// for a postal address in marketing email; the owner chose on 2026-10-10 to
+// send with the name and the support address until there is one.
+export const COMPANY_NAME = "ZyvoAI";
+export const COMPANY_ADDRESS = "";
+export const COMPANY_CONTACT = "support@tryzyvo.com";
+export const COMPANY_FOOTER = [COMPANY_NAME, COMPANY_ADDRESS, COMPANY_CONTACT].filter(Boolean).join(" · ");
 
 // Marketing and other promotional mail: mail.tryzyvo.com only. Password resets
 // (Supabase Auth) and owner alerts stay on tryzyvo.com, so a bad campaign can't
@@ -30,9 +34,10 @@ export function emailFooter({ unsubscribeUrl, why }) {
   const html = `<div style="padding:24px 8px 0 8px;text-align:center;font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#8A8F98;">
     ${esc(why)}<br>
     <a href="${esc(unsubscribeUrl)}" style="${link}">Unsubscribe</a>
-    &nbsp;·&nbsp; <a href="${APP_URL}" style="${link}">tryzyvo.com</a>${COMPANY_FOOTER ? `<br>\n    ${esc(COMPANY_FOOTER)}` : ""}
+    &nbsp;·&nbsp; <a href="${APP_URL}" style="${link}">tryzyvo.com</a><br>
+    ${esc(COMPANY_FOOTER)}
   </div>`;
-  const text = `${why}\nUnsubscribe: ${unsubscribeUrl}${COMPANY_FOOTER ? `\n${COMPANY_FOOTER}` : ""}`;
+  const text = `${why}\nUnsubscribe: ${unsubscribeUrl}\n${COMPANY_FOOTER}`;
   return { html, text };
 }
 

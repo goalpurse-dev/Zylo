@@ -356,12 +356,12 @@ async function handleRequest(req: Request): Promise<Response> {
       const nextStage = (row.recovery_stage ?? 0) + 1; // 1, 2, or 3
 
       // The email gate, before anything is minted at Stripe: suppressed
-      // address, consent (checked again in the database), once per stage, and
-      // the 3-emails-a-day ceiling per address.
+      // address, consent (checked again in the database), once per stage, one
+      // marketing email per address a day, none on the day they signed up.
       const claim = await claimEmail(sb, row.email, reminderKind(row.id, nextStage), "marketing");
       if (!claim.ok) {
         if (FINAL_REASONS.has(claim.reason)) await finishWithoutEmail(claim.reason);
-        else { await sb.rpc("release_abandoned_checkout_claim", { p_id: row.id }); summary.errors++; } // daily limit or gate down: a later run tries again
+        else { await sb.rpc("release_abandoned_checkout_claim", { p_id: row.id }); summary.errors++; } // daily limit, signed up today or gate down: a later run tries again
         continue;
       }
       emailClaimId = claim.id;

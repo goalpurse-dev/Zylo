@@ -1,6 +1,7 @@
 // Long Form launch email — ADMIN ONLY (needs the service role + Resend keys in .env.local; run locally).
 // All sending goes through emails/marketing.js: only email_updates = true, never
-// a suppressed address, once per person, from mail.tryzyvo.com, one at a time.
+// a suppressed address, once per person, one marketing email per person a day
+// and none on the day they signed up, from mail.tryzyvo.com, one at a time.
 //
 //   node emails/sendLongFormLaunch.js
 //       Dry run (the default): counts the recipients, writes a preview to
