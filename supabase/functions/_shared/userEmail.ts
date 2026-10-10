@@ -15,7 +15,7 @@ import { APP_URL, emailFooter } from "./emailRules.js";
 const RESEND_API_KEY = () => Deno.env.get("RESEND_API_KEY") ?? "";
 const UNSUBSCRIBE_SECRET = () => Deno.env.get("EMAIL_UNSUBSCRIBE_SECRET") ?? "";
 
-export type EmailCategory = "marketing" | "account";
+export type EmailCategory = "marketing" | "account" | "test"; // test: a proof copy for the owner (20 a day)
 export type Claim = { ok: true; id: number } | { ok: false; reason: string };
 // Reasons that will never change for this email: don't retry it.
 export const FINAL_REASONS = new Set(["bad_address", "bad_request", "suppressed", "no_consent", "already_sent"]);
@@ -58,14 +58,20 @@ export type ClaimedEmail = {
   why: string;                       // footer line: why this person gets this email
   render: (footer: { html: string; text: string }) => { html: string; text?: string };
   tags?: { name: string; value: string }[];
+  plain?: boolean;                   // the plain footer of a personal email (emailFooter's plain)
 };
 
 // Step 2: send a claimed email. On any failure the claim is released and false comes back.
 export async function sendClaimedEmail(sb: any, m: ClaimedEmail): Promise<boolean> {
+  return (await sendClaimedEmailWithId(sb, m)) !== null;
+}
+
+// The same, for a caller that keeps Resend's id of the email (campaigns: to match bounces and complaints). null = not sent.
+export async function sendClaimedEmailWithId(sb: any, m: ClaimedEmail): Promise<string | null> {
   try {
     const links = await unsubscribeLinks(m.userId);
     if (!RESEND_API_KEY() || !links) throw new Error("RESEND_API_KEY or EMAIL_UNSUBSCRIBE_SECRET is not set");
-    const body = m.render(emailFooter({ unsubscribeUrl: links.pageUrl, why: m.why }));
+    const body = m.render(emailFooter({ unsubscribeUrl: links.pageUrl, why: m.why, plain: m.plain === true }));
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -87,11 +93,11 @@ export async function sendClaimedEmail(sb: any, m: ClaimedEmail): Promise<boolea
       signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) throw new Error(`Resend answered ${res.status}: ${(await res.text()).slice(0, 300)}`);
-    await res.body?.cancel();
-    return true;
+    const sent = await res.json().catch(() => ({}));
+    return String(sent?.id ?? "");
   } catch (e) {
     console.error("[userEmail] send failed, claim released:", String((e as any)?.message ?? e));
     await releaseEmail(sb, m.claimId);
-    return false;
+    return null;
   }
 }

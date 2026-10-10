@@ -182,6 +182,11 @@ verify_jwt = false
 [functions.check-email]
 verify_jwt = false
 
+# Called every minute by the cron job email-campaign-sender, which sends no
+# Supabase JWT: the function checks x-campaign-secret itself.
+[functions.campaign-sender]
+verify_jwt = false
+
 # The welcome email of the signed-in user: the gateway checks the user's JWT
 # and the function reads the user from it again.
 [functions.send-welcome-email]

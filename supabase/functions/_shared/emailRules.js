@@ -20,17 +20,28 @@ export const COMPANY_FOOTER = [COMPANY_NAME, COMPANY_ADDRESS, COMPANY_CONTACT].f
 export const SENDERS = {
   updates: "Zyvo <updates@mail.tryzyvo.com>",          // campaigns
   founder: "Niko from Zyvo <niko@mail.tryzyvo.com>",   // welcome, checkout reminders
+  niko: "Niko <niko@mail.tryzyvo.com>",                // plain personal emails (the warm-up)
 };
-export const REPLY_TO = { updates: "support@tryzyvo.com", founder: "niko@tryzyvo.com" };
+// Replies go to tryzyvo.com mailboxes (Cloudflare forwards them to the owner).
+export const REPLY_TO = { updates: "support@tryzyvo.com", founder: "niko@tryzyvo.com", niko: "niko@tryzyvo.com" };
 export const APP_URL = "https://www.tryzyvo.com";      // www: tryzyvo.com answers with a redirect
 
 const esc = (s = "") =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // The footer of every email to a user: why they got it, how to stop it, who we are.
-export function emailFooter({ unsubscribeUrl, why }) {
+// plain: for a plain personal email (no layout, left-aligned, and no second link to the site).
+export function emailFooter({ unsubscribeUrl, why, plain = false }) {
   if (!unsubscribeUrl) throw new Error("emailFooter needs an unsubscribeUrl");
   const link = "color:#8A8F98;text-decoration:underline;";
+  if (plain) {
+    return {
+      html: `<p style="margin:28px 0 0 0;font-size:12px;line-height:1.6;color:#8A8F98;">${esc(why)}<br>
+    <a href="${esc(unsubscribeUrl)}" style="${link}">Unsubscribe</a><br>
+    ${esc(COMPANY_FOOTER)}</p>`,
+      text: `${why}\nUnsubscribe: ${unsubscribeUrl}\n${COMPANY_FOOTER}`,
+    };
+  }
   const html = `<div style="padding:24px 8px 0 8px;text-align:center;font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#8A8F98;">
     ${esc(why)}<br>
     <a href="${esc(unsubscribeUrl)}" style="${link}">Unsubscribe</a>

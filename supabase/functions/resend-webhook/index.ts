@@ -5,10 +5,11 @@ import { logEvent } from "../_shared/systemLog.ts";
 import { stopReason } from "../_shared/emailRules.js";
 
 // What Resend tells us about emails we sent (webhook registered at Resend for
-// email.bounced, email.complained and email.suppressed; signed with
-// RESEND_WEBHOOK_SECRET):
+// email.delivered, email.delivery_delayed, email.bounced, email.complained and
+// email.suppressed; signed with RESEND_WEBHOOK_SECRET):
 //   1. bounces and spam complaints switch that address OFF (below, stopReason)
-//   2. clicks/opens of checkout reminders are recorded (Phase 8)
+//   2. events of scheduled campaigns are kept in email_events (stop rules, report)
+//   3. clicks/opens of checkout reminders are recorded (Phase 8)
 
 /* =================== Phase 8: click/open attribution =================== */
 // Optional and strictly additive — this function never gates or blocks the
@@ -97,6 +98,31 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   const tags = event?.data?.tags;
+
+  // An email of a scheduled campaign (its "campaign" tag, or its Resend id on the
+  // campaign's queue): keep the event. The campaign-sender function counts these
+  // for the stop rules (a complaint, bounces over 2%) and for the report.
+  const resendId: string | null = event?.data?.email_id ?? null;
+  if (resendId && type.startsWith("email.")) {
+    let campaign = tagValue(tags, "campaign");
+    if (!campaign) {
+      const { data: queued } = await sb.from("email_campaign_queue").select("campaign").eq("resend_id", resendId).limit(1).maybeSingle();
+      campaign = queued?.campaign ?? null;
+    }
+    if (campaign) {
+      const bounce = event?.data?.bounce;
+      const { error } = await sb.from("email_events").upsert({
+        resend_id: resendId, type, campaign,
+        email: String([event?.data?.to ?? []].flat()[0] ?? "").trim().toLowerCase() || null,
+        detail: bounce ? `${bounce.type ?? "?"}/${bounce.subType ?? "?"}` : null,
+      }, { onConflict: "resend_id,type", ignoreDuplicates: true });
+      if (error) {
+        console.error("[resend-webhook] email_events failed:", error.message);
+        return new Response(JSON.stringify({ error: "could not record the event" }), { status: 500 });
+      }
+    }
+  }
+
   const checkoutId = tagValue(tags, "checkout_id");
   const stage = tagValue(tags, "stage");
 

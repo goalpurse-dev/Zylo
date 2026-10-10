@@ -51,7 +51,7 @@ test("both senders ask the gate before Resend, and give the claim back when the 
   assert.match(edge, /sb\.rpc\("claim_email_send", \{ p_email: to, p_kind: kind, p_category: category \}\)/);
   assert.match(edge, /if \(error \|\| !data\) \{[\s\S]{0,200}return \{ ok: false, reason: "gate_unavailable" \}/, "no answer from the gate means no email");
   assert.match(edge, /claimId: number;/, "sendClaimedEmail cannot be called without a claim");
-  assert.match(edge, /await releaseEmail\(sb, m\.claimId\);\s*return false;/);
+  assert.match(edge, /await releaseEmail\(sb, m\.claimId\);\s*return null;/, "a failed send gives its claim back");
   const node = read("emails/marketing.js");
   const claimAt = node.indexOf('admin.rpc("claim_email_send"'), sendAt = node.indexOf("resend.emails.send(");
   assert.ok(claimAt > 0 && sendAt > claimAt, "the claim comes before the send");
