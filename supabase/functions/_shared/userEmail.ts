@@ -12,7 +12,11 @@
 // Owner alerts (adminAlert.ts) don't come through here: they go to ALERT_EMAIL only.
 import { APP_URL, emailFooter } from "./emailRules.js";
 
-const RESEND_API_KEY = () => Deno.env.get("RESEND_API_KEY") ?? "";
+// Emails to users go from mail.tryzyvo.com, so they need a Resend key that may
+// send from that domain: RESEND_MAIL_API_KEY (a sending-only key for
+// mail.tryzyvo.com). RESEND_API_KEY, the key of the owner alerts, is limited to
+// tryzyvo.com: with it Resend answers 403 here (found on 2026-10-10).
+const RESEND_API_KEY = () => Deno.env.get("RESEND_MAIL_API_KEY") ?? Deno.env.get("RESEND_API_KEY") ?? "";
 const UNSUBSCRIBE_SECRET = () => Deno.env.get("EMAIL_UNSUBSCRIBE_SECRET") ?? "";
 
 export type EmailCategory = "marketing" | "account" | "test"; // test: a proof copy for the owner (20 a day)
