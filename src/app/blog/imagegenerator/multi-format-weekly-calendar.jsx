@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -105,6 +106,7 @@ export default function MultiFormatWeeklyCalendar() {
             </div>
           </section>
 
+          {PUBLISH_SUITE_RELEASED && (
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Scheduling it all in one place</h2>
             <p className="text-[17px] leading-relaxed">
@@ -113,16 +115,19 @@ export default function MultiFormatWeeklyCalendar() {
               to plan the whole week in one sitting.
             </p>
           </section>
+          )}
 
+          {PUBLISH_SUITE_RELEASED && (
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Plan Your Week</h2>
             <Link
-              to="/"
+              to="/publish"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Explore Zyvo Publish →
             </Link>
           </section>
+          )}
 
         </div>
 

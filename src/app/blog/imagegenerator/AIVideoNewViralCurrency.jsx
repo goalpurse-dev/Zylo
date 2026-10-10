@@ -307,7 +307,7 @@ export default function AIVideoNewViralCurrency() {
               Create AI Video →
             </Link>
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-block rounded-xl border border-[#7A3BFF] text-[#7A3BFF] px-12 py-5 font-semibold hover:bg-[#7A3BFF]/5 transition text-[15px]"
             >
               Try AI Images Too

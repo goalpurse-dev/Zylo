@@ -6,6 +6,7 @@ import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
+import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
@@ -128,7 +129,7 @@ export const FLAGGED_CREATE_TOOLS = [
   seoVisibility: getWorkspaceRouteSeoPolicy(tool.path)?.seoVisibility || "noindex",
 }));
 
-export const PUBLISH_TOOLS = [
+const ALL_PUBLISH_TOOLS = [
   {
     id: "post-schedule",
     label: "Post / Schedule",
@@ -185,6 +186,8 @@ export const PUBLISH_TOOLS = [
     ),
   },
 ];
+// "Post / Schedule" has no page to open until Publish is released (data/unreleasedFeatures.js).
+export const PUBLISH_TOOLS = ALL_PUBLISH_TOOLS.filter((tool) => PUBLISH_SUITE_RELEASED || tool.id !== "post-schedule");
 
 /* ─── Shared panel shell ──────────────────────────────────────────────────── */
 function DesktopPanel({ open, onClose, title, subtitle, sectionLabel, grid, children }) {

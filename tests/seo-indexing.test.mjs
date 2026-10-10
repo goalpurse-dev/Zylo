@@ -10,6 +10,7 @@ import {
 } from "../src/data/routeSeoPolicy.js";
 import { getPublicSeoMetadata } from "../src/data/publicSeoMetadata.js";
 import { blogArticles } from "../src/data/blogArticles.js";
+import { HIDDEN_BLOG_POSTS, PUBLISH_SUITE_PAGES, PUBLISH_SUITE_RELEASED } from "../src/data/unreleasedFeatures.js";
 
 const read = (pathname) => readFileSync(new URL(`../${pathname}`, import.meta.url), "utf8");
 
@@ -132,20 +133,123 @@ test("Publish, Stats and Connections are unreleased: their landing pages go Home
 test("public pages link straight to the final URL, never to an address that redirects", () => {
   const sources = JSON.parse(read("vercel.json")).redirects.map((r) => r.source);
   const folders = ["../src/app/blog/", "../src/app/blog/imagegenerator/", "../src/app/blog/productphotos/", "../src/pages/landing/", "../src/components/home-v2/", "../src/components/blog/", "../src/components/seo/"];
-  const files = [new URL("../src/components/workspace/footer.jsx", import.meta.url), new URL("../src/data/blogArticles.js", import.meta.url)];
-  // The three unreleased landing pages are not served (they redirect), so their own links are not on the site.
-  const off = ["PublishLanding.jsx", "StatsLanding.jsx", "ConnectionsLanding.jsx", "CreatorSuiteLanding.jsx"];
+  const files = [new URL("../src/components/workspace/footer.jsx", import.meta.url)];
+  // Not on the site while the features are unreleased: the three landing pages (they redirect) and the hidden posts.
+  const off = ["PublishLanding.jsx", "StatsLanding.jsx", "ConnectionsLanding.jsx", "CreatorSuiteLanding.jsx", ...HIDDEN_BLOG_POSTS.map((slug) => `${slug.replace("/blog/", "")}.jsx`)];
   for (const folder of folders) {
     const url = new URL(folder, import.meta.url);
     for (const name of readdirSync(url)) if (/\.jsx?$/.test(name) && !off.includes(name)) files.push(new URL(name, url));
   }
   for (const file of files) {
     const text = readFileSync(file, "utf8");
+    // A post that keeps its Publish/Stats/Connections pitch behind the release flag may name those pages there.
+    const gated = text.includes("PUBLISH_SUITE_RELEASED");
     for (const source of sources) {
+      if (gated && [...PUBLISH_SUITE_PAGES, "/workspace/publish"].includes(source)) continue;
       for (const quote of ['"', "'", "`"]) {
         assert.equal(text.includes(`${quote}${source}${quote}`), false, `${file.pathname.split("/src/")[1]} links to ${source}, which redirects`);
       }
     }
+  }
+  // The build checks the same on the finished pages (scripts/validateSeoIndexing.js).
+  assert.match(read("scripts/validateSeoIndexing.js"), /links to \$\{target\}, which redirects/);
+});
+
+test("unreleased features: six feature-only posts are hidden, other posts drop the pitch, one flag restores it all", () => {
+  assert.equal(PUBLISH_SUITE_RELEASED, false);
+  assert.deepEqual(HIDDEN_BLOG_POSTS, [
+    "/blog/what-is-zyvo-publish", "/blog/what-is-zyvo-stats", "/blog/what-is-zyvo-connections",
+    "/blog/one-click-publishing-playbook", "/blog/schedule-auto-publish-ai-videos", "/blog/zyvo-content-workflow",
+  ]);
+  const sitemap = read("public/sitemap.xml");
+  for (const slug of HIDDEN_BLOG_POSTS) {
+    assert.equal(getWorkspaceRouteSeoPolicy(slug)?.seoVisibility, "noindex", `${slug} is noindex`);
+    assert.equal(publicRobotsFor(slug), "noindex, follow");
+    assert.equal(sitemap.includes(`${slug}<`), false, `${slug} is out of the sitemap`);
+    assert.equal(blogArticles.some((article) => article.slug === slug), false, `${slug} is out of the blog index`);
+    assert.ok(read("src/App.jsx").includes(`path="${slug}"`), `${slug} still has its route (the post is kept for release)`);
+  }
+  // The general how-to posts stay.
+  for (const slug of ["/blog/how-to-cross-post-instagram-tiktok-youtube", "/blog/social-media-scheduler-for-creators", "/blog/youtube-analytics-for-creators", "/blog/best-time-to-post-ai-content"]) {
+    assert.ok(blogArticles.some((article) => article.slug === slug), `${slug} is in the blog index`);
+    assert.ok(sitemap.includes(`<loc>https://www.tryzyvo.com${slug}</loc>`), `${slug} is in the sitemap`);
+    assert.equal(getWorkspaceRouteSeoPolicy(slug), null);
+  }
+  // Related lists never offer a hidden post, and no kept post links to one outside a flagged block.
+  assert.match(read("src/app/blog/RelatedArticles.jsx"), /listed\.filter\(\(article\) => !isHiddenBlogPost\(article\.slug\)\)/);
+  const folder = new URL("../src/app/blog/imagegenerator/", import.meta.url);
+  const hiddenFiles = HIDDEN_BLOG_POSTS.map((slug) => `${slug.replace("/blog/", "")}.jsx`);
+  for (const name of readdirSync(folder).filter((file) => file.endsWith(".jsx") && !hiddenFiles.includes(file))) {
+    const text = readFileSync(new URL(name, folder), "utf8");
+    for (const slug of HIDDEN_BLOG_POSTS) {
+      if (text.includes(`to="${slug}"`)) assert.ok(text.includes("PUBLISH_SUITE_RELEASED"), `${name} links to the hidden ${slug} outside a flagged block`);
+    }
+    if (/Explore Zyvo Publish|Open Zyvo Stats/.test(text)) assert.ok(text.includes("PUBLISH_SUITE_RELEASED"), `${name} has a feature button outside a flagged block`);
+  }
+  // The six shared guides filter the pitch; the app menu leaves out the tool that has no page.
+  const guides = read("src/app/blog/CreatorGrowthGuide.jsx");
+  assert.match(guides, /const GUIDES = PUBLISH_SUITE_RELEASED \? ALL_GUIDES : /);
+  assert.equal((guides.match(/\{PUBLISH_SUITE_RELEASED && \(/g) || []).length, 2, "the two open-the-tool blocks");
+  assert.match(read("src/components/workspace/CreateMenu.jsx"), /ALL_PUBLISH_TOOLS\.filter\(\(tool\) => PUBLISH_SUITE_RELEASED \|\| tool\.id !== "post-schedule"\)/);
+  // The steps to release are written down next to the flag.
+  assert.match(read("src/data/unreleasedFeatures.js"), /TO RELEASE THEM, in this order:/);
+});
+
+test("unknown addresses are a real 404; only app routes get the app shell, which is noindex with no canonical", () => {
+  const config = JSON.parse(read("vercel.json"));
+  // No catch-all: nothing rewrites an unknown path to a page (Vercel then answers 404 with dist/404.html).
+  assert.equal(config.rewrites.some((r) => r.source === "/(.*)" || r.source === "/:path*"), false);
+  const shellSources = config.rewrites.filter((r) => r.destination === "/app-shell").map((r) => r.source);
+  assert.ok(shellSources.length > 0);
+  assert.deepEqual(config.rewrites.filter((r) => r.destination !== "/app-shell"), [{ source: "/api/(.*)", destination: "/api/$1" }]);
+  const toShell = (pathname) => shellSources.some((source) => new RegExp(`^${source.replace(/\(\.\*\)/g, ".*")}$`).test(pathname));
+  for (const stray of ["/$", "/&", "/blog/not-a-post", "/sitemax.xml", "/contact", "/worspace/home", "/anything"]) assert.equal(toShell(stray), false, `${stray} must be a 404`);
+
+  // Every route of the app is served: its own HTML (sitemap or noindex list), a redirect, or the app shell.
+  const app = read("src/App.jsx");
+  const sitemap = read("public/sitemap.xml");
+  const redirects = new Set(config.redirects.map((r) => r.source));
+  const hasOwnHtml = (pathname) => sitemap.includes(`<loc>https://www.tryzyvo.com${pathname === "/" ? "/" : pathname}</loc>`) || getNoindexWorkspaceRoutes().some((policy) => policy.path === pathname);
+  const routes = [...app.matchAll(/path="(\/[^"]*)"/g)].map((match) => match[1]);
+  assert.ok(routes.length > 300);
+  for (const route of routes) {
+    const sample = route.replace(/:[A-Za-z]+/g, "abc123");
+    assert.ok(hasOwnHtml(sample) || redirects.has(sample) || toShell(sample), `${route} would be a 404`);
+  }
+  // Paths the app, emails and payment returns send people to.
+  for (const used of ["/auth/callback", "/auth/confirm", "/auth/reset", "/billing/success", "/billing/cancel", "/unsubscribe", "/login", "/signup", "/settings",
+    "/long-form/create", "/long-form/project/abc123/scenes", "/long-form/teaser/abc123", "/workspace/earn", "/workspace/stats", "/admin/ops", "/help/feedback", "/support/article/abc123", "/support/policies/cookies"]) {
+    assert.ok(hasOwnHtml(used) || toShell(used), `${used} is served`);
+  }
+  assert.deepEqual(config.redirects.find((r) => r.source === "/workspace"), { source: "/workspace", destination: "/", statusCode: 301 });
+  // The build writes both files, neither with a canonical, both noindex.
+  const gen = read("scripts/generateSeoHtml.js");
+  assert.match(gen, /const APP_SHELL_FILE = "app-shell\.html";/);
+  assert.match(gen, /const NOT_FOUND_FILE = "404\.html";/);
+  assert.match(gen, /if \(\/rel="canonical"\/i\.test\(html\)\) throw new Error/);
+  assert.match(gen, /await writeShellAndNotFound\(template, renderApp\);/);
+});
+
+test("/long-form and the support pages in every footer have their own indexable HTML", () => {
+  const sitemap = read("public/sitemap.xml");
+  const longForm = getWorkspaceRouteSeoPolicy("/long-form");
+  assert.equal(longForm.seoVisibility, "public");
+  assert.ok(longForm.title.length <= 60 && longForm.description.length >= 80 && longForm.description.length <= 160);
+  assert.notEqual(longForm.title, getWorkspaceRouteSeoPolicy("/").title);
+  assert.equal(getWorkspaceRouteSeoPolicy("/long-form/create").seoVisibility, "noindex");
+  const pages = ["/long-form", "/support", "/support/contact", "/support/policies/privacy", "/support/policies/tos"];
+  for (const page of pages) assert.ok(sitemap.includes(`<loc>https://www.tryzyvo.com${page}</loc>`), `${page} is in the sitemap, so the build writes its HTML`);
+  const titles = pages.map((page) => getPublicSeoMetadata(page)?.title ?? getWorkspaceRouteSeoPolicy(page)?.title);
+  assert.equal(new Set(titles).size, pages.length);
+  // A signed-out visitor (and the prerendered page) gets real content on /long-form.
+  const lobby = read("src/pages/workspace/long-form/index.jsx");
+  assert.ok(lobby.includes("const signedOut = !user && (!authLoading || import.meta.env.SSR);"));
+  assert.match(lobby, /data-testid="lobby-niches"/);
+  // The stickman pages' niche cards and blog links to the image tool point at indexable pages too.
+  assert.equal(read("src/pages/landing/StickmanVideoLanding.jsx").includes("/long-form/create"), false);
+  for (const dir of ["imagegenerator", "productphotos"]) {
+    const folder = new URL(`../src/app/blog/${dir}/`, import.meta.url);
+    for (const name of readdirSync(folder)) assert.equal(readFileSync(new URL(name, folder), "utf8").includes('"/workspace/image-generator"'), false, `${name} links to the noindex image tool`);
   }
 });
 

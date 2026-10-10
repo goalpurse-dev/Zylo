@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data/routeSeoPolicy.js";
+import { HIDDEN_BLOG_POSTS } from "../src/data/unreleasedFeatures.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
@@ -91,6 +92,28 @@ if (prerenderSucceeded) {
   for (const { path: pathname } of getPublicWorkspaceRoutes()) {
     assert(sitemapPaths.includes(pathname), `public workspace route is missing from sitemap: ${pathname}`);
     validateHead(pathname, "index, follow, max-image-preview:large");
+  }
+
+  // Links on an indexable page go straight to a final URL: never to an address
+  // that redirects, and never to a blog post that is hidden for now.
+  const redirectSources = new Set(redirects.map((redirect) => redirect.source));
+  const hiddenPosts = new Set(HIDDEN_BLOG_POSTS);
+  for (const pathname of sitemapPaths) {
+    const html = readFileSync(snapshotFile(pathname), "utf8");
+    for (const match of html.matchAll(/<a\b[^>]*\bhref="(\/[^"#?]*)/g)) {
+      const target = match[1].length > 1 ? match[1].replace(/\/+$/, "") : "/";
+      assert(!redirectSources.has(target), `${pathname} links to ${target}, which redirects`);
+      assert(!hiddenPosts.has(target), `${pathname} links to ${target}, a post that is hidden for now`);
+    }
+  }
+
+  // The app shell and the 404 page exist, are noindex and carry no canonical.
+  for (const file of ["app-shell.html", "404.html"]) {
+    const full = path.join(root, "dist", file);
+    assert(existsSync(full), `dist/${file} is missing`);
+    const html = readFileSync(full, "utf8");
+    assert(/<meta name="robots" content="noindex, follow"/.test(html), `dist/${file} must be noindex`);
+    assert(!/rel="canonical"/.test(html), `dist/${file} must not carry a canonical`);
   }
 
   const aiFruitHtml = validateHead("/ai-fruit-story-maker", "index, follow, max-image-preview:large");

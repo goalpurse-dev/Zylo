@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -120,9 +121,8 @@ export default function TiktokAlgorithmExplained() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">What this means practically</h2>
             <p className="text-[17px] leading-relaxed">
-              Since consistency and completion rate matter more than any single trick, a workflow that makes it easy to post often without dropping quality is the most reliable lever you actually control. See{" "}
-              <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">how scheduled posting works</Link>{" "}
-              in Zyvo.
+              Since consistency and completion rate matter more than any single trick, a workflow that makes it easy to post often without dropping quality is the most reliable lever you actually control.
+              {PUBLISH_SUITE_RELEASED && <>{" "}See <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">how scheduled posting works</Link> in Zyvo.</>}
             </p>
           </section>
 

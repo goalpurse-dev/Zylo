@@ -82,7 +82,7 @@ export default function FreeViralAITool() {
           </p>
           <p className="text-[17px] text-[#4A4A55] mb-5 leading-relaxed">
             A free{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               viral AI tool
             </Link>{" "}
             lets you generate the kind of visuals that trigger those reactions — in seconds,
@@ -276,7 +276,7 @@ export default function FreeViralAITool() {
           </p>
           <p className="text-[#4A4A55] leading-relaxed">
             Go to{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               Zyvo's image generator
             </Link>{" "}
             or the{" "}
@@ -298,7 +298,7 @@ export default function FreeViralAITool() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-block rounded-xl bg-[#7A3BFF] px-12 py-5 text-white font-semibold hover:opacity-90 transition text-[16px]"
             >
               Try Image Generator Free →

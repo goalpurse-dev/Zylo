@@ -34,7 +34,7 @@ out.afterCta = { url: new URL(page.url()).pathname, viewport: await viewport() }
 await page.goto(`${ORIGIN}${TARGET}`, { waitUntil: "load" });
 await page.waitForTimeout(1500);
 out.directViewport = await viewport();
-await page.locator('[data-landing-content] a[href^="/long-form/create?niche="]').first().click();
+await page.locator('[data-landing-content] a[href="/long-form"]').first().click();
 await page.waitForTimeout(2500);
 out.afterNiche = { url: page.url().replace(ORIGIN, ""), viewport: await viewport() };
 out.errors = errors;

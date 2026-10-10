@@ -220,7 +220,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
                   </p>
                 </div>
                 <Link
-                  to="/workspace/image-generator"
+                  to="/image-generator"
                   className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-white text-[14px] transition-all hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)" }}
                 >
@@ -621,7 +621,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
             </p>
             <p className="text-[#4A4A55] text-[16px] leading-relaxed">
               If you want to replicate that workflow,{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo's image generator
               </Link>{" "}
               is the starting point — and it's free to try. Generate your first post in under
@@ -684,7 +684,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/workspace/image-generator"
+                to="/image-generator"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white text-[15px] transition-all hover:opacity-90 active:scale-[0.98]"
                 style={{ background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)", boxShadow: "0 8px 32px rgba(122,59,255,0.4)" }}
               >
@@ -722,7 +722,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
             <p className="text-[#4A4A55] text-[16px] leading-relaxed">
               The best time to upgrade your content workflow was six months ago. The second best
               time is now. Start with{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo's free tier
               </Link>{" "}
               — your first image will take less than a minute.

@@ -79,7 +79,7 @@ export default function HowToGoViralWithAI() {
           </p>
           <p className="text-[#4A4A55] text-[16px] leading-relaxed">
             This is the exact playbook. Tools like{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
               Zyvo's AI image generator
             </Link>{" "}
             and{" "}
@@ -225,7 +225,7 @@ export default function HowToGoViralWithAI() {
             </p>
             <p className="text-[#4A4A55] text-[15px] leading-relaxed">
               Zyvo's{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
                 prompt library
               </Link>{" "}
               gives you hundreds of tested starting points across every viral style — so you're never
@@ -300,7 +300,7 @@ export default function HowToGoViralWithAI() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-block rounded-xl bg-[#7A3BFF] px-12 py-5 text-white font-semibold hover:opacity-90 transition text-[15px]"
             >
               Start Creating For Free

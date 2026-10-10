@@ -50,7 +50,7 @@ export default function CreateProfessionalImagesWithAI() {
           </p>
           <p className="text-[#4A4A55]">
             If you’re using a modern{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, you can replicate the same quality principles used in real
             photography.

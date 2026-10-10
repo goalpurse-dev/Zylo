@@ -28,7 +28,7 @@ export default function AIImageGeneratorForContentCreators() {
           </p>
           <p className="text-[#4A4A55]">
             A modern{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>{" "}
             gives creators the ability to produce high-quality content
@@ -191,7 +191,7 @@ export default function AIImageGeneratorForContentCreators() {
             scale your content production effortlessly.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition"
           >
             Start Creating With ZyvoAI

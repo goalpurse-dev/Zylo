@@ -196,7 +196,7 @@ export default function BlogPost() {
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                  to="/workspace/image-generator"
+                  to="/image-generator"
                 >
 
                   Generate a lifestyle shot
@@ -216,7 +216,7 @@ export default function BlogPost() {
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
-                  to="/workspace/image-generator"
+                  to="/image-generator"
 
                   className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                 >
@@ -280,7 +280,7 @@ export default function BlogPost() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
-             to="/workspace/image-generator"
+             to="/image-generator"
               className="inline-flex items-center justify-center rounded-2xl bg-[#7A3BFF] px-6 py-3 text-base font-semibold hover:opacity-90"
             >
               Generate my product photos →

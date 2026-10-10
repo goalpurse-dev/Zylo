@@ -227,6 +227,40 @@ async function writeSnapshot(pathname, html) {
   await Promise.all([writeFile(htmlFile, html), writeFile(indexFile, html)]);
 }
 
+// Two pages that belong to no route of their own (vercel.json sends requests to them):
+//   dist/app-shell.html  what an app route without a snapshot gets (a project, sign-in, settings…):
+//                        the empty app, a generic title, noindex, and NO canonical. It used to be
+//                        Home's HTML, so Google read every such URL as a copy of the homepage.
+//   dist/404.html        what any other unknown address gets, with HTTP status 404 (Vercel serves
+//                        this file for a path nothing else matches).
+const APP_SHELL_FILE = "app-shell.html";
+const NOT_FOUND_FILE = "404.html";
+
+function bareHead(template, { title, description }) {
+  const tags = [`<meta name="robots" content="noindex, follow" />`];
+  if (description) tags.push(`<meta name="description" content="${escapeAttr(description)}" />`);
+  const html = template
+    .replace(/<title>[\s\S]*?<\/title>/i, () => `<title>${escapeAttr(title)}</title>`)
+    .replace("</head>", `${tags.join("\n    ")}\n  </head>`);
+  if (/rel="canonical"/i.test(html)) throw new Error("the bare template carries a canonical tag");
+  if ((html.match(/<title>/gi) || []).length !== 1) throw new Error("the bare template needs exactly one title");
+  return html;
+}
+
+async function writeShellAndNotFound(template, renderApp) {
+  const shell = bareHead(template, { title: "Zyvo" });
+  if (!shell.includes('<div id="root"></div>')) throw new Error("the app shell must have an empty root");
+  await writeFile(path.join(distDir, APP_SHELL_FILE), shell);
+
+  const notFoundInner = await renderApp("/this-address-does-not-exist", { inline: true });
+  if (!/Page Not Found/.test(notFoundInner)) throw new Error("the 404 page did not render the \"Page Not Found\" screen");
+  const notFound = bareHead(template, { title: "Page Not Found | Zyvo", description: "The requested Zyvo page could not be found." })
+    .replace('<div id="root"></div>', () => `<div id="root">${notFoundInner}</div>`);
+  if (notFound.includes('"/$"') || notFound.includes('"/&"')) throw new Error("the 404 page carries React's inline script");
+  await writeFile(path.join(distDir, NOT_FOUND_FILE), notFound);
+  console.log(`Wrote ${APP_SHELL_FILE} (app routes without a snapshot) and ${NOT_FOUND_FILE} (unknown addresses).`);
+}
+
 async function main() {
   if (!existsSync(indexTemplatePath)) throw new Error("dist/index.html is missing; run this script after vite build");
   if (!existsSync(ssrEntryPath)) throw new Error("dist-ssr/entry-server.js is missing; run this script after the SSR build (see package.json build:ssr)");
@@ -267,6 +301,8 @@ async function main() {
   if (failures.length) {
     throw new Error(`SEO HTML generation failed for ${failures.length} route(s):\n${failures.join("\n")}`);
   }
+
+  await writeShellAndNotFound(template, renderApp);
 
   console.log(`Generated ${completed} static SEO HTML route(s), 0 failures.`);
   await writeFile(SUCCESS_MARKER, new Date().toISOString());

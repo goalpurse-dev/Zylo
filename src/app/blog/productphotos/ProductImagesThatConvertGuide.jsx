@@ -158,7 +158,7 @@ export default function ProductImagesThatConvertCompleteGuide() {
         <p className="mb-12">
           This approach makes it easier to test creatives, launch faster, and
           maintain visual quality across Shopify, ads, and social channels using{" "}
-          <Link to="/workspace/image-generator" className="text-purple-600 underline">
+          <Link to="/image-generator" className="text-purple-600 underline">
             AI-powered product photography
           </Link>.
         </p>
@@ -175,7 +175,7 @@ export default function ProductImagesThatConvertCompleteGuide() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
             >
               Try Zyvo Product Photos

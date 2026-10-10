@@ -58,7 +58,7 @@ export default function BestAIImageGeneratorForSocialMedia() {
             Platforms like TikTok and Instagram prioritize engagement signals.
             That means your visuals must stop the scroll instantly — something
             modern{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generators
             </Link>{" "}
             are specifically optimized to do.
@@ -141,7 +141,7 @@ export default function BestAIImageGeneratorForSocialMedia() {
             </p>
             <p className="text-[#4A4A55]">
               This is why creators centralize their workflow inside a single{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image workspace
               </Link>.
             </p>
@@ -165,7 +165,7 @@ export default function BestAIImageGeneratorForSocialMedia() {
             <p className="text-[#4A4A55]">
               The result: faster growth, better engagement, and scalable
               content production powered by{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image platforms
               </Link>.
             </p>
@@ -202,7 +202,7 @@ export default function BestAIImageGeneratorForSocialMedia() {
             for modern social platforms.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition"
           >
             Try the AI Image Generator

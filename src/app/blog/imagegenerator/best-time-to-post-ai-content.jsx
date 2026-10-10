@@ -110,7 +110,7 @@ export default function BestTimeToPostAiContent() {
               Traditional creators often post whenever a video happens to finish rendering or editing — not when their audience is actually online. AI-generated content removes that constraint entirely. Because a batch of images or short videos can be generated well ahead of time, you can queue posts for the exact windows that work best, instead of whatever time your production schedule allows.
             </p>
             <p className="text-[17px] leading-relaxed">
-              With <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">Zyvo's image generator</Link> and <Link to="/workspace/video-generator" className="text-[#7A3BFF] font-semibold hover:underline">video generator</Link>, you can generate a week's worth of content in one sitting, then post each piece into its ideal window instead of racing to finish something right before you publish it.
+              With <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">Zyvo's image generator</Link> and <Link to="/workspace/video-generator" className="text-[#7A3BFF] font-semibold hover:underline">video generator</Link>, you can generate a week's worth of content in one sitting, then post each piece into its ideal window instead of racing to finish something right before you publish it.
             </p>
           </section>
 
@@ -130,7 +130,7 @@ export default function BestTimeToPostAiContent() {
               None of this matters if you don't have anything ready when your window arrives. Batch-generate your next few posts with Zyvo so timing is never the bottleneck.
             </p>
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Start Creating on Zyvo →

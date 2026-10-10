@@ -59,7 +59,7 @@ export default function HowAIImageGeneratorsWork() {
           <p className="text-gray-600">
             Over time, the model understands relationships between words and
             visual elements. This is why when you type a prompt into an{" "}
-            <Link to="/workspace/image-generator" className="text-purple-600 underline">
+            <Link to="/image-generator" className="text-purple-600 underline">
               AI image generator
             </Link>, it can produce something surprisingly accurate.
           </p>
@@ -123,7 +123,7 @@ export default function HowAIImageGeneratorsWork() {
           <p className="text-gray-600">
             produce very different results. If you want better outputs, learning
             prompt structure is key — and tools like{" "}
-            <Link to="/workspace/image-generator" className="text-purple-600 underline">
+            <Link to="/image-generator" className="text-purple-600 underline">
               AI prompt builders
             </Link>{" "}
             can help refine them.
@@ -148,7 +148,7 @@ export default function HowAIImageGeneratorsWork() {
         </p>
         <p className="text-gray-600">
           If you want to try it yourself, explore our{" "}
-          <Link to="/workspace/image-generator" className="text-purple-600 underline">
+          <Link to="/image-generator" className="text-purple-600 underline">
             AI image tools
           </Link>{" "}
           and start creating instantly.

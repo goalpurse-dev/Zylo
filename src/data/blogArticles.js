@@ -4,6 +4,8 @@
 // (publicSeoMetadata.js) or each article's own hand-rendered content; it only
 // powers hub/discovery UI and the shared related-guides computation.
 
+import { PUBLISH_SUITE_PAGES, PUBLISH_SUITE_RELEASED, isHiddenBlogPost } from "./unreleasedFeatures.js";
+
 export const CATEGORIES = [
   "All",
   "AI Video",
@@ -31,7 +33,7 @@ export function getCategoryBySlug(categorySlug) {
   return Object.entries(CATEGORY_SLUGS).find(([, slug]) => slug === categorySlug)?.[0] || null;
 }
 
-export const blogArticles = [
+const ALL_BLOG_ARTICLES = [
   {
     "title": "What Is Zyvo Publish? Scheduling and Posting Explained",
     "slug": "/blog/what-is-zyvo-publish",
@@ -42,7 +44,8 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": { "name": "Zyvo Publish", "href": "/publish" }
   },
   {
     "title": "What Is Zyvo Stats? Understanding Your YouTube Analytics",
@@ -54,7 +57,8 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": { "name": "Zyvo Stats", "href": "/stats" }
   },
   {
     "title": "What Is Zyvo Connections? Managing Your Social Accounts",
@@ -66,7 +70,8 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T18:00:00.000Z",
     "updatedAt": "2026-08-21T18:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": { "name": "Zyvo Connections", "href": "/connections" }
   },
   {
     "title": "The Complete Zyvo Content Workflow: From Idea to Published Post",
@@ -2269,7 +2274,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-01T21:00:00.000Z",
     "updatedAt": "2026-07-01T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Publish",
+      "href": "/publish"
+    }
   },
   {
     "title": "Social Media Scheduler for Creators: The Complete 2026 Guide",
@@ -2287,7 +2296,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Publish",
+      "href": "/publish"
+    }
   },
   {
     "title": "How to Cross-Post to Instagram, TikTok, and YouTube in 2026",
@@ -2306,7 +2319,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Publish",
+      "href": "/publish"
+    }
   },
   {
     "title": "How to Build a 28-Day Social Media Content Calendar",
@@ -2325,7 +2342,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Publish",
+      "href": "/publish"
+    }
   },
   {
     "title": "Social Media Automation for Creators Without Losing Control",
@@ -2360,7 +2381,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Stats",
+      "href": "/stats"
+    }
   },
   {
     "title": "Short-Form Video Metrics That Actually Matter in 2026",
@@ -2379,7 +2404,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-19T21:00:00.000Z",
     "updatedAt": "2026-07-19T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Stats",
+      "href": "/stats"
+    }
   },
   {
     "title": "One-Click Publishing: Why Posting Consistency Beats Virality in 2026",
@@ -2397,7 +2426,11 @@ export const blogArticles = [
     "publishedAt": "2026-07-01T21:00:00.000Z",
     "updatedAt": "2026-07-01T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": {
+      "name": "Zyvo Publish",
+      "href": "/publish"
+    }
   },
   {
     "title": "How to Go Viral With AI in 2026: The Complete Strategy",
@@ -3891,7 +3924,8 @@ export const blogArticles = [
     "publishedAt": "2026-08-21T21:00:00.000Z",
     "updatedAt": "2026-08-21T21:00:00.000Z",
     "featured": false,
-    "popular": false
+    "popular": false,
+    "relatedTool": { "name": "Zyvo Publish", "href": "/publish" }
   },
   {
     "title": "How to Cross-Promote Between Zyvo Formats: Turn One Audience Into Many",
@@ -4229,6 +4263,16 @@ export const blogArticles = [
     "relatedTool": { "name": "30 Days Series", "href": "/30-days-series-video-maker" }
   }
 ];
+
+// What the blog shows. While Publish, Stats and Connections are unreleased (unreleasedFeatures.js),
+// the posts that are only about them are left out, and no post offers a "Try Zyvo Publish" button.
+export const blogArticles = ALL_BLOG_ARTICLES
+  .filter((article) => !isHiddenBlogPost(article.slug))
+  .map((article) => {
+    if (PUBLISH_SUITE_RELEASED || !PUBLISH_SUITE_PAGES.includes(article.relatedTool?.href)) return article;
+    const { relatedTool: _unreleased, ...rest } = article;
+    return rest;
+  });
 
 export function getPublishedArticles() {
   return blogArticles;

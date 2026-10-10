@@ -16,7 +16,7 @@ import { getPublishedSeoBlogPosts, seoBlogPosts } from "../src/data/seoBlogPosts
 import { getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data/routeSeoPolicy.js";
 import { STICKMAN_LANDING_PAGES } from "../src/data/stickmanLandingPages.js";
 import { blogArticles } from "../src/data/blogArticles.js";
-import { PUBLIC_SEO_METADATA } from "../src/data/publicSeoMetadata.js";
+import { PUBLIC_SEO_METADATA, SUPPORT_PUBLIC_PAGES } from "../src/data/publicSeoMetadata.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
@@ -144,6 +144,8 @@ function main() {
   // Long Form landing pages: App.jsx maps their routes from the config, so the
   // paths aren't literal in its source.
   STICKMAN_LANDING_PAGES.forEach((page) => staticRoutes.add(page.path));
+  // Support pages: nested routes in App.jsx (path="contact", path="policies/:slug"), so not literal there either.
+  Object.keys(SUPPORT_PUBLIC_PAGES).forEach((pathname) => staticRoutes.add(pathname));
   const redirectSources = new Set((vercelConfig.redirects || []).map((redirect) => redirect.source));
   const noindexRoutes = new Set(getNoindexWorkspaceRoutes().map((policy) => policy.path));
   const draftBlogRoutes = new Set(
@@ -193,6 +195,11 @@ function main() {
       path: page,
       priority: "0.9",
       changefreq: "weekly",
+    })),
+    ...Object.keys(SUPPORT_PUBLIC_PAGES).map((pathname) => ({
+      path: pathname,
+      priority: "0.3",
+      changefreq: "yearly",
     })),
     ...getPublicWorkspaceRoutes().map((policy) => ({
       path: policy.path,

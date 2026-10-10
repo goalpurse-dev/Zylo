@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -130,8 +131,8 @@ export default function ZyvoTemplateComparison() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Still deciding?</h2>
             <p className="text-[17px] leading-relaxed">
               For a faster, if-then style walkthrough instead of a full table, see{" "}
-              <Link to="/blog/which-zyvo-template" className="text-[#7A3BFF] hover:underline font-semibold">the quick decision guide</Link>. Once you've generated something, the next step is publishing and tracking it — see{" "}
-              <Link to="/blog/zyvo-content-workflow" className="text-[#7A3BFF] hover:underline font-semibold">the complete content workflow</Link>.
+              <Link to="/blog/which-zyvo-template" className="text-[#7A3BFF] hover:underline font-semibold">the quick decision guide</Link>.
+              {PUBLISH_SUITE_RELEASED && <>{" "}Once you've generated something, the next step is publishing and tracking it — see <Link to="/blog/zyvo-content-workflow" className="text-[#7A3BFF] hover:underline font-semibold">the complete content workflow</Link>.</>}
             </p>
           </section>
 

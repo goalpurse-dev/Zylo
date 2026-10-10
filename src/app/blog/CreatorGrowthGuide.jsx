@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar, CheckCircle2, Clock3 } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
+import { PUBLISH_SUITE_PAGES, PUBLISH_SUITE_RELEASED, isHiddenBlogPost } from "../../data/unreleasedFeatures.js";
 import publishHero from "../../assets/blog/publish/publish-landing-hero-wide.png";
 import analyticsHero from "../../assets/blog/publish/analytics-landing-hero-wide.png";
 import distributionHero from "../../assets/blog/publish/multi-platform-distribution-wide.png";
@@ -16,7 +17,7 @@ import batchVertical from "../../assets/blog/publish/batch-content-workflow-vert
 
 const SITE_URL = "https://www.tryzyvo.com";
 
-const GUIDES = {
+const ALL_GUIDES = {
   "social-media-scheduler-for-creators": {
     title: "Social Media Scheduler for Creators: The Complete 2026 Guide",
     seoTitle: "Social Media Scheduler for Creators: Complete 2026 Guide | Zyvo",
@@ -71,9 +72,9 @@ const GUIDES = {
       ["Should every creator use a daily posting schedule?", "No. The best schedule is the one you can sustain without lowering content quality."],
     ],
     links: [
-      ["/", "Explore Zyvo Publish", "See the complete multi-platform scheduling workflow."],
+      ["/publish", "Explore Zyvo Publish", "See the complete multi-platform scheduling workflow."],
       ["/blog/28-day-social-media-content-calendar", "Build a 28-day content calendar", "Turn a realistic weekly cadence into a full monthly plan."],
-      ["/", "Use analytics to plan the next batch", "Track YouTube views, watch time, subscribers, and top videos."],
+      ["/stats", "Use analytics to plan the next batch", "Track YouTube views, watch time, subscribers, and top videos."],
     ],
     cta: "Start scheduling your videos",
   },
@@ -130,8 +131,8 @@ const GUIDES = {
       ["Does cross-posting hurt reach?", "Cross-posting itself is a distribution method. Content quality, packaging, audience fit, and platform requirements still determine performance."],
     ],
     links: [
-      ["/", "Connect all three platforms", "Prepare Instagram, TikTok, and YouTube as publishing destinations."],
-      ["/", "Open the multi-platform publisher", "Choose one video and prepare every destination together."],
+      ["/connections", "Connect all three platforms", "Prepare Instagram, TikTok, and YouTube as publishing destinations."],
+      ["/publish", "Open the multi-platform publisher", "Choose one video and prepare every destination together."],
       ["/blog/social-media-automation-for-creators", "Automate the repeatable work", "Build a controlled publishing system without losing oversight."],
     ],
     cta: "Cross-post your next video",
@@ -189,7 +190,7 @@ const GUIDES = {
       ["Can Zyvo schedule a full month?", "Zyvo supports planning eligible posts up to 28 days ahead."],
     ],
     links: [
-      ["/", "Open the 28-day publishing calendar", "Place finished videos into a clear multi-platform queue."],
+      ["/publish", "Open the 28-day publishing calendar", "Place finished videos into a clear multi-platform queue."],
       ["/blog/social-media-scheduler-for-creators", "Choose a creator scheduler", "Learn which scheduling features matter for short-form video."],
       ["/blog/short-form-video-metrics-that-matter", "Review the right metrics", "Use performance signals to improve the next seven days."],
       ["/blog/what-is-zyvo-publish", "What is Zyvo Publish?", "The full guide to scheduling and posting explained."],
@@ -251,8 +252,8 @@ const GUIDES = {
       ["Is social media automation only for teams?", "No. Solo creators often gain the most because every repeated upload competes directly with their creation time."],
     ],
     links: [
-      ["/", "Use controlled publishing automation", "Review each post, then publish now or plan it ahead."],
-      ["/", "Manage destination accounts", "Keep Instagram, TikTok, and YouTube connections organized."],
+      ["/publish", "Use controlled publishing automation", "Review each post, then publish now or plan it ahead."],
+      ["/connections", "Manage destination accounts", "Keep Instagram, TikTok, and YouTube connections organized."],
       ["/blog/one-click-publishing-playbook", "Read the consistency playbook", "See why a repeatable system matters more than one lucky spike."],
     ],
     cta: "Automate your publishing workflow",
@@ -310,8 +311,8 @@ const GUIDES = {
       ["Does Zyvo Stats track YouTube analytics?", "Yes. Connected YouTube channels can show views, watch time, subscriber growth, average view duration, trends, and video-level performance."],
     ],
     links: [
-      ["/", "Open Zyvo Stats", "Review connected YouTube performance in one focused dashboard."],
-      ["/", "Connect your YouTube channel", "Authorize the channel used by publishing and analytics."],
+      ["/stats", "Open Zyvo Stats", "Review connected YouTube performance in one focused dashboard."],
+      ["/connections", "Connect your YouTube channel", "Authorize the channel used by publishing and analytics."],
       ["/blog/short-form-video-metrics-that-matter", "Learn which metrics matter", "Turn raw numbers into a repeatable review framework."],
       ["/blog/what-is-zyvo-stats", "What is Zyvo Stats?", "The full guide to the analytics dashboard explained."],
     ],
@@ -370,7 +371,7 @@ const GUIDES = {
       ["How often should creators review analytics?", "A weekly review is frequent enough to guide the next content batch without reacting emotionally to every early fluctuation."],
     ],
     links: [
-      ["/", "Track YouTube creator metrics", "See views, watch time, subscribers, duration, trends, and video details."],
+      ["/stats", "Track YouTube creator metrics", "See views, watch time, subscribers, duration, trends, and video details."],
       ["/blog/youtube-analytics-for-creators", "Read the YouTube analytics guide", "Understand how the core channel metrics work together."],
       ["/blog/28-day-social-media-content-calendar", "Apply insights to the next 28 days", "Turn performance patterns into a practical content calendar."],
       ["/blog/tiktok-algorithm-explained", "What actually gets videos seen", "The signals that consistently correlate with reach on TikTok."],
@@ -378,6 +379,23 @@ const GUIDES = {
     cta: "Turn metrics into your next idea",
   },
 };
+
+// While Publish, Stats and Connections are unreleased (data/unreleasedFeatures.js), a guide keeps its
+// how-to content and leaves out what sells those features: every paragraph, bullet and FAQ line that
+// talks about Zyvo, and the links to their pages and to the posts that are hidden for now.
+const sellsZyvo = (text) => /Zyvo/.test(String(text ?? ""));
+function withoutPitch(guide) {
+  return {
+    ...guide,
+    intro: guide.intro.filter((paragraph) => !sellsZyvo(paragraph)),
+    sections: guide.sections
+      .map((section) => ({ ...section, paragraphs: section.paragraphs.filter((paragraph) => !sellsZyvo(paragraph)), bullets: section.bullets?.filter((bullet) => !sellsZyvo(bullet)) }))
+      .filter((section) => section.paragraphs.length || section.bullets?.length),
+    faqs: guide.faqs.filter(([question, answer]) => !sellsZyvo(question) && !sellsZyvo(answer)),
+    links: guide.links.filter(([to, title, description]) => !PUBLISH_SUITE_PAGES.includes(to) && !isHiddenBlogPost(to) && !sellsZyvo(title) && !sellsZyvo(description)),
+  };
+}
+const GUIDES = PUBLISH_SUITE_RELEASED ? ALL_GUIDES : Object.fromEntries(Object.entries(ALL_GUIDES).map(([slug, guide]) => [slug, withoutPitch(guide)]));
 
 function upsertMeta(attribute, key, content) {
   let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
@@ -451,7 +469,7 @@ export default function CreatorGrowthGuide({ slug }) {
   if (!guide) return null;
   const primaryToolPath = slug === "youtube-analytics-for-creators" || slug === "short-form-video-metrics-that-matter"
     ? "/workspace/stats"
-    : "/";
+    : "/workspace/publish";
 
   return (
     <div className="min-h-screen bg-[#F7F5FA] text-[#110829]">
@@ -532,21 +550,25 @@ export default function CreatorGrowthGuide({ slug }) {
                 ))}
               </div>
             </div>
+            {PUBLISH_SUITE_RELEASED && (
             <Link to={primaryToolPath} className="group block rounded-2xl bg-[#110829] p-5 text-white shadow-[0_18px_50px_rgba(17,8,41,.18)]">
               <p className="text-[16px] font-bold">{guide.cta}</p>
               <span className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-bold text-violet-300">Open Zyvo <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span>
             </Link>
+            )}
           </aside>
         </div>
 
+        {PUBLISH_SUITE_RELEASED && (
         <section className="mt-20 rounded-[28px] bg-[#110829] px-6 py-12 text-center text-white sm:px-10">
           <h2 className="text-[30px] font-black">Create, publish, measure, repeat.</h2>
           <p className="mx-auto mt-3 max-w-xl text-[15px] leading-7 text-white/55">Move from the next idea to a scheduled post, then bring real performance signals back into the next creative decision.</p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/" className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold">Open Publish</Link>
+            <Link to="/workspace/publish" className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold">Open Publish</Link>
             <Link to="/workspace/stats" className="rounded-xl border border-white/10 bg-white/[0.06] px-6 py-3 text-[14px] font-bold">Open Stats</Link>
           </div>
         </section>
+        )}
       </main>
       <Footer />
     </div>

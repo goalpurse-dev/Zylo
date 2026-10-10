@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -101,9 +102,8 @@ export default function RepurposeOneVideoTenPieces() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Scheduling the split-out pieces</h2>
             <p className="text-[17px] leading-relaxed">
-              Once one session becomes several posts, spacing them across the week matters more than posting them all at once. See{" "}
-              <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">how scheduled posting works</Link>{" "}
-              to queue a week's worth of pieces from a single sitting.
+              Once one session becomes several posts, spacing them across the week matters more than posting them all at once.
+              {PUBLISH_SUITE_RELEASED && <>{" "}See <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">how scheduled posting works</Link> to queue a week's worth of pieces from a single sitting.</>}
             </p>
           </section>
 

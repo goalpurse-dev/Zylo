@@ -83,7 +83,7 @@ export default function FreeAIImageGenerator() {
           <p className="text-[17px] text-[#4A4A55] mb-5 leading-relaxed">
             In 2026, the creators and brands winning on TikTok, Instagram, and Pinterest aren't
             working harder. They're using smarter tools. A{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               free AI image generator
             </Link>{" "}
             is the single highest-leverage tool in their stack.
@@ -276,7 +276,7 @@ export default function FreeAIImageGenerator() {
           </p>
           <p className="text-[#4A4A55] leading-relaxed">
             Zyvo's{" "}
-            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               free AI image generator
             </Link>{" "}
             is where to start. Free to start with 5 image generations, built for creators, and optimized for
@@ -294,7 +294,7 @@ export default function FreeAIImageGenerator() {
             in seconds. Join thousands of creators already using Zyvo.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition text-[16px]"
           >
             Generate Images Free →

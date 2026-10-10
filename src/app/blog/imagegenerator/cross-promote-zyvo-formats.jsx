@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -98,6 +99,7 @@ export default function CrossPromoteZyvoFormats() {
             </div>
           </section>
 
+          {PUBLISH_SUITE_RELEASED && (
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Keeping every platform connected</h2>
             <p className="text-[17px] leading-relaxed">
@@ -105,6 +107,7 @@ export default function CrossPromoteZyvoFormats() {
               <Link to="/blog/what-is-zyvo-connections" className="text-[#7A3BFF] hover:underline font-semibold">how Zyvo Connections works</Link>.
             </p>
           </section>
+          )}
 
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Grow Every Format Together</h2>

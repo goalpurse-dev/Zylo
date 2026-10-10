@@ -70,7 +70,7 @@ export default function IsAIImageGenerationWorthIt() {
           </p>
           <p className="text-gray-600 mb-4">
             With an{" "}
-            <Link to="/workspace/image-generator" className="text-purple-600 underline">
+            <Link to="/image-generator" className="text-purple-600 underline">
               AI image generator
             </Link>, creators can produce professional visuals in seconds.
           </p>
@@ -142,7 +142,7 @@ export default function IsAIImageGenerationWorthIt() {
         </p>
         <p className="text-gray-600">
           Try our{" "}
-          <Link to="/workspace/image-generator" className="text-purple-600 underline">
+          <Link to="/image-generator" className="text-purple-600 underline">
             AI image platform
           </Link>{" "}
           and see the difference yourself.

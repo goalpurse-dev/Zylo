@@ -395,11 +395,18 @@ export function stickmanGroupPage(groupId) {
   return STICKMAN_LANDING_PAGES.find((entry) => entry.nicheGroupId === groupId) ?? null;
 }
 
-// Where a niche card goes: that niche's own landing page once it exists in
-// the list above, the Long Form setup with the niche preselected until then.
+// Where a niche card links (what crawlers follow): that niche's own landing page
+// once it exists in the list above, the Long Form page until then. The setup
+// itself is noindex (routeSeoPolicy.js), so it is never a link's href.
 export function stickmanNicheHref(nicheId) {
   const page = STICKMAN_LANDING_PAGES.find((entry) => entry.nicheId === nicheId);
-  return page ? page.path : `/long-form/create?niche=${nicheId}`;
+  return page ? page.path : "/long-form";
+}
+
+// What a plain click on that card opens instead of the href: the setup with the
+// niche picked. null when the niche has its own page (the click follows the link).
+export function stickmanNicheSetup(nicheId) {
+  return STICKMAN_LANDING_PAGES.some((entry) => entry.nicheId === nicheId) ? null : `/long-form/create?niche=${nicheId}`;
 }
 
 const youtubeWatch = (id) => `https://www.youtube.com/watch?v=${id}`;

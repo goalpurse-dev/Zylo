@@ -408,7 +408,7 @@ export default function AIProductPhotoGenerator() {
                 <h3 className="text-white text-2xl font-extrabold mb-3">Generate your first product photo in 10 seconds</h3>
                 <p className="text-white/50 text-[14px] mb-7 max-w-sm mx-auto">5 free image generations. No credit card. No photoshoot. Just results.</p>
                 <Link
-                  to="/workspace/image-generator"
+                  to="/image-generator"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-bold text-[15px] transition hover:opacity-90 active:scale-[0.98]"
                   style={{ background: "linear-gradient(135deg,#7A3BFF,#9D6BFF)", boxShadow: "0 8px 28px rgba(122,59,255,0.45)" }}
                 >

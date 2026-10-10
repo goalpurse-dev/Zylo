@@ -206,7 +206,7 @@ export default function GenerateHighQualityImagesWithAI() {
             instantly with ZyvoAI.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition"
           >
             Try ZyvoAI Now

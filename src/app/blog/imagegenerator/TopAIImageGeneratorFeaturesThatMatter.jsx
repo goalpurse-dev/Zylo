@@ -191,7 +191,7 @@ export default function TopAIImageGeneratorFeaturesThatMatter() {
             built specifically for modern creators.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-14 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Try ZyvoAI Now

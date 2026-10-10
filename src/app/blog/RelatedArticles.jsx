@@ -1,7 +1,10 @@
 import { Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { isHiddenBlogPost } from "../../data/unreleasedFeatures.js";
 
-export default function RelatedArticles({ articles = [] }) {
+export default function RelatedArticles({ articles: listed = [] }) {
+  // A post that is hidden for now (unreleasedFeatures.js) is not offered as related reading.
+  const articles = listed.filter((article) => !isHiddenBlogPost(article.slug));
   if (!articles.length) return null;
 
   return (

@@ -105,7 +105,7 @@ export default function AIImageGeneratorVsTraditionalDesign() {
             </p>
             <p className="text-[#4A4A55]">
               Using a modern{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image generator
               </Link>, you can produce dozens of visuals in the time it takes
               to manually design one.

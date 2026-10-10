@@ -89,7 +89,7 @@ export default function WhyYourPostsDontGoViral() {
             </p>
             <p className="text-[#4A4A55]">
               This is why creators using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link> see higher retention instantly.
             </p>
@@ -116,7 +116,7 @@ export default function WhyYourPostsDontGoViral() {
             <p className="text-[#4A4A55]">
               Consistency becomes effortless when generating content
               inside one{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image workspace
               </Link>.
             </p>
@@ -177,7 +177,7 @@ export default function WhyYourPostsDontGoViral() {
             </p>
             <p className="text-[#4A4A55]">
               This workflow only works at scale using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image tools
               </Link> designed for creators.
             </p>
@@ -215,7 +215,7 @@ export default function WhyYourPostsDontGoViral() {
             on modern social platforms.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition"
           >
             Start Creating With AI

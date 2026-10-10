@@ -135,7 +135,7 @@ export default function AiContentHooksCaptionsThatGoViral() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Match the Hook to the Visual, Not Just the Topic</h2>
             <p className="text-[17px] leading-relaxed">
               The strongest hooks are written after you already know what the AI-generated image or video looks like — not before. Generate the visual first with{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo's AI image generator
               </Link>{" "}
               or{" "}
@@ -152,7 +152,7 @@ export default function AiContentHooksCaptionsThatGoViral() {
               Generate your next piece of AI content, then use one of these five hook formulas to write the caption that earns it a real chance at going viral.
             </p>
             <Link
-              to="/workspace/image-generator"
+              to="/image-generator"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Start Creating on Zyvo →

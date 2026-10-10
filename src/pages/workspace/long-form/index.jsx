@@ -5,6 +5,7 @@ import { fetchProjectBilling, fetchUserLongFormProjects } from "./project";
 import { coverFor, fetchProjectCovers, projectTitle } from "./projectCovers";
 import { deriveProjectStageInfo } from "./projectStage";
 import { NeutralCover, ProjectCard } from "./shared";
+import { NICHE_GROUPS } from "./niches";
 import { useAuth } from "../../../context/AuthContext";
 import { TutorialCard } from "../../../components/launch/LaunchUI.jsx";
 import { fetchShowcase, showcaseThumb, trackLaunch } from "../../../components/launch/launch";
@@ -81,7 +82,7 @@ function MadeWithZyvo() {
 export default function LongForm() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState(null); // null = loading, [] = loaded-empty
 
   // CREATE NEW VIDEO opens the single-column Production Setup (ProductionSetup.jsx).
@@ -90,9 +91,7 @@ export default function LongForm() {
     navigate("/long-form/create");
   };
 
-  useEffect(() => {
-    document.title = "Long Form | Zyvo";
-  }, []);
+  // The page title comes from data/routeSeoPolicy.js (WorkspaceRouteSeo), the same one the prerendered HTML has.
 
   // "See examples" (What's new popup) lands here: scroll to the examples once they render.
   useEffect(() => {
@@ -115,6 +114,10 @@ export default function LongForm() {
   }, [user?.id]);
 
   const hasProjects = projects?.length > 0;
+  // A signed-out visitor (and the prerendered page Google reads: scripts/generateSeoHtml.js) gets
+  // "How it works" and the niches. A signed-in user gets their videos once they have loaded.
+  const signedOut = !user && (!authLoading || import.meta.env.SSR);
+  const openNiche = (id) => { trackLaunch("niche_pick", { placement: "long_form_lobby", target: id }); navigate(`/long-form/create?niche=${id}`); };
   const seeAll = () => document.getElementById("all-videos")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
@@ -147,7 +150,7 @@ export default function LongForm() {
         </div>
 
         <section className="min-w-0 lg:col-span-2 lg:row-start-2" data-testid="your-videos">
-          {projects === null ? null : hasProjects ? (
+          {projects === null && !signedOut ? null : hasProjects ? (
             <>
               <div className="mb-3 flex items-end justify-between px-1">
                 <p className="text-[17px] font-bold text-white">Your videos</p>
@@ -159,8 +162,31 @@ export default function LongForm() {
             </>
           ) : (
             <>
-              <p className="mb-3 px-1 text-[17px] font-bold text-white">How it works</p>
+              <h2 className="mb-3 px-1 text-[17px] font-bold text-white">How it works</h2>
               <HowItWorks />
+              {signedOut && (
+                <div className="mt-8" data-testid="lobby-niches">
+                  <h2 className="px-1 text-[17px] font-bold text-white">25 niches to start from</h2>
+                  <p className="mt-1 px-1 text-[13px] text-white/45">Pick one and Zyvo suggests video ideas in it. You can also type your own topic.</p>
+                  <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {NICHE_GROUPS.map((group) => (
+                      <div key={group.id}>
+                        <h3 className="px-1 text-[12px] font-bold uppercase tracking-[0.12em] text-lime-300">{group.label}</h3>
+                        <ul className="mt-2 space-y-1">
+                          {group.niches.map((niche) => (
+                            <li key={niche.id}>
+                              <button type="button" onClick={() => openNiche(niche.id)} className="w-full rounded-lg px-1 py-1 text-left transition hover:bg-white/[0.04]">
+                                <span className="block text-[13.5px] font-semibold text-white/90">{niche.label}</span>
+                                {niche.description && <span className="block text-[12.5px] leading-snug text-white/45">{niche.description}</span>}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </section>

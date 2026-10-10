@@ -154,6 +154,8 @@ test("the Home snapshot is also the fallback HTML for app routes: its content an
   assert.match(gen, /link\[rel=canonical\]","script#page-ld"/);
   const entry = read("src/main.jsx");
   assert.match(entry, /dataset\.shell === "true"\) \{\s+container\.replaceChildren\(\);\s+document\.getElementById\("shell-hide"\)\?\.remove\(\);/);
-  // The catch-all rewrite this guards against.
-  assert.ok(vercel.rewrites.some((r) => r.source === "/(.*)" && r.destination === "/"));
+  // The live site no longer serves Home's HTML for other URLs: app routes get dist/app-shell.html and unknown
+  // addresses a 404 (vercel.json). The guard stays for a local `vite preview`, which still falls back to index.html.
+  assert.equal(vercel.rewrites.some((r) => r.source === "/(.*)"), false);
+  assert.ok(vercel.rewrites.some((r) => r.source === "/workspace/(.*)" && r.destination === "/app-shell"));
 });

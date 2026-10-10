@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PUBLISH_SUITE_RELEASED } from "../../../data/unreleasedFeatures.js";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -120,7 +121,7 @@ export default function HowToMakeMoneyAiContent() {
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Why consistency beats a single viral hit</h2>
             <p className="text-[17px] leading-relaxed">
               Platform payouts, brand interest, and affiliate returns all compound with volume. A tool built around{" "}
-              <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">scheduled, repeatable posting</Link>{" "}
+              {PUBLISH_SUITE_RELEASED ? <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">scheduled, repeatable posting</Link> : "scheduled, repeatable posting"}{" "}
               — rather than one-off manual uploads — is what makes that volume realistic to sustain. For long-form YouTube, the{" "}
               <Link to="/ai-stickman-video-generator" className="text-[#7A3BFF] hover:underline font-semibold">AI stickman video generator</Link>{" "}
               makes a full 8–15 minute video from one idea.

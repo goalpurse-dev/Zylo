@@ -111,7 +111,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             </p>
             <p className="text-[#4A4A55]">
               Creators batch-generate motion-based scenes using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image platforms
               </Link> and repurpose them across multiple formats.
             </p>
@@ -145,7 +145,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             </p>
             <p className="text-[#4A4A55]">
               This trend is accelerating fast among creators using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI-powered workspaces
               </Link>.
             </p>
@@ -169,7 +169,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             </p>
             <p className="text-[#4A4A55]">
               Creators build entire feeds around this look using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image generators
               </Link>.
             </p>
@@ -227,7 +227,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             </p>
             <p className="text-[#4A4A55]">
               This trend is exploding among creators using{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI platforms
               </Link> that support high-volume creation.
             </p>
@@ -263,7 +263,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             and build a visual identity that stands out.
           </p>
           <Link
-            to="/workspace/image-generator"
+            to="/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-16 py-5 text-white font-semibold hover:opacity-90 transition"
           >
             Open the AI Image Generator

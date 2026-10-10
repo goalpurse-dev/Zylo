@@ -125,7 +125,7 @@ export default function BestAIToolsFacelessTikTokVideos() {
               num: "03",
               category: "AI Image Generator",
               tool: "Zyvo AI Image Generator",
-              link: "/workspace/image-generator",
+              link: "/image-generator",
               why: "For faceless TikTok, images serve two critical functions: generating reference images for video consistency, and creating thumbnail-quality first frames. Zyvo's image generator has 20+ styles including cinematic, 3D, and realistic. Use it to generate a hero image of your main subject or setting, then feed that image into the video generator to lock the visual identity across all clips.",
               bestFor: "Creating reference images for multi-clip consistency. Also useful for faceless educational and aesthetic content where static images with motion overlays are the format.",
               free: true,

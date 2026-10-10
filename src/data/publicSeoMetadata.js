@@ -1079,6 +1079,16 @@ export const PUBLIC_SEO_METADATA = {
   },
 };
 
+// Support pages that every footer links to. scripts/generateSitemap.js adds them to the sitemap, so
+// the build writes each its own HTML (they used to answer with Home's HTML).
+export const SUPPORT_PUBLIC_PAGES = {
+  "/support": { title: "Zyvo Support Center – Help, Policies and Contact", description: "Get help with Zyvo: answers to common questions about plans, credits and video creation, our policies, and a way to contact support." },
+  "/support/contact": { title: "Contact Zyvo Support", description: "Send a message to Zyvo support about your account, billing, credits or a video that did not come out right. We answer by email." },
+  "/support/policies/privacy": { title: "Privacy Policy | Zyvo", description: "How Zyvo collects, uses, stores and protects your personal data, which services process it, and the rights you have over it." },
+  "/support/policies/tos": { title: "Terms of Service | Zyvo", description: "The terms that apply when you use Zyvo: accounts, plans and credits, acceptable use, the content you create, and liability." },
+};
+Object.entries(SUPPORT_PUBLIC_PAGES).forEach(([pathname, page]) => { PUBLIC_SEO_METADATA[pathname] = { ...page, type: "website" }; });
+
 export function getPublicSeoMetadata(pathname) {
   return PUBLIC_SEO_METADATA[pathname] || null;
 }

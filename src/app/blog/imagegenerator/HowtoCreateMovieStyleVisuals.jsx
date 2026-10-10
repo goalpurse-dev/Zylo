@@ -205,7 +205,7 @@ export default function CinematicAIImages() {
         </p>
 
         <Link
-          to="/workspace/image-generator"
+          to="/image-generator"
           className="inline-block px-8 py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-700 transition"
         >
           Generate Cinematic Images

@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
   STICKMAN_BASE_PATH, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS,
-  getStickmanLandingPage, stickmanGroupPage, stickmanNicheHref, stickmanStructuredData,
+  getStickmanLandingPage, stickmanGroupPage, stickmanNicheHref, stickmanNicheSetup, stickmanStructuredData,
 } from "../src/data/stickmanLandingPages.js";
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
@@ -190,7 +190,9 @@ test("niche cards: 25 niches, each opens Long Form with the niche (or its own pa
   assert.equal(ALL_NICHES.length, 25);
   for (const niche of ALL_NICHES) {
     const page = STICKMAN_LANDING_PAGES.find((p) => p.nicheId === niche.id);
-    assert.equal(stickmanNicheHref(niche.id), page ? page.path : `/long-form/create?niche=${niche.id}`);
+    // The link is an indexable page (/long-form, or the niche's own page); a click opens the noindex setup with the niche.
+    assert.equal(stickmanNicheHref(niche.id), page ? page.path : "/long-form");
+    assert.equal(stickmanNicheSetup(niche.id), page ? null : `/long-form/create?niche=${niche.id}`);
   }
 });
 

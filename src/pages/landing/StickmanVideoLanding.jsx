@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Check, Play, Plus } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
 import { NICHE_GROUPS, findNiche } from "../workspace/long-form/niches.js";
@@ -8,7 +8,7 @@ import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import GALLERY from "../../data/stickmanLandingGallery.json";
 import {
   APP_VIEWPORT, STICKMAN_ASSETS, STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS, STICKMAN_VIEWPORT,
-  stickmanGroupPage, stickmanNicheHref, stickmanVideoUrl,
+  stickmanGroupPage, stickmanNicheHref, stickmanNicheSetup, stickmanVideoUrl,
 } from "../../data/stickmanLandingPages.js";
 
 // Long Form SEO landing page. Everything on it comes from one entry of
@@ -160,6 +160,15 @@ export default function StickmanVideoLanding({ page }) {
   const parent = page.slug ? STICKMAN_LANDING_PAGES[0] : null; // a niche page links up to the main page
   const nicheGroups = NICHE_GROUPS.filter((group) => !page.niches.groupIds || page.niches.groupIds.includes(group.id));
   const featuresInThrees = page.features.items.length % 3 === 0;
+  const navigate = useNavigate();
+  // A niche card links to /long-form (or the niche's own page); a plain click opens the setup with the niche picked.
+  const openNiche = (event, name, niche) => {
+    trackSeoEvent(name, { slug, niche });
+    const setup = stickmanNicheSetup(niche);
+    if (!setup || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    navigate(setup);
+  };
   return (
     <div className="min-h-screen overflow-x-clip bg-[#0B0D0F] text-white">
       <style dangerouslySetInnerHTML={{ __html: FALLBACK_FACE }} />
@@ -251,7 +260,7 @@ export default function StickmanVideoLanding({ page }) {
                 <ol className="mt-9 grid gap-3 md:grid-cols-2">
                   {page.ideas.items.map((idea) => (
                     <li key={idea.title}>
-                      <Link to={stickmanNicheHref(idea.niche)} onClick={() => trackSeoEvent("seo_idea_clicked", { slug, niche: idea.niche })}
+                      <Link to={stickmanNicheHref(idea.niche)} onClick={(event) => openNiche(event, "seo_idea_clicked", idea.niche)}
                         className={`group flex h-full items-center justify-between gap-4 rounded-[16px] border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-lime-300/40 ${FOCUS}`}>
                         <span>
                           <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-lime-300">{findNiche(idea.niche)?.label}</span>
@@ -283,7 +292,7 @@ export default function StickmanVideoLanding({ page }) {
                   <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
                     {group.niches.map((niche) => (
                       <li key={niche.id}>
-                        <Link to={stickmanNicheHref(niche.id)} onClick={() => trackSeoEvent("seo_niche_clicked", { slug, niche: niche.id })} className={`group block rounded-[14px] ${FOCUS}`}>
+                        <Link to={stickmanNicheHref(niche.id)} onClick={(event) => openNiche(event, "seo_niche_clicked", niche.id)} className={`group block rounded-[14px] ${FOCUS}`}>
                           <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-lime-300/45">
                             <img {...optImg(`/images/niches/${niche.id}.webp`, "(max-width: 640px) 46vw, 280px", 480)} alt={`${niche.label} stickman video niche`} width="480" height="270" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
                           </div>

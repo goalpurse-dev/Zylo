@@ -199,7 +199,7 @@ export default function ScaleEcommerceContent() {
             </Link>
           </li>
           <li>
-            <Link to="/workspace/image-generator" className="text-purple-600 underline">
+            <Link to="/image-generator" className="text-purple-600 underline">
               Scaling Shopify Content with AI
             </Link>
           </li>

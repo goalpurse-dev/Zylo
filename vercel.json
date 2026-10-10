@@ -6,6 +6,11 @@
       "statusCode": 301
     },
     {
+      "source": "/workspace",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
       "source": "/home",
       "destination": "/",
       "statusCode": 301
@@ -249,8 +254,60 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/workspace/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/long-form/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/billing/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/support/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/help/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/support",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/help",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/login",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/signup",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/settings",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/unsubscribe",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/public-gallery",
+      "destination": "/app-shell"
     }
   ]
 }

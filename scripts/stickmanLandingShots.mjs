@@ -54,11 +54,11 @@ for (const [name, viewport, scale] of [["desktop-1920", { width: 1920, height: 1
   await page.waitForTimeout(600);
   r.iframeAfterClick = await page.locator("iframe").first().getAttribute("src");
   r.cta = await page.getByRole("link", { name: "Make your first video" }).first().getAttribute("href");
-  r.nicheLinks = await page.locator('[data-landing-content] a[href^="/long-form/create?niche="]').count();
+  r.nicheLinks = await page.locator('[data-landing-content] a[href="/long-form"]').count();
   r.ideas = await page.locator('[data-testid="ideas"] a').count();
   r.breadcrumb = await page.locator('nav[aria-label="Breadcrumb"] a').first().getAttribute("href").catch(() => null);
   r.subPageLinks = await page.locator('[data-landing-content] a[href^="/ai-stickman-video-generator"]').evaluateAll((els) => [...new Set(els.map((el) => el.getAttribute("href")))]);
-  r.firstNiche = await page.locator('[data-landing-content] a[href^="/long-form/create?niche="]').first().getAttribute("href");
+  r.firstNiche = await page.locator('[data-landing-content] a[href="/long-form"]').first().getAttribute("href");
   r.pricingLink = await page.locator('[data-landing-content] a[href="/workspace/pricing"]').count();
   r.errors = errors;
   report[name] = r;

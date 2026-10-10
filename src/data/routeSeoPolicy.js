@@ -1,4 +1,5 @@
 import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "./blockyStories.js";
+import { HIDDEN_BLOG_POSTS } from "./unreleasedFeatures.js";
 
 export const SITE_URL = "https://www.tryzyvo.com";
 
@@ -40,10 +41,19 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   // its own snapshot every one of those URLs served Home's HTML (Home's title,
   // canonical "/"), which Google read as copies of the homepage.
   { path: "/long-form/create", seoVisibility: "noindex", routeType: "credit-application", publicLanding: "/ai-stickman-video-generator", title: "Zyvo Long Form Video Setup" },
-  // Publish, Stats and Connections are not released yet: their landing pages (/publish, /stats,
-  // /connections) redirect Home (vercel.json, App.jsx) and no tool above points at them. To release
-  // one: remove its redirect in both files, put its publicLanding back on the tool above, and add it
-  // to REQUIRED_PUBLIC_PAGES in scripts/generateSitemap.js.
+  // Publish, Stats and Connections are not released yet (unreleasedFeatures.js has the full list of
+  // what is switched off and how to release them): their landing pages redirect Home and no tool
+  // above points at them. The blog posts that are only about them are noindex:
+  ...HIDDEN_BLOG_POSTS.map((path) => ({ path, seoVisibility: "noindex", routeType: "unreleased-feature-post" })),
+  // The Long Form lobby: public and indexable, with its own HTML. Home's niche cards and the stickman
+  // landing pages link to it. (The setup, /long-form/create, is noindex: see above.)
+  {
+    path: "/long-form",
+    seoVisibility: "public",
+    routeType: "public-marketing",
+    title: "Zyvo Long Form – Turn One Idea into a Full YouTube Video",
+    description: "Start a Long Form video in Zyvo: pick one of 25 niches and an idea, and get an 8–15 minute YouTube video with script, voiceover, scenes and thumbnails.",
+  },
   // The public pricing page (was /workspace/pricing: 301 in vercel.json).
   {
     path: "/pricing",
