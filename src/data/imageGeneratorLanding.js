@@ -116,7 +116,7 @@ export const IMAGE_PROMPTS = [
 ];
 
 export const IMAGE_FAQ = [
-  { q: "Is the AI image generator free?", a: "It is free to start. A free Zyvo account gets 5 image generations every 30 days, with no card needed. Paid plans add monthly credits for more images and for the video tools." },
+  { q: "Is the AI image generator free?", a: "It is free to start. A free Zyvo account gets 5 image generations every 30 days, with no card needed. Images saved on the free plan carry a small \"Made with Zyvo AI\" mark; paid plans save without it and add monthly credits for more images and for the video tools." },
   { q: "Can I use the images commercially?", a: "Yes. You can use the images you make in your own posts, thumbnails, ads and product listings. You are responsible for what you ask for: do not put real people or other companies' characters and logos in a prompt without the right to use them." },
   { q: "Which styles can I generate?", a: "Cinematic, Realistic, Anime, Cartoon, Comic, Clay, Cyberpunk, Low poly, Pixel art, Noir and Vintage portrait are built in as presets. You can also describe any other look in the prompt itself." },
   { q: "Which sizes can I choose?", a: "Square 1:1, landscape 16:9 and vertical 9:16, so one idea fits a feed post, a YouTube thumbnail and a TikTok or Reels cover." },

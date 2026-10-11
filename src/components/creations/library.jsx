@@ -1,10 +1,13 @@
 // src/pages/Library.jsx
 import { useEffect, useRef, useState } from "react";
+import { saveMediaToDevice } from "../../lib/downloadMedia";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import { Download, X, ChevronLeft, ChevronRight, Clapperboard, Images } from "lucide-react";
 import { FULL_VIDEO_TOOL_KEY } from "../../lib/jobs";
+
+const isVideoUrl = (url) => /\.(mp4|webm|mov)(\?|$)/i.test(String(url ?? ""));
 
 /* =====================================================
    HORIZONTAL ROW
@@ -340,13 +343,16 @@ export default function Library() {
             )}
 
             <div className="flex justify-end mt-4">
-              <a
-                href={activeItem.result_url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Download className="h-4 w-4 text-[#B7BBC6] hover:opacity-70" />
-              </a>
+              {/* An image is saved through the shared helper, so a free-plan account's file carries the mark (lib/freeWatermark.js). */}
+              {isVideoUrl(activeItem.result_url) ? (
+                <a href={activeItem.result_url} target="_blank" rel="noreferrer" aria-label="Open the video">
+                  <Download className="h-4 w-4 text-[#B7BBC6] hover:opacity-70" />
+                </a>
+              ) : (
+                <button type="button" aria-label="Save the image" onClick={() => saveMediaToDevice({ url: activeItem.result_url, filename: "zyvo-image.png", title: "My Zyvo image" }).catch(() => window.open(activeItem.result_url, "_blank"))}>
+                  <Download className="h-4 w-4 text-[#B7BBC6] hover:opacity-70" />
+                </button>
+              )}
             </div>
           </div>
         </div>

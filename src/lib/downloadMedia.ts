@@ -118,6 +118,12 @@ export async function saveMediaToDevice(options: {
     openMediaFallback(options.url);
     return { method: "opened" };
   }
+  // An image saved by an account on the free plan gets the small "Made with Zyvo AI" mark (lib/freeWatermark.js).
+  if (/^image\//.test(mediaMimeType(filename, blob.type))) {
+    const { markForFreePlan } = await import("./freeWatermark.js");
+    const typed = /^image\//.test(blob.type) ? blob : new Blob([blob], { type: mediaMimeType(filename, blob.type) });
+    blob = await markForFreePlan(typed);
+  }
   const type = mediaMimeType(filename, blob.type);
   filename = filenameForMime(filename, type);
   const typedBlob = blob.type === type ? blob : new Blob([blob], { type });

@@ -90,7 +90,7 @@ export function MadeWithZyvo() {
 }
 
 // Each line checked against the product (2026-10-01): every paid plan opens every
-// tool; exports carry no watermark; creations are saved per account; support is
+// tool; exports carry no watermark (free-plan images carry a small mark: lib/freeWatermark.js); creations are saved per account; support is
 // by email/contact form; plans cancel in the Stripe portal. Not listed: "Brand
 // creation" and "Viral Video/Script Builder" (not separate tools) and script
 // writing (built into some tools, not every one).
@@ -106,7 +106,7 @@ const INCLUDED = [
 export function EveryPlanIncludes() {
   return (
     <section aria-labelledby="included-title" className="rounded-[24px] border border-white/[0.07] bg-[#0F1112] p-5 sm:p-6">
-      <h2 id="included-title" className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Every plan includes</h2>
+      <h2 id="included-title" className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Every paid plan includes</h2>
       <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {INCLUDED.map((f) => (
           <li key={f} className="flex items-center gap-2 text-[13px] text-white/70"><Check className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" />{f}</li>

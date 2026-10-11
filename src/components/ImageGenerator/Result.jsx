@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { useAuth } from "../../context/AuthContext";
 import { saveMediaToDevice, shareMediaFile } from "../../lib/downloadMedia";
+import { FreeMarkNote, FreeMarkPreview, useFreePlanMark } from "./FreeMark.jsx";
 
 /* =============================== CONFIG =============================== */
 
@@ -145,6 +146,7 @@ function Viewer({ image, onClose, prevImage, nextImage, onPrev, onNext }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, prevImage, nextImage, onPrev, onNext]);
+  const freeMark = useFreePlanMark();
 
   return createPortal(
     <div
@@ -177,12 +179,15 @@ function Viewer({ image, onClose, prevImage, nextImage, onPrev, onNext }) {
             </div>
           )}
 
-          <img
-            key={image.id}
-            src={fullImageSrc}
-            className="max-w-full max-h-full rounded-2xl object-contain"
-            style={{ maxHeight: "calc(100dvh - 160px)" }}
-          />
+          <div className="relative min-h-0 max-w-full">
+            <img
+              key={image.id}
+              src={fullImageSrc}
+              className="max-w-full max-h-full rounded-2xl object-contain"
+              style={{ maxHeight: "calc(100dvh - 160px)" }}
+            />
+            {freeMark && <FreeMarkPreview />}
+          </div>
 
           {/* Right peek — faded neighbor, click to jump */}
           {nextImage && (
@@ -216,6 +221,7 @@ function Viewer({ image, onClose, prevImage, nextImage, onPrev, onNext }) {
 
       {/* ACTIONS */}
       <div className="flex-shrink-0 px-4 py-4 flex items-center justify-center flex-wrap gap-3">
+        {freeMark && <FreeMarkNote />}
 
         {/* DOWNLOAD */}
         <button
