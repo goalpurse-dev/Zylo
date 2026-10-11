@@ -26,6 +26,7 @@ export const PUBLIC_SEO_METADATA = {
     ...HOME_SEO,
     type: "website",
     shellGuard: true, // dist/index.html is also the fallback for app routes: see scripts/generateSeoHtml.js
+    inlineContent: true, // Home keeps its server HTML (hydrated); the app script is fetched after the first paint
   },
   // The image generator's product page (src/data/imageGeneratorLanding.js). Like the Long Form landing
   // pages: hero picture preloaded, display font without blocking, content hydrated in place.

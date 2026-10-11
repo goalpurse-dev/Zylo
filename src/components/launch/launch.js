@@ -24,8 +24,10 @@ export function youtubeId(url) {
   const m = String(url ?? "").match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/)([\w-]{11})/);
   return m ? m[1] : null;
 }
-export function showcaseThumb(video) {
-  if (video.thumbnail_url) return video.thumbnail_url;
+// A thumbnail stored in our own storage is asked for at display size (640 wide, a tenth of the
+// original's weight) through storage's image endpoint; any other address is used as it is.
+export function showcaseThumb(video, width = 640) {
+  if (video.thumbnail_url) return video.thumbnail_url.includes("/storage/v1/object/public/") ? `${video.thumbnail_url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/")}?width=${width}&quality=70` : video.thumbnail_url;
   const id = youtubeId(video.youtube_url);
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 }
