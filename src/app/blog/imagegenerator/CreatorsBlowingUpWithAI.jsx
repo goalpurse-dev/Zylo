@@ -14,18 +14,6 @@ const related = [
     date: "01.02.2026",
     slug: "/blog/creators-blowingup-with-ai",
   },
-  {
-    title: "How AI Product Photos Increase Conversion Rates",
-    description: "Learn how AI product photos improve conversion rates",
-    date: "08.01.2026",
-    slug: "/blog/AI-product-photos-increase-conversion-rates",
-  },
-  {
-    title: "How to Improve Ecommerce Visual Trust",
-    description: "Boost sales with better product images",
-    date: "05.01.2026",
-    slug: "/blog/how-to-improve-ecommerce-visual-trust",
-  },
 ];
 
 export default function CreatorsBlowingUpWithAI() {

@@ -15,18 +15,6 @@ const related = [
     date: "18.04.2026",
     slug: "/blog/ai-product-photo-generator",
   },
-  {
-    title: "AI Product Photography for Small Businesses",
-    description: "How small brands create professional product images with AI — without a studio.",
-    date: "20.01.2026",
-    slug: "/blog/ai-product-photography-for-small-businesses",
-  },
-  {
-    title: "AI vs Traditional Product Photography",
-    description: "A practical comparison for ecommerce brands choosing between AI and photoshoots.",
-    date: "15.01.2026",
-    slug: "/blog/ai-vs-traditional-product-photography",
-  },
 ];
 
 const TOC = [

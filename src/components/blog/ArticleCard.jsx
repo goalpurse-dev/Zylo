@@ -8,7 +8,6 @@ const CAT_PILL = {
   "Viral Ideas": "bg-purple-100 text-purple-700",
   "2AM Worlds": "bg-lime-100 text-lime-700",
   "Fruit Stories": "bg-fuchsia-100 text-fuchsia-700",
-  "Product Photos": "bg-emerald-100 text-emerald-700",
   Tutorials: "bg-amber-100 text-amber-700",
   "Growth & Analytics": "bg-violet-100 text-violet-700",
 };

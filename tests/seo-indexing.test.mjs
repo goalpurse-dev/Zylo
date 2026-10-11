@@ -79,8 +79,8 @@ test("blog posts only link to blog posts that exist; three addresses that never 
   const isPage = (slug) => app.includes(`path="${slug}"`) || redirects.some((r) => r.source === slug);
   for (const [dead, real] of [
     ["/blog/ai-image-generator-dark-moody-cinematic", "/blog/ai-image-generator-for-dark-visuals"],
-    ["/blog/clean-product-backgrounds", "/blog/best-ai-product-backgrounds-to-use"],
-    ["/blog/ai-product-photography-ecommerce", "/blog/best-ai-tools-for-ecommerce"],
+    ["/blog/clean-product-backgrounds", "/blog/ai-product-photo-generator"],
+    ["/blog/ai-product-photography-ecommerce", "/blog/zyvo-vs-midjourney-product-photos"],
   ]) {
     assert.deepEqual(redirects.find((r) => r.source === dead), { source: dead, destination: real, statusCode: 301 });
     assert.ok(sitemap.includes(`<loc>https://www.tryzyvo.com${real}</loc>`), `${real} is a real, indexable post`);

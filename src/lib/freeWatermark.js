@@ -26,7 +26,7 @@ export async function isFreePlanAccount() {
 
 /** Where and how big the mark is for an image of this size: one place, so the preview and the file agree. */
 export function freeMarkLayout(width, height) {
-  const fontSize = Math.round(Math.min(64, Math.max(13, width * 0.02)));
+  const fontSize = Math.round(Math.min(56, Math.max(12, width * 0.016)));
   const padX = Math.round(fontSize * 0.75);
   const padY = Math.round(fontSize * 0.42);
   const margin = Math.round(Math.max(8, Math.min(width, height) * 0.02));

@@ -16,18 +16,6 @@ const related = [
     date: "18.04.2026",
     slug: "/blog/zyvo-vs-midjourney-product-photos",
   },
-  {
-    title: "AI Background Removal for Product Photos",
-    description: "Remove backgrounds instantly and get clean, professional product images.",
-    date: "18.01.2026",
-    slug: "/blog/ai-background-removal-for-product-photos",
-  },
-  {
-    title: "Best AI Tools for Ecommerce Product Photography",
-    description: "Top AI tools to create high-quality ecommerce product images fast.",
-    date: "10.01.2026",
-    slug: "/blog/best-ai-tools-for-ecommerce",
-  },
 ];
 
 const TOC = [

@@ -41,7 +41,6 @@ const REQUIRED_PUBLIC_PAGES = [
   "/blog/category/viral-ideas",
   "/blog/category/2am-worlds",
   "/blog/category/fruit-stories",
-  "/blog/category/product-photos",
   "/blog/category/tutorials",
   "/blog/category/growth-analytics",
 ];

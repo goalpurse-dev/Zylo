@@ -69,11 +69,6 @@ export const PUBLIC_SEO_METADATA = {
     description: "Prompt formulas, character ideas, plot twists, and entertaining guides for Zyvo's AI Fruit Story maker.",
     type: "website",
   },
-  "/blog/category/product-photos": {
-    title: "AI Product Photography Guides | Zyvo Blog",
-    description: "Guides on creating AI product photos for ecommerce, Shopify, dropshipping, and social media.",
-    type: "website",
-  },
   "/blog/category/tutorials": {
     title: "Zyvo Tutorials & How-To Guides | Zyvo Blog",
     description: "Step-by-step tutorials for creating, generating, and publishing AI content with Zyvo.",
@@ -92,10 +87,6 @@ export const PUBLIC_SEO_METADATA = {
     "AI Image Generators vs Traditional Design",
     "Compare AI image generation with traditional design workflows, including speed, control, cost, and the best use cases for each approach.",
   ),
-  "/blog/ai-product-photography-high-end": blog(
-    "How to Create High-End AI Product Photography",
-    "Create polished product photography with AI using better prompts, lighting direction, composition, and brand-consistent visual choices.",
-  ),
   "/blog/ai-script-generator-viral-videos": blog(
     "AI Script Generator for Viral Videos",
     "Use an AI script generator to develop stronger hooks, tighter short-form pacing, and clearer calls to action for social videos.",
@@ -107,10 +98,6 @@ export const PUBLIC_SEO_METADATA = {
   "/blog/ai-visual-styles-most-engagement": blog(
     "Visual Styles That Get the Most Engagement (AI Edition)",
     "Discover AI visual styles that can help social posts stand out, including cinematic, 3D cartoon, aesthetic, anime, and minimalist approaches.",
-  ),
-  "/blog/ai-vs-traditional-product-photography": blog(
-    "AI vs Traditional Product Photography",
-    "Compare AI and traditional product photography across quality, speed, cost, consistency, and ecommerce production needs.",
   ),
   "/blog/best-ai-tools-faceless-tiktok-videos": blog(
     "Best AI Tools for Faceless TikTok Videos",
@@ -140,25 +127,9 @@ export const PUBLIC_SEO_METADATA = {
     "How to Make Viral AI TikTok Videos",
     "Plan and create AI TikTok videos with better hooks, visual consistency, pacing, and repeatable content formats.",
   ),
-  "/blog/why-product-photos-matter-for-ecommerce-success": blog(
-    "Why Product Photos Matter for Ecommerce Success",
-    "Your product image is your ad's landing page. See why product photo quality drives buyer trust and conversion more than the ad that got the click.",
-  ),
-  "/blog/how-visual-branding-separates-winners-from-losers": blog(
-    "How Visual Branding Separates Winners From Losers",
-    "Learn how visual consistency, product presentation, hierarchy, and brand recognition shape trust and ecommerce conversions.",
-  ),
   "/blog/one-click-publishing-playbook": blog(
     "The One-Click Publishing Playbook",
     "Use a practical cross-platform publishing workflow to prepare, schedule, and distribute short-form content more consistently.",
-  ),
-  "/blog/product-images-that-convert-full-guide": blog(
-    "Product Images That Convert: A Complete Guide",
-    "Learn which product image types reduce uncertainty, build visual trust, and help ecommerce shoppers make purchase decisions.",
-  ),
-  "/blog/product-photos-with-ai-for-shopify": blog(
-    "Product Photos With AI for Shopify",
-    "Learn how Shopify stores can create consistent AI product photos for product pages, launches, ads, and social content.",
   ),
   "/blog/schedule-auto-publish-ai-videos": blog(
     "How to Schedule and Auto-Publish AI Videos",
@@ -167,10 +138,6 @@ export const PUBLIC_SEO_METADATA = {
   "/blog/short-form-video-metrics-that-matter": blog(
     "Short-Form Video Metrics That Matter",
     "Understand the retention, watch-time, completion, replay, and engagement metrics that help creators evaluate short-form videos.",
-  ),
-  "/blog/studio-quality-product-photos": blog(
-    "How to Create Studio-Quality Product Photos",
-    "Create cleaner, more consistent product photos by controlling lighting, backgrounds, framing, shadows, and brand presentation.",
   ),
   "/blog/top-ai-image-generator-features-that-matter": blog(
     "Top AI Image Generator Features That Matter",

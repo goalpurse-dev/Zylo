@@ -22,12 +22,6 @@ const related = [
     date: "08.01.2026",
     slug: "/blog/viral-ai-images-tiktok",
   },
-  {
-    title: "How to Improve Ecommerce Visual Trust",
-    description: "Boost sales with better product images",
-    date: "05.01.2026",
-    slug: "/blog/how-to-improve-ecommerce-visual-trust",
-  },
 ];
 export default function ITestViralAIPrompts() {
   return (

@@ -47,12 +47,12 @@
     },
     {
       "source": "/blog/how-visual-branding-seperates-winners-from-losers",
-      "destination": "/blog/how-visual-branding-separates-winners-from-losers",
+      "destination": "/image-generator",
       "permanent": true
     },
     {
       "source": "/blog/product-images-that-conver-full-guide",
-      "destination": "/blog/product-images-that-convert-full-guide",
+      "destination": "/blog/ai-product-photo-generator",
       "permanent": true
     },
     {
@@ -72,12 +72,12 @@
     },
     {
       "source": "/blog/clean-product-backgrounds",
-      "destination": "/blog/best-ai-product-backgrounds-to-use",
+      "destination": "/blog/ai-product-photo-generator",
       "statusCode": 301
     },
     {
       "source": "/blog/ai-product-photography-ecommerce",
-      "destination": "/blog/best-ai-tools-for-ecommerce",
+      "destination": "/blog/zyvo-vs-midjourney-product-photos",
       "statusCode": 301
     },
     {
@@ -243,6 +243,176 @@
     {
       "source": "/blog/fruit-story-vs-footballer-nationality-swap",
       "destination": "/blog/fruit-story-vs-kit-swap",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/product-photos-with-ai-for-shopify",
+      "destination": "/blog/ai-tools-every-shopify-store-owner-should-know",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/product-photos-for-shopify-store",
+      "destination": "/blog/ai-tools-every-shopify-store-owner-should-know",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/AI-product-photos-increase-conversion-rates",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/best-ai-tools-for-ecommerce",
+      "destination": "/blog/zyvo-vs-midjourney-product-photos",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/shopify-product-photo-best-practices",
+      "destination": "/blog/ai-tools-every-shopify-store-owner-should-know",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-vs-traditional-product-photography",
+      "destination": "/blog/zyvo-vs-midjourney-product-photos",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/why-product-photos-matter-for-ecommerce-success",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-to-improve-ecommerce-visual-trust",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/product-photography-mistakes-ecommerce-brands-make",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-visual-branding-impacts-online-sales",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-background-removal-for-product-photos",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-to-scale-ecommerce-content-creation-with-ai",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/converting-product-images-for-shopify-stores",
+      "destination": "/blog/ai-tools-every-shopify-store-owner-should-know",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-product-photography-for-small-businesses",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-better-images-reduce-bounce-rate",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ecommerce-visual-consistency-explained",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-productphotos-for-dropshipping",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/product-images-that-convert-full-guide",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/studio-quality-product-photos",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/why-clean-product-photos-build-trust",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/visual-optimization-for-mobile-ecommerce",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-ai-helps-ecommerce-brands-scale-faster",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/product-photography-trends-for-ecommerce",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-product-photos-for-fashion-stores",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-product-photos-for-beaty-and-skincare",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-visual-branding-separates-winners-from-losers",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-product-photography-high-end",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/best-ai-product-backgrounds-to-use",
+      "destination": "/blog/ai-product-photo-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-visual-quality-impacts-seo",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/how-to-launch-products-faster-with-ai",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/category/product-photos",
+      "destination": "/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/workspace/myproduct",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/workspace/productphoto",
+      "destination": "/image-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/workspace/productphotos",
+      "destination": "/image-generator",
       "statusCode": 301
     }
   ],

@@ -7,7 +7,6 @@ const TOPIC_ICONS = {
   "Viral Ideas": "🚀",
   "2AM Worlds": "🌙",
   "Fruit Stories": "🍓",
-  "Product Photos": "📦",
   Tutorials: "📘",
   "Growth & Analytics": "📈",
 };

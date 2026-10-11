@@ -78,36 +78,7 @@ const BlogIndex = lazy(() => import("./app/blog/BlogIndex"));
 const BlogCategoryPage = lazy(() => import("./app/blog/BlogCategoryPage"));
 
 {/* Product Photo Blogs */}
-const ProductPhotosShopify = lazy(() => import("./app/blog/ProductPhotosShopify"));
-const ProductPhotosForShopify = lazy(() => import("./app/blog/productphotos/Forshopifystores.jsx"));
-const AiIncreaseRates = lazy(() => import("./app/blog/productphotos/AIroductIncreaseRates.jsx"));
-const BestAiToolsEcommerce = lazy(() => import("./app/blog/productphotos/BestAiToolsEcommerce.jsx"));
-const ShopifyProductPhotoBestPractices = lazy(() => import("./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx"));
-const AiVsTraditional = lazy(() => import("./app/blog/productphotos/ai-vs-traditional-product-photography.jsx"));
-const WhyProductPhotosMatter = lazy(() => import("./app/blog/productphotos/WhyProductPhotosMatter.jsx"));
-const BestAiProductBgToUse = lazy(() => import("./app/blog/productphotos/BestAiProductBgToUse.jsx"));
-const HowImproveEcommerceVisualTrust = lazy(() => import("./app/blog/productphotos/HowImproveEcommerceVisualTrust.jsx"));
-const ProductPhotographyMistakesEcommerce = lazy(() => import("./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx"));
-const HowVisualBrandingImpactsOnlineSales = lazy(() => import("./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx"));
-const AIBackgroundRemovalForProductPhotos = lazy(() => import("./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx"));
-const ScaleEcommerceContent = lazy(() => import("./app/blog/productphotos/ScaleEcommerceContent.jsx"));
-const ConvertingProductImagesForShopify = lazy(() => import("./app/blog/productphotos/ConvertingProductImagesForShopify.jsx"));
-const AIProductPhotoForSmallBusiness = lazy(() => import("./app/blog/productphotos/AIProductPhotoForSmallBusiness.jsx"));
-const HowBetterImagesReduceBounceRate = lazy(() => import("./app/blog/productphotos/HowBetterImagesReduceBounceRate.jsx"));
-const EcommerceVisualConsistencyExplained = lazy(() => import("./app/blog/productphotos/EcommerceVisualConsistencyExplained.jsx"));
-const AiProductPhotosForDropshipping = lazy(() => import("./app/blog/productphotos/AiProductPhotosForDropshipping.jsx"));
-const HowVisualQualityImpactsSeo = lazy(() => import("./app/blog/productphotos/HowVisualQualityImpactsSeo.jsx"));
-const ProductImagesThatConverGuide = lazy(() => import("./app/blog/productphotos/ProductImagesThatConvertGuide.jsx"));
 const AiToolsEveryShopifyStoreOwnerKnow = lazy(() => import("./app/blog/productphotos/Ai-Tools-Every-Shopify-Store-Owner-Know.jsx"));
-const HowToLaunchProductsFasterWithAi = lazy(() => import("./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx"));
-const StudioQualityProductPhotos = lazy(() => import("./app/blog/productphotos/StudioQualityProductPhotos.jsx"));
-const WhyCleanProductPhotoBuildTrust = lazy(() => import("./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx"));
-const VisualOptimizationForMobielEcommerce = lazy(() => import("./app/blog/productphotos/VisualOptimizationForMobileEcommerce.jsx"));
-const HowAiHelpsEcommerceBrandsScaleFaster = lazy(() => import("./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx"));
-const ProductPhotographyTrendsForEcommerce = lazy(() => import("./app/blog/productphotos/ProductPhotographyTrendsForEcommerce.jsx"));
-const AIProductPhotosForFashionStores = lazy(() => import("./app/blog/productphotos/AIProductPhotosForFashionStores.jsx"));
-const AIProductPhotosForBeatyAndSkincare = lazy(() => import("./app/blog/productphotos/AIProductPhotosForBeautyAndSkincare.jsx"));
-const HowVisualBrandingSeperatesWinnersFromLosers = lazy(() => import("./app/blog/productphotos/HowVisualBrandingSeparatesWinnersFromLosers.jsx"));
 const ViralAiImagesTiktok = lazy(() => import("./app/blog/imagegenerator/ViralAiImagesTikTok.jsx"));
 const CreatorsBlowingUpWithAi = lazy(() => import("./app/blog/imagegenerator/CreatorsBlowingUpWithAI.jsx"));
 const ITestViralPromts = lazy(() => import("./app/blog/imagegenerator/ITestViralAIPrompts.jsx"));
@@ -136,7 +107,6 @@ const HowtoGenerateAestheticImagesWithAI = lazy(() => import("./app/blog/imagege
 const WhichAIImageStyleWorksBest = lazy(() => import("./app/blog/imagegenerator/whichaiimagestyleworksbest.jsx"));
 const LuxuryAIImages = lazy(() => import("./app/blog/imagegenerator/how-to-create-luxury-ai-images.jsx"));
 const DarkMoodyCinematicImages = lazy(() => import("./app/blog/imagegenerator/ai-dark-moody-cinematic-images.jsx"));
-const AIProductPhotography = lazy(() => import("./app/blog/imagegenerator/ai-product-photography-high-end.jsx"));
 const VisualStylesAI = lazy(() => import("./app/blog/imagegenerator/ai-visual-styles-most-engagement.jsx"));
 const HowToGoViralWithAI = lazy(() => import("./app/blog/imagegenerator/HowToGoViralWithAI.jsx"));
 const AIVideoNewViralCurrency = lazy(() => import("./app/blog/imagegenerator/AIVideoNewViralCurrency.jsx"));
@@ -600,42 +570,12 @@ return (
         <Route path="/blog/category/viral-ideas" element={<BlogCategoryPage category="Viral Ideas" />} />
         <Route path="/blog/category/2am-worlds" element={<BlogCategoryPage category="2AM Worlds" />} />
         <Route path="/blog/category/fruit-stories" element={<BlogCategoryPage category="Fruit Stories" />} />
-        <Route path="/blog/category/product-photos" element={<BlogCategoryPage category="Product Photos" />} />
         <Route path="/blog/category/tutorials" element={<BlogCategoryPage category="Tutorials" />} />
         <Route path="/blog/category/growth-analytics" element={<BlogCategoryPage category="Growth & Analytics" />} />
 
-        <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />
-        <Route path="/blog/product-photos-for-shopify-store" element={<ProductPhotosForShopify />} />
-        <Route path="/blog/AI-product-photos-increase-conversion-rates" element={<AiIncreaseRates />} />
-        <Route path="/blog/best-ai-tools-for-ecommerce" element={<BestAiToolsEcommerce />} />
-        <Route path="/blog/shopify-product-photo-best-practices" element={<ShopifyProductPhotoBestPractices />} />
-        <Route path="/blog/ai-vs-traditional-product-photography" element={<AiVsTraditional />} />
-        <Route path="/blog/why-product-photos-matter-for-ecommerce-success" element={<WhyProductPhotosMatter />} />
-        <Route path="/blog/best-ai-product-backgrounds-to-use" element={<BestAiProductBgToUse />} /> 
-        <Route path="/blog/how-to-improve-ecommerce-visual-trust" element={<HowImproveEcommerceVisualTrust />} />
-        <Route path="/blog/product-photography-mistakes-ecommerce-brands-make" element={<ProductPhotographyMistakesEcommerce />} />
-        <Route path="/blog/how-visual-branding-impacts-online-sales" element={<HowVisualBrandingImpactsOnlineSales />} />
-        <Route path="/blog/ai-background-removal-for-product-photos" element={<AIBackgroundRemovalForProductPhotos />} />
-        <Route path="/blog/how-to-scale-ecommerce-content-creation-with-ai" element={<ScaleEcommerceContent />} />
-        <Route path="/blog/converting-product-images-for-shopify-stores" element={<ConvertingProductImagesForShopify />} />
-        <Route path="/blog/ai-product-photography-for-small-businesses" element={<AIProductPhotoForSmallBusiness />} />
-        <Route path="/blog/how-better-images-reduce-bounce-rate" element={<HowBetterImagesReduceBounceRate />} />
-        <Route path="/blog/ecommerce-visual-consistency-explained" element={<EcommerceVisualConsistencyExplained />} />
-        <Route path="/blog/ai-productphotos-for-dropshipping" element={<AiProductPhotosForDropshipping />} />
-        <Route path="/blog/how-visual-quality-impacts-seo" element={<HowVisualQualityImpactsSeo />} />
-        <Route path="/blog/product-images-that-conver-full-guide" element={<Navigate to="/blog/product-images-that-convert-full-guide" replace />} />
-        <Route path="/blog/product-images-that-convert-full-guide" element={<ProductImagesThatConverGuide/>} />
+        <Route path="/blog/product-images-that-conver-full-guide" element={<Navigate to="/blog/ai-product-photo-generator" replace />} />
         <Route path="/blog/ai-tools-every-shopify-store-owner-should-know" element={<AiToolsEveryShopifyStoreOwnerKnow/>} />
-        <Route path="/blog/how-to-launch-products-faster-with-ai" element={<HowToLaunchProductsFasterWithAi/>} />
-        <Route path="/blog/studio-quality-product-photos" element={<StudioQualityProductPhotos/>} />
-        <Route path="/blog/why-clean-product-photos-build-trust" element={<WhyCleanProductPhotoBuildTrust/>} />
-        <Route path="/blog/visual-optimization-for-mobile-ecommerce" element={<VisualOptimizationForMobielEcommerce/>} />
-        <Route path="/blog/how-ai-helps-ecommerce-brands-scale-faster" element={<HowAiHelpsEcommerceBrandsScaleFaster/>} />
-        <Route path="/blog/product-photography-trends-for-ecommerce" element={<ProductPhotographyTrendsForEcommerce/>} />
-        <Route path="/blog/ai-product-photos-for-fashion-stores" element={<AIProductPhotosForFashionStores/>} />
-        <Route path="/blog/ai-product-photos-for-beaty-and-skincare" element={<AIProductPhotosForBeatyAndSkincare/>} />
-        <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<Navigate to="/blog/how-visual-branding-separates-winners-from-losers" replace />} />
-        <Route path="/blog/how-visual-branding-separates-winners-from-losers" element={<HowVisualBrandingSeperatesWinnersFromLosers/>} />
+        <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<Navigate to="/image-generator" replace />} />
         <Route path="/blog/viral-ai-images-tiktok" element={<ViralAiImagesTiktok/>} />
         <Route path="/blog/creators-blowingup-with-ai" element={<CreatorsBlowingUpWithAi/>} />
         <Route path="/blog/i-test-viral-prompts" element={<ITestViralPromts/>} />
@@ -664,7 +604,6 @@ return (
         <Route path="/blog/which-ai-image-style-works-best" element={<WhichAIImageStyleWorksBest/>} />
         <Route path="/blog/how-to-create-luxury-ai-images" element={<LuxuryAIImages/>} />
         <Route path="/blog/ai-image-generator-for-dark-visuals" element={<DarkMoodyCinematicImages/>} />
-        <Route path="/blog/ai-product-photography-high-end" element={<AIProductPhotography/>} />
         <Route path="/blog/ai-visual-styles-most-engagement" element={<VisualStylesAI/>} />
         <Route path="/blog/ai-visual-styles-most-engagementd" element={<Navigate to="/blog/ai-visual-styles-most-engagement" replace />} />
         <Route path="/blog/how-to-go-viral-with-ai" element={<HowToGoViralWithAI/>} />
