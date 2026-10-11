@@ -49,6 +49,9 @@ export default function Footer() {
               <Link to="/ai-fruit-story-maker" className="text-[12px] hover:underline">
                 AI Fruit Story
               </Link>
+              <Link to="/blocky-story-video-maker" className="text-[12px] hover:underline">
+                Blocky Stories
+              </Link>
               <Link to="/face-asmr-maker" className="text-[12px] hover:underline">
                 Face ASMR
               </Link>
@@ -146,6 +149,9 @@ export default function Footer() {
               </Link>
               <Link to="/ai-fruit-story-maker" className="hover:underline">
                 AI Fruit Story
+              </Link>
+              <Link to="/blocky-story-video-maker" className="hover:underline">
+                Blocky Stories
               </Link>
               <Link to="/face-asmr-maker" className="hover:underline">
                 Face ASMR

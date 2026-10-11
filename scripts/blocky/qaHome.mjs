@@ -17,6 +17,8 @@ const { chromium } = require("playwright");
 const [outDir, base = "http://localhost:5173"] = process.argv.slice(2);
 fs.mkdirSync(outDir, { recursive: true });
 const BLOCKY = "/workspace/blocky-stories";
+// What Home's Blocky links say for crawlers: the tool's public page (ToolLink). A click still opens the tool.
+const LANDING = "/blocky-story-video-maker";
 const ref = new URL(SUPABASE_URL).hostname.split(".")[0];
 const live = (await admin().from("global_feature_flags").select("enabled").eq("key", "blocky_v1").maybeSingle()).data?.enabled === true;
 const owner = await userSession();
@@ -54,12 +56,12 @@ async function clear(p) {
   await p.getByRole("dialog").getByRole("button", { name: "Close" }).click({ timeout: 6000 }).catch(() => {});
   await p.waitForTimeout(500);
 }
-const card = (p) => p.locator(`a[href="${BLOCKY}"]:has(img[alt="Blocky Stories"]) >> visible=true`);
+const card = (p) => p.locator(`a[href="${LANDING}"]:has(img[alt="Blocky Stories"]) >> visible=true`);
 /** What the page has of Blocky right now. */
 const seen = async (p) => ({
   suiteCards: await card(p).count(),
   section: await p.locator('[data-testid="featured-blocky"]').count(),
-  anyLink: await p.locator(`a[href="${BLOCKY}"] >> visible=true`).count(),
+  anyLink: (await p.locator(`a[href="${BLOCKY}"] >> visible=true`).count()) + (await p.locator(`a[href="${LANDING}"] >> visible=true`).count()),
   wordOnPage: (await p.locator("#root").innerText()).includes("Blocky Stories"),
 });
 const signedOutView = async (p) => {
@@ -97,7 +99,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
         title: title.textContent.trim(), cartoonTitle: c.querySelector("h2").textContent.trim(),
         aboveCartoon: r(b).bottom <= r(c).top + 1, nothingBetween: b.nextElementSibling === c,
         titleLeftOfButton: r(title).left < r(cta).left, sameLine: Math.abs(r(title).bottom - r(cta).bottom) < 40,
-        ctaHref: cta.getAttribute("href"), tiles: tiles.length, tileLinks: tiles.every((a) => a.getAttribute("href") === "/workspace/blocky-stories"),
+        ctaHref: cta.getAttribute("href"), tiles: tiles.length, tileLinks: tiles.every((a) => a.getAttribute("href") === "/blocky-story-video-maker"),
         tileShape: tiles.map((a) => Math.round((r(a).height / r(a).width) * 100) / 100),
         sameTileSizeAsCartoon: Math.abs(r(tiles[0]).width - r(c.querySelector('a[aria-label^="Try the"]')).width) < 1,
         videos: videos.length, muted: videos.every((v) => v.muted), loop: videos.every((v) => v.loop), playing: videos.filter((v) => !v.paused && v.readyState >= 2).length,
@@ -142,7 +144,7 @@ for (const name of ["1440", "390"]) {
   checks.push(
     [`${name}, switch on: Blocky Stories leads the "short form suite" row, with its picture, its name and NEW`, on.suiteCards >= 1 && on.suiteCardBox.picture && on.suiteCardBox.name === "Blocky Stories" && on.suiteCardBox.labelShown && on.suiteCardBox.isNew && on.suiteCardBox.inside && on.suiteLeads],
     [`${name}, switch on: its own section sits directly above Cartoon Drive By`, on.section === 1 && s.title === "Blocky Stories" && s.cartoonTitle === "Cartoon Drive By" && s.aboveCartoon && s.nothingBetween],
-    [`${name}, switch on: the section is built like Cartoon Drive By (title left, Try Template right, a row of tall clips)`, s.titleLeftOfButton && s.sameLine && s.ctaHref === BLOCKY && s.tiles === 4 && s.tileLinks && s.tileShape.every((x) => Math.abs(x - 16 / 9) < 0.03) && s.sameTileSizeAsCartoon],
+    [`${name}, switch on: the section is built like Cartoon Drive By (title left, Try Template right, a row of tall clips)`, s.titleLeftOfButton && s.sameLine && s.ctaHref === LANDING && s.tiles === 4 && s.tileLinks && s.tileShape.every((x) => Math.abs(x - 16 / 9) < 0.03) && s.sameTileSizeAsCartoon],
     [`${name}, switch on: four clips; the ones on screen play, without sound, looping`, s.tiles === 4 && s.posters >= 4 && s.videos >= (name === "390" ? 2 : 4) && s.muted && s.loop && s.playing === s.videos],
     [`${name}, switch on, signed out: Try Template, a clip and the card all land on the signed-out Blocky view`, lands(on.fromTryTemplate) && lands(on.fromClip) && lands(on.fromSuiteCard)],
     [`${name}, switch on: no sideways scroll, no page errors`, !on.sideScroll && on.pageErrors.length === 0],

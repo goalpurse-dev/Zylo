@@ -9,7 +9,7 @@ import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { BLOCKY_TEMPLATE, HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
-import { BLOCKY_STORIES_FLAG } from "../../data/blockyStories";
+import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 
@@ -17,7 +17,10 @@ export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
   // Blocky Stories is on Home only once it is switched on for EVERYONE (the global blocky_v1 switch). No
   // user is passed on purpose: an account's own switch doesn't count here, so nothing shows before launch.
-  const blockyLive = useFeatureFlag(BLOCKY_STORIES_FLAG, null).enabled;
+  // Until the switch has been read (the build's HTML, and a first visit's first paint) Home shows what is
+  // launched, so the server HTML and the first browser render are the same and crawlers get the links.
+  const blockySwitch = useFeatureFlag(BLOCKY_STORIES_FLAG, null);
+  const blockyLive = blockySwitch.loading ? BLOCKY_STORIES_LAUNCHED : blockySwitch.enabled;
 
   useEffect(() => {
     fetchShowcase("home").then(setLongFormCreations);

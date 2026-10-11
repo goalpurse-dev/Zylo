@@ -11,6 +11,8 @@ import KeyButton from "../ui/zyvo/KeyButton";
 import { FOCUS, cx } from "../ui/zyvo/styles";
 import { DISPLAY_FONT, isCurrentPlan, subscribe } from "./PlanCards";
 import { LoadError, Num, usePricingData } from "./PricingData";
+import useBlockyPrices from "../viral-tools/blocky-stories/pricing/useBlockyPrices";
+import { videosPerMonth } from "../viral-tools/blocky-stories/pricing/blockyEstimates";
 
 const Dash = () => <span className="text-white/25" aria-label="Not included">—</span>;
 const Yes = () => <Check className="mx-auto h-4 w-4 text-lime-300" aria-label="Included" />;
@@ -138,6 +140,12 @@ function useCompareGroups() {
     const unit = costs.costs?.finder?.[fruit.key]?.[tier];
     return <Num status={costs.status} value={unit ? Math.floor(PRICING_PLANS[id].credits / unit) : null} />;
   };
+  // Blocky Stories: 30-second stories a month on each tier the plan has, from the live price rows.
+  const blocky = useBlockyPrices("9:16");
+  const blockyTier = (tier) => (id) => {
+    if (id === "free" || !PRICING_PLANS[id].modelAccess.includes(tier.toUpperCase())) return <Dash />;
+    return <Num status={blocky.status} value={videosPerMonth(PRICING_PLANS[id].credits, 30, tier, blocky.prices)} />;
+  };
   const tierAccess = (tier) => (id) => (id !== "free" && PRICING_PLANS[id].modelAccess.includes(tier) ? <Yes /> : <No />);
   const paid = (id) => (id === "free" ? <No /> : <Yes />);
   const perMonth = (id) => {
@@ -155,6 +163,11 @@ function useCompareGroups() {
       { label: `V2 · ${sec}-second videos / mo`, cell: count(fruit.headline.key, fruit.headline.idx) },
       { label: `V3 · ${sec}-second videos / mo`, cell: fruitTier("v3") },
       { label: `V4 · ${sec}-second videos / mo`, cell: fruitTier("v4") },
+    ] },
+    { title: "Blocky Stories", href: "/blocky-story-video-maker", rows: [
+      { label: "V2 · 30-second stories / mo", cell: blockyTier("v2") },
+      { label: "V3 · 30-second stories / mo", cell: blockyTier("v3") },
+      { label: "V4 · 30-second stories / mo", cell: blockyTier("v4") },
     ] },
     { title: "Long Form", rows: [
       { label: `Long Form V2 · ${LONG_FORM_HEADLINE_MINUTES}-min videos / mo`, cell: lfCell("v2") },

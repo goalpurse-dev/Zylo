@@ -205,6 +205,7 @@ import { clearRouteReloadAttempt, lazyRoute } from "./lib/lazyRouteRecovery.js";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const ImageGeneratorLanding = lazy(() => import("./pages/landing/ImageGeneratorLanding.jsx"));
+const BlockyStoriesLanding = lazy(() => import("./pages/landing/BlockyStoriesLanding.jsx"));
 const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
 const FootballerNationalitySwapLanding = lazy(() => import("./pages/landing/FootballerNationalitySwapLanding.jsx"));
 const BehindTheScenesLanding = lazy(() => import("./pages/landing/BehindTheScenesLanding.jsx"));
@@ -700,6 +701,7 @@ return (
 
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/image-generator" element={<ImageGeneratorLanding />} />
+         <Route path="/blocky-story-video-maker" element={<BlockyStoriesLanding />} />
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
          <Route path="/kit-swap-ai" element={<FootballerNationalitySwapLanding />} />
          <Route path="/behind-the-scenes-video-maker" element={<BehindTheScenesLanding />} />

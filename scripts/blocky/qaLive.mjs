@@ -21,6 +21,8 @@ const pre = args.includes("--pre");
 const [outDir, base = "https://www.tryzyvo.com"] = args.filter((a) => a !== "--pre");
 fs.mkdirSync(outDir, { recursive: true });
 const BLOCKY = "/workspace/blocky-stories";
+// What Home's Blocky links say for crawlers: the tool's public page (ToolLink). A click still opens the tool.
+const LANDING = "/blocky-story-video-maker";
 const ref = new URL(SUPABASE_URL).hostname.split(".")[0];
 const db = admin();
 const results = [];
@@ -64,7 +66,7 @@ const SHOWCASE = 'section[aria-label="Videos made with Blocky Stories"]';
 const SIGNUP = "Free to join. Your Blocky story is a few minutes away.";
 const UPGRADE = "Upgrade your plan to continue";
 const homeHas = async (p) => ({
-  card: await p.locator(`a[href="${BLOCKY}"]:has(img[alt="Blocky Stories"]) >> visible=true`).count(),
+  card: await p.locator(`a[href="${LANDING}"]:has(img[alt="Blocky Stories"]) >> visible=true`).count(),
   section: await p.locator('[data-testid="featured-blocky"]').count(),
   cartoon: await p.locator('[data-testid="featured-template"]').count(),
 });
@@ -81,7 +83,7 @@ try {
       const h = await homeHas(p);
       if (pre) ok(`${w}, signed out, before launch: nothing of Blocky on Home`, h.card === 0 && h.section === 0);
       else {
-        await p.locator(`a[href="${BLOCKY}"]:has(img[alt="Blocky Stories"]) >> visible=true`).first().scrollIntoViewIfNeeded();
+        await p.locator(`a[href="${LANDING}"]:has(img[alt="Blocky Stories"]) >> visible=true`).first().scrollIntoViewIfNeeded();
         await v.shot(`live-home-card-${w}`);
         const section = p.locator('[data-testid="featured-blocky"]');
         await section.scrollIntoViewIfNeeded();

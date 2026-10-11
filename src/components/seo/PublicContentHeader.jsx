@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import Logo from "../../assets/Logo-96.webp"; // 96 px copy of Logo.png: shown at 28–32 px
-import { CREATE_TOOLS } from "../workspace/CreateMenu.jsx";
+import { CREATE_TOOLS, FLAGGED_CREATE_TOOLS } from "../workspace/CreateMenu.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import AuthModal from "../AuthModal.jsx";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
@@ -24,10 +24,12 @@ export default function PublicContentHeader({ templateId, slug }) {
   const wasMobileOpen = useRef(false);
 
   // Long Form landing pages: "Create" opens Long Form, and the buttons use the lime accent of that page.
+  // Blocky Stories' page is lime too, and its "Create" opens Blocky Stories.
   const longForm = templateId === "long-form";
-  const createPath = longForm ? "/long-form" : CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/";
-  const primaryCls = longForm ? "bg-lime-300 text-[#11150D]" : "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white";
-  const quietCls = longForm ? "bg-white/[0.08] text-white hover:bg-white/[0.14]" : "bg-[#2A1660] text-[#B794FF] hover:bg-[#331B78]";
+  const lime = longForm || templateId === "blocky-stories";
+  const createPath = longForm ? "/long-form" : [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS].find((tool) => tool.id === templateId)?.path || "/";
+  const primaryCls = lime ? "bg-lime-300 text-[#11150D]" : "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white";
+  const quietCls = lime ? "bg-white/[0.08] text-white hover:bg-white/[0.14]" : "bg-[#2A1660] text-[#B794FF] hover:bg-[#331B78]";
 
   const navItems = [
     { label: "Home", to: "/" },

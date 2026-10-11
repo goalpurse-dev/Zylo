@@ -94,7 +94,14 @@ test("the smoke check compares the same list with the live rows", () => {
 
 test("nothing outside Blocky imports pricing.js, and it imports nothing", () => {
   assert.doesNotMatch(read("supabase/functions/_shared/blocky/pricing.js"), /^\s*import\s|\bimport\(|\brequire\(/m);
-  const blocky = (f) => /^supabase\/functions\/(_shared\/blocky|blocky-[a-z-]+)\//.test(f) || f.startsWith("src/components/viral-tools/blocky-stories/") || /^render-worker\/src\/blocky/.test(f);
+  // Blocky's own files: the engine, the tool's page, the final-video code, and since 2026-10-11 its public
+  // landing page (its content file and its page).
+  const LANDING = ["src/data/blockyStoryLanding.js", "src/pages/landing/BlockyStoriesLanding.jsx"];
+  // The one page outside Blocky that shows Blocky's numbers, at the owner's request (2026-10-11): the pricing
+  // page's compare table, which counts 30-second stories per plan from the live quotes, as it does for Fruit.
+  const PRICING_PAGE = ["src/components/pricing/OutputTables.jsx"];
+  const blocky = (f) => /^supabase\/functions\/(_shared\/blocky|blocky-[a-z-]+)\//.test(f) || f.startsWith("src/components/viral-tools/blocky-stories/") || /^render-worker\/src\/blocky/.test(f) || LANDING.includes(f) || PRICING_PAGE.includes(f);
+  for (const f of [...LANDING, ...PRICING_PAGE]) assert.match(read(f), /blocky\/pricing|blocky-stories\/pricing/, `${f} is listed because it reads Blocky's prices`);
   const others = ["supabase/functions", "src", "render-worker/src", "api"].flatMap(filesUnder).filter((f) => /\.(js|jsx|mjs|ts|tsx)$/.test(f) && !blocky(f));
   assert.ok(others.length > 300, `the scan read the rest of the code (${others.length} files)`);
   const fruit = others.filter((f) => /fruit/i.test(f));

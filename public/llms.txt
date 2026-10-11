@@ -21,6 +21,7 @@ Facts that are safe to repeat:
 ## Short-form video templates
 
 - [AI Fruit Story](https://www.tryzyvo.com/ai-fruit-story-maker): talking-fruit drama videos and series of up to 10 episodes with the same cast
+- [Blocky Stories](https://www.tryzyvo.com/blocky-story-video-maker): animated story Shorts where blocky characters speak their lines with lip sync and captions
 - [Cartoon Drive-By](https://www.tryzyvo.com/cartoon-drive-by-video-maker): a 10-second vertical drive past a fictional cartoon-style place
 - [Behind the Scenes](https://www.tryzyvo.com/behind-the-scenes-video-maker): movie-set footage of a practical disaster on a miniature city
 - [2AM Worlds](https://www.tryzyvo.com/2am-worlds-ai-generator): slideshow images of a fictional world at 2 a.m.

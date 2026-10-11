@@ -6,6 +6,7 @@ import { BLOG_DATES } from "./blogDates.js";
 import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
 import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
 import { IMAGE_GENERATOR_PATH, imageGeneratorStructuredData } from "./imageGeneratorLanding.js";
+import { BLOCKY_LANDING_PATH, blockyStructuredData } from "./blockyStoryLanding.js";
 
 const faqPage = (faq) => ({
   "@type": "FAQPage",
@@ -62,6 +63,7 @@ export function structuredDataFor(pathname, givenMetadata, canonical) {
   if (stickmanPage) return stickmanStructuredData(stickmanPage, canonical, SITE_URL);
   // The image generator's page too (the tool with its real prices, FAQ, breadcrumb).
   if (pathname === IMAGE_GENERATOR_PATH) return imageGeneratorStructuredData(canonical, SITE_URL);
+  if (pathname === BLOCKY_LANDING_PATH) return blockyStructuredData(canonical, SITE_URL);
 
   // Homepage gets exactly one brand-identity graph (Organization + WebSite)
   // and nothing else — no BreadcrumbList/WebPage duplicate, no second

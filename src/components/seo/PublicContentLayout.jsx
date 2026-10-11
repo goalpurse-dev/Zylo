@@ -15,6 +15,7 @@ const TEMPLATE_PREFIXES = [
   { prefixes: ["/kit-swap-ai", "/blog/footballer-nationality-swap"], id: "footballer-nationality-swap" },
   { prefixes: ["/behind-the-scenes-video-maker", "/blog/behind-the-scenes"], id: "behind-the-scenes" },
   { prefixes: ["/ai-stickman-video-generator"], id: "long-form" },
+  { prefixes: ["/blocky-story-video-maker"], id: "blocky-stories" },
   { prefixes: ["/2am-", "/blog/what-is-the-2am", "/blog/best-2am", "/blog/how-to-create-2am", "/blog/ai-world", "/blog/how-to-make-ai-nostalgia"], id: "two-am" },
 ];
 

@@ -691,6 +691,24 @@ Decisions of 2026-10-08 (after the first real story):
     own form (ideas work, the upgrade popup after that, refused by the server too, no
     /admin/ops), and Fruit, Long Form and Blocky opening for the owner. Privacy 32 of 32, now
     also with a paying second account. Live functions equal main.
+105. THE PUBLIC PAGE (owner, 2026-10-11): `/blocky-story-video-maker`, built like
+    /image-generator and the Long Form landing page (the same headings font, colours and
+    section rhythm). Content in `src/data/blockyStoryLanding.js`, page in
+    `src/pages/landing/BlockyStoriesLanding.jsx`. Title "AI Story Video Maker – Animated
+    Talking Shorts | Zyvo" (53), H1 "Make animated story Shorts with AI". Sections: hero with
+    one whole story playing without sound, four clean example clips, what it is and five
+    steps, seven features, who it is for, plans (which tiers, and about how many 30-second
+    stories: computed from the price rows, live in the browser), a tutorial slot that is
+    hidden until `BLOCKY_TUTORIAL` is set, eight questions, other tools, a final button.
+    TRADEMARK RULES: the genre's name is written in ONE constant (`GENRE`); it is never in
+    the URL, title, H1, product name, a file name or an alt text; it shows twice as
+    "…-style", in the "is this affiliated" question and in the notice above the footer;
+    `GENRE = null` removes all of it. Structured data: SoftwareApplication with the plans'
+    prices, five VideoObjects, FAQPage, BreadcrumbList. Links to it: Home's Blocky card and
+    section (their address for crawlers, through `publicLanding`; a click still opens the
+    tool), a Blocky group on the pricing page, llms.txt, the sitemap. Home's build-time HTML
+    now includes Blocky (`BLOCKY_STORIES_LAUNCHED`), since crawlers read that HTML. Checks:
+    `scripts/blocky/checkLanding.mjs` (the built HTML, 30) and `qaLanding.mjs` (a browser, 18).
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

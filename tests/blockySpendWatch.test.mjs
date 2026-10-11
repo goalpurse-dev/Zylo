@@ -235,12 +235,14 @@ test("the upgrade popup's lines say what each plan really unlocks", async () => 
   assert.doesNotMatch(page, /UpgradeDialog/, "the page has the one popup only");
 });
 
-test("Blocky is on Home only while it is switched on for everyone (the global switch; an account's own doesn't count)", async () => {
+test("Blocky is on Home while it is switched on for everyone (the global switch; an account's own doesn't count)", async () => {
   const fs = await import("node:fs");
   const read = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), "utf8").replace(/\r\n/g, "\n");
   const home = read("src/pages/workspace/HomeV2.jsx");
   // No user is passed to the switch: only the global row can turn it on.
-  assert.match(home, /const blockyLive = useFeatureFlag\(BLOCKY_STORIES_FLAG, null\)\.enabled;/);
+  assert.match(home, /const blockySwitch = useFeatureFlag\(BLOCKY_STORIES_FLAG, null\);/);
+  // Before the switch has been read (the build's HTML), Home shows what is launched; after that the live switch decides.
+  assert.match(home, /const blockyLive = blockySwitch\.loading \? BLOCKY_STORIES_LAUNCHED : blockySwitch\.enabled;/);
   assert.equal(home.split("BLOCKY_TEMPLATE").length - 1, 2, "imported, and used once");
   assert.match(home, /\{blockyLive && <FeaturedTemplate template=\{BLOCKY_TEMPLATE\} testId="featured-blocky" \/>\}/);
   assert.match(home, /items=\{suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive \}\)\}/);

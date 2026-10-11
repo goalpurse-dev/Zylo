@@ -36,6 +36,7 @@ const REQUIRED_PUBLIC_PAGES = [
   "/micro-camera-animal-maker",
   "/clay-rescue-maker",
   "/image-generator",
+  "/blocky-story-video-maker",
   "/blog/category/ai-video",
   "/blog/category/ai-images",
   "/blog/category/viral-ideas",

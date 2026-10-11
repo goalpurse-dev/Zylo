@@ -1,6 +1,7 @@
 import { STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_VIEWPORT } from "./stickmanLandingPages.js";
 import { HOME_SEO } from "./routeSeoPolicy.js";
 import { IMAGE_GENERATOR_SEO, IMAGE_HERO, imageSrc } from "./imageGeneratorLanding.js";
+import { BLOCKY_HERO_VIDEO, BLOCKY_LANDING_ASSETS, BLOCKY_LANDING_PATH, BLOCKY_LANDING_SEO, posterSrc as blockyPoster } from "./blockyStoryLanding.js";
 
 export const SITE_URL = "https://www.tryzyvo.com";
 
@@ -38,6 +39,19 @@ export const PUBLIC_SEO_METADATA = {
     fontHref: STICKMAN_FONT_HREF,
     inlineContent: true,
     modified: "2026-10-11",
+  },
+  // Blocky Stories' public page (src/data/blockyStoryLanding.js), built like the image generator's: the
+  // hero poster preloaded, the display font without blocking, the content hydrated in place.
+  [BLOCKY_LANDING_PATH]: {
+    title: BLOCKY_LANDING_SEO.title,
+    description: BLOCKY_LANDING_SEO.description,
+    type: "website",
+    image: `${SITE_URL}${BLOCKY_LANDING_ASSETS}/og-blocky-stories.jpg`,
+    imageSize: [1200, 630],
+    preloadImage: blockyPoster(BLOCKY_HERO_VIDEO.poster, BLOCKY_HERO_VIDEO.posterWidths.at(-1)),
+    fontHref: STICKMAN_FONT_HREF,
+    inlineContent: true,
+    modified: BLOCKY_LANDING_SEO.modified, // bump when the page changes: it becomes the sitemap's lastmod
   },
   "/blog": {
     title: "Zyvo Blog – AI Creation Ideas, Tutorials & Viral Strategies",
