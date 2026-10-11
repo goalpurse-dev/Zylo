@@ -1,5 +1,8 @@
 import { SITE_URL } from "./publicSeoMetadata.js";
-import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
+import { STICKMAN_PRICING, getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
+import { getPublishedSeoLandingPages } from "./seoLandingPages.js";
+import { getPublicWorkspaceRoutes } from "./routeSeoPolicy.js";
+import { blogArticles } from "./blogArticles.js";
 import { BLOG_DATES } from "./blogDates.js";
 import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
 import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
@@ -13,18 +16,48 @@ const faqPage = (faq) => ({
 // The brand, as stated on the homepage (Organization + WebSite).
 export const BRAND = {
   name: "Zyvo",
-  alternateName: ["Zyvo AI", "ZyvoAI", "tryzyvo"], // the ways people type the brand ("zyvoai" as one word included)
+  alternateName: ["Zyvo AI", "ZyvoAI", "TryZyvo"], // the ways people type the brand
   logo: "/logo.png", // public/logo.png, 512 x 512
-  // Official Zyvo profiles only: the YouTube channel (tutorials) and the
-  // Instagram account the Creator Rewards dialog links to.
-  sameAs: ["https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai"],
+  // The owner sends the official social links later (2026-10-11): until then there is no sameAs at all.
+  sameAs: [],
 };
 
 // Plain JS (no React/JSX) so it can be imported both by the client
 // (PublicContentLayout.jsx, via its useEffect-driven useSEO() injection) and
 // by scripts/generateSeoHtml.js directly in plain Node at build time —
 // single source of truth for JSON-LD in both places.
-export function structuredDataFor(pathname, metadata, canonical) {
+// The tool pages that get a SoftwareApplication node here (the others build theirs further down).
+const TOOL_APPS = {
+  "/long-form": "Zyvo Long Form",
+  "/face-asmr-maker": "Zyvo Face ASMR Maker",
+  "/micro-camera-animal-maker": "Zyvo Micro Camera Animal",
+  "/clay-rescue-maker": "Zyvo Clay Rescue",
+};
+
+// The three monthly plans, the same numbers /pricing shows. Every tool needs one of them
+// (only the image generator has free generations, and it states that itself).
+export const planOffers = () => STICKMAN_PRICING.plans.map((plan) => ({
+  "@type": "Offer",
+  name: `${plan.name} plan, monthly`,
+  price: String(plan.price),
+  priceCurrency: STICKMAN_PRICING.currency,
+  description: `${plan.credits} credits a month`,
+  url: `${SITE_URL}/pricing`,
+}));
+
+// Title and description for a page that has no entry in publicSeoMetadata.js.
+function fallbackMetadata(pathname) {
+  const landing = getPublishedSeoLandingPages().find((page) => `/${page.slug}` === pathname);
+  if (landing) return { title: landing.seo.title, description: landing.seo.description, toolName: `Zyvo ${landing.seo.title.split(" – ")[0]}`, faq: landing.sections?.faq ?? [] };
+  // A blog post without its own entry: the title and description the blog index shows for it.
+  const article = blogArticles.find((post) => post.slug === pathname);
+  if (article) return { title: `${article.title} | Zyvo`, description: article.description, type: "article" };
+  const policy = getPublicWorkspaceRoutes().find((route) => route.path === pathname);
+  return policy ? { title: policy.title, description: policy.description } : null;
+}
+
+export function structuredDataFor(pathname, givenMetadata, canonical) {
+  const metadata = givenMetadata ?? fallbackMetadata(pathname);
   if (!metadata) return null;
 
   // Long Form landing pages build their own graph (SoftwareApplication with
@@ -50,7 +83,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
           alternateName: BRAND.alternateName,
           url: `${SITE_URL}/`,
           logo: { "@type": "ImageObject", url: `${SITE_URL}${BRAND.logo}`, width: 512, height: 512 },
-          sameAs: BRAND.sameAs,
+          ...(BRAND.sameAs.length ? { sameAs: BRAND.sameAs } : {}),
         },
         {
           "@type": "WebSite",
@@ -421,5 +454,12 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
+  const toolName = TOOL_APPS[pathname] ?? metadata.toolName;
+  if (toolName) {
+    graph[0] = { "@type": "SoftwareApplication", name: toolName, description: metadata.description, url: canonical, applicationCategory: "MultimediaApplication", operatingSystem: "Web" };
+    if (metadata.faq?.length) graph.push(faqPage(metadata.faq));
+  }
+  // Real prices on every tool: no page states a tool without what it costs.
+  if (graph[0]["@type"] === "SoftwareApplication" && !graph[0].offers) graph[0].offers = planOffers();
   return { "@context": "https://schema.org", "@graph": graph };
 }

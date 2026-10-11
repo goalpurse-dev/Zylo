@@ -646,5 +646,15 @@
   240,
   480,
   960
+ ],
+ "/lp/fruit/examples/twenty-pairs-no-questions.jpg": [
+  240,
+  480,
+  720
+ ],
+ "/lp/fruit/examples/glass-walls-dont-lie.jpg": [
+  240,
+  480,
+  720
  ]
 }

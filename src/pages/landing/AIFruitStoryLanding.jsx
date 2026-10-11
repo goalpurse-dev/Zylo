@@ -333,6 +333,18 @@ export default function AIFruitStoryLanding() {
         </div>
       </section>
 
+      {/* ── FOR SHORT-FORM ── */}
+      <section className="pb-14 md:pb-16">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <h2 className="text-center text-[26px] font-black tracking-tight sm:text-[34px]">An AI Fruit Drama Generator for TikTok, Reels and Shorts</h2>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-[15px] leading-relaxed text-white/55">
+            Fruit drama works on short-form because every scene is one face and one line, so a viewer follows it with the sound off.
+            This AI fruit drama generator is built for that: vertical 9:16 video, optional on-screen captions, and a story from {F.minLengthSec} seconds to {F.maxLengthMin} minutes.
+            The same {F.characters} characters keep their look from scene to scene, and a series carries one cast through up to {F.maxEpisodes} episodes.
+          </p>
+        </div>
+      </section>
+
       {/* ── HOW TO ── */}
       <section className="border-y border-white/[0.07] bg-[#0c0c0f] py-16 md:py-20">
         <div className="mx-auto max-w-5xl px-4 md:px-6">

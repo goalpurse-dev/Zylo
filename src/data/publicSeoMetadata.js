@@ -558,12 +558,12 @@ export const PUBLIC_SEO_METADATA = {
     viewport: STICKMAN_VIEWPORT,
   }])),
   "/ai-fruit-story-maker": {
-    title: "AI Fruit Story Generator & Maker – Videos and Series | Zyvo",
-    description: "Make talking fruit drama videos from one idea, or a series of up to 10 episodes with the same cast. 150 characters, 15 sec to 2 min. Plans from €18/month.", // €18 = Starter, monthly, as Stripe returns it (plan-prices, read 2026-10-05). Change it here if that price changes.
+    title: "AI Fruit Story Generator – Talking Fruit Drama Videos in Minutes | Zyvo", // the owner's wording (2026-10-11); longer than 60 characters on purpose
+    description: "Type one idea, get a finished talking-fruit drama for TikTok, Reels and Shorts. 150 characters that stay consistent, series up to 10 episodes.", // never "free": fruit stories need a paid plan
     type: "website",
     image: `${SITE_URL}/lp/fruit/og-ai-fruit-story.jpg`,
     imageSize: [1200, 630],
-    modified: "2026-10-05", // bump when the page changes: it becomes the sitemap's lastmod
+    modified: "2026-10-11", // bump when the page changes: it becomes the sitemap's lastmod
   },
   // The three "maker" blog copies 301 to these pages (vercel.json), which now
   // carry the copies' unique sections.

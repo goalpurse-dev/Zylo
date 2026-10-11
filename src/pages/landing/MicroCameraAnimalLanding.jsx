@@ -85,25 +85,11 @@ export default function MicroCameraAnimalLanding() {
     setOg("og:type", "website");
     setOg("og:url", "https://tryzyvo.com/micro-camera-animal-maker");
 
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Zyvo Micro Camera Animal",
-      "description": "Generate viral animal bodycam videos with AI. Type any small animal and Zyvo creates cinematic micro-camera POV scenes as it descends underground. No editing required.",
-      "url": "https://tryzyvo.com/micro-camera-animal-maker",
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-    };
-    let schemaEl = document.querySelector("#ld-json-micro-camera");
-    if (!schemaEl) { schemaEl = document.createElement("script"); schemaEl.id = "ld-json-micro-camera"; schemaEl.type = "application/ld+json"; document.head.appendChild(schemaEl); }
-    schemaEl.textContent = JSON.stringify(schema);
 
     if (videoRef.current) videoRef.current.play().catch(() => {});
 
     return () => {
       document.title = "Zyvo – Go Viral With AI Content Creation";
-      schemaEl?.remove();
     };
   }, []);
 

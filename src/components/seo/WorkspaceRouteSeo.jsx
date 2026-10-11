@@ -4,8 +4,6 @@ import { useSEO } from "../../hooks/useSEO.js";
 import { getPublicSeoMetadata, canonicalFor } from "../../data/publicSeoMetadata.js";
 import { structuredDataFor } from "../../data/structuredData.js";
 
-// Only Home carries structured data among these routes (Organization + WebSite).
-const HOME_LD = structuredDataFor("/", getPublicSeoMetadata("/"), canonicalFor("/"));
 
 export default function WorkspaceRouteSeo() {
   const { pathname } = useLocation();
@@ -20,7 +18,8 @@ export default function WorkspaceRouteSeo() {
       ? "index, follow, max-image-preview:large"
       : "noindex, follow",
     ogType: "website",
-    structuredData: pathname === "/" ? HOME_LD : undefined,
+    // The public pages among these routes (Home, /pricing, /long-form) carry the same JSON-LD as their prerendered HTML.
+    structuredData: policy?.seoVisibility === "public" ? structuredDataFor(policy.path, getPublicSeoMetadata(policy.path), canonicalFor(policy.path)) : undefined,
   });
 
   return null;

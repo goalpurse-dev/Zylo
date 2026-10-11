@@ -86,29 +86,10 @@ export default function ClayRescueLanding() {
     setOg("og:url", "https://tryzyvo.com/clay-rescue-maker");
     setOg("og:image", "https://tryzyvo.com/clayrescue/smallpreview.webp");
 
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      name: "Zyvo Clay Rescue",
-      description: "AI video maker for viral Clay Rescue videos featuring tiny clay people, giant hand fixes, and satisfying miniature rescue scenes.",
-      url: "https://tryzyvo.com/clay-rescue-maker",
-      applicationCategory: "MultimediaApplication",
-      operatingSystem: "Web",
-      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-    };
-    let schemaEl = document.querySelector("#ld-json-clay-rescue");
-    if (!schemaEl) {
-      schemaEl = document.createElement("script");
-      schemaEl.id = "ld-json-clay-rescue";
-      schemaEl.type = "application/ld+json";
-      document.head.appendChild(schemaEl);
-    }
-    schemaEl.textContent = JSON.stringify(schema);
 
     videoRef.current?.play().catch(() => {});
     return () => {
       document.title = "Zyvo - Go Viral With AI Content Creation";
-      schemaEl?.remove();
     };
   }, []);
 

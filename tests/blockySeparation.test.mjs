@@ -81,6 +81,14 @@ const ALLOWED_IN_FRUIT = [
   "tests/helpers/fruitMemoryStore.mjs",
 ];
 
+// The public landing page /ai-fruit-story-maker, which the owner asked to change by name on 2026-10-11
+// (SEO round 2: title, description, an "AI fruit drama generator" section, two more example videos).
+// Page copy only: nothing of Fruit's engine, tool or functions.
+const FRUIT_LANDING_BY_OWNER = [
+  "src/data/fruitStoryPages.js",
+  "src/pages/landing/AIFruitStoryLanding.jsx",
+];
+
 const CODE = /\.(js|jsx|mjs|ts|tsx)$/;
 function filesUnder(rel) {
   const full = path.join(ROOT, rel);
@@ -131,13 +139,13 @@ test("Fruit's files are main's, except the changes the owner asked for by name",
   let base;
   try { [base] = git("merge-base", "HEAD", "origin/main"); } catch { /* no origin/main here */ }
   if (!base) return t.skip("origin/main is not fetched here");
-  const allowed = new Set(ALLOWED_IN_FRUIT);
+  const allowed = new Set([...ALLOWED_IN_FRUIT, ...FRUIT_LANDING_BY_OWNER]);
   const changed = git("diff", "--name-only", base, "--", ...FRUIT).filter((f) => !allowed.has(f));
   const added = git("ls-files", "--others", "--exclude-standard", "--", ...FRUIT).filter((f) => !allowed.has(f));
   assert.deepEqual(changed, [], "changed against main");
   assert.deepEqual(added, [], "new files in Fruit's folders");
   // The approved code change is the caption fix and nothing else: each changed Fruit file mentions it.
-  for (const f of git("diff", "--name-only", base, "--", ...FRUIT).filter((x) => allowed.has(x) && !/\.md$/.test(x))) {
+  for (const f of git("diff", "--name-only", base, "--", ...FRUIT).filter((x) => allowed.has(x) && !FRUIT_LANDING_BY_OWNER.includes(x) && !/\.md$/.test(x))) {
     assert.match(read(f), /drawn|speech|negativePrompt/i, `${f} differs from main for the caption fix`);
   }
 });

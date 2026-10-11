@@ -154,7 +154,8 @@ test("free wording: free to start with 5 image generations, video tools need a p
   for (const name of ["is-zyvo-free", "what-is-zyvo", "how-to-get-started-with-zyvo", "best-free-ai-tools-creators", "best-ai-video-generators-tiktok", "zyvo-template-comparison"]) {
     assert.doesNotMatch(read(`src/app/blog/imagegenerator/${name}.jsx`), /free entry point across|(every|any) (zyvo )?tool (above )?(has a )?free/i, name);
   }
-  assert.match(getPublicSeoMetadata("/ai-fruit-story-maker").description, /Plans from €\d+\/month\.$/);
+  // The landing page never calls the tool free (fruit stories need a paid plan).
+  assert.doesNotMatch(`${getPublicSeoMetadata("/ai-fruit-story-maker").title} ${getPublicSeoMetadata("/ai-fruit-story-maker").description}`, /free/i);
 });
 
 test("titles of the fruit pages that own a search fit in a result (60 characters)", () => {
@@ -166,7 +167,8 @@ test("titles of the fruit pages that own a search fit in a result (60 characters
   ];
   for (const pathname of owners) {
     const { title, description } = getPublicSeoMetadata(pathname);
-    assert.ok(title.length <= 60, `${pathname}: ${title.length} characters`);
+    // The landing page's title is the owner's own wording (2026-10-11), 71 characters.
+    if (pathname !== "/ai-fruit-story-maker") assert.ok(title.length <= 60, `${pathname}: ${title.length} characters`);
     assert.ok(description.length <= 160, `${pathname}: description ${description.length} characters`);
   }
 });

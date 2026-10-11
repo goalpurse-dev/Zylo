@@ -116,6 +116,50 @@ if (prerenderSucceeded) {
     assert(!/rel="canonical"/.test(html), `dist/${file} must not carry a canonical`);
   }
 
+  // JSON-LD: every block on every generated page must parse and carry what its type needs.
+  // Real data only: a rating or review node fails the build (there are no ratings to report).
+  const absolute = (value) => typeof value === "string" && /^https:\/\//.test(value);
+  const text = (value) => typeof value === "string" && value.trim().length > 0;
+  const NODE_RULES = {
+    Organization: (n) => text(n.name) && absolute(n.url) && absolute(n.logo?.url),
+    WebSite: (n) => text(n.name) && absolute(n.url),
+    WebPage: (n) => text(n.name) && absolute(n.url),
+    Blog: (n) => text(n.name) && absolute(n.url),
+    CollectionPage: (n) => text(n.name) && absolute(n.url),
+    BlogPosting: (n) => text(n.headline) && text(n.description) && absolute(n.mainEntityOfPage) && text(n.author?.name) && text(n.publisher?.name),
+    BreadcrumbList: (n) => Array.isArray(n.itemListElement) && n.itemListElement.length > 0 && n.itemListElement.every((item, i) => item.position === i + 1 && text(item.name) && absolute(item.item)),
+    FAQPage: (n) => Array.isArray(n.mainEntity) && n.mainEntity.length > 0 && n.mainEntity.every((q) => q["@type"] === "Question" && text(q.name) && text(q.acceptedAnswer?.text)),
+    SoftwareApplication: (n) => text(n.name) && text(n.description) && absolute(n.url) && text(n.applicationCategory) && Array.isArray(n.offers) && n.offers.length > 0
+      && n.offers.every((offer) => /^\d+(\.\d+)?$/.test(String(offer.price)) && /^[A-Z]{3}$/.test(String(offer.priceCurrency))),
+    VideoObject: (n) => text(n.name) && text(n.description) && [].concat(n.thumbnailUrl ?? []).length > 0 && [].concat(n.thumbnailUrl ?? []).every(absolute)
+      && /^\d{4}-\d{2}-\d{2}/.test(String(n.uploadDate)) && (absolute(n.contentUrl) || absolute(n.embedUrl)) && (!n.duration || /^PT(\d+H)?(\d+M)?(\d+S)?$/.test(n.duration)),
+  };
+  let jsonLdBlocks = 0;
+  const allSnapshots = [...sitemapPaths, ...getNoindexWorkspaceRoutes().map((policy) => policy.path)];
+  for (const pathname of allSnapshots) {
+    const html = readFileSync(snapshotFile(pathname), "utf8");
+    for (const [, body] of html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+      jsonLdBlocks += 1;
+      let data;
+      try { data = JSON.parse(body); } catch (error) { throw new Error(`${pathname}: JSON-LD does not parse (${error.message})`); }
+      assert(data["@context"] === "https://schema.org", `${pathname}: JSON-LD without the schema.org context`);
+      assert(!/"(aggregateRating|review|reviewRating|ratingValue)"/.test(body), `${pathname}: JSON-LD carries a rating or review, and there are none to report`);
+      const nodes = Array.isArray(data["@graph"]) ? data["@graph"] : [data];
+      assert(nodes.length > 0, `${pathname}: empty JSON-LD graph`);
+      for (const node of nodes) {
+        const rule = NODE_RULES[node["@type"]];
+        assert(rule, `${pathname}: JSON-LD node of an unexpected type: ${node["@type"]}`);
+        assert(rule(node), `${pathname}: invalid ${node["@type"]} in JSON-LD: ${JSON.stringify(node).slice(0, 200)}`);
+      }
+    }
+  }
+  // Every indexable page has its block, and every tool landing page states what the tool costs.
+  for (const pathname of sitemapPaths) {
+    const html = readFileSync(snapshotFile(pathname), "utf8");
+    assert(/<script type="application\/ld\+json"/.test(html), `${pathname} has no JSON-LD`);
+  }
+  console.log(`JSON-LD validated: ${jsonLdBlocks} block(s) on ${allSnapshots.length} page(s).`);
+
   const aiFruitHtml = validateHead("/ai-fruit-story-maker", "index, follow, max-image-preview:large");
   assert((aiFruitHtml.match(/<h1\b/gi) || []).length === 1, "AI Fruit landing must have one H1");
   assert(!sitemapPaths.includes("/blog/ai-fruit-story-maker"), "merged AI Fruit blog remains in sitemap");

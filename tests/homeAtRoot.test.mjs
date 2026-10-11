@@ -59,20 +59,20 @@ test("SEO: title starts with Zyvo, canonical is the www root, indexable, in the 
   assert.ok(!/document\.title\s*=/.test(read("src/pages/workspace/HomeV2.jsx")));
 });
 
-test("JSON-LD on /: Organization + WebSite named Zyvo, with logo and the YouTube channel", () => {
+test("JSON-LD on /: Organization + WebSite named Zyvo, with logo, and no sameAs until the owner sends the links", () => {
   const ld = structuredDataFor("/", getPublicSeoMetadata("/"), canonicalFor("/"));
   const [org, site] = ld["@graph"];
   assert.deepEqual(ld["@graph"].map((n) => n["@type"]), ["Organization", "WebSite"]);
   assert.equal(org.name, "Zyvo");
-  assert.deepEqual(org.alternateName, ["Zyvo AI", "ZyvoAI", "tryzyvo"]);
+  assert.deepEqual(org.alternateName, ["Zyvo AI", "ZyvoAI", "TryZyvo"]);
   assert.equal(org.url, `${SITE_URL}/`);
   assert.equal(org.logo.url, `${SITE_URL}/logo.png`);
   assert.ok(existsSync(join(root, "public/logo.png")));
-  assert.deepEqual(org.sameAs, BRAND.sameAs);
-  // Official Zyvo profiles only (not the Stickman Files content channel).
-  assert.deepEqual(org.sameAs, ["https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai"]);
+  // The owner sends the official social links later (2026-10-11): no sameAs key at all until then.
+  assert.deepEqual(BRAND.sameAs, []);
+  assert.equal("sameAs" in org, false);
   assert.equal(site.name, "Zyvo");
-  assert.deepEqual(site.alternateName, ["Zyvo AI", "ZyvoAI", "tryzyvo"]);
+  assert.deepEqual(site.alternateName, ["Zyvo AI", "ZyvoAI", "TryZyvo"]);
   assert.equal(site.url, `${SITE_URL}/`);
   assert.equal(site.publisher["@id"], org["@id"]);
 });

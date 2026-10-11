@@ -103,25 +103,11 @@ export default function FaceAsmrLanding() {
     setOg("og:type", "website");
     setOg("og:url", "https://tryzyvo.com/face-asmr-maker");
 
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Zyvo Face ASMR Maker",
-      "description": "Create viral Face ASMR videos with AI. Upload any face, pick a scene, and generate a full vertical ASMR video in minutes. No editing required.",
-      "url": "https://tryzyvo.com/face-asmr-maker",
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-    };
-    let schemaEl = document.querySelector("#ld-json-face-asmr");
-    if (!schemaEl) { schemaEl = document.createElement("script"); schemaEl.id = "ld-json-face-asmr"; schemaEl.type = "application/ld+json"; document.head.appendChild(schemaEl); }
-    schemaEl.textContent = JSON.stringify(schema);
 
     if (videoRef.current) videoRef.current.play().catch(() => {});
 
     return () => {
       document.title = "Zyvo – Go Viral With AI Content Creation";
-      schemaEl?.remove();
     };
   }, []);
 
