@@ -100,3 +100,15 @@ test("/image-generator says nothing about e-commerce", () => {
   assert.doesNotMatch(words, /e-?commerce|shopify|online store/i);
   assert.ok(has("public/lp/image-generator/product-headphones.w960.webp"));
 });
+
+test("the plan is read from profiles.plan_code everywhere: nothing queries a \"subscriptions\" table", () => {
+  // The Stripe webhook writes the plan there; the image tool used to ask a table that does not exist.
+  assert.ok(read("supabase/functions/stripe-webhook/index.ts").includes("patch.plan_code"));
+  const tool = read("src/pages/viral/Image.jsx");
+  assert.ok(tool.includes("const { plan: userPlan } = usePlanCode();"));
+  assert.ok(!tool.includes('.from("subscriptions")'));
+  assert.ok(read("src/hooks/usePlanCode.js").includes('from("profiles").select("plan_code'));
+  assert.ok(read("src/lib/freeWatermark.js").includes('.from("profiles").select("plan_code")'));
+  const walk = (dir) => readdirSync(new URL(dir, import.meta.url), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(`${dir}${entry.name}/`) : /\.(jsx?|tsx?)$/.test(entry.name) ? [`${dir}${entry.name}`] : []));
+  for (const file of walk("../src/")) assert.ok(!readFileSync(new URL(file, import.meta.url), "utf8").includes('from("subscriptions")'), `${file} reads the missing table`);
+});

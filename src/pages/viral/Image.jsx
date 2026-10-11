@@ -3,6 +3,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { watchJob } from "../../lib/jobs";
 import { useLocation } from "react-router-dom";
 import { useSEO } from "../../hooks/useSEO";
+import usePlanCode from "../../hooks/usePlanCode";
 
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
@@ -61,7 +62,9 @@ export default function Image() {
 
   const [prompt, setPrompt] = useState("");
   const [results, setResults] = useState([]);
-const [userPlan, setUserPlan] = useState("free");
+  // The plan comes from profiles.plan_code, the column the Stripe webhook writes and every server gate reads
+  // (hooks/usePlanCode.js). It used to be read here from a "subscriptions" table that does not exist.
+  const { plan: userPlan } = usePlanCode();
 
 
   const inspirationRef = useRef(null);
@@ -95,28 +98,6 @@ useEffect(() => {
 }, []);
 
 
-useEffect(() => {
-  async function loadPlan() {
-    const { data } = await supabase.auth.getSession();
-    const uid = data?.session?.user?.id;
-
-    if (!uid) return;
-
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("plan")
-      .eq("user_id", uid)
-      .single();
-
-    if (sub?.plan) {
-      setUserPlan(sub.plan);
-    } else {
-      setUserPlan("free");
-    }
-  }
-
-  loadPlan();
-}, []);
 
 useEffect(() => {
   async function loadPosted() {
