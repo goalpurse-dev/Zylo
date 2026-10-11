@@ -26,25 +26,24 @@ export default function GlowHeader({ compact = false } = {}) {
             transition={{ delay: 0.05, duration: 0.5 }}
             className="block text-white"
           >
-            What would you like to
-          </motion.span>
-          <motion.span
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.5 }}
-            className="block"
-          >
-            <span className="bg-gradient-to-r from-[#d8c1ff] via-[#a970ff] to-[#e879f9] bg-clip-text text-transparent">
-              create
-            </span>
-            <span className="text-white"> today?</span>
-            <img
-              {...optImg("/home/click.png", "44px", 96)}
-              alt=""
-              className="inline-block ml-2 md:ml-3 w-8 h-8 md:w-11 md:h-11 align-middle -mt-2 select-none pointer-events-none"
-            />
+            AI Video Generator for{" "}
+            <span className="bg-gradient-to-r from-[#d8c1ff] via-[#a970ff] to-[#e879f9] bg-clip-text text-transparent">YouTube, TikTok and Reels</span>
           </motion.span>
         </h1>
+        {/* The old headline, now the line under it. One text node, so it reads "to create" with its space. */}
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="mx-auto mt-2 max-w-2xl text-[15px] font-semibold text-white/65 sm:text-[17px] md:mt-3 md:text-[20px]"
+        >
+          What would you like to create today?
+          <img
+            {...optImg("/home/click.png", "44px", 96)}
+            alt=""
+            className="ml-1.5 inline-block h-6 w-6 select-none align-middle pointer-events-none md:ml-2 md:h-8 md:w-8"
+          />
+        </motion.p>
 
       </motion.div>
     </section>

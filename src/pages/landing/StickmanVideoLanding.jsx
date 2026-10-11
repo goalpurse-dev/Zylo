@@ -7,7 +7,7 @@ import { optImg } from "../../lib/optImage.js";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import GALLERY from "../../data/stickmanLandingGallery.json";
 import {
-  APP_VIEWPORT, STICKMAN_ASSETS, STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS, STICKMAN_VIEWPORT,
+  STICKMAN_ASSETS, STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS,
   stickmanGroupPage, stickmanNicheHref, stickmanNicheSetup, stickmanVideoUrl,
 } from "../../data/stickmanLandingPages.js";
 
@@ -31,29 +31,6 @@ function useDisplayFont() {
     link.rel = "stylesheet";
     link.href = STICKMAN_FONT_HREF;
     document.head.appendChild(link);
-  }, []);
-}
-
-// This page allows pinch-zoom (the app's viewport tag doesn't). While a text
-// field has focus (the sign-up dialog) the app's tag is put back, so iOS
-// doesn't zoom into the 14 px field; it is also put back on leaving the page.
-function useZoomableViewport() {
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) return undefined;
-    const isField = (el) => el instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName);
-    const lock = (e) => { if (isField(e.target)) meta.setAttribute("content", APP_VIEWPORT); };
-    const unlock = (e) => { if (isField(e.target)) meta.setAttribute("content", STICKMAN_VIEWPORT); };
-    meta.setAttribute("content", STICKMAN_VIEWPORT);
-    document.addEventListener("touchstart", lock, { passive: true });
-    document.addEventListener("focusin", lock);
-    document.addEventListener("focusout", unlock);
-    return () => {
-      document.removeEventListener("touchstart", lock);
-      document.removeEventListener("focusin", lock);
-      document.removeEventListener("focusout", unlock);
-      meta.setAttribute("content", APP_VIEWPORT);
-    };
   }, []);
 }
 
@@ -154,7 +131,6 @@ function Gallery({ gallery }) {
 
 export default function StickmanVideoLanding({ page }) {
   useDisplayFont();
-  useZoomableViewport();
   const slug = page.path.replace(/^\//, "");
   const tutorial = STICKMAN_VIDEOS[page.tutorial.video];
   const parent = page.slug ? STICKMAN_LANDING_PAGES[0] : null; // a niche page links up to the main page

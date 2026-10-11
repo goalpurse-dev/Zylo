@@ -1,5 +1,6 @@
 import { STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_VIEWPORT } from "./stickmanLandingPages.js";
 import { HOME_SEO } from "./routeSeoPolicy.js";
+import { IMAGE_GENERATOR_SEO, IMAGE_HERO, imageSrc } from "./imageGeneratorLanding.js";
 
 export const SITE_URL = "https://www.tryzyvo.com";
 
@@ -26,10 +27,16 @@ export const PUBLIC_SEO_METADATA = {
     type: "website",
     shellGuard: true, // dist/index.html is also the fallback for app routes: see scripts/generateSeoHtml.js
   },
+  // The image generator's product page (src/data/imageGeneratorLanding.js). Like the Long Form landing
+  // pages: hero picture preloaded, display font without blocking, content hydrated in place.
   "/image-generator": {
-    title: "AI Image Generator – Cinematic, 3D, Anime & Product Images | Zyvo",
-    description: "Generate cinematic, 3D, anime, realistic, and product-ready images from a single prompt with Zyvo's AI image generator — free to start.",
+    title: IMAGE_GENERATOR_SEO.title,
+    description: IMAGE_GENERATOR_SEO.description,
     type: "website",
+    preloadImage: imageSrc(IMAGE_HERO.file, 960),
+    fontHref: STICKMAN_FONT_HREF,
+    inlineContent: true,
+    modified: "2026-10-11",
   },
   "/blog": {
     title: "Zyvo Blog – AI Creation Ideas, Tutorials & Viral Strategies",

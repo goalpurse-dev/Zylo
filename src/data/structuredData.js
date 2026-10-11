@@ -3,6 +3,7 @@ import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandin
 import { BLOG_DATES } from "./blogDates.js";
 import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
 import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
+import { IMAGE_GENERATOR_PATH, imageGeneratorStructuredData } from "./imageGeneratorLanding.js";
 
 const faqPage = (faq) => ({
   "@type": "FAQPage",
@@ -30,6 +31,8 @@ export function structuredDataFor(pathname, metadata, canonical) {
   // the real plan prices, the videos on the page, FAQ, breadcrumb).
   const stickmanPage = getStickmanLandingPage(pathname);
   if (stickmanPage) return stickmanStructuredData(stickmanPage, canonical, SITE_URL);
+  // The image generator's page too (the tool with its real prices, FAQ, breadcrumb).
+  if (pathname === IMAGE_GENERATOR_PATH) return imageGeneratorStructuredData(canonical, SITE_URL);
 
   // Homepage gets exactly one brand-identity graph (Organization + WebSite)
   // and nothing else — no BreadcrumbList/WebPage duplicate, no second
@@ -205,27 +208,6 @@ export function structuredDataFor(pathname, metadata, canonical) {
         ["Does the AI remember what happened in previous episodes?", "Yes. Every episode's summary — relationship changes, new characters, mysteries opened and resolved, and the cliffhanger — feeds into planning the next one, so the story continues without you re-explaining anything."],
         ["Can I skip ahead to a later day?", "No — episodes generate in order, one at a time, so the continuity stays intact. You can only start the next episode once the current one is complete."],
         ["Which plans include Series mode?", "Series mode uses the same plan eligibility as standard 30 Days videos — included on Starter, Pro, and Generative plans. It isn't available on the free plan."],
-      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
-    });
-  }
-
-  if (pathname === "/image-generator") {
-    page = {
-      "@type": "SoftwareApplication",
-      name: "Zyvo AI Image Generator",
-      description: metadata.description,
-      url: canonical,
-      applicationCategory: "MultimediaApplication",
-      operatingSystem: "Web",
-    };
-    graph[0] = page;
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: [
-        ["What styles can I generate?", "Cinematic, 3D, anime, realistic, and product-focused styles, all from a single text prompt."],
-        ["Can I use this for product photos?", "Yes. The generator includes AI background removal and clean-background product presets built for ecommerce and Shopify listings."],
-        ["Is it free to start?", "Yes. A free account gets 5 image generations every 30 days, with no card needed. Paid plans add monthly credits for higher volume."],
-        ["What sizes and platforms is this built for?", "Output works for TikTok, Instagram Reels, and YouTube thumbnails and covers, as well as square and landscape formats for product listings and ads."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });
   }

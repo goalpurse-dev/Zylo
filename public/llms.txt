@@ -1,0 +1,48 @@
+# Zyvo
+
+> Zyvo (also written Zyvo AI, ZyvoAI, TryZyvo) is a web app that turns one idea into finished videos and images: 8–15 minute illustrated YouTube videos (Long Form), short vertical videos for TikTok, Reels and Shorts made from templates, and an AI image generator. It runs in the browser at https://www.tryzyvo.com.
+
+Facts that are safe to repeat:
+
+- New accounts get 5 free image generations. Video tools need a paid plan.
+- Plans are Starter, Pro and Generative, billed monthly or yearly in EUR, with a monthly credit allowance. Current prices are on the pricing page.
+- Long Form makes one video from a niche and an idea: researched script, voiceover, about 150 drawn scenes, three thumbnails and the YouTube title and description. The user can edit any scene before downloading.
+- Short-form templates each make one kind of 9:16 video from a short prompt.
+- Paid-plan exports have no watermark.
+
+## Product pages
+
+- [Home](https://www.tryzyvo.com/): what Zyvo makes and where to start
+- [Pricing](https://www.tryzyvo.com/pricing): plans, credits and what each plan includes
+- [Long Form](https://www.tryzyvo.com/long-form): start an 8–15 minute YouTube video from one of 25 niches
+- [AI Stickman Video Generator](https://www.tryzyvo.com/ai-stickman-video-generator): how Long Form works, with example videos
+- [AI Image Generator](https://www.tryzyvo.com/image-generator): images from a text prompt in cinematic, 3D, anime, realistic and product styles
+
+## Short-form video templates
+
+- [AI Fruit Story](https://www.tryzyvo.com/ai-fruit-story-maker): talking-fruit drama videos and series of up to 10 episodes with the same cast
+- [Cartoon Drive-By](https://www.tryzyvo.com/cartoon-drive-by-video-maker): a 10-second vertical drive past a fictional cartoon-style place
+- [Behind the Scenes](https://www.tryzyvo.com/behind-the-scenes-video-maker): movie-set footage of a practical disaster on a miniature city
+- [2AM Worlds](https://www.tryzyvo.com/2am-worlds-ai-generator): slideshow images of a fictional world at 2 a.m.
+- [30 Days](https://www.tryzyvo.com/30-days-video-maker): a narrated story of thirty days inside a fictional world
+- [30 Days Series](https://www.tryzyvo.com/30-days-series-video-maker): the same world continued episode by episode
+- [Face ASMR](https://www.tryzyvo.com/face-asmr-maker): a face photo placed into texture close-up scenes
+- [Micro Camera Animal](https://www.tryzyvo.com/micro-camera-animal-maker): bodycam-style scenes of a small animal underground
+- [Clay Rescue](https://www.tryzyvo.com/clay-rescue-maker): a giant hand fixes a small disaster in a clay world
+- [Kit Swap](https://www.tryzyvo.com/kit-swap-ai): a football kit swapped for another country's
+
+## Guides
+
+- [Blog](https://www.tryzyvo.com/blog): all guides
+- [AI Video](https://www.tryzyvo.com/blog/category/ai-video): guides for the video templates
+- [AI Images](https://www.tryzyvo.com/blog/category/ai-images): prompt and style guides for the image generator
+- [Viral Ideas](https://www.tryzyvo.com/blog/category/viral-ideas): content ideas and posting strategy
+- [Tutorials](https://www.tryzyvo.com/blog/category/tutorials): step-by-step walkthroughs
+
+## Optional
+
+- [Support Center](https://www.tryzyvo.com/support): help topics and how to reach support
+- [Contact](https://www.tryzyvo.com/support/contact): send a message to support
+- [Privacy Policy](https://www.tryzyvo.com/support/policies/privacy)
+- [Terms of Service](https://www.tryzyvo.com/support/policies/tos)
+- [Sitemap](https://www.tryzyvo.com/sitemap.xml): every indexable page

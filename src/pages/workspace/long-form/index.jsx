@@ -123,7 +123,7 @@ export default function LongForm() {
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-5 lg:px-8 lg:py-6">
       <div className="mb-4">
-        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-white lg:text-[30px]">Long Form</h1>
+        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-white lg:text-[30px]">{signedOut ? "AI Long-Form YouTube Video Generator" : "Long Form"}</h1>
         <p className="mt-0.5 text-[14px] text-white/45">Create complete AI-powered YouTube videos from one idea.</p>
       </div>
 

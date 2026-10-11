@@ -117,8 +117,10 @@ test("fast first paint: content inline, hydrated (not redrawn), app script after
   const meta = getPublicSeoMetadata(main.path);
   assert.equal(meta.inlineContent, true);
   assert.equal(meta.viewport, "width=device-width, initial-scale=1, viewport-fit=cover");
-  // The viewport the page restores on leaving is the app's real one.
-  assert.ok(read("index.html").includes('content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"'));
+  // Every page allows pinch-zoom: the tag has no maximum-scale or user-scalable=no (zoom is capped only while a field has focus).
+  assert.ok(read("index.html").includes('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />'));
+  assert.doesNotMatch(read("index.html"), /user-scalable|maximum-scale/);
+  assert.ok(read("src/main.jsx").includes("installViewportZoom();"));
   const entry = read("src/main.jsx");
   assert.match(entry, /document\.documentElement\.dataset\.hydrate === "true" && container\.firstElementChild\) \{\s+ReactDOM\.hydrateRoot\(container, app/);
   assert.match(entry, /\} else \{\s+ReactDOM\.createRoot\(container\)\.render\(app\);/, "every other page keeps the client render");

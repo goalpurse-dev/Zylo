@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
+import { installViewportZoom } from "./lib/viewportZoom.js";
+
+installViewportZoom();
 
 const container = document.getElementById("root");
 const app = (

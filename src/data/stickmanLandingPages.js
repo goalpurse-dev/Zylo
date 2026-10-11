@@ -21,8 +21,7 @@ import { PLAN_CREDITS } from "../../supabase/functions/_shared/stripePlanPrices.
 
 export const STICKMAN_BASE_PATH = "/ai-stickman-video-generator";
 export const STICKMAN_ASSETS = "/lp/stickman";
-// The app's viewport tag (index.html) blocks pinch-zoom. These pages allow it.
-export const APP_VIEWPORT = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+// Every page allows pinch-zoom now (index.html, src/lib/viewportZoom.js); this is that same tag.
 export const STICKMAN_VIEWPORT = "width=device-width, initial-scale=1, viewport-fit=cover";
 export const STICKMAN_FONT_HREF = "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&display=swap";
 
