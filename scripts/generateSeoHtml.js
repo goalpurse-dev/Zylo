@@ -26,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
 import { getNoindexWorkspaceRoutes, getWorkspaceRouteSeoPolicy } from "../src/data/routeSeoPolicy.js";
+import { blogArticles } from "../src/data/blogArticles.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = path.join(projectRoot, "dist");
@@ -105,7 +106,9 @@ function buildHead({ pathname, seoVisibility, innerHtml }) {
   const description = metadata?.description || workspacePolicy?.description || derived?.description || DEFAULT_DESCRIPTION;
   const ogImage = metadata?.image || `${SITE_URL}/og-image.png`;
   const ogType = metadata?.type || "website";
-  const structuredData = structuredDataFor(pathname, metadata, canonical);
+  // A blog post without its own metadata entry still gets BlogPosting + BreadcrumbList, from what the blog index says about it.
+  const article = metadata ? null : blogArticles.find((post) => post.slug === pathname);
+  const structuredData = structuredDataFor(pathname, article ? { title: `${article.title} | Zyvo`, description: article.description, type: "article" } : metadata, canonical);
 
   return { title, description, canonical, robots, ogImage, ogType, structuredData, imageSize: metadata?.imageSize, preloadImage: metadata?.preloadImage, fontHref: metadata?.fontHref, hydrate: Boolean(metadata?.inlineContent), viewport: metadata?.viewport, shellGuard: Boolean(metadata?.shellGuard) };
 }

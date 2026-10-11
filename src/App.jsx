@@ -22,10 +22,7 @@ import { Toaster } from "sonner";
 import ResumeCheckout from "./components/billing/ResumeCheckout.jsx";
 import PasswordRecoveryRedirect from "./components/auth/PasswordRecoveryRedirect.jsx";
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
-import AIFruitStory from "./pages/workspace/AIFruitStory";
-import BlockyStories from "./pages/workspace/BlockyStories";
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
-import SkeletonShorts from "./pages/workspace/SkeletonShorts";
 
 // pages…
 //import Home from "./pages/Home";
@@ -66,6 +63,10 @@ const HomeV2 = lazy(() => import("./pages/workspace/HomeV2.jsx"));
 // 🔥 ALSO lazy these workspace pages (important for performance)
 const WorkspaceLayout = lazy(() => import("./pages/workspace/layout.jsx"));
 const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
+// Tool pages: loaded when opened, not with every page of the site.
+const AIFruitStory = lazy(() => import("./pages/workspace/AIFruitStory"));
+const BlockyStories = lazy(() => import("./pages/workspace/BlockyStories"));
+const SkeletonShorts = lazy(() => import("./pages/workspace/SkeletonShorts"));
 
 const ImageGenTest = lazy(() => import("./pages/image-gen-test.jsx"));
 import { GenerationsProvider } from "./components/GenerationsDock";

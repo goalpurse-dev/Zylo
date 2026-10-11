@@ -5,12 +5,7 @@ import { optImg } from "../../lib/optImage";
 export default function GlowHeader({ compact = false } = {}) {
   return (
     <section className={`relative w-full overflow-hidden ${compact ? "pt-3 sm:pt-4 md:pt-6" : "pt-4 sm:pt-7 md:pt-10"}`}>
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 px-3 text-center sm:px-5 md:px-8"
-      >
+      <div className="relative z-10 px-3 text-center sm:px-5 md:px-8">
         {!compact && <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -20,32 +15,22 @@ export default function GlowHeader({ compact = false } = {}) {
           AI creation suite for viral content
         </motion.div>}
         <h1 className={`mx-auto max-w-4xl font-black leading-[1.04] tracking-[-0.045em] ${compact ? "text-[22px] sm:text-[26px] md:text-[36px] lg:text-[40px] xl:text-[45px]" : "text-[30px] sm:text-[36px] md:text-[52px] lg:text-[58px] xl:text-[64px]"}`}>
-          <motion.span
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05, duration: 0.5 }}
-            className="block text-white"
-          >
+          <span className="block text-white">
             AI Video Generator for{" "}
             <span className="bg-gradient-to-r from-[#d8c1ff] via-[#a970ff] to-[#e879f9] bg-clip-text text-transparent">YouTube, TikTok and Reels</span>
-          </motion.span>
+          </span>
         </h1>
         {/* The old headline, now the line under it. One text node, so it reads "to create" with its space. */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.5 }}
-          className="mx-auto mt-2 max-w-2xl text-[15px] font-semibold text-white/65 sm:text-[17px] md:mt-3 md:text-[20px]"
-        >
+        <p className="mx-auto mt-2 max-w-2xl text-[15px] font-semibold text-white/65 sm:text-[17px] md:mt-3 md:text-[20px]">
           What would you like to create today?
           <img
             {...optImg("/home/click.png", "44px", 96)}
             alt=""
             className="ml-1.5 inline-block h-6 w-6 select-none align-middle pointer-events-none md:ml-2 md:h-8 md:w-8"
           />
-        </motion.p>
+        </p>
 
-      </motion.div>
+      </div>
     </section>
   );
 }

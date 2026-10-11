@@ -563,6 +563,7 @@ export const PUBLIC_SEO_METADATA = {
     type: "website",
     image: `${SITE_URL}/lp/fruit/og-ai-fruit-story.jpg`,
     imageSize: [1200, 630],
+    inlineContent: true,
     modified: "2026-10-11", // bump when the page changes: it becomes the sitemap's lastmod
   },
   // The three "maker" blog copies 301 to these pages (vercel.json), which now

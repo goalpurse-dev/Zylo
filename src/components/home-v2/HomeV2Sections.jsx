@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ToolLink from "../seo/ToolLink.jsx";
+import { useFirstInteraction } from "../../lib/firstInteraction.js";
 import { useReducedMotion } from "framer-motion";
 import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
@@ -55,11 +56,15 @@ const NewPill = ({ className = "" }) => (
 
 // Poster first; the clip loads and plays only while on screen (never with reduced motion).
 // `webm` (VP9) is offered first when given; the MP4 (H.264) is the fallback.
-export function LazyLoopVideo({ src, webm, poster, className = "" }) {
+// The poster shows first. The video file is fetched only once the visitor has scrolled, tapped or moved
+// (useFirstInteraction) AND the card is on screen, so a first load never pays for video.
+// `priority`: the poster is one of the first pictures on screen (fetched early, not lazily).
+export function LazyLoopVideo({ src, webm, poster, className = "", priority = false }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
+  const interacted = useFirstInteraction();
   useEffect(() => {
     if (reduced || !ref.current) return undefined;
     const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting));
@@ -70,11 +75,11 @@ export function LazyLoopVideo({ src, webm, poster, className = "" }) {
     const v = ref.current?.querySelector("video");
     if (!v) return;
     if (inView) v.play().catch(() => {}); else v.pause();
-  }, [inView]);
+  }, [inView, interacted]);
   return (
     <div ref={ref} className={`overflow-hidden bg-[#0d0f10] ${className.split(" ").includes("absolute") ? "" : "relative"} ${className}`}>
-      <img src={poster} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
-      {!reduced && (inView || ready) && (
+      <img src={poster} alt="" decoding="async" loading={priority ? "eager" : "lazy"} {...(priority ? { fetchPriority: "high" } : {})} className="absolute inset-0 h-full w-full object-cover" />
+      {!reduced && interacted && (inView || ready) && (
         <video poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${ready ? "opacity-100" : "opacity-0"}`}>
           {webm && <source src={webm} type='video/webm; codecs="vp9"' />}
@@ -136,7 +141,7 @@ export function PathCards() {
         primary isNew={isLongFormNew()}
         to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "home_hero" })}
         icon={Clapperboard} name="Long Form" line="8–15 min YouTube explainers from one idea" cta="Start a video"
-        media={<LazyLoopVideo {...LONG_FORM_LOOP} className="h-full" />}
+        media={<LazyLoopVideo {...LONG_FORM_LOOP} className="h-full" priority />}
       />
     </div>
   );

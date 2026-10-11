@@ -2,7 +2,6 @@ import { SITE_URL } from "./publicSeoMetadata.js";
 import { STICKMAN_PRICING, getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
 import { getPublishedSeoLandingPages } from "./seoLandingPages.js";
 import { getPublicWorkspaceRoutes } from "./routeSeoPolicy.js";
-import { blogArticles } from "./blogArticles.js";
 import { BLOG_DATES } from "./blogDates.js";
 import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
 import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
@@ -49,9 +48,6 @@ export const planOffers = () => STICKMAN_PRICING.plans.map((plan) => ({
 function fallbackMetadata(pathname) {
   const landing = getPublishedSeoLandingPages().find((page) => `/${page.slug}` === pathname);
   if (landing) return { title: landing.seo.title, description: landing.seo.description, toolName: `Zyvo ${landing.seo.title.split(" – ")[0]}`, faq: landing.sections?.faq ?? [] };
-  // A blog post without its own entry: the title and description the blog index shows for it.
-  const article = blogArticles.find((post) => post.slug === pathname);
-  if (article) return { title: `${article.title} | Zyvo`, description: article.description, type: "article" };
   const policy = getPublicWorkspaceRoutes().find((route) => route.path === pathname);
   return policy ? { title: policy.title, description: policy.description } : null;
 }
