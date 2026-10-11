@@ -87,6 +87,8 @@ const ALLOWED_IN_FRUIT = [
 const FRUIT_LANDING_BY_OWNER = [
   "src/data/fruitStoryPages.js",
   "src/pages/landing/AIFruitStoryLanding.jsx",
+  "public/lp/fruit/examples/twenty-pairs-no-questions.jpg",
+  "public/lp/fruit/examples/glass-walls-dont-lie.jpg",
 ];
 
 const CODE = /\.(js|jsx|mjs|ts|tsx)$/;
