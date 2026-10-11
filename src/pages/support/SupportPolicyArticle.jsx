@@ -8,11 +8,12 @@ const POLICIES = {
 
   tos: {
     title: "Terms of Service",
-    updated: "2026-03-14",
+    updated: "2026-10-11",
     body: [
       "By using Zyvo, you agree to these Terms of Service.",
       "Zyvo provides AI-powered tools for generating images, videos, and other creative content.",
       "You are responsible for how you use generated content.",
+      "You can use the images you make in your own posts, thumbnails, ads and product listings. You are responsible for what you ask for: do not put real people or other companies' characters and logos in a prompt without the right to use them.",
       "We may update the service, pricing, or policies at any time.",
       "Abuse of the platform, including automated scraping or misuse of credits, may result in account suspension."
     ]

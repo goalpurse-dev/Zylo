@@ -17,8 +17,8 @@ export const BRAND = {
   name: "Zyvo",
   alternateName: ["Zyvo AI", "ZyvoAI", "TryZyvo"], // the ways people type the brand
   logo: "/logo.png", // public/logo.png, 512 x 512
-  // The owner sends the official social links later (2026-10-11): until then there is no sameAs at all.
-  sameAs: [],
+  // The official Zyvo profiles, as the owner gave them on 2026-10-11.
+  sameAs: ["https://www.tiktok.com/@zyvoai", "https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai/"],
 };
 
 // Plain JS (no React/JSX) so it can be imported both by the client

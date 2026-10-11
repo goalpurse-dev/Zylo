@@ -94,9 +94,9 @@ test("headings: Home's H1 names what Zyvo is; /long-form's does for a signed-out
   assert.ok(read("src/pages/workspace/long-form/index.jsx").includes('{signedOut ? "AI Long-Form YouTube Video Generator" : "Long Form"}'));
 });
 
-test("structured data: brand without sameAs, SoftwareApplication with prices on every tool page, checked by the build", () => {
+test("structured data: brand with its official profiles, SoftwareApplication with prices on every tool page, checked by the build", () => {
   assert.deepEqual(BRAND.alternateName, ["Zyvo AI", "ZyvoAI", "TryZyvo"]);
-  assert.deepEqual(BRAND.sameAs, []);
+  assert.deepEqual(BRAND.sameAs, ["https://www.tiktok.com/@zyvoai", "https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai/"]);
   const tools = ["/long-form", "/image-generator", "/ai-fruit-story-maker", "/cartoon-drive-by-video-maker", "/behind-the-scenes-video-maker", "/kit-swap-ai", "/30-days-video-maker", "/30-days-series-video-maker",
     "/face-asmr-maker", "/micro-camera-animal-maker", "/clay-rescue-maker", "/2am-worlds-ai-generator", "/ai-stickman-video-generator"];
   for (const tool of tools) {

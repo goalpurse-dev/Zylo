@@ -87,7 +87,7 @@ export default function ImageGeneratorLanding() {
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-lime-300">Zyvo image generator</p>
               <h1 style={DISPLAY} className="mt-3 text-balance text-[46px] font-extrabold uppercase leading-[0.95] text-white sm:text-[64px] lg:text-[72px]">{IMAGE_GENERATOR_SEO.h1}</h1>
               <p className="mt-5 max-w-[56ch] text-[16px] leading-7 text-white/70 sm:text-[18px] sm:leading-8">
-                Describe a picture and get it in seconds: cinematic scenes, illustrations, realistic shots and 3D renders, sized for TikTok, YouTube thumbnails, product photos and ads.
+                Describe a picture and get it in seconds: cinematic scenes, anime, product shots, illustrations and 3D renders, sized for TikTok, YouTube thumbnails, product photos and ads.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <StartLink placement="hero" />

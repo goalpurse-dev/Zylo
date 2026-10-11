@@ -59,7 +59,7 @@ test("SEO: title starts with Zyvo, canonical is the www root, indexable, in the 
   assert.ok(!/document\.title\s*=/.test(read("src/pages/workspace/HomeV2.jsx")));
 });
 
-test("JSON-LD on /: Organization + WebSite named Zyvo, with logo, and no sameAs until the owner sends the links", () => {
+test("JSON-LD on /: Organization + WebSite named Zyvo, with logo and the three official profiles", () => {
   const ld = structuredDataFor("/", getPublicSeoMetadata("/"), canonicalFor("/"));
   const [org, site] = ld["@graph"];
   assert.deepEqual(ld["@graph"].map((n) => n["@type"]), ["Organization", "WebSite"]);
@@ -68,9 +68,9 @@ test("JSON-LD on /: Organization + WebSite named Zyvo, with logo, and no sameAs 
   assert.equal(org.url, `${SITE_URL}/`);
   assert.equal(org.logo.url, `${SITE_URL}/logo.png`);
   assert.ok(existsSync(join(root, "public/logo.png")));
-  // The owner sends the official social links later (2026-10-11): no sameAs key at all until then.
-  assert.deepEqual(BRAND.sameAs, []);
-  assert.equal("sameAs" in org, false);
+  // The official profiles, as the owner gave them on 2026-10-11.
+  assert.deepEqual(org.sameAs, ["https://www.tiktok.com/@zyvoai", "https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai/"]);
+  assert.deepEqual(org.sameAs, BRAND.sameAs);
   assert.equal(site.name, "Zyvo");
   assert.deepEqual(site.alternateName, ["Zyvo AI", "ZyvoAI", "TryZyvo"]);
   assert.equal(site.url, `${SITE_URL}/`);
