@@ -20,18 +20,20 @@ import { createClient } from "@supabase/supabase-js";
 import { checkEmailAddress, emailFooter } from "../supabase/functions/_shared/emailRules.js";
 import { CAMPAIGNS, campaignNumbers, campaignReportText } from "../supabase/functions/_shared/campaigns.js";
 
+// Leaving a moment after the last request: on Windows, exiting while a connection is still closing crashes Node with an assertion.
+const bye = async (code) => { await new Promise((r) => setTimeout(r, 400)); process.exit(code); };
 const args = process.argv.slice(2);
 const flag = (k) => args.includes(k);
 const val = (k, fallback = null) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : fallback; };
 const id = val("--campaign");
 const def = CAMPAIGNS[id];
-if (!def) { console.error(`Unknown --campaign. Known: ${Object.keys(CAMPAIGNS).join(", ")}`); process.exit(1); }
+if (!def) { console.error(`Unknown --campaign. Known: ${Object.keys(CAMPAIGNS).join(", ")}`); await bye(1); }
 const admin = createClient(process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 const when = (d) => `${new Date(d).toISOString().slice(0, 16).replace("T", " ")} UTC (${new Date(d).toLocaleString("en-GB", { timeZone: "Europe/Helsinki", weekday: "short", hour: "2-digit", minute: "2-digit" })} in Finland)`;
 const { data: existing } = await admin.from("email_campaigns").select("*").eq("id", id).maybeSingle();
 
 if (flag("--report")) {
-  if (!existing) { console.log(`${id}: not queued yet`); process.exit(0); }
+  if (!existing) { console.log(`${id}: not queued yet`); await bye(0); }
   console.log(campaignReportText(id, existing, await campaignNumbers(admin, id, existing.starts_at)));
   console.log(`Window: ${when(existing.starts_at)} to ${when(existing.ends_at)}`);
   if (existing.depends_on) console.log(`Runs only if ${existing.depends_on} had 0 spam complaints and bounces under 2%.`);
@@ -41,15 +43,15 @@ if (flag("--report")) {
   const reasons = {};
   for (const r of why ?? []) reasons[r.reason ?? "?"] = (reasons[r.reason ?? "?"] ?? 0) + 1;
   if (why?.length) console.log("Not sent, by reason:", JSON.stringify(reasons));
-  process.exit(0);
+  await bye(0);
 }
 
 const move = async (from, to, extra = {}) => {
-  if (!existing) { console.error(`${id} is not queued yet (run --queue first)`); process.exit(1); }
+  if (!existing) { console.error(`${id} is not queued yet (run --queue first)`); await bye(1); }
   const { data, error } = await admin.from("email_campaigns").update({ status: to, ...extra }).eq("id", id).in("status", from).select("status");
   if (error) throw new Error(error.message);
   console.log(data?.length ? `${id}: ${existing.status} → ${to}` : `${id}: not changed (it is "${existing.status}", this needs ${from.join(" or ")})`);
-  process.exit(data?.length ? 0 : 1);
+  await bye(data?.length ? 0 : 1);
 };
 if (flag("--approve")) await move(["waiting"], "approved");
 if (flag("--hold")) await move(["approved"], "waiting");
@@ -59,19 +61,19 @@ if (flag("--stop")) await move(["waiting", "approved", "sending"], "stopped", { 
 const start = new Date(val("--start") ?? NaN);
 const count = Number(val("--count", 200));
 const hours = Number(val("--hours", 7));
-if (Number.isNaN(start.getTime())) { console.error("Give --start as a UTC time, e.g. --start 2026-10-11T13:00:00Z"); process.exit(1); }
-if (!Number.isInteger(count) || count < 1 || count > 1000 || !(hours >= 6 && hours <= 12)) { console.error("--count 1 to 1000, --hours 6 to 12"); process.exit(1); }
+if (Number.isNaN(start.getTime())) { console.error("Give --start as a UTC time, e.g. --start 2026-10-11T13:00:00Z"); await bye(1); }
+if (!Number.isInteger(count) || count < 1 || count > 1000 || !(hours >= 6 && hours <= 12)) { console.error("--count 1 to 1000, --hours 6 to 12"); await bye(1); }
 let cutoff = new Date(start.getTime() - 24 * 3600_000).toISOString(); // signed up at least 24 hours before the first send
 
 // --after a,b: "the next N": only people who signed up BEFORE everyone in those campaigns (and none of their recipients).
 const after = String(val("--after", "")).split(",").map((s) => s.trim()).filter(Boolean);
 const dependsOn = val("--depends-on");
-for (const c of [...after, ...(dependsOn ? [dependsOn] : [])]) if (!CAMPAIGNS[c]) { console.error(`Unknown campaign in --after/--depends-on: ${c}`); process.exit(1); }
+for (const c of [...after, ...(dependsOn ? [dependsOn] : [])]) if (!CAMPAIGNS[c]) { console.error(`Unknown campaign in --after/--depends-on: ${c}`); await bye(1); }
 const earlier = new Set();
 for (const c of after) {
   const { data: q, error: qe } = await admin.from("email_campaign_queue").select("profile_id").eq("campaign", c).limit(1000);
   if (qe) throw new Error(qe.message);
-  if (!q.length) { console.error(`--after ${c}: that campaign has no queue yet`); process.exit(1); }
+  if (!q.length) { console.error(`--after ${c}: that campaign has no queue yet`); await bye(1); }
   for (const r of q) earlier.add(r.profile_id);
 }
 if (earlier.size) {
@@ -125,9 +127,9 @@ console.log(JSON.stringify({
 }, null, 1));
 console.log("\n----- the email (text version) -----\n" + def.render(footer).text + "\n------------------------------------");
 
-if (!flag("--queue")) { console.log("\nPlan only: nothing was written. Add --queue to write it (status \"waiting\": nothing is sent until --approve)."); process.exit(0); }
-if (existing) { console.error(`\n${id} is already queued (status "${existing.status}"): not written again.`); process.exit(1); }
-if (!picked.length) { console.error("\nNobody to send to."); process.exit(1); }
+if (!flag("--queue")) { console.log("\nPlan only: nothing was written. Add --queue to write it (status \"waiting\": nothing is sent until --approve)."); await bye(0); }
+if (existing) { console.error(`\n${id} is already queued (status "${existing.status}"): not written again.`); await bye(1); }
+if (!picked.length) { console.error("\nNobody to send to."); await bye(1); }
 const { error: e1 } = await admin.from("email_campaigns").insert({ id, status: "waiting", planned: rows.length, starts_at: start.toISOString(), ends_at: dropAfter.toISOString(), depends_on: dependsOn ?? null });
 if (e1) throw new Error(e1.message);
 const { error: e2 } = await admin.from("email_campaign_queue").insert(rows);
