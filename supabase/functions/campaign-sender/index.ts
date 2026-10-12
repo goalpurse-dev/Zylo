@@ -1,9 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
-// campaign-sender/index.ts — sends the scheduled campaigns, one email a minute at most.
+// campaign-sender/index.ts — sends the scheduled campaigns, one email per 25 seconds at most.
 //
-// Called every minute by the cron job email-campaign-sender (x-campaign-secret;
+// Called every 30 seconds by the cron job email-campaign-sender (x-campaign-secret;
 // verify_jwt = false). Each call, for every campaign that is allowed to send
 // (status approved or sending, inside its window):
+//   0. depends_on: the campaign before it must have finished with 0 spam
+//      complaints and bounces under 2%, or this one does not start
 //   1. the stop rules (_shared/campaigns.js): any spam complaint, or bounces
 //      over 2% of what was sent → the campaign is stopped and the owner is told
 //   2. ONE email that is due: the profile must still be ON with the same
@@ -16,7 +18,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, campaignNumbers, campaignReportText, campaignStopReason } from "../_shared/campaigns.js";
+import { CAMPAIGNS, campaignNumbers, campaignReportText, campaignStopReason, previousCampaignProblem } from "../_shared/campaigns.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
 const SECRET = Deno.env.get("CAMPAIGN_SENDER_SECRET") ?? "";
@@ -29,7 +31,7 @@ async function finish(c: any, status: "done" | "stopped", reason: string | null)
   if (!changed?.length) return; // another call got there first: one email to the owner, not two
   const n = await campaignNumbers(sb, c.id, c.starts_at);
   const head = status === "stopped" ? `Zyvo campaign ${c.id} STOPPED: ${reason}` : `Zyvo campaign ${c.id} finished: ${n.sent} sent, ${n.bounced} bounced, ${n.complained} complaints`;
-  await alertAdmin(head, `${campaignReportText(c.id, { ...c, status, stop_reason: reason }, n)}\n\n${status === "stopped" ? "Nothing more will be sent for this campaign." : "Late bounces and unsubscribes can still come in over the next day."}`, "campaign");
+  await alertAdmin(head, `${campaignReportText(c.id, { ...c, status, stop_reason: reason }, n)}\n\n${status === "stopped" ? "Nothing more will be sent for this campaign." : "Opens, late bounces and unsubscribes still come in: you get these numbers again in 12 hours."}`, "campaign");
 }
 
 async function sendOne(c: any, def: any): Promise<string> {
@@ -69,6 +71,16 @@ async function tick() {
   for (const c of campaigns ?? []) {
     const def = (CAMPAIGNS as any)[c.id];
     if (!def) { await finish(c, "stopped", "no template for this campaign in _shared/campaigns.js"); out[c.id] = "stopped"; continue; }
+    // A campaign that depends on the one before it: 0 spam complaints and bounces under 2% there,
+    // or this one does not start (and stops, if a complaint about the earlier one arrives later).
+    if (c.depends_on) {
+      const { data: prev } = await sb.from("email_campaigns").select("*").eq("id", c.depends_on).maybeSingle();
+      const problem = previousCampaignProblem(prev, prev ? await campaignNumbers(sb, prev.id, prev.starts_at) : null);
+      if (problem) {
+        const why = `${c.status === "approved" ? "not started" : "stopped part-way"}: ${problem}`;
+        await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
+      }
+    }
     const n = await campaignNumbers(sb, c.id, c.starts_at);
     const stop = campaignStopReason(n);
     if (stop) { await finish(c, "stopped", stop); out[c.id] = `stopped: ${stop}`; continue; }
@@ -81,7 +93,24 @@ async function tick() {
     out[c.id] = await sendOne(c, def);
     if (out[c.id] === "nothing_due" && n.queued === 0) { await finish(c, "done", null); out[c.id] = "done"; }
   }
+  await followUpReports(out);
   return out;
+}
+
+// 12 hours after a campaign ended the owner gets its numbers again: by then the opens,
+// the late bounces and the unsubscribes are in. Once per campaign; none if it sent nothing.
+async function followUpReports(out: Record<string, string>) {
+  const cutoff = new Date(Date.now() - 12 * 3600_000).toISOString();
+  const { data: ended } = await sb.from("email_campaigns").select("*").in("status", ["done", "stopped"]).is("followup_report_at", null).lt("finished_at", cutoff);
+  for (const c of ended ?? []) {
+    const { data: mine } = await sb.from("email_campaigns").update({ followup_report_at: new Date().toISOString() }).eq("id", c.id).is("followup_report_at", null).select("id");
+    if (!mine?.length) continue; // another call sent it
+    const n = await campaignNumbers(sb, c.id, c.starts_at);
+    if (n.sent === 0) { out[c.id] = "no follow-up (nothing was sent)"; continue; }
+    await alertAdmin(`Zyvo campaign ${c.id}, the day after: ${n.sent} sent, ${n.opened} opened, ${n.bounced} bounced, ${n.complained} complaints, ${n.unsubscribed} unsubscribed`,
+      `${campaignReportText(c.id, c, n)}\n\nThese are the numbers 12 hours after the last email.`, "campaign");
+    out[c.id] = "follow-up report sent";
+  }
 }
 
 // One proof copy for the owner, through the same template, sender and gate (category "test": 20 a day, no consent needed).
