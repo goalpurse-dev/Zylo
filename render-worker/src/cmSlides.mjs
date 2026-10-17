@@ -90,28 +90,48 @@ async function put(url, bytes, type) {
   throw new Error(`upload failed (${last})`);
 }
 
-/** Draws the PNGs, the ZIP and the MP4 into dir. Returns their paths. */
-export async function renderSlideshow(job, dir, { chromium } = {}) {
+export class LayoutError extends Error {
+  constructor(layout) { super(`layout check failed: ${layout.map((l) => `slide ${l.slide}: ${l.problems.join("; ")}`).join(" | ")}`); this.layout = layout; }
+}
+
+/** Real runs take images only from https (generated images, signed storage links): never local files. */
+export function assertRemoteImages(job) {
+  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.logos ?? {})].filter(Boolean);
+  const bad = urls.filter((u) => !String(u).toLowerCase().startsWith("https://"));
+  if (bad.length) throw new Error(`only https images may be used in a real render (got ${bad.length} other)`);
+}
+
+/**
+ * Draws the PNGs, the ZIP and the MP4 into dir. Returns their paths. Every slide checks its own layout
+ * (templates.js): one overlap, one word outside the safe zone or one missing image and NOTHING is drawn
+ * into files: a LayoutError lists each slide's problems.
+ * opts.local: file: images allowed (local checks only); opts.safeZones: draw the zones (previews only).
+ */
+export async function renderSlideshow(job, dir, { chromium, local = false, safeZones = false, keepGoing = false } = {}) {
   await mkdir(dir, { recursive: true });
   const browserType = chromium ?? (await import("playwright")).chromium;
   const browser = await browserType.launch({ args: ["--disable-dev-shm-usage", "--font-render-hinting=none"] });
   const pngs = [];
+  const layoutProblems = [];
   try {
     const page = await browser.newPage({ viewport: { width: SIZE.width, height: SIZE.height }, deviceScaleFactor: 1 });
     const fontCss = FONT_CSS.local(pathToFileURL(FONTS_DIR).href);
     const slides = job.slideshow.slides;
     for (const [i, slide] of slides.entries()) {
       const html = slideHtml({
-        slide, index: i, total: slides.length, style: job.style, zyvoShot: job.zyvoShot ?? null, fontCss,
+        slide, index: i, total: slides.length, style: job.style, zyvoShot: job.zyvoShot ?? null, fontCss, logos: job.logos ?? null, safeZones, allowFile: local,
         images: { background: job.images?.background ?? null, illustration: job.images?.illustrations?.[i] ?? null },
       });
       const file = path.join(dir, `slide-${String(i + 1).padStart(2, "0")}.png`);
       await writeFile(path.join(dir, "page.html"), html, "utf8");   // file:// so local fonts load
       await page.goto(pathToFileURL(path.join(dir, "page.html")).href, { waitUntil: "load", timeout: 60_000 });
       await page.waitForSelector('body[data-ready="1"]', { timeout: 30_000 });
+      const layout = JSON.parse(await page.evaluate(() => document.body.dataset.layout || "{}"));
+      if (!layout.ok) layoutProblems.push({ slide: i + 1, problems: layout.problems ?? ["no layout result"] });
       await page.screenshot({ path: file, type: "png" });
       pngs.push(file);
     }
+    if (layoutProblems.length && !keepGoing) throw new LayoutError(layoutProblems);
   } finally {
     await browser.close();
   }
@@ -120,7 +140,7 @@ export async function renderSlideshow(job, dir, { chromium } = {}) {
   const mp4 = path.join(dir, "slideshow.mp4");
   const { args, durationSec } = mp4Args(pngs.map((p) => path.basename(p)), slideDurations(pngs.length, job.secondsPerSlide ?? 2.5), path.basename(mp4));
   await run(FFMPEG, args, dir);
-  return { pngs, zip, mp4, durationSec };
+  return { pngs, zip, mp4, durationSec, layoutProblems };
 }
 
 async function main() {
@@ -130,7 +150,8 @@ async function main() {
   const t0 = Date.now();
   const dir = local > -1 ? path.resolve(process.argv[local + 2] ?? "cm-slides-out") : path.join(process.env.WORK_DIR ?? os.tmpdir(), `cm-slides-${job.ideaId ?? "local"}`);
   try {
-    const out = await renderSlideshow(job, dir);
+    if (local === -1) assertRemoteImages(job);
+    const out = await renderSlideshow(job, dir, { local: local > -1 });
     const sizes = { zip: (await stat(out.zip)).size, mp4: (await stat(out.mp4)).size };
     if (local > -1) { console.log(JSON.stringify({ ok: true, dir, slides: out.pngs.length, durationSec: out.durationSec, sizes, seconds: (Date.now() - t0) / 1000 })); return; }
     for (const [i, p] of out.pngs.entries()) await put(job.uploads.pngs[i], await readFile(p), "image/png");
@@ -140,7 +161,7 @@ async function main() {
     console.log(`[cm-slides] done in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   } catch (e) {
     console.error("[cm-slides] failed:", e?.message ?? e);
-    if (local === -1 && job.uploads?.manifest) await put(job.uploads.manifest, Buffer.from(JSON.stringify({ ok: false, error: String(e?.message ?? e).slice(0, 500), seconds: (Date.now() - t0) / 1000 })), "application/json").catch(() => {});
+    if (local === -1 && job.uploads?.manifest) await put(job.uploads.manifest, Buffer.from(JSON.stringify({ ok: false, error: String(e?.message ?? e).slice(0, 500), layout: e?.layout ?? null, seconds: (Date.now() - t0) / 1000 })), "application/json").catch(() => {});
     process.exitCode = 1;
   } finally {
     if (local === -1) await rm(dir, { recursive: true, force: true }).catch(() => {});

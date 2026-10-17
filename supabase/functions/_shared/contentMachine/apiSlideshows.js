@@ -3,7 +3,7 @@
 import { ApiError } from "./errors.js";
 import { coverage } from "./planner.js";
 import { localDay } from "./spendSummary.js";
-import { ZYVO_SHOT_PATH } from "./pipeline.js";
+import { ZYVO_SHOT_PATH, logosFor } from "./pipeline.js";
 
 const KINDS = ["format", "style", "hook"];
 const LIB_STATUS = ["active", "proposed", "retired"];
@@ -59,6 +59,48 @@ export function ideaView(idea, costs, urls) {
   };
 }
 
+/* ─── the logo library: official files only, approved by the owner before use ─── */
+
+const LOGO_TYPES = { "image/png": "png", "image/svg+xml": "svg", "image/webp": "webp", "image/jpeg": "jpg" };
+export const LOGO_MAX_BYTES = 500_000;
+
+function decodeBase64(b64) {
+  const bin = atob(String(b64 ?? "").replace(/^data:[^,]*,/, ""));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/** The file is what it says it is, small, and (for SVG) carries no script, event handler or outside link. */
+export function checkLogoFile(bytes, contentType) {
+  if (!LOGO_TYPES[contentType]) throw new ApiError("VALIDATION", "A logo is a PNG, SVG, WebP or JPEG file.");
+  if (!bytes.length || bytes.length > LOGO_MAX_BYTES) throw new ApiError("VALIDATION", `A logo file is at most ${LOGO_MAX_BYTES / 1000} KB.`);
+  const head = (n) => Array.from(bytes.slice(0, n));
+  const ok = {
+    "image/png": () => head(4).join(",") === "137,80,78,71",
+    "image/jpeg": () => head(2).join(",") === "255,216",
+    "image/webp": () => String.fromCharCode(...head(4)) === "RIFF" && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP",
+    "image/svg+xml": () => {
+      const text = new TextDecoder().decode(bytes);
+      if (!/<svg[\s>]/i.test(text)) return false;
+      if (/<script|<foreignObject|\son[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["'](?!#)/i.test(text)) throw new ApiError("VALIDATION", "This SVG has scripts, event handlers or links to outside files. Use the plain official file.");
+      return true;
+    },
+  }[contentType]();
+  if (!ok) throw new ApiError("VALIDATION", "The file doesn't match its type.");
+}
+
+function cleanLogoRow(body, existing = null) {
+  const name = String(body?.name ?? existing?.name ?? "").trim();
+  if (name.length < 1 || name.length > 60) throw new ApiError("VALIDATION", "Tool name: 1 to 60 characters.");
+  const domain = String(body?.domain ?? existing?.domain ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) throw new ApiError("VALIDATION", "Domain: like descript.com.");
+  const source = body?.source_url === undefined ? existing?.source_url ?? null : String(body.source_url ?? "").trim() || null;
+  if (source && !/^https:\/\/[^\s]+$/i.test(source)) throw new ApiError("VALIDATION", "Source: the https address of the company's press or brand page.");
+  const notes = body?.notes === undefined ? existing?.notes ?? null : String(body.notes ?? "").trim().slice(0, 300) || null;
+  return { name, domain, source_url: source, notes };
+}
+
 export function slideshowActions({ cm, files, kick, store, guard, now }) {
   async function startRun(user, { topic, count, kind }) {
     const s = await store.readSettings();
@@ -94,6 +136,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
         ideas: rows.map((r) => ideaView(r, costs, urls)),
         styles: Object.fromEntries(library.filter((l) => l.kind === "style").map((l) => [l.key, l.spec])),
         zyvoShot: await files.signedUrl(ZYVO_SHOT_PATH, 900),
+        logos: await logosFor({ db: cm, files }, rows.flatMap((r) => r.script?.slides ?? [])),
       };
     },
 
@@ -131,6 +174,45 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       return { package: saved };
     },
 
+    logos: async () => {
+      const rows = await cm.listLogos();
+      const urls = await files.signedUrls(rows.map((r) => r.logo_path).filter(Boolean), 900);
+      return { rows: rows.map((r) => ({ ...r, url: r.logo_path ? urls[r.logo_path] ?? null : null })) };
+    },
+
+    saveLogo: async ({ user, body }) => {
+      const existing = body?.id ? await cm.getLogo(String(body.id)) : null;
+      const row = cleanLogoRow(body, existing);
+      // A changed source or domain means a different file: the owner approves it again.
+      const reapprove = existing && (row.source_url !== existing.source_url || row.domain !== existing.domain);
+      const saved = await cm.saveLogo({ ...(existing ? { id: existing.id } : {}), ...row, ...(reapprove ? { approved: false, approved_at: null, approved_by: null } : {}) });
+      await store.audit(user.email, existing ? "logo.edit" : "logo.add", { domain: row.domain, reapprove: Boolean(reapprove) });
+      return { row: saved };
+    },
+
+    uploadLogo: async ({ user, body }) => {
+      const logo = await cm.getLogo(String(body?.id ?? ""));
+      const contentType = String(body?.contentType ?? "");
+      let bytes;
+      try { bytes = decodeBase64(body?.dataBase64); } catch { throw new ApiError("VALIDATION", "The file couldn't be read."); }
+      checkLogoFile(bytes, contentType);
+      const path = `logos/${logo.domain}.${LOGO_TYPES[contentType]}`;
+      await cm.uploadLogoFile(path, bytes, contentType);
+      // A new file is never in use until the owner approves it.
+      const saved = await cm.saveLogo({ id: logo.id, logo_path: path, content_type: contentType, approved: false, approved_at: null, approved_by: null });
+      await store.audit(user.email, "logo.upload", { domain: logo.domain, bytes: bytes.length, contentType });
+      return { row: saved };
+    },
+
+    approveLogo: async ({ user, body }) => {
+      const logo = await cm.getLogo(String(body?.id ?? ""));
+      const approved = body?.approved === true;
+      if (approved && (!logo.logo_path || !logo.source_url)) throw new ApiError("VALIDATION", "Add the official file and the page you took it from before approving.");
+      const saved = await cm.saveLogo({ id: logo.id, approved, approved_at: approved ? now().toISOString() : null, approved_by: approved ? user.email : null });
+      await store.audit(user.email, approved ? "logo.approve" : "logo.unapprove", { domain: logo.domain, source: logo.source_url });
+      return { row: saved };
+    },
+
     setIdeaStatus: async ({ user, body }) => {
       const status = String(body?.status ?? "");
       if (!["approved", "rejected", "done"].includes(status)) throw new ApiError("VALIDATION", "Status: approved, rejected or done.");
@@ -149,7 +231,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       const dry = guard.envDryRun || Boolean(s.dry_run);
       const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind: "manual", status: "ideating", dry_run: dry, input: { remakeOf: idea.id, count: 1 }, started_at: now().toISOString() });
       const [copy] = await cm.createIdeas([{ run_id: run.id, status: "producing", source: "owner", format: idea.format, title: "(being written)", recipe: idea.recipe, topic: idea.topic, dry_run: dry, target_platforms: idea.target_platforms }]);
-      await cm.enqueue([{ run_id: run.id, idea_id: copy.id, stage: "write", payload: { problems: [`a remake of "${idea.title}": keep the recipe, write it differently`] } }]);
+      await cm.enqueue([{ run_id: run.id, idea_id: copy.id, stage: "write", payload: { note: `a remake of "${idea.title}": keep the recipe, write it differently` } }]);
       await store.audit(user.email, "idea.remake", { id: idea.id, newId: copy.id });
       await kick().catch(() => {});
       return { runId: run.id, ideaId: copy.id };

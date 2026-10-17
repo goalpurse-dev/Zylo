@@ -97,7 +97,8 @@ HOW TO WRITE IT:
 - No real logos: tool slides show an icon tile with the tool's name, which the renderer draws. Don't describe logos.
 - Text density: low = headline only (≤ 8 words) on most slides; medium = headline + one short line; high = headline + 2–3 lines or a short list.
 - headline ≤ 60 characters. body ≤ 160 characters. items ≤ 5 per slide, ≤ 40 characters each. Wrap ONE key phrase of a headline in *asterisks* to get the yellow highlight bar.
-- image_prompt: an idea for a background or illustration for that slide (scene, mood, colours), or null. It must never ask for text, letters, logos, real people or brands. At most 3 slides get one.
+- image_prompt: an idea for an illustration for that slide (scene, mood, colours), or null. It must never ask for text, letters, logos or brands, and NEVER for a real person, a celebrity, a public figure or anyone who looks like one; prefer scenes and objects, and if a character is needed it is an invented cartoon character. At most 3 slides get one. Every slide of kind "meme" needs one (its picture).
+- Never imply that Zyvo is partnered with, endorsed by or affiliated with any tool you list.
 - The last slide is kind "cta" and matches the recipe's cta_type: link_in_bio ("tool's in my bio"), comment_keyword ("comment ZYVO and I'll send the link"), soft_mention ("made with Zyvo"), question (a question that invites comments).
 - First person only when true: "I built Zyvo" is true; invented experiences ("I've used X for 6 months", "this made me $5k") are not allowed.
 - hypothesis: one line saying what this post tests, e.g. "a question hook beats a statement hook for tool listicles".
@@ -159,7 +160,7 @@ PACKAGING:
 - sound_suggestion: a description of the kind of sound that fits (mood, tempo, "a trending lo-fi sound"); the owner picks the actual sound in the app. Never name copyrighted songs as if they were included.
 - Hashtags start with # and have no spaces.
 
-COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
+COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. So is any image_prompt that describes a real person, a celebrity, a public figure or a lookalike of one, and any wording that implies Zyvo is partnered with, endorsed by or affiliated with another tool. compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
 Return only the JSON object.`;
 }
 
@@ -195,6 +196,10 @@ export function slideshowProblems(s, recipe) {
     if ((x.items ?? []).length > 6) p.push(`slide ${i + 1}: too many items`);
   });
   if (s.slides.filter((x) => x.image_prompt).length > 3) p.push("more than 3 image prompts");
+  s.slides.forEach((x, i) => { if (x.kind === "meme" && !String(x.image_prompt ?? "").trim()) p.push(`slide ${i + 1}: a meme slide needs an image_prompt (its picture)`); });
+  // A program backstop for the obvious cases; the model's compliance check covers the rest.
+  const people = /\b(celebrit\w*|famous people|lookalike|look-alike|resembl\w*|elon musk|mrbeast|taylor swift|ronaldo|messi|kardashian\w*|real person)\b/i;
+  s.slides.forEach((x, i) => { if (people.test(String(x.image_prompt ?? ""))) p.push(`slide ${i + 1}: the image prompt points at a real person or a lookalike`); });
   const named = s.slides.map((x) => x.tool?.name).filter((t) => t && !/^zyvo$/i.test(t));
   const checked = new Set((s.tools_checked ?? []).map((t) => String(t.name).toLowerCase()));
   for (const t of named) if (!checked.has(t.toLowerCase())) p.push(`${t} is named but not in tools_checked`);

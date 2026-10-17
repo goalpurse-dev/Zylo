@@ -148,10 +148,42 @@ BEGIN
   END IF;
 END $$;
 
+/* ─── the logo library (owner, 2026-10-18) ───────────────────────────── */
+-- Official logo files only (from each company's press / brand kit page), unaltered, shown small next to
+-- the tool's name. A logo is used ONLY once the owner has approved it; a new upload clears the approval.
+-- Without an approved logo the slide shows the icon tile. Files live in the private bucket (logos/...).
+CREATE TABLE IF NOT EXISTS public.cm_logos (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  domain text NOT NULL UNIQUE CHECK (domain ~ '^[a-z0-9.-]+\.[a-z]{2,}$'),
+  logo_path text,
+  content_type text,
+  source_url text,
+  approved boolean NOT NULL DEFAULT false,
+  approved_at timestamptz,
+  approved_by text,
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  -- Approval needs the file and where it came from.
+  CONSTRAINT cm_logos_approved_needs_file CHECK (NOT approved OR (logo_path IS NOT NULL AND source_url IS NOT NULL))
+);
+INSERT INTO public.cm_logos (name, domain, notes) VALUES
+  ('Zyvo', 'tryzyvo.com', 'Our own logo'),
+  ('Descript', 'descript.com', NULL), ('ElevenLabs', 'elevenlabs.io', NULL), ('CapCut', 'capcut.com', NULL),
+  ('Runway', 'runwayml.com', NULL), ('Pika', 'pika.art', NULL), ('Kling', 'klingai.com', NULL),
+  ('Hedra', 'hedra.com', NULL), ('Hailuo', 'hailuoai.video', NULL), ('Seedance', 'seed.bytedance.com', 'Check the domain'),
+  ('Veo', 'deepmind.google', 'Google DeepMind'), ('Canva', 'canva.com', NULL), ('HeyGen', 'heygen.com', NULL),
+  ('Synthesia', 'synthesia.io', NULL), ('InVideo', 'invideo.io', NULL), ('OpusClip', 'opus.pro', NULL),
+  ('Suno', 'suno.com', NULL), ('Midjourney', 'midjourney.com', NULL), ('ChatGPT', 'chatgpt.com', NULL)
+ON CONFLICT (domain) DO NOTHING;
+
 DO $$
 BEGIN
   EXECUTE 'ALTER TABLE public.cm_library ENABLE ROW LEVEL SECURITY';
   EXECUTE 'REVOKE ALL ON public.cm_library FROM PUBLIC, anon, authenticated';
+  EXECUTE 'ALTER TABLE public.cm_logos ENABLE ROW LEVEL SECURITY';
+  EXECUTE 'REVOKE ALL ON public.cm_logos FROM PUBLIC, anon, authenticated';
 END $$;
 
 COMMIT;

@@ -34,5 +34,12 @@ begin
   assert not has_function_privilege('authenticated', 'public.cm_claim_jobs(integer,integer)', 'execute'), 'claim not exposed';
   assert not has_function_privilege('authenticated', 'private.trigger_content_machine()', 'execute'), 'tick not exposed';
   assert (select relrowsecurity from pg_class where oid = 'public.cm_library'::regclass), 'RLS on the library';
+  assert (select relrowsecurity from pg_class where oid = 'public.cm_logos'::regclass), 'RLS on the logos';
+  assert (select count(*) from public.cm_logos where approved) = 0, 'no logo starts approved';
+  begin
+    update public.cm_logos set approved = true where domain = 'descript.com';
+    raise exception 'approved without a file';
+  exception when check_violation then null;
+  end;
 end $$;
 rollback;

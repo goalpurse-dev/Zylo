@@ -2,8 +2,8 @@
 // the renderer uses (_shared/contentMachine/slides/templates.js), so a dry run already shows what would be
 // posted; once rendered, the real PNGs and the MP4 replace the live preview. Download and copy work on a
 // phone: the owner often posts from it.
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FONT_CSS, slideHtml } from "../../../../supabase/functions/_shared/contentMachine/slides/templates.js";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FONT_CSS, SAFE, slideHtml } from "../../../../supabase/functions/_shared/contentMachine/slides/templates.js";
 import { api, copyText, money, when } from "./cmApi";
 
 const STATUS_TONE = {
@@ -35,13 +35,39 @@ function CopyButton({ text, label = "Copy" }) {
 
 /* ─── one slide: the rendered PNG, or the live preview from the templates ─── */
 
-function SlidePreview({ slide, index, total, style, images, zyvoShot, png, width = 216 }) {
-  const scale = width / 1080;
-  const html = useMemo(() => (png || !style ? null : slideHtml({ slide, index, total, style, images, zyvoShot, fontCss: FONT_CSS.google })), [png, slide, index, total, style, images, zyvoShot]);
+// The platforms' safe zone on a 1080×1920 slide, in % (templates.js SAFE): drawn over a rendered PNG.
+const ZONE = { left: (SAFE.left / 1080) * 100, right: (SAFE.right / 1080) * 100, top: (SAFE.top / 1920) * 100, bottom: (SAFE.bottom / 1920) * 100 };
+function ZoneOverlay() {
+  const band = "absolute bg-rose-500/20";
   return (
-    <div className="shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black" style={{ width, height: width * (16 / 9) }}>
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div className={band} style={{ left: 0, top: 0, bottom: 0, width: `${ZONE.left}%` }} />
+      <div className={band} style={{ right: 0, top: 0, bottom: 0, width: `${ZONE.right}%` }} />
+      <div className={band} style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, top: 0, height: `${ZONE.top}%` }} />
+      <div className={band} style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, bottom: 0, height: `${ZONE.bottom}%` }} />
+      <div className="absolute border border-dashed border-rose-400" style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, top: `${ZONE.top}%`, bottom: `${ZONE.bottom}%` }} />
+    </div>
+  );
+}
+
+function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png, safeZones, width = 216 }) {
+  const scale = width / 1080;
+  const frame = useRef(null);
+  const [layout, setLayout] = useState(null);
+  const html = useMemo(() => (png || !style ? null : slideHtml({ slide, index, total, style, images, zyvoShot, logos, fontCss: FONT_CSS.google })), [png, slide, index, total, style, images, zyvoShot, logos]);
+  // The slide checks its own layout (overlaps, safe zone, missing images) and reports it here.
+  useEffect(() => {
+    const onMessage = (e) => { if (e.source && e.source === frame.current?.contentWindow && e.data?.cmLayout) setLayout(e.data.cmLayout); };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+  const bad = layout && !layout.ok;
+  return (
+    <div className={`relative shrink-0 overflow-hidden rounded-xl border bg-black ${bad ? "border-red-400" : "border-white/10"}`} style={{ width, height: width * (16 / 9) }} data-testid="cm-slide" data-layout-ok={layout ? String(layout.ok) : undefined}>
       {png ? <img src={png} alt={`Slide ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
-        : <iframe title={`Slide ${index + 1}`} srcDoc={html} sandbox="allow-scripts" className="pointer-events-none origin-top-left border-0" style={{ width: 1080, height: 1920, transform: `scale(${scale})` }} />}
+        : <iframe ref={frame} title={`Slide ${index + 1}`} srcDoc={html} sandbox="allow-scripts" className="pointer-events-none origin-top-left border-0" style={{ width: 1080, height: 1920, transform: `scale(${scale})` }} />}
+      {safeZones && <ZoneOverlay />}
+      {bad && <div className="absolute inset-x-1 bottom-1 rounded-md bg-red-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-white" title={layout.problems.join("\n")}>Layout: {layout.problems[0]}{layout.problems.length > 1 ? ` (+${layout.problems.length - 1})` : ""}</div>}
     </div>
   );
 }
@@ -108,7 +134,7 @@ function Row({ label, text, small }) {
   );
 }
 
-export function IdeaCard({ idea, styles, zyvoShot, onChanged, startOpen = false }) {
+export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, startOpen = false }) {
   const [open, setOpen] = useState(startOpen);
   const [busy, setBusy] = useState(null);
   const [note, setNote] = useState(null);
@@ -149,7 +175,7 @@ export function IdeaCard({ idea, styles, zyvoShot, onChanged, startOpen = false 
           {flagged && <p className="text-[13px] text-amber-200">The compliance check still found: {idea.compliance.problems.join(" · ")}. Fix it or reject it before posting.</p>}
           {idea.slides.length > 0 && (
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2" data-testid="cm-slides">
-              {idea.slides.map((s, i) => <SlidePreview key={i} slide={s} index={i} total={idea.slides.length} style={style} images={images(i)} zyvoShot={zyvoShot} png={g?.pngs?.[i]} />)}
+              {idea.slides.map((s, i) => <SlidePreview key={i} slide={s} index={i} total={idea.slides.length} style={style} images={images(i)} zyvoShot={zyvoShot} logos={logos} safeZones={safeZones} png={g?.pngs?.[i]} />)}
             </div>
           )}
           {g?.dryRun && <p className="text-[12.5px] text-white/50">Dry run: these previews are drawn live in your browser; nothing was rendered or spent.</p>}
@@ -184,7 +210,21 @@ export function IdeaCard({ idea, styles, zyvoShot, onChanged, startOpen = false 
 
 /* ─── Today ──────────────────────────────────────────────────────────── */
 
+/** "Show safe zones": the platforms' UI areas drawn over every preview (remembered in this browser). */
+function useSafeZones() {
+  const [on, setOn] = useState(() => { try { return localStorage.getItem("cm.safeZones") === "1"; } catch { return false; } });
+  const toggle = (v) => { setOn(v); try { localStorage.setItem("cm.safeZones", v ? "1" : "0"); } catch { /* private window */ } };
+  const control = (
+    <label className="flex items-center gap-2 text-[12.5px] text-white/70">
+      <input type="checkbox" checked={on} onChange={(e) => toggle(e.target.checked)} data-testid="cm-safe-zones" className="h-4 w-4 accent-rose-400" />
+      Show safe zones
+    </label>
+  );
+  return [on, control];
+}
+
 export function TodayTab({ st, onChanged }) {
+  const [zones, zoneControl] = useSafeZones();
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState(String(st.settings.slideshows_per_day ?? 5));
   const [runs, setRuns] = useState(null);
@@ -248,9 +288,10 @@ export function TodayTab({ st, onChanged }) {
         </div>
       )}
 
+      <div className="flex justify-end">{zoneControl}</div>
       {run && RUN_ACTIVE.has(run.status) && <p className="text-[13px] text-sky-200">This run is working ({nice(run.status)})… the page refreshes by itself.</p>}
       {data?.ideas?.length === 0 && <p className="text-[13.5px] text-white/60">{runs?.length ? "No slideshows in this run yet." : "Nothing made yet. Press Make slideshows."}</p>}
-      <div className="space-y-3">{data?.ideas?.map((i, n) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} onChanged={() => load(runId)} startOpen={n === 0} />)}</div>
+      <div className="space-y-3">{data?.ideas?.map((i, n) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={() => load(runId)} startOpen={n === 0} />)}</div>
     </div>
   );
 }
@@ -258,6 +299,7 @@ export function TodayTab({ st, onChanged }) {
 /* ─── Ideas: all history with filters ────────────────────────────────── */
 
 export function IdeasTab() {
+  const [zones, zoneControl] = useSafeZones();
   const [f, setF] = useState({ from: "", to: "", format: "", style: "", status: "" });
   const [data, setData] = useState(null);
   const [lib, setLib] = useState(null);
@@ -280,9 +322,10 @@ export function IdeasTab() {
           <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} className={input} aria-label="Status"><option value="">any status</option>{["done", "approved", "rejected", "producing", "failed", "skipped_budget"].map((s) => <option key={s} value={s}>{nice(s)}</option>)}</select>
         </div>
       </Card>
+      <div className="flex justify-end">{zoneControl}</div>
       {error && <p className="text-[13px] text-red-200">{error}</p>}
       {!data ? <p className="text-[13px] text-white/50">Loading…</p> : data.ideas.length === 0 ? <p className="text-[13.5px] text-white/60">No ideas match.</p>
-        : <div className="space-y-3">{data.ideas.map((i) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} onChanged={load} />)}</div>}
+        : <div className="space-y-3">{data.ideas.map((i) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} />)}</div>}
     </div>
   );
 }
@@ -290,6 +333,71 @@ export function IdeasTab() {
 /* ─── Library: formats, styles and hooks ─────────────────────────────── */
 
 const EMPTY = { kind: "format", key: "", name: "", description: "", spec: '{"slides": [5, 7]}' };
+
+/* ─── the logo library: official files, approved one by one ─── */
+
+const readBase64 = (file) => new Promise((resolve, reject) => {
+  const r = new FileReader();
+  r.onload = () => resolve(String(r.result).replace(/^data:[^,]*,/, ""));
+  r.onerror = reject;
+  r.readAsDataURL(file);
+});
+
+function LogoRow({ row, onSaved }) {
+  const [source, setSource] = useState(row.source_url ?? "");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState(null);
+  const run = async (fn) => { setBusy(true); setNote(null); try { await fn(); await onSaved(); } catch (e) { setNote(e.message); } setBusy(false); };
+  const upload = (file) => run(async () => {
+    if (!file) return;
+    await api("uploadLogo", { id: row.id, contentType: file.type, dataBase64: await readBase64(file) });
+  });
+  return (
+    <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center" data-testid="cm-logo">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-2">{row.url ? <img src={row.url} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[11px] text-black/40">no file</span>}</div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[14px] font-semibold text-white">{row.name} <span className="text-[12px] font-normal text-white/45">{row.domain}</span></div>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Press / brand kit page (https://…)" className={`${input} w-full py-1.5 text-[12.5px] sm:w-80`} aria-label={`${row.name} source page`} />
+          {source !== (row.source_url ?? "") && <button type="button" disabled={busy} onClick={() => run(() => api("saveLogo", { id: row.id, source_url: source }))} className="rounded-lg bg-white/10 px-2.5 py-1.5 text-[12px] font-semibold text-white">Save source</button>}
+          <label className="cursor-pointer rounded-lg bg-white/10 px-2.5 py-1.5 text-[12px] font-semibold text-white">{row.logo_path ? "Replace file" : "Upload official file"}
+            <input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
+          </label>
+        </div>
+        {row.notes && <div className="mt-1 text-[11.5px] text-white/45">{row.notes}</div>}
+        {note && <div className="mt-1 text-[12px] text-red-200">{note}</div>}
+      </div>
+      <label className="flex items-center gap-2 text-[12.5px] text-white/80">
+        <input type="checkbox" checked={row.approved} disabled={busy || (!row.approved && (!row.logo_path || !row.source_url))} onChange={(e) => run(() => api("approveLogo", { id: row.id, approved: e.target.checked }))} className="h-4 w-4 accent-lime-300" />
+        {row.approved ? "Approved" : "Approve"}
+      </label>
+    </li>
+  );
+}
+
+function LogosCard() {
+  const [rows, setRows] = useState(null);
+  const [add, setAdd] = useState({ name: "", domain: "" });
+  const [note, setNote] = useState(null);
+  const load = useCallback(async () => { try { setRows((await api("logos")).rows); } catch (e) { setNote(e.message); } }, []);
+  useEffect(() => { load(); }, [load]);
+  const create = async (e) => {
+    e.preventDefault(); setNote(null);
+    try { await api("saveLogo", add); setAdd({ name: "", domain: "" }); await load(); } catch (err) { setNote(err.message); }
+  };
+  return (
+    <Card title="Logo library" testid="cm-logos">
+      <p className="mb-2 text-[12.5px] text-white/55">Only official files from each company's press or brand kit page, unaltered. A logo appears small next to the tool's name, and only once you approve it; a new file needs approving again. Without an approved logo, the slide shows the initials tile. Never implies a partnership.</p>
+      {!rows ? <p className="text-[13px] text-white/50">{note ?? "Loading…"}</p> : <ul className="divide-y divide-white/[0.06]">{rows.map((r) => <LogoRow key={r.id} row={r} onSaved={load} />)}</ul>}
+      <form onSubmit={create} className="mt-3 flex flex-wrap gap-2">
+        <input value={add.name} onChange={(e) => setAdd({ ...add, name: e.target.value })} placeholder="Tool name" className={input} aria-label="New tool name" />
+        <input value={add.domain} onChange={(e) => setAdd({ ...add, domain: e.target.value })} placeholder="domain.com" className={input} aria-label="New tool domain" />
+        <button type="submit" className="rounded-lg bg-white/10 px-3 py-2 text-[13px] font-semibold text-white">Add tool</button>
+        {note && rows && <span className="text-[12.5px] text-red-200">{note}</span>}
+      </form>
+    </Card>
+  );
+}
 
 export function LibraryTab() {
   const [data, setData] = useState(null);
@@ -334,6 +442,7 @@ export function LibraryTab() {
           </ul>
         </Card>
       ))}
+      <LogosCard />
       <Card title="Add to the library">
         <form onSubmit={add} className="grid gap-2 sm:grid-cols-2">
           <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value, spec: e.target.value === "style" ? '{"bg_prompt": "…, no text", "bg": "#0b0b0f", "fg": "#ffffff", "accent": "#a855f7", "highlight": "#facc15", "font": "anton"}' : e.target.value === "format" ? '{"slides": [5, 7]}' : "{}" })} className={input} aria-label="Kind"><option value="format">Format</option><option value="style">Visual style</option><option value="hook">Hook type</option></select>

@@ -10,6 +10,8 @@ const VERSION = "2023-06-01";
 
 export const PRICES = Object.freeze({
   "claude-sonnet-5-5": { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite5m: 2.5, cacheWrite1h: 4.0 },
+  // The refusal fallback (pipeline.js): the same price as Sonnet 5.5, never more.
+  "claude-sonnet-5": { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite5m: 2.5, cacheWrite1h: 4.0 },
   "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite5m: 0.125, cacheWrite1h: 0.2 },
   "claude-opus-5-5": { input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite5m: 5.0, cacheWrite1h: 8.0 },
 });
@@ -20,7 +22,8 @@ export const WEB_SEARCH_TOOL = "web_search_20260209";
 
 export function priceFor(model, overrides = null) {
   const table = { ...PRICES, ...(overrides ?? {}) };
-  const key = Object.keys(table).find((k) => String(model ?? "").startsWith(k));
+  // The longest matching name: "claude-sonnet-5-5" must not be priced as "claude-sonnet-5".
+  const key = Object.keys(table).filter((k) => String(model ?? "").startsWith(k)).sort((a, b) => b.length - a.length)[0];
   return key ? table[key] : UNKNOWN;
 }
 

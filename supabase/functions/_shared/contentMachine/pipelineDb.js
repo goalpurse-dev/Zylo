@@ -101,6 +101,21 @@ export function createPipelineDb(db) {
     async saveLibrary(row) {
       return must(await db.from("cm_library").upsert({ ...row, updated_at: nowIso() }, { onConflict: "kind,key" }).select("*").single(), "save library");
     },
+    /* ─── the logo library ─── */
+    async approvedLogos() {
+      return must(await db.from("cm_logos").select("name,domain,logo_path").eq("approved", true).not("logo_path", "is", null), "approved logos");
+    },
+    async listLogos() { return must(await db.from("cm_logos").select("*").order("name"), "logos"); },
+    async getLogo(id) { return must(await db.from("cm_logos").select("*").eq("id", id).single(), "logo"); },
+    async saveLogo(row) {
+      if (row.id) return must(await db.from("cm_logos").update({ ...row, updated_at: nowIso() }).eq("id", row.id).select("*").single(), "save logo");
+      return must(await db.from("cm_logos").insert(row).select("*").single(), "add logo");
+    },
+    async uploadLogoFile(path, bytes, contentType) {
+      const { error } = await db.storage.from(BUCKET).upload(path, bytes, { contentType, upsert: true });
+      if (error) throw new Error(`[content-machine] upload logo: ${error.message}`);
+    },
+
     async getPackage(id) { return must(await db.from("cm_packages").select("*").eq("id", id).single(), "package"); },
     async updatePackage(id, patch) { return must(await db.from("cm_packages").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update package"); },
   };

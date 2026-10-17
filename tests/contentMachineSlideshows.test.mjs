@@ -8,10 +8,13 @@ import { createBudgetGuard, assertTicket } from "../supabase/functions/_shared/c
 import { runJob, renderPaths, platformPackages } from "../supabase/functions/_shared/contentMachine/pipeline.js";
 import { planRecipes, coverage, inExperimentPhase, rng } from "../supabase/functions/_shared/contentMachine/planner.js";
 import { costOfUsage, estimateUsd, createMessage, jsonFromMessage, WEB_SEARCH_TOOL } from "../supabase/functions/_shared/contentMachine/providers/anthropic.js";
-import { generateImage, imagePrompt } from "../supabase/functions/_shared/contentMachine/providers/runware.js";
+import { generateImage, imagePrompt, NO_PEOPLE } from "../supabase/functions/_shared/contentMachine/providers/runware.js";
 import { renderCostUsd } from "../supabase/functions/_shared/contentMachine/providers/fly.js";
 import { slideshowProblems, packageProblems, utmLinks, nearDuplicate, mockSlideshow, writeRequest, packageRequest, SLIDESHOW_SCHEMA } from "../supabase/functions/_shared/contentMachine/writer.js";
-import { slideHtml, highlight, initials, esc } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
+import { slideHtml, highlight, initials, esc, logoFor, SAFE, SAFE_RECT } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
+import { assertRemoteImages } from "../render-worker/src/cmSlides.mjs";
+import { checkLogoFile } from "../supabase/functions/_shared/contentMachine/apiSlideshows.js";
+import { fallbackModel } from "../supabase/functions/_shared/contentMachine/pipeline.js";
 import { mp4Args, slideDurations, zipStore } from "../render-worker/src/cmSlides.mjs";
 import { createWorkerHandler, maybeStartDailyRun, localClock, tick } from "../supabase/functions/_shared/contentMachine/worker.js";
 import { cleanLibraryRow } from "../supabase/functions/_shared/contentMachine/apiSlideshows.js";
@@ -61,7 +64,7 @@ test("a real run: every call reserved first, settled with the provider's own cos
   const w = p.calls.messages.find((m) => m.tools);
   assert.equal(w.tools[0].type, WEB_SEARCH_TOOL);
   assert.equal(w.system[0].cache_control.type, "ephemeral");
-  assert.equal(w.fallbacks, "default", "refusal fallbacks on the main model");
+  assert.equal(w.fallbacks, undefined, "no server-side fallback: it could route to a dearer model");
   assert.ok(p.calls.messages.some((m) => m.model === "claude-haiku-5-5"));
   // Packages: UTM links per platform, the AI label flag, the sound suggestion as text.
   const tk = world.pkgs.find((x) => x.platform === "tiktok");
@@ -270,7 +273,8 @@ test("templates: every word escaped, the highlight bar, icon tiles not logos, un
   assert.doesNotMatch(html, /<img src=x>/);
   assert.doesNotMatch(html, /src="javascript:/);
   assert.match(html, /class="tile"/);
-  assert.match(html, /2\/5/);
+  assert.match(html, /body\.dataset\.layout/, "every slide checks its own layout");
+  assert.doesNotMatch(html, /class="counter"/, "no page counter: it sat outside the safe zone");
   assert.equal(esc(`"'&`), "&quot;&#39;&amp;");
 });
 
@@ -383,4 +387,138 @@ test("remake: the same recipe written again as a new idea", async () => {
   const copy = world.ideas.find((i) => i.id === r.data.ideaId);
   assert.deepEqual(copy.recipe, world.ideas[0].recipe);
   assert.equal(world.jobs.at(-1).stage, "write");
+});
+
+/* ─── the fixes of 2026-10-18 ────────────────────────────────────────── */
+
+test("a refusal: one retry on a model that costs no more, through the guard; never a dearer model", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world, { refuse: "once" });
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  assert.equal(world.ideas[0].status, "done");
+  const ops = world.ledger.filter((l) => l.operation.startsWith("anthropic.write")).map((l) => [l.operation, l.status]);
+  assert.deepEqual(ops, [["anthropic.write", "failed"], ["anthropic.write.fallback", "settled"]], "both calls are in the ledger");
+  assert.equal(world.ledger[0].actual_usd, 0.002, "the refused call's own cost is kept");
+  assert.ok(p.calls.messages.some((m) => m.model === "claude-sonnet-5"));
+  assert.equal(fallbackModel({ fallbacks: true }, "claude-sonnet-5-5"), "claude-sonnet-5");
+  assert.equal(fallbackModel({ fallbacks: true, modelFallback: "claude-opus-5-5" }, "claude-sonnet-5-5"), null, "Opus costs more: no fallback");
+  assert.equal(fallbackModel({ fallbacks: false }, "claude-sonnet-5-5"), null);
+  const always = fakeWorld();
+  await startRun(always, { count: 1 });
+  await drain(always, depsFor(always, fakeProviders(always, { refuse: "always" })));
+  assert.equal(always.ideas[0].status, "done", "the fallback model wrote it");
+});
+
+test("a failed layout check: nothing is posted; ONE shorter rewrite and a new render; twice is flagged", async () => {
+  const once = fakeWorld();
+  const p = fakeProviders(once, { layoutFails: 1 });
+  await startRun(once, { count: 1 });
+  await drain(once, depsFor(once, p));
+  assert.equal(once.ideas[0].status, "done");
+  assert.equal(p.calls.renders, 2);
+  assert.equal(once.ideas[0].compliance.layoutRetried, true);
+  const rewrite = p.calls.messages.find((m) => /SHORTER/.test(JSON.stringify(m.messages)));
+  assert.ok(rewrite, "the rewrite asked for shorter text");
+  assert.match(JSON.stringify(rewrite.messages), /headline overlaps card/);
+  const twice = fakeWorld();
+  const p2 = fakeProviders(twice, { layoutFails: 2 });
+  await startRun(twice, { count: 1 });
+  await drain(twice, depsFor(twice, p2));
+  assert.equal(twice.ideas[0].status, "failed");
+  assert.equal(twice.ideas[0].compliance.flagged, true);
+  assert.match(twice.ideas[0].compliance.problems.join(" "), /slide 2: headline overlaps card/);
+  assert.equal(twice.gens[0].status, "failed");
+});
+
+test("images: one retry each; a second failure fails the slideshow (never a placeholder)", async () => {
+  const retry = fakeWorld();
+  const p = fakeProviders(retry, { imageFailures: 1 });
+  await startRun(retry, { count: 1 });
+  await drain(retry, depsFor(retry, p));
+  assert.equal(retry.ideas[0].status, "done");
+  assert.equal(p.calls.imageAttempts, 3, "one failure, its retry, then the second image");
+  const dead = fakeWorld();
+  const p2 = fakeProviders(dead, { imageFailures: Infinity });
+  await startRun(dead, { count: 1 });
+  await drain(dead, depsFor(dead, p2));
+  assert.equal(dead.ideas[0].status, "failed");
+  assert.match(dead.ideas[0].error, /an image failed twice/);
+  assert.equal(p2.calls.renders, 0, "nothing is rendered without its images");
+});
+
+test("no real people: prompts, program checks, and the renderer takes no local pictures", () => {
+  assert.match(imagePrompt("a desk at night", "background"), /no people, no faces/);
+  assert.match(imagePrompt("a desk at night", "background"), /no celebrities.*no lookalikes/);
+  assert.match(imagePrompt("a cat", "illustration"), /invented cartoon character, no real people/);
+  assert.ok(!imagePrompt("a cat", "illustration").includes(NO_PEOPLE), "illustrations may show invented characters");
+  const recipe = { slide_count: 6 };
+  const sh = validSlideshow(recipe);
+  sh.slides[1].image_prompt = "a Ronaldo lookalike holding a phone";
+  assert.match(slideshowProblems(sh, recipe).join(" "), /real person or a lookalike/);
+  sh.slides[1].image_prompt = "a melon on a desk";
+  assert.deepEqual(slideshowProblems(sh, recipe), []);
+  sh.slides[3] = { ...sh.slides[3], kind: "meme", image_prompt: null };
+  assert.match(slideshowProblems(sh, recipe).join(" "), /meme slide needs an image_prompt/);
+  assert.throws(() => assertRemoteImages({ images: { background: "file:///C:/repo/public/community-posters/cr-1.jpg" } }), /only https images/);
+  assertRemoteImages({ zyvoShot: "https://x.supabase.co/a.png", images: { background: "https://im.runware.ai/1.jpg", illustrations: { 1: "https://im.runware.ai/2.jpg" } } });
+  const html = slideHtml({ slide: validSlideshow(recipe).slides[0], index: 0, total: 6, style: LIB.styles[0].spec, images: { background: "file:///C:/x.jpg" } });
+  assert.ok(!html.includes("file:///"), "the templates drop a local picture unless the local renderer asks");
+  const req = writeRequest({ model: "claude-sonnet-5-5", brandRules: "x", library: LIB, recipe: planRecipes({ library: LIB, count: 1, seed: "p" })[0], today: "2026-10-20" });
+  assert.match(req.system[0].text, /NEVER for a real person, a celebrity/);
+  assert.match(req.system[0].text, /Never imply that Zyvo is partnered with/);
+  assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /lookalike of one/);
+});
+
+test("the safe zone: left 8 %, right 15 %, top 10 %, bottom 22 % of 1080×1920", () => {
+  assert.deepEqual(SAFE, { left: 90, right: 160, top: 190, bottom: 420 });
+  assert.deepEqual(SAFE_RECT, { x0: 90, y0: 190, x1: 920, y1: 1500 });
+  const slide = validSlideshow({ slide_count: 5 }).slides[0];
+  assert.match(slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec, safeZones: true }), /class="zone l"/);
+  assert.ok(!slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec }).includes('class="zone'), "never drawn unless asked (previews only)");
+});
+
+test("logos: only approved ones reach the render, matched by domain or name; others get the initials tile", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  const logos = p.calls.lastRender.logos;
+  assert.equal(logos["tryzyvo.com"], "https://signed/logos/tryzyvo.com.png");
+  assert.equal(Object.keys(logos).some((k) => k.includes("descript")), false, "Descript has no approved file");
+  assert.equal(logoFor({ name: "Zyvo", url: "https://www.tryzyvo.com/" }, logos), logos["tryzyvo.com"]);
+  const tool = { kind: "item", headline: "x", body: null, label: null, items: [], tool: { name: "Descript", url: "https://descript.com", what_it_does: "y" }, image_prompt: null, is_zyvo: false };
+  assert.match(slideHtml({ slide: tool, index: 1, total: 5, style: LIB.styles[0].spec, logos }), /class="tile"/);
+  assert.ok(slideHtml({ slide: tool, index: 1, total: 5, style: LIB.styles[0].spec, logos: { "descript.com": "https://signed/d.png" } }).includes('<img src="https://signed/d.png"'));
+});
+
+test("logo files: real PNG/SVG only, no scripts in an SVG, small", () => {
+  const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0]);
+  checkLogoFile(png, "image/png");
+  assert.throws(() => checkLogoFile(png, "image/jpeg"), /doesn't match/);
+  const svg = (t) => new TextEncoder().encode(t);
+  checkLogoFile(svg('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v10z"/></svg>'), "image/svg+xml");
+  assert.throws(() => checkLogoFile(svg("<svg><script>alert(1)</script></svg>"), "image/svg+xml"), /scripts/);
+  assert.throws(() => checkLogoFile(svg('<svg><rect onload="x()"/></svg>'), "image/svg+xml"), /scripts/);
+  assert.throws(() => checkLogoFile(svg('<svg><image href="https://evil/x.png"/></svg>'), "image/svg+xml"), /outside files/);
+  assert.throws(() => checkLogoFile(new Uint8Array(600_000).fill(1), "image/png"), /at most/);
+  assert.throws(() => checkLogoFile(png, "image/gif"), /PNG, SVG/);
+});
+
+test("the logo library through the API: upload, approve only with file + source, a new file needs approving again", async () => {
+  const world = fakeWorld();
+  const api = apiFor(world);
+  assert.equal((await api.call({ action: "approveLogo", id: "LOGO-descript", approved: true })).code, "VALIDATION", "no file, no approval");
+  const b64 = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]).toString("base64");
+  assert.equal((await api.call({ action: "uploadLogo", id: "LOGO-descript", contentType: "image/png", dataBase64: b64 })).ok, true);
+  assert.equal(world.uploads[0].path, "logos/descript.com.png");
+  assert.equal((await api.call({ action: "approveLogo", id: "LOGO-descript", approved: true })).code, "VALIDATION", "no source page yet");
+  assert.equal((await api.call({ action: "saveLogo", id: "LOGO-descript", source_url: "http://not-https" })).code, "VALIDATION");
+  await api.call({ action: "saveLogo", id: "LOGO-descript", source_url: "https://www.descript.com/brand" });
+  const ok = await api.call({ action: "approveLogo", id: "LOGO-descript", approved: true });
+  assert.equal(ok.data.row.approved, true);
+  assert.equal(ok.data.row.approved_by, "upwardlift6@gmail.com");
+  await api.call({ action: "uploadLogo", id: "LOGO-descript", contentType: "image/png", dataBase64: b64 });
+  assert.equal(world.logos.find((l) => l.id === "LOGO-descript").approved, false, "a new file is not approved");
+  assert.deepEqual(world.audit.map((a) => a.action).filter((a) => a.startsWith("logo.")), ["logo.upload", "logo.edit", "logo.approve", "logo.upload"]);
 });

@@ -9,6 +9,7 @@ BEGIN
 END $$;
 DROP FUNCTION IF EXISTS private.trigger_content_machine();
 DROP FUNCTION IF EXISTS public.cm_claim_jobs(integer, integer);
+DROP TABLE IF EXISTS public.cm_logos;
 DROP TABLE IF EXISTS public.cm_library;
 DROP INDEX IF EXISTS public.cm_ideas_format_style;
 ALTER TABLE public.cm_ideas DROP COLUMN IF EXISTS recipe, DROP COLUMN IF EXISTS topic, DROP COLUMN IF EXISTS hypothesis,

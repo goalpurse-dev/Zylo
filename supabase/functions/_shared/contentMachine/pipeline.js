@@ -16,10 +16,11 @@
 // goes on with the others; the kill switch puts the job back to wait instead.
 import { BudgetStopped } from "./budgetGuard.js";
 import { inExperimentPhase, planRecipes } from "./planner.js";
-import { estimateUsd, jsonFromMessage } from "./providers/anthropic.js";
+import { estimateUsd, jsonFromMessage, priceFor } from "./providers/anthropic.js";
 import { IMAGE_ESTIMATE_USD } from "./providers/runware.js";
 import { RENDER_ESTIMATE_USD, RENDER_TIMEOUT_MS, renderCostUsd } from "./providers/fly.js";
 import { localDay } from "./spendSummary.js";
+import { domain } from "./slides/templates.js";
 import { mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
@@ -90,7 +91,33 @@ export async function finishRunIfDone(deps, runId) {
 }
 
 const models = (s, env) => ({ main: s.models?.main || env.modelMain || "claude-sonnet-5-5", fast: s.models?.fast || env.modelFast || "claude-haiku-5-5" });
-const fallbackOpts = (env, model) => (env.fallbacks && /^claude-(sonnet|opus|fable)-5/.test(model) ? { betas: ["server-side-fallback-2026-07-01"], extra: { fallbacks: "default" } } : { betas: [], extra: {} });
+// The refusal fallback (owner, 2026-10-18): kept, but done here, not by the API: a second call through the
+// Budget Guard like any other, and only to a model that costs no more than the main one per token.
+export const FALLBACK_MODEL = "claude-sonnet-5";
+export function fallbackModel(env, main) {
+  if (!env.fallbacks) return null;
+  const fb = env.modelFallback || FALLBACK_MODEL;
+  if (fb === main) return null;
+  const a = priceFor(main), b = priceFor(fb);
+  return b.input <= a.input && b.output <= a.output && b.cacheWrite5m <= a.cacheWrite5m ? fb : null;
+}
+
+/** A main-model call through the guard; on a refusal, ONE retry on the fallback model, also through the guard. */
+async function callMain(deps, { operation, request, idea, estimate }) {
+  const opts = { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => ({ dry: true }) };
+  const once = (req, op) => deps.guard.spend("anthropic", op, estimate(req.model), async (ticket) => {
+    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: req });
+    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
+  }, opts);
+  try {
+    return await once(request, operation);
+  } catch (e) {
+    const fb = e?.refusal ? fallbackModel(deps.env, request.model) : null;
+    if (!fb) throw e;
+    deps.log?.(`[content-machine] ${operation} refused on ${request.model}; trying ${fb}`);
+    return once({ ...request, model: fb }, `${operation}.fallback`);
+  }
+}
 
 /* ─── plan ───────────────────────────────────────────────────────────── */
 
@@ -151,11 +178,8 @@ async function write(job, deps) {
   const { s, library, recent, today, m } = await writeContext(deps, idea);
   const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title) });
   if (job.payload?.problems?.length) request.messages[0].content += `\n\nYOUR LAST ATTEMPT HAD THESE PROBLEMS, avoid them:\n${job.payload.problems.map((p) => `- ${p}`).join("\n")}`;
-  const fb = fallbackOpts(deps.env, m.main);
-  const r = await deps.guard.spend("anthropic", "anthropic.write", ESTIMATES.write(m.main), async (ticket) => {
-    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: { ...request, ...fb.extra }, betas: fb.betas });
-    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
-  }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => ({ dry: true }) });
+  if (job.payload?.note) request.messages[0].content += `\n\nNOTE: ${job.payload.note}`;
+  const r = await callMain(deps, { operation: "anthropic.write", request, idea, estimate: (model) => ESTIMATES.write(model) });
   const slideshow = r.dryRun ? mockSlideshow(idea.recipe) : jsonFromMessage(r.result);
   const problems = r.dryRun ? [] : judge(slideshow, idea, recent);
   if (problems.length) {
@@ -248,13 +272,13 @@ async function check(job, deps) {
   const problems = [...(pkg.compliance?.ok ? [] : pkg.compliance?.problems ?? ["the compliance check failed"]), ...packageProblems(pkg)];
   const rewritten = Boolean(idea.compliance?.rewritten);
   if (problems.length && !rewritten && !r.dryRun) {
-    await deps.db.updateIdea(idea.id, { compliance: { ok: false, problems, rewritten: false } });
+    await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), ok: false, problems, rewritten: false } });
     await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "rewrite", payload: { problems } }]);
     return "rewrite needed";
   }
   const gen = await deps.db.ensureGeneration(idea.id);
   await deps.db.savePackages(gen.id, platformPackages(pkg, idea, links));
-  await deps.db.updateIdea(idea.id, { compliance: { ok: !problems.length, problems, rewritten, flagged: problems.length > 0 } });
+  await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), ok: !problems.length, problems, rewritten, flagged: problems.length > 0 } });
   await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "images" }]);
   return problems.length ? "flagged" : "packaged";
 }
@@ -275,15 +299,13 @@ async function rewrite(job, deps) {
   if (TERMINAL.has(idea.status)) return "idea already finished";
   const { s, library, today, m } = await writeContext(deps, idea);
   const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [] });
-  const fb = fallbackOpts(deps.env, m.main);
-  const r = await deps.guard.spend("anthropic", "anthropic.rewrite", ESTIMATES.rewrite(m.main), async (ticket) => {
-    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: { ...request, ...fb.extra }, betas: fb.betas });
-    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
-  }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => ({ dry: true }) });
+  const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
   const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
   const problems = slideshowProblems(slideshow, idea.recipe);
   if (problems.length) throw Object.assign(new Error(`the rewrite failed the checks: ${problems.join("; ")}`), { final: true });
-  await deps.db.updateIdea(idea.id, { script: slideshow, title: slideshow.title.slice(0, 200), hook: slideshow.hook, compliance: { ...(idea.compliance ?? {}), rewritten: true } });
+  // A layout rewrite (the text didn't fit) is counted apart from the compliance rewrite: one of each.
+  const flag = job.payload?.layout ? { layoutRetried: true } : { rewritten: true };
+  await deps.db.updateIdea(idea.id, { script: slideshow, title: slideshow.title.slice(0, 200), hook: slideshow.hook, compliance: { ...(idea.compliance ?? {}), ...flag } });
   await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "check" }]);
   return "rewritten";
 }
@@ -302,10 +324,22 @@ async function images(job, deps) {
   if (!assets.background && style.spec?.bg_prompt) wanted.push(["background", `${style.spec.bg_prompt}. Mood suited to: ${idea.topic ?? idea.title}`]);
   idea.script.slides.forEach((sl, i) => { if (sl.image_prompt && wanted.length < 4 && !assets.illustrations[i]) wanted.push([i, sl.image_prompt]); });
   for (const [slot, prompt] of wanted) {
-    const r = await deps.guard.spend("runware", "runware.image.fast", IMAGE_ESTIMATE_USD, async (ticket) => {
-      const out = await deps.images.generateImage(ticket, { apiKey: deps.env.runwareKey, baseUrl: deps.env.runwareBase, prompt });
-      return { result: out.url, actualUsd: out.costUsd, requestRef: out.taskUUID };
-    }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => null });
+    // Backgrounds carry text, so they have no people at all; illustrations may show invented characters.
+    const kind = slot === "background" && !style.spec?.meme ? "background" : "illustration";
+    // One retry per image. A second failure fails the slideshow: a placeholder is never posted.
+    let r = null, last = null;
+    for (let attempt = 1; attempt <= 2 && !r; attempt++) {
+      try {
+        r = await deps.guard.spend("runware", "runware.image.fast", IMAGE_ESTIMATE_USD, async (ticket) => {
+          const out = await deps.images.generateImage(ticket, { apiKey: deps.env.runwareKey, baseUrl: deps.env.runwareBase, prompt, kind });
+          return { result: out.url, actualUsd: out.costUsd, requestRef: out.taskUUID };
+        }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => null });
+      } catch (e) {
+        if (e instanceof BudgetStopped) throw e;
+        last = e;
+      }
+    }
+    if (!r) throw Object.assign(new Error(`an image failed twice (${slot === "background" ? "background" : `slide ${slot + 1}`}): ${last?.message ?? "unknown"}`), { final: true });
     if (slot === "background") assets.background = r.result; else assets.illustrations[slot] = r.result;
     assets.costs[slot] = r.actualUsd;
     await deps.db.updateGeneration(gen.id, { source_assets: assets, status: "generating" });   // kept even if a later image fails
@@ -315,6 +349,21 @@ async function images(job, deps) {
 }
 
 /* ─── render ─────────────────────────────────────────────────────────── */
+
+/** Signed links to the APPROVED logos of the tools on these slides (and Zyvo's own), keyed by domain and name. */
+export async function logosFor(deps, slides) {
+  const rows = (await deps.db.approvedLogos()) ?? [];
+  const wanted = new Set(["tryzyvo.com", "zyvo"]);
+  for (const s of slides) if (s.tool) { wanted.add(domain(s.tool.url)); wanted.add(String(s.tool.name).trim().toLowerCase()); }
+  const out = {};
+  for (const row of rows) {
+    const keys = [row.domain, String(row.name).trim().toLowerCase()].filter((k) => wanted.has(k));
+    if (!keys.length || !row.logo_path) continue;
+    const url = await deps.files.signedUrl(row.logo_path, 3600);
+    if (url) for (const k of keys) out[k] = url;
+  }
+  return out;
+}
 
 export function renderPaths(idea, day) {
   const base = `slideshows/${day}/${idea.id}`;
@@ -349,6 +398,7 @@ async function render(job, deps) {
     ideaId: idea.id, slideshow: { slides: idea.script.slides }, style: style.spec,
     images: { background: gen.source_assets?.background ?? null, illustrations: gen.source_assets?.illustrations ?? {} },
     zyvoShot: await deps.files.signedUrl(ZYVO_SHOT_PATH, 3600), uploads, secondsPerSlide: 2.5,
+    logos: await logosFor(deps, idea.script.slides),
   };
   const r = await deps.guard.reserve("fly", "fly.render.slides", RENDER_ESTIMATE_USD, { lane: LANE, runId: idea.run_id, ideaId: idea.id });
   let started;
@@ -380,6 +430,20 @@ async function renderWait(job, deps) {
   const cost = renderCostUsd(startedAt, now);
   if (!manifest.ok) {
     await deps.guard.settle(ledgerId, { actualUsd: cost, status: "failed", requestRef: machineId, error: manifest.error });
+    const layout = Array.isArray(manifest.layout) ? manifest.layout : null;
+    if (layout) {
+      // The slides didn't pass the layout check (too much text, an overlap, outside the safe zone, a missing
+      // image). Nothing was posted. Once: ask for shorter copy and render again. Twice: flag it and stop.
+      const problems = layout.flatMap((l) => l.problems.map((p) => `slide ${l.slide}: ${p}`));
+      if (!idea.compliance?.layoutRetried) {
+        await deps.db.updateGeneration(gen.id, { status: "queued", error: null });
+        await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "rewrite", payload: { layout: true, problems: [...problems, "make the text on these slides SHORTER so it fits"] } }]);
+        return "layout: rewriting shorter";
+      }
+      await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), flagged: true, ok: false, problems: [...(idea.compliance?.problems ?? []), ...problems] } });
+      await deps.db.updateGeneration(gen.id, { status: "failed", error: `layout still fails after a shorter rewrite: ${problems.join("; ")}`.slice(0, 500) });
+      throw Object.assign(new Error(`the layout still fails after a shorter rewrite: ${problems.join("; ")}`), { final: true });
+    }
     await deps.db.updateGeneration(gen.id, { status: "failed", error: String(manifest.error).slice(0, 500) });
     throw Object.assign(new Error(`render failed: ${manifest.error}`), { final: true });
   }

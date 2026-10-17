@@ -28,6 +28,10 @@ export function fakeWorld(settings = {}) {
     experiment_started_on: null, daily_auto_run: true, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
   };
   const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [];
+  const logos = [
+    { id: "LOGO-zyvo", name: "Zyvo", domain: "tryzyvo.com", logo_path: "logos/tryzyvo.com.png", source_url: "https://www.tryzyvo.com", approved: true },
+    { id: "LOGO-descript", name: "Descript", domain: "descript.com", logo_path: null, source_url: null, approved: false },
+  ];
   const cost = (r) => r.actual_usd ?? r.estimated_usd;
   const store = {
     async readSettings() { return { ...s }; },
@@ -86,9 +90,15 @@ export function fakeWorld(settings = {}) {
       if (keepAttempt) j.attempts = Math.max(0, j.attempts - 1);
     },
     async dailyRunExists(day) { return runs.some((r) => r.kind === "daily" && r.run_date === day); },
+    async approvedLogos() { return logos.filter((l) => l.approved && l.logo_path); },
+    async listLogos() { return [...logos]; },
+    async getLogo(i) { const l = logos.find((x) => x.id === i); if (!l) throw new Error("no logo"); return l; },
+    async saveLogo(row) { if (row.id) { const l = logos.find((x) => x.id === row.id); Object.assign(l, row); return l; } const l = { id: id("LOGO"), approved: false, logo_path: null, ...row }; logos.push(l); return l; },
+    async uploadLogoFile(path, bytes) { uploads.push({ path, size: bytes.length }); },
   };
+  const uploads = [];
   const clock = { now: new Date("2026-10-20T06:30:00Z") };   // 09:30 in Helsinki
-  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, store, db, clock };
+  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, store, db, clock };
 }
 
 /* ─── fake providers that behave like the real ones ──────────────────── */
@@ -111,9 +121,13 @@ export const PKG = (ok = true) => ({
 });
 export const msg = (obj, usage = { input_tokens: 9000, output_tokens: 4000, server_tool_use: { web_search_requests: 3 } }) => ({ id: `msg_${Math.random().toString(36).slice(2, 8)}`, model: "claude-sonnet-5-5", stop_reason: "end_turn", usage, content: [{ type: "text", text: JSON.stringify(obj) }] });
 
-export function fakeProviders(world, { packageOk = [true], badFirstWrite = false, badAlways = false } = {}) {
-  const calls = { messages: [], images: 0, renders: 0, batches: [] };
-  let pkgN = 0, writeN = 0;
+/**
+ * refuse: refuse the main model's writes ("once" or "always"); imageFailures: that many image calls fail
+ * first (Infinity: all); layoutFails: that many renders come back with a failed layout check.
+ */
+export function fakeProviders(world, { packageOk = [true], badFirstWrite = false, badAlways = false, refuse = null, imageFailures = 0, layoutFails = 0 } = {}) {
+  const calls = { messages: [], images: 0, imageAttempts: 0, renders: 0, batches: [], renderJobs: [] };
+  let pkgN = 0, writeN = 0, refused = 0;
   const ai = {
     async createMessage(ticket, { request }) {
       assertTicket(ticket, "anthropic");
@@ -124,6 +138,10 @@ export function fakeProviders(world, { packageOk = [true], badFirstWrite = false
         const body = msg(PKG(ok), { input_tokens: 5000, output_tokens: 900 });
         body.model = "claude-haiku-5-5";
         return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
+      }
+      if (refuse && request.model === "claude-sonnet-5-5" && (refuse === "always" || refused === 0)) {
+        refused += 1;
+        throw Object.assign(new Error("refused (cyber)"), { actualUsd: 0.002, refusal: true });
       }
       const recipe = JSON.parse(/RECIPE: (.*)/.exec(request.messages[0].content)[1]);
       writeN += 1;
@@ -144,14 +162,31 @@ export function fakeProviders(world, { packageOk = [true], badFirstWrite = false
       return out;
     },
   };
-  const images = { async generateImage(ticket) { assertTicket(ticket, "runware"); calls.images += 1; return { url: `https://im.runware.ai/${calls.images}.jpg`, costUsd: 0.0012, taskUUID: `t${calls.images}` }; } };
+  const images = { async generateImage(ticket, { prompt, kind }) {
+    assertTicket(ticket, "runware");
+    calls.imageAttempts += 1;
+    calls.lastImage = { prompt, kind };
+    if (calls.imageAttempts <= imageFailures) throw Object.assign(new Error("runware 500"), { actualUsd: 0 });
+    calls.images += 1;
+    return { url: `https://im.runware.ai/${calls.images}.jpg`, costUsd: 0.0012, taskUUID: `t${calls.images}` };
+  } };
+  const manifests = new Map();
   const uploaded = new Set();
-  const fly = { async startRender(ticket, { job }) { assertTicket(ticket, "fly"); calls.renders += 1; calls.lastRender = job; uploaded.add(job.uploads.manifest); return { machineId: `m${calls.renders}`, startedAt: world.clock.now.getTime() }; } };
+  const fly = { async startRender(ticket, { job }) {
+    assertTicket(ticket, "fly");
+    calls.renders += 1; calls.lastRender = job; calls.renderJobs.push(job);
+    uploaded.add(job.uploads.manifest);
+    manifests.set(job.uploads.manifest, calls.renders <= layoutFails
+      ? { ok: false, error: "layout check failed", layout: [{ slide: 2, problems: ["headline needs more than 4 lines: shorten it", "headline overlaps card"] }] }
+      : { ok: true, durationSec: 19, sizes: { zip: 1, mp4: 2 } });
+    return { machineId: `m${calls.renders}`, startedAt: world.clock.now.getTime() };
+  } };
   const files = {
     async signedUpload(p) { return `https://upload/${p}`; },
     async signedUrl(p) { return `https://signed/${p}`; },
     async exists(p) { return [...uploaded].some((u) => u.endsWith(p)); },
-    async readJson() { return { ok: true, durationSec: 19, sizes: { zip: 1, mp4: 2 } }; },
+    async readJson(p) { const hit = [...manifests.entries()].find(([u]) => u.endsWith(p)); return hit ? hit[1] : null; },
+    async signedUrls(ps) { return Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])); },
   };
   return { ai, images, fly, files, calls };
 }

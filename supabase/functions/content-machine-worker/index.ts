@@ -35,8 +35,10 @@ Deno.serve(createWorkerHandler({
       flyImage: Deno.env.get("CM_SLIDES_IMAGE") ?? `registry.fly.io/${FLY_APP}:cm-slides`,
       modelMain: Deno.env.get("CM_MODEL_MAIN") ?? "",
       modelFast: Deno.env.get("CM_MODEL_FAST") ?? "",
-      // Refusal fallbacks on the main model (Claude API only): off with CM_FALLBACKS=off.
+      // On a refusal: one retry on a model that costs no more than the main one (pipeline.js fallbackModel),
+      // through the Budget Guard. CM_MODEL_FALLBACK picks it (default claude-sonnet-5); CM_FALLBACKS=off turns it off.
       fallbacks: (Deno.env.get("CM_FALLBACKS") ?? "on") !== "off",
+      modelFallback: Deno.env.get("CM_MODEL_FALLBACK") ?? "",
     },
     now: () => new Date(),
     log: (m: string) => console.log(m),
