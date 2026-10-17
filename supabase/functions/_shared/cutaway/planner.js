@@ -92,7 +92,7 @@ STEP 3 — BEATS. Split the narration into beats: one clause of about 3 seconds 
   edit     a small close-up change to apply to the crop, or ""
   action   the one thing that happens, landing on the verb
   ongoing  an action that must keep going for the WHOLE beat (falling rain, flowing water, a moving truck), or ""
-  adds     the name of the part that APPEARS during this beat, exactly as written in a state's "parts", or "". APPEARS ON ITS WORD: the beat's own state must NOT contain that part, and the NEXT beat's state (or "end") MUST contain it.
+  adds     the name of the part that APPEARS during this beat, exactly as written in a state's "parts", or "". APPEARS ON ITS WORD: the beat's own state must NOT contain that part, and the NEXT beat's state (or "end") MUST contain it. Each change from one wide state to the next brings in AT MOST ONE appearing part, so at most (number of states - 1) beats have "adds"; other parts are either in the master already or left out.
   overlay  one explainer overlay built into the scene: ${Object.entries(OVERLAYS).map(([k, v]) => `${k} = ${v}`).join("; ")}
   move     how the camera gets to the NEXT beat's first frame at the end of the beat: push-in, pull-out, follow, arc, hold
   sound    0 or 1 sound effect tied to the on-screen action: key = one of ${Object.keys(LIBRARY).join(", ")}, "custom" (then text describes the exact sound, e.g. "garbage bags thudding into a pit"), or "" for none. at = "verb" or "start"; whole = true if it lasts the whole beat (rain, a running engine). No music, never a whoosh for a camera move. Give sound to about 6 beats in 10.
@@ -137,7 +137,7 @@ export const CRITIC_SYSTEM = `You are the critic for a cutaway explainer plan. Y
 - sentences average 15-19 words, none over 30; "But" loops and "This is a" names in the asked range
 - the first surprise lands in the first 4 beats; a myth-bust near the end
 - each beat 8-14 words with exactly one visible change; no two beats in a row with the same state and nearly the same box
-- "adds": the part is missing from the beat's own state and present in the next beat's state (or "end")
+- "adds": the part is missing from the beat's own state and present in the next beat's state (or "end"); each state change brings in at most one appearing part, so at most (states - 1) beats have "adds"
 - every part that appears is named in the narration
 - "end" is calm and the problem is gone
 - states' "checks" are short yes/no facts you can see in that image
@@ -212,21 +212,35 @@ export function repairStructure(input) {
   const plan = JSON.parse(JSON.stringify(input));
   const index = new Map(plan.states.map((s, i) => [s.id, i]));
   const hasAt = (i, part) => (plan.states[i]?.parts ?? []).some((p) => norm(p) === norm(part));
-  plan.beats.forEach((b, i) => {
+  plan.beats.forEach((b) => {
     const v = closestWord(b.text, b.verb);
     if (v && bare(b.verb) !== v) b.verb = words(b.text).find((x) => bare(x) === v);
     if (b.card?.text && b.card.word) {
       const c = closestWord(b.text, b.card.word) ?? bare(b.verb);
       b.card.word = words(b.text).find((x) => bare(x) === c) ?? b.verb;
     }
-    if (!b.adds) return;
-    const first = plan.states.findIndex((_, k) => hasAt(k, b.adds));
-    if (first < 0) return; // no state shows the part: left for the checks and the critic
-    if (first === 0) { b.adds = ""; return; } // in the master already: it can't appear, so it isn't an "adds"
-    if (hasAt(index.get(b.state) ?? -1, b.adds) && first > 0) b.state = plan.states[first - 1].id;
-    const next = i + 1 < plan.beats.length ? plan.beats[i + 1] : plan.end;
-    if (next && !hasAt(index.get(next.state) ?? -1, b.adds)) next.state = plan.states[first].id;
   });
+  // "Appears on its word" needs one change between wide images per appearing part. Assign states in
+  // story order: each appearing part gets the step into the first state that shows it, if that step
+  // isn't taken yet and comes later than the last one used. Parts that can't get their own step
+  // (more parts than images, or two parts first shown in the same state) stay in the plan but lose
+  // "adds": they are listed in plan.addsDropped and reported as warnings, never as failures.
+  const frames = [...plan.beats, plan.end];
+  const firstOf = (part) => plan.states.findIndex((_, k) => hasAt(k, part));
+  const dropped = [];
+  let floor = 0; // frames after the last appearing part are at least this state
+  plan.beats.forEach((b, i) => {
+    if (!b.adds) return;
+    const first = firstOf(b.adds);
+    if (first < 0) return; // no state shows the part: left for the checks and the critic
+    // In the master already (it can't appear), or its step into `first` is taken / already passed.
+    if (first === 0 || first - 1 < floor) { dropped.push(b.adds); b.adds = ""; return; }
+    for (let k = 0; k <= i; k++) { const s = index.get(frames[k].state) ?? 0; if (s > first - 1) frames[k].state = plan.states[first - 1].id; }
+    frames[i].state = plan.states[first - 1].id;
+    for (let k = i + 1; k < frames.length; k++) { const s = index.get(frames[k].state) ?? 0; if (s < first) frames[k].state = plan.states[first].id; }
+    floor = first;
+  });
+  if (dropped.length) plan.addsDropped = dropped;
   return plan;
 }
 
@@ -241,6 +255,7 @@ export function planWarnings(plan) {
   if (!Array.isArray(plan?.beats)) return out;
   const narration = norm(plan.beats.map((b) => b.text).join(" "));
   for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) out.push(`the part "${b.adds}" appears but is never named`);
+  for (const p of plan.addsDropped ?? []) out.push(`"${p}" can't appear on its own word (not enough changes between wide images): it is already visible before it is named`);
   return out;
 }
 

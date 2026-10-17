@@ -118,6 +118,21 @@ test("the program does the bookkeeping: states for appearing parts, verbs, myth-
   assert.equal(fixed.beats[0].adds, "");
 });
 
+test("more appearing parts than image changes: the extra ones lose 'adds' with a warning, the plan still passes", () => {
+  const p = samplePlan();
+  p.beats[2].adds = "gas pipes";           // first shown in W3, but beat 6 also needs the W2 -> W3 step
+  p.beats[5].adds = "trash";               // first shown in W2, already passed by beat 2's step
+  const fixed = validatePlan(p, 30);
+  assert.equal(fixed.beats[2].adds, "gas pipes");
+  assert.equal(fixed.beats[2].state, "W2");
+  assert.equal(fixed.beats[3].state, "W3");
+  assert.equal(fixed.beats[6].adds, "", "its step is taken: dropped");
+  assert.ok(planWarnings(fixed).some((w) => /"gas pipes" can't appear on its own word/.test(w) || /"liner" can't appear/.test(w)));
+  // states never go backwards through the story
+  const order = fixed.beats.map((b) => Number(b.state.slice(1)));
+  for (let i = 1; i < order.length; i++) assert.ok(order[i] >= order[i - 1], `beat ${i + 1} goes back`);
+});
+
 test("script rules: long sentences, missing loops, late surprises, no myth-bust, used ideas", () => {
   const long = samplePlan();
   long.beats[1].text = "But it stinks and the rats move in and the rain washes it away and the wind blows it around the whole street";
