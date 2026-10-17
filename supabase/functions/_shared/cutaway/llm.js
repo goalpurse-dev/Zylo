@@ -4,6 +4,11 @@
 
 import { MODELS } from "./pricing.js";
 import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems } from "./planner.js";
+import { OVERLAYS } from "./style.js";
+import { SOUND_KEYS } from "./sound.js";
+
+const OVERLAY_KEYS = Object.keys(OVERLAYS);
+const SOUND_KEYS_SET = new Set(SOUND_KEYS);
 
 // USD per 1M tokens (same figures as the other templates' llm.js).
 const PRICE = { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 };
@@ -33,30 +38,64 @@ async function callTool({ apiKey, system, content, name, schema, maxTokens = 120
   return { data: block.input, costUsd };
 }
 
-/** Plan, then the critic pass. Returns {plan, costUsd, critic: {before, after}}. */
-export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [] }) {
+export const MAX_CRITIC_ROUNDS = 2;
+
+/**
+ * Plan, then the critic: always one round, a second only if the program still finds problems.
+ * Every raw output and its problems are kept (trace), so a failure can be read afterwards.
+ * Returns {plan, costUsd, critic: {rounds: [problems...]}, trace}.
+ */
+export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTrace }) {
   let costUsd = 0;
+  const trace = [];
+  const note = (entry) => { trace.push(entry); onTrace?.(entry); };
   try {
     const first = await callTool({ apiKey, system: PLANNER_SYSTEM, content: plannerUser({ topic, lengthSec, usedIdeas }), name: "cutaway_plan", schema: PLAN_SCHEMA });
     costUsd += first.costUsd;
-    const before = planProblems(first.data, lengthSec, usedIdeas);
-    const critic = await callTool({
-      apiKey, system: CRITIC_SYSTEM, name: "cutaway_plan", schema: PLAN_SCHEMA,
-      content: [
-        plannerUser({ topic, lengthSec, usedIdeas }),
-        `PROBLEMS FOUND BY THE PROGRAM (${before.length}):\n${before.length ? before.map((p) => `- ${p}`).join("\n") : "- none; still check every rule, especially that each fact is true"}`,
-        `THE PLAN:\n${JSON.stringify(first.data)}`,
-      ].join("\n\n"),
-    });
-    costUsd += critic.costUsd;
-    const after = planProblems(critic.data, lengthSec, usedIdeas);
-    if (after.length) throw Object.assign(new Error(`PLAN_INVALID after the critic: ${after.join("; ")}`), { problems: after });
-    return { plan: normalizePlan(critic.data), costUsd: Number(costUsd.toFixed(5)), critic: { before, after } };
+    let plan = repairPlan(first.data);
+    let problems = planProblems(plan, lengthSec, usedIdeas);
+    note({ stage: "planner", costUsd: first.costUsd, problems, output: first.data });
+    const rounds = [problems];
+    for (let round = 1; round <= MAX_CRITIC_ROUNDS; round++) {
+      if (round > 1 && !problems.length) break;
+      const critic = await callTool({
+        apiKey, system: CRITIC_SYSTEM, name: "cutaway_plan", schema: PLAN_SCHEMA,
+        content: [
+          plannerUser({ topic, lengthSec, usedIdeas }),
+          `PROBLEMS FOUND BY THE PROGRAM (${problems.length}):\n${problems.length ? problems.map((p) => `- ${p}`).join("\n") : "- none; still check every rule, especially that each fact is true"}`,
+          `THE PLAN:\n${JSON.stringify(plan)}`,
+        ].join("\n\n"),
+      });
+      costUsd += critic.costUsd;
+      plan = repairPlan(critic.data);
+      problems = planProblems(plan, lengthSec, usedIdeas);
+      note({ stage: `critic ${round}`, costUsd: critic.costUsd, problems, output: critic.data });
+      rounds.push(problems);
+    }
+    if (problems.length) throw Object.assign(new Error(`PLAN_INVALID after the critic: ${problems.join("; ")}`), { problems });
+    return { plan: normalizePlan(plan), costUsd: Number(costUsd.toFixed(5)), critic: { rounds }, trace };
   } catch (e) {
     e.costUsd = Number((costUsd + (e.costUsd ?? 0)).toFixed(5));
+    e.trace = trace;
     if (!/^PLAN_INVALID/.test(e.message)) e.message = `PLAN_FAILED: ${e.message}`;
     throw e;
   }
+}
+
+/** Mechanical fixes only (never content): unknown overlay or move -> a default, a sound key in the overlay slot moved over. */
+export function repairPlan(input) {
+  if (!input || !Array.isArray(input.beats)) return input;
+  const plan = JSON.parse(JSON.stringify(input));
+  for (const b of plan.beats) {
+    if (!OVERLAY_KEYS.includes(b.overlay)) {
+      if (SOUND_KEYS_SET.has(b.overlay) && !b.sound?.key) b.sound = { key: b.overlay, text: "", at: "verb", whole: false };
+      b.overlay = "arrows";
+    }
+    if (!["push-in", "pull-out", "follow", "arc", "hold"].includes(b.move)) b.move = "push-in";
+    if (b.sound && b.sound.key && !SOUND_KEYS_SET.has(b.sound.key)) b.sound = { key: "custom", text: b.sound.text || b.sound.key, at: b.sound.at === "start" ? "start" : "verb", whole: Boolean(b.sound.whole) };
+    if (!b.card) b.card = { text: "", word: "" };
+  }
+  return plan;
 }
 
 const VISION_SCHEMA = {

@@ -65,6 +65,8 @@ async function stepPlan(s, deps) {
   } catch (e) {
     addCost(s, "plan", e?.costUsd);
     s.planErrors = [...(s.planErrors ?? []), e.message];
+    // Keep each round's problems (not the raw outputs: they are large; the local runner saves those itself).
+    s.planTrace = [...(s.planTrace ?? []), (e.trace ?? []).map((t) => ({ stage: t.stage, problems: t.problems }))];
     if (s.attempts.plan >= MAX_ATTEMPTS) return fail(s, e.message);
   }
   return s;

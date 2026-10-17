@@ -63,7 +63,11 @@ const ideas = existsSync(IDEAS) ? JSON.parse(readFileSync(IDEAS, "utf8")) : { to
 
 let renderResult = null;
 const deps = {
-  planVideo: ({ topic, lengthSec, usedIdeas }) => planVideo({ apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
+  // Every planner / critic output is saved next to the state, so a failed plan can be read.
+  planVideo: ({ topic, lengthSec, usedIdeas }) => planVideo({
+    apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas,
+    onTrace: (t) => writeFileSync(path.join(out, `plan-${Date.now()}-${t.stage.replace(/\s+/g, "")}.json`), JSON.stringify(t, null, 2)),
+  }),
   checkImage: ({ imageUrl, description, checks }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks }),
   synthesize: process.env.ELEVENLABS_KEY ? ({ text }) => synthesize({ apiKey: process.env.ELEVENLABS_KEY, text }) : null,
   sfx: process.env.ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }) => {
