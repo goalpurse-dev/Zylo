@@ -3,7 +3,8 @@
 // The server (content-machine-api) decides who may see it: anyone but the verified admin gets a 404 from
 // it, and this page then shows the site's normal "Page Not Found", so nothing reveals the page exists.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { api } from "./contentMachine/cmApi";
+import { IdeasTab, LibraryTab, TodayTab } from "./contentMachine/SlideshowTabs";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const money = (n, d = 2) => (n == null ? "–" : `$${Number(n).toFixed(d)}`);
@@ -15,20 +16,6 @@ const FORMATS = [
   ["pov_skit", "POV skit"], ["before_after", "Before / after"], ["series_episode", "Series episode"], ["challenge", "Challenge"],
 ];
 const REASONS = { kill_switch: "kill switch", daily_cap: "daily cap", monthly_cap: "monthly cap", provider_cap: "provider cap", lane_cap: "cap for this kind of work", bad_estimate: "no valid estimate" };
-
-async function api(action, body = {}) {
-  const { data, error } = await supabase.functions.invoke("content-machine-api", { body: { action, ...body } });
-  if (error) {
-    const status = error?.context?.status;
-    let message = "Couldn't reach the server. Try again.";
-    try { const j = await error.context.json(); if (j?.message && j.code !== "NOT_FOUND") message = j.message; } catch { /* no body */ }
-    const e = new Error(message);
-    e.status = status;
-    throw e;
-  }
-  if (!data?.ok) throw new Error(data?.message ?? "Something went wrong.");
-  return data.data;
-}
 
 function Card({ title, children, tone = "plain", testid, right }) {
   const border = tone === "bad" ? "border-red-300/40" : tone === "warn" ? "border-amber-300/40" : "border-white/10";
@@ -74,6 +61,14 @@ function TopBar({ st, onStatus }) {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
   const kill = st.settings.kill_switch;
+  const run = st.latestRun;
+  const [running, setRunning] = useState(false);
+  const runNow = async () => {
+    if (!window.confirm(`Make ${st.settings.slideshows_per_day} slideshows now${st.dryRun.effective ? " (dry run, $0)" : ", within the caps"}?`)) return;
+    setRunning(true); setNote(null);
+    try { await api("makeSlideshows", {}); onStatus(await api("status")); } catch (e) { setNote(e.message); }
+    setRunning(false);
+  };
   const flip = async (on) => {
     if (on && !window.confirm("Turn the kill switch ON? Nothing will run (not even dry runs) until you turn it off.")) return;
     if (!on && !window.confirm("Turn the kill switch OFF? Work can run again, within the caps.")) return;
@@ -88,8 +83,9 @@ function TopBar({ st, onStatus }) {
         <Meter label="This month" m={st.spend.month} />
         <div className="min-w-0">
           <div className="text-[12px] text-white/50">Run</div>
-          <div className="text-[15px] font-semibold text-white">No runs yet</div>
-          <button type="button" disabled title="Comes with the slideshow MVP (Phase 2)" className="mt-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white/50">Run now</button>
+          <div className="text-[15px] font-semibold text-white" data-testid="cm-run-status">{run ? `${run.kind === "daily" ? "Daily" : "Last"} run: ${run.status.replace(/_/g, " ")}${run.dry_run ? " (dry)" : ""}` : "No runs yet"}</div>
+          {run && <div className="text-[11.5px] text-white/45">{run.run_date} · {money(run.spend_usd, 3)}</div>}
+          <button type="button" disabled={running || kill} onClick={runNow} title={kill ? "The kill switch is on" : "Make today's slideshows now"} className="mt-1.5 rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{running ? "Starting…" : "Run now"}</button>
         </div>
         <div className="min-w-0">
           <div className="text-[12px] text-white/50">Kill switch</div>
@@ -260,6 +256,8 @@ const toForm = (s, models) => ({
   format_mix: Object.fromEntries(FORMATS.map(([k]) => [k, String(s.format_mix?.[k] ?? 0)])),
   auto_produce: s.auto_produce, end_card: s.end_card, dry_run: s.dry_run,
   run_time_local: s.run_time_local, timezone: s.timezone, brand_rules: s.brand_rules,
+  experiment_days: String(s.experiment_days ?? 14), daily_auto_run: s.daily_auto_run ?? true, winners_per_day: String(s.winners_per_day ?? 3),
+  experiments_per_day: String(s.experiments_per_day ?? 2), use_batch_for_daily: s.use_batch_for_daily ?? true,
   models: { main: s.models?.main ?? "", fast: s.models?.fast ?? "" }, modelsInUse: models,
 });
 const capsOut = (o) => Object.fromEntries(Object.entries(o).filter(([k, v]) => k && v !== "").map(([k, v]) => [k, Number(v)]));
@@ -270,6 +268,8 @@ const fromForm = (f) => ({
   format_mix: Object.fromEntries(Object.entries(f.format_mix).filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Number(v)])),
   auto_produce: f.auto_produce, end_card: f.end_card, dry_run: f.dry_run,
   run_time_local: f.run_time_local, timezone: f.timezone, brand_rules: f.brand_rules, models: f.models,
+  experiment_days: Number(f.experiment_days), daily_auto_run: f.daily_auto_run, winners_per_day: Number(f.winners_per_day),
+  experiments_per_day: Number(f.experiments_per_day), use_batch_for_daily: f.use_batch_for_daily,
 });
 
 function Field({ label, hint, children, htmlFor }) {
@@ -365,6 +365,13 @@ function SettingsTab({ st, onStatus }) {
           {toggleRow("dry_run", "Dry run", st.dryRun.env ? "The DRY_RUN secret is also on, so calls stay mocked whatever this says." : "On: every paid call is mocked at $0. Off: real, paid calls.", "lime")}
           {toggleRow("auto_produce", "Auto-produce", "Make ideas without waiting for your approval.")}
           {toggleRow("end_card", "End card", "\"made with Zyvo · tryzyvo.com\" in the last 1.5 s.")}
+          {toggleRow("daily_auto_run", "Automatic daily run", `Makes the day's slideshows at ${f.run_time_local} without you.`)}
+          {toggleRow("use_batch_for_daily", "Batch API for the daily run", "Half price for the writing; results within minutes (up to 24 h). Run now is never batched.")}
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <Field label="Experiment phase (days)" htmlFor="cm-experiment_days" hint={st.settings.experiment_started_on ? `Started ${st.settings.experiment_started_on}.` : "Starts with the first real (not dry) run."}>{num("experiment_days", { min: 0, max: 365, step: 1 })}</Field>
+          <Field label="Proven winners per day (after it)" htmlFor="cm-winners_per_day">{num("winners_per_day", { min: 0, max: 50, step: 1 })}</Field>
+          <Field label="New experiments per day (after it)" htmlFor="cm-experiments_per_day">{num("experiments_per_day", { min: 0, max: 50, step: 1 })}</Field>
         </div>
       </Card>
 
@@ -396,13 +403,13 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Today"], ["ideas", "Ideas"], ["library", "Library"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | notfound | error
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("budget");
+  const [tab, setTab] = useState("today");
   const [reloadKey, setReloadKey] = useState(0);
   const load = useCallback(async () => {
     try { setSt(await api("status")); setState("ok"); }
@@ -429,6 +436,9 @@ export default function ContentMachine() {
             className={`-mb-px border-b-2 px-4 py-2.5 text-[14px] font-semibold transition ${tab === k ? "border-lime-300 text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>{label}</button>
         ))}
       </nav>
+      {tab === "today" && <TodayTab st={st} onChanged={load} />}
+      {tab === "ideas" && <IdeasTab />}
+      {tab === "library" && <LibraryTab />}
       {tab === "budget" && <BudgetTab st={st} reloadKey={reloadKey} onChanged={load} />}
       {tab === "settings" && <SettingsTab st={st} onStatus={onStatus} />}
     </div>

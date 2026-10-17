@@ -10,20 +10,20 @@ import { NOT_FOUND_BODY, adminFromRequest } from "./adminGuard.js";
 import { BudgetStopped, PROVIDERS, REASON_TEXT } from "./budgetGuard.js";
 import { SettingsError, cleanSettingsPatch, settingsDiff } from "./settings.js";
 import { dailySeries, daysBack, localDay, monthStart, summarize } from "./spendSummary.js";
+import { ApiError } from "./errors.js";
+import { slideshowActions } from "./apiSlideshows.js";
 
-class ApiError extends Error {
-  constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
-}
 
 const PUBLIC_SETTINGS = [
   "daily_budget_usd", "monthly_budget_usd", "per_provider_daily_caps", "lane_daily_caps", "daily_video_target",
   "slideshows_per_day", "format_mix", "auto_produce", "end_card", "kill_switch", "dry_run", "run_time_local",
   "timezone", "watchlist", "brand_rules", "models", "updated_at", "updated_by",
+  "experiment_days", "experiment_started_on", "daily_auto_run", "winners_per_day", "experiments_per_day", "use_batch_for_daily",
 ];
 const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o?.[k] ?? null]));
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function createHandler({ getUser, emails, store, guard, cors, env = {}, now = () => new Date() }) {
+export function createHandler({ getUser, emails, store, guard, cors, env = {}, now = () => new Date(), cm = null, files = null, kick = async () => {} }) {
   const models = (s) => ({
     main: s.models?.main || env.CM_MODEL_MAIN || "claude-sonnet-5-5",
     fast: s.models?.fast || env.CM_MODEL_FAST || "claude-haiku-5-5",
@@ -38,10 +38,12 @@ export function createHandler({ getUser, emails, store, guard, cors, env = {}, n
       models: models(s),
       spend: summarize(rows, s, today),
       dryRun: { env: guard.envDryRun, settings: Boolean(s.dry_run), effective: guard.envDryRun || Boolean(s.dry_run) },
+      latestRun: cm ? (await cm.listRuns(1))[0] ?? null : null,
     };
   }
 
   const ACTIONS = {
+    ...(cm ? slideshowActions({ cm, files, kick, store, guard, now }) : {}),
     whoami: async ({ user }) => ({ email: user.email }),
     status: async () => status(),
 

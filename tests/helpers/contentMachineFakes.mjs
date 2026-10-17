@@ -1,0 +1,209 @@
+// Content Machine test helpers: an in-memory database (the pipeline's db + the Budget Guard's store),
+// fake providers that behave like the real ones (they check the guard's ticket), and the admin API on top.
+// Used by tests/contentMachineSlideshows.test.mjs and the browser check scripts/contentMachine/qaPage.mjs.
+import { createBudgetGuard, assertTicket } from "../../supabase/functions/_shared/contentMachine/budgetGuard.js";
+import { runJob } from "../../supabase/functions/_shared/contentMachine/pipeline.js";
+import { costOfUsage } from "../../supabase/functions/_shared/contentMachine/providers/anthropic.js";
+import { createHandler } from "../../supabase/functions/_shared/contentMachine/api.js";
+import { cors } from "../../supabase/functions/shared/cors.ts";
+
+/* ─── a library like the seeded one (smaller) ────────────────────────── */
+export const LIB = {
+  formats: ["tool_listicle", "numbered_steps", "pov_text", "myth_fact", "tier_list", "quiz", "meme"].map((key) => ({ key, name: key, description: key, spec: { slides: [5, 7] } })),
+  styles: [
+    { key: "neon_grid", name: "Neon", description: "", spec: { bg_prompt: "dark grid, no text", bg: "#07060d", fg: "#ffffff", accent: "#a855f7", highlight: "#facc15", font: "anton", grid: true } },
+    { key: "minimal_clean", name: "Minimal", description: "", spec: { bg_prompt: "paper, no text", bg: "#f6f3ee", fg: "#111111", accent: "#2563eb", highlight: "#fde047", font: "inter" } },
+    { key: "luxury_night", name: "Luxury", description: "", spec: { bg_prompt: "night city, no text", bg: "#0b0b0f", fg: "#ffffff", accent: "#f5c542", highlight: "#f5c542", font: "anton" } },
+  ],
+  hooks: ["question", "bold_statement", "number_list", "pov", "warning"].map((key) => ({ key, name: key, description: key, spec: {} })),
+};
+
+/* ─── the in-memory database (pipelineDb + the guard's store) ─────────── */
+export function fakeWorld(settings = {}) {
+  let n = 0;
+  const id = (p) => `${p}-${String(++n).padStart(4, "0")}-aaaa-bbbb-cccc`;
+  const s = {
+    dry_run: false, kill_switch: false, daily_budget_usd: 3, monthly_budget_usd: 90, per_provider_daily_caps: { runware: 2, anthropic: 1.5, fly: 0.5 },
+    lane_daily_caps: { slideshow: 3 }, slideshows_per_day: 2, timezone: "Europe/Helsinki", models: {}, brand_rules: "- Be honest.", experiment_days: 14,
+    experiment_started_on: null, daily_auto_run: true, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
+  };
+  const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [];
+  const cost = (r) => r.actual_usd ?? r.estimated_usd;
+  const store = {
+    async readSettings() { return { ...s }; },
+    async updateSettings(p) { Object.assign(s, p); return { ...s }; },
+    async reserve({ provider, operation, estimatedUsd, lane, runId, ideaId, dryRun }) {
+      const sum = (f) => ledger.filter(f).reduce((a, r) => a + cost(r), 0);
+      const pc = s.per_provider_daily_caps[provider], lc = lane ? s.lane_daily_caps[lane] : null;
+      const reason = s.kill_switch ? "kill_switch" : !(estimatedUsd >= 0) ? "bad_estimate" : sum(() => true) + estimatedUsd > s.daily_budget_usd ? "daily_cap"
+        : pc != null && sum((r) => r.provider === provider) + estimatedUsd > pc ? "provider_cap" : lc != null && sum((r) => r.lane === lane) + estimatedUsd > lc ? "lane_cap" : null;
+      if (reason) return { ok: false, reason };
+      const row = { id: id("L"), provider, operation, lane, run_id: runId, idea_id: ideaId, estimated_usd: dryRun ? 0 : estimatedUsd, actual_usd: null, status: "reserved", dry_run: dryRun, would_cost_usd: dryRun ? estimatedUsd : null };
+      ledger.push(row);
+      return { ok: true, ledger_id: row.id };
+    },
+    async settle({ ledgerId, actualUsd, status, requestRef, error }) {
+      const r = ledger.find((x) => x.id === ledgerId && x.status === "reserved");
+      if (!r) return false;
+      Object.assign(r, { actual_usd: r.dry_run ? 0 : actualUsd, status, request_ref: requestRef, error });
+      return true;
+    },
+    async ledgerSince() { return [...ledger]; },
+    async audit(email, action, payload) { audit.push({ email, action, payload }); },
+    async auditLog() { return [...audit]; },
+  };
+  const db = {
+    async settings() { return { ...s }; },
+    async updateSettings(p) { Object.assign(s, p); },
+    async library() { return LIB; },
+    async getRun(i) { return runs.find((r) => r.id === i); },
+    async updateRun(i, p) { Object.assign(runs.find((r) => r.id === i), p); },
+    async createRun(row) {
+      if (row.kind === "daily" && runs.some((r) => r.kind === "daily" && r.run_date === row.run_date)) throw new Error("duplicate key value violates unique constraint");
+      const r = { id: id("R"), input: {}, ...row }; runs.push(r); return r;
+    },
+    async recentRecipes() { return ideas.filter((i) => !i.dry_run).map((i) => i.recipe); },
+    async recentTitles(_d, ex) { return ideas.filter((i) => !i.dry_run && i.id !== ex && i.title !== "(being written)").map((i) => ({ id: i.id, title: i.title, hook: i.hook })); },
+    async createIdeas(rows) { const out = rows.map((r) => ({ id: id("I"), compliance: {}, script: {}, ...r })); ideas.push(...out); return out; },
+    async getIdea(i) { return ideas.find((x) => x.id === i); },
+    async updateIdea(i, p) { const x = ideas.find((y) => y.id === i); Object.assign(x, p); return x; },
+    async ideasOfRun(r) { return ideas.filter((i) => i.run_id === r); },
+    async runSpend(r) { return ledger.filter((l) => l.run_id === r).reduce((a, l) => a + cost(l), 0); },
+    async ensureGeneration(ideaId) { let g = gens.find((x) => x.idea_id === ideaId); if (!g) { g = { id: id("G"), idea_id: ideaId, kind: "slideshow", status: "queued", source_assets: {}, files: {} }; gens.push(g); } return g; },
+    async updateGeneration(i, p) { Object.assign(gens.find((g) => g.id === i), p); },
+    async savePackages(g, rows) { for (const r of rows) { const old = pkgs.findIndex((p) => p.generation_id === g && p.platform === r.platform); if (old >= 0) pkgs.splice(old, 1); pkgs.push({ id: id("P"), generation_id: g, ...r }); } },
+    async enqueue(rows) { for (const r of rows) jobs.push({ id: id("J"), status: "queued", attempts: 0, max_attempts: 2, payload: {}, run_after: new Date(0).toISOString(), ...r }); },
+    async claimJobs(limit) {
+      const due = jobs.filter((j) => j.status === "queued" && new Date(j.run_after) <= clock.now).slice(0, limit);
+      for (const j of due) { j.status = "running"; j.attempts += 1; }
+      return due.map((j) => ({ ...j }));
+    },
+    async finishJob(i, status, error) { Object.assign(jobs.find((j) => j.id === i), { status, error }); },
+    async requeueJob(i, { delaySec, error, keepAttempt, payload }) {
+      const j = jobs.find((x) => x.id === i);
+      Object.assign(j, { status: "queued", run_after: new Date(clock.now.getTime() + delaySec * 1000).toISOString(), error });
+      if (payload) j.payload = payload;
+      if (keepAttempt) j.attempts = Math.max(0, j.attempts - 1);
+    },
+    async dailyRunExists(day) { return runs.some((r) => r.kind === "daily" && r.run_date === day); },
+  };
+  const clock = { now: new Date("2026-10-20T06:30:00Z") };   // 09:30 in Helsinki
+  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, store, db, clock };
+}
+
+/* ─── fake providers that behave like the real ones ──────────────────── */
+export function validSlideshow(recipe, title = "5 AI tools that replace a video editor") {
+  const n = recipe.slide_count;
+  const slides = Array.from({ length: n }, (_, i) => ({
+    kind: i === 0 ? "cover" : i === n - 1 ? "cta" : "item", headline: i === 0 ? title : `Point ${i}`, body: null, label: null, items: [],
+    tool: i > 0 && i < n - 1 ? { name: i === 2 ? "Zyvo" : `Tool${i}`, url: "https://x.com", what_it_does: "Does a real thing." } : null,
+    image_prompt: i === 1 ? "a desk at night" : null, is_zyvo: i === 2,
+  }));
+  return { title, topic: "AI tools", hook: "Number 3 surprised me", hypothesis: "question hook beats statement", slides,
+    tools_checked: slides.filter((s) => s.tool && s.tool.name !== "Zyvo").map((s) => ({ name: s.tool.name, url: s.tool.url, source_url: s.tool.url })),
+    ai_label_required: false, why_it_could_go_viral: "useful", virality_score: 7 };
+}
+export const PKG = (ok = true) => ({
+  tiktok: { caption: "Which would you try first?", hashtags: ["#aitools", "#faceless", "#aivideo"], on_screen_text: ["3 tools"] },
+  instagram: { caption: "Save this.\nLink in bio → tryzyvo.com", hashtags: ["#aitools", "#faceless", "#aivideo", "#creator", "#youtube"] },
+  youtube: { title: "AI tools that replace an editor", description: "Link: https://www.tryzyvo.com/", hashtags: ["#shorts", "#aitools", "#ai"] },
+  sound_suggestion: "an upbeat lo-fi sound", compliance: ok ? { ok: true, problems: [] } : { ok: false, problems: ["slide 3 claims an income"] },
+});
+export const msg = (obj, usage = { input_tokens: 9000, output_tokens: 4000, server_tool_use: { web_search_requests: 3 } }) => ({ id: `msg_${Math.random().toString(36).slice(2, 8)}`, model: "claude-sonnet-5-5", stop_reason: "end_turn", usage, content: [{ type: "text", text: JSON.stringify(obj) }] });
+
+export function fakeProviders(world, { packageOk = [true], badFirstWrite = false, badAlways = false } = {}) {
+  const calls = { messages: [], images: 0, renders: 0, batches: [] };
+  let pkgN = 0, writeN = 0;
+  const ai = {
+    async createMessage(ticket, { request }) {
+      assertTicket(ticket, "anthropic");
+      calls.messages.push(request);
+      const isPackage = /package/i.test(request.system[0].text.slice(0, 80));
+      if (isPackage) {
+        const ok = packageOk[Math.min(pkgN++, packageOk.length - 1)];
+        const body = msg(PKG(ok), { input_tokens: 5000, output_tokens: 900 });
+        body.model = "claude-haiku-5-5";
+        return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
+      }
+      const recipe = JSON.parse(/RECIPE: (.*)/.exec(request.messages[0].content)[1]);
+      writeN += 1;
+      const s = validSlideshow(recipe, `Title ${writeN}: 5 tools ${recipe.format} ${recipe.style}`);
+      if (badAlways || (badFirstWrite && writeN === 1)) s.slides[0].kind = "item";
+      const body = msg(s);
+      return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
+    },
+    async createBatch(ticket, { requests }) { assertTicket(ticket, "anthropic"); const b = { id: "batch_1", processing_status: "in_progress", requests }; calls.batches.push(b); return b; },
+    async getBatch({ batchId }) { const b = calls.batches.find((x) => x.id === batchId); return { id: b.id, processing_status: b.processing_status, results_url: "https://results" }; },
+    async batchResults() {
+      const out = {};
+      for (const r of calls.batches[0].requests) {
+        const recipe = JSON.parse(/RECIPE: (.*)/.exec(r.params.messages[0].content)[1]);
+        const m = msg(validSlideshow(recipe, `Batch ${recipe.format} in ${recipe.style}`));
+        out[r.custom_id] = { type: "succeeded", message: m, costUsd: costOfUsage(m.usage, m.model, { batch: true }) };
+      }
+      return out;
+    },
+  };
+  const images = { async generateImage(ticket) { assertTicket(ticket, "runware"); calls.images += 1; return { url: `https://im.runware.ai/${calls.images}.jpg`, costUsd: 0.0012, taskUUID: `t${calls.images}` }; } };
+  const uploaded = new Set();
+  const fly = { async startRender(ticket, { job }) { assertTicket(ticket, "fly"); calls.renders += 1; calls.lastRender = job; uploaded.add(job.uploads.manifest); return { machineId: `m${calls.renders}`, startedAt: world.clock.now.getTime() }; } };
+  const files = {
+    async signedUpload(p) { return `https://upload/${p}`; },
+    async signedUrl(p) { return `https://signed/${p}`; },
+    async exists(p) { return [...uploaded].some((u) => u.endsWith(p)); },
+    async readJson() { return { ok: true, durationSec: 19, sizes: { zip: 1, mp4: 2 } }; },
+  };
+  return { ai, images, fly, files, calls };
+}
+
+export function depsFor(world, providers, guardOpts = {}) {
+  return {
+    db: world.db, guard: createBudgetGuard({ store: world.store, ...guardOpts }), ...providers,
+    env: { anthropicKey: "k", runwareKey: "k", flyToken: "t", flyApp: "zyvo-render", flyImage: "img", fallbacks: true },
+    now: () => world.clock.now,
+  };
+}
+
+/** Runs claimed jobs until none are due (moving the clock past waits). */
+export async function drain(world, deps, maxRounds = 80) {
+  for (let i = 0; i < maxRounds; i++) {
+    const due = await world.db.claimJobs(10);
+    if (!due.length) {
+      const waiting = world.jobs.filter((j) => j.status === "queued");
+      if (!waiting.length) return;
+      world.clock.now = new Date(Math.max(...waiting.map((j) => new Date(j.run_after).getTime())) + 1000);
+      continue;
+    }
+    for (const j of due) await runJob(j, deps);
+  }
+  throw new Error("the pipeline did not settle");
+}
+
+export async function startRun(world, { kind = "slideshows", dry = false, count = 2, topic = null } = {}) {
+  const run = await world.db.createRun({ run_date: "2026-10-20", kind, status: "pending", dry_run: dry, input: { count, topic } });
+  await world.db.enqueue([{ run_id: run.id, stage: "plan" }]);
+  return run;
+}
+
+export function apiFor(world, extra = {}) {
+  const guard = createBudgetGuard({ store: world.store });
+  let kicks = 0;
+  const cm = {
+    ...world.db,
+    async listRuns() { return [...world.runs].reverse(); },
+    async listIdeas({ runId = null } = {}) { return [...world.ideas].reverse().filter((i) => !runId || i.run_id === runId).map((i) => ({ ...i, cm_generations: world.gens.filter((g) => g.idea_id === i.id).map((g) => ({ ...g, cm_packages: world.pkgs.filter((p) => p.generation_id === g.id) })) })); },
+    async ideaCosts(ids) { return Object.fromEntries(ids.map((i) => [i, { usd: world.ledger.filter((l) => l.idea_id === i).reduce((a, l) => a + (l.actual_usd ?? l.estimated_usd), 0), wouldUsd: 0, byProvider: {}, calls: 0 }])); },
+    async libraryAll() { return [...LIB.styles.map((s) => ({ ...s, kind: "style", status: "active" })), ...LIB.formats.map((f) => ({ ...f, kind: "format", status: "active" }))]; },
+    async saveLibrary(row) { return row; },
+    async getPackage(id) { return world.pkgs.find((p) => p.id === id); },
+    async updatePackage(id, patch) { return Object.assign(world.pkgs.find((p) => p.id === id), patch); },
+  };
+  const handle = createHandler({
+    getUser: async () => ({ data: { user: { email: "upwardlift6@gmail.com", email_confirmed_at: "x" } }, error: null }), emails: ["upwardlift6@gmail.com"],
+    store: world.store, guard, cors, now: () => world.clock.now, cm, files: { signedUrls: async (ps) => Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])), signedUrl: async () => "https://signed/shot" },
+    kick: async () => { kicks += 1; }, ...extra,
+  });
+  const call = async (body) => (await handle(new Request("https://x", { method: "POST", headers: { Authorization: "Bearer t", Origin: "https://tryzyvo.com" }, body: JSON.stringify(body) }))).json();
+  return { call, handle, kicks: () => kicks };
+}
+

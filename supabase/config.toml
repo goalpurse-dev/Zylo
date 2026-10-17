@@ -213,3 +213,8 @@ verify_jwt = false
 # the admin with a plain 404; with the gateway's check on, a call without a token would get a 401 instead.
 [functions.content-machine-api]
 verify_jwt = false
+
+# The Content Machine's worker: called by the database's minute tick and by the admin API, both with the
+# x-cm-worker-secret header (checked in the function); anyone else gets a plain 404.
+[functions.content-machine-worker]
+verify_jwt = false

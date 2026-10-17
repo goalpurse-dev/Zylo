@@ -158,3 +158,50 @@ To go live (each on the owner's word):
 1. Apply the migration.
 2. Deploy `content-machine-api` from inside this folder.
 3. Ship the page through Vercel. That means `laptop-transfer`, then `main`.
+
+## 7. Owner decisions, 2026-10-18
+
+- Phase 1 is live: migration applied, `content-machine-api` deployed, dry run on.
+- While only slideshows are made, the caps are $3/day and $90/month. The slideshow cap is $3 too.
+- The cap covers every paid call: Runware, Anthropic tokens, Anthropic web searches ($0.01 each) and Fly render time.
+- Ways to save money:
+  - prompt caching on the long system prompts
+  - the Batch API for the daily run
+  - CM_MODEL_FAST for captions, compliance checks and reading screenshots
+- Phase 2 = slideshow experiments.
+- Phase 3 = the learning loop:
+  - a Posted tab with stats, typed in or read from a screenshot
+  - "Let the agent analyze"
+  - a playbook
+  - winners and experiments mixed in each day, with a 14-day half-life
+  - a post counts as a winner only after it has worked 3 or more times
+  - the scout
+- After that: the Zyvo-tool videos and the making-of videos.
+
+## 8. Phase 2: built and tested locally (not migrated, not deployed)
+
+| Piece | File |
+|---|---|
+| Migration: library (17 formats, 5 styles, 10 hook types), recipe columns, experiment settings, job claim, minute tick | `supabase/migrations/20261108100000_content_machine_slideshows.sql` (+ rollback) |
+| Experiment planner | `_shared/contentMachine/planner.js` |
+| Prompts, schemas, checks, duplicate check, dry-run mocks | `_shared/contentMachine/writer.js` |
+| Providers, each needing a Budget Guard ticket | `_shared/contentMachine/providers/{anthropic,runware,fly}.js` |
+| Pipeline (plan → write or batch → check → rewrite → images → render) | `_shared/contentMachine/pipeline.js`, `pipelineDb.js` |
+| Worker (07:00 daily run, job claims) | `_shared/contentMachine/worker.js`, `supabase/functions/content-machine-worker/` |
+| Admin API: slideshow actions | `_shared/contentMachine/apiSlideshows.js` |
+| Slide templates, shared by the browser preview and the renderer | `_shared/contentMachine/slides/templates.js` |
+| Renderer (Chromium → PNG + ZIP, ffmpeg → MP4) | `render-worker/src/cmSlides.mjs`, `render-worker/Dockerfile.cm`, fonts (OFL) |
+| Page: Today, Ideas and Library tabs; Run now; Phase 2 settings | `src/pages/admin/contentMachine/SlideshowTabs.jsx` |
+| Tests | `tests/contentMachineSlideshows.test.mjs` (23), `tests/contentMachineSlideshows.lifecycle.sql`, `tests/contentMachineTick.pglite.sql` |
+| Local checks ($0) | `scripts/contentMachine/{renderSamples,qaSlideshows,captureZyvoShot,uploadZyvoShot}.mjs` |
+
+### Go-live steps (each on the owner's word)
+
+1. Apply the migration with `supabase db query --linked -f`, then `migration repair`. Never use `db push`: production lacks history records for many older migrations.
+2. Set the secret `CM_WORKER_SECRET`, and add the vault entries `cm_worker_secret` and `cm_worker_url` (the worker's function URL).
+3. Deploy `content-machine-api` and `content-machine-worker` with `--no-verify-jwt`, from this folder.
+4. Upload the tryzyvo.com screenshot to `content-machine/assets/zyvo-home.png`.
+5. In `render-worker/`, run `node scripts/sync-shared.mjs`, then `fly deploy --app zyvo-render --build-only --push --image-label cm-slides --dockerfile Dockerfile.cm`.
+6. Still in dry run: one Run now to see the whole flow in production at $0.
+7. First real run: the owner switches Dry run off in Settings and presses Run now. Then report the cost per slideshow from the ledger.
+8. Ship the page (laptop-transfer → main).

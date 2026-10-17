@@ -75,6 +75,11 @@ const FIELDS = {
     if (s.length < 20 || s.length > 5000) throw new SettingsError("Brand rules: 20 to 5,000 characters.");
     return s;
   },
+  experiment_days: (v) => int(v, "Experiment phase (days)", 0, 365),
+  daily_auto_run: (v) => bool(v, "Automatic daily run"),
+  winners_per_day: (v) => int(v, "Proven winners per day", 0, 50),
+  experiments_per_day: (v) => int(v, "New experiments per day", 0, 50),
+  use_batch_for_daily: (v) => bool(v, "Batch API for the daily run"),
   models: (v) => {
     if (!v || typeof v !== "object" || Array.isArray(v)) throw new SettingsError("Models: main and fast.");
     return { main: modelName(v.main), fast: modelName(v.fast) };

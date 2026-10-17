@@ -21,19 +21,35 @@ await db.exec(`
   create role anon; create role authenticated; create role service_role;
   create schema storage;
   create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
+  -- The vault and pg_net, recording instead of calling (the tick test reads net.calls).
+  create schema vault;
+  create table vault.decrypted_secrets (name text primary key, decrypted_secret text);
+  insert into vault.decrypted_secrets values ('cm_worker_secret', 'test-secret'), ('cm_worker_url', 'https://worker.test/tick');
+  create schema net;
+  create table net.calls (url text, headers jsonb, body jsonb);
+  create function net.http_post(url text, headers jsonb, body jsonb, timeout_milliseconds integer) returns bigint
+    language sql as $$ insert into net.calls values (url, headers, body); select 1::bigint $$;
 `);
 
+const M1 = "supabase/migrations/20261107100000_content_machine.sql";
+const M2 = "supabase/migrations/20261108100000_content_machine_slideshows.sql";
 const steps = [
-  ["migration", "supabase/migrations/20261107100000_content_machine.sql"],
-  ["migration again (must be safe to re-run)", "supabase/migrations/20261107100000_content_machine.sql"],
+  ["migration 1", M1],
+  ["migration 1 again (must be safe to re-run)", M1],
   ["spend tests", "tests/contentMachineSpend.lifecycle.sql"],
-  ["rollback", "supabase/rollbacks/20261107100000_content_machine_rollback.sql"],
-  ["migration after rollback", "supabase/migrations/20261107100000_content_machine.sql"],
+  ["migration 2 (slideshows)", M2],
+  ["migration 2 again", M2],
+  ["slideshow tests", "tests/contentMachineSlideshows.lifecycle.sql"],
+  ["the minute tick (stubbed pg_net)", "tests/contentMachineTick.pglite.sql"],
+  ["rollback 2", "supabase/rollbacks/20261108100000_content_machine_slideshows_rollback.sql"],
+  ["rollback 1", "supabase/rollbacks/20261107100000_content_machine_rollback.sql"],
+  ["both migrations after rollback", M1],
+  ["", M2],
 ];
 for (const [label, file] of steps) {
   try {
     await db.exec(read(file));
-    console.log(`ok   ${label}`);
+    if (label) console.log(`ok   ${label}`);
   } catch (e) {
     console.error(`FAIL ${label}: ${e.message}`);
     process.exit(1);

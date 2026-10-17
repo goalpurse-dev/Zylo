@@ -1,0 +1,19 @@
+# Content Machine slideshow renderer (src/cmSlides.mjs): Chromium draws the slides with the app's own
+# templates, ffmpeg makes the MP4. Its own image tag (cm-slides) on the zyvo-render app; the other
+# products' images are not touched. Build (from render-worker/, after `node scripts/sync-shared.mjs`):
+#   fly deploy --app zyvo-render --build-only --push --image-label cm-slides --dockerfile Dockerfile.cm
+FROM node:22.23.3-bookworm-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ffmpeg ca-certificates fonts-noto-color-emoji \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+# Exact version, the same one the repo's checks run locally.
+RUN npm init -y >/dev/null && npm install --no-audit --no-fund playwright@1.63.0 \
+ && npx playwright install --with-deps chromium \
+ && rm -rf /root/.npm
+COPY src/cmSlides.mjs ./src/cmSlides.mjs
+COPY assets/fonts ./assets/fonts
+# The slide templates, synced by scripts/sync-shared.mjs at their repo path (/supabase/...).
+COPY shared/ /
+ENV WORK_DIR=/tmp/render NODE_ENV=production
+CMD ["node", "src/cmSlides.mjs"]
