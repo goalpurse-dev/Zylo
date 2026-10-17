@@ -44,16 +44,25 @@ export async function maybeStartDailyRun(deps) {
   return run;
 }
 
-export async function tick(deps) {
+// One tick keeps claiming the next steps (each finished step queues the next) for up to this long, so a
+// slideshow goes through its 6–7 steps in one or two ticks instead of one step a minute.
+export const TICK_BUDGET_MS = 150_000;
+export const MAX_ROUNDS = 12;
+
+export async function tick(deps, { clock = () => Date.now() } = {}) {
   const daily = await maybeStartDailyRun(deps);
-  const s = await deps.db.settings();
-  if (s.kill_switch) return { daily: daily?.id ?? null, jobs: [] };
-  const jobs = await deps.db.claimJobs(JOBS_PER_TICK, LEASE_SECONDS);
-  const results = await Promise.all(jobs.map(async (job) => {
-    try { return { id: job.id, stage: job.stage, result: await runJob(job, deps) }; }
-    catch (e) { deps.log?.(`[content-machine-worker] ${job.stage} ${job.id}: ${e?.message ?? e}`); return { id: job.id, stage: job.stage, result: "error" }; }
-  }));
-  // More waiting right now? Ask for another pass instead of waiting a minute.
+  const started = clock();
+  const results = [];
+  for (let round = 0; round < MAX_ROUNDS && clock() - started < TICK_BUDGET_MS; round++) {
+    const s = await deps.db.settings();
+    if (s.kill_switch) break;
+    const jobs = await deps.db.claimJobs(JOBS_PER_TICK, LEASE_SECONDS);
+    if (!jobs.length) break;
+    results.push(...await Promise.all(jobs.map(async (job) => {
+      try { return { id: job.id, stage: job.stage, result: await runJob(job, deps) }; }
+      catch (e) { deps.log?.(`[content-machine-worker] ${job.stage} ${job.id}: ${e?.message ?? e}`); return { id: job.id, stage: job.stage, result: "error" }; }
+    })));
+  }
   return { daily: daily?.id ?? null, jobs: results };
 }
 

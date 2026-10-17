@@ -522,3 +522,15 @@ test("the logo library through the API: upload, approve only with file + source,
   assert.equal(world.logos.find((l) => l.id === "LOGO-descript").approved, false, "a new file is not approved");
   assert.deepEqual(world.audit.map((a) => a.action).filter((a) => a.startsWith("logo.")), ["logo.upload", "logo.edit", "logo.approve", "logo.upload"]);
 });
+
+test("one tick keeps going: a dry slideshow goes through all its steps in a single tick", async () => {
+  const world = fakeWorld({ dry_run: true });
+  const deps = depsFor(world, fakeProviders(world));
+  await startRun(world, { dry: true, count: 2 });
+  const r = await tick(deps);
+  assert.equal(world.runs[0].status, "done", JSON.stringify(r.jobs.map((j) => j.stage)));
+  assert.ok(r.jobs.length >= 10, "plan + 5 steps for each of 2 slideshows");
+  world.s.kill_switch = true;
+  await startRun(world, { dry: true, count: 1 });
+  assert.deepEqual((await tick(deps)).jobs, [], "the kill switch stops the loop");
+});
