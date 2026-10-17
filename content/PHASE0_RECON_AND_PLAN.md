@@ -1,0 +1,113 @@
+# Content Machine: Phase 0 recon and plan
+
+Branch `contentmachine`, branched from `laptop-transfer` at 4df900b8. Working tree: `C:\Users\Public\Zylo-contentmachine`.
+Status: **waiting for the owner's approval** (spec §12). Nothing has been built, migrated or deployed.
+
+## 1. What the repo already has
+
+| Area | What exists | Where |
+|---|---|---|
+| Frontend | Vite, React 19, react-router 7 (with SSR), Tailwind, zod, sonner | routes in `src/App.jsx`; admin pages are in `src/pages/admin/` (`Ops.jsx`, `FeedbackAnalytics.jsx`) |
+| Backend | About 200 Supabase Edge Functions (Deno). `api/` holds only 2 Vercel functions (OpenAI proxy, Stripe webhook) | `supabase/functions/`, helpers in `shared/` and `_shared/` |
+| Auth | Supabase Auth. Server side, `requireUser(req)` calls `auth.getUser()` | `supabase/functions/shared/auth.ts:18` |
+| Admin check | Copy-pasted `adminEmails()` (`ADMIN_EMAILS` + `ALERT_EMAIL` + `CONTACT_TO_EMAIL`). Returns **403**, and **does not check email verification** | `ops-status/index.ts:27-66`, `blocky-story-api/index.ts:91-94` |
+| Database | Supabase Postgres with no ORM: raw SQL migrations, `YYYYMMDDHHMMSS_name.sql`, RLS on, server-only tables `revoke all` | latest is `20261106100000_cutaway_explainer.sql` |
+| Audit log | None. Admin changes (for example the Blocky window cap) are only `console.log`ged | |
+| Cron / jobs | pg_cron + pg_net call edge functions through `private.trigger_*()` with vault secrets. Per-feature job tables plus workers (`fruit_jobs`/`fruit-worker`, `blocky_jobs`/`blocky-worker`, `long_form_render_jobs`) | e.g. `20261026100000_blocky_stories_backend.sql:863` |
+| Rendering | `render-worker/`: Node + ffmpeg on Fly.io, one machine per job. Used by Long Form, Fruit, Blocky and Cutaway finals; compute cost is logged per second | `render-worker/src/*.mjs` |
+| Storage | Supabase Storage. Main bucket is `generated` (public). Private buckets exist (`long-form-renders`, `generation-references`) with signed URLs (1 h typical) | `src/lib/storage.ts:67` |
+| Runware | `includeCost: true` is already sent everywhere. Costs are stored per product (`fruit_ai_calls`, `blocky_ai_calls`, `long_form_cost_ledger`, `cutaway_runs.cost_usd`). The generic `runware-image`/`runware-video` path does **not** store its cost | `_shared/{fruit,blocky,cutaway}/runware.js`, `runware-video/runware.ts` |
+| LLMs | Anthropic (`ANTHROPIC_API_KEY`) and OpenAI. Model names live in per-product model maps | `_shared/{fruit,blocky}/models.js`, `_shared/cutaway/llm.js` |
+| Spend guards | Blocky: paid-calls switch, $20 per 3 hours for all users, $20 per user per day, spend watch. Runware balance guard. Fruit off switch. All of these estimate and check; **none reserves spend in a row** | `blocky-story-api:103-127`, `_shared/blocky/spendWatch.js`, `_shared/runwareBalance.ts` |
+| Credits | Charged per product (`charge_job_credits`, `fruit_charge_step`, `blocky_charge_step`, `deduct_credits`, ...). **There is no admin/internal bypass anywhere** | |
+| Community gallery | Hard-coded clips plus curated `showcase_videos` rows. **No generation is published automatically**, so content-machine output cannot leak there | `src/components/launch/launch.js:49-62` |
+| Playwright | In `node_modules` (not in package.json); about 70 QA and screenshot scripts use it | `scripts/blocky/qa*.mjs` |
+| UTM | First-touch UTM goes into auth user metadata (`first_touch_*`) at signup. No server-side table | `src/lib/firstTouch.js`, `src/lib/auth.js:6-27` |
+| Tests | `npm test` = `node --test tests/*.test.mjs` (with a Deno env shim) | `tests/setup.mjs` |
+| Env | No `APIFY_*`, `YOUTUBE_API_KEY` (only YouTube OAuth vars) or `DRY_RUN` yet. No `.env.example` | |
+
+### How each generator in the spec actually runs
+
+| Spec name | Real backend | Server-drivable? |
+|---|---|---|
+| AI Fruit Story (+ 10-episode series) | `fruit-story-api` (actions `createStory`, `buildFinal`, `createSeriesPlan`, ...) + `fruit-worker` + Fly final | **Yes** |
+| Blocky Stories | `blocky-story-api` + `blocky-worker` + Fly final | **Yes** |
+| Cutaway Explainer | `cutaway-api` (`start`/`advance`/`approve`) + Fly final | **Yes** |
+| Long Form (stickman) | many `*-long-form-*` functions + autopilot + `long-form-render` | **Yes** (autopilot exists) |
+| 2AM Worlds | `two-am-planner` (server reserves credits), images only | Mostly |
+| Clay Rescue, Micro Camera, Cartoon Drive By, Behind the Scenes, Video Generator / Short Form templates | generic `jobs` + `job-worker` + `runware-*`, **orchestrated by the browser** (Clay Rescue even stitches with ffmpeg.wasm in the browser) | No, not without the UI |
+| Skeleton | UI stub, no backend | No |
+| Anime | not a generator, just a Short Form template plus style options | (via templates) |
+
+## 2. Proposals that need the owner's approval
+
+**P1. Queue and cron: reuse the existing pg_cron pattern plus a DB job table.**
+No Redis/BullMQ (it would be a new service).
+- Table `cm_jobs` (stage, idea_id, status, attempts, locked_until, ...) and an edge function `content-machine-worker`.
+- `private.trigger_content_machine()` runs every minute with a vault secret, like the Blocky and Long Form workers.
+- On every tick the worker:
+  1. If the Helsinki local time is at or past `run_time_local` and no `cm_runs` row exists for today, it creates one. This gets daylight saving right without UTC cron maths.
+  2. It claims due jobs with `FOR UPDATE SKIP LOCKED`.
+- Every stage is a separate job and can safely run more than once, so a crash resumes on the next tick.
+
+**P2. One migration, create-only (nothing existing is altered or dropped).**
+- Tables: all spec tables (`cm_settings`, `cm_runs`, `cm_scout_reports`, `cm_ideas`, `cm_generations`, `cm_packages`, `cm_posts`, `cm_spend_ledger`, `cm_audit_log`) plus `cm_jobs` and `cm_cost_estimates` (the per-operation cost table that calibrates itself).
+- Every table has RLS on with `revoke all from public, anon, authenticated`, so only the service role (edge functions) can touch them.
+- Spend reservation is an RPC, `cm_reserve_spend(...)`. It locks the single `cm_settings` row, sums today, month and provider spend in Helsinki time, compares against the caps and inserts the ledger row in one transaction, so parallel workers cannot overspend.
+- File: `supabase/migrations/20261107100000_content_machine.sql` (after the latest timestamp), with a rollback file in `supabase/rollbacks/`.
+
+**P3. API: one action-routed edge function, `content-machine-api`.**
+This matches the house style of `blocky-story-api` and `cutaway-api`.
+- `verify_jwt = false` in `config.toml`, so even a call with no token gets **our** plain 404 instead of the gateway's 401.
+- A new shared helper, `_shared/contentMachine/adminGuard.ts`:
+  - The user must exist, have `email_confirmed_at` set, and their email must be in `ADMIN_EMAILS`.
+  - It uses only `ADMIN_EMAILS`, not the ops-page fallbacks.
+  - Anyone else gets `404 Not Found`.
+- **Deviation from the spec:** the spec asks for `/api/admin/content-machine/*`, but this app's backend is Supabase, not Vercel. A Vercel rewrite could add that literal path later if wanted.
+
+**P4. Admin page `/admin/content-machine` (SPA).**
+- The page first calls `content-machine-api {action:"whoami"}`. If the reply is not admin, it renders the site's normal 404 page.
+- Honest limit: in an SPA the page's JavaScript chunk is downloadable by anyone, but it contains no data and no secrets. Every byte of data comes through the guarded API.
+- Files go to a **private** bucket `content-machine` with 15-minute signed URLs.
+
+**P5. Admin generations without spending users' credits.**
+There is no bypass today. Recommended: a **dedicated internal Supabase user** (for example `content-machine@tryzyvo.com`, not the owner's account).
+- The worker tops that user's credits up from the Budget Guard and ledgers every top-up as internal.
+- The generators stay **completely unchanged**, so there is zero risk to user-facing code.
+- The real dollars are controlled by the Budget Guard, which wraps each generator job at the job level:
+  1. Reserve the estimate.
+  2. Run the job.
+  3. Reconcile the actual cost from the product's own cost table (`fruit_ai_calls`, `blocky_ai_calls`, ...).
+- The alternative, adding an `internal` flag to each generator's charge path, touches user-facing code, so I don't recommend it.
+
+**P6. Which tools the machine can use in v1.**
+- **Fruit Story (incl. series), Blocky Stories, Cutaway Explainer, Long Form cut-downs**, plus listicle slideshows. These are the server-drivable ones.
+- The browser-only tools (Clay Rescue, Micro Camera, Cartoon Drive By, Behind the Scenes) could be driven later by the Phase 4 Playwright session, which uses the real UI anyway.
+- Skeleton has no backend, so it is out.
+
+**P7. Rendering and Playwright: the existing Fly render-worker.**
+- New entry points: end card, slideshow MP4, making-of edit.
+- Playwright needs Chromium, which edge functions can't run. In Phase 4 it would go in a separate Fly machine image (Fly is already in use, so no new provider). The other option is a script run on this laptop.
+
+**P8. Models and keys.**
+- `CM_MODEL_MAIN=claude-sonnet-5-5` and `CM_MODEL_FAST=claude-haiku-5-5` as the spec says, set by env. The existing `ANTHROPIC_API_KEY` and `RUNWARE_API_KEY` are reused.
+- Not needed until Phase 2:
+  - `YOUTUBE_API_KEY`: free quota, but a new key.
+  - **Apify**: a new paid service, so I'll ask before adding it. Scouting works with Claude web search alone.
+
+**P9. Testing.** `DRY_RUN=true` mocks every paid call at $0. I test with DRY_RUN plus unit tests only; any paid run happens only when the owner asks.
+
+## 3. Phase 1 scope (once P1–P5 are approved)
+
+- `adminGuard.ts`, plus tests: a non-admin, an unverified admin and a missing token all get 404.
+- The migration (P2).
+- `_shared/contentMachine/budgetGuard.js` (`guard.spend(provider, operation, estimatedUsd, fn)`), with the kill switch, DRY_RUN and reserve/reconcile. Tests cover every cap and the kill switch.
+- A check script that fails if `api.runware.ai` or `api.anthropic.com` is called anywhere under `_shared/contentMachine/` outside the guard.
+- `content-machine-api` with whoami, settings get/set, ledger list, kill switch and audit-log writes.
+- Admin shell page with a top bar (spend vs caps, kill switch) and the Budget and Settings tabs.
+
+## 4. Getting it onto laptop-transfer
+
+- `contentmachine` starts at `laptop-transfer`'s tip (4df900b8). `laptop-transfer` is checked out in `C:\Users\Public\Zylo-cutaway`.
+- To transfer: merge `contentmachine` there, or cherry-pick its commits. Content-machine files are all new (`cm_*`, `contentMachine/`, `content/`), so conflicts should be limited to `src/App.jsx` (one route) and `supabase/config.toml` (one entry).
+- Deploys run from inside the folder whose code is meant to go live, because the Supabase CLI bundles from the current directory.
