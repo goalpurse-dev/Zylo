@@ -1,107 +1,147 @@
-// Cutaway Explainer: the plan (script + beats + wide states) and every prompt
-// built from it. Pure: no network, no runtime APIs (Deno and node both import it).
-// Method: research/seamless-niche/TEST1_REVIEW.md (rules R1-R21).
+// Cutaway Explainer: the plan (script + beats + wide states + surprises + sound)
+// and every prompt built from it. Pure: no network, no runtime APIs (Deno and node both import it).
+// Method: research/seamless-niche/TEST1_REVIEW.md (R1-R21) and CREATOR_PLAYBOOK.md (sections 1-5).
 
 import { NEVER, OVERLAYS, STYLE_BLOCK, WATER_RULES } from "./style.js";
+import { LIBRARY, SOUND_KEYS } from "./sound.js";
 import { workFor } from "./pricing.js";
 
 export const MOVES = Object.freeze(["push-in", "pull-out", "follow", "arc", "hold"]);
+export const SURPRISE_KINDS = Object.freeze(["fact", "myth", "gross", "danger", "funny"]);
 export const MIN_BOX = 0.4; // crops narrower than 40% of the wide image get soft (TEST1_REVIEW.md)
 
 /** Words the narration should have: ~228 wpm once the stitch has sped the voice up. */
 export const targetWords = (lengthSec) => Math.round(lengthSec * 3.8);
 
+/** The script numbers per length (CREATOR_PLAYBOOK.md section 2, scaled to the length). */
+export function rulesFor(lengthSec) {
+  return lengthSec >= 60
+    ? { buts: [4, 6], names: [2, 4], surprises: [3, 4], firstSurpriseBeat: 4, mythFrom: 0.7 }
+    : { buts: [2, 3], names: [1, 2], surprises: [2, 3], firstSurpriseBeat: 4, mythFrom: 0.6 };
+}
+
+const BOX = { type: "object", additionalProperties: false, required: ["x", "y", "w"], properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" } } };
+
 export const PLAN_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["title", "facts", "world", "cutaway", "states", "beats", "end"],
+  required: ["title", "facts", "mechanisms", "surprises", "life", "world", "cutaway", "states", "beats", "end"],
   properties: {
     title: { type: "string" },
-    facts: {
+    facts: { type: "array", items: { type: "object", additionalProperties: false, required: ["claim", "check"], properties: { claim: { type: "string" }, check: { type: "string" } } } },
+    mechanisms: { type: "array", items: { type: "string" } },
+    surprises: {
       type: "array",
-      items: { type: "object", additionalProperties: false, required: ["claim", "check"], properties: { claim: { type: "string" }, check: { type: "string" } } },
+      items: { type: "object", additionalProperties: false, required: ["beat", "kind", "text", "number"], properties: { beat: { type: "integer" }, kind: { type: "string", enum: [...SURPRISE_KINDS] }, text: { type: "string" }, number: { type: "string" } } },
     },
+    life: { type: "string" },
     world: { type: "string" },
     cutaway: { type: "string" },
     states: {
       type: "array",
       items: {
-        type: "object", additionalProperties: false, required: ["id", "label", "description", "change"],
-        properties: { id: { type: "string" }, label: { type: "string" }, description: { type: "string" }, change: { type: "string" } },
+        type: "object", additionalProperties: false, required: ["id", "label", "description", "change", "parts", "problem", "checks"],
+        properties: {
+          id: { type: "string" }, label: { type: "string" }, description: { type: "string" }, change: { type: "string" },
+          parts: { type: "array", items: { type: "string" } }, problem: { type: "boolean" }, checks: { type: "array", items: { type: "string" } },
+        },
       },
     },
     beats: {
       type: "array",
       items: {
         type: "object", additionalProperties: false,
-        required: ["text", "verb", "state", "box", "show", "edit", "action", "overlay", "move"],
+        required: ["text", "verb", "state", "box", "show", "edit", "action", "ongoing", "adds", "overlay", "move", "sound", "card"],
         properties: {
-          text: { type: "string" },
-          verb: { type: "string" },
-          state: { type: "string" },
-          box: { type: "object", additionalProperties: false, required: ["x", "y", "w"], properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" } } },
-          show: { type: "string" },
-          edit: { type: "string" },
-          action: { type: "string" },
-          overlay: { type: "string", enum: Object.keys(OVERLAYS) },
-          move: { type: "string", enum: [...MOVES] },
+          text: { type: "string" }, verb: { type: "string" }, state: { type: "string" }, box: BOX,
+          show: { type: "string" }, edit: { type: "string" }, action: { type: "string" }, ongoing: { type: "string" }, adds: { type: "string" },
+          overlay: { type: "string", enum: Object.keys(OVERLAYS) }, move: { type: "string", enum: [...MOVES] },
+          sound: {
+            type: "object", additionalProperties: false, required: ["key", "text", "at", "whole"],
+            properties: { key: { type: "string", enum: ["", ...SOUND_KEYS] }, text: { type: "string" }, at: { type: "string", enum: ["start", "verb"] }, whole: { type: "boolean" } },
+          },
+          card: { type: "object", additionalProperties: false, required: ["text", "word"], properties: { text: { type: "string" }, word: { type: "string" } } },
         },
       },
     },
-    end: {
-      type: "object", additionalProperties: false, required: ["state", "box", "show", "edit"],
-      properties: {
-        state: { type: "string" },
-        box: { type: "object", additionalProperties: false, required: ["x", "y", "w"], properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" } } },
-        show: { type: "string" },
-        edit: { type: "string" },
-      },
-    },
+    end: { type: "object", additionalProperties: false, required: ["state", "box", "show", "edit"], properties: { state: { type: "string" }, box: BOX, show: { type: "string" }, edit: { type: "string" } } },
   },
 };
 
-export const PLANNER_SYSTEM = `You plan short vertical "cutaway explainer" videos: one continuous camera move through a 3D cutaway diorama that shows how something works.
+export const PLANNER_SYSTEM = `You plan vertical "cutaway explainer" videos: one continuous camera move through a 3D cutaway diorama that shows how something works. These videos get millions of views when they follow the rules below exactly.
 
-STEP 1 — FACTS. Before writing, list every mechanism the video will claim in "facts" (claim + why it is true). Only use mechanisms that are physically correct and commonly accepted. If something is a simplification, keep it honest.
+STEP 1 — FACTS AND SURPRISES. List every mechanism the video claims in "facts" (claim + why it is true; only physically correct, commonly accepted facts; keep simplifications honest). "mechanisms": short names of each mechanism explained (e.g. "S-bend water trap", "compressor cycle"). Then pick the SURPRISES: concrete, true, ideally with a number ("weighs as much as six cars", "air can only push it 33 feet"). Kinds: fact, myth (the shape "That [familiar thing] is not [assumption], it is [mechanism]"), gross, danger, funny. Placement:
+  - the first surprise (often gross or dangerous, physically big) in one of the first 4 beats (~12 s),
+  - another in the middle,
+  - a myth-bust near the end, about something the viewer has seen or heard in real life.
+For each surprise give the beat index (0-based) it lands in and "number": the short number card to show on screen ("= 6 CARS", "33 FT", "50 YEARS"), or "" when it has no number.
 
-STEP 2 — NARRATION. Second person, short sentences, this formula:
-  "If you [naive first step], you have a [thing]." -> "But [concrete failure the viewer can picture]." -> "So you [add one real part]." (repeat) -> "This is a [real term]." -> "Congratulations, you have built a [thing]."
-For a 15 s video you may compress: hook, one or two problem/fix rounds, the name, the closer. Use plain words a 12-year-old knows.
+STEP 2 — NARRATION. Second person, plain words a 12-year-old knows. Sentences average 15-19 words, NONE over 30 words: put full stops between "But..." and "So you...". The formula:
+  HOOK: "If you [ONE naive physical action with an object], you have a [thing]." (never "do the machine's job by hand").
+  LOOPS: "But [a failure you can SEE: it floods, sinks, stinks, explodes, cracks]." "So you [add one real part, described physically]."
+  NAMES: "This is a [real term]." on the most important parts.
+  MYTH-BUST near the end. FINISH: "Add [two or three finishing touches]. Congratulations, you have built a [thing]."
+Never explain a mechanism from the USED IDEAS list you are given (a one-line nod back is fine).
 
-STEP 3 — BEATS. Split the narration into beats. Each beat is one clause of about 3 seconds with exactly ONE visible change (R2). For each beat give:
-  text     the exact words of that clause (all beats joined = the whole narration, in order, nothing left out)
-  verb     the one word in text where the change must happen on screen (R5), copied exactly
-  state    the id of the wide image this beat's first frame is cropped from
-  box      the crop of that wide image for the beat's FIRST frame: x, y = top-left, w = width, all as fractions of the wide image (the crop keeps 9:16, so its height fraction equals w). w between 0.4 and 1. When something is named it must fill 25-50% of the frame (R7): use a close crop on it.
+STEP 3 — BEATS. Split the narration into beats: one clause of about 3 seconds (8 to 14 words) with exactly ONE visible change. For each beat:
+  text     the exact words (all beats joined = the whole narration, in order)
+  verb     the one word in text where the change happens on screen, copied exactly
+  state    the id of the wide image this beat's FIRST frame is cropped from
+  box      the crop for the FIRST frame: x, y top-left, w width, fractions of the wide image (height fraction = w). w 0.4-1. The thing named fills 25-50% of the frame. Two beats in a row never have the same state and nearly the same box.
   show     what is visible in that first frame, concretely
-  edit     a small close-up change to apply to the crop (e.g. "the ground along the wall is dark and wet"), or "" if the crop is right as it is
-  action   what happens during the beat, landing on the verb (one action only)
-  overlay  one explainer overlay built into the scene (R11): ${Object.entries(OVERLAYS).map(([k, v]) => `${k} = ${v}`).join("; ")}
-  move     how the camera gets to the NEXT beat's first frame in the last 0.6-0.8 s: push-in, pull-out, follow (ride along with moving water/air/current), arc, or hold (R6, R8)
-Then "end": the final frame (state, box, show, edit) — the solved, calm result shown wide or medium (R3).
+  edit     a small close-up change to apply to the crop, or ""
+  action   the one thing that happens, landing on the verb
+  ongoing  an action that must keep going for the WHOLE beat (falling rain, flowing water, a moving truck), or ""
+  adds     the name of the part that APPEARS during this beat, exactly as written in a state's "parts", or "". APPEARS ON ITS WORD: the beat's own state must NOT contain that part, and the NEXT beat's state (or "end") MUST contain it.
+  overlay  one explainer overlay built into the scene: ${Object.entries(OVERLAYS).map(([k, v]) => `${k} = ${v}`).join("; ")}
+  move     how the camera gets to the NEXT beat's first frame at the end of the beat: push-in, pull-out, follow, arc, hold
+  sound    0 or 1 sound effect tied to the on-screen action: key = one of ${Object.keys(LIBRARY).join(", ")}, "custom" (then text describes the exact sound, e.g. "garbage bags thudding into a pit"), or "" for none. at = "verb" or "start"; whole = true if it lasts the whole beat (rain, a running engine). No music, never a whoosh for a camera move. Give sound to about 6 beats in 10.
+  card     the number card for a surprise landing in this beat: text (e.g. "= 6 CARS") and the word it appears on; or text "" and word "".
+"end": the final frame (state, box, show, edit): the solved, calm result, wide or medium.
 
 STEP 4 — WORLD AND STATES.
-  world    one paragraph describing the diorama in physical detail (buildings, materials, colours, surroundings), restated in every prompt
-  cutaway  where the cut plane runs: it must run RIGHT THROUGH the part the story is about, so the problem, the cause and the fix are visible in one frame (R9)
-  states   the wide images, in order. states[0] is the master (id "W0"): describe it fully in "description"; "change" = "". Each later state is an EDIT of the previous one: "change" says only what changes (weather, a new part, a crack), "description" says the full resulting scene. Use exactly the number of states asked for. A beat that adds a new part starts from a state WITHOUT the part, and the next beat's first frame (or "end") comes from a state WITH it, so the part appears on screen during the beat that names it (R13).
+  world    one paragraph describing the diorama in physical detail (buildings, materials, colours, surroundings, a big soil cross-section where it fits), restated in every prompt
+  cutaway  where the cut plane runs: RIGHT THROUGH the part the story is about, so the problem, the cause and the fix are in one frame
+  life     ONE moving element that makes the world alive where it fits (a garbage truck, a car, a worker, a dog), or ""; put it in the states where it appears
+  states   the wide images in order. states[0] = master "W0" (full description, change ""). Each later state is an EDIT of the previous one: "change" says only what changes (a new part, weather, time passing, a crack), "description" the full resulting scene.
+           parts   every part visible in this state (short names; reuse the exact same names across states)
+           problem true while the story's problem is still visible in this state
+           checks  3-5 short yes/no facts a person could verify by looking at this image (e.g. "the gutter runs along the level bottom edge of the roof", "no water falls from the roof edge", "the pit is lined with a black sheet"). Only about this state.
+  Weather or time-passing changes ("ten years later") may be their own state and beat where the story needs it.
+  The "end" state must have problem = false.
 
 RULES
-- The camera never travels along an empty surface (R8). Big moves go through a wider framing or follow the moving thing.
-- The wide master is tight: the subject and the cutaway fill about 70% of the frame (R10).
+- The camera never travels along an empty surface. Big moves go through a wider framing or follow the moving thing.
+- The master is tight: subject and cutaway fill about 70% of the frame; the world runs to the frame edges.
 - Water: ${WATER_RULES}
-- Nothing new for more than one beat without an action, overlay or prop appearing (R12).
-- The last beats must show the fix working, and "end" shows the solved state (R1, R3).`;
+- Every beat has an action, an overlay or a part appearing.
+- The last beats show the fix working; "end" is calm and the problem is gone.`;
 
-export function plannerUser({ topic, lengthSec }) {
+export function plannerUser({ topic, lengthSec, usedIdeas = [] }) {
   const w = workFor(lengthSec);
+  const r = rulesFor(lengthSec);
   return [
     `Topic: ${topic}`,
     `Length: ${lengthSec} seconds.`,
     `Narration: about ${targetWords(lengthSec)} words in total.`,
     `Beats: exactly ${w.beats}.`,
     `Wide states: exactly ${w.wideImages} (W0 = master, then W1, W2, ...).`,
+    `"But" loops: ${r.buts[0]}-${r.buts[1]}. "This is a" names: ${r.names[0]}-${r.names[1]}. Surprises: ${r.surprises[0]}-${r.surprises[1]}.`,
+    usedIdeas.length ? `USED IDEAS (already explained in earlier videos, do not explain again): ${usedIdeas.join("; ")}` : "USED IDEAS: none yet.",
   ].join("\n");
 }
+
+export const CRITIC_SYSTEM = `You are the critic for a cutaway explainer plan. You get the plan and a list of problems a program already found. Fix EVERY listed problem and anything else that breaks these checks, then return the whole corrected plan in the same format:
+- every fact and surprise is true (fix or replace anything false or overstated; keep numbers honest)
+- the hook is one naive physical action with an object, not doing the machine's job by hand
+- sentences average 15-19 words, none over 30; "But" loops and "This is a" names in the asked range
+- the first surprise lands in the first 4 beats; a myth-bust near the end
+- each beat 8-14 words with exactly one visible change; no two beats in a row with the same state and nearly the same box
+- "adds": the part is missing from the beat's own state and present in the next beat's state (or "end")
+- every part that appears is named in the narration
+- "end" is calm and the problem is gone
+- states' "checks" are short yes/no facts you can see in that image
+Change as little as possible otherwise.`;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 export function normBox(box) {
@@ -110,44 +150,132 @@ export function normBox(box) {
 }
 
 export const words = (text) => String(text ?? "").trim().split(/\s+/).filter(Boolean);
-const bare = (w) => w.toLowerCase().replace(/[^a-z0-9']/g, "");
+const bare = (w) => String(w).toLowerCase().replace(/[^a-z0-9']/g, "");
+const norm = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+export const sentencesOf = (text) => String(text).split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
 
-/** Checks the LLM plan and returns a normalised copy, or throws with the reason. */
-export function validatePlan(plan, lengthSec) {
+/** Box distance in wide-image units: centre distance and size ratio. */
+export function boxJump(a, b) {
+  const ca = [a.x + a.w / 2, a.y + a.w / 2], cb = [b.x + b.w / 2, b.y + b.w / 2];
+  const dist = Math.hypot(ca[0] - cb[0], ca[1] - cb[1]);
+  const scale = Math.max(a.w, b.w) / Math.min(a.w, b.w);
+  return { dist, scale, far: dist > 0.3 || (dist > 0.18 && scale > 1.8) };
+}
+
+/** All the program's checks. Returns a list of problems (empty = fine). */
+export function planProblems(plan, lengthSec, usedIdeas = []) {
   const w = workFor(lengthSec);
+  const r = rulesFor(lengthSec);
   const problems = [];
-  if (!plan || typeof plan !== "object") throw new Error("PLAN_INVALID: not an object");
+  if (!plan || typeof plan !== "object") return ["not an object"];
   if (!Array.isArray(plan.facts) || plan.facts.length === 0) problems.push("no facts");
-  if (!Array.isArray(plan.states) || plan.states.length !== w.wideImages) problems.push(`states: ${plan.states?.length} (want ${w.wideImages})`);
-  if (!Array.isArray(plan.beats) || plan.beats.length !== w.beats) problems.push(`beats: ${plan.beats?.length} (want ${w.beats})`);
-  const ids = new Set((plan.states ?? []).map((s) => s.id));
-  (plan.beats ?? []).forEach((b, i) => {
-    if (!ids.has(b.state)) problems.push(`beat ${i + 1}: unknown state ${b.state}`);
-    if (!words(b.text).length) problems.push(`beat ${i + 1}: no text`);
-    if (!words(b.text).some((x) => bare(x) === bare(b.verb))) problems.push(`beat ${i + 1}: verb "${b.verb}" not in its text`);
-    if (!MOVES.includes(b.move)) problems.push(`beat ${i + 1}: move ${b.move}`);
-    if (!OVERLAYS[b.overlay]) problems.push(`beat ${i + 1}: overlay ${b.overlay}`);
+  if (!Array.isArray(plan.states) || plan.states.length !== w.wideImages) problems.push(`states: ${plan.states?.length} (want exactly ${w.wideImages})`);
+  if (!Array.isArray(plan.beats) || plan.beats.length !== w.beats) problems.push(`beats: ${plan.beats?.length} (want exactly ${w.beats})`);
+  if (problems.length) return problems;
+  const states = new Map(plan.states.map((s) => [s.id, s]));
+  const has = (stateId, part) => (states.get(stateId)?.parts ?? []).some((p) => norm(p) === norm(part));
+  plan.beats.forEach((b, i) => {
+    const n = i + 1;
+    if (!states.has(b.state)) problems.push(`beat ${n}: unknown state ${b.state}`);
+    const wc = words(b.text).length;
+    if (wc < 7 || wc > 16) problems.push(`beat ${n}: ${wc} words (want 8-14)`);
+    if (!words(b.text).some((x) => bare(x) === bare(b.verb))) problems.push(`beat ${n}: verb "${b.verb}" not in its text`);
+    if (!MOVES.includes(b.move)) problems.push(`beat ${n}: move ${b.move}`);
+    if (!OVERLAYS[b.overlay]) problems.push(`beat ${n}: overlay ${b.overlay}`);
+    const nextState = i + 1 < plan.beats.length ? plan.beats[i + 1].state : plan.end?.state;
+    if (b.adds) {
+      if (has(b.state, b.adds)) problems.push(`beat ${n} adds "${b.adds}" but its own state ${b.state} already shows it (it must appear on its word)`);
+      if (!has(nextState, b.adds)) problems.push(`beat ${n} adds "${b.adds}" but the next state ${nextState} doesn't list it in parts`);
+    }
+    if (i > 0) {
+      const p = plan.beats[i - 1];
+      if (p.state === b.state && boxJump(normBox(p.box), normBox(b.box)).dist < 0.06 && Math.abs(normBox(p.box).w - normBox(b.box).w) < 0.08) problems.push(`beats ${i} and ${n}: same state and nearly the same framing`);
+    }
+    if (b.sound?.key === "custom" && !String(b.sound.text ?? "").trim()) problems.push(`beat ${n}: custom sound without a description`);
+    if (b.card?.text && !words(b.text).some((x) => bare(x) === bare(b.card.word))) problems.push(`beat ${n}: card word "${b.card.word}" not in its text`);
   });
-  if (!ids.has(plan.end?.state)) problems.push(`end: unknown state ${plan.end?.state}`);
-  const total = (plan.beats ?? []).reduce((n, b) => n + words(b.text).length, 0);
-  if (total < targetWords(lengthSec) * 0.7 || total > targetWords(lengthSec) * 1.3) problems.push(`narration ${total} words (want ~${targetWords(lengthSec)})`);
-  if (problems.length) throw new Error(`PLAN_INVALID: ${problems.join("; ")}`);
+  if (!states.has(plan.end?.state)) problems.push(`end: unknown state ${plan.end?.state}`);
+  else if (states.get(plan.end.state).problem) problems.push(`end state ${plan.end.state} still shows the problem (problem must be false)`);
+  // every part that appears is named in the narration
+  const narration = norm(plan.beats.map((b) => b.text).join(" "));
+  for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) problems.push(`the part "${b.adds}" appears but is never named`);
+  // script shape
+  const text = plan.beats.map((b) => b.text.trim()).join(" ");
+  const total = words(text).length;
+  if (total < targetWords(lengthSec) * 0.8 || total > targetWords(lengthSec) * 1.2) problems.push(`narration ${total} words (want ~${targetWords(lengthSec)})`);
+  const sents = sentencesOf(text);
+  const lens = sents.map((s) => words(s).length);
+  const avg = total / Math.max(1, sents.length);
+  if (avg > 20) problems.push(`sentences average ${avg.toFixed(1)} words (want 15-19)`);
+  lens.forEach((l, i) => { if (l > 30) problems.push(`sentence ${i + 1} has ${l} words (max 30): "${sents[i].slice(0, 60)}..."`); });
+  const low = text.toLowerCase();
+  const buts = (low.match(/\bbut\b/g) ?? []).length;
+  const names = (low.match(/\b(this|that) is (called )?(a|an|the)\b/g) ?? []).length;
+  if (buts < r.buts[0] || buts > r.buts[1] + 1) problems.push(`${buts} "But" loops (want ${r.buts[0]}-${r.buts[1]})`);
+  if (names < r.names[0] || names > r.names[1] + 1) problems.push(`${names} "This is a" names (want ${r.names[0]}-${r.names[1]})`);
+  if (!/^if you\b/i.test(plan.beats[0].text.trim()) || !/\byou have (a|an)\b/i.test(plan.beats.slice(0, 2).map((b) => b.text).join(" "))) problems.push(`the hook must be "If you ..., you have a ..."`);
+  if (!/congratulations/i.test(plan.beats.at(-1).text)) problems.push(`the last beat must end "Congratulations, you have built a ..."`);
+  // surprises
+  const sp = Array.isArray(plan.surprises) ? plan.surprises : [];
+  if (sp.length < r.surprises[0]) problems.push(`${sp.length} surprises (want ${r.surprises[0]}-${r.surprises[1]})`);
+  if (sp.length && Math.min(...sp.map((s) => s.beat)) > r.firstSurpriseBeat - 1) problems.push(`the first surprise is in beat ${Math.min(...sp.map((s) => s.beat)) + 1} (must be in the first ${r.firstSurpriseBeat})`);
+  if (!sp.some((s) => s.kind === "myth" && s.beat >= Math.floor(w.beats * r.mythFrom))) problems.push(`no myth-bust ("That X is not Y, it is Z") in the last part`);
+  sp.forEach((s) => { if (s.beat < 0 || s.beat >= w.beats) problems.push(`surprise "${s.text.slice(0, 40)}" points at beat ${s.beat}`); });
+  // used ideas
+  const used = usedIdeas.map(norm).filter(Boolean);
+  for (const m of plan.mechanisms ?? []) if (used.includes(norm(m))) problems.push(`mechanism "${m}" was already explained in an earlier video`);
+  return problems;
+}
+
+/** Normalises a plan that passed planProblems. */
+export function normalizePlan(plan) {
   return {
     ...plan,
-    states: plan.states.map((s, i) => ({ ...s, id: s.id, change: i === 0 ? "" : s.change })),
-    beats: plan.beats.map((b) => ({ ...b, box: normBox(b.box), edit: String(b.edit ?? "").trim() })),
+    life: String(plan.life ?? "").trim(),
+    states: plan.states.map((s, i) => ({ ...s, change: i === 0 ? "" : s.change, parts: s.parts ?? [], checks: (s.checks ?? []).slice(0, 5) })),
+    beats: plan.beats.map((b) => ({
+      ...b, box: normBox(b.box), edit: String(b.edit ?? "").trim(), ongoing: String(b.ongoing ?? "").trim(), adds: String(b.adds ?? "").trim(),
+      sound: b.sound?.key ? { key: b.sound.key, text: String(b.sound.text ?? "").trim(), at: b.sound.at === "start" ? "start" : "verb", whole: Boolean(b.sound.whole) } : null,
+      card: b.card?.text ? { text: String(b.card.text).trim().toUpperCase(), word: String(b.card.word).trim() } : null,
+    })),
     end: { ...plan.end, box: normBox(plan.end.box), edit: String(plan.end.edit ?? "").trim() },
   };
 }
 
+/** Checks the plan and returns a normalised copy, or throws with the reasons. */
+export function validatePlan(plan, lengthSec, usedIdeas = []) {
+  const problems = planProblems(plan, lengthSec, usedIdeas);
+  if (problems.length) throw Object.assign(new Error(`PLAN_INVALID: ${problems.join("; ")}`), { problems });
+  return normalizePlan(plan);
+}
+
 export const narrationText = (plan) => plan.beats.map((b) => b.text.trim()).join(" ");
 
-/** The keyframes: one at the start of each beat, plus the end frame. */
-export function keyframesOf(plan) {
-  return [
-    ...plan.beats.map((b, i) => ({ index: i, state: b.state, box: b.box, show: b.show, edit: b.edit })),
-    { index: plan.beats.length, state: plan.end.state, box: plan.end.box, show: plan.end.show, edit: plan.end.edit },
+/**
+ * The keyframes and the clips between them. One keyframe at the start of each beat plus the end frame.
+ * A beat whose framing jumps far (boxJump.far) is routed through a wider "via" keyframe:
+ * two clips, A = action then pull back to the via frame (60% of the beat), B = push in to the next frame (40%).
+ */
+export function framesOf(plan) {
+  const base = [
+    ...plan.beats.map((b, i) => ({ id: `k${i}`, beat: i, state: b.state, box: b.box, show: b.show, edit: b.edit })),
+    { id: `k${plan.beats.length}`, beat: plan.beats.length, state: plan.end.state, box: plan.end.box, show: plan.end.show, edit: plan.end.edit },
   ];
+  const frames = [...base];
+  const segments = [];
+  plan.beats.forEach((b, i) => {
+    const from = base[i], to = base[i + 1];
+    const jump = boxJump(from.box, to.box);
+    if (!jump.far) { segments.push({ beat: i, from: from.id, to: to.id, part: "whole", frac: 1 }); return; }
+    // the wider frame covering both, cropped from the state that already shows any new part
+    const left = Math.min(from.box.x, to.box.x), top = Math.min(from.box.y, to.box.y);
+    const right = Math.max(from.box.x + from.box.w, to.box.x + to.box.w), bottom = Math.max(from.box.y + from.box.w, to.box.y + to.box.w);
+    const wv = Math.min(1, Math.max(right - left, bottom - top) * 1.05);
+    const via = { id: `v${i}`, beat: i, state: b.adds ? to.state : from.state, box: normBox({ x: (left + right) / 2 - wv / 2, y: (top + bottom) / 2 - wv / 2, w: wv }), show: `a wider view taking in both: ${from.show}; and ${to.show}`, edit: "", via: true };
+    frames.push(via);
+    segments.push({ beat: i, from: from.id, to: via.id, part: "a", frac: 0.6 }, { beat: i, from: via.id, to: to.id, part: "b", frac: 0.4 });
+  });
+  return { frames, segments };
 }
 
 // ---------- prompts ----------
@@ -165,58 +293,59 @@ export function masterPrompt(plan) {
   ].join("\n");
 }
 
-export function statePrompt(plan, i) {
+export function statePrompt(plan, i, fix = "") {
   const s = plan.states[i];
   return [
-    "Same image, same camera, same composition, same house and surroundings, same style. Change only this:",
+    "Same image, same camera, same composition, same buildings and surroundings, same style. Change only this:",
     s.change,
     `The result: ${s.description}`,
+    s.checks?.length ? `It must be true in the result: ${s.checks.join("; ")}.` : "",
+    fix ? `The last attempt got this wrong, fix it: ${fix}` : "",
     WATER_RULES,
     NEVER,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
+}
+
+export function masterPromptWithFix(plan, fix) {
+  const s = plan.states[0];
+  return [masterPrompt(plan), s.checks?.length ? `It must be true in the image: ${s.checks.join("; ")}.` : "", fix ? `The last attempt got this wrong, fix it: ${fix}` : ""].filter(Boolean).join("\n");
 }
 
 export function keyframeEditPrompt(edit) {
-  return [
-    "Same image, same framing, same style; keep everything identical except this one change:",
-    edit,
-    WATER_RULES,
-    NEVER,
-  ].join("\n");
+  return ["Same image, same framing, same style; keep everything identical except this one change:", edit, WATER_RULES, NEVER].join("\n");
 }
 
 const MOVE_COPY = {
-  "push-in": "pushes in quickly",
-  "pull-out": "pulls back quickly",
-  follow: "follows the moving water or air quickly",
+  "push-in": "pushes in",
+  "pull-out": "pulls back",
+  follow: "follows the moving water or air",
   arc: "arcs smoothly",
   hold: "keeps drifting slowly",
 };
 
 /**
- * One clip: beat i, from keyframe i to keyframe i+1 (R2, R5, R6).
- * verbAtSec: when the verb lands, in seconds from the clip start (already scaled to the clip's own length).
+ * One clip (a segment of a beat). verbAtSec: when the verb lands, on the clip's own clock.
+ * Part "a" of a far jump: action, then pull back to the wider frame. Part "b": push in to the next frame.
  */
-export function clipPrompt(plan, i, { clipSec, verbAtSec }) {
-  const b = plan.beats[i];
-  const next = i + 1 < plan.beats.length ? plan.beats[i + 1] : plan.end;
+export function clipPrompt(plan, seg, { clipSec, verbAtSec, toShow }) {
+  const b = plan.beats[seg.beat];
   const state = plan.states.find((s) => s.id === b.state) ?? plan.states[0];
-  const moveSec = b.move === "hold" ? 0 : 0.7;
-  const driftUntil = Math.max(0.5, clipSec - moveSec).toFixed(1);
-  const at = Math.max(0.2, Math.min(clipSec - moveSec - 0.2, verbAtSec ?? clipSec / 2)).toFixed(1);
-  const parts = [
-    STYLE_BLOCK,
-    `The scene: ${plan.world} ${state.description}`,
-    `First frame: ${b.show}.`,
-    `At about ${at} seconds: ${b.action}. Shown with ${OVERLAYS[b.overlay]}.`,
-    moveSec
-      ? `The camera drifts slowly until ${driftUntil} seconds; in the last ${moveSec} seconds it ${MOVE_COPY[b.move]} to the next view: ${next.show}.`
-      : `The camera drifts slowly the whole time, ending on: ${next.show}.`,
-    "The camera is still drifting slowly at the very end. One continuous shot, no cuts.",
-    WATER_RULES,
-    "Silent: no music, no voices.",
-    NEVER,
-  ];
+  const life = plan.life ? ` ${plan.life} moves naturally where it appears.` : "";
+  const ongoing = b.ongoing ? `The whole time, from the first frame to the last: ${b.ongoing}.` : "";
+  const parts = [STYLE_BLOCK, `The scene: ${plan.world} ${state.description}${life}`];
+  if (seg.part === "b") {
+    parts.push(`The camera smoothly pushes in over the whole clip to: ${toShow}. ${ongoing}`.trim());
+  } else {
+    const moveSec = seg.part === "a" ? 1.0 : b.move === "hold" ? 0 : 0.7;
+    const driftUntil = Math.max(0.5, clipSec - moveSec).toFixed(1);
+    const at = Math.max(0.2, Math.min(clipSec - moveSec - 0.2, verbAtSec ?? clipSec / 2)).toFixed(1);
+    parts.push(`First frame: ${b.show}.`, `At about ${at} seconds: ${b.action}. Shown with ${OVERLAYS[b.overlay]}.`);
+    if (ongoing) parts.push(ongoing);
+    parts.push(moveSec
+      ? `The camera drifts slowly until ${driftUntil} seconds; in the last ${moveSec} seconds it ${seg.part === "a" ? "pulls back" : MOVE_COPY[b.move]} smoothly to: ${toShow}.`
+      : `The camera drifts slowly the whole time, ending on: ${toShow}.`);
+  }
+  parts.push("The camera is still drifting slowly at the very end. One continuous shot, no cuts.", WATER_RULES, "Silent: no music, no voices.", NEVER);
   let text = parts.join("\n");
   if (text.length > 2000) text = parts.filter((p) => p !== WATER_RULES).join("\n");
   return text.slice(0, 2000);

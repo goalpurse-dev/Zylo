@@ -14,9 +14,11 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { advance, approve, newRun } from "../../supabase/functions/_shared/cutaway/engine.js";
+import { fileURLToPath } from "node:url";
+import { advance, approve, newRun, visionFailures } from "../../supabase/functions/_shared/cutaway/engine.js";
 import { cropPixels } from "../../supabase/functions/_shared/cutaway/beats.js";
-import { planVideo } from "../../supabase/functions/_shared/cutaway/llm.js";
+import { checkImage, planVideo } from "../../supabase/functions/_shared/cutaway/llm.js";
+import { generateSfx } from "../../supabase/functions/_shared/cutaway/sound.js";
 import { synthesize } from "../../supabase/functions/_shared/cutaway/voice.js";
 import { directSender } from "../../supabase/functions/_shared/cutaway/runware.js";
 import { renderCutaway } from "../../render-worker/src/cutawayFinal.mjs";
@@ -50,10 +52,28 @@ async function fetchTo(url, file) {
   return file;
 }
 
+// Sound effects: library sounds are kept in render-worker/assets/sfx (committed, the same file every
+// video); topic-specific cues go to a local cache folder. Either way a repeat costs nothing.
+const ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../render-worker/assets/sfx");
+const SFX_CACHE = path.resolve(arg("sfx-cache", path.join(out, "..", "sfx-cache")));
+mkdirSync(SFX_CACHE, { recursive: true });
+// The used-ideas log for local runs: topics + mechanisms of earlier local runs.
+const IDEAS = path.resolve(arg("ideas", path.join(out, "..", "used-ideas.json")));
+const ideas = existsSync(IDEAS) ? JSON.parse(readFileSync(IDEAS, "utf8")) : { topics: [], mechanisms: [] };
+
 let renderResult = null;
 const deps = {
-  planVideo: ({ topic, lengthSec }) => planVideo({ apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec }),
+  planVideo: ({ topic, lengthSec, usedIdeas }) => planVideo({ apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
+  checkImage: ({ imageUrl, description, checks }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks }),
   synthesize: process.env.ELEVENLABS_KEY ? ({ text }) => synthesize({ apiKey: process.env.ELEVENLABS_KEY, text }) : null,
+  sfx: process.env.ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }) => {
+    const lib = cacheKey.startsWith("lib-");
+    const file = path.join(lib ? ASSETS : SFX_CACHE, `${cacheKey}.mp3`);
+    if (existsSync(file)) return { url: file, costUsd: 0, cached: true };
+    const { bytes, costUsd } = await generateSfx({ apiKey: process.env.ELEVENLABS_KEY, text, seconds });
+    writeFileSync(file, bytes);
+    return { url: file, costUsd, cached: false };
+  } : null,
   saveAudio: async (b64) => { const f = path.join(out, "voice.mp3"); writeFileSync(f, Buffer.from(b64, "base64")); return f; },
   send: directSender(process.env.RUNWARE_API_KEY),
   crop: async ({ imageUrl, box }) => {
@@ -76,8 +96,15 @@ const deps = {
 const spent = (s) => Object.values(s.costs ?? {}).reduce((a, b) => a + (Number(b) || 0), 0);
 const save = (s) => writeFileSync(statePath, JSON.stringify(s, null, 2));
 
-let s = existsSync(statePath) ? JSON.parse(readFileSync(statePath, "utf8")) : newRun({ topic: arg("topic", "rain gutter"), lengthSec: Number(arg("length", "15")) });
-if (s.step === "approval" && flag("approve")) { s = approve(s); save(s); console.log("approved"); }
+let s = existsSync(statePath) ? JSON.parse(readFileSync(statePath, "utf8")) : newRun({ topic: arg("topic", "landfill"), lengthSec: Number(arg("length", "30")), soundEffects: !flag("no-sfx"), usedIdeas: ideas.mechanisms });
+if (s.step === "approval" && flag("approve")) {
+  const failed = visionFailures(s);
+  if (failed.length && !flag("force")) {
+    console.error(`not approving: ${failed.length} wide image(s) failed the vision check twice: ${failed.map((w) => `${w.id}: ${w.vision.fix}`).join(" | ")}`);
+    process.exit(3);
+  }
+  s = approve(s); save(s); console.log("approved");
+}
 
 const t0 = Date.now();
 let lastStep = null;
@@ -89,4 +116,8 @@ while (!["approval", "done", "failed"].includes(s.step)) {
   if (!["approval", "done", "failed"].includes(s.step)) await new Promise((r) => setTimeout(r, 4000));
 }
 
-console.log(JSON.stringify({ step: s.step, error: s.error ?? null, costs: s.costs, totalUsd: Number(spent(s).toFixed(4)), final: s.finalUrl ?? null, seconds: (Date.now() - t0) / 1000 }, null, 2));
+if (s.step === "done" && s.plan) {
+  writeFileSync(IDEAS, JSON.stringify({ topics: [...new Set([...ideas.topics, s.topic])], mechanisms: [...new Set([...ideas.mechanisms, ...(s.plan.mechanisms ?? [])])] }, null, 2));
+}
+const vision = (s.wide ?? []).map((w) => ({ id: w.id, attempts: w.attempts, pass: w.vision?.pass ?? null, fix: w.vision?.fix ?? "" }));
+console.log(JSON.stringify({ step: s.step, error: s.error ?? null, costs: s.costs, totalUsd: Number(spent(s).toFixed(4)), vision, critic: s.critic ?? null, final: s.finalUrl ?? null, seconds: (Date.now() - t0) / 1000 }, null, 2));

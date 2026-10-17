@@ -13,6 +13,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 COPY src ./src
+# Fixed sound assets (the Cutaway chime).
+COPY assets ./assets
 # The app's own text/caption drawing code, synced by scripts/sync-shared.mjs at
 # the same relative paths as in the repo (/supabase/..., /src/lib/...).
 COPY shared/ /

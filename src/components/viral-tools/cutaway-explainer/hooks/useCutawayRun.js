@@ -46,7 +46,7 @@ export default function useCutawayRun() {
     try { accept(await fn()); } catch (e) { setError(e.message); } finally { setBusy(false); }
   }, [accept]);
 
-  const start = useCallback((topic, lengthSec) => { generation.current += 1; accept(null); return act(() => startRun(topic, lengthSec)); }, [act, accept]);
+  const start = useCallback((topic, lengthSec, soundEffects = true) => { generation.current += 1; accept(null); return act(() => startRun(topic, lengthSec, soundEffects)); }, [act, accept]);
   const regenerate = useCallback((index) => act(() => regenerateImage(runRef.current.id, index)), [act]);
   const approve = useCallback(() => act(() => approveImages(runRef.current.id)), [act]);
   const open = useCallback((runId) => { generation.current += 1; return act(() => advanceRun(runId)); }, [act]);

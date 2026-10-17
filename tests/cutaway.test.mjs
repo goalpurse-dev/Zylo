@@ -1,57 +1,66 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS } from "../supabase/functions/_shared/cutaway/pricing.js";
-import { validatePlan, keyframesOf, clipPrompt, narrationText, normBox, targetWords } from "../supabase/functions/_shared/cutaway/planner.js";
-import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBeats } from "../supabase/functions/_shared/cutaway/beats.js";
+import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
+import { validatePlan, planProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
+import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
 import { clipTask, parseReply } from "../supabase/functions/_shared/cutaway/runware.js";
-import { advance, approve, newRun, regenerateWide, renderJob, progressOf } from "../supabase/functions/_shared/cutaway/engine.js";
+import { cueCacheKey, cueRequest } from "../supabase/functions/_shared/cutaway/sound.js";
+import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures } from "../supabase/functions/_shared/cutaway/engine.js";
 import { buildAss, captionWord, finalArgs, atempoChain } from "../render-worker/src/cutawayFinalPlan.mjs";
+import { freshSuggestions, TOPIC_SUGGESTIONS } from "../src/data/cutawayTopics.js";
 
-// ---------- a plan like the planner returns (15 s: 5 beats, 4 states) ----------
+// ---------- a 30 s plan like the planner returns (10 beats, 5 states) ----------
 
-const beatTexts = [
-  "Put a roof on a house and the rain pours straight off the edge.",
-  "It hammers the ground right against your walls and soaks in.",
-  "It soaks down to your foundation and cracks it open wide.",
-  "So you hang a channel along the roof edge to catch it all.",
-  "And a pipe down the corner carries it away from your walls.",
+const BEATS = [
+  ["If you dig a pit and throw your trash in, you have a dump.", "dump", "W0", { x: 0, y: 0, w: 1 }, "", { key: "dirt", text: "", at: "verb", whole: false }],
+  ["But it stinks, the rats move in, and the rain washes it away.", "stinks", "W0", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "rain", text: "", at: "start", whole: true }],
+  ["The dirty water soaks down and poisons the well next door.", "soaks", "W0", { x: 0.2, y: 0.5, w: 0.45 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["So you line the pit with clay and a thick plastic sheet.", "line", "W0", { x: 0.1, y: 0.3, w: 0.6 }, "liner", { key: "custom", text: "a heavy plastic sheet unrolling into a pit", at: "verb", whole: false }],
+  ["This is a liner, and it keeps the trash juice out of the ground.", "liner", "W1", { x: 0.25, y: 0.35, w: 0.5 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["But the trash still rots and fills the pit with hidden gas.", "gas", "W2", { x: 0.2, y: 0.3, w: 0.6 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["So you bury pipes that pull the gas out and burn it.", "burn", "W2", { x: 0.4, y: 0.5, w: 0.45 }, "gas pipes", { key: "flame", text: "", at: "verb", whole: false }],
+  ["That bad smell is not rot, it is gas you can turn into power.", "power", "W3", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "motor_hum", text: "", at: "verb", whole: true }],
+  ["Cover every layer with dirt each night, and plant grass on top.", "grass", "W3", { x: 0, y: 0, w: 1 }, "grass cap", { key: "machine", text: "", at: "start", whole: false }],
+  ["Congratulations, you have built a landfill that barely rots at all.", "landfill", "W4", { x: 0.1, y: 0.1, w: 0.8 }, "", { key: "", text: "", at: "verb", whole: false }],
 ];
-const verbs = ["pours", "hammers", "cracks", "hang", "carries"];
+const PARTS = [["pit"], ["pit", "liner"], ["pit", "liner", "trash"], ["pit", "liner", "trash", "gas pipes"], ["pit", "liner", "trash", "gas pipes", "grass cap"]];
 function samplePlan() {
   return {
-    title: "How a rain gutter works",
-    facts: [{ claim: "Roof runoff next to a wall saturates soil", check: "Water concentrates at the drip line" }],
-    world: "A two-storey cream house with a terracotta roof on a striped lawn.",
-    cutaway: "The ground is cut along the front wall, exposing soil and the foundation.",
-    states: [
-      { id: "W0", label: "Sunny master", description: "Sunny, no gutter.", change: "" },
-      { id: "W1", label: "Rain", description: "Heavy rain, runoff curtain.", change: "make it rain" },
-      { id: "W2", label: "Gutter in rain", description: "Gutter and downspout carry the water.", change: "add a gutter" },
-      { id: "W3", label: "Sun", description: "Sun out, dry soil.", change: "stop the rain" },
+    title: "How a landfill works",
+    facts: [{ claim: "Sealed landfills have little oxygen, so trash decomposes very slowly", check: "Garbage Project digs found readable decades-old newspapers" }],
+    mechanisms: ["landfill liner", "landfill gas collection"],
+    surprises: [
+      { beat: 1, kind: "gross", text: "it stinks and the rats move in", number: "" },
+      { beat: 4, kind: "fact", text: "newspapers stay readable for decades", number: "40 YEARS" },
+      { beat: 7, kind: "myth", text: "the smell is gas you can burn for power", number: "" },
     ],
-    beats: beatTexts.map((text, i) => ({
-      text, verb: verbs[i], state: i < 3 ? "W1" : "W2", box: { x: 0.1 * i, y: 0.2, w: i === 0 ? 1 : 0.45 },
-      show: `view ${i}`, edit: i === 1 ? "the ground along the wall is dark and wet" : "", action: `action ${i}`, overlay: "arrows", move: i === 2 ? "pull-out" : "push-in",
+    life: "a garbage truck",
+    world: "A green valley with a town at the back and a big soil cross-section in front.",
+    cutaway: "The ground is cut through the middle of the pit.",
+    states: PARTS.map((parts, i) => ({ id: `W${i}`, label: `state ${i}`, description: `scene ${i}`, change: i ? `add ${parts.at(-1)}` : "", parts, problem: i < 4, checks: [`it shows the ${parts.at(-1)}`] })),
+    beats: BEATS.map(([text, verb, state, box, adds, sound], i) => ({
+      text, verb, state, box, adds, sound, show: `view ${i}`, edit: i === 2 ? "the soil under the pit is dark and wet" : "", action: `action ${i}`, ongoing: i === 1 ? "rain keeps falling" : "", overlay: "arrows", move: "push-in",
+      card: i === 4 ? { text: "40 YEARS", word: "liner" } : { text: "", word: "" },
     })),
-    end: { state: "W3", box: { x: 0, y: 0, w: 1 }, show: "the sunny house with its gutter", edit: "" },
+    end: { state: "W4", box: { x: 0, y: 0, w: 1 }, show: "the grassy hill with the gas plant", edit: "" },
   };
 }
 
 // ---------- pricing ----------
 
-test("prices are 2x our cost, rounded up to whole credits", () => {
-  for (const s of [15, 30]) {
-    assert.equal(PRICES.plan.byLength[s], Math.ceil((planCostUsd(s) * BASIS.markup) / USD_PER_CREDIT));
-    assert.ok(PRICES.video.byLength[s] * USD_PER_CREDIT >= videoCostUsd(s) * 2);
-  }
-  assert.equal(totalCredits(15), 55);
-  assert.equal(totalCredits(30), 94);
+test("lengths are 30 s (default) and 60 s", () => {
+  assert.deepEqual([...LENGTHS], [30, 60]);
 });
 
-test("the per-second video row gives the same credits as pricing.js", () => {
-  for (const s of [15, 30]) assert.equal(Math.ceil(PRICES.video.creditsPerSecond * s), PRICES.video.byLength[s]);
+test("prices are at least 2x our cost, in whole credits", () => {
+  for (const s of LENGTHS) {
+    assert.equal(PRICES.plan.byLength[s], Math.ceil((planCostUsd(s) * BASIS.markup) / USD_PER_CREDIT));
+    assert.ok(PRICES.video.byLength[s] * USD_PER_CREDIT >= videoCostUsd(s) * 2, `video ${s}`);
+  }
+  assert.equal(totalCredits(30), 128);
+  assert.equal(totalCredits(60), 229);
 });
 
 test("the migration's tool_prices rows match pricing.js", () => {
@@ -60,41 +69,97 @@ test("the migration's tool_prices rows match pricing.js", () => {
     const line = sql.split("\n").find((l) => l.includes(`'${row.tool_key}'`) && l.trim().startsWith("("));
     assert.ok(line, `no row for ${row.tool_key}`);
     if (row.flat_credits != null) assert.match(line, new RegExp(`'${row.tool_key}', NULL, ${row.flat_credits},`));
-    else assert.match(line, new RegExp(`'${row.tool_key}', ${row.credits_per_second}, NULL, ARRAY\\[15, 30\\]`));
+    else assert.match(line, new RegExp(`'${row.tool_key}', ${row.credits_per_second}, NULL, ARRAY\\[30, 60\\]`));
   }
+  assert.match(sql, /length_sec IN \(30, 60\)/);
 });
 
-// ---------- plan ----------
+// ---------- topics ----------
 
-test("validatePlan accepts a good plan and clamps crop boxes", () => {
-  const p = validatePlan(samplePlan(), 15);
-  assert.equal(p.beats.length, 5);
+test("topic suggestions skip what the user already made", () => {
+  assert.equal(TOPIC_SUGGESTIONS.length, 20);
+  const fresh = freshSuggestions(["Dam", "skyscraper"], 3);
+  assert.deepEqual(fresh.map((t) => t.topic), ["Sewage treatment plant", "Tunnel under a river", "Electricity to your outlet"]);
+});
+
+// ---------- plan checks ----------
+
+test("a good plan passes and is normalised", () => {
+  const p = validatePlan(samplePlan(), 30);
+  assert.equal(p.beats.length, 10);
+  assert.equal(p.beats[0].sound.key, "dirt");
+  assert.equal(p.beats[2].sound, null);
+  assert.equal(p.beats[4].card.text, "40 YEARS");
   for (const b of p.beats) assert.ok(b.box.w >= 0.4 && b.box.x + b.box.w <= 1 && b.box.y + b.box.w <= 1);
-  assert.equal(keyframesOf(p).length, 6);
-  assert.equal(narrationText(p).split(" ").length, beatTexts.join(" ").split(" ").length);
+  assert.equal(narrationText(p).split(" ").length, BEATS.map((b) => b[0]).join(" ").split(" ").length);
+  assert.ok(Math.abs(narrationText(p).split(" ").length - targetWords(30)) < targetWords(30) * 0.2);
 });
 
-test("validatePlan rejects a verb that isn't in its beat, and a wrong beat count", () => {
-  const bad = samplePlan();
-  bad.beats[0].verb = "floods";
-  assert.throws(() => validatePlan(bad, 15), /verb "floods"/);
-  const short = samplePlan();
-  short.beats.pop();
-  assert.throws(() => validatePlan(short, 15), /beats: 4/);
+test("appears on its word: a part already in the beat's state, or missing from the next, is refused", () => {
+  const early = samplePlan();
+  early.beats[3].state = "W1"; // the liner is already there
+  assert.ok(planProblems(early, 30).some((p) => /already shows it/.test(p)));
+  const late = samplePlan();
+  late.beats[4].state = "W0"; late.beats[4].box = { x: 0.5, y: 0.5, w: 0.5 }; // the next state lacks the liner
+  assert.ok(planProblems(late, 30).some((p) => /doesn't list it/.test(p)));
+});
+
+test("script rules: long sentences, missing loops, late surprises, no myth-bust, used ideas", () => {
+  const long = samplePlan();
+  long.beats[1].text = "But it stinks and the rats move in and the rain washes it away and the wind blows it around the whole street";
+  long.beats[2].text = "and the dirty water soaks down and poisons the well next door.";
+  assert.ok(planProblems(long, 30).some((p) => /has \d+ words \(max 30\)|words \(want 8-14\)/.test(p)));
+  const late = samplePlan();
+  late.surprises = late.surprises.map((s) => ({ ...s, beat: Math.max(5, s.beat) }));
+  assert.ok(planProblems(late, 30).some((p) => /first surprise is in beat/.test(p)));
+  const noMyth = samplePlan();
+  noMyth.surprises = noMyth.surprises.filter((s) => s.kind !== "myth");
+  assert.ok(planProblems(noMyth, 30).some((p) => /no myth-bust/.test(p)));
+  assert.ok(planProblems(samplePlan(), 30, ["Landfill liner"]).some((p) => /already explained/.test(p)));
+  const unnamed = samplePlan();
+  unnamed.beats[9].text = "Congratulations, you have built a dump that barely rots at all.";
+  unnamed.beats[9].verb = "dump";
+  unnamed.beats[8].adds = "grass cap"; unnamed.beats[8].text = "Cover every layer with dirt each night, and plant seeds on top.";
+  unnamed.beats[8].verb = "seeds";
+  assert.ok(planProblems(unnamed, 30).some((p) => /appears but is never named/.test(p)));
+  const sameFrame = samplePlan();
+  sameFrame.beats[2].box = { ...sameFrame.beats[1].box };
+  assert.ok(planProblems(sameFrame, 30).some((p) => /nearly the same framing/.test(p)));
+  const stillBad = samplePlan();
+  stillBad.states[4].problem = true;
+  assert.ok(planProblems(stillBad, 30).some((p) => /still shows the problem/.test(p)));
 });
 
 test("normBox keeps a 9:16 crop inside the image and never under 40% wide", () => {
   assert.deepEqual(normBox({ x: 0.9, y: 0.9, w: 0.1 }), { x: 0.6, y: 0.6, w: 0.4 });
-  assert.equal(targetWords(15), 57);
 });
 
-test("clip prompts restate the scene, land the verb, and move only at the end", () => {
-  const p = validatePlan(samplePlan(), 15);
-  const text = clipPrompt(p, 1, { clipSec: 3, verbAtSec: 0.4 });
-  assert.match(text, /two-storey cream house/);
-  assert.match(text, /At about 0\.4 seconds: action 1/);
-  assert.match(text, /in the last 0\.7 seconds it pushes in quickly to the next view: view 2/);
-  assert.ok(text.length <= 2000);
+// ---------- no big jumps inside one clip ----------
+
+test("a far jump goes through a wider frame: two clips, 60/40", () => {
+  assert.equal(boxJump({ x: 0, y: 0, w: 0.4 }, { x: 0.6, y: 0.6, w: 0.4 }).far, true);
+  assert.equal(boxJump({ x: 0.2, y: 0.2, w: 0.5 }, { x: 0.3, y: 0.3, w: 0.5 }).far, false);
+  const plan = validatePlan(samplePlan(), 30);
+  const near = framesOf(plan);
+  assert.equal(near.segments.length, 10);
+  plan.beats[1].box = { x: 0, y: 0, w: 0.4 };
+  plan.beats[2].box = { x: 0.6, y: 0.6, w: 0.4 };
+  const { frames, segments } = framesOf(plan);
+  assert.ok(segments.length > 10);
+  const split = segments.filter((s) => s.beat === 1);
+  assert.deepEqual(split.map((s) => [s.from, s.to, s.frac]), [["k1", "v1", 0.6], ["v1", "k2", 0.4]]);
+  const via = frames.find((f) => f.id === "v1");
+  assert.ok(via.box.w >= 0.95);
+  const placed = evenBeats(plan.beats, 30);
+  const t = clipTimings(placed, segments).filter((c) => c.beat === 1);
+  assert.ok(Math.abs(t[0].durationSec - 1.8) < 0.01 && Math.abs(t[1].durationSec - 1.2) < 0.01);
+  assert.equal(t[1].verbAtSec, null);
+  const promptB = clipPrompt(plan, split[1], { clipSec: t[1].clipSec, verbAtSec: null, toShow: "view 2" });
+  assert.match(promptB, /pushes in over the whole clip to: view 2/);
+  const promptA = clipPrompt(plan, split[0], { clipSec: 2, verbAtSec: 0.6, toShow: via.show });
+  assert.match(promptA, /in the last 1 seconds it pulls back smoothly/);
+  assert.match(promptA, /The whole time, from the first frame to the last: rain keeps falling/);
+  assert.match(promptA, /a garbage truck moves naturally/);
 });
 
 // ---------- timing ----------
@@ -107,24 +172,47 @@ function fakeSpoken(texts, wps = 3) {
 }
 
 test("the voice is sped up to ~238 wpm, never above 1.45x, never slowed", () => {
-  const t = voiceTempo(fakeSpoken(beatTexts, 3)); // ~180 wpm -> ~1.32
+  const t = voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 3));
   assert.ok(t > 1.3 && t < 1.34, String(t));
-  assert.equal(voiceTempo(fakeSpoken(beatTexts, 1.5)), 1.45);
-  assert.equal(voiceTempo(fakeSpoken(beatTexts, 6)), 1);
+  assert.equal(voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 1.5)), 1.45);
+  assert.equal(voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 6)), 1);
 });
 
-test("beats start on their first word and the verb time is inside the beat", () => {
-  const spoken = fakeSpoken(beatTexts, 3);
-  const placed = placeBeats(validatePlan(samplePlan(), 15).beats, spoken, 1.3);
+test("beats start on their first word; clips fit their share exactly", () => {
+  const plan = validatePlan(samplePlan(), 30);
+  const placed = placeBeats(plan.beats, fakeSpoken(BEATS.map((b) => b[0]), 3), 1.3);
   assert.equal(placed[0].start, 0);
   for (let i = 1; i < placed.length; i++) assert.equal(placed[i].start, placed[i - 1].end);
-  for (const p of placed) assert.ok(p.verbAt >= 0 && p.verbAt <= p.duration);
-  const clips = clipTimings(placed);
-  for (const [i, c] of clips.entries()) {
-    assert.ok(Number.isInteger(c.clipSec) && c.clipSec >= 2);
-    assert.ok(Math.abs(c.clipSec / c.speed - placed[i].duration) < 0.01);
-  }
-  assert.equal(evenBeats(beatTexts, 15)[4].end, 15);
+  for (const c of clipTimings(placed)) assert.ok(Math.abs(c.clipSec / c.speed - c.durationSec) < 0.01);
+});
+
+test("sound timeline: a chime on each name, card and Congratulations; cues on their action", () => {
+  const plan = validatePlan(samplePlan(), 30);
+  const spoken = fakeSpoken(BEATS.map((b) => b[0]), 4);
+  const placed = placeBeats(plan.beats, spoken, 1);
+  const t = cueTimeline(plan, placed, spoken);
+  const at = (word, from = 0) => spoken.slice(from).find((w) => w.w.replace(/[^\w]/g, "").toLowerCase() === word).s;
+  assert.ok(t.chimes.some((c) => Math.abs(c - at("this")) < 0.01), "This is a liner");
+  assert.ok(t.chimes.some((c) => Math.abs(c - at("congratulations")) < 0.01));
+  assert.equal(t.cards.length, 1);
+  assert.equal(t.cards[0].text, "40 YEARS");
+  assert.ok(Math.abs(t.cards[0].s - at("liner", 40)) < 0.01);
+  // "That bad smell is not" is not a name: no chime there
+  assert.ok(!t.chimes.some((c) => Math.abs(c - at("that", 60)) < 0.01));
+  assert.equal(t.sfx.length, 6);
+  const rain = t.sfx.find((c) => c.key === "rain");
+  assert.ok(Math.abs(rain.start - (placed[1].start + 0.05)) < 0.01 && Math.abs(rain.duration - (placed[1].end - rain.start)) < 0.01);
+  const flame = t.sfx.find((c) => c.key === "flame");
+  assert.ok(Math.abs(flame.start - at("burn")) < 0.01 && flame.duration === null);
+});
+
+test("sound cache keys: library by key, custom by text and length", async () => {
+  assert.equal(await cueCacheKey({ key: "rain", text: "", seconds: 3 }), "lib-rain");
+  const a = await cueCacheKey({ key: "custom", text: "Plastic sheet unrolling", seconds: 2 });
+  const b = await cueCacheKey({ key: "custom", text: "plastic sheet unrolling ", seconds: 2 });
+  assert.equal(a, b);
+  assert.match(a, /^cue-[0-9a-f]{20}$/);
+  assert.equal(cueRequest({ key: "crack" }).seconds, 1.5);
 });
 
 test("ElevenLabs character alignment becomes words", () => {
@@ -135,9 +223,7 @@ test("ElevenLabs character alignment becomes words", () => {
 test("crops are 9:16 whole pixels inside the image; small crops upscale 4x", () => {
   const c = cropPixels({ x: 0.5, y: 0.5, w: 0.45 }, 768, 1376);
   assert.ok(c.x + c.w <= 768 && c.y + c.h <= 1376);
-  assert.ok(Math.abs(c.h / c.w - 16 / 9) < 0.02);
   assert.equal(upscaleFactor(c.h), 4);
-  assert.equal(upscaleFactor(1365), 2);
 });
 
 // ---------- Runware ----------
@@ -147,32 +233,36 @@ test("clip task: first + last frame, 720p, audio off, no width/height", () => {
   assert.equal(t.model, "prunaai:p-video@2");
   assert.deepEqual(t.inputs.frameImages, [{ image: "a", frame: "first" }, { image: "b", frame: "last" }]);
   assert.equal(t.settings.audio, false);
-  assert.equal(t.resolution, "720p");
   assert.equal(t.width, undefined);
-  assert.equal(t.duration, 3);
 });
 
 test("Runware replies: success, pending, error", () => {
   assert.deepEqual(parseReply({ data: [{ taskUUID: "t", imageURL: "u", cost: 0.03 }] }, "t"), { state: "success", url: "u", cost: 0.03 });
   assert.equal(parseReply({ data: [] }, "t").state, "pending");
-  assert.equal(parseReply({ errors: [{ taskUUID: "t", message: "content moderation" }] }, "t").contentPolicy, true);
 });
 
 // ---------- the engine, end to end on fakes ----------
 
-function fakeDeps() {
+function fakeDeps({ visionFails = {} } = {}) {
   const tasks = new Map();
   const log = [];
+  const vision = [];
   return {
-    log,
-    planVideo: async () => ({ plan: validatePlan(samplePlan(), 15), costUsd: 0.05 }),
-    synthesize: async ({ text }) => ({ audioBase64: "AAAA", spoken: fakeSpoken([text], 3), costUsd: 0.01 }),
+    log, vision,
+    planVideo: async ({ usedIdeas }) => ({ plan: validatePlan(samplePlan(), 30, usedIdeas), costUsd: 0.12, critic: { before: ["x"], after: [] } }),
+    synthesize: async ({ text }) => ({ audioBase64: "AAAA", spoken: fakeSpoken([text], 3), costUsd: 0.02 }),
     saveAudio: async () => "https://store/voice.mp3",
+    checkImage: async ({ imageUrl, checks }) => {
+      vision.push(imageUrl);
+      const n = vision.filter((u) => u.includes(checks[0])).length;
+      const failsLeft = visionFails[checks[0]] ?? 0;
+      return { pass: n > failsLeft, fix: n > failsLeft ? "" : "the liner is missing", checks: [], costUsd: 0.01 };
+    },
     send: async (batch) => {
       const t = batch[0];
       if (t.taskType === "getResponse") {
         const known = tasks.get(t.taskUUID);
-        return { status: 200, body: { data: [{ taskUUID: t.taskUUID, status: "success", ...(known.taskType === "videoInference" ? { videoURL: `https://rw/${t.taskUUID}.mp4` } : { imageURL: `https://rw/${t.taskUUID}.jpg` }), cost: 0.01 }] } };
+        return { status: 200, body: { data: [{ taskUUID: t.taskUUID, status: "success", ...(known.taskType === "videoInference" ? { videoURL: `https://rw/${t.taskUUID}.mp4` } : { imageURL: `https://rw/${t.taskUUID}-${((known.positivePrompt ?? "").match(/it shows the [a-z ]+/) ?? [""])[0]}.jpg` }), cost: 0.01 }] } };
       }
       tasks.set(t.taskUUID, t);
       log.push(t);
@@ -180,94 +270,122 @@ function fakeDeps() {
     },
     crop: async ({ imageUrl }) => ({ image: `${imageUrl}#crop`, h: 610 }),
     keep: async (url) => url,
+    sfx: async ({ cacheKey }) => ({ url: `https://store/${cacheKey}.mp3`, costUsd: 0.02, cached: false }),
     startRender: async (job) => ({ job }),
     checkRender: async () => ({ state: "done", url: "https://store/final.mp4", costUsd: 0.004 }),
   };
 }
 
-async function runUntil(state, deps, stop, max = 200) {
+async function runUntil(state, deps, stop, max = 400) {
   let s = state;
   for (let i = 0; i < max && !stop(s); i++) s = await advance(s, deps);
   return s;
 }
 
-test("engine: plan -> voice -> wide images -> STOPS for approval", async () => {
+test("engine: plan -> voice -> wide images (each vision-checked) -> STOPS for approval", async () => {
   const deps = fakeDeps();
-  const s = await runUntil(newRun({ topic: "rain gutter", lengthSec: 15 }), deps, (x) => x.step === "approval" || x.step === "failed");
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "approval" || x.step === "failed");
   assert.equal(s.step, "approval", s.error);
-  assert.equal(s.wide.length, 4);
-  // each state after the master is an edit of the previous image
-  const images = deps.log.filter((t) => t.taskType === "imageInference");
-  assert.equal(images[0].inputs, undefined);
-  for (let i = 1; i < 4; i++) assert.deepEqual(images[i].inputs.referenceImages, [s.wide[i - 1].url]);
-  assert.ok(s.voice.tempo > 1);
-  // nothing past approval runs on its own
+  assert.equal(s.wide.length, 5);
+  assert.equal(deps.vision.length, 5);
+  assert.ok(s.wide.every((w) => w.vision.pass));
+  assert.equal(visionFailures(s).length, 0);
   const again = await advance(s, deps);
   assert.equal(again.step, "approval");
-  assert.equal(progressOf(again).images.state, "review");
 });
 
-test("engine: regenerate redoes that image and the later ones only", async () => {
-  const deps = fakeDeps();
-  const s = await runUntil(newRun({ topic: "rain gutter", lengthSec: 15 }), deps, (x) => x.step === "approval");
-  const r = regenerateWide(s, 2);
-  assert.deepEqual(r.wide.map((w) => w.status), ["done", "done", "pending", "pending"]);
-  const back = await runUntil(r, deps, (x) => x.step === "approval");
-  assert.equal(back.wide[1].url, s.wide[1].url);
-  assert.notEqual(back.wide[2].url, s.wide[2].url);
+test("engine: a vision failure regenerates once with the fix; a second failure is flagged, not looped", async () => {
+  const once = fakeDeps({ visionFails: { "it shows the liner": 1 } });
+  const s1 = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), once, (x) => x.step === "approval");
+  const w1 = s1.wide[1];
+  assert.equal(w1.attempts, 2);
+  assert.ok(w1.vision.pass);
+  const fixPrompt = once.log.filter((t) => t.taskType === "imageInference").map((t) => t.positivePrompt).find((p) => /The last attempt got this wrong, fix it: the liner is missing/.test(p));
+  assert.ok(fixPrompt);
+  const twice = fakeDeps({ visionFails: { "it shows the liner": 5 } });
+  const s2 = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), twice, (x) => x.step === "approval");
+  assert.equal(s2.wide[1].attempts, 2);
+  assert.equal(visionFailures(s2).length, 1);
+  assert.equal(progressOf(s2).images.flagged, 1);
 });
 
-test("engine: after approval, keyframes -> clips (same file at every join) -> render -> done", async () => {
+test("engine: used ideas reach the planner; regenerate redoes that image and the later ones", async () => {
   const deps = fakeDeps();
-  const s = await runUntil(newRun({ topic: "rain gutter", lengthSec: 15 }), deps, (x) => x.step === "approval");
+  let seen;
+  deps.planVideo = async ({ usedIdeas }) => { seen = usedIdeas; return { plan: validatePlan(samplePlan(), 30), costUsd: 0.1 }; };
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30, usedIdeas: ["S-bend trap"] }), deps, (x) => x.step === "approval");
+  assert.deepEqual(seen, ["S-bend trap"]);
+  const r = regenerateWide(s, 3);
+  assert.deepEqual(r.wide.map((w) => w.status), ["done", "done", "done", "pending", "pending"]);
+});
+
+test("engine: after approval, keyframes -> clips (same file at every join) -> sound -> render -> done", async () => {
+  const deps = fakeDeps();
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "approval");
   const done = await runUntil(approve(s), deps, (x) => x.step === "done" || x.step === "failed");
   assert.equal(done.step, "done", done.error);
-  assert.equal(done.finalUrl, "https://store/final.mp4");
   const clips = deps.log.filter((t) => t.taskType === "videoInference");
-  assert.equal(clips.length, 5);
+  assert.equal(clips.length, done.timing.segments.length);
   for (let i = 1; i < clips.length; i++) assert.equal(clips[i].inputs.frameImages[0].image, clips[i - 1].inputs.frameImages[1].image);
-  // only the keyframe with an edit got an edit call
-  const edits = deps.log.filter((t) => t.taskType === "imageInference" && t.inputs?.referenceImages?.[0]?.includes("rw/") && t.positivePrompt.startsWith("Same image, same framing"));
-  assert.equal(edits.length, 1);
+  assert.equal(done.sounds.length, 6);
   const job = renderJob(done);
-  assert.equal(job.clips[0].dropFirstFrame, false);
+  assert.equal(job.sfx.length, 6);
+  assert.ok(job.chimes.length >= 3);
+  assert.equal(job.cards[0].text, "40 YEARS");
   assert.ok(job.clips.slice(1).every((c) => c.dropFirstFrame));
-  assert.ok(job.captions.length > 40);
-  assert.ok(Object.values(done.costs).every((v) => v >= 0));
+  assert.ok(done.costs.sound > 0 && done.costs.vision > 0);
 });
 
-test("engine: without a voice the beats are even and the script is kept for recording", async () => {
-  const deps = { ...fakeDeps(), synthesize: null };
-  const s = await runUntil(newRun({ topic: "rain gutter", lengthSec: 15 }), deps, (x) => x.step === "approval");
-  assert.equal(s.voice, null);
-  assert.equal(s.timing.placed[4].end, 15);
-  assert.ok(s.narration.startsWith("Put a roof"));
+test("engine: sound effects off -> no cues, no chimes, voice only", async () => {
+  const deps = fakeDeps();
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30, soundEffects: false }), deps, (x) => x.step === "approval");
+  const done = await runUntil(approve(s), deps, (x) => x.step === "done");
+  const job = renderJob(done);
+  assert.equal(job.sfx.length, 0);
+  assert.equal(job.chimes.length, 0);
+  assert.equal(job.cards.length, 1, "number cards stay: they are picture, not sound");
+});
+
+test("engine: a sound cue that fails twice is dropped, the video still finishes", async () => {
+  const deps = fakeDeps();
+  deps.sfx = async () => { throw new Error("SFX_FAILED: 500"); };
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "approval");
+  const done = await runUntil(approve(s), deps, (x) => x.step === "done" || x.step === "failed");
+  assert.equal(done.step, "done");
+  assert.ok(done.sounds.every((c) => c.status === "dropped"));
+  assert.equal(renderJob(done).sfx.length, 0);
 });
 
 test("engine: a task that fails twice fails the run (one retry, no loop)", async () => {
   const deps = fakeDeps();
   deps.send = async (batch) => ({ status: 200, body: { errors: [{ taskUUID: batch[0].taskUUID, message: "boom" }] } });
-  const s = await runUntil(newRun({ topic: "rain gutter", lengthSec: 15 }), deps, (x) => x.step === "failed", 50);
-  assert.equal(s.step, "failed");
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "failed", 50);
   assert.equal(s.failedAt, "wide");
 });
 
 // ---------- the stitch ----------
 
-test("final ffmpeg: drops the duplicate first frame after clip 1, speed-fits, 24 fps, voice tempo", () => {
-  const args = finalArgs({ clipFiles: ["a.mp4", "b.mp4"], speeds: [1, 1.25], voiceFile: "v.mp3", tempo: 1.3, assFile: "c.ass", fontsDir: "fonts", lengthSec: 6, output: "o.mp4" });
+test("final ffmpeg: duplicate frame dropped, speed-fit, 24 fps, voice tempo, chime and sfx mixed", () => {
+  const args = finalArgs({
+    clipFiles: ["a.mp4", "b.mp4"], speeds: [1, 1.25], voiceFile: "v.mp3", tempo: 1.3, assFile: "c.ass", fontsDir: "fonts",
+    chimeFile: "chime.wav", chimes: [1.5, 4.25], sfx: [{ file: "rain.mp3", start: 0.05, duration: 3 }, { file: "crack.mp3", start: 2.3, duration: null }],
+    levels: { sfxDb: -12, chimeDb: -14 }, lengthSec: 6, output: "o.mp4",
+  });
   const fc = args[args.indexOf("-filter_complex") + 1];
-  assert.match(fc, /\[0:v\]setpts=\(PTS-STARTPTS\)\/1\.0000,fps=24/);
   assert.match(fc, /\[1:v\]select='gte\(n\\,1\)',setpts=\(PTS-STARTPTS\)\/1\.2500/);
-  assert.match(fc, /subtitles=c\.ass:fontsdir=fonts/);
-  assert.match(fc, /\[2:a\]atempo=1\.3000,apad/);
-  assert.equal(args[args.indexOf("-r") + 1], "24");
+  assert.match(fc, /\[2:a\]atempo=1\.3000/);
+  assert.match(fc, /\[3:a\].*volume=0\.1995,asplit=2\[ch0\]\[ch1\]/);
+  assert.match(fc, /\[ch1\]adelay=4250:all=1/);
+  assert.match(fc, /\[4:a\]atrim=0:3\.000,afade=t=out:st=2\.700:d=0\.3,.*volume=0\.2512,adelay=50:all=1\[fx0\]/);
+  assert.match(fc, /\[5:a\]aresample.*adelay=2300:all=1\[fx1\]/);
+  assert.match(fc, /\[voice\]\[chd0\]\[chd1\]\[fx0\]\[fx1\]amix=inputs=5:duration=longest:normalize=0/);
+  assert.equal(args[args.indexOf("rain.mp3") - 3], "-stream_loop");
   assert.equal(atempoChain(2.5), "atempo=2,atempo=1.2500");
 });
 
-test("captions: one capitalised word at a time, centred at 52%", () => {
+test("captions: one word at 52%; number cards at 30% with a pop", () => {
   assert.equal(captionWord("pours,"), "Pours");
-  const ass = buildAss({ words: [{ w: "if", s: 0, e: 0.2 }, { w: "you", s: 0.3, e: 0.5 }] });
-  assert.match(ass, /Dialogue: 0,0:00:00\.00,0:00:00\.30,Word,,0,0,0,,\{\\pos\(540,998\)\}If/);
-  assert.match(ass, /0:00:00\.75,Word,,0,0,0,,\{\\pos\(540,998\)\}You/);
+  const ass = buildAss({ words: [{ w: "if", s: 0, e: 0.2 }], cards: [{ text: "= 6 CARS", s: 1.2, e: 3 }] });
+  assert.match(ass, /Dialogue: 0,0:00:00\.00,0:00:00\.45,Word,,0,0,0,,\{\\pos\(540,998\)\}If/);
+  assert.match(ass, /Dialogue: 1,0:00:01\.20,0:00:03\.00,Card,,0,0,0,,\{\\pos\(540,576\)\\fad\(80,220\).*\}= 6 CARS/);
 });

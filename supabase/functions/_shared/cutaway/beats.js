@@ -57,16 +57,60 @@ export function placeBeats(beats, spoken, tempo = 1) {
 }
 
 /**
- * The clip to ask for per beat: whole seconds within the model's range,
- * and the speed factor the stitch applies to fit it to the beat exactly
- * (factor > 1 = played faster). verbAtSec is on the clip's own clock.
+ * The clip to ask for per segment (framesOf): whole seconds within the model's range,
+ * and the speed factor the stitch applies to fit it to its share of the beat exactly
+ * (factor > 1 = played faster). verbAtSec is on the clip's own clock (the verb lands
+ * in the whole clip or in part "a" of a far jump).
  */
-export function clipTimings(placed) {
-  return placed.map((p) => {
-    const clipSec = Math.min(MODELS.clip.maxSec, Math.max(2, Math.round(p.duration)));
-    const speed = round(clipSec / p.duration, 4);
-    return { clipSec, speed, verbAtSec: round(p.verbAt * speed) };
+export function clipTimings(placed, segments = placed.map((_, i) => ({ beat: i, part: "whole", frac: 1 }))) {
+  return segments.map((seg) => {
+    const p = placed[seg.beat];
+    const d = p.duration * seg.frac;
+    const clipSec = Math.min(MODELS.clip.maxSec, Math.max(seg.part === "whole" ? 2 : 1, Math.round(d)));
+    const speed = round(clipSec / d, 4);
+    const verbAt = seg.part === "b" ? null : Math.min(p.verbAt, d - 0.3);
+    return { beat: seg.beat, part: seg.part, durationSec: round(d), clipSec, speed, verbAtSec: verbAt == null ? null : round(Math.max(0.2, verbAt) * speed) };
   });
+}
+
+/**
+ * The sound, chime and card timeline on the final clock.
+ * placed: beat times (placeBeats/evenBeats); finalWords: the voice's words on the final clock ([] without a voice).
+ * Returns {chimes: [sec], cards: [{text, s, e}], sfx: [{key, text, start, duration|null}]}.
+ */
+export function cueTimeline(plan, placed, finalWords = []) {
+  const bare = (x) => String(x).toLowerCase().replace(/[^a-z0-9']/g, "");
+  const counts = plan.beats.map((b) => words(b.text).length);
+  const beatWords = [];
+  let cursor = 0;
+  counts.forEach((c) => { beatWords.push(finalWords.slice(cursor, cursor + c)); cursor += c; });
+  const timeOf = (i, word, fallback) => (beatWords[i] ?? []).find((w) => bare(w.w) === bare(word))?.s ?? fallback;
+  const chimes = [];
+  const cards = [];
+  const sfx = [];
+  // chime on every "This is a" / "That is a" name and on "Congratulations"
+  finalWords.forEach((w, k) => {
+    const a = bare(w.w), b = bare(finalWords[k + 1]?.w ?? "");
+    if ((a === "this" || a === "that") && b === "is") chimes.push(w.s);
+    if (a === "congratulations") chimes.push(w.s);
+  });
+  plan.beats.forEach((b, i) => {
+    const p = placed[i];
+    const verbAt = p.start + p.verbAt;
+    if (b.card) {
+      const s = timeOf(i, b.card.word, verbAt);
+      cards.push({ text: b.card.text, s: round(s), e: round(s + 1.8) });
+      chimes.push(s);
+    }
+    if (b.sound) {
+      const start = b.sound.at === "start" ? p.start + 0.05 : timeOf(i, b.verb, verbAt);
+      sfx.push({ key: b.sound.key, text: b.sound.text, start: round(start), duration: b.sound.whole ? round(p.end - start) : null });
+    }
+  });
+  // without a voice: chime at the start of the naming beats and the last beat
+  if (!finalWords.length) plan.beats.forEach((b, i) => { if (/\b(this|that) is\b/i.test(b.text) || /congratulations/i.test(b.text)) chimes.push(placed[i].start + 0.2); });
+  const uniq = [...new Set(chimes.map((t) => round(t)))].sort((x, y) => x - y).filter((t, k, arr) => k === 0 || t - arr[k - 1] > 0.4);
+  return { chimes: uniq, cards, sfx };
 }
 
 /** Without a voice: beats get equal shares of the length (the user records the script). */

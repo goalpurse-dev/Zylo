@@ -5,28 +5,32 @@
 // state. The caller saves it and calls again a few seconds later (the edge
 // function per browser tick, the local runner in a loop). Pure apart from deps.
 //
-// Steps: plan -> voice -> wide -> approval (STOP: the user approves) ->
-//        keyframes -> clips -> render -> done   (or failed)
+// Steps: plan (+ critic) -> voice -> wide (+ vision check each) -> approval (STOP: the user approves) ->
+//        keyframes -> clips -> sound -> render -> done   (or failed)
 //
 // deps = {
-//   planVideo({topic, lengthSec}) -> {plan, costUsd}
+//   planVideo({topic, lengthSec, usedIdeas}) -> {plan, costUsd, critic}
 //   synthesize({text}) -> {audioBase64, spoken:[{w,s,e}], costUsd}   (null = no voice: script only)
 //   saveAudio(base64) -> url
+//   checkImage({imageUrl, description, checks}) -> {pass, fix, checks, costUsd}   (null = no vision check)
 //   send(tasks[]) -> {status, body}            Runware transport
 //   crop({imageUrl, box}) -> {image, h}        9:16 crop as a URL or data URI, and its height in px
 //   keep(url, name) -> url                     copy a provider URL to our storage (identity on the local runner)
+//   sfx({cacheKey, text, seconds}) -> {url, costUsd, cached}   a sound effect, from the cache or made and cached
 //   startRender(job) -> handle;  checkRender(handle) -> {state:"pending"|"done"|"error", url?, message?}
 // }
 
-import { clipTimings, evenBeats, placeBeats, upscaleFactor, voiceTempo } from "./beats.js";
-import { clipPrompt, keyframeEditPrompt, keyframesOf, masterPrompt, narrationText, statePrompt } from "./planner.js";
+import { clipTimings, cueTimeline, evenBeats, placeBeats, upscaleFactor, voiceTempo } from "./beats.js";
+import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt } from "./planner.js";
 import { clipTask, imageTask, poll, submit, upscaleTask } from "./runware.js";
+import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
 
-export const STEPS = Object.freeze(["plan", "voice", "wide", "approval", "keyframes", "clips", "render", "done"]);
+export const STEPS = Object.freeze(["plan", "voice", "wide", "approval", "keyframes", "clips", "sound", "render", "done"]);
 const MAX_ATTEMPTS = 2; // one retry per task, never more (no auto-retry loops)
 
-export function newRun({ topic, lengthSec }) {
-  return { topic, lengthSec, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], render: null, finalUrl: null, error: null };
+/** @param {{topic: string, lengthSec: number, soundEffects?: boolean, usedIdeas?: string[]}} input */
+export function newRun({ topic, lengthSec, soundEffects = true, usedIdeas = [] }) {
+  return { topic, lengthSec, soundEffects, usedIdeas, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], sounds: [], render: null, finalUrl: null, error: null };
 }
 
 const clone = (s) => JSON.parse(JSON.stringify(s));
@@ -41,6 +45,7 @@ export async function advance(input, deps) {
     if (s.step === "wide") return await stepWide(s, deps);
     if (s.step === "keyframes") return await stepKeyframes(s, deps);
     if (s.step === "clips") return await stepClips(s, deps);
+    if (s.step === "sound") return await stepSound(s, deps);
     if (s.step === "render") return await stepRender(s, deps);
     return s; // approval, done, failed: nothing to do
   } catch (e) {
@@ -51,23 +56,26 @@ export async function advance(input, deps) {
 async function stepPlan(s, deps) {
   s.attempts.plan = (s.attempts.plan ?? 0) + 1;
   try {
-    const { plan, costUsd } = await deps.planVideo({ topic: s.topic, lengthSec: s.lengthSec });
+    const { plan, costUsd, critic } = await deps.planVideo({ topic: s.topic, lengthSec: s.lengthSec, usedIdeas: s.usedIdeas ?? [] });
     addCost(s, "plan", costUsd);
     s.plan = plan;
+    s.critic = critic ?? null;
     s.narration = narrationText(plan);
     s.step = "voice";
   } catch (e) {
     addCost(s, "plan", e?.costUsd);
+    s.planErrors = [...(s.planErrors ?? []), e.message];
     if (s.attempts.plan >= MAX_ATTEMPTS) return fail(s, e.message);
   }
   return s;
 }
 
 async function stepVoice(s, deps) {
+  let placed;
   if (!deps.synthesize) {
     // No voice in this setup: even beats; the user records the script.
     s.voice = null;
-    s.timing = timingFrom(s.plan, evenBeats(s.plan.beats, s.lengthSec));
+    placed = evenBeats(s.plan.beats, s.lengthSec);
   } else {
     s.attempts.voice = (s.attempts.voice ?? 0) + 1;
     try {
@@ -76,23 +84,23 @@ async function stepVoice(s, deps) {
       const tempo = voiceTempo(spoken);
       const url = await deps.saveAudio(audioBase64);
       s.voice = { url, tempo, words: spoken.map((w) => ({ w: w.w, s: round(w.s / tempo), e: round(w.e / tempo) })) };
-      s.timing = timingFrom(s.plan, placeBeats(s.plan.beats, spoken, tempo));
+      placed = placeBeats(s.plan.beats, spoken, tempo);
     } catch (e) {
       if (s.attempts.voice >= MAX_ATTEMPTS) return fail(s, e.message);
       return s;
     }
   }
-  s.wide = s.plan.states.map((st, i) => ({ id: st.id, label: st.label, status: "pending", attempts: 0, prompt: i === 0 ? masterPrompt(s.plan) : statePrompt(s.plan, i) }));
+  const { frames, segments } = framesOf(s.plan);
+  s.timing = { placed, segments, clips: clipTimings(placed, segments), lengthSec: round(placed[placed.length - 1].end) };
+  s.timeline = cueTimeline(s.plan, placed, s.voice?.words ?? []);
+  s.frames = frames;
+  // Every prompt states its own checklist, so the vision check asks for nothing the image wasn't told.
+  s.wide = s.plan.states.map((st, i) => ({ id: st.id, label: st.label, status: "pending", attempts: 0, prompt: i === 0 ? masterPromptWithFix(s.plan, "") : statePrompt(s.plan, i) }));
   s.step = "wide";
   return s;
 }
 
-function timingFrom(plan, placed) {
-  const clips = clipTimings(placed);
-  return { placed, clips, lengthSec: round(placed[placed.length - 1].end) };
-}
-
-/** Wide images in order: each state is an edit of the one before it (R: "edit wide"). */
+/** Wide images in order: each state is an edit of the one before it; each is checked against its checklist. */
 async function stepWide(s, deps) {
   const i = s.wide.findIndex((w) => w.status !== "done");
   if (i < 0) { s.step = "approval"; return s; }
@@ -100,14 +108,17 @@ async function stepWide(s, deps) {
   if (w.status === "pending") {
     w.attempts += 1;
     const references = i === 0 ? [] : [s.wide[i - 1].url];
-    const { taskUUID, early } = await submit(deps.send, imageTask({ prompt: w.prompt, references }));
-    w.taskUUID = taskUUID;
-    w.status = "submitted";
+    const prompt = w.fix ? (i === 0 ? masterPromptWithFix(s.plan, w.fix) : statePrompt(s.plan, i, w.fix)) : (w.prompt ?? (i === 0 ? masterPromptWithFix(s.plan, "") : statePrompt(s.plan, i)));
+    const { taskUUID, early } = await submit(deps.send, imageTask({ prompt, references }));
+    Object.assign(w, { taskUUID, status: "submitted" });
     if (early) await finishWide(s, w, early, deps);
     return s;
   }
-  const r = await poll(deps.send, w.taskUUID);
-  await finishWide(s, w, r, deps);
+  if (w.status === "submitted") {
+    await finishWide(s, w, await poll(deps.send, w.taskUUID), deps);
+    return s;
+  }
+  if (w.status === "checking") await checkWide(s, i, deps);
   return s;
 }
 
@@ -120,14 +131,29 @@ async function finishWide(s, w, r, deps) {
     return;
   }
   w.url = await deps.keep(r.url, `wide-${w.id}-${w.attempts}.jpg`);
-  w.status = "done";
+  w.status = deps.checkImage ? "checking" : "done";
 }
+
+/** The vision check: a failure regenerates the image once with the fix; a second failure is flagged for the user. */
+async function checkWide(s, i, deps) {
+  const w = s.wide[i];
+  const st = s.plan.states[i];
+  const v = await deps.checkImage({ imageUrl: w.url, description: st.description, checks: st.checks ?? [] });
+  addCost(s, "vision", v.costUsd);
+  w.vision = { pass: v.pass, fix: v.fix, checks: v.checks, attempt: w.attempts };
+  w.history = [...(w.history ?? []), { url: w.url, pass: v.pass, fix: v.fix }];
+  if (v.pass) { w.status = "done"; return; }
+  if (w.attempts < MAX_ATTEMPTS) { Object.assign(w, { status: "pending", fix: v.fix, taskUUID: null }); return; }
+  w.status = "done"; // kept, but flagged: the approval screen shows it, and the local runner stops
+}
+
+export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && !w.vision.pass);
 
 /** The user's "Regenerate" on wide image i: it and every later state (each is an edit of the one before). */
 export function regenerateWide(input, i) {
   const s = clone(input);
   if (s.step !== "approval" || !s.wide[i]) throw new Error("REGENERATE_NOT_ALLOWED");
-  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null });
+  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null, fix: "", vision: null });
   s.step = "wide";
   return s;
 }
@@ -136,7 +162,7 @@ export function regenerateWide(input, i) {
 export function approve(input) {
   const s = clone(input);
   if (s.step !== "approval") throw new Error("APPROVE_NOT_ALLOWED");
-  s.keyframes = keyframesOf(s.plan).map((k) => ({ ...k, stage: "crop", attempts: 0 }));
+  s.keyframes = s.frames.map((k) => ({ ...k, stage: "crop", attempts: 0 }));
   s.step = "keyframes";
   return s;
 }
@@ -166,7 +192,7 @@ async function stepKeyframes(s, deps) {
     if (s.step === "failed") return s;
   }
   if (s.keyframes.every((k) => k.stage === "done")) {
-    s.clips = s.plan.beats.map((_, i) => ({ index: i, status: "pending", attempts: 0 }));
+    s.clips = s.timing.segments.map((seg, i) => ({ index: i, ...seg, status: "pending", attempts: 0 }));
     s.step = "clips";
   }
   return s;
@@ -177,30 +203,33 @@ async function finishKeyframe(s, k, r, deps) {
   addCost(s, "keyframes", r.cost);
   if (r.state === "error") {
     const tries = k.stage === "edit" ? k.editAttempts : k.attempts;
-    if (tries >= MAX_ATTEMPTS) { fail(s, `Keyframe ${k.index + 1}: ${r.message}`); return; }
+    if (tries >= MAX_ATTEMPTS) { fail(s, `Keyframe ${k.id}: ${r.message}`); return; }
     k.stage = k.stage === "edit" ? "edit-pending" : "crop";
     return;
   }
   if (k.stage === "upscale") {
-    k.upscaledUrl = await deps.keep(r.url, `key-${k.index}-up.jpg`);
+    k.upscaledUrl = await deps.keep(r.url, `key-${k.id}-up.jpg`);
     if (k.edit) { k.stage = "edit-pending"; return; }
     k.url = k.upscaledUrl;
     k.stage = "done";
     return;
   }
-  k.url = await deps.keep(r.url, `key-${k.index}.jpg`);
+  k.url = await deps.keep(r.url, `key-${k.id}.jpg`);
   k.stage = "done";
 }
 
-/** Clips: all at once. First frame = keyframe N, last frame = keyframe N+1 (the same file at every join). */
+const frameById = (s, id) => s.keyframes.find((k) => k.id === id);
+
+/** Clips: all at once. First frame = one keyframe, last frame = the next (the same file at every join). */
 async function stepClips(s, deps) {
   for (const c of s.clips) {
     if (c.status === "done") continue;
     if (c.status === "pending") {
       c.attempts += 1;
       const t = s.timing.clips[c.index];
-      c.prompt = clipPrompt(s.plan, c.index, { clipSec: t.clipSec, verbAtSec: t.verbAtSec });
-      const { taskUUID } = await submit(deps.send, clipTask({ prompt: c.prompt, firstUrl: s.keyframes[c.index].url, lastUrl: s.keyframes[c.index + 1].url, durationSec: t.clipSec }));
+      const to = frameById(s, c.to);
+      c.prompt = clipPrompt(s.plan, c, { clipSec: t.clipSec, verbAtSec: t.verbAtSec, toShow: to.show });
+      const { taskUUID } = await submit(deps.send, clipTask({ prompt: c.prompt, firstUrl: frameById(s, c.from).url, lastUrl: to.url, durationSec: t.clipSec }));
       Object.assign(c, { status: "submitted", taskUUID });
       continue;
     }
@@ -215,16 +244,44 @@ async function stepClips(s, deps) {
     c.url = await deps.keep(r.url, `clip-${c.index}.mp4`);
     c.status = "done";
   }
-  if (s.clips.every((c) => c.status === "done")) s.step = "render";
+  if (s.clips.every((c) => c.status === "done")) {
+    s.sounds = s.soundEffects && deps.sfx ? s.timeline.sfx.map((cue, i) => ({ index: i, ...cue, status: "pending", attempts: 0 })) : [];
+    s.step = "sound";
+  }
+  return s;
+}
+
+/** Sound effects: each cue from the cache, or made once and cached. A cue that fails twice is dropped, not fatal. */
+async function stepSound(s, deps) {
+  for (const cue of s.sounds) {
+    if (cue.status !== "pending") continue;
+    cue.attempts += 1;
+    try {
+      const req = cueRequest({ key: cue.key, text: cue.text, seconds: cue.duration ? Math.min(6, Math.max(1.5, cue.duration)) : 2.5 });
+      const cacheKey = await cueCacheKey({ key: cue.key, text: req.text, seconds: req.seconds });
+      const r = await deps.sfx({ cacheKey, text: req.text, seconds: req.seconds });
+      addCost(s, "sound", r.costUsd);
+      Object.assign(cue, { url: r.url, cached: r.cached, cacheKey, status: "done" });
+    } catch (e) {
+      if (cue.attempts >= MAX_ATTEMPTS) Object.assign(cue, { status: "dropped", error: e.message });
+    }
+    return s; // one cue per tick
+  }
+  s.step = "render";
   return s;
 }
 
 /** What the stitch needs (render-worker/src/cutawayFinal.mjs). */
 export function renderJob(s) {
+  const on = s.soundEffects !== false;
   return {
     clips: s.clips.map((c) => ({ url: c.url, speed: s.timing.clips[c.index].speed, dropFirstFrame: c.index > 0 })),
     voice: s.voice ? { url: s.voice.url, tempo: s.voice.tempo } : null,
     captions: s.voice ? s.voice.words : [],
+    cards: s.timeline?.cards ?? [],
+    chimes: on ? (s.timeline?.chimes ?? []) : [],
+    sfx: on ? (s.sounds ?? []).filter((c) => c.status === "done").map((c) => ({ url: c.url, start: c.start, duration: c.duration })) : [],
+    levels: LEVELS,
     lengthSec: s.timing.lengthSec,
     width: 1080, height: 1920, fps: 24,
   };
@@ -248,14 +305,14 @@ function round(v) { return Math.round(v * 1000) / 1000; }
 
 /** Progress for the UI: the four visible stages and how far each is. */
 export function progressOf(s) {
-  const doneCount = (list, ok) => list.filter(ok).length;
-  const order = ["plan", "voice", "wide", "approval", "keyframes", "clips", "render", "done"];
+  const doneCount = (list, ok) => (list ?? []).filter(ok).length;
+  const order = ["plan", "voice", "wide", "approval", "keyframes", "clips", "sound", "render", "done"];
   const at = order.indexOf(s.step === "failed" ? s.failedAt : s.step);
   const state = (from, to) => (at > to ? "done" : at >= from ? (s.step === "failed" ? "failed" : "active") : "waiting");
   return {
     script: { state: state(0, 1) },
-    images: { state: s.step === "approval" ? "review" : state(2, 3), done: doneCount(s.wide, (w) => w.status === "done"), total: s.wide.length || null },
-    clips: { state: state(4, 5), done: doneCount(s.clips, (c) => c.status === "done") + 0, total: s.clips.length || null, keyframesDone: doneCount(s.keyframes, (k) => k.stage === "done"), keyframesTotal: s.keyframes.length || null },
-    final: { state: state(6, 7) },
+    images: { state: s.step === "approval" ? "review" : state(2, 3), done: doneCount(s.wide, (w) => w.status === "done"), total: s.wide?.length || null, flagged: visionFailures(s).length },
+    clips: { state: state(4, 5), done: doneCount(s.clips, (c) => c.status === "done"), total: s.clips?.length || null, keyframesDone: doneCount(s.keyframes, (k) => k.stage === "done"), keyframesTotal: s.keyframes?.length || null },
+    final: { state: state(6, 8) },
   };
 }

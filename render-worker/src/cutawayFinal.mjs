@@ -18,6 +18,8 @@ import { buildAss, finalArgs } from "./cutawayFinalPlan.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
 const FONT = process.env.CUTAWAY_FONT ?? path.resolve(HERE, "../../supabase/functions/_shared/fonts/LilitaOne-Regular.ttf");
+// The fixed two-tone chime (scripts/cutaway/makeChime.mjs): the same file in every video.
+const CHIME = process.env.CUTAWAY_CHIME ?? path.resolve(HERE, "../assets/sfx/chime.wav");
 const USD_PER_SECOND = Number(process.env.MACHINE_USD_PER_SECOND ?? "0.0000478");
 
 function run(cmd, args, cwd) {
@@ -53,16 +55,27 @@ export async function renderCutaway(job, dir, outName = "final.mp4") {
   const voiceFile = job.voice?.url ? path.basename(await download(job.voice.url, path.join(dir, "voice.mp3"))) : null;
   let assFile = null;
   let fontsDir = null;
-  if (job.captions?.length) {
+  if (job.captions?.length || job.cards?.length) {
     fontsDir = "fonts";
     await mkdir(path.join(dir, fontsDir), { recursive: true });
     await copyFile(FONT, path.join(dir, fontsDir, path.basename(FONT)));
     assFile = "captions.ass";
-    await writeFile(path.join(dir, assFile), buildAss({ words: job.captions, width: job.width ?? 1080, height: job.height ?? 1920 }), "utf8");
+    await writeFile(path.join(dir, assFile), buildAss({ words: job.captions ?? [], cards: job.cards ?? [], width: job.width ?? 1080, height: job.height ?? 1920 }), "utf8");
+  }
+  let chimeFile = null;
+  if (job.chimes?.length) {
+    chimeFile = "chime.wav";
+    await copyFile(CHIME, path.join(dir, chimeFile));
+  }
+  const sfx = [];
+  for (const [i, c] of (job.sfx ?? []).entries()) {
+    const ext = path.extname(String(c.url).split("?")[0]) || ".mp3";
+    sfx.push({ file: path.basename(await download(c.url, path.join(dir, `sfx-${i}${ext}`))), start: c.start, duration: c.duration ?? null });
   }
   const args = finalArgs({
     clipFiles, speeds: job.clips.map((c) => c.speed), voiceFile, tempo: job.voice?.tempo ?? 1,
-    assFile, fontsDir, lengthSec: job.lengthSec, width: job.width ?? 1080, height: job.height ?? 1920, fps: job.fps ?? 24, output: outName,
+    assFile, fontsDir, chimeFile, chimes: job.chimes ?? [], sfx, levels: job.levels,
+    lengthSec: job.lengthSec, width: job.width ?? 1080, height: job.height ?? 1920, fps: job.fps ?? 24, output: outName,
   });
   await run(FFMPEG, args, dir);
   return path.join(dir, outName);

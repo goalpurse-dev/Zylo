@@ -1,7 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 // cutaway-api: the Cutaway Explainer template's only server entry point.
 //
-//   start      {topic, lengthSec}      charge step 1 (script, voice, wide images) and create the run
+//   start      {topic, lengthSec, soundEffects}   charge step 1 (script + critic, voice, wide images + vision check) and create the run
+//   ideas      {}                      the user's used topics (for the topic suggestions)
 //   advance    {runId}                 move the run one small step (the page calls this every few seconds)
 //   regenerate {runId, index}          redo wide image `index` and the later ones (each is an edit of the one before)
 //   approve    {runId}                 "Looks good -> make video": charge step 2 and go on to keyframes, clips, stitch
@@ -14,7 +15,8 @@ import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { cors, err, ok } from "../shared/cors.ts";
 import { advance, approve, newRun, progressOf, regenerateWide } from "../_shared/cutaway/engine.js";
 import { cropPixels } from "../_shared/cutaway/beats.js";
-import { planVideo } from "../_shared/cutaway/llm.js";
+import { checkImage, planVideo } from "../_shared/cutaway/llm.js";
+import { generateSfx } from "../_shared/cutaway/sound.js";
 import { synthesize } from "../_shared/cutaway/voice.js";
 import { directSender } from "../_shared/cutaway/runware.js";
 import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
@@ -113,8 +115,17 @@ async function fetchBytes(url: string) {
 
 function depsFor(row: any) {
   return {
-    planVideo: ({ topic, lengthSec }: any) => planVideo({ apiKey: ANTHROPIC_API_KEY, topic, lengthSec }),
+    planVideo: ({ topic, lengthSec, usedIdeas }: any) => planVideo({ apiKey: ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
+    checkImage: ({ imageUrl, description, checks }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks }),
     synthesize: ELEVENLABS_KEY ? ({ text }: any) => synthesize({ apiKey: ELEVENLABS_KEY, text }) : null,
+    // Sound effects: one shared cache for every user (cutaway/sfx-cache/<key>.mp3); a hit costs nothing.
+    sfx: ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }: any) => {
+      const path = `cutaway/sfx-cache/${cacheKey}.mp3`;
+      const { data } = await admin.storage.from(BUCKET).list("cutaway/sfx-cache", { search: `${cacheKey}.mp3` });
+      if ((data ?? []).some((f: any) => f.name === `${cacheKey}.mp3`)) return { url: publicUrl(path), costUsd: 0, cached: true };
+      const { bytes, costUsd } = await generateSfx({ apiKey: ELEVENLABS_KEY, text, seconds });
+      return { url: await upload(path, bytes, "audio/mpeg"), costUsd, cached: false };
+    } : null,
     saveAudio: async (b64: string) => upload(runPath(row, "voice.mp3"), new Uint8Array(await (await fetch(`data:audio/mpeg;base64,${b64}`)).arrayBuffer()), "audio/mpeg"),
     send: directSender(RUNWARE_API_KEY),
     maxCropsPerTick: 2,
@@ -170,7 +181,9 @@ function view(row: any) {
     id: row.id, topic: row.topic, lengthSec: row.length_sec, step: s.step, error: s.error ?? null,
     createdAt: row.created_at, finalUrl: s.finalUrl ?? row.final_url ?? null,
     narration: s.narration ?? null, title: s.plan?.title ?? null, hasVoice: Boolean(s.voice),
-    wide: (s.wide ?? []).map((w: any) => ({ id: w.id, label: w.label, status: w.status, url: w.url ?? null })),
+    soundEffects: s.soundEffects !== false,
+    wide: (s.wide ?? []).map((w: any) => ({ id: w.id, label: w.label, status: w.status, url: w.url ?? null, vision: w.vision ? { pass: w.vision.pass, fix: w.vision.fix } : null })),
+    surprises: (s.plan?.surprises ?? []).map((x: any) => ({ beat: x.beat, kind: x.kind, text: x.text, number: x.number })),
     progress: progressOf(s),
     creditsCharged: row.credits_charged, creditsRefunded: row.credits_refunded,
   };
@@ -197,7 +210,7 @@ async function save(row: any, state: any, extra: Record<string, unknown> = {}) {
 
 /** One engine step under a lease, so two open tabs never run the same step twice. */
 async function tick(row: any) {
-  if (!["plan", "voice", "wide", "keyframes", "clips", "render"].includes(row.state?.step)) return row;
+  if (!["plan", "voice", "wide", "keyframes", "clips", "sound", "render"].includes(row.state?.step)) return row;
   const now = new Date();
   const { data: leased } = await admin.from("cutaway_runs")
     .update({ lease_until: new Date(now.getTime() + LEASE_SEC * 1000).toISOString() })
@@ -209,6 +222,14 @@ async function tick(row: any) {
   return save(leased, next);
 }
 
+/** The used-ideas log: topics and mechanisms of the user's earlier videos (newest 40). */
+async function usedIdeas(userId: string) {
+  const { data } = await admin.from("cutaway_runs").select("topic, state->plan->mechanisms").eq("user_id", userId).neq("step", "failed").order("created_at", { ascending: false }).limit(40);
+  const topics = [...new Set((data ?? []).map((r: any) => String(r.topic)))];
+  const mechanisms = [...new Set((data ?? []).flatMap((r: any) => (Array.isArray(r.mechanisms) ? r.mechanisms : [])).map((m: any) => String(m)))].slice(0, 80);
+  return { topics, mechanisms };
+}
+
 // ---------- actions ----------
 
 async function handle(req: Request) {
@@ -216,15 +237,22 @@ async function handle(req: Request) {
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action ?? "");
 
+  if (action === "ideas") {
+    const { topics } = await usedIdeas(userId);
+    return { usedTopics: topics };
+  }
+
   if (action === "start") {
     const topic = String(body?.topic ?? "").trim().replace(/\s+/g, " ");
     const lengthSec = Number(body?.lengthSec);
+    const soundEffects = body?.soundEffects !== false;
     if (topic.length < 3 || topic.length > 120) throw new ApiError("Type a topic (3 to 120 characters).");
-    if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 15 or 30 seconds.");
+    if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 30 or 60 seconds.");
+    const { mechanisms } = await usedIdeas(userId);
     const credits = await price(PRICES.plan.toolKey(lengthSec));
     await charge(userId, credits);
     const { data: row, error } = await admin.from("cutaway_runs").insert({
-      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec }),
+      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, usedIdeas: mechanisms }),
       credits_charged: credits, charges: [{ stage: "plan", credits, at: new Date().toISOString() }],
     }).select("*").single();
     if (error || !row) {

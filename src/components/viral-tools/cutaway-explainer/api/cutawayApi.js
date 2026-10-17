@@ -1,10 +1,10 @@
 import { supabase } from "../../../../lib/supabaseClient";
 
-export const LENGTHS = [15, 30];
-export const DEFAULT_LENGTH = 15;
+export const LENGTHS = [30, 60];
+export const DEFAULT_LENGTH = 30;
 export const TERMINAL_STEPS = new Set(["done", "failed"]);
 /** Steps where the server has work to do; the page keeps nudging it ("advance"). */
-export const WORKING_STEPS = new Set(["plan", "voice", "wide", "keyframes", "clips", "render"]);
+export const WORKING_STEPS = new Set(["plan", "voice", "wide", "keyframes", "clips", "sound", "render"]);
 
 // Prices come from the server (public.tool_prices), see supabase/functions/_shared/cutaway/pricing.js.
 export const PRICE_ITEMS = [
@@ -34,7 +34,9 @@ async function call(body) {
   return data;
 }
 
-export const startRun = (topic, lengthSec) => call({ action: "start", topic, lengthSec });
+export const startRun = (topic, lengthSec, soundEffects = true) => call({ action: "start", topic, lengthSec, soundEffects });
+/** Topics the user already made (the used-ideas log), for the suggestions. */
+export const fetchUsedTopics = () => call({ action: "ideas" }).then((r) => r?.usedTopics ?? []).catch(() => []);
 export const advanceRun = (runId) => call({ action: "advance", runId });
 export const regenerateImage = (runId, index) => call({ action: "regenerate", runId, index });
 export const approveImages = (runId) => call({ action: "approve", runId });

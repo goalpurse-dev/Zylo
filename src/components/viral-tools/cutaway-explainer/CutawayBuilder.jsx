@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, Clock3, Layers } from "lucide-react";
+import { ChevronRight, Clock3, Layers, Volume2, VolumeX } from "lucide-react";
+import { freshSuggestions } from "../../../data/cutawayTopics";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import NoCreditsModal from "../shared/NoCreditsModal";
@@ -7,7 +8,6 @@ import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
 import QuotedCredits from "../../pricing/QuotedCredits";
 import { calcCredits, DEFAULT_LENGTH, LENGTHS, PRICE_ITEMS } from "./api/cutawayApi";
 
-const TOPIC_EXAMPLES = ["Rain gutter", "How a toilet flushes", "A house foundation", "A city water tower"];
 
 function CreditIcon() {
   return (
@@ -19,9 +19,11 @@ function CreditIcon() {
   );
 }
 
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, busy, phase, historyMode = false, onDone }) {
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, busy, phase, historyMode = false, onDone, usedTopics = [] }) {
   const topic = values?.topic ?? "";
   const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
+  const soundEffects = values?.soundEffects !== false;
+  const suggestions = useMemo(() => freshSuggestions(usedTopics, 6), [usedTopics]);
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const creditBalance = useProfileCredits();
@@ -41,7 +43,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     if (creditBalance < totalCredits) { setNoCreditsOpen(true); return; }
     setValidationError("");
     emitCreditSpend(firstCredits, "Cutaway Explainer");
-    onGenerate({ topic: clean, lengthSec });
+    onGenerate({ topic: clean, lengthSec, soundEffects });
   };
 
   return (
@@ -72,16 +74,18 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
               placeholder="What should the video explain? e.g. rain gutter"
               className="h-[96px] w-full resize-none rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-cutaway/35 focus:ring-1 focus:ring-cutaway/30"
             />
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {TOPIC_EXAMPLES.map((example) => (
+            <p className="mb-1.5 mt-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Topics that work</p>
+            <div className="flex flex-wrap gap-1.5">
+              {suggestions.map((s) => (
                 <button
-                  key={example}
+                  key={s.topic}
                   type="button"
-                  onClick={() => { update("topic", example); setValidationError(""); }}
+                  title={`If you ${s.hook}…`}
+                  onClick={() => { update("topic", s.topic); setValidationError(""); }}
                   disabled={historyMode || isWorking}
                   className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold text-white/45 transition hover:border-cutaway/25 hover:text-white/75"
                 >
-                  {example}
+                  {s.topic}
                 </button>
               ))}
             </div>
@@ -102,6 +106,27 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40 lg:mb-1.5">Sound effects</p>
+            <button
+              id="cutaway-sfx"
+              type="button"
+              role="switch"
+              aria-checked={soundEffects}
+              onClick={() => update("soundEffects", !soundEffects)}
+              disabled={historyMode || isWorking}
+              className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left transition ${soundEffects ? "border-cutaway/35 bg-cutaway/[0.08]" : "border-white/[0.07] bg-white/[0.035]"}`}
+            >
+              <span className="flex items-center gap-2 text-[12px] font-bold text-white/80">
+                {soundEffects ? <Volume2 className="h-4 w-4 text-cutaway" /> : <VolumeX className="h-4 w-4 text-white/40" />}
+                {soundEffects ? "On: splashes, cracks, engines and a chime on each name" : "Off: voice only"}
+              </span>
+              <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${soundEffects ? "bg-cutaway" : "bg-white/15"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${soundEffects ? "left-[18px]" : "left-0.5"}`} />
+              </span>
+            </button>
           </div>
 
           <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">

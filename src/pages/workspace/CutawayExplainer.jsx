@@ -5,13 +5,14 @@ import CutawayResults from "../../components/viral-tools/cutaway-explainer/Cutaw
 import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPaywall";
 import useCutawayRun from "../../components/viral-tools/cutaway-explainer/hooks/useCutawayRun";
 import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
-import { DEFAULT_LENGTH, listRuns, PRICE_ITEMS, WORKING_STEPS } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
+import { DEFAULT_LENGTH, fetchUsedTopics, listRuns, PRICE_ITEMS, WORKING_STEPS } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
 import { CUTAWAY_FLAG } from "../../data/cutawayExplainer";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { supabase } from "../../lib/supabaseClient";
 
 const PAID_PLAN_CODES = new Set(["starter", "pro", "generative", "affiliate"]);
+const needsUpgradeFor = (code) => code === "free" || code === "guest" || code == null;
 
 function phaseOf(run) {
   if (!run) return "idle";
@@ -28,7 +29,8 @@ export default function CutawayExplainer() {
   const [mobilePanel, setMobilePanel] = useState("builder");
   const [planCode, setPlanCode] = useState(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH });
+  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true });
+  const [usedTopics, setUsedTopics] = useState([]);
   const [recent, setRecent] = useState([]);
   const [viewingRecent, setViewingRecent] = useState(false);
   const { run, error, busy, start, regenerate, approve, open, reset } = useCutawayRun();
@@ -54,6 +56,7 @@ export default function CutawayExplainer() {
   }, [user]);
 
   useEffect(() => { void loadRecent(); }, [loadRecent]);
+  useEffect(() => { if (user && !needsUpgradeFor(planCode)) fetchUsedTopics().then(setUsedTopics); }, [user, planCode]);
   useEffect(() => { if (run?.step === "approval" || run?.step === "done" || run?.step === "failed") void loadRecent(); }, [run?.step, loadRecent]);
 
   if (!authLoading && !flag.loading && !flag.enabled) return <Navigate to="/" replace />;
@@ -67,7 +70,7 @@ export default function CutawayExplainer() {
     setViewingRecent(false);
     setMobilePanel("results");
     scrollTop();
-    void start(input.topic, input.lengthSec);
+    void start(input.topic, input.lengthSec, input.soundEffects);
   };
   const handleOpen = (runId) => { setViewingRecent(true); setMobilePanel("results"); scrollTop(); void open(runId); };
   const handleReset = () => { setViewingRecent(false); reset(); setMobilePanel("builder"); };
@@ -75,7 +78,8 @@ export default function CutawayExplainer() {
 
   const builder = (
     <CutawayBuilder
-      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec } : values}
+      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects } : values}
+      usedTopics={usedTopics}
       onValuesChange={setValues}
       onGenerate={handleGenerate}
       onReset={handleReset}
