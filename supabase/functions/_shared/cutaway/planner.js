@@ -162,6 +162,29 @@ export function boxJump(a, b) {
   return { dist, scale, far: dist > 0.3 || (dist > 0.18 && scale > 1.8) };
 }
 
+/**
+ * Shape checks only (is this the plan format at all?): exact beat and state counts, every required
+ * field present with the right type. A reply that fails these is malformed (e.g. 95 beats): it is
+ * retried once instead of being sent to the critic.
+ */
+export function shapeProblems(plan, lengthSec) {
+  const w = workFor(lengthSec);
+  const out = [];
+  if (!plan || typeof plan !== "object") return ["not an object"];
+  const str = (v) => typeof v === "string";
+  const isBox = (b) => b && ["x", "y", "w"].every((k) => typeof b[k] === "number" && Number.isFinite(b[k]));
+  if (!Array.isArray(plan.facts) || !plan.facts.length) out.push("facts missing");
+  if (!Array.isArray(plan.surprises)) out.push("surprises missing");
+  if (!Array.isArray(plan.mechanisms)) out.push("mechanisms missing");
+  if (!str(plan.world) || !str(plan.cutaway)) out.push("world or cutaway missing");
+  if (!Array.isArray(plan.states) || plan.states.length !== w.wideImages) out.push(`states: ${plan.states?.length ?? 0} (must be exactly ${w.wideImages})`);
+  else plan.states.forEach((s, i) => { if (!str(s?.id) || !str(s?.description) || !Array.isArray(s?.parts) || !Array.isArray(s?.checks) || typeof s?.problem !== "boolean") out.push(`state ${i + 1} malformed`); });
+  if (!Array.isArray(plan.beats) || plan.beats.length !== w.beats) out.push(`beats: ${plan.beats?.length ?? 0} (must be exactly ${w.beats})`);
+  else plan.beats.forEach((b, i) => { if (!str(b?.text) || !str(b?.verb) || !str(b?.state) || !isBox(b?.box) || !str(b?.show) || !str(b?.action)) out.push(`beat ${i + 1} malformed`); });
+  if (!plan.end || !str(plan.end.state) || !isBox(plan.end.box)) out.push("end malformed");
+  return out;
+}
+
 /** Closest word in `text` to `want` (same word, then the longest shared start of 4+ letters), or null. */
 function closestWord(text, want) {
   const ws = words(text).map(bare).filter(Boolean);

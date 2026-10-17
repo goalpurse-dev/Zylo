@@ -13,7 +13,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { cors, err, ok } from "../shared/cors.ts";
-import { advance, approve, newRun, progressOf, regenerateWide } from "../_shared/cutaway/engine.js";
+import { advance, approve, newRun, progressOf, refundsFor, regenerateWide, userMessage } from "../_shared/cutaway/engine.js";
 import { cropPixels } from "../_shared/cutaway/beats.js";
 import { checkImage, planVideo } from "../_shared/cutaway/llm.js";
 import { generateSfx } from "../_shared/cutaway/sound.js";
@@ -83,15 +83,18 @@ async function charge(userId: string, credits: number) {
 }
 
 /** A failed step refunds its own charge (step 1 before approval, step 2 after), once. */
-async function refundIfFailed(row: any, state: any) {
-  if (state.step !== "failed") return {};
-  const stage = ["plan", "voice", "wide"].includes(state.failedAt) ? "plan" : "video";
-  const charges = Array.isArray(row.charges) ? row.charges : [];
-  const target = charges.find((c: any) => c.stage === stage && !c.refunded);
-  if (!target) return {};
-  await admin.rpc("deduct_credits", { uid: row.user_id, amount: -target.credits });
-  target.refunded = true;
-  return { charges, credits_refunded: (row.credits_refunded ?? 0) + target.credits };
+/**
+ * A run that fails on our side refunds what the user paid for it (engine.js#refundsFor).
+ * Returns the row patch (charges marked refunded) and the credits to give back; the credits are
+ * returned only after that patch is saved, so a refund can never be paid twice.
+ */
+function refundPlan(row: any, state: any) {
+  const charges = Array.isArray(row.charges) ? row.charges.map((c: any) => ({ ...c })) : [];
+  const idx = refundsFor(state, charges);
+  if (!idx.length) return { patch: {}, credits: 0 };
+  let credits = 0;
+  for (const i of idx) { credits += Number(charges[i].credits) || 0; charges[i].refunded = true; }
+  return { patch: { charges, credits_refunded: (row.credits_refunded ?? 0) + credits }, credits };
 }
 
 // ---------- storage ----------
@@ -178,7 +181,7 @@ function depsFor(row: any) {
 function view(row: any) {
   const s = row.state ?? {};
   return {
-    id: row.id, topic: row.topic, lengthSec: row.length_sec, step: s.step, error: s.error ?? null,
+    id: row.id, topic: row.topic, lengthSec: row.length_sec, step: s.step, error: userMessage(s),
     createdAt: row.created_at, finalUrl: s.finalUrl ?? row.final_url ?? null,
     narration: s.narration ?? null, title: s.plan?.title ?? null, hasVoice: Boolean(s.voice),
     soundEffects: s.soundEffects !== false,
@@ -199,12 +202,16 @@ const sumCosts = (s: any) => Number(Object.values(s.costs ?? {}).reduce((a: numb
 
 /** Saves a new state if nobody else wrote the row in between (version check). */
 async function save(row: any, state: any, extra: Record<string, unknown> = {}) {
-  const refund = await refundIfFailed({ ...row, ...extra }, state);
+  const refund = refundPlan({ ...row, ...extra }, state);
   const { data, error } = await admin.from("cutaway_runs").update({
     state, step: state.step, version: row.version + 1, lease_until: null, cost_usd: sumCosts(state),
-    final_url: state.finalUrl ?? null, updated_at: new Date().toISOString(), ...extra, ...refund,
+    final_url: state.finalUrl ?? null, updated_at: new Date().toISOString(), ...extra, ...refund.patch,
   }).eq("id", row.id).eq("version", row.version).select("*").maybeSingle();
   if (error) throw new Error(error.message);
+  if (data && refund.credits > 0) {
+    const { error: refundErr } = await admin.rpc("deduct_credits", { uid: row.user_id, amount: -refund.credits });
+    if (refundErr) console.error("[cutaway-api] refund failed, needs a manual refund:", row.id, refund.credits, refundErr.message);
+  }
   return data ?? (await admin.from("cutaway_runs").select("*").eq("id", row.id).single()).data;
 }
 

@@ -27,6 +27,8 @@ import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
 
 export const STEPS = Object.freeze(["plan", "voice", "wide", "approval", "keyframes", "clips", "sound", "render", "done"]);
 const MAX_ATTEMPTS = 2; // one retry per task, never more (no auto-retry loops)
+// The plan step is one attempt: planVideo already retries a malformed planner reply once, then runs the critic rounds.
+const PLAN_ATTEMPTS = 1;
 
 /** @param {{topic: string, lengthSec: number, soundEffects?: boolean, usedIdeas?: string[]}} input */
 export function newRun({ topic, lengthSec, soundEffects = true, usedIdeas = [] }) {
@@ -67,7 +69,7 @@ async function stepPlan(s, deps) {
     s.planErrors = [...(s.planErrors ?? []), e.message];
     // Keep each round's problems (not the raw outputs: they are large; the local runner saves those itself).
     s.planTrace = [...(s.planTrace ?? []), (e.trace ?? []).map((t) => ({ stage: t.stage, problems: t.problems }))];
-    if (s.attempts.plan >= MAX_ATTEMPTS) return fail(s, e.message);
+    if (s.attempts.plan >= PLAN_ATTEMPTS) return fail(s, e.message);
   }
   return s;
 }
@@ -147,6 +149,27 @@ async function checkWide(s, i, deps) {
   if (v.pass) { w.status = "done"; return; }
   if (w.attempts < MAX_ATTEMPTS) { Object.assign(w, { status: "pending", fix: v.fix, taskUUID: null }); return; }
   w.status = "done"; // kept, but flagged: the approval screen shows it, and the local runner stops
+}
+
+/**
+ * Users never pay for a failure on our side. Which charges a failed run refunds:
+ * failing before approval (plan, voice, wide images) refunds the Generate charge and any regenerate
+ * charges; failing after approval (keyframes, clips, render) refunds the video charge too.
+ * charges: [{stage: "plan"|"regenerate"|"video", credits, refunded?}]. Returns the indexes to refund.
+ */
+export function refundsFor(state, charges = []) {
+  if (state?.step !== "failed") return [];
+  const early = ["plan", "voice", "wide", "approval"].includes(state.failedAt);
+  const stages = early ? ["plan", "regenerate"] : ["plan", "regenerate", "video"];
+  return charges.map((c, i) => (stages.includes(c.stage) && !c.refunded ? i : -1)).filter((i) => i >= 0);
+}
+
+/** What the user is told when a run fails (the technical reason stays in state.error for us). */
+export function userMessage(state) {
+  if (state?.step !== "failed") return null;
+  if (state.failedAt === "plan") return "We couldn't plan a good video for this topic. Your credits were returned. Try another topic, or describe this one differently.";
+  if (["voice", "wide", "approval"].includes(state.failedAt)) return "Something went wrong on our side while making the images. Your credits were returned. Please try again.";
+  return "Something went wrong on our side while making the video. Your credits were returned. Please try again.";
 }
 
 export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && !w.vision.pass);

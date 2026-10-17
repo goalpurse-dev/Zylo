@@ -3,7 +3,7 @@
 //   checkImage: the vision check of one wide image against its state's checklist
 
 import { MODELS } from "./pricing.js";
-import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure } from "./planner.js";
+import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure, shapeProblems } from "./planner.js";
 import { OVERLAYS } from "./style.js";
 import { SOUND_KEYS } from "./sound.js";
 
@@ -45,16 +45,25 @@ export const MAX_CRITIC_ROUNDS = 2;
  * Every raw output and its problems are kept (trace), so a failure can be read afterwards.
  * Returns {plan, costUsd, critic: {rounds: [problems...]}, trace}.
  */
-export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTrace }) {
+/** @param {{apiKey: string, topic: string, lengthSec: number, usedIdeas?: string[], onTrace?: (t: object) => void}} input */
+export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTrace = undefined }) {
   let costUsd = 0;
   const trace = [];
   const note = (entry) => { trace.push(entry); onTrace?.(entry); };
   try {
-    const first = await callTool({ apiKey, system: PLANNER_SYSTEM, content: plannerUser({ topic, lengthSec, usedIdeas }), name: "cutaway_plan", schema: PLAN_SCHEMA });
-    costUsd += first.costUsd;
+    // The planner: a malformed reply (wrong counts, missing fields) is retried once right away, never sent to the critic.
+    let first = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const reply = await callTool({ apiKey, system: PLANNER_SYSTEM, content: plannerUser({ topic, lengthSec, usedIdeas }), name: "cutaway_plan", schema: PLAN_SCHEMA });
+      costUsd += reply.costUsd;
+      const shape = shapeProblems(reply.data, lengthSec);
+      note({ stage: `planner ${attempt}`, costUsd: reply.costUsd, problems: shape.map((p) => `SHAPE: ${p}`), output: reply.data });
+      if (!shape.length) { first = reply; break; }
+      if (attempt === 2) throw Object.assign(new Error(`PLAN_INVALID: the planner's reply was malformed twice: ${shape.join("; ")}`), { problems: shape });
+    }
     let plan = repairPlan(first.data);
     let problems = planProblems(plan, lengthSec, usedIdeas);
-    note({ stage: "planner", costUsd: first.costUsd, problems, output: first.data });
+    note({ stage: "planner checks", costUsd: 0, problems, output: null });
     const rounds = [problems];
     for (let round = 1; round <= MAX_CRITIC_ROUNDS; round++) {
       if (round > 1 && !problems.length) break;
@@ -68,6 +77,13 @@ export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTr
         ].join("\n\n"),
       });
       costUsd += critic.costUsd;
+      const shape = shapeProblems(critic.data, lengthSec);
+      if (shape.length) {
+        // A malformed critic reply is thrown away: keep the plan we had.
+        note({ stage: `critic ${round} (malformed, discarded)`, costUsd: critic.costUsd, problems: shape.map((p) => `SHAPE: ${p}`), output: critic.data });
+        rounds.push(problems);
+        continue;
+      }
       plan = repairPlan(critic.data);
       problems = planProblems(plan, lengthSec, usedIdeas);
       note({ stage: `critic ${round}`, costUsd: critic.costUsd, problems, output: critic.data });

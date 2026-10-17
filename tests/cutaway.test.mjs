@@ -2,12 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
-import { validatePlan, planProblems, planWarnings, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
+import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
 import { clipTask, parseReply } from "../supabase/functions/_shared/cutaway/runware.js";
 import { cueCacheKey, cueRequest } from "../supabase/functions/_shared/cutaway/sound.js";
-import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures } from "../supabase/functions/_shared/cutaway/engine.js";
+import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
 import { buildAss, captionWord, finalArgs, atempoChain } from "../render-worker/src/cutawayFinalPlan.mjs";
 import { freshSuggestions, TOPIC_SUGGESTIONS } from "../src/data/cutawayTopics.js";
 
@@ -378,6 +378,43 @@ test("engine: a task that fails twice fails the run (one retry, no loop)", async
   assert.equal(s.failedAt, "wide");
 });
 
+// ---------- users never pay for our failures ----------
+
+test("refunds: a failed plan or image step refunds Generate + regenerates; a later failure refunds everything", () => {
+  const charges = [{ stage: "plan", credits: 38 }, { stage: "regenerate", credits: 8 }, { stage: "video", credits: 90 }];
+  assert.deepEqual(refundsFor({ step: "failed", failedAt: "plan" }, charges.slice(0, 1)), [0]);
+  assert.deepEqual(refundsFor({ step: "failed", failedAt: "wide" }, charges.slice(0, 2)), [0, 1]);
+  assert.deepEqual(refundsFor({ step: "failed", failedAt: "clips" }, charges), [0, 1, 2]);
+  assert.deepEqual(refundsFor({ step: "failed", failedAt: "render" }, charges.map((c, i) => ({ ...c, refunded: i === 0 }))), [1, 2]);
+  assert.deepEqual(refundsFor({ step: "done" }, charges), []);
+  assert.match(userMessage({ step: "failed", failedAt: "plan" }), /couldn't plan .* credits were returned\. Try another topic/);
+  assert.match(userMessage({ step: "failed", failedAt: "clips" }), /on our side .* credits were returned/);
+  assert.equal(userMessage({ step: "done" }), null);
+});
+
+test("engine: a failed plan fails the run at once (no second plan attempt: planVideo retries inside)", async () => {
+  const deps = fakeDeps();
+  let calls = 0;
+  deps.planVideo = async () => { calls += 1; throw Object.assign(new Error("PLAN_INVALID after the critic: x"), { costUsd: 0.2 }); };
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "failed", 10);
+  assert.equal(calls, 1);
+  assert.equal(s.failedAt, "plan");
+  assert.equal(s.costs.plan, 0.2);
+});
+
+test("shape checks catch a malformed reply (the 95-beat plan)", () => {
+  assert.deepEqual(shapeProblems(samplePlan(), 30), []);
+  const broken = samplePlan();
+  broken.beats = Array.from({ length: 95 }, () => broken.beats[0]);
+  broken.states = Array.from({ length: 24 }, () => broken.states[0]);
+  delete broken.facts;
+  const p = shapeProblems(broken, 30);
+  assert.ok(p.includes("beats: 95 (must be exactly 10)") && p.includes("states: 24 (must be exactly 5)") && p.includes("facts missing"));
+  const noBox = samplePlan();
+  noBox.beats[3].box = { x: 0.1 };
+  assert.deepEqual(shapeProblems(noBox, 30), ["beat 4 malformed"]);
+});
+
 // ---------- the stitch ----------
 
 test("final ffmpeg: duplicate frame dropped, speed-fit, 24 fps, voice tempo, chime and sfx mixed", () => {
@@ -403,4 +440,7 @@ test("captions: one word at 52%; number cards at 30% with a pop", () => {
   const ass = buildAss({ words: [{ w: "if", s: 0, e: 0.2 }], cards: [{ text: "= 6 CARS", s: 1.2, e: 3 }] });
   assert.match(ass, /Dialogue: 0,0:00:00\.00,0:00:00\.45,Word,,0,0,0,,\{\\pos\(540,998\)\}If/);
   assert.match(ass, /Dialogue: 1,0:00:01\.20,0:00:03\.00,Card,,0,0,0,,\{\\pos\(540,576\)\\fad\(80,220\).*\}= 6 CARS/);
+  const white = buildAss({ words: [], cards: [{ text: "33 FT", s: 0, e: 1 }] });
+  assert.match(white, /,CardWhite,,0,0,0,,.*\}33 FT/);
+  assert.match(white, /Style: CardWhite,Lilita One,130,&H00FFFFFF/);
 });

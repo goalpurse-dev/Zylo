@@ -6,7 +6,8 @@
 //   - each clip is sped up or slowed down to fit its share of a beat exactly (speed = clip / beat share)
 //   - all clips go to 1080x1920 at 24 fps (no repeated frames: the clips are 24 fps already)
 //   - the voice is sped up with atempo (pitch kept) to the planned pace
-//   - one-word captions centred at 52% of the height; number cards ("= 6 CARS") at 30%
+//   - one-word captions centred at 52% of the height; number cards at 30%
+//     (yellow for "= 6 CARS" comparisons, white for "33 FT" / "YEAR 2", as the creator does)
 //   - sound: the voice, a chime on every name / card / "Congratulations", event sound effects.
 //     Clips are silent. No music, no whooshes. Levels are relative to the voice.
 
@@ -43,7 +44,9 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
   });
   for (const c of cards) {
     const text = String(c.text).replace(/[{}\\]/g, "");
-    lines.push(`Dialogue: 1,${assTime(c.s)},${assTime(c.e)},Card,,0,0,0,,{\\pos(${x},${cy})\\fad(80,220)\\fscx70\\fscy70\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)}${text}`);
+    // As on the creator's account: comparison cards ("= 6 CARS") yellow, unit/time cards ("33 FT", "YEAR 2") white.
+    const style = /^\s*=/.test(text) ? "Card" : "CardWhite";
+    lines.push(`Dialogue: 1,${assTime(c.s)},${assTime(c.e)},${style},,0,0,0,,{\\pos(${x},${cy})\\fad(80,220)\\fscx70\\fscy70\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)}${text}`);
   }
   return [
     "[Script Info]",
@@ -56,6 +59,7 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
     `Style: Word,${fontName},${Math.round(width * 0.085)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H64000000,0,0,0,0,100,100,0,0,1,${Math.round(width * 0.0065)},2,5,0,0,0,1`,
     `Style: Card,${fontName},${Math.round(width * 0.12)},&H004DE1FF,&H004DE1FF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
+    `Style: CardWhite,${fontName},${Math.round(width * 0.12)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

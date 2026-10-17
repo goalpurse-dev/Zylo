@@ -66,7 +66,7 @@ const deps = {
   // Every planner / critic output is saved next to the state, so a failed plan can be read.
   planVideo: ({ topic, lengthSec, usedIdeas }) => planVideo({
     apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas,
-    onTrace: (t) => writeFileSync(path.join(out, `plan-${Date.now()}-${t.stage.replace(/\s+/g, "")}.json`), JSON.stringify(t, null, 2)),
+    onTrace: (t) => { if (t.output) writeFileSync(path.join(out, `plan-${Date.now()}-${t.stage.replace(/[^a-z0-9]+/gi, "")}.json`), JSON.stringify(t, null, 2)); },
   }),
   checkImage: ({ imageUrl, description, checks }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks }),
   synthesize: process.env.ELEVENLABS_KEY ? ({ text }) => synthesize({ apiKey: process.env.ELEVENLABS_KEY, text }) : null,
