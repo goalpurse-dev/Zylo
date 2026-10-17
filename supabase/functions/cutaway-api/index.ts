@@ -119,7 +119,7 @@ async function fetchBytes(url: string) {
 function depsFor(row: any) {
   return {
     planVideo: ({ topic, lengthSec, usedIdeas }: any) => planVideo({ apiKey: ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
-    checkImage: ({ imageUrl, description, checks }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks }),
+    checkImage: ({ imageUrl, description, checks, plan }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks, plan }),
     synthesize: ELEVENLABS_KEY ? ({ text }: any) => synthesize({ apiKey: ELEVENLABS_KEY, text }) : null,
     // Sound effects: one shared cache for every user (cutaway/sfx-cache/<key>.mp3); a hit costs nothing.
     sfx: ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }: any) => {

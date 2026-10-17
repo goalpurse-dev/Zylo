@@ -21,7 +21,7 @@
 // }
 
 import { clipTimings, cueTimeline, evenBeats, placeBeats, upscaleFactor, voiceTempo } from "./beats.js";
-import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt } from "./planner.js";
+import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt, visionContext } from "./planner.js";
 import { clipTask, imageTask, poll, submit, upscaleTask } from "./runware.js";
 import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
 
@@ -142,11 +142,15 @@ async function finishWide(s, w, r, deps) {
 async function checkWide(s, i, deps) {
   const w = s.wide[i];
   const st = s.plan.states[i];
-  const v = await deps.checkImage({ imageUrl: w.url, description: st.description, checks: st.checks ?? [] });
+  const v = await deps.checkImage({ imageUrl: w.url, description: st.description, checks: st.checks ?? [], plan: visionContext(s.plan) });
   addCost(s, "vision", v.costUsd);
-  w.vision = { pass: v.pass, fix: v.fix, checks: v.checks, attempt: w.attempts };
+  w.vision = { pass: v.pass, fix: v.fix, checks: v.checks, attempt: w.attempts, emptyReplies: v.emptyReplies ?? 0 };
+  const failed = (v.checks ?? []).filter((c) => !c.ok).map((c) => c.check);
+  // The vision log: every verdict, with its reason, so false alarms can be counted.
+  s.visionLog = [...(s.visionLog ?? []), { image: w.id, attempt: w.attempts, verdict: v.pass === null ? "unchecked" : v.pass ? "pass" : "fail", failedChecks: failed, fix: v.fix, emptyReplies: v.emptyReplies ?? 0, url: w.url }];
   w.history = [...(w.history ?? []), { url: w.url, pass: v.pass, fix: v.fix }];
-  if (v.pass) { w.status = "done"; return; }
+  // An empty reply is never a fail: the image is kept as "unchecked" and shown to the user as such.
+  if (v.pass || v.pass === null) { w.status = "done"; return; }
   if (w.attempts < MAX_ATTEMPTS) { Object.assign(w, { status: "pending", fix: v.fix, taskUUID: null }); return; }
   w.status = "done"; // kept, but flagged: the approval screen shows it, and the local runner stops
 }
@@ -172,13 +176,15 @@ export function userMessage(state) {
   return "Something went wrong on our side while making the video. Your credits were returned. Please try again.";
 }
 
-export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && !w.vision.pass);
+export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && w.vision.pass === false);
+export const visionUnchecked = (s) => (s.wide ?? []).filter((w) => w.vision && w.vision.pass === null);
 
 /** The user's "Regenerate" on wide image i: it and every later state (each is an edit of the one before). */
 export function regenerateWide(input, i) {
   const s = clone(input);
   if (s.step !== "approval" || !s.wide[i]) throw new Error("REGENERATE_NOT_ALLOWED");
-  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null, fix: "", vision: null });
+  // prompt: null -> rebuilt from the (possibly corrected) plan
+  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null, fix: "", vision: null, prompt: null });
   s.step = "wide";
   return s;
 }

@@ -68,7 +68,7 @@ const deps = {
     apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas,
     onTrace: (t) => { if (t.output) writeFileSync(path.join(out, `plan-${Date.now()}-${t.stage.replace(/[^a-z0-9]+/gi, "")}.json`), JSON.stringify(t, null, 2)); },
   }),
-  checkImage: ({ imageUrl, description, checks }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks }),
+  checkImage: ({ imageUrl, description, checks, plan }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks, plan }),
   synthesize: process.env.ELEVENLABS_KEY ? ({ text }) => synthesize({ apiKey: process.env.ELEVENLABS_KEY, text }) : null,
   sfx: process.env.ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }) => {
     const lib = cacheKey.startsWith("lib-");
@@ -124,4 +124,5 @@ if (s.step === "done" && s.plan) {
   writeFileSync(IDEAS, JSON.stringify({ topics: [...new Set([...ideas.topics, s.topic])], mechanisms: [...new Set([...ideas.mechanisms, ...(s.plan.mechanisms ?? [])])] }, null, 2));
 }
 const vision = (s.wide ?? []).map((w) => ({ id: w.id, attempts: w.attempts, pass: w.vision?.pass ?? null, fix: w.vision?.fix ?? "" }));
+if (s.visionLog?.length) writeFileSync(path.join(out, "vision-log.json"), JSON.stringify(s.visionLog, null, 2));
 console.log(JSON.stringify({ step: s.step, error: s.error ?? null, costs: s.costs, totalUsd: Number(spent(s).toFixed(4)), vision, critic: s.critic ?? null, final: s.finalUrl ?? null, seconds: (Date.now() - t0) / 1000 }, null, 2));

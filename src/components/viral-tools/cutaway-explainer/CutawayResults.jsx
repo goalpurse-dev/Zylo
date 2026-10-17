@@ -47,12 +47,12 @@ function ImageGrid({ run, review, busy, regenerateCredits, onRegenerate }) {
                 <span className="absolute inset-0 grid place-items-center"><Loader2 className="h-5 w-5 animate-spin text-cutaway/60" /></span>
               )}
               {w.vision && review && (
-                <span className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ${w.vision.pass ? "bg-cutaway text-cutaway-ink" : "bg-amber-300 text-black"}`}>
-                  {w.vision.pass ? "Checked" : "Check this one"}
+                <span className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ${w.vision.pass ? "bg-cutaway text-cutaway-ink" : w.vision.pass === null ? "bg-white/80 text-black" : "bg-amber-300 text-black"}`}>
+                  {w.vision.pass ? "Checked" : w.vision.pass === null ? "Not checked" : "Check this one"}
                 </span>
               )}
             </div>
-            {w.vision && !w.vision.pass && review && <p className="px-2.5 pt-2 text-[10px] font-semibold leading-snug text-amber-200/80">{w.vision.fix}</p>}
+            {w.vision && w.vision.pass === false && review && <p className="px-2.5 pt-2 text-[10px] font-semibold leading-snug text-amber-200/80">{w.vision.fix}</p>}
             <figcaption className="flex items-center justify-between gap-2 px-2.5 py-2">
               <span className="min-w-0 truncate text-[10.5px] font-bold text-white/70">{i + 1}. {w.label}</span>
               {review && (

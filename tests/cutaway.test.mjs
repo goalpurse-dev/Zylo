@@ -7,7 +7,8 @@ import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBea
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
 import { clipTask, parseReply } from "../supabase/functions/_shared/cutaway/runware.js";
 import { cueCacheKey, cueRequest } from "../supabase/functions/_shared/cutaway/sound.js";
-import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
+import { checkImage } from "../supabase/functions/_shared/cutaway/llm.js";
+import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, visionUnchecked, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
 import { buildAss, captionWord, finalArgs, atempoChain } from "../render-worker/src/cutawayFinalPlan.mjs";
 import { freshSuggestions, TOPIC_SUGGESTIONS } from "../src/data/cutawayTopics.js";
 
@@ -391,6 +392,54 @@ test("engine: a task that fails twice fails the run (one retry, no loop)", async
   deps.send = async (batch) => ({ status: 200, body: { errors: [{ taskUUID: batch[0].taskUUID, message: "boom" }] } });
   const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "failed", 50);
   assert.equal(s.failedAt, "wide");
+});
+
+// ---------- the vision check ----------
+
+function mockAnthropic(replies) {
+  const real = globalThis.fetch;
+  let n = 0;
+  const seen = [];
+  globalThis.fetch = async (_url, init) => {
+    seen.push(JSON.parse(init.body));
+    const input = replies[Math.min(n++, replies.length - 1)];
+    return { ok: true, status: 200, json: async () => ({ usage: { input_tokens: 1000, output_tokens: 100 }, stop_reason: "tool_use", content: [{ type: "tool_use", input }] }) };
+  };
+  return { seen, calls: () => n, restore: () => { globalThis.fetch = real; } };
+}
+
+test("vision: an empty reply is re-run (max 2), never a fail; the plan and house style are in the prompt", async () => {
+  const empty = { checks: [], pass: false, fix: "" };
+  const good = { checks: [{ check: "a", ok: true, seen: "yes" }], pass: true, fix: "" };
+  let m = mockAnthropic([empty, good]);
+  let r = await checkImage({ apiKey: "k", imageUrl: "u", description: "d", checks: ["a"], plan: "Narration: gas flare burns" });
+  m.restore();
+  assert.equal(r.pass, true);
+  assert.equal(r.emptyReplies, 1);
+  assert.equal(m.calls(), 2);
+  assert.match(JSON.stringify(m.seen[0]), /gas flare burns/);
+  assert.match(m.seen[0].system[0].text, /cyan/);
+  m = mockAnthropic([empty]);
+  r = await checkImage({ apiKey: "k", imageUrl: "u", description: "d", checks: ["a"] });
+  m.restore();
+  assert.equal(r.pass, null, "still empty after 2 re-runs: unchecked, not failed");
+  assert.equal(m.calls(), 3);
+  // a reply that says pass but has a failed line is a fail
+  m = mockAnthropic([{ checks: [{ check: "a", ok: false, seen: "no" }], pass: true, fix: "\"add a\"" }]);
+  r = await checkImage({ apiKey: "k", imageUrl: "u", description: "d", checks: ["a"] });
+  m.restore();
+  assert.equal(r.pass, false);
+  assert.equal(r.fix, "add a");
+});
+
+test("engine: an unchecked image is not a failure; every verdict is logged", async () => {
+  const deps = fakeDeps();
+  deps.checkImage = async ({ checks, plan }) => ({ pass: checks[0].includes("liner") ? null : true, fix: "", checks: [], costUsd: 0.01, emptyReplies: checks[0].includes("liner") ? 3 : 0, plan });
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "approval");
+  assert.equal(visionFailures(s).length, 0);
+  assert.equal(visionUnchecked(s).length, 1);
+  assert.equal(s.visionLog.length, 5);
+  assert.deepEqual(s.visionLog.map((v) => v.verdict), ["pass", "unchecked", "pass", "pass", "pass"]);
 });
 
 // ---------- users never pay for our failures ----------

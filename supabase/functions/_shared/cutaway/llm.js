@@ -124,16 +124,41 @@ const VISION_SCHEMA = {
   },
 };
 
-const VISION_SYSTEM = `You check one generated image of a 3D cutaway diorama against a short checklist. Look carefully. For each check say ok true/false and what you actually see. pass = every check is ok AND there is no obvious error a viewer would notice (garbled text or labels, a part in a physically impossible place, water shown as glass tubes). If it fails, "fix" is one or two short sentences telling the image editor what to change; otherwise "".`;
+export const VISION_SYSTEM = `You check one generated image of a 3D cutaway diorama for a "how it works" explainer video, against a short checklist.
 
-/** The vision check. Returns {pass, fix, checks, costUsd}. */
-export async function checkImage({ apiKey, imageUrl, description, checks }) {
-  const { data, costUsd } = await callTool({
-    apiKey, system: VISION_SYSTEM, name: "image_check", schema: VISION_SCHEMA, maxTokens: 1500, timeoutMs: 90_000,
-    content: [
-      { type: "image", source: { type: "url", url: imageUrl } },
-      { type: "text", text: `What the image should show: ${description}\nChecklist:\n${checks.map((c) => `- ${c}`).join("\n")}` },
-    ],
-  });
-  return { pass: Boolean(data.pass), fix: String(data.fix ?? ""), checks: data.checks ?? [], costUsd };
+THE HOUSE STYLE. These are CORRECT, never a defect:
+- water and other liquids tinted light blue / cyan (never clear glass)
+- the ground sliced open as a cutaway, with buried contents (pipes, tanks, trash, foundations) shown in the cut face
+- stylised-realistic 3D game-art look, dioramas whose world runs to the frame edges
+- every element named in THE PLAN below (for example a gas flare burning, a truck, rain) is meant to be there
+
+JUDGE ONLY:
+1. each checklist line: ok true/false, and what you actually see
+2. clear defects a viewer would notice: a part in the wrong place, a part missing, an extra part that isn't in the plan, the buildings or setting changing from the scene description, anything that contradicts what the voiceover says (THE PLAN), garbled text or labels.
+Do not fail an image for taste, realism or colour choices that follow the house style.
+
+pass = every checklist line is ok AND no clear defect. If it fails, "fix" is one or two short sentences telling the image editor exactly what to change; otherwise "".`;
+
+/**
+ * The vision check. An empty reply (no checklist results) means the check didn't run, not that
+ * the image failed: it is re-run up to 2 times; if it is still empty, the image is "unchecked".
+ * Returns {pass: true|false|null, fix, checks, costUsd, emptyReplies}.
+ */
+export async function checkImage({ apiKey, imageUrl, description, checks, plan = "" }) {
+  let costUsd = 0;
+  let emptyReplies = 0;
+  for (let attempt = 0; attempt <= 2; attempt++) {
+    const { data, costUsd: c } = await callTool({
+      apiKey, system: VISION_SYSTEM, name: "image_check", schema: VISION_SCHEMA, maxTokens: 1500, timeoutMs: 90_000,
+      content: [
+        { type: "image", source: { type: "url", url: imageUrl } },
+        { type: "text", text: `THE PLAN (what the video shows and says around this image):\n${plan}\n\nWhat THIS image should show: ${description}\n\nChecklist:\n${checks.map((x) => `- ${x}`).join("\n")}` },
+      ],
+    });
+    costUsd += c;
+    const results = Array.isArray(data?.checks) ? data.checks.filter((x) => x && typeof x.ok === "boolean") : [];
+    if (results.length) return { pass: Boolean(data.pass) && results.every((x) => x.ok), fix: String(data.fix ?? "").replace(/^"+|"+$/g, ""), checks: results, costUsd: Number(costUsd.toFixed(5)), emptyReplies };
+    emptyReplies += 1;
+  }
+  return { pass: null, fix: "", checks: [], costUsd: Number(costUsd.toFixed(5)), emptyReplies };
 }

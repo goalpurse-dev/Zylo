@@ -140,7 +140,8 @@ export const CRITIC_SYSTEM = `You are the critic for a cutaway explainer plan. Y
 - "adds": the part is missing from the beat's own state and present in the next beat's state (or "end"); each state change brings in at most one appearing part, so at most (states - 1) beats have "adds"
 - every part that appears is named in the narration
 - "end" is calm and the problem is gone
-- states' "checks" are short yes/no facts you can see in that image
+- states' "checks" are short yes/no facts you can see in that image, and EVERY check agrees with that state's own "description" and with the plan (never a check that forbids something the scene or the narration includes, e.g. "no gas escaping" when a gas flare is in the scene)
+- liquids and gas only go where the story says: if the story is about containing something, the scene and the checks say where it goes and that nothing escapes elsewhere
 Change as little as possible otherwise.`;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -346,6 +347,16 @@ export function validatePlan(input, lengthSec, usedIdeas = []) {
 }
 
 export const narrationText = (plan) => plan.beats.map((b) => b.text.trim()).join(" ");
+
+/** The plan context the vision check gets: the narration, the named elements and the actions. */
+export function visionContext(plan) {
+  const parts = [...new Set(plan.states.flatMap((s) => s.parts ?? []))];
+  return [
+    `Narration: ${narrationText(plan)}`,
+    `Named elements: ${parts.join(", ")}${plan.life ? `, ${plan.life}` : ""}`,
+    `Actions: ${plan.beats.map((b) => b.action).filter(Boolean).join("; ")}`,
+  ].join("\n").slice(0, 3000);
+}
 
 /**
  * The keyframes and the clips between them. One keyframe at the start of each beat plus the end frame.
