@@ -205,3 +205,48 @@ To go live (each on the owner's word):
 6. Still in dry run: one Run now to see the whole flow in production at $0.
 7. First real run: the owner switches Dry run off in Settings and presses Run now. Then report the cost per slideshow from the ledger.
 8. Ship the page (laptop-transfer → main).
+
+## 9. Fixes before the first real run (owner, 2026-10-18) and go-live
+
+**Fixes, all built and tested:**
+1. **No overlaps.**
+   - Each slide is one vertical stack with fixed gaps.
+   - Text is measured in the page and shrunk to its line limit.
+   - A layout check inside every slide compares the boxes of all text and image elements. The renderer refuses a slide that fails.
+   - A failed slide gets one shorter rewrite and a new render. If it fails again, it's flagged and failed.
+2. **Safe zones.**
+   - Left 90, right 160, top 190 and bottom 420 px of 1080×1920. Backgrounds may still fill the frame.
+   - No text may leave the zone (part of the same check).
+   - The type scale is 15–20 % smaller.
+   - "Show safe zones" toggle on the admin previews.
+3. **Readable on photos.** A dark scrim sits behind text on image backgrounds. Backgrounds are generated with no people, so text never crosses a face.
+4. **No empty slides.**
+   - Each image gets one retry; a second failure fails the slideshow.
+   - The meme layout is used only with a picture, and a meme slide must ask for one.
+5. **No real people.**
+   - Image prompts forbid real people, celebrities and lookalikes.
+   - A program check plus the compliance check back this up.
+   - Real renders accept only https images, so the repo's stand-ins can never be used.
+6. **Logo library** (`cm_logos`).
+   - Official files only, approved one by one; a new file or a new source needs approving again.
+   - Shown small next to the tool's name. Without an approved logo, the initials tile.
+   - SVGs with scripts or outside links are refused.
+   - Seeded with 19 tools; only Zyvo's own logo is approved.
+7. **Refusal fallback.**
+   - Done in our code: a second call through the Budget Guard.
+   - Only to a model that costs no more than the main one: `claude-sonnet-5` by default, the same $2/$10 as Sonnet 5.5.
+   - Opus can never be picked.
+
+**Go-live, 2026-10-18, all six steps done, dry run on:**
+1. Migration `20261108100000` applied and recorded in production's migration history.
+2. `CM_WORKER_SECRET` set; the vault holds `cm_worker_secret` and `cm_worker_url`.
+3. `content-machine-api` and `content-machine-worker` deployed; the downloaded copies match the commit.
+4. `assets/zyvo-home.png` and `logos/tryzyvo.com.png` (approved) uploaded.
+5. `registry.fly.io/zyvo-render:cm-slides` built and pushed.
+6. One dry Run now in production: 2 slideshows done within 10 seconds, $0.
+
+The 07:00 Helsinki daily dry run is on.
+
+**Still to come:**
+- First real run: the owner switches Dry run off in Settings.
+- Shipping the page: laptop-transfer → main.

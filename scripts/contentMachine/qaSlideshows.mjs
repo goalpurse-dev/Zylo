@@ -97,10 +97,25 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   await p.screenshot({ path: path.join(outDir, `today-real-${name}.png`), fullPage: true });
   ok(`${name}: no sideways scroll on Today`, !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)));
 
-  // 3. Library and Ideas.
+  // 2b. The safe zones on the previews, and every live preview's own layout check.
+  await p.getByTestId("cm-safe-zones").check();
+  await p.waitForTimeout(300);
+  ok(`${name}: "Show safe zones" draws the zones over the slides`, (await p.locator('[data-testid="cm-slide"] .border-dashed').count()) > 0);
+  await p.getByTestId("cm-safe-zones").uncheck();
+  // The first run's cards (dry: live previews) report their layout check; none may fail.
+  await p.getByRole("button", { name: /Slideshows · .*dry run/ }).first().click().catch(() => {});
+  await p.waitForTimeout(4000);
+  const reported = await p.locator('[data-testid="cm-slide"][data-layout-ok]').count();
+  const failedSlides = await p.locator('[data-testid="cm-slide"][data-layout-ok="false"]').count();
+  ok(`${name}: the live previews pass their own layout check`, reported > 0 && failedSlides === 0, `${reported} reported, ${failedSlides} failed`);
+
+  // 3. Library (with the logo library) and Ideas.
   await p.getByRole("button", { name: "Library", exact: true }).click();
   await p.getByText(/format × style pairs tried/).waitFor({ timeout: 10_000 });
   ok(`${name}: the library shows formats, styles and hooks with coverage`, /Formats/i.test(await p.locator("body").innerText()) && /Visual styles/i.test(await p.locator("body").innerText()));
+  await p.getByTestId("cm-logo").first().waitFor({ timeout: 10_000 });
+  ok(`${name}: the logo library lists the tools, Zyvo approved, Descript waiting for a file`, (await p.getByTestId("cm-logo").count()) === 2
+    && /Approved/.test(await p.getByTestId("cm-logo").nth(0).innerText()) && /Upload official file/.test(await p.getByTestId("cm-logo").nth(1).innerText()));
   await p.screenshot({ path: path.join(outDir, `library-${name}.png`), fullPage: true });
   ok(`${name}: no sideways scroll on Library`, !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)));
   await p.getByRole("button", { name: "Ideas", exact: true }).click();
