@@ -690,3 +690,18 @@ test("honest stories: hypothetical or about 'you', never a made-up real person",
   assert.match(req.system[0].text, /clearly hypothetical \("Imagine…", "POV: you…"\)/);
   assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /made-up person told as if real/);
 });
+
+test("a provider's rate limit (429) is a wait, not a failure", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const orig = p.ai.createMessage;
+  let hits = 0;
+  p.ai.createMessage = async (ticket, args) => {
+    if (args.request.tools && hits++ < 2) throw Object.assign(new Error("anthropic 429: rate_limit_error"), { status: 429, actualUsd: 0 });
+    return orig(ticket, args);
+  };
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  assert.equal(world.ideas[0].status, "done");
+  assert.equal(world.ledger.filter((l) => l.operation === "anthropic.write" && l.status === "failed").every((l) => l.actual_usd === 0), true);
+});

@@ -80,6 +80,12 @@ export async function runJob(job, deps) {
       await deps.db.requeueJob(job.id, { delaySec: e.delaySec, error: e.message, keepAttempt: true, payload: e.payload });
       return "waiting";
     }
+    // A provider's rate limit (HTTP 429) is a wait, not a failure: up to 10 waits, then it counts.
+    const waits = Number(job.payload?.rateWaits ?? 0);
+    if ((e?.status === 429 || /rate_limit|\b429\b/.test(String(e?.message))) && waits < 10) {
+      await deps.db.requeueJob(job.id, { delaySec: 60 + waits * 30, error: "rate limited: waiting", keepAttempt: true, payload: { ...(job.payload ?? {}), rateWaits: waits + 1 } });
+      return "rate_limited";
+    }
     if (job.attempts < job.max_attempts && !e?.final) {
       await deps.db.requeueJob(job.id, { delaySec: 120, error: String(e?.message ?? e) });
       return "retry";
