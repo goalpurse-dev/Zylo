@@ -208,3 +208,8 @@ verify_jwt = true
 # verification on and every Stripe event is rejected with 401.
 [functions.stripe-webhook]
 verify_jwt = false
+
+# Admin-only (the Content Machine). The function checks the token itself and answers anyone who is not
+# the admin with a plain 404; with the gateway's check on, a call without a token would get a 401 instead.
+[functions.content-machine-api]
+verify_jwt = false

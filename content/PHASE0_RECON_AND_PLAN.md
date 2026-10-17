@@ -111,3 +111,50 @@ There is no bypass today. Recommended: a **dedicated internal Supabase user** (f
 - `contentmachine` starts at `laptop-transfer`'s tip (4df900b8). `laptop-transfer` is checked out in `C:\Users\Public\Zylo-cutaway`.
 - To transfer: merge `contentmachine` there, or cherry-pick its commits. Content-machine files are all new (`cm_*`, `contentMachine/`, `content/`), so conflicts should be limited to `src/App.jsx` (one route) and `supabase/config.toml` (one entry).
 - Deploys run from inside the folder whose code is meant to go live, because the Supabase CLI bundles from the current directory.
+
+## 5. Decisions (owner, 2026-10-17) and the new phase order
+
+P1–P9 approved. Notes from the owner:
+- **P3:** CORS preflight (OPTIONS) must keep working. Only real requests get the 404.
+- **P5:** the internal account gets a random password and no way to log in. Its credit top-ups are capped through the Budget Guard. It is kept out of analytics, signup metrics, emails, referrals and leaderboards.
+- No paid run without the owner saying so.
+
+New order:
+1. **Phase 1:** foundation. Admin guard, migration, Budget Guard (kill switch, DRY_RUN), Budget and Settings tabs.
+2. **Phase 2:** **slideshow MVP**.
+   - A "Make slideshows" button, with an optional topic, on the Today tab.
+   - Claude with web search writes the slides: a hook cover, 5 real tools with Zyvo in a varying position, and a CTA slide.
+   - Runware draws backgrounds and illustrations only, with no text in the image.
+   - Text is drawn by the render worker.
+   - Exports: a PNG set + ZIP, and an MP4 at about 2.5 s per slide with no music.
+   - Packaging per platform, plus a sound suggestion.
+   - Settings: slideshows per day (default 5) and a slideshow cap (default $2/day).
+3. Scout and the learn loop.
+4. Fruit, Blocky and Cutaway result videos.
+5. Making-of videos with Playwright.
+
+## 6. Phase 1: built (not migrated, not deployed)
+
+| Piece | File |
+|---|---|
+| Migration (create-only) + rollback | `supabase/migrations/20261107100000_content_machine.sql`, `supabase/rollbacks/20261107100000_content_machine_rollback.sql` |
+| Admin check (verified email in `ADMIN_EMAILS`, plain 404 otherwise) | `supabase/functions/_shared/contentMachine/adminGuard.js` |
+| Budget Guard | `_shared/contentMachine/budgetGuard.js` (+ `cm_reserve_spend` / `cm_settle_spend` in SQL) |
+| Settings checks, spend numbers, DB calls, API | `_shared/contentMachine/{settings,spendSummary,store,api}.js` |
+| Edge function | `supabase/functions/content-machine-api/index.ts` (`verify_jwt = false` in `config.toml`) |
+| Admin page | `src/pages/admin/ContentMachine.jsx`, route in `src/App.jsx` |
+| Tests | `tests/contentMachine.test.mjs` (17), `tests/contentMachineSpend.lifecycle.sql` |
+| Checks | `scripts/contentMachine/sqlCheck.mjs` (PGlite), `checkPaidCalls.mjs`, `qaPage.mjs` (browser, faked API) |
+
+Settings already carry the Phase 2 fields: `slideshows_per_day` = 5, and `lane_daily_caps` = `{"slideshow": 2}`.
+
+Two defaults are on the safe side:
+- `dry_run` = true: every paid call is mocked until the owner turns it off in Settings.
+- The kill switch stops dry runs too.
+
+The internal account (P5) is created in the phase that first uses a Zyvo generator. Slideshows don't need it.
+
+To go live (each on the owner's word):
+1. Apply the migration.
+2. Deploy `content-machine-api` from inside this folder.
+3. Ship the page through Vercel. That means `laptop-transfer`, then `main`.
