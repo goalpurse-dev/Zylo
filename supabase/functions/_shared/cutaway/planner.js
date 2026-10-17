@@ -162,6 +162,65 @@ export function boxJump(a, b) {
   return { dist, scale, far: dist > 0.3 || (dist > 0.18 && scale > 1.8) };
 }
 
+/** Closest word in `text` to `want` (same word, then the longest shared start of 4+ letters), or null. */
+function closestWord(text, want) {
+  const ws = words(text).map(bare).filter(Boolean);
+  const w = bare(want);
+  if (!w) return null;
+  if (ws.includes(w)) return w;
+  let best = null, bestLen = 3;
+  for (const x of ws) {
+    let k = 0;
+    while (k < Math.min(x.length, w.length) && x[k] === w[k]) k++;
+    if (k > bestLen) { best = x; bestLen = k; }
+  }
+  return best;
+}
+
+/**
+ * The program's own bookkeeping, done before any check (the model kept getting it off by one):
+ *  - "appears on its word": a beat that adds a part starts from the last state WITHOUT it, and the
+ *    next frame comes from the first state WITH it (all states are edits of one camera, so the crop boxes stay valid)
+ *  - a verb or card word that isn't in its beat's text -> the closest word that is (e.g. "seals" -> "seal")
+ * Content is never touched.
+ */
+export function repairStructure(input) {
+  if (!input || !Array.isArray(input.beats) || !Array.isArray(input.states)) return input;
+  const plan = JSON.parse(JSON.stringify(input));
+  const index = new Map(plan.states.map((s, i) => [s.id, i]));
+  const hasAt = (i, part) => (plan.states[i]?.parts ?? []).some((p) => norm(p) === norm(part));
+  plan.beats.forEach((b, i) => {
+    const v = closestWord(b.text, b.verb);
+    if (v && bare(b.verb) !== v) b.verb = words(b.text).find((x) => bare(x) === v);
+    if (b.card?.text && b.card.word) {
+      const c = closestWord(b.text, b.card.word) ?? bare(b.verb);
+      b.card.word = words(b.text).find((x) => bare(x) === c) ?? b.verb;
+    }
+    if (!b.adds) return;
+    const first = plan.states.findIndex((_, k) => hasAt(k, b.adds));
+    if (first < 0) return; // no state shows the part: left for the checks and the critic
+    if (first === 0) { b.adds = ""; return; } // in the master already: it can't appear, so it isn't an "adds"
+    if (hasAt(index.get(b.state) ?? -1, b.adds) && first > 0) b.state = plan.states[first - 1].id;
+    const next = i + 1 < plan.beats.length ? plan.beats[i + 1] : plan.end;
+    if (next && !hasAt(index.get(next.state) ?? -1, b.adds)) next.state = plan.states[first].id;
+  });
+  return plan;
+}
+
+/** True when the narration of the last part has the myth-bust shape ("... is not ..., it is ..."). */
+function narrationHasMyth(plan, from) {
+  return plan.beats.slice(from).some((b) => /\b(is not|isn't|are not|aren't)\b/i.test(b.text) && /\b(it is|it's|they are|they're|that is)\b/i.test(b.text.split(/\b(?:is not|isn't|are not|aren't)\b/i)[1] ?? ""));
+}
+
+/** Softer checks: reported to the critic and kept on the run, but never fail it. */
+export function planWarnings(plan) {
+  const out = [];
+  if (!Array.isArray(plan?.beats)) return out;
+  const narration = norm(plan.beats.map((b) => b.text).join(" "));
+  for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) out.push(`the part "${b.adds}" appears but is never named`);
+  return out;
+}
+
 /** All the program's checks. Returns a list of problems (empty = fine). */
 export function planProblems(plan, lengthSec, usedIdeas = []) {
   const w = workFor(lengthSec);
@@ -196,9 +255,6 @@ export function planProblems(plan, lengthSec, usedIdeas = []) {
   });
   if (!states.has(plan.end?.state)) problems.push(`end: unknown state ${plan.end?.state}`);
   else if (states.get(plan.end.state).problem) problems.push(`end state ${plan.end.state} still shows the problem (problem must be false)`);
-  // every part that appears is named in the narration
-  const narration = norm(plan.beats.map((b) => b.text).join(" "));
-  for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) problems.push(`the part "${b.adds}" appears but is never named`);
   // script shape
   const text = plan.beats.map((b) => b.text.trim()).join(" ");
   const total = words(text).length;
@@ -219,7 +275,8 @@ export function planProblems(plan, lengthSec, usedIdeas = []) {
   const sp = Array.isArray(plan.surprises) ? plan.surprises : [];
   if (sp.length < r.surprises[0]) problems.push(`${sp.length} surprises (want ${r.surprises[0]}-${r.surprises[1]})`);
   if (sp.length && Math.min(...sp.map((s) => s.beat)) > r.firstSurpriseBeat - 1) problems.push(`the first surprise is in beat ${Math.min(...sp.map((s) => s.beat)) + 1} (must be in the first ${r.firstSurpriseBeat})`);
-  if (!sp.some((s) => s.kind === "myth" && s.beat >= Math.floor(w.beats * r.mythFrom))) problems.push(`no myth-bust ("That X is not Y, it is Z") in the last part`);
+  const mythFrom = Math.floor(w.beats * r.mythFrom);
+  if (!sp.some((s) => s.kind === "myth" && s.beat >= mythFrom) && !narrationHasMyth(plan, mythFrom)) problems.push(`no myth-bust ("That X is not Y, it is Z") in the last part`);
   sp.forEach((s) => { if (s.beat < 0 || s.beat >= w.beats) problems.push(`surprise "${s.text.slice(0, 40)}" points at beat ${s.beat}`); });
   // used ideas
   const used = usedIdeas.map(norm).filter(Boolean);
@@ -242,8 +299,9 @@ export function normalizePlan(plan) {
   };
 }
 
-/** Checks the plan and returns a normalised copy, or throws with the reasons. */
-export function validatePlan(plan, lengthSec, usedIdeas = []) {
+/** Repairs the bookkeeping, checks the plan and returns a normalised copy, or throws with the reasons. */
+export function validatePlan(input, lengthSec, usedIdeas = []) {
+  const plan = repairStructure(input);
   const problems = planProblems(plan, lengthSec, usedIdeas);
   if (problems.length) throw Object.assign(new Error(`PLAN_INVALID: ${problems.join("; ")}`), { problems });
   return normalizePlan(plan);

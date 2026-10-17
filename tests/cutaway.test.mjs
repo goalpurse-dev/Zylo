@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
-import { validatePlan, planProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
+import { validatePlan, planProblems, planWarnings, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
 import { clipTask, parseReply } from "../supabase/functions/_shared/cutaway/runware.js";
@@ -104,6 +104,20 @@ test("appears on its word: a part already in the beat's state, or missing from t
   assert.ok(planProblems(late, 30).some((p) => /doesn't list it/.test(p)));
 });
 
+test("the program does the bookkeeping: states for appearing parts, verbs, myth-bust in the narration", () => {
+  const p = samplePlan();
+  p.beats[3].state = "W1";              // the model put the liner beat in the state that already has the liner
+  p.beats[4].state = "W0"; p.beats[4].box = { x: 0.5, y: 0.5, w: 0.5 }; // and the next beat in one without it
+  p.beats[3].verb = "lines";            // "line" is in the text
+  p.beats[0].adds = "pit";              // the pit is in the master: it can't appear
+  p.surprises = p.surprises.filter((s) => s.kind !== "myth"); // the myth-bust is still in beat 8's words
+  const fixed = validatePlan(p, 30);
+  assert.equal(fixed.beats[3].state, "W0");
+  assert.equal(fixed.beats[4].state, "W1");
+  assert.equal(fixed.beats[3].verb, "line");
+  assert.equal(fixed.beats[0].adds, "");
+});
+
 test("script rules: long sentences, missing loops, late surprises, no myth-bust, used ideas", () => {
   const long = samplePlan();
   long.beats[1].text = "But it stinks and the rats move in and the rain washes it away and the wind blows it around the whole street";
@@ -114,6 +128,7 @@ test("script rules: long sentences, missing loops, late surprises, no myth-bust,
   assert.ok(planProblems(late, 30).some((p) => /first surprise is in beat/.test(p)));
   const noMyth = samplePlan();
   noMyth.surprises = noMyth.surprises.filter((s) => s.kind !== "myth");
+  noMyth.beats[7].text = "Then the smell turns out to be gas you can turn into power.";
   assert.ok(planProblems(noMyth, 30).some((p) => /no myth-bust/.test(p)));
   assert.ok(planProblems(samplePlan(), 30, ["Landfill liner"]).some((p) => /already explained/.test(p)));
   const unnamed = samplePlan();
@@ -121,7 +136,7 @@ test("script rules: long sentences, missing loops, late surprises, no myth-bust,
   unnamed.beats[9].verb = "dump";
   unnamed.beats[8].adds = "grass cap"; unnamed.beats[8].text = "Cover every layer with dirt each night, and plant seeds on top.";
   unnamed.beats[8].verb = "seeds";
-  assert.ok(planProblems(unnamed, 30).some((p) => /appears but is never named/.test(p)));
+  assert.ok(planWarnings(unnamed).some((p) => /appears but is never named/.test(p)), "a warning for the critic, not a failure");
   const sameFrame = samplePlan();
   sameFrame.beats[2].box = { ...sameFrame.beats[1].box };
   assert.ok(planProblems(sameFrame, 30).some((p) => /nearly the same framing/.test(p)));

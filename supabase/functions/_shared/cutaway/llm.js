@@ -3,7 +3,7 @@
 //   checkImage: the vision check of one wide image against its state's checklist
 
 import { MODELS } from "./pricing.js";
-import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems } from "./planner.js";
+import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure } from "./planner.js";
 import { OVERLAYS } from "./style.js";
 import { SOUND_KEYS } from "./sound.js";
 
@@ -63,6 +63,7 @@ export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTr
         content: [
           plannerUser({ topic, lengthSec, usedIdeas }),
           `PROBLEMS FOUND BY THE PROGRAM (${problems.length}):\n${problems.length ? problems.map((p) => `- ${p}`).join("\n") : "- none; still check every rule, especially that each fact is true"}`,
+          ...(planWarnings(plan).length ? [`ALSO FIX IF YOU CAN:\n${planWarnings(plan).map((p) => `- ${p}`).join("\n")}`] : []),
           `THE PLAN:\n${JSON.stringify(plan)}`,
         ].join("\n\n"),
       });
@@ -73,7 +74,7 @@ export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTr
       rounds.push(problems);
     }
     if (problems.length) throw Object.assign(new Error(`PLAN_INVALID after the critic: ${problems.join("; ")}`), { problems });
-    return { plan: normalizePlan(plan), costUsd: Number(costUsd.toFixed(5)), critic: { rounds }, trace };
+    return { plan: normalizePlan(plan), costUsd: Number(costUsd.toFixed(5)), critic: { rounds, warnings: planWarnings(plan) }, trace };
   } catch (e) {
     e.costUsd = Number((costUsd + (e.costUsd ?? 0)).toFixed(5));
     e.trace = trace;
@@ -95,7 +96,7 @@ export function repairPlan(input) {
     if (b.sound && b.sound.key && !SOUND_KEYS_SET.has(b.sound.key)) b.sound = { key: "custom", text: b.sound.text || b.sound.key, at: b.sound.at === "start" ? "start" : "verb", whole: Boolean(b.sound.whole) };
     if (!b.card) b.card = { text: "", word: "" };
   }
-  return plan;
+  return repairStructure(plan);
 }
 
 const VISION_SCHEMA = {
