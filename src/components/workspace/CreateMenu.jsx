@@ -8,6 +8,7 @@ import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
+import { CUTAWAY_FLAG, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
 
@@ -123,6 +124,17 @@ export const FLAGGED_CREATE_TOOLS = [
     color: "#bef264",
     flag: BLOCKY_STORIES_FLAG,
     after: "ai-fruit-story",
+  },
+  {
+    id: "cutaway-explainer",
+    label: CUTAWAY_NAME,
+    sublabel: "",
+    path: CUTAWAY_PATH,
+    preview: "/cutaway-explainer/poster.webp",
+    previewPosition: "object-center",
+    color: "#4ADE80",
+    flag: CUTAWAY_FLAG,
+    after: "cartoon-drive-by",
   },
 ].map((tool) => ({
   ...tool,
@@ -401,8 +413,9 @@ const MENU_TOOLS = CREATE_TOOLS.filter((t) => !HIDDEN_SHORT_FORM_TOOLS.includes(
 export function useShortFormTools() {
   const auth = useAuth();
   const blocky = useFeatureFlag(BLOCKY_STORIES_FLAG, auth?.user?.id);
+  const cutaway = useFeatureFlag(CUTAWAY_FLAG, auth?.user?.id);
   return useMemo(() => {
-    const on = { [BLOCKY_STORIES_FLAG]: blocky.enabled };
+    const on = { [BLOCKY_STORIES_FLAG]: blocky.enabled, [CUTAWAY_FLAG]: cutaway.enabled };
     const tools = [...MENU_TOOLS];
     for (const extra of FLAGGED_CREATE_TOOLS) {
       if (!on[extra.flag]) continue;
@@ -410,7 +423,7 @@ export function useShortFormTools() {
       tools.splice(at < 0 ? tools.length : at + 1, 0, extra);
     }
     return tools;
-  }, [blocky.enabled]);
+  }, [blocky.enabled, cutaway.enabled]);
 }
 
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */

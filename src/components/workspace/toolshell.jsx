@@ -5,6 +5,7 @@ import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
 import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
+import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import "../../styles/workspace-shell.css";
 import { NewBadge } from "../launch/LaunchUI.jsx";
 import { isLongFormNew, trackLaunch } from "../launch/launch";
@@ -83,6 +84,7 @@ export default function ToolShell({ onClose }) {
     isActive("/workspace/cartoon-drive-by") ||
     isActive("/workspace/ai-fruit-story") ||
     isActive(BLOCKY_STORIES_PATH) ||
+    isActive(CUTAWAY_PATH) ||
     isActive("/workspace/face-asmr") ||
     isActive("/workspace/micro-camera-animal") ||
     isActive("/workspace/clay-rescue") ||

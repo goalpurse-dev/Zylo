@@ -19,6 +19,10 @@ module.exports = {
         inter: ["Inter", "sans-serif"],
         opensans: ["Open Sans", "sans-serif"],
       },
+      colors: {
+        // Cutaway Explainer's accent (the design system had no green token).
+        cutaway: { DEFAULT: "#4ADE80", soft: "#86EFAC", deep: "#16A34A", ink: "#052E16" },
+      },
     },
   },
   plugins: [

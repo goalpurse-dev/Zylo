@@ -19,3 +19,6 @@ emails/.preview/
 
 # Any other local env file with keys
 .env.*.local
+
+# Seamless-niche research scratch (frames, audio, test runs)
+research/seamless-niche/work/
