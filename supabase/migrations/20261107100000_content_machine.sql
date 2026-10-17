@@ -16,12 +16,12 @@ SET LOCAL lock_timeout = '5s';
 /* ─── settings (one row) ─────────────────────────────────────────────── */
 CREATE TABLE IF NOT EXISTS public.cm_settings (
   id boolean PRIMARY KEY DEFAULT true CHECK (id),
-  daily_budget_usd numeric(10, 2) NOT NULL DEFAULT 8.00 CHECK (daily_budget_usd >= 0),
-  monthly_budget_usd numeric(10, 2) NOT NULL DEFAULT 150.00 CHECK (monthly_budget_usd >= 0),
+  daily_budget_usd numeric(10, 2) NOT NULL DEFAULT 3.00 CHECK (daily_budget_usd >= 0),
+  monthly_budget_usd numeric(10, 2) NOT NULL DEFAULT 90.00 CHECK (monthly_budget_usd >= 0),
   -- {provider: usd per day}; a provider not listed has no cap of its own (the daily and monthly caps still apply).
-  per_provider_daily_caps jsonb NOT NULL DEFAULT '{"runware": 6.00, "anthropic": 1.50, "apify": 0.50}',
+  per_provider_daily_caps jsonb NOT NULL DEFAULT '{"runware": 2.00, "anthropic": 1.50, "fly": 0.50, "apify": 0.50}',
   -- {lane: usd per day}: a cap for one kind of work, whatever provider it uses.
-  lane_daily_caps jsonb NOT NULL DEFAULT '{"slideshow": 2.00}',
+  lane_daily_caps jsonb NOT NULL DEFAULT '{"slideshow": 3.00}',
   daily_video_target integer NOT NULL DEFAULT 15 CHECK (daily_video_target BETWEEN 0 AND 100),
   slideshows_per_day integer NOT NULL DEFAULT 5 CHECK (slideshows_per_day BETWEEN 0 AND 50),
   format_mix jsonb NOT NULL DEFAULT '{"zyvo_native": 6, "listicle_slideshow": 2, "long_form_cutdown": 1}',
@@ -36,6 +36,9 @@ CREATE TABLE IF NOT EXISTS public.cm_settings (
   watchlist jsonb NOT NULL DEFAULT '{"accounts": ["@aicenturyclips"], "hashtags": ["#aitools", "#aivideo", "#aifruit", "#faceless", "#youtubeautomation", "#stickman", "#claymation", "#aianimation"], "proposed": []}',
   brand_rules text NOT NULL DEFAULT $rules$- Promote Zyvo softly and honestly. Zyvo appears as the tool used, a listicle entry, a caption CTA, or an end card.
 - No fake testimonials, fake users, invented income claims or invented stats. Listicle entries describe real tools accurately.
+- No invented personal claims: no "I've used Zyvo for 6 months", no income or lifestyle claims ("bought this car at 17"). First person is fine only when true ("I built Zyvo", "how I'd start from scratch").
+- Listicles: real tools only, checked with web search, accurate one-line descriptions. Clean icon tiles with the tool's name, never real logos. Zyvo is one genuine entry and its position varies (not always #1).
+- No text inside generated images: every word on a slide is drawn by the renderer.
 - No copyrighted characters, brands, logos, celebrity likenesses or real people. No copied designs from other creators.
 - Flag ai_label_required for any realistic AI-generated visuals.
 - No misleading "news" or fake events; no medical or financial advice.

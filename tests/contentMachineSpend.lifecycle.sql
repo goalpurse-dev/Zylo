@@ -6,7 +6,7 @@ do $$
 declare r jsonb; id1 uuid; n integer;
 begin
   -- Fresh state: the seeded settings, and paid calls mocked until the owner says otherwise.
-  assert (select dry_run and not kill_switch and daily_budget_usd = 8 and monthly_budget_usd = 150 from public.cm_settings), 'seeded settings';
+  assert (select dry_run and not kill_switch and daily_budget_usd = 3 and monthly_budget_usd = 90 and lane_daily_caps = '{"slideshow": 3.00}' from public.cm_settings), 'seeded settings: $3 a day, $90 a month, slideshows $3';
   delete from public.cm_spend_ledger;
   update public.cm_settings set daily_budget_usd = 10, monthly_budget_usd = 100,
     per_provider_daily_caps = '{"runware": 6, "anthropic": 1.5}', lane_daily_caps = '{"slideshow": 2}';
