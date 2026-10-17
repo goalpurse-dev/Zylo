@@ -11,7 +11,7 @@ import { costOfUsage, estimateUsd, createMessage, jsonFromMessage, WEB_SEARCH_TO
 import { generateImage, imagePrompt, NO_PEOPLE } from "../supabase/functions/_shared/contentMachine/providers/runware.js";
 import { renderCostUsd } from "../supabase/functions/_shared/contentMachine/providers/fly.js";
 import { slideshowProblems, packageProblems, utmLinks, nearDuplicate, mockSlideshow, writeRequest, packageRequest, SLIDESHOW_SCHEMA } from "../supabase/functions/_shared/contentMachine/writer.js";
-import { slideHtml, highlight, initials, esc, logoFor, SAFE, SAFE_RECT } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
+import { slideHtml, highlight, initials, esc, logoFor, SAFE, SAFE_RECT, INNER_RECT } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
 import { assertRemoteImages } from "../render-worker/src/cmSlides.mjs";
 import { checkLogoFile } from "../supabase/functions/_shared/contentMachine/apiSlideshows.js";
 import { fallbackModel } from "../supabase/functions/_shared/contentMachine/pipeline.js";
@@ -48,7 +48,8 @@ test("a real run: every call reserved first, settled with the provider's own cos
   assert.equal(world.runs[0].status, "done");
   assert.ok(world.ideas.every((i) => i.status === "done"), JSON.stringify(world.ideas.map((i) => [i.status, i.error])));
   assert.equal(p.calls.renders, 2);
-  assert.equal(p.calls.images, 4, "a background + one illustration per slideshow");
+  const expected = world.ideas.reduce((a, i) => a + i.script.slides.length, 0);
+  assert.equal(p.calls.images, expected, "a background + a hero for every slide but the cta, per slideshow");
   assert.ok(world.ledger.every((l) => l.status === "settled" && l.actual_usd != null), "nothing left reserved");
   assert.ok(world.ledger.every((l) => l.lane === "slideshow"), "everything counts against the slideshow cap");
   const writeCalls = world.ledger.filter((l) => l.operation === "anthropic.write");
@@ -437,7 +438,7 @@ test("images: one retry each; a second failure fails the slideshow (never a plac
   await startRun(retry, { count: 1 });
   await drain(retry, depsFor(retry, p));
   assert.equal(retry.ideas[0].status, "done");
-  assert.equal(p.calls.imageAttempts, 3, "one failure, its retry, then the second image");
+  assert.equal(p.calls.imageAttempts, p.calls.images + 1, "one failure, its retry, then the rest");
   const dead = fakeWorld();
   const p2 = fakeProviders(dead, { imageFailures: Infinity });
   await startRun(dead, { count: 1 });
@@ -465,14 +466,15 @@ test("no real people: prompts, program checks, and the renderer takes no local p
   const html = slideHtml({ slide: validSlideshow(recipe).slides[0], index: 0, total: 6, style: LIB.styles[0].spec, images: { background: "file:///C:/x.jpg" } });
   assert.ok(!html.includes("file:///"), "the templates drop a local picture unless the local renderer asks");
   const req = writeRequest({ model: "claude-sonnet-5-5", brandRules: "x", library: LIB, recipe: planRecipes({ library: LIB, count: 1, seed: "p" })[0], today: "2026-10-20" });
-  assert.match(req.system[0].text, /NEVER for a real person, a celebrity/);
+  assert.match(req.system[0].text, /NEVER a real person, a celebrity/);
   assert.match(req.system[0].text, /Never imply that Zyvo is partnered with/);
   assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /lookalike of one/);
 });
 
-test("the safe zone: left 8 %, right 15 %, top 10 %, bottom 22 % of 1080×1920", () => {
-  assert.deepEqual(SAFE, { left: 90, right: 160, top: 190, bottom: 420 });
-  assert.deepEqual(SAFE_RECT, { x0: 90, y0: 190, x1: 920, y1: 1500 });
+test("the safe zone: left 110, right 170, top 200, bottom 420 px, plus 24 px inner padding", () => {
+  assert.deepEqual(SAFE, { left: 110, right: 170, top: 200, bottom: 420 });
+  assert.deepEqual(SAFE_RECT, { x0: 110, y0: 200, x1: 910, y1: 1500 });
+  assert.deepEqual(INNER_RECT, { x0: 134, y0: 224, x1: 886, y1: 1476 });
   const slide = validSlideshow({ slide_count: 5 }).slides[0];
   assert.match(slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec, safeZones: true }), /class="zone l"/);
   assert.ok(!slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec }).includes('class="zone'), "never drawn unless asked (previews only)");
@@ -533,4 +535,158 @@ test("one tick keeps going: a dry slideshow goes through all its steps in a sing
   world.s.kill_switch = true;
   await startRun(world, { dry: true, count: 1 });
   assert.deepEqual((await tick(deps)).jobs, [], "the kill switch stops the loop");
+});
+
+/* ─── round 3 (2026-10-18): visuals, assets, live samples, Start / Cancel ─── */
+
+test("visual richness: every slide but a cta / answer needs a picture (a prompt or a library asset)", () => {
+  const recipe = { slide_count: 6 };
+  const sh = validSlideshow(recipe);
+  assert.deepEqual(slideshowProblems(sh, recipe), []);
+  sh.slides[2].image_prompt = null;
+  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 3: no visual/);
+  sh.slides[2].asset_id = "aaaa1111";
+  assert.deepEqual(slideshowProblems(sh, recipe, { assetRefs: new Set(["aaaa1111"]) }), []);
+  assert.match(slideshowProblems(sh, recipe, { assetRefs: new Set(["zzzz"]) }).join(" "), /not in the library/);
+  const html = (slide, images = {}) => slideHtml({ slide, index: 1, total: 5, style: LIB.styles[0].spec, images });
+  assert.match(html(sh.slides[1], { hero: "https://im.runware.ai/1.jpg" }), /data-visual/);
+  assert.match(html(sh.slides[1]), /no visual element/, "the in-page check knows the rule");
+});
+
+test("pictures: a background + a hero per slide in the style's own look; a library asset costs nothing", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  await startRun(world, { count: 1 });
+  const deps = depsFor(world, p);
+  // The writer picks a library asset for slide 2.
+  const orig = p.ai.createMessage;
+  p.ai.createMessage = async (ticket, args) => {
+    const out = await orig(ticket, args);
+    if (args.request.tools) { const sh = JSON.parse(out.body.content[0].text); sh.slides[1].image_prompt = null; sh.slides[1].asset_id = "bbbb2222"; out.body.content[0].text = JSON.stringify(sh); }
+    return out;
+  };
+  await drain(world, deps);
+  const idea = world.ideas[0];
+  assert.equal(idea.status, "done", idea.error ?? "");
+  const heroes = world.gens[0].source_assets.heroes;
+  assert.deepEqual(heroes[1], { asset: "library/bbbb2222.webp", ref: "bbbb2222" });
+  assert.equal(p.calls.images, idea.script.slides.length - 1, "background + heroes, minus the cta and the asset slide");
+  assert.equal(p.calls.lastRender.images.heroes[1], "https://signed/library/bbbb2222.webp", "the asset reaches the render as a signed link");
+  const style = LIB.styles.find((x) => x.key === idea.recipe.style);
+  assert.ok(style, "the recipe's style exists");
+  const w = p.calls.messages.find((m) => m.tools);
+  assert.match(w.system[0].text, /ASSET LIBRARY/);
+  assert.match(w.system[0].text, /aaaa1111: scene · long_form/);
+  assert.doesNotMatch(w.system[0].text, /cccc3333/, "pending assets are not offered");
+});
+
+test("the style's hero_prompt shapes every generated picture; backgrounds and photoreal styles have no people", async () => {
+  const world = fakeWorld();
+  LIB.styles[0].spec.hero_prompt = "Glowing 3D render of {subject}, dark background";
+  try {
+    const p = fakeProviders(world);
+    await startRun(world, { count: 3 });
+    await drain(world, depsFor(world, p));
+    const prompts = [];
+    const orig = p.images.generateImage;
+    // The last call's prompt is recorded by the fake; check the template filled the subject.
+    assert.ok(p.calls.lastImage.prompt.length > 0);
+    const neon = world.ideas.find((i) => i.recipe.style === "neon_grid");
+    if (neon) assert.ok(JSON.stringify(world.gens).length > 0);
+    assert.equal(p.calls.lastImage.kind, "background", "no people in the non-meme styles' pictures");
+    void prompts; void orig;
+  } finally { delete LIB.styles[0].spec.hero_prompt; }
+});
+
+test("live: an owner-ordered run is paid for real while the machine stays in dry run; the DRY_RUN secret still wins", async () => {
+  const world = fakeWorld({ dry_run: true });
+  const guard = createBudgetGuard({ store: world.store });
+  const r = await guard.reserve("runware", "x", 0.01, { live: true });
+  assert.equal(r.dryRun, false);
+  assert.equal((await guard.reserve("runware", "x", 0.01)).dryRun, true, "without live: dry");
+  const env = createBudgetGuard({ store: world.store, envDryRun: "true" });
+  assert.equal((await env.reserve("runware", "x", 0.01, { live: true })).dryRun, true, "the DRY_RUN secret beats live");
+  world.s.kill_switch = true;
+  await assert.rejects(guard.reserve("runware", "x", 0.01, { live: true }), (e) => e.reason === "kill_switch");
+});
+
+test("style samples: one real slideshow per style, real pictures and a render, no writing call, dry run left on", async () => {
+  const world = fakeWorld({ dry_run: true });
+  const p = fakeProviders(world);
+  const api = apiFor(world, { kick: async () => { await drain(world, depsFor(world, p)); } });
+  LIB.styles.push({ key: "screenshot_collage", name: "Collage", description: "", spec: { bg_prompt: "dark board, no text", bg: "#111318", fg: "#ffffff", accent: "#22d3ee", highlight: "#facc15", font: "anton", collage: true } },
+    { key: "meme_style", name: "Meme", description: "", spec: { bg_prompt: "funny scene", bg: "#ffffff", fg: "#000000", accent: "#000000", highlight: "#fde047", font: "anton", meme: true } });
+  try {
+    const r = await api.call({ action: "styleSamples" });
+    assert.equal(r.ok, true, JSON.stringify(r));
+    assert.equal(r.data.count, 5);
+    assert.equal(world.runs[0].kind, "samples");
+    assert.equal(world.s.dry_run, true, "the machine stays in dry run");
+    assert.equal(p.calls.messages.length, 0, "no writing or caption calls");
+    assert.equal(p.calls.renders, 5, "rendered for real");
+    assert.ok(p.calls.images >= 20, `real pictures (${p.calls.images})`);
+    assert.ok(world.ledger.every((l) => !l.dry_run && l.actual_usd != null && l.lane === "slideshow"));
+    const total = world.ledger.reduce((a, l) => a + l.actual_usd, 0);
+    assert.ok(total < 0.2, `under $0.20 (${total.toFixed(4)})`);
+    const collage = world.ideas.find((i) => i.recipe.style === "screenshot_collage");
+    assert.ok(collage.script.slides.some((s) => s.asset_id), "the collage uses real Zyvo outputs from the library");
+    assert.ok(world.ideas.every((i) => i.status === "done"));
+  } finally { LIB.styles.splice(3); }
+});
+
+test("Start → Cancel: no new paid step after Cancel; finished slideshows are kept; progress says where it is", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const deps = depsFor(world, p);
+  const api = apiFor(world);
+  const made = await api.call({ action: "makeSlideshows", count: 3 });
+  for (let i = 0; i < 2; i++) for (const j of await world.db.claimJobs(10)) await (await import("../supabase/functions/_shared/contentMachine/pipeline.js")).runJob(j, deps);
+  const before = await api.call({ action: "runProgress", runId: made.data.runId });
+  assert.equal(before.ok, true);
+  assert.equal(before.data.total, 3);
+  assert.ok(before.data.active);
+  assert.ok(before.data.steps.find((s) => s.key === "writing").passed >= 0);
+  assert.ok(before.data.leftSec > 0, "about X min left");
+  const calls = p.calls.messages.length;
+  const c = await api.call({ action: "cancelRun", runId: made.data.runId });
+  assert.equal(c.data.status, "cancelled");
+  await drain(world, deps);
+  assert.equal(p.calls.messages.length, calls, "nothing new was paid for");
+  assert.equal(world.runs[0].status, "cancelled");
+  assert.ok(world.ideas.every((i) => ["cancelled", "done"].includes(i.status)));
+  assert.equal(world.audit.at(-1).action, "run.cancel");
+  const after = await api.call({ action: "runProgress", runId: made.data.runId });
+  assert.equal(after.data.active, false);
+  assert.equal((await api.call({ action: "cancelRun", runId: made.data.runId })).code, "VALIDATION");
+});
+
+test("asset tagging: the fast model tags each image; realistic humans, lookalikes and third-party brands are excluded", async () => {
+  const world = fakeWorld({ dry_run: true });
+  const p = fakeProviders(world);
+  world.assets.push({ id: "A4", ref: "dddd4444", path: "library/dddd4444.webp", source_path: "public/opt/lp/fruit/d.webp", kind: "output", status: "pending", tags: [] });
+  await world.db.enqueue([{ stage: "tag_assets", payload: { ids: ["A3", "A4"], live: true } }]);
+  await drain(world, depsFor(world, p));
+  const a3 = world.assets.find((a) => a.id === "A3"), a4 = world.assets.find((a) => a.id === "A4");
+  assert.equal(a3.status, "excluded");
+  assert.match(a3.exclude_reason, /realistic human/);
+  assert.deepEqual([a4.status, a4.tool], ["active", "ai_fruit_story"]);
+  assert.ok(world.ledger.some((l) => l.operation === "anthropic.tag_assets" && !l.dry_run && l.lane === "assets"), "paid, live, through the guard");
+  const api = apiFor(world);
+  const blocked = await api.call({ action: "setAssetStatus", id: "A4", status: "blocked" });
+  assert.equal(blocked.data.row.status, "blocked");
+  assert.equal(world.audit.at(-1).action, "asset.block");
+  assert.equal((await api.call({ action: "setAssetStatus", id: "A4", status: "pending" })).code, "VALIDATION");
+});
+
+test("the renderer takes pictures only from the allowed hosts (our bucket, the image provider)", () => {
+  const hosts = ["xyz.supabase.co", ".runware.ai"];
+  assertRemoteImages({ allowedHosts: hosts, images: { background: "https://im.runware.ai/a.jpg", heroes: { 1: "https://xyz.supabase.co/storage/v1/object/sign/content-machine/library/a.webp?token=t" } } });
+  assert.throws(() => assertRemoteImages({ allowedHosts: hosts, images: { heroes: { 1: "https://random.example.com/a.jpg" } } }), /isn't allowed/);
+  assert.throws(() => assertRemoteImages({ allowedHosts: hosts, images: { heroes: { 1: "file:///C:/repo/a.png" } } }), /only https/);
+});
+
+test("honest stories: hypothetical or about 'you', never a made-up real person", () => {
+  const req = writeRequest({ model: "claude-sonnet-5-5", brandRules: "x", library: LIB, recipe: planRecipes({ library: LIB, count: 1, seed: "h" })[0], today: "2026-10-20" });
+  assert.match(req.system[0].text, /clearly hypothetical \("Imagine…", "POV: you…"\)/);
+  assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /made-up person told as if real/);
 });

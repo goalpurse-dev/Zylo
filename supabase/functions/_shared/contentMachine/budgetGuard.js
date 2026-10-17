@@ -58,7 +58,9 @@ export function createBudgetGuard({ store, envDryRun = false }) {
     const est = Number(estimatedUsd);
     const settings = await store.readSettings();
     if (settings.kill_switch) throw new BudgetStopped("kill_switch");
-    const dryRun = envDry || Boolean(settings.dry_run) || Boolean(opts.forceDryRun);
+    // opts.live: a job the owner ordered to run for real while the machine's dry run is on (the asset
+    // tagging, the style samples). It never beats the DRY_RUN secret, the kill switch or any cap.
+    const dryRun = envDry || (Boolean(settings.dry_run) && !opts.live) || Boolean(opts.forceDryRun);
     const r = await store.reserve({
       provider, operation, estimatedUsd: Number.isFinite(est) ? est : -1,
       lane: opts.lane ?? null, runId: opts.runId ?? null, ideaId: opts.ideaId ?? null, dryRun,

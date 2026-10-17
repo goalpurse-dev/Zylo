@@ -39,6 +39,8 @@ Deno.serve(createWorkerHandler({
       // through the Budget Guard. CM_MODEL_FALLBACK picks it (default claude-sonnet-5); CM_FALLBACKS=off turns it off.
       fallbacks: (Deno.env.get("CM_FALLBACKS") ?? "on") !== "off",
       modelFallback: Deno.env.get("CM_MODEL_FALLBACK") ?? "",
+      // The renderer accepts pictures only from these hosts: our own storage and the image provider's CDN.
+      allowedImageHosts: [new URL(Deno.env.get("SUPABASE_URL")!).hostname, ".runware.ai"],
     },
     now: () => new Date(),
     log: (m: string) => console.log(m),

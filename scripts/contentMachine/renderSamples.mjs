@@ -19,11 +19,17 @@ const svg = (body, w = 768, h = 1344) => `data:image/svg+xml,${encodeURIComponen
 const BACKGROUNDS = {
   luxury_night: svg(`<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1408"/><stop offset="1" stop-color="#050505"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="18"/></filter></defs><rect width="768" height="1344" fill="url(#g)"/>${Array.from({ length: 26 }, (_, i) => `<circle cx="${(i * 137) % 768}" cy="${200 + ((i * 211) % 700)}" r="${18 + (i % 5) * 9}" fill="${i % 3 ? "#f5c542" : "#ff9d3a"}" opacity=".45" filter="url(#b)"/>`).join("")}<rect x="0" y="980" width="768" height="364" fill="#0b0906"/>`),
   neon_grid: null,
+  neon_grid_bg: svg(`<rect width="768" height="1344" fill="#07060d"/><ellipse cx="384" cy="700" rx="420" ry="300" fill="#3b0764" opacity=".6"/>`),
   minimal_clean: svg(`<defs><radialGradient id="g" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#e9e3d8"/></radialGradient></defs><rect width="768" height="1344" fill="url(#g)"/>`),
   screenshot_collage: svg(`<rect width="768" height="1344" fill="#15171c"/>${Array.from({ length: 9 }, (_, i) => `<rect x="${(i * 173) % 640}" y="${(i * 251) % 1200}" width="220" height="150" rx="10" fill="#${["2a2f3a", "1f2a33", "33303a"][i % 3]}" transform="rotate(${(i % 5) * 4 - 8} ${(i * 173) % 640} ${(i * 251) % 1200})"/>`).join("")}`),
   meme_style: svg(`<rect width="768" height="1344" fill="#bfe3ff"/><rect x="0" y="900" width="768" height="444" fill="#8a6a4a"/><rect x="190" y="620" width="390" height="260" rx="16" fill="#333"/><rect x="210" y="640" width="350" height="210" fill="#7dd3fc"/><circle cx="640" cy="300" r="90" fill="#fde047"/>`),
 };
 // A drawn illustration (a laptop on a desk, a plant): no people.
+// Stand-in hero pictures per style (drawn shapes, no people): the layout is what is being checked here.
+const HERO = (style, i) => {
+  const c = { luxury_night: ["#2a1b0a", "#f5c542"], neon_grid: ["#0d0718", "#a855f7"], minimal_clean: ["#efe9df", "#2563eb"], screenshot_collage: ["#1a1f29", "#22d3ee"], meme_style: ["#bfe3ff", "#fb923c"] }[style] ?? ["#222", "#888"];
+  return svg(`<rect width="1024" height="1024" fill="${c[0]}"/><circle cx="${380 + (i * 97) % 300}" cy="${420 + (i * 53) % 200}" r="${180 + (i % 3) * 40}" fill="${c[1]}" opacity=".85"/><rect x="${200 + (i * 71) % 400}" y="620" width="260" height="180" rx="30" fill="#ffffff" opacity=".7"/>`, 1024, 1024);
+};
 const ILLU = svg(`<rect width="768" height="1344" fill="#2b1d4a"/><rect x="0" y="880" width="768" height="464" fill="#4a3426"/><rect x="170" y="560" width="430" height="300" rx="18" fill="#222"/><rect x="190" y="580" width="390" height="250" fill="#a78bfa"/><rect x="120" y="860" width="530" height="26" rx="8" fill="#555"/><rect x="620" y="700" width="70" height="160" rx="10" fill="#7c5a3a"/><circle cx="655" cy="660" r="70" fill="#22c55e"/>`);
 
 const STYLES = {
@@ -165,8 +171,9 @@ for (const [format, slidesIn] of Object.entries(FORMATS)) {
     const dir = path.resolve(outDir, format, styleKey);
     await mkdir(dir, { recursive: true });
     const slides = slidesIn.map(({ illustration, ...s }) => s);
-    const illustrations = Object.fromEntries(slidesIn.map((s, i) => [i, s.image_prompt ? ILLU : null]).filter(([, v]) => v));
-    const job = { style, zyvoShot, images: { background: BACKGROUNDS[styleKey], illustrations }, slideshow: { slides } };
+    // A stand-in hero picture on every slide but the cta (the real ones are generated per slide).
+    const heroes = Object.fromEntries(slidesIn.map((s, i) => [i, s.kind === "cta" ? null : HERO(styleKey, i)]).filter(([, v]) => v));
+    const job = { style, zyvoShot, images: { background: BACKGROUNDS[styleKey] ?? BACKGROUNDS.neon_grid_bg, heroes }, slideshow: { slides } };
     const out = await renderSlideshow(job, dir, { local: true, safeZones: true, keepGoing: true });
     report[`${format} × ${styleKey}`] = out.layoutProblems;
     if (out.layoutProblems.length) { failed += 1; console.log(`FAIL ${format} × ${styleKey}: ${out.layoutProblems.map((l) => `slide ${l.slide}: ${l.problems.join("; ")}`).join(" | ")}`); }

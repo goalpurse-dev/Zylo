@@ -3,7 +3,9 @@
 import { ApiError } from "./errors.js";
 import { coverage } from "./planner.js";
 import { localDay } from "./spendSummary.js";
-import { ZYVO_SHOT_PATH, logosFor } from "./pipeline.js";
+import { ZYVO_SHOT_PATH, heroUrls, logosFor } from "./pipeline.js";
+import { runProgress } from "./progress.js";
+import { STYLE_SAMPLES, resolveSample } from "./styleSamples.js";
 
 const KINDS = ["format", "style", "hook"];
 const LIB_STATUS = ["active", "proposed", "retired"];
@@ -52,7 +54,10 @@ export function ideaView(idea, costs, urls) {
     cost: costs[idea.id] ?? { usd: 0, wouldUsd: 0, byProvider: {}, calls: 0 },
     generation: gen && {
       id: gen.id, status: gen.status, error: gen.error, duration_s: gen.duration_s, dryRun: Boolean(f.dryRun),
-      images: { background: gen.source_assets?.background ?? null, illustrations: gen.source_assets?.illustrations ?? {} },
+      images: {
+        background: gen.source_assets?.background ?? null,
+        heroes: Object.fromEntries(Object.entries(gen.source_assets?.heroes ?? {}).map(([i, h]) => [i, h?.url ?? (h?.asset ? urls[h.asset] ?? null : null)])),
+      },
       pngs: (f.pngs ?? []).map(url), zip: url(f.zip), mp4: url(f.mp4),
     },
     packages: (gen?.cm_packages ?? []).sort((a, b) => ["tiktok", "instagram", "youtube"].indexOf(a.platform) - ["tiktok", "instagram", "youtube"].indexOf(b.platform)),
@@ -83,7 +88,8 @@ export function checkLogoFile(bytes, contentType) {
     "image/svg+xml": () => {
       const text = new TextDecoder().decode(bytes);
       if (!/<svg[\s>]/i.test(text)) return false;
-      if (/<script|<foreignObject|\son[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["'](?!#)/i.test(text)) throw new ApiError("VALIDATION", "This SVG has scripts, event handlers or links to outside files. Use the plain official file.");
+      // Links may point inside the file (#id) or embed a raster image (data:image/…); never outside.
+      if (/<script|<foreignObject|\son[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["'](?!#|data:image\/(?:png|jpe?g|webp|gif);)/i.test(text)) throw new ApiError("VALIDATION", "This SVG has scripts, event handlers or links to outside files. Use the plain official file.");
       return true;
     },
   }[contentType]();
@@ -129,7 +135,8 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       filters.limit = Math.min(100, Math.max(1, Number(body?.limit) || 40));
       const rows = await cm.listIdeas(filters);
       const costs = await cm.ideaCosts(rows.map((r) => r.id));
-      const paths = rows.flatMap((r) => (r.cm_generations ?? []).flatMap((g) => [...(g.files?.pngs ?? []), g.files?.zip, g.files?.mp4].filter(Boolean)));
+      const paths = rows.flatMap((r) => (r.cm_generations ?? []).flatMap((g) => [...(g.files?.pngs ?? []), g.files?.zip, g.files?.mp4,
+        ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset)].filter(Boolean)));
       const urls = await files.signedUrls(paths, 900);
       const library = await cm.libraryAll();
       return {
@@ -210,6 +217,68 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       if (approved && (!logo.logo_path || !logo.source_url)) throw new ApiError("VALIDATION", "Add the official file and the page you took it from before approving.");
       const saved = await cm.saveLogo({ id: logo.id, approved, approved_at: approved ? now().toISOString() : null, approved_by: approved ? user.email : null });
       await store.audit(user.email, approved ? "logo.approve" : "logo.unapprove", { domain: logo.domain, source: logo.source_url });
+      return { row: saved };
+    },
+
+    /* ─── live progress and cancel (the Start button) ─── */
+    runProgress: async ({ body }) => {
+      const runId = String(body?.runId ?? "");
+      const run = await cm.getRun(runId);
+      const [ideas, jobs, past] = await Promise.all([cm.ideasOfRun(runId), cm.jobsOfRun(runId), cm.pastRuns(10)]);
+      return runProgress({ run, ideas, jobs, pastRuns: past, now: now() });
+    },
+
+    cancelRun: async ({ user, body }) => {
+      const run = await cm.getRun(String(body?.runId ?? ""));
+      if (["done", "failed", "budget_stopped", "cancelled"].includes(run.status)) throw new ApiError("VALIDATION", "This run has already finished.");
+      // No new paid step from here on (pipeline.js checks before every step); finished slideshows stay.
+      await cm.updateRun(run.id, { status: "cancelled", finished_at: now().toISOString() });
+      await cm.cancelQueuedJobs(run.id);
+      // Slideshows with no step running now are cancelled here; one mid-step is cancelled when that step
+      // finishes (its next step is refused by the pipeline), so a render already paid for is still kept.
+      const running = new Set((await cm.jobsOfRun(run.id)).filter((j) => j.status === "running").map((j) => j.idea_id));
+      for (const idea of await cm.ideasOfRun(run.id)) {
+        if (!["done", "failed", "skipped_budget", "rejected", "cancelled"].includes(idea.status) && !running.has(idea.id)) await cm.updateIdea(idea.id, { status: "cancelled" });
+      }
+      await store.audit(user.email, "run.cancel", { runId: run.id });
+      return { runId: run.id, status: "cancelled" };
+    },
+
+    /* ─── the style samples: one real slideshow per style (owner-ordered, paid, under $0.20) ─── */
+    styleSamples: async ({ user }) => {
+      const s = await store.readSettings();
+      if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
+      const assets = (await cm.activeAssets()) ?? [];
+      const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind: "samples", status: "producing", dry_run: false, input: { live: true, count: STYLE_SAMPLES.length, samples: true }, started_at: now().toISOString() });
+      const rows = STYLE_SAMPLES.map((sample) => {
+        const script = resolveSample(sample, assets);
+        return { run_id: run.id, status: "producing", source: "owner", format: sample.format, title: script.title, hook: script.hook, topic: script.topic, hypothesis: script.hypothesis, script,
+          recipe: { format: sample.format, style: sample.style, mode: "sample", slide_count: script.slides.length }, dry_run: false, target_platforms: ["tiktok", "instagram", "youtube"] };
+      });
+      const ideas = await cm.createIdeas(rows);
+      await cm.enqueue(ideas.map((i) => ({ run_id: run.id, idea_id: i.id, stage: "images" })));
+      await store.audit(user.email, "samples.run", { runId: run.id, styles: STYLE_SAMPLES.map((x) => x.style) });
+      await kick().catch(() => {});
+      return { runId: run.id, count: ideas.length };
+    },
+
+    /* ─── the asset library ─── */
+    assets: async ({ body }) => {
+      const filters = {};
+      for (const k of ["status", "tool", "kind"]) if (body?.[k]) filters[k] = String(body[k]);
+      const rows = await cm.listAssets({ ...filters, limit: Math.min(600, Number(body?.limit) || 600) });
+      const urls = await files.signedUrls(rows.map((r) => r.path), 900);
+      const counts = rows.reduce((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {});
+      return { rows: rows.map((r) => ({ ...r, url: urls[r.path] ?? null })), counts };
+    },
+
+    setAssetStatus: async ({ user, body }) => {
+      const status = String(body?.status ?? "");
+      if (!["active", "blocked"].includes(status)) throw new ApiError("VALIDATION", "Status: active or blocked.");
+      const [asset] = await cm.getAssets([String(body?.id ?? "")]);
+      if (!asset) throw new ApiError("VALIDATION", "No such asset.");
+      const saved = await cm.updateAsset(asset.id, { status, blocked_by: status === "blocked" ? user.email : null });
+      await store.audit(user.email, status === "blocked" ? "asset.block" : "asset.unblock", { ref: asset.ref, wasExcluded: asset.status === "excluded" ? asset.exclude_reason : null });
       return { row: saved };
     },
 

@@ -94,11 +94,22 @@ export class LayoutError extends Error {
   constructor(layout) { super(`layout check failed: ${layout.map((l) => `slide ${l.slide}: ${l.problems.join("; ")}`).join(" | ")}`); this.layout = layout; }
 }
 
-/** Real runs take images only from https (generated images, signed storage links): never local files. */
+/**
+ * Real runs take images only over https, and (when the job lists allowedHosts) only from those hosts: our own
+ * bucket's signed links (generated pictures, approved library assets, logos, the Zyvo screenshot) and the
+ * image provider. Never a local file, never a random address.
+ */
 export function assertRemoteImages(job) {
-  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.logos ?? {})].filter(Boolean);
+  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.heroes ?? {}), ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.logos ?? {})].filter(Boolean);
   const bad = urls.filter((u) => !String(u).toLowerCase().startsWith("https://"));
   if (bad.length) throw new Error(`only https images may be used in a real render (got ${bad.length} other)`);
+  const hosts = (job.allowedHosts ?? []).map((h) => String(h).toLowerCase());
+  if (hosts.length) {
+    const hostOf = (u) => new URL(u).hostname.toLowerCase();
+    const allowed = (h) => hosts.some((a) => h === a || (a.startsWith(".") && h.endsWith(a)));
+    const outside = urls.filter((u) => !allowed(hostOf(u)));
+    if (outside.length) throw new Error(`an image comes from a host that isn't allowed (${[...new Set(outside.map(hostOf))].join(", ")})`);
+  }
 }
 
 /**
@@ -120,7 +131,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
     for (const [i, slide] of slides.entries()) {
       const html = slideHtml({
         slide, index: i, total: slides.length, style: job.style, zyvoShot: job.zyvoShot ?? null, fontCss, logos: job.logos ?? null, safeZones, allowFile: local,
-        images: { background: job.images?.background ?? null, illustration: job.images?.illustrations?.[i] ?? null },
+        images: { background: job.images?.background ?? null, hero: job.images?.heroes?.[i] ?? job.images?.illustrations?.[i] ?? null },
       });
       const file = path.join(dir, `slide-${String(i + 1).padStart(2, "0")}.png`);
       await writeFile(path.join(dir, "page.html"), html, "utf8");   // file:// so local fonts load

@@ -33,6 +33,7 @@ await db.exec(`
 
 const M1 = "supabase/migrations/20261107100000_content_machine.sql";
 const M2 = "supabase/migrations/20261108100000_content_machine_slideshows.sql";
+const M3 = "supabase/migrations/20261109100000_content_machine_assets.sql";
 const steps = [
   ["migration 1", M1],
   ["migration 1 again (must be safe to re-run)", M1],
@@ -41,10 +42,15 @@ const steps = [
   ["migration 2 again", M2],
   ["slideshow tests", "tests/contentMachineSlideshows.lifecycle.sql"],
   ["the minute tick (stubbed pg_net)", "tests/contentMachineTick.pglite.sql"],
+  ["migration 3 (assets)", M3],
+  ["migration 3 again", M3],
+  ["asset tests", "tests/contentMachineAssets.lifecycle.sql"],
+  ["rollback 3", "supabase/rollbacks/20261109100000_content_machine_assets_rollback.sql"],
   ["rollback 2", "supabase/rollbacks/20261108100000_content_machine_slideshows_rollback.sql"],
   ["rollback 1", "supabase/rollbacks/20261107100000_content_machine_rollback.sql"],
   ["both migrations after rollback", M1],
   ["", M2],
+  ["", M3],
 ];
 for (const [label, file] of steps) {
   try {

@@ -141,7 +141,7 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
   const r = idea.recipe ?? {};
   const g = idea.generation;
   const style = styles?.[r.style];
-  const images = (i) => ({ background: g?.images?.background ?? null, illustration: g?.images?.illustrations?.[i] ?? null });
+  const images = (i) => ({ background: g?.images?.background ?? null, hero: g?.images?.heroes?.[i] ?? null });
   const act = async (action, body, label) => {
     setBusy(label); setNote(null);
     try { await api(action, body); onChanged(); } catch (e) { setNote(e.message); }
@@ -223,6 +223,54 @@ function useSafeZones() {
   return [on, control];
 }
 
+/** A running batch: the steps, a bar, about how long is left, and Cancel. Slideshows appear as they finish. */
+function RunProgress({ runId, onTick, onDone }) {
+  const [p, setP] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState(null);
+  const seen = useRef(-1);
+  useEffect(() => {
+    let alive = true;
+    const poll = async () => {
+      try {
+        const r = await api("runProgress", { runId });
+        if (!alive) return;
+        setP(r);
+        if (r.done + r.failed + r.cancelled !== seen.current) { seen.current = r.done + r.failed + r.cancelled; onTick(); }
+        if (!r.active) onDone();
+      } catch (e) { if (alive) setNote(e.message); }
+    };
+    poll();
+    const t = setInterval(poll, 4000);
+    return () => { alive = false; clearInterval(t); };
+  }, [runId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cancel = async () => {
+    if (!window.confirm("Cancel this batch? Nothing new is paid for from now on; slideshows already finished are kept.")) return;
+    setBusy(true);
+    try { await api("cancelRun", { runId }); onDone(); } catch (e) { setNote(e.message); }
+    setBusy(false);
+  };
+  if (!p) return null;
+  const mins = Math.max(1, Math.round(p.leftSec / 60));
+  return (
+    <Card title="Making today's batch" testid="cm-progress" right={p.active && <button type="button" onClick={cancel} disabled={busy} data-testid="cm-cancel" className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white hover:bg-red-400/30 disabled:opacity-40">Cancel</button>}>
+      <ol className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+        {p.steps.map((s) => (
+          <li key={s.key} className={s.now ? "font-semibold text-sky-200" : s.passed === p.total ? "text-lime-200" : "text-white/45"}>
+            {s.label} {s.passed}/{p.total}{s.now ? ` · ${s.now} now` : ""}
+          </li>
+        ))}
+        <li className="text-white/70">Done {p.done}/{p.total}{p.failed ? ` · ${p.failed} stopped` : ""}{p.cancelled ? ` · ${p.cancelled} cancelled` : ""}</li>
+      </ol>
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/[0.08]" role="progressbar" aria-valuenow={Math.round(p.share * 100)} aria-valuemin={0} aria-valuemax={100}>
+        <div className="h-full rounded-full bg-lime-300 transition-all" style={{ width: `${Math.max(2, p.share * 100)}%` }} />
+      </div>
+      <p className="mt-2 text-[12.5px] text-white/55">{p.active ? `About ${mins} min left (from past runs) · ${Math.round(p.elapsedSec / 60)} min so far.` : `Finished: ${p.status}.`} Each slideshow appears below as soon as it's done.</p>
+      {note && <p className="mt-1 text-[12.5px] text-red-200">{note}</p>}
+    </Card>
+  );
+}
+
 export function TodayTab({ st, onChanged }) {
   const [zones, zoneControl] = useSafeZones();
   const [topic, setTopic] = useState("");
@@ -255,33 +303,51 @@ export function TodayTab({ st, onChanged }) {
     try {
       const r = await api("makeSlideshows", { topic: topic.trim() || null, count: Number(count) });
       setTopic("");
-      setNote(`Started ${r.count} slideshow${r.count > 1 ? "s" : ""}${r.dryRun ? " as a dry run (nothing is spent)" : ""}. They appear below as they're made.`);
+      setNote(`Started ${r.count} slideshow${r.count > 1 ? "s" : ""}${r.dryRun ? " as a dry run (nothing is spent)" : ""}.`);
       await load(r.runId); onChanged();
     } catch (err) { setNote(err.message); }
     setBusy(false);
   };
 
+  const [auto, setAuto] = useState(Boolean(st.settings.daily_auto_run));
+  const [autoBusy, setAutoBusy] = useState(false);
+  useEffect(() => { setAuto(Boolean(st.settings.daily_auto_run)); }, [st.settings.daily_auto_run]);
+  const flipAuto = async (on) => {
+    setAutoBusy(true); setNote(null);
+    try { await api("saveSettings", { patch: { daily_auto_run: on } }); setAuto(on); onChanged(); } catch (e) { setNote(e.message); }
+    setAutoBusy(false);
+  };
+
   return (
     <div className="space-y-4">
-      <Card title="Make slideshows" testid="cm-make">
-        <form onSubmit={make} className="space-y-3">
-          <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={200} placeholder='Topic (optional), e.g. "AI tools that replace a video editor"' className={`${input} w-full`} aria-label="Topic" data-testid="cm-topic" />
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-[13px] text-white/70">How many
-              <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label="How many">{Array.from({ length: 10 }, (_, i) => <option key={i + 1}>{i + 1}</option>)}</select>
-            </label>
-            <button type="submit" disabled={busy || st.settings.kill_switch} data-testid="cm-make-button" className="rounded-lg bg-lime-300 px-4 py-2 text-[14px] font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{busy ? "Starting…" : "Make slideshows"}</button>
-            <span className="text-[12px] text-white/45">{st.dryRun.effective ? "Dry run: mocked, $0." : "Live: each costs about $0.10–0.20, within the caps."} Empty topic: Claude picks.</span>
+      <Card title="Today" testid="cm-make">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+          <button type="button" role="switch" aria-checked={auto} aria-label="Automatic" disabled={autoBusy} onClick={() => flipAuto(!auto)} data-testid="cm-automatic"
+            className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-40 ${auto ? "bg-lime-300" : "bg-white/15"}`}>
+            <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${auto ? "left-6" : "left-1"}`} />
+          </button>
+          <div className="text-[13.5px]">
+            <span className="font-semibold text-white">Automatic {auto ? "ON" : "OFF"}</span>
+            <span className="text-white/55"> · {auto ? `makes ${st.settings.slideshows_per_day} slideshows by itself every day at ${st.settings.run_time_local} (Helsinki)` : "no daily run; use Start whenever you want"}. The time is in Settings.</span>
           </div>
-          {note && <p role="status" className="text-[13px] text-white/70">{note}</p>}
+        </div>
+        <form onSubmit={make} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+          <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={200} placeholder='Topic (optional), e.g. "AI tools that replace a video editor"' className={`${input} w-full sm:flex-1`} aria-label="Topic" data-testid="cm-topic" />
+          <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label="How many">{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1} slideshow{i ? "s" : ""}</option>)}</select>
+          <button type="submit" disabled={busy || st.settings.kill_switch || Boolean(run && RUN_ACTIVE.has(run.status))} data-testid="cm-make-button"
+            className="rounded-xl bg-lime-300 px-8 py-3 text-[17px] font-bold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{busy ? "Starting…" : "Start"}</button>
         </form>
+        <p className="mt-2 text-[12px] text-white/45">{st.dryRun.effective ? "Dry run: mocked, $0." : "Live: about $0.10–0.25 a slideshow, within the caps."} Empty topic: Claude picks. Start works whether Automatic is on or off.</p>
+        {note && <p role="status" className="mt-2 text-[13px] text-white/70">{note}</p>}
       </Card>
+
+      {run && RUN_ACTIVE.has(run.status) && <RunProgress runId={run.id} onTick={() => load(run.id)} onDone={() => { load(run.id); onChanged(); }} />}
 
       {runs && runs.length > 0 && (
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {runs.slice(0, 12).map((r) => (
             <button key={r.id} type="button" onClick={() => load(r.id)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${r.id === runId ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}>
-              <div className="font-semibold text-white">{r.kind === "daily" ? "Daily run" : r.kind === "manual" ? "Remake" : "Slideshows"} · {r.run_date}</div>
+              <div className="font-semibold text-white">{{ daily: "Daily run", manual: "Remake", samples: "Style samples" }[r.kind] ?? "Slideshows"} · {r.run_date}</div>
               <div className="text-white/55">{nice(r.status)}{r.dry_run ? " · dry run" : ""} · {money(r.spend_usd, 3)}</div>
             </button>
           ))}
@@ -289,7 +355,6 @@ export function TodayTab({ st, onChanged }) {
       )}
 
       <div className="flex justify-end">{zoneControl}</div>
-      {run && RUN_ACTIVE.has(run.status) && <p className="text-[13px] text-sky-200">This run is working ({nice(run.status)})… the page refreshes by itself.</p>}
       {data?.ideas?.length === 0 && <p className="text-[13.5px] text-white/60">{runs?.length ? "No slideshows in this run yet." : "Nothing made yet. Press Make slideshows."}</p>}
       <div className="space-y-3">{data?.ideas?.map((i, n) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={() => load(runId)} startOpen={n === 0} />)}</div>
     </div>
@@ -453,6 +518,55 @@ export function LibraryTab() {
           <div className="flex items-center gap-3 sm:col-span-2"><button type="submit" className="rounded-lg bg-lime-300 px-4 py-2 text-[14px] font-semibold text-[#071006]">Add</button>{note && <span role="status" className="text-[13px] text-white/70">{note}</span>}</div>
         </form>
       </Card>
+    </div>
+  );
+}
+
+/* ─── Assets: real Zyvo outputs and UI the writer may use ────────────── */
+
+const ASSET_TONE = { active: "bg-lime-300/15 text-lime-200", excluded: "bg-amber-300/15 text-amber-200", blocked: "bg-red-400/15 text-red-200", pending: "bg-white/10 text-white/60" };
+
+export function AssetsTab() {
+  const [f, setF] = useState({ status: "", tool: "" });
+  const [data, setData] = useState(null);
+  const [note, setNote] = useState(null);
+  const load = useCallback(async () => {
+    try { setData(await api("assets", Object.fromEntries(Object.entries(f).filter(([, v]) => v)))); } catch (e) { setNote(e.message); }
+  }, [f]);
+  useEffect(() => { load(); }, [load]);
+  const setStatus = async (row, status) => {
+    setNote(null);
+    try { await api("setAssetStatus", { id: row.id, status }); await load(); } catch (e) { setNote(e.message); }
+  };
+  const tools = useMemo(() => [...new Set((data?.rows ?? []).map((r) => r.tool).filter(Boolean))].sort(), [data]);
+  return (
+    <div className="space-y-4">
+      <Card title="Asset library" testid="cm-assets">
+        <p className="text-[12.5px] text-white/55">Real Zyvo outputs and UI from the repo, in the private bucket. The writer can put any <b>active</b> one on a slide ("made with Zyvo" proof, showcases, the screenshot collage style). The fast model tagged each one and excluded anything with a realistic human, a real person or lookalike, or a third-party character or brand. Block anything you don't want used.</p>
+        {data && <p className="mt-2 text-[13px] text-white/75">{Object.entries(data.counts).map(([k, v]) => `${v} ${k}`).join(" · ") || "No assets yet."}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} className={input} aria-label="Status"><option value="">any status</option>{["active", "excluded", "blocked", "pending"].map((s) => <option key={s}>{s}</option>)}</select>
+          <select value={f.tool} onChange={(e) => setF({ ...f, tool: e.target.value })} className={input} aria-label="Tool"><option value="">any tool</option>{tools.map((t) => <option key={t} value={t}>{nice(t)}</option>)}</select>
+        </div>
+        {note && <p className="mt-2 text-[12.5px] text-red-200">{note}</p>}
+      </Card>
+      {!data ? <p className="text-[13px] text-white/50">Loading…</p> : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {data.rows.map((r) => (
+            <figure key={r.id} data-testid="cm-asset" className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+              <div className="aspect-square bg-black">{r.url && <img src={r.url} alt={r.subject ?? ""} loading="lazy" className={`h-full w-full object-cover ${r.status === "active" ? "" : "opacity-40"}`} />}</div>
+              <figcaption className="space-y-1 p-2 text-[11.5px]">
+                <div className="flex flex-wrap items-center gap-1"><Badge tone={ASSET_TONE[r.status]}>{r.status}</Badge>{r.tool && <Badge>{nice(r.tool)}</Badge>}</div>
+                <div className="line-clamp-2 text-white/75" title={r.source_path}>{r.subject ?? r.source_path}</div>
+                {r.exclude_reason && <div className="text-amber-200/80">{r.exclude_reason}</div>}
+                {r.status === "blocked"
+                  ? <button type="button" onClick={() => setStatus(r, "active")} className="text-white/70 underline">Unblock</button>
+                  : r.status !== "pending" && <button type="button" onClick={() => setStatus(r, r.status === "excluded" ? "active" : "blocked")} className="text-white/70 underline">{r.status === "excluded" ? "Use anyway" : "Block"}</button>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

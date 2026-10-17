@@ -4,7 +4,7 @@
 // it, and this page then shows the site's normal "Page Not Found", so nothing reveals the page exists.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./contentMachine/cmApi";
-import { IdeasTab, LibraryTab, TodayTab } from "./contentMachine/SlideshowTabs";
+import { AssetsTab, IdeasTab, LibraryTab, TodayTab } from "./contentMachine/SlideshowTabs";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const money = (n, d = 2) => (n == null ? "–" : `$${Number(n).toFixed(d)}`);
@@ -403,7 +403,7 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["today", "Today"], ["ideas", "Ideas"], ["library", "Library"], ["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Today"], ["ideas", "Ideas"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
@@ -439,6 +439,7 @@ export default function ContentMachine() {
       {tab === "today" && <TodayTab st={st} onChanged={load} />}
       {tab === "ideas" && <IdeasTab />}
       {tab === "library" && <LibraryTab />}
+      {tab === "assets" && <AssetsTab />}
       {tab === "budget" && <BudgetTab st={st} reloadKey={reloadKey} onChanged={load} />}
       {tab === "settings" && <SettingsTab st={st} onStatus={onStatus} />}
     </div>

@@ -101,6 +101,33 @@ export function createPipelineDb(db) {
     async saveLibrary(row) {
       return must(await db.from("cm_library").upsert({ ...row, updated_at: nowIso() }, { onConflict: "kind,key" }).select("*").single(), "save library");
     },
+    /* ─── live progress and cancel ─── */
+    async jobsOfRun(runId) {
+      return must(await db.from("cm_jobs").select("id,idea_id,stage,status,created_at,updated_at").eq("run_id", runId).order("created_at"), "jobs of run");
+    },
+    async cancelQueuedJobs(runId) {
+      must(await db.from("cm_jobs").update({ status: "cancelled", error: "the run was cancelled", updated_at: nowIso() }).eq("run_id", runId).eq("status", "queued"), "cancel jobs");
+    },
+    /** Finished real runs, newest first: how long they took, for "about X min left". */
+    async pastRuns(limit = 10) {
+      return must(await db.from("cm_runs").select("id,started_at,finished_at,input,kind").eq("status", "done").eq("dry_run", false).not("finished_at", "is", null).order("finished_at", { ascending: false }).limit(limit), "past runs");
+    },
+
+    /* ─── the asset library ─── */
+    /** Usable assets as the writer and the image step see them. */
+    async activeAssets() {
+      return must(await db.from("cm_assets").select("ref,path,kind,tool,style,subject,tags").eq("status", "active").order("tool").limit(400), "active assets");
+    },
+    async getAssets(ids) { return must(await db.from("cm_assets").select("*").in("id", ids), "assets"); },
+    async listAssets({ status = null, tool = null, kind = null, limit = 300 } = {}) {
+      let q = db.from("cm_assets").select("*").order("created_at", { ascending: false }).limit(limit);
+      if (status) q = q.eq("status", status);
+      if (tool) q = q.eq("tool", tool);
+      if (kind) q = q.eq("kind", kind);
+      return must(await q, "list assets");
+    },
+    async updateAsset(id, patch) { return must(await db.from("cm_assets").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update asset"); },
+
     /* ─── the logo library ─── */
     async approvedLogos() {
       return must(await db.from("cm_logos").select("name,domain,logo_path").eq("approved", true).not("logo_path", "is", null), "approved logos");

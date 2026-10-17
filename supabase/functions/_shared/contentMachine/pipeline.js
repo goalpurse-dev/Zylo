@@ -21,11 +21,14 @@ import { IMAGE_ESTIMATE_USD } from "./providers/runware.js";
 import { RENDER_ESTIMATE_USD, RENDER_TIMEOUT_MS, renderCostUsd } from "./providers/fly.js";
 import { localDay } from "./spendSummary.js";
 import { domain } from "./slides/templates.js";
+import { assetUpdate, tagRequest } from "./assets.js";
 import { mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
-const TERMINAL = new Set(["done", "failed", "skipped_budget", "rejected"]);
+const TERMINAL = new Set(["done", "failed", "skipped_budget", "rejected", "cancelled"]);
 export const ZYVO_SHOT_PATH = "assets/zyvo-home.png";
+// At most this many generated pictures per slideshow (a background + a hero for each slide).
+export const MAX_IMAGES = 11;
 
 // Reservation ceilings (the actual cost replaces them): writing reads search results, so input is large.
 export const ESTIMATES = {
@@ -46,6 +49,19 @@ export class Retry extends Error {
 export async function runJob(job, deps) {
   const handler = HANDLERS[job.stage];
   if (!handler) throw new Error(`unknown stage ${job.stage}`);
+  // Cancel (owner, 2026-10-18): no new paid step for a cancelled run. A render already running is still
+  // collected (it was paid for), so anything finished is kept.
+  if (job.run_id && job.stage !== "render_wait") {
+    const run = await deps.db.getRun(job.run_id);
+    if (run?.status === "cancelled") {
+      if (job.idea_id) {
+        const idea = await deps.db.getIdea(job.idea_id);
+        if (idea && !TERMINAL.has(idea.status)) await deps.db.updateIdea(job.idea_id, { status: "cancelled" });
+      }
+      await deps.db.finishJob(job.id, "cancelled", "the run was cancelled");
+      return "cancelled";
+    }
+  }
   try {
     const next = await handler(job, deps);
     await deps.db.finishJob(job.id, "done");
@@ -82,6 +98,11 @@ async function stopIdea(deps, ideaId, status, error) {
 
 export async function finishRunIfDone(deps, runId) {
   const ideas = await deps.db.ideasOfRun(runId);
+  const current = await deps.db.getRun(runId);
+  if (current?.status === "cancelled") {
+    if (ideas.every((i) => TERMINAL.has(i.status))) await deps.db.updateRun(runId, { finished_at: current.finished_at ?? deps.now().toISOString(), spend_usd: await deps.db.runSpend(runId) });
+    return true;
+  }
   if (!ideas.length || !ideas.every((i) => TERMINAL.has(i.status))) return false;
   const spend = await deps.db.runSpend(runId);
   const anyDone = ideas.some((i) => i.status === "done");
@@ -103,8 +124,14 @@ export function fallbackModel(env, main) {
 }
 
 /** A main-model call through the guard; on a refusal, ONE retry on the fallback model, also through the guard. */
+/** Guard options for a slideshow's paid calls: its lane, its run, and "live" for an owner-ordered real run. */
+export async function paidOpts(deps, idea, extra = {}) {
+  const run = idea.run_id ? await deps.db.getRun(idea.run_id) : null;
+  return { lane: LANE, runId: idea.run_id, ideaId: idea.id, live: run?.input?.live === true, ...extra };
+}
+
 async function callMain(deps, { operation, request, idea, estimate }) {
-  const opts = { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => ({ dry: true }) };
+  const opts = await paidOpts(deps, idea, { mock: async () => ({ dry: true }) });
   const once = (req, op) => deps.guard.spend("anthropic", op, estimate(req.model), async (ticket) => {
     const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: req });
     return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
@@ -150,12 +177,12 @@ async function plan(job, deps) {
 
 async function writeContext(deps, idea) {
   const s = await deps.db.settings();
-  return { s, library: await deps.db.library(), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env) };
+  return { s, library: await deps.db.library(), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env), assets: (await deps.db.activeAssets?.()) ?? [] };
 }
 
 /** Program checks + near-duplicates. Returns the problems (empty = keep it). */
-function judge(slideshow, idea, recent) {
-  const problems = slideshowProblems(slideshow, idea.recipe);
+function judge(slideshow, idea, recent, assets = []) {
+  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(assets.map((a) => a.ref)) });
   const dup = nearDuplicate(slideshow, recent);
   if (dup) problems.push(`too close to an earlier post ("${dup.title}"): pick a different angle`);
   return problems;
@@ -175,13 +202,13 @@ async function saveSlideshow(deps, idea, slideshow) {
 async function write(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, recent, today, m } = await writeContext(deps, idea);
-  const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title) });
+  const { s, library, recent, today, m, assets } = await writeContext(deps, idea);
+  const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title), assets });
   if (job.payload?.problems?.length) request.messages[0].content += `\n\nYOUR LAST ATTEMPT HAD THESE PROBLEMS, avoid them:\n${job.payload.problems.map((p) => `- ${p}`).join("\n")}`;
   if (job.payload?.note) request.messages[0].content += `\n\nNOTE: ${job.payload.note}`;
   const r = await callMain(deps, { operation: "anthropic.write", request, idea, estimate: (model) => ESTIMATES.write(model) });
   const slideshow = r.dryRun ? mockSlideshow(idea.recipe) : jsonFromMessage(r.result);
-  const problems = r.dryRun ? [] : judge(slideshow, idea, recent);
+  const problems = r.dryRun ? [] : judge(slideshow, idea, recent, assets);
   if (problems.length) {
     if (!job.payload?.problems) {
       await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "write", payload: { problems } }]);
@@ -203,6 +230,7 @@ async function writeBatch(job, deps) {
   const today = localDay(deps.now(), s.timezone);
   const m = models(s, deps.env);
   const recent = await deps.db.recentTitles(30, null);
+  const assets = (await deps.db.activeAssets?.()) ?? [];
   const requests = [], ledger = {};
   let ticket = null;
   for (const idea of ideas) {
@@ -211,7 +239,7 @@ async function writeBatch(job, deps) {
       if (r.dryRun) { await deps.guard.settle(r.ledgerId, { actualUsd: 0, requestRef: "dry-run" }); await deps.db.enqueue([{ run_id: job.run_id, idea_id: idea.id, stage: "write" }]); continue; }
       ticket = ticket ?? r.ticket;
       ledger[idea.id] = r.ledgerId;
-      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title) }) });
+      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title), assets }) });
     } catch (e) {
       if (!(e instanceof BudgetStopped) || e.reason === "kill_switch") throw e;
       await stopIdea(deps, idea.id, "skipped_budget", e.message);
@@ -249,7 +277,7 @@ async function pollBatch(job, deps) {
     }
     await deps.guard.settle(ledgerId, { actualUsd: r.costUsd, requestRef: `${batchId}/${ideaId}` });
     let slideshow = null, problems;
-    try { slideshow = jsonFromMessage(r.message); problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId)); } catch (e) { problems = [e.message]; }
+    try { slideshow = jsonFromMessage(r.message); problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId), (await deps.db.activeAssets?.()) ?? []); } catch (e) { problems = [e.message]; }
     if (problems.length) await deps.db.enqueue([{ run_id: job.run_id, idea_id: ideaId, stage: "write", payload: { problems } }]);
     else await saveSlideshow(deps, idea, slideshow);
   }
@@ -267,7 +295,7 @@ async function check(job, deps) {
   const r = await deps.guard.spend("anthropic", "anthropic.package", ESTIMATES.package(m.fast), async (ticket) => {
     const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: packageRequest({ model: m.fast, brandRules: s.brand_rules, recipe: idea.recipe, slideshow: idea.script, links }) });
     return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
-  }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => ({ dry: true }) });
+  }, await paidOpts(deps, idea, { mock: async () => ({ dry: true }) }));
   const pkg = r.dryRun ? mockPackage() : jsonFromMessage(r.result);
   const problems = [...(pkg.compliance?.ok ? [] : pkg.compliance?.problems ?? ["the compliance check failed"]), ...packageProblems(pkg)];
   const rewritten = Boolean(idea.compliance?.rewritten);
@@ -297,11 +325,11 @@ export function platformPackages(pkg, idea, links) {
 async function rewrite(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, today, m } = await writeContext(deps, idea);
-  const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [] });
+  const { s, library, today, m, assets } = await writeContext(deps, idea);
+  const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets });
   const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
   const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
-  const problems = slideshowProblems(slideshow, idea.recipe);
+  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(assets.map((a) => a.ref)) });
   if (problems.length) throw Object.assign(new Error(`the rewrite failed the checks: ${problems.join("; ")}`), { final: true });
   // A layout rewrite (the text didn't fit) is counted apart from the compliance rewrite: one of each.
   const flag = job.payload?.layout ? { layoutRetried: true } : { rewritten: true };
@@ -319,33 +347,61 @@ async function images(job, deps) {
   const style = library.styles.find((x) => x.key === idea.recipe.style) ?? library.styles[0];
   const gen = await deps.db.ensureGeneration(idea.id);
   const have = gen.source_assets ?? {};
-  const assets = { background: have.background ?? null, illustrations: { ...(have.illustrations ?? {}) }, costs: { ...(have.costs ?? {}) } };
+  // heroes: {slide index: {url} (generated) | {asset: path, ref} (from the asset library)}.
+  const assets = { background: have.background ?? null, heroes: { ...(have.heroes ?? {}) }, costs: { ...(have.costs ?? {}) } };
+  const library_ = (await deps.db.activeAssets?.()) ?? [];
+  const byRef = new Map(library_.map((a) => [a.ref, a]));
   const wanted = [];
+  // The shared background: one per slideshow, for consistency (every style has one now).
   if (!assets.background && style.spec?.bg_prompt) wanted.push(["background", `${style.spec.bg_prompt}. Mood suited to: ${idea.topic ?? idea.title}`]);
-  idea.script.slides.forEach((sl, i) => { if (sl.image_prompt && wanted.length < 4 && !assets.illustrations[i]) wanted.push([i, sl.image_prompt]); });
+  // One hero visual per slide: a library asset when the writer picked one (no cost), else a generated
+  // picture in the style's own look (hero_prompt). Owner, 2026-10-18: "every slide needs a strong visual".
+  idea.script.slides.forEach((sl, i) => {
+    if (assets.heroes[i]) return;
+    const asset = sl.asset_id ? byRef.get(String(sl.asset_id)) : null;
+    if (asset) { assets.heroes[i] = { asset: asset.path, ref: asset.ref }; return; }
+    if (!String(sl.image_prompt ?? "").trim()) return;
+    const subject = String(sl.image_prompt).trim();
+    const prompt = style.spec?.hero_prompt ? style.spec.hero_prompt.replace("{subject}", subject) : subject;
+    if (wanted.length < MAX_IMAGES) wanted.push([i, prompt]);
+  });
+  const opts = await paidOpts(deps, idea, { mock: async () => null });
   for (const [slot, prompt] of wanted) {
-    // Backgrounds carry text, so they have no people at all; illustrations may show invented characters.
-    const kind = slot === "background" && !style.spec?.meme ? "background" : "illustration";
+    // No people at all in backgrounds and in the photoreal / 3D / product styles' pictures (text sits on
+    // them, and a photoreal person risks a lookalike); the meme style's scenes may show invented characters.
+    const kind = style.spec?.meme && slot !== "background" ? "illustration" : "background";
+    const size = slot === "background" ? {} : { width: 1024, height: 1024 };
     // One retry per image. A second failure fails the slideshow: a placeholder is never posted.
     let r = null, last = null;
     for (let attempt = 1; attempt <= 2 && !r; attempt++) {
       try {
         r = await deps.guard.spend("runware", "runware.image.fast", IMAGE_ESTIMATE_USD, async (ticket) => {
-          const out = await deps.images.generateImage(ticket, { apiKey: deps.env.runwareKey, baseUrl: deps.env.runwareBase, prompt, kind });
+          const out = await deps.images.generateImage(ticket, { apiKey: deps.env.runwareKey, baseUrl: deps.env.runwareBase, prompt, kind, ...size });
           return { result: out.url, actualUsd: out.costUsd, requestRef: out.taskUUID };
-        }, { lane: LANE, runId: idea.run_id, ideaId: idea.id, mock: async () => null });
+        }, opts);
       } catch (e) {
         if (e instanceof BudgetStopped) throw e;
         last = e;
       }
     }
     if (!r) throw Object.assign(new Error(`an image failed twice (${slot === "background" ? "background" : `slide ${slot + 1}`}): ${last?.message ?? "unknown"}`), { final: true });
-    if (slot === "background") assets.background = r.result; else assets.illustrations[slot] = r.result;
+    if (slot === "background") assets.background = r.result; else assets.heroes[slot] = { url: r.result };
     assets.costs[slot] = r.actualUsd;
     await deps.db.updateGeneration(gen.id, { source_assets: assets, status: "generating" });   // kept even if a later image fails
   }
+  await deps.db.updateGeneration(gen.id, { source_assets: assets, status: "generating" });
   await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "render" }]);
   return `${wanted.length} images`;
+}
+
+/** The URLs the renderer gets for a slideshow's pictures: generated ones as they are, library assets signed. */
+export async function heroUrls(deps, heroes = {}, seconds = 3600) {
+  const out = {};
+  for (const [i, h] of Object.entries(heroes)) {
+    if (h?.url) out[i] = h.url;
+    else if (h?.asset) out[i] = await deps.files.signedUrl(h.asset, seconds);
+  }
+  return out;
 }
 
 /* ─── render ─────────────────────────────────────────────────────────── */
@@ -396,11 +452,13 @@ async function render(job, deps) {
   };
   const renderJob = {
     ideaId: idea.id, slideshow: { slides: idea.script.slides }, style: style.spec,
-    images: { background: gen.source_assets?.background ?? null, illustrations: gen.source_assets?.illustrations ?? {} },
+    images: { background: gen.source_assets?.background ?? null, heroes: await heroUrls(deps, gen.source_assets?.heroes) },
     zyvoShot: await deps.files.signedUrl(ZYVO_SHOT_PATH, 3600), uploads, secondsPerSlide: 2.5,
     logos: await logosFor(deps, idea.script.slides),
+    // The renderer takes pictures only from these hosts: our own bucket and the image provider.
+    allowedHosts: deps.env.allowedImageHosts ?? [],
   };
-  const r = await deps.guard.reserve("fly", "fly.render.slides", RENDER_ESTIMATE_USD, { lane: LANE, runId: idea.run_id, ideaId: idea.id });
+  const r = await deps.guard.reserve("fly", "fly.render.slides", RENDER_ESTIMATE_USD, await paidOpts(deps, idea));
   let started;
   try {
     started = await deps.fly.startRender(r.ticket, { token: deps.env.flyToken, app: deps.env.flyApp, image: deps.env.flyImage, name: `cm-slides-${idea.id.slice(0, 8)}-${Date.now().toString(36)}`, job: renderJob });
@@ -457,5 +515,36 @@ async function renderWait(job, deps) {
   return "rendered";
 }
 
-const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait };
+/* ─── the asset library: tagging ─────────────────────────────────────── */
+
+async function tagAssets(job, deps) {
+  const rows = (await deps.db.getAssets(job.payload?.ids ?? [])).filter((a) => a.status === "pending");
+  if (!rows.length) return "nothing to tag";
+  const s = await deps.db.settings();
+  const model = models(s, deps.env).fast;
+  const items = [];
+  for (const a of rows) {
+    const url = await deps.files.signedUrl(a.path, 1800);
+    if (url) items.push({ ref: a.ref, source_path: a.source_path, url, id: a.id });
+  }
+  const opts = { lane: "assets", live: job.payload?.live === true, mock: async () => ({ dry: true }) };
+  const r = await deps.guard.spend("anthropic", "anthropic.tag_assets", estimateUsd({ model, inputTokens: items.length * 1800 + 900, outputTokens: items.length * 160 }), async (ticket) => {
+    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: tagRequest({ model, items }) });
+    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
+  }, opts);
+  if (r.dryRun) return "dry run: not tagged";
+  const tags = jsonFromMessage(r.result).images ?? [];
+  const now = deps.now().toISOString();
+  let done = 0;
+  for (const it of items) {
+    const t = tags.find((x) => x.ref === it.ref);
+    if (!t) continue;
+    await deps.db.updateAsset(it.id, assetUpdate(t, now));
+    done += 1;
+  }
+  return `tagged ${done} of ${items.length}`;
+}
+
+
+const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, tag_assets: tagAssets };
 export const STAGES = Object.keys(HANDLERS);

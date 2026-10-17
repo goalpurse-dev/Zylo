@@ -30,7 +30,7 @@ export const SLIDESHOW_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["kind", "headline", "body", "label", "items", "tool", "image_prompt", "is_zyvo"],
+        required: ["kind", "headline", "body", "label", "items", "tool", "image_prompt", "asset_id", "is_zyvo"],
         properties: {
           kind: { type: "string", enum: SLIDE_KINDS },
           headline: { type: "string" },
@@ -44,6 +44,7 @@ export const SLIDESHOW_SCHEMA = {
             properties: { name: { type: "string" }, url: { type: "string" }, what_it_does: { type: "string" } },
           },
           image_prompt: nullable("string"),
+          asset_id: nullable("string"),
           is_zyvo: { type: "boolean" },
         },
       },
@@ -73,11 +74,18 @@ export const PACKAGE_SCHEMA = {
 
 const libraryText = (library) => [
   "FORMATS:", ...library.formats.map((f) => `- ${f.key}: ${f.name}. ${f.description} (slides ${JSON.stringify(f.spec?.slides ?? [5, 7])}; Zyvo: ${f.spec?.zyvo ?? "one honest mention"})`),
-  "VISUAL STYLES (the renderer draws these; you only write words and background ideas):", ...library.styles.map((s) => `- ${s.key}: ${s.name}. ${s.description}`),
+  "VISUAL STYLES (the renderer draws the words; you choose each slide's picture):", ...library.styles.map((s) => `- ${s.key}: ${s.name}. ${s.description}${s.spec?.visual ? ` Pictures: ${s.spec.visual}.` : ""}`),
   "HOOK TYPES:", ...library.hooks.map((h) => `- ${h.key}: ${h.name}. ${h.description} e.g. "${h.spec?.example ?? ""}"`),
 ].join("\n");
 
-export function writeSystem({ brandRules, library }) {
+/** The asset library as the writer sees it: one line per usable asset (ref, tool, subject, tags). */
+export function assetsText(assets = []) {
+  if (!assets.length) return "ASSET LIBRARY: empty for now (use image_prompt).";
+  return ["ASSET LIBRARY (real Zyvo outputs and UI; use one by putting its ref in asset_id):",
+    ...assets.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}`)].join("\n");
+}
+
+export function writeSystem({ brandRules, library, assets = [] }) {
   return `You write short-form SLIDESHOW posts (TikTok/Instagram photo carousels, also cut into a Shorts/Reels video) for Zyvo's own accounts. Each post is a labelled experiment: you are given a recipe (format, hook type, style, where Zyvo appears, CTA type, platform, text density, slide count) and you follow it exactly.
 
 ABOUT ZYVO (the only facts you may state about it):
@@ -89,18 +97,24 @@ ${brandRules}
 THE LIBRARY:
 ${libraryText(library)}
 
+${assetsText(assets)}
+
 HOW TO WRITE IT:
 - The cover (slide 1) carries the hook: it must stop the scroll in under 2 seconds. Short, concrete, no clickbait lies.
 - Each post must be entertaining or useful on its own. Zyvo is snuck in at the recipe's position, never the hook.
 - zyvo_position: early = slide 2–3, middle = the middle slide, late = the slide before the last, cta_only = Zyvo only in the last (cta) slide. Mark Zyvo's slide is_zyvo = true; use kind "zyvo" for a slide about Zyvo itself, or kind "item" with tool {name: "Zyvo", url: "tryzyvo.com", ...} in a listicle.
 - Real tools only. Use web search to check that every tool you name exists, what it does, and its official address; list each in tools_checked with the page you checked. Never invent features, prices or numbers. If you can't verify a tool, leave it out.
-- No real logos: tool slides show an icon tile with the tool's name, which the renderer draws. Don't describe logos.
+- Don't describe or ask for logos: the renderer shows the tool's official logo (only if the owner approved it) or an icon tile with its initials, small, next to its name.
 - Text density: low = headline only (≤ 8 words) on most slides; medium = headline + one short line; high = headline + 2–3 lines or a short list.
 - headline ≤ 60 characters. body ≤ 160 characters. items ≤ 5 per slide, ≤ 40 characters each. Wrap ONE key phrase of a headline in *asterisks* to get the yellow highlight bar.
-- image_prompt: an idea for an illustration for that slide (scene, mood, colours), or null. It must never ask for text, letters, logos or brands, and NEVER for a real person, a celebrity, a public figure or anyone who looks like one; prefer scenes and objects, and if a character is needed it is an invented cartoon character. At most 3 slides get one. Every slide of kind "meme" needs one (its picture).
+- EVERY slide gets a strong visual (posts that are walls of text don't stop the scroll). For each slide give EITHER image_prompt OR asset_id:
+  - image_prompt: the ONE concrete subject of that slide's picture, matching the slide's point and the style's picture language (e.g. "a glowing film clapperboard with a play button", "a microphone on a velvet desk at night"). Just the subject: the style's look is added for you. Never text, letters, logos or brands, and NEVER a real person, a celebrity, a public figure or anyone who looks like one; prefer objects and scenes; a character must be an invented cartoon character.
+  - asset_id: a ref from the ASSET LIBRARY, for "made with Zyvo" proof, output showcases and the screenshot_collage style (which uses real Zyvo UI and outputs first). Only refs that are listed.
+  - Only a cta slide (or a quiz answer) may have neither; it then sits on the slideshow's background picture.
 - Never imply that Zyvo is partnered with, endorsed by or affiliated with any tool you list.
 - The last slide is kind "cta" and matches the recipe's cta_type: link_in_bio ("tool's in my bio"), comment_keyword ("comment ZYVO and I'll send the link"), soft_mention ("made with Zyvo"), question (a question that invites comments).
 - First person only when true: "I built Zyvo" is true; invented experiences ("I've used X for 6 months", "this made me $5k") are not allowed.
+- Stories are clearly hypothetical ("Imagine…", "POV: you…") or about "you", the viewer. Never a made-up real person ("She edited for 6 hours… 212 views" reads like a real testimonial: not allowed).
 - hypothesis: one line saying what this post tests, e.g. "a question hook beats a statement hook for tool listicles".
 - ai_label_required: true if any slide uses realistic AI imagery.
 - virality_score: your honest 1–10 estimate.
@@ -116,22 +130,22 @@ DON'T REPEAT these recent posts (titles):
 ${avoidTitles.length ? avoidTitles.slice(0, 60).map((t) => `- ${t}`).join("\n") : "- none yet"}`;
 }
 
-export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4 }) {
+export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4, assets = [] }) {
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: writeUser({ recipe, today, avoidTitles }) }],
     tools: [{ type: WEB_SEARCH_TOOL, name: "web_search", max_uses: maxSearches }],
     output_config: { effort: "medium", format: { type: "json_schema", schema: SLIDESHOW_SCHEMA } },
   };
 }
 
-export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems }) {
+export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems, assets = [] }) {
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: `${writeUser({ recipe, today })}
 
 A compliance check found these problems in the post below. Rewrite it so every problem is gone; keep what works. Don't add tools you haven't checked before (you have no web search now): drop any you can't vouch for.
@@ -160,7 +174,7 @@ PACKAGING:
 - sound_suggestion: a description of the kind of sound that fits (mood, tempo, "a trending lo-fi sound"); the owner picks the actual sound in the app. Never name copyrighted songs as if they were included.
 - Hashtags start with # and have no spaces.
 
-COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. So is any image_prompt that describes a real person, a celebrity, a public figure or a lookalike of one, and any wording that implies Zyvo is partnered with, endorsed by or affiliated with another tool. compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
+COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. So is any image_prompt that describes a real person, a celebrity, a public figure or a lookalike of one, any wording that implies Zyvo is partnered with, endorsed by or affiliated with another tool, and any story about a specific made-up person told as if real (stories must be hypothetical, "Imagine…" / "POV: you…", or about "you"). compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
 Return only the JSON object.`;
 }
 
@@ -179,7 +193,7 @@ THE POST: ${JSON.stringify(slideshow)}` }],
 /* ─── checks on what came back ───────────────────────────────────────── */
 
 /** Problems a program can see (empty = fine). The model's own compliance check is separate. */
-export function slideshowProblems(s, recipe) {
+export function slideshowProblems(s, recipe, opts = {}) {
   const p = [];
   if (!s || !Array.isArray(s.slides)) return ["no slides"];
   const n = s.slides.length;
@@ -195,7 +209,12 @@ export function slideshowProblems(s, recipe) {
     if (String(x.body ?? "").length > 200) p.push(`slide ${i + 1}: text too long`);
     if ((x.items ?? []).length > 6) p.push(`slide ${i + 1}: too many items`);
   });
-  if (s.slides.filter((x) => x.image_prompt).length > 3) p.push("more than 3 image prompts");
+  // Visual richness: every slide but a cta / quiz answer has a picture (a prompt or a library asset).
+  s.slides.forEach((x, i) => {
+    const hasVisual = String(x.image_prompt ?? "").trim() || String(x.asset_id ?? "").trim();
+    if (!hasVisual && !["cta", "quiz_answer"].includes(x.kind)) p.push(`slide ${i + 1}: no visual (give an image_prompt or an asset_id)`);
+    if (x.asset_id && opts.assetRefs && !opts.assetRefs.has(String(x.asset_id))) p.push(`slide ${i + 1}: asset_id ${x.asset_id} is not in the library`);
+  });
   s.slides.forEach((x, i) => { if (x.kind === "meme" && !String(x.image_prompt ?? "").trim()) p.push(`slide ${i + 1}: a meme slide needs an image_prompt (its picture)`); });
   // A program backstop for the obvious cases; the model's compliance check covers the rest.
   const people = /\b(celebrit\w*|famous people|lookalike|look-alike|resembl\w*|elon musk|mrbeast|taylor swift|ronaldo|messi|kardashian\w*|real person)\b/i;
@@ -260,7 +279,8 @@ export function mockSlideshow(recipe) {
       label: kind === "item" ? String(i) : null,
       items: [],
       tool: kind === "item" ? { name: `Example tool ${i}`, url: "example.com", what_it_does: "A placeholder for a real, checked tool." } : null,
-      image_prompt: i === 0 ? "placeholder background" : null,
+      image_prompt: kind === "cta" ? null : "a placeholder subject",
+      asset_id: null,
       is_zyvo: kind === "zyvo" || (recipe.zyvo_position === "cta_only" && kind === "cta"),
     };
   });

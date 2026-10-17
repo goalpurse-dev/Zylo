@@ -28,6 +28,11 @@ export function fakeWorld(settings = {}) {
     experiment_started_on: null, daily_auto_run: true, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
   };
   const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [];
+  const assets = [
+    { id: "A1", ref: "aaaa1111", path: "library/aaaa1111.webp", source_path: "public/lp/stickman/a.webp", kind: "scene", tool: "long_form", subject: "a stickman explaining history", tags: ["stickman"], status: "active" },
+    { id: "A2", ref: "bbbb2222", path: "library/bbbb2222.webp", source_path: "public/lp/fruit/b.webp", kind: "output", tool: "ai_fruit_story", subject: "a strawberry on a stage", tags: ["fruit"], status: "active" },
+    { id: "A3", ref: "cccc3333", path: "library/cccc3333.webp", source_path: "public/face/c.webp", kind: "output", tool: null, subject: null, tags: [], status: "pending" },
+  ];
   const logos = [
     { id: "LOGO-zyvo", name: "Zyvo", domain: "tryzyvo.com", logo_path: "logos/tryzyvo.com.png", source_url: "https://www.tryzyvo.com", approved: true },
     { id: "LOGO-descript", name: "Descript", domain: "descript.com", logo_path: null, source_url: null, approved: false },
@@ -90,6 +95,13 @@ export function fakeWorld(settings = {}) {
       if (keepAttempt) j.attempts = Math.max(0, j.attempts - 1);
     },
     async dailyRunExists(day) { return runs.some((r) => r.kind === "daily" && r.run_date === day); },
+    async activeAssets() { return assets.filter((a) => a.status === "active"); },
+    async getAssets(ids) { return assets.filter((a) => ids.includes(a.id)); },
+    async listAssets({ status = null } = {}) { return assets.filter((a) => !status || a.status === status); },
+    async updateAsset(i, p) { const a = assets.find((x) => x.id === i); Object.assign(a, p); return a; },
+    async jobsOfRun(r) { return jobs.filter((j) => j.run_id === r); },
+    async cancelQueuedJobs(r) { for (const j of jobs) if (j.run_id === r && j.status === "queued") j.status = "cancelled"; },
+    async pastRuns() { return runs.filter((r) => r.status === "done" && !r.dry_run && r.finished_at); },
     async approvedLogos() { return logos.filter((l) => l.approved && l.logo_path); },
     async listLogos() { return [...logos]; },
     async getLogo(i) { const l = logos.find((x) => x.id === i); if (!l) throw new Error("no logo"); return l; },
@@ -98,7 +110,7 @@ export function fakeWorld(settings = {}) {
   };
   const uploads = [];
   const clock = { now: new Date("2026-10-20T06:30:00Z") };   // 09:30 in Helsinki
-  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, store, db, clock };
+  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, assets, store, db, clock };
 }
 
 /* ─── fake providers that behave like the real ones ──────────────────── */
@@ -107,7 +119,7 @@ export function validSlideshow(recipe, title = "5 AI tools that replace a video 
   const slides = Array.from({ length: n }, (_, i) => ({
     kind: i === 0 ? "cover" : i === n - 1 ? "cta" : "item", headline: i === 0 ? title : `Point ${i}`, body: null, label: null, items: [],
     tool: i > 0 && i < n - 1 ? { name: i === 2 ? "Zyvo" : `Tool${i}`, url: "https://x.com", what_it_does: "Does a real thing." } : null,
-    image_prompt: i === 1 ? "a desk at night" : null, is_zyvo: i === 2,
+    image_prompt: i === n - 1 ? null : `subject ${i}`, asset_id: null, is_zyvo: i === 2,
   }));
   return { title, topic: "AI tools", hook: "Number 3 surprised me", hypothesis: "question hook beats statement", slides,
     tools_checked: slides.filter((s) => s.tool && s.tool.name !== "Zyvo").map((s) => ({ name: s.tool.name, url: s.tool.url, source_url: s.tool.url })),
@@ -132,6 +144,16 @@ export function fakeProviders(world, { packageOk = [true], badFirstWrite = false
     async createMessage(ticket, { request }) {
       assertTicket(ticket, "anthropic");
       calls.messages.push(request);
+      if (/catalogue images/i.test(request.system[0].text.slice(0, 120))) {
+        // The asset tagger: anything from a "face" folder shows a realistic human.
+        const refs = request.messages[0].content.filter((c) => c.type === "text" && c.text.startsWith("ref ")).map((c) => /^ref (\S+) · from (\S+)/.exec(c.text));
+        const images = refs.map(([, ref, from]) => ({ ref, tool: /fruit/.test(from) ? "ai_fruit_story" : "other", kind: "output", style: "cartoon", subject: `a picture from ${from}`, tags: ["test"],
+          realistic_human: /face/.test(from), celebrity_or_lookalike: false, third_party_character_or_brand: false, text_heavy: false, usable: !/face/.test(from), reason: /face/.test(from) ? "a realistic face" : null }));
+        const body = msg({ images }, { input_tokens: 12000, output_tokens: 800 });
+        body.model = "claude-haiku-5-5";
+        calls.tagged = (calls.tagged ?? 0) + images.length;
+        return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
+      }
       const isPackage = /package/i.test(request.system[0].text.slice(0, 80));
       if (isPackage) {
         const ok = packageOk[Math.min(pkgN++, packageOk.length - 1)];
