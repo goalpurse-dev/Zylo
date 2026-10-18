@@ -57,6 +57,7 @@ export function ideaView(idea, costs, urls) {
       images: {
         background: gen.source_assets?.background ?? null,
         heroes: Object.fromEntries(Object.entries(gen.source_assets?.heroes ?? {}).map(([i, h]) => [i, h?.url ?? (h?.asset ? urls[h.asset] ?? null : null)])),
+        collages: Object.fromEntries(Object.entries(gen.source_assets?.collages ?? {}).map(([i, list]) => [i, (list ?? []).map((h) => (h?.asset ? urls[h.asset] ?? null : null)).filter(Boolean)])),
       },
       pngs: (f.pngs ?? []).map(url), zip: url(f.zip), mp4: url(f.mp4),
     },
@@ -136,7 +137,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       const rows = await cm.listIdeas(filters);
       const costs = await cm.ideaCosts(rows.map((r) => r.id));
       const paths = rows.flatMap((r) => (r.cm_generations ?? []).flatMap((g) => [...(g.files?.pngs ?? []), g.files?.zip, g.files?.mp4,
-        ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset)].filter(Boolean)));
+        ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset), ...Object.values(g.source_assets?.collages ?? {}).flat().map((h) => h?.asset)].filter(Boolean)));
       const urls = await files.signedUrls(paths, 900);
       const library = await cm.libraryAll();
       return {

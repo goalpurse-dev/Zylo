@@ -6,6 +6,8 @@
 //                 with no real asset is LEFT OUT (never a generated stand-in: owner's honesty rule)
 //   is_zyvo       shows real Zyvo: its asset, else the real Zyvo screen; never a generated picture
 
+import { usableAssets } from "./writer.js";
+
 const S = (kind, headline, extra = {}) => ({ kind, headline, body: null, label: null, items: [], tool: null, image_prompt: null, asset_id: null, is_zyvo: false, ...extra });
 const T = (name, url, what) => ({ name, url, what_it_does: what });
 
@@ -74,7 +76,8 @@ export function resolveSample(sample, assets) {
   const slides = [];
   for (const { asset_pick, ...slide } of sample.slides) {
     if (!asset_pick) { slides.push(slide); continue; }
-    const hit = assets.find((a) => a.tool === asset_pick.tool && !used.has(a.ref) && a.kind !== "ui");
+    // A clean frame first (no burned-in subtitles); never one whose subtitle is cut off mid-sentence.
+    const hit = usableAssets(assets).find((a) => a.tool === asset_pick.tool && !used.has(a.ref) && a.kind !== "ui");
     if (hit) { used.add(hit.ref); slides.push({ ...slide, asset_id: hit.ref, image_prompt: null }); continue; }
     // No real output for this tool: a showcase slide about it is skipped; other Zyvo slides show the Zyvo screen.
     if (sample.format === "zyvo_showcase" && slide.kind === "text") continue;

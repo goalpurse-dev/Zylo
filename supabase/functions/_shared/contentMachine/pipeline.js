@@ -23,11 +23,13 @@ import { localDay } from "./spendSummary.js";
 import { domain } from "./slides/templates.js";
 import { assetUpdate, tagRequest } from "./assets.js";
 import { qaFindings, qaRequest } from "./qa.js";
-import { mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
+import { usableAssets, mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
 const TERMINAL = new Set(["done", "failed", "skipped_budget", "rejected", "cancelled"]);
-export const ZYVO_SHOT_PATH = "assets/zyvo-home.png";
+// The real Zyvo screen on a Zyvo slide without an asset: a tight, readable crop of one feature (the Long
+// Form niche + style picker), not the whole home page (flagged as unreadable on a phone, 2026-10-18).
+export const ZYVO_SHOT_PATH = "assets/zyvo-ui-picker.png";
 // At most this many generated pictures per slideshow (a background + a hero for each slide).
 export const MAX_IMAGES = 11;
 
@@ -189,7 +191,7 @@ async function writeContext(deps, idea) {
 
 /** Program checks + near-duplicates. Returns the problems (empty = keep it). */
 function judge(slideshow, idea, recent, assets = []) {
-  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(assets.map((a) => a.ref)) });
+  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(usableAssets(assets).map((a) => a.ref)) });
   const dup = nearDuplicate(slideshow, recent);
   if (dup) problems.push(`too close to an earlier post ("${dup.title}"): pick a different angle`);
   return problems;
@@ -336,7 +338,7 @@ async function rewrite(job, deps) {
   const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets });
   const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
   const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
-  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(assets.map((a) => a.ref)) });
+  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(usableAssets(assets).map((a) => a.ref)) });
   if (problems.length) throw Object.assign(new Error(`the rewrite failed the checks: ${problems.join("; ")}`), { final: true });
   // A layout rewrite (the text didn't fit) is counted apart from the compliance rewrite: one of each.
   const flag = job.payload?.layout ? { layoutRetried: true } : { rewritten: true };
@@ -355,7 +357,7 @@ async function images(job, deps) {
   const gen = await deps.db.ensureGeneration(idea.id);
   const have = gen.source_assets ?? {};
   // heroes: {slide index: {url} (generated) | {asset: path, ref} (from the asset library)}.
-  const assets = { background: have.background ?? null, heroes: { ...(have.heroes ?? {}) }, costs: { ...(have.costs ?? {}) } };
+  const assets = { background: have.background ?? null, heroes: { ...(have.heroes ?? {}) }, costs: { ...(have.costs ?? {}) }, ...(have.collages ? { collages: have.collages } : {}) };
   const library_ = (await deps.db.activeAssets?.()) ?? [];
   const byRef = new Map(library_.map((a) => [a.ref, a]));
   const wanted = [];
@@ -363,8 +365,16 @@ async function images(job, deps) {
   if (!assets.background && style.spec?.bg_prompt) wanted.push(["background", `${style.spec.bg_prompt}. Mood suited to: ${idea.topic ?? idea.title}`]);
   // One hero visual per slide: a library asset when the writer picked one (no cost), else a generated
   // picture in the style's own look (hero_prompt). Owner, 2026-10-18: "every slide needs a strong visual".
+  // A showcase cover is the collage of the real outputs on its later slides (owner, 2026-10-18): no picture
+  // of its own is generated.
+  const showcase = idea.recipe?.format === "zyvo_showcase" && idea.script.slides[0]?.kind === "cover";
+  if (showcase) {
+    const outputs = idea.script.slides.slice(1).map((sl) => (sl.asset_id ? byRef.get(String(sl.asset_id)) : null)).filter(Boolean);
+    const unique = [...new Map(outputs.map((a) => [a.ref, a])).values()].slice(0, 4);
+    if (unique.length >= 2) { assets.collages = { 0: unique.map((a) => ({ asset: a.path, ref: a.ref })) }; delete assets.heroes[0]; }
+  }
   idea.script.slides.forEach((sl, i) => {
-    if (assets.heroes[i]) return;
+    if (assets.heroes[i] || (i === 0 && assets.collages?.[0])) return;
     const asset = sl.asset_id ? byRef.get(String(sl.asset_id)) : null;
     if (asset) { assets.heroes[i] = { asset: asset.path, ref: asset.ref }; return; }
     // A slide about Zyvo shows real Zyvo (its asset, else the real Zyvo screen): never a generated picture.
@@ -378,7 +388,7 @@ async function images(job, deps) {
   for (const [slot, prompt] of wanted) {
     // No people at all in backgrounds and in the photoreal / 3D / product styles' pictures (text sits on
     // them, and a photoreal person risks a lookalike); the meme style's scenes may show invented characters.
-    const kind = style.spec?.meme && slot !== "background" ? "illustration" : "background";
+    const kind = style.spec?.meme && slot !== "background" ? "meme" : "background";
     // Each picture is made at the shape of the frame it fills, so nothing needs cropping: heroes 4:3 (the
     // frame takes the picture's own shape), a meme picture tall (it fills the slide under the caption bar).
     const slide = slot === "background" ? null : idea.script.slides[slot];
@@ -414,6 +424,13 @@ export async function heroUrls(deps, heroes = {}, seconds = 3600) {
     if (h?.url) out[i] = h.url;
     else if (h?.asset) out[i] = await deps.files.signedUrl(h.asset, seconds);
   }
+  return out;
+}
+
+/** The showcase covers' collages: {slide index: [signed urls]}. */
+export async function collageUrls(deps, collages = {}, seconds = 3600) {
+  const out = {};
+  for (const [i, list] of Object.entries(collages ?? {})) out[i] = Object.values(await heroUrls(deps, { ...list }, seconds));
   return out;
 }
 
@@ -469,7 +486,7 @@ async function render(job, deps) {
   };
   const renderJob = {
     ideaId: idea.id, slideshow: { slides: idea.script.slides }, style: style.spec,
-    images: { background: gen.source_assets?.background ?? null, heroes: await heroUrls(deps, gen.source_assets?.heroes) },
+    images: { background: gen.source_assets?.background ?? null, heroes: await heroUrls(deps, gen.source_assets?.heroes), collages: await collageUrls(deps, gen.source_assets?.collages) },
     zyvoShot: await deps.files.signedUrl(ZYVO_SHOT_PATH, 3600), uploads, secondsPerSlide: 2.5,
     logos: await logosFor(deps, idea.script.slides),
     // The renderer takes pictures only from these hosts: our own bucket and the image provider.
@@ -527,6 +544,10 @@ async function renderWait(job, deps) {
     status: "done", video_path: paths.mp4, thumbnail_path: paths.pngs[0], duration_s: manifest.durationSec,
     files: { pngs: paths.pngs, zip: paths.zip, mp4: paths.mp4, sizes: manifest.sizes ?? null },
   });
+  // Empty space (owner, 2026-10-18): a slide with more than ~25 % of the safe area unused still renders, but
+  // the slideshow is marked for the owner.
+  const empty = (manifest.warnings ?? []).flatMap((w) => w.warnings.map((x) => `slide ${w.slide}: ${x}`));
+  if (empty.length) await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), flagged: true, emptySpace: empty, problems: [...(idea.compliance?.problems ?? []).filter((p) => !/of the safe area is empty/.test(p)), ...empty] } });
   // The vision QA check looks at the finished slides before the slideshow counts as done.
   await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "qa" }]);
   return "rendered";
@@ -544,7 +565,7 @@ async function qa(job, deps) {
   const slides = [];
   for (const [n, path] of (gen.files?.pngs ?? []).entries()) {
     const h = heroes[n];
-    const picture = h?.url ? "generated" : h?.asset ? "a real Zyvo output from the library" : idea.script.slides[n]?.is_zyvo ? "the real Zyvo screen" : "the background";
+    const picture = n === 0 && gen.source_assets?.collages?.[0] ? "a collage of real Zyvo outputs from the library" : h?.url ? "generated" : h?.asset ? "a real Zyvo output from the library" : idea.script.slides[n]?.is_zyvo ? "the real Zyvo screen" : "the background";
     slides.push({ slide: n + 1, kind: idea.script.slides[n]?.kind ?? "slide", picture, url: await deps.files.signedUrl(path, 1800) });
   }
   const r = await deps.guard.spend("anthropic", "anthropic.qa", estimateUsd({ model, inputTokens: slides.length * 1700 + 900, outputTokens: slides.length * 90 }), async (ticket) => {
@@ -567,16 +588,62 @@ async function qa(job, deps) {
     await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "images" }]);
     return `qa: regenerating slides ${regenerable.join(", ")}`;
   }
-  // Still flagged (or nothing to regenerate): kept, but marked for the owner in admin.
   const problems = Object.entries(findings).map(([n, f]) => `slide ${n}: ${f.flags.join(", ")}${f.note ? ` (${f.note})` : ""}`);
+  // A meme slideshow still flagged after its regenerate is dropped and replaced by another format × style,
+  // so the batch stays complete (owner, 2026-10-18). One replacement per dropped slideshow.
+  if (idea.recipe?.style === "meme_style" && idea.compliance?.qaRetried && !idea.recipe?.replaces) {
+    await deps.db.updateIdea(idea.id, { status: "rejected", error: "dropped: still flagged by the QA check after its regenerate (replaced)", compliance: { ...(idea.compliance ?? {}), qa: { checked: true, findings }, flagged: true, ok: false, dropped: true, problems: [...(idea.compliance?.problems ?? []), ...problems] } });
+    const replacement = await replaceIdea(deps, idea);
+    await finishRunIfDone(deps, idea.run_id);
+    return `qa: dropped the meme slideshow; replaced by ${replacement.recipe.format} × ${replacement.recipe.style}`;
+  }
+  // Still flagged (or nothing to regenerate): kept, but marked for the owner in admin.
   await done({ flagged: true, ok: false, problems: [...(idea.compliance?.problems ?? []), ...problems] });
   return `qa flagged: ${problems.join("; ")}`;
+}
+
+/**
+ * The vision QA check on slides that aren't a slideshow of a run (owner-ordered, 2026-10-18: the format ×
+ * style grid after a layout change). payload: { paths: PNGs under qa/ in the bucket (≤ 12), kinds,
+ * pictures, out: where the findings are saved (qa/…json), live }. Through the Budget Guard, lane "qa".
+ */
+async function qaCheck(job, deps) {
+  const p = job.payload ?? {};
+  const paths = (p.paths ?? []).map(String).filter((x) => x.startsWith("qa/")).slice(0, 12);
+  const out = String(p.out ?? "");
+  if (!paths.length || !out.startsWith("qa/") || !out.endsWith(".json")) throw Object.assign(new Error("qa_check needs PNGs and an output under qa/"), { final: true });
+  const model = models(await deps.db.settings(), deps.env).fast;
+  const slides = [];
+  for (const [n, path] of paths.entries()) slides.push({ slide: n + 1, kind: p.kinds?.[n] ?? "slide", picture: p.pictures?.[n] ?? "generated", url: await deps.files.signedUrl(path, 1800) });
+  const r = await deps.guard.spend("anthropic", "anthropic.qa_check", estimateUsd({ model, inputTokens: slides.length * 1700 + 900, outputTokens: slides.length * 90 }), async (ticket) => {
+    const res = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: qaRequest({ model, slides }) });
+    return { result: res.body, actualUsd: res.costUsd, requestRef: res.body?.id };
+  }, { lane: "qa", live: p.live === true, mock: async () => ({ dry: true }) });
+  const findings = r.dryRun ? null : qaFindings(jsonFromMessage(r.result));
+  await deps.files.writeJson(out, { checkedAt: deps.now().toISOString(), dryRun: Boolean(r.dryRun), paths, findings, costUsd: r.actualUsd ?? 0 });
+  return r.dryRun ? "dry run: not checked" : `checked ${paths.length}: ${Object.keys(findings).length} flagged`;
+}
+
+/** A new idea in the same run with a different format × style (never the meme style), written from scratch. */
+async function replaceIdea(deps, idea) {
+  const run = await deps.db.getRun(idea.run_id);
+  const full = await deps.db.library();
+  const library = { ...full, styles: full.styles.filter((s) => s.key !== "meme_style"), formats: full.formats.filter((f) => f.key !== "meme") };
+  const today = (await deps.db.ideasOfRun(idea.run_id)).map((i) => i.recipe).filter(Boolean);
+  const [r] = planRecipes({ library, history: [...today, ...today, ...(await deps.db.recentRecipes(120))], count: 1, seed: `${idea.run_id}-replace-${idea.id}`, topic: run?.input?.topic || null });
+  const [created] = await deps.db.createIdeas([{
+    run_id: idea.run_id, status: "producing", source: idea.source ?? "machine", format: r.format, zyvo_tool: null, title: "(being written)",
+    recipe: { ...r, replaces: idea.id }, topic: r.topic, dry_run: idea.dry_run, target_platforms: idea.target_platforms ?? ["tiktok", "instagram", "youtube"],
+  }]);
+  await deps.db.enqueue([{ run_id: idea.run_id, idea_id: created.id, stage: "write" }]);
+  return created;
 }
 
 /* ─── the asset library: tagging ─────────────────────────────────────── */
 
 async function tagAssets(job, deps) {
-  const rows = (await deps.db.getAssets(job.payload?.ids ?? [])).filter((a) => a.status === "pending");
+  // payload.retag (owner-ordered): active assets are looked at again (the subtitles tag, 2026-10-18).
+  const rows = (await deps.db.getAssets(job.payload?.ids ?? [])).filter((a) => a.status === "pending" || (job.payload?.retag && a.status === "active"));
   if (!rows.length) return "nothing to tag";
   const s = await deps.db.settings();
   const model = models(s, deps.env).fast;
@@ -604,5 +671,5 @@ async function tagAssets(job, deps) {
 }
 
 
-const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, qa, tag_assets: tagAssets };
+const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, qa, qa_check: qaCheck, tag_assets: tagAssets };
 export const STAGES = Object.keys(HANDLERS);

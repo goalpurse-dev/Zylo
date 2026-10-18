@@ -67,6 +67,7 @@ function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png
       {png ? <img src={png} alt={`Slide ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
         : <iframe ref={frame} title={`Slide ${index + 1}`} srcDoc={html} sandbox="allow-scripts" className="pointer-events-none origin-top-left border-0" style={{ width: 1080, height: 1920, transform: `scale(${scale})` }} />}
       {safeZones && <ZoneOverlay />}
+      {!bad && layout?.warnings?.length > 0 && <div className="absolute inset-x-1 bottom-1 rounded-md bg-amber-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-black" title={layout.warnings.join("; ")}>Space: {layout.warnings[0]}</div>}
       {bad && <div className="absolute inset-x-1 bottom-1 rounded-md bg-red-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-white" title={layout.problems.join("\n")}>Layout: {layout.problems[0]}{layout.problems.length > 1 ? ` (+${layout.problems.length - 1})` : ""}</div>}
     </div>
   );
@@ -141,7 +142,7 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
   const r = idea.recipe ?? {};
   const g = idea.generation;
   const style = styles?.[r.style];
-  const images = (i) => ({ background: g?.images?.background ?? null, hero: g?.images?.heroes?.[i] ?? null });
+  const images = (i) => ({ background: g?.images?.background ?? null, hero: g?.images?.heroes?.[i] ?? null, collage: g?.images?.collages?.[i] ?? null });
   const act = async (action, body, label) => {
     setBusy(label); setNote(null);
     try { await api(action, body); onChanged(); } catch (e) { setNote(e.message); }

@@ -107,8 +107,9 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .content{position:absolute;left:${I.x0}px;top:${I.y0}px;width:${I.x1 - I.x0}px;height:${I.y1 - I.y0}px;display:flex;flex-direction:column;justify-content:safe center;gap:36px}
 .content>*{flex-shrink:0}
 .kicker{font:800 30px/1.2 "Inter";letter-spacing:.14em;text-transform:uppercase;color:${style.accent}}
-.headline{font-family:${head};font-weight:${headWeight};text-transform:${style.font === "inter" ? "none" : "uppercase"};line-height:1.12;letter-spacing:${style.font === "inter" ? "-0.02em" : "0.005em"};color:${style.fg};text-wrap:balance${hasPhoto && !light ? ";text-shadow:0 4px 24px rgba(0,0,0,.55)" : ""}}
-.hl{background:${style.highlight};color:${isLight(style.highlight) ? "#0b0b0f" : "#ffffff"};padding:0 .12em;margin:0 -.02em;box-decoration-break:clone;-webkit-box-decoration-break:clone;border-radius:.06em;text-shadow:none}
+.headline{font-family:${head};font-weight:${headWeight};text-transform:${style.font === "inter" ? "none" : "uppercase"};line-height:1.14;letter-spacing:${style.font === "inter" ? "-0.02em" : "0.005em"};color:${style.fg};text-wrap:balance${hasPhoto && !light ? ";text-shadow:0 4px 24px rgba(0,0,0,.55)" : ""}}
+.headline:has(.hl){line-height:1.25}
+.hl{background:linear-gradient(${style.highlight},${style.highlight}) no-repeat 0 0/100% 100%;color:${isLight(style.highlight) ? "#0b0b0f" : "#ffffff"};padding:0 .12em;margin:0 -.02em;box-decoration-break:clone;-webkit-box-decoration-break:clone;border-radius:.06em;text-shadow:none}
 .body{font:500 42px/1.32 "Inter";color:${hexA(style.fg, 0.92)}${hasPhoto && !light ? ";text-shadow:0 2px 12px rgba(0,0,0,.6)" : ""}}
 .items{display:flex;flex-direction:column;gap:22px}
 .item{display:flex;gap:24px;align-items:flex-start;font:600 42px/1.25 "Inter"}
@@ -136,9 +137,14 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .browser .bar{height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;background:#1b1b26}
 .browser .bar i{width:18px;height:18px;border-radius:50%;background:#555;font-style:normal}
 .browser .bar span{margin-left:16px;font:600 26px "Inter";color:#cfcfe0;background:#2a2a38;padding:6px 22px;border-radius:999px}
-.browser img{display:block;width:100%;height:520px;object-fit:cover;object-position:top}
-.hero{align-self:center;border-radius:30px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45);background:${hexA(style.fg, 0.06)};line-height:0}
-.hero img{display:block}
+.browser img{display:block;width:100%;height:auto;object-fit:cover;object-position:top}
+.hero{position:relative;align-self:center;display:flex;align-items:center;justify-content:center;border-radius:30px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45);background:${hexA(style.fg, 0.06)};line-height:0}
+.hero img{display:block;position:relative}
+.hero .blur{display:none;position:absolute;left:-60px;top:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(34px) brightness(.8)}
+.hero.wide .blur{display:block}
+.collage{align-self:center;display:flex;flex-direction:column;align-items:center;gap:14px;line-height:0}
+.collage .row{display:flex;gap:14px;justify-content:center}
+.collage img{display:block;border-radius:22px;box-shadow:0 16px 44px rgba(0,0,0,.4)${style.collage ? ";border:6px solid #fff" : ""}}
 .tilt{transform:rotate(-1.5deg);border:10px solid #fff;margin:0 12px}
 .meme{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
 .memebar{flex:none;background:#fff;padding:${I.y0}px ${SIZE.width - I.x1}px 36px ${I.x0}px;display:flex;flex-direction:column;gap:18px}
@@ -172,21 +178,27 @@ function inner(slide, style, images, ctx) {
   const head = (t = TYPE.headline) => `<h1 class="headline" ${fit(t)} data-name="headline">${highlight(slide.headline)}</h1>`;
   const body = slide.body ? `<p class="body" ${fit(TYPE.body)} data-name="body">${highlight(slide.body)}</p>` : "";
   const items = (marker) => (slide.items?.length ? `<div class="items">${slide.items.map((t, n) => `<div class="item" data-box data-text data-name="item ${n + 1}" ${fitAttr(TYPE.item)}>${marker}<span>${highlight(t)}</span></div>`).join("")}</div>` : "");
-  const browser = `<div class="browser" data-box data-visual data-name="Zyvo screenshot"><div class="bar"><i></i><i></i><i></i><span>tryzyvo.com</span></div><img data-shrink="240" src="${U(ctx.zyvoShot)}" alt=""></div>`;
+  const browser = `<div class="browser" data-box data-visual data-name="Zyvo screenshot"><div class="bar"><i></i><i></i><i></i><span>tryzyvo.com</span></div><img data-shot data-shrink="240" src="${U(ctx.zyvoShot)}" alt=""></div>`;
   // The slide's hero visual. It fills a box up to `h` px tall at the PICTURE'S OWN aspect ratio (the page
   // sizes it once loaded), so nothing is ever cropped; it may shrink to `min` px when the text needs room.
   // A slide about Zyvo shows real Zyvo: its library asset (a real output), else the real Zyvo screen;
   // never a generic generated picture (owner, 2026-10-18).
   const heroUrl = images.hero ?? images.illustration ?? null;
+  // After the text fits, the page grows the frame into the free height (a tall picture gets a tall frame); a
+  // frame wider or taller than its picture is filled by a blurred copy of the same picture, never a crop.
   const hero = (h, min = Math.round(h * 0.6)) => {
-    if (heroUrl) return `<div class="hero${style.collage ? " tilt" : ""}" data-box data-visual data-name="visual"><img data-hero="${h}" data-shrink="${min}" src="${U(heroUrl)}" alt=""></div>`;
+    if (heroUrl) return `<div class="hero${style.collage ? " tilt" : ""}" data-box data-visual data-name="visual"><img class="blur" src="${U(heroUrl)}" alt=""><img data-hero="${h}" data-shrink="${min}" src="${U(heroUrl)}" alt=""></div>`;
     if (slide.is_zyvo && ctx.zyvoShot) return browser;
     return "";
   };
+  // A showcase cover (owner, 2026-10-18): a grid of the real Zyvo outputs shown later in the slideshow, each
+  // at its own shape (the page lays them out in one or two rows), never a generic picture.
+  const collage = (images.collage ?? []).filter(Boolean).slice(0, 4);
+  const grid = (h, min) => `<div class="collage" data-box data-visual data-name="collage" data-collage="${h}" data-shrink="${min}">${collage.map((u) => `<img data-tile src="${U(u)}" alt="">`).join("")}</div>`;
 
   switch (k) {
     case "cover":
-      return `${label}${head(TYPE.cover)}${hero(640, 420)}${body}<div class="swipe" data-box data-text>swipe →</div>`;
+      return `${label}${head(TYPE.cover)}${collage.length >= 2 ? grid(700, 420) : hero(640, 420)}${body}<div class="swipe" data-box data-text>swipe →</div>`;
     case "item": {
       if (!slide.tool) return `${label}${head()}${hero(600)}${body}${items('<span class="dot"></span>')}`;
       const zyvo = slide.is_zyvo || /^zyvo$/i.test(slide.tool.name);
@@ -250,28 +262,73 @@ function toolMark(tool, logos, U) {
 // parent window (the admin preview shows a warning on a slide that fails).
 const LAYOUT_SCRIPT = `<script>
 (async()=>{
-const problems=[];
+const problems=[],warnings=[];
 try{await document.fonts.ready}catch(e){}
 const imgs=[...document.images];
 await Promise.all(imgs.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
-for(const i of imgs)if(!i.naturalWidth)problems.push("an image didn't load ("+(i.closest("[data-name]")?.dataset.name||"background")+")");
-const sizeHero=(img,h)=>{const tilt=img.closest(".tilt");const W=(img.closest(".content")?.clientWidth||0)-(tilt?72:0);const H=h-(tilt?40:0);const nw=img.naturalWidth,nh=img.naturalHeight;if(!nw||!nh)return;const k=Math.min(W/nw,H/nh);img.style.width=Math.round(nw*k)+"px";img.style.height=Math.round(nh*k)+"px";img.dataset.h=h};
+for(const i of imgs)if(!i.naturalWidth&&!i.classList.contains("blur"))problems.push("an image didn't load ("+(i.closest("[data-name]")?.dataset.name||"background")+")");
+const content=document.querySelector(".content");
+const CW=content?content.clientWidth:0;
+const borders=(el)=>{const c=getComputedStyle(el);return[parseFloat(c.borderLeftWidth)+parseFloat(c.borderRightWidth),parseFloat(c.borderTopWidth)+parseFloat(c.borderBottomWidth)]};
+// A hero: the picture at its own shape inside W x H. The frame is the picture, at least 75 % of the width
+// for a tall picture; fill=true (free height left) lets the frame grow up to 1.45x the picture's height.
+// Any frame area beyond the picture shows the blurred copy (.wide).
+const sizeHero=(img,h,fill)=>{const box=img.closest(".hero");const tilt=img.closest(".tilt");const W=CW-(tilt?72:0);const H=h-(tilt?40:0);const nw=img.naturalWidth,nh=img.naturalHeight;if(!nw||!nh)return;const k=Math.min(W/nw,H/nh);const w=Math.round(nw*k),ih=Math.round(nh*k);img.style.width=w+"px";img.style.height=ih+"px";img.dataset.h=h;
+if(!box)return;const[bw,bh]=borders(box);const fw=Math.max(w,Math.round(W*0.75));const fh=fill?Math.max(ih,Math.min(H,Math.round(ih*1.45))):ih;box.style.width=(fw+bw)+"px";box.style.height=(fh+bh)+"px";box.classList.toggle("wide",fw>w+4||fh>ih+4)};
+// The showcase collage: the tiles at their own shapes in one or two rows (whichever shows them biggest).
+const layCollage=(el,H)=>{const tiles=[...el.querySelectorAll("img[data-tile]")].filter(i=>i.naturalWidth);el.dataset.h=H;if(!tiles.length)return;
+const g=14,W=CW,a=tiles.map(i=>i.naturalWidth/i.naturalHeight);
+const plans=[[tiles.length]];for(let s=1;s<tiles.length;s++)plans.push([s,tiles.length-s]);
+let best=null;for(const p of plans){let at=0;const rows=p.map(n=>{const r=a.slice(at,at+n);at+=n;return r});
+const hs=rows.map(r=>(W-g*(r.length-1))/r.reduce((x,y)=>x+y,0));const tot=hs.reduce((x,y)=>x+y,0);const s=Math.min(1,(H-g*(rows.length-1))/tot);
+const area=rows.reduce((A,r,ri)=>A+r.reduce((B,x)=>B+x*(hs[ri]*s)*(hs[ri]*s),0),0);if(!best||area>best.area)best={p,hs,s,area}}
+el.innerHTML="";let at=0;for(const[ri,n]of best.p.entries()){const row=document.createElement("div");row.className="row";const hh=Math.floor(best.hs[ri]*best.s);
+for(const t of tiles.slice(at,at+n)){t.style.height=hh+"px";t.style.width=Math.floor(hh*t.naturalWidth/t.naturalHeight)+"px";row.appendChild(t)}at+=n;el.appendChild(row)}};
+const resize=(el,h,fill)=>{if(el.hasAttribute("data-hero"))sizeHero(el,h,fill);else if(el.hasAttribute("data-collage"))layCollage(el,h);else{el.style.height=h+"px";el.dataset.h=h}};
+const heightOf=(el)=>+el.dataset.h||el.getBoundingClientRect().height;
 for(const i of document.querySelectorAll("img[data-hero]"))sizeHero(i,+i.dataset.hero);
+for(const c of document.querySelectorAll("[data-collage]"))layCollage(c,+c.dataset.collage);
 for(const i of document.querySelectorAll(".logo img"))if(i.naturalWidth){i.style.maxWidth=Math.min(i.naturalWidth,106)+"px";i.style.maxHeight=Math.min(i.naturalHeight,106)+"px"}
 const lines=(el)=>{const r=document.createRange();r.selectNodeContents(el);const tol=parseFloat(getComputedStyle(el).fontSize)*0.6;const tops=[];for(const q of r.getClientRects()){if(q.width<1||q.height<1)continue;if(!tops.some(t=>Math.abs(t-q.top)<tol))tops.push(q.top)}return tops.length};
 const fits=[...document.querySelectorAll("[data-fit]")];
 for(const el of fits){const[size,min,max]=el.dataset.fit.split(",").map(Number);let s=size;el.style.fontSize=s+"px";
 while((lines(el)>max||el.scrollWidth>el.clientWidth+2)&&s>min){s-=2;el.style.fontSize=s+"px"}
 if(lines(el)>max||el.scrollWidth>el.clientWidth+2)problems.push((el.dataset.name||"text")+" needs more than "+max+" line"+(max>1?"s":"")+": shorten it")}
-const content=document.querySelector(".content");
+const gap=content?parseFloat(getComputedStyle(content).rowGap)||0:0;
+const stackH=()=>{const kids=[...content.children];return kids.reduce((s,k)=>s+k.offsetHeight,0)+Math.max(0,kids.length-1)*gap};
+const over=()=>stackH()>content.clientHeight+1;
+const growers=content?[...content.querySelectorAll("img[data-hero],[data-collage]")]:[];
 if(content){let guard=200;
-const over=()=>content.scrollHeight>content.clientHeight+1;
 while(over()&&guard-->0){
-const shrinkImg=[...content.querySelectorAll("img[data-shrink]")].find(i=>(+i.dataset.h||i.getBoundingClientRect().height)>+i.dataset.shrink+20);
-if(shrinkImg){if(shrinkImg.hasAttribute("data-hero"))sizeHero(shrinkImg,(+shrinkImg.dataset.h)-40);else shrinkImg.style.height=(shrinkImg.getBoundingClientRect().height-40)+"px";continue}
+const sh=[...content.querySelectorAll("[data-shrink]")].find(i=>heightOf(i)>+i.dataset.shrink+20);
+if(sh){resize(sh,heightOf(sh)-40);continue}
 const cand=fits.filter(el=>content.contains(el)).map(el=>{const[,min]=el.dataset.fit.split(",").map(Number);return{el,min,s:parseFloat(el.style.fontSize)}}).filter(c=>c.s>c.min).sort((a,b)=>b.s-a.s)[0];
 if(!cand)break;cand.el.style.fontSize=(cand.s-2)+"px"}
-if(over())problems.push("the slide has more than fits in the safe zone: shorten it")}
+if(over())problems.push("the slide has more than fits in the safe zone: shorten it");
+// Then the other way (owner, 2026-10-18: no empty space): free height goes to the slide's picture first,
+// then, on a short slide, to the headline (up to 1.3x its size, within its line limit).
+else{if(growers.length){const g0=growers[0];
+const free=content.clientHeight-stackH();if(free>8){resize(g0,Math.min(1400,Math.floor(g0.offsetHeight+free)),true);let t=60;while(over()&&t-->0)resize(g0,heightOf(g0)-10,true)}}
+const H=content.clientHeight;
+for(const el of fits.filter(e=>e.classList.contains("headline")&&content.contains(e))){const[size,,max]=el.dataset.fit.split(",").map(Number);let s=parseFloat(el.style.fontSize);
+while(s+4<=size*1.3&&H-stackH()>H*0.18){el.style.fontSize=(s+4)+"px";if(lines(el)>max||el.scrollWidth>el.clientWidth+2||over()){el.style.fontSize=s+"px";break}s+=4}}}}
+// Highlights: the bar covers the letters plus a padding smaller than the gap to the next line, so a bar
+// never touches another line's letters or bar. The font's metrics come from a canvas measurement.
+const cv=document.createElement("canvas").getContext("2d");
+const metrics=(el,text)=>{const c=getComputedStyle(el);cv.font=c.fontWeight+" "+c.fontSize+" "+c.fontFamily;let t=text??el.textContent;if(c.textTransform==="uppercase")t=t.toUpperCase();const m=cv.measureText(t||"H");return{fa:m.fontBoundingBoxAscent,fd:m.fontBoundingBoxDescent,aa:m.actualBoundingBoxAscent,ad:Math.max(0,m.actualBoundingBoxDescent),size:parseFloat(c.fontSize)}};
+const pitchOf=(el)=>{const v=parseFloat(getComputedStyle(el).lineHeight);return isNaN(v)?parseFloat(getComputedStyle(el).fontSize)*1.2:v};
+const hlBlocks=new Set();
+for(const hl of document.querySelectorAll(".hl")){const p=hl.closest("[data-fit]")||hl.parentElement;hlBlocks.add(p);const m=metrics(hl);const pm=metrics(p);const pitch=pitchOf(p);
+const glyphH=Math.max(m.aa,pm.aa)+Math.max(m.ad,pm.ad);const pad=Math.max(0,Math.min(m.size*0.08,(pitch-glyphH)/2-6));
+hl.style.paddingTop=hl.style.paddingBottom=pad+"px";hl.dataset.band=JSON.stringify([m.fa-m.aa,m.aa+m.ad+2*pad,pad]);
+hl.style.backgroundSize="100% "+(m.aa+m.ad+2*pad)+"px";hl.style.backgroundPosition="0 "+(m.fa-m.aa)+"px"}
+const touch=(a,b)=>Math.min(a.r,b.r)-Math.max(a.l,b.l)>1&&a.t<b.b+2&&b.t<a.b+2;
+for(const p of hlBlocks){const pm=metrics(p);const tol=pm.size*0.5;const tops=[];const lineOf=(top)=>{let i=tops.findIndex(t=>Math.abs(t-top)<tol);if(i<0){tops.push(top);i=tops.length-1}return i};
+const glyphs=[],bands=[];const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);const r=document.createRange();
+for(let n=w.nextNode();n;n=w.nextNode()){r.selectNodeContents(n);const m=metrics(n.parentElement,n.textContent);for(const q of r.getClientRects()){if(q.width<1)continue;glyphs.push({line:lineOf(q.top),l:q.left,r:q.right,t:q.top+m.fa-m.aa,b:q.top+m.fa+m.ad})}}
+for(const hl of p.querySelectorAll(".hl")){const[off,bh,pad]=JSON.parse(hl.dataset.band);for(const q of hl.getClientRects()){if(q.width<1)continue;const t=q.top+off;bands.push({line:lineOf(q.top+pad),l:q.left,r:q.right,t,b:t+bh})}}
+let bad=false;for(const b of bands){for(const o of[...glyphs,...bands])if(o!==b&&o.line!==b.line&&touch(b,o)){bad=true;break}if(bad)break}
+if(bad)problems.push("a highlight in the "+(p.dataset.name||"text")+" touches another line")}
 const S=${JSON.stringify(INNER_RECT)};const TEXT_ONLY=${JSON.stringify(TEXT_ONLY_KINDS)};
 const boxes=[...document.querySelectorAll("[data-box]")].map(el=>({el,r:el.getBoundingClientRect(),name:el.dataset.name||el.className}));
 for(const b of boxes){const r=b.r;
@@ -283,7 +340,15 @@ for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i
 if(a.el.contains(b.el)||b.el.contains(a.el))continue;
 const w=Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left),h=Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top);
 if(w>2&&h>2)problems.push(a.name+" overlaps "+b.name)}
-const result={ok:problems.length===0,problems:[...new Set(problems)]};
+// Empty space (a warning: the slide still renders, admin marks it): the free height above and below the
+// stack plus the empty sides beside a picture narrower than the zone, as a share of the safe area.
+let empty=0;
+if(content){const W=content.clientWidth,H=content.clientHeight;let side=0;
+for(const v of content.querySelectorAll(".hero,.browser"))side+=Math.max(0,W-v.offsetWidth)*v.offsetHeight;
+for(const row of content.querySelectorAll(".collage .row"))side+=Math.max(0,W-row.offsetWidth)*row.offsetHeight;
+empty=Math.max(0,((H-stackH())*W+side)/(W*H));
+if(empty>0.25)warnings.push("about "+Math.round(empty*100)+"% of the safe area is empty")}
+const result={ok:problems.length===0,problems:[...new Set(problems)],warnings,empty:Math.round(empty*100)/100};
 document.body.dataset.layout=JSON.stringify(result);
 try{parent.postMessage({cmLayout:result,slide:document.body.dataset.slide},"*")}catch(e){}
 document.body.dataset.ready="1"})();
@@ -301,7 +366,10 @@ export function slideHtml({ slide, index, total, style, images = {}, zyvoShot = 
   // The meme layout (caption bar over a picture): meme slides, and the cover / text / cta slides of the meme
   // style. Everything else keeps its own layout (a tool card, a tier list…). Never without a picture.
   const heroUrl = images.hero ?? images.illustration ?? null;
-  const meme = (slide.kind === "meme" || (style.meme && ["cover", "text", "cta"].includes(slide.kind))) && Boolean(heroUrl || images.background);
+  // Only for a GENERATED meme picture (it fills the frame edge to edge): a real Zyvo output, a Zyvo slide and a
+  // showcase collage keep the normal layout, where nothing is cropped (owner, 2026-10-18).
+  const real = slide.is_zyvo || Boolean(slide.asset_id) || (images.collage ?? []).filter(Boolean).length >= 2;
+  const meme = !real && (slide.kind === "meme" || (style.meme && ["cover", "text", "cta"].includes(slide.kind))) && Boolean(heroUrl || images.background);
   // Text goes over a background photo only in the photo styles (generated with no people). The meme style's
   // picture may show an invented character, so it is never put behind text.
   const photo = !meme && !style.meme && Boolean(images.background);

@@ -220,6 +220,7 @@ export function fakeProviders(world, { packageOk = [true], badFirstWrite = false
     async exists(p) { return [...uploaded].some((u) => u.endsWith(p)); },
     async readJson(p) { const hit = [...manifests.entries()].find(([u]) => u.endsWith(p)); return hit ? hit[1] : null; },
     async signedUrls(ps) { return Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])); },
+    async writeJson(p, v) { world.written = { ...(world.written ?? {}), [p]: v }; },
   };
   return { ai, images, fly, files, calls };
 }

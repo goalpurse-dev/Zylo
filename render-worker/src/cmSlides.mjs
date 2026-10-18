@@ -100,7 +100,7 @@ export class LayoutError extends Error {
  * image provider. Never a local file, never a random address.
  */
 export function assertRemoteImages(job) {
-  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.heroes ?? {}), ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.logos ?? {})].filter(Boolean);
+  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.heroes ?? {}), ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.images?.collages ?? {}).flat(), ...Object.values(job.logos ?? {})].filter(Boolean);
   const bad = urls.filter((u) => !String(u).toLowerCase().startsWith("https://"));
   if (bad.length) throw new Error(`only https images may be used in a real render (got ${bad.length} other)`);
   const hosts = (job.allowedHosts ?? []).map((h) => String(h).toLowerCase());
@@ -124,6 +124,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
   const browser = await browserType.launch({ args: ["--disable-dev-shm-usage", "--font-render-hinting=none"] });
   const pngs = [];
   const layoutProblems = [];
+  const layoutWarnings = [];   // empty space: the slide renders, admin marks it
   try {
     const page = await browser.newPage({ viewport: { width: SIZE.width, height: SIZE.height }, deviceScaleFactor: 1 });
     const fontCss = FONT_CSS.local(pathToFileURL(FONTS_DIR).href);
@@ -131,7 +132,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
     for (const [i, slide] of slides.entries()) {
       const html = slideHtml({
         slide, index: i, total: slides.length, style: job.style, zyvoShot: job.zyvoShot ?? null, fontCss, logos: job.logos ?? null, safeZones, allowFile: local,
-        images: { background: job.images?.background ?? null, hero: job.images?.heroes?.[i] ?? job.images?.illustrations?.[i] ?? null },
+        images: { background: job.images?.background ?? null, hero: job.images?.heroes?.[i] ?? job.images?.illustrations?.[i] ?? null, collage: job.images?.collages?.[i] ?? null },
       });
       const file = path.join(dir, `slide-${String(i + 1).padStart(2, "0")}.png`);
       await writeFile(path.join(dir, "page.html"), html, "utf8");   // file:// so local fonts load
@@ -139,6 +140,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
       await page.waitForSelector('body[data-ready="1"]', { timeout: 30_000 });
       const layout = JSON.parse(await page.evaluate(() => document.body.dataset.layout || "{}"));
       if (!layout.ok) layoutProblems.push({ slide: i + 1, problems: layout.problems ?? ["no layout result"] });
+      if (layout.warnings?.length) layoutWarnings.push({ slide: i + 1, warnings: layout.warnings, empty: layout.empty });
       await page.screenshot({ path: file, type: "png" });
       pngs.push(file);
     }
@@ -151,7 +153,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
   const mp4 = path.join(dir, "slideshow.mp4");
   const { args, durationSec } = mp4Args(pngs.map((p) => path.basename(p)), slideDurations(pngs.length, job.secondsPerSlide ?? 2.5), path.basename(mp4));
   await run(FFMPEG, args, dir);
-  return { pngs, zip, mp4, durationSec, layoutProblems };
+  return { pngs, zip, mp4, durationSec, layoutProblems, layoutWarnings };
 }
 
 async function main() {
@@ -168,7 +170,7 @@ async function main() {
     for (const [i, p] of out.pngs.entries()) await put(job.uploads.pngs[i], await readFile(p), "image/png");
     await put(job.uploads.zip, await readFile(out.zip), "application/zip");
     await put(job.uploads.mp4, await readFile(out.mp4), "video/mp4");
-    await put(job.uploads.manifest, Buffer.from(JSON.stringify({ ok: true, slides: out.pngs.length, durationSec: out.durationSec, sizes, seconds: (Date.now() - t0) / 1000 })), "application/json");
+    await put(job.uploads.manifest, Buffer.from(JSON.stringify({ ok: true, slides: out.pngs.length, durationSec: out.durationSec, sizes, warnings: out.layoutWarnings, seconds: (Date.now() - t0) / 1000 })), "application/json");
     console.log(`[cm-slides] done in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   } catch (e) {
     console.error("[cm-slides] failed:", e?.message ?? e);

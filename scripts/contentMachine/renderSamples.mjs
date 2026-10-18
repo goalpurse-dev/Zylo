@@ -5,6 +5,7 @@
 //   FFMPEG=<path to ffmpeg> node scripts/contentMachine/renderSamples.mjs <outDir> <zyvo-home.png> [format ...]
 // Writes <outDir>/<format>.png (rows = styles) and <outDir>/layout.json; exits 1 if any slide fails its check.
 import { mkdir, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -161,8 +162,27 @@ const FORMATS = {
   ],
 };
 
+// PICS=<manifest.json>: the real pictures of earlier runs (generated per style + real Zyvo outputs from the
+// library), downloaded locally, instead of the drawn stand-ins. Zyvo slides then show real Zyvo outputs and
+// a showcase cover shows the collage of the outputs in its slideshow, as in a real run.
+const pics = process.env.PICS ? JSON.parse(readFileSync(process.env.PICS, "utf8")) : null;
+const fileUrl = (f) => pathToFileURL(f).href;
+const pool = (style) => {
+  const gen = [], meme = [], zyvo = [];
+  let bg = null;
+  for (const i of pics ?? []) {
+    for (const [n, f] of Object.entries(i.heroes)) {
+      if (!f) continue;
+      if (i.slides[n]?.asset_id) zyvo.push(fileUrl(f));
+      else if (i.style === style) (i.slides[n]?.kind === "meme" || i.style === "meme_style" ? meme : gen).push(fileUrl(f));
+    }
+    if (i.style === style && i.background && !bg) bg = fileUrl(i.background);
+  }
+  return { gen, meme, zyvo: [...new Set(zyvo)], bg };
+};
 const ffmpeg = process.env.FFMPEG ?? "ffmpeg";
 const report = {};
+const warned = {};
 let failed = 0;
 for (const [format, slidesIn] of Object.entries(FORMATS)) {
   if (only.length && !only.includes(format)) continue;
@@ -171,12 +191,26 @@ for (const [format, slidesIn] of Object.entries(FORMATS)) {
     const dir = path.resolve(outDir, format, styleKey);
     await mkdir(dir, { recursive: true });
     const slides = slidesIn.map(({ illustration, ...s }) => s);
-    // A stand-in hero picture on every slide but the cta (the real ones are generated per slide).
-    // Zyvo slides show the real Zyvo screen (no stand-in); meme pictures are tall.
-    const heroes = Object.fromEntries(slidesIn.map((s, i) => [i, s.is_zyvo ? null : (s.kind === "meme" || styleKey === "meme_style") ? ILLU : HERO(styleKey, i)]).filter(([, v]) => v));
-    const job = { style, zyvoShot, images: { background: BACKGROUNDS[styleKey] ?? BACKGROUNDS.neon_grid_bg, heroes }, slideshow: { slides } };
-    const out = await renderSlideshow(job, dir, { local: true, safeZones: true, keepGoing: true });
+    let heroes, collages = {}, background = BACKGROUNDS[styleKey] ?? BACKGROUNDS.neon_grid_bg;
+    if (pics) {
+      const p = pool(styleKey);
+      let g = 0, z = Object.keys(FORMATS).indexOf(format) * 3;
+      const gens = styleKey === "meme_style" && p.meme.length ? p.meme : p.gen;
+      const showcase = format === "zyvo_showcase";
+      heroes = Object.fromEntries(slidesIn.map((s, i) => [i, (s.is_zyvo || showcase) && !(showcase && i === 0) ? p.zyvo[z++ % p.zyvo.length] : gens[g++ % gens.length]]).filter(([, v]) => v));
+      if (showcase) { collages = { 0: Object.entries(heroes).filter(([i]) => i !== "0").map(([, u]) => u) }; delete heroes[0]; }
+      // A slide showing a real output carries its asset_id, as in a real run (it keeps the uncropped layout).
+      slidesIn.forEach((x, i) => { if (((x.is_zyvo || showcase) && i > 0) || (x.is_zyvo && i === 0)) slides[i] = { ...slides[i], asset_id: "real-output" }; });
+      background = p.bg ?? background;
+    } else {
+      // A stand-in hero picture on every slide but the cta (the real ones are generated per slide).
+      // Zyvo slides show the real Zyvo screen (no stand-in); meme pictures are tall.
+      heroes = Object.fromEntries(slidesIn.map((s, i) => [i, s.is_zyvo ? null : (s.kind === "meme" || styleKey === "meme_style") ? ILLU : HERO(styleKey, i)]).filter(([, v]) => v));
+    }
+    const job = { style, zyvoShot, images: { background, heroes, collages }, slideshow: { slides } };
+    const out = await renderSlideshow(job, dir, { local: true, safeZones: process.env.ZONES !== "0", keepGoing: true });
     report[`${format} × ${styleKey}`] = out.layoutProblems;
+    if (out.layoutWarnings.length) warned[`${format} × ${styleKey}`] = out.layoutWarnings;
     if (out.layoutProblems.length) { failed += 1; console.log(`FAIL ${format} × ${styleKey}: ${out.layoutProblems.map((l) => `slide ${l.slide}: ${l.problems.join("; ")}`).join(" | ")}`); }
     const row = path.join(outDir, format, `${styleKey}.png`);
     spawnSync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-i", path.join(dir, "slide-%02d.png"), "-vf", `scale=216:384,tile=${slides.length}x1:padding=6:color=0x444444`, "-frames:v", "1", row]);
@@ -190,5 +224,7 @@ for (const [format, slidesIn] of Object.entries(FORMATS)) {
   console.log(`${format}: ${rows.length} styles`);
 }
 await writeFile(path.join(outDir, "layout.json"), JSON.stringify(report, null, 2));
+await writeFile(path.join(outDir, "empty-space.json"), JSON.stringify(warned, null, 2));
+console.log(`${Object.keys(warned).length} format × style combinations have a slide with more than 25 % empty space (see empty-space.json).`);
 console.log(failed ? `${failed} format × style combinations have layout problems (see layout.json).` : "Every slide passed the layout check (no overlaps, all text inside the safe zone, every image loaded).");
 process.exit(failed ? 1 : 0);

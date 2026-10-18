@@ -116,7 +116,7 @@ export function createPipelineDb(db) {
     /* ─── the asset library ─── */
     /** Usable assets as the writer and the image step see them. */
     async activeAssets() {
-      return must(await db.from("cm_assets").select("ref,path,kind,tool,style,subject,tags").eq("status", "active").order("tool").limit(400), "active assets");
+      return must(await db.from("cm_assets").select("ref,path,kind,tool,style,subject,tags,subtitles").eq("status", "active").order("tool").limit(400), "active assets");
     },
     async getAssets(ids) { return must(await db.from("cm_assets").select("*").in("id", ids), "assets"); },
     async listAssets({ status = null, tool = null, kind = null, limit = 300 } = {}) {
@@ -179,6 +179,10 @@ export function createFiles(db) {
       const { data, error } = await bucket().download(path);
       if (error || !data) return null;
       try { return JSON.parse(await data.text()); } catch { return null; }
+    },
+    async writeJson(path, value) {
+      const { error } = await bucket().upload(path, new Blob([JSON.stringify(value)], { type: "application/json" }), { contentType: "application/json", upsert: true });
+      if (error) throw new Error(`couldn't save ${path}: ${error.message}`);
     },
   };
 }
