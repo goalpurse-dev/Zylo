@@ -15,4 +15,15 @@ SET spec = spec || '{"hero_prompt": "Simple meme-style cartoon scene: {subject}.
     updated_at = now()
 WHERE kind = 'style' AND key = 'meme_style';
 
+-- Neon pictures fill their frame (the grid QA found a small object in a mostly empty dark picture).
+UPDATE public.cm_library
+SET spec = spec || '{"hero_prompt": "Glowing 3D render of {subject}, close-up, the object fills most of the frame, neon purple and lime rim light, glossy materials, dark background, studio render"}'::jsonb,
+    updated_at = now()
+WHERE kind = 'style' AND key = 'neon_grid';
+
+-- The full-page UI captures (unreadable on a phone, a cookie banner over the text) are blocked: the tight crops
+-- from scripts/contentMachine/importUiCrops.mjs replace them. The owner can unblock them in Assets.
+UPDATE public.cm_assets SET status = 'blocked', blocked_by = 'round 5: full-page UI capture', updated_at = now()
+WHERE kind = 'ui' AND status = 'active' AND source_path LIKE 'https://www.tryzyvo.com/%';
+
 COMMIT;
