@@ -7,8 +7,9 @@ export const STEPS = [
   { key: "captions", label: "Captions & checks", stages: ["check", "rewrite"] },
   { key: "images", label: "Images", stages: ["images"] },
   { key: "rendering", label: "Rendering", stages: ["render", "render_wait"] },
+  { key: "qa", label: "Quality check", stages: ["qa"] },
 ];
-const ORDER = ["writing", "captions", "images", "rendering", "done"];
+const ORDER = ["writing", "captions", "images", "rendering", "qa", "done"];
 const FINISHED = new Set(["done", "failed", "skipped_budget", "rejected", "cancelled"]);
 export const DEFAULT_SECONDS_PER_SLIDESHOW = 150;
 
@@ -35,9 +36,9 @@ export function runProgress({ run, ideas, jobs, pastRuns = [], now = new Date() 
   const counts = Object.fromEntries([...ORDER, "failed", "skipped_budget", "cancelled", "rejected"].map((k) => [k, 0]));
   for (const p of per) counts[p.step] = (counts[p.step] ?? 0) + 1;
   const total = Math.max(1, Number(run.input?.count) || ideas.length || 1);
-  // Each slideshow counts 0–4 steps of 4; finished ones (any outcome) count fully.
-  const doneSteps = per.reduce((a, p) => a + (ORDER.includes(p.step) ? ORDER.indexOf(p.step) : 4), 0);
-  const share = Math.min(1, doneSteps / (total * 4));
+  // Each slideshow counts 0–5 steps of 5; finished ones (any outcome) count fully.
+  const doneSteps = per.reduce((a, p) => a + (ORDER.includes(p.step) ? ORDER.indexOf(p.step) : 5), 0);
+  const share = Math.min(1, doneSteps / (total * 5));
   const active = !["done", "failed", "budget_stopped", "cancelled"].includes(run.status);
   const elapsed = run.started_at ? Math.max(0, (now - new Date(run.started_at)) / 1000) : 0;
   const estimate = secondsPerSlideshow(pastRuns) * total;

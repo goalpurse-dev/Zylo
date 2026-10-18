@@ -34,6 +34,7 @@ await db.exec(`
 const M1 = "supabase/migrations/20261107100000_content_machine.sql";
 const M2 = "supabase/migrations/20261108100000_content_machine_slideshows.sql";
 const M3 = "supabase/migrations/20261109100000_content_machine_assets.sql";
+const M4 = "supabase/migrations/20261110100000_content_machine_logo_rules.sql";
 const steps = [
   ["migration 1", M1],
   ["migration 1 again (must be safe to re-run)", M1],
@@ -45,12 +46,15 @@ const steps = [
   ["migration 3 (assets)", M3],
   ["migration 3 again", M3],
   ["asset tests", "tests/contentMachineAssets.lifecycle.sql"],
+  ["migration 4 (logo rules)", M4],
+  ["migration 4 again", M4],
   ["rollback 3", "supabase/rollbacks/20261109100000_content_machine_assets_rollback.sql"],
   ["rollback 2", "supabase/rollbacks/20261108100000_content_machine_slideshows_rollback.sql"],
   ["rollback 1", "supabase/rollbacks/20261107100000_content_machine_rollback.sql"],
   ["both migrations after rollback", M1],
   ["", M2],
   ["", M3],
+  ["", M4],
 ];
 for (const [label, file] of steps) {
   try {

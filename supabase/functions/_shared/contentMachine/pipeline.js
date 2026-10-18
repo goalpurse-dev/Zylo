@@ -22,6 +22,7 @@ import { RENDER_ESTIMATE_USD, RENDER_TIMEOUT_MS, renderCostUsd } from "./provide
 import { localDay } from "./spendSummary.js";
 import { domain } from "./slides/templates.js";
 import { assetUpdate, tagRequest } from "./assets.js";
+import { qaFindings, qaRequest } from "./qa.js";
 import { mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
@@ -366,6 +367,8 @@ async function images(job, deps) {
     if (assets.heroes[i]) return;
     const asset = sl.asset_id ? byRef.get(String(sl.asset_id)) : null;
     if (asset) { assets.heroes[i] = { asset: asset.path, ref: asset.ref }; return; }
+    // A slide about Zyvo shows real Zyvo (its asset, else the real Zyvo screen): never a generated picture.
+    if (sl.is_zyvo) return;
     if (!String(sl.image_prompt ?? "").trim()) return;
     const subject = String(sl.image_prompt).trim();
     const prompt = style.spec?.hero_prompt ? style.spec.hero_prompt.replace("{subject}", subject) : subject;
@@ -376,7 +379,11 @@ async function images(job, deps) {
     // No people at all in backgrounds and in the photoreal / 3D / product styles' pictures (text sits on
     // them, and a photoreal person risks a lookalike); the meme style's scenes may show invented characters.
     const kind = style.spec?.meme && slot !== "background" ? "illustration" : "background";
-    const size = slot === "background" ? {} : { width: 1024, height: 1024 };
+    // Each picture is made at the shape of the frame it fills, so nothing needs cropping: heroes 4:3 (the
+    // frame takes the picture's own shape), a meme picture tall (it fills the slide under the caption bar).
+    const slide = slot === "background" ? null : idea.script.slides[slot];
+    const memeLayout = slide && (slide.kind === "meme" || (style.spec?.meme && ["cover", "text", "cta"].includes(slide.kind)));
+    const size = slot === "background" ? {} : memeLayout ? { width: 768, height: 1088 } : { width: 1024, height: 768 };
     // One retry per image. A second failure fails the slideshow: a placeholder is never posted.
     let r = null, last = null;
     for (let attempt = 1; attempt <= 2 && !r; attempt++) {
@@ -420,7 +427,11 @@ export async function logosFor(deps, slides) {
   const out = {};
   for (const row of rows) {
     const keys = [row.domain, String(row.name).trim().toLowerCase()].filter((k) => wanted.has(k));
-    if (!keys.length || !row.logo_path) continue;
+    if (!keys.length) continue;
+    const display = row.display ?? "logo";
+    // The owner's rules first: "name" (no mark) and "tile" (initials) apply whatever file there is.
+    if (display !== "logo") { for (const k of keys) out[k] = { display }; continue; }
+    if (!row.approved || !row.logo_path) continue;          // a file is used only once approved
     const url = await deps.files.signedUrl(row.logo_path, 3600);
     if (url) for (const k of keys) out[k] = url;
   }
@@ -516,9 +527,50 @@ async function renderWait(job, deps) {
     status: "done", video_path: paths.mp4, thumbnail_path: paths.pngs[0], duration_s: manifest.durationSec,
     files: { pngs: paths.pngs, zip: paths.zip, mp4: paths.mp4, sizes: manifest.sizes ?? null },
   });
-  await deps.db.updateIdea(idea.id, { status: "done" });
-  await finishRunIfDone(deps, idea.run_id);
+  // The vision QA check looks at the finished slides before the slideshow counts as done.
+  await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "qa" }]);
   return "rendered";
+}
+
+/* ─── the vision QA check ────────────────────────────────────────────── */
+
+async function qa(job, deps) {
+  const idea = await deps.db.getIdea(job.idea_id);
+  if (TERMINAL.has(idea.status)) return "idea already finished";
+  const gen = await deps.db.ensureGeneration(idea.id);
+  const s = await deps.db.settings();
+  const model = models(s, deps.env).fast;
+  const heroes = gen.source_assets?.heroes ?? {};
+  const slides = [];
+  for (const [n, path] of (gen.files?.pngs ?? []).entries()) {
+    const h = heroes[n];
+    const picture = h?.url ? "generated" : h?.asset ? "a real Zyvo output from the library" : idea.script.slides[n]?.is_zyvo ? "the real Zyvo screen" : "the background";
+    slides.push({ slide: n + 1, kind: idea.script.slides[n]?.kind ?? "slide", picture, url: await deps.files.signedUrl(path, 1800) });
+  }
+  const r = await deps.guard.spend("anthropic", "anthropic.qa", estimateUsd({ model, inputTokens: slides.length * 1700 + 900, outputTokens: slides.length * 90 }), async (ticket) => {
+    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: qaRequest({ model, slides }) });
+    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
+  }, await paidOpts(deps, idea, { mock: async () => ({ dry: true }) }));
+  const findings = r.dryRun ? {} : qaFindings(jsonFromMessage(r.result));
+  const flagged = Object.keys(findings).map(Number);
+  const done = async (extra = {}) => {
+    await deps.db.updateIdea(idea.id, { status: "done", compliance: { ...(idea.compliance ?? {}), qa: { checked: true, findings }, ...extra } });
+    await finishRunIfDone(deps, idea.run_id);
+  };
+  if (!flagged.length) { await done(); return "qa passed"; }
+  // One regenerate: the flagged slides' GENERATED pictures are made again, then render and QA again.
+  const regenerable = flagged.filter((n) => heroes[n - 1]?.url);
+  if (!idea.compliance?.qaRetried && regenerable.length) {
+    const kept = Object.fromEntries(Object.entries(heroes).filter(([i]) => !regenerable.includes(Number(i) + 1)));
+    await deps.db.updateGeneration(gen.id, { source_assets: { ...gen.source_assets, heroes: kept }, status: "queued" });
+    await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), qaRetried: true, qa: { checked: true, findings, regenerated: regenerable } } });
+    await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "images" }]);
+    return `qa: regenerating slides ${regenerable.join(", ")}`;
+  }
+  // Still flagged (or nothing to regenerate): kept, but marked for the owner in admin.
+  const problems = Object.entries(findings).map(([n, f]) => `slide ${n}: ${f.flags.join(", ")}${f.note ? ` (${f.note})` : ""}`);
+  await done({ flagged: true, ok: false, problems: [...(idea.compliance?.problems ?? []), ...problems] });
+  return `qa flagged: ${problems.join("; ")}`;
 }
 
 /* ─── the asset library: tagging ─────────────────────────────────────── */
@@ -552,5 +604,5 @@ async function tagAssets(job, deps) {
 }
 
 
-const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, tag_assets: tagAssets };
+const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, qa, tag_assets: tagAssets };
 export const STAGES = Object.keys(HANDLERS);

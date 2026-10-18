@@ -110,7 +110,10 @@ HOW TO WRITE IT:
 - EVERY slide gets a strong visual (posts that are walls of text don't stop the scroll). For each slide give EITHER image_prompt OR asset_id:
   - image_prompt: the ONE concrete subject of that slide's picture, matching the slide's point and the style's picture language (e.g. "a glowing film clapperboard with a play button", "a microphone on a velvet desk at night"). Just the subject: the style's look is added for you. Never text, letters, logos or brands, and NEVER a real person, a celebrity, a public figure or anyone who looks like one; prefer objects and scenes; a character must be an invented cartoon character.
   - asset_id: a ref from the ASSET LIBRARY, for "made with Zyvo" proof, output showcases and the screenshot_collage style (which uses real Zyvo UI and outputs first). Only refs that are listed.
-  - Only a cta slide (or a quiz answer) may have neither; it then sits on the slideshow's background picture.
+  - The closing cta slide gets a picture too. Only a quiz answer may have neither (it sits on the background picture).
+- ANY slide that mentions or shows Zyvo (is_zyvo = true) shows REAL Zyvo: an asset_id of a real Zyvo output, or nothing (the real Zyvo screen is shown then). NEVER an image_prompt on a Zyvo slide: a generated picture is not Zyvo's work.
+- "Made with Zyvo" (or similar) may appear ONLY on a slide whose picture is a real Zyvo output (asset_id). Never on generated pictures, memes or backgrounds.
+- Showcase and proof slides show ONLY real Zyvo outputs from the asset library. If a tool has no usable asset, leave that tool out: never stand in a generated picture.
 - Never imply that Zyvo is partnered with, endorsed by or affiliated with any tool you list.
 - The last slide is kind "cta" and matches the recipe's cta_type: link_in_bio ("tool's in my bio"), comment_keyword ("comment ZYVO and I'll send the link"), soft_mention ("made with Zyvo"), question (a question that invites comments).
 - First person only when true: "I built Zyvo" is true; invented experiences ("I've used X for 6 months", "this made me $5k") are not allowed.
@@ -174,7 +177,7 @@ PACKAGING:
 - sound_suggestion: a description of the kind of sound that fits (mood, tempo, "a trending lo-fi sound"); the owner picks the actual sound in the app. Never name copyrighted songs as if they were included.
 - Hashtags start with # and have no spaces.
 
-COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. So is any image_prompt that describes a real person, a celebrity, a public figure or a lookalike of one, any wording that implies Zyvo is partnered with, endorsed by or affiliated with another tool, and any story about a specific made-up person told as if real (stories must be hypothetical, "Imagine…" / "POV: you…", or about "you"). compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
+COMPLIANCE: check the slides AND your captions against every brand rule. Invented personal claims, income or lifestyle claims, fake testimonials or stats, inaccurate tool descriptions, logos, real people, copyrighted characters, misleading news, medical or financial advice: each is a problem. So is any image_prompt that describes a real person, a celebrity, a public figure or a lookalike of one, any wording that implies Zyvo is partnered with, endorsed by or affiliated with another tool, and any story about a specific made-up person told as if real (stories must be hypothetical, "Imagine…" / "POV: you…", or about "you"), a "made with Zyvo" claim on a slide whose picture is not a real Zyvo output (an asset), and a showcase or proof slide that shows a generated stand-in instead of a real Zyvo output. compliance.ok is true only if there are none; otherwise list each problem in one line saying which slide and what to change.
 Return only the JSON object.`;
 }
 
@@ -212,7 +215,12 @@ export function slideshowProblems(s, recipe, opts = {}) {
   // Visual richness: every slide but a cta / quiz answer has a picture (a prompt or a library asset).
   s.slides.forEach((x, i) => {
     const hasVisual = String(x.image_prompt ?? "").trim() || String(x.asset_id ?? "").trim();
-    if (!hasVisual && !["cta", "quiz_answer"].includes(x.kind)) p.push(`slide ${i + 1}: no visual (give an image_prompt or an asset_id)`);
+    if (!hasVisual && !x.is_zyvo && x.kind !== "quiz_answer") p.push(`slide ${i + 1}: no visual (give an image_prompt or an asset_id)`);
+    // Honesty (owner, 2026-10-18): a Zyvo slide shows real Zyvo, never a generated picture; "made with
+    // Zyvo" only where the picture is a real Zyvo output.
+    if (x.is_zyvo && String(x.image_prompt ?? "").trim()) p.push(`slide ${i + 1}: a Zyvo slide must show real Zyvo (asset_id, or nothing for the Zyvo screen), not a generated picture`);
+    const words = [x.headline, x.body, x.label, ...(x.items ?? [])].join(" ");
+    if (/made (with|in|by|using) zyvo/i.test(words) && !String(x.asset_id ?? "").trim()) p.push(`slide ${i + 1}: "made with Zyvo" only on a slide showing a real Zyvo output (asset_id)`);
     if (x.asset_id && opts.assetRefs && !opts.assetRefs.has(String(x.asset_id))) p.push(`slide ${i + 1}: asset_id ${x.asset_id} is not in the library`);
   });
   s.slides.forEach((x, i) => { if (x.kind === "meme" && !String(x.image_prompt ?? "").trim()) p.push(`slide ${i + 1}: a meme slide needs an image_prompt (its picture)`); });

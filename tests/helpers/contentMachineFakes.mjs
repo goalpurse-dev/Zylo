@@ -102,7 +102,7 @@ export function fakeWorld(settings = {}) {
     async jobsOfRun(r) { return jobs.filter((j) => j.run_id === r); },
     async cancelQueuedJobs(r) { for (const j of jobs) if (j.run_id === r && j.status === "queued") j.status = "cancelled"; },
     async pastRuns() { return runs.filter((r) => r.status === "done" && !r.dry_run && r.finished_at); },
-    async approvedLogos() { return logos.filter((l) => l.approved && l.logo_path); },
+    async approvedLogos() { return logos.map((l) => ({ display: "logo", ...l })); },
     async listLogos() { return [...logos]; },
     async getLogo(i) { const l = logos.find((x) => x.id === i); if (!l) throw new Error("no logo"); return l; },
     async saveLogo(row) { if (row.id) { const l = logos.find((x) => x.id === row.id); Object.assign(l, row); return l; } const l = { id: id("LOGO"), approved: false, logo_path: null, ...row }; logos.push(l); return l; },
@@ -119,7 +119,7 @@ export function validSlideshow(recipe, title = "5 AI tools that replace a video 
   const slides = Array.from({ length: n }, (_, i) => ({
     kind: i === 0 ? "cover" : i === n - 1 ? "cta" : "item", headline: i === 0 ? title : `Point ${i}`, body: null, label: null, items: [],
     tool: i > 0 && i < n - 1 ? { name: i === 2 ? "Zyvo" : `Tool${i}`, url: "https://x.com", what_it_does: "Does a real thing." } : null,
-    image_prompt: i === n - 1 ? null : `subject ${i}`, asset_id: null, is_zyvo: i === 2,
+    image_prompt: i === 2 ? null : `subject ${i}`, asset_id: null, is_zyvo: i === 2,
   }));
   return { title, topic: "AI tools", hook: "Number 3 surprised me", hypothesis: "question hook beats statement", slides,
     tools_checked: slides.filter((s) => s.tool && s.tool.name !== "Zyvo").map((s) => ({ name: s.tool.name, url: s.tool.url, source_url: s.tool.url })),
@@ -137,13 +137,24 @@ export const msg = (obj, usage = { input_tokens: 9000, output_tokens: 4000, serv
  * refuse: refuse the main model's writes ("once" or "always"); imageFailures: that many image calls fail
  * first (Infinity: all); layoutFails: that many renders come back with a failed layout check.
  */
-export function fakeProviders(world, { packageOk = [true], badFirstWrite = false, badAlways = false, refuse = null, imageFailures = 0, layoutFails = 0 } = {}) {
+export function fakeProviders(world, { packageOk = [true], badFirstWrite = false, badAlways = false, refuse = null, imageFailures = 0, layoutFails = 0, qaFlags = [] } = {}) {
   const calls = { messages: [], images: 0, imageAttempts: 0, renders: 0, batches: [], renderJobs: [] };
   let pkgN = 0, writeN = 0, refused = 0;
   const ai = {
     async createMessage(ticket, { request }) {
       assertTicket(ticket, "anthropic");
       calls.messages.push(request);
+      if (/final quality check/i.test(request.system[0].text.slice(0, 120))) {
+        // The vision QA check: qaFlags[k] = the slide numbers flagged on the k-th check.
+        const n = request.messages[0].content.filter((c) => c.type === "image").length;
+        const flagged = new Set(qaFlags[calls.qa ?? 0] ?? []);
+        calls.qa = (calls.qa ?? 0) + 1;
+        const slides = Array.from({ length: n }, (_, i) => ({ slide: i + 1, cut_off_subject: flagged.has(i + 1), garbled_text_in_image: false, distorted_hands_or_faces: false,
+          unreadable_text: false, large_empty_area: false, resembles_real_person_or_brand: false, note: flagged.has(i + 1) ? "the head is cut off" : null }));
+        const body = msg({ slides }, { input_tokens: 9000, output_tokens: 400 });
+        body.model = "claude-haiku-5-5";
+        return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
+      }
       if (/catalogue images/i.test(request.system[0].text.slice(0, 120))) {
         // The asset tagger: anything from a "face" folder shows a realistic human.
         const refs = request.messages[0].content.filter((c) => c.type === "text" && c.text.startsWith("ref ")).map((c) => /^ref (\S+) · from (\S+)/.exec(c.text));

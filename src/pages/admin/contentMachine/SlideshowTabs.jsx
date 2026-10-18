@@ -421,7 +421,7 @@ function LogoRow({ row, onSaved }) {
     <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center" data-testid="cm-logo">
       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-2">{row.url ? <img src={row.url} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[11px] text-black/40">no file</span>}</div>
       <div className="min-w-0 flex-1">
-        <div className="text-[14px] font-semibold text-white">{row.name} <span className="text-[12px] font-normal text-white/45">{row.domain}</span></div>
+        <div className="text-[14px] font-semibold text-white">{row.name} <span className="text-[12px] font-normal text-white/45">{row.domain}</span>{row.display && row.display !== "logo" && <span className="ml-2"><Badge tone="bg-sky-300/15 text-sky-200">{row.display === "name" ? "Name only (your rule)" : "Initials tile (your rule)"}</Badge></span>}</div>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Press / brand kit page (https://…)" className={`${input} w-full py-1.5 text-[12.5px] sm:w-80`} aria-label={`${row.name} source page`} />
           {source !== (row.source_url ?? "") && <button type="button" disabled={busy} onClick={() => run(() => api("saveLogo", { id: row.id, source_url: source }))} className="rounded-lg bg-white/10 px-2.5 py-1.5 text-[12px] font-semibold text-white">Save source</button>}

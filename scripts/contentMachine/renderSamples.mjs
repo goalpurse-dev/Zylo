@@ -28,7 +28,7 @@ const BACKGROUNDS = {
 // Stand-in hero pictures per style (drawn shapes, no people): the layout is what is being checked here.
 const HERO = (style, i) => {
   const c = { luxury_night: ["#2a1b0a", "#f5c542"], neon_grid: ["#0d0718", "#a855f7"], minimal_clean: ["#efe9df", "#2563eb"], screenshot_collage: ["#1a1f29", "#22d3ee"], meme_style: ["#bfe3ff", "#fb923c"] }[style] ?? ["#222", "#888"];
-  return svg(`<rect width="1024" height="1024" fill="${c[0]}"/><circle cx="${380 + (i * 97) % 300}" cy="${420 + (i * 53) % 200}" r="${180 + (i % 3) * 40}" fill="${c[1]}" opacity=".85"/><rect x="${200 + (i * 71) % 400}" y="620" width="260" height="180" rx="30" fill="#ffffff" opacity=".7"/>`, 1024, 1024);
+  return svg(`<rect width="1024" height="768" fill="${c[0]}"/><circle cx="${380 + (i * 97) % 300}" cy="${330 + (i * 53) % 150}" r="${150 + (i % 3) * 35}" fill="${c[1]}" opacity=".85"/><rect x="${200 + (i * 71) % 400}" y="500" width="260" height="160" rx="30" fill="#ffffff" opacity=".7"/>`, 1024, 768);
 };
 const ILLU = svg(`<rect width="768" height="1344" fill="#2b1d4a"/><rect x="0" y="880" width="768" height="464" fill="#4a3426"/><rect x="170" y="560" width="430" height="300" rx="18" fill="#222"/><rect x="190" y="580" width="390" height="250" fill="#a78bfa"/><rect x="120" y="860" width="530" height="26" rx="8" fill="#555"/><rect x="620" y="700" width="70" height="160" rx="10" fill="#7c5a3a"/><circle cx="655" cy="660" r="70" fill="#22c55e"/>`);
 
@@ -172,7 +172,8 @@ for (const [format, slidesIn] of Object.entries(FORMATS)) {
     await mkdir(dir, { recursive: true });
     const slides = slidesIn.map(({ illustration, ...s }) => s);
     // A stand-in hero picture on every slide but the cta (the real ones are generated per slide).
-    const heroes = Object.fromEntries(slidesIn.map((s, i) => [i, s.kind === "cta" ? null : HERO(styleKey, i)]).filter(([, v]) => v));
+    // Zyvo slides show the real Zyvo screen (no stand-in); meme pictures are tall.
+    const heroes = Object.fromEntries(slidesIn.map((s, i) => [i, s.is_zyvo ? null : (s.kind === "meme" || styleKey === "meme_style") ? ILLU : HERO(styleKey, i)]).filter(([, v]) => v));
     const job = { style, zyvoShot, images: { background: BACKGROUNDS[styleKey] ?? BACKGROUNDS.neon_grid_bg, heroes }, slideshow: { slides } };
     const out = await renderSlideshow(job, dir, { local: true, safeZones: true, keepGoing: true });
     report[`${format} × ${styleKey}`] = out.layoutProblems;

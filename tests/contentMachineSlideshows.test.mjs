@@ -11,10 +11,10 @@ import { costOfUsage, estimateUsd, createMessage, jsonFromMessage, WEB_SEARCH_TO
 import { generateImage, imagePrompt, NO_PEOPLE } from "../supabase/functions/_shared/contentMachine/providers/runware.js";
 import { renderCostUsd } from "../supabase/functions/_shared/contentMachine/providers/fly.js";
 import { slideshowProblems, packageProblems, utmLinks, nearDuplicate, mockSlideshow, writeRequest, packageRequest, SLIDESHOW_SCHEMA } from "../supabase/functions/_shared/contentMachine/writer.js";
-import { slideHtml, highlight, initials, esc, logoFor, SAFE, SAFE_RECT, INNER_RECT } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
+import { slideHtml, highlight, initials, esc, logoFor, SAFE, SAFE_RECT, INNER_RECT, TYPE, TEXT_ONLY_KINDS } from "../supabase/functions/_shared/contentMachine/slides/templates.js";
 import { assertRemoteImages } from "../render-worker/src/cmSlides.mjs";
 import { checkLogoFile } from "../supabase/functions/_shared/contentMachine/apiSlideshows.js";
-import { fallbackModel } from "../supabase/functions/_shared/contentMachine/pipeline.js";
+import { fallbackModel, logosFor } from "../supabase/functions/_shared/contentMachine/pipeline.js";
 import { mp4Args, slideDurations, zipStore } from "../render-worker/src/cmSlides.mjs";
 import { createWorkerHandler, maybeStartDailyRun, localClock, tick } from "../supabase/functions/_shared/contentMachine/worker.js";
 import { cleanLibraryRow } from "../supabase/functions/_shared/contentMachine/apiSlideshows.js";
@@ -543,9 +543,9 @@ test("visual richness: every slide but a cta / answer needs a picture (a prompt 
   const recipe = { slide_count: 6 };
   const sh = validSlideshow(recipe);
   assert.deepEqual(slideshowProblems(sh, recipe), []);
-  sh.slides[2].image_prompt = null;
-  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 3: no visual/);
-  sh.slides[2].asset_id = "aaaa1111";
+  sh.slides[1].image_prompt = null;
+  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 2: no visual/);
+  sh.slides[1].asset_id = "aaaa1111";
   assert.deepEqual(slideshowProblems(sh, recipe, { assetRefs: new Set(["aaaa1111"]) }), []);
   assert.match(slideshowProblems(sh, recipe, { assetRefs: new Set(["zzzz"]) }).join(" "), /not in the library/);
   const html = (slide, images = {}) => slideHtml({ slide, index: 1, total: 5, style: LIB.styles[0].spec, images });
@@ -622,7 +622,8 @@ test("style samples: one real slideshow per style, real pictures and a render, n
     assert.equal(r.data.count, 5);
     assert.equal(world.runs[0].kind, "samples");
     assert.equal(world.s.dry_run, true, "the machine stays in dry run");
-    assert.equal(p.calls.messages.length, 0, "no writing or caption calls");
+    assert.ok(p.calls.messages.every((m) => /final quality check/.test(m.system[0].text)), "no writing or caption calls: only the QA check");
+    assert.equal(p.calls.messages.length, 5, "one QA check per slideshow");
     assert.equal(p.calls.renders, 5, "rendered for real");
     assert.ok(p.calls.images >= 20, `real pictures (${p.calls.images})`);
     assert.ok(world.ledger.every((l) => !l.dry_run && l.actual_usd != null && l.lane === "slideshow"));
@@ -704,4 +705,98 @@ test("a provider's rate limit (429) is a wait, not a failure", async () => {
   await drain(world, depsFor(world, p));
   assert.equal(world.ideas[0].status, "done");
   assert.equal(world.ledger.filter((l) => l.operation === "anthropic.write" && l.status === "failed").every((l) => l.actual_usd === 0), true);
+});
+
+/* ─── round 4 (2026-10-18): crops, honesty, QA, logo rules ─── */
+
+test("vision QA: a flagged slide's generated picture is made again ONCE; still flagged → marked in admin", async () => {
+  const once = fakeWorld();
+  const p = fakeProviders(once, { qaFlags: [[2]] });
+  await startRun(once, { count: 1 });
+  await drain(once, depsFor(once, p));
+  const idea = once.ideas[0];
+  assert.equal(idea.status, "done");
+  assert.equal(p.calls.renders, 2, "rendered again after the regenerate");
+  assert.deepEqual(idea.compliance.qa.findings, {}, "the second check passed");
+  assert.equal(idea.compliance.qaRetried, true);
+  assert.ok(once.ledger.some((l) => l.operation === "anthropic.qa"), "the QA check goes through the guard");
+  const twice = fakeWorld();
+  const p2 = fakeProviders(twice, { qaFlags: [[2], [2]] });
+  await startRun(twice, { count: 1 });
+  await drain(twice, depsFor(twice, p2));
+  assert.equal(twice.ideas[0].status, "done", "kept, but…");
+  assert.equal(twice.ideas[0].compliance.flagged, true, "…marked for the owner");
+  assert.match(twice.ideas[0].compliance.problems.join(" "), /slide 2: a head or subject is cut off/);
+});
+
+test("honesty: a Zyvo slide shows real Zyvo (never a generated picture); 'made with Zyvo' only on a real output", async () => {
+  const recipe = { slide_count: 6 };
+  const sh = validSlideshow(recipe);
+  sh.slides[2].image_prompt = "a glowing TV";
+  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 3: a Zyvo slide must show real Zyvo/);
+  sh.slides[2].image_prompt = null;
+  sh.slides[4].body = "made with Zyvo · tryzyvo.com";
+  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 5: "made with Zyvo" only on a slide showing a real Zyvo output/);
+  sh.slides[4].asset_id = "aaaa1111"; sh.slides[4].image_prompt = null;
+  assert.deepEqual(slideshowProblems(sh, recipe, { assetRefs: new Set(["aaaa1111"]) }), []);
+  // The image step never generates for a Zyvo slide, whatever the writer gave it.
+  // (The writer check above already refuses it; the image step guards on its own too.)
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const run = await world.db.createRun({ run_date: "2026-10-20", kind: "slideshows", status: "producing", dry_run: false, input: { count: 1 } });
+  const script = validSlideshow({ slide_count: 5 });
+  script.slides[2].image_prompt = "a glowing TV";
+  const [idea] = await world.db.createIdeas([{ run_id: run.id, status: "producing", format: "tool_listicle", title: "t", recipe: { format: "tool_listicle", style: "neon_grid", slide_count: 5 }, script, dry_run: false }]);
+  await world.db.enqueue([{ run_id: run.id, idea_id: idea.id, stage: "images" }]);
+  await drain(world, depsFor(world, p));
+  assert.equal(world.gens[0].source_assets.heroes[2], undefined, "no generated picture on the Zyvo slide");
+  assert.ok(world.gens[0].source_assets.heroes[1]?.url, "the other slides got theirs");
+  const html = slideHtml({ slide: { ...validSlideshow(recipe).slides[2], kind: "text", tool: null }, index: 2, total: 6, style: LIB.styles[0].spec, zyvoShot: "https://x/shot.png" });
+  assert.match(html, /class="browser"/, "it shows the real Zyvo screen");
+  const req = writeRequest({ model: "claude-sonnet-5-5", brandRules: "x", library: LIB, recipe: planRecipes({ library: LIB, count: 1, seed: "z" })[0], today: "2026-10-20" });
+  assert.match(req.system[0].text, /NEVER an image_prompt on a Zyvo slide/);
+  assert.match(req.system[0].text, /leave that tool out: never stand in a generated picture/);
+  assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /generated stand-in instead of a real Zyvo output/);
+});
+
+test("pictures are made at their frame's shape: heroes 4:3, meme pictures tall; no frame crops", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const sizes = [];
+  const orig = p.images.generateImage;
+  p.images.generateImage = async (t, a) => { sizes.push([a.width ?? 768, a.height ?? 1344]); return orig(t, a); };
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  assert.ok(sizes.some(([w, h]) => w === 1024 && h === 768), "4:3 heroes");
+  assert.ok(sizes.some(([w, h]) => w === 768 && h === 1344), "the 9:16 background");
+  const html = slideHtml({ slide: validSlideshow({ slide_count: 5 }).slides[1], index: 1, total: 5, style: LIB.styles[0].spec, images: { hero: "https://im.runware.ai/a.jpg" } });
+  assert.match(html, /data-hero="\d+"/, "the page sizes the frame to the picture's own aspect ratio");
+  assert.ok(!/\.hero img\{[^}]*object-fit:cover/.test(html), "heroes are never cover-cropped");
+});
+
+test("meme pictures fill to the bottom edge; text sizes never under 38 px (body) / 30 px (labels); closing slides need a picture", () => {
+  const meme = slideHtml({ slide: { kind: "meme", headline: "A", body: "b", label: null, items: [], tool: null, image_prompt: "x", asset_id: null, is_zyvo: false }, index: 0, total: 3, style: { ...LIB.styles[0].spec, meme: true }, images: { hero: "https://im.runware.ai/m.jpg" } });
+  assert.ok(!meme.includes('class="memefoot"'), "no white foot under the picture");
+  assert.match(meme, /class="memebody"/, "the caption sits in the top bar");
+  for (const [k, t] of Object.entries({ body: 38, item: 38, tool: 38, side: 38, option: 38, memeBody: 38 })) assert.ok(TYPE[k].min >= t, `${k} min ${TYPE[k].min}`);
+  assert.deepEqual(TEXT_ONLY_KINDS, ["quiz_answer"], "a cta needs its own picture");
+  const recipe = { slide_count: 5 };
+  const sh = validSlideshow(recipe);
+  sh.slides[4].is_zyvo = false; sh.slides[4].image_prompt = null;
+  assert.match(slideshowProblems(sh, recipe).join(" "), /slide 5: no visual/);
+});
+
+test("logo rules: name only (Veo, Midjourney), initials tile (Seedance, Hailuo), an approved file otherwise, never upscaled", async () => {
+  const world = fakeWorld();
+  world.logos.push({ id: "L-veo", name: "Veo", domain: "deepmind.google", logo_path: "logos/veo.svg", source_url: "https://deepmind.google", approved: true, display: "name" },
+    { id: "L-seed", name: "Seedance", domain: "seed.bytedance.com", logo_path: "logos/seed.png", source_url: "https://seed.bytedance.com", approved: true, display: "tile" });
+  const deps = depsFor(world, fakeProviders(world));
+  const slides = [{ tool: { name: "Veo", url: "https://deepmind.google/models/veo/" } }, { tool: { name: "Seedance", url: "https://seed.bytedance.com/en/seedance" } }];
+  const logos = await logosFor(deps, slides);
+  assert.deepEqual(logos["deepmind.google"], { display: "name" });
+  assert.deepEqual(logos["seed.bytedance.com"], { display: "tile" });
+  const card = (name, url) => slideHtml({ slide: { kind: "item", headline: "x", body: null, label: null, items: [], tool: { name, url, what_it_does: "y" }, image_prompt: "a", asset_id: null, is_zyvo: false }, index: 1, total: 5, style: LIB.styles[0].spec, logos });
+  assert.ok(!/class="(logo|tile)"/.test(card("Veo", "https://deepmind.google/models/veo/")), "Veo: the name only");
+  assert.match(card("Seedance", "https://seed.bytedance.com/en/seedance"), /class="tile"/);
+  assert.match(card("Veo", "https://deepmind.google/models/veo/"), /naturalWidth/, "the page caps every logo at its own file size");
 });

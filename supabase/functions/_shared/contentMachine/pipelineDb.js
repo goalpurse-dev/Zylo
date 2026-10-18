@@ -130,7 +130,8 @@ export function createPipelineDb(db) {
 
     /* ─── the logo library ─── */
     async approvedLogos() {
-      return must(await db.from("cm_logos").select("name,domain,logo_path").eq("approved", true).not("logo_path", "is", null), "approved logos");
+      // Every row: approved files are used, and the display rules (name only, initials tile) apply to all.
+      return must(await db.from("cm_logos").select("name,domain,logo_path,approved,display"), "logo rows");
     },
     async listLogos() { return must(await db.from("cm_logos").select("*").order("name"), "logos"); },
     async getLogo(id) { return must(await db.from("cm_logos").select("*").eq("id", id).single(), "logo"); },
