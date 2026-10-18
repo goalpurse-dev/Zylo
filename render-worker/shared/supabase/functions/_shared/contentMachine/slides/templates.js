@@ -25,7 +25,7 @@ export const PAD = 24;
 export const INNER_RECT = Object.freeze({ x0: SAFE_RECT.x0 + PAD, y0: SAFE_RECT.y0 + PAD, x1: SAFE_RECT.x1 - PAD, y1: SAFE_RECT.y1 - PAD });
 // Slides that may carry their message without a hero visual (on a photo background): the last question,
 // the answer reveal. Every other slide needs a visual (the "visual richness" rule).
-export const TEXT_ONLY_KINDS = Object.freeze(["cta", "quiz_answer"]);
+export const TEXT_ONLY_KINDS = Object.freeze(["quiz_answer"]);
 
 const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ESC[c]);
@@ -78,11 +78,14 @@ export const TYPE = Object.freeze({
   cover: { size: 100, min: 56, lines: 4 },
   headline: { size: 88, min: 50, lines: 4 },
   cardHeadline: { size: 68, min: 44, lines: 3 },
-  body: { size: 42, min: 30, lines: 5 },
-  item: { size: 42, min: 30, lines: 2 },
-  toolname: { size: 60, min: 40, lines: 1 },
-  tool: { size: 40, min: 30, lines: 3 },
+  body: { size: 42, min: 38, lines: 5 },
+  item: { size: 42, min: 38, lines: 2 },
+  toolname: { size: 60, min: 44, lines: 1 },
+  tool: { size: 40, min: 38, lines: 3 },
   meme: { size: 76, min: 46, lines: 4 },
+  memeBody: { size: 40, min: 38, lines: 2 },
+  side: { size: 40, min: 38, lines: 5 },
+  option: { size: 42, min: 38, lines: 2 },
 });
 
 function css(style, hasPhoto) {
@@ -116,7 +119,7 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .toolrow{display:flex;align-items:center;gap:28px}
 .tile{flex:none;width:150px;height:150px;border-radius:38px;display:flex;align-items:center;justify-content:center;font:800 64px "Inter";color:#fff;box-shadow:0 14px 40px rgba(0,0,0,.35)}
 .logo{flex:none;width:150px;height:150px;border-radius:38px;background:#fff;display:flex;align-items:center;justify-content:center;padding:22px}
-.logo img{max-width:100%;max-height:100%;object-fit:contain}
+.logo img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto}
 .toolname{font:800 60px/1.1 "Inter";letter-spacing:-.02em;min-width:0}
 .tooltext{font:500 40px/1.32 "Inter";color:${hexA(style.fg, 0.9)}}
 .pill{align-self:flex-start;font:600 30px "Inter";padding:10px 24px;border-radius:999px;background:${style.highlight};color:${isLight(style.highlight) ? "#0b0b0f" : "#fff"}}
@@ -134,15 +137,14 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .browser .bar i{width:18px;height:18px;border-radius:50%;background:#555;font-style:normal}
 .browser .bar span{margin-left:16px;font:600 26px "Inter";color:#cfcfe0;background:#2a2a38;padding:6px 22px;border-radius:999px}
 .browser img{display:block;width:100%;height:520px;object-fit:cover;object-position:top}
-.hero{border-radius:34px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45);background:${hexA(style.fg, 0.06)}}
-.hero img{display:block;width:100%;object-fit:cover}
+.hero{align-self:center;border-radius:30px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45);background:${hexA(style.fg, 0.06)};line-height:0}
+.hero img{display:block}
 .tilt{transform:rotate(-1.5deg);border:10px solid #fff;margin:0 12px}
 .meme{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
-.memebar{flex:none;background:#fff;padding:${I.y0}px ${SIZE.width - I.x1}px 40px ${I.x0}px}
+.memebar{flex:none;background:#fff;padding:${I.y0}px ${SIZE.width - I.x1}px 36px ${I.x0}px;display:flex;flex-direction:column;gap:18px}
 .memetext{color:#000;font:400 76px/1.1 "Anton";text-transform:uppercase;text-align:center}
-.memeimg{flex:1;min-height:0;width:100%;object-fit:cover}
-.memefoot{flex:none;background:#fff;padding:30px ${SIZE.width - I.x1}px ${SIZE.height - I.y1}px ${I.x0}px}
-.memefoot div{color:#111;font:700 40px/1.25 "Inter";text-align:center}
+.memeimg{flex:1;min-height:0;width:100%;object-fit:cover;object-position:center top}
+.memebody{color:#222;font:700 40px/1.25 "Inter";text-align:center}
 .swipe{align-self:flex-end;font:700 32px "Inter";color:${hexA(style.fg, 0.75)}}
 .site{font:700 38px "Inter";color:${style.accent}}
 .zone{position:absolute;background:rgba(255,40,80,.18);pointer-events:none;z-index:50}
@@ -169,57 +171,78 @@ function inner(slide, style, images, ctx) {
   const label = slide.label ? `<div class="kicker" data-box data-text>${esc(slide.label)}</div>` : "";
   const head = (t = TYPE.headline) => `<h1 class="headline" ${fit(t)} data-name="headline">${highlight(slide.headline)}</h1>`;
   const body = slide.body ? `<p class="body" ${fit(TYPE.body)} data-name="body">${highlight(slide.body)}</p>` : "";
-  const items = (marker) => (slide.items?.length ? `<div class="items">${slide.items.map((t, n) => `<div class="item" data-box data-text data-name="item ${n + 1}" data-fit="${TYPE.item.size},${TYPE.item.min},${TYPE.item.lines}" style="font-size:${TYPE.item.size}px">${marker}<span>${highlight(t)}</span></div>`).join("")}</div>` : "");
-  // The slide's hero visual (a generated picture or an asset from the library): it starts at `h` px and may
-  // shrink to `min` px when the text needs the room. Every slide has one, except cta / answer slides.
-  const heroUrl = images.hero ?? images.illustration ?? null;
-  const hero = (h, min = Math.round(h * 0.55)) => (heroUrl ? `<div class="hero${style.collage ? " tilt" : ""}" data-box data-visual data-name="visual"><img data-shrink="${min}" style="height:${h}px" src="${U(heroUrl)}" alt=""></div>` : "");
+  const items = (marker) => (slide.items?.length ? `<div class="items">${slide.items.map((t, n) => `<div class="item" data-box data-text data-name="item ${n + 1}" ${fitAttr(TYPE.item)}>${marker}<span>${highlight(t)}</span></div>`).join("")}</div>` : "");
   const browser = `<div class="browser" data-box data-visual data-name="Zyvo screenshot"><div class="bar"><i></i><i></i><i></i><span>tryzyvo.com</span></div><img data-shrink="240" src="${U(ctx.zyvoShot)}" alt=""></div>`;
+  // The slide's hero visual. It fills a box up to `h` px tall at the PICTURE'S OWN aspect ratio (the page
+  // sizes it once loaded), so nothing is ever cropped; it may shrink to `min` px when the text needs room.
+  // A slide about Zyvo shows real Zyvo: its library asset (a real output), else the real Zyvo screen;
+  // never a generic generated picture (owner, 2026-10-18).
+  const heroUrl = images.hero ?? images.illustration ?? null;
+  const hero = (h, min = Math.round(h * 0.6)) => {
+    if (heroUrl) return `<div class="hero${style.collage ? " tilt" : ""}" data-box data-visual data-name="visual"><img data-hero="${h}" data-shrink="${min}" src="${U(heroUrl)}" alt=""></div>`;
+    if (slide.is_zyvo && ctx.zyvoShot) return browser;
+    return "";
+  };
 
   switch (k) {
     case "cover":
-      return `${label}${head(TYPE.cover)}${hero(640, 340)}${body}<div class="swipe" data-box data-text>swipe →</div>`;
+      return `${label}${head(TYPE.cover)}${hero(640, 420)}${body}<div class="swipe" data-box data-text>swipe →</div>`;
     case "item": {
-      if (!slide.tool) return `${label}${head()}${hero(560)}${body}${items('<span class="dot"></span>')}`;
+      if (!slide.tool) return `${label}${head()}${hero(600)}${body}${items('<span class="dot"></span>')}`;
       const zyvo = slide.is_zyvo || /^zyvo$/i.test(slide.tool.name);
-      const logo = logoFor(slide.tool, ctx.logos);
-      const mark = logo ? `<div class="logo" data-box data-name="logo"><img src="${U(logo)}" alt=""></div>` : `<div class="tile" data-box data-name="tile" style="${tileStyle(slide.tool.name)}">${esc(initials(slide.tool.name))}</div>`;
-      const visual = zyvo && ctx.zyvoShot && !heroUrl ? browser : hero(420, 240);
+      const mark = toolMark(slide.tool, ctx.logos, U);
+      const visual = zyvo && !heroUrl && ctx.zyvoShot ? browser : hero(540, 380);
       return `${label}<h1 class="headline" ${fit(TYPE.cardHeadline)} data-name="headline">${highlight(slide.headline)}</h1>${visual}
 <div class="card" data-box data-name="card"><div class="toolrow">${mark}<div class="toolname" ${fit(TYPE.toolname)} data-name="tool name">${esc(slide.tool.name)}</div></div>
 <p class="tooltext" ${fit(TYPE.tool)} data-name="tool text">${esc(slide.tool.what_it_does)}</p><div class="pill" data-box data-text>${esc(domain(slide.tool.url))}</div></div>`;
     }
     case "zyvo": {
-      const logo = ctx.logos?.["tryzyvo.com"];
-      const visual = heroUrl ? hero(620, 300) : ctx.zyvoShot ? browser : "";
-      return `${label}<h1 class="headline" ${fit(TYPE.cardHeadline)} data-name="headline">${highlight(slide.headline)}</h1>${visual}${body}${logo ? `<div class="logo" data-box data-name="Zyvo logo" style="width:110px;height:110px;padding:16px"><img src="${U(logo)}" alt=""></div>` : ""}`;
+      const z = ctx.logos?.["tryzyvo.com"];
+      const logo = typeof z === "string" ? z : z?.url;
+      return `${label}<h1 class="headline" ${fit(TYPE.cardHeadline)} data-name="headline">${highlight(slide.headline)}</h1>${heroUrl ? hero(620, 380) : ctx.zyvoShot ? browser : ""}${body}${logo ? `<div class="logo" data-box data-name="Zyvo logo" style="width:110px;height:110px;padding:16px"><img src="${U(logo)}" alt=""></div>` : ""}`;
     }
     case "step":
-      return `${slide.label ? `<div class="num" data-box data-text>${esc(slide.label)}</div>` : ""}${head()}${hero(520)}${body}${items('<span class="dot"></span>')}`;
+      return `${slide.label ? `<div class="num" data-box data-text>${esc(slide.label)}</div>` : ""}${head()}${hero(600, 400)}${body}${items('<span class="dot"></span>')}`;
     case "checklist":
-      return `${label}${head()}${hero(420, 220)}${items('<span class="box"></span>')}${body}`;
+      return `${label}${head()}${hero(520, 340)}${items('<span class="box"></span>')}${body}`;
     case "versus": {
       const [l, r] = String(slide.label ?? "").split(/\s+vs\.?\s+/i);
       const [a, b] = slide.items ?? [];
-      return `${head()}${hero(400, 220)}<div class="vs"><div class="side bad" data-box data-text data-fit="40,28,5" style="font-size:40px" data-name="left side"><b>✗ ${esc(l || "MYTH")}</b>${highlight(a ?? "")}</div>
-<div class="side good" data-box data-text data-fit="40,28,5" style="font-size:40px" data-name="right side"><b>✓ ${esc(r || "FACT")}</b>${highlight(b ?? slide.body ?? "")}</div></div>`;
+      return `${head()}${hero(480, 300)}<div class="vs"><div class="side bad" data-box data-text ${fitAttr(TYPE.side)} data-name="left side"><b>✗ ${esc(l || "MYTH")}</b>${highlight(a ?? "")}</div>
+<div class="side good" data-box data-text ${fitAttr(TYPE.side)} data-name="right side"><b>✓ ${esc(r || "FACT")}</b>${highlight(b ?? slide.body ?? "")}</div></div>`;
     }
     case "tier":
-      return `${head()}${hero(380, 200)}<div class="items">${(slide.items ?? []).map((t, n) => {
+      return `${head()}${hero(460, 280)}<div class="items">${(slide.items ?? []).map((t, n) => {
         const m = /^\s*([SABCD])\s*[:\-–]\s*(.*)$/i.exec(t);
         const tier = (m?.[1] ?? "B").toUpperCase();
-        return `<div class="tier" data-box data-text data-name="tier ${n + 1}" data-fit="42,30,2" style="font-size:42px"><i style="background:${TIER_COLORS[tier]}">${tier}</i><span>${highlight(m?.[2] ?? t)}</span></div>`;
+        return `<div class="tier" data-box data-text data-name="tier ${n + 1}" ${fitAttr(TYPE.option)}><i style="background:${TIER_COLORS[tier]}">${tier}</i><span>${highlight(m?.[2] ?? t)}</span></div>`;
       }).join("")}</div>`;
     case "quiz_question":
-      return `${label}${head()}${hero(460, 240)}<div class="items">${(slide.items ?? []).map((t, n) => `<div class="option" data-box data-text data-name="option ${n + 1}" data-fit="42,30,2" style="font-size:42px">${"ABCD"[n] ?? "•"}. ${highlight(t)}</div>`).join("")}</div>`;
+      return `${label}${head()}${hero(500, 300)}<div class="items">${(slide.items ?? []).map((t, n) => `<div class="option" data-box data-text data-name="option ${n + 1}" ${fitAttr(TYPE.option)}>${"ABCD"[n] ?? "•"}. ${highlight(t)}</div>`).join("")}</div>`;
     case "quiz_answer":
-      return `<div class="num" data-box data-text>✓</div>${head()}${hero(520)}${body}`;
+      return `<div class="num" data-box data-text>✓</div>${head()}${hero(560, 360)}${body}`;
     case "cta":
-      return `${label}${head()}${hero(520)}${body}${slide.is_zyvo ? '<div class="site" data-box data-text>tryzyvo.com</div>' : ""}`;
+      return `${label}${head()}${hero(620, 400)}${body}${slide.is_zyvo ? '<div class="site" data-box data-text>tryzyvo.com</div>' : ""}`;
     case "text":
     default:
-      return `${label}${head()}${hero(600, 320)}${body}${items('<span class="dot"></span>')}`;
+      return `${label}${head()}${hero(640, 400)}${body}${items('<span class="dot"></span>')}`;
   }
+}
+
+const fitAttr = (t) => `data-fit="${t.size},${t.min},${t.lines}" style="font-size:${t.size}px"`;
+
+/**
+ * A tool's mark next to its name (owner's logo rules, 2026-10-18): the approved official file, shown no
+ * larger than the file itself (never upscaled, redrawn or recoloured); "tile" → the initials tile;
+ * "name" → nothing but the name (Veo, Midjourney).
+ */
+function toolMark(tool, logos, U) {
+  const entry = logoFor(tool, logos);
+  const display = typeof entry === "object" && entry ? entry.display : entry ? "logo" : "tile";
+  const url = typeof entry === "string" ? entry : entry?.url;
+  if (display === "name") return "";
+  if (display === "logo" && url) return `<div class="logo" data-box data-name="logo"><img src="${U(url)}" alt=""></div>`;
+  return `<div class="tile" data-box data-name="tile" style="${tileStyle(tool.name)}">${esc(initials(tool.name))}</div>`;
 }
 
 // In the page: fit every [data-fit] block to its line limit, shrink the stack until it fits the safe zone,
@@ -232,6 +255,9 @@ try{await document.fonts.ready}catch(e){}
 const imgs=[...document.images];
 await Promise.all(imgs.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
 for(const i of imgs)if(!i.naturalWidth)problems.push("an image didn't load ("+(i.closest("[data-name]")?.dataset.name||"background")+")");
+const sizeHero=(img,h)=>{const tilt=img.closest(".tilt");const W=(img.closest(".content")?.clientWidth||0)-(tilt?72:0);const H=h-(tilt?40:0);const nw=img.naturalWidth,nh=img.naturalHeight;if(!nw||!nh)return;const k=Math.min(W/nw,H/nh);img.style.width=Math.round(nw*k)+"px";img.style.height=Math.round(nh*k)+"px";img.dataset.h=h};
+for(const i of document.querySelectorAll("img[data-hero]"))sizeHero(i,+i.dataset.hero);
+for(const i of document.querySelectorAll(".logo img"))if(i.naturalWidth){i.style.maxWidth=Math.min(i.naturalWidth,106)+"px";i.style.maxHeight=Math.min(i.naturalHeight,106)+"px"}
 const lines=(el)=>{const r=document.createRange();r.selectNodeContents(el);const tol=parseFloat(getComputedStyle(el).fontSize)*0.6;const tops=[];for(const q of r.getClientRects()){if(q.width<1||q.height<1)continue;if(!tops.some(t=>Math.abs(t-q.top)<tol))tops.push(q.top)}return tops.length};
 const fits=[...document.querySelectorAll("[data-fit]")];
 for(const el of fits){const[size,min,max]=el.dataset.fit.split(",").map(Number);let s=size;el.style.fontSize=s+"px";
@@ -241,8 +267,8 @@ const content=document.querySelector(".content");
 if(content){let guard=200;
 const over=()=>content.scrollHeight>content.clientHeight+1;
 while(over()&&guard-->0){
-const shrinkImg=[...content.querySelectorAll("img[data-shrink]")].find(i=>i.getBoundingClientRect().height>+i.dataset.shrink+20);
-if(shrinkImg){shrinkImg.style.height=(shrinkImg.getBoundingClientRect().height-40)+"px";continue}
+const shrinkImg=[...content.querySelectorAll("img[data-shrink]")].find(i=>(+i.dataset.h||i.getBoundingClientRect().height)>+i.dataset.shrink+20);
+if(shrinkImg){if(shrinkImg.hasAttribute("data-hero"))sizeHero(shrinkImg,(+shrinkImg.dataset.h)-40);else shrinkImg.style.height=(shrinkImg.getBoundingClientRect().height-40)+"px";continue}
 const cand=fits.filter(el=>content.contains(el)).map(el=>{const[,min]=el.dataset.fit.split(",").map(Number);return{el,min,s:parseFloat(el.style.fontSize)}}).filter(c=>c.s>c.min).sort((a,b)=>b.s-a.s)[0];
 if(!cand)break;cand.el.style.fontSize=(cand.s-2)+"px"}
 if(over())problems.push("the slide has more than fits in the safe zone: shorten it")}
@@ -284,8 +310,8 @@ export function slideHtml({ slide, index, total, style, images = {}, zyvoShot = 
   const zones = safeZones ? '<div class="zone l"></div><div class="zone r"></div><div class="zone t"></div><div class="zone b"></div><div class="zoneline"></div><div class="zonepad"></div>' : "";
   const pic = heroUrl ?? images.background;
   const main = meme
-    ? `<div class="meme"><div class="memebar"><div class="memetext" ${fit(TYPE.meme)} data-name="meme text">${esc(String(slide.headline).replace(/\*/g, ""))}</div></div>
-<img class="memeimg" data-visual src="${safeUrl(pic, allowFile)}" alt="">${slide.body ? `<div class="memefoot"><div data-box data-text data-name="meme caption" data-fit="40,30,2" style="font-size:40px">${esc(String(slide.body).replace(/\*/g, ""))}</div></div>` : `<div class="memefoot" style="padding-top:0"></div>`}</div>`
+    ? `<div class="meme"><div class="memebar"><div class="memetext" ${fit(TYPE.meme)} data-name="meme text">${esc(String(slide.headline).replace(/\*/g, ""))}</div>${slide.body ? `<div class="memebody" ${fit(TYPE.memeBody)} data-name="meme caption">${esc(String(slide.body).replace(/\*/g, ""))}</div>` : ""}</div>
+<img class="memeimg" data-visual src="${safeUrl(pic, allowFile)}" alt=""></div>`
     : `<div class="content">${inner(slide, style, images, ctx)}</div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${SIZE.width}">${fontCss}<style>${css(style, photo)}</style></head>
 <body data-slide="${index}" data-kind="${esc(slide.kind)}"><div class="slide">${bg}${deco}${main}${zones}</div>${LAYOUT_SCRIPT}</body></html>`;
