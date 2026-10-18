@@ -17,6 +17,8 @@ const files = [
   "supabase/functions/_shared/stickman/textOverlay.ts",
   "supabase/functions/_shared/stickman/faceFinder.ts",
   "supabase/functions/_shared/fonts/LilitaOne-Regular.ttf",
+  // The Content Machine slide templates (Dockerfile.cm).
+  "supabase/functions/_shared/contentMachine/slides/templates.js",
 ];
 for (const f of files) {
   mkdirSync(path.dirname(path.join(out, f)), { recursive: true });
