@@ -7,7 +7,7 @@ import { assertTicket } from "../budgetGuard.js";
 export const IMAGE_MODEL = "runware:400@4";
 export const IMAGE_ESTIMATE_USD = 0.004;   // a ceiling per image; the actual comes back from Runware
 export const SIZE = Object.freeze({ width: 768, height: 1344 });   // 9:16-ish, multiples of 16
-export const NO_TEXT = "no text, no letters, no words, no numbers, no captions, no watermark, no logos, no brand marks";
+export const NO_TEXT = "no text, no letters, no words, no numbers, no captions, no watermark, no logos, no brand marks, any screen or monitor shows no text and no interface";
 
 // Never a real person (owner, 2026-10-18): no real people, celebrities or lookalikes in any image.
 export const NO_REAL_PEOPLE = "no real people, no celebrities, no public figures, no lookalikes of real people, no photographs of people";
