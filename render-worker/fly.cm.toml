@@ -1,0 +1,8 @@
+# Build config for the Content Machine's slide renderer image ONLY (tag cm-slides on the zyvo-render app).
+# fly.toml names the main Dockerfile and wins over --dockerfile, so this file names Dockerfile.cm:
+#   fly deploy --config fly.cm.toml --app zyvo-render --build-only --push --image-label cm-slides
+app = "zyvo-render"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile.cm"
