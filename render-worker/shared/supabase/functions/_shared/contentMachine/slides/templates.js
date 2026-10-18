@@ -16,15 +16,16 @@
 //    without one, an icon tile with the initials.
 
 export const SIZE = Object.freeze({ width: 1080, height: 1920 });
-// Each platform's own UI over a 1080×1920 slide, in px (owner, 2026-10-18, from a real TikTok photo post on an
-// iPhone): what is covered on each side, plus "avoid" areas inside the frame.
-//   tiktok_photo    photo posts are top-anchored: the status bar, back arrow and "Find related content" search
-//                   bar cover the top ~300; the caption, carousel dots and name the bottom ~440; the icon column
-//                   the right; the profile avatar sits above the caption at the left.
+// Each platform's own UI over a 1080×1920 slide, in px: what is covered on each side, plus "avoid" areas.
+//   tiktok_photo    MEASURED on the owner's iPhone screenshot of a posted photo slideshow (2026-10-18): TikTok
+//                   fits the slide to the screen width (×1.092) and places it 40 screen px above the top. The
+//                   status bar + back arrow + "Find related content" search bar cover slide y 0–308; the icon
+//                   column starts at x 936 (the "2/8" counter at x 932–1047, y 342–406); the caption panel
+//                   covers y 1728–1920; the profile avatar sits at x 33–170, y 1553–1685. Each + a small margin.
 //   instagram_feed  a 9:16 carousel slide is shown cropped to 4:5 in the feed: only the middle 1350 px show.
 //   shorts_video    Reels / Shorts / TikTok video (the MP4): search bar on top, caption at the bottom, icons right.
 export const SAFE_PROFILES = Object.freeze({
-  tiktok_photo: { label: "TikTok photo post", left: 110, right: 170, top: 300, bottom: 440, avoid: [{ name: "the TikTok profile avatar", x0: 0, y0: 1400, x1: 300, y1: 1920 }] },
+  tiktok_photo: { label: "TikTok photo post", left: 40, right: 150, top: 320, bottom: 200, avoid: [{ name: "the TikTok profile avatar", x0: 0, y0: 1530, x1: 190, y1: 1720 }] },
   instagram_feed: { label: "Instagram feed (4:5 crop)", left: 60, right: 60, top: 285, bottom: 285, avoid: [] },
   shorts_video: { label: "Reels / Shorts video", left: 110, right: 170, top: 200, bottom: 420, avoid: [] },
 });

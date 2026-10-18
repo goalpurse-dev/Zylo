@@ -471,12 +471,13 @@ test("no real people: prompts, program checks, and the renderer takes no local p
   assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /lookalike of one/);
 });
 
-test("the safe zone: TikTok photo posts (top 300, bottom 440, avatar) and one export that fits every platform", async () => {
+test("the safe zone: TikTok photo posts as measured on the owner's iPhone, and one export that fits every platform", async () => {
   const { SAFE_PROFILES, AVOID } = await import("../supabase/functions/_shared/contentMachine/slides/templates.js");
-  assert.deepEqual(SAFE, { left: 110, right: 170, top: 300, bottom: 440 });
-  assert.deepEqual(SAFE_RECT, { x0: 110, y0: 300, x1: 910, y1: 1480 });
-  // The stack is centered between the top zone and the avatar (24 px inner padding on every side).
-  assert.deepEqual(INNER_RECT, { x0: 134, y0: 324, x1: 886, y1: 1376 });
+  assert.deepEqual(SAFE_PROFILES.tiktok_photo, { label: "TikTok photo post", left: 40, right: 150, top: 320, bottom: 200, avoid: [{ name: "the TikTok profile avatar", x0: 0, y0: 1530, x1: 190, y1: 1720 }] });
+  assert.deepEqual(SAFE, { left: 110, right: 170, top: 320, bottom: 420 });
+  assert.deepEqual(SAFE_RECT, { x0: 110, y0: 320, x1: 910, y1: 1500 });
+  // 24 px inner padding on every side; the avatar sits below the stack.
+  assert.deepEqual(INNER_RECT, { x0: 134, y0: 344, x1: 886, y1: 1476 });
   assert.deepEqual(AVOID.map((a) => a.name), ["the TikTok profile avatar"]);
   // Every platform's free area contains the export's, so one set of PNGs fits them all.
   for (const [k, p] of Object.entries(SAFE_PROFILES)) {
@@ -486,7 +487,7 @@ test("the safe zone: TikTok photo posts (top 300, bottom 440, avatar) and one ex
   const slide = validSlideshow({ slide_count: 5 }).slides[0];
   const zoned = slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec, safeZones: true });
   assert.match(zoned, /class="zone l"/);
-  assert.match(zoned, /left:0px;top:1400px;width:300px;height:520px/, "the avatar area is drawn");
+  assert.match(zoned, /left:0px;top:1530px;width:190px;height:190px/, "the avatar area is drawn");
   assert.ok(!slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec }).includes('class="zone'), "never drawn unless asked (previews only)");
 });
 

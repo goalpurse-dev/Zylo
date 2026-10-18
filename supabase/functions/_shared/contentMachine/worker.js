@@ -11,6 +11,7 @@ import { localToUtc } from "./localTime.js";
 
 export const LEASE_SECONDS = 420;   // longer than the slowest job (a written slideshow with web search)
 export const JOBS_PER_TICK = 4;
+export const SCOUT_WAIT_MS = 10 * 60_000;
 
 export function localClock(date, timeZone) {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
@@ -34,6 +35,15 @@ export async function maybeStartDailyRun(deps) {
   if (localClock(now, s.timezone) < s.run_time_local) return null;
   const day = localDay(now, s.timezone);
   if (await deps.db.dailyRunExists(day)) return null;
+  // The scout runs first (owner, 2026-10-18): wait for today's report, at most 10 minutes after it started.
+  if (s.daily_scout && deps.db.listScouts && deps.db.firstScoutJobAt) {
+    const dayStart = localToUtc(day, s.timezone).toISOString();
+    const report = (await deps.db.listScouts(1))[0];
+    if (!(report && report.created_at >= dayStart)) {
+      const startedAt = await deps.db.firstScoutJobAt(dayStart);
+      if (!startedAt || now.getTime() - Date.parse(startedAt) < SCOUT_WAIT_MS) return null;
+    }
+  }
   let run;
   try {
     run = await deps.db.createRun({ run_date: day, kind: "daily", status: "pending", dry_run: deps.guard.envDryRun || Boolean(s.dry_run), input: { count: s.slideshows_per_day }, started_at: now.toISOString() });
@@ -63,8 +73,8 @@ export const TICK_BUDGET_MS = 150_000;
 export const MAX_ROUNDS = 12;
 
 export async function tick(deps, { clock = () => Date.now() } = {}) {
-  const daily = await maybeStartDailyRun(deps);
   const scouted = await maybeStartDailyScout(deps).catch((e) => { deps.log?.(`[content-machine-worker] scout: ${e?.message ?? e}`); return false; });
+  const daily = await maybeStartDailyRun(deps);
   const started = clock();
   const results = [];
   for (let round = 0; round < MAX_ROUNDS && clock() - started < TICK_BUDGET_MS; round++) {
