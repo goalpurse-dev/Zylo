@@ -102,6 +102,7 @@ export function fakeWorld(settings = {}) {
     async listAnalyses(n = 10) { return analyses.slice(0, n); },
     async saveScout(row) { const r = { id: id("SC"), created_at: clock.now.toISOString(), ...row }; scouts.unshift(r); return r; },
     async listScouts(n = 5) { return scouts.slice(0, n); },
+    async firstScoutJobAt(iso) { return jobs.filter((j) => j.stage === "scout" && (j.created_at ?? "") >= iso).map((j) => j.created_at).sort()[0] ?? null; },
     async scoutQueuedSince(iso) { return jobs.some((j) => j.stage === "scout" && (j.created_at ?? new Date(0).toISOString()) >= iso); },
     // Part 2: posts and stats snapshots
     async createPost(row) { const p = { id: id("P"), created_at: clock.now.toISOString(), ...row }; posts.push(p); return p; },

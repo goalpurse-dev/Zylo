@@ -243,3 +243,27 @@ test("the daily scout: queued once a day after the run time when it's on; its br
   off.clock.now = new Date("2026-10-20T06:00:00Z");
   assert.equal((await tick(depsFor(off, fakeProviders(off)))).scout, false, "off by default (it's paid)");
 });
+
+
+test("with the daily scout on, today's automatic run waits for the scout (at most 10 minutes)", async () => {
+  const world = fakeWorld({ daily_auto_run: true, daily_scout: true, run_time_local: "08:00", dry_run: true });
+  world.clock.now = new Date("2026-10-20T06:00:00Z");   // 09:00 Helsinki
+  const p = fakeProviders(world);
+  const orig = p.ai.createMessage;
+  let scoutCalls = 0;
+  p.ai.createMessage = async (t, a) => {
+    if (/^You scout/.test(a.request.system[0].text)) { scoutCalls += 1; throw new Error("search provider down"); }
+    return orig(t, a);
+  };
+  const deps = depsFor(world, p);
+  // Dry run: the scout is a live call (owner-ordered), so it runs; here it fails.
+  const first = await tick(deps);
+  assert.equal(first.scout, true);
+  assert.equal(first.daily, null, "the run waits for the scout");
+  assert.equal(world.runs.length, 0);
+  world.clock.now = new Date(world.clock.now.getTime() + 5 * 60_000);
+  assert.equal((await tick(deps)).daily, null, "still waiting (5 min)");
+  world.clock.now = new Date(world.clock.now.getTime() + 6 * 60_000);
+  assert.ok((await tick(deps)).daily, "after 10 minutes the run starts without a report");
+  assert.equal(scoutCalls, 1, "the scout is tried once, never retried in a loop");
+});

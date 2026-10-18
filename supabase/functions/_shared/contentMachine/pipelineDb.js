@@ -154,6 +154,7 @@ export function createPipelineDb(db) {
     async listAnalyses(limit = 10) { return must(await db.from("cm_analyses").select("*").order("created_at", { ascending: false }).limit(limit), "analyses"); },
     async saveScout(row) { return must(await db.from("cm_scout_reports").insert(row).select("*").single(), "save scout report"); },
     async listScouts(limit = 5) { return must(await db.from("cm_scout_reports").select("*").order("created_at", { ascending: false }).limit(limit), "scout reports"); },
+    async firstScoutJobAt(iso) { return must(await db.from("cm_jobs").select("created_at").eq("stage", "scout").gte("created_at", iso).order("created_at").limit(1), "scout job")[0]?.created_at ?? null; },
     async scoutQueuedSince(iso) { return must(await db.from("cm_jobs").select("id").eq("stage", "scout").gte("created_at", iso).limit(1), "scout jobs").length > 0; },
 
     /* ─── Part 2: posts and their stats snapshots ─── */
