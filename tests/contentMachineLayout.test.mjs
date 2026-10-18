@@ -39,3 +39,63 @@ test("the layout check refuses too much text and a missing image, before any fil
     return true;
   });
 });
+
+/* ─── round 5 (2026-10-18): highlights, empty space ─── */
+
+test("highlights keep clear of the other lines, and the check catches a highlight that touches one", { skip: !chromium && "Playwright's Chromium is not installed" }, async () => {
+  const { slideHtml, FONT_CSS } = await import("../supabase/functions/_shared/contentMachine/slides/templates.js");
+  const { pathToFileURL } = await import("node:url");
+  const fonts = FONT_CSS.local(pathToFileURL(join(process.cwd(), "render-worker/assets/fonts")).href);
+  const minimal = { bg: "#f6f3ee", fg: "#111111", accent: "#2563eb", highlight: "#fde047", font: "inter" };
+  const s = slide({ kind: "cover", headline: "*4 faceless looks* you can make with *long form* and *image style*", image_prompt: "x" });
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+    const check = async (html) => {
+      await page.setContent(html, { waitUntil: "load" });
+      await page.waitForSelector('body[data-ready="1"]');
+      return JSON.parse(await page.evaluate(() => document.body.dataset.layout));
+    };
+    for (const st of [minimal, style]) {
+      const ok = await check(slideHtml({ slide: s, index: 0, total: 3, style: st, images: { hero: PICTURE }, fontCss: fonts }));
+      assert.ok(!ok.problems.some((p) => /highlight/.test(p)), `${st.font}: ${ok.problems.join("; ")}`);
+      // The line height opens up for a highlighted headline, and the bar is shorter than one line.
+      const m = await page.evaluate(() => { const h = document.querySelector(".headline"); const b = document.querySelector(".hl"); return { lh: parseFloat(getComputedStyle(h).lineHeight), fs: parseFloat(getComputedStyle(h).fontSize), band: parseFloat(getComputedStyle(b).backgroundSize.split(" ")[1]) }; });
+      assert.ok(m.lh / m.fs >= 1.24, `line height ${m.lh / m.fs}`);
+      assert.ok(m.band < m.lh, `bar ${m.band} < line ${m.lh}`);
+    }
+    // Squeezed lines: the highlights now touch the next line, and the slide fails.
+    const tight = slideHtml({ slide: s, index: 0, total: 3, style: minimal, images: { hero: PICTURE }, fontCss: fonts }).replace("</head>", "<style>.headline:has(.hl){line-height:.82!important}</style></head>");
+    const bad = await check(tight);
+    assert.ok(bad.problems.some((p) => /a highlight in the headline touches another line/.test(p)), bad.problems.join("; "));
+  } finally {
+    await browser.close();
+  }
+});
+
+test("free height goes to the picture; a slide with more than 25 % empty space is marked (not refused)", { skip: !chromium && "Playwright's Chromium is not installed" }, async () => {
+  const { slideHtml, FONT_CSS } = await import("../supabase/functions/_shared/contentMachine/slides/templates.js");
+  const { pathToFileURL } = await import("node:url");
+  const fonts = FONT_CSS.local(pathToFileURL(join(process.cwd(), "render-worker/assets/fonts")).href);
+  const tall = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="540" height="960"><rect width="540" height="960" fill="#16a34a"/><circle cx="270" cy="400" r="200" fill="#facc15"/></svg>')}`;
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+    const check = async (s, images) => {
+      await page.setContent(slideHtml({ slide: s, index: 0, total: 3, style, images, fontCss: fonts }), { waitUntil: "load" });
+      await page.waitForSelector('body[data-ready="1"]');
+      return { layout: JSON.parse(await page.evaluate(() => document.body.dataset.layout)), heroH: await page.evaluate(() => document.querySelector(".hero")?.offsetHeight ?? 0) };
+    };
+    // A tall picture: the frame grows past its start height (640) into the free height; nothing is empty.
+    const a = await check(slide({ headline: "A tall picture", image_prompt: "x" }), { hero: tall });
+    assert.equal(a.layout.ok, true, a.layout.problems.join("; "));
+    assert.ok(a.heroH > 900, `hero ${a.heroH}px tall`);
+    assert.deepEqual(a.layout.warnings, []);
+    // Only a word on a photo: rendered, but marked as mostly empty.
+    const b = await check(slide({ kind: "quiz_answer", headline: "Yes" }), { background: PICTURE });
+    assert.equal(b.layout.ok, true);
+    assert.match(b.layout.warnings.join(" "), /of the safe area is empty/);
+  } finally {
+    await browser.close();
+  }
+});

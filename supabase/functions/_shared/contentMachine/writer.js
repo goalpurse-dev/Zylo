@@ -79,10 +79,18 @@ const libraryText = (library) => [
 ].join("\n");
 
 /** The asset library as the writer sees it: one line per usable asset (ref, tool, subject, tags). */
+// Frames with burned-in subtitles (owner, 2026-10-18): one cut off mid-sentence is never offered; clean
+// frames (no subtitles) are listed first, then untagged ones, then frames whose subtitle is whole.
+const SUB_RANK = { none: 0, full: 2 };
+export function usableAssets(assets = []) {
+  return assets.filter((a) => a.subtitles !== "cut").map((a, i) => [a, i]).sort(([a, i], [b, j]) => (SUB_RANK[a.subtitles] ?? 1) - (SUB_RANK[b.subtitles] ?? 1) || i - j).map(([a]) => a);
+}
 export function assetsText(assets = []) {
-  if (!assets.length) return "ASSET LIBRARY: empty for now (use image_prompt).";
+  const list = usableAssets(assets);
+  if (!list.length) return "ASSET LIBRARY: empty for now (use image_prompt).";
+  const sub = (a) => (a.subtitles === "none" ? " · clean" : a.subtitles === "full" ? " · whole subtitle" : "");
   return ["ASSET LIBRARY (real Zyvo outputs and UI; use one by putting its ref in asset_id):",
-    ...assets.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}`)].join("\n");
+    ...list.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""}${sub(a)} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}`)].join("\n");
 }
 
 export function writeSystem({ brandRules, library, assets = [] }) {
@@ -110,10 +118,14 @@ HOW TO WRITE IT:
 - EVERY slide gets a strong visual (posts that are walls of text don't stop the scroll). For each slide give EITHER image_prompt OR asset_id:
   - image_prompt: the ONE concrete subject of that slide's picture, matching the slide's point and the style's picture language (e.g. "a glowing film clapperboard with a play button", "a microphone on a velvet desk at night"). Just the subject: the style's look is added for you. Never text, letters, logos or brands, and NEVER a real person, a celebrity, a public figure or anyone who looks like one; prefer objects and scenes; a character must be an invented cartoon character.
   - asset_id: a ref from the ASSET LIBRARY, for "made with Zyvo" proof, output showcases and the screenshot_collage style (which uses real Zyvo UI and outputs first). Only refs that are listed.
+  - meme_style pictures: a simple scene with one or two invented cartoon characters at most (no crowds), plain unbranded devices and clothes, screens with a plain glow (no UI, no blank black screen).
   - The closing cta slide gets a picture too. Only a quiz answer may have neither (it sits on the background picture).
 - ANY slide that mentions or shows Zyvo (is_zyvo = true) shows REAL Zyvo: an asset_id of a real Zyvo output, or nothing (the real Zyvo screen is shown then). NEVER an image_prompt on a Zyvo slide: a generated picture is not Zyvo's work.
 - "Made with Zyvo" (or similar) may appear ONLY on a slide whose picture is a real Zyvo output (asset_id). Never on generated pictures, memes or backgrounds.
 - Showcase and proof slides show ONLY real Zyvo outputs from the asset library. If a tool has no usable asset, leave that tool out: never stand in a generated picture.
+- zyvo_showcase: the cover is made for you as a collage of the real outputs on the later slides, so give the cover NEITHER image_prompt NOR asset_id, and give at least 2 later slides an asset_id of a real output.
+- On a Zyvo slide, prefer a real OUTPUT (what Zyvo makes). Use a ui asset (a tight crop of one Zyvo screen: the prompt box, the template picker, the scene editor) ONLY when the slide is about that part of the app.
+- Prefer assets marked "clean" (no burned-in subtitles). Never pick one marked "subtitle cut off".
 - Never imply that Zyvo is partnered with, endorsed by or affiliated with any tool you list.
 - The last slide is kind "cta" and matches the recipe's cta_type: link_in_bio ("tool's in my bio"), comment_keyword ("comment ZYVO and I'll send the link"), soft_mention ("made with Zyvo"), question (a question that invites comments).
 - First person only when true: "I built Zyvo" is true; invented experiences ("I've used X for 6 months", "this made me $5k") are not allowed.
@@ -213,8 +225,11 @@ export function slideshowProblems(s, recipe, opts = {}) {
     if ((x.items ?? []).length > 6) p.push(`slide ${i + 1}: too many items`);
   });
   // Visual richness: every slide but a cta / quiz answer has a picture (a prompt or a library asset).
+  // A showcase's cover is the collage of its real outputs (the images step makes it): it needs 2 of them.
+  const showcase = recipe?.format === "zyvo_showcase";
+  if (showcase && s.slides.slice(1).filter((x) => String(x.asset_id ?? "").trim()).length < 2) p.push("a zyvo_showcase needs at least 2 later slides with a real output (asset_id) for its cover collage");
   s.slides.forEach((x, i) => {
-    const hasVisual = String(x.image_prompt ?? "").trim() || String(x.asset_id ?? "").trim();
+    const hasVisual = String(x.image_prompt ?? "").trim() || String(x.asset_id ?? "").trim() || (showcase && i === 0);
     if (!hasVisual && !x.is_zyvo && x.kind !== "quiz_answer") p.push(`slide ${i + 1}: no visual (give an image_prompt or an asset_id)`);
     // Honesty (owner, 2026-10-18): a Zyvo slide shows real Zyvo, never a generated picture; "made with
     // Zyvo" only where the picture is a real Zyvo output.

@@ -1,14 +1,14 @@
 // Content Machine: the vision QA check (owner, 2026-10-18). After a slideshow is rendered, CM_MODEL_FAST
 // looks at every final slide and flags what a program can't see: a cut-off head or subject, letters or
 // garbled text inside a generated picture, distorted hands or faces, unreadable text, a large empty
-// area, anything that resembles a real person or a brand. A flagged slide gets ONE regenerate (its
+// area, anything that resembles a real person or a brand. Strict about logos on objects (owner, 2026-10-18: an Apple-like logo on a laptop was missed once). A flagged slide gets ONE regenerate (its
 // generated picture is made again); if it is still flagged, it is marked in admin.
 
-export const QA_FLAGS = ["cut_off_subject", "garbled_text_in_image", "distorted_hands_or_faces", "unreadable_text", "large_empty_area", "resembles_real_person_or_brand"];
+export const QA_FLAGS = ["cut_off_subject", "garbled_text_in_image", "distorted_hands_or_faces", "unreadable_text", "large_empty_area", "resembles_real_person_or_brand", "logo_on_object"];
 export const QA_LABELS = {
   cut_off_subject: "a head or subject is cut off", garbled_text_in_image: "letters or garbled text inside the picture",
   distorted_hands_or_faces: "distorted hands or faces", unreadable_text: "text is hard to read", large_empty_area: "a large empty area",
-  resembles_real_person_or_brand: "resembles a real person or a brand",
+  resembles_real_person_or_brand: "resembles a real person or a brand", logo_on_object: "a logo or brand mark on an object",
 };
 
 export const QA_SCHEMA = {
@@ -32,6 +32,7 @@ export const QA_SYSTEM = `You are the final quality check for social-media slide
 - unreadable_text: some of the slide's text is too small, too low-contrast or covered, so it is hard to read on a phone.
 - large_empty_area: a large part of the slide is empty and looks unfinished (normal margins are fine).
 - resembles_real_person_or_brand: anything looks like a real, identifiable person, a celebrity, or a real brand's logo or product (the tool names and small official logos next to tool names on tool cards are fine; Zyvo's own screens are fine).
+- logo_on_object: the PICTURE shows any logo, brand mark or symbol on an object: a laptop lid, the back of a phone, a shirt, a cap, a cup, a bag. Be strict: a small or simplified one counts (an apple shape on a laptop lid, a swoosh on a shoe, a bitten fruit, three stripes). Not the official logos drawn next to tool names on tool cards.
 note: one short line when anything is true, else null. Be strict about real faces and garbled text; don't flag stylised cartoon characters for being cartoons.
 Return only the JSON object, one entry per slide, numbered as given.`;
 

@@ -8,6 +8,9 @@ export const ZYVO_TOOLS = ["ai_fruit_story", "blocky_stories", "long_form", "cut
   "behind_the_scenes", "two_am_worlds", "thirty_days", "face_asmr", "kit_swap", "image_generator", "cooking", "ui", "other"];
 export const ASSET_KINDS = ["output", "ui", "character", "thumbnail", "scene"];
 export const TAG_BATCH = 8;
+// Burned-in subtitles (owner, 2026-10-18): none, full (a whole line is readable) or cut (cut off mid-sentence,
+// e.g. "Why is there a…"). The writer never gets a "cut" frame and prefers "none".
+export const SUBTITLES = ["none", "full", "cut"];
 
 const nullable = (t) => ({ type: [t, "null"] });
 export const TAG_SCHEMA = {
@@ -17,7 +20,7 @@ export const TAG_SCHEMA = {
       type: "array",
       items: {
         type: "object", additionalProperties: false,
-        required: ["ref", "tool", "kind", "style", "subject", "tags", "realistic_human", "celebrity_or_lookalike", "third_party_character_or_brand", "text_heavy", "usable", "reason"],
+        required: ["ref", "tool", "kind", "style", "subject", "tags", "realistic_human", "celebrity_or_lookalike", "third_party_character_or_brand", "text_heavy", "subtitles", "usable", "reason"],
         properties: {
           ref: { type: "string" },
           tool: { type: "string", enum: ZYVO_TOOLS },
@@ -29,6 +32,7 @@ export const TAG_SCHEMA = {
           celebrity_or_lookalike: { type: "boolean" },
           third_party_character_or_brand: { type: "boolean" },
           text_heavy: { type: "boolean" },
+          subtitles: { type: "string", enum: SUBTITLES },
           usable: { type: "boolean" },
           reason: nullable("string"),
         },
@@ -46,6 +50,7 @@ For every image you are given (each with its ref and the repo path it came from,
 - celebrity_or_lookalike: true if anyone shown is, or looks like, a real public figure.
 - third_party_character_or_brand: true if it shows a character, logo, mascot, sports kit or brand that belongs to someone else (not Zyvo).
 - text_heavy: true if it is mostly text.
+- subtitles: burned-in subtitles or captions on the picture (spoken lines, story captions). "none" if there are none; "full" if the caption shown is a complete sentence or phrase; "cut" if it stops mid-sentence or mid-word ("Why is there a…"), is cropped by the edge, or is only part of a line.
 - usable: false if realistic_human, celebrity_or_lookalike or third_party_character_or_brand is true; otherwise true. Cartoon, clay, fruit, blocky, stickman and other stylised characters ARE usable.
 - reason: one short line when usable is false, else null.
 Return only the JSON object, one entry per image, in the order given.`;
@@ -75,6 +80,7 @@ export function assetUpdate(t, now) {
     style: String(t.style ?? "").slice(0, 60) || null,
     subject: String(t.subject ?? "").slice(0, 160) || null,
     tags: (t.tags ?? []).map((x) => String(x).toLowerCase().slice(0, 30)).slice(0, 8),
+    subtitles: SUBTITLES.includes(t.subtitles) ? t.subtitles : null,
     status: excluded ? "excluded" : "active",
     exclude_reason: excluded ? (flags.join("; ") || t.reason || "not usable") : null,
     tagged_at: now,

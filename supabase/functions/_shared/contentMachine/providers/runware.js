@@ -14,11 +14,18 @@ export const NO_REAL_PEOPLE = "no real people, no celebrities, no public figures
 // Backgrounds carry the text, so they have no people at all (text never crosses a face).
 export const NO_PEOPLE = "no people, no faces, no human figures";
 
-/** kind: "background" (no people at all) or "illustration" (invented characters allowed, never real ones). */
+// The meme style's scenes (owner, 2026-10-18): simple, few characters, nothing branded, plain screens. The
+// first real meme run showed an Apple-like logo on a laptop, a blank black screen and a distorted crowd.
+export const MEME_RULES = "simple uncluttered scene, one or two characters at most, no crowd, no background people, every laptop, phone, cup and piece of clothing is plain and unbranded with no logo or symbol on it, any screen shows only a soft bright plain colour glow";
+
+/**
+ * kind: "background" (no people at all), "illustration" (invented characters allowed, never real ones) or
+ * "meme" (an illustration with the meme rules).
+ */
 export function imagePrompt(prompt, kind = "illustration") {
   const p = String(prompt ?? "").replace(/\s+/g, " ").trim().slice(0, 600);
   const people = kind === "background" ? `${NO_PEOPLE}, ${NO_REAL_PEOPLE}` : `any character is an invented cartoon character, ${NO_REAL_PEOPLE}`;
-  return `${p}. ${NO_TEXT}, ${people}.`;
+  return `${p}. ${kind === "meme" ? `${MEME_RULES}, ` : ""}${NO_TEXT}, ${people}.`;
 }
 
 export async function generateImage(ticket, { apiKey, prompt, kind = "illustration", baseUrl = "https://api.runware.ai", fetchImpl = fetch, model = IMAGE_MODEL, width = SIZE.width, height = SIZE.height }) {

@@ -58,7 +58,7 @@ test("a real run: every call reserved first, settled with the provider's own cos
   assert.equal(world.s.experiment_started_on, "2026-10-20", "the first real run starts the experiment phase");
   // The render got the slides, the style, the images and the Zyvo screenshot; the generation has its files.
   assert.equal(p.calls.lastRender.style.font, "anton");
-  assert.match(p.calls.lastRender.zyvoShot, /assets\/zyvo-home\.png/);
+  assert.match(p.calls.lastRender.zyvoShot, /assets\/zyvo-ui-picker\.png/);
   assert.equal(p.calls.lastRender.uploads.pngs.length, world.ideas[1].script.slides.length);
   assert.ok(world.gens.every((g) => g.status === "done" && g.files.mp4 && g.files.zip && g.files.pngs.length));
   // Prompts: the write request has web search and caching; the package call uses the fast model.
@@ -799,4 +799,152 @@ test("logo rules: name only (Veo, Midjourney), initials tile (Seedance, Hailuo),
   assert.ok(!/class="(logo|tile)"/.test(card("Veo", "https://deepmind.google/models/veo/")), "Veo: the name only");
   assert.match(card("Seedance", "https://seed.bytedance.com/en/seedance"), /class="tile"/);
   assert.match(card("Veo", "https://deepmind.google/models/veo/"), /naturalWidth/, "the page caps every logo at its own file size");
+});
+
+/* ─── round 5 (2026-10-18): collage covers, clean frames, UI crops, memes ─── */
+
+test("a showcase cover is a collage of the real outputs in the slideshow; no picture is generated for it", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const run = await world.db.createRun({ run_date: "2026-10-20", kind: "slideshows", status: "producing", dry_run: false, input: { count: 1 } });
+  const S = (kind, extra = {}) => ({ kind, headline: "Would you *watch this*?", body: null, label: null, items: [], tool: null, image_prompt: null, asset_id: null, is_zyvo: true, ...extra });
+  const [idea] = await world.db.createIdeas([{ run_id: run.id, status: "producing", recipe: { format: "zyvo_showcase", style: "neon_grid" }, title: "Showcase", dry_run: false,
+    script: { slides: [S("cover", { image_prompt: "a phone" }), S("text", { asset_id: "aaaa1111" }), S("text", { asset_id: "bbbb2222" }), S("cta", { is_zyvo: false, image_prompt: "a star" })] } }]);
+  await world.db.enqueue([{ run_id: run.id, idea_id: idea.id, stage: "images" }]);
+  await drain(world, depsFor(world, p));
+  const src = world.gens[0].source_assets;
+  assert.deepEqual(src.collages[0].map((c) => c.ref), ["aaaa1111", "bbbb2222"]);
+  assert.equal(src.heroes[0], undefined, "no generated cover picture");
+  assert.equal(p.calls.images, 2, "only the background and the cta picture were generated");
+  assert.deepEqual(p.calls.lastRender.images.collages[0], ["https://signed/library/aaaa1111.webp", "https://signed/library/bbbb2222.webp"]);
+  const html = slideHtml({ slide: S("cover"), index: 0, total: 4, style: LIB.styles[0].spec, images: { collage: p.calls.lastRender.images.collages[0] } });
+  assert.equal((html.match(/<img data-tile/g) ?? []).length, 2, "the cover shows both outputs");
+  assert.ok(!/class="browser"/.test(html), "not the generic Zyvo screen");
+  // The writer: no picture on a showcase cover, and at least 2 real outputs for its collage.
+  const recipe = { slide_count: 4, format: "zyvo_showcase" };
+  const sh = validSlideshow(recipe);
+  sh.slides.forEach((x) => { x.image_prompt = null; x.asset_id = null; x.is_zyvo = true; });
+  assert.match(slideshowProblems(sh, recipe).join(" "), /needs at least 2 later slides with a real output/);
+  sh.slides[1].asset_id = "aaaa1111"; sh.slides[2].asset_id = "bbbb2222";
+  assert.deepEqual(slideshowProblems(sh, recipe, { assetRefs: new Set(["aaaa1111", "bbbb2222"]) }), []);
+});
+
+test("clean frames: a frame whose subtitle is cut off is never offered; clean frames come first", async () => {
+  const { assetsText, usableAssets } = await import("../supabase/functions/_shared/contentMachine/writer.js");
+  const { assetUpdate, TAG_SCHEMA, TAG_SYSTEM } = await import("../supabase/functions/_shared/contentMachine/assets.js");
+  const list = [
+    { ref: "cut00001", kind: "output", tool: "ai_fruit_story", subject: "Why is there a…", subtitles: "cut" },
+    { ref: "full0001", kind: "output", tool: "ai_fruit_story", subject: "a whole line", subtitles: "full" },
+    { ref: "unkn0001", kind: "output", tool: "long_form", subject: "not tagged yet", subtitles: null },
+    { ref: "none0001", kind: "output", tool: "clay_rescue", subject: "a clean frame", subtitles: "none" },
+  ];
+  assert.deepEqual(usableAssets(list).map((a) => a.ref), ["none0001", "unkn0001", "full0001"]);
+  const text = assetsText(list);
+  assert.ok(!text.includes("cut00001"));
+  assert.match(text, /none0001: output · clay_rescue · clean/);
+  assert.ok(TAG_SCHEMA.properties.images.items.required.includes("subtitles"));
+  assert.match(TAG_SYSTEM, /"cut" if it stops mid-sentence/);
+  assert.equal(assetUpdate({ tool: "ai_fruit_story", kind: "output", subtitles: "cut", usable: true }, "now").subtitles, "cut");
+  assert.equal(assetUpdate({ tool: "ai_fruit_story", kind: "output", subtitles: "maybe", usable: true }, "now").subtitles, null);
+  // The writer's check refuses a cut frame, even though it is in the library.
+  const world = fakeWorld();
+  world.assets.push({ id: "A9", ref: "cut00001", path: "library/cut.webp", kind: "output", tool: "ai_fruit_story", status: "active", subtitles: "cut" });
+  const p = fakeProviders(world);
+  const orig = p.ai.createMessage;
+  p.ai.createMessage = async (t, a) => { const out = await orig(t, a); if (a.request.tools) { const x = JSON.parse(out.body.content[0].text); x.slides[2].asset_id = "cut00001"; x.slides[2].image_prompt = null; out.body.content[0].text = JSON.stringify(x); } return out; };
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  assert.equal(world.ideas[0].status, "failed");
+  assert.match(world.ideas[0].error, /asset_id cut00001 is not in the library/);
+  // A re-tag job (owner-ordered) looks at active assets again.
+  const w2 = fakeWorld();
+  const p2 = fakeProviders(w2);
+  await w2.db.enqueue([{ stage: "tag_assets", payload: { ids: ["A1", "A2"], live: true, retag: true } }]);
+  await drain(w2, depsFor(w2, p2));
+  assert.equal(p2.calls.tagged, 2);
+});
+
+test("a Zyvo slide prefers a real output; UI crops only for slides about the app; the default screen is a tight crop", async () => {
+  const { ZYVO_SHOT_PATH } = await import("../supabase/functions/_shared/contentMachine/pipeline.js");
+  assert.equal(ZYVO_SHOT_PATH, "assets/zyvo-ui-picker.png");
+  const req = writeRequest({ model: "claude-sonnet-5-5", brandRules: "x", library: LIB, recipe: planRecipes({ library: LIB, count: 1, seed: "u" })[0], today: "2026-10-20" });
+  assert.match(req.system[0].text, /prefer a real OUTPUT/);
+  assert.match(req.system[0].text, /ONLY when the slide is about that part of the app/);
+  const { CROPS } = await import("../scripts/contentMachine/importUiCrops.mjs").catch(() => ({ CROPS: null }));
+  if (CROPS) for (const c of CROPS) assert.ok(c[4] >= 700 || c[5] >= 450, `${c[0]} is a large crop`);
+});
+
+test("meme pictures: simple, unbranded, plain screens; QA is strict about logos on objects", async () => {
+  const { MEME_RULES } = await import("../supabase/functions/_shared/contentMachine/providers/runware.js");
+  const { QA_FLAGS, QA_SYSTEM, qaFindings } = await import("../supabase/functions/_shared/contentMachine/qa.js");
+  const prompt = imagePrompt("a creator staring at a laptop", "meme");
+  assert.ok(prompt.includes(MEME_RULES));
+  assert.match(prompt, /no crowd/);
+  assert.match(prompt, /plain and unbranded with no logo/);
+  assert.ok(!imagePrompt("a lamp", "illustration").includes(MEME_RULES));
+  assert.ok(QA_FLAGS.includes("logo_on_object"));
+  assert.match(QA_SYSTEM, /an apple shape on a laptop lid/);
+  assert.deepEqual(qaFindings({ slides: [{ slide: 1, logo_on_object: true, note: "apple logo" }] }), { 1: { flags: ["a logo or brand mark on an object"], note: "apple logo" } });
+});
+
+test("a meme slideshow still flagged after its regenerate is dropped and replaced by another format × style", async () => {
+  const world = fakeWorld();
+  const MEME = { key: "meme_style", name: "Meme", description: "", spec: { bg: "#ffffff", fg: "#000000", accent: "#000000", highlight: "#ffffff", font: "anton", meme: true, hero_prompt: "Simple meme scene: {subject}" } };
+  world.db.library = async () => ({ ...LIB, styles: [...LIB.styles, MEME] });
+  const create = world.db.createIdeas;
+  let first = true;
+  world.db.createIdeas = async (rows) => create(first ? (first = false, rows.map((r) => ({ ...r, recipe: { ...r.recipe, style: "meme_style" } }))) : rows);
+  const p = fakeProviders(world, { qaFlags: [[2], [2]] });
+  const kinds = [];
+  const gen = p.images.generateImage;
+  p.images.generateImage = async (t, a) => { kinds.push(a.kind); return gen(t, a); };
+  const run = await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  assert.ok(kinds.includes("meme"), "meme pictures get the meme rules");
+  assert.equal(world.ideas.length, 2);
+  const [dropped, replacement] = world.ideas;
+  assert.equal(dropped.status, "rejected");
+  assert.equal(dropped.compliance.dropped, true);
+  assert.match(dropped.error, /dropped/);
+  assert.equal(replacement.recipe.replaces, dropped.id);
+  assert.notEqual(replacement.recipe.style, "meme_style");
+  assert.notEqual(replacement.recipe.format, "meme");
+  assert.equal(replacement.status, "done");
+  assert.equal(world.runs.find((r) => r.id === run.id).status, "done", "the batch is complete");
+  // A non-meme slideshow still flagged is kept and marked (as before).
+  const w2 = fakeWorld();
+  await startRun(w2, { count: 1 });
+  await drain(w2, depsFor(w2, fakeProviders(w2, { qaFlags: [[2], [2]] })));
+  assert.equal(w2.ideas.length, 1);
+  assert.equal(w2.ideas[0].status, "done");
+  assert.equal(w2.ideas[0].compliance.flagged, true);
+});
+
+test("empty space reported by the renderer marks the slideshow for the owner", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const start = p.fly.startRender;
+  p.fly.startRender = async (t, a) => {
+    const out = await start(t, a);
+    const m = await p.files.readJson(a.job.uploads.manifest.replace("https://upload/", ""));
+    m.warnings = [{ slide: 3, warnings: ["about 31% of the safe area is empty"], empty: 0.31 }];
+    return out;
+  };
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  const c = world.ideas[0].compliance;
+  assert.equal(world.ideas[0].status, "done");
+  assert.equal(c.flagged, true);
+  assert.deepEqual(c.emptySpace, ["slide 3: about 31% of the safe area is empty"]);
+});
+
+test("qa_check: the owner-ordered vision check on grid slides goes through the guard and saves its findings", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world, { qaFlags: [[2]] });
+  await world.db.enqueue([{ stage: "qa_check", payload: { paths: ["qa/grid/a/slide-01.png", "qa/grid/a/slide-02.png", "library/not-allowed.png"], kinds: ["cover", "text"], out: "qa/grid/a.json", live: true } }]);
+  await drain(world, depsFor(world, p));
+  const saved = world.written["qa/grid/a.json"];
+  assert.deepEqual(saved.paths, ["qa/grid/a/slide-01.png", "qa/grid/a/slide-02.png"], "only files under qa/");
+  assert.deepEqual(Object.keys(saved.findings), ["2"]);
+  assert.ok(world.ledger.some((l) => l.operation === "anthropic.qa_check" && l.lane === "qa"));
 });
