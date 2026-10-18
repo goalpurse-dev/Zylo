@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./contentMachine/cmApi";
 import { AssetsTab, IdeasTab, LibraryTab, TodayTab } from "./contentMachine/SlideshowTabs";
+import { AnalyticsTab, PostedTab } from "./contentMachine/PostedTabs";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const money = (n, d = 2) => (n == null ? "–" : `$${Number(n).toFixed(d)}`);
@@ -62,13 +63,6 @@ function TopBar({ st, onStatus }) {
   const [note, setNote] = useState(null);
   const kill = st.settings.kill_switch;
   const run = st.latestRun;
-  const [running, setRunning] = useState(false);
-  const runNow = async () => {
-    if (!window.confirm(`Make ${st.settings.slideshows_per_day} slideshows now${st.dryRun.effective ? " (dry run, $0)" : ", within the caps"}?`)) return;
-    setRunning(true); setNote(null);
-    try { await api("makeSlideshows", {}); onStatus(await api("status")); } catch (e) { setNote(e.message); }
-    setRunning(false);
-  };
   const flip = async (on) => {
     if (on && !window.confirm("Turn the kill switch ON? Nothing will run (not even dry runs) until you turn it off.")) return;
     if (!on && !window.confirm("Turn the kill switch OFF? Work can run again, within the caps.")) return;
@@ -84,9 +78,7 @@ function TopBar({ st, onStatus }) {
         <div className="min-w-0">
           <div className="text-[12px] text-white/50">Run</div>
           <div className="text-[15px] font-semibold text-white" data-testid="cm-run-status">{run ? `${run.kind === "daily" ? "Daily" : "Last"} run: ${run.status.replace(/_/g, " ")}${run.dry_run ? " (dry)" : ""}` : "No runs yet"}</div>
-          {run && <div className="text-[11.5px] text-white/45">{run.run_date} · {money(run.spend_usd, 3)}</div>}
-          <button type="button" disabled={running || kill} onClick={runNow} title={kill ? "The kill switch is on" : "Make today's slideshows now"} className="mt-1.5 rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{running ? "Starting…" : "Run now"}</button>
-        </div>
+          {run && <div className="text-[11.5px] text-white/45">{run.run_date} · {money(run.spend_usd, 3)}</div>}        </div>
         <div className="min-w-0">
           <div className="text-[12px] text-white/50">Kill switch</div>
           <div className="mt-1 flex items-center gap-3">
@@ -258,6 +250,7 @@ const toForm = (s, models) => ({
   run_time_local: s.run_time_local, timezone: s.timezone, brand_rules: s.brand_rules,
   experiment_days: String(s.experiment_days ?? 14), daily_auto_run: s.daily_auto_run ?? true, winners_per_day: String(s.winners_per_day ?? 3),
   experiments_per_day: String(s.experiments_per_day ?? 2), use_batch_for_daily: s.use_batch_for_daily ?? true,
+  half_life_days: String(s.half_life_days ?? 14), winner_min_successes: String(s.winner_min_successes ?? 3), analysis_suggest_after: String(s.analysis_suggest_after ?? 10),
   models: { main: s.models?.main ?? "", fast: s.models?.fast ?? "" }, modelsInUse: models,
 });
 const capsOut = (o) => Object.fromEntries(Object.entries(o).filter(([k, v]) => k && v !== "").map(([k, v]) => [k, Number(v)]));
@@ -270,6 +263,7 @@ const fromForm = (f) => ({
   run_time_local: f.run_time_local, timezone: f.timezone, brand_rules: f.brand_rules, models: f.models,
   experiment_days: Number(f.experiment_days), daily_auto_run: f.daily_auto_run, winners_per_day: Number(f.winners_per_day),
   experiments_per_day: Number(f.experiments_per_day), use_batch_for_daily: f.use_batch_for_daily,
+  half_life_days: Number(f.half_life_days), winner_min_successes: Number(f.winner_min_successes), analysis_suggest_after: Number(f.analysis_suggest_after),
 });
 
 function Field({ label, hint, children, htmlFor }) {
@@ -366,12 +360,15 @@ function SettingsTab({ st, onStatus }) {
           {toggleRow("auto_produce", "Auto-produce", "Make ideas without waiting for your approval.")}
           {toggleRow("end_card", "End card", "\"made with Zyvo · tryzyvo.com\" in the last 1.5 s.")}
           {toggleRow("daily_auto_run", "Automatic daily run", `Makes the day's slideshows at ${f.run_time_local} without you.`)}
-          {toggleRow("use_batch_for_daily", "Batch API for the daily run", "Half price for the writing; results within minutes (up to 24 h). Run now is never batched.")}
+          {toggleRow("use_batch_for_daily", "Batch API for the daily run", "Half price for the writing; results within minutes (up to 24 h). Start in the Today tab is never batched.")}
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <Field label="Experiment phase (days)" htmlFor="cm-experiment_days" hint={st.settings.experiment_started_on ? `Started ${st.settings.experiment_started_on}.` : "Starts with the first real (not dry) run."}>{num("experiment_days", { min: 0, max: 365, step: 1 })}</Field>
           <Field label="Proven winners per day (after it)" htmlFor="cm-winners_per_day">{num("winners_per_day", { min: 0, max: 50, step: 1 })}</Field>
           <Field label="New experiments per day (after it)" htmlFor="cm-experiments_per_day">{num("experiments_per_day", { min: 0, max: 50, step: 1 })}</Field>
+          <Field label="Freshness half-life (days)" htmlFor="cm-half_life_days" hint="A post counts half as much after this many days.">{num("half_life_days", { min: 1, max: 365, step: 1 })}</Field>
+          <Field label="Successes a winner needs" htmlFor="cm-winner_min_successes" hint="Posts of one recipe that beat the account median.">{num("winner_min_successes", { min: 1, max: 50, step: 1 })}</Field>
+          <Field label="Suggest an analysis after (posts with new stats)" htmlFor="cm-analysis_suggest_after">{num("analysis_suggest_after", { min: 1, max: 500, step: 1 })}</Field>
         </div>
       </Card>
 
@@ -403,7 +400,7 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["today", "Today"], ["ideas", "Ideas"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Today"], ["posted", "Posted"], ["analytics", "Analytics"], ["ideas", "Ideas"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
@@ -437,6 +434,8 @@ export default function ContentMachine() {
         ))}
       </nav>
       {tab === "today" && <TodayTab st={st} onChanged={load} />}
+      {tab === "posted" && <PostedTab />}
+      {tab === "analytics" && <AnalyticsTab />}
       {tab === "ideas" && <IdeasTab />}
       {tab === "library" && <LibraryTab />}
       {tab === "assets" && <AssetsTab />}

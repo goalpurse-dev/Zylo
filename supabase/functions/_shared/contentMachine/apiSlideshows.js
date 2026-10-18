@@ -3,6 +3,7 @@
 import { ApiError } from "./errors.js";
 import { coverage } from "./planner.js";
 import { localDay } from "./spendSummary.js";
+import { localToUtc } from "./localTime.js";
 import { ZYVO_SHOT_PATH, heroUrls, logosFor } from "./pipeline.js";
 import { runProgress } from "./progress.js";
 import { STYLE_SAMPLES, resolveSample } from "./styleSamples.js";
@@ -133,6 +134,8 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       for (const k of ["format", "style", "status"]) if (body?.[k]) filters[k] = String(body[k]);
       if (body?.from) filters.from = `${String(body.from).slice(0, 10)}T00:00:00Z`;
       if (body?.to) filters.to = `${String(body.to).slice(0, 10)}T23:59:59Z`;
+      // Today (owner, 2026-10-18): everything made since midnight Helsinki, across all runs.
+      if (body?.today) { const s = await cm.settings(); filters.from = localToUtc(localDay(now(), s.timezone), s.timezone).toISOString(); }
       filters.limit = Math.min(100, Math.max(1, Number(body?.limit) || 40));
       const rows = await cm.listIdeas(filters);
       const costs = await cm.ideaCosts(rows.map((r) => r.id));
@@ -177,6 +180,8 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       }
       if (pkg.platform === "tiktok" && (patch.caption ?? pkg.caption ?? "").length > 150) throw new ApiError("VALIDATION", "A TikTok caption is at most 150 characters.");
       if (pkg.platform === "youtube" && (patch.title ?? pkg.title ?? "").length > 60) throw new ApiError("VALIDATION", "A YouTube title is at most 60 characters.");
+      if (pkg.platform === "tiktok" && (patch.title ?? pkg.title ?? "").length > 90) throw new ApiError("VALIDATION", "A TikTok title is at most 90 characters.");
+      if (pkg.platform === "instagram") delete patch.title;
       const saved = await cm.updatePackage(pkg.id, patch);
       await store.audit(user.email, "package.edit", { id: pkg.id, platform: pkg.platform, fields: Object.keys(patch) });
       return { package: saved };

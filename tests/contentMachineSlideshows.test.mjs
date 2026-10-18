@@ -471,12 +471,22 @@ test("no real people: prompts, program checks, and the renderer takes no local p
   assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /lookalike of one/);
 });
 
-test("the safe zone: left 110, right 170, top 200, bottom 420 px, plus 24 px inner padding", () => {
-  assert.deepEqual(SAFE, { left: 110, right: 170, top: 200, bottom: 420 });
-  assert.deepEqual(SAFE_RECT, { x0: 110, y0: 200, x1: 910, y1: 1500 });
-  assert.deepEqual(INNER_RECT, { x0: 134, y0: 224, x1: 886, y1: 1476 });
+test("the safe zone: TikTok photo posts (top 300, bottom 440, avatar) and one export that fits every platform", async () => {
+  const { SAFE_PROFILES, AVOID } = await import("../supabase/functions/_shared/contentMachine/slides/templates.js");
+  assert.deepEqual(SAFE, { left: 110, right: 170, top: 300, bottom: 440 });
+  assert.deepEqual(SAFE_RECT, { x0: 110, y0: 300, x1: 910, y1: 1480 });
+  // The stack is centered between the top zone and the avatar (24 px inner padding on every side).
+  assert.deepEqual(INNER_RECT, { x0: 134, y0: 324, x1: 886, y1: 1376 });
+  assert.deepEqual(AVOID.map((a) => a.name), ["the TikTok profile avatar"]);
+  // Every platform's free area contains the export's, so one set of PNGs fits them all.
+  for (const [k, p] of Object.entries(SAFE_PROFILES)) {
+    assert.ok(INNER_RECT.x0 >= p.left && INNER_RECT.y0 >= p.top && INNER_RECT.x1 <= 1080 - p.right && INNER_RECT.y1 <= 1920 - p.bottom, k);
+    for (const a of p.avoid) assert.ok(INNER_RECT.y1 <= a.y0, `${k}: above ${a.name}`);
+  }
   const slide = validSlideshow({ slide_count: 5 }).slides[0];
-  assert.match(slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec, safeZones: true }), /class="zone l"/);
+  const zoned = slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec, safeZones: true });
+  assert.match(zoned, /class="zone l"/);
+  assert.match(zoned, /left:0px;top:1400px;width:300px;height:520px/, "the avatar area is drawn");
   assert.ok(!slideHtml({ slide, index: 0, total: 5, style: LIB.styles[0].spec }).includes('class="zone'), "never drawn unless asked (previews only)");
 });
 
@@ -947,4 +957,57 @@ test("qa_check: the owner-ordered vision check on grid slides goes through the g
   assert.deepEqual(saved.paths, ["qa/grid/a/slide-01.png", "qa/grid/a/slide-02.png"], "only files under qa/");
   assert.deepEqual(Object.keys(saved.findings), ["2"]);
   assert.ok(world.ledger.some((l) => l.operation === "anthropic.qa_check" && l.lane === "qa"));
+});
+
+/* ─── round 6 (2026-10-18): TikTok title, flawed assets, Helsinki time ─── */
+
+test("TikTok gets its own title (≤ 90 characters) next to the description", async () => {
+  const pkg = JSON.parse(JSON.stringify(PKG(true)));
+  assert.deepEqual(packageProblems(pkg), []);
+  pkg.tiktok.title = "x".repeat(91);
+  assert.match(packageProblems(pkg).join(" "), /TikTok title over 90 characters/);
+  pkg.tiktok.title = " ";
+  assert.match(packageProblems(pkg).join(" "), /no TikTok title/);
+  const world = fakeWorld();
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, fakeProviders(world)));
+  const tk = world.pkgs.find((p) => p.platform === "tiktok");
+  assert.equal(tk.title, PKG(true).tiktok.title);
+  assert.match(packageRequest({ model: "m", brandRules: "x", recipe: {}, slideshow: {}, links: utmLinks("a") }).system[0].text, /tiktok\.title: the photo post's separate title field/);
+});
+
+test("a library asset the vision QA flags for an artifact is marked flawed and no longer offered", async () => {
+  const { flawedAssets } = await import("../supabase/functions/_shared/contentMachine/pipeline.js");
+  const heroes = { 1: { asset: "library/aaaa1111.webp", ref: "aaaa1111" }, 2: { url: "https://im.runware.ai/1.jpg" }, 3: { asset: "library/bbbb2222.webp", ref: "bbbb2222" } };
+  const findings = {
+    2: { flags: ["distorted hands or faces"], note: "fused fingers" },
+    3: { flags: ["distorted hands or faces"], note: null },             // a generated picture: regenerated instead
+    4: { flags: ["text is hard to read"], note: "small" },               // a layout flag, not the picture's fault
+  };
+  assert.deepEqual(flawedAssets(findings, heroes), [{ ref: "aaaa1111", reason: "distorted hands or faces (fused fingers)" }]);
+  // In the pipeline: slide 2 shows asset aaaa1111 and QA flags it twice.
+  const world = fakeWorld();
+  const p = fakeProviders(world, { qaFlags: [[3], [3]] });
+  const orig = p.ai.createMessage;
+  p.ai.createMessage = async (t, a) => {
+    const out = await orig(t, a);
+    if (a.request.tools) { const x = JSON.parse(out.body.content[0].text); x.slides[2].asset_id = "aaaa1111"; x.slides[2].image_prompt = null; out.body.content[0].text = JSON.stringify(x); }
+    if (/final quality check/i.test(a.request.system[0].text.slice(0, 120))) { const x = JSON.parse(out.body.content[0].text); for (const s of x.slides) if (s.cut_off_subject) { s.cut_off_subject = false; s.distorted_hands_or_faces = true; } out.body.content[0].text = JSON.stringify(x); }
+    return out;
+  };
+  await startRun(world, { count: 1 });
+  await drain(world, depsFor(world, p));
+  const a = world.assets.find((x) => x.ref === "aaaa1111");
+  assert.equal(a.status, "flawed");
+  assert.match(a.flaw_reason, /distorted hands or faces/);
+  assert.ok(!(await world.db.activeAssets()).some((x) => x.ref === "aaaa1111"), "no longer offered to the writer");
+});
+
+test("Helsinki wall-clock time ↔ UTC, summer and winter", async () => {
+  const { localToUtc, utcToLocal } = await import("../supabase/functions/_shared/contentMachine/localTime.js");
+  assert.equal(localToUtc("2026-10-18T09:30", "Europe/Helsinki").toISOString(), "2026-10-18T06:30:00.000Z");   // summer: +3
+  assert.equal(localToUtc("2026-11-18T09:30", "Europe/Helsinki").toISOString(), "2026-11-18T07:30:00.000Z");   // winter: +2
+  assert.equal(localToUtc("2026-10-18", "Europe/Helsinki").toISOString(), "2026-10-17T21:00:00.000Z");
+  assert.equal(utcToLocal("2026-10-18T06:30:00Z", "Europe/Helsinki"), "2026-10-18T09:30");
+  assert.equal(localToUtc("18.10.2026", "Europe/Helsinki"), null);
 });

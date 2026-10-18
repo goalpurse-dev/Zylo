@@ -80,6 +80,10 @@ const FIELDS = {
   winners_per_day: (v) => int(v, "Proven winners per day", 0, 50),
   experiments_per_day: (v) => int(v, "New experiments per day", 0, 50),
   use_batch_for_daily: (v) => bool(v, "Batch API for the daily run"),
+  half_life_days: (v) => int(v, "Freshness half-life (days)", 1, 365),
+  winner_min_successes: (v) => int(v, "Successes a winner needs", 1, 50),
+  analysis_suggest_after: (v) => int(v, "New posts with stats before an analysis is suggested", 1, 500),
+  daily_scout: (v) => bool(v, "Daily scout"),
   models: (v) => {
     if (!v || typeof v !== "object" || Array.isArray(v)) throw new SettingsError("Models: main and fast.");
     return { main: modelName(v.main), fast: modelName(v.fast) };

@@ -36,6 +36,8 @@ const M2 = "supabase/migrations/20261108100000_content_machine_slideshows.sql";
 const M3 = "supabase/migrations/20261109100000_content_machine_assets.sql";
 const M4 = "supabase/migrations/20261110100000_content_machine_logo_rules.sql";
 const M5 = "supabase/migrations/20261112100000_content_machine_round5.sql";
+const M6 = "supabase/migrations/20261113100000_content_machine_posts.sql";
+const M7 = "supabase/migrations/20261114100000_content_machine_learning.sql";
 const steps = [
   ["migration 1", M1],
   ["migration 1 again (must be safe to re-run)", M1],
@@ -54,6 +56,15 @@ const steps = [
   ["round 5 tests", "tests/contentMachineRound5.lifecycle.sql"],
   ["rollback 5", "supabase/rollbacks/20261112100000_content_machine_round5_rollback.sql"],
   ["migration 5 after its rollback", M5],
+  ["migration 5 again (before 6)", M5],
+  ["migration 6 (posts, stats, flawed, Anthropic cap)", M6],
+  ["migration 6 again", M6],
+  ["posts tests", "tests/contentMachinePosts.lifecycle.sql"],
+  ["migration 7 (learning loop)", M7],
+  ["migration 7 again", M7],
+  ["learning tests (stubbed pg_net)", "tests/contentMachineLearning.pglite.sql"],
+  ["rollback 7", "supabase/rollbacks/20261114100000_content_machine_learning_rollback.sql"],
+  ["rollback 6", "supabase/rollbacks/20261113100000_content_machine_posts_rollback.sql"],
   ["rollback 5 before the others", "supabase/rollbacks/20261112100000_content_machine_round5_rollback.sql"],
   ["rollback 3", "supabase/rollbacks/20261109100000_content_machine_assets_rollback.sql"],
   ["rollback 2", "supabase/rollbacks/20261108100000_content_machine_slideshows_rollback.sql"],
@@ -63,6 +74,8 @@ const steps = [
   ["", M3],
   ["", M4],
   ["", M5],
+  ["", M6],
+  ["", M7],
 ];
 for (const [label, file] of steps) {
   try {

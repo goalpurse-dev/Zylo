@@ -3,12 +3,13 @@
 // posted; once rendered, the real PNGs and the MP4 replace the live preview. Download and copy work on a
 // phone: the owner often posts from it.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FONT_CSS, SAFE, slideHtml } from "../../../../supabase/functions/_shared/contentMachine/slides/templates.js";
+import { AVOID, FONT_CSS, SAFE, SAFE_PROFILES, slideHtml } from "../../../../supabase/functions/_shared/contentMachine/slides/templates.js";
 import { api, copyText, money, when } from "./cmApi";
+import { MarkPosted } from "./PostedTabs";
 
 const STATUS_TONE = {
   done: "bg-lime-300/15 text-lime-200", producing: "bg-sky-300/15 text-sky-200", proposed: "bg-white/10 text-white/70", approved: "bg-lime-300/25 text-lime-100",
-  rejected: "bg-white/10 text-white/40", failed: "bg-red-400/15 text-red-200", skipped_budget: "bg-amber-300/15 text-amber-200",
+  rejected: "bg-white/10 text-white/40", posted: "bg-sky-300/25 text-sky-100", failed: "bg-red-400/15 text-red-200", skipped_budget: "bg-amber-300/15 text-amber-200",
   pending: "bg-white/10 text-white/70", ideating: "bg-sky-300/15 text-sky-200", budget_stopped: "bg-amber-300/15 text-amber-200",
 };
 const RUN_ACTIVE = new Set(["pending", "scouting", "ideating", "producing", "packaging"]);
@@ -35,17 +36,21 @@ function CopyButton({ text, label = "Copy" }) {
 
 /* ─── one slide: the rendered PNG, or the live preview from the templates ─── */
 
-// The platforms' safe zone on a 1080×1920 slide, in % (templates.js SAFE): drawn over a rendered PNG.
-const ZONE = { left: (SAFE.left / 1080) * 100, right: (SAFE.right / 1080) * 100, top: (SAFE.top / 1920) * 100, bottom: (SAFE.bottom / 1920) * 100 };
-function ZoneOverlay() {
+// A platform's safe zone on a 1080×1920 slide, in % (templates.js SAFE_PROFILES), drawn over any preview.
+// "export": the zone every platform leaves free, which is what the slides are laid out in.
+const ZONE_PICKS = [["export", "All platforms (the export)"], ...Object.entries(SAFE_PROFILES).map(([k, p]) => [k, p.label])];
+function ZoneOverlay({ profile }) {
+  const z = profile === "export" ? { ...SAFE, avoid: AVOID } : SAFE_PROFILES[profile] ?? { ...SAFE, avoid: AVOID };
+  const x = (v) => `${(v / 1080) * 100}%`, y = (v) => `${(v / 1920) * 100}%`;
   const band = "absolute bg-rose-500/20";
   return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-      <div className={band} style={{ left: 0, top: 0, bottom: 0, width: `${ZONE.left}%` }} />
-      <div className={band} style={{ right: 0, top: 0, bottom: 0, width: `${ZONE.right}%` }} />
-      <div className={band} style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, top: 0, height: `${ZONE.top}%` }} />
-      <div className={band} style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, bottom: 0, height: `${ZONE.bottom}%` }} />
-      <div className="absolute border border-dashed border-rose-400" style={{ left: `${ZONE.left}%`, right: `${ZONE.right}%`, top: `${ZONE.top}%`, bottom: `${ZONE.bottom}%` }} />
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true" data-testid="cm-zone-overlay">
+      <div className={band} style={{ left: 0, top: 0, bottom: 0, width: x(z.left) }} />
+      <div className={band} style={{ right: 0, top: 0, bottom: 0, width: x(z.right) }} />
+      <div className={band} style={{ left: x(z.left), right: x(z.right), top: 0, height: y(z.top) }} />
+      <div className={band} style={{ left: x(z.left), right: x(z.right), bottom: 0, height: y(z.bottom) }} />
+      {(z.avoid ?? []).map((a) => <div key={a.name} title={a.name} className="absolute bg-orange-400/35" style={{ left: x(a.x0), top: y(a.y0), width: x(a.x1 - a.x0), height: y(a.y1 - a.y0) }} />)}
+      <div className="absolute border border-dashed border-rose-400" style={{ left: x(z.left), right: x(z.right), top: y(z.top), bottom: y(z.bottom) }} />
     </div>
   );
 }
@@ -66,7 +71,7 @@ function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png
     <div className={`relative shrink-0 overflow-hidden rounded-xl border bg-black ${bad ? "border-red-400" : "border-white/10"}`} style={{ width, height: width * (16 / 9) }} data-testid="cm-slide" data-layout-ok={layout ? String(layout.ok) : undefined}>
       {png ? <img src={png} alt={`Slide ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
         : <iframe ref={frame} title={`Slide ${index + 1}`} srcDoc={html} sandbox="allow-scripts" className="pointer-events-none origin-top-left border-0" style={{ width: 1080, height: 1920, transform: `scale(${scale})` }} />}
-      {safeZones && <ZoneOverlay />}
+      {safeZones && <ZoneOverlay profile={safeZones} />}
       {!bad && layout?.warnings?.length > 0 && <div className="absolute inset-x-1 bottom-1 rounded-md bg-amber-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-black" title={layout.warnings.join("; ")}>Space: {layout.warnings[0]}</div>}
       {bad && <div className="absolute inset-x-1 bottom-1 rounded-md bg-red-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-white" title={layout.problems.join("\n")}>Layout: {layout.problems[0]}{layout.problems.length > 1 ? ` (+${layout.problems.length - 1})` : ""}</div>}
     </div>
@@ -83,7 +88,7 @@ function PackageTabs({ packages, onSaved }) {
   const full = [p.title, p.caption, tags].filter(Boolean).join("\n\n");
   const save = async () => {
     setNote(null);
-    try { await api("savePackage", { id: p.id, caption: edit.caption, title: p.platform === "youtube" ? edit.title : undefined, hashtags: edit.hashtags }); setEdit(null); onSaved(); }
+    try { await api("savePackage", { id: p.id, caption: edit.caption, title: p.platform !== "instagram" ? edit.title : undefined, hashtags: edit.hashtags }); setEdit(null); onSaved(); }
     catch (e) { setNote(e.message); }
   };
   return (
@@ -99,7 +104,7 @@ function PackageTabs({ packages, onSaved }) {
       <div className="space-y-3 p-3 text-[13.5px] text-white/85">
         {edit ? (
           <div className="space-y-2">
-            {p.platform === "youtube" && <input value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value })} className={`${input} w-full`} aria-label="Title" />}
+            {p.platform !== "instagram" && <input value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value })} className={`${input} w-full`} aria-label="Title" />}
             <textarea rows={4} value={edit.caption} onChange={(e) => setEdit({ ...edit, caption: e.target.value })} className={`${input} w-full`} aria-label="Caption" />
             <input value={edit.hashtags} onChange={(e) => setEdit({ ...edit, hashtags: e.target.value })} className={`${input} w-full`} aria-label="Hashtags" />
             <div className="flex gap-2"><button type="button" onClick={save} className="rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-semibold text-[#071006]">Save</button><button type="button" onClick={() => setEdit(null)} className="text-[13px] text-white/60 underline">Cancel</button>{note && <span className="text-[12.5px] text-red-200">{note}</span>}</div>
@@ -107,8 +112,9 @@ function PackageTabs({ packages, onSaved }) {
         ) : (
           <>
             {p.title && <Row label="Title" text={p.title} />}
-            <Row label={p.platform === "youtube" ? "Description" : "Caption"} text={p.caption} />
-            <Row label="Hashtags" text={tags} />
+            {p.platform === "tiktok"
+              ? <Row label="Description (caption + hashtags)" text={[p.caption, tags].filter(Boolean).join("\n\n")} />
+              : <><Row label={p.platform === "youtube" ? "Description" : "Caption"} text={p.caption} /><Row label="Hashtags" text={tags} /></>}
             {p.compliance?.link && <Row label="Tracked link" text={p.compliance.link} small />}
             <div className="flex flex-wrap items-center gap-2">
               <CopyButton text={full} label="Copy all" />
@@ -197,8 +203,9 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
             </details>
           )}
           <div className="flex flex-wrap items-center gap-2">
+            <MarkPosted idea={idea} onDone={onChanged} />
             {idea.status !== "approved" && idea.status === "done" && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "approved" }, "approve")} className="rounded-lg bg-lime-300/90 px-3 py-1.5 text-[13px] font-semibold text-[#071006] disabled:opacity-40">Approve</button>}
-            {idea.status !== "rejected" && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "rejected" }, "reject")} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Reject</button>}
+            {!["rejected", "posted"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "rejected" }, "reject")} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Reject</button>}
             {idea.recipe?.format && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Write this recipe again as a new slideshow? It costs a new write.")) act("remakeIdea", { id: idea.id }, "remake"); }} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Remake</button>}
             {busy && <span className="text-[12.5px] text-white/50">Working…</span>}
             {note && <span className="text-[12.5px] text-red-200">{note}</span>}
@@ -211,14 +218,17 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
 
 /* ─── Today ──────────────────────────────────────────────────────────── */
 
-/** "Show safe zones": the platforms' UI areas drawn over every preview (remembered in this browser). */
+/** "Show safe zones": a platform's UI areas drawn over every preview (remembered in this browser). */
 function useSafeZones() {
-  const [on, setOn] = useState(() => { try { return localStorage.getItem("cm.safeZones") === "1"; } catch { return false; } });
-  const toggle = (v) => { setOn(v); try { localStorage.setItem("cm.safeZones", v ? "1" : "0"); } catch { /* private window */ } };
+  const [on, setOn] = useState(() => { try { const v = localStorage.getItem("cm.safeZones"); return v === "1" ? "export" : v && v !== "0" ? v : ""; } catch { return ""; } });
+  const pick = (v) => { setOn(v); try { localStorage.setItem("cm.safeZones", v || "0"); } catch { /* private window */ } };
   const control = (
     <label className="flex items-center gap-2 text-[12.5px] text-white/70">
-      <input type="checkbox" checked={on} onChange={(e) => toggle(e.target.checked)} data-testid="cm-safe-zones" className="h-4 w-4 accent-rose-400" />
       Show safe zones
+      <select value={on} onChange={(e) => pick(e.target.value)} data-testid="cm-safe-zones" className="rounded-lg border border-white/15 bg-white/[0.05] px-2 py-1 text-[12.5px] text-white">
+        <option value="">off</option>
+        {ZONE_PICKS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+      </select>
     </label>
   );
   return [on, control];
@@ -272,40 +282,48 @@ function RunProgress({ runId, onTick, onDone }) {
   );
 }
 
+// Today's status filters (owner, 2026-10-18). A posted slideshow leaves Today for the Posted tab.
+const TODAY_FILTERS = [
+  ["", "All", () => true],
+  ["ready", "Ready", (i) => i.status === "done" && !i.compliance?.flagged],
+  ["approved", "Approved", (i) => i.status === "approved"],
+  ["flagged", "Flagged", (i) => Boolean(i.compliance?.flagged) && !["rejected", "posted"].includes(i.status)],
+  ["rejected", "Rejected", (i) => i.status === "rejected"],
+];
+
 export function TodayTab({ st, onChanged }) {
   const [zones, zoneControl] = useSafeZones();
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState(String(st.settings.slideshows_per_day ?? 5));
   const [runs, setRuns] = useState(null);
-  const [runId, setRunId] = useState(null);
+  const [runFilter, setRunFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("");
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
-  const load = useCallback(async (pick = null) => {
+  const load = useCallback(async () => {
     try {
-      const r = await api("runs");
+      const [r, d] = await Promise.all([api("runs"), api("ideas", { today: true, limit: 100, ...(runFilter ? { runId: runFilter } : {}) })]);
       setRuns(r.runs);
-      const target = pick ?? runId ?? r.runs[0]?.id ?? null;
-      setRunId(target);
-      if (target) setData(await api("ideas", { runId: target }));
-      else setData({ ideas: [], styles: {}, zyvoShot: null });
+      setData(d);
     } catch (e) { setNote(e.message); }
-  }, [runId]);
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const run = runs?.find((r) => r.id === runId);
+  }, [runFilter]);
+  useEffect(() => { load(); }, [load]);
+  const active = runs?.find((r) => RUN_ACTIVE.has(r.status));
   useEffect(() => {
-    if (!run || !RUN_ACTIVE.has(run.status)) return undefined;
-    const t = setInterval(() => load(run.id), 8000);
+    if (!active) return undefined;
+    const t = setInterval(load, 8000);
     return () => clearInterval(t);
-  }, [run, load]);
+  }, [active, load]);
 
+  const n = Number(count);
   const make = async (e) => {
     e.preventDefault(); setBusy(true); setNote(null);
     try {
-      const r = await api("makeSlideshows", { topic: topic.trim() || null, count: Number(count) });
+      const r = await api("makeSlideshows", { topic: topic.trim() || null, count: n });
       setTopic("");
       setNote(`Started ${r.count} slideshow${r.count > 1 ? "s" : ""}${r.dryRun ? " as a dry run (nothing is spent)" : ""}.`);
-      await load(r.runId); onChanged();
+      await load(); onChanged();
     } catch (err) { setNote(err.message); }
     setBusy(false);
   };
@@ -319,6 +337,11 @@ export function TodayTab({ st, onChanged }) {
     setAutoBusy(false);
   };
 
+  const today = (data?.ideas ?? []).filter((i) => i.status !== "posted");
+  const counts = Object.fromEntries(TODAY_FILTERS.map(([k, , f]) => [k, today.filter(f).length]));
+  const shown = today.filter(TODAY_FILTERS.find(([k]) => k === statusFilter)[2]);
+  const pill = (on) => `shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? "border-lime-300/60 bg-lime-300/15 text-lime-100" : "border-white/10 bg-white/[0.03] text-white/70"}`;
+
   return (
     <div className="space-y-4">
       <Card title="Today" testid="cm-make">
@@ -329,35 +352,42 @@ export function TodayTab({ st, onChanged }) {
           </button>
           <div className="text-[13.5px]">
             <span className="font-semibold text-white">Automatic {auto ? "ON" : "OFF"}</span>
-            <span className="text-white/55"> · {auto ? `makes ${st.settings.slideshows_per_day} slideshows by itself every day at ${st.settings.run_time_local} (Helsinki)` : "no daily run; use Start whenever you want"}. The time is in Settings.</span>
+            <span className="text-white/55"> · {auto ? `makes ${st.settings.slideshows_per_day} slideshows by itself every day at ${st.settings.run_time_local} (Helsinki)` : "no daily run; use the button whenever you want"}. The time is in Settings.</span>
           </div>
         </div>
         <form onSubmit={make} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
           <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={200} placeholder='Topic (optional), e.g. "AI tools that replace a video editor"' className={`${input} w-full sm:flex-1`} aria-label="Topic" data-testid="cm-topic" />
-          <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label="How many">{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1} slideshow{i ? "s" : ""}</option>)}</select>
-          <button type="submit" disabled={busy || st.settings.kill_switch || Boolean(run && RUN_ACTIVE.has(run.status))} data-testid="cm-make-button"
-            className="rounded-xl bg-lime-300 px-8 py-3 text-[17px] font-bold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{busy ? "Starting…" : "Start"}</button>
+          <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label="How many">{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select>
+          <button type="submit" disabled={busy || st.settings.kill_switch || Boolean(active)} data-testid="cm-make-button"
+            className="rounded-xl bg-lime-300 px-6 py-3 text-[16px] font-bold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{busy ? "Starting…" : `Make ${n} new slideshow${n > 1 ? "s" : ""}`}</button>
         </form>
-        <p className="mt-2 text-[12px] text-white/45">{st.dryRun.effective ? "Dry run: mocked, $0." : "Live: about $0.10–0.25 a slideshow, within the caps."} Empty topic: Claude picks. Start works whether Automatic is on or off.</p>
+        <p className="mt-2 text-[12px] text-white/45">{st.dryRun.effective ? "Dry run: mocked, $0." : "Live: about $0.10–0.25 a slideshow, within the caps."} Empty topic: Claude picks. Works whether Automatic is on or off.</p>
         {note && <p role="status" className="mt-2 text-[13px] text-white/70">{note}</p>}
       </Card>
 
-      {run && RUN_ACTIVE.has(run.status) && <RunProgress runId={run.id} onTick={() => load(run.id)} onDone={() => { load(run.id); onChanged(); }} />}
+      {active && <RunProgress runId={active.id} onTick={load} onDone={() => { load(); onChanged(); }} />}
 
+      <div className="flex flex-wrap items-center gap-2" data-testid="cm-today-filters">
+        {TODAY_FILTERS.map(([k, label]) => <button key={k || "all"} type="button" onClick={() => setStatusFilter(k)} className={pill(statusFilter === k)}>{label} {counts[k]}</button>)}
+        <div className="ml-auto">{zoneControl}</div>
+      </div>
       {runs && runs.length > 0 && (
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-          {runs.slice(0, 12).map((r) => (
-            <button key={r.id} type="button" onClick={() => load(r.id)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${r.id === runId ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}>
-              <div className="font-semibold text-white">{{ daily: "Daily run", manual: "Remake", samples: "Style samples" }[r.kind] ?? "Slideshows"} · {r.run_date}</div>
-              <div className="text-white/55">{nice(r.status)}{r.dry_run ? " · dry run" : ""} · {money(r.spend_usd, 3)}</div>
-            </button>
-          ))}
-        </div>
+        <details className="text-[12.5px] text-white/60" open={Boolean(runFilter)}>
+          <summary className="cursor-pointer">Filter by run (optional){runFilter ? " · one run" : ""}</summary>
+          <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
+            <button type="button" onClick={() => setRunFilter(null)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${!runFilter ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}><div className="font-semibold text-white">All runs today</div></button>
+            {runs.slice(0, 12).map((r) => (
+              <button key={r.id} type="button" onClick={() => setRunFilter(r.id === runFilter ? null : r.id)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${r.id === runFilter ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}>
+                <div className="font-semibold text-white">{{ daily: "Daily run", manual: "Remake", samples: "Style samples" }[r.kind] ?? "Slideshows"} · {r.run_date}</div>
+                <div className="text-white/55">{nice(r.status)}{r.dry_run ? " · dry run" : ""} · {money(r.spend_usd, 3)}</div>
+              </button>
+            ))}
+          </div>
+        </details>
       )}
 
-      <div className="flex justify-end">{zoneControl}</div>
-      {data?.ideas?.length === 0 && <p className="text-[13.5px] text-white/60">{runs?.length ? "No slideshows in this run yet." : "Nothing made yet. Press Make slideshows."}</p>}
-      <div className="space-y-3">{data?.ideas?.map((i, n) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={() => load(runId)} startOpen={n === 0} />)}</div>
+      {data && shown.length === 0 && <p className="text-[13.5px] text-white/60">{today.length ? "Nothing with this status today." : "Nothing made today yet. Press the button above."}</p>}
+      <div className="space-y-3" data-testid="cm-today-list">{shown.map((i, k) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} startOpen={k === 0} />)}</div>
     </div>
   );
 }
@@ -525,7 +555,7 @@ export function LibraryTab() {
 
 /* ─── Assets: real Zyvo outputs and UI the writer may use ────────────── */
 
-const ASSET_TONE = { active: "bg-lime-300/15 text-lime-200", excluded: "bg-amber-300/15 text-amber-200", blocked: "bg-red-400/15 text-red-200", pending: "bg-white/10 text-white/60" };
+const ASSET_TONE = { active: "bg-lime-300/15 text-lime-200", excluded: "bg-amber-300/15 text-amber-200", blocked: "bg-red-400/15 text-red-200", flawed: "bg-orange-400/15 text-orange-200", pending: "bg-white/10 text-white/60" };
 
 export function AssetsTab() {
   const [f, setF] = useState({ status: "", tool: "" });
@@ -543,10 +573,10 @@ export function AssetsTab() {
   return (
     <div className="space-y-4">
       <Card title="Asset library" testid="cm-assets">
-        <p className="text-[12.5px] text-white/55">Real Zyvo outputs and UI from the repo, in the private bucket. The writer can put any <b>active</b> one on a slide ("made with Zyvo" proof, showcases, the screenshot collage style). The fast model tagged each one and excluded anything with a realistic human, a real person or lookalike, or a third-party character or brand. Block anything you don't want used.</p>
+        <p className="text-[12.5px] text-white/55">Real Zyvo outputs and UI from the repo, in the private bucket. The writer can put any <b>active</b> one on a slide ("made with Zyvo" proof, showcases, the screenshot collage style). The fast model tagged each one and excluded anything with a realistic human, a real person or lookalike, or a third-party character or brand. Block anything you don't want used. When the vision QA finds an artifact in an asset (distorted hands, garbled text…), it is marked <b>flawed</b> and no longer offered; Unflag it if you disagree.</p>
         {data && <p className="mt-2 text-[13px] text-white/75">{Object.entries(data.counts).map(([k, v]) => `${v} ${k}`).join(" · ") || "No assets yet."}</p>}
         <div className="mt-3 flex flex-wrap gap-2">
-          <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} className={input} aria-label="Status"><option value="">any status</option>{["active", "excluded", "blocked", "pending"].map((s) => <option key={s}>{s}</option>)}</select>
+          <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} className={input} aria-label="Status"><option value="">any status</option>{["active", "flawed", "excluded", "blocked", "pending"].map((s) => <option key={s}>{s}</option>)}</select>
           <select value={f.tool} onChange={(e) => setF({ ...f, tool: e.target.value })} className={input} aria-label="Tool"><option value="">any tool</option>{tools.map((t) => <option key={t} value={t}>{nice(t)}</option>)}</select>
         </div>
         {note && <p className="mt-2 text-[12.5px] text-red-200">{note}</p>}
@@ -560,7 +590,9 @@ export function AssetsTab() {
                 <div className="flex flex-wrap items-center gap-1"><Badge tone={ASSET_TONE[r.status]}>{r.status}</Badge>{r.tool && <Badge>{nice(r.tool)}</Badge>}</div>
                 <div className="line-clamp-2 text-white/75" title={r.source_path}>{r.subject ?? r.source_path}</div>
                 {r.exclude_reason && <div className="text-amber-200/80">{r.exclude_reason}</div>}
-                {r.status === "blocked"
+                {r.status === "flawed" && r.flaw_reason && <div className="text-orange-200/80">QA: {r.flaw_reason}</div>}
+                {r.status === "flawed" ? <button type="button" onClick={() => setStatus(r, "active")} className="text-white/70 underline">Unflag</button>
+                  : r.status === "blocked"
                   ? <button type="button" onClick={() => setStatus(r, "active")} className="text-white/70 underline">Unblock</button>
                   : r.status !== "pending" && <button type="button" onClick={() => setStatus(r, r.status === "excluded" ? "active" : "blocked")} className="text-white/70 underline">{r.status === "excluded" ? "Use anyway" : "Block"}</button>}
               </figcaption>
