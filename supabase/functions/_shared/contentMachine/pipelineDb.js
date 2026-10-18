@@ -126,6 +126,9 @@ export function createPipelineDb(db) {
       if (kind) q = q.eq("kind", kind);
       return must(await q, "list assets");
     },
+    async markAssetsFlawed(list) {
+      for (const { ref, reason } of list) must(await db.from("cm_assets").update({ status: "flawed", flaw_reason: reason, updated_at: nowIso() }).eq("ref", ref).eq("status", "active").select("id"), "flag asset");
+    },
     async updateAsset(id, patch) { return must(await db.from("cm_assets").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update asset"); },
 
     /* ─── the logo library ─── */
@@ -143,6 +146,33 @@ export function createPipelineDb(db) {
       const { error } = await db.storage.from(BUCKET).upload(path, bytes, { contentType, upsert: true });
       if (error) throw new Error(`[content-machine] upload logo: ${error.message}`);
     },
+
+    /* ─── Phase 3: analyses and scout reports ─── */
+    async createAnalysis(row) { return must(await db.from("cm_analyses").insert(row).select("*").single(), "create analysis"); },
+    async getAnalysis(id) { return must(await db.from("cm_analyses").select("*").eq("id", id).single(), "analysis"); },
+    async updateAnalysis(id, patch) { return must(await db.from("cm_analyses").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update analysis"); },
+    async listAnalyses(limit = 10) { return must(await db.from("cm_analyses").select("*").order("created_at", { ascending: false }).limit(limit), "analyses"); },
+    async saveScout(row) { return must(await db.from("cm_scout_reports").insert(row).select("*").single(), "save scout report"); },
+    async listScouts(limit = 5) { return must(await db.from("cm_scout_reports").select("*").order("created_at", { ascending: false }).limit(limit), "scout reports"); },
+    async scoutQueuedSince(iso) { return must(await db.from("cm_jobs").select("id").eq("stage", "scout").gte("created_at", iso).limit(1), "scout jobs").length > 0; },
+
+    /* ─── Part 2: posts and their stats snapshots ─── */
+    async createPost(row) { return must(await db.from("cm_posts").insert(row).select("*").single(), "create post"); },
+    async getPost(id) { return must(await db.from("cm_posts").select("*").eq("id", id).single(), "post"); },
+    async updatePost(id, patch) { return must(await db.from("cm_posts").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update post"); },
+    async deletePost(id) { must(await db.from("cm_posts").delete().eq("id", id).select("id"), "delete post"); },
+    async postsOfIdea(ideaId) { return must(await db.from("cm_posts").select("*").eq("idea_id", ideaId), "posts of idea"); },
+    /** Every post with its slideshow (title, recipe, first PNG) and its snapshots. */
+    async listPosts({ limit = 500 } = {}) {
+      return must(await db.from("cm_posts").select("*, cm_ideas(id,title,recipe,status,cm_generations(files)), cm_post_stats(*)").not("idea_id", "is", null).order("posted_at", { ascending: false }).limit(limit), "posts");
+    },
+    async getStats(id) { return must(await db.from("cm_post_stats").select("*").eq("id", id).single(), "stats"); },
+    async saveStats(row) {
+      if (row.id) { const { id, ...patch } = row; return must(await db.from("cm_post_stats").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update stats"); }
+      return must(await db.from("cm_post_stats").insert(row).select("*").single(), "save stats");
+    },
+    async deleteStats(id) { must(await db.from("cm_post_stats").delete().eq("id", id).select("id"), "delete stats"); },
+    async statsOfPost(postId) { return must(await db.from("cm_post_stats").select("*").eq("post_id", postId), "stats of post"); },
 
     async getPackage(id) { return must(await db.from("cm_packages").select("*").eq("id", id).single(), "package"); },
     async updatePackage(id, patch) { return must(await db.from("cm_packages").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update package"); },
@@ -180,6 +210,11 @@ export function createFiles(db) {
       if (error || !data) return null;
       try { return JSON.parse(await data.text()); } catch { return null; }
     },
+    async upload(path, bytes, contentType) {
+      const { error } = await bucket().upload(path, bytes, { contentType, upsert: true });
+      if (error) throw new Error(`couldn't save ${path}: ${error.message}`);
+    },
+    async remove(path) { await bucket().remove([path]); },
     async writeJson(path, value) {
       const { error } = await bucket().upload(path, new Blob([JSON.stringify(value)], { type: "application/json" }), { contentType: "application/json", upsert: true });
       if (error) throw new Error(`couldn't save ${path}: ${error.message}`);

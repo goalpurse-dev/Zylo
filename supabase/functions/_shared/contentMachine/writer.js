@@ -64,7 +64,7 @@ export const PACKAGE_SCHEMA = {
   additionalProperties: false,
   required: ["tiktok", "instagram", "youtube", "sound_suggestion", "compliance"],
   properties: {
-    tiktok: { type: "object", additionalProperties: false, required: ["caption", "hashtags", "on_screen_text"], properties: { caption: { type: "string" }, hashtags: { type: "array", items: { type: "string" } }, on_screen_text: { type: "array", items: { type: "string" } } } },
+    tiktok: { type: "object", additionalProperties: false, required: ["title", "caption", "hashtags", "on_screen_text"], properties: { title: { type: "string" }, caption: { type: "string" }, hashtags: { type: "array", items: { type: "string" } }, on_screen_text: { type: "array", items: { type: "string" } } } },
     instagram: { type: "object", additionalProperties: false, required: ["caption", "hashtags"], properties: { caption: { type: "string" }, hashtags: { type: "array", items: { type: "string" } } } },
     youtube: { type: "object", additionalProperties: false, required: ["title", "description", "hashtags"], properties: { title: { type: "string" }, description: { type: "string" }, hashtags: { type: "array", items: { type: "string" } } } },
     sound_suggestion: { type: "string" },
@@ -93,7 +93,7 @@ export function assetsText(assets = []) {
     ...list.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""}${sub(a)} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}`)].join("\n");
 }
 
-export function writeSystem({ brandRules, library, assets = [] }) {
+export function writeSystem({ brandRules, library, assets = [], playbook = "", trends = "" }) {
   return `You write short-form SLIDESHOW posts (TikTok/Instagram photo carousels, also cut into a Shorts/Reels video) for Zyvo's own accounts. Each post is a labelled experiment: you are given a recipe (format, hook type, style, where Zyvo appears, CTA type, platform, text density, slide count) and you follow it exactly.
 
 ABOUT ZYVO (the only facts you may state about it):
@@ -106,7 +106,13 @@ THE LIBRARY:
 ${libraryText(library)}
 
 ${assetsText(assets)}
-
+${playbook?.trim() ? `
+PLAYBOOK (what has worked for THIS account so far; follow it unless the recipe says otherwise):
+${playbook.trim()}
+` : ""}${trends?.trim() ? `
+TRENDS (today's scout; use what fits the recipe, never copy anyone's content):
+${trends.trim()}
+` : ""}
 HOW TO WRITE IT:
 - The cover (slide 1) carries the hook: it must stop the scroll in under 2 seconds. Short, concrete, no clickbait lies.
 - Each post must be entertaining or useful on its own. Zyvo is snuck in at the recipe's position, never the hook.
@@ -145,22 +151,22 @@ DON'T REPEAT these recent posts (titles):
 ${avoidTitles.length ? avoidTitles.slice(0, 60).map((t) => `- ${t}`).join("\n") : "- none yet"}`;
 }
 
-export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4, assets = [] }) {
+export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4, assets = [], playbook = "", trends = "" }) {
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library, assets }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: writeUser({ recipe, today, avoidTitles }) }],
     tools: [{ type: WEB_SEARCH_TOOL, name: "web_search", max_uses: maxSearches }],
     output_config: { effort: "medium", format: { type: "json_schema", schema: SLIDESHOW_SCHEMA } },
   };
 }
 
-export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems, assets = [] }) {
+export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems, assets = [], playbook = "", trends = "" }) {
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library, assets }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: `${writeUser({ recipe, today })}
 
 A compliance check found these problems in the post below. Rewrite it so every problem is gone; keep what works. Don't add tools you haven't checked before (you have no web search now): drop any you can't vouch for.
@@ -182,7 +188,8 @@ BRAND RULES:
 ${brandRules}
 
 PACKAGING:
-- tiktok.caption: at most 150 characters: a curiosity hook plus a question that invites comments. 3–5 hashtags (one broad, the rest niche). on_screen_text: 1–3 short text suggestions for the first frame.
+- tiktok.title: the photo post's separate title field: short and hooky, at most 90 characters, no hashtags.
+- tiktok.caption: the description, at most 150 characters: a curiosity hook plus a question that invites comments. 3–5 hashtags (one broad, the rest niche). on_screen_text: 1–3 short text suggestions for the first frame.
 - instagram.caption: a hook line, 1–2 lines of value, then the CTA line given to you. 5–8 hashtags.
 - youtube.title: at most 60 characters, hooky and searchable. youtube.description: 1–2 sentences plus the link given to you. Exactly 3 hashtags including #shorts.
 - Posts whose recipe cta_type is comment_keyword or link_in_bio may use a stronger CTA; soft_mention and question stay soft.
@@ -253,6 +260,8 @@ export function packageProblems(pkg) {
   const p = [];
   if (!pkg) return ["no package"];
   if ((pkg.tiktok?.caption ?? "").length > 150) p.push("TikTok caption over 150 characters");
+  if (!String(pkg.tiktok?.title ?? "").trim()) p.push("no TikTok title");
+  if (String(pkg.tiktok?.title ?? "").length > 90) p.push("TikTok title over 90 characters");
   if ((pkg.youtube?.title ?? "").length > 60) p.push("YouTube title over 60 characters");
   const tags = (list) => (list ?? []).every((h) => /^#[^\s#]+$/.test(h));
   if (!tags(pkg.tiktok?.hashtags) || !tags(pkg.instagram?.hashtags) || !tags(pkg.youtube?.hashtags)) p.push("a hashtag is malformed");
@@ -322,7 +331,7 @@ export function mockSlideshow(recipe) {
 
 export function mockPackage() {
   return {
-    tiktok: { caption: "DRY RUN caption: which one would you try first?", hashtags: ["#aitools", "#dryrun", "#faceless"], on_screen_text: ["DRY RUN"] },
+    tiktok: { title: "DRY RUN: 3 tools that replace a video editor", caption: "DRY RUN caption: which one would you try first?", hashtags: ["#aitools", "#dryrun", "#faceless"], on_screen_text: ["DRY RUN"] },
     instagram: { caption: "DRY RUN caption.\nMocked: nothing was spent.\nLink in bio → tryzyvo.com", hashtags: ["#aitools", "#dryrun", "#faceless", "#aivideo", "#contentcreator"] },
     youtube: { title: "DRY RUN title", description: "Mocked package. https://www.tryzyvo.com/", hashtags: ["#shorts", "#aitools", "#dryrun"] },
     sound_suggestion: "DRY RUN: a calm lo-fi trending sound",

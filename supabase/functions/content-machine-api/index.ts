@@ -9,6 +9,7 @@ import { createBudgetGuard } from "../_shared/contentMachine/budgetGuard.js";
 import { createStore } from "../_shared/contentMachine/store.js";
 import { createFiles, createPipelineDb } from "../_shared/contentMachine/pipelineDb.js";
 import { createHandler } from "../_shared/contentMachine/api.js";
+import { createMessage } from "../_shared/contentMachine/providers/anthropic.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const admin = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -30,7 +31,9 @@ Deno.serve(createHandler({
   store,
   guard: createBudgetGuard({ store, envDryRun: Deno.env.get("DRY_RUN") }),
   cors,
-  env: { CM_MODEL_MAIN: Deno.env.get("CM_MODEL_MAIN") ?? "", CM_MODEL_FAST: Deno.env.get("CM_MODEL_FAST") ?? "" },
+  // ANTHROPIC_API_KEY stays on the server: only the stats screenshot reader (Posted tab) uses it here.
+  env: { CM_MODEL_MAIN: Deno.env.get("CM_MODEL_MAIN") ?? "", CM_MODEL_FAST: Deno.env.get("CM_MODEL_FAST") ?? "", ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "" },
+  ai: { createMessage },
   cm: createPipelineDb(admin),
   files: createFiles(admin),
   kick,

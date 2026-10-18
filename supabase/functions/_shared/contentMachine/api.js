@@ -12,6 +12,8 @@ import { SettingsError, cleanSettingsPatch, settingsDiff } from "./settings.js";
 import { dailySeries, daysBack, localDay, monthStart, summarize } from "./spendSummary.js";
 import { ApiError } from "./errors.js";
 import { slideshowActions } from "./apiSlideshows.js";
+import { postsActions } from "./apiPosts.js";
+import { learningActions } from "./apiLearning.js";
 
 
 const PUBLIC_SETTINGS = [
@@ -19,11 +21,12 @@ const PUBLIC_SETTINGS = [
   "slideshows_per_day", "format_mix", "auto_produce", "end_card", "kill_switch", "dry_run", "run_time_local",
   "timezone", "watchlist", "brand_rules", "models", "updated_at", "updated_by",
   "experiment_days", "experiment_started_on", "daily_auto_run", "winners_per_day", "experiments_per_day", "use_batch_for_daily",
+  "half_life_days", "winner_min_successes", "analysis_suggest_after", "daily_scout",
 ];
 const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o?.[k] ?? null]));
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function createHandler({ getUser, emails, store, guard, cors, env = {}, now = () => new Date(), cm = null, files = null, kick = async () => {} }) {
+export function createHandler({ getUser, emails, store, guard, cors, env = {}, now = () => new Date(), cm = null, files = null, kick = async () => {}, ai = null }) {
   const models = (s) => ({
     main: s.models?.main || env.CM_MODEL_MAIN || "claude-sonnet-5-5",
     fast: s.models?.fast || env.CM_MODEL_FAST || "claude-haiku-5-5",
@@ -44,6 +47,8 @@ export function createHandler({ getUser, emails, store, guard, cors, env = {}, n
 
   const ACTIONS = {
     ...(cm ? slideshowActions({ cm, files, kick, store, guard, now }) : {}),
+    ...(cm ? learningActions({ cm, store, kick, now }) : {}),
+    ...(cm ? postsActions({ cm, files, store, guard, now, ai, env: { anthropicKey: env.ANTHROPIC_API_KEY }, models }) : {}),
     whoami: async ({ user }) => ({ email: user.email }),
     status: async () => status(),
 

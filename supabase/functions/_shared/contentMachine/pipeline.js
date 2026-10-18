@@ -23,6 +23,9 @@ import { localDay } from "./spendSummary.js";
 import { domain } from "./slides/templates.js";
 import { assetUpdate, tagRequest } from "./assets.js";
 import { qaFindings, qaRequest } from "./qa.js";
+import { postMetrics, scorePosts } from "./analytics.js";
+import { LEARNING_RULES, freshness, learn } from "./learning.js";
+import { SNAPSHOT_COLUMNS, analysisRequest, analystPosts, scoutRequest } from "./agents.js";
 import { usableAssets, mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
@@ -168,7 +171,9 @@ async function plan(job, deps) {
   const recipes = planRecipes({
     library, history, count, seed: run.id, topic: run.input?.topic || null,
     experimentPhase: inExperimentPhase({ startedOn: s.experiment_started_on, today, days: s.experiment_days }),
-    winners: [], winnersPerDay: s.winners_per_day,
+    // Winners (Phase 3): recipes with repeated success, fresh-weighted (learning.js). Used after the experiment phase.
+    winners: learn(await postsForLearning(deps), { now: deps.now(), halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 }).winners.map((w) => w.recipe),
+    winnersPerDay: s.winners_per_day,
   });
   if (!run.dry_run && !s.experiment_started_on) await db.updateSettings({ experiment_started_on: today });
   const ideas = await db.createIdeas(recipes.map((r) => ({
@@ -186,7 +191,8 @@ async function plan(job, deps) {
 
 async function writeContext(deps, idea) {
   const s = await deps.db.settings();
-  return { s, library: await deps.db.library(), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env), assets: (await deps.db.activeAssets?.()) ?? [] };
+  const trends = (await deps.db.listScouts?.(1))?.[0]?.trend_brief ?? "";
+  return { s, library: await deps.db.library(), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env), assets: (await deps.db.activeAssets?.()) ?? [], extra: { playbook: s.playbook ?? "", trends } };
 }
 
 /** Program checks + near-duplicates. Returns the problems (empty = keep it). */
@@ -211,8 +217,8 @@ async function saveSlideshow(deps, idea, slideshow) {
 async function write(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, recent, today, m, assets } = await writeContext(deps, idea);
-  const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title), assets });
+  const { s, library, recent, today, m, assets, extra } = await writeContext(deps, idea);
+  const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title), assets, ...extra });
   if (job.payload?.problems?.length) request.messages[0].content += `\n\nYOUR LAST ATTEMPT HAD THESE PROBLEMS, avoid them:\n${job.payload.problems.map((p) => `- ${p}`).join("\n")}`;
   if (job.payload?.note) request.messages[0].content += `\n\nNOTE: ${job.payload.note}`;
   const r = await callMain(deps, { operation: "anthropic.write", request, idea, estimate: (model) => ESTIMATES.write(model) });
@@ -240,6 +246,7 @@ async function writeBatch(job, deps) {
   const m = models(s, deps.env);
   const recent = await deps.db.recentTitles(30, null);
   const assets = (await deps.db.activeAssets?.()) ?? [];
+  const extra = { playbook: s.playbook ?? "", trends: (await deps.db.listScouts?.(1))?.[0]?.trend_brief ?? "" };
   const requests = [], ledger = {};
   let ticket = null;
   for (const idea of ideas) {
@@ -248,7 +255,7 @@ async function writeBatch(job, deps) {
       if (r.dryRun) { await deps.guard.settle(r.ledgerId, { actualUsd: 0, requestRef: "dry-run" }); await deps.db.enqueue([{ run_id: job.run_id, idea_id: idea.id, stage: "write" }]); continue; }
       ticket = ticket ?? r.ticket;
       ledger[idea.id] = r.ledgerId;
-      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title), assets }) });
+      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title), assets, ...extra }) });
     } catch (e) {
       if (!(e instanceof BudgetStopped) || e.reason === "kill_switch") throw e;
       await stopIdea(deps, idea.id, "skipped_budget", e.message);
@@ -325,7 +332,7 @@ export function platformPackages(pkg, idea, links) {
   const time = idea.recipe?.post_time ?? null;
   const sound = pkg.sound_suggestion ?? null;
   return [
-    { platform: "tiktok", caption: pkg.tiktok.caption, title: null, hashtags: pkg.tiktok.hashtags, on_screen_text: pkg.tiktok.on_screen_text ?? [], suggested_post_time: time, ai_label_required: ai, sound_suggestion: sound, compliance: { link: links.tiktok } },
+    { platform: "tiktok", caption: pkg.tiktok.caption, title: pkg.tiktok.title ?? null, hashtags: pkg.tiktok.hashtags, on_screen_text: pkg.tiktok.on_screen_text ?? [], suggested_post_time: time, ai_label_required: ai, sound_suggestion: sound, compliance: { link: links.tiktok } },
     { platform: "instagram", caption: pkg.instagram.caption, title: null, hashtags: pkg.instagram.hashtags, on_screen_text: [], suggested_post_time: time, ai_label_required: ai, sound_suggestion: sound, compliance: { link: links.instagram } },
     { platform: "youtube", caption: pkg.youtube.description, title: pkg.youtube.title, hashtags: pkg.youtube.hashtags, on_screen_text: [], suggested_post_time: time, ai_label_required: ai, sound_suggestion: sound, compliance: { link: links.youtube } },
   ];
@@ -334,8 +341,8 @@ export function platformPackages(pkg, idea, links) {
 async function rewrite(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, today, m, assets } = await writeContext(deps, idea);
-  const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets });
+  const { s, library, today, m, assets, extra } = await writeContext(deps, idea);
+  const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets, ...extra });
   const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
   const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
   const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(usableAssets(assets).map((a) => a.ref)) });
@@ -574,6 +581,10 @@ async function qa(job, deps) {
   }, await paidOpts(deps, idea, { mock: async () => ({ dry: true }) }));
   const findings = r.dryRun ? {} : qaFindings(jsonFromMessage(r.result));
   const flagged = Object.keys(findings).map(Number);
+  // A real library asset flagged for an artifact in the picture itself is marked "flawed" and no longer
+  // offered to the writer (owner, 2026-10-18); the owner can unflag it in Assets.
+  const flawed = flawedAssets(findings, heroes);
+  if (flawed.length) await deps.db.markAssetsFlawed?.(flawed);
   const done = async (extra = {}) => {
     await deps.db.updateIdea(idea.id, { status: "done", compliance: { ...(idea.compliance ?? {}), qa: { checked: true, findings }, ...extra } });
     await finishRunIfDone(deps, idea.run_id);
@@ -600,6 +611,62 @@ async function qa(job, deps) {
   // Still flagged (or nothing to regenerate): kept, but marked for the owner in admin.
   await done({ flagged: true, ok: false, problems: [...(idea.compliance?.problems ?? []), ...problems] });
   return `qa flagged: ${problems.join("; ")}`;
+}
+
+/* ─── Phase 3: the analyst and the scout ─────────────────────────────── */
+
+/** The posts with their slideshows' recipes and snapshots, as the learning code reads them. */
+async function postsForLearning(deps) {
+  if (!deps.db.listPosts) return [];
+  return (await deps.db.listPosts()).map((p) => ({ ...p, idea: p.cm_ideas ?? null, stats: p.cm_post_stats ?? [] }));
+}
+
+/** "Let the agent analyze" (payload.analysisId): a report and a proposed playbook, CM_MODEL_MAIN, through the guard. */
+async function analyze(job, deps) {
+  const a = await deps.db.getAnalysis(job.payload.analysisId);
+  if (a.status === "done") return "already done";
+  const s = await deps.db.settings();
+  const m = models(s, deps.env);
+  const posts = await postsForLearning(deps);
+  const now = deps.now();
+  const learned = learn(posts, { now, halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 });
+  // The analyst reads every post, scored or not, newest first, with its freshness weight.
+  const rows = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
+  scorePosts(rows);
+  for (const r of rows) r.w = freshness((now.getTime() - Date.parse(r.post.posted_at)) / 86_400_000, s.half_life_days ?? 14);
+  const lib = await deps.db.library();
+  const library = [...lib.formats.map((x) => ({ ...x, kind: "format", status: "active" })), ...lib.styles.map((x) => ({ ...x, kind: "style", status: "active" })), ...lib.hooks.map((x) => ({ ...x, kind: "hook", status: "active" }))];
+  const scoutReport = (await deps.db.listScouts?.(1))?.[0] ?? null;
+  const request = analysisRequest({ model: m.main, posts: { columns: SNAPSHOT_COLUMNS, rows: analystPosts(rows) }, learning: learned, playbook: s.playbook, rules: LEARNING_RULES({ half_life_days: s.half_life_days ?? 14, winner_min_successes: s.winner_min_successes ?? 3 }), library, scout: scoutReport });
+  await deps.db.updateAnalysis(a.id, { status: "running", model: m.main, learning: learned });
+  try {
+    const r = await deps.guard.spend("anthropic", "anthropic.analyze", estimateUsd({ model: m.main, inputTokens: 6000 + posts.length * 400, outputTokens: 4000 }), async (ticket) => {
+      const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request });
+      return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
+    }, { lane: "analysis", live: true, mock: async () => ({ dry: true }) });
+    const report = r.dryRun ? { summary: "Dry run: no analysis was made.", what_works: [], what_doesnt: [], playbook: s.playbook ?? "", experiments: [], retire: [], trend_notes: "", confidence: "low" } : jsonFromMessage(r.result);
+    await deps.db.updateAnalysis(a.id, { status: "done", report, cost_usd: r.actualUsd ?? 0, error: null });
+    return "analysed";
+  } catch (e) {
+    await deps.db.updateAnalysis(a.id, { status: "failed", error: String(e?.message ?? e).slice(0, 500) });
+    if (e instanceof BudgetStopped) return `stopped: ${e.message}`;
+    throw Object.assign(e, { final: true });
+  }
+}
+
+/** The daily scout (and "Scout now"): what works in short-form right now, with sources. */
+async function scout(job, deps) {
+  const s = await deps.db.settings();
+  const m = models(s, deps.env);
+  const today = localDay(deps.now(), s.timezone);
+  const r = await deps.guard.spend("anthropic", "anthropic.scout", estimateUsd({ model: m.main, inputTokens: 25_000, outputTokens: 3000, searches: 5 }), async (ticket) => {
+    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: scoutRequest({ model: m.main, today }) });
+    return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
+  }, { lane: "scout", live: job.payload?.live === true, mock: async () => ({ dry: true }) });
+  if (r.dryRun) return "dry run: no scout";
+  const report = jsonFromMessage(r.result);
+  await deps.db.saveScout({ run_id: null, raw_sources: report.sources ?? [], trend_brief: report.trend_brief, top_formats: report.top_formats ?? [], report, cost_usd: r.actualUsd ?? 0 });
+  return "scouted";
 }
 
 /**
@@ -639,6 +706,18 @@ async function replaceIdea(deps, idea) {
   return created;
 }
 
+/** [{ref, reason}] for the flagged slides whose picture is a library asset and whose flags are about the picture. */
+export const ASSET_FLAWS = ["distorted hands or faces", "letters or garbled text inside the picture", "a head or subject is cut off", "a logo or brand mark on an object", "resembles a real person or a brand"];
+export function flawedAssets(findings, heroes) {
+  const out = [];
+  for (const [n, f] of Object.entries(findings ?? {})) {
+    const h = heroes?.[Number(n) - 1];
+    const why = (f.flags ?? []).filter((x) => ASSET_FLAWS.includes(x));
+    if (h?.asset && h.ref && why.length) out.push({ ref: h.ref, reason: `${why.join(", ")}${f.note ? ` (${f.note})` : ""}`.slice(0, 300) });
+  }
+  return out;
+}
+
 /* ─── the asset library: tagging ─────────────────────────────────────── */
 
 async function tagAssets(job, deps) {
@@ -671,5 +750,5 @@ async function tagAssets(job, deps) {
 }
 
 
-const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, qa, qa_check: qaCheck, tag_assets: tagAssets };
+const HANDLERS = { plan, write, write_batch: writeBatch, poll_batch: pollBatch, check, rewrite, images, render, render_wait: renderWait, qa, qa_check: qaCheck, tag_assets: tagAssets, analyze, scout };
 export const STAGES = Object.keys(HANDLERS);

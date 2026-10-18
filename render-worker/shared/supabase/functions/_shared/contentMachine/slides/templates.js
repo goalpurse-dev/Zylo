@@ -16,13 +16,29 @@
 //    without one, an icon tile with the initials.
 
 export const SIZE = Object.freeze({ width: 1080, height: 1920 });
-// The platforms' UI: the like/comment/share column on the right, the caption, name and dots at the bottom,
-// the search bar at the top. Round 3 (owner, 2026-10-18): more breathing room than the bare minimum.
-export const SAFE = Object.freeze({ left: 110, right: 170, top: 200, bottom: 420 });
+// Each platform's own UI over a 1080×1920 slide, in px (owner, 2026-10-18, from a real TikTok photo post on an
+// iPhone): what is covered on each side, plus "avoid" areas inside the frame.
+//   tiktok_photo    photo posts are top-anchored: the status bar, back arrow and "Find related content" search
+//                   bar cover the top ~300; the caption, carousel dots and name the bottom ~440; the icon column
+//                   the right; the profile avatar sits above the caption at the left.
+//   instagram_feed  a 9:16 carousel slide is shown cropped to 4:5 in the feed: only the middle 1350 px show.
+//   shorts_video    Reels / Shorts / TikTok video (the MP4): search bar on top, caption at the bottom, icons right.
+export const SAFE_PROFILES = Object.freeze({
+  tiktok_photo: { label: "TikTok photo post", left: 110, right: 170, top: 300, bottom: 440, avoid: [{ name: "the TikTok profile avatar", x0: 0, y0: 1400, x1: 300, y1: 1920 }] },
+  instagram_feed: { label: "Instagram feed (4:5 crop)", left: 60, right: 60, top: 285, bottom: 285, avoid: [] },
+  shorts_video: { label: "Reels / Shorts video", left: 110, right: 170, top: 200, bottom: 420, avoid: [] },
+});
+// ONE export fits every platform: the zone every profile leaves free (the strictest side of each).
+const PROFILES = Object.values(SAFE_PROFILES);
+export const SAFE = Object.freeze(Object.fromEntries(["left", "right", "top", "bottom"].map((k) => [k, Math.max(...PROFILES.map((p) => p[k]))])));
+export const AVOID = Object.freeze(PROFILES.flatMap((p) => p.avoid));
 export const SAFE_RECT = Object.freeze({ x0: SAFE.left, y0: SAFE.top, x1: SIZE.width - SAFE.right, y1: SIZE.height - SAFE.bottom });
-// Inner padding: nothing touches the zone's edge. Every text and key visual must sit inside INNER_RECT.
+// Inner padding: nothing touches the zone's edge. Every text and key visual must sit inside INNER_RECT, which
+// also ends above any avoid area that reaches across the stack's left edge (the avatar): the stack is centered
+// between the top zone and the avatar.
 export const PAD = 24;
-export const INNER_RECT = Object.freeze({ x0: SAFE_RECT.x0 + PAD, y0: SAFE_RECT.y0 + PAD, x1: SAFE_RECT.x1 - PAD, y1: SAFE_RECT.y1 - PAD });
+const innerBottom = Math.min(SAFE_RECT.y1 - PAD, ...AVOID.filter((a) => a.x0 <= SAFE_RECT.x0 + PAD && a.x1 > SAFE_RECT.x0 + PAD).map((a) => a.y0 - PAD));
+export const INNER_RECT = Object.freeze({ x0: SAFE_RECT.x0 + PAD, y0: SAFE_RECT.y0 + PAD, x1: SAFE_RECT.x1 - PAD, y1: innerBottom });
 // Slides that may carry their message without a hero visual (on a photo background): the last question,
 // the answer reveal. Every other slide needs a visual (the "visual richness" rule).
 export const TEXT_ONLY_KINDS = Object.freeze(["quiz_answer"]);
@@ -116,10 +132,10 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .dot{flex:none;width:20px;height:20px;margin-top:15px;border-radius:50%;background:${style.accent}}
 .box{flex:none;width:48px;height:48px;margin-top:4px;border:5px solid ${style.accent};border-radius:12px;position:relative}
 .box::after{content:"";position:absolute;left:10px;top:1px;width:12px;height:24px;border:solid ${style.highlight};border-width:0 6px 6px 0;transform:rotate(45deg)}
-.card{display:flex;flex-direction:column;gap:26px;padding:48px;border-radius:40px;background:${hexA(light ? "#ffffff" : "#0b0b12", light ? 0.9 : 0.8)};border:2px solid ${hexA(style.fg, 0.12)}}
+.card{display:flex;flex-direction:column;gap:20px;padding:36px 40px;border-radius:40px;background:${hexA(light ? "#ffffff" : "#0b0b12", light ? 0.9 : 0.8)};border:2px solid ${hexA(style.fg, 0.12)}}
 .toolrow{display:flex;align-items:center;gap:28px}
-.tile{flex:none;width:150px;height:150px;border-radius:38px;display:flex;align-items:center;justify-content:center;font:800 64px "Inter";color:#fff;box-shadow:0 14px 40px rgba(0,0,0,.35)}
-.logo{flex:none;width:150px;height:150px;border-radius:38px;background:#fff;display:flex;align-items:center;justify-content:center;padding:22px}
+.tile{flex:none;width:120px;height:120px;border-radius:32px;display:flex;align-items:center;justify-content:center;font:800 52px "Inter";color:#fff;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.logo{flex:none;width:120px;height:120px;border-radius:32px;background:#fff;display:flex;align-items:center;justify-content:center;padding:16px}
 .logo img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto}
 .toolname{font:800 60px/1.1 "Inter";letter-spacing:-.02em;min-width:0}
 .tooltext{font:500 40px/1.32 "Inter";color:${hexA(style.fg, 0.9)}}
@@ -203,7 +219,7 @@ function inner(slide, style, images, ctx) {
       if (!slide.tool) return `${label}${head()}${hero(600)}${body}${items('<span class="dot"></span>')}`;
       const zyvo = slide.is_zyvo || /^zyvo$/i.test(slide.tool.name);
       const mark = toolMark(slide.tool, ctx.logos, U);
-      const visual = zyvo && !heroUrl && ctx.zyvoShot ? browser : hero(540, 380);
+      const visual = zyvo && !heroUrl && ctx.zyvoShot ? browser : hero(540, 280);
       return `${label}<h1 class="headline" ${fit(TYPE.cardHeadline)} data-name="headline">${highlight(slide.headline)}</h1>${visual}
 <div class="card" data-box data-name="card"><div class="toolrow">${mark}<div class="toolname" ${fit(TYPE.toolname)} data-name="tool name">${esc(slide.tool.name)}</div></div>
 <p class="tooltext" ${fit(TYPE.tool)} data-name="tool text">${esc(slide.tool.what_it_does)}</p><div class="pill" data-box data-text>${esc(domain(slide.tool.url))}</div></div>`;
@@ -329,10 +345,11 @@ for(let n=w.nextNode();n;n=w.nextNode()){r.selectNodeContents(n);const m=metrics
 for(const hl of p.querySelectorAll(".hl")){const[off,bh,pad]=JSON.parse(hl.dataset.band);for(const q of hl.getClientRects()){if(q.width<1)continue;const t=q.top+off;bands.push({line:lineOf(q.top+pad),l:q.left,r:q.right,t,b:t+bh})}}
 let bad=false;for(const b of bands){for(const o of[...glyphs,...bands])if(o!==b&&o.line!==b.line&&touch(b,o)){bad=true;break}if(bad)break}
 if(bad)problems.push("a highlight in the "+(p.dataset.name||"text")+" touches another line")}
-const S=${JSON.stringify(INNER_RECT)};const TEXT_ONLY=${JSON.stringify(TEXT_ONLY_KINDS)};
+const S=${JSON.stringify(INNER_RECT)};const AV=${JSON.stringify(AVOID)};const TEXT_ONLY=${JSON.stringify(TEXT_ONLY_KINDS)};
 const boxes=[...document.querySelectorAll("[data-box]")].map(el=>({el,r:el.getBoundingClientRect(),name:el.dataset.name||el.className}));
 for(const b of boxes){const r=b.r;
-if(r.left<S.x0-1||r.top<S.y0-1||r.right>S.x1+1||r.bottom>S.y1+1)problems.push(b.name+" is outside the safe zone")}
+if(r.left<S.x0-1||r.top<S.y0-1||r.right>S.x1+1||r.bottom>S.y1+1)problems.push(b.name+" is outside the safe zone");
+for(const a of AV)if(r.right>a.x0+1&&r.left<a.x1-1&&r.bottom>a.y0+1&&r.top<a.y1-1)problems.push(b.name+" is under "+a.name)}
 const visuals=[...document.querySelectorAll("[data-visual] img, img[data-visual]")].filter(i=>i.naturalWidth>0);
 const bgPhoto=[...document.querySelectorAll(".bg img")].some(i=>i.naturalWidth>0);
 if(!visuals.length&&!(TEXT_ONLY.includes(document.body.dataset.kind)&&bgPhoto))problems.push("no visual element: the slide needs a picture");
@@ -375,7 +392,8 @@ export function slideHtml({ slide, index, total, style, images = {}, zyvoShot = 
   const photo = !meme && !style.meme && Boolean(images.background);
   const bg = photo ? `<div class="bg"><img src="${safeUrl(images.background, allowFile)}" alt=""></div><div class="shade"></div><div class="scrim"></div>` : "";
   const deco = style.grid && !photo ? '<div class="glow"></div><div class="grid"></div>' : "";
-  const zones = safeZones ? '<div class="zone l"></div><div class="zone r"></div><div class="zone t"></div><div class="zone b"></div><div class="zoneline"></div><div class="zonepad"></div>' : "";
+  const avoid = AVOID.map((a) => `<div class="zone" style="left:${a.x0}px;top:${a.y0}px;width:${a.x1 - a.x0}px;height:${a.y1 - a.y0}px;background:rgba(255,140,0,.35)"></div>`).join("");
+  const zones = safeZones ? `<div class="zone l"></div><div class="zone r"></div><div class="zone t"></div><div class="zone b"></div>${avoid}<div class="zoneline"></div><div class="zonepad"></div>` : "";
   const pic = heroUrl ?? images.background;
   const main = meme
     ? `<div class="meme"><div class="memebar"><div class="memetext" ${fit(TYPE.meme)} data-name="meme text">${esc(String(slide.headline).replace(/\*/g, ""))}</div>${slide.body ? `<div class="memebody" ${fit(TYPE.memeBody)} data-name="meme caption">${esc(String(slide.body).replace(/\*/g, ""))}</div>` : ""}</div>

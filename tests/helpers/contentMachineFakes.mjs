@@ -25,9 +25,9 @@ export function fakeWorld(settings = {}) {
   const s = {
     dry_run: false, kill_switch: false, daily_budget_usd: 3, monthly_budget_usd: 90, per_provider_daily_caps: { runware: 2, anthropic: 1.5, fly: 0.5 },
     lane_daily_caps: { slideshow: 3 }, slideshows_per_day: 2, timezone: "Europe/Helsinki", models: {}, brand_rules: "- Be honest.", experiment_days: 14,
-    experiment_started_on: null, daily_auto_run: true, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
+    experiment_started_on: null, daily_auto_run: true, playbook: "", half_life_days: 14, winner_min_successes: 3, analysis_suggest_after: 10, daily_scout: false, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
   };
-  const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [];
+  const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [], posts = [], stats = [], stored = {}, analyses = [], scouts = [];
   const assets = [
     { id: "A1", ref: "aaaa1111", path: "library/aaaa1111.webp", source_path: "public/lp/stickman/a.webp", kind: "scene", tool: "long_form", subject: "a stickman explaining history", tags: ["stickman"], status: "active" },
     { id: "A2", ref: "bbbb2222", path: "library/bbbb2222.webp", source_path: "public/lp/fruit/b.webp", kind: "output", tool: "ai_fruit_story", subject: "a strawberry on a stage", tags: ["fruit"], status: "active" },
@@ -81,7 +81,7 @@ export function fakeWorld(settings = {}) {
     async ensureGeneration(ideaId) { let g = gens.find((x) => x.idea_id === ideaId); if (!g) { g = { id: id("G"), idea_id: ideaId, kind: "slideshow", status: "queued", source_assets: {}, files: {} }; gens.push(g); } return g; },
     async updateGeneration(i, p) { Object.assign(gens.find((g) => g.id === i), p); },
     async savePackages(g, rows) { for (const r of rows) { const old = pkgs.findIndex((p) => p.generation_id === g && p.platform === r.platform); if (old >= 0) pkgs.splice(old, 1); pkgs.push({ id: id("P"), generation_id: g, ...r }); } },
-    async enqueue(rows) { for (const r of rows) jobs.push({ id: id("J"), status: "queued", attempts: 0, max_attempts: 2, payload: {}, run_after: new Date(0).toISOString(), ...r }); },
+    async enqueue(rows) { for (const r of rows) jobs.push({ id: id("J"), status: "queued", attempts: 0, max_attempts: 2, payload: {}, run_after: new Date(0).toISOString(), created_at: clock.now.toISOString(), ...r }); },
     async claimJobs(limit) {
       const due = jobs.filter((j) => j.status === "queued" && new Date(j.run_after) <= clock.now).slice(0, limit);
       for (const j of due) { j.status = "running"; j.attempts += 1; }
@@ -95,9 +95,29 @@ export function fakeWorld(settings = {}) {
       if (keepAttempt) j.attempts = Math.max(0, j.attempts - 1);
     },
     async dailyRunExists(day) { return runs.some((r) => r.kind === "daily" && r.run_date === day); },
+    // Phase 3: analyses and scout reports
+    async createAnalysis(row) { const a = { id: id("AN"), created_at: clock.now.toISOString(), ...row }; analyses.unshift(a); return a; },
+    async getAnalysis(i) { return analyses.find((a) => a.id === i); },
+    async updateAnalysis(i, p) { return Object.assign(analyses.find((a) => a.id === i), p); },
+    async listAnalyses(n = 10) { return analyses.slice(0, n); },
+    async saveScout(row) { const r = { id: id("SC"), created_at: clock.now.toISOString(), ...row }; scouts.unshift(r); return r; },
+    async listScouts(n = 5) { return scouts.slice(0, n); },
+    async scoutQueuedSince(iso) { return jobs.some((j) => j.stage === "scout" && (j.created_at ?? new Date(0).toISOString()) >= iso); },
+    // Part 2: posts and stats snapshots
+    async createPost(row) { const p = { id: id("P"), created_at: clock.now.toISOString(), ...row }; posts.push(p); return p; },
+    async getPost(i) { const p = posts.find((x) => x.id === i); if (!p) throw new Error("post: not found"); return p; },
+    async updatePost(i, patch) { return Object.assign(posts.find((x) => x.id === i), patch); },
+    async deletePost(i) { posts.splice(posts.findIndex((x) => x.id === i), 1); for (let k = stats.length - 1; k >= 0; k--) if (stats[k].post_id === i) stats.splice(k, 1); },
+    async postsOfIdea(i) { return posts.filter((p) => p.idea_id === i); },
+    async listPosts() { return posts.map((p) => { const idea = ideas.find((x) => x.id === p.idea_id); return { ...p, cm_ideas: idea && { ...idea, cm_generations: gens.filter((g) => g.idea_id === idea.id) }, cm_post_stats: stats.filter((x) => x.post_id === p.id) }; }); },
+    async getStats(i) { const x = stats.find((y) => y.id === i); if (!x) throw new Error("stats: not found"); return x; },
+    async saveStats(row) { if (row.id) { const { id: sid, ...patch } = row; return Object.assign(stats.find((x) => x.id === sid), patch); } const x = { id: id("S"), ...row }; stats.push(x); return x; },
+    async deleteStats(i) { stats.splice(stats.findIndex((x) => x.id === i), 1); },
+    async statsOfPost(i) { return stats.filter((x) => x.post_id === i); },
     async activeAssets() { return assets.filter((a) => a.status === "active"); },
     async getAssets(ids) { return assets.filter((a) => ids.includes(a.id)); },
     async listAssets({ status = null } = {}) { return assets.filter((a) => !status || a.status === status); },
+    async markAssetsFlawed(list) { for (const { ref, reason } of list) { const a = assets.find((x) => x.ref === ref && x.status === "active"); if (a) Object.assign(a, { status: "flawed", flaw_reason: reason }); } },
     async updateAsset(i, p) { const a = assets.find((x) => x.id === i); Object.assign(a, p); return a; },
     async jobsOfRun(r) { return jobs.filter((j) => j.run_id === r); },
     async cancelQueuedJobs(r) { for (const j of jobs) if (j.run_id === r && j.status === "queued") j.status = "cancelled"; },
@@ -110,7 +130,7 @@ export function fakeWorld(settings = {}) {
   };
   const uploads = [];
   const clock = { now: new Date("2026-10-20T06:30:00Z") };   // 09:30 in Helsinki
-  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, assets, store, db, clock };
+  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, assets, store, db, clock, posts, stats, stored, analyses, scouts };
 }
 
 /* ─── fake providers that behave like the real ones ──────────────────── */
@@ -126,7 +146,7 @@ export function validSlideshow(recipe, title = "5 AI tools that replace a video 
     ai_label_required: false, why_it_could_go_viral: "useful", virality_score: 7 };
 }
 export const PKG = (ok = true) => ({
-  tiktok: { caption: "Which would you try first?", hashtags: ["#aitools", "#faceless", "#aivideo"], on_screen_text: ["3 tools"] },
+  tiktok: { title: "3 AI tools that replace a video editor", caption: "Which would you try first?", hashtags: ["#aitools", "#faceless", "#aivideo"], on_screen_text: ["3 tools"] },
   instagram: { caption: "Save this.\nLink in bio → tryzyvo.com", hashtags: ["#aitools", "#faceless", "#aivideo", "#creator", "#youtube"] },
   youtube: { title: "AI tools that replace an editor", description: "Link: https://www.tryzyvo.com/", hashtags: ["#shorts", "#aitools", "#ai"] },
   sound_suggestion: "an upbeat lo-fi sound", compliance: ok ? { ok: true, problems: [] } : { ok: false, problems: ["slide 3 claims an income"] },
@@ -269,7 +289,7 @@ export function apiFor(world, extra = {}) {
   };
   const handle = createHandler({
     getUser: async () => ({ data: { user: { email: "upwardlift6@gmail.com", email_confirmed_at: "x" } }, error: null }), emails: ["upwardlift6@gmail.com"],
-    store: world.store, guard, cors, now: () => world.clock.now, cm, files: { signedUrls: async (ps) => Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])), signedUrl: async () => "https://signed/shot" },
+    store: world.store, guard, cors, now: () => world.clock.now, cm, files: { signedUrls: async (ps) => Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])), signedUrl: async () => "https://signed/shot", upload: async (p, bytes, type) => { world.stored[p] = { bytes: bytes.length, type }; }, remove: async (p) => { delete world.stored[p]; } },
     kick: async () => { kicks += 1; }, ...extra,
   });
   const call = async (body) => (await handle(new Request("https://x", { method: "POST", headers: { Authorization: "Bearer t", Origin: "https://tryzyvo.com" }, body: JSON.stringify(body) }))).json();

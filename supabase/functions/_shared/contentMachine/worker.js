@@ -7,6 +7,7 @@
 import { NOT_FOUND_BODY } from "./adminGuard.js";
 import { runJob } from "./pipeline.js";
 import { localDay } from "./spendSummary.js";
+import { localToUtc } from "./localTime.js";
 
 export const LEASE_SECONDS = 420;   // longer than the slowest job (a written slideshow with web search)
 export const JOBS_PER_TICK = 4;
@@ -44,6 +45,18 @@ export async function maybeStartDailyRun(deps) {
   return run;
 }
 
+/** Queues today's scout (Phase 3) once the run time has passed, when the daily scout is on. Returns true if queued. */
+export async function maybeStartDailyScout(deps) {
+  const s = await deps.db.settings();
+  if (s.kill_switch || !s.daily_scout || !deps.db.scoutQueuedSince) return false;
+  const now = deps.now();
+  if (localClock(now, s.timezone) < s.run_time_local) return false;
+  const dayStart = localToUtc(localDay(now, s.timezone), s.timezone).toISOString();
+  if (await deps.db.scoutQueuedSince(dayStart)) return false;
+  await deps.db.enqueue([{ stage: "scout", payload: { live: true, daily: true }, max_attempts: 1 }]);
+  return true;
+}
+
 // One tick keeps claiming the next steps (each finished step queues the next) for up to this long, so a
 // slideshow goes through its 6–7 steps in one or two ticks instead of one step a minute.
 export const TICK_BUDGET_MS = 150_000;
@@ -51,6 +64,7 @@ export const MAX_ROUNDS = 12;
 
 export async function tick(deps, { clock = () => Date.now() } = {}) {
   const daily = await maybeStartDailyRun(deps);
+  const scouted = await maybeStartDailyScout(deps).catch((e) => { deps.log?.(`[content-machine-worker] scout: ${e?.message ?? e}`); return false; });
   const started = clock();
   const results = [];
   for (let round = 0; round < MAX_ROUNDS && clock() - started < TICK_BUDGET_MS; round++) {
@@ -63,7 +77,7 @@ export async function tick(deps, { clock = () => Date.now() } = {}) {
       catch (e) { deps.log?.(`[content-machine-worker] ${job.stage} ${job.id}: ${e?.message ?? e}`); return { id: job.id, stage: job.stage, result: "error" }; }
     })));
   }
-  return { daily: daily?.id ?? null, jobs: results };
+  return { daily: daily?.id ?? null, scout: scouted, jobs: results };
 }
 
 export function createWorkerHandler({ secret, deps, background = (p) => p }) {
