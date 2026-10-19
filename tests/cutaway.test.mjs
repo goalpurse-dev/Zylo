@@ -10,7 +10,7 @@ import { cueCacheKey, cueRequest } from "../supabase/functions/_shared/cutaway/s
 import { checkImage } from "../supabase/functions/_shared/cutaway/llm.js";
 import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, visionUnchecked, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
 import { buildAss, captionWord, finalArgs, atempoChain, gainFor } from "../render-worker/src/cutawayFinalPlan.mjs";
-import { freshSuggestions, TOPIC_SUGGESTIONS } from "../src/data/cutawayTopics.js";
+import { freshSuggestions, isKitTopic, KIT_TOPICS } from "../src/data/cutawayTopics.js";
 
 // ---------- a 30 s plan like the planner returns (10 beats, 5 states) ----------
 
@@ -77,10 +77,13 @@ test("the migration's tool_prices rows match pricing.js", () => {
 
 // ---------- topics ----------
 
-test("topic suggestions skip what the user already made", () => {
-  assert.equal(TOPIC_SUGGESTIONS.length, 20);
-  const fresh = freshSuggestions(["Dam", "skyscraper"], 3);
-  assert.deepEqual(fresh.map((t) => t.topic), ["Sewage treatment plant", "Tunnel under a river", "Electricity to your outlet"]);
+test("topic suggestions are kit topics only, skip what the user already made, ready ones first", () => {
+  assert.equal(KIT_TOPICS[0].topic, "Landfill");
+  assert.ok(KIT_TOPICS[0].ready);
+  const fresh = freshSuggestions(["landfill", "Septic tank"], 3);
+  assert.deepEqual(fresh.map((t) => t.topic), ["Swimming pool", "Water well", "French drain"]);
+  assert.ok(isKitTopic("swimming pool"));
+  assert.ok(!isKitTopic("Nuclear power plant"));
 });
 
 // ---------- plan checks ----------
