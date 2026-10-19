@@ -79,7 +79,6 @@ export function atempoChain(tempo) {
 }
 
 const ms = (sec) => Math.max(0, Math.round(sec * 1000));
-const gain = (db) => (10 ** (db / 20)).toFixed(4);
 
 /**
  * ffmpeg arguments. Inputs in this order: clip files, the voice (optional), the chime (optional, once),
@@ -87,22 +86,44 @@ const gain = (db) => (10 ** (db / 20)).toFixed(4);
  * assFile and fontsDir are paths relative to ffmpeg's working directory
  * (no drive letters inside the filter, so it works on Windows and Linux alike).
  */
-export function finalArgs({ clipFiles, speeds, voiceFile = null, tempo = 1, assFile = null, fontsDir = null, chimeFile = null, chimes = [], sfx = [], levels = { sfxDb: -12, chimeDb: -14 }, lengthSec, width = 1080, height = 1920, fps = 24, output }) {
-  const n = clipFiles.length;
-  const parts = clipFiles.map((_, i) => {
-    const drop = i > 0 ? "select='gte(n\\,1)'," : "";
-    return `[${i}:v]${drop}setpts=(PTS-STARTPTS)/${speeds[i].toFixed(4)},fps=${fps},scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},setsar=1[v${i}]`;
-  });
-  const joined = `${clipFiles.map((_, i) => `[v${i}]`).join("")}concat=n=${n}:v=1:a=0,tpad=stop_mode=clone:stop_duration=2`;
-  const subs = assFile ? `,subtitles=${assFile}${fontsDir ? `:fontsdir=${fontsDir}` : ""}` : "";
-  const filters = [...parts, `${joined}${subs}[vout]`];
+/**
+ * The gain (dB) that puts a sound `levelDb` under the voice, from measured loudness (LUFS):
+ * the fix for test 3, where -12 dB was applied to each file's own level and effects came out at voice level.
+ * Without a measurement it falls back to the plain level.
+ */
+export function gainFor({ voiceLufs, soundLufs, levelDb }) {
+  if (!Number.isFinite(voiceLufs) || !Number.isFinite(soundLufs)) return levelDb;
+  return Math.round((voiceLufs + levelDb - soundLufs) * 10) / 10;
+}
 
-  const inputs = clipFiles.flatMap((f) => ["-i", f]);
+export const SHORT_SFX_SEC = 1.4;
+
+/**
+ * ffmpeg arguments. Inputs in this order: clip files, the voice (optional), the chime (optional, once),
+ * then one input per sound effect. Each effect and the chime carry `gainDb` (gainFor, measured against
+ * the voice); effects are cut to SHORT_SFX_SEC with a short fade, except `soft` ones (rain) which loop
+ * for their duration with a slow fade in and out. audioOnly: no clips, writes the mix alone.
+ */
+export function finalArgs({ clipFiles = [], speeds = [], voiceFile = null, tempo = 1, assFile = null, fontsDir = null, chimeFile = null, chimes = [], chimeGainDb = -20, sfx = [], lengthSec, width = 1080, height = 1920, fps = 24, output, audioOnly = false }) {
+  const n = audioOnly ? 0 : clipFiles.length;
+  const filters = [];
+  if (!audioOnly) {
+    clipFiles.forEach((_, i) => {
+      const drop = i > 0 ? "select='gte(n\\,1)'," : "";
+      filters.push(`[${i}:v]${drop}setpts=(PTS-STARTPTS)/${speeds[i].toFixed(4)},fps=${fps},scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},setsar=1[v${i}]`);
+    });
+    const joined = `${clipFiles.map((_, i) => `[v${i}]`).join("")}concat=n=${n}:v=1:a=0,tpad=stop_mode=clone:stop_duration=2`;
+    const subs = assFile ? `,subtitles=${assFile}${fontsDir ? `:fontsdir=${fontsDir}` : ""}` : "";
+    filters.push(`${joined}${subs}[vout]`);
+  }
+
+  const inputs = audioOnly ? [] : clipFiles.flatMap((f) => ["-i", f]);
   const mix = [];
   let idx = n;
   if (voiceFile) {
     inputs.push("-i", voiceFile);
-    filters.push(`[${idx}:a]${atempoChain(tempo)},aresample=44100,aformat=channel_layouts=stereo,apad[voice]`);
+    const stretch = Math.abs(tempo - 1) > 0.001 ? `${atempoChain(tempo)},` : ""; // never used now: the voice is not sped up
+    filters.push(`[${idx}:a]${stretch}aresample=44100,aformat=channel_layouts=stereo,apad[voice]`);
     mix.push("[voice]");
     idx += 1;
   } else if (chimes.length || sfx.length) {
@@ -113,15 +134,19 @@ export function finalArgs({ clipFiles, speeds, voiceFile = null, tempo = 1, assF
   if (chimeFile && chimes.length) {
     inputs.push("-i", chimeFile);
     const labels = chimes.map((_, k) => `[ch${k}]`).join("");
-    filters.push(`[${idx}:a]aresample=44100,aformat=channel_layouts=stereo,volume=${gain(levels.chimeDb)},asplit=${chimes.length}${labels}`);
+    filters.push(`[${idx}:a]aresample=44100,aformat=channel_layouts=stereo,volume=${chimeGainDb}dB,asplit=${chimes.length}${labels}`);
     chimes.forEach((t, k) => { filters.push(`[ch${k}]adelay=${ms(t)}:all=1[chd${k}]`); mix.push(`[chd${k}]`); });
     idx += 1;
   }
   sfx.forEach((c, k) => {
-    if (c.duration) inputs.push("-stream_loop", "-1");
+    const soft = Boolean(c.soft);
+    const dur = soft ? Math.max(1.5, c.duration ?? 3) : Math.min(SHORT_SFX_SEC, c.duration ?? SHORT_SFX_SEC);
+    if (soft) inputs.push("-stream_loop", "-1");
     inputs.push("-i", c.file);
-    const trim = c.duration ? `atrim=0:${c.duration.toFixed(3)},afade=t=out:st=${Math.max(0, c.duration - 0.3).toFixed(3)}:d=0.3,` : "";
-    filters.push(`[${idx}:a]${trim}aresample=44100,aformat=channel_layouts=stereo,volume=${gain(levels.sfxDb)},adelay=${ms(c.start)}:all=1[fx${k}]`);
+    const fades = soft
+      ? `afade=t=in:d=${Math.min(0.8, dur / 3).toFixed(2)},afade=t=out:st=${Math.max(0, dur - Math.min(1, dur / 3)).toFixed(3)}:d=${Math.min(1, dur / 3).toFixed(2)}`
+      : `afade=t=out:st=${Math.max(0, dur - 0.25).toFixed(3)}:d=0.25`;
+    filters.push(`[${idx}:a]atrim=0:${dur.toFixed(3)},${fades},aresample=44100,aformat=channel_layouts=stereo,volume=${c.gainDb ?? -20}dB,adelay=${ms(c.start)}:all=1[fx${k}]`);
     mix.push(`[fx${k}]`);
     idx += 1;
   });
@@ -129,6 +154,7 @@ export function finalArgs({ clipFiles, speeds, voiceFile = null, tempo = 1, assF
   if (mix.length > 1) filters.push(`${mix.join("")}amix=inputs=${mix.length}:duration=longest:normalize=0,alimiter=limit=0.95[aout]`);
   else if (mix.length === 1) filters.push(`${mix[0]}anull[aout]`);
 
+  if (audioOnly) return ["-y", ...inputs, "-filter_complex", filters.join(";"), "-map", "[aout]", "-t", lengthSec.toFixed(3), "-c:a", "libmp3lame", "-b:a", "192k", output];
   return [
     "-y",
     ...inputs,

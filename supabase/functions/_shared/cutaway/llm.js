@@ -3,11 +3,9 @@
 //   checkImage: the vision check of one wide image against its state's checklist
 
 import { MODELS } from "./pricing.js";
-import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure, shapeProblems } from "./planner.js";
-import { OVERLAYS } from "./style.js";
+import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure, shapeProblems, validatePlan } from "./planner.js";
 import { SOUND_KEYS } from "./sound.js";
 
-const OVERLAY_KEYS = Object.keys(OVERLAYS);
 const SOUND_KEYS_SET = new Set(SOUND_KEYS);
 
 // USD per 1M tokens (same figures as the other templates' llm.js).
@@ -99,15 +97,34 @@ export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTr
   }
 }
 
-/** Mechanical fixes only (never content): unknown overlay or move -> a default, a sound key in the overlay slot moved over. */
+const TRIM_SCHEMA = {
+  type: "object", additionalProperties: false, required: ["beats"],
+  properties: { beats: { type: "array", items: { type: "string" } } },
+};
+
+const TRIM_SYSTEM = `You shorten the narration of a short explainer video so it fits its length when read at a natural pace. You get the beats' texts in order and a maximum total word count. Return the same number of beats, each shortened, so the total is at most the maximum. Keep every fact, the hook shape ("If you ..., you have a ..."), "But ... / So you ...", the "This is a ..." names, the myth-bust and the "Congratulations, you have built a ..." ending. Keep the listed KEEP words in their beat exactly. Cut filler first. Plain words, short sentences.`;
+
+/**
+ * Cuts words so the voiceover fits (it is never sped up). Only the beat texts change; verbs and
+ * card words stay in their beats. Returns {plan, costUsd}; throws if the result fails the checks.
+ */
+export async function trimScript({ apiKey, plan, maxWords, lengthSec, usedIdeas = [] }) {
+  const lines = plan.beats.map((b, i) => `${i + 1}. ${b.text}   [KEEP: ${[b.verb, b.card?.word].filter(Boolean).join(", ")}]`);
+  const { data, costUsd } = await callTool({
+    apiKey, system: TRIM_SYSTEM, name: "trimmed", schema: TRIM_SCHEMA, maxTokens: 2000, timeoutMs: 60_000,
+    content: `Maximum total words: ${maxWords}.\nBeats:\n${lines.join("\n")}`,
+  });
+  if (!Array.isArray(data?.beats) || data.beats.length !== plan.beats.length) throw Object.assign(new Error("TRIM_FAILED: wrong number of beats"), { costUsd });
+  const next = { ...plan, beats: plan.beats.map((b, i) => ({ ...b, text: String(data.beats[i]).trim() })) };
+  return { plan: validatePlan(next, lengthSec, usedIdeas, { wordRange: [Math.floor(maxWords * 0.7), maxWords + 2] }), costUsd };
+}
+
+/** Mechanical fixes only (never content): unknown move -> a default, unknown sound key -> custom; no overlays any more. */
 export function repairPlan(input) {
   if (!input || !Array.isArray(input.beats)) return input;
   const plan = JSON.parse(JSON.stringify(input));
   for (const b of plan.beats) {
-    if (!OVERLAY_KEYS.includes(b.overlay)) {
-      if (SOUND_KEYS_SET.has(b.overlay) && !b.sound?.key) b.sound = { key: b.overlay, text: "", at: "verb", whole: false };
-      b.overlay = "arrows";
-    }
+    delete b.overlay;
     if (!["push-in", "pull-out", "follow", "arc", "hold"].includes(b.move)) b.move = "push-in";
     if (b.sound && b.sound.key && !SOUND_KEYS_SET.has(b.sound.key)) b.sound = { key: "custom", text: b.sound.text || b.sound.key, at: b.sound.at === "start" ? "start" : "verb", whole: Boolean(b.sound.whole) };
     if (!b.card) b.card = { text: "", word: "" };

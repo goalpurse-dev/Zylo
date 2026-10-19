@@ -20,7 +20,7 @@
 //   startRender(job) -> handle;  checkRender(handle) -> {state:"pending"|"done"|"error", url?, message?}
 // }
 
-import { clipTimings, cueTimeline, evenBeats, placeBeats, upscaleFactor, voiceTempo } from "./beats.js";
+import { clipTimings, cueTimeline, evenBeats, placeBeats, spokenSeconds, upscaleFactor, voiceTempo, wordsToFit } from "./beats.js";
 import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt, visionContext } from "./planner.js";
 import { clipTask, imageTask, poll, submit, upscaleTask } from "./runware.js";
 import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
@@ -85,6 +85,17 @@ async function stepVoice(s, deps) {
     try {
       const { audioBase64, spoken, costUsd } = await deps.synthesize({ text: s.narration });
       addCost(s, "voice", costUsd);
+      // Too long for the length? The planner cuts words (once); the audio is never sped up.
+      const fit = wordsToFit(spoken, s.lengthSec);
+      if (fit != null && deps.trimScript && !s.trimmed) {
+        const { plan, costUsd: trimCost } = await deps.trimScript({ plan: s.plan, maxWords: fit, lengthSec: s.lengthSec, usedIdeas: s.usedIdeas ?? [] });
+        addCost(s, "plan", trimCost);
+        s.trimmed = { from: s.narration.split(/\s+/).length, to: fit, spokenSec: Math.round(spokenSeconds(spoken) * 10) / 10 };
+        s.plan = plan;
+        s.narration = narrationText(plan);
+        s.attempts.voice -= 1; // the re-voice of the shorter script is not a retry
+        return s;
+      }
       const tempo = voiceTempo(spoken);
       const url = await deps.saveAudio(audioBase64);
       s.voice = { url, tempo, words: spoken.map((w) => ({ w: w.w, s: round(w.s / tempo), e: round(w.e / tempo) })) };
@@ -311,7 +322,7 @@ export function renderJob(s) {
     captions: s.voice ? s.voice.words : [],
     cards: s.timeline?.cards ?? [],
     chimes: on ? (s.timeline?.chimes ?? []) : [],
-    sfx: on ? (s.sounds ?? []).filter((c) => c.status === "done").map((c) => ({ url: c.url, start: c.start, duration: c.duration })) : [],
+    sfx: on ? (s.sounds ?? []).filter((c) => c.status === "done").map((c) => ({ url: c.url, start: c.start, duration: c.duration, soft: Boolean(c.soft) })) : [],
     levels: LEVELS,
     lengthSec: s.timing.lengthSec,
     width: 1080, height: 1920, fps: 24,

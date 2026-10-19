@@ -15,7 +15,7 @@ import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { cors, err, ok } from "../shared/cors.ts";
 import { advance, approve, newRun, progressOf, refundsFor, regenerateWide, userMessage } from "../_shared/cutaway/engine.js";
 import { cropPixels } from "../_shared/cutaway/beats.js";
-import { checkImage, planVideo } from "../_shared/cutaway/llm.js";
+import { checkImage, planVideo, trimScript } from "../_shared/cutaway/llm.js";
 import { generateSfx } from "../_shared/cutaway/sound.js";
 import { synthesize } from "../_shared/cutaway/voice.js";
 import { directSender } from "../_shared/cutaway/runware.js";
@@ -119,6 +119,7 @@ async function fetchBytes(url: string) {
 function depsFor(row: any) {
   return {
     planVideo: ({ topic, lengthSec, usedIdeas }: any) => planVideo({ apiKey: ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
+    trimScript: ({ plan, maxWords, lengthSec, usedIdeas }: any) => trimScript({ apiKey: ANTHROPIC_API_KEY, plan, maxWords, lengthSec, usedIdeas }),
     checkImage: ({ imageUrl, description, checks, plan }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks, plan }),
     synthesize: ELEVENLABS_KEY ? ({ text }: any) => synthesize({ apiKey: ELEVENLABS_KEY, text }) : null,
     // Sound effects: one shared cache for every user (cutaway/sfx-cache/<key>.mp3); a hit costs nothing.

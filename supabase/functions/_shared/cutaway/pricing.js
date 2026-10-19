@@ -20,9 +20,9 @@ export const MODELS = Object.freeze({
   // First + last frame clips. Duration: whole seconds 1-20 (Runware docs, 2026-10-17).
   // With frameImages the size comes from the stills (9:16 -> 704x1280); width/height are refused.
   clip: Object.freeze({ air: "prunaai:p-video@2", resolution: "720p", fps: 24, minSec: 1, maxSec: 20, promptMax: 2000 }),
-  // Josh (the measured voice), fastest model; speed 1.2 is ElevenLabs' maximum.
-  // The stitch speeds the voice up further (atempo) to reach the target pace.
-  voice: Object.freeze({ voiceId: "TxGEqnHWrfWFTfGW9XjX", model: "eleven_flash_v2_5", speed: 1.2 }),
+  // The voice speaks at its own pace: never sped up in the stitch (owner, 2026-10-19), ElevenLabs speed <= 1.1.
+  // wpm = the voice's measured pace; the planner sizes the script to it. voiceId: the owner's pick of voice A/B/C.
+  voice: Object.freeze({ voiceId: "TxGEqnHWrfWFTfGW9XjX", model: "eleven_flash_v2_5", speed: 1.0, maxSpeed: 1.1, wpm: 170 }),
   // Sound effects (ElevenLabs text-to-sound), cached by cue so a repeat costs nothing.
   sfx: Object.freeze({ provider: "elevenlabs", promptInfluence: 0.5 }),
 });

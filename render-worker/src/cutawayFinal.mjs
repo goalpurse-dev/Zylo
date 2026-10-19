@@ -13,7 +13,7 @@ import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildAss, finalArgs } from "./cutawayFinalPlan.mjs";
+import { buildAss, finalArgs, gainFor } from "./cutawayFinalPlan.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
@@ -67,18 +67,56 @@ export async function renderCutaway(job, dir, outName = "final.mp4") {
     chimeFile = "chime.wav";
     await copyFile(CHIME, path.join(dir, chimeFile));
   }
-  const sfx = [];
-  for (const [i, c] of (job.sfx ?? []).entries()) {
-    const ext = path.extname(String(c.url).split("?")[0]) || ".mp3";
-    sfx.push({ file: path.basename(await download(c.url, path.join(dir, `sfx-${i}${ext}`))), start: c.start, duration: c.duration ?? null });
-  }
+  const { sfx, chimeGainDb, measured } = await mixInputs(job, dir, voiceFile, chimeFile);
   const args = finalArgs({
     clipFiles, speeds: job.clips.map((c) => c.speed), voiceFile, tempo: job.voice?.tempo ?? 1,
-    assFile, fontsDir, chimeFile, chimes: job.chimes ?? [], sfx, levels: job.levels,
+    assFile, fontsDir, chimeFile, chimes: job.chimes ?? [], chimeGainDb, sfx,
     lengthSec: job.lengthSec, width: job.width ?? 1080, height: job.height ?? 1920, fps: job.fps ?? 24, output: outName,
   });
   await run(FFMPEG, args, dir);
+  job.measured = measured;
   return path.join(dir, outName);
+}
+
+/** Integrated loudness (EBU R128, LUFS) of a file; silence is gated out, so short effects measure fairly. */
+export function loudness(file, cwd) {
+  return new Promise((resolve) => {
+    const p = spawn(FFMPEG, ["-hide_banner", "-nostats", "-i", file, "-af", "ebur128", "-f", "null", "-"], { cwd, stdio: ["ignore", "ignore", "pipe"] });
+    let err = "";
+    p.stderr.on("data", (d) => { err += d; });
+    p.on("close", () => {
+      const m = [...err.matchAll(/I:\s+(-?[\d.]+) LUFS/g)].at(-1);
+      const v = m ? Number(m[1]) : NaN;
+      resolve(Number.isFinite(v) && v > -70 ? v : NaN);
+    });
+  });
+}
+
+/** Downloads the effects and works out every gain from the voice's measured loudness. */
+export async function mixInputs(job, dir, voiceFile, chimeFile) {
+  const levels = job.levels ?? { sfxDb: -20, chimeDb: -20 };
+  const voiceLufs = voiceFile ? await loudness(voiceFile, dir) : NaN;
+  const chimeLufs = chimeFile ? await loudness(chimeFile, dir) : NaN;
+  const chimeGainDb = gainFor({ voiceLufs, soundLufs: chimeLufs, levelDb: levels.chimeDb });
+  const sfx = [];
+  for (const [i, c] of (job.sfx ?? []).entries()) {
+    const ext = path.extname(String(c.url).split("?")[0]) || ".mp3";
+    const file = path.basename(await download(c.url, path.join(dir, `sfx-${i}${ext}`)));
+    const soundLufs = await loudness(file, dir);
+    sfx.push({ file, start: c.start, duration: c.duration ?? null, soft: Boolean(c.soft), gainDb: gainFor({ voiceLufs, soundLufs, levelDb: levels.sfxDb }), soundLufs });
+  }
+  return { sfx, chimeGainDb, measured: { voiceLufs, chimeLufs, chimeGainDb, sfx: sfx.map((s) => ({ file: s.file, lufs: s.soundLufs, gainDb: s.gainDb })) } };
+}
+
+/** The audio mix alone (voice + chime + effects) as an mp3, for listening tests. */
+export async function renderMix(job, dir, outName = "mix.mp3") {
+  await mkdir(dir, { recursive: true });
+  const voiceFile = job.voice?.url ? path.basename(await download(job.voice.url, path.join(dir, "voice.mp3"))) : null;
+  let chimeFile = null;
+  if (job.chimes?.length) { chimeFile = "chime.wav"; await copyFile(CHIME, path.join(dir, chimeFile)); }
+  const { sfx, chimeGainDb, measured } = await mixInputs(job, dir, voiceFile, chimeFile);
+  await run(FFMPEG, finalArgs({ voiceFile, chimeFile, chimes: job.chimes ?? [], chimeGainDb, sfx, lengthSec: job.lengthSec, output: outName, audioOnly: true }), dir);
+  return { file: path.join(dir, outName), measured };
 }
 
 async function main() {

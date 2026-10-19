@@ -17,7 +17,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { advance, approve, newRun, visionFailures } from "../../supabase/functions/_shared/cutaway/engine.js";
 import { cropPixels } from "../../supabase/functions/_shared/cutaway/beats.js";
-import { checkImage, planVideo } from "../../supabase/functions/_shared/cutaway/llm.js";
+import { checkImage, planVideo, trimScript } from "../../supabase/functions/_shared/cutaway/llm.js";
 import { generateSfx } from "../../supabase/functions/_shared/cutaway/sound.js";
 import { synthesize } from "../../supabase/functions/_shared/cutaway/voice.js";
 import { directSender } from "../../supabase/functions/_shared/cutaway/runware.js";
@@ -68,6 +68,7 @@ const deps = {
     apiKey: process.env.ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas,
     onTrace: (t) => { if (t.output) writeFileSync(path.join(out, `plan-${Date.now()}-${t.stage.replace(/[^a-z0-9]+/gi, "")}.json`), JSON.stringify(t, null, 2)); },
   }),
+  trimScript: ({ plan, maxWords, lengthSec, usedIdeas }) => trimScript({ apiKey: process.env.ANTHROPIC_API_KEY, plan, maxWords, lengthSec, usedIdeas }),
   checkImage: ({ imageUrl, description, checks, plan }) => checkImage({ apiKey: process.env.ANTHROPIC_API_KEY, imageUrl, description, checks, plan }),
   synthesize: process.env.ELEVENLABS_KEY ? ({ text }) => synthesize({ apiKey: process.env.ELEVENLABS_KEY, text }) : null,
   sfx: process.env.ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }) => {

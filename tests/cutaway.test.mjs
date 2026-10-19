@@ -3,28 +3,28 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
 import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
-import { placeBeats, clipTimings, voiceTempo, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
+import { placeBeats, clipTimings, voiceTempo, wordsToFit, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
 import { clipTask, parseReply } from "../supabase/functions/_shared/cutaway/runware.js";
 import { cueCacheKey, cueRequest } from "../supabase/functions/_shared/cutaway/sound.js";
 import { checkImage } from "../supabase/functions/_shared/cutaway/llm.js";
 import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, visionUnchecked, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
-import { buildAss, captionWord, finalArgs, atempoChain } from "../render-worker/src/cutawayFinalPlan.mjs";
+import { buildAss, captionWord, finalArgs, atempoChain, gainFor } from "../render-worker/src/cutawayFinalPlan.mjs";
 import { freshSuggestions, TOPIC_SUGGESTIONS } from "../src/data/cutawayTopics.js";
 
 // ---------- a 30 s plan like the planner returns (10 beats, 5 states) ----------
 
 const BEATS = [
-  ["If you dig a pit and throw your trash in, you have a dump.", "dump", "W0", { x: 0, y: 0, w: 1 }, "", { key: "dirt", text: "", at: "verb", whole: false }],
-  ["But it stinks, the rats move in, and the rain washes it away.", "stinks", "W0", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "rain", text: "", at: "start", whole: true }],
-  ["The dirty water soaks down and poisons the well next door.", "soaks", "W0", { x: 0.2, y: 0.5, w: 0.45 }, "", { key: "", text: "", at: "verb", whole: false }],
-  ["So you line the pit with clay and a thick plastic sheet.", "line", "W0", { x: 0.1, y: 0.3, w: 0.6 }, "liner", { key: "custom", text: "a heavy plastic sheet unrolling into a pit", at: "verb", whole: false }],
-  ["This is a liner, and it keeps the trash juice out of the ground.", "liner", "W1", { x: 0.25, y: 0.35, w: 0.5 }, "", { key: "", text: "", at: "verb", whole: false }],
-  ["But the trash still rots and fills the pit with hidden gas.", "gas", "W2", { x: 0.2, y: 0.3, w: 0.6 }, "", { key: "", text: "", at: "verb", whole: false }],
-  ["So you bury pipes that pull the gas out and burn it.", "burn", "W2", { x: 0.4, y: 0.5, w: 0.45 }, "gas pipes", { key: "flame", text: "", at: "verb", whole: false }],
-  ["That bad smell is not rot, it is gas you can turn into power.", "power", "W3", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "motor_hum", text: "", at: "verb", whole: true }],
-  ["Cover every layer with dirt each night, and plant grass on top.", "grass", "W3", { x: 0, y: 0, w: 1 }, "grass cap", { key: "machine", text: "", at: "start", whole: false }],
-  ["Congratulations, you have built a landfill that barely rots at all.", "landfill", "W4", { x: 0.1, y: 0.1, w: 0.8 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["If you dig a pit for trash, you have a dump.", "dump", "W0", { x: 0, y: 0, w: 1 }, "", { key: "dirt", text: "", at: "verb", whole: false }],
+  ["But it stinks, and the rain washes it away.", "stinks", "W0", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "rain", text: "", at: "start", whole: true }],
+  ["The dirty water soaks down into your well.", "soaks", "W0", { x: 0.2, y: 0.5, w: 0.45 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["So you line the pit with thick plastic.", "line", "W0", { x: 0.1, y: 0.3, w: 0.6 }, "liner", { key: "custom", text: "a heavy plastic sheet unrolling into a pit", at: "verb", whole: false }],
+  ["This is a liner, and it holds the juice.", "liner", "W1", { x: 0.25, y: 0.35, w: 0.5 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["But the trash still rots into hidden gas.", "gas", "W2", { x: 0.2, y: 0.3, w: 0.6 }, "", { key: "", text: "", at: "verb", whole: false }],
+  ["So you bury pipes and burn it.", "burn", "W2", { x: 0.4, y: 0.5, w: 0.45 }, "gas pipes", { key: "flame", text: "", at: "verb", whole: false }],
+  ["That smell is not rot, it is power.", "power", "W3", { x: 0.3, y: 0.4, w: 0.5 }, "", { key: "motor_hum", text: "", at: "verb", whole: true }],
+  ["Cover each layer with dirt and grass.", "grass", "W3", { x: 0, y: 0, w: 1 }, "grass cap", { key: "machine", text: "", at: "start", whole: false }],
+  ["Congratulations, you have built a landfill.", "landfill", "W4", { x: 0.1, y: 0.1, w: 0.8 }, "", { key: "", text: "", at: "verb", whole: false }],
 ];
 const PARTS = [["pit"], ["pit", "liner"], ["pit", "liner", "trash"], ["pit", "liner", "trash", "gas pipes"], ["pit", "liner", "trash", "gas pipes", "grass cap"]];
 function samplePlan() {
@@ -202,11 +202,28 @@ function fakeSpoken(texts, wps = 3) {
   return out;
 }
 
-test("the voice is sped up to ~238 wpm, never above 1.45x, never slowed", () => {
-  const t = voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 3));
-  assert.ok(t > 1.3 && t < 1.34, String(t));
-  assert.equal(voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 1.5)), 1.45);
-  assert.equal(voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 6)), 1);
+test("the voice is never sped up; a voiceover that runs long asks the planner to cut words", () => {
+  assert.equal(voiceTempo(fakeSpoken(BEATS.map((b) => b[0]), 1.5)), 1);
+  const fits = fakeSpoken(BEATS.map((b) => b[0]), 3); // 77 words at 3/s: ~25.7 s
+  assert.equal(wordsToFit(fits, 30), null);
+  const long = fakeSpoken(BEATS.map((b) => b[0]), 2); // ~38.5 s for a 30 s video
+  const keep = wordsToFit(long, 30);
+  assert.ok(keep < 77 && keep > 50, String(keep));
+  assert.equal(targetWords(30, 170), 82);
+});
+
+test("engine: a voiceover that runs long is trimmed once, re-voiced, never sped up", async () => {
+  const deps = fakeDeps();
+  let voiced = 0;
+  deps.synthesize = async ({ text }) => { voiced += 1; return { audioBase64: "AAAA", spoken: fakeSpoken([text], voiced === 1 ? 2 : 3), costUsd: 0.02 }; };
+  let asked = null;
+  deps.trimScript = async ({ plan, maxWords }) => { asked = maxWords; return { plan, costUsd: 0.01 }; };
+  const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30 }), deps, (x) => x.step === "approval");
+  assert.ok(asked > 0 && asked < 77);
+  assert.equal(voiced, 2);
+  assert.equal(s.voice.tempo, 1);
+  assert.ok(s.trimmed);
+  assert.equal(renderJob({ ...s, clips: [], timing: s.timing }).voice.tempo, 1);
 });
 
 test("beats start on their first word; clips fit their share exactly", () => {
@@ -227,14 +244,24 @@ test("sound timeline: a chime on each name, card and Congratulations; cues on th
   assert.ok(t.chimes.some((c) => Math.abs(c - at("congratulations")) < 0.01));
   assert.equal(t.cards.length, 1);
   assert.equal(t.cards[0].text, "40 YEARS");
-  assert.ok(Math.abs(t.cards[0].s - at("liner", 40)) < 0.01);
-  // "That bad smell is not" is not a name: no chime there
-  assert.ok(!t.chimes.some((c) => Math.abs(c - at("that", 60)) < 0.01));
-  assert.equal(t.sfx.length, 6);
+  assert.ok(Math.abs(t.cards[0].s - at("liner", 30)) < 0.01);
+  // "That smell is not" is not a name: no chime there
+  assert.ok(!t.chimes.some((c) => Math.abs(c - at("that", 50)) < 0.01));
+  // sparse: never two effects within 6 s; short ones are 1.4 s; rain is the soft long one
+  for (let i = 1; i < t.sfx.length; i++) assert.ok(t.sfx[i].start - t.sfx[i - 1].start >= 6, "6 s apart");
+  assert.ok(t.sfx.length >= 2 && t.sfx.length < 6);
+  for (const c of t.sfx) assert.ok(c.key === "rain" ? c.soft : c.duration === 1.4 && !c.soft, c.key);
+});
+
+test("sound: rain on its own is long and soft; the first effect wins a 6 s window", () => {
+  const plan = validatePlan(samplePlan(), 30);
+  plan.beats[0].sound = null;
+  const spoken = fakeSpoken(BEATS.map((b) => b[0]), 3);
+  const placed = placeBeats(plan.beats, spoken, 1);
+  const t = cueTimeline(plan, placed, spoken);
   const rain = t.sfx.find((c) => c.key === "rain");
-  assert.ok(Math.abs(rain.start - (placed[1].start + 0.05)) < 0.01 && Math.abs(rain.duration - (placed[1].end - rain.start)) < 0.01);
-  const flame = t.sfx.find((c) => c.key === "flame");
-  assert.ok(Math.abs(flame.start - at("burn")) < 0.01 && flame.duration === null);
+  assert.ok(rain && rain.soft && rain.duration >= 1.5);
+  assert.ok(!t.sfx.some((c) => c.key !== "rain" && c.start - rain.start < 6));
 });
 
 test("sound cache keys: library by key, custom by text and length", async () => {
@@ -243,7 +270,8 @@ test("sound cache keys: library by key, custom by text and length", async () => 
   const b = await cueCacheKey({ key: "custom", text: "plastic sheet unrolling ", seconds: 2 });
   assert.equal(a, b);
   assert.match(a, /^cue-[0-9a-f]{20}$/);
-  assert.equal(cueRequest({ key: "crack" }).seconds, 1.5);
+  assert.equal(cueRequest({ key: "crack" }).seconds, 1.0);
+  assert.equal(cueRequest({ key: "custom", text: "a long rumble", seconds: 5 }).seconds, 1.4, "custom cues are short too");
 });
 
 test("ElevenLabs character alignment becomes words", () => {
@@ -358,9 +386,9 @@ test("engine: after approval, keyframes -> clips (same file at every join) -> so
   const clips = deps.log.filter((t) => t.taskType === "videoInference");
   assert.equal(clips.length, done.timing.segments.length);
   for (let i = 1; i < clips.length; i++) assert.equal(clips[i].inputs.frameImages[0].image, clips[i - 1].inputs.frameImages[1].image);
-  assert.equal(done.sounds.length, 6);
+  assert.ok(done.sounds.length >= 2 && done.sounds.length < 6, "sparse");
   const job = renderJob(done);
-  assert.equal(job.sfx.length, 6);
+  assert.equal(job.sfx.length, done.sounds.length);
   assert.ok(job.chimes.length >= 3);
   assert.equal(job.cards[0].text, "40 YEARS");
   assert.ok(job.clips.slice(1).every((c) => c.dropFirstFrame));
@@ -481,22 +509,31 @@ test("shape checks catch a malformed reply (the 95-beat plan)", () => {
 
 // ---------- the stitch ----------
 
-test("final ffmpeg: duplicate frame dropped, speed-fit, 24 fps, voice tempo, chime and sfx mixed", () => {
+test("final ffmpeg: duplicate frame dropped, speed-fit, 24 fps, no voice stretch, gains from the voice's loudness", () => {
   const args = finalArgs({
-    clipFiles: ["a.mp4", "b.mp4"], speeds: [1, 1.25], voiceFile: "v.mp3", tempo: 1.3, assFile: "c.ass", fontsDir: "fonts",
-    chimeFile: "chime.wav", chimes: [1.5, 4.25], sfx: [{ file: "rain.mp3", start: 0.05, duration: 3 }, { file: "crack.mp3", start: 2.3, duration: null }],
-    levels: { sfxDb: -12, chimeDb: -14 }, lengthSec: 6, output: "o.mp4",
+    clipFiles: ["a.mp4", "b.mp4"], speeds: [1, 1.25], voiceFile: "v.mp3", assFile: "c.ass", fontsDir: "fonts",
+    chimeFile: "chime.wav", chimes: [1.5, 4.25], chimeGainDb: -7.5,
+    sfx: [{ file: "rain.mp3", start: 0.05, duration: 3, soft: true, gainDb: -18 }, { file: "crack.mp3", start: 2.3, duration: 4, gainDb: -22.5 }],
+    lengthSec: 6, output: "o.mp4",
   });
   const fc = args[args.indexOf("-filter_complex") + 1];
   assert.match(fc, /\[1:v\]select='gte\(n\\,1\)',setpts=\(PTS-STARTPTS\)\/1\.2500/);
-  assert.match(fc, /\[2:a\]atempo=1\.3000/);
-  assert.match(fc, /\[3:a\].*volume=0\.1995,asplit=2\[ch0\]\[ch1\]/);
-  assert.match(fc, /\[ch1\]adelay=4250:all=1/);
-  assert.match(fc, /\[4:a\]atrim=0:3\.000,afade=t=out:st=2\.700:d=0\.3,.*volume=0\.2512,adelay=50:all=1\[fx0\]/);
-  assert.match(fc, /\[5:a\]aresample.*adelay=2300:all=1\[fx1\]/);
-  assert.match(fc, /\[voice\]\[chd0\]\[chd1\]\[fx0\]\[fx1\]amix=inputs=5:duration=longest:normalize=0/);
-  assert.equal(args[args.indexOf("rain.mp3") - 3], "-stream_loop");
+  assert.doesNotMatch(fc, /atempo/);
+  assert.match(fc, /\[2:a\]aresample=44100/);
+  assert.match(fc, /\[3:a\].*volume=-7\.5dB,asplit=2\[ch0\]\[ch1\]/);
+  assert.match(fc, /\[4:a\]atrim=0:3\.000,afade=t=in:d=0\.80,afade=t=out:st=2\.000:d=1\.00,.*volume=-18dB,adelay=50:all=1\[fx0\]/);
+  assert.match(fc, /\[5:a\]atrim=0:1\.400,afade=t=out:st=1\.150:d=0\.25,.*volume=-22\.5dB,adelay=2300:all=1\[fx1\]/, "short effects cut to 1.4 s");
+  assert.equal(args[args.indexOf("rain.mp3") - 3], "-stream_loop", "only rain loops");
+  assert.notEqual(args[args.indexOf("crack.mp3") - 3], "-stream_loop");
   assert.equal(atempoChain(2.5), "atempo=2,atempo=1.2500");
+});
+
+test("level fix: effects sit N dB under the voice's MEASURED loudness, whatever the file's own level", () => {
+  assert.equal(gainFor({ voiceLufs: -18, soundLufs: -10, levelDb: -20 }), -28, "a loud file is turned down more");
+  assert.equal(gainFor({ voiceLufs: -18, soundLufs: -40, levelDb: -20 }), 2, "a quiet file is turned up");
+  assert.equal(gainFor({ voiceLufs: NaN, soundLufs: -10, levelDb: -20 }), -20);
+  const mp3 = finalArgs({ voiceFile: "v.mp3", chimeFile: "c.wav", chimes: [1], sfx: [], lengthSec: 5, output: "m.mp3", audioOnly: true });
+  assert.ok(!mp3.includes("[vout]") && mp3.includes("libmp3lame"));
 });
 
 test("captions: one word at 52%; number cards at 30% with a pop", () => {
