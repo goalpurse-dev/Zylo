@@ -4,8 +4,9 @@
 // it, and this page then shows the site's normal "Page Not Found", so nothing reveals the page exists.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./contentMachine/cmApi";
-import { AssetsTab, IdeasTab, LibraryTab, TodayTab } from "./contentMachine/SlideshowTabs";
+import { AssetsTab, IdeasTab, LibraryTab, QueueTab } from "./contentMachine/SlideshowTabs";
 import { AnalyticsTab, PostedTab } from "./contentMachine/PostedTabs";
+import { AccountsTab } from "./contentMachine/AccountsTab";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const money = (n, d = 2) => (n == null ? "–" : `$${Number(n).toFixed(d)}`);
@@ -257,7 +258,7 @@ const capsOut = (o) => Object.fromEntries(Object.entries(o).filter(([k, v]) => k
 const fromForm = (f) => ({
   daily_budget_usd: Number(f.daily_budget_usd), monthly_budget_usd: Number(f.monthly_budget_usd),
   per_provider_daily_caps: capsOut(f.per_provider_daily_caps), lane_daily_caps: capsOut(f.lane_daily_caps),
-  daily_video_target: Number(f.daily_video_target), slideshows_per_day: Number(f.slideshows_per_day),
+  daily_video_target: Number(f.daily_video_target),
   format_mix: Object.fromEntries(Object.entries(f.format_mix).filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Number(v)])),
   auto_produce: f.auto_produce, end_card: f.end_card, dry_run: f.dry_run,
   run_time_local: f.run_time_local, timezone: f.timezone, brand_rules: f.brand_rules, models: f.models,
@@ -339,7 +340,7 @@ function SettingsTab({ st, onStatus }) {
 
       <Card title="Production">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Slideshows per day" htmlFor="cm-slideshows_per_day" hint="Kept low while we check quality.">{num("slideshows_per_day", { min: 0, max: 50, step: 1 })}</Field>
+          <Field label="Slideshows per day" htmlFor="cm-slideshows_per_day" hint="Set per account in the Accounts tab (Zyvo + Creator)."><div id="cm-slideshows_per_day" className="py-2 text-[14px] text-white/80">{st.settings.slideshows_per_day} in total</div></Field>
           <Field label="Daily video target (full machine)" htmlFor="cm-daily_video_target">{num("daily_video_target", { min: 0, max: 100, step: 1 })}</Field>
           <Field label="Run time (local)" htmlFor="cm-run_time_local"><input id="cm-run_time_local" type="time" value={f.run_time_local} onChange={(e) => set("run_time_local")(e.target.value)} className={input} /></Field>
           <Field label="Time zone" htmlFor="cm-timezone" hint="Days and caps are counted in this time zone."><input id="cm-timezone" value={f.timezone} onChange={(e) => set("timezone")(e.target.value)} className={input} /></Field>
@@ -400,7 +401,7 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["today", "Today"], ["posted", "Posted"], ["analytics", "Analytics"], ["ideas", "Ideas"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Queue"], ["posted", "Posted"], ["analytics", "Analytics"], ["ideas", "Ideas"], ["accounts", "Accounts"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
@@ -433,10 +434,11 @@ export default function ContentMachine() {
             className={`-mb-px border-b-2 px-4 py-2.5 text-[14px] font-semibold transition ${tab === k ? "border-lime-300 text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>{label}</button>
         ))}
       </nav>
-      {tab === "today" && <TodayTab st={st} onChanged={load} />}
+      {tab === "today" && <QueueTab st={st} onChanged={load} />}
       {tab === "posted" && <PostedTab />}
       {tab === "analytics" && <AnalyticsTab />}
       {tab === "ideas" && <IdeasTab />}
+      {tab === "accounts" && <AccountsTab />}
       {tab === "library" && <LibraryTab />}
       {tab === "assets" && <AssetsTab />}
       {tab === "budget" && <BudgetTab st={st} reloadKey={reloadKey} onChanged={load} />}

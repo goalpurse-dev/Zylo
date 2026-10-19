@@ -4,6 +4,10 @@ import { ApiError } from "./errors.js";
 import { coverage } from "./planner.js";
 import { localDay } from "./spendSummary.js";
 import { localToUtc } from "./localTime.js";
+import { batchCheck } from "./batchBudget.js";
+import { summarize, monthStart } from "./spendSummary.js";
+import { ACCOUNTS } from "./planner.js";
+import { LAYOUT_VERSION } from "./slides/templates.js";
 import { ZYVO_SHOT_PATH, heroUrls, logosFor } from "./pipeline.js";
 import { runProgress } from "./progress.js";
 import { STYLE_SAMPLES, resolveSample } from "./styleSamples.js";
@@ -48,7 +52,9 @@ export function ideaView(idea, costs, urls) {
   const f = gen?.files ?? {};
   const url = (p) => (p ? urls[p] ?? null : null);
   return {
-    id: idea.id, run_id: idea.run_id, status: idea.status, created_at: idea.created_at, dry_run: idea.dry_run,
+    id: idea.id, run_id: idea.run_id, status: idea.status, account: idea.account ?? idea.recipe?.account ?? "creator",
+    // Rendered with older slide templates than today's (zones, sizes): shown as "Outdated" in the Queue.
+    outdated: Boolean(f.pngs?.length) && (gen?.layout_version ?? 0) < LAYOUT_VERSION, created_at: idea.created_at, dry_run: idea.dry_run,
     title: idea.title, hook: idea.hook, topic: idea.topic, hypothesis: idea.hypothesis, recipe: idea.recipe,
     virality_score: idea.virality_score, compliance: idea.compliance, error: idea.error, source: idea.source,
     slides: idea.script?.slides ?? [], tools_checked: idea.script?.tools_checked ?? [], ai_label_required: Boolean(idea.script?.ai_label_required),
@@ -59,6 +65,7 @@ export function ideaView(idea, costs, urls) {
         background: gen.source_assets?.background ?? null,
         heroes: Object.fromEntries(Object.entries(gen.source_assets?.heroes ?? {}).map(([i, h]) => [i, h?.url ?? (h?.asset ? urls[h.asset] ?? null : null)])),
         collages: Object.fromEntries(Object.entries(gen.source_assets?.collages ?? {}).map(([i, list]) => [i, (list ?? []).map((h) => (h?.asset ? urls[h.asset] ?? null : null)).filter(Boolean)])),
+        galleries: Object.fromEntries(Object.entries(gen.source_assets?.galleries ?? {}).map(([i, list]) => [i, (list ?? []).map((g) => ({ url: g?.asset ? urls[g.asset] ?? null : null, label: g?.label ?? null })).filter((g) => g.url)])),
       },
       pngs: (f.pngs ?? []).map(url), zip: url(f.zip), mp4: url(f.mp4),
     },
@@ -110,21 +117,95 @@ function cleanLogoRow(body, existing = null) {
 }
 
 export function slideshowActions({ cm, files, kick, store, guard, now }) {
-  async function startRun(user, { topic, count, kind }) {
+  /** Will a batch of this account fit today's caps? From the account's recent real costs (owner, 2026-10-19). */
+  async function estimate(account, count) {
+    const s = await store.readSettings();
+    const today = localDay(now(), s.timezone);
+    const summary = summarize(await store.ledgerSince(monthStart(today)), s, today);
+    const recent = (await cm.listIdeas({ account, status: "done", limit: 12 })).filter((i) => !i.dry_run);
+    const costs = recent.length ? await cm.ideaCosts(recent.map((i) => i.id)) : {};
+    return batchCheck({ account, count, summary, recentCosts: Object.values(costs).map((c) => c.usd), dryRun: guard.envDryRun || Boolean(s.dry_run) });
+  }
+  const cleanAccount = (a) => {
+    const v = String(a ?? "creator");
+    if (!ACCOUNTS.includes(v)) throw new ApiError("VALIDATION", "Account: creator or zyvo.");
+    return v;
+  };
+
+  async function startRun(user, { topic, count, kind, account = "creator" }) {
     const s = await store.readSettings();
     if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
     const n = count == null ? s.slideshows_per_day : Number(count);
     if (!Number.isInteger(n) || n < 1 || n > 10) throw new ApiError("VALIDATION", "Make 1 to 10 slideshows at a time.");
+    // Refused before it starts if it wouldn't fit today's caps (never stopped halfway).
+    const check = await estimate(account, n);
+    if (!check.fits) throw new ApiError("BUDGET", check.message, 409);
     const dry = guard.envDryRun || Boolean(s.dry_run);
-    const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind, status: "pending", dry_run: dry, input: { topic, count: n }, started_at: now().toISOString() });
+    const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind, status: "pending", dry_run: dry, account, input: { topic, count: n, account }, started_at: now().toISOString() });
     await cm.enqueue([{ run_id: run.id, stage: "plan" }]);
-    await store.audit(user.email, "slideshows.make", { runId: run.id, topic, count: n, dryRun: dry });
+    await store.audit(user.email, "slideshows.make", { runId: run.id, account, topic, count: n, dryRun: dry, estimateUsd: check.estimateUsd });
     await kick().catch(() => {});
-    return { runId: run.id, count: n, dryRun: dry };
+    return { runId: run.id, count: n, dryRun: dry, account, estimateUsd: check.estimateUsd };
   }
 
   return {
-    makeSlideshows: async ({ user, body }) => startRun(user, { topic: cleanTopic(body?.topic), count: body?.count ?? null, kind: "slideshows" }),
+    makeSlideshows: async ({ user, body }) => startRun(user, { topic: cleanTopic(body?.topic), count: body?.count ?? null, kind: "slideshows", account: cleanAccount(body?.account) }),
+
+    /** The Queue's "about $X · $Y left" line, before Start. */
+    batchEstimate: async ({ body }) => {
+      const n = Number(body?.count);
+      if (!Number.isInteger(n) || n < 1 || n > 10) throw new ApiError("VALIDATION", "1 to 10.");
+      return estimate(cleanAccount(body?.account), n);
+    },
+
+    /* ─── the two accounts and the Zyvo fact sheet ─── */
+    lanes: async () => ({ lanes: await cm.lanes() }),
+    saveLane: async ({ user, body }) => {
+      const key = cleanAccount(body?.key);
+      const p = body?.patch ?? {};
+      const patch = {};
+      if (p.brand_rules != null) { const t = String(p.brand_rules).trim(); if (t.length < 20 || t.length > 5000) throw new ApiError("VALIDATION", "Brand rules: 20 to 5,000 characters."); patch.brand_rules = t; }
+      if (p.cta_style != null) patch.cta_style = String(p.cta_style).trim().slice(0, 500);
+      if (p.slideshows_per_day != null) { const v = Number(p.slideshows_per_day); if (!Number.isInteger(v) || v < 0 || v > 20) throw new ApiError("VALIDATION", "Slideshows per day: 0 to 20."); patch.slideshows_per_day = v; }
+      if (p.post_times != null) {
+        const out = {};
+        for (const pl of ["tiktok", "instagram", "youtube"]) {
+          const list = (Array.isArray(p.post_times[pl]) ? p.post_times[pl] : String(p.post_times[pl] ?? "").split(/[\s,]+/)).map((t) => String(t).trim()).filter(Boolean);
+          if (!list.length || !list.every((t) => /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(t))) throw new ApiError("VALIDATION", `Posting times (${pl}): HH:MM, comma separated.`);
+          out[pl] = list.slice(0, 8);
+        }
+        patch.post_times = out;
+      }
+      if (!Object.keys(patch).length) throw new ApiError("VALIDATION", "Nothing to save.");
+      const saved = await cm.saveLane(key, { ...patch, updated_by: user.email });
+      // The daily run's total (the minute tick reads it) follows the accounts' counts.
+      if (patch.slideshows_per_day != null) { const all = await cm.lanes(); await cm.updateSettings({ slideshows_per_day: Object.values(all).reduce((t, l) => t + (Number(l.slideshows_per_day) || 0), 0) }); }
+      await store.audit(user.email, "lane.save", { key, fields: Object.keys(patch) });
+      return { lane: saved };
+    },
+    facts: async () => ({ facts: await cm.listFacts() }),
+    saveFact: async ({ user, body }) => {
+      const row = {};
+      if (body?.id) row.id = String(body.id);
+      if (body?.key != null || !row.id) { const k = String(body?.key ?? "").trim(); if (!/^[a-z][a-z0-9_]{1,40}$/.test(k)) throw new ApiError("VALIDATION", "Key: lowercase letters, digits and _ (e.g. lf_length)."); row.key = k; }
+      if (body?.claim != null || !row.id) { const c = String(body?.claim ?? "").trim(); if (c.length < 5 || c.length > 200) throw new ApiError("VALIDATION", "Claim: 5 to 200 characters."); row.claim = c; }
+      if (body?.source != null || !row.id) { const src = String(body?.source ?? "").trim(); if (src.length < 4) throw new ApiError("VALIDATION", "Source: where it's true (a repo path or a tryzyvo.com page)."); row.source = src.slice(0, 300); }
+      if (body?.detail !== undefined) row.detail = String(body.detail ?? "").trim().slice(0, 400) || null;
+      if (body?.category != null) row.category = String(body.category).trim().slice(0, 40) || "other";
+      if (body?.status != null) { if (!["active", "retired"].includes(body.status)) throw new ApiError("VALIDATION", "Status: active or retired."); row.status = body.status; }
+      if (!row.id) row.created_by = user.email;
+      const saved = await cm.saveFact(row);
+      await store.audit(user.email, row.id ? "fact.edit" : "fact.add", { key: saved.key, status: saved.status });
+      return { fact: saved };
+    },
+    setAssetPrompt: async ({ user, body }) => {
+      const [asset] = await cm.getAssets([String(body?.id ?? "")]);
+      if (!asset) throw new ApiError("VALIDATION", "No such asset.");
+      const prompt = String(body?.prompt ?? "").trim().slice(0, 300) || null;
+      const saved = await cm.updateAsset(asset.id, { prompt });
+      await store.audit(user.email, "asset.prompt", { ref: asset.ref, set: Boolean(prompt) });
+      return { row: saved };
+    },
 
     runs: async () => ({ runs: await cm.listRuns(20) }),
 
@@ -132,6 +213,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       const filters = {};
       if (body?.runId) filters.runId = String(body.runId);
       for (const k of ["format", "style", "status"]) if (body?.[k]) filters[k] = String(body[k]);
+      if (body?.account) filters.account = cleanAccount(body.account);
       if (body?.from) filters.from = `${String(body.from).slice(0, 10)}T00:00:00Z`;
       if (body?.to) filters.to = `${String(body.to).slice(0, 10)}T23:59:59Z`;
       // Today (owner, 2026-10-18): everything made since midnight Helsinki, across all runs.
@@ -140,7 +222,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       const rows = await cm.listIdeas(filters);
       const costs = await cm.ideaCosts(rows.map((r) => r.id));
       const paths = rows.flatMap((r) => (r.cm_generations ?? []).flatMap((g) => [...(g.files?.pngs ?? []), g.files?.zip, g.files?.mp4,
-        ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset), ...Object.values(g.source_assets?.collages ?? {}).flat().map((h) => h?.asset)].filter(Boolean)));
+        ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset), ...Object.values(g.source_assets?.collages ?? {}).flat().map((h) => h?.asset), ...Object.values(g.source_assets?.galleries ?? {}).flat().map((h) => h?.asset)].filter(Boolean)));
       const urls = await files.signedUrls(paths, 900);
       const library = await cm.libraryAll();
       return {
@@ -298,6 +380,21 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
     },
 
     // The same recipe written again (a new idea, a new cost): for a slideshow that came out badly.
+    /** "Render again" (an Outdated slideshow): the same words and pictures with today's slide templates, then QA. */
+    rerender: async ({ user, body }) => {
+      const s = await store.readSettings();
+      if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
+      const idea = await cm.getIdea(String(body?.id ?? ""));
+      if (!["done", "approved"].includes(idea.status) || !idea.script?.slides?.length) throw new ApiError("VALIDATION", "Only a finished slideshow can be rendered again.");
+      if (idea.dry_run) throw new ApiError("VALIDATION", "A dry run has nothing to render.");
+      const gen = await cm.ensureGeneration(idea.id);
+      await cm.updateGeneration(gen.id, { status: "queued", error: null });
+      await cm.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "render" }]);
+      await store.audit(user.email, "idea.rerender", { id: idea.id });
+      await kick().catch(() => {});
+      return { queued: true };
+    },
+
     remakeIdea: async ({ user, body }) => {
       const s = await store.readSettings();
       if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
@@ -305,7 +402,7 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       if (!idea.recipe?.format) throw new ApiError("VALIDATION", "This idea has no recipe to remake.");
       const dry = guard.envDryRun || Boolean(s.dry_run);
       const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind: "manual", status: "ideating", dry_run: dry, input: { remakeOf: idea.id, count: 1 }, started_at: now().toISOString() });
-      const [copy] = await cm.createIdeas([{ run_id: run.id, status: "producing", source: "owner", format: idea.format, title: "(being written)", recipe: idea.recipe, topic: idea.topic, dry_run: dry, target_platforms: idea.target_platforms }]);
+      const [copy] = await cm.createIdeas([{ run_id: run.id, status: "producing", source: "owner", format: idea.format, title: "(being written)", recipe: idea.recipe, topic: idea.topic, dry_run: dry, target_platforms: idea.target_platforms, account: idea.account ?? idea.recipe?.account ?? "creator" }]);
       await cm.enqueue([{ run_id: run.id, idea_id: copy.id, stage: "write", payload: { note: `a remake of "${idea.title}": keep the recipe, write it differently` } }]);
       await store.audit(user.email, "idea.remake", { id: idea.id, newId: copy.id });
       await kick().catch(() => {});

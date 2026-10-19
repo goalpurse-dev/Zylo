@@ -316,7 +316,8 @@ test("the automatic daily run: once, after 07:00 Helsinki time, never twice", as
   world.clock.now = new Date("2026-10-20T04:00:00Z");
   const run = await maybeStartDailyRun(deps);
   assert.equal(run.kind, "daily");
-  assert.equal(run.input.count, 2);
+  assert.equal(run.input.count, 5, "each account's own count: 2 Zyvo + 3 Creator");
+  assert.deepEqual(run.input.lanes, { creator: 3, zyvo: 2 });
   assert.equal(await maybeStartDailyRun(deps), null, "not twice");
   world.s.daily_auto_run = false;
   world.clock.now = new Date("2026-10-21T05:00:00Z");

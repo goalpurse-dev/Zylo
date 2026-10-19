@@ -5,6 +5,8 @@
 // The system prompts are stable (cached, cache_control on the last system block); everything that
 // changes per slideshow is in the user message, so the cache is shared across the day's slideshows.
 import { WEB_SEARCH_TOOL } from "./providers/anthropic.js";
+import { ZYVO_KINDS } from "./slides/templates.js";
+import { citable, mockZyvoSlideshow, zyvoComplianceText, zyvoProblems, zyvoWriteSystem } from "./zyvoLane.js";
 
 export const ZYVO_FACTS = `Zyvo (tryzyvo.com) is a web app that turns one idea into finished videos and images:
 - Long Form: 8–15 minute illustrated (stickman-style) YouTube videos from a niche and an idea: researched script, voiceover, about 150 drawn scenes, three thumbnails, title and description; every scene can be edited before download.
@@ -13,7 +15,8 @@ export const ZYVO_FACTS = `Zyvo (tryzyvo.com) is a web app that turns one idea i
 - New accounts get 5 free image generations; video tools need a paid plan (Starter, Pro, Generative). Paid exports have no watermark.
 Say nothing else about Zyvo: no user counts, no speeds ("in 30 seconds"), no earnings, no reviews.`;
 
-export const SLIDE_KINDS = ["cover", "item", "step", "text", "versus", "tier", "quiz_question", "quiz_answer", "checklist", "meme", "zyvo", "cta"];
+export const CREATOR_KINDS = ["cover", "item", "step", "text", "versus", "tier", "quiz_question", "quiz_answer", "checklist", "meme", "zyvo", "cta"];
+export const SLIDE_KINDS = [...CREATOR_KINDS, ...ZYVO_KINDS];
 
 const nullable = (t) => ({ type: [t, "null"] });
 export const SLIDESHOW_SCHEMA = {
@@ -30,7 +33,7 @@ export const SLIDESHOW_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["kind", "headline", "body", "label", "items", "tool", "image_prompt", "asset_id", "is_zyvo"],
+        required: ["kind", "headline", "body", "label", "items", "tool", "image_prompt", "asset_id", "is_zyvo", "items_right", "assets", "prompt", "callout", "fact_ids"],
         properties: {
           kind: { type: "string", enum: SLIDE_KINDS },
           headline: { type: "string" },
@@ -46,6 +49,12 @@ export const SLIDESHOW_SCHEMA = {
           image_prompt: nullable("string"),
           asset_id: nullable("string"),
           is_zyvo: { type: "boolean" },
+          // The Zyvo brand account's fields (the creator account leaves them empty / null).
+          items_right: { type: "array", items: { type: "string" } },
+          assets: { type: "array", items: { type: "object", additionalProperties: false, required: ["asset_id", "label"], properties: { asset_id: { type: "string" }, label: nullable("string") } } },
+          prompt: nullable("string"),
+          callout: nullable("string"),
+          fact_ids: { type: "array", items: { type: "string" } },
         },
       },
     },
@@ -90,14 +99,24 @@ export function assetsText(assets = []) {
   if (!list.length) return "ASSET LIBRARY: empty for now (use image_prompt).";
   const sub = (a) => (a.subtitles === "none" ? " · clean" : a.subtitles === "full" ? " · whole subtitle" : "");
   return ["ASSET LIBRARY (real Zyvo outputs and UI; use one by putting its ref in asset_id):",
-    ...list.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""}${sub(a)} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}`)].join("\n");
+    ...list.slice(0, 300).map((a) => `- ${a.ref}: ${a.kind}${a.tool ? ` · ${a.tool}` : ""}${a.style ? ` · ${a.style}` : ""}${sub(a)} · ${a.subject ?? ""}${a.tags?.length ? ` [${a.tags.slice(0, 6).join(", ")}]` : ""}${a.prompt ? ` · prompt "${a.prompt}"` : ""}`)].join("\n");
 }
 
-export function writeSystem({ brandRules, library, assets = [], playbook = "", trends = "" }) {
+/** The fact sheet as the writer reads it (the fixed ZYVO_FACTS text only while the sheet is empty). */
+export function factsBlock(facts) {
+  const yes = citable(facts), no = (facts ?? []).filter((f) => f.category === "not_feature");
+  if (!yes.length) return ZYVO_FACTS;
+  return [...yes.map((f) => `- ${f.claim}${f.detail ? ` (${f.detail})` : ""}`),
+    ...(no.length ? ["NOT features (never claim or imply them):", ...no.map((f) => `- ${f.claim}`)] : []),
+    "Say nothing else about Zyvo: no user counts, no speeds, no earnings, no reviews."].join("\n");
+}
+
+export function writeSystem({ brandRules, library, assets = [], playbook = "", trends = "", account = "creator", facts = [] }) {
+  if (account === "zyvo") return zyvoWriteSystem({ brandRules, library, assetsLine: assetsText(assets), playbook, trends, facts });
   return `You write short-form SLIDESHOW posts (TikTok/Instagram photo carousels, also cut into a Shorts/Reels video) for Zyvo's own accounts. Each post is a labelled experiment: you are given a recipe (format, hook type, style, where Zyvo appears, CTA type, platform, text density, slide count) and you follow it exactly.
 
 ABOUT ZYVO (the only facts you may state about it):
-${ZYVO_FACTS}
+${factsBlock(facts)}
 
 BRAND RULES (follow strictly):
 ${brandRules}
@@ -139,6 +158,7 @@ HOW TO WRITE IT:
 - hypothesis: one line saying what this post tests, e.g. "a question hook beats a statement hook for tool listicles".
 - ai_label_required: true if any slide uses realistic AI imagery.
 - virality_score: your honest 1–10 estimate.
+- items_right, assets, prompt, callout and fact_ids belong to Zyvo's brand account: leave them [] / null.
 Return only the JSON object.`;
 }
 
@@ -151,22 +171,24 @@ DON'T REPEAT these recent posts (titles):
 ${avoidTitles.length ? avoidTitles.slice(0, 60).map((t) => `- ${t}`).join("\n") : "- none yet"}`;
 }
 
-export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4, assets = [], playbook = "", trends = "" }) {
+export function writeRequest({ model, brandRules, library, recipe, today, avoidTitles, maxSearches = 4, assets = [], playbook = "", trends = "", facts = [] }) {
+  const account = recipe?.account ?? "creator";
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends, account, facts }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: writeUser({ recipe, today, avoidTitles }) }],
-    tools: [{ type: WEB_SEARCH_TOOL, name: "web_search", max_uses: maxSearches }],
+    // The Zyvo account claims only what's on the fact sheet: no web search needed (and cheaper).
+    ...(account === "zyvo" ? {} : { tools: [{ type: WEB_SEARCH_TOOL, name: "web_search", max_uses: maxSearches }] }),
     output_config: { effort: "medium", format: { type: "json_schema", schema: SLIDESHOW_SCHEMA } },
   };
 }
 
-export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems, assets = [], playbook = "", trends = "" }) {
+export function rewriteRequest({ model, brandRules, library, recipe, today, slideshow, problems, assets = [], playbook = "", trends = "", facts = [] }) {
   return {
     model,
     max_tokens: 16000,
-    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: writeSystem({ brandRules, library, assets, playbook, trends, account: recipe?.account ?? "creator", facts }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: `${writeUser({ recipe, today })}
 
 A compliance check found these problems in the post below. Rewrite it so every problem is gone; keep what works. Don't add tools you haven't checked before (you have no web search now): drop any you can't vouch for.
@@ -178,11 +200,11 @@ ${JSON.stringify(slideshow)}` }],
   };
 }
 
-export function packageSystem({ brandRules }) {
+export function packageSystem({ brandRules, account = "creator", facts = [] }) {
   return `You package finished slideshow posts for TikTok, Instagram and YouTube Shorts, and you check them against the brand rules.
 
-ABOUT ZYVO (the only facts that may be stated about it):
-${ZYVO_FACTS}
+${account === "zyvo" ? zyvoComplianceText(facts) : `ABOUT ZYVO (the only facts that may be stated about it):
+${factsBlock(facts)}`}
 
 BRAND RULES:
 ${brandRules}
@@ -192,7 +214,7 @@ PACKAGING:
 - tiktok.caption: the description, at most 150 characters: a curiosity hook plus a question that invites comments. 3–5 hashtags (one broad, the rest niche). on_screen_text: 1–3 short text suggestions for the first frame.
 - instagram.caption: a hook line, 1–2 lines of value, then the CTA line given to you. 5–8 hashtags.
 - youtube.title: at most 60 characters, hooky and searchable. youtube.description: 1–2 sentences plus the link given to you. Exactly 3 hashtags including #shorts.
-- Posts whose recipe cta_type is comment_keyword or link_in_bio may use a stronger CTA; soft_mention and question stay soft.
+- Posts whose recipe cta_type is comment_keyword or link_in_bio may use a stronger CTA; soft_mention and question stay soft. zyvo_button (Zyvo's brand account): a clear product CTA, "Link in bio → tryzyvo.com".
 - sound_suggestion: a description of the kind of sound that fits (mood, tempo, "a trending lo-fi sound"); the owner picks the actual sound in the app. Never name copyrighted songs as if they were included.
 - Hashtags start with # and have no spaces.
 
@@ -200,11 +222,11 @@ COMPLIANCE: check the slides AND your captions against every brand rule. Invente
 Return only the JSON object.`;
 }
 
-export function packageRequest({ model, brandRules, recipe, slideshow, links }) {
+export function packageRequest({ model, brandRules, recipe, slideshow, links, facts = [] }) {
   return {
     model,
     max_tokens: 4000,
-    system: [{ type: "text", text: packageSystem({ brandRules }), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: packageSystem({ brandRules, account: recipe?.account ?? "creator", facts }), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: `RECIPE: ${JSON.stringify(recipe)}
 LINKS (use exactly): instagram CTA line: "Link in bio → tryzyvo.com"; youtube link: ${links.youtube}
 THE POST: ${JSON.stringify(slideshow)}` }],
@@ -216,6 +238,7 @@ THE POST: ${JSON.stringify(slideshow)}` }],
 
 /** Problems a program can see (empty = fine). The model's own compliance check is separate. */
 export function slideshowProblems(s, recipe, opts = {}) {
+  if (recipe?.account === "zyvo") return zyvoProblems(s, recipe, opts);
   const p = [];
   if (!s || !Array.isArray(s.slides)) return ["no slides"];
   const n = s.slides.length;
@@ -225,7 +248,7 @@ export function slideshowProblems(s, recipe, opts = {}) {
   if (s.slides[n - 1]?.kind !== "cta") p.push("the last slide is not the cta");
   if (!s.slides.some((x) => x.is_zyvo)) p.push("Zyvo appears nowhere");
   s.slides.forEach((x, i) => {
-    if (!SLIDE_KINDS.includes(x.kind)) p.push(`slide ${i + 1}: unknown kind ${x.kind}`);
+    if (!CREATOR_KINDS.includes(x.kind)) p.push(`slide ${i + 1}: unknown kind ${x.kind}`);
     if (!String(x.headline ?? "").trim()) p.push(`slide ${i + 1}: no headline`);
     if (String(x.headline ?? "").replace(/\*/g, "").length > 70) p.push(`slide ${i + 1}: headline too long`);
     if (String(x.body ?? "").length > 200) p.push(`slide ${i + 1}: text too long`);
@@ -299,7 +322,8 @@ export function nearDuplicate(s, recent, threshold = 0.6) {
 
 /* ─── dry runs: what a mocked call returns ───────────────────────────── */
 
-export function mockSlideshow(recipe) {
+export function mockSlideshow(recipe, assets = [], facts = []) {
+  if (recipe?.account === "zyvo") return mockZyvoSlideshow(recipe, assets, facts);
   const n = Math.max(3, recipe.slide_count ?? 6);
   const zyvoAt = { early: 1, middle: Math.floor(n / 2), late: n - 2, cta_only: n - 1 }[recipe.zyvo_position] ?? n - 2;
   const slides = Array.from({ length: n }, (_, i) => {
@@ -314,6 +338,7 @@ export function mockSlideshow(recipe) {
       image_prompt: kind === "cta" ? null : "a placeholder subject",
       asset_id: null,
       is_zyvo: kind === "zyvo" || (recipe.zyvo_position === "cta_only" && kind === "cta"),
+      items_right: [], assets: [], prompt: null, callout: null, fact_ids: [],
     };
   });
   return {

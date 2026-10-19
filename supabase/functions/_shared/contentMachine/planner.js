@@ -10,6 +10,13 @@ export const PLATFORMS = ["tiktok", "instagram", "youtube"];
 export const TEXT_DENSITY = ["low", "medium", "high"];
 // Helsinki local times to try per platform (the owner posts by hand; the time is part of the experiment).
 export const POST_TIMES = { tiktok: ["12:00", "17:00", "19:30", "21:00"], instagram: ["08:00", "12:30", "18:00", "20:30"], youtube: ["11:00", "15:00", "18:00", "20:00"] };
+// The two accounts (content lanes, owner 2026-10-19). A lane brings its own CTA types, Zyvo placement and posting
+// times; the creator lane is the original behaviour. The Zyvo brand account is about Zyvo on every slide.
+export const ACCOUNTS = ["creator", "zyvo"];
+export const LANE_DEFAULTS = {
+  creator: { ctaTypes: CTA_TYPES, zyvoPositions: ZYVO_POSITIONS, postTimes: POST_TIMES },
+  zyvo: { ctaTypes: ["zyvo_button"], zyvoPositions: ["throughout"], postTimes: POST_TIMES },
+};
 
 /** A small seeded PRNG (mulberry32) from a string such as the run id. */
 export function rng(seed) {
@@ -49,8 +56,12 @@ export function inExperimentPhase({ startedOn, today, days }) {
  * winners: proven recipes from Phase 3's playbook (empty during the experiment phase)
  * Returns `count` recipes; each has a `mode` of "experiment" or "winner".
  */
-export function planRecipes({ library, history = [], count, seed, topic = null, experimentPhase = true, winners = [], winnersPerDay = 3 }) {
+export function planRecipes({ library, history = [], count, seed, topic = null, experimentPhase = true, winners = [], winnersPerDay = 3, lane = null }) {
   const random = rng(seed);
+  // A lane (account): its own history, CTA types, Zyvo placement and posting times. The library given is that
+  // lane's subset already. No lane: the creator account (the original behaviour).
+  const L = { key: lane?.key ?? "creator", ...LANE_DEFAULTS[lane?.key ?? "creator"], ...(lane?.postTimes ? { postTimes: { ...POST_TIMES, ...lane.postTimes } } : {}) };
+  history = history.filter((h) => (h?.account ?? "creator") === L.key);
   const formats = library.formats.map((f) => f.key);
   const styles = library.styles.map((s) => s.key);
   const hooks = library.hooks.map((h) => h.key);
@@ -66,7 +77,7 @@ export function planRecipes({ library, history = [], count, seed, topic = null, 
   // Winners (after the experiment phase): a varied copy of a proven recipe, never the same pair twice a day.
   const winnerSlots = experimentPhase ? 0 : Math.min(winnersPerDay, winners.length, count);
   for (const w of winners.slice(0, winnerSlots)) {
-    const r = finish({ ...w, mode: "winner" }, all, today, random, topic);
+    const r = finish({ ...w, mode: "winner" }, all, today, random, topic, null, L);
     mark(r);
     recipes.push(r);
   }
@@ -86,7 +97,7 @@ export function planRecipes({ library, history = [], count, seed, topic = null, 
     });
     const [format, style] = pairs[0];
     pairCounts.set(`${format}|${style}`, (pairCounts.get(`${format}|${style}`) ?? 0) + 1);
-    const r = finish({ format, style, mode: "experiment" }, all, today, random, topic, hooks);
+    const r = finish({ format, style, mode: "experiment" }, all, today, random, topic, hooks, L);
     mark(r);
     recipes.push(r);
   }
@@ -95,17 +106,20 @@ export function planRecipes({ library, history = [], count, seed, topic = null, 
   return recipes.map((r) => ({ ...r, slide_count: r.slide_count ?? slideCount(spec[r.format], random) }));
 }
 
-function finish(base, all, today, random, topic, hooks = null) {
+function finish(base, all, today, random, topic, hooks = null, L = { key: "creator", ...LANE_DEFAULTS.creator }) {
   const pick = (values, key) => base[key] ?? leastUsed(values, all, key, today[key], random)[0];
   const platform = pick(PLATFORMS, "platform");
+  // A winner keeps its recipe, but never another lane's CTA or placement.
+  const own = (key, values) => (values.includes(base[key]) ? base[key] : leastUsed(values, all, key, today[key], random)[0]);
   return {
+    account: L.key,
     format: base.format,
     style: base.style,
     hook_type: hooks ? pick(hooks, "hook_type") : base.hook_type,
-    zyvo_position: pick(ZYVO_POSITIONS, "zyvo_position"),
-    cta_type: pick(CTA_TYPES, "cta_type"),
+    zyvo_position: own("zyvo_position", L.zyvoPositions),
+    cta_type: own("cta_type", L.ctaTypes),
     platform,
-    post_time: base.post_time ?? leastUsed(POST_TIMES[platform], all.filter((r) => r.platform === platform), "post_time", new Set(), random)[0],
+    post_time: L.postTimes[platform]?.includes(base.post_time) ? base.post_time : leastUsed(L.postTimes[platform] ?? POST_TIMES[platform], all.filter((r) => r.platform === platform), "post_time", new Set(), random)[0],
     text_density: pick(TEXT_DENSITY, "text_density"),
     topic: topic ?? base.topic ?? null,
     slide_count: base.slide_count ?? null,

@@ -94,13 +94,16 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
   const day = (iso) => String(iso ?? "").slice(0, 10);
   const all = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
   scorePosts(all);   // the medians are the whole account's, whatever the filter
-  const rows = all.filter(({ post, recipe }) => (!filters.platform || post.platform === filters.platform)
+  const acc = (post) => post.account ?? post.idea?.account ?? post.idea?.recipe?.account ?? "creator";
+  const rows = all.filter(({ post, recipe }) => (!filters.account || acc(post) === filters.account) && (!filters.platform || post.platform === filters.platform)
     && (!filters.format || recipe.format === filters.format) && (!filters.style || recipe.style === filters.style)
     && (!filters.hook || recipe.hook_type === filters.hook)
     && (!filters.from || day(post.posted_at) >= filters.from) && (!filters.to || day(post.posted_at) <= filters.to));
 
   const sum = (list, k) => list.reduce((a, r) => a + (r.m[k] ?? 0), 0);
   const totalsOf = (list) => ({ posts: list.length, views: sum(list, "views"), likes: sum(list, "likes"), comments: sum(list, "comments"), shares: sum(list, "shares"), saves: sum(list, "saves"), profileVisits: sum(list, "profileVisits"), newFollowers: sum(list, "newFollowers") });
+  const byAccount = {};
+  for (const a of ["creator", "zyvo"]) { const l = rows.filter((r) => acc(r.post) === a); if (l.length) byAccount[a] = totalsOf(l); }
   const byPlatform = {};
   for (const p of ["tiktok", "instagram", "youtube"]) { const l = rows.filter((r) => r.post.platform === p); if (l.length) byPlatform[p] = totalsOf(l); }
 
@@ -131,7 +134,7 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
     }
   }
   return {
-    totals: totalsOf(rows), byPlatform, table, top5, series,
+    totals: totalsOf(rows), byPlatform, byAccount, table, top5, series,
     averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type") },
     formula: SCORE_FORMULA, filtered: rows.length, total: all.length,
   };

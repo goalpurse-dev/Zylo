@@ -43,6 +43,11 @@ export const INNER_RECT = Object.freeze({ x0: SAFE_RECT.x0 + PAD, y0: SAFE_RECT.
 // Slides that may carry their message without a hero visual (on a photo background): the last question,
 // the answer reveal. Every other slide needs a visual (the "visual richness" rule).
 export const TEXT_ONLY_KINDS = Object.freeze(["quiz_answer"]);
+// The Zyvo account's footer (logo, name, swipe) sits under the stack, inside the safe zone.
+export const FOOTER_H = 64;
+// Raised whenever the slide templates change how a slide looks (zones, sizes, kinds): a render made with an older
+// version shows as "Outdated" in admin and can be rendered again. 7 = the measured TikTok zones + the Zyvo account.
+export const LAYOUT_VERSION = 7;
 
 const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ESC[c]);
@@ -103,6 +108,8 @@ export const TYPE = Object.freeze({
   memeBody: { size: 40, min: 38, lines: 2 },
   side: { size: 40, min: 38, lines: 5 },
   option: { size: 42, min: 38, lines: 2 },
+  uiPrompt: { size: 46, min: 38, lines: 3 },
+  callout: { size: 40, min: 38, lines: 2 },
 });
 
 function css(style, hasPhoto) {
@@ -121,7 +128,7 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .scrim{position:absolute;left:${S.x0 - 60}px;top:${S.y0 - 60}px;width:${S.x1 - S.x0 + 120}px;height:${S.y1 - S.y0 + 120}px;border-radius:80px;background:${light ? "radial-gradient(ellipse at center,rgba(246,243,238,.9),rgba(246,243,238,.55) 70%,transparent)" : "radial-gradient(ellipse at center,rgba(0,0,0,.72),rgba(0,0,0,.45) 70%,transparent)"};filter:blur(10px)}
 .grid{position:absolute;inset:0;background-image:linear-gradient(${hexA(style.accent, 0.16)} 2px,transparent 2px),linear-gradient(90deg,${hexA(style.accent, 0.16)} 2px,transparent 2px);background-size:90px 90px;mask-image:radial-gradient(ellipse at 50% 40%,#000 30%,transparent 80%)}
 .glow{position:absolute;width:1100px;height:1100px;left:-10px;top:300px;border-radius:50%;background:radial-gradient(circle,${hexA(style.accent, 0.45)},transparent 65%);filter:blur(40px)}
-.content{position:absolute;left:${I.x0}px;top:${I.y0}px;width:${I.x1 - I.x0}px;height:${I.y1 - I.y0}px;display:flex;flex-direction:column;justify-content:safe center;gap:36px}
+.content{position:absolute;left:${I.x0}px;top:${I.y0}px;width:${I.x1 - I.x0}px;height:${I.y1 - I.y0 - (style.brand ? FOOTER_H + 20 : 0)}px;display:flex;flex-direction:column;justify-content:safe center;gap:36px}
 .content>*{flex-shrink:0}
 .kicker{font:800 30px/1.2 "Inter";letter-spacing:.14em;text-transform:uppercase;color:${style.accent}}
 .headline{font-family:${head};font-weight:${headWeight};text-transform:${style.font === "inter" ? "none" : "uppercase"};line-height:1.14;letter-spacing:${style.font === "inter" ? "-0.02em" : "0.005em"};color:${style.fg};text-wrap:balance${hasPhoto && !light ? ";text-shadow:0 4px 24px rgba(0,0,0,.55)" : ""}}
@@ -160,8 +167,36 @@ body{font-family:"Inter",system-ui,sans-serif;color:${style.fg};-webkit-font-smo
 .hero .blur{display:none;position:absolute;left:-60px;top:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(34px) brightness(.8)}
 .hero.wide .blur{display:block}
 .collage{align-self:center;display:flex;flex-direction:column;align-items:center;gap:14px;line-height:0}
-.collage .row{display:flex;gap:14px;justify-content:center}
+.collage .row{display:flex;gap:14px;justify-content:center;flex:none}
 .collage img{display:block;border-radius:22px;box-shadow:0 16px 44px rgba(0,0,0,.4)${style.collage ? ";border:6px solid #fff" : ""}}
+.collage figure{position:relative;margin:0;line-height:0;flex:none}
+.collage figure.cell{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:22px;background:#111;box-shadow:0 16px 44px rgba(0,0,0,.4)}
+.collage figure.cell img[data-tile]{position:relative;border-radius:0;box-shadow:none}
+.collage .gblur{position:absolute;left:-30px;top:-30px;width:calc(100% + 60px);height:calc(100% + 60px);object-fit:cover;filter:blur(22px) brightness(.65);border-radius:0;box-shadow:none}
+.collage figure.cell figcaption{z-index:1}
+.collage figcaption{position:absolute;left:10px;bottom:10px;font:700 30px/1.1 "Inter";padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}
+.collage figure.play::after{content:"";position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:rgba(0,0,0,.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z' fill='white'/%3E%3C/svg%3E") center/62px no-repeat;border:4px solid rgba(255,255,255,.9)}
+.ui{border-radius:30px;background:${hexA(light ? "#ffffff" : "#16131f", 0.96)};border:2px solid ${hexA(style.accent, 0.55)};box-shadow:0 24px 70px rgba(0,0,0,.45);padding:34px 36px;display:flex;flex-direction:column;gap:20px}
+.ui-cap{font:700 30px "Inter";color:${hexA(style.fg, 0.6)};letter-spacing:.02em}
+.ui-input{font:600 46px/1.25 "Inter";color:${style.fg};border-radius:20px;background:${hexA(style.fg, 0.07)};border:2px solid ${hexA(style.fg, 0.16)};padding:22px 26px}
+.ui-input .caret{display:inline-block;width:4px;height:1em;margin-left:6px;vertical-align:-0.12em;background:${style.accent}}
+.ui-row{display:flex;justify-content:flex-end}
+.ui-btn{font:800 38px "Inter";padding:18px 30px;border-radius:999px;background:${style.accent};color:${isLight(style.accent) ? "#0b0b0f" : "#ffffff"}}
+.ui-item{display:flex;gap:22px;align-items:flex-start;font:600 42px/1.25 "Inter";color:${style.fg}}
+.ui-item i{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 30px "Inter";font-style:normal;background:${hexA(style.accent, 0.2)};color:${style.accent}}
+.ui-dl{align-items:center;padding:24px}
+.callout{align-self:flex-start;display:flex;gap:14px;align-items:center;font:700 40px/1.2 "Inter";color:${style.fg};padding:14px 24px;border-radius:20px;border:3px dashed ${hexA(style.accent, 0.85)}}
+.callout .arrow{font:800 46px "Inter";color:${style.accent}}
+.stepnum{align-self:flex-start;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 48px "Inter";background:${style.accent};color:${isLight(style.accent) ? "#0b0b0f" : "#ffffff"}}
+.arrowdown{align-self:center;font:800 72px/1 "Inter";color:${style.accent}}
+.ctabtn{align-self:stretch;text-align:center;font:800 52px/1.15 "Inter";padding:34px 30px;border-radius:999px;background:${style.accent};color:${isLight(style.accent) ? "#0b0b0f" : "#ffffff"};box-shadow:0 20px 60px ${hexA(style.accent, 0.45)}}
+.ctameta{align-self:center;display:flex;gap:22px;align-items:center}
+.ctameta .site{font:800 40px "Inter";color:${style.fg}}
+.brandfoot{position:absolute;left:${I.x0}px;width:${I.x1 - I.x0}px;top:${I.y1 - FOOTER_H}px;height:${FOOTER_H}px;display:flex;align-items:center;gap:16px;font:800 34px "Inter";color:${style.fg}}
+.bf-logo{width:56px;height:56px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px}
+.bf-logo img{max-width:100%;max-height:100%}
+.bf-z{font:900 34px "Inter";color:${style.accent}}
+.bf-swipe{margin-left:auto;font:700 30px "Inter";color:${hexA(style.fg, 0.7)}}
 .tilt{transform:rotate(-1.5deg);border:10px solid #fff;margin:0 12px}
 .meme{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
 .memebar{flex:none;background:#fff;padding:${I.y0}px ${SIZE.width - I.x1}px 36px ${I.x0}px;display:flex;flex-direction:column;gap:18px}
@@ -213,9 +248,11 @@ function inner(slide, style, images, ctx) {
   const collage = (images.collage ?? []).filter(Boolean).slice(0, 4);
   const grid = (h, min) => `<div class="collage" data-box data-visual data-name="collage" data-collage="${h}" data-shrink="${min}">${collage.map((u) => `<img data-tile src="${U(u)}" alt="">`).join("")}</div>`;
 
+  if (ZYVO_KINDS.includes(k)) return zyvoInner(slide, style, images, ctx, { label, head, body, items, hero, U });
+
   switch (k) {
     case "cover":
-      return `${label}${head(TYPE.cover)}${collage.length >= 2 ? grid(700, 420) : hero(640, 420)}${body}<div class="swipe" data-box data-text>swipe →</div>`;
+      return `${label}${head(TYPE.cover)}${collage.length >= 2 ? grid(700, 420) : hero(640, 420)}${body}${style.brand ? "" : '<div class="swipe" data-box data-text>swipe →</div>'}`;
     case "item": {
       if (!slide.tool) return `${label}${head()}${hero(600)}${body}${items('<span class="dot"></span>')}`;
       const zyvo = slide.is_zyvo || /^zyvo$/i.test(slide.tool.name);
@@ -260,6 +297,56 @@ function inner(slide, style, images, ctx) {
 
 const fitAttr = (t) => `data-fit="${t.size},${t.min},${t.lines}" style="font-size:${t.size}px"`;
 
+// The Zyvo brand account's slide kinds (owner, 2026-10-19). Product-forward; only REAL Zyvo outputs from the
+// asset library (each with a small style / tool label); rebuilt UI components instead of screenshots: clean
+// versions of Zyvo's real screens, with the real labels, large enough to read on a phone.
+export const ZYVO_KINDS = Object.freeze(["feature_hero", "style_grid", "template_showcase", "spotlight", "ui_prompt", "ui_checklist", "ui_result", "prompt_result", "by_hand", "cta_button"]);
+// The labels of the real app the rebuilt components use (the Long Form "Create New Video" flow and the publish step).
+export const ZYVO_UI = Object.freeze({ idea: "Your idea", generate: "Generate video", download: "Download video (1080p)", button: "Make your first video →", site: "tryzyvo.com", bio: "Link in bio" });
+
+function zyvoInner(slide, style, images, ctx, { label, head, body, items, hero, U }) {
+  const k = slide.kind;
+  const gallery = (images.gallery ?? []).filter((g) => g?.url);
+  const tiles = (list, h, min, name = "gallery") => (list.length
+    ? `<div class="collage" data-box data-visual data-name="${name}" data-collage="${h}" data-shrink="${min}" data-cols="2">${list.map((g) => `<figure class="gtile"><img data-tile src="${U(g.url)}" alt="">${g.label ? `<figcaption>${esc(g.label)}</figcaption>` : ""}</figure>`).join("")}</div>`
+    : hero(Math.min(h, 640), min));
+  const num = slide.label ? `<div class="stepnum" data-box data-text data-name="step">${esc(slide.label)}</div>` : "";
+  const promptBox = `<div class="ui ui-prompt" data-box data-ui data-name="prompt box"><div class="ui-cap">${esc(ZYVO_UI.idea)}</div><div class="ui-input" ${fitAttr(TYPE.uiPrompt)} data-name="prompt">${esc(slide.prompt ?? "")}<span class="caret"></span></div><div class="ui-row"><span class="ui-btn">${esc(ZYVO_UI.generate)} →</span></div></div>`;
+  const list = (rows, mark = "✓") => rows.map((t, n) => `<div class="ui-item" data-name="line ${n + 1}" ${fitAttr(TYPE.item)}><i>${mark}</i><span>${highlight(t)}</span></div>`).join("");
+  const callout = slide.callout ? `<div class="callout" data-box data-text ${fitAttr(TYPE.callout)} data-name="callout"><span class="arrow">↑</span>${highlight(slide.callout)}</div>` : "";
+  switch (k) {
+    case "feature_hero":
+      return `${label}${head(TYPE.cover)}${tiles(gallery.slice(0, 3), 640, 380)}${callout}${body}`;
+    case "style_grid":
+    case "template_showcase":
+      return `${label}${head()}${tiles(gallery.slice(0, 8), 860, 520)}${body}`;
+    case "spotlight":
+      return `${label}${head()}${gallery.length > 1 ? tiles(gallery.slice(0, 3), 640, 380) : tiles(gallery, 640, 380)}${body}${items('<span class="dot"></span>')}${callout}`;
+    case "ui_prompt":
+      return `${num}${head()}${promptBox}${body}`;
+    case "ui_checklist":
+      return `${num}${head()}<div class="ui ui-check" data-box data-ui data-name="checklist">${list(slide.items ?? [])}</div>${body}`;
+    case "ui_result":
+      return `${num}${head()}${tiles(gallery.slice(0, 1), 640, 380, "finished video").replace('<figure class="gtile">', '<figure class="gtile play">')}<div class="ui ui-dl" data-box data-ui data-name="download panel"><span class="ui-btn">⬇ ${esc(ZYVO_UI.download)}</span></div>${body}`;
+    case "prompt_result":
+      return `${label}${head()}${promptBox}<div class="arrowdown" data-box data-name="arrow">↓</div>${tiles(gallery.slice(0, 1), 560, 340, "result")}`;
+    case "by_hand":
+      return `${head()}${tiles(gallery.slice(0, 1), 420, 260)}<div class="vs"><div class="side bad" data-box data-name="by hand"><b>✗ BY HAND</b>${list(slide.items ?? [], "•")}</div>
+<div class="side good" data-box data-name="with Zyvo"><b>✓ WITH ZYVO</b>${list(slide.items_right ?? [], "✓")}</div></div>`;
+    case "cta_button":
+    default:
+      return `${head()}${tiles(gallery.slice(0, 3), 520, 320)}<div class="ctabtn" data-box data-ui data-text data-name="button">${esc(slide.body || ZYVO_UI.button)}</div><div class="ctameta" data-box data-text data-name="link"><span class="site">${esc(ZYVO_UI.site)}</span><span class="pill">${esc(ZYVO_UI.bio)}</span></div>`;
+  }
+}
+
+/** The brand footer on every Zyvo-account slide: the Zyvo logo + name, and the swipe hint (inside the safe zone). */
+function brandFooter(index, total, ctx) {
+  const z = ctx.logos?.["tryzyvo.com"];
+  const logo = typeof z === "string" ? z : z?.url;
+  const mark = logo ? `<img src="${safeUrl(logo, ctx.allowFile)}" alt="">` : '<span class="bf-z">Z</span>';
+  return `<div class="brandfoot" data-box data-name="footer"><span class="bf-logo">${mark}</span><b>Zyvo</b><span class="bf-swipe">${index < total - 1 ? "swipe →" : "tryzyvo.com"}</span></div>`;
+}
+
 /**
  * A tool's mark next to its name (owner's logo rules, 2026-10-18): the approved official file, shown no
  * larger than the file itself (never upscaled, redrawn or recoloured); "tile" → the initials tile;
@@ -293,14 +380,26 @@ const borders=(el)=>{const c=getComputedStyle(el);return[parseFloat(c.borderLeft
 const sizeHero=(img,h,fill)=>{const box=img.closest(".hero");const tilt=img.closest(".tilt");const W=CW-(tilt?72:0);const H=h-(tilt?40:0);const nw=img.naturalWidth,nh=img.naturalHeight;if(!nw||!nh)return;const k=Math.min(W/nw,H/nh);const w=Math.round(nw*k),ih=Math.round(nh*k);img.style.width=w+"px";img.style.height=ih+"px";img.dataset.h=h;
 if(!box)return;const[bw,bh]=borders(box);const fw=Math.max(w,Math.round(W*0.75));const fh=fill?Math.max(ih,Math.min(H,Math.round(ih*1.45))):ih;box.style.width=(fw+bw)+"px";box.style.height=(fh+bh)+"px";box.classList.toggle("wide",fw>w+4||fh>ih+4)};
 // The showcase collage: the tiles at their own shapes in one or two rows (whichever shows them biggest).
-const layCollage=(el,H)=>{const tiles=[...el.querySelectorAll("img[data-tile]")].filter(i=>i.naturalWidth);el.dataset.h=H;if(!tiles.length)return;
+// The Zyvo account's galleries (data-cols): an even grid, 2 cells a row (an odd first picture spans the row),
+// each picture whole inside its cell over a blurred copy of itself (never cropped).
+const layGrid=(el,H)=>{const tiles=[...el.querySelectorAll("img[data-tile]")].filter(i=>i.naturalWidth);el.dataset.h=H;if(!tiles.length)return;
+const g=14,W=CW,n=tiles.length,cols=Math.min(+el.dataset.cols||2,n),span=n%cols===1&&n>1;const rows=Math.ceil(n/cols);
+const cw=(W-g*(cols-1))/cols;const ch=Math.floor(Math.min((H-g*(rows-1))/rows,cw*1.3,(span?W:cw)*1.3));
+el.innerHTML="";let row=null;
+tiles.forEach((t,i)=>{const fig=t.closest("figure")||t;const wide=span&&i===0;const fw=Math.floor(wide?W:cw);
+if(wide||!row||row.children.length>=cols||(span&&i===1)){row=document.createElement("div");row.className="row";el.appendChild(row)}
+fig.classList.add("cell");fig.style.width=fw+"px";fig.style.height=ch+"px";
+if(!fig.querySelector(".gblur")){const b=t.cloneNode();b.className="gblur";b.removeAttribute("data-tile");fig.insertBefore(b,t)}
+const k=Math.min(fw/t.naturalWidth,ch/t.naturalHeight);t.style.width=Math.round(t.naturalWidth*k)+"px";t.style.height=Math.round(t.naturalHeight*k)+"px";row.appendChild(fig)})};
+const layCollage=(el,H)=>{if(el.dataset.cols)return layGrid(el,H);const tiles=[...el.querySelectorAll("img[data-tile]")].filter(i=>i.naturalWidth);el.dataset.h=H;if(!tiles.length)return;
 const g=14,W=CW,a=tiles.map(i=>i.naturalWidth/i.naturalHeight);
-const plans=[[tiles.length]];for(let s=1;s<tiles.length;s++)plans.push([s,tiles.length-s]);
+const plans=[[tiles.length]];for(let s=1;s<tiles.length;s++)plans.push([s,tiles.length-s]);for(let r=3;r<=Math.min(4,tiles.length);r++){const p=[];let left=tiles.length;for(let k=r;k>0;k--){const n=Math.ceil(left/k);p.push(n);left-=n}plans.push(p)}
+const cols=+el.dataset.cols||99;const ok=plans.filter(p=>p.every(n=>n<=cols));if(ok.length)plans.splice(0,plans.length,...ok);
 let best=null;for(const p of plans){let at=0;const rows=p.map(n=>{const r=a.slice(at,at+n);at+=n;return r});
 const hs=rows.map(r=>(W-g*(r.length-1))/r.reduce((x,y)=>x+y,0));const tot=hs.reduce((x,y)=>x+y,0);const s=Math.min(1,(H-g*(rows.length-1))/tot);
 const area=rows.reduce((A,r,ri)=>A+r.reduce((B,x)=>B+x*(hs[ri]*s)*(hs[ri]*s),0),0);if(!best||area>best.area)best={p,hs,s,area}}
 el.innerHTML="";let at=0;for(const[ri,n]of best.p.entries()){const row=document.createElement("div");row.className="row";const hh=Math.floor(best.hs[ri]*best.s);
-for(const t of tiles.slice(at,at+n)){t.style.height=hh+"px";t.style.width=Math.floor(hh*t.naturalWidth/t.naturalHeight)+"px";row.appendChild(t)}at+=n;el.appendChild(row)}};
+for(const t of tiles.slice(at,at+n)){t.style.height=hh+"px";t.style.width=Math.floor(hh*t.naturalWidth/t.naturalHeight)+"px";row.appendChild(t.closest("figure")||t)}at+=n;el.appendChild(row)}};
 const resize=(el,h,fill)=>{if(el.hasAttribute("data-hero"))sizeHero(el,h,fill);else if(el.hasAttribute("data-collage"))layCollage(el,h);else{el.style.height=h+"px";el.dataset.h=h}};
 const heightOf=(el)=>+el.dataset.h||el.getBoundingClientRect().height;
 for(const i of document.querySelectorAll("img[data-hero]"))sizeHero(i,+i.dataset.hero);
@@ -351,9 +450,12 @@ const boxes=[...document.querySelectorAll("[data-box]")].map(el=>({el,r:el.getBo
 for(const b of boxes){const r=b.r;
 if(r.left<S.x0-1||r.top<S.y0-1||r.right>S.x1+1||r.bottom>S.y1+1)problems.push(b.name+" is outside the safe zone");
 for(const a of AV)if(r.right>a.x0+1&&r.left<a.x1-1&&r.bottom>a.y0+1&&r.top<a.y1-1)problems.push(b.name+" is under "+a.name)}
+// A picture drawn outside its own frame (a frame that shrank) would cover the text without any box overlapping.
+for(const img of document.querySelectorAll("[data-box] img")){if(img.classList.contains("blur")||img.classList.contains("gblur"))continue;const box=img.closest("[data-box]").getBoundingClientRect(),q=img.getBoundingClientRect();if(q.width>2&&(q.left<box.left-2||q.top<box.top-2||q.right>box.right+2||q.bottom>box.bottom+2))problems.push("a picture spills out of its frame ("+(img.closest("[data-name]")?.dataset.name||"picture")+")")}
 const visuals=[...document.querySelectorAll("[data-visual] img, img[data-visual]")].filter(i=>i.naturalWidth>0);
 const bgPhoto=[...document.querySelectorAll(".bg img")].some(i=>i.naturalWidth>0);
-if(!visuals.length&&!(TEXT_ONLY.includes(document.body.dataset.kind)&&bgPhoto))problems.push("no visual element: the slide needs a picture");
+const uiVisual=Boolean(document.querySelector("[data-ui]"));
+if(!visuals.length&&!uiVisual&&!(TEXT_ONLY.includes(document.body.dataset.kind)&&bgPhoto))problems.push("no visual element: the slide needs a picture");
 for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];
 if(a.el.contains(b.el)||b.el.contains(a.el))continue;
 const w=Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left),h=Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top);
@@ -399,7 +501,7 @@ export function slideHtml({ slide, index, total, style, images = {}, zyvoShot = 
   const main = meme
     ? `<div class="meme"><div class="memebar"><div class="memetext" ${fit(TYPE.meme)} data-name="meme text">${esc(String(slide.headline).replace(/\*/g, ""))}</div>${slide.body ? `<div class="memebody" ${fit(TYPE.memeBody)} data-name="meme caption">${esc(String(slide.body).replace(/\*/g, ""))}</div>` : ""}</div>
 <img class="memeimg" data-visual src="${safeUrl(pic, allowFile)}" alt=""></div>`
-    : `<div class="content">${inner(slide, style, images, ctx)}</div>`;
+    : `<div class="content">${inner(slide, style, images, ctx)}</div>${style.brand ? brandFooter(index, total, ctx) : ""}`;
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${SIZE.width}">${fontCss}<style>${css(style, photo)}</style></head>
 <body data-slide="${index}" data-kind="${esc(slide.kind)}"><div class="slide">${bg}${deco}${main}${zones}</div>${LAYOUT_SCRIPT}</body></html>`;
 }

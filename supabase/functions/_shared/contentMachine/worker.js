@@ -30,7 +30,11 @@ export function sameSecret(a, b) {
 /** Creates today's automatic run if it is due. Returns the run or null. */
 export async function maybeStartDailyRun(deps) {
   const s = await deps.db.settings();
-  if (s.kill_switch || !s.daily_auto_run || s.slideshows_per_day < 1) return null;
+  // Each account makes its own count (owner, 2026-10-19: 2 Zyvo + 3 Creator by default; set in Settings).
+  const lanes = (await deps.db.lanes?.()) ?? null;
+  const perLane = lanes ? Object.fromEntries(Object.values(lanes).map((l) => [l.key, Number(l.slideshows_per_day) || 0])) : { creator: s.slideshows_per_day };
+  const total = Object.values(perLane).reduce((a, b) => a + b, 0);
+  if (s.kill_switch || !s.daily_auto_run || total < 1) return null;
   const now = deps.now();
   if (localClock(now, s.timezone) < s.run_time_local) return null;
   const day = localDay(now, s.timezone);
@@ -46,7 +50,7 @@ export async function maybeStartDailyRun(deps) {
   }
   let run;
   try {
-    run = await deps.db.createRun({ run_date: day, kind: "daily", status: "pending", dry_run: deps.guard.envDryRun || Boolean(s.dry_run), input: { count: s.slideshows_per_day }, started_at: now.toISOString() });
+    run = await deps.db.createRun({ run_date: day, kind: "daily", status: "pending", dry_run: deps.guard.envDryRun || Boolean(s.dry_run), input: { count: total, lanes: perLane }, started_at: now.toISOString() });
   } catch (e) {
     if (/duplicate|unique/i.test(String(e?.message))) return null;   // another tick made it first
     throw e;

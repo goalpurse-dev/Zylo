@@ -34,9 +34,10 @@ Rules:
 - trend_notes: what the latest scout report suggests trying, if one is given, else "".
 Return only the JSON object.`;
 
-export function analysisRequest({ model, posts, learning, playbook, rules, library, scout }) {
+export function analysisRequest({ model, posts, learning, playbook, rules, library, scout, account = "creator" }) {
   const keys = (kind) => library.filter((l) => l.kind === kind && l.status === "active").map((l) => l.key).join(", ");
   const user = [
+    `ACCOUNT: ${{ creator: "the creator account (go-viral / faceless-creator education, a soft Zyvo mention)", zyvo: "Zyvo's brand account (product carousels; claims only from the fact sheet). The program's numbers include \"features\": per cited fact, per hook and per format: posts, score, profile visits per 1,000 views and link clicks. In what_works, say which features and hooks drive profile visits and link clicks", both: "both accounts together: a combined report; the playbook you propose is a reading aid, not applied" }[account] ?? account}`,
     `LEARNING RULES: ${rules}`,
     `LIBRARY (active keys) · formats: ${keys("format")} · styles: ${keys("style")} · hooks: ${keys("hook")}`,
     `CURRENT PLAYBOOK:\n${playbook?.trim() || "(empty)"}`,
@@ -59,10 +60,11 @@ export function analystPosts(rows) {
     recipe: Object.fromEntries(["format", "style", "hook_type", "zyvo_position", "cta_type", "text_density", "post_time", "mode"].map((k) => [k, r.recipe?.[k] ?? null])),
     score: r.m.score, freshness: r.w != null ? Math.round(r.w * 100) / 100 : null, views24: r.m.views24, views7d: r.m.views7d,
     engagement: r.m.engagementRate != null ? Math.round(r.m.engagementRate * 1000) / 1000 : null,
-    snapshots: (r.post.stats ?? []).map((s) => [Number(s.hours_since_post), s.views, s.likes, s.comments, s.shares, s.saves, s.profile_visits, s.new_followers, s.avg_watch_sec, s.watched_full_pct]),
+    account: r.post.account ?? r.post.idea?.account ?? "creator",
+    snapshots: (r.post.stats ?? []).map((s) => [Number(s.hours_since_post), s.views, s.likes, s.comments, s.shares, s.saves, s.profile_visits, s.new_followers, s.avg_watch_sec, s.watched_full_pct, s.link_clicks ?? null]),
   }));
 }
-export const SNAPSHOT_COLUMNS = "hours, views, likes, comments, shares, saves, profile_visits, new_followers, avg_watch_sec, watched_full_pct";
+export const SNAPSHOT_COLUMNS = "hours, views, likes, comments, shares, saves, profile_visits, new_followers, avg_watch_sec, watched_full_pct, link_clicks";
 
 export const SCOUT_SCHEMA = obj({
   trend_brief: str,

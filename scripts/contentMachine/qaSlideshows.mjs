@@ -57,13 +57,16 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   p.on("pageerror", (e) => errors.push(e.message));
   p.on("dialog", (d) => d.accept());
   await p.goto(`${base}/admin/content-machine`, { waitUntil: "domcontentloaded" });
-  await p.getByTestId("cm-make").waitFor({ timeout: 45_000 });
+  await p.getByTestId("cm-lane-creator").waitFor({ state: "attached", timeout: 45_000 });
   await p.getByRole("button", { name: "Decline" }).click({ timeout: 3000 }).catch(() => {});
-  ok(`${name}: Today is the first tab, with the topic box and Make slideshows`, await p.getByTestId("cm-topic").isVisible());
+  // Desktop: one account at a time (tabs); phone: both sections stacked.
+  if (!phone) await p.getByRole("tab", { name: "Creator account" }).click();
+  ok(`${name}: the Queue is the first tab, with the Creator account's topic box and button`, await p.getByTestId("cm-topic-creator").isVisible());
+  await p.getByTestId("cm-count-creator").selectOption("2");
 
   // 1. A dry run with a topic: live previews from the templates, mocked text, $0.
-  await p.getByTestId("cm-topic").fill("faceless YouTube niches that still work in 2026");
-  await p.getByTestId("cm-make-button").click();
+  await p.getByTestId("cm-topic-creator").fill("faceless YouTube niches that still work in 2026");
+  await p.getByTestId("cm-make-creator").click();
   await p.getByTestId("cm-idea").first().waitFor({ timeout: 20_000 });
   const dryCards = await p.getByTestId("cm-idea").count();
   ok(`${name}: the dry run made 2 slideshows`, dryCards === 2, String(dryCards));
@@ -77,9 +80,11 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   // 2. A real run (fake providers): rendered PNGs, MP4, ZIP, captions per platform.
   world.s.dry_run = false;
   await p.reload({ waitUntil: "domcontentloaded" });
-  await p.getByTestId("cm-make").waitFor({ timeout: 45_000 });
-  await p.getByTestId("cm-make-button").click();
-  await p.getByText(/Started 2 slideshows\./).waitFor({ timeout: 20_000 });
+  await p.getByTestId("cm-lane-creator").waitFor({ state: "attached", timeout: 45_000 });
+  if (!phone) await p.getByRole("tab", { name: "Creator account" }).click();
+  await p.getByTestId("cm-count-creator").selectOption("2");
+  await p.getByTestId("cm-make-creator").click();
+  await p.getByText(/Started 2 Creator slideshows/).waitFor({ timeout: 20_000 });
   const card = p.getByTestId("cm-idea").first();
   await card.locator("video").waitFor({ timeout: 20_000 });
   ok(`${name}: the real run shows rendered slides, the MP4 and the ZIP download`, (await card.locator('[data-testid="cm-slides"] img').count()) >= 3 && (await card.getByRole("link", { name: "Download slides (ZIP)" }).count()) === 1);
