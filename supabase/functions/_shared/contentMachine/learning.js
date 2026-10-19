@@ -48,3 +48,30 @@ export function learn(posts, { now = new Date(), halfLife = 14, minSuccesses = 3
 export function analysisDue(postsWithStats, lastAnalysisPosts, suggestAfter = 10) {
   return postsWithStats - (lastAnalysisPosts ?? 0) >= suggestAfter;
 }
+
+/**
+ * The Zyvo account (owner, 2026-10-19): which features (the fact keys its slides cite) and hooks go with profile
+ * visits and link clicks. posts: [{idea: {script, recipe}, stats}]. Per feature / hook: posts, the average score,
+ * profile visits per 1,000 views, link clicks (summed; entered by hand until the site records UTM visits).
+ */
+export function featureBreakdown(posts, { now = new Date() } = {}) {
+  const rows = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
+  scorePosts(rows);
+  const clicks = (r) => { const last = [...(r.post.stats ?? [])].sort((a, b) => Date.parse(a.taken_at) - Date.parse(b.taken_at)).pop(); return Number(last?.link_clicks ?? 0) || 0; };
+  const group = (keyOf) => {
+    const g = new Map();
+    for (const r of rows) for (const k of new Set(keyOf(r))) { if (!g.has(k)) g.set(k, []); g.get(k).push(r); }
+    return [...g].map(([key, list]) => {
+      const views = list.reduce((a, r) => a + (r.m.views ?? 0), 0);
+      const visits = list.reduce((a, r) => a + (r.m.profileVisits ?? 0), 0);
+      const scored = list.filter((r) => r.m.score != null);
+      return { key, posts: list.length, score: scored.length ? Math.round(scored.reduce((a, r) => a + r.m.score, 0) / scored.length) : null,
+        visitsPer1k: views ? Math.round((visits / views) * 10000) / 10 : null, linkClicks: list.reduce((a, r) => a + clicks(r), 0) };
+    }).sort((a, b) => (b.visitsPer1k ?? -1) - (a.visitsPer1k ?? -1));
+  };
+  return {
+    features: group((r) => (r.post.idea?.script?.slides ?? []).flatMap((s) => s.fact_ids ?? [])),
+    hooks: group((r) => [r.recipe.hook_type ?? "unknown"]),
+    formats: group((r) => [r.recipe.format ?? "unknown"]),
+  };
+}

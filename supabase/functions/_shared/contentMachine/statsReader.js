@@ -5,7 +5,7 @@
 export const STAT_FIELDS = Object.freeze([
   ["views", "Views", "int"], ["likes", "Likes", "int"], ["comments", "Comments", "int"], ["shares", "Shares", "int"], ["saves", "Saves", "int"],
   ["avg_watch_sec", "Average watch time (s)", "dec"], ["watched_full_pct", "Watched full (%)", "pct"],
-  ["profile_visits", "Profile visits", "int"], ["new_followers", "New followers", "int"],
+  ["profile_visits", "Profile visits", "int"], ["new_followers", "New followers", "int"], ["link_clicks", "Link clicks", "int"],
 ]);
 
 const nullableNumber = { type: ["number", "null"] };
@@ -23,7 +23,7 @@ export const STATS_SYSTEM = `You read the numbers off a screenshot of a social m
 Return each number exactly as shown, as a plain number: "1.2K" → 1200, "3,4 t." or "3.4M" → 3400000, "12.5%" → 12.5, "4.2s" → 4.2, "1:05" (watch time) → 65.
 - views: video views / plays / post views. likes, comments, shares, saves (also "favorites" / "bookmarks").
 - avg_watch_sec: average watch time in seconds. watched_full_pct: "watched full video" / "completion rate" in %.
-- profile_visits: profile views / visits from this post. new_followers: followers gained from this post.
+- profile_visits: profile views / visits from this post. new_followers: followers gained from this post. link_clicks: clicks on a link or the link in bio, only if the screenshot shows them.
 - platform: which app the screenshot is from, if you can tell.
 A number that is not clearly visible is null. Never estimate, add up or infer a number. note: one short line if anything is unclear, else null.
 Return only the JSON object.`;

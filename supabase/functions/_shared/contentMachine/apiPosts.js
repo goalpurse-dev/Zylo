@@ -43,8 +43,8 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
     const m = postMetrics({ ...p, stats }, now());
     const png = idea?.cm_generations?.[0]?.files?.pngs?.[0] ?? null;
     return {
-      id: p.id, platform: p.platform, post_url: p.post_url, posted_at: p.posted_at, posted_local: utcToLocal(p.posted_at, zone),
-      idea: idea && { id: idea.id, title: idea.title, recipe: idea.recipe }, thumbnail: png ? urls[png] ?? null : null,
+      id: p.id, platform: p.platform, account: p.account ?? idea?.account ?? "creator", post_url: p.post_url, posted_at: p.posted_at, posted_local: utcToLocal(p.posted_at, zone),
+      idea: idea && { id: idea.id, title: idea.title, recipe: idea.recipe, account: idea.account ?? "creator" }, thumbnail: png ? urls[png] ?? null : null,
       stats: stats.map((s) => ({ ...s, taken_local: utcToLocal(s.taken_at, zone), screenshot: s.screenshot_path ? urls[s.screenshot_path] ?? null : null })),
       metrics: m,
     };
@@ -57,7 +57,8 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
       const platform = String(body?.platform ?? "");
       if (!PLATFORM_HOSTS[platform]) throw new ApiError("VALIDATION", "Platform: TikTok, Instagram or YouTube.");
       const zone = await tz();
-      const post = await cm.createPost({ idea_id: idea.id, platform, post_url: cleanPostUrl(platform, body?.postUrl), posted_at: when(body?.postedAt, zone, "Posted at").toISOString(), posted_by: user.email });
+      const account = ["creator", "zyvo"].includes(body?.account) ? body.account : idea.account ?? "creator";   // pre-selected from the slideshow
+      const post = await cm.createPost({ idea_id: idea.id, platform, account, post_url: cleanPostUrl(platform, body?.postUrl), posted_at: when(body?.postedAt, zone, "Posted at").toISOString(), posted_by: user.email });
       await cm.updateIdea(idea.id, { status: "posted" });
       await store.audit(user.email, "post.create", { idea: idea.id, platform, url: post.post_url });
       return { post };
@@ -146,9 +147,9 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
       const rows = await cm.listPosts();
       const posts = rows.map((p) => ({ ...p, idea: p.cm_ideas ?? null, stats: p.cm_post_stats ?? [] }));
       const f = {};
-      for (const k of ["platform", "format", "style", "hook", "from", "to"]) if (body?.[k]) f[k] = String(body[k]).slice(0, 40);
+      for (const k of ["platform", "format", "style", "hook", "from", "to", "account"]) if (body?.[k] && body[k] !== "both") f[k] = String(body[k]).slice(0, 40);
       const a = analytics(posts, { filters: f, now: now(), sort: String(body?.sort ?? "score"), dir: body?.dir === "asc" ? "asc" : "desc" });
-      const slim = (r) => ({ id: r.post.id, platform: r.post.platform, post_url: r.post.post_url, posted_at: r.post.posted_at, title: r.post.idea?.title ?? null, recipe: r.recipe, m: r.m });
+      const slim = (r) => ({ id: r.post.id, platform: r.post.platform, account: r.post.account ?? "creator", post_url: r.post.post_url, posted_at: r.post.posted_at, title: r.post.idea?.title ?? null, recipe: r.recipe, m: r.m });
       return { ...a, table: a.table.map(slim), top5: a.top5.map(slim) };
     },
   };

@@ -18,6 +18,34 @@ export const LIB = {
   hooks: ["question", "bold_statement", "number_list", "pov", "warning"].map((key) => ({ key, name: key, description: key, spec: {} })),
 };
 
+// The Zyvo brand account's part of the library (lanes: ["zyvo"]); the database returns LIB + ZLIB.
+export const ZLIB = {
+  formats: ["feature_hero", "how_it_works"].map((key) => ({ key, name: key, description: key, spec: { slides: [4, 6], layout: "zyvo" }, lanes: ["zyvo"] })),
+  styles: [{ key: "zyvo_brand", name: "Zyvo brand", description: "", spec: { bg: "#090A0A", fg: "#ffffff", accent: "#BEF264", highlight: "#BEF264", font: "inter", brand: true }, lanes: ["zyvo"] }],
+  hooks: [{ key: "benefit_promise", name: "Benefit promise", description: "", spec: {}, lanes: ["zyvo"] }],
+};
+export const FACTS = [
+  { key: "lf_length", category: "long_form", claim: "Turn one idea into an 8–15 minute YouTube explainer", detail: "8–15 min", source: "lengthEstimates.js" },
+  { key: "fruit_series", category: "fruit_story", claim: "Make a series of up to 10 episodes with the same cast", detail: "3–10", source: "limits.js" },
+  { key: "no_autopost", category: "not_feature", claim: "Zyvo does NOT post or schedule to social platforms", detail: null, source: "unreleasedFeatures.js" },
+];
+
+/** A Zyvo-account slideshow that passes the checks (real assets aaaa1111 / bbbb2222, cited facts). */
+export function validZyvoSlideshow(recipe, title = "One idea in, a finished video out") {
+  const S = (kind, headline, extra = {}) => ({ kind, headline, body: null, label: null, items: [], items_right: [], tool: null, image_prompt: null, asset_id: null, assets: [], prompt: null, callout: null, fact_ids: ["lf_length"], is_zyvo: true, ...extra });
+  return {
+    title, topic: recipe.topic ?? "what Zyvo makes", hook: "One idea in. A finished video out.", hypothesis: "a benefit hook with real outputs",
+    slides: [
+      S("feature_hero", "One idea in. A *finished video* out.", { assets: [{ asset_id: "aaaa1111", label: "Long Form" }, { asset_id: "bbbb2222", label: "AI Fruit Story" }], callout: "8–15 minute YouTube videos" }),
+      S("ui_prompt", "Type one idea", { label: "1", prompt: "Why the Romans built roads that still stand" }),
+      S("spotlight", "A whole series, same cast", { assets: [{ asset_id: "bbbb2222", label: "AI Fruit Story" }], body: "Up to 10 episodes with the same characters.", fact_ids: ["fruit_series"] }),
+      S("cta_button", "Your first video is one idea away", { body: "Make your first video →", fact_ids: [] }),
+    ],
+    tools_checked: [], ai_label_required: false, why_it_could_go_viral: "proof with real outputs", virality_score: 6,
+    items_right: undefined,
+  };
+}
+
 /* ─── the in-memory database (pipelineDb + the guard's store) ─────────── */
 export function fakeWorld(settings = {}) {
   let n = 0;
@@ -27,7 +55,11 @@ export function fakeWorld(settings = {}) {
     lane_daily_caps: { slideshow: 3 }, slideshows_per_day: 2, timezone: "Europe/Helsinki", models: {}, brand_rules: "- Be honest.", experiment_days: 14,
     experiment_started_on: null, daily_auto_run: true, playbook: "", half_life_days: 14, winner_min_successes: 3, analysis_suggest_after: 10, daily_scout: false, run_time_local: "07:00", winners_per_day: 3, experiments_per_day: 2, use_batch_for_daily: true, ...settings,
   };
-  const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [], posts = [], stats = [], stored = {}, analyses = [], scouts = [];
+  const runs = [], ideas = [], gens = [], pkgs = [], jobs = [], ledger = [], audit = [], posts = [], stats = [], stored = {}, analyses = [], scouts = [], facts = FACTS.map((x, n) => ({ id: `F-${n}`, status: "active", ...x }));
+  const lanes = {
+    creator: { key: "creator", name: "Creator account", brand_rules: "- Be honest. (creator)", cta_style: "soft", post_times: {}, playbook: "", slideshows_per_day: 3 },
+    zyvo: { key: "zyvo", name: "Zyvo account", brand_rules: "- Only claims on the fact sheet. (zyvo)", cta_style: "button", post_times: {}, playbook: "", slideshows_per_day: 2 },
+  };
   const assets = [
     { id: "A1", ref: "aaaa1111", path: "library/aaaa1111.webp", source_path: "public/lp/stickman/a.webp", kind: "scene", tool: "long_form", subject: "a stickman explaining history", tags: ["stickman"], status: "active" },
     { id: "A2", ref: "bbbb2222", path: "library/bbbb2222.webp", source_path: "public/lp/fruit/b.webp", kind: "output", tool: "ai_fruit_story", subject: "a strawberry on a stage", tags: ["fruit"], status: "active" },
@@ -64,7 +96,7 @@ export function fakeWorld(settings = {}) {
   const db = {
     async settings() { return { ...s }; },
     async updateSettings(p) { Object.assign(s, p); },
-    async library() { return LIB; },
+    async library() { return { formats: [...LIB.formats, ...ZLIB.formats], styles: [...LIB.styles, ...ZLIB.styles], hooks: [...LIB.hooks, ...ZLIB.hooks] }; },
     async getRun(i) { return runs.find((r) => r.id === i); },
     async updateRun(i, p) { Object.assign(runs.find((r) => r.id === i), p); },
     async createRun(row) {
@@ -95,6 +127,12 @@ export function fakeWorld(settings = {}) {
       if (keepAttempt) j.attempts = Math.max(0, j.attempts - 1);
     },
     async dailyRunExists(day) { return runs.some((r) => r.kind === "daily" && r.run_date === day); },
+    // The two accounts and the fact sheet
+    async lanes() { return JSON.parse(JSON.stringify(lanes)); },
+    async saveLane(k, patch) { Object.assign(lanes[k], patch); return { ...lanes[k] }; },
+    async facts() { return facts.filter((x) => (x.status ?? "active") === "active"); },
+    async listFacts() { return [...facts]; },
+    async saveFact(row) { if (row.id) return Object.assign(facts.find((x) => x.id === row.id), row); const x = { id: id("F"), status: "active", category: "other", ...row }; facts.push(x); return x; },
     // Phase 3: analyses and scout reports
     async createAnalysis(row) { const a = { id: id("AN"), created_at: clock.now.toISOString(), ...row }; analyses.unshift(a); return a; },
     async getAnalysis(i) { return analyses.find((a) => a.id === i); },
@@ -131,7 +169,7 @@ export function fakeWorld(settings = {}) {
   };
   const uploads = [];
   const clock = { now: new Date("2026-10-20T06:30:00Z") };   // 09:30 in Helsinki
-  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, assets, store, db, clock, posts, stats, stored, analyses, scouts };
+  return { s, runs, ideas, gens, pkgs, jobs, ledger, audit, logos, uploads, assets, store, db, clock, posts, stats, stored, analyses, scouts, facts, lanes };
 }
 
 /* ─── fake providers that behave like the real ones ──────────────────── */
@@ -199,7 +237,7 @@ export function fakeProviders(world, { packageOk = [true], badFirstWrite = false
       }
       const recipe = JSON.parse(/RECIPE: (.*)/.exec(request.messages[0].content)[1]);
       writeN += 1;
-      const s = validSlideshow(recipe, `Title ${writeN}: 5 tools ${recipe.format} ${recipe.style}`);
+      const s = recipe.account === "zyvo" ? validZyvoSlideshow(recipe, `Zyvo ${writeN}: ${recipe.format}`) : validSlideshow(recipe, `Title ${writeN}: 5 tools ${recipe.format} ${recipe.style}`);
       if (badAlways || (badFirstWrite && writeN === 1)) s.slides[0].kind = "item";
       const body = msg(s);
       return { body, costUsd: costOfUsage(body.usage, body.model), model: body.model };
@@ -281,7 +319,7 @@ export function apiFor(world, extra = {}) {
   const cm = {
     ...world.db,
     async listRuns() { return [...world.runs].reverse(); },
-    async listIdeas({ runId = null } = {}) { return [...world.ideas].reverse().filter((i) => !runId || i.run_id === runId).map((i) => ({ ...i, cm_generations: world.gens.filter((g) => g.idea_id === i.id).map((g) => ({ ...g, cm_packages: world.pkgs.filter((p) => p.generation_id === g.id) })) })); },
+    async listIdeas({ runId = null, account = null, status = null } = {}) { return [...world.ideas].reverse().filter((i) => (!runId || i.run_id === runId) && (!account || (i.account ?? "creator") === account) && (!status || i.status === status)).map((i) => ({ ...i, cm_generations: world.gens.filter((g) => g.idea_id === i.id).map((g) => ({ ...g, cm_packages: world.pkgs.filter((p) => p.generation_id === g.id) })) })); },
     async ideaCosts(ids) { return Object.fromEntries(ids.map((i) => [i, { usd: world.ledger.filter((l) => l.idea_id === i).reduce((a, l) => a + (l.actual_usd ?? l.estimated_usd), 0), wouldUsd: 0, byProvider: {}, calls: 0 }])); },
     async libraryAll() { return [...LIB.styles.map((s) => ({ ...s, kind: "style", status: "active" })), ...LIB.formats.map((f) => ({ ...f, kind: "format", status: "active" }))]; },
     async saveLibrary(row) { return row; },

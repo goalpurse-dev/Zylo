@@ -148,7 +148,7 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
   const r = idea.recipe ?? {};
   const g = idea.generation;
   const style = styles?.[r.style];
-  const images = (i) => ({ background: g?.images?.background ?? null, hero: g?.images?.heroes?.[i] ?? null, collage: g?.images?.collages?.[i] ?? null });
+  const images = (i) => ({ background: g?.images?.background ?? null, hero: g?.images?.heroes?.[i] ?? null, collage: g?.images?.collages?.[i] ?? null, gallery: g?.images?.galleries?.[i] ?? null });
   const act = async (action, body, label) => {
     setBusy(label); setNote(null);
     try { await api(action, body); onChanged(); } catch (e) { setNote(e.message); }
@@ -160,6 +160,8 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full flex-col gap-2 p-4 text-left sm:p-5">
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge tone={STATUS_TONE[idea.status]}>{nice(idea.status)}</Badge>
+          <Badge tone={idea.account === "zyvo" ? "bg-violet-300/20 text-violet-100" : "bg-sky-300/15 text-sky-100"}>{idea.account === "zyvo" ? "Zyvo account" : "Creator account"}</Badge>
+          {idea.outdated && <Badge tone="bg-orange-300/20 text-orange-100" title="Rendered with older slide templates">outdated</Badge>}
           {idea.dry_run && <Badge tone="bg-sky-300/15 text-sky-200" title="Mocked: nothing was spent">dry run</Badge>}
           <Badge>{nice(r.format)}</Badge><Badge>{nice(r.style)}</Badge><Badge>hook: {nice(r.hook_type)}</Badge>
           <Badge>Zyvo: {nice(r.zyvo_position)}</Badge><Badge>{r.platform} {r.post_time}</Badge>
@@ -204,6 +206,7 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
           )}
           <div className="flex flex-wrap items-center gap-2">
             <MarkPosted idea={idea} onDone={onChanged} />
+            {idea.outdated && ["done", "approved"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Render this slideshow again with today's slide templates? The same words and pictures; a render and its QA check, about $0.005.")) act("rerender", { id: idea.id }, "rerender"); }} className="rounded-lg bg-orange-300/20 px-3 py-1.5 text-[13px] font-semibold text-orange-100 disabled:opacity-40">Render again</button>}
             {idea.status !== "approved" && idea.status === "done" && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "approved" }, "approve")} className="rounded-lg bg-lime-300/90 px-3 py-1.5 text-[13px] font-semibold text-[#071006] disabled:opacity-40">Approve</button>}
             {!["rejected", "posted"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "rejected" }, "reject")} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Reject</button>}
             {idea.recipe?.format && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Write this recipe again as a new slideshow? It costs a new write.")) act("remakeIdea", { id: idea.id }, "remake"); }} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Remake</button>}
@@ -282,112 +285,127 @@ function RunProgress({ runId, onTick, onDone }) {
   );
 }
 
-// Today's status filters (owner, 2026-10-18). A posted slideshow leaves Today for the Posted tab.
-const TODAY_FILTERS = [
+// The Queue's status filters (owner, 2026-10-19). A posted slideshow leaves the Queue for the Posted tab.
+const QUEUE_FILTERS = [
   ["", "All", () => true],
   ["ready", "Ready", (i) => i.status === "done" && !i.compliance?.flagged],
   ["approved", "Approved", (i) => i.status === "approved"],
   ["flagged", "Flagged", (i) => Boolean(i.compliance?.flagged) && !["rejected", "posted"].includes(i.status)],
   ["rejected", "Rejected", (i) => i.status === "rejected"],
+  ["outdated", "Outdated", (i) => Boolean(i.outdated)],
 ];
 
-export function TodayTab({ st, onChanged }) {
-  const [zones, zoneControl] = useSafeZones();
+// The two accounts (content lanes): each has its own section, colour, button, progress and list.
+const LANES = {
+  zyvo: { title: "Zyvo account", word: "Zyvo", hint: "Product carousels about Zyvo: real outputs, rebuilt UI, claims only from the fact sheet.", defaultCount: 2,
+    ring: "border-violet-400/40", bg: "bg-violet-400/[0.06]", accent: "text-violet-200", button: "bg-violet-300 text-[#14092b] enabled:hover:bg-violet-200", pillOn: "border-violet-300/60 bg-violet-300/15 text-violet-100" },
+  creator: { title: "Creator account", word: "Creator", hint: "Go-viral and faceless-creator education with one soft Zyvo mention.", defaultCount: 3,
+    ring: "border-sky-400/40", bg: "bg-sky-400/[0.05]", accent: "text-sky-200", button: "bg-sky-300 text-[#04131c] enabled:hover:bg-sky-200", pillOn: "border-sky-300/60 bg-sky-300/15 text-sky-100" },
+};
+
+function LaneSection({ lane, st, runs, zones, onChanged, reloadRuns, className = "" }) {
+  const L = LANES[lane];
   const [topic, setTopic] = useState("");
-  const [count, setCount] = useState(String(st.settings.slideshows_per_day ?? 5));
-  const [runs, setRuns] = useState(null);
-  const [runFilter, setRunFilter] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [count, setCount] = useState(String(L.defaultCount));
+  const [filter, setFilter] = useState("");
   const [data, setData] = useState(null);
+  const [est, setEst] = useState(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
   const load = useCallback(async () => {
-    try {
-      const [r, d] = await Promise.all([api("runs"), api("ideas", { today: true, limit: 100, ...(runFilter ? { runId: runFilter } : {}) })]);
-      setRuns(r.runs);
-      setData(d);
-    } catch (e) { setNote(e.message); }
-  }, [runFilter]);
+    try { setData(await api("ideas", { today: true, account: lane, limit: 100 })); } catch (e) { setNote(e.message); }
+  }, [lane]);
   useEffect(() => { load(); }, [load]);
-  const active = runs?.find((r) => RUN_ACTIVE.has(r.status));
+  const n = Number(count);
+  useEffect(() => {
+    let alive = true;
+    api("batchEstimate", { account: lane, count: n }).then((r) => { if (alive) setEst(r); }).catch(() => { if (alive) setEst(null); });
+    return () => { alive = false; };
+  }, [lane, n, st.spend.day.usedUsd]);
+  const active = runs?.find((r) => r.account === lane && RUN_ACTIVE.has(r.status));
   useEffect(() => {
     if (!active) return undefined;
     const t = setInterval(load, 8000);
     return () => clearInterval(t);
   }, [active, load]);
 
-  const n = Number(count);
   const make = async (e) => {
     e.preventDefault(); setBusy(true); setNote(null);
     try {
-      const r = await api("makeSlideshows", { topic: topic.trim() || null, count: n });
+      const r = await api("makeSlideshows", { account: lane, topic: topic.trim() || null, count: n });
       setTopic("");
-      setNote(`Started ${r.count} slideshow${r.count > 1 ? "s" : ""}${r.dryRun ? " as a dry run (nothing is spent)" : ""}.`);
-      await load(); onChanged();
+      setNote(`Started ${r.count} ${L.word} slideshow${r.count > 1 ? "s" : ""}${r.dryRun ? " as a dry run (nothing is spent)" : ` (about $${r.estimateUsd.toFixed(2)})`}.`);
+      await reloadRuns(); await load(); onChanged();
     } catch (err) { setNote(err.message); }
     setBusy(false);
   };
+  const today = (data?.ideas ?? []).filter((i) => i.status !== "posted");
+  const counts = Object.fromEntries(QUEUE_FILTERS.map(([k, , f]) => [k, today.filter(f).length]));
+  const shown = today.filter(QUEUE_FILTERS.find(([k]) => k === filter)[2]);
+  const pill = (on) => `shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? L.pillOn : "border-white/10 bg-white/[0.03] text-white/70"}`;
+  const tooMuch = est && !est.fits;
+  return (
+    <section className={`space-y-3 rounded-2xl border-2 ${L.ring} ${L.bg} p-3 sm:p-4 ${className}`} data-testid={`cm-lane-${lane}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className={`text-[15px] font-extrabold uppercase tracking-[0.1em] ${L.accent}`}>{L.title}</h2>
+        <p className="text-[12px] text-white/55">{L.hint}</p>
+      </div>
+      <form onSubmit={make} className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+        <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={200} placeholder="Topic (optional)" className={`${input} w-full sm:flex-1`} aria-label={`${L.word} topic`} data-testid={`cm-topic-${lane}`} />
+        <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label={`How many ${L.word} slideshows`} data-testid={`cm-count-${lane}`}>{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select>
+        <button type="submit" disabled={busy || st.settings.kill_switch || Boolean(active) || tooMuch} data-testid={`cm-make-${lane}`}
+          className={`rounded-xl px-5 py-3 text-[15px] font-bold transition disabled:opacity-40 ${L.button}`}>{busy ? "Starting…" : `Make ${n} ${L.word} slideshow${n > 1 ? "s" : ""}`}</button>
+      </form>
+      {est && <p className={`text-[12px] ${tooMuch ? "font-semibold text-red-200" : "text-white/50"}`} data-testid={`cm-estimate-${lane}`}>{tooMuch ? est.message : est.leftUsd == null ? `About $${est.estimateUsd.toFixed(2)}.` : `About $${est.estimateUsd.toFixed(2)} (≈ $${est.perUsd.toFixed(2)} each) · fits today's caps.`}</p>}
+      {note && <p role="status" className="text-[13px] text-white/75">{note}</p>}
+      {active && <RunProgress runId={active.id} onTick={load} onDone={() => { reloadRuns(); load(); onChanged(); }} />}
+      <div className="flex flex-wrap items-center gap-2" data-testid={`cm-filters-${lane}`}>
+        {QUEUE_FILTERS.map(([k, label]) => <button key={k || "all"} type="button" onClick={() => setFilter(k)} className={pill(filter === k)}>{label} {counts[k]}</button>)}
+      </div>
+      {data && shown.length === 0 && <p className="text-[13px] text-white/55">{today.length ? "Nothing with this status today." : `No ${L.word} slideshows today yet.`}</p>}
+      <div className="space-y-3" data-testid={`cm-list-${lane}`}>{shown.map((i, k) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} startOpen={k === 0} />)}</div>
+    </section>
+  );
+}
 
+export function QueueTab({ st, onChanged }) {
+  const [zones, zoneControl] = useSafeZones();
+  const [runs, setRuns] = useState(null);
+  const [deskLane, setDeskLane] = useState(() => { try { return localStorage.getItem("cm.lane") || "zyvo"; } catch { return "zyvo"; } });
+  const pickLane = (l) => { setDeskLane(l); try { localStorage.setItem("cm.lane", l); } catch { /* private window */ } };
+  const reloadRuns = useCallback(async () => { try { setRuns((await api("runs")).runs); } catch { /* the sections show their own errors */ } }, []);
+  useEffect(() => { reloadRuns(); const t = setInterval(reloadRuns, 10_000); return () => clearInterval(t); }, [reloadRuns]);
   const [auto, setAuto] = useState(Boolean(st.settings.daily_auto_run));
   const [autoBusy, setAutoBusy] = useState(false);
+  const [note, setNote] = useState(null);
   useEffect(() => { setAuto(Boolean(st.settings.daily_auto_run)); }, [st.settings.daily_auto_run]);
   const flipAuto = async (on) => {
     setAutoBusy(true); setNote(null);
     try { await api("saveSettings", { patch: { daily_auto_run: on } }); setAuto(on); onChanged(); } catch (e) { setNote(e.message); }
     setAutoBusy(false);
   };
-
-  const today = (data?.ideas ?? []).filter((i) => i.status !== "posted");
-  const counts = Object.fromEntries(TODAY_FILTERS.map(([k, , f]) => [k, today.filter(f).length]));
-  const shown = today.filter(TODAY_FILTERS.find(([k]) => k === statusFilter)[2]);
-  const pill = (on) => `shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? "border-lime-300/60 bg-lime-300/15 text-lime-100" : "border-white/10 bg-white/[0.03] text-white/70"}`;
-
   return (
     <div className="space-y-4">
-      <Card title="Today" testid="cm-make">
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
-          <button type="button" role="switch" aria-checked={auto} aria-label="Automatic" disabled={autoBusy} onClick={() => flipAuto(!auto)} data-testid="cm-automatic"
-            className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-40 ${auto ? "bg-lime-300" : "bg-white/15"}`}>
-            <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${auto ? "left-6" : "left-1"}`} />
-          </button>
-          <div className="text-[13.5px]">
-            <span className="font-semibold text-white">Automatic {auto ? "ON" : "OFF"}</span>
-            <span className="text-white/55"> · {auto ? `makes ${st.settings.slideshows_per_day} slideshows by itself every day at ${st.settings.run_time_local} (Helsinki)` : "no daily run; use the button whenever you want"}. The time is in Settings.</span>
-          </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+        <button type="button" role="switch" aria-checked={auto} aria-label="Automatic" disabled={autoBusy} onClick={() => flipAuto(!auto)} data-testid="cm-automatic"
+          className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-40 ${auto ? "bg-lime-300" : "bg-white/15"}`}>
+          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${auto ? "left-6" : "left-1"}`} />
+        </button>
+        <div className="text-[13.5px]">
+          <span className="font-semibold text-white">Automatic {auto ? "ON" : "OFF"}</span>
+          <span className="text-white/55"> · {auto ? `makes each account's daily count by itself at ${st.settings.run_time_local} (Helsinki)` : "no daily run; use the buttons below"}. Counts per account and the time are in Settings.</span>
         </div>
-        <form onSubmit={make} className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-          <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={200} placeholder='Topic (optional), e.g. "AI tools that replace a video editor"' className={`${input} w-full sm:flex-1`} aria-label="Topic" data-testid="cm-topic" />
-          <select value={count} onChange={(e) => setCount(e.target.value)} className={input} aria-label="How many">{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select>
-          <button type="submit" disabled={busy || st.settings.kill_switch || Boolean(active)} data-testid="cm-make-button"
-            className="rounded-xl bg-lime-300 px-6 py-3 text-[16px] font-bold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{busy ? "Starting…" : `Make ${n} new slideshow${n > 1 ? "s" : ""}`}</button>
-        </form>
-        <p className="mt-2 text-[12px] text-white/45">{st.dryRun.effective ? "Dry run: mocked, $0." : "Live: about $0.10–0.25 a slideshow, within the caps."} Empty topic: Claude picks. Works whether Automatic is on or off.</p>
-        {note && <p role="status" className="mt-2 text-[13px] text-white/70">{note}</p>}
-      </Card>
-
-      {active && <RunProgress runId={active.id} onTick={load} onDone={() => { load(); onChanged(); }} />}
-
-      <div className="flex flex-wrap items-center gap-2" data-testid="cm-today-filters">
-        {TODAY_FILTERS.map(([k, label]) => <button key={k || "all"} type="button" onClick={() => setStatusFilter(k)} className={pill(statusFilter === k)}>{label} {counts[k]}</button>)}
         <div className="ml-auto">{zoneControl}</div>
+        {note && <p className="w-full text-[12.5px] text-red-200">{note}</p>}
       </div>
-      {runs && runs.length > 0 && (
-        <details className="text-[12.5px] text-white/60" open={Boolean(runFilter)}>
-          <summary className="cursor-pointer">Filter by run (optional){runFilter ? " · one run" : ""}</summary>
-          <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
-            <button type="button" onClick={() => setRunFilter(null)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${!runFilter ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}><div className="font-semibold text-white">All runs today</div></button>
-            {runs.slice(0, 12).map((r) => (
-              <button key={r.id} type="button" onClick={() => setRunFilter(r.id === runFilter ? null : r.id)} className={`shrink-0 rounded-xl border px-3 py-2 text-left text-[12px] ${r.id === runFilter ? "border-lime-300/60 bg-lime-300/10" : "border-white/10 bg-white/[0.03]"}`}>
-                <div className="font-semibold text-white">{{ daily: "Daily run", manual: "Remake", samples: "Style samples" }[r.kind] ?? "Slideshows"} · {r.run_date}</div>
-                <div className="text-white/55">{nice(r.status)}{r.dry_run ? " · dry run" : ""} · {money(r.spend_usd, 3)}</div>
-              </button>
-            ))}
-          </div>
-        </details>
-      )}
-
-      {data && shown.length === 0 && <p className="text-[13.5px] text-white/60">{today.length ? "Nothing with this status today." : "Nothing made today yet. Press the button above."}</p>}
-      <div className="space-y-3" data-testid="cm-today-list">{shown.map((i, k) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} startOpen={k === 0} />)}</div>
+      <div className="hidden gap-1 rounded-xl border border-white/10 bg-black/20 p-1 lg:flex" role="tablist" aria-label="Account">
+        {Object.entries(LANES).map(([k, L]) => (
+          <button key={k} type="button" role="tab" aria-selected={deskLane === k} onClick={() => pickLane(k)} className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-bold ${deskLane === k ? `${L.bg} ${L.accent} ring-1 ${L.ring}` : "text-white/55 hover:text-white/80"}`}>{L.title}</button>
+        ))}
+      </div>
+      {Object.keys(LANES).map((k) => (
+        <LaneSection key={k} lane={k} st={st} runs={runs} zones={zones} onChanged={onChanged} reloadRuns={reloadRuns} className={deskLane === k ? "" : "lg:hidden"} />
+      ))}
     </div>
   );
 }
@@ -396,7 +414,7 @@ export function TodayTab({ st, onChanged }) {
 
 export function IdeasTab() {
   const [zones, zoneControl] = useSafeZones();
-  const [f, setF] = useState({ from: "", to: "", format: "", style: "", status: "" });
+  const [f, setF] = useState({ from: "", to: "", format: "", style: "", status: "", account: "" });
   const [data, setData] = useState(null);
   const [lib, setLib] = useState(null);
   const [error, setError] = useState(null);
@@ -410,7 +428,8 @@ export function IdeasTab() {
   return (
     <div className="space-y-4">
       <Card title="Filter">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+          <select value={f.account} onChange={(e) => setF({ ...f, account: e.target.value })} className={input} aria-label="Account"><option value="">both accounts</option><option value="zyvo">Zyvo</option><option value="creator">Creator</option></select>
           <input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} className={input} aria-label="From" />
           <input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} className={input} aria-label="To" />
           <select value={f.format} onChange={(e) => setF({ ...f, format: e.target.value })} className={input} aria-label="Format"><option value="">all formats</option>{opts("format").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
@@ -557,6 +576,19 @@ export function LibraryTab() {
 
 const ASSET_TONE = { active: "bg-lime-300/15 text-lime-200", excluded: "bg-amber-300/15 text-amber-200", blocked: "bg-red-400/15 text-red-200", flawed: "bg-orange-400/15 text-orange-200", pending: "bg-white/10 text-white/60" };
 
+/** The prompt that really made this output (for "Prompt → result" slides); empty when unknown. */
+function PromptField({ row, onSaved }) {
+  const [v, setV] = useState(row.prompt ?? "");
+  const [open, setOpen] = useState(false);
+  if (!open) return <button type="button" onClick={() => setOpen(true)} className="text-white/55 underline">{row.prompt ? "Prompt ✓" : "Add its prompt"}</button>;
+  return (
+    <div className="space-y-1">
+      <textarea rows={2} value={v} onChange={(e) => setV(e.target.value)} maxLength={300} placeholder="The exact prompt that made it" className="w-full rounded-md border border-white/15 bg-white/[0.05] p-1.5 text-[11.5px] text-white" />
+      <button type="button" onClick={async () => { await api("setAssetPrompt", { id: row.id, prompt: v }); setOpen(false); onSaved(); }} className="text-lime-200 underline">Save</button>
+    </div>
+  );
+}
+
 export function AssetsTab() {
   const [f, setF] = useState({ status: "", tool: "" });
   const [data, setData] = useState(null);
@@ -591,6 +623,7 @@ export function AssetsTab() {
                 <div className="line-clamp-2 text-white/75" title={r.source_path}>{r.subject ?? r.source_path}</div>
                 {r.exclude_reason && <div className="text-amber-200/80">{r.exclude_reason}</div>}
                 {r.status === "flawed" && r.flaw_reason && <div className="text-orange-200/80">QA: {r.flaw_reason}</div>}
+                <PromptField row={r} onSaved={load} />
                 {r.status === "flawed" ? <button type="button" onClick={() => setStatus(r, "active")} className="text-white/70 underline">Unflag</button>
                   : r.status === "blocked"
                   ? <button type="button" onClick={() => setStatus(r, "active")} className="text-white/70 underline">Unblock</button>

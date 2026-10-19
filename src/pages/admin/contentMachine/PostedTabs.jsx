@@ -36,7 +36,7 @@ function Card({ title, children, right, testid }) {
 
 export function MarkPosted({ idea, onDone }) {
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState({ platform: "tiktok", postUrl: "", postedAt: "" });
+  const [f, setF] = useState({ platform: "tiktok", postUrl: "", postedAt: "", account: idea.account ?? "creator" });
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
   if (!["done", "approved", "posted"].includes(idea.status)) return null;
@@ -48,6 +48,7 @@ export function MarkPosted({ idea, onDone }) {
   if (!open) return <button type="button" onClick={() => { setF({ ...f, postedAt: nowLocal() }); setOpen(true); }} data-testid="cm-mark-posted" className={primary}>Mark as posted</button>;
   return (
     <form onSubmit={save} className="flex w-full flex-col gap-2 rounded-xl border border-lime-300/30 bg-lime-300/[0.05] p-3 sm:flex-row sm:flex-wrap sm:items-end" data-testid="cm-post-form">
+      <label className="text-[12px] text-white/60">Account<select value={f.account} onChange={(e) => setF({ ...f, account: e.target.value })} className={`${input} mt-1 block w-full`} data-testid="cm-post-account"><option value="zyvo">Zyvo</option><option value="creator">Creator</option></select></label>
       <label className="text-[12px] text-white/60">Platform<select value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} className={`${input} mt-1 block w-full`}>{PLATFORMS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       <label className="min-w-0 flex-1 text-[12px] text-white/60">Post URL<input required value={f.postUrl} onChange={(e) => setF({ ...f, postUrl: e.target.value })} placeholder="https://www.tiktok.com/@…/photo/…" className={`${input} mt-1 block w-full`} /></label>
       <label className="text-[12px] text-white/60">Posted at (Helsinki)<input type="datetime-local" required value={f.postedAt} onChange={(e) => setF({ ...f, postedAt: e.target.value })} className={`${input} mt-1 block w-full`} /></label>
@@ -151,6 +152,24 @@ function StatsForm({ post, existing, onSaved, onCancel }) {
   );
 }
 
+/* ─── the account switch (Posted, Analytics) ─────────────────────────── */
+
+const ACCOUNT_VIEWS = [["both", "Both"], ["zyvo", "Zyvo"], ["creator", "Creator"]];
+function useAccountView(key) {
+  const [v, setV] = useState(() => { try { return localStorage.getItem(key) || "both"; } catch { return "both"; } });
+  const pick = (x) => { setV(x); try { localStorage.setItem(key, x); } catch { /* private window */ } };
+  const control = (
+    <div className="inline-flex gap-1 rounded-xl border border-white/10 bg-black/25 p-1" role="tablist" aria-label="Account" data-testid="cm-account-switch">
+      {ACCOUNT_VIEWS.map(([k, l]) => (
+        <button key={k} type="button" role="tab" aria-selected={v === k} onClick={() => pick(k)}
+          className={`rounded-lg px-3 py-1.5 text-[12.5px] font-bold ${v === k ? (k === "zyvo" ? "bg-violet-300/20 text-violet-100" : k === "creator" ? "bg-sky-300/15 text-sky-100" : "bg-white/15 text-white") : "text-white/55"}`}>{l}</button>
+      ))}
+    </div>
+  );
+  return [v, control];
+}
+const accountBadge = (a) => <Badge tone={a === "zyvo" ? "bg-violet-300/20 text-violet-100" : "bg-sky-300/15 text-sky-100"}>{a === "zyvo" ? "Zyvo" : "Creator"}</Badge>;
+
 /* ─── Posted ─────────────────────────────────────────────────────────── */
 
 function PostCard({ post, onChanged }) {
@@ -167,7 +186,8 @@ function PostCard({ post, onChanged }) {
         <div className="h-[96px] w-[54px] shrink-0 overflow-hidden rounded-lg bg-black">{post.thumbnail && <img src={post.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" />}</div>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge tone="bg-sky-300/15 text-sky-200">{PLATFORM_NAME[post.platform]}</Badge>
+            {accountBadge(post.account)}
+            <Badge tone="bg-white/10 text-white/80">{PLATFORM_NAME[post.platform]}</Badge>
             {m.needs.map((k) => <Badge key={k} tone="bg-amber-300/20 text-amber-100">needs {k === "24h" ? "24 h" : "7 d"} stats</Badge>)}
             {post.idea?.recipe && <><Badge>{nice(post.idea.recipe.format)}</Badge><Badge>{nice(post.idea.recipe.style)}</Badge></>}
           </div>
@@ -234,23 +254,25 @@ export function PostedTab() {
   const [data, setData] = useState(null);
   const [note, setNote] = useState(null);
   const [filter, setFilter] = useState("");
+  const [account, accountControl] = useAccountView("cm.postedAccount");
   const load = useCallback(async () => { try { setData(await api("posts")); } catch (e) { setNote(e.message); } }, []);
   useEffect(() => { load(); }, [load]);
   if (!data) return <p className="text-[13px] text-white/50">{note ?? "Loading…"}</p>;
-  const due = data.posts.filter((p) => p.metrics.needs.length);
-  const shown = data.posts.filter((p) => !filter || (filter === "needs" ? p.metrics.needs.length : p.platform === filter));
+  const mine = data.posts.filter((p) => account === "both" || p.account === account);
+  const due = mine.filter((p) => p.metrics.needs.length);
+  const shown = mine.filter((p) => !filter || (filter === "needs" ? p.metrics.needs.length : p.platform === filter));
   const pill = (on) => `rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? "border-lime-300/60 bg-lime-300/15 text-lime-100" : "border-white/10 bg-white/[0.03] text-white/70"}`;
   return (
     <div className="space-y-4" data-testid="cm-posted">
-      <Card title="Posted">
+      <Card title="Posted" right={accountControl}>
         <p className="text-[12.5px] text-white/55">Every slideshow you marked as posted. Add stats after 24 hours and again after 7 days: each update is its own snapshot, so the growth shows. All times are Helsinki time.</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => setFilter("")} className={pill(!filter)}>All {data.posts.length}</button>
+          <button type="button" onClick={() => setFilter("")} className={pill(!filter)}>All {mine.length}</button>
           <button type="button" onClick={() => setFilter("needs")} className={pill(filter === "needs")}>Needs stats {due.length}</button>
-          {PLATFORMS.map(([k, l]) => <button key={k} type="button" onClick={() => setFilter(k)} className={pill(filter === k)}>{l} {data.posts.filter((p) => p.platform === k).length}</button>)}
+          {PLATFORMS.map(([k, l]) => <button key={k} type="button" onClick={() => setFilter(k)} className={pill(filter === k)}>{l} {mine.filter((p) => p.platform === k).length}</button>)}
         </div>
       </Card>
-      {shown.length === 0 && <p className="text-[13.5px] text-white/60">{data.posts.length ? "Nothing here." : "Nothing posted yet. Use \"Mark as posted\" on a slideshow in Today."}</p>}
+      {shown.length === 0 && <p className="text-[13.5px] text-white/60">{data.posts.length ? "Nothing here." : "Nothing posted yet. Use \"Mark as posted\" on a slideshow in the Queue."}</p>}
       <div className="space-y-3">{shown.map((p) => <PostCard key={p.id} post={p} onChanged={load} />)}</div>
     </div>
   );
@@ -263,14 +285,15 @@ const COLUMNS = [
 ];
 
 export function AnalyticsTab({ extra = null }) {
+  const [account, accountControl] = useAccountView("cm.analyticsAccount");
   const [f, setF] = useState({ platform: "", format: "", style: "", hook: "", from: "", to: "" });
   const [sort, setSort] = useState(["score", "desc"]);
   const [data, setData] = useState(null);
   const [lib, setLib] = useState(null);
   const [note, setNote] = useState(null);
   const load = useCallback(async () => {
-    try { setData(await api("analytics", Object.fromEntries(Object.entries(f).filter(([, v]) => v)))); } catch (e) { setNote(e.message); }
-  }, [f]);
+    try { setData(await api("analytics", { ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)), account })); } catch (e) { setNote(e.message); }
+  }, [f, account]);
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api("library").then((r) => setLib(r.rows)).catch(() => {}); }, []);
   const opts = (kind) => (lib ?? []).filter((r) => r.kind === kind);
@@ -283,7 +306,8 @@ export function AnalyticsTab({ extra = null }) {
   const cell = (k, r) => (k === "posted_at" ? showLocal(utcToLocal(r.posted_at, TZ)) : k === "engagementRate" ? pct(r.m[k]) : fmt(r.m[k], k === "viewsPerHour" ? 1 : 0));
   return (
     <div className="space-y-4" data-testid="cm-analytics">
-      <LearningCard />
+      <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[12.5px] text-white/55">Each account learns from its own posts: its own medians, winners and playbook. Both = a combined view.</span>{accountControl}</div>
+      <LearningCard key={account} account={account} />
       <Card title="Filter">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <select value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} className={input} aria-label="Platform"><option value="">all platforms</option>{PLATFORMS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
@@ -360,13 +384,13 @@ export function AnalyticsTab({ extra = null }) {
 
 /* ─── Phase 3: the learning loop (top of Analytics) ──────────────────── */
 
-export function LearningCard() {
+export function LearningCard({ account = "creator" }) {
   const [d, setD] = useState(null);
   const [text, setText] = useState(null);
   const [busy, setBusy] = useState(null);
   const [note, setNote] = useState(null);
   const [lib, setLib] = useState(null);
-  const load = useCallback(async () => { try { const r = await api("learning"); setD(r); setText((t) => (t == null ? r.playbook : t)); } catch (e) { setNote(e.message); } }, []);
+  const load = useCallback(async () => { try { const r = await api("learning", { account }); setD(r); setText((t) => (t == null ? r.playbook : t)); } catch (e) { setNote(e.message); } }, [account]);
   useEffect(() => { load(); api("library").then((r) => setLib(r.rows)).catch(() => {}); }, [load]);
   const latest = d?.analyses?.[0];
   const running = Boolean(latest && ["queued", "running"].includes(latest.status));
@@ -377,8 +401,8 @@ export function LearningCard() {
   const r = shown?.report;
   const libRow = (kind, key) => lib?.find((x) => x.kind === kind && x.key === key);
   return (
-    <Card title="Learning" testid="cm-learning" right={
-      <button type="button" disabled={!!busy || running} data-testid="cm-analyze" onClick={() => { if (window.confirm("Let the agent analyze every post's stats and propose a playbook? One paid call to the main model, about $0.05–0.15, within the caps.")) act("analyze", () => api("analyze")); }} className={primary}>
+    <Card title={`Learning · ${{ zyvo: "Zyvo account", creator: "Creator account", both: "both accounts" }[account]}`} testid="cm-learning" right={
+      <button type="button" disabled={!!busy || running} data-testid="cm-analyze" onClick={() => { if (window.confirm("Let the agent analyze every post's stats and propose a playbook? One paid call to the main model, about $0.05–0.15, within the caps.")) act("analyze", () => api("analyze", { account })); }} className={primary}>
         {running ? "Analyzing…" : "Let the agent analyze"}
       </button>}>
       <div className="space-y-4 text-[13px] text-white/80">
@@ -405,6 +429,21 @@ export function LearningCard() {
               })}</ul>}
           </div>
         </div>
+        {d.features && (
+          <div className="rounded-xl border border-violet-300/25 bg-violet-300/[0.04] p-3" data-testid="cm-features">
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">What drives profile visits and link clicks (Zyvo account)</div>
+            {d.features.features.length === 0 ? <p className="text-white/50">No posted Zyvo slideshows with stats yet.</p> : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[["features", "Features (the facts the slides cite)"], ["hooks", "Hooks"]].map(([k, title]) => (
+                  <table key={k} className="w-full text-left text-[12.5px]"><thead className="text-white/45"><tr><th className="py-1 font-semibold">{title}</th><th className="font-semibold">Posts</th><th className="font-semibold">Visits / 1k views</th><th className="font-semibold">Link clicks</th><th className="font-semibold">Score</th></tr></thead>
+                    <tbody className="divide-y divide-white/[0.06]">{d.features[k].slice(0, 8).map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td>{g.posts}</td><td className="tabular-nums">{fmt(g.visitsPer1k, 1)}</td><td className="tabular-nums">{fmt(g.linkClicks)}</td><td className="tabular-nums">{fmt(g.score)}</td></tr>)}</tbody>
+                  </table>
+                ))}
+              </div>
+            )}
+            <p className="mt-1 text-[11.5px] text-white/45">Link clicks are entered with the stats (the site doesn't record UTM visits per post yet).</p>
+          </div>
+        )}
         {r && (
           <div className="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3" data-testid="cm-analysis">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-white/40">The agent's analysis · {showLocal(utcToLocal(shown.created_at, TZ))} · {shown.posts_count} posts · confidence {r.confidence} · {money(shown.cost_usd, 3)}</div>
@@ -415,14 +454,14 @@ export function LearningCard() {
             {r.retire?.length > 0 && <div><b>Retire:</b> {r.retire.map((e) => `${e.kind} ${nice(e.key)} (${e.why})`).join(" · ")}</div>}
             {r.trend_notes && <div><b>Trends:</b> {r.trend_notes}</div>}
             <details><summary className="cursor-pointer text-white/70">Proposed playbook</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.playbook}</pre></details>
-            <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Replace your playbook with this proposal? You can still edit it after.")) act("apply", async () => { const x = await api("applyAnalysis", { id: shown.id }); setText(x.playbook); }); }} className={button}>{shown.applied_at ? "Applied ✓ (apply again)" : "Apply this playbook"}</button>
+            {account !== "both" && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Replace this account's playbook with this proposal? You can still edit it after.")) act("apply", async () => { const x = await api("applyAnalysis", { id: shown.id }); setText(x.playbook); }); }} className={button}>{shown.applied_at ? "Applied ✓ (apply again)" : "Apply this playbook"}</button>}
           </div>
         )}
-        <div>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Playbook (the writer follows it){d.playbookUpdatedAt ? ` · saved ${showLocal(utcToLocal(d.playbookUpdatedAt, TZ))}` : ""}</div>
+        {d.playbook != null && <div>
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Playbook of this account (its writer follows it){d.playbookUpdatedAt ? ` · saved ${showLocal(utcToLocal(d.playbookUpdatedAt, TZ))}` : ""}</div>
           <textarea rows={8} value={text ?? ""} onChange={(e) => setText(e.target.value)} placeholder="Empty: the writer uses only the library and the brand rules. Let the agent analyze to get a first proposal." className={`${input} w-full font-mono text-[12.5px]`} aria-label="Playbook" data-testid="cm-playbook" />
-          <button type="button" disabled={!!busy || text === d.playbook} onClick={() => act("save", () => api("savePlaybook", { text }))} className={`${primary} mt-2`}>Save playbook</button>
-        </div>
+          <button type="button" disabled={!!busy || text === d.playbook} onClick={() => act("save", () => api("savePlaybook", { account, text }))} className={`${primary} mt-2`}>Save playbook</button>
+        </div>}
         <div className="rounded-xl border border-white/10 bg-black/20 p-3">
           <div className="mb-2 flex flex-wrap items-center gap-3">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Scout</span>

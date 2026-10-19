@@ -15,7 +15,7 @@ export function createPipelineDb(db) {
     async settings() { return must(await db.from("cm_settings").select("*").eq("id", true).single(), "settings"); },
     async updateSettings(patch) { must(await db.from("cm_settings").update({ ...patch, updated_at: nowIso() }).eq("id", true), "update settings"); },
     async library() {
-      const rows = must(await db.from("cm_library").select("kind,key,name,description,spec").eq("status", "active").order("key"), "library");
+      const rows = must(await db.from("cm_library").select("kind,key,name,description,spec,lanes").eq("status", "active").order("key"), "library");
       return { formats: rows.filter((r) => r.kind === "format"), styles: rows.filter((r) => r.kind === "style"), hooks: rows.filter((r) => r.kind === "hook") };
     },
     async getRun(id) { return must(await db.from("cm_runs").select("*").eq("id", id).single(), "run"); },
@@ -74,7 +74,7 @@ export function createPipelineDb(db) {
       return must(await db.from("cm_runs").select("*").order("created_at", { ascending: false }).limit(limit), "runs");
     },
     /** Ideas with their slideshow generation and its packages. filters: runId | {from, to, format, style, status}. */
-    async listIdeas({ runId = null, from = null, to = null, format = null, style = null, status = null, limit = 60 } = {}) {
+    async listIdeas({ runId = null, from = null, to = null, format = null, style = null, status = null, account = null, limit = 60 } = {}) {
       let q = db.from("cm_ideas").select("*, cm_generations(*, cm_packages(*))").order("created_at", { ascending: false }).limit(limit);
       if (runId) q = q.eq("run_id", runId);
       if (from) q = q.gte("created_at", from);
@@ -82,6 +82,7 @@ export function createPipelineDb(db) {
       if (format) q = q.eq("format", format);
       if (style) q = q.eq("recipe->>style", style);
       if (status) q = q.eq("status", status);
+      if (account) q = q.eq("account", account);
       return must(await q, "ideas");
     },
     async ideaCosts(ideaIds) {
@@ -116,7 +117,7 @@ export function createPipelineDb(db) {
     /* ─── the asset library ─── */
     /** Usable assets as the writer and the image step see them. */
     async activeAssets() {
-      return must(await db.from("cm_assets").select("ref,path,kind,tool,style,subject,tags,subtitles").eq("status", "active").order("tool").limit(400), "active assets");
+      return must(await db.from("cm_assets").select("ref,path,kind,tool,style,subject,tags,subtitles,prompt").eq("status", "active").order("tool").limit(400), "active assets");
     },
     async getAssets(ids) { return must(await db.from("cm_assets").select("*").in("id", ids), "assets"); },
     async listAssets({ status = null, tool = null, kind = null, limit = 300 } = {}) {
@@ -147,6 +148,16 @@ export function createPipelineDb(db) {
       if (error) throw new Error(`[content-machine] upload logo: ${error.message}`);
     },
 
+    /* ─── the two accounts (lanes) and the Zyvo fact sheet ─── */
+    async lanes() { return Object.fromEntries(must(await db.from("cm_lanes").select("*"), "lanes").map((l) => [l.key, l])); },
+    async saveLane(key, patch) { return must(await db.from("cm_lanes").update({ ...patch, updated_at: nowIso() }).eq("key", key).select("*").single(), "save lane"); },
+    async facts() { return must(await db.from("cm_facts").select("key,category,claim,detail,source").eq("status", "active").order("category").order("key"), "facts"); },
+    async listFacts() { return must(await db.from("cm_facts").select("*").order("category").order("key"), "fact sheet"); },
+    async saveFact(row) {
+      if (row.id) { const { id, ...patch } = row; return must(await db.from("cm_facts").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "save fact"); }
+      return must(await db.from("cm_facts").insert(row).select("*").single(), "add fact");
+    },
+
     /* ─── Phase 3: analyses and scout reports ─── */
     async createAnalysis(row) { return must(await db.from("cm_analyses").insert(row).select("*").single(), "create analysis"); },
     async getAnalysis(id) { return must(await db.from("cm_analyses").select("*").eq("id", id).single(), "analysis"); },
@@ -165,7 +176,7 @@ export function createPipelineDb(db) {
     async postsOfIdea(ideaId) { return must(await db.from("cm_posts").select("*").eq("idea_id", ideaId), "posts of idea"); },
     /** Every post with its slideshow (title, recipe, first PNG) and its snapshots. */
     async listPosts({ limit = 500 } = {}) {
-      return must(await db.from("cm_posts").select("*, cm_ideas(id,title,recipe,status,cm_generations(files)), cm_post_stats(*)").not("idea_id", "is", null).order("posted_at", { ascending: false }).limit(limit), "posts");
+      return must(await db.from("cm_posts").select("*, cm_ideas(id,title,recipe,status,account,script,cm_generations(files)), cm_post_stats(*)").not("idea_id", "is", null).order("posted_at", { ascending: false }).limit(limit), "posts");
     },
     async getStats(id) { return must(await db.from("cm_post_stats").select("*").eq("id", id).single(), "stats"); },
     async saveStats(row) {

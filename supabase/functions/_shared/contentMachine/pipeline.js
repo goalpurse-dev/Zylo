@@ -20,12 +20,13 @@ import { estimateUsd, jsonFromMessage, priceFor } from "./providers/anthropic.js
 import { IMAGE_ESTIMATE_USD } from "./providers/runware.js";
 import { RENDER_ESTIMATE_USD, RENDER_TIMEOUT_MS, renderCostUsd } from "./providers/fly.js";
 import { localDay } from "./spendSummary.js";
-import { domain } from "./slides/templates.js";
+import { LAYOUT_VERSION, domain } from "./slides/templates.js";
 import { assetUpdate, tagRequest } from "./assets.js";
 import { qaFindings, qaRequest } from "./qa.js";
 import { postMetrics, scorePosts } from "./analytics.js";
-import { LEARNING_RULES, freshness, learn } from "./learning.js";
+import { LEARNING_RULES, featureBreakdown, freshness, learn } from "./learning.js";
 import { SNAPSHOT_COLUMNS, analysisRequest, analystPosts, scoutRequest } from "./agents.js";
+import { citable } from "./zyvoLane.js";
 import { usableAssets, mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
@@ -167,17 +168,31 @@ async function plan(job, deps) {
   const today = localDay(deps.now(), s.timezone);
   const library = await db.library();
   const history = await db.recentRecipes(120);
+  const lanes = (await db.lanes?.()) ?? {};
+  const assets = (await db.activeAssets?.()) ?? [];
+  const posts = await postsForLearning(deps);
   const count = Math.max(1, Math.min(20, Number(run.input?.count) || s.slideshows_per_day));
-  const recipes = planRecipes({
-    library, history, count, seed: run.id, topic: run.input?.topic || null,
-    experimentPhase: inExperimentPhase({ startedOn: s.experiment_started_on, today, days: s.experiment_days }),
-    // Winners (Phase 3): recipes with repeated success, fresh-weighted (learning.js). Used after the experiment phase.
-    winners: learn(await postsForLearning(deps), { now: deps.now(), halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 }).winners.map((w) => w.recipe),
-    winnersPerDay: s.winners_per_day,
-  });
+  // The two accounts (owner, 2026-10-19): a lane's batch makes only that lane; the daily run makes each lane's
+  // own count (Settings). Each lane plans with its own formats, history, posting times and winners.
+  const perLane = run.account ? { [run.account]: count } : run.input?.lanes ?? { creator: count };
+  const experimentPhase = inExperimentPhase({ startedOn: s.experiment_started_on, today, days: s.experiment_days });
+  const recipes = [];
+  for (const [account, n] of Object.entries(perLane)) {
+    if (!(n > 0)) continue;
+    const winnersShare = (s.winners_per_day ?? 3) / Math.max(1, (s.winners_per_day ?? 3) + (s.experiments_per_day ?? 2));
+    recipes.push(...planRecipes({
+      library: laneLibrary(library, account, assets), history, count: Math.min(20, n), seed: `${run.id}-${account}`, topic: run.input?.topic || null,
+      experimentPhase,
+      // Winners (Phase 3): this lane's recipes with repeated success, fresh-weighted (learning.js), after the experiment phase.
+      winners: learn(posts.filter((p) => (p.idea?.account ?? p.idea?.recipe?.account ?? "creator") === account), { now: deps.now(), halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 }).winners.map((w) => w.recipe),
+      winnersPerDay: Math.round(n * winnersShare),
+      lane: { key: account, postTimes: lanes[account]?.post_times },
+    }));
+  }
+  if (!recipes.length) throw Object.assign(new Error("nothing to plan (no lane has slideshows)"), { final: true });
   if (!run.dry_run && !s.experiment_started_on) await db.updateSettings({ experiment_started_on: today });
   const ideas = await db.createIdeas(recipes.map((r) => ({
-    run_id: run.id, status: "producing", source: run.input?.topic ? "owner" : "machine", format: r.format, zyvo_tool: null,
+    run_id: run.id, status: "producing", source: run.input?.topic ? "owner" : "machine", format: r.format, zyvo_tool: null, account: r.account ?? "creator",
     title: "(being written)", recipe: r, topic: r.topic, dry_run: run.dry_run, target_platforms: ["tiktok", "instagram", "youtube"],
   })));
   await db.updateRun(run.id, { status: "ideating", started_at: run.started_at ?? deps.now().toISOString() });
@@ -192,12 +207,36 @@ async function plan(job, deps) {
 async function writeContext(deps, idea) {
   const s = await deps.db.settings();
   const trends = (await deps.db.listScouts?.(1))?.[0]?.trend_brief ?? "";
-  return { s, library: await deps.db.library(), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env), assets: (await deps.db.activeAssets?.()) ?? [], extra: { playbook: s.playbook ?? "", trends } };
+  const account = idea.account ?? idea.recipe?.account ?? "creator";
+  const lane = ((await deps.db.lanes?.()) ?? {})[account] ?? null;
+  const facts = (await deps.db.facts?.()) ?? [];
+  const assets = (await deps.db.activeAssets?.()) ?? [];
+  return {
+    s, account, facts, brandRules: lane?.brand_rules || s.brand_rules,
+    library: laneLibrary(await deps.db.library(), account, assets), recent: await deps.db.recentTitles(30, idea.id), today: localDay(deps.now(), s.timezone), m: models(s, deps.env), assets,
+    extra: { playbook: (lane ? lane.playbook : s.playbook) ?? "", trends, facts },
+  };
+}
+
+/** A lane's part of the library: its formats and styles (cm_library.lanes); "Prompt → result" only with 2+ assets whose prompt is recorded. */
+export function laneLibrary(library, account = "creator", assets = []) {
+  const mine = (r) => (r.lanes ?? ["creator"]).includes(account);
+  const prompted = usableAssets(assets).filter((a) => String(a.prompt ?? "").trim()).length;
+  return {
+    formats: library.formats.filter((f) => mine(f) && (f.spec?.requires !== "asset_prompts" || prompted >= 2)),
+    styles: library.styles.filter(mine), hooks: library.hooks.filter(mine),
+  };
+}
+
+/** What the program checks a slideshow against: the usable assets (and their recorded prompts) and the fact keys. */
+function checkOpts(assets, facts) {
+  const usable = usableAssets(assets);
+  return { assetRefs: new Set(usable.map((a) => a.ref)), assetPrompts: new Map(usable.filter((a) => a.prompt).map((a) => [a.ref, a.prompt])), factKeys: new Set(citable(facts).map((x) => x.key)) };
 }
 
 /** Program checks + near-duplicates. Returns the problems (empty = keep it). */
-function judge(slideshow, idea, recent, assets = []) {
-  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(usableAssets(assets).map((a) => a.ref)) });
+function judge(slideshow, idea, recent, assets = [], facts = []) {
+  const problems = slideshowProblems(slideshow, idea.recipe, checkOpts(assets, facts));
   const dup = nearDuplicate(slideshow, recent);
   if (dup) problems.push(`too close to an earlier post ("${dup.title}"): pick a different angle`);
   return problems;
@@ -217,13 +256,13 @@ async function saveSlideshow(deps, idea, slideshow) {
 async function write(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, recent, today, m, assets, extra } = await writeContext(deps, idea);
-  const request = writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title), assets, ...extra });
+  const { library, recent, today, m, assets, extra, facts, brandRules } = await writeContext(deps, idea);
+  const request = writeRequest({ model: m.main, brandRules, library, recipe: idea.recipe, today, avoidTitles: recent.map((r) => r.title), assets, ...extra });
   if (job.payload?.problems?.length) request.messages[0].content += `\n\nYOUR LAST ATTEMPT HAD THESE PROBLEMS, avoid them:\n${job.payload.problems.map((p) => `- ${p}`).join("\n")}`;
   if (job.payload?.note) request.messages[0].content += `\n\nNOTE: ${job.payload.note}`;
   const r = await callMain(deps, { operation: "anthropic.write", request, idea, estimate: (model) => ESTIMATES.write(model) });
-  const slideshow = r.dryRun ? mockSlideshow(idea.recipe) : jsonFromMessage(r.result);
-  const problems = r.dryRun ? [] : judge(slideshow, idea, recent, assets);
+  const slideshow = r.dryRun ? mockSlideshow(idea.recipe, usableAssets(assets), facts) : jsonFromMessage(r.result);
+  const problems = r.dryRun ? [] : judge(slideshow, idea, recent, assets, facts);
   if (problems.length) {
     if (!job.payload?.problems) {
       await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "write", payload: { problems } }]);
@@ -241,12 +280,10 @@ async function writeBatch(job, deps) {
   const ideas = (await deps.db.ideasOfRun(job.run_id)).filter((i) => i.status === "producing" && !i.script?.slides);
   if (!ideas.length) return "nothing to write";
   const s = await deps.db.settings();
-  const library = await deps.db.library();
   const today = localDay(deps.now(), s.timezone);
   const m = models(s, deps.env);
   const recent = await deps.db.recentTitles(30, null);
   const assets = (await deps.db.activeAssets?.()) ?? [];
-  const extra = { playbook: s.playbook ?? "", trends: (await deps.db.listScouts?.(1))?.[0]?.trend_brief ?? "" };
   const requests = [], ledger = {};
   let ticket = null;
   for (const idea of ideas) {
@@ -255,7 +292,8 @@ async function writeBatch(job, deps) {
       if (r.dryRun) { await deps.guard.settle(r.ledgerId, { actualUsd: 0, requestRef: "dry-run" }); await deps.db.enqueue([{ run_id: job.run_id, idea_id: idea.id, stage: "write" }]); continue; }
       ticket = ticket ?? r.ticket;
       ledger[idea.id] = r.ledgerId;
-      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title), assets, ...extra }) });
+      const ctx = await writeContext(deps, idea);   // the idea's own lane: rules, formats, playbook, fact sheet
+      requests.push({ custom_id: idea.id, params: writeRequest({ model: m.main, brandRules: ctx.brandRules, library: ctx.library, recipe: idea.recipe, today, avoidTitles: recent.map((x) => x.title), assets, ...ctx.extra }) });
     } catch (e) {
       if (!(e instanceof BudgetStopped) || e.reason === "kill_switch") throw e;
       await stopIdea(deps, idea.id, "skipped_budget", e.message);
@@ -293,7 +331,7 @@ async function pollBatch(job, deps) {
     }
     await deps.guard.settle(ledgerId, { actualUsd: r.costUsd, requestRef: `${batchId}/${ideaId}` });
     let slideshow = null, problems;
-    try { slideshow = jsonFromMessage(r.message); problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId), (await deps.db.activeAssets?.()) ?? []); } catch (e) { problems = [e.message]; }
+    try { slideshow = jsonFromMessage(r.message); problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId), (await deps.db.activeAssets?.()) ?? [], (await deps.db.facts?.()) ?? []); } catch (e) { problems = [e.message]; }
     if (problems.length) await deps.db.enqueue([{ run_id: job.run_id, idea_id: ideaId, stage: "write", payload: { problems } }]);
     else await saveSlideshow(deps, idea, slideshow);
   }
@@ -308,8 +346,9 @@ async function check(job, deps) {
   const s = await deps.db.settings();
   const m = models(s, deps.env);
   const links = utmLinks(idea.id);
+  const { brandRules, facts } = await writeContext(deps, idea);   // the lane's rules; the Zyvo lane is checked against the fact sheet
   const r = await deps.guard.spend("anthropic", "anthropic.package", ESTIMATES.package(m.fast), async (ticket) => {
-    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: packageRequest({ model: m.fast, brandRules: s.brand_rules, recipe: idea.recipe, slideshow: idea.script, links }) });
+    const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request: packageRequest({ model: m.fast, brandRules, recipe: idea.recipe, slideshow: idea.script, links, facts }) });
     return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
   }, await paidOpts(deps, idea, { mock: async () => ({ dry: true }) }));
   const pkg = r.dryRun ? mockPackage() : jsonFromMessage(r.result);
@@ -341,11 +380,11 @@ export function platformPackages(pkg, idea, links) {
 async function rewrite(job, deps) {
   const idea = await deps.db.getIdea(job.idea_id);
   if (TERMINAL.has(idea.status)) return "idea already finished";
-  const { s, library, today, m, assets, extra } = await writeContext(deps, idea);
-  const request = rewriteRequest({ model: m.main, brandRules: s.brand_rules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets, ...extra });
+  const { library, today, m, assets, extra, facts, brandRules } = await writeContext(deps, idea);
+  const request = rewriteRequest({ model: m.main, brandRules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets, ...extra });
   const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
   const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
-  const problems = slideshowProblems(slideshow, idea.recipe, { assetRefs: new Set(usableAssets(assets).map((a) => a.ref)) });
+  const problems = slideshowProblems(slideshow, idea.recipe, checkOpts(assets, facts));
   if (problems.length) throw Object.assign(new Error(`the rewrite failed the checks: ${problems.join("; ")}`), { final: true });
   // A layout rewrite (the text didn't fit) is counted apart from the compliance rewrite: one of each.
   const flag = job.payload?.layout ? { layoutRetried: true } : { rewritten: true };
@@ -364,7 +403,7 @@ async function images(job, deps) {
   const gen = await deps.db.ensureGeneration(idea.id);
   const have = gen.source_assets ?? {};
   // heroes: {slide index: {url} (generated) | {asset: path, ref} (from the asset library)}.
-  const assets = { background: have.background ?? null, heroes: { ...(have.heroes ?? {}) }, costs: { ...(have.costs ?? {}) }, ...(have.collages ? { collages: have.collages } : {}) };
+  const assets = { background: have.background ?? null, heroes: { ...(have.heroes ?? {}) }, costs: { ...(have.costs ?? {}) }, ...(have.collages ? { collages: have.collages } : {}), ...(have.galleries ? { galleries: have.galleries } : {}) };
   const library_ = (await deps.db.activeAssets?.()) ?? [];
   const byRef = new Map(library_.map((a) => [a.ref, a]));
   const wanted = [];
@@ -380,8 +419,13 @@ async function images(job, deps) {
     const unique = [...new Map(outputs.map((a) => [a.ref, a])).values()].slice(0, 4);
     if (unique.length >= 2) { assets.collages = { 0: unique.map((a) => ({ asset: a.path, ref: a.ref })) }; delete assets.heroes[0]; }
   }
+  // The Zyvo account's slides show several real outputs each, with their style / tool labels (owner, 2026-10-19).
   idea.script.slides.forEach((sl, i) => {
-    if (assets.heroes[i] || (i === 0 && assets.collages?.[0])) return;
+    const list = (sl.assets ?? []).map((x) => ({ a: byRef.get(String(x?.asset_id ?? "")), label: x?.label ?? null })).filter((x) => x.a);
+    if (list.length) assets.galleries = { ...(assets.galleries ?? {}), [i]: list.map((x) => ({ asset: x.a.path, ref: x.a.ref, label: x.label })) };
+  });
+  idea.script.slides.forEach((sl, i) => {
+    if (assets.heroes[i] || (i === 0 && assets.collages?.[0]) || assets.galleries?.[i]) return;
     const asset = sl.asset_id ? byRef.get(String(sl.asset_id)) : null;
     if (asset) { assets.heroes[i] = { asset: asset.path, ref: asset.ref }; return; }
     // A slide about Zyvo shows real Zyvo (its asset, else the real Zyvo screen): never a generated picture.
@@ -430,6 +474,17 @@ export async function heroUrls(deps, heroes = {}, seconds = 3600) {
   for (const [i, h] of Object.entries(heroes)) {
     if (h?.url) out[i] = h.url;
     else if (h?.asset) out[i] = await deps.files.signedUrl(h.asset, seconds);
+  }
+  return out;
+}
+
+/** The Zyvo account's galleries: {slide index: [{url, label}]} (signed links, labels kept in order). */
+export async function galleryUrls(deps, galleries = {}, seconds = 3600) {
+  const out = {};
+  for (const [i, list] of Object.entries(galleries ?? {})) {
+    const rows = [];
+    for (const g of list ?? []) { const url = g?.asset ? await deps.files.signedUrl(g.asset, seconds) : null; if (url) rows.push({ url, label: g.label ?? null }); }
+    out[i] = rows;
   }
   return out;
 }
@@ -493,11 +548,12 @@ async function render(job, deps) {
   };
   const renderJob = {
     ideaId: idea.id, slideshow: { slides: idea.script.slides }, style: style.spec,
-    images: { background: gen.source_assets?.background ?? null, heroes: await heroUrls(deps, gen.source_assets?.heroes), collages: await collageUrls(deps, gen.source_assets?.collages) },
+    images: { background: gen.source_assets?.background ?? null, heroes: await heroUrls(deps, gen.source_assets?.heroes), collages: await collageUrls(deps, gen.source_assets?.collages), galleries: await galleryUrls(deps, gen.source_assets?.galleries) },
     zyvoShot: await deps.files.signedUrl(ZYVO_SHOT_PATH, 3600), uploads, secondsPerSlide: 2.5,
     logos: await logosFor(deps, idea.script.slides),
     // The renderer takes pictures only from these hosts: our own bucket and the image provider.
     allowedHosts: deps.env.allowedImageHosts ?? [],
+    layoutVersion: LAYOUT_VERSION,
   };
   const r = await deps.guard.reserve("fly", "fly.render.slides", RENDER_ESTIMATE_USD, await paidOpts(deps, idea));
   let started;
@@ -509,6 +565,7 @@ async function render(job, deps) {
   }
   await deps.db.updateGeneration(gen.id, { status: "rendering" });
   await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "render_wait", payload: { ledgerId: r.ledgerId, startedAt: started.startedAt, machineId: started.machineId, paths }, run_after: new Date(deps.now().getTime() + 45_000).toISOString() }]);
+  await deps.db.updateGeneration(gen.id, { layout_version: LAYOUT_VERSION });
   return "rendering";
 }
 
@@ -572,7 +629,7 @@ async function qa(job, deps) {
   const slides = [];
   for (const [n, path] of (gen.files?.pngs ?? []).entries()) {
     const h = heroes[n];
-    const picture = n === 0 && gen.source_assets?.collages?.[0] ? "a collage of real Zyvo outputs from the library" : h?.url ? "generated" : h?.asset ? "a real Zyvo output from the library" : idea.script.slides[n]?.is_zyvo ? "the real Zyvo screen" : "the background";
+    const picture = gen.source_assets?.galleries?.[n] ? "real Zyvo outputs from the library (with small style labels) and rebuilt Zyvo UI" : ["ui_prompt", "ui_checklist"].includes(idea.script.slides[n]?.kind) ? "a rebuilt Zyvo UI component (no photo)" : n === 0 && gen.source_assets?.collages?.[0] ? "a collage of real Zyvo outputs from the library" : h?.url ? "generated" : h?.asset ? "a real Zyvo output from the library" : idea.script.slides[n]?.is_zyvo ? "the real Zyvo screen" : "the background";
     slides.push({ slide: n + 1, kind: idea.script.slides[n]?.kind ?? "slide", picture, url: await deps.files.signedUrl(path, 1800) });
   }
   const r = await deps.guard.spend("anthropic", "anthropic.qa", estimateUsd({ model, inputTokens: slides.length * 1700 + 900, outputTokens: slides.length * 90 }), async (ticket) => {
@@ -586,7 +643,8 @@ async function qa(job, deps) {
   const flawed = flawedAssets(findings, heroes);
   if (flawed.length) await deps.db.markAssetsFlawed?.(flawed);
   const done = async (extra = {}) => {
-    await deps.db.updateIdea(idea.id, { status: "done", compliance: { ...(idea.compliance ?? {}), qa: { checked: true, findings }, ...extra } });
+    // A slideshow the owner had approved (then rendered again) stays approved.
+    await deps.db.updateIdea(idea.id, { status: idea.status === "approved" ? "approved" : "done", compliance: { ...(idea.compliance ?? {}), qa: { checked: true, findings }, ...extra } });
     await finishRunIfDone(deps, idea.run_id);
   };
   if (!flagged.length) { await done(); return "qa passed"; }
@@ -627,9 +685,15 @@ async function analyze(job, deps) {
   if (a.status === "done") return "already done";
   const s = await deps.db.settings();
   const m = models(s, deps.env);
-  const posts = await postsForLearning(deps);
+  // One account's posts (its own medians and winners), or both for a combined report (owner, 2026-10-19).
+  const account = a.account ?? job.payload?.account ?? "creator";
+  const accountOf = (p) => p.account ?? p.idea?.account ?? p.idea?.recipe?.account ?? "creator";
+  const posts = (await postsForLearning(deps)).filter((p) => account === "both" || accountOf(p) === account);
+  const lane = account === "both" ? null : ((await deps.db.lanes?.()) ?? {})[account] ?? null;
   const now = deps.now();
   const learned = learn(posts, { now, halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 });
+  // The Zyvo account: which features (cited facts) and hooks go with profile visits and link clicks.
+  if (account === "zyvo") learned.features = featureBreakdown(posts, { now });
   // The analyst reads every post, scored or not, newest first, with its freshness weight.
   const rows = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
   scorePosts(rows);
@@ -637,7 +701,7 @@ async function analyze(job, deps) {
   const lib = await deps.db.library();
   const library = [...lib.formats.map((x) => ({ ...x, kind: "format", status: "active" })), ...lib.styles.map((x) => ({ ...x, kind: "style", status: "active" })), ...lib.hooks.map((x) => ({ ...x, kind: "hook", status: "active" }))];
   const scoutReport = (await deps.db.listScouts?.(1))?.[0] ?? null;
-  const request = analysisRequest({ model: m.main, posts: { columns: SNAPSHOT_COLUMNS, rows: analystPosts(rows) }, learning: learned, playbook: s.playbook, rules: LEARNING_RULES({ half_life_days: s.half_life_days ?? 14, winner_min_successes: s.winner_min_successes ?? 3 }), library, scout: scoutReport });
+  const request = analysisRequest({ model: m.main, account, posts: { columns: SNAPSHOT_COLUMNS, rows: analystPosts(rows) }, learning: learned, playbook: lane ? lane.playbook : s.playbook, rules: LEARNING_RULES({ half_life_days: s.half_life_days ?? 14, winner_min_successes: s.winner_min_successes ?? 3 }), library, scout: scoutReport });
   await deps.db.updateAnalysis(a.id, { status: "running", model: m.main, learning: learned });
   try {
     const r = await deps.guard.spend("anthropic", "anthropic.analyze", estimateUsd({ model: m.main, inputTokens: 6000 + posts.length * 400, outputTokens: 4000 }), async (ticket) => {

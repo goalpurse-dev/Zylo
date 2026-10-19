@@ -100,7 +100,7 @@ export class LayoutError extends Error {
  * image provider. Never a local file, never a random address.
  */
 export function assertRemoteImages(job) {
-  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.heroes ?? {}), ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.images?.collages ?? {}).flat(), ...Object.values(job.logos ?? {})].filter(Boolean);
+  const urls = [job.zyvoShot, job.images?.background, ...Object.values(job.images?.heroes ?? {}), ...Object.values(job.images?.illustrations ?? {}), ...Object.values(job.images?.collages ?? {}).flat(), ...Object.values(job.images?.galleries ?? {}).flat().map((g) => g?.url), ...Object.values(job.logos ?? {})].filter(Boolean);
   const bad = urls.filter((u) => !String(u).toLowerCase().startsWith("https://"));
   if (bad.length) throw new Error(`only https images may be used in a real render (got ${bad.length} other)`);
   const hosts = (job.allowedHosts ?? []).map((h) => String(h).toLowerCase());
@@ -132,7 +132,7 @@ export async function renderSlideshow(job, dir, { chromium, local = false, safeZ
     for (const [i, slide] of slides.entries()) {
       const html = slideHtml({
         slide, index: i, total: slides.length, style: job.style, zyvoShot: job.zyvoShot ?? null, fontCss, logos: job.logos ?? null, safeZones, allowFile: local,
-        images: { background: job.images?.background ?? null, hero: job.images?.heroes?.[i] ?? job.images?.illustrations?.[i] ?? null, collage: job.images?.collages?.[i] ?? null },
+        images: { background: job.images?.background ?? null, hero: job.images?.heroes?.[i] ?? job.images?.illustrations?.[i] ?? null, collage: job.images?.collages?.[i] ?? null, gallery: job.images?.galleries?.[i] ?? null },
       });
       const file = path.join(dir, `slide-${String(i + 1).padStart(2, "0")}.png`);
       await writeFile(path.join(dir, "page.html"), html, "utf8");   // file:// so local fonts load

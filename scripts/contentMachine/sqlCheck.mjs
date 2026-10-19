@@ -38,6 +38,7 @@ const M4 = "supabase/migrations/20261110100000_content_machine_logo_rules.sql";
 const M5 = "supabase/migrations/20261112100000_content_machine_round5.sql";
 const M6 = "supabase/migrations/20261113100000_content_machine_posts.sql";
 const M7 = "supabase/migrations/20261114100000_content_machine_learning.sql";
+const M8 = "supabase/migrations/20261115100000_content_machine_lanes.sql";
 const steps = [
   ["migration 1", M1],
   ["migration 1 again (must be safe to re-run)", M1],
@@ -63,6 +64,10 @@ const steps = [
   ["migration 7 (learning loop)", M7],
   ["migration 7 again", M7],
   ["learning tests (stubbed pg_net)", "tests/contentMachineLearning.pglite.sql"],
+  ["migration 8 (two accounts, fact sheet)", M8],
+  ["migration 8 again", M8],
+  ["lanes tests", "tests/contentMachineLanes.lifecycle.sql"],
+  ["rollback 8", "supabase/rollbacks/20261115100000_content_machine_lanes_rollback.sql"],
   ["rollback 7", "supabase/rollbacks/20261114100000_content_machine_learning_rollback.sql"],
   ["rollback 6", "supabase/rollbacks/20261113100000_content_machine_posts_rollback.sql"],
   ["rollback 5 before the others", "supabase/rollbacks/20261112100000_content_machine_round5_rollback.sql"],
@@ -76,6 +81,7 @@ const steps = [
   ["", M5],
   ["", M6],
   ["", M7],
+  ["", M8],
 ];
 for (const [label, file] of steps) {
   try {

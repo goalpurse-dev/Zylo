@@ -65,33 +65,49 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   p.on("pageerror", (e) => errors.push(e.message));
   p.on("dialog", (d) => d.accept());
   await p.goto(`${base}/admin/content-machine`, { waitUntil: "domcontentloaded" });
-  await p.getByTestId("cm-make").waitFor({ timeout: 45_000 });
+  await p.getByTestId("cm-lane-creator").waitFor({ state: "attached", timeout: 45_000 });
   await p.getByRole("button", { name: "Decline" }).click({ timeout: 3000 }).catch(() => {});
 
-  // One button, labelled by the dropdown; no "Run now" in the top bar.
   ok(`${name}: no Run now in the top bar`, (await p.getByTestId("cm-topbar").getByRole("button", { name: "Run now" }).count()) === 0);
-  await p.getByLabel("How many").selectOption("2");
-  ok(`${name}: the button says "Make 2 new slideshows"`, (await p.getByTestId("cm-make-button").innerText()).trim() === "Make 2 new slideshows");
-  await p.getByTestId("cm-make-button").click();
-  await p.getByText(/Started 2 slideshows\./).waitFor({ timeout: 20_000 });
-  await p.getByTestId("cm-idea").nth(1).waitFor({ timeout: 20_000 });
-  ok(`${name}: Today lists every slideshow made today`, (await p.getByTestId("cm-idea").count()) === 2);
-  ok(`${name}: status filters with counts`, /Ready 2/.test(await p.getByTestId("cm-today-filters").innerText()));
+  // Two accounts, two sections: each with its own button (labelled by its count), progress and list.
+  if (!phone) await p.getByRole("tab", { name: "Zyvo account" }).click();
+  const zyvo = p.getByTestId("cm-lane-zyvo");
+  ok(`${name}: the Zyvo section's button follows its count (default 2)`, (await zyvo.getByTestId("cm-make-zyvo").innerText()).trim() === "Make 2 Zyvo slideshows");
+  await zyvo.getByTestId("cm-count-zyvo").selectOption("1");
+  await zyvo.getByTestId("cm-make-zyvo").click();
+  await zyvo.getByText(/Started 1 Zyvo slideshow/).waitFor({ timeout: 20_000 });
+  await zyvo.getByTestId("cm-idea").first().waitFor({ timeout: 20_000 });
+  ok(`${name}: the Zyvo batch made a Zyvo-account slideshow`, world.ideas.length === 1 && world.ideas[0].account === "zyvo" && /Zyvo account/.test(await zyvo.getByTestId("cm-idea").first().innerText()));
+  if (!phone) await p.getByRole("tab", { name: "Creator account" }).click();
+  const sec = p.getByTestId("cm-lane-creator");
+  ok(`${name}: the Creator section lists only Creator slideshows`, (await sec.getByTestId("cm-idea").count()) === 0);
+  await sec.getByTestId("cm-count-creator").selectOption("2");
+  ok(`${name}: the button says "Make 2 Creator slideshows"`, (await sec.getByTestId("cm-make-creator").innerText()).trim() === "Make 2 Creator slideshows");
+  ok(`${name}: the cost line shows before starting`, /About \$\d/.test(await sec.getByTestId("cm-estimate-creator").innerText()));
+  await sec.getByTestId("cm-make-creator").click();
+  await sec.getByText(/Started 2 Creator slideshows/).waitFor({ timeout: 20_000 });
+  await sec.getByTestId("cm-idea").nth(1).waitFor({ timeout: 20_000 });
+  ok(`${name}: the Queue lists every Creator slideshow made today`, (await sec.getByTestId("cm-idea").count()) === 2);
+  ok(`${name}: status filters with counts (Ready, Flagged, Rejected, Outdated)`, /Ready 2/.test(await sec.getByTestId("cm-filters-creator").innerText()) && /Outdated 0/.test(await sec.getByTestId("cm-filters-creator").innerText()));
 
-  // Mark as posted → it leaves Today.
-  const card = p.getByTestId("cm-idea").first();
+  // Mark as posted (the account pre-selected) → it leaves the Queue.
+  const card = sec.getByTestId("cm-idea").first();
   const title = world.ideas.find((i) => card) && (await card.innerText()).split("\n").find((l) => /Title \d/.test(l));
   await card.getByTestId("cm-mark-posted").click();
   const form = card.getByTestId("cm-post-form");
+  ok(`${name}: the Posted dialog pre-selects the slideshow's account`, (await form.getByTestId("cm-post-account").inputValue()) === "creator");
   await form.getByPlaceholder(/tiktok\.com/).fill("https://www.tiktok.com/@zyvo/photo/7123");
   const postedLocal = utcToLocal(new Date().toISOString(), "Europe/Helsinki");
   await form.locator('input[type="datetime-local"]').fill(postedLocal);
   await form.getByRole("button", { name: "Save" }).click();
   await p.waitForTimeout(1200);
-  ok(`${name}: the posted slideshow left Today`, (await p.getByTestId("cm-idea").count()) === 1 && world.ideas.some((i) => i.status === "posted"));
+  ok(`${name}: the posted slideshow left the Queue`, (await sec.getByTestId("cm-idea").count()) === 1 && world.ideas.some((i) => i.status === "posted"));
 
   // Posted: paste a screenshot → numbers read → Save → snapshot, chart.
   await p.getByRole("button", { name: "Posted", exact: true }).click();
+  await p.getByTestId("cm-account-switch").getByRole("tab", { name: "Zyvo" }).click();
+  ok(`${name}: the account switch: no Zyvo posts yet`, (await p.getByTestId("cm-post").count()) === 0);
+  await p.getByTestId("cm-account-switch").getByRole("tab", { name: "Both" }).click();
   const post = p.getByTestId("cm-post").first();
   await post.waitFor({ timeout: 10_000 });
   ok(`${name}: Posted lists it with its platform and time`, /TikTok/.test(await post.innerText()) && (await post.innerText()).includes(postedLocal.replace("T", " ")));
@@ -119,6 +135,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
 
   // Analytics + learning.
   await p.getByRole("button", { name: "Analytics", exact: true }).click();
+  await p.getByTestId("cm-account-switch").getByRole("tab", { name: "Creator" }).click();
   await p.getByTestId("cm-posts-table").waitFor({ timeout: 10_000 });
   ok(`${name}: Analytics totals, the posts table and the score formula`, /12,500/.test(await p.getByTestId("cm-analytics").innerText()) && /score = 100/.test(await p.getByTestId("cm-analytics").innerText()));
   await p.getByTestId("cm-analyze").click();
@@ -126,7 +143,7 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   ok(`${name}: the agent's analysis shows`, /too little data for rules/.test(await p.getByTestId("cm-analysis").innerText()));
   await p.getByRole("button", { name: "Apply this playbook" }).click();
   await p.waitForTimeout(800);
-  ok(`${name}: Apply puts the proposal in the playbook`, world.s.playbook === REPORT.playbook && (await p.getByTestId("cm-playbook").inputValue()) === REPORT.playbook);
+  ok(`${name}: Apply puts the proposal in the playbook`, world.lanes.creator.playbook === REPORT.playbook && (await p.getByTestId("cm-playbook").inputValue()) === REPORT.playbook);
   await p.screenshot({ path: path.join(outDir, `analytics-${name}.png`), fullPage: true });
   ok(`${name}: no sideways scroll on Analytics`, !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)));
   ok(`${name}: no page errors`, errors.length === 0, errors.join(" | ").slice(0, 300));
