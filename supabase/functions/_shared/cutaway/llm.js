@@ -102,21 +102,54 @@ const TRIM_SCHEMA = {
   properties: { beats: { type: "array", items: { type: "string" } } },
 };
 
-const TRIM_SYSTEM = `You shorten the narration of a short explainer video so it fits its length when read at a natural pace. You get the beats' texts in order and a maximum total word count. Return the same number of beats, each shortened, so the total is at most the maximum. Keep every fact, the hook shape ("If you ..., you have a ..."), "But ... / So you ...", the "This is a ..." names, the myth-bust and the "Congratulations, you have built a ..." ending. Keep the listed KEEP words in their beat exactly. Cut filler first. Plain words, short sentences.`;
+const TRIM_SYSTEM = `You shorten the narration of a short explainer video so it fits its length when read at a natural pace. You get the beats' texts in order, each with its own maximum word count. Return the same number of beats, each within its maximum. Cut filler words first (adjectives, "still", "straight", "that", repeated ideas).
+Never break these:
+- beat 1 starts "If you" and keeps ", you have a ..."
+- keep "But" and "So you" where they are, and the "This is a ..." names
+- keep the myth-bust shape ("... is not ..., it is ...")
+- the last beat ends "Congratulations, you have built a ..."
+- each KEEP word appears in its beat exactly once; never repeat a word or phrase
+- every fact stays true. Plain spoken English, full sentences, no colons.
+The total MUST be at or under the maximum. If cutting filler is not enough, merge two beats' ideas or drop the least important clause (a detail, a side step), but never the hook, the names, a surprise that has a number card, the myth-bust or the ending.`;
 
 /**
  * Cuts words so the voiceover fits (it is never sped up). Only the beat texts change; verbs and
  * card words stay in their beats. Returns {plan, costUsd}; throws if the result fails the checks.
  */
 export async function trimScript({ apiKey, plan, maxWords, lengthSec, usedIdeas = [] }) {
-  const lines = plan.beats.map((b, i) => `${i + 1}. ${b.text}   [KEEP: ${[b.verb, b.card?.word].filter(Boolean).join(", ")}]`);
-  const { data, costUsd } = await callTool({
-    apiKey, system: TRIM_SYSTEM, name: "trimmed", schema: TRIM_SCHEMA, maxTokens: 2000, timeoutMs: 60_000,
-    content: `Maximum total words: ${maxWords}.\nBeats:\n${lines.join("\n")}`,
-  });
-  if (!Array.isArray(data?.beats) || data.beats.length !== plan.beats.length) throw Object.assign(new Error("TRIM_FAILED: wrong number of beats"), { costUsd });
-  const next = { ...plan, beats: plan.beats.map((b, i) => ({ ...b, text: String(data.beats[i]).trim() })) };
-  return { plan: validatePlan(next, lengthSec, usedIdeas, { wordRange: [Math.floor(maxWords * 0.7), maxWords + 2] }), costUsd };
+  const count = (t) => String(t).trim().split(/\s+/).filter(Boolean).length;
+  const total = plan.beats.reduce((n, b) => n + count(b.text), 0);
+  // Each beat gets its share of the budget, so the cut is spread evenly and the model can count it.
+  const budgets = plan.beats.map((b) => Math.max(4, Math.floor((count(b.text) * maxWords) / total)));
+  const keep = (b) => [...new Set([b.verb, b.card?.word].filter(Boolean).map((w) => String(w).toLowerCase()))].join(", ");
+  const lines = plan.beats.map((b, i) => `${i + 1}. (now ${count(b.text)} words, max ${budgets[i]}) ${b.text}   [KEEP, once: ${keep(b)}]`);
+  let costUsd = 0;
+  let content = `Maximum total words: ${maxWords} (now ${total}). Keep each beat within its own maximum.\nBeats:\n${lines.join("\n")}`;
+  let lastError = "";
+  let best = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const reply = await callTool({ apiKey, system: TRIM_SYSTEM, name: "trimmed", schema: TRIM_SCHEMA, maxTokens: 2000, timeoutMs: 60_000, content });
+    costUsd += reply.costUsd;
+    const beats = reply.data?.beats;
+    if (!Array.isArray(beats) || beats.length !== plan.beats.length) { lastError = `wrong number of beats (${beats?.length ?? 0})`; continue; }
+    const got = beats.reduce((n, t) => n + count(t), 0);
+    if (globalThis.process?.env?.CUTAWAY_DEBUG_TRIM) console.log(`[trim] attempt ${attempt}: ${got} words`, JSON.stringify(beats));
+    const next = { ...plan, beats: plan.beats.map((b, i) => ({ ...b, text: String(beats[i]).trim() })) };
+    let problems = got > maxWords + 3 ? [`${got} words: cut ${got - maxWords} more (merge or drop the least important clause if needed)`] : [];
+    // Keep the shortest version that passes every other check, in case neither attempt reaches the limit.
+    try {
+      const valid = validatePlan(next, lengthSec, usedIdeas, { wordRange: [Math.floor(maxWords * 0.6), total] });
+      if (!best || got < best.words) best = { plan: valid, words: got };
+    } catch (e) { if (!problems.length) problems = e.problems ?? [e.message]; }
+    if (!problems.length) return { plan: best.plan, costUsd, words: got };
+    lastError = problems.join("; ");
+    // The retry edits its OWN last answer (not the original): fix only what is listed.
+    const mine = beats.map((t, i) => `${i + 1}. (${count(t)} words) ${t}   [KEEP, once: ${keep(plan.beats[i])}]`);
+    content = `Fix this version. Problems: ${lastError}. Maximum total words: ${maxWords}; change as little as possible.\nBeats:\n${mine.join("\n")}`;
+  }
+  // Couldn't reach the limit: use the shortest valid version; the video runs a little long, the voice is never sped up.
+  if (best) return { plan: best.plan, costUsd, words: best.words, overrun: true };
+  throw Object.assign(new Error(`TRIM_FAILED: couldn't cut the script to ${maxWords} words (${lastError})`), { costUsd });
 }
 
 /** Mechanical fixes only (never content): unknown move -> a default, unknown sound key -> custom; no overlays any more. */

@@ -32,7 +32,7 @@ export function wordsToFit(spoken, lengthSec) {
   const room = lengthSec - END_HOLD_SEC;
   const took = spokenSeconds(spoken);
   if (took <= room + OVERRUN_SEC) return null;
-  return Math.floor((spoken.length * room * 0.96) / took);
+  return Math.floor((spoken.length * room) / took);
 }
 
 /**

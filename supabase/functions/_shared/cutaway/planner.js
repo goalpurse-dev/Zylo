@@ -218,7 +218,8 @@ export function repairStructure(input) {
   const index = new Map(plan.states.map((s, i) => [s.id, i]));
   const hasAt = (i, part) => (plan.states[i]?.parts ?? []).some((p) => norm(p) === norm(part));
   plan.beats.forEach((b) => {
-    const v = closestWord(b.text, b.verb);
+    // The verb only says WHEN the change lands: if a rewrite cut it, point at the beat's longest word.
+    const v = closestWord(b.text, b.verb) ?? [...words(b.text).map(bare)].sort((x, y) => y.length - x.length)[0];
     if (v && bare(b.verb) !== v) b.verb = words(b.text).find((x) => bare(x) === v);
     if (b.card?.text && b.card.word) {
       const c = closestWord(b.text, b.card.word) ?? bare(b.verb);
