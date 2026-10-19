@@ -184,7 +184,9 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
       </button>
       {open && (
         <div className="space-y-4 border-t border-white/10 p-4 sm:p-5">
-          {idea.error && <p className="text-[13px] text-red-200">{idea.error}</p>}
+          {idea.error && <p className="text-[13px] text-red-200" data-testid="cm-idea-error">{idea.error}</p>}
+          {idea.compliance?.needsNewFormat && <p className="text-[13px] text-amber-200">This format couldn't be made to fit, even after the program shortened it. Remaking it the same way would fail again: use <b>Remake with different format</b> below.</p>}
+          {idea.compliance?.shortened?.length > 0 && <p className="text-[12px] text-white/50">Shortened by the program to fit: {idea.compliance.shortened.join(" · ")}</p>}
           {flagged && <p className="text-[13px] text-amber-200">The compliance check still found: {idea.compliance.problems.join(" · ")}. Fix it or reject it before posting.</p>}
           {idea.slides.length > 0 && (
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2" data-testid="cm-slides">
@@ -213,7 +215,8 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
             {idea.outdated && ["done", "approved"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Render this slideshow again with today's slide templates? The same words and pictures; a render and its QA check, about $0.005.")) act("rerender", { id: idea.id }, "rerender"); }} className="rounded-lg bg-orange-300/20 px-3 py-1.5 text-[13px] font-semibold text-orange-100 disabled:opacity-40">Render again</button>}
             {idea.status !== "approved" && idea.status === "done" && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "approved" }, "approve")} className="rounded-lg bg-lime-300/90 px-3 py-1.5 text-[13px] font-semibold text-[#071006] disabled:opacity-40">Approve</button>}
             {!["rejected", "posted"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "rejected" }, "reject")} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Reject</button>}
-            {idea.recipe?.format && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Write this recipe again as a new slideshow? It costs a new write.")) act("remakeIdea", { id: idea.id }, "remake"); }} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Remake</button>}
+            {idea.recipe?.format && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Write the same idea again as a new slideshow? One paid write (about $0.10–0.25), within the caps.")) act("remakeIdea", { id: idea.id, mode: "same" }, "remake"); }} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Remake same idea</button>}
+            {idea.recipe?.format && <button type="button" disabled={!!busy} data-testid="cm-remake-format" onClick={() => { if (window.confirm("Remake it in a DIFFERENT format (same topic and account)? One paid write (about $0.10–0.25), within the caps.")) act("remakeIdea", { id: idea.id, mode: "format" }, "remake"); }} className={`rounded-lg px-3 py-1.5 text-[13px] font-semibold disabled:opacity-40 ${idea.compliance?.needsNewFormat ? "bg-lime-300 text-[#071006]" : "bg-white/10 text-white"}`}>Remake with different format</button>}
             {busy && <span className="text-[12.5px] text-white/50">Working…</span>}
             {note && <span className="text-[12.5px] text-red-200">{note}</span>}
           </div>

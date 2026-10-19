@@ -412,23 +412,29 @@ test("a refusal: one retry on a model that costs no more, through the guard; nev
   assert.equal(always.ideas[0].status, "done", "the fallback model wrote it");
 });
 
-test("a failed layout check: nothing is posted; ONE shorter rewrite and a new render; twice is flagged", async () => {
+test("a failed layout check: nothing is posted; the PROGRAM shortens it and renders again (no model call); twice stops with a clear message", async () => {
   const once = fakeWorld();
   const p = fakeProviders(once, { layoutFails: 1 });
+  const orig = p.ai.createMessage;
+  p.ai.createMessage = async (t, a) => { const out = await orig(t, a); if (a.request.tools) { const x = JSON.parse(out.body.content[0].text); x.slides[1].body = "A long body line that keeps going about the tool and what it does for faceless channels, far longer than it needs to be."; out.body.content[0].text = JSON.stringify(x); } return out; };
   await startRun(once, { count: 1 });
   await drain(once, depsFor(once, p));
   assert.equal(once.ideas[0].status, "done");
   assert.equal(p.calls.renders, 2);
-  assert.equal(once.ideas[0].compliance.layoutRetried, true);
-  const rewrite = p.calls.messages.find((m) => /SHORTER/.test(JSON.stringify(m.messages)));
-  assert.ok(rewrite, "the rewrite asked for shorter text");
-  assert.match(JSON.stringify(rewrite.messages), /headline overlaps card/);
+  assert.equal(once.ideas[0].compliance.layoutShortened, true);
+  assert.ok(!p.calls.messages.some((m) => /SHORTER/.test(JSON.stringify(m.messages))), "no paid shorter rewrite");
+  assert.ok(once.ideas[0].compliance.shortened.length > 0, "what was cut is recorded");
   const twice = fakeWorld();
   const p2 = fakeProviders(twice, { layoutFails: 2 });
+  const orig2 = p2.ai.createMessage;
+  p2.ai.createMessage = async (t, a) => { const out = await orig2(t, a); if (a.request.tools) { const x = JSON.parse(out.body.content[0].text); x.slides[1].body = "A long body line that keeps going about the tool and what it does for faceless channels, far longer than it needs to be."; out.body.content[0].text = JSON.stringify(x); } return out; };
   await startRun(twice, { count: 1 });
   await drain(twice, depsFor(twice, p2));
+  assert.equal(p2.calls.renders, 2, "shortened once, rendered again");
+  assert.equal(p2.calls.messages.length, 2, "the write and the captions only: no model call for the layout");
   assert.equal(twice.ideas[0].status, "failed");
-  assert.equal(twice.ideas[0].compliance.flagged, true);
+  assert.equal(twice.ideas[0].compliance.needsNewFormat, true);
+  assert.match(twice.ideas[0].error, /still don't fit after the program shortened them[\s\S]*Remake with a different format/);
   assert.match(twice.ideas[0].compliance.problems.join(" "), /slide 2: headline overlaps card/);
   assert.equal(twice.gens[0].status, "failed");
 });

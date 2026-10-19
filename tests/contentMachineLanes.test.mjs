@@ -52,13 +52,13 @@ test("the Zyvo account's honesty checks: cited facts, no other tools, real outpu
   assert.match(p, /fact no_autopost is not on the fact sheet/, "a NOT-feature can't be cited");
   assert.match(p, /names another tool \("CapCut"\)/);
   assert.match(p, /asset zzzz9999 is not in the library/);
-  assert.match(p, /feature_hero needs at least 2 real outputs/);
+  assert.match(p, /feature_hero needs 2–3 real outputs \(has 1\)/);
   assert.match(p, /only real Zyvo outputs \(no image_prompt\)/);
   assert.match(p, /the last slide must be the cta_button/);
   assert.ok(COMPETITORS.test("we beat Midjourney") && !COMPETITORS.test("Zyvo makes videos"));
   // "Prompt → result": only the asset's recorded prompt, exactly.
   const pr = JSON.parse(JSON.stringify(ok));
-  pr.slides[2] = { ...pr.slides[2], kind: "prompt_result", prompt: "a made-up prompt", assets: [{ asset_id: "aaaa1111", label: "Long Form" }] };
+  pr.slides[2] = { ...pr.slides[2], kind: "prompt_result", body: null, prompt: "a made-up prompt", assets: [{ asset_id: "aaaa1111", label: "Long Form" }] };
   assert.match(zyvoProblems(pr, recipe, opts()).join(" "), /only with an asset whose real prompt is recorded/);
   assert.match(zyvoProblems(pr, recipe, opts({ assetPrompts: new Map([["aaaa1111", "Why Rome's roads lasted"]]) })).join(" "), /must be the asset's recorded prompt, exactly/);
   pr.slides[2].prompt = "Why Rome's roads lasted";
@@ -159,4 +159,66 @@ test("the Zyvo slide kinds render: labelled real outputs, rebuilt UI, the CTA bu
   assert.match(cta, /tryzyvo\.com[\s\S]*Link in bio/);
   assert.match(cta, /bf-swipe">tryzyvo\.com/, "the last slide's footer shows the address instead of swipe");
   assert.equal(ZYVO_KINDS.length, 10);
+});
+
+/* ─── slot limits (owner, 2026-10-19): the writer knows them, the program applies them, no paid loop ─── */
+
+import { ZYVO_SLOTS, fitSlideshow, slotLimitsText, slotProblems, trimText } from "../supabase/functions/_shared/contentMachine/slotFit.js";
+
+test("the writer is told every Zyvo slot's limits up front (items, characters, pictures)", () => {
+  const req = writeRequest({ model: "m", brandRules: "- z", library: laneLibrary(ALL, "zyvo"), recipe: { account: "zyvo", format: "by_hand_vs_zyvo", slide_count: 5 }, today: "2026-10-20", avoidTitles: [], facts: FACTS });
+  const sys = req.system[0].text;
+  assert.match(sys, /SLOT LIMITS/);
+  assert.match(sys, /- by_hand: headline ≤ 40, body null, items 2–3 × ≤ 26, items_right 2–3 × ≤ 26, real outputs exactly 1/);
+  assert.match(sys, /- ui_checklist: headline ≤ 36, body null, items 3–5 × ≤ 32, no pictures/);
+  assert.equal(slotLimitsText().split("\n").length, Object.keys(ZYVO_SLOTS).length + 1);
+});
+
+test("the failing 'by hand vs Zyvo' slide is cut to fit by the program, keeping its picture", () => {
+  const recipe = { account: "zyvo", format: "by_hand_vs_zyvo" };
+  const s = validZyvoSlideshow(recipe);
+  // What the writer produced before the fix: 5 + 5 long lines and a body.
+  s.slides[1] = { ...s.slides[1], kind: "by_hand", headline: "The by-hand way vs *Zyvo*", body: "Same idea, two ways.", label: null, prompt: null,
+    items: ["Write the script", "Record a voice-over", "Hunt for visuals", "Edit every cut", "Add captions"],
+    items_right: ["Pick a short-form template", "Cast fruit characters", "Blocky characters talk with lip sync", "Switch captions on in 3 styles", "Edit any scene before download"],
+    assets: [{ asset_id: "aaaa1111", label: "Long Form" }], fact_ids: ["lf_length"] };
+  assert.match(zyvoProblems(s, recipe, opts()).join(" | "), /slide 2: items 5 lines \(2–3\)/);
+  const { slideshow, changes } = fitSlideshow(s, 0);
+  const b = slideshow.slides[1];
+  assert.equal(b.items.length, 3);
+  assert.equal(b.items_right.length, 3);
+  assert.ok(b.items_right.every((t) => t.replace(/\*/g, "").length <= 26), JSON.stringify(b.items_right));
+  assert.equal(b.body, null, "by_hand has no body");
+  assert.equal(b.assets.length, 1, "the real output stays (the old shorter rewrite dropped it)");
+  assert.deepEqual(zyvoProblems(slideshow, recipe, opts()), []);
+  assert.ok(changes.length >= 3);
+  // After a layout failure (level 1): one line fewer, never under the minimum.
+  const tighter = fitSlideshow(slideshow, 1).slideshow.slides[1];
+  assert.equal(tighter.items.length, 2);
+  assert.equal(tighter.assets.length, 1, "exactly 1 is required: it stays");
+});
+
+test("trimming keeps words whole and never leaves a highlight open", () => {
+  assert.equal(trimText("Turn one idea into a *finished video* out", 30), "Turn one idea into a finished…", "the half highlight is dropped");
+  assert.equal(trimText("Pick a *look* for every video", 12), "Pick a *look*…");
+  assert.equal(trimText("Short", 30), "Short");
+  assert.deepEqual(slotProblems({ kind: "by_hand", headline: "x", items: ["a", "b"], items_right: ["c", "d"], assets: [{ asset_id: "a" }], body: null }, "s"), []);
+});
+
+test("Remake same idea vs Remake with a different format (same account and topic)", async () => {
+  const world = fakeWorld();
+  const p = fakeProviders(world);
+  const { call } = apiFor(world, { kick: async () => { await drain(world, depsFor(world, p)); } });
+  await call({ action: "makeSlideshows", account: "zyvo", count: 1 });
+  const first = world.ideas[0];
+  const same = await call({ action: "remakeIdea", id: first.id, mode: "same" });
+  assert.equal(same.ok, true, same.message);
+  assert.equal(world.ideas.find((i) => i.id === same.data.ideaId).recipe.format, first.recipe.format);
+  const other = await call({ action: "remakeIdea", id: first.id, mode: "format" });
+  assert.equal(other.ok, true, other.message);
+  const copy = world.ideas.find((i) => i.id === other.data.ideaId);
+  assert.notEqual(copy.recipe.format, first.recipe.format, "a different format");
+  assert.equal(copy.account, "zyvo");
+  assert.ok(ZLIB.formats.some((f) => f.key === copy.recipe.format), "from the Zyvo account's formats");
+  assert.ok(world.audit.some((a) => a.action === "idea.remake" && a.payload.mode === "format"));
 });
