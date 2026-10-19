@@ -12,7 +12,7 @@ const U = soilM.userData.u;
 const linerA = phys({ color: C("#272c34"), roughness: 0.28, clearcoat: 0.9, clearcoatRoughness: 0.18, sheen: 0.4, sheenColor: C("#8a96a8") });
 const rimM = std({ color: C("#9aa3ad"), roughness: 0.4 });
 const bagMatsA = ["#3b6a3c", "#2c4a2e", "#3d4047", "#344250", "#4a6e40"].map((c) => phys({ color: C(c), roughness: 0.3, clearcoat: 0.7, clearcoatRoughness: 0.2, sheen: 0.35, sheenColor: C("#b8c8bc") }));
-const clayM = std({ color: C("#a7a5ae"), roughness: 0.95, normalMap: tex("excavated_soil_wall", "nor", 0.5, false) });
+const clayM = std({ map: tex("excavated_soil_wall", "diff", 0.5), color: C("#e9a46c"), roughness: 0.72, normalMap: tex("excavated_soil_wall", "nor", 0.5, false) }); // brown-orange clay (owner, M1)
 { const fl = new THREE.Mesh(new THREE.PlaneGeometry(10, 8, 20, 16), soilM); fl.rotation.x = -Math.PI / 2; fl.position.set(0, -PIT.depth, -4); fl.receiveShadow = true; const uv = fl.geometry.attributes.uv, pp = fl.geometry.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, pp.getX(i) / 4, (pp.getY(i) - 4) / 4); scene.add(fl); } // the pit floor
 
 // ---- the pit plug: lawn + soil face that sink as the pit is dug ----

@@ -1,5 +1,5 @@
 ﻿// Smooth style frames (?s=1|2|3): the look-frame moment on continuous ground.
-// 1 smooth clay toy (closest to now) Â· 2 textured clay toy Â· 3 soft miniature diorama (closer to the creator's semi-real look)
+// 1 smooth clay toy (closest to now) · 2 textured clay toy · 3 soft miniature diorama (closer to the creator's semi-real look)
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";

@@ -1,5 +1,5 @@
 ﻿// Four clearly different looks of the same landfill moment (?r=1..4), all from CC0 assets (Poly Haven) and code.
-// R1 creator match Â· R2 realistic materials on simple shapes Â· R3 stylised animated-film Â· R4 real miniature model
+// R1 creator match · R2 realistic materials on simple shapes · R3 stylised animated-film · R4 real miniature model
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
