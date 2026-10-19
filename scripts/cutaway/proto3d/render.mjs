@@ -28,6 +28,7 @@ if (only) { // stills at given times for a quick look
   for (const t of only.split(",")) {
     const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.9); }, Number(t));
     fs.writeFileSync(`${out}-${t}.jpg`, Buffer.from(data.split(",")[1], "base64"));
+    const ms = await page.evaluate(() => { const gl = document.querySelector("canvas").getContext("webgl2"); const px = new Uint8Array(4); window.renderAt(0); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); const a = performance.now(); for (let i = 0; i < 5; i++) { window.renderAt(0); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); } return (performance.now() - a) / 5; }); console.log(`frame time ${ms.toFixed(0)} ms`);
   }
 } else {
   const n = Math.round(Number(secs) * Number(fps));

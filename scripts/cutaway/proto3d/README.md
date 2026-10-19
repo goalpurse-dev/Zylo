@@ -15,3 +15,5 @@ look.js is the M1 look-frame scene (bevelled blocks, N8AO ambient occlusion, sof
 preview.js is the M1 10 s preview (look B tuned, timeline keyed to voice_A_30s's words): PAGE=preview.html node render.mjs <ffmpeg> preview_silent.mp4 11.46 30, then mux test3b's mix_20.mp3 and burn its captions.ass. Grade override: preview.html?sat=0.85&con=1.12
 
 world.js: smooth diorama ground (continuous grass with a rounded lip, strata shader on the cut face and pit walls, clay-crumb clumps, mound). smooth.js: the three smooth style frames, PAGE="smooth.html?s=1|2|3".
+
+real.js: the four realistic looks R1-R4 (PAGE="real.html?r=1..4"). Needs the CC0 Poly Haven textures and HDRI in ./assets: node fetchAssets.mjs ./assets (about 63 MB, not committed). Sources and authors in ASSET_SOURCES.md. render.mjs prints the GPU frame time for stills.
