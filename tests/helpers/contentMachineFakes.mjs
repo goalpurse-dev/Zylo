@@ -328,7 +328,7 @@ export function apiFor(world, extra = {}) {
   };
   const handle = createHandler({
     getUser: async () => ({ data: { user: { email: "upwardlift6@gmail.com", email_confirmed_at: "x" } }, error: null }), emails: ["upwardlift6@gmail.com"],
-    store: world.store, guard, cors, now: () => world.clock.now, cm, files: { signedUrls: async (ps) => Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])), signedUrl: async () => "https://signed/shot", upload: async (p, bytes, type) => { world.stored[p] = { bytes: bytes.length, type }; }, remove: async (p) => { delete world.stored[p]; } },
+    store: world.store, guard, cors, now: () => world.clock.now, cm, files: { signedUrls: async (ps) => Object.fromEntries(ps.map((p) => [p, `https://signed/${p}`])), signedUrl: async (p) => (p === "assets/zyvo-ui-picker.png" ? "https://signed/shot" : `https://signed/${p}`), upload: async (p, bytes, type) => { world.stored[p] = { bytes: bytes.length, type }; }, remove: async (p) => { delete world.stored[p]; } },
     kick: async () => { kicks += 1; }, ...extra,
   });
   const call = async (body) => (await handle(new Request("https://x", { method: "POST", headers: { Authorization: "Bearer t", Origin: "https://tryzyvo.com" }, body: JSON.stringify(body) }))).json();

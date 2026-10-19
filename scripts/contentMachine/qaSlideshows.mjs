@@ -32,6 +32,11 @@ async function session(browser, viewport, phone) {
   await ctx.route("https://cm-fake.supabase.co/**", async (route) => {
     const req = route.request();
     if (!req.url().includes("/functions/v1/content-machine-api")) return route.fulfill({ status: 404, body: "{}" });
+    // Fresh download links: counted, and made to fail on demand (the error must show, not a broken page).
+    if (String(req.postData() ?? "").includes('"freshUrl"')) {
+      world.freshCalls = (world.freshCalls ?? 0) + 1;
+      if (world.failFresh) return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: false, code: "NOT_FOUND_FILE", message: "That file isn't available any more (it may have been rendered again). Reload the page." }) });
+    }
     const res = await handle(new Request(req.url(), { method: req.method(), headers: req.headers(), body: req.method() === "POST" ? req.postData() : undefined }));
     route.fulfill({ status: res.status, headers: Object.fromEntries(res.headers), body: await res.text() });
   });
@@ -87,7 +92,17 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
   await p.getByText(/Started 2 Creator slideshows/).waitFor({ timeout: 20_000 });
   const card = p.getByTestId("cm-idea").first();
   await card.locator("video").waitFor({ timeout: 20_000 });
-  ok(`${name}: the real run shows rendered slides, the MP4 and the ZIP download`, (await card.locator('[data-testid="cm-slides"] img').count()) >= 3 && (await card.getByRole("link", { name: "Download slides (ZIP)" }).count()) === 1);
+  ok(`${name}: the real run shows rendered slides, the MP4 and the ZIP download`, (await card.locator('[data-testid="cm-slides"] img').count()) >= 3 && (await card.getByTestId("cm-download-zip").count()) === 1);
+  // Downloads ask for a fresh link when clicked (a link made when the page rendered expires before the click).
+  const before = world.freshCalls ?? 0;
+  const [dl] = await Promise.all([p.waitForEvent("download", { timeout: 15_000 }), card.getByTestId("cm-download-zip").click()]);
+  ok(`${name}: "Download slides (ZIP)" asks for a fresh link on click and downloads`, (world.freshCalls ?? 0) === before + 1 && /\.zip$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+  world.failFresh = true;
+  const pagesBefore = ctx.pages().length;
+  await card.getByTestId("cm-download-mp4").click();
+  await card.getByRole("alert").first().waitFor({ timeout: 10_000 });
+  ok(`${name}: when the link can't be made, the button says so (no broken page)`, /isn't available any more/.test(await card.getByRole("alert").first().innerText()) && ctx.pages().length === pagesBefore);
+  world.failFresh = false;
   ok(`${name}: the cost per slideshow comes from the ledger`, /cost \$0\.\d{3}/.test(await card.innerText()));
   for (const tab of ["Instagram", "YouTube", "TikTok"]) await card.getByRole("button", { name: tab, exact: true }).click();
   await card.getByRole("button", { name: "Copy all" }).click();
