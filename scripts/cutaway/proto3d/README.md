@@ -17,3 +17,5 @@ preview.js is the M1 10 s preview (look B tuned, timeline keyed to voice_A_30s's
 world.js: smooth diorama ground (continuous grass with a rounded lip, strata shader on the cut face and pit walls, clay-crumb clumps, mound). smooth.js: the three smooth style frames, PAGE="smooth.html?s=1|2|3".
 
 real.js: the four realistic looks R1-R4 (PAGE="real.html?r=1..4"). Needs the CC0 Poly Haven textures and HDRI in ./assets: node fetchAssets.mjs ./assets (about 63 MB, not committed). Sources and authors in ASSET_SOURCES.md. render.mjs prints the GPU frame time for stills.
+
+R1 preview: node voiceCut.mjs <worktree> <ffmpeg> <outDir> (voice_A's read with pauses cut to 80 ms, word times, captions.ass, -20 dB mix), copy outDir/times.json here, node makePreview2.mjs (builds preview2.js = R1 home world from real.js + anim_r1.js), then PAGE=preview2.html node render.mjs <ffmpeg> out.mp4 <lengthSec> 30.
