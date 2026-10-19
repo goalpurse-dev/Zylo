@@ -29,3 +29,11 @@ export async function copyText(text) {
     return ok;
   }
 }
+
+/** A fresh signed link to one file (5 minutes). download: a file name → the browser saves it under that name. */
+export async function freshUrl(path, download = null) {
+  if (!path) throw new Error("This file isn't ready yet.");
+  const r = await api("freshUrl", { path, ...(download ? { download } : {}) });
+  if (!r?.url) throw new Error("Couldn't get a link to the file. Try again.");
+  return r.url;
+}

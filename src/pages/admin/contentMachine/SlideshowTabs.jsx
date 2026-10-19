@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AVOID, FONT_CSS, SAFE, SAFE_PROFILES, slideHtml } from "../../../../supabase/functions/_shared/contentMachine/slides/templates.js";
 import { api, copyText, money, when } from "./cmApi";
 import { MarkPosted } from "./PostedTabs";
+import { DownloadButton, FreshImg, FreshVideo } from "./freshFiles";
 
 const STATUS_TONE = {
   done: "bg-lime-300/15 text-lime-200", producing: "bg-sky-300/15 text-sky-200", proposed: "bg-white/10 text-white/70", approved: "bg-lime-300/25 text-lime-100",
@@ -55,7 +56,7 @@ function ZoneOverlay({ profile }) {
   );
 }
 
-function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png, safeZones, width = 216 }) {
+function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png, pngPath, safeZones, width = 216 }) {
   const scale = width / 1080;
   const frame = useRef(null);
   const [layout, setLayout] = useState(null);
@@ -69,7 +70,7 @@ function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png
   const bad = layout && !layout.ok;
   return (
     <div className={`relative shrink-0 overflow-hidden rounded-xl border bg-black ${bad ? "border-red-400" : "border-white/10"}`} style={{ width, height: width * (16 / 9) }} data-testid="cm-slide" data-layout-ok={layout ? String(layout.ok) : undefined}>
-      {png ? <img src={png} alt={`Slide ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+      {png ? <FreshImg src={png} path={pngPath} alt={`Slide ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
         : <iframe ref={frame} title={`Slide ${index + 1}`} srcDoc={html} sandbox="allow-scripts" className="pointer-events-none origin-top-left border-0" style={{ width: 1080, height: 1920, transform: `scale(${scale})` }} />}
       {safeZones && <ZoneOverlay profile={safeZones} />}
       {!bad && layout?.warnings?.length > 0 && <div className="absolute inset-x-1 bottom-1 rounded-md bg-amber-500/90 px-2 py-1 text-[10.5px] font-semibold leading-tight text-black" title={layout.warnings.join("; ")}>Space: {layout.warnings[0]}</div>}
@@ -141,6 +142,9 @@ function Row({ label, text, small }) {
   );
 }
 
+/** A readable file name for downloads: the title, made safe, plus the date. */
+const fileStem = (idea) => `${String(idea.title ?? "slideshow").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "slideshow"}-${String(idea.created_at ?? "").slice(0, 10)}`;
+
 export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, startOpen = false }) {
   const [open, setOpen] = useState(startOpen);
   const [busy, setBusy] = useState(null);
@@ -184,17 +188,17 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
           {flagged && <p className="text-[13px] text-amber-200">The compliance check still found: {idea.compliance.problems.join(" · ")}. Fix it or reject it before posting.</p>}
           {idea.slides.length > 0 && (
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2" data-testid="cm-slides">
-              {idea.slides.map((s, i) => <SlidePreview key={i} slide={s} index={i} total={idea.slides.length} style={style} images={images(i)} zyvoShot={zyvoShot} logos={logos} safeZones={safeZones} png={g?.pngs?.[i]} />)}
+              {idea.slides.map((s, i) => <SlidePreview key={i} slide={s} index={i} total={idea.slides.length} style={style} images={images(i)} zyvoShot={zyvoShot} logos={logos} safeZones={safeZones} png={g?.pngs?.[i]} pngPath={g?.paths?.pngs?.[i]} />)}
             </div>
           )}
           {g?.dryRun && <p className="text-[12.5px] text-white/50">Dry run: these previews are drawn live in your browser; nothing was rendered or spent.</p>}
           {g && !g.dryRun && g.status !== "done" && <p className="text-[12.5px] text-white/50">Rendering… ({g.status}){g.error ? `: ${g.error}` : ""}</p>}
           {(g?.mp4 || g?.zip) && (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              {g.mp4 && <video src={g.mp4} controls playsInline preload="metadata" className="w-full max-w-[260px] rounded-xl border border-white/10 bg-black" />}
+              {g.mp4 && <FreshVideo src={g.mp4} path={g.paths?.mp4} controls playsInline preload="metadata" className="w-full max-w-[260px] rounded-xl border border-white/10 bg-black" />}
               <div className="flex flex-wrap gap-2">
-                {g.zip && <a href={g.zip} download className="rounded-lg bg-lime-300 px-3 py-2 text-[13px] font-semibold text-[#071006]">Download slides (ZIP)</a>}
-                {g.mp4 && <a href={g.mp4} download className="rounded-lg bg-white/10 px-3 py-2 text-[13px] font-semibold text-white">Download MP4</a>}
+                {g.paths?.zip && <DownloadButton path={g.paths.zip} filename={`${fileStem(idea)}-slides.zip`} testid="cm-download-zip" className="rounded-lg bg-lime-300 px-3 py-2 text-[13px] font-semibold text-[#071006]">Download slides (ZIP)</DownloadButton>}
+                {g.paths?.mp4 && <DownloadButton path={g.paths.mp4} filename={`${fileStem(idea)}.mp4`} testid="cm-download-mp4" className="rounded-lg bg-white/10 px-3 py-2 text-[13px] font-semibold text-white">Download MP4</DownloadButton>}
               </div>
             </div>
           )}
@@ -469,7 +473,7 @@ function LogoRow({ row, onSaved }) {
   });
   return (
     <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center" data-testid="cm-logo">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-2">{row.url ? <img src={row.url} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[11px] text-black/40">no file</span>}</div>
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-2">{row.url ? <FreshImg src={row.url} path={row.logo_path} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[11px] text-black/40">no file</span>}</div>
       <div className="min-w-0 flex-1">
         <div className="text-[14px] font-semibold text-white">{row.name} <span className="text-[12px] font-normal text-white/45">{row.domain}</span>{row.display && row.display !== "logo" && <span className="ml-2"><Badge tone="bg-sky-300/15 text-sky-200">{row.display === "name" ? "Name only (your rule)" : "Initials tile (your rule)"}</Badge></span>}</div>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -617,7 +621,7 @@ export function AssetsTab() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {data.rows.map((r) => (
             <figure key={r.id} data-testid="cm-asset" className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
-              <div className="aspect-square bg-black">{r.url && <img src={r.url} alt={r.subject ?? ""} loading="lazy" className={`h-full w-full object-cover ${r.status === "active" ? "" : "opacity-40"}`} />}</div>
+              <div className="aspect-square bg-black">{r.url && <FreshImg src={r.url} path={r.path} alt={r.subject ?? ""} loading="lazy" className={`h-full w-full object-cover ${r.status === "active" ? "" : "opacity-40"}`} />}</div>
               <figcaption className="space-y-1 p-2 text-[11.5px]">
                 <div className="flex flex-wrap items-center gap-1"><Badge tone={ASSET_TONE[r.status]}>{r.status}</Badge>{r.tool && <Badge>{nice(r.tool)}</Badge>}</div>
                 <div className="line-clamp-2 text-white/75" title={r.source_path}>{r.subject ?? r.source_path}</div>

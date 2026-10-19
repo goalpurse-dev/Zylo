@@ -44,7 +44,7 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
     const png = idea?.cm_generations?.[0]?.files?.pngs?.[0] ?? null;
     return {
       id: p.id, platform: p.platform, account: p.account ?? idea?.account ?? "creator", post_url: p.post_url, posted_at: p.posted_at, posted_local: utcToLocal(p.posted_at, zone),
-      idea: idea && { id: idea.id, title: idea.title, recipe: idea.recipe, account: idea.account ?? "creator" }, thumbnail: png ? urls[png] ?? null : null,
+      idea: idea && { id: idea.id, title: idea.title, recipe: idea.recipe, account: idea.account ?? "creator" }, thumbnail: png ? urls[png] ?? null : null, thumbnail_path: png,
       stats: stats.map((s) => ({ ...s, taken_local: utcToLocal(s.taken_at, zone), screenshot: s.screenshot_path ? urls[s.screenshot_path] ?? null : null })),
       metrics: m,
     };

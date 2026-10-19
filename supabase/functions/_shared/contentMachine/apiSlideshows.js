@@ -68,6 +68,8 @@ export function ideaView(idea, costs, urls) {
         galleries: Object.fromEntries(Object.entries(gen.source_assets?.galleries ?? {}).map(([i, list]) => [i, (list ?? []).map((g) => ({ url: g?.asset ? urls[g.asset] ?? null : null, label: g?.label ?? null })).filter((g) => g.url)])),
       },
       pngs: (f.pngs ?? []).map(url), zip: url(f.zip), mp4: url(f.mp4),
+      // The files' own paths: buttons ask for a fresh link when clicked (a page's links expire).
+      paths: { pngs: f.pngs ?? [], zip: f.zip ?? null, mp4: f.mp4 ?? null },
     },
     packages: (gen?.cm_packages ?? []).sort((a, b) => ["tiktok", "instagram", "youtube"].indexOf(a.platform) - ["tiktok", "instagram", "youtube"].indexOf(b.platform)),
   };
@@ -116,6 +118,10 @@ function cleanLogoRow(body, existing = null) {
   return { name, domain, source_url: source, notes };
 }
 
+// The folders a fresh link may be made for: renders, post screenshots, the asset library, logos, the Zyvo screen.
+export const FRESH_PATH = /^(slideshows|posts|library|logos|assets)\/[A-Za-z0-9/_.\-]+$/;
+export const FRESH_SECONDS = 300;
+
 export function slideshowActions({ cm, files, kick, store, guard, now }) {
   /** Will a batch of this account fit today's caps? From the account's recent real costs (owner, 2026-10-19). */
   async function estimate(account, count) {
@@ -149,6 +155,19 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
   }
 
   return {
+    /**
+     * A fresh signed link to ONE file, made when the owner clicks (owner, 2026-10-19): links made when the page
+     * rendered expired before the click ("exp" claim timestamp check failed). 5 minutes; only our own folders.
+     */
+    freshUrl: async ({ body }) => {
+      const path = String(body?.path ?? "");
+      if (!FRESH_PATH.test(path) || path.includes("..")) throw new ApiError("VALIDATION", "That isn't a Content Machine file.");
+      const name = body?.download ? String(body.download).replace(/[^\w.\- ]+/g, "_").slice(0, 120) : null;
+      const url = await files.signedUrl(path, FRESH_SECONDS, name ? { download: name } : {});
+      if (!url) throw new ApiError("NOT_FOUND_FILE", "That file isn't available any more (it may have been rendered again). Reload the page.", 404);
+      return { url, expiresInSec: FRESH_SECONDS };
+    },
+
     makeSlideshows: async ({ user, body }) => startRun(user, { topic: cleanTopic(body?.topic), count: body?.count ?? null, kind: "slideshows", account: cleanAccount(body?.account) }),
 
     /** The Queue's "about $X · $Y left" line, before Start. */

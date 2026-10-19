@@ -200,8 +200,9 @@ export function createFiles(db) {
       if (error || !data?.signedUrl) throw new Error(`couldn't prepare the upload of ${path}`);
       return data.signedUrl;
     },
-    async signedUrl(path, seconds = 900) {
-      const { data, error } = await bucket().createSignedUrl(path, seconds);
+    /** opts.download: a file name → the link downloads the file under that name (Content-Disposition). */
+    async signedUrl(path, seconds = 900, opts = {}) {
+      const { data, error } = await bucket().createSignedUrl(path, seconds, opts.download ? { download: opts.download } : undefined);
       if (error || !data?.signedUrl) return null;
       return data.signedUrl;
     },

@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { utcToLocal } from "../../../../supabase/functions/_shared/contentMachine/localTime.js";
 import { STAT_FIELDS } from "../../../../supabase/functions/_shared/contentMachine/statsReader.js";
 import { api, money } from "./cmApi";
+import { FreshImg, OpenFileButton } from "./freshFiles";
 
 const TZ = "Europe/Helsinki";
 const PLATFORMS = [["tiktok", "TikTok"], ["instagram", "Instagram"], ["youtube", "YouTube"]];
@@ -183,7 +184,7 @@ function PostCard({ post, onChanged }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.04]" data-testid="cm-post">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full gap-3 p-3 text-left sm:p-4">
-        <div className="h-[96px] w-[54px] shrink-0 overflow-hidden rounded-lg bg-black">{post.thumbnail && <img src={post.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" />}</div>
+        <div className="h-[96px] w-[54px] shrink-0 overflow-hidden rounded-lg bg-black">{post.thumbnail && <FreshImg src={post.thumbnail} path={post.thumbnail_path} alt="" className="h-full w-full object-cover" loading="lazy" />}</div>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-1.5">
             {accountBadge(post.account)}
@@ -232,7 +233,7 @@ function PostCard({ post, onChanged }) {
                     <td className="py-1.5 pr-3">{showLocal(s.taken_local)}</td><td className="pr-3">{fmt(s.hours_since_post, 1)}</td>
                     {STAT_FIELDS.map(([k]) => <td key={k} className="pr-3 tabular-nums">{fmt(s[k], 2)}</td>)}
                     <td className="whitespace-nowrap">
-                      {s.screenshot && <a href={s.screenshot} target="_blank" rel="noreferrer" className="mr-2 underline">screenshot</a>}
+                      {s.screenshot_path && <OpenFileButton path={s.screenshot_path} className="mr-2 underline">screenshot</OpenFileButton>}
                       <button type="button" onClick={() => setForm(s)} className="mr-2 underline">Edit</button>
                       <button type="button" onClick={() => { if (window.confirm("Delete this snapshot?")) run(() => api("deleteStats", { id: s.id })); }} className="text-red-200 underline">Delete</button>
                     </td>
