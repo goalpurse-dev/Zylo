@@ -37,7 +37,7 @@ export default function CutawayExplainer() {
 
   return (
     <>
-      <CutawayStudio onBeforeGenerate={() => { if (needsUpgrade) { setPaywallOpen(true); return false; } return true; }} />
+      <CutawayStudio planCode={planCode} onBeforeGenerate={() => { if (needsUpgrade) { setPaywallOpen(true); return false; } return true; }} />
       <FaceAsmrPaywall
         open={paywallOpen}
         onClose={() => { if (needsUpgrade) navigate("/"); else setPaywallOpen(false); }}

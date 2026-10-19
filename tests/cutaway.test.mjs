@@ -11,6 +11,7 @@ import { checkImage } from "../supabase/functions/_shared/cutaway/llm.js";
 import { advance, approve, newRun, regenerateWide, renderJob, progressOf, visionFailures, visionUnchecked, refundsFor, userMessage } from "../supabase/functions/_shared/cutaway/engine.js";
 import { buildAss, captionWord, finalArgs, atempoChain, gainFor } from "../render-worker/src/cutawayFinalPlan.mjs";
 import { freshSuggestions, isKitTopic, KIT_TOPICS } from "../src/data/cutawayTopics.js";
+import { canRemoveEndCard, endCardFor, END_CARD } from "../supabase/functions/_shared/cutaway/endCard.js";
 
 // ---------- a 30 s plan like the planner returns (10 beats, 5 states) ----------
 
@@ -406,6 +407,38 @@ test("engine: sound effects off -> no cues, no chimes, voice only", async () => 
   assert.equal(job.sfx.length, 0);
   assert.equal(job.chimes.length, 0);
   assert.equal(job.cards.length, 1, "number cards stay: they are picture, not sound");
+});
+
+// ---------- end card ("watermark") ----------
+
+test("end card: only Pro and above may remove it; affiliates, starter, free and unknown plans keep it", () => {
+  for (const code of ["free", "starter", "affiliate", "", null, "guest", "STARTER"]) assert.equal(canRemoveEndCard(code), false, String(code));
+  for (const code of ["pro", "generative", "Pro", " generative "]) assert.equal(canRemoveEndCard(code), true, code);
+  assert.equal(endCardFor("starter", true), true, "asking is not enough below Pro");
+  assert.equal(endCardFor("pro", true), false);
+  assert.equal(endCardFor("pro", false), true, "Pro keeps it unless asked");
+  assert.equal(endCardFor(null, true), true, "no plan read -> it stays on");
+  assert.match(END_CARD.line1, /Zyvo/);
+  assert.equal(END_CARD.line2, "tryzyvo.com");
+});
+
+test("end card: decided from the plan read at render time, not from the request alone", async () => {
+  const run = async (planCode, removeWatermark) => {
+    const deps = fakeDeps();
+    let jobSeen = null;
+    deps.startRender = async (job) => { jobSeen = job; return { job }; };
+    if (planCode !== undefined) deps.planCode = async () => planCode;
+    const s = await runUntil(newRun({ topic: "landfill", lengthSec: 30, removeWatermark }), deps, (x) => x.step === "approval");
+    const done = await runUntil(approve(s), deps, (x) => x.step === "done");
+    return { job: jobSeen, done };
+  };
+  assert.equal((await run("starter", true)).job.endCard, true, "a starter account asking to remove it still gets it");
+  const pro = await run("pro", true);
+  assert.equal(pro.job.endCard, false);
+  assert.equal(pro.done.endCard, false, "the decision is kept on the run");
+  assert.equal((await run("pro", false)).job.endCard, true);
+  assert.equal((await run(undefined, true)).job.endCard, true, "no plan reader -> on");
+  assert.equal(renderJob({ ...pro.done, removeWatermark: true }).endCard, true, "renderJob without a plan keeps it on");
 });
 
 test("engine: a sound cue that fails twice is dropped, the video still finishes", async () => {

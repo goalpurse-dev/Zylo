@@ -18,21 +18,27 @@
 //   keep(url, name) -> url                     copy a provider URL to our storage (identity on the local runner)
 //   sfx({cacheKey, text, seconds}) -> {url, costUsd, cached}   a sound effect, from the cache or made and cached
 //   startRender(job) -> handle;  checkRender(handle) -> {state:"pending"|"done"|"error", url?, message?}
+//   planCode() -> the user's profiles.plan_code, read when the render job is built (the end card, endCard.js)
 // }
 
 import { clipTimings, cueTimeline, evenBeats, placeBeats, spokenSeconds, upscaleFactor, voiceTempo, wordsToFit } from "./beats.js";
 import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt, visionContext } from "./planner.js";
 import { clipTask, imageTask, poll, submit, upscaleTask } from "./runware.js";
 import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
+import { endCardFor } from "./endCard.js";
 
 export const STEPS = Object.freeze(["plan", "voice", "wide", "approval", "keyframes", "clips", "sound", "render", "done"]);
 const MAX_ATTEMPTS = 2; // one retry per task, never more (no auto-retry loops)
 // The plan step is one attempt: planVideo already retries a malformed planner reply once, then runs the critic rounds.
 const PLAN_ATTEMPTS = 1;
 
-/** @param {{topic: string, lengthSec: number, soundEffects?: boolean, usedIdeas?: string[]}} input */
-export function newRun({ topic, lengthSec, soundEffects = true, usedIdeas = [] }) {
-  return { topic, lengthSec, soundEffects, usedIdeas, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], sounds: [], render: null, finalUrl: null, error: null };
+/**
+ * removeWatermark is only the user's request; whether the end card is really dropped is decided from the plan
+ * when the render job is built (stepRender), never from this flag alone.
+ * @param {{topic: string, lengthSec: number, soundEffects?: boolean, removeWatermark?: boolean, usedIdeas?: string[]}} input
+ */
+export function newRun({ topic, lengthSec, soundEffects = true, removeWatermark = false, usedIdeas = [] }) {
+  return { topic, lengthSec, soundEffects, removeWatermark: removeWatermark === true, usedIdeas, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], sounds: [], render: null, finalUrl: null, error: null };
 }
 
 const clone = (s) => JSON.parse(JSON.stringify(s));
@@ -313,10 +319,14 @@ async function stepSound(s, deps) {
   return s;
 }
 
-/** What the stitch needs (render-worker/src/cutawayFinal.mjs). */
-export function renderJob(s) {
+/**
+ * What the renderer needs (render-worker/src/cutawayFinal.mjs). planCode is read on the server when the job is
+ * built; without it the end card stays on.
+ */
+export function renderJob(s, { planCode = null } = {}) {
   const on = s.soundEffects !== false;
   return {
+    endCard: endCardFor(planCode, s.removeWatermark === true),
     clips: s.clips.map((c) => ({ url: c.url, speed: s.timing.clips[c.index].speed, dropFirstFrame: c.index > 0 })),
     voice: s.voice ? { url: s.voice.url, tempo: s.voice.tempo } : null,
     captions: s.voice ? s.voice.words : [],
@@ -331,7 +341,11 @@ export function renderJob(s) {
 
 async function stepRender(s, deps) {
   if (!s.render) {
-    s.render = { handle: await deps.startRender(renderJob(s)), startedAt: new Date().toISOString() };
+    // the plan is read now, at render time (a downgrade since the start keeps the end card on)
+    const planCode = deps.planCode ? await deps.planCode().catch(() => null) : null;
+    const job = renderJob(s, { planCode });
+    s.endCard = job.endCard;
+    s.render = { handle: await deps.startRender(job), startedAt: new Date().toISOString() };
     return s;
   }
   const r = await deps.checkRender(s.render.handle);

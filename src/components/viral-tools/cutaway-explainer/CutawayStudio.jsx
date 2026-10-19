@@ -2,12 +2,12 @@ import { useState } from "react";
 import CutawayBuilder from "./CutawayBuilder";
 import CutawayResults from "./CutawayResults";
 import useCutawayRun from "./hooks/useCutawayRun";
-import { DEFAULT_LENGTH } from "./api/cutawayApi";
+import { DEFAULT_LENGTH, endCardFor } from "./api/cutawayApi";
 
 /** The Cutaway Explainer workspace: generate on the left, the result on the right (one panel at a time on phones). */
-export default function CutawayStudio({ onBeforeGenerate }) {
+export default function CutawayStudio({ onBeforeGenerate, planCode = null }) {
   const [mobilePanel, setMobilePanel] = useState("builder");
-  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true });
+  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true, removeWatermark: false });
   const [viewingRecent, setViewingRecent] = useState(false);
   const { run, recent, start, open, reset } = useCutawayRun();
   const phase = !run ? "idle" : run.step === "done" ? "done" : "working";
@@ -18,7 +18,8 @@ export default function CutawayStudio({ onBeforeGenerate }) {
     setViewingRecent(false);
     setMobilePanel("results");
     scrollTop();
-    start(input.topic, input.lengthSec, input.soundEffects);
+    // demo only: the real pipeline sends removeWatermark as a request and the server decides from the plan
+    start(input.topic, input.lengthSec, input.soundEffects, endCardFor(planCode, input.removeWatermark === true));
   };
   const handleOpen = (id) => { setViewingRecent(true); setMobilePanel("results"); scrollTop(); open(id); };
   const handleReset = () => { setViewingRecent(false); reset(); setMobilePanel("builder"); };
@@ -26,7 +27,8 @@ export default function CutawayStudio({ onBeforeGenerate }) {
 
   const builder = (
     <CutawayBuilder
-      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects } : values}
+      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects, removeWatermark: run.endCard === false } : values}
+      planCode={planCode}
       usedTopics={recent.map((r) => r.topic)}
       onValuesChange={setValues}
       onGenerate={handleGenerate}

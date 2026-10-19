@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEMO_STEP_MS, DEMO_VIDEO, newDemoRun } from "../api/cutawayApi";
+import { DEMO_STEP_MS, DEMO_VIDEO, DEMO_VIDEO_CLEAN, newDemoRun } from "../api/cutawayApi";
 
 const ORDER = ["script", "scene", "render", "done"];
 
@@ -25,7 +25,7 @@ export default function useCutawayRun() {
         if (pct >= 100) {
           setRun((r) => {
             if (!r) return r;
-            const done = { ...r, step: "done", renderPct: 100, finalUrl: DEMO_VIDEO };
+            const done = { ...r, step: "done", renderPct: 100, finalUrl: r.endCard === false ? DEMO_VIDEO_CLEAN : DEMO_VIDEO };
             setRecent((list) => [done, ...list.filter((x) => x.id !== done.id)].slice(0, 8));
             return done;
           });
@@ -43,7 +43,8 @@ export default function useCutawayRun() {
     return () => window.clearTimeout(timer.current);
   }, [run?.id, run?.step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const start = useCallback((topic, lengthSec, soundEffects = true) => { window.clearTimeout(timer.current); setRun(newDemoRun(topic, lengthSec, soundEffects)); }, []);
+  // endCard: in the demo the page mirrors the server rule (endCardFor); the real pipeline decides on the server
+  const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true) => { window.clearTimeout(timer.current); setRun(newDemoRun(topic, lengthSec, soundEffects, endCard)); }, []);
   const open = useCallback((id) => { const r = recent.find((x) => x.id === id); if (r) setRun(r); }, [recent]);
   const reset = useCallback(() => { window.clearTimeout(timer.current); setRun(null); }, []);
 

@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 // cutaway-api: the Cutaway Explainer template's only server entry point.
 //
-//   start      {topic, lengthSec, soundEffects}   charge step 1 (script + critic, voice, wide images + vision check) and create the run
+//   start      {topic, lengthSec, soundEffects, removeWatermark}   charge step 1 (script + critic, voice, wide images + vision check) and create the run
 //   ideas      {}                      the user's used topics (for the topic suggestions)
 //   advance    {runId}                 move the run one small step (the page calls this every few seconds)
 //   regenerate {runId, index}          redo wide image `index` and the later ones (each is an edit of the one before)
@@ -141,6 +141,11 @@ function depsFor(row: any) {
       return { image: url, h: p.h };
     },
     keep: async (url: string, name: string) => upload(runPath(row, name), await fetchBytes(url), name.endsWith(".mp4") ? "video/mp4" : "image/jpeg"),
+    // read from the database when the render job is built: decides the end card (never trusted from the page)
+    planCode: async () => {
+      const { data } = await admin.from("profiles").select("plan_code").eq("id", row.user_id).single();
+      return String(data?.plan_code ?? "free").toLowerCase();
+    },
     startRender: async (job: any) => {
       if (!FLY_API_TOKEN) throw new Error("the video stitcher isn't configured");
       const path = runPath(row, `final-${Date.now().toString(36)}.mp4`);
@@ -186,6 +191,7 @@ function view(row: any) {
     createdAt: row.created_at, finalUrl: s.finalUrl ?? row.final_url ?? null,
     narration: s.narration ?? null, title: s.plan?.title ?? null, hasVoice: Boolean(s.voice),
     soundEffects: s.soundEffects !== false,
+    removeWatermark: s.removeWatermark === true, endCard: s.endCard ?? null,
     wide: (s.wide ?? []).map((w: any) => ({ id: w.id, label: w.label, status: w.status, url: w.url ?? null, vision: w.vision ? { pass: w.vision.pass, fix: w.vision.fix } : null })),
     surprises: (s.plan?.surprises ?? []).map((x: any) => ({ beat: x.beat, kind: x.kind, text: x.text, number: x.number })),
     progress: progressOf(s),
@@ -254,13 +260,15 @@ async function handle(req: Request) {
     const topic = String(body?.topic ?? "").trim().replace(/\s+/g, " ");
     const lengthSec = Number(body?.lengthSec);
     const soundEffects = body?.soundEffects !== false;
+    // only a request: the end card is kept or dropped from the plan read at render time (_shared/cutaway/endCard.js)
+    const removeWatermark = body?.removeWatermark === true;
     if (topic.length < 3 || topic.length > 120) throw new ApiError("Type a topic (3 to 120 characters).");
     if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 30 or 60 seconds.");
     const { mechanisms } = await usedIdeas(userId);
     const credits = await price(PRICES.plan.toolKey(lengthSec));
     await charge(userId, credits);
     const { data: row, error } = await admin.from("cutaway_runs").insert({
-      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, usedIdeas: mechanisms }),
+      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, removeWatermark, usedIdeas: mechanisms }),
       credits_charged: credits, charges: [{ stage: "plan", credits, at: new Date().toISOString() }],
     }).select("*").single();
     if (error || !row) {

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, Clock3, Layers, Volume2, VolumeX } from "lucide-react";
+import { BadgeCheck, ChevronRight, Clock3, Layers, Lock, Volume2, VolumeX } from "lucide-react";
 import { freshSuggestions } from "../../../data/cutawayTopics";
-import { CREDITS, DEFAULT_LENGTH, DEMO_MODE, LENGTHS } from "./api/cutawayApi";
+import { canRemoveEndCard, CREDITS, DEFAULT_LENGTH, DEMO_MODE, LENGTHS } from "./api/cutawayApi";
+import CutawayUpgradeModal from "./CutawayUpgradeModal";
 
 function CreditIcon() {
   return (
@@ -13,12 +14,15 @@ function CreditIcon() {
   );
 }
 
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [] }) {
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null }) {
   const topic = values?.topic ?? "";
   const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
+  const canRemove = canRemoveEndCard(planCode);
+  const removeWatermark = canRemove && values?.removeWatermark === true;
   const suggestions = useMemo(() => freshSuggestions(usedTopics, 6), [usedTopics]);
   const [validationError, setValidationError] = useState("");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const credits = CREDITS[lengthSec];
   const isWorking = phase === "working";
   const isDone = phase === "done";
@@ -29,7 +33,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     const clean = topic.trim();
     if (clean.length < 3) { setValidationError("Type what the video should explain."); return; }
     setValidationError("");
-    onGenerate({ topic: clean, lengthSec, soundEffects });
+    onGenerate({ topic: clean, lengthSec, soundEffects, removeWatermark });
   };
 
   return (
@@ -116,6 +120,32 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             </button>
           </div>
 
+          <div>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40 lg:mb-1.5">Watermark</p>
+            <button
+              id="cutaway-watermark"
+              type="button"
+              role="switch"
+              aria-checked={removeWatermark}
+              aria-disabled={!canRemove}
+              onClick={() => (canRemove ? update("removeWatermark", !removeWatermark) : setUpgradeOpen(true))}
+              disabled={historyMode || isWorking}
+              className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition ${removeWatermark ? "border-cutaway/35 bg-cutaway/[0.08]" : "border-white/[0.07] bg-white/[0.035]"}`}
+            >
+              <span className="min-w-0">
+                <span className="flex items-center gap-2 text-[12px] font-bold text-white/80">
+                  {canRemove ? <BadgeCheck className={`h-4 w-4 ${removeWatermark ? "text-cutaway" : "text-white/40"}`} /> : <Lock className="h-4 w-4 text-white/40" />}
+                  Remove watermark
+                  {!canRemove && <span className="rounded-full bg-[#F5C042]/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#F5C042]">Pro</span>}
+                </span>
+                <span className="mt-0.5 block text-[10px] font-semibold text-white/35">{removeWatermark ? "No end card: the video ends on “Congratulations”." : "Ends with a 2 s “Make videos like this with Zyvo” sign."}</span>
+              </span>
+              <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${removeWatermark ? "bg-cutaway" : "bg-white/15"} ${canRemove ? "" : "opacity-50"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${removeWatermark ? "left-[18px]" : "left-0.5"}`} />
+              </span>
+            </button>
+          </div>
+
           <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
             <p className="text-[11px] font-bold text-white/75">How it works</p>
             <ol className="mt-1.5 space-y-1 text-[10.5px] font-medium leading-relaxed text-white/45">
@@ -143,6 +173,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
           </>}
         </button>
       </div>
+      <CutawayUpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </section>
   );
 }
