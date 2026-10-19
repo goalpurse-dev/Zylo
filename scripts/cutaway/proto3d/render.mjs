@@ -21,7 +21,7 @@ const page = await browser.newPage();
 page.on("console", (m) => console.log("page:", m.text()));
 page.on("pageerror", (e) => console.log("page error:", e.message));
 await page.setViewport({ width: 1080, height: 1920 });
-await page.goto(`http://localhost:${port}/index.html`);
+await page.goto(`http://localhost:${port}/${process.env.PAGE ?? "index.html"}`);
 await page.waitForFunction("window.ready === true", { timeout: 30000 });
 
 if (only) { // stills at given times for a quick look
