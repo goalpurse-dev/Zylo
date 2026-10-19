@@ -321,7 +321,7 @@ function zyvoInner(slide, style, images, ctx, { label, head, body, items, hero, 
     case "template_showcase":
       return `${label}${head()}${tiles(gallery.slice(0, 8), 860, 520)}${body}`;
     case "spotlight":
-      return `${label}${head()}${gallery.length > 1 ? tiles(gallery.slice(0, 3), 640, 380) : tiles(gallery, 640, 380)}${body}${items('<span class="dot"></span>')}${callout}`;
+      return `${label}${head()}${tiles(gallery.slice(0, 3), 640, 240)}${body}${items('<span class="dot"></span>')}${callout}`;
     case "ui_prompt":
       return `${num}${head()}${promptBox}${body}`;
     case "ui_checklist":
@@ -329,9 +329,9 @@ function zyvoInner(slide, style, images, ctx, { label, head, body, items, hero, 
     case "ui_result":
       return `${num}${head()}${tiles(gallery.slice(0, 1), 640, 380, "finished video").replace('<figure class="gtile">', '<figure class="gtile play">')}<div class="ui ui-dl" data-box data-ui data-name="download panel"><span class="ui-btn">⬇ ${esc(ZYVO_UI.download)}</span></div>${body}`;
     case "prompt_result":
-      return `${label}${head()}${promptBox}<div class="arrowdown" data-box data-name="arrow">↓</div>${tiles(gallery.slice(0, 1), 560, 340, "result")}`;
+      return `${label}${head()}${promptBox}<div class="arrowdown" data-box data-name="arrow">↓</div>${tiles(gallery.slice(0, 1), 560, 240, "result")}`;
     case "by_hand":
-      return `${head()}${tiles(gallery.slice(0, 1), 420, 260)}<div class="vs"><div class="side bad" data-box data-name="by hand"><b>✗ BY HAND</b>${list(slide.items ?? [], "•")}</div>
+      return `${head()}${tiles(gallery.slice(0, 1), 320, 220)}<div class="vs"><div class="side bad" data-box data-name="by hand"><b>✗ BY HAND</b>${list(slide.items ?? [], "•")}</div>
 <div class="side good" data-box data-name="with Zyvo"><b>✓ WITH ZYVO</b>${list(slide.items_right ?? [], "✓")}</div></div>`;
     case "cta_button":
     default:
@@ -468,6 +468,9 @@ for(const v of content.querySelectorAll(".hero,.browser"))side+=Math.max(0,W-v.o
 for(const row of content.querySelectorAll(".collage .row"))side+=Math.max(0,W-row.offsetWidth)*row.offsetHeight;
 empty=Math.max(0,((H-stackH())*W+side)/(W*H));
 if(empty>0.25)warnings.push("about "+Math.round(empty*100)+"% of the safe area is empty")}
+// The Zyvo footer reserves its own space under the stack: anything on the slide that reaches into it fails.
+const foot=document.querySelector(".brandfoot");
+if(foot&&content){const f=foot.getBoundingClientRect();for(const el of content.querySelectorAll("[data-box],.ui-item,.item,figure,.side,p,h1")){const q=el.getBoundingClientRect();if(q.width<1||q.height<1)continue;if(Math.min(q.right,f.right)-Math.max(q.left,f.left)>1&&Math.min(q.bottom,f.bottom)-Math.max(q.top,f.top)>1)problems.push((el.dataset.name||el.className||"text")+" overlaps the footer")}}
 const result={ok:problems.length===0,problems:[...new Set(problems)],warnings,empty:Math.round(empty*100)/100};
 document.body.dataset.layout=JSON.stringify(result);
 try{parent.postMessage({cmLayout:result,slide:document.body.dataset.slide},"*")}catch(e){}

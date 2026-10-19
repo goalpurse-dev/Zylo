@@ -6,9 +6,9 @@ import { localDay } from "./spendSummary.js";
 import { localToUtc } from "./localTime.js";
 import { batchCheck } from "./batchBudget.js";
 import { summarize, monthStart } from "./spendSummary.js";
-import { ACCOUNTS } from "./planner.js";
+import { ACCOUNTS, planRecipes } from "./planner.js";
 import { LAYOUT_VERSION } from "./slides/templates.js";
-import { ZYVO_SHOT_PATH, heroUrls, logosFor } from "./pipeline.js";
+import { ZYVO_SHOT_PATH, heroUrls, laneLibrary, logosFor } from "./pipeline.js";
 import { runProgress } from "./progress.js";
 import { STYLE_SAMPLES, resolveSample } from "./styleSamples.js";
 
@@ -419,13 +419,29 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
       const idea = await cm.getIdea(String(body?.id ?? ""));
       if (!idea.recipe?.format) throw new ApiError("VALIDATION", "This idea has no recipe to remake.");
+      const account = idea.account ?? idea.recipe?.account ?? "creator";
+      // "same": the same recipe, written again. "format" (owner, 2026-10-19): same account and topic, a DIFFERENT
+      // format from that account's library (when a format keeps failing, remaking it the same way won't help).
+      const mode = body?.mode === "format" ? "format" : "same";
+      let recipe = idea.recipe;
+      if (mode === "format") {
+        const lib = laneLibrary(await cm.library(), account, (await cm.activeAssets?.()) ?? []);
+        const others = { ...lib, formats: lib.formats.filter((f) => f.key !== idea.recipe.format) };
+        if (!others.formats.length) throw new ApiError("VALIDATION", "This account has no other format to try.");
+        const lanes = (await cm.lanes?.()) ?? {};
+        [recipe] = planRecipes({ library: others, history: await cm.recentRecipes(120), count: 1, seed: `${idea.id}-${now().getTime()}`, topic: idea.recipe.topic ?? idea.topic ?? null, lane: { key: account, postTimes: lanes[account]?.post_times } });
+      }
+      // The same estimate as a batch of 1: refused before it starts if it wouldn't fit today's caps.
+      const check = await estimate(account, 1);
+      if (!check.fits) throw new ApiError("BUDGET", check.message, 409);
       const dry = guard.envDryRun || Boolean(s.dry_run);
-      const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind: "manual", status: "ideating", dry_run: dry, input: { remakeOf: idea.id, count: 1 }, started_at: now().toISOString() });
-      const [copy] = await cm.createIdeas([{ run_id: run.id, status: "producing", source: "owner", format: idea.format, title: "(being written)", recipe: idea.recipe, topic: idea.topic, dry_run: dry, target_platforms: idea.target_platforms, account: idea.account ?? idea.recipe?.account ?? "creator" }]);
-      await cm.enqueue([{ run_id: run.id, idea_id: copy.id, stage: "write", payload: { note: `a remake of "${idea.title}": keep the recipe, write it differently` } }]);
-      await store.audit(user.email, "idea.remake", { id: idea.id, newId: copy.id });
+      const run = await cm.createRun({ run_date: localDay(now(), s.timezone), kind: "manual", status: "ideating", dry_run: dry, account, input: { remakeOf: idea.id, mode, count: 1, account }, started_at: now().toISOString() });
+      const [copy] = await cm.createIdeas([{ run_id: run.id, status: "producing", source: "owner", format: recipe.format, title: "(being written)", recipe, topic: recipe.topic ?? idea.topic, dry_run: dry, target_platforms: idea.target_platforms, account }]);
+      const note = mode === "format" ? `a remake of "${idea.title}" in a different format (${recipe.format}): same topic and account` : `a remake of "${idea.title}": keep the recipe, write it differently`;
+      await cm.enqueue([{ run_id: run.id, idea_id: copy.id, stage: "write", payload: { note } }]);
+      await store.audit(user.email, "idea.remake", { id: idea.id, newId: copy.id, mode, format: recipe.format });
       await kick().catch(() => {});
-      return { runId: run.id, ideaId: copy.id };
+      return { runId: run.id, ideaId: copy.id, mode, format: recipe.format, estimateUsd: check.estimateUsd };
     },
   };
 }

@@ -99,3 +99,37 @@ test("free height goes to the picture; a slide with more than 25 % empty space i
     await browser.close();
   }
 });
+
+/* ─── the Zyvo account at its limits, and the footer (owner, 2026-10-19) ─── */
+
+test("every Zyvo slide kind fits at its maximum, footer included; overflowing into the footer is caught", { skip: !chromium && "Playwright's Chromium is not installed" }, async () => {
+  const { slideHtml, FONT_CSS } = await import("../supabase/functions/_shared/contentMachine/slides/templates.js");
+  const { ZYVO_SLOTS } = await import("../supabase/functions/_shared/contentMachine/slotFit.js");
+  const { pathToFileURL } = await import("node:url");
+  const fonts = FONT_CSS.local(pathToFileURL(join(process.cwd(), "render-worker/assets/fonts")).href);
+  const brand = { bg: "#090A0A", fg: "#ffffff", accent: "#BEF264", highlight: "#BEF264", font: "inter", brand: true };
+  const tall = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="540" height="960"><rect width="540" height="960" fill="#16a34a"/></svg>')}`;
+  const words = "Turn one idea into finished videos with research script voice-over scenes thumbnails templates".split(" ");
+  const text = (n, seed = 0) => { let o = "", i = seed; while (o.length < n) o += (o ? " " : "") + words[i++ % words.length]; return o.slice(0, n).trim(); };
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+    const check = async (slide, gallery) => {
+      await page.setContent(slideHtml({ slide, index: 1, total: 4, style: brand, images: { gallery }, fontCss: fonts }), { waitUntil: "load" });
+      await page.waitForSelector('body[data-ready="1"]');
+      return JSON.parse(await page.evaluate(() => document.body.dataset.layout));
+    };
+    for (const [kind, L] of Object.entries(ZYVO_SLOTS)) {
+      const slide = { kind, headline: `*${text(L.headline - 2)}*`.replace(/^\*(\S+) /, "*$1* ").replace(/\*$/, ""), body: L.body ? text(L.body, 3) : null, label: "2", callout: L.callout ? text(L.callout, 5) : null, prompt: L.prompt ? text(L.prompt, 7) : null,
+        items: L.items ? Array.from({ length: L.items[1] }, (_, n) => text(L.itemChars, n)) : [], items_right: L.right ? Array.from({ length: L.right[1] }, (_, n) => text(L.rightChars, n + 1)) : [], assets: [], fact_ids: [], is_zyvo: true };
+      const r = await check(slide, Array.from({ length: L.assets[1] }, (_, n) => ({ url: n % 2 ? tall : PICTURE, label: "Long Form" })));
+      assert.equal(r.ok, true, `${kind} at its limits: ${r.problems.join("; ")}`);
+    }
+    // Beyond the limits (8 long lines on a checklist): the stack runs into the footer, and the check says so.
+    const over = await check({ kind: "ui_checklist", headline: "Zyvo does the rest", body: null, label: "2", items: Array.from({ length: 9 }, (_, n) => text(60, n)), items_right: [], assets: [], fact_ids: [], is_zyvo: true }, []);
+    assert.equal(over.ok, false);
+    assert.ok(over.problems.some((p) => /overlaps the footer/.test(p)), over.problems.join("; "));
+  } finally {
+    await browser.close();
+  }
+});

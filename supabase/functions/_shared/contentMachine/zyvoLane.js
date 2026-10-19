@@ -2,6 +2,7 @@
 // show what Zyvo does. Honesty: every claim comes from the Zyvo fact sheet (cm_facts) and cites its fact key; only
 // real Zyvo outputs from the asset library; never a generated picture; never another tool's name or features.
 import { ZYVO_KINDS } from "./slides/templates.js";
+import { slotLimitsText, slotProblems } from "./slotFit.js";
 
 // Never name competitors or other tools on the brand account (a program backstop; the compliance check covers the rest).
 export const COMPETITORS = /\b(capcut|descript|eleven ?labs|invideo|pictory|synthesia|heygen|runway(ml)?|pika|sora|veo|kling|midjourney|canva|opus ?clip|submagic|veed|vidiq|tubebuddy|fliki|lumen5|clipchamp|kapwing|hailuo|seedance|luma|higgsfield|hedra|vizard|chatgpt|openai|gemini|leonardo|ideogram|dall-?e|stable diffusion)\b/i;
@@ -13,7 +14,7 @@ export const ZYVO_FORMAT_GUIDE = `- feature_hero: slide 1 feature_hero (a big be
 - feature_spotlight: slide 1 feature_hero or spotlight; 2–4 spotlight slides, ONE feature each (real outputs of that feature + one claim from the sheet); last cta_button.
 - prompt_result: slide 1 feature_hero; 2–3 prompt_result slides: the asset's RECORDED prompt (listed with the asset as prompt "…") exactly as written, then that output. Only assets with a recorded prompt; never invent a prompt; last cta_button.
 - template_showcase: slide 1 feature_hero; template_showcase slides of real outputs from the short-form templates, each labelled with its template name; last cta_button.
-- by_hand_vs_zyvo: slide 1 feature_hero; a by_hand slide: items = the manual steps (script, voice-over, finding visuals, editing…; time only in general words like "hours", never a made-up number), items_right = what Zyvo does instead (from the sheet); a spotlight with real outputs; last cta_button. Never name any other tool.`;
+- by_hand_vs_zyvo: slide 1 feature_hero; a by_hand slide: items = 2–3 manual steps of about 4 words ("Write the script", "Record a voice-over", "Edit every cut"; time only in general words like "hours", never a made-up number), items_right = 2–3 things Zyvo does instead, about 4 words each, from the sheet, and exactly ONE real output; a spotlight with real outputs; last cta_button. Never name any other tool.`;
 
 // "not_feature" facts are what Zyvo does NOT do: listed so they're never claimed, never citable.
 export const citable = (facts) => (facts ?? []).filter((f) => f.category !== "not_feature");
@@ -41,19 +42,20 @@ ${library.hooks?.length ? `HOOK TYPES:\n${library.hooks.map((h) => `- ${h.key}: 
 ${assetsLine}
 ${playbook?.trim() ? `\nPLAYBOOK (what has worked for THIS account; follow it unless the recipe says otherwise):\n${playbook.trim()}\n` : ""}${trends?.trim() ? `\nTRENDS (today's scout; use only what fits, never copy anyone's content or design):\n${trends.trim()}\n` : ""}
 SLIDE KINDS (use only these): ${ZYVO_KINDS.join(", ")}.
+${slotLimitsText()}
+Write TO these limits: count the characters. A slide over its limits is cut by the program, which reads worse than text written to fit.
 HOW TO WRITE IT:
 - 4–6 slides. Slide 1 = the benefit hook (feature_hero, spotlight, style_grid or template_showcase). The middle = proof and features. The last slide = cta_button: headline (a short invitation) and body = the button text, e.g. "Make your first video →". The renderer adds tryzyvo.com, "Link in bio" and the Zyvo footer.
 - Every slide except cta_button lists in fact_ids the keys of the facts its words rely on (at least one). A claim that isn't on the sheet is not allowed: no speeds, user counts, earnings, reviews, "best", "#1", no features you can't cite.
 - Pictures: ONLY real outputs from the ASSET LIBRARY, in assets [{asset_id, label}] (label: the style or tool, 1–3 words, e.g. "AI Fruit Story", "Clay Rescue", "Stickman"). Never an image_prompt. asset_id stays null; tool stays null; is_zyvo is true on every slide.
-- ui_prompt: prompt = a one-line idea a user would type (an idea, not a claim). ui_checklist: items = 3–5 short lines, each one a fact from the sheet. ui_result: one real output in assets.
+- ui_prompt: prompt = a one-line idea a user would type (an idea, not a claim). ui_checklist: items = short lines, each one a fact from the sheet. ui_result: one real output in assets.
 - feature_hero: callout = one short line with the strongest proof point from the sheet (it gets an arrow).
-- headline ≤ 60 characters, body ≤ 140, items ≤ 5 of ≤ 40 characters. Wrap ONE key phrase of a headline in *asterisks* for the accent colour.
+- Wrap ONE key phrase of a headline in *asterisks* for the accent colour.
 - Plain, confident, second person ("you"). Never name, compare with or copy another tool or company.
 - tools_checked: []. ai_label_required: false unless a picture is photoreal AI imagery.
 Return only the JSON object.`;
 }
 
-const MIN_ASSETS = { feature_hero: 2, style_grid: 4, template_showcase: 2, spotlight: 1, ui_result: 1, prompt_result: 1, by_hand: 1, cta_button: 0, ui_prompt: 0, ui_checklist: 0 };
 const HOOK_KINDS = ["feature_hero", "spotlight", "style_grid", "template_showcase"];
 
 /** Program checks for a Zyvo-lane slideshow. opts: { assetRefs: Set, assetPrompts: Map(ref → prompt), factKeys: Set }. */
@@ -68,16 +70,12 @@ export function zyvoProblems(s, recipe, opts = {}) {
     const at = `slide ${i + 1}`;
     if (!ZYVO_KINDS.includes(x.kind)) p.push(`${at}: ${x.kind} isn't a Zyvo-account slide kind`);
     if (!String(x.headline ?? "").trim()) p.push(`${at}: no headline`);
-    if (String(x.headline ?? "").replace(/\*/g, "").length > 70) p.push(`${at}: headline too long`);
-    if (String(x.body ?? "").length > 160) p.push(`${at}: text too long`);
-    if ((x.items ?? []).length > 5 || (x.items_right ?? []).length > 5) p.push(`${at}: too many items`);
+    p.push(...slotProblems(x, at));   // the slot limits: lengths, lines, pictures (slotFit.js)
     if (String(x.image_prompt ?? "").trim()) p.push(`${at}: the Zyvo account shows only real Zyvo outputs (no image_prompt)`);
     if (x.tool) p.push(`${at}: no tool cards on the Zyvo account`);
     const assets = (x.assets ?? []).filter((a) => a?.asset_id);
     for (const a of assets) if (opts.assetRefs && !opts.assetRefs.has(String(a.asset_id))) p.push(`${at}: asset ${a.asset_id} is not in the library`);
-    if (assets.length < (MIN_ASSETS[x.kind] ?? 0)) p.push(`${at}: ${x.kind} needs at least ${MIN_ASSETS[x.kind]} real outputs`);
     if (x.kind === "ui_prompt" && !String(x.prompt ?? "").trim()) p.push(`${at}: ui_prompt needs the typed idea (prompt)`);
-    if (x.kind === "ui_checklist" && ((x.items ?? []).length < 3)) p.push(`${at}: ui_checklist needs 3–5 lines`);
     if (x.kind === "prompt_result") {
       const known = assets[0] ? opts.assetPrompts?.get(String(assets[0].asset_id)) : null;
       if (!known) p.push(`${at}: prompt_result only with an asset whose real prompt is recorded`);

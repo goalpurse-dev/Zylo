@@ -27,6 +27,7 @@ import { postMetrics, scorePosts } from "./analytics.js";
 import { LEARNING_RULES, featureBreakdown, freshness, learn } from "./learning.js";
 import { SNAPSHOT_COLUMNS, analysisRequest, analystPosts, scoutRequest } from "./agents.js";
 import { citable } from "./zyvoLane.js";
+import { fitSlideshow, shortenCreator } from "./slotFit.js";
 import { usableAssets, mockPackage, mockSlideshow, nearDuplicate, packageProblems, packageRequest, rewriteRequest, slideshowProblems, utmLinks, writeRequest } from "./writer.js";
 
 export const LANE = "slideshow";
@@ -234,6 +235,12 @@ function checkOpts(assets, facts) {
   return { assetRefs: new Set(usable.map((a) => a.ref)), assetPrompts: new Map(usable.filter((a) => a.prompt).map((a) => [a.ref, a.prompt])), factKeys: new Set(citable(facts).map((x) => x.key)) };
 }
 
+/** The Zyvo account's slides cut to the slot table (slotFit.js) before any check: no model call. */
+export function fitToSlots(slideshow, recipe) {
+  if (recipe?.account !== "zyvo" || !slideshow?.slides) return { slideshow, changes: [] };
+  return fitSlideshow(slideshow, 0);
+}
+
 /** Program checks + near-duplicates. Returns the problems (empty = keep it). */
 function judge(slideshow, idea, recent, assets = [], facts = []) {
   const problems = slideshowProblems(slideshow, idea.recipe, checkOpts(assets, facts));
@@ -261,7 +268,7 @@ async function write(job, deps) {
   if (job.payload?.problems?.length) request.messages[0].content += `\n\nYOUR LAST ATTEMPT HAD THESE PROBLEMS, avoid them:\n${job.payload.problems.map((p) => `- ${p}`).join("\n")}`;
   if (job.payload?.note) request.messages[0].content += `\n\nNOTE: ${job.payload.note}`;
   const r = await callMain(deps, { operation: "anthropic.write", request, idea, estimate: (model) => ESTIMATES.write(model) });
-  const slideshow = r.dryRun ? mockSlideshow(idea.recipe, usableAssets(assets), facts) : jsonFromMessage(r.result);
+  const slideshow = r.dryRun ? mockSlideshow(idea.recipe, usableAssets(assets), facts) : fitToSlots(jsonFromMessage(r.result), idea.recipe).slideshow;
   const problems = r.dryRun ? [] : judge(slideshow, idea, recent, assets, facts);
   if (problems.length) {
     if (!job.payload?.problems) {
@@ -331,7 +338,7 @@ async function pollBatch(job, deps) {
     }
     await deps.guard.settle(ledgerId, { actualUsd: r.costUsd, requestRef: `${batchId}/${ideaId}` });
     let slideshow = null, problems;
-    try { slideshow = jsonFromMessage(r.message); problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId), (await deps.db.activeAssets?.()) ?? [], (await deps.db.facts?.()) ?? []); } catch (e) { problems = [e.message]; }
+    try { slideshow = fitToSlots(jsonFromMessage(r.message), idea.recipe).slideshow; problems = judge(slideshow, idea, await deps.db.recentTitles(30, ideaId), (await deps.db.activeAssets?.()) ?? [], (await deps.db.facts?.()) ?? []); } catch (e) { problems = [e.message]; }
     if (problems.length) await deps.db.enqueue([{ run_id: job.run_id, idea_id: ideaId, stage: "write", payload: { problems } }]);
     else await saveSlideshow(deps, idea, slideshow);
   }
@@ -383,7 +390,7 @@ async function rewrite(job, deps) {
   const { library, today, m, assets, extra, facts, brandRules } = await writeContext(deps, idea);
   const request = rewriteRequest({ model: m.main, brandRules, library, recipe: idea.recipe, today, slideshow: idea.script, problems: job.payload?.problems ?? [], assets, ...extra });
   const r = await callMain(deps, { operation: "anthropic.rewrite", request, idea, estimate: (model) => ESTIMATES.rewrite(model) });
-  const slideshow = r.dryRun ? idea.script : jsonFromMessage(r.result);
+  const slideshow = r.dryRun ? idea.script : fitToSlots(jsonFromMessage(r.result), idea.recipe).slideshow;
   const problems = slideshowProblems(slideshow, idea.recipe, checkOpts(assets, facts));
   if (problems.length) throw Object.assign(new Error(`the rewrite failed the checks: ${problems.join("; ")}`), { final: true });
   // A layout rewrite (the text didn't fit) is counted apart from the compliance rewrite: one of each.
@@ -589,16 +596,23 @@ async function renderWait(job, deps) {
     const layout = Array.isArray(manifest.layout) ? manifest.layout : null;
     if (layout) {
       // The slides didn't pass the layout check (too much text, an overlap, outside the safe zone, a missing
-      // image). Nothing was posted. Once: ask for shorter copy and render again. Twice: flag it and stop.
+      // image). Nothing was posted. Owner, 2026-10-19: no paid retry loop. Once: the program shortens the text
+      // itself (fewer list lines, shorter text, one picture fewer where allowed) and renders again, with no model
+      // call. Twice: stop with a clear message; the owner can remake it in a different format.
       const problems = layout.flatMap((l) => l.problems.map((p) => `slide ${l.slide}: ${p}`));
-      if (!idea.compliance?.layoutRetried) {
+      const shortened = idea.compliance?.layoutShortened ? null : idea.recipe?.account === "zyvo" ? fitSlideshow(idea.script, 1) : shortenCreator(idea.script);
+      // Nothing left to cut: rendering the same slides again would fail the same way, so stop now.
+      if (shortened?.changes.length) {
+        const { slideshow, changes } = shortened;
+        await deps.db.updateIdea(idea.id, { script: slideshow, compliance: { ...(idea.compliance ?? {}), layoutShortened: true, shortened: changes, layoutProblems: problems } });
         await deps.db.updateGeneration(gen.id, { status: "queued", error: null });
-        await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "rewrite", payload: { layout: true, problems: [...problems, "make the text on these slides SHORTER so it fits"] } }]);
-        return "layout: rewriting shorter";
+        await deps.db.enqueue([{ run_id: idea.run_id, idea_id: idea.id, stage: "render" }]);
+        return `layout: shortened by the program (${changes.length} changes), rendering again`;
       }
-      await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), flagged: true, ok: false, problems: [...(idea.compliance?.problems ?? []), ...problems] } });
-      await deps.db.updateGeneration(gen.id, { status: "failed", error: `layout still fails after a shorter rewrite: ${problems.join("; ")}`.slice(0, 500) });
-      throw Object.assign(new Error(`the layout still fails after a shorter rewrite: ${problems.join("; ")}`), { final: true });
+      const message = `The slides still don't fit after the program shortened them (${problems.join("; ")}). Use "Remake with a different format".`;
+      await deps.db.updateIdea(idea.id, { compliance: { ...(idea.compliance ?? {}), flagged: true, ok: false, needsNewFormat: true, problems: [...(idea.compliance?.problems ?? []), ...problems] } });
+      await deps.db.updateGeneration(gen.id, { status: "failed", error: message.slice(0, 500) });
+      throw Object.assign(new Error(message), { final: true });
     }
     await deps.db.updateGeneration(gen.id, { status: "failed", error: String(manifest.error).slice(0, 500) });
     throw Object.assign(new Error(`render failed: ${manifest.error}`), { final: true });
