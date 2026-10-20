@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { speechEnd } from "./speechEnd.mjs";
 const [wt, ff, OUT] = process.argv.slice(2);
 process.env.FFMPEG = ff;
 const V = "C:/Users/Public/Zylo/research/seamless-niche/m1/voice_tests";
@@ -21,10 +22,14 @@ const T = {
   flame: at(/^flame$/), electricity: at(/^electricity$/), add2: at(/^Add$/), cap: at(/^cap,$/), fence: at(/^fence,$/), trees: at(/^trees\.$/),
   congrats: at(/^Congratulations,$/), built: at(/^built$/), lastWord: words.at(-1).s, voiceEnd: words.at(-1).e,
 };
-const HOLD = 1.5, ENDCARD = 1.8;
-T.signPop = +(T.voiceEnd + HOLD - 0.1).toFixed(3);
+// End card (fixed 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured, not the aligner's word
+// end, which ran 0.4 s late), with the chime, and holds 1.75 s after its 0.45 s pop. Before, a 1.5 s hold sat
+// between the last word and the sign, so about 2 s of empty scene showed before it.
+const HOLD = 1.5, SIGN_GAP = 0.4, SIGN_POP = 0.45, SIGN_HOLD = 1.75;
+T.speechEnd = speechEnd(ff, `${OUT}/voice.mp3`);
+T.signPop = +(T.speechEnd + SIGN_GAP).toFixed(3);
 T.lengthNoEnd = +(T.voiceEnd + HOLD).toFixed(3);
-T.lengthEnd = +(T.voiceEnd + HOLD + ENDCARD).toFixed(3);
+T.lengthEnd = +(T.signPop + SIGN_POP + SIGN_HOLD).toFixed(3);
 fs.writeFileSync(`${OUT}/times.json`, JSON.stringify({ lengthSec: T.lengthEnd, ...T }, null, 1));
 const cards = [{ text: "37 YEARS", s: T.readable, e: T.readable + 1.8 }, { text: "480 LANDFILLS", s: T.electricity, e: T.electricity + 1.8 }];
 const { buildAss } = await import(pathToFileURL(path.join(wt, "render-worker/src/cutawayFinalPlan.mjs")).href);

@@ -201,8 +201,10 @@ const KEYS = [
   [TM.electricity + 0.5, [7.4, 10.2, 29.0], [-3.2, 1.0, -9.6]], //           the generator
   [TM.add2 + 0.2, [12.4, 11.0, 32.0], [0.2, 1.6, -8.8]], //                  the cap, fence, trees
   [TM.congrats + 0.1, [13.6, 12.0, 34.5], [0.3, 1.5, -9.0]],
-  [TM.lengthNoEnd, [16.0, 15.2, 41.0], [0.4, 1.4, -9.4]], //                  pull back to the calm, finished scene
-  ...(END_CARD ? [[TM.lengthEnd, [10.5, 9.6, 30.0], [0.0, 2.6, -4.0]]] : []), // end card: a gentle push toward the sign
+  ...(END_CARD
+    ? [[TM.signPop + 0.1, [15.2, 14.0, 38.8], [0.3, 1.5, -9.2]], //           pull back to the calm scene until the sign pops,
+      [TM.lengthEnd, [10.5, 9.6, 30.0], [0.0, 2.6, -4.0]]] //                  then a gentle push toward the sign
+    : [[TM.lengthNoEnd, [16.0, 15.2, 41.0], [0.4, 1.4, -9.4]]]), //           pull back to the calm, finished scene
 ];
 function monotone(xs, ys) { const n = xs.length, d = [], m = new Array(n).fill(0); for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i])); for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (3 * (xs[i + 1] - xs[i - 1])) / ((2 * xs[i + 1] - xs[i] - xs[i - 1]) / d[i - 1] + (xs[i + 1] + xs[i] - 2 * xs[i - 1]) / d[i]); return (x) => { let i = 0; while (i < n - 2 && x > xs[i + 1]) i++; const h = xs[i + 1] - xs[i], u = clamp01((x - xs[i]) / h); return (2 * u ** 3 - 3 * u ** 2 + 1) * ys[i] + (u ** 3 - 2 * u ** 2 + u) * h * m[i] + (-2 * u ** 3 + 3 * u ** 2) * ys[i + 1] + (u ** 3 - u ** 2) * h * m[i + 1]; }; }
 const KT = KEYS.map((k) => k[0]), camF = [0, 1, 2].map((a) => monotone(KT, KEYS.map((k) => k[1][a]))), tgtF = [0, 1, 2].map((a) => monotone(KT, KEYS.map((k) => k[2][a])));

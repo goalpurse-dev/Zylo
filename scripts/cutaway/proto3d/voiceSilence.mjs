@@ -5,7 +5,8 @@ import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 const [ff, inFile, wordsFile, outFile] = process.argv.slice(2);
 const T = { comma: 0.02, inner: 0.06, sentence: 0.23, section: 0.28 };
-const SECTION = /^(But|So|This|Add|Congratulations|That)\b/;
+// words that open a new section (a slightly longer pause); SECTION_WORDS="And|Wrap" adds topic-specific ones
+const SECTION = new RegExp(`^(But|So|This|Add|Congratulations|That${process.env.SECTION_WORDS ? `|${process.env.SECTION_WORDS}` : ""})\\b`);
 const SR = 16000, HOP = SR / 100;
 const words = JSON.parse(fs.readFileSync(wordsFile, "utf8"));
 const b = execFileSync(ff, ["-v", "error", "-i", inFile, "-ac", "1", "-ar", String(SR), "-f", "s16le", "-"], { maxBuffer: 1 << 28 });
