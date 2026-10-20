@@ -14,7 +14,9 @@ function CreditIcon() {
   );
 }
 
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null }) {
+// access: "guest" (signed out: the button reads "Sign up to generate" and opens sign-up), "free" (Generate opens
+// the upgrade popup), "paid" or "unknown" (Generate runs; the server checks the plan again on every call).
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade }) {
   const topic = values?.topic ?? "";
   const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
@@ -30,6 +32,8 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const update = (key, value) => { if (!historyMode) onValuesChange?.({ ...values, [key]: value }); };
 
   const handleGenerate = () => {
+    if (access === "guest") { onSignUp?.(); return; }
+    if (access === "free") { onUpgrade?.(); return; }
     const clean = topic.trim();
     if (clean.length < 3) { setValidationError("Type what the video should explain."); return; }
     setValidationError("");
@@ -166,7 +170,10 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
           disabled={isWorking}
           className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black transition lg:py-2.5 ${isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink hover:bg-cutaway-soft"}`}
         >
-          {historyMode ? "Done" : isWorking ? "Working…" : isDone ? "Create another" : <>
+          {historyMode ? "Done" : isWorking ? "Working…" : isDone ? "Create another" : access === "guest" ? <>
+            Sign up to generate
+            <ChevronRight className="h-4 w-4" />
+          </> : <>
             Generate
             <span className="flex items-center gap-1 text-[13px] font-semibold"><CreditIcon />{credits}</span>
             <ChevronRight className="h-4 w-4" />

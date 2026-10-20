@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
 import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, wordsToFit, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
@@ -606,4 +606,54 @@ test("cutaway switch: the page, the Short Form menu and the server all use it, a
     assert.doesNotMatch(src, /CUTAWAY_FLAG|"cutaway_explainer"/, `${name} still refers to the old flag`);
   }
   assert.doesNotMatch(server, /user_feature_flags|global_feature_flags/, "server still reads a feature-flag table");
+});
+
+// ---------- who may generate: one rule for the page and the server ----------
+
+test("access: signed out = guest, free/unknown plan = free, Starter and above (and affiliates) = paid, unread plan = unknown", async () => {
+  const { accessFor, canGenerate, PAID_PLANS } = await import("../supabase/functions/_shared/cutaway/access.js");
+  assert.deepEqual([...PAID_PLANS], ["starter", "pro", "generative", "affiliate"]);
+  assert.equal(accessFor({ signedIn: false, planCode: "pro" }), "guest");
+  assert.equal(accessFor({ signedIn: true, planCode: "free" }), "free");
+  assert.equal(accessFor({ signedIn: true, planCode: "something-else" }), "free");
+  assert.equal(accessFor({ signedIn: true, planCode: null }), "unknown", "a failed plan read never blocks; the server decides");
+  for (const p of ["starter", "Pro", "generative", " affiliate "]) assert.equal(accessFor({ signedIn: true, planCode: p }), "paid", p);
+  assert.equal(canGenerate(undefined), false);
+  assert.equal(canGenerate("free"), false);
+});
+
+test("access: the server enforces the same rule on every action, before anything is charged", () => {
+  const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
+  assert.match(server, /import \{ canGenerate \} from "\.\.\/_shared\/cutaway\/access\.js";/);
+  assert.match(server, /if \(!canGenerate\(profile\?\.plan_code \?\? "free"\)\) throw new ApiError\("Cutaway Explainer is for paid plans\.", 402\);/);
+  // every action goes through requireUser first: it is the first line of handle()
+  assert.match(server, /async function handle\(req: Request\) \{\r?\n  const userId = await requireUser\(req\);/);
+  assert.doesNotMatch(server, /PAID_PLANS/, "no second copy of the plan list in the server");
+});
+
+test("page: nothing pops up on load; guests get sign-up and free plans the upgrade popup only when they press Generate", () => {
+  const page = readFileSync(new URL("../src/pages/workspace/CutawayExplainer.jsx", import.meta.url), "utf8");
+  const builder = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayBuilder.jsx", import.meta.url), "utf8");
+  assert.doesNotMatch(page, /setPaywallOpen\(true\)|useState\(true\)/, "no popup opens by itself");
+  assert.match(page, /<AuthModal\s+mode="signup"/);
+  assert.match(page, /title="Cutaway Explainer is for paid plans"/);
+  assert.match(page, /subtitle="Upgrade to make your own 3D explainer videos\."/);
+  assert.match(page, /dropFeatures=\{\["Watermark-free exports"\]\}/, "Starter keeps the end card here, so that generic line is dropped");
+  assert.match(page, /const DEV_AS = import\.meta\.env\.DEV \?/, "the ?as= state override exists only in local dev");
+  assert.match(builder, /if \(access === "guest"\) \{ onSignUp\?\.\(\); return; \}/);
+  assert.match(builder, /if \(access === "free"\) \{ onUpgrade\?\.\(\); return; \}/);
+  assert.match(builder, /access === "guest" \? <>\s*Sign up to generate/);
+});
+
+test("examples: our two finished videos (with the end card) fill Recent Creations until the viewer has one of their own", async () => {
+  const { EXAMPLES, recentOrExamples } = await import("../src/components/viral-tools/cutaway-explainer/api/cutawayApi.js");
+  assert.deepEqual(EXAMPLES.map((e) => e.id), ["example-french-drain", "example-landfill"]);
+  for (const e of EXAMPLES) {
+    assert.equal(e.example, true); assert.equal(e.endCard, true); assert.equal(e.step, "done");
+    assert.ok(existsSync(new URL(`../public${e.finalUrl}`, import.meta.url)), e.finalUrl);
+    assert.ok(existsSync(new URL(`../public${e.poster}`, import.meta.url)), e.poster);
+  }
+  assert.equal(recentOrExamples([]), EXAMPLES);
+  const mine = [{ id: "r1", topic: "septic tank" }];
+  assert.equal(recentOrExamples(mine), mine, "as soon as they have a video, only theirs");
 });

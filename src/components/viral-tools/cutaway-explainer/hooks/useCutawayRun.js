@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEMO_STEP_MS, DEMO_VIDEO, DEMO_VIDEO_CLEAN, newDemoRun } from "../api/cutawayApi";
+import { DEMO_STEP_MS, DEMO_VIDEO, DEMO_VIDEO_CLEAN, EXAMPLES, newDemoRun } from "../api/cutawayApi";
 
 const ORDER = ["script", "scene", "render", "done"];
 
@@ -45,7 +45,8 @@ export default function useCutawayRun() {
 
   // endCard: in the demo the page mirrors the server rule (endCardFor); the real pipeline decides on the server
   const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true) => { window.clearTimeout(timer.current); setRun(newDemoRun(topic, lengthSec, soundEffects, endCard)); }, []);
-  const open = useCallback((id) => { const r = recent.find((x) => x.id === id); if (r) setRun(r); }, [recent]);
+  // a finished run of this session, or one of the two examples shown while there are none
+  const open = useCallback((id) => { const r = recent.find((x) => x.id === id) ?? EXAMPLES.find((x) => x.id === id); if (r) setRun(r); }, [recent]);
   const reset = useCallback(() => { window.clearTimeout(timer.current); setRun(null); }, []);
 
   return { run, recent, start, open, reset };

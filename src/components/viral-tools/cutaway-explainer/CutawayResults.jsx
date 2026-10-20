@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { ArrowLeft, Check, Download, Layers, Loader2, Play, RotateCcw } from "lucide-react";
 import { saveMediaToDevice } from "../../../lib/downloadMedia";
-import { LOADING_FRAMES, STEPS } from "./api/cutawayApi";
+import { LOADING_FRAMES, recentOrExamples, STEPS } from "./api/cutawayApi";
 
 function timeAgo(value) {
   const seconds = Math.max(0, (Date.now() - new Date(value).getTime()) / 1000);
@@ -37,10 +37,12 @@ function FinalVideo({ run }) {
   const download = () => saveMediaToDevice({ url: run.finalUrl, filename: "cutaway-explainer.mp4", title: "Cutaway Explainer" });
   return (
     <div className="relative mx-auto aspect-[9/16] h-full max-h-[min(78dvh,820px)] min-h-[360px] overflow-hidden rounded-[26px] border border-white/[0.1] bg-black shadow-[0_24px_70px_rgba(0,0,0,.55)]">
-      <video src={run.finalUrl} controls autoPlay playsInline className="absolute inset-0 h-full w-full object-cover" />
-      <button type="button" onClick={download} className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-cutaway px-3 py-2 text-[11px] font-black text-cutaway-ink transition hover:bg-cutaway-soft">
-        <Download className="h-4 w-4" />Download
-      </button>
+      <video src={run.finalUrl} poster={run.poster} controls autoPlay playsInline className="absolute inset-0 h-full w-full object-cover" />
+      {!run.example && ( // an example isn't the viewer's video: watch only
+        <button type="button" onClick={download} className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-cutaway px-3 py-2 text-[11px] font-black text-cutaway-ink transition hover:bg-cutaway-soft">
+          <Download className="h-4 w-4" />Download
+        </button>
+      )}
     </div>
   );
 }
@@ -98,25 +100,41 @@ function Working({ run }) {
   );
 }
 
+export function ExampleBadge({ className = "" }) {
+  return <span className={`rounded-full border border-cutaway/30 bg-cutaway/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-cutaway ${className}`}>Example</span>;
+}
+
 function Recents({ items, onOpen }) {
+  // No videos of their own yet: our two finished examples, labelled so nobody thinks they made them.
+  const shown = recentOrExamples(items);
+  const examples = !items.length;
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-4">
       <h3 className="text-[14px] font-black text-white">Recent Creations</h3>
-      {items.length ? (
-        <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
-          {items.map((item) => (
-            <button key={item.id} type="button" onClick={() => onOpen(item.id)} className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] p-2.5 text-left transition hover:border-cutaway/25">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-cutaway/10 text-cutaway">{item.finalUrl ? <Play className="h-4 w-4 fill-current" /> : <Layers className="h-4 w-4" />}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12px] font-bold text-white/80 group-hover:text-white">{item.topic}</span>
-                <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wide text-white/30">{item.lengthSec} sec · {item.step === "done" ? "ready" : "in progress"}{item.demo ? " · demo" : ""} · {timeAgo(item.createdAt)}</span>
+      {examples && <p className="mt-1 text-[11px] font-semibold text-white/35">Your videos will appear here. Until then, tap an example to watch it.</p>}
+      <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+        {shown.map((item) => (
+          <button key={item.id} type="button" onClick={() => onOpen(item.id)} className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] p-2.5 text-left transition hover:border-cutaway/25">
+            {item.poster ? (
+              <span className="relative h-14 w-[32px] shrink-0 overflow-hidden rounded-md bg-black">
+                <img src={item.poster} alt="" loading="lazy" className="h-full w-full object-cover" />
+                <span className="absolute inset-0 grid place-items-center bg-black/25"><Play className="h-3.5 w-3.5 fill-white text-white" /></span>
               </span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-3 rounded-xl border border-dashed border-white/10 px-4 py-8 text-center text-[11px] font-semibold text-white/30">Your finished videos will appear here.</p>
-      )}
+            ) : (
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-cutaway/10 text-cutaway">{item.finalUrl ? <Play className="h-4 w-4 fill-current" /> : <Layers className="h-4 w-4" />}</span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="truncate text-[12px] font-bold text-white/80 group-hover:text-white">{item.example ? item.title : item.topic}</span>
+                {item.example && <ExampleBadge className="shrink-0" />}
+              </span>
+              <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wide text-white/30">
+                {item.example ? `${item.lengthSec} sec · made with Cutaway Explainer` : `${item.lengthSec} sec · ${item.step === "done" ? "ready" : "in progress"}${item.demo ? " · demo" : ""} · ${timeAgo(item.createdAt)}`}
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
     </section>
   );
 }
@@ -136,7 +154,7 @@ export default function CutawayResults({ run, recent = [], onOpen, onReset, view
   }
 
   const done = run.step === "done";
-  const headline = done ? "Ready" : "Working";
+  const headline = run.example ? run.title : done ? "Ready" : "Working";
 
   return (
     <div className="flex h-full min-h-[500px] w-full flex-col gap-3 p-3 lg:min-h-0">
@@ -144,7 +162,7 @@ export default function CutawayResults({ run, recent = [], onOpen, onReset, view
         <div className="flex min-w-0 items-center gap-2.5">
           {!done && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-cutaway" />}
           <span className="truncate text-[12px] font-bold text-cutaway">{headline}</span>
-          <span className="hidden truncate text-[11px] font-semibold text-white/35 sm:inline">· {run.topic} · {run.lengthSec} sec</span>
+          {run.example ? <ExampleBadge className="shrink-0" /> : <span className="hidden truncate text-[11px] font-semibold text-white/35 sm:inline">· {run.topic} · {run.lengthSec} sec</span>}
         </div>
         {(done || viewingRecent) && (
           <button type="button" onClick={viewingRecent ? onBack : onReset} className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-white/55 transition hover:text-white">

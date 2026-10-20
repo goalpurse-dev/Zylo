@@ -21,6 +21,7 @@ import { generateSfx } from "../_shared/cutaway/sound.js";
 import { synthesize } from "../_shared/cutaway/voice.js";
 import { directSender } from "../_shared/cutaway/runware.js";
 import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
+import { canGenerate } from "../_shared/cutaway/access.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -35,7 +36,6 @@ const CUTAWAY_FINAL_IMAGE = Deno.env.get("CUTAWAY_FINAL_IMAGE") ?? `registry.fly
 const BUCKET = "generated";
 // One Supabase project serves production and every preview, so the server switch is a single secret: off unless "true".
 const CUTAWAY_ENABLED = (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true";
-const PAID_PLANS = new Set(["starter", "pro", "generative", "affiliate"]);
 const LEASE_SEC = 140;
 const RENDER_TIMEOUT_MS = 12 * 60 * 1000;
 const FINAL_MACHINE = { cpu_kind: "performance", cpus: 4, memory_mb: 8192 };
@@ -63,7 +63,8 @@ async function requireUser(req: Request) {
   if (error || !data?.user) throw new ApiError("Please sign in.", 401);
   const userId = data.user.id;
   const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", userId).single();
-  if (!PAID_PLANS.has(String(profile?.plan_code ?? "free").toLowerCase())) throw new ApiError("Cutaway Explainer needs a paid plan.", 402);
+  // the same rule as the page (_shared/cutaway/access.js), enforced here on every action before anything is charged
+  if (!canGenerate(profile?.plan_code ?? "free")) throw new ApiError("Cutaway Explainer is for paid plans.", 402);
   return userId;
 }
 

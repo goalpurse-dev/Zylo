@@ -33,8 +33,11 @@ const TIERS = [
  * planLines (optional): { starter, pro, generative } tool-specific lines that
  * replace the generic "~N AI videos" line (a null value drops it). AI Fruit
  * Story passes counts computed from its live prices.
+ * title / subtitle (optional): replace the header for a signed-in viewer ("Subscription Required" /
+ * "You need a paid plan…"), for a template that wants its own words. dropFeatures (optional): generic plan
+ * lines that don't hold for this template (e.g. "Watermark-free exports" where Starter keeps an end card).
  */
-export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true, toolName = "Face ASMR", previewSrc = "/face/preview.mp4", planLines = null }) {
+export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true, toolName = "Face ASMR", previewSrc = "/face/preview.mp4", planLines = null, title = null, subtitle = null, dropFeatures = null }) {
   const navigate = useNavigate();
   // One checkout at a time: spinner on the clicked plan, a toast if it fails.
   const pay = usePaymentAction();
@@ -109,12 +112,12 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
             </div>
             <div>
               <h2 className="text-[15px] font-bold text-white leading-tight">
-                {isGuest ? `Sign up to use ${toolName}` : "Subscription Required"}
+                {isGuest ? `Sign up to use ${toolName}` : title ?? "Subscription Required"}
               </h2>
               <p className="text-[11px] text-white/40 mt-0.5">
                 {isGuest
                   ? `Create a free account to get started with ${toolName}.`
-                  : `You need a paid plan to create ${toolName} videos.`}
+                  : subtitle ?? `You need a paid plan to create ${toolName} videos.`}
               </p>
             </div>
           </div>
@@ -230,7 +233,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                         </button>
 
                         <ul className="space-y-1.5">
-                          {(planLines ? [tier.features[0], ...(planLines[tier.id] ? [planLines[tier.id]] : []), ...tier.features.slice(2)] : tier.features).filter(Boolean).map((f, i) => (
+                          {(planLines ? [tier.features[0], ...(planLines[tier.id] ? [planLines[tier.id]] : []), ...tier.features.slice(2)] : tier.features).filter(Boolean).filter((f) => !dropFeatures?.includes(f)).map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
                               <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
                               {f}

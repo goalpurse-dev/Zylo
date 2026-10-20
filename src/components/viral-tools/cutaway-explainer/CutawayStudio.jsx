@@ -5,12 +5,14 @@ import useCutawayRun from "./hooks/useCutawayRun";
 import { DEFAULT_LENGTH, endCardFor } from "./api/cutawayApi";
 
 /** The Cutaway Explainer workspace: generate on the left, the result on the right (one panel at a time on phones). */
-export default function CutawayStudio({ onBeforeGenerate, planCode = null }) {
+export default function CutawayStudio({ onBeforeGenerate, planCode = null, access = "unknown", onSignUp, onUpgrade }) {
   const [mobilePanel, setMobilePanel] = useState("builder");
   const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true, removeWatermark: false });
   const [viewingRecent, setViewingRecent] = useState(false);
   const { run, recent, start, open, reset } = useCutawayRun();
-  const phase = !run ? "idle" : run.step === "done" ? "done" : "working";
+  // an example only plays: the form keeps the viewer's own inputs and stays usable
+  const example = Boolean(run?.example);
+  const phase = !run || example ? "idle" : run.step === "done" ? "done" : "working";
   const scrollTop = () => document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
 
   const handleGenerate = (input) => {
@@ -27,14 +29,17 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null }) {
 
   const builder = (
     <CutawayBuilder
-      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects, removeWatermark: run.endCard === false } : values}
+      values={viewingRecent && run && !example ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects, removeWatermark: run.endCard === false } : values}
       planCode={planCode}
+      access={access}
+      onSignUp={onSignUp}
+      onUpgrade={onUpgrade}
       usedTopics={recent.map((r) => r.topic)}
       onValuesChange={setValues}
       onGenerate={handleGenerate}
       onReset={handleReset}
       phase={phase}
-      historyMode={viewingRecent}
+      historyMode={viewingRecent && !example}
       onDone={handleBack}
     />
   );
