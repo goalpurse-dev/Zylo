@@ -8,7 +8,8 @@
 //   approve    {runId}                 "Looks good -> make video": charge step 2 and go on to keyframes, clips, stitch
 //
 // The pipeline itself is _shared/cutaway/engine.js (also run by scripts/cutaway/runLocal.mjs).
-// A step that fails refunds its own charge once. Hidden behind the cutaway_explainer flag.
+// A step that fails refunds its own charge once. Off unless the CUTAWAY_ENABLED secret is "true": the server twin of
+// VITE_CUTAWAY_ENABLED, one switch for the page, the Short Form menu and this function (no per-user flag).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
@@ -32,7 +33,8 @@ const FLY_APP = Deno.env.get("FLY_RENDER_APP") ?? "zyvo-render";
 const CUTAWAY_FINAL_IMAGE = Deno.env.get("CUTAWAY_FINAL_IMAGE") ?? `registry.fly.io/${FLY_APP}:cutaway-final`;
 
 const BUCKET = "generated";
-const FLAG = "cutaway_explainer";
+// One Supabase project serves production and every preview, so the server switch is a single secret: off unless "true".
+const CUTAWAY_ENABLED = (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true";
 const PAID_PLANS = new Set(["starter", "pro", "generative", "affiliate"]);
 const LEASE_SEC = 140;
 const RENDER_TIMEOUT_MS = 12 * 60 * 1000;
@@ -54,17 +56,13 @@ class ApiError extends Error {
 // ---------- access ----------
 
 async function requireUser(req: Request) {
+  if (!CUTAWAY_ENABLED) throw new ApiError("This template isn't available yet.", 403);
   const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: `Bearer ${token}` } } });
   const { data, error } = await client.auth.getUser(token);
   if (error || !data?.user) throw new ApiError("Please sign in.", 401);
   const userId = data.user.id;
-  const [{ data: profile }, { data: global }, { data: mine }] = await Promise.all([
-    admin.from("profiles").select("plan_code").eq("id", userId).single(),
-    admin.from("global_feature_flags").select("enabled").eq("key", FLAG).maybeSingle(),
-    admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
-  ]);
-  if (!(global?.enabled === true || mine?.flags?.[FLAG] === true)) throw new ApiError("This template isn't available yet.", 403);
+  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", userId).single();
   if (!PAID_PLANS.has(String(profile?.plan_code ?? "free").toLowerCase())) throw new ApiError("Cutaway Explainer needs a paid plan.", 402);
   return userId;
 }

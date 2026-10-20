@@ -8,7 +8,7 @@ import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
-import { CUTAWAY_FLAG, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
+import { CUTAWAY_ENABLED, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
 
@@ -109,10 +109,10 @@ export const CREATE_TOOLS = [
   seoVisibility: getWorkspaceRouteSeoPolicy(tool.path)?.seoVisibility || "noindex",
 }));
 
-// Templates that exist only for accounts whose flag is on (hidden until
-// launch). They are NOT in CREATE_TOOLS, so nothing that lists every tool can
-// show them by accident; useShortFormTools() adds each one right after the
-// tool named in `after`.
+// Templates hidden until launch: each has either a database `flag` (on for accounts whose flag is on, or for
+// everyone with the global switch) or a build switch `enabled` (Cutaway: on in local dev and Vercel previews,
+// off in production). They are NOT in CREATE_TOOLS, so nothing that lists every tool can show them by accident;
+// useShortFormTools() adds each one right after the tool named in `after`.
 export const FLAGGED_CREATE_TOOLS = [
   {
     id: "blocky-stories",
@@ -133,7 +133,7 @@ export const FLAGGED_CREATE_TOOLS = [
     preview: "/cutaway-explainer/poster.webp",
     previewPosition: "object-center",
     color: "#4ADE80",
-    flag: CUTAWAY_FLAG,
+    enabled: CUTAWAY_ENABLED,
     after: "cartoon-drive-by",
   },
 ].map((tool) => ({
@@ -406,24 +406,24 @@ function ToolGridItem({ tool, active, onClick, pinned, onTogglePin, pinDisabled 
 const MENU_TOOLS = CREATE_TOOLS.filter((t) => !HIDDEN_SHORT_FORM_TOOLS.includes(t.label));
 
 /**
- * The Short Form tools this viewer gets: MENU_TOOLS, plus each flagged
- * template whose flag is on for them (their own flag or the global switch),
- * placed right after the tool it belongs next to. Flag off = not in the list.
+ * The Short Form tools this viewer gets: MENU_TOOLS, plus each hidden template
+ * that is on (its database flag for this viewer, or its build switch),
+ * placed right after the tool it belongs next to. Off = not in the list.
  */
+export function shortFormTools(flagsOn = {}) {
+  const tools = [...MENU_TOOLS];
+  for (const extra of FLAGGED_CREATE_TOOLS) {
+    if (!(extra.flag ? flagsOn[extra.flag] === true : extra.enabled === true)) continue;
+    const at = tools.findIndex((t) => t.id === extra.after);
+    tools.splice(at < 0 ? tools.length : at + 1, 0, extra);
+  }
+  return tools;
+}
+
 export function useShortFormTools() {
   const auth = useAuth();
   const blocky = useFeatureFlag(BLOCKY_STORIES_FLAG, auth?.user?.id);
-  const cutaway = useFeatureFlag(CUTAWAY_FLAG, auth?.user?.id);
-  return useMemo(() => {
-    const on = { [BLOCKY_STORIES_FLAG]: blocky.enabled, [CUTAWAY_FLAG]: cutaway.enabled };
-    const tools = [...MENU_TOOLS];
-    for (const extra of FLAGGED_CREATE_TOOLS) {
-      if (!on[extra.flag]) continue;
-      const at = tools.findIndex((t) => t.id === extra.after);
-      tools.splice(at < 0 ? tools.length : at + 1, 0, extra);
-    }
-    return tools;
-  }, [blocky.enabled, cutaway.enabled]);
+  return useMemo(() => shortFormTools({ [BLOCKY_STORIES_FLAG]: blocky.enabled }), [blocky.enabled]);
 }
 
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */

@@ -135,8 +135,8 @@ export default function ToolShell({ onClose }) {
   const pinnedTools = pinnedIds
     .map((id) => ALL_PINNABLE_TOOLS.find((tool) => tool.id === id))
     .filter(Boolean)
-    // A flagged template stays pinned only while its flag is on for this viewer.
-    .filter((tool) => !tool.flag || shortFormTools.some((t) => t.id === tool.id));
+    // A hidden template (database flag or build switch) stays pinned only while it is on for this viewer.
+    .filter((tool) => !(tool.flag || "enabled" in tool) || shortFormTools.some((t) => t.id === tool.id));
   const pinLimitReached = pinnedIds.length >= 4;
 
   return (

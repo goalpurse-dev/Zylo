@@ -581,3 +581,29 @@ test("captions: one word at 52%; number cards at 30% with a pop", () => {
   assert.match(white, /,CardWhite,,0,0,0,,.*\}33 FT/);
   assert.match(white, /Style: CardWhite,Lilita One,130,&H00FFFFFF/);
 });
+
+// ---------- one switch for the whole template (no per-user flag) ----------
+
+test("cutaway switch: on in local dev and Vercel previews, off in production unless VITE_CUTAWAY_ENABLED says so", async () => {
+  const { cutawayEnabled } = await import("../src/data/cutawayExplainer.js");
+  assert.equal(cutawayEnabled({ DEV: true }), true, "local dev");
+  assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "preview" }), true, "Vercel preview");
+  assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "production" }), false, "production build");
+  assert.equal(cutawayEnabled({}), false, "a build outside Vercel");
+  assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "production", VITE_CUTAWAY_ENABLED: "true" }), true, "explicit on");
+  assert.equal(cutawayEnabled({ DEV: true, VITE_CUTAWAY_ENABLED: "false" }), false, "explicit off wins in dev");
+  assert.equal(cutawayEnabled({ VITE_VERCEL_ENV: "preview", VITE_CUTAWAY_ENABLED: " FALSE " }), false, "explicit off wins on a preview");
+});
+
+test("cutaway switch: the page, the Short Form menu and the server all use it, and none reads a per-user flag", () => {
+  const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  const page = read("src/pages/workspace/CutawayExplainer.jsx"), menu = read("src/components/workspace/CreateMenu.jsx"), server = read("supabase/functions/cutaway-api/index.ts");
+  assert.match(page, /if \(!CUTAWAY_ENABLED\) return <Navigate/);
+  assert.match(menu, /enabled: CUTAWAY_ENABLED,/);
+  assert.match(server, /Deno\.env\.get\("CUTAWAY_ENABLED"\)/);
+  assert.match(server, /if \(!CUTAWAY_ENABLED\) throw new ApiError/);
+  for (const [name, src] of [["page", page], ["menu", menu], ["server", server]]) {
+    assert.doesNotMatch(src, /CUTAWAY_FLAG|"cutaway_explainer"/, `${name} still refers to the old flag`);
+  }
+  assert.doesNotMatch(server, /user_feature_flags|global_feature_flags/, "server still reads a feature-flag table");
+});
