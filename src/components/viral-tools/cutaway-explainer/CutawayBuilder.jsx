@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { BadgeCheck, ChevronRight, Clock3, Layers, Lock, Volume2, VolumeX } from "lucide-react";
+import { BadgeCheck, ChevronRight, Clock3, Layers, Lock, PackageX, Volume2, VolumeX } from "lucide-react";
 import { freshSuggestions } from "../../../data/cutawayTopics";
-import { canRemoveEndCard, CREDITS, DEFAULT_LENGTH, DEMO_MODE, LENGTHS } from "./api/cutawayApi";
+import { canRemoveEndCard, closestNames, DEFAULT_LENGTH, DEMO_MODE, LENGTHS, PRICES, quoteTopic } from "./api/cutawayApi";
 import CutawayUpgradeModal from "./CutawayUpgradeModal";
 
 function CreditIcon() {
@@ -25,7 +25,12 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const suggestions = useMemo(() => freshSuggestions(usedTopics, 6), [usedTopics]);
   const [validationError, setValidationError] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const credits = CREDITS[lengthSec];
+  const [cantBuild, setCantBuild] = useState(null); // { topic, missing, closest } after the kit check said no
+  // The live price: premade (a chip, or a typed topic that names one) or custom, by the same rule the server charges by.
+  const quote = useMemo(() => quoteTopic(topic, lengthSec), [topic, lengthSec]);
+  const hasTopic = topic.trim().length >= 3;
+  const credits = hasTopic ? quote.credits : PRICES.video.credits.premade[lengthSec];
+  const kindLabel = !hasTopic ? null : quote.kind === "premade" ? "Premade topic" : "Custom topic";
   const isWorking = phase === "working";
   const isDone = phase === "done";
 
@@ -37,6 +42,9 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     const clean = topic.trim();
     if (clean.length < 3) { setValidationError("Type what the video should explain."); return; }
     setValidationError("");
+    // The kit check, before anything is charged. "no" stops here; "unsure" goes on, and the server asks Claude
+    // Haiku (~$0.0005, ours) before charging, so a topic it refuses is never paid for either.
+    if (quote.kind === "custom" && quote.check.verdict === "no") { setCantBuild({ topic: clean, missing: quote.check.missing, closest: closestNames(quote.check.closest) }); return; }
     onGenerate({ topic: clean, lengthSec, soundEffects, removeWatermark });
   };
 
@@ -61,29 +69,53 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             <textarea
               id="cutaway-topic"
               value={topic}
-              onChange={(e) => { update("topic", e.target.value); setValidationError(""); }}
+              onChange={(e) => { update("topic", e.target.value); setValidationError(""); setCantBuild(null); }}
               disabled={historyMode || isWorking}
               maxLength={120}
               rows={3}
               placeholder="What should the video explain? e.g. septic tank"
               className="h-[96px] w-full resize-none rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-cutaway/35 focus:ring-1 focus:ring-cutaway/30"
             />
-            <p className="mb-1.5 mt-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Topics it can build</p>
+            <p className="mb-1.5 mt-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Premade topics</p>
             <div className="flex flex-wrap gap-1.5">
-              {suggestions.map((s) => (
-                <button
-                  key={s.topic}
-                  type="button"
-                  title={`If you ${s.hook}…`}
-                  onClick={() => { update("topic", s.topic); setValidationError(""); }}
-                  disabled={historyMode || isWorking}
-                  className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold text-white/45 transition hover:border-cutaway/25 hover:text-white/75"
-                >
-                  {s.ready && <span className="h-1.5 w-1.5 rounded-full bg-cutaway" aria-label="ready" />}
-                  {s.topic}
-                </button>
-              ))}
+              {suggestions.map((s) => {
+                const picked = quote.kind === "premade" && quote.premade === s.key;
+                return (
+                  <button
+                    key={s.topic}
+                    type="button"
+                    title={`If you ${s.hook}…`}
+                    aria-pressed={picked}
+                    onClick={() => { update("topic", s.topic); setValidationError(""); setCantBuild(null); }}
+                    disabled={historyMode || isWorking}
+                    className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold transition ${picked ? "border-cutaway/45 bg-cutaway/15 text-cutaway" : "border-white/[0.08] bg-white/[0.04] text-white/45 hover:border-cutaway/25 hover:text-white/75"}`}
+                  >
+                    {s.ready && <span className="h-1.5 w-1.5 rounded-full bg-cutaway" aria-label="ready" />}
+                    {s.topic}
+                  </button>
+                );
+              })}
             </div>
+            {cantBuild && (
+              <div role="status" className="mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
+                <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't build this one yet</p>
+                <p className="mt-1 text-[10.5px] font-medium leading-relaxed text-white/50">
+                  “{cantBuild.topic}” needs parts our 3D kit doesn't have yet{cantBuild.missing.length ? ` (${cantBuild.missing.join(", ")})` : ""}. You weren't charged, and we've noted it for the next parts we build.
+                </p>
+                {cantBuild.closest.length > 0 && (
+                  <>
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Closest premade topics</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {cantBuild.closest.map((name) => (
+                        <button key={name} type="button" onClick={() => { update("topic", name); setCantBuild(null); }} className="rounded-full border border-cutaway/30 bg-cutaway/10 px-2.5 py-1 text-[10px] font-bold text-cutaway transition hover:bg-cutaway/20">
+                          {name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -157,7 +189,9 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
               <li>2. Scene: the 3D cutaway is built, and every part appears on its word.</li>
               <li>3. Render: one continuous vertical video with captions and sound.</li>
             </ol>
-            <p className="mt-2 text-[10px] font-semibold text-white/35">{credits} credits for a {lengthSec} s video{DEMO_MODE ? " · not charged in the demo" : ""}</p>
+            <p className="mt-2 text-[10px] font-semibold text-white/35">
+              {lengthSec} s video: {PRICES.video.credits.premade[lengthSec]} credits for a premade topic, {PRICES.video.credits.custom[lengthSec]} for a custom one{DEMO_MODE ? " · not charged in the demo" : ""}
+            </p>
           </div>
         </div>
       </div>
@@ -175,6 +209,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             <ChevronRight className="h-4 w-4" />
           </> : <>
             Generate
+            {kindLabel && <span data-testid="cutaway-kind" className="rounded-full bg-cutaway-ink/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide">{kindLabel}</span>}
             <span className="flex items-center gap-1 text-[13px] font-semibold"><CreditIcon />{credits}</span>
             <ChevronRight className="h-4 w-4" />
           </>}

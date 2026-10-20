@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { PRICE_ROWS, PRICES, totalCredits, USD_PER_CREDIT, planCostUsd, videoCostUsd, BASIS, LENGTHS } from "../supabase/functions/_shared/cutaway/pricing.js";
+import { PRICE_ROWS, PRICES, USD_PER_CREDIT, BASIS, LENGTHS, COSTS_3D, videoCredits } from "../supabase/functions/_shared/cutaway/pricing.js";
 import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, wordsToFit, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
@@ -56,13 +56,16 @@ test("lengths are 30 s (default) and 60 s", () => {
   assert.deepEqual([...LENGTHS], [30, 60]);
 });
 
-test("prices are at least 2x our cost, in whole credits", () => {
-  for (const s of LENGTHS) {
-    assert.equal(PRICES.plan.byLength[s], Math.ceil((planCostUsd(s) * BASIS.markup) / USD_PER_CREDIT));
-    assert.ok(PRICES.video.byLength[s] * USD_PER_CREDIT >= videoCostUsd(s) * 2, `video ${s}`);
+test("3D prices: premade 40 / 62 and custom 66 / 95 credits (30 / 60 s), each 2.5-3x our cost", () => {
+  assert.deepEqual(PRICES.video.credits, { premade: { 30: 40, 60: 62 }, custom: { 30: 66, 60: 95 } });
+  for (const k of ["premade", "custom"]) for (const s of LENGTHS) {
+    const x = (PRICES.video.credits[k][s] * USD_PER_CREDIT) / COSTS_3D[k][s];
+    assert.ok(x >= 2.5 && x <= 3, `${k} ${s}: ${x.toFixed(2)}x`);
+    assert.equal(videoCredits(k, s), PRICES.video.credits[k][s]);
   }
-  assert.equal(totalCredits(30), 128);
-  assert.equal(totalCredits(60), 229);
+  assert.throws(() => videoCredits("custom", 45));
+  assert.equal(PRICES.video.toolKey("custom", 60), "cutaway:custom-60");
+  assert.equal(BASIS.markup, 2); // the old regenerate price keeps the template basis
 });
 
 test("the migration's tool_prices rows match pricing.js", () => {
@@ -74,6 +77,9 @@ test("the migration's tool_prices rows match pricing.js", () => {
     else assert.match(line, new RegExp(`'${row.tool_key}', ${row.credits_per_second}, NULL, ARRAY\\[30, 60\\]`));
   }
   assert.match(sql, /length_sec IN \(30, 60\)/);
+  assert.doesNotMatch(sql, /cutaway:plan-|'cutaway:video'/, "the old two-step prices are gone");
+  assert.doesNotMatch(sql, /global_feature_flags|user_feature_flags/, "no flag rows: the template uses the build switch");
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.cutaway_parts_backlog/);
 });
 
 // ---------- topics ----------
@@ -81,8 +87,10 @@ test("the migration's tool_prices rows match pricing.js", () => {
 test("topic suggestions are kit topics only, skip what the user already made, ready ones first", () => {
   assert.equal(KIT_TOPICS[0].topic, "Landfill");
   assert.ok(KIT_TOPICS[0].ready);
+  assert.equal(KIT_TOPICS[1].topic, "French drain");
+  assert.ok(KIT_TOPICS[1].ready);
   const fresh = freshSuggestions(["landfill", "Septic tank"], 3);
-  assert.deepEqual(fresh.map((t) => t.topic), ["Swimming pool", "Water well", "French drain"]);
+  assert.deepEqual(fresh.map((t) => t.topic), ["French drain", "Swimming pool", "Water well"]);
   assert.ok(isKitTopic("swimming pool"));
   assert.ok(!isKitTopic("Nuclear power plant"));
 });
@@ -656,4 +664,71 @@ test("examples: our two finished videos (with the end card) fill Recent Creation
   assert.equal(recentOrExamples([]), EXAMPLES);
   const mine = [{ id: "r1", topic: "septic tank" }];
   assert.equal(recentOrExamples(mine), mine, "as soon as they have a video, only theirs");
+});
+
+// ---------- premade or custom, the kit check, the quote (one rule for the page and the server) ----------
+
+test("topics: a tapped chip or a typed topic naming one premade topic is premade; anything else is custom", async () => {
+  const { classifyTopic } = await import("../supabase/functions/_shared/cutaway/topics.js");
+  const premade = { "Septic tank": "septic_tank", "how does a septic tank work": "septic_tank", "Septic tanks explained": "septic_tank", "How does a well work?": "water_well", "how is a road built": "road", "French drain": "french_drain", "how do swimming pools work": "swimming_pool", "LANDFILL": "landfill" };
+  for (const [text, key] of Object.entries(premade)) assert.deepEqual(classifyTopic(text), { kind: "premade", premade: key }, text);
+  for (const text of ["septic tank vs sewer", "pool heater", "how does a dry well work", "rain barrel", "how does a microwave work", "", "how well does a dishwasher clean"]) assert.equal(classifyTopic(text).kind, "custom", text);
+});
+
+test("kit check: yes for kit parts, no (with what is missing) for parts the kit lacks, unsure goes to the server's Haiku check", async () => {
+  const { kitCheck, closestPremade } = await import("../supabase/functions/_shared/cutaway/topics.js");
+  assert.equal(kitCheck("how does a dry well work").verdict, "yes");
+  assert.equal(kitCheck("rain barrel").verdict, "yes");
+  const no = kitCheck("how does a microwave work");
+  assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["kitchen appliances"]);
+  assert.equal(no.closest.length, 3);
+  assert.deepEqual(kitCheck("how does a jet engine work").missing, ["engines and vehicles' insides"]);
+  assert.equal(kitCheck("washing machine").verdict, "no");
+  assert.equal(kitCheck("lightning rod").verdict, "unsure");
+  assert.deepEqual(closestPremade("how do toilets flush", 2), ["septic_tank", "sewer_pipe"]);
+  assert.equal(closestPremade("how does flooding in a basement happen", 1)[0], "french_drain");
+});
+
+test("quote: the credits come from the topic, premade or custom, and say whether it can be built", async () => {
+  const { quoteTopic, closestNames } = await import("../supabase/functions/_shared/cutaway/quote.js");
+  assert.deepEqual([quoteTopic("Septic tank", 30).credits, quoteTopic("how does a septic tank work", 60).credits], [40, 62]);
+  assert.deepEqual([quoteTopic("how does a dry well work", 30).credits, quoteTopic("rain barrel", 60).credits], [66, 95]);
+  const q = quoteTopic("how does a microwave work", 30);
+  assert.equal(q.kind, "custom"); assert.equal(q.check.verdict, "no");
+  assert.equal(closestNames(q.check.closest).length, 3);
+  assert.equal(quoteTopic("Road", 30).check.verdict, "yes", "premade topics are always buildable (septic, pool, well, road without a saved layout too)");
+});
+
+test("server: decides the price from the topic it got, checks the kit before charging, logs what it can't build, charges once", () => {
+  const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
+  assert.match(server, /const quote = await serverQuote\(userId, topic, lengthSec, \{ log: action === "start" \}\);/);
+  assert.match(server, /if \(!quote\.buildable\) return \{ cantBuild: true, message: "We can't build this one yet\.", quote \}; \/\/ not charged/);
+  assert.match(server, /const credits = await price\(PRICES\.video\.toolKey\(quote\.kind, lengthSec\)\);/);
+  assert.ok(server.indexOf("if (!quote.buildable)") < server.indexOf("await charge(userId, credits);"), "the kit check comes before the charge");
+  assert.match(server, /from\("cutaway_parts_backlog"\)\.insert\(/);
+  assert.doesNotMatch(server, /body\?\.(credits|price|kind)\b/, "nothing the page sends about the price is read");
+  assert.doesNotMatch(server, /PRICES\.plan|PRICES\.video\.toolKey\(\)/, "no second charge: approve is free");
+});
+
+test("kit check call: Haiku 5.5, low effort, a JSON schema answer (no forced tool), refusals count as not buildable", async () => {
+  const { kitCheckRequest, parseKitReply } = await import("../supabase/functions/_shared/cutaway/kitCheck.js");
+  const r = kitCheckRequest("lightning rod");
+  assert.equal(r.model, "claude-haiku-5-5");
+  assert.equal(r.output_config.effort, "low");
+  assert.equal(r.output_config.format.type, "json_schema");
+  assert.equal(r.tool_choice, undefined);
+  const ok = parseKitReply({ content: [{ type: "text", text: JSON.stringify({ buildable: false, missing: ["a tall metal rod on a roof"], closest: ["rain_gutter", "nope"] }) }], usage: { input_tokens: 2500, output_tokens: 300 } });
+  assert.deepEqual([ok.buildable, ok.closest, ok.costUsd], [false, ["rain_gutter"], 0.0004]);
+  assert.equal(parseKitReply({ stop_reason: "refusal", content: [] }).buildable, false);
+  assert.equal(parseKitReply({ content: [{ type: "text", text: "not json" }] }).buildable, false);
+});
+
+test("page: 'Premade topics', the live price with its label, and the can't-build message before any charge", () => {
+  const builder = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayBuilder.jsx", import.meta.url), "utf8");
+  assert.match(builder, />Premade topics</);
+  assert.doesNotMatch(builder, /Topics it can build/);
+  assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec\), \[topic, lengthSec\]\);/);
+  assert.match(builder, /"Premade topic" : "Custom topic"/);
+  assert.match(builder, /We can't build this one yet/);
+  assert.ok(builder.indexOf('quote.check.verdict === "no"') < builder.indexOf("onGenerate({ topic: clean"), "the check runs before generating");
 });

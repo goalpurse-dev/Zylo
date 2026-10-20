@@ -7,9 +7,11 @@ export const LENGTHS = [30, 60];
 export const DEFAULT_LENGTH = 30;
 export const DEMO_MODE = true;
 
-// Provisional credit prices: about 3x the estimated real cost (~$0.45 / ~$0.75 per 30 / 60 s video, BUILD_PLAN M4).
-// The real prices will come from public.tool_prices when the 3D pipeline goes live.
-export const CREDITS = { 30: 48, 60: 80 };
+// Two prices per length, premade or custom topic (pricing.js PRICES.video, ~2.8x our cost). The page shows them live
+// from the same rule the server charges by (quote.js): the server recomputes the quote from the topic text before
+// charging, so nothing the page shows or sends can change the price.
+export { quoteTopic, closestNames } from "../../../../../supabase/functions/_shared/cutaway/quote.js";
+export { PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
 
 export const STEPS = [
   ["script", "Script"],

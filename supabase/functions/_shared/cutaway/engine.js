@@ -173,15 +173,14 @@ async function checkWide(s, i, deps) {
 }
 
 /**
- * Users never pay for a failure on our side. Which charges a failed run refunds:
- * failing before approval (plan, voice, wide images) refunds the Generate charge and any regenerate
- * charges; failing after approval (keyframes, clips, render) refunds the video charge too.
- * charges: [{stage: "plan"|"regenerate"|"video", credits, refunded?}]. Returns the indexes to refund.
+ * Users never pay for a failure on our side: a failed run refunds every charge not refunded yet, at any stage.
+ * Since the 3D prices (2026-10-21) the whole video is one "video" charge taken at Generate, so a failure in
+ * planning refunds it too. charges: [{stage: "plan"|"regenerate"|"video", credits, refunded?}]. Returns the
+ * indexes to refund.
  */
 export function refundsFor(state, charges = []) {
   if (state?.step !== "failed") return [];
-  const early = ["plan", "voice", "wide", "approval"].includes(state.failedAt);
-  const stages = early ? ["plan", "regenerate"] : ["plan", "regenerate", "video"];
+  const stages = ["plan", "regenerate", "video"];
   return charges.map((c, i) => (stages.includes(c.stage) && !c.refunded ? i : -1)).filter((i) => i >= 0);
 }
 

@@ -22,6 +22,8 @@ import { synthesize } from "../_shared/cutaway/voice.js";
 import { directSender } from "../_shared/cutaway/runware.js";
 import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
+import { closestNames, quoteTopic } from "../_shared/cutaway/quote.js";
+import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -243,6 +245,30 @@ async function usedIdeas(userId: string) {
   return { topics, mechanisms };
 }
 
+// ---------- the quote: price and "can the kit build it", decided here from the topic text ----------
+
+/**
+ * Premade or custom (topics.js) and the credits (pricing.js, then tool_prices when charging). A custom topic the
+ * free rules can't decide goes to the Haiku kit check (~$0.0005, our cost). One that can't be built is logged to the
+ * parts backlog (once per call that would have charged) and nothing is charged.
+ */
+async function serverQuote(userId: string, topic: string, lengthSec: number, { log = false } = {}) {
+  const q: any = quoteTopic(topic, lengthSec);
+  let checkedBy = "rules", checkCostUsd = 0;
+  if (q.check.verdict === "unsure") {
+    if (!ANTHROPIC_API_KEY) throw new ApiError("The topic check isn't available right now. Try a premade topic.", 503);
+    const ai = await checkKitFit({ apiKey: ANTHROPIC_API_KEY, topic });
+    checkedBy = "claude"; checkCostUsd = ai.costUsd;
+    q.check = { verdict: ai.buildable ? "yes" : "no", missing: ai.missing, closest: ai.closest.length ? ai.closest : q.check.closest };
+  }
+  const buildable = q.check.verdict === "yes";
+  if (!buildable && log) {
+    const { error } = await admin.from("cutaway_parts_backlog").insert({ user_id: userId, topic, missing: q.check.missing, checked_by: checkedBy, closest: q.check.closest });
+    if (error) console.error("[cutaway-api] parts backlog:", error.message);
+  }
+  return { topic, lengthSec, kind: q.kind, premade: q.premade, credits: q.credits, buildable, missing: q.check.missing, closest: closestNames(q.check.closest), checkedBy, checkCostUsd };
+}
+
 // ---------- actions ----------
 
 async function handle(req: Request) {
@@ -255,20 +281,24 @@ async function handle(req: Request) {
     return { usedTopics: topics };
   }
 
-  if (action === "start") {
+  if (action === "quote" || action === "start") {
     const topic = String(body?.topic ?? "").trim().replace(/\s+/g, " ");
     const lengthSec = Number(body?.lengthSec);
+    if (topic.length < 3 || topic.length > 120) throw new ApiError("Type a topic (3 to 120 characters).");
+    if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 30 or 60 seconds.");
+    // the price and the kit check come from the topic itself; anything the page sends about the price is ignored
+    const quote = await serverQuote(userId, topic, lengthSec, { log: action === "start" });
+    if (action === "quote") return { quote };
+    if (!quote.buildable) return { cantBuild: true, message: "We can't build this one yet.", quote }; // not charged
     const soundEffects = body?.soundEffects !== false;
     // only a request: the end card is kept or dropped from the plan read at render time (_shared/cutaway/endCard.js)
     const removeWatermark = body?.removeWatermark === true;
-    if (topic.length < 3 || topic.length > 120) throw new ApiError("Type a topic (3 to 120 characters).");
-    if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 30 or 60 seconds.");
     const { mechanisms } = await usedIdeas(userId);
-    const credits = await price(PRICES.plan.toolKey(lengthSec));
+    const credits = await price(PRICES.video.toolKey(quote.kind, lengthSec)); // tool_prices is the authority
     await charge(userId, credits);
     const { data: row, error } = await admin.from("cutaway_runs").insert({
       user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, removeWatermark, usedIdeas: mechanisms }),
-      credits_charged: credits, charges: [{ stage: "plan", credits, at: new Date().toISOString() }],
+      credits_charged: credits, charges: [{ stage: "video", kind: quote.kind, premade: quote.premade, credits, at: new Date().toISOString() }],
     }).select("*").single();
     if (error || !row) {
       await admin.rpc("deduct_credits", { uid: userId, amount: -credits });
@@ -295,10 +325,8 @@ async function handle(req: Request) {
 
   if (action === "approve") {
     if (row.state?.step !== "approval") throw new ApiError("The images aren't ready for approval.", 409);
-    const credits = await price(PRICES.video.toolKey(), { durationSec: row.length_sec });
-    await charge(userId, credits);
-    const charges = [...(row.charges ?? []), { stage: "video", credits, at: new Date().toISOString() }];
-    const saved = await save(row, approve(row.state), { charges, credits_charged: row.credits_charged + credits });
+    // the whole video was paid at "start" (one price per video, premade or custom): approving charges nothing more
+    const saved = await save(row, approve(row.state), {});
     background(tick(saved).catch((e) => console.error("[cutaway-api] approve tick:", e?.message ?? e)));
     return view(saved);
   }
