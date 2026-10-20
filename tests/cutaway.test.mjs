@@ -732,3 +732,71 @@ test("page: 'Premade topics', the live price with its label, and the can't-build
   assert.match(builder, /We can't build this one yet/);
   assert.ok(builder.indexOf('quote.check.verdict === "no"') < builder.indexOf("onGenerate({ topic: clean"), "the check runs before generating");
 });
+
+// ---------- one video at a time (the "plays twice" bug) and the redesigned views ----------
+
+test("playback: starting a player pauses the one that was playing; only one plays at a time", async () => {
+  const { claimPlayback, releasePlayback, playingNow } = await import("../src/components/viral-tools/cutaway-explainer/playback.js");
+  const fake = () => ({ paused: false, pauses: 0, pause() { this.paused = true; this.pauses++; } });
+  const a = fake(), b = fake();
+  claimPlayback(a);
+  assert.equal(playingNow(), a);
+  claimPlayback(b);
+  assert.equal(a.paused, true); assert.equal(a.pauses, 1);
+  assert.equal(b.paused, false); assert.equal(playingNow(), b);
+  claimPlayback(b); // the same player again: nothing paused
+  assert.equal(b.pauses, 0);
+  releasePlayback(a); assert.equal(playingNow(), b, "releasing another player keeps the current one");
+  releasePlayback(b); assert.equal(playingNow(), null);
+});
+
+test("one layout mounted: the studio picks desktop OR phone from the screen width, never both hidden by CSS", () => {
+  const read = (p) => readFileSync(new URL(`../src/components/viral-tools/cutaway-explainer/${p}`, import.meta.url), "utf8");
+  const studio = read("CutawayStudio.jsx");
+  assert.match(studio, /const isDesktop = useIsDesktop\(\);/);
+  assert.match(studio, /if \(isDesktop\) \{\s*return \(/);
+  assert.doesNotMatch(studio, /hidden h-full w-full gap-3 overflow-hidden bg-\[#0B0D0F\] p-3 lg:flex|lg:hidden/, "no CSS-hidden second layout");
+  // the only <video> in the template is the player, and it claims playback when it starts
+  for (const f of ["CutawayStudio.jsx", "CutawayResults.jsx", "CutawayResultView.jsx", "CutawayGenerating.jsx", "CutawayBuilder.jsx"]) assert.doesNotMatch(read(f), /<video\b/, f);
+  const player = read("CutawayPlayer.jsx");
+  assert.equal((player.match(/<video\s+ref=/g) ?? []).length, 1);
+  assert.match(player, /onPlay=\{\(e\) => \{ claimPlayback\(e\.currentTarget\);/);
+  assert.match(player, /releasePlayback\(v\)/, "a player that unmounts lets go");
+  const hook = read("hooks/useIsDesktop.js");
+  assert.match(hook, /"\(min-width: 1024px\)"/);
+});
+
+test("result view: the player as hero, no step list; Download, Make one like this, Delete (own videos), post copy, facts, a collapsed transcript", () => {
+  const view = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayResultView.jsx", import.meta.url), "utf8");
+  assert.doesNotMatch(view, /StepRow|STEPS/, "the Script/Scene/Render/Done steps belong to the generating state only");
+  assert.match(view, /<CutawayPlayer /);
+  for (const s of ["/>Download", "Make one like this", "Delete this video?", "Ready to post", "Fact-checked", "Voiceover transcript"]) assert.ok(view.includes(s), s);
+  assert.match(view, /const own = !run\.example;/);
+  assert.match(view, /\{own && \(/, "examples can't be deleted");
+  assert.match(view, /useState\(false\);\s*\n\s*const \[confirmDelete/, "the transcript starts collapsed");
+  assert.match(view, /rel="noopener noreferrer"/);
+});
+
+test("generating view: typed script, parts popping in, a render % with an ETA and frames as they come in", () => {
+  const gen = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayGenerating.jsx", import.meta.url), "utf8");
+  for (const s of ["function ScriptStep", "cw-caret", "function SceneStep", "parts.slice(0, count)", "function RenderStep", "eta(left)", "run.framesShown", "Backdrop"]) assert.ok(gen.includes(s), s);
+  assert.match(gen, /prefers-reduced-motion: reduce/);
+  const css = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/cutaway-motion.css", import.meta.url), "utf8");
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  // one-shot transitions are 150-300 ms (the caret blink and the progress sheen are loops, not transitions)
+  for (const m of css.matchAll(/animation: (cwViewIn|cwFadeUp|cwPop|cwReveal|cwGlow) (\d+)ms/g)) assert.ok(Number(m[2]) >= 150 && Number(m[2]) <= 300, `${m[1]} ${m[2]} ms`);
+});
+
+test("examples carry post copy, sourced facts, scene parts and render frames; the demo plays the example closest to the topic", async () => {
+  const { EXAMPLES, newDemoRun } = await import("../src/components/viral-tools/cutaway-explainer/api/cutawayApi.js");
+  for (const e of EXAMPLES) {
+    assert.ok(e.post.title && e.post.description && e.post.hashtags.length >= 5, e.id);
+    assert.ok(e.facts.length >= 2 && e.facts.every((f) => f.sources.length && f.sources.every((s) => /^https:\/\//.test(s.url))), e.id);
+    assert.ok(e.parts.length >= 6, e.id);
+    assert.equal(e.frames.length, 8);
+    for (const f of e.frames) assert.ok(existsSync(new URL(`../public${f}`, import.meta.url)), f);
+  }
+  assert.equal(newDemoRun("how does a french drain work", 30, true).demoKey, "french_drain");
+  assert.equal(newDemoRun("septic tank", 30, true).demoKey, "landfill");
+  assert.ok(existsSync(new URL("../public/cutaway-explainer/example-french-drain-clean.mp4", import.meta.url)));
+});

@@ -88,7 +88,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
                     aria-pressed={picked}
                     onClick={() => { update("topic", s.topic); setValidationError(""); setCantBuild(null); }}
                     disabled={historyMode || isWorking}
-                    className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold transition ${picked ? "border-cutaway/45 bg-cutaway/15 text-cutaway" : "border-white/[0.08] bg-white/[0.04] text-white/45 hover:border-cutaway/25 hover:text-white/75"}`}
+                    className={`cw-press flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${picked ? "border-cutaway/45 bg-cutaway/15 text-cutaway" : "border-white/[0.08] bg-white/[0.04] text-white/45 hover:border-cutaway/25 hover:text-white/75"}`}
                   >
                     {s.ready && <span className="h-1.5 w-1.5 rounded-full bg-cutaway" aria-label="ready" />}
                     {s.topic}
@@ -97,7 +97,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
               })}
             </div>
             {cantBuild && (
-              <div role="status" className="mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
+              <div role="status" className="cw-fade-up mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
                 <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't build this one yet</p>
                 <p className="mt-1 text-[10.5px] font-medium leading-relaxed text-white/50">
                   “{cantBuild.topic}” needs parts our 3D kit doesn't have yet{cantBuild.missing.length ? ` (${cantBuild.missing.join(", ")})` : ""}. You weren't charged, and we've noted it for the next parts we build.
@@ -202,7 +202,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
           type="button"
           onClick={historyMode ? onDone : isDone ? onReset : handleGenerate}
           disabled={isWorking}
-          className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black transition lg:py-2.5 ${isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink hover:bg-cutaway-soft"}`}
+          className={`cw-press flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black lg:py-2.5 ${isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink hover:bg-cutaway-soft"}`}
         >
           {historyMode ? "Done" : isWorking ? "Working…" : isDone ? "Create another" : access === "guest" ? <>
             Sign up to generate
