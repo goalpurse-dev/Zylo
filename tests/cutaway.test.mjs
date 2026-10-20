@@ -772,7 +772,8 @@ test("result view: the player as hero, no step list; Download, Make one like thi
   assert.match(view, /<CutawayPlayer /);
   for (const s of ["/>Download", "Make one like this", "Delete this video?", "Ready to post", "Fact-checked", "Voiceover transcript"]) assert.ok(view.includes(s), s);
   assert.match(view, /const own = !run\.example;/);
-  assert.match(view, /\{own && \(/, "examples can't be deleted");
+  assert.match(view, /\{own && !confirmDelete && \(/, "examples can't be deleted");
+  assert.match(view, /\{own && confirmDelete && \(/);
   assert.match(view, /useState\(false\);\s*\n\s*const \[confirmDelete/, "the transcript starts collapsed");
   assert.match(view, /rel="noopener noreferrer"/);
 });
@@ -799,4 +800,39 @@ test("examples carry post copy, sourced facts, scene parts and render frames; th
   assert.equal(newDemoRun("how does a french drain work", 30, true).demoKey, "french_drain");
   assert.equal(newDemoRun("septic tank", 30, true).demoKey, "landfill");
   assert.ok(existsSync(new URL("../public/cutaway-explainer/example-french-drain-clean.mp4", import.meta.url)));
+});
+
+// ---------- recent creations grid, the whole video on phones, the read-only "Generation finished" builder ----------
+
+test("recent creations: a grid of 9:16 posters (2 columns on phones) with the full title on up to 2 lines", () => {
+  const res = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayResults.jsx", import.meta.url), "utf8");
+  assert.match(res, /grid grid-cols-2/);
+  assert.match(res, /aspect-\[9\/16\] w-full/);
+  assert.match(res, /line-clamp-2/);
+  assert.doesNotMatch(res, /h-14 w-\[32px\]/, "no tiny thumbnails");
+});
+
+test("phones: the result video is the largest 9:16 between the header and the bottom nav, never cropped", () => {
+  const fit = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/hooks/useFit.js", import.meta.url), "utf8");
+  assert.match(fit, /export function useFitScreen\(/);
+  assert.match(fit, /document\.querySelector\("\.ftg-bottom-nav"\)/);
+  assert.match(fit, /const w = Math\.min\(r\.width, h \* ratio\);/, "limited by the width and the height");
+  const view = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayResultView.jsx", import.meta.url), "utf8");
+  assert.match(view, /useFitScreen\(9 \/ 16, \{ reserveBelow: 46 \+ 12 \+ 10/, "Download and Make one like this stay on screen under it");
+  const player = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayPlayer.jsx", import.meta.url), "utf8");
+  assert.match(player, /object-cover/); // the box is exactly 9:16, so cover never crops a 9:16 video
+});
+
+test("while a finished video or an example is open, the Generate side is a read-only summary with New video and Make one like this", () => {
+  const studio = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayStudio.jsx", import.meta.url), "utf8");
+  assert.match(studio, /const finished = Boolean\(run && run\.step === "done" && run\.finalUrl\);/);
+  assert.match(studio, /const builder = finished \? \(\s*<CutawaySummary /);
+  assert.match(studio, /const handleNew = \(\) => \{ setValues\(EMPTY\);/);
+  assert.match(studio, /setValues\(\{ topic: r\.topic, lengthSec: LENGTHS\.includes\(r\.lengthSec\) \? r\.lengthSec : DEFAULT_LENGTH, soundEffects: r\.soundEffects !== false, removeWatermark: r\.endCard === false \}\);/);
+  const sum = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawaySummary.jsx", import.meta.url), "utf8");
+  for (const t of ["Generation finished", "Topic type", "Length", "Sound effects", "Watermark", "Credits spent", "New video", "Make one like this", '"Example"']) assert.ok(sum.includes(t), t);
+  assert.doesNotMatch(sum, /<textarea|<input|onChange/, "nothing in it can be edited");
+  // the animation is on the content, never on the parent of the bar that is fixed on phones
+  assert.match(sum, /<div key=\{run\.id\} className="cw-view min-h-0 flex-1 overflow-y-auto/);
+  assert.match(sum, /<section className="relative flex min-h-\[560px\]/);
 });

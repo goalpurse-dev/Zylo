@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Check, ChevronDown, Copy, Download, ExternalLink, ShieldCheck, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { saveMediaToDevice } from "../../../lib/downloadMedia";
 import CutawayPlayer from "./CutawayPlayer";
-import useFit from "./hooks/useFit";
+import useFit, { useFitScreen } from "./hooks/useFit";
 import useIsDesktop from "./hooks/useIsDesktop";
 
 export function ExampleBadge({ className = "" }) {
@@ -37,6 +37,8 @@ export default function CutawayResultView({ run, onBack, onMakeLike, onDelete, r
   const { copied, copy } = useCopy();
   const isDesktop = useIsDesktop();
   const [fitRef, fit] = useFit(9 / 16);
+  // phones: the whole 9:16 between the header and the bottom nav, with the action row (46 px + gaps) still on screen
+  const [screenRef, screen] = useFitScreen(9 / 16, { reserveBelow: 46 + 12 + 10, minHeight: 240 });
   const [transcript, setTranscript] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const own = !run.example;
@@ -57,37 +59,37 @@ export default function CutawayResultView({ run, onBack, onMakeLike, onDelete, r
           </div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-white/35">{run.lengthSec} sec · 9:16 · {run.endCard === false ? "no end card" : "with the Zyvo end card"}</p>
         </div>
+        {own && !confirmDelete && (
+          <button type="button" onClick={() => setConfirmDelete(true)} aria-label="Delete video" className="cw-press grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-white/40 hover:bg-red-400/10 hover:text-red-300">
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </header>
+      {own && confirmDelete && (
+        <div className="cw-fade-up flex shrink-0 items-center gap-2 rounded-xl border border-red-400/25 bg-red-400/[0.06] px-3 py-2 text-[12px] font-semibold text-red-200">
+          <span className="flex-1">Delete this video? This can't be undone.</span>
+          <button type="button" onClick={() => setConfirmDelete(false)} className="cw-press rounded-lg px-2 py-1 text-white/60 hover:text-white">Keep</button>
+          <button type="button" onClick={() => onDelete(run.id)} className="cw-press rounded-lg bg-red-500/80 px-2.5 py-1 font-bold text-white hover:bg-red-500">Delete</button>
+        </div>
+      )}
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row">
-        {/* the hero: on desktop the largest 9:16 that fits the space next to the details; on phones full width */}
-        <div ref={fitRef} className="flex min-h-0 shrink-0 items-start justify-center lg:min-w-0 lg:flex-1 lg:items-center">
-          <div style={isDesktop && fit ? { width: fit.width, height: fit.height } : undefined} className={`relative ${isDesktop ? (fit ? "" : "aspect-[9/16] h-full") : "aspect-[9/16] w-full max-w-[420px]"} ${reveal ? "cw-reveal" : ""}`}>
+        {/* the hero, never cropped: on desktop the largest 9:16 next to the details, on phones the largest 9:16
+            between the header and the bottom nav (with Download under it still on screen) */}
+        <div ref={isDesktop ? fitRef : screenRef} className="flex min-h-0 w-full shrink-0 items-start justify-center lg:w-auto lg:min-w-0 lg:flex-1 lg:items-center">
+          <div style={(isDesktop ? fit : screen) ? { width: (isDesktop ? fit : screen).width, height: (isDesktop ? fit : screen).height } : undefined} className={`relative ${(isDesktop ? fit : screen) ? "" : "aspect-[9/16] h-full max-h-[60dvh]"} ${reveal ? "cw-reveal" : ""}`}>
             <CutawayPlayer src={run.finalUrl} poster={run.poster} autoPlay className={`absolute inset-0 h-full w-full ${reveal ? "cw-glow" : ""}`} />
           </div>
         </div>
 
         <aside className="flex min-h-0 flex-col gap-3 lg:w-[300px] lg:shrink-0 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin] xl:w-[340px]">
-          <div style={{ "--d": "40ms" }} className="cw-fade-up flex flex-wrap gap-2">
-            <button type="button" onClick={download} className="cw-press flex flex-1 items-center justify-center gap-2 rounded-xl bg-cutaway px-4 py-3 text-[13px] font-black text-cutaway-ink shadow-[0_10px_30px_rgba(74,222,128,.22)] hover:bg-cutaway-soft">
+          <div style={{ "--d": "40ms" }} className="cw-fade-up flex gap-2">
+            <button type="button" onClick={download} className="cw-press flex h-[46px] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-cutaway px-3 text-[13px] font-black text-cutaway-ink shadow-[0_10px_30px_rgba(74,222,128,.22)] hover:bg-cutaway-soft">
               <Download className="h-4 w-4" />Download
             </button>
-            <button type="button" onClick={() => onMakeLike(run)} className="cw-press flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-[13px] font-bold text-white/85 hover:border-cutaway/30 hover:text-white">
+            <button type="button" onClick={() => onMakeLike(run)} className="cw-press flex h-[46px] flex-[1.4] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[13px] font-bold text-white/85 hover:border-cutaway/30 hover:text-white">
               <Wand2 className="h-4 w-4 text-cutaway" />Make one like this
             </button>
-            {own && (
-              confirmDelete ? (
-                <div className="flex w-full items-center gap-2 rounded-xl border border-red-400/25 bg-red-400/[0.06] px-3 py-2 text-[12px] font-semibold text-red-200">
-                  <span className="flex-1">Delete this video?</span>
-                  <button type="button" onClick={() => setConfirmDelete(false)} className="cw-press rounded-lg px-2 py-1 text-white/60 hover:text-white">Keep</button>
-                  <button type="button" onClick={() => onDelete(run.id)} className="cw-press rounded-lg bg-red-500/80 px-2.5 py-1 font-bold text-white hover:bg-red-500">Delete</button>
-                </div>
-              ) : (
-                <button type="button" onClick={() => setConfirmDelete(true)} aria-label="Delete video" className="cw-press grid h-[46px] w-[46px] place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/45 hover:border-red-400/30 hover:text-red-300">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )
-            )}
           </div>
 
           {post && (

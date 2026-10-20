@@ -62,7 +62,8 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
         </div>
       </div>
 
-      <div className={`min-h-0 flex-1 overflow-y-auto px-5 py-4 transition [scrollbar-width:thin] lg:py-3 ${historyMode ? "pointer-events-none opacity-[.55] grayscale" : ""}`}>
+      {/* the content fades in when the builder comes back from the read-only summary (the fixed bar is a sibling) */}
+      <div className={`cw-view min-h-0 flex-1 overflow-y-auto px-5 py-4 transition [scrollbar-width:thin] lg:py-3 ${historyMode ? "pointer-events-none opacity-[.55] grayscale" : ""}`}>
         <div className="flex flex-col gap-5 pb-[150px] lg:gap-4 lg:pb-0">
           <div>
             <label htmlFor="cutaway-topic" className="mb-2 block text-[11px] font-bold uppercase tracking-[0.12em] text-white/40 lg:mb-1.5">Topic</label>

@@ -15,6 +15,16 @@ export default function CutawayPlayer({ src, poster, autoPlay = true, className 
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [controls, setControls] = useState(true);
+  // a small player (short phones): smaller buttons and no time readout, so the controls never wrap
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(([e]) => setCompact(e.contentRect.width < 220));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const btn = compact ? "h-7 w-7" : "h-8 w-8";
 
   const wake = useCallback(() => {
     setControls(true);
@@ -73,7 +83,7 @@ export default function CutawayPlayer({ src, poster, autoPlay = true, className 
         </button>
       )}
 
-      <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 pb-3 pt-10 transition-opacity duration-200 ${controls || !playing ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+      <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent ${compact ? "px-2 pb-2 pt-8" : "px-3 pb-3 pt-10"} transition-opacity duration-200 ${controls || !playing ? "opacity-100" : "pointer-events-none opacity-0"}`}>
         <input
           type="range"
           min="0"
@@ -85,16 +95,16 @@ export default function CutawayPlayer({ src, poster, autoPlay = true, className 
           className="block h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/25 accent-cutaway [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
           style={{ background: `linear-gradient(90deg, #4ADE80 ${pct / 10}%, rgba(255,255,255,.25) ${pct / 10}%)` }}
         />
-        <div className="mt-2 flex items-center gap-2">
-          <button type="button" onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={playing ? "Pause" : "Play"} className="grid h-8 w-8 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95">
+        <div className={`flex items-center ${compact ? "mt-1.5 gap-1" : "mt-2 gap-2"}`}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={playing ? "Pause" : "Play"} className={`grid ${btn} shrink-0 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95`}>
             {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
           </button>
-          <span className="text-[11px] font-semibold tabular-nums text-white/80">{fmt(time)} / {fmt(duration)}</span>
+          {!compact && <span className="whitespace-nowrap text-[11px] font-semibold tabular-nums text-white/80">{fmt(time)} / {fmt(duration)}</span>}
           <span className="flex-1" />
-          <button type="button" onClick={mute} aria-label={muted ? "Unmute" : "Mute"} className="grid h-8 w-8 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95">
+          <button type="button" onClick={mute} aria-label={muted ? "Unmute" : "Mute"} className={`grid ${btn} shrink-0 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95`}>
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
-          <button type="button" onClick={full} aria-label="Fullscreen" className="grid h-8 w-8 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95">
+          <button type="button" onClick={full} aria-label="Fullscreen" className={`grid ${btn} shrink-0 place-items-center rounded-full text-white transition hover:bg-white/15 active:scale-95`}>
             <Maximize className="h-4 w-4" />
           </button>
         </div>

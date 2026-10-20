@@ -45,9 +45,10 @@ export default function useCutawayRun() {
   }, [run?.id, run?.step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // endCard: in the demo the page mirrors the server rule (endCardFor); the real pipeline decides on the server
-  const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true) => {
+  // credits / kind: what the quote said (the real pipeline reads them back from the server's charge)
+  const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true, { credits = null, kind = null } = {}) => {
     window.clearTimeout(timer.current);
-    setRun({ ...newDemoRun(topic, lengthSec, soundEffects, endCard), stepAt: Date.now(), framesShown: 0 });
+    setRun({ ...newDemoRun(topic, lengthSec, soundEffects, endCard), credits, kind, stepAt: Date.now(), framesShown: 0 });
   }, []);
   // a finished run of this session, or one of the two examples shown while there are none
   const open = useCallback((id) => { const r = recent.find((x) => x.id === id) ?? EXAMPLES.find((x) => x.id === id); if (r) setRun(r); }, [recent]);

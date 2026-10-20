@@ -19,28 +19,29 @@ function Recents({ items, onOpen }) {
   const shown = recentOrExamples(items);
   const examples = !items.length;
   return (
-    <section style={{ "--d": "80ms" }} className="cw-fade-up flex min-h-0 flex-1 flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-4">
+    <section style={{ "--d": "80ms" }} className="cw-fade-up flex flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:p-4 lg:min-h-0 lg:flex-1">
       <h3 className="text-[14px] font-black text-white">Recent Creations</h3>
       {examples && <p className="mt-1 text-[11px] font-semibold text-white/35">Your videos will appear here. Until then, tap an example to watch it.</p>}
-      <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+      {/* a grid of 9:16 posters with the full title under each (2 columns on phones, as wide as fits on desktop) */}
+      <div className="mt-3 grid grid-cols-2 content-start gap-3 sm:grid-cols-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin] lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
         {shown.map((item, i) => (
-          <button key={item.id} type="button" style={{ "--d": `${120 + i * 50}ms` }} onClick={() => onOpen(item.id)} className="cw-fade-up cw-press group flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.035] p-2.5 text-left hover:border-cutaway/25 hover:bg-white/[0.05]">
-            {item.poster ? (
-              <span className="relative h-14 w-[32px] shrink-0 overflow-hidden rounded-md bg-black">
-                <img src={item.poster} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-110" />
-                <span className="absolute inset-0 grid place-items-center bg-black/25"><Play className="h-3.5 w-3.5 fill-white text-white" /></span>
+          <button key={item.id} type="button" style={{ "--d": `${120 + i * 50}ms` }} onClick={() => onOpen(item.id)} className="cw-fade-up cw-press group flex min-w-0 flex-col rounded-2xl border border-white/[0.07] bg-white/[0.035] p-2 text-left hover:border-cutaway/30 hover:bg-white/[0.05]">
+            <span className="relative block aspect-[9/16] w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+              {item.poster ? (
+                <img src={item.poster} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+              ) : (
+                <span className="grid h-full w-full place-items-center bg-cutaway/10 text-cutaway"><Layers className="h-6 w-6" /></span>
+              )}
+              <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+              <span className="absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-black/45 backdrop-blur-sm transition group-hover:scale-110 group-hover:bg-black/60">
+                <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
               </span>
-            ) : (
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-cutaway/10 text-cutaway">{item.finalUrl ? <Play className="h-4 w-4 fill-current" /> : <Layers className="h-4 w-4" />}</span>
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2">
-                <span className="truncate text-[12px] font-bold text-white/80 group-hover:text-white">{item.example ? item.title : item.topic}</span>
-                {item.example && <ExampleBadge className="shrink-0" />}
-              </span>
-              <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wide text-white/30">
-                {item.example ? `${item.lengthSec} sec · made with Cutaway Explainer` : `${item.lengthSec} sec · ${item.step === "done" ? "ready" : "in progress"}${item.demo ? " · demo" : ""} · ${timeAgo(item.createdAt)}`}
-              </span>
+              {item.example && <ExampleBadge className="absolute left-2 top-2 !bg-black/55 backdrop-blur-sm" />}
+              <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white/90">{item.lengthSec}s</span>
+            </span>
+            <span className="mt-2 line-clamp-2 px-0.5 text-[12.5px] font-bold leading-snug text-white/85 group-hover:text-white">{item.example ? item.title : item.topic}</span>
+            <span className="mt-0.5 px-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-white/30">
+              {item.example ? "Made with Cutaway" : `${item.step === "done" ? "Ready" : "In progress"}${item.demo ? " · demo" : ""} · ${timeAgo(item.createdAt)}`}
             </span>
           </button>
         ))}
@@ -53,7 +54,7 @@ function Recents({ items, onOpen }) {
 export default function CutawayResults({ run, recent = [], onOpen, onBack, onMakeLike, onDelete }) {
   if (!run) {
     return (
-      <div className="cw-view relative flex min-h-[620px] flex-col gap-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-5 lg:h-full lg:min-h-0">
+      <div className="cw-view relative flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-hidden">
         <div className="cw-fade-up">
           <div className="flex items-center gap-2 text-cutaway"><Layers className="h-4 w-4" /><span className="text-[10px] font-black uppercase tracking-[0.18em]">Cutaway Explainer</span></div>
           <h2 className="mt-2 text-[27px] font-black leading-[1.03] tracking-[-0.045em] text-white sm:text-[34px]">See inside how it works.<br /><span className="text-cutaway">In one continuous shot.</span></h2>

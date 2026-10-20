@@ -1,9 +1,12 @@
 import { useState } from "react";
 import CutawayBuilder from "./CutawayBuilder";
 import CutawayResults from "./CutawayResults";
+import CutawaySummary from "./CutawaySummary";
 import useCutawayRun from "./hooks/useCutawayRun";
 import useIsDesktop from "./hooks/useIsDesktop";
-import { DEFAULT_LENGTH, endCardFor } from "./api/cutawayApi";
+import { DEFAULT_LENGTH, endCardFor, LENGTHS, quoteTopic } from "./api/cutawayApi";
+
+const EMPTY = { topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true, removeWatermark: false };
 import "./cutaway-motion.css";
 
 /**
@@ -14,32 +17,38 @@ import "./cutaway-motion.css";
 export default function CutawayStudio({ onBeforeGenerate, planCode = null, access = "unknown", onSignUp, onUpgrade }) {
   const isDesktop = useIsDesktop();
   const [mobilePanel, setMobilePanel] = useState("builder");
-  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true, removeWatermark: false });
-  const [viewingRecent, setViewingRecent] = useState(false);
+  const [values, setValues] = useState(EMPTY);
   const { run, recent, start, open, reset, remove } = useCutawayRun();
-  // an example only plays: the form keeps the viewer's own inputs and stays usable
-  const example = Boolean(run?.example);
-  const phase = !run || example ? "idle" : run.step === "done" ? "done" : "working";
+  // a finished video or an example is open: the Generate side shows what it was made with, read-only
+  const finished = Boolean(run && run.step === "done" && run.finalUrl);
+  const phase = !run ? "idle" : run.step === "done" ? "done" : "working";
   const scrollTop = () => document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
   const show = (panel) => { setMobilePanel(panel); scrollTop(); };
 
   const handleGenerate = (input) => {
     if (onBeforeGenerate && !onBeforeGenerate()) return;
-    setViewingRecent(false);
     show("results");
+    const q = quoteTopic(input.topic, input.lengthSec);
     // demo only: the real pipeline sends removeWatermark as a request and the server decides from the plan
-    start(input.topic, input.lengthSec, input.soundEffects, endCardFor(planCode, input.removeWatermark === true));
+    start(input.topic, input.lengthSec, input.soundEffects, endCardFor(planCode, input.removeWatermark === true), { credits: q.credits, kind: q.kind });
   };
-  const handleOpen = (id) => { setViewingRecent(true); show("results"); open(id); };
-  const handleReset = () => { setViewingRecent(false); reset(); show("builder"); };
-  const handleBack = () => { setViewingRecent(false); reset(); show("results"); };
-  // "Make one like this": the same topic in the form, back to the builder
-  const handleMakeLike = (r) => { setValues((v) => ({ ...v, topic: r.topic })); setViewingRecent(false); reset(); show("builder"); };
-  const handleDelete = (id) => { remove(id); setViewingRecent(false); show("results"); };
+  const handleOpen = (id) => { show("results"); open(id); };
+  const handleReset = () => { reset(); show("builder"); };
+  const handleBack = () => { reset(); show("results"); };
+  // "New video": the normal, empty, editable builder
+  const handleNew = () => { setValues(EMPTY); reset(); show("builder"); };
+  // "Make one like this": the builder pre-filled with the same settings (examples are ~40 s: the nearest length)
+  const handleMakeLike = (r) => {
+    setValues({ topic: r.topic, lengthSec: LENGTHS.includes(r.lengthSec) ? r.lengthSec : DEFAULT_LENGTH, soundEffects: r.soundEffects !== false, removeWatermark: r.endCard === false });
+    reset(); show("builder");
+  };
+  const handleDelete = (id) => { remove(id); show("results"); };
 
-  const builder = (
+  const builder = finished ? (
+    <CutawaySummary run={run} onNew={handleNew} onMakeLike={handleMakeLike} />
+  ) : (
     <CutawayBuilder
-      values={viewingRecent && run && !example ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects, removeWatermark: run.endCard === false } : values}
+      values={values}
       planCode={planCode}
       access={access}
       onSignUp={onSignUp}
@@ -49,7 +58,6 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
       onGenerate={handleGenerate}
       onReset={handleReset}
       phase={phase}
-      historyMode={viewingRecent && !example}
       onDone={handleBack}
     />
   );
