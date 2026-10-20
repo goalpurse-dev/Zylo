@@ -1,7 +1,7 @@
 // French drain audio ($0, local): Eric's re-timed take, word times for every cue, one-word captions with three
 // number cards, and -20 dB mixes (effects + chimes) with and without the end card (same timing rule as the fixed
-// landfill: the sign pops 0.4 s after the voice audibly stops, then holds 1.75 s after its pop). The rain bed is made
-// here from filtered noise (no paid sound) and laid in at a fixed level under the voice, as the creator's beds are.
+// landfill: the sign pops 0.4 s after the voice audibly stops, then holds 1.75 s after its pop). The rain bed is the
+// library's rain effect, looped with crossfades and laid in at a fixed level under the voice, as the creator's beds are.
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -42,11 +42,15 @@ const sfx = [
   { url: lib("water_rush"), start: T.downhill, duration: 1.4 },      // carried away down the outlet
 ];
 const chimes = [T.n600, T.n300, T.this, T.n1859, T.congrats];
-// the rain bed: pink noise, band-limited, with a slow swell; fades in on "But", out from "Wrap"
+// the rain bed: the library's ElevenLabs rain (lib-rain.mp3, 3.5 s), laid end to end in copies that overlap by
+// 0.5 s with crossfades (no seam clicks); fades in on "But", out from "mud"
 const rainA = T.but1, rainB = T.mud + 0.6, rainLen = rainB - rainA;
-execFileSync(ff, ["-v", "error", "-y", "-f", "lavfi", "-i", `anoisesrc=color=pink:r=44100:a=0.5:d=${(rainLen + 0.5).toFixed(2)}:seed=7`, "-f", "lavfi", "-i", `anoisesrc=color=white:r=44100:a=0.25:d=${(rainLen + 0.5).toFixed(2)}:seed=3`,
-  "-filter_complex", `[0:a]highpass=f=300,lowpass=f=6500[p];[1:a]highpass=f=2500,lowpass=f=9000,volume=0.35[w];[p][w]amix=inputs=2:normalize=0,tremolo=f=0.35:d=0.15,afade=t=in:d=0.6,afade=t=out:st=${(rainLen - 1.6).toFixed(2)}:d=1.6,aformat=channel_layouts=stereo[o]`,
-  "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "160k", `${OUT}/rain.mp3`]);
+{
+  const src = lib("rain"), CL = 3.5, STEP = CL - 0.5, n = Math.ceil(rainLen / STEP) + 1;
+  const parts = Array.from({ length: n }, (_, k) => `[0:a]atrim=0:${CL},asetpts=PTS-STARTPTS,afade=t=in:d=0.5,afade=t=out:st=${CL - 0.5}:d=0.5,adelay=${Math.round(k * STEP * 1000)}:all=1[r${k}]`);
+  execFileSync(ff, ["-v", "error", "-y", "-i", src, "-filter_complex", `${parts.join(";")};${parts.map((_, k) => `[r${k}]`).join("")}amix=inputs=${n}:normalize=0,atrim=0:${rainLen.toFixed(3)},afade=t=in:d=0.6,afade=t=out:st=${(rainLen - 1.6).toFixed(2)}:d=1.6,aformat=channel_layouts=stereo[o]`,
+    "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "160k", `${OUT}/rain.mp3`]);
+}
 const voiceLufs = await loudness(`${OUT}/voice.mp3`, OUT), rainLufs = await loudness(`${OUT}/rain.mp3`, OUT);
 if (!Number.isFinite(voiceLufs) || !Number.isFinite(rainLufs)) throw new Error(`loudness not measured (voice ${voiceLufs}, rain ${rainLufs})`);
 const RAIN_UNDER = 24; // dB under the voice (creator beds: 16-34, median 23)

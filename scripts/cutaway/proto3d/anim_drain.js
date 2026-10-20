@@ -105,7 +105,8 @@ const KEYS = [
   K(TM.and1 + 0.35, [2.6, -1.2, -2.2], 0.38), //                         the flag and the book, high in the frame (above the card and the caption)
   K(TM.henry + 0.2, [2.7, -1.2, -2.1], 0.37),
   K(TM.n1859 + 0.6, [2.7, -1.2, -2.1], 0.355),
-  K(TM.add + 0.35, HOME_T, 0.95), //                                      the cap and the bushes
+  K(TM.n1859 + 1.32, [2.7, -1.2, -2.1], 0.35), //                          hold on the book until the "1859" card (1.3 s) is gone,
+  K(TM.add + 0.65, HOME_T, 0.95), //                                       then pull back to the cap and the bushes
   K(TM.congrats + 0.1, HOME_T, 1.0),
   ...(END_CARD
     ? [K(TM.signPop + 0.1, [-3.2, 1.2, -4.2], 1.18), //                   pull back to the calm scene until the sign pops,
