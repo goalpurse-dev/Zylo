@@ -81,7 +81,7 @@ export function crack(ctx, points, { color = "#1b1712", r = 0.045 } = {}) {
   return { set(k) { m.visible = k > 0.001; geo.setDrawRange(0, Math.floor((total * Math.min(1, k)) / 6) * 6); } };
 }
 
-export function endSign(ctx, { at, rotY = 0.3, scale = 1.5 }) {
+export function endSign(ctx, { at, rotY = 0.3, scale = 1.5, postsReceiveShadow = false }) {
   const { THREE, scene } = ctx;
   const sign = new THREE.Group(); sign.position.set(...at); sign.rotation.y = rotY; sign.scale.setScalar(0); scene.add(sign);
   const t = canvasTex(THREE, 1024, 560, (g) => {
@@ -92,6 +92,6 @@ export function endSign(ctx, { at, rotY = 0.3, scale = 1.5 }) {
   });
   const face = new THREE.MeshStandardMaterial({ map: t, roughness: 0.55 }), edge = new THREE.MeshStandardMaterial({ color: "#e9e4d8", roughness: 0.6 });
   const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 3.06, 0.18), [edge, edge, edge, edge, face, edge]); board.position.y = 3.2; board.castShadow = true; sign.add(board);
-  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 })); p.position.set(x, 1.0, -0.05); p.castShadow = true; sign.add(p); }
+  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 })); p.position.set(x, 1.0, -0.05); p.castShadow = true; p.receiveShadow = postsReceiveShadow; sign.add(p); }
   return { update(t, a, on = true) { sign.visible = on; sign.scale.setScalar(scale * pop(t, a, 0.45)); } };
 }
