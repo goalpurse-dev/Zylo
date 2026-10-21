@@ -1,0 +1,158 @@
+// M2: the camera director. It turns a layout's shots ("frame these parts from this sentence on") into camera keys
+// for the kit's monotone path, by the account's rules (ANIMATION_STUDY.md, BUILD_PLAN.md):
+//  - the home angle to open, drift (a slow push-in) while a shot holds, a fast move (0.85 s, ease in, quick stop)
+//    starting 0.4 s before the sentence (or word) it belongs to, and no two moves closer than MOVE.minGap;
+//  - each framed part fills `width` of the frame (at least 15%) and sits in a free zone of the frame: clear of the
+//    card band (25-35% of the height) and the caption band (47-57%);
+//  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
+// It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
+import { boxCenter, focusOf, union } from "./focus.js";
+
+export const LENS = Object.freeze({ vfov: 35, aspect: 1080 / 1920 });
+export const BANDS = Object.freeze({ card: [0.25, 0.35], caption: [0.47, 0.57] });
+export const ZONES = Object.freeze({ top: [0.06, 0.245], mid: [0.355, 0.465], bottom: [0.575, 0.95] });
+// view directions (from the target toward the camera); home is the French drain's home angle
+export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34], low: [12, 4.5, 40], front: [5, 6, 50], side: [24, 9, 40] });
+// minGap: a move must finish (and hold a moment) before the next; the approved videos move every 3-4 s on average
+export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap: 1.2 });
+export const MIN_WIDTH = 0.15;
+
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => mul(a, 1 / Math.hypot(...a));
+const TV = Math.tan((LENS.vfov * Math.PI) / 360), TH = TV * LENS.aspect;
+
+function basis(pos, tgt) {
+  const f = norm(sub(tgt, pos)), r = norm(cross(f, [0, 1, 0])), u = cross(r, f);
+  return { f, r, u };
+}
+
+/** a world point on screen: x, y as fractions of the frame (0,0 = top left), z = depth in front of the camera */
+export function project(pos, tgt, p) {
+  const { f, r, u } = basis(pos, tgt), v = sub(p, pos), z = dot(v, f);
+  return { x: (dot(v, r) / (z * TH) + 1) / 2, y: (1 - dot(v, u) / (z * TV)) / 2, z };
+}
+
+/** a box on screen: its bounding rectangle in frame fractions (w, h its size); behind = a corner behind the camera */
+export function projectBox(pos, tgt, b) {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, behind = false;
+  for (const X of [b.min[0], b.max[0]]) for (const Y of [b.min[1], b.max[1]]) for (const Z of [b.min[2], b.max[2]]) {
+    const q = project(pos, tgt, [X, Y, Z]); if (q.z <= 0.1) behind = true;
+    x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y);
+  }
+  return { x0, x1, y0, y1, w: x1 - x0, h: y1 - y0, behind };
+}
+
+/** does a screen rectangle cross the card or caption band? */
+export function bandHits(rect) {
+  const hit = (band) => rect.y1 > band[0] && rect.y0 < band[1];
+  return { card: hit(BANDS.card), caption: hit(BANDS.caption) };
+}
+
+/**
+ * Frame a box: a camera looking along `view` at it, at the distance where it fills `width` of the frame, panned
+ * so the box sits in a free zone ("bottom" | "top" | "mid" | "auto" | "center": no zone, e.g. the home view).
+ * Returns { pos, tgt, rect, zone, ok, why }.
+ */
+export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone" } = {}) {
+  const dir = norm(Array.isArray(view) ? view : VIEWS[view] ?? VIEWS.home);
+  const c = boxCenter(box);
+  let d = Math.max(4, Math.hypot(box.max[0] - box.min[0], box.max[2] - box.min[2]) / (2 * TH * width));
+  const at = (dd, shift = [0, 0, 0]) => { const tgt = add(c, shift); return { pos: add(tgt, mul(dir, dd)), tgt }; };
+  for (let i = 0; i < 6; i++) { const { pos, tgt } = at(d); const r = projectBox(pos, tgt, box); if (r.behind) { d *= 1.5; continue; } d *= r.w / width; }
+  let { pos, tgt } = at(d), rect = projectBox(pos, tgt, box);
+  // the zone: the one the box fits best at this size (it shrinks to fit when it is too tall, down to MIN_WIDTH)
+  const zones = zone === "auto" ? ["bottom", "top", "mid"] : zone === "center" ? [] : [zone];
+  let chosen = zone === "center" ? "center" : null;
+  for (const z of zones) { const [a, b] = ZONES[z]; if (rect.h <= b - a) { chosen = z; break; } }
+  // too tall for every zone: a hero shot shrinks it into the bottom zone; a loose shot keeps its size and sits low
+  let loose = false;
+  if (!chosen && fit === "loose") { chosen = "bottom"; loose = true; }
+  if (!chosen) { chosen = zones[0]; const [a, b] = ZONES[chosen]; const k = Math.min(rect.h / (b - a) * 1.02, rect.w / MIN_WIDTH); d *= k; ({ pos, tgt } = at(d)); rect = projectBox(pos, tgt, box); }
+  // pan (camera and target together, so the view direction stays) until the box is centred in its zone
+  const want = chosen === "center" ? 0.5 : loose ? Math.max(0.5, 0.96 - rect.h / 2) : (ZONES[chosen][0] + ZONES[chosen][1]) / 2;
+  let shift = [0, 0, 0];
+  for (let i = 0; i < 6; i++) {
+    const { r, u } = basis(pos, tgt), cy = (rect.y0 + rect.y1) / 2, cx = (rect.x0 + rect.x1) / 2;
+    shift = add(shift, add(mul(u, -(cy - want) * 2 * TV * d), mul(r, (cx - 0.5) * 2 * TH * d)));
+    ({ pos, tgt } = at(d, shift)); rect = projectBox(pos, tgt, box);
+  }
+  const hits = bandHits(rect), why = [];
+  if (rect.w < MIN_WIDTH - 1e-3) why.push(`${(rect.w * 100).toFixed(0)}% wide`);
+  if (chosen !== "center" && !loose && (hits.card || hits.caption)) why.push(`crosses the ${hits.card ? "card" : "caption"} band`);
+  if (width <= 1 && (rect.x0 < -0.01 || rect.x1 > 1.01)) why.push("off the side of the frame");
+  return { pos: pos.map((v) => +v.toFixed(3)), tgt: tgt.map((v) => +v.toFixed(3)), rect, zone: loose ? "low" : chosen, ok: !why.length, why, bands: hits };
+}
+
+const drift = (k, f = MOVE.drift) => ({ pos: add(k.tgt, mul(sub(k.pos, k.tgt), f)).map((v) => +v.toFixed(3)), tgt: k.tgt });
+const scaleView = (k, f) => drift(k, f);
+
+/** the home view: the whole cut with the house behind it (or layout.camera.home) */
+export function homeView(layout) {
+  if (layout.camera?.home) return layout.camera.home;
+  const W = layout.world ?? {}, cut = W.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
+  const h = W.house ?? [-8, 0, -30];
+  const box = union([{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }, { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] }]);
+  const f = frameBox(box, { view: "home", width: 0.9, zone: "center" });
+  return { pos: f.pos, tgt: f.tgt };
+}
+
+/**
+ * The camera keys for a layout. shots: [{ t (s, the sentence start), focus: [partIds] | "home", box? (a region instead),
+ *   view, width, zone, hero? (the named part: kept clear of the bands), scale? (home) }],
+ * sorted; marks: the compiler's end marks. Returns { end, noend, notes, frames: [{t, ids, rect, ok, why}] }.
+ */
+export function directCamera(layout, shots, marks) {
+  const parts = new Map(layout.parts.map((p) => [p.id, p]));
+  const cut = layout.world?.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
+  const home = homeView(layout);
+  const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
+  let cur = home, lastMove = -Infinity;
+  const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
+  for (const s of shots) {
+    const start = s.t - MOVE.lead;
+    if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
+    let k;
+    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : home;
+    else {
+      const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
+      if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
+      const f = frameBox(union(boxes), { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose" });
+      frames.push({ t: s.t, ids, rect: f.rect, zone: f.zone, ok: f.ok, why: f.why });
+      k = f;
+    }
+    if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));
+    push(s.t + MOVE.settle, k);
+    cur = k; lastMove = start;
+  }
+  // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
+  const signPart = layout.parts.find((p) => p.kind === "sign");
+  const back = scaleView(home, 1.18);
+  const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
+  const toward = { pos: add(home.tgt, mul(sub(home.pos, home.tgt), 0.72)).map((v) => +v.toFixed(3)), tgt: home.tgt.map((v, i) => +(v + (signC[i] - v) * 0.5).toFixed(3)) };
+  toward.pos = add(toward.pos, sub(toward.tgt, home.tgt)).map((v) => +v.toFixed(3));
+  const base = keys.slice();
+  if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
+  const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];
+  const nb = keys.slice(); if (marks.lengthNoEnd - nb.at(-1)[0] < 0.05) nb.pop();
+  const far = scaleView(home, 1.25);
+  const noend = [...nb, [marks.lengthNoEnd, far.pos, far.tgt]];
+  return { end, noend, notes, frames };
+}
+
+/** the camera at time t on a key list (the kit's monotone path), for checks in node */
+export function cameraAt(keys, t) {
+  const n = keys.length, T = keys.map((k) => k[0]);
+  const axis = (sel) => {
+    const ys = keys.map(sel), d = [], m = new Array(n).fill(0);
+    for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / (T[i + 1] - T[i]));
+    for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (3 * (T[i + 1] - T[i - 1])) / ((2 * T[i + 1] - T[i] - T[i - 1]) / d[i - 1] + (T[i + 1] + T[i] - 2 * T[i - 1]) / d[i]);
+    let i = 0; while (i < n - 2 && t > T[i + 1]) i++;
+    const h = T[i + 1] - T[i], u = Math.min(1, Math.max(0, (t - T[i]) / h));
+    return (2 * u ** 3 - 3 * u ** 2 + 1) * ys[i] + (u ** 3 - 2 * u ** 2 + u) * h * m[i] + (-2 * u ** 3 + 3 * u ** 2) * ys[i + 1] + (u ** 3 - u ** 2) * h * m[i + 1];
+  };
+  return { pos: [0, 1, 2].map((a) => axis((k) => k[1][a])), tgt: [0, 1, 2].map((a) => axis((k) => k[2][a])) };
+}

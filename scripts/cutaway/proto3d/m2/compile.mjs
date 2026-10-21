@@ -4,6 +4,8 @@
 import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { validateLayout } from "./format.js";
+import { expandBeats } from "./verbs.js";
+import { directCamera } from "./director.js";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
 // the audio, not the aligner), pops over 0.45 s and holds 1.75 s. Without the end card: a 1.5 s calm hold.
@@ -15,7 +17,12 @@ export function marksFor(words, speechEnd) {
   return { speechEnd, voiceEnd, signPop, lengthEnd: +(signPop + END.pop + END.hold).toFixed(3), lengthNoEnd: +(speechEnd + END.noEndHold).toFixed(3) };
 }
 
-export function compile(layout, words, speechEnd, { roles = [] } = {}) {
+export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
+  // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
+  const beats = expandBeats(layout0);
+  const layout = { ...layout0, cues: [...(layout0.cues ?? []), ...beats.cues], shots: [...(layout0.shots ?? []), ...beats.shots] };
+  const sign = layout.parts.find((p) => p.kind === "sign");
+  if (sign && !layout.cues.some((c) => c.p === sign.id && c.c === "pop")) layout.cues.push({ p: sign.id, c: "pop", a: { mark: "signPop" }, e: "step" });
   const problems = validateLayout(layout);
   if (problems.length) throw new Error(`layout ${layout.key}: ${problems.join("; ")}`);
   const sentences = sentencesOf(words, roles);
@@ -34,6 +41,13 @@ export function compile(layout, words, speechEnd, { roles = [] } = {}) {
   }
 
   const keysFor = (which) => (layout.camera?.keys ?? []).filter((k) => !k.only || k.only === which).map((k) => [+at(k.at).toFixed(4), k.pos, k.tgt]);
+  let camera, director = null;
+  if (layout.camera?.keys?.length) camera = { end: keysFor("end"), noend: keysFor("noend") };
+  else {
+    const shots = layout.shots.map((s) => ({ ...s, t: at(s.at) })).sort((a, b) => a.t - b.t);
+    director = directCamera(layout, shots, marks);
+    camera = { end: director.end, noend: director.noend };
+  }
   const audio = layout.audio ?? {};
   const cards = (audio.cards ?? []).map((c) => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }));
   return {
@@ -42,7 +56,8 @@ export function compile(layout, words, speechEnd, { roles = [] } = {}) {
     lengthSec: marks.lengthEnd,
     sentences: sentences.map(({ id, role, t0, t1, text }) => ({ id, role, t0, t1, text })),
     tracks,
-    camera: { end: keysFor("end"), noend: keysFor("noend") },
+    camera,
+    director: director && { notes: director.notes, frames: director.frames },
     audio: {
       sfx: (audio.sfx ?? []).map((s) => ({ lib: s.lib, start: +at(s.at).toFixed(3), duration: s.d ?? 1.4 })),
       chimes: (audio.chimes ?? []).map((a) => +at(a).toFixed(3)),

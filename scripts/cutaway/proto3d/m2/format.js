@@ -15,6 +15,7 @@ function anchorProblem(a) {
   if (a.o != null && !Number.isFinite(Number(a.o))) return "bad offset";
   if (a.abs != null) return Number.isFinite(Number(a.abs)) ? null : "bad abs";
   if (a.mark != null) return MARKS.includes(a.mark) ? null : `unknown mark ${a.mark}`;
+  if (a.s != null && a.w == null) return typeof a.s === "string" && a.s ? null : "bad sentence role";
   if (a.w != null) return typeof a.w === "string" && a.w ? (a.n == null || (Number.isInteger(a.n) && a.n >= 1) ? null : "bad n") : "bad word";
   return "anchor needs abs, mark or w";
 }
@@ -56,7 +57,14 @@ export function validateLayout(L) {
     if (c.amp != null && !Number.isFinite(Number(c.amp))) P.push(`cue ${i} (${c.p}.${c.c}): bad amp`);
   });
   const keys = L.camera?.keys;
-  if (!Array.isArray(keys) || keys.length < 2) P.push("camera needs 2+ keys");
+  if (!keys?.length) {
+    if (!(L.shots ?? []).length) P.push("camera needs 2+ keys, or shots for the camera director");
+    (L.shots ?? []).forEach((s, i) => {
+      const pa = anchorProblem(s.at); if (pa) P.push(`shot ${i}: ${pa}`);
+      if (s.focus !== "home" && !s.box) for (const id of [].concat(s.focus ?? [])) if (!seen.has(id)) P.push(`shot ${i}: no part ${id}`);
+      if (s.focus == null && !s.box) P.push(`shot ${i}: no focus`);
+    });
+  } else if (keys.length < 2) P.push("camera needs 2+ keys");
   else keys.forEach((k, i) => {
     const pa = anchorProblem(k.at); if (pa) P.push(`camera key ${i}: ${pa}`);
     for (const v of [k.pos, k.tgt]) if (!Array.isArray(v) || v.length !== 3 || !v.every(Number.isFinite)) P.push(`camera key ${i}: pos/tgt must be 3 numbers`);

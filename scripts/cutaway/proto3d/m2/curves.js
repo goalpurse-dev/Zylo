@@ -42,6 +42,7 @@ const clean = (w) => String(w ?? "").toLowerCase().replace(/[^a-z0-9']/g, "");
  *  {abs: 2.5}                 seconds
  *  {w: "lay", n: 1, o: 0.02}  the n-th word "lay" of the script (punctuation ignored), + o
  *  {s: "fix1", w: "lay"}      the word "lay" in the sentence whose role is "fix1" (planner templates), + o
+ *  {s: "fix1"}               that sentence's first word ({s, end: true}: its last word's end), + o
  *  {mark: "signPop"}          speechEnd | signPop | lengthEnd | lengthNoEnd, + o
  * `exact: true` on a {w} anchor matches the word with its punctuation ("landfill." vs "landfill").
  */
@@ -53,6 +54,11 @@ export function resolveAnchor(a, ctx) {
     const v = ctx.marks?.[a.mark];
     if (!Number.isFinite(v)) throw new Error(`unknown mark ${a.mark}`);
     return v + o;
+  }
+  if (a.s != null && a.w == null) { // a sentence start (or its end)
+    const s = ctx.sentences?.find((x) => x.role === a.s || x.id === a.s);
+    if (!s) throw new Error(`no sentence with role ${a.s}`);
+    return (a.end ? s.t1 : s.t0) + o;
   }
   if (a.w != null) {
     const words = a.s != null ? wordsOfSentence(ctx, a.s) : ctx.words;

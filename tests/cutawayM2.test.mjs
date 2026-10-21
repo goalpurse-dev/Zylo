@@ -118,3 +118,56 @@ for (const [key, wf, tf] of GOLD) {
     }
   });
 }
+
+// ---------- step B: the camera director, the verbs, the templates ----------
+import { frameBox, directCamera, projectBox, bandHits, MOVE } from "../scripts/cutaway/proto3d/m2/director.js";
+import { verbCues, expandBeats } from "../scripts/cutaway/proto3d/m2/verbs.js";
+
+test("m2 director frames a box at the asked width, in a free zone, clear of the card and caption bands", () => {
+  const box = { min: [-1, -3, -0.6], max: [1, -1.5, 0] };
+  const f = frameBox(box, { width: 0.4 });
+  assert.ok(Math.abs(f.rect.w - 0.4) < 0.02, `width ${f.rect.w}`);
+  assert.ok(f.ok, f.why.join());
+  const r = projectBox(f.pos, f.tgt, box), hits = bandHits(r);
+  assert.ok(!hits.card && !hits.caption);
+  // a hero box too tall for any zone is shrunk into the bottom zone, never under 15%
+  const tall = frameBox({ min: [-1, -8, -0.5], max: [1, 2, 0] }, { width: 0.6 });
+  assert.ok(tall.rect.w >= 0.13 && tall.rect.y0 >= 0.57 - 0.01 && tall.rect.y1 <= 0.96, JSON.stringify(tall.rect));
+  assert.ok(!tall.ok); // and the check reports it (under 15%)
+});
+
+test("m2 director: home first, a move 0.4 s before each shot, too-close shots dropped, the end card pull-back and push", () => {
+  const lay = { world: { cut: { x0: -5, x1: 5, z0: -8, depth: 6 } }, parts: [{ id: "tank", kind: "tank", params: { pos: [8, 0, -1] } }, { id: "sign", kind: "sign", params: { at: [0, 0.25, -2.2] } }] };
+  const marks = { signPop: 20, lengthEnd: 22.2, lengthNoEnd: 21.5 };
+  const d = directCamera(lay, [{ t: 5, focus: ["tank"] }, { t: 5.5, focus: "home" }, { t: 12, focus: "home" }], marks);
+  assert.equal(d.end[0][0], 0);
+  assert.ok(d.end.some((k) => Math.abs(k[0] - (5 - MOVE.lead)) < 1e-6) && d.end.some((k) => Math.abs(k[0] - (5 + MOVE.settle)) < 1e-6));
+  assert.equal(d.notes.length, 1);
+  assert.deepEqual(d.end.slice(-2).map((k) => k[0]), [20.1, 22.2]);
+  assert.equal(d.noend.at(-1)[0], 21.5);
+  for (let i = 1; i < d.end.length; i++) assert.ok(d.end[i][0] - d.end[i - 1][0] >= 0.05);
+});
+
+test("m2 verbs: a verb on its word gives the account's timing; d stretches it", () => {
+  const part = { id: "p", kind: "pipe" };
+  const [c] = verbCues(part, { v: "grow" }, { s: "fix2", w: "pipe" });
+  assert.deepEqual([c.a.o, c.b.o, c.e], [-0.1, 0.7, "lin"]);
+  const [d] = verbCues(part, { v: "grow", d: 1.6, o: 0.2 }, { s: "fix2", w: "pipe" });
+  assert.deepEqual([d.a.o, d.b.o], [0.1, 1.7]);
+  assert.throws(() => verbCues(part, { v: "explode" }, { s: "x" }), /no verb/);
+  const lay = { parts: [{ id: "t", kind: "tank" }], beats: [{ s: "how", do: [{ p: "t", v: "show", w: "tank" }], shot: { focus: ["t"] } }] };
+  const ex = expandBeats(lay);
+  assert.equal(ex.cues[0].e, "back"); assert.deepEqual(ex.shots[0].at, { s: "how" });
+});
+
+for (const [key, wf, tf] of GOLD) {
+  test(`m2 template ${key}: compiles on the approved script, every shot framed`, { skip: !existsSync(wf) && "approved voice not on this machine" }, () => {
+    const lay = L(`${key}.template`), words = JSON.parse(readFileSync(wf, "utf8")), TM = JSON.parse(readFileSync(tf, "utf8"));
+    const tl = compile(lay, words, TM.speechEnd, { roles: lay.roles });
+    assert.equal(tl.sentences.filter((s) => s.role).length, lay.roles.length);
+    assert.deepEqual(tl.director.notes, []);
+    for (const f of tl.director.frames) assert.ok(f.rect.w >= 0.15, `${f.ids} ${f.rect.w}`);
+    assert.ok(tl.director.frames.filter((f) => f.ok).length >= tl.director.frames.length - 1);
+    assert.equal(tl.tracks["sign.pop"].ramps[0].t0, TM.signPop);
+  });
+}
