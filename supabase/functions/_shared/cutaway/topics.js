@@ -16,6 +16,12 @@ export const PREMADE = Object.freeze([
   { key: "road", topic: "Road", hook: "scrape off the grass and drive on the dirt", aliases: ["road", "roads", "street", "streets", "highway", "highways", "asphalt road", "paved road"], related: ["asphalt", "pavement", "driveway", "car", "traffic", "pothole", "gravel"] },
   { key: "rain_gutter", topic: "Rain gutter", hook: "let the rain pour straight off your roof", aliases: ["rain gutter", "rain gutters", "gutter", "gutters", "downspout", "downspouts"], related: ["roof", "rain", "eave", "water"] },
   { key: "sewer_pipe", topic: "Sewer pipe", hook: "run a pipe from your toilet to the street", aliases: ["sewer pipe", "sewer pipes", "sewer", "sewers", "sewer line", "sewage pipe"], related: ["toilet", "sewage", "drain", "flush", "street"] },
+  // beyond the home (NON_HOME_CATALOG.md): the city parts kit (cityParts.js, vending.js)
+  { key: "vending_machine", topic: "Vending machine", hook: "put a coin in and wait for your snack", layout: true, setting: "street", aliases: ["vending machine", "vending machines", "snack machine", "soda machine", "drink machine"], related: ["snack", "soda", "coin", "machine"] },
+  { key: "car_wash", topic: "Car wash", hook: "drive your dirty car into the bay", setting: "carwash", aliases: ["car wash", "car washes", "carwash", "automatic car wash"], related: ["car", "soap", "brushes", "water"] },
+  { key: "traffic_light", topic: "Traffic light", hook: "stop at the red light and wait", setting: "street", aliases: ["traffic light", "traffic lights", "stop light", "stoplight", "traffic signal", "traffic signals"], related: ["intersection", "car", "red light", "road"] },
+  { key: "fire_hydrant", topic: "Fire hydrant", hook: "open the short red post on the sidewalk", setting: "street", aliases: ["fire hydrant", "fire hydrants", "hydrant", "hydrants", "fire plug"], related: ["firefighter", "water main", "water", "street"] },
+  { key: "atm", topic: "ATM", hook: "put your card in the cash machine", setting: "street", aliases: ["atm", "atms", "cash machine", "cash machines", "cashpoint"], related: ["cash", "bank", "money", "card"] },
 ].map((t) => Object.freeze({ layout: false, ...t })));
 
 // Words that don't change what the video is about ("how does a septic tank work").
