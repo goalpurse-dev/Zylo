@@ -10,6 +10,8 @@ import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA
 import { solveLayout } from "./solver.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps } from "./framing.js";
+import { VERBS } from "./verbs.js";
+import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -87,8 +89,10 @@ THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for i
 ${JSON.stringify(sceneFromLayout(template(example)))}`;
 const SCENE_SYSTEM = sceneSystem();
 
+// topics that happen inside a home go in the room setting (its cut below the floor is the basement)
+export const INDOOR = /\b(basement|sump|crawl ?space|indoor|inside (a|the|your) (house|home)|water heater|boiler|furnace|radiator|air condition\w*|\bac unit|heat pump|toilet|sink|shower|bathtub|dishwasher|smoke detector|fireplace|chimney|floor heating|underfloor)\b/i;
 function sceneUser({ topic, title, sentences, hero, parts, lastOpening }) {
-  return `Topic: ${topic} ("${title}"). The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
+  return `Topic: ${topic} ("${title}").${INDOOR.test(topic) ? " This happens inside a home: use the room setting (world.backdrop {type: \"room\"}); the cut below its floor is the basement." : ""} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
 The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`;
 }
@@ -101,6 +105,51 @@ export function openingOf(L) {
   const id = [].concat(sh.focus ?? [])[0], part = L.parts.find((p) => p.id === id);
   return { setting, kind: sh.box ? "region" : part?.kind ?? "region", type: sh.type ?? (sh.width ? `width ${sh.width}` : "mid"), what: id ?? "a region" };
 }
+// verbs that build something over time: at the first frame they are already under way (a third done), not finished;
+// the dig itself is the exception (below)
+const PROCESS = /^(dig|grow|fill|pour|rise|wipe|flow|seep|soak|build|stack)/;
+export const OPEN_AT = 0.3;
+/**
+ * The hook object on screen at 0.3 s: the part the hook's first shot frames gets its first action moved to the start of
+ * the video, so it is already there (a car parked in the bay, a machine standing) or already under way (the cut a
+ * third dug). Returns { layout, moved: { part, verb } | null }.
+ */
+export function fixOpening(L) {
+  const hook = (L.beats ?? []).find((b) => b.s === "hook");
+  const sh = hook && [hook.shot, ...(hook.shots ?? [])].filter(Boolean).find((s) => !s.at?.w);
+  if (!sh || sh.focus === "home") return { layout: L, moved: null };
+  const cut = L.world?.cut, parts = new Map(L.parts.map((p) => [p.id, p]));
+  // the part it frames: the first focus part, or for a region the part (with an action) that overlaps it most
+  let id = [].concat(sh.focus ?? []).find((x) => parts.has(x));
+  if (!id && sh.box) {
+    const ov = (a, b) => Math.max(0, Math.min(a.max[0], b.max[0]) - Math.max(a.min[0], b.min[0])) * Math.max(0, Math.min(a.max[1], b.max[1]) - Math.max(a.min[1], b.min[1]));
+    // only a part the hook sentence itself acts on (never a later highlight such as the "This is a…" outline)
+    const acted = new Set((hook.do ?? []).map((a) => a.p));
+    id = L.parts.filter((p) => acted.has(p.id)).map((p) => ({ id: p.id, o: (() => { try { const b = focusOf(p, cut); return b ? ov(b, sh.box) : 0; } catch { return 0; } })() })).sort((a, b) => b.o - a.o)[0]?.id;
+    if (!id && parts.has("dig")) id = "dig";
+  }
+  if (!id) return { layout: L, moved: null };
+  // its first action anywhere in the video (the one that makes it appear)
+  const next = JSON.parse(JSON.stringify(L));
+  for (const b of next.beats ?? []) for (const a of b.do ?? []) {
+    if (a.p !== id) continue;
+    const part = parts.get(id), list = VERBS[part.kind]?.[a.v] ?? (part.kind === "panels" ? [{ a: 0.02, b: 0.45 }] : null);
+    if (!list) return { layout: L, moved: null };
+    // a dig is shown mostly done (the hole open, its clumps landed): a third done is mid-burst, a cloud of dirt close up
+    const r = list[0], len = r.b == null ? 0 : (a.d != null ? Number(a.d) : r.b - r.a), P = a.v === "dig" ? 0.8 : PROCESS.test(a.v) ? 0.35 : 1;
+    // already on screen by 0.3 s: nothing to do (its sentence starts the video and its cue starts early enough)
+    const start = OPEN_AT - (r.b == null ? 0.05 : P * len);
+    // move it to the hook's start; it may begin before the first frame (then the video opens with it under way)
+    const moved = { part: id, verb: a.v, from: b.s + (a.w ? `:${a.w}` : "") };
+    const beat = next.beats.find((x) => x.s === "hook"), act = { ...a, o: +(start - r.a).toFixed(3) }; delete act.w;
+    if (part.kind === "dig") { const first = [beat.shot, ...(beat.shots ?? [])].filter(Boolean).find((s) => !s.at?.w); if (first && (first.type === "close" || first.type === "detail" || (first.width ?? 0) > 0.8)) { delete first.width; first.type = "mid"; } }
+    b.do.splice(b.do.indexOf(a), 1);
+    beat.do = [act, ...(beat.do ?? [])];
+    return { layout: next, moved };
+  }
+  return { layout: L, moved: null };
+}
+
 /** the opening rules: close on the hook object, and not the way the previous video opened */
 export function openingProblems(L, last) {
   const o = openingOf(L), out = [];
@@ -263,6 +312,9 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     }
     layout = { ...conv.layout, why: r.data.why };
   }
+  // the hook object on screen in the first frame (free, in code)
+  const op = fixOpening(layout);
+  if (op.moved) { layout = op.layout; ({ problems, warnings } = (() => { const r = solveLayout(layout, script.sentences); return { problems: [...problems.filter((x) => !/^anchor word not found/.test(x)), ...r.problems.filter((x) => !problems.includes(x))], warnings: [...warnings, ...r.warnings.filter((x) => !warnings.includes(x))] }; })()); trace.push({ label: "opening", ...op.moved }); }
   return { script, layout, problems, warnings, costUsd: +cost.toFixed(4), trace };
 }
 

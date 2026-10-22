@@ -112,9 +112,33 @@ export function homeView(layout) {
     : W.backdrop?.type === "street" ? { min: [-6, 0, (W.backdrop.back ?? -8) - 0.8], max: [6, 7.5, (W.backdrop.back ?? -8)] }
     : W.house === false ? { min: [cut.x0 - 3, 0, cut.z0 - 3], max: [cut.x1 + 3, 3, 0] }
     : { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] };
-  const box = union([{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }, behind]);
-  const f = frameBox(box, { view: "home", width: 0.9, zone: "center" });
+  const cutBox = { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] };
+  const f = frameBox(union([cutBox, behind]), { view: "home", width: 0.9, zone: "center" });
+  // a small subject (a road loop, a pump in its pit): the named part must be at least MIN_WIDTH of the frame in the
+  // home view too; when the whole setting makes it smaller, the home view frames the cut and the named part instead
+  const hero = heroBox(layout);
+  // (or the subject, cut and part together, under CAMERA_LIMITS.subjectMin of the frame: a flat road loop is wide but thin)
+  if (hero && (projectBox(f.pos, f.tgt, hero).w < MIN_WIDTH || measureKey(layout, f.pos, f.tgt).subject < CAMERA_LIMITS.subjectMin)) {
+    const both = union([cutBox, hero]);
+    for (const w of [0.9, 0.8, 0.7, 0.55, 0.45, 0.35]) {
+      const g = frameBox(both, { view: "home", width: w, zone: "center", minField: 0 });
+      if (projectBox(g.pos, g.tgt, hero).w >= MIN_WIDTH + 0.02 && measureKey(layout, g.pos, g.tgt).subject >= CAMERA_LIMITS.subjectMin + 0.01) return { pos: g.pos, tgt: g.tgt, small: true };
+    }
+    const g = frameBox(hero, { view: "home", width: 0.3, zone: "center", minField: 0 });
+    return { pos: g.pos, tgt: g.tgt, small: true };
+  }
   return { pos: f.pos, tgt: f.tgt };
+}
+
+/** the named part: the hero shots' parts or region (the "This is a…" sentence), as one box (or null) */
+export function heroBox(layout) {
+  const cut = layout.world?.cut, parts = new Map((layout.parts ?? []).map((p) => [p.id, p])), boxes = [];
+  for (const b of layout.beats ?? []) for (const s of [b.shot, ...(b.shots ?? [])]) {
+    if (!s?.hero) continue;
+    if (s.box) boxes.push(s.box);
+    for (const id of [].concat(s.focus ?? [])) { const p = parts.get(id); const fb = p && focusOf(p, cut); if (fb) boxes.push(fb); }
+  }
+  return boxes.length ? union(boxes) : null;
 }
 
 /**
@@ -157,7 +181,9 @@ export function directCamera(layout, shots, marks) {
       // the part itself on screen (the framed box may be wider: MIN_FIELD)
       const real = projectBox(f.pos, f.tgt, union(boxes));
       // the hero keeps its own frame (the bands rule); every other shot is anchored on the subject
-      const an = s.hero ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
+      // the opening shot (the hook object, first frame) keeps its own aim: it only has to avoid open lawn and sky
+      const opening = keys.length === 1 && start < 0.4;
+      const an = s.hero || (opening && passes(f).m.empty <= CAMERA_LIMITS.emptyMax - 0.02) ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
       if (an.how) notes.push(`shot at ${s.t.toFixed(2)} s (${ids}): ${an.how} (it was ${(passes(f).m.empty * 100).toFixed(0)}% empty, ${(passes(f).m.subject * 100).toFixed(0)}% on the subject)`);
       const realA = projectBox(an.k.pos, an.k.tgt, union(boxes));
       frames.push({ t: s.t, ids, hero: !!s.hero, rect: an.how ? realA : real, zone: f.zone, measure: an.m, anchored: an.how, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });

@@ -61,7 +61,7 @@ export function makePage(layout) {
   if (W.moreTrees === false) rep("tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
   if (W.road === false) rep("road.receiveShadow = true; scene.add(road); }", "road.receiveShadow = true; }");
   if (Array.isArray(W.house)) rep("const g = new THREE.Group(); g.position.set(-8, 0, -30); scene.add(g);", `const g = new THREE.Group(); g.position.set(${W.house.map(n).join(", ")}); scene.add(g);`);
-  if (W.porch === false) rep("box(P.trim, 3.2, 0.18, 1.4, 0, 2.9, Dd / 2 + 0.7, g, 0.03); for (const x of [-1.4, 1.4]) cyl(P.trim, 0.09, 2.8, x, 1.4, Dd / 2 + 1.3, g); ", "");
+  if (W.porch === false && W.house !== false) rep("box(P.trim, 3.2, 0.18, 1.4, 0, 2.9, Dd / 2 + 0.7, g, 0.03); for (const x of [-1.4, 1.4]) cyl(P.trim, 0.09, 2.8, x, 1.4, Dd / 2 + 1.3, g); ", "");
   if (W.trees) rep("tree(-13, -11.5); tree(14, -3.4, 0.9);", W.trees.map((a) => `tree(${a.map(n).join(", ")});`).join(" "));
   if (Array.isArray(W.road)) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41

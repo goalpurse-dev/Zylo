@@ -26,6 +26,7 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX}: a room in section: a wood floor (top y 0.12)
     over the cut ground, a back wall with a window, the left wall, the ceiling and a roof slice; an armchair, a lamp, a rug.
     It suits things inside a home: an air conditioner, a radiator, a toilet, a sump pump in the floor, a smoke detector.
+    Use it for every basement or indoor topic (a sump pump, a water heater, a furnace): the cut below its floor is the basement.
   world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
     y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
   The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.

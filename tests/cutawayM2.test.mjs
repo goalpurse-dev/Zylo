@@ -299,3 +299,36 @@ test("m2 framing: a side-story prop far out on the lawn is moved beside the cut,
   const near = { ...lay, parts: [{ ...lay.parts[0], params: { ...lay.parts[0].params, at: [-1, 0, -3.2] } }, lay.parts[1]] };
   assert.deepEqual(placeLifeProps(near, homeView(near), projectBox).moved, []);
 });
+
+import { fixOpening, INDOOR, OPEN_AT } from "../scripts/cutaway/proto3d/m2/planner.mjs";
+import { heroBox } from "../scripts/cutaway/proto3d/m2/director.js";
+const openLay = (hookDo, laterDo, hookShot) => ({
+  key: "open_test", title: "t", roles: ["hook", "problem", "name", "congrats"],
+  world: { cut: { x0: -1, x1: 3, z0: -5, depth: 4 }, house: false, backdrop: { type: "carwash" } },
+  parts: [{ id: "dig", kind: "dig", params: { mound: { x: 6, z: -3, rx: 1, rz: 1, h: 1 } } }, { id: "car", kind: "car", params: { pos: [-3, 0.1, -2.5] } }, { id: "sign", kind: "sign", params: { at: [6, 0.1, -4] } }],
+  cues: [], audio: { cards: [], sfx: [], chimes: [] },
+  beats: [{ s: "hook", do: hookDo, shots: [hookShot] }, { s: "problem", do: laterDo, shots: [{ focus: "home" }] }, { s: "name", shots: [{ focus: ["dig"], hero: true, width: 0.5 }] }, { s: "congrats", shots: [{ focus: "home" }] }],
+});
+const openSentences = [{ role: "hook", text: "You drive your dirty car into the bay here." }, { role: "problem", text: "Then the water drains away below." }, { role: "name", text: "This is a car wash." }, { role: "congrats", text: "Congratulations, it is clean." }];
+test("m2 opening: the hook object is on screen at 0.3 s (a car already in the bay, a dig mostly open)", () => {
+  // the car drives in on a later word of the hook: moved so it has arrived by 0.3 s
+  const L = openLay([{ p: "dig", v: "dig", w: "here." }, { p: "car", v: "arrive", w: "bay" }], [], { focus: ["car"], type: "close" });
+  const { layout, moved } = fixOpening(L);
+  assert.equal(moved.part, "car");
+  const words = draftWords(openSentences), tl = compile(layout, words, words.at(-1).e, { roles: layout.roles });
+  assert.ok(channelValue(tl.tracks["car.drive"], OPEN_AT) >= 0.99, String(channelValue(tl.tracks["car.drive"], OPEN_AT)));
+  // a dig framed close opens mostly dug, at mid distance
+  const D = fixOpening(openLay([{ p: "dig", v: "dig", w: "here." }], [{ p: "car", v: "arrive", w: "water" }], { focus: ["dig"], type: "close" }));
+  const tl2 = compile(D.layout, words, words.at(-1).e, { roles: D.layout.roles });
+  const dg = channelValue(tl2.tracks["dig.dig"], OPEN_AT);
+  assert.ok(dg > 0.6 && dg < 0.95, String(dg));
+  assert.equal(D.layout.beats[0].shots[0].type, "mid");
+  // a home opening is not touched
+  assert.equal(fixOpening(openLay([], [], { focus: "home" })).moved, null);
+});
+test("m2 home view: a small named part reaches 15% of the frame width, and indoor topics go to the room setting", () => {
+  const lay = { world: { cut: { x0: -1.2, x1: 1.2, z0: -3.2, depth: 0.7 }, backdrop: { type: "street" } }, parts: [{ id: "dig", kind: "dig", params: {} }], beats: [{ s: "name", shots: [{ box: { min: [-1.5, -0.9, -3], max: [1.5, 0.5, 0.3] }, hero: true, width: 0.7 }] }] };
+  const h = homeView(lay);
+  assert.ok(projectBox(h.pos, h.tgt, heroBox(lay)).w >= 0.15);
+  assert.ok(INDOOR.test("How a sump pump keeps a basement dry") && INDOOR.test("how a water heater works") && !INDOOR.test("How a car wash works"));
+});
