@@ -27,7 +27,8 @@ export function solveLayout(L, sentences) {
   if (!(cut.x1 > cut.x0 && cut.z0 < 0 && cut.depth > 0)) problems.push("world.cut: needs x1 > x0, z0 < 0 (it opens on the face z = 0) and depth > 0");
   if (Math.abs(cut.x0) > 14 || Math.abs(cut.x1) > 14 || cut.depth > 20 || cut.z0 < -10) problems.push("world.cut: keep |x| <= 14, depth <= 20, z0 >= -10");
   const cutBox = { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] };
-  const h = Array.isArray(W.house) ? W.house : W.house === false ? [0, -100, 0] : [-8, 0, -30], houseBox = { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] };
+  // no house (house: false): a box far below the world, so nothing can overlap it (its y used to be fixed at 0-9.4)
+  const h = Array.isArray(W.house) ? W.house : W.house === false ? [0, -100, 0] : [-8, 0, -30], houseBox = { min: [h[0] - 5.5, h[1], h[2] - 3.25], max: [h[0] + 5.5, h[1] + 9.4, h[2] + 3.25] };
   if (overlap({ min: [cut.x0, -1, cut.z0], max: [cut.x1, 1, 0] }, houseBox, 0.05)) problems.push("the house stands on the cut: move world.house back (its front is z + 3.25) or the cut aside");
   // the parts' own settings
   for (const p of L.parts) {
