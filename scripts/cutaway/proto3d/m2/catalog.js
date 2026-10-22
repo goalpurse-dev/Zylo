@@ -20,6 +20,8 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 
 // per kind: what it is, its params, and notes. Positions are world coordinates.
 export const KIND_DOCS = {
+  vendingMachine: ["a vending machine on the lawn, cut open on its right side (coils, motors, coin chute, bin, drop sensor, cooler, lit header)", "pos [x, y, z] (its base centre; it faces the camera), color, header (the lit sign text)", "channels show, snacks, slot, steal, glass, coils, coin, spinA/spinB (turns), fallA/fallB, beam, cooler, light; give it a focus box"],
+  miniMachines: ["a crowd of small drink machines popping up across the lawn", "area [x0, x1, z0, z1], count", "channels pop (a ramp: they pop one by one within it), gone"],
   dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150), dark (true for a narrow shaft under 2.5 wide: its inside is shaded so the hole reads)", "channels dig, refill. Always the first beat."],
   panels: ["anchored boxes that wipe in from one side (liners, clay walls, covers, caps)", "panels: [{ch, mat, size [sx,sy,sz], anchor [ax,ay,az] (-1/0/1: the side it grows from), pos [x,y,z] (the anchor point), axis 'x'|'y'|'z' (the growing axis) or null (pops in), vis (0), r (0.04), uv [u,v]?}]", "each panel names its own channel ch; verbs: grow (with ch), pop (with ch)"],
   box: ["a plain static box (a foundation, a slab)", "mat, size [sx,sy,sz], pos [x,y,z] (its center), r (0.04), receiveShadow", "no verbs"],

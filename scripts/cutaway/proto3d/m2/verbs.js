@@ -11,6 +11,8 @@ const POP = { show: [R("pop", -0.1, 0.3, 1, "back")] };
 const ONOFF = (c = "on") => ({ show: [R(c, -0.2, 0.1)], hide: [R(c, -0.25, 0.05, -1)] });
 
 export const VERBS = {
+  vendingMachine: { show: [R("show", -0.1, 0.3, 1, "back")], fill: [R("snacks", 0, 0.8)], slot: [R("slot", -0.1, 0.25, 1, "back")], steal: [R("steal", 0, 1.1)], glass: [R("glass", 0, 0.6, 1, "out")], coils: [R("coils", -0.05, 0.4, 1, "back")], coin: [R("coin", 0, 0.9)], turnA: [R("spinA", 0, 1.0, 1, "inOut")], dropA: [R("fallA", 0, 0.45, 1, "lin")], turnB: [R("spinB", 0, 0.8, 0.75, "inOut")], retryB: [R("spinB", 0, 0.7, 0.35, "inOut")], dropB: [R("fallB", 0, 0.45, 1, "lin")], beam: [R("beam", -0.1, 0.2)], cooler: [R("cooler", -0.1, 0.35, 1, "back")], light: [R("light", 0, 0.5, 1, "out")] },
+  miniMachines: { show: [R("pop", 0, 1.6)], hide: [R("gone", 0, 0.6, 1, "inOut")] },
   dig: { dig: [R("dig", 0.02, 1.0)], refill: [R("refill", 0, 0.8)] },
   panels: {}, // channels are its own panel names: { v: "grow", ch: "linerFloor" }
   box: {},

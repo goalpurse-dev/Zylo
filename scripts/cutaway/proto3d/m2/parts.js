@@ -17,6 +17,7 @@ import { rain, stream } from "../kit/weather.js";
 import { wrapSheet } from "../kit/sheet.js";
 import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/props.js";
 import { EASES, rampU } from "./curves.js";
+import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -37,6 +38,9 @@ const shifted = (r, t, s0, s1 = s0) => {
 };
 
 export const KINDS = {
+  // ================= machines (the vending machine, cut open) =================
+  vendingMachine, miniMachines,
+
   // ================= ground =================
 
   /** a box cut dug open (the cut itself is the world's: world.cut); channels: dig, refill */
@@ -514,6 +518,7 @@ export const KINDS = {
 
 // The channels each kind reads (for the format check and the planner's instructions).
 export const KIND_CHANNELS = {
+  ...VENDING_CHANNELS,
   dig: ["dig", "refill"], panels: ["*"], box: [], bags: ["drop", "lift", "raise"], dumpTruck: ["z", "tip", "load"],
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],

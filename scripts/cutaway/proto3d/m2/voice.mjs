@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PER_CHAR = 0.0002;
 
-export async function makeVoice({ text, out, ff, wt, capUsd = 0.2, log, sectionWords = [] }) {
+export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [] }) {
   fs.mkdirSync(out, { recursive: true });
   const raw = path.join(out, "raw.mp3"), rawWords = path.join(out, "raw.words.json"), final = path.join(out, "voice.mp3");
   let usd = 0;

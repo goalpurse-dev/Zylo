@@ -1,6 +1,6 @@
 // M2: a free look at a layout on its voice before a full render: 1 fps stills, a contact sheet, and the mean HSV
 // saturation of those stills (the same measure as the render check).
-//   node m2/look.mjs <layout.json> <voice.mp3> <words.json> <proto> <ffmpeg> <outDir> [roles.json | script.json]
+//   node m2/look.mjs <layout.json> <voice.mp3 | -> <words.json | -> <proto> <ffmpeg> <outDir> [roles.json | script.json]
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -9,12 +9,15 @@ import { preparePage, runProcess } from "./make.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { sheet } from "./sheet.mjs";
 import { timelineChecks } from "./checks.mjs";
+import { draftWords } from "./plan.js";
 
 const [lf, voice, wf, proto, ff, out, rf] = process.argv.slice(2);
-const layout = JSON.parse(fs.readFileSync(lf, "utf8")), words = JSON.parse(fs.readFileSync(wf, "utf8"));
+const layout = JSON.parse(fs.readFileSync(lf, "utf8"));
 const rj = rf ? JSON.parse(fs.readFileSync(rf, "utf8")) : null;
+// voice "-": draft word times from the script (a look before the voice is paid for)
+const words = voice === "-" ? draftWords(rj.sentences) : JSON.parse(fs.readFileSync(wf, "utf8"));
 const roles = Array.isArray(rj) ? rj : rj?.sentences ? rj.sentences.map((s) => s.role) : layout.roles ?? [];
-const tl = compile(layout, words, speechEnd(ff, voice), { roles });
+const tl = compile(layout, words, voice === "-" ? words.at(-1).e + 0.1 : speechEnd(ff, voice), { roles });
 preparePage({ layout, tl, proto });
 const times = []; for (let t = 0; t <= tl.marks.lengthEnd; t += 1) times.push(t);
 await runProcess(process.execPath, [path.join(proto, "m2", "stills.mjs"), `m2_${layout.key}.html`, out, times.join(",")], { cwd: proto });

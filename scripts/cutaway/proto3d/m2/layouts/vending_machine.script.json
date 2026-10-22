@@ -1,0 +1,124 @@
+{
+ "title": "How a vending machine works",
+ "hero": "a vending spiral",
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you put snacks in a box with a coin slot, you have a vending machine."
+  },
+  {
+   "role": "problem",
+   "text": "But people just reach in and take them for free."
+  },
+  {
+   "role": "fix1",
+   "text": "So you lock them behind glass, each snack sitting in a spiral coil."
+  },
+  {
+   "role": "how",
+   "text": "Drop in a coin, and a little motor turns the coil one full turn."
+  },
+  {
+   "role": "name",
+   "text": "This is a vending spiral."
+  },
+  {
+   "role": "problem2",
+   "text": "But sometimes the snack gets stuck on the edge."
+  },
+  {
+   "role": "fix2",
+   "text": "So an invisible light beam watches the bin, and if nothing falls through it, the spiral turns again."
+  },
+  {
+   "role": "fact",
+   "text": "Japan has over 2 million drink machines, about one for every 55 people."
+  },
+  {
+   "role": "myth",
+   "text": "And the vending machine is not a modern idea."
+  },
+  {
+   "role": "mythFact",
+   "text": "Hero of Alexandria built one 2,000 years ago that poured holy water for a coin."
+  },
+  {
+   "role": "finish",
+   "text": "Add a cooler underneath and a light on top."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a vending machine."
+  }
+ ],
+ "surprises": [],
+ "cards": [
+  {
+   "text": "2 MILLION",
+   "sentence": 7,
+   "word": "2"
+  },
+  {
+   "text": "2,000 YEARS",
+   "sentence": 9,
+   "word": "2,000"
+  }
+ ],
+ "parts": [
+  "vending machine",
+  "snacks",
+  "glass",
+  "spiral coils",
+  "coin",
+  "motor",
+  "drop sensor",
+  "drink machines",
+  "book",
+  "cooler",
+  "light"
+ ],
+ "facts": [
+  {
+   "verdict": "keep",
+   "claim": "Many machines use an infrared drop sensor: if no product falls through the beam, the coil turns again, and the money is refunded if it still fails",
+   "sources": [
+    {
+     "url": "https://www.ttelectronics.com/TTElectronics/media/ProductFiles/Application-Note/App-Note-OPB720-for-Vending-Machines.pdf",
+     "title": "TT Electronics: optic sensors for vending machines"
+    },
+    {
+     "url": "https://www.vending.com/blog/guarantee-product-delivery/",
+     "title": "Vending.com: guarantee product delivery"
+    }
+   ]
+  },
+  {
+   "verdict": "reword",
+   "claim": "Japan had about 2.25 million beverage vending machines at the end of 2021 (JVMA), about one for every 55 people",
+   "sources": [
+    {
+     "url": "https://www.sg.emb-japan.go.jp/JCC/E-Magazine-Jul-2023-Vending-Machine.html",
+     "title": "Embassy of Japan in Singapore: vending machines"
+    },
+    {
+     "url": "https://unseen-japan.com/number-of-vending-machines-in-japan-dwindling/",
+     "title": "Unseen Japan: the number of vending machines"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "Hero of Alexandria described a coin-operated holy-water dispenser in his Pneumatica, in the 1st century AD",
+   "sources": [
+    {
+     "url": "https://www.mentalfloss.com/history/worlds-first-vending-machine-dispensed-holy-water",
+     "title": "Mental Floss: the first vending machine dispensed holy water"
+    },
+    {
+     "url": "https://historyofinformation.com/detail.php?id=10",
+     "title": "History of Information: Hero's Pneumatica"
+    }
+   ]
+  }
+ ]
+}

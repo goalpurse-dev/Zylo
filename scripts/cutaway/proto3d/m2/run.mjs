@@ -68,6 +68,14 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
   let { tl, checks } = checkAll();
   save("timeline_checks.json", checks);
   let visionReport = null;
+  if (!vision) {
+    // no vision check (a re-render of a checked layout, or no Claude credit): the preview stills still set the grading
+    preparePage({ layout, tl, proto });
+    const pngs = await previewStills({ proto, layout, times: previewTimes(tl).map((s) => s.t), out: path.join(out, "preview") });
+    const sat0 = saturationOf(ff, pngs), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
+    if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
+    save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38, vision: "off" });
+  }
   if (vision) {
     P({ stage: "scene", step: "preview frames", pct: 6 });
     preparePage({ layout, tl, proto });
