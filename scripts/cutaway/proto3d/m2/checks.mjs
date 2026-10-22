@@ -7,6 +7,7 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { channelValue } from "./curves.js";
 import { cameraAt } from "./director.js";
+import { CAMERA_LIMITS, measureKey, turnBetween } from "./framing.js";
 import { callJSON } from "./llm.mjs";
 import { sheet } from "./sheet.mjs";
 
@@ -45,9 +46,22 @@ export function timelineChecks(layout, tl) {
   // the named part: on screen, at least 15% of the width, clear of the bands (the director's hero frame)
   const hero = (tl.director?.frames ?? []).filter((f) => f.ok !== undefined);
   for (const f of hero) if (f.rect.w < 0.15) (f.hero ? problems : warnings).push(`the shot at ${f.t.toFixed(1)} s frames ${f.ids} at ${(f.rect.w * 100).toFixed(0)}% of the width (at least 15%)`);
+  // the camera at the middle of every sentence: the main subject in view, at most 40% open lawn or sky, and no
+  // turn between keys bigger than the hand-built paths make (CAMERA_LIMITS, calibrated on them)
+  const camera = [];
+  for (const s of tl.sentences) {
+    const t = (s.t0 + s.t1) / 2; if (t > M.signPop) continue;
+    const k = cameraAt(tl.camera.end, t), m = measureKey(layout, k.pos, k.tgt);
+    camera.push({ role: s.role, t: +t.toFixed(2), ...m });
+    if (m.empty > CAMERA_LIMITS.emptyMax) problems.push(`sentence ${s.role}: the frame is ${(m.empty * 100).toFixed(0)}% open lawn or sky (at most ${CAMERA_LIMITS.emptyMax * 100}%)`);
+    if (m.subject < CAMERA_LIMITS.subjectMin) problems.push(`sentence ${s.role}: the main subject is out of the frame (${(m.subject * 100).toFixed(1)}% of it)`);
+  }
+  const story = tl.camera.end.filter((k) => k[0] <= M.signPop);
+  for (let i = 1; i < story.length; i++) { const tu = turnBetween({ pos: story[i - 1][1], tgt: story[i - 1][2] }, { pos: story[i][1], tgt: story[i][2] }); if (tu > CAMERA_LIMITS.turnMax) problems.push(`the camera turns ${tu.toFixed(0)} degrees at ${story[i][0].toFixed(1)} s (the hand-built paths at most ${CAMERA_LIMITS.turnMax})`); }
+  if (!(tl.director?.frames ?? []).some((f) => f.opening)) warnings.push("the video opens on the home view, not close on the hook object");
   // beats at least 2.5 s long
   for (const s of tl.sentences) if (s.t1 - s.t0 < 1.0) warnings.push(`sentence ${s.role} lasts only ${(s.t1 - s.t0).toFixed(1)} s`);
-  return { problems, warnings, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2) } };
+  return { problems, warnings, camera, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2) } };
 }
 
 /** 2a. one preview time per sentence: when its last action has finished (capped before the next sentence) */

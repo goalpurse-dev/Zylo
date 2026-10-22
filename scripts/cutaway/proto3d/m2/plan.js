@@ -2,9 +2,12 @@
 // Structured outputs need every object closed and every field listed, so free-form settings travel as JSON text
 // (paramsJson) and "not set" is an empty string or 0.
 import { KIND_CHANNELS } from "./parts.js";
+import { homeView, projectBox, SHOTS } from "./director.js";
+import { placeLifeProps } from "./framing.js";
 
 export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
+export const SHOT_TYPES = Object.keys(SHOTS);
 
 const obj = (properties) => ({ type: "object", properties, required: Object.keys(properties), additionalProperties: false });
 const str = { type: "string" }, num = { type: "number" }, int = { type: "integer" }, bool = { type: "boolean" };
@@ -26,7 +29,7 @@ export const FACTS_SCHEMA = obj({
 
 const ACTION = obj({ p: str, v: str, w: str, o: num, d: num, amp: num, ch: str });
 // (no enums in the scene schema: the grammar would be too large; the solver checks kinds, roles and views)
-const SHOT = obj({ focus: arr(str), view: str, width: num, hero: bool, word: str, box: arr(num) });
+const SHOT = obj({ focus: arr(str), view: str, width: num, type: str, hero: bool, word: str, box: arr(num) });
 const AT = obj({ s: str, w: str, o: num });
 // the scene reply: the layout as JSON text (a full schema compiles to a grammar the API refuses as too large)
 export const SCENE_REPLY_SCHEMA = obj({ why: str, sceneJson: str });
@@ -48,7 +51,9 @@ export function layoutFromScene(scene, { key, title, roles }) {
   const [x0, x1, z0, depth] = scene.world.cut;
   const world = { cut: { x0, x1, z0, depth } };
   if (scene.world.house === false) world.house = false; else if (scene.world.house?.length === 3) world.house = scene.world.house;
-  for (const k of ["worker", "moreTrees"]) if (scene.world[k] === false) world[k] = false;
+  // the yard's worker figure only when asked for (he stood in the frame of other topics' shots)
+  if (scene.world.worker !== true) world.worker = false;
+  if (scene.world.moreTrees === false) world.moreTrees = false;
   if (scene.world.road === false) world.road = false;
   if (scene.world.backdrop && ["street", "park"].includes(scene.world.backdrop.type)) world.backdrop = scene.world.backdrop;
   else if (scene.world.backdrop) problems.push(`world.backdrop type "${scene.world.backdrop.type}": use street or park, or leave it out for the yard`);
@@ -56,13 +61,13 @@ export function layoutFromScene(scene, { key, title, roles }) {
   if (scene.world.trees?.length === 2) world.trees = scene.world.trees;
   if (Array.isArray(scene.world.road) && scene.world.road.length === 3) world.road = scene.world.road;
   if (scene.world.rocksAvoid?.length) { world.rocksAvoid = scene.world.rocksAvoid; world.roots = { pad: 0.8, to: Math.max(7, x1 + 2) }; }
-  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
+  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
   const beats = scene.beats.map((b) => ({
     s: b.s,
     do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp && a.amp !== 1) o.amp = a.amp; if (a.ch) o.ch = a.ch; return o; }),
     shots: (b.shots ?? []).map((s) => {
       const o = (s.focus ?? []).includes("home") ? { focus: "home" } : s.box?.length === 6 ? { box: { min: s.box.slice(0, 3), max: s.box.slice(3) } } : { focus: s.focus };
-      if (s.view && s.view !== "home") { if (VIEWS.includes(s.view)) o.view = s.view; else problems.push(`shot view "${s.view}": use one of ${VIEWS.join(", ")}`); } if (s.width) o.width = s.width; if (s.hero) o.hero = true; if (s.word) o.at = { s: b.s, w: s.word };
+      if (s.view && s.view !== "home") { if (VIEWS.includes(s.view)) o.view = s.view; else problems.push(`shot view "${s.view}": use one of ${VIEWS.join(", ")}`); } if (s.width) o.width = s.width; if (s.type) { if (SHOT_TYPES.includes(s.type)) o.type = s.type; else problems.push(`shot type "${s.type}": use one of ${SHOT_TYPES.join(", ")}`); } if (s.hero) o.hero = true; if (s.word) o.at = { s: b.s, w: s.word };
       return o;
     }),
   }));
@@ -73,7 +78,10 @@ export function layoutFromScene(scene, { key, title, roles }) {
     chimes: A.chimes.map(anchor),
     ...(A.rain.length === 2 ? { rain: { from: anchor(A.rain[0]), to: anchor(A.rain[1]), underDb: 24 } } : {}),
   };
-  return { layout: { key, title, template: true, roles, world, parts, cues: [], beats, audio }, problems };
+  const raw = { key, title, template: true, roles, world, parts, cues: [], beats, audio };
+  // the side-story props (a flag, a book, a newspaper) stand beside the action, inside the home frame
+  const placed = placeLifeProps(raw, homeView(raw), projectBox);
+  return { layout: placed.layout, problems, moved: placed.moved };
 }
 
 /** a layout template -> the planner's scene shape (the worked example in the prompt) */
@@ -86,7 +94,7 @@ export function sceneFromLayout(L) {
     beats: L.beats.map((b) => ({
       s: b.s,
       do: (b.do ?? []).map((a) => ({ p: a.p, v: a.v, w: a.w ?? "", o: a.o ?? 0, d: a.d ?? 0, amp: a.amp ?? 1, ch: a.ch ?? "" })),
-      shots: [b.shot, ...(b.shots ?? [])].filter(Boolean).map((s) => ({ focus: s.focus === "home" ? ["home"] : s.focus ?? [], view: typeof s.view === "string" ? s.view : "home", width: s.width ?? 0, hero: !!s.hero, word: s.at?.w ?? "", box: s.box ? [...s.box.min, ...s.box.max] : [] })),
+      shots: [b.shot, ...(b.shots ?? [])].filter(Boolean).map((s) => ({ focus: s.focus === "home" ? ["home"] : s.focus ?? [], view: typeof s.view === "string" ? s.view : "home", width: s.width ?? 0, type: s.type ?? "", hero: !!s.hero, word: s.at?.w ?? "", box: s.box ? [...s.box.min, ...s.box.max] : [] })),
     })),
     audio: { cards: (L.audio.cards ?? []).map((c) => ({ text: c.text, at: at(c.at), d: c.d ?? 1.8 })), sfx: (L.audio.sfx ?? []).map((c) => ({ lib: c.lib, at: at(c.at), d: c.d ?? 1.3 })), chimes: (L.audio.chimes ?? []).map(at), rain: L.audio.rain ? [at(L.audio.rain.from), at(L.audio.rain.to)] : [] },
   };

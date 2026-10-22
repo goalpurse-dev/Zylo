@@ -71,7 +71,9 @@ HOW TO PLAN
 - The explainer layer: arrows show where water or gas moves; a glowing outline traces the named part on the "This is a…" sentence (verb show on the named word, hide on the next sentence); flow dots run in pipes when water flows.
 - A myth-bust ("X is not Y") must SHOW the wrong idea first, then take it away: a flag crossed out, a fake lake that drains or fades on "not", then the real mechanism appears on the next sentence. A sentence about something that is not there needs a visible stand-in for it.
 - Something new every 2-3 s: every sentence has at least one action. Problems are visible (rain, flooding, a crack, a leak) and are fixed by the next part. By "Congratulations" the problem is gone: stop rain, clear the storm, hide arrows and flows, refill or cap the cut, add the finishing touches. The end is calm.
-- Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). width is how much of the frame width they fill: 0.3-0.5 for a prop or a detail, 0.6-1.0 for a long trench or a pit (wide parts fill the frame). box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts, for a close-up on a detail (the holes in a pipe). view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall). The "This is a…" sentence's shot is hero: true. Congrats and finish are home shots. The hook is a home shot when the cut is wide; for a small or narrow cut (a well shaft) the hook frames the cut being dug (focus the dig part) so the hole reads.
+- Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). Size a shot by type, the shot vocabulary measured on the hand-built videos: wide (0.9 of the home distance), mid (0.7: most story shots), close (0.42: a crack, a newspaper, a machine's slot), detail (0.2: the holes in a pipe); or by width (how much of the frame width the parts fill: 0.3-0.5 for a prop, 0.6-1.0 for a long trench). Give type or width, not both. box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts. view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall); they all stay within 20 degrees of the home angle. The "This is a…" sentence's shot is hero: true (with a width). Congrats and finish are home shots.
+- THE OPENING: the video opens close on its own hook object, never on the house. The hook beat's first shot (no word) frames the naive thing the hook line names, the thing a viewer already knows (the hole being dug, the machine's slot, the puddle at the wall, the car in the bay, the button), type close or mid. The home view comes later (the problem or how sentence) and at the end.
+- THE MAIN SUBJECT: every shot keeps it in view (the cut, or the part you mark main: true when the story is a machine above ground); no shot of open lawn or sky. Side-story props (a flag, a book, a newspaper) stand beside the cut, just behind its back edge and inside the home frame, never out on the lawn. world.worker true only when the topic has a worker (by default there is none).
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
 - Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shots: [...]}], audio: {cards, sfx, chimes, rain}}. A part's base (optional) sets a channel's starting value. Numbers in world units.
 - Verbs: an action is {p: part id, v: verb, w: the word in that sentence (as written, without punctuation; "" = the sentence start), o: seconds after the word (0), d: a duration to stretch the verb (0 = default), amp: 1, ch: "" (panels only: the panel channel)}.
@@ -82,10 +84,26 @@ THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for i
 ${JSON.stringify(sceneFromLayout(template(example)))}`;
 const SCENE_SYSTEM = sceneSystem();
 
-function sceneUser({ topic, title, sentences, hero, parts }) {
-  return `Topic: ${topic} ("${title}"). The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.
+function sceneUser({ topic, title, sentences, hero, parts, lastOpening }) {
+  return `Topic: ${topic} ("${title}"). The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
 The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`;
+}
+
+// how a layout opens: its setting, and the hook's first shot (the part it frames, its kind, its size)
+export function openingOf(L) {
+  const W = L.world ?? {}, setting = W.backdrop?.type ?? (W.house === false ? "plain" : "yard");
+  const hook = (L.beats ?? []).find((b) => b.s === "hook"), sh = hook && [hook.shot, ...(hook.shots ?? [])].filter(Boolean).find((s) => !s.at?.w) ;
+  if (!sh || sh.focus === "home" || (Array.isArray(sh.focus) && sh.focus.includes("home"))) return { setting, kind: "home", type: "home", what: "the home view" };
+  const id = [].concat(sh.focus ?? [])[0], part = L.parts.find((p) => p.id === id);
+  return { setting, kind: sh.box ? "region" : part?.kind ?? "region", type: sh.type ?? (sh.width ? `width ${sh.width}` : "mid"), what: id ?? "a region" };
+}
+/** the opening rules: close on the hook object, and not the way the previous video opened */
+export function openingProblems(L, last) {
+  const o = openingOf(L), out = [];
+  if (o.kind === "home") out.push("the hook opens on the home view: its first shot (no word) must frame the hook object close (type close or mid)");
+  else if (last && o.kind === last.kind && o.setting === last.setting) out.push(`the video opens like the previous one (a ${o.kind} in the ${o.setting} setting): open on another kind of object${o.setting === "yard" ? " or in another setting" : ""}`);
+  return out;
 }
 
 // the words a saved layout's beats, shots and sounds trigger on, by sentence role
@@ -136,7 +154,7 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -200,18 +218,20 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     }
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
-    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] });
+    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening });
     let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
     ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
-    problems.unshift(...conv.problems);
-    trace.push({ label: "solver 1", problems, warnings });
+    problems.unshift(...conv.problems, ...openingProblems(conv.layout, lastOpening));
+    trace.push({ label: "solver 1", problems, warnings, opening: openingOf(conv.layout) });
     if (problems.length) {
       r = await step("scene repair", { system: SCENE, user: `${user}\n\nYour layout below has problems the layout solver found. Fix every one and return the whole layout again (change only what the problems need).\nProblems:\n- ${problems.join("\n- ")}\n${warnings.length ? `Warnings (fix them if you can):\n- ${warnings.join("\n- ")}\n` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
       conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
       ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
       problems.unshift(...conv.problems);
-      trace.push({ label: "solver 2", problems, warnings });
+      // a repeat opening after the repair is a warning: the video still goes on
+      warnings.push(...openingProblems(conv.layout, lastOpening));
+      trace.push({ label: "solver 2", problems, warnings, opening: openingOf(conv.layout) });
     }
     layout = { ...conv.layout, why: r.data.why };
   }

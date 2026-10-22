@@ -9,7 +9,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { planTopic, repairLayout } from "./planner.mjs";
+import { planTopic, repairLayout, openingOf } from "./planner.mjs";
 import { loadKey } from "./llm.mjs";
 import { makeVoice } from "./voice.mjs";
 import { makeVideo, preparePage, runProcess } from "./make.mjs";
@@ -21,6 +21,9 @@ import { sheet } from "./sheet.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WT = path.resolve(here, "../../../..");
 export const VISION_FAILS_OK = 2;
+// how each video opened, newest last (the planner opens the next one differently)
+export const OPENINGS = path.join(here, "layouts", "openings.jsonl");
+const lastOpeningIn = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8").trim().split("\n").at(-1)); } catch { return null; } };
 const progress = (o, cb) => { console.log(`PROGRESS ${JSON.stringify(o)}`); cb?.(o); };
 
 // the vision check, cached by the exact frames (and sentences) it is given: a re-run with the same frames is free
@@ -38,17 +41,18 @@ async function previewStills({ proto, layout, times, out }) {
   return times.map((_, i) => path.join(out, `f_${String(i).padStart(3, "0")}.png`));
 }
 
-export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true }) {
+export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS }) {
   fs.mkdirSync(out, { recursive: true });
   const t0 = Date.now(), apiKey = loadKey(), cacheDir = path.join(out, "steps");
   const save = (f, d) => fs.writeFileSync(path.join(out, f), JSON.stringify(d, null, 1));
   const P = (o) => progress(o, onProgress);
   P({ stage: "script", pct: 1 });
-  const plan = await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
+  const plan = await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
   save("script.json", plan.script); save("layout.json", plan.layout); save("trace.json", plan.trace);
   P({ stage: "scene", pct: 4, title: plan.script.title, narration: plan.script.sentences.map((s) => s.text).join(" "), facts: plan.script.facts ?? [], parts: plan.layout.parts.map((p) => p.id) });
   const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, planSeconds: (Date.now() - t0) / 1000 };
   save("plan_report.json", report);
+  if (!reuse && !plan.problems.length && openings) fs.appendFileSync(openings, JSON.stringify({ topic, at: new Date().toISOString(), ...openingOf(plan.layout) }) + "\n");
   if (plan.problems.length > maxProblems) { P({ stage: "failed", reason: "plan", problems: plan.problems }); return { ...report, ok: false }; }
   if (planOnly) return { ...report, ok: true };
 

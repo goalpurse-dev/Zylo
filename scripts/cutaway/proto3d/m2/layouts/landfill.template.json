@@ -919,6 +919,14 @@
      "v": "leave",
      "w": "landfill"
     }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "bags1"
+     ],
+     "type": "close"
+    }
    ]
   },
   {

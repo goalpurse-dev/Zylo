@@ -906,7 +906,11 @@
    ],
    "shots": [
     {
-     "focus": "home"
+     "focus": [
+      "curbL",
+      "curbR"
+     ],
+     "type": "close"
     },
     {
      "focus": [

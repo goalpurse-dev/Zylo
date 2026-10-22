@@ -265,6 +265,14 @@
      "v": "slot",
      "w": "slot"
     }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "machine"
+     ],
+     "type": "close"
+    }
    ]
   },
   {

@@ -141,7 +141,7 @@ test("m2 director: home first, a move 0.4 s before each shot, too-close shots dr
   const d = directCamera(lay, [{ t: 5, focus: ["tank"] }, { t: 5.5, focus: "home" }, { t: 12, focus: "home" }], marks);
   assert.equal(d.end[0][0], 0);
   assert.ok(d.end.some((k) => Math.abs(k[0] - (5 - MOVE.lead)) < 1e-6) && d.end.some((k) => Math.abs(k[0] - (5 + MOVE.settle)) < 1e-6));
-  assert.equal(d.notes.length, 1);
+  assert.equal(d.notes.filter((n) => /dropped/.test(n)).length, 1);
   assert.deepEqual(d.end.slice(-2).map((k) => k[0]), [20.1, 22.2]);
   assert.equal(d.noend.at(-1)[0], 21.5);
   for (let i = 1; i < d.end.length; i++) assert.ok(d.end[i][0] - d.end[i - 1][0] >= 0.05);
@@ -164,10 +164,15 @@ for (const [key, wf, tf] of GOLD) {
     const lay = L(`${key}.template`), words = JSON.parse(readFileSync(wf, "utf8")), TM = JSON.parse(readFileSync(tf, "utf8"));
     const tl = compile(lay, words, TM.speechEnd, { roles: lay.roles });
     assert.equal(tl.sentences.filter((s) => s.role).length, lay.roles.length);
-    assert.deepEqual(tl.director.notes, []);
-    for (const f of tl.director.frames) assert.ok(f.rect.w >= 0.15, `${f.ids} ${f.rect.w}`);
+    // only re-aims (the saved side-story shots looked at open lawn): no shot dropped, none replaced by home
+    assert.deepEqual(tl.director.notes.filter((n) => !/re-aimed/.test(n)), []);
+    for (const f of tl.director.frames) assert.ok(f.anchored || f.rect.w >= 0.15, `${f.ids} ${f.rect.w}`);
+    for (const f of tl.director.frames) if (!f.hero) assert.ok(f.measure.empty <= CAMERA_LIMITS.emptyMax && f.measure.subject >= CAMERA_LIMITS.subjectMin, `${f.ids} ${JSON.stringify(f.measure)}`);
     assert.ok(tl.director.frames.filter((f) => f.ok).length >= tl.director.frames.length - 1);
     assert.equal(tl.tracks["sign.pop"].ramps[0].t0, TM.signPop);
+    // it opens close on its hook object, and every sentence passes the camera checks
+    assert.ok(tl.director.frames[0].opening);
+    assert.deepEqual(timelineChecks(lay, tl).problems, []);
   });
 }
 
@@ -269,4 +274,28 @@ test("m2 saved layout: only the words missing from the new sentences are re-anch
   assert.equal(missingWords(next, changed.map((s) => (s.role === r0 ? { ...s, text: "brand new words here" } : s))).length, 0);
   assert.deepEqual(next.parts, L.parts); // the world and parts stay exactly as saved
   assert.ok(L.facts?.length >= 2); // and the verified facts travel with it
+});
+
+import { measureKey, CAMERA_LIMITS, placeLifeProps, turnBetween } from "../scripts/cutaway/proto3d/m2/framing.js";
+import { homeView } from "../scripts/cutaway/proto3d/m2/director.js";
+test("m2 framing: the hand-built paths pass the camera limits (their story keys), the Gate 2 lawn shots would not", () => {
+  for (const key of ["french_drain", "landfill"]) {
+    const lay = L(key), keys = lay.camera.keys.filter((k) => !k.at.mark);
+    for (const k of keys) { const m = measureKey(lay, k.pos, k.tgt); assert.ok(m.empty <= CAMERA_LIMITS.emptyMax && m.subject >= CAMERA_LIMITS.subjectMin, `${key} ${JSON.stringify(k.at)} ${JSON.stringify(m)}`); }
+    for (let i = 1; i < keys.length; i++) assert.ok(turnBetween(keys[i - 1], keys[i]) <= CAMERA_LIMITS.turnMax);
+  }
+  // a camera on the open lawn beside the house (the Gate 2 book shot): mostly empty, the cut out of view
+  const fd = L("french_drain");
+  const m = measureKey(fd, [16, 3, 10], [11, 1.5, -6]);
+  assert.ok(m.empty > CAMERA_LIMITS.emptyMax || m.subject < CAMERA_LIMITS.subjectMin, JSON.stringify(m));
+});
+test("m2 framing: a side-story prop far out on the lawn is moved beside the cut, inside the home frame", () => {
+  const lay = { world: { cut: { x0: -11.4, x1: 0.8, z0: -2, depth: 3.6 }, house: [-8, 0, -5.5] }, parts: [{ id: "flag", kind: "flag", params: { at: [16, 0, -9], w: 3, pole: 5 } }, { id: "dig", kind: "dig", params: {} }], beats: [] };
+  const r = placeLifeProps(lay, homeView(lay), projectBox);
+  assert.deepEqual(r.moved, ["flag"]);
+  const at = r.layout.parts[0].params.at;
+  assert.ok(at[0] < 4 && at[0] > -14 && at[2] < -2, JSON.stringify(at));
+  // already beside the action: left where it is
+  const near = { ...lay, parts: [{ ...lay.parts[0], params: { ...lay.parts[0].params, at: [-1, 0, -3.2] } }, lay.parts[1]] };
+  assert.deepEqual(placeLifeProps(near, homeView(near), projectBox).moved, []);
 });

@@ -7,8 +7,13 @@
 //  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
 import { boxCenter, focusOf, union } from "./focus.js";
+import { LENS, CAMERA_LIMITS, measureKey, subjectBox, turnBetween } from "./framing.js";
 
-export const LENS = Object.freeze({ vfov: 35, aspect: 1080 / 1920 });
+export { LENS };
+// the shot vocabulary, measured on the hand-built paths (m2/shotStudy.mjs): the camera's distance as a share of the
+// home distance. home 1.0; wide 0.85-0.97; mid 0.6-0.8; close 0.35-0.5 (the crack, the newspaper); detail 0.17 (the
+// pipe's holes). A shot with a type is placed by it (its view direction from VIEWS, aimed at its parts' centre).
+export const SHOTS = Object.freeze({ wide: 0.9, mid: 0.7, close: 0.42, detail: 0.2 });
 export const BANDS = Object.freeze({ card: [0.25, 0.35], caption: [0.47, 0.57] });
 export const ZONES = Object.freeze({ top: [0.06, 0.245], mid: [0.355, 0.465], bottom: [0.575, 0.95] });
 // view directions (from the target toward the camera); home is the French drain's home angle
@@ -111,7 +116,10 @@ export function homeView(layout) {
 
 /**
  * The camera keys for a layout. shots: [{ t (s, the sentence start), focus: [partIds] | "home", box? (a region instead),
- *   view, width, zone, hero? (the named part: kept clear of the bands), scale? (home) }],
+ *   view, width | type (SHOTS), zone, hero? (the named part: kept clear of the bands), scale? (home) }],
+ * The first shot, when it starts the hook, is the opening frame itself (no establishing shot before it). Every shot
+ * keeps the main subject in view, with little empty lawn or sky (CAMERA_LIMITS): one that does not is re-aimed
+ * toward the subject, then widened to hold both, then replaced by the home view.
  * sorted; marks: the compiler's end marks. Returns { end, noend, notes, frames: [{t, ids, rect, ok, why}] }.
  */
 export function directCamera(layout, shots, marks) {
@@ -120,6 +128,15 @@ export function directCamera(layout, shots, marks) {
   const home = homeView(layout);
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
+  const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
+  const passes = (k) => { const m = measureKey(layout, k.pos, k.tgt); return { ok: m.empty <= CAMERA_LIMITS.emptyMax - 0.02 && m.subject >= CAMERA_LIMITS.subjectMin + 0.01, m }; };
+  // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
+  const anchor = (k, box, s) => {
+    let p = passes(k); if (p.ok) return { k, m: p.m, how: null };
+    for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
+    for (const w of [0.7, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? "home", width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
+    return { k: home, m: passes(home).m, how: "replaced by the home view" };
+  };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
   for (const s of shots) {
     const start = s.t - MOVE.lead;
@@ -130,13 +147,22 @@ export function directCamera(layout, shots, marks) {
       const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
       let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : MIN_FIELD });
+      // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
+      if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
       for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
       // the part itself on screen (the framed box may be wider: MIN_FIELD)
       const real = projectBox(f.pos, f.tgt, union(boxes));
-      frames.push({ t: s.t, ids, hero: !!s.hero, rect: real, zone: f.zone, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
-      k = f;
+      // the hero keeps its own frame (the bands rule); every other shot is anchored on the subject
+      const an = s.hero ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
+      if (an.how) notes.push(`shot at ${s.t.toFixed(2)} s (${ids}): ${an.how} (it was ${(passes(f).m.empty * 100).toFixed(0)}% empty, ${(passes(f).m.subject * 100).toFixed(0)}% on the subject)`);
+      const realA = projectBox(an.k.pos, an.k.tgt, union(boxes));
+      frames.push({ t: s.t, ids, hero: !!s.hero, rect: an.how ? realA : real, zone: f.zone, measure: an.m, anchored: an.how, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
+      k = an.k.pos ? { pos: an.k.pos, tgt: an.k.tgt } : an.k;
+      // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
+      if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }
+    if (turnBetween(cur, k) > CAMERA_LIMITS.turnMax) notes.push(`shot at ${s.t.toFixed(2)} s turns ${turnBetween(cur, k).toFixed(0)} degrees (the hand-built paths turn at most ${CAMERA_LIMITS.turnMax})`);
     if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));
     push(s.t + MOVE.settle, k);
     cur = k; lastMove = start;
