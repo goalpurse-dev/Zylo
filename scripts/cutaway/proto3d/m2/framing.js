@@ -67,6 +67,16 @@ function hitBox(o, d, b) {
   return t0;
 }
 
+// (the end sign is left out: it is only there for the end card)
+// what a part fills on screen: its focus box, except the thin side-story props (a book, a sheet, a flag), whose focus
+// boxes are padded for framing and would count the lawn round them as filled
+function solidOf(p, cut) {
+  const q = p.params ?? {};
+  if ((p.kind === "book" || p.kind === "sheet") && q.to) { const w = (q.w ?? 1.8) / 2, h = (q.h ?? 2.4) / 2; return { min: [q.to[0] - w, q.to[1] - h, q.to[2] - 0.2], max: [q.to[0] + w, q.to[1] + h, q.to[2] + 0.2] }; }
+  if (p.kind === "flag" && q.at) return { min: [q.at[0], q.at[1] + (q.pole ?? 2.6) - (q.h ?? 1.2), q.at[2] - 0.1], max: [q.at[0] + (q.w ?? 1.8), q.at[1] + (q.pole ?? 2.6), q.at[2] + 0.1] };
+  return focusOf(p, cut);
+}
+
 const inside = (p, b, pad = 0) => p.every((v, i) => v >= b.min[i] - pad && v <= b.max[i] + pad);
 
 /** the rays of a camera key, n x m over the frame: [{ x, y, o, d }] */
@@ -85,7 +95,7 @@ function rays(pos, tgt, n = 18, m = 32) {
  */
 export function measureKey(L, pos, tgt) {
   const cut = cutOf(L), subj = subjectBox(L);
-  const solids = [...sceneryBoxes(L), ...L.parts.map((p) => (["rain", "light"].includes(p.kind) ? null : focusOf(p, cut))).filter(Boolean)];
+  const solids = [...sceneryBoxes(L), ...L.parts.map((p) => (["rain", "light", "sign"].includes(p.kind) ? null : solidOf(p, cut))).filter(Boolean)];
   let sky = 0, lawn = 0, onSubject = 0;
   const R = rays(pos, tgt);
   for (const { o, d } of R) {
