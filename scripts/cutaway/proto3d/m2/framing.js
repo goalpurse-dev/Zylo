@@ -23,11 +23,24 @@ const FAR = 90;
 
 export const cutOf = (L) => L.world?.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
 
+/** a setting's solid boxes (kit/backdrops.js): what stands behind and around the cut */
+export function settingBoxes(B) {
+  if (!B) return [];
+  const back = B.back;
+  switch (B.type) {
+    case "street": { const b = back ?? -8; return [{ min: [-14, 0, b - 6], max: [14, 7.5, b] }]; }
+    case "garage": { const b = back ?? -9, x = B.x ?? 0; return [{ min: [x - 4.7, 0, b - 7], max: [x + 4.7, 4.9, b] }, { min: [x - 14.7, 0, b - 7], max: [x - 4.7, 8, b] }]; }
+    case "room": { const b = back ?? -7, x0 = B.x0 ?? -9, x1 = B.x1 ?? 9, h = B.h ?? 4.2; return [{ min: [x0 - 3, 0, b - 6.2], max: [x1 + 3, h + 6, b - 2.2] }, { min: [x0, 0, b - 0.35], max: [x1, h + 0.8, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h + 0.8, 0] }, { min: [x0 - 0.35, h, b - 0.35], max: [x1 + 0.4, h + 0.8, 0.4] }]; }
+    case "carwash": { const b = back ?? -8, x0 = B.x0 ?? -7, x1 = B.x1 ?? 7, h = B.h ?? 5.2; return [{ min: [x0, 0, b - 0.3], max: [x1, h + 0.5, b] }, { min: [x0 - 0.4, 0, b], max: [x0, h + 0.5, 0] }, { min: [x0 - 0.3, h, b - 0.3], max: [x1 + 0.3, h + 0.5, 0.2] }]; }
+    default: return [];
+  }
+}
+
 /** the house's box (or null), and the setting's backdrop box (or null) */
 export function sceneryBoxes(L) {
   const W = L.world ?? {}, out = [];
   if (W.house !== false) { const h = Array.isArray(W.house) ? W.house : [-8, 0, -30]; out.push({ min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] }); }
-  if (W.backdrop?.type === "street") { const b = W.backdrop.back ?? -8; out.push({ min: [-14, 0, b - 6], max: [14, 7.5, b] }); }
+  out.push(...settingBoxes(W.backdrop));
   for (const b of W.backdrop?.boxes ?? []) out.push(b); // a setting may list its own solid boxes (walls, a canopy)
   return out;
 }

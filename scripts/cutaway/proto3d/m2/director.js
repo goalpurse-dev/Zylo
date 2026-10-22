@@ -7,7 +7,7 @@
 //  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
 import { boxCenter, focusOf, union } from "./focus.js";
-import { LENS, CAMERA_LIMITS, measureKey, subjectBox, turnBetween } from "./framing.js";
+import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 
 export { LENS };
 // the shot vocabulary, measured on the hand-built paths (m2/shotStudy.mjs): the camera's distance as a share of the
@@ -106,7 +106,10 @@ export function homeView(layout) {
   const W = layout.world ?? {}, cut = W.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
   const h = Array.isArray(W.house) ? W.house : [-8, 0, -30];
   // what stands behind the cut: the house, or a street's shop fronts, or (a park, no house) just the lawn around the cut
-  const behind = W.backdrop?.type === "street" ? { min: [-6, 0, (W.backdrop.back ?? -8) - 0.8], max: [6, 7.5, (W.backdrop.back ?? -8)] }
+  // a room or a car wash bay: its walls and ceiling frame the cut (the whole interior in view); a garage: its door
+  const inner = ["room", "carwash"].includes(W.backdrop?.type) ? union(settingBoxes(W.backdrop)) : W.backdrop?.type === "garage" ? settingBoxes(W.backdrop)[0] : null;
+  const behind = inner ? { min: [Math.max(inner.min[0], cut.x0 - 6), 0, inner.max[2] - 1], max: [Math.min(inner.max[0], cut.x1 + 6), inner.max[1], inner.max[2]] }
+    : W.backdrop?.type === "street" ? { min: [-6, 0, (W.backdrop.back ?? -8) - 0.8], max: [6, 7.5, (W.backdrop.back ?? -8)] }
     : W.house === false ? { min: [cut.x0 - 3, 0, cut.z0 - 3], max: [cut.x1 + 3, 3, 0] }
     : { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] };
   const box = union([{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }, behind]);

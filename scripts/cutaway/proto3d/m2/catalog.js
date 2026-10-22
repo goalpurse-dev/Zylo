@@ -21,6 +21,14 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     with taller buildings behind. It suits city things: a vending machine, a fire hydrant, a manhole, a bus stop, a storm drain.
     The sidewalk top is y 0.12, so props stand at y 0.12, and the world's cut is left open in it.
   world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
+  world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
+    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door, a water heater, a sump.
+  world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX}: a room in section: a wood floor (top y 0.12)
+    over the cut ground, a back wall with a window, the left wall, the ceiling and a roof slice; an armchair, a lamp, a rug.
+    It suits things inside a home: an air conditioner, a radiator, a toilet, a sump pump in the floor, a smoke detector.
+  world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
+    y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
+  The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
   world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
     world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak

@@ -8,6 +8,8 @@ import { placeLifeProps } from "./framing.js";
 export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
 export const SHOT_TYPES = Object.keys(SHOTS);
+// the settings besides the yard (kit/backdrops.js)
+export const SETTINGS = ["street", "park", "garage", "room", "carwash"];
 
 const obj = (properties) => ({ type: "object", properties, required: Object.keys(properties), additionalProperties: false });
 const str = { type: "string" }, num = { type: "number" }, int = { type: "integer" }, bool = { type: "boolean" };
@@ -55,8 +57,8 @@ export function layoutFromScene(scene, { key, title, roles }) {
   if (scene.world.worker !== true) world.worker = false;
   if (scene.world.moreTrees === false) world.moreTrees = false;
   if (scene.world.road === false) world.road = false;
-  if (scene.world.backdrop && ["street", "park"].includes(scene.world.backdrop.type)) world.backdrop = scene.world.backdrop;
-  else if (scene.world.backdrop) problems.push(`world.backdrop type "${scene.world.backdrop.type}": use street or park, or leave it out for the yard`);
+  if (scene.world.backdrop && SETTINGS.includes(scene.world.backdrop.type)) world.backdrop = scene.world.backdrop;
+  else if (scene.world.backdrop) problems.push(`world.backdrop type "${scene.world.backdrop.type}": use ${SETTINGS.join(", ")}, or leave it out for the yard`);
   if (scene.world.porch === false) world.porch = false;
   if (scene.world.trees?.length === 2) world.trees = scene.world.trees;
   if (Array.isArray(scene.world.road) && scene.world.road.length === 3) world.road = scene.world.road;
