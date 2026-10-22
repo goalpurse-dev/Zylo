@@ -8,6 +8,8 @@
 //   trees [[x, z, s?], ...]            the two big trees;  road [x, y, z]  where the road lies
 //   roots {pad, to}                    roots in the cut's span (+ pad) move right of x = to
 //   rocksAvoid [[x0, x1, y0, y1], ...] no rocks or roots of the cut face in these boxes (pipe runs, soak pits)
+//   house: false, worker: false, moreTrees: false (the four far trees), road: false   leave those out
+//   backdrop {type: "street" | "park", ...}  a setting other than the yard (kit/backdrops.js)
 //   sat (1.38)                         the grading saturation (set by the runner when a topic measures outside 0.38-0.45)
 import fs from "node:fs";
 import path from "node:path";
@@ -22,7 +24,7 @@ export function makePage(layout) {
   const cut = (from, to) => { const a = s.indexOf(from), b = s.indexOf(to); if (a < 0 || b < 0 || b < a) throw new Error(`markers not found: ${from} / ${to}`); s = s.slice(0, a) + s.slice(b); };
   const n = (v) => String(v);
 
-  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";');
+  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";');
   rep('const R = Number(Q.get("r") ?? 1);', `const R = 1;\nconst M2_LAYOUT = await (await fetch("/m2run/${layout.key}.layout.json")).json();\nconst M2_TL = await (await fetch("/m2run/${layout.key}.timeline.json")).json();`);
   if (W.cut) rep("const PIT = { x0: -5, x1: 5, z0: -8, depth: 6 }", `const PIT = { x0: ${n(W.cut.x0)}, x1: ${n(W.cut.x1)}, z0: ${n(W.cut.z0)}, depth: ${n(W.cut.depth)} }`);
   // a wet lawn (rain)
@@ -54,10 +56,14 @@ export function makePage(layout) {
   // the static landfill parts and the static truck + flying bags
   cut("// ---------------- the scene ----------------", "// house: R1 detailed");
   cut("// dump truck tipping, two bags in the air", "// worker");
-  if (W.house) rep("const g = new THREE.Group(); g.position.set(-8, 0, -30); scene.add(g);", `const g = new THREE.Group(); g.position.set(${W.house.map(n).join(", ")}); scene.add(g);`);
+  if (W.house === false) cut("// house: R1 detailed", "// trees");
+  if (W.worker === false) cut("// worker", "// R3: grass tufts");
+  if (W.moreTrees === false) rep("tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
+  if (W.road === false) rep("road.receiveShadow = true; scene.add(road); }", "road.receiveShadow = true; }");
+  if (Array.isArray(W.house)) rep("const g = new THREE.Group(); g.position.set(-8, 0, -30); scene.add(g);", `const g = new THREE.Group(); g.position.set(${W.house.map(n).join(", ")}); scene.add(g);`);
   if (W.porch === false) rep("box(P.trim, 3.2, 0.18, 1.4, 0, 2.9, Dd / 2 + 0.7, g, 0.03); for (const x of [-1.4, 1.4]) cyl(P.trim, 0.09, 2.8, x, 1.4, Dd / 2 + 1.3, g); ", "");
   if (W.trees) rep("tree(-13, -11.5); tree(14, -3.4, 0.9);", W.trees.map((a) => `tree(${a.map(n).join(", ")});`).join(" "));
-  if (W.road) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
+  if (Array.isArray(W.road)) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41
   rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;");
   rep("hemi: 0.15, sat: 1.12,", `hemi: 0.15, sat: Number(Q.get("satR1") ?? ${n(W.sat ?? 1.38)}),`);
@@ -65,6 +71,7 @@ export function makePage(layout) {
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{
   const ctx = { THREE, scene, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {} };
+  if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, M2_LAYOUT.world.backdrop);
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
   window.renderAt = (t) => { run.update(t, camera); composer.render(); return true; };

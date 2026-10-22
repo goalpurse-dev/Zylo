@@ -99,8 +99,12 @@ const scaleView = (k, f) => drift(k, f);
 export function homeView(layout) {
   if (layout.camera?.home) return layout.camera.home;
   const W = layout.world ?? {}, cut = W.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
-  const h = W.house ?? [-8, 0, -30];
-  const box = union([{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }, { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] }]);
+  const h = Array.isArray(W.house) ? W.house : [-8, 0, -30];
+  // what stands behind the cut: the house, or a street's shop fronts, or (a park, no house) just the lawn around the cut
+  const behind = W.backdrop?.type === "street" ? { min: [-6, 0, (W.backdrop.back ?? -8) - 0.8], max: [6, 7.5, (W.backdrop.back ?? -8)] }
+    : W.house === false ? { min: [cut.x0 - 3, 0, cut.z0 - 3], max: [cut.x1 + 3, 3, 0] }
+    : { min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] };
+  const box = union([{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }, behind]);
   const f = frameBox(box, { view: "home", width: 0.9, zone: "center" });
   return { pos: f.pos, tgt: f.tgt };
 }

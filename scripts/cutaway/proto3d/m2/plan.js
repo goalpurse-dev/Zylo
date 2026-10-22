@@ -47,10 +47,14 @@ export function layoutFromScene(scene, { key, title, roles }) {
   if (!scene?.world?.cut || !Array.isArray(scene.parts) || !Array.isArray(scene.beats) || !scene.audio) return { layout: { key, title, roles, world: { cut: {} }, parts: [], cues: [], beats: [], audio: {} }, problems: [`the scene needs world.cut, parts, beats and audio${scene?._bad ? ` (sceneJson is not JSON: ${scene._bad})` : ""}`] };
   const [x0, x1, z0, depth] = scene.world.cut;
   const world = { cut: { x0, x1, z0, depth } };
-  if (scene.world.house?.length === 3) world.house = scene.world.house;
+  if (scene.world.house === false) world.house = false; else if (scene.world.house?.length === 3) world.house = scene.world.house;
+  for (const k of ["worker", "moreTrees"]) if (scene.world[k] === false) world[k] = false;
+  if (scene.world.road === false) world.road = false;
+  if (scene.world.backdrop && ["street", "park"].includes(scene.world.backdrop.type)) world.backdrop = scene.world.backdrop;
+  else if (scene.world.backdrop) problems.push(`world.backdrop type "${scene.world.backdrop.type}": use street or park, or leave it out for the yard`);
   if (scene.world.porch === false) world.porch = false;
   if (scene.world.trees?.length === 2) world.trees = scene.world.trees;
-  if (scene.world.road?.length === 3) world.road = scene.world.road;
+  if (Array.isArray(scene.world.road) && scene.world.road.length === 3) world.road = scene.world.road;
   if (scene.world.rocksAvoid?.length) { world.rocksAvoid = scene.world.rocksAvoid; world.roots = { pad: 0.8, to: Math.max(7, x1 + 2) }; }
   const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
   const beats = scene.beats.map((b) => ({
@@ -77,7 +81,7 @@ export function sceneFromLayout(L) {
   const at = (a) => ({ s: a.s, w: a.w ?? "", o: a.o ?? 0 });
   return {
     why: `${L.title}: the saved layout.`,
-    world: { cut: [L.world.cut.x0, L.world.cut.x1, L.world.cut.z0, L.world.cut.depth], house: L.world.house ?? [], porch: L.world.porch !== false, trees: L.world.trees ?? [], road: L.world.road ?? [], rocksAvoid: L.world.rocksAvoid ?? [] },
+    world: { cut: [L.world.cut.x0, L.world.cut.x1, L.world.cut.z0, L.world.cut.depth], house: L.world.house ?? [], porch: L.world.porch !== false, trees: L.world.trees ?? [], road: L.world.road ?? [], rocksAvoid: L.world.rocksAvoid ?? [], ...(L.world.backdrop ? { backdrop: L.world.backdrop } : {}), ...(L.world.worker === false ? { worker: false } : {}), ...(L.world.moreTrees === false ? { moreTrees: false } : {}) },
     parts: L.parts.map((p) => ({ id: p.id, kind: p.kind, params: p.params ?? {}, ...(p.base ? { base: p.base } : {}) })),
     beats: L.beats.map((b) => ({
       s: b.s,

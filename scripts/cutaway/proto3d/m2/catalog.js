@@ -15,6 +15,14 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 - world.trees [[x, z, scale?], [x, z, scale?]]: the two big trees; world.road [x, 0.01, z]: the road (it runs along z).
 - world.roots {pad, to}: roots near the cut move right of x = to;  world.rocksAvoid [[x0, x1, y0, y1], ...]: no rocks
   or roots on the face in these boxes (pipe runs, pits you will build in the face).
+- THE SETTING: pick the one that fits the topic; the videos must not all look the same.
+  The yard (the default: lawn, house, trees, road) suits things around a house: drains, wells, septic tanks, pools, gutters.
+  world.backdrop {type: "street", sign: "SHOP NAME", lampX, benchX}: a sidewalk over the cut ground in front of shop fronts,
+    with taller buildings behind. It suits city things: a vending machine, a fire hydrant, a manhole, a bus stop, a storm drain.
+    The sidewalk top is y 0.12, so props stand at y 0.12, and the world's cut is left open in it.
+  world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
+  world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
+    world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
   (water soaking down from a soak pit) paint the face itself.`;
 

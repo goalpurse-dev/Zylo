@@ -148,7 +148,7 @@ export function miniMachines(ctx, p, api) {
   const [x0, x1, z0, z1] = p.area ?? [-12, 12, -16, -5];
   const n = p.count ?? 60;
   for (let i = 0; i < n; i++) {
-    const g = new THREE.Group(); const x = x0 + rnd() * (x1 - x0), z = z0 + rnd() * (z1 - z0); g.position.set(x, 0, z); g.rotation.y = (rnd() - 0.5) * 0.5; scene.add(g);
+    const g = new THREE.Group(); let x = x0 + rnd() * (x1 - x0); const z = z0 + rnd() * (z1 - z0); if (p.avoid && x > p.avoid[0] && x < p.avoid[1]) x = x < (p.avoid[0] + p.avoid[1]) / 2 ? p.avoid[0] - 0.5 - rnd() : p.avoid[1] + 0.5 + rnd(); g.position.set(x, p.y ?? 0, z); g.rotation.y = (rnd() - 0.5) * 0.5; scene.add(g);
     const m = new THREE.Mesh(new RoundedBoxGeometry(0.7, 1.2, 0.5, 2, 0.05), std({ color: C(cols[i % cols.length]), roughness: 0.4 })); m.position.y = 0.6; m.castShadow = true; g.add(m);
     const w = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.6), std({ color: C("#dbeaf5"), roughness: 0.1, emissive: C("#cfe6ff"), emissiveIntensity: 0.25 })); w.position.set(-0.05, 0.7, 0.26); g.add(w);
     g.scale.setScalar(0.001); g.visible = false;
