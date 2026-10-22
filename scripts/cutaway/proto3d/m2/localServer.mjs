@@ -58,6 +58,19 @@ function view(st) {
   };
 }
 
+// a finished run in RUNS (after a restart of this runner, or a run made by m2/run.mjs and copied there)
+function fromDisk(id) {
+  const out = path.join(RUNS, id), rep = path.join(out, "run_report.json");
+  if (!/^[\w-]+$/.test(id) || !fs.existsSync(rep)) return null;
+  const r = JSON.parse(fs.readFileSync(rep, "utf8")), script = JSON.parse(fs.readFileSync(path.join(out, "script.json"), "utf8")), L = JSON.parse(fs.readFileSync(path.join(out, "layout.json"), "utf8"));
+  const post = fs.existsSync(path.join(out, "post.json")) ? JSON.parse(fs.readFileSync(path.join(out, "post.json"), "utf8")) : null;
+  const final = path.relative(out, r.files.end).split(path.sep).join("/");
+  const frames = fs.existsSync(path.join(out, "preview_small")) ? fs.readdirSync(path.join(out, "preview_small")).filter((f) => f.endsWith(".jpg")).sort().map((f) => `preview_small/${f}`) : [];
+  const st = { id, topic: r.topic, lengthSec: r.lengthSec, endCard: true, reuse: r.reuse, step: "done", stepAt: Date.now(), renderPct: 100, title: script.title, narration: script.sentences.map((x) => x.text).join(" "), facts: script.facts ?? [], parts: L.parts.map((p) => pretty(p.id)), frames, final, poster: frames.at(-1), post, costUsd: r.totalUsd, doneAt: Date.now() - 60000, createdAt: new Date(fs.statSync(rep).mtimeMs).toISOString() };
+  runs.set(id, st);
+  return st;
+}
+
 async function start(st) {
   const out = path.join(RUNS, st.id);
   const set = (o) => { const stepNow = o.step && o.step !== st.step; Object.assign(st, o); if (stepNow) st.stepAt = Date.now(); };
@@ -110,8 +123,12 @@ async function handle(req, res) {
     start(st);
     return json(200, { id, reuse });
   }
+  if (req.method === "GET" && url.pathname === "/m2api/runs") {
+    const ids = fs.existsSync(RUNS) ? fs.readdirSync(RUNS).filter((d) => fs.existsSync(path.join(RUNS, d, "run_report.json"))) : [];
+    return json(200, ids.map((id) => runs.get(id) ?? fromDisk(id)).filter((st) => st?.step === "done").map(view).sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt))).slice(0, 8));
+  }
   let m = url.pathname.match(/^\/m2api\/runs\/([\w-]+)$/);
-  if (req.method === "GET" && m) { const st = runs.get(m[1]); return st ? json(200, view(st)) : json(404, { error: "no such run" }); }
+  if (req.method === "GET" && m) { const st = runs.get(m[1]) ?? fromDisk(m[1]); return st ? json(200, view(st)) : json(404, { error: "no such run" }); }
   m = url.pathname.match(/^\/m2api\/files\/([\w-]+)\/(.+)$/);
   if (req.method === "GET" && m) {
     const dir = path.join(RUNS, m[1]), f = path.resolve(dir, decodeURIComponent(m[2]));

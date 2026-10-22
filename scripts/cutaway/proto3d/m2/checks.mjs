@@ -44,7 +44,7 @@ export function timelineChecks(layout, tl) {
   if (per10 > 3.5) warnings.push(`${fast.length} fast camera moves in ${M.speechEnd.toFixed(0)} s (${per10.toFixed(1)} per 10 s; the approved videos have about 3)`);
   // the named part: on screen, at least 15% of the width, clear of the bands (the director's hero frame)
   const hero = (tl.director?.frames ?? []).filter((f) => f.ok !== undefined);
-  for (const f of hero) if (f.rect.w < 0.15) problems.push(`the shot at ${f.t.toFixed(1)} s frames ${f.ids} at ${(f.rect.w * 100).toFixed(0)}% of the width (at least 15%)`);
+  for (const f of hero) if (f.rect.w < 0.15) (f.hero ? problems : warnings).push(`the shot at ${f.t.toFixed(1)} s frames ${f.ids} at ${(f.rect.w * 100).toFixed(0)}% of the width (at least 15%)`);
   // beats at least 2.5 s long
   for (const s of tl.sentences) if (s.t1 - s.t0 < 1.0) warnings.push(`sentence ${s.role} lasts only ${(s.t1 - s.t0).toFixed(1)} s`);
   return { problems, warnings, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2) } };

@@ -17,7 +17,7 @@ export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34],
 export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
 // the narrowest field of view in world units (the approved close-ups: the holes ~4 m across, the crack ~5 m)
-export const MIN_FIELD = 6;
+export const MIN_FIELD = 4;
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -130,7 +130,7 @@ export function directCamera(layout, shots, marks) {
       for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
       // the part itself on screen (the framed box may be wider: MIN_FIELD)
       const real = projectBox(f.pos, f.tgt, union(boxes));
-      frames.push({ t: s.t, ids, rect: real, zone: f.zone, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
+      frames.push({ t: s.t, ids, hero: !!s.hero, rect: real, zone: f.zone, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
       k = f;
     }
     if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));

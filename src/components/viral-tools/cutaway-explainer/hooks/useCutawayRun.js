@@ -19,6 +19,12 @@ export default function useCutawayRun() {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  // local mode: the videos already made on this computer fill Recent Creations
+  useEffect(() => {
+    if (!LOCAL_GENERATION) return;
+    fetch("/m2api/runs").then((r) => (r.ok ? r.json() : [])).then((list) => { if (Array.isArray(list) && list.length) setRecent((cur) => (cur.length ? cur : list)); }).catch(() => {});
+  }, []);
+
   // local mode (localhost, VITE_CUTAWAY_LOCAL=1): the real M2 pipeline on this computer, polled once a second
   useEffect(() => {
     if (!run?.local || run.step === "done" || run.step === "failed" || String(run.id).startsWith("pending-")) return undefined;

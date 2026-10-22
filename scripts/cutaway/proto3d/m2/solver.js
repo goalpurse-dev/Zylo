@@ -64,7 +64,7 @@ export function solveLayout(L, sentences) {
     try {
       const words = draftWords(sentences);
       const tl = compile(L, words, words.at(-1).e + 0.1, { roles: sentences.map((s) => s.role) });
-      for (const f of tl.director?.frames ?? []) if (!f.ok) (f.why.some((w) => /wide$/.test(w)) ? problems : warnings).push(`shot at ${f.t.toFixed(1)} s (${f.ids}): ${f.why.join(", ")}`);
+      for (const f of tl.director?.frames ?? []) if (!f.ok) (f.hero && f.why.some((w) => /wide$/.test(w)) ? problems : warnings).push(`shot at ${f.t.toFixed(1)} s (${f.ids}): ${f.why.join(", ")}`);
       for (const n of tl.director?.notes ?? []) warnings.push(`camera: ${n}`);
       // the props on the lawn: overlap each other above ground
       const above = L.parts.filter((p) => ["tank", "machine", "flag", "sign", "boxPop", "shrubs"].includes(p.kind)).map((p) => ({ id: p.id, b: focusOf(p, cut) })).filter((x) => x.b && x.b.min[1] >= -0.05);

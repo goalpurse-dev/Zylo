@@ -233,3 +233,22 @@ for (const [key, wf, tf] of GOLD) {
     if (lay.parts.some((p) => p.kind === "rain")) assert.ok(timelineChecks(bad, tl2).problems.some((p) => /calm/.test(p)));
   });
 }
+
+// ---------- calibration: grading, the field floor, the hero rule ----------
+import { gradingFor, SAT } from "../scripts/cutaway/proto3d/m2/checks.mjs";
+import { MIN_FIELD } from "../scripts/cutaway/proto3d/m2/director.js";
+
+test("m2 grading: inside 0.38-0.45 nothing changes; outside, one step toward 0.42, clamped", () => {
+  assert.equal(gradingFor(0.41), null); assert.equal(gradingFor(0.38), null); assert.equal(gradingFor(0.45), null);
+  assert.ok(Math.abs(gradingFor(0.521) - (SAT.base - (0.521 - 0.42) / SAT.slope)) < 1e-3);
+  assert.equal(gradingFor(0.05), 1.6); assert.equal(gradingFor(0.99), 0.8);
+});
+
+test("m2 director: a thin part is never framed tighter than the field floor, except as the hero", () => {
+  const pipe = { min: [-0.3, -6, -0.4], max: [0.3, 0, 0] };
+  const f = frameBox(pipe, { width: 0.6, fit: "loose" });
+  const fieldW = (pipe.max[0] - pipe.min[0]) / projectBox(f.pos, f.tgt, pipe).w; // world width across the frame
+  assert.ok(fieldW >= MIN_FIELD * 0.8, `field ${fieldW}`); // (the box depth makes the front face read a little wider)
+  const h = frameBox(pipe, { width: 0.3, minField: 0, fit: "loose" });
+  assert.ok(projectBox(h.pos, h.tgt, pipe).w > 0.25);
+});

@@ -1,0 +1,1220 @@
+{
+ "key": "water_well",
+ "title": "How to Build a Water Well",
+ "template": true,
+ "roles": [
+  "hook",
+  "problem",
+  "fix1",
+  "name",
+  "problem2",
+  "fix2",
+  "problem3",
+  "fix3",
+  "myth",
+  "mythFact",
+  "finish",
+  "congrats"
+ ],
+ "world": {
+  "cut": {
+   "x0": -0.7,
+   "x1": 0.7,
+   "z0": -1.4,
+   "depth": 13
+  },
+  "house": [
+   -9,
+   0,
+   -14
+  ],
+  "trees": [
+   [
+    -14.5,
+    -9.5
+   ],
+   [
+    13.5,
+    -5.2,
+    0.9
+   ]
+  ],
+  "road": [
+   8.5,
+   0.01,
+   -57
+  ],
+  "rocksAvoid": [
+   [
+    -8,
+    8,
+    -14,
+    -9.5
+   ],
+   [
+    -1.5,
+    1.5,
+    -14,
+    0.5
+   ]
+  ],
+  "roots": {
+   "pad": 0.8,
+   "to": 7
+  }
+ },
+ "parts": [
+  {
+   "id": "light",
+   "kind": "light",
+   "params": {
+    "storm": true
+   }
+  },
+  {
+   "id": "dig",
+   "kind": "dig",
+   "params": {
+    "clumps": 150,
+    "dark": true,
+    "mound": {
+     "x": 5,
+     "z": -4,
+     "rx": 1.5,
+     "rz": 1.2,
+     "h": 1
+    }
+   }
+  },
+  {
+   "id": "wellWater",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": -0.65,
+     "x1": 0.65,
+     "y0": -13,
+     "y1": -11,
+     "z0": -1.35,
+     "z1": -0.01
+    },
+    "mat": "water"
+   }
+  },
+  {
+   "id": "mud",
+   "kind": "drops",
+   "params": {
+    "x0": -0.55,
+    "x1": 0.55,
+    "count": 60,
+    "fromY": -1,
+    "landY": -12.8,
+    "z": -0.3,
+    "mat": "mud"
+   }
+  },
+  {
+   "id": "caveIn",
+   "kind": "drops",
+   "params": {
+    "x0": -0.6,
+    "x1": 0.6,
+    "count": 70,
+    "fromY": -0.5,
+    "landY": -12.6,
+    "z": -0.3,
+    "mat": "soil"
+   }
+  },
+  {
+   "id": "mudFill",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": -0.68,
+     "x1": 0.68,
+     "y0": -12.98,
+     "y1": -2,
+     "z0": -1.38,
+     "z1": -0.005
+    },
+    "mat": "mud"
+   }
+  },
+  {
+   "id": "leak",
+   "kind": "soilLeak",
+   "params": {
+    "x1": -0.9,
+    "x2": 0.9,
+    "murkX": 0
+   },
+   "base": {
+    "y1": -6,
+    "y2": -6
+   }
+  },
+  {
+   "id": "casing",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      0,
+      0.7,
+      -0.5
+     ],
+     [
+      0,
+      -12.5,
+      -0.5
+     ]
+    ],
+    "r": 0.45,
+    "radial": 24,
+    "joints": false,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "casingOutline",
+   "kind": "outline",
+   "params": {
+    "points": [
+     [
+      -0.75,
+      0.9,
+      0.1
+     ],
+     [
+      -0.75,
+      -12.8,
+      0.1
+     ],
+     [
+      0.75,
+      -12.8,
+      0.1
+     ],
+     [
+      0.75,
+      0.9,
+      0.1
+     ]
+    ]
+   }
+  },
+  {
+   "id": "pump",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.9,
+     1.3,
+     0.5
+    ],
+    "pos": [
+     0,
+     -12,
+     -0.1
+    ],
+    "r": 0.05,
+    "mat": "machineBody"
+   }
+  },
+  {
+   "id": "pushArrows",
+   "kind": "arrows",
+   "params": {
+    "list": [
+     {
+      "at": [
+       0,
+       -9.5,
+       0.35
+      ],
+      "dir": [
+       0,
+       1
+      ],
+      "travel": 2.5,
+      "phase": 0
+     },
+     {
+      "at": [
+       0,
+       -7,
+       0.35
+      ],
+      "dir": [
+       0,
+       1
+      ],
+      "travel": 2.5,
+      "phase": 0.5
+     }
+    ],
+    "opts": {
+     "scale": 0.8
+    }
+   }
+  },
+  {
+   "id": "thinPipe",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      0,
+      -11.5,
+      -0.06
+     ],
+     [
+      0,
+      0.95,
+      -0.06
+     ]
+    ],
+    "r": 0.1,
+    "radial": 12,
+    "joints": false,
+    "mat": "pipeWhite"
+   }
+  },
+  {
+   "id": "thinFlow",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "thinPipe",
+    "count": 18,
+    "size": 0.09,
+    "speed": 3,
+    "dz": 0.12,
+    "mat": "water"
+   }
+  },
+  {
+   "id": "rain",
+   "kind": "rain",
+   "params": {
+    "x0": -14,
+    "x1": 14,
+    "z0": -14,
+    "z1": -0.1,
+    "yTop": 20,
+    "yBot": -0.4,
+    "count": 1200,
+    "width": 0.02,
+    "opacity": 0.36
+   }
+  },
+  {
+   "id": "lawn",
+   "kind": "lawnWet",
+   "params": {}
+  },
+  {
+   "id": "puddles",
+   "kind": "puddles",
+   "params": {
+    "list": [
+     [
+      3,
+      -3.5,
+      1.2,
+      0.8
+     ],
+     [
+      -3,
+      -4,
+      1,
+      0.7
+     ]
+    ],
+    "rise": [
+     0.3,
+     0.2
+    ],
+    "fall": [
+     0.2,
+     0
+    ]
+   }
+  },
+  {
+   "id": "rainArrows",
+   "kind": "arrows",
+   "params": {
+    "list": [
+     {
+      "at": [
+       -0.9,
+       -3,
+       0.3
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3,
+      "phase": 0
+     },
+     {
+      "at": [
+       0.9,
+       -3,
+       0.3
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3,
+      "phase": 0.4
+     }
+    ],
+    "opts": {
+     "scale": 0.9
+    }
+   }
+  },
+  {
+   "id": "seepDirt",
+   "kind": "seepFlow",
+   "params": {
+    "count": 40,
+    "width": 1.3,
+    "y0": -0.4,
+    "fall": 11,
+    "floor": -12.5
+   }
+  },
+  {
+   "id": "clay",
+   "kind": "panels",
+   "params": {
+    "panels": [
+     {
+      "ch": "chL",
+      "mat": "clay",
+      "size": [
+       0.24,
+       8,
+       1.3
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       -0.58,
+       0,
+       -0.7
+      ],
+      "axis": "y",
+      "vis": 0,
+      "r": 0.04
+     },
+     {
+      "ch": "chR",
+      "mat": "clay",
+      "size": [
+       0.24,
+       8,
+       1.3
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       0.58,
+       0,
+       -0.7
+      ],
+      "axis": "y",
+      "vis": 0,
+      "r": 0.04
+     }
+    ]
+   }
+  },
+  {
+   "id": "cap",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     1.1,
+     0.22,
+     1.1
+    ],
+    "pos": [
+     0,
+     0.75,
+     -0.5
+    ],
+    "r": 0.05,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "tank",
+   "kind": "tank",
+   "params": {
+    "pos": [
+     2.6,
+     0,
+     -0.6
+    ],
+    "r": 0.7,
+    "h": 1.5,
+    "bands": [
+     0.5
+    ],
+    "mat": "tankBlue"
+   }
+  },
+  {
+   "id": "link",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      0,
+      0.95,
+      -0.06
+     ],
+     [
+      1.9,
+      0.95,
+      -0.06
+     ]
+    ],
+    "r": 0.08,
+    "radial": 12,
+    "joints": true,
+    "mat": "pipeWhite"
+   }
+  },
+  {
+   "id": "grassL",
+   "kind": "wipe",
+   "params": {
+    "box": {
+     "x0": -1.4,
+     "x1": -0.5,
+     "y0": -0.05,
+     "y1": 0.09,
+     "z0": -1.5,
+     "z1": 0
+    },
+    "mat": "grass",
+    "axis": "x",
+    "r": 0.05,
+    "uvScale": 0.25
+   }
+  },
+  {
+   "id": "grassR",
+   "kind": "wipe",
+   "params": {
+    "box": {
+     "x0": 0.5,
+     "x1": 1.4,
+     "y0": -0.05,
+     "y1": 0.09,
+     "z0": -1.5,
+     "z1": 0
+    },
+    "mat": "grass",
+    "axis": "x",
+    "r": 0.05,
+    "uvScale": 0.25
+   }
+  },
+  {
+   "id": "bushes",
+   "kind": "shrubs",
+   "params": {
+    "list": [
+     [
+      -2.2,
+      -1,
+      0.9
+     ],
+     [
+      -1.2,
+      -1.8,
+      0.8
+     ],
+     [
+      4,
+      -1.5,
+      0.9
+     ]
+    ],
+    "stagger": 0.09
+   }
+  },
+  {
+   "id": "lakeL",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": -10,
+     "x1": -0.75,
+     "y0": -13.5,
+     "y1": -8,
+     "z0": -4,
+     "z1": -0.02
+    },
+    "mat": "water"
+   }
+  },
+  {
+   "id": "lakeR",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": 0.75,
+     "x1": 10,
+     "y0": -13.5,
+     "y1": -8,
+     "z0": -4,
+     "z1": -0.02
+    },
+    "mat": "water"
+   }
+  },
+  {
+   "id": "aquL",
+   "kind": "soakPit",
+   "params": {
+    "box": {
+     "x0": -8,
+     "x1": -0.75,
+     "y0": -14,
+     "y1": -9.5,
+     "z0": -2.4,
+     "z1": 0.015
+    },
+    "faceBox": {
+     "x0": -8,
+     "x1": -0.75,
+     "y0": -14,
+     "y1": -9.5,
+     "z0": -2.3,
+     "z1": 0.04
+    },
+    "mat": "gravelPit",
+    "pebbleMat": "pebblesPit"
+   },
+   "base": {
+    "wetY": -14
+   }
+  },
+  {
+   "id": "aquR",
+   "kind": "soakPit",
+   "params": {
+    "box": {
+     "x0": 0.75,
+     "x1": 8,
+     "y0": -14,
+     "y1": -9.5,
+     "z0": -2.4,
+     "z1": 0.015
+    },
+    "faceBox": {
+     "x0": 0.75,
+     "x1": 8,
+     "y0": -14,
+     "y1": -9.5,
+     "z0": -2.3,
+     "z1": 0.04
+    },
+    "mat": "gravelPit",
+    "pebbleMat": "pebblesPit"
+   },
+   "base": {
+    "wetY": -14
+   }
+  },
+  {
+   "id": "sign",
+   "kind": "sign",
+   "params": {
+    "at": [
+     8.5,
+     0.08,
+     -2
+    ],
+    "rotY": 0.22,
+    "scale": 1.3
+   }
+  }
+ ],
+ "cues": [],
+ "beats": [
+  {
+   "s": "hook",
+   "do": [
+    {
+     "p": "dig",
+     "v": "dig",
+     "w": "dig"
+    },
+    {
+     "p": "wellWater",
+     "v": "flood",
+     "w": "water",
+     "d": 1.2
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -5,
+       -14,
+       -3
+      ],
+      "max": [
+       5,
+       2,
+       1
+      ]
+     },
+     "width": 0.9
+    }
+   ]
+  },
+  {
+   "s": "problem",
+   "do": [
+    {
+     "p": "caveIn",
+     "v": "fall",
+     "w": "walls",
+     "d": 2
+    },
+    {
+     "p": "mud",
+     "v": "fall",
+     "w": "walls",
+     "o": 0.3,
+     "d": 2
+    },
+    {
+     "p": "mudFill",
+     "v": "flood",
+     "w": "fills",
+     "d": 2.2
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -3,
+       -14,
+       -2
+      ],
+      "max": [
+       3,
+       1,
+       1
+      ]
+     },
+     "width": 0.9
+    }
+   ]
+  },
+  {
+   "s": "fix1",
+   "do": [
+    {
+     "p": "mud",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "caveIn",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "mudFill",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "casing",
+     "v": "grow",
+     "w": "slide",
+     "d": 2
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "casing"
+     ],
+     "width": 0.5
+    }
+   ]
+  },
+  {
+   "s": "name",
+   "do": [
+    {
+     "p": "casingOutline",
+     "v": "show",
+     "w": "well"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "casing"
+     ],
+     "width": 0.5,
+     "hero": true
+    }
+   ]
+  },
+  {
+   "s": "problem2",
+   "do": [
+    {
+     "p": "casingOutline",
+     "v": "hide",
+     "w": "But"
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -3,
+       -14,
+       -1
+      ],
+      "max": [
+       3,
+       1,
+       1
+      ]
+     },
+     "view": "low",
+     "width": 0.9
+    }
+   ]
+  },
+  {
+   "s": "fix2",
+   "do": [
+    {
+     "p": "pump",
+     "v": "show",
+     "w": "pump"
+    },
+    {
+     "p": "pushArrows",
+     "v": "show",
+     "w": "push"
+    },
+    {
+     "p": "thinPipe",
+     "v": "grow",
+     "w": "push",
+     "d": 1.6
+    },
+    {
+     "p": "thinFlow",
+     "v": "show",
+     "w": "water"
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -3.5,
+       -14,
+       -1
+      ],
+      "max": [
+       3.5,
+       -6,
+       1
+      ]
+     },
+     "view": "low",
+     "width": 0.9
+    },
+    {
+     "box": {
+      "min": [
+       -4,
+       -14,
+       -1
+      ],
+      "max": [
+       4,
+       2,
+       1
+      ]
+     },
+     "view": "low",
+     "width": 0.9,
+     "at": {
+      "s": "fix2",
+      "w": "push"
+     }
+    }
+   ]
+  },
+  {
+   "s": "problem3",
+   "do": [
+    {
+     "p": "pushArrows",
+     "v": "hide",
+     "w": "But"
+    },
+    {
+     "p": "light",
+     "v": "storm",
+     "w": "But"
+    },
+    {
+     "p": "rain",
+     "v": "start",
+     "w": "But"
+    },
+    {
+     "p": "lawn",
+     "v": "wet",
+     "w": "But"
+    },
+    {
+     "p": "puddles",
+     "v": "rise",
+     "w": "runs"
+    },
+    {
+     "p": "rainArrows",
+     "v": "show",
+     "w": "down"
+    },
+    {
+     "p": "seepDirt",
+     "v": "show",
+     "w": "carrying"
+    },
+    {
+     "p": "leak",
+     "v": "murk",
+     "w": "dirt"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "casing"
+     ],
+     "width": 0.7
+    }
+   ]
+  },
+  {
+   "s": "fix3",
+   "do": [
+    {
+     "p": "rainArrows",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "seepDirt",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "clay",
+     "v": "grow",
+     "w": "pour",
+     "d": 1.6,
+     "ch": "chL"
+    },
+    {
+     "p": "clay",
+     "v": "grow",
+     "w": "pour",
+     "d": 1.6,
+     "ch": "chR"
+    },
+    {
+     "p": "rain",
+     "v": "stop",
+     "w": "swells"
+    },
+    {
+     "p": "light",
+     "v": "clear",
+     "w": "swells"
+    },
+    {
+     "p": "puddles",
+     "v": "dry",
+     "w": "swells",
+     "d": 2.5
+    },
+    {
+     "p": "lawn",
+     "v": "dry",
+     "w": "shut"
+    },
+    {
+     "p": "leak",
+     "v": "clear1",
+     "w": "shut"
+    },
+    {
+     "p": "leak",
+     "v": "clear2",
+     "w": "shut"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "clay"
+     ],
+     "width": 0.5
+    }
+   ]
+  },
+  {
+   "s": "myth",
+   "do": [
+    {
+     "p": "lakeL",
+     "v": "flood",
+     "w": "well",
+     "d": 1
+    },
+    {
+     "p": "lakeR",
+     "v": "flood",
+     "w": "well",
+     "d": 1
+    },
+    {
+     "p": "lakeL",
+     "v": "hide",
+     "w": "lake",
+     "o": 0.5
+    },
+    {
+     "p": "lakeR",
+     "v": "hide",
+     "w": "lake",
+     "o": 0.5
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "lakeL",
+      "lakeR"
+     ],
+     "width": 1
+    }
+   ]
+  },
+  {
+   "s": "mythFact",
+   "do": [
+    {
+     "p": "aquL",
+     "v": "grow",
+     "w": "sand",
+     "d": 1.2
+    },
+    {
+     "p": "aquR",
+     "v": "grow",
+     "w": "sand",
+     "d": 1.2
+    },
+    {
+     "p": "aquL",
+     "v": "wet",
+     "w": "filling"
+    },
+    {
+     "p": "aquR",
+     "v": "wet",
+     "w": "filling"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "aquR"
+     ],
+     "view": "low",
+     "width": 0.8
+    }
+   ]
+  },
+  {
+   "s": "finish",
+   "do": [
+    {
+     "p": "cap",
+     "v": "show",
+     "w": "cap"
+    },
+    {
+     "p": "tank",
+     "v": "show",
+     "w": "tank"
+    },
+    {
+     "p": "link",
+     "v": "grow",
+     "w": "tank",
+     "o": 0.3,
+     "d": 0.8
+    },
+    {
+     "p": "grassL",
+     "v": "grow",
+     "w": "grass",
+     "d": 0.9
+    },
+    {
+     "p": "grassR",
+     "v": "grow",
+     "w": "grass",
+     "d": 0.9
+    },
+    {
+     "p": "bushes",
+     "v": "show",
+     "w": "around"
+    }
+   ],
+   "shots": [
+    {
+     "focus": "home"
+    }
+   ]
+  },
+  {
+   "s": "congrats",
+   "do": [],
+   "shots": [
+    {
+     "focus": "home"
+    }
+   ]
+  }
+ ],
+ "audio": {
+  "cards": [
+   {
+    "text": "500 FEET",
+    "at": {
+     "s": "problem2",
+     "w": "500"
+    },
+    "d": 1.8
+   }
+  ],
+  "sfx": [
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "hook",
+     "w": "dig",
+     "o": 0.05
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "water_rush",
+    "at": {
+     "s": "hook",
+     "w": "water"
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "problem",
+     "w": "walls"
+    },
+    "d": 1.5
+   },
+   {
+    "lib": "motor_hum",
+    "at": {
+     "s": "fix2",
+     "w": "pump"
+    },
+    "d": 2
+   },
+   {
+    "lib": "drip",
+    "at": {
+     "s": "problem3",
+     "w": "carrying"
+    },
+    "d": 1.3
+   },
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "fix3",
+     "w": "pour"
+    },
+    "d": 1.2
+   }
+  ],
+  "chimes": [
+   {
+    "s": "problem2",
+    "w": "500"
+   },
+   {
+    "s": "name"
+   },
+   {
+    "s": "congrats"
+   }
+  ],
+  "rain": {
+   "from": {
+    "s": "problem3",
+    "w": "But"
+   },
+   "to": {
+    "s": "fix3",
+    "w": "swells"
+   },
+   "underDb": 24
+  }
+ },
+ "why": "A cutaway of a narrow well shaft: the hole is dug, a steel casing slides in, a pump and thin pipe reach the water, and clay seals the outside of the pipe. The fix is that both clay panels now anchor at [0,-1,0] with pos y = 0, so they grow down from the surface instead of up above the ground. Everything else is unchanged.",
+ "approved": false,
+ "savedFrom": "work/m2run_water_well",
+ "savedAt": "2026-10-22T09:46:37.795Z"
+}
