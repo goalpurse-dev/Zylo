@@ -1216,5 +1216,67 @@
  "why": "A cutaway of a narrow well shaft: the hole is dug, a steel casing slides in, a pump and thin pipe reach the water, and clay seals the outside of the pipe. The fix is that both clay panels now anchor at [0,-1,0] with pos y = 0, so they grow down from the surface instead of up above the ground. Everything else is unchanged.",
  "approved": false,
  "savedFrom": "work/m2run_water_well",
- "savedAt": "2026-10-22T09:46:37.795Z"
+ "savedAt": "2026-10-22T09:46:37.795Z",
+ "facts": [
+  {
+   "index": 0,
+   "verdict": "keep",
+   "claim": "Some private home wells are drilled to depths of over 500 feet to reach water.",
+   "why": "Well-drilling and consumer sources say most private wells run 100 to 500 feet, but some go past 500 feet and a few past 1,000. \"Some\" fits as written.",
+   "sources": [
+    {
+     "url": "https://www.angi.com/articles/deep-well-vs-shallow-well.htm",
+     "title": "Deep Well vs. Shallow Well: What's the Difference?"
+    },
+    {
+     "url": "https://www.middlegawater.com/how-deep-should-your-water-well-be",
+     "title": "How Deep Should Your Water Well Be?"
+    },
+    {
+     "url": "https://www.northstarwellservice.com/how-deep-should-your-water-well-be",
+     "title": "How Deep Should Your Water Well Be?"
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "verdict": "keep",
+   "claim": "Bentonite clay used to seal around a well casing swells to many times its dry volume when it gets wet.",
+   "why": "Water Well Journal reports that bentonite swells roughly 8 to 15 times its dry volume when hydrated. \"Swells shut when wet\" matches this.",
+   "sources": [
+    {
+     "url": "https://waterwelljournal.com/cement-or-bentonite-annular-well-seals/",
+     "title": "Cement or Bentonite Annular Well Seals"
+    },
+    {
+     "url": "https://waterwelljournal.com/grouting-with-bentonite/",
+     "title": "Grouting with Bentonite"
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "verdict": "reword",
+   "claim": "Well water comes from groundwater held in tiny gaps in sand and rock, not from underground lakes.",
+   "why": "USGS says groundwater fills pores or cracks in soil and rock, and is not simply underground lakes or rivers. Underground lakes occasionally exist in caves, so the script should say \"almost never\" or \"generally\" rather than flatly deny them.",
+   "sources": [
+    {
+     "url": "https://pubs.usgs.gov/gip/gw/how_a.html",
+     "title": "How Ground Water Occurs"
+    },
+    {
+     "url": "https://www.usgs.gov/mission-areas/water-resources/science/groundwater-basics",
+     "title": "Groundwater Basics"
+    },
+    {
+     "url": "https://profession.americangeosciences.org/collections/visual-explainers/aquifer-recharge/understanding-aquifers/",
+     "title": "What an Aquifer Actually Is - Geoscience Profession"
+    },
+    {
+     "url": "http://academic.brooklyn.cuny.edu/geology/grocha/groundwater/",
+     "title": "Brooklyn College - Earth and Environmental Sciences - Groundwater"
+    }
+   ]
+  }
+ ]
 }

@@ -91,7 +91,9 @@ async function start(st) {
     if (!st.reuse) {
       const L = JSON.parse(fs.readFileSync(path.join(out, "layout.json"), "utf8"));
       const key = classifyTopic(st.topic).premade ?? keyOf(st.topic);
-      fs.writeFileSync(path.join(LAYOUTS, `${key}.template.json`), JSON.stringify({ ...L, key, template: true, approved: false, savedFrom: st.id, savedAt: new Date().toISOString() }, null, 1));
+      // its checked facts go with it: the next video of this topic needs no new fact-check
+      const facts = JSON.parse(fs.readFileSync(path.join(out, "script.json"), "utf8")).facts ?? [];
+      fs.writeFileSync(path.join(LAYOUTS, `${key}.template.json`), JSON.stringify({ ...L, key, template: true, approved: false, facts, savedFrom: st.id, savedAt: new Date().toISOString() }, null, 1));
     }
     const file = path.relative(out, r.files[st.endCard === false ? "noend" : "end"] ?? r.files.end).split(path.sep).join("/");
     set({ step: "done", renderPct: 100, final: file, post, costUsd: +(r.totalUsd + costUsd).toFixed(4), doneAt: Date.now(), report: r.measured });

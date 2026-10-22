@@ -25,5 +25,7 @@ for (const [key, g] of Object.entries(GOLD)) {
   const sentences = ss.map((s) => ({ role: s.role, text: s.text }));
   const cards = g.cards.map(([text, role, word]) => ({ text, sentence: sentences.findIndex((s) => s.role === role), word: word.replace(/[^\w']/g, "") }));
   fs.writeFileSync(path.join(out, `${key}.script.json`), JSON.stringify({ title: g.title, hero: g.hero, sentences, surprises: [], cards, parts: g.parts, facts: g.facts }, null, 1));
+  // the saved layout keeps its verified facts, so a new video of the topic skips the fact-check
+  fs.writeFileSync(path.join(here, `${key}.template.json`), JSON.stringify({ ...T, facts: g.facts }, null, 1));
   console.log(key, sentences.length, "sentences");
 }

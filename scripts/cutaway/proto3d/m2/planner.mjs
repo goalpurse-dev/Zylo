@@ -37,12 +37,13 @@ Rules:
 - Each sentence gets one role from the list; a role is used once. Order: hook first, congrats last, finish just before it, name after the loop that adds the named part.
 - parts: the physical things the video will need to show (for the scene planner), plain nouns.`;
 
-function scriptUser({ topic, lengthSec, roles, facts }) {
+function scriptUser({ topic, lengthSec, roles, facts, keyWords }) {
   const L = LENGTH[lengthSec];
   return `Topic: ${topic}
 Length: ${lengthSec} s video: ${L.words[0]}-${L.words[1]} words in ${L.sentences[0]}-${L.sentences[1]} sentences.
 ${roles ? `This topic re-uses a saved scene. Use exactly these roles, in this order, one sentence each: ${roles.join(", ")}.` : `Roles you may use: ${ROLES.join(", ")}.`}
 ${facts?.length ? `Use only these verified facts for the surprises (with their exact wording and numbers):\n${facts.map((f) => `- ${f}`).join("\n")}` : ""}
+${keyWords ? `The saved scene animates on these words; use them in these sentences where it reads naturally:\n${Object.entries(keyWords).map(([r, ws]) => `- ${r}: ${ws.join(", ")}`).join("\n")}` : ""}
 
 Two approved scripts by the account, sentence by sentence (| between sentences), with their roles:
 ${EXAMPLES.map((e) => `${e.topic} [${e.roles.join(", ")}]:\n${e.text}`).join("\n\n")}`;
@@ -87,6 +88,34 @@ The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`;
 }
 
+// the words a saved layout's beats, shots and sounds trigger on, by sentence role
+export function anchorWords(L) {
+  const out = {}; const add = (s, w) => { if (s && w) (out[s] ??= new Set()).add(w); };
+  for (const b of L.beats ?? []) { for (const a of b.do ?? []) add(b.s, a.w); for (const sh of [b.shot, ...(b.shots ?? [])]) if (sh?.at) add(sh.at.s, sh.at.w); }
+  for (const c of [...(L.audio?.cards ?? []), ...(L.audio?.sfx ?? [])]) add(c.at?.s, c.at?.w);
+  for (const c of L.audio?.chimes ?? []) add(c.s, c.w);
+  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, [...v]]));
+}
+const clean = (w) => String(w ?? "").toLowerCase().replace(/[^a-z0-9']/g, "");
+// every anchor of a saved layout whose word is not in its sentence of the new script
+export function missingWords(L, sentences) {
+  const has = (s, w) => (sentences.find((x) => x.role === s)?.text ?? "").split(/\s+/).some((x) => clean(x) === clean(w));
+  const out = [];
+  (L.beats ?? []).forEach((b, bi) => {
+    (b.do ?? []).forEach((a, ai) => { if (a.w && !has(b.s, a.w)) out.push({ s: b.s, w: a.w, what: `${a.v} ${a.p}`, path: ["beats", bi, "do", ai, "w"] }); });
+    [b.shot, ...(b.shots ?? [])].forEach((sh, si) => { if (sh?.at?.w && !has(sh.at.s, sh.at.w)) out.push({ s: sh.at.s, w: sh.at.w, what: "the camera moves to the next shot", path: si === 0 ? ["beats", bi, "shot", "at", "w"] : ["beats", bi, "shots", si - 1, "at", "w"] }); });
+  });
+  for (const k of ["cards", "sfx"]) (L.audio?.[k] ?? []).forEach((c, i) => { if (c.at?.w && !has(c.at.s, c.at.w)) out.push({ s: c.at.s, w: c.at.w, what: k === "cards" ? `the number card ${c.text}` : `the sound ${c.lib}`, path: ["audio", k, i, "at", "w"] }); });
+  (L.audio?.chimes ?? []).forEach((c, i) => { if (c.w && !has(c.s, c.w)) out.push({ s: c.s, w: c.w, what: "a chime", path: ["audio", "chimes", i, "w"] }); });
+  return out;
+}
+export function applyWords(L, missing, words) {
+  const next = JSON.parse(JSON.stringify(L));
+  missing.forEach((m, i) => { const w = words.find((x) => x.index === i)?.word; if (!w) return; let o = next; for (const k of m.path.slice(0, -1)) o = o[k]; o[m.path.at(-1)] = w.replace(/[^\w',-]/g, ""); });
+  return next;
+}
+const WORDS_SCHEMA = { type: "object", additionalProperties: false, required: ["words"], properties: { words: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "word"], properties: { index: { type: "integer" }, word: { type: "string" } } } } } };
+
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
 const checkScript = (s, lengthSec, roles) => {
@@ -121,17 +150,22 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     cost += r.costUsd; trace.push({ label, costUsd: r.costUsd, searches: r.searches, data: r.data }); return r;
   };
   const saved = reuse ? template(reuse) : null;
+  const savedFacts = saved?.facts?.filter((f) => f.verdict !== "drop") ?? [];
+  const keyWords = saved ? anchorWords(saved) : null;
 
   // 1. the script (or a given one: the golden set re-uses the approved scripts)
   let script = given;
   if (!script) {
-    let r = await step("script", { system: SCRIPT_SYSTEM, user: scriptUser({ topic, lengthSec, roles: saved?.roles }), schema: SCRIPT_SCHEMA, effort: "high", maxTokens: 16000 });
+    let r = await step("script", { system: SCRIPT_SYSTEM, user: scriptUser({ topic, lengthSec, roles: saved?.roles, facts: savedFacts.map((f) => f.claim), keyWords }), schema: SCRIPT_SCHEMA, effort: "high", maxTokens: 16000 });
     script = r.data;
     let P = checkScript(script, lengthSec, saved?.roles);
     if (P.length) { r = await step("script repair", { system: SCRIPT_SYSTEM, user: `${scriptUser({ topic, lengthSec, roles: saved?.roles })}\n\nYour last script had these problems; fix them and return the whole script:\n- ${P.join("\n- ")}\n\nYour last script:\n${JSON.stringify(script)}`, schema: SCRIPT_SCHEMA, maxTokens: 16000 }); script = r.data; P = checkScript(script, lengthSec, saved?.roles); }
     trace.push({ label: "script check", problems: P });
 
-    // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive)
+    // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive). A saved layout
+    //    keeps the facts it was checked with (the plan: a repeat topic needs no new fact-check).
+    if (savedFacts.length) { script = { ...script, facts: saved.facts }; trace.push({ label: "fact-check skipped: the saved layout's verified facts", facts: savedFacts.length }); }
+    else {
     const claims = `Surprise claims (index: claim | suggested search):\n${script.surprises.map((c, i) => `${i}: ${c.claim} | ${c.search}`).join("\n")}`;
     let rs = await step("fact research", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${claims}`, schema: null, search: Math.min(10, 2 * script.surprises.length + 2), effort: "medium", maxTokens: 24000 });
     if (rs.searches < script.surprises.length) rs = await step("fact research (again)", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${claims}\n\nSearch the web for EACH claim now; an answer without searches is refused.`, schema: null, search: Math.min(10, 2 * script.surprises.length + 2), effort: "medium", maxTokens: 24000 });
@@ -145,6 +179,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
       const r2 = await step("script (verified facts)", { system: SCRIPT_SYSTEM, user: scriptUser({ topic, lengthSec, roles: saved?.roles, facts: kept.map((c) => c.claim) }), schema: SCRIPT_SCHEMA, maxTokens: 16000 });
       script = { ...r2.data, facts: fc.data.checks };
     }
+    }
     const P2 = checkScript(script, lengthSec, saved?.roles);
     if (P2.length) trace.push({ label: "script check after facts", problems: P2 });
   }
@@ -155,12 +190,13 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     layout = { ...saved, title: script.title || saved.title };
     ({ problems, warnings } = solveLayout(layout, script.sentences));
     if (problems.length) {
-      // the saved beats' words are not all in the new sentences: one small call re-picks them
-      const r = await step("re-anchor saved beats", { system: SCENE, user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThis topic re-uses the saved layout below. Keep its world, parts and settings exactly; only change the beats' words (w, and shot words) so every word is in its sentence, and the cards' and sounds' words. Problems with the saved beats on this script:\n- ${problems.join("\n- ")}\n\nThe saved layout:\n${JSON.stringify(sceneFromLayout(saved))}`, schema: SCENE_REPLY_SCHEMA, maxTokens: 48000 });
-      const conv = layoutFromScene(parseScene(r.data), { key: saved.key, title: layout.title, roles: saved.roles });
-      layout = { ...conv.layout, parts: saved.parts, world: saved.world, camera: saved.camera };
+      // the saved beats' words are not all in the new sentences: one small call re-picks only those words
+      const missing = missingWords(saved, script.sentences);
+      if (missing.length) {
+        const r = await step("re-anchor words", { system: "You re-anchor an animation to a new narration. For each item, pick the one word of the given sentence (copy it exactly, without punctuation) on which that action should happen: the word that names the thing or the action. Reply with every item.", user: `Items (index: sentence role: sentence | the action | the old word):\n${missing.map((m, i) => `${i}: ${m.s}: ${script.sentences.find((x) => x.role === m.s)?.text} | ${m.what} | ${m.w}`).join("\n")}`, schema: WORDS_SCHEMA, effort: "low", maxTokens: 4000 });
+        layout = applyWords(layout, missing, r.data.words);
+      }
       ({ problems, warnings } = solveLayout(layout, script.sentences));
-      problems.unshift(...conv.problems);
     }
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);

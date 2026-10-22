@@ -699,5 +699,49 @@
     -4.066
    ]
   }
- }
+ },
+ "facts": [
+  {
+   "verdict": "keep",
+   "claim": "Many machines use an infrared drop sensor: if no product falls through the beam, the coil turns again, and the money is refunded if it still fails",
+   "sources": [
+    {
+     "url": "https://www.ttelectronics.com/TTElectronics/media/ProductFiles/Application-Note/App-Note-OPB720-for-Vending-Machines.pdf",
+     "title": "TT Electronics: optic sensors for vending machines"
+    },
+    {
+     "url": "https://www.vending.com/blog/guarantee-product-delivery/",
+     "title": "Vending.com: guarantee product delivery"
+    }
+   ]
+  },
+  {
+   "verdict": "reword",
+   "claim": "Japan had about 2.25 million beverage vending machines at the end of 2021 (JVMA), about one for every 55 people",
+   "sources": [
+    {
+     "url": "https://www.sg.emb-japan.go.jp/JCC/E-Magazine-Jul-2023-Vending-Machine.html",
+     "title": "Embassy of Japan in Singapore: vending machines"
+    },
+    {
+     "url": "https://unseen-japan.com/number-of-vending-machines-in-japan-dwindling/",
+     "title": "Unseen Japan: the number of vending machines"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "Hero of Alexandria described a coin-operated holy-water dispenser in his Pneumatica, in the 1st century AD",
+   "sources": [
+    {
+     "url": "https://www.mentalfloss.com/history/worlds-first-vending-machine-dispensed-holy-water",
+     "title": "Mental Floss: the first vending machine dispensed holy water"
+    },
+    {
+     "url": "https://historyofinformation.com/detail.php?id=10",
+     "title": "History of Information: Hero's Pneumatica"
+    }
+   ]
+  }
+ ]
 }

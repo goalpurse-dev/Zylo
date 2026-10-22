@@ -91,7 +91,8 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     const vc = await visionCached({ apiKey, frames: shots, log, cacheDir }); extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
     visionReport = { round1: vc.frames, costUsd: vc.costUsd };
-    if (failed.length) {
+    // only the hook flagged: no repair (the approved videos' hooks are flagged as well; a repair costs about $0.17)
+    if (failed.length && !failed.every((f) => f.role === "hook")) {
       P({ stage: "scene", step: "repair", pct: 7 });
       const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: failed.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
       extraUsd += rp.costUsd;

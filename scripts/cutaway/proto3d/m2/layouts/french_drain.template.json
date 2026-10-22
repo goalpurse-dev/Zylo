@@ -1341,5 +1341,37 @@
    },
    "underDb": 24
   }
- }
+ },
+ "facts": [
+  {
+   "verdict": "keep",
+   "claim": "One inch of rain on a 1,000 sq ft roof is about 623 gallons",
+   "sources": [
+    {
+     "url": "https://agrilifetoday.tamu.edu/?p=313689",
+     "title": "Texas A&M AgriLife"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "Five feet down, still water pushes about 312 lb on each square foot",
+   "sources": [
+    {
+     "url": "https://pubs.usgs.gov/circ/2004/circ1268/htdocs/text-conversion.html",
+     "title": "USGS"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "Named after Judge Henry Flagg French and his 1859 book Farm Drainage",
+   "sources": [
+    {
+     "url": "https://en.wikipedia.org/wiki/Henry_Flagg_French",
+     "title": "Wikipedia"
+    }
+   ]
+  }
+ ]
 }

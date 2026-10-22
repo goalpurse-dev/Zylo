@@ -1370,5 +1370,67 @@
  "why": "A storm drain in a street cutaway: the curb and street are dug into the sidewalk face, rain floods the street, then a sloping concrete pipe and a metal grate appear. The pipe runs to a creek at the right, and the painted fish and grass finish it. I moved the house far back and out of frame so it no longer stands on the cut. I also removed the congrats camera shot, which only repeated the finish home view and was dropped as too close to the last move.",
  "approved": false,
  "savedFrom": "m2-1792694000867",
- "savedAt": "2026-10-22T18:43:10.680Z"
+ "savedAt": "2026-10-22T18:43:10.680Z",
+ "facts": [
+  {
+   "index": 0,
+   "verdict": "reword",
+   "claim": "One inch of rain on a 1,000 square foot driveway produces over 600 gallons of runoff",
+   "why": "One inch on 1,000 sq ft is about 623 gallons of rain. Runoff is a bit less, since not all of it runs off. Saying 'about 600 gallons of rain' is what the notes support.",
+   "sources": [
+    {
+     "url": "https://www.easyunitconverter.com/rainfall-calculator",
+     "title": "Rainfall Calculator"
+    },
+    {
+     "url": "https://www.watercache.com/resources/rainwater-collection-calculator",
+     "title": "Rainwater Harvesting Calculator, Formulas, and Equations"
+    },
+    {
+     "url": "https://www.tank-depot.com/blog/rainwater-harvesting-calculator-how-much-can-your-roof-catch",
+     "title": "Rainwater Harvesting Calculator: How Much Can Your Roof Catch?"
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "verdict": "keep",
+   "claim": "One inch of rain on an acre of parking lot makes over 27,000 gallons of water",
+   "why": "USGS says one inch of rain on 1 acre is about 27,154 gallons.",
+   "sources": [
+    {
+     "url": "https://www.usgs.gov/water-science-school/science/rain-and-precipitation",
+     "title": "Rain and Precipitation"
+    },
+    {
+     "url": "https://www.omnicalculator.com/other/rainfall-volume",
+     "title": "Rainfall Calculator"
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "verdict": "reword",
+   "claim": "Storm drains usually carry water untreated straight to the nearest creek, river or ocean, not to a treatment plant",
+   "why": "Sources support this for most places, but 'nearest' is too strong and some older cities with combined systems do treat the water. Use 'nearby' and 'most'.",
+   "sources": [
+    {
+     "url": "https://cleancalifornia.dot.ca.gov/water",
+     "title": "About Stormwater"
+    },
+    {
+     "url": "https://stormwater.allianceforthebay.org/runoff-busters/drain-drain-go-away",
+     "title": "Drain, Drain, Go Away"
+    },
+    {
+     "url": "https://www.roundrocktexas.gov/city-departments/utilities-and-environmental-services/stormwater/",
+     "title": "Stormwater - City of Round Rock"
+    },
+    {
+     "url": "https://dem.ri.gov/sites/g/files/xkgbur861/files/ri-stormwater-solutions/documents/2.UnderstandingStormDrains.Factsheet.pdf",
+     "title": "Understanding Storm Drains and Sewer Systems"
+    }
+   ]
+  }
+ ]
 }

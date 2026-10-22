@@ -252,3 +252,21 @@ test("m2 director: a thin part is never framed tighter than the field floor, exc
   const h = frameBox(pipe, { width: 0.3, minField: 0, fit: "loose" });
   assert.ok(projectBox(h.pos, h.tgt, pipe).w > 0.25);
 });
+
+import { missingWords, applyWords, anchorWords } from "../scripts/cutaway/proto3d/m2/planner.mjs";
+test("m2 saved layout: only the words missing from the new sentences are re-anchored, in place", () => {
+  const L = JSON.parse(readFileSync(new URL("../scripts/cutaway/proto3d/m2/layouts/french_drain.template.json", import.meta.url), "utf8"));
+  const kw = anchorWords(L);
+  // sentences that hold every anchor word: nothing to re-anchor
+  const full = L.roles.map((r) => ({ role: r, text: (kw[r] ?? []).join(" ") }));
+  assert.equal(missingWords(L, full).length, 0);
+  // one sentence rewritten: only its anchors are listed, and the picked words land on them
+  const r0 = L.roles.find((r) => kw[r]?.length);
+  const changed = full.map((s) => (s.role === r0 ? { ...s, text: "brand new words here" } : s));
+  const miss = missingWords(L, changed);
+  assert.ok(miss.length >= 1 && miss.every((m) => m.s === r0));
+  const next = applyWords(L, miss, miss.map((_, i) => ({ index: i, word: "new," })));
+  assert.equal(missingWords(next, changed.map((s) => (s.role === r0 ? { ...s, text: "brand new words here" } : s))).length, 0);
+  assert.deepEqual(next.parts, L.parts); // the world and parts stay exactly as saved
+  assert.ok(L.facts?.length >= 2); // and the verified facts travel with it
+});

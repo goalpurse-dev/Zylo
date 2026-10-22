@@ -1407,5 +1407,27 @@
     "s": "congrats"
    }
   ]
- }
+ },
+ "facts": [
+  {
+   "verdict": "keep",
+   "claim": "A 1952 newspaper dug up from a landfill decades later was still readable",
+   "sources": [
+    {
+     "url": "https://www.csmonitor.com/1992/1208/08131.html",
+     "title": "Christian Science Monitor"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "About 490 US landfills feed their gas to energy projects",
+   "sources": [
+    {
+     "url": "https://www.epa.gov/lmop",
+     "title": "EPA LMOP"
+    }
+   ]
+  }
+ ]
 }
