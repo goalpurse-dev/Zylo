@@ -135,6 +135,19 @@ export function applyWords(L, missing, words) {
   missing.forEach((m, i) => { const w = words.find((x) => x.index === i)?.word; if (!w) return; let o = next; for (const k of m.path.slice(0, -1)) o = o[k]; o[m.path.at(-1)] = w.replace(/[^\w',-]/g, ""); });
   return next;
 }
+// a line's inner sentence breaks joined: "It sucks. It spins." -> "It sucks; it spins." (an abbreviation like "Mr."
+// before a capital is joined too, which reads the same)
+export function oneSentence(text) {
+  // the next word is lowercased only when it is a common sentence start (names keep their capital)
+  const START = /^(It|Its|It's|This|That|These|Those|The|A|An|And|But|So|Then|There|They|We|You|Your|He|She|Now|Each|Every|No|Not|Just|Even|Most|Some|All)$/;
+  return String(text).trim().replace(/([.!?])(["”']?)\s+([\w']+)/g, (m, p, close, next) => `${p === "?" ? "," : ";"}${close} ${START.test(next) ? next.toLowerCase() : next}`);
+}
+// anchors whose words are missing: they fall back to the start of their sentence (a negative offset is dropped)
+export function dropWords(L, missing) {
+  const next = JSON.parse(JSON.stringify(L));
+  for (const m of missing) { let o = next; for (const k of m.path.slice(0, -1)) o = o[k]; delete o.w; if (o.o < 0) delete o.o; }
+  return next;
+}
 const WORDS_SCHEMA = { type: "object", additionalProperties: false, required: ["words"], properties: { words: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "word"], properties: { index: { type: "integer" }, word: { type: "string" } } } } } };
 
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
@@ -205,6 +218,10 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     if (P2.length) trace.push({ label: "script check after facts", problems: P2 });
   }
 
+  // one sentence per role: the voice is split into sentences at . ! ?, so a line holding two would shift every later
+  // role by one. An inner break becomes a semicolon (a question mark a comma).
+  script = { ...script, sentences: script.sentences.map((s) => ({ ...s, text: oneSentence(s.text) })) };
+
   // 3. the scene: a saved layout's beats, or a new layout planned from the kit
   let layout, problems = [], warnings = [];
   if (saved) {
@@ -232,6 +249,14 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
       conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
       ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
       problems.unshift(...conv.problems);
+      // words still not in their sentences after the repair: those actions start with their sentence instead (free)
+      if (problems.some((x) => /^anchor word not found/.test(x))) {
+        const miss = missingWords(conv.layout, script.sentences);
+        conv = { ...conv, layout: dropWords(conv.layout, miss) };
+        ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
+        problems.unshift(...conv.problems);
+        warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`));
+      }
       // a repeat opening after the repair is a warning: the video still goes on
       warnings.push(...openingProblems(conv.layout, lastOpening));
       trace.push({ label: "solver 2", problems, warnings, opening: openingOf(conv.layout) });
