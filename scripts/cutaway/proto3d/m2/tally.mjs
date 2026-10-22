@@ -18,7 +18,7 @@ const lines = rows.map((r) => {
   const searches = r.usage?.server_tool_use?.web_search_requests;
   return `| ${day} | ${r.label}${searches ? ` (${searches} web searches)` : ""} | ${service(r)} | $${r.costUsd.toFixed(4)} |`;
 });
-const block = `## M2 spend tally (owner pre-approved $10 on 2026-10-21)
+const block = `## M2 spend tally (owner pre-approved $10 on 2026-10-21, and $8 more for the Gate 2 tuning round on 2026-10-22)
 
 Every paid call for M2: date, what, model or service, cost (from \`work/m2spend.jsonl\`, rebuilt by \`m2/tally.mjs\`). Running total at the bottom.
 

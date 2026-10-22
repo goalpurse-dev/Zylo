@@ -46,15 +46,17 @@ export function sceneryBoxes(L) {
 }
 
 /**
- * The main subject: the part(s) marked `main`, else the cut (the cutaway is the story), else the hero shots' parts.
- * Every shot must keep it in view (MAIN_COVER of the frame).
+ * The main subject: the part(s) marked `main`, else the cut together with the hero shots' parts (the thing named in
+ * "This is a…": a tiny cut under a road is not the story, the traffic light is; a pump in a pit below the cut is).
+ * Every shot must keep it in view (CAMERA_LIMITS.subjectMin of the frame).
  */
 export function subjectBox(L) {
   const cut = cutOf(L), main = L.parts.filter((p) => p.main).map((p) => focusOf(p, cut)).filter(Boolean);
   if (main.length) return union(main);
-  if (L.world?.cut !== false) return { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] };
-  const hero = (L.beats ?? []).flatMap((b) => [b.shot, ...(b.shots ?? [])]).filter((s) => s?.hero).flatMap((s) => s.focus ?? []);
-  return union(L.parts.filter((p) => hero.includes(p.id)).map((p) => focusOf(p, cut)).filter(Boolean));
+  const hero = (L.beats ?? []).flatMap((b) => [b.shot, ...(b.shots ?? [])]).filter((s) => s?.hero).flatMap((s) => [].concat(s.focus ?? []));
+  const heroBoxes = L.parts.filter((p) => hero.includes(p.id)).map((p) => focusOf(p, cut)).filter(Boolean);
+  const cutBox = L.world?.cut !== false ? [{ min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] }] : [];
+  return union([...cutBox, ...heroBoxes]);
 }
 
 function hitBox(o, d, b) {
