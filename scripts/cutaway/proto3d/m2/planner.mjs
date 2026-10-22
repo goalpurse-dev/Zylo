@@ -56,7 +56,9 @@ const FACTS_SYSTEM = `You fact-check the surprise claims in a short explainer sc
 - list the sources you used (url and title) for keep and reword.
 You are given research notes with sources found by web search: judge every claim ONLY from those notes (a claim the notes do not support is dropped), and copy the source URLs from the notes. Then return the whole script again with the claims fixed: reworded sentences changed, and a dropped claim's sentence rewritten without it (keep the role, keep it something visible). Keep every other sentence word for word. Return the number cards again too, fixed to the new wording (a card's word must still be a word of its sentence).`;
 
-const SCENE_SYSTEM = `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.
+// the worked example is the other golden topic when the topic is itself a golden one (a fair remake)
+const EXAMPLE_TITLE = { french_drain: "French drain", landfill: "landfill" };
+const sceneSystem = (example = "french_drain") => `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.
 
 ${catalogText()}
 
@@ -65,16 +67,18 @@ HOW TO PLAN
 - One cut (world.cut) holds the main build. Keep the house off the cut (move it back or aside with world.house). Pipes may run through the soil outside the cut, along the face.
 - A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). The dig is on "dig" in the hook.
 - The explainer layer: arrows show where water or gas moves; a glowing outline traces the named part on the "This is a…" sentence (verb show on the named word, hide on the next sentence); flow dots run in pipes when water flows.
+- A myth-bust ("X is not Y") must SHOW the wrong idea first, then take it away: a flag crossed out, a fake lake that drains or fades on "not", then the real mechanism appears on the next sentence. A sentence about something that is not there needs a visible stand-in for it.
 - Something new every 2-3 s: every sentence has at least one action. Problems are visible (rain, flooding, a crack, a leak) and are fixed by the next part. By "Congratulations" the problem is gone: stop rain, clear the storm, hide arrows and flows, refill or cap the cut, add the finishing touches. The end is calm.
-- Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). width is how much of the frame width they fill: 0.3-0.5 for a prop or a detail, 0.6-1.0 for a long trench or a pit (wide parts fill the frame). box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts, for a close-up on a detail (the holes in a pipe). view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall). The "This is a…" sentence's shot is hero: true. The hook and congrats are home shots; finish is a home shot.
+- Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). width is how much of the frame width they fill: 0.3-0.5 for a prop or a detail, 0.6-1.0 for a long trench or a pit (wide parts fill the frame). box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts, for a close-up on a detail (the holes in a pipe). view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall). The "This is a…" sentence's shot is hero: true. Congrats and finish are home shots. The hook is a home shot when the cut is wide; for a small or narrow cut (a well shaft) the hook frames the cut being dug (focus the dig part) so the hole reads.
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
 - Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shots: [...]}], audio: {cards, sfx, chimes, rain}}. A part's base (optional) sets a channel's starting value. Numbers in world units.
 - Verbs: an action is {p: part id, v: verb, w: the word in that sentence (as written, without punctuation; "" = the sentence start), o: seconds after the word (0), d: a duration to stretch the verb (0 = default), amp: 1, ch: "" (panels only: the panel channel)}.
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
 - In "why", say in two or three sentences what the scene is and how the camera tells it.
 
-THE WORKED EXAMPLE: the approved French drain video's layout, for its script:
-${JSON.stringify(sceneFromLayout(template("french_drain")))}`;
+THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for its script:
+${JSON.stringify(sceneFromLayout(template(example)))}`;
+const SCENE_SYSTEM = sceneSystem();
 
 function sceneUser({ topic, title, sentences, hero, parts }) {
   return `Topic: ${topic} ("${title}"). The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.
@@ -102,7 +106,8 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, model = MODEL.default, onStep = () => {}, cacheDir = null }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+  const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
   // every paid step is saved (cacheDir/step_<n>_<label>.json) and re-used on a re-run: nothing is paid for twice
@@ -150,7 +155,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     ({ problems, warnings } = solveLayout(layout, script.sentences));
     if (problems.length) {
       // the saved beats' words are not all in the new sentences: one small call re-picks them
-      const r = await step("re-anchor saved beats", { system: SCENE_SYSTEM, user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThis topic re-uses the saved layout below. Keep its world, parts and settings exactly; only change the beats' words (w, and shot words) so every word is in its sentence, and the cards' and sounds' words. Problems with the saved beats on this script:\n- ${problems.join("\n- ")}\n\nThe saved layout:\n${JSON.stringify(sceneFromLayout(saved))}`, schema: SCENE_REPLY_SCHEMA, maxTokens: 48000 });
+      const r = await step("re-anchor saved beats", { system: SCENE, user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThis topic re-uses the saved layout below. Keep its world, parts and settings exactly; only change the beats' words (w, and shot words) so every word is in its sentence, and the cards' and sounds' words. Problems with the saved beats on this script:\n- ${problems.join("\n- ")}\n\nThe saved layout:\n${JSON.stringify(sceneFromLayout(saved))}`, schema: SCENE_REPLY_SCHEMA, maxTokens: 48000 });
       const conv = layoutFromScene(parseScene(r.data), { key: saved.key, title: layout.title, roles: saved.roles });
       layout = { ...conv.layout, parts: saved.parts, world: saved.world, camera: saved.camera };
       ({ problems, warnings } = solveLayout(layout, script.sentences));
@@ -159,13 +164,13 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
     const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] });
-    let r = await step("scene plan", { system: SCENE_SYSTEM, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+    let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
     ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
     problems.unshift(...conv.problems);
     trace.push({ label: "solver 1", problems, warnings });
     if (problems.length) {
-      r = await step("scene repair", { system: SCENE_SYSTEM, user: `${user}\n\nYour layout below has problems the layout solver found. Fix every one and return the whole layout again (change only what the problems need).\nProblems:\n- ${problems.join("\n- ")}\n${warnings.length ? `Warnings (fix them if you can):\n- ${warnings.join("\n- ")}\n` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+      r = await step("scene repair", { system: SCENE, user: `${user}\n\nYour layout below has problems the layout solver found. Fix every one and return the whole layout again (change only what the problems need).\nProblems:\n- ${problems.join("\n- ")}\n${warnings.length ? `Warnings (fix them if you can):\n- ${warnings.join("\n- ")}\n` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
       conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
       ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
       problems.unshift(...conv.problems);
@@ -183,12 +188,12 @@ export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, role
  * planner, which returns the layout with only those beats (and the parts they use) changed. A saved layout keeps
  * its world and parts: only beats and shots may change.
  */
-export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false }) {
+export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
   const file = cacheDir && path.join(cacheDir, `repair_${problems.length}_${problems.join("|").length}.json`);
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {
-    r = await callJSON({ apiKey, model, log, label: "preview repair", system: SCENE_SYSTEM, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000,
+    r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000,
       user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is, and return the whole layout.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
   }
@@ -196,6 +201,7 @@ export async function repairLayout({ apiKey, topic, script, layout, problems, lo
   let next = { ...conv.layout, why: layout.why };
   if (saved) next = { ...next, world: layout.world, parts: layout.parts, camera: layout.camera };
   else if (layout.camera) next.camera = layout.camera;
+  if (layout.world?.sat != null) next.world = { ...next.world, sat: layout.world.sat };
   const solved = solveLayout(next, script.sentences);
   return { layout: next, problems: [...conv.problems, ...solved.problems], warnings: solved.warnings, costUsd: r.costUsd ?? 0 };
 }

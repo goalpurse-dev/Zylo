@@ -8,6 +8,7 @@
 //   trees [[x, z, s?], ...]            the two big trees;  road [x, y, z]  where the road lies
 //   roots {pad, to}                    roots in the cut's span (+ pad) move right of x = to
 //   rocksAvoid [[x0, x1, y0, y1], ...] no rocks or roots of the cut face in these boxes (pipe runs, soak pits)
+//   sat (1.38)                         the grading saturation (set by the runner when a topic measures outside 0.38-0.45)
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,7 +60,7 @@ export function makePage(layout) {
   if (W.road) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41
   rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;");
-  rep("hemi: 0.15, sat: 1.12,", 'hemi: 0.15, sat: Number(Q.get("satR1") ?? 1.38),');
+  rep("hemi: 0.15, sat: 1.12,", `hemi: 0.15, sat: Number(Q.get("satR1") ?? ${n(W.sat ?? 1.38)}),`);
   // the animated renderAt
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{

@@ -6,6 +6,7 @@
 //        [--noVision] [--log spend.jsonl]
 // Progress goes to stdout as PROGRESS lines; everything (script, facts, layout, trace, checks, files) is saved in DIR.
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { planTopic, repairLayout } from "./planner.mjs";
@@ -14,12 +15,23 @@ import { makeVoice } from "./voice.mjs";
 import { makeVideo, preparePage, runProcess } from "./make.mjs";
 import { compile } from "./compile.mjs";
 import { speechEnd } from "../speechEnd.mjs";
-import { previewTimes, renderChecks, shrink, timelineChecks, visionCheck } from "./checks.mjs";
+import { gradingFor, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
 import { sheet } from "./sheet.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WT = path.resolve(here, "../../../..");
+export const VISION_FAILS_OK = 2;
 const progress = (o, cb) => { console.log(`PROGRESS ${JSON.stringify(o)}`); cb?.(o); };
+
+// the vision check, cached by the exact frames (and sentences) it is given: a re-run with the same frames is free
+async function visionCached({ apiKey, frames, log, cacheDir }) {
+  const h = crypto.createHash("sha1"); for (const f of frames) { h.update(f.text); h.update(fs.readFileSync(f.file)); }
+  const file = path.join(cacheDir, `vision_${h.digest("hex").slice(0, 16)}.json`);
+  if (fs.existsSync(file)) return { ...JSON.parse(fs.readFileSync(file, "utf8")), costUsd: 0 };
+  const r = await visionCheck({ apiKey, frames, log });
+  fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1));
+  return r;
+}
 
 async function previewStills({ proto, layout, times, out }) {
   await runProcess(process.execPath, [path.join(proto, "m2", "stills.mjs"), `m2_${layout.key}.html`, out, times.join(",")], { cwd: proto });
@@ -48,7 +60,9 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     voice = v.voice; words = v.words; vUsd = v.usd;
   }
   const roles = plan.script.sentences.map((s) => s.role);
-  let layout = plan.layout, extraUsd = 0;
+  // a layout that already passed the preview check in this folder (after its repair) is the one to re-render
+  const accepted = path.join(cacheDir, "accepted_layout.json");
+  let layout = fs.existsSync(accepted) ? JSON.parse(fs.readFileSync(accepted, "utf8")) : plan.layout, extraUsd = 0;
   // the timeline checks (free), then the preview frames and the vision check (one repair round)
   const checkAll = () => { const tl = compile(layout, words, speechEnd(ff, voice), { roles }); return { tl, checks: timelineChecks(layout, tl) }; };
   let { tl, checks } = checkAll();
@@ -60,9 +74,13 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     let shots = previewTimes(tl);
     const pngs = await previewStills({ proto, layout, times: shots.map((s) => s.t), out: path.join(out, "preview") });
     const jpgs = shrink(ff, pngs, path.join(out, "preview_small"));
+    // the house style saturation (0.38-0.45): a topic that measures outside it gets its grading corrected
+    const sat0 = saturationOf(ff, pngs), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
+    if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
+    save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38 });
     shots = shots.map((s, i) => ({ ...s, file: jpgs[i] }));
     P({ stage: "scene", step: "vision check", pct: 7, frames: jpgs.map((f) => path.relative(out, f).split(path.sep).join("/")) });
-    const vc = await visionCheck({ apiKey, frames: shots, log }); extraUsd += vc.costUsd;
+    const vc = await visionCached({ apiKey, frames: shots, log, cacheDir }); extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
     visionReport = { round1: vc.frames, costUsd: vc.costUsd };
     if (failed.length) {
@@ -76,14 +94,20 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
         const again = previewTimes(tl).filter((s) => failed.some((f) => f.role === s.role));
         const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, "preview2") });
         const jpgs2 = shrink(ff, pngs2, path.join(out, "preview2_small"));
-        const vc2 = await visionCheck({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log }); extraUsd += vc2.costUsd;
+        const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
         visionReport.round2 = vc2.frames; visionReport.costUsd += vc2.costUsd;
       } else visionReport.repairProblems = rp.problems;
     }
     const still = (visionReport.round2 ?? []).filter((f) => !f.ok).concat(visionReport.round2 ? [] : failed);
     visionReport.failing = still.map((f) => f.role);
     save("vision.json", visionReport);
-    if (still.length) { P({ stage: "failed", reason: "preview", problems: still.map((f) => `${f.role}: ${f.problem}`) }); return { ...report, ok: false, vision: visionReport, timelineChecks: checks, voiceUsd: vUsd, totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4) }; }
+    // the gate, calibrated on the approved videos (they fail 2-3 of 12-13 frames of this check): after the repair round
+    // the video goes on with at most VISION_FAILS_OK failing beats, and never with a failing hero (name) beat
+    const blocking = still.length > VISION_FAILS_OK || still.some((f) => f.role === "name");
+    visionReport.passedGate = !blocking;
+    save("vision.json", visionReport);
+    if (!blocking) fs.writeFileSync(accepted, JSON.stringify(layout, null, 1));
+    if (blocking) { P({ stage: "failed", reason: "preview", problems: still.map((f) => `${f.role}: ${f.problem}`) }); return { ...report, ok: false, vision: visionReport, timelineChecks: checks, voiceUsd: vUsd, totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4) }; }
   }
   // the full render, the sound, the checks on the result
   const made = await makeVideo({ layout, voice, words, out, proto, ff, roles, wt, onProgress, noend: endCard === false });

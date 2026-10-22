@@ -16,6 +16,8 @@ export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34],
 // minGap: a move must finish (and hold a moment) before the next; the approved videos move every 3-4 s on average
 export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
+// the narrowest field of view in world units (the approved close-ups: the holes ~4 m across, the crack ~5 m)
+export const MIN_FIELD = 6;
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -57,7 +59,10 @@ export function bandHits(rect) {
  * so the box sits in a free zone ("bottom" | "top" | "mid" | "auto" | "center": no zone, e.g. the home view).
  * Returns { pos, tgt, rect, zone, ok, why }.
  */
-export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone" } = {}) {
+export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone", minField = MIN_FIELD } = {}) {
+  // never closer than MIN_FIELD of world across: a thin part (a pipe, a crack) at a big width would fill the frame
+  const sx = box.max[0] - box.min[0];
+  if (sx < minField * width) { const c0 = (box.min[0] + box.max[0]) / 2, h = (minField * width) / 2; box = { min: [c0 - h, box.min[1], box.min[2]], max: [c0 + h, box.max[1], box.max[2]] }; }
   const dir = norm(Array.isArray(view) ? view : VIEWS[view] ?? VIEWS.home);
   const c = boxCenter(box);
   let d = Math.max(4, Math.hypot(box.max[0] - box.min[0], box.max[2] - box.min[2]) / (2 * TH * width));
@@ -120,10 +125,12 @@ export function directCamera(layout, shots, marks) {
     else {
       const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
-      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose" });
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : MIN_FIELD });
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
-      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone" }); }
-      frames.push({ t: s.t, ids, rect: f.rect, zone: f.zone, ok: f.ok, why: f.why });
+      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
+      // the part itself on screen (the framed box may be wider: MIN_FIELD)
+      const real = projectBox(f.pos, f.tgt, union(boxes));
+      frames.push({ t: s.t, ids, rect: real, zone: f.zone, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
       k = f;
     }
     if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));
@@ -134,8 +141,8 @@ export function directCamera(layout, shots, marks) {
   const signPart = layout.parts.find((p) => p.kind === "sign");
   const back = scaleView(home, 1.18);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
-  const toward = { pos: add(home.tgt, mul(sub(home.pos, home.tgt), 0.72)).map((v) => +v.toFixed(3)), tgt: home.tgt.map((v, i) => +(v + (signC[i] - v) * 0.5).toFixed(3)) };
-  toward.pos = add(toward.pos, sub(toward.tgt, home.tgt)).map((v) => +v.toFixed(3));
+  // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
+  const toward = signPart ? (() => { const f = frameBox(focusOf(signPart, cut), { view: sub(home.pos, home.tgt), width: 0.7, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
   const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];

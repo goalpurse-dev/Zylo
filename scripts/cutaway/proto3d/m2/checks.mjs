@@ -105,6 +105,25 @@ export function renderChecks({ ff, video, out, every = 1 }) {
   fs.writeFileSync(path.join(frames, "times.json"), JSON.stringify(files.map((_, i) => i)));
   const contact = sheet(ff, frames, null, path.join(out, "contact_sheet.jpg"), files.map((_, i) => i), { w: 180, perRow: 8 });
   const problems = [];
+  if (saturation < 0.38 || saturation > 0.45) problems.push(`saturation ${saturation} (the house style is 0.38-0.45; the creator is 0.41)`);
   if (sceneMax != null && sceneMax > 10) problems.push(`a scene-change score of ${sceneMax.toFixed(1)} (0-100): looks like a cut, not one continuous shot`);
   return { sceneMax, saturation, contact, problems };
+}
+
+/** mean HSV saturation (0-1) of still images, at 108x192 (the render check's measure) */
+export function saturationOf(ff, files) {
+  let sum = 0, n = 0;
+  for (const f of files) {
+    const raw = execFileSync(ff, ["-v", "error", "-i", f, "-vf", "scale=108:192", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]);
+    for (let k = 0; k < raw.length; k += 3) { const mx = Math.max(raw[k], raw[k + 1], raw[k + 2]), mn = Math.min(raw[k], raw[k + 1], raw[k + 2]); sum += mx ? (mx - mn) / mx : 0; n++; }
+  }
+  return +(sum / n).toFixed(3);
+}
+
+// the grading saturation for a topic: one step from the measured preview toward the creator's 0.41-0.42
+// (measured on the water well: about 0.25 of saturation per unit of grading)
+export const SAT = Object.freeze({ base: 1.38, lo: 0.38, hi: 0.45, target: 0.42, slope: 0.25 });
+export function gradingFor(measured, current = SAT.base) {
+  if (measured >= SAT.lo && measured <= SAT.hi) return null;
+  return +Math.min(1.6, Math.max(0.8, current - (measured - SAT.target) / SAT.slope)).toFixed(3);
 }

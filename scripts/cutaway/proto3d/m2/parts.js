@@ -19,6 +19,16 @@ import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/prop
 import { EASES, rampU } from "./curves.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
+// the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
+function stoneGeometry(ctx) {
+  if (ctx.sharedGeo.stone) return ctx.sharedGeo.stone;
+  const { THREE, mergeVertices } = ctx;
+  const s = mergeVertices(new THREE.IcosahedronGeometry(1, 1)); const q = s.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < q.count; i++) { v.fromBufferAttribute(q, i); v.multiplyScalar(1 + 0.18 * Math.sin(v.x * 5 + v.y * 3)); q.setXYZ(i, v.x, v.y * 0.8, v.z); }
+  s.computeVertexNormals();
+  return (ctx.sharedGeo.stone = s);
+}
+const noWet = { set() {} };
 // a cue with its start (and end) moved by s0 (and s1): for elements that start one after another
 const shifted = (r, t, s0, s1 = s0) => {
   const t0 = r.t0 + s0, t1 = r.t1 + s1;
@@ -33,7 +43,19 @@ export const KINDS = {
   dig(ctx, p, api) {
     const cut = { ...ctx.cut, ...(p.cut ?? {}) };
     const d = digCut(ctx, { x0: cut.x0, x1: cut.x1, z0: cut.z0, z1: 0, depth: cut.depth, mound: p.mound, clumps: p.clumps ?? 150, dirtMat: api.mat(p.mat ?? "dirt"), margin: p.margin, endY: p.endY, arc: p.arc, uvFlip: p.uvFlip });
-    return { update(t) { const c = api.cue("dig"), r = api.cue("refill"); d.update(t, c.t0, c.t1, r ? [r.t0, r.t1] : null); } };
+    // dark: a narrow shaft (a well) would read as part of the face; its inside is shaded dark as it opens
+    let shade = null;
+    if (p.dark) {
+      const { THREE, scene } = ctx, w = cut.x1 - cut.x0;
+      shade = new THREE.Mesh(new THREE.BoxGeometry(w - 0.02, 1, 0.02), new THREE.MeshStandardMaterial({ color: "#24180f", roughness: 1 }));
+      shade.geometry.translate(0, -0.5, 0); shade.position.set((cut.x0 + cut.x1) / 2, 0, cut.z0 + 0.015); shade.visible = false; scene.add(shade);
+    }
+    return {
+      update(t) {
+        const c = api.cue("dig"), r = api.cue("refill"); d.update(t, c.t0, c.t1, r ? [r.t0, r.t1] : null);
+        if (shade) { const k = Math.min(1, Math.max(0, (t - c.t0) / Math.max(0.01, c.t1 - c.t0))); shade.visible = k > 0.01; shade.scale.y = Math.max(0.001, k * cut.depth); }
+      },
+    };
   },
 
   /** anchored boxes that wipe in along an axis (clay base, liner, soil covers, a grass cap); each panel names its channel */
@@ -352,11 +374,10 @@ export const KINDS = {
   gravel(ctx, p, api) {
     const { THREE, mergeVertices } = ctx;
     const g = fillBlock(ctx, { ...p.box, mat: api.mat(p.mat ?? "gravel"), r: 0.04 });
-    const stoneGeo = (() => { const s = mergeVertices(new THREE.IcosahedronGeometry(1, 1)); const q = s.attributes.position, v = new THREE.Vector3(); for (let i = 0; i < q.count; i++) { v.fromBufferAttribute(q, i); v.multiplyScalar(1 + 0.18 * Math.sin(v.x * 5 + v.y * 3)); q.setXYZ(i, v.x, v.y * 0.8, v.z); } s.computeVertexNormals(); return s; })();
+    const stoneGeo = stoneGeometry(ctx);
     const face = pebbles(ctx, { ...p.faceBox, mat: api.mat(p.pebbleMat ?? "pebbles"), geo: stoneGeo });
     const stones = pour(ctx, { ...p.pourBox, yFrom: p.pourFrom ?? 6.5, count: p.pourCount ?? 260, geo: stoneGeo, mat: api.mat("stones"), size: [0.09, 0.19] });
-    ctx.sharedGeo.stone = stoneGeo;
-    const wet = api.wetter(p.mat ?? "gravel"), wetP = api.wetter(p.pebbleMat ?? "pebbles");
+    const wet = api.wetter(p.mat ?? "gravel") ?? noWet, wetP = api.wetter(p.pebbleMat ?? "pebbles") ?? noWet;
     const depth = -p.box.y0;
     return {
       top: g.top,
@@ -376,8 +397,8 @@ export const KINDS = {
   /** a gravel soak pit in the cut face with pebbles and a water level; channels: grow, wetY, wetOn */
   soakPit(ctx, p, api) {
     const w = wipeBlock(ctx, { ...p.box, mat: api.mat(p.mat ?? "gravelPit"), axis: "y", r: 0.05 });
-    const face = pebbles(ctx, { ...p.faceBox, mat: api.mat(p.pebbleMat ?? "pebblesPit"), geo: ctx.sharedGeo.stone });
-    const wet = api.wetter(p.mat ?? "gravelPit"), wetP = api.wetter(p.pebbleMat ?? "pebblesPit");
+    const face = pebbles(ctx, { ...p.faceBox, mat: api.mat(p.pebbleMat ?? "pebblesPit"), geo: stoneGeometry(ctx) });
+    const wet = api.wetter(p.mat ?? "gravelPit") ?? noWet, wetP = api.wetter(p.pebbleMat ?? "pebblesPit") ?? noWet;
     return {
       update(t) {
         const k = api.ch("grow", t); w.set(k); face.set(p.box.y0 + (p.box.y1 - p.box.y0) * k, 0, k > 0.01 ? 1 : 0);

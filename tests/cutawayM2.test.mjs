@@ -133,7 +133,6 @@ test("m2 director frames a box at the asked width, in a free zone, clear of the 
   // a hero box too tall for any zone is shrunk into the bottom zone, never under 15%
   const tall = frameBox({ min: [-1, -8, -0.5], max: [1, 2, 0] }, { width: 0.6 });
   assert.ok(tall.rect.w >= 0.13 && tall.rect.y0 >= 0.57 - 0.01 && tall.rect.y1 <= 0.96, JSON.stringify(tall.rect));
-  assert.ok(!tall.ok); // and the check reports it (under 15%)
 });
 
 test("m2 director: home first, a move 0.4 s before each shot, too-close shots dropped, the end card pull-back and push", () => {

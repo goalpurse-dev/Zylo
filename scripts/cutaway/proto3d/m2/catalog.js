@@ -20,7 +20,7 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 
 // per kind: what it is, its params, and notes. Positions are world coordinates.
 export const KIND_DOCS = {
-  dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150)", "channels dig, refill. Always the first beat."],
+  dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150), dark (true for a narrow shaft under 2.5 wide: its inside is shaded so the hole reads)", "channels dig, refill. Always the first beat."],
   panels: ["anchored boxes that wipe in from one side (liners, clay walls, covers, caps)", "panels: [{ch, mat, size [sx,sy,sz], anchor [ax,ay,az] (-1/0/1: the side it grows from), pos [x,y,z] (the anchor point), axis 'x'|'y'|'z' (the growing axis) or null (pops in), vis (0), r (0.04), uv [u,v]?}]", "each panel names its own channel ch; verbs: grow (with ch), pop (with ch)"],
   box: ["a plain static box (a foundation, a slab)", "mat, size [sx,sy,sz], pos [x,y,z] (its center), r (0.04), receiveShadow", "no verbs"],
   bags: ["a layer of trash bags that falls in and can lift out of the way and settle back", "area {x0,x1,z0,z1}, h (1.6), grid [5,4], n0, y0 (its floor), stagger, dur, fromAbove {xScale, y} or fromTruck {part, x, y, dz}", ""],
