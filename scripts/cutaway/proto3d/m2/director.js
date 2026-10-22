@@ -12,7 +12,7 @@ export const LENS = Object.freeze({ vfov: 35, aspect: 1080 / 1920 });
 export const BANDS = Object.freeze({ card: [0.25, 0.35], caption: [0.47, 0.57] });
 export const ZONES = Object.freeze({ top: [0.06, 0.245], mid: [0.355, 0.465], bottom: [0.575, 0.95] });
 // view directions (from the target toward the camera); home is the French drain's home angle
-export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34], low: [12, 4.5, 40], front: [5, 6, 50], side: [24, 9, 40] });
+export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34], low: [12, 4.5, 40], front: [5, 6, 50], side: [24, 9, 40], close: [12, 9, 40] });
 // minGap: a move must finish (and hold a moment) before the next; the approved videos move every 3-4 s on average
 export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
@@ -120,7 +120,9 @@ export function directCamera(layout, shots, marks) {
     else {
       const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
-      const f = frameBox(union(boxes), { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose" });
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose" });
+      // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
+      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone" }); }
       frames.push({ t: s.t, ids, rect: f.rect, zone: f.zone, ok: f.ok, why: f.why });
       k = f;
     }

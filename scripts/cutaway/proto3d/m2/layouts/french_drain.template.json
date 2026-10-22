@@ -886,11 +886,7 @@
     "focus": [
      "crack"
     ],
-    "view": [
-     12,
-     9,
-     40
-    ],
+    "view": "close",
     "width": 0.3
    }
   },

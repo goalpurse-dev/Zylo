@@ -1010,7 +1010,19 @@
    "shot": {
     "focus": "home",
     "scale": 0.93
-   }
+   },
+   "shots": [
+    {
+     "at": {
+      "s": "fix1",
+      "w": "not"
+     },
+     "focus": [
+      "seepFlow"
+     ],
+     "width": 0.65
+    }
+   ]
   },
   {
    "s": "fix2",
@@ -1066,17 +1078,7 @@
      "v": "clear2",
      "w": "plastic"
     }
-   ],
-   "shot": {
-    "at": {
-     "s": "fix1",
-     "w": "not"
-    },
-    "focus": [
-     "seepFlow"
-    ],
-    "width": 0.65
-   }
+   ]
   },
   {
    "s": "name",

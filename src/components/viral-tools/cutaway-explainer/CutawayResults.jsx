@@ -1,4 +1,4 @@
-﻿import { Layers, Play } from "lucide-react";
+﻿import { AlertTriangle, Layers, Play } from "lucide-react";
 import { recentOrExamples } from "./api/cutawayApi";
 import CutawayGenerating from "./CutawayGenerating";
 import CutawayResultView, { ExampleBadge } from "./CutawayResultView";
@@ -50,6 +50,20 @@ function Recents({ items, onOpen }) {
   );
 }
 
+/** A run that stopped before the render (the kit can't build the topic, a check failed): nothing was charged. */
+function RunFailed({ run, onBack }) {
+  return (
+    <div className="cw-view flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-6 text-center lg:h-full">
+      <AlertTriangle className="h-6 w-6 text-amber-300" />
+      <p className="text-[15px] font-black text-white">{run.missing ? "We can’t build this one yet" : "This video couldn’t be made"}</p>
+      <p className="max-w-[420px] text-[12px] leading-relaxed text-white/55">{run.error}</p>
+      {run.closest?.length > 0 && <p className="text-[12px] text-white/55">Try: <span className="font-semibold text-white/80">{run.closest.join(", ")}</span></p>}
+      <p className="text-[11px] text-white/35">You weren’t charged.</p>
+      <button type="button" onClick={onBack} className="mt-1 rounded-full bg-white px-4 py-2 text-[12px] font-bold text-black transition hover:bg-white/90">Back</button>
+    </div>
+  );
+}
+
 /** The right side: the intro and Recent Creations, a video being made, or a finished video. */
 export default function CutawayResults({ run, recent = [], onOpen, onBack, onMakeLike, onDelete }) {
   if (!run) {
@@ -64,6 +78,7 @@ export default function CutawayResults({ run, recent = [], onOpen, onBack, onMak
       </div>
     );
   }
+  if (run.step === "failed") return <RunFailed run={run} onBack={onBack} />;
   if (run.step !== "done" || !run.finalUrl) return <CutawayGenerating key={run.id} run={run} />;
   // a video that has just finished gets the reveal; one opened from the list just appears
   const reveal = Boolean(run.doneAt && Date.now() - run.doneAt < 1500);

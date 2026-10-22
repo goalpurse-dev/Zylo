@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DEMO_STEP_MS, demoVideoFor, EXAMPLES, newDemoRun } from "../api/cutawayApi";
 
 const ORDER = ["script", "scene", "render", "done"];
+// owner testing on localhost only: the real pipeline (scripts/cutaway/proto3d/m2/localServer.mjs) instead of the demo
+export const LOCAL_GENERATION = import.meta.env?.DEV === true && import.meta.env?.VITE_CUTAWAY_LOCAL === "1";
 
 /**
  * One Cutaway run. In the demo (until the 3D planner and render service exist) it walks through
@@ -17,8 +19,29 @@ export default function useCutawayRun() {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  // local mode (localhost, VITE_CUTAWAY_LOCAL=1): the real M2 pipeline on this computer, polled once a second
   useEffect(() => {
-    if (!run || run.step === "done" || run.example) return undefined;
+    if (!run?.local || run.step === "done" || run.step === "failed" || String(run.id).startsWith("pending-")) return undefined;
+    let stop = false;
+    const poll = async () => {
+      try {
+        const r = await fetch(`/m2api/runs/${run.id}`);
+        if (r.ok) {
+          const s = await r.json();
+          if (stop) return;
+          setRun((cur) => (cur?.id === s.id ? { ...cur, ...s, credits: cur.credits, kind: cur.kind } : cur));
+          if (s.step === "done") setRecent((list) => [{ ...s }, ...list.filter((x) => x.id !== s.id)].slice(0, 8));
+          if (s.step === "done" || s.step === "failed") return;
+        }
+      } catch { /* the runner restarts: keep polling */ }
+      if (!stop) timer.current = window.setTimeout(poll, 1000);
+    };
+    timer.current = window.setTimeout(poll, 600);
+    return () => { stop = true; window.clearTimeout(timer.current); };
+  }, [run?.id, run?.local]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!run || run.step === "done" || run.example || run.local) return undefined;
     if (run.step === "render") {
       const t0 = run.stepAt ?? Date.now();
       const tick = () => {
@@ -48,6 +71,18 @@ export default function useCutawayRun() {
   // credits / kind: what the quote said (the real pipeline reads them back from the server's charge)
   const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true, { credits = null, kind = null } = {}) => {
     window.clearTimeout(timer.current);
+    if (LOCAL_GENERATION) {
+      const base = { topic, lengthSec, soundEffects, endCard, credits, kind, local: true, step: "script", stepAt: Date.now(), renderPct: 0, framesShown: 0, createdAt: new Date().toISOString() };
+      setRun({ ...base, id: `pending-${Date.now()}` });
+      fetch("/m2api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic, lengthSec, endCard }) })
+        .then(async (r) => {
+          const b = await r.json().catch(() => ({}));
+          if (!r.ok) { setRun({ ...base, id: `failed-${Date.now()}`, step: "failed", error: b.error ?? `The local runner said ${r.status}.`, missing: b.missing, closest: b.closest }); return; }
+          setRun({ ...base, id: b.id });
+        })
+        .catch(() => setRun({ ...base, id: `failed-${Date.now()}`, step: "failed", error: "The local runner is not running. Start it with: node scripts/cutaway/proto3d/m2/localServer.mjs" }));
+      return;
+    }
     setRun({ ...newDemoRun(topic, lengthSec, soundEffects, endCard), credits, kind, stepAt: Date.now(), framesShown: 0 });
   }, []);
   // a finished run of this session, or one of the two examples shown while there are none

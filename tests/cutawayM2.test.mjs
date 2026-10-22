@@ -171,3 +171,66 @@ for (const [key, wf, tf] of GOLD) {
     assert.equal(tl.tracks["sign.pop"].ramps[0].t0, TM.signPop);
   });
 }
+
+// ---------- steps C and D: the planner shapes, the solver, the checks ----------
+import { sceneFromLayout, layoutFromScene, draftWords, SCENE_REPLY_SCHEMA } from "../scripts/cutaway/proto3d/m2/plan.js";
+import { solveLayout } from "../scripts/cutaway/proto3d/m2/solver.js";
+import { timelineChecks, previewTimes } from "../scripts/cutaway/proto3d/m2/checks.mjs";
+import { catalogText } from "../scripts/cutaway/proto3d/m2/catalog.js";
+import { costOf } from "../scripts/cutaway/proto3d/m2/llm.mjs";
+import { sentencesOf as sOf } from "../scripts/cutaway/proto3d/m2/curves.js";
+
+test("m2 catalog documents every part kind with its verbs", () => {
+  const t = catalogText();
+  for (const k of Object.keys(KIND_CHANNELS)) assert.ok(t.includes(`- ${k}:`), k);
+  assert.ok(t.includes("MATERIALS") && t.includes("water_rush"));
+});
+
+test("m2 planner prices: Sonnet 5.5 tokens and web searches", () => {
+  assert.equal(costOf("claude-sonnet-5-5", { input_tokens: 1e6, output_tokens: 1e5, server_tool_use: { web_search_requests: 3 } }), 2 + 1 + 0.03);
+  assert.equal(costOf("claude-opus-5-5", { output_tokens: 1e6 }), 20);
+});
+
+test("m2 the scene reply schema stays tiny (a full layout schema compiles to a grammar the API refuses)", () => {
+  assert.ok(JSON.stringify(SCENE_REPLY_SCHEMA).length < 300);
+});
+
+for (const [key, wf] of GOLD) {
+  test(`m2 template ${key}: round-trips through the planner's scene shape and passes the solver`, { skip: !existsSync(wf) && "approved voice not on this machine" }, () => {
+    const lay = L(`${key}.template`);
+    const back = layoutFromScene(JSON.parse(JSON.stringify(sceneFromLayout(lay))), { key, title: lay.title, roles: lay.roles });
+    assert.deepEqual(back.problems, []);
+    const ss = sOf(JSON.parse(readFileSync(wf, "utf8")), lay.roles).map((s) => ({ role: s.role, text: s.text }));
+    assert.deepEqual(solveLayout({ ...back.layout, camera: lay.camera }, ss).problems, []);
+  });
+}
+
+test("m2 solver catches a bad plan", () => {
+  const lay = L("french_drain.template");
+  const ss = [{ role: "hook", text: "If you dig a ditch, you have a drain." }, { role: "name", text: "This is a drain." }, { role: "congrats", text: "Congratulations, you built it." }];
+  const bad = { ...lay, world: { ...lay.world, house: [0, 0, -1] }, parts: [...lay.parts.filter((p) => p.kind !== "sign"), { id: "x", kind: "tank", params: {} }], audio: { ...lay.audio, sfx: [{ lib: "explosion", at: { s: "hook" } }] } };
+  const P = solveLayout(bad, ss).problems.join(" | ");
+  for (const want of ["house stands on the cut", "needs pos", "no library sound", "no sign part", "no sentence with that role"]) assert.ok(P.includes(want), `${want} in ${P}`);
+});
+
+test("m2 draft words: one per script word, sentences split for role anchors", () => {
+  const w = draftWords([{ role: "hook", text: "If you dig." }, { role: "name", text: "This is it." }]);
+  assert.equal(w.length, 6); assert.ok(w[3].s - w[2].e > 0.2);
+});
+
+for (const [key, wf, tf] of GOLD) {
+  test(`m2 timeline checks pass on the approved ${key} (a calm end, the sign 0.4 s after the voice)`, { skip: !existsSync(wf) && "approved voice not on this machine" }, () => {
+    const lay = L(`${key}.template`), TM = JSON.parse(readFileSync(tf, "utf8"));
+    const tl = compile(lay, JSON.parse(readFileSync(wf, "utf8")), TM.speechEnd, { roles: lay.roles });
+    const c = timelineChecks(lay, tl);
+    assert.deepEqual(c.problems, []);
+    assert.ok(c.stats.movesPer10s < 3.5);
+    const pv = previewTimes(tl);
+    assert.equal(pv.length, lay.roles.length);
+    pv.forEach((p, i) => assert.ok(p.t >= tl.sentences[i].t0 && p.t <= (tl.sentences[i + 1]?.t0 ?? tl.marks.lengthEnd)));
+    // a storm left on at "Congratulations" is caught
+    const bad = { ...lay, beats: lay.beats.map((b) => ({ ...b, do: (b.do ?? []).filter((a) => !(a.p === "light" && a.v === "clear") && !(a.p === "rain" && a.v === "stop")) })) };
+    const tl2 = compile(bad, JSON.parse(readFileSync(wf, "utf8")), TM.speechEnd, { roles: lay.roles });
+    if (lay.parts.some((p) => p.kind === "rain")) assert.ok(timelineChecks(bad, tl2).problems.some((p) => /calm/.test(p)));
+  });
+}

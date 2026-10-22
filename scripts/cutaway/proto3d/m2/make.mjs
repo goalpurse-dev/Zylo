@@ -39,18 +39,24 @@ export function syncProto(proto) {
 // the caption font (Lilita One, OFL): the approved videos took it from the research folder
 export const FONTS = "C:/Users/Public/Zylo/research/seamless-niche/work/m2drain/fonts";
 
-export async function makeVideo({ layout, voice, words, out, proto, ff, roles = [], noend = false, secs = null, wt = path.resolve(here, "../../../.."), fonts = FONTS }) {
+/** write the layout, its timeline and its page into the render folder */
+export function preparePage({ layout, tl, proto }) {
+  syncProto(proto);
+  fs.writeFileSync(path.join(proto, "m2run", `${layout.key}.layout.json`), JSON.stringify(layout));
+  fs.writeFileSync(path.join(proto, "m2run", `${layout.key}.timeline.json`), JSON.stringify(tl));
+  fs.writeFileSync(path.join(proto, `m2_${layout.key}.js`), makePage(layout));
+  fs.writeFileSync(path.join(proto, `m2_${layout.key}.html`), fs.readFileSync(path.join(here, "..", "full.html"), "utf8").replace('src="/full.js"', `src="/m2_${layout.key}.js"`));
+}
+
+export async function makeVideo({ layout, voice, words, out, proto, ff, roles = [], noend = false, secs = null, wt = path.resolve(here, "../../../.."), fonts = FONTS, onProgress = null }) {
+  const progress = (o) => { console.log(`PROGRESS ${JSON.stringify(o)}`); onProgress?.(o); };
   const t0 = Date.now(), timing = {};
   fs.mkdirSync(out, { recursive: true });
   progress({ stage: "timeline", pct: 2 });
   const se = speechEnd(ff, voice);
   const tl = compile(layout, words, se, { roles });
   fs.writeFileSync(path.join(out, "timeline.json"), JSON.stringify(tl, null, 1));
-  syncProto(proto);
-  fs.writeFileSync(path.join(proto, "m2run", `${layout.key}.layout.json`), JSON.stringify(layout));
-  fs.writeFileSync(path.join(proto, "m2run", `${layout.key}.timeline.json`), JSON.stringify(tl));
-  fs.writeFileSync(path.join(proto, `m2_${layout.key}.js`), makePage(layout));
-  fs.writeFileSync(path.join(proto, `m2_${layout.key}.html`), fs.readFileSync(path.join(here, "..", "full.html"), "utf8").replace('src="/full.js"', `src="/m2_${layout.key}.js"`));
+  preparePage({ layout, tl, proto });
   timing.prepare = (Date.now() - t0) / 1000;
 
   const versions = [["end", tl.marks.lengthEnd, ""], ...(noend ? [["noend", tl.marks.lengthNoEnd, "?endcard=0"]] : [])];
@@ -96,3 +102,4 @@ if (/make\.mjs$/.test(process.argv[1] ?? "")) {
   const r = await makeVideo({ layout: read(a.layout), voice: a.voice, words: read(a.words), out: a.out, proto: a.proto, ff: a.ff, roles: a.roles ? read(a.roles) : [], noend: !!a.noend, secs: a.secs ? Number(a.secs) : null });
   console.log(JSON.stringify(r.timing), r.files.end);
 }
+export { run as runProcess };
