@@ -29,6 +29,7 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
     y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
   The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
+  A car, a machine or a person stands on solid floor beside the cut, never over its open hole (the cut is the ground in section).
   world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
     world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
@@ -36,6 +37,11 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 
 // per kind: what it is, its params, and notes. Positions are world coordinates.
 export const KIND_DOCS = {
+  car: ["a small car that drives in along x, stops, and drives on (wheels turn)", "pos [x, y, z] (where it stops; y = the setting's floor top), from (x, default pos - 16), to (x), color, scale (1)", "verbs arrive, leave; give each car an id (a carWash names its car)"],
+  carWash: ["a car wash's machine over the bay: a spray arch and two spinning side brushes; it puts foam on the car in the bay", "pos [x, y, z] (the bay centre, where the car stops), width (3.6), height (3.4), car (the car part's id)", "verbs show (the arch), spray, stopSpray, brushes, close (brushes swing in), open, spin, foam, rinse"],
+  trafficLight: ["a traffic signal on a pole, and the wire loop sawn into the road in front of it (seen in the cut) that feels a car's metal", "pos [x, y, z], height (5), loop [x, z, w, d] (the loop's centre and size, in the road over the cut)", "verbs show, red, yellow, green (switch lamps), loop (the wire loop appears), pulse (its field rings), stopPulse"],
+  hydrant: ["a dry-barrel fire hydrant: the body above ground, the barrel down to the main valve deep below (in section at the face), the drain hole at the valve", "pos [x, y, z] (y = the sidewalk top), depth (3.2: the valve below the frost line), color", "verbs show, barrel, open (the stem turns, the valve opens), fill (water rises in the barrel), spray, close, drain (the barrel empties through the drain hole), stopDrain"],
+  atm: ["a cash machine cut open on its right side: screen, keypad, card slot, the cassettes inside a safe, the belt up to the cash slot", "pos [x, y, z] (its base centre), color", "verbs show, screen, card, safe, cassettes, pick (a note travels from a cassette to the slot), cash"],
   vendingMachine: ["a vending machine on the lawn, cut open on its right side (coils, motors, coin chute, bin, drop sensor, cooler, lit header)", "pos [x, y, z] (its base centre; it faces the camera), color, header (the lit sign text)", "channels show, snacks, slot, steal, glass, coils, coin, spinA/spinB (turns), fallA/fallB, beam, cooler, light; give it a focus box"],
   miniMachines: ["a crowd of small drink machines popping up across the lawn", "area [x0, x1, z0, z1], count", "channels pop (a ramp: they pop one by one within it), gone"],
   dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150), dark (true for a narrow shaft under 2.5 wide: its inside is shaded so the hole reads)", "channels dig, refill. Always the first beat."],

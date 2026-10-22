@@ -29,6 +29,11 @@ export function focusOf(part, cut) {
     case "riser": return { min: [p.x - 0.3, p.y0, p.z - 0.3], max: [p.x + 0.3, p.y1, p.z + 0.3] };
     case "boxPop": return centered(p.pos, p.size);
     case "flare": return { min: [p.pos[0] - 0.8, p.pos[1], p.pos[2] - 0.8], max: [p.pos[0] + 0.8, p.pos[1] + 2.4, p.pos[2] + 0.8] };
+    case "car": { const [x, y, z] = p.pos ?? [0, 0.1, -2], s = p.scale ?? 1; return { min: [x - 2.2 * s, y, z - 1 * s], max: [x + 2.2 * s, y + 1.9 * s, z + 1 * s] }; }
+    case "carWash": { const [x, y, z] = p.pos ?? [0, 0.1, -2], w = p.width ?? 3.6, h = p.height ?? 3.4; return { min: [x - w / 2 - 0.7, y, z - 0.3], max: [x + w / 2 + 0.7, y + h + 0.2, z + 1.7] }; }
+    case "trafficLight": { const [x, y, z] = p.pos ?? [4, 0.1, -1], h = p.height ?? 5; return { min: [x - 0.5, y, z - 0.4], max: [x + 0.5, y + h + 2.3, z + 0.7] }; }
+    case "hydrant": { const [x, y, z] = p.pos ?? [0, 0.12, -0.5], d = p.depth ?? 3.2; return { min: [x - 0.6, y - d - 0.4, -0.4], max: [x + 0.6, y + 1.6, z + 0.6] }; }
+    case "atm": { const [x, y, z] = p.pos ?? [0, 0.12, -1]; return { min: [x - 0.8, y, z - 0.6], max: [x + 0.8, y + 2.6, z + 0.7] }; }
     case "machine": return { min: [p.pos[0] - 1.5, 0, p.pos[2] - 1.2], max: [p.pos[0] + 1.5, 2.7, p.pos[2] + 1.2] };
     case "bubbles": return { min: [p.x0, p.y0, (p.z ?? -0.15) - 0.2], max: [p.x1, p.y1, (p.z ?? -0.15) + 0.2] };
     case "fence": return { min: [p.x0, 0, p.zBack], max: [p.x1, 1.15, p.zFront] };

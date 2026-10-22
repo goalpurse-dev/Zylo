@@ -43,7 +43,7 @@ export function backdrop(ctx, opts) {
   if (opts.type === "street") {
     const walk = PBR("beige_wall_001", 0.35, { color: C("#d9d6d0") });
     const top = opts.walkTop ?? 0.12, back = opts.back ?? -8;
-    slabAround(ctx, walk, [-26, 26, back, 0], -0.02, top, hole);
+    slabAround(ctx, walk, [-26, 26, back, 0.04], -0.2, top, lip);
     // paving joints: thin dark lines every 1.5 m along x (cheap, no texture)
     const joint = std({ color: C("#a9a49b"), roughness: 0.9 });
     for (let x = -24; x <= 24; x += 1.5) { if (hole && x > hole[0] - 0.1 && x < hole[1] + 0.1) continue; const j = box(joint, 0.04, 0.005, -back, x, top + 0.003, back / 2, scene, 0.001); j.castShadow = false; }
