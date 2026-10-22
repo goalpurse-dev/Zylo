@@ -8,10 +8,13 @@ import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
+import { homeView, projectBox } from "./director.js";
+import { placeLifeProps } from "./framing.js";
 import { KIND_DOCS } from "./catalog.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const template = (k) => JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8"));
+// a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
+const template = (k) => { const L = JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8")); return placeLifeProps(L, homeView(L), projectBox).layout; };
 const roleScript = (L, words) => words; // (kept for symmetry; scripts carry their roles)
 
 export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
