@@ -9,7 +9,9 @@ export const LENS = Object.freeze({ vfov: 35, aspect: 1080 / 1920 });
 // the limits, measured on the hand-built paths (m2/shotStudy.mjs and the calibration in M2_PROGRESS.md): their story
 // keys are at most 33% empty (40% on the last pull-back), never under 3.8% on the subject, and never turn more than
 // 19.3 degrees between keys
-export const CAMERA_LIMITS = Object.freeze({ emptyMax: 0.4, subjectMin: 0.03, turnMax: 20 });
+// soilMax: the cut face's share of the frame unless the sentence is about something underground (the owner's ~35% on
+// screen; this ray measure reads about a fifth low against the rendered frames, so 0.28 here)
+export const CAMERA_LIMITS = Object.freeze({ emptyMax: 0.4, subjectMin: 0.03, turnMax: 20, soilMax: 0.28 });
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -41,6 +43,9 @@ export function sceneryBoxes(L) {
   const W = L.world ?? {}, out = [];
   if (W.house !== false) { const h = Array.isArray(W.house) ? W.house : [-8, 0, -30]; out.push({ min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] }); }
   out.push(...settingBoxes(W.backdrop));
+  // the far city behind a street, garage, room or car wash (kit/backdrops.js farRow: that far behind the setting's back)
+  const gap = { street: 22, garage: 24, room: 26, carwash: 22 }[W.backdrop?.type];
+  if (gap) { const z = (W.backdrop.back ?? { street: -8, garage: -9, room: -7, carwash: -8 }[W.backdrop.type]) - gap; out.push({ min: [-46, 0, z - 12], max: [46, 14, z] }); }
   for (const b of W.backdrop?.boxes ?? []) out.push(b); // a setting may list its own solid boxes (walls, a canopy)
   return out;
 }
@@ -98,11 +103,14 @@ function rays(pos, tgt, n = 18, m = 32) {
 export function measureKey(L, pos, tgt) {
   const cut = cutOf(L), subj = subjectBox(L);
   const solids = [...sceneryBoxes(L), ...L.parts.map((p) => (["rain", "light", "sign"].includes(p.kind) ? null : solidOf(p, cut))).filter(Boolean)];
-  let sky = 0, lawn = 0, onSubject = 0;
+  let sky = 0, lawn = 0, onSubject = 0, soil = 0;
   const R = rays(pos, tgt);
   for (const { o, d } of R) {
     // the nearest of: a solid box, the ground (y = 0), the soil face (z = 0 below ground)
     let t = Math.min(...solids.map((b) => hitBox(o, d, b)));
+    // the cross-section face (soil and the cut in it), however much of it is the subject: at most ~35% of the frame
+    // unless the sentence is about something underground
+    { const tf0 = d[2] < 0 && o[2] > 0 ? -o[2] / d[2] : Infinity; if (tf0 < Infinity && o[1] + d[1] * tf0 < 0 && tf0 <= t + 1e-6) soil++; }
     // the subject, or a part on it (arrows and outlines sit just in front of the cut face)
     const tS = hitBox(o, d, subj);
     if (tS < Infinity && (tS <= t + 1e-6 || inside(add(o, mul(d, t)), subj, 0.6))) { onSubject++; continue; }
@@ -119,7 +127,7 @@ export function measureKey(L, pos, tgt) {
   const n = R.length, c = subj.min.map((v, i) => (v + subj.max[i]) / 2);
   const f = norm(sub(tgt, pos)), r = norm(cross(f, [0, 1, 0])), u = cross(r, f), v = sub(c, pos), z = dot(v, f);
   const cx = (dot(v, r) / (z * TH) + 1) / 2, cy = (1 - dot(v, u) / (z * TV)) / 2;
-  return { empty: +((sky + lawn) / n).toFixed(3), sky: +(sky / n).toFixed(3), lawn: +(lawn / n).toFixed(3), subject: +(onSubject / n).toFixed(3), inFrame: z > 0 && cx > 0 && cx < 1 && cy > 0 && cy < 1 };
+  return { empty: +((sky + lawn) / n).toFixed(3), sky: +(sky / n).toFixed(3), lawn: +(lawn / n).toFixed(3), subject: +(onSubject / n).toFixed(3), soil: +(soil / n).toFixed(3), inFrame: z > 0 && cx > 0 && cx < 1 && cy > 0 && cy < 1 };
 }
 
 /** the angle (degrees) between two keys' view directions */

@@ -356,3 +356,39 @@ test("m2 clarity camera: the soap is seen running into the creek, and the canopy
   // a creek is the water in this story: no blue groundwater band under it to be taken for the creek
   assert.match(makePage(layout), /water.visible = false/);
 });
+
+import { normWords, compareWords } from "../scripts/cutaway/proto3d/m2/voiceCheck.mjs";
+test("m2 voice check: the Flash take's garbles fail, number words and a misheard little word pass", () => {
+  assert.deepEqual(normWords("up to 80 % of it, about one hundred forty gallons"), ["up", "to", "80", "percent", "of", "it", "about", "140", "gallons"]);
+  const script = "Sand sinks, oil rises, and clean water goes to a pump. It uses about 15 gallons of fresh water a car.";
+  // what faster-whisper heard in the car wash's Flash take (2026-10-24)
+  const flash = compareWords(script, "Sand sinks, oil rises, and in mind, clean water goes to a pump. It uses about fifteen gallons of fresh water or a car, car.");
+  assert.equal(flash.ok, false);
+  assert.ok(flash.problems.some((p) => /extra "mind"/.test(p)) && flash.problems.some((p) => /extra "car"/.test(p)));
+  // the approved French drain: "the French in French drain" heard with "and" is a mishearing, not a failure
+  const drain = compareWords("And the French in French drain is not France.", "And the French and French drain is not France.");
+  assert.equal(drain.ok, true); assert.equal(drain.notes.length, 1);
+  // a run-together sentence ("140. Add a pay kiosk" heard "140 at a pay kiosk") fails: a content word changed
+  assert.equal(compareWords("up to 140. Add a pay kiosk.", "up to 140 at a pay kiosk.").ok, false);
+});
+
+import { underground } from "../scripts/cutaway/proto3d/m2/director.js";
+test("m2 look: the cut face at most ~35% of a frame above ground, the hook car a quarter of the width, a moving opening", () => {
+  const { layout, sentences } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_car_wash_c.json", import.meta.url), "utf8"));
+  const w = draftWords(sentences), tl = compile(layout, w, w.at(-1).e + 0.1, { roles: sentences.map((s) => s.role) });
+  const cut = layout.world.cut, box = (id) => focusOf(layout.parts.find((p) => p.id === id), cut);
+  for (const p of previewTimes(tl, layout)) {
+    const b = layout.beats.find((x) => x.s === p.role), shows = b?.shows && layout.parts.find((q) => q.id === b.shows.p);
+    if (shows && underground(focusOf(shows, cut))) continue;
+    const k = cameraAt(tl.camera.end, p.t);
+    assert.ok(measureKey(layout, k.pos, k.tgt).soil <= CAMERA_LIMITS.soilMax + 0.03, `${p.role}: ${measureKey(layout, k.pos, k.tgt).soil}`);
+  }
+  // the hook car's box at least a third of the width once the opening push-in lands (the car itself: a quarter)
+  const k1 = cameraAt(tl.camera.end, 1.5);
+  assert.ok(projectBox(k1.pos, k1.tgt, box("car")).w >= 0.3);
+  // the camera moves in the first half second
+  const a = cameraAt(tl.camera.end, 0), c = cameraAt(tl.camera.end, 0.5);
+  assert.ok(Math.hypot(...a.pos.map((v, i) => v - c.pos[i])) > 0.2);
+  // the approved pair keep their own framing (their home view is hand-set)
+  assert.ok(underground({ min: [0, -4.8, 0], max: [1, -1.4, 1] }) && !underground({ min: [0, -0.9, 0], max: [1, 0.3, 1] }));
+});

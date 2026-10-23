@@ -1,6 +1,6 @@
 // M2: a free look at each setting (kit/backdrops.js): a minimal layout (the cut dug, the sign), stills of the opening,
 // the home view and the end, one contact sheet per setting.
-//   node m2/layouts/settingsLook.mjs <outDir> --proto PROTO --ff FFMPEG [garage,room,carwash]
+//   node m2/layouts/settingsLook.mjs <outDir> --proto PROTO --ff FFMPEG [garage,room,carwash,street]
 import fs from "node:fs";
 import path from "node:path";
 import { compile } from "../compile.mjs";
@@ -16,7 +16,7 @@ const sentences = [
   { role: "how", text: "This is how the whole thing works underneath." },
   { role: "congrats", text: "Congratulations, you built it." },
 ];
-const CUTS = { garage: { x0: -2.5, x1: 2.5, z0: -3, depth: 4 }, room: { x0: 1, x1: 5, z0: -3, depth: 4 }, carwash: { x0: -3, x1: 3, z0: -4, depth: 3 } };
+const CUTS = { garage: { x0: -2.5, x1: 2.5, z0: -3, depth: 4 }, room: { x0: 1, x1: 5, z0: -3, depth: 4 }, carwash: { x0: -3, x1: 3, z0: -4, depth: 3 }, street: { x0: -2.5, x1: 2.5, z0: -3, depth: 4 } };
 for (const type of only) {
   const cut = CUTS[type];
   const layout = {

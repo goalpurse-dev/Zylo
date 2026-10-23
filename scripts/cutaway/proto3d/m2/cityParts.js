@@ -11,6 +11,8 @@
 //   atm          a cash machine cut open on its right side: the screen, keypad, card slot, the cassettes in the safe,
 //                the pick and the belt. show, screen, card (goes in), safe (the safe walls), cassettes (pop), pick (a
 //                note travels from the cassette up the belt to the slot), cash (the notes come out)
+import { model, nodes } from "../kit/models.js";
+
 const pop = (k) => Math.max(0.001, k);
 const clamp = (v) => Math.min(1, Math.max(0, v));
 
@@ -30,27 +32,58 @@ export function car(ctx, p, api) {
   const [px, py, pz] = p.pos ?? [0, 0.1, -2], from = p.from ?? px - 16, to = p.to ?? px + 16, s = p.scale ?? 1;
   root.scale.setScalar(s);
   const paint = phys({ color: C(p.color ?? "#2f7de0"), roughness: 0.3, clearcoat: 0.8, clearcoatRoughness: 0.15 });
-  const glass = std3(ctx, "#bcd8ea");
-  add(root, rb(4.2, 0.8, 1.9, 0.25), paint, 0, 0.75, 0);
-  add(root, rb(2.4, 0.75, 1.7, 0.25), paint, -0.2, 1.45, 0);
-  add(root, rb(2.2, 0.55, 1.75, 0.15), glass, -0.2, 1.47, 0, false);
-  for (const x of [1.95, -1.95]) add(root, rb(0.1, 0.25, 0.5, 0.05), x > 0 ? glow("#fff3c4", 0.6) : glow("#d93a32", 0.4), x + (x > 0 ? 0.08 : -0.08), 0.85, 0.55);
   const wheels = [];
-  for (const x of [1.35, -1.35]) for (const z of [0.85, -0.85]) { const w = add(root, cylG(0.42, 0.32, 20), dark, x, 0.42, z); w.rotation.x = Math.PI / 2; wheels.push(w); }
+  // a Kenney CC0 car (kit/models.js), 4.2 m long, its front toward +x like the box car; a given colour tints it (a muddy
+  // car), its wheels turn as it drives. Without the model loader (the tests): the box car.
+  let spin = (w, x) => { w.rotation.y = -x / (0.42 * s); };
+  // a muddy car (a mud-brown colour asked for, or mud: true): its own paint with flattened mud splats on the sides and
+  // the bonnet, washed off as the car wash's foam goes on
+  const hsl = p.color ? new THREE.Color(p.color).getHSL({}) : null;
+  const muddy = p.mud ?? (!!hsl && hsl.h > 0.03 && hsl.h < 0.15 && hsl.s > 0.15 && hsl.l < 0.5);
+  const mud = [];
+  let model3d = false;
+  if (ctx.gltf) {
+    model3d = true;
+    model(ctx, `car/${p.model ?? "sedan"}.glb`, { parent: root, rotY: Math.PI / 2, size: 4.2, gloss: 0.4, ...(p.color && !muddy ? { tint: p.color } : {}) }, (g, inner) => { for (const w of nodes(inner, /^wheel/)) wheels.push(w); });
+    spin = (w, x) => { w.rotation.x = -x / (0.3 * 1.65 * s); };
+    if (muddy) {
+      const mudM = ctx.std({ color: C(p.color ?? "#6b4a2a"), roughness: 0.95 });
+      for (let i = 0; i < 22; i++) {
+        const side = i % 2 ? 1 : -1, onHood = i >= 16;
+        const m = add(root, new THREE.SphereGeometry(0.15 + ((i * 7) % 4) * 0.04, 10, 8), mudM, onHood ? 1.3 + (i % 3) * 0.25 : -1.7 + ((i * 5) % 8) * 0.48, onHood ? 1.18 : 0.55 + ((i * 3) % 4) * 0.16, onHood ? -0.6 + (i % 4) * 0.4 : side * 1.2, false);
+        if (onHood) m.scale.set(1.6, 0.15, 1.2); else m.scale.set(1.9, 0.8, 0.12);
+        mud.push(m);
+      }
+    }
+  } else {
+    const glass = std3(ctx, "#bcd8ea");
+    add(root, rb(4.2, 0.8, 1.9, 0.25), paint, 0, 0.75, 0);
+    add(root, rb(2.4, 0.75, 1.7, 0.25), paint, -0.2, 1.45, 0);
+    add(root, rb(2.2, 0.55, 1.75, 0.15), glass, -0.2, 1.47, 0, false);
+    for (const x of [1.95, -1.95]) add(root, rb(0.1, 0.25, 0.5, 0.05), x > 0 ? glow("#fff3c4", 0.6) : glow("#d93a32", 0.4), x + (x > 0 ? 0.08 : -0.08), 0.85, 0.55);
+    for (const x of [1.35, -1.35]) for (const z of [0.85, -0.85]) { const w = add(root, cylG(0.42, 0.32, 20), dark, x, 0.42, z); w.rotation.x = Math.PI / 2; wheels.push(w); }
+  }
   // the foam a car wash puts on it (a carWash part drives it through api.shared)
   const foamMat = std3(ctx, "#ffffff", 0.9), foam = [];
-  for (let i = 0; i < 26; i++) { const f = add(root, new THREE.SphereGeometry(0.28 + (i % 3) * 0.08, 10, 8), foamMat, -1.9 + (i % 9) * 0.48, 1.2 + ((i * 7) % 5) * 0.16, -0.7 + ((i * 5) % 3) * 0.7, false); f.visible = false; foam.push(f); }
+  // (on the model car, taller and wider than the box car, the foam sits higher and wider)
+  const fy = model3d ? 1.75 : 1.2, fz = model3d ? 0.95 : 0.7;
+  for (let i = 0; i < 26; i++) { const f = add(root, new THREE.SphereGeometry(0.28 + (i % 3) * 0.08, 10, 8), foamMat, -1.9 + (i % 9) * 0.48, fy + ((i * 7) % 5) * 0.16, -fz + ((i * 5) % 3) * fz, false); f.visible = false; foam.push(f); }
   const shine = paint.clearcoat;
+  let washed = 0;
   ctx.shared = ctx.shared ?? {}; ctx.shared[`car:${p.id ?? "car"}`] = { root, foam, paint };
   return {
     update(t) {
       const dv = api.ch("drive", t), lv = api.ch("leave", t);
       const x = from + (px - from) * clamp(dv) + (to - px) * clamp(lv);
       root.position.set(x, py, pz); root.visible = dv > 0.001 && lv < 0.999;
-      for (const w of wheels) w.rotation.y = -x / (0.42 * s);
+      for (const w of wheels) spin(w, x);
       const f = ctx.shared[`car:${p.id ?? "car"}`].foamK ?? 0;
       foam.forEach((m, i) => { const k = clamp(f * 1.6 - (i / foam.length) * 0.6); m.visible = k > 0.01; m.scale.setScalar(pop(k)); });
       paint.clearcoat = shine * (1 - 0.6 * f);
+      // the mud goes as the foam goes on (and stays gone): frames are rendered in any order, so it follows the foam's
+      // own channel at t, never a remembered peak
+      washed = clamp((ctx.shared[`car:${p.id ?? "car"}`].washK ?? 0));
+      mud.forEach((m, i) => { const k = clamp(1 - washed * 1.4 + (i / mud.length) * 0.3); m.visible = k > 0.02; });
     },
   };
 }
@@ -86,7 +119,7 @@ export function carWash(ctx, p, api) {
       const br = api.ch("brushes", t), cl = api.ch("close", t), spin = api.ch("spin", t);
       for (const b of brushes) { b.g.visible = br > 0.002; b.g.scale.setScalar(pop(br)); b.g.position.x = b.sx * (W / 2 + 0.2 - cl * (W / 2 - 1.15)); b.core.rotation.y = b.sx * spin * Math.PI * 2; }
       // the car in the bay takes the foam (p.car names it)
-      const c = ctx.shared?.[`car:${p.car ?? "car"}`]; if (c) c.foamK = clamp(api.ch("foam", t) - api.ch("rinse", t));
+      const c = ctx.shared?.[`car:${p.car ?? "car"}`]; if (c) { c.foamK = clamp(api.ch("foam", t) - api.ch("rinse", t)); c.washK = clamp(api.ch("foam", t)); }
     },
   };
 }

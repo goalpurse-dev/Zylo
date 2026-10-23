@@ -100,9 +100,39 @@ export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit 
 const drift = (k, f = MOVE.drift) => ({ pos: add(k.tgt, mul(sub(k.pos, k.tgt), f)).map((v) => +v.toFixed(3)), tgt: k.tgt });
 const scaleView = (k, f) => drift(k, f);
 
-/** the home view: the whole cut with the house behind it (or layout.camera.home) */
+/** a box about something underground (a tank, a pipe in the ground; not a shallow creek): its sentence may show the cut face at any size */
+export const underground = (b) => !!b && b.max[1] <= 0.5 && b.min[1] < -1.5;
+
+/**
+ * A key slid straight up (the same angle) until the cut face is at most CAMERA_LIMITS.soilMax of the frame: the
+ * approved videos keep the ground and what stands on it in view, the soil below. Never so far that `keep` (the shot's
+ * own parts) drops out of the bottom or the subject goes under its minimum. The approved pair (their own home view)
+ * keep their framing.
+ */
+export function liftSoil(layout, k, keep = null) {
+  if (layout.camera?.home || !k?.pos) return k;
+  if (measureKey(layout, k.pos, k.tgt).soil <= CAMERA_LIMITS.soilMax) return k;
+  // what must stay in is the part above ground (a build that reaches down into its cut keeps its top)
+  if (keep && keep.max[1] > 0) keep = { min: [keep.min[0], Math.max(0, keep.min[1]), keep.min[2]], max: keep.max };
+  let best = k;
+  for (let dy = 0.4; dy <= 14; dy += 0.4) {
+    const up = (p) => [p[0], +(p[1] + dy).toFixed(3), p[2]], q = { ...k, pos: up(k.pos), tgt: up(k.tgt) };
+    if (keep) { const r = projectBox(q.pos, q.tgt, keep); if (r.behind || r.y1 > 1.0) break; }
+    const m = measureKey(layout, q.pos, q.tgt);
+    if (m.subject < CAMERA_LIMITS.subjectMin) break;
+    best = q;
+    if (m.soil <= CAMERA_LIMITS.soilMax) break;
+  }
+  return best;
+}
+
+/** the home view: the whole cut with the house behind it (or layout.camera.home), the cut face at most ~35% of it */
 export function homeView(layout) {
   if (layout.camera?.home) return layout.camera.home;
+  const v = homeView0(layout);
+  return { ...liftSoil(layout, v), ...(v.small ? { small: true } : {}) };
+}
+function homeView0(layout) {
   const W = layout.world ?? {}, cut = W.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
   const h = Array.isArray(W.house) ? W.house : [-8, 0, -30];
   // what stands behind the cut: the house, or a street's shop fronts, or (a park, no house) just the lawn around the cut
@@ -176,12 +206,27 @@ export function directCamera(layout, shots, marks) {
     return { k: home, m: passes(home).m, how: "replaced by the home view" };
   };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
+  // the hook object: the biggest solid thing the hook sentence acts on (the car, not the spray on it); the opening frame
+  // holds it at least a quarter of the frame wide (its box at 36%: the box is wider than the car itself), with the
+  // shot's other parts (the spray) beside it
+  const hookB = (() => {
+    const b = (layout.beats ?? []).find((x) => x.s === "hook");
+    const bs = (b?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "pipeRun", "pipeRunFlow", "light", "rain", "outline", "sign", "dig", "water", "arrow"].includes(p.kind)).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean);
+    return bs.sort((a, c) => (c.max[0] - c.min[0]) * (c.max[1] - c.min[1]) - (a.max[0] - a.min[0]) * (a.max[1] - a.min[1]))[0] ?? null;
+  })();
+  const hookClose = (k, box, s) => {
+    if (!hookB || projectBox(k.pos, k.tgt, hookB).w >= 0.36) return k;
+    const both = union([hookB, box]), w = Math.min(0.9, Math.max(0.4, (0.38 * (both.max[0] - both.min[0])) / Math.max(0.5, hookB.max[0] - hookB.min[0])));
+    let g = frameBox(both, { view: s.view ?? "home", width: w, zone: "center", minField: 0 });
+    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? "home", width: 0.4, zone: "center", minField: 0 });
+    return { pos: g.pos, tgt: g.tgt };
+  };
   for (const s of shots) {
     const start = s.t - MOVE.lead;
     if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
     let k;
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
-    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? homeAll : home;
+    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
     else {
       const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
@@ -200,6 +245,10 @@ export function directCamera(layout, shots, marks) {
       const realA = projectBox(an.k.pos, an.k.tgt, union(boxes));
       frames.push({ t: s.t, ids, hero: !!s.hero, rect: an.how ? realA : real, zone: f.zone, measure: an.m, anchored: an.how, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
       k = an.k.pos ? { pos: an.k.pos, tgt: an.k.tgt } : an.k;
+      // the opening: the hook object at least a quarter of the frame wide (the creator opens close on it)
+      if (opening && !layout.camera?.home) k = hookClose(k, box, s);
+      // the cut face at most ~35% of the frame, unless the sentence is about something underground
+      if (!underground(box)) k = liftSoil(layout, k, box);
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
       if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }
@@ -208,13 +257,18 @@ export function directCamera(layout, shots, marks) {
     push(s.t + MOVE.settle, k);
     cur = k; lastMove = start;
   }
+  // the first half second moves (the creator's openings never sit still): a gentle push-in onto the first frame
+  if (!layout.camera?.home && keys.length) {
+    const k0 = { pos: keys[0][1], tgt: keys[0][2] }, tIn = Math.min(1.4, (keys[1]?.[0] ?? marks.signPop) - 0.3);
+    if (tIn > 0.8) { const wide = scaleView(k0, 1.1); keys.splice(0, 1, [0, wide.pos, wide.tgt], [+tIn.toFixed(3), k0.pos, k0.tgt]); }
+  }
   // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
   const signPart = layout.parts.find((p) => p.kind === "sign");
-  const back0 = scaleView(home, 1.18), back = holds(back0) ? back0 : homeAll;
+  const back0 = liftSoil(layout, scaleView(home, 1.18), build), back = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
   // the finished build stays in view with the sign beside it (the end card never hides what was built)
-  const toward = signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), build]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
+  const toward = liftSoil(layout, signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), build]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72), build);
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
   const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];
