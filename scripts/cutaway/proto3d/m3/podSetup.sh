@@ -8,7 +8,7 @@ LOG=/work/setup.log; mkdir -p /work; exec > >(tee -a $LOG) 2>&1
 log() { echo "[$(( $(date +%s) - T0 ))s] $*"; }
 up() { [ -f "$2" ] && curl -sS -X PUT -H "Content-Type: $3" --data-binary @"$2" "$1" >/dev/null && log "uploaded $2"; }
 # the log goes last: its arrival tells the controller that everything is uploaded
-finish() { set +e; trap - ERR; log "done ($1)"; up "$UP_CHECK" /work/gpucheck.json application/json; up "$UP_BENCH" /work/bench.json application/json; [ -f /work/full.mp4 ] && ffmpeg -v error -y -i /work/full.mp4 -vf scale=540:-2 -c:v libx264 -crf 30 -an /work/full_small.mp4; up "$UP_VIDEO" /work/full_small.mp4 video/mp4; up "$UP_LOG" $LOG text/plain; sleep infinity; }
+finish() { set +e; trap - ERR; log "done ($1)"; up "$UP_CHECK" /work/gpucheck.json application/json; up "$UP_BENCH" /work/bench.json application/json; [ "$MODE" != "stills" ] && [ -f /work/full.mp4 ] && ffmpeg -v error -y -i /work/full.mp4 -vf scale=540:-2 -c:v libx264 -crf 30 -an /work/full_small.mp4; up "$UP_VIDEO" /work/full_small.mp4 video/mp4; up "$UP_LOG" $LOG text/plain; sleep infinity; }
 trap 'finish error' ERR
 set -eE
 
@@ -37,6 +37,11 @@ log "npm"
 export CHROME_PATH=/usr/bin/google-chrome
 node m3/gpuCheck.mjs /work/gpucheck.json
 log "gpu check: $(node -e 'console.log(JSON.parse(require("fs").readFileSync("/work/gpucheck.json","utf8")).pick)')"
-node m3/podBench.mjs "$PAGE_KEY" "$LENGTH_SEC" /work/gpucheck.json /work/bench.json
-log "bench"
+if [ "$MODE" = "stills" ]; then
+  node m3/podStills.mjs "$PAGE_KEY" "$STILL_TIMES" /work/bench.json; cp /work/stills.tgz /work/full_small.mp4
+  log "stills"
+else
+  node m3/podBench.mjs "$PAGE_KEY" "$LENGTH_SEC" /work/gpucheck.json /work/bench.json
+  log "bench"
+fi
 finish ok

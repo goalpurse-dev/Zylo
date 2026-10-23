@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), arg = (k, d) => (argv.includes(`--${k}`) ? argv[argv.indexOf(`--${k}`) + 1] : d);
-const proto = arg("proto"), key = arg("key"), lengthSec = arg("length"), out = arg("out"), limitMin = Number(arg("limit-min", 25)), dry = argv.includes("--dry");
+const proto = arg("proto"), key = arg("key"), lengthSec = arg("length"), out = arg("out"), limitMin = Number(arg("limit-min", 25)), dry = argv.includes("--dry"), mode = arg("mode", "bench"), stillTimes = arg("times", "2,8"), gpus = arg("gpus", "NVIDIA L4").split(",");
 const LOG = "C:/Users/Public/Zylo/research/seamless-niche/work/m2spend.jsonl";
 const env = Object.fromEntries(fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
 const RP = env.RUNPOD_API_KEY, SB = env.SUPABASE_URL, SK = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -45,14 +45,14 @@ const podEnv = {
   NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all",
   SETUP_URL: await signGet("podSetup.sh"), BUNDLE_URLS: (await Promise.all(parts.map(signGet))).join(" "),
   UP_LOG: await signPut("setup.log"), UP_CHECK: await signPut("gpucheck.json"), UP_BENCH: await signPut("bench.json"), UP_VIDEO: await signPut("full.mp4"),
-  PAGE_KEY: key, LENGTH_SEC: String(lengthSec),
+  PAGE_KEY: key, LENGTH_SEC: String(lengthSec), MODE: mode, STILL_TIMES: stillTimes,
 };
 note("uploaded the bundle and the setup script to", `${BUCKET}/${prefix}`);
 
 // the pod
 const rp = (p, init = {}) => fetch(`https://rest.runpod.io/v1${p}`, { ...init, headers: { Authorization: `Bearer ${RP}`, "Content-Type": "application/json", ...(init.headers ?? {}) } });
 const created = Date.now();
-const res = await rp("/pods", { method: "POST", body: JSON.stringify({ name: "zyvo-cutaway-gpu-test", imageName: "node:22-trixie", computeType: "GPU", cloudType: "SECURE", gpuTypeIds: ["NVIDIA L4"], gpuCount: 1, containerDiskInGb: 30, volumeInGb: 0, env: podEnv, dockerStartCmd: ["bash", "-c", "curl -fsSL \"$SETUP_URL\" -o /setup.sh && bash /setup.sh"], ports: [], interruptible: false }) });
+const res = await rp("/pods", { method: "POST", body: JSON.stringify({ name: "zyvo-cutaway-gpu-test", imageName: "node:22-trixie", computeType: "GPU", cloudType: "SECURE", gpuTypeIds: gpus, gpuCount: 1, containerDiskInGb: 30, volumeInGb: 0, env: podEnv, dockerStartCmd: ["bash", "-c", "curl -fsSL \"$SETUP_URL\" -o /setup.sh && bash /setup.sh"], ports: [], interruptible: false }) });
 const pod = await res.json();
 fs.writeFileSync(path.join(out, "pod_created.json"), JSON.stringify(pod, null, 1));
 if (!res.ok || !pod.id) { note("pod create failed:", res.status, JSON.stringify(pod).slice(0, 400)); process.exit(1); }
@@ -76,7 +76,8 @@ try {
     const st = `${s.desiredStatus ?? "?"} ${s.lastStatusChange ?? ""}`.trim();
     if (st !== last) { note("pod:", st); last = st; }
     const log = await fetchOut("setup.log");
-    if (log) { note("results arrived"); for (const f of ["gpucheck.json", "bench.json", "full.mp4"]) await fetchOut(f); break; }
+    if (log) { note("results arrived"); for (const f of ["gpucheck.json", "bench.json", "full.mp4"]) await fetchOut(f);
+      if (mode === "stills") fs.renameSync(path.join(out, "full.mp4"), path.join(out, "stills.tgz")); break; }
   }
 } catch (e) { note("error:", e.message); }
 finally { await stop("finished"); }
