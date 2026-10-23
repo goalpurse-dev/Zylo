@@ -11,6 +11,7 @@ import { solveLayout } from "./solver.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps } from "./framing.js";
 import { VERBS } from "./verbs.js";
+import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
 
@@ -91,8 +92,17 @@ const SCENE_SYSTEM = sceneSystem();
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
 export const INDOOR = /\b(basement|sump|crawl ?space|indoor|inside (a|the|your) (house|home)|water heater|boiler|furnace|radiator|air condition\w*|\bac unit|heat pump|toilet|sink|shower|bathtub|dishwasher|smoke detector|fireplace|chimney|floor heating|underfloor)\b/i;
+// the setting a topic belongs in: a premade topic's own (topics.js), else the room for indoor topics
+export function settingHint(topic) {
+  // a premade topic, or a custom one that names it ("how a traffic light knows your car is there")
+  const t = ` ${normTopic(topic)} `;
+  const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
+  const type = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
+  if (!type) return "";
+  return ` This topic belongs in the ${type} setting: use world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : ""}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
+}
 function sceneUser({ topic, title, sentences, hero, parts, lastOpening }) {
-  return `Topic: ${topic} ("${title}").${INDOOR.test(topic) ? " This happens inside a home: use the room setting (world.backdrop {type: \"room\"}); the cut below its floor is the basement." : ""} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
+  return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
 The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`;
 }
