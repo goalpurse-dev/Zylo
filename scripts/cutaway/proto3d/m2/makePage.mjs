@@ -65,7 +65,9 @@ export function makePage(layout) {
   if (W.trees) rep("tree(-13, -11.5); tree(14, -3.4, 0.9);", W.trees.map((a) => `tree(${a.map(n).join(", ")});`).join(" "));
   if (Array.isArray(W.road)) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41
-  rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;");
+  // (hidden where a creek is the water in the story: a blue band under it reads as the creek)
+  const gwOff = W.groundwater === false || (layout.parts ?? []).some((p) => p.kind === "creek");
+  rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;" + (gwOff ? " water.visible = false;" : ""));
   rep("hemi: 0.15, sat: 1.12,", `hemi: 0.15, sat: Number(Q.get("satR1") ?? ${n(W.sat ?? 1.38)}),`);
   // the animated renderAt
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");

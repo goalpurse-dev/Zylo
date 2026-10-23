@@ -6,7 +6,7 @@ import { resolveAnchor, sentencesOf } from "./curves.js";
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
 import { focusOf } from "./focus.js";
-import { directCamera, cameraAt, projectBox } from "./director.js";
+import { directCamera, cameraAt, projectBox, MOVE } from "./director.js";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
 // the audio, not the aligner), pops over 0.45 s and holds 1.75 s. Without the end card: a 1.5 s calm hold.
@@ -56,9 +56,18 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       const act = (b.do ?? []).find((a) => a.p === b.shows.p); if (!box || !act) continue;
       let t; try { t = at({ s: b.s, ...(act.w ? { w: act.w } : {}), ...(act.o ? { o: act.o } : {}) }); } catch { continue; }
       const k = cameraAt(director.end, t + 0.6), r = projectBox(k.pos, k.tgt, box), w = Math.min(1, r.x1) - Math.max(0, r.x0);
-      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95) extra.push({ focus: [b.shows.p], type: w < 0.05 ? "close" : "mid", t: Math.max(0, t - 0.1), auto: true });
+      // a flow must be seen arriving: whatever it flows into (a creek, a tank, a grate) is in the frame too
+      let target = null;
+      if (part.kind === "flow") { const end = part.params?.path?.at(-1); target = end && layout.parts.find((q) => { if (q === part || ["flow", "light", "rain", "sign"].includes(q.kind)) return false; let qb = null; try { qb = focusOf(q, layout.world?.cut); } catch {} return qb && end.every((v, i) => v >= qb.min[i] - 0.5 && v <= qb.max[i] + 0.5); }); }
+      let tr = null; if (target) { try { tr = projectBox(k.pos, k.tgt, focusOf(target, layout.world?.cut)); } catch {} }
+      // at least half of what it flows into is in the frame (an edge just touching the frame is not seeing it arrive)
+      const targetOut = tr && (tr.behind || Math.min(1, tr.x1) - Math.max(0, tr.x0) < Math.min(0.15, (tr.x1 - tr.x0) * 0.5));
+      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ focus: target ? [b.shows.p, target.id] : [b.shows.p], type: w < 0.05 && !target ? "close" : "mid", t: Math.max(0, t - 0.1), auto: true });
     }
-    if (extra.length) director = directCamera(layout, [...shots, ...extra].sort((a, b) => a.t - b.t), marks);
+    // an auto shot takes the place of a planned shot just before it (closer than a move's gap it would be dropped),
+    // starting at that shot's time
+    const kept = shots.filter((s) => { const e = extra.find((x) => s.t <= x.t && x.t - s.t < MOVE.minGap); if (e) e.t = Math.min(e.t, s.t); return !e; });
+    if (extra.length) director = directCamera(layout, [...kept, ...extra].sort((a, b) => a.t - b.t), marks);
     camera = { end: director.end, noend: director.noend };
   }
   const audio = layout.audio ?? {};

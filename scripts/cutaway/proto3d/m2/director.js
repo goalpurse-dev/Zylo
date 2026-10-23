@@ -156,12 +156,23 @@ export function directCamera(layout, shots, marks) {
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
   const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
+  // the whole finished build: the subject and everything the "Add ..." line brought (a canopy at the far end of the bay)
+  const finBeat = (layout.beats ?? []).find((b) => b.s === "finish");
+  const added = (finBeat?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "sign", "light", "rain"].includes(p.kind) && !/hide|stop|refill/.test(String((finBeat.do.find((a) => a.p === p.id) ?? {}).v)));
+  const build = union([subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
+  // the home view, or (when the finished build reaches past it) a view of the whole build from the home angle
+  const holds = (k) => { const r = projectBox(k.pos, k.tgt, build); return !r.behind && r.x0 >= 0.03 && r.x1 <= 0.97; };
+  const homeAll = holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })();
   const passes = (k) => { const m = measureKey(layout, k.pos, k.tgt); return { ok: m.empty <= CAMERA_LIMITS.emptyMax - 0.02 && m.subject >= CAMERA_LIMITS.subjectMin + 0.01, m }; };
   // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
   const anchor = (k, box, s) => {
     let p = passes(k); if (p.ok) return { k, m: p.m, how: null };
-    for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
-    for (const w of [0.7, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? "home", width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
+    // a re-aim may not push the shot's own parts out (a soap flow re-aimed away from the creek it runs into)
+    const keeps = (q) => { const r = projectBox(q.pos, q.tgt, box); return !r.behind && Math.min(1, r.x1) - Math.max(0, r.x0) >= 0.8 * Math.min(1, r.x1 - r.x0); };
+    for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok && keeps(q)) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
+    // holding both (the subject and a creek far off to the side) may sit on the bare limits, without the safety margin
+    const bare = (m) => m.empty <= CAMERA_LIMITS.emptyMax && m.subject >= CAMERA_LIMITS.subjectMin;
+    for (const w of [0.7, 0.8, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? "home", width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok || bare(p.m)) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
     return { k: home, m: passes(home).m, how: "replaced by the home view" };
   };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
@@ -169,7 +180,8 @@ export function directCamera(layout, shots, marks) {
     const start = s.t - MOVE.lead;
     if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
     let k;
-    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : home;
+    // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
+    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? homeAll : home;
     else {
       const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
@@ -198,11 +210,11 @@ export function directCamera(layout, shots, marks) {
   }
   // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
   const signPart = layout.parts.find((p) => p.kind === "sign");
-  const back = scaleView(home, 1.18);
+  const back0 = scaleView(home, 1.18), back = holds(back0) ? back0 : homeAll;
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
   // the finished build stays in view with the sign beside it (the end card never hides what was built)
-  const toward = signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), subjectBox(layout)]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
+  const toward = signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), build]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
   const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];

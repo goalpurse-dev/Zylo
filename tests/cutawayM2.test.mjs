@@ -332,3 +332,27 @@ test("m2 home view: a small named part reaches 15% of the frame width, and indoo
   assert.ok(projectBox(h.pos, h.tgt, heroBox(lay)).w >= 0.15);
   assert.ok(INDOOR.test("How a sump pump keeps a basement dry") && INDOOR.test("how a water heater works") && !INDOOR.test("How a car wash works"));
 });
+
+import { cameraAt } from "../scripts/cutaway/proto3d/m2/director.js";
+import { makePage } from "../scripts/cutaway/proto3d/m2/makePage.mjs";
+import { focusOf } from "../scripts/cutaway/proto3d/m2/focus.js";
+import { mustFor } from "../scripts/cutaway/proto3d/m2/checks.mjs";
+test("m2 clarity camera: the soap is seen running into the creek, and the canopy is up in its sentence's frame (car wash)", () => {
+  const { layout, sentences } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_car_wash_c.json", import.meta.url), "utf8"));
+  const w = draftWords(sentences), tl = compile(layout, w, w.at(-1).e + 0.1, { roles: sentences.map((s) => s.role) });
+  const pts = previewTimes(tl, layout), at = (role) => pts.find((p) => p.role === role).t, cut = layout.world.cut;
+  const on = (role, id) => { const k = cameraAt(tl.camera.end, at(role)), r = projectBox(k.pos, k.tgt, focusOf(layout.parts.find((p) => p.id === id), cut)); return !r.behind && Math.min(1, r.x1) - Math.max(0, r.x0) >= 0.15; };
+  // the creek the soap runs into is in the frame (a planned shot and an auto shot 1.1 s apart: the auto one used to be dropped)
+  assert.ok(on("problem2", "soapFlow") && on("problem2", "creek"));
+  // the canopy goes up on "canopy", the sentence's last word: its frame waits for the roof (it used to show the posts only)
+  const roof = tl.tracks["canopy.roof"].ramps[0];
+  assert.ok(at("finish") >= roof.t1 && at("finish") < at("congrats"));
+  // the side sentences only need their thing in view; congrats is judged before the end card
+  assert.match(mustFor("myth", { p: "wasteWater", does: "x" }), /visible, no action needed/);
+  assert.ok(at("congrats") < tl.marks.signPop);
+  // the end view holds the whole build: the canopy the "Add ..." line put at the far end of the bay too
+  const whole = (role, id) => { const k = cameraAt(tl.camera.end, at(role)), r = projectBox(k.pos, k.tgt, focusOf(layout.parts.find((p) => p.id === id), cut)); return !r.behind && r.x0 >= 0 && r.x1 <= 1; };
+  assert.ok(["canopy", "kiosk", "vacuum"].every((id) => whole("congrats", id)));
+  // a creek is the water in this story: no blue groundwater band under it to be taken for the creek
+  assert.match(makePage(layout), /water.visible = false/);
+});

@@ -3,7 +3,7 @@
 //   repair round for failing beats) -> render -> sound -> the video -> measured checks + contact sheet.
 //   node m2/run.mjs --topic "a water well" --out DIR --proto PROTO --ff FFMPEG [--length 30] [--reuse french_drain]
 //        [--script approved.json (a given script)] [--voice v.mp3 --words w.json (a given voice)] [--planOnly]
-//        [--noVision] [--log spend.jsonl]
+//        [--noVision] [--log spend.jsonl] [--resume (the plan saved in DIR)] [--maxUsd 1 (no repair past it)]
 // Progress goes to stdout as PROGRESS lines; everything (script, facts, layout, trace, checks, files) is saved in DIR.
 import fs from "node:fs";
 import crypto from "node:crypto";
@@ -41,18 +41,22 @@ async function previewStills({ proto, layout, times, out }) {
   return times.map((_, i) => path.join(out, `f_${String(i).padStart(3, "0")}.png`));
 }
 
-export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS }) {
+export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS, resume = false, maxUsd = Infinity }) {
   fs.mkdirSync(out, { recursive: true });
   const t0 = Date.now(), apiKey = loadKey(), cacheDir = path.join(out, "steps");
   const save = (f, d) => fs.writeFileSync(path.join(out, f), JSON.stringify(d, null, 1));
   const P = (o) => progress(o, onProgress);
   P({ stage: "script", pct: 1 });
-  const plan = await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
+  // resume: the plan already made (and paid for) in this folder, as saved (its layout may have had free fixes since)
+  const read0 = (f) => JSON.parse(fs.readFileSync(path.join(out, f), "utf8"));
+  const plan = resume
+    ? { script: read0("script.json"), layout: read0("layout.json"), trace: read0("trace.json"), costUsd: read0("plan_report.json").planUsd ?? 0, problems: [], warnings: [], resumed: true }
+    : await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
   save("script.json", plan.script); save("layout.json", plan.layout); save("trace.json", plan.trace);
   P({ stage: "scene", pct: 4, title: plan.script.title, narration: plan.script.sentences.map((s) => s.text).join(" "), facts: plan.script.facts ?? [], parts: plan.layout.parts.map((p) => p.id) });
   const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, planSeconds: (Date.now() - t0) / 1000 };
   save("plan_report.json", report);
-  if (!reuse && !plan.problems.length && openings) fs.appendFileSync(openings, JSON.stringify({ topic, at: new Date().toISOString(), ...openingOf(plan.layout) }) + "\n");
+  if (!reuse && !plan.resumed && !plan.problems.length && openings) fs.appendFileSync(openings, JSON.stringify({ topic, at: new Date().toISOString(), ...openingOf(plan.layout) }) + "\n");
   if (plan.problems.length > maxProblems) { P({ stage: "failed", reason: "plan", problems: plan.problems }); return { ...report, ok: false }; }
   if (planOnly) return { ...report, ok: true };
 
@@ -104,6 +108,8 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     // a repair round on the failing beats, then their frames looked at again (round: 2, 3)
     let still = failed;
     const repairRound = async (round, beats) => {
+      // a spending cap: no repair round that could take the video past it (a repair and its look cost about $0.2)
+      if (plan.costUsd + vUsd + extraUsd + 0.2 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return false; }
       P({ stage: "scene", step: round === 2 ? "repair" : "second repair", pct: 7 });
       const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: beats.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
       extraUsd += rp.costUsd;
@@ -151,6 +157,6 @@ if (/run\.mjs$/.test(process.argv[1] ?? "")) {
   const argv = process.argv.slice(2), a = {};
   for (let i = 0; i < argv.length; i++) if (argv[i].startsWith("--")) { const k = argv[i].slice(2); a[k] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : true; }
   const read = (f) => JSON.parse(fs.readFileSync(f, "utf8"));
-  const r = await runTopic({ topic: a.topic, out: a.out, proto: a.proto, ff: a.ff, lengthSec: Number(a.length ?? 30), reuse: a.reuse ?? null, script: a.script ? read(a.script) : null, voice: a.voice ?? null, words: a.words ? read(a.words) : null, planOnly: !!a.planOnly, vision: !a.noVision, log: a.log });
+  const r = await runTopic({ topic: a.topic, out: a.out, proto: a.proto, ff: a.ff, lengthSec: Number(a.length ?? 30), reuse: a.reuse ?? null, script: a.script ? read(a.script) : null, voice: a.voice ?? null, words: a.words ? read(a.words) : null, planOnly: !!a.planOnly, vision: !a.noVision, log: a.log, resume: !!a.resume, maxUsd: a.maxUsd ? Number(a.maxUsd) : Infinity });
   console.log(JSON.stringify({ ok: r.ok, planUsd: r.planUsd, totalUsd: r.totalUsd, problems: r.problems, warnings: r.warnings, seconds: r.seconds, file: r.files?.end, measured: r.measured && { saturation: r.measured.saturation, sceneMax: r.measured.sceneMax } }, null, 1));
 }

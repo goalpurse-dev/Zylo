@@ -184,3 +184,16 @@ export function placeSign(L, home, project) {
   for (const at of cands) { const q = { ...sign, params: { ...sign.params, at } }; const c = cover(q); if (c.share <= 0.1 && c.inFrame && !hits(focusOf(q, cut))) return { layout: { ...L, parts: L.parts.map((p) => (p === sign ? q : p)) }, moved: true }; }
   return { layout: L, moved: false };
 }
+
+/** creeks and surface flows lifted onto the setting's floor (the bay, the sidewalk), so no slab hides them */
+export function liftToFloor(L) {
+  const W = L.world ?? {}, t = W.backdrop?.type, floor = W.backdrop?.walkTop ?? (t === "street" || t === "room" ? 0.12 : t === "carwash" ? 0.1 : t === "garage" ? 0.08 : 0);
+  if (!floor) return L;
+  const cut = cutOf(L), inCut = (q) => q[0] > cut.x0 && q[0] < cut.x1 && q[2] > cut.z0;
+  const parts = L.parts.map((p) => {
+    if (p.kind === "creek") return { ...p, params: { ...p.params, y: Math.max(p.params?.y ?? 0, floor + 0.02) } };
+    if (p.kind === "flow" && Array.isArray(p.params?.path)) return { ...p, params: { ...p.params, path: p.params.path.map((q) => (q[1] >= -0.05 && q[1] < floor + 0.12 && !inCut(q) ? [q[0], floor + 0.14, q[2]] : q)) } };
+    return p;
+  });
+  return { ...L, parts };
+}

@@ -44,18 +44,19 @@ export function settle(ctx, p, api) {
     const s = add(root, new THREE.SphereGeometry(0.07 + ((i * 7) % 5) * 0.012, 8, 6), sandM, 0, 0, 0, false);
     grains.push({ s, x: b.x0 + 0.15 + ((i * 37) % 97) / 97 * (W - 0.3), y: b.y0 + 0.3 + ((i * 53) % 89) / 89 * (H * 0.75), z: b.z1 - 0.12 - ((i * 13) % 7) / 7 * Math.min(0.6, D * 0.6), d: ((i * 29) % 31) / 31 });
   }
-  const sandBed = add(root, boxG(W, 1, D - 0.04), sandM, cx, b.y0, cz, false);
+  // the bed and the top layer reach the cut face, in front of the water (seen through 80% water they washed out)
+  const sandBed = add(root, boxG(W, 1, D + 0.02), sandM, cx, b.y0, cz + 0.01, false);
   // oil: dark droplets that rise, and a dark layer on top
   // the top layer (oil, scum): near black and glossy, so it reads against the water and the walls
   const oilM = ctx.phys ? ctx.phys({ color: C(col(p.oilColor, "#14100c")), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }) : mat("#14100c"), drops = [];
   for (let i = 0; i < 26; i++) { const s = add(root, new THREE.SphereGeometry(0.09, 8, 6), oilM, 0, 0, 0, false); drops.push({ s, x: b.x0 + 0.2 + ((i * 41) % 83) / 83 * (W - 0.4), y: b.y0 + 0.4 + ((i * 23) % 61) / 61 * H * 0.5, z: b.z1 - 0.12 - ((i * 11) % 5) / 5 * 0.4, d: ((i * 17) % 19) / 19 }); }
-  const oilLayer = add(root, boxG(W, 1, D - 0.04), oilM, cx, b.y1, cz, false);
+  const oilLayer = add(root, boxG(W, 1, D + 0.02), oilM, cx, b.y1, cz + 0.01, false);
   return {
     update(tt) {
       const sh = api.ch("show", tt); walls.visible = sh > 0.002; walls.scale.setScalar(pop(back(Math.min(1, sh))));
-      const fill = clamp(api.ch("fill", tt)), level = H * fill;
+      const fill = api.cue("fill") ? clamp(api.ch("fill", tt)) : clamp(sh), level = H * fill;
       water.visible = fill > 0.01; water.scale.y = Math.max(0.001, level); water.position.y = b.y0 + level / 2;
-      waterM.color.copy(murky).lerp(clear, clamp(api.ch("clear", tt)));
+      const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
       const sd = clamp(api.ch("sand", tt)), bed = H * 0.16 * sd;
       for (const g of grains) {
         const k = clamp((sd - g.d * 0.5) / 0.5); // each grain sinks over half the cue, staggered
@@ -80,7 +81,8 @@ export function creek(ctx, p, api) {
   add(root, boxG(L, 0.16, w + 0.4), bank, (x0 + x1) / 2, y - depth - 0.04, z); // the bed under the water (the face shows the water in section)
   const clean = new THREE.Color(col(p.color, "#2f8fd8")), dirty = new THREE.Color(col(p.dirtyColor, "#8a7a3e"));
   const wM = ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
-  const water = add(root, boxG(L, depth, w), wM, (x0 + x1) / 2, y - depth / 2 + 0.04, z + 0.01, false);
+  // its front just in front of the soil's face (behind it, the face hid the section and only a pale strip showed on top)
+  const water = add(root, boxG(L, depth, w + 0.06), wM, (x0 + x1) / 2, y - depth / 2 + 0.04, z + 0.03, false);
   const rip = ctx.std({ color: new THREE.Color("#e8f6ff"), roughness: 0.3, transparent: true, opacity: 0.85 }), ripples = [];
   for (let i = 0; i < 40; i++) { const r = add(root, new THREE.BoxGeometry(0.45, 0.012, 0.06), rip, 0, y + 0.07, z - w / 2 + 0.15 + ((i * 7) % 11) / 11 * (w - 0.3), false); ripples.push({ r, ph: i / 40 }); }
   const foamM = ctx.std({ color: new THREE.Color("#f4efe2"), roughness: 0.9 }), foam = [];
@@ -101,21 +103,25 @@ export function flow(ctx, p, api) {
   const { THREE } = ctx;
   const pts = (p.path ?? [[0, 0.1, 0], [3, 0.1, 0]]).map((q) => new THREE.Vector3(...q));
   const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.1), L = curve.getLength();
-  const look = { water: ["#4aa3e8", 0.15], sludge: ["#3b2a1a", 0.35], soap: ["#f1f6fa", 0.4], oil: ["#1d1712", 0.1], mud: ["#6b4a2a", 0.6] }[p.look ?? "water"] ?? ["#4aa3e8", 0.15];
-  const m = ctx.std({ color: new THREE.Color(look[0]), roughness: look[1] });
-  const ribbonM = ctx.std({ color: new THREE.Color(look[0]), roughness: 0.3, transparent: true, opacity: 0.35 });
-  const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(16, pts.length * 12), (p.size ?? 0.16) * 0.55, 8, false), ribbonM); ctx.scene.add(ribbon);
-  const N = p.count ?? Math.max(10, Math.round(L * 3)), blobs = [];
-  for (let i = 0; i < N; i++) { const s = new THREE.Mesh(new THREE.SphereGeometry((p.size ?? 0.16) * (0.85 + ((i * 7) % 5) * 0.08), 10, 8), m); s.castShadow = false; ctx.scene.add(s); blobs.push({ s, ph: i / N }); }
+  // water that starts in the air (a hose, a nozzle) is a spray: pale drops fanning out, no tube (a blue tube of blobs
+  // in front of a blue wall read as the hose itself)
+  const spray = p.look === "spray" || ((p.look ?? "water") === "water" && pts[0].y > 0.5);
+  const look = spray ? ["#e4f5ff", 0.1] : { water: ["#4aa3e8", 0.15], sludge: ["#3b2a1a", 0.35], soap: ["#f1f6fa", 0.4], oil: ["#1d1712", 0.1], mud: ["#6b4a2a", 0.6] }[p.look ?? "water"] ?? ["#4aa3e8", 0.15];
+  const m = ctx.std({ color: new THREE.Color(look[0]), roughness: look[1], ...(spray ? { emissive: new THREE.Color("#9fd8ff"), emissiveIntensity: 0.35 } : {}) });
+  const ribbonM = ctx.std({ color: new THREE.Color(look[0]), roughness: 0.3, transparent: true, opacity: 0.5 });
+  const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(16, pts.length * 12), Math.max(0.22, p.size ?? 0.22) * 0.6, 8, false), ribbonM); ctx.scene.add(ribbon);
+  const R0 = spray ? 0.11 : Math.max(0.22, p.size ?? 0.22), N = spray ? Math.max(p.count ?? 0, Math.round(L * 14)) : p.count ?? Math.max(14, Math.round(L * 4)), blobs = [];
+  // each drop's own sideways direction: the spray widens toward its end (a cone up to 0.45 m across)
+  for (let i = 0; i < N; i++) { const s = new THREE.Mesh(new THREE.SphereGeometry(R0 * (0.85 + ((i * 7) % 5) * 0.08), 10, 8), m); s.castShadow = false; ctx.scene.add(s); const a = i * 2.39996; blobs.push({ s, ph: spray ? (i * 0.618034) % 1 : i / N, off: spray ? new THREE.Vector3(Math.cos(a), Math.sin(a), Math.cos(a * 1.7)).multiplyScalar(0.45 * (((i * 13) % 7) / 6)) : null }); }
   return {
     update(tt) {
       const on = clamp(api.ch("on", tt) - api.ch("off", tt));
-      ribbon.visible = on > 0.02; ribbonM.opacity = 0.35 * on;
+      ribbon.visible = !spray && on > 0.02; ribbonM.opacity = 0.5 * on;
       for (const b of blobs) {
         const u = (tt * (p.speed ?? 2.4) / L + b.ph) % 1;
         // the blobs reach only as far as the flow has got (it starts at the top of the path)
         b.s.visible = on > 0.02 && u <= Math.min(1, on * 1.2);
-        b.s.position.copy(curve.getPointAt(u)); b.s.scale.setScalar(pop(Math.min(1, on * 1.5)));
+        b.s.position.copy(curve.getPointAt(u)); if (b.off) b.s.position.addScaledVector(b.off, u); b.s.scale.setScalar(pop(Math.min(1, on * 1.5)));
       }
     },
   };

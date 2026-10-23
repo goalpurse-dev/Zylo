@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { channelValue } from "./curves.js";
-import { cameraAt, projectBox } from "./director.js";
+import { cameraAt, projectBox, MOVE } from "./director.js";
 import { focusOf } from "./focus.js";
 import { CAMERA_LIMITS, measureKey, turnBetween } from "./framing.js";
 import { callJSON } from "./llm.mjs";
@@ -81,9 +81,13 @@ export function previewTimes(tl, layout = null) {
     const next = tl.sentences[i + 1]?.t0 ?? tl.marks.lengthEnd;
     const beat = layout?.beats?.find((b) => b.s === s.role), shows = beat?.shows;
     // the moment after the sentence's showing action has settled (else after its last action)
-    const own = shows ? Object.entries(tl.tracks).filter(([k]) => k.startsWith(`${shows.p}.`)).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1)) : [];
+    const own = shows ? Object.entries(tl.tracks).filter(([k]) => k.startsWith(`${shows.p}.`)).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next).map((r) => r.t1)) : [];
     const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
-    const t = Math.min(next - 0.15, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, next - 0.15))));
+    // (the showing action on the last word, a canopy going up on "canopy", may settle just after the sentence: up to 0.4 s)
+    // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed)
+    const moveOff = Math.min(Infinity, ...(tl.director?.frames ?? []).filter((f) => f.t >= next - 0.05).map((f) => f.t - MOVE.lead - 0.05));
+    const lim = Math.min(own.length ? next + 0.4 : next - 0.15, moveOff);
+    const t = Math.min(lim, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, lim))));
     // congrats is judged before the end card pops (the finished build must be in view, not the sign)
     const tt = s.role === "congrats" && tl.marks?.signPop ? Math.min(t, tl.marks.signPop - 0.2) : t;
     out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, tt).toFixed(2), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
