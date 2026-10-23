@@ -9,3 +9,9 @@
 {"topic":"How a traffic light knows your car is there","at":"2026-10-22T20:53:41.013Z","setting":"street","kind":"trafficLight","type":"close","what":"tl"}
 {"topic":"How a sump pump keeps a basement dry","at":"2026-10-22T20:56:07.315Z","setting":"yard","kind":"dig","type":"close","what":"dig"}
 {"topic":"How a car wash works","at":"2026-10-22T20:58:43.972Z","setting":"carwash","kind":"car","type":"close","what":"car"}
+{"topic":"How a car wash works","at":"2026-10-22T22:04:45.952Z","setting":"plain","kind":"boxPop","type":"close","what":"nozzles"}
+{"topic":"How a traffic light knows your car is there","at":"2026-10-22T22:12:45.670Z","setting":"street","kind":"region","type":"width 0.45","what":"a region"}
+{"topic":"How a car wash works","at":"2026-10-22T22:19:42.447Z","setting":"carwash","kind":"car","type":"close","what":"car"}
+{"topic":"How a fire hydrant works","at":"2026-10-23T17:42:12.108Z","setting":"street","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How an ATM works","at":"2026-10-23T17:45:10.074Z","setting":"street","kind":"boxPop","type":"close","what":"cash"}
+{"topic":"How a septic tank works","at":"2026-10-23T17:51:17.005Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}

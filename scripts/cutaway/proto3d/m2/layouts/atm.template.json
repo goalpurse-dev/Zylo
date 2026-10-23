@@ -1,0 +1,1376 @@
+{
+ "key": "atm",
+ "title": "How an ATM Works",
+ "template": true,
+ "roles": [
+  "hook",
+  "problem",
+  "fix1",
+  "fix2",
+  "fact",
+  "fix3",
+  "name",
+  "myth",
+  "mythFact",
+  "finish",
+  "congrats"
+ ],
+ "world": {
+  "cut": {
+   "x0": -7,
+   "x1": 2,
+   "z0": -2,
+   "depth": 2.5
+  },
+  "house": false,
+  "worker": false,
+  "moreTrees": false,
+  "road": false,
+  "backdrop": {
+   "type": "street",
+   "sign": "CORNER BANK",
+   "lampX": -12,
+   "benchX": 10
+  },
+  "porch": false,
+  "rocksAvoid": [
+   [
+    -8,
+    4.5,
+    -2.4,
+    0.2
+   ]
+  ],
+  "roots": {
+   "pad": 0.8,
+   "to": 7
+  }
+ },
+ "parts": [
+  {
+   "id": "light",
+   "kind": "light",
+   "params": {
+    "storm": false
+   }
+  },
+  {
+   "id": "dig",
+   "kind": "dig",
+   "params": {
+    "clumps": 150,
+    "mound": {
+     "x": -3,
+     "z": -5,
+     "rx": 1.8,
+     "rz": 1.4,
+     "h": 1
+    }
+   }
+  },
+  {
+   "id": "cash",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.7,
+     0.5,
+     0.45
+    ],
+    "pos": [
+     4,
+     0.37,
+     -0.2
+    ],
+    "r": 0.03,
+    "mat": "leaf2"
+   }
+  },
+  {
+   "id": "wallBox",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     1.4,
+     2.6,
+     1
+    ],
+    "pos": [
+     4,
+     1.42,
+     -1.3
+    ],
+    "r": 0.04,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "atm",
+   "kind": "atm",
+   "params": {
+    "pos": [
+     4,
+     0.12,
+     -1.2
+    ],
+    "color": "#3a5a8c"
+   }
+  },
+  {
+   "id": "wheelA",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.5,
+     0.5,
+     0.4
+    ],
+    "pos": [
+     4,
+     1.15,
+     0
+    ],
+    "r": 0.2,
+    "mat": "chassis"
+   }
+  },
+  {
+   "id": "wheelB",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.5,
+     0.5,
+     0.4
+    ],
+    "pos": [
+     4,
+     1.75,
+     0
+    ],
+    "r": 0.2,
+    "mat": "chassis"
+   }
+  },
+  {
+   "id": "sensor",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.22,
+     0.5,
+     0.3
+    ],
+    "pos": [
+     4.75,
+     1.45,
+     0
+    ],
+    "r": 0.04,
+    "mat": "machineBand"
+   }
+  },
+  {
+   "id": "rejectBin",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.8,
+     0.7,
+     0.7
+    ],
+    "pos": [
+     5.6,
+     0.47,
+     0.1
+    ],
+    "r": 0.04,
+    "mat": "machineBody"
+   }
+  },
+  {
+   "id": "grab",
+   "kind": "arrows",
+   "params": {
+    "list": [
+     {
+      "at": [
+       4,
+       1.2,
+       0.5
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 0.8,
+      "phase": 0
+     },
+     {
+      "at": [
+       3.2,
+       1.2,
+       0.5
+      ],
+      "dir": [
+       -1,
+       0
+      ],
+      "travel": 0.8,
+      "phase": 0.4
+     }
+    ],
+    "opts": {
+     "scale": 1
+    }
+   }
+  },
+  {
+   "id": "cable",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      5.15,
+      0.1,
+      -0.06
+     ],
+     [
+      5.15,
+      -1.6,
+      -0.06
+     ],
+     [
+      -7.5,
+      -1.6,
+      -0.06
+     ]
+    ],
+    "r": 0.12,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "data",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "cable",
+    "count": 14,
+    "size": 0.1,
+    "speed": 3,
+    "mat": "juice"
+   }
+  },
+  {
+   "id": "bank",
+   "kind": "panels",
+   "params": {
+    "panels": [
+     {
+      "ch": "bank",
+      "mat": "concrete",
+      "size": [
+       5,
+       5.5,
+       3
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       -9.5,
+       0.12,
+       -4.5
+      ],
+      "axis": "y",
+      "vis": 0,
+      "r": 0.04
+     }
+    ]
+   }
+  },
+  {
+   "id": "roof",
+   "kind": "panels",
+   "params": {
+    "panels": [
+     {
+      "ch": "roof",
+      "mat": "metal",
+      "size": [
+       2.6,
+       0.18,
+       2
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       4,
+       3.2,
+       -1.1
+      ],
+      "axis": null,
+      "vis": 0,
+      "r": 0.04
+     }
+    ]
+   }
+  },
+  {
+   "id": "outline",
+   "kind": "outline",
+   "params": {
+    "points": [
+     [
+      3.1,
+      0.15,
+      0.15
+     ],
+     [
+      3.1,
+      2.7,
+      0.15
+     ],
+     [
+      5,
+      2.7,
+      0.15
+     ],
+     [
+      5,
+      0.15,
+      0.15
+     ]
+    ],
+    "opts": {
+     "closed": true
+    }
+   }
+  },
+  {
+   "id": "cardBook",
+   "kind": "book",
+   "params": {
+    "w": 1.6,
+    "h": 1,
+    "bg": "#1f4e8c",
+    "book": false,
+    "lines": [
+     {
+      "text": "BANK CARD",
+      "font": "bold 60px Georgia, serif",
+      "color": "#f2d58e",
+      "y": 120
+     },
+     {
+      "text": "$ $ $ CASH",
+      "font": "bold 70px Georgia, serif",
+      "color": "#9be39b",
+      "y": 300
+     }
+    ],
+    "from": [
+     2.3,
+     -0.3,
+     -0.3
+    ],
+    "to": [
+     2.3,
+     2.2,
+     -0.3
+    ],
+    "rot": [
+     -0.1,
+     -0.25,
+     0.02
+    ]
+   }
+  },
+  {
+   "id": "acctBook",
+   "kind": "book",
+   "params": {
+    "w": 1.6,
+    "h": 1,
+    "bg": "#1f4e8c",
+    "book": false,
+    "lines": [
+     {
+      "text": "ACCOUNT NO.",
+      "font": "bold 54px Georgia, serif",
+      "color": "#f2d58e",
+      "y": 130
+     },
+     {
+      "text": "4821 0937",
+      "font": "bold 70px Georgia, serif",
+      "color": "#ffffff",
+      "y": 300
+     }
+    ],
+    "from": [
+     1.2000000000000004,
+     -0.8,
+     -2.8
+    ],
+    "to": [
+     1.2000000000000004,
+     2.6,
+     -2.8
+    ],
+    "rot": [
+     -0.1,
+     -0.25,
+     0.02
+    ]
+   }
+  },
+  {
+   "id": "bush",
+   "kind": "shrubs",
+   "params": {
+    "list": [
+     [
+      6.2,
+      -0.9,
+      0.9
+     ]
+    ],
+    "stagger": 0.1
+   }
+  },
+  {
+   "id": "sign",
+   "kind": "sign",
+   "params": {
+    "at": [
+     8.5,
+     0.12,
+     -1
+    ],
+    "rotY": 0.22,
+    "scale": 1.3
+   }
+  },
+  {
+   "id": "safe",
+   "kind": "panels",
+   "params": {
+    "panels": [
+     {
+      "ch": "safeTop",
+      "mat": "metal",
+      "size": [
+       1.2,
+       0.12,
+       0.9
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       4,
+       0.83,
+       -0.15
+      ],
+      "axis": null,
+      "vis": 0,
+      "r": 0.03
+     },
+     {
+      "ch": "safeL",
+      "mat": "metal",
+      "size": [
+       0.12,
+       0.65,
+       0.9
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       3.44,
+       0.445,
+       -0.15
+      ],
+      "axis": null,
+      "vis": 0,
+      "r": 0.03
+     },
+     {
+      "ch": "safeR",
+      "mat": "metal",
+      "size": [
+       0.12,
+       0.65,
+       0.9
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       4.56,
+       0.445,
+       -0.15
+      ],
+      "axis": null,
+      "vis": 0,
+      "r": 0.03
+     },
+     {
+      "ch": "safeBack",
+      "mat": "metal",
+      "size": [
+       1.2,
+       0.65,
+       0.1
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       4,
+       0.445,
+       -0.58
+      ],
+      "axis": null,
+      "vis": 0,
+      "r": 0.03
+     },
+     {
+      "ch": "safeDoor",
+      "mat": "chassis",
+      "size": [
+       1,
+       0.65,
+       0.14
+      ],
+      "anchor": [
+       -1,
+       0,
+       0
+      ],
+      "pos": [
+       3.5,
+       0.445,
+       0.22
+      ],
+      "axis": "x",
+      "vis": 0,
+      "r": 0.04
+     }
+    ]
+   }
+  },
+  {
+   "id": "safeHandle",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.1,
+     0.32,
+     0.12
+    ],
+    "pos": [
+     4.3,
+     0.45,
+     0.36
+    ],
+    "r": 0.04,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "safeDial",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.24,
+     0.24,
+     0.1
+    ],
+    "pos": [
+     3.85,
+     0.45,
+     0.34
+    ],
+    "r": 0.1,
+    "mat": "machineBand"
+   }
+  },
+  {
+   "id": "bill",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.9,
+     0.06,
+     0.35
+    ],
+    "pos": [
+     4,
+     1.45,
+     0
+    ],
+    "r": 0.01,
+    "mat": "leaf2"
+   }
+  },
+  {
+   "id": "bill2",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.9,
+     0.06,
+     0.35
+    ],
+    "pos": [
+     4.15,
+     1.52,
+     0.05
+    ],
+    "r": 0.01,
+    "mat": "leaf"
+   }
+  },
+  {
+   "id": "binLabel",
+   "kind": "book",
+   "params": {
+    "w": 0.75,
+    "h": 0.3,
+    "bg": "#b02a2a",
+    "book": false,
+    "lines": [
+     {
+      "text": "REJECT",
+      "font": "bold 50px Georgia, serif",
+      "color": "#ffffff",
+      "y": 80
+     }
+    ],
+    "from": [
+     5.6,
+     0.4,
+     0.5
+    ],
+    "to": [
+     5.6,
+     0.55,
+     0.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "dropArrow",
+   "kind": "arrows",
+   "params": {
+    "list": [
+     {
+      "at": [
+       5.2,
+       1.5,
+       0.3
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 0.7,
+      "phase": 0
+     }
+    ],
+    "opts": {
+     "scale": 0.8
+    }
+   }
+  },
+  {
+   "id": "keypad",
+   "kind": "book",
+   "params": {
+    "w": 0.6,
+    "h": 0.7,
+    "bg": "#222a33",
+    "book": false,
+    "lines": [
+     {
+      "text": "1 2 3",
+      "font": "bold 60px Georgia, serif",
+      "color": "#ffffff",
+      "y": 100
+     },
+     {
+      "text": "4 5 6",
+      "font": "bold 60px Georgia, serif",
+      "color": "#ffffff",
+      "y": 200
+     },
+     {
+      "text": "7 8 9",
+      "font": "bold 60px Georgia, serif",
+      "color": "#ffffff",
+      "y": 300
+     },
+     {
+      "text": "* 0 #",
+      "font": "bold 60px Georgia, serif",
+      "color": "#ffffff",
+      "y": 400
+     }
+    ],
+    "from": [
+     5.6,
+     1,
+     0.35
+    ],
+    "to": [
+     5.6,
+     1.45,
+     0.35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "id": "cardSlot",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.6,
+     0.12,
+     0.2
+    ],
+    "pos": [
+     5.6,
+     2,
+     0.3
+    ],
+    "r": 0.03,
+    "mat": "chassis"
+   }
+  },
+  {
+   "id": "wire",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      5.35,
+      1.15,
+      0.3
+     ],
+     [
+      5.15,
+      1.15,
+      0.3
+     ],
+     [
+      5.15,
+      0.12,
+      0.3
+     ]
+    ],
+    "r": 0.06,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "noCash",
+   "kind": "flag",
+   "params": {
+    "at": [
+     0.6000000000000005,
+     0,
+     -4.3999999999999995
+    ],
+    "colors": [
+     "#2f7d3a",
+     "#9be39b",
+     "#2f7d3a"
+    ],
+    "w": 1.2,
+    "h": 0.8
+   }
+  }
+ ],
+ "cues": [],
+ "beats": [
+  {
+   "s": "hook",
+   "do": [
+    {
+     "p": "cash",
+     "v": "show"
+    },
+    {
+     "p": "wallBox",
+     "v": "show",
+     "w": "wall"
+    },
+    {
+     "p": "dig",
+     "v": "dig",
+     "w": "cut"
+    },
+    {
+     "p": "atm",
+     "v": "show",
+     "w": "machine"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "cash"
+     ],
+     "type": "close"
+    }
+   ]
+  },
+  {
+   "s": "problem",
+   "do": [
+    {
+     "p": "grab",
+     "v": "show",
+     "w": "reach"
+    },
+    {
+     "p": "atm",
+     "v": "cash",
+     "w": "pull"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "atm"
+     ],
+     "type": "mid"
+    }
+   ]
+  },
+  {
+   "s": "fix1",
+   "do": [
+    {
+     "p": "grab",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "safe",
+     "v": "pop",
+     "w": "lock",
+     "ch": "safeTop"
+    },
+    {
+     "p": "safe",
+     "v": "pop",
+     "w": "lock",
+     "o": 0.05,
+     "ch": "safeL"
+    },
+    {
+     "p": "safe",
+     "v": "pop",
+     "w": "lock",
+     "o": 0.1,
+     "ch": "safeR"
+    },
+    {
+     "p": "safe",
+     "v": "pop",
+     "w": "lock",
+     "o": 0.15,
+     "ch": "safeBack"
+    },
+    {
+     "p": "safe",
+     "v": "grow",
+     "w": "steel",
+     "d": 0.6,
+     "ch": "safeDoor"
+    },
+    {
+     "p": "atm",
+     "v": "safe",
+     "w": "safe"
+    },
+    {
+     "p": "safeDial",
+     "v": "show",
+     "w": "safe",
+     "o": 0.2
+    },
+    {
+     "p": "safeHandle",
+     "v": "show",
+     "w": "safe",
+     "o": 0.4
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "safe",
+      "cash"
+     ],
+     "type": "close"
+    }
+   ]
+  },
+  {
+   "s": "fix2",
+   "do": [
+    {
+     "p": "atm",
+     "v": "cassettes",
+     "w": "rubber"
+    },
+    {
+     "p": "wheelA",
+     "v": "show",
+     "w": "wheels"
+    },
+    {
+     "p": "wheelB",
+     "v": "show",
+     "w": "wheels",
+     "o": 0.15
+    },
+    {
+     "p": "bill",
+     "v": "show",
+     "w": "bill"
+    },
+    {
+     "p": "atm",
+     "v": "pick",
+     "w": "one"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "wheelA",
+      "wheelB",
+      "bill"
+     ],
+     "view": "close",
+     "type": "close"
+    }
+   ]
+  },
+  {
+   "s": "fact",
+   "do": [
+    {
+     "p": "sensor",
+     "v": "show",
+     "w": "sensor"
+    },
+    {
+     "p": "bill2",
+     "v": "show",
+     "w": "two"
+    },
+    {
+     "p": "rejectBin",
+     "v": "show",
+     "w": "reject"
+    },
+    {
+     "p": "binLabel",
+     "v": "show",
+     "w": "reject",
+     "o": 0.2
+    },
+    {
+     "p": "dropArrow",
+     "v": "show",
+     "w": "drops"
+    },
+    {
+     "p": "atm",
+     "v": "pick",
+     "w": "drops"
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       3.2,
+       0.1,
+       -0.5
+      ],
+      "max": [
+       6.2,
+       2.2,
+       0.6
+      ]
+     },
+     "view": "close",
+     "width": 0.9
+    }
+   ]
+  },
+  {
+   "s": "fix3",
+   "do": [
+    {
+     "p": "dropArrow",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "atm",
+     "v": "card",
+     "w": "card"
+    },
+    {
+     "p": "cardSlot",
+     "v": "show",
+     "w": "slot"
+    },
+    {
+     "p": "keypad",
+     "v": "show",
+     "w": "keypad"
+    },
+    {
+     "p": "wire",
+     "v": "grow",
+     "w": "wired",
+     "d": 0.8
+    },
+    {
+     "p": "cable",
+     "v": "grow",
+     "w": "buried",
+     "d": 1.6
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       3.2,
+       -2,
+       -0.6
+      ],
+      "max": [
+       6.4,
+       2.4,
+       0.6
+      ]
+     },
+     "view": "close",
+     "width": 0.9
+    }
+   ]
+  },
+  {
+   "s": "name",
+   "do": [
+    {
+     "p": "outline",
+     "v": "show",
+     "w": "automated"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "atm"
+     ],
+     "width": 0.45,
+     "hero": true
+    }
+   ]
+  },
+  {
+   "s": "myth",
+   "do": [
+    {
+     "p": "outline",
+     "v": "hide",
+     "w": "And"
+    },
+    {
+     "p": "cardBook",
+     "v": "show",
+     "w": "card"
+    },
+    {
+     "p": "noCash",
+     "v": "show",
+     "w": "card",
+     "o": 0.3
+    },
+    {
+     "p": "noCash",
+     "v": "cross",
+     "w": "not"
+    },
+    {
+     "p": "noCash",
+     "v": "hide",
+     "w": "money",
+     "o": 0.9
+    },
+    {
+     "p": "cardBook",
+     "v": "hide",
+     "w": "money",
+     "o": 0.9
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       1,
+       0,
+       -0.8
+      ],
+      "max": [
+       7.6,
+       3.2,
+       1
+      ]
+     },
+     "width": 0.8
+    }
+   ]
+  },
+  {
+   "s": "mythFact",
+   "do": [
+    {
+     "p": "acctBook",
+     "v": "show",
+     "w": "account"
+    },
+    {
+     "p": "bank",
+     "v": "grow",
+     "w": "balance",
+     "d": 1.2,
+     "ch": "bank"
+    },
+    {
+     "p": "data",
+     "v": "show",
+     "w": "computer"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "acctBook",
+      "cable"
+     ],
+     "width": 0.8
+    }
+   ]
+  },
+  {
+   "s": "finish",
+   "do": [
+    {
+     "p": "dig",
+     "v": "refill",
+     "w": "Add"
+    },
+    {
+     "p": "acctBook",
+     "v": "hide",
+     "w": "Add"
+    },
+    {
+     "p": "data",
+     "v": "hide",
+     "w": "Add"
+    },
+    {
+     "p": "atm",
+     "v": "screen",
+     "w": "screen"
+    },
+    {
+     "p": "roof",
+     "v": "pop",
+     "w": "roof",
+     "ch": "roof"
+    },
+    {
+     "p": "bush",
+     "v": "show",
+     "w": "bush"
+    }
+   ],
+   "shots": [
+    {
+     "focus": "home"
+    }
+   ]
+  },
+  {
+   "s": "congrats",
+   "do": [],
+   "shots": [
+    {
+     "focus": "home"
+    }
+   ]
+  }
+ ],
+ "audio": {
+  "cards": [
+   {
+    "text": "1,000 LB",
+    "at": {
+     "s": "fix1",
+     "w": "1,000"
+    },
+    "d": 1.8
+   }
+  ],
+  "sfx": [
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "hook",
+     "w": "cut",
+     "o": 0.05
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "motor_hum",
+    "at": {
+     "s": "fix2",
+     "w": "wheels"
+    },
+    "d": 1.5
+   },
+   {
+    "lib": "motor_hum",
+    "at": {
+     "s": "fact",
+     "w": "drops"
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "finish",
+     "w": "Add",
+     "o": 0.05
+    },
+    "d": 1.2
+   }
+  ],
+  "chimes": [
+   {
+    "s": "fix1",
+    "w": "1,000"
+   },
+   {
+    "s": "name"
+   },
+   {
+    "s": "congrats"
+   }
+  ]
+ },
+ "why": "A street scene: a sidewalk with a bank-front sign, a trench cut beside it for the buried cable, and the ATM standing on solid sidewalk. The video opens close on the stack of cash that the hook names, not on a car. Then the camera moves in on the safe, the wheels, the sensor and bin, and the card and cable. It ends on the account-number card, the bank building and the finished machine.",
+ "approved": false,
+ "facts": [
+  {
+   "index": 0,
+   "verdict": "keep",
+   "claim": "Some ATMs and their steel safes weigh over 1,000 pounds",
+   "why": "A vendor spec table lists ATMs at 1,058 to 2,205 lb, and a Diebold Cashgard safe is listed at 1,830 lb. Many ATMs weigh far less, so 'some' is the correct word.",
+   "sources": [
+    {
+     "url": "https://www.tetralink.com/Docs/ATMComparisonGuide2014.pdf",
+     "title": "ATM Comparison Guide"
+    },
+    {
+     "url": "https://empiresafe.com/product/diebold-cashgard-18720-trtl-30/",
+     "title": "Diebold Cashgard 18720 TRTL-30"
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "verdict": "keep",
+   "claim": "ATM cash dispensers use a sensor to detect two stuck-together bills and send them to a reject bin",
+   "why": "Several patents describe double-pick detection with thickness sensors, with rejected notes sent to a purge or reject bin.",
+   "sources": [
+    {
+     "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8116995",
+     "title": "Media characterization"
+    },
+    {
+     "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5267826",
+     "title": "Sheet handling apparatus"
+    },
+    {
+     "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/6648220",
+     "title": "Cash dispenser and method"
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "verdict": "reword",
+   "claim": "An ATM card holds only an account number; the balance is kept on the bank's computer",
+   "why": "The stripe also holds the cardholder name, expiry date and a service code, so 'only' is too strong. The balance is not on the card and stays with the bank.",
+   "sources": [
+    {
+     "url": "https://www.capitalmds.com/magnetic-strips-how-they-work/",
+     "title": "Magnetic Strips - How They Work"
+    },
+    {
+     "url": "https://www.foxbusiness.com/fox-money/banking/how-ATMs-work",
+     "title": "What is an ATM, and how does it work?"
+    },
+    {
+     "url": "https://money.howstuffworks.com/personal-finance/banking/atm3.htm",
+     "title": "Parts of the Machine - How ATMs Work"
+    }
+   ]
+  }
+ ],
+ "savedFrom": "prebuild atm",
+ "savedAt": "2026-10-23T17:50:18.431Z"
+}
