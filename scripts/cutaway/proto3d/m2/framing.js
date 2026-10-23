@@ -150,6 +150,8 @@ export function placeLifeProps(L, home, project) {
   let parts = L.parts.slice();
   for (const [i, p] of parts.entries()) {
     if (!LIFE_KINDS.includes(p.kind)) continue;
+    // a newspaper or a book dug up out of the cut is part of the action: it stays where it comes from
+    const from = p.params?.from; if (from && from[0] >= cut.x0 - 0.3 && from[0] <= cut.x1 + 0.3 && from[1] <= 0.2 && from[2] >= cut.z0 - 0.3) continue;
     const b = focusOf(p, cut); if (!b || (near(b) && onScreen(b))) continue;
     const c = b.min.map((v, k) => (v + b.max[k]) / 2), others = taken(p.id);
     // candidates: a grid on the lawn behind and beside the cut; the free spot on screen nearest its back right corner

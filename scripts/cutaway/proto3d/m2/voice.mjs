@@ -10,8 +10,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PER_CHAR = 0.0002;
 
-// model: the ElevenLabs model (eleven_multilingual_v2 is the approved one; flash and turbo v2.5 cost half the credits)
-export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [], model = "eleven_multilingual_v2" }) {
+// model: the ElevenLabs model. eleven_flash_v2_5 since 2026-10-23: the owner could not tell it from the approved
+// eleven_multilingual_v2 in a blind A/B, it passed the timing checks (every word aligned, no timeline problems), and it
+// costs half the credits
+export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [], model = "eleven_flash_v2_5" }) {
   fs.mkdirSync(out, { recursive: true });
   const raw = path.join(out, "raw.mp3"), rawWords = path.join(out, "raw.words.json"), final = path.join(out, "voice.mp3");
   let usd = 0;
@@ -31,7 +33,7 @@ export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionW
     const { alignmentWords } = await import(pathToFileURL(path.join(wt, "supabase/functions/_shared/cutaway/voice.js")).href);
     fs.writeFileSync(rawWords, JSON.stringify(alignmentWords(body.alignment ?? body.normalized_alignment)));
     fs.writeFileSync(path.join(out, "voice.json"), JSON.stringify({ text, chars: text.length, characterCost: chars, usd }, null, 1));
-    if (log) fs.appendFileSync(log, `${JSON.stringify({ at: new Date().toISOString(), label: `voice (ElevenLabs${model === "eleven_multilingual_v2" ? "" : " " + model})`, chars: text.length, characterCost: chars, costUsd: usd })}\n`);
+    if (log) fs.appendFileSync(log, `${JSON.stringify({ at: new Date().toISOString(), label: `voice (ElevenLabs ${model})`, chars: text.length, characterCost: chars, costUsd: usd })}\n`);
   }
   execFileSync(process.execPath, [path.join(here, "..", "voiceSilence.mjs"), ff, raw, rawWords, final], { env: { ...process.env, ...(sectionWords.length ? { SECTION_WORDS: sectionWords.join("|") } : {}) }, stdio: ["ignore", "pipe", "inherit"] });
   return { voice: final, words: JSON.parse(fs.readFileSync(final.replace(/\.mp3$/, ".words.json"), "utf8")), usd };

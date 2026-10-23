@@ -808,7 +808,11 @@
      ],
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "dig",
+    "does": "dig dig"
+   }
   },
   {
    "s": "problem",
@@ -853,6 +857,10 @@
    "shot": {
     "focus": "home",
     "scale": 0.9
+   },
+   "shows": {
+    "p": "lawn",
+    "does": "wet lawn"
    }
   },
   {
@@ -870,6 +878,10 @@
     ],
     "view": "high",
     "width": 1
+   },
+   "shows": {
+    "p": "trenchWater",
+    "does": "flood trenchWater"
    }
   },
   {
@@ -896,6 +908,10 @@
     ],
     "view": "close",
     "width": 0.3
+   },
+   "shows": {
+    "p": "crack",
+    "does": "grow crack"
    }
   },
   {
@@ -922,6 +938,10 @@
      "gravel"
     ],
     "width": 1
+   },
+   "shows": {
+    "p": "gravel",
+    "does": "fill gravel"
    }
   },
   {
@@ -962,6 +982,10 @@
     },
     "view": "low",
     "width": 0.95
+   },
+   "shows": {
+    "p": "gravel",
+    "does": "lift gravel"
    }
   },
   {
@@ -979,6 +1003,10 @@
     ],
     "width": 1,
     "hero": true
+   },
+   "shows": {
+    "p": "trenchOutline",
+    "does": "show trenchOutline"
    }
   },
   {
@@ -1058,6 +1086,10 @@
      "soakPit"
     ],
     "width": 0.75
+   },
+   "shows": {
+    "p": "flowIn",
+    "does": "show flowIn"
    }
   },
   {
@@ -1125,6 +1157,10 @@
      "fabric"
     ],
     "width": 1
+   },
+   "shows": {
+    "p": "fabric",
+    "does": "show fabric"
    }
   },
   {
@@ -1156,6 +1192,10 @@
      "flag"
     ],
     "width": 0.4
+   },
+   "shows": {
+    "p": "flag",
+    "does": "show flag"
    }
   },
   {
@@ -1186,6 +1226,10 @@
      "book"
     ],
     "width": 0.4
+   },
+   "shows": {
+    "p": "book",
+    "does": "show book"
    }
   },
   {
@@ -1222,6 +1266,10 @@
    "shot": {
     "focus": "home",
     "scale": 0.95
+   },
+   "shows": {
+    "p": "capSoil",
+    "does": "grow capSoil"
    }
   },
   {

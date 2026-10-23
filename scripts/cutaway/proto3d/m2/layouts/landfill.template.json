@@ -712,7 +712,7 @@
       0.6
      ],
      [
-      -7.4,
+      -11.5,
       -11.4,
       0.5
      ]
@@ -927,7 +927,11 @@
      ],
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "truck",
+    "does": "arrive truck"
+   }
   },
   {
    "s": "problem",
@@ -958,6 +962,10 @@
      "seepFlow"
     ],
     "width": 0.7
+   },
+   "shows": {
+    "p": "seepFlow",
+    "does": "show seepFlow"
    }
   },
   {
@@ -1030,7 +1038,11 @@
      ],
      "width": 0.65
     }
-   ]
+   ],
+   "shows": {
+    "p": "bags1",
+    "does": "lift bags1"
+   }
   },
   {
    "s": "fix2",
@@ -1086,7 +1098,11 @@
      "v": "clear2",
      "w": "plastic"
     }
-   ]
+   ],
+   "shows": {
+    "p": "bags1",
+    "does": "lift bags1"
+   }
   },
   {
    "s": "name",
@@ -1103,6 +1119,10 @@
     ],
     "width": 0.8,
     "hero": true
+   },
+   "shows": {
+    "p": "linerOutline",
+    "does": "show linerOutline"
    }
   },
   {
@@ -1140,6 +1160,10 @@
      "tank"
     ],
     "width": 1.15
+   },
+   "shows": {
+    "p": "drainPipe",
+    "does": "grow drainPipe"
    }
   },
   {
@@ -1177,6 +1201,10 @@
      "pit"
     ],
     "width": 0.95
+   },
+   "shows": {
+    "p": "pit",
+    "does": "grow pit"
    }
   },
   {
@@ -1202,6 +1230,10 @@
      "newspaper"
     ],
     "width": 0.45
+   },
+   "shows": {
+    "p": "newspaper",
+    "does": "show newspaper"
    }
   },
   {
@@ -1234,6 +1266,10 @@
    "shot": {
     "focus": "home",
     "scale": 0.95
+   },
+   "shows": {
+    "p": "bubbles",
+    "does": "show bubbles"
    }
   },
   {
@@ -1282,7 +1318,11 @@
      ],
      "width": 0.6
     }
-   ]
+   ],
+   "shows": {
+    "p": "flare",
+    "does": "show flare"
+   }
   },
   {
    "s": "finish",
@@ -1321,6 +1361,10 @@
    ],
    "shot": {
     "focus": "home"
+   },
+   "shows": {
+    "p": "pit",
+    "does": "grow pit"
    }
   },
   {

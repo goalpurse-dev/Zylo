@@ -690,7 +690,11 @@
      },
      "width": 0.9
     }
-   ]
+   ],
+   "shows": {
+    "p": "dig",
+    "does": "dig dig"
+   }
   },
   {
    "s": "problem",
@@ -731,7 +735,11 @@
      },
      "width": 0.9
     }
-   ]
+   ],
+   "shows": {
+    "p": "caveIn",
+    "does": "fall caveIn"
+   }
   },
   {
    "s": "fix1",
@@ -765,7 +773,11 @@
      ],
      "width": 0.5
     }
-   ]
+   ],
+   "shows": {
+    "p": "casing",
+    "does": "grow casing"
+   }
   },
   {
    "s": "name",
@@ -784,7 +796,11 @@
      "width": 0.5,
      "hero": true
     }
-   ]
+   ],
+   "shows": {
+    "p": "casingOutline",
+    "does": "show casingOutline"
+   }
   },
   {
    "s": "problem2",
@@ -876,7 +892,11 @@
       "w": "push"
      }
     }
-   ]
+   ],
+   "shows": {
+    "p": "pump",
+    "does": "show pump"
+   }
   },
   {
    "s": "problem3",
@@ -929,7 +949,11 @@
      ],
      "width": 0.7
     }
-   ]
+   ],
+   "shows": {
+    "p": "lawn",
+    "does": "wet lawn"
+   }
   },
   {
    "s": "fix3",
@@ -997,7 +1021,11 @@
      ],
      "width": 0.5
     }
-   ]
+   ],
+   "shows": {
+    "p": "clay",
+    "does": "grow clay"
+   }
   },
   {
    "s": "myth",
@@ -1035,7 +1063,11 @@
      ],
      "width": 1
     }
-   ]
+   ],
+   "shows": {
+    "p": "lakeL",
+    "does": "flood lakeL"
+   }
   },
   {
    "s": "mythFact",
@@ -1071,7 +1103,11 @@
      "view": "low",
      "width": 0.8
     }
-   ]
+   ],
+   "shows": {
+    "p": "aquL",
+    "does": "grow aquL"
+   }
   },
   {
    "s": "finish",
@@ -1115,7 +1151,11 @@
     {
      "focus": "home"
     }
-   ]
+   ],
+   "shows": {
+    "p": "cap",
+    "does": "show cap"
+   }
   },
   {
    "s": "congrats",

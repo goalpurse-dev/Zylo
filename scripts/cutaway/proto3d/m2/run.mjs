@@ -15,7 +15,7 @@ import { makeVoice } from "./voice.mjs";
 import { makeVideo, preparePage, runProcess } from "./make.mjs";
 import { compile } from "./compile.mjs";
 import { speechEnd } from "../speechEnd.mjs";
-import { gradingFor, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
+import { gradingFor, MECHANISM, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
 import { sheet } from "./sheet.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -75,7 +75,7 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
   if (!vision) {
     // no vision check (a re-render of a checked layout, or no Claude credit): the preview stills still set the grading
     preparePage({ layout, tl, proto });
-    const pngs = await previewStills({ proto, layout, times: previewTimes(tl).map((s) => s.t), out: path.join(out, "preview") });
+    const pngs = await previewStills({ proto, layout, times: previewTimes(tl, layout).map((s) => s.t), out: path.join(out, "preview") });
     const sat0 = saturationOf(ff, pngs), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
     if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
     save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38, vision: "off" });
@@ -83,12 +83,12 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
   if (vision) {
     P({ stage: "scene", step: "preview frames", pct: 6 });
     preparePage({ layout, tl, proto });
-    let shots = previewTimes(tl);
+    let shots = previewTimes(tl, layout);
     // an approved saved layout was checked when it was approved: only the sentences whose words moved get a new look
     // (none moved: no vision call at all), and no repair (the layout itself is unchanged)
     const approvedSaved = !!reuse && plan.approved;
     if (approvedSaved) shots = shots.filter((s) => (plan.changedRoles ?? []).includes(s.role));
-    const allTimes = approvedSaved ? previewTimes(tl) : shots;
+    const allTimes = approvedSaved ? previewTimes(tl, layout) : shots;
     const pngsAll = await previewStills({ proto, layout, times: allTimes.map((s) => s.t), out: path.join(out, "preview") });
     const pngs = approvedSaved ? pngsAll.filter((_, i) => shots.some((s) => s.t === allTimes[i].t)) : pngsAll;
     const jpgs = shrink(ff, pngs, path.join(out, "preview_small"));
@@ -101,28 +101,37 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     const vc = shots.length ? await visionCached({ apiKey, frames: shots, log, cacheDir }) : { frames: [], costUsd: 0 }; extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
     visionReport = { round1: vc.frames, costUsd: vc.costUsd };
+    // a repair round on the failing beats, then their frames looked at again (round: 2, 3)
+    let still = failed;
+    const repairRound = async (round, beats) => {
+      P({ stage: "scene", step: round === 2 ? "repair" : "second repair", pct: 7 });
+      const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: beats.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
+      extraUsd += rp.costUsd;
+      if (rp.problems.length) { visionReport[`repairProblems${round}`] = rp.problems; return false; }
+      layout = rp.layout; save("layout.json", layout);
+      ({ tl, checks } = checkAll());
+      preparePage({ layout, tl, proto });
+      const again = previewTimes(tl, layout).filter((s) => beats.some((f) => f.role === s.role));
+      const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, `preview${round}`) });
+      const jpgs2 = shrink(ff, pngs2, path.join(out, `preview${round}_small`));
+      const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
+      visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
+      still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
+      return true;
+    };
     // only the hook flagged: no repair (the approved videos' hooks are flagged as well; a repair costs about $0.17)
     if (failed.length && !failed.every((f) => f.role === "hook") && !approvedSaved) {
-      P({ stage: "scene", step: "repair", pct: 7 });
-      const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: failed.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
-      extraUsd += rp.costUsd;
-      if (!rp.problems.length) {
-        layout = rp.layout; save("layout.json", layout);
-        ({ tl, checks } = checkAll());
-        preparePage({ layout, tl, proto });
-        const again = previewTimes(tl).filter((s) => failed.some((f) => f.role === s.role));
-        const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, "preview2") });
-        const jpgs2 = shrink(ff, pngs2, path.join(out, "preview2_small"));
-        const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
-        visionReport.round2 = vc2.frames; visionReport.costUsd += vc2.costUsd;
-      } else visionReport.repairProblems = rp.problems;
+      const ok = await repairRound(2, failed);
+      // a mechanism beat ("This is a…", how, the fixes) still failing gets a second, small repair of just those beats:
+      // cheaper than refunding the whole attempt
+      const mech = still.filter((f) => MECHANISM.includes(f.role));
+      if (ok && mech.length) await repairRound(3, mech);
     }
-    const still = (visionReport.round2 ?? []).filter((f) => !f.ok).concat(visionReport.round2 ? [] : failed);
     visionReport.failing = still.map((f) => f.role);
     save("vision.json", visionReport);
-    // the gate, calibrated on the approved videos (they fail 2-3 of 12-13 frames of this check): after the repair round
-    // the video goes on with at most VISION_FAILS_OK failing beats, and never with a failing hero (name) beat
-    const blocking = still.length > VISION_FAILS_OK || still.some((f) => f.role === "name");
+    // the gate, calibrated on the approved videos (they fail 2-3 of 12-13 frames of this check): after the repair rounds
+    // the video goes on with at most VISION_FAILS_OK failing beats, and never with a failing mechanism beat
+    const blocking = still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role));
     visionReport.passedGate = !blocking;
     save("vision.json", visionReport);
     if (!blocking) fs.writeFileSync(accepted, JSON.stringify(layout, null, 1));

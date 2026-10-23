@@ -5,7 +5,8 @@ import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
-import { directCamera } from "./director.js";
+import { focusOf } from "./focus.js";
+import { directCamera, cameraAt, projectBox } from "./director.js";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
 // the audio, not the aligner), pops over 0.45 s and holds 1.75 s. Without the end card: a 1.5 s calm hold.
@@ -46,6 +47,18 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   else {
     const shots = layout.shots.map((s) => ({ ...s, t: at(s.at) })).sort((a, b) => a.t - b.t);
     director = directCamera(layout, shots, marks);
+    // every sentence's showing part at least 12% wide and in the frame while it acts: a shot on it where the camera
+    // would miss it (then the camera is directed once more)
+    const extra = [];
+    for (const b of layout.beats ?? []) {
+      if (!b.shows || b.s === "congrats") continue;
+      const part = layout.parts.find((p) => p.id === b.shows.p); let box = null; try { box = part && focusOf(part, layout.world?.cut); } catch {}
+      const act = (b.do ?? []).find((a) => a.p === b.shows.p); if (!box || !act) continue;
+      let t; try { t = at({ s: b.s, ...(act.w ? { w: act.w } : {}), ...(act.o ? { o: act.o } : {}) }); } catch { continue; }
+      const k = cameraAt(director.end, t + 0.6), r = projectBox(k.pos, k.tgt, box), w = Math.min(1, r.x1) - Math.max(0, r.x0);
+      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95) extra.push({ focus: [b.shows.p], type: w < 0.05 ? "close" : "mid", t: Math.max(0, t - 0.1), auto: true });
+    }
+    if (extra.length) director = directCamera(layout, [...shots, ...extra].sort((a, b) => a.t - b.t), marks);
     camera = { end: director.end, noend: director.noend };
   }
   const audio = layout.audio ?? {};

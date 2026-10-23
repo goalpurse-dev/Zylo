@@ -27,7 +27,7 @@ const EXAMPLES = [
   { topic: "a landfill", roles: template("landfill").roles, text: "If you dig a pit and throw your trash in, you have a landfill. | But dirty trash juice leaks straight down into the groundwater you drink. | So you lay a thick clay base, but it is still not enough. | You add a thick black plastic sheet. | This is a landfill liner. | A pipe drains the collected juice into a tank beside the pit. | Sealed this tight, trash barely rots at all once it is buried. | A 1952 newspaper dug up decades later was still readable word for word. | But trapped trash still makes gas, so a pipe carries it out. | That flame is not waste burning, it is gas making electricity nearby. | Add a grass cap, a fence, and a few young trees. | Congratulations, you have built a landfill." },
 ];
 
-const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama of a lawn and a house with the ground cut open in section, where a thing is built step by step while one narrator talks. The account's formula:
+const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama of a lawn and a house with the ground cut open in section, where a thing is built step by step while one narrator talks. Every sentence must be something the 3D kit can show happening: digging, pipes, tanks, fills (gravel, water, soil, clay), liners and covers, water or sludge flowing along a path, sand sinking and oil rising in a tank, a creek, rain, leaks and cracks, a car, simple machines (a pump box, a generator, a vending machine, a car wash arch, a traffic light, a hydrant, an ATM), props (a flag, a book, a newspaper, number cards). Never name a thing outside that list (no people doing things, no maps, no ice, no towers, no screens with text) and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
 LOOPS     "But [a failure you can see: it floods, it stinks, it leaks, it cracks]." then "So you [add one real part, described physically, no jargon]."
@@ -76,12 +76,14 @@ HOW TO PLAN
 - A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). The dig is on "dig" in the hook.
 - The explainer layer: arrows show where water or gas moves; a glowing outline traces the named part on the "This is a…" sentence (verb show on the named word, hide on the next sentence); flow dots run in pipes when water flows.
 - A myth-bust ("X is not Y") must SHOW the wrong idea first, then take it away: a flag crossed out, a fake lake that drains or fades on "not", then the real mechanism appears on the next sentence. A sentence about something that is not there needs a visible stand-in for it.
+- EVERY SENTENCE SHOWS ITS OWN ACTION: the thing the sentence names is on screen and visibly does the sentence's verb. Each beat has shows: {p: the id of the part that does it, does: the visible action in a few words}. Use the part made for the verb: flow for runs / pours / flows (its path goes from where the stuff starts to where it ends, e.g. across the slab into the drain, through the pipe, down into the creek), settle for sinks / floats / separates (sand grains fall to the floor, a dark oil layer rises), creek for a creek, river or stream (it must exist as a part, not a blue box), fills for filling up, pipes growing for laying a pipe. Arrows alone never show an action: they only point at one. A creek or anything else seen in section must lie inside the cut's x range (the solid soil face hides the rest); otherwise it is seen on the surface.
+- IF THE KIT CANNOT SHOW A SENTENCE: rewrite that sentence so it says what the kit can show, keeping its numbers and facts and its length: sceneJson.rewrites [{role, text}]. The narration is recorded after your plan, so the rewrite is what is said.
 - Something new every 2-3 s: every sentence has at least one action. Problems are visible (rain, flooding, a crack, a leak) and are fixed by the next part. By "Congratulations" the problem is gone: stop rain, clear the storm, hide arrows and flows, refill or cap the cut, add the finishing touches. The end is calm.
 - Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). Size a shot by type, the shot vocabulary measured on the hand-built videos: wide (0.9 of the home distance), mid (0.7: most story shots), close (0.42: a crack, a newspaper, a machine's slot), detail (0.2: the holes in a pipe); or by width (how much of the frame width the parts fill: 0.3-0.5 for a prop, 0.6-1.0 for a long trench). Give type or width, not both. box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts. view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall); they all stay within 20 degrees of the home angle. The "This is a…" sentence's shot is hero: true (with a width). Congrats and finish are home shots.
 - THE OPENING: the video opens close on its own hook object, never on the house. The hook beat's first shot (no word) frames the naive thing the hook line names, the thing a viewer already knows (the hole being dug, the machine's slot, the puddle at the wall, the car in the bay, the button), type close or mid. The home view comes later (the problem or how sentence) and at the end.
 - THE MAIN SUBJECT: every shot keeps it in view (the cut, or the part you mark main: true when the story is a machine above ground); no shot of open lawn or sky. Side-story props (a flag, a book, a newspaper) stand beside the cut, just behind its back edge and inside the home frame, never out on the lawn. world.worker true only when the topic has a worker (by default there is none).
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
-- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shots: [...]}], audio: {cards, sfx, chimes, rain}}. A part's base (optional) sets a channel's starting value. Numbers in world units.
+- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shows: {p, does}, shots: [...]}], audio: {cards, sfx, chimes, rain}, rewrites?: [{role, text}]}. A part's base (optional) sets a channel's starting value. Numbers in world units.
 - Verbs: an action is {p: part id, v: verb, w: the word in that sentence (as written, without punctuation; "" = the sentence start), o: seconds after the word (0), d: a duration to stretch the verb (0 = default), amp: 1, ch: "" (panels only: the panel channel)}.
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
 - In "why", say in two or three sentences what the scene is and how the camera tells it.
@@ -209,6 +211,24 @@ export function dropWords(L, missing) {
 }
 const WORDS_SCHEMA = { type: "object", additionalProperties: false, required: ["words"], properties: { words: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "word"], properties: { index: { type: "integer" }, word: { type: "string" } } } } } };
 
+/**
+ * A planner's sentence rewrites (the kit can't show the original), taken only when they keep the sentence's numbers
+ * and roughly its length. Returns { script, taken: [roles], refused: [reasons] }.
+ */
+export function applyRewrites(script, rewrites = []) {
+  const nums = (t) => (String(t).match(/\d[\d,.]*/g) ?? []).map((x) => x.replace(/[,.]$/, ""));
+  const words = (t) => String(t).split(/\s+/).filter(Boolean).length;
+  let sentences = script.sentences.slice(); const taken = [], refused = [];
+  for (const r of rewrites) {
+    const i = sentences.findIndex((s) => s.role === r.role); if (i < 0) { refused.push(`${r.role}: no such sentence`); continue; }
+    const old = sentences[i].text, lost = nums(old).filter((n) => !nums(r.text).includes(n));
+    if (lost.length) { refused.push(`${r.role}: drops ${lost.join(", ")}`); continue; }
+    if (Math.abs(words(r.text) - words(old)) > Math.max(4, words(old) * 0.4)) { refused.push(`${r.role}: length ${words(old)} -> ${words(r.text)} words`); continue; }
+    sentences[i] = { ...sentences[i], text: oneSentence(r.text) }; taken.push(r.role);
+  }
+  return { script: { ...script, sentences }, taken, refused };
+}
+
 /** a scene patch applied to a whole scene (a repair's reply): beats replaced by sentence, parts by id, world keys */
 export function mergeScene(scene, patch) {
   if (!patch || patch._bad || (!patch.beats && !patch.parts && !patch.world)) return patch?.world?.cut ? patch : scene; // a whole layout is still accepted
@@ -314,12 +334,14 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening });
     let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
+    const rw1 = applyRewrites(script, conv.rewrites); script = rw1.script; if (rw1.taken.length || rw1.refused.length) trace.push({ label: "rewrites", taken: rw1.taken, refused: rw1.refused });
     ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
     problems.unshift(...conv.problems, ...openingProblems(conv.layout, lastOpening));
     trace.push({ label: "solver 1", problems, warnings, opening: openingOf(conv.layout) });
     if (problems.length) {
       r = await step("scene repair", { system: SCENE, user: `${user}\n\nYour layout below has problems the layout solver found. Fix every one and return the whole layout again (change only what the problems need).\nProblems:\n- ${problems.join("\n- ")}\n${warnings.length ? `Warnings (fix them if you can):\n- ${warnings.join("\n- ")}\n` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
       conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
+      const rw2 = applyRewrites(script, conv.rewrites); script = rw2.script; if (rw2.taken.length || rw2.refused.length) trace.push({ label: "rewrites (repair)", taken: rw2.taken, refused: rw2.refused });
       ({ problems, warnings } = solveLayout(conv.layout, script.sentences));
       problems.unshift(...conv.problems);
       // words still not in their sentences after the repair: those actions start with their sentence instead (free)

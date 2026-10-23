@@ -6,7 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { channelValue } from "./curves.js";
-import { cameraAt } from "./director.js";
+import { cameraAt, projectBox } from "./director.js";
+import { focusOf } from "./focus.js";
 import { CAMERA_LIMITS, measureKey, turnBetween } from "./framing.js";
 import { callJSON } from "./llm.mjs";
 import { sheet } from "./sheet.mjs";
@@ -59,31 +60,45 @@ export function timelineChecks(layout, tl) {
   const story = tl.camera.end.filter((k) => k[0] <= M.signPop);
   for (let i = 1; i < story.length; i++) { const tu = turnBetween({ pos: story[i - 1][1], tgt: story[i - 1][2] }, { pos: story[i][1], tgt: story[i][2] }); if (tu > CAMERA_LIMITS.turnMax) problems.push(`the camera turns ${tu.toFixed(0)} degrees at ${story[i][0].toFixed(1)} s (the hand-built paths at most ${CAMERA_LIMITS.turnMax})`); }
   if (!(tl.director?.frames ?? []).some((f) => f.opening)) warnings.push("the video opens on the home view, not close on the hook object");
+  // the part that shows each sentence: at least 12% of the frame width and inside the frame at its moment
+  for (const pt of previewTimes(tl, layout)) {
+    const b = layout.beats?.find((x) => x.s === pt.role); if (!b?.shows) continue;
+    const part = layout.parts.find((p) => p.id === b.shows.p); let box = null; try { box = part && focusOf(part, layout.world?.cut); } catch {}
+    if (!box) continue;
+    const k = cameraAt(tl.camera.end, pt.t), r = projectBox(k.pos, k.tgt, box);
+    if (r.behind || r.x1 < 0.02 || r.x0 > 0.98 || r.y1 < 0.02 || r.y0 > 0.98) problems.push(`sentence ${pt.role}: ${b.shows.p} is not in the frame at its moment`);
+    else if (Math.min(1, r.x1) - Math.max(0, r.x0) < 0.12) problems.push(`sentence ${pt.role}: ${b.shows.p} is only ${((Math.min(1, r.x1) - Math.max(0, r.x0)) * 100).toFixed(0)}% of the frame width at its moment (at least 12%)`);
+  }
   // beats at least 2.5 s long
   for (const s of tl.sentences) if (s.t1 - s.t0 < 1.0) warnings.push(`sentence ${s.role} lasts only ${(s.t1 - s.t0).toFixed(1)} s`);
   return { problems, warnings, camera, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2) } };
 }
 
 /** 2a. one preview time per sentence: when its last action has finished (capped before the next sentence) */
-export function previewTimes(tl) {
+export function previewTimes(tl, layout = null) {
   const out = [];
   tl.sentences.forEach((s, i) => {
     const next = tl.sentences[i + 1]?.t0 ?? tl.marks.lengthEnd;
-    const ends = Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
-    const t = Math.min(next - 0.15, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.1, next - 0.15))));
-    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, t).toFixed(2) });
+    const beat = layout?.beats?.find((b) => b.s === s.role), shows = beat?.shows;
+    // the moment after the sentence's showing action has settled (else after its last action)
+    const own = shows ? Object.entries(tl.tracks).filter(([k]) => k.startsWith(`${shows.p}.`)).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1)) : [];
+    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
+    const t = Math.min(next - 0.15, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, next - 0.15))));
+    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, t).toFixed(2), ...(shows ? { must: `${shows.p}: ${shows.does}` } : {}) });
   });
   return out;
 }
+// the beats that explain the mechanism: they must pass the preview check (a repair, then a second small one)
+export const MECHANISM = ["name", "how", "fix1", "fix2", "fix3"];
 
 const VISION_SCHEMA = { type: "object", additionalProperties: false, required: ["frames"], properties: { frames: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "ok", "seen", "problem"], properties: { role: { type: "string" }, ok: { type: "boolean" }, seen: { type: "string" }, problem: { type: "string" } } } } } };
-const VISION_SYSTEM = `You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
+const VISION_SYSTEM = `When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
 
 /** 2b. the vision check (paid: about $0.01 per frame at 540x960) */
 export async function visionCheck({ apiKey, frames, log, model }) {
   const content = [];
   for (const f of frames) {
-    content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s. Sentence: "${f.text}"` });
+    content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
     content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(f.file).toString("base64") } });
   }
   content.push({ type: "text", text: "Check every frame, in order." });

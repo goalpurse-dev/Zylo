@@ -923,7 +923,11 @@
       "w": "hole"
      }
     }
-   ]
+   ],
+   "shows": {
+    "p": "dig",
+    "does": "dig dig"
+   }
   },
   {
    "s": "problem",
@@ -956,7 +960,11 @@
      ],
      "width": 0.8
     }
-   ]
+   ],
+   "shows": {
+    "p": "flood",
+    "does": "trickle flood"
+   }
   },
   {
    "s": "flood",
@@ -985,7 +993,11 @@
      ],
      "width": 0.9
     }
-   ]
+   ],
+   "shows": {
+    "p": "stub",
+    "does": "grow stub"
+   }
   },
   {
    "s": "fix1",
@@ -1005,7 +1017,11 @@
      "view": "low",
      "width": 1.1
     }
-   ]
+   ],
+   "shows": {
+    "p": "drainPipe",
+    "does": "grow drainPipe"
+   }
   },
   {
    "s": "fix2",
@@ -1035,7 +1051,11 @@
      ],
      "width": 0.45
     }
-   ]
+   ],
+   "shows": {
+    "p": "leaves",
+    "does": "fall leaves"
+   }
   },
   {
    "s": "name",
@@ -1055,7 +1075,11 @@
      "width": 0.9,
      "hero": true
     }
-   ]
+   ],
+   "shows": {
+    "p": "outline",
+    "does": "show outline"
+   }
   },
   {
    "s": "how",
@@ -1103,7 +1127,11 @@
       "w": "rushes"
      }
     }
-   ]
+   ],
+   "shows": {
+    "p": "flow",
+    "does": "show flow"
+   }
   },
   {
    "s": "fact",
@@ -1145,7 +1173,11 @@
      "view": "high",
      "width": 1
     }
-   ]
+   ],
+   "shows": {
+    "p": "lot",
+    "does": "grow lot"
+   }
   },
   {
    "s": "myth",
@@ -1182,7 +1214,11 @@
       "w": "treatment"
      }
     }
-   ]
+   ],
+   "shows": {
+    "p": "plantSheet",
+    "does": "show plantSheet"
+   }
   },
   {
    "s": "mythFact",
@@ -1218,7 +1254,11 @@
      "view": "low",
      "width": 0.5
     }
-   ]
+   ],
+   "shows": {
+    "p": "creekWater",
+    "does": "flood creekWater"
+   }
   },
   {
    "s": "finish",
@@ -1281,7 +1321,11 @@
       "w": "strip"
      }
     }
-   ]
+   ],
+   "shows": {
+    "p": "fish",
+    "does": "pop fish"
+   }
   },
   {
    "s": "congrats",

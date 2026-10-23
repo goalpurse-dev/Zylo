@@ -19,6 +19,7 @@ import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/prop
 import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 import { atm, car, carWash, CITY_CHANNELS, hydrant, trafficLight } from "./cityParts.js";
+import { canopy, CLARITY_CHANNELS, creek, flow, prop, settle } from "./clarityParts.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -43,6 +44,9 @@ export const KINDS = {
   vendingMachine, miniMachines,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
   car, carWash, trafficLight, hydrant, atm,
+  // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
+  // setting props, a roof on its posts
+  settle, creek, flow, prop, canopy,
 
   // ================= ground =================
 
@@ -523,6 +527,7 @@ export const KINDS = {
 export const KIND_CHANNELS = {
   ...VENDING_CHANNELS,
   ...CITY_CHANNELS,
+  ...CLARITY_CHANNELS,
   dig: ["dig", "refill"], panels: ["*"], box: [], bags: ["drop", "lift", "raise"], dumpTruck: ["z", "tip", "load"],
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],

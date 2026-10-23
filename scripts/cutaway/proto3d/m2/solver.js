@@ -7,6 +7,7 @@ const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return nu
 import { expandBeats, VERBS } from "./verbs.js";
 import { compile } from "./compile.mjs";
 import { draftWords } from "./plan.js";
+import { clarityChecks } from "./clarity.js";
 
 // the settings each kind cannot do without
 export const REQUIRED = {
@@ -59,6 +60,8 @@ export function solveLayout(L, sentences) {
   const name = (L.beats ?? []).find((b) => b.s === "name");
   if (!name) problems.push('no beat for the "This is a…" sentence (role name)');
   else if (![name.shot, ...(name.shots ?? [])].some((s) => s?.hero)) warnings.push("the name beat has no hero shot");
+  // the clarity checks: every sentence shows its action, setting props, nothing floats, no tree over a part (clarity.js)
+  { const c = clarityChecks(L, sentences); problems.push(...c.problems); warnings.push(...c.warnings); }
   // the format check and a dry compile on draft word times (catches words that are not in their sentence)
   if (ex) {
     for (const p of validateLayout({ ...L, cues: [...(L.cues ?? []), ...ex.cues], shots: ex.shots })) problems.push(p);

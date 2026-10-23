@@ -9,10 +9,31 @@ import { sheet } from "../sheet.mjs";
 
 const out = process.argv[2], arg = (k) => process.argv[process.argv.indexOf(`--${k}`) + 1];
 const proto = arg("proto"), ff = arg("ff");
-const only = process.argv[3] && !process.argv[3].startsWith("--") ? process.argv[3].split(",") : ["carWash", "trafficLight", "hydrant", "atm"];
+const only = process.argv[3] && !process.argv[3].startsWith("--") ? process.argv[3].split(",") : ["clarity", "canopy"];
 const S = (role, text) => ({ role, text });
 const base = { house: false, worker: false, moreTrees: false, road: false, trees: [] };
 const LOOKS = {
+  clarity: {
+    world: { ...base, cut: { x0: -3.5, x1: 2.5, z0: -3, depth: 4 }, backdrop: { type: "carwash" } },
+    parts: [
+      { id: "dig", kind: "dig", params: { clumps: 60, mound: { x: -6, z: -2.5, rx: 1.2, rz: 0.9, h: 0.8 } } },
+      { id: "tank", kind: "settle", params: { box: { x0: -2.6, x1: 1.6, y0: -3.4, y1: -0.9, z0: -2.4, z1: 0 } } },
+      { id: "sludge", kind: "flow", params: { path: [[-5, 0.15, -1], [-3.2, 0.1, -0.5], [-2.2, -0.6, -0.1], [-1.6, -1.2, -0.1]], look: "sludge", size: 0.18 } },
+      { id: "creek", kind: "creek", params: { x0: 3.4, x1: 12, y: 0.1 } },
+      { id: "run", kind: "flow", params: { path: [[1.2, 0.18, -2.2], [2.6, 0.15, -1.8], [4, 0.12, -1.3]], look: "water", size: 0.16 } },
+      { id: "kiosk", kind: "prop", params: { type: "kiosk", pos: [-5.8, 0.1, -4.5] } },
+      { id: "vac", kind: "prop", params: { type: "vacuum", pos: [5.6, 0.1, -5] } },
+      { id: "towels", kind: "prop", params: { type: "towelRack", pos: [3.6, 0.1, -6.2] } },
+    ],
+    sentences: [S("hook", "Oily sludge pours through the drain grate."), S("problem", "In the tank, sand sinks and oil floats."), S("how", "Then the water runs out to the creek."), S("congrats", "Add a kiosk, a vacuum and a towel rack.")],
+    beats: [{ s: "hook", do: [{ p: "dig", v: "dig", w: "Oily" }, { p: "tank", v: "show", w: "sludge" }, { p: "sludge", v: "start", w: "pours" }], shots: [{ focus: ["sludge", "tank"], type: "mid" }] }, { s: "problem", do: [{ p: "tank", v: "fill", w: "tank," }, { p: "tank", v: "sink", w: "sinks" }, { p: "tank", v: "float", w: "floats." }, { p: "sludge", v: "stop", w: "oil" }], shots: [{ focus: ["tank"], type: "close" }] }, { s: "how", do: [{ p: "tank", v: "clear", w: "water" }, { p: "creek", v: "show", w: "Then" }, { p: "run", v: "start", w: "runs" }], shots: [{ focus: ["run", "creek"], type: "mid" }] }, { s: "congrats", do: [{ p: "kiosk", v: "show", w: "kiosk," }, { p: "vac", v: "show", w: "vacuum" }, { p: "towels", v: "show", w: "towel" }], shots: [{ focus: "home" }] }],
+  },
+  canopy: {
+    world: { ...base, cut: { x0: -2, x1: 2, z0: -3, depth: 3 }, backdrop: { type: "street" } },
+    parts: [{ id: "dig", kind: "dig", params: { clumps: 60, mound: { x: -6, z: -2.5, rx: 1.2, rz: 0.9, h: 0.8 } } }, { id: "roof", kind: "canopy", params: { x0: 2.8, x1: 6.8, z0: -5, z1: -1.5, y: 0.12, h: 3 } }, { id: "bench", kind: "prop", params: { type: "bench", pos: [4.8, 0.12, -3.2] } }],
+    sentences: [S("hook", "Dig a hole by the bus stop."), S("problem", "Add a roof on its posts."), S("how", "And a bench under it."), S("congrats", "Congratulations, you built it.")],
+    beats: [{ s: "hook", do: [{ p: "dig", v: "dig", w: "Dig" }], shots: [{ focus: ["dig"], type: "mid" }] }, { s: "problem", do: [{ p: "roof", v: "build", w: "roof" }], shots: [{ focus: ["roof"], type: "mid" }] }, { s: "how", do: [{ p: "bench", v: "show", w: "bench" }] }, { s: "congrats", shots: [{ focus: "home" }] }],
+  },
   carWash: {
     world: { ...base, cut: { x0: -3, x1: 3, z0: -4, depth: 3 }, backdrop: { type: "carwash" } },
     parts: [{ id: "dig", kind: "dig", params: { clumps: 60, mound: { x: -6, z: -2.5, rx: 1.2, rz: 0.9, h: 0.8 } } }, { id: "car", kind: "car", params: { pos: [0, 0.1, -2], color: "#d93a32" } }, { id: "wash", kind: "carWash", params: { pos: [0, 0.1, -3.2], car: "car" } }],

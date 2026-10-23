@@ -849,7 +849,11 @@
      ],
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "cash",
+    "does": "show cash"
+   }
   },
   {
    "s": "problem",
@@ -872,7 +876,11 @@
      ],
      "type": "mid"
     }
-   ]
+   ],
+   "shows": {
+    "p": "atm",
+    "does": "cash atm"
+   }
   },
   {
    "s": "fix1",
@@ -942,7 +950,11 @@
      ],
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "safe",
+    "does": "pop safe"
+   }
   },
   {
    "s": "fix2",
@@ -984,7 +996,11 @@
      "view": "close",
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "atm",
+    "does": "cassettes atm"
+   }
   },
   {
    "s": "fact",
@@ -1038,7 +1054,11 @@
      "view": "close",
      "width": 0.9
     }
-   ]
+   ],
+   "shows": {
+    "p": "sensor",
+    "does": "show sensor"
+   }
   },
   {
    "s": "fix3",
@@ -1093,7 +1113,11 @@
      "view": "close",
      "width": 0.9
     }
-   ]
+   ],
+   "shows": {
+    "p": "atm",
+    "does": "card atm"
+   }
   },
   {
    "s": "name",
@@ -1112,7 +1136,11 @@
      "width": 0.45,
      "hero": true
     }
-   ]
+   ],
+   "shows": {
+    "p": "outline",
+    "does": "show outline"
+   }
   },
   {
    "s": "myth",
@@ -1167,7 +1195,11 @@
      },
      "width": 0.8
     }
-   ]
+   ],
+   "shows": {
+    "p": "cardBook",
+    "does": "show cardBook"
+   }
   },
   {
    "s": "mythFact",
@@ -1198,7 +1230,11 @@
      ],
      "width": 0.8
     }
-   ]
+   ],
+   "shows": {
+    "p": "acctBook",
+    "does": "show acctBook"
+   }
   },
   {
    "s": "finish",
@@ -1239,7 +1275,11 @@
     {
      "focus": "home"
     }
-   ]
+   ],
+   "shows": {
+    "p": "atm",
+    "does": "screen atm"
+   }
   },
   {
    "s": "congrats",

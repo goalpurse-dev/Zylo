@@ -273,7 +273,11 @@
      ],
      "type": "close"
     }
-   ]
+   ],
+   "shows": {
+    "p": "machine",
+    "does": "show machine"
+   }
   },
   {
    "s": "problem",
@@ -298,6 +302,10 @@
      ]
     },
     "width": 0.85
+   },
+   "shows": {
+    "p": "machine",
+    "does": "steal machine"
    }
   },
   {
@@ -333,6 +341,10 @@
      8,
      44
     ]
+   },
+   "shows": {
+    "p": "machine",
+    "does": "glass machine"
    }
   },
   {
@@ -374,6 +386,10 @@
      9,
      32
     ]
+   },
+   "shows": {
+    "p": "machine",
+    "does": "coin machine"
    }
   },
   {
@@ -405,6 +421,10 @@
      9,
      32
     ]
+   },
+   "shows": {
+    "p": "spiralOutline",
+    "does": "show spiralOutline"
    }
   },
   {
@@ -440,6 +460,10 @@
      9,
      32
     ]
+   },
+   "shows": {
+    "p": "machine",
+    "does": "turnB machine"
    }
   },
   {
@@ -480,6 +504,10 @@
      9,
      32
     ]
+   },
+   "shows": {
+    "p": "machine",
+    "does": "beam machine"
    }
   },
   {
@@ -510,6 +538,10 @@
      10,
      44
     ]
+   },
+   "shows": {
+    "p": "crowd",
+    "does": "show crowd"
    }
   },
   {
@@ -548,6 +580,10 @@
      "book"
     ],
     "width": 0.4
+   },
+   "shows": {
+    "p": "book",
+    "does": "show book"
    }
   },
   {
@@ -616,7 +652,11 @@
       42
      ]
     }
-   ]
+   ],
+   "shows": {
+    "p": "machine",
+    "does": "cooler machine"
+   }
   },
   {
    "s": "congrats",

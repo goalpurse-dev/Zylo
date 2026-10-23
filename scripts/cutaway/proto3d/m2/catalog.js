@@ -3,6 +3,16 @@
 import { VERBS } from "./verbs.js";
 import { MATERIAL_NAMES } from "./materials.js";
 
+// the finishing touches each setting allows ("Add a ..." sentences): a prop out of place (grass at a car wash) is refused
+export const SETTING_PROPS = Object.freeze({
+  yard: ["shrubs", "youngTrees", "fence", "grass", "prop:mailbox", "prop:planter", "prop:bench"],
+  park: ["shrubs", "youngTrees", "fence", "grass", "prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack"],
+  street: ["prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack", "prop:mailbox"],
+  carwash: ["prop:kiosk", "prop:vacuum", "prop:towelRack", "prop:trashCan", "canopy"],
+  garage: ["prop:toolbox", "prop:trashCan", "prop:pottedPlant", "prop:bikeRack"],
+  room: ["prop:pottedPlant", "prop:trashCan"],
+  plain: ["prop:planter", "prop:trashCan"],
+});
 export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is the plane z = 0 facing the camera, ground surface y = 0)
 - A lawn and a house behind a cutaway of the ground. The viewer sees the ground in section on the face z = 0:
   soil strata down to y = -26, a stony band with a glossy groundwater film at y -11 to -14, roots, rocks.
@@ -31,6 +41,8 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
   The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
   A car, a machine or a person stands on solid floor beside the cut, never over its open hole (the cut is the ground in section).
+- SETTING PROPS: the "Add ..." finishing touches come only from the setting's list: yard: shrubs, young trees, a fence, a grass cap, a mailbox, a planter, a bench; park: shrubs, young trees, a fence, grass, a bench, a trash can, a planter, a bike rack; street: a bench, a trash can, a planter, a bike rack, a mailbox; carwash: a payment kiosk, a vacuum station, a towel rack, a trash can, a canopy; garage: a toolbox, a trash can, a potted plant, a bike rack; room: a potted plant, a trash can. Never grass or bushes at a car wash, a street, a garage or a room.
+- NOTHING FLOATS: every part rests on the ground, the floor or another part. A roof is a canopy (it has its posts). Pipes start and end at a part, the ground or the cut face.
   world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
     world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
@@ -38,6 +50,11 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 
 // per kind: what it is, its params, and notes. Positions are world coordinates.
 export const KIND_DOCS = {
+  settle: ["a tank in section where a mix separates: murky water fills it, sand grains SINK and pile up on the floor, a dark oil layer RISES to the top, the water clears (an oil-water separator, a septic tank, a settling basin)", "box {x0,x1,y0,y1,z0,z1} (the inside, seen at the face: z1 = 0), lid (true), murky, clearColor", "verbs show (the tank walls), fill, sink (the sand falls), float (the oil rises), clear"],
+  creek: ["a creek on the ground with banks and ripples drifting downstream; it can turn dirty (soap, oil) and clean again. Use it whenever a sentence names a creek, a river or a stream", "x0, x1 (its length, along x; beside the cut, not over it), width (2.4), depth (0.7), y (the ground top), dir (1 or -1: the way it flows); it runs along the front edge, so the face shows it in section", "verbs show, dirty, clean"],
+  flow: ["blobs moving along a path over a faint ribbon: water running across a slab to a drain or down to a creek, sludge pouring through a drain or a pipe, soap down a slope. Use it for every 'runs', 'pours', 'flows' action", "path [[x,y,z],...] (from where it starts to where it ends), look water|sludge|soap|oil|mud, size (0.16), speed, count", "verbs start, stop"],
+  prop: ["a finishing-touch prop that belongs in the setting (see SETTING PROPS): it stands on the floor", "type (one of the setting's list), pos [x, y, z] (y = the floor top), rotY, scale (1)", "verb show"],
+  canopy: ["a roof or canopy that stands on four posts (a roof must never float): the posts grow up, then the roof goes on", "x0, x1, z0, z1, y (the floor top), h (the post height, 4), color", "verb build"],
   car: ["a small car that drives in along x, stops, and drives on (wheels turn)", "pos [x, y, z] (where it stops; y = the setting's floor top), from (x, default pos - 16), to (x), color, scale (1)", "verbs arrive, leave; give each car an id (a carWash names its car)"],
   carWash: ["a car wash's machine over the bay: a spray arch and two spinning side brushes; it puts foam on the car in the bay", "pos [x, y, z] (the bay centre, where the car stops), width (3.6), height (3.4), car (the car part's id)", "verbs show (the arch), spray, stopSpray, brushes, close (brushes swing in), open, spin, foam, rinse"],
   trafficLight: ["a traffic signal on a pole, and the wire loop sawn into the road in front of it (seen in the cut) that feels a car's metal", "pos [x, y, z], height (5), loop [x, z, w, d] (the loop's centre and size, in the road over the cut)", "verbs show, red, yellow, green (switch lamps), loop (the wire loop appears), pulse (its field rings), stopPulse"],

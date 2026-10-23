@@ -66,6 +66,8 @@ export function layoutFromScene(scene, { key, title, roles }) {
   const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
   const beats = scene.beats.map((b) => ({
     s: b.s,
+    // what this sentence visibly shows: the part that does its verb (the solver checks it acts in this beat)
+    ...(b.shows?.p ? { shows: { p: String(b.shows.p), does: String(b.shows.does ?? "") } } : {}),
     do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp && a.amp !== 1) o.amp = a.amp; if (a.ch) o.ch = a.ch; return o; }),
     shots: (b.shots ?? []).map((s) => {
       const o = (s.focus ?? []).includes("home") ? { focus: "home" } : s.box?.length === 6 ? { box: { min: s.box.slice(0, 3), max: s.box.slice(3) } } : { focus: s.focus };
@@ -81,9 +83,10 @@ export function layoutFromScene(scene, { key, title, roles }) {
     ...(A.rain.length === 2 ? { rain: { from: anchor(A.rain[0]), to: anchor(A.rain[1]), underDb: 24 } } : {}),
   };
   const raw = { key, title, template: true, roles, world, parts, cues: [], beats, audio };
+  const rewrites = (Array.isArray(scene.rewrites) ? scene.rewrites : []).filter((x) => x?.role && x?.text).map((x) => ({ role: String(x.role), text: String(x.text) }));
   // the side-story props (a flag, a book, a newspaper) stand beside the action, inside the home frame
   const placed = placeLifeProps(raw, homeView(raw), projectBox);
-  return { layout: placed.layout, problems, moved: placed.moved };
+  return { layout: placed.layout, problems, moved: placed.moved, rewrites };
 }
 
 /** a layout template -> the planner's scene shape (the worked example in the prompt) */
@@ -95,6 +98,7 @@ export function sceneFromLayout(L) {
     parts: L.parts.map((p) => ({ id: p.id, kind: p.kind, params: p.params ?? {}, ...(p.base ? { base: p.base } : {}) })),
     beats: L.beats.map((b) => ({
       s: b.s,
+      ...(b.shows ? { shows: b.shows } : {}),
       do: (b.do ?? []).map((a) => ({ p: a.p, v: a.v, w: a.w ?? "", o: a.o ?? 0, d: a.d ?? 0, amp: a.amp ?? 1, ch: a.ch ?? "" })),
       shots: [b.shot, ...(b.shots ?? [])].filter(Boolean).map((s) => ({ focus: s.focus === "home" ? ["home"] : s.focus ?? [], view: typeof s.view === "string" ? s.view : "home", width: s.width ?? 0, type: s.type ?? "", hero: !!s.hero, word: s.at?.w ?? "", box: s.box ? [...s.box.min, ...s.box.max] : [] })),
     })),
