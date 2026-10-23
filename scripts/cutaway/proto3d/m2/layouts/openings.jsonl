@@ -15,3 +15,15 @@
 {"topic":"How a fire hydrant works","at":"2026-10-23T17:42:12.108Z","setting":"street","kind":"dig","type":"mid","what":"dig"}
 {"topic":"How an ATM works","at":"2026-10-23T17:45:10.074Z","setting":"street","kind":"boxPop","type":"close","what":"cash"}
 {"topic":"How a septic tank works","at":"2026-10-23T17:51:17.005Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a car wash works","at":"2026-10-23T20:17:09.719Z","setting":"carwash","kind":"car","type":"mid","what":"car"}
+{"topic":"How a septic tank works","at":"2026-10-23T20:24:43.829Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a sump pump keeps a basement dry","at":"2026-10-23T20:32:16.545Z","setting":"room","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a car wash cleans and reuses its water","at":"2026-10-23T20:42:31.164Z","setting":"carwash","kind":"car","type":"close","what":"car"}
+{"topic":"What happens after you flush into a septic tank","at":"2026-10-23T20:49:57.907Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a sump pump works","at":"2026-10-23T20:57:46.913Z","setting":"room","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a car wash cleans and reuses its water","at":"2026-10-23T21:00:47.875Z","setting":"carwash","kind":"car","type":"close","what":"car"}
+{"topic":"What happens after you flush into a septic tank","at":"2026-10-23T21:02:53.975Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a sump pump works","at":"2026-10-23T21:17:30.808Z","setting":"room","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a car wash cleans and reuses its water","at":"2026-10-23T21:18:17.307Z","setting":"carwash","kind":"car","type":"close","what":"car"}
+{"topic":"What happens after you flush into a septic tank","at":"2026-10-23T21:20:57.476Z","setting":"yard","kind":"dig","type":"mid","what":"dig"}
+{"topic":"How a sump pump works","at":"2026-10-23T21:23:53.533Z","setting":"room","kind":"dig","type":"mid","what":"dig"}
