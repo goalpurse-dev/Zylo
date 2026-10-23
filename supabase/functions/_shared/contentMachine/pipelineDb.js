@@ -73,16 +73,20 @@ export function createPipelineDb(db) {
     async listRuns(limit = 20) {
       return must(await db.from("cm_runs").select("*").order("created_at", { ascending: false }).limit(limit), "runs");
     },
-    /** Ideas with their slideshow generation and its packages. filters: runId | {from, to, format, style, status}. */
-    async listIdeas({ runId = null, from = null, to = null, format = null, style = null, status = null, account = null, limit = 60 } = {}) {
-      let q = db.from("cm_ideas").select("*, cm_generations(*, cm_packages(*))").order("created_at", { ascending: false }).limit(limit);
+    /** Ideas with their slideshow generation, its packages and its posts. filters: runId | {from, to, before, format,
+     *  style, status, notStatus (a list), account, title (a part of it)}. */
+    async listIdeas({ runId = null, from = null, to = null, format = null, style = null, status = null, notStatus = null, account = null, title = null, before = null, limit = 60 } = {}) {
+      let q = db.from("cm_ideas").select("*, cm_generations(*, cm_packages(*)), cm_posts(platform, posted_at)").order("created_at", { ascending: false }).limit(limit);
       if (runId) q = q.eq("run_id", runId);
       if (from) q = q.gte("created_at", from);
       if (to) q = q.lte("created_at", to);
+      if (before) q = q.lt("created_at", before);
       if (format) q = q.eq("format", format);
       if (style) q = q.eq("recipe->>style", style);
       if (status) q = q.eq("status", status);
+      if (notStatus?.length) q = q.not("status", "in", `(${notStatus.join(",")})`);
       if (account) q = q.eq("account", account);
+      if (title) q = q.ilike("title", `%${title}%`);
       return must(await q, "ideas");
     },
     async ideaCosts(ideaIds) {

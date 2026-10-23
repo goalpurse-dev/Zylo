@@ -1,7 +1,8 @@
 // Content Machine, Part 2: the Posted and Analytics tabs' actions (owner, 2026-10-18).
 //   markPosted          a slideshow is posted: platform, post URL, posted time (Helsinki) → it leaves Today
 //   posts               every post with its slideshow, thumbnail, snapshots and numbers
-//   savePost/deletePost edit or undo a post (undo: the slideshow goes back to Today)
+//   savePost/deletePost edit or undo a post (undo: the slideshow goes back to the Queue)
+//   unmarkPosted        "Undo posted" on a slideshow: all its posts (and their stats) removed, back to Not posted
 //   saveStats           one stats snapshot (new or edited): its own Helsinki time, the numbers, the screenshot
 //   deleteStats
 //   readStatsScreenshot the fast model reads the numbers off a pasted screenshot (paid, through the guard)
@@ -86,6 +87,22 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
       if (!left.length) await cm.updateIdea(post.idea_id, { status: "approved" });   // back to Today
       await store.audit(user.email, "post.delete", { id: post.id, idea: post.idea_id, platform: post.platform });
       return { deleted: post.id };
+    },
+
+    // The All tab's "Undo posted" (owner, 2026-10-23): the slideshow wasn't really posted. Every post of it goes,
+    // with its stats and screenshots, and it's back in the Queue as Not posted.
+    unmarkPosted: async ({ user, body }) => {
+      const idea = await cm.getIdea(String(body?.ideaId ?? ""));
+      if (idea?.status !== "posted") throw new ApiError("VALIDATION", "This slideshow isn't marked as posted.");
+      const removed = [];
+      for (const post of await cm.postsOfIdea(idea.id)) {
+        for (const s of await cm.statsOfPost(post.id)) if (s.screenshot_path) await files.remove?.(s.screenshot_path);
+        await cm.deletePost(post.id);
+        removed.push(post.platform);
+      }
+      await cm.updateIdea(idea.id, { status: "approved" });
+      await store.audit(user.email, "post.unmark", { idea: idea.id, platforms: removed });
+      return { id: idea.id, removed };
     },
 
     posts: async () => {

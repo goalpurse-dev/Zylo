@@ -1,4 +1,4 @@
-// Browser check of the slideshow tabs (Today, Ideas, Library) on a running dev server, with NO real backend:
+// Browser check of the slideshow tabs (Queue, All, Library) on a running dev server, with NO real backend:
 // the page's API calls are answered in this process by the real handler and the real pipeline on an
 // in-memory database with fake providers (tests/helpers/contentMachineFakes.mjs). $0, nothing live touched.
 // "Signed" file links are served from locally rendered samples (scripts/contentMachine/renderSamples.mjs).
@@ -143,9 +143,19 @@ for (const [name, viewport] of [["1440", { width: 1440, height: 900 }], ["390", 
     && /Approved/.test(await p.getByTestId("cm-logo").nth(0).innerText()) && /Upload official file/.test(await p.getByTestId("cm-logo").nth(1).innerText()));
   await p.screenshot({ path: path.join(outDir, `library-${name}.png`), fullPage: true });
   ok(`${name}: no sideways scroll on Library`, !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)));
-  await p.getByRole("button", { name: "Ideas", exact: true }).click();
-  await p.getByTestId("cm-idea").first().waitFor({ timeout: 10_000 });
-  ok(`${name}: Ideas lists all 4 slideshows (dry and real)`, (await p.getByTestId("cm-idea").count()) === 4);
+  // 4. All (owner, 2026-10-23): every slideshow ever made, a status on each, a card opens the full slideshow.
+  await p.getByRole("button", { name: "All", exact: true }).click();
+  await p.getByTestId("cm-all-row").first().waitFor({ timeout: 10_000 });
+  ok(`${name}: All lists all 4 slideshows (dry and real), each with a status`, (await p.getByTestId("cm-all-row").count()) === 4 && (await p.getByTestId("cm-all-list").getByTestId("cm-state").count()) === 4);
+  await p.getByTestId("cm-all-search").fill("zzz-no-such-title");
+  await p.getByText("No slideshows match.").waitFor({ timeout: 10_000 });
+  await p.getByTestId("cm-all-search").fill("");
+  await p.getByTestId("cm-all-row").first().waitFor({ timeout: 10_000 });
+  await p.getByTestId("cm-all-row").first().click();
+  await p.getByTestId("cm-all-open").getByTestId("cm-slides").waitFor({ timeout: 10_000 });
+  ok(`${name}: a card in All opens with its slides and the Posted button`, await p.getByTestId("cm-all-open").getByTestId("cm-mark-posted").isVisible());
+  await p.screenshot({ path: path.join(outDir, `all-${name}.png`), fullPage: true });
+  ok(`${name}: no sideways scroll on All`, !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)));
   ok(`${name}: no page errors`, errors.length === 0, errors.join(" | "));
   await ctx.close();
 }

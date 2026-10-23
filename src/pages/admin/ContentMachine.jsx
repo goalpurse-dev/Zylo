@@ -4,7 +4,7 @@
 // it, and this page then shows the site's normal "Page Not Found", so nothing reveals the page exists.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "./contentMachine/cmApi";
-import { AssetsTab, IdeasTab, LibraryTab, QueueTab } from "./contentMachine/SlideshowTabs";
+import { AllTab, AssetsTab, LibraryTab, QueueTab } from "./contentMachine/SlideshowTabs";
 import { AnalyticsTab, PostedTab } from "./contentMachine/PostedTabs";
 import { AccountsTab } from "./contentMachine/AccountsTab";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
@@ -401,7 +401,7 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["today", "Queue"], ["posted", "Posted"], ["analytics", "Analytics"], ["ideas", "Ideas"], ["accounts", "Accounts"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Queue"], ["all", "All"], ["posted", "Posted"], ["analytics", "Analytics"],["accounts", "Accounts"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
@@ -437,7 +437,7 @@ export default function ContentMachine() {
       {tab === "today" && <QueueTab st={st} onChanged={load} />}
       {tab === "posted" && <PostedTab />}
       {tab === "analytics" && <AnalyticsTab />}
-      {tab === "ideas" && <IdeasTab />}
+      {tab === "all" && <AllTab />}
       {tab === "accounts" && <AccountsTab />}
       {tab === "library" && <LibraryTab />}
       {tab === "assets" && <AssetsTab />}

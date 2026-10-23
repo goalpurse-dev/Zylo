@@ -1,4 +1,4 @@
-// Content Machine, Phase 2: the Today, Ideas and Library tabs. Slides are previewed with the SAME templates
+// Content Machine, Phase 2: the Queue, All and Library tabs. Slides are previewed with the SAME templates
 // the renderer uses (_shared/contentMachine/slides/templates.js), so a dry run already shows what would be
 // posted; once rendered, the real PNGs and the MP4 replace the live preview. Download and copy work on a
 // phone: the owner often posts from it.
@@ -7,6 +7,8 @@ import { AVOID, FONT_CSS, SAFE, SAFE_PROFILES, slideHtml } from "../../../../sup
 import { api, copyText, money, when } from "./cmApi";
 import { MarkPosted } from "./PostedTabs";
 import { DownloadButton, FreshImg, FreshVideo } from "./freshFiles";
+import { QUEUE_FILTERS, groupByDay, queueView } from "./queueView";
+import { ideaState } from "../../../../supabase/functions/_shared/contentMachine/ideaState.js";
 
 const STATUS_TONE = {
   done: "bg-lime-300/15 text-lime-200", producing: "bg-sky-300/15 text-sky-200", proposed: "bg-white/10 text-white/70", approved: "bg-lime-300/25 text-lime-100",
@@ -142,6 +144,21 @@ function Row({ label, text, small }) {
   );
 }
 
+const PLATFORM_NAMES = { tiktok: "TikTok", instagram: "Instagram", youtube: "YouTube" };
+const day = (iso) => (iso ? new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" }) : "");
+
+/** The slideshow's state (ideaState.js): green Posted (+ where and when), grey Not posted, red Rejected, amber Flagged. */
+function StateBadge({ idea }) {
+  const s = ideaState(idea);
+  if (s === "posted") {
+    const where = [...new Set((idea.posts ?? []).map((p) => PLATFORM_NAMES[p.platform] ?? p.platform))].join(", ");
+    const at = idea.posts?.[0]?.posted_at;
+    return <span data-testid="cm-state" data-state={s}><Badge tone="bg-lime-400/25 text-lime-100">Posted{where ? ` · ${where}` : ""}{at ? ` · ${day(at)}` : ""}</Badge></span>;
+  }
+  const look = { rejected: ["Rejected", "bg-red-500/25 text-red-100"], flagged: ["Flagged", "bg-amber-300/25 text-amber-100"], not_posted: ["Not posted", "bg-white/10 text-white/70"] }[s];
+  return <span data-testid="cm-state" data-state={s}><Badge tone={look[1]}>{look[0]}</Badge></span>;
+}
+
 /** A readable file name for downloads: the title, made safe, plus the date. */
 const fileStem = (idea) => `${String(idea.title ?? "slideshow").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "slideshow"}-${String(idea.created_at ?? "").slice(0, 10)}`;
 
@@ -163,14 +180,15 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
     <article data-testid="cm-idea" className={`rounded-2xl border ${flagged ? "border-amber-300/40" : "border-white/10"} bg-white/[0.04]`}>
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full flex-col gap-2 p-4 text-left sm:p-5">
         <div className="flex flex-wrap items-center gap-1.5">
-          <Badge tone={STATUS_TONE[idea.status]}>{nice(idea.status)}</Badge>
+          <StateBadge idea={idea} />
+          {!["done", "approved", "posted", "rejected"].includes(idea.status) && <Badge tone={STATUS_TONE[idea.status]}>{nice(idea.status)}</Badge>}
+          {idea.status === "approved" && <Badge tone={STATUS_TONE.approved}>approved</Badge>}
           <Badge tone={idea.account === "zyvo" ? "bg-violet-300/20 text-violet-100" : "bg-sky-300/15 text-sky-100"}>{idea.account === "zyvo" ? "Zyvo account" : "Creator account"}</Badge>
-          {idea.outdated && <Badge tone="bg-orange-300/20 text-orange-100" title="Rendered with older slide templates">outdated</Badge>}
+          {idea.outdated && <Badge tone="bg-orange-300/20 text-orange-100" title="Rendered with older slide templates">Outdated</Badge>}
           {idea.dry_run && <Badge tone="bg-sky-300/15 text-sky-200" title="Mocked: nothing was spent">dry run</Badge>}
           <Badge>{nice(r.format)}</Badge><Badge>{nice(r.style)}</Badge><Badge>hook: {nice(r.hook_type)}</Badge>
           <Badge>Zyvo: {nice(r.zyvo_position)}</Badge><Badge>{r.platform} {r.post_time}</Badge>
           {r.mode === "winner" && <Badge tone="bg-lime-300/20 text-lime-100">winner</Badge>}
-          {flagged && <Badge tone="bg-amber-300/20 text-amber-100">check flagged</Badge>}
         </div>
         <div className="text-[17px] font-semibold leading-snug text-white">{idea.title}</div>
         {idea.hypothesis && <div className="text-[13px] text-white/60">Testing: {idea.hypothesis}</div>}
@@ -212,6 +230,7 @@ export function IdeaCard({ idea, styles, zyvoShot, logos, safeZones, onChanged, 
           )}
           <div className="flex flex-wrap items-center gap-2">
             <MarkPosted idea={idea} onDone={onChanged} />
+            {idea.status === "posted" && <button type="button" disabled={!!busy} data-testid="cm-undo-posted" onClick={() => { if (window.confirm(`Undo posted? Its ${idea.posts?.length || ""} post${idea.posts?.length === 1 ? "" : "s"} and their stats are removed, and it goes back to Not posted (in the Queue).`)) act("unmarkPosted", { ideaId: idea.id }, "undo"); }} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Undo posted</button>}
             {idea.outdated && ["done", "approved"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Render this slideshow again with today's slide templates? The same words and pictures; a render and its QA check, about $0.005.")) act("rerender", { id: idea.id }, "rerender"); }} className="rounded-lg bg-orange-300/20 px-3 py-1.5 text-[13px] font-semibold text-orange-100 disabled:opacity-40">Render again</button>}
             {idea.status !== "approved" && idea.status === "done" && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "approved" }, "approve")} className="rounded-lg bg-lime-300/90 px-3 py-1.5 text-[13px] font-semibold text-[#071006] disabled:opacity-40">Approve</button>}
             {!["rejected", "posted"].includes(idea.status) && <button type="button" disabled={!!busy} onClick={() => act("setIdeaStatus", { id: idea.id, status: "rejected" }, "reject")} className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-40">Reject</button>}
@@ -292,16 +311,6 @@ function RunProgress({ runId, onTick, onDone }) {
   );
 }
 
-// The Queue's status filters (owner, 2026-10-19). A posted slideshow leaves the Queue for the Posted tab.
-const QUEUE_FILTERS = [
-  ["", "All", () => true],
-  ["ready", "Ready", (i) => i.status === "done" && !i.compliance?.flagged],
-  ["approved", "Approved", (i) => i.status === "approved"],
-  ["flagged", "Flagged", (i) => Boolean(i.compliance?.flagged) && !["rejected", "posted"].includes(i.status)],
-  ["rejected", "Rejected", (i) => i.status === "rejected"],
-  ["outdated", "Outdated", (i) => Boolean(i.outdated)],
-];
-
 // The two accounts (content lanes): each has its own section, colour, button, progress and list.
 const LANES = {
   zyvo: { title: "Zyvo account", word: "Zyvo", hint: "Product carousels about Zyvo: real outputs, rebuilt UI, claims only from the fact sheet.", defaultCount: 2,
@@ -320,7 +329,8 @@ function LaneSection({ lane, st, runs, zones, onChanged, reloadRuns, className =
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
   const load = useCallback(async () => {
-    try { setData(await api("ideas", { today: true, account: lane, limit: 100 })); } catch (e) { setNote(e.message); }
+    // Every unposted slideshow of this account, from any day (owner, 2026-10-23).
+    try { setData(await api("ideas", { queue: true, account: lane, limit: 200 })); } catch (e) { setNote(e.message); }
   }, [lane]);
   useEffect(() => { load(); }, [load]);
   const n = Number(count);
@@ -346,9 +356,8 @@ function LaneSection({ lane, st, runs, zones, onChanged, reloadRuns, className =
     } catch (err) { setNote(err.message); }
     setBusy(false);
   };
-  const today = (data?.ideas ?? []).filter((i) => i.status !== "posted");
-  const counts = Object.fromEntries(QUEUE_FILTERS.map(([k, , f]) => [k, today.filter(f).length]));
-  const shown = today.filter(QUEUE_FILTERS.find(([k]) => k === filter)[2]);
+  const { shown, counts, total } = queueView(data?.ideas, filter);
+  const days = groupByDay(shown, new Date(), st.settings.timezone || "Europe/Helsinki");
   const pill = (on) => `shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? L.pillOn : "border-white/10 bg-white/[0.03] text-white/70"}`;
   const tooMuch = est && !est.fits;
   return (
@@ -369,8 +378,17 @@ function LaneSection({ lane, st, runs, zones, onChanged, reloadRuns, className =
       <div className="flex flex-wrap items-center gap-2" data-testid={`cm-filters-${lane}`}>
         {QUEUE_FILTERS.map(([k, label]) => <button key={k || "all"} type="button" onClick={() => setFilter(k)} className={pill(filter === k)}>{label} {counts[k]}</button>)}
       </div>
-      {data && shown.length === 0 && <p className="text-[13px] text-white/55">{today.length ? "Nothing with this status today." : `No ${L.word} slideshows today yet.`}</p>}
-      <div className="space-y-3" data-testid={`cm-list-${lane}`}>{shown.map((i, k) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} startOpen={k === 0} />)}</div>
+      {data && shown.length === 0 && <p className="text-[13px] text-white/55">{total ? "Nothing with this status." : "No unposted slideshows."}</p>}
+      {data && !filter && (counts.rejected > 0 || counts.outdated > 0) && <p className="text-[12px] text-white/45">Rejected and Outdated are hidden here (pick them above, or see the All tab).</p>}
+      {data?.more && <p className="text-[12px] text-amber-200">Showing the newest {data.ideas.length}; older unposted ones are in the All tab.</p>}
+      <div className="space-y-4" data-testid={`cm-list-${lane}`}>
+        {days.map((d, n) => (
+          <div key={d.key} className="space-y-3" data-testid="cm-day">
+            <h3 className="text-[12px] font-bold uppercase tracking-[0.1em] text-white/50" data-testid="cm-day-label">{d.label} <span className="font-semibold text-white/35">· {d.ideas.length}</span></h3>
+            {d.ideas.map((i, k) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} startOpen={n === 0 && k === 0} />)}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -417,37 +435,89 @@ export function QueueTab({ st, onChanged }) {
   );
 }
 
-/* ─── Ideas: all history with filters ────────────────────────────────── */
+/* ─── All: every slideshow ever made, both accounts (owner, 2026-10-23) ─── */
 
-export function IdeasTab() {
+const STATE_PICKS = [["", "any status"], ["posted", "Posted"], ["not_posted", "Not posted"], ["rejected", "Rejected"], ["flagged", "Flagged"], ["outdated", "Outdated"]];
+
+/** One line of the All tab: thumbnail, title, account, format/style, date made, cost, state. Opens the full card. */
+function AllRow({ idea, data, zones, onChanged }) {
+  const [open, setOpen] = useState(false);
+  const r = idea.recipe ?? {};
+  const g = idea.generation;
+  if (open) {
+    return (
+      <div className="space-y-1" data-testid="cm-all-open">
+        <button type="button" onClick={() => setOpen(false)} className="text-[12.5px] text-white/55 underline">Close ▲</button>
+        <IdeaCard idea={idea} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={onChanged} startOpen />
+      </div>
+    );
+  }
+  return (
+    <button type="button" onClick={() => setOpen(true)} data-testid="cm-all-row" className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 text-left hover:bg-white/[0.07]">
+      <div className="h-[86px] w-[48px] shrink-0 overflow-hidden rounded-md border border-white/10 bg-black">
+        {g?.pngs?.[0] && <FreshImg src={g.pngs[0]} path={g.paths?.pngs?.[0]} alt="" className="h-full w-full object-cover" loading="lazy" />}
+      </div>
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StateBadge idea={idea} />
+          {idea.outdated && <Badge tone="bg-orange-300/20 text-orange-100">Outdated</Badge>}
+          {!["done", "approved", "posted", "rejected"].includes(idea.status) && <Badge tone={STATUS_TONE[idea.status]}>{nice(idea.status)}</Badge>}
+          {idea.dry_run && <Badge tone="bg-sky-300/15 text-sky-200">dry run</Badge>}
+        </div>
+        <div className="truncate text-[15px] font-semibold text-white">{idea.title}</div>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[12px] text-white/50">
+          <span className={idea.account === "zyvo" ? "text-violet-200" : "text-sky-200"}>{idea.account === "zyvo" ? "Zyvo" : "Creator"}</span>
+          <span>{nice(r.format)} · {nice(r.style)}</span>
+          <span>made {when(idea.created_at)}</span>
+          <span>{idea.dry_run ? `would cost ${money(idea.cost.wouldUsd, 3)}` : money(idea.cost.usd, 3)}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function AllTab() {
   const [zones, zoneControl] = useSafeZones();
-  const [f, setF] = useState({ from: "", to: "", format: "", style: "", status: "", account: "" });
+  const [f, setF] = useState({ account: "", state: "", from: "", to: "", format: "", style: "", q: "" });
+  const [q, setQ] = useState("");
   const [data, setData] = useState(null);
   const [lib, setLib] = useState(null);
   const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  // Search waits for a short pause in typing.
+  useEffect(() => { const t = setTimeout(() => setF((x) => (x.q === q.trim() ? x : { ...x, q: q.trim() })), 350); return () => clearTimeout(t); }, [q]);
+  const params = useMemo(() => ({ ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)), limit: 60 }), [f]);
   const load = useCallback(async () => {
     setError(null);
-    try { setData(await api("ideas", { ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)), limit: 60 })); } catch (e) { setError(e.message); }
-  }, [f]);
+    try { setData(await api("ideas", params)); } catch (e) { setError(e.message); }
+  }, [params]);
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api("library").then((r) => setLib(r.rows)).catch(() => {}); }, []);
+  const more = async () => {
+    setBusy(true);
+    try { const r = await api("ideas", { ...params, before: data.oldest }); setData({ ...r, ideas: [...data.ideas, ...r.ideas] }); } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
   const opts = (kind) => (lib ?? []).filter((r) => r.kind === kind);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   return (
-    <div className="space-y-4">
-      <Card title="Filter">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
-          <select value={f.account} onChange={(e) => setF({ ...f, account: e.target.value })} className={input} aria-label="Account"><option value="">both accounts</option><option value="zyvo">Zyvo</option><option value="creator">Creator</option></select>
-          <input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} className={input} aria-label="From" />
-          <input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} className={input} aria-label="To" />
-          <select value={f.format} onChange={(e) => setF({ ...f, format: e.target.value })} className={input} aria-label="Format"><option value="">all formats</option>{opts("format").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
-          <select value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })} className={input} aria-label="Style"><option value="">all styles</option>{opts("style").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
-          <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} className={input} aria-label="Status"><option value="">any status</option>{["done", "approved", "rejected", "producing", "failed", "skipped_budget"].map((s) => <option key={s} value={s}>{nice(s)}</option>)}</select>
+    <div className="space-y-4" data-testid="cm-all">
+      <Card title="Every slideshow ever made">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search titles" className={`${input} col-span-2`} aria-label="Search titles" data-testid="cm-all-search" />
+          <select value={f.account} onChange={set("account")} className={input} aria-label="Account"><option value="">both accounts</option><option value="zyvo">Zyvo</option><option value="creator">Creator</option></select>
+          <select value={f.state} onChange={set("state")} className={input} aria-label="Status" data-testid="cm-all-state">{STATE_PICKS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+          <label className="flex flex-col text-[11px] text-white/50">Made from<input type="date" value={f.from} onChange={set("from")} className={`${input} mt-0.5`} /></label>
+          <label className="flex flex-col text-[11px] text-white/50">Made until<input type="date" value={f.to} onChange={set("to")} className={`${input} mt-0.5`} /></label>
+          <select value={f.format} onChange={set("format")} className={input} aria-label="Format"><option value="">all formats</option>{opts("format").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
+          <select value={f.style} onChange={set("style")} className={input} aria-label="Style"><option value="">all styles</option>{opts("style").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
         </div>
       </Card>
       <div className="flex justify-end">{zoneControl}</div>
       {error && <p className="text-[13px] text-red-200">{error}</p>}
-      {!data ? <p className="text-[13px] text-white/50">Loading…</p> : data.ideas.length === 0 ? <p className="text-[13.5px] text-white/60">No ideas match.</p>
-        : <div className="space-y-3">{data.ideas.map((i) => <IdeaCard key={i.id} idea={i} styles={data.styles} zyvoShot={data.zyvoShot} logos={data.logos} safeZones={zones} onChanged={load} />)}</div>}
+      {!data ? <p className="text-[13px] text-white/50">Loading…</p> : data.ideas.length === 0 && !data.more ? <p className="text-[13.5px] text-white/60">No slideshows match.</p>
+        : <div className="space-y-2" data-testid="cm-all-list">{data.ideas.map((i) => <AllRow key={i.id} idea={i} data={data} zones={zones} onChanged={load} />)}</div>}
+      {data?.more && <button type="button" disabled={busy} onClick={more} className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-40">{busy ? "Loading…" : "Show older"}</button>}
     </div>
   );
 }

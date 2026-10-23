@@ -105,7 +105,7 @@ export function fakeWorld(settings = {}) {
     },
     async recentRecipes() { return ideas.filter((i) => !i.dry_run).map((i) => i.recipe); },
     async recentTitles(_d, ex) { return ideas.filter((i) => !i.dry_run && i.id !== ex && i.title !== "(being written)").map((i) => ({ id: i.id, title: i.title, hook: i.hook })); },
-    async createIdeas(rows) { const out = rows.map((r) => ({ id: id("I"), compliance: {}, script: {}, ...r })); ideas.push(...out); return out; },
+    async createIdeas(rows) { const out = rows.map((r) => ({ id: id("I"), compliance: {}, script: {}, created_at: clock.now.toISOString(), ...r })); ideas.push(...out); return out; },
     async getIdea(i) { return ideas.find((x) => x.id === i); },
     async updateIdea(i, p) { const x = ideas.find((y) => y.id === i); Object.assign(x, p); return x; },
     async ideasOfRun(r) { return ideas.filter((i) => i.run_id === r); },
@@ -319,7 +319,15 @@ export function apiFor(world, extra = {}) {
   const cm = {
     ...world.db,
     async listRuns() { return [...world.runs].reverse(); },
-    async listIdeas({ runId = null, account = null, status = null } = {}) { return [...world.ideas].reverse().filter((i) => (!runId || i.run_id === runId) && (!account || (i.account ?? "creator") === account) && (!status || i.status === status)).map((i) => ({ ...i, cm_generations: world.gens.filter((g) => g.idea_id === i.id).map((g) => ({ ...g, cm_packages: world.pkgs.filter((p) => p.generation_id === g.id) })) })); },
+    // Like the real query: newest first, the same filters, cm_generations (with packages) and cm_posts embedded.
+    async listIdeas({ runId = null, account = null, status = null, notStatus = null, from = null, to = null, before = null, title = null, limit = 60 } = {}) {
+      const at = (i) => Date.parse(i.created_at ?? 0);
+      return [...world.ideas].reverse().sort((a, b) => at(b) - at(a))
+        .filter((i) => (!runId || i.run_id === runId) && (!account || (i.account ?? "creator") === account) && (!status || i.status === status) && !(notStatus ?? []).includes(i.status)
+          && (!from || at(i) >= Date.parse(from)) && (!to || at(i) <= Date.parse(to)) && (!before || at(i) < Date.parse(before)) && (!title || String(i.title ?? "").toLowerCase().includes(title.toLowerCase())))
+        .slice(0, limit)
+        .map((i) => ({ ...i, cm_generations: world.gens.filter((g) => g.idea_id === i.id).map((g) => ({ ...g, cm_packages: world.pkgs.filter((p) => p.generation_id === g.id) })), cm_posts: world.posts.filter((p) => p.idea_id === i.id).map((p) => ({ platform: p.platform, posted_at: p.posted_at })) }));
+    },
     async ideaCosts(ids) { return Object.fromEntries(ids.map((i) => [i, { usd: world.ledger.filter((l) => l.idea_id === i).reduce((a, l) => a + (l.actual_usd ?? l.estimated_usd), 0), wouldUsd: 0, byProvider: {}, calls: 0 }])); },
     async libraryAll() { return [...LIB.styles.map((s) => ({ ...s, kind: "style", status: "active" })), ...LIB.formats.map((f) => ({ ...f, kind: "format", status: "active" }))]; },
     async saveLibrary(row) { return row; },
