@@ -33,6 +33,7 @@ export function focusOf(part, cut) {
     case "creek": { const w = p.width ?? 2.4, z = p.z ?? -w / 2 - 0.02, d = p.depth ?? 0.7; return { min: [p.x0 ?? 4, -d - 0.2, z - w / 2 - 0.4], max: [p.x1 ?? 14, 0.3, z + w / 2 + 0.2] }; }
     case "flow": return fromPoints(p.path ?? [[0, 0.1, 0], [3, 0.1, 0]], p.size ?? 0.16);
     case "prop": { const [x, y, z] = p.pos ?? [0, 0, 0], s = p.scale ?? 1; return { min: [x - 0.8 * s, y, z - 0.5 * s], max: [x + 0.8 * s, y + 1.9 * s, z + 0.5 * s] }; }
+    case "grate": { const [x, y, z] = p.pos ?? [0, 0.1, -1.5], w = p.width ?? 1.6, d = p.depth ?? 0.8; return { min: [x - w / 2, y, z - d / 2], max: [x + w / 2, y + 0.1, z + d / 2] }; }
     case "canopy": return { min: [p.x0 ?? -3, p.y ?? 0, p.z0 ?? -5], max: [p.x1 ?? 3, (p.y ?? 0) + (p.h ?? 4) + 0.3, p.z1 ?? -1] };
     case "car": { const [x, y, z] = p.pos ?? [0, 0.1, -2], s = p.scale ?? 1; return { min: [x - 2.2 * s, y, z - 1 * s], max: [x + 2.2 * s, y + 1.9 * s, z + 1 * s] }; }
     case "carWash": { const [x, y, z] = p.pos ?? [0, 0.1, -2], w = p.width ?? 3.6, h = p.height ?? 3.4; return { min: [x - w / 2 - 0.7, y, z - 0.3], max: [x + w / 2 + 0.7, y + h + 0.2, z + 1.7] }; }

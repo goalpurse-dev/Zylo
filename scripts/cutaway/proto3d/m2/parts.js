@@ -19,7 +19,7 @@ import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/prop
 import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 import { atm, car, carWash, CITY_CHANNELS, hydrant, trafficLight } from "./cityParts.js";
-import { canopy, CLARITY_CHANNELS, creek, flow, prop, settle } from "./clarityParts.js";
+import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -46,7 +46,7 @@ export const KINDS = {
   car, carWash, trafficLight, hydrant, atm,
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
-  settle, creek, flow, prop, canopy,
+  settle, creek, flow, prop, canopy, grate,
 
   // ================= ground =================
 

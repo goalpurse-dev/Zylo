@@ -25,12 +25,13 @@ export function settle(ctx, p, api) {
   const b = p.box ?? { x0: -1.5, x1: 1.5, y0: -3, y1: -0.6, z0: -2, z1: 0 };
   const W = b.x1 - b.x0, H = b.y1 - b.y0, D = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
   const root = new THREE.Group(); ctx.scene.add(root);
-  const wall = api.mat?.("concrete") ?? mat("#b9b4aa"), t = 0.14;
+  // concrete by default; a plastic basin (a sump pit) with wallColor; open at the top unless lid: true (the contents must read)
+  const wall = p.wallColor ? mat(p.wallColor, { roughness: 0.45 }) : api.mat?.("concrete") ?? mat("#b9b4aa"), t = p.wallColor ? 0.1 : 0.14;
   const walls = new THREE.Group(); root.add(walls);
   add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y0 - t / 2, cz); // floor
   add(walls, boxG(t, H, D), wall, b.x0 - t / 2, b.y0 + H / 2, cz); add(walls, boxG(t, H, D), wall, b.x1 + t / 2, b.y0 + H / 2, cz); // sides
   add(walls, boxG(W + 2 * t, H, t), wall, cx, b.y0 + H / 2, b.z0 - t / 2); // back
-  if (p.lid !== false) add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y1 + t / 2, cz); // lid
+  if (p.lid === true) add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y1 + t / 2, cz); // lid (off by default)
   // the water: murky brown that clears to blue
   const murky = new THREE.Color(p.murky ?? "#6b5a3a"), clear = new THREE.Color(p.clearColor ?? "#3d8fd6");
   const waterM = ctx.std({ color: murky.clone(), roughness: 0.15, transparent: true, opacity: 0.82 });
@@ -43,7 +44,8 @@ export function settle(ctx, p, api) {
   }
   const sandBed = add(root, boxG(W, 1, D - 0.04), sandM, cx, b.y0, cz, false);
   // oil: dark droplets that rise, and a dark layer on top
-  const oilM = ctx.phys ? ctx.phys({ color: C(p.oilColor ?? "#1d1712"), roughness: 0.15, clearcoat: 1 }) : mat("#1d1712"), drops = [];
+  // the top layer (oil, scum): near black and glossy, so it reads against the water and the walls
+  const oilM = ctx.phys ? ctx.phys({ color: C(p.oilColor ?? "#14100c"), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }) : mat("#14100c"), drops = [];
   for (let i = 0; i < 26; i++) { const s = add(root, new THREE.SphereGeometry(0.09, 8, 6), oilM, 0, 0, 0, false); drops.push({ s, x: b.x0 + 0.2 + ((i * 41) % 83) / 83 * (W - 0.4), y: b.y0 + 0.4 + ((i * 23) % 61) / 61 * H * 0.5, z: b.z1 - 0.12 - ((i * 11) % 5) / 5 * 0.4, d: ((i * 17) % 19) / 19 }); }
   const oilLayer = add(root, boxG(W, 1, D - 0.04), oilM, cx, b.y1, cz, false);
   return {
@@ -59,7 +61,7 @@ export function settle(ctx, p, api) {
         g.s.position.set(g.x, g.y + (b.y0 + bed + 0.06 - g.y) * k * k, g.z);
       }
       sandBed.visible = bed > 0.005; sandBed.scale.y = Math.max(0.001, bed); sandBed.position.y = b.y0 + bed / 2;
-      const ol = clamp(api.ch("oil", tt)), layer = H * 0.16 * ol, top = b.y0 + level;
+      const ol = clamp(api.ch("oil", tt)), layer = Math.max(0.18, H * 0.18) * ol, top = b.y0 + level;
       for (const d of drops) { const k = clamp((ol - d.d * 0.5) / 0.5); d.s.visible = fill > 0.3 && ol > 0.01 && k < 0.98; d.s.position.set(d.x, d.y + (top - layer - 0.05 - d.y) * k, d.z); }
       oilLayer.visible = layer > 0.005 && fill > 0.3; oilLayer.scale.y = Math.max(0.001, layer); oilLayer.position.y = top - layer / 2;
     },
@@ -155,7 +157,21 @@ export function canopy(ctx, p, api) {
   };
 }
 
+/** a drain grate set into the floor: a dark frame with slots, a little proud of the slab so it reads from the side */
+export function grate(ctx, p, api) {
+  const { THREE, add, boxG, mat } = tools(ctx);
+  const [x, y, z] = p.pos ?? [0, 0.1, -1.5], w = p.width ?? 1.6, d = p.depth ?? 0.8;
+  const g = new THREE.Group(); g.position.set(x, y, z); ctx.scene.add(g);
+  const iron = mat("#22262a", { metalness: 0.6, roughness: 0.4 });
+  add(g, boxG(w, 0.06, d), iron, 0, 0.03, 0);
+  const slot = mat("#050505", { roughness: 1 });
+  const n = Math.max(3, Math.round(w / 0.18));
+  for (let i = 0; i < n; i++) add(g, boxG(0.07, 0.065, d - 0.16), slot, -w / 2 + 0.14 + (i * (w - 0.28)) / (n - 1), 0.035, 0, false);
+  return { update(tt) { const v = back(clamp(api.ch("show", tt))); g.visible = v > 0.002; g.scale.setScalar(pop(v)); } };
+}
+
 export const CLARITY_CHANNELS = {
+  grate: ["show"],
   settle: ["show", "fill", "sand", "oil", "clear"],
   creek: ["show", "dirty", "clean"],
   flow: ["on", "off"],
