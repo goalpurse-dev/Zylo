@@ -96,6 +96,7 @@ const VISION_SYSTEM = `When a frame says what it must clearly show, ok is true o
 
 /** 2b. the vision check (paid: about $0.01 per frame at 540x960) */
 export async function visionCheck({ apiKey, frames, log, model }) {
+  const frames0 = frames;
   const content = [];
   for (const f of frames) {
     content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
@@ -103,7 +104,9 @@ export async function visionCheck({ apiKey, frames, log, model }) {
   }
   content.push({ type: "text", text: "Check every frame, in order." });
   const r = await callJSON({ apiKey, model, system: VISION_SYSTEM, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label: "vision check", log });
-  return { ...r.data, costUsd: r.costUsd };
+  // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
+  const judged = (r.data.frames ?? []).map((f, i) => (frames0[i] ? { ...f, role: frames0[i].role, t: frames0[i].t } : f));
+  return { ...r.data, frames: judged, costUsd: r.costUsd };
 }
 
 /** small jpgs of the preview pngs, for the vision check */

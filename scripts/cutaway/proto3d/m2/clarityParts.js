@@ -9,6 +9,8 @@
 //            vacuum, towelRack, trashCan, planter, bench, bikeRack, mailbox, pottedPlant, toolbox. channel: pop
 //   canopy   a roof that always stands on its posts (never floats). channels: posts (they grow up), roof (it pops on)
 const pop = (k) => Math.max(0.001, k);
+// a colour setting only when it is one (a planner wrote murky: true, which three.js turned into white)
+const col = (v, d) => (typeof v === "string" && /^#[0-9a-f]{3,8}$/i.test(v) ? v : d);
 const clamp = (v) => Math.min(1, Math.max(0, v));
 const back = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 + 2.70158 * (u - 1) ** 3 + 1.70158 * (u - 1) ** 2);
 
@@ -26,18 +28,18 @@ export function settle(ctx, p, api) {
   const W = b.x1 - b.x0, H = b.y1 - b.y0, D = b.z1 - b.z0, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
   const root = new THREE.Group(); ctx.scene.add(root);
   // concrete by default; a plastic basin (a sump pit) with wallColor; open at the top unless lid: true (the contents must read)
-  const wall = p.wallColor ? mat(p.wallColor, { roughness: 0.45 }) : api.mat?.("concrete") ?? mat("#b9b4aa"), t = p.wallColor ? 0.1 : 0.14;
+  const wall = col(p.wallColor) ? mat(col(p.wallColor), { roughness: 0.45 }) : api.mat?.("concrete") ?? mat("#b9b4aa"), t = col(p.wallColor) ? 0.1 : 0.14;
   const walls = new THREE.Group(); root.add(walls);
   add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y0 - t / 2, cz); // floor
   add(walls, boxG(t, H, D), wall, b.x0 - t / 2, b.y0 + H / 2, cz); add(walls, boxG(t, H, D), wall, b.x1 + t / 2, b.y0 + H / 2, cz); // sides
   add(walls, boxG(W + 2 * t, H, t), wall, cx, b.y0 + H / 2, b.z0 - t / 2); // back
   if (p.lid === true) add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y1 + t / 2, cz); // lid (off by default)
   // the water: murky brown that clears to blue
-  const murky = new THREE.Color(p.murky ?? "#6b5a3a"), clear = new THREE.Color(p.clearColor ?? "#3d8fd6");
+  const murky = new THREE.Color(col(p.murky, "#6b5a3a")), clear = new THREE.Color(col(p.clearColor, "#3d8fd6"));
   const waterM = ctx.std({ color: murky.clone(), roughness: 0.15, transparent: true, opacity: 0.82 });
   const water = add(root, boxG(W, 1, D - 0.02), waterM, cx, b.y0, cz, false);
   // sand: grains spread through the water that sink and pile up as a layer on the floor
-  const sandM = mat(p.sandColor ?? "#d8b56a", { roughness: 0.9 }), N = p.grains ?? 70, grains = [];
+  const sandM = mat(col(p.sandColor, "#d8b56a"), { roughness: 0.9 }), N = p.grains ?? 70, grains = [];
   for (let i = 0; i < N; i++) {
     const s = add(root, new THREE.SphereGeometry(0.07 + ((i * 7) % 5) * 0.012, 8, 6), sandM, 0, 0, 0, false);
     grains.push({ s, x: b.x0 + 0.15 + ((i * 37) % 97) / 97 * (W - 0.3), y: b.y0 + 0.3 + ((i * 53) % 89) / 89 * (H * 0.75), z: b.z1 - 0.12 - ((i * 13) % 7) / 7 * Math.min(0.6, D * 0.6), d: ((i * 29) % 31) / 31 });
@@ -45,7 +47,7 @@ export function settle(ctx, p, api) {
   const sandBed = add(root, boxG(W, 1, D - 0.04), sandM, cx, b.y0, cz, false);
   // oil: dark droplets that rise, and a dark layer on top
   // the top layer (oil, scum): near black and glossy, so it reads against the water and the walls
-  const oilM = ctx.phys ? ctx.phys({ color: C(p.oilColor ?? "#14100c"), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }) : mat("#14100c"), drops = [];
+  const oilM = ctx.phys ? ctx.phys({ color: C(col(p.oilColor, "#14100c")), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }) : mat("#14100c"), drops = [];
   for (let i = 0; i < 26; i++) { const s = add(root, new THREE.SphereGeometry(0.09, 8, 6), oilM, 0, 0, 0, false); drops.push({ s, x: b.x0 + 0.2 + ((i * 41) % 83) / 83 * (W - 0.4), y: b.y0 + 0.4 + ((i * 23) % 61) / 61 * H * 0.5, z: b.z1 - 0.12 - ((i * 11) % 5) / 5 * 0.4, d: ((i * 17) % 19) / 19 }); }
   const oilLayer = add(root, boxG(W, 1, D - 0.04), oilM, cx, b.y1, cz, false);
   return {
@@ -76,7 +78,7 @@ export function creek(ctx, p, api) {
   const bank = mat("#6b5536", { roughness: 0.95 });
   add(root, boxG(L, 0.14, 0.4), bank, (x0 + x1) / 2, y + 0.03, z - w / 2 - 0.2);
   add(root, boxG(L, 0.16, w + 0.4), bank, (x0 + x1) / 2, y - depth - 0.04, z); // the bed under the water (the face shows the water in section)
-  const clean = new THREE.Color(p.color ?? "#2f8fd8"), dirty = new THREE.Color(p.dirtyColor ?? "#8a7a3e");
+  const clean = new THREE.Color(col(p.color, "#2f8fd8")), dirty = new THREE.Color(col(p.dirtyColor, "#8a7a3e"));
   const wM = ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
   const water = add(root, boxG(L, depth, w), wM, (x0 + x1) / 2, y - depth / 2 + 0.04, z + 0.01, false);
   const rip = ctx.std({ color: new THREE.Color("#e8f6ff"), roughness: 0.3, transparent: true, opacity: 0.85 }), ripples = [];
