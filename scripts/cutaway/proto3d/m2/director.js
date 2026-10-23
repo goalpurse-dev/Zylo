@@ -201,7 +201,8 @@ export function directCamera(layout, shots, marks) {
   const back = scaleView(home, 1.18);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
-  const toward = signPart ? (() => { const f = frameBox(focusOf(signPart, cut), { view: sub(home.pos, home.tgt), width: 0.7, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
+  // the finished build stays in view with the sign beside it (the end card never hides what was built)
+  const toward = signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), subjectBox(layout)]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72);
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
   const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];

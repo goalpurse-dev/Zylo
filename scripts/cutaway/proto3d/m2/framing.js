@@ -165,3 +165,22 @@ export function placeLifeProps(L, home, project) {
   }
   return { layout: { ...L, parts }, moved };
 }
+
+/**
+ * The end sign beside the finished build: if, in the home view, the sign would cover more than a tenth of the build,
+ * it moves to the nearest spot beside it (right first) that keeps it in the frame and on the ground.
+ */
+export function placeSign(L, home, project) {
+  const sign = L.parts.find((p) => p.kind === "sign"); if (!sign?.params?.at) return { layout: L, moved: false };
+  const cut = cutOf(L), subj = subjectBox(L), sr = project(home.pos, home.tgt, subj);
+  const cover = (q) => { const r = project(home.pos, home.tgt, focusOf(q, cut)); const ix = Math.max(0, Math.min(r.x1, sr.x1) - Math.max(r.x0, sr.x0)), iy = Math.max(0, Math.min(r.y1, sr.y1) - Math.max(r.y0, sr.y0)); return { share: (ix * iy) / Math.max(1e-6, sr.w * sr.h), inFrame: !r.behind && r.x0 > 0.02 && r.x1 < 0.98, r }; };
+  if (cover(sign).share <= 0.1) return { layout: L, moved: false };
+  const [x0, y0, z0] = sign.params.at;
+  const cands = [];
+  for (const dx of [0, 2, 4, 6, 8, -2, -4, -6, -8]) for (const dz of [0, -2, -4, -6]) cands.push([subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz]);
+  // never into the house, the setting or another part
+  const others = [...sceneryBoxes(L), ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((b) => b && b.max[1] > 0.2)];
+  const hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2);
+  for (const at of cands) { const q = { ...sign, params: { ...sign.params, at } }; const c = cover(q); if (c.share <= 0.1 && c.inFrame && !hits(focusOf(q, cut))) return { layout: { ...L, parts: L.parts.map((p) => (p === sign ? q : p)) }, moved: true }; }
+  return { layout: L, moved: false };
+}

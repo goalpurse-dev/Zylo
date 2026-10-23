@@ -35,6 +35,9 @@ export function clarityChecks(L, sentences) {
     if (green && (["shrubs", "youngTrees", "lawnWet"].includes(p.kind) || isGrass)) problems.push(`part ${p.id} (${isGrass ? "grass" : p.kind}) does not belong in the ${setting} setting: use its props (${[...allowed].join(", ")})`);
     if (p.kind === "prop" && !allowed.has(`prop:${p.params?.type}`)) problems.push(`part ${p.id}: a ${p.params?.type} does not belong in the ${setting} setting (allowed: ${[...allowed].filter((x) => x.startsWith("prop:")).map((x) => x.slice(5)).join(", ")})`);
   }
+  // 2b. the "Add ..." line brings only finishing touches, never a new machine (a traffic light at a car wash)
+  const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));
+  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
   // 3. nothing floats
   const floor = W.backdrop?.walkTop ?? (["street", "room"].includes(setting) ? 0.12 : setting === "carwash" ? 0.1 : setting === "garage" ? 0.08 : 0);
   const solids = [...settingBoxes(W.backdrop)];

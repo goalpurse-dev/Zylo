@@ -84,15 +84,29 @@ export function previewTimes(tl, layout = null) {
     const own = shows ? Object.entries(tl.tracks).filter(([k]) => k.startsWith(`${shows.p}.`)).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1)) : [];
     const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
     const t = Math.min(next - 0.15, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, next - 0.15))));
-    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, t).toFixed(2), ...(shows ? { must: `${shows.p}: ${shows.does}` } : {}) });
+    // congrats is judged before the end card pops (the finished build must be in view, not the sign)
+    const tt = s.role === "congrats" && tl.marks?.signPop ? Math.min(t, tl.marks.signPop - 0.2) : t;
+    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, tt).toFixed(2), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
   });
   return out;
+}
+/**
+ * What a sentence's frame must show, by kind of sentence (the creator's videos, studied 2026-10-24): the mechanism and
+ * the hook show their action; the myth lines only need the named thing clearly in view (a small cue is enough); the
+ * "Add ..." line shows each added thing in place; congrats shows the whole finished build, nothing covering it.
+ */
+export function mustFor(role, shows) {
+  if (role === "congrats") return "the whole finished build, fully in view, nothing covering it (visible, no action needed)";
+  if (role === "finish") return `each thing this sentence adds, in place on the finished build and standing on something${shows ? ` (${shows.p})` : ""}`;
+  if (!shows) return null;
+  if (["myth", "mythFact"].includes(role)) return `${shows.p} clearly in view (visible, no action needed; a small cue is enough)`;
+  return `${shows.p}: ${shows.does}`;
 }
 // the beats that explain the mechanism: they must pass the preview check (a repair, then a second small one)
 export const MECHANISM = ["name", "how", "fix1", "fix2", "fix3"];
 
 const VISION_SCHEMA = { type: "object", additionalProperties: false, required: ["frames"], properties: { frames: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "ok", "seen", "problem"], properties: { role: { type: "string" }, ok: { type: "boolean" }, seen: { type: "string" }, problem: { type: "string" } } } } } };
-const VISION_SYSTEM = `When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
+const VISION_SYSTEM = `When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
 
 /** 2b. the vision check (paid: about $0.01 per frame at 540x960) */
 export async function visionCheck({ apiKey, frames, log, model }) {

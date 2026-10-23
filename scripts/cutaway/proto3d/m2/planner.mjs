@@ -5,11 +5,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
-import { catalogText } from "./catalog.js";
+import { catalogText, SETTING_PROPS } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
 import { homeView, projectBox } from "./director.js";
-import { placeLifeProps } from "./framing.js";
+import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
 import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { focusOf, union } from "./focus.js";
@@ -17,7 +17,7 @@ import { KIND_DOCS } from "./catalog.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
-const template = (k) => { const L = JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8")); return placeLifeProps(L, homeView(L), projectBox).layout; };
+const template = (k) => { const L = JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8")); const P = placeLifeProps(L, homeView(L), projectBox).layout; return placeSign(P, homeView(P), projectBox).layout; };
 const roleScript = (L, words) => words; // (kept for symmetry; scripts carry their roles)
 
 export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
@@ -46,6 +46,7 @@ Rules:
 function scriptUser({ topic, lengthSec, roles, facts, keyWords }) {
   const L = LENGTH[lengthSec];
   return `Topic: ${topic}
+${finishPropsLine(topic)}
 Length: ${lengthSec} s video: ${L.words[0]}-${L.words[1]} words in ${L.sentences[0]}-${L.sentences[1]} sentences.
 ${roles ? `This topic re-uses a saved scene. Use exactly these roles, in this order, one sentence each: ${roles.join(", ")}.` : `Roles you may use: ${ROLES.join(", ")}.`}
 ${facts?.length ? `Use only these verified facts for the surprises (with their exact wording and numbers):\n${facts.map((f) => `- ${f}`).join("\n")}` : ""}
@@ -91,6 +92,18 @@ HOW TO PLAN
 THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for its script:
 ${JSON.stringify(sceneFromLayout(template(example)))}`;
 const SCENE_SYSTEM = sceneSystem();
+
+// the "Add ..." line names only finishing touches the setting has (catalog.js SETTING_PROPS), so a car wash never gets
+// a traffic light or grass
+const PROP_WORDS = { shrubs: "bushes", youngTrees: "young trees", fence: "a fence", grass: "a grass cap", canopy: "a canopy", "prop:mailbox": "a mailbox", "prop:planter": "a planter", "prop:bench": "a bench", "prop:trashCan": "a trash can", "prop:bikeRack": "a bike rack", "prop:kiosk": "a pay kiosk", "prop:vacuum": "a vacuum station", "prop:towelRack": "a towel rack", "prop:toolbox": "a toolbox", "prop:pottedPlant": "a potted plant" };
+const propWords = (setting) => (SETTING_PROPS[setting] ?? []).map((k) => PROP_WORDS[k] ?? k).join(", ");
+export function finishPropsLine(topic) {
+  const t = ` ${normTopic(topic)} `;
+  const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
+  const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
+  if (setting) return `The "Add ..." finishing line may only name things from this setting's list (it can also add a lid or cover to the thing itself): ${propWords(setting)}.`;
+  return `The "Add ..." finishing line may only name things the setting it lives in has: a yard: ${propWords("yard")}; a street: ${propWords("street")}; a park: ${propWords("park")}; a garage: ${propWords("garage")}; a room: ${propWords("room")}; it can also add a lid or cover to the thing itself.`;
+}
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
 export const INDOOR = /\b(basement|sump|crawl ?space|indoor|inside (a|the|your) (house|home)|water heater|boiler|furnace|radiator|air condition\w*|\bac unit|heat pump|toilet|sink|shower|bathtub|dishwasher|smoke detector|fireplace|chimney|floor heating|underfloor)\b/i;
