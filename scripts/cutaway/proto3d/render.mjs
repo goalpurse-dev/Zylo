@@ -16,7 +16,10 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(f).pipe(res);
 }).listen(0);
 const port = server.address().port;
-const browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: process.env.SOFTWARE_GL ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu"] : ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"] });
+// a render server sets CHROME_PATH and its GPU flags in CHROME_ARGS (JSON); puppeteer's own SwiftShader flag is then left
+// out, so WebGL can't fall back to software without the GPU check seeing it
+const chromeArgs = process.env.CHROME_ARGS ? JSON.parse(process.env.CHROME_ARGS) : null;
+const browser = await puppeteer.launch({ executablePath: process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, ...(chromeArgs ? { ignoreDefaultArgs: ["--use-angle=swiftshader-webgl", "--disable-gpu"] } : {}), args: chromeArgs ?? (process.env.SOFTWARE_GL ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu"] : ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"]) });
 const page = await browser.newPage();
 page.on("console", (m) => console.log("page:", m.text()));
 page.on("pageerror", (e) => console.log("page error:", e.message));
