@@ -84,19 +84,25 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     P({ stage: "scene", step: "preview frames", pct: 6 });
     preparePage({ layout, tl, proto });
     let shots = previewTimes(tl);
-    const pngs = await previewStills({ proto, layout, times: shots.map((s) => s.t), out: path.join(out, "preview") });
+    // an approved saved layout was checked when it was approved: only the sentences whose words moved get a new look
+    // (none moved: no vision call at all), and no repair (the layout itself is unchanged)
+    const approvedSaved = !!reuse && plan.approved;
+    if (approvedSaved) shots = shots.filter((s) => (plan.changedRoles ?? []).includes(s.role));
+    const allTimes = approvedSaved ? previewTimes(tl) : shots;
+    const pngsAll = await previewStills({ proto, layout, times: allTimes.map((s) => s.t), out: path.join(out, "preview") });
+    const pngs = approvedSaved ? pngsAll.filter((_, i) => shots.some((s) => s.t === allTimes[i].t)) : pngsAll;
     const jpgs = shrink(ff, pngs, path.join(out, "preview_small"));
     // the house style saturation (0.38-0.45): a topic that measures outside it gets its grading corrected
-    const sat0 = saturationOf(ff, pngs), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
+    const sat0 = saturationOf(ff, pngsAll), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
     if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
     save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38 });
     shots = shots.map((s, i) => ({ ...s, file: jpgs[i] }));
     P({ stage: "scene", step: "vision check", pct: 7, frames: jpgs.map((f) => path.relative(out, f).split(path.sep).join("/")) });
-    const vc = await visionCached({ apiKey, frames: shots, log, cacheDir }); extraUsd += vc.costUsd;
+    const vc = shots.length ? await visionCached({ apiKey, frames: shots, log, cacheDir }) : { frames: [], costUsd: 0 }; extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
     visionReport = { round1: vc.frames, costUsd: vc.costUsd };
     // only the hook flagged: no repair (the approved videos' hooks are flagged as well; a repair costs about $0.17)
-    if (failed.length && !failed.every((f) => f.role === "hook")) {
+    if (failed.length && !failed.every((f) => f.role === "hook") && !approvedSaved) {
       P({ stage: "scene", step: "repair", pct: 7 });
       const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: failed.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
       extraUsd += rp.costUsd;

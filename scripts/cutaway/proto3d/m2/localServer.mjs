@@ -15,7 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runTopic } from "./run.mjs";
-import { callJSON, loadKey } from "./llm.mjs";
+import { callJSON, loadKey, MODEL } from "./llm.mjs";
 import { classifyTopic, kitCheck, normTopic, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { checkKitFit } from "../../../../supabase/functions/_shared/cutaway/kitCheck.js";
 
@@ -39,7 +39,8 @@ function savedLayoutFor(topic) {
 
 const POST_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "description", "hashtags"], properties: { title: { type: "string" }, description: { type: "string" }, hashtags: { type: "array", items: { type: "string" } } } };
 async function postFor(script) {
-  const r = await callJSON({ apiKey: loadKey(), label: "post text", log: LOG, effort: "low", maxTokens: 3000, schema: POST_SCHEMA,
+  // Haiku: it passed the post-text checks on every test script (Sonnet broke the 2-sentence rule twice), at 1/20 the price
+  const r = await callJSON({ apiKey: loadKey(), model: MODEL.small, label: "post text", log: LOG, effort: "low", maxTokens: 3000, schema: POST_SCHEMA,
     system: "You write the post text for a short vertical 3D explainer video on TikTok, YouTube Shorts and Reels: a title under 60 characters with one emoji at the end, a 1-2 sentence description that teases the most surprising fact, and 8 lowercase hashtags (each starting with #, always including #howitworks, #3danimation, #explained and #shorts).",
     user: `Title: ${script.title}\nNarration: ${script.sentences.map((s) => s.text).join(" ")}` });
   return { post: r.data, costUsd: r.costUsd };

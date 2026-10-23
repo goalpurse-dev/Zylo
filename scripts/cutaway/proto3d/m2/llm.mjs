@@ -3,9 +3,10 @@
 // priced from its usage and appended to the spend log, so the BUILD_PLAN tally can be checked against it.
 import fs from "node:fs";
 
-export const MODEL = { default: "claude-sonnet-5-5", strong: "claude-opus-5-5" };
+// small: the simple steps (re-anchoring words, the post text, the kit check), where it passes the same checks
+export const MODEL = { default: "claude-sonnet-5-5", strong: "claude-opus-5-5", small: "claude-haiku-5-5" };
 // USD per 1M tokens; web search $10 per 1,000 searches
-const PRICE = { "claude-sonnet-5-5": { in: 2, out: 10, cacheRead: 0.2, cacheWrite: 2.5 }, "claude-opus-5-5": { in: 4, out: 20, cacheRead: 0.2, cacheWrite: 5 } };
+const PRICE = { "claude-haiku-5-5": { in: 0.1, out: 0.5, cacheRead: 0.01, cacheWrite: 0.125 }, "claude-sonnet-5-5": { in: 2, out: 10, cacheRead: 0.2, cacheWrite: 2.5 }, "claude-opus-5-5": { in: 4, out: 20, cacheRead: 0.2, cacheWrite: 5 } };
 export function costOf(model, u = {}) {
   const p = PRICE[model];
   const tok = ((u.input_tokens ?? 0) * p.in + (u.output_tokens ?? 0) * p.out + (u.cache_read_input_tokens ?? 0) * p.cacheRead + (u.cache_creation_input_tokens ?? 0) * p.cacheWrite) / 1e6;
@@ -94,4 +95,34 @@ export async function callJSON({ apiKey, model = MODEL.default, system, user, sc
   let data;
   try { data = JSON.parse(text); } catch { throw Object.assign(new Error(`reply is not JSON: ${text.slice(0, 200)}`), { costUsd: cost }); }
   return { data, costUsd: +cost.toFixed(5), usage, searches, sources };
+}
+
+/**
+ * Many planner calls through the Message Batches API (half price, results within 24 h, usually minutes). requests:
+ * [{ customId, model, system, user, schema, effort, maxTokens, label }] (no web search: those stay live calls).
+ * Returns { [customId]: { data, costUsd, usage } | { error } }. Every result is logged at its batch price.
+ */
+export async function batchJSON({ apiKey, requests, log, pollMs = 30_000, maxWaitMs = 6 * 3600_000 }) {
+  const H = { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" };
+  const params = (q) => ({ model: q.model ?? MODEL.default, max_tokens: q.maxTokens ?? 32000, system: [{ type: "text", text: q.system, cache_control: { type: "ephemeral" } }], messages: [{ role: "user", content: q.user }], output_config: q.schema ? { effort: q.effort ?? "high", format: { type: "json_schema", schema: q.schema } } : { effort: q.effort ?? "high" } });
+  const res = await fetch("https://api.anthropic.com/v1/messages/batches", { method: "POST", headers: H, body: JSON.stringify({ requests: requests.map((q) => ({ custom_id: q.customId, params: params(q) })) }) });
+  let b = await res.json();
+  if (!res.ok) throw new Error(`batch create ${res.status} ${JSON.stringify(b).slice(0, 300)}`);
+  const t0 = Date.now();
+  while (b.processing_status !== "ended") {
+    if (Date.now() - t0 > maxWaitMs) throw new Error(`batch ${b.id} still ${b.processing_status} after ${maxWaitMs / 60000} min`);
+    await new Promise((ok) => setTimeout(ok, pollMs));
+    b = await (await fetch(`https://api.anthropic.com/v1/messages/batches/${b.id}`, { headers: H })).json();
+  }
+  const text = await (await fetch(b.results_url, { headers: H })).text();
+  const out = {};
+  for (const line of text.trim().split("\n")) {
+    const row = JSON.parse(line), q = requests.find((x) => x.customId === row.custom_id);
+    if (row.result.type !== "succeeded") { out[row.custom_id] = { error: row.result.type }; continue; }
+    const m = row.result.message, model = q.model ?? MODEL.default, c = +(costOf(model, m.usage) * 0.5).toFixed(5);
+    if (log) fs.appendFileSync(log, `${JSON.stringify({ at: new Date().toISOString(), label: `${q.label} (batch)`, model, status: 200, stop: m.stop_reason, usage: m.usage, costUsd: c, batch: b.id })}\n`);
+    const t = m.content.filter((x) => x.type === "text").map((x) => x.text).join("").trim();
+    try { out[row.custom_id] = { data: q.schema ? JSON.parse(t) : { text: t }, costUsd: c, usage: m.usage, searches: 0 }; } catch { out[row.custom_id] = { error: "reply is not JSON", costUsd: c }; }
+  }
+  return out;
 }

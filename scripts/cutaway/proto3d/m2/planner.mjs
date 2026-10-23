@@ -209,6 +209,16 @@ export function dropWords(L, missing) {
 }
 const WORDS_SCHEMA = { type: "object", additionalProperties: false, required: ["words"], properties: { words: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "word"], properties: { index: { type: "integer" }, word: { type: "string" } } } } } };
 
+/** a scene patch applied to a whole scene (a repair's reply): beats replaced by sentence, parts by id, world keys */
+export function mergeScene(scene, patch) {
+  if (!patch || patch._bad || (!patch.beats && !patch.parts && !patch.world)) return patch?.world?.cut ? patch : scene; // a whole layout is still accepted
+  const out = JSON.parse(JSON.stringify(scene));
+  for (const b of patch.beats ?? []) { const i = out.beats.findIndex((x) => x.s === b.s); if (i >= 0) out.beats[i] = b; else out.beats.push(b); }
+  for (const p of patch.parts ?? []) { const i = out.parts.findIndex((x) => x.id === p.id); if (i >= 0) out.parts[i] = p; else out.parts.push(p); }
+  if (patch.world) out.world = { ...out.world, ...patch.world };
+  if (patch.audio) for (const k of ["cards", "sfx", "chimes", "rain"]) if (patch.audio[k]) out.audio[k] = patch.audio[k];
+  return out;
+}
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
 const checkScript = (s, lengthSec, roles) => {
@@ -229,7 +239,7 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -238,6 +248,8 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     onStep({ step: label });
     const file = cacheDir && path.join(cacheDir, `step_${++n}_${label.replace(/[^a-z0-9]+/gi, "_")}.json`);
     if (file && fs.existsSync(file)) { const r = JSON.parse(fs.readFileSync(file, "utf8")); trace.push({ label, cached: true, data: r.data }); return r; }
+    // a batch pre-build: the scene plan's request is handed back instead of sent (its answer is written to this file)
+    if (defer && label === "scene plan") { defer.push({ file, label, model, ...args }); throw Object.assign(new Error("deferred to a batch"), { deferred: true }); }
     const r = await callJSON({ apiKey, model, log, label, ...args });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
     cost += r.costUsd; trace.push({ label, costUsd: r.costUsd, searches: r.searches, data: r.data }); return r;
@@ -282,13 +294,15 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
   script = { ...script, sentences: script.sentences.map((s) => ({ ...s, text: oneSentence(s.text) })) };
 
   // 3. the scene: a saved layout's beats, or a new layout planned from the kit
-  let layout, problems = [], warnings = [];
+  // the sentences of a saved layout whose words moved (re-anchored): only their preview frames need a new look
+  let layout, problems = [], warnings = [], changedRoles = null;
   if (saved) {
     layout = { ...saved, title: script.title || saved.title };
     ({ problems, warnings } = solveLayout(layout, script.sentences));
     if (problems.length) {
       // the saved beats' words are not all in the new sentences: one small call re-picks only those words
       const missing = missingWords(saved, script.sentences);
+      changedRoles = [...new Set(missing.map((m) => m.s))];
       if (missing.length) {
         const r = await step("re-anchor words", { system: "You re-anchor an animation to a new narration. For each item, pick the one word of the given sentence (copy it exactly, without punctuation) on which that action should happen: the word that names the thing or the action. Reply with every item.", user: `Items (index: sentence role: sentence | the action | the old word):\n${missing.map((m, i) => `${i}: ${m.s}: ${script.sentences.find((x) => x.role === m.s)?.text} | ${m.what} | ${m.w}`).join("\n")}`, schema: WORDS_SCHEMA, effort: "low", maxTokens: 4000 });
         layout = applyWords(layout, missing, r.data.words);
@@ -325,7 +339,8 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
   // the hook object on screen in the first frame (free, in code)
   const op = fixOpening(layout);
   if (op.moved) { layout = op.layout; ({ problems, warnings } = (() => { const r = solveLayout(layout, script.sentences); return { problems: [...problems.filter((x) => !/^anchor word not found/.test(x)), ...r.problems.filter((x) => !problems.includes(x))], warnings: [...warnings, ...r.warnings.filter((x) => !warnings.includes(x))] }; })()); trace.push({ label: "opening", ...op.moved }); }
-  return { script, layout, problems, warnings, costUsd: +cost.toFixed(4), trace };
+  if (saved && changedRoles == null) changedRoles = [];
+  return { script, layout, problems, warnings, costUsd: +cost.toFixed(4), trace, changedRoles, approved: saved ? saved.approved !== false : false };
 }
 
 export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, roleScript };
@@ -341,10 +356,11 @@ export async function repairLayout({ apiKey, topic, script, layout, problems, lo
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {
     r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000,
-      user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is, and return the whole layout.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
+      user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is. Return ONLY what changes, as sceneJson = {\"beats\": [each beat you change, whole, with its s], \"parts\": [each part you change or add, whole, with its id], \"world\": {only the world keys you change}}; leave out everything that stays the same.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
   }
-  const conv = layoutFromScene(parseScene(r.data), { key: layout.key, title: layout.title, roles: layout.roles });
+  // the reply is a patch: changed beats (by sentence), changed or new parts (by id), changed world keys
+  const conv = layoutFromScene(mergeScene(sceneFromLayout(layout), parseScene(r.data)), { key: layout.key, title: layout.title, roles: layout.roles });
   let next = { ...conv.layout, why: layout.why };
   if (saved) next = { ...next, world: layout.world, parts: layout.parts, camera: layout.camera };
   else if (layout.camera) next.camera = layout.camera;

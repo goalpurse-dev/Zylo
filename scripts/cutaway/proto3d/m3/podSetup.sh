@@ -2,13 +2,13 @@
 # M3, on the GPU machine (RunPod pod, image node:22-trixie): set up headless Chrome on the GPU, check that WebGL really
 # uses it, measure the render, upload the results. Every step is timed in setup.log. The controller (m3/gpuTest.mjs)
 # deletes the pod when the results arrive, or after its time limit.
-# env: BUNDLE_URL (the render bundle), UP_LOG, UP_CHECK, UP_BENCH, UP_VIDEO (signed upload URLs), PAGE_KEY, LENGTH_SEC
+# env: BUNDLE_URLS (the render bundle, in parts), UP_LOG, UP_CHECK, UP_BENCH, UP_VIDEO (signed upload URLs), PAGE_KEY, LENGTH_SEC
 T0=$(date +%s)
 LOG=/work/setup.log; mkdir -p /work; exec > >(tee -a $LOG) 2>&1
 log() { echo "[$(( $(date +%s) - T0 ))s] $*"; }
 up() { [ -f "$2" ] && curl -sS -X PUT -H "Content-Type: $3" --data-binary @"$2" "$1" >/dev/null && log "uploaded $2"; }
 # the log goes last: its arrival tells the controller that everything is uploaded
-finish() { set +e; trap - ERR; log "done ($1)"; up "$UP_CHECK" /work/gpucheck.json application/json; up "$UP_BENCH" /work/bench.json application/json; up "$UP_VIDEO" /work/full.mp4 video/mp4; up "$UP_LOG" $LOG text/plain; sleep infinity; }
+finish() { set +e; trap - ERR; log "done ($1)"; up "$UP_CHECK" /work/gpucheck.json application/json; up "$UP_BENCH" /work/bench.json application/json; [ -f /work/full.mp4 ] && ffmpeg -v error -y -i /work/full.mp4 -vf scale=540:-2 -c:v libx264 -crf 30 -an /work/full_small.mp4; up "$UP_VIDEO" /work/full_small.mp4 video/mp4; up "$UP_LOG" $LOG text/plain; sleep infinity; }
 trap 'finish error' ERR
 set -eE
 
@@ -30,7 +30,7 @@ mkdir -p /usr/share/glvnd/egl_vendor.d /etc/vulkan/icd.d
 vulkaninfo --summary 2>&1 | grep -iE "deviceName|driverName|apiVersion" | head -6 || log "vulkaninfo failed"
 log "vendor files"
 
-cd /work && curl -sSL "$BUNDLE_URL" -o bundle.tgz && tar xzf bundle.tgz && rm bundle.tgz
+cd /work && for u in $BUNDLE_URLS; do curl -sSL "$u" >> bundle.tgz; done && tar xzf bundle.tgz && rm bundle.tgz
 log "bundle"
 npm ci --omit=dev --no-audit --no-fund >/dev/null
 log "npm"

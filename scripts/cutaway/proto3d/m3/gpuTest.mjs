@@ -37,11 +37,13 @@ execFileSync("tar", ["-czf", tgz.replace(/\\/g, "/").replace(/^([A-Za-z]):/, (m,
 note(`bundle ${(fs.statSync(tgz).size / 1e6).toFixed(1)} MB:`, files.length, "entries");
 if (dry) { note("dry run: no upload, no pod"); process.exit(0); }
 
-await put("bundle.tgz", tgz, "application/gzip");
+// storage takes files up to 50 MB: the bundle goes up in 40 MB parts that the pod joins again
+const whole = fs.readFileSync(tgz), PART = 40e6, parts = [];
+for (let i = 0; i * PART < whole.length; i++) { const f = path.join(out, `bundle.part${i}`); fs.writeFileSync(f, whole.subarray(i * PART, (i + 1) * PART)); await put(`bundle.part${i}`, f, "application/octet-stream"); parts.push(`bundle.part${i}`); }
 await put("podSetup.sh", path.join(here, "podSetup.sh"), "text/plain");
 const podEnv = {
   NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all",
-  SETUP_URL: await signGet("podSetup.sh"), BUNDLE_URL: await signGet("bundle.tgz"),
+  SETUP_URL: await signGet("podSetup.sh"), BUNDLE_URLS: (await Promise.all(parts.map(signGet))).join(" "),
   UP_LOG: await signPut("setup.log"), UP_CHECK: await signPut("gpucheck.json"), UP_BENCH: await signPut("bench.json"), UP_VIDEO: await signPut("full.mp4"),
   PAGE_KEY: key, LENGTH_SEC: String(lengthSec),
 };
