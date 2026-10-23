@@ -1,6 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// Vercel's deployment kind ("production", "preview") at build time, for build switches such as
+// VITE_CUTAWAY_ENABLED (src/data/cutawayExplainer.js). Unset outside Vercel.
+if (process.env.VERCEL_ENV && !process.env.VITE_VERCEL_ENV) process.env.VITE_VERCEL_ENV = process.env.VERCEL_ENV;
+
 export default defineConfig({
   plugins: [react()],
 

@@ -2,7 +2,8 @@
 // and every prompt built from it. Pure: no network, no runtime APIs (Deno and node both import it).
 // Method: research/seamless-niche/TEST1_REVIEW.md (R1-R21) and CREATOR_PLAYBOOK.md (sections 1-5).
 
-import { NEVER, OVERLAYS, STYLE_BLOCK, WATER_RULES } from "./style.js";
+import { NEVER, STYLE_BLOCK, WATER_RULES } from "./style.js";
+import { MODELS } from "./pricing.js";
 import { LIBRARY, SOUND_KEYS } from "./sound.js";
 import { workFor } from "./pricing.js";
 
@@ -11,7 +12,9 @@ export const SURPRISE_KINDS = Object.freeze(["fact", "myth", "gross", "danger", 
 export const MIN_BOX = 0.4; // crops narrower than 40% of the wide image get soft (TEST1_REVIEW.md)
 
 /** Words the narration should have: ~228 wpm once the stitch has sped the voice up. */
-export const targetWords = (lengthSec) => Math.round(lengthSec * 3.8);
+// The voice is never sped up (owner, 2026-10-19): the script is sized for the voice's own pace,
+// minus ~1.2 s for the end hold.
+export const targetWords = (lengthSec, wpm = MODELS.voice.wpm) => Math.round(((lengthSec - 1.2) * wpm) / 60);
 
 /** The script numbers per length (CREATOR_PLAYBOOK.md section 2, scaled to the length). */
 export function rulesFor(lengthSec) {
@@ -51,11 +54,11 @@ export const PLAN_SCHEMA = {
       type: "array",
       items: {
         type: "object", additionalProperties: false,
-        required: ["text", "verb", "state", "box", "show", "edit", "action", "ongoing", "adds", "overlay", "move", "sound", "card"],
+        required: ["text", "verb", "state", "box", "show", "edit", "action", "ongoing", "adds", "move", "sound", "card"],
         properties: {
           text: { type: "string" }, verb: { type: "string" }, state: { type: "string" }, box: BOX,
           show: { type: "string" }, edit: { type: "string" }, action: { type: "string" }, ongoing: { type: "string" }, adds: { type: "string" },
-          overlay: { type: "string", enum: Object.keys(OVERLAYS) }, move: { type: "string", enum: [...MOVES] },
+          move: { type: "string", enum: [...MOVES] },
           sound: {
             type: "object", additionalProperties: false, required: ["key", "text", "at", "whole"],
             properties: { key: { type: "string", enum: ["", ...SOUND_KEYS] }, text: { type: "string" }, at: { type: "string", enum: ["start", "verb"] }, whole: { type: "boolean" } },
@@ -92,10 +95,9 @@ STEP 3 — BEATS. Split the narration into beats: one clause of about 3 seconds 
   edit     a small close-up change to apply to the crop, or ""
   action   the one thing that happens, landing on the verb
   ongoing  an action that must keep going for the WHOLE beat (falling rain, flowing water, a moving truck), or ""
-  adds     the name of the part that APPEARS during this beat, exactly as written in a state's "parts", or "". APPEARS ON ITS WORD: the beat's own state must NOT contain that part, and the NEXT beat's state (or "end") MUST contain it.
-  overlay  one explainer overlay built into the scene: ${Object.entries(OVERLAYS).map(([k, v]) => `${k} = ${v}`).join("; ")}
+  adds     the name of the part that APPEARS during this beat, exactly as written in a state's "parts", or "". APPEARS ON ITS WORD: the beat's own state must NOT contain that part, and the NEXT beat's state (or "end") MUST contain it. Each change from one wide state to the next brings in AT MOST ONE appearing part, so at most (number of states - 1) beats have "adds"; other parts are either in the master already or left out.
   move     how the camera gets to the NEXT beat's first frame at the end of the beat: push-in, pull-out, follow, arc, hold
-  sound    0 or 1 sound effect tied to the on-screen action: key = one of ${Object.keys(LIBRARY).join(", ")}, "custom" (then text describes the exact sound, e.g. "garbage bags thudding into a pit"), or "" for none. at = "verb" or "start"; whole = true if it lasts the whole beat (rain, a running engine). No music, never a whoosh for a camera move. Give sound to about 6 beats in 10.
+  sound    0 or 1 short sound effect tied to a clear on-screen action: key = one of ${Object.keys(LIBRARY).join(", ")}, "custom" (then text describes the exact sound, e.g. "garbage bags thudding into a pit"), or "" for none. at = "verb" or "start"; whole = true only for rain. Sparse: at most one effect every two beats (~6 s), only on the strongest moments. No music, never a whoosh for a camera move.
   card     the number card for a surprise landing in this beat: text (e.g. "= 6 CARS") and the word it appears on; or text "" and word "".
 "end": the final frame (state, box, show, edit): the solved, calm result, wide or medium.
 
@@ -114,7 +116,9 @@ RULES
 - The camera never travels along an empty surface. Big moves go through a wider framing or follow the moving thing.
 - The master is tight: subject and cutaway fill about 70% of the frame; the world runs to the frame edges.
 - Water: ${WATER_RULES}
-- Every beat has an action, an overlay or a part appearing.
+- Weather: keep it dry. Rain only if the story is about rain, and then only above ground: the cut-away faces always stay dry (rain drawn on a cut face reads as a leak).
+- No drawn explainers: no arrows, dots, glows, symbols or labels in any image or clip. Show how it works with the real parts and what they do.
+- Every beat has an action or a part appearing.
 - The last beats show the fix working; "end" is calm and the problem is gone.`;
 
 export function plannerUser({ topic, lengthSec, usedIdeas = [] }) {
@@ -137,10 +141,11 @@ export const CRITIC_SYSTEM = `You are the critic for a cutaway explainer plan. Y
 - sentences average 15-19 words, none over 30; "But" loops and "This is a" names in the asked range
 - the first surprise lands in the first 4 beats; a myth-bust near the end
 - each beat 8-14 words with exactly one visible change; no two beats in a row with the same state and nearly the same box
-- "adds": the part is missing from the beat's own state and present in the next beat's state (or "end")
+- "adds": the part is missing from the beat's own state and present in the next beat's state (or "end"); each state change brings in at most one appearing part, so at most (states - 1) beats have "adds"
 - every part that appears is named in the narration
 - "end" is calm and the problem is gone
-- states' "checks" are short yes/no facts you can see in that image
+- states' "checks" are short yes/no facts you can see in that image, and EVERY check agrees with that state's own "description" and with the plan (never a check that forbids something the scene or the narration includes, e.g. "no gas escaping" when a gas flare is in the scene)
+- liquids and gas only go where the story says: if the story is about containing something, the scene and the checks say where it goes and that nothing escapes elsewhere
 Change as little as possible otherwise.`;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -162,8 +167,106 @@ export function boxJump(a, b) {
   return { dist, scale, far: dist > 0.3 || (dist > 0.18 && scale > 1.8) };
 }
 
+/**
+ * Shape checks only (is this the plan format at all?): exact beat and state counts, every required
+ * field present with the right type. A reply that fails these is malformed (e.g. 95 beats): it is
+ * retried once instead of being sent to the critic.
+ */
+export function shapeProblems(plan, lengthSec) {
+  const w = workFor(lengthSec);
+  const out = [];
+  if (!plan || typeof plan !== "object") return ["not an object"];
+  const str = (v) => typeof v === "string";
+  const isBox = (b) => b && ["x", "y", "w"].every((k) => typeof b[k] === "number" && Number.isFinite(b[k]));
+  if (!Array.isArray(plan.facts) || !plan.facts.length) out.push("facts missing");
+  if (!Array.isArray(plan.surprises)) out.push("surprises missing");
+  if (!Array.isArray(plan.mechanisms)) out.push("mechanisms missing");
+  if (!str(plan.world) || !str(plan.cutaway)) out.push("world or cutaway missing");
+  if (!Array.isArray(plan.states) || plan.states.length !== w.wideImages) out.push(`states: ${plan.states?.length ?? 0} (must be exactly ${w.wideImages})`);
+  else plan.states.forEach((s, i) => { if (!str(s?.id) || !str(s?.description) || !Array.isArray(s?.parts) || !Array.isArray(s?.checks) || typeof s?.problem !== "boolean") out.push(`state ${i + 1} malformed`); });
+  if (!Array.isArray(plan.beats) || plan.beats.length !== w.beats) out.push(`beats: ${plan.beats?.length ?? 0} (must be exactly ${w.beats})`);
+  else plan.beats.forEach((b, i) => { if (!str(b?.text) || !str(b?.verb) || !str(b?.state) || !isBox(b?.box) || !str(b?.show) || !str(b?.action)) out.push(`beat ${i + 1} malformed`); });
+  if (!plan.end || !str(plan.end.state) || !isBox(plan.end.box)) out.push("end malformed");
+  return out;
+}
+
+/** Closest word in `text` to `want` (same word, then the longest shared start of 4+ letters), or null. */
+function closestWord(text, want) {
+  const ws = words(text).map(bare).filter(Boolean);
+  const w = bare(want);
+  if (!w) return null;
+  if (ws.includes(w)) return w;
+  let best = null, bestLen = 3;
+  for (const x of ws) {
+    let k = 0;
+    while (k < Math.min(x.length, w.length) && x[k] === w[k]) k++;
+    if (k > bestLen) { best = x; bestLen = k; }
+  }
+  return best;
+}
+
+/**
+ * The program's own bookkeeping, done before any check (the model kept getting it off by one):
+ *  - "appears on its word": a beat that adds a part starts from the last state WITHOUT it, and the
+ *    next frame comes from the first state WITH it (all states are edits of one camera, so the crop boxes stay valid)
+ *  - a verb or card word that isn't in its beat's text -> the closest word that is (e.g. "seals" -> "seal")
+ * Content is never touched.
+ */
+export function repairStructure(input) {
+  if (!input || !Array.isArray(input.beats) || !Array.isArray(input.states)) return input;
+  const plan = JSON.parse(JSON.stringify(input));
+  const index = new Map(plan.states.map((s, i) => [s.id, i]));
+  const hasAt = (i, part) => (plan.states[i]?.parts ?? []).some((p) => norm(p) === norm(part));
+  plan.beats.forEach((b) => {
+    // The verb only says WHEN the change lands: if a rewrite cut it, point at the beat's longest word.
+    const v = closestWord(b.text, b.verb) ?? [...words(b.text).map(bare)].sort((x, y) => y.length - x.length)[0];
+    if (v && bare(b.verb) !== v) b.verb = words(b.text).find((x) => bare(x) === v);
+    if (b.card?.text && b.card.word) {
+      const c = closestWord(b.text, b.card.word) ?? bare(b.verb);
+      b.card.word = words(b.text).find((x) => bare(x) === c) ?? b.verb;
+    }
+  });
+  // "Appears on its word" needs one change between wide images per appearing part. Assign states in
+  // story order: each appearing part gets the step into the first state that shows it, if that step
+  // isn't taken yet and comes later than the last one used. Parts that can't get their own step
+  // (more parts than images, or two parts first shown in the same state) stay in the plan but lose
+  // "adds": they are listed in plan.addsDropped and reported as warnings, never as failures.
+  const frames = [...plan.beats, plan.end];
+  const firstOf = (part) => plan.states.findIndex((_, k) => hasAt(k, part));
+  const dropped = [];
+  let floor = 0; // frames after the last appearing part are at least this state
+  plan.beats.forEach((b, i) => {
+    if (!b.adds) return;
+    const first = firstOf(b.adds);
+    if (first < 0) return; // no state shows the part: left for the checks and the critic
+    // In the master already (it can't appear), or its step into `first` is taken / already passed.
+    if (first === 0 || first - 1 < floor) { dropped.push(b.adds); b.adds = ""; return; }
+    for (let k = 0; k <= i; k++) { const s = index.get(frames[k].state) ?? 0; if (s > first - 1) frames[k].state = plan.states[first - 1].id; }
+    frames[i].state = plan.states[first - 1].id;
+    for (let k = i + 1; k < frames.length; k++) { const s = index.get(frames[k].state) ?? 0; if (s < first) frames[k].state = plan.states[first].id; }
+    floor = first;
+  });
+  if (dropped.length) plan.addsDropped = dropped;
+  return plan;
+}
+
+/** True when the narration of the last part has the myth-bust shape ("... is not ..., it is ..."). */
+function narrationHasMyth(plan, from) {
+  return plan.beats.slice(from).some((b) => /\b(is not|isn't|are not|aren't)\b/i.test(b.text) && /\b(it is|it's|they are|they're|that is)\b/i.test(b.text.split(/\b(?:is not|isn't|are not|aren't)\b/i)[1] ?? ""));
+}
+
+/** Softer checks: reported to the critic and kept on the run, but never fail it. */
+export function planWarnings(plan) {
+  const out = [];
+  if (!Array.isArray(plan?.beats)) return out;
+  const narration = norm(plan.beats.map((b) => b.text).join(" "));
+  for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) out.push(`the part "${b.adds}" appears but is never named`);
+  for (const p of plan.addsDropped ?? []) out.push(`"${p}" can't appear on its own word (not enough changes between wide images): it is already visible before it is named`);
+  return out;
+}
+
 /** All the program's checks. Returns a list of problems (empty = fine). */
-export function planProblems(plan, lengthSec, usedIdeas = []) {
+export function planProblems(plan, lengthSec, usedIdeas = [], opts = {}) {
   const w = workFor(lengthSec);
   const r = rulesFor(lengthSec);
   const problems = [];
@@ -178,10 +281,9 @@ export function planProblems(plan, lengthSec, usedIdeas = []) {
     const n = i + 1;
     if (!states.has(b.state)) problems.push(`beat ${n}: unknown state ${b.state}`);
     const wc = words(b.text).length;
-    if (wc < 7 || wc > 16) problems.push(`beat ${n}: ${wc} words (want 8-14)`);
+    if (wc < 5 || wc > 16) problems.push(`beat ${n}: ${wc} words (want 6-14)`);
     if (!words(b.text).some((x) => bare(x) === bare(b.verb))) problems.push(`beat ${n}: verb "${b.verb}" not in its text`);
     if (!MOVES.includes(b.move)) problems.push(`beat ${n}: move ${b.move}`);
-    if (!OVERLAYS[b.overlay]) problems.push(`beat ${n}: overlay ${b.overlay}`);
     const nextState = i + 1 < plan.beats.length ? plan.beats[i + 1].state : plan.end?.state;
     if (b.adds) {
       if (has(b.state, b.adds)) problems.push(`beat ${n} adds "${b.adds}" but its own state ${b.state} already shows it (it must appear on its word)`);
@@ -196,13 +298,11 @@ export function planProblems(plan, lengthSec, usedIdeas = []) {
   });
   if (!states.has(plan.end?.state)) problems.push(`end: unknown state ${plan.end?.state}`);
   else if (states.get(plan.end.state).problem) problems.push(`end state ${plan.end.state} still shows the problem (problem must be false)`);
-  // every part that appears is named in the narration
-  const narration = norm(plan.beats.map((b) => b.text).join(" "));
-  for (const b of plan.beats) if (b.adds && !norm(b.adds).split(" ").some((t) => t.length > 3 && narration.includes(t))) problems.push(`the part "${b.adds}" appears but is never named`);
   // script shape
   const text = plan.beats.map((b) => b.text.trim()).join(" ");
   const total = words(text).length;
-  if (total < targetWords(lengthSec) * 0.8 || total > targetWords(lengthSec) * 1.2) problems.push(`narration ${total} words (want ~${targetWords(lengthSec)})`);
+  const [lo, hi] = opts.wordRange ?? [targetWords(lengthSec) * 0.8, targetWords(lengthSec) * 1.2];
+  if (total < lo || total > hi) problems.push(`narration ${total} words (want ~${targetWords(lengthSec)})`);
   const sents = sentencesOf(text);
   const lens = sents.map((s) => words(s).length);
   const avg = total / Math.max(1, sents.length);
@@ -219,7 +319,8 @@ export function planProblems(plan, lengthSec, usedIdeas = []) {
   const sp = Array.isArray(plan.surprises) ? plan.surprises : [];
   if (sp.length < r.surprises[0]) problems.push(`${sp.length} surprises (want ${r.surprises[0]}-${r.surprises[1]})`);
   if (sp.length && Math.min(...sp.map((s) => s.beat)) > r.firstSurpriseBeat - 1) problems.push(`the first surprise is in beat ${Math.min(...sp.map((s) => s.beat)) + 1} (must be in the first ${r.firstSurpriseBeat})`);
-  if (!sp.some((s) => s.kind === "myth" && s.beat >= Math.floor(w.beats * r.mythFrom))) problems.push(`no myth-bust ("That X is not Y, it is Z") in the last part`);
+  const mythFrom = Math.floor(w.beats * r.mythFrom);
+  if (!sp.some((s) => s.kind === "myth" && s.beat >= mythFrom) && !narrationHasMyth(plan, mythFrom)) problems.push(`no myth-bust ("That X is not Y, it is Z") in the last part`);
   sp.forEach((s) => { if (s.beat < 0 || s.beat >= w.beats) problems.push(`surprise "${s.text.slice(0, 40)}" points at beat ${s.beat}`); });
   // used ideas
   const used = usedIdeas.map(norm).filter(Boolean);
@@ -242,14 +343,25 @@ export function normalizePlan(plan) {
   };
 }
 
-/** Checks the plan and returns a normalised copy, or throws with the reasons. */
-export function validatePlan(plan, lengthSec, usedIdeas = []) {
-  const problems = planProblems(plan, lengthSec, usedIdeas);
+/** Repairs the bookkeeping, checks the plan and returns a normalised copy, or throws with the reasons. */
+export function validatePlan(input, lengthSec, usedIdeas = [], opts = {}) {
+  const plan = repairStructure(input);
+  const problems = planProblems(plan, lengthSec, usedIdeas, opts);
   if (problems.length) throw Object.assign(new Error(`PLAN_INVALID: ${problems.join("; ")}`), { problems });
   return normalizePlan(plan);
 }
 
 export const narrationText = (plan) => plan.beats.map((b) => b.text.trim()).join(" ");
+
+/** The plan context the vision check gets: the narration, the named elements and the actions. */
+export function visionContext(plan) {
+  const parts = [...new Set(plan.states.flatMap((s) => s.parts ?? []))];
+  return [
+    `Narration: ${narrationText(plan)}`,
+    `Named elements: ${parts.join(", ")}${plan.life ? `, ${plan.life}` : ""}`,
+    `Actions: ${plan.beats.map((b) => b.action).filter(Boolean).join("; ")}`,
+  ].join("\n").slice(0, 3000);
+}
 
 /**
  * The keyframes and the clips between them. One keyframe at the start of each beat plus the end frame.
@@ -339,7 +451,7 @@ export function clipPrompt(plan, seg, { clipSec, verbAtSec, toShow }) {
     const moveSec = seg.part === "a" ? 1.0 : b.move === "hold" ? 0 : 0.7;
     const driftUntil = Math.max(0.5, clipSec - moveSec).toFixed(1);
     const at = Math.max(0.2, Math.min(clipSec - moveSec - 0.2, verbAtSec ?? clipSec / 2)).toFixed(1);
-    parts.push(`First frame: ${b.show}.`, `At about ${at} seconds: ${b.action}. Shown with ${OVERLAYS[b.overlay]}.`);
+    parts.push(`First frame: ${b.show}.`, `At about ${at} seconds: ${b.action}.`);
     if (ongoing) parts.push(ongoing);
     parts.push(moveSec
       ? `The camera drifts slowly until ${driftUntil} seconds; in the last ${moveSec} seconds it ${seg.part === "a" ? "pulls back" : MOVE_COPY[b.move]} smoothly to: ${toShow}.`

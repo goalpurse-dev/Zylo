@@ -10,23 +10,28 @@
 // - "custom": anything topic-specific; generated from the cue text and cached
 //   by a hash of the text + length, so a repeat costs nothing.
 
+// Every effect is short (under 1.5 s) except rain, which fades in and out softly (owner, 2026-10-19).
+export const MAX_SFX_SEC = 1.4;
 export const LIBRARY = Object.freeze({
-  splash: { prompt: "a single water splash, close, clean, no background", seconds: 1.5 },
-  water_rush: { prompt: "water rushing through a pipe, steady flow", seconds: 3 },
-  drip: { prompt: "a few slow water drips into a puddle", seconds: 2.5 },
-  crack: { prompt: "concrete cracking with a short crunch", seconds: 1.5 },
-  engine: { prompt: "a heavy diesel truck engine idling then driving past", seconds: 3 },
-  flame: { prompt: "a gas flame igniting and burning steadily", seconds: 2.5 },
-  motor_hum: { prompt: "a small electric motor humming steadily", seconds: 3 },
-  rain: { prompt: "steady rain falling on a lawn and roof, no thunder", seconds: 3 },
-  dirt: { prompt: "a shovel of dirt and gravel being dumped and settling", seconds: 2 },
-  machine: { prompt: "a large construction machine working: hydraulics and metal clanks", seconds: 3 },
+  splash: { prompt: "a single water splash, close, clean, no background", seconds: 1.2 },
+  water_rush: { prompt: "a short gush of water through a pipe", seconds: 1.4 },
+  drip: { prompt: "two slow water drips into a puddle", seconds: 1.2 },
+  crack: { prompt: "concrete cracking with a short crunch", seconds: 1.0 },
+  engine: { prompt: "a heavy diesel truck engine revving once", seconds: 1.4 },
+  flame: { prompt: "a gas flame igniting with a soft whump", seconds: 1.2 },
+  motor_hum: { prompt: "a small electric motor starting with a short hum", seconds: 1.4 },
+  rain: { prompt: "steady soft rain on a lawn and roof, no thunder", seconds: 4, soft: true },
+  dirt: { prompt: "a load of dirt and gravel being dumped", seconds: 1.4 },
+  machine: { prompt: "a construction machine: one hydraulic hiss and metal clank", seconds: 1.4 },
 });
 
 export const SOUND_KEYS = Object.freeze([...Object.keys(LIBRARY), "custom"]);
 
-/** Levels relative to the voice (the stitch applies them). */
-export const LEVELS = Object.freeze({ voiceDb: 0, sfxDb: -12, chimeDb: -14, ambientDb: -28 });
+/**
+ * Levels relative to the VOICE's measured loudness (the stitch measures both the voice and each
+ * effect file and sets the effect's gain from the difference). -20 until the owner picks by ear.
+ */
+export const LEVELS = Object.freeze({ voiceDb: 0, sfxDb: -20, chimeDb: -20, ambientDb: -28 });
 
 /** Cache key for a cue: library key, or a short hash of the custom text + length. */
 export async function cueCacheKey(cue) {
@@ -39,7 +44,7 @@ export async function cueCacheKey(cue) {
 /** What to generate for a cue (prompt text + length in seconds). */
 export function cueRequest(cue) {
   if (cue.key !== "custom") return { text: LIBRARY[cue.key].prompt, seconds: LIBRARY[cue.key].seconds };
-  return { text: cue.text, seconds: cue.seconds };
+  return { text: cue.text, seconds: Math.min(MAX_SFX_SEC, cue.seconds ?? MAX_SFX_SEC) };
 }
 
 /** ElevenLabs text-to-sound. Returns {bytes, costUsd}. */

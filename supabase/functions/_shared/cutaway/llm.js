@@ -3,7 +3,10 @@
 //   checkImage: the vision check of one wide image against its state's checklist
 
 import { MODELS } from "./pricing.js";
-import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems } from "./planner.js";
+import { CRITIC_SYSTEM, normalizePlan, PLAN_SCHEMA, PLANNER_SYSTEM, plannerUser, planProblems, planWarnings, repairStructure, shapeProblems, validatePlan } from "./planner.js";
+import { SOUND_KEYS } from "./sound.js";
+
+const SOUND_KEYS_SET = new Set(SOUND_KEYS);
 
 // USD per 1M tokens (same figures as the other templates' llm.js).
 const PRICE = { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 };
@@ -33,30 +36,133 @@ async function callTool({ apiKey, system, content, name, schema, maxTokens = 120
   return { data: block.input, costUsd };
 }
 
-/** Plan, then the critic pass. Returns {plan, costUsd, critic: {before, after}}. */
-export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [] }) {
+export const MAX_CRITIC_ROUNDS = 2;
+
+/**
+ * Plan, then the critic: always one round, a second only if the program still finds problems.
+ * Every raw output and its problems are kept (trace), so a failure can be read afterwards.
+ * Returns {plan, costUsd, critic: {rounds: [problems...]}, trace}.
+ */
+/** @param {{apiKey: string, topic: string, lengthSec: number, usedIdeas?: string[], onTrace?: (t: object) => void}} input */
+export async function planVideo({ apiKey, topic, lengthSec, usedIdeas = [], onTrace = undefined }) {
   let costUsd = 0;
+  const trace = [];
+  const note = (entry) => { trace.push(entry); onTrace?.(entry); };
   try {
-    const first = await callTool({ apiKey, system: PLANNER_SYSTEM, content: plannerUser({ topic, lengthSec, usedIdeas }), name: "cutaway_plan", schema: PLAN_SCHEMA });
-    costUsd += first.costUsd;
-    const before = planProblems(first.data, lengthSec, usedIdeas);
-    const critic = await callTool({
-      apiKey, system: CRITIC_SYSTEM, name: "cutaway_plan", schema: PLAN_SCHEMA,
-      content: [
-        plannerUser({ topic, lengthSec, usedIdeas }),
-        `PROBLEMS FOUND BY THE PROGRAM (${before.length}):\n${before.length ? before.map((p) => `- ${p}`).join("\n") : "- none; still check every rule, especially that each fact is true"}`,
-        `THE PLAN:\n${JSON.stringify(first.data)}`,
-      ].join("\n\n"),
-    });
-    costUsd += critic.costUsd;
-    const after = planProblems(critic.data, lengthSec, usedIdeas);
-    if (after.length) throw Object.assign(new Error(`PLAN_INVALID after the critic: ${after.join("; ")}`), { problems: after });
-    return { plan: normalizePlan(critic.data), costUsd: Number(costUsd.toFixed(5)), critic: { before, after } };
+    // The planner: a malformed reply (wrong counts, missing fields) is retried once right away, never sent to the critic.
+    let first = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const reply = await callTool({ apiKey, system: PLANNER_SYSTEM, content: plannerUser({ topic, lengthSec, usedIdeas }), name: "cutaway_plan", schema: PLAN_SCHEMA });
+      costUsd += reply.costUsd;
+      const shape = shapeProblems(reply.data, lengthSec);
+      note({ stage: `planner ${attempt}`, costUsd: reply.costUsd, problems: shape.map((p) => `SHAPE: ${p}`), output: reply.data });
+      if (!shape.length) { first = reply; break; }
+      if (attempt === 2) throw Object.assign(new Error(`PLAN_INVALID: the planner's reply was malformed twice: ${shape.join("; ")}`), { problems: shape });
+    }
+    let plan = repairPlan(first.data);
+    let problems = planProblems(plan, lengthSec, usedIdeas);
+    note({ stage: "planner checks", costUsd: 0, problems, output: null });
+    const rounds = [problems];
+    for (let round = 1; round <= MAX_CRITIC_ROUNDS; round++) {
+      if (round > 1 && !problems.length) break;
+      const critic = await callTool({
+        apiKey, system: CRITIC_SYSTEM, name: "cutaway_plan", schema: PLAN_SCHEMA,
+        content: [
+          plannerUser({ topic, lengthSec, usedIdeas }),
+          `PROBLEMS FOUND BY THE PROGRAM (${problems.length}):\n${problems.length ? problems.map((p) => `- ${p}`).join("\n") : "- none; still check every rule, especially that each fact is true"}`,
+          ...(planWarnings(plan).length ? [`ALSO FIX IF YOU CAN:\n${planWarnings(plan).map((p) => `- ${p}`).join("\n")}`] : []),
+          `THE PLAN:\n${JSON.stringify(plan)}`,
+        ].join("\n\n"),
+      });
+      costUsd += critic.costUsd;
+      const shape = shapeProblems(critic.data, lengthSec);
+      if (shape.length) {
+        // A malformed critic reply is thrown away: keep the plan we had.
+        note({ stage: `critic ${round} (malformed, discarded)`, costUsd: critic.costUsd, problems: shape.map((p) => `SHAPE: ${p}`), output: critic.data });
+        rounds.push(problems);
+        continue;
+      }
+      plan = repairPlan(critic.data);
+      problems = planProblems(plan, lengthSec, usedIdeas);
+      note({ stage: `critic ${round}`, costUsd: critic.costUsd, problems, output: critic.data });
+      rounds.push(problems);
+    }
+    if (problems.length) throw Object.assign(new Error(`PLAN_INVALID after the critic: ${problems.join("; ")}`), { problems });
+    return { plan: normalizePlan(plan), costUsd: Number(costUsd.toFixed(5)), critic: { rounds, warnings: planWarnings(plan) }, trace };
   } catch (e) {
     e.costUsd = Number((costUsd + (e.costUsd ?? 0)).toFixed(5));
+    e.trace = trace;
     if (!/^PLAN_INVALID/.test(e.message)) e.message = `PLAN_FAILED: ${e.message}`;
     throw e;
   }
+}
+
+const TRIM_SCHEMA = {
+  type: "object", additionalProperties: false, required: ["beats"],
+  properties: { beats: { type: "array", items: { type: "string" } } },
+};
+
+const TRIM_SYSTEM = `You shorten the narration of a short explainer video so it fits its length when read at a natural pace. You get the beats' texts in order, each with its own maximum word count. Return the same number of beats, each within its maximum. Cut filler words first (adjectives, "still", "straight", "that", repeated ideas).
+Never break these:
+- beat 1 starts "If you" and keeps ", you have a ..."
+- keep "But" and "So you" where they are, and the "This is a ..." names
+- keep the myth-bust shape ("... is not ..., it is ...")
+- the last beat ends "Congratulations, you have built a ..."
+- each KEEP word appears in its beat exactly once; never repeat a word or phrase
+- every fact stays true. Plain spoken English, full sentences, no colons.
+The total MUST be at or under the maximum. If cutting filler is not enough, merge two beats' ideas or drop the least important clause (a detail, a side step), but never the hook, the names, a surprise that has a number card, the myth-bust or the ending.`;
+
+/**
+ * Cuts words so the voiceover fits (it is never sped up). Only the beat texts change; verbs and
+ * card words stay in their beats. Returns {plan, costUsd}; throws if the result fails the checks.
+ */
+export async function trimScript({ apiKey, plan, maxWords, lengthSec, usedIdeas = [] }) {
+  const count = (t) => String(t).trim().split(/\s+/).filter(Boolean).length;
+  const total = plan.beats.reduce((n, b) => n + count(b.text), 0);
+  // Each beat gets its share of the budget, so the cut is spread evenly and the model can count it.
+  const budgets = plan.beats.map((b) => Math.max(4, Math.floor((count(b.text) * maxWords) / total)));
+  const keep = (b) => [...new Set([b.verb, b.card?.word].filter(Boolean).map((w) => String(w).toLowerCase()))].join(", ");
+  const lines = plan.beats.map((b, i) => `${i + 1}. (now ${count(b.text)} words, max ${budgets[i]}) ${b.text}   [KEEP, once: ${keep(b)}]`);
+  let costUsd = 0;
+  let content = `Maximum total words: ${maxWords} (now ${total}). Keep each beat within its own maximum.\nBeats:\n${lines.join("\n")}`;
+  let lastError = "";
+  let best = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const reply = await callTool({ apiKey, system: TRIM_SYSTEM, name: "trimmed", schema: TRIM_SCHEMA, maxTokens: 2000, timeoutMs: 60_000, content });
+    costUsd += reply.costUsd;
+    const beats = reply.data?.beats;
+    if (!Array.isArray(beats) || beats.length !== plan.beats.length) { lastError = `wrong number of beats (${beats?.length ?? 0})`; continue; }
+    const got = beats.reduce((n, t) => n + count(t), 0);
+    if (globalThis.process?.env?.CUTAWAY_DEBUG_TRIM) console.log(`[trim] attempt ${attempt}: ${got} words`, JSON.stringify(beats));
+    const next = { ...plan, beats: plan.beats.map((b, i) => ({ ...b, text: String(beats[i]).trim() })) };
+    let problems = got > maxWords + 3 ? [`${got} words: cut ${got - maxWords} more (merge or drop the least important clause if needed)`] : [];
+    // Keep the shortest version that passes every other check, in case neither attempt reaches the limit.
+    try {
+      const valid = validatePlan(next, lengthSec, usedIdeas, { wordRange: [Math.floor(maxWords * 0.6), total] });
+      if (!best || got < best.words) best = { plan: valid, words: got };
+    } catch (e) { if (!problems.length) problems = e.problems ?? [e.message]; }
+    if (!problems.length) return { plan: best.plan, costUsd, words: got };
+    lastError = problems.join("; ");
+    // The retry edits its OWN last answer (not the original): fix only what is listed.
+    const mine = beats.map((t, i) => `${i + 1}. (${count(t)} words) ${t}   [KEEP, once: ${keep(plan.beats[i])}]`);
+    content = `Fix this version. Problems: ${lastError}. Maximum total words: ${maxWords}; change as little as possible.\nBeats:\n${mine.join("\n")}`;
+  }
+  // Couldn't reach the limit: use the shortest valid version; the video runs a little long, the voice is never sped up.
+  if (best) return { plan: best.plan, costUsd, words: best.words, overrun: true };
+  throw Object.assign(new Error(`TRIM_FAILED: couldn't cut the script to ${maxWords} words (${lastError})`), { costUsd });
+}
+
+/** Mechanical fixes only (never content): unknown move -> a default, unknown sound key -> custom; no overlays any more. */
+export function repairPlan(input) {
+  if (!input || !Array.isArray(input.beats)) return input;
+  const plan = JSON.parse(JSON.stringify(input));
+  for (const b of plan.beats) {
+    delete b.overlay;
+    if (!["push-in", "pull-out", "follow", "arc", "hold"].includes(b.move)) b.move = "push-in";
+    if (b.sound && b.sound.key && !SOUND_KEYS_SET.has(b.sound.key)) b.sound = { key: "custom", text: b.sound.text || b.sound.key, at: b.sound.at === "start" ? "start" : "verb", whole: Boolean(b.sound.whole) };
+    if (!b.card) b.card = { text: "", word: "" };
+  }
+  return repairStructure(plan);
 }
 
 const VISION_SCHEMA = {
@@ -68,16 +174,41 @@ const VISION_SCHEMA = {
   },
 };
 
-const VISION_SYSTEM = `You check one generated image of a 3D cutaway diorama against a short checklist. Look carefully. For each check say ok true/false and what you actually see. pass = every check is ok AND there is no obvious error a viewer would notice (garbled text or labels, a part in a physically impossible place, water shown as glass tubes). If it fails, "fix" is one or two short sentences telling the image editor what to change; otherwise "".`;
+export const VISION_SYSTEM = `You check one generated image of a 3D cutaway diorama for a "how it works" explainer video, against a short checklist.
 
-/** The vision check. Returns {pass, fix, checks, costUsd}. */
-export async function checkImage({ apiKey, imageUrl, description, checks }) {
-  const { data, costUsd } = await callTool({
-    apiKey, system: VISION_SYSTEM, name: "image_check", schema: VISION_SCHEMA, maxTokens: 1500, timeoutMs: 90_000,
-    content: [
-      { type: "image", source: { type: "url", url: imageUrl } },
-      { type: "text", text: `What the image should show: ${description}\nChecklist:\n${checks.map((c) => `- ${c}`).join("\n")}` },
-    ],
-  });
-  return { pass: Boolean(data.pass), fix: String(data.fix ?? ""), checks: data.checks ?? [], costUsd };
+THE HOUSE STYLE. These are CORRECT, never a defect:
+- water and other liquids tinted light blue / cyan (never clear glass)
+- the ground sliced open as a cutaway, with buried contents (pipes, tanks, trash, foundations) shown in the cut face
+- stylised-realistic 3D game-art look, dioramas whose world runs to the frame edges
+- every element named in THE PLAN below (for example a gas flare burning, a truck, rain) is meant to be there
+
+JUDGE ONLY:
+1. each checklist line: ok true/false, and what you actually see
+2. clear defects a viewer would notice: a part in the wrong place, a part missing, an extra part that isn't in the plan, the buildings or setting changing from the scene description, anything that contradicts what the voiceover says (THE PLAN), garbled text or labels.
+Do not fail an image for taste, realism or colour choices that follow the house style.
+
+pass = every checklist line is ok AND no clear defect. If it fails, "fix" is one or two short sentences telling the image editor exactly what to change; otherwise "".`;
+
+/**
+ * The vision check. An empty reply (no checklist results) means the check didn't run, not that
+ * the image failed: it is re-run up to 2 times; if it is still empty, the image is "unchecked".
+ * Returns {pass: true|false|null, fix, checks, costUsd, emptyReplies}.
+ */
+export async function checkImage({ apiKey, imageUrl, description, checks, plan = "" }) {
+  let costUsd = 0;
+  let emptyReplies = 0;
+  for (let attempt = 0; attempt <= 2; attempt++) {
+    const { data, costUsd: c } = await callTool({
+      apiKey, system: VISION_SYSTEM, name: "image_check", schema: VISION_SCHEMA, maxTokens: 1500, timeoutMs: 90_000,
+      content: [
+        { type: "image", source: { type: "url", url: imageUrl } },
+        { type: "text", text: `THE PLAN (what the video shows and says around this image):\n${plan}\n\nWhat THIS image should show: ${description}\n\nChecklist:\n${checks.map((x) => `- ${x}`).join("\n")}` },
+      ],
+    });
+    costUsd += c;
+    const results = Array.isArray(data?.checks) ? data.checks.filter((x) => x && typeof x.ok === "boolean") : [];
+    if (results.length) return { pass: Boolean(data.pass) && results.every((x) => x.ok), fix: String(data.fix ?? "").replace(/^"+|"+$/g, ""), checks: results, costUsd: Number(costUsd.toFixed(5)), emptyReplies };
+    emptyReplies += 1;
+  }
+  return { pass: null, fix: "", checks: [], costUsd: Number(costUsd.toFixed(5)), emptyReplies };
 }

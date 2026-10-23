@@ -20,9 +20,9 @@ export const MODELS = Object.freeze({
   // First + last frame clips. Duration: whole seconds 1-20 (Runware docs, 2026-10-17).
   // With frameImages the size comes from the stills (9:16 -> 704x1280); width/height are refused.
   clip: Object.freeze({ air: "prunaai:p-video@2", resolution: "720p", fps: 24, minSec: 1, maxSec: 20, promptMax: 2000 }),
-  // Josh (the measured voice), fastest model; speed 1.2 is ElevenLabs' maximum.
-  // The stitch speeds the voice up further (atempo) to reach the target pace.
-  voice: Object.freeze({ voiceId: "TxGEqnHWrfWFTfGW9XjX", model: "eleven_flash_v2_5", speed: 1.2 }),
+  // The voice speaks at its own pace: never sped up in the stitch (owner, 2026-10-19), ElevenLabs speed <= 1.1.
+  // wpm = the voice's measured pace; the planner sizes the script to it. voiceId: the owner's pick of voice A/B/C.
+  voice: Object.freeze({ voiceId: "TxGEqnHWrfWFTfGW9XjX", model: "eleven_flash_v2_5", speed: 1.0, maxSpeed: 1.1, wpm: 170 }),
   // Sound effects (ElevenLabs text-to-sound), cached by cue so a repeat costs nothing.
   sfx: Object.freeze({ provider: "elevenlabs", promptInfluence: 0.5 }),
 });
@@ -58,37 +58,45 @@ export function workFor(lengthSec) {
 
 const credits = (usd) => Math.ceil((usd * BASIS.markup) / USD_PER_CREDIT);
 
-/** Step 1 (on Generate): plan + critic + voice + the wide images and their checks (one regenerate each allowed). */
-export function planCostUsd(lengthSec) {
-  const w = workFor(lengthSec);
-  const images = w.wideImages * 1.4; // vision failures regenerate about 2 in 5
-  return COSTS.llmPlanUsd + COSTS.llmCriticUsd + COSTS.ttsUsd * (lengthSec / 30) + images * (COSTS.imageUsd + COSTS.visionUsd);
-}
-
-/** Step 2 (on "Looks good -> make video"): keyframes + clips + sound + the stitch. */
-export function videoCostUsd(lengthSec) {
-  const w = workFor(lengthSec);
-  return w.keyframes * COSTS.upscaleUsd + w.keyframeEdits * COSTS.imageUsd + w.clipSeconds * COSTS.clipUsdPerSec + w.sfxSeconds * COSTS.sfxUsdPerSec / 2 + COSTS.renderUsd;
-}
-
-const VIDEO_CREDITS_PER_SECOND = 3; // 30 s: 90 credits ($2.42) for ~$1.06 of cost; 60 s: 180 for ~$2.07
+// ---------- the 3D video: one price per video, premade or custom (research/seamless-niche/M2_PLAN.md, section 4) ----------
+// Our cost per video (USD), from the M2 plan's figures: Claude Opus 5.5 at $4/$20 per 1M tokens, web search $0.01
+// a search, Eric ~$0.045 per 30 s, new sound effects $0.007-0.03, a GPU render ~$0.03 per 30 s (M3 to confirm).
+//  premade: a saved layout and saved facts: script, timeline + one repair round, the preview-frame vision check,
+//    voice, render. A premade topic without a saved layout yet (septic, pool, well, road, gutter, sewer) is charged
+//    the same: we absorb its first build (about the custom cost), and its layout is saved for everyone after it.
+//  custom: a new layout: the same steps plus the fact-check and the scene plan, planned with Claude Sonnet 5.5
+//    (about half the Opus cost), plus a 20% buffer for the plans that fail the checks and are re-planned on Opus,
+//    plus the kit check (Haiku 5.5, ~$0.0005).
+export const MODELS_3D = Object.freeze({ premade: "claude-opus-5-5", custom: "claude-sonnet-5-5", customFallback: "claude-opus-5-5", kitCheck: "claude-haiku-5-5" });
+export const COSTS_3D = Object.freeze({
+  premade: Object.freeze({ 30: 0.38, 60: 0.59 }),
+  custom: Object.freeze({ 30: Number((0.52 * 1.2 + 0.0005).toFixed(4)), 60: Number((0.755 * 1.2 + 0.0005).toFixed(4)) }),
+});
+// 2.5-3x our cost (owner, 2026-10-21): 2.8x, rounded up to whole credits.
+export const MARKUP_3D = 2.8;
+const credits3d = (usd) => Math.ceil((usd * MARKUP_3D) / USD_PER_CREDIT);
+export const KINDS = Object.freeze(["premade", "custom"]);
 
 /** The credit prices the user is charged (tool_prices rows). */
 export const PRICES = Object.freeze({
-  // One flat row per length: cutaway:plan-30, cutaway:plan-60.
-  plan: Object.freeze({ toolKey: (s) => `cutaway:plan-${s}`, byLength: Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, credits(planCostUsd(s))]))) }),
-  // One per-second row (durations 30 and 60).
-  video: Object.freeze({ toolKey: () => "cutaway:video", creditsPerSecond: VIDEO_CREDITS_PER_SECOND, byLength: Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, Math.ceil(VIDEO_CREDITS_PER_SECOND * s)]))) }),
+  // One flat row per kind and length: cutaway:premade-30, cutaway:premade-60, cutaway:custom-30, cutaway:custom-60.
+  video: Object.freeze({
+    toolKey: (kind, s) => `cutaway:${kind}-${s}`,
+    credits: Object.freeze(Object.fromEntries(KINDS.map((k) => [k, Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, credits3d(COSTS_3D[k][s])])))]))),
+  }),
+  // The old AI-video pipeline's "regenerate one wide image" (still in the engine until M2 replaces it).
   regenerate: Object.freeze({ toolKey: () => "cutaway:image", credits: credits(COSTS.imageUsd + COSTS.visionUsd) }),
 });
 
+/** Credits for one video: the server charges this, from the topic it classified itself (topics.js). */
+export function videoCredits(kind, lengthSec) {
+  const c = PRICES.video.credits[kind]?.[lengthSec];
+  if (!Number.isInteger(c)) throw new Error(`no Cutaway price for ${kind} ${lengthSec} s`);
+  return c;
+}
+
 /** The rows for public.tool_prices, as the migration writes them. */
 export const PRICE_ROWS = Object.freeze([
-  ...LENGTHS.map((s) => ({ tool_key: PRICES.plan.toolKey(s), flat_credits: PRICES.plan.byLength[s], credits_per_second: null, allowed_durations: null })),
-  { tool_key: "cutaway:video", flat_credits: null, credits_per_second: PRICES.video.creditsPerSecond, allowed_durations: [...LENGTHS] },
+  ...KINDS.flatMap((k) => LENGTHS.map((s) => ({ tool_key: PRICES.video.toolKey(k, s), flat_credits: PRICES.video.credits[k][s], credits_per_second: null, allowed_durations: null }))),
   { tool_key: "cutaway:image", flat_credits: PRICES.regenerate.credits, credits_per_second: null, allowed_durations: null },
 ]);
-
-export function totalCredits(lengthSec) {
-  return PRICES.plan.byLength[lengthSec] + PRICES.video.byLength[lengthSec];
-}

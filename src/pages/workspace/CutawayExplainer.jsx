@@ -1,136 +1,76 @@
-import { useCallback, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import CutawayBuilder from "../../components/viral-tools/cutaway-explainer/CutawayBuilder";
-import CutawayResults from "../../components/viral-tools/cutaway-explainer/CutawayResults";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import AuthModal from "../../components/AuthModal";
+import CutawayStudio from "../../components/viral-tools/cutaway-explainer/CutawayStudio";
 import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPaywall";
-import useCutawayRun from "../../components/viral-tools/cutaway-explainer/hooks/useCutawayRun";
-import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
-import { DEFAULT_LENGTH, fetchUsedTopics, listRuns, PRICE_ITEMS, WORKING_STEPS } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
-import { CUTAWAY_FLAG } from "../../data/cutawayExplainer";
+import { accessFor, DEMO_VIDEO } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
+import { CUTAWAY_ENABLED, CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { useAuth } from "../../context/AuthContext";
-import { useFeatureFlag } from "../../lib/featureFlags";
 import { supabase } from "../../lib/supabaseClient";
 
-const PAID_PLAN_CODES = new Set(["starter", "pro", "generative", "affiliate"]);
-const needsUpgradeFor = (code) => code === "free" || code === "guest" || code == null;
+// Local dev only (never in a preview or production build): ?as=guest|free|paid shows that state without an account.
+const DEV_AS = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("as") : null;
+const DEV_PLAN = { free: "free", paid: "starter" };
 
-function phaseOf(run) {
-  if (!run) return "idle";
-  if (run.step === "done") return "done";
-  if (run.step === "failed") return "error";
-  if (run.step === "approval") return "review";
-  return WORKING_STEPS.has(run.step) ? "working" : "idle";
-}
-
+// Behind one build switch while the 3D version is built: on in local dev and Vercel previews, off in production
+// (CUTAWAY_ENABLED in src/data/cutawayExplainer.js). Everyone can look, type a topic and watch the examples;
+// generating needs an account and a paid plan (the cutaway-api server enforces the same rule: access.js).
 export default function CutawayExplainer() {
-  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const flag = useFeatureFlag(CUTAWAY_FLAG, user?.id ?? null);
-  const [mobilePanel, setMobilePanel] = useState("builder");
   const [planCode, setPlanCode] = useState(null);
-  const [paywallOpen, setPaywallOpen] = useState(false);
-  const [values, setValues] = useState({ topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true });
-  const [usedTopics, setUsedTopics] = useState([]);
-  const [recent, setRecent] = useState([]);
-  const [viewingRecent, setViewingRecent] = useState(false);
-  const { run, error, busy, start, regenerate, approve, open, reset } = useCutawayRun();
-  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const [gate, setGate] = useState(null); // "signup" | "upgrade" | null
 
   useEffect(() => {
-    if (authLoading) return undefined;
-    if (!user) { setPlanCode("guest"); setPaywallOpen(true); return undefined; }
+    if (authLoading || !user || DEV_AS) return undefined;
     let mounted = true;
     supabase.from("profiles").select("plan_code").eq("id", user.id).single().then(({ data, error: dbErr }) => {
       if (!mounted) return;
       if (dbErr) { setPlanCode(null); return; } // don't block paid users on a failed read; the server checks again
-      const code = String(data?.plan_code || "free").toLowerCase();
-      setPlanCode(code);
-      setPaywallOpen(!PAID_PLAN_CODES.has(code));
+      setPlanCode(String(data?.plan_code || "free").toLowerCase());
     });
     return () => { mounted = false; };
   }, [authLoading, user]);
 
-  const loadRecent = useCallback(async () => {
-    if (!user) { setRecent([]); return; }
-    try { setRecent(await listRuns(8)); } catch { setRecent([]); }
-  }, [user]);
+  if (!CUTAWAY_ENABLED) return <Navigate to="/" replace />;
 
-  useEffect(() => { void loadRecent(); }, [loadRecent]);
-  useEffect(() => { if (user && !needsUpgradeFor(planCode)) fetchUsedTopics().then(setUsedTopics); }, [user, planCode]);
-  useEffect(() => { if (run?.step === "approval" || run?.step === "done" || run?.step === "failed") void loadRecent(); }, [run?.step, loadRecent]);
-
-  if (!authLoading && !flag.loading && !flag.enabled) return <Navigate to="/" replace />;
-
-  const needsUpgrade = planCode === "free" || planCode === "guest";
-  const phase = phaseOf(run);
-  const scrollTop = () => document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-
-  const handleGenerate = (input) => {
-    if (needsUpgrade) { setPaywallOpen(true); return; }
-    setViewingRecent(false);
-    setMobilePanel("results");
-    scrollTop();
-    void start(input.topic, input.lengthSec, input.soundEffects);
-  };
-  const handleOpen = (runId) => { setViewingRecent(true); setMobilePanel("results"); scrollTop(); void open(runId); };
-  const handleReset = () => { setViewingRecent(false); reset(); setMobilePanel("builder"); };
-  const handleBack = () => { setViewingRecent(false); reset(); setMobilePanel("results"); };
-
-  const builder = (
-    <CutawayBuilder
-      values={viewingRecent && run ? { topic: run.topic, lengthSec: run.lengthSec, soundEffects: run.soundEffects } : values}
-      usedTopics={usedTopics}
-      onValuesChange={setValues}
-      onGenerate={handleGenerate}
-      onReset={handleReset}
-      busy={busy}
-      phase={phase}
-      historyMode={viewingRecent}
-      onDone={handleBack}
-    />
-  );
-  const results = (
-    <CutawayResults
-      run={run}
-      error={error}
-      busy={busy}
-      recent={recent}
-      prices={quotes.prices}
-      onRegenerate={(i) => void regenerate(i)}
-      onApprove={() => void approve()}
-      onOpen={handleOpen}
-      onReset={handleReset}
-      viewingRecent={viewingRecent}
-      onBack={handleBack}
-    />
-  );
+  const signedIn = DEV_AS ? DEV_AS !== "guest" : Boolean(user);
+  const plan = DEV_AS ? DEV_PLAN[DEV_AS] ?? null : planCode;
+  const access = authLoading && !DEV_AS ? "unknown" : accessFor({ signedIn, planCode: plan });
 
   return (
     <>
-      <div className="hidden h-full w-full gap-3 overflow-hidden bg-[#0B0D0F] p-3 lg:flex">
-        <div className="h-full w-[420px] shrink-0 xl:w-[460px]">{builder}</div>
-        <div className="h-full min-w-0 flex-1 overflow-hidden">{results}</div>
-      </div>
-
-      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#0B0D0F] lg:hidden">
-        <div className="sticky top-0 z-20 border-b border-white/10 bg-[#0B0D0F] px-3 py-3">
-          <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
-            {[["builder", "Generate"], ["results", "Result"]].map(([id, label]) => (
-              <button key={id} type="button" onClick={() => { setMobilePanel(id); scrollTop(); }} className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === id ? "bg-white text-black" : "text-white/60"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-[110px]">{mobilePanel === "builder" ? builder : results}</div>
-      </div>
-
+      <CutawayStudio
+        planCode={plan}
+        access={access}
+        onSignUp={() => setGate("signup")}
+        onUpgrade={() => setGate("upgrade")}
+        onBeforeGenerate={() => {
+          if (access === "guest") { setGate("signup"); return false; }
+          if (access === "free") { setGate("upgrade"); return false; }
+          return true;
+        }}
+      />
+      {/* A signed-out visitor pressed Generate: the app's own sign-up popup, back here afterwards. */}
+      {gate === "signup" && (
+        <AuthModal
+          mode="signup"
+          title="Sign up to generate"
+          subtitle="Free to join. Make your own 3D explainer videos."
+          returnTo={CUTAWAY_PATH}
+          onClose={() => setGate(null)}
+        />
+      )}
+      {/* A free plan pressed Generate: the app's existing upgrade popup, in this template's words. */}
       <FaceAsmrPaywall
-        open={paywallOpen}
-        onClose={() => { if (needsUpgrade) navigate("/"); else setPaywallOpen(false); }}
-        isGuest={planCode === "guest"}
-        dismissable={!needsUpgrade}
+        open={gate === "upgrade"}
+        onClose={() => setGate(null)}
+        isGuest={false}
         toolName="Cutaway Explainer"
+        previewSrc={DEMO_VIDEO}
+        title="Cutaway Explainer is for paid plans"
+        subtitle="Upgrade to make your own 3D explainer videos."
+        planLines={{ starter: "Cutaway Explainer, with the Zyvo end card", pro: "Cutaway Explainer, end card can be removed", generative: "Cutaway Explainer, end card can be removed" }}
+        dropFeatures={["Watermark-free exports"]}
       />
     </>
   );

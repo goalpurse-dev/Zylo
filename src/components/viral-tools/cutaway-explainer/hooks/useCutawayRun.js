@@ -1,56 +1,60 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { advanceRun, approveImages, regenerateImage, startRun, WORKING_STEPS } from "../api/cutawayApi";
+import { DEMO_STEP_MS, demoVideoFor, EXAMPLES, newDemoRun } from "../api/cutawayApi";
 
-const TICK_MS = 4000;
-const MAX_FAILED_TICKS = 5;
+const ORDER = ["script", "scene", "render", "done"];
 
 /**
- * One Cutaway run. While the server has work (WORKING_STEPS) the page calls
- * "advance" every few seconds; at "approval" it stops and waits for the user.
- * A run left mid-way picks up again when it is opened (open(runId)).
+ * One Cutaway run. In the demo (until the 3D planner and render service exist) it walks through
+ * Script → Scene → Render on timers and ends on the example closest to the topic. Each step records when it
+ * started (stepAt), so the page can type the script out, pop the scene parts in and show a render ETA; the render
+ * releases its low-res frames as it goes (framesShown), like a browser render would. Finished runs stay in this
+ * session's "Recent" list; remove() deletes one.
  */
 export default function useCutawayRun() {
   const [run, setRun] = useState(null);
-  const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const runRef = useRef(null);
-  const generation = useRef(0);
+  const [recent, setRecent] = useState([]);
+  const timer = useRef(0);
 
-  const accept = useCallback((next) => { runRef.current = next; setRun(next); }, []);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   useEffect(() => {
-    if (!run?.id || !WORKING_STEPS.has(run.step)) return undefined;
-    const mine = generation.current;
-    let failed = 0;
-    let timer;
-    const loop = async () => {
-      try {
-        const next = await advanceRun(runRef.current.id);
-        if (generation.current !== mine) return;
-        failed = 0;
-        accept(next);
-        if (!WORKING_STEPS.has(next.step)) return;
-      } catch (e) {
-        failed += 1;
-        if (failed >= MAX_FAILED_TICKS) { setError(e.message); return; }
-      }
-      timer = window.setTimeout(loop, TICK_MS);
-    };
-    timer = window.setTimeout(loop, TICK_MS);
-    return () => window.clearTimeout(timer);
-  }, [run?.id, run?.step, accept]);
+    if (!run || run.step === "done" || run.example) return undefined;
+    if (run.step === "render") {
+      const t0 = run.stepAt ?? Date.now();
+      const tick = () => {
+        const pct = Math.min(100, Math.round(((Date.now() - t0) / DEMO_STEP_MS.render) * 100));
+        if (pct >= 100) {
+          setRun((r) => {
+            if (!r) return r;
+            const done = { ...r, step: "done", renderPct: 100, framesShown: r.frames?.length ?? 0, finalUrl: demoVideoFor(r), doneAt: Date.now() };
+            setRecent((list) => [done, ...list.filter((x) => x.id !== done.id)].slice(0, 8));
+            return done;
+          });
+          return;
+        }
+        setRun((r) => (r ? { ...r, renderPct: pct, framesShown: Math.floor((pct / 100) * (r.frames?.length ?? 0)) } : r));
+        timer.current = window.setTimeout(tick, 120);
+      };
+      timer.current = window.setTimeout(tick, 120);
+      return () => window.clearTimeout(timer.current);
+    }
+    timer.current = window.setTimeout(() => {
+      setRun((r) => (r ? { ...r, step: ORDER[ORDER.indexOf(r.step) + 1], stepAt: Date.now() } : r));
+    }, DEMO_STEP_MS[run.step]);
+    return () => window.clearTimeout(timer.current);
+  }, [run?.id, run?.step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const act = useCallback(async (fn) => {
-    setBusy(true);
-    setError(null);
-    try { accept(await fn()); } catch (e) { setError(e.message); } finally { setBusy(false); }
-  }, [accept]);
+  // endCard: in the demo the page mirrors the server rule (endCardFor); the real pipeline decides on the server
+  // credits / kind: what the quote said (the real pipeline reads them back from the server's charge)
+  const start = useCallback((topic, lengthSec, soundEffects = true, endCard = true, { credits = null, kind = null } = {}) => {
+    window.clearTimeout(timer.current);
+    setRun({ ...newDemoRun(topic, lengthSec, soundEffects, endCard), credits, kind, stepAt: Date.now(), framesShown: 0 });
+  }, []);
+  // a finished run of this session, or one of the two examples shown while there are none
+  const open = useCallback((id) => { const r = recent.find((x) => x.id === id) ?? EXAMPLES.find((x) => x.id === id); if (r) setRun(r); }, [recent]);
+  const reset = useCallback(() => { window.clearTimeout(timer.current); setRun(null); }, []);
+  // the viewer's own video only (examples can't be deleted); the real pipeline also deletes it on the server
+  const remove = useCallback((id) => { setRecent((list) => list.filter((x) => x.id !== id)); setRun((r) => (r?.id === id ? null : r)); }, []);
 
-  const start = useCallback((topic, lengthSec, soundEffects = true) => { generation.current += 1; accept(null); return act(() => startRun(topic, lengthSec, soundEffects)); }, [act, accept]);
-  const regenerate = useCallback((index) => act(() => regenerateImage(runRef.current.id, index)), [act]);
-  const approve = useCallback(() => act(() => approveImages(runRef.current.id)), [act]);
-  const open = useCallback((runId) => { generation.current += 1; return act(() => advanceRun(runId)); }, [act]);
-  const reset = useCallback(() => { generation.current += 1; accept(null); setError(null); }, [accept]);
-
-  return { run, error, busy, start, regenerate, approve, open, reset };
+  return { run, recent, start, open, reset, remove };
 }

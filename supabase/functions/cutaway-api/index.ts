@@ -1,25 +1,29 @@
 // deno-lint-ignore-file no-explicit-any
 // cutaway-api: the Cutaway Explainer template's only server entry point.
 //
-//   start      {topic, lengthSec, soundEffects}   charge step 1 (script + critic, voice, wide images + vision check) and create the run
+//   start      {topic, lengthSec, soundEffects, removeWatermark}   charge step 1 (script + critic, voice, wide images + vision check) and create the run
 //   ideas      {}                      the user's used topics (for the topic suggestions)
 //   advance    {runId}                 move the run one small step (the page calls this every few seconds)
 //   regenerate {runId, index}          redo wide image `index` and the later ones (each is an edit of the one before)
 //   approve    {runId}                 "Looks good -> make video": charge step 2 and go on to keyframes, clips, stitch
 //
 // The pipeline itself is _shared/cutaway/engine.js (also run by scripts/cutaway/runLocal.mjs).
-// A step that fails refunds its own charge once. Hidden behind the cutaway_explainer flag.
+// A step that fails refunds its own charge once. Off unless the CUTAWAY_ENABLED secret is "true": the server twin of
+// VITE_CUTAWAY_ENABLED, one switch for the page, the Short Form menu and this function (no per-user flag).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { cors, err, ok } from "../shared/cors.ts";
-import { advance, approve, newRun, progressOf, regenerateWide } from "../_shared/cutaway/engine.js";
+import { advance, approve, newRun, progressOf, refundsFor, regenerateWide, userMessage } from "../_shared/cutaway/engine.js";
 import { cropPixels } from "../_shared/cutaway/beats.js";
-import { checkImage, planVideo } from "../_shared/cutaway/llm.js";
+import { checkImage, planVideo, trimScript } from "../_shared/cutaway/llm.js";
 import { generateSfx } from "../_shared/cutaway/sound.js";
 import { synthesize } from "../_shared/cutaway/voice.js";
 import { directSender } from "../_shared/cutaway/runware.js";
 import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
+import { canGenerate } from "../_shared/cutaway/access.js";
+import { closestNames, quoteTopic } from "../_shared/cutaway/quote.js";
+import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -32,8 +36,8 @@ const FLY_APP = Deno.env.get("FLY_RENDER_APP") ?? "zyvo-render";
 const CUTAWAY_FINAL_IMAGE = Deno.env.get("CUTAWAY_FINAL_IMAGE") ?? `registry.fly.io/${FLY_APP}:cutaway-final`;
 
 const BUCKET = "generated";
-const FLAG = "cutaway_explainer";
-const PAID_PLANS = new Set(["starter", "pro", "generative", "affiliate"]);
+// One Supabase project serves production and every preview, so the server switch is a single secret: off unless "true".
+const CUTAWAY_ENABLED = (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true";
 const LEASE_SEC = 140;
 const RENDER_TIMEOUT_MS = 12 * 60 * 1000;
 const FINAL_MACHINE = { cpu_kind: "performance", cpus: 4, memory_mb: 8192 };
@@ -54,18 +58,15 @@ class ApiError extends Error {
 // ---------- access ----------
 
 async function requireUser(req: Request) {
+  if (!CUTAWAY_ENABLED) throw new ApiError("This template isn't available yet.", 403);
   const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: `Bearer ${token}` } } });
   const { data, error } = await client.auth.getUser(token);
   if (error || !data?.user) throw new ApiError("Please sign in.", 401);
   const userId = data.user.id;
-  const [{ data: profile }, { data: global }, { data: mine }] = await Promise.all([
-    admin.from("profiles").select("plan_code").eq("id", userId).single(),
-    admin.from("global_feature_flags").select("enabled").eq("key", FLAG).maybeSingle(),
-    admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
-  ]);
-  if (!(global?.enabled === true || mine?.flags?.[FLAG] === true)) throw new ApiError("This template isn't available yet.", 403);
-  if (!PAID_PLANS.has(String(profile?.plan_code ?? "free").toLowerCase())) throw new ApiError("Cutaway Explainer needs a paid plan.", 402);
+  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", userId).single();
+  // the same rule as the page (_shared/cutaway/access.js), enforced here on every action before anything is charged
+  if (!canGenerate(profile?.plan_code ?? "free")) throw new ApiError("Cutaway Explainer is for paid plans.", 402);
   return userId;
 }
 
@@ -83,15 +84,18 @@ async function charge(userId: string, credits: number) {
 }
 
 /** A failed step refunds its own charge (step 1 before approval, step 2 after), once. */
-async function refundIfFailed(row: any, state: any) {
-  if (state.step !== "failed") return {};
-  const stage = ["plan", "voice", "wide"].includes(state.failedAt) ? "plan" : "video";
-  const charges = Array.isArray(row.charges) ? row.charges : [];
-  const target = charges.find((c: any) => c.stage === stage && !c.refunded);
-  if (!target) return {};
-  await admin.rpc("deduct_credits", { uid: row.user_id, amount: -target.credits });
-  target.refunded = true;
-  return { charges, credits_refunded: (row.credits_refunded ?? 0) + target.credits };
+/**
+ * A run that fails on our side refunds what the user paid for it (engine.js#refundsFor).
+ * Returns the row patch (charges marked refunded) and the credits to give back; the credits are
+ * returned only after that patch is saved, so a refund can never be paid twice.
+ */
+function refundPlan(row: any, state: any) {
+  const charges = Array.isArray(row.charges) ? row.charges.map((c: any) => ({ ...c })) : [];
+  const idx = refundsFor(state, charges);
+  if (!idx.length) return { patch: {}, credits: 0 };
+  let credits = 0;
+  for (const i of idx) { credits += Number(charges[i].credits) || 0; charges[i].refunded = true; }
+  return { patch: { charges, credits_refunded: (row.credits_refunded ?? 0) + credits }, credits };
 }
 
 // ---------- storage ----------
@@ -116,7 +120,8 @@ async function fetchBytes(url: string) {
 function depsFor(row: any) {
   return {
     planVideo: ({ topic, lengthSec, usedIdeas }: any) => planVideo({ apiKey: ANTHROPIC_API_KEY, topic, lengthSec, usedIdeas }),
-    checkImage: ({ imageUrl, description, checks }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks }),
+    trimScript: ({ plan, maxWords, lengthSec, usedIdeas }: any) => trimScript({ apiKey: ANTHROPIC_API_KEY, plan, maxWords, lengthSec, usedIdeas }),
+    checkImage: ({ imageUrl, description, checks, plan }: any) => checkImage({ apiKey: ANTHROPIC_API_KEY, imageUrl, description, checks, plan }),
     synthesize: ELEVENLABS_KEY ? ({ text }: any) => synthesize({ apiKey: ELEVENLABS_KEY, text }) : null,
     // Sound effects: one shared cache for every user (cutaway/sfx-cache/<key>.mp3); a hit costs nothing.
     sfx: ELEVENLABS_KEY ? async ({ cacheKey, text, seconds }: any) => {
@@ -137,6 +142,11 @@ function depsFor(row: any) {
       return { image: url, h: p.h };
     },
     keep: async (url: string, name: string) => upload(runPath(row, name), await fetchBytes(url), name.endsWith(".mp4") ? "video/mp4" : "image/jpeg"),
+    // read from the database when the render job is built: decides the end card (never trusted from the page)
+    planCode: async () => {
+      const { data } = await admin.from("profiles").select("plan_code").eq("id", row.user_id).single();
+      return String(data?.plan_code ?? "free").toLowerCase();
+    },
     startRender: async (job: any) => {
       if (!FLY_API_TOKEN) throw new Error("the video stitcher isn't configured");
       const path = runPath(row, `final-${Date.now().toString(36)}.mp4`);
@@ -178,10 +188,11 @@ function depsFor(row: any) {
 function view(row: any) {
   const s = row.state ?? {};
   return {
-    id: row.id, topic: row.topic, lengthSec: row.length_sec, step: s.step, error: s.error ?? null,
+    id: row.id, topic: row.topic, lengthSec: row.length_sec, step: s.step, error: userMessage(s),
     createdAt: row.created_at, finalUrl: s.finalUrl ?? row.final_url ?? null,
     narration: s.narration ?? null, title: s.plan?.title ?? null, hasVoice: Boolean(s.voice),
     soundEffects: s.soundEffects !== false,
+    removeWatermark: s.removeWatermark === true, endCard: s.endCard ?? null,
     wide: (s.wide ?? []).map((w: any) => ({ id: w.id, label: w.label, status: w.status, url: w.url ?? null, vision: w.vision ? { pass: w.vision.pass, fix: w.vision.fix } : null })),
     surprises: (s.plan?.surprises ?? []).map((x: any) => ({ beat: x.beat, kind: x.kind, text: x.text, number: x.number })),
     progress: progressOf(s),
@@ -199,12 +210,16 @@ const sumCosts = (s: any) => Number(Object.values(s.costs ?? {}).reduce((a: numb
 
 /** Saves a new state if nobody else wrote the row in between (version check). */
 async function save(row: any, state: any, extra: Record<string, unknown> = {}) {
-  const refund = await refundIfFailed({ ...row, ...extra }, state);
+  const refund = refundPlan({ ...row, ...extra }, state);
   const { data, error } = await admin.from("cutaway_runs").update({
     state, step: state.step, version: row.version + 1, lease_until: null, cost_usd: sumCosts(state),
-    final_url: state.finalUrl ?? null, updated_at: new Date().toISOString(), ...extra, ...refund,
+    final_url: state.finalUrl ?? null, updated_at: new Date().toISOString(), ...extra, ...refund.patch,
   }).eq("id", row.id).eq("version", row.version).select("*").maybeSingle();
   if (error) throw new Error(error.message);
+  if (data && refund.credits > 0) {
+    const { error: refundErr } = await admin.rpc("deduct_credits", { uid: row.user_id, amount: -refund.credits });
+    if (refundErr) console.error("[cutaway-api] refund failed, needs a manual refund:", row.id, refund.credits, refundErr.message);
+  }
   return data ?? (await admin.from("cutaway_runs").select("*").eq("id", row.id).single()).data;
 }
 
@@ -230,6 +245,30 @@ async function usedIdeas(userId: string) {
   return { topics, mechanisms };
 }
 
+// ---------- the quote: price and "can the kit build it", decided here from the topic text ----------
+
+/**
+ * Premade or custom (topics.js) and the credits (pricing.js, then tool_prices when charging). A custom topic the
+ * free rules can't decide goes to the Haiku kit check (~$0.0005, our cost). One that can't be built is logged to the
+ * parts backlog (once per call that would have charged) and nothing is charged.
+ */
+async function serverQuote(userId: string, topic: string, lengthSec: number, { log = false } = {}) {
+  const q: any = quoteTopic(topic, lengthSec);
+  let checkedBy = "rules", checkCostUsd = 0;
+  if (q.check.verdict === "unsure") {
+    if (!ANTHROPIC_API_KEY) throw new ApiError("The topic check isn't available right now. Try a premade topic.", 503);
+    const ai = await checkKitFit({ apiKey: ANTHROPIC_API_KEY, topic });
+    checkedBy = "claude"; checkCostUsd = ai.costUsd;
+    q.check = { verdict: ai.buildable ? "yes" : "no", missing: ai.missing, closest: ai.closest.length ? ai.closest : q.check.closest };
+  }
+  const buildable = q.check.verdict === "yes";
+  if (!buildable && log) {
+    const { error } = await admin.from("cutaway_parts_backlog").insert({ user_id: userId, topic, missing: q.check.missing, checked_by: checkedBy, closest: q.check.closest });
+    if (error) console.error("[cutaway-api] parts backlog:", error.message);
+  }
+  return { topic, lengthSec, kind: q.kind, premade: q.premade, credits: q.credits, buildable, missing: q.check.missing, closest: closestNames(q.check.closest), checkedBy, checkCostUsd };
+}
+
 // ---------- actions ----------
 
 async function handle(req: Request) {
@@ -242,18 +281,24 @@ async function handle(req: Request) {
     return { usedTopics: topics };
   }
 
-  if (action === "start") {
+  if (action === "quote" || action === "start") {
     const topic = String(body?.topic ?? "").trim().replace(/\s+/g, " ");
     const lengthSec = Number(body?.lengthSec);
-    const soundEffects = body?.soundEffects !== false;
     if (topic.length < 3 || topic.length > 120) throw new ApiError("Type a topic (3 to 120 characters).");
     if (!LENGTHS.includes(lengthSec)) throw new ApiError("Pick 30 or 60 seconds.");
+    // the price and the kit check come from the topic itself; anything the page sends about the price is ignored
+    const quote = await serverQuote(userId, topic, lengthSec, { log: action === "start" });
+    if (action === "quote") return { quote };
+    if (!quote.buildable) return { cantBuild: true, message: "We can't build this one yet.", quote }; // not charged
+    const soundEffects = body?.soundEffects !== false;
+    // only a request: the end card is kept or dropped from the plan read at render time (_shared/cutaway/endCard.js)
+    const removeWatermark = body?.removeWatermark === true;
     const { mechanisms } = await usedIdeas(userId);
-    const credits = await price(PRICES.plan.toolKey(lengthSec));
+    const credits = await price(PRICES.video.toolKey(quote.kind, lengthSec)); // tool_prices is the authority
     await charge(userId, credits);
     const { data: row, error } = await admin.from("cutaway_runs").insert({
-      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, usedIdeas: mechanisms }),
-      credits_charged: credits, charges: [{ stage: "plan", credits, at: new Date().toISOString() }],
+      user_id: userId, topic, length_sec: lengthSec, step: "plan", state: newRun({ topic, lengthSec, soundEffects, removeWatermark, usedIdeas: mechanisms }),
+      credits_charged: credits, charges: [{ stage: "video", kind: quote.kind, premade: quote.premade, credits, at: new Date().toISOString() }],
     }).select("*").single();
     if (error || !row) {
       await admin.rpc("deduct_credits", { uid: userId, amount: -credits });
@@ -280,10 +325,8 @@ async function handle(req: Request) {
 
   if (action === "approve") {
     if (row.state?.step !== "approval") throw new ApiError("The images aren't ready for approval.", 409);
-    const credits = await price(PRICES.video.toolKey(), { durationSec: row.length_sec });
-    await charge(userId, credits);
-    const charges = [...(row.charges ?? []), { stage: "video", credits, at: new Date().toISOString() }];
-    const saved = await save(row, approve(row.state), { charges, credits_charged: row.credits_charged + credits });
+    // the whole video was paid at "start" (one price per video, premade or custom): approving charges nothing more
+    const saved = await save(row, approve(row.state), {});
     background(tick(saved).catch((e) => console.error("[cutaway-api] approve tick:", e?.message ?? e)));
     return view(saved);
   }

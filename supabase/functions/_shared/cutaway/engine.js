@@ -18,19 +18,27 @@
 //   keep(url, name) -> url                     copy a provider URL to our storage (identity on the local runner)
 //   sfx({cacheKey, text, seconds}) -> {url, costUsd, cached}   a sound effect, from the cache or made and cached
 //   startRender(job) -> handle;  checkRender(handle) -> {state:"pending"|"done"|"error", url?, message?}
+//   planCode() -> the user's profiles.plan_code, read when the render job is built (the end card, endCard.js)
 // }
 
-import { clipTimings, cueTimeline, evenBeats, placeBeats, upscaleFactor, voiceTempo } from "./beats.js";
-import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt } from "./planner.js";
+import { clipTimings, cueTimeline, evenBeats, placeBeats, spokenSeconds, upscaleFactor, voiceTempo, wordsToFit } from "./beats.js";
+import { clipPrompt, framesOf, keyframeEditPrompt, masterPromptWithFix, narrationText, statePrompt, visionContext } from "./planner.js";
 import { clipTask, imageTask, poll, submit, upscaleTask } from "./runware.js";
 import { cueCacheKey, cueRequest, LEVELS } from "./sound.js";
+import { endCardFor } from "./endCard.js";
 
 export const STEPS = Object.freeze(["plan", "voice", "wide", "approval", "keyframes", "clips", "sound", "render", "done"]);
 const MAX_ATTEMPTS = 2; // one retry per task, never more (no auto-retry loops)
+// The plan step is one attempt: planVideo already retries a malformed planner reply once, then runs the critic rounds.
+const PLAN_ATTEMPTS = 1;
 
-/** @param {{topic: string, lengthSec: number, soundEffects?: boolean, usedIdeas?: string[]}} input */
-export function newRun({ topic, lengthSec, soundEffects = true, usedIdeas = [] }) {
-  return { topic, lengthSec, soundEffects, usedIdeas, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], sounds: [], render: null, finalUrl: null, error: null };
+/**
+ * removeWatermark is only the user's request; whether the end card is really dropped is decided from the plan
+ * when the render job is built (stepRender), never from this flag alone.
+ * @param {{topic: string, lengthSec: number, soundEffects?: boolean, removeWatermark?: boolean, usedIdeas?: string[]}} input
+ */
+export function newRun({ topic, lengthSec, soundEffects = true, removeWatermark = false, usedIdeas = [] }) {
+  return { topic, lengthSec, soundEffects, removeWatermark: removeWatermark === true, usedIdeas, step: "plan", attempts: {}, costs: {}, plan: null, voice: null, timing: null, wide: [], keyframes: [], clips: [], sounds: [], render: null, finalUrl: null, error: null };
 }
 
 const clone = (s) => JSON.parse(JSON.stringify(s));
@@ -65,7 +73,9 @@ async function stepPlan(s, deps) {
   } catch (e) {
     addCost(s, "plan", e?.costUsd);
     s.planErrors = [...(s.planErrors ?? []), e.message];
-    if (s.attempts.plan >= MAX_ATTEMPTS) return fail(s, e.message);
+    // Keep each round's problems (not the raw outputs: they are large; the local runner saves those itself).
+    s.planTrace = [...(s.planTrace ?? []), (e.trace ?? []).map((t) => ({ stage: t.stage, problems: t.problems }))];
+    if (s.attempts.plan >= PLAN_ATTEMPTS) return fail(s, e.message);
   }
   return s;
 }
@@ -81,6 +91,17 @@ async function stepVoice(s, deps) {
     try {
       const { audioBase64, spoken, costUsd } = await deps.synthesize({ text: s.narration });
       addCost(s, "voice", costUsd);
+      // Too long for the length? The planner cuts words (once); the audio is never sped up.
+      const fit = wordsToFit(spoken, s.lengthSec);
+      if (fit != null && deps.trimScript && !s.trimmed) {
+        const { plan, costUsd: trimCost } = await deps.trimScript({ plan: s.plan, maxWords: fit, lengthSec: s.lengthSec, usedIdeas: s.usedIdeas ?? [] });
+        addCost(s, "plan", trimCost);
+        s.trimmed = { from: s.narration.split(/\s+/).length, to: fit, spokenSec: Math.round(spokenSeconds(spoken) * 10) / 10 };
+        s.plan = plan;
+        s.narration = narrationText(plan);
+        s.attempts.voice -= 1; // the re-voice of the shorter script is not a retry
+        return s;
+      }
       const tempo = voiceTempo(spoken);
       const url = await deps.saveAudio(audioBase64);
       s.voice = { url, tempo, words: spoken.map((w) => ({ w: w.w, s: round(w.s / tempo), e: round(w.e / tempo) })) };
@@ -138,22 +159,48 @@ async function finishWide(s, w, r, deps) {
 async function checkWide(s, i, deps) {
   const w = s.wide[i];
   const st = s.plan.states[i];
-  const v = await deps.checkImage({ imageUrl: w.url, description: st.description, checks: st.checks ?? [] });
+  const v = await deps.checkImage({ imageUrl: w.url, description: st.description, checks: st.checks ?? [], plan: visionContext(s.plan) });
   addCost(s, "vision", v.costUsd);
-  w.vision = { pass: v.pass, fix: v.fix, checks: v.checks, attempt: w.attempts };
+  w.vision = { pass: v.pass, fix: v.fix, checks: v.checks, attempt: w.attempts, emptyReplies: v.emptyReplies ?? 0 };
+  const failed = (v.checks ?? []).filter((c) => !c.ok).map((c) => c.check);
+  // The vision log: every verdict, with its reason, so false alarms can be counted.
+  s.visionLog = [...(s.visionLog ?? []), { image: w.id, attempt: w.attempts, verdict: v.pass === null ? "unchecked" : v.pass ? "pass" : "fail", failedChecks: failed, fix: v.fix, emptyReplies: v.emptyReplies ?? 0, url: w.url }];
   w.history = [...(w.history ?? []), { url: w.url, pass: v.pass, fix: v.fix }];
-  if (v.pass) { w.status = "done"; return; }
+  // An empty reply is never a fail: the image is kept as "unchecked" and shown to the user as such.
+  if (v.pass || v.pass === null) { w.status = "done"; return; }
   if (w.attempts < MAX_ATTEMPTS) { Object.assign(w, { status: "pending", fix: v.fix, taskUUID: null }); return; }
   w.status = "done"; // kept, but flagged: the approval screen shows it, and the local runner stops
 }
 
-export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && !w.vision.pass);
+/**
+ * Users never pay for a failure on our side: a failed run refunds every charge not refunded yet, at any stage.
+ * Since the 3D prices (2026-10-21) the whole video is one "video" charge taken at Generate, so a failure in
+ * planning refunds it too. charges: [{stage: "plan"|"regenerate"|"video", credits, refunded?}]. Returns the
+ * indexes to refund.
+ */
+export function refundsFor(state, charges = []) {
+  if (state?.step !== "failed") return [];
+  const stages = ["plan", "regenerate", "video"];
+  return charges.map((c, i) => (stages.includes(c.stage) && !c.refunded ? i : -1)).filter((i) => i >= 0);
+}
+
+/** What the user is told when a run fails (the technical reason stays in state.error for us). */
+export function userMessage(state) {
+  if (state?.step !== "failed") return null;
+  if (state.failedAt === "plan") return "We couldn't plan a good video for this topic. Your credits were returned. Try another topic, or describe this one differently.";
+  if (["voice", "wide", "approval"].includes(state.failedAt)) return "Something went wrong on our side while making the images. Your credits were returned. Please try again.";
+  return "Something went wrong on our side while making the video. Your credits were returned. Please try again.";
+}
+
+export const visionFailures = (s) => (s.wide ?? []).filter((w) => w.vision && w.vision.pass === false);
+export const visionUnchecked = (s) => (s.wide ?? []).filter((w) => w.vision && w.vision.pass === null);
 
 /** The user's "Regenerate" on wide image i: it and every later state (each is an edit of the one before). */
 export function regenerateWide(input, i) {
   const s = clone(input);
   if (s.step !== "approval" || !s.wide[i]) throw new Error("REGENERATE_NOT_ALLOWED");
-  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null, fix: "", vision: null });
+  // prompt: null -> rebuilt from the (possibly corrected) plan
+  for (let k = i; k < s.wide.length; k++) Object.assign(s.wide[k], { status: "pending", attempts: 0, taskUUID: null, url: null, fix: "", vision: null, prompt: null });
   s.step = "wide";
   return s;
 }
@@ -271,16 +318,20 @@ async function stepSound(s, deps) {
   return s;
 }
 
-/** What the stitch needs (render-worker/src/cutawayFinal.mjs). */
-export function renderJob(s) {
+/**
+ * What the renderer needs (render-worker/src/cutawayFinal.mjs). planCode is read on the server when the job is
+ * built; without it the end card stays on.
+ */
+export function renderJob(s, { planCode = null } = {}) {
   const on = s.soundEffects !== false;
   return {
+    endCard: endCardFor(planCode, s.removeWatermark === true),
     clips: s.clips.map((c) => ({ url: c.url, speed: s.timing.clips[c.index].speed, dropFirstFrame: c.index > 0 })),
     voice: s.voice ? { url: s.voice.url, tempo: s.voice.tempo } : null,
     captions: s.voice ? s.voice.words : [],
     cards: s.timeline?.cards ?? [],
     chimes: on ? (s.timeline?.chimes ?? []) : [],
-    sfx: on ? (s.sounds ?? []).filter((c) => c.status === "done").map((c) => ({ url: c.url, start: c.start, duration: c.duration })) : [],
+    sfx: on ? (s.sounds ?? []).filter((c) => c.status === "done").map((c) => ({ url: c.url, start: c.start, duration: c.duration, soft: Boolean(c.soft) })) : [],
     levels: LEVELS,
     lengthSec: s.timing.lengthSec,
     width: 1080, height: 1920, fps: 24,
@@ -289,7 +340,11 @@ export function renderJob(s) {
 
 async function stepRender(s, deps) {
   if (!s.render) {
-    s.render = { handle: await deps.startRender(renderJob(s)), startedAt: new Date().toISOString() };
+    // the plan is read now, at render time (a downgrade since the start keeps the end card on)
+    const planCode = deps.planCode ? await deps.planCode().catch(() => null) : null;
+    const job = renderJob(s, { planCode });
+    s.endCard = job.endCard;
+    s.render = { handle: await deps.startRender(job), startedAt: new Date().toISOString() };
     return s;
   }
   const r = await deps.checkRender(s.render.handle);

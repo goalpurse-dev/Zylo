@@ -3,24 +3,36 @@
 
 import { MODELS } from "./pricing.js";
 import { words } from "./planner.js";
+import { MAX_SFX_SEC } from "./sound.js";
 
-/** Target narration pace after the stitch speeds the voice up (words per minute). */
-export const TARGET_WPM = 238;
-/** The most the stitch will speed the voice up (atempo); above this it sounds rushed. */
-export const MAX_TEMPO = 1.45;
+/** At most one sound effect every this many seconds (chimes are separate). */
+export const SFX_GAP_SEC = 6;
+
 /** Silence kept after the last word, so the end frame is seen (R3). */
 export const END_HOLD_SEC = 1.0;
+/** How far past the target length the voice may run before the planner cuts words (seconds). */
+export const OVERRUN_SEC = 1.0;
 
 /**
- * The voice tempo the stitch applies: brings the measured pace up to TARGET_WPM,
- * never slows it down, never above MAX_TEMPO.
- * spoken: [{w, s, e}] word timings from the TTS (seconds).
+ * The voice is never sped up (owner, 2026-10-19): tempo is always 1.
+ * Kept as a function so stored runs and the stitch keep one shape.
  */
-export function voiceTempo(spoken) {
-  if (!spoken.length) return 1;
-  const span = spoken[spoken.length - 1].e - spoken[0].s;
-  const wpm = span > 0 ? (spoken.length / span) * 60 : TARGET_WPM;
-  return Math.round(Math.min(MAX_TEMPO, Math.max(1, TARGET_WPM / wpm)) * 1000) / 1000;
+export function voiceTempo() {
+  return 1;
+}
+
+/** Spoken length in seconds (first word start to last word end). */
+export const spokenSeconds = (spoken) => (spoken.length ? spoken[spoken.length - 1].e - spoken[0].s : 0);
+
+/**
+ * When the voice runs longer than the target length, how many words the script may keep
+ * (scaled by the measured pace, 4% margin). null = it fits.
+ */
+export function wordsToFit(spoken, lengthSec) {
+  const room = lengthSec - END_HOLD_SEC;
+  const took = spokenSeconds(spoken);
+  if (took <= room + OVERRUN_SEC) return null;
+  return Math.floor((spoken.length * room) / took);
 }
 
 /**
@@ -104,9 +116,16 @@ export function cueTimeline(plan, placed, finalWords = []) {
     }
     if (b.sound) {
       const start = b.sound.at === "start" ? p.start + 0.05 : timeOf(i, b.verb, verbAt);
-      sfx.push({ key: b.sound.key, text: b.sound.text, start: round(start), duration: b.sound.whole ? round(p.end - start) : null });
+      // Short effects only (<= 1.4 s); rain is the one long sound, fading in and out softly.
+      const rain = b.sound.key === "rain";
+      sfx.push({ key: b.sound.key, text: b.sound.text, start: round(start), duration: rain ? round(Math.max(1.5, p.end - start)) : MAX_SFX_SEC, soft: rain });
     }
   });
+  // Sparse (owner, 2026-10-19): at most one effect every ~6 s; the earlier one wins.
+  const sparse = [];
+  for (const c of sfx.sort((a, b) => a.start - b.start)) if (!sparse.length || c.start - sparse.at(-1).start >= SFX_GAP_SEC) sparse.push(c);
+  sfx.length = 0;
+  sfx.push(...sparse);
   // without a voice: chime at the start of the naming beats and the last beat
   if (!finalWords.length) plan.beats.forEach((b, i) => { if (/\b(this|that) is\b/i.test(b.text) || /congratulations/i.test(b.text)) chimes.push(placed[i].start + 0.2); });
   const uniq = [...new Set(chimes.map((t) => round(t)))].sort((x, y) => x - y).filter((t, k, arr) => k === 0 || t - arr[k - 1] > 0.4);
