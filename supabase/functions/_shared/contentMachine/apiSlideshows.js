@@ -3,13 +3,13 @@
 import { ApiError } from "./errors.js";
 import { coverage } from "./planner.js";
 import { localDay } from "./spendSummary.js";
-import { localToUtc } from "./localTime.js";
 import { batchCheck } from "./batchBudget.js";
 import { summarize, monthStart } from "./spendSummary.js";
 import { ACCOUNTS, planRecipes } from "./planner.js";
 import { LAYOUT_VERSION } from "./slides/templates.js";
 import { ZYVO_SHOT_PATH, heroUrls, laneLibrary, logosFor } from "./pipeline.js";
 import { runProgress } from "./progress.js";
+import { STATES, matchesState } from "./ideaState.js";
 import { STYLE_SAMPLES, resolveSample } from "./styleSamples.js";
 
 const KINDS = ["format", "style", "hook"];
@@ -59,6 +59,7 @@ export function ideaView(idea, costs, urls) {
     virality_score: idea.virality_score, compliance: idea.compliance, error: idea.error, source: idea.source,
     slides: idea.script?.slides ?? [], tools_checked: idea.script?.tools_checked ?? [], ai_label_required: Boolean(idea.script?.ai_label_required),
     cost: costs[idea.id] ?? { usd: 0, wouldUsd: 0, byProvider: {}, calls: 0 },
+    posts: (idea.cm_posts ?? []).map((p) => ({ platform: p.platform, posted_at: p.posted_at })).sort((a, b) => Date.parse(a.posted_at) - Date.parse(b.posted_at)),
     generation: gen && {
       id: gen.id, status: gen.status, error: gen.error, duration_s: gen.duration_s, dryRun: Boolean(f.dryRun),
       images: {
@@ -235,17 +236,28 @@ export function slideshowActions({ cm, files, kick, store, guard, now }) {
       if (body?.account) filters.account = cleanAccount(body.account);
       if (body?.from) filters.from = `${String(body.from).slice(0, 10)}T00:00:00Z`;
       if (body?.to) filters.to = `${String(body.to).slice(0, 10)}T23:59:59Z`;
-      // Today (owner, 2026-10-18): everything made since midnight Helsinki, across all runs.
-      if (body?.today) { const s = await cm.settings(); filters.from = localToUtc(localDay(now(), s.timezone), s.timezone).toISOString(); }
-      filters.limit = Math.min(100, Math.max(1, Number(body?.limit) || 40));
+      if (body?.before && !Number.isNaN(Date.parse(body.before))) filters.before = new Date(body.before).toISOString();
+      const title = String(body?.q ?? "").replace(/[%_\\,()*]/g, " ").trim().slice(0, 80);
+      if (title) filters.title = title;
+      // The Queue (owner, 2026-10-23): every slideshow not posted yet, from ANY day. Nothing is hidden by date;
+      // the page hides Rejected and Outdated by default.
+      if (body?.queue) filters.notStatus = ["posted"];
+      // The All tab's status filter: posted / rejected in the query; the others are checked on each row below.
+      const state = STATES.includes(body?.state) ? body.state : null;
+      if (state === "posted" || state === "rejected") filters.status = state;
+      else if (state === "not_posted" || state === "flagged") filters.notStatus = ["posted", "rejected"];
+      filters.limit = Math.min(body?.queue || state ? 200 : 100, Math.max(1, Number(body?.limit) || 40));
       const rows = await cm.listIdeas(filters);
+      const more = rows.length === filters.limit;
       const costs = await cm.ideaCosts(rows.map((r) => r.id));
       const paths = rows.flatMap((r) => (r.cm_generations ?? []).flatMap((g) => [...(g.files?.pngs ?? []), g.files?.zip, g.files?.mp4,
         ...Object.values(g.source_assets?.heroes ?? {}).map((h) => h?.asset), ...Object.values(g.source_assets?.collages ?? {}).flat().map((h) => h?.asset), ...Object.values(g.source_assets?.galleries ?? {}).flat().map((h) => h?.asset)].filter(Boolean)));
       const urls = await files.signedUrls(paths, 900);
       const library = await cm.libraryAll();
       return {
-        ideas: rows.map((r) => ideaView(r, costs, urls)),
+        ideas: rows.map((r) => ideaView(r, costs, urls)).filter((i) => matchesState(i, state)),
+        // Older ones exist: the page asks again with before = the oldest created_at it has.
+        more, oldest: rows.at(-1)?.created_at ?? null,
         styles: Object.fromEntries(library.filter((l) => l.kind === "style").map((l) => [l.key, l.spec])),
         zyvoShot: await files.signedUrl(ZYVO_SHOT_PATH, 900),
         logos: await logosFor({ db: cm, files }, rows.flatMap((r) => r.script?.slides ?? [])),
