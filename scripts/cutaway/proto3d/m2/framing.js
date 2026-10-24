@@ -175,33 +175,90 @@ export function placeLifeProps(L, home, project) {
 }
 
 /**
- * The end sign beside the finished build: if, in the home view, the sign would cover more than a tenth of the build,
- * it moves to the nearest spot beside it (right first) that keeps it in the frame and on the ground.
+ * What the end sign may not stand in: the house, the setting (a car wash canopy over it hid its first line) and the
+ * other parts. A roof overhead counts down to the ground: the camera looks down on it, so a sign under it is hidden.
+ */
+export function signObstacles(L, sign) {
+  const cut = cutOf(L);
+  return [...sceneryBoxes(L).map((b) => ({ min: [b.min[0], 0, b.min[2]], max: b.max })), ...worldTrees(L), ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((b) => b && b.max[1] > 0.2)];
+}
+/** the world's two big trees (real.js; world.trees moves them, [] removes them): crown about 3.2 m round, 7.8 m tall */
+export function worldTrees(L) {
+  const T = L.world?.trees ?? [[-13, -11.5, 1], [14, -3.4, 0.9]];
+  return T.map(([x, z, s = 1]) => ({ min: [x - 3.2 * s, 0, z - 3.2 * s], max: [x + 3.2 * s, 7.8 * s, z + 3.2 * s] }));
+}
+/**
+ * What would hide the end sign (the check): the setting (a roof over it, a wall, the house) and structures (a canopy, a
+ * wash arch, a machine). Low things before its posts (a fence, bushes, a pit cap) do not hide its board.
+ */
+const HIDERS = new Set(["canopy", "carWash", "machine", "trafficLight", "atm", "vendingMachine", "hydrant"]);
+export function signBlocked(L) {
+  const sign = L.parts.find((p) => p.kind === "sign"); if (!sign?.params?.at) return [];
+  const cut = cutOf(L), b = focusOf(sign, cut);
+  const boxes = [...sceneryBoxes(L).map((o) => ({ min: [o.min[0], 0, o.min[2]], max: o.max })), ...L.parts.filter((p) => HIDERS.has(p.kind)).map((p) => focusOf(p, cut)).filter(Boolean)];
+  return boxes.filter((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2 && b.min[1] < o.max[1]);
+}
+
+/**
+ * The end sign beside the finished build: if, in the home view, the sign would cover more than a tenth of the build, or
+ * it would stand inside something (under a car wash canopy, whose roof hid its first line),
+ * it moves to the nearest free spot beside it (right first; in the home view if one is free), on the ground.
  */
 export function placeSign(L, home, project) {
   const sign = L.parts.find((p) => p.kind === "sign"); if (!sign?.params?.at) return { layout: L, moved: false };
   const cut = cutOf(L), subj = subjectBox(L), sr = project(home.pos, home.tgt, subj);
   const cover = (q) => { const r = project(home.pos, home.tgt, focusOf(q, cut)); const ix = Math.max(0, Math.min(r.x1, sr.x1) - Math.max(r.x0, sr.x0)), iy = Math.max(0, Math.min(r.y1, sr.y1) - Math.max(r.y0, sr.y0)); return { share: (ix * iy) / Math.max(1e-6, sr.w * sr.h), inFrame: !r.behind && r.x0 > 0.02 && r.x1 < 0.98, r }; };
-  if (cover(sign).share <= 0.1) return { layout: L, moved: false };
-  const [x0, y0, z0] = sign.params.at;
-  const cands = [];
-  for (const dx of [0, 2, 4, 6, 8, -2, -4, -6, -8]) for (const dz of [0, -2, -4, -6]) cands.push([subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz]);
-  // never into the house, the setting or another part
-  const others = [...sceneryBoxes(L), ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((b) => b && b.max[1] > 0.2)];
-  const hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2);
-  for (const at of cands) { const q = { ...sign, params: { ...sign.params, at } }; const c = cover(q); if (c.share <= 0.1 && c.inFrame && !hits(focusOf(q, cut))) return { layout: { ...L, parts: L.parts.map((p) => (p === sign ? q : p)) }, moved: true }; }
+  const others = signObstacles(L, sign), hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2 && b.min[1] < o.max[1]);
+  if (cover(sign).share <= 0.1 && !hits(focusOf(sign, cut))) return { layout: L, moved: false };
+  const [, y0, z0] = sign.params.at;
+  // spots nearest the build first (1 m apart, either side), each at the sign's size, then a little smaller (1.0)
+  const cands = [], dxs = Array.from({ length: 33 }, (_, i) => (i === 0 ? 0 : (i % 2 ? 1 : -1) * Math.ceil(i / 2)));
+  for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz], scale });
+  // first a spot inside the home view; else the free spot nearest the build (the end views frame the sign with it)
+  for (const need of [true, false]) {
+    const ok = cands.map(({ at, scale }) => ({ ...sign, params: { ...sign.params, at, scale } })).filter((q) => { const c = cover(q); return c.share <= 0.1 && (c.inFrame || !need) && !hits(focusOf(q, cut)); });
+    // nearest: the one that widens the build's span the least (the end frame holds them both)
+    const B = union([subj, ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((o) => o && o.max[1] > 0.3 && o.max[0] - o.min[0] < 30)]), near = (q) => { const b = focusOf(q, cut); return Math.max(B.max[0], b.max[0]) - Math.min(B.min[0], b.min[0]); };
+    if (ok.length) { const q = ok.sort((a, b) => near(a) - near(b))[0]; return { layout: { ...L, parts: L.parts.map((p) => (p === sign ? q : p)) }, moved: true }; }
+  }
   return { layout: L, moved: false };
 }
 
-/** creeks and surface flows lifted onto the setting's floor (the bay, the sidewalk), so no slab hides them */
+/** a setting's paved floor, [x0, x1, z0, z1] (kit/backdrops.js: the slab each one lays), or null for the yard */
+export function settingFloor(B) {
+  if (!B) return null;
+  const back = B.back;
+  switch (B.type) {
+    case "street": return [-26, 26, back ?? -8, 0.04];
+    case "garage": return [-7, 7, back ?? -9, 0.04];
+    case "room": return [B.x0 ?? -9, B.x1 ?? 9, back ?? -7, 0.04];
+    case "carwash": return [(B.x0 ?? -7) - 6, (B.x1 ?? 7) + 6, back ?? -8, 0.04];
+    default: return null;
+  }
+}
+
+/** creeks and surface flows lifted onto the setting's floor (the bay, the sidewalk), so no slab hides them; in those
+ * settings the dug dirt is hauled away right after the dig (no spoil pile on a car wash floor) */
 export function liftToFloor(L) {
   const W = L.world ?? {}, t = W.backdrop?.type, floor = W.backdrop?.walkTop ?? (t === "street" || t === "room" ? 0.12 : t === "carwash" ? 0.1 : t === "garage" ? 0.08 : 0);
   if (!floor) return L;
   const cut = cutOf(L), inCut = (q) => q[0] > cut.x0 && q[0] < cut.x1 && q[2] > cut.z0;
+  // only what is on the floor (a stream on the grass beside the lot stays on the grass)
+  const F = settingFloor(W.backdrop), onFloor = (x0, x1) => !F || (x1 > F[0] && x0 < F[1]);
   const parts = L.parts.map((p) => {
-    if (p.kind === "creek") return { ...p, params: { ...p.params, y: Math.max(p.params?.y ?? 0, floor + 0.02) } };
-    if (p.kind === "flow" && Array.isArray(p.params?.path)) return { ...p, params: { ...p.params, path: p.params.path.map((q) => (q[1] >= -0.05 && q[1] < floor + 0.12 && !inCut(q) ? [q[0], floor + 0.14, q[2]] : q)) } };
+    if (p.kind === "dig" && p.params?.haul === undefined) return { ...p, params: { ...p.params, haul: true } };
+    if (p.kind === "creek") { const b = focusOf(p, cut); return onFloor(b.min[0], b.max[0]) ? { ...p, params: { ...p.params, y: Math.max(p.params?.y ?? 0, floor + 0.02) } } : p; }
+    if (p.kind === "flow" && Array.isArray(p.params?.path)) return { ...p, params: { ...p.params, path: p.params.path.map((q) => (q[1] >= -0.05 && q[1] < floor + 0.12 && !inCut(q) && onFloor(q[0], q[0]) ? [q[0], floor + 0.14, q[2]] : q)) } };
     return p;
   });
-  return { ...L, parts };
+  // the world's big trees off the paved floor and off the parts (one stood on the car wash lot's edge, over the stream
+  // bank and in front of the end sign): each moves outward along x to the first free spot, or goes
+  const solid = parts.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter((b) => b && b.max[1] > 0.2 && b.max[0] - b.min[0] < 40);
+  const free = (b) => !(F && b.max[0] > F[0] && b.min[0] < F[1] && b.max[2] > F[2] && b.min[2] < F[3]) && !solid.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2]);
+  const trees = [];
+  for (const [x, z, s = 1] of W.trees ?? [[-13, -11.5, 1], [14, -3.4, 0.9]]) {
+    const side = Math.sign(x) || 1, at = [0, 2, 4, 6, 8, 10, 12].map((d) => x + side * d).find((tx) => free({ min: [tx - 3.2 * s, 0, z - 3.2 * s], max: [tx + 3.2 * s, 7.8 * s, z + 3.2 * s] }));
+    if (at !== undefined) trees.push([at, z, s]);
+  }
+  return { ...L, world: { ...W, trees }, parts };
 }

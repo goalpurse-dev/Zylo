@@ -76,7 +76,7 @@ export function makePage(layout) {
   if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, M2_LAYOUT.world.backdrop);
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
-  window.renderAt = (t) => { run.update(t, camera); composer.render(); return true; };
+  window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); composer.render(); return true; };
 }
 manager.onLoad = () => { window.ready = true; };`);
   return s;

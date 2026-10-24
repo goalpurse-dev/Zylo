@@ -8,7 +8,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { channelValue } from "./curves.js";
 import { cameraAt, projectBox, MOVE } from "./director.js";
 import { focusOf } from "./focus.js";
-import { CAMERA_LIMITS, measureKey, turnBetween } from "./framing.js";
+import { CAMERA_LIMITS, measureKey, turnBetween, signBlocked } from "./framing.js";
 import { callJSON } from "./llm.mjs";
 import { sheet } from "./sheet.mjs";
 
@@ -44,6 +44,29 @@ export function timelineChecks(layout, tl) {
   }
   const per10 = (fast.length / M.speechEnd) * 10;
   if (per10 > 3.5) warnings.push(`${fast.length} fast camera moves in ${M.speechEnd.toFixed(0)} s (${per10.toFixed(1)} per 10 s; the approved videos have about 3)`);
+  // the camera moves toward what each sentence is about, never away: its showing part is no smaller at the sentence's
+  // moment than at the sentence before's (unless it did not fit the frame then). The approved pair keep their own paths.
+  if (!layout.camera?.home && !layout.camera?.keys?.length) {
+    const pts = previewTimes(tl, layout), parts = new Map(layout.parts.map((p) => [p.id, p]));
+    for (let i = 1; i < pts.length; i++) {
+      const b = (layout.beats ?? []).find((x) => x.s === pts[i].role), p = b?.shows && parts.get(b.shows.p);
+      if (!p || ["finish", "congrats"].includes(pts[i].role)) continue;
+      let box; try { box = focusOf(p, layout.world?.cut); } catch { continue; }
+      const k0 = cameraAt(tl.camera.end, pts[i - 1].t), k1 = cameraAt(tl.camera.end, pts[i].t), w0 = projectBox(k0.pos, k0.tgt, box), w1 = projectBox(k1.pos, k1.tgt, box);
+      if (!w0.behind && !w1.behind && w0.w <= 0.85 && w1.w < w0.w * 0.95) problems.push(`sentence ${pts[i].role}: the camera moves away from ${p.id} (${(w0.w * 100).toFixed(0)}% of the width before, ${(w1.w * 100).toFixed(0)}% at its moment)`);
+    }
+  }
+  // the end card stands free (not under a canopy or in a wall), wholly in the frame, 5% clear of every edge, from just
+  // after it pops (0.45 s) to the last frame
+  const sign = layout.parts.find((p) => p.kind === "sign");
+  if (sign && signBlocked(layout).length) problems.push(`the end card stands inside or under something (${signBlocked(layout).length} box${signBlocked(layout).length > 1 ? "es" : ""}): it would be hidden`);
+  if (sign && !layout.camera?.home && !layout.camera?.keys?.length) {
+    let box = null; try { box = focusOf(sign, layout.world?.cut); } catch {}
+    for (let t = M.signPop + 0.45; box && t <= M.lengthEnd + 1e-6; t += 0.25) {
+      const k = cameraAt(tl.camera.end, t), r = projectBox(k.pos, k.tgt, box);
+      if (r.behind || r.x0 < 0.05 || r.x1 > 0.95 || r.y0 < 0.05 || r.y1 > 0.95) { problems.push(`the end card is not wholly in the frame at ${t.toFixed(2)} s (x ${r.x0.toFixed(2)}-${r.x1.toFixed(2)}, y ${r.y0.toFixed(2)}-${r.y1.toFixed(2)}; want 0.05-0.95)`); break; }
+    }
+  }
   // the named part: on screen, at least 15% of the width, clear of the bands (the director's hero frame)
   const hero = (tl.director?.frames ?? []).filter((f) => f.ok !== undefined);
   for (const f of hero) if (f.rect.w < 0.15) (f.hero ? problems : warnings).push(`the shot at ${f.t.toFixed(1)} s frames ${f.ids} at ${(f.rect.w * 100).toFixed(0)}% of the width (at least 15%)`);
@@ -55,7 +78,11 @@ export function timelineChecks(layout, tl) {
     const k = cameraAt(tl.camera.end, t), m = measureKey(layout, k.pos, k.tgt);
     camera.push({ role: s.role, t: +t.toFixed(2), ...m });
     if (m.empty > CAMERA_LIMITS.emptyMax) problems.push(`sentence ${s.role}: the frame is ${(m.empty * 100).toFixed(0)}% open lawn or sky (at most ${CAMERA_LIMITS.emptyMax * 100}%)`);
-    if (m.subject < CAMERA_LIMITS.subjectMin) problems.push(`sentence ${s.role}: the main subject is out of the frame (${(m.subject * 100).toFixed(1)}% of it)`);
+    // (a frame its own sentence's part fills, a third of the width or more, is not lost: the soap reaching the stream
+    // beside the lot, far from the cut; the director allows the same)
+    const sb = (layout.beats ?? []).find((x) => x.s === s.role)?.shows, sp = sb && layout.parts.find((p) => p.id === sb.p);
+    let own = 0; try { if (sp && !layout.camera?.home) { const r = projectBox(k.pos, k.tgt, focusOf(sp, layout.world?.cut)); own = r.behind ? 0 : Math.min(1, r.x1) - Math.max(0, r.x0); } } catch {}
+    if (m.subject < CAMERA_LIMITS.subjectMin && own < 0.35) problems.push(`sentence ${s.role}: the main subject is out of the frame (${(m.subject * 100).toFixed(1)}% of it)`);
   }
   const story = tl.camera.end.filter((k) => k[0] <= M.signPop);
   for (let i = 1; i < story.length; i++) { const tu = turnBetween({ pos: story[i - 1][1], tgt: story[i - 1][2] }, { pos: story[i][1], tgt: story[i][2] }); if (tu > CAMERA_LIMITS.turnMax) problems.push(`the camera turns ${tu.toFixed(0)} degrees at ${story[i][0].toFixed(1)} s (the hand-built paths at most ${CAMERA_LIMITS.turnMax})`); }

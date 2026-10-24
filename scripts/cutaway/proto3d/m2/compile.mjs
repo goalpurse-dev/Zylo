@@ -5,7 +5,7 @@ import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
-import { focusOf } from "./focus.js";
+import { focusOf, union } from "./focus.js";
 import { directCamera, cameraAt, projectBox, MOVE } from "./director.js";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
@@ -59,10 +59,24 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       // a flow must be seen arriving: whatever it flows into (a creek, a tank, a grate) is in the frame too
       let target = null;
       if (part.kind === "flow") { const end = part.params?.path?.at(-1); target = end && layout.parts.find((q) => { if (q === part || ["flow", "light", "rain", "sign"].includes(q.kind)) return false; let qb = null; try { qb = focusOf(q, layout.world?.cut); } catch {} return qb && end.every((v, i) => v >= qb.min[i] - 0.5 && v <= qb.max[i] + 0.5); }); }
+      // a drain it runs into leads on: a pipe starting under the grate carries it to where that pipe ends (a stream)
+      const chain = [];
+      if (target?.kind === "grate") {
+        const g = target.params?.pos ?? [0, 0, 0], pipe = layout.parts.find((q) => q.kind === "pipeRun" && Array.isArray(q.params?.path) && Math.abs(q.params.path[0][0] - g[0]) < 1 && q.params.path[0][1] < g[1] + 0.2);
+        const pend = pipe?.params.path.at(-1), end2 = pend && layout.parts.find((q) => { if (q === pipe || q === target || ["flow", "light", "rain", "sign", "pipeRunFlow"].includes(q.kind)) return false; let qb = null; try { qb = focusOf(q, layout.world?.cut); } catch {} return qb && pend.every((v, i) => v >= qb.min[i] - 0.5 && v <= qb.max[i] + 0.5); });
+        if (pipe && end2) { chain.push(pipe.id); target = end2; }
+      }
       let tr = null; if (target) { try { tr = projectBox(k.pos, k.tgt, focusOf(target, layout.world?.cut)); } catch {} }
       // at least half of what it flows into is in the frame (an edge just touching the frame is not seeing it arrive)
       const targetOut = tr && (tr.behind || Math.min(1, tr.x1) - Math.max(0, tr.x0) < Math.min(0.15, (tr.x1 - tr.x0) * 0.5));
-      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ focus: target ? [b.shows.p, target.id] : [b.shows.p], type: w < 0.05 && !target ? "close" : "mid", t: Math.max(0, t - 0.1), auto: true });
+      // a flow seen arriving: its last stretch, the pipe it runs on in and where it ends (the whole run, arch to stream, put
+      // the camera so far back that the stream was a speck)
+      const arrival = () => {
+        const path = part.params.path, tail = path.slice(Math.floor(path.length * 0.5)), bs = [...chain.map((id) => layout.parts.find((q) => q.id === id)), target].map((q) => { try { return focusOf(q, layout.world?.cut); } catch { return null; } }).filter(Boolean);
+        const pad = 0.6, tb = { min: [0, 1, 2].map((i) => Math.min(...tail.map((q) => q[i])) - pad), max: [0, 1, 2].map((i) => Math.max(...tail.map((q) => q[i])) + pad) };
+        return union([tb, ...bs]);
+      };
+      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : { focus: [b.shows.p], type: w < 0.05 ? "close" : "mid" }), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
     }
     // an auto shot takes the place of a planned shot just before it (closer than a move's gap it would be dropped),
     // starting at that shot's time

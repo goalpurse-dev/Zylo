@@ -19,7 +19,10 @@ const A = { row: 1, col: 1 }, B = { row: 0, col: 2 }, STEAL = { row: 2, col: 0 }
 
 function label(THREE, text, w = 1024, h = 180, bg = "#fff6d8", fg = "#c0302a") {
   const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
-  g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = fg; g.font = `900 ${Math.round(h * 0.62)}px 'Arial Black', Arial, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, w / 2, h / 2 + 4, w * 0.92);
+  // too long a label is made smaller evenly, never squeezed (kit/signText.js)
+  const font = (px) => `900 ${px}px 'Arial Black', Arial, sans-serif`;
+  let px = Math.round(h * 0.62); g.font = font(px); const tw = g.measureText(text).width; if (tw > w * 0.92) px = Math.floor((px * w * 0.92) / tw);
+  g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = fg; g.font = font(px); g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, w / 2, h / 2 + 4);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 

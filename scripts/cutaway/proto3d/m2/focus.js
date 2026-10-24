@@ -30,7 +30,7 @@ export function focusOf(part, cut) {
     case "boxPop": return centered(p.pos, p.size);
     case "flare": return { min: [p.pos[0] - 0.8, p.pos[1], p.pos[2] - 0.8], max: [p.pos[0] + 0.8, p.pos[1] + 2.4, p.pos[2] + 0.8] };
     case "settle": { const b = p.box ?? { x0: -1.5, x1: 1.5, y0: -3, y1: -0.6, z0: -2, z1: 0 }; return { min: [b.x0 - 0.15, b.y0 - 0.15, b.z0], max: [b.x1 + 0.15, b.y1 + 0.15, b.z1] }; }
-    case "creek": { const w = p.width ?? 2.4, z = p.z ?? -w / 2 - 0.02, d = p.depth ?? 0.7; return { min: [p.x0 ?? 4, -d - 0.2, z - w / 2 - 0.4], max: [p.x1 ?? 14, 0.3, z + w / 2 + 0.2] }; }
+    case "creek": { if (p.axis === "z") { const w = p.width ?? 2.6, x = p.x ?? 17, d = p.depth ?? 0.8; return { min: [x - w / 2 - 0.5, -d - 0.2, Math.max(p.z0 ?? -26, -8)], max: [x + w / 2 + 0.5, 0.3, 0.05] }; } const w = p.width ?? 2.4, z = p.z ?? -w / 2 - 0.02, d = p.depth ?? 0.7; return { min: [p.x0 ?? 4, -d - 0.2, z - w / 2 - 0.4], max: [p.x1 ?? 14, 0.3, z + w / 2 + 0.2] }; }
     case "flow": return fromPoints(p.path ?? [[0, 0.1, 0], [3, 0.1, 0]], p.size ?? 0.16);
     case "prop": { const [x, y, z] = p.pos ?? [0, 0, 0], s = p.scale ?? 1; return { min: [x - 0.8 * s, y, z - 0.5 * s], max: [x + 0.8 * s, y + 1.9 * s, z + 0.5 * s] }; }
     case "grate": { const [x, y, z] = p.pos ?? [0, 0.1, -1.5], w = p.width ?? 1.6, d = p.depth ?? 0.8; return { min: [x - w / 2, y, z - d / 2], max: [x + w / 2, y + 0.1, z + d / 2] }; }

@@ -8,7 +8,7 @@
 //  4. no tree stands over a part that acts (a tree over the gas flame)
 import { focusOf as focusRaw } from "./focus.js";
 import { SETTING_PROPS } from "./catalog.js";
-import { settingBoxes } from "./framing.js";
+import { settingBoxes, settingFloor } from "./framing.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
 // verbs that only take something away: a sentence whose only action is one of these shows nothing happening
@@ -38,6 +38,10 @@ export function clarityChecks(L, sentences) {
   // 2b. the "Add ..." line brings only finishing touches, never a new machine (a traffic light at a car wash)
   const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));
   for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
+  // 2c. realistic settings: no natural water (a creek, a stream) on a paved floor; it lies beside the setting (axis "z",
+  // past the floor's edge), and what runs off the floor reaches it through a storm drain and a pipe
+  const F = settingFloor(W.backdrop);
+  if (F) for (const p of L.parts) if (p.kind === "creek") { const b = focusRaw(p, cut); if (b.max[0] > F[0] && b.min[0] < F[1]) problems.push(`part ${p.id}: a creek cannot run across the ${setting}'s paved floor (x ${F[0]} to ${F[1]}); put it beside the setting (axis "z", x past ${F[1] + 2} or before ${F[0] - 2}) and bring the water to it through a storm drain grate and a pipe in the cut face`); }
   // 3. nothing floats
   const floor = W.backdrop?.walkTop ?? (["street", "room"].includes(setting) ? 0.12 : setting === "carwash" ? 0.1 : setting === "garage" ? 0.08 : 0);
   const solids = [...settingBoxes(W.backdrop)];

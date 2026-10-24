@@ -30,16 +30,17 @@ const assTime = (sec) => {
 };
 
 /** ASS subtitles: each word from its start to the next word's start (or its end + 0.25 s), plus the number cards. */
-export function buildAss({ words, cards = [], width = 1080, height = 1920, fontName = "Lilita One" }) {
+// until (optional): no caption after it (the end card pops there and a caption must never sit on it)
+export function buildAss({ words, cards = [], width = 1080, height = 1920, fontName = "Lilita One", until = Infinity }) {
   const x = Math.round(width / 2);
   const y = Math.round(height * CAPTION_Y);
   const cy = Math.round(height * CARD_Y);
   const lines = [];
   words.forEach((w, i) => {
     const text = captionWord(w.w);
-    if (!text) return;
+    if (!text || w.s >= until - 0.05) return;
     const next = words[i + 1];
-    const end = next ? Math.max(w.e, next.s) : w.e + 0.25;
+    const end = Math.min(until, next ? Math.max(w.e, next.s) : w.e + 0.25);
     lines.push(`Dialogue: 0,${assTime(w.s)},${assTime(end)},Word,,0,0,0,,{\\pos(${x},${y})}${text}`);
   });
   for (const c of cards) {

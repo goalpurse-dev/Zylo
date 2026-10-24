@@ -37,7 +37,9 @@ export function settle(ctx, p, api) {
   // the water: murky brown that clears to blue
   const murky = new THREE.Color(col(p.murky, "#6b5a3a")), clear = new THREE.Color(col(p.clearColor, "#3d8fd6"));
   const waterM = ctx.std({ color: murky.clone(), roughness: 0.15, transparent: true, opacity: 0.82 });
-  const water = add(root, boxG(W, 1, D - 0.02), waterM, cx, b.y0, cz, false);
+  // the layers never share a face (shared faces flickered as a sawtooth): each inset from the walls by its own amount, and
+  // stacked with small gaps, sand bed, water, oil
+  const water = add(root, boxG(W - 0.04, 1, D - 0.04), waterM, cx, b.y0, cz - 0.01, false);
   // sand: grains spread through the water that sink and pile up as a layer on the floor
   const sandM = mat(col(p.sandColor, "#d8b56a"), { roughness: 0.9 }), N = p.grains ?? 70, grains = [];
   for (let i = 0; i < N; i++) {
@@ -45,26 +47,28 @@ export function settle(ctx, p, api) {
     grains.push({ s, x: b.x0 + 0.15 + ((i * 37) % 97) / 97 * (W - 0.3), y: b.y0 + 0.3 + ((i * 53) % 89) / 89 * (H * 0.75), z: b.z1 - 0.12 - ((i * 13) % 7) / 7 * Math.min(0.6, D * 0.6), d: ((i * 29) % 31) / 31 });
   }
   // the bed and the top layer reach the cut face, in front of the water (seen through 80% water they washed out)
-  const sandBed = add(root, boxG(W, 1, D + 0.02), sandM, cx, b.y0, cz + 0.01, false);
+  const sandBed = add(root, boxG(W - 0.08, 1, D + 0.02), sandM, cx, b.y0, cz + 0.01, false);
   // oil: dark droplets that rise, and a dark layer on top
   // the top layer (oil, scum): near black and glossy, so it reads against the water and the walls
   const oilM = ctx.phys ? ctx.phys({ color: C(col(p.oilColor, "#14100c")), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }) : mat("#14100c"), drops = [];
   for (let i = 0; i < 26; i++) { const s = add(root, new THREE.SphereGeometry(0.09, 8, 6), oilM, 0, 0, 0, false); drops.push({ s, x: b.x0 + 0.2 + ((i * 41) % 83) / 83 * (W - 0.4), y: b.y0 + 0.4 + ((i * 23) % 61) / 61 * H * 0.5, z: b.z1 - 0.12 - ((i * 11) % 5) / 5 * 0.4, d: ((i * 17) % 19) / 19 }); }
-  const oilLayer = add(root, boxG(W, 1, D + 0.02), oilM, cx, b.y1, cz + 0.01, false);
+  const oilLayer = add(root, boxG(W - 0.02, 1, D + 0.03), oilM, cx, b.y1, cz + 0.015, false);
   return {
     update(tt) {
       const sh = api.ch("show", tt); walls.visible = sh > 0.002; walls.scale.setScalar(pop(back(Math.min(1, sh))));
       const fill = api.cue("fill") ? clamp(api.ch("fill", tt)) : clamp(sh), level = H * fill;
-      water.visible = fill > 0.01; water.scale.y = Math.max(0.001, level); water.position.y = b.y0 + level / 2;
-      const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
       const sd = clamp(api.ch("sand", tt)), bed = H * 0.16 * sd;
+      const ol = clamp(api.ch("oil", tt)), layer = Math.max(0.18, H * 0.18) * ol, top = b.y0 + level;
+      // the water from just above the sand bed to just under the oil slab (its own top face, never the oil's)
+      const w0 = b.y0 + (bed > 0.005 ? bed + 0.006 : 0.004), w1 = layer > 0.005 ? top - layer - 0.008 : top, wh = Math.max(0.001, w1 - w0);
+      water.visible = fill > 0.01 && w1 > w0; water.scale.y = wh; water.position.y = w0 + wh / 2;
+      const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
       for (const g of grains) {
         const k = clamp((sd - g.d * 0.5) / 0.5); // each grain sinks over half the cue, staggered
         g.s.visible = fill > 0.3 && k < 0.98;
         g.s.position.set(g.x, g.y + (b.y0 + bed + 0.06 - g.y) * k * k, g.z);
       }
       sandBed.visible = bed > 0.005; sandBed.scale.y = Math.max(0.001, bed); sandBed.position.y = b.y0 + bed / 2;
-      const ol = clamp(api.ch("oil", tt)), layer = Math.max(0.18, H * 0.18) * ol, top = b.y0 + level;
       for (const d of drops) { const k = clamp((ol - d.d * 0.5) / 0.5); d.s.visible = fill > 0.3 && ol > 0.01 && k < 0.98; d.s.position.set(d.x, d.y + (top - layer - 0.05 - d.y) * k, d.z); }
       oilLayer.visible = layer > 0.005 && fill > 0.3; oilLayer.scale.y = Math.max(0.001, layer); oilLayer.position.y = top - layer / 2;
     },
@@ -72,6 +76,7 @@ export function settle(ctx, p, api) {
 }
 
 export function creek(ctx, p, api) {
+  if (p.axis === "z") return stream(ctx, p, api);
   const { THREE, add, boxG, mat } = tools(ctx);
   // it runs along x at the front edge, so the cut face shows it in section: a channel of water in the soil
   const w = p.width ?? 2.4, x0 = p.x0 ?? 4, x1 = p.x1 ?? 14, z = p.z ?? -w / 2 - 0.02, y = p.y ?? 0.03, L = x1 - x0, depth = p.depth ?? 0.7;
@@ -95,6 +100,37 @@ export function creek(ctx, p, api) {
       wM.color.copy(clean).lerp(dirty, dk);
       for (const q of ripples) { const u = (tt * 0.25 + q.ph) % 1; q.r.position.x = dir > 0 ? x0 + 0.3 + u * (L - 0.6) : x1 - 0.3 - u * (L - 0.6); q.r.visible = sh > 0.5; }
       for (const q of foam) { const u = (tt * 0.2 + q.ph) % 1; q.f.position.x = dir > 0 ? x0 + 0.3 + u * (L - 0.6) : x1 - 0.3 - u * (L - 0.6); q.f.visible = dk > 0.15; q.f.scale.setScalar(pop(dk)); q.f.scale.y = 0.4 * dk; }
+    },
+  };
+}
+
+// a stream beside the setting that runs toward the camera (axis "z"): a channel in the lawn from far back to the face,
+// grassy banks with stones, ripples drifting toward the viewer; the face shows it in section (water over its bed)
+function stream(ctx, p, api) {
+  const { THREE, add, boxG, mat } = tools(ctx);
+  const w = p.width ?? 2.6, d = p.depth ?? 0.8, x = p.x ?? 17, z0 = p.z0 ?? -26, L = -z0, y = p.y ?? 0.02;
+  const root = new THREE.Group(); ctx.scene.add(root);
+  const bank = mat("#6b5536", { roughness: 0.95 }), grass = mat("#5f9a3c", { roughness: 0.9 }), stone = mat("#8d8a84", { roughness: 0.85 });
+  // the bed under the water and the banks on both sides (grass on top, soil faces), reaching the cut face
+  add(root, boxG(w + 0.6, 0.2, L), bank, x, y - d - 0.1, z0 / 2 + 0.02);
+  for (const s of [-1, 1]) { add(root, boxG(0.5, 0.22, L), grass, x + s * (w / 2 + 0.25), y + 0.08, z0 / 2 + 0.02); add(root, boxG(0.3, d + 0.1, L), bank, x + s * (w / 2 + 0.15), y - d / 2, z0 / 2 + 0.03); }
+  for (let i = 0; i < 18; i++) { const s = add(root, new THREE.DodecahedronGeometry(0.16 + (i % 3) * 0.06, 0), stone, x + (i % 2 ? 1 : -1) * (w / 2 - 0.05 + ((i * 7) % 3) * 0.08), y + 0.06, -0.8 - ((i * 37) % 23) / 23 * (L - 2)); s.rotation.set(i, i * 2, 0); s.scale.y = 0.6; }
+  const clean = new THREE.Color(col(p.color, "#2f8fd8")), dirty = new THREE.Color(col(p.dirtyColor, "#8a8a6e"));
+  const wM = ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
+  // the water's front just in front of the soil face, so the section reads as water in a channel
+  add(root, boxG(w, d, L + 0.03), wM, x, y - d / 2 + 0.04, z0 / 2 + 0.015, false);
+  const rip = ctx.std({ color: new THREE.Color("#e8f6ff"), roughness: 0.3, transparent: true, opacity: 0.85 }), ripples = [];
+  for (let i = 0; i < 40; i++) { const r = add(root, new THREE.BoxGeometry(0.06, 0.012, 0.45), rip, x - w / 2 + 0.2 + ((i * 7) % 11) / 11 * (w - 0.4), y + 0.07, 0, false); ripples.push({ r, ph: i / 40 }); }
+  const foamM = ctx.std({ color: new THREE.Color("#f4efe2"), roughness: 0.9 }), foam = [];
+  for (let i = 0; i < 22; i++) { const f = add(root, new THREE.SphereGeometry(0.12 + (i % 3) * 0.04, 8, 6), foamM, x - w / 2 + 0.25 + ((i * 5) % 9) / 9 * (w - 0.5), y + 0.08, 0, false); f.scale.y = 0.4; foam.push({ f, ph: (i * 0.137) % 1 }); }
+  return {
+    update(tt) {
+      const sh = clamp(api.ch("show", tt)); root.visible = sh > 0.002; root.scale.set(1, Math.max(0.001, sh), 1);
+      const dk = clamp(api.ch("dirty", tt) - api.ch("clean", tt));
+      wM.color.copy(clean).lerp(dirty, dk);
+      // downstream is toward the camera; the dirt spreads from the pipe's outfall (near the face) with the current
+      for (const q of ripples) { const u = (tt * 0.12 + q.ph) % 1; q.r.position.z = z0 + 0.4 + u * (L - 0.8); q.r.visible = sh > 0.5; }
+      for (const q of foam) { const u = (tt * 0.1 + q.ph) % 1; q.f.position.z = -0.4 - u * Math.min(L - 1, 6); q.f.visible = dk > 0.15; q.f.scale.setScalar(pop(dk)); q.f.scale.y = 0.4 * dk; }
     },
   };
 }

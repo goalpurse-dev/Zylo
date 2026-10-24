@@ -107,7 +107,9 @@ export function carWash(ctx, p, api) {
     const g = new THREE.Group(); g.position.set(sx * (W / 2 + 0.2), 0, 1.2); root.add(g);
     const core = new THREE.Group(); core.position.y = 0.2; g.add(core);
     const mat = std({ color: C(sx < 0 ? "#2f7de0" : "#d93a32"), roughness: 0.9 });
-    for (let k = 0; k < 22; k++) { const a = (k / 22) * Math.PI * 2, s = add(core, new THREE.BoxGeometry(0.06, H - 0.6, 0.42), mat, Math.cos(a) * 0.38, (H - 0.6) / 2, Math.sin(a) * 0.38); s.rotation.y = -a; }
+    // a solid body and 12 broad strips (22 thin ones with gaps between shimmered as the camera moved: the flicker check)
+    add(core, cylG(0.46, H - 0.6, 24), mat, 0, (H - 0.6) / 2, 0);
+    for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2, s = add(core, new THREE.BoxGeometry(0.12, H - 0.6, 0.3), mat, Math.cos(a) * 0.5, (H - 0.6) / 2, Math.sin(a) * 0.5); s.rotation.y = -a; }
     add(g, cylG(0.06, H + 0.1, 10), steel, 0, (H + 0.1) / 2, 0);
     brushes.push({ g, core, sx });
   }

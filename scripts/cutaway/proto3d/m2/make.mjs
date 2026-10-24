@@ -83,7 +83,7 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   const files = {};
   for (const [v] of versions) {
     const final = `${layout.key}_${v}.mp4`;
-    await run(ff, ["-v", "error", "-y", "-i", `silent_${v}.mp4`, "-i", `mix_${v}.mp3`, "-vf", "subtitles=captions.ass:fontsdir=fonts", "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { cwd: out });
+    await run(ff, ["-v", "error", "-y", "-i", `silent_${v}.mp4`, "-i", `mix_${v}.mp3`, "-vf", `subtitles=${v === "end" && fs.existsSync(path.join(out, "captions_end.ass")) ? "captions_end.ass" : "captions.ass"}:fontsdir=fonts`, "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { cwd: out });
     files[v] = path.join(out, final);
   }
   await run(ff, ["-v", "error", "-y", "-i", files.end, "-vf", "scale=576:1024", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", `${layout.key}-web.mp4`], { cwd: out });

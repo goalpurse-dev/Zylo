@@ -8,12 +8,10 @@
 //  carwash: a car wash bay (wet floor over the cut drain, tiled back wall, canopy on a column, lit sign).
 
 import { model } from "./models.js";
+import { signTexture } from "./signText.js";
 
-function sign(THREE, text, bg, fg) {
-  const c = document.createElement("canvas"); c.width = 1024; c.height = 192; const g = c.getContext("2d");
-  g.fillStyle = bg; g.fillRect(0, 0, 1024, 192); g.fillStyle = fg; g.font = "900 110px 'Arial Black', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, 512, 100, 960);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
-}
+// sign lettering in the board's own proportions, never stretched (kit/signText.js)
+function sign(THREE, text, bg, fg, w, h) { return signTexture(THREE, text, bg, fg, w, h); }
 
 /** a slab over an area with a rectangular hole (the cut): up to 4 boxes */
 function slabAround(ctx, mat, [x0, x1, z0, z1], y0, y1, hole) {
@@ -74,11 +72,16 @@ function city(ctx, zFront, { road: withRoad = true, x0 = -46, x1 = 46 } = {}) {
   // the kerb between them
   const kerb = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0 + 40, 0.14, 0.25), std({ color: C("#bdb8ae"), roughness: 0.8 })); kerb.position.set(0, 0.07, zFront + 2.9); kerb.receiveShadow = true; scene.add(kerb);
   let x = x0, i = 0;
-  while (x < x1) { const [name, size, tint] = CITY[i % CITY.length]; model(ctx, `commercial/${name}.glb`, { pos: [x + size / 2, 0.06, zFront - size / 2], size, tint, gloss: 0.85 }); x += size + 1.2; i++; }
+  // the distance haze is in the city's own colour (lifted toward the sky), so the setting and the cut stay crisp however
+  // far back the camera stands (a scene fog washed out the whole build in wide shots, and left a flat band at the horizon)
+  const HAZE = ["#b9c6d4", 0.32], HAZE_NEAR = ["#b9c6d4", 0.18];
+  while (x < x1) { const [name, size, tint] = CITY[i % CITY.length]; model(ctx, `commercial/${name}.glb`, { pos: [x + size / 2, 0.06, zFront - size / 2], size, tint, gloss: 0.85, haze: HAZE }); x += size + 1.2; i++; }
+  // a far skyline behind it, more hazed, so a high camera sees city to the horizon (not the yard world's striped lawn)
+  // (sized for 20-24 m tall: the slim towers are four times taller than wide; a pale neutral tint, well hazed)
+  const SKY = [["low-detail-building-a", 5.5], ["low-detail-building-wide-a", 19], ["low-detail-building-d", 6.2], ["low-detail-building-k", 7], ["low-detail-building-wide-b", 18], ["low-detail-building-g", 5.2]];
+  for (let sx = x0 - 20, j = 0; sx < x1 + 20; j++) { const [name, size] = SKY[j % SKY.length]; model(ctx, `commercial/${name}.glb`, { pos: [sx + size / 2, 0, zFront - 26 - (j % 2) * 5], size, tint: "#d5dde4", gloss: 0.9, haze: ["#b9c6d4", 0.45] }); sx += size + 3; }
   // street trees along the far sidewalk (depth between the setting and the city)
-  for (let tx = x0 + 7, j = 0; tx < x1; tx += 9.5, j++) model(ctx, `suburban/${j % 3 ? "tree-large" : "tree-small"}.glb`, { pos: [tx, 0.06, zFront + 1.6], size: j % 3 ? 4.2 : 3.2, gloss: 0.9 });
-  // haze from just past the setting: the city softens with distance, the bay and the cut stay crisp
-  if (scene.fog) { scene.fog.near = 48; scene.fog.far = 150; }
+  for (let tx = x0 + 7, j = 0; tx < x1; tx += 9.5, j++) model(ctx, `suburban/${j % 3 ? "tree-large" : "tree-small"}.glb`, { pos: [tx, 0.06, zFront + 1.6], size: j % 3 ? 4.2 : 3.2, gloss: 0.9, haze: HAZE_NEAR });
 }
 
 /** a far row of taller buildings with lit windows (z: their front), so no empty field shows behind a setting */
@@ -125,7 +128,7 @@ export function backdrop(ctx, opts) {
         // the awning: red and white stripes, tilted out over the sidewalk
         const aw = new THREE.Group(); aw.position.set(0, 3.55, 0.45); aw.rotation.x = 0.5; g.add(aw);
         for (let i = 0; i < 12; i++) box(std({ color: C(i % 2 ? "#f4f0e8" : "#c8372f"), roughness: 0.7 }), (s.w - 0.4) / 12, 0.05, 1.7, -s.w / 2 + 0.2 + (i + 0.5) * ((s.w - 0.4) / 12), 0, 0.85, aw, 0.01);
-        const sg = new THREE.Mesh(new THREE.PlaneGeometry(s.w - 2.5, 0.9), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.sign ?? "CORNER STORE", "#2d3236", "#ffd34d"), emissive: new THREE.Color("#ffe9a8"), emissiveIntensity: 0.25, roughness: 0.5 }));
+        const sg = new THREE.Mesh(new THREE.PlaneGeometry(s.w - 2.5, 0.9), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.sign ?? "CORNER STORE", "#2d3236", "#ffd34d", s.w - 2.5, 0.9), emissive: new THREE.Color("#ffe9a8"), emissiveIntensity: 0.25, roughness: 0.5 }));
         sg.position.set(0, 4.55, 0.43); g.add(sg);
       }
     }
@@ -226,7 +229,7 @@ export function backdrop(ctx, opts) {
       box(pbrSized(ctx, "painted_plaster_wall", -back, H, 3, { color: C("#eef0f2") }), 0.4, H, -back, L0 - 0.2, top + H / 2, back / 2, scene, 0.02);
       const lampM = std({ color: C("#fff6dc"), emissive: C("#ffe9b0"), emissiveIntensity: 0.8, roughness: 0.3 });
       for (const x of [L0 + 3, (L0 + R0) / 2, R0 - 3]) { box(std({ color: C("#2d3236"), roughness: 0.5 }), 0.9, 0.12, 0.5, x, top + H - 0.6, back + 0.3, scene, 0.03); const l = box(lampM, 0.8, 0.06, 0.4, x, top + H - 0.68, back + 0.32, scene, 0.02); l.castShadow = false; }
-      const board = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.1), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.price ?? "WASH  $8", "#ffffff", "#1d5fb0"), roughness: 0.5 }));
+      const board = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.1), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.price ?? "WASH  $8", "#ffffff", "#1d5fb0", 2.4, 1.1), roughness: 0.5 }));
       board.position.set(L0 + 2.6, top + 3.0, back + 0.03); scene.add(board);
       for (const [x, z] of [[R0 + 1.2, -0.9], [R0 + 2.2, -0.7]]) model(ctx, "car/cone.glb", { pos: [x, top, z], size: 0.6 });
     } else {
@@ -238,7 +241,7 @@ export function backdrop(ctx, opts) {
     cyl(steel, 0.22, H, R0 - 0.3, top + H / 2, -0.8, scene, "y", 16);
     box(std({ color: C("#f2f4f6"), roughness: 0.5 }), R0 - L0 + 0.6, 0.5, -back + 0.6, (L0 + R0) / 2, top + H + 0.25, back / 2 - 0.1, scene, 0.04);
     if (ctx.gltf) { const trim = std({ color: C("#1d5fb0"), roughness: 0.4 }); box(trim, R0 - L0 + 0.7, 0.14, 0.2, (L0 + R0) / 2, top + H + 0.56, 0.22, scene, 0.03); box(trim, R0 - L0 + 0.7, 0.14, 0.2, (L0 + R0) / 2, top + H - 0.05, 0.22, scene, 0.03); }
-    const sg = new THREE.Mesh(new THREE.PlaneGeometry(R0 - L0 - 1, 0.9), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.sign ?? "CAR WASH", "#1d5fb0", "#ffffff"), emissive: new THREE.Color("#cfe4ff"), emissiveIntensity: 0.3, roughness: 0.5 }));
+    const sg = new THREE.Mesh(new THREE.PlaneGeometry(R0 - L0 - 1, 0.9), new THREE.MeshStandardMaterial({ map: sign(THREE, opts.sign ?? "CAR WASH", "#1d5fb0", "#ffffff", R0 - L0 - 1, 0.9), emissive: new THREE.Color("#cfe4ff"), emissiveIntensity: 0.3, roughness: 0.5 }));
     sg.position.set((L0 + R0) / 2, top + H + 0.25, 0.22); scene.add(sg);
     // a coin box and a hose reel on the side wall
     box(std({ color: C("#f0c419"), roughness: 0.5 }), 0.7, 1.1, 0.4, L0 + 0.25, top + 1.6, -2.5, scene, 0.05);

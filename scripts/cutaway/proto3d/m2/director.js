@@ -111,7 +111,10 @@ export const underground = (b) => !!b && b.max[1] <= 0.5 && b.min[1] < -1.5;
  */
 export function liftSoil(layout, k, keep = null) {
   if (layout.camera?.home || !k?.pos) return k;
-  if (measureKey(layout, k.pos, k.tgt).soil <= CAMERA_LIMITS.soilMax) return k;
+  const m0 = measureKey(layout, k.pos, k.tgt);
+  if (m0.soil <= CAMERA_LIMITS.soilMax) return k;
+  // (a subject the shot holds is never lost by the lift; a shot of something else, beside the lot, has none to lose)
+  const hadSubject = m0.subject >= CAMERA_LIMITS.subjectMin + 0.01;
   // what must stay in is the part above ground (a build that reaches down into its cut keeps its top)
   if (keep && keep.max[1] > 0) keep = { min: [keep.min[0], Math.max(0, keep.min[1]), keep.min[2]], max: keep.max };
   let best = k;
@@ -119,7 +122,7 @@ export function liftSoil(layout, k, keep = null) {
     const up = (p) => [p[0], +(p[1] + dy).toFixed(3), p[2]], q = { ...k, pos: up(k.pos), tgt: up(k.tgt) };
     if (keep) { const r = projectBox(q.pos, q.tgt, keep); if (r.behind || r.y1 > 1.0) break; }
     const m = measureKey(layout, q.pos, q.tgt);
-    if (m.subject < CAMERA_LIMITS.subjectMin) break;
+    if (hadSubject && m.subject < CAMERA_LIMITS.subjectMin) break;
     best = q;
     if (m.soil <= CAMERA_LIMITS.soilMax) break;
   }
@@ -197,6 +200,10 @@ export function directCamera(layout, shots, marks) {
   // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
   const anchor = (k, box, s) => {
     let p = passes(k); if (p.ok) return { k, m: p.m, how: null };
+    // a shot its own parts fill (a third of the width or more), with little open lawn or sky, is not lost: it need not
+    // hold the main subject too (the soap reaching a stream beside the lot, 20 m from the car wash's cut)
+    const own = projectBox(k.pos, k.tgt, box);
+    if (!layout.camera?.home && !own.behind && own.w >= 0.35 && p.m.empty <= CAMERA_LIMITS.emptyMax - 0.02) return { k, m: p.m, how: null };
     // a re-aim may not push the shot's own parts out (a soap flow re-aimed away from the creek it runs into)
     const keeps = (q) => { const r = projectBox(q.pos, q.tgt, box); return !r.behind && Math.min(1, r.x1) - Math.max(0, r.x0) >= 0.8 * Math.min(1, r.x1 - r.x0); };
     for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok && keeps(q)) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
@@ -206,6 +213,24 @@ export function directCamera(layout, shots, marks) {
     return { k: home, m: passes(home).m, how: "replaced by the home view" };
   };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
+  // what a shot's sentence is about: its showing part (the mud on the paint), on the "Add ..." line all it adds
+  const boxOf = (p) => { try { return focusOf(p, cut); } catch { return null; } };
+  const subjectOf = (s, box) => {
+    const role = s.at?.s;
+    if (role === "finish" && added.length) return union(added.map(boxOf).filter(Boolean));
+    const b = (layout.beats ?? []).find((x) => x.s === role), p = b?.shows && parts.get(b.shows.p);
+    return (p && boxOf(p)) ?? box;
+  };
+  // the camera moves toward what the sentence is about, never away: its subject never gets smaller on screen than in the
+  // shot before (unless it no longer fits the frame); a shot that would shrink it pushes in along the current view
+  const pushToward = (k, s, box) => {
+    const sb = subjectOf(s, box), before = projectBox(cur.pos, cur.tgt, sb), after = projectBox(k.pos, k.tgt, sb);
+    if (before.behind || after.behind || before.w > 0.85 || after.w >= before.w * 0.98) return k;
+    const f = frameBox(sb, { view: sub(cur.pos, cur.tgt), width: Math.min(0.85, Math.max(before.w * 1.25, 0.3)), zone: "center", minField: 0 });
+    const q = underground(sb) ? { pos: f.pos, tgt: f.tgt } : liftSoil(layout, { pos: f.pos, tgt: f.tgt }, sb);
+    notes.push(`shot at ${s.t.toFixed(2)} s: pushed in on ${s.at?.s ?? "its subject"} (it would have shrunk from ${(before.w * 100).toFixed(0)}% to ${(after.w * 100).toFixed(0)}% of the width)`);
+    return q;
+  };
   // the hook object: the biggest solid thing the hook sentence acts on (the car, not the spray on it); the opening frame
   // holds it at least a quarter of the frame wide (its box at 36%: the box is wider than the car itself), with the
   // shot's other parts (the spray) beside it
@@ -249,6 +274,7 @@ export function directCamera(layout, shots, marks) {
       if (opening && !layout.camera?.home) k = hookClose(k, box, s);
       // the cut face at most ~35% of the frame, unless the sentence is about something underground
       if (!underground(box)) k = liftSoil(layout, k, box);
+      if (!opening && !layout.camera?.home) k = pushToward(k, s, box);
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
       if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }
@@ -264,11 +290,24 @@ export function directCamera(layout, shots, marks) {
   }
   // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
   const signPart = layout.parts.find((p) => p.kind === "sign");
-  const back0 = liftSoil(layout, scaleView(home, 1.18), build), back = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
+  const back0 = liftSoil(layout, scaleView(home, 1.18), build), back1 = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
   // the finished build stays in view with the sign beside it (the end card never hides what was built)
-  const toward = liftSoil(layout, signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), build]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72), build);
+  let toward = liftSoil(layout, signPart ? (() => { const f = frameBox(union([focusOf(signPart, cut), build]), { view: sub(home.pos, home.tgt), width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; })() : scaleView(home, 0.72), build);
+  // the end card wholly in the frame, 5% clear of every edge, from the moment it pops to the last frame: both end keys
+  // hold it (widened step by step if not)
+  let back = back1;
+  if (signPart) {
+    const sb = focusOf(signPart, cut), clear = (k) => { const r = projectBox(k.pos, k.tgt, sb); return !r.behind && r.x0 >= 0.05 && r.x1 <= 0.95 && r.y0 >= 0.05 && r.y1 <= 0.95; };
+    const holdSign = (k) => {
+      if (clear(k)) return k;
+      for (const w of [0.85, 0.78, 0.7, 0.62, 0.55]) { const f = frameBox(union([sb, build]), { view: sub(home.pos, home.tgt), width: w, zone: "center", minField: 0 }), q = { pos: f.pos, tgt: f.tgt }; if (clear(q)) { const l = liftSoil(layout, q, build); return clear(l) ? l : q; } }
+      notes.push("the end card could not be held clear of the frame's edges");
+      return k;
+    };
+    toward = holdSign(toward); back = holdSign(back);
+  }
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
   const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];

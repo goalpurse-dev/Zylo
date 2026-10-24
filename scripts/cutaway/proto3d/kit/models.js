@@ -27,6 +27,8 @@ export function model(ctx, file, opts = {}, onReady = null) {
       // its own material (a tint must not colour every other copy); a little sheen, like the toy plastic of the props
       o.material = o.material.clone();
       if (opts.tint) o.material.color = new THREE.Color(opts.tint);
+      // distance haze baked into the far city (a scene fog hazed the whole build too whenever the camera stood back)
+      if (opts.haze) { o.material.emissive = new THREE.Color(opts.haze[0]); o.material.emissiveIntensity = opts.haze[1]; }
       o.material.roughness = opts.gloss ?? 0.55;
       o.material.envMapIntensity = 0.8;
     });

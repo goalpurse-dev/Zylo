@@ -32,9 +32,13 @@ export function runLayout(ctx, layout, timeline, { endCard = true, look = null }
   const cam = cameraPath(keys);
   return {
     parts: built,
-    update(t, camera) {
+    // camT: the camera's own time (the flicker check holds the scene at t and moves only the camera)
+    update(t, camera, camT = t) {
       for (const o of list) o.update(t);
-      if (look) { camera.position.set(look[0], look[1], look[2]); camera.lookAt(look[3], look[4], look[5]); } else cam.apply(camera, t);
+      // parts that read another's state (the car's foam from the wash arch) see this moment's, not the last frame's: a
+      // still rendered out of order showed stale foam
+      if (ctx.shared && Object.keys(ctx.shared).length) for (const o of list) o.update(t);
+      if (look) { camera.position.set(look[0], look[1], look[2]); camera.lookAt(look[3], look[4], look[5]); } else cam.apply(camera, camT);
     },
   };
 }

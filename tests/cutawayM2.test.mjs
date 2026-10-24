@@ -392,3 +392,42 @@ test("m2 look: the cut face at most ~35% of a frame above ground, the hook car a
   // the approved pair keep their own framing (their home view is hand-set)
   assert.ok(underground({ min: [0, -4.8, 0], max: [1, -1.4, 1] }) && !underground({ min: [0, -0.9, 0], max: [1, 0.3, 1] }));
 });
+
+import { signFit } from "../scripts/cutaway/proto3d/kit/signText.js";
+import { signBlocked } from "../scripts/cutaway/proto3d/m2/framing.js";
+import { clarityChecks } from "../scripts/cutaway/proto3d/m2/clarity.js";
+import { buildAss as buildCaptions } from "../render-worker/src/cutawayFinalPlan.mjs";
+import { jitter } from "../scripts/cutaway/proto3d/m2/flickerCheck.mjs";
+test("m2 car wash review fixes: toward the mud, a real creek, no spoil pile, true signs, a clear end card, no flicker", () => {
+  const { layout, before, sentences, words } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_car_wash_six.json", import.meta.url), "utf8"));
+  const tl = compile(layout, words, words.at(-1).e + 0.1, { roles: sentences.map((s) => s.role) }), cut = layout.world.cut;
+  const pts = previewTimes(tl, layout), at = (r) => pts.find((p) => p.role === r).t, box = (id) => focusOf(layout.parts.find((p) => p.id === id), cut);
+  const wAt = (t, id) => { const k = cameraAt(tl.camera.end, t); return projectBox(k.pos, k.tgt, box(id)).w; };
+  // 2. "the mud just smears on the paint": the camera pushes in, the mud grows on screen
+  assert.ok(wAt(at("problem"), "mudSmear") > wAt(at("hook"), "mudSmear") * 1.1);
+  assert.deepEqual(timelineChecks(layout, tl).problems, []);
+  // 3. no creek on the paved lot (the old layout had one; the check names it), the soap reaches the stream through a drain and a pipe
+  assert.ok(clarityChecks(before, sentences).problems.some((p) => /creek cannot run across/.test(p)));
+  assert.ok(!clarityChecks(layout, sentences).problems.some((p) => /creek cannot run across/.test(p)));
+  // (the frame holds the end of the journey: the drain, the pipe and the stream whole, the soap arriving from the left)
+  const kc = cameraAt(tl.camera.end, at("problem2"));
+  for (const id of ["stormDrain", "stormPipe", "creek"]) { const r = projectBox(kc.pos, kc.tgt, box(id)); assert.ok(!r.behind && r.x0 >= -0.02 && r.x1 <= 1.02, id); }
+  assert.ok(projectBox(kc.pos, kc.tgt, box("creek")).w >= 0.25 && projectBox(kc.pos, kc.tgt, box("soapFlow")).x1 > 0.3);
+  // 4. in a paved setting the dug dirt is hauled away
+  assert.equal(layout.parts.find((p) => p.kind === "dig").params.haul, true);
+  // 5. sign lettering: the canvas has the board's proportions, the text fits inside its margins (never squeezed)
+  for (const [w, h, n] of [[13, 0.9, 15], [2.4, 1.1, 8], [9.5, 0.9, 12]]) {
+    const f = signFit(w, h, (px) => px * 0.62 * n);
+    assert.ok(Math.abs(f.aspectCanvas - f.aspectBoard) / f.aspectBoard < 0.02);
+    assert.ok(f.tw <= f.cw * 0.88 + 1);
+  }
+  for (const f of ["../scripts/cutaway/proto3d/kit/backdrops.js", "../scripts/cutaway/proto3d/kit/signText.js", "../scripts/cutaway/proto3d/m2/vending.js"]) assert.doesNotMatch(readFileSync(new URL(f, import.meta.url), "utf8"), /fillText\([^)]*,[^)]*,[^)]*,[^)]*\)/);
+  // 6. the end card stands free (the old one stood under the canopy) and the captions stop when it pops
+  assert.ok(signBlocked(before).length > 0 && signBlocked(layout).length === 0);
+  const ass = buildCaptions({ words, until: tl.marks.signPop }).split("\n").filter((l) => l.startsWith("Dialogue"));
+  const toS = (s) => { const [h, m, x] = s.split(":"); return +h * 3600 + +m * 60 + +x; };
+  assert.ok(ass.every((l) => toS(l.split(",")[2]) <= tl.marks.signPop + 0.01));
+  // 1. the flicker measure: a still frame has none, a sawtooth does
+  const a = Buffer.alloc(100, 120), b = Buffer.from(a.map((v, i) => (i % 2 ? 200 : 40))), c = Buffer.alloc(100, 120);
+  assert.equal(jitter(a, a, a, 10, [0, 0, 10, 10]), 0); assert.ok(jitter(a, b, c, 10, [0, 0, 10, 10]) > 100);
+});
