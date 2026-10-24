@@ -84,9 +84,9 @@ REVOKE ALL ON public.cutaway_layouts FROM anon, authenticated;
 CREATE TABLE IF NOT EXISTS public.cutaway_settings (
   id                   integer PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   paid_calls           boolean NOT NULL DEFAULT true,
-  daily_cap_usd        numeric NOT NULL DEFAULT 25,
-  window_cap_usd       numeric NOT NULL DEFAULT 10,
-  user_daily_usd       numeric NOT NULL DEFAULT 5,
+  daily_cap_usd        numeric NOT NULL DEFAULT 3,
+  window_cap_usd       numeric NOT NULL DEFAULT 3,
+  user_daily_usd       numeric NOT NULL DEFAULT 1.5,
   user_max_running     integer NOT NULL DEFAULT 2,
   user_starts_per_hour integer NOT NULL DEFAULT 10,
   user_fail_streak     integer NOT NULL DEFAULT 3,
@@ -180,10 +180,10 @@ BEGIN
   SELECT max(finished_at) INTO v_last_fail FROM public.cutaway_runs WHERE user_id = p_user AND status = 'failed';
   SELECT max(finished_at) INTO v_balance FROM public.cutaway_runs WHERE error_code = 'PROVIDER_BALANCE' AND finished_at > now() - interval '1 hour';
   RETURN jsonb_build_object(
-    'spent_24h', COALESCE((SELECT sum(cost_usd) FROM public.cutaway_runs WHERE created_at > now() - interval '24 hours'), 0),
-    'spent_3h', COALESCE((SELECT sum(cost_usd) FROM public.cutaway_runs WHERE created_at > now() - interval '3 hours'), 0),
+    'spent_24h', COALESCE((SELECT sum(CASE WHEN status IN ('done', 'failed') THEN cost_usd ELSE greatest(cost_usd, credits_charged * 0.01) END) FROM public.cutaway_runs WHERE created_at > now() - interval '24 hours'), 0),
+    'spent_3h', COALESCE((SELECT sum(CASE WHEN status IN ('done', 'failed') THEN cost_usd ELSE greatest(cost_usd, credits_charged * 0.01) END) FROM public.cutaway_runs WHERE created_at > now() - interval '3 hours'), 0),
     'running', (SELECT count(*) FROM public.cutaway_runs WHERE status NOT IN ('done', 'failed')),
-    'user_spent_24h', COALESCE((SELECT sum(cost_usd) FROM public.cutaway_runs WHERE user_id = p_user AND created_at > now() - interval '24 hours'), 0),
+    'user_spent_24h', COALESCE((SELECT sum(CASE WHEN status IN ('done', 'failed') THEN cost_usd ELSE greatest(cost_usd, credits_charged * 0.01) END) FROM public.cutaway_runs WHERE user_id = p_user AND created_at > now() - interval '24 hours'), 0),
     'user_running', (SELECT count(*) FROM public.cutaway_runs WHERE user_id = p_user AND status NOT IN ('done', 'failed')),
     'user_starts_1h', (SELECT count(*) FROM public.cutaway_runs WHERE user_id = p_user AND created_at > now() - interval '1 hour'),
     'user_fail_streak', v_streak,

@@ -5,9 +5,9 @@
 
 export const DEFAULT_SETTINGS = Object.freeze({
   paid_calls: true,
-  daily_cap_usd: 25,        // our provider spend across everyone in 24 h (planning, voice, checks, GPU)
-  window_cap_usd: 10,       // the same in any 3 hours (a burst can't spend the whole day at once)
-  user_daily_usd: 5,        // one user's videos in 24 h, at our cost (about 5 custom videos)
+  daily_cap_usd: 3,         // our provider spend across everyone in 24 h, the owner's test runs included (launch: lean)
+  window_cap_usd: 3,        // the same in any 3 hours (raise it below the daily cap when the daily cap goes up)
+  user_daily_usd: 1.5,      // one user's videos in 24 h, at our cost (about 6 premade or 1 custom)
   user_max_running: 2,      // one user's videos being made at once
   user_starts_per_hour: 10,
   user_fail_streak: 3,      // failed in a row: a 30-minute pause, so a topic that keeps failing can't keep spending
