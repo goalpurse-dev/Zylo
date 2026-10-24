@@ -1,0 +1,17 @@
+{
+ "app": "zyvo-cutaway-render",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:d964840a890424d6f0c7c60e886f6dc17fb2dc1fa4b53d7dbc8287feb77c2bf2",
+ "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
+ "templateId": "xo79228irp",
+ "endpointId": "f66astc0vrus92",
+ "gpus": [
+  "NVIDIA RTX A4000",
+  "NVIDIA RTX 4000 Ada Generation",
+  "NVIDIA RTX A4500",
+  "NVIDIA RTX 2000 Ada Generation"
+ ],
+ "workersMax": 4,
+ "idleTimeout": 5,
+ "executionTimeoutMs": 2700000,
+ "createdAt": "2026-10-24T21:31:11.147Z"
+}

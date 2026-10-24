@@ -18,7 +18,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), image = argv[argv.indexOf("--image") + 1], PROD = argv.includes("--prod");
 const env = Object.fromEntries(fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_0-9]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
 const NAME = PROD ? "zyvo-cutaway-render" : "zyvo-cutaway-render-staging";
-const KEY = PROD ? env.CUTAWAY_RUNPOD_PROD_API_KEY : env.RUNPOD_API_KEY, FLY_TOKEN = PROD ? env.CUTAWAY_FLY_PROD_TOKEN : env.FLY_CUTAWAY_STAGING_TOKEN;
+// the owner's choice (2026-10-25): production reuses the existing RunPod key, and without a production Fly token it pulls
+// the image from the staging app's registry (the same digest is pushed there) with the staging registry login
+const KEY = PROD ? env.CUTAWAY_RUNPOD_PROD_API_KEY ?? env.RUNPOD_API_KEY : env.RUNPOD_API_KEY;
+const REG = PROD && env.CUTAWAY_FLY_PROD_TOKEN ? { name: NAME, token: env.CUTAWAY_FLY_PROD_TOKEN } : { name: "zyvo-cutaway-render-staging", token: env.FLY_CUTAWAY_STAGING_TOKEN };
+const FLY_TOKEN = REG.token;
 if (!KEY || !FLY_TOKEN) throw new Error(`missing ${PROD ? "CUTAWAY_RUNPOD_PROD_API_KEY or CUTAWAY_FLY_PROD_TOKEN" : "RUNPOD_API_KEY or FLY_CUTAWAY_STAGING_TOKEN"} in .env.local`);
 // the 16 GB workstation tier: RunPod schedules by price tier, and the 24 GB tier (L4, A5000, 3090) also hands out MIG slices
 // (a slice of an RTX PRO 6000 Blackwell came up), which have no graphics: WebGL falls back to software there
@@ -26,14 +30,16 @@ export const GPUS = ["NVIDIA RTX A4000", "NVIDIA RTX 4000 Ada Generation", "NVID
 const rp = async (p, init = {}) => { const r = await fetch(`https://rest.runpod.io/v1${p}`, { ...init, headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" } }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; } if (!r.ok) throw new Error(`${init.method ?? "GET"} ${p}: ${r.status} ${t.slice(0, 300)}`); return j; };
 
 const auths = await rp("/containerregistryauth").catch(() => []);
-let auth = (Array.isArray(auths) ? auths : []).find((a) => a.name === NAME);
-if (!auth) auth = await rp("/containerregistryauth", { method: "POST", body: JSON.stringify({ name: NAME, username: "x", password: FLY_TOKEN }) });
+let auth = (Array.isArray(auths) ? auths : []).find((a) => a.name === REG.name);
+if (!auth) auth = await rp("/containerregistryauth", { method: "POST", body: JSON.stringify({ name: REG.name, username: "x", password: FLY_TOKEN }) });
+if (!image.startsWith(`registry.fly.io/${REG.name}@`) && !image.startsWith(`registry.fly.io/${REG.name}:`)) throw new Error(`the image must be in ${REG.name}'s registry (the login is for that app)`);
 console.log("registry auth", auth.id);
 
 const templates = await rp("/templates").catch(() => []);
 // the driver capabilities go in the template env too: the GPU test pod got them as container env, and a serverless
 // worker with them only in the image fell back to Mesa (llvmpipe). The model keys: RunPod secrets in production.
-const modelKeys = PROD
+// --env-keys: the existing keys of .env.local go into the template env (the owner's choice: no separate production keys)
+const modelKeys = PROD && !argv.includes("--env-keys")
   ? { ANTHROPIC_API_KEY: "{{ RUNPOD_SECRET_cutaway_anthropic }}", ELEVENLABS_KEY: "{{ RUNPOD_SECRET_cutaway_elevenlabs }}" }
   : { ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY ?? "", ELEVENLABS_KEY: env.ELEVENLABS_KEY ?? "" };
 const tname = `${NAME}-${image.split("@sha256:")[1]?.slice(0, 12) ?? "latest"}`;

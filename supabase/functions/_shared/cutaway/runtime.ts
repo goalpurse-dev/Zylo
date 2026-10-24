@@ -19,10 +19,11 @@ const env = (k: string) => (Deno.env.get(k) ?? "").trim();
 const SUPABASE_URL = env("SUPABASE_URL");
 export const CONFIG = {
   runpodKey: env("CUTAWAY_RUNPOD_API_KEY"), endpoint: env("CUTAWAY_RUNPOD_ENDPOINT"),
+  // the owner's choice (2026-10-25): the existing model keys are reused; a CUTAWAY_* secret, if ever set, takes over.
+  // (Long Form's FLY_API_TOKEN is scoped to zyvo-render: Fly answered 403 for the Cutaway apps, so it isn't reused)
   flyToken: env("CUTAWAY_FLY_API_TOKEN"), flyApp: env("CUTAWAY_FLY_APP") || "zyvo-cutaway-render", image: env("CUTAWAY_RENDER_IMAGE"),
   callbackSecret: env("CUTAWAY_CALLBACK_SECRET"),
-  // Cutaway's own production keys only (never the other products' shared ANTHROPIC_API_KEY)
-  anthropic: env("CUTAWAY_ANTHROPIC_API_KEY"), elevenlabs: env("CUTAWAY_ELEVENLABS_KEY"),
+  anthropic: env("CUTAWAY_ANTHROPIC_API_KEY") || env("ANTHROPIC_API_KEY"), elevenlabs: env("CUTAWAY_ELEVENLABS_KEY") || env("ELEVENLABS_KEY"),
 };
 const CALLBACK_URL = `${SUPABASE_URL}/functions/v1/cutaway-callback`;
 const DAY = 86400;
@@ -81,7 +82,8 @@ const FLY_GUEST: Record<string, any> = { plan: { cpu_kind: "performance", cpus: 
 async function startFly(run: any, role: string, job: any, name: string) {
   if (!CONFIG.flyToken || !CONFIG.image) throw Object.assign(new Error("the Fly fallback is not configured"), { code: "NOT_CONFIGURED" });
   const res = await fetch(`https://api.machines.dev/v1/apps/${CONFIG.flyApp}/machines`, {
-    method: "POST", headers: { Authorization: `Bearer ${CONFIG.flyToken}`, "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
+    // (a deploy token is "FlyV1 fm2_...": sent as it is; an older token goes after "Bearer")
+    method: "POST", headers: { Authorization: CONFIG.flyToken.startsWith("FlyV1 ") ? CONFIG.flyToken : `Bearer ${CONFIG.flyToken}`, "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
     body: JSON.stringify({
       name, region: "fra",
       config: {
