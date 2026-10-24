@@ -65,7 +65,8 @@ export function settle(ctx, p, api) {
       const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
       for (const g of grains) {
         const k = clamp((sd - g.d * 0.5) / 0.5); // each grain sinks over half the cue, staggered
-        g.s.visible = fill > 0.3 && k < 0.98;
+        // (the grains show from the sand's own moment: before it, a tank full of drifting grains read as clutter)
+        g.s.visible = fill > 0.3 && (!api.cue("sand") || sd > 0.001) && k < 0.98;
         g.s.position.set(g.x, g.y + (b.y0 + bed + 0.06 - g.y) * k * k, g.z);
       }
       sandBed.visible = bed > 0.005; sandBed.scale.y = Math.max(0.001, bed); sandBed.position.y = b.y0 + bed / 2;

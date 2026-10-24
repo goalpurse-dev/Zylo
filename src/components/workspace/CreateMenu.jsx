@@ -9,6 +9,7 @@ import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
 import { CUTAWAY_ENABLED, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
+import useCutawayAccess from "../viral-tools/cutaway-explainer/api/cutawayAccess";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
 
@@ -413,7 +414,8 @@ const MENU_TOOLS = CREATE_TOOLS.filter((t) => !HIDDEN_SHORT_FORM_TOOLS.includes(
 export function shortFormTools(flagsOn = {}) {
   const tools = [...MENU_TOOLS];
   for (const extra of FLAGGED_CREATE_TOOLS) {
-    if (!(extra.flag ? flagsOn[extra.flag] === true : extra.enabled === true)) continue;
+    // a build switch can also be opened per viewer (Cutaway: the server says this signed-in user is a tester)
+    if (!(extra.flag ? flagsOn[extra.flag] === true : extra.enabled === true || flagsOn[extra.id] === true)) continue;
     const at = tools.findIndex((t) => t.id === extra.after);
     tools.splice(at < 0 ? tools.length : at + 1, 0, extra);
   }
@@ -423,7 +425,9 @@ export function shortFormTools(flagsOn = {}) {
 export function useShortFormTools() {
   const auth = useAuth();
   const blocky = useFeatureFlag(BLOCKY_STORIES_FLAG, auth?.user?.id);
-  return useMemo(() => shortFormTools({ [BLOCKY_STORIES_FLAG]: blocky.enabled }), [blocky.enabled]);
+  // Cutaway while it is off for customers: shown to a tester (the cutaway-api `access` action, once per session)
+  const cutaway = useCutawayAccess();
+  return useMemo(() => shortFormTools({ [BLOCKY_STORIES_FLAG]: blocky.enabled, "cutaway-explainer": cutaway.tester }), [blocky.enabled, cutaway.tester]);
 }
 
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */

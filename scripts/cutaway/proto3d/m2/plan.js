@@ -4,6 +4,7 @@
 import { KIND_CHANNELS } from "./parts.js";
 import { homeView, projectBox, SHOTS } from "./director.js";
 import { liftToFloor, placeLifeProps, placeSign } from "./framing.js";
+import { layoutRules } from "./layoutRules.js";
 
 export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
@@ -86,7 +87,9 @@ export function layoutFromScene(scene, { key, title, roles }) {
   const rewrites = (Array.isArray(scene.rewrites) ? scene.rewrites : []).filter((x) => x?.role && x?.text).map((x) => ({ role: String(x.role), text: String(x.text) }));
   // the side-story props (a flag, a book, a newspaper) stand beside the action, inside the home frame
   const placed = placeLifeProps(raw, homeView(raw), projectBox);
-  const signed = placeSign(liftToFloor(placed.layout), homeView(placed.layout), projectBox);
+  // the setting rules (floor, haul, trees), then the readability rules (layoutRules.js), then the end sign
+  const ruled = layoutRules(liftToFloor(placed.layout)).layout;
+  const signed = placeSign(ruled, homeView(ruled), projectBox);
   return { layout: signed.layout, problems, moved: placed.moved, rewrites };
 }
 

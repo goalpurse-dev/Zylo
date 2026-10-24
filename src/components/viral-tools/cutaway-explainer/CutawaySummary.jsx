@@ -21,7 +21,7 @@ function Row({ icon: Icon, label, value, d }) {
  * nothing looks changeable for a video that already exists.
  */
 export default function CutawaySummary({ run, onNew, onMakeLike }) {
-  const kind = run.example ? "Premade topic" : quoteTopic(run.topic, 30).kind === "premade" ? "Premade topic" : "Custom topic";
+  const kind = run.example ? "Premade topic" : (run.kind ?? quoteTopic(run.topic, 30).kind) === "premade" ? "Premade topic" : "Custom topic";
   const spent = run.example ? "Example" : run.credits != null ? <span className="inline-flex items-center gap-1"><CreditIcon />{run.credits}{run.demo ? " · not charged in the demo" : ""}</span> : "—";
   return (
     <section className="relative flex min-h-[560px] flex-col overflow-hidden rounded-2xl border border-cutaway/[0.13] bg-[#0C0F0D] lg:h-full lg:min-h-0" aria-label="Generation finished">

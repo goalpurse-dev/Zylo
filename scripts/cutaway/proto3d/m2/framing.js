@@ -209,14 +209,18 @@ export function placeSign(L, home, project) {
   const cut = cutOf(L), subj = subjectBox(L), sr = project(home.pos, home.tgt, subj);
   const cover = (q) => { const r = project(home.pos, home.tgt, focusOf(q, cut)); const ix = Math.max(0, Math.min(r.x1, sr.x1) - Math.max(r.x0, sr.x0)), iy = Math.max(0, Math.min(r.y1, sr.y1) - Math.max(r.y0, sr.y0)); return { share: (ix * iy) / Math.max(1e-6, sr.w * sr.h), inFrame: !r.behind && r.x0 > 0.02 && r.x1 < 0.98, r }; };
   const others = signObstacles(L, sign), hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2 && b.min[1] < o.max[1]);
-  if (cover(sign).share <= 0.1 && !hits(focusOf(sign, cut))) return { layout: L, moved: false };
+  // seen from the camera: nothing of the setting between the home view and the board (a spot behind the bay's back wall
+  // was free but hidden)
+  const walls = [...sceneryBoxes(L), ...worldTrees(L), ...L.parts.filter((p) => p !== sign).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter((b) => b && b.max[1] > 1.5 && b.min[1] > -0.5)];
+  const seen = (b) => { const pts = [[(b.min[0] + b.max[0]) / 2, b.max[1] - 0.5, b.max[2]], [b.min[0] + 0.4, b.max[1] - 0.5, b.max[2]], [b.max[0] - 0.4, b.max[1] - 0.5, b.max[2]]]; return pts.every((p) => { const d = sub(p, home.pos), len = Math.hypot(...d), u = mul(d, 1 / len); return !walls.some((w) => hitBox(home.pos, u, w) < len - 0.3); }); };
+  if (cover(sign).share <= 0.1 && !hits(focusOf(sign, cut)) && seen(focusOf(sign, cut))) return { layout: L, moved: false };
   const [, y0, z0] = sign.params.at;
   // spots nearest the build first (1 m apart, either side), each at the sign's size, then a little smaller (1.0)
   const cands = [], dxs = Array.from({ length: 33 }, (_, i) => (i === 0 ? 0 : (i % 2 ? 1 : -1) * Math.ceil(i / 2)));
   for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz], scale });
   // first a spot inside the home view; else the free spot nearest the build (the end views frame the sign with it)
   for (const need of [true, false]) {
-    const ok = cands.map(({ at, scale }) => ({ ...sign, params: { ...sign.params, at, scale } })).filter((q) => { const c = cover(q); return c.share <= 0.1 && (c.inFrame || !need) && !hits(focusOf(q, cut)); });
+    const ok = cands.map(({ at, scale }) => ({ ...sign, params: { ...sign.params, at, scale } })).filter((q) => { const c = cover(q); return c.share <= 0.1 && (c.inFrame || !need) && !hits(focusOf(q, cut)) && seen(focusOf(q, cut)); });
     // nearest: the one that widens the build's span the least (the end frame holds them both)
     const B = union([subj, ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((o) => o && o.max[1] > 0.3 && o.max[0] - o.min[0] < 30)]), near = (q) => { const b = focusOf(q, cut); return Math.max(B.max[0], b.max[0]) - Math.min(B.min[0], b.min[0]); };
     if (ok.length) { const q = ok.sort((a, b) => near(a) - near(b))[0]; return { layout: { ...L, parts: L.parts.map((p) => (p === sign ? q : p)) }, moved: true }; }

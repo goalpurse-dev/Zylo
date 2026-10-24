@@ -41,7 +41,7 @@ async function previewStills({ proto, layout, times, out }) {
   return times.map((_, i) => path.join(out, `f_${String(i).padStart(3, "0")}.png`));
 }
 
-export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS, resume = false, maxUsd = Infinity }) {
+export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS, resume = false, maxUsd = Infinity, onReady = null, render = true, only = null }) {
   fs.mkdirSync(out, { recursive: true });
   const t0 = Date.now(), apiKey = loadKey(), cacheDir = path.join(out, "steps");
   const save = (f, d) => fs.writeFileSync(path.join(out, f), JSON.stringify(d, null, 1));
@@ -143,8 +143,13 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
     if (!blocking) fs.writeFileSync(accepted, JSON.stringify(layout, null, 1));
     if (blocking) { P({ stage: "failed", reason: "preview", problems: still.map((f) => `${f.role}: ${f.problem}`) }); return { ...report, ok: false, vision: visionReport, timelineChecks: checks, voiceUsd: vUsd, totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4) }; }
   }
+  // the plan is ready (it passed the gate): the production worker uploads it here, so a retry or the CPU fallback renders
+  // it without paying for it again; render: false stops here (the fallback's plan machine)
+  const ready = { layout, voice, words, roles, script: plan.script, costs: { planUsd: plan.costUsd, voiceUsd: vUsd, checksUsd: +extraUsd.toFixed(4) } };
+  if (onReady) await onReady(ready);
+  if (render === false) { save("plan_ready.json", { ...report, ok: true, voiceUsd: vUsd, checksUsd: +extraUsd.toFixed(4), totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4) }); return { ...report, ok: true, ready, voiceUsd: vUsd, checksUsd: +extraUsd.toFixed(4), totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4) }; }
   // the full render, the sound, the checks on the result
-  const made = await makeVideo({ layout, voice, words, out, proto, ff, roles, wt, onProgress, noend: endCard === false });
+  const made = await makeVideo({ layout, voice, words, out, proto, ff, roles, wt, onProgress, noend: endCard === false, only });
   P({ stage: "render", step: "checks", pct: 98 });
   const measured = renderChecks({ ff, video: made.files.end, out: path.join(out, "checks") });
   const final = { ...report, ok: true, voiceUsd: vUsd, checksUsd: +extraUsd.toFixed(4), totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4), timelineChecks: checks, vision: visionReport, measured, timing: made.timing, files: made.files, director: made.director, seconds: (Date.now() - t0) / 1000 };

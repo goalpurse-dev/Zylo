@@ -1,6 +1,6 @@
 # M3: the Cutaway render worker. One image for both renderers:
 #  - RunPod serverless GPU (the default CMD: handler.py; WebGL on the NVIDIA GPU through ANGLE-on-EGL), and
-#  - the Fly CPU fallback (CMD overridden: node .../m3/worker.mjs, mode "cpu", SwiftShader).
+#  - the Fly CPU fallback (CMD overridden: node .../m3/videoJob.mjs with CUTAWAY_JOB: the plan, chunk and mix roles).
 # The build context is assembled by m3/buildContext.mjs (proto = the render folder's packages and R1 textures,
 # wt = the kit, the M2 code and the final-mix modules, fonts = the caption font).
 FROM node:22-trixie
@@ -25,7 +25,11 @@ RUN mkdir -p /usr/share/glvnd/egl_vendor.d /etc/vulkan/icd.d \
  && echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}' > /usr/share/glvnd/egl_vendor.d/10_nvidia.json \
  && echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libGLX_nvidia.so.0","api_version":"1.3"}}' > /etc/vulkan/icd.d/nvidia_icd.json
 
-RUN pip3 install --no-cache-dir --break-system-packages "runpod>=1.7,<2"
+RUN pip3 install --no-cache-dir --break-system-packages "runpod>=1.7,<2" "faster-whisper==1.1.1" numpy
+
+# the voice's word check (m2/transcribe.py): its model is baked in, so no job downloads it
+ENV HF_HOME=/app/hf PYTHON=python3
+RUN python3 -c "from faster_whisper import WhisperModel; WhisperModel('small.en', device='cpu', compute_type='int8')"
 
 WORKDIR /app/proto
 COPY proto/package.json proto/package-lock.json ./

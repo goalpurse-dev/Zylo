@@ -15,7 +15,8 @@ import { premadeByKey } from "../../../../supabase/functions/_shared/cutaway/top
 const here = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), arg = (k) => argv[argv.indexOf(`--${k}`) + 1];
 const outDir = arg("out"), proto = arg("proto"), ff = arg("ff"), log = arg("log");
-const keys = []; for (let i = 0; i < argv.length; i++) { if (argv[i].startsWith("--")) { i++; continue; } keys.push(argv[i]); }
+const FLAGS = new Set(["--planOnly"]);
+const keys = []; for (let i = 0; i < argv.length; i++) { if (FLAGS.has(argv[i])) continue; if (argv[i].startsWith("--")) { i++; continue; } keys.push(argv[i]); }
 const apiKey = loadKey();
 const lastOpening = () => { try { return JSON.parse(fs.readFileSync(OPENINGS, "utf8").trim().split("\n").at(-1)); } catch { return null; } };
 const topicOf = (k) => `How ${/^[aeiou]/i.test(premadeByKey(k).topic) ? "an" : "a"} ${premadeByKey(k).topic.toLowerCase().replace(/^atm$/, "ATM")} works`;
@@ -38,10 +39,17 @@ if (pending.length) {
     console.log(p.k, `scene plan $${r.costUsd} (batch)`);
   }
 }
-// 3. the rest of each topic, live (the scene plan now comes from the cache)
+// 3. the rest of each topic, live (the scene plan now comes from the cache). --planOnly: stop after the plan (free:
+// the scene plan is cached), so the draft frames (draftBeats.mjs) can be looked at before the voice and the check.
+// Each topic sees the same "last opening" step 1 planned with (a topic appending its own opening changed the next
+// one's script prompt, so its cached script missed and was paid for twice)
+const planOnly = argv.includes("--planOnly");
+const opening0 = (() => { try { return fs.readFileSync(OPENINGS, "utf8").trim().split("\n").at(-1); } catch { return ""; } })();
 for (const k of keys) {
-  const out = path.join(outDir, k);
-  const r = await runTopic({ topic: topicOf(k), out, proto, ff, lengthSec: 30, log });
+  const out = path.join(outDir, k), openings = path.join(outDir, `${k}.openings.jsonl`);
+  if (!fs.existsSync(path.join(out, "plan_report.json"))) fs.writeFileSync(openings, opening0 ? `${opening0}\n` : "");
+  if (planOnly) { const r = await runTopic({ topic: topicOf(k), out, proto, ff, lengthSec: 30, log, planOnly: true, openings }); console.log(k, "planned", `$${r.planUsd}`, (r.problems ?? []).join("; ")); continue; }
+  const r = await runTopic({ topic: topicOf(k), out, proto, ff, lengthSec: 30, log, openings, resume: fs.existsSync(path.join(out, "plan_report.json")) });
   console.log(k, r.ok ? "passed" : "did not pass", `$${r.totalUsd}`, (r.problems ?? []).join("; "));
   if (!r.ok) continue;
   const L = JSON.parse(fs.readFileSync(path.join(out, "layout.json"), "utf8")), facts = JSON.parse(fs.readFileSync(path.join(out, "script.json"), "utf8")).facts ?? [];

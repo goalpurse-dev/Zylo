@@ -1,0 +1,9 @@
+# M3 PRODUCTION: the Cutaway worker's Fly app. It holds the image in Fly's registry (the production RunPod endpoint pulls
+# it from registry.fly.io with a deploy token scoped to this app) and runs the CPU fallback as one-off machines (the
+# plan, chunk and mix roles of m3/videoJob.mjs), started by the server. No services, no always-on machine.
+# Never the Long Form app (zyvo-render).
+app = "zyvo-cutaway-render"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"

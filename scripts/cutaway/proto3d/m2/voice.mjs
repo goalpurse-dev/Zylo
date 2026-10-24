@@ -15,7 +15,7 @@ const PER_CHAR = 0.0002;
 // approved model at about $0.025 more a video.
 // Every take is transcribed locally and compared word by word with the script (voiceCheck.mjs, free). A failing take is
 // paid for again once; a second failure stops the video (the user is refunded).
-export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [], model = "eleven_multilingual_v2", check = true, python = "python" }) {
+export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [], model = "eleven_multilingual_v2", check = true, python = process.env.PYTHON ?? "python" }) {
   fs.mkdirSync(out, { recursive: true });
   const raw = path.join(out, "raw.mp3"), rawWords = path.join(out, "raw.words.json"), final = path.join(out, "voice.mp3");
   let usd = 0;

@@ -35,16 +35,19 @@ if (only) { // stills at given times for a quick look
   }
 } else {
   const n = Math.round(Number(secs) * Number(fps));
+  // FRAME_FROM / FRAME_TO: one chunk of the video (the CPU fallback splits a video over several machines; the chunks are
+  // joined by stream copy, so each is a whole x264 stream of its own frames)
+  const f0 = Math.max(0, Number(process.env.FRAME_FROM ?? 0)), f1 = Math.min(n, Number(process.env.FRAME_TO ?? n));
   const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
-  for (let f = 0; f < n; f++) {
+  for (let f = f0; f < f1; f++) {
     const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.95); }, f / Number(fps));
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }
   enc.stdin.end();
   await new Promise((r) => enc.on("close", r));
-  console.log(`rendered ${n} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+  console.log(`rendered ${f1 - f0} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 await browser.close();
 server.close();

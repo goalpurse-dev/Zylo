@@ -18,13 +18,20 @@ const cp = (src, dst, filter = () => true) => {
 };
 fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });
 cp(path.join(here, "Dockerfile.gpu"), path.join(out, "Dockerfile"));
-cp(path.join(here, "fly.staging.toml"), path.join(out, "fly.toml"));
+// --fly fly.production.toml for the production app (the staging app by default)
+const flyToml = argv.includes("--fly") ? argv[argv.indexOf("--fly") + 1] : "fly.staging.toml";
+cp(path.join(here, flyToml), path.join(out, "fly.toml"));
 cp(path.join(here, "handler.py"), path.join(out, "handler.py"));
 for (const f of ["package.json", "package-lock.json"]) cp(path.join(proto, f), path.join(out, "proto", f));
 cp(path.join(proto, "assets"), path.join(out, "proto", "assets"));
 const code = (f) => !/\.(json|jsonl|md)$/.test(f) || f === "package.json"; // no layouts, logs or notes
-for (const f of ["real.js", "full.html", "render.mjs", "speechEnd.mjs"]) cp(path.join(P3, f), path.join(out, "wt/scripts/cutaway/proto3d", f));
-for (const d of ["kit", "m2", "m3"]) cp(path.join(P3, d), path.join(out, "wt/scripts/cutaway/proto3d", d), (f, full) => !fs.statSync(full).isDirectory() && code(f) && !/Dockerfile|\.toml$|\.py$/.test(f));
+// (the production job plans too: the voice re-timer, the word check's transcriber and the shared topic, kit-check and
+// voice modules come along; approved layouts arrive in each job, never baked in)
+for (const f of ["real.js", "full.html", "render.mjs", "speechEnd.mjs", "voiceSilence.mjs"]) cp(path.join(P3, f), path.join(out, "wt/scripts/cutaway/proto3d", f));
+for (const d of ["kit", "m2", "m3"]) cp(path.join(P3, d), path.join(out, "wt/scripts/cutaway/proto3d", d), (f, full) => !fs.statSync(full).isDirectory() && code(f) && (f === "transcribe.py" || !/Dockerfile|\.toml$|\.py$/.test(f)));
+// ...except the planner's two worked examples, which it reads when it loads (without them every job failed at import)
+for (const k of ["landfill", "french_drain"]) cp(path.join(P3, "m2/layouts", `${k}.template.json`), path.join(out, "wt/scripts/cutaway/proto3d/m2/layouts", `${k}.template.json`));
+cp(path.join(WT, "supabase/functions/_shared/cutaway"), path.join(out, "wt/supabase/functions/_shared/cutaway"), (f) => f.endsWith(".js"));
 for (const f of ["cutawayFinal.mjs", "cutawayFinalPlan.mjs"]) cp(path.join(WT, "render-worker/src", f), path.join(out, "wt/render-worker/src", f));
 cp(path.join(WT, "render-worker/assets/sfx"), path.join(out, "wt/render-worker/assets/sfx"));
 cp(path.join(WT, "supabase/functions/_shared/fonts/LilitaOne-Regular.ttf"), path.join(out, "fonts/LilitaOne-Regular.ttf"));

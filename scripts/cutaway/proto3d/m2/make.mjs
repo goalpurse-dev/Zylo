@@ -37,7 +37,8 @@ export function syncProto(proto) {
 }
 
 // the caption font (Lilita One, OFL): the approved videos took it from the research folder
-export const FONTS = "C:/Users/Public/Zylo/research/seamless-niche/work/m2drain/fonts";
+// (a render server sets CUTAWAY_FONTS: the worker image keeps it in /app/fonts)
+export const FONTS = process.env.CUTAWAY_FONTS ?? "C:/Users/Public/Zylo/research/seamless-niche/work/m2drain/fonts";
 
 /** write the layout, its timeline and its page into the render folder */
 export function preparePage({ layout, tl, proto }) {
@@ -48,7 +49,9 @@ export function preparePage({ layout, tl, proto }) {
   fs.writeFileSync(path.join(proto, `m2_${layout.key}.html`), fs.readFileSync(path.join(here, "..", "full.html"), "utf8").replace('src="/full.js"', `src="/m2_${layout.key}.js"`));
 }
 
-export async function makeVideo({ layout, voice, words, out, proto, ff, roles = [], noend = false, secs = null, wt = path.resolve(here, "../../../.."), fonts = FONTS, onProgress = null }) {
+// only: "end" | "noend" renders just that version (production renders the one the user gets); silent: { end, noend }
+// silent videos already rendered (the CPU fallback's joined chunks): no render, just the sound, captions and copies
+export async function makeVideo({ layout, voice, words, out, proto, ff, roles = [], noend = false, secs = null, wt = path.resolve(here, "../../../.."), fonts = FONTS, onProgress = null, only = null, silent = null }) {
   const progress = (o) => { console.log(`PROGRESS ${JSON.stringify(o)}`); onProgress?.(o); };
   const t0 = Date.now(), timing = {};
   fs.mkdirSync(out, { recursive: true });
@@ -59,10 +62,12 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   preparePage({ layout, tl, proto });
   timing.prepare = (Date.now() - t0) / 1000;
 
-  const versions = [["end", tl.marks.lengthEnd, ""], ...(noend ? [["noend", tl.marks.lengthNoEnd, "?endcard=0"]] : [])];
+  const all = [["end", tl.marks.lengthEnd, ""], ...(noend || only === "noend" ? [["noend", tl.marks.lengthNoEnd, "?endcard=0"]] : [])];
+  const versions = only ? all.filter(([v]) => v === only) : all;
   const share = 80 / versions.length;
   for (const [i, [v, len, q]] of versions.entries()) {
     const t1 = Date.now(), L = secs ?? len, file = path.join(out, `silent_${v}.mp4`);
+    if (silent?.[v]) { if (path.resolve(silent[v]) !== path.resolve(file)) fs.copyFileSync(silent[v], file); continue; }
     progress({ stage: "render", version: v, pct: Math.round(5 + i * share) });
     await run(process.execPath, [path.join(proto, "render.mjs"), ff, file, String(L), "30"], { cwd: proto, env: { ...process.env, PAGE: `m2_${layout.key}.html${q}` } }, (line) => {
       const m = /^frame (\d+)\/(\d+)/.exec(line); if (m) progress({ stage: "render", version: v, frame: +m[1], frames: +m[2], pct: Math.round(5 + i * share + (share * m[1]) / m[2]) });
@@ -86,7 +91,8 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
     await run(ff, ["-v", "error", "-y", "-i", `silent_${v}.mp4`, "-i", `mix_${v}.mp3`, "-vf", `subtitles=${v === "end" && fs.existsSync(path.join(out, "captions_end.ass")) ? "captions_end.ass" : "captions.ass"}:fontsdir=fonts`, "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { cwd: out });
     files[v] = path.join(out, final);
   }
-  await run(ff, ["-v", "error", "-y", "-i", files.end, "-vf", "scale=576:1024", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", `${layout.key}-web.mp4`], { cwd: out });
+  // the web copy of the version delivered (the end card version, or the clean one when only that was made)
+  await run(ff, ["-v", "error", "-y", "-i", files.end ?? files[versions[0][0]], "-vf", "scale=576:1024", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", `${layout.key}-web.mp4`], { cwd: out });
   files.web = path.join(out, `${layout.key}-web.mp4`);
   timing.finish = (Date.now() - t3) / 1000;
   timing.total = (Date.now() - t0) / 1000;

@@ -1,0 +1,227 @@
+// M3: one production Cutaway job, on the RunPod GPU or a Fly CPU machine. The job comes from the server
+// (supabase/functions/_shared/cutaway/jobs.js); it carries signed URLs only, never a key. Roles:
+//   video  the whole video on the GPU: the plan (script, facts, scene, voice and its word check, the preview gate), the
+//          render, the mix, the uploads
+//   plan   the CPU fallback's first machine: the plan only (the GPU job's plan, when it got that far, is reused instead)
+//   chunk  one frame range of the video on a CPU machine (SwiftShader), uploaded as a segment
+//   mix    the CPU fallback's last machine: the segments joined, then the sound, captions and copies, uploaded
+// A plan already made (a retry, the fallback) is downloaded, never paid for again. Progress, the finished plan and the end
+// go to the callback (cutaway-callback) with the job's token; a callback that can't be reached never fails the job.
+//   node m3/videoJob.mjs '<input json>'         (RunPod: handler.py passes the job input)
+//   CUTAWAY_JOB='<job json>' node m3/videoJob.mjs (Fly: the machine's env)
+// Keys: ANTHROPIC_API_KEY and ELEVENLABS_KEY from the environment (RunPod secrets / the Fly machine's env).
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { execFileSync, spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { runTopic } from "../m2/run.mjs";
+import { makeVideo, preparePage } from "../m2/make.mjs";
+import { compile } from "../m2/compile.mjs";
+import { callJSON, loadKey, MODEL } from "../m2/llm.mjs";
+import { speechEnd } from "../speechEnd.mjs";
+import { useGpu, useSoftware } from "./gpu.mjs";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const PROTO = process.env.CUTAWAY_PROTO ?? "/app/proto", FF = process.env.FFMPEG ?? "ffmpeg", FPS = 30;
+const LAYOUTS = path.resolve(here, "../m2/layouts");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---------- the job's files ----------
+// (file:// URLs work too: the local test of the fallback roles)
+export async function get(url, file) {
+  if (url.startsWith("file://")) { const b = fs.readFileSync(fileURLToPath(url)); if (file) fs.writeFileSync(file, b); return b; }
+  for (let i = 0; ; i++) {
+    try { const r = await fetch(url, { signal: AbortSignal.timeout(120000) }); if (!r.ok) throw new Error(`download ${r.status}`); const b = Buffer.from(await r.arrayBuffer()); if (file) fs.writeFileSync(file, b); return b; } catch (e) { if (i >= 2) throw e; await sleep(1500 * (i + 1)); }
+  }
+}
+export async function put(url, file, type) {
+  if (url.startsWith("file://")) { const to = fileURLToPath(url); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(file, to); return; }
+  for (let i = 0; ; i++) {
+    try { const r = await fetch(url, { method: "PUT", headers: { "Content-Type": type, "x-upsert": "true" }, body: fs.readFileSync(file), signal: AbortSignal.timeout(300000) }); if (!r.ok) throw new Error(`upload ${path.basename(file)} ${r.status} ${(await r.text()).slice(0, 200)}`); return; } catch (e) { if (i >= 2) throw e; await sleep(2000 * (i + 1)); }
+  }
+}
+
+/** a failure's code and whether a second try could help (the server refunds the rest at once) */
+export function classify(e) {
+  const msg = String(e?.message ?? e);
+  if (e?.code === "NO_GPU") return { code: "NO_GPU", retryable: true };
+  if (/voice check failed twice/i.test(msg)) return { code: "VOICE_FAILED", retryable: false };
+  if (/credit balance|insufficient.?(credit|fund|quota)|quota_exceeded|payment required|\b402\b/i.test(msg)) return { code: "PROVIDER_BALANCE", retryable: false };
+  if (/overloaded|\b529\b|\b503\b|rate.?limit|\b429\b/i.test(msg)) return { code: "PROVIDER_BUSY", retryable: true };
+  return { code: e?.code ?? "RENDER_FAILED", retryable: true };
+}
+
+// the stages the page shows, from the pipeline's progress events (contract.js statusOfStage)
+function stageOf(p) {
+  if (p.stage === "scene") return /voice/.test(p.step ?? "") ? "voice" : /preview|vision|repair/.test(p.step ?? "") ? "preview" : "scene";
+  if (["timeline", "render"].includes(p.stage)) return "render";
+  return p.stage;
+}
+const pretty = (id) => id.replace(/([a-z])([A-Z0-9])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
+
+const POST_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "description", "hashtags"], properties: { title: { type: "string" }, description: { type: "string" }, hashtags: { type: "array", items: { type: "string" } } } };
+/** the copy-ready post text (Haiku: it passed the post-text checks on every test script, at 1/20 the price) */
+export async function postFor(script) {
+  const r = await callJSON({ apiKey: loadKey(), model: MODEL.small, label: "post text", effort: "low", maxTokens: 3000, schema: POST_SCHEMA,
+    system: "You write the post text for a short vertical 3D explainer video on TikTok, YouTube Shorts and Reels: a title under 60 characters with one emoji at the end, a 1-2 sentence description that teases the most surprising fact, and 8 lowercase hashtags (each starting with #, always including #howitworks, #3danimation, #explained and #shorts).",
+    user: `Title: ${script.title}\nNarration: ${script.sentences.map((s) => s.text).join(" ")}` });
+  return { post: r.data, costUsd: r.costUsd };
+}
+
+/** the frames of a planned video (with or without its end card): what the CPU fallback splits into chunks */
+export function framesOf({ layout, words, voice, roles }, version = "end") {
+  const tl = compile(layout, words, speechEnd(FF, voice), { roles });
+  return { frames: Math.round((version === "noend" ? tl.marks.lengthNoEnd : tl.marks.lengthEnd) * FPS), tl };
+}
+
+async function main() {
+  const input = process.argv[2] ? JSON.parse(process.argv[2]) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
+  const job = input.job ?? input, role = job.role ?? "video", mode = job.mode ?? (role === "video" ? "gpu" : "cpu");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cutaway-")), out = path.join(dir, "run");
+  const version = job.endCard === false ? "noend" : "end", t0 = Date.now(), costs = { planUsd: 0, voiceUsd: 0, checksUsd: 0, postUsd: 0 };
+  fs.mkdirSync(out, { recursive: true });
+
+  // ---------- the callback ----------
+  let lastTell = 0, lastStage = null;
+  const tell = async (event, data = {}) => {
+    if (!job.callback?.url) { console.log(`EVENT ${event} ${JSON.stringify(data).slice(0, 300)}`); return; }
+    const body = JSON.stringify({ runId: job.runId, token: job.callback.token, role, attempt: job.attempt ?? 1, event, ...data });
+    for (let i = 0; i < 4; i++) {
+      try { const r = await fetch(job.callback.url, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: AbortSignal.timeout(15000) }); await r.body?.cancel(); if (r.ok || r.status < 500) return; } catch { /* try again */ }
+      await sleep(1000 * 2 ** i);
+    }
+  };
+  const progress = (p) => {
+    if (p.stage === "failed") return;
+    const stage = stageOf(p), now = Date.now(), extra = {};
+    if (p.title) extra.title = p.title;
+    if (p.narration) extra.narration = p.narration;
+    if (p.facts) extra.facts = p.facts;
+    if (p.parts) extra.parts = p.parts.map(pretty);
+    const pct = stage === "render" && Number.isFinite(p.frames) ? Math.min(99, Math.round((p.frame / p.frames) * 100)) : undefined;
+    if (stage === lastStage && !Object.keys(extra).length && now - lastTell < 3000) return;
+    lastStage = stage; lastTell = now;
+    tell("progress", { stage, ...(pct !== undefined ? { pct } : {}), ...extra });
+  };
+  const beat = setInterval(() => tell("heartbeat"), 20000);
+
+  // ---------- the plan's files: uploaded once made, downloaded when given ----------
+  const planFiles = { layout: "layout.json", script: "script.json", words: "words.json", voice: "voice.mp3", post: "post.json" };
+  const savePlan = async (ready, post) => {
+    const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });
+    fs.writeFileSync(path.join(p, "layout.json"), JSON.stringify(ready.layout)); fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...ready.script, roles: ready.roles }));
+    fs.writeFileSync(path.join(p, "words.json"), JSON.stringify(ready.words)); fs.copyFileSync(ready.voice, path.join(p, "voice.mp3"));
+    fs.writeFileSync(path.join(p, "post.json"), JSON.stringify(post ?? null));
+    for (const [k, f] of Object.entries(planFiles)) if (job.plan?.put?.[k]) await put(job.plan.put[k], path.join(p, f), f.endsWith(".mp3") ? "audio/mpeg" : "application/json");
+  };
+  const loadPlan = async () => {
+    const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });
+    for (const [k, f] of Object.entries(planFiles)) if (job.plan.get[k]) await get(job.plan.get[k], path.join(p, f));
+    const read = (f) => JSON.parse(fs.readFileSync(path.join(p, f), "utf8"));
+    const script = read("script.json");
+    return { layout: read("layout.json"), script, roles: script.roles ?? script.sentences.map((s) => s.role), words: read("words.json"), voice: path.join(p, "voice.mp3"), post: fs.existsSync(path.join(p, "post.json")) ? read("post.json") : null };
+  };
+  // the preview frames the page shows while the video renders (up to 8, small)
+  const sendFrames = async () => {
+    const src = path.join(out, "preview"), urls = job.out?.frames ?? [];
+    if (!fs.existsSync(src) || !urls.length) return 0;
+    const pngs = fs.readdirSync(src).filter((f) => f.endsWith(".png")).sort();
+    const pick = pngs.filter((_, i) => i % Math.max(1, Math.ceil(pngs.length / urls.length)) === 0).slice(0, urls.length);
+    for (const [i, f] of pick.entries()) { const jpg = path.join(dir, `frame_${i}.jpg`); execFileSync(FF, ["-v", "error", "-y", "-i", path.join(src, f), "-vf", "scale=360:-1", "-q:v", "5", jpg]); await put(urls[i], jpg, "image/jpeg"); }
+    return pick.length;
+  };
+
+  // ---------- the finished video: the delivered copy, the web copy, the poster ----------
+  const deliver = async (made, ready) => {
+    const src = made.files[version] ?? made.files.end, final = path.join(dir, "final.mp4"), poster = path.join(dir, "poster.jpg");
+    execFileSync(FF, ["-v", "error", "-y", "-i", src, "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-c:a", "copy", "-movflags", "+faststart", final]);
+    const len = Number(execFileSync(FF.replace(/ffmpeg(\.exe)?$/, (m) => m.replace("ffmpeg", "ffprobe")), ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", final], { encoding: "utf8" }).trim()) || 30;
+    execFileSync(FF, ["-v", "error", "-y", "-ss", String(Math.max(0, len - 2.5)), "-i", final, "-frames:v", "1", "-vf", "scale=720:-1", "-q:v", "3", poster]);
+    if (job.out?.final) await put(job.out.final, final, "video/mp4");
+    if (job.out?.web) await put(job.out.web, made.files.web, "video/mp4");
+    if (job.out?.poster) await put(job.out.poster, poster, "image/jpeg");
+    return { durationSec: +len.toFixed(2), sizes: { final: fs.statSync(final).size, web: fs.statSync(made.files.web).size } };
+  };
+
+  try {
+    // (mode "local": this laptop's own GPU, for the local test of the roles)
+    const renderer = mode === "local" ? "local" : role === "video" && mode === "gpu" ? await useGpu() : role === "plan" ? "none" : useSoftware();
+    tell("progress", { stage: job.plan?.get ? "render" : "script", renderer });
+
+    if (role === "video" || role === "plan") {
+      let ready, post;
+      if (job.plan?.get) ({ post, ...ready } = await loadPlan());
+      else {
+        // an approved layout for this topic: the worker's layouts folder gets it, the planner reuses it
+        let reuse = null;
+        if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
+        const r = await runTopic({ topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false });
+        if (!r.ok) {
+          const failedGate = Array.isArray(r.vision?.failing) && r.vision.failing.length;
+          throw Object.assign(new Error(failedGate ? `the preview check blocked it: ${r.vision.failing.join(", ")}` : `the plan did not pass: ${(r.problems ?? []).join("; ").slice(0, 500)}`), { code: failedGate ? "GATE_FAILED" : "PLAN_FAILED", retryable: false, costs: { planUsd: r.planUsd ?? 0, voiceUsd: r.voiceUsd ?? 0, checksUsd: r.checksUsd ?? 0 } });
+        }
+        ready = r.ready; Object.assign(costs, r.ready.costs);
+        const p = await postFor(ready.script); post = p.post; costs.postUsd = p.costUsd;
+        await savePlan(ready, post);
+        const frames = await sendFrames();
+        const fv = framesOf(ready, version);
+        await tell("planned", { costs, frames: fv.frames, previewFrames: frames, title: ready.script.title, narration: ready.script.sentences.map((s) => s.text).join(" "), facts: ready.script.facts ?? [], parts: ready.layout.parts.map((q) => pretty(q.id)), post, key: ready.layout.key });
+      }
+      if (role === "plan") { clearInterval(beat); return { ok: true }; }
+      // the render, the sound, the copies (the GPU job, or a GPU retry of a plan already made)
+      tell("progress", { stage: "render", pct: 0 });
+      const made = await makeVideo({ layout: ready.layout, voice: ready.voice, words: ready.words, out: path.join(dir, "made"), proto: PROTO, ff: FF, roles: ready.roles, onProgress: progress, only: version });
+      tell("progress", { stage: "upload", pct: 99 });
+      const files = await deliver(made, ready);
+      clearInterval(beat);
+      await tell("done", { costs, renderer, files, seconds: +((Date.now() - t0) / 1000).toFixed(1) });
+      return { ok: true };
+    }
+
+    const ready = await loadPlan();
+    if (role === "chunk") {
+      const { tl } = framesOf(ready, version);
+      const layout = { ...ready.layout, key: `${ready.layout.key}_c${job.chunk.index}`.slice(0, 60) };
+      preparePage({ layout, tl, proto: PROTO });
+      const seg = path.join(dir, `seg_${job.chunk.index}.mp4`), len = version === "noend" ? tl.marks.lengthNoEnd : tl.marks.lengthEnd;
+      await new Promise((res, rej) => {
+        const p = spawn(process.execPath, [path.join(PROTO, "render.mjs"), FF, seg, String(len), String(FPS)], { cwd: PROTO, env: { ...process.env, PAGE: `m2_${layout.key}.html${version === "noend" ? "?endcard=0" : ""}`, FRAME_FROM: String(job.chunk.from), FRAME_TO: String(job.chunk.to) }, stdio: ["ignore", "pipe", "pipe"] });
+        let err = ""; p.stderr.on("data", (d) => { err += d; });
+        p.stdout.on("data", (d) => { const m = /frame (\d+)\//.exec(String(d)); if (m) tell("heartbeat", { chunk: job.chunk.index, frame: Number(m[1]) }); });
+        p.on("close", (c) => (c === 0 ? res() : rej(new Error(`chunk ${job.chunk.index} render failed: ${err.slice(-400)}`))));
+      });
+      await put(job.out.segment, seg, "video/mp4");
+      clearInterval(beat);
+      await tell("chunk", { index: job.chunk.index, seconds: +((Date.now() - t0) / 1000).toFixed(1) });
+      return { ok: true };
+    }
+
+    if (role === "mix") {
+      const list = path.join(dir, "segments.txt"), parts = [];
+      for (const [i, u] of job.segments.entries()) { const f = path.join(dir, `seg_${i}.mp4`); await get(u, f); parts.push(`file '${f.replace(/\\/g, "/")}'`); }
+      fs.writeFileSync(list, parts.join("\n"));
+      const joined = path.join(dir, `silent_${version}.mp4`);
+      execFileSync(FF, ["-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", list, "-c", "copy", "-movflags", "+faststart", joined]);
+      tell("progress", { stage: "sound", pct: 99 });
+      const made = await makeVideo({ layout: ready.layout, voice: ready.voice, words: ready.words, out: path.join(dir, "made"), proto: PROTO, ff: FF, roles: ready.roles, only: version, silent: { [version]: joined } });
+      const files = await deliver(made, ready);
+      clearInterval(beat);
+      await tell("done", { costs: {}, renderer: "SwiftShader (CPU, split)", files, seconds: +((Date.now() - t0) / 1000).toFixed(1) });
+      return { ok: true };
+    }
+    throw new Error(`unknown role ${role}`);
+  } catch (e) {
+    clearInterval(beat);
+    const c = e.retryable === false ? { code: e.code ?? "RENDER_FAILED", retryable: false } : classify(e);
+    Object.assign(costs, e.costs ?? {});
+    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 1500), costs });
+    return { ok: false, code: c.code, error: String(e.message ?? e).slice(0, 1500) };
+  }
+}
+
+if (/videoJob\.mjs$/.test(process.argv[1] ?? "")) {
+  const r = await main();
+  console.log(`RESULT ${JSON.stringify(r)}`);
+  process.exit(r.ok ? 0 : 1);
+}

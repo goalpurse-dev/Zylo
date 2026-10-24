@@ -1,11 +1,121 @@
 // Cutaway Explainer, 3D version (research/seamless-niche/BUILD_PLAN.md, option A): a planner writes the script and a
 // scene, the 3D world is animated on the words and rendered, then voice, captions and sound are mixed in.
-// Until the planner (M2) and the render service (M3) exist, the page runs a DEMO: it walks through the same steps
-// and plays the hand-built landfill video. Nothing is charged in the demo.
+//
+// Where a run comes from (useCutawayRun picks one):
+//  - "server": the cutaway-api edge function (every preview and production build). The contract, the RunView shape
+//    and the error codes live in supabase/functions/_shared/cutaway/contract.js; cutawayCall() below speaks it.
+//  - "local":  localhost only (VITE_CUTAWAY_LOCAL=1): the M2 runner on this computer through the /m2api proxy.
+//  - "mock":   local dev only (?mock=...): the timed demo below and the mock RunViews of dev/cutawayMock.js.
+//    Nothing is charged; a production build never reaches it (import.meta.env.DEV is false there).
 
 export const LENGTHS = [30, 60];
 export const DEFAULT_LENGTH = 30;
-export const DEMO_MODE = true;
+
+// ---------- the server (cutaway-api) ----------
+import { ERRORS, FAILED_MESSAGE, STATUSES } from "../../../../../supabase/functions/_shared/cutaway/contract.js";
+export { ERRORS, FAILED_MESSAGE, STATUSES };
+
+/** A run is still being made (the page polls `status` while this is true). */
+export const isWorking = (run) => Boolean(run) && ["queued", "script", "scene", "render"].includes(run.step);
+
+/** An error from cutaway-api, with the contract's code and the extras some codes carry. */
+export class CutawayApiError extends Error {
+  constructor(code, message, extra = {}) {
+    super(message || ERRORS[code]?.message || ERRORS.SERVER.message);
+    this.name = "CutawayApiError";
+    this.code = code;
+    this.status = extra.status ?? ERRORS[code]?.status ?? 0;
+    this.credits = Number.isFinite(extra.credits) ? extra.credits : null; // CREDITS: what the video needs
+    this.missing = Array.isArray(extra.missing) ? extra.missing : []; // CANT_BUILD
+    this.closest = Array.isArray(extra.closest) ? extra.closest : []; // CANT_BUILD: premade keys or names
+    this.retryAfterSec = Number.isFinite(extra.retryAfterSec) ? extra.retryAfterSec : null; // LIMIT
+  }
+}
+
+// A reply without a code (an older function, a gateway error): the code from the status and the words.
+function codeFrom(status, message = "") {
+  if (status === 401) return "SIGN_IN";
+  if (status === 402) return /paid plan|upgrade/i.test(message) ? "UPGRADE" : "CREDITS";
+  if (status === 403) return "OFF";
+  if (status === 404) return "NOT_FOUND";
+  if (status === 422) return "CANT_BUILD";
+  if (status === 429) return "LIMIT";
+  if (status === 503) return "BUSY";
+  if (status === 400) return "BAD_INPUT";
+  return "SERVER";
+}
+
+/** Turns a cutaway-api error body (and its HTTP status) into a CutawayApiError. */
+export function errorFromReply(body, status = 0) {
+  const message = typeof body?.error === "string" ? body.error : typeof body?.message === "string" ? body.message : "";
+  const code = typeof body?.code === "string" && ERRORS[body.code] ? body.code : codeFrom(status, message);
+  const credits = Number(body?.credits ?? body?.needed);
+  return new CutawayApiError(code, message || ERRORS[code].message, { status, credits, missing: body?.missing ?? body?.quote?.missing, closest: body?.closest ?? body?.quote?.closest, retryAfterSec: Number(body?.retryAfterSec) });
+}
+
+/**
+ * One cutaway-api action through the app's supabase client (it sends the session). Throws CutawayApiError.
+ * The client is imported lazily, so this file still loads in Node (tests import the examples from it).
+ */
+export async function cutawayCall(action, body = {}) {
+  const { supabase } = await import("../../../../lib/supabaseClient");
+  let data, error;
+  try {
+    ({ data, error } = await supabase.functions.invoke("cutaway-api", { body: { action, ...body } }));
+  } catch {
+    throw new CutawayApiError("NETWORK", "We couldn't reach the server. Check your connection and try again.");
+  }
+  if (error) {
+    const res = error.context;
+    if (res && typeof res.clone === "function") {
+      const parsed = await res.clone().json().catch(() => null);
+      throw errorFromReply(parsed ?? {}, res.status ?? 0);
+    }
+    throw new CutawayApiError("NETWORK", "We couldn't reach the server. Check your connection and try again.");
+  }
+  // an older reply shape: "can't build" as a 200 with cantBuild (nothing charged)
+  if (data?.cantBuild) throw errorFromReply({ code: "CANT_BUILD", error: data.message, quote: data.quote }, 422);
+  if (data?.error && data?.code) throw errorFromReply(data, ERRORS[data.code]?.status ?? 0);
+  return data;
+}
+
+/** A RunView from the server, in the shape the page renders (`step` mirrors `status`; lists never missing). */
+export function toRun(view) {
+  if (!view || typeof view !== "object") return null;
+  const step = STATUSES.includes(view.status) ? view.status : STATUSES.includes(view.step) ? view.step : "queued";
+  return {
+    ...view,
+    step,
+    status: step,
+    parts: Array.isArray(view.parts) ? view.parts : [],
+    frames: Array.isArray(view.frames) ? view.frames : [],
+    facts: Array.isArray(view.facts) ? view.facts : [],
+    renderPct: Number.isFinite(view.renderPct) ? view.renderPct : step === "done" ? 100 : 0,
+    stepAt: Number.isFinite(view.stepAt) ? view.stepAt : Date.parse(view.stepAt ?? "") || null,
+    refunded: view.refunded === true || view.creditsRefunded === true,
+    server: true,
+  };
+}
+
+export const cutawayServer = {
+  access: () => cutawayCall("access"),
+  quote: (topic, lengthSec) => cutawayCall("quote", { topic, lengthSec }).then((r) => r?.quote ?? null),
+  // ?testfail=1: the owner's forced failure (the server honours it only for test users while the switch is off)
+  start: ({ topic, lengthSec, removeWatermark }) => cutawayCall("start", { topic, lengthSec, removeWatermark: removeWatermark === true, ...(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("testfail") === "1" ? { testFail: true } : {}) }).then(toRun),
+  status: (runId) => cutawayCall("status", { runId }).then(toRun),
+  list: () => cutawayCall("list").then((r) => (Array.isArray(r?.runs) ? r.runs.map(toRun).filter(Boolean) : [])),
+  remove: (runId) => cutawayCall("remove", { runId }),
+  approveLayout: (runId, approve) => cutawayCall("approveLayout", { runId, approve: approve === true }),
+};
+
+/** The post text the "Copy post text" button puts on the clipboard: title, description, hashtags. */
+export function postText(post) {
+  if (!post) return "";
+  return [post.title, post.description, (post.hashtags ?? []).join(" ")].filter((s) => String(s ?? "").trim()).join("\n\n");
+}
+
+/** A file name for a download that has no server name (examples, the local runner). */
+export const downloadName = (run) => `${String(run?.title || run?.topic || "cutaway-explainer").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "cutaway-explainer"}.mp4`;
 
 // Two prices per length, premade or custom topic (pricing.js PRICES.video, ~2.8x our cost). The page shows them live
 // from the same rule the server charges by (quote.js): the server recomputes the quote from the topic text before
