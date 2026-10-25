@@ -8,6 +8,7 @@ import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText, SETTING_PROPS } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
+import { chainProblems } from "./chain.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -22,6 +23,15 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 
 export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
 
+// the worked examples the script writer sees: the chain structure (the owner's rule of 2026-10-25), written by hand from
+// facts verified in earlier runs (research/seamless-niche/CHAIN_EXAMPLES.json)
+const CHAIN_EXAMPLES = [
+  { topic: "a French drain", roles: ["hook", "problem", "fix1", "problem2", "fix2", "name", "problem3", "fix3", "myth", "mythFact", "finish", "congrats"], text: "If you dig a ditch along your house, you have a drain. | But one inch of rain on a roof dumps over 600 gallons, and the ditch overflows. | So you fill the ditch with gravel to hold the water. | But now the gravel holds that water against the wall, and the wall cracks. | So you lay a pipe full of holes under the gravel, sloping away downhill. | This is a French drain. | But mud washes into the gravel, clogs every hole, and the basement floods anyway. | So you wrap the gravel in fabric that keeps the mud out. | And the French in French drain is not France. | It is Henry French, who wrote the book on drains in 1859. | Add the grass back on top. | Congratulations, you have built a French drain.",
+    chain: "problem: rain spills out of the ditch against the wall (size 2) <- the hook | problem2: a crack runs up the wall (size 4) <- fix1, the gravel holding the water | problem3: the basement floods (size 5) <- fix2, the pipe's holes clogging" },
+  { topic: "a traffic light", roles: ["hook", "problem", "fix1", "name", "problem2", "fix2", "problem3", "fix3", "myth", "finish", "congrats"], text: "If you hang one red lamp over a crossing, you have a traffic light. | But it never changes, so cars pile up down both roads. | So you add a green lamp and a gray box that switches them. | This is a signal controller. | But the box runs on a clock, so at midnight a lone car sits at an empty red. | So you bury a loop of wire in the road that feels a car's metal. | But now the light flips the instant a car arrives, and a car already crossing gets hit. | So you add a yellow lamp that gives everyone a few seconds to stop. | And many of those sensors are wire loops, not cameras. | Add a crosswalk, a bench, and a mailbox. | Congratulations, you have built a traffic light.",
+    chain: "problem: cars queue down both roads (size 2) <- the hook | problem2: one car waits at a red with nobody around (size 3) <- fix1, the box's clock | problem3: a car hit in the junction (size 5) <- fix2, the loop flipping the light at once" },
+];
+// the account's approved scripts (the golden pair), kept for the record; the writer now sees CHAIN_EXAMPLES
 const EXAMPLES = [
   { topic: "a French drain", roles: template("french_drain").roles, text: "If you dig a ditch along your house, you have a drain. | But one inch of rain on a small roof dumps over 600 gallons right by your walls. | The ditch floods. | Five feet down, that water pushes over 300 pounds on each square foot, and the wall cracks. | So you fill the ditch with gravel, but the water still sits at the bottom. | So you lay a pipe full of holes under the gravel. | This is a French drain. | Water seeps in through the holes, and the pipe slopes downhill to carry it away. | Wrap the gravel in fabric so mud can't clog it. | And the French in French drain is not France. | It is Henry French, a New England farmer and judge who wrote the book on drains in 1859. | Add the grass back on top. | Congratulations, you have built a French drain." },
   { topic: "a landfill", roles: template("landfill").roles, text: "If you dig a pit and throw your trash in, you have a landfill. | But dirty trash juice leaks straight down into the groundwater you drink. | So you lay a thick clay base, but it is still not enough. | You add a thick black plastic sheet. | This is a landfill liner. | A pipe drains the collected juice into a tank beside the pit. | Sealed this tight, trash barely rots at all once it is buried. | A 1952 newspaper dug up decades later was still readable word for word. | But trapped trash still makes gas, so a pipe carries it out. | That flame is not waste burning, it is gas making electricity nearby. | Add a grass cap, a fence, and a few young trees. | Congratulations, you have built a landfill." },
@@ -30,13 +40,20 @@ const EXAMPLES = [
 const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama of a lawn and a house with the ground cut open in section, where a thing is built step by step while one narrator talks. Every sentence must be something the 3D kit can show happening: digging, pipes, tanks, fills (gravel, water, soil, clay), liners and covers, water or sludge flowing along a path, sand sinking and oil rising in a tank, a creek, rain, leaks and cracks, a car, simple machines (a pump box, a generator, a vending machine, a car wash arch, a traffic light, a hydrant, an ATM), props (a flag, a book, a newspaper, number cards). Never name a thing outside that list (no people doing things, no maps, no ice, no towers, no screens with text) and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
-LOOPS     "But [a failure you can see: it floods, it stinks, it leaks, it cracks]." then "So you [add one real part, described physically, no jargon]."
+CHAIN     "But [a visible consequence]." then "So you [add one real part, described physically, no jargon]." repeated: a CHAIN, not a list.
+          Every fix causes the next, bigger problem: "So you add X. But now X does Y…". The story escalates: each "But" is a
+          bigger, concrete, real-world consequence with visible stakes (cars piling up, a car hit in the junction, water
+          flooding the basement, the wall cracking, the creek turning grey), never a dry fact or a number on its own.
+          The first problem is the second sentence, right after a short hook (16 words or fewer), and anyone gets it at once.
+          Each problem is SHOWN happening on screen, not just said: say what we see.
 NAME      "This is a [real term]." (exactly one sentence with role name; a second one, name2, only in 60 s videos)
 MYTH-BUST "And [the thing everyone knows] is not [what they think]. It is [the mechanism]." (when a true one exists)
 FINISH    "Add [two or three finishing touches]." then "Congratulations, you have built a [thing]."
 
 Rules:
-- Every sentence is something the viewer can SEE happen in the cut-open ground or on the lawn: dig, fill, pour, lay a pipe, water rising, flowing, seeping, a crack, rain, a tank, a pump, a cap, grass, a fence. Nothing abstract, no people, no vehicles except a dump truck.
+- Every sentence is something the viewer can SEE happen in the cut-open ground or on the lawn: dig, fill, pour, lay a pipe, water rising, flowing, seeping, a crack, rain, a tank, a pump, a cap, grass, a fence. Nothing abstract, no people; vehicles only as the kit has them (a car, a dump truck).
+- chain: one entry per "But…" sentence: problem (its sentence index), causedBy (the index of the "So you…" fix that caused it; -1 for the first, caused by the hook), shows (what we see happening on screen, a short phrase), stakes (who or what suffers), size (1-10: how big it is; every problem bigger than the one before).
+- Numbers are spoken as written: write "1,500", never "1500" or "fifteen hundred".
 - Three or four surprises, each physical and concrete, ideally with a number ("dumps over 600 gallons", "pushes over 300 pounds on each square foot", "still readable"). One by about a third of the way in, one in the middle, the myth-bust near the end. Each surprise is a claim the fact-checker will search, so give a search query for it.
 - Number cards: put 1-3 big numbers on screen as cards ("600 GALLONS", "300 LB", "1859", "37 YEARS"). The card's word must be a word of that sentence, exactly as written (for example the word "600").
 - Plain words, sentences of 6-20 words, no run-ons, no lists of more than three, no questions, no "you might think". Present tense. American English, numbers as digits.
@@ -52,8 +69,8 @@ ${roles ? `This topic re-uses a saved scene. Use exactly these roles, in this or
 ${facts?.length ? `Use only these verified facts for the surprises (with their exact wording and numbers):\n${facts.map((f) => `- ${f}`).join("\n")}` : ""}
 ${keyWords ? `The saved scene animates on these words; use them in these sentences where it reads naturally:\n${Object.entries(keyWords).map(([r, ws]) => `- ${r}: ${ws.join(", ")}`).join("\n")}` : ""}
 
-Two approved scripts by the account, sentence by sentence (| between sentences), with their roles:
-${EXAMPLES.map((e) => `${e.topic} [${e.roles.join(", ")}]:\n${e.text}`).join("\n\n")}`;
+Two example scripts in the chain structure, sentence by sentence (| between sentences), with their roles and their chain:
+${CHAIN_EXAMPLES.map((e) => `${e.topic} [${e.roles.join(", ")}]:\n${e.text}\nchain: ${e.chain}`).join("\n\n")}`;
 }
 
 const RESEARCH_SYSTEM = `You research the surprise claims in a short explainer script with web search. You MUST search for every claim (one or two searches each) before you answer; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.`;
@@ -116,10 +133,12 @@ export function settingHint(topic) {
   if (!type) return "";
   return ` This topic belongs in the ${type} setting: use world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : ""}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
 }
-function sceneUser({ topic, title, sentences, hero, parts, lastOpening }) {
+function sceneUser({ topic, title, sentences, hero, parts, lastOpening, chain = null }) {
   return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
 The script, one sentence per line, as "role: text":
-${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`;
+${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}${chain?.length ? `
+Each problem must be SHOWN happening on screen (its beat's shows does it), as the writer meant:
+${chain.map((c) => `- ${sentences[c.problem]?.role ?? c.problem}: ${c.shows} (stakes: ${c.stakes})`).join("\n")}` : ""}`;
 }
 
 // how a layout opens: its setting, and the hook's first shot (the part it frames, its kind, its size)
@@ -265,6 +284,8 @@ const checkScript = (s, lengthSec, roles) => {
   if (roles && rs.join() !== roles.join()) P.push(`the roles must be exactly ${roles.join(", ")}`);
   for (const c of s.cards ?? []) { const t = s.sentences[c.sentence]?.text ?? ""; if (!t.split(/\s+/).some((w) => w.replace(/[^\w']/g, "") === c.word.replace(/[^\w']/g, ""))) P.push(`card "${c.text}": the word "${c.word}" is not in sentence ${c.sentence}`); }
   for (const x of s.sentences) if (!/[.!]$/.test(x.text.trim())) P.push(`sentence "${x.text.slice(0, 30)}…" must end with a full stop`);
+  // the story chain: strict for a new layout; a saved layout's fixed roles (made before the rule) get it as guidance
+  P.push(...chainProblems(s, { strict: !roles, lengthSec }));
   return P;
 };
 
@@ -299,6 +320,10 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     let P = checkScript(script, lengthSec, saved?.roles);
     if (P.length) { r = await step("script repair", { system: SCRIPT_SYSTEM, user: `${scriptUser({ topic, lengthSec, roles: saved?.roles })}\n\nYour last script had these problems; fix them and return the whole script:\n- ${P.join("\n- ")}\n\nYour last script:\n${JSON.stringify(script)}`, schema: SCRIPT_SCHEMA, maxTokens: 16000 }); script = r.data; P = checkScript(script, lengthSec, saved?.roles); }
     trace.push({ label: "script check", problems: P });
+    // a new topic whose problems still don't chain and escalate after the repair is refused (the owner's rule): it stops
+    // here as a plan that didn't pass (refunded), before the fact-check, the scene and the voice are paid for
+    const chainLeft = saved ? [] : chainProblems(script, { strict: true, lengthSec });
+    if (chainLeft.length) throw Object.assign(new Error(`the script's story does not chain: ${chainLeft.join("; ")}`), { code: "PLAN_FAILED", retryable: false });
 
     // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive). A saved layout
     //    keeps the facts it was checked with (the plan: a repeat topic needs no new fact-check).
@@ -344,7 +369,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     }
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
-    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening });
+    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening, chain: script.chain ?? null });
     let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
     const rw1 = applyRewrites(script, conv.rewrites); script = rw1.script; if (rw1.taken.length || rw1.refused.length) trace.push({ label: "rewrites", taken: rw1.taken, refused: rw1.refused });

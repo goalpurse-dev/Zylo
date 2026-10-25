@@ -469,3 +469,23 @@ test("m2 creator round 3 (his traffic light, 2026-10-25): the subject whole in f
   // 3. the finished mix is mastered to the creator's loudness
   assert.equal(MASTER.lufs, -16); assert.equal(MASTER.ceilingDb, -1);
 });
+
+import { chainProblems } from "../scripts/cutaway/proto3d/m2/chain.js";
+test("m2 story chain (the owner's rule, 2026-10-25): problems chain and escalate, each one visible, the first right after the hook", () => {
+  const { scripts } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_chain_examples.json", import.meta.url), "utf8"));
+  for (const s of scripts) assert.deepEqual(chainProblems(s), [], s.topic);
+  const S = (...t) => t.map((text, i) => ({ role: `r${i}`, text }));
+  // a list of parts with a late, dry problem
+  const list = chainProblems({ sentences: S("If you dig a hole, you have a pond.", "So you add a liner.", "So you add a pump.", "But algae costs money to remove.", "Congratulations."), chain: [] });
+  assert.ok(list.some((p) => /at least 2 problems/.test(p)) && list.some((p) => /second sentence/.test(p)) && list.some((p) => /see happen/.test(p)));
+  // a problem that doesn't follow from the fix before it
+  const loose = chainProblems({ sentences: S("If you dig a ditch, you have a drain.", "But rain floods the yard.", "So you fill it with gravel.", "But the neighbor's tree falls on the fence."), chain: [{ problem: 1, causedBy: -1, shows: "water floods the yard", stakes: "the yard", size: 2 }, { problem: 3, causedBy: 2, shows: "a tree falls on it", stakes: "the fence", size: 3 }] });
+  assert.ok(loose.some((p) => /follow from the fix before it/.test(p)));
+  // no escalation, and a dry fact
+  const flat = chainProblems({ sentences: S("If you dig a ditch, you have a drain.", "But rain floods the yard.", "So you add gravel.", "But now the gravel cracks the wall."), chain: [{ problem: 1, causedBy: -1, shows: "water floods the yard", stakes: "the yard", size: 4 }, { problem: 3, causedBy: 2, shows: "a crack runs up", stakes: "the wall", size: 3 }] });
+  assert.ok(flat.some((p) => /bigger than the one before/.test(p)));
+  assert.ok(chainProblems({ sentences: S("If you dig a pit, you have a landfill.", "But 30 percent of trash is food.") }).some((p) => /dry fact/.test(p)));
+  // a saved layout's fixed roles: no position rules, the rest still applies
+  const saved = chainProblems({ sentences: S("If you dig a pit, you have a landfill.", "So you lay clay.", "But trash juice leaks into the groundwater.", "A fact.", "But now gas builds up and the cap bulges."), chain: [{ problem: 2, causedBy: 1, shows: "dark juice seeps down", stakes: "the drinking water", size: 3 }, { problem: 4, causedBy: 1, shows: "the cap swells", stakes: "the whole hill", size: 4 }] }, { strict: false });
+  assert.deepEqual(saved, []);
+});

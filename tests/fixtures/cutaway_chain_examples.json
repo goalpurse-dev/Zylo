@@ -1,0 +1,70 @@
+{
+  "note": "Three 30 s scripts in the new chain structure, written by hand for the owner's review (2026-10-25, $0). Facts are only ones already verified in earlier runs. Not from the creator's scripts.",
+  "scripts": [
+    {
+      "topic": "Traffic light",
+      "sentences": [
+        { "role": "hook", "text": "If you hang one red lamp over a crossing, you have a traffic light." },
+        { "role": "problem", "text": "But it never changes, so cars pile up down both roads." },
+        { "role": "fix1", "text": "So you add a green lamp and a gray box that switches them." },
+        { "role": "name", "text": "This is a signal controller." },
+        { "role": "problem2", "text": "But the box runs on a clock, so at midnight a lone car sits at an empty red." },
+        { "role": "fix2", "text": "So you bury a loop of wire in the road that feels a car's metal." },
+        { "role": "problem3", "text": "But now the light flips the instant a car arrives, and a car already crossing gets hit." },
+        { "role": "fix3", "text": "So you add a yellow lamp that gives everyone a few seconds to stop." },
+        { "role": "myth", "text": "And many of those sensors are wire loops, not cameras." },
+        { "role": "finish", "text": "Add a crosswalk, a bench, and a mailbox." },
+        { "role": "congrats", "text": "Congratulations, you have built a traffic light." }
+      ],
+      "chain": [
+        { "problem": 1, "causedBy": -1, "shows": "cars queue at the red lamp down both roads, the queue growing", "stakes": "every driver at the crossing", "size": 2 },
+        { "problem": 4, "causedBy": 2, "shows": "night, one car waiting at a red light with nobody else around", "stakes": "drivers stuck for nothing", "size": 3 },
+        { "problem": 6, "causedBy": 5, "shows": "the light snaps green under an arriving car while a crossing car is mid-junction, near miss", "stakes": "a car hit in the junction", "size": 5 }
+      ]
+    },
+    {
+      "topic": "French drain",
+      "sentences": [
+        { "role": "hook", "text": "If you dig a ditch along your house, you have a drain." },
+        { "role": "problem", "text": "But one inch of rain on a roof dumps over 600 gallons, and the ditch overflows." },
+        { "role": "fix1", "text": "So you fill the ditch with gravel to hold the water." },
+        { "role": "problem2", "text": "But now the gravel holds that water against the wall, and the wall cracks." },
+        { "role": "fix2", "text": "So you lay a pipe full of holes under the gravel, sloping away downhill." },
+        { "role": "name", "text": "This is a French drain." },
+        { "role": "problem3", "text": "But mud washes into the gravel, clogs every hole, and the basement floods anyway." },
+        { "role": "fix3", "text": "So you wrap the gravel in fabric that keeps the mud out." },
+        { "role": "myth", "text": "And the French in French drain is not France." },
+        { "role": "mythFact", "text": "It is Henry French, who wrote the book on drains in 1859." },
+        { "role": "finish", "text": "Add the grass back on top." },
+        { "role": "congrats", "text": "Congratulations, you have built a French drain." }
+      ],
+      "chain": [
+        { "problem": 1, "causedBy": -1, "shows": "rain pours off the roof, the ditch brims and spills against the wall", "stakes": "the house wall soaked", "size": 2 },
+        { "problem": 3, "causedBy": 2, "shows": "water sits in the gravel at the wall, a crack runs up the foundation", "stakes": "the foundation cracked", "size": 4 },
+        { "problem": 6, "causedBy": 4, "shows": "mud fills the pipe's holes, water rises inside the basement", "stakes": "the basement and everything in it", "size": 5 }
+      ]
+    },
+    {
+      "topic": "Car wash",
+      "sentences": [
+        { "role": "hook", "text": "If you spray a muddy car with a hose, you have a car wash." },
+        { "role": "problem", "text": "But the mud just smears on the paint." },
+        { "role": "fix1", "text": "So you build an arch with soap sprays and spinning brushes." },
+        { "role": "problem2", "text": "But now soapy, oily water runs off the lot and into the creek." },
+        { "role": "fix2", "text": "So you cut a floor drain into an underground tank." },
+        { "role": "name", "text": "This is a water reclaim tank." },
+        { "role": "problem3", "text": "But the tank fills to the brim, and dirty water backs up over the floor." },
+        { "role": "fix3", "text": "So you add a pump that sends up to 80 percent back to the arch." },
+        { "role": "myth", "text": "And a car wash does not waste more water than your hose." },
+        { "role": "mythFact", "text": "It uses about 45 gallons a car, while a hose can top 100." },
+        { "role": "finish", "text": "Add a pay kiosk and a canopy." },
+        { "role": "congrats", "text": "Congratulations, you have built a car wash." }
+      ],
+      "chain": [
+        { "problem": 1, "causedBy": -1, "shows": "brown mud streaks across the paint under the hose", "stakes": "the car, still dirty", "size": 2 },
+        { "problem": 3, "causedBy": 2, "shows": "grey foamy water runs off the lot, down the street and into the creek", "stakes": "the creek and what lives in it", "size": 4 },
+        { "problem": 6, "causedBy": 4, "shows": "the tank brims and dirty water wells up over the wash floor", "stakes": "the whole wash floor flooded", "size": 5 }
+      ]
+    }
+  ]
+}

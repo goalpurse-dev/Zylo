@@ -22,6 +22,8 @@ export const SCRIPT_SCHEMA = obj({
   surprises: arr(obj({ claim: str, sentence: int, search: str })),
   cards: arr(obj({ text: str, sentence: int, word: str })),
   parts: arr(str),
+  // the story chain (m2/chain.js): one entry per "But…" sentence
+  chain: arr(obj({ problem: int, causedBy: int, shows: str, stakes: str, size: int })),
 });
 
 export const FACTS_SCHEMA = obj({

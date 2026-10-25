@@ -47,7 +47,8 @@ export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionW
       tries.push({ ok: c.ok, problems: c.problems, notes: c.notes, heard: c.heard });
       fs.writeFileSync(path.join(out, "voice_check.json"), JSON.stringify(tries, null, 1));
       if (c.ok) break;
-      if (n >= 1) throw new Error(`voice check failed twice (stop and refund): ${c.problems.join("; ")}`);
+      // both takes' problems, with what was heard (the owner's Details; the Pond run of 2026-10-25 only kept the second)
+      if (n >= 1) throw new Error(`voice check failed twice (stop and refund): ${tries.map((t, i) => `take ${i + 1}: ${t.problems.join("; ")} | heard: "${String(t.heard ?? "").slice(0, 400)}"`).join(" || ")}`);
       // the failed take kept beside it, for listening
       fs.renameSync(raw, path.join(out, `raw_rejected${n + 1}.mp3`)); fs.renameSync(rawWords, path.join(out, `raw_rejected${n + 1}.words.json`));
       await take();
