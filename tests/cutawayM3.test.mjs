@@ -21,18 +21,19 @@ test("caps: a calm day starts; the switch and an unreadable state never do (fail
   assert.equal(decide(DEFAULT_SETTINGS, null, 0.2).code, "BUSY");
 });
 
-test("caps: everyone's limits say BUSY, one user's say LIMIT with a reason", () => {
+test("caps: the emergency cap says BUSY; one user's only limits are two at once and the starts per hour", () => {
   const at = (o, add = 0.5) => decide(DEFAULT_SETTINGS, { ...calm, ...o }, add);
-  assert.equal(at({ spent_24h: 24.8 }).code, "BUSY");
-  assert.equal(at({ spent_3h: 9.8 }).code, "BUSY");
-  assert.equal(at({ running: DEFAULT_SETTINGS.max_running }).code, "BUSY");
+  assert.equal(DEFAULT_SETTINGS.daily_cap_usd, 20);
+  assert.equal(at({ spent_24h: 19.4 }).ok, true);
+  assert.equal(at({ spent_24h: 19.6 }).code, "BUSY");
   assert.equal(at({ minutes_since_balance_fail: 3 }).code, "BUSY", "an empty provider balance pauses new videos");
   assert.equal(at({ minutes_since_balance_fail: 12 }).ok, true);
-  for (const o of [{ user_spent_24h: 4.8 }, { user_running: 2 }, { user_starts_1h: 10 }, { user_fail_streak: 3, minutes_since_last_fail: 5 }]) {
+  for (const o of [{ user_running: 2 }, { user_starts_1h: 10 }]) {
     const d = at(o);
     assert.equal(d.code, "LIMIT", JSON.stringify(o)); assert.ok(d.reason && d.retryAfterSec > 0);
   }
-  assert.equal(at({ user_fail_streak: 3, minutes_since_last_fail: 31 }).ok, true, "the pause ends");
+  // gone (the owner, 2026-10-25): money per user, the 3-hour cap, the fail-streak pause, the site-wide running limit
+  for (const o of [{ user_spent_24h: 50 }, { spent_3h: 15 }, { user_fail_streak: 9, minutes_since_last_fail: 1 }, { running: 40 }]) assert.equal(at(o).ok, true, JSON.stringify(o));
 });
 
 test("topics: 3 to 80 characters, blocked words refused before anything is charged", () => {

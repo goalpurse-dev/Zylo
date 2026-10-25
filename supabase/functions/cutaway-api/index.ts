@@ -4,7 +4,7 @@
 // refunds) in _shared/cutaway/orchestrate.js and runtime.ts.
 //
 //   access {}  quote {topic, lengthSec}  start {topic, lengthSec, removeWatermark}  status {runId}  list {}
-//   remove {runId}  approveLayout {runId, approve}  (owner only)
+//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  (owner only)
 //
 // Who may generate: CUTAWAY_ENABLED=true for everyone with a paid plan (access.js); while it is off, only the emails in
 // CUTAWAY_TEST_USERS (owner test mode: one line, removed at launch). The owner (ADMIN_EMAILS) approves layouts.
@@ -20,7 +20,8 @@ import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
 import { closestNames } from "../_shared/cutaway/quote.js";
 import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
-import { capFreesInSec, decide, DEFAULT_SETTINGS, topicProblem } from "../_shared/cutaway/guard.js";
+import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem } from "../_shared/cutaway/guard.js";
+import { alertOnce } from "../_shared/adminAlert.ts";
 import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
 import { BUCKET, runDir } from "../_shared/cutaway/jobs.js";
 import { advance, CONFIG, dispatchNew, expectedUsd, layoutKeyOf, viewOf, watch } from "../_shared/cutaway/runtime.ts";
@@ -101,8 +102,24 @@ async function serverQuote(userId: string | null, topic: string, lengthSec: numb
 function capDetail(reason: string | null, settings: any, counts: any, addUsd: number, cErr: any) {
   if (cErr) return `cap check: the spend state could not be read (${cErr.message})`;
   const s = { ...DEFAULT_SETTINGS, ...(settings ?? {}) }, c = counts ?? {}, $ = (v: unknown) => `$${(Number(v) || 0).toFixed(2)}`;
-  return `${reason}: this video ~${$(addUsd)}. You: ${$(c.user_spent_24h)} of ${$(s.user_daily_usd)} in 24 h, ${c.user_running ?? 0} running, ${c.user_starts_1h ?? 0} starts in 1 h, fail streak ${c.user_fail_streak ?? 0}. ` +
-    `Site: ${$(c.spent_24h)} of ${$(s.daily_cap_usd)} in 24 h, ${$(c.spent_3h)} of ${$(s.window_cap_usd)} in 3 h, ${c.running ?? 0} running. Balance fail ${c.minutes_since_balance_fail ?? "-"} min ago.`;
+  return `${reason}: this video ~${$(addUsd)}. You: ${c.user_running ?? 0} of ${s.user_max_running} running, ${c.user_starts_1h ?? 0} of ${s.user_starts_per_hour} starts in 1 h. ` +
+    `Everyone: ${$(c.spent_24h)} of the ${$(s.daily_cap_usd)} emergency cap in 24 h, ${c.running ?? 0} running. Balance fail ${c.minutes_since_balance_fail ?? "-"} min ago.`;
+}
+
+/**
+ * The emergency cap's emails: at 50 % and 80 % of it, and when it is reached (a start refused), each level at most
+ * once per 24 h (alertOnce keeps the memory in system_logs). Awaited before the reply: work left behind a response
+ * can be cut off. Never throws.
+ */
+async function noteCapLevel(usedUsd: number, capUsd: number) {
+  const level = capAlertLevel(usedUsd, capUsd);
+  if (!level) return;
+  const $ = (v: number) => `$${v.toFixed(2)}`;
+  const subject = level >= 100 ? `Cutaway: the ${$(capUsd)} emergency cap was reached (new videos see "High demand")` : `Cutaway: ${level} % of the ${$(capUsd)} daily emergency cap used`;
+  const text = `Cutaway Explainer has used ${$(usedUsd)} of our provider cost in the last 24 hours (videos in progress counted at their price), against an emergency cap of ${$(capUsd)}.\n\n` +
+    (level >= 100 ? "New videos are refused with \"High demand right now, please try again shortly\"; nothing is charged for them, and videos in progress finish.\n\n" : "") +
+    "If this is real demand, raise the cap on /admin/ops (the Cutaway card): it takes effect at once. If it isn't, something may be looping: switch paid calls off there.";
+  await alertOnce(admin, `cutaway:cap${level}`, 24 * 3600, subject, text).catch(() => false);
 }
 
 // a custom video on a premade topic with no approved layout yet keeps the premade key, so approving its layout makes
@@ -147,11 +164,9 @@ async function handle(req: Request, trace: Trace) {
     ]);
     const addUsd = expectedUsd(quote.kind, lengthSec);
     const g = decide(settings ?? DEFAULT_SETTINGS, cErr ? null : counts, addUsd, { envOff: PAID_OFF });
-    if (!g.ok && g.code === "LIMIT" && (Number(counts?.user_spent_24h) || 0) + addUsd > Number((settings ?? DEFAULT_SETTINGS).user_daily_usd)) {
-      // the per-user cap: the real wait, from when the user's runs leave the 24-hour window
-      const { data: mine } = await admin.from("cutaway_runs").select("created_at, status, cost_usd, credits_charged").eq("user_id", who.user.id).gt("created_at", new Date(Date.now() - 24 * 3600e3).toISOString());
-      const runs = (mine ?? []).map((r: any) => ({ at: Date.parse(r.created_at), usd: ["done", "failed"].includes(r.status) ? Number(r.cost_usd) || 0 : Math.max(Number(r.cost_usd) || 0, (Number(r.credits_charged) || 0) * 0.01) }));
-      g.retryAfterSec = capFreesInSec(runs, addUsd, Number((settings ?? DEFAULT_SETTINGS).user_daily_usd)) || g.retryAfterSec;
+    if (!cErr && counts && body?.dryRun !== true && (g.ok || g.reason === "the emergency cap")) {
+      const capUsd = Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd), spent = Number(counts.spent_24h) || 0;
+      await noteCapLevel(g.ok ? spent + addUsd : Math.max(spent + addUsd, capUsd), capUsd);
     }
     if (!g.ok) throw new ApiError(g.code as any, g.code === "LIMIT" ? g.reason ?? undefined : g.message ?? undefined, { retryAfterSec: g.retryAfterSec }, capDetail(g.reason, settings, counts, addUsd, cErr));
 
@@ -162,7 +177,7 @@ async function handle(req: Request, trace: Trace) {
     if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
     const credits = Number(price);
     // owner test mode only: every check above, then stop before anything is charged or created (free)
-    if (body?.dryRun === true && who.tester) return { dryRun: true, quote, credits, endCard, guard: { ok: true, spentTodayUsd: Number(counts?.user_spent_24h ?? 0), addUsd } };
+    if (body?.dryRun === true && who.tester) return { dryRun: true, quote, credits, endCard, guard: { ok: true, everyoneSpent24hUsd: Number(counts?.spent_24h ?? 0), capUsd: Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd), addUsd } };
     trace.step = "job creation";
     const { data: run, error } = await admin.rpc("cutaway_start_run", {
       p_user: who.user.id, p_topic: topic, p_topic_key: quote.premade ?? namedPremade(topic) ?? topicKey(topic), p_length: lengthSec, p_kind: quote.kind,
@@ -184,6 +199,29 @@ async function handle(req: Request, trace: Trace) {
   }
 
   const who = await requireUser(req, trace);
+
+  // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it
+  if (action === "opsStatus" || action === "opsSetDailyCap") {
+    if (!who.owner) throw new ApiError("NOT_FOUND");
+    if (action === "opsSetDailyCap") {
+      const usd = Math.round(Number(body?.usd));
+      if (!Number.isFinite(usd) || usd < DAILY_CAP_RANGE.min || usd > DAILY_CAP_RANGE.max) throw new ApiError("BAD_INPUT", `Pick a whole number of dollars from ${DAILY_CAP_RANGE.min} to ${DAILY_CAP_RANGE.max}.`);
+      const { error } = await admin.from("cutaway_settings").update({ daily_cap_usd: usd, updated_at: new Date().toISOString() }).eq("id", 1);
+      if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    }
+    const since = new Date(Date.now() - 24 * 3600e3).toISOString();
+    const [{ data: settings }, { data: counts }, { data: alerts }] = await Promise.all([
+      admin.from("cutaway_settings").select("*").eq("id", 1).maybeSingle(),
+      admin.rpc("cutaway_guard", { p_user: who.user.id }),
+      admin.from("system_logs").select("event, created_at").eq("source", "ops-alert").like("event", "cutaway:cap%").gte("created_at", since).order("created_at", { ascending: false }),
+    ]);
+    const capUsd = Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd), usedUsd = Number(counts?.spent_24h) || 0;
+    return {
+      capUsd, usedUsd, running: Number(counts?.running) || 0, paidCalls: settings?.paid_calls !== false && !PAID_OFF, range: DAILY_CAP_RANGE,
+      perUser: { maxRunning: Number(settings?.user_max_running ?? DEFAULT_SETTINGS.user_max_running), startsPerHour: Number(settings?.user_starts_per_hour ?? DEFAULT_SETTINGS.user_starts_per_hour) },
+      alerts: (alerts ?? []).map((a: any) => ({ level: Number(String(a.event).replace("cutaway:cap", "")), at: a.created_at })),
+    };
+  }
 
   if (action === "list") {
     const { data } = await admin.from("cutaway_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);

@@ -43,7 +43,7 @@ import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
 import { COST_USD, SMALL_USD, WRITER_USD, estimateUsd, readPaidState } from "../_shared/blocky/spendGuard.js";
-import { cleanWindowCap, noteWindowHit, readOpsCard, readWindow, userBudget, userSpendToday, windowBudget } from "../_shared/blocky/spendWatch.js";
+import { cleanWindowCap, noteWindowHit, readOpsCard, readWindow, windowBudget } from "../_shared/blocky/spendWatch.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -97,10 +97,11 @@ function adminEmails(): string[] {
  * Paid calls are OFF unless the switch is on. Then Blocky's one limit (spendWatch.js): what all users
  * together cost us in the last 3 hours. At the limit anything NEW is refused with "High demand right
  * now" and the owner is emailed; a step of something already under way (inProgress: a draft being
- * written, a story that has been paid for) goes on, so nobody is left with half a video. Then the cap
- * per user. Read fresh every time. Nothing is charged on a refusal.
+ * written, a story that has been paid for) goes on, so nobody is left with half a video. No cap per user
+ * (the owner, 2026-10-25): a paying user with credits is never stopped by a money limit of their own.
+ * Read fresh every time. Nothing is charged on a refusal.
  */
-async function requirePaidCalls(addUsd: number, userId: string | null = null, { inProgress = false } = {}) {
+async function requirePaidCalls(addUsd: number, _userId: string | null = null, { inProgress = false } = {}) {
   const state = await readPaidState(admin, ENV_PAID_CALLS, addUsd);
   if (!state.on) {
     console.log(`[blocky-story-api] paid call refused: ${state.reason} (spent $${state.spentUsd}, running $${state.inFlightUsd}, next $${addUsd}, cap $${state.capUsd})`);
@@ -114,14 +115,6 @@ async function requirePaidCalls(addUsd: number, userId: string | null = null, { 
       // behind the response it was cut off (the live drill, 2026-10-09). It never throws.
       await noteWindowHit(admin, LLM_ENV, budget);
       throw blockyError("HIGH_DEMAND");
-    }
-  }
-  // The cap per user (spendWatch.js): our real cost one account may cause in a day. Refused before any charge.
-  if (userId) {
-    const budget = userBudget({ ...(await userSpendToday(admin, userId)), addUsd });
-    if (!budget.ok) {
-      console.log(`[blocky-story-api] user daily limit: ${userId} spent $${budget.spentUsd.toFixed(2)}, running $${budget.runningUsd.toFixed(2)}, next $${addUsd}, cap $${budget.capUsd}`);
-      throw blockyError("USER_DAILY_LIMIT");
     }
   }
 }

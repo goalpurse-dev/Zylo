@@ -88,7 +88,7 @@ function BlockyCard({ b, onChange }) {
         <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set limit"}</button>
         {note && <span role="status" className="text-white/60">{note}</span>}
       </form>
-      <p className="mt-2 text-[12.5px] text-white/50">At the limit, new stories see "High demand right now, please try again shortly", nothing is charged, stories in progress finish, and you get an email. Also in force: {money(b.limits.userDailyUsd)} of our cost per user per day. All of Blocky today, tests too: {money(b.today.spentUsd)}.</p>
+      <p className="mt-2 text-[12.5px] text-white/50">At the limit, new stories see "High demand right now, please try again shortly", nothing is charged, stories in progress finish, and you get an email. No limit per user. All of Blocky today, tests too: {money(b.today.spentUsd)}.</p>
       {b.alerts.map((a) => (
         <p key={a.kind} className={`mt-3 text-[12.5px] ${ALERTS[a.kind]?.[1] ?? "text-amber-200"}`}>
           {ALERTS[a.kind]?.[0] ?? "Alert"} (last seen {new Date(a.lastSeen).toLocaleString()}): {a.message}
@@ -99,9 +99,56 @@ function BlockyCard({ b, onChange }) {
   );
 }
 
+// Cutaway Explainer's emergency cap (its own function, cutaway-api: the same owner check on the server). One cap for
+// everyone together over 24 hours, changed right here; no money limit per user. Emails at 50 % and 80 % and when reached.
+function CutawayCard({ c, onChange }) {
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [note, setNote] = useState(null);
+  if (!c) return <Card title="Cutaway Explainer · emergency cap" testid="ops-cutaway"><p className="text-[14px] text-white/60">Couldn't load Cutaway's numbers.</p></Card>;
+  const share = Math.min(100, Math.round((c.usedUsd / c.capUsd) * 100));
+  const full = c.usedUsd >= c.capUsd;
+  const save = async (e) => {
+    e.preventDefault();
+    const usd = Number(draft);
+    if (!(usd >= c.range.min && usd <= c.range.max)) { setNote(`Enter a whole number of dollars between ${c.range.min} and ${num(c.range.max)}.`); return; }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetDailyCap", usd } });
+    setSaving(false);
+    if (error || !data || data.error) { setNote("Couldn't save the cap. Try again."); return; }
+    setDraft("");
+    setNote(`Saved. The cap is ${money(data.capUsd)} per 24 hours, in force now.`);
+    onChange(data);
+  };
+  return (
+    <Card title="Cutaway Explainer · emergency cap" tone={full ? "bad" : share >= 50 ? "warn" : "plain"} testid="ops-cutaway">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat label="All users · last 24 hours" value={`${money(c.usedUsd)} of ${money(c.capUsd)}`} sub={full ? "at the cap: new videos wait" : `${share} % used`} />
+        <Stat label="Paid calls" value={c.paidCalls ? "On" : "Off"} sub={c.paidCalls ? "videos can be made" : "no new videos"} />
+        <Stat label="Videos being made" value={num(c.running)} />
+        <Stat label="Per user" value={`${c.perUser.maxRunning} at once`} sub={`${c.perUser.startsPerHour} starts an hour · no money limit`} />
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]" role="img" aria-label={`${share} % of the 24-hour cap used`}>
+        <div className={`h-full rounded-full ${full ? "bg-red-300" : share >= 50 ? "bg-amber-300" : "bg-lime-300"}`} style={{ width: `${Math.max(share, c.usedUsd > 0 ? 2 : 0)}%` }} />
+      </div>
+      <form onSubmit={save} className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <label htmlFor="ops-cutaway-cap" className="font-semibold text-white">Emergency cap per 24 hours, all Cutaway users together:</label>
+        <span className="flex items-center gap-1">
+          $<input id="ops-cutaway-cap" data-testid="ops-cutaway-cap" type="number" inputMode="decimal" min={c.range.min} max={c.range.max} step="1" value={draft} onChange={(e) => { setDraft(e.target.value); setNote(null); }} placeholder={String(c.capUsd)} className="w-24 rounded-lg border border-white/15 bg-white/[0.05] px-2 py-1.5 tabular-nums text-white outline-none focus:border-lime-300/60" />
+        </span>
+        <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set cap"}</button>
+        {note && <span role="status" className="text-white/60">{note}</span>}
+      </form>
+      <p className="mt-2 text-[12.5px] text-white/50">Only for runaway bugs or retry loops. You get an email at 50 % and 80 %; at the cap, new videos see "High demand right now, please try again shortly", nothing is charged, and videos in progress finish.</p>
+      {c.alerts.map((a) => <p key={`${a.level}-${a.at}`} className={`mt-2 text-[12.5px] ${a.level >= 100 ? "text-red-200" : "text-amber-200"}`}>{a.level >= 100 ? "The cap was reached" : `${a.level} % of the cap was used`} · emailed {new Date(a.at).toLocaleString()}</p>)}
+    </Card>
+  );
+}
+
 export default function Ops() {
   const [data, setData] = useState(null);
   const [blocky, setBlocky] = useState(null);
+  const [cutaway, setCutaway] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | denied | error
   const load = useCallback(async () => {
     const { data: d, error } = await supabase.functions.invoke("ops-status", { body: {} });
@@ -110,6 +157,8 @@ export default function Ops() {
     // Blocky's card has its own source; a failure there never hides the rest of the page.
     const { data: b, error: blockyError } = await supabase.functions.invoke("blocky-story-api", { body: { action: "opsStatus" } });
     setBlocky(!blockyError && b?.ok ? b.data : null);
+    const { data: c, error: cutawayError } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsStatus" } });
+    setCutaway(!cutawayError && c && !c.error ? c : null);
   }, []);
   useEffect(() => { document.title = "Ops | Zyvo"; load(); const t = setInterval(load, 30_000); return () => clearInterval(t); }, [load]);
 
@@ -142,6 +191,8 @@ export default function Ops() {
       </Card>
 
       <BlockyCard b={blocky} onChange={setBlocky} />
+
+      <CutawayCard c={cutaway} onChange={setCutaway} />
 
       <Card title="Failures per hour · last 24 hours" testid="ops-failures">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">

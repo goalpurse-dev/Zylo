@@ -29,7 +29,7 @@ See "The final test" at the end. Launch only after it passes.
      nothing is charged, stories in progress finish, and the owner gets an email. The owner raises
      it on /admin/ops (the Blocky card) as users grow; $20 is roughly 15 V2 videos of 30 seconds
      in 3 hours. There is no daily cap (the old one stays unset).
-   - A cap per user: $20 of our real cost per user per day (`spendWatch.js#USER_DAILY_USD`).
+   - No cap per user (removed 2026-10-25): a paying user with credits is never stopped by a money limit.
    - The bug alarm: provider spend more than $10 ahead of what users were charged in 24 hours
      switches paid calls OFF, writes an alert and emails the admin (`AHEAD_ALARM_USD`). With many
      users writing for free and never buying, $10 can be reached without a bug: watch it in the

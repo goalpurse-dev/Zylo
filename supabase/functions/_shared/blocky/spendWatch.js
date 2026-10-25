@@ -4,8 +4,8 @@
 //      (blocky_settings.window_cap_usd, $20 to start; the owner raises it on /admin/ops). At the limit,
 //      anything NEW is refused before any charge with "High demand right now, please try again shortly",
 //      the owner is emailed, and stories already in progress go on to their final video.
-//   1. A cap per user: USER_DAILY_USD of OUR real cost per user per day (from 00:00 UTC). A step that would
-//      pass it is refused BEFORE anything is charged, with a clear message.
+//   1. (No cap per user: a paying user with credits is never stopped by a money limit of their own. The
+//      $20-a-day cap per user was removed on 2026-10-25, the owner's rule.)
 //   2. A bug alarm: when what we spent at providers runs ahead of what users were charged (the last 24
 //      hours), paid calls are switched off, an alert row is written and the admin is emailed. A healthy day
 //      looks the other way round: users are charged about twice what we spend.
@@ -17,8 +17,6 @@
 // The alarm's numbers and switches live in Blocky's own tables (blocky_provider_alerts, blocky_settings).
 import { BASIS, PICTURE, tierGuardPerSec } from "./pricing.js";
 
-/** Our real cost one user may cause in a day. */
-export const USER_DAILY_USD = 20;
 /** The alarm: spend this far ahead of what users were charged, over the last 24 hours. */
 export const AHEAD_ALARM_USD = 10;
 /** The engine sends a job at most a handful of times (three tries, a fallback or two, one remake). */
@@ -65,12 +63,6 @@ export function inFlightUsd(jobs) {
   return usd;
 }
 
-/** Is there room under the user's daily cap for a step expected to cost addUsd? */
-export function userBudget({ spentUsd = 0, runningUsd = 0, addUsd = 0, capUsd = USER_DAILY_USD }) {
-  const after = spentUsd + runningUsd + Math.max(0, addUsd);
-  return { ok: after <= capUsd + 1e-9, spentUsd, runningUsd, capUsd, leftUsd: Math.max(0, capUsd - spentUsd - runningUsd) };
-}
-
 /**
  * The alarm's verdict from the day's numbers.
  * @param {{spendUsd: number, chargedCredits: number, jobs?: {id: string, attempt: number}[]}} n
@@ -93,16 +85,6 @@ async function allRows(query, max = 20000) {
     if (!data || data.length < 1000) break;
   }
   return rows;
-}
-const dayStart = (now) => { const d = new Date(now); d.setUTCHours(0, 0, 0, 0); return d.toISOString(); };
-
-/** What one user has cost us today, and what their running jobs are still expected to cost. */
-export async function userSpendToday(admin, userId, now = new Date()) {
-  const since = dayStart(now);
-  const calls = await allRows(() => admin.from("blocky_ai_calls").select("cost_usd, purpose, user_id").eq("user_id", userId).gte("created_at", since).gt("cost_usd", 0).order("created_at"));
-  const { data: jobs, error } = await admin.from("blocky_jobs").select("kind, tool_key, price_input").eq("user_id", userId).in("status", ["queued", "submitting", "submitted"]);
-  if (error) throw new Error(error.message);
-  return { spentUsd: calls.filter(isUserSpend).reduce((s, c) => s + Number(c.cost_usd), 0), runningUsd: inFlightUsd(jobs) };
 }
 
 /** The numbers the alarm judges: the last WATCH_HOURS, or since the alarm was last cleared if that is later. */
@@ -190,7 +172,7 @@ export function opsCard({ paid, numbers, window = {}, alerts = [], clearedAt = n
     window: { hours: WINDOW_HOURS, usedUsd: w.usedUsd, spentUsd: w.spentUsd, runningUsd: w.runningUsd, capUsd: w.capUsd, leftUsd: w.leftUsd, full: !w.ok, range: WINDOW_CAP_RANGE },
     today: { spentUsd: round(Number(paid?.spentUsd) || 0), inFlightUsd: round(Number(paid?.inFlightUsd) || 0) },
     watch: { since: numbers.since ?? null, hours: WATCH_HOURS, spendUsd: v.spendUsd, chargedCredits: v.chargedCredits, chargedUsd: v.chargedUsd, aheadUsd: v.aheadUsd, alarmAtUsd: AHEAD_ALARM_USD, retried: v.retried.length },
-    limits: { userDailyUsd: USER_DAILY_USD, maxJobAttempts: MAX_JOB_ATTEMPTS },
+    limits: { maxJobAttempts: MAX_JOB_ATTEMPTS },
     alerts: alerts.filter(open).map((a) => ({ kind: KIND[a.provider], message: a.message, since: a.opened_at ?? null, lastSeen: a.last_seen_at, count: Number(a.count) || 0 })),
   };
 }

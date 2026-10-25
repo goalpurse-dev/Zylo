@@ -3,24 +3,18 @@
 // job that is sent too often. No provider and no database: the numbers are given.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, USER_DAILY_USD, WINDOW_ALERT, WINDOW_CAP_DEFAULT_USD, WINDOW_HOURS, cleanWindowCap, inFlightUsd, isUserSpend, judgeSpend, noteWindowHit, opsCard, runSpendWatch, usdOfCredits, userBudget, windowBudget } from "../supabase/functions/_shared/blocky/spendWatch.js";
+import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, WINDOW_ALERT, WINDOW_CAP_DEFAULT_USD, WINDOW_HOURS, cleanWindowCap, inFlightUsd, isUserSpend, judgeSpend, noteWindowHit, opsCard, runSpendWatch, usdOfCredits, windowBudget } from "../supabase/functions/_shared/blocky/spendWatch.js";
 import { MESSAGES } from "../supabase/functions/_shared/blocky/errors.js";
 
-test("the cap per user: $20 of our real cost a day, counted with what is still running and what the step adds", () => {
-  assert.equal(USER_DAILY_USD, 20);
-  assert.equal(userBudget({ spentUsd: 12, runningUsd: 3, addUsd: 4.9 }).ok, true);
-  assert.equal(userBudget({ spentUsd: 12, runningUsd: 3, addUsd: 5 }).ok, true, "exactly at the cap still goes");
-  const over = userBudget({ spentUsd: 12, runningUsd: 3, addUsd: 5.01 });
-  assert.deepEqual([over.ok, over.leftUsd], [false, 5]);
-  assert.equal(userBudget({ spentUsd: 25 }).leftUsd, 0);
+test("no cap per user (the owner, 2026-10-25); what running jobs are expected to cost", async () => {
+  const sw = await import("../supabase/functions/_shared/blocky/spendWatch.js");
+  assert.equal(sw.USER_DAILY_USD, undefined);
+  assert.equal(sw.userBudget, undefined);
+  assert.equal(MESSAGES.USER_DAILY_LIMIT, undefined);
   // What running jobs are expected to cost: a picture, a clip's seconds at its tier's dearest model.
   assert.equal(Number(inFlightUsd([{ kind: "image" }, { kind: "image" }]).toFixed(2)), 0.08);
   assert.equal(Number(inFlightUsd([{ kind: "clip", tool_key: "video:blocky-story-v4", price_input: { durationSec: 6 } }]).toFixed(2)), 0.9);
   assert.ok(inFlightUsd([{ kind: "clip", tool_key: "video:something-new", price_input: {} }]) > 2, "an unknown clip is assumed long and dear");
-  // The message says what happened, when it ends, and that nothing was charged.
-  assert.match(MESSAGES.USER_DAILY_LIMIT, /today/i);
-  assert.match(MESSAGES.USER_DAILY_LIMIT, /midnight UTC/);
-  assert.match(MESSAGES.USER_DAILY_LIMIT, /Nothing was charged/);
 });
 
 test("what counts as spend: calls a user caused, not the owner's test scripts", () => {
@@ -106,7 +100,7 @@ test("the alarm card on /admin/ops: the switch, the numbers, and only the alerts
   const quiet = opsCard({ paid: paidOn, numbers: { since: "2026-10-08T12:00:00Z", spendUsd: 3.2, chargedCredits: 300 }, now });
   assert.deepEqual([quiet.paidCalls, quiet.offReason, quiet.alerts.length], [true, null, 0]);
   assert.equal("capUsd" in quiet.today, false, "there is no daily cap anymore: the 3-hour limit is the one limit");
-  assert.deepEqual([quiet.watch.spendUsd, quiet.watch.chargedCredits, quiet.watch.alarmAtUsd, quiet.limits.userDailyUsd], [3.2, 300, AHEAD_ALARM_USD, USER_DAILY_USD]);
+  assert.deepEqual([quiet.watch.spendUsd, quiet.watch.chargedCredits, quiet.watch.alarmAtUsd, quiet.limits.maxJobAttempts], [3.2, 300, AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS]);
   assert.ok(quiet.watch.aheadUsd < 0, "a healthy day: charges are ahead of spend");
   // A spend alarm: open until paid calls are switched back on by hand, however old it is.
   const spend = { provider: SPEND_ALERT, message: "ahead", opened_at: "2026-10-07T10:00:00Z", last_seen_at: "2026-10-07T10:00:00Z", count: 3 };
@@ -172,9 +166,10 @@ test("the API: what the limit stops, what goes on, and who may ask for what", as
   assert.equal(api.split("requirePaidCalls(SMALL_USD, null, { inProgress: true })").length - 1, 2, "the post text and the final video");
   // A step of a story is under way once the story has been paid for (pictures made): the first paid step is new.
   assert.match(api, /await requirePaidCalls\(estimateUsd\(plan\.items\), ctx\.userId, \{ inProgress: spent > 0 \}\);/);
-  // The refusal comes before the cap per user and before any charge, with the friendly words.
+  // The refusal comes before any charge, with the friendly words; there is no cap per user.
   const guard = api.slice(api.indexOf("async function requirePaidCalls"), api.indexOf("/* ─── helpers"));
-  assert.ok(guard.indexOf('throw blockyError("HIGH_DEMAND")') > 0 && guard.indexOf('throw blockyError("HIGH_DEMAND")') < guard.indexOf('throw blockyError("USER_DAILY_LIMIT")'));
+  assert.ok(guard.indexOf('throw blockyError("HIGH_DEMAND")') > 0);
+  assert.ok(!/USER_DAILY_LIMIT|userBudget|userSpendToday/.test(api), "no cap per user");
   const { MESSAGES } = await import("../supabase/functions/_shared/blocky/errors.js");
   assert.equal(MESSAGES.HIGH_DEMAND, "High demand right now, please try again shortly. Nothing was charged.");
   assert.equal(MESSAGES.PLAN_UPGRADE_REQUIRED, "Upgrade your plan to continue.", "no plan is pushed: the popup lists all three");

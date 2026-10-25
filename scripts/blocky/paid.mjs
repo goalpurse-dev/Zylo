@@ -11,7 +11,7 @@
 // blocky_settings → paid_calls (true / false) and daily_cap_usd.
 // "Today" runs from 00:00 UTC. It takes effect on the next request.
 import { admin } from "./lib.mjs";
-import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, SPEND_CLEARED, USER_DAILY_USD, WATCH_HOURS, WINDOW_HOURS, judgeSpend, readSpendWatch, readWindow, windowBudget } from "../../supabase/functions/_shared/blocky/spendWatch.js";
+import { AHEAD_ALARM_USD, MAX_JOB_ATTEMPTS, RETRY_ALERT, SPEND_ALERT, SPEND_CLEARED, WATCH_HOURS, WINDOW_HOURS, judgeSpend, readSpendWatch, readWindow, windowBudget } from "../../supabase/functions/_shared/blocky/spendWatch.js";
 
 const [command = "status", value] = process.argv.slice(2);
 const NO_CAP_USD = 999999.99;
@@ -46,7 +46,7 @@ const win = windowBudget(await readWindow(db));
 console.log(`Last ${WINDOW_HOURS} hours, all users together: ${usd(win.usedUsd)} of the ${usd(win.capUsd)} limit${win.ok ? `, ${usd(win.leftUsd)} left` : ": AT THE LIMIT, new stories see \"High demand right now\""}.`);
 // The spending watch (spendWatch.js): what users cost us and were charged, and any alarm.
 const watch = judgeSpend(await readSpendWatch(db));
-console.log(`Last ${WATCH_HOURS} hours, users only: ${usd(watch.spendUsd)} spent at providers, ${watch.chargedCredits} credits charged (worth ${usd(watch.chargedUsd)}): ${watch.aheadUsd > 0 ? `${usd(watch.aheadUsd)} AHEAD of charges` : "charges are ahead of spend, as they should be"}. The alarm goes at ${usd(AHEAD_ALARM_USD)} ahead and pauses paid calls. Cap per user: ${usd(USER_DAILY_USD)} of our cost a day.`);
+console.log(`Last ${WATCH_HOURS} hours, users only: ${usd(watch.spendUsd)} spent at providers, ${watch.chargedCredits} credits charged (worth ${usd(watch.chargedUsd)}): ${watch.aheadUsd > 0 ? `${usd(watch.aheadUsd)} AHEAD of charges` : "charges are ahead of spend, as they should be"}. The alarm goes at ${usd(AHEAD_ALARM_USD)} ahead and pauses paid calls. No cap per user.`);
 const { data: alerts } = await db.from("blocky_provider_alerts").select("provider, message, last_seen_at, count").in("provider", [SPEND_ALERT, RETRY_ALERT]);
 const fresh = (alerts ?? []).filter((a) => Date.now() - new Date(a.last_seen_at).getTime() < WATCH_HOURS * 3600_000);
 for (const a of fresh) console.log(`ALERT (${a.provider === SPEND_ALERT ? "spend ahead of charges" : `a job sent more than ${MAX_JOB_ATTEMPTS} times`}, last seen ${a.last_seen_at}): ${a.message}`);

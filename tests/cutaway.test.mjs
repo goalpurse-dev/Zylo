@@ -89,8 +89,16 @@ test("the migration's tool_prices rows match pricing.js", () => {
   for (const fn of ["cutaway_start_run", "cutaway_refund", "cutaway_add_cost", "cutaway_guard"]) assert.match(sql, new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${fn}\\(.*TO service_role`));
   assert.ok(sql.includes("'cutaway-renders', 'cutaway-renders', false, 524288000"));
   assert.ok(sql.includes("cron.schedule('cutaway-watchdog', '*/2 * * * *'"));
-  // the settings row's defaults are guard.js DEFAULT_SETTINGS
-  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) assert.match(sql, new RegExp(`\\n\\s+${k}\\s+\\w+\\s+NOT NULL DEFAULT ${v}[,\\n]`), k);
+  // the settings row's defaults are guard.js DEFAULT_SETTINGS (the emergency cap's later migration changes one default
+  // and drops the per-user money cap and the others the owner removed on 2026-10-25)
+  const caps = readFileSync(new URL("../supabase/migrations/20261125100000_cutaway_emergency_cap.sql", import.meta.url), "utf8");
+  const changed = { daily_cap_usd: /ALTER COLUMN daily_cap_usd SET DEFAULT (\d+)/.exec(caps)?.[1] };
+  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
+    if (changed[k] != null) assert.equal(Number(changed[k]), v, k);
+    else assert.match(sql, new RegExp(`\\n\\s+${k}\\s+\\w+\\s+NOT NULL DEFAULT ${v}[,\\n]`), k);
+  }
+  for (const gone of ["window_cap_usd", "user_daily_usd", "user_fail_streak", "fail_pause_min", "max_running"]) assert.match(caps, new RegExp(`DROP COLUMN IF EXISTS ${gone}\\b`), gone);
+  assert.match(caps, /UPDATE public\.cutaway_settings SET daily_cap_usd = 20\b/);
 });
 
 // ---------- topics ----------
