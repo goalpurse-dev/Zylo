@@ -1,8 +1,8 @@
 {
  "app": "zyvo-cutaway-render",
- "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:76a60657a7168b4f424adeb03766aed187014b7b880ef5b725c45a4a73599baa",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:a6da24148f5bf94b72ed0290358e5439493eab957a4d443f1dadabced6419f75",
  "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
- "templateId": "4412rpdedj",
+ "templateId": "3v5jcgj5gk",
  "endpointId": "f66astc0vrus92",
  "gpus": [
   "NVIDIA RTX A4000",
@@ -13,5 +13,5 @@
  "workersMax": 4,
  "idleTimeout": 5,
  "executionTimeoutMs": 2700000,
- "createdAt": "2026-10-25T21:31:38.743Z"
+ "createdAt": "2026-10-25T22:09:46.099Z"
 }
