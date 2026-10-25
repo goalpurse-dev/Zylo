@@ -7,7 +7,7 @@ const [logFile, planFile, budget = "10"] = process.argv.slice(2);
 const rows = fs.readFileSync(logFile, "utf8").trim().split("\n").map((l) => JSON.parse(l)).filter((r) => r.label !== "stream test" || r.costUsd);
 // worst case for a dropped call: what that kind of call cost when it went through (rounded up)
 const WORST = { "scene plan": 0.25, "fact research": 0.15, "scene repair": 0.1, "preview repair": 0.25 };
-const service = (r) => (/voice/.test(r.label) ? "ElevenLabs" : /Haiku/.test(r.label) ? "Claude Haiku 5.5" : r.model === "claude-opus-5-5" ? "Claude Opus 5.5" : "Claude Sonnet 5.5");
+const service = (r) => (/voice|ElevenLabs/.test(r.label) ? "ElevenLabs" : /Haiku/.test(r.label) ? "Claude Haiku 5.5" : r.model === "claude-opus-5-5" ? "Claude Opus 5.5" : "Claude Sonnet 5.5");
 let total = 0, unknown = 0;
 const lines = rows.map((r) => {
   const day = r.at.slice(0, 10);
