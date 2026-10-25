@@ -122,6 +122,13 @@ test("watchdog: 45 minutes is the hard limit, a quiet worker is lost, a long que
   assert.deepEqual(onWatch(run(), { status: "IN_PROGRESS" }, NOW).actions, [], "a healthy run is left alone");
 });
 
+test("events: an earlier attempt's RunPod webhook never fails or retries the run again (the production test of 2026-10-25)", () => {
+  const retrying = run({ attempt: 2, provider_job_id: null });
+  assert.deepEqual(onEvent(retrying, { event: "runpod", jobId: "rp-1", status: "FAILED" }, NOW).patch, {});
+  assert.deepEqual(onEvent(run({ attempt: 2, provider_job_id: "rp-2" }), { event: "runpod", jobId: "rp-1", status: "FAILED" }, NOW).patch, {});
+  assert.equal(onEvent(run({ provider_job_id: "rp-1" }), { event: "runpod", jobId: "rp-1", status: "FAILED" }, NOW).patch.attempt, 2, "the current job's failure still retries");
+});
+
 // ---------- the worker's failure codes (m3/videoJob.mjs) ----------
 
 test("worker: an empty balance (Anthropic's real 400 of 2026-10-24) is PROVIDER_BALANCE, never retried", async () => {

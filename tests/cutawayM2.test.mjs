@@ -368,8 +368,13 @@ test("m2 voice check: the Flash take's garbles fail, number words and a misheard
   // the approved French drain: "the French in French drain" heard with "and" is a mishearing, not a failure
   const drain = compareWords("And the French in French drain is not France.", "And the French and French drain is not France.");
   assert.equal(drain.ok, true); assert.equal(drain.notes.length, 1);
-  // a run-together sentence ("140. Add a pay kiosk" heard "140 at a pay kiosk") fails: a content word changed
-  assert.equal(compareWords("up to 140. Add a pay kiosk.", "up to 140 at a pay kiosk.").ok, false);
+  // "Add" heard as "at" sounds the same to a listener: a note, not a failure (2026-10-25: the production Landfill test
+  // failed both takes on it, and on "US" said as letters; both are notes now). A different word still fails.
+  const add = compareWords("up to 140. Add a pay kiosk.", "up to 140 at a pay kiosk.");
+  assert.equal(add.ok, true); assert.equal(add.notes.length, 1);
+  assert.equal(compareWords("at about 490 US landfills", "at about 490 U.S. landfills").ok, true);
+  assert.equal(compareWords("at about 490 US landfills", "at about 490 landfills").ok, false, "a missing word still fails");
+  assert.equal(compareWords("dig a pit", "dig a pot").ok, false, "a different short word still fails");
 });
 
 import { underground } from "../scripts/cutaway/proto3d/m2/director.js";

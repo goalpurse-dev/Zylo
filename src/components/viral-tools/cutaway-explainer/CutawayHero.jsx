@@ -105,14 +105,14 @@ function CutawayCanvas({ wide }) {
  * labelled in depth. variant "tall" (9:16, desktop) or "wide" (a 16:11 crop for phones). Space is reserved by the
  * aspect ratio, so nothing shifts while the image loads.
  */
-export default function CutawayHero({ variant = "tall", onWatch, children, className = "" }) {
+export default function CutawayHero({ variant = "tall", onWatch, children, className = "", style }) {
   const stage = useParallax();
   const wide = variant === "wide";
   const touch = !finePointer();
   return (
-    <div ref={stage} className={`relative [perspective:1100px] ${className}`}>
+    <div ref={stage} style={style} className={`relative [perspective:1100px] ${className}`}>
       {!wide && (
-        <div aria-hidden="true" className="cw-depth pointer-events-none absolute inset-0" style={{ "--z": "-10px" }}>
+        <div aria-hidden="true" className="cw-depth pointer-events-none absolute inset-0 max-sm:hidden" style={{ "--z": "-10px" }}>
           <img src={BACK_POSTER} alt="" width="216" height="384" decoding="async" className="cw-back-card absolute -left-[18%] top-[7%] aspect-[9/16] w-[78%] rounded-[24px] border border-white/10 object-cover shadow-[0_30px_60px_rgba(0,0,0,.5)]" />
         </div>
       )}

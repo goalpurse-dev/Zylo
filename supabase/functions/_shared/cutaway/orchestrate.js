@@ -28,7 +28,8 @@ function terminal(run, f, now) {
   if (run.provider === "runpod" && run.provider_job_id) actions.push({ type: "cancel", provider: "runpod", jobId: run.provider_job_id });
   if (f.code === "PROVIDER_BALANCE") actions.push({ type: "alert", key: "cutaway-provider-balance", subject: "Cutaway: a provider is out of balance", text: `Run ${run.id} failed: ${f.message ?? f.code}. New videos are paused until the balance is topped up.` });
   else if (!NO_RETRY.has(f.code)) actions.push({ type: "alert", key: "cutaway-render-failed", subject: "Cutaway: a video failed on our side", text: `Run ${run.id} (${run.topic}) failed after its retries: ${f.code} ${String(f.message ?? "").slice(0, 400)}` });
-  return { patch: { status: "failed", stage: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 1500), finished_at: iso(now) }, actions };
+  // (the stage keeps the step it failed in: the owner's Details show it)
+  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 1500), finished_at: iso(now) }, actions };
 }
 
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
@@ -97,7 +98,9 @@ export function onEvent(run, ev, now = Date.now()) {
     }
     case "runpod": {
       // the RunPod webhook: a job that ended without its worker's own "done"/"failed" (a crash, a timeout)
-      if (ev.jobId && run.provider_job_id && ev.jobId !== run.provider_job_id) return { patch: {}, actions };
+      // only the run's current job counts: an earlier attempt's webhook (its worker already reported the failure that
+      // started this attempt) must not fail or retry the run a second time
+      if (!ev.jobId || ev.jobId !== run.provider_job_id) return { patch: {}, actions };
       const st = String(ev.status ?? "").toUpperCase();
       if (st === "COMPLETED" && ev.output?.ok) return { patch: {}, actions: [...actions, { type: "verifyDone" }] };
       if (st === "COMPLETED" || ["FAILED", "CANCELLED", "TIMED_OUT"].includes(st)) {

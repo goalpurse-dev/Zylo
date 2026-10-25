@@ -38,16 +38,16 @@ function statusLine(item) {
   return `In progress · ${when}`;
 }
 
-function Recents({ items, onOpen, compact = false }) {
+function Recents({ items, onOpen, compact = false, flow = false }) {
   // No videos of their own yet: our two finished examples, labelled so nobody thinks they made them.
   const shown = recentOrExamples(items);
   const examples = !items.length;
   return (
-    <section style={{ "--d": "120ms" }} className={`cw-fade-up flex flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:p-4 ${compact ? "" : "lg:min-h-0 lg:flex-1"}`}>
+    <section style={{ "--d": "120ms" }} className={`cw-fade-up flex flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:p-4 ${compact || flow ? "" : "lg:min-h-0 lg:flex-1"}`}>
       <h3 className="text-[14px] font-black text-white">{examples ? "Examples" : "Recent Creations"}</h3>
       {examples && <p className="mt-1 text-[11px] font-semibold text-white/35">Your videos will appear here. Until then, tap an example to watch it.</p>}
       {/* a grid of 9:16 posters with the full title under each (2 columns on phones, as wide as fits on desktop) */}
-      <div className={`mt-3 grid grid-cols-2 content-start gap-3 sm:grid-cols-3 ${compact ? "lg:[grid-template-columns:repeat(auto-fill,minmax(118px,1fr))]" : "lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin] lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]"}`}>
+      <div className={`mt-3 grid grid-cols-2 content-start gap-3 sm:grid-cols-3 ${compact ? "lg:[grid-template-columns:repeat(auto-fill,minmax(118px,1fr))]" : flow ? "lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]" : "lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin] lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]"}`}>
         {shown.map((item, i) => {
           const working = isWorking(item), failed = item.step === "failed";
           return (
@@ -110,24 +110,25 @@ function Idle({ recent, onOpen, onWatch, isDesktop }) {
   const [ref, { width, height }] = useWidth();
   const wide = isDesktop && width >= 640;
   return (
-    <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0">
+    // the whole panel scrolls (everything below the hero stays reachable); the hero is the video's own 9:16 shape, whole
+    <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin]">
       {isDesktop && <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(74,222,128,.10),transparent_65%)]" />}
       {wide ? (
-        <div className="relative flex min-h-0 flex-1 gap-6">
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto [scrollbar-width:none]">
-            {/* the three feature lines only when the panel is tall enough to keep the examples in view too */}
-            <Intro size={width >= 860 ? "lg" : "md"} features={height >= 820} />
+        <div className="relative flex gap-6">
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <Intro size={width >= 860 ? "lg" : "md"} features />
             <Recents items={recent} onOpen={onOpen} compact />
           </div>
-          <div className="flex h-full shrink-0 items-center justify-center pl-8 pr-1">
-            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16] h-full max-h-[580px]" />
+          {/* the hero stays in view while the side scrolls; its height fits the panel */}
+          <div className="sticky top-0 flex shrink-0 items-start justify-center self-start pl-8 pr-1">
+            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16]" style={{ height: `${Math.max(320, Math.min(580, (height || 640) - 48))}px` }} />
           </div>
         </div>
       ) : (
         <>
-          {isDesktop && <CutawayHero variant="wide" onWatch={onWatch} className="w-full shrink-0" />}
+          {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[300px] shrink-0" />}
           <Intro size="sm" />
-          <Recents items={recent} onOpen={onOpen} />
+          <Recents items={recent} onOpen={onOpen} flow />
         </>
       )}
     </div>
@@ -172,6 +173,32 @@ function RunFailed({ run, onBack, onRetry }) {
           <ArrowLeft className="h-3.5 w-3.5" />Back
         </button>
       </div>
+      {run.debug && <FailureDetails debug={run.debug} />}
+    </div>
+  );
+}
+
+const STEP_NAMES = { queued: "Waiting for a GPU", script: "Script", facts: "Fact-check", scene: "Scene plan", voice: "Voice", preview: "Preview check", repair: "Preview repair", render: "Render", sound: "Sound mix", finish: "Finishing", upload: "Upload" };
+
+/** The owner only (the server sends `debug` to the owner alone): the step that failed and the error, to copy. */
+function FailureDetails({ debug }) {
+  const [open, setOpen] = useState(false);
+  const step = STEP_NAMES[debug.step] ?? debug.step ?? "unknown";
+  const text = `Step: ${step}\nCode: ${debug.code ?? "-"}\nAttempt: ${debug.attempt} (${debug.provider ?? "-"})\n${debug.message ?? ""}`;
+  return (
+    <div className="relative mt-1 w-full max-w-[420px] text-left">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="mx-auto block text-[11px] font-semibold text-white/40 underline decoration-white/20 underline-offset-2 hover:text-white/70">
+        {open ? "Hide details" : "Details"}
+      </button>
+      {open && (
+        <div className="cw-fade-up mt-2 rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-white/70">
+          <p><span className="text-white/40">Step</span> {step}</p>
+          <p><span className="text-white/40">Code</span> {debug.code ?? "-"}</p>
+          <p><span className="text-white/40">Attempt</span> {debug.attempt} · {debug.provider ?? "-"}</p>
+          {debug.message && <p className="mt-1.5 max-h-40 overflow-y-auto whitespace-pre-wrap break-words text-white/60">{debug.message}</p>}
+          <button type="button" onClick={() => navigator.clipboard?.writeText(text).catch(() => {})} className="mt-2 text-[10.5px] font-sans font-bold text-cutaway hover:text-cutaway-soft">Copy</button>
+        </div>
+      )}
     </div>
   );
 }

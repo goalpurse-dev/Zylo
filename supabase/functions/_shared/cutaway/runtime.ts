@@ -226,6 +226,8 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
     error: run.status === "failed" ? FAILED_MESSAGE : null,
     refunded: Boolean(run.refunded_at), creditsRefunded: run.credits_refunded ?? 0,
     owner, layoutApproved: owner ? (run.layout_approved ?? null) : null,
+    // the owner only: why a run failed (customers see the friendly message)
+    debug: owner && run.status === "failed" ? { step: run.stage ?? null, code: run.error_code ?? null, message: run.error_message ?? null, attempt: run.attempt ?? 1, provider: run.provider ?? null, at: run.finished_at ?? null } : null,
   };
 }
 

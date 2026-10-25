@@ -70,7 +70,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
 
   // phones: the hero opens the builder (on desktop it fills the empty result side instead)
   const phoneHero = !isDesktop && phase !== "working" ? (
-    <CutawayHero variant="wide" onWatch={watchExample}>
+    <CutawayHero variant="tall" onWatch={watchExample} className="mx-auto aspect-[9/16] w-full max-w-[min(300px,78vw)]">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cutaway">Type a topic · get a 3D video</p>
       <h2 className="mt-1 overflow-hidden pb-[0.06em] text-[24px] font-black leading-[1.02] tracking-[-0.04em] text-white">
         <span className="cw-line-up" style={{ "--d": "250ms" }}>See inside how it works.</span>

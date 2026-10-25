@@ -14,7 +14,10 @@ const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy:
 
 /** words as compared: lower case, no punctuation, "%" as "percent", spelled-out numbers as digits ("one hundred forty" -> "140") */
 export function normWords(text) {
-  const raw = String(text).toLowerCase().replace(/%/g, " percent ").replace(/(\d),(\d{3})/g, "$1$2").replace(/[–—-]/g, " ").replace(/[^a-z0-9.' ]+/g, " ").replace(/\.(?!\d)/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
+  // an abbreviation said as letters is one word: "U.S." and "U S" both become "us", as the script's "US" (the production
+  // Landfill test of 2026-10-25 failed both takes on "490 US landfills" heard as "U.S.")
+  const t0 = String(text).replace(/\b((?:[A-Za-z]\.){2,})/g, (m) => m.replace(/\./g, "")).replace(/\b[A-Z](?: [A-Z])+\b/g, (m) => m.replace(/ /g, ""));
+  const raw = t0.toLowerCase().replace(/%/g, " percent ").replace(/(\d),(\d{3})/g, "$1$2").replace(/[–—-]/g, " ").replace(/[^a-z0-9.' ]+/g, " ").replace(/\.(?!\d)/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
   const out = [];
   for (let i = 0; i < raw.length; i++) {
     const w = raw[i];
@@ -40,7 +43,9 @@ export function compareWords(scriptText, heardText) {
   const a = normWords(scriptText), b = normWords(heardText);
   const n = a.length, m = b.length, D = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: m + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
   const same = (x, y) => x === y || (x.length > 3 && stem(x) === stem(y));
-  const minor = (x, y) => same(x, y) || (LITTLE.has(x) && LITTLE.has(y));
+  // two short words that start alike, one heard for the other ("Add a grass cap" heard "at a grass cap"): a mishearing
+  // of an unstressed sound, noted; a missing or an extra word still fails
+  const minor = (x, y) => same(x, y) || (LITTLE.has(x) && LITTLE.has(y)) || (x.length <= 3 && y.length <= 3 && x[0] === y[0] && x.match(/[aeiouy]/)?.[0] === y.match(/[aeiouy]/)?.[0] && x.length > 1 && !/\d/.test(x + y));
   for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) D[i][j] = Math.min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + (same(a[i - 1], b[j - 1]) ? 0 : 1));
   const problems = [], notes = [];
   for (let i = n, j = m; i > 0 || j > 0;) {

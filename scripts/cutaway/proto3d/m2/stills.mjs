@@ -18,7 +18,10 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": types[path.extname(f)] ?? "application/octet-stream" });
   fs.createReadStream(f).pipe(res);
 }).listen(0);
-const browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"] });
+// the same launch as render.mjs: a render server sets CHROME_PATH and its GPU flags in CHROME_ARGS (the production preview
+// gate crashed on the GPU server with this laptop's Chrome path written in, 2026-10-25)
+const chromeArgs = process.env.CHROME_ARGS ? JSON.parse(process.env.CHROME_ARGS) : null;
+const browser = await puppeteer.launch({ executablePath: process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, ...(chromeArgs ? { ignoreDefaultArgs: ["--use-angle=swiftshader-webgl", "--disable-gpu"] } : {}), args: chromeArgs ?? (process.env.SOFTWARE_GL ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu"] : ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"]) });
 const page = await browser.newPage();
 page.on("pageerror", (e) => console.log("page error:", e.message));
 page.on("console", (m) => { if (m.type() === "error") console.log("page:", m.text()); });

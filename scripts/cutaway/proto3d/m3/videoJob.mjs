@@ -25,6 +25,8 @@ import { useGpu, useSoftware } from "./gpu.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PROTO = process.env.CUTAWAY_PROTO ?? "/app/proto", FF = process.env.FFMPEG ?? "ffmpeg", FPS = 30;
 const LAYOUTS = path.resolve(here, "../m2/layouts");
+// the RunPod 16 GB tier, per second (pricing.js RUNTIME_RATES.runpodUsdPerSec)
+const GPU_USD_PER_SEC = 0.00016;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- the job's files ----------
@@ -81,6 +83,13 @@ async function main() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cutaway-")), out = path.join(dir, "run");
   const version = job.endCard === false ? "noend" : "end", t0 = Date.now(), costs = { planUsd: 0, voiceUsd: 0, checksUsd: 0, postUsd: 0 };
   fs.mkdirSync(out, { recursive: true });
+  // every paid call of this job, one line each (m2 llm.mjs and voice.mjs write it): what a failed job reports as spent
+  const spendLog = path.join(dir, "spend.jsonl");
+  const spentSoFar = () => {
+    const s = { planUsd: 0, voiceUsd: 0, checksUsd: 0 };
+    try { for (const l of fs.readFileSync(spendLog, "utf8").split("\n").filter(Boolean)) { const r = JSON.parse(l), u = Number(r.costUsd) || 0; if (/voice/.test(r.label)) s.voiceUsd += u; else if (/vision|preview/.test(r.label)) s.checksUsd += u; else s.planUsd += u; } } catch { /* nothing spent yet */ }
+    return s;
+  };
 
   // ---------- the callback ----------
   let lastTell = 0, lastStage = null;
@@ -156,7 +165,7 @@ async function main() {
         // an approved layout for this topic: the worker's layouts folder gets it, the planner reuses it
         let reuse = null;
         if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
-        const r = await runTopic({ topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false });
+        const r = await runTopic({ topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog });
         if (!r.ok) {
           const failedGate = Array.isArray(r.vision?.failing) && r.vision.failing.length;
           throw Object.assign(new Error(failedGate ? `the preview check blocked it: ${r.vision.failing.join(", ")}` : `the plan did not pass: ${(r.problems ?? []).join("; ").slice(0, 500)}`), { code: failedGate ? "GATE_FAILED" : "PLAN_FAILED", retryable: false, costs: { planUsd: r.planUsd ?? 0, voiceUsd: r.voiceUsd ?? 0, checksUsd: r.checksUsd ?? 0 } });
@@ -215,6 +224,10 @@ async function main() {
     clearInterval(beat);
     const c = e.retryable === false ? { code: e.code ?? "RENDER_FAILED", retryable: false } : classify(e);
     Object.assign(costs, e.costs ?? {});
+    // what this attempt spent, from its own log when the error didn't carry it (a crash, the voice check), and its GPU time
+    const logged = spentSoFar();
+    for (const k of Object.keys(logged)) costs[k] = Math.max(Number(costs[k]) || 0, +logged[k].toFixed(5));
+    if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
     await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 1500), costs });
     return { ok: false, code: c.code, error: String(e.message ?? e).slice(0, 1500) };
   }
