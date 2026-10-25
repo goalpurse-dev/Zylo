@@ -43,6 +43,7 @@ export const ERRORS = Object.freeze({
   CREDITS: { status: 402, message: "You need more credits for this video." },
   OFF: { status: 403, message: "This template isn't available yet." },
   CANT_BUILD: { status: 422, message: "We can't build this one yet." },
+  SOON: { status: 403, message: "Custom topics are coming soon. Pick a premade topic." },
   LIMIT: { status: 429, message: "You've hit a limit for now. Try again a little later." },
   BUSY: { status: 503, message: "We're making a lot of videos right now. Try again in a few minutes." },
   BAD_INPUT: { status: 400, message: "That didn't look right. Please try again." },

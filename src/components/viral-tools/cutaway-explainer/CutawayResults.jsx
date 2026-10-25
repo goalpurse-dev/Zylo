@@ -114,7 +114,7 @@ function Intro({ size = "sm", features = false }) {
         <span className="block overflow-hidden pb-[0.06em]"><span className="cw-line-up" style={{ "--d": "120ms" }}>See inside how it works.</span></span>
         <span className="block overflow-hidden pb-[0.06em]"><span className="cw-line-up text-cutaway" style={{ "--d": "240ms" }}>In one continuous shot.</span></span>
       </h2>
-      <p style={{ "--d": "360ms" }} className="cw-fade-up mt-3 max-w-[560px] text-[12.5px] font-medium leading-relaxed text-white/45">Type a topic. You get a fact-checked voiceover and a vertical 3D cutaway video: the pit is dug, every part appears on its word, and the camera never cuts.</p>
+      <p style={{ "--d": "360ms" }} className="cw-fade-up mt-3 max-w-[560px] text-[12.5px] font-medium leading-relaxed text-white/45">Pick a topic. You get a fact-checked voiceover and a vertical 3D cutaway video: the pit is dug, every part appears on its word, and the camera never cuts.</p>
       {features && (
         <ul className="mt-4 flex flex-col gap-1.5">
           {FEATURES.map((f, i) => (

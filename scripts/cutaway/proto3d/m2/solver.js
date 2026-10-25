@@ -48,7 +48,10 @@ export function solveLayout(L, sentences) {
   for (const s of L.audio?.sfx ?? []) if (!LIBS.includes(s.lib)) problems.push(`audio.sfx: no library sound "${s.lib}" (use ${LIBS.join(", ")})`);
   if (!L.parts.some((p) => p.kind === "sign")) problems.push("no sign part (the end card)");
   if (!L.parts.some((p) => p.kind === "light")) warnings.push("no light part");
-  if (!L.parts.some((p) => p.kind === "dig")) problems.push("no dig part (the cut is never dug)");
+  // a dig only where there is a real cut to dig: a thin-slab world (nothing underground, set by layoutRules rule 8: a
+  // street topic, its wire loop in a saw cut drawn on the road) has none (the traffic light run of 2026-10-25 was
+  // refused here, and its repair was asked for a dig the rules forbid)
+  if (!W.shallow && !L.parts.some((p) => p.kind === "dig")) problems.push("no dig part (the cut is never dug)");
   // beats: verbs exist, parts exist, every part is used, every sentence has something
   let ex = null;
   try { ex = expandBeats(L); } catch (e) { problems.push(e.message); }

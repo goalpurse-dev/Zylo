@@ -79,6 +79,7 @@ function CutawayPage() {
     recent: Mock.mockRecent(DEV_MOCK, mockOpts),
     values: Mock.mockValues(DEV_MOCK),
     notice: Mock.mockNotice(DEV_MOCK),
+    customOpen: Mock.mockCustomOpen(DEV_MOCK),
   } : null;
 
   return (

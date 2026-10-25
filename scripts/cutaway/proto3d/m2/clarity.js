@@ -48,7 +48,7 @@ export function clarityChecks(L, sentences) {
   const boxesOf = (p) => (p.kind === "panels" ? (p.params?.panels ?? []).map((q) => { if (!Array.isArray(q.size) || !Array.isArray(q.pos)) return null; const s = q.size.map(Math.abs), a = q.anchor ?? [0, 0, 0]; const c = q.pos.map((v, i) => v + (a[i] * s[i]) / 2); return { ch: q.ch, min: c.map((v, i) => v - s[i] / 2), max: c.map((v, i) => v + s[i] / 2) }; }).filter(Boolean) : [focusOf(p, cut)].filter(Boolean));
   const STANDING = ["box", "boxPop", "machine", "tank", "prop", "panels", "vendingMachine", "atm", "carWash", "trafficLight", "hydrant"];
   // what can hold something up: solid parts (a pipe, a flow, water or an arrow holds nothing)
-  const all = L.parts.filter((p) => [...STANDING, "canopy", "settle", "wipe", "gravel", "bags"].includes(p.kind)).flatMap((p) => boxesOf(p).map((b) => ({ id: p.id, b })));
+  const all = L.parts.filter((p) => [...STANDING, "cabinet", "canopy", "settle", "wipe", "gravel", "bags"].includes(p.kind)).flatMap((p) => boxesOf(p).map((b) => ({ id: p.id, b })));
   const ends = L.parts.flatMap((p) => boxesOf(p).map((b) => ({ id: p.id, b })));
   for (const p of L.parts) {
     if (!STANDING.includes(p.kind)) continue;
@@ -57,8 +57,13 @@ export function clarityChecks(L, sentences) {
       // a riser (a vertical pipe) holds a small cap on its top (a wellhead), never a roof
       const small = b.max[0] - b.min[0] <= 1.2 && b.max[2] - b.min[2] <= 1.2;
       const risers = small ? L.parts.filter((x) => x.kind === "riser").map((x) => focusOf(x, cut)).filter(Boolean) : [];
-      const under = [...all.filter((x) => !(x.id === p.id && x.b.ch === b.ch)).map((x) => x.b), ...solids, ...risers].some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
-      if (!under) problems.push(`part ${p.id}${b.ch ? ` (${b.ch})` : ""} floats: its bottom is at y = ${b.min[1].toFixed(1)} with nothing under it; stand it on the ground or a part (a roof is a canopy, with its posts)`);
+      const holders = [...all.filter((x) => !(x.id === p.id && x.b.ch === b.ch)).map((x) => x.b), ...solids, ...risers];
+      const under = holders.some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
+      // a thin panel mounted on a solid's front face (layoutRules: a timer as a display on the controller cabinet; a
+      // traffic light run's plan was refused as "floats" for it): its back on the face, within the face's height and width
+      const thin = b.max[2] - b.min[2] <= 0.15;
+      const mounted = thin && holders.some((o) => o.min[0] <= b.max[0] && o.max[0] >= b.min[0] && o.min[1] <= b.min[1] + 0.02 && o.max[1] >= b.max[1] - 0.02 && b.min[2] >= o.min[2] - 0.12 && b.min[2] <= o.max[2] + 0.12);
+      if (!under && !mounted) problems.push(`part ${p.id}${b.ch ? ` (${b.ch})` : ""} floats: its bottom is at y = ${b.min[1].toFixed(1)} with nothing under it; stand it on the ground or a part (a roof is a canopy, with its posts)`);
     }
   }
   for (const p of L.parts.filter((x) => ["pipe", "pipeRun"].includes(x.kind))) {

@@ -40,7 +40,7 @@ const waitText = (sec) => {
 
 // access: "guest" (signed out: the button reads "Sign up to generate" and opens sign-up), "free" (Generate opens
 // the upgrade popup), "paid" or "unknown" (Generate runs; the server checks the plan again on every call).
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null }) {
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true }) {
   const topic = values?.topic ?? "";
   const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
@@ -60,6 +60,10 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const hasTopic = topic.trim().length >= 3;
   const credits = hasTopic ? quote.credits : PRICES.video.credits.premade[lengthSec];
   const kindLabel = !hasTopic ? null : quote.kind === "premade" ? "Premade topic" : "Custom topic";
+  // custom topics are "Coming soon" (the launch is premade only): shown, never startable, never charged. While the
+  // answer loads (null) a typed custom topic waits too.
+  const soon = customOpen !== true;
+  const customBlocked = soon && hasTopic && quote.kind === "custom";
   const isWorking = phase === "working";
   const isDone = phase === "done";
   const locked = historyMode || isWorking || starting;
@@ -84,7 +88,8 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     if (access === "guest") { onSignUp?.(); return; }
     if (access === "free") { onUpgrade?.(); return; }
     const clean = topic.trim();
-    if (clean.length < 3) { setValidationError("Type what the video should explain."); return; }
+    if (clean.length < 3) { setValidationError(soon ? "Pick a premade topic." : "Type what the video should explain."); return; }
+    if (customBlocked) return;
     setValidationError("");
     // The kit check, before anything is charged. "no" stops here; "unsure" goes on, and the server asks Claude
     // Haiku (~$0.0005, ours) before charging, so a topic it refuses is never paid for either.
@@ -138,7 +143,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
                 disabled={locked}
                 maxLength={120}
                 rows={3}
-                placeholder="What should the video explain? e.g. septic tank"
+                placeholder={soon ? "Pick a premade topic below" : "What should the video explain? e.g. septic tank"}
                 className={`relative h-[96px] w-full resize-none rounded-2xl border bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition-colors placeholder:text-white/25 disabled:opacity-60 ${validationError ? "cw-shake border-red-400/50" : "border-white/[0.08] focus:border-cutaway/35"}`}
               />
             </div>
@@ -162,7 +167,18 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
                   </button>
                 );
               })}
+              {soon && (
+                <span data-testid="cutaway-custom-soon" aria-disabled="true" title="Any topic you type: coming soon" className="flex cursor-not-allowed select-none items-center gap-1.5 rounded-full border border-dashed border-white/[0.1] bg-white/[0.02] px-2.5 py-1.5 text-[11px] font-semibold text-white/30">
+                  <Lock className="h-3 w-3" />Custom topic
+                  <span className="rounded-full bg-[#F5C042]/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#F5C042]/80">Coming soon</span>
+                </span>
+              )}
             </div>
+            {customBlocked && (
+              <p role="status" data-testid="cutaway-custom-blocked" className="cw-fade-up mt-2.5 text-[11px] font-medium leading-relaxed text-white/50">
+                <span className="font-bold text-[#F5C042]/90">Custom topics are coming soon.</span> For now, pick one of the premade topics above. Nothing is charged.
+              </p>
+            )}
             {shownCantBuild && (
               <div role="status" className="cw-fade-up mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
                 <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't build this one yet</p>
@@ -255,7 +271,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
               <li><span className="font-bold text-cutaway/80">3.</span> Render: one continuous vertical video with captions and sound.</li>
             </ol>
             <p className="mt-2 text-[10.5px] font-semibold text-white/35">
-              {lengthSec} s video: {PRICES.video.credits.premade[lengthSec]} credits for a premade topic, {PRICES.video.credits.custom[lengthSec]} for a custom one. Charged once, when it starts; back in full if it fails.
+              {lengthSec} s video: {PRICES.video.credits.premade[lengthSec]} credits for a premade topic{soon ? " (custom topics are coming soon)" : `, ${PRICES.video.credits.custom[lengthSec]} for a custom one`}. Charged once, when it starts; back in full if it fails.
             </p>
           </div>
         </div>
@@ -280,16 +296,18 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
           data-testid="cutaway-generate"
           onPointerDown={(e) => { if (!isWorking && !starting) ripple(e); }}
           onClick={historyMode ? onDone : isDone ? onReset : handleGenerate}
-          disabled={isWorking || starting}
+          disabled={isWorking || starting || (customBlocked && !historyMode && !isDone && access !== "guest" && access !== "free")}
           aria-busy={starting || undefined}
-          className={`cw-press relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl py-3.5 text-[14px] font-black lg:py-2.5 ${starting ? "cw-sheen cursor-wait bg-cutaway text-cutaway-ink" : isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/50" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink shadow-[0_10px_30px_-8px_rgba(74,222,128,.55)] hover:bg-cutaway-soft"}`}
+          className={`cw-press relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl py-3.5 text-[14px] font-black lg:py-2.5 ${starting ? "cw-sheen cursor-wait bg-cutaway text-cutaway-ink" : isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/50" : customBlocked && !historyMode && !isDone && access !== "guest" && access !== "free" ? "cursor-not-allowed border border-white/10 bg-white/[0.05] text-white/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink shadow-[0_10px_30px_-8px_rgba(74,222,128,.55)] hover:bg-cutaway-soft"}`}
         >
           {ripples.map((p) => <span key={p.id} aria-hidden="true" className="cw-ripple" style={{ left: p.x, top: p.y }} />)}
           {historyMode ? "Done" : starting ? <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />Starting your video…
           </> : isWorking ? <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />Making your video…
-          </> : isDone ? "Create another" : access === "guest" ? <>
+          </> : isDone ? "Create another" : customBlocked && access !== "guest" && access !== "free" ? <>
+            <Lock className="h-4 w-4" />Custom topics coming soon
+          </> : access === "guest" ? <>
             Sign up to generate
             <ChevronRight className="h-4 w-4" />
           </> : <>

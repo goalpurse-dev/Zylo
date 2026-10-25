@@ -65,11 +65,37 @@ test("an error reply keeps the owner's debug (step, code, message)", () => {
 test("/admin/ops: the emergency cap is read and changed by the owner only, and the page shows it", async () => {
   const { readFileSync } = await import("node:fs");
   const api = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
-  const ops = api.slice(api.indexOf('if (action === "opsStatus" || action === "opsSetDailyCap")'));
+  const ops = api.slice(api.indexOf('if (action === "opsStatus" || action === "opsSetDailyCap" || action === "opsSetCustom")'));
   assert.ok(ops.indexOf('if (!who.owner) throw new ApiError("NOT_FOUND")') > 0 && ops.indexOf('if (!who.owner)') < ops.indexOf('.update({ daily_cap_usd'));
   assert.match(api, /await noteCapLevel\(/);
   assert.doesNotMatch(api, /user_daily_usd|capFreesInSec/);
   const page = readFileSync(new URL("../src/pages/admin/Ops.jsx", import.meta.url), "utf8");
   assert.match(page, /action: "opsSetDailyCap", usd/);
   assert.match(page, /<CutawayCard c=\{cutaway\}/);
+});
+
+test("launch: premade only; a customer's custom start is refused before anything is spent; custom shows Coming soon", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { ERRORS } = await import("../supabase/functions/_shared/cutaway/contract.js");
+  assert.equal(ERRORS.SOON.status, 403);
+  assert.match(ERRORS.SOON.message, /coming soon/i);
+  const api = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
+  const start = api.slice(api.indexOf('if (action === "quote" || action === "start")'));
+  const gate = start.indexOf('throw new ApiError("SOON"');
+  assert.ok(gate > 0 && gate < start.indexOf('trace.step = "kit check"') && gate < start.indexOf('admin.rpc("cutaway_start_run"'), "refused before the kit check and the charge");
+  assert.match(start, /if \(action === "start" && !who\.owner\)/, "the owner can still test custom topics");
+  assert.match(api, /customOpen: customOn \|\| Boolean\(who\?\.owner\)/);
+  assert.match(api, /return !error && data\?\.custom_enabled === true;/, "unreadable counts as off");
+  assert.match(api, /action === "opsSetCustom"/);
+  const mig = readFileSync(new URL("../supabase/migrations/20261126100000_cutaway_custom_soon.sql", import.meta.url), "utf8");
+  assert.match(mig, /ADD COLUMN IF NOT EXISTS custom_enabled boolean NOT NULL DEFAULT false/);
+  // the page: the chip is shown and not clickable, a typed custom topic can't be generated, the price line says so
+  const b = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayBuilder.jsx", import.meta.url), "utf8");
+  assert.match(b, /data-testid="cutaway-custom-soon" aria-disabled="true"/);
+  assert.match(b, /const customBlocked = soon && hasTopic && quote\.kind === "custom";/);
+  assert.match(b, /if \(customBlocked\) return;/);
+  assert.match(b, /Custom topics coming soon/);
+  const hook = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/api/cutawayPremade.js", import.meta.url), "utf8");
+  assert.match(hook, /export function useCutawayCustomOpen/);
+  assert.ok(hook.includes("return { keys: [], customOpen: false };"), "unreadable: closed");
 });

@@ -124,6 +124,14 @@ async function main() {
     fs.writeFileSync(path.join(p, "post.json"), JSON.stringify(post ?? null));
     for (const [k, f] of Object.entries(planFiles)) if (job.plan?.put?.[k]) await put(job.plan.put[k], path.join(p, f), f.endsWith(".mp3") ? "audio/mpeg" : "application/json");
   };
+  // a plan that didn't pass: what the planner left in its folder goes to the run's plan files (never read back for a render)
+  const keepFailedPlan = async () => {
+    const read = (f) => (fs.existsSync(path.join(out, f)) ? JSON.parse(fs.readFileSync(path.join(out, f), "utf8")) : null);
+    const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json");
+    const p = path.join(dir, "failed"); fs.mkdirSync(p, { recursive: true });
+    if (layout && job.plan?.put?.layout) { fs.writeFileSync(path.join(p, "layout.json"), JSON.stringify(layout)); await put(job.plan.put.layout, path.join(p, "layout.json"), "application/json"); }
+    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+  };
   const loadPlan = async () => {
     const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });
     for (const [k, f] of Object.entries(planFiles)) if (job.plan.get[k]) await get(job.plan.get[k], path.join(p, f));
@@ -167,6 +175,8 @@ async function main() {
         if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
         const r = await runTopic({ topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog });
         if (!r.ok) {
+          // the refused plan is kept (its layout, and its script with the planner's trace), so it can be replayed free
+          await keepFailedPlan().catch((e) => console.error("[cutaway] the failed plan was not kept:", e?.message ?? e));
           const failedGate = Array.isArray(r.vision?.failing) && r.vision.failing.length;
           throw Object.assign(new Error(failedGate ? `the preview check blocked it: ${r.vision.failing.join(", ")}` : `the plan did not pass: ${(r.problems ?? []).join("; ").slice(0, 500)}`), { code: failedGate ? "GATE_FAILED" : "PLAN_FAILED", retryable: false, costs: { planUsd: r.planUsd ?? 0, voiceUsd: r.voiceUsd ?? 0, checksUsd: r.checksUsd ?? 0 } });
         }

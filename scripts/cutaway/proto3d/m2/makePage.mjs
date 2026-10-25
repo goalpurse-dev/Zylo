@@ -86,7 +86,11 @@ export function makePage(layout) {
   // a thin-slab world (no soil cut): the ground runs on toward the camera, the lawn and the setting's floor alike, so a
   // pull-back never shows an edge over the table below (the haze band of 2026-10-25)
   if (M2_LAYOUT.world?.shallow) { const ap = new THREE.Mesh(new THREE.PlaneGeometry(2 * X, 60), grassM); ap.rotation.x = -Math.PI / 2; ap.position.set(0, -0.004, 29.6); ap.receiveShadow = true; scene.add(ap); }
-  if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, { ...M2_LAYOUT.world.backdrop, apron: !!M2_LAYOUT.world?.shallow });
+  // a thin slab with nothing dug (no dig part: a street topic) has no open hole that nothing ever fills (the replay of the
+  // traffic light run, 2026-10-25): turf over the cut, and the setting's floor laid whole over it
+  const M2_CLOSED = !!M2_LAYOUT.world?.shallow && !(M2_LAYOUT.parts ?? []).some((p) => p.kind === "dig");
+  if (M2_CLOSED) { const lid = new THREE.Mesh(new THREE.PlaneGeometry(PIT.x1 - PIT.x0 + 0.2, -PIT.z0 + 0.1), grassM); lid.rotation.x = -Math.PI / 2; lid.position.set((PIT.x0 + PIT.x1) / 2, 0.002, PIT.z0 / 2); lid.receiveShadow = true; scene.add(lid); }
+  if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, { ...M2_LAYOUT.world.backdrop, apron: !!M2_LAYOUT.world?.shallow, closed: M2_CLOSED });
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
   window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); composer.render(); return true; };

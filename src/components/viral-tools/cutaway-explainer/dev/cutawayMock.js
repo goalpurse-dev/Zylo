@@ -16,7 +16,7 @@
 import { EXAMPLES, FAILED_MESSAGE, endCardFor, quoteTopic } from "../api/cutawayApi";
 
 export const MOCK_STATES = Object.freeze([
-  "quote", "cantbuild", "limit", "busy", "credits", "signup", "upgrade",
+  "quote", "soon", "cantbuild", "limit", "busy", "credits", "signup", "upgrade",
   "generating-queued", "generating-script", "generating-scene", "generating-render", "done", "failed",
 ]);
 
@@ -26,6 +26,7 @@ const TOPIC = "French drain";
 /** The builder's starting values for a mock state (a typed topic shows the live price). */
 export function mockValues(state) {
   if (state === "cantbuild") return { topic: "how does a microwave work" };
+  if (state === "soon") return { topic: "traffic light" };
   if (["quote", "credits", "limit", "busy", "upgrade", "signup"].includes(state)) return { topic: TOPIC };
   return null;
 }
@@ -36,6 +37,9 @@ export function mockNotice(state) {
   if (state === "busy") return { kind: "BUSY", message: "We're making a lot of videos right now. Try again in a few minutes." };
   return null;
 }
+
+/** ?mock=soon: custom topics "Coming soon" (the launch is premade only); every other state has them open. */
+export const mockCustomOpen = (state) => state !== "soon";
 
 export const mockBalance = (state, param) => (Number.isFinite(Number(param)) && param !== null ? Number(param) : state === "credits" ? 12 : 640);
 

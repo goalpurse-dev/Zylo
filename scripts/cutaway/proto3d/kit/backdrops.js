@@ -97,9 +97,11 @@ function farRow(ctx, zFront, opts = {}) {
 
 export function backdrop(ctx, opts) {
   const { THREE, scene, box, cyl, std, PBR, C, cut } = ctx;
-  const hole = cut ? [cut.x0, cut.x1, cut.z0, 0] : null;
+  // closed (a thin slab with nothing dug: a street topic): the floor runs whole over the cut, which still places the road
+  const open = cut && !opts.closed;
+  const hole = open ? [cut.x0, cut.x1, cut.z0, 0] : null;
   // an indoor floor laps 6 cm over the cut edge, so the lawn turf of the cut rim never shows under it
-  const lip = cut ? [cut.x0 + 0.06, cut.x1 - 0.06, cut.z0 + 0.06, 0.05] : null;
+  const lip = open ? [cut.x0 + 0.06, cut.x1 - 0.06, cut.z0 + 0.06, 0.05] : null;
   const lamp = (x, z) => { const pole = std({ color: C("#2d3236"), roughness: 0.5, metalness: 0.6 }); cyl(pole, 0.09, 5.2, x, 2.6, z, scene, "y", 12); box(pole, 0.9, 0.12, 0.12, x + 0.4, 5.15, z, scene, 0.03); const head = box(std({ color: C("#fff6dc"), emissive: C("#ffe9b0"), emissiveIntensity: 0.6, roughness: 0.3 }), 0.5, 0.18, 0.32, x + 0.8, 5.0, z, scene, 0.05); head.castShadow = false; };
   const bench = (x, z, rot = 0) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g); const wood = std({ color: C("#a8743f"), roughness: 0.7 }), iron = std({ color: C("#2d3236"), roughness: 0.5, metalness: 0.5 }); box(wood, 2.2, 0.08, 0.6, 0, 0.62, 0, g, 0.02); box(wood, 2.2, 0.5, 0.06, 0, 1.0, -0.28, g, 0.02); for (const sx of [-0.95, 0.95]) box(iron, 0.08, 0.62, 0.55, sx, 0.31, 0, g, 0.02); };
   if (opts.type === "street") {

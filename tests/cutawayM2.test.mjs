@@ -543,3 +543,33 @@ test("chain: a possessive names the thing, and an unlinked problem gets a free \
   assert.equal(linkProblems(script).script.sentences[1].text, script.sentences[1].text);
   assert.equal(linkProblems({ sentences: S("If x.", "But y.", "So you add a pipe.", "But the wall cracks.") }).script.sentences[3].text, "But now the wall cracks.");
 });
+
+// the traffic light run of 2026-10-25 (PLAN_FAILED at the scene plan: "no dig part"): the plan checks against this
+// round's rules (no soil cut when nothing is underground, the street along the road, machine parts)
+import { layoutRules as rulesForClash } from "../scripts/cutaway/proto3d/m2/layoutRules.js";
+test("plan checks: a thin-slab street needs no dig; a real cut gets one free; a cabinet's display is mounted, not floating", () => {
+  const { layout, sentences } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_traffic_light_draft.json", import.meta.url), "utf8"));
+  const noDig = { ...layout, parts: layout.parts.filter((p) => p.kind !== "dig"), beats: layout.beats.map((b) => ({ ...b, do: (b.do ?? []).filter((a) => a.p !== "dig"), shots: (b.shots ?? []).map((sh) => (Array.isArray(sh.focus) ? { ...sh, focus: sh.focus.filter((id) => id !== "dig") } : sh)).filter((sh) => !Array.isArray(sh.focus) || sh.focus.length || sh.box) })) };
+  const ruled = rulesForClash(noDig).layout;
+  assert.equal(ruled.world.shallow, true, "nothing underground: a thin slab");
+  assert.deepEqual(solveLayout(ruled, sentences).problems, [], "no dig asked for, and the timer on the cabinet's front does not float");
+  // a real cut (a tank underground) with no dig: dug at the start of the hook, for free
+  const deep = rulesForClash({ ...noDig, parts: [...noDig.parts, { id: "tank1", kind: "tank", params: { pos: [0, -2.5, -1.5] } }] }).layout;
+  assert.equal(deep.world.shallow, undefined);
+  assert.ok(deep.parts.some((p) => p.kind === "dig") && deep.beats.find((b) => b.s === "hook").do[0].p === "dig");
+  assert.ok(!solveLayout(deep, sentences).problems.some((p) => /dig part/.test(p)));
+  // the check itself still asks a real cut for its dig, and still finds a thin thing floating in the air
+  assert.ok(solveLayout({ ...deep, parts: deep.parts.filter((p) => p.kind !== "dig"), beats: deep.beats.map((b) => ({ ...b, do: b.do.filter((a) => a.p !== "dig") })) }, sentences).problems.includes("no dig part (the cut is never dug)"));
+  const air = { ...ruled, parts: [...ruled.parts, { id: "plate", kind: "boxPop", params: { size: [0.5, 0.2, 0.05], pos: [-20, 3, -20], mat: "machineBand" } }], beats: ruled.beats.map((b) => (b.s === "fix1" ? { ...b, do: [...b.do, { p: "plate", v: "show" }] } : b)) };
+  assert.ok(solveLayout(air, sentences).problems.some((p) => /part plate floats/.test(p)));
+  // no cut given and nothing underground: a thin slab where the build stands, not a refusal
+  const { cut, ...worldNoCut } = noDig.world;
+  const nc = rulesForClash({ ...noDig, world: worldNoCut }).layout;
+  assert.equal(nc.world.shallow, true); assert.ok(nc.world.cut && nc.world.cut.depth <= 0.6);
+  // the page: a thin slab with nothing dug is laid whole (no open pit in the sidewalk)
+  const page = readFileSync(new URL("../scripts/cutaway/proto3d/m2/makePage.mjs", import.meta.url), "utf8"), kit = readFileSync(new URL("../scripts/cutaway/proto3d/kit/backdrops.js", import.meta.url), "utf8");
+  assert.match(page, /closed: M2_CLOSED/); assert.match(kit, /const open = cut && !opts\.closed;/);
+  // the planners are told the same: the dig only when something goes underground
+  assert.match(catalogText(), /no dig when nothing does/);
+  assert.doesNotMatch(catalogText(), /Always the first beat/);
+});

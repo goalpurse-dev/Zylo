@@ -4,7 +4,7 @@
 // refunds) in _shared/cutaway/orchestrate.js and runtime.ts.
 //
 //   access {}  quote {topic, lengthSec}  start {topic, lengthSec, removeWatermark}  status {runId}  list {}
-//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  (owner only)
+//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  opsSetCustom {on}  (owner only)
 //
 // Who may generate: CUTAWAY_ENABLED=true for everyone with a paid plan (access.js); while it is off, only the emails in
 // CUTAWAY_TEST_USERS (owner test mode: one line, removed at launch). The owner (ADMIN_EMAILS) approves layouts.
@@ -122,6 +122,12 @@ async function noteCapLevel(usedUsd: number, capUsd: number) {
   await alertOnce(admin, `cutaway:cap${level}`, 24 * 3600, subject, text).catch(() => false);
 }
 
+/** Custom topics for customers: off unless the owner switched them on (/admin/ops; fails closed). */
+async function customTopicsOn() {
+  const { data, error } = await admin.from("cutaway_settings").select("custom_enabled").eq("id", 1).maybeSingle();
+  return !error && data?.custom_enabled === true;
+}
+
 // a custom video on a premade topic with no approved layout yet keeps the premade key, so approving its layout makes
 // that topic premade
 const namedPremade = (topic: string) => { const c = classifyTopic(topic); return c.kind === "premade" ? c.premade ?? null : null; };
@@ -135,9 +141,11 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    const approved = await approvedKeys();
+    const [approved, customOn] = await Promise.all([approvedKeys(), customTopicsOn()]);
     return {
       enabled: ENABLED, tester: Boolean(who?.tester), owner: Boolean(who?.owner), signedIn: Boolean(who), plan: who?.plan ?? null,
+      // custom topics: "Coming soon" on the page until the owner switches them on (the owner can always test them)
+      customOpen: customOn || Boolean(who?.owner),
       canGenerate: Boolean(who && (ENABLED || who.tester) && canGenerate(who.plan)), canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)),
       premade: PREMADE.filter((p) => approved.has(p.key)).map((p) => ({ key: p.key, topic: p.topic, hook: p.hook })),
     };
@@ -151,6 +159,12 @@ async function handle(req: Request, trace: Trace) {
     const bad = topicProblem(topic);
     if (bad) throw new ApiError("BAD_INPUT", bad);
     if (!LENGTHS.includes(lengthSec)) throw new ApiError("BAD_INPUT", "Pick 30 or 60 seconds.");
+    // custom topics are "Coming soon" until the owner switches them on (launch: premade only, the owner's decision of
+    // 2026-10-26): refused before the kit check, so nothing is spent or charged; the owner can still test them
+    if (action === "start" && !who.owner) {
+      const named = classifyTopic(topic), [approved, customOn] = await Promise.all([approvedKeys(), customTopicsOn()]);
+      if (!customOn && !(named.kind === "premade" && named.premade && approved.has(named.premade))) throw new ApiError("SOON", undefined, {}, "custom topics are switched off (cutaway_settings.custom_enabled)");
+    }
     trace.step = "kit check";
     const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
     if (action === "quote") return { quote };
@@ -201,8 +215,12 @@ async function handle(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
 
   // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it
-  if (action === "opsStatus" || action === "opsSetDailyCap") {
+  if (action === "opsStatus" || action === "opsSetDailyCap" || action === "opsSetCustom") {
     if (!who.owner) throw new ApiError("NOT_FOUND");
+    if (action === "opsSetCustom") {
+      const { error } = await admin.from("cutaway_settings").update({ custom_enabled: body?.on === true, updated_at: new Date().toISOString() }).eq("id", 1);
+      if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    }
     if (action === "opsSetDailyCap") {
       const usd = Math.round(Number(body?.usd));
       if (!Number.isFinite(usd) || usd < DAILY_CAP_RANGE.min || usd > DAILY_CAP_RANGE.max) throw new ApiError("BAD_INPUT", `Pick a whole number of dollars from ${DAILY_CAP_RANGE.min} to ${DAILY_CAP_RANGE.max}.`);
@@ -217,7 +235,7 @@ async function handle(req: Request, trace: Trace) {
     ]);
     const capUsd = Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd), usedUsd = Number(counts?.spent_24h) || 0;
     return {
-      capUsd, usedUsd, running: Number(counts?.running) || 0, paidCalls: settings?.paid_calls !== false && !PAID_OFF, range: DAILY_CAP_RANGE,
+      capUsd, usedUsd, running: Number(counts?.running) || 0, paidCalls: settings?.paid_calls !== false && !PAID_OFF, range: DAILY_CAP_RANGE, customEnabled: settings?.custom_enabled === true,
       perUser: { maxRunning: Number(settings?.user_max_running ?? DEFAULT_SETTINGS.user_max_running), startsPerHour: Number(settings?.user_starts_per_hour ?? DEFAULT_SETTINGS.user_starts_per_hour) },
       alerts: (alerts ?? []).map((a: any) => ({ level: Number(String(a.event).replace("cutaway:cap", "")), at: a.created_at })),
     };

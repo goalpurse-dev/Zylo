@@ -90,7 +90,16 @@ export function layoutRules(L) {
   // slab (world.shallow), the pit only as deep as the thing set into the road. Kept whenever a part reaches down into it.
   const DRESSING = new Set(["dig", "light", "sign", "rain", "lawnWet", "outline", "arrows", "book", "sheet", "flag"]);
   const deep = parts.filter((p) => !DRESSING.has(p.kind)).some((p) => { try { return focusOf(p, cut).min[1] < -0.8; } catch { return false; } });
+  // a layout with nothing underground may leave the cut out (a street topic): it gets a small thin slab where its build
+  // stands, instead of being refused for having no cut
+  if (!world.cut && !deep) { world.cut = { x0: -4, x1: 4, z0: -4, depth: 0.6 }; world.shallow = true; notes.push("no cut given and nothing underground: a thin ground slab"); }
   if (!deep && world.cut && !world.shallow && L.camera?.home == null) { world.shallow = true; world.cut.depth = Math.min(world.cut.depth ?? 6, 0.6); notes.push("nothing underground: a thin ground slab, no soil cut"); }
+  // 8b. a real cut (something underground) the plan forgot to dig: dug at the start of the hook, its dirt on a mound
+  // beside the cut (taken away in a setting with a backdrop), instead of a failed plan (free)
+  if (world.cut && !world.shallow && !parts.some((p) => p.kind === "dig")) {
+    const c = world.cut, dig = { id: "dig", kind: "dig", params: { clumps: 120, mound: { x: +(c.x1 + 2.5).toFixed(2), z: +(c.z0 / 2).toFixed(2), rx: 1.2, rz: 1, h: 0.6 }, ...(world.backdrop ? { haul: true } : {}) } };
+    if (!byId.has("dig")) { parts.unshift(dig); byId.set("dig", dig); const hook = beats.find((b) => b.s === "hook"); if (hook) hook.do.unshift({ p: "dig", v: "dig" }); notes.push("a cut with nothing digging it: dug at the start of the hook"); }
+  }
   // 9. a street looks along its road (kit/street.js): the road on the side of the cut with fewer parts; nothing stands on
   // it but vehicles; a traffic signal stands on its corner at the stop line with its arm over the lane going away, its
   // controller, wires and outline moved with it; its loop in that lane before the stop line; cars drive along the lane

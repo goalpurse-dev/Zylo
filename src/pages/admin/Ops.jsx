@@ -139,6 +139,20 @@ function CutawayCard({ c, onChange }) {
         <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set cap"}</button>
         {note && <span role="status" className="text-white/60">{note}</span>}
       </form>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <span className="font-semibold text-white">Custom topics for customers:</span>
+        <span data-testid="ops-cutaway-custom" className={c.customEnabled ? "text-lime-200" : "text-amber-200"}>{c.customEnabled ? "On" : "Coming soon (premade only)"}</span>
+        <button type="button" disabled={saving} onClick={async () => {
+          if (!c.customEnabled && !window.confirm("Switch custom topics on for every customer? They cost about 5x a premade video and pass less reliably.")) return;
+          setSaving(true);
+          const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetCustom", on: !c.customEnabled } });
+          setSaving(false);
+          if (error || !data || data.error) { setNote("Couldn't change custom topics. Try again."); return; }
+          setNote(data.customEnabled ? "Custom topics are on for everyone." : "Custom topics are back to Coming soon.");
+          onChange(data);
+        }} className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/[0.06] disabled:opacity-40">{c.customEnabled ? "Back to Coming soon" : "Switch on"}</button>
+        <span className="text-white/45">(you can always test custom topics yourself)</span>
+      </div>
       <p className="mt-2 text-[12.5px] text-white/50">Only for runaway bugs or retry loops. You get an email at 50 % and 80 %; at the cap, new videos see "High demand right now, please try again shortly", nothing is charged, and videos in progress finish.</p>
       {c.alerts.map((a) => <p key={`${a.level}-${a.at}`} className={`mt-2 text-[12.5px] ${a.level >= 100 ? "text-red-200" : "text-amber-200"}`}>{a.level >= 100 ? "The cap was reached" : `${a.level} % of the cap was used`} · emailed {new Date(a.at).toLocaleString()}</p>)}
     </Card>

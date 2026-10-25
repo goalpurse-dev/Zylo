@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import CutawayBuilder from "./CutawayBuilder";
-import useCutawayPremade from "./api/cutawayPremade";
+import useCutawayPremade, { useCutawayCustomOpen } from "./api/cutawayPremade";
 import CutawayHero from "./CutawayHero";
 import CutawayResults from "./CutawayResults";
 import CutawaySummary from "./CutawaySummary";
@@ -29,6 +29,8 @@ const topicNames = (list = []) => list.map((k) => premadeByKey(k)?.topic ?? k).f
 export default function CutawayStudio({ onBeforeGenerate, planCode = null, access = "unknown", balance = 0, mode = "server", mock = null, listOnMount = false, onSignUp, onUpgrade, onNoCredits }) {
   const isDesktop = useIsDesktop();
   const approved = useCutawayPremade(mode);
+  // custom topics: "Coming soon" until the owner switches them on (the demo can show either: mock.customOpen)
+  const liveCustomOpen = useCutawayCustomOpen(mode), customOpen = mock?.customOpen ?? liveCustomOpen;
   const [mobilePanel, setMobilePanel] = useState(mock?.run ? "results" : "builder");
   const [values, setValues] = useState(mock?.values ? { ...EMPTY, ...mock.values } : EMPTY);
   const [notice, setNotice] = useState(mock?.notice ?? null); // a refusal from the server, shown above Generate
@@ -77,7 +79,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
     </button>
   ) : (
     <CutawayHero variant="tall" onWatch={watchExample} className="mx-auto aspect-[9/16] w-full max-w-[min(300px,78vw)]">
-      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cutaway">Type a topic · get a 3D video</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cutaway">Pick a topic · get a 3D video</p>
       <h2 className="mt-1 overflow-hidden pb-[0.06em] text-[24px] font-black leading-[1.02] tracking-[-0.04em] text-white">
         <span className="cw-line-up" style={{ "--d": "250ms" }}>See inside how it works.</span>
       </h2>
@@ -90,6 +92,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
     <CutawayBuilder
       values={values}
       approved={approved}
+      customOpen={customOpen}
       planCode={planCode}
       access={access}
       onSignUp={onSignUp}
