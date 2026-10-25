@@ -10,7 +10,9 @@ const VISIBLE = /\b(flood|overflow|spill|leak|seep|soak|pour|gush|burst|crack|br
 // a dry fact, not a consequence: percentages, studies, "about N"
 const DRY = /\b(percent|studies|research|experts|statistic|on average|according to)\b|%/i;
 const STOP = new Set("get gets got put puts let lets way new old big did does the a an and but so you your it its they them this that these those now then into onto with from over under every each one two three four five some more most much many very just also only still again when while there here what which who will would can could must has have had are was were been being not no all any out off down up for of to in on at by as".split(" "));
-const words = (t) => String(t).toLowerCase().replace(/[^a-z' ]+/g, " ").split(/\s+/).filter((w) => w.length >= 3 && !STOP.has(w));
+// possessives and apostrophes go first: "a car's metal" names the car (the traffic light run of 2026-10-25 was refused
+// because "car's" and "car" counted as different words)
+const words = (t) => String(t).toLowerCase().replace(/['’]s\b/g, "").replace(/[^a-z ]+/g, " ").split(/\s+/).filter((w) => w.length >= 3 && !STOP.has(w));
 const stem = (w) => w.replace(/(ings?|ed|es|s)$/, "");
 
 const isProblem = (t) => /^\s*but\b/i.test(t);
@@ -57,3 +59,30 @@ export function chainProblems(script, { strict = true, lengthSec = 30 } = {}) {
   if (sizes.every(Number.isFinite)) for (let k = 1; k < sizes.length; k++) if (!(sizes[k] > sizes[k - 1])) { P.push(`chain: every problem must be bigger than the one before (sizes ${sizes.join(", ")})`); break; }
   return P;
 }
+
+const UNLINKED = /^problem ".*" must follow from the fix before it/;
+/**
+ * Free repair of the one chain problem a word can fix: a later problem that doesn't name what the fix before it did
+ * gets "now" ("But at midnight, one car waits…" -> "But now, at midnight, one car waits…"), which says the fix made
+ * it happen. Only where the writer's own chain says that fix caused it (causedBy), so the link is real, not invented.
+ * Returns { script (a copy), linked: [sentence indexes] }.
+ */
+export function linkProblems(script) {
+  const S = (script.sentences ?? []).map((s) => ({ ...s })), linked = [];
+  const probs = S.map((s, i) => (isProblem(s.text) ? i : -1)).filter((i) => i >= 0);
+  const causedBy = new Map((script.chain ?? []).map((c) => [c.problem, c.causedBy]));
+  probs.forEach((pi, k) => {
+    if (k === 0 || /\bnow\b/i.test(S[pi].text)) return;
+    let f = -1; for (let i = pi - 1; i > probs[k - 1]; i--) if (isFix(S[i].text)) { f = i; break; }
+    if (f < 0 || (causedBy.has(pi) && causedBy.get(pi) !== f)) return;
+    const fw = new Set(words(S[f].text).map(stem));
+    if (words(S[pi].text).some((w) => fw.has(stem(w)))) return;
+    const m = S[pi].text.match(/^(\s*but)\b,?\s*(.*)$/is);
+    const rest = m[2], comma = /^(at|in|on|by|after|when|once|if|then|soon)\b/i.test(rest) ? "," : "";
+    S[pi].text = `${m[1]} now${comma} ${rest}`;
+    linked.push(pi);
+  });
+  return { script: { ...script, sentences: S }, linked };
+}
+/** Only "doesn't name the fix" problems left: linkProblems clears those. */
+export const onlyUnlinked = (problems) => problems.length > 0 && problems.every((p) => UNLINKED.test(p));

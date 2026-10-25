@@ -8,7 +8,7 @@ import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText, SETTING_PROPS } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
-import { chainProblems } from "./chain.js";
+import { chainProblems, linkProblems } from "./chain.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -46,6 +46,10 @@ CHAIN     "But [a visible consequence]." then "So you [add one real part, descri
           flooding the basement, the wall cracking, the creek turning grey), never a dry fact or a number on its own.
           The first problem is the second sentence, right after a short hook (16 words or fewer), and anyone gets it at once.
           Each problem is SHOWN happening on screen, not just said: say what we see.
+          LINK RULE (checked by code): every "But…" after the first must name the part the fix before it added (the
+          box, the loop, the gravel), or start with "But now". "So you add a box that switches them. But at midnight a
+          car waits" fails; "But the box runs on a clock, so at midnight a car waits" or "But now, at midnight, a car
+          waits" passes.
 NAME      "This is a [real term]." (exactly one sentence with role name; a second one, name2, only in 60 s videos)
 MYTH-BUST "And [the thing everyone knows] is not [what they think]. It is [the mechanism]." (when a true one exists)
 FINISH    "Add [two or three finishing touches]." then "Congratulations, you have built a [thing]."
@@ -316,14 +320,17 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
   let script = given;
   if (!script) {
     let r = await step("script", { system: SCRIPT_SYSTEM, user: scriptUser({ topic, lengthSec, roles: saved?.roles, facts: savedFacts.map((f) => f.claim), keyWords }), schema: SCRIPT_SCHEMA, effort: "high", maxTokens: 16000 });
-    script = r.data;
+    // a "But…" that doesn't name the fix the writer's chain says caused it gets "now" (free): no paid repair for a word
+    const relink = (sc) => { const { script: s2, linked } = linkProblems(sc); if (linked.length) trace.push({ label: "chain linked with \"now\" (free)", sentences: linked }); return s2; };
+    script = relink(r.data);
     let P = checkScript(script, lengthSec, saved?.roles);
-    if (P.length) { r = await step("script repair", { system: SCRIPT_SYSTEM, user: `${scriptUser({ topic, lengthSec, roles: saved?.roles })}\n\nYour last script had these problems; fix them and return the whole script:\n- ${P.join("\n- ")}\n\nYour last script:\n${JSON.stringify(script)}`, schema: SCRIPT_SCHEMA, maxTokens: 16000 }); script = r.data; P = checkScript(script, lengthSec, saved?.roles); }
+    if (P.length) { r = await step("script repair", { system: SCRIPT_SYSTEM, user: `${scriptUser({ topic, lengthSec, roles: saved?.roles })}\n\nYour last script had these problems; fix them and return the whole script:\n- ${P.join("\n- ")}\n\nYour last script:\n${JSON.stringify(script)}`, schema: SCRIPT_SCHEMA, effort: "high", maxTokens: 16000 }); script = relink(r.data); P = checkScript(script, lengthSec, saved?.roles); }
     trace.push({ label: "script check", problems: P });
     // a new topic whose problems still don't chain and escalate after the repair is refused (the owner's rule): it stops
-    // here as a plan that didn't pass (refunded), before the fact-check, the scene and the voice are paid for
+    // here as a plan that didn't pass (refunded), before the fact-check, the scene and the voice are paid for. The script
+    // goes into the error, so the owner's Details show what was refused.
     const chainLeft = saved ? [] : chainProblems(script, { strict: true, lengthSec });
-    if (chainLeft.length) throw Object.assign(new Error(`the script's story does not chain: ${chainLeft.join("; ")}`), { code: "PLAN_FAILED", retryable: false });
+    if (chainLeft.length) throw Object.assign(new Error(`the script's story does not chain: ${chainLeft.join("; ")}\n\nThe script:\n${(script.sentences ?? []).map((x, i) => `${i + 1}. ${x.text}`).join("\n")}`), { code: "PLAN_FAILED", retryable: false });
 
     // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive). A saved layout
     //    keeps the facts it was checked with (the plan: a repeat topic needs no new fact-check).

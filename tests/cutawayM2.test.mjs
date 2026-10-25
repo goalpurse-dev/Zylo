@@ -521,3 +521,25 @@ test("m2 street, machines, ambience (2026-10-25): the road along the view, nothi
   assert.ok(!yard.world.shallow, "something underground keeps the cut");
   assert.ok(yard.parts.find((p) => p.id === "c2").params.pos[2] <= -5);
 });
+
+// the traffic light run of 2026-10-25 (PLAN_FAILED at the script): its two refused problems, as production saw them
+import { linkProblems, onlyUnlinked } from "../scripts/cutaway/proto3d/m2/chain.js";
+test("chain: a possessive names the thing, and an unlinked problem gets a free \"now\" (no paid repair)", () => {
+  const S = (...t) => t.map((text) => ({ text }));
+  const script = {
+    sentences: S("If you hang one red lamp over a crossing, you have a traffic light.", "But it never changes, so cars pile up down both roads.", "So you add a green lamp and a box that switches them on a timer.", "This is a signal controller.", "But at midnight, one car waits at an empty red.", "So you bury a 6 foot wire loop that feels a car's metal.", "But the light flips instantly, and a car already crossing gets hit.", "So you add a yellow lamp.", "Congratulations, you have built a traffic light."),
+    chain: [{ problem: 1, causedBy: -1 }, { problem: 4, causedBy: 2 }, { problem: 6, causedBy: 5 }],
+  };
+  const before = chainProblems(script).filter((p) => !p.startsWith("chain:"));
+  assert.equal(before.length, 1, "\"a car's metal\" now names the car of \"a car already crossing\"");
+  assert.ok(onlyUnlinked(before));
+  const { script: fixed, linked } = linkProblems(script);
+  assert.deepEqual(linked, [4]);
+  assert.equal(fixed.sentences[4].text, "But now, at midnight, one car waits at an empty red.");
+  assert.equal(script.sentences[4].text, "But at midnight, one car waits at an empty red.", "the original is left alone");
+  assert.deepEqual(chainProblems(fixed).filter((p) => !p.startsWith("chain:")), []);
+  // only where the writer's own chain says that fix caused it, and never the first problem
+  assert.deepEqual(linkProblems({ ...script, chain: [{ problem: 4, causedBy: 0 }] }).linked, []);
+  assert.equal(linkProblems(script).script.sentences[1].text, script.sentences[1].text);
+  assert.equal(linkProblems({ sentences: S("If x.", "But y.", "So you add a pipe.", "But the wall cracks.") }).script.sentences[3].text, "But now the wall cracks.");
+});

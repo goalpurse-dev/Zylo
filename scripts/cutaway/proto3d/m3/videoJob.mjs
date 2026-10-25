@@ -228,7 +228,7 @@ async function main() {
     const logged = spentSoFar();
     for (const k of Object.keys(logged)) costs[k] = Math.max(Number(costs[k]) || 0, +logged[k].toFixed(5));
     if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
-    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 1500), costs });
+    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 3500), costs });
     return { ok: false, code: c.code, error: String(e.message ?? e).slice(0, 1500) };
   }
 }

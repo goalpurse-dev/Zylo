@@ -29,7 +29,7 @@ function terminal(run, f, now) {
   if (f.code === "PROVIDER_BALANCE") actions.push({ type: "alert", key: "cutaway-provider-balance", subject: "Cutaway: a provider is out of balance", text: `Run ${run.id} failed: ${f.message ?? f.code}. New videos are paused until the balance is topped up.` });
   else if (!NO_RETRY.has(f.code)) actions.push({ type: "alert", key: "cutaway-render-failed", subject: "Cutaway: a video failed on our side", text: `Run ${run.id} (${run.topic}) failed after its retries: ${f.code} ${String(f.message ?? "").slice(0, 400)}` });
   // (the stage keeps the step it failed in: the owner's Details show it)
-  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 1500), finished_at: iso(now) }, actions };
+  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 3500), finished_at: iso(now) }, actions };
 }
 
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
