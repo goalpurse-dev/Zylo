@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Play } from "lucide-react";
 import CutawayBuilder from "./CutawayBuilder";
 import useCutawayPremade from "./api/cutawayPremade";
 import CutawayHero from "./CutawayHero";
@@ -69,14 +70,19 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
   const watchExample = () => handleOpen(EXAMPLES[1].id);
 
   // phones: the hero opens the builder (on desktop it fills the empty result side instead)
-  const phoneHero = !isDesktop && phase !== "working" ? (
+  // (someone with videos of their own gets a small link instead: the big hero is for new users)
+  const phoneHero = !isDesktop && phase !== "working" ? (recent.length ? (
+    <button type="button" onClick={watchExample} className="cw-press flex items-center gap-1.5 self-start rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] font-bold text-white/75 hover:border-cutaway/30 hover:text-white">
+      <Play className="h-3.5 w-3.5 fill-current" />Watch an example
+    </button>
+  ) : (
     <CutawayHero variant="tall" onWatch={watchExample} className="mx-auto aspect-[9/16] w-full max-w-[min(300px,78vw)]">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cutaway">Type a topic · get a 3D video</p>
       <h2 className="mt-1 overflow-hidden pb-[0.06em] text-[24px] font-black leading-[1.02] tracking-[-0.04em] text-white">
         <span className="cw-line-up" style={{ "--d": "250ms" }}>See inside how it works.</span>
       </h2>
     </CutawayHero>
-  ) : null;
+  )) : null;
 
   const builder = finished ? (
     <CutawaySummary run={run} onNew={handleNew} onMakeLike={handleMakeLike} />

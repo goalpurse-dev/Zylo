@@ -1,5 +1,5 @@
 import { BadgeCheck, CheckCircle2, Clock3, Layers, Plus, Volume2, VolumeX, Wand2 } from "lucide-react";
-import { quoteTopic } from "./api/cutawayApi";
+import { quoteTopic, realSeconds } from "./api/cutawayApi";
 
 function CreditIcon() {
   return <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 bg-current" style={{ WebkitMaskImage: "url('/icons/credits.png')", maskImage: "url('/icons/credits.png')", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />;
@@ -51,7 +51,7 @@ export default function CutawaySummary({ run, onNew, onMakeLike }) {
             <div aria-readonly="true" className="min-h-[64px] rounded-2xl border border-dashed border-white/[0.09] bg-white/[0.02] px-4 py-3 text-[14px] leading-relaxed text-white/55">{run.topic}</div>
           </div>
           <Row d={100} icon={Layers} label="Topic type" value={kind} />
-          <Row d={130} icon={Clock3} label="Length" value={`${run.lengthSec} seconds`} />
+          <Row d={130} icon={Clock3} label="Length" value={`${realSeconds(run)} seconds`} />
           <Row d={160} icon={run.soundEffects === false ? VolumeX : Volume2} label="Sound effects" value={run.soundEffects === false ? "Off" : "On"} />
           <Row d={190} icon={BadgeCheck} label="Watermark" value={run.endCard === false ? "Off (no end card)" : "On (Zyvo end card)"} />
           <Row d={220} icon={CheckCircle2} label="Credits spent" value={spent} />

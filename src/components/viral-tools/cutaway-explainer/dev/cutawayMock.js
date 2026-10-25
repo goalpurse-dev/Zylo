@@ -78,5 +78,7 @@ export function mockRun(state, { plan = "starter", owner = false, removeWatermar
 /** Recent Creations in mock mode: one finished video of the viewer's own, so the grid shows a real item too. */
 export function mockRecent(state, opts) {
   if (state === "done") return [mockRun("done", opts)];
+  // "recent": nothing open, a finished video (its real 0:36) and one that didn't work out (credits back)
+  if (state === "recent") return [{ ...mockRun("done", opts), id: "mock-recent-done", durationSec: 36.97 }, { ...mockRun("failed", opts), id: "mock-recent-failed", topic: "Pond", title: "Pond", poster: null }];
   return [];
 }

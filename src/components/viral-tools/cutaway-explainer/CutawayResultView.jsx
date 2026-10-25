@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronDown, ClipboardCheck, Copy, Download, ExternalLink, Loader2, ShieldCheck, Sparkles, Stamp, Trash2, Wand2 } from "lucide-react";
 import { saveMediaToDevice } from "../../../lib/downloadMedia";
-import { downloadName, postText } from "./api/cutawayApi";
+import { downloadName, postText, realSeconds } from "./api/cutawayApi";
 import CutawayPlayer from "./CutawayPlayer";
 import useFit, { useFitScreen } from "./hooks/useFit";
 import useIsDesktop from "./hooks/useIsDesktop";
@@ -159,7 +159,7 @@ export default function CutawayResultView({ run, onBack, onMakeLike, onDelete, o
             <h2 className="truncate text-[14px] font-black text-white">{run.title || run.topic}</h2>
             {run.example && <ExampleBadge className="shrink-0" />}
           </div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-white/35">{run.lengthSec} sec · 9:16 · {run.endCard === false ? "no end card" : "with the Zyvo end card"}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-white/35">{realSeconds(run)} sec · 9:16 · {run.endCard === false ? "no end card" : "with the Zyvo end card"}</p>
         </div>
         {own && !confirmDelete && (
           <button type="button" onClick={() => setConfirmDelete(true)} aria-label="Delete video" className="cw-press grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-white/40 hover:bg-red-400/10 hover:text-red-300">

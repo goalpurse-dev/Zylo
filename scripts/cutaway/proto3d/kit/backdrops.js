@@ -107,8 +107,10 @@ export function backdrop(ctx, opts) {
     // the road along the camera's view (kit/street.js; road false: the old sidewalk-only street)
     const R = opts.road === false ? null : streetRoad({ cut, road: opts.road ?? {}, back: opts.back ?? STREET_BACK });
     const top = opts.walkTop ?? 0.12, back = opts.back ?? (R ? STREET_BACK : -8);
-    slabAround(ctx, walk, [-26, 26, back, 0.04], -0.2, top, lip);
-    if (ctx.gltf) floorOver(ctx, "concrete_pavement", "#dcd8d0", 2.4, [-26, 26, back, 0.04], top, lip);
+    // apron (a thin-slab world): the sidewalk and the road run on toward the camera instead of ending at an edge
+    const zf = opts.apron ? 40 : 0.04;
+    slabAround(ctx, walk, [-26, 26, back, zf], -0.2, top, lip);
+    if (ctx.gltf) floorOver(ctx, "concrete_pavement", "#dcd8d0", 2.4, [-26, 26, back, zf], top, lip);
     // paving joints: thin dark lines every 1.5 m along x (cheap, no texture)
     const joint = std({ color: C("#a9a49b"), roughness: 0.9 });
     for (let x = -24; x <= 24 && !ctx.gltf; x += 1.5) { if (hole && x > hole[0] - 0.1 && x < hole[1] + 0.1) continue; if (R && x > R.x0 - 0.3 && x < R.x1 + 0.3) continue; const j = box(joint, 0.04, 0.005, -back, x, top + 0.003, back / 2, scene, 0.001); j.castShadow = false; }
@@ -116,10 +118,10 @@ export function backdrop(ctx, opts) {
       // asphalt from the front edge to the cross street behind the shops, raised curbs, a double yellow centre line, the
       // stop line in the lane going away, a zebra crosswalk in front of it
       const asphalt = PBR("asphalt_02", 3, { color: C("#8f8f8f") }), paint = std({ color: C("#f4f2ea"), roughness: 0.6 }), yellow = std({ color: C("#f2c230"), roughness: 0.6 });
-      const len = -(back - 8.5) + 0.04, zc = (back - 8.5) / 2;
+      const len = -(back - 8.5) + zf, zc = (back - 8.5 + zf) / 2;
       const road = box(asphalt, R.w, 0.03, len, R.cx, top + 0.006, zc, scene, 0.005); road.castShadow = false; road.receiveShadow = true;
-      for (const sx of [R.x0 - 0.1, R.x1 + 0.1]) { const c = box(std({ color: C("#cfccc4"), roughness: 0.7 }), 0.2, 0.16, -back + 0.04, sx, top + 0.06, back / 2, scene, 0.02); c.castShadow = false; }
-      for (const dx of [-0.09, 0.09]) for (let z = -0.6; z > back + 2.2; z -= 3) { if (z < R.crossZ[1] + 0.2 && z > R.crossZ[0] - 0.2) continue; const m = box(yellow, 0.1, 0.008, 2, R.cx + dx, top + 0.026, z - 1, scene, 0.002); m.castShadow = false; }
+      for (const sx of [R.x0 - 0.1, R.x1 + 0.1]) { const c = box(std({ color: C("#cfccc4"), roughness: 0.7 }), 0.2, 0.16, -back + zf, sx, top + 0.06, (back + zf) / 2, scene, 0.02); c.castShadow = false; }
+      for (const dx of [-0.09, 0.09]) for (let z = zf > 1 ? 30 : -0.6; z > back + 2.2; z -= 3) { if (z < R.crossZ[1] + 0.2 && z > R.crossZ[0] - 0.2) continue; const m = box(yellow, 0.1, 0.008, 2, R.cx + dx, top + 0.026, z - 1, scene, 0.002); m.castShadow = false; }
       const sl = box(paint, R.w / 2 - 0.3, 0.008, 0.45, R.laneOut, top + 0.026, R.stopZ, scene, 0.002); sl.castShadow = false;
       for (let x = R.x0 + 0.5; x < R.x1 - 0.3; x += 0.9) { const m = box(paint, 0.5, 0.008, R.crossZ[1] - R.crossZ[0], x + 0.25, top + 0.026, (R.crossZ[0] + R.crossZ[1]) / 2, scene, 0.002); m.castShadow = false; }
     }

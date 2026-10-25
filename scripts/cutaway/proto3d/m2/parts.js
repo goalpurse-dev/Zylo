@@ -18,7 +18,7 @@ import { wrapSheet } from "../kit/sheet.js";
 import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/props.js";
 import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
-import { atm, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
+import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
@@ -43,7 +43,7 @@ export const KINDS = {
   // ================= machines (the vending machine, cut open) =================
   vendingMachine, miniMachines,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
-  car, carWash, trafficLight, hydrant, atm, traffic, counter,
+  car, carWash, trafficLight, hydrant, atm, traffic, counter, cabinet,
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
   settle, creek, flow, prop, canopy, grate,

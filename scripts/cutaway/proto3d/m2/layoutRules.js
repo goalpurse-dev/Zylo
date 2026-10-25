@@ -145,6 +145,21 @@ export function layoutRules(L) {
     for (const c of parts.filter((p) => p.kind === "car")) { c.params = { ...c.params, axis: "z", pos: [R.laneOut, c.params.pos?.[1] ?? 0.12, +(R.stopZ + 2.6).toFixed(2)], from: -0.4, to: R.back - 18 }; notes.push(`${c.id} drives along the road`); }
     for (const q of parts.filter((p) => p.kind === "traffic")) q.params = { ...q.params, lane: [R.laneOut, R.stopZ], dir: -1, y: q.params.y ?? 0.12 };
   }
+  // 12. a signal's controller is a real cabinet: a plain box the planner put beside a traffic light (named a controller,
+  // a box or a cabinet) becomes the metal cabinet; a small box on its top (its "timer") becomes a display on its front
+  for (const s of parts.filter((p) => p.kind === "trafficLight")) {
+    const [sx, , sz] = s.params.pos ?? [0, 0, 0];
+    const box = parts.find((p) => p.kind === "boxPop" && /ctrl|control|cabinet|box/i.test(p.id) && Array.isArray(p.params.pos) && Math.hypot(p.params.pos[0] - sx, p.params.pos[2] - sz) < 4);
+    if (!box) continue;
+    box.kind = "cabinet";
+    const [bw, bh, bd] = box.params.size ?? [0.9, 1.3, 0.6], [bx, by, bz] = box.params.pos;
+    box.params = { pos: [bx, by, bz], size: [Math.max(0.8, bw), Math.max(1.2, bh), Math.max(0.5, bd)] };
+    for (const t of parts.filter((p) => p !== box && p.kind === "boxPop" && Array.isArray(p.params.pos) && Math.abs(p.params.pos[0] - bx) < bw && Math.abs(p.params.pos[2] - bz) < bd + 0.2 && p.params.pos[1] > by + bh / 2 - 0.05)) {
+      t.params = { ...t.params, size: [Math.min(0.5, bw * 0.55), 0.22, 0.05], pos: [bx, +(by + bh * 0.22).toFixed(2), +(bz + bd / 2 + 0.06).toFixed(2)] };
+      notes.push(`${t.id} is a display on the cabinet's front`);
+    }
+    notes.push(`${box.id} is a metal controller cabinet`);
+  }
   // 11. the ending shows the machine working (the creator's traffic light ends on the crossing running, a car driving off):
   // a traffic light that nothing sets running by the end runs its cycle from the "Add ..." line on
   const finB = beats.find((b) => b.s === "finish") ?? beats.find((b) => b.s === "congrats");

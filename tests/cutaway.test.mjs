@@ -755,7 +755,8 @@ test("page: 'Premade topics', the live price with its label, and the can't-build
   assert.match(builder, />Premade topics</);
   assert.doesNotMatch(builder, /Topics it can build/);
   assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec, approved \?\? \[\]\), \[topic, lengthSec, approved\]\);/);
-  assert.match(builder, /freshSuggestions\(usedTopics, 6, approved \?\? \[\]\)/, "only approved topics are offered as premade");
+  // only approved topics are premade, and every one of them always shows (a topic already made or picked too)
+  assert.match(builder, /freshSuggestions\(\[\], 6, approved \?\? \[\]\)/, "all approved topics, always");
   assert.match(builder, /"Premade topic" : "Custom topic"/);
   assert.match(builder, /We can't build this one yet/);
   assert.ok(builder.indexOf('quote.check.verdict === "no"') < builder.indexOf("onGenerate({ topic: clean"), "the check runs before generating");

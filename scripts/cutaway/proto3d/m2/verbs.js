@@ -19,6 +19,7 @@ export const VERBS = {
   canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")] },
   car: { arrive: [R("drive", -0.2, 1.4, 1, "inOut")], leave: [R("leave", 0, 1.4, 1, "in2")] },
   traffic: { pile: [R("pile", 0, 2.4)], go: [R("go", 0, 2.2, 1, "in2")] },
+  cabinet: { show: [R("pop", -0.1, 0.3, 1, "back")], open: [R("open", 0, 0.7, 1, "out")], close: [R("open", 0, 0.6, -1, "inOut")], lights: [R("lights", 0, 0.2)] },
   counter: { show: [R("show", -0.1, 0.3, 1, "back")], count: [R("count", 0, 9, 1, "lin")] },
   carWash: { show: [R("arch", -0.1, 0.3, 1, "back")], spray: [R("spray", 0, 0.4)], stopSpray: [R("spray", 0, 0.3, -1)], brushes: [R("brushes", -0.1, 0.3, 1, "back")], close: [R("close", 0, 0.6, 1, "inOut")], open: [R("close", 0, 0.5, -1, "inOut")], spin: [R("spin", 0, 3, 3)], foam: [R("foam", 0, 0.8)], rinse: [R("rinse", 0, 1.0)] },
   trafficLight: { show: [R("show", -0.1, 0.3, 1, "back")], red: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], allRed: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], cycle: [R("cycle", 0, 0.1, 1, "step")], stopCycle: [R("cycle", 0, 0.1, -1, "step")], flash: [R("flash", 0, 0.1, 1, "step")], stopFlash: [R("flash", 0, 0.1, -1, "step")], yellow: [R("yellow", 0, 0.1, 1, "step")], green: [R("green", 0, 0.1, 1, "step"), R("red", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], loop: [R("loop", 0, 0.5, 1, "out")], pulse: [R("pulse", 0, 0.3)], stopPulse: [R("pulse", 0, 0.3, -1)] },

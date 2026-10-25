@@ -46,7 +46,8 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const canRemove = canRemoveEndCard(planCode);
   const removeWatermark = canRemove && values?.removeWatermark === true;
   // premade = an owner-approved layout (null while the list loads: no chips yet, prices as custom)
-  const suggestions = useMemo(() => freshSuggestions(usedTopics, 6, approved ?? []), [usedTopics, approved]);
+  // every approved premade topic, always (one already made, or the one picked, too: the owner's rule of 2026-10-25)
+  const suggestions = useMemo(() => freshSuggestions([], 6, approved ?? []), [approved]);
   const [validationError, setValidationError] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [cantBuild, setCantBuild] = useState(null); // { topic, missing, closest } after the kit check said no

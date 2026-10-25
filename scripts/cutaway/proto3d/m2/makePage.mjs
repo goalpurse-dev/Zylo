@@ -83,7 +83,10 @@ export function makePage(layout) {
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{
   const ctx = { THREE, scene, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
-  if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, M2_LAYOUT.world.backdrop);
+  // a thin-slab world (no soil cut): the ground runs on toward the camera, the lawn and the setting's floor alike, so a
+  // pull-back never shows an edge over the table below (the haze band of 2026-10-25)
+  if (M2_LAYOUT.world?.shallow) { const ap = new THREE.Mesh(new THREE.PlaneGeometry(2 * X, 60), grassM); ap.rotation.x = -Math.PI / 2; ap.position.set(0, -0.004, 29.6); ap.receiveShadow = true; scene.add(ap); }
+  if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, { ...M2_LAYOUT.world.backdrop, apron: !!M2_LAYOUT.world?.shallow });
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
   window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); composer.render(); return true; };

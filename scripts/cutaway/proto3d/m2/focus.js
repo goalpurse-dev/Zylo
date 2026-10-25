@@ -28,6 +28,7 @@ export function focusOf(part, cut) {
     case "tank": return { min: [p.pos[0] - (p.r ?? 1.3), p.pos[1], p.pos[2] - (p.r ?? 1.3)], max: [p.pos[0] + (p.r ?? 1.3), p.pos[1] + (p.h ?? 2.6) * 1.15, p.pos[2] + (p.r ?? 1.3)] };
     case "riser": return { min: [p.x - 0.3, p.y0, p.z - 0.3], max: [p.x + 0.3, p.y1, p.z + 0.3] };
     case "boxPop": return centered(p.pos, p.size);
+    case "cabinet": { const [w, h, d] = p.size ?? [0.9, 1.3, 0.6], [x, y, z] = p.pos ?? [0, 0.75, -1]; return { min: [x - w / 2 - 0.15, y - h / 2, z - d / 2 - 0.15], max: [x + w / 2 + 0.15, y + h / 2 + 0.24, z + d / 2 + 0.15 + w] }; }
     case "flare": return { min: [p.pos[0] - 0.8, p.pos[1], p.pos[2] - 0.8], max: [p.pos[0] + 0.8, p.pos[1] + 2.4, p.pos[2] + 0.8] };
     case "settle": { const b = p.box ?? { x0: -1.5, x1: 1.5, y0: -3, y1: -0.6, z0: -2, z1: 0 }; return { min: [b.x0 - 0.15, b.y0 - 0.15, b.z0], max: [b.x1 + 0.15, b.y1 + 0.15, b.z1] }; }
     case "creek": { if (p.axis === "z") { const w = p.width ?? 2.6, x = p.x ?? 17, d = p.depth ?? 0.8; return { min: [x - w / 2 - 0.5, -d - 0.2, Math.max(p.z0 ?? -26, -8)], max: [x + w / 2 + 0.5, 0.3, 0.05] }; } const w = p.width ?? 2.4, z = p.z ?? -w / 2 - 0.02, d = p.depth ?? 0.7; return { min: [p.x0 ?? 4, -d - 0.2, z - w / 2 - 0.4], max: [p.x1 ?? 14, 0.3, z + w / 2 + 0.2] }; }

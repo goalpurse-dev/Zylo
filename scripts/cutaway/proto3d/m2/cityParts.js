@@ -336,7 +336,48 @@ export function counter(ctx, p, api) {
   };
 }
 
+/**
+ * A traffic controller's cabinet (the creator's newer videos: the grey box on the corner, its door open on the rack):
+ * brushed grey metal on a concrete pad, a rain hood, louvred vents, a handle; the door swings open on a rack of modules
+ * whose lights blink. pos [x, y, z] (its centre, as a boxPop's), size [w, h, d] (0.9, 1.3, 0.6). Channels: pop (it pops
+ * in: the boxPop verb show), open (the door, 0..1), lights (the modules blink).
+ */
+export function cabinet(ctx, p, api) {
+  const { THREE, std, C, add, rb } = parts(ctx);
+  const [w, h, d] = p.size ?? [0.9, 1.3, 0.6], [x, y, z] = p.pos ?? [0, h / 2 + 0.1, -1];
+  const root = new THREE.Group(); root.position.set(x, y - h / 2, z); ctx.scene.add(root);
+  const body = new THREE.Group(); root.add(body);
+  const metal = std({ color: C("#a9b0b5"), roughness: 0.38, metalness: 0.75 }), darkM = std({ color: C("#2a2f33"), roughness: 0.6 });
+  add(body, rb(w + 0.3, 0.14, d + 0.3, 0.03), std({ color: C("#b9b4aa"), roughness: 0.9 }), 0, 0.07, 0); // the pad
+  add(body, rb(w, h, d, 0.04), metal, 0, 0.14 + h / 2, 0);
+  add(body, rb(w + 0.1, 0.06, d + 0.14, 0.02), metal, 0, 0.14 + h + 0.03, 0.02); // the rain hood
+  for (let i = 0; i < 4; i++) add(body, rb(w * 0.5, 0.03, 0.03, 0.01), darkM, 0, 0.3 + i * 0.07, d / 2 + 0.005); // louvres
+  // inside: a dark rack with modules, seen when the door opens
+  const rack = new THREE.Group(); rack.position.z = d / 2 - 0.06; body.add(rack);
+  add(rack, rb(w - 0.12, h - 0.2, 0.04, 0.01), darkM, 0, 0.14 + h / 2, -0.02);
+  const leds = [];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
+    add(rack, rb((w - 0.24) / 4 - 0.03, 0.22, 0.05, 0.01), std({ color: C("#3a4046"), roughness: 0.5 }), -(w - 0.24) / 2 + (c + 0.5) * ((w - 0.24) / 4), 0.45 + r * 0.32, 0.02);
+    const col = ["#ff4d3d", "#ffd23d", "#4dff7a"][(r + c) % 3];
+    const l = add(rack, new THREE.SphereGeometry(0.025, 8, 6), std({ color: C(col), emissive: C(col), emissiveIntensity: 0, roughness: 0.3 }), -(w - 0.24) / 2 + (c + 0.5) * ((w - 0.24) / 4), 0.52 + r * 0.32, 0.05, false);
+    leds.push({ l, ph: ((r * 4 + c) * 0.37) % 1 });
+  }
+  // the door, hinged on its left edge
+  const hinge = new THREE.Group(); hinge.position.set(-w / 2, 0.14 + h / 2, d / 2 + 0.01); body.add(hinge);
+  add(hinge, rb(w - 0.02, h - 0.04, 0.04, 0.02), metal, w / 2, 0, 0);
+  add(hinge, rb(0.05, 0.18, 0.05, 0.015), darkM, w - 0.1, 0, 0.04); // the handle
+  return {
+    update(t) {
+      const pp = api.ch("pop", t); body.visible = pp > 0.002; body.scale.setScalar(Math.max(0.001, pp));
+      hinge.rotation.y = -clamp(api.ch("open", t)) * 1.9;
+      const lk = clamp(api.ch("lights", t)) || (api.ch("open", t) > 0.5 ? 1 : 0);
+      for (const e of leds) e.l.material.emissiveIntensity = lk * ((t * 2 + e.ph) % 1 < 0.6 ? 1.6 : 0.2);
+    },
+  };
+}
+
 export const CITY_CHANNELS = {
+  cabinet: ["pop", "open", "lights"],
   car: ["drive", "leave"],
   carWash: ["arch", "spray", "brushes", "close", "spin", "foam", "rinse"],
   trafficLight: ["show", "red", "yellow", "green", "loop", "pulse", "cycle", "flash"],

@@ -1,6 +1,6 @@
 ﻿import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, Clapperboard, Layers, Loader2, Play, RotateCcw, ShieldCheck, Smartphone } from "lucide-react";
-import { FAILED_MESSAGE, isWorking, recentOrExamples } from "./api/cutawayApi";
+import { clockLength, FAILED_MESSAGE, isWorking, recentOrExamples } from "./api/cutawayApi";
 import CutawayGenerating from "./CutawayGenerating";
 import CutawayHero from "./CutawayHero";
 import CutawayResultView, { ExampleBadge } from "./CutawayResultView";
@@ -38,18 +38,42 @@ function statusLine(item) {
   return `In progress · ${when}`;
 }
 
-function Recents({ items, onOpen, compact = false, flow = false }) {
+function Recents({ items, onOpen, onRetry, onWatch, compact = false, flow = false }) {
   // No videos of their own yet: our two finished examples, labelled so nobody thinks they made them.
   const shown = recentOrExamples(items);
   const examples = !items.length;
   return (
     <section style={{ "--d": "120ms" }} className={`cw-fade-up flex flex-col rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:p-4 ${compact || flow ? "" : "lg:min-h-0 lg:flex-1"}`}>
-      <h3 className="text-[14px] font-black text-white">{examples ? "Examples" : "Recent Creations"}</h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-[14px] font-black text-white">{examples ? "Examples" : "Recent Creations"}</h3>
+        {/* their own videos come first: the example is one small link away (the big hero is for new users) */}
+        {!examples && onWatch && (
+          <button type="button" onClick={onWatch} className="cw-press flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/70 hover:border-cutaway/30 hover:text-white">
+            <Play className="h-3 w-3 fill-current" />Watch an example
+          </button>
+        )}
+      </div>
       {examples && <p className="mt-1 text-[11px] font-semibold text-white/35">Your videos will appear here. Until then, tap an example to watch it.</p>}
       {/* a grid of 9:16 posters with the full title under each (2 columns on phones, as wide as fits on desktop) */}
       <div className={`mt-3 grid grid-cols-2 content-start gap-3 sm:grid-cols-3 ${compact ? "lg:[grid-template-columns:repeat(auto-fill,minmax(118px,1fr))]" : flow ? "lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]" : "lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin] lg:[grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]"}`}>
         {shown.map((item, i) => {
           const working = isWorking(item), failed = item.step === "failed";
+          // a run that didn't work out reads as one: what happened, the credits back, and Try again (never an empty card)
+          if (failed) return (
+            <div key={item.id} style={{ "--d": `${180 + i * 60}ms` }} className="cw-fade-up flex min-w-0 flex-col rounded-2xl border border-amber-300/15 bg-white/[0.025] p-2">
+              <button type="button" onClick={() => onOpen(item.id)} className="cw-press relative flex aspect-[9/16] w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl bg-[radial-gradient(circle_at_50%_35%,rgba(245,192,66,.10),transparent_65%)] p-3 text-center ring-1 ring-white/10">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-amber-300/30 bg-amber-300/10 text-[16px] font-black text-amber-200">!</span>
+                <span className="text-[12px] font-black leading-tight text-white/85">Didn't work out</span>
+                {item.refunded && <span className="rounded-full border border-cutaway/30 bg-cutaway/10 px-2 py-0.5 text-[10px] font-bold text-cutaway">Credits refunded</span>}
+              </button>
+              <span className="mt-2 line-clamp-2 px-0.5 text-[12.5px] font-bold leading-snug text-white/70">{item.title || item.topic}</span>
+              {onRetry && item.topic && (
+                <button type="button" onClick={() => onRetry(item)} className="cw-press mt-1.5 flex items-center justify-center gap-1 rounded-full bg-cutaway px-2.5 py-1.5 text-[11px] font-black text-cutaway-ink hover:bg-cutaway-soft">
+                  <RotateCcw className="h-3 w-3" />Try again
+                </button>
+              )}
+            </div>
+          );
           return (
             <button key={item.id} type="button" style={{ "--d": `${180 + i * 60}ms` }} onClick={() => onOpen(item.id)} className="cw-fade-up cw-press group flex min-w-0 flex-col rounded-2xl border border-white/[0.07] bg-white/[0.035] p-2 text-left hover:border-cutaway/30 hover:bg-white/[0.05]">
               <span className="relative block aspect-[9/16] w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
@@ -63,7 +87,7 @@ function Recents({ items, onOpen, compact = false, flow = false }) {
                   {working ? <Loader2 className="h-5 w-5 animate-spin text-cutaway motion-reduce:animate-none" /> : failed ? <RotateCcw className="h-5 w-5 text-white/80" /> : <Play className="ml-0.5 h-5 w-5 fill-current text-white group-hover:text-cutaway-ink" />}
                 </span>
                 {item.example && <ExampleBadge className="absolute left-2 top-2 !bg-black/55 backdrop-blur-sm" />}
-                <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white/90">{item.lengthSec}s</span>
+                <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white/90">{clockLength(item)}</span>
               </span>
               <span className="mt-2 line-clamp-2 px-0.5 text-[12.5px] font-bold leading-snug text-white/85 group-hover:text-white">{item.example ? item.title : item.title || item.topic}</span>
               <span className={`mt-0.5 px-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${failed ? "text-amber-300/60" : "text-white/30"}`}>{statusLine(item)}</span>
@@ -106,9 +130,15 @@ function Intro({ size = "sm", features = false }) {
 }
 
 /** Nothing open: the hero (desktop) or the intro (phones, whose hero opens the builder) and the videos. */
-function Idle({ recent, onOpen, onWatch, isDesktop }) {
+function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
   const [ref, { width, height }] = useWidth();
   const wide = isDesktop && width >= 640;
+  // someone with videos of their own: Recent Creations first, in view without scrolling; the hero is for new users
+  if (recent.length) return (
+    <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin]">
+      <Recents items={recent} onOpen={onOpen} onRetry={onRetry} onWatch={onWatch} flow />
+    </div>
+  );
   return (
     // the whole panel scrolls (everything below the hero stays reachable); the hero is the video's own 9:16 shape, whole
     <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin]">
@@ -205,7 +235,7 @@ function FailureDetails({ debug }) {
 
 /** The right side: the hero and Recent Creations, a video being made, a failed run, or a finished video. */
 export default function CutawayResults({ run, recent = [], isDesktop = true, onOpen, onBack, onMakeLike, onDelete, onApprove, onWatch }) {
-  if (!run) return <Idle recent={recent} onOpen={onOpen} onWatch={onWatch} isDesktop={isDesktop} />;
+  if (!run) return <Idle recent={recent} onOpen={onOpen} onRetry={onMakeLike} onWatch={onWatch} isDesktop={isDesktop} />;
   if (run.step === "failed") return <RunFailed run={run} onBack={onBack} onRetry={onMakeLike} />;
   if (run.step !== "done" || !run.finalUrl) return <CutawayGenerating key={run.id} run={run} />;
   // a video that has just finished gets the reveal; one opened from the list just appears

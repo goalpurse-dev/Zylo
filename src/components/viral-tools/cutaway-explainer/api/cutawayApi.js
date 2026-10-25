@@ -16,6 +16,11 @@ import { ERRORS, FAILED_MESSAGE, STATUSES } from "../../../../../supabase/functi
 export { ERRORS, FAILED_MESSAGE, STATUSES };
 
 /** A run is still being made (the page polls `status` while this is true). */
+/** a video's real length in seconds (the finished file's, else the length asked for): a "30 s" video runs ~36 s */
+export const realSeconds = (run) => Math.round(Number(run?.durationSec) || Number(run?.lengthSec) || 0);
+/** "0:36" */
+export const clockLength = (run) => { const s = realSeconds(run); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+
 export const isWorking = (run) => Boolean(run) && ["queued", "script", "scene", "render"].includes(run.step);
 
 /** An error from cutaway-api, with the contract's code and the extras some codes carry. */

@@ -134,6 +134,14 @@ async function gpuUsd(jobId: string | null) {
   return s?.executionTime ? Number(((Number(s.executionTime) / 1000) * RUNTIME_RATES.runpodUsdPerSec).toFixed(6)) : 0;
 }
 
+/** is this finished run's layout approved now (its cutaway_layouts row)? null when there is no row or it's not finished */
+async function layoutIsApproved(admin: any, run: any): Promise<boolean | null> {
+  const key = run.status === "done" ? layoutKeyOf(run) : null;
+  if (!key) return null;
+  const { data } = await admin.from("cutaway_layouts").select("approved, retired_at").eq("key", key).maybeSingle();
+  return data ? Boolean(data.approved && !data.retired_at) : null;
+}
+
 /** the cutaway_layouts key of a run's layout: the reused one, else the topic's (a premade topic keeps its premade key) */
 export const layoutKeyOf = (run: any): string | null => run.layout_key ?? run.topic_key ?? run.plan_key ?? null;
 
@@ -214,6 +222,8 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
   const slug = String(run.title ?? run.topic).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "cutaway";
   return {
     id: run.id, topic: run.topic, title: run.title ?? run.topic, lengthSec: run.length_sec, kind: run.kind, credits: run.credits_charged,
+    // the finished video's real length (a "30 s" video runs about 36 s with its end card)
+    durationSec: Number(run.files?.durationSec) || null,
     createdAt: run.created_at, doneAt: run.finished_at ?? null,
     status: run.status, step: run.status, stepAt: Date.parse(run.stage_at ?? run.created_at), renderPct: done ? 100 : run.status === "render" ? Number(run.pct) || 0 : 0,
     narration: run.narration ?? "", parts: run.parts ?? [], frames, framesShown: done ? frames.length : run.status === "render" ? Math.floor(((Number(run.pct) || 0) / 100) * frames.length) : 0,
@@ -225,7 +235,8 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
     endCard: run.end_card !== false,
     error: run.status === "failed" ? FAILED_MESSAGE : null,
     refunded: Boolean(run.refunded_at), creditsRefunded: run.credits_refunded ?? 0,
-    owner, layoutApproved: owner ? (run.layout_approved ?? null) : null,
+    // approved: made from an approved layout (a premade topic), or its own layout approved since (on this run or another)
+    owner, layoutApproved: owner ? (run.layout_used ? true : (await layoutIsApproved(admin, run)) ?? run.layout_approved ?? null) : null,
     // the owner only: why a run failed (customers see the friendly message)
     debug: owner && run.status === "failed" ? { step: run.stage ?? null, code: run.error_code ?? null, message: run.error_message ?? null, attempt: run.attempt ?? 1, provider: run.provider ?? null, at: run.finished_at ?? null } : null,
   };
