@@ -375,6 +375,10 @@ test("m2 voice check: the Flash take's garbles fail, number words and a misheard
   assert.equal(compareWords("at about 490 US landfills", "at about 490 U.S. landfills").ok, true);
   assert.equal(compareWords("at about 490 US landfills", "at about 490 landfills").ok, false, "a missing word still fails");
   assert.equal(compareWords("dig a pit", "dig a pot").ok, false, "a different short word still fails");
+  // the production Pond test: "1,500" heard as "1 500" is the same number; two numbers in a row stay apart
+  assert.equal(compareWords("holds about 1,500 gallons", "holds about 1 500 gallons").ok, true);
+  assert.equal(compareWords("holds about 1,500 gallons", "holds about 500 gallons").ok, false);
+  assert.deepEqual(normWords("in 1952 500 people"), ["in", "1952", "500", "people"]);
 });
 
 import { underground } from "../scripts/cutaway/proto3d/m2/director.js";
