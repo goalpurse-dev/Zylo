@@ -647,8 +647,10 @@ test("access: the server enforces the same rule on every action, before anything
   assert.match(server, /import \{ canGenerate \} from "\.\.\/_shared\/cutaway\/access\.js";/);
   assert.match(server, /if \(!canGenerate\(who\.plan\)\) throw new ApiError\("UPGRADE"\);/);
   // start goes through requireGenerator (the switch or a test user, then a paid plan) before the caps and the charge
-  assert.match(server, /const who = action === "start" \? await requireGenerator\(req\) : await requireUser\(req\);/);
-  assert.ok(server.indexOf("requireGenerator(req)") < server.indexOf('admin.rpc("cutaway_start_run"'));
+  assert.match(server, /const who = action === "start" \? await requireGenerator\(req, trace\) : await requireUser\(req, trace\);/);
+  assert.ok(server.indexOf("requireGenerator(req, trace)") < server.indexOf('admin.rpc("cutaway_start_run"'));
+  // the owner's dry run stops before the charge
+  assert.ok(server.indexOf("body?.dryRun === true && who.tester") < server.indexOf('admin.rpc("cutaway_start_run"'));
   // every other action after access needs a signed-in user and reads only that user's runs
   assert.match(server, /\.eq\("id", runId\)\.eq\("user_id", who\.user\.id\)/);
   assert.doesNotMatch(server, /PAID_PLANS/, "no second copy of the plan list in the server");
@@ -724,7 +726,7 @@ test("quote: the credits come from the topic, premade or custom, and say whether
 
 test("server: decides the price from the topic it got, checks the kit before charging, logs what it can't build, charges once", () => {
   const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
-  assert.match(server, /const quote = await serverQuote\(who\.user\.id, topic, lengthSec, \{ log: action === "start" \}\);/);
+  assert.match(server, /const quote = await serverQuote\(who\.user\.id, topic, lengthSec, \{ log: action === "start" && body\?\.dryRun !== true \}\);/);
   assert.match(server, /if \(!quote\.buildable\) throw new ApiError\("CANT_BUILD"/);
   assert.match(server, /admin\.rpc\("compute_tool_price", \{ p_tool_key: PRICES\.video\.toolKey\(quote\.kind, lengthSec\)/);
   const at = (s) => server.indexOf(s);

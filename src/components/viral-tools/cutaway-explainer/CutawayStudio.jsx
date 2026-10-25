@@ -53,7 +53,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
     else if (e.code === "UPGRADE") onUpgrade?.();
     else if (e.code === "CREDITS") onNoCredits?.(e.credits ?? q.credits);
     else if (e.code === "CANT_BUILD") setNotice({ kind: "CANT_BUILD", topic: input.topic, missing: e.missing, closest: topicNames(e.closest) });
-    else setNotice({ kind: e.code, message: e.message, retryAfterSec: e.retryAfterSec });
+    else setNotice({ kind: e.code, message: e.message, retryAfterSec: e.retryAfterSec, debug: e.debug });
   };
   const handleOpen = (id) => { show("results"); open(id); };
   const handleReset = () => { reset(); show("builder"); };

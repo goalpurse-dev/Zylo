@@ -3,6 +3,7 @@ import { ArrowRight, BadgeCheck, Check, ChevronRight, Clock3, Hourglass, Layers,
 import { freshSuggestions } from "../../../data/cutawayTopics";
 import { canRemoveEndCard, closestNames, DEFAULT_LENGTH, LENGTHS, PRICES, quoteTopic } from "./api/cutawayApi";
 import CutawayUpgradeModal from "./CutawayUpgradeModal";
+import { FailureDetails } from "./CutawayResults";
 
 function CreditIcon({ className = "h-4 w-4" }) {
   return (
@@ -265,10 +266,11 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
         {calm && (
           <div role="status" className="cw-fade-up mb-2 flex items-start gap-2.5 rounded-xl border border-white/[0.09] bg-white/[0.04] px-3 py-2.5">
             <Hourglass className="mt-0.5 h-4 w-4 shrink-0 text-cutaway/80" />
-            <p className="min-w-0 flex-1 text-[11.5px] font-medium leading-snug text-white/70">
-              {calm.message}{waitText(calm.retryAfterSec) && <span className="text-white/45"> {waitText(calm.retryAfterSec)}</span>}
+            <div className="min-w-0 flex-1 text-[11.5px] font-medium leading-snug text-white/70">
+              <p>{calm.message}{waitText(calm.retryAfterSec) && <span className="text-white/45"> {waitText(calm.retryAfterSec)}</span>}</p>
               <span className="mt-0.5 block text-[10.5px] text-white/35">Nothing was charged.</span>
-            </p>
+              {calm.debug && <FailureDetails debug={calm.debug} />}
+            </div>
             <button type="button" onClick={onDismissNotice} aria-label="Dismiss" className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-white/35 transition hover:bg-white/10 hover:text-white/70"><X className="h-3.5 w-3.5" /></button>
           </div>
         )}

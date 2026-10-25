@@ -208,13 +208,14 @@ function RunFailed({ run, onBack, onRetry }) {
   );
 }
 
-const STEP_NAMES = { queued: "Waiting for a GPU", script: "Script", facts: "Fact-check", scene: "Scene plan", voice: "Voice", preview: "Preview check", repair: "Preview repair", render: "Render", sound: "Sound mix", finish: "Finishing", upload: "Upload" };
+const STEP_NAMES = { "sign-in": "Sign-in check", topic: "Topic check", "kit check": "Kit check", "cap check": "Cap check", price: "Price", "job creation": "Job creation", dispatch: "Sending to the GPU", "dry run": "Dry run", queued: "Waiting for a GPU", script: "Script", facts: "Fact-check", scene: "Scene plan", voice: "Voice", preview: "Preview check", repair: "Preview repair", render: "Render", sound: "Sound mix", finish: "Finishing", upload: "Upload" };
 
 /** The owner only (the server sends `debug` to the owner alone): the step that failed and the error, to copy. */
-function FailureDetails({ debug }) {
+export function FailureDetails({ debug }) {
   const [open, setOpen] = useState(false);
   const step = STEP_NAMES[debug.step] ?? debug.step ?? "unknown";
-  const text = `Step: ${step}\nCode: ${debug.code ?? "-"}\nAttempt: ${debug.attempt} (${debug.provider ?? "-"})\n${debug.message ?? ""}`;
+  const attempt = debug.attempt != null; // a run's failure has an attempt; a start error stops before there is one
+  const text = `Step: ${step}\nCode: ${debug.code ?? "-"}\n${attempt ? `Attempt: ${debug.attempt} (${debug.provider ?? "-"})\n` : ""}${debug.message ?? ""}`;
   return (
     <div className="relative mt-1 w-full max-w-[420px] text-left">
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="mx-auto block text-[11px] font-semibold text-white/40 underline decoration-white/20 underline-offset-2 hover:text-white/70">
@@ -224,7 +225,7 @@ function FailureDetails({ debug }) {
         <div className="cw-fade-up mt-2 rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-white/70">
           <p><span className="text-white/40">Step</span> {step}</p>
           <p><span className="text-white/40">Code</span> {debug.code ?? "-"}</p>
-          <p><span className="text-white/40">Attempt</span> {debug.attempt} · {debug.provider ?? "-"}</p>
+          {attempt && <p><span className="text-white/40">Attempt</span> {debug.attempt} · {debug.provider ?? "-"}</p>}
           {debug.message && <p className="mt-1.5 max-h-40 overflow-y-auto whitespace-pre-wrap break-words text-white/60">{debug.message}</p>}
           <button type="button" onClick={() => navigator.clipboard?.writeText(text).catch(() => {})} className="mt-2 text-[10.5px] font-sans font-bold text-cutaway hover:text-cutaway-soft">Copy</button>
         </div>

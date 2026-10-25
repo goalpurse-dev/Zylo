@@ -34,6 +34,7 @@ export class CutawayApiError extends Error {
     this.missing = Array.isArray(extra.missing) ? extra.missing : []; // CANT_BUILD
     this.closest = Array.isArray(extra.closest) ? extra.closest : []; // CANT_BUILD: premade keys or names
     this.retryAfterSec = Number.isFinite(extra.retryAfterSec) ? extra.retryAfterSec : null; // LIMIT
+    this.debug = extra.debug && typeof extra.debug === "object" ? extra.debug : null; // the owner only: {step, code, message}
   }
 }
 
@@ -55,7 +56,7 @@ export function errorFromReply(body, status = 0) {
   const message = typeof body?.error === "string" ? body.error : typeof body?.message === "string" ? body.message : "";
   const code = typeof body?.code === "string" && ERRORS[body.code] ? body.code : codeFrom(status, message);
   const credits = Number(body?.credits ?? body?.needed);
-  return new CutawayApiError(code, message || ERRORS[code].message, { status, credits, missing: body?.missing ?? body?.quote?.missing, closest: body?.closest ?? body?.quote?.closest, retryAfterSec: Number(body?.retryAfterSec) });
+  return new CutawayApiError(code, message || ERRORS[code].message, { status, credits, missing: body?.missing ?? body?.quote?.missing, closest: body?.closest ?? body?.quote?.closest, retryAfterSec: Number(body?.retryAfterSec), debug: body?.debug });
 }
 
 /**
@@ -102,11 +103,22 @@ export function toRun(view) {
   };
 }
 
+/** The owner's test levers from the address bar (the server honours them only for test users). */
+function ownerLevers() {
+  if (typeof window === "undefined") return {};
+  const q = new URLSearchParams(window.location.search);
+  return { ...(q.get("testfail") === "1" ? { testFail: true } : {}), ...(q.get("dryrun") === "1" ? { dryRun: true } : {}) };
+}
+
 export const cutawayServer = {
   access: () => cutawayCall("access"),
   quote: (topic, lengthSec) => cutawayCall("quote", { topic, lengthSec }).then((r) => r?.quote ?? null),
   // ?testfail=1: the owner's forced failure (the server honours it only for test users while the switch is off)
-  start: ({ topic, lengthSec, removeWatermark }) => cutawayCall("start", { topic, lengthSec, removeWatermark: removeWatermark === true, ...(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("testfail") === "1" ? { testFail: true } : {}) }).then(toRun),
+  // ?dryrun=1: every start check (kit check, caps, price) and then a stop before anything is charged or created
+  start: ({ topic, lengthSec, removeWatermark }) => cutawayCall("start", { topic, lengthSec, removeWatermark: removeWatermark === true, ...ownerLevers() }).then((data) => {
+    if (data?.dryRun) throw new CutawayApiError("DRY_RUN", `Dry run: every check passed. This would cost ${data.credits} credits (${data.quote?.kind}). Nothing was started.`, { debug: { step: "dry run", code: "OK", message: JSON.stringify(data) } });
+    return toRun(data);
+  }),
   status: (runId) => cutawayCall("status", { runId }).then(toRun),
   list: () => cutawayCall("list").then((r) => (Array.isArray(r?.runs) ? r.runs.map(toRun).filter(Boolean) : [])),
   remove: (runId) => cutawayCall("remove", { runId }),

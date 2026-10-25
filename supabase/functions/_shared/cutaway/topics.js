@@ -73,6 +73,8 @@ const BLOCKER_PHRASES = [["kitchen appliances", "washing machine"], ["tall build
  */
 export function kitCheck(text) {
   const t = normTopic(text), w = words(text);
+  // a premade topic is one the kit was built for: buildable before its layout is approved, with no Claude check
+  if (classifyTopic(text).kind === "premade") return { verdict: "yes", missing: [], closest: closestPremade(text, 3) };
   const missing = new Set();
   for (const b of BLOCKERS) if (w.some((x) => b.set.has(x))) missing.add(b.label);
   for (const [label, phrase] of BLOCKER_PHRASES) if (hasPhrase(t, phrase)) missing.add(label);

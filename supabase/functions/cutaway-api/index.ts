@@ -20,7 +20,7 @@ import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
 import { closestNames } from "../_shared/cutaway/quote.js";
 import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
-import { decide, DEFAULT_SETTINGS, topicProblem } from "../_shared/cutaway/guard.js";
+import { capFreesInSec, decide, DEFAULT_SETTINGS, topicProblem } from "../_shared/cutaway/guard.js";
 import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
 import { BUCKET, runDir } from "../_shared/cutaway/jobs.js";
 import { advance, CONFIG, dispatchNew, expectedUsd, layoutKeyOf, viewOf, watch } from "../_shared/cutaway/runtime.ts";
@@ -38,8 +38,11 @@ const PAID_OFF = flag("CUTAWAY_PAID_CALLS") === "off";
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
 class ApiError extends Error {
-  constructor(public code: keyof typeof ERRORS, message?: string, public extra: Record<string, unknown> = {}) { super(message ?? ERRORS[code].message); }
+  /** `detail`: what really happened, for the logs and the owner's Details (never shown to a customer) */
+  constructor(public code: keyof typeof ERRORS, message?: string, public extra: Record<string, unknown> = {}, public detail?: string) { super(message ?? ERRORS[code].message); }
 }
+/** One request's trail: the step it is on, and whether the owner is asking (the owner's error replies carry `debug`). */
+type Trace = { action: string; step: string; owner: boolean };
 
 // ---------- who is asking ----------
 async function whoIs(req: Request) {
@@ -53,14 +56,15 @@ async function whoIs(req: Request) {
   const plan = String(profile?.plan_code ?? "free").toLowerCase();
   return { user, plan, tester: isAdmin(user, TESTERS), owner: isAdmin(user, OWNERS) };
 }
-async function requireUser(req: Request) {
+async function requireUser(req: Request, trace?: Trace) {
   const who = await whoIs(req);
   if (!who) throw new ApiError("SIGN_IN");
+  if (trace) trace.owner = who.owner;
   return who;
 }
 /** may generate: the switch is on (or a tester while it is off), and a paid plan (testers too: the same rule as customers) */
-async function requireGenerator(req: Request) {
-  const who = await requireUser(req);
+async function requireGenerator(req: Request, trace?: Trace) {
+  const who = await requireUser(req, trace);
   if (!ENABLED && !who.tester) throw new ApiError("OFF");
   if (!canGenerate(who.plan)) throw new ApiError("UPGRADE");
   return who;
@@ -80,8 +84,11 @@ async function serverQuote(userId: string | null, topic: string, lengthSec: numb
   const premade = c.kind === "premade" && c.premade && approved.has(c.premade) ? c.premade : null;
   let check: any = premade ? { verdict: "yes", missing: [], closest: [] } : kitCheck(topic), checkedBy = "rules";
   if (!premade && check.verdict === "unsure") {
-    if (!CONFIG.anthropic) throw new ApiError("BUSY", "The topic check isn't available right now. Try a premade topic.");
-    const ai = await checkKitFit({ apiKey: CONFIG.anthropic, topic });
+    if (!CONFIG.anthropic) throw new ApiError("BUSY", "The topic check isn't available right now. Try a premade topic.", {}, "no Anthropic key on the server");
+    const ai = await checkKitFit({ apiKey: CONFIG.anthropic, topic }).catch((e: any) => {
+      throw new ApiError("BUSY", e?.balance ? "Custom topics are paused on our side for now. Try a premade topic." : "We couldn't check this topic right now. Try again in a few minutes, or pick a premade topic.",
+        { retryAfterSec: e?.balance ? 1800 : 120 }, `${e?.balance ? "Anthropic balance: " : ""}${e?.message ?? e}`);
+    });
     checkedBy = "claude";
     check = { verdict: ai.buildable ? "yes" : "no", missing: ai.missing, closest: ai.closest.length ? ai.closest : check.closest };
   }
@@ -90,15 +97,24 @@ async function serverQuote(userId: string | null, topic: string, lengthSec: numb
   return { kind, premade, credits: PRICES.video.credits[kind][lengthSec], buildable, missing: check.missing ?? [], closest: closestNames((check.closest ?? []).filter((k: string) => approved.has(k))) };
 }
 
+/** The owner's view of a cap refusal: which cap, and the numbers it compared. */
+function capDetail(reason: string | null, settings: any, counts: any, addUsd: number, cErr: any) {
+  if (cErr) return `cap check: the spend state could not be read (${cErr.message})`;
+  const s = { ...DEFAULT_SETTINGS, ...(settings ?? {}) }, c = counts ?? {}, $ = (v: unknown) => `$${(Number(v) || 0).toFixed(2)}`;
+  return `${reason}: this video ~${$(addUsd)}. You: ${$(c.user_spent_24h)} of ${$(s.user_daily_usd)} in 24 h, ${c.user_running ?? 0} running, ${c.user_starts_1h ?? 0} starts in 1 h, fail streak ${c.user_fail_streak ?? 0}. ` +
+    `Site: ${$(c.spent_24h)} of ${$(s.daily_cap_usd)} in 24 h, ${$(c.spent_3h)} of ${$(s.window_cap_usd)} in 3 h, ${c.running ?? 0} running. Balance fail ${c.minutes_since_balance_fail ?? "-"} min ago.`;
+}
+
 // a custom video on a premade topic with no approved layout yet keeps the premade key, so approving its layout makes
 // that topic premade
 const namedPremade = (topic: string) => { const c = classifyTopic(topic); return c.kind === "premade" ? c.premade ?? null : null; };
 const topicKey = (topic: string) => normTopic(topic).replace(/^(a|an|the) /, "").replace(/\b(how|does|do|work|works|a|an|the)\b/g, " ").trim().replace(/\s+/g, "_").slice(0, 40);
 
 // ---------- actions ----------
-async function handle(req: Request) {
+async function handle(req: Request, trace: Trace) {
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action ?? "");
+  trace.action = action;
 
   if (action === "access") {
     const who = await whoIs(req);
@@ -111,35 +127,50 @@ async function handle(req: Request) {
   }
 
   if (action === "quote" || action === "start") {
-    const who = action === "start" ? await requireGenerator(req) : await requireUser(req);
+    trace.step = "sign-in";
+    const who = action === "start" ? await requireGenerator(req, trace) : await requireUser(req, trace);
+    trace.step = "topic";
     const topic = String(body?.topic ?? "").trim().replace(/\s+/g, " "), lengthSec = Number(body?.lengthSec);
     const bad = topicProblem(topic);
     if (bad) throw new ApiError("BAD_INPUT", bad);
     if (!LENGTHS.includes(lengthSec)) throw new ApiError("BAD_INPUT", "Pick 30 or 60 seconds.");
-    const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" });
+    trace.step = "kit check";
+    const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
     if (action === "quote") return { quote };
-    if (!quote.buildable) throw new ApiError("CANT_BUILD", undefined, { missing: quote.missing, closest: quote.closest });
+    if (!quote.buildable) throw new ApiError("CANT_BUILD", undefined, { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
 
     // the caps, read fresh (fail closed), before anything is charged
+    trace.step = "cap check";
     const [{ data: settings }, { data: counts, error: cErr }] = await Promise.all([
       admin.from("cutaway_settings").select("*").eq("id", 1).maybeSingle(),
       admin.rpc("cutaway_guard", { p_user: who.user.id }),
     ]);
-    const g = decide(settings ?? DEFAULT_SETTINGS, cErr ? null : counts, expectedUsd(quote.kind, lengthSec), { envOff: PAID_OFF });
-    if (!g.ok) throw new ApiError(g.code as any, g.code === "LIMIT" ? g.reason ?? undefined : undefined, { retryAfterSec: g.retryAfterSec });
+    const addUsd = expectedUsd(quote.kind, lengthSec);
+    const g = decide(settings ?? DEFAULT_SETTINGS, cErr ? null : counts, addUsd, { envOff: PAID_OFF });
+    if (!g.ok && g.code === "LIMIT" && (Number(counts?.user_spent_24h) || 0) + addUsd > Number((settings ?? DEFAULT_SETTINGS).user_daily_usd)) {
+      // the per-user cap: the real wait, from when the user's runs leave the 24-hour window
+      const { data: mine } = await admin.from("cutaway_runs").select("created_at, status, cost_usd, credits_charged").eq("user_id", who.user.id).gt("created_at", new Date(Date.now() - 24 * 3600e3).toISOString());
+      const runs = (mine ?? []).map((r: any) => ({ at: Date.parse(r.created_at), usd: ["done", "failed"].includes(r.status) ? Number(r.cost_usd) || 0 : Math.max(Number(r.cost_usd) || 0, (Number(r.credits_charged) || 0) * 0.01) }));
+      g.retryAfterSec = capFreesInSec(runs, addUsd, Number((settings ?? DEFAULT_SETTINGS).user_daily_usd)) || g.retryAfterSec;
+    }
+    if (!g.ok) throw new ApiError(g.code as any, g.code === "LIMIT" ? g.reason ?? undefined : g.message ?? undefined, { retryAfterSec: g.retryAfterSec }, capDetail(g.reason, settings, counts, addUsd, cErr));
 
     // the end card comes from the plan, read here (the page's request only asks)
+    trace.step = "price";
     const endCard = endCardFor(who.plan, body?.removeWatermark === true);
     const { data: price, error: pErr } = await admin.rpc("compute_tool_price", { p_tool_key: PRICES.video.toolKey(quote.kind, lengthSec), p_input: {} });
-    if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.");
+    if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
     const credits = Number(price);
+    // owner test mode only: every check above, then stop before anything is charged or created (free)
+    if (body?.dryRun === true && who.tester) return { dryRun: true, quote, credits, endCard, guard: { ok: true, spentTodayUsd: Number(counts?.user_spent_24h ?? 0), addUsd } };
+    trace.step = "job creation";
     const { data: run, error } = await admin.rpc("cutaway_start_run", {
       p_user: who.user.id, p_topic: topic, p_topic_key: quote.premade ?? namedPremade(topic) ?? topicKey(topic), p_length: lengthSec, p_kind: quote.kind,
       p_end_card: endCard, p_credits: credits, p_env: who.tester && !ENABLED ? "test" : "prod", p_layout_key: quote.premade,
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
-      throw new ApiError("SERVER", "Couldn't start. Nothing was charged.");
+      throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     // owner test mode only: a forced failure on our side, to see the refund and the failed state (no provider is called)
     if (body?.testFail === true && who.tester && !ENABLED) {
@@ -147,11 +178,12 @@ async function handle(req: Request) {
       return await viewOf(admin, { ...run, ...patch }, { owner: who.owner });
     }
     // off to the GPU; a run that can't be sent anywhere is refunded inside (runtime.ts)
+    trace.step = "dispatch";
     const patch = await dispatchNew(admin, run);
     return await viewOf(admin, { ...run, ...patch }, { owner: who.owner });
   }
 
-  const who = await requireUser(req);
+  const who = await requireUser(req, trace);
 
   if (action === "list") {
     const { data } = await admin.from("cutaway_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
@@ -200,11 +232,16 @@ async function handle(req: Request) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
+  const trace: Trace = { action: "", step: "", owner: false };
   try {
-    return ok(req, await handle(req));
+    return ok(req, await handle(req, trace));
   } catch (e) {
-    if (e instanceof ApiError) return err(req, e.message, ERRORS[e.code].status, { code: e.code, ...e.extra });
-    console.error("[cutaway-api]", e instanceof Error ? e.message : e);
-    return err(req, ERRORS.SERVER.message, 500, { code: "SERVER" });
+    const known = e instanceof ApiError, code = known ? e.code : "SERVER";
+    const detail = known ? e.detail ?? e.message : e instanceof Error ? e.message : String(e);
+    if (!known || ["SERVER", "BUSY", "LIMIT"].includes(code)) console.error("[cutaway-api]", JSON.stringify({ action: trace.action, step: trace.step, code, detail }));
+    // the owner's reply says where it stopped and why (the Details link on the page); a customer's never does
+    const debug = trace.owner ? { step: trace.step || null, code, message: detail } : undefined;
+    if (known) return err(req, e.message, ERRORS[e.code].status, { code: e.code, ...e.extra, ...(debug ? { debug } : {}) });
+    return err(req, ERRORS.SERVER.message, 500, { code: "SERVER", ...(debug ? { debug } : {}) });
   }
 });

@@ -7,12 +7,13 @@ import { PREMADE } from "./topics.js";
 const PRICE = { input: 0.1, output: 0.5 }; // USD per 1M tokens, Claude Haiku 5.5 (prompts up to 100k tokens)
 
 export const KIT_SYSTEM = `You decide whether a short "how it works" 3D cutaway video about a topic can be built from a fixed parts kit.
-The video is one continuous shot of a diorama: a house, a lawn and trees, and a soil cut face (soil layers, stones, roots, groundwater) in front.
+The video is one continuous shot of a diorama: a house, a lawn and trees, and a soil cut face (soil layers, stones, roots, groundwater) in front; or a street scene (a road with lanes, a sidewalk, a curb, street lamps, cars driving and stopping, traffic lights, signs, a small shop front).
 The kit can build only these:
 - the ground: pits, trenches, ditches and holes dug into it (with flying dirt and a mound), and fills that rise in them: gravel, water, soil, clay
 - pipes along any path (solid or perforated) with flowing water or liquid, tanks and boxes, sheets and liners, fabric wraps
 - rain, runoff, puddles, water levels and seepage through the soil, a crack in a concrete wall, a foundation
-- trucks dumping loads, simple props (a sign, a book, a flag, bushes, fences, posts), arrows and outlines, number cards
+- trucks dumping loads, cars on the road, traffic lights with their red, yellow and green lamps, simple boxes and cabinets with a lamp or a panel, a counter
+- simple props (a sign, a book, a flag, bushes, fences, posts), arrows and outlines, number cards
 It CANNOT build: appliances or machines' insides, electronics, engines, vehicles' insides, the human body, space, tall buildings, bridges, dams, tunnels, factories, or ideas without a physical build.
 Answer "buildable": true only if every important part of the topic can be shown with the kit. List what is missing otherwise, in a few plain words each.
 Also pick the 3 closest premade topics (by key) from this list: ${PREMADE.map((p) => `${p.key} (${p.topic})`).join(", ")}.`;
@@ -23,8 +24,9 @@ export const KIT_SCHEMA = {
   required: ["buildable", "missing", "closest"],
   properties: {
     buildable: { type: "boolean" },
-    missing: { type: "array", items: { type: "string" }, maxItems: 5 },
-    closest: { type: "array", items: { type: "string", enum: PREMADE.map((p) => p.key) }, maxItems: 3 },
+    // no maxItems: structured outputs reject array size limits (a 400 on every call); parseKitReply trims the lists
+    missing: { type: "array", items: { type: "string" } },
+    closest: { type: "array", items: { type: "string", enum: PREMADE.map((p) => p.key) } },
   },
 };
 
@@ -54,6 +56,9 @@ export function parseKitReply(body) {
   }
 }
 
+/** Anthropic's "out of credits" reply (a 400 whose message names the credit balance). */
+export const isBalanceError = (status, body) => status === 400 && /credit balance/i.test(String(body?.error?.message ?? ""));
+
 export async function checkKitFit({ apiKey, topic, timeoutMs = 20_000 }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -62,6 +67,10 @@ export async function checkKitFit({ apiKey, topic, timeoutMs = 20_000 }) {
     signal: AbortSignal.timeout(timeoutMs),
   });
   const body = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(`kit check: anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 200)}`);
+  if (!res.ok) {
+    const e = new Error(`kit check: anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`);
+    e.balance = isBalanceError(res.status, body);
+    throw e;
+  }
   return parseKitReply(body);
 }
