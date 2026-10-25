@@ -74,9 +74,18 @@ export function car(ctx, p, api) {
   return {
     update(t) {
       const dv = api.ch("drive", t), lv = api.ch("leave", t);
-      const x = from + (px - from) * clamp(dv) + (to - px) * clamp(lv);
-      root.position.set(x, py, pz); root.visible = dv > 0.001 && lv < 0.999;
-      for (const w of wheels) spin(w, x);
+      // axis "z": along a street's road (layoutRules rule 9), from/to along z; turned to face where it drives, and only
+      // drawn over the ground (never in the air in front of the face)
+      if (p.axis === "z") {
+        const z = from + (pz - from) * clamp(dv) + (to - pz) * clamp(lv);
+        root.rotation.y = to < from ? Math.PI / 2 : -Math.PI / 2;
+        root.position.set(px, py, z); root.visible = dv > 0.001 && lv < 0.999 && z < -0.3;
+        for (const w of wheels) spin(w, z);
+      } else {
+        const x = from + (px - from) * clamp(dv) + (to - px) * clamp(lv);
+        root.position.set(x, py, pz); root.visible = dv > 0.001 && lv < 0.999;
+        for (const w of wheels) spin(w, x);
+      }
       const f = ctx.shared[`car:${p.id ?? "car"}`].foamK ?? 0;
       foam.forEach((m, i) => { const k = clamp(f * 1.6 - (i / foam.length) * 0.6); m.visible = k > 0.01; m.scale.setScalar(pop(k)); });
       paint.clearcoat = shine * (1 - 0.6 * f);
@@ -126,19 +135,40 @@ export function carWash(ctx, p, api) {
   };
 }
 
-export function trafficLight(ctx, p, api) {
-  const { THREE, std, C, add, rb, cylG, dark, glow } = parts(ctx);
-  const root = new THREE.Group(); const [x, y, z] = p.pos ?? [4, 0.1, -1]; root.position.set(x, y, z); ctx.scene.add(root);
-  const H = p.height ?? 5, olive = std({ color: C("#3b4232"), roughness: 0.6 });
-  const body = new THREE.Group(); root.add(body);
-  add(body, cylG(0.12, H, 14), olive, 0, H / 2, 0);
-  add(body, rb(0.9, 2.5, 0.6, 0.1), std({ color: C("#f0c419"), roughness: 0.5 }), 0, H + 1.0, 0.1);
-  const lamps = ["#e0352b", "#f2b01e", "#2fbf5a"].map((col, i) => {
-    const m = add(body, new THREE.CylinderGeometry(0.28, 0.28, 0.1, 22), glow(col, 0), 0, H + 1.8 - i * 0.8, 0.42, false); m.rotation.x = Math.PI / 2;
-    add(body, rb(0.75, 0.08, 0.4, 0.03), dark, 0, H + 2.15 - i * 0.8, 0.55);
-    return m;
+// one signal head as a real one looks (the creator's newer videos, 2026-10-25): a dark three-section housing with a yellow
+// retro-reflective border on its backplate, a visor over each lamp, lenses that glow when lit. Returns the lens meshes.
+function signalHead(ctx, parent, x, y, z) {
+  const { THREE, std, C, add, rb, glow } = parts(ctx);
+  const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
+  const housing = std({ color: C("#1f2427"), roughness: 0.55 }), border = std({ color: C("#f2c230"), roughness: 0.45 });
+  add(g, rb(1.25, 3.0, 0.08, 0.05), border, 0, 0, -0.18);
+  add(g, rb(1.08, 2.84, 0.1, 0.05), housing, 0, 0, -0.13);
+  add(g, rb(0.86, 2.6, 0.5, 0.08), housing, 0, 0, 0.12);
+  return ["#e0352b", "#f2b01e", "#2fbf5a"].map((col, i) => {
+    const cy = 0.85 - i * 0.85;
+    const lens = add(g, new THREE.CylinderGeometry(0.3, 0.3, 0.06, 28), glow(col, 0), 0, cy, 0.39, false); lens.rotation.x = Math.PI / 2;
+    // the visor: a half tube over the lens's top
+    const visor = add(g, new THREE.CylinderGeometry(0.36, 0.36, 0.42, 20, 1, true, -Math.PI / 2, Math.PI), housing, 0, cy, 0.58, true); visor.rotation.x = Math.PI / 2; visor.material.side = THREE.DoubleSide;
+    return lens;
   });
-  const light = new THREE.PointLight(0xffffff, 0, 6); light.position.set(0, H + 1, 1.2); body.add(light);
+}
+
+export function trafficLight(ctx, p, api) {
+  const { THREE, std, C, add, cylG, glow } = parts(ctx);
+  const root = new THREE.Group(); const [x, y, z] = p.pos ?? [4, 0.1, -1]; root.position.set(x, y, z); ctx.scene.add(root);
+  const H = p.height ?? 5, pole = std({ color: C("#5f666b"), roughness: 0.45, metalness: 0.6 });
+  const body = new THREE.Group(); root.add(body);
+  add(body, cylG(0.14, H, 16), pole, 0, H / 2, 0);
+  // arm: a mast arm over the road (its length, toward armDir: -1 left, 1 right), the head hanging from its end; without
+  // it the head sits on top of the pole
+  const arm = p.arm ?? 0, dir = p.armDir ?? -1;
+  let lamps;
+  if (arm > 0.5) {
+    const a = add(body, cylG(0.09, arm, 12), pole, (dir * arm) / 2, H - 0.2, 0); a.rotation.z = Math.PI / 2;
+    lamps = signalHead(ctx, body, dir * (arm - 0.3), H - 1.8, 0.1);
+  } else lamps = signalHead(ctx, body, 0, H + 1.4, 0.1);
+  // (its glow on the road, out in front: close to the head it tinted the dark lenses beside the lit one at night)
+  const light = new THREE.PointLight(0xffffff, 0, 6); light.position.set(arm > 0.5 ? dir * (arm - 0.3) : 0, arm > 0.5 ? H - 2.6 : H + 0.6, 2.6); body.add(light);
   // the loop: a rectangle of wire in a saw cut in the road (just under the surface), at loop [x, z, w, d]
   const [lx, lz, lw, ld] = p.loop ?? [x - 3, -1.2, 2, 1.6];
   const wire = glow("#ff7a1a", 0.0), loopG = new THREE.Group(); loopG.position.set(lx, -0.04, lz); ctx.scene.add(loopG);
@@ -149,9 +179,13 @@ export function trafficLight(ctx, p, api) {
   return {
     update(t) {
       const sh = api.ch("show", t); body.scale.setScalar(pop(sh)); body.visible = sh > 0.002;
-      const ks = ["red", "yellow", "green"].map((c) => clamp(api.ch(c, t)));
-      lamps.forEach((m, i) => { m.material.emissiveIntensity = 0.05 + ks[i] * 1.6; });
-      light.intensity = Math.max(...ks) * 3; light.color.set(ks[2] > 0.5 ? 0x2fbf5a : ks[1] > 0.5 ? 0xf2b01e : 0xe0352b);
+      let ks = ["red", "yellow", "green"].map((c) => clamp(api.ch(c, t)));
+      // running on its own: a cycle (green 4 s, yellow 1.5 s, red 4.5 s, round again) or a flashing red (1 a second)
+      if (api.ch("cycle", t) > 0.5) { const u = (t + (p.phase ?? 0)) % 10; ks = u < 4 ? [0, 0, 1] : u < 5.5 ? [0, 1, 0] : [1, 0, 0]; }
+      if (api.ch("flash", t) > 0.5) ks = [(t % 1) < 0.5 ? 1 : 0, 0, 0];
+      // an unlit lens is dark (its colour at a fifth), a lit one bright and glowing: "all red" reads as one red lamp
+      lamps.forEach((m, i) => { m.userData.base = m.userData.base ?? m.material.color.clone(); m.material.color.copy(m.userData.base).multiplyScalar(0.2 + 0.8 * ks[i]); m.material.emissiveIntensity = 0.02 + ks[i] * 1.8; });
+      light.intensity = Math.max(...ks) * 1.4; light.color.set(ks[2] > 0.5 ? 0x2fbf5a : ks[1] > 0.5 ? 0xf2b01e : 0xe0352b);
       const lp = api.ch("loop", t); loopG.visible = lp > 0.002; loopG.scale.set(pop(lp), 1, pop(lp)); wire.emissiveIntensity = 0.2 + lp * 0.5;
       const pu = api.ch("pulse", t);
       rings.forEach((r, i) => { const u = (t * 0.9 + i / 3) % 1; r.visible = pu > 0.02 && lp > 0.5; r.scale.setScalar(0.5 + u * Math.max(lw, ld) * 0.8); r.position.y = 0.15 + u * 0.9; r.material.opacity = 0.6 * (1 - u) * Math.min(1, pu); });
@@ -237,10 +271,77 @@ export function atm(ctx, p, api) {
   };
 }
 
+/**
+ * A lane of real cars (the creator's "cars pile up"): they arrive one by one and queue behind the stop line, then drive
+ * off. lane [x, zStop] (the stop line), dir (1: driving toward the camera, +z, the queue backing up down the road; -1:
+ * away), n (4), gap (5.6 m bumper to bumper), y (the road top), colors. Channels: pile (0..1: car k is in its place by
+ * (k+1)/n), go (0..1: they pull away past the stop line).
+ */
+export function traffic(ctx, p, api) {
+  const { THREE, C } = parts(ctx);
+  const [lx, zStop] = p.lane ?? [-6, 4], dir = p.dir ?? 1, gap = p.gap ?? 5.6, y = p.y ?? 0.12;
+  // driving away from the camera, the queue backs up toward the front edge: only as many as fit on the ground
+  const n = dir < 0 ? Math.max(1, Math.min(p.n ?? 4, Math.floor((-0.6 - (zStop + 2.4 + 2.1)) / gap) + 1)) : p.n ?? 4;
+  const colors = p.colors ?? ["#c0392b", "#2f7de0", "#e9c46a", "#5aa469", "#8e5aa8", "#f2f2f2"];
+  const cars = Array.from({ length: n }, (_, k) => {
+    const g = new THREE.Group(); ctx.scene.add(g);
+    if (ctx.gltf) model(ctx, `car/${["sedan", "suv", "hatchback-sports", "sedan-sports", "taxi", "suv-luxury"][k % 6]}.glb`, { parent: g, rotY: dir > 0 ? 0 : Math.PI, size: 4.2, gloss: 0.4, tint: colors[k % colors.length] });
+    else { const m = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.4, 4.2), ctx.std({ color: C(colors[k % colors.length]), roughness: 0.4 })); m.position.y = 0.7; g.add(m); }
+    // (driving away from the camera they come in over the front edge of the ground; toward it, from far down the road)
+    const slot = zStop - dir * (2.4 + k * gap);
+    return { g, slot, far: dir < 0 ? Math.min(-0.4, slot + 10) : zStop - dir * (60 + k * gap) };
+  });
+  return {
+    update(t) {
+      const pl = clamp(api.ch("pile", t)), go = clamp(api.ch("go", t));
+      cars.forEach((c, k) => {
+        const u = clamp(pl * n - k), arrived = u > 0.001;
+        let zz = c.far + (c.slot - c.far) * (1 - (1 - u) * (1 - u));
+        zz += dir * go * (50 + k * gap * 0.6);
+        // only over the ground (z < 0), never past the cross street behind the shops
+        c.g.position.set(lx, y, zz); c.g.visible = arrived && zz < -0.3 && zz > -40;
+      });
+    },
+  };
+}
+
+/**
+ * A countdown on a dark panel (a crosswalk's walk timer, a timer box's display): the number ticks from `from` to `to` as
+ * count goes 0 -> 1. pos [x, y, z] (its centre), size (0.8), color (#ff9d2e), label (optional, small, under the number).
+ * Channels: show, count.
+ */
+export function counter(ctx, p, api) {
+  const { THREE, std, C, add, rb } = parts(ctx);
+  const root = new THREE.Group(); root.position.set(...(p.pos ?? [0, 2.5, -1])); ctx.scene.add(root);
+  const s = p.size ?? 0.8, from = p.from ?? 9, to = p.to ?? 0, col = p.color ?? "#ff9d2e";
+  add(root, rb(s * 1.2, s * 1.2, 0.2, 0.05), std({ color: C("#14171a"), roughness: 0.5 }), 0, 0, 0);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(s, s), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(col), emissiveIntensity: 0.9, transparent: true }));
+  face.position.z = 0.11; root.add(face);
+  const tex = new Map();
+  const texFor = (v) => {
+    if (tex.has(v)) return tex.get(v);
+    const cv = (typeof document !== "undefined" ? document.createElement("canvas") : null);
+    if (!cv) return null;
+    cv.width = cv.height = 256; const g = cv.getContext("2d");
+    g.fillStyle = "#000"; g.fillRect(0, 0, 256, 256); g.fillStyle = col; g.font = "bold 200px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(String(v), 128, 138);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; tex.set(v, t); return t;
+  };
+  let shown = null;
+  return {
+    update(t) {
+      const sh = api.ch("show", t); root.visible = sh > 0.002; root.scale.setScalar(pop(sh));
+      const v = Math.round(from + (to - from) * clamp(api.ch("count", t)));
+      if (v !== shown) { const tx = texFor(v); if (tx) { face.material.map = tx; face.material.emissiveMap = tx; face.material.needsUpdate = true; } shown = v; }
+    },
+  };
+}
+
 export const CITY_CHANNELS = {
   car: ["drive", "leave"],
   carWash: ["arch", "spray", "brushes", "close", "spin", "foam", "rinse"],
-  trafficLight: ["show", "red", "yellow", "green", "loop", "pulse"],
+  trafficLight: ["show", "red", "yellow", "green", "loop", "pulse", "cycle", "flash"],
+  traffic: ["pile", "go"],
+  counter: ["show", "count"],
   hydrant: ["show", "barrel", "stem", "valve", "water", "spray", "drain"],
   atm: ["show", "screen", "card", "safe", "cassettes", "pick", "cash"],
 };

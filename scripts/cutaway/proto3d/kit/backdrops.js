@@ -9,6 +9,7 @@
 
 import { model } from "./models.js";
 import { signTexture } from "./signText.js";
+import { STREET_BACK, streetRoad } from "./street.js";
 
 // sign lettering in the board's own proportions, never stretched (kit/signText.js)
 function sign(THREE, text, bg, fg, w, h) { return signTexture(THREE, text, bg, fg, w, h); }
@@ -103,14 +104,29 @@ export function backdrop(ctx, opts) {
   const bench = (x, z, rot = 0) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g); const wood = std({ color: C("#a8743f"), roughness: 0.7 }), iron = std({ color: C("#2d3236"), roughness: 0.5, metalness: 0.5 }); box(wood, 2.2, 0.08, 0.6, 0, 0.62, 0, g, 0.02); box(wood, 2.2, 0.5, 0.06, 0, 1.0, -0.28, g, 0.02); for (const sx of [-0.95, 0.95]) box(iron, 0.08, 0.62, 0.55, sx, 0.31, 0, g, 0.02); };
   if (opts.type === "street") {
     const walk = PBR("beige_wall_001", 0.35, { color: C("#d9d6d0") });
-    const top = opts.walkTop ?? 0.12, back = opts.back ?? -8;
+    // the road along the camera's view (kit/street.js; road false: the old sidewalk-only street)
+    const R = opts.road === false ? null : streetRoad({ cut, road: opts.road ?? {}, back: opts.back ?? STREET_BACK });
+    const top = opts.walkTop ?? 0.12, back = opts.back ?? (R ? STREET_BACK : -8);
     slabAround(ctx, walk, [-26, 26, back, 0.04], -0.2, top, lip);
     if (ctx.gltf) floorOver(ctx, "concrete_pavement", "#dcd8d0", 2.4, [-26, 26, back, 0.04], top, lip);
     // paving joints: thin dark lines every 1.5 m along x (cheap, no texture)
     const joint = std({ color: C("#a9a49b"), roughness: 0.9 });
-    for (let x = -24; x <= 24 && !ctx.gltf; x += 1.5) { if (hole && x > hole[0] - 0.1 && x < hole[1] + 0.1) continue; const j = box(joint, 0.04, 0.005, -back, x, top + 0.003, back / 2, scene, 0.001); j.castShadow = false; }
-    // the shop fronts: three buildings side by side, the middle one is the shop
-    const shops = opts.shops ?? [{ x: -11, w: 9.6, h: 8, color: "#7fa7c9" }, { x: 0, w: 12, h: 7.4, color: "#e9c46a", shop: true }, { x: 11.5, w: 10.5, h: 9, color: "#c0584a" }];
+    for (let x = -24; x <= 24 && !ctx.gltf; x += 1.5) { if (hole && x > hole[0] - 0.1 && x < hole[1] + 0.1) continue; if (R && x > R.x0 - 0.3 && x < R.x1 + 0.3) continue; const j = box(joint, 0.04, 0.005, -back, x, top + 0.003, back / 2, scene, 0.001); j.castShadow = false; }
+    if (R) {
+      // asphalt from the front edge to the cross street behind the shops, raised curbs, a double yellow centre line, the
+      // stop line in the lane going away, a zebra crosswalk in front of it
+      const asphalt = PBR("asphalt_02", 3, { color: C("#8f8f8f") }), paint = std({ color: C("#f4f2ea"), roughness: 0.6 }), yellow = std({ color: C("#f2c230"), roughness: 0.6 });
+      const len = -(back - 8.5) + 0.04, zc = (back - 8.5) / 2;
+      const road = box(asphalt, R.w, 0.03, len, R.cx, top + 0.006, zc, scene, 0.005); road.castShadow = false; road.receiveShadow = true;
+      for (const sx of [R.x0 - 0.1, R.x1 + 0.1]) { const c = box(std({ color: C("#cfccc4"), roughness: 0.7 }), 0.2, 0.16, -back + 0.04, sx, top + 0.06, back / 2, scene, 0.02); c.castShadow = false; }
+      for (const dx of [-0.09, 0.09]) for (let z = -0.6; z > back + 2.2; z -= 3) { if (z < R.crossZ[1] + 0.2 && z > R.crossZ[0] - 0.2) continue; const m = box(yellow, 0.1, 0.008, 2, R.cx + dx, top + 0.026, z - 1, scene, 0.002); m.castShadow = false; }
+      const sl = box(paint, R.w / 2 - 0.3, 0.008, 0.45, R.laneOut, top + 0.026, R.stopZ, scene, 0.002); sl.castShadow = false;
+      for (let x = R.x0 + 0.5; x < R.x1 - 0.3; x += 0.9) { const m = box(paint, 0.5, 0.008, R.crossZ[1] - R.crossZ[0], x + 0.25, top + 0.026, (R.crossZ[0] + R.crossZ[1]) / 2, scene, 0.002); m.castShadow = false; }
+    }
+    // the shop fronts: three buildings side by side, the middle one is the shop (with a road: on either side of it)
+    const shops = opts.shops ?? (R
+      ? [{ x: R.x0 - 0.8 - 5.2, w: 10.4, h: 8, color: "#7fa7c9" }, { x: R.x1 + 0.8 + 6, w: 12, h: 7.4, color: "#e9c46a", shop: true }, { x: R.x1 + 0.8 + 12 + 5.4, w: 10.5, h: 9, color: "#c0584a" }]
+      : [{ x: -11, w: 9.6, h: 8, color: "#7fa7c9" }, { x: 0, w: 12, h: 7.4, color: "#e9c46a", shop: true }, { x: 11.5, w: 10.5, h: 9, color: "#c0584a" }]);
     for (const s of shops) {
       const z = back - 0.4, g = new THREE.Group(); g.position.set(s.x, top, z); scene.add(g);
       const wall = ctx.gltf ? pbrSized(ctx, s.shop ? "brick_wall_02" : "painted_plaster_wall", s.w, s.h, s.shop ? 2 : 3, { color: C(s.shop ? "#f2e2d0" : s.color) }) : PBR("painted_plaster_wall", 0.25, { color: C(s.color) });
@@ -136,9 +152,12 @@ export function backdrop(ctx, opts) {
     const asphalt = PBR("asphalt_02", 6, { color: C("#9a9a9a") });
     const road = new THREE.Mesh(new THREE.PlaneGeometry(90, 14), asphalt); road.rotation.x = -Math.PI / 2; road.position.set(0, 0.02, back - 8.5); road.receiveShadow = true; scene.add(road);
     farRow(ctx, back - 22, { road: false });
-    lamp(opts.lampX ?? 6.5, -1.0);
+    // (never on the road: a lamp or a bench there moves to the sidewalk beyond the curb)
+    const offRoad = (x, pad) => (R && x > R.x0 - pad && x < R.x1 + pad ? (x < R.cx ? R.x0 - pad : R.x1 + pad) : x);
+    // (with a road: across it from the cut and back from the front edge, out of the camera's way down the road)
+    if (R) lamp(R.side > 0 ? R.x1 + 0.8 : R.x0 - 1.6, -6); else lamp(opts.lampX ?? 6.5, -1.0);
     if (ctx.gltf && opts.parked !== false) model(ctx, "car/taxi.glb", { pos: [opts.parkedX ?? -14, 0.02, back - 6], rotY: Math.PI / 2, size: 4.2 });
-    if (opts.bench !== false) bench(opts.benchX ?? -6.5, back + 1.4);
+    if (opts.bench !== false) bench(offRoad(opts.benchX ?? -6.5, 1.6), back + 1.4);
   } else if (opts.type === "garage") {
     // a concrete driveway up to a garage with its door half open (the lit inside: shelves, a workbench), the side of
     // the house beside it

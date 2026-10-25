@@ -35,9 +35,12 @@ export function focusOf(part, cut) {
     case "prop": { const [x, y, z] = p.pos ?? [0, 0, 0], s = p.scale ?? 1; return { min: [x - 0.8 * s, y, z - 0.5 * s], max: [x + 0.8 * s, y + 1.9 * s, z + 0.5 * s] }; }
     case "grate": { const [x, y, z] = p.pos ?? [0, 0.1, -1.5], w = p.width ?? 1.6, d = p.depth ?? 0.8; return { min: [x - w / 2, y, z - d / 2], max: [x + w / 2, y + 0.1, z + d / 2] }; }
     case "canopy": return { min: [p.x0 ?? -3, p.y ?? 0, p.z0 ?? -5], max: [p.x1 ?? 3, (p.y ?? 0) + (p.h ?? 4) + 0.3, p.z1 ?? -1] };
-    case "car": { const [x, y, z] = p.pos ?? [0, 0.1, -2], s = p.scale ?? 1; return { min: [x - 2.2 * s, y, z - 1 * s], max: [x + 2.2 * s, y + 1.9 * s, z + 1 * s] }; }
+    case "car": { const [x, y, z] = p.pos ?? [0, 0.1, -2], s = p.scale ?? 1; return p.axis === "z" ? { min: [x - 1 * s, y, z - 2.2 * s], max: [x + 1 * s, y + 1.9 * s, z + 2.2 * s] } : { min: [x - 2.2 * s, y, z - 1 * s], max: [x + 2.2 * s, y + 1.9 * s, z + 1 * s] }; }
+    // a lane of queued cars: from the stop line back along the lane (cityParts.js traffic)
+    case "traffic": { const [x, zs] = p.lane ?? [-6, 4], d = p.dir ?? 1, n = p.n ?? 4, g = p.gap ?? 5.6, y = p.y ?? 0.12, far = zs - d * (2.4 + (n - 1) * g + 2.2); return { min: [x - 1.1, y, Math.min(zs, far)], max: [x + 1.1, y + 1.9, Math.max(zs, far)] }; }
+    case "counter": { const [x, y, z] = p.pos ?? [0, 2.5, -1], s = (p.size ?? 0.8) * 0.6; return { min: [x - s, y - s, z - 0.1], max: [x + s, y + s, z + 0.12] }; }
     case "carWash": { const [x, y, z] = p.pos ?? [0, 0.1, -2], w = p.width ?? 3.6, h = p.height ?? 3.4; return { min: [x - w / 2 - 0.7, y, z - 0.3], max: [x + w / 2 + 0.7, y + h + 0.2, z + 1.7] }; }
-    case "trafficLight": { const [x, y, z] = p.pos ?? [4, 0.1, -1], h = p.height ?? 5; return { min: [x - 0.5, y, z - 0.4], max: [x + 0.5, y + h + 2.3, z + 0.7] }; }
+    case "trafficLight": { const [x, y, z] = p.pos ?? [4, 0.1, -1], h = p.height ?? 5, arm = p.arm > 0.5 ? p.arm : 0, dir = p.armDir ?? -1; const x0 = Math.min(x - 0.6, x + dir * arm - 0.7), x1 = Math.max(x + 0.6, x + dir * arm + 0.7); return { min: [x0, y, z - 0.4], max: [x1, y + (arm ? h + 0.3 : h + 2.9), z + 0.8] }; }
     case "hydrant": { const [x, y, z] = p.pos ?? [0, 0.12, -0.5], d = p.depth ?? 3.2; return { min: [x - 0.6, y - d - 0.4, -0.4], max: [x + 0.6, y + 1.6, z + 0.6] }; }
     case "atm": { const [x, y, z] = p.pos ?? [0, 0.12, -1]; return { min: [x - 0.8, y, z - 0.6], max: [x + 0.8, y + 2.6, z + 0.7] }; }
     case "machine": return { min: [p.pos[0] - 1.5, 0, p.pos[2] - 1.2], max: [p.pos[0] + 1.5, 2.7, p.pos[2] + 1.2] };

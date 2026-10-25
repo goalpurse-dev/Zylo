@@ -44,7 +44,7 @@ export function clarityChecks(L, sentences) {
   if (F) for (const p of L.parts) if (p.kind === "creek") { const b = focusRaw(p, cut); if (b.max[0] > F[0] && b.min[0] < F[1]) problems.push(`part ${p.id}: a creek cannot run across the ${setting}'s paved floor (x ${F[0]} to ${F[1]}); put it beside the setting (axis "z", x past ${F[1] + 2} or before ${F[0] - 2}) and bring the water to it through a storm drain grate and a pipe in the cut face`); }
   // 3. nothing floats
   const floor = W.backdrop?.walkTop ?? (["street", "room"].includes(setting) ? 0.12 : setting === "carwash" ? 0.1 : setting === "garage" ? 0.08 : 0);
-  const solids = [...settingBoxes(W.backdrop)];
+  const solids = [...settingBoxes(W.backdrop, W.cut ?? null)];
   const boxesOf = (p) => (p.kind === "panels" ? (p.params?.panels ?? []).map((q) => { if (!Array.isArray(q.size) || !Array.isArray(q.pos)) return null; const s = q.size.map(Math.abs), a = q.anchor ?? [0, 0, 0]; const c = q.pos.map((v, i) => v + (a[i] * s[i]) / 2); return { ch: q.ch, min: c.map((v, i) => v - s[i] / 2), max: c.map((v, i) => v + s[i] / 2) }; }).filter(Boolean) : [focusOf(p, cut)].filter(Boolean));
   const STANDING = ["box", "boxPop", "machine", "tank", "prop", "panels", "vendingMachine", "atm", "carWash", "trafficLight", "hydrant"];
   // what can hold something up: solid parts (a pipe, a flow, water or an arrow holds nothing)

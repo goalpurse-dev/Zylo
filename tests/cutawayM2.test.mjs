@@ -489,3 +489,35 @@ test("m2 story chain (the owner's rule, 2026-10-25): problems chain and escalate
   const saved = chainProblems({ sentences: S("If you dig a pit, you have a landfill.", "So you lay clay.", "But trash juice leaks into the groundwater.", "A fact.", "But now gas builds up and the cap bulges."), chain: [{ problem: 2, causedBy: 1, shows: "dark juice seeps down", stakes: "the drinking water", size: 3 }, { problem: 4, causedBy: 1, shows: "the cap swells", stakes: "the whole hill", size: 4 }] }, { strict: false });
   assert.deepEqual(saved, []);
 });
+
+import { layoutRules } from "../scripts/cutaway/proto3d/m2/layoutRules.js";
+import { streetRoad } from "../scripts/cutaway/proto3d/kit/street.js";
+test("m2 street, machines, ambience (2026-10-25): the road along the view, nothing on it, the signal on its corner, switches, a thin slab when nothing is underground", () => {
+  const { layout } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_traffic_light_draft.json", import.meta.url), "utf8"));
+  const r = layoutRules(layout), L = r.layout, R = streetRoad({ cut: L.world.cut, road: L.world.backdrop.road, back: L.world.backdrop.back });
+  // nothing underground: a thin slab; the road on the side with fewer parts
+  assert.equal(L.world.shallow, true); assert.ok(L.world.cut.depth <= 0.6);
+  const box = (p) => focusOf(p, L.world.cut);
+  // the signal on the corner at the stop line, its arm over the lane; its controller beside it, off the road
+  const sig = L.parts.find((p) => p.kind === "trafficLight");
+  assert.ok(sig.params.arm > 3 && Math.abs(sig.params.pos[2] - (R.stopZ - 0.8)) < 1.6);
+  for (const p of L.parts.filter((q) => !["car", "traffic", "trafficLight", "dig", "light", "sign", "outline", "book"].includes(q.kind))) {
+    const b = box(p); if (!b) continue;
+    assert.ok(b.max[0] < R.x0 - 0.2 || b.min[0] > R.x1 + 0.2 || b.max[2] < R.back, `${p.id} stands on the road`);
+  }
+  // the car drives along the lane, on the ground; the light runs its cycle at the end
+  const car = L.parts.find((p) => p.kind === "car");
+  assert.equal(car.params.axis, "z"); assert.equal(car.params.pos[0], R.laneOut); assert.ok(car.params.pos[2] < -0.5);
+  assert.ok(L.beats.find((b) => b.s === "finish").do.some((a) => a.p === sig.id && a.v === "cycle"));
+  // switches: in time order, an "on" while on does nothing (the planner lit red twice; one "green" must turn it off)
+  const sents = JSON.parse(readFileSync(new URL("./fixtures/cutaway_traffic_light_draft.json", import.meta.url), "utf8")).sentences, w = draftWords(sents);
+  const twice = { ...L, beats: L.beats.map((b) => (b.s === "problem" ? { ...b, do: [...b.do, { p: sig.id, v: "red" }, { p: sig.id, v: "red" }] } : b)) };
+  const tl = compile(twice, w, w.at(-1).e + 0.1, { roles: sents.map((x) => x.role) }), red = tl.tracks[`${sig.id}.red`];
+  let s = red.base ?? 0; for (const x of [...red.ramps].sort((a, b) => a.t0 - b.t0)) { s += x.amp; assert.ok(s > -1e-6 && s < 1 + 1e-6, `red stacked to ${s}`); }
+  // the setting's sound bed and the name card
+  assert.equal(tl.audio.ambience.setting, "street");
+  // a car never stands out in front of the face or over an open pit
+  const yard = layoutRules({ ...layout, world: { cut: { x0: -4, x1: 4, z0: -4, depth: 3 } }, parts: [...layout.parts.filter((p) => p.kind !== "trafficLight"), { id: "c2", kind: "car", params: { pos: [0, 0.1, 2] } }, { id: "t", kind: "settle", params: { box: { x0: -2, x1: 2, y0: -3, y1: -0.6, z0: -2, z1: 0 } } }] }).layout;
+  assert.ok(!yard.world.shallow, "something underground keeps the cut");
+  assert.ok(yard.parts.find((p) => p.id === "c2").params.pos[2] <= -5);
+});

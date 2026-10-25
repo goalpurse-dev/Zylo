@@ -18,6 +18,12 @@ export function marksFor(words, speechEnd) {
   return { speechEnd, voiceEnd, signPop, lengthEnd: +(signPop + END.pop + END.hold).toFixed(3), lengthNoEnd: +(speechEnd + END.noEndHold).toFixed(3) };
 }
 
+// the channels that are on/off switches (compile: they never stack past on or below off)
+export const SWITCHES = Object.freeze({ trafficLight: ["red", "yellow", "green", "cycle", "flash"] });
+
+// a setting's ambience file (makeAmbience.mjs): one per setting, the yard's for anything else
+export const AMBIENCE_OF = Object.freeze({ yard: "yard", street: "street", park: "park", garage: "garage", room: "room", carwash: "carwash" });
+
 /**
  * The name label (the creator's newer videos, 2026-10-25: "INDUCTIVE LOOP" in caps on screen as the line names it): the
  * naming line ("This is a signal controller.") gets a short card with the name, from its first word, for 1.6 s. Not
@@ -60,6 +66,13 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const t0 = at(c.a);
     const t1 = c.b ? at(c.b) : c.d != null ? t0 + Number(c.d) : t0;
     (tracks[key] ??= { base: 0, ramps: [] }).ramps.push({ t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step") });
+  }
+  // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
+  // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
+  for (const p of layout.parts) for (const ch of SWITCHES[p.kind] ?? []) {
+    const tr = tracks[`${p.id}.${ch}`]; if (!tr) continue;
+    let s = Math.min(1, Math.max(0, tr.base ?? 0));
+    for (const r of [...tr.ramps].sort((a, b) => a.t0 - b.t0)) { const next = Math.min(1, Math.max(0, s + r.amp)); r.amp = +(next - s).toFixed(4); s = next; }
   }
 
   const keysFor = (which) => (layout.camera?.keys ?? []).filter((k) => !k.only || k.only === which).map((k) => [+at(k.at).toFixed(4), k.pos, k.tgt]);
@@ -121,6 +134,9 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       chimes: (audio.chimes ?? []).map((a) => +at(a).toFixed(3)),
       cards,
       rain: audio.rain ? { from: at(audio.rain.from), to: at(audio.rain.to), underDb: audio.rain.underDb ?? 24 } : null,
+      // the setting's sound bed under the whole video (render-worker/assets/sfx/amb-<setting>.mp3; the creator's
+      // traffic light runs a road rumble under the voice), unless the layout turns it off
+      ambience: audio.ambience === false ? null : { setting: AMBIENCE_OF[layout.world?.backdrop?.type ?? "yard"] ?? "yard", underDb: audio.ambienceUnderDb ?? 20 },
     },
   };
 }

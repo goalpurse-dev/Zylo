@@ -18,7 +18,7 @@ import { wrapSheet } from "../kit/sheet.js";
 import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/props.js";
 import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
-import { atm, car, carWash, CITY_CHANNELS, hydrant, trafficLight } from "./cityParts.js";
+import { atm, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
@@ -43,7 +43,7 @@ export const KINDS = {
   // ================= machines (the vending machine, cut open) =================
   vendingMachine, miniMachines,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
-  car, carWash, trafficLight, hydrant, atm,
+  car, carWash, trafficLight, hydrant, atm, traffic, counter,
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
   settle, creek, flow, prop, canopy, grate,
@@ -460,17 +460,18 @@ export const KINDS = {
   rain(ctx, p, api) { const r = rain(ctx, p); return { update(t) { r.update(t, api.ch("on", t)); } }; },
   stream(ctx, p, api) { const r = stream(ctx, p); return { update(t) { r.update(t, api.ch("on", t)); } }; },
 
-  /** the sun, sky and environment: a quick dip ("decades later") and an overcast storm; channels: dip, storm */
+  /** the sun, sky and environment: a quick dip ("decades later"), an overcast storm, and night ("at 3 a.m.": the sun
+   *  down, the sky dark, every lamp and lens glowing against it); channels: dip, storm, night */
   light(ctx, p, api) {
     const { sun, hemi, scene } = ctx;
     const base = { sun: sun.intensity, hemi: hemi?.intensity ?? 0, env: 1.0, bg: scene.backgroundIntensity ?? 1 };
     return {
       update(t) {
-        const dip = api.ch("dip", t), k = api.ch("storm", t);
-        sun.intensity = base.sun * (1 - 0.75 * dip) * (1 - 0.72 * k);
-        if (hemi) hemi.intensity = base.hemi * (1 - 0.55 * dip) * (1 - 0.3 * k);
-        scene.environmentIntensity = base.env * (1 - 0.6 * dip) * (1 - 0.42 * k);
-        if (k > 0 || p.storm) scene.backgroundIntensity = base.bg * (1 - 0.5 * k);
+        const dip = api.ch("dip", t), k = api.ch("storm", t), nt = Math.min(1, Math.max(0, api.ch("night", t)));
+        sun.intensity = base.sun * (1 - 0.75 * dip) * (1 - 0.72 * k) * (1 - 0.9 * nt);
+        if (hemi) hemi.intensity = base.hemi * (1 - 0.55 * dip) * (1 - 0.3 * k) * (1 - 0.7 * nt);
+        scene.environmentIntensity = base.env * (1 - 0.6 * dip) * (1 - 0.42 * k) * (1 - 0.75 * nt);
+        if (k > 0 || p.storm || nt > 0 || p.night) scene.backgroundIntensity = base.bg * (1 - 0.5 * k) * (1 - 0.8 * nt);
       },
     };
   },
@@ -533,6 +534,6 @@ export const KIND_CHANNELS = {
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
   water: ["flood", "gone"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
-  rain: ["on"], stream: ["on"], light: ["dip", "storm"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
+  rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
   arrows: ["on"], outline: ["on"], seepFlow: ["on"],
 };

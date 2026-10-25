@@ -4,6 +4,7 @@
 // a ray that lands on open lawn, or never meets the ground (sky), counts as empty. Trees and the far scenery count
 // as empty: a frame of lawn with one tree in it is the shot to avoid. Pure math: runs in node and in the page.
 import { focusOf, union } from "./focus.js";
+import { STREET_BACK, streetRoad } from "../kit/street.js";
 
 export const LENS = Object.freeze({ vfov: 35, aspect: 1080 / 1920 });
 // the limits, measured on the hand-built paths (m2/shotStudy.mjs and the calibration in M2_PROGRESS.md): their story
@@ -26,11 +27,15 @@ const FAR = 90;
 export const cutOf = (L) => L.world?.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
 
 /** a setting's solid boxes (kit/backdrops.js): what stands behind and around the cut */
-export function settingBoxes(B) {
+export function settingBoxes(B, cut = null) {
   if (!B) return [];
   const back = B.back;
   switch (B.type) {
-    case "street": { const b = back ?? -8; return [{ min: [-14, 0, b - 6], max: [14, 7.5, b] }]; }
+    case "street": {
+      // with the road (kit/street.js): the shop row split either side of it, further back
+      if (B.road !== false) { const R = streetRoad({ cut, road: B.road ?? {}, back: back ?? STREET_BACK }), b = R.back; return [{ min: [R.x0 - 11.4, 0, b - 6], max: [R.x0 - 0.6, 9, b] }, { min: [R.x1 + 0.6, 0, b - 6], max: [R.x1 + 24, 9, b] }]; }
+      const b = back ?? -8; return [{ min: [-14, 0, b - 6], max: [14, 7.5, b] }];
+    }
     case "garage": { const b = back ?? -9, x = B.x ?? 0; return [{ min: [x - 4.7, 0, b - 7], max: [x + 4.7, 4.9, b] }, { min: [x - 14.7, 0, b - 7], max: [x - 4.7, 8, b] }]; }
     case "room": { const b = back ?? -7, x0 = B.x0 ?? -9, x1 = B.x1 ?? 9, h = B.h ?? 4.2; return [{ min: [x0 - 3, 0, b - 6.2], max: [x1 + 3, h + 6, b - 2.2] }, { min: [x0, 0, b - 0.35], max: [x1, h + 0.8, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h + 0.8, 0] }, { min: [x0 - 0.35, h, b - 0.35], max: [x1 + 0.4, h + 0.8, 0.4] }]; }
     case "carwash": { const b = back ?? -8, x0 = B.x0 ?? -7, x1 = B.x1 ?? 7, h = B.h ?? 5.2; return [{ min: [x0, 0, b - 0.3], max: [x1, h + 0.5, b] }, { min: [x0 - 0.4, 0, b], max: [x0, h + 0.5, 0] }, { min: [x0 - 0.3, h, b - 0.3], max: [x1 + 0.3, h + 0.5, 0.2] }]; }
@@ -42,10 +47,10 @@ export function settingBoxes(B) {
 export function sceneryBoxes(L) {
   const W = L.world ?? {}, out = [];
   if (W.house !== false) { const h = Array.isArray(W.house) ? W.house : [-8, 0, -30]; out.push({ min: [h[0] - 5.5, 0, h[2] - 3.25], max: [h[0] + 5.5, 9.4, h[2] + 3.25] }); }
-  out.push(...settingBoxes(W.backdrop));
+  out.push(...settingBoxes(W.backdrop, W.cut ?? null));
   // the far city behind a street, garage, room or car wash (kit/backdrops.js farRow: that far behind the setting's back)
   const gap = { street: 22, garage: 24, room: 26, carwash: 22 }[W.backdrop?.type];
-  if (gap) { const z = (W.backdrop.back ?? { street: -8, garage: -9, room: -7, carwash: -8 }[W.backdrop.type]) - gap; out.push({ min: [-46, 0, z - 12], max: [46, 14, z] }); }
+  if (gap) { const z = (W.backdrop.back ?? { street: W.backdrop.road === false ? -8 : STREET_BACK, garage: -9, room: -7, carwash: -8 }[W.backdrop.type]) - gap; out.push({ min: [-46, 0, z - 12], max: [46, 14, z] }); }
   for (const b of W.backdrop?.boxes ?? []) out.push(b); // a setting may list its own solid boxes (walls, a canopy)
   return out;
 }
@@ -233,7 +238,7 @@ export function settingFloor(B) {
   if (!B) return null;
   const back = B.back;
   switch (B.type) {
-    case "street": return [-26, 26, back ?? -8, 0.04];
+    case "street": return [-26, 26, back ?? (B.road === false ? -8 : STREET_BACK), 0.04];
     case "garage": return [-7, 7, back ?? -9, 0.04];
     case "room": return [B.x0 ?? -9, B.x1 ?? 9, back ?? -7, 0.04];
     case "carwash": return [(B.x0 ?? -7) - 6, (B.x1 ?? 7) + 6, back ?? -8, 0.04];

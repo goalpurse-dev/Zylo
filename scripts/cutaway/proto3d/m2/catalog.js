@@ -27,9 +27,13 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   or roots on the face in these boxes (pipe runs, pits you will build in the face).
 - THE SETTING: pick the one that fits the topic; the videos must not all look the same.
   The yard (the default: lawn, house, trees, road) suits things around a house: drains, wells, septic tanks, pools, gutters.
-  world.backdrop {type: "street", sign: "SHOP NAME", lampX, benchX}: a sidewalk over the cut ground in front of shop fronts,
-    with taller buildings behind. It suits city things: a vending machine, a fire hydrant, a manhole, a bus stop, a storm drain.
-    The sidewalk top is y 0.12, so props stand at y 0.12, and the world's cut is left open in it.
+  world.backdrop {type: "street", sign: "SHOP NAME", lampX, benchX, road: {side: -1 | 1}}: a sidewalk over the cut ground with a
+    two-lane road running away from the camera beside the cut (on its left, side -1, or its right, side 1): curbs, a double
+    yellow centre line, a stop line in the lane going away and a crosswalk near the cross street; shop fronts on either side
+    of the road 15 m back (back -15), taller buildings behind. The camera looks along the road. It suits city things: a
+    traffic light (on the corner at the stop line, its arm over the lane), a fire hydrant, a vending machine, a manhole, a
+    bus stop, a storm drain. The sidewalk top is y 0.12, so props stand at y 0.12; nothing but vehicles stands on the road.
+    The world's cut is left open in the sidewalk.
   world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
   world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
     (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door, a water heater, a sump.
@@ -49,6 +53,12 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
 - NOTHING FLOATS: every part rests on the ground, the floor or another part. A roof is a canopy (it has its posts). Pipes start and end at a part, the ground or the cut face.
   world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
     world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
+- NO CUT WHEN NOTHING IS UNDERGROUND: when no part of the story is below ground, the ground is a thin slab (the
+  pipeline sets world.shallow by itself); hidden things in the road (a wire loop) are drawn on its surface.
+- THE MACHINE WORKS ON ITS WORDS: lights switch on the word that names the colour (red, yellow, green, allRed), a
+  timer's number ticks while it is said (counter count), cars queue on "pile up" and pull away on "go" (traffic), a
+  night line ("at 3 a.m.", "at night") turns the light to night and the next line back to day. At "Add ..." and
+  "Congratulations" a machine is shown working as it should (a traffic light on cycle, a car passing), not frozen.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
   (water soaking down from a soak pit) paint the face itself.`;
 
@@ -60,9 +70,11 @@ export const KIND_DOCS = {
   prop: ["a finishing-touch prop that belongs in the setting (see SETTING PROPS): it stands on the floor", "type (one of the setting's list), pos [x, y, z] (y = the floor top), rotY, scale (1)", "verb show"],
   grate: ["a dark slotted drain grate set into a slab or the floor (the drain the water and sludge run into)", "pos [x, y, z] (y = the slab top), width (1.6), depth (0.8)", "verb show"],
   canopy: ["a roof or canopy that stands on four posts (a roof must never float): the posts grow up, then the roof goes on", "x0, x1, z0, z1, y (the floor top), h (the post height, 4), color", "verb build"],
-  car: ["a small car that drives in along x, stops, and drives on (wheels turn)", "pos [x, y, z] (where it stops; y = the setting's floor top), from (x, default pos - 16), to (x), color, scale (1)", "verbs arrive, leave; give each car an id (a carWash names its car)"],
+  car: ["a real car (or a fire truck: model \"firetruck\") that drives in, stops, and drives on (wheels turn)", "pos [x, y, z] (where it stops; y = the setting's floor top), from, to (along x; on a street the pipeline moves it into the road's lane, along z), color, model (sedan, suv, taxi, police, ambulance, firetruck), scale (1)", "verbs arrive, leave; give each car an id (a carWash names its car)"],
+  traffic: ["a lane of real cars that queue behind the stop line one by one (\"cars pile up\") and then pull away", "lane [x, zStop] (the lane and its stop line; on a street the pipeline puts it in the road), dir (-1: driving away from the camera), n (how many), gap (5.6), colors", "verbs pile (they arrive and queue; d stretches it), go (they drive off)"],
+  counter: ["a countdown or timer display: a dark panel with a glowing number that ticks down on its words", "pos [x, y, z] (its centre: on a pole, a cabinet, a box), size (0.8), from (9), to (0), color", "verbs show, count (from -> to over the line; d sets how long)"],
   carWash: ["a car wash's machine over the bay: a spray arch and two spinning side brushes; it puts foam on the car in the bay", "pos [x, y, z] (the bay centre, where the car stops), width (3.6), height (3.4), car (the car part's id)", "verbs show (the arch), spray, stopSpray, brushes, close (brushes swing in), open, spin, foam, rinse"],
-  trafficLight: ["a traffic signal on a pole, and the wire loop sawn into the road in front of it (seen in the cut) that feels a car's metal", "pos [x, y, z], height (5), loop [x, z, w, d] (the loop's centre and size, in the road over the cut)", "verbs show, red, yellow, green (switch lamps), loop (the wire loop appears), pulse (its field rings), stopPulse"],
+  trafficLight: ["a real traffic signal: a dark three-lamp head with visors and a yellow-bordered backplate, on a pole or hanging from a mast arm over the road, and the wire loop sawn into the road that feels a car's metal", "pos [x, y, z], height (5), arm (the mast arm's length; 0: the head on top of the pole), armDir (-1 left, 1 right), loop [x, z, w, d] (in the lane before the stop line), phase (s: offsets its cycle)", "verbs show, red, yellow, green (switch lamps), allRed (every lamp red), cycle (runs green, yellow, red by itself) and stopCycle, flash (blinking red) and stopFlash, loop (the wire loop appears), pulse (its field rings), stopPulse"],
   hydrant: ["a dry-barrel fire hydrant: the body above ground, the barrel down to the main valve deep below (in section at the face), the drain hole at the valve", "pos [x, y, z] (y = the sidewalk top), depth (3.2: the valve below the frost line), color", "verbs show, barrel, open (the stem turns, the valve opens), fill (water rises in the barrel), spray, close, drain (the barrel empties through the drain hole), stopDrain"],
   atm: ["a cash machine cut open on its right side: screen, keypad, card slot, the cassettes inside a safe, the belt up to the cash slot", "pos [x, y, z] (its base centre), color", "verbs show, screen, card, safe, cassettes, pick (a note travels from a cassette to the slot), cash"],
   vendingMachine: ["a vending machine on the lawn, cut open on its right side (coils, motors, coin chute, bin, drop sensor, cooler, lit header)", "pos [x, y, z] (its base centre; it faces the camera), color, header (the lit sign text)", "channels show, snacks, slot, steal, glass, coils, coin, spinA/spinB (turns), fallA/fallB, beam, cooler, light; give it a focus box"],
@@ -99,7 +111,7 @@ export const KIND_DOCS = {
   puddles: ["flat water patches on the lawn that spread and dry up", "list [[x, z, rx, rz]], rise [stagger], fall [stagger]", ""],
   rain: ["rain streaks over the scene", "x0, x1, z0, z1, yTop, yBot, count, width, opacity", ""],
   stream: ["water pouring off an edge (a roof eave, a pipe outlet)", "x0, x1, z, yTop, yBot, count", ""],
-  light: ["the sun and sky: a storm (overcast) and a quick 'time passes' dip", "storm (true if the layout has a storm)", "include one 'light' part"],
+  light: ["the sun and sky: a storm (overcast), a quick 'time passes' dip, and night (the sun down, the sky dark, lamps and lenses glowing)", "storm (true if the layout has a storm)", "include one 'light' part; verbs night and day for a night line"],
   lawnWet: ["the lawn going dark and wet in the rain", "{}", ""],
   soilLeak: ["landfill seeps painted on the face and the murky groundwater", "x1, x2, murkX", "base {y1: -6, y2: -6}"],
   wetBand: ["a dark wet band in the soil round the cut", "cx, halfW, bottom", ""],

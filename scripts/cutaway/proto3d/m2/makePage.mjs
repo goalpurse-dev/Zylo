@@ -26,7 +26,7 @@ export function makePage(layout) {
 
   rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";');
   rep('const R = Number(Q.get("r") ?? 1);', `const R = 1;\nconst M2_LAYOUT = await (await fetch("/m2run/${layout.key}.layout.json")).json();\nconst M2_TL = await (await fetch("/m2run/${layout.key}.timeline.json")).json();`);
-  if (W.cut) rep("const PIT = { x0: -5, x1: 5, z0: -8, depth: 6 }", `const PIT = { x0: ${n(W.cut.x0)}, x1: ${n(W.cut.x1)}, z0: ${n(W.cut.z0)}, depth: ${n(W.cut.depth)} }`);
+  if (W.cut) rep("const PIT = { x0: -5, x1: 5, z0: -8, depth: 6 }", `const PIT = { x0: ${n(W.cut.x0)}, x1: ${n(W.cut.x1)}, z0: ${n(W.cut.z0)}, depth: ${n(W.shallow ? Math.min(W.cut.depth, 0.6) : W.cut.depth)} }`);
   // a wet lawn (rain)
   rep("function lawnMaterial() {", "const WET_LAWN = { value: 0 };\nfunction lawnMaterial() {");
   rep("  m.normalScale.set(0.8, 0.8);\n  m.onBeforeCompile = (sh) => {", "  m.normalScale.set(0.8, 0.8);\n  m.onBeforeCompile = (sh) => {\n    sh.uniforms.uWetLawn = WET_LAWN;");
@@ -53,6 +53,16 @@ export function makePage(layout) {
   rep('m.customProgramCacheKey = () => "soil" + R;\n  return m;', 'm.customProgramCacheKey = () => "soil" + R;\n  m.userData.u = u;\n  return m;');
   if (W.roots) rep("if (x0 > PIT.x0 - 0.5 && x0 < PIT.x1 + 0.5) x0 += 11;", `if (x0 > PIT.x0 - ${n(W.roots.pad)} && x0 < ${n(W.roots.to)}) x0 = ${n(W.roots.to)} + (x0 - PIT.x0) * 0.6;`);
   if (W.rocksAvoid?.length) rep("while (x > PIT.x0 - 0.3 && x < PIT.x1 + 0.3 && y > -PIT.depth - 0.3);", `while ((x > PIT.x0 - 0.3 && x < PIT.x1 + 0.3 && y > -PIT.depth - 0.3)${W.rocksAvoid.map(([a, b, c, d]) => ` || (x > ${n(a)} && x < ${n(b)} && y > ${n(c)} && y < ${n(d)})`).join("")});`);
+  // no soil cut (layoutRules rule 8: nothing in the story is underground): the ground is a thin slab, like a diorama's
+  // base; no stones or roots down a face that isn't there (the groundwater film is hidden below: gwOff)
+  if (W.shallow) {
+    rep("BOTTOM = R === 4 ? -15.5 : -26", "BOTTOM = -1.4");
+    cut("// R1: real stones and roots in the cut face", "// groundwater:");
+    // the slab rests on the table (no dark base block under it), a neutral tabletop: a thin model on a table, not a
+    // terrace floating over a pale floor
+    rep("base.position.set(0, BOTTOM - 0.6, -D / 2); scene.add(base);", "base.position.set(0, BOTTOM - 0.6, -D / 2);");
+    rep('std({ map: fineNoise("#b9a58a", 0.08), roughness: 0.7 })); table.rotation.x = -Math.PI / 2; table.position.y = BOTTOM - 1.2;', 'std({ map: fineNoise("#6a655c", 0.06), roughness: 0.8 })); table.rotation.x = -Math.PI / 2; table.position.y = BOTTOM - 0.005;');
+  }
   // the static landfill parts and the static truck + flying bags
   cut("// ---------------- the scene ----------------", "// house: R1 detailed");
   cut("// dump truck tipping, two bags in the air", "// worker");
@@ -66,7 +76,7 @@ export function makePage(layout) {
   if (Array.isArray(W.road)) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41
   // (hidden where a creek is the water in the story: a blue band under it reads as the creek)
-  const gwOff = W.groundwater === false || (layout.parts ?? []).some((p) => p.kind === "creek");
+  const gwOff = W.groundwater === false || W.shallow || (layout.parts ?? []).some((p) => p.kind === "creek");
   rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;" + (gwOff ? " water.visible = false;" : ""));
   rep("hemi: 0.15, sat: 1.12,", `hemi: 0.15, sat: Number(Q.get("satR1") ?? ${n(W.sat ?? 1.38)}),`);
   // the animated renderAt
