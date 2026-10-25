@@ -46,7 +46,8 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
   for (const c of cards) {
     const text = String(c.text).replace(/[{}\\]/g, "");
     // As on the creator's account: comparison cards ("= 6 CARS") yellow, unit/time cards ("33 FT", "YEAR 2") white.
-    const style = /^\s*=/.test(text) ? "Card" : "CardWhite";
+    // a name label (compile.mjs nameCards: "SIGNAL CONTROLLER") is smaller and teal, like the creator's part labels
+    const style = c.kind === "name" ? "CardName" : /^\s*=/.test(text) ? "Card" : "CardWhite";
     lines.push(`Dialogue: 1,${assTime(c.s)},${assTime(c.e)},${style},,0,0,0,,{\\pos(${x},${cy})\\fad(80,220)\\fscx70\\fscy70\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)}${text}`);
   }
   return [
@@ -61,6 +62,7 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
     `Style: Word,${fontName},${Math.round(width * 0.085)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H64000000,0,0,0,0,100,100,0,0,1,${Math.round(width * 0.0065)},2,5,0,0,0,1`,
     `Style: Card,${fontName},${Math.round(width * 0.12)},&H004DE1FF,&H004DE1FF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
     `Style: CardWhite,${fontName},${Math.round(width * 0.12)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
+    `Style: CardName,${fontName},${Math.round(width * 0.075)},&H00E6F07C,&H00E6F07C,&H00141414,&H78000000,0,0,0,0,100,100,2,0,1,${Math.round(width * 0.007)},2,5,0,0,0,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

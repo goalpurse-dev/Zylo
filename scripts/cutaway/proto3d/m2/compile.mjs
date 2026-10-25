@@ -18,6 +18,27 @@ export function marksFor(words, speechEnd) {
   return { speechEnd, voiceEnd, signPop, lengthEnd: +(signPop + END.pop + END.hold).toFixed(3), lengthNoEnd: +(speechEnd + END.noEndHold).toFixed(3) };
 }
 
+/**
+ * The name label (the creator's newer videos, 2026-10-25: "INDUCTIVE LOOP" in caps on screen as the line names it): the
+ * naming line ("This is a signal controller.") gets a short card with the name, from its first word, for 1.6 s. Not
+ * when a number card is up then, and not for a name too long to read at a glance (over 22 letters).
+ */
+export function nameCards(sentences, words, cards = []) {
+  const out = [];
+  for (const s of sentences) {
+    const m = /\bthis is (?:an? |the |your )?([a-z][a-z' -]*?)(?=[,.!?;]|$| that | which | and | but )/i.exec(s.text ?? "");
+    if (!m) continue;
+    const name = m[1].trim().replace(/\s+/g, " ");
+    if (!name || name.length > 22 || name.split(" ").length > 3) continue;
+    const first = name.split(" ")[0].toLowerCase();
+    const w = words.find((x) => x.s >= s.t0 - 0.01 && x.s <= s.t1 + 0.01 && x.w.toLowerCase().replace(/[^a-z']/g, "") === first);
+    const t = w ? w.s : s.t0 + 0.4, e = t + 1.6;
+    if (cards.some((c) => c.s < e && c.e > t)) continue;
+    out.push({ text: name.toUpperCase(), s: +t.toFixed(3), e: +e.toFixed(3), kind: "name" });
+  }
+  return out;
+}
+
 export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
   const beats = expandBeats(layout0);
@@ -86,6 +107,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   }
   const audio = layout.audio ?? {};
   const cards = (audio.cards ?? []).map((c) => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }));
+  cards.push(...nameCards(sentences, words, cards));
   return {
     key: layout.key,
     marks,

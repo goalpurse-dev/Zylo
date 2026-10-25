@@ -246,6 +246,31 @@ export function directCamera(layout, shots, marks) {
     if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? "home", width: 0.4, zone: "center", minField: 0 });
     return { pos: g.pos, tgt: g.tgt };
   };
+  // the whole subject in the frame (the creator's newer videos, 2026-10-25: every shot holds the thing it explains whole,
+  // in its place: the full signal head on its mast arm, the open cabinet; ours, sized by width alone, cropped a tall
+  // thin part to a pole against a wall). A subject cut by an edge: the camera steps back along its view and recentres
+  // until it is whole. Underground subjects (a tank, a cut face) may still fill the frame.
+  const WHOLE = { x: [0.04, 0.96], y: [0.06, 0.94] };
+  const whole = (r) => !r.behind && r.x0 >= WHOLE.x[0] && r.x1 <= WHOLE.x[1] && r.y0 >= WHOLE.y[0] && r.y1 <= WHOLE.y[1];
+  const fitWhole = (k, b, s) => {
+    if (!b || !k?.pos || underground(b) || layout.camera?.home) return k;
+    // a long low thing (a creek, a road, a pipe run) is meant to run out of the frame: only compact things are held whole
+    const sx = b.max[0] - b.min[0], sy = b.max[1] - b.min[1], sz = b.max[2] - b.min[2];
+    if (Math.max(sx, sz) > 4 * Math.max(sy, 0.3)) return k;
+    const r = projectBox(k.pos, k.tgt, b);
+    if (r.behind || whole(r)) return k;
+    const view = sub(k.pos, k.tgt);
+    // the size it may keep: as big as it was, but no wider than 0.88 and no taller than 0.84 of the frame
+    let w = Math.min(0.88, r.w, (0.84 * r.w) / Math.max(1e-6, r.h));
+    for (let i = 0; i < 8; i++, w *= 0.9) {
+      const f = frameBox(b, { view, width: w, zone: "center", minField: 0 }), q = { pos: f.pos, tgt: f.tgt };
+      if (!whole(projectBox(q.pos, q.tgt, b))) continue;
+      const l = liftSoil(layout, q, b), out = whole(projectBox(l.pos, l.tgt, b)) ? l : q;
+      notes.push(`shot at ${s.t.toFixed(2)} s: stepped back to hold ${s.at?.s ?? "its subject"} whole (it was cut by the frame edge)`);
+      return out;
+    }
+    return k;
+  };
   for (const s of shots) {
     const start = s.t - MOVE.lead;
     if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
@@ -275,6 +300,8 @@ export function directCamera(layout, shots, marks) {
       // the cut face at most ~35% of the frame, unless the sentence is about something underground
       if (!underground(box)) k = liftSoil(layout, k, box);
       if (!opening && !layout.camera?.home) k = pushToward(k, s, box);
+      // last: what the sentence is about stays whole (the hook object on the opening frame)
+      k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
       if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }

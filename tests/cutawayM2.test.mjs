@@ -436,3 +436,32 @@ test("m2 car wash review fixes: toward the mud, a real creek, no spoil pile, tru
   const a = Buffer.alloc(100, 120), b = Buffer.from(a.map((v, i) => (i % 2 ? 200 : 40))), c = Buffer.alloc(100, 120);
   assert.equal(jitter(a, a, a, 10, [0, 0, 10, 10]), 0); assert.ok(jitter(a, b, c, 10, [0, 0, 10, 10]) > 100);
 });
+
+import { nameCards } from "../scripts/cutaway/proto3d/m2/compile.mjs";
+import { MASTER } from "../scripts/cutaway/proto3d/m2/audio.mjs";
+import { buildAss } from "../render-worker/src/cutawayFinalPlan.mjs";
+test("m2 creator round 3 (his traffic light, 2026-10-25): the subject whole in frame, a name label, the mix at -16 LUFS", () => {
+  // 1. the traffic light (a tall thin part) was cropped to a pole against a wall; every shot of it now holds it whole
+  const { layout, sentences } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_traffic_light_draft.json", import.meta.url), "utf8"));
+  const w = draftWords(sentences), tl = compile(layout, w, w.at(-1).e + 0.1, { roles: sentences.map((s) => s.role) });
+  // (each line's own subject: the part its beat shows, when it is a compact thing above ground)
+  let checked = 0;
+  for (const p of previewTimes(tl, layout)) {
+    const beat = layout.beats.find((x) => x.s === p.role), part = beat?.shows && layout.parts.find((q) => q.id === beat.shows.p);
+    if (!part || ['finish', 'congrats'].includes(p.role)) continue;
+    const bx = focusOf(part, layout.world.cut), long = Math.max(bx.max[0] - bx.min[0], bx.max[2] - bx.min[2]) > 4 * Math.max(bx.max[1] - bx.min[1], 0.3);
+    if (underground(bx) || long) continue;
+    const k = cameraAt(tl.camera.end, p.t), r = projectBox(k.pos, k.tgt, bx); checked++;
+    assert.ok(!r.behind && r.x0 >= 0.02 && r.x1 <= 0.98 && r.y0 >= 0.03 && r.y1 <= 0.97, `${p.role} ${part.id}: ${JSON.stringify(r)}`);
+  }
+  assert.ok(checked >= 4, 'the signal and the box lines are checked');
+  // 2. the naming line gets its name in caps, teal and smaller than a number card
+  const mk = (text) => { const ws = text.split(" ").map((x, i) => ({ w: x, s: 1 + i * 0.3, e: 1.25 + i * 0.3 })); return [[{ text, t0: 1, t1: ws.at(-1).e }], ws]; };
+  assert.deepEqual(nameCards(...mk("This is a signal controller.")).map((c) => c.text), ["SIGNAL CONTROLLER"]);
+  assert.deepEqual(nameCards(...mk("This is the first traffic light ever installed in a busy city.")), [], "too long to read at a glance");
+  assert.deepEqual(nameCards(...mk("So you add a pump.")), []);
+  assert.equal(tl.audio.cards.filter((c) => c.kind === "name").map((c) => c.text).join(), "SIGNAL CONTROLLER");
+  assert.match(buildAss({ words: w, cards: [{ text: "SIGNAL CONTROLLER", s: 1, e: 2.6, kind: "name" }] }), /CardName,,0,0,0,,.*SIGNAL CONTROLLER/);
+  // 3. the finished mix is mastered to the creator's loudness
+  assert.equal(MASTER.lufs, -16); assert.equal(MASTER.ceilingDb, -1);
+});

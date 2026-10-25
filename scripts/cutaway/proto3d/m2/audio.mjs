@@ -36,11 +36,32 @@ export async function buildAudio({ wt, ff, timeline: tl, voice, words, out }) {
   const result = {};
   for (const [name, len, extra] of [["mix_end.mp3", M.lengthEnd, [M.signPop]], ["mix_noend.mp3", M.lengthNoEnd, []]]) {
     const r = await renderMix({ voice: { url: path.join(out, "voice.mp3"), tempo: 1 }, chimes: [...A.chimes, ...extra], sfx, lengthSec: len, levels: { sfxDb: -20, chimeDb: -20 } }, path.join(out, `mix-${name}`), name);
-    if (rain) execFileSync(ff, ["-v", "error", "-y", "-i", r.file, "-i", path.join(out, "rain.mp3"), "-filter_complex", `[1:a]volume=${rain.gain}dB,adelay=${Math.round(rain.at * 1000)}:all=1[r];[0:a][r]amix=inputs=2:normalize=0:duration=first[o]`, "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "192k", path.join(out, name)]);
-    else fs.copyFileSync(r.file, path.join(out, name));
-    result[name] = { lengthSec: len, ...r.measured, ...(rain ? { rainLufs: rain.rainLufs, rainGain: rain.gain } : {}) };
+    const pre = path.join(out, `pre-${name}`);
+    if (rain) execFileSync(ff, ["-v", "error", "-y", "-i", r.file, "-i", path.join(out, "rain.mp3"), "-filter_complex", `[1:a]volume=${rain.gain}dB,adelay=${Math.round(rain.at * 1000)}:all=1[r];[0:a][r]amix=inputs=2:normalize=0:duration=first[o]`, "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "192k", pre]);
+    else fs.copyFileSync(r.file, pre);
+    const master = await masterTo(ff, pre, path.join(out, name), out, loudness);
+    result[name] = { lengthSec: len, ...r.measured, ...(rain ? { rainLufs: rain.rainLufs, rainGain: rain.gain } : {}), master };
   }
   return result;
+}
+
+// the finished mix's loudness: the creator's videos measure about -16 LUFS integrated (his traffic light -15.9, 2026-10-25);
+// ours came out at -24.7, about 9 dB quieter on a phone. One gain to the target, the peaks held under -1 dBTP by a fast
+// limiter, measured again (a second, smaller step if the limiter took it short).
+export const MASTER = Object.freeze({ lufs: -16, ceilingDb: -1, maxGainDb: 14 });
+async function masterTo(ff, src, dst, dir, loudness) {
+  const lim = `alimiter=limit=${Math.pow(10, MASTER.ceilingDb / 20).toFixed(3)}:attack=5:release=60:level=false`;
+  let cur = src, before = await loudness(src, dir), gain = 0, after = before;
+  if (!Number.isFinite(before)) { fs.copyFileSync(src, dst); return { before, after, gain }; }
+  for (let i = 0; i < 2; i++) {
+    const g = Math.max(-6, Math.min(MASTER.maxGainDb - gain, MASTER.lufs - after));
+    if (Math.abs(g) < 0.3) break;
+    const next = path.join(dir, `master${i}-${path.basename(dst)}`);
+    execFileSync(ff, ["-v", "error", "-y", "-i", cur, "-af", `volume=${g.toFixed(2)}dB,${lim}`, "-c:a", "libmp3lame", "-b:a", "192k", next]);
+    cur = next; gain += g; after = await loudness(cur, dir);
+  }
+  fs.copyFileSync(cur, dst);
+  return { before: +before.toFixed(1), after: +after.toFixed(1), gain: +gain.toFixed(1) };
 }
 
 if (/audio\.mjs$/.test(process.argv[1] ?? "")) {
