@@ -44,7 +44,7 @@ export const VERBS = {
   sign: {}, // the compiler adds its pop at signPop
   crack: { grow: [R("grow", -0.05, 0.35, 1, "out")] },
   drops: { fall: [R("fall", -0.1, 0.35)], hide: [R("gone", -0.1, 0.3)] },
-  water: { trickle: [R("flood", 0, 2.0, 0.22)], flood: [R("flood", -0.05, 0.45, 0.78, "out")], hide: [R("gone", 0.3, null, 1, "step")] },
+  water: { trickle: [R("flood", 0, 2.0, 0.22)], flood: [R("flood", -0.05, 0.45, 0.78, "out")], drain: [R("flood", 0, 1.4, -1, "inOut")], dirty: [R("dirty", 0, 1.0, 1, "inOut")], clean: [R("clean", 0, 1.0, 1, "inOut")], hide: [R("gone", 0.3, null, 1, "step")] },
   gravel: { fill: [R("fill", 0.1, 0.8), R("pour", 0, 0.75)], lift: [R("lift", 0.02, 0.36, 2.6, "out")], lower: [R("lift", -0.15, 0.22, -2.6, "in2"), R("squash", 0.22, 0.48, 0.04, "bump", false)], drain: [R("drain", 0.2, 2.9, 1, "inOut")] },
   soakPit: { grow: [R("grow", 0.25, 0.6, 1, "out")], wet: [R("wetY", -0.1, 0.9, 2.25, "out"), R("wetOn", -0.1, null, 1, "step")], dry: [R("wetY", 0, 2.5, -1.35)] },
   wipe: { grow: [R("grow", 0.05, 0.55, 1, "out")] },

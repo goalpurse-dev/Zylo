@@ -573,3 +573,53 @@ test("plan checks: a thin-slab street needs no dig; a real cut gets one free; a 
   assert.match(catalogText(), /no dig when nothing does/);
   assert.doesNotMatch(catalogText(), /Always the first beat/);
 });
+
+// custom-topic reliability round (2026-10-26): free trials of ten topics with local renders found these causes
+import { signalQueueBox } from "../scripts/cutaway/proto3d/m2/focus.js";
+import { VERBS } from "../scripts/cutaway/proto3d/m2/verbs.js";
+import { exampleFor } from "../scripts/cutaway/proto3d/m2/planner.mjs";
+test("street rules: the signal stays on its corner, the loop and its outline are in the lane, cars stop nose to tail by when they are there", () => {
+  const { layout } = JSON.parse(readFileSync(new URL("./fixtures/cutaway_traffic_light_draft.json", import.meta.url), "utf8"));
+  // a controller planned far over the road used to drag the whole signal group 16 m back on a 16 m arm
+  const parts = layout.parts.map((p) => (p.id === "ctrl" ? { ...p, params: { ...p.params, pos: [p.params.pos[0] + 9, p.params.pos[1], p.params.pos[2]] } } : p));
+  parts.push({ id: "loopGlow", kind: "outline", params: { points: [[-13, 0.06, -13], [-13, 0.06, -11], [-11, 0.06, -11], [-11, 0.06, -13]] } });
+  parts.push({ id: "carA", kind: "car", params: { pos: [0, 0.12, -6] } }, { id: "carB", kind: "car", params: { pos: [0, 0.12, -6] } }, { id: "carC", kind: "car", params: { pos: [0, 0.12, -6] } });
+  const beats = layout.beats.map((b) => ({ ...b, do: [...(b.do ?? [])] }));
+  beats.find((b) => b.s === "problem").do.push({ p: "carA", v: "arrive" });
+  beats.find((b) => b.s === "fix1").do.push({ p: "carA", v: "leave" }, { p: "carB", v: "arrive" }, { p: "carC", v: "arrive" });
+  const L = rulesForClash({ ...layout, parts, beats }).layout, sig = L.parts.find((p) => p.kind === "trafficLight");
+  assert.ok(sig.params.arm < 6, `arm ${sig.params.arm}`);
+  const [lx, lz] = sig.params.loop, glow = L.parts.find((p) => p.id === "loopGlow");
+  assert.ok(glow.params.points.every((q) => Math.abs(q[0] - lx) < 1.5 && Math.abs(q[2] - lz) < 1.5), "the loop outline traces the loop");
+  const z = (id) => L.parts.find((p) => p.id === id).params.pos[2];
+  assert.equal(z("carA"), z("carB"), "carA has left: carB takes the first spot");
+  assert.ok(Math.abs(z("carC") - z("carB") - 4.7) < 0.01, "carC waits nose to tail behind carB");
+  assert.ok(z("carB") - lz > 3, "the first car waits behind the loop, so its glow shows");
+});
+test("camera: a street queue is framed with its signal; a sentence's own shot beats the previous sentence's auto shot", () => {
+  const sig = { kind: "trafficLight", params: { pos: [1.5, 0.12, -13.4], height: 5, arm: 4.6, armDir: 1 } }, q = { kind: "traffic", params: { lane: [6, -12.6], dir: -1, gap: 5.6 } };
+  const b = signalQueueBox(sig, q, { x0: -3, x1: 1, z0: -3, depth: 0.6 });
+  assert.ok(b.min[0] <= 1 && b.max[0] >= 6.9 && b.max[2] < -1 && b.max[2] > -4, JSON.stringify(b));
+  const src = readFileSync(new URL("../scripts/cutaway/proto3d/m2/compile.mjs", import.meta.url), "utf8");
+  assert.match(src, /an auto shot just before the NEXT sentence's own shot gives way to it/);
+});
+test("kit: still water turns green and clears, drains; a vending machine has a box; painted parts never crash the checks", async () => {
+  assert.deepEqual(Object.keys(VERBS.water).sort(), ["clean", "dirty", "drain", "flood", "hide", "trickle"]);
+  assert.ok(KIND_CHANNELS.water.includes("dirty") && KIND_CHANNELS.water.includes("clean"));
+  const vm = focusOf({ kind: "vendingMachine", params: { pos: [0, 0.12, -1.8] } }, null);
+  assert.ok(vm && vm.max[1] - vm.min[1] > 3);
+  assert.match(catalogText(), /per axis, the way the panel extends from pos: 1 toward \+, -1 toward -/);
+  const clarity = readFileSync(new URL("../scripts/cutaway/proto3d/m2/clarity.js", import.meta.url), "utf8");
+  assert.doesNotMatch(clarity.match(/const AWAY = .*/)[0], /\|drain\||\|clean\||\|open\||\|leave\|/);
+});
+test("layout rules: a second start of something already running is dropped (the rain stops at the end)", () => {
+  const L = { world: { cut: { x0: -3, x1: 3, z0: -3, depth: 2 } }, parts: [{ id: "rain", kind: "rain", params: {} }, { id: "dig", kind: "dig", params: {} }], beats: [{ s: "a", do: [{ p: "rain", v: "start" }] }, { s: "b", do: [{ p: "rain", v: "start" }] }, { s: "c", do: [{ p: "rain", v: "stop" }] }] };
+  const out = rulesForClash(L).layout;
+  assert.deepEqual(out.beats.map((b) => b.do.filter((a) => a.p === "rain").map((a) => a.v)), [["start"], [], ["stop"]]);
+});
+test("the scene planner sees the worked example of its own topic, or of its setting", () => {
+  assert.equal(exampleFor("vending machine"), "vending_machine");
+  assert.equal(exampleFor("how a water well works"), "water_well");
+  assert.equal(exampleFor("traffic light"), "storm_drain");
+  assert.equal(exampleFor("pond"), "french_drain");
+});

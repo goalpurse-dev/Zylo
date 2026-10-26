@@ -12,7 +12,10 @@ import { settingBoxes, settingFloor } from "./framing.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
 // verbs that only take something away: a sentence whose only action is one of these shows nothing happening
-const AWAY = /^(hide|stop|stopSpray|stopPulse|stopDrain|off|gone|leave|untip|lower|refill|close|open|clean|drain|clear1|clear2|dry)$/;
+// verbs that take a part away: a sentence whose part only does these shows nothing. (drain, clean, open and leave are
+// actions you see: the level falling, the water clearing, a door swinging open, a car driving off; a pond that "drains
+// empty" was refused with them here)
+const AWAY = /^(hide|stop|stopSpray|stopPulse|stopDrain|off|gone|untip|lower|refill|close|clear1|clear2|dry)$/;
 const overlapXZ = (a, b, pad = 0) => a.min[0] < b.max[0] - pad && b.min[0] < a.max[0] - pad && a.min[2] < b.max[2] - pad && b.min[2] < a.max[2] - pad;
 export const settingOf = (W = {}) => W.backdrop?.type ?? (W.house === false ? "plain" : "yard");
 

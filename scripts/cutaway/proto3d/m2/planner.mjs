@@ -28,8 +28,8 @@ export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { wo
 const CHAIN_EXAMPLES = [
   { topic: "a French drain", roles: ["hook", "problem", "fix1", "problem2", "fix2", "name", "problem3", "fix3", "myth", "mythFact", "finish", "congrats"], text: "If you dig a ditch along your house, you have a drain. | But one inch of rain on a roof dumps over 600 gallons, and the ditch overflows. | So you fill the ditch with gravel to hold the water. | But now the gravel holds that water against the wall, and the wall cracks. | So you lay a pipe full of holes under the gravel, sloping away downhill. | This is a French drain. | But mud washes into the gravel, clogs every hole, and the basement floods anyway. | So you wrap the gravel in fabric that keeps the mud out. | And the French in French drain is not France. | It is Henry French, who wrote the book on drains in 1859. | Add the grass back on top. | Congratulations, you have built a French drain.",
     chain: "problem: rain spills out of the ditch against the wall (size 2) <- the hook | problem2: a crack runs up the wall (size 4) <- fix1, the gravel holding the water | problem3: the basement floods (size 5) <- fix2, the pipe's holes clogging" },
-  { topic: "a traffic light", roles: ["hook", "problem", "fix1", "name", "problem2", "fix2", "problem3", "fix3", "myth", "finish", "congrats"], text: "If you hang one red lamp over a crossing, you have a traffic light. | But it never changes, so cars pile up down both roads. | So you add a green lamp and a gray box that switches them. | This is a signal controller. | But the box runs on a clock, so at midnight a lone car sits at an empty red. | So you bury a loop of wire in the road that feels a car's metal. | But now the light flips the instant a car arrives, and a car already crossing gets hit. | So you add a yellow lamp that gives everyone a few seconds to stop. | And many of those sensors are wire loops, not cameras. | Add a crosswalk, a bench, and a mailbox. | Congratulations, you have built a traffic light.",
-    chain: "problem: cars queue down both roads (size 2) <- the hook | problem2: one car waits at a red with nobody around (size 3) <- fix1, the box's clock | problem3: a car hit in the junction (size 5) <- fix2, the loop flipping the light at once" },
+  { topic: "a traffic light", roles: ["hook", "problem", "fix1", "name", "problem2", "fix2", "problem3", "fix3", "myth", "finish", "congrats"], text: "If you hang one red lamp over a crossing, you have a traffic light. | But it never changes, so cars pile up down both roads. | So you add a green lamp and a gray box that switches them. | This is a signal controller. | But the box runs on a clock, so at midnight a lone car sits at an empty red. | So you bury a loop of wire in the road that feels a car's metal. | But now the light flips the instant a car arrives, and the car behind it slams into its back. | So you add a yellow lamp that gives everyone a few seconds to stop. | And many of those sensors are wire loops, not cameras. | Add a crosswalk, a bench, and a mailbox. | Congratulations, you have built a traffic light.",
+    chain: "problem: cars queue down both roads (size 2) <- the hook | problem2: one car waits at a red with nobody around (size 3) <- fix1, the box's clock | problem3: the car behind crashes into the stopped car (size 5) <- fix2, the loop flipping the light at once" },
 ];
 // the account's approved scripts (the golden pair), kept for the record; the writer now sees CHAIN_EXAMPLES
 const EXAMPLES = [
@@ -87,6 +87,23 @@ You are given research notes with sources found by web search: judge every claim
 
 // the worked example is the other golden topic when the topic is itself a golden one (a fair remake)
 const EXAMPLE_TITLE = { french_drain: "French drain", landfill: "landfill" };
+// the hand-built layouts the scene planner can be shown as its worked example (m2/layouts/<key>.template.json)
+const EXAMPLE_LAYOUTS = ["landfill", "french_drain", "car_wash", "storm_drain", "vending_machine", "water_well", "atm"];
+/**
+ * The worked example for a topic: the hand-built layout of the topic itself when there is one (a vending machine sees
+ * the vending machine), else one from its setting (a street topic sees the storm drain's street, a car wash the car
+ * wash), else the yard: the French drain, or the landfill for a drain. Free: it only changes which layout the prompt
+ * shows (a traffic light was planned from the French drain's yard).
+ */
+export function exampleFor(topic) {
+  const t = ` ${normTopic(topic)} `;
+  const own = EXAMPLE_LAYOUTS.find((k) => [k.replace(/_/g, " "), ...(premadeByKey(k)?.aliases ?? [])].some((a) => t.includes(` ${a} `)));
+  if (own) return own;
+  const set = settingHint(topic).match(/the (\w+) setting/)?.[1];
+  if (set === "street") return "storm_drain";
+  if (set === "carwash") return "car_wash";
+  return /drain/i.test(topic) ? "landfill" : "french_drain";
+}
 const sceneSystem = (example = "french_drain") => `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.
 
 ${catalogText()}
@@ -110,7 +127,7 @@ HOW TO PLAN
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
 - In "why", say in two or three sentences what the scene is and how the camera tells it.
 
-THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for its script:
+THE WORKED EXAMPLE: the ${EXAMPLE_TITLE[example] ?? premadeByKey(example)?.topic ?? example.replace(/_/g, " ")} video's layout, for its script:
 ${JSON.stringify(sceneFromLayout(template(example)))}`;
 const SCENE_SYSTEM = sceneSystem();
 
@@ -297,7 +314,7 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic) }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -417,7 +434,7 @@ export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, role
  * planner, which returns the layout with only those beats (and the parts they use) changed. A saved layout keeps
  * its world and parts: only beats and shots may change.
  */
-export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = exampleFor(topic) }) {
   const file = cacheDir && path.join(cacheDir, `repair_${problems.length}_${problems.join("|").length}.json`);
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));

@@ -226,8 +226,13 @@ export function directCamera(layout, shots, marks) {
   const pushToward = (k, s, box) => {
     const sb = subjectOf(s, box), before = projectBox(cur.pos, cur.tgt, sb), after = projectBox(k.pos, k.tgt, sb);
     if (before.behind || after.behind || before.w > 0.85 || after.w >= before.w * 0.98) return k;
-    const f = frameBox(sb, { view: sub(cur.pos, cur.tgt), width: Math.min(0.85, Math.max(before.w * 1.25, 0.3)), zone: "center", minField: 0 });
-    const q = underground(sb) ? { pos: f.pos, tgt: f.tgt } : liftSoil(layout, { pos: f.pos, tgt: f.tgt }, sb);
+    // pushed in on the subject together with what the shot was planned to frame (the subject alone dropped the rest: a
+    // pump pushing water "through a filter box" lost the filter from the frame)
+    // (only when the subject still does not shrink that way; else on the subject alone, as the rule wants)
+    const frameOn = (bx, w0) => frameBox(bx, { view: sub(cur.pos, cur.tgt), width: Math.min(0.85, Math.max(w0 * 1.25, 0.3)), zone: "center", minField: 0 });
+    let all = box && box !== sb ? union([sb, box]) : sb, f = frameOn(all, all === sb ? before.w : (() => { const w = projectBox(cur.pos, cur.tgt, all); return w.behind ? 0.6 : w.w; })());
+    if (all !== sb) { const kept = projectBox(f.pos, f.tgt, sb); if (kept.behind || kept.w < before.w * 0.98) { all = sb; f = frameOn(sb, before.w); } }
+    const q = underground(all) ? { pos: f.pos, tgt: f.tgt } : liftSoil(layout, { pos: f.pos, tgt: f.tgt }, all);
     notes.push(`shot at ${s.t.toFixed(2)} s: pushed in on ${s.at?.s ?? "its subject"} (it would have shrunk from ${(before.w * 100).toFixed(0)}% to ${(after.w * 100).toFixed(0)}% of the width)`);
     return q;
   };

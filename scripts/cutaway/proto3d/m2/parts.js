@@ -367,15 +367,21 @@ export const KINDS = {
 
   // ================= water, gravel, fills =================
 
-  /** water filling a cut (a flooded ditch); channels: flood (0..1 of its height), gone (a step: hidden after) */
+  /** water filling a cut (a flooded ditch, a pond, a pool); channels: flood (0..1 of its height; drain takes it down),
+   *  gone (a step: hidden after), dirty / clean (still water going algae green, or dirtyColor, and clear again) */
   water(ctx, p, api) {
-    const w = fillBlock(ctx, { ...p.box, mat: api.mat(p.mat ?? "water"), r: p.r ?? 0.02, castShadow: false });
+    // its own copy of the material only when this plan turns it green (so it never tints other water; the premade
+    // videos' water keeps the shared material exactly as approved)
+    const tints = Boolean(api.cue("dirty") || api.cue("clean")), shared = api.mat(p.mat ?? "water");
+    const mat = tints ? shared.clone() : shared, base = mat.color.clone(), dirtyC = new ctx.THREE.Color(typeof p.dirtyColor === "string" ? p.dirtyColor : "#4e7d2c");
+    const w = fillBlock(ctx, { ...p.box, mat, r: p.r ?? 0.02, castShadow: false });
     w.mesh.renderOrder = 2;
     return {
       mesh: w.mesh, top: w.top,
       update(t) {
         const gravK = p.gravel ? api.other(p.gravel, "fill", t) : 0;
-        w.set(api.ch("flood", t) * (1 - 0.5 * gravK)); // as gravel fills the cut, the water sinks into it
+        w.set(clamp01(api.ch("flood", t)) * (1 - 0.5 * gravK)); // as gravel fills the cut, the water sinks into it
+        if (tints) mat.color.copy(base).lerp(dirtyC, clamp01(api.ch("dirty", t) - api.ch("clean", t)));
         const gone = api.cue("gone"); if (gone && t >= gone.t0) w.mesh.visible = false;
       },
     };
@@ -533,7 +539,7 @@ export const KIND_CHANNELS = {
   dig: ["dig", "refill"], panels: ["*"], box: [], bags: ["drop", "lift", "raise"], dumpTruck: ["z", "tip", "load"],
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
-  water: ["flood", "gone"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
+  water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
   arrows: ["on"], outline: ["on"], seepFlow: ["on"],
 };

@@ -7,17 +7,32 @@
 //  4. an outline hugs the tank it names (an outline 20 cm off the walls read as "offset")
 //  5. standing water on a paved floor is a thin glossy puddle, not a 35 cm slab
 //  6. a canopy stands in the open (not under the setting.s roof) and stands out from the building beside it
-import { focusOf } from "./focus.js";
+import { focusOf, signalQueueBox } from "./focus.js";
 import { settingBoxes } from "./framing.js";
 import { STREET_BACK, streetRoad } from "../kit/street.js";
 
 const near = (a, b, d) => Math.hypot(a[0] - b[0], a[2] - b[2]) <= d;
 const hexClose = (a, b) => { const p = (h) => [1, 3, 5].map((i) => parseInt(String(h).slice(i, i + 2), 16)); try { const x = p(a), y = p(b); return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 60; } catch { return false; } };
 
+/** How far behind the stop line the first car waits on a street (m): the loop glows in the road in front of it. */
+export const FIRST_CAR = 6;
+
 export function layoutRules(L) {
   const cut = L.world?.cut, parts = L.parts.map((p) => ({ ...p, params: { ...(p.params ?? {}) } })), byId = new Map(parts.map((p) => [p.id, p]));
   const beats = (L.beats ?? []).map((b) => ({ ...b, do: [...(b.do ?? [])] }));
   const notes = [];
+  // 0. on/off verbs add up (start + start + stop = still on): a start on something already running and a stop on
+  // something already off are dropped (a storm drain plan started the rain again for "the next storm" and the rain
+  // never stopped, failing "the end must be calm")
+  const ONOFF = new Set(["arrows", "pipeFlow", "pipeRunFlow", "bubbles", "seepFlow"]), running = new Map();
+  for (const b of beats) b.do = b.do.filter((a) => {
+    const p = byId.get(a.p); if (!p) return true;
+    const on = a.v === "start" || (a.v === "show" && ONOFF.has(p.kind)), off = a.v === "stop" || (a.v === "hide" && ONOFF.has(p.kind));
+    if (!on && !off) return true;
+    const was = running.get(a.p) === true;
+    if (on === was) { notes.push(`${a.p}: a second ${a.v} dropped (it was already ${was ? "on" : "off"})`); return false; }
+    running.set(a.p, on); return true;
+  });
   // 1. the spray out of the hose
   for (const f of parts.filter((p) => p.kind === "flow" && Array.isArray(p.params.path) && p.params.path.length >= 2)) {
     const s = f.params.path[0], spray = f.params.look === "spray" || ((f.params.look ?? "water") === "water" && s[1] > 0.5);
@@ -129,12 +144,26 @@ export function layoutRules(L) {
       for (const p of [sig, ...near, ...outl]) group.add(p);
       const cornerX = side < 0 ? R.x1 + 0.9 : R.x0 - 0.9;
       for (const p of group) move(p, +(cornerX - sx).toFixed(2), +(R.stopZ - 0.8 - sz).toFixed(2));
-      // (nothing of the group but the arm on the road: the whole group steps back from the curb as far as it overhangs)
-      const xs = [...group].filter((p) => p !== sig).map(boxOf).filter(Boolean).concat([{ min: [cornerX - 0.2], max: [cornerX + 0.2] }]);
-      const over = side > 0 ? Math.max(...xs.map((b) => b.max[0])) - (R.x0 - 0.4) : (R.x1 + 0.4) - Math.min(...xs.map((b) => b.min[0]));
-      if (over > 0) for (const p of group) move(p, +(side > 0 ? -over : over).toFixed(2));
-      sig.params.arm = +(R.w * 0.62 + Math.max(0, over)).toFixed(2); sig.params.armDir = side < 0 ? -1 : 1;
-      sig.params.loop = [R.laneOut, +(R.stopZ + 2.2).toFixed(2), 1.8, 2.4];
+      // nothing of the group but the arm on the road: a member that overhangs the curb steps back onto the sidewalk on
+      // its own; the signal stays on the corner (the whole group used to step back, signal and all: a traffic light run
+      // of 2026-10-25 had its pole 16 m from the road on a 16 m arm, its lamps a speck in every shot)
+      for (const p of [...group].filter((q) => q !== sig && q.kind !== "outline")) {
+        const b = boxOf(p); if (!b) continue;
+        const over = side > 0 ? b.max[0] - (R.x0 - 0.4) : (R.x1 + 0.4) - b.min[0];
+        if (over > 0) move(p, +(side > 0 ? -over : over).toFixed(2));
+      }
+      sig.params.arm = +(R.w * 0.62).toFixed(2); sig.params.armDir = side < 0 ? -1 : 1;
+      // the loop just behind the stop line, the first car waiting a little further back (FIRST_CAR): the glow shows in front
+      // of its nose (it lay wholly under the waiting car, so the glow the sentence names could not be seen; a car 1.9 tall
+      // hides about 3 m of road ahead of it from the camera's height)
+      sig.params.loop = [R.laneOut, +(R.stopZ + 1.2).toFixed(2), 1.8, 2.0];
+      // an outline the plan drew round the loop (its id names the loop, the wire or the sensor) goes where the loop
+      // really is, in the lane (the planner guessed: both loop outlines of that run lay on the sidewalk)
+      const [lx, lz, lw, ld] = sig.params.loop;
+      for (const o of parts.filter((p) => p.kind === "outline" && /loop|wire|sensor|coil/i.test(p.id))) {
+        o.params = { ...o.params, points: [[lx - lw / 2, 0.06, lz - ld / 2], [lx - lw / 2, 0.06, lz + ld / 2], [lx + lw / 2, 0.06, lz + ld / 2], [lx + lw / 2, 0.06, lz - ld / 2]], opts: { ...(o.params.opts ?? {}), closed: true } };
+        notes.push(`${o.id} traces the loop in the lane`);
+      }
       notes.push(`${sig.id} on the corner at the stop line, its arm over the lane${near.length ? `, with ${near.map((p) => p.id).join(", ")}` : ""}`);
     }
     // anything else standing on the road moves to the sidewalk beyond the curb on the cut's side, clear of what is there
@@ -150,9 +179,44 @@ export function layoutRules(L) {
     }
     // the end sign too (it stands on the sidewalk, never in a lane)
     for (const p of parts.filter((q) => q.kind === "sign")) { const b = boxOf(p); if (b && b.max[0] > R.x0 - 0.3 && b.min[0] < R.x1 + 0.3) { move(p, +(side < 0 ? R.x1 + 0.6 - b.min[0] : R.x0 - 0.6 - b.max[0]).toFixed(2)); notes.push(`${p.id} moved off the road`); } }
-    // cars drive along the lane going away from the camera and stop at the stop line
-    for (const c of parts.filter((p) => p.kind === "car")) { c.params = { ...c.params, axis: "z", pos: [R.laneOut, c.params.pos?.[1] ?? 0.12, +(R.stopZ + 2.6).toFixed(2)], from: -0.4, to: R.back - 18 }; notes.push(`${c.id} drives along the road`); }
+    // cars drive along the lane going away from the camera and stop behind the stop line, the first FIRST_CAR back with
+    // the loop clear in front of it, the next nose to tail (a car is 4.4 long: two cars given the same stop drove inside
+    // each other, and a car that "hits" the one ahead must touch it).
+    // A car takes the front free spot for the beats it is there (from the beat it arrives to the one it leaves): a car
+    // that has driven on frees its spot for the next (the crash pair stood two and three spots back, behind the camera)
+    const cars = parts.filter((p) => p.kind === "car"), beatOf = (id, v) => beats.findIndex((b) => b.do.some((a) => a.p === id && a.v === v));
+    const span = (c) => { const a = beatOf(c.id, "arrive"), l = beatOf(c.id, "leave"); return [a < 0 ? 0 : a, l < 0 ? Infinity : l]; };
+    const taken = [];
+    for (const c of [...cars].sort((a, b) => span(a)[0] - span(b)[0])) {
+      const [a, l] = span(c);
+      let k = 0; while (taken.some((t) => t.k === k && t.a < l && a < t.l)) k++;
+      taken.push({ k, a, l });
+      c.params = { ...c.params, axis: "z", pos: [R.laneOut, c.params.pos?.[1] ?? 0.12, +(R.stopZ + FIRST_CAR + k * 4.7).toFixed(2)], from: -0.4, to: R.back - 18 };
+      notes.push(`${c.id} drives along the road (spot ${k + 1})`);
+    }
     for (const q of parts.filter((p) => p.kind === "traffic")) q.params = { ...q.params, lane: [R.laneOut, R.stopZ], dir: -1, y: q.params.y ?? 0.12 };
+    // a queue forms over its whole sentence (it started on "cars", two words from the end, and was one car when the
+    // frame was taken)
+    for (const b of beats) for (const a of b.do) if (a.v === "pile" && parts.some((p) => p.id === a.p && p.kind === "traffic")) { delete a.w; delete a.o; a.d = Math.max(2, a.d ?? 0); }
+    // the camera on a street with a signal: the queue is seen end on along the road, so a shot of it frames the signal
+    // (the queue lines up right below it; framing the whole lane went wide and the cars were specks); a shot of the loop
+    // keeps the signal in it too (the loop alone framed the back of a car)
+    if (sig) {
+      const kindOf = new Map(parts.map((p) => [p.id, p.kind]));
+      for (const b of beats) b.shots = (b.shots ?? []).map((s) => {
+        if (!Array.isArray(s.focus)) return s;
+        const q = parts.find((p) => p.kind === "traffic" && s.focus.includes(p.id));
+        const qb = q && signalQueueBox(sig, q, C0);
+        if (qb) { notes.push(`${b.s}: the shot frames the signal and the queue at it`); return { box: qb, width: 0.9, zone: "center", ...(s.word ? { word: s.word } : {}), ...(s.at ? { at: s.at } : {}) }; }
+        const loopy = s.focus.some((id) => kindOf.get(id) === "outline" && /loop|wire|sensor|coil/i.test(id));
+        if (!loopy) return s;
+        // the loop and the car waiting behind it, from above: the stretch of lane from the stop line back past the car
+        // (aimed at the signal, the loop was at the frame's edge and the car out of it)
+        notes.push(`${b.s}: the shot sees the loop and the waiting car from above`);
+        const [lx2, lz2, lw2, ld2] = sig.params.loop;
+        return { box: { min: [lx2 - 1.6, 0, lz2 - ld2 / 2 - 0.5], max: [lx2 + 1.6, 1.9, R.stopZ + FIRST_CAR + 2.4] }, width: 0.9, zone: "center", view: "high", ...(s.word ? { word: s.word } : {}) };
+      });
+    }
   }
   // 12. a signal's controller is a real cabinet: a plain box the planner put beside a traffic light (named a controller,
   // a box or a cabinet) becomes the metal cabinet; a small box on its top (its "timer") becomes a display on its front
