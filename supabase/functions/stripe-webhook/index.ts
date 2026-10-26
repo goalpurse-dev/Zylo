@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared/stripePlanPrices.js";
+import { OFFER, offerBonusFor } from "../_shared/offer.js";
 
 /* =================== CONFIG =================== */
 /** Recurring plan prices → plan + monthly credits (current and legacy), with the
@@ -443,9 +444,24 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       ? await grantCreditsOnce(userId, credits, hasProration ? "plan_upgrade" : "plan_renewal", inv.id)
       : false;
 
+    // The +50 bonus offer (_shared/offer.js): a plan bought or upgraded, judged by the PAYMENT
+    // time, not now; once per account (the database's grant_offer_bonus).
+    const paidAtIso = unixToIso(inv?.status_transitions?.paid_at) ?? unixToIso(inv?.created) ?? new Date().toISOString();
+    // SIMULATION_OFFER_JSON: only the offline simulators set it (tests/stripe-webhook), to pin a window.
+    const OFFER_NOW = Deno.env.get("SIMULATION_OFFER_JSON") ? { ...OFFER, ...JSON.parse(Deno.env.get("SIMULATION_OFFER_JSON")!) } : OFFER;
+    const offer = offerBonusFor({ billingReason: inv?.billing_reason, planAfter: plan ?? changedTo?.plan, planBefore: profile.plan_code, paidAt: paidAtIso }, OFFER_NOW);
+    let bonus = false;
+    if (offer.eligible) {
+      bonus = must(
+        await sb.rpc("grant_offer_bonus", { p_user_id: userId, p_offer_id: OFFER_NOW.id, p_credits: OFFER_NOW.bonusCredits, p_invoice_id: inv.id, p_paid_at: paidAtIso }),
+        `offer bonus (${OFFER_NOW.id}, invoice ${inv.id}) for user ${userId}`,
+      ) === true;
+      if (!bonus) console.log(`[stripe-webhook] offer ${OFFER_NOW.id}: user ${userId} already had the bonus`);
+    }
+
     return hasProration
-      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted }
-      : { ok: true, plan_credits: planCredits, granted };
+      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}) }
+      : { ok: true, plan_credits: planCredits, granted, ...(offer.eligible ? { bonus } : {}) };
   }
 
   /* ── invoice.payment_failed ───────────────────────────────────────── */

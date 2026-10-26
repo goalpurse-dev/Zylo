@@ -1,6 +1,6 @@
 // In-memory stand-in for supabase-js, just enough for stripe-webhook/index.ts.
 // deno-lint-ignore-file no-explicit-any
-export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [] };
+export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [] };
 /** Return an error message to make the matching call fail. */
 export const inject: { fail: ((call: { table?: string; op: string; payload?: any }) => string | null) | null } = { fail: null };
 const UNIQUE: Record<string, string> = { credit_grants: "external_id", billing_events_processed: "event_id" };
@@ -38,6 +38,19 @@ export function createClient(..._args: any[]): any {
     rpc: (name: string, args: any) => {
       const msg = inject.fail?.({ op: `rpc:${name}`, payload: args });
       if (msg) return Promise.resolve({ data: null, error: { message: msg } });
+      // grant_offer_bonus (migration 20261108400000): one row per account and offer, then the credits
+      // through grant_credits_once with reason offer_bonus; a second call for the same account is false.
+      if (name === "grant_offer_bonus") {
+        if (db.offer_redemptions.some((r) => r.user_id === args.p_user_id && r.offer_id === args.p_offer_id)) return Promise.resolve({ data: false, error: null });
+        const p = db.profiles.find((r) => r.id === args.p_user_id);
+        if (!p) return Promise.resolve({ data: null, error: { message: `grant_offer_bonus: no profile ${args.p_user_id}` } });
+        db.offer_redemptions.push({ user_id: args.p_user_id, offer_id: args.p_offer_id, invoice_id: args.p_invoice_id, credits: args.p_credits, paid_at: args.p_paid_at });
+        const ext = `${args.p_offer_id}:${args.p_user_id}`;
+        if (db.credit_grants.some((g) => g.external_id === ext)) return Promise.resolve({ data: false, error: null });
+        db.credit_grants.push({ user_id: args.p_user_id, reason: "offer_bonus", amount: args.p_credits, external_id: ext });
+        p.credit_balance = (p.credit_balance ?? 0) + args.p_credits;
+        return Promise.resolve({ data: true, error: null });
+      }
       if (name !== "grant_credits_once") return Promise.resolve({ data: null, error: { message: `no function ${name}` } });
       // Same contract as the SQL function: ledger row + balance together, or neither.
       if (db.credit_grants.some((g) => g.external_id === args.p_external_id)) return Promise.resolve({ data: false, error: null });

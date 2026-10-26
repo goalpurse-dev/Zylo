@@ -8,6 +8,8 @@ import WelcomeScreen from "../../components/WelcomeScreen";
 import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
 import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
+import { OfferBar } from "../../components/offer/OfferBanners.jsx";
+import { useOffer } from "../../lib/useOffer";
 import PastDueNotice from "../../components/billing/PastDueNotice.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 import { COOKIE_CONSENT_EVENT, hasCookieConsent } from "../../lib/cookieConsent";
@@ -22,6 +24,7 @@ export default function WorkspaceLayout() {
   const noticeRef = useRef(null);
 
   const location = useLocation();
+  const offer = useOffer();
   // Phase 6d-1: the mobile Edit page is a full-screen editor — no promo banner there.
   const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
   useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setNarrow(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
@@ -242,7 +245,8 @@ useEffect(() => {
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
       <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
-        {!hidePromo && <AnnouncementBar />}
+        {/* Home: the +50 bonus offer's news bar replaces the usual announcement while it runs. */}
+        {!hidePromo && (location.pathname === "/" && offer.live ? <OfferBar /> : <AnnouncementBar />)}
         <PastDueNotice />
       </div>
 
