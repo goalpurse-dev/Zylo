@@ -54,6 +54,15 @@ async function urlsFor(admin: any, run: any, role: string, index?: number) {
   return out;
 }
 
+/**
+ * The parts library (the kit grows by itself): parts designed for earlier videos that passed every check, not retired.
+ * The planner is shown the ones whose names match its topic (planner.mjs libraryMatches); the newest 60 go with a job.
+ */
+async function partsLibrary(admin: any) {
+  const { data } = await admin.from("cutaway_parts_library").select("name, synonyms, recipe").is("retired_at", null).order("created_at", { ascending: false }).limit(60);
+  return data ?? [];
+}
+
 async function approvedLayout(admin: any, run: any) {
   if (!run.layout_key) return null;
   const { data } = await admin.from("cutaway_layouts").select("key, layout, script").eq("key", run.layout_key).eq("approved", true).is("retired_at", null).maybeSingle();
@@ -72,7 +81,7 @@ export async function runpodStatus(jobId: string) { try { return await rp(`/stat
 async function dispatchRunPod(admin: any, run: any) {
   if (!CONFIG.runpodKey || !CONFIG.endpoint) throw Object.assign(new Error("RunPod is not configured"), { code: "NOT_CONFIGURED" });
   const token = await tokenFor(CONFIG.callbackSecret, run.id);
-  const job = jobFor(run, { role: "video", mode: "gpu", urls: await urlsFor(admin, run, "video"), callback: { url: CALLBACK_URL, token }, layout: await approvedLayout(admin, run) });
+  const job = jobFor(run, { role: "video", mode: "gpu", urls: await urlsFor(admin, run, "video"), callback: { url: CALLBACK_URL, token }, layout: await approvedLayout(admin, run), library: run.layout_key ? null : await partsLibrary(admin) });
   const res = await rp("/run", { method: "POST", body: JSON.stringify({ input: { job }, webhook: `${CALLBACK_URL}?src=runpod&run=${run.id}&token=${token}`, policy: { executionTimeout: 2700000, ttl: 3600000 } }) });
   return { provider: "runpod", provider_job_id: res.id, dispatched_at: new Date().toISOString() };
 }
@@ -112,7 +121,7 @@ async function dispatchFly(admin: any, run: any, role: string, index?: number) {
     await startFly(run, "chunk", jobFor(run, { role: "chunk", mode: "cpu", urls: await urlsFor(admin, run, "chunk", index), callback, chunk: c }), `cutaway-${String(run.id).slice(0, 8)}-c${index}-${Date.now().toString(36)}`);
     return {};
   }
-  const id = await startFly(run, role, jobFor(run, { role, mode: "cpu", urls: await urlsFor(admin, run, role), callback, layout: role === "plan" ? await approvedLayout(admin, run) : null }), `cutaway-${String(run.id).slice(0, 8)}-${role}-${Date.now().toString(36)}`);
+  const id = await startFly(run, role, jobFor(run, { role, mode: "cpu", urls: await urlsFor(admin, run, role), callback, layout: role === "plan" ? await approvedLayout(admin, run) : null, library: role === "plan" && !run.layout_key ? await partsLibrary(admin) : null }), `cutaway-${String(run.id).slice(0, 8)}-${role}-${Date.now().toString(36)}`);
   return { provider_job_id: id };
 }
 
@@ -191,10 +200,38 @@ export async function applyActions(admin: any, run: any, actions: any[]) {
 }
 
 /** one event on a run: decide (orchestrate.js), save the patch, carry out the actions */
+/**
+ * The kit grows by itself (the owner, 2026-10-26): a video that passed every check and finished saves the parts its plan
+ * designed (kind "rig", with a name) to the parts library, unless a part of that name is already there. The next video
+ * that needs one is shown it and reuses it for free. Never throws: a video is done whatever happens here.
+ */
+export async function saveDesignedParts(admin: any, run: any) {
+  try {
+    const { data: file } = await admin.storage.from(BUCKET).download(paths(run).plan.layout);
+    if (!file) return 0;
+    const layout = JSON.parse(await file.text());
+    let saved = 0;
+    for (const p of (layout.parts ?? []).filter((q: any) => q.kind === "rig" && typeof q.params?.name === "string" && q.params.name.trim())) {
+      const name = p.params.name.trim().toLowerCase().slice(0, 60);
+      const { data: have } = await admin.from("cutaway_parts_library").select("id").eq("name", name).is("retired_at", null).maybeSingle();
+      if (have) { await admin.rpc("cutaway_part_used", { p_name: name }); continue; }
+      // the recipe as reusable: its own place and turn are the next video's
+      const { pos, rotY, scale, ...recipe } = p.params;
+      const { error } = await admin.from("cutaway_parts_library").insert({ name, synonyms: (Array.isArray(p.params.synonyms) ? p.params.synonyms : []).map(String).slice(0, 12), recipe, source_run: run.id, topic: run.topic });
+      if (!error) saved++;
+    }
+    return saved;
+  } catch (e) {
+    console.error("[cutaway] designed parts not saved:", e instanceof Error ? e.message : e);
+    return 0;
+  }
+}
+
 export async function advance(admin: any, run: any, ev: any): Promise<any> {
   const r = onEvent(run, ev);
   if (Object.keys(r.patch).length) await admin.from("cutaway_runs").update({ ...r.patch, updated_at: new Date().toISOString() }).eq("id", run.id);
   const next = { ...run, ...r.patch };
+  if (next.status === "done" && run.status !== "done") await saveDesignedParts(admin, next);
   const more = await applyActions(admin, next, r.actions);
   return { patch: { ...r.patch, ...more } };
 }

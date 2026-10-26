@@ -41,7 +41,7 @@ async function previewStills({ proto, layout, times, out }) {
   return times.map((_, i) => path.join(out, `f_${String(i).padStart(3, "0")}.png`));
 }
 
-export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS, resume = false, maxUsd = Infinity, onReady = null, render = true, only = null }) {
+export async function runTopic({ library = [], topic, out, proto, ff, lengthSec = 30, reuse = null, script = null, voice = null, words = null, planOnly = false, vision = true, log, wt = WT, onProgress = null, maxProblems = 0, endCard = true, openings = OPENINGS, resume = false, maxUsd = Infinity, onReady = null, render = true, only = null }) {
   fs.mkdirSync(out, { recursive: true });
   const t0 = Date.now(), apiKey = loadKey(), cacheDir = path.join(out, "steps");
   const save = (f, d) => fs.writeFileSync(path.join(out, f), JSON.stringify(d, null, 1));
@@ -51,7 +51,7 @@ export async function runTopic({ topic, out, proto, ff, lengthSec = 30, reuse = 
   const read0 = (f) => JSON.parse(fs.readFileSync(path.join(out, f), "utf8"));
   const plan = resume
     ? { script: read0("script.json"), layout: read0("layout.json"), trace: read0("trace.json"), costUsd: read0("plan_report.json").planUsd ?? 0, problems: [], warnings: [], resumed: true }
-    : await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
+    : await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, library, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
   save("script.json", plan.script); save("layout.json", plan.layout); save("trace.json", plan.trace);
   P({ stage: "scene", pct: 4, title: plan.script.title, narration: plan.script.sentences.map((s) => s.text).join(" "), facts: plan.script.facts ?? [], parts: plan.layout.parts.map((p) => p.id) });
   const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, planSeconds: (Date.now() - t0) / 1000 };

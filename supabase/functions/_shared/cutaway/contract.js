@@ -17,7 +17,7 @@
 //   UPGRADE 402            "Cutaway Explainer is for paid plans."             -> the app's upgrade popup
 //   CREDITS 402            "You need N credits for this video."                -> the app's add-credits flow (needed in `credits`)
 //   OFF 403                "This template isn't available yet."
-//   CANT_BUILD 422         "We can't build this one yet."                      (+ missing, closest; nothing charged)
+//   CANT_BUILD 422         "We can't make this one."                      (+ missing, closest; nothing charged)
 //   LIMIT 429              a cap or rate limit, in plain words (+ retryAfterSec)
 //   BUSY 503               "We're making a lot of videos right now..."        (nothing charged)
 //   BAD_INPUT 400, NOT_FOUND 404, SERVER 500
@@ -42,7 +42,7 @@ export const ERRORS = Object.freeze({
   UPGRADE: { status: 402, message: "Cutaway Explainer is for paid plans." },
   CREDITS: { status: 402, message: "You need more credits for this video." },
   OFF: { status: 403, message: "This template isn't available yet." },
-  CANT_BUILD: { status: 422, message: "We can't build this one yet." },
+  CANT_BUILD: { status: 422, message: "We can't make this one." },
   SOON: { status: 403, message: "Custom topics are coming soon. Pick a premade topic." },
   LIMIT: { status: 429, message: "You've hit a limit for now. Try again a little later." },
   BUSY: { status: 503, message: "We're making a lot of videos right now. Try again in a few minutes." },

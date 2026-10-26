@@ -8,12 +8,13 @@ import { expandBeats, VERBS } from "./verbs.js";
 import { compile } from "./compile.mjs";
 import { draftWords } from "./plan.js";
 import { clarityChecks } from "./clarity.js";
+import { rigProblems } from "./rig.js";
 
 // the settings each kind cannot do without
 export const REQUIRED = {
   dig: ["mound"], panels: ["panels"], box: ["mat", "size", "pos"], bags: ["area", "y0"], pipeRun: ["path", "r"], pipeRunFlow: ["pipe"], tank: ["pos"],
   riser: ["x", "z", "y0", "y1"], boxPop: ["size", "pos"], flare: ["pos"], bubbles: ["x0", "x1", "y0", "y1"], machine: ["pos"], fence: ["x0", "x1", "step", "zBack", "sideStart", "zFront"],
-  youngTrees: ["trees"], sheet: ["from", "to"], book: ["from", "to", "lines"], flag: ["at"], shrubs: ["list"], sign: ["at"], crack: ["points"], drops: ["x0", "x1", "landY"],
+  rig: ["nodes", "pos"], youngTrees: ["trees"], sheet: ["from", "to"], book: ["from", "to", "lines"], flag: ["at"], shrubs: ["list"], sign: ["at"], crack: ["points"], drops: ["x0", "x1", "landY"],
   water: ["box"], gravel: ["box", "faceBox", "pourBox", "waterTop", "waterSpan", "drainDrop"], soakPit: ["box", "faceBox"], wipe: ["box", "mat"], wrap: ["box"], pipe: ["path"], pipeFlow: ["pipe"],
   puddles: ["list"], rain: ["x0", "x1", "z0", "z1"], stream: ["x0", "x1", "z", "yTop", "yBot"], wetBand: ["cx", "halfW", "bottom"], soak: ["x0", "x1", "top"], arrows: ["list"], outline: ["points"],
 };
@@ -45,6 +46,9 @@ export function solveLayout(L, sentences) {
     if (p.kind === "panels") for (const q of P.panels ?? []) { if (!Array.isArray(q.size) || !Array.isArray(q.pos)) { problems.push(`part ${p.id}: panel ${q.ch} needs size and pos`); continue; } const a = q.anchor ?? [0, 0, 0], top = q.pos[1] + (a[1] * Math.abs(q.size[1])) / 2 + Math.abs(q.size[1]) / 2, inCut = q.pos[0] > cut.x0 - 0.6 && q.pos[0] < cut.x1 + 0.6 && q.pos[2] > cut.z0 - 0.6; const standing = top - Math.abs(q.size[1]) >= -0.05; /* a structure standing on the surface (a canopy, posts) */ if (inCut && top > 0.6 && standing) warnings.push(`part ${p.id}: panel ${q.ch} stands above the ground up to y = ${top.toFixed(1)} (a structure on the surface)`); else if (inCut && top > 0.6) problems.push(`part ${p.id}: panel ${q.ch} reaches y = ${top.toFixed(1)}, above the ground (anchor [0, 1, 0] grows UP from pos; to grow down from the surface use anchor [0, -1, 0] with pos y = 0)`); }
     for (const [k, v] of Object.entries(P)) if (/mat$/i.test(k) && typeof v === "string" && v === "") problems.push(`part ${p.id}: empty ${k}`);
   }
+  // a designed part (rig.js): its recipe builds, is a sensible size, every piece joined, standing on the floor
+  const floor = W.backdrop?.walkTop ?? ({ street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[W.backdrop?.type] ?? 0);
+  for (const p of L.parts) if (p.kind === "rig") problems.push(...rigProblems(p, { floor, cut }));
   for (const s of L.audio?.sfx ?? []) if (!LIBS.includes(s.lib)) problems.push(`audio.sfx: no library sound "${s.lib}" (use ${LIBS.join(", ")})`);
   if (!L.parts.some((p) => p.kind === "sign")) problems.push("no sign part (the end card)");
   if (!L.parts.some((p) => p.kind === "light")) warnings.push("no light part");

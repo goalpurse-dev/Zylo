@@ -5,6 +5,8 @@
 //   shot?: { focus: [partIds] | "home", view?, width?, zone?, scale? (home only), at? }, shots?: [more shots] }
 // expandBeats(layout) -> cues in the layout cue format. `d` stretches a verb's main ramp; `amp` scales it.
 
+import { rigVerb } from "./rig.js";
+
 // [channel, a (s after the word), b (s after the word) | null for a step, amp, easing, { d: true if d stretches b }]
 const R = (c, a, b, amp = 1, e = "lin", stretch = true) => ({ c, a, b, amp, e, stretch });
 const POP = { show: [R("pop", -0.1, 0.3, 1, "back")] };
@@ -71,6 +73,8 @@ export function verbCues(part, act, at) {
   const table = VERBS[part.kind] ?? {};
   let list = table[act.v];
   if (!list && part.kind === "panels") list = act.v === "grow" ? [R(act.ch, 0.02, 0.45, 1, "out")] : act.v === "pop" ? [R(act.ch, 0, 0.3, 1, "back")] : null;
+  // a designed part (rig.js): show / hide, and each move of its recipe by name ("open", "openBack")
+  if (!list && part.kind === "rig") list = rigVerb(part.params ?? {}, act.v);
   if (!list) throw new Error(`${part.kind} ${part.id} has no verb ${act.v}`);
   const o = Number(act.o ?? 0), first = list[0];
   return list.map((r) => {

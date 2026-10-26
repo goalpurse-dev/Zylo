@@ -4,6 +4,7 @@
 // An anchor: { abs } | { w, n?, o? } | { s, w, o? } | { mark, o? } (m2/curves.js). Returns a list of problems.
 import { EASES } from "./curves.js";
 import { KIND_CHANNELS } from "./parts.js";
+import { rigChannels } from "./rig.js";
 import { MATERIAL_NAMES } from "./materials.js";
 
 export const MARKS = ["speechEnd", "voiceEnd", "signPop", "lengthEnd", "lengthNoEnd"];
@@ -45,7 +46,7 @@ export function validateLayout(L) {
     if ((REFS[p.kind] ?? []).includes("pipe") && p.params?.pipe && !seen.has(p.params.pipe)) P.push(`part ${p.id}: its pipe must come before it`);
     seen.set(p.id, p);
   });
-  const chans = (p) => (p.kind === "panels" ? (p.params?.panels ?? []).map((q) => q.ch) : KIND_CHANNELS[p.kind] ?? []);
+  const chans = (p) => (p.kind === "panels" ? (p.params?.panels ?? []).map((q) => q.ch) : p.kind === "rig" ? rigChannels(p.params ?? {}) : KIND_CHANNELS[p.kind] ?? []);
   L.cues.forEach((c, i) => {
     const p = seen.get(c.p);
     if (!p) { P.push(`cue ${i}: no part ${c.p}`); return; }
@@ -61,7 +62,8 @@ export function validateLayout(L) {
     if (!(L.shots ?? []).length) P.push("camera needs 2+ keys, or shots for the camera director");
     (L.shots ?? []).forEach((s, i) => {
       const pa = anchorProblem(s.at); if (pa) P.push(`shot ${i}: ${pa}`);
-      if (s.focus !== "home" && !s.box) for (const id of [].concat(s.focus ?? [])) if (!seen.has(id)) P.push(`shot ${i}: no part ${id}`);
+      // ("part.node": one piece of a designed part)
+      if (s.focus !== "home" && !s.box) for (const id of [].concat(s.focus ?? [])) { const [pid, node] = String(id).split("."), part = L.parts.find((q) => q.id === pid); if (!seen.has(pid)) P.push(`shot ${i}: no part ${id}`); else if (node && !(part?.kind === "rig" && (part.params?.nodes ?? []).some((n) => n.id === node))) P.push(`shot ${i}: ${pid} has no piece ${node}`); }
       if (s.focus == null && !s.box) P.push(`shot ${i}: no focus`);
     });
   } else if (keys.length < 2) P.push("camera needs 2+ keys");

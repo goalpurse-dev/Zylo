@@ -89,8 +89,11 @@ export const MEASURED = Object.freeze({
     // plan: measured 2026-10-24 on 8 topics, at the live (not batch) price: script $0.046 + fact research $0.112 +
     // fact-check $0.026 + scene plan $0.215 + scene repair $0.130 = $0.53. checks: the car wash's two preview checks
     // ($0.22 and $0.13). passRate: still the estimate (no topic has run the whole path in production yet)
-    30: Object.freeze({ attempt: { plan: 0.53, voice: 0.05, checks: 0.18, post: 0.002, kitCheck: 0.0005, gpu: 0.09, storage: 0.002 }, failed: 0.65, passRate: 0.6 }),
-    60: Object.freeze({ attempt: { plan: 0.78, voice: 0.1, checks: 0.24, post: 0.002, kitCheck: 0.0005, gpu: 0.14, storage: 0.004 }, failed: 0.9, passRate: 0.6 }),
+    // design (2026-10-26): a part the kit lacks, designed from building blocks: the NEW PARTS instructions (~1,400 tokens
+    // in, twice: plan and repair, $0.008) and the recipe written out (~1,000 tokens out, twice, $0.03); counted on every
+    // custom video (most topics design one) and on its failed attempts
+    30: Object.freeze({ attempt: { plan: 0.53, design: 0.04, voice: 0.05, checks: 0.18, post: 0.002, kitCheck: 0.0005, gpu: 0.09, storage: 0.002 }, failed: 0.69, passRate: 0.6 }),
+    60: Object.freeze({ attempt: { plan: 0.78, design: 0.05, voice: 0.1, checks: 0.24, post: 0.002, kitCheck: 0.0005, gpu: 0.14, storage: 0.004 }, failed: 0.95, passRate: 0.6 }),
   }),
 });
 export const KINDS = Object.freeze(["premade", "custom"]);

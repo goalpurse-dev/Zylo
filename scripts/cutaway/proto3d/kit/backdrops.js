@@ -176,11 +176,14 @@ export function backdrop(ctx, opts) {
     box(wall, W, 1.3, 0.4, 0, H - 0.65, Dd / 2, g, 0.03); // over the door
     const roof = ctx.gltf ? pbrSized(ctx, "roof_09", W + 0.8, Dd + 0.8, 2, { color: C("#c9876a") }) : std({ color: C("#7a4a3a"), roughness: 0.8 }); box(roof, W + 0.8, 0.35, Dd + 0.8, 0, H + 0.17, 0, g, 0.04);
     box(trim, W + 0.9, 0.18, 0.2, 0, H - 0.05, Dd / 2 + 0.25, g, 0.02);
+    // its concrete floor (the lawn showed through the open door)
+    box(std({ color: C("#a9a59e"), roughness: 0.9 }), W - 0.4, 0.04, Dd - 0.2, 0, 0.02, 0, g, 0.01);
     const inside = std({ color: C("#4a4f55"), emissive: C("#fff1d0"), emissiveIntensity: 0.08, roughness: 0.9 });
     box(inside, W - 0.8, H - 0.4, 0.05, 0, H / 2, -Dd / 2 + 0.23, g, 0.01);
     // the roll-up door, half open: horizontal slats in the top half of the opening
     const slat = std({ color: C("#f0eee8"), roughness: 0.5 });
-    for (let i = 0; i < 4; i++) box(slat, W - 0.9, 0.36, 0.08, 0, H - 1.5 - i * 0.38, Dd / 2 - 0.05, g, 0.02);
+    // (door false: the video builds its own door in the opening, x -4.05 to 4.05 from the garage centre, 3.1 tall)
+    if (opts.door !== false) for (let i = 0; i < 4; i++) box(slat, W - 0.9, 0.36, 0.08, 0, H - 1.5 - i * 0.38, Dd / 2 - 0.05, g, 0.02);
     // inside: shelves with boxes on the back wall, a workbench, a ceiling light
     const shelf = std({ color: C("#8a6a48"), roughness: 0.7 }), boxes = ["#c8372f", "#3a7bd5", "#e9c46a", "#5aa469"];
     for (const y of [0.9, 1.7]) { box(shelf, 3.2, 0.08, 0.6, -2.4, y, -Dd / 2 + 0.6, g, 0.01); boxes.forEach((c, i) => box(std({ color: C(c), roughness: 0.7 }), 0.55, 0.45, 0.45, -3.6 + i * 0.8, y + 0.27, -Dd / 2 + 0.6, g, 0.03)); }

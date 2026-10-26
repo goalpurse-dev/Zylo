@@ -42,14 +42,14 @@ export function sameToken(a, b) {
  * A job for the worker. urls: signed URLs the server made for this job ({ planPut, planGet, frames, final, web, poster,
  * segment, segments }); layout: an approved layout to reuse (premade), or null.
  */
-export function jobFor(run, { role, mode, urls, callback, layout = null, chunk = null }) {
+export function jobFor(run, { role, mode, urls, callback, layout = null, chunk = null, library = null }) {
   const job = {
     v: 1, runId: run.id, role, mode, attempt: run.attempt ?? 1, topic: run.topic, lengthSec: run.length_sec, kind: run.kind,
     endCard: run.end_card !== false, callback,
   };
   if (role === "video" || role === "plan") {
     if (run.plan_ready && urls.planGet) job.plan = { get: urls.planGet };
-    else { job.plan = { put: urls.planPut }; if (layout) job.layout = layout; }
+    else { job.plan = { put: urls.planPut }; if (layout) job.layout = layout; if (library?.length) job.library = library; }
   } else job.plan = { get: urls.planGet };
   if (role === "video" || role === "plan") job.out = { frames: urls.frames ?? [] };
   if (role === "video" || role === "mix") job.out = { ...(job.out ?? {}), final: urls.final, web: urls.web, poster: urls.poster };

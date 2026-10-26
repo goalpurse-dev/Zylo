@@ -246,5 +246,7 @@ export function layoutRules(L) {
     const over = world.cut && x > world.cut.x0 - 2.2 && x < world.cut.x1 + 2.2 && z > world.cut.z0 - 1.2;
     if (z > -1.2 || over) { z = over ? +(world.cut.z0 - 1.4).toFixed(2) : -1.2; c.params.pos = [x, y, z]; notes.push(`${c.id} stands on the ground`); }
   }
+  // 13. a garage whose door the video builds itself (a designed part named a door): the backdrop leaves its own door out
+  if (world.backdrop?.type === "garage" && world.backdrop.door !== false && parts.some((p) => p.kind === "rig" && /door/i.test(`${p.id} ${p.params?.name ?? ""}`))) { world.backdrop = { ...world.backdrop, door: false }; notes.push("the garage leaves its own door out: the video builds one"); }
   return { layout: { ...L, world, parts, beats }, notes };
 }

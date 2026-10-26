@@ -12,7 +12,14 @@ const KITS = {
   commercial: { page: "https://kenney.nl/assets/city-kit-commercial", zip: "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip" },
   suburban: { page: "https://kenney.nl/assets/city-kit-suburban", zip: "https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip" },
   roads: { page: "https://kenney.nl/assets/city-kit-roads", zip: "https://kenney.nl/media/pages/assets/city-kit-roads/74288c9459-1791628607/kenney_city-kit-roads.zip" },
+  // the model library the scene planner picks from before designing a part (kit/modelCatalog.json): household things,
+  // barrels, crates, tanks and machines (2026-10-26)
+  furniture: { page: "https://kenney.nl/assets/furniture-kit", zip: "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip" },
+  survival: { page: "https://kenney.nl/assets/survival-kit", zip: "https://kenney.nl/media/pages/assets/survival-kit/4065a8185b-1712149243/kenney_survival-kit.zip" },
+  factory: { page: "https://kenney.nl/assets/factory-kit", zip: "https://kenney.nl/media/pages/assets/factory-kit/edaac9d4f6-1777639602/kenney_factory-kit_3.0.zip" },
 };
+// only some kits: node fetchKenney.mjs <dir> furniture survival (the others stay as they are)
+const ONLY = process.argv.slice(3);
 
 /** the files in a zip: [{ name, data }] (stored or deflated entries, read from the central directory) */
 function unzip(buf) {
@@ -29,19 +36,22 @@ function unzip(buf) {
   return out;
 }
 
-const sources = [];
+const sourcesFile = path.join(OUT, "SOURCES.json");
+const sources = (fs.existsSync(sourcesFile) ? JSON.parse(fs.readFileSync(sourcesFile, "utf8")) : []).filter((x) => ONLY.length && !ONLY.includes(x.kit));
 for (const [kit, k] of Object.entries(KITS)) {
+  if (ONLY.length && !ONLY.includes(kit)) continue;
   const r = await fetch(k.zip); if (!r.ok) throw new Error(`${r.status} ${k.zip}`);
   const files = unzip(Buffer.from(await r.arrayBuffer()));
   const lic = files.find((f) => /License\.txt$/i.test(f.name))?.data.toString("utf8") ?? "";
   if (!/CC0|Creative Commons Zero/i.test(lic)) throw new Error(`${kit}: not CC0, not used`);
   const dir = path.join(OUT, kit); let n = 0;
   for (const f of files) {
-    const m = f.name.match(/Models\/GLB format\/(.+)$/); if (!m) continue;
+    // (the older kits keep their .glb files under "GLTF format")
+    const m = f.name.match(/Models\/GL(?:B|TF) format\/(.+\.(?:glb|png))$/i); if (!m) continue;
     const to = path.join(dir, m[1]); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.writeFileSync(to, f.data); n++;
   }
-  fs.writeFileSync(path.join(dir, "License.txt"), lic);
+  fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(path.join(dir, "License.txt"), lic);
   sources.push({ kit, author: "Kenney (kenney.nl)", licence: "CC0 1.0", page: k.page, files: n });
   console.log(kit, n, "files");
 }
-fs.writeFileSync(path.join(OUT, "SOURCES.json"), JSON.stringify(sources, null, 1));
+fs.writeFileSync(sourcesFile, JSON.stringify(sources, null, 1));

@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowRight, BadgeCheck, Check, ChevronRight, Clock3, Hourglass, Layers, Loader2, Lock, PackageX, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { freshSuggestions } from "../../../data/cutawayTopics";
-import { canRemoveEndCard, closestNames, DEFAULT_LENGTH, LENGTHS, PRICES, quoteTopic } from "./api/cutawayApi";
+import { canRemoveEndCard, DEFAULT_LENGTH, LENGTHS, PRICES, quoteTopic } from "./api/cutawayApi";
 import CutawayUpgradeModal from "./CutawayUpgradeModal";
 import { FailureDetails } from "./CutawayResults";
 
@@ -40,7 +40,7 @@ const waitText = (sec) => {
 
 // access: "guest" (signed out: the button reads "Sign up to generate" and opens sign-up), "free" (Generate opens
 // the upgrade popup), "paid" or "unknown" (Generate runs; the server checks the plan again on every call).
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true }) {
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true, customBeta = false }) {
   const topic = values?.topic ?? "";
   const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
@@ -91,9 +91,8 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     if (clean.length < 3) { setValidationError(soon ? "Pick a premade topic." : "Type what the video should explain."); return; }
     if (customBlocked) return;
     setValidationError("");
-    // The kit check, before anything is charged. "no" stops here; "unsure" goes on, and the server asks Claude
-    // Haiku (~$0.0005, ours) before charging, so a topic it refuses is never paid for either.
-    if (quote.kind === "custom" && quote.check.verdict === "no") { setCantBuild({ topic: clean, missing: quote.check.missing, closest: closestNames(quote.check.closest) }); return; }
+    // The kit check is the server's, before anything is charged (free rules, Claude Haiku only for a name that may be a
+    // real person): a refusal comes back as CANT_BUILD with suggestions, and it is logged for the owner (/admin/ops)
     onGenerate({ topic: clean, lengthSec, soundEffects, removeWatermark });
   };
 
@@ -181,13 +180,13 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             )}
             {shownCantBuild && (
               <div role="status" className="cw-fade-up mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
-                <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't build this one yet</p>
+                <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't make this one</p>
                 <p className="mt-1 text-[11px] font-medium leading-relaxed text-white/55">
-                  “{shownCantBuild.topic}” needs parts our 3D kit doesn't have yet{shownCantBuild.missing?.length ? ` (${shownCantBuild.missing.join(", ")})` : ""}. You weren't charged, and we've noted it for the next parts we build.
+                  “{shownCantBuild.topic}” can't be a cutaway video{shownCantBuild.missing?.length ? ` (it's about ${shownCantBuild.missing.join(", ")})` : ""}. We build machines, structures and how things work. You weren't charged.
                 </p>
                 {shownCantBuild.closest?.length > 0 && (
                   <>
-                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Closest premade topics</p>
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Try one of these</p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {shownCantBuild.closest.map((name, i) => (
                         <button key={name} type="button" style={{ "--d": `${60 + i * 50}ms` }} onClick={() => pickTopic(name)} className="cw-press cw-pop rounded-full border border-cutaway/30 bg-cutaway/10 px-2.5 py-1 text-[11px] font-bold text-cutaway hover:bg-cutaway/20">
@@ -314,6 +313,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             {access === "free" ? <Sparkles className="h-4 w-4" /> : null}
             Generate
             {kindLabel && <span data-testid="cutaway-kind" className="rounded-full bg-cutaway-ink/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide">{kindLabel}</span>}
+            {customBeta && quote.kind === "custom" && hasTopic && <span data-testid="cutaway-beta" className="rounded-full bg-[#F5C042] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#3a2a00]">Beta</span>}
             <span className="flex items-center gap-1 text-[13px] font-semibold"><CreditIcon /><span key={credits} className="cw-tick tabular-nums">{credits}</span></span>
             <ChevronRight className="h-4 w-4" />
           </>}

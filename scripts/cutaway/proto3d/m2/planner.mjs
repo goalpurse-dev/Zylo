@@ -15,6 +15,7 @@ import { VERBS } from "./verbs.js";
 import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
+import { modelMatches, wordsOf } from "./models.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
@@ -37,7 +38,7 @@ const EXAMPLES = [
   { topic: "a landfill", roles: template("landfill").roles, text: "If you dig a pit and throw your trash in, you have a landfill. | But dirty trash juice leaks straight down into the groundwater you drink. | So you lay a thick clay base, but it is still not enough. | You add a thick black plastic sheet. | This is a landfill liner. | A pipe drains the collected juice into a tank beside the pit. | Sealed this tight, trash barely rots at all once it is buried. | A 1952 newspaper dug up decades later was still readable word for word. | But trapped trash still makes gas, so a pipe carries it out. | That flame is not waste burning, it is gas making electricity nearby. | Add a grass cap, a fence, and a few young trees. | Congratulations, you have built a landfill." },
 ];
 
-const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something the 3D kit can show happening: digging, pipes, tanks, fills (gravel, water, soil, clay), liners and covers, water or sludge flowing along a path, sand sinking and oil rising in a tank, a creek, rain, leaks and cracks, a car, simple machines (a pump box, a generator, a vending machine, a car wash arch, a traffic light, a hydrant, an ATM), props (a flag, a book, a newspaper, number cards). Never name a thing outside that list (no people doing things, no maps, no ice, no towers, no screens with text) and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
+const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something a 3D build can show happening: digging, pipes, tanks, fills, water flowing, leaks and cracks, rain, cars, and the parts of the thing itself (doors, springs, rails, motors, wheels, gears, valves, floats, levers, lamps, buttons, a small screen with a number): any machine or structure is built from such parts, and its parts move (slide, swing, roll up, spin, fill, light up). No people doing things, no maps, no ice, no long text on screens, no outer space or the body, and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
 CHAIN     "But [a visible consequence]." then "So you [add one real part, described physically, no jargon]." repeated: a CHAIN, not a list.
@@ -154,8 +155,25 @@ export function settingHint(topic) {
   if (!type) return "";
   return ` This topic belongs in the ${type} setting: use world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : ""}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
 }
-function sceneUser({ topic, title, sentences, hero, parts, lastOpening, chain = null }) {
-  return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
+/**
+ * The saved parts of the kit's library (parts designed for earlier videos that passed every check: the kit grows by
+ * itself) that match the text by name or synonym, best first, at most n.
+ */
+export function libraryMatches(library, text, n = 4) {
+  const want = new Set(wordsOf(String(text)).filter((w) => w.length >= 3));
+  const score = (e) => [e.name, ...(e.synonyms ?? [])].map((s) => { const ws = wordsOf(String(s)); return ws.length ? ws.filter((w) => want.has(w)).length / ws.length : 0; }).reduce((a, b) => Math.max(a, b), 0);
+  return (library ?? []).map((e) => ({ e, s: score(e) })).filter((x) => x.s >= 0.5).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.e);
+}
+
+function sceneUser({ topic, title, sentences, hero, parts, lastOpening, chain = null, library = [] }) {
+  // what the kit already has for this topic, before a part is designed: saved parts, then CC0 models
+  const text = `${topic} ${hero ?? ""} ${(parts ?? []).join(" ")}`;
+  const saved = libraryMatches(library, text), models = modelMatches(text, 12);
+  return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}${saved.length ? `
+SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: copy its recipe, change only id, pos, rotY and scale):
+${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
+CC0 MODELS that may fit (use one as a model shape inside a rig when it is the thing, sized in metres; it cannot move by itself, so put moving pieces in their own nodes):
+${models.map((m) => `- ${m.file}`).join("\n")}` : ""}
 The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}${chain?.length ? `
 Each problem must be SHOWN happening on screen (its beat's shows does it), as the writer meant:
@@ -314,7 +332,7 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic) }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -393,7 +411,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     }
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
-    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening, chain: script.chain ?? null });
+    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening, chain: script.chain ?? null, library });
     let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
     const rw1 = applyRewrites(script, conv.rewrites); script = rw1.script; if (rw1.taken.length || rw1.refused.length) trace.push({ label: "rewrites", taken: rw1.taken, refused: rw1.refused });

@@ -21,8 +21,8 @@ test("a premade topic without an approved layout is buildable by the rules (no C
     assert.equal(classifyTopic(t).kind, "premade", t);
     assert.equal(kitCheck(t).verdict, "yes", t);
   }
-  assert.equal(kitCheck("how does a microwave work").verdict, "no");
-  assert.equal(kitCheck("lightning rod").verdict, "unsure");
+  assert.equal(kitCheck("how does a microwave work").verdict, "yes", "built from building blocks (2026-10-26)");
+  assert.equal(kitCheck("the human heart").verdict, "no");
 });
 
 test("Anthropic's out-of-credits reply is told apart from other errors", () => {
@@ -65,7 +65,7 @@ test("an error reply keeps the owner's debug (step, code, message)", () => {
 test("/admin/ops: the emergency cap is read and changed by the owner only, and the page shows it", async () => {
   const { readFileSync } = await import("node:fs");
   const api = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
-  const ops = api.slice(api.indexOf('if (action === "opsStatus" || action === "opsSetDailyCap" || action === "opsSetCustom")'));
+  const ops = api.slice(api.indexOf('if (["opsStatus", "opsSetDailyCap", "opsSetCustom", "opsSetBeta", "opsRetirePart"].includes(action))'));
   assert.ok(ops.indexOf('if (!who.owner) throw new ApiError("NOT_FOUND")') > 0 && ops.indexOf('if (!who.owner)') < ops.indexOf('.update({ daily_cap_usd'));
   assert.match(api, /await noteCapLevel\(/);
   assert.doesNotMatch(api, /user_daily_usd|capFreesInSec/);

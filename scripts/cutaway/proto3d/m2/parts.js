@@ -20,6 +20,7 @@ import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
+import { rig } from "./rig.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -42,6 +43,8 @@ const shifted = (r, t, s0, s1 = s0) => {
 export const KINDS = {
   // ================= machines (the vending machine, cut open) =================
   vendingMachine, miniMachines,
+  // a part the scene planner designs from building blocks when the kit has none (rig.js: a garage door, a rain barrel)
+  rig,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
   car, carWash, trafficLight, hydrant, atm, traffic, counter, cabinet,
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
@@ -535,6 +538,7 @@ export const KINDS = {
 export const KIND_CHANNELS = {
   ...VENDING_CHANNELS,
   ...CITY_CHANNELS,
+  rig: ["pop"], // and one channel per move of its recipe (rig.js rigChannels)
   ...CLARITY_CHANNELS,
   dig: ["dig", "refill"], panels: ["*"], box: [], bags: ["drop", "lift", "raise"], dumpTruck: ["z", "tip", "load"],
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
