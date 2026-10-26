@@ -115,6 +115,44 @@ export function layoutRules(L) {
     const c = world.cut, dig = { id: "dig", kind: "dig", params: { clumps: 120, mound: { x: +(c.x1 + 2.5).toFixed(2), z: +(c.z0 / 2).toFixed(2), rx: 1.2, rz: 1, h: 0.6 }, ...(world.backdrop ? { haul: true } : {}) } };
     if (!byId.has("dig")) { parts.unshift(dig); byId.set("dig", dig); const hook = beats.find((b) => b.s === "hook"); if (hook) hook.do.unshift({ p: "dig", v: "dig" }); notes.push("a cut with nothing digging it: dug at the start of the hook"); }
   }
+  // 14. the plan says WHAT a shot looks at, the code decides HOW (the owner's rule of 2026-10-26): a shot keeps the parts
+  // it names and the part its sentence shows; its own camera box, view, width and type are dropped (the paid traffic
+  // light test of 2026-10-26 boxed a low view a metre behind a car's bumper, and three sentences failed on cars jammed
+  // against the lens or cut by the frame's edge). The director frames what is left whole, at a distance it chooses.
+  // A car on a street with a signal is framed with the signal: the car's story is the lamp it waits at.
+  const known = (id) => byId.has(String(id).split(".")[0]);
+  const sigOf = parts.find((p) => p.kind === "trafficLight");
+  // (nothing marked main: the thing the hook builds is the subject, "...you have a traffic light"; the named part can be
+  // a piece of it, the controller box, and the finished-build shot framed the box and a bench without the signal)
+  const hookB = beats.find((b) => b.s === "hook");
+  if (!parts.some((p) => p.main) && hookB?.shows?.p && byId.has(String(hookB.shows.p).split(".")[0])) { byId.get(String(hookB.shows.p).split(".")[0]).main = true; notes.push(`${String(hookB.shows.p).split(".")[0]} is the main subject (the hook builds it)`); }
+  for (const b of beats) {
+    if (b.s === "congrats" || !b.shots?.length) continue;
+    const shown = b.shows?.p && known(b.shows.p) ? [b.shows.p] : [];
+    // (the "Add ..." line shows the whole finished build, the things it adds arriving on it: a run framed one bench)
+    if (b.s === "finish") { b.shots = [{ focus: "home" }]; notes.push("finish: the whole build"); continue; }
+    b.shots = b.shots.map((s) => {
+      if (s.focus === "home" || (Array.isArray(s.focus) && s.focus.includes("home"))) return s;
+      // (a shot of one piece, "door.spring", stays on that piece: the part it hangs on is not added back)
+      // (on a small thing, under 2.5 m, a piece is framed as the whole thing: a toilet's tank alone left its bowl cut off)
+      const small = (id) => { try { const b = focusOf(byId.get(id), cut); return Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) < 2.5; } catch { return false; } };
+      const named0 = [...new Set([].concat(s.focus ?? []).filter(known).map((id) => (String(id).includes(".") && small(String(id).split(".")[0]) ? String(id).split(".")[0] : id)))], pieces = named0.filter((id) => String(id).includes("."));
+      const named = pieces.length ? named0.filter((id) => String(id).includes(".") || !pieces.some((q) => q.startsWith(`${id}.`))) : named0;
+      const piece = (id) => named.some((q) => q.startsWith(`${id}.`));
+      // (nothing named: the parts acting in the sentence, not the scenery switches)
+      const acting = b.do.map((a) => a.p).filter((id) => known(id) && !["light", "rain", "sign", "outline", "arrows"].includes(byId.get(id).kind));
+      const ids = [...new Set([...named, ...shown.filter((id) => !piece(id))])];
+      if (!ids.length) ids.push(...new Set(acting));
+      if (!ids.length) return s;
+      if (sigOf && ids.some((id) => byId.get(String(id).split(".")[0])?.kind === "car") && !ids.includes(sigOf.id)) ids.push(sigOf.id);
+      const keep = Object.fromEntries(Object.entries(s).filter(([k]) => ["at", "word", "hero"].includes(k)));
+      // the width is the code's too: one part fills most of the frame, one piece a little less (its part around it is
+      // context), several parts together fill it (a 45% default left an 8 m garage door a quarter of a phone screen)
+      const width = s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      return { ...keep, focus: ids, width };
+    });
+    notes.push(`${b.s}: shots framed by the code`);
+  }
   // 9. a street looks along its road (kit/street.js): the road on the side of the cut with fewer parts; nothing stands on
   // it but vehicles; a traffic signal stands on its corner at the stop line with its arm over the lane going away, its
   // controller, wires and outline moved with it; its loop in that lane before the stop line; cars drive along the lane
@@ -248,5 +286,5 @@ export function layoutRules(L) {
   }
   // 13. a garage whose door the video builds itself (a designed part named a door): the backdrop leaves its own door out
   if (world.backdrop?.type === "garage" && world.backdrop.door !== false && parts.some((p) => p.kind === "rig" && /door/i.test(`${p.id} ${p.params?.name ?? ""}`))) { world.backdrop = { ...world.backdrop, door: false }; notes.push("the garage leaves its own door out: the video builds one"); }
-  return { layout: { ...L, world, parts, beats }, notes };
+  return { layout: { ...L, world, parts, beats, codeShots: true }, notes };
 }

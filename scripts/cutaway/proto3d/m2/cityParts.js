@@ -38,7 +38,9 @@ export function car(ctx, p, api) {
   let spin = (w, x) => { w.rotation.y = -x / (0.42 * s); };
   // a muddy car (a mud-brown colour asked for, or mud: true): its own paint with flattened mud splats on the sides and
   // the bonnet, washed off as the car wash's foam goes on
-  const hsl = p.color ? new THREE.Color(p.color).getHSL({}) : null;
+  // (read as the colour is written, sRGB: in linear light a golden yellow #e8c43a measured as a dark brown, and every
+  // yellow or orange car of the custom traffic light tests wore mud splats that read as stray yellow blobs)
+  const hsl = p.color ? new THREE.Color(p.color).getHSL({}, THREE.SRGBColorSpace) : null;
   const muddy = p.mud ?? (!!hsl && hsl.h > 0.03 && hsl.h < 0.15 && hsl.s > 0.15 && hsl.l < 0.5);
   const mud = [];
   let model3d = false;

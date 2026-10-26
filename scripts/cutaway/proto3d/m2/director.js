@@ -295,6 +295,9 @@ export function directCamera(layout, shots, marks) {
       if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
       for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
+      // a car never looms (a planned layout whose shots the code frames, layoutRules 14): a car more than 45% of the width,
+      // or cut by the frame's bottom edge, steps the camera back (a garage motor shot had the parked car's roof filling
+      // the frame; the cars waiting nearest the lens were cut in half)
       // the part itself on screen (the framed box may be wider: MIN_FIELD)
       const real = projectBox(f.pos, f.tgt, union(boxes));
       // the hero keeps its own frame (the bands rule); every other shot is anchored on the subject
@@ -312,6 +315,19 @@ export function directCamera(layout, shots, marks) {
       if (!opening && !layout.camera?.home) k = pushToward(k, s, box);
       // last: what the sentence is about stays whole (the hook object on the opening frame)
       k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      // and after everything else: a car never looms (a planned layout whose shots the code frames, layoutRules 14): a
+      // car there in this sentence more than 45% of the width, or cut by the frame's bottom edge, steps the camera back
+      // (a garage motor shot had the parked car's roof filling the frame; the cars waiting nearest the lens were cut in
+      // half). Only the cars there: from the sentence they arrive in to the one they leave in; a parked car always.
+      if (layout.codeShots && !s.hero) {
+        const B = layout.beats ?? [], at = B.findIndex((b) => b.s === s.at?.s), idx = (id, re) => B.findIndex((b) => (b.do ?? []).some((a) => a.p === id && re.test(a.v)));
+        const there = (p) => { const a = idx(p.id, /^(arrive|show)$/), l = idx(p.id, /^(leave|hide)$/); return at < 0 || ((a < 0 || a <= at) && (l < 0 || l >= at)); };
+        const carB = layout.parts.filter((p) => p.kind === "car" && there(p)).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean);
+        const looms = (q) => carB.some((c) => { const r = projectBox(q.pos, q.tgt, c); return !r.behind && r.x1 > 0 && r.x0 < 1 && r.y0 < 1 && (r.w > 0.45 || r.y1 > 1.02); });
+        let n = 0;
+        for (; n < 6 && looms(k); n++) k = { pos: add(k.tgt, mul(sub(k.pos, k.tgt), 1.25)).map((v) => +v.toFixed(3)), tgt: k.tgt };
+        if (n) notes.push(`shot at ${s.t.toFixed(2)} s: stepped back ${n} time${n > 1 ? "s" : ""} so no car looms`);
+      }
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
       if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }

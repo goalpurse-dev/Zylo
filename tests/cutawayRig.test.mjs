@@ -71,3 +71,29 @@ test("topic policy: new machines are built, only what the format cannot show is 
   for (const t of ["garage door", "rain barrel", "how a toilet flushes", "microwave", "traffic light"]) assert.equal(kitCheck(t).verdict, "yes", t);
   for (const t of ["how the heart pumps blood", "a black hole", "the solar system"]) assert.equal(kitCheck(t).verdict, "no", t);
 });
+
+test("code decides HOW a shot is framed: the plan's camera box, view and width are dropped; a car is seen with its signal; the finish shows the whole build; the hook's thing is the subject", async () => {
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  const L = {
+    world: { cut: { x0: -3, x1: 3, z0: -3, depth: 0.6 }, shallow: true },
+    parts: [{ id: "tl", kind: "trafficLight", params: { pos: [-4, 0.12, -6] } }, { id: "lone", kind: "car", params: { pos: [2, 0.12, -6] } }, { id: "bench", kind: "prop", params: { type: "bench", pos: [4, 0.12, -6] } }],
+    beats: [
+      { s: "hook", shows: { p: "tl" }, do: [{ p: "tl", v: "show" }], shots: [{ focus: ["tl"], type: "close" }] },
+      { s: "problem2", shows: { p: "lone" }, do: [{ p: "lone", v: "arrive" }], shots: [{ box: { min: [1, 0, -7], max: [3, 2, -5] }, view: "low" }] },
+      { s: "finish", do: [{ p: "bench", v: "show" }], shots: [{ focus: ["bench"], width: 0.8 }] },
+    ],
+  };
+  const out = layoutRules(L).layout, B = Object.fromEntries(out.beats.map((b) => [b.s, b]));
+  assert.equal(out.codeShots, true);
+  assert.deepEqual(B.problem2.shots, [{ focus: ["lone", "tl"], width: 0.8 }], "no box, no view: the car and its signal");
+  assert.deepEqual(B.hook.shots, [{ focus: ["tl"], width: 0.7 }], "no type: the code's width");
+  assert.deepEqual(B.finish.shots, [{ focus: "home" }]);
+  assert.equal(out.parts.find((p) => p.id === "tl").main, true, "the hook builds the subject");
+});
+
+test("the writer may only promise what the setting holds: both roads, turning and people are caught before the scene is paid for", async () => {
+  const { KIT_CANNOT } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const caught = (t) => KIT_CANNOT.some(([re]) => re.test(t));
+  for (const t of ["But it never changes, so cars pile up down both roads.", "So cars jam the cross street.", "The car turns left.", "But pedestrians wait forever."]) assert.equal(caught(t), true, t);
+  for (const t of ["But it never changes, so cars pile up at the red.", "So drivers can stop or clear the crossing.", "One car waits at an empty red."]) assert.equal(caught(t), false, t);
+});

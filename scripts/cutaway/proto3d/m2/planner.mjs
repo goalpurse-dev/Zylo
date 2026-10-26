@@ -38,7 +38,14 @@ const EXAMPLES = [
   { topic: "a landfill", roles: template("landfill").roles, text: "If you dig a pit and throw your trash in, you have a landfill. | But dirty trash juice leaks straight down into the groundwater you drink. | So you lay a thick clay base, but it is still not enough. | You add a thick black plastic sheet. | This is a landfill liner. | A pipe drains the collected juice into a tank beside the pit. | Sealed this tight, trash barely rots at all once it is buried. | A 1952 newspaper dug up decades later was still readable word for word. | But trapped trash still makes gas, so a pipe carries it out. | That flame is not waste burning, it is gas making electricity nearby. | Add a grass cap, a fence, and a few young trees. | Congratulations, you have built a landfill." },
 ];
 
-const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something a 3D build can show happening: digging, pipes, tanks, fills, water flowing, leaks and cracks, rain, cars, and the parts of the thing itself (doors, springs, rails, motors, wheels, gears, valves, floats, levers, lamps, buttons, a small screen with a number): any machine or structure is built from such parts, and its parts move (slide, swing, roll up, spin, fill, light up). No people doing things, no maps, no ice, no long text on screens, no outer space or the body, and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
+const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something a 3D build can show happening: digging, pipes, tanks, fills, water flowing, leaks and cracks, rain, cars, and the parts of the thing itself (doors, springs, rails, motors, wheels, gears, valves, floats, levers, lamps, buttons, a small screen with a number): any machine or structure is built from such parts, and its parts move (slide, swing, roll up, spin, fill, light up). No people doing things, no maps, no ice, no long text on screens, no outer space or the body, and never compare two things that would both need to be drawn in a beat of their own.
+WHAT THE SETTINGS REALLY CONTAIN (promise only what is there):
+- street: ONE straight road going away from the camera, one crosswalk, one signal on its corner, a sidewalk with shop fronts. Cars drive one way along that road: they arrive, stop, queue nose to tail at the line, wait, drive off, and can bump the car ahead. There is no cross road or second road, no turning, no pedestrians: say "cars pile up at the red", never "on both roads" or "the cross street".
+- yard: a house, a lawn, a fence, trees and the ground cut open in section below; rain, water and pipes.
+- garage: a garage with one wide opening on a driveway, a car, shelves inside.
+- room: a room with a floor (the basement below in section), a wall with a window, an armchair.
+- car wash: a lot with a wash bay, a car going through.
+The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
 CHAIN     "But [a visible consequence]." then "So you [add one real part, described physically, no jargon]." repeated: a CHAIN, not a list.
@@ -312,6 +319,11 @@ export function mergeScene(scene, patch) {
 }
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
+export const KIT_CANNOT = [
+  [/\b(both|two|all|four|every|each|other)\s+(roads|streets|directions|ways)\b|\bcross[- ]?(road|street|traffic)\b|\bside street\b/i, "the street has ONE road going away from the camera: say what happens on that road (cars queue at the red, one car waits)"],
+  [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
+  [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],
+];
 const checkScript = (s, lengthSec, roles) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
@@ -323,6 +335,9 @@ const checkScript = (s, lengthSec, roles) => {
   if (roles && rs.join() !== roles.join()) P.push(`the roles must be exactly ${roles.join(", ")}`);
   for (const c of s.cards ?? []) { const t = s.sentences[c.sentence]?.text ?? ""; if (!t.split(/\s+/).some((w) => w.replace(/[^\w']/g, "") === c.word.replace(/[^\w']/g, ""))) P.push(`card "${c.text}": the word "${c.word}" is not in sentence ${c.sentence}`); }
   for (const x of s.sentences) if (!/[.!]$/.test(x.text.trim())) P.push(`sentence "${x.text.slice(0, 30)}…" must end with a full stop`);
+  // promises the kit cannot keep (free, before the scene is paid for): both paid traffic light scripts said "cars pile
+  // up down both roads" and the street has one road, so the preview check failed it twice
+  for (const x of s.sentences) for (const [re, why] of KIT_CANNOT) if (re.test(x.text)) P.push(`"${x.text.slice(0, 50)}…": ${why}`);
   // the story chain: strict for a new layout; a saved layout's fixed roles (made before the rule) get it as guidance
   P.push(...chainProblems(s, { strict: !roles, lengthSec }));
   return P;
