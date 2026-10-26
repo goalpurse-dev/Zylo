@@ -379,6 +379,10 @@ test("m2 voice check: the Flash take's garbles fail, number words and a misheard
   assert.equal(compareWords("holds about 1,500 gallons", "holds about 1 500 gallons").ok, true);
   assert.equal(compareWords("holds about 1,500 gallons", "holds about 500 gallons").ok, false);
   assert.deepEqual(normWords("in 1952 500 people"), ["in", "1952", "500", "people"]);
+  // the garage door test (2026-10-26): "10,000" heard as "10 ,000", "hinged" as "hinge", "close" as "closed"
+  assert.equal(compareWords("for about 10,000 open-and-close cycles", "for about 10 ,000 open and closed cycles").ok, true);
+  assert.equal(compareWords("split the panel into hinged sections", "split the panel into hinge sections").ok, true);
+  assert.equal(compareWords("a big panel", "a big pane").ok, false, "a different word still fails");
 });
 
 import { underground } from "../scripts/cutaway/proto3d/m2/director.js";
