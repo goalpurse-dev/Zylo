@@ -21,7 +21,7 @@ test("days 4–7: the owner's text, one link, no images, same sender and reply-t
     assert.equal(c.replyTo, "niko@tryzyvo.com");
     assert.equal(c.linkTo, undefined, "owner, 2026-10-26: the link always goes to tryzyvo.com, never the Cutaway page");
   }
-  const { html, text } = CAMPAIGNS.warmup_day4.render(footer);
+  const { html, text } = CAMPAIGNS.warmup_day4.render(footer, { at: "2026-11-02T12:00:00Z" }); // after the +50 offer
   assert.equal(text.split("\n\n--\n")[0], [
     "Hey,",
     "It's Niko from Zyvo. Thanks for signing up. Here's what you can make with it.",
@@ -38,6 +38,28 @@ test("days 4–7: the owner's text, one link, no images, same sender and reply-t
   assert.match(src, /def\.linkTo === "cutaway" && \(Deno\.env\.get\("CUTAWAY_ENABLED"\) \?\? ""\)\.trim\(\)\.toLowerCase\(\) === "true" \? CUTAWAY_URL : APP_URL/);
   assert.equal(src.split("render: (footer: any) => def.render(footer, { link: linkFor(def) })").length - 1, 2, "both the real send and the proof copy");
   assert.ok(CUTAWAY_URL.endsWith("/workspace/cutaway-explainer"));
+});
+
+test("the +50 offer line: before 'Try it here' on days 4–7 while the offer is live at send time; never after Sunday, never in 'still want'", () => {
+  const LINE = "This week only: get 50 bonus credits on top of any plan you upgrade to. Ends Sunday.";
+  for (const id of ["warmup_day4", "warmup_day5", "warmup_day6", "warmup_day7"]) {
+    const { html, text } = CAMPAIGNS[id].render(footer, { at: "2026-10-30T14:00:00Z" });
+    const body = text.split("\n\n--\n")[0].split("\n\n");
+    assert.equal(body[4], LINE, id);
+    assert.equal(body[5], "Try it here: tryzyvo.com");
+    assert.ok(html.includes(`<p style="margin:0 0 16px 0;">${LINE}</p>\n<p style="margin:0 0 16px 0;">Try it here: <a href=`));
+    assert.equal([...html.matchAll(/<a href=/g)].length, 2, "still one link, plus unsubscribe");
+  }
+  assert.ok(CAMPAIGNS.warmup_day7.render(footer, { at: "2026-11-01T21:59:00Z" }).text.includes(LINE), "Sunday 23:59 Finnish: still in");
+  for (const at of ["2026-11-01T22:00:00Z", "2026-11-02T16:00:00Z"]) {
+    assert.ok(!CAMPAIGNS.warmup_day7.render(footer, { at }).text.includes(LINE), `a day moved past Sunday (${at}) goes without it`);
+  }
+  for (const id of ["still_want_updates", "still_want_updates_1", "still_want_updates_2"]) {
+    assert.ok(!CAMPAIGNS[id].render(footer, { at: "2026-10-30T14:00:00Z" }).text.includes("bonus"), id);
+  }
+  for (const id of ["warmup_day1", "warmup_day2", "warmup_day3"]) {
+    assert.ok(!CAMPAIGNS[id].render(footer, { at: "2026-10-30T14:00:00Z" }).text.includes("bonus"), id);
+  }
 });
 
 test("a day that may not start because Runware or the voice provider failed moves forward with every later day; nothing is cancelled", () => {

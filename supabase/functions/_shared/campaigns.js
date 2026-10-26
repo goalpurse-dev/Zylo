@@ -4,6 +4,7 @@
 // WHO gets a campaign and WHEN is in the database (email_campaigns,
 // email_campaign_queue); every send still passes the email gate.
 import { APP_URL, REPLY_TO, SENDERS } from "./emailRules.js";
+import { OFFER_EMAIL_LINE, offerLive } from "./offer.js";
 
 export const CAMPAIGN_WHY = "You're getting this because product updates are turned on for your Zyvo account.";
 // The Cutaway Explainer page (src/data/cutawayExplainer.js: CUTAWAY_PATH).
@@ -26,9 +27,14 @@ ${footer.html}
 
 // A plain email whose one link sits inside a paragraph: the paragraph that contains "tryzyvo.com"
 // gets it as a link to `opts.link` (decided when the email is sent). No other link but the footer's unsubscribe.
-function plainEmailInlineLink(paragraphs, signature) {
+// offerBefore: the paragraph that the +50 bonus offer line goes in front of, only while the offer is
+// live at `opts.at` (default: now, the moment the email is rendered = sent; _shared/offer.js).
+function plainEmailInlineLink(allParagraphs, signature, { offerBefore } = {}) {
   return (footer, opts = {}) => {
     const href = opts.link ?? APP_URL;
+    const paragraphs = offerBefore && offerLive(opts.at ?? Date.now())
+      ? allParagraphs.flatMap((p) => (p === offerBefore ? [OFFER_EMAIL_LINE, p] : [p]))
+      : allParagraphs;
     const para = (p) => {
       const at = p.indexOf("tryzyvo.com");
       const body = at < 0 ? esc(p) : `${esc(p.slice(0, at))}<a href="${esc(href)}" style="color:#1a56db;">tryzyvo.com</a>${esc(p.slice(at + "tryzyvo.com".length))}`;
@@ -77,7 +83,7 @@ const facelessEmail = {
     "There are different styles, like 3D, so you can find one that fits your page.",
     "Try it here: tryzyvo.com",
     "If you make something, reply and send it to me. I want to see it.",
-  ], "Niko"),
+  ], "Niko", { offerBefore: "Try it here: tryzyvo.com" }), // owner, 2026-10-26: the offer line, only while it is live
 };
 
 // "Still want to hear from me?" for people who signed up more than 6 months ago (built 2026-10-26,
