@@ -89,7 +89,9 @@ async function collect() {
     const lf = (covered ?? []).filter((l: any) => real(l.details?.projectId));
     const jf = (jobsFailed ?? []).filter((j: any) => real(null, j.user_id));
     const { data: guard } = await sb.from("provider_balance_guard").select("paused, last_error").eq("provider", "runware").maybeSingle();
-    out.runware = { reachable: balance != null, error: balance == null ? "balance read failed" : undefined, balance, unit: "usd", perDay, perDaySource: measured != null ? "measured" : "estimate",
+    // One failed balance read is not an outage (it happened on the first tick, 2026-10-26): unknown, not red.
+    // Real trouble shows as real users' failures or a paused guard.
+    out.runware = { reachable: balance != null ? true : undefined, balance, unit: "usd", perDay, perDaySource: measured != null ? "measured" : "estimate",
       failures: lf.length + jf.length, failingUsers: new Set([...lf.map((l: any) => l.details?.projectId), ...jf.map((j: any) => j.user_id)]).size,
       note: guard?.paused ? `drawing paused (${String(guard.last_error ?? "").slice(0, 60)})` : undefined };
   }
