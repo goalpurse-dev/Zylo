@@ -45,6 +45,22 @@ function linkFor(def: any): string {
 
 // The owner's rule of 2026-10-26: no day STARTS while the owner alerts show Runware or the voice
 // provider failing in the last 3 hours (_shared/campaigns.js: providerProblem).
+// Move a day that may not start, and every campaign scheduled at or after it, one day forward
+// (postpone_campaigns: start, end and every queued email +24 hours, in one transaction), then
+// email the owner the new dates. Only a campaign that has not sent anything is moved.
+async function postpone(c: any, why: string): Promise<string> {
+  const { data: moved, error } = await sb.rpc("postpone_campaigns", { p_from: c.id });
+  if (error) { console.error("[campaign-sender] postpone failed:", error.message); return `postpone failed: ${error.message}`; }
+  const rows = (moved ?? []) as { id: string; starts_at: string }[];
+  if (!rows.length) return "not moved (already moved or started)";
+  const fi = (iso: string) => new Date(iso).toLocaleString("en-GB", { timeZone: "Europe/Helsinki", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  await alertAdmin(`Zyvo campaign ${c.id} MOVED one day: ${why.slice(0, 120)}`,
+    [`${c.id} did not start: ${why}.`, "", "It and every later day were moved one day forward. Nothing was cancelled; nothing was sent.", "",
+      ...rows.map((r) => `${r.id}: now starts ${fi(r.starts_at)} (Finnish time)`), "",
+      "At the new start time the same check runs again."].join("\n"), "campaign");
+  return `moved: ${rows.map((r) => r.id).join(", ")}`;
+}
+
 async function providersFailing(): Promise<string | null> {
   const since = new Date(Date.now() - 3 * 3600_000).toISOString();
   const [{ data: runware }, { data: voiceLogs }] = await Promise.all([
@@ -101,10 +117,11 @@ async function tick() {
         await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
       }
     }
-    // Not started yet: Runware or the voice provider failing in the last 3 hours → this day does not start, and the owner is told.
+    // Not started yet: Runware or the voice provider failing in the last 3 hours → this day and every
+    // later day move one day forward (nothing is cancelled), and the owner is told (owner, 2026-10-26).
     if (c.status === "approved") {
       const down = await providersFailing();
-      if (down) { const why = `not started: ${down} in the last 3 hours`; await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue; }
+      if (down) { out[c.id] = await postpone(c, `${down} in the last 3 hours`); continue; }
     }
     const n = await campaignNumbers(sb, c.id, c.starts_at);
     const stop = campaignStopReason(n);

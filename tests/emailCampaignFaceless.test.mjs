@@ -19,28 +19,42 @@ test("days 4–7: the owner's text, one link, no images, same sender and reply-t
     assert.equal(c.subject, "you can make this without showing your face");
     assert.equal(c.from, "Niko <niko@mail.tryzyvo.com>");
     assert.equal(c.replyTo, "niko@tryzyvo.com");
-    assert.equal(c.linkTo, "cutaway");
+    assert.equal(c.linkTo, undefined, "owner, 2026-10-26: the link always goes to tryzyvo.com, never the Cutaway page");
   }
-  const { html, text } = CAMPAIGNS.warmup_day4.render(footer, { link: "https://www.tryzyvo.com" });
+  const { html, text } = CAMPAIGNS.warmup_day4.render(footer);
   assert.equal(text.split("\n\n--\n")[0], [
     "Hey,",
-    "It's Niko from Zyvo. You signed up a while ago, so here's what you can do with it now.",
-    "Pick a template, type your topic, and Zyvo makes the whole faceless video for you. Ready to post on TikTok, Shorts or Reels. No camera, no editing.",
-    "The newest one is Cutaway Explainer: 3D videos that show how things work inside, in one smooth shot. Type any topic and it builds it.",
+    "It's Niko from Zyvo. Thanks for signing up. Here's what you can make with it.",
+    "Pick a template and Zyvo makes the whole faceless video for you. Ready to post on TikTok, Shorts or Reels. No camera, no editing.",
+    "There are different styles, like 3D, so you can find one that fits your page.",
     "Try it here: tryzyvo.com",
     "If you make something, reply and send it to me. I want to see it.",
     "Niko",
   ].join("\n\n"));
-  assert.doesNotMatch(html, /<img|<table|youtube|utm_/i);
+  assert.doesNotMatch(html, /<img|<table|youtube|utm_|cutaway/i);
   assert.deepEqual([...html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]), ["https://www.tryzyvo.com", "https://www.tryzyvo.com/unsubscribe?u=1&amp;t=2"], "one link, plus unsubscribe");
-  // With the Cutaway page on, the same one link goes there.
-  const on = CAMPAIGNS.warmup_day4.render(footer, { link: CUTAWAY_URL });
-  assert.deepEqual([...on.html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1])[0], "https://www.tryzyvo.com/workspace/cutaway-explainer");
-  assert.ok(on.text.includes("Try it here: tryzyvo.com/workspace/cutaway-explainer"));
-  // The sender decides the link at send time from the Cutaway switch.
+  // The sender's link choice gives tryzyvo.com to every campaign without linkTo "cutaway".
   const src = read("supabase/functions/campaign-sender/index.ts");
   assert.match(src, /def\.linkTo === "cutaway" && \(Deno\.env\.get\("CUTAWAY_ENABLED"\) \?\? ""\)\.trim\(\)\.toLowerCase\(\) === "true" \? CUTAWAY_URL : APP_URL/);
   assert.equal(src.split("render: (footer: any) => def.render(footer, { link: linkFor(def) })").length - 1, 2, "both the real send and the proof copy");
+  assert.ok(CUTAWAY_URL.endsWith("/workspace/cutaway-explainer"));
+});
+
+test("a day that may not start because Runware or the voice provider failed moves forward with every later day; nothing is cancelled", () => {
+  const src = read("supabase/functions/campaign-sender/index.ts");
+  const tick = src.slice(src.indexOf("async function tick()"));
+  assert.match(tick, /const down = await providersFailing\(\);\s*if \(down\) \{ out\[c\.id\] = await postpone\(c, `\$\{down\} in the last 3 hours`\); continue; \}/);
+  assert.doesNotMatch(tick, /not started: \$\{down\}/, "no longer stopped for a provider failure");
+  assert.match(src, /sb\.rpc\("postpone_campaigns", \{ p_from: c\.id \}\)/);
+  assert.match(src, /MOVED one day/, "the owner is emailed");
+  // Bounces or complaints still stop the day and, through depends_on, the days after it.
+  assert.match(tick, /const stop = campaignStopReason\(n\);\s*if \(stop\) \{ await finish\(c, "stopped", stop\);/);
+  const sql = read("supabase/migrations/20261108200000_email_campaign_postpone.sql");
+  assert.match(sql, /where c\.status in \('approved', 'waiting'\) and c\.starts_at >= v_from/, "that day and every later one");
+  assert.match(sql, /status in \('sending', 'sent'\)/, "a day that has sent anything is never moved");
+  assert.match(sql, /send_after = q\.send_after \+ interval '24 hours'/);
+  assert.match(sql, /set starts_at = c\.starts_at \+ interval '24 hours', ends_at = c\.ends_at \+ interval '24 hours'/);
+  assert.match(sql, /revoke all on function public\.postpone_campaigns\(text\) from public, anon, authenticated/);
 });
 
 test("the 'still want to hear from me?' email is built, plain, and not part of the warm-up days", () => {

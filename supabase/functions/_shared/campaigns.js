@@ -61,9 +61,8 @@ const warmup = (signedUpLine, extra = {}) => ({
   ...extra,
 });
 
-// The warm-up email from day 4 on (owner's text, 2026-10-26). Its one link goes to the Cutaway
-// Explainer page when that template is switched on for users (CUTAWAY_ENABLED = "true" at send
-// time), otherwise to tryzyvo.com: linkTo "cutaway" asks campaign-sender to decide.
+// The warm-up email from day 4 on (owner's text, second version, 2026-10-26). Its one link always
+// goes to tryzyvo.com (owner: "Link always to tryzyvo.com for these days, not the Cutaway page").
 const facelessEmail = {
   from: SENDERS.niko,
   replyTo: REPLY_TO.niko,
@@ -71,12 +70,11 @@ const facelessEmail = {
   why: CAMPAIGN_WHY,
   plain: true,
   opensTracked: true,
-  linkTo: "cutaway",
   render: plainEmailInlineLink([
     "Hey,",
-    "It's Niko from Zyvo. You signed up a while ago, so here's what you can do with it now.",
-    "Pick a template, type your topic, and Zyvo makes the whole faceless video for you. Ready to post on TikTok, Shorts or Reels. No camera, no editing.",
-    "The newest one is Cutaway Explainer: 3D videos that show how things work inside, in one smooth shot. Type any topic and it builds it.",
+    "It's Niko from Zyvo. Thanks for signing up. Here's what you can make with it.",
+    "Pick a template and Zyvo makes the whole faceless video for you. Ready to post on TikTok, Shorts or Reels. No camera, no editing.",
+    "There are different styles, like 3D, so you can find one that fits your page.",
     "Try it here: tryzyvo.com",
     "If you make something, reply and send it to me. I want to see it.",
   ], "Niko"),
@@ -114,8 +112,11 @@ export const CAMPAIGNS = {
   warmup_day5: facelessEmail,
   warmup_day6: facelessEmail,
   warmup_day7: facelessEmail,
-  // Built, not queued.
+  // "Still want to hear from me?" (owner, 2026-10-26: the gentle version), for the people who are
+  // ON and signed up before 2026-04-26, split over two days after day 7.
   still_want_updates: stillWantToHear,
+  still_want_updates_1: stillWantToHear,
+  still_want_updates_2: stillWantToHear,
 };
 
 // The owner's stop rules for a running campaign (2026-10-10):
@@ -145,7 +146,8 @@ export function previousCampaignProblem(prev, n) {
 }
 
 // The owner's rule of 2026-10-26: a day does not START if the owner alerts showed Runware or the
-// voice provider failing in the last 3 hours. The alerts are emails; what they are sent from is in
+// voice provider failing in the last 3 hours. Then that day and every later day move one day
+// forward (postpone_campaigns) and the owner is emailed; nothing is cancelled. The alerts are emails; what they are sent from is in
 // the database, and that is what this reads (the same conditions that send those alert emails):
 //   runware: the provider_balance_guard row for "runware" — paused now (out of balance, low
 //            balance or "failing every scene"), or an alert sent in the window
