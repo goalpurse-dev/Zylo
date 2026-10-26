@@ -218,3 +218,7 @@ verify_jwt = false
 # x-cm-worker-secret header (checked in the function); anyone else gets a plain 404.
 [functions.content-machine-worker]
 verify_jwt = false
+
+# The owner's health check: called by the cron job ops-health with x-ops-secret (no user JWT).
+[functions.ops-health]
+verify_jwt = false

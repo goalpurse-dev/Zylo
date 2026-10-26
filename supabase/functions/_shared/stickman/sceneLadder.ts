@@ -38,7 +38,15 @@ export const HARD_BUDGET_S = 300;
 
 // overload (2026-10-08): the model answered "serviceOverloaded" with a retryAfter. Not a step of the
 // ladder and not a failure: the scene waits that long and the model's circuit breaker pauses the rest.
-export type FailureKind = "balance" | "overload" | "prompt" | "safety" | "check" | "provider";
+export type FailureKind = "balance" | "overload" | "prompt" | "safety" | "check" | "code" | "provider";
+// A crash in OUR code (2026-10-26: "Cannot read properties of undefined (reading 'midground')"):
+// the same scene fails the same way every time and no provider is involved. It is that project's
+// problem: the scene is covered, drawing never pauses for anyone because of it.
+// Not a bare "TypeError": a dropped connection is "TypeError: error sending request" (the provider).
+const CODE_ERROR = /\b(ReferenceError|SyntaxError|RangeError)\b|Cannot (read|set) propert|is not a function|is not defined|is not iterable|undefined is not/;
+// The scene renderer's log events that mean "a scene of this project failed at the provider" (the
+// outage rule counts the OTHER projects that have them lately).
+export const SCENE_FAILURE_EVENTS = ["scene_retry_deferred", "scene_covered", "scene_waits_for_provider"];
 const OVERLOAD = /serviceOverloaded|service.?overload|overloaded|temporarily unavailable|high demand|at capacity|runware (?:429|503)\b/i;
 const SAFETY = /safety|moderat|nsfw|content[ _-]?polic|prohibited|inappropriate|sensitive|blocked|invalid\w*prompt|unsafe/i;
 export function classifyFailure(message: string): FailureKind {
@@ -46,6 +54,7 @@ export function classifyFailure(message: string): FailureKind {
   if (OUT_OF_BALANCE.test(m)) return "balance";        // our account can't pay: the scene waits, drawing pauses
   if (OVERLOAD.test(m)) return "overload";              // the model is overloaded: wait its retryAfter
   if (/prompt check:/i.test(m)) return "prompt";        // our own prompt rule: the same prompt fails the same way
+  if (CODE_ERROR.test(m)) return "code";               // a bug of ours, not the provider: cover, never pause everyone
   if (SAFETY.test(m)) return "safety";                  // the provider refused the picture
   if (/^image_failed$/.test(m)) return "check";         // our own image checks
   return "provider";                                    // 504, timeout, internalError, a dropped connection...
@@ -126,8 +135,12 @@ export type OutageState = { count: number; since: string } | null | undefined;
 export const providerOnly = (failures: string[]) => failures.length > 0 && failures.every((f) => classifyFailure(f.replace(/^(?:safe|backup): /, "")) === "provider");
 // pendingOthers: the project's other scenes still queued or being drawn. A scene that is the only
 // one left is covered at once (waiting would hold a finished video up for one picture).
-export function outageDecision(a: { failures: string[]; readyLately: number; pendingOthers: number; outage: OutageState; nowMs: number }): { kind: "cover" } | { kind: "wait"; outage: { count: number; since: string } } {
+// otherProjectsFailing (2026-10-26, owner: "If one project keeps failing, put that project aside and
+// keep going for everyone else"): how many OTHER projects had provider failures lately. With none,
+// the trouble is this project's: its scene is covered and drawing does not pause for everyone.
+export function outageDecision(a: { failures: string[]; readyLately: number; pendingOthers: number; outage: OutageState; nowMs: number; otherProjectsFailing?: number }): { kind: "cover" } | { kind: "wait"; outage: { count: number; since: string } } {
   if (!providerOnly(a.failures) || a.readyLately > 0 || a.pendingOthers <= 0) return { kind: "cover" };
+  if (a.otherProjectsFailing !== undefined && a.otherProjectsFailing < 1) return { kind: "cover" };
   const since = a.outage?.since ?? new Date(a.nowMs).toISOString();
   const count = Number(a.outage?.count ?? 0);
   if (count >= OUTAGE_MAX_REQUEUES || a.nowMs - Date.parse(since) > OUTAGE_MAX_S * 1000) return { kind: "cover" };

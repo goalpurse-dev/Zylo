@@ -30,7 +30,7 @@ import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S, SCENES_TOTAL_MAX } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
 import { needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
-import { BACKUP_TIER, climbLadder, HARD_BUDGET_S, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
+import { BACKUP_TIER, climbLadder, HARD_BUDGET_S, ladderOf, outageDecision, OUTAGE_WINDOW_S, PROVIDER_TIMEOUT_MS, SCENE_FAILURE_EVENTS, type RungKind } from "../_shared/stickman/sceneLadder.ts";
 import { gate, overloadedTooLong, readBreaker, recordOverload, recordSuccess } from "../_shared/modelOverload.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
 import { mandatoryStatIntent } from "../_shared/stickman/headlines.ts";
@@ -288,7 +288,13 @@ async function drawScene(scene: any) {
     if (canDefer && out.kind === "covered") {
       const { count: readyLately } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("status", "ready").gte("ready_at", new Date(Date.now() - OUTAGE_WINDOW_S * 1000).toISOString());
       const { count: pendingOthers } = await admin.from("long_form_scene_images").select("id", { count: "exact", head: true }).eq("project_id", projectId).eq("is_current", true).in("status", ["queued", "rendering"]).neq("id", scene.id);
-      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, pendingOthers: pendingOthers ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now() });
+      // Other projects whose scenes also failed at the provider lately (a deferred retry, a covered
+      // scene, or one waiting for the provider): with none, this is one project's trouble and drawing
+      // does not pause for everyone (owner, 2026-10-26).
+      const { data: othersLog } = await admin.from("system_logs").select("details").eq("source", "render-long-form-scene")
+        .in("event", SCENE_FAILURE_EVENTS).gte("created_at", new Date(Date.now() - 2 * OUTAGE_WINDOW_S * 1000).toISOString()).limit(500);
+      const otherProjectsFailing = new Set((othersLog ?? []).map((l: any) => l.details?.projectId).filter((p: any) => p && p !== projectId)).size;
+      const od = outageDecision({ failures: ladderState.failures, readyLately: readyLately ?? 0, pendingOthers: pendingOthers ?? 0, outage: scene.qa?.outage ?? null, nowMs: Date.now(), otherProjectsFailing });
       if (od.kind === "wait") {
         await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: notCounted, cost_usd: costUsd, qa: { waiting: "provider_outage", outage: od.outage, lastFailures: ladderState.failures.slice(-3) } }).eq("id", scene.id);
         await markProviderDown(admin, ladderState.failures.at(-1) ?? "provider error");
