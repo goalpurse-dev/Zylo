@@ -23,11 +23,6 @@ export default defineConfig({
     proxy: {
       // Cutaway M2 owner testing: the local runner (scripts/cutaway/proto3d/m2/localServer.mjs), localhost only
       "/m2api": { target: "http://127.0.0.1:8787", changeOrigin: true },
-      "/api/openai": {
-        target: "https://api.openai.com",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/openai/, ""),
-      },
     },
     watch: {
       ignored: [

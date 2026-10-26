@@ -2,16 +2,9 @@
 // scriptPrompt.js
 // Full OpenAI prompt system for viral script generation.
 //
-// USAGE:
-//   import { buildOpenAIRequest } from "./scriptPrompt";
-//   const body = buildOpenAIRequest(form, stylePreset);
-//   const res  = await fetch("https://api.openai.com/v1/chat/completions", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_KEY}` },
-//     body: JSON.stringify(body),
-//   });
-//   const { choices } = await res.json();
-//   const script = JSON.parse(choices[0].message.content);
+// USAGE: only on the server, in supabase/functions/generate-script, which holds the OpenAI key:
+//   const body = buildOpenAIRequest(form, stylePreset);  // → the chat completions request body
+// The browser never calls OpenAI (src/lib/generateScript.js calls that function).
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Style-specific creative briefs ──────────────────────────────────────────
@@ -174,44 +167,4 @@ export function buildOpenAIRequest(form, stylePreset) {
       },
     ],
   };
-}
-
-/**
- * Ready-to-use async function.
- * Call this in generateScript.js once you have an OpenAI API key.
- *
- * @param {object} form       - The form data from ScriptChat
- * @param {object} stylePreset - The selected style preset from scriptTemplates.js
- * @param {string} apiKey     - Your OpenAI API key (or pull from import.meta.env.VITE_OPENAI_KEY)
- * @returns {Promise<object>} - Parsed script JSON matching ScriptResult's expected shape
- */
-export async function generateScriptWithOpenAI(form, stylePreset, apiKey) {
-  const body = buildOpenAIRequest(form, stylePreset);
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`OpenAI error ${response.status}: ${err}`);
-  }
-
-  const data = await response.json();
-  const raw = data.choices?.[0]?.message?.content;
-  if (!raw) throw new Error("OpenAI returned empty content");
-
-  const script = JSON.parse(raw);
-
-  // Ensure presetIcon is populated from the stylePreset if missing
-  if (!script.meta.presetIcon && stylePreset?.icon) {
-    script.meta.presetIcon = stylePreset.icon;
-  }
-
-  return script;
 }
