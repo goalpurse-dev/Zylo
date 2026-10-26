@@ -54,22 +54,22 @@ export const premadeByKey = (key) => PREMADE.find((p) => p.key === key) ?? null;
 // liners, rain and runoff, trucks, simple props. Topics that need other parts are refused before any charge.
 const KIT_WORDS = new Set("pit pits trench trenches ditch ditches hole holes pipe pipes piping pipeline tank tanks cistern barrel drain drains drainage culvert culverts gravel soil dirt groundwater aquifer rain rainwater stormwater storm flood flooding basement foundation footing footings sewer sewage septic leach pond ponds pool pools well wells pump sump gutter gutters downspout landfill trash garbage compost garden irrigation sprinkler sprinklers dig digging buried bury concrete slab driveway road roads asphalt pavement curb sidewalk geothermal soakaway puddle mud clay sand lawn retaining fence posts post".split(" "));
 const KIT_PHRASES = ["dry well", "rain barrel", "rain garden", "storm drain", "retaining wall", "fence post", "water main", "water line", "gas line", "septic system", "drain field", "sump pump", "ground loop"];
-// What the kit has no parts for, by kind (a hit here refuses the topic).
+// What cannot be a cutaway video at all (the owner, 2026-10-26: everything buildable gets built, a part the kit lacks is
+// designed from building blocks; only topics that do not fit the format are refused, before anything is charged).
 const BLOCKERS = [
-  ["kitchen appliances", "fridge refrigerator freezer microwave oven stove dishwasher toaster blender kettle coffee washing washer dryer"],
-  ["electronics", "phone smartphone iphone computer laptop chip chips battery batteries internet wifi radio camera tv television screen speaker headphones router"],
-  ["engines and vehicles' insides", "engine engines motor jet jets plane airplane aircraft rocket rockets helicopter train trains ship ships submarine bicycle gearbox transmission"],
-  ["the human body", "heart brain lungs lung body blood eye eyes ear ears cell cells virus dna stomach kidney liver muscle bone bones"],
-  ["space", "sun moon planet planets star stars galaxy satellite satellites mars spaceship"],
-  ["tall buildings and big structures", "skyscraper elevator escalator bridge dam tower nuclear reactor turbine windmill"],
-  ["ideas without a physical build", "money stock stocks economy love music language government politics bitcoin crypto"],
+  ["the human body", "heart brain lungs lung body blood eye eyes ear ears virus dna stomach kidney liver muscle bone bones skeleton skin"],
+  ["space", "sun moon planet planets star stars galaxy galaxies satellite satellites mars jupiter universe spaceship astronaut"],
+  ["an idea, not a thing you can build", "money stock stocks economy love music language government politics bitcoin crypto religion history philosophy"],
 ].map(([label, list]) => ({ label, set: new Set(list.split(" ")) }));
-const BLOCKER_PHRASES = [["kitchen appliances", "washing machine"], ["tall buildings and big structures", "power plant"], ["tall buildings and big structures", "wind turbine"], ["electronics", "solar panel"], ["space", "black hole"]];
+const BLOCKER_PHRASES = [["space", "black hole"], ["space", "solar system"], ["the human body", "immune system"]];
+// two capitalised words in a row that are not a known topic: maybe a real person (refused) or a product (built): Claude
+// Haiku decides (kitCheck.js), about $0.0005
+const PROPER = /(?:^|[^.!?]\s)([A-Z][a-z]+\s+[A-Z][a-z]+)/;
 
 /**
- * The free kit check. verdict: "yes" (only kit parts named), "no" (it needs parts the kit doesn't have: `missing`
- * names what), "unsure" (nothing either way: the server asks Claude Haiku 5.5, about $0.0005, see kitCheck.js).
- * `closest`: the 3 premade topics nearest to it, for "We can't build this one yet".
+ * The free kit check. verdict: "yes" (it can be a cutaway video: the kit builds it, designing any part it lacks), "no"
+ * (it cannot be one at all: `missing` says why), "unsure" (it may name a real person: the server asks Claude Haiku 5.5,
+ * about $0.0005, see kitCheck.js). `closest`: the 3 premade topics nearest to it, suggested with a refusal.
  */
 export function kitCheck(text) {
   const t = normTopic(text), w = words(text);
@@ -78,8 +78,7 @@ export function kitCheck(text) {
   const missing = new Set();
   for (const b of BLOCKERS) if (w.some((x) => b.set.has(x))) missing.add(b.label);
   for (const [label, phrase] of BLOCKER_PHRASES) if (hasPhrase(t, phrase)) missing.add(label);
-  const kitHit = w.some((x) => KIT_WORDS.has(x)) || KIT_PHRASES.some((p) => hasPhrase(t, p));
-  const verdict = missing.size ? "no" : kitHit ? "yes" : "unsure";
+  const verdict = missing.size ? "no" : PROPER.test(String(text)) ? "unsure" : "yes";
   return { verdict, missing: [...missing], closest: closestPremade(text, 3) };
 }
 

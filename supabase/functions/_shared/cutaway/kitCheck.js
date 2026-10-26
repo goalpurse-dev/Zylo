@@ -6,16 +6,14 @@ import { PREMADE } from "./topics.js";
 
 const PRICE = { input: 0.1, output: 0.5 }; // USD per 1M tokens, Claude Haiku 5.5 (prompts up to 100k tokens)
 
-export const KIT_SYSTEM = `You decide whether a short "how it works" 3D cutaway video about a topic can be built from a fixed parts kit.
-The video is one continuous shot of a diorama: a house, a lawn and trees, and a soil cut face (soil layers, stones, roots, groundwater) in front; or a street scene (a road with lanes, a sidewalk, a curb, street lamps, cars driving and stopping, traffic lights, signs, a small shop front).
-The kit can build only these:
-- the ground: pits, trenches, ditches and holes dug into it (with flying dirt and a mound), and fills that rise in them: gravel, water, soil, clay
-- pipes along any path (solid or perforated) with flowing water or liquid, tanks and boxes, sheets and liners, fabric wraps
-- rain, runoff, puddles, water levels and seepage through the soil, a crack in a concrete wall, a foundation
-- trucks dumping loads, cars on the road, traffic lights with their red, yellow and green lamps, simple boxes and cabinets with a lamp or a panel, a counter
-- simple props (a sign, a book, a flag, bushes, fences, posts), arrows and outlines, number cards
-It CANNOT build: appliances or machines' insides, electronics, engines, vehicles' insides, the human body, space, tall buildings, bridges, dams, tunnels, factories, or ideas without a physical build.
-Answer "buildable": true only if every important part of the topic can be shown with the kit. List what is missing otherwise, in a few plain words each.
+export const KIT_SYSTEM = `You decide whether a topic can be a short "how it works" 3D cutaway video: one continuous shot of a toy-like
+diorama (a yard, a street, a room, a garage) where the thing is built step by step and its working parts move. Any physical
+thing people build or use can be one: the kit designs a part it lacks from building blocks (boxes, panels, pipes, wheels,
+springs, gears, rails, lights, screens) that slide, swing, roll, spin, fill and flow. A machine, an appliance, a vehicle, a
+building part, a gadget or a product named by its brand is buildable.
+Answer "buildable": false ONLY when the topic cannot be such a video at all: the human or animal body, space and the sky,
+an abstract idea (money, history, feelings, politics), a real named person, or something unsafe. Then put the reason in
+missing as a few plain words ("a real person", "the human body", "space", "an idea, not a thing").
 Also pick the 3 closest premade topics (by key) from this list: ${PREMADE.map((p) => `${p.key} (${p.topic})`).join(", ")}.`;
 
 export const KIT_SCHEMA = {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import CutawayBuilder from "./CutawayBuilder";
-import useCutawayPremade, { useCutawayCustomOpen } from "./api/cutawayPremade";
+import useCutawayPremade, { useCutawayCustomBeta, useCutawayCustomOpen } from "./api/cutawayPremade";
 import CutawayHero from "./CutawayHero";
 import CutawayResults from "./CutawayResults";
 import CutawaySummary from "./CutawaySummary";
@@ -13,7 +13,7 @@ import { premadeByKey } from "../../../data/cutawayTopics";
 const EMPTY = { topic: "", lengthSec: DEFAULT_LENGTH, soundEffects: true, removeWatermark: false };
 import "./cutaway-motion.css";
 
-// "We can't build this one yet": the server may name the closest premade topics by key or by name.
+// "We can't make this one": the server may name the closest premade topics by key or by name.
 const topicNames = (list = []) => list.map((k) => premadeByKey(k)?.topic ?? k).filter(Boolean).slice(0, 3);
 
 /**
@@ -23,7 +23,7 @@ const topicNames = (list = []) => list.map((k) => premadeByKey(k)?.topic ?? k).f
  *
  * Generate: the page's gates first (sign up / upgrade), then the credit check, then start(). A refusal from the
  * server is mapped here: SIGN_IN -> sign-up, UPGRADE -> the upgrade popup, CREDITS -> add credits (with what the
- * video needs), CANT_BUILD -> "We can't build this one yet" with the closest premade topics, anything else
+ * video needs), CANT_BUILD -> "We can't make this one" with the closest premade topics, anything else
  * (LIMIT, BUSY, ...) -> a calm message above the button. Nothing is charged in any of these.
  */
 export default function CutawayStudio({ onBeforeGenerate, planCode = null, access = "unknown", balance = 0, mode = "server", mock = null, listOnMount = false, onSignUp, onUpgrade, onNoCredits }) {
@@ -31,6 +31,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
   const approved = useCutawayPremade(mode);
   // custom topics: "Coming soon" until the owner switches them on (the demo can show either: mock.customOpen)
   const liveCustomOpen = useCutawayCustomOpen(mode), customOpen = mock?.customOpen ?? liveCustomOpen;
+  const liveBeta = useCutawayCustomBeta(mode), customBeta = mock?.customBeta ?? liveBeta;
   const [mobilePanel, setMobilePanel] = useState(mock?.run ? "results" : "builder");
   const [values, setValues] = useState(mock?.values ? { ...EMPTY, ...mock.values } : EMPTY);
   const [notice, setNotice] = useState(mock?.notice ?? null); // a refusal from the server, shown above Generate
@@ -93,6 +94,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
       values={values}
       approved={approved}
       customOpen={customOpen}
+      customBeta={customBeta}
       planCode={planCode}
       access={access}
       onSignUp={onSignUp}

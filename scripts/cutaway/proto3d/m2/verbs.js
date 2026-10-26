@@ -5,6 +5,8 @@
 //   shot?: { focus: [partIds] | "home", view?, width?, zone?, scale? (home only), at? }, shots?: [more shots] }
 // expandBeats(layout) -> cues in the layout cue format. `d` stretches a verb's main ramp; `amp` scales it.
 
+import { rigVerb } from "./rig.js";
+
 // [channel, a (s after the word), b (s after the word) | null for a step, amp, easing, { d: true if d stretches b }]
 const R = (c, a, b, amp = 1, e = "lin", stretch = true) => ({ c, a, b, amp, e, stretch });
 const POP = { show: [R("pop", -0.1, 0.3, 1, "back")] };
@@ -44,7 +46,7 @@ export const VERBS = {
   sign: {}, // the compiler adds its pop at signPop
   crack: { grow: [R("grow", -0.05, 0.35, 1, "out")] },
   drops: { fall: [R("fall", -0.1, 0.35)], hide: [R("gone", -0.1, 0.3)] },
-  water: { trickle: [R("flood", 0, 2.0, 0.22)], flood: [R("flood", -0.05, 0.45, 0.78, "out")], hide: [R("gone", 0.3, null, 1, "step")] },
+  water: { trickle: [R("flood", 0, 2.0, 0.22)], flood: [R("flood", -0.05, 0.45, 0.78, "out")], drain: [R("flood", 0, 1.4, -1, "inOut")], dirty: [R("dirty", 0, 1.0, 1, "inOut")], clean: [R("clean", 0, 1.0, 1, "inOut")], hide: [R("gone", 0.3, null, 1, "step")] },
   gravel: { fill: [R("fill", 0.1, 0.8), R("pour", 0, 0.75)], lift: [R("lift", 0.02, 0.36, 2.6, "out")], lower: [R("lift", -0.15, 0.22, -2.6, "in2"), R("squash", 0.22, 0.48, 0.04, "bump", false)], drain: [R("drain", 0.2, 2.9, 1, "inOut")] },
   soakPit: { grow: [R("grow", 0.25, 0.6, 1, "out")], wet: [R("wetY", -0.1, 0.9, 2.25, "out"), R("wetOn", -0.1, null, 1, "step")], dry: [R("wetY", 0, 2.5, -1.35)] },
   wipe: { grow: [R("grow", 0.05, 0.55, 1, "out")] },
@@ -71,6 +73,8 @@ export function verbCues(part, act, at) {
   const table = VERBS[part.kind] ?? {};
   let list = table[act.v];
   if (!list && part.kind === "panels") list = act.v === "grow" ? [R(act.ch, 0.02, 0.45, 1, "out")] : act.v === "pop" ? [R(act.ch, 0, 0.3, 1, "back")] : null;
+  // a designed part (rig.js): show / hide, and each move of its recipe by name ("open", "openBack")
+  if (!list && part.kind === "rig") list = rigVerb(part.params ?? {}, act.v);
   if (!list) throw new Error(`${part.kind} ${part.id} has no verb ${act.v}`);
   const o = Number(act.o ?? 0), first = list[0];
   return list.map((r) => {

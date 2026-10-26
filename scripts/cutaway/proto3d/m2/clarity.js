@@ -12,7 +12,10 @@ import { settingBoxes, settingFloor } from "./framing.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
 // verbs that only take something away: a sentence whose only action is one of these shows nothing happening
-const AWAY = /^(hide|stop|stopSpray|stopPulse|stopDrain|off|gone|leave|untip|lower|refill|close|open|clean|drain|clear1|clear2|dry)$/;
+// verbs that take a part away: a sentence whose part only does these shows nothing. (drain, clean, open and leave are
+// actions you see: the level falling, the water clearing, a door swinging open, a car driving off; a pond that "drains
+// empty" was refused with them here)
+const AWAY = /^(hide|stop|stopSpray|stopPulse|stopDrain|off|gone|untip|lower|refill|close|clear1|clear2|dry)$/;
 const overlapXZ = (a, b, pad = 0) => a.min[0] < b.max[0] - pad && b.min[0] < a.max[0] - pad && a.min[2] < b.max[2] - pad && b.min[2] < a.max[2] - pad;
 export const settingOf = (W = {}) => W.backdrop?.type ?? (W.house === false ? "plain" : "yard");
 
@@ -46,12 +49,13 @@ export function clarityChecks(L, sentences) {
   const floor = W.backdrop?.walkTop ?? (["street", "room"].includes(setting) ? 0.12 : setting === "carwash" ? 0.1 : setting === "garage" ? 0.08 : 0);
   const solids = [...settingBoxes(W.backdrop, W.cut ?? null)];
   const boxesOf = (p) => (p.kind === "panels" ? (p.params?.panels ?? []).map((q) => { if (!Array.isArray(q.size) || !Array.isArray(q.pos)) return null; const s = q.size.map(Math.abs), a = q.anchor ?? [0, 0, 0]; const c = q.pos.map((v, i) => v + (a[i] * s[i]) / 2); return { ch: q.ch, min: c.map((v, i) => v - s[i] / 2), max: c.map((v, i) => v + s[i] / 2) }; }).filter(Boolean) : [focusOf(p, cut)].filter(Boolean));
-  const STANDING = ["box", "boxPop", "machine", "tank", "prop", "panels", "vendingMachine", "atm", "carWash", "trafficLight", "hydrant"];
+  const STANDING = ["box", "boxPop", "machine", "tank", "prop", "panels", "vendingMachine", "atm", "carWash", "trafficLight", "hydrant", "rig"];
   // what can hold something up: solid parts (a pipe, a flow, water or an arrow holds nothing)
   const all = L.parts.filter((p) => [...STANDING, "cabinet", "canopy", "settle", "wipe", "gravel", "bags"].includes(p.kind)).flatMap((p) => boxesOf(p).map((b) => ({ id: p.id, b })));
   const ends = L.parts.flatMap((p) => boxesOf(p).map((b) => ({ id: p.id, b })));
   for (const p of L.parts) {
     if (!STANDING.includes(p.kind)) continue;
+    if (p.kind === "rig" && p.params?.mount === "wall") continue; // (a designed part hung on a wall: its recipe check sees to it)
     for (const b of boxesOf(p)) {
       if (b.min[1] <= floor + 0.2) continue; // on the ground (or in the cut)
       // a riser (a vertical pipe) holds a small cap on its top (a wellhead), never a roof

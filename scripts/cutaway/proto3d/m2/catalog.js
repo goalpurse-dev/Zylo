@@ -37,6 +37,9 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
   world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
     (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door, a water heater, a sump.
+    The garage stands with its front at z = back, its opening from x - 4.05 to x + 4.05 and 3.1 tall (floor y 0.08), the wall
+    over it 0.4 thick (z back - 0.2 to back + 0.2: hang a piece meant to be seen in front of it, z > back + 0.25); a video
+    about the door builds its own door there as a rig named a door (the backdrop then leaves its own out).
   world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX}: a room in section: a wood floor (top y 0.12)
     over the cut ground, a back wall with a window, the left wall, the ceiling and a roof slice; an armchair, a lamp, a rug.
     It suits things inside a home: an air conditioner, a radiator, a toilet, a sump pump in the floor, a smoke detector.
@@ -81,7 +84,7 @@ export const KIND_DOCS = {
   vendingMachine: ["a vending machine on the lawn, cut open on its right side (coils, motors, coin chute, bin, drop sensor, cooler, lit header)", "pos [x, y, z] (its base centre; it faces the camera), color, header (the lit sign text)", "channels show, snacks, slot, steal, glass, coils, coin, spinA/spinB (turns), fallA/fallB, beam, cooler, light; give it a focus box"],
   miniMachines: ["a crowd of small drink machines popping up across the lawn", "area [x0, x1, z0, z1], count", "channels pop (a ramp: they pop one by one within it), gone"],
   dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150), dark (true for a narrow shaft under 2.5 wide: its inside is shaded so the hole reads)", "channels dig, refill. The first beat when something goes underground; no dig when nothing does (a street topic: a wire loop is drawn in a saw cut on the road)."],
-  panels: ["anchored boxes that wipe in from one side (liners, clay walls, covers, caps)", "panels: [{ch, mat, size [sx,sy,sz], anchor [ax,ay,az] (-1/0/1: the side it grows from), pos [x,y,z] (the anchor point), axis 'x'|'y'|'z' (the growing axis) or null (pops in), vis (0), r (0.04), uv [u,v]?}]", "each panel names its own channel ch; verbs: grow (with ch), pop (with ch)"],
+  panels: ["anchored boxes that wipe in from one side (liners, clay walls, covers, caps)", "panels: [{ch, mat, size [sx,sy,sz], anchor [ax,ay,az] (per axis, the way the panel extends from pos: 1 toward +, -1 toward -, 0 centred on pos; e.g. a pond floor from x -5 to 5 is pos x -5 with ax 1, a wall hanging down from the surface is pos y 0 with ay -1), pos [x,y,z] (the anchor point), axis 'x'|'y'|'z' (the growing axis) or null (pops in), vis (0), r (0.04), uv [u,v]?}]", "each panel names its own channel ch; verbs: grow (with ch), pop (with ch)"],
   box: ["a plain static box (a foundation, a slab)", "mat, size [sx,sy,sz], pos [x,y,z] (its center), r (0.04), receiveShadow", "no verbs"],
   bags: ["a layer of trash bags that falls in and can lift out of the way and settle back", "area {x0,x1,z0,z1}, h (1.6), grid [5,4], n0, y0 (its floor), stagger, dur, fromAbove {xScale, y} or fromTruck {part, x, y, dz}", ""],
   dumpTruck: ["a dump truck that drives in along z, tips its bed and drives away", "x", "base {z: -40, load: 1}"],
@@ -102,7 +105,7 @@ export const KIND_DOCS = {
   sign: ["the end card sign (Make videos like this with Zyvo)", "at [x,y,z] (on the lawn in front of the house, clear of the cut), rotY, scale (1.3-1.5)", "ALWAYS include one; it pops by itself after the voice"],
   crack: ["a dark crack that grows across a wall", "points [[x,y,z],...] (on the wall surface), r", ""],
   drops: ["mud lumps dropping onto a surface and stopping there", "x0, x1, count, fromY, landY, z, mat (mud)", ""],
-  water: ["water filling a box (a flooded ditch, a full shaft); it sinks into gravel if `gravel` names a gravel part", "box {x0,x1,y0,y1,z0,z1}, gravel?, mat (water)", ""],
+  water: ["water filling a box (a flooded ditch, a full shaft, a pond, a pool); it sinks into gravel if `gravel` names a gravel part; it can drain away, turn algae green (dirty) and clear again (clean)", "box {x0,x1,y0,y1,z0,z1}, gravel?, mat (water), dirtyColor (#4e7d2c)", "verbs trickle, flood, drain (the level falls away), dirty (turns green), clean, hide"],
   gravel: ["a gravel fill with real pebbles on its face, stones pouring in, a water level inside, and a lift (to lay a pipe under it)", "box, faceBox (box inset, z1 0.04), pourBox, pourFrom, pourCount, water? (a water part), waterTop, waterSpan, drainDrop, mat (gravel), pebbleMat (pebbles)", ""],
   soakPit: ["a gravel soak pit in the face with pebbles and a water level", "box, faceBox, mat (gravelPit), pebbleMat (pebblesPit)", "base {wetY: box.y0}"],
   wipe: ["a block that wipes in along an axis (a soil cap, a grass strip, a slab, a concrete seal)", "box {x0,x1,y0,y1,z0,z1}, mat, axis ('x'|'y'|'z'), r, uvScale", ""],
@@ -118,14 +121,44 @@ export const KIND_DOCS = {
   wetBand: ["a dark wet band in the soil round the cut", "cx, halfW, bottom", ""],
   soak: ["water soaking down from a soak pit toward the groundwater", "x0, x1, top", "base {front: top}"],
   arrows: ["pulsing white block arrows (in the face, or flat on a surface)", "list [{at [x,y,z], dir [dx,dy], travel, phase}], opts {scale, speed, flat}", "the explainer layer: show where something moves"],
-  outline: ["a glowing yellow outline traced around the named part", "points [[x,y,z],...] (in front of the face: z 0.06-0.12), opts {r, closed}", "for the 'This is a…' sentence"],
+  outline: ["a glowing yellow outline traced around the named part", "points [[x,y,z],...] (in front of the face: z 0.06-0.12), opts {r: line thickness, 0.11 by default; on a part under a metre use about a twentieth of its size, closed}", "for the 'This is a…' sentence"],
   seepFlow: ["murky dots seeping down the face and spreading in the groundwater", "count, width, y0, fall, floor", ""],
+  rig: ["a NEW PART you design from building blocks when no kind above is the thing (a garage door, a rain barrel, a toilet's flush valve): see NEW PARTS below", "name, synonyms [..], pos [x, y, z] (its base on the floor), rotY, scale (1), mount (\"wall\" only for a thing hung on a wall), nodes [{id, parent?, at [x,y,z], shapes [..], moves [..]}]", "verbs: show, hide, and each of its moves by name (\"open\"), undone by name + Back (\"openBack\")"],
 };
+
+// how to design a new part: the building blocks, the moves, the rules and one worked recipe (rig.js)
+const RIG_DOC = `NEW PARTS (kind "rig"): when the topic needs a thing no kind above is (check the SAVED PARTS and CC0 MODELS lists first,
+when the request has them), design it as a rig: named nodes (the pieces that move separately), each a group of shapes,
+each with its own moves. Build it the way the real thing is built, simple and readable at phone size, in the toy look.
+- Shapes (metres, from the node's pivot; look: metal, plastic, wood, glass, rubber, paint, concrete; color "#rrggbb"):
+  box {size [w,h,d], at, rot? [deg x,y,z]}, panel {size [w,h], thick, at, rot?}, cylinder {r, h, axis, at},
+  wheel {r, w, axis, at}, gear {r, w, teeth, axis, at}, hinge {r, h, axis, at}, spring {r, h, turns, wire, axis, at},
+  tube or cable {path [[x,y,z]...], r}, rail or track {path, w}, chain or belt {path, w}, button {r, at},
+  light {r, at, color} (a lamp, dark until a light or blink move), beam {from [x,y,z], to, r (0.04), color} (a glowing ray:
+  a sensor beam, a laser; lit like a lamp), screen {size [w,h], at} (a number on a count move),
+  model {file, size, at, rotY?} (a CC0 model from the CC0 MODELS list).
+- Moves (each one a verb by its name; "<name>Back" undoes it; one name on several nodes moves them together): appear (the piece pops in on its word; it is hidden
+  until then: build a thing step by step), slide {to [dx,dy,dz]}, swing {axis, angle (deg)} (about the
+  node's pivot: put a door's pivot on its hinge edge), track {path} (the pivot runs along the path: a door rolling up its
+  rails), spin {axis, turns per second} (stays on until "<name>Back"), extend {axis, k}, light, blink {rate},
+  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color} (dots running along a path), count {from, to}.
+- Rules (code checks them): pos y is the floor top and the lowest shape rests on it (or the part sits in the cut); every
+  node's shapes touch its parent's; at most 40 nodes and 160 shapes; sizes in real metres (a door 2.4 wide, a barrel
+  0.9 tall); every move you use is defined on a node. Give it name and synonyms: a part that passes is saved to the kit.
+- The beats use it like any part: {p: "door", v: "show"}, {p: "door", v: "open", w: "lifts"}; shows names it. A shot frames
+  one piece (and the pieces hung on it) as "part.node": focus ["door.motor"], so a small piece is seen, not the whole thing.
+  Put the pieces where the camera can see them (the front, not behind a wall).
+Worked recipe, a hinged mailbox (base on the lawn, the lid swings open, the flag swings up, a light blinks):
+{"id":"mailbox","kind":"rig","params":{"name":"mailbox","synonyms":["letter box"],"pos":[3,0,-2],"nodes":[
+ {"id":"post","at":[0,0,0],"shapes":[{"shape":"box","size":[0.12,1.1,0.12],"at":[0,0.55,0],"look":"wood"},{"shape":"box","size":[0.5,0.4,0.8],"at":[0,1.3,0],"look":"metal","color":"#3d6fb0"}]},
+ {"id":"lid","parent":"post","at":[0,1.5,0.4],"shapes":[{"shape":"panel","size":[0.5,0.4],"thick":0.04,"at":[0,-0.2,0.02],"look":"metal","color":"#3d6fb0"}],"moves":[{"name":"open","type":"swing","axis":"x","angle":80}]},
+ {"id":"flag","parent":"post","at":[0.27,1.3,0.1],"shapes":[{"shape":"box","size":[0.04,0.3,0.04],"at":[0,0.15,0],"look":"paint"},{"shape":"panel","size":[0.18,0.12],"at":[0,0.27,0.09],"rot":[0,90,0],"look":"paint","color":"#e23b2e"}],"moves":[{"name":"raise","type":"swing","axis":"z","angle":-90}]},
+ {"id":"lamp","parent":"post","at":[0,1.55,-0.3],"shapes":[{"shape":"light","r":0.06,"color":"#ffd23d"}],"moves":[{"name":"blink","type":"blink","rate":2}]}]}}`;
 
 export function catalogText() {
   const kinds = Object.entries(KIND_DOCS).map(([k, [what, params, notes]]) => {
     const verbs = Object.keys(VERBS[k] ?? {});
-    return `- ${k}: ${what}\n    params: ${params}${notes ? `\n    notes: ${notes}` : ""}\n    verbs: ${verbs.length ? verbs.join(", ") : k === "panels" ? "grow (ch), pop (ch)" : "(none)"}`;
+    return `- ${k}: ${what}\n    params: ${params}${notes ? `\n    notes: ${notes}` : ""}\n    verbs: ${verbs.length ? verbs.join(", ") : k === "panels" ? "grow (ch), pop (ch)" : k === "rig" ? "show, hide, its moves by name" : "(none)"}`;
   });
-  return `${WORLD_DOC}\n\nPART KINDS\n${kinds.join("\n")}\n\nMATERIALS (the only names a 'mat' may use)\n${MATERIAL_NAMES.join(", ")}\n\nSOUND LIBRARY (sfx 'lib' names)\ndirt (digging, pouring), drip (seeping), water_rush (water flowing in a pipe or flooding), flame, motor_hum (a pump or machine running); rain is only the rain bed (audio.rain)`;
+  return `${WORLD_DOC}\n\nPART KINDS\n${kinds.join("\n")}\n\n${RIG_DOC}\n\nMATERIALS (the only names a 'mat' may use)\n${MATERIAL_NAMES.join(", ")}\n\nSOUND LIBRARY (sfx 'lib' names)\ndirt (digging, pouring), drip (seeping), water_rush (water flowing in a pipe or flooding), flame, motor_hum (a pump or machine running); rain is only the rain bed (audio.rain)`;
 }

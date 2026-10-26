@@ -155,7 +155,55 @@ function CutawayCard({ c, onChange }) {
       </div>
       <p className="mt-2 text-[12.5px] text-white/50">Only for runaway bugs or retry loops. You get an email at 50 % and 80 %; at the cap, new videos see "High demand right now, please try again shortly", nothing is charged, and videos in progress finish.</p>
       {c.alerts.map((a) => <p key={`${a.level}-${a.at}`} className={`mt-2 text-[12.5px] ${a.level >= 100 ? "text-red-200" : "text-amber-200"}`}>{a.level >= 100 ? "The cap was reached" : `${a.level} % of the cap was used`} · emailed {new Date(a.at).toLocaleString()}</p>)}
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <span className="font-semibold text-white">"Beta" badge on custom topics:</span>
+        <span data-testid="ops-cutaway-beta">{c.customBeta ? "Shown" : "Off"}</span>
+        <button type="button" disabled={saving} onClick={async () => {
+          setSaving(true);
+          const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetBeta", on: !c.customBeta } });
+          setSaving(false);
+          if (error || !data || data.error) { setNote("Couldn't change the badge. Try again."); return; }
+          onChange(data);
+        }} className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/[0.06] disabled:opacity-40">{c.customBeta ? "Hide" : "Show"}</button>
+      </div>
+      <CutawayLists c={c} onChange={onChange} />
     </Card>
+  );
+}
+
+// what users ask for: the parts the kit designed and saved (retire a bad one), the topics refused, the videos that failed
+function CutawayLists({ c, onChange }) {
+  const [busy, setBusy] = useState(null);
+  const retire = async (id) => {
+    if (!window.confirm("Retire this part? No later video will be shown it.")) return;
+    setBusy(id);
+    const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsRetirePart", id } });
+    setBusy(null);
+    if (!error && data && !data.error) onChange(data);
+  };
+  const when = (iso) => new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const live = (c.parts ?? []).filter((p) => !p.retired_at);
+  return (
+    <div className="mt-4 grid gap-4 lg:grid-cols-3" data-testid="ops-cutaway-lists">
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Parts the kit learned · {live.length}</div>
+        {!live.length && <p className="text-[12.5px] text-white/45">None yet: a part designed for a video is saved when the video passes every check.</p>}
+        {live.map((p) => (
+          <div key={p.id} className="flex items-center justify-between gap-2 border-t border-white/[0.06] py-1 text-[12.5px]">
+            <span className="min-w-0 truncate text-white/80" title={(p.synonyms ?? []).join(", ")}>{p.name} <span className="text-white/40">· used {p.uses}× · from "{p.topic}"</span></span>
+            <button type="button" disabled={busy === p.id} onClick={() => retire(p.id)} className="shrink-0 rounded-md border border-white/15 px-2 py-0.5 text-white/70 hover:bg-white/[0.06] disabled:opacity-40">Retire</button>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Topics refused · {(c.refused ?? []).length}</div>
+        {(c.refused ?? []).map((r, i) => <div key={i} className="border-t border-white/[0.06] py-1 text-[12.5px] text-white/75">"{r.topic}" <span className="text-white/40">· {(r.missing ?? []).join(", ") || "-"} · {when(r.created_at)}</span></div>)}
+      </div>
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Videos that failed · {(c.failed ?? []).length}</div>
+        {(c.failed ?? []).map((r, i) => <div key={i} className="border-t border-white/[0.06] py-1 text-[12.5px] text-white/75" title={r.error_message}>"{r.topic}" <span className="text-white/40">· {r.stage} · {r.error_code} · ${Number(r.cost_usd).toFixed(2)} · {when(r.created_at)}</span></div>)}
+      </div>
+    </div>
   );
 }
 

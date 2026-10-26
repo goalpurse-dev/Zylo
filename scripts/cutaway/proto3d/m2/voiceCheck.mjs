@@ -18,8 +18,9 @@ export function normWords(text) {
   // Landfill test of 2026-10-25 failed both takes on "490 US landfills" heard as "U.S.")
   const t0 = String(text).replace(/\b((?:[A-Za-z]\.){2,})/g, (m) => m.replace(/\./g, "")).replace(/\b[A-Z](?: [A-Z])+\b/g, (m) => m.replace(/ /g, ""));
   // a number's thousands written any way is one number: "1,500", "1 500" and "1.500" are all 1500 (the production Pond
-  // test of 2026-10-25 failed both takes on "1,500" heard as "1 500")
-  const raw = t0.toLowerCase().replace(/%/g, " percent ").replace(/\b(\d{1,3})[, .](?=\d{3}\b)/g, "$1").replace(/\b(\d{1,3})[, .](?=\d{3}\b)/g, "$1").replace(/[–—-]/g, " ").replace(/[^a-z0-9.' ]+/g, " ").replace(/\.(?!\d)/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
+  // test of 2026-10-25 failed both takes on "1,500" heard as "1 500"; the M2 garage door test of 2026-10-26 on "10,000"
+  // heard as "10 ,000": spaces either side of the mark)
+  const raw = t0.toLowerCase().replace(/%/g, " percent ").replace(/\b(\d{1,3})[\s  ]*[,.]?[\s  ]*(?=\d{3}\b)/g, "$1").replace(/\b(\d{1,3})[\s  ]*[,.]?[\s  ]*(?=\d{3}\b)/g, "$1").replace(/[–—-]/g, " ").replace(/[^a-z0-9.' ]+/g, " ").replace(/\.(?!\d)/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
   const out = [];
   for (let i = 0; i < raw.length; i++) {
     const w = raw[i];
@@ -35,7 +36,8 @@ export function normWords(text) {
   return out;
 }
 
-const stem = (w) => w.replace(/(ing|ed|es|s|d)$/, "");
+// (a final e too: "hinged" heard as "hinge" and "close" as "closed" failed both takes of the garage door test)
+const stem = (w) => w.replace(/(ing|ed|es|s|d|e)$/, "");
 // an unstressed little word heard as another ("the French in French drain" heard "and"): a mishearing, noted, not failed
 // (a missing or an extra word still fails, little or not)
 const LITTLE = new Set(["a", "an", "the", "in", "and", "on", "of", "to", "at", "or", "is", "it", "as"]);

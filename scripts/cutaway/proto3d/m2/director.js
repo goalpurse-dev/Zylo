@@ -6,7 +6,7 @@
 //    card band (25-35% of the height) and the caption band (47-57%);
 //  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
-import { boxCenter, focusOf, union } from "./focus.js";
+import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
 import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 
 export { LENS };
@@ -169,7 +169,7 @@ export function heroBox(layout) {
   for (const b of layout.beats ?? []) for (const s of [b.shot, ...(b.shots ?? [])]) {
     if (!s?.hero) continue;
     if (s.box) boxes.push(s.box);
-    for (const id of [].concat(s.focus ?? [])) { const p = parts.get(id); const fb = p && focusOf(p, cut); if (fb) boxes.push(fb); }
+    for (const id of [].concat(s.focus ?? [])) { const fb = focusOfId(parts, id, cut); if (fb) boxes.push(fb); }
   }
   return boxes.length ? union(boxes) : null;
 }
@@ -189,6 +189,8 @@ export function directCamera(layout, shots, marks) {
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
   const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
+  // a small build (a toilet, a mailbox): the shortest field shrinks with it, or its pieces could never fill a shot
+  const minField = Math.min(MIN_FIELD, Math.max(1.2, 2.5 * Math.max(subj.max[0] - subj.min[0], subj.max[2] - subj.min[2])));
   // the whole finished build: the subject and everything the "Add ..." line brought (a canopy at the far end of the bay)
   const finBeat = (layout.beats ?? []).find((b) => b.s === "finish");
   const added = (finBeat?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "sign", "light", "rain"].includes(p.kind) && !/hide|stop|refill/.test(String((finBeat.do.find((a) => a.p === p.id) ?? {}).v)));
@@ -217,6 +219,9 @@ export function directCamera(layout, shots, marks) {
   const boxOf = (p) => { try { return focusOf(p, cut); } catch { return null; } };
   const subjectOf = (s, box) => {
     const role = s.at?.s;
+    // a shot of one piece of a designed part ("door.motor"): that piece is the subject, not the whole part (an 8 m door
+    // held whole kept the camera far from the motor it was meant to show)
+    if (box && [].concat(s.focus ?? []).some((id) => String(id).includes("."))) return box;
     if (role === "finish" && added.length) return union(added.map(boxOf).filter(Boolean));
     const b = (layout.beats ?? []).find((x) => x.s === role), p = b?.shows && parts.get(b.shows.p);
     return (p && boxOf(p)) ?? box;
@@ -226,8 +231,13 @@ export function directCamera(layout, shots, marks) {
   const pushToward = (k, s, box) => {
     const sb = subjectOf(s, box), before = projectBox(cur.pos, cur.tgt, sb), after = projectBox(k.pos, k.tgt, sb);
     if (before.behind || after.behind || before.w > 0.85 || after.w >= before.w * 0.98) return k;
-    const f = frameBox(sb, { view: sub(cur.pos, cur.tgt), width: Math.min(0.85, Math.max(before.w * 1.25, 0.3)), zone: "center", minField: 0 });
-    const q = underground(sb) ? { pos: f.pos, tgt: f.tgt } : liftSoil(layout, { pos: f.pos, tgt: f.tgt }, sb);
+    // pushed in on the subject together with what the shot was planned to frame (the subject alone dropped the rest: a
+    // pump pushing water "through a filter box" lost the filter from the frame)
+    // (only when the subject still does not shrink that way; else on the subject alone, as the rule wants)
+    const frameOn = (bx, w0) => frameBox(bx, { view: sub(cur.pos, cur.tgt), width: Math.min(0.85, Math.max(w0 * 1.25, 0.3)), zone: "center", minField: 0 });
+    let all = box && box !== sb ? union([sb, box]) : sb, f = frameOn(all, all === sb ? before.w : (() => { const w = projectBox(cur.pos, cur.tgt, all); return w.behind ? 0.6 : w.w; })());
+    if (all !== sb) { const kept = projectBox(f.pos, f.tgt, sb); if (kept.behind || kept.w < before.w * 0.98) { all = sb; f = frameOn(sb, before.w); } }
+    const q = underground(all) ? { pos: f.pos, tgt: f.tgt } : liftSoil(layout, { pos: f.pos, tgt: f.tgt }, all);
     notes.push(`shot at ${s.t.toFixed(2)} s: pushed in on ${s.at?.s ?? "its subject"} (it would have shrunk from ${(before.w * 100).toFixed(0)}% to ${(after.w * 100).toFixed(0)}% of the width)`);
     return q;
   };
@@ -278,9 +288,9 @@ export function directCamera(layout, shots, marks) {
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
     if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
     else {
-      const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => (parts.has(id) ? focusOf(parts.get(id), cut) : null));
+      const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
       if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
-      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : MIN_FIELD });
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : minField });
       // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
       if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits

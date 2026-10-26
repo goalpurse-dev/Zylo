@@ -20,7 +20,7 @@ function fetchAccess() {
       const { supabase } = await import("../../../../lib/supabaseClient");
       const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "access" } });
       if (error || !Array.isArray(data?.premade)) return { keys: [], customOpen: false };
-      const value = { keys: data.premade.map((p) => p.key).filter(Boolean), customOpen: data.customOpen === true };
+      const value = { keys: data.premade.map((p) => p.key).filter(Boolean), customOpen: data.customOpen === true, customBeta: data.customBeta === true };
       try { sessionStorage.setItem(KEY, JSON.stringify(value)); } catch { /* not kept */ }
       return value;
     } catch {
@@ -46,6 +46,11 @@ function useAccess(mode) {
 /** The approved premade keys: null while loading, then an array. mode "server" asks; "mock"/"local" use the catalog. */
 export default function useCutawayPremade(mode = "server") {
   return useAccess(mode)?.keys ?? null;
+}
+
+/** The "Beta" badge on custom topics (off by default; the owner switches it on /admin/ops). */
+export function useCutawayCustomBeta(mode = "server") {
+  return useAccess(mode)?.customBeta === true;
 }
 
 /** Custom topics open for this user: null while loading, then true or false ("Coming soon"). */

@@ -77,7 +77,11 @@ test("3D prices: credits = our full real cost / $0.01, rounded up (failed attemp
 test("the migration's tool_prices rows match pricing.js", () => {
   const sql = readFileSync(new URL("../supabase/migrations/20261124100000_cutaway_explainer.sql", import.meta.url), "utf8");
   assert.equal(PRICE_ROWS.length, 4);
+  // (a later migration may set a row's price: the custom design cost of 2026-10-26)
+  const later = readFileSync(new URL("../supabase/migrations/20261127100000_cutaway_parts_library.sql", import.meta.url), "utf8");
   for (const row of PRICE_ROWS) {
+    const upd = later.match(new RegExp(`SET flat_credits = (\\d+) WHERE tool_key = '${row.tool_key}'`));
+    if (upd) { assert.equal(Number(upd[1]), row.flat_credits, row.tool_key); continue; }
     const line = sql.split("\n").find((l) => l.includes(`'${row.tool_key}'`) && l.trim().startsWith("("));
     assert.ok(line, `no row for ${row.tool_key}`);
     assert.ok(line.includes(`'${row.tool_key}', NULL, ${row.flat_credits}, NULL,`), line);
@@ -700,16 +704,16 @@ test("topics: a tapped chip or a typed topic naming one premade topic is premade
   for (const text of ["septic tank vs sewer", "pool heater", "how does a dry well work", "rain barrel", "how does a microwave work", "", "how well does a dishwasher clean"]) assert.equal(classifyTopic(text).kind, "custom", text);
 });
 
-test("kit check: yes for kit parts, no (with what is missing) for parts the kit lacks, unsure goes to the server's Haiku check", async () => {
+test("kit check: everything buildable is yes (a part the kit lacks is designed); only what cannot be a cutaway is no; a name goes to Haiku", async () => {
   const { kitCheck, closestPremade } = await import("../supabase/functions/_shared/cutaway/topics.js");
-  assert.equal(kitCheck("how does a dry well work").verdict, "yes");
-  assert.equal(kitCheck("rain barrel").verdict, "yes");
-  const no = kitCheck("how does a microwave work");
-  assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["kitchen appliances"]);
+  // (the owner, 2026-10-26: users will type topics the kit has never seen; they are built, not refused)
+  for (const t of ["how does a dry well work", "rain barrel", "how does a microwave work", "how does a jet engine work", "washing machine", "lightning rod", "garage door", "elevator"]) assert.equal(kitCheck(t).verdict, "yes", t);
+  const no = kitCheck("how does the human heart work");
+  assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["the human body"]);
   assert.equal(no.closest.length, 3);
-  assert.deepEqual(kitCheck("how does a jet engine work").missing, ["engines and vehicles' insides"]);
-  assert.equal(kitCheck("washing machine").verdict, "no");
-  assert.equal(kitCheck("lightning rod").verdict, "unsure");
+  assert.deepEqual(kitCheck("a black hole").missing, ["space"]);
+  assert.deepEqual(kitCheck("bitcoin").missing, ["an idea, not a thing you can build"]);
+  assert.equal(kitCheck("how Elon Musk builds rockets").verdict, "unsure", "a name that may be a real person: Claude Haiku decides");
   assert.deepEqual(closestPremade("how do toilets flush", 2), ["septic_tank", "sewer_pipe"]);
   assert.equal(closestPremade("how does flooding in a basement happen", 1)[0], "french_drain");
 });
@@ -718,7 +722,7 @@ test("quote: the credits come from the topic, premade or custom, and say whether
   const { quoteTopic, closestNames } = await import("../supabase/functions/_shared/cutaway/quote.js");
   assert.deepEqual([quoteTopic("Septic tank", 30).credits, quoteTopic("how does a septic tank work", 60).credits], [videoCredits("premade", 30), videoCredits("premade", 60)]);
   assert.deepEqual([quoteTopic("how does a dry well work", 30).credits, quoteTopic("rain barrel", 60).credits], [videoCredits("custom", 30), videoCredits("custom", 60)]);
-  const q = quoteTopic("how does a microwave work", 30);
+  const q = quoteTopic("how does the human heart work", 30);
   assert.equal(q.kind, "custom"); assert.equal(q.check.verdict, "no");
   assert.equal(closestNames(q.check.closest).length, 3);
   assert.equal(quoteTopic("Road", 30).check.verdict, "yes", "premade topics are always buildable (septic, pool, well, road without a saved layout too)");
@@ -768,8 +772,9 @@ test("page: 'Premade topics', the live price with its label, and the can't-build
   // only approved topics are premade, and every one of them always shows (a topic already made or picked too)
   assert.match(builder, /freshSuggestions\(\[\], 6, approved \?\? \[\]\)/, "all approved topics, always");
   assert.match(builder, /"Premade topic" : "Custom topic"/);
-  assert.match(builder, /We can't build this one yet/);
-  assert.ok(builder.indexOf('quote.check.verdict === "no"') < builder.indexOf("onGenerate({ topic: clean"), "the check runs before generating");
+  assert.match(builder, /We can't make this one/);
+  // the server decides (and logs every refusal for the owner): the page no longer refuses on its own
+  assert.doesNotMatch(builder, /quote.check.verdict === "no"/);
 });
 
 // ---------- one video at a time (the "plays twice" bug) and the redesigned views ----------

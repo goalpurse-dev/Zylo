@@ -15,6 +15,7 @@ import { VERBS } from "./verbs.js";
 import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
+import { modelMatches, wordsOf } from "./models.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
@@ -28,8 +29,8 @@ export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { wo
 const CHAIN_EXAMPLES = [
   { topic: "a French drain", roles: ["hook", "problem", "fix1", "problem2", "fix2", "name", "problem3", "fix3", "myth", "mythFact", "finish", "congrats"], text: "If you dig a ditch along your house, you have a drain. | But one inch of rain on a roof dumps over 600 gallons, and the ditch overflows. | So you fill the ditch with gravel to hold the water. | But now the gravel holds that water against the wall, and the wall cracks. | So you lay a pipe full of holes under the gravel, sloping away downhill. | This is a French drain. | But mud washes into the gravel, clogs every hole, and the basement floods anyway. | So you wrap the gravel in fabric that keeps the mud out. | And the French in French drain is not France. | It is Henry French, who wrote the book on drains in 1859. | Add the grass back on top. | Congratulations, you have built a French drain.",
     chain: "problem: rain spills out of the ditch against the wall (size 2) <- the hook | problem2: a crack runs up the wall (size 4) <- fix1, the gravel holding the water | problem3: the basement floods (size 5) <- fix2, the pipe's holes clogging" },
-  { topic: "a traffic light", roles: ["hook", "problem", "fix1", "name", "problem2", "fix2", "problem3", "fix3", "myth", "finish", "congrats"], text: "If you hang one red lamp over a crossing, you have a traffic light. | But it never changes, so cars pile up down both roads. | So you add a green lamp and a gray box that switches them. | This is a signal controller. | But the box runs on a clock, so at midnight a lone car sits at an empty red. | So you bury a loop of wire in the road that feels a car's metal. | But now the light flips the instant a car arrives, and a car already crossing gets hit. | So you add a yellow lamp that gives everyone a few seconds to stop. | And many of those sensors are wire loops, not cameras. | Add a crosswalk, a bench, and a mailbox. | Congratulations, you have built a traffic light.",
-    chain: "problem: cars queue down both roads (size 2) <- the hook | problem2: one car waits at a red with nobody around (size 3) <- fix1, the box's clock | problem3: a car hit in the junction (size 5) <- fix2, the loop flipping the light at once" },
+  { topic: "a traffic light", roles: ["hook", "problem", "fix1", "name", "problem2", "fix2", "problem3", "fix3", "myth", "finish", "congrats"], text: "If you hang one red lamp over a crossing, you have a traffic light. | But it never changes, so cars pile up down both roads. | So you add a green lamp and a gray box that switches them. | This is a signal controller. | But the box runs on a clock, so at midnight a lone car sits at an empty red. | So you bury a loop of wire in the road that feels a car's metal. | But now the light flips the instant a car arrives, and the car behind it slams into its back. | So you add a yellow lamp that gives everyone a few seconds to stop. | And many of those sensors are wire loops, not cameras. | Add a crosswalk, a bench, and a mailbox. | Congratulations, you have built a traffic light.",
+    chain: "problem: cars queue down both roads (size 2) <- the hook | problem2: one car waits at a red with nobody around (size 3) <- fix1, the box's clock | problem3: the car behind crashes into the stopped car (size 5) <- fix2, the loop flipping the light at once" },
 ];
 // the account's approved scripts (the golden pair), kept for the record; the writer now sees CHAIN_EXAMPLES
 const EXAMPLES = [
@@ -37,7 +38,7 @@ const EXAMPLES = [
   { topic: "a landfill", roles: template("landfill").roles, text: "If you dig a pit and throw your trash in, you have a landfill. | But dirty trash juice leaks straight down into the groundwater you drink. | So you lay a thick clay base, but it is still not enough. | You add a thick black plastic sheet. | This is a landfill liner. | A pipe drains the collected juice into a tank beside the pit. | Sealed this tight, trash barely rots at all once it is buried. | A 1952 newspaper dug up decades later was still readable word for word. | But trapped trash still makes gas, so a pipe carries it out. | That flame is not waste burning, it is gas making electricity nearby. | Add a grass cap, a fence, and a few young trees. | Congratulations, you have built a landfill." },
 ];
 
-const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something the 3D kit can show happening: digging, pipes, tanks, fills (gravel, water, soil, clay), liners and covers, water or sludge flowing along a path, sand sinking and oil rising in a tank, a creek, rain, leaks and cracks, a car, simple machines (a pump box, a generator, a vending machine, a car wash arch, a traffic light, a hydrant, an ATM), props (a flag, a book, a newspaper, number cards). Never name a thing outside that list (no people doing things, no maps, no ice, no towers, no screens with text) and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
+const SCRIPT_SYSTEM = `You write scripts for short cutaway explainer videos: a 3D diorama (a yard with a house, a street, a car wash lot...: the setting that fits the topic), with the ground cut open in section when something goes underground, where a thing is built step by step while one narrator talks. Every sentence must be something a 3D build can show happening: digging, pipes, tanks, fills, water flowing, leaks and cracks, rain, cars, and the parts of the thing itself (doors, springs, rails, motors, wheels, gears, valves, floats, levers, lamps, buttons, a small screen with a number): any machine or structure is built from such parts, and its parts move (slide, swing, roll up, spin, fill, light up). No people doing things, no maps, no ice, no long text on screens, no outer space or the body, and never compare two things that would both need to be drawn in a beat of their own. The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
 CHAIN     "But [a visible consequence]." then "So you [add one real part, described physically, no jargon]." repeated: a CHAIN, not a list.
@@ -87,6 +88,23 @@ You are given research notes with sources found by web search: judge every claim
 
 // the worked example is the other golden topic when the topic is itself a golden one (a fair remake)
 const EXAMPLE_TITLE = { french_drain: "French drain", landfill: "landfill" };
+// the hand-built layouts the scene planner can be shown as its worked example (m2/layouts/<key>.template.json)
+const EXAMPLE_LAYOUTS = ["landfill", "french_drain", "car_wash", "storm_drain", "vending_machine", "water_well", "atm"];
+/**
+ * The worked example for a topic: the hand-built layout of the topic itself when there is one (a vending machine sees
+ * the vending machine), else one from its setting (a street topic sees the storm drain's street, a car wash the car
+ * wash), else the yard: the French drain, or the landfill for a drain. Free: it only changes which layout the prompt
+ * shows (a traffic light was planned from the French drain's yard).
+ */
+export function exampleFor(topic) {
+  const t = ` ${normTopic(topic)} `;
+  const own = EXAMPLE_LAYOUTS.find((k) => [k.replace(/_/g, " "), ...(premadeByKey(k)?.aliases ?? [])].some((a) => t.includes(` ${a} `)));
+  if (own) return own;
+  const set = settingHint(topic).match(/the (\w+) setting/)?.[1];
+  if (set === "street") return "storm_drain";
+  if (set === "carwash") return "car_wash";
+  return /drain/i.test(topic) ? "landfill" : "french_drain";
+}
 const sceneSystem = (example = "french_drain") => `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.
 
 ${catalogText()}
@@ -110,7 +128,7 @@ HOW TO PLAN
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
 - In "why", say in two or three sentences what the scene is and how the camera tells it.
 
-THE WORKED EXAMPLE: the approved ${EXAMPLE_TITLE[example]} video's layout, for its script:
+THE WORKED EXAMPLE: the ${EXAMPLE_TITLE[example] ?? premadeByKey(example)?.topic ?? example.replace(/_/g, " ")} video's layout, for its script:
 ${JSON.stringify(sceneFromLayout(template(example)))}`;
 const SCENE_SYSTEM = sceneSystem();
 
@@ -137,8 +155,25 @@ export function settingHint(topic) {
   if (!type) return "";
   return ` This topic belongs in the ${type} setting: use world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : ""}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
 }
-function sceneUser({ topic, title, sentences, hero, parts, lastOpening, chain = null }) {
-  return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}
+/**
+ * The saved parts of the kit's library (parts designed for earlier videos that passed every check: the kit grows by
+ * itself) that match the text by name or synonym, best first, at most n.
+ */
+export function libraryMatches(library, text, n = 4) {
+  const want = new Set(wordsOf(String(text)).filter((w) => w.length >= 3));
+  const score = (e) => [e.name, ...(e.synonyms ?? [])].map((s) => { const ws = wordsOf(String(s)); return ws.length ? ws.filter((w) => want.has(w)).length / ws.length : 0; }).reduce((a, b) => Math.max(a, b), 0);
+  return (library ?? []).map((e) => ({ e, s: score(e) })).filter((x) => x.s >= 0.5).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.e);
+}
+
+function sceneUser({ topic, title, sentences, hero, parts, lastOpening, chain = null, library = [] }) {
+  // what the kit already has for this topic, before a part is designed: saved parts, then CC0 models
+  const text = `${topic} ${hero ?? ""} ${(parts ?? []).join(" ")}`;
+  const saved = libraryMatches(library, text), models = modelMatches(text, 12);
+  return `Topic: ${topic} ("${title}").${settingHint(topic)} The named part: ${hero}. Things it needs to show: ${parts.join(", ")}.${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}${saved.length ? `
+SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: copy its recipe, change only id, pos, rotY and scale):
+${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
+CC0 MODELS that may fit (use one as a model shape inside a rig when it is the thing, sized in metres; it cannot move by itself, so put moving pieces in their own nodes):
+${models.map((m) => `- ${m.file}`).join("\n")}` : ""}
 The script, one sentence per line, as "role: text":
 ${sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}${chain?.length ? `
 Each problem must be SHOWN happening on screen (its beat's shows does it), as the writer meant:
@@ -297,7 +332,7 @@ const checkScript = (s, lengthSec, roles) => {
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -376,7 +411,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     }
   } else {
     const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
-    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening, chain: script.chain ?? null });
+    const user = sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [], lastOpening, chain: script.chain ?? null, library });
     let r = await step("scene plan", { system: SCENE, user, schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
     let conv = layoutFromScene(parseScene(r.data), { key, title: script.title, roles: script.sentences.map((s) => s.role) });
     const rw1 = applyRewrites(script, conv.rewrites); script = rw1.script; if (rw1.taken.length || rw1.refused.length) trace.push({ label: "rewrites", taken: rw1.taken, refused: rw1.refused });
@@ -417,7 +452,7 @@ export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, role
  * planner, which returns the layout with only those beats (and the parts they use) changed. A saved layout keeps
  * its world and parts: only beats and shots may change.
  */
-export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = /french drain|drain/i.test(topic) ? "landfill" : "french_drain" }) {
+export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = exampleFor(topic) }) {
   const file = cacheDir && path.join(cacheDir, `repair_${problems.length}_${problems.join("|").length}.json`);
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));

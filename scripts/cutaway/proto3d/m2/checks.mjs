@@ -51,7 +51,9 @@ export function timelineChecks(layout, tl) {
     for (let i = 1; i < pts.length; i++) {
       const b = (layout.beats ?? []).find((x) => x.s === pts[i].role), p = b?.shows && parts.get(b.shows.p);
       if (!p || ["finish", "congrats"].includes(pts[i].role)) continue;
+      // (a part painted on the face, a soak or a wet band, has no box: nothing to measure; it crashed the whole check)
       let box; try { box = focusOf(p, layout.world?.cut); } catch { continue; }
+      if (!box) continue;
       const k0 = cameraAt(tl.camera.end, pts[i - 1].t), k1 = cameraAt(tl.camera.end, pts[i].t), w0 = projectBox(k0.pos, k0.tgt, box), w1 = projectBox(k1.pos, k1.tgt, box);
       if (!w0.behind && !w1.behind && w0.w <= 0.85 && w1.w < w0.w * 0.95) problems.push(`sentence ${pts[i].role}: the camera moves away from ${p.id} (${(w0.w * 100).toFixed(0)}% of the width before, ${(w1.w * 100).toFixed(0)}% at its moment)`);
     }
@@ -108,7 +110,10 @@ export function previewTimes(tl, layout = null) {
     const next = tl.sentences[i + 1]?.t0 ?? tl.marks.lengthEnd;
     const beat = layout?.beats?.find((b) => b.s === s.role), shows = beat?.shows;
     // the moment after the sentence's showing action has settled (else after its last action)
-    const own = shows ? Object.entries(tl.tracks).filter(([k]) => k.startsWith(`${shows.p}.`)).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next).map((r) => r.t1)) : [];
+    // (and of every part the sentence's own shot frames: "a pump that pushes the water through a filter box" was judged
+    // when the pump had popped in, before the filter and the flow had come, and failed for a missing filter)
+    const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : []))].filter(Boolean));
+    const own = shows ? Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next).map((r) => r.t1)) : [];
     const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
     // (the showing action on the last word, a canopy going up on "canopy", may settle just after the sentence: up to 0.4 s)
     // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed)

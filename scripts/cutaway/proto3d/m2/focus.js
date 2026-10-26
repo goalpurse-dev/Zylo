@@ -2,6 +2,8 @@
 // director frames them and the code checks measure them on screen. A part may set its own `focus`; otherwise it
 // is derived from its params. Parts with no place of their own (light, soil shading) have none.
 
+import { rigBox } from "./rig.js";
+
 const fromPoints = (pts, pad = 0) => {
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (const p of pts) for (let i = 0; i < 3; i++) { min[i] = Math.min(min[i], p[i] - pad); max[i] = Math.max(max[i], p[i] + pad); }
@@ -14,6 +16,26 @@ export const boxCenter = (b) => b.min.map((v, i) => (v + b.max[i]) / 2);
 export const boxSize = (b) => b.max.map((v, i) => v - b.min[i]);
 
 /** cut: the world's cut ({x0, x1, z0, depth}), for the parts that fill it */
+/**
+ * A street queue as the camera should see it: the signal and the first two cars waiting at its stop line (the lane seen
+ * end on hides the rest; the whole lane framed put the cars far off, the signal alone left them out). Null without both.
+ */
+export function signalQueueBox(sig, traffic, cut) {
+  if (!sig || !traffic) return null;
+  let sb = null; try { sb = focusOf(sig, cut); } catch { return null; }
+  const [x, zs] = traffic.params?.lane ?? [0, 0], d = traffic.params?.dir ?? -1, g = traffic.params?.gap ?? 5.6, y = traffic.params?.y ?? 0.12;
+  const z2 = zs - d * (2.4 + g + 2.2);
+  return union([sb, { min: [x - 1.1, y, Math.min(zs, z2)], max: [x + 1.1, y + 1.9, Math.max(zs, z2)] }]);
+}
+
+/** a shot's focus id: a part, or "part.node" for one piece of a designed part (rig.js) */
+export function focusOfId(parts, id, cut) {
+  const [pid, node] = String(id).split(".");
+  const p = parts.get(pid); if (!p) return null;
+  if (node && p.kind === "rig") return rigBox(p.params ?? {}, { node });
+  try { return focusOf(p, cut); } catch { return null; }
+}
+
 export function focusOf(part, cut) {
   if (part.focus) return part.focus.min ? part.focus : centered(part.focus.c, part.focus.s);
   const p = part.params ?? {};
@@ -43,6 +65,10 @@ export function focusOf(part, cut) {
     case "carWash": { const [x, y, z] = p.pos ?? [0, 0.1, -2], w = p.width ?? 3.6, h = p.height ?? 3.4; return { min: [x - w / 2 - 0.7, y, z - 0.3], max: [x + w / 2 + 0.7, y + h + 0.2, z + 1.7] }; }
     case "trafficLight": { const [x, y, z] = p.pos ?? [4, 0.1, -1], h = p.height ?? 5, arm = p.arm > 0.5 ? p.arm : 0, dir = p.armDir ?? -1; const x0 = Math.min(x - 0.6, x + dir * arm - 0.7), x1 = Math.max(x + 0.6, x + dir * arm + 0.7); return { min: [x0, y, z - 0.4], max: [x1, y + (arm ? h + 0.3 : h + 2.9), z + 0.8] }; }
     case "hydrant": { const [x, y, z] = p.pos ?? [0, 0.12, -0.5], d = p.depth ?? 3.2; return { min: [x - 0.6, y - d - 0.4, -0.4], max: [x + 0.6, y + 1.6, z + 0.6] }; }
+    // the vending machine (vending.js: 2.0 wide, 3.2 tall, 1.5 deep, from its base centre): a planned one has no part-level
+    // focus box (the scene reply has no field for it), so without this the camera could not frame it and stood far off
+    case "vendingMachine": { const [x, y, z] = p.pos ?? [0, 0.12, -1.5]; return { min: [x - 1.1, y, z - 0.8], max: [x + 1.1, y + 3.3, z + 0.8] }; }
+    case "rig": return rigBox(p);
     case "atm": { const [x, y, z] = p.pos ?? [0, 0.12, -1]; return { min: [x - 0.8, y, z - 0.6], max: [x + 0.8, y + 2.6, z + 0.7] }; }
     case "machine": return { min: [p.pos[0] - 1.5, 0, p.pos[2] - 1.2], max: [p.pos[0] + 1.5, 2.7, p.pos[2] + 1.2] };
     case "bubbles": return { min: [p.x0, p.y0, (p.z ?? -0.15) - 0.2], max: [p.x1, p.y1, (p.z ?? -0.15) + 0.2] };

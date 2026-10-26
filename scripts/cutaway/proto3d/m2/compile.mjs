@@ -5,7 +5,7 @@ import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
-import { focusOf, union } from "./focus.js";
+import { focusOf, signalQueueBox, union } from "./focus.js";
 import { directCamera, cameraAt, projectBox, MOVE } from "./director.js";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
@@ -110,11 +110,19 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
         const pad = 0.6, tb = { min: [0, 1, 2].map((i) => Math.min(...tail.map((q) => q[i])) - pad), max: [0, 1, 2].map((i) => Math.max(...tail.map((q) => q[i])) + pad) };
         return union([tb, ...bs]);
       };
-      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : { focus: [b.shows.p], type: w < 0.05 ? "close" : "mid" }), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
+      // a flat thing on the ground (a loop glowing in the road, a puddle) is seen from above; a queue of cars along a street
+      // is seen end on, so its shot frames the signal it waits at (both went low into the lane, behind a parked car)
+      const sigP = part.kind === "traffic" ? layout.parts.find((q) => q.kind === "trafficLight") : null, flat = box.max[1] - box.min[1] < 0.35;
+      const qb = sigP && signalQueueBox(sigP, part, layout.world?.cut);
+      const own = qb ? { box: qb, width: 0.9, zone: "center" } : { focus: [b.shows.p], type: w < 0.05 && !flat ? "close" : "mid", ...(flat ? { view: "high" } : {}) };
+      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : own), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
     }
     // an auto shot takes the place of a planned shot just before it (closer than a move's gap it would be dropped),
     // starting at that shot's time
     const kept = shots.filter((s) => { const e = extra.find((x) => s.t <= x.t && x.t - s.t < MOVE.minGap); if (e) e.t = Math.min(e.t, s.t); return !e; });
+    // an auto shot just before the NEXT sentence's own shot gives way to it (the camera cannot move twice that fast, and
+    // the next sentence's planned shot was the one dropped: a storm drain's catch basin was never framed)
+    for (let i = extra.length - 1; i >= 0; i--) if (kept.some((s) => s.at?.s !== extra[i].at?.s && s.t > extra[i].t && s.t - extra[i].t < MOVE.minGap)) extra.splice(i, 1);
     if (extra.length) director = directCamera(layout, [...kept, ...extra].sort((a, b) => a.t - b.t), marks);
     camera = { end: director.end, noend: director.noend };
   }

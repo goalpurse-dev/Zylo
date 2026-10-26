@@ -4,7 +4,8 @@
 // refunds) in _shared/cutaway/orchestrate.js and runtime.ts.
 //
 //   access {}  quote {topic, lengthSec}  start {topic, lengthSec, removeWatermark}  status {runId}  list {}
-//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  opsSetCustom {on}  (owner only)
+//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  opsSetCustom {on}  opsSetBeta {on}
+//   opsRetirePart {id}  (owner only)
 //
 // Who may generate: CUTAWAY_ENABLED=true for everyone with a paid plan (access.js); while it is off, only the emails in
 // CUTAWAY_TEST_USERS (owner test mode: one line, removed at launch). The owner (ADMIN_EMAILS) approves layouts.
@@ -127,6 +128,11 @@ async function customTopicsOn() {
   const { data, error } = await admin.from("cutaway_settings").select("custom_enabled").eq("id", 1).maybeSingle();
   return !error && data?.custom_enabled === true;
 }
+/** the "Beta" badge on custom topics (off by default; /admin/ops) */
+async function customBetaOn() {
+  const { data, error } = await admin.from("cutaway_settings").select("custom_beta").eq("id", 1).maybeSingle();
+  return !error && data?.custom_beta === true;
+}
 
 // a custom video on a premade topic with no approved layout yet keeps the premade key, so approving its layout makes
 // that topic premade
@@ -141,8 +147,9 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    const [approved, customOn] = await Promise.all([approvedKeys(), customTopicsOn()]);
+    const [approved, customOn, beta] = await Promise.all([approvedKeys(), customTopicsOn(), customBetaOn()]);
     return {
+      customBeta: beta,
       enabled: ENABLED, tester: Boolean(who?.tester), owner: Boolean(who?.owner), signedIn: Boolean(who), plan: who?.plan ?? null,
       // custom topics: "Coming soon" on the page until the owner switches them on (the owner can always test them)
       customOpen: customOn || Boolean(who?.owner),
@@ -215,8 +222,18 @@ async function handle(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
 
   // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it
-  if (action === "opsStatus" || action === "opsSetDailyCap" || action === "opsSetCustom") {
+  if (["opsStatus", "opsSetDailyCap", "opsSetCustom", "opsSetBeta", "opsRetirePart"].includes(action)) {
     if (!who.owner) throw new ApiError("NOT_FOUND");
+    if (action === "opsSetBeta") {
+      const { error } = await admin.from("cutaway_settings").update({ custom_beta: body?.on === true, updated_at: new Date().toISOString() }).eq("id", 1);
+      if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    }
+    // a bad saved part is retired: no later video is shown it (a part of that name can be designed again)
+    if (action === "opsRetirePart") {
+      const id = String(body?.id ?? ""); if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ApiError("BAD_INPUT");
+      const { error } = await admin.from("cutaway_parts_library").update({ retired_at: new Date().toISOString() }).eq("id", id).is("retired_at", null);
+      if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    }
     if (action === "opsSetCustom") {
       const { error } = await admin.from("cutaway_settings").update({ custom_enabled: body?.on === true, updated_at: new Date().toISOString() }).eq("id", 1);
       if (error) throw new ApiError("SERVER", undefined, {}, error.message);
@@ -228,14 +245,19 @@ async function handle(req: Request, trace: Trace) {
       if (error) throw new ApiError("SERVER", undefined, {}, error.message);
     }
     const since = new Date(Date.now() - 24 * 3600e3).toISOString();
-    const [{ data: settings }, { data: counts }, { data: alerts }] = await Promise.all([
+    const [{ data: settings }, { data: counts }, { data: alerts }, { data: parts }, { data: refused }, { data: failed }] = await Promise.all([
       admin.from("cutaway_settings").select("*").eq("id", 1).maybeSingle(),
       admin.rpc("cutaway_guard", { p_user: who.user.id }),
       admin.from("system_logs").select("event, created_at").eq("source", "ops-alert").like("event", "cutaway:cap%").gte("created_at", since).order("created_at", { ascending: false }),
+      // what users ask for: the parts the kit learned, the topics refused, the videos that failed (and where)
+      admin.from("cutaway_parts_library").select("id, name, synonyms, topic, uses, created_at, retired_at").order("created_at", { ascending: false }).limit(40),
+      admin.from("cutaway_parts_backlog").select("topic, missing, checked_by, created_at").order("created_at", { ascending: false }).limit(30),
+      admin.from("cutaway_runs").select("topic, kind, stage, error_code, error_message, cost_usd, created_at").eq("status", "failed").order("created_at", { ascending: false }).limit(30),
     ]);
     const capUsd = Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd), usedUsd = Number(counts?.spent_24h) || 0;
     return {
-      capUsd, usedUsd, running: Number(counts?.running) || 0, paidCalls: settings?.paid_calls !== false && !PAID_OFF, range: DAILY_CAP_RANGE, customEnabled: settings?.custom_enabled === true,
+      capUsd, usedUsd, running: Number(counts?.running) || 0, paidCalls: settings?.paid_calls !== false && !PAID_OFF, range: DAILY_CAP_RANGE, customEnabled: settings?.custom_enabled === true, customBeta: settings?.custom_beta === true,
+      parts: parts ?? [], refused: refused ?? [], failed: (failed ?? []).map((r: any) => ({ ...r, error_message: String(r.error_message ?? "").split("\n")[0].slice(0, 200) })),
       perUser: { maxRunning: Number(settings?.user_max_running ?? DEFAULT_SETTINGS.user_max_running), startsPerHour: Number(settings?.user_starts_per_hour ?? DEFAULT_SETTINGS.user_starts_per_hour) },
       alerts: (alerts ?? []).map((a: any) => ({ level: Number(String(a.event).replace("cutaway:cap", "")), at: a.created_at })),
     };

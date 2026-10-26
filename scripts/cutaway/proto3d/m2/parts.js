@@ -20,6 +20,7 @@ import { EASES, rampU } from "./curves.js";
 import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
+import { rig } from "./rig.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -42,6 +43,8 @@ const shifted = (r, t, s0, s1 = s0) => {
 export const KINDS = {
   // ================= machines (the vending machine, cut open) =================
   vendingMachine, miniMachines,
+  // a part the scene planner designs from building blocks when the kit has none (rig.js: a garage door, a rain barrel)
+  rig,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
   car, carWash, trafficLight, hydrant, atm, traffic, counter, cabinet,
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
@@ -367,15 +370,21 @@ export const KINDS = {
 
   // ================= water, gravel, fills =================
 
-  /** water filling a cut (a flooded ditch); channels: flood (0..1 of its height), gone (a step: hidden after) */
+  /** water filling a cut (a flooded ditch, a pond, a pool); channels: flood (0..1 of its height; drain takes it down),
+   *  gone (a step: hidden after), dirty / clean (still water going algae green, or dirtyColor, and clear again) */
   water(ctx, p, api) {
-    const w = fillBlock(ctx, { ...p.box, mat: api.mat(p.mat ?? "water"), r: p.r ?? 0.02, castShadow: false });
+    // its own copy of the material only when this plan turns it green (so it never tints other water; the premade
+    // videos' water keeps the shared material exactly as approved)
+    const tints = Boolean(api.cue("dirty") || api.cue("clean")), shared = api.mat(p.mat ?? "water");
+    const mat = tints ? shared.clone() : shared, base = mat.color.clone(), dirtyC = new ctx.THREE.Color(typeof p.dirtyColor === "string" ? p.dirtyColor : "#4e7d2c");
+    const w = fillBlock(ctx, { ...p.box, mat, r: p.r ?? 0.02, castShadow: false });
     w.mesh.renderOrder = 2;
     return {
       mesh: w.mesh, top: w.top,
       update(t) {
         const gravK = p.gravel ? api.other(p.gravel, "fill", t) : 0;
-        w.set(api.ch("flood", t) * (1 - 0.5 * gravK)); // as gravel fills the cut, the water sinks into it
+        w.set(clamp01(api.ch("flood", t)) * (1 - 0.5 * gravK)); // as gravel fills the cut, the water sinks into it
+        if (tints) mat.color.copy(base).lerp(dirtyC, clamp01(api.ch("dirty", t) - api.ch("clean", t)));
         const gone = api.cue("gone"); if (gone && t >= gone.t0) w.mesh.visible = false;
       },
     };
@@ -529,11 +538,12 @@ export const KINDS = {
 export const KIND_CHANNELS = {
   ...VENDING_CHANNELS,
   ...CITY_CHANNELS,
+  rig: ["pop"], // and one channel per move of its recipe (rig.js rigChannels)
   ...CLARITY_CHANNELS,
   dig: ["dig", "refill"], panels: ["*"], box: [], bags: ["drop", "lift", "raise"], dumpTruck: ["z", "tip", "load"],
   pipeRun: ["grow"], pipeRunFlow: ["on"], tank: ["pop"], riser: ["grow"], boxPop: ["pop"], flare: ["pop"], bubbles: ["on"], machine: ["pop"],
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
-  water: ["flood", "gone"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
+  water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
   arrows: ["on"], outline: ["on"], seepFlow: ["on"],
 };
