@@ -50,13 +50,13 @@ test("day 3 only if day 2 went well: finished, 0 spam complaints, bounces under 
   assert.match(read("scripts/warmupCampaign.mjs"), /depends_on: dependsOn \?\? null/);
 });
 
-test("opens are counted for days 2 and 3, and the owner gets the numbers again 12 hours later", () => {
+test("opens are counted for days 2 and 3, and the owner gets the numbers again later (48 hours since 2026-10-26)", () => {
   const n = { sent: 300, delivered: 298, bounced: 2, bouncedPermanent: 1, complained: 0, opened: 120, unsubscribed: 3, skipped: 0, failed: 0, queued: 0 };
   assert.ok(campaignReportText("warmup_day2", { status: "done", planned: 300 }, n).includes("Opened: 120 (40.0%)"));
   assert.ok(campaignReportText("warmup_day1", { status: "done", planned: 200 }, { ...n, opened: 0 }).includes("Opens: not measured"), "day 1 went out before open tracking was on");
   assert.match(read("supabase/functions/_shared/campaigns.js"), /ev\("email\.opened"\)/);
   const src = read("supabase/functions/campaign-sender/index.ts");
-  assert.match(src, /const cutoff = new Date\(Date\.now\(\) - 12 \* 3600_000\)\.toISOString\(\);/);
+  assert.match(src, /const cutoff = new Date\(Date\.now\(\) - 48 \* 3600_000\)\.toISOString\(\);/);
   assert.match(src, /\.is\("followup_report_at", null\)\.lt\("finished_at", cutoff\)/);
   assert.match(src, /\.eq\("id", c\.id\)\.is\("followup_report_at", null\)\.select\("id"\);\s*if \(!mine\?\.length\) continue;/, "once per campaign");
 });

@@ -8,6 +8,9 @@
 //       --count 200 (how many) --hours 7 (the window they are spread over)
 //       --after warmup_day1,warmup_day2   "the next N": people who signed up before everyone in those campaigns
 //       --depends-on warmup_day2          it runs only if that campaign had 0 complaints and bounces under 2%
+//       --recipients-of a,b               exactly the people those campaigns were sent to
+//       --signed-up-since ISO --signed-up-before ISO --exclude a,b   a sign-up window, minus anyone in those queues
+//       --count all                       everyone who fits
 //   … --queue      write the campaign and its queue, in status "waiting": nothing is sent
 //   … --approve    waiting → approved: it starts at its start time (only on the owner's go)
 //   … --hold       approved → waiting (before it has started)
@@ -34,7 +37,7 @@ const { data: existing } = await admin.from("email_campaigns").select("*").eq("i
 
 if (flag("--report")) {
   if (!existing) { console.log(`${id}: not queued yet`); await bye(0); }
-  console.log(campaignReportText(id, existing, await campaignNumbers(admin, id, existing.starts_at)));
+  console.log(campaignReportText(id, existing, await campaignNumbers(admin, id, existing.starts_at, { withPurchases: true })));
   console.log(`Window: ${when(existing.starts_at)} to ${when(existing.ends_at)}`);
   if (existing.depends_on) console.log(`Runs only if ${existing.depends_on} had 0 spam complaints and bounces under 2%.`);
   const { data: last } = await admin.from("email_campaign_queue").select("sent_at").eq("campaign", id).eq("status", "sent").order("sent_at", { ascending: false }).limit(1);
@@ -59,23 +62,47 @@ if (flag("--stop")) await move(["waiting", "approved", "sending"], "stopped", { 
 
 // The plan.
 const start = new Date(val("--start") ?? NaN);
-const count = Number(val("--count", 200));
+const countArg = String(val("--count", "200"));
+const count = countArg === "all" ? Infinity : Number(countArg);
 const hours = Number(val("--hours", 7));
 if (Number.isNaN(start.getTime())) { console.error("Give --start as a UTC time, e.g. --start 2026-10-11T13:00:00Z"); await bye(1); }
-if (!Number.isInteger(count) || count < 1 || count > 1000 || !(hours >= 6 && hours <= 12)) { console.error("--count 1 to 1000, --hours 6 to 12"); await bye(1); }
+if (!(count === Infinity || (Number.isInteger(count) && count >= 1 && count <= 3000)) || !(hours >= 6 && hours <= 12)) { console.error("--count 1 to 3000 or all, --hours 6 to 12"); await bye(1); }
 let cutoff = new Date(start.getTime() - 24 * 3600_000).toISOString(); // signed up at least 24 hours before the first send
+const list = (k) => String(val(k, "")).split(",").map((s) => s.trim()).filter(Boolean);
 
-// --after a,b: "the next N": only people who signed up BEFORE everyone in those campaigns (and none of their recipients).
-const after = String(val("--after", "")).split(",").map((s) => s.trim()).filter(Boolean);
+// Who, one of:
+//   --after a,b              "the next N": people who signed up BEFORE everyone in those campaigns (and none of their recipients)
+//   --recipients-of a,b      exactly the people those campaigns were sent to (still ON, not suppressed)
+//   --signed-up-since ISO / --signed-up-before ISO, with --exclude a,b (nobody who is in those campaigns' queues)
+const after = list("--after");
+const recipientsOf = list("--recipients-of");
+const exclude = list("--exclude");
+const since = val("--signed-up-since");
+const before = val("--signed-up-before");
 const dependsOn = val("--depends-on");
-for (const c of [...after, ...(dependsOn ? [dependsOn] : [])]) if (!CAMPAIGNS[c]) { console.error(`Unknown campaign in --after/--depends-on: ${c}`); await bye(1); }
+for (const c of [...after, ...recipientsOf, ...exclude, ...(dependsOn ? [dependsOn] : [])]) if (!CAMPAIGNS[c]) { console.error(`Unknown campaign: ${c}`); await bye(1); }
+const queueOf = async (c, onlySent) => {
+  const out = [];
+  for (let from = 0; ; from += 1000) {
+    let q = admin.from("email_campaign_queue").select("profile_id").eq("campaign", c);
+    if (onlySent) q = q.eq("status", "sent");
+    const { data, error: qe } = await q.order("id").range(from, from + 999);
+    if (qe) throw new Error(qe.message);
+    out.push(...data.map((r) => r.profile_id));
+    if (data.length < 1000) return out;
+  }
+};
 const earlier = new Set();
 for (const c of after) {
-  const { data: q, error: qe } = await admin.from("email_campaign_queue").select("profile_id").eq("campaign", c).limit(1000);
-  if (qe) throw new Error(qe.message);
+  const q = await queueOf(c, false);
   if (!q.length) { console.error(`--after ${c}: that campaign has no queue yet`); await bye(1); }
-  for (const r of q) earlier.add(r.profile_id);
+  for (const r of q) earlier.add(r);
 }
+const excluded = new Set();
+for (const c of exclude) for (const r of await queueOf(c, false)) excluded.add(r);
+const only = new Set();
+for (const c of recipientsOf) for (const r of await queueOf(c, true)) only.add(r);
+if (recipientsOf.length && !only.size) { console.error("--recipients-of: nobody was sent those campaigns"); await bye(1); }
 if (earlier.size) {
   const ids = [...earlier];
   let oldest = null;
@@ -89,14 +116,39 @@ if (earlier.size) {
 
 const { data: suppressed } = await admin.from("email_suppressions").select("email").limit(5000);
 const never = new Set((suppressed ?? []).map((s) => s.email));
-const seen = new Set(), picked = [], passed = { badAddress: 0, duplicate: 0, suppressed: 0 };
-for (let from = 0; picked.length < count; from += 1000) { // PostgREST returns at most 1000 rows per call
-  const { data: newest, error } = await admin.from("profiles").select("id, email, created_at").eq("email_updates", true).not("email", "is", null)
-    [earlier.size ? "lt" : "lte"]("created_at", cutoff).order("created_at", { ascending: false }).order("id").range(from, from + 999);
+const seen = new Set(), picked = [], passed = { badAddress: 0, duplicate: 0, suppressed: 0, alreadyInExcludedCampaigns: 0, notOnAnyMore: 0 };
+if (only.size) {
+  const { count: total } = { count: only.size };
+  let on = 0;
+  const ids = [...only];
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data: ps, error: pe } = await admin.from("profiles").select("id, email, created_at").in("id", ids.slice(i, i + 200)).eq("email_updates", true).not("email", "is", null);
+    if (pe) throw new Error(pe.message);
+    on += ps.length;
+    for (const p of ps) {
+      const check = checkEmailAddress(p.email);
+      if (!check.ok) { passed.badAddress++; continue; }
+      if (seen.has(check.email)) { passed.duplicate++; continue; }
+      seen.add(check.email);
+      if (never.has(check.email)) { passed.suppressed++; continue; }
+      picked.push({ profile_id: p.id, email: check.email, created_at: p.created_at });
+    }
+  }
+  passed.notOnAnyMore = total - on;
+  picked.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (picked.length > count) picked.length = count;
+}
+for (let from = 0; !only.size && picked.length < count; from += 1000) { // PostgREST returns at most 1000 rows per call
+  let q = admin.from("profiles").select("id, email, created_at").eq("email_updates", true).not("email", "is", null)
+    [earlier.size ? "lt" : "lte"]("created_at", cutoff);
+  if (since) q = q.gte("created_at", new Date(since).toISOString());
+  if (before) q = q.lt("created_at", new Date(before).toISOString());
+  const { data: newest, error } = await q.order("created_at", { ascending: false }).order("id").range(from, from + 999);
   if (error) throw new Error(error.message);
   for (const p of newest) {
     if (picked.length >= count) break;
     if (earlier.has(p.id)) continue;
+    if (excluded.has(p.id)) { passed.alreadyInExcludedCampaigns++; continue; }
     const check = checkEmailAddress(p.email);
     if (!check.ok) { passed.badAddress++; continue; }
     if (seen.has(check.email)) { passed.duplicate++; continue; }
@@ -118,14 +170,16 @@ const footer = emailFooter({ unsubscribeUrl: "https://www.tryzyvo.com/unsubscrib
 
 console.log(JSON.stringify({
   campaign: id, from: def.from, replyTo: def.replyTo, subject: def.subject,
-  people: picked.length, wanted: count, passedOver: passed,
+  people: picked.length, wanted: countArg, passedOver: passed,
+  who: only.size ? { recipientsOf } : { after: after.length ? after : null, signedUpSince: since, signedUpBefore: before, exclude: exclude.length ? exclude : null },
   signedUpBetween: picked.length ? [picked.at(-1).created_at.slice(0, 16), picked[0].created_at.slice(0, 16)] : null,
   providers,
   after: after.length ? after : null, onlyIfThisWentWell: dependsOn ?? null,
   firstEmail: when(start), lastEmail: when(end), oneEvery: `${Math.round(step / 1000)} seconds`, droppedIfNotSentBy: when(dropAfter),
   alreadyQueued: existing ? existing.status : false,
 }, null, 1));
-console.log("\n----- the email (text version) -----\n" + def.render(footer).text + "\n------------------------------------");
+console.log("\n----- the email (text version) -----\n" + def.render(footer).text + "\n------------------------------------"
+  + (def.linkTo === "cutaway" ? "\n(The one link: the Cutaway Explainer page if CUTAWAY_ENABLED is \"true\" when each email goes out, otherwise tryzyvo.com, as shown above.)" : ""));
 
 if (!flag("--queue")) { console.log("\nPlan only: nothing was written. Add --queue to write it (status \"waiting\": nothing is sent until --approve)."); await bye(0); }
 if (existing) { console.error(`\n${id} is already queued (status "${existing.status}"): not written again.`); await bye(1); }

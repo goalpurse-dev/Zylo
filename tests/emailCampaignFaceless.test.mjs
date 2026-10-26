@@ -1,0 +1,106 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { emailFooter } from "../supabase/functions/_shared/emailRules.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignReportText, providerProblem, purchasesAfter } from "../supabase/functions/_shared/campaigns.js";
+
+// Warm-up days 4–7 (owner, 2026-10-26): the "without showing your face" email, its one link going
+// to the Cutaway Explainer page only while that template is on, no day starting while Runware or
+// the voice provider failed in the last 3 hours, and plans bought within 48 hours in the report.
+const root = fileURLToPath(new URL("..", import.meta.url));
+const read = (p) => readFileSync(join(root, p), "utf8");
+const footer = emailFooter({ unsubscribeUrl: "https://www.tryzyvo.com/unsubscribe?u=1&t=2", why: "why", plain: true });
+
+test("days 4–7: the owner's text, one link, no images, same sender and reply-to", () => {
+  for (const id of ["warmup_day4", "warmup_day5", "warmup_day6", "warmup_day7"]) {
+    const c = CAMPAIGNS[id];
+    assert.equal(c.subject, "you can make this without showing your face");
+    assert.equal(c.from, "Niko <niko@mail.tryzyvo.com>");
+    assert.equal(c.replyTo, "niko@tryzyvo.com");
+    assert.equal(c.linkTo, "cutaway");
+  }
+  const { html, text } = CAMPAIGNS.warmup_day4.render(footer, { link: "https://www.tryzyvo.com" });
+  assert.equal(text.split("\n\n--\n")[0], [
+    "Hey,",
+    "It's Niko from Zyvo. You signed up a while ago, so here's what you can do with it now.",
+    "Pick a template, type your topic, and Zyvo makes the whole faceless video for you. Ready to post on TikTok, Shorts or Reels. No camera, no editing.",
+    "The newest one is Cutaway Explainer: 3D videos that show how things work inside, in one smooth shot. Type any topic and it builds it.",
+    "Try it here: tryzyvo.com",
+    "If you make something, reply and send it to me. I want to see it.",
+    "Niko",
+  ].join("\n\n"));
+  assert.doesNotMatch(html, /<img|<table|youtube|utm_/i);
+  assert.deepEqual([...html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]), ["https://www.tryzyvo.com", "https://www.tryzyvo.com/unsubscribe?u=1&amp;t=2"], "one link, plus unsubscribe");
+  // With the Cutaway page on, the same one link goes there.
+  const on = CAMPAIGNS.warmup_day4.render(footer, { link: CUTAWAY_URL });
+  assert.deepEqual([...on.html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1])[0], "https://www.tryzyvo.com/workspace/cutaway-explainer");
+  assert.ok(on.text.includes("Try it here: tryzyvo.com/workspace/cutaway-explainer"));
+  // The sender decides the link at send time from the Cutaway switch.
+  const src = read("supabase/functions/campaign-sender/index.ts");
+  assert.match(src, /def\.linkTo === "cutaway" && \(Deno\.env\.get\("CUTAWAY_ENABLED"\) \?\? ""\)\.trim\(\)\.toLowerCase\(\) === "true" \? CUTAWAY_URL : APP_URL/);
+  assert.equal(src.split("render: (footer: any) => def.render(footer, { link: linkFor(def) })").length - 1, 2, "both the real send and the proof copy");
+});
+
+test("the 'still want to hear from me?' email is built, plain, and not part of the warm-up days", () => {
+  const c = CAMPAIGNS.still_want_updates;
+  assert.equal(c.subject, "still want to hear from me?");
+  const { html, text } = c.render(footer);
+  assert.match(text, /If yes, you don't need to do anything\. If not, the unsubscribe link is right below/);
+  assert.doesNotMatch(html, /<img/);
+  assert.equal(c.linkTo, undefined);
+});
+
+test("no day starts while Runware or the voice provider failed in the last 3 hours", () => {
+  const since = "2026-10-27T11:00:00.000Z";
+  assert.equal(providerProblem({ runware: { paused: false, alerted_at: null }, voiceLogs: [], sinceIso: since }), null);
+  assert.equal(providerProblem({ runware: { paused: false, alerted_at: "2026-10-27T08:00:00Z" }, voiceLogs: [], sinceIso: since }), null, "an alert older than 3 hours");
+  assert.match(providerProblem({ runware: { paused: true, last_error: "outage: backup failed" }, voiceLogs: [], sinceIso: since }), /Runware is paused \(outage: backup failed\)/);
+  assert.match(providerProblem({ runware: { paused: false, alerted_at: "2026-10-27T12:00:00Z" }, sinceIso: since }), /Runware is alerting/);
+  assert.match(providerProblem({ runware: null, voiceLogs: [{ event: "narration_failed", details: {} }], sinceIso: since }), /1 voiceovers failed for good/);
+  assert.match(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { tries: 1, error: "ElevenLabs 401: invalid_api_key" } }], sinceIso: since }), /1 refusals of our account/);
+  assert.match(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { tries: 3, error: "503" } }], sinceIso: since }), /1 paused 3\+ times/);
+  assert.equal(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { tries: 1, error: "429 too many requests" } }], sinceIso: since }), null, "one passing slowdown is not an outage");
+  const src = read("supabase/functions/campaign-sender/index.ts");
+  const tick = src.slice(src.indexOf("async function tick()"));
+  assert.ok(tick.indexOf('if (c.status === "approved")') < tick.indexOf("await sendOne(c, def)"), "checked before the first email of the day");
+  assert.match(src, /new Date\(Date\.now\(\) - 3 \* 3600_000\)/);
+  assert.match(src, /\.eq\("provider", "runware"\)/);
+});
+
+test("plans bought within 48 hours of the email: first plans, upgrades, top-ups; not renewals", () => {
+  const recipients = [
+    { profile_id: "a", sent_at: "2026-10-27T14:00:00Z" }, // first plan the next day → counted
+    { profile_id: "b", sent_at: "2026-10-27T14:00:00Z" }, // renewal of a plan they had → not counted
+    { profile_id: "c", sent_at: "2026-10-27T14:00:00Z" }, // top-up after 3 days → too late
+    { profile_id: "d", sent_at: "2026-10-27T14:00:00Z" }, // upgrade + top-up → one person
+    { profile_id: "e", sent_at: "2026-10-27T14:00:00Z" }, // bought BEFORE the email → not counted
+  ];
+  const grants = [
+    { user_id: "a", reason: "plan_renewal", created_at: "2026-10-28T09:00:00Z" },
+    { user_id: "b", reason: "plan_renewal", created_at: "2026-09-28T09:00:00Z" },
+    { user_id: "b", reason: "plan_renewal", created_at: "2026-10-28T09:00:00Z" },
+    { user_id: "c", reason: "topup", created_at: "2026-10-30T15:00:00Z" },
+    { user_id: "d", reason: "plan_upgrade", created_at: "2026-10-27T15:00:00Z" },
+    { user_id: "d", reason: "topup", created_at: "2026-10-28T15:00:00Z" },
+    { user_id: "e", reason: "plan_renewal", created_at: "2026-10-27T13:00:00Z" },
+    { user_id: "x", reason: "topup", created_at: "2026-10-27T15:00:00Z" },
+  ];
+  assert.deepEqual(purchasesAfter(recipients, grants, 48), { people: 2, firstPlan: 1, upgrade: 1, topup: 1 });
+  const report = campaignReportText("warmup_day4", { status: "done", planned: 1000 }, { sent: 1000, delivered: 998, bounced: 2, bouncedPermanent: 1, complained: 0, opened: 200, unsubscribed: 1, skipped: 0, failed: 0, queued: 0, purchases: { people: 7, firstPlan: 5, upgrade: 1, topup: 2 } });
+  assert.ok(report.includes("Bought within 48 hours of their email: 7 (0.7%) — first plan 5, upgrade 1, credit top-up 2"));
+  assert.ok(report.includes("Opened: 200 (20.0%)"));
+});
+
+test("pace for 1,500 in 7 hours: a tick every 10 seconds, one email per 8 seconds at most; the second report after 48 hours", () => {
+  const sql = read("supabase/migrations/20261107100000_email_campaign_pace.sql");
+  assert.match(sql, /claimed_at > now\(\) - interval '8 seconds'/);
+  assert.match(sql, /cron\.alter_job\(jobid, schedule := '10 seconds'\) from cron\.job where jobname = 'email-campaign-sender'/);
+  assert.match(sql, /finished_at < now\(\) - interval '48 hours'/);
+  assert.match(read("supabase/functions/campaign-sender/index.ts"), /const cutoff = new Date\(Date\.now\(\) - 48 \* 3600_000\)\.toISOString\(\);/);
+  // The admin script can aim at the earlier recipients and at a sign-up window minus earlier queues.
+  const script = read("scripts/warmupCampaign.mjs");
+  assert.match(script, /if \(excluded\.has\(p\.id\)\) \{ passed\.alreadyInExcludedCampaigns\+\+; continue; \}/);
+  assert.match(script, /for \(const c of recipientsOf\) for \(const r of await queueOf\(c, true\)\) only\.add\(r\);/);
+});

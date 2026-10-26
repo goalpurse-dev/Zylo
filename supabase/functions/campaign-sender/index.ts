@@ -1,11 +1,12 @@
 // deno-lint-ignore-file no-explicit-any
-// campaign-sender/index.ts — sends the scheduled campaigns, one email per 25 seconds at most.
+// campaign-sender/index.ts — sends the scheduled campaigns, one email per 8 seconds at most.
 //
-// Called every 30 seconds by the cron job email-campaign-sender (x-campaign-secret;
+// Called every 10 seconds by the cron job email-campaign-sender (x-campaign-secret;
 // verify_jwt = false). Each call, for every campaign that is allowed to send
 // (status approved or sending, inside its window):
 //   0. depends_on: the campaign before it must have finished with 0 spam
-//      complaints and bounces under 2%, or this one does not start
+//      complaints and bounces under 2%, or this one does not start; and a day
+//      does not start while Runware or the voice provider failed in the last 3 hours
 //   1. the stop rules (_shared/campaigns.js): any spam complaint, or bounces
 //      over 2% of what was sent → the campaign is stopped and the owner is told
 //   2. ONE email that is due: the profile must still be ON with the same
@@ -18,7 +19,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, campaignNumbers, campaignReportText, campaignStopReason, previousCampaignProblem } from "../_shared/campaigns.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
+import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
 const SECRET = Deno.env.get("CAMPAIGN_SENDER_SECRET") ?? "";
@@ -29,9 +31,27 @@ async function finish(c: any, status: "done" | "stopped", reason: string | null)
   const { data: changed } = await sb.from("email_campaigns").update({ status, stop_reason: reason, finished_at: new Date().toISOString() })
     .eq("id", c.id).in("status", ["approved", "sending"]).select("id");
   if (!changed?.length) return; // another call got there first: one email to the owner, not two
-  const n = await campaignNumbers(sb, c.id, c.starts_at);
-  const head = status === "stopped" ? `Zyvo campaign ${c.id} STOPPED: ${reason}` : `Zyvo campaign ${c.id} finished: ${n.sent} sent, ${n.bounced} bounced, ${n.complained} complaints`;
-  await alertAdmin(head, `${campaignReportText(c.id, { ...c, status, stop_reason: reason }, n)}\n\n${status === "stopped" ? "Nothing more will be sent for this campaign." : "Opens, late bounces and unsubscribes still come in: you get these numbers again in 12 hours."}`, "campaign");
+  const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true });
+  const head = status === "stopped" ? `Zyvo campaign ${c.id} STOPPED: ${reason}` : `Zyvo campaign ${c.id} finished: ${n.sent} sent, ${n.opened} opened, ${n.bounced} bounced, ${n.complained} complaints`;
+  await alertAdmin(head, `${campaignReportText(c.id, { ...c, status, stop_reason: reason }, n)}\n\n${status === "stopped" ? "Nothing more will be sent for this campaign." : "Opens, purchases, late bounces and unsubscribes still come in: you get these numbers again 48 hours after the last email."}`, "campaign");
+}
+
+// The one link of a campaign that sends people to the Cutaway Explainer (linkTo "cutaway"): that page
+// while the template is switched on for users (the CUTAWAY_ENABLED secret, the server's twin of the
+// page's switch), otherwise tryzyvo.com. Decided for every email at the moment it is sent.
+function linkFor(def: any): string {
+  return def.linkTo === "cutaway" && (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true" ? CUTAWAY_URL : APP_URL;
+}
+
+// The owner's rule of 2026-10-26: no day STARTS while the owner alerts show Runware or the voice
+// provider failing in the last 3 hours (_shared/campaigns.js: providerProblem).
+async function providersFailing(): Promise<string | null> {
+  const since = new Date(Date.now() - 3 * 3600_000).toISOString();
+  const [{ data: runware }, { data: voiceLogs }] = await Promise.all([
+    sb.from("provider_balance_guard").select("paused, alerted_at, last_error").eq("provider", "runware").maybeSingle(),
+    sb.from("system_logs").select("event, details").eq("source", "generate-long-form-narration-audio").in("event", ["narration_failed", "narration_paused"]).gte("created_at", since).limit(1000),
+  ]);
+  return providerProblem({ runware, voiceLogs: voiceLogs ?? [], sinceIso: since });
 }
 
 async function sendOne(c: any, def: any): Promise<string> {
@@ -56,7 +76,7 @@ async function sendOne(c: any, def: any): Promise<string> {
   }
   const resendId = await sendClaimedEmailWithId(sb, {
     claimId: claim.id, to: row.email, userId: p.id,
-    from: def.from, replyTo: def.replyTo, subject: def.subject, why: def.why, plain: def.plain === true, render: def.render,
+    from: def.from, replyTo: def.replyTo, subject: def.subject, why: def.why, plain: def.plain === true, render: (footer: any) => def.render(footer, { link: linkFor(def) }),
     tags: [{ name: "campaign", value: c.id }],
   });
   if (resendId === null) { await settle("failed", { reason: "send_failed" }); return "failed"; } // the claim was released by the sender
@@ -81,6 +101,11 @@ async function tick() {
         await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
       }
     }
+    // Not started yet: Runware or the voice provider failing in the last 3 hours → this day does not start, and the owner is told.
+    if (c.status === "approved") {
+      const down = await providersFailing();
+      if (down) { const why = `not started: ${down} in the last 3 hours`; await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue; }
+    }
     const n = await campaignNumbers(sb, c.id, c.starts_at);
     const stop = campaignStopReason(n);
     if (stop) { await finish(c, "stopped", stop); out[c.id] = `stopped: ${stop}`; continue; }
@@ -97,18 +122,19 @@ async function tick() {
   return out;
 }
 
-// 12 hours after a campaign ended the owner gets its numbers again: by then the opens,
-// the late bounces and the unsubscribes are in. Once per campaign; none if it sent nothing.
+// 48 hours after a campaign ended the owner gets its numbers again: by then the opens, the
+// purchases within 48 hours of each email, the late bounces and the unsubscribes are in.
+// Once per campaign; none if it sent nothing.
 async function followUpReports(out: Record<string, string>) {
-  const cutoff = new Date(Date.now() - 12 * 3600_000).toISOString();
+  const cutoff = new Date(Date.now() - 48 * 3600_000).toISOString();
   const { data: ended } = await sb.from("email_campaigns").select("*").in("status", ["done", "stopped"]).is("followup_report_at", null).lt("finished_at", cutoff);
   for (const c of ended ?? []) {
     const { data: mine } = await sb.from("email_campaigns").update({ followup_report_at: new Date().toISOString() }).eq("id", c.id).is("followup_report_at", null).select("id");
     if (!mine?.length) continue; // another call sent it
-    const n = await campaignNumbers(sb, c.id, c.starts_at);
+    const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true });
     if (n.sent === 0) { out[c.id] = "no follow-up (nothing was sent)"; continue; }
-    await alertAdmin(`Zyvo campaign ${c.id}, the day after: ${n.sent} sent, ${n.opened} opened, ${n.bounced} bounced, ${n.complained} complaints, ${n.unsubscribed} unsubscribed`,
-      `${campaignReportText(c.id, c, n)}\n\nThese are the numbers 12 hours after the last email.`, "campaign");
+    await alertAdmin(`Zyvo campaign ${c.id}, 48 hours later: ${n.sent} sent, ${n.opened} opened, ${n.purchases?.people ?? 0} bought, ${n.bounced} bounced, ${n.complained} complaints, ${n.unsubscribed} unsubscribed`,
+      `${campaignReportText(c.id, c, n)}\n\nThese are the numbers 48 hours after the last email.`, "campaign");
     out[c.id] = "follow-up report sent";
   }
 }
@@ -123,7 +149,7 @@ async function test(campaign: string, to: string) {
   if (!claim.ok) return { sent: false, reason: claim.reason };
   const resendId = await sendClaimedEmailWithId(sb, {
     claimId: claim.id, to: address, userId: p?.id ?? crypto.randomUUID(), // no profile: the unsubscribe page will say the link isn't valid
-    from: def.from, replyTo: def.replyTo, subject: `[TEST] ${def.subject}`, why: def.why, plain: def.plain === true, render: def.render,
+    from: def.from, replyTo: def.replyTo, subject: `[TEST] ${def.subject}`, why: def.why, plain: def.plain === true, render: (footer: any) => def.render(footer, { link: linkFor(def) }),
     tags: [{ name: "campaign_test", value: campaign }],
   });
   return resendId === null ? { sent: false, reason: "send_failed" } : { sent: true, resendId };
