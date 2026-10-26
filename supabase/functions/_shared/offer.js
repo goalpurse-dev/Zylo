@@ -8,8 +8,8 @@
 export const OFFER = {
   id: "bonus50_2026_10",
   bonusCredits: 50,
-  // From when it went live (2026-10-26) …
-  startsAt: "2026-10-26T22:00:00.000Z",
+  // From when it went live: Monday 26 Oct 2026, 22:00 in Helsinki (deployed about 23:00) …
+  startsAt: "2026-10-26T20:00:00.000Z",
   // … until Sunday 1 Nov 2026 23:59:59 in Helsinki (EET, UTC+2 after 25 Oct) = 21:59:59.999 UTC.
   endsAt: "2026-11-01T21:59:59.999Z",
   plans: ["starter", "pro", "generative"],
