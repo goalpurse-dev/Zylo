@@ -31,6 +31,8 @@ for (const f of ["real.js", "full.html", "render.mjs", "speechEnd.mjs", "voiceSi
 for (const d of ["kit", "m2", "m3"]) cp(path.join(P3, d), path.join(out, "wt/scripts/cutaway/proto3d", d), (f, full) => !fs.statSync(full).isDirectory() && code(f) && (f === "transcribe.py" || !/Dockerfile|\.toml$|\.py$/.test(f)));
 // ...except the planner's two worked examples, which it reads when it loads (without them every job failed at import)
 for (const k of ["landfill", "french_drain"]) cp(path.join(P3, "m2/layouts", `${k}.template.json`), path.join(out, "wt/scripts/cutaway/proto3d/m2/layouts", `${k}.template.json`));
+// ...and the CC0 model catalog the planner is offered models from (without it a new part could only use shapes)
+cp(path.join(P3, "kit/modelCatalog.json"), path.join(out, "wt/scripts/cutaway/proto3d/kit/modelCatalog.json"));
 cp(path.join(WT, "supabase/functions/_shared/cutaway"), path.join(out, "wt/supabase/functions/_shared/cutaway"), (f) => f.endsWith(".js"));
 for (const f of ["cutawayFinal.mjs", "cutawayFinalPlan.mjs"]) cp(path.join(WT, "render-worker/src", f), path.join(out, "wt/render-worker/src", f));
 cp(path.join(WT, "render-worker/assets/sfx"), path.join(out, "wt/render-worker/assets/sfx"));
