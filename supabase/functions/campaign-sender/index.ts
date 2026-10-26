@@ -19,7 +19,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, ownerEmailsFrom, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
 import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
@@ -61,13 +61,28 @@ async function postpone(c: any, why: string): Promise<string> {
   return `moved: ${rows.map((r) => r.id).join(", ")}`;
 }
 
+// Only real users on live templates count: the owner's own accounts (ADMIN_EMAILS,
+// CUTAWAY_TEST_USERS) and the Cutaway template are left out (providerProblem).
 async function providersFailing(): Promise<string | null> {
   const since = new Date(Date.now() - 3 * 3600_000).toISOString();
-  const [{ data: runware }, { data: voiceLogs }] = await Promise.all([
+  const [{ data: runware }, { data: voiceLogs }, { data: sceneLogs }] = await Promise.all([
     sb.from("provider_balance_guard").select("paused, alerted_at, last_error").eq("provider", "runware").maybeSingle(),
-    sb.from("system_logs").select("event, details").eq("source", "generate-long-form-narration-audio").in("event", ["narration_failed", "narration_paused"]).gte("created_at", since).limit(1000),
+    sb.from("system_logs").select("source, event, details").eq("source", "generate-long-form-narration-audio").in("event", ["narration_failed", "narration_paused"]).gte("created_at", since).limit(1000),
+    sb.from("system_logs").select("source, event, details").eq("source", "render-long-form-scene").in("event", ["scene_retry_deferred", "scene_covered"]).gte("created_at", since).limit(1000),
   ]);
-  return providerProblem({ runware, voiceLogs: voiceLogs ?? [], sinceIso: since });
+  // The Long Form projects (among the ones in these logs) that belong to the owner's own accounts.
+  const owners = ownerEmailsFrom(Deno.env.get("ADMIN_EMAILS"), Deno.env.get("CUTAWAY_TEST_USERS"));
+  const projectIds = [...new Set([...(voiceLogs ?? []), ...(sceneLogs ?? [])].map((l: any) => l.details?.projectId).filter(Boolean))];
+  let ownerProjectIds: string[] = [];
+  if (owners.length && projectIds.length) {
+    const { data: ownerProfiles } = await sb.from("profiles").select("id, email").in("email", owners);
+    const ownerIds = new Set((ownerProfiles ?? []).map((p: any) => p.id));
+    for (let i = 0; i < projectIds.length; i += 200) {
+      const { data: projects } = await sb.from("long_form_projects").select("id, user_id").in("id", projectIds.slice(i, i + 200));
+      ownerProjectIds.push(...(projects ?? []).filter((p: any) => ownerIds.has(p.user_id)).map((p: any) => p.id));
+    }
+  }
+  return providerProblem({ runware, voiceLogs: voiceLogs ?? [], sceneLogs: sceneLogs ?? [], ownerProjectIds, sinceIso: since });
 }
 
 async function sendOne(c: any, def: any): Promise<string> {

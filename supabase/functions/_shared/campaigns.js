@@ -154,19 +154,40 @@ export function previousCampaignProblem(prev, n) {
 //   voice:   system_logs of generate-long-form-narration-audio — a voiceover failed for good, the
 //            provider refused our account (401/402/403, quota, payment, key), or a voiceover
 //            paused 3 times or more ("keeps failing")
+// Only REAL USERS ON LIVE TEMPLATES count (owner, 2026-10-26): failures from the owner's own
+// accounts (the emails in ADMIN_EMAILS and CUTAWAY_TEST_USERS) and from the Cutaway template
+// (not live; the owner tests it) never block a day. ownerProjectIds: Long Form projects of
+// those accounts. sceneLogs: render-long-form-scene failures in the window (they are what puts
+// Runware in "outage"); a Runware outage counts only when a real user's scene failed. A low or
+// empty balance counts whoever noticed it: it stops everyone.
 // → the problem in words, or null.
 const VOICE_ACCOUNT = /\b40[123]\b|quota_exceeded|insufficient|payment|invalid_api_key|unusual_activity|missing_permissions/i;
-export function providerProblem({ runware, voiceLogs = [], sinceIso }) {
+const fromRealUser = (owners) => (l) => {
+  const project = l.details?.projectId ?? null;
+  const source = String(l.source ?? "") + " " + String(l.details?.tool ?? l.details?.template ?? "");
+  return !/cutaway/i.test(source) && !(project && owners.has(String(project)));
+};
+export function providerProblem({ runware, voiceLogs = [], sceneLogs = [], ownerProjectIds = [], sinceIso }) {
+  const owners = new Set([...ownerProjectIds].map(String));
+  const real = fromRealUser(owners);
   const out = [];
   if (runware && (runware.paused === true || (runware.alerted_at && runware.alerted_at >= sinceIso))) {
-    out.push(`Runware is ${runware.paused ? "paused" : "alerting"} (${String(runware.last_error ?? "no detail").slice(0, 100)})`);
+    const sceneOutage = /^outage/i.test(String(runware.last_error ?? ""));
+    const realSceneFailures = sceneLogs.filter(real).length;
+    if (!sceneOutage || realSceneFailures > 0) {
+      out.push(`Runware is ${runware.paused ? "paused" : "alerting"} (${String(runware.last_error ?? "no detail").slice(0, 100)}${sceneOutage ? `; ${realSceneFailures} failed scenes of real users` : ""})`);
+    }
   }
-  const failed = voiceLogs.filter((l) => l.event === "narration_failed").length;
-  const refused = voiceLogs.filter((l) => l.event === "narration_paused" && VOICE_ACCOUNT.test(String(l.details?.error ?? ""))).length;
-  const stuck = voiceLogs.filter((l) => l.event === "narration_paused" && Number(l.details?.tries ?? 0) >= 3).length;
-  if (failed || refused || stuck) out.push(`the voice provider is failing (${failed} voiceovers failed for good, ${refused} refusals of our account, ${stuck} paused 3+ times)`);
+  const voice = voiceLogs.filter(real);
+  const failed = voice.filter((l) => l.event === "narration_failed").length;
+  const refused = voice.filter((l) => l.event === "narration_paused" && VOICE_ACCOUNT.test(String(l.details?.error ?? ""))).length;
+  const stuck = voice.filter((l) => l.event === "narration_paused" && Number(l.details?.tries ?? 0) >= 3).length;
+  if (failed || refused || stuck) out.push(`the voice provider is failing for real users (${failed} voiceovers failed for good, ${refused} refusals of our account, ${stuck} paused 3+ times)`);
   return out.length ? out.join("; and ") : null;
 }
+
+// The owner's own accounts: the emails in ADMIN_EMAILS and CUTAWAY_TEST_USERS (comma-separated).
+export const ownerEmailsFrom = (...lists) => [...new Set(lists.flatMap((v) => String(v ?? "").split(/[,\s]+/)).map((e) => e.trim().toLowerCase()).filter((e) => e.includes("@")))];
 
 // Plans bought within `hours` of a person's campaign email (owner, 2026-10-26).
 // recipients: [{ profile_id, sent_at }], grants: credit_grants rows of those people

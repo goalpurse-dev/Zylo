@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emailFooter } from "../supabase/functions/_shared/emailRules.js";
-import { CAMPAIGNS, CUTAWAY_URL, campaignReportText, providerProblem, purchasesAfter } from "../supabase/functions/_shared/campaigns.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignReportText, ownerEmailsFrom, providerProblem, purchasesAfter } from "../supabase/functions/_shared/campaigns.js";
 
 // Warm-up days 4–7 (owner, 2026-10-26): the "without showing your face" email, its one link going
 // to the Cutaway Explainer page only while that template is on, no day starting while Runware or
@@ -70,7 +70,7 @@ test("no day starts while Runware or the voice provider failed in the last 3 hou
   const since = "2026-10-27T11:00:00.000Z";
   assert.equal(providerProblem({ runware: { paused: false, alerted_at: null }, voiceLogs: [], sinceIso: since }), null);
   assert.equal(providerProblem({ runware: { paused: false, alerted_at: "2026-10-27T08:00:00Z" }, voiceLogs: [], sinceIso: since }), null, "an alert older than 3 hours");
-  assert.match(providerProblem({ runware: { paused: true, last_error: "outage: backup failed" }, voiceLogs: [], sinceIso: since }), /Runware is paused \(outage: backup failed\)/);
+  assert.match(providerProblem({ runware: { paused: true, last_error: "outage: backup failed" }, sceneLogs: [{ event: "scene_covered", details: { projectId: "user-1" } }], voiceLogs: [], sinceIso: since }), /Runware is paused \(outage: backup failed; 1 failed scenes of real users\)/);
   assert.match(providerProblem({ runware: { paused: false, alerted_at: "2026-10-27T12:00:00Z" }, sinceIso: since }), /Runware is alerting/);
   assert.match(providerProblem({ runware: null, voiceLogs: [{ event: "narration_failed", details: {} }], sinceIso: since }), /1 voiceovers failed for good/);
   assert.match(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { tries: 1, error: "ElevenLabs 401: invalid_api_key" } }], sinceIso: since }), /1 refusals of our account/);
@@ -117,4 +117,28 @@ test("pace for 1,500 in 7 hours: a tick every 10 seconds, one email per 8 second
   const script = read("scripts/warmupCampaign.mjs");
   assert.match(script, /if \(excluded\.has\(p\.id\)\) \{ passed\.alreadyInExcludedCampaigns\+\+; continue; \}/);
   assert.match(script, /for \(const c of recipientsOf\) for \(const r of await queueOf\(c, true\)\) only\.add\(r\);/);
+});
+
+test("only real users on live templates block a day: the owner's own projects and Cutaway are ignored (owner, 2026-10-26)", () => {
+  const since = "2026-10-27T11:00:00.000Z";
+  const quota = { tries: 1, error: "NARRATION_TTS_PROVIDER_FAILED: 401 quota_exceeded" };
+  // Voice: the owner's own project → ignored; a real user's → counts.
+  assert.equal(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { ...quota, projectId: "own-1" } }], ownerProjectIds: ["own-1"], sinceIso: since }), null);
+  assert.match(providerProblem({ voiceLogs: [{ event: "narration_paused", details: { ...quota, projectId: "user-1" } }], ownerProjectIds: ["own-1"], sinceIso: since }), /failing for real users \(0 voiceovers failed for good, 1 refusals/);
+  // Anything from the Cutaway template → ignored.
+  assert.equal(providerProblem({ voiceLogs: [{ source: "cutaway-api", event: "narration_failed", details: {} }], sinceIso: since }), null);
+  assert.equal(providerProblem({ voiceLogs: [{ event: "narration_failed", details: { template: "cutaway" } }], sinceIso: since }), null);
+  // Runware "outage" (scenes failing): counts only when a real user's scene failed.
+  const outage = { paused: true, last_error: "outage: backup: TypeError" };
+  assert.equal(providerProblem({ runware: outage, sceneLogs: [{ event: "scene_covered", details: { projectId: "own-1" } }], ownerProjectIds: ["own-1"], sinceIso: since }), null);
+  assert.equal(providerProblem({ runware: outage, sceneLogs: [], sinceIso: since }), null, "no real user's scene failed");
+  assert.match(providerProblem({ runware: outage, sceneLogs: [{ event: "scene_retry_deferred", details: { projectId: "user-9" } }], ownerProjectIds: ["own-1"], sinceIso: since }), /Runware is paused .*1 failed scenes of real users/);
+  // A low or empty balance stops everyone: it always counts.
+  assert.match(providerProblem({ runware: { paused: true, last_error: "balance read failed" }, sinceIso: since }), /Runware is paused/);
+  assert.match(providerProblem({ runware: { paused: false, alerted_at: "2026-10-27T12:00:00Z", last_error: null }, sinceIso: since }), /Runware is alerting/);
+  // The owner's accounts come from the ADMIN_EMAILS and CUTAWAY_TEST_USERS settings.
+  assert.deepEqual(ownerEmailsFrom("Owner@Example.com, b@example.com", "owner@example.com", undefined), ["owner@example.com", "b@example.com"]);
+  const src = read("supabase/functions/campaign-sender/index.ts");
+  assert.match(src, /ownerEmailsFrom\(Deno\.env\.get\("ADMIN_EMAILS"\), Deno\.env\.get\("CUTAWAY_TEST_USERS"\)\)/);
+  assert.match(src, /\.eq\("source", "render-long-form-scene"\)\.in\("event", \["scene_retry_deferred", "scene_covered"\]\)/);
 });
