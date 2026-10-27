@@ -65,7 +65,8 @@ FINISH    "Add [two or three finishing touches]." then "Congratulations, you hav
 Rules:
 - Every sentence is something the viewer can SEE happen in the cut-open ground, on the lawn or in the street: dig, fill, pour, lay a pipe, water rising, flowing, seeping, a crack, rain, a tank, a pump, a cap, grass, a fence. Nothing abstract, no people; vehicles only as the kit has them (a car, a dump truck).
 - chain: one entry per "But…" sentence: problem (its sentence index), causedBy (the index of the "So you…" fix that caused it; -1 for the first, caused by the hook), shows (what we see happening on screen, a short phrase), stakes (who or what suffers), size (1-10: how big it is; every problem bigger than the one before).
-- Numbers are spoken as written: write "1,500", never "1500" or "fifteen hundred".
+- Numbers are spoken as written: write "1,500", never "1500" or "fifteen hundred"; years as 4 digits ("1952").
+- The narration is read aloud, then checked word by word, so write every word one standard way: "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons", never "sq ft", "lb", "gal").
 - Three or four surprises, each physical and concrete, ideally with a number ("dumps over 600 gallons", "pushes over 300 pounds on each square foot", "still readable"). One by about a third of the way in, one in the middle, the myth-bust near the end. Each surprise is a claim the fact-checker will search, so give a search query for it.
 - Number cards: put 1-3 big numbers on screen as cards ("600 GALLONS", "300 LB", "1859", "37 YEARS"). The card's word must be a word of that sentence, exactly as written (for example the word "600").
 - Plain words, sentences of 6-20 words, no run-ons, no lists of more than three, no questions, no "you might think". Present tense. American English, numbers as digits.
@@ -276,10 +277,26 @@ export function applyWords(L, missing, words) {
 }
 // a line's inner sentence breaks joined: "It sucks. It spins." -> "It sucks; it spins." (an abbreviation like "Mr."
 // before a capital is joined too, which reads the same)
+// a word after "US" that is not a noun it describes ("the US uses", "in the US and"): there it is "America"
+const NOT_NOUN = /^(is|are|was|were|has|have|had|and|or|but|to|in|on|at|for|with|by|from|of|alone|uses|makes|gets|still|now|today|each|every|a|an|the)$/;
+/**
+ * The narration in the one standard form the voice reads and the voice check compares (the owner's rule of
+ * 2026-10-27, after "can not" and "US" failed the production Landfill's voice check): "cannot", no "US" ("American",
+ * or "America"), units in full, long numbers with commas. Free; the writer is told the same.
+ */
+export function speakable(text) {
+  return String(text)
+    .replace(/\b([Cc])an not\b/g, "$1annot")
+    .replace(/\b([Tt]he\s+)?(U\.S\.A\.|U\.S\.|USA|US)(?!\w)(\s+([A-Za-z]+))?/g, (m, the, us, sp, next) => (next && !NOT_NOUN.test(next) ? `${the ?? ""}American${sp}` : `America${sp ?? ""}`))
+    .replace(/\bsq\.?\s?ft\b\.?/gi, "square feet")
+    .replace(/(\d)\s*lbs?\b\.?/g, "$1 pounds").replace(/(\d)\s*ft\b\.?/g, "$1 feet").replace(/(\d)\s*gal\b\.?/g, "$1 gallons").replace(/(\d)\s*mph\b/gi, "$1 miles per hour")
+    .replace(/(?<![\d.,])\d{5,}(?![\d.,]\d)/g, (n) => Number(n).toLocaleString("en-US"));
+}
+
 export function oneSentence(text) {
   // the next word is lowercased only when it is a common sentence start (names keep their capital)
   const START = /^(It|Its|It's|This|That|These|Those|The|A|An|And|But|So|Then|There|They|We|You|Your|He|She|Now|Each|Every|No|Not|Just|Even|Most|Some|All)$/;
-  return String(text).trim().replace(/([.!?])(["”']?)\s+([\w']+)/g, (m, p, close, next) => `${p === "?" ? "," : ";"}${close} ${START.test(next) ? next.toLowerCase() : next}`);
+  return speakable(String(text).trim()).replace(/([.!?])(["”']?)\s+([\w']+)/g, (m, p, close, next) => `${p === "?" ? "," : ";"}${close} ${START.test(next) ? next.toLowerCase() : next}`);
 }
 // anchors whose words are missing: they fall back to the start of their sentence (a negative offset is dropped)
 export function dropWords(L, missing) {

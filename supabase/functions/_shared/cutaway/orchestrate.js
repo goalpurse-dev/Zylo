@@ -28,8 +28,8 @@ function terminal(run, f, now) {
   if (run.provider === "runpod" && run.provider_job_id) actions.push({ type: "cancel", provider: "runpod", jobId: run.provider_job_id });
   if (f.code === "PROVIDER_BALANCE") actions.push({ type: "alert", key: "cutaway-provider-balance", subject: "Cutaway: a provider is out of balance", text: `Run ${run.id} failed: ${f.message ?? f.code}. New videos are paused until the balance is topped up.` });
   else if (!NO_RETRY.has(f.code)) actions.push({ type: "alert", key: "cutaway-render-failed", subject: "Cutaway: a video failed on our side", text: `Run ${run.id} (${run.topic}) failed after its retries: ${f.code} ${String(f.message ?? "").slice(0, 400)}` });
-  // (the stage keeps the step it failed in: the owner's Details show it)
-  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 3500), finished_at: iso(now) }, actions };
+  // (the stage keeps the step it failed in: the owner's Details show it; the worker names it when it knows)
+  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 3500), finished_at: iso(now), ...(f.stage ? { stage: f.stage } : {}) }, actions };
 }
 
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
@@ -93,7 +93,7 @@ export function onEvent(run, ev, now = Date.now()) {
       actions.push({ type: "settle", seconds: ev.seconds ?? null, renderer: ev.renderer ?? null }, { type: "saveLayout" });
       return { patch: { ...beat, status: "done", stage: "done", pct: 100, finished_at: iso(now), files: ev.files ?? null, renderer: ev.renderer ?? null, error_code: null, error_message: null }, actions };
     case "failed": {
-      const r = failOrRetry(run, { code: ev.code ?? "RENDER_FAILED", message: ev.message, retryable: ev.retryable, piece: ev.role === "chunk" ? `chunk_${ev.index}` : ev.role === "mix" || ev.role === "plan" ? ev.role : undefined }, now);
+      const r = failOrRetry(run, { code: ev.code ?? "RENDER_FAILED", message: ev.message, retryable: ev.retryable, stage: typeof ev.stage === "string" ? ev.stage.slice(0, 40) : undefined, piece: ev.role === "chunk" ? `chunk_${ev.index}` : ev.role === "mix" || ev.role === "plan" ? ev.role : undefined }, now);
       return { patch: r.patch, actions: [...actions, ...r.actions] };
     }
     case "runpod": {

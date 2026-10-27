@@ -111,6 +111,10 @@ test("events: progress moves forward only; a stale attempt can't move the run; d
   assert.deepEqual(after.patch, {}); assert.deepEqual(after.actions.map((a) => a.type), ["ledger"], "late costs still counted");
   const pl = onEvent(run({ provider: "fly", fallback: { phase: "plan" } }), { event: "planned", frames: 1109, previewFrames: 8 }, NOW);
   assert.equal(pl.patch.plan_ready, true); assert.deepEqual(types(pl), ["dispatch:fly:chunks"]);
+  // a voice failure names its step (the 2026-10-27 Landfill showed "Scene plan"); without one the last stage stays
+  const v = onEvent(run({ status: "scene", stage: "scene" }), { event: "failed", code: "VOICE_FAILED", retryable: false, stage: "voice" }, NOW);
+  assert.equal(v.patch.status, "failed"); assert.equal(v.patch.stage, "voice");
+  assert.equal(onEvent(run({ status: "scene", stage: "scene" }), { event: "failed", code: "PLAN_FAILED", retryable: false }, NOW).patch.stage, undefined);
 });
 
 test("watchdog: 45 minutes is the hard limit, a quiet worker is lost, a long queue goes to the next step", () => {

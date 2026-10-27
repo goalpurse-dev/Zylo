@@ -92,8 +92,11 @@ async function main() {
   };
 
   // ---------- the callback ----------
-  let lastTell = 0, lastStage = null;
-  const tell = async (event, data = {}) => {
+  let lastTell = 0, lastStage = null, queue = Promise.resolve();
+  // one at a time, in order: sent side by side, the "scene" event (with the narration) landed after the "voice" one, so a
+  // voice failure showed "Scene plan" as its step (the production Landfill of 2026-10-27)
+  const tell = (event, data = {}) => (queue = queue.then(() => send(event, data)));
+  const send = async (event, data) => {
     if (!job.callback?.url) { console.log(`EVENT ${event} ${JSON.stringify(data).slice(0, 300)}`); return; }
     const body = JSON.stringify({ runId: job.runId, token: job.callback.token, role, attempt: job.attempt ?? 1, event, ...data });
     for (let i = 0; i < 4; i++) {
@@ -238,7 +241,9 @@ async function main() {
     const logged = spentSoFar();
     for (const k of Object.keys(logged)) costs[k] = Math.max(Number(costs[k]) || 0, +logged[k].toFixed(5));
     if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
-    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 3500), costs });
+    // the step it failed in, for the owner's Details
+    const stage = c.code === "VOICE_FAILED" ? "voice" : c.code === "GATE_FAILED" ? "preview" : lastStage;
+    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 3500), costs, ...(stage ? { stage } : {}) });
     return { ok: false, code: c.code, error: String(e.message ?? e).slice(0, 1500) };
   }
 }
