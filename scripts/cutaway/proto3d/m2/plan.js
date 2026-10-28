@@ -77,7 +77,7 @@ export function layoutFromScene(scene, { key, title, roles }) {
     // the red state label the planner gave a problem beat (compile.mjs stateCards; it was dropped here, so only the
     // fallback word list ever labelled a line: the aquarium's "TOO HOT" never showed, free harness 2026-10-28)
     ...(b.state?.text || typeof b.state === "string" ? { state: typeof b.state === "string" ? { text: b.state } : { text: String(b.state.text), ...(b.state.w ? { w: String(b.state.w) } : {}) } } : {}),
-    do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp && a.amp !== 1) o.amp = a.amp; if (a.ch) o.ch = a.ch; return o; }),
+    do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp != null && Number.isFinite(Number(a.amp)) && Number(a.amp) !== 1) o.amp = Number(a.amp); /* (amp 0 is kept: it became 1, a full extra pop) */ if (a.ch) o.ch = a.ch; return o; }),
     shots: (b.shots ?? []).map((s) => {
       const o = (s.focus ?? []).includes("home") ? { focus: "home" } : s.box?.length === 6 ? { box: { min: s.box.slice(0, 3), max: s.box.slice(3) } } : { focus: s.focus };
       if (s.view && s.view !== "home") { if (VIEWS.includes(s.view)) o.view = s.view; else problems.push(`shot view "${s.view}": use one of ${VIEWS.join(", ")}`); } if (s.width) o.width = s.width; if (s.type) { if (SHOT_TYPES.includes(s.type)) o.type = s.type; else problems.push(`shot type "${s.type}": use one of ${SHOT_TYPES.join(", ")}`); } if (s.hero) o.hero = true; if (s.word) o.at = { s: b.s, w: s.word };

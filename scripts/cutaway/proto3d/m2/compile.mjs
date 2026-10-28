@@ -141,7 +141,9 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   }
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
-  for (const p of layout.parts) for (const ch of SWITCHES[p.kind] ?? []) {
+  // (in a planned layout a water level is kept between empty and full the same way: a trickle then a full drain left it
+  // below empty, and the next trickle never showed; free basement run, 2026-10-28)
+  for (const p of layout.parts) for (const ch of [...(SWITCHES[p.kind] ?? []), ...(layout.hold && p.kind === "water" ? ["flood"] : [])]) {
     const tr = tracks[`${p.id}.${ch}`]; if (!tr) continue;
     let s = Math.min(1, Math.max(0, tr.base ?? 0));
     for (const r of [...tr.ramps].sort((a, b) => a.t0 - b.t0)) { const next = Math.min(1, Math.max(0, s + r.amp)); r.amp = +(next - s).toFixed(4); s = next; }

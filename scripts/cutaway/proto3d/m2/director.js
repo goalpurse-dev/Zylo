@@ -292,8 +292,14 @@ export function directCamera(layout, shots, marks) {
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
     if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
     else {
-      const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
-      if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
+      let ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
+      // (a part with no box of its own, a wet band or a flow, is left out of the shot; the shot keeps the rest: the whole
+      // shot was dropped, and the free basement run's myth line kept the camera on the pit)
+      if (boxes.some((b) => !b)) {
+        notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`);
+        ids = ids.filter((_, i) => boxes[i]); boxes = boxes.filter(Boolean);
+        if (!boxes.length) continue;
+      }
       let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : minField });
       // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
       if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
