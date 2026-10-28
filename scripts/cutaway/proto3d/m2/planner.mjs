@@ -2,6 +2,7 @@
 // layout's beats mapped onto the new script) -> layout solver -> one repair round. Sonnet 5.5 by default.
 // Every step's reply and problems are kept in the trace for reading afterwards.
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
@@ -136,7 +137,7 @@ ${mode === "beats" ? `- A part appears ON ITS CUE WORD: an action's w is the one
 - STATE LABEL: every problem beat may carry state: {text, w}: a red label of one to three words in caps (TOO FAST, BROKEN, NO POWER, CRASH!, FLOODED, STUCK, TOO HEAVY) shown from its word w (a word of that sentence) to the line's end. Give one on each problem beat.
 - ARROWS BY COLOUR: arrows opts.color: water "#3ad6ff" (cyan), air or wind "#ffffff" (white), heat "#ff8a2a" (orange), force or weight "#ffd23d" (yellow). They point at an action, they never are it.
 - BEFORE AND AFTER: a state change (a level, a colour, a material: clear to murky, dry to flooded, white ice to blue water) happens in ONE shot with the camera still: give the beat one shot only, the same as the beat before it where the change is the point.
-- METERS: a value that changes (pressure, speed, weight, a count) is a counter (bar: true makes it a gauge whose bar fills and turns red past danger, 0.8 of the top by default: for a good value, a drain rate or a safe level, set danger above 1 so it stays green), its count on the words that say the change; it always reaches its final number.
+- METERS: a value that changes (pressure, speed, weight, a count) is a counter (bar: true makes it a gauge whose bar fills and turns red past danger, 0.8 of the top by default: for a good value, a drain rate or a safe level, set danger above 1 so it stays green), its count on the words that say the change; it always reaches its final number. It stands right beside the thing it measures, and the beat's shot names both.
 - A CONTROL BOX (a cabinet, a controller) stands next to what it controls, both in one shot, at least 1.2 m tall; when it runs a cycle, the light cycles fast (cycleFast) in the same shot.
 ${mode === "beats" ? `- SHOW ONLY WHAT THE KIT CAN SHOW: a beat whose idea the kit cannot show gets another idea that it can. The writer describes only what your beats show.` : `- IF THE KIT CANNOT SHOW A SENTENCE: rewrite that sentence so it says what the kit can show, keeping its numbers and facts and its length: sceneJson.rewrites [{role, text}]. The narration is recorded after your plan, so the rewrite is what is said.`}
 - Something new every 2-3 s: every sentence has at least one action. Problems are visible (rain, flooding, a crack, a leak) and are fixed by the next part. By "Congratulations" the problem is gone: stop rain, clear the storm, hide arrows and flows, refill or cap the cut, add the finishing touches. The end is calm.
@@ -649,6 +650,11 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     });
     // cue words that were a dropped or changed number fire at the sentence's start instead
     for (const b of layout.beats) if (b.s === c.role) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !now.includes(String(a.w).replace(/,/g, ""))) delete a.w;
+    // a meter showing that number follows it too (the free aquarium run: the check made 88 degrees 86, its gauge still
+    // climbed to 88)
+    for (const p of layout.parts.filter((q) => q.kind === "counter")) for (const k of ["from", "to"]) {
+      const i = was.indexOf(String(p.params?.[k] ?? "")); if (i >= 0 && now[i] != null && now[i] !== was[i]) p.params[k] = Number(now[i]);
+    }
   }
   // a card whose number no verified fact of its beat says (the recorded garage door plan carded "100" while its checked
   // fact said 150 to 250 pounds): it takes its beat's verified number, or goes (free)
@@ -881,7 +887,9 @@ export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, role
  * its world and parts: only beats and shots may change.
  */
 export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = exampleFor(topic) }) {
-  const file = cacheDir && path.join(cacheDir, `repair_${problems.length}_${problems.join("|").length}.json`);
+  // (keyed by the problems' text and the layout: two rounds with the same count and length reused one answer, so the
+  // second repair re-rendered the first; free aquarium run, 2026-10-28)
+  const file = cacheDir && path.join(cacheDir, `repair_${crypto.createHash("sha1").update(problems.join("|")).update(JSON.stringify(layout.beats ?? [])).digest("hex").slice(0, 16)}.json`);
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {

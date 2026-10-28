@@ -103,7 +103,7 @@ export const KIND_DOCS = {
   flag: ["a flag on a pole that pops in, gets a red 'no' cross, and goes", "at [x,0,z], colors [3 stripes], w, h, pole", "for a myth-bust about a country or a name"],
   shrubs: ["round bushes that pop in staggered (finishing touches)", "list [[x, z, scale]], stagger", ""],
   sign: ["the end card sign (Make videos like this with Zyvo)", "at [x,y,z] (on the lawn in front of the house, clear of the cut), rotY, scale (1.3-1.5)", "ALWAYS include one; it pops by itself after the voice"],
-  crack: ["a dark crack that grows across a wall", "points [[x,y,z],...] (on the wall surface), r", ""],
+  crack: ["a dark crack with a pale edge that grows across a wall or the soil face; it stays until a fix covers it", "points [[x,y,z],...] (on the wall surface; on the soil face z 0.02, in open soil clear of pipes and layers), r (0.08 or more)", "verb grow"],
   drops: ["mud lumps dropping onto a surface and stopping there", "x0, x1, count, fromY, landY, z, mat (mud)", ""],
   water: ["water filling a box (a flooded ditch, a full shaft, a pond, a pool); it sinks into gravel if `gravel` names a gravel part; it can drain away, turn algae green (dirty) and clear again (clean)", "box {x0,x1,y0,y1,z0,z1}, gravel?, mat (water), dirtyColor (#4e7d2c)", "verbs trickle, flood, drain (the level falls away), dirty (turns green), clean, hide"],
   gravel: ["a gravel fill with real pebbles on its face, stones pouring in, a water level inside, and a lift (to lay a pipe under it)", "box, faceBox (box inset, z1 0.04), pourBox, pourFrom, pourCount, water? (a water part), waterTop, waterSpan, drainDrop, mat (gravel), pebbleMat (pebbles)", ""],

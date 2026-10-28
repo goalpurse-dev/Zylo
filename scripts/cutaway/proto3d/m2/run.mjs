@@ -28,11 +28,11 @@ const lastOpeningIn = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8"
 const progress = (o, cb) => { console.log(`PROGRESS ${JSON.stringify(o)}`); cb?.(o); };
 
 // the vision check, cached by the exact frames (and sentences) it is given: a re-run with the same frames is free
-async function visionCached({ apiKey, frames, log, cacheDir }) {
-  const h = crypto.createHash("sha1"); for (const f of frames) { h.update(f.text); h.update(fs.readFileSync(f.file)); }
+async function visionCached({ apiKey, frames, log, cacheDir, multi = true }) {
+  const h = crypto.createHash("sha1"); h.update(multi ? "multi" : "one"); for (const f of frames) { h.update(f.text); h.update(fs.readFileSync(f.file)); }
   const file = path.join(cacheDir, `vision_${h.digest("hex").slice(0, 16)}.json`);
   if (fs.existsSync(file)) return { ...JSON.parse(fs.readFileSync(file, "utf8")), costUsd: 0 };
-  const r = await visionCheck({ apiKey, frames, log });
+  const r = await visionCheck({ apiKey, frames, log, multi });
   fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1));
   return r;
 }
@@ -120,6 +120,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     // (none moved: no vision call at all), and no repair (the layout itself is unchanged)
     const approvedSaved = !!reuse && plan.approved;
     if (approvedSaved) shots = shots.filter((s) => (plan.changedRoles ?? []).includes(s.role));
+    // premade keeps the one-frame check its approved scenes passed (the owner's decision of 2026-10-28); custom gets strips
+    const multi = !reuse, one = (xs) => (multi ? xs : xs.map(({ ts, ...s }) => s));
+    shots = one(shots);
     const allTimes = previewTimes(tl, layout);
     const pngsAll = await previewStills({ proto, layout, times: allTimes.map((s) => s.t), out: path.join(out, "preview") });
     // the checked sentences as strips: the start, middle and end of each one's action
@@ -130,7 +133,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
     save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38 });
     P({ stage: "scene", step: "vision check", pct: 7, frames: jpgs.map((f) => path.relative(out, f).split(path.sep).join("/")) });
-    const vc = shots.length ? await visionCached({ apiKey, frames: shots, log, cacheDir }) : { frames: [], costUsd: 0 }; extraUsd += vc.costUsd;
+    const vc = shots.length ? await visionCached({ apiKey, frames: shots, log, cacheDir, multi }) : { frames: [], costUsd: 0 }; extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
     visionReport = { round1: vc.frames, costUsd: vc.costUsd };
     // a repair round on the failing beats, then their frames looked at again (round: 2, 3)
@@ -145,9 +148,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       layout = rp.layout; save("layout.json", layout);
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
-      const again = previewTimes(tl, layout).filter((s) => beats.some((f) => f.role === s.role));
+      const again = one(previewTimes(tl, layout)).filter((s) => beats.some((f) => f.role === s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
       return true;
@@ -174,9 +177,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       await revoice(round);
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
-      const again = previewTimes(tl, layout).filter((s) => rw.changed.includes(s.role));
+      const again = one(previewTimes(tl, layout)).filter((s) => rw.changed.includes(s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
     };
@@ -200,8 +203,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       if (still.length && (still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role) || broken(f)))) {
         const ok = await repairRound(3, still);
         // a mechanism beat still failing gets a second, small picture repair of just those beats
-        const mech = still.filter((f) => MECHANISM.includes(f.role));
-        if (ok && mech.length) await repairRound(4, mech);
+        // (any beat still failing, not only a mechanism beat: the free aquarium and ice rink runs stopped with a failing
+        // beat whose second repair never ran; the owner's round of 2026-10-28)
+        if (ok && still.length) await repairRound(4, still);
       }
     }
     visionReport.failing = still.map((f) => f.role);

@@ -89,3 +89,26 @@ test("a layout round trip (as a picture repair rebuilds it) keeps the beats' sta
   assert.deepEqual(L2.beats[0].state, { text: "CRACKED", w: "cracks" });
   assert.match(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/planner.mjs", import.meta.url), "utf8"), /why: layout\.why, \.\.\.\(layout\.hold \? \{ hold: true \} : \{\}\)/);
 });
+
+test("round 4 rules: meters are readable on a phone, a roof turns see-through over what later lines show, a coat on a wall reads at the face", async () => {
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  const L = { key: "t", world: { cut: { x0: -4, x1: 4, z0: -4, depth: 3 } }, audio: {}, parts: [
+    { id: "temp", kind: "counter", params: { pos: [5, 1.5, -2], size: 0.8, bar: true } },
+    { id: "shade", kind: "canopy", params: { x0: -3, x1: 3, z0: -4, z1: -0.5, y: 0.12, h: 3 } },
+    { id: "tank", kind: "boxPop", params: { pos: [0, 0.6, -2], size: [2, 1, 2] } },
+    { id: "walls", kind: "panels", params: { panels: [{ ch: "coatL", mat: "liner", size: [0.1, 3, 4], anchor: [-1, 1, 1], pos: [-4, -3, -4], axis: "y" }, { ch: "floor", mat: "liner", size: [6, 0.08, 4], anchor: [1, 1, 1], pos: [-3, -0.6, -4], axis: "x" }] } }],
+    beats: [{ s: "hook", do: [], shots: [] }, { s: "fix2", do: [{ p: "shade", v: "build" }], shots: [] }, { s: "how", shows: { p: "tank" }, do: [{ p: "tank", v: "show" }], shots: [] }, { s: "finish", do: [], shots: [] }] };
+  const { layout } = layoutRules(L), by = (id) => layout.parts.find((p) => p.id === id);
+  assert.equal(by("temp").params.size, 1.4);
+  assert.deepEqual(layout.beats.find((b) => b.s === "how").do[0], { p: "shade", v: "ghost" });
+  assert.deepEqual(layout.beats.find((b) => b.s === "finish").do[0], { p: "shade", v: "unghost" });
+  assert.deepEqual(by("walls").params.panels.map((q) => q.size[0] === 0.35 || q.size[1]), [true, 0.08], "the upright coat thickens, the liner floor stays");
+  assert.equal(L.parts[3].params.panels[0].size[0], 0.1, "the planner's own layout is not changed");
+});
+
+test("the multi-frame check is for custom only: premade keeps the one-frame prompt", () => {
+  const run = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/run.mjs", import.meta.url), "utf8"), checks = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/checks.mjs", import.meta.url), "utf8");
+  assert.match(run, /const multi = !reuse/); assert.match(checks, /system: multi \? VISION_SYSTEM : VISION_SYSTEM_ONE/);
+  assert.match(checks, /const VISION_SYSTEM_ONE = `When a frame's line says/);
+  assert.match(run, /if \(ok && still\.length\) await repairRound\(4, still\)/, "the second picture repair runs for whatever still fails");
+});

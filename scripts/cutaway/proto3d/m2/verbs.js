@@ -18,7 +18,7 @@ export const VERBS = {
   flow: { start: [R("on", 0, 0.8)], stop: [R("off", 0, 0.4)] },
   prop: { show: [R("pop", -0.1, 0.3, 1, "lin")] },
   grate: { show: [R("show", -0.1, 0.3, 1, "lin")] },
-  canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")] },
+  canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")], ghost: [R("ghost", -0.3, 0.2, 1, "inOut")], unghost: [R("ghost", -0.2, 0.3, -1, "inOut")] },
   car: { arrive: [R("drive", -0.2, 1.4, 1, "inOut")], leave: [R("leave", 0, 1.4, 1, "in2")] },
   traffic: { pile: [R("pile", 0, 2.4)], go: [R("go", 0, 2.2, 1, "out")], bump: [R("bump", 0, 0.3, 1, "out")], unbump: [R("bump", 0, 0.5, -1, "inOut")] },
   cabinet: { show: [R("pop", -0.1, 0.3, 1, "back")], open: [R("open", 0, 0.7, 1, "out")], close: [R("open", 0, 0.6, -1, "inOut")], lights: [R("lights", 0, 0.2)] },

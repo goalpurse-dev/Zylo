@@ -193,11 +193,14 @@ export function canopy(ctx, p, api) {
   const posts = [];
   for (const x of [x0 + 0.15, x1 - 0.15]) for (const z of [z0 + 0.15, z1 - 0.15]) posts.push(add(ctx.scene, boxG(0.2, h, 0.2), postM, x, y + h / 2, z));
   const roof = add(ctx.scene, boxG(x1 - x0 + 0.4, 0.3, z1 - z0 + 0.4), roofM, cx, y + h + 0.15, cz);
+  roofM.transparent = true;
   return {
     update(tt) {
-      const ps = clamp(api.ch("posts", tt)), rf = back(clamp(api.ch("roof", tt)));
+      const ps = clamp(api.ch("posts", tt)), rf = back(clamp(api.ch("roof", tt))), gh = clamp(api.ch("ghost", tt));
       for (const q of posts) { q.visible = ps > 0.002; q.scale.y = pop(ps); q.position.y = y + (h * ps) / 2; }
       roof.visible = rf > 0.002 && ps > 0.95; roof.scale.setScalar(pop(rf));
+      // (see-through while a later sentence looks at what is under it: layoutRules 16)
+      roofM.opacity = 1 - 0.82 * gh; roofM.depthWrite = gh < 0.05; roof.castShadow = gh < 0.5;
     },
   };
 }
@@ -221,5 +224,5 @@ export const CLARITY_CHANNELS = {
   creek: ["show", "dirty", "clean"],
   flow: ["on", "off"],
   prop: ["pop"],
-  canopy: ["posts", "roof"],
+  canopy: ["posts", "roof", "ghost"],
 };

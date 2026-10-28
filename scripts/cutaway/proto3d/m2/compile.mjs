@@ -170,7 +170,10 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       // is seen end on, so its shot frames the signal it waits at (both went low into the lane, behind a parked car)
       const sigP = part.kind === "traffic" ? layout.parts.find((q) => q.kind === "trafficLight") : null, flat = box.max[1] - box.min[1] < 0.35;
       const qb = sigP && signalQueueBox(sigP, part, layout.world?.cut);
-      const own = qb ? { box: qb, width: 0.9, zone: "center" } : { focus: [b.shows.p], type: w < 0.05 && !flat ? "close" : "mid", ...(flat ? { view: "high" } : {}) };
+      // (and everything the beat's own shot names with it: a shot of the showing part alone dropped the rest, a meter framed
+      // without the fish it measured; the owner's round of 2026-10-28)
+      const named = [...new Set([b.shows.p, ...(b.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : [])).filter((id) => id !== "home" && layout.parts.some((q) => q.id === String(id).split(".")[0]))])];
+      const own = qb ? { box: qb, width: 0.9, zone: "center" } : named.length > 1 ? { focus: named, width: 0.8, ...(flat ? { view: "high" } : {}) } : { focus: [b.shows.p], type: w < 0.05 && !flat ? "close" : "mid", ...(flat ? { view: "high" } : {}) };
       if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : own), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
     }
     // an auto shot takes the place of a planned shot just before it (closer than a move's gap it would be dropped),

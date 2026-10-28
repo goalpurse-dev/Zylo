@@ -284,6 +284,39 @@ export function layoutRules(L) {
     const over = world.cut && x > world.cut.x0 - 2.2 && x < world.cut.x1 + 2.2 && z > world.cut.z0 - 1.2;
     if (z > -1.2 || over) { z = over ? +(world.cut.z0 - 1.4).toFixed(2) : -1.2; c.params.pos = [x, y, z]; notes.push(`${c.id} stands on the ground`); }
   }
+  // 15. a meter is readable on a phone: at least 1.4 m (the free runs' 0.8 m meters read as specks in a wide shot)
+  for (const c of parts.filter((p) => p.kind === "counter")) if (!(Number(c.params.size) >= 1.4)) { c.params.size = 1.4; notes.push(`${c.id} is 1.4 m, readable on a phone`); }
+  // 16. a roof stops hiding what is under it: in each sentence after the one that builds it whose showing part stands under
+  // it (not the finish and congrats: the finished build has its roof), the roof turns see-through, and back after
+  // (the free aquarium run: a shade roof covered the tank and its pipes in every later shot)
+  for (const c of parts.filter((p) => p.kind === "canopy")) {
+    const P = c.params, built = beats.findIndex((b) => b.do.some((a) => a.p === c.id && a.v === "build"));
+    if (built < 0) continue;
+    // (near it counts: the camera looks down past the roof edge at what stands beside it, a filter and pipes behind a tank;
+    // and the parts the beat's shot names count with its showing part: a flow along a pipe has no box of its own)
+    const M = 3, near = (id0) => {
+      const id = String(id0 ?? "").split(".")[0]; if (!id || id === c.id || !byId.has(id)) return false;
+      let q = null; try { q = focusOf(byId.get(id), world.cut); } catch { return false; } if (!q) return false;
+      const mx = (q.min[0] + q.max[0]) / 2, mz = (q.min[2] + q.max[2]) / 2;
+      return mx > (P.x0 ?? -3) - M && mx < (P.x1 ?? 3) + M && mz > (P.z0 ?? -5) - M && mz < (P.z1 ?? -1) + M && q.min[1] < (P.y ?? 0) + (P.h ?? 4);
+    };
+    const under = (b) => [b.shows?.p, ...(b.shots ?? []).flatMap((s) => (Array.isArray(s.focus) ? s.focus : []))].some(near);
+    let on = false;
+    for (const b of beats.slice(built + 1)) {
+      const want = !["finish", "congrats"].includes(b.s) && under(b);
+      if (want !== on) { b.do.unshift({ p: c.id, v: want ? "ghost" : "unghost" }); on = want; notes.push(`${c.id} ${want ? "turns see-through" : "comes back"} in ${b.s}`); }
+    }
+  }
+  // 17. a thin upright layer in the soil (a coating, a membrane, a liner on a wall) is only seen edge-on at the cut face: at least
+  // 0.35 m thick there, so its band reads (the free basement run's rubber coat was a thin stripe)
+  for (const pp of parts.filter((p) => p.kind === "panels")) { pp.params.panels = (pp.params.panels ?? []).map((q) => ({ ...q })); }
+  for (const pp of parts.filter((p) => p.kind === "panels")) for (const q of pp.params.panels) {
+    const [sx, sy, sz] = q.size ?? [], low = Array.isArray(q.pos) && q.pos[1] < 0;
+    if (!low || ![sx, sy, sz].every(Number.isFinite) || !/liner|coat|seal|membrane|tar|rubber|foam/i.test(`${q.ch} ${q.mat}`)) continue;
+    // (an upright layer on a wall only: a liner floor seen edge-on stays as thin as it is)
+    const i = 0, t = sx;
+    if (sx < sy && t < 0.35 && sy > 0.6 && sz > 0.6) { q.size = q.size.map((v, k) => (k === i ? 0.35 : v)); notes.push(`${pp.id}.${q.ch} is 0.35 m thick, readable at the face`); }
+  }
   // 13. a garage whose door the video builds itself (a designed part named a door): the backdrop leaves its own door out
   if (world.backdrop?.type === "garage" && world.backdrop.door !== false && parts.some((p) => p.kind === "rig" && /door/i.test(`${p.id} ${p.params?.name ?? ""}`))) { world.backdrop = { ...world.backdrop, door: false }; notes.push("the garage leaves its own door out: the video builds one"); }
   return { layout: { ...L, world, parts, beats, codeShots: true }, notes };
