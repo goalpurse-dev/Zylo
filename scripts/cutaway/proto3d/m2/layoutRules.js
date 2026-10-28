@@ -8,6 +8,8 @@
 //  5. standing water on a paved floor is a thin glossy puddle, not a 35 cm slab
 //  6. a canopy stands in the open (not under the setting.s roof) and stands out from the building beside it
 import { focusOf, signalQueueBox } from "./focus.js";
+import { verbCues } from "./verbs.js";
+import { LIBS } from "./solver.js";
 import { settingBoxes } from "./framing.js";
 import { STREET_BACK, streetRoad } from "../kit/street.js";
 
@@ -317,7 +319,20 @@ export function layoutRules(L) {
     const i = 0, t = sx;
     if (sx < sy && t < 0.35 && sy > 0.6 && sz > 0.6) { q.size = q.size.map((v, k) => (k === i ? 0.35 : v)); notes.push(`${pp.id}.${q.ch} is 0.35 m thick, readable at the face`); }
   }
+  // 18. free fixes before any check can refuse the plan (the owner's rule of 2026-10-28: a run fails only when nothing
+  // free can fix it): an action on a part that does not exist, or a verb its part does not have, is dropped; a beat for
+  // a role the script does not have is dropped; an unknown library sound is dropped; the cut is kept inside the ground;
+  // a missing end card gets one (it is placed where the end camera sees it, framing.js)
+  for (const b of beats) b.do = b.do.filter((a) => { const p = byId.get(a.p); if (!p) { notes.push(`${b.s}: dropped ${a.p} ${a.v} (no such part)`); return false; } try { verbCues(p, a, { s: b.s }); return true; } catch { notes.push(`${b.s}: dropped ${a.p} ${a.v} (${p.kind} has no such verb)`); return false; } });
+  if (Array.isArray(L.roles) && L.roles.length) for (let i = beats.length - 1; i >= 0; i--) if (!L.roles.includes(beats[i].s)) { notes.push(`dropped beat ${beats[i].s} (no such role)`); beats.splice(i, 1); }
+  const audio = { ...(L.audio ?? {}) };
+  if (Array.isArray(audio.sfx)) { const keep = audio.sfx.filter((s) => LIBS.includes(s.lib)); if (keep.length < audio.sfx.length) notes.push(`dropped ${audio.sfx.length - keep.length} unknown library sounds`); audio.sfx = keep; }
+  if (world.cut && [world.cut.x0, world.cut.x1, world.cut.z0, world.cut.depth].every(Number.isFinite)) {
+    const c = { ...world.cut, x0: Math.max(-14, world.cut.x0), x1: Math.min(14, world.cut.x1), z0: Math.max(-10, world.cut.z0), depth: Math.min(20, world.cut.depth) };
+    if (JSON.stringify(c) !== JSON.stringify(world.cut)) { world.cut = c; notes.push("the cut is kept inside the ground (|x| <= 14, z0 >= -10, depth <= 20)"); }
+  }
+  if (!parts.some((p) => p.kind === "sign")) { const x = (world.cut?.x1 ?? 4) + 3; parts.push({ id: "sign", kind: "sign", params: { at: [x, 0.12, -6], rotY: -0.2, scale: 1.3 } }); notes.push("an end card was added"); }
   // 13. a garage whose door the video builds itself (a designed part named a door): the backdrop leaves its own door out
   if (world.backdrop?.type === "garage" && world.backdrop.door !== false && parts.some((p) => p.kind === "rig" && /door/i.test(`${p.id} ${p.params?.name ?? ""}`))) { world.backdrop = { ...world.backdrop, door: false }; notes.push("the garage leaves its own door out: the video builds one"); }
-  return { layout: { ...L, world, parts, beats, codeShots: true }, notes };
+  return { layout: { ...L, world, parts, beats, audio, codeShots: true }, notes };
 }

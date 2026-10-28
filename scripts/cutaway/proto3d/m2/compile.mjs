@@ -100,17 +100,30 @@ export function holdRamps(r, s) {
 
 export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
-  const beats = expandBeats(layout0);
+  const beats = expandBeats(layout0, { lenient: true });
   const layout = { ...layout0, cues: [...(layout0.cues ?? []), ...beats.cues], shots: [...(layout0.shots ?? []), ...beats.shots] };
   const sign = layout.parts.find((p) => p.kind === "sign");
   if (sign && !layout.cues.some((c) => c.p === sign.id && c.c === "pop")) layout.cues.push({ p: sign.id, c: "pop", a: { mark: "signPop" }, e: "step" });
-  const problems = validateLayout(layout);
+  let problems = validateLayout(layout);
+  const notes = [];
+  if (problems.length) {
+    const bad = new Set(problems.map((p) => /^cue (\d+) /.exec(p)).filter(Boolean).filter((m) => !/unknown easing/.test(problems.find((p) => p.startsWith(`cue ${m[1]} `)) ?? "")).map((m) => Number(m[1])));
+    layout.cues = layout.cues.map((c) => (c.e != null && /unknown easing/.test(problems.find((p) => p.startsWith(`cue ${layout.cues.indexOf(c)} `)) ?? "") ? { ...c, e: "lin" } : c)).filter((_, i) => !bad.has(i));
+    notes.push(...problems.filter((p) => /^cue \d+ /.test(p)).map((p) => `fixed: ${p}`));
+    problems = validateLayout(layout);
+  }
   if (problems.length) throw new Error(`layout ${layout.key}: ${problems.join("; ")}`);
   const sentences = sentencesOf(words, roles);
   const marks = marksFor(words, speechEnd);
   const exact = layout.anchorMatch === "exact";
   const ctx = { words, sentences, marks };
-  const at = (a) => resolveAnchor(exact && a.w != null && a.exact == null ? { ...a, exact: true } : a, ctx);
+  const at = (a) => {
+    try { return resolveAnchor(exact && a.w != null && a.exact == null ? { ...a, exact: true } : a, ctx); } catch (e) {
+      if (!/anchor word not found/.test(e.message) || a.s == null) throw e;
+      notes.push(`${a.s}: "${a.w}" is not said, so it fires at the sentence start`);
+      const { w, n, exact: _x, ...rest } = a; return resolveAnchor(rest, ctx);
+    }
+  };
 
   const tracks = {};
   for (const p of layout.parts) for (const [ch, base] of Object.entries(p.base ?? {})) tracks[`${p.id}.${ch}`] = { base, ramps: [] };
@@ -198,6 +211,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     tracks,
     camera,
     director: director && { notes: director.notes, frames: director.frames },
+    ...(notes.length ? { fixes: notes } : {}),
     audio: {
       sfx: (audio.sfx ?? []).map((s) => ({ lib: s.lib, start: +at(s.at).toFixed(3), duration: s.d ?? 1.4 })),
       chimes: (audio.chimes ?? []).map((a) => +at(a).toFixed(3)),

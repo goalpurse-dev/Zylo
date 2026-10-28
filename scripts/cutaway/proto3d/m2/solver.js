@@ -18,7 +18,7 @@ export const REQUIRED = {
   water: ["box"], gravel: ["box", "faceBox", "pourBox", "waterTop", "waterSpan", "drainDrop"], soakPit: ["box", "faceBox"], wipe: ["box", "mat"], wrap: ["box"], pipe: ["path"], pipeFlow: ["pipe"],
   puddles: ["list"], rain: ["x0", "x1", "z0", "z1"], stream: ["x0", "x1", "z", "yTop", "yBot"], wetBand: ["cx", "halfW", "bottom"], soak: ["x0", "x1", "top"], arrows: ["list"], outline: ["points"],
 };
-const LIBS = ["dirt", "drip", "water_rush", "flame", "motor_hum"];
+export const LIBS = ["dirt", "drip", "water_rush", "flame", "motor_hum"];
 const overlap = (a, b, pad = 0) => [0, 1, 2].every((i) => a.min[i] < b.max[i] - pad && b.min[i] < a.max[i] - pad);
 const pts = (p) => [p.path, p.points, Array.isArray(p.list) && p.list.every((a) => a && !Array.isArray(a) && Array.isArray(a.at)) ? p.list.map((a) => a.at) : null].find(Array.isArray) ?? [];
 

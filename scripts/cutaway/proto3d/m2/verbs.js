@@ -89,15 +89,15 @@ export function verbCues(part, act, at) {
 }
 
 /** a layout's beats -> cues (added to its own cues) and shots for the camera director */
-export function expandBeats(layout) {
+export function expandBeats(layout, { lenient = false } = {}) {
   const parts = new Map(layout.parts.map((p) => [p.id, p]));
   const cues = [], shots = [];
   for (const beat of layout.beats ?? []) {
     for (const act of beat.do ?? []) {
       const part = parts.get(act.p);
-      if (!part) throw new Error(`beat ${beat.s}: no part ${act.p}`);
+      if (!part) { if (lenient) continue; throw new Error(`beat ${beat.s}: no part ${act.p}`); }
       const at = act.w ? { s: beat.s, w: act.w, ...(act.n ? { n: act.n } : {}) } : act.at ?? { s: beat.s };
-      cues.push(...verbCues(part, act, at));
+      try { cues.push(...verbCues(part, act, at)); } catch (e) { if (!lenient) throw e; }
     }
     for (const shot of [beat.shot, ...(beat.shots ?? [])].filter(Boolean)) shots.push({ ...shot, at: shot.at ?? { s: beat.s } });
   }

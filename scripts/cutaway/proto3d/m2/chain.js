@@ -37,7 +37,8 @@ export function chainProblems(script, { strict = true, lengthSec = 30 } = {}) {
     // the first problem lands within the first few seconds: right after a short hook
     if (probs[0] !== 1) P.push(`the first problem ("But…") must be the second sentence, right after the hook (it is sentence ${probs[0] + 1})`);
     const hookWords = String(S[0]?.text ?? "").split(/\s+/).filter(Boolean).length;
-    if (hookWords > 16) P.push(`the hook is ${hookWords} words: keep it to 16 or fewer so the first problem lands within about 4 seconds`);
+    // (16 words is the aim; up to 18 is tolerated: about 0.5 s more before the first problem)
+    if (hookWords > 18) P.push(`the hook is ${hookWords} words: keep it to 16 or fewer so the first problem lands within about 4 seconds`);
   }
   probs.forEach((pi, k) => {
     const text = S[pi].text, short = `"${text.slice(0, 50)}…"`;

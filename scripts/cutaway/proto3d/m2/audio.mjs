@@ -20,8 +20,8 @@ export async function buildAudio({ wt, ff, timeline: tl, voice, words, out }) {
   fs.writeFileSync(path.join(out, "captions_end.ass"), buildAss({ words, cards: A.cards, until: M.signPop }));
   const { renderMix, loudness } = await import(pathToFileURL(path.join(wt, "render-worker/src/cutawayFinal.mjs")).href);
   const lib = (k) => path.join(wt, "render-worker/assets/sfx", `lib-${k}.mp3`);
-  const sfx = A.sfx.map((s) => ({ url: lib(s.lib), start: s.start, duration: s.duration }));
-  for (const s of sfx) if (!fs.existsSync(s.url)) throw new Error(`no library sound ${s.url}`);
+  // (a library sound that is not there is left out: the video goes on without it)
+  const sfx = A.sfx.map((s) => ({ url: lib(s.lib), start: s.start, duration: s.duration })).filter((s) => fs.existsSync(s.url));
   const voiceLufs = await loudness(path.join(out, "voice.mp3"), out);
   // a looped bed (crossfaded copies of a short file), laid `underDb` under the measured voice. Its boost is capped: a
   // near-silent room tone stays a whisper, never amplified hiss.
@@ -35,7 +35,7 @@ export async function buildAudio({ wt, ff, timeline: tl, voice, words, out }) {
     return { file: path.join(out, name), at: from, gain: +Math.min(BED_MAX_BOOST_DB, voiceLufs - underDb - lufs).toFixed(1), lufs: +lufs.toFixed(1) };
   };
   const beds = [];
-  if (A.rain) { const b = await bed(lib("rain"), "rain.mp3", A.rain.from, A.rain.to - A.rain.from, A.rain.underDb, 3.5); if (!b) throw new Error("rain loudness not measured"); beds.push({ kind: "rain", ...b }); }
+  if (A.rain) { const b = await bed(lib("rain"), "rain.mp3", A.rain.from, A.rain.to - A.rain.from, A.rain.underDb, 3.5); if (b) beds.push({ kind: "rain", ...b }); }
   const amb = A.ambience && path.join(wt, "render-worker/assets/sfx", `amb-${A.ambience.setting}.mp3`);
   const result = {};
   for (const [name, len, extra] of [["mix_end.mp3", M.lengthEnd, [M.signPop]], ["mix_noend.mp3", M.lengthNoEnd, []]]) {

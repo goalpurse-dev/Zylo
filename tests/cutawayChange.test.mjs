@@ -112,3 +112,37 @@ test("the multi-frame check is for custom only: premade keeps the one-frame prom
   assert.match(checks, /const VISION_SYSTEM_ONE = `When a frame's line says/);
   assert.match(run, /if \(ok && still\.length\) await repairRound\(4, still\)/, "the second picture repair runs for whatever still fails");
 });
+
+test("round 5: a narration a little over its limit is tolerated, then trimmed for free, before any rewrite is paid for", async () => {
+  const { overWords, trimNarration, wordCount, LENGTH } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  assert.equal(overWords(121, 30), false, "121 of 120 is inside the 5% tolerance"); assert.equal(overWords(127, 30), true);
+  assert.deepEqual(LENGTH[30].beats, [10, 12]); assert.deepEqual(LENGTH[60].beats, [18, 24]);
+  const s = { sentences: [{ role: "fix2", text: "So you add a yellow lamp that just really warns drivers then." }, { role: "how", text: "Inside, the box also reads the loop and turns green." }] };
+  const t = trimNarration(s, { max: 19, cues: { how: ["also"] } });
+  assert.ok(t.script.sentences.reduce((k, x) => k + wordCount(x.text), 0) <= 19);
+  assert.match(t.script.sentences[0].text, /^So you add a yellow lamp/); assert.match(t.script.sentences[1].text, /\balso\b/, "a cue word is kept");
+});
+
+test("round 5: the beat plan's story bookkeeping is fixed for free; a planned layout's broken actions, roles and sounds are dropped", async () => {
+  const { fixStory } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const scene = { beats: [{ s: "hook", shows: { does: "a lamp hangs" } }, { s: "problem", shows: { does: "cars pile up at the red" }, do: [{ p: "q", v: "pile", w: "pile up" }] }, { s: "fix1" }, { s: "problem2", shows: { does: "a car crashes into another" } }] };
+  const st = fixStory({ chain: [{ problem: "problem", causedBy: "fix1", size: 5 }, { problem: "problem2", causedBy: "hook", size: 3 }], surprises: [{ role: "nope", claim: "x" }] }, scene);
+  assert.deepEqual(st.chain.map((c) => [c.causedBy, c.size]), [["hook", 5], ["fix1", 6]]);
+  assert.equal(st.ideas.find((i) => i.role === "problem2").idea, "a car crashes into another");
+  assert.deepEqual(st.surprises, []); assert.equal(scene.beats[1].do[0].w, "pile");
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  const { layout, notes } = layoutRules({ key: "t", roles: ["hook", "fix1"], world: { cut: { x0: -20, x1: 4, z0: -3, depth: 3 } }, audio: { sfx: [{ lib: "dirt", at: { s: "hook" } }, { lib: "nope", at: { s: "hook" } }] },
+    parts: [{ id: "tank", kind: "boxPop", params: { pos: [0, 0.5, -2] } }], beats: [{ s: "hook", do: [{ p: "tank", v: "show" }, { p: "tank", v: "explode" }, { p: "ghost", v: "show" }], shots: [] }, { s: "fix9", do: [], shots: [] }] });
+  assert.deepEqual(layout.beats.map((b) => [b.s, b.do.length]), [["hook", 1]]);
+  assert.deepEqual(layout.audio.sfx.map((s) => s.lib), ["dirt"]); assert.equal(layout.world.cut.x0, -14);
+  assert.ok(layout.parts.some((p) => p.kind === "sign"), notes.join("; "));
+});
+
+test("round 5: an anchor word that is not said fires at its sentence start instead of crashing the render", async () => {
+  const { compile } = await import("../scripts/cutaway/proto3d/m2/compile.mjs");
+  const words = [{ w: "If", s: 0.1, e: 0.2 }, { w: "you", s: 0.25, e: 0.35 }, { w: "dig.", s: 0.4, e: 0.6 }, { w: "But", s: 0.9, e: 1.0 }, { w: "rain.", s: 1.05, e: 1.3 }];
+  const L = { key: "anchor_t", world: { cut: { x0: -4, x1: 4, z0: -3, depth: 3 } }, camera: { keys: [{ at: { abs: 0 }, pos: [0, 5, 10], tgt: [0, 0, 0] }, { at: { abs: 1 }, pos: [0, 5, 9], tgt: [0, 0, 0] }] }, audio: { ambience: false }, parts: [{ id: "tank", kind: "boxPop", params: { pos: [0, 0.5, -2] } }],
+    beats: [{ s: "hook", do: [{ p: "tank", v: "show", w: "pit" }] }, { s: "problem", do: [] }] };
+  const tl = compile(L, words, 1.4, { roles: ["hook", "problem"] });
+  assert.ok(tl.fixes.some((f) => /"pit" is not said/.test(f))); assert.ok(tl.tracks["tank.pop"].ramps[0].t0 < 0.2);
+});

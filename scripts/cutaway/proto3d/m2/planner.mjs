@@ -23,8 +23,14 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const template = (k) => { const L = JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8")); const P = placeLifeProps(L, homeView(L), projectBox).layout; return placeSign(P, homeView(P), projectBox).layout; };
 const roleScript = (L, words) => words; // (kept for symmetry; scripts carry their roles)
 
-// (the most is a hard limit: the real writer's first narrations ran to 150-168 words for 30 s, 2026-10-28)
-export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
+// (the most is a limit with a 5% tolerance, WORD_TOLERANCE: the real writer's first narrations ran to 150-182 words for
+// 30 s, 2026-10-28; a free trim and a second rewrite come before a refusal). beats: a new plan's most beats (the owner's
+// cap of 2026-10-28: 12 for 30 s, scaled for 60 s; 13 beats made the words overrun); sentences: what a script may have
+// (the approved premade scripts have up to 13)
+export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12] }, 60: { words: [200, 240], sentences: [18, 24], beats: [18, 24] } };
+export const WORD_TOLERANCE = 0.05;
+export const wordCount = (t) => String(t ?? "").split(/\s+/).filter(Boolean).length;
+export const overWords = (n, lengthSec) => n > Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
 
 // the worked examples the script writer sees: the chain structure (the owner's rule of 2026-10-25), written by hand from
 // facts verified in earlier runs (research/seamless-niche/CHAIN_EXAMPLES.json)
@@ -354,6 +360,33 @@ export function mergeScene(scene, patch) {
   if (patch.audio) for (const k of ["cards", "sfx", "chimes", "rain"]) if (patch.audio[k]) out.audio[k] = patch.audio[k];
   return out;
 }
+/**
+ * The free trim (before a paid rewrite): filler words out of the longest lines first, until the narration is within the
+ * limit. Never a cue word, a number, or a line's opening words (the formula: "If you", "But", "So you", "This is",
+ * "And", "Add", "Congratulations"). Returns { script, cut: [the words taken out] }.
+ */
+const FILLER = ["just", "really", "very", "actually", "simply", "basically", "then", "also", "quickly", "slowly", "finally", "suddenly", "even", "still", "right", "all", "completely", "totally", "literally"];
+export function trimNarration(script, { max, cues = {} } = {}) {
+  const S = script.sentences.map((s) => ({ ...s })), cut = [];
+  const total = () => S.reduce((k, s) => k + wordCount(s.text), 0);
+  const keep = (s) => new Set([...(cues[s.role] ?? []).map(tok)]);
+  for (const f of FILLER) {
+    while (total() > max) {
+      // the longest line holding this filler word after its first two words
+      const cand = S.map((s, i) => ({ s, i, ws: s.text.split(/\s+/) })).filter(({ s, ws }) => ws.slice(2).some((w) => tok(w) === f && !keep(s).has(f))).sort((a, b) => b.ws.length - a.ws.length)[0];
+      if (!cand) break;
+      const j = cand.ws.findIndex((w, k) => k >= 2 && tok(w) === f);
+      const w = cand.ws[j], tail = /[,.!?;:]$/.test(w) ? w.slice(-1) : "";
+      cand.ws.splice(j, 1);
+      if (tail && j > 0 && !/[,.!?;:]$/.test(cand.ws[j - 1])) cand.ws[j - 1] += tail;
+      S[cand.i].text = cand.ws.join(" ").replace(/\s+,/g, ",").replace(/,\s*\./g, ".").replace(/\band and\b/g, "and");
+      cut.push(`${S[cand.i].role}: ${f}`);
+    }
+  }
+  // "and then" / ", and" repeats: "so you ... and so" -> keep one
+  for (const s of S) if (total() > max && /\band so\b/i.test(s.text.split(/\s+/).slice(2).join(" "))) { s.text = s.text.replace(/(\S+\s+\S+\s.*?)\band so\b/i, "$1and"); cut.push(`${s.role}: so`); }
+  return { script: { ...script, sentences: S }, cut };
+}
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
 export const KIT_CANNOT = [
@@ -364,7 +397,7 @@ export const KIT_CANNOT = [
 const checkScript = (s, lengthSec, roles) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
-  if (n < L.words[0] - 8 || n > L.words[1]) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
+  if (n < L.words[0] - 8 || overWords(n, lengthSec)) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
   const rs = s.sentences.map((x) => x.role);
   if (new Set(rs).size !== rs.length) P.push("a role is used twice");
   if (rs[0] !== "hook" || rs.at(-1) !== "congrats") P.push("the script must open with hook and end with congrats");
@@ -436,6 +469,7 @@ function wordsUser({ topic, lengthSec, beats, facts = [] }) {
   const L = LENGTH[lengthSec];
   return `Topic: ${topic}
 Length: ${lengthSec} s: ${L.words[0]}-${L.words[1]} words in all, one sentence per beat (${beats.length} sentences).
+Word budget: aim for ${Math.round((L.words[0] + L.words[1]) / 2)} words in all, about ${Math.round((L.words[0] + L.words[1]) / 2 / beats.length)} words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over ${L.words[1]} words is too long.
 ${facts.length ? `Verified facts (the only numbers and claims you may use, word for word where you use them):\n${facts.map((f) => `- ${f}`).join("\n")}\n` : "No verified facts: use no numbers.\n"}
 The beats, in order:
 ${beats.map((b, i) => `${i + 1}. ${b.role}
@@ -457,8 +491,9 @@ export function sentenceProblems(text, { cues = [], allowed = null, must = [], w
   for (const n of must) if (!nums.includes(n)) P.push(`the number ${n} is missing`);
   for (const [re, why] of KIT_CANNOT) if (re.test(text)) P.push(why);
   const n = toks.filter(Boolean).length;
-  if (n < 3 || n > 28) P.push(`${n} words`);
-  if (words && (n > words * 1.6 + 3 || n < words * 0.5)) P.push(`${n} words where the beat had ${words}`);
+  // (a line's own length is a tolerance only: the whole narration's count is the limit; a line far out still fails)
+  if (n < 3 || n > 34) P.push(`${n} words`);
+  if (words && (n > words * 2 + 4 || n < words * 0.4)) P.push(`${n} words where the beat had ${words}`);
   if (!/[.!]$/.test(String(text).trim())) P.push("no full stop");
   return P;
 }
@@ -537,13 +572,32 @@ export function draftSentences(L, ideas) {
   });
 }
 /** the beat plan's story (free): roles in order, the chain of problems (caused by the fix before, bigger each time), the surprises */
+/** the beat plan's story bookkeeping, fixed for free (it is derived from the beats; the checks then judge the story) */
+export function fixStory(story0, scene) {
+  const story = JSON.parse(JSON.stringify(story0 ?? {})), beats = scene?.beats ?? [], roles = beats.map((b) => b.s);
+  const ideas = new Map((story.ideas ?? []).map((x) => [x.role, x.idea]));
+  story.ideas = roles.map((r) => ({ role: r, idea: String(ideas.get(r) ?? "").trim() || String(beats.find((b) => b.s === r)?.shows?.does ?? "").trim() || r }));
+  const probs = roles.filter((r) => /^problem/.test(r)), byP = new Map((story.chain ?? []).map((c) => [c.problem, c]));
+  let last = 0;
+  story.chain = probs.map((r, k) => {
+    const c = { ...(byP.get(r) ?? { problem: r }) }, i = roles.indexOf(r);
+    c.causedBy = k === 0 ? "hook" : roles.slice(0, i).filter((x) => /^fix/.test(x)).at(-1) ?? c.causedBy ?? "hook";
+    if (String(c.shows ?? "").split(/\s+/).filter(Boolean).length < 3) c.shows = String(beats.find((b) => b.s === r)?.shows?.does ?? ideas.get(r) ?? r);
+    if (String(c.stakes ?? "").split(/\s+/).filter(Boolean).length < 2) c.stakes = c.stakes || "the build fails";
+    c.size = Math.max(Number(c.size) || 0, last + 1); last = c.size;
+    return c;
+  });
+  story.surprises = (story.surprises ?? []).filter((s) => roles.includes(s.role));
+  for (const b of beats) for (const a of b.do ?? []) if (a.w && !/^[A-Za-z0-9'-]+$/.test(a.w)) { const m = String(a.w).match(/[A-Za-z0-9'-]+/); if (m) a.w = m[0]; else delete a.w; }
+  return story;
+}
 export function beatPlanProblems(L, story, lengthSec) {
   const P = [], roles = (L.beats ?? []).map((b) => b.s), R = LENGTH[lengthSec];
   if (roles[0] !== "hook" || roles.at(-1) !== "congrats") P.push("the beats must start with hook and end with congrats");
   if (!roles.includes("name")) P.push('no "name" beat (This is a…)');
   if (new Set(roles).size !== roles.length) P.push("a role is used twice");
   for (const r of roles) if (!ROLES.includes(r)) P.push(`role "${r}" is not one of ${ROLES.join(", ")}`);
-  if (roles.length < R.sentences[0] || roles.length > R.sentences[1]) P.push(`${roles.length} beats (want ${R.sentences[0]}-${R.sentences[1]})`);
+  if (roles.length < R.beats[0] || roles.length > R.beats[1]) P.push(`${roles.length} beats (want ${R.beats[0]}-${R.beats[1]})`);
   const ideas = new Map((story?.ideas ?? []).map((x) => [x.role, x.idea]));
   for (const r of roles) if (!String(ideas.get(r) ?? "").trim()) P.push(`beat ${r}: no idea`);
   const probs = roles.filter((r) => /^problem/.test(r)), need = lengthSec >= 60 ? 3 : 2;
@@ -591,21 +645,21 @@ async function planCustom({ step, topic, lengthSec, example, lastOpening, librar
   const text = `${topic}`;
   const saved = libraryMatches(library, text), models = modelMatches(text, 12);
   const user = `Topic: ${topic}.${settingHint(topic)}
-Length: ${lengthSec} s: ${R.sentences[0]}-${R.sentences[1]} beats (the narration will be ${R.words[0]}-${R.words[1]} words). Roles: ${ROLES.join(", ")}.
+Length: ${lengthSec} s: ${R.beats[0]}-${R.beats[1]} beats (the narration will be ${R.words[0]}-${R.words[1]} words). Roles: ${ROLES.join(", ")}.
 ${finishPropsLine(topic)}${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}${saved.length ? `
 SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: copy its recipe, change only id, pos, rotY and scale):
 ${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
 CC0 MODELS that may fit (use one as a model shape inside a rig when it is the thing, sized in metres; it cannot move by itself, so put moving pieces in their own nodes):
 ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const plan = (r) => {
-    const scene = parseScene(r.data), story = r.data.story ?? {};
+    const scene = parseScene(r.data), story = fixStory(r.data.story ?? {}, scene);
     const roles = (scene.beats ?? []).map((b) => b.s);
     const conv = layoutFromScene(scene, { key, title: story.title || topic, roles });
     const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
     const draft = draftSentences(conv.layout, ideas);
     const solved = solveLayout(conv.layout, draft);
-    const problems = [...conv.problems, ...beatPlanProblems(conv.layout, story, lengthSec), ...solved.problems, ...openingProblems(conv.layout, lastOpening)];
-    return { scene, story, conv, ideas, draft, problems, warnings: solved.warnings, why: r.data.why };
+    const problems = [...conv.problems, ...beatPlanProblems(conv.layout, story, lengthSec), ...solved.problems];
+    return { scene, story, conv, ideas, draft, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
   };
   // 1. the beat plan
   let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
@@ -682,7 +736,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const factOf = (role) => kept.filter((c) => c.role === role).map((c) => c.claim).join("; ");
   const beats = roles.map((role) => ({ role, sees: beatBrief(layout, role), idea: B.ideas[role], cues: cuesOf()[role] ?? [], fact: factOf(role) }));
   const toScript = (data) => {
-    const sentences = roles.map((role) => ({ role, text: oneSentence(data.sentences?.find((x) => x.role === role)?.text ?? "") }));
+    // (by role; a writer that returned one sentence per beat under other role names is read in order: free)
+    const byOrder = (data.sentences ?? []).length === roles.length;
+    const sentences = roles.map((role, i) => ({ role, text: oneSentence(data.sentences?.find((x) => x.role === role)?.text ?? (byOrder ? data.sentences[i]?.text : "") ?? "") }));
     const chain = (B.story.chain ?? []).map((c) => ({ problem: roles.indexOf(c.problem), causedBy: c.causedBy === "hook" ? -1 : roles.indexOf(c.causedBy), shows: c.shows, stakes: c.stakes, size: c.size })).filter((c) => c.problem >= 0);
     const linked = linkProblems({ sentences, chain }).script.sentences;
     const cards = (layout.audio.cards ?? []).map((c) => ({ text: c.text, sentence: roles.indexOf(c.at.s), word: String(c.at.w ?? "") }));
@@ -696,12 +752,15 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     return { P, moved: rt.moved };
   };
   let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
-  let script = toScript(w.data), wc = wordsCheck(script);
+  // the free trim first: a narration a few words over its limit loses filler words, never its cues, numbers or openings
+  const maxW = Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
+  const trimmed = (sc) => { const n = sc.sentences.reduce((k, s) => k + wordCount(s.text), 0); if (n <= maxW) return sc; const t = trimNarration(sc, { max: maxW, cues: cuesOf() }); if (t.cut.length) trace.push({ label: "words trim (free)", from: n, to: t.script.sentences.reduce((k, s) => k + wordCount(s.text), 0), cut: t.cut }); return t.script; };
+  let script = trimmed(toScript(w.data)), wc = wordsCheck(script);
   trace.push({ label: "words checks", problems: wc.P, moved: wc.moved });
-  if (wc.P.length) {
-    w = await step("words repair", { system: WORDS_SYSTEM, user: `${wordsUser({ topic, lengthSec, beats: roles.map((role) => ({ ...beats.find((b) => b.role === role), cues: cuesOf()[role] ?? [] })), facts: kept.map((c) => c.claim) })}\n\nYour narration below has problems the free checks found. Fix every one and return the whole narration again.\nProblems:\n- ${wc.P.join("\n- ")}\n\nYour narration:\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
-    script = toScript(w.data); wc = wordsCheck(script);
-    trace.push({ label: "words checks (repair)", problems: wc.P, moved: wc.moved });
+  for (let round = 1; round <= 2 && wc.P.length; round++) {
+    w = await step(round === 1 ? "words repair" : "words repair 2", { system: WORDS_SYSTEM, user: `${wordsUser({ topic, lengthSec, beats: roles.map((role) => ({ ...beats.find((b) => b.role === role), cues: cuesOf()[role] ?? [] })), facts: kept.map((c) => c.claim) })}\n\nYour narration below has problems the free checks found. Fix every one and return the whole narration again.\nProblems:\n- ${wc.P.join("\n- ")}\n\nYour narration:\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
+    script = trimmed(toScript(w.data)); wc = wordsCheck(script);
+    trace.push({ label: `words checks (repair ${round})`, problems: wc.P, moved: wc.moved });
   }
   // a cue word still missing: its actions fire at the start of its sentence (free; the picture still shows them)
   const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
