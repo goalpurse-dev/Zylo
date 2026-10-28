@@ -16,6 +16,8 @@
 // A campaign in status "waiting" is never touched: the owner has not said go.
 //   POST { action: "tick" }                         the cron call
 //   POST { action: "test", campaign, to }           ONE proof copy to one address (subject "[TEST] …")
+//        + asSent: true   the subject exactly as users got it (owner, 2026-10-28: a spam-placement check)
+//        + offer: false   without the +50 offer line
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
@@ -172,7 +174,7 @@ async function followUpReports(out: Record<string, string>) {
 }
 
 // One proof copy for the owner, through the same template, sender and gate (category "test": 20 a day, no consent needed).
-async function test(campaign: string, to: string) {
+async function test(campaign: string, to: string, { asSent = false, offer = true } = {}) {
   const def = (CAMPAIGNS as any)[campaign];
   const address = String(to ?? "").trim().toLowerCase();
   if (!def || !address) return { sent: false, reason: "unknown campaign or no address" };
@@ -181,7 +183,8 @@ async function test(campaign: string, to: string) {
   if (!claim.ok) return { sent: false, reason: claim.reason };
   const resendId = await sendClaimedEmailWithId(sb, {
     claimId: claim.id, to: address, userId: p?.id ?? crypto.randomUUID(), // no profile: the unsubscribe page will say the link isn't valid
-    from: def.from, replyTo: def.replyTo, subject: `[TEST] ${def.subject}`, why: def.why, plain: def.plain === true, render: (footer: any) => def.render(footer, { link: linkFor(def) }),
+    from: def.from, replyTo: def.replyTo, subject: asSent ? def.subject : `[TEST] ${def.subject}`, why: def.why, plain: def.plain === true,
+    render: (footer: any) => def.render(footer, { link: linkFor(def), ...(offer ? {} : { offer: false }) }),
     tags: [{ name: "campaign_test", value: campaign }],
   });
   return resendId === null ? { sent: false, reason: "send_failed" } : { sent: true, resendId };
@@ -192,7 +195,7 @@ Deno.serve(async (req) => {
   if (!SECRET || req.headers.get("x-campaign-secret") !== SECRET) return json({ error: "Unauthorized" }, 401);
   const body = await req.json().catch(() => ({}));
   try {
-    if (body?.action === "test") return json(await test(String(body.campaign ?? ""), String(body.to ?? "")));
+    if (body?.action === "test") return json(await test(String(body.campaign ?? ""), String(body.to ?? ""), { asSent: body.asSent === true, offer: body.offer !== false }));
     return json({ ok: true, campaigns: await tick() });
   } catch (e) {
     console.error("[campaign-sender] failed:", String((e as any)?.message ?? e));

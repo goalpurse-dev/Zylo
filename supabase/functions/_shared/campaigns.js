@@ -29,10 +29,11 @@ ${footer.html}
 // gets it as a link to `opts.link` (decided when the email is sent). No other link but the footer's unsubscribe.
 // offerBefore: the paragraph that the +50 bonus offer line goes in front of, only while the offer is
 // live at `opts.at` (default: now, the moment the email is rendered = sent; _shared/offer.js).
+// opts.offer === false leaves the line out even while the offer is live (a test copy without it).
 function plainEmailInlineLink(allParagraphs, signature, { offerBefore } = {}) {
   return (footer, opts = {}) => {
     const href = opts.link ?? APP_URL;
-    const paragraphs = offerBefore && offerLive(opts.at ?? Date.now())
+    const paragraphs = offerBefore && opts.offer !== false && offerLive(opts.at ?? Date.now())
       ? allParagraphs.flatMap((p) => (p === offerBefore ? [OFFER_EMAIL_LINE, p] : [p]))
       : allParagraphs;
     const para = (p) => {

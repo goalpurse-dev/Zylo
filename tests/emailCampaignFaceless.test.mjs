@@ -36,7 +36,7 @@ test("days 4–7: the owner's text, one link, no images, same sender and reply-t
   // The sender's link choice gives tryzyvo.com to every campaign without linkTo "cutaway".
   const src = read("supabase/functions/campaign-sender/index.ts");
   assert.match(src, /def\.linkTo === "cutaway" && \(Deno\.env\.get\("CUTAWAY_ENABLED"\) \?\? ""\)\.trim\(\)\.toLowerCase\(\) === "true" \? CUTAWAY_URL : APP_URL/);
-  assert.equal(src.split("render: (footer: any) => def.render(footer, { link: linkFor(def) })").length - 1, 2, "both the real send and the proof copy");
+  assert.equal(src.split("render: (footer: any) => def.render(footer, { link: linkFor(def)").length - 1, 2, "both the real send and the proof copy");
   assert.ok(CUTAWAY_URL.endsWith("/workspace/cutaway-explainer"));
 });
 
@@ -163,4 +163,14 @@ test("only real users on live templates block a day: the owner's own projects an
   const src = read("supabase/functions/campaign-sender/index.ts");
   assert.match(src, /ownerEmailsFrom\(Deno\.env\.get\("ADMIN_EMAILS"\), Deno\.env\.get\("CUTAWAY_TEST_USERS"\)\)/);
   assert.match(src, /\.eq\("source", "render-long-form-scene"\)\.in\("event", \["scene_retry_deferred", "scene_covered"\]\)/);
+});
+
+test("proof copies (owner, 2026-10-28): asSent keeps the real subject, offer: false leaves the +50 line out", () => {
+  const footer = emailFooter({ why: "why", unsubscribeUrl: "https://x/u" });
+  const live = Date.parse("2026-10-28T12:00:00Z");
+  assert.match(CAMPAIGNS.warmup_day4.render(footer, { at: live }).text, /50 bonus credits/);
+  assert.doesNotMatch(CAMPAIGNS.warmup_day4.render(footer, { at: live, offer: false }).text, /50 bonus credits/);
+  const src = readFileSync(join(root, "supabase/functions/campaign-sender/index.ts"), "utf8");
+  assert.match(src, /subject: asSent \? def\.subject : `\[TEST\] \$\{def\.subject\}`/);
+  assert.match(src, /asSent: body\.asSent === true, offer: body\.offer !== false/);
 });
