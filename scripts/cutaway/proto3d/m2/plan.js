@@ -111,6 +111,7 @@ export function sceneFromLayout(L) {
     beats: L.beats.map((b) => ({
       s: b.s,
       ...(b.shows ? { shows: b.shows } : {}),
+      ...(b.state ? { state: b.state } : {}),
       do: (b.do ?? []).map((a) => ({ p: a.p, v: a.v, w: a.w ?? "", o: a.o ?? 0, d: a.d ?? 0, amp: a.amp ?? 1, ch: a.ch ?? "" })),
       shots: [b.shot, ...(b.shots ?? [])].filter(Boolean).map((s) => ({ focus: s.focus === "home" ? ["home"] : s.focus ?? [], view: typeof s.view === "string" ? s.view : "home", width: s.width ?? 0, type: s.type ?? "", hero: !!s.hero, word: s.at?.w ?? "", box: s.box ? [...s.box.min, ...s.box.max] : [] })),
     })),

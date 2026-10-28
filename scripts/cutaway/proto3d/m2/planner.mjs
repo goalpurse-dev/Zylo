@@ -891,7 +891,9 @@ export async function repairLayout({ apiKey, topic, script, layout, problems, lo
   }
   // the reply is a patch: changed beats (by sentence), changed or new parts (by id), changed world keys
   const conv = layoutFromScene(mergeScene(sceneFromLayout(layout), parseScene(r.data)), { key: layout.key, title: layout.title, roles: layout.roles });
-  let next = { ...conv.layout, why: layout.why };
+  // (the hold and the state labels survive a repair: the rebuilt layout dropped them, and the free basement and pond
+  // runs' final videos had neither)
+  let next = { ...conv.layout, why: layout.why, ...(layout.hold ? { hold: true } : {}) };
   if (saved) next = { ...next, world: layout.world, parts: layout.parts, camera: layout.camera };
   else if (layout.camera) next.camera = layout.camera;
   if (layout.world?.sat != null) next.world = { ...next.world, sat: layout.world.sat };

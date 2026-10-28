@@ -2,6 +2,7 @@
 // label, the hold at 70% of travel, the bump and the drive-off, the snap, the gauge, the fast cycle.
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { stateCards, holdRamps, STATE_WORDS } from "../scripts/cutaway/proto3d/m2/compile.mjs";
 import { previewTimes } from "../scripts/cutaway/proto3d/m2/checks.mjs";
 import { buildAss, STATE_Y } from "../render-worker/src/cutawayFinalPlan.mjs";
@@ -78,4 +79,13 @@ test("the planner's own state label survives into the layout (it was dropped: on
   const scene = { world: { cut: [-4, 4, -3, 3] }, parts: [], audio: {}, beats: [{ s: "problem", do: [], state: { text: "TOO HOT", w: "heats" } }, { s: "problem2", do: [], state: "STUCK" }] };
   const { layout } = layoutFromScene(scene, { key: "t", title: "t", roles: ["problem", "problem2"] });
   assert.deepEqual(layout.beats.map((b) => b.state), [{ text: "TOO HOT", w: "heats" }, { text: "STUCK" }]);
+});
+
+test("a layout round trip (as a picture repair rebuilds it) keeps the beats' state labels", async () => {
+  const { layoutFromScene, sceneFromLayout } = await import("../scripts/cutaway/proto3d/m2/plan.js");
+  const scene = { world: { cut: [-4, 4, -3, 3] }, parts: [], audio: {}, beats: [{ s: "problem", do: [], state: { text: "CRACKED", w: "cracks" } }] };
+  const L1 = layoutFromScene(scene, { key: "t", title: "t", roles: ["problem"] }).layout;
+  const L2 = layoutFromScene(sceneFromLayout(L1), { key: "t", title: "t", roles: ["problem"] }).layout;
+  assert.deepEqual(L2.beats[0].state, { text: "CRACKED", w: "cracks" });
+  assert.match(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/planner.mjs", import.meta.url), "utf8"), /why: layout\.why, \.\.\.\(layout\.hold \? \{ hold: true \} : \{\}\)/);
 });
