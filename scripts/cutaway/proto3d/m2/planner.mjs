@@ -797,6 +797,9 @@ export async function rewordBeats({ apiKey, topic, script, layout, failing, log,
     if (!cand) return s;
     const text = oneSentence(cand), p = sentenceProblems(text, { allowed: numbersIn(s.text).concat(numbersIn((script.facts ?? []).map((c) => c.claim).join(" "))), must: numbersIn(s.text) });
     if (p.length) { problems.push(`${s.role}: ${p.join("; ")}`); return s; }
+    // (the same words back are no change: it paid for a new voice take and a check of the same pictures; free garage
+    // door run, 2026-10-28)
+    if (text.trim() === s.text.trim()) return s;
     changed.push(s.role); return { ...s, text };
   });
   return { script: { ...script, sentences: linkProblems({ sentences, chain: script.chain ?? [] }).script.sentences }, changed, problems, costUsd: r.costUsd ?? 0 };
