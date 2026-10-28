@@ -132,7 +132,9 @@ export function layoutRules(L) {
     if (b.s === "congrats" || !b.shots?.length) continue;
     const shown = b.shows?.p && known(b.shows.p) ? [b.shows.p] : [];
     // (the "Add ..." line shows the whole finished build, the things it adds arriving on it: a run framed one bench)
-    if (b.s === "finish") { b.shots = [{ focus: "home" }]; notes.push("finish: the whole build"); continue; }
+    // (the build itself and what the line adds, framed close enough to read them: the whole yard left an ice rink's lines
+    // and nets specks; the owner's finish round of 2026-10-29)
+    if (b.s === "finish") { const main = parts.find((p) => p.main)?.id, adds = b.do.filter((a) => /^(show|build|grow|arrive|pop|fill)$/.test(a.v) && known(a.p) && !["light", "rain", "sign", "outline", "arrows"].includes(byId.get(a.p).kind)).map((a) => a.p), ids = [...new Set([main, ...adds].filter(Boolean))]; b.shots = ids.length ? [{ focus: ids, width: 0.85 }] : [{ focus: "home" }]; notes.push("finish: the build and what it adds"); continue; }
     b.shots = b.shots.map((s) => {
       if (s.focus === "home" || (Array.isArray(s.focus) && s.focus.includes("home"))) return s;
       // (a shot of one piece, "door.spring", stays on that piece: the part it hangs on is not added back)

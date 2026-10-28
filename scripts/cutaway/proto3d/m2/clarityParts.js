@@ -178,9 +178,11 @@ const PROP_TYPES = {
   // the topic props (2026-10-29): the finishing touches that complete the thing itself
   rocks(g, k) {
     // stones along the edge of an area [w, d] (a pond's rim), centred on pos
-    const [w, d] = k.p.size ?? [4, 3], n = Math.max(10, Math.round((w + d) * 2.2)), m = [k.mat("#8d8a82", { roughness: 0.95 }), k.mat("#a7a39a", { roughness: 0.95 }), k.mat("#76736c", { roughness: 0.95 })];
+    // (open: the sides left without stones: "front" at the cut face, where stones would float on the water seen in section)
+    const [w, d] = k.p.size ?? [4, 3], open = [].concat(k.p.open ?? []), n = Math.max(10, Math.round((w + d) * 2.2)), m = [k.mat("#8d8a82", { roughness: 0.95 }), k.mat("#a7a39a", { roughness: 0.95 }), k.mat("#76736c", { roughness: 0.95 })];
     for (let i = 0; i < n; i++) {
       const u = i / n, per = 2 * (w + d), s = u * per, [x, z] = s < w ? [-w / 2 + s, d / 2] : s < w + d ? [w / 2, d / 2 - (s - w)] : s < 2 * w + d ? [w / 2 - (s - w - d), -d / 2] : [-w / 2, -d / 2 + (s - 2 * w - d)];
+      if ((open.includes("front") && z >= d / 2 - 1e-6) || (open.includes("back") && z <= -d / 2 + 1e-6) || (open.includes("left") && x <= -w / 2 + 1e-6) || (open.includes("right") && x >= w / 2 - 1e-6)) continue;
       const r = 0.22 + ((i * 7) % 5) * 0.05, st = k.add(g, new k.THREE.DodecahedronGeometry(r, 0), m[i % 3], x, r * 0.55, z); st.scale.y = 0.6; st.rotation.y = i * 1.3;
     }
   },
@@ -251,11 +253,12 @@ const PROP_TYPES = {
   },
   ceilingLight(g, k) {
     // a pendant lamp hanging from a ceiling at height h above pos (pos y = the floor): a cord, a shade, a glowing bulb
+    // (drawn large enough to read in a wide shot: a 0.35 m shade was a speck)
     const h = k.p.h ?? 2.6, drop = k.p.drop ?? 0.7;
-    k.add(g, new k.THREE.CylinderGeometry(0.015, 0.015, drop, 6), k.mat("#2d3236"), 0, h - drop / 2, 0, false);
-    k.add(g, new k.THREE.ConeGeometry(0.35, 0.3, 18, 1, true), k.mat("#2d3236", { roughness: 0.5 }), 0, h - drop - 0.1, 0);
-    k.add(g, new k.THREE.SphereGeometry(0.12, 12, 10), k.ctx.std({ color: k.C("#fff6d8"), emissive: k.C("#ffe9a8"), emissiveIntensity: 2.2 }), 0, h - drop - 0.22, 0, false);
-    const L = new k.THREE.PointLight(0xffe2a8, 1.4, 6); L.position.set(0, h - drop - 0.35, 0); g.add(L);
+    k.add(g, new k.THREE.CylinderGeometry(0.03, 0.03, drop, 6), k.mat("#2d3236"), 0, h - drop / 2, 0, false);
+    k.add(g, new k.THREE.ConeGeometry(0.6, 0.5, 18, 1, true), k.mat("#2d3236", { roughness: 0.5 }), 0, h - drop - 0.2, 0);
+    k.add(g, new k.THREE.SphereGeometry(0.22, 12, 10), k.ctx.std({ color: k.C("#fff6d8"), emissive: k.C("#ffe9a8"), emissiveIntensity: 2.2 }), 0, h - drop - 0.42, 0, false);
+    const L = new k.THREE.PointLight(0xffe2a8, 2.2, 8); L.position.set(0, h - drop - 0.6, 0); g.add(L);
   },
   steppingStones(g, k) {
     // flat stones in a line along x over length w (a path to the thing)

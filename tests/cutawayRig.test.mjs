@@ -72,7 +72,7 @@ test("topic policy: new machines are built, only what the format cannot show is 
   for (const t of ["how the heart pumps blood", "a black hole", "the solar system"]) assert.equal(kitCheck(t).verdict, "no", t);
 });
 
-test("code decides HOW a shot is framed: the plan's camera box, view and width are dropped; a car is seen with its signal; the finish shows the whole build; the hook's thing is the subject", async () => {
+test("code decides HOW a shot is framed: the plan's camera box, view and width are dropped; a car is seen with its signal; the finish shows the build and what it adds; the hook's thing is the subject", async () => {
   const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
   const L = {
     world: { cut: { x0: -3, x1: 3, z0: -3, depth: 0.6 }, shallow: true },
@@ -87,7 +87,8 @@ test("code decides HOW a shot is framed: the plan's camera box, view and width a
   assert.equal(out.codeShots, true);
   assert.deepEqual(B.problem2.shots, [{ focus: ["lone", "tl"], width: 0.8 }], "no box, no view: the car and its signal");
   assert.deepEqual(B.hook.shots, [{ focus: ["tl"], width: 0.7 }], "no type: the code's width");
-  assert.deepEqual(B.finish.shots, [{ focus: "home" }]);
+  // (the finish frames the build and what it adds, close enough to read them: 2026-10-29)
+  assert.deepEqual(B.finish.shots, [{ focus: ["tl", "bench"], width: 0.85 }]);
   assert.equal(out.parts.find((p) => p.id === "tl").main, true, "the hook builds the subject");
 });
 
