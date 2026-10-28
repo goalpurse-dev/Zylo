@@ -79,8 +79,9 @@ export function stateCards(sentences, words, beats = [], cards = []) {
 // The hold (the owner's rule of 2026-10-28, from the examples: the crane mast stays tilted, the elevator hangs mid-fall):
 // in a layout with hold: true, a beat's motion runs to 70% of its travel by 75% of its line and holds there, the rest
 // after the line ends; the check frames are taken during the hold (the tail ramp is marked so previewTimes skips it).
-// Only motions: a part's visibility and switches keep their timing.
-const HOLD_CH = { car: ["drive", "leave"], traffic: ["pile", "go"], dumpTruck: ["tip"], cabinet: ["open"], counter: ["count"] };
+// Only motions: a part's visibility and switches keep their timing. (Not a counter: the number it says must be reached;
+// held at 70% a "6 inches an hour" gauge read 4, free harness 2026-10-28.)
+const HOLD_CH = { car: ["drive", "leave"], traffic: ["pile", "go"], dumpTruck: ["tip"], cabinet: ["open"] };
 const RIG_HOLD = new Set(["slide", "swing", "track", "extend", "snap", "fill"]);
 function holdable(part, ch) {
   if (!part) return false;
