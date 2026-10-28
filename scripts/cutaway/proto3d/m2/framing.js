@@ -216,8 +216,12 @@ export function placeSign(L, home, project) {
   const others = signObstacles(L, sign), hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2 && b.min[1] < o.max[1]);
   // seen from the camera: nothing of the setting between the home view and the board (a spot behind the bay's back wall
   // was free but hidden)
-  const walls = [...sceneryBoxes(L), ...worldTrees(L), ...L.parts.filter((p) => p !== sign).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter((b) => b && b.max[1] > 1.5 && b.min[1] > -0.5)];
-  const seen = (b) => { const pts = [[(b.min[0] + b.max[0]) / 2, b.max[1] - 0.5, b.max[2]], [b.min[0] + 0.4, b.max[1] - 0.5, b.max[2]], [b.max[0] - 0.4, b.max[1] - 0.5, b.max[2]]]; return pts.every((p) => { const d = sub(p, home.pos), len = Math.hypot(...d), u = mul(d, 1 / len); return !walls.some((w) => hitBox(home.pos, u, w) < len - 0.3); }); };
+  // (each young tree too: their one padded box reaches under the ground and was never counted, and one hid half the
+  // Landfill's sign in its end view, 2026-10-28)
+  const young = L.parts.filter((p) => p.kind === "youngTrees").flatMap((p) => (p.params?.trees ?? []).map(([x, z, s = 0.6]) => ({ min: [x - 1.6 * s, 0, z - 1.6 * s], max: [x + 1.6 * s, 5.4 * s, z + 1.6 * s] })));
+  const walls = [...sceneryBoxes(L), ...worldTrees(L), ...young, ...L.parts.filter((p) => p !== sign).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter((b) => b && b.max[1] > 1.5 && b.min[1] > -0.5)];
+  // (the board's middle too, where its words are: rays to its top edge only cleared a tree that hid the text)
+  const seen = (b) => { const mid = b.max[1] - Math.min(2.4, (b.max[1] - b.min[1]) * 0.35); const pts = [[(b.min[0] + b.max[0]) / 2, b.max[1] - 0.5, b.max[2]], [b.min[0] + 0.4, b.max[1] - 0.5, b.max[2]], [b.max[0] - 0.4, b.max[1] - 0.5, b.max[2]], [(b.min[0] + b.max[0]) / 2, mid, b.max[2]], [b.min[0] + 0.4, mid, b.max[2]], [b.max[0] - 0.4, mid, b.max[2]]]; return pts.every((p) => { const d = sub(p, home.pos), len = Math.hypot(...d), u = mul(d, 1 / len); return !walls.some((w) => hitBox(home.pos, u, w) < len - 0.3); }); };
   if (cover(sign).share <= 0.1 && !hits(focusOf(sign, cut)) && seen(focusOf(sign, cut))) return { layout: L, moved: false };
   const [, y0, z0] = sign.params.at;
   // spots nearest the build first (1 m apart, either side), each at the sign's size, then a little smaller (1.0)

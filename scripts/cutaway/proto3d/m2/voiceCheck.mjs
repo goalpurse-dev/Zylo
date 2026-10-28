@@ -95,8 +95,10 @@ export function compareWords(scriptText, heardText, { maxNoteRate = 0.08 } = {})
   // edit distance where a word written as two ("ground water"/"groundwater", "box shaped"/"boxshaped") costs nothing
   const D = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: m + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
   const sub = (i, j) => (same(a[i - 1], b[j - 1]) ? 0 : 1);
-  const join21 = (i, j) => i > 1 && j > 0 && a[i - 2] + a[i - 1] === b[j - 1];
-  const join12 = (i, j) => i > 0 && j > 1 && a[i - 1] === b[j - 2] + b[j - 1];
+  // (two words run together are heard as one, spelt as heard: "pay kiosk" as "pakiosk")
+  const joined = (x, y) => x === y || (!isNum(x) && !isNum(y) && oneOff(x, y));
+  const join21 = (i, j) => i > 1 && j > 0 && joined(a[i - 2] + a[i - 1], b[j - 1]);
+  const join12 = (i, j) => i > 0 && j > 1 && joined(a[i - 1], b[j - 2] + b[j - 1]);
   for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
     D[i][j] = Math.min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + sub(i, j));
     if (join21(i, j)) D[i][j] = Math.min(D[i][j], D[i - 2][j - 1]);

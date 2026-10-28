@@ -11,6 +11,8 @@ import { compile } from "./compile.mjs";
 import { makePage } from "./makePage.mjs";
 import { buildAudio } from "./audio.mjs";
 import { speechEnd } from "../speechEnd.mjs";
+import { cameraAt, projectBox } from "./director.js";
+import { placeSign } from "./framing.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const progress = (o) => console.log(`PROGRESS ${JSON.stringify(o)}`);
@@ -57,7 +59,14 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   fs.mkdirSync(out, { recursive: true });
   progress({ stage: "timeline", pct: 2 });
   const se = speechEnd(ff, voice);
-  const tl = compile(layout, words, se, { roles });
+  let tl = compile(layout, words, se, { roles });
+  // the end card checked from the camera the video really ends on (with the real word times), and moved to a clear spot
+  // if something stands between (a young tree hid half the Landfill's sign, 2026-10-28); free, before the render
+  for (let i = 0; i < 2 && tl.marks?.signPop != null && tl.camera?.end; i++) {
+    const k = cameraAt(tl.camera.end, tl.marks.signPop + 0.6), ps = placeSign(layout, { pos: k.pos, tgt: k.tgt }, projectBox);
+    if (!ps.moved) break;
+    layout = ps.layout; tl = compile(layout, words, se, { roles }); timing.signMoved = (timing.signMoved ?? 0) + 1;
+  }
   fs.writeFileSync(path.join(out, "timeline.json"), JSON.stringify(tl, null, 1));
   preparePage({ layout, tl, proto });
   timing.prepare = (Date.now() - t0) / 1000;

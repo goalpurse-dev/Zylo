@@ -2,6 +2,7 @@
 // outputs (output_config.format); the web search server tool for the fact-check (pause_turn resumed). Every call is
 // priced from its usage and appended to the spend log, so the BUILD_PLAN tally can be checked against it.
 import fs from "node:fs";
+import { REPLAY, replayLLM } from "./providers.mjs";
 
 // small: the simple steps (re-anchoring words, the post text, the kit check), where it passes the same checks
 export const MODEL = { default: "claude-sonnet-5-5", strong: "claude-opus-5-5", small: "claude-haiku-5-5" };
@@ -45,6 +46,7 @@ async function readStream(res) {
 }
 
 export function loadKey(envFile = "C:/Users/Public/Zylo/.env.local") {
+  if (REPLAY) return "replay";
   if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
   for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) { const m = line.match(/^\s*ANTHROPIC_API_KEY\s*=\s*(.*)\s*$/); if (m) return m[1].replace(/^["']|["']$/g, ""); }
   throw new Error("no ANTHROPIC_API_KEY");
@@ -55,6 +57,8 @@ export function loadKey(envFile = "C:/Users/Public/Zylo/.env.local") {
  * log: the spend log file (one JSON line per call).
  */
 export async function callJSON({ apiKey, model = MODEL.default, system, user, schema, search = 0, effort = "high", maxTokens = 32000, label, log, timeoutMs = 600_000 }) {
+  // the free harness: a recorded or written answer, never the API (providers.mjs)
+  if (REPLAY) return replayLLM({ label, model, system, user, schema, search, log });
   const body = {
     model, max_tokens: maxTokens, stream: true,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],

@@ -112,14 +112,38 @@ export function previewTimes(tl, layout = null) {
     // the moment after the sentence's showing action has settled (else after its last action)
     // (and of every part the sentence's own shot frames: "a pump that pushes the water through a filter box" was judged
     // when the pump had popped in, before the filter and the flow had come, and failed for a missing filter)
-    const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : []))].filter(Boolean));
-    const own = shows ? Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next).map((r) => r.t1)) : [];
-    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
+    // (and of every part the beat itself acts on: "so a pipe carries it" was judged on the bubbles alone, before the gas
+    // pipe had grown, in the free harness of 2026-10-27)
+    const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : [])), ...(shows ? (beat?.do ?? []).map((a) => a.p) : [])].filter(Boolean));
+    // (only actions that start while the sentence is spoken: the next sentence's lead-in, a "So" that hides this beat's
+    // seep 0.25 s early, belongs to the next beat; the free harness of 2026-10-27 found Landfill frames judged after it)
+    const framedRamps = Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps);
+    // a motion of this beat, or of a later one (by the sentence it is anchored to; one tied to no sentence, as the end
+    // card's pop, goes by its time)
+    const order = (role) => tl.sentences.findIndex((x) => x.role === role);
+    const mine = (r) => (r.s ? r.s === s.role : r.t0 >= s.t0 - 0.5 && r.t0 < next);
+    const later = (r) => (r.s ? order(r.s) > i : r.t0 >= s.t1);
+    const own = shows ? framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next + 0.4).map((r) => r.t1) : [];
+    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
     // (the showing action on the last word, a canopy going up on "canopy", may settle just after the sentence: up to 0.4 s)
-    // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed)
+    // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed),
+    // nor after the next beat starts changing what this one frames (the newspaper sinking on "But")
     const moveOff = Math.min(Infinity, ...(tl.director?.frames ?? []).filter((f) => f.t >= next - 0.05).map((f) => f.t - MOVE.lead - 0.05));
-    const lim = Math.min(own.length ? next + 0.4 : next - 0.15, moveOff);
-    const t = Math.min(lim, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, lim))));
+    const changeOff = Math.min(Infinity, ...framedRamps.filter((r) => later(r) && r.t0 >= s.t0 && r.t0 < next + 0.4).map((r) => r.t0 - 0.03));
+    // nor after this beat takes its own shown thing away again (a myth's wrong idea: the toilet's push arrows came on
+    // "pushing" and went on "not", and the frame after both showed nothing; free harness, 2026-10-28)
+    // (only its visibility channel coming back down: a designed part's other channels, a toilet's gas or water, go up and
+    // down as its story runs)
+    const part = layout?.parts?.find((p) => p.id === shows?.p);
+    const appear = new Set(["on", "pop", "show", "appear", ...((part?.params?.nodes ?? []).flatMap((n) => (n.moves ?? []).filter((m) => m.type === "appear").map((m) => m.name)))]);
+    let hideOff = Infinity;
+    if (shows) for (const [k, tr] of Object.entries(tl.tracks)) {
+      const [p, ch] = k.split("."); if (p !== shows.p || !appear.has(ch)) continue;
+      const rs = tr.ramps.filter(mine).sort((a, b) => a.t0 - b.t0), on = rs.find((r) => r.amp > 0);
+      if (on) hideOff = Math.min(hideOff, ...rs.filter((r) => r.amp < 0 && r.t0 >= on.t1).map((r) => r.t0 - 0.03));
+    }
+    const lim = Math.min(own.length ? next + 0.4 : next - 0.15, moveOff, changeOff, hideOff);
+    const t = Math.min(lim, Math.max(Math.min(s.t0 + 1.0, lim), ...ends.map((e) => Math.min(e + 0.2, lim))));
     // congrats is judged before the end card pops (the finished build must be in view, not the sign)
     const tt = s.role === "congrats" && tl.marks?.signPop ? Math.min(t, tl.marks.signPop - 0.2) : t;
     out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, tt).toFixed(2), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });

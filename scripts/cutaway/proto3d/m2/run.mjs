@@ -9,7 +9,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { planTopic, repairLayout, openingOf } from "./planner.mjs";
+import { planTopic, repairLayout, openingOf, rewordBeats, missingWords, dropWords } from "./planner.mjs";
 import { loadKey } from "./llm.mjs";
 import { makeVoice } from "./voice.mjs";
 import { makeVideo, preparePage, runProcess } from "./make.mjs";
@@ -125,13 +125,58 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
       return true;
     };
-    // only the hook flagged: no repair (the approved videos' hooks are flagged as well; a repair costs about $0.17)
-    if (failed.length && !failed.every((f) => f.role === "hook") && !approvedSaved) {
-      const ok = await repairRound(2, failed);
-      // a mechanism beat ("This is a…", how, the fixes) still failing gets a second, small repair of just those beats:
-      // cheaper than refunding the whole attempt
-      const mech = still.filter((f) => MECHANISM.includes(f.role));
-      if (ok && mech.length) await repairRound(3, mech);
+    // the two-way repair (the owner's rule of 2026-10-27): a flagged sentence can be rewritten to say what its frame
+    // shows (the words), or the frame changed (the picture), whichever is cheaper and surer: the words first, then the
+    // picture for what still fails and for frames that are broken. A new voice take follows changed words (the whole
+    // narration: a take spliced from pieces would be heard, and a take costs about $0.025).
+    const revoice = async (round) => {
+      const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), out: path.join(out, `voice_r${round}`), ff, wt, log });
+      voice = v.voice; words = v.words; vUsd += v.usd;
+      save("script.json", plan.script);
+    };
+    const wordsRound = async (round, beats) => {
+      if (plan.costUsd + vUsd + extraUsd + 0.08 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return; }
+      P({ stage: "scene", step: "repair", pct: 7 });
+      const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: beats, log, cacheDir });
+      extraUsd += rw.costUsd; visionReport[`words${round}`] = { changed: rw.changed, problems: rw.problems };
+      if (!rw.changed.length) return;
+      plan.script = rw.script;
+      // a cue word the new sentence no longer says: its actions start with the sentence
+      const miss = missingWords(layout, plan.script.sentences); if (miss.length) layout = dropWords(layout, miss);
+      P({ stage: "scene", step: "voice", pct: 7 });
+      await revoice(round);
+      ({ tl, checks } = checkAll());
+      preparePage({ layout, tl, proto });
+      const again = previewTimes(tl, layout).filter((s) => rw.changed.includes(s.role));
+      const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, `preview${round}`) });
+      const jpgs2 = shrink(ff, pngs2, path.join(out, `preview${round}_small`));
+      const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
+      visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
+      still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
+    };
+    const broken = (f) => /\bfloat|black|empty frame|blank|inside (the )?(house|geometry|wall)|cut off|clipped|camera (is )?(in|inside)|nothing (is )?(visible|on screen)/i.test(`${f.problem} ${f.seen}`);
+    if (approvedSaved && failed.length) {
+      // a premade topic: each flagged sentence goes back to its approved wording, which the approved picture shows
+      const A = plan.approvedScript, back = failed.map((f) => f.role).filter((r) => A?.sentences.some((s) => s.role === r));
+      if (back.length) {
+        plan.script = { ...plan.script, sentences: plan.script.sentences.map((s) => (back.includes(s.role) ? { ...A.sentences.find((a) => a.role === s.role) } : s)) };
+        P({ stage: "scene", step: "voice", pct: 7 });
+        await revoice(2);
+        ({ tl, checks } = checkAll());
+        visionReport.reverted = back;
+        still = still.filter((f) => !back.includes(f.role));
+      }
+    } else if (failed.length && !failed.every((f) => f.role === "hook")) {
+      // only the hook flagged: no repair (the approved videos' hooks are flagged as well)
+      const byWords = failed.filter((f) => !broken(f));
+      if (byWords.length) await wordsRound(2, byWords);
+      // the picture for what would still block the gate, or a broken frame
+      if (still.length && (still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role) || broken(f)))) {
+        const ok = await repairRound(3, still);
+        // a mechanism beat still failing gets a second, small picture repair of just those beats
+        const mech = still.filter((f) => MECHANISM.includes(f.role));
+        if (ok && mech.length) await repairRound(4, mech);
+      }
     }
     visionReport.failing = still.map((f) => f.role);
     save("vision.json", visionReport);

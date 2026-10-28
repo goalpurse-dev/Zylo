@@ -65,7 +65,8 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const key = `${c.p}.${c.c}`;
     const t0 = at(c.a);
     const t1 = c.b ? at(c.b) : c.d != null ? t0 + Number(c.d) : t0;
-    (tracks[key] ??= { base: 0, ramps: [] }).ramps.push({ t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step") });
+    // (s: the sentence whose words it is anchored to, so the preview moment knows this beat's motions from the next one's)
+    (tracks[key] ??= { base: 0, ramps: [] }).ramps.push({ t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step"), ...(c.a?.s ? { s: c.a.s } : {}) });
   }
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)

@@ -37,7 +37,10 @@ export function solveLayout(L, sentences) {
     const P = p.params ?? {};
     for (const k of REQUIRED[p.kind] ?? []) if (P[k] == null) problems.push(`part ${p.id} (${p.kind}): needs ${k}`);
     for (const q of pts(P)) if (!Array.isArray(q) || q.length !== 3 || !q.every(Number.isFinite)) { problems.push(`part ${p.id}: every point must be [x, y, z]`); break; }
-    for (const k of ["box", "faceBox", "pourBox", "area"]) if (P[k]) { const b = P[k]; if (!["x0", "x1", "z0", "z1"].every((j) => Number.isFinite(b[j])) || b.x1 <= b.x0 || b.z1 <= b.z0 || (b.y0 != null && b.y1 != null && b.y1 <= b.y0)) problems.push(`part ${p.id}: ${k} needs x0 < x1, y0 < y1, z0 < z1`); }
+    // (an area may be the array [x0, x1, z0, z1] the catalog documents for miniMachines: the vending machine plan of the
+    // free harness, 2026-10-28, was refused for using the documented form)
+    if (Array.isArray(P.area) && !(P.area.length === 4 && P.area.every(Number.isFinite) && P.area[0] < P.area[1] && P.area[2] < P.area[3])) problems.push(`part ${p.id}: area needs [x0, x1, z0, z1] with x0 < x1 and z0 < z1`);
+    for (const k of ["box", "faceBox", "pourBox", "area"]) if (P[k] && !Array.isArray(P[k])) { const b = P[k]; if (!["x0", "x1", "z0", "z1"].every((j) => Number.isFinite(b[j])) || b.x1 <= b.x0 || b.z1 <= b.z0 || (b.y0 != null && b.y1 != null && b.y1 <= b.y0)) problems.push(`part ${p.id}: ${k} needs x0 < x1, y0 < y1, z0 < z1`); }
     if (["water", "gravel", "soakPit", "wrap"].includes(p.kind) && P.box && Math.abs(P.box.z1) > 0.06) warnings.push(`part ${p.id}: a fill seen in section should end at the face (box.z1 about 0)`);
     if (p.kind === "pipe" || p.kind === "pipeRun") for (const q of P.path ?? []) if (q[1] < 0 && Math.abs(q[2]) > 0.3 && !(q[0] >= cut.x0 && q[0] <= cut.x1 && q[2] >= cut.z0)) warnings.push(`part ${p.id}: an underground pipe point ${JSON.stringify(q)} is hidden (not at the face, z about -0.06)`);
     if (p.kind === "sign") { const s = focusOf(p, cut); if ((P.at?.[1] ?? 0) < 0) problems.push("the sign must stand on the ground (at[1] >= 0)"); if (overlap(s, houseBox, 0.3)) problems.push("the sign is inside the house"); }

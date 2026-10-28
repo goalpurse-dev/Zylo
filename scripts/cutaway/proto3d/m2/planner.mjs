@@ -113,7 +113,12 @@ export function exampleFor(topic) {
   if (set === "carwash") return "car_wash";
   return /drain/i.test(topic) ? "landfill" : "french_drain";
 }
-const sceneSystem = (example = "french_drain") => `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.
+// mode "script": the scene for a written script (a given script, a repair); mode "beats": the beats FIRST (the owner's
+// rule of 2026-10-27, "visuals first, words second"): the planner decides what visibly happens in each moment, with cue
+// words instead of a script, and the writer then writes one sentence per beat about what is on screen
+const sceneSystem = (example = "french_drain", mode = "script") => `${mode === "beats" ? `You plan a cutaway explainer video BEFORE its narration exists: its story beats, its 3D scene and its animation, using ONLY the kit described below. For each moment (beat) of the story you decide what visibly happens, with kit parts and verbs, and the camera. A writer then writes exactly one sentence per beat saying what you show, so a beat can only carry what the kit can show. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each beat (by its role), which kit verbs happen on which cue words, and the camera shots; and the story: each beat's idea, the chain of problems, the surprises.
+
+${STORY_RULES}` : `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.`}
 
 ${catalogText()}
 
@@ -121,23 +126,26 @@ HOW TO PLAN
 - Coordinates: the face of the cut is z = 0, facing the camera; things seen in section in the face sit at z near 0 (pipes in the face at z = -0.06, fills from z0 to z1 = 0). The ground surface is y = 0. The camera looks from +z, a little from the right and above.
 - Choose the setting first (THE SETTING above): the yard only for things around a house; a street or a park when the topic lives there. Our videos should not all look alike.
 - One cut (world.cut) holds the main build. Keep the house off the cut (move it back or aside with world.house). Pipes may run through the soil outside the cut, along the face. When nothing goes underground (a street topic) the cut is just where the build stands: the pipeline makes it a thin slab, and there is no dig.
-- A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). When there is a dig, it is on "dig" in the hook.
+${mode === "beats" ? `- A part appears ON ITS CUE WORD: an action's w is the one plain word the narration will say at that moment: the thing's name ("pipe", "gravel", "tank", "loop") or the action ("dig", "cracks", "floods"); one word, no punctuation, never "" except to start with the beat. The writer must say every cue word of a beat in its sentence, so pick words a narrator would say. When there is a dig, its cue is "dig" in the hook.` : `- A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). When there is a dig, it is on "dig" in the hook.`}
 - The explainer layer: arrows show where water or gas moves; a glowing outline traces the named part on the "This is a…" sentence (verb show on the named word, hide on the next sentence); flow dots run in pipes when water flows.
 - A myth-bust ("X is not Y") must SHOW the wrong idea first, then take it away: a flag crossed out, a fake lake that drains or fades on "not", then the real mechanism appears on the next sentence. A sentence about something that is not there needs a visible stand-in for it.
 - EVERY SENTENCE SHOWS ITS OWN ACTION: the thing the sentence names is on screen and visibly does the sentence's verb. Each beat has shows: {p: the id of the part that does it, does: the visible action in a few words}. Use the part made for the verb: flow for runs / pours / flows (its path goes from where the stuff starts to where it ends, e.g. across the slab into the drain, through the pipe, down into the creek), settle for sinks / floats / separates (sand grains fall to the floor, a dark oil layer rises), creek for a creek, river or stream (it must exist as a part, not a blue box), fills for filling up, pipes growing for laying a pipe. Arrows alone never show an action: they only point at one. A creek or anything else seen in section must lie inside the cut's x range (the solid soil face hides the rest); otherwise it is seen on the surface.
-- IF THE KIT CANNOT SHOW A SENTENCE: rewrite that sentence so it says what the kit can show, keeping its numbers and facts and its length: sceneJson.rewrites [{role, text}]. The narration is recorded after your plan, so the rewrite is what is said.
+${mode === "beats" ? `- SHOW ONLY WHAT THE KIT CAN SHOW: a beat whose idea the kit cannot show gets another idea that it can. The writer describes only what your beats show.` : `- IF THE KIT CANNOT SHOW A SENTENCE: rewrite that sentence so it says what the kit can show, keeping its numbers and facts and its length: sceneJson.rewrites [{role, text}]. The narration is recorded after your plan, so the rewrite is what is said.`}
 - Something new every 2-3 s: every sentence has at least one action. Problems are visible (rain, flooding, a crack, a leak) and are fixed by the next part. By "Congratulations" the problem is gone: stop rain, clear the storm, hide arrows and flows, refill or cap the cut, add the finishing touches. The end is calm.
 - Camera shots: about one per sentence, a fast move starts just before the sentence (or before the word in shot.word). focus is the ids of the parts to frame (["home"] = the home view). Size a shot by type, the shot vocabulary measured on the hand-built videos: wide (0.9 of the home distance), mid (0.7: most story shots), close (0.42: a crack, a newspaper, a machine's slot), detail (0.2: the holes in a pipe); or by width (how much of the frame width the parts fill: 0.3-0.5 for a prop, 0.6-1.0 for a long trench). Give type or width, not both. box (6 numbers: min x,y,z, max x,y,z) frames a region instead of parts. view: home (default), high (from above, for water on a surface), low (level, for a pipe in section), close (a detail on a wall); they all stay within 20 degrees of the home angle. The "This is a…" sentence's shot is hero: true (with a width). Congrats and finish are home shots.
 - THE OPENING: the video opens close on its own hook object, never on the house. The hook beat's first shot (no word) frames the naive thing the hook line names, the thing a viewer already knows (the hole being dug, the machine's slot, the puddle at the wall, the car in the bay, the button), type close or mid. The home view comes later (the problem or how sentence) and at the end.
 - THE MAIN SUBJECT: every shot keeps it in view (the cut, or the part you mark main: true when the story is a machine above ground); no shot of open lawn or sky. Side-story props (a flag, a book, a newspaper) stand beside the cut, just behind its back edge and inside the home frame, never out on the lawn. world.worker true only when the topic has a worker (by default there is none).
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
-- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shows: {p, does}, shots: [...]}], audio: {cards, sfx, chimes, rain}, rewrites?: [{role, text}]}. A part's base (optional) sets a channel's starting value. Numbers in world units.
+${mode === "beats" ? `- Reply with "why", "story" and "sceneJson". story: title, hero (the named part, as the "This is a…" beat names it: "a landfill liner"), parts (plain nouns), ideas (one per beat, in beat order: {role, idea: what this beat means in the story, in one plain line, as the narrator would put it, e.g. "the box runs on a clock, so at midnight a lone car waits at an empty red"}), chain (one per problem beat: {problem: its role, causedBy: the role of the fix before it that caused it, "hook" for the first; shows: what we see happening; stakes: who or what suffers; size: 1-10, bigger every time}), surprises (3-4: {claim: a concrete checkable claim, ideally with a number; role: the beat that says it; search: a web search query}). A number card's word (audio.cards at.w) is the number as the narrator will say it ("600").
+` : ""}- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shows: {p, does}, shots: [...]}], audio: {cards, sfx, chimes, rain}, rewrites?: [{role, text}]}. A part's base (optional) sets a channel's starting value. Numbers in world units.
 - Verbs: an action is {p: part id, v: verb, w: the word in that sentence (as written, without punctuation; "" = the sentence start), o: seconds after the word (0), d: a duration to stretch the verb (0 = default), amp: 1, ch: "" (panels only: the panel channel)}.
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
 - In "why", say in two or three sentences what the scene is and how the camera tells it.
 
 THE WORKED EXAMPLE: the ${EXAMPLE_TITLE[example] ?? premadeByKey(example)?.topic ?? example.replace(/_/g, " ")} video's layout, for its script:
-${JSON.stringify(sceneFromLayout(template(example)))}`;
+${JSON.stringify(sceneFromLayout(template(example)))}${mode === "beats" && approvedScript(example) ? `
+Its narration, written afterwards one sentence per beat (role: sentence), to show how cue words become words:
+${approvedScript(example).sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}` : ""}`;
 const SCENE_SYSTEM = sceneSystem();
 
 // the "Add ..." line names only finishing touches the setting has (catalog.js SETTING_PROPS), so a car wash never gets
@@ -360,6 +368,352 @@ const checkScript = (s, lengthSec, roles) => {
   return P;
 };
 
+// ---------- visuals first, words second (the owner's rule of 2026-10-27) ----------
+// The production Landfill of 2026-10-27 failed the preview check on problem, fix1 and problem2: its fresh script said
+// "the plastic traps gas, and the pile bulges and cracks" over a scene that shows a gas pipe. The words were written
+// first and the pictures could not follow. Now the beats come first (a premade topic: the approved layout's; a custom
+// one: the planner's beat plan, checked free), and the writer writes one sentence per beat about what is on screen.
+
+// the approved videos' scripts, sentence by sentence (layouts/approved_scripts.json, shipped in the worker image)
+let APPROVED = null;
+export function approvedScript(key) {
+  if (!APPROVED) { try { APPROVED = JSON.parse(fs.readFileSync(path.join(here, "layouts", "approved_scripts.json"), "utf8")); } catch { APPROVED = {}; } }
+  return APPROVED[key]?.sentences ? APPROVED[key] : null;
+}
+
+// the story rules the beat plan follows (the writer's formula, as beats)
+const STORY_RULES = `THE STORY (the account's formula; you plan it as beats, one sentence each later):
+- hook: "If you [one naive physical action], you have a [thing]." The video opens on that action.
+- the chain: problem ("But [a visible consequence]") then fix ("So you [add one real part]"), repeated. Every fix causes the next, bigger problem ("So you add X. But now X does Y"): a CHAIN, not a list. Each problem is a concrete consequence you SEE happen (cars piling up at the red, water flooding the basement, the wall cracking, the creek turning grey), with visible stakes, never a dry fact. The first problem is the second beat.
+- name: "This is a [real term]." (once; a second, name2, only in 60 s videos); how/fact beats show the mechanism working.
+- myth: "And [what everyone thinks] is not [what it is]." Show the wrong idea first, then take it away; mythFact shows the real one.
+- finish: "Add [two or three finishing touches]." then congrats: "Congratulations, you have built a [thing]." The end is calm.
+- Surprises: three or four concrete, checkable claims, ideally with a number; they are fact-checked before the words are written.
+- Roles: hook first, congrats last, finish just before it; problem roles are problem, problem2, problem3 (flood and stakes may deepen a problem); fix roles are fix1..fix5. One beat per role.
+WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
+- street: ONE straight road going away from the camera, one crosswalk, one signal on its corner, a sidewalk with shop fronts. Cars drive one way along that road: they arrive, stop, queue nose to tail at the line, wait, drive off, and can bump the car ahead. No cross road or second road, no turning, no pedestrians.
+- yard: a house, a lawn, a fence, trees and the ground cut open in section below; rain, water and pipes.
+- garage: a garage with one wide opening on a driveway, a car, shelves inside.
+- room: a room with a floor (the basement below in section), a wall with a window, an armchair.
+- car wash: a lot with a wash bay, a car going through.
+No people doing things, no maps, no long text on screens, no outer space or the body.`;
+
+const WORDS_SYSTEM = `You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.
+THE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.
+Cue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.
+The account's formula (keep it):
+HOOK      "If you [one naive physical action], you have a [thing]." (16 words or fewer)
+CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added, or starts with "But now" (checked by code).
+NAME      "This is a [real term]."
+MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
+FINISH    "Add [the finishing touches shown]." then "Congratulations, you have built a [thing]."
+Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
+Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952").
+Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
+const NARRATION_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "sentences"], properties: { title: { type: "string" }, sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } } } };
+
+const prettyId = (id) => String(id).replace(/([a-z])([A-Z0-9])/g, "$1 $2").toLowerCase();
+/** what a beat of a layout shows, in plain words (what the writer is told the viewer sees) */
+export function beatBrief(L, role) {
+  const b = (L.beats ?? []).find((x) => x.s === role);
+  if (!b) return "the finished build, calm";
+  const acts = (b.do ?? []).map((a) => `${prettyId(a.p)} ${a.v}${a.w ? ` (on "${a.w}")` : ""}`);
+  return [b.shows?.does, acts.length ? `actions: ${acts.join("; ")}` : null].filter(Boolean).join(". ") || "the finished build, calm";
+}
+function wordsUser({ topic, lengthSec, beats, facts = [] }) {
+  const L = LENGTH[lengthSec];
+  return `Topic: ${topic}
+Length: ${lengthSec} s: ${L.words[0]}-${L.words[1]} words in all, one sentence per beat (${beats.length} sentences).
+${facts.length ? `Verified facts (the only numbers and claims you may use, word for word where you use them):\n${facts.map((f) => `- ${f}`).join("\n")}\n` : "No verified facts: use no numbers.\n"}
+The beats, in order:
+${beats.map((b, i) => `${i + 1}. ${b.role}
+   on screen: ${b.sees}${b.idea ? `\n   idea: ${b.idea}` : ""}
+   cue words: ${b.cues.length ? b.cues.map((w) => `"${w}"`).join(", ") : "(none)"}${b.fact ? `\n   its fact: ${b.fact}` : ""}${b.approved ? `\n   the approved sentence for this beat (it matches the picture): "${b.approved}". Say the same thing in fresh words, or keep it if it is already the best way to say it.` : ""}`).join("\n")}`;
+}
+
+const tok = (w) => String(w ?? "").toLowerCase().replace(/[^a-z0-9']/g, "").replace(/'s$/, "");
+const numbersIn = (t) => (String(t).match(/\d[\d,]*(?:\.\d+)?/g) ?? []).map((x) => x.replace(/,/g, "").replace(/\.$/, ""));
+/**
+ * One written sentence against its beat (free): its cue words, its numbers (only allowed ones; the must-haves kept),
+ * what the kit cannot show, its length and its full stop. Returns the problems.
+ */
+export function sentenceProblems(text, { cues = [], allowed = null, must = [], words = null } = {}) {
+  const P = [], toks = String(text).split(/\s+/).map(tok);
+  for (const c of cues) if (c && !toks.includes(tok(c))) P.push(`cue word "${c}" is missing`);
+  const nums = numbersIn(text);
+  if (allowed) for (const n of nums) if (!allowed.includes(n) && !(Number(n) <= 12 && !/\./.test(n))) P.push(`the number ${n} is not in the verified facts`);
+  for (const n of must) if (!nums.includes(n)) P.push(`the number ${n} is missing`);
+  for (const [re, why] of KIT_CANNOT) if (re.test(text)) P.push(why);
+  const n = toks.filter(Boolean).length;
+  if (n < 3 || n > 28) P.push(`${n} words`);
+  if (words && (n > words * 1.6 + 3 || n < words * 0.5)) P.push(`${n} words where the beat had ${words}`);
+  if (!/[.!]$/.test(String(text).trim())) P.push("no full stop");
+  return P;
+}
+
+/**
+ * A premade topic: the approved layout's beats and their approved sentences; the writer says each in fresh words around
+ * the same cue words. A sentence that fails its free checks keeps its approved wording (and so does the whole script
+ * if the whole fails). Returns { script, changedRoles, costUsd } or null (no approved script: the old path).
+ */
+async function planPremade({ step, topic, lengthSec, saved, key, trace }) {
+  const A = approvedScript(key);
+  if (!A || A.sentences.map((s) => s.role).join() !== (saved.roles ?? []).join()) return null;
+  const cues = anchorWords(saved);
+  const beats = A.sentences.map((s) => ({ role: s.role, approved: s.text, sees: beatBrief(saved, s.role), cues: cues[s.role] ?? [] }));
+  const facts = (saved.facts ?? []).filter((f) => f.verdict !== "drop").map((f) => f.claim);
+  let fresh = null;
+  try { fresh = (await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 })).data; }
+  catch (e) { if (e.code === "REPLAY_PENDING" || /credit balance|insufficient/i.test(e.message)) throw e; trace.push({ label: "words failed: the approved script is used", error: String(e.message).slice(0, 200) }); }
+  const kept = [];
+  let sentences = A.sentences.map((s) => {
+    const cand = fresh?.sentences?.find((x) => x.role === s.role)?.text;
+    if (!cand) { kept.push({ role: s.role, why: "no fresh sentence" }); return { ...s }; }
+    const text = oneSentence(cand);
+    const p = sentenceProblems(text, { cues: cues[s.role] ?? [], allowed: numbersIn(s.text), must: numbersIn(s.text), words: s.text.split(/\s+/).length });
+    if (p.length) { kept.push({ role: s.role, why: p.join("; ") }); return { ...s }; }
+    return { role: s.role, text };
+  });
+  // the whole: its chain (a "But" that no longer names its fix gets "now", free) and no new problem the approved has not
+  sentences = linkProblems({ sentences }).script.sentences;
+  // (compared by kind: a problem quotes its sentence, and the fresh sentence is worded differently)
+  const kind = (p) => p.replace(/"[^"]*"/g, '""').replace(/\d+/g, "#");
+  const own = new Set(checkScript({ sentences: A.sentences }, lengthSec, A.sentences.map((s) => s.role)).map(kind));
+  const wholeProblems = () => checkScript({ sentences }, lengthSec, A.sentences.map((s) => s.role)).filter((p) => !own.has(kind(p)));
+  let fresh2 = wholeProblems();
+  // a problem that names its sentence ("problem "But now the soapy…" is not…"): that sentence goes back to its approved
+  // wording, not the whole script
+  for (const p of fresh2.filter((x) => !/words \(want/.test(x))) {
+    const frag = p.match(/"([^"]{12,}?)(?:…)?"/)?.[1]?.replace(/…$/, "");
+    const i = frag ? sentences.findIndex((s) => s.text.startsWith(frag)) : -1;
+    if (i >= 0 && sentences[i].text !== A.sentences[i].text) { kept.push({ role: sentences[i].role, why: p }); sentences[i] = { ...A.sentences[i] }; }
+  }
+  fresh2 = wholeProblems();
+  // too long or short as a whole: the sentences that grew (or shrank) most go back to their approved wording, one at a
+  // time, until it fits (the rest keep their fresh words)
+  if (fresh2.length && fresh2.every((p) => /words \(want/.test(p))) {
+    const n = (t) => t.split(/\s+/).filter(Boolean).length, long = fresh2.some((p) => Number(p.match(/^(\d+)/)?.[1]) > LENGTH[lengthSec].words[1]);
+    const order = sentences.map((s, i) => ({ i, d: (n(s.text) - n(A.sentences[i].text)) * (long ? 1 : -1) })).filter((x) => x.d > 0).sort((p, q) => q.d - p.d);
+    for (const { i } of order) { kept.push({ role: sentences[i].role, why: "the whole was too long or short" }); sentences[i] = { ...A.sentences[i] }; fresh2 = wholeProblems(); if (!fresh2.length) break; }
+  }
+  if (fresh2.length) { trace.push({ label: "the fresh script as a whole failed: the approved script is used", problems: fresh2 }); sentences = A.sentences.map((s) => ({ ...s })); }
+  if (kept.length) trace.push({ label: "approved wording kept", sentences: kept });
+  const changedRoles = sentences.filter((s, i) => s.text !== A.sentences[i].text).map((s) => s.role);
+  return { script: { title: A.title, hero: A.hero, sentences, cards: A.cards ?? [], parts: A.parts ?? [], facts: saved.facts ?? [] }, changedRoles };
+}
+
+// the beat plan's reply: the scene (as JSON text) and the story
+const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, required: ["why", "story", "sceneJson"], properties: {
+  why: { type: "string" }, sceneJson: { type: "string" },
+  story: { type: "object", additionalProperties: false, required: ["title", "hero", "parts", "ideas", "chain", "surprises"], properties: {
+    title: { type: "string" }, hero: { type: "string" }, parts: { type: "array", items: { type: "string" } },
+    ideas: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "idea"], properties: { role: { type: "string" }, idea: { type: "string" } } } },
+    chain: { type: "array", items: { type: "object", additionalProperties: false, required: ["problem", "causedBy", "shows", "stakes", "size"], properties: { problem: { type: "string" }, causedBy: { type: "string" }, shows: { type: "string" }, stakes: { type: "string" }, size: { type: "integer" } } } },
+    surprises: { type: "array", items: { type: "object", additionalProperties: false, required: ["claim", "role", "search"], properties: { claim: { type: "string" }, role: { type: "string" }, search: { type: "string" } } } },
+  } } } };
+const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
+const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.`;
+
+const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
+/** stand-in sentences for a beat plan (its idea and its cue words), so the free checks run before the words exist */
+export function draftSentences(L, ideas) {
+  const cues = anchorWords(L);
+  return (L.beats ?? []).map((b) => {
+    const idea = String(ideas[b.s] ?? b.shows?.does ?? b.s).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
+    const extra = (cues[b.s] ?? []).filter((w) => !have.has(tok(w)));
+    return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you) (but|so you)\b/i, "$1") };
+  });
+}
+/** the beat plan's story (free): roles in order, the chain of problems (caused by the fix before, bigger each time), the surprises */
+export function beatPlanProblems(L, story, lengthSec) {
+  const P = [], roles = (L.beats ?? []).map((b) => b.s), R = LENGTH[lengthSec];
+  if (roles[0] !== "hook" || roles.at(-1) !== "congrats") P.push("the beats must start with hook and end with congrats");
+  if (!roles.includes("name")) P.push('no "name" beat (This is a…)');
+  if (new Set(roles).size !== roles.length) P.push("a role is used twice");
+  for (const r of roles) if (!ROLES.includes(r)) P.push(`role "${r}" is not one of ${ROLES.join(", ")}`);
+  if (roles.length < R.sentences[0] || roles.length > R.sentences[1]) P.push(`${roles.length} beats (want ${R.sentences[0]}-${R.sentences[1]})`);
+  const ideas = new Map((story?.ideas ?? []).map((x) => [x.role, x.idea]));
+  for (const r of roles) if (!String(ideas.get(r) ?? "").trim()) P.push(`beat ${r}: no idea`);
+  const probs = roles.filter((r) => /^problem/.test(r)), need = lengthSec >= 60 ? 3 : 2;
+  if (probs.length < need) P.push(`the story needs at least ${need} problem beats; it has ${probs.length}`);
+  if (probs.length && roles.indexOf(probs[0]) !== 1) P.push("the first problem must be the second beat, right after the hook");
+  const chain = new Map((story?.chain ?? []).map((c) => [c.problem, c]));
+  let last = -Infinity;
+  for (const [k, r] of probs.entries()) {
+    const c = chain.get(r); if (!c) { P.push(`chain: no entry for ${r}`); continue; }
+    const i = roles.indexOf(r), before = roles.slice(0, i).filter((x) => /^fix/.test(x)).at(-1);
+    if (k === 0 ? c.causedBy !== "hook" : c.causedBy !== before) P.push(`chain: ${r} must be caused by ${k === 0 ? "the hook" : before ?? "a fix before it"} (it says ${c.causedBy})`);
+    if (String(c.shows ?? "").split(/\s+/).filter(Boolean).length < 3) P.push(`chain: ${r} must say what is seen happening`);
+    if (!(Number(c.size) > last)) P.push(`chain: ${r} must be bigger than the problem before it`); last = Number(c.size);
+  }
+  for (const s of story?.surprises ?? []) if (!roles.includes(s.role)) P.push(`surprise "${String(s.claim).slice(0, 40)}…": no beat ${s.role}`);
+  for (const r of roles) for (const [re, why] of KIT_CANNOT) if (re.test(ideas.get(r) ?? "")) P.push(`beat ${r}: ${why}`);
+  for (const b of L.beats ?? []) for (const a of b.do ?? []) if (a.w && !/^[A-Za-z0-9'-]+$/.test(a.w)) P.push(`beat ${b.s}: cue word "${a.w}" must be one plain word`);
+  return P;
+}
+/** a cue word written in another form ("pipe" said as "pipes"): the anchors move to the word as written (free) */
+export function retargetCues(L, sentences) {
+  const next = JSON.parse(JSON.stringify(L)), moved = [];
+  const stemOf = (w) => tok(w).replace(/(ings?|ed|es|s|d)$/, "");
+  const fix = (s, w) => {
+    const t = sentences.find((x) => x.role === s)?.text ?? "", toks = t.split(/\s+/).map((x) => x.replace(/[^\w'-]/g, ""));
+    if (!w || toks.some((x) => tok(x) === tok(w))) return w;
+    const hit = toks.find((x) => x && stemOf(x) === stemOf(w));
+    if (hit) { moved.push(`${s}: "${w}" -> "${hit}"`); return hit; }
+    return w;
+  };
+  for (const b of next.beats ?? []) { for (const a of b.do ?? []) if (a.w) a.w = fix(b.s, a.w); for (const sh of [b.shot, ...(b.shots ?? [])]) if (sh?.at?.w) sh.at.w = fix(sh.at.s ?? b.s, sh.at.w); }
+  for (const k of ["cards", "sfx"]) for (const c of next.audio?.[k] ?? []) if (c.at?.w) c.at.w = fix(c.at.s, c.at.w);
+  for (const c of next.audio?.chimes ?? []) if (c.w) c.w = fix(c.s, c.w);
+  return { layout: next, moved };
+}
+
+/**
+ * A custom topic, visuals first: 1. the beat plan (scene + story, checked free; one repair), 2. the fact-check of its
+ * claims, 3. the words, one sentence per beat (checked free; one repair; a cue word still missing then fires at its
+ * sentence's start). Returns what planTopic returns.
+ */
+async function planCustom({ step, topic, lengthSec, example, lastOpening, library, trace }) {
+  const key = topic.toLowerCase().replace(/^(a|an|the)\s+/, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40);
+  const SYS = sceneSystem(example, "beats"), R = LENGTH[lengthSec];
+  const text = `${topic}`;
+  const saved = libraryMatches(library, text), models = modelMatches(text, 12);
+  const user = `Topic: ${topic}.${settingHint(topic)}
+Length: ${lengthSec} s: ${R.sentences[0]}-${R.sentences[1]} beats (the narration will be ${R.words[0]}-${R.words[1]} words). Roles: ${ROLES.join(", ")}.
+${finishPropsLine(topic)}${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}${saved.length ? `
+SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: copy its recipe, change only id, pos, rotY and scale):
+${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
+CC0 MODELS that may fit (use one as a model shape inside a rig when it is the thing, sized in metres; it cannot move by itself, so put moving pieces in their own nodes):
+${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
+  const plan = (r) => {
+    const scene = parseScene(r.data), story = r.data.story ?? {};
+    const roles = (scene.beats ?? []).map((b) => b.s);
+    const conv = layoutFromScene(scene, { key, title: story.title || topic, roles });
+    const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
+    const draft = draftSentences(conv.layout, ideas);
+    const solved = solveLayout(conv.layout, draft);
+    const problems = [...conv.problems, ...beatPlanProblems(conv.layout, story, lengthSec), ...solved.problems, ...openingProblems(conv.layout, lastOpening)];
+    return { scene, story, conv, ideas, draft, problems, warnings: solved.warnings, why: r.data.why };
+  };
+  // 1. the beat plan
+  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+  let B = plan(r);
+  trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
+  if (B.problems.length) {
+    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+    const B2 = plan(r);
+    // a repeat opening after the repair is a warning: the video still goes on
+    const opening = openingProblems(B2.conv.layout, lastOpening);
+    B = { ...B2, problems: B2.problems.filter((p) => !opening.includes(p)), warnings: [...B2.warnings, ...opening] };
+    trace.push({ label: "beat plan checks (repair)", problems: B.problems, warnings: B.warnings });
+  }
+  let layout = { ...B.conv.layout, why: B.why };
+  const roles = layout.beats.map((b) => b.s);
+  if (B.problems.length) return { script: { title: B.story.title || topic, hero: B.story.hero, sentences: B.draft, chain: [], facts: [], cards: [] }, layout, problems: B.problems, warnings: B.warnings };
+
+  // 2. the facts: the planned claims, researched and checked before any word is written
+  const claims = (B.story.surprises ?? []).filter((s) => roles.includes(s.role));
+  let checks = [];
+  if (claims.length) {
+    const list = `Claims (index: claim | suggested search):\n${claims.map((c, i) => `${i}: ${c.claim} | ${c.search}`).join("\n")}`;
+    let rs = await step("fact research", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${list}`, schema: null, search: Math.min(10, 2 * claims.length + 2), effort: "medium", maxTokens: 24000 });
+    if (rs.searches < claims.length) rs = await step("fact research (again)", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${list}\n\nSearch the web for EACH claim now; an answer without searches is refused.`, schema: null, search: Math.min(10, 2 * claims.length + 2), effort: "medium", maxTokens: 24000 });
+    if (rs.searches < 1) throw new Error("fact-check: no web search was made; the facts are not verified");
+    const fc = await step("fact-check", { system: CLAIMS_SYSTEM, user: `Topic: ${topic}\n${list}\n\nResearch notes (from ${rs.searches} web searches):\n${rs.data.text}\n\nSources found:\n${rs.data.sources.map((s) => `- ${s.title} ${s.url}`).join("\n")}`, schema: CLAIMS_SCHEMA, effort: "medium", maxTokens: 16000 });
+    checks = (fc.data.checks ?? []).map((c) => ({ ...c, role: claims[c.index]?.role, planned: claims[c.index]?.claim }));
+  }
+  // a number card follows its claim: a reworded number moves with it, a dropped claim's card goes (free)
+  const kept = checks.filter((c) => c.verdict !== "drop" && c.role);
+  const verifiedNums = kept.flatMap((c) => numbersIn(c.claim));
+  for (const c of checks.filter((x) => x.role)) {
+    const was = numbersIn(c.planned), now = c.verdict === "drop" ? [] : numbersIn(c.claim);
+    layout.audio.cards = (layout.audio.cards ?? []).flatMap((card) => {
+      if (card.at?.s !== c.role) return [card];
+      const i = was.indexOf(String(card.at.w ?? "").replace(/,/g, ""));
+      if (i < 0) return [card];
+      if (!now[i]) return [];
+      return [{ ...card, at: { ...card.at, w: Number(now[i]).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(now[i]).toLocaleString("en-US")) }];
+    });
+    // cue words that were a dropped or changed number fire at the sentence's start instead
+    for (const b of layout.beats) if (b.s === c.role) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !now.includes(String(a.w).replace(/,/g, ""))) delete a.w;
+  }
+  // a card whose number no verified fact of its beat says (the recorded garage door plan carded "100" while its checked
+  // fact said 150 to 250 pounds): it takes its beat's verified number, or goes (free)
+  layout.audio.cards = (layout.audio.cards ?? []).flatMap((card) => {
+    const w = String(card.at?.w ?? "").replace(/,/g, "");
+    if (!/^\d/.test(w)) return [card];
+    const nums = kept.filter((c) => c.role === card.at?.s).flatMap((c) => numbersIn(c.claim));
+    if (nums.includes(w)) return [card];
+    const used = new Set((layout.audio.cards ?? []).filter((x) => x !== card && x.at?.s === card.at?.s).map((x) => String(x.at?.w ?? "").replace(/,/g, "")));
+    const n = nums.find((x) => !used.has(x));
+    return n ? [{ ...card, at: { ...card.at, w: Number(n).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(n).toLocaleString("en-US")) }] : [];
+  });
+  for (const b of layout.beats) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !kept.some((c) => c.role === b.s && numbersIn(c.claim).includes(String(a.w).replace(/,/g, "")))) delete a.w;
+  // the chime that rings with a card, a sound or a shot on a number: it follows the card's verified number, or starts
+  // with its sentence (the garage door's and the pool's chimes still pointed at their old numbers)
+  const verifiedIn = (role, w) => kept.some((c) => c.role === role && numbersIn(c.claim).includes(String(w).replace(/,/g, "")));
+  const cardNum = (role) => (layout.audio.cards ?? []).find((c) => c.at?.s === role && /^\d/.test(String(c.at?.w ?? "")))?.at.w;
+  for (const c of layout.audio.chimes ?? []) if (/^\d/.test(String(c.w ?? "")) && !verifiedIn(c.s, c.w)) { const n = cardNum(c.s); if (n) c.w = n; else delete c.w; }
+  for (const c of layout.audio.sfx ?? []) if (/^\d/.test(String(c.at?.w ?? "")) && !verifiedIn(c.at.s, c.at.w)) { const n = cardNum(c.at.s); if (n) c.at.w = n; else delete c.at.w; }
+  for (const b of layout.beats) for (const sh of [b.shot, ...(b.shots ?? [])]) if (sh?.at && /^\d/.test(String(sh.at.w ?? "")) && !verifiedIn(sh.at.s ?? b.s, sh.at.w)) delete sh.at.w;
+  trace.push({ label: "facts", kept: kept.length, dropped: checks.length - kept.length, cards: (layout.audio.cards ?? []).map((c) => c.text) });
+
+  // 3. the words, one sentence per beat
+  const cuesOf = () => anchorWords(layout);
+  const factOf = (role) => kept.filter((c) => c.role === role).map((c) => c.claim).join("; ");
+  const beats = roles.map((role) => ({ role, sees: beatBrief(layout, role), idea: B.ideas[role], cues: cuesOf()[role] ?? [], fact: factOf(role) }));
+  const toScript = (data) => {
+    const sentences = roles.map((role) => ({ role, text: oneSentence(data.sentences?.find((x) => x.role === role)?.text ?? "") }));
+    const chain = (B.story.chain ?? []).map((c) => ({ problem: roles.indexOf(c.problem), causedBy: c.causedBy === "hook" ? -1 : roles.indexOf(c.causedBy), shows: c.shows, stakes: c.stakes, size: c.size })).filter((c) => c.problem >= 0);
+    const linked = linkProblems({ sentences, chain }).script.sentences;
+    const cards = (layout.audio.cards ?? []).map((c) => ({ text: c.text, sentence: roles.indexOf(c.at.s), word: String(c.at.w ?? "") }));
+    return { title: data.title || B.story.title || topic, hero: B.story.hero, sentences: linked.map((s) => ({ ...s, text: /[.!]$/.test(s.text.trim()) ? s.text : `${s.text.trim()}.` })), chain, cards, parts: B.story.parts ?? [], surprises: claims, facts: checks };
+  };
+  const wordsCheck = (script) => {
+    const rt = retargetCues(layout, script.sentences); layout = rt.layout;
+    const cues = cuesOf(), P = [];
+    for (const s of script.sentences) for (const p of sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums })) P.push(`${s.role}: ${p}`);
+    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles).filter((p) => !/words \(want/.test(p) || Math.abs(script.sentences.reduce((k, x) => k + x.text.split(/\s+/).length, 0) - (R.words[0] + R.words[1]) / 2) > 30));
+    return { P, moved: rt.moved };
+  };
+  let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
+  let script = toScript(w.data), wc = wordsCheck(script);
+  trace.push({ label: "words checks", problems: wc.P, moved: wc.moved });
+  if (wc.P.length) {
+    w = await step("words repair", { system: WORDS_SYSTEM, user: `${wordsUser({ topic, lengthSec, beats: roles.map((role) => ({ ...beats.find((b) => b.role === role), cues: cuesOf()[role] ?? [] })), facts: kept.map((c) => c.claim) })}\n\nYour narration below has problems the free checks found. Fix every one and return the whole narration again.\nProblems:\n- ${wc.P.join("\n- ")}\n\nYour narration:\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
+    script = toScript(w.data); wc = wordsCheck(script);
+    trace.push({ label: "words checks (repair)", problems: wc.P, moved: wc.moved });
+  }
+  // a cue word still missing: its actions fire at the start of its sentence (free; the picture still shows them)
+  const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
+  if (miss.length) { layout = dropWords(layout, miss); warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`)); }
+  // (the layout itself is solved by planTopic, after the opening fix)
+  return { script, layout, problems: wc.P.filter((p) => !/cue word .* is missing/.test(p)), warnings, solve: true };
+}
+
+/**
+ * The preview check's other repair: the words. A flagged sentence is rewritten to say what its frame really shows
+ * (what the checker saw), keeping its role, its cue words where they still fit, and its numbers. Usually cheaper and
+ * surer than changing the picture. Returns { script, changed: [roles], problems, costUsd }.
+ */
+export async function rewordBeats({ apiKey, topic, script, layout, failing, log, cacheDir, model = MODEL.default }) {
+  const file = cacheDir && path.join(cacheDir, `reword_${failing.map((f) => f.role).join("_")}.json`);
+  const cues = anchorWords(layout);
+  const user = `Topic: ${topic}\nThe narration, one sentence per beat (role: sentence):\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}\n\nThe preview frames of these beats do not show what their sentences say. Rewrite ONLY these sentences so each says what its frame really shows (what the checker saw), keeps its role in the story (a "But…" stays a visible problem, a "So you…" a fix), keeps its numbers, and uses its cue words where they still fit:\n${failing.map((f) => `- ${f.role}: "${script.sentences.find((s) => s.role === f.role)?.text}"\n  the checker saw: ${f.seen}\n  what was wrong: ${f.problem}\n  on screen in this beat: ${beatBrief(layout, f.role)}\n  cue words: ${(cues[f.role] ?? []).join(", ") || "(none)"}`).join("\n")}\n\nReturn the title and only the rewritten sentences.`;
+  let r;
+  if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
+  else { r = await callJSON({ apiKey, model, log, label: "words repair (preview)", system: WORDS_SYSTEM, user, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 6000 }); if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); } }
+  const changed = [], problems = [];
+  const sentences = script.sentences.map((s) => {
+    const f = failing.find((x) => x.role === s.role), cand = f && r.data.sentences?.find((x) => x.role === s.role)?.text;
+    if (!cand) return s;
+    const text = oneSentence(cand), p = sentenceProblems(text, { allowed: numbersIn(s.text).concat(numbersIn((script.facts ?? []).map((c) => c.claim).join(" "))), must: numbersIn(s.text) });
+    if (p.length) { problems.push(`${s.role}: ${p.join("; ")}`); return s; }
+    changed.push(s.role); return { ...s, text };
+  });
+  return { script: { ...script, sentences: linkProblems({ sentences, chain: script.chain ?? [] }).script.sentences }, changed, problems, costUsd: r.costUsd ?? 0 };
+}
+
 /**
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
@@ -382,6 +736,25 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
   const saved = reuse ? template(reuse) : null;
   const savedFacts = saved?.facts?.filter((f) => f.verdict !== "drop") ?? [];
   const keyWords = saved ? anchorWords(saved) : null;
+
+  // visuals first (the owner's rule of 2026-10-27): a premade topic writes fresh words around its approved beats; a
+  // custom topic plans its beats, checks its facts, then writes its words. (A given script, the golden remake's tool,
+  // still plans its scene from the script below.)
+  if (!given && saved) {
+    const pp = await planPremade({ step, topic, lengthSec, saved, key: reuse, trace });
+    if (pp) {
+      const layout = { ...saved, title: pp.script.title || saved.title };
+      const solved = solveLayout(layout, pp.script.sentences);
+      return { script: pp.script, layout, problems: solved.problems, warnings: solved.warnings, costUsd: +cost.toFixed(4), trace, changedRoles: pp.changedRoles, approved: saved.approved !== false, approvedScript: approvedScript(reuse) };
+    }
+  }
+  if (!given && !saved) {
+    const pc = await planCustom({ step, topic, lengthSec, example, lastOpening, library, trace });
+    let layout = pc.layout;
+    if (pc.solve) { const op = fixOpening(layout); if (op.moved) { layout = op.layout; trace.push({ label: "opening", ...op.moved }); } }
+    const solved = pc.solve ? solveLayout(layout, pc.script.sentences) : { problems: [], warnings: [] };
+    return { script: pc.script, layout, problems: [...pc.problems, ...solved.problems], warnings: [...pc.warnings, ...solved.warnings], costUsd: +cost.toFixed(4), trace, changedRoles: null, approved: false };
+  }
 
   // 1. the script (or a given one: the golden set re-uses the approved scripts)
   let script = given;

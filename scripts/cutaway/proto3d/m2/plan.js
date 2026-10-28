@@ -5,6 +5,7 @@ import { KIND_CHANNELS } from "./parts.js";
 import { homeView, projectBox, SHOTS } from "./director.js";
 import { liftToFloor, placeLifeProps, placeSign } from "./framing.js";
 import { layoutRules } from "./layoutRules.js";
+import { PROP_NAMES } from "./clarityParts.js";
 
 export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
@@ -66,7 +67,9 @@ export function layoutFromScene(scene, { key, title, roles }) {
   if (scene.world.trees?.length === 2) world.trees = scene.world.trees;
   if (Array.isArray(scene.world.road) && scene.world.road.length === 3) world.road = scene.world.road;
   if (scene.world.rocksAvoid?.length) { world.rocksAvoid = scene.world.rocksAvoid; world.roots = { pad: 0.8, to: Math.max(7, x1 + 2) }; }
-  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
+  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true;
+    // a prop named in words ("potted plant", the real garage door plan of 2026-10-26) is the kit's prop of that name
+    if (out.kind === "prop" && typeof out.params?.type === "string") { const n = out.params.type.toLowerCase().replace(/[^a-z]/g, ""); const hit = PROP_NAMES.find((x) => x.toLowerCase() === n); if (hit) out.params = { ...out.params, type: hit }; } const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
   const beats = scene.beats.map((b) => ({
     s: b.s,
     // what this sentence visibly shows: the part that does its verb (the solver checks it acts in this beat)

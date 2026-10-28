@@ -78,7 +78,8 @@ export function framesOf({ layout, words, voice, roles }, version = "end") {
 }
 
 async function main() {
-  const input = process.argv[2] ? JSON.parse(process.argv[2]) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
+  // (CUTAWAY_JOB_FILE: the free harness's job, too long for a Windows command line)
+  const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.CUTAWAY_JOB_FILE ? JSON.parse(fs.readFileSync(process.env.CUTAWAY_JOB_FILE, "utf8")) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
   const job = input.job ?? input, role = job.role ?? "video", mode = job.mode ?? (role === "video" ? "gpu" : "cpu");
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cutaway-")), out = path.join(dir, "run");
   const version = job.endCard === false ? "noend" : "end", t0 = Date.now(), costs = { planUsd: 0, voiceUsd: 0, checksUsd: 0, postUsd: 0 };
@@ -130,10 +131,11 @@ async function main() {
   // a plan that didn't pass: what the planner left in its folder goes to the run's plan files (never read back for a render)
   const keepFailedPlan = async () => {
     const read = (f) => (fs.existsSync(path.join(out, f)) ? JSON.parse(fs.readFileSync(path.join(out, f), "utf8")) : null);
-    const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json");
+    // (the preview check's verdicts too: the Landfill of 2026-10-27 failed the gate and its verdicts were lost)
+    const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json"), vision = read("vision.json");
     const p = path.join(dir, "failed"); fs.mkdirSync(p, { recursive: true });
     if (layout && job.plan?.put?.layout) { fs.writeFileSync(path.join(p, "layout.json"), JSON.stringify(layout)); await put(job.plan.put.layout, path.join(p, "layout.json"), "application/json"); }
-    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report, vision })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
   };
   const loadPlan = async () => {
     const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });

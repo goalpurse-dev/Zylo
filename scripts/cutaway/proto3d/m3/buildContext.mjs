@@ -29,8 +29,10 @@ const code = (f) => !/\.(json|jsonl|md)$/.test(f) || f === "package.json"; // no
 // voice modules come along; approved layouts arrive in each job, never baked in)
 for (const f of ["real.js", "full.html", "render.mjs", "speechEnd.mjs", "voiceSilence.mjs"]) cp(path.join(P3, f), path.join(out, "wt/scripts/cutaway/proto3d", f));
 for (const d of ["kit", "m2", "m3"]) cp(path.join(P3, d), path.join(out, "wt/scripts/cutaway/proto3d", d), (f, full) => !fs.statSync(full).isDirectory() && code(f) && (f === "transcribe.py" || !/Dockerfile|\.toml$|\.py$/.test(f)));
-// ...except the planner's two worked examples, which it reads when it loads (without them every job failed at import)
-for (const k of ["landfill", "french_drain"]) cp(path.join(P3, "m2/layouts", `${k}.template.json`), path.join(out, "wt/scripts/cutaway/proto3d/m2/layouts", `${k}.template.json`));
+// ...except the planner's worked examples, which it reads when it loads or plans (without them every job failed at
+// import; with only two of them, a custom street, car wash or machine topic crashed at planning, 2026-10-27 audit), and
+// the approved scripts a premade topic writes its fresh words around
+for (const f of fs.readdirSync(path.join(P3, "m2/layouts")).filter((f) => f.endsWith(".template.json") || f === "approved_scripts.json")) cp(path.join(P3, "m2/layouts", f), path.join(out, "wt/scripts/cutaway/proto3d/m2/layouts", f));
 // ...and the CC0 model catalog the planner is offered models from (without it a new part could only use shapes)
 cp(path.join(P3, "kit/modelCatalog.json"), path.join(out, "wt/scripts/cutaway/proto3d/kit/modelCatalog.json"));
 cp(path.join(WT, "supabase/functions/_shared/cutaway"), path.join(out, "wt/supabase/functions/_shared/cutaway"), (f) => f.endsWith(".js"));

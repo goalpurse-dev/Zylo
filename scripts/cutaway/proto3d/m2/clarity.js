@@ -62,7 +62,10 @@ export function clarityChecks(L, sentences) {
       const small = b.max[0] - b.min[0] <= 1.2 && b.max[2] - b.min[2] <= 1.2;
       const risers = small ? L.parts.filter((x) => x.kind === "riser").map((x) => focusOf(x, cut)).filter(Boolean) : [];
       const holders = [...all.filter((x) => !(x.id === p.id && x.b.ch === b.ch)).map((x) => x.b), ...solids, ...risers];
-      const under = holders.some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
+      // (and the top end of an upright pipe: a well casing built as a pipe run holds its cap, as a riser does; the water
+      // well plan of the free harness, 2026-10-28, was refused as "floats" for it)
+      const pipeTop = small && L.parts.some((x) => ["pipe", "pipeRun"].includes(x.kind) && (x.params?.path ?? []).some((q) => Array.isArray(q) && q[0] >= b.min[0] - 0.05 && q[0] <= b.max[0] + 0.05 && q[2] >= b.min[2] - 0.05 && q[2] <= b.max[2] + 0.05 && Math.abs(q[1] - b.min[1]) <= 0.25));
+      const under = pipeTop || holders.some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
       // a thin panel mounted on a solid's front face (layoutRules: a timer as a display on the controller cabinet; a
       // traffic light run's plan was refused as "floats" for it): its back on the face, within the face's height and width
       const thin = b.max[2] - b.min[2] <= 0.15;
