@@ -146,3 +146,12 @@ test("round 5: an anchor word that is not said fires at its sentence start inste
   const tl = compile(L, words, 1.4, { roles: ["hook", "problem"] });
   assert.ok(tl.fixes.some((f) => /"pit" is not said/.test(f))); assert.ok(tl.tracks["tank.pop"].ramps[0].t0 < 0.2);
 });
+
+test("the worker reports each cost once: 'planned' then 'done' with the same totals booked a finished video twice", () => {
+  const src = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m3/videoJob.mjs", import.meta.url), "utf8");
+  assert.match(src, /const fresh = \(costs\) =>/); assert.match(src, /send\(event, data\.costs \? \{ \.\.\.data, costs: fresh\(data\.costs\) \} : data\)/);
+  // the same arithmetic: totals sent twice are counted once, a later addition is sent as its difference
+  const sent = {}, fresh = (costs) => { const out = {}; for (const [k, v] of Object.entries(costs)) { const d = +((Number(v) || 0) - (sent[k] ?? 0)).toFixed(6); if (d > 0) { out[k] = d; sent[k] = (sent[k] ?? 0) + d; } } return out; };
+  const a = fresh({ planUsd: 0.44, voiceUsd: 0.05 }), b = fresh({ planUsd: 0.44, voiceUsd: 0.05, gpuUsd: 0.02 });
+  assert.deepEqual(a, { planUsd: 0.44, voiceUsd: 0.05 }); assert.deepEqual(b, { gpuUsd: 0.02 });
+});

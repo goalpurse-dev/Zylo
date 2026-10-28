@@ -100,7 +100,17 @@ async function main() {
   let lastTell = 0, lastStage = null, queue = Promise.resolve();
   // one at a time, in order: sent side by side, the "scene" event (with the narration) landed after the "voice" one, so a
   // voice failure showed "Scene plan" as its step (the production Landfill of 2026-10-27)
-  const tell = (event, data = {}) => (queue = queue.then(() => send(event, data)));
+  // each cost is reported once: an event carries only what was not sent before (the server adds every event's costs to
+  // the ledger, and "planned" then "done" with the same totals counted a finished video twice; the real traffic light
+  // run of 2026-10-28 cost $0.518 and was booked at $1.036)
+  const sent = {};
+  const fresh = (costs) => {
+    if (!costs) return costs;
+    const out = {};
+    for (const [k, v] of Object.entries(costs)) { const d = +((Number(v) || 0) - (sent[k] ?? 0)).toFixed(6); if (d > 0) { out[k] = d; sent[k] = (sent[k] ?? 0) + d; } }
+    return out;
+  };
+  const tell = (event, data = {}) => (queue = queue.then(() => send(event, data.costs ? { ...data, costs: fresh(data.costs) } : data)));
   const send = async (event, data) => {
     if (!job.callback?.url) { console.log(`EVENT ${event} ${JSON.stringify(data).slice(0, 300)}`); return; }
     const body = JSON.stringify({ runId: job.runId, token: job.callback.token, role, attempt: job.attempt ?? 1, event, ...data });
