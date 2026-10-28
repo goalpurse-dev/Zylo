@@ -3,6 +3,7 @@
 // priced from its usage and appended to the spend log, so the BUILD_PLAN tally can be checked against it.
 import fs from "node:fs";
 import { REPLAY, replayLLM } from "./providers.mjs";
+import { allow, add } from "./budget.mjs";
 
 // small: the simple steps (re-anchoring words, the post text, the kit check), where it passes the same checks
 export const MODEL = { default: "claude-sonnet-5-5", strong: "claude-opus-5-5", small: "claude-haiku-5-5" };
@@ -59,6 +60,13 @@ export function loadKey(envFile = "C:/Users/Public/Zylo/.env.local") {
 export async function callJSON({ apiKey, model = MODEL.default, system, user, schema, search = 0, effort = "high", maxTokens = 32000, label, log, timeoutMs = 600_000 }) {
   // the free harness: a recorded or written answer, never the API (providers.mjs)
   if (REPLAY) return replayLLM({ label, model, system, user, schema, search, log });
+  // the run's spending limit: refused before it is sent if it could pass the cap (budget.mjs)
+  allow(label);
+  const out = await callOnce({ apiKey, model, system, user, schema, search, effort, maxTokens, label, log, timeoutMs }).catch((e) => { add(e.costUsd); throw e; });
+  add(out.costUsd);
+  return out;
+}
+async function callOnce({ apiKey, model, system, user, schema, search, effort, maxTokens, label, log, timeoutMs }) {
   const body = {
     model, max_tokens: maxTokens, stream: true,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],

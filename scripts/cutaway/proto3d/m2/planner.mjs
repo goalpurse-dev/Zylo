@@ -22,7 +22,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const template = (k) => { const L = JSON.parse(fs.readFileSync(path.join(here, "layouts", `${k}.template.json`), "utf8")); const P = placeLifeProps(L, homeView(L), projectBox).layout; return placeSign(P, homeView(P), projectBox).layout; };
 const roleScript = (L, words) => words; // (kept for symmetry; scripts carry their roles)
 
-export const LENGTH = { 30: { words: [100, 125], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
+// (the most is a hard limit: the real writer's first narrations ran to 150-168 words for 30 s, 2026-10-28)
+export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13] }, 60: { words: [200, 240], sentences: [18, 24] } };
 
 // the worked examples the script writer sees: the chain structure (the owner's rule of 2026-10-25), written by hand from
 // facts verified in earlier runs (research/seamless-niche/CHAIN_EXAMPLES.json)
@@ -352,7 +353,7 @@ export const KIT_CANNOT = [
 const checkScript = (s, lengthSec, roles) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
-  if (n < L.words[0] - 8 || n > L.words[1] + 10) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
+  if (n < L.words[0] - 8 || n > L.words[1]) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
   const rs = s.sentences.map((x) => x.role);
   if (new Set(rs).size !== rs.length) P.push("a role is used twice");
   if (rs[0] !== "hook" || rs.at(-1) !== "congrats") P.push("the script must open with hook and end with congrats");
@@ -673,7 +674,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const rt = retargetCues(layout, script.sentences); layout = rt.layout;
     const cues = cuesOf(), P = [];
     for (const s of script.sentences) for (const p of sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums })) P.push(`${s.role}: ${p}`);
-    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles).filter((p) => !/words \(want/.test(p) || Math.abs(script.sentences.reduce((k, x) => k + x.text.split(/\s+/).length, 0) - (R.words[0] + R.words[1]) / 2) > 30));
+    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles));
     return { P, moved: rt.moved };
   };
   let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });

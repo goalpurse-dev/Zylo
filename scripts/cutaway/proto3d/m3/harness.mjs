@@ -99,6 +99,7 @@ let attempt = 0;
 for (;;) {
   attempt++;
   const job = jobFor(run, { role: "video", mode: "local", urls, callback, layout: layoutFor(q.premade), library: [] });
+  if (a.cap) job.capUsd = Number(a.cap);
   log(`worker attempt ${run.attempt}${job.plan.get ? " (the plan already made)" : ""}`);
   const code = await worker(job);
   await new Promise((r) => setTimeout(r, 300));

@@ -21,6 +21,7 @@ import { compile } from "../m2/compile.mjs";
 import { callJSON, loadKey, MODEL } from "../m2/llm.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { useGpu, useSoftware } from "./gpu.mjs";
+import { setRunCap } from "../m2/budget.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PROTO = process.env.CUTAWAY_PROTO ?? "/app/proto", FF = process.env.FFMPEG ?? "ffmpeg", FPS = 30;
@@ -49,6 +50,7 @@ export function classify(e) {
   const msg = String(e?.message ?? e);
   if (e?.code === "NO_GPU") return { code: "NO_GPU", retryable: true };
   if (/voice check failed twice/i.test(msg)) return { code: "VOICE_FAILED", retryable: false };
+  if (e?.code === "BUDGET" || /over the run's \$/.test(msg)) return { code: "BUDGET", retryable: false };
   if (/credit balance|insufficient.?(credit|fund|quota)|quota_exceeded|payment required|\b402\b/i.test(msg)) return { code: "PROVIDER_BALANCE", retryable: false };
   if (/overloaded|\b529\b|\b503\b|rate.?limit|\b429\b/i.test(msg)) return { code: "PROVIDER_BUSY", retryable: true };
   return { code: e?.code ?? "RENDER_FAILED", retryable: true };
@@ -81,6 +83,8 @@ async function main() {
   // (CUTAWAY_JOB_FILE: the free harness's job, too long for a Windows command line)
   const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.CUTAWAY_JOB_FILE ? JSON.parse(fs.readFileSync(process.env.CUTAWAY_JOB_FILE, "utf8")) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
   const job = input.job ?? input, role = job.role ?? "video", mode = job.mode ?? (role === "video" ? "gpu" : "cpu");
+  // the run's spending limit (budget.mjs): every paid call checks it before it is sent
+  if (job.capUsd) setRunCap(job.capUsd);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cutaway-")), out = path.join(dir, "run");
   const version = job.endCard === false ? "noend" : "end", t0 = Date.now(), costs = { planUsd: 0, voiceUsd: 0, checksUsd: 0, postUsd: 0 };
   fs.mkdirSync(out, { recursive: true });

@@ -7,6 +7,7 @@
 // Progress goes to stdout as PROGRESS lines; everything (script, facts, layout, trace, checks, files) is saved in DIR.
 import fs from "node:fs";
 import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { planTopic, repairLayout, openingOf, rewordBeats, missingWords, dropWords } from "./planner.mjs";
@@ -34,6 +35,20 @@ async function visionCached({ apiKey, frames, log, cacheDir }) {
   const r = await visionCheck({ apiKey, frames, log });
   fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1));
   return r;
+}
+
+// each sentence's frames (start, middle, end of its action) side by side in one small jpg: what the checker sees
+async function previewStrips({ proto, layout, shots, out, ff }) {
+  const all = shots.flatMap((s) => s.ts ?? [s.t]);
+  const pngs = await previewStills({ proto, layout, times: all, out });
+  let k = 0;
+  return shots.map((s, i) => {
+    const n = (s.ts ?? [s.t]).length, mine = pngs.slice(k, k + n); k += n;
+    const file = path.join(out, `strip_${String(i).padStart(2, "0")}.jpg`);
+    const ins = mine.flatMap((p) => ["-i", p]);
+    execFileSync(ff, ["-v", "error", "-y", ...ins, "-filter_complex", n > 1 ? `${mine.map((_, j) => `[${j}]scale=270:-1[f${j}]`).join(";")};${mine.map((_, j) => `[f${j}]`).join("")}hstack=inputs=${n}` : "[0]scale=360:-1", "-q:v", "4", file]);
+    return { ...s, file, end: mine.at(-1) };
+  });
 }
 
 async function previewStills({ proto, layout, times, out }) {
@@ -92,15 +107,15 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     // (none moved: no vision call at all), and no repair (the layout itself is unchanged)
     const approvedSaved = !!reuse && plan.approved;
     if (approvedSaved) shots = shots.filter((s) => (plan.changedRoles ?? []).includes(s.role));
-    const allTimes = approvedSaved ? previewTimes(tl, layout) : shots;
+    const allTimes = previewTimes(tl, layout);
     const pngsAll = await previewStills({ proto, layout, times: allTimes.map((s) => s.t), out: path.join(out, "preview") });
-    const pngs = approvedSaved ? pngsAll.filter((_, i) => shots.some((s) => s.t === allTimes[i].t)) : pngsAll;
-    const jpgs = shrink(ff, pngs, path.join(out, "preview_small"));
+    // the checked sentences as strips: the start, middle and end of each one's action
+    shots = shots.length ? await previewStrips({ proto, layout, shots, out: path.join(out, "preview_strips"), ff }) : [];
+    const jpgs = shots.map((s) => s.file);
     // the house style saturation (0.38-0.45): a topic that measures outside it gets its grading corrected
     const sat0 = saturationOf(ff, pngsAll), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
     if (grade) layout = { ...layout, world: { ...layout.world, sat: grade } };
     save("saturation.json", { preview: sat0, grading: grade ?? layout.world?.sat ?? 1.38 });
-    shots = shots.map((s, i) => ({ ...s, file: jpgs[i] }));
     P({ stage: "scene", step: "vision check", pct: 7, frames: jpgs.map((f) => path.relative(out, f).split(path.sep).join("/")) });
     const vc = shots.length ? await visionCached({ apiKey, frames: shots, log, cacheDir }) : { frames: [], costUsd: 0 }; extraUsd += vc.costUsd;
     const failed = vc.frames.filter((f) => !f.ok);
@@ -118,9 +133,8 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = previewTimes(tl, layout).filter((s) => beats.some((f) => f.role === s.role));
-      const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, `preview${round}`) });
-      const jpgs2 = shrink(ff, pngs2, path.join(out, `preview${round}_small`));
-      const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
+      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff });
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
       return true;
@@ -148,9 +162,8 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = previewTimes(tl, layout).filter((s) => rw.changed.includes(s.role));
-      const pngs2 = await previewStills({ proto, layout, times: again.map((s) => s.t), out: path.join(out, `preview${round}`) });
-      const jpgs2 = shrink(ff, pngs2, path.join(out, `preview${round}_small`));
-      const vc2 = await visionCached({ apiKey, frames: again.map((s, i) => ({ ...s, file: jpgs2[i] })), log, cacheDir }); extraUsd += vc2.costUsd;
+      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff });
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
     };

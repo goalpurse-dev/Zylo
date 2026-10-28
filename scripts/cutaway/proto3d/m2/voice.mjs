@@ -7,6 +7,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { REPLAY, replayVoice } from "./providers.mjs";
+import { allow, add } from "./budget.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PER_CHAR = 0.0002;
@@ -23,6 +24,7 @@ export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionW
   const take = async () => {
     if (text.length * PER_CHAR * 2 > capUsd) throw new Error(`voice: worst case $${(text.length * PER_CHAR * 2).toFixed(3)} (two takes) is over the $${capUsd} cap`);
     // the free harness: a recorded take or a free local one, never ElevenLabs (providers.mjs)
+    if (!REPLAY) allow("voice");
     if (REPLAY) { const r = replayVoice({ text, mp3: raw, ff, log }); fs.writeFileSync(rawWords, JSON.stringify(r.words)); fs.writeFileSync(path.join(out, "voice.json"), JSON.stringify({ text, model, chars: text.length, replay: true, simulatedUsd: r.simulatedUsd }, null, 1)); return; }
     let key = process.env.ELEVENLABS_KEY;
     if (!key) for (const line of fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/)) { const m = line.match(/^\s*ELEVENLABS_KEY\s*=\s*(.*)\s*$/); if (m) key = m[1].replace(/^["']|["']$/g, ""); }
@@ -32,7 +34,7 @@ export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionW
     });
     if (!res.ok) throw new Error(`voice failed (not billed): ${res.status} ${(await res.text()).slice(0, 300)}`);
     const chars = Number(res.headers.get("character-cost")) || text.length;
-    const u = +(chars * PER_CHAR).toFixed(4); usd += u;
+    const u = +(chars * PER_CHAR).toFixed(4); usd += u; add(u);
     const body = await res.json();
     fs.writeFileSync(raw, Buffer.from(body.audio_base64, "base64"));
     const { alignmentWords } = await import(pathToFileURL(path.join(wt, "supabase/functions/_shared/cutaway/voice.js")).href);

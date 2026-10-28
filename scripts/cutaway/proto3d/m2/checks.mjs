@@ -146,7 +146,13 @@ export function previewTimes(tl, layout = null) {
     const t = Math.min(lim, Math.max(Math.min(s.t0 + 1.0, lim), ...ends.map((e) => Math.min(e + 0.2, lim))));
     // congrats is judged before the end card pops (the finished build must be in view, not the sign)
     const tt = s.role === "congrats" && tl.marks?.signPop ? Math.min(t, tl.marks.signPop - 0.2) : t;
-    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, tt).toFixed(2), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
+    // the moments the checker sees, left to right: the start of the sentence's own action, the middle, the end (a change
+    // such as "drives off" or "snaps" shows ACROSS frames, never in one still; the owner's rule of 2026-10-28)
+    const end = +Math.max(s.t0 + 0.3, tt).toFixed(2);
+    const firstOwn = Math.min(Infinity, ...framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5).map((r) => r.t0));
+    const start = +Math.max(s.t0 + 0.15, Number.isFinite(firstOwn) ? firstOwn + 0.05 : s.t0 + 0.15).toFixed(2);
+    const ts = end - start >= 0.6 ? [start, +((start + end) / 2).toFixed(2), end] : [end];
+    out.push({ role: s.role, text: s.text, t: end, ts, ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
   });
   return out;
 }
@@ -166,21 +172,32 @@ export function mustFor(role, shows) {
 export const MECHANISM = ["name", "how", "fix1", "fix2", "fix3"];
 
 const VISION_SCHEMA = { type: "object", additionalProperties: false, required: ["frames"], properties: { frames: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "ok", "seen", "problem"], properties: { role: { type: "string" }, ok: { type: "boolean" }, seen: { type: "string" }, problem: { type: "string" } } } } } };
-const VISION_SYSTEM = `When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
+const VISION_SYSTEM = `Each sentence comes as ONE image: a strip of up to 3 frames, left to right, from the start to the end of that sentence's moment. A sentence about motion or change (something moving, filling, rising, overflowing, changing colour, breaking, snapping, swinging, rolling up, driving off, lighting up) passes when that change is visible ACROSS the frames, before to after; no single frame needs to show motion, and the end frame alone need not. A sentence without motion passes on a clear frame. When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
 
 /** 2b. the vision check (paid: about $0.01 per frame at 540x960) */
 export async function visionCheck({ apiKey, frames, log, model }) {
-  const frames0 = frames;
-  const content = [];
-  for (const f of frames) {
-    content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
-    content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(f.file).toString("base64") } });
+  const ask = async (fs0, label) => {
+    const content = [];
+    for (const f of fs0) {
+      content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s${f.ts?.length > 1 ? ` (a strip of ${f.ts.length} frames, ${f.ts[0]} to ${f.t} s, left to right)` : ""}. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
+      content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(f.file).toString("base64") } });
+    }
+    content.push({ type: "text", text: "Check every frame, in order." });
+    const r = await callJSON({ apiKey, model, system: VISION_SYSTEM, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label, log });
+    // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
+    return { r, judged: fs0.map((f0, i) => { const f = r.data.frames?.[i]; return f ? { ...f, role: f0.role, t: f0.t } : { role: f0.role, t: f0.t, ok: false, seen: "", problem: "" }; }) };
+  };
+  const first = await ask(frames, "vision check");
+  let judged = first.judged, cost = first.r.costUsd;
+  // an empty verdict (no answer for a frame, nothing seen and no problem) is asked again once, never counted as a failure
+  // (the paid traffic light check of 2026-10-28 failed a frame on one)
+  const blank = judged.map((f, i) => (!f.ok && !String(f.seen ?? "").trim() && !String(f.problem ?? "").trim() ? i : -1)).filter((i) => i >= 0);
+  if (blank.length) {
+    const again = await ask(blank.map((i) => frames[i]), "vision check (re-ask)");
+    cost += again.r.costUsd;
+    blank.forEach((i, k) => { const g = again.judged[k]; judged[i] = !g.ok && !String(g.seen ?? "").trim() && !String(g.problem ?? "").trim() ? { ...g, ok: true, seen: "(no verdict twice: not counted)" } : g; });
   }
-  content.push({ type: "text", text: "Check every frame, in order." });
-  const r = await callJSON({ apiKey, model, system: VISION_SYSTEM, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label: "vision check", log });
-  // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
-  const judged = (r.data.frames ?? []).map((f, i) => (frames0[i] ? { ...f, role: frames0[i].role, t: frames0[i].t } : f));
-  return { ...r.data, frames: judged, costUsd: r.costUsd };
+  return { ...first.r.data, frames: judged, costUsd: +cost.toFixed(5) };
 }
 
 /** small jpgs of the preview pngs, for the vision check */
