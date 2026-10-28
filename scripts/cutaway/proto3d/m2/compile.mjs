@@ -55,8 +55,10 @@ export const STATE_WORDS = [
   [/\bcrash|\bbump|\bslam|\brear-end/i, "CRASH!"], [/\bsnaps?\b|\bbreaks?\b|\bbroke/i, "BROKEN"], [/\bjams?\b|\bstuck\b/i, "STUCK"],
   [/\bpiles? up\b|\bbacks? up\b/i, "JAMMED"], [/\bflood|\boverflow/i, "FLOODED"], [/\bleaks?\b|\bseeps?\b/i, "LEAKING"],
   [/\bclog/i, "CLOGGED"], [/\bfreez|\bfrozen\b/i, "FROZEN"], [/\bmelt/i, "MELTING"], [/\brots?\b|\brotting\b/i, "ROTTING"],
-  [/\bcracks?\b/i, "CRACKED"], [/\bdies?\b|\bdying\b/i, "DYING"], [/\bstinks?\b|\bsmells?\b/i, "STINKS"], [/\bheavy\b|\bweighs\b/i, "TOO HEAVY"],
-  [/\bhot\b|\boverheat/i, "TOO HOT"], [/\bdirty\b|\bmurky\b|\bgreen water\b/i, "DIRTY"], [/\bdrowns?\b|\bsoggy\b|\bwaterlogged\b/i, "SOAKED"],
+  [/\bcracks?\b/i, "CRACKED"], [/\bdies?\b|\bdying\b/i, "DYING"], [/\bstinks?\b|\bsmells?\b/i, "STINKS"], [/\btoo heavy\b|\bweighs\b/i, "TOO HEAVY"],
+  [/\bhot\b|\boverheat|\bheats?\b/i, "TOO HOT"], [/\bdirty\b|\bmurky\b|\bturns? green\b|\bgreen water\b|\balgae\b/i, "DIRTY"], [/\bdrowns?\b|\bsoggy\b|\bwaterlogged\b/i, "SOAKED"],
+  // (the free pond run: "heavy rain" was labelled TOO HEAVY, and "soaks into the soil" and "spills over" got no label)
+  [/\bsoaks? (?:in|away|into)\b|\bdrains? away\b/i, "EMPTY"], [/\bspills?\b/i, "OVERFLOW"],
 ];
 export function stateCards(sentences, words, beats = [], cards = []) {
   const out = [];
