@@ -27,9 +27,11 @@ const url = (f) => pathToFileURL(f).href;
 for (const d of ["answers", "requests", "plan", "out", "frames", "sheet"]) fs.mkdirSync(path.join(DIR, d), { recursive: true });
 // each run of a case starts clean (what it would have cost, its events): the answers and requests stay
 for (const f of ["spend.jsonl", "events.jsonl", "harness.log"]) fs.rmSync(path.join(DIR, f), { force: true });
-// this process answers the server's own kit check from the same replay folder, behind the same paid-host guard
-process.env.CUTAWAY_PROVIDERS = "replay"; process.env.CUTAWAY_REPLAY_DIR = DIR;
-const { replayLLM } = await import(url(path.join(M2, "providers.mjs")));
+// --real: the PAID confirmation run (the owner's go only): the real providers, the same code path; otherwise this
+// process answers the server's own kit check from the same replay folder, behind the same paid-host guard
+const REAL = a.real === true;
+if (!REAL) { process.env.CUTAWAY_PROVIDERS = "replay"; process.env.CUTAWAY_REPLAY_DIR = DIR; }
+const { replayLLM } = REAL ? { replayLLM: () => { throw Object.assign(new Error("a real kit check is not run by the harness"), { code: "REPLAY_PENDING" }); } } : await import(url(path.join(M2, "providers.mjs")));
 const { topicProblem, decide, DEFAULT_SETTINGS } = await import(url(path.join(SH, "guard.js")));
 const { quoteTopic } = await import(url(path.join(SH, "quote.js")));
 const { jobFor } = await import(url(path.join(SH, "jobs.js")));
@@ -80,7 +82,8 @@ await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
 const callback = { url: `http://127.0.0.1:${server.address().port}/cutaway-callback`, token: "harness" };
 
 const worker = (job) => new Promise((ok) => {
-  const env = { ...process.env, CUTAWAY_PROVIDERS: "replay", CUTAWAY_REPLAY_DIR: DIR, CUTAWAY_PROTO: PROTO, CUTAWAY_WT: WT, FFMPEG: FF, PYTHON: PY, ...(a.takes ? { CUTAWAY_TAKES: path.resolve(a.takes) } : {}) };
+  const env = { ...process.env, CUTAWAY_PROTO: PROTO, CUTAWAY_WT: WT, FFMPEG: FF, PYTHON: PY, ...(REAL ? {} : { CUTAWAY_PROVIDERS: "replay", CUTAWAY_REPLAY_DIR: DIR }), ...(a.takes && !REAL ? { CUTAWAY_TAKES: path.resolve(a.takes) } : {}) };
+  if (REAL) { delete env.CUTAWAY_PROVIDERS; delete env.CUTAWAY_REPLAY_DIR; }
   for (const k of ["ANTHROPIC_API_KEY", "ELEVENLABS_KEY", "ELEVENLABS_API_KEY", "RUNWARE_API_KEY"]) delete env[k];
   const jf = path.join(DIR, `job_${job.attempt}.json`); fs.writeFileSync(jf, JSON.stringify({ job }));
   env.CUTAWAY_JOB_FILE = jf;
@@ -156,6 +159,6 @@ if (run.status === "done" && fs.existsSync(path.join(DIR, "out", "final.mp4"))) 
   }
 }
 fs.writeFileSync(path.join(DIR, "sheet.json"), JSON.stringify(sheet, null, 1));
-const r = result({ ok: run.status === "done", code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
+const r = result({ ok: run.status === "done", code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, real: REAL, realUsd: +ledger.reduce((s, c) => s + Object.values(c ?? {}).reduce((x, y) => x + (Number(y) || 0), 0), 0).toFixed(4), durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
 log(`${r.ok ? "DONE" : `FAILED ${r.code}`} (${r.seconds} s, would have cost about $${simulatedUsd})`);
 process.exit(r.ok ? 0 : 1);
