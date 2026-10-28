@@ -60,7 +60,7 @@ export const STATE_WORDS = [
 ];
 export function stateCards(sentences, words, beats = [], cards = []) {
   const out = [];
-  for (const s of sentences) {
+  for (const [i, s] of sentences.entries()) {
     if (!/^problem/.test(s.role ?? "")) continue;
     const own = beats.find((b) => b.s === s.role)?.state;
     let text = own?.text ?? (typeof own === "string" ? own : null), word = own?.w ?? null;
@@ -68,7 +68,8 @@ export function stateCards(sentences, words, beats = [], cards = []) {
     if (!text || text.length > 14) continue;
     const key = String(word ?? "").toLowerCase().replace(/[^a-z']/g, "");
     const w = key && words.find((x) => x.s >= s.t0 - 0.01 && x.s <= s.t1 + 0.01 && x.w.toLowerCase().replace(/[^a-z']/g, "").startsWith(key));
-    const t = w ? w.s : s.t0 + 0.4, e = Math.max(t + 1.2, s.t1);
+    // (to the line's end, never into the fix that follows: a DIRTY label 1.2 s from a late word sat on the fix's frame)
+    const next = sentences[i + 1]?.t0 ?? Infinity, t = w ? w.s : s.t0 + 0.4, e = Math.min(Math.max(t + 0.7, s.t1 + 0.1), next - 0.05);
     // (it sits higher than the number cards, so both can be up: "80 LB" and "TOO HEAVY")
     if (cards.some((c) => c.kind === "state" && c.s < e && c.e > t)) continue;
     out.push({ text: text.toUpperCase(), s: +t.toFixed(3), e: +e.toFixed(3), kind: "state" });

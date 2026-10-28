@@ -72,3 +72,10 @@ test("a car held at a red light is a visible problem (the second real traffic li
   const P = chainProblems({ sentences: [{ role: "hook", text: "If you hang a red lamp, you have a light." }, { role: "problem", text: "But now at night the timer holds red for one lone car." }], chain: [] }, { strict: false });
   assert.ok(!P.some((p) => /not something you can see/.test(p)), P.join("; "));
 });
+
+test("the planner's own state label survives into the layout (it was dropped: only the fallback words ever labelled a line)", async () => {
+  const { layoutFromScene } = await import("../scripts/cutaway/proto3d/m2/plan.js");
+  const scene = { world: { cut: [-4, 4, -3, 3] }, parts: [], audio: {}, beats: [{ s: "problem", do: [], state: { text: "TOO HOT", w: "heats" } }, { s: "problem2", do: [], state: "STUCK" }] };
+  const { layout } = layoutFromScene(scene, { key: "t", title: "t", roles: ["problem", "problem2"] });
+  assert.deepEqual(layout.beats.map((b) => b.state), [{ text: "TOO HOT", w: "heats" }, { text: "STUCK" }]);
+});

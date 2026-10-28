@@ -74,6 +74,9 @@ export function layoutFromScene(scene, { key, title, roles }) {
     s: b.s,
     // what this sentence visibly shows: the part that does its verb (the solver checks it acts in this beat)
     ...(b.shows?.p ? { shows: { p: String(b.shows.p), does: String(b.shows.does ?? "") } } : {}),
+    // the red state label the planner gave a problem beat (compile.mjs stateCards; it was dropped here, so only the
+    // fallback word list ever labelled a line: the aquarium's "TOO HOT" never showed, free harness 2026-10-28)
+    ...(b.state?.text || typeof b.state === "string" ? { state: typeof b.state === "string" ? { text: b.state } : { text: String(b.state.text), ...(b.state.w ? { w: String(b.state.w) } : {}) } } : {}),
     do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp && a.amp !== 1) o.amp = a.amp; if (a.ch) o.ch = a.ch; return o; }),
     shots: (b.shots ?? []).map((s) => {
       const o = (s.focus ?? []).includes("home") ? { focus: "home" } : s.box?.length === 6 ? { box: { min: s.box.slice(0, 3), max: s.box.slice(3) } } : { focus: s.focus };
