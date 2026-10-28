@@ -65,3 +65,10 @@ test("a time like 3 a.m. never splits a line in two (the real traffic light run 
   const [d] = draftSentences({ beats: [{ s: "problem2", do: [{ p: "car", v: "arrive", w: "lone" }] }] }, { problem2: "at 3 a.m. one lone car waits at a red" });
   assert.equal((d.text.match(/\./g) ?? []).length, 1, d.text);
 });
+
+test("a car held at a red light is a visible problem (the second real traffic light run of 2026-10-28 was refused for it)", async () => {
+  const { chainProblems, VISIBLE } = await import("../scripts/cutaway/proto3d/m2/chain.js");
+  assert.ok(VISIBLE.test("But now at night the timer holds red for one lone car."));
+  const P = chainProblems({ sentences: [{ role: "hook", text: "If you hang a red lamp, you have a light." }, { role: "problem", text: "But now at night the timer holds red for one lone car." }], chain: [] }, { strict: false });
+  assert.ok(!P.some((p) => /not something you can see/.test(p)), P.join("; "));
+});

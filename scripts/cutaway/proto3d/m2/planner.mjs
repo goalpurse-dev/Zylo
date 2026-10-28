@@ -8,7 +8,7 @@ import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText, SETTING_PROPS } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
-import { chainProblems, linkProblems } from "./chain.js";
+import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -700,8 +700,18 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   // a cue word still missing: its actions fire at the start of its sentence (free; the picture still shows them)
   const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
   if (miss.length) { layout = dropWords(layout, miss); warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`)); }
+  // a problem line whose WORDING still misses the visible-consequence list after the repair, while its beat's picture
+  // shows a visible problem: a warning (the picture is planned first and the preview check judges it; the real traffic
+  // light run of 2026-10-28 was refused, after $0.38, for "the timer holds red for one lone car")
+  const shown = (p) => {
+    const m = /^problem "(.{1,50})…" is not something you can see happen/.exec(p); if (!m) return false;
+    const s = script.sentences.find((x) => x.text.startsWith(m[1]));
+    const b = s && layout.beats.find((x) => x.s === s.role);
+    return !!b && VISIBLE.test(`${b.shows?.does ?? ""} ${(B.story.chain ?? []).find((c) => c.problem === s.role)?.shows ?? ""}`);
+  };
+  for (const p of wc.P.filter(shown)) warnings.push(`${p} (its picture shows it: left to the preview check)`);
   // (the layout itself is solved by planTopic, after the opening fix)
-  return { script, layout, problems: wc.P.filter((p) => !/cue word .* is missing/.test(p)), warnings, solve: true };
+  return { script, layout, problems: wc.P.filter((p) => !/cue word .* is missing/.test(p) && !shown(p)), warnings, solve: true };
 }
 
 /**
