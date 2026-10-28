@@ -57,3 +57,11 @@ test("kit: a spring snaps in two and stays broken until its fix; cars bump and d
   assert.deepEqual(VERBS.trafficLight.cycleFast.map((r) => r.c), ["cycle", "fast"]);
   assert.deepEqual(VERBS.trafficLight.stopCycle.map((r) => [r.c, r.amp]), [["cycle", -1], ["fast", -1]]);
 });
+
+test("a time like 3 a.m. never splits a line in two (the real traffic light run of 2026-10-28 failed its plan on it)", async () => {
+  const { speakable, draftSentences } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  assert.equal(speakable("But at 3 a.m. one lone car waits."), "But at 3 AM one lone car waits.");
+  assert.equal(speakable("So you wait till 7:30 p.m."), "So you wait till 7:30 PM.");
+  const [d] = draftSentences({ beats: [{ s: "problem2", do: [{ p: "car", v: "arrive", w: "lone" }] }] }, { problem2: "at 3 a.m. one lone car waits at a red" });
+  assert.equal((d.text.match(/\./g) ?? []).length, 1, d.text);
+});

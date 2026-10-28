@@ -304,6 +304,9 @@ export function speakable(text) {
   return String(text)
     .replace(/\b([Cc])an not\b/g, "$1annot")
     .replace(/\b([Tt]he\s+)?(U\.S\.A\.|U\.S\.|USA|US)(?!\w)(\s+([A-Za-z]+))?/g, (m, the, us, sp, next) => (next && !NOT_NOUN.test(next) ? `${the ?? ""}American${sp}` : `America${sp ?? ""}`))
+    // "3 a.m.": its full stops split the line in two wherever sentences are found by their full stop (the real traffic
+    // light run of 2026-10-28 failed its plan on it): "3 AM" (a full stop kept only when it ended the text)
+    .replace(/\b([ap])\.\s?m\.?(?=\s|[,;!?]|$)/gi, (m, x, off, str) => `${x.toUpperCase()}M${m.endsWith(".") && !str.slice(off + m.length).trim() ? "." : ""}`)
     .replace(/\bsq\.?\s?ft\b\.?/gi, "square feet")
     .replace(/(\d)\s*lbs?\b\.?/g, "$1 pounds").replace(/(\d)\s*ft\b\.?/g, "$1 feet").replace(/(\d)\s*gal\b\.?/g, "$1 gallons").replace(/(\d)\s*mph\b/gi, "$1 miles per hour")
     .replace(/(?<![\d.,])\d{5,}(?![\d.,]\d)/g, (n) => Number(n).toLocaleString("en-US"));
@@ -416,7 +419,7 @@ NAME      "This is a [real term]."
 MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
 FINISH    "Add [the finishing touches shown]." then "Congratulations, you have built a [thing]."
 Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
-Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952").
+Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
 Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
 const NARRATION_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "sentences"], properties: { title: { type: "string" }, sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } } } };
 
@@ -527,7 +530,7 @@ const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) 
 export function draftSentences(L, ideas) {
   const cues = anchorWords(L);
   return (L.beats ?? []).map((b) => {
-    const idea = String(ideas[b.s] ?? b.shows?.does ?? b.s).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
+    const idea = speakable(String(ideas[b.s] ?? b.shows?.does ?? b.s)).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
     const extra = (cues[b.s] ?? []).filter((w) => !have.has(tok(w)));
     return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you) (but|so you)\b/i, "$1") };
   });
