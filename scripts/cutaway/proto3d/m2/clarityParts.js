@@ -175,15 +175,102 @@ const PROP_TYPES = {
   bikeRack(g, k) { for (const x of [-0.6, 0, 0.6]) { const a = k.add(g, new k.THREE.TorusGeometry(0.35, 0.04, 8, 20, Math.PI), k.mat("#c9cdd2", { metalness: 0.6 }), x, 0.02, 0); a.rotation.y = Math.PI / 2; } },
   mailbox(g, k) { k.add(g, k.boxG(0.1, 1.0, 0.1), k.mat("#5a4632"), 0, 0.5, 0); k.add(g, k.boxG(0.3, 0.3, 0.55), k.mat("#2f5f9e"), 0, 1.12, 0); },
   pottedPlant(g, k) { k.add(g, new k.THREE.CylinderGeometry(0.25, 0.2, 0.4, 14), k.mat("#c0584a"), 0, 0.2, 0); for (let i = 0; i < 5; i++) k.add(g, new k.THREE.SphereGeometry(0.18, 10, 8), k.mat("#4f9a3c", { roughness: 0.9 }), Math.cos(i) * 0.12, 0.55 + (i % 2) * 0.12, Math.sin(i) * 0.12); },
+  // the topic props (2026-10-29): the finishing touches that complete the thing itself
+  rocks(g, k) {
+    // stones along the edge of an area [w, d] (a pond's rim), centred on pos
+    const [w, d] = k.p.size ?? [4, 3], n = Math.max(10, Math.round((w + d) * 2.2)), m = [k.mat("#8d8a82", { roughness: 0.95 }), k.mat("#a7a39a", { roughness: 0.95 }), k.mat("#76736c", { roughness: 0.95 })];
+    for (let i = 0; i < n; i++) {
+      const u = i / n, per = 2 * (w + d), s = u * per, [x, z] = s < w ? [-w / 2 + s, d / 2] : s < w + d ? [w / 2, d / 2 - (s - w)] : s < 2 * w + d ? [w / 2 - (s - w - d), -d / 2] : [-w / 2, -d / 2 + (s - 2 * w - d)];
+      const r = 0.22 + ((i * 7) % 5) * 0.05, st = k.add(g, new k.THREE.DodecahedronGeometry(r, 0), m[i % 3], x, r * 0.55, z); st.scale.y = 0.6; st.rotation.y = i * 1.3;
+    }
+  },
+  lilyPads(g, k) {
+    // pads floating on a water surface [w, d] (pos y = the water top), a pink flower on some
+    const [w, d] = k.p.size ?? [3, 2], pad = k.mat("#3f9a3c", { roughness: 0.6 }), fl = k.mat("#f2a7c3", { roughness: 0.5 });
+    for (let i = 0; i < 7; i++) {
+      const x = -w / 2 + 0.4 + ((i * 0.37) % 1) * (w - 0.8), z = -d / 2 + 0.3 + ((i * 0.61) % 1) * (d - 0.6), r = 0.32 + (i % 3) * 0.08;
+      k.add(g, new k.THREE.CylinderGeometry(r, r, 0.03, 18, 1, false, 0.4, Math.PI * 2 - 0.5), pad, x, 0.02, z, false);
+      if (i % 2 === 0) for (let j = 0; j < 5; j++) { const p = k.add(g, new k.THREE.ConeGeometry(0.07, 0.18, 6), fl, x + Math.cos(j * 1.26) * 0.07, 0.1, z + Math.sin(j * 1.26) * 0.07, false); p.rotation.z = Math.cos(j * 1.26) * 0.6; p.rotation.x = -Math.sin(j * 1.26) * 0.6; }
+    }
+  },
+  fish(g, k) {
+    // orange fish swimming slow circles in a water box [w, d] (pos y = mid-water)
+    const [w, d] = k.p.size ?? [3, 2], body = [k.mat("#f08a24", { roughness: 0.4 }), k.mat("#f6f1e8", { roughness: 0.4 })], fish = [];
+    for (let i = 0; i < 5; i++) {
+      const f = new k.THREE.Group(); g.add(f);
+      const b = k.add(f, new k.THREE.SphereGeometry(0.16, 12, 10), body[i % 4 === 3 ? 1 : 0], 0, 0, 0, false); b.scale.set(1.8, 0.8, 0.7);
+      const t = k.add(f, new k.THREE.ConeGeometry(0.12, 0.2, 4), body[0], -0.33, 0, 0, false); t.rotation.z = Math.PI / 2;
+      fish.push({ f, ph: i / 5, rx: w * (0.25 + (i % 3) * 0.06), rz: d * (0.2 + (i % 2) * 0.08), y: (i % 3 - 1) * 0.15 });
+    }
+    k.anim.push((tt) => { for (const q of fish) { const a = (tt * 0.25 + q.ph) * Math.PI * 2; q.f.position.set(Math.cos(a) * q.rx, q.y, Math.sin(a) * q.rz); q.f.rotation.y = -a - Math.PI / 2; } });
+  },
+  rinkLines(g, k) {
+    // the painted markings on an ice sheet [w, d] (pos y = the ice top): a red centre line, two blue lines, a centre circle
+    const [w, d] = k.p.size ?? [6, 4], red = k.mat("#d23a33", { roughness: 0.4 }), blue = k.mat("#2e62c9", { roughness: 0.4 });
+    k.add(g, k.boxG(0.12, 0.01, d * 0.96), red, 0, 0.006, 0, false);
+    for (const x of [-w * 0.2, w * 0.2]) k.add(g, k.boxG(0.12, 0.01, d * 0.96), blue, x, 0.006, 0, false);
+    const c = k.add(g, new k.THREE.TorusGeometry(Math.min(w, d) * 0.18, 0.04, 6, 40), blue, 0, 0.01, 0, false); c.rotation.x = Math.PI / 2;
+    for (const x of [-w * 0.42, w * 0.42]) k.add(g, k.boxG(0.06, 0.01, d * 0.96), red, x, 0.006, 0, false);
+  },
+  goalNets(g, k) {
+    // two small goals facing each other across [w, d]: red frames, white mesh
+    const [w] = k.p.size ?? [6, 4], red = k.mat("#d23a33", { metalness: 0.3, roughness: 0.4 }), net = k.ctx.std({ color: k.C("#f4f4f4"), roughness: 0.9, transparent: true, opacity: 0.55 });
+    for (const sx of [-1, 1]) {
+      const q = new k.THREE.Group(); q.position.x = sx * w * 0.42; q.rotation.y = sx > 0 ? Math.PI / 2 : -Math.PI / 2; g.add(q);
+      for (const x of [-0.45, 0.45]) k.add(q, k.boxG(0.06, 0.5, 0.06), red, x, 0.25, 0);
+      k.add(q, k.boxG(0.96, 0.06, 0.06), red, 0, 0.5, 0);
+      k.add(q, k.boxG(0.9, 0.46, 0.02), net, 0, 0.24, -0.25, false); k.add(q, k.boxG(0.9, 0.02, 0.26), net, 0, 0.48, -0.12, false);
+    }
+  },
+  floodLight(g, k) {
+    // a tall pole with a lamp head aimed down
+    const pole = k.mat("#5f666b", { metalness: 0.6, roughness: 0.4 });
+    k.add(g, new k.THREE.CylinderGeometry(0.07, 0.09, 4.2, 12), pole, 0, 2.1, 0);
+    const h = k.add(g, k.boxG(0.8, 0.35, 0.3), k.mat("#2d3236"), 0, 4.3, 0.15); h.rotation.x = 0.5;
+    const lens = k.add(g, k.boxG(0.7, 0.25, 0.04), k.ctx.std({ color: k.C("#fff7d6"), emissive: k.C("#fff2b8"), emissiveIntensity: 1.6 }), 0, 4.22, 0.3, false); lens.rotation.x = 0.5;
+  },
+  crosswalk(g, k) {
+    // white stripes across a road [w, d] (pos y = the road top); the stripes run along d
+    const [w, d] = k.p.size ?? [6, 3], m = k.mat("#f4f4ef", { roughness: 0.7 }), n = Math.max(4, Math.round(w / 0.9));
+    for (let i = 0; i < n; i++) k.add(g, k.boxG(0.45, 0.012, d), m, -w / 2 + 0.45 + i * ((w - 0.9) / (n - 1)), 0.008, 0, false);
+  },
+  stopLine(g, k) { const [w] = k.p.size ?? [3]; k.add(g, k.boxG(w, 0.012, 0.35), k.mat("#f4f4ef", { roughness: 0.7 }), 0, 0.008, 0, false); },
+  streetSign(g, k) {
+    // a green street-name sign on a pole (text: its name)
+    k.add(g, new k.THREE.CylinderGeometry(0.05, 0.05, 2.8, 10), k.mat("#5f666b", { metalness: 0.6 }), 0, 1.4, 0);
+    const cv = typeof document !== "undefined" ? document.createElement("canvas") : null; let face = k.mat("#1f7a4a");
+    if (cv) { cv.width = 512; cv.height = 128; const c = cv.getContext("2d"); c.fillStyle = "#1f7a4a"; c.fillRect(0, 0, 512, 128); c.strokeStyle = "#ffffff"; c.lineWidth = 8; c.strokeRect(8, 8, 496, 112); c.fillStyle = "#ffffff"; c.font = "bold 72px Arial, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(String(k.p.text ?? "MAIN ST").slice(0, 12), 256, 68); const t = new k.THREE.CanvasTexture(cv); t.colorSpace = k.THREE.SRGBColorSpace; face = k.ctx.std({ map: t, roughness: 0.5 }); }
+    k.add(g, k.boxG(1.3, 0.32, 0.04), face, 0, 2.7, 0.04);
+  },
+  stairs(g, k) {
+    // a straight stair rising +x from pos (the bottom step) to height h, width w; with a handrail
+    const h = k.p.h ?? 2.6, w = k.p.w ?? 1.0, n = Math.max(4, Math.round(h / 0.19)), run = 0.27, m = k.mat("#b9906a", { roughness: 0.7 }), rail = k.mat("#5f666b", { metalness: 0.5 });
+    for (let i = 0; i < n; i++) k.add(g, k.boxG(run, (h / n) * (i + 1), w), m, run / 2 + i * run, ((h / n) * (i + 1)) / 2, 0);
+    const len = Math.hypot(n * run, h), r = k.add(g, k.boxG(len, 0.05, 0.05), rail, (n * run) / 2, h / 2 + 0.9, -w / 2 + 0.04); r.rotation.z = Math.atan2(h, n * run);
+    for (const x of [0.1, n * run - 0.1]) k.add(g, k.boxG(0.05, 0.9, 0.05), rail, x, (x / (n * run)) * h + 0.45, -w / 2 + 0.04);
+  },
+  ceilingLight(g, k) {
+    // a pendant lamp hanging from a ceiling at height h above pos (pos y = the floor): a cord, a shade, a glowing bulb
+    const h = k.p.h ?? 2.6, drop = k.p.drop ?? 0.7;
+    k.add(g, new k.THREE.CylinderGeometry(0.015, 0.015, drop, 6), k.mat("#2d3236"), 0, h - drop / 2, 0, false);
+    k.add(g, new k.THREE.ConeGeometry(0.35, 0.3, 18, 1, true), k.mat("#2d3236", { roughness: 0.5 }), 0, h - drop - 0.1, 0);
+    k.add(g, new k.THREE.SphereGeometry(0.12, 12, 10), k.ctx.std({ color: k.C("#fff6d8"), emissive: k.C("#ffe9a8"), emissiveIntensity: 2.2 }), 0, h - drop - 0.22, 0, false);
+    const L = new k.THREE.PointLight(0xffe2a8, 1.4, 6); L.position.set(0, h - drop - 0.35, 0); g.add(L);
+  },
+  steppingStones(g, k) {
+    // flat stones in a line along x over length w (a path to the thing)
+    const [w] = k.p.size ?? [3], m = k.mat("#9a968d", { roughness: 0.9 }), n = Math.max(3, Math.round(w / 0.75));
+    for (let i = 0; i < n; i++) { const s = k.add(g, new k.THREE.CylinderGeometry(0.28 + (i % 2) * 0.05, 0.3, 0.08, 9), m, -w / 2 + 0.3 + i * ((w - 0.6) / (n - 1)), 0.04, (i % 2 ? 0.12 : -0.12)); s.rotation.y = i; }
+  },
   toolbox(g, k) { k.add(g, k.boxG(0.7, 0.35, 0.35), k.mat("#c8372f"), 0, 0.18, 0); k.add(g, k.boxG(0.3, 0.05, 0.05), k.mat("#2d3236"), 0, 0.42, 0); },
 };
 export const PROP_NAMES = Object.keys(PROP_TYPES);
 export function prop(ctx, p, api) {
-  const k = { ...tools(ctx), ctx };
+  const k = { ...tools(ctx), ctx, p, anim: [] };
   const g = new k.THREE.Group(); g.position.set(...(p.pos ?? [0, 0, 0])); g.rotation.y = p.rotY ?? 0; ctx.scene.add(g);
   (PROP_TYPES[p.type] ?? PROP_TYPES.planter)(g, k);
   const s0 = p.scale ?? 1;
-  return { update(tt) { const v = back(clamp(api.ch("pop", tt))); g.visible = v > 0.002; g.scale.setScalar(pop(v * s0)); } };
+  return { update(tt) { const v = back(clamp(api.ch("pop", tt))); g.visible = v > 0.002; g.scale.setScalar(pop(v * s0)); for (const f of k.anim) f(tt); } };
 }
 
 export function canopy(ctx, p, api) {

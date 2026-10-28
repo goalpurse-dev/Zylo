@@ -6,7 +6,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
-import { catalogText, SETTING_PROPS } from "./catalog.js";
+import { catalogText, SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
@@ -166,12 +166,14 @@ const SCENE_SYSTEM = sceneSystem();
 // the "Add ..." line names only finishing touches the setting has (catalog.js SETTING_PROPS), so a car wash never gets
 // a traffic light or grass
 const PROP_WORDS = { shrubs: "bushes", youngTrees: "young trees", fence: "a fence", grass: "a grass cap", canopy: "a canopy", "prop:mailbox": "a mailbox", "prop:planter": "a planter", "prop:bench": "a bench", "prop:trashCan": "a trash can", "prop:bikeRack": "a bike rack", "prop:kiosk": "a pay kiosk", "prop:vacuum": "a vacuum station", "prop:towelRack": "a towel rack", "prop:toolbox": "a toolbox", "prop:pottedPlant": "a potted plant" };
+const TOPIC_WORDS = "rocks round an edge, lily pads, fish, painted rink lines, goal nets, a flood light, crosswalk stripes, a stop line, a street sign, stairs, a ceiling light, stepping stones";
 const propWords = (setting) => (SETTING_PROPS[setting] ?? []).map((k) => PROP_WORDS[k] ?? k).join(", ");
 export function finishPropsLine(topic) {
   const t = ` ${normTopic(topic)} `;
   const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
   const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
-  if (setting) return `The "Add ..." finishing line may only name things from this setting's list (it can also add a lid or cover to the thing itself): ${propWords(setting)}.`;
+  // (the finish completes the thing itself: the topic props first; the setting's own props are not finishing touches)
+  if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
   return `The "Add ..." finishing line may only name things the setting it lives in has: a yard: ${propWords("yard")}; a street: ${propWords("street")}; a park: ${propWords("park")}; a garage: ${propWords("garage")}; a room: ${propWords("room")}; it can also add a lid or cover to the thing itself.`;
 }
 
@@ -432,7 +434,7 @@ const STORY_RULES = `THE STORY (the account's formula; you plan it as beats, one
 - the chain: problem ("But [a visible consequence]") then fix ("So you [add one real part]"), repeated. Every fix causes the next, bigger problem ("So you add X. But now X does Y"): a CHAIN, not a list. Each problem is a concrete consequence you SEE happen (cars piling up at the red, water flooding the basement, the wall cracking, the creek turning grey), with visible stakes, never a dry fact. The first problem is the second beat.
 - name: "This is a [real term]." (once; a second, name2, only in 60 s videos); how/fact beats show the mechanism working.
 - myth: "And [what everyone thinks] is not [what it is]." Show the wrong idea first, then take it away; mythFact shows the real one.
-- finish: "Add [two or three finishing touches]." then congrats: "Congratulations, you have built a [thing]." The end is calm.
+- finish: "Add [two or three touches that complete the thing itself]." then congrats: "Congratulations, you have built a [thing]." The end is calm. THE FINISH completes the thing, as the account's videos do ("Add the grass back on top", "Add a grass cap, a fence and young trees", "Add stairs and electricity", "Add boards and glass so the puck stays in", "Add a drip tray and a cone", "Add stepping stones and warm lights"): a pond gets rocks round its edge, lily pads and fish; an ice rink painted lines, goal nets and flood lights; a traffic light crosswalk stripes, a stop line and a street sign; a basement stairs and a light; a garage door a car rolling inside. Never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox) unless the topic is about that thing.
 - Surprises: three or four concrete, checkable claims, ideally with a number; they are fact-checked before the words are written.
 - Roles: hook first, congrats last, finish just before it; problem roles are problem, problem2, problem3 (flood and stakes may deepen a problem); fix roles are fix1..fix5. One beat per role.
 WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
@@ -451,7 +453,7 @@ HOOK      "If you [one naive physical action], you have a [thing]." (16 words or
 CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added, or starts with "But now" (checked by code).
 NAME      "This is a [real term]."
 MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
-FINISH    "Add [the finishing touches shown]." then "Congratulations, you have built a [thing]."
+FINISH    "Add [the finishing touches shown]." (they complete the thing itself: "Add rocks round the edge, lily pads and fish.") then "Congratulations, you have built a [thing]."
 Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
 Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
 Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
@@ -592,7 +594,10 @@ export function fixStory(story0, scene) {
   return story;
 }
 export function beatPlanProblems(L, story, lengthSec) {
-  const P = [], roles = (L.beats ?? []).map((b) => b.s), R = LENGTH[lengthSec];
+  const P = [], fin = (L.beats ?? []).find((b) => b.s === "finish"), about = `${L.title ?? ""} ${story?.title ?? ""}`.toLowerCase();
+  // the finish completes the thing: generic decor is refused unless the topic is about it (the owner's rule of 2026-10-29)
+  for (const a of fin?.do ?? []) { const p = (L.parts ?? []).find((q) => q.id === a.p); const t = p?.kind === "prop" ? p.params?.type : null; if (t && GENERIC_DECOR.includes(t) && !about.includes(t.replace(/([A-Z])/g, " $1").toLowerCase().trim())) P.push(`the finish adds a ${t.replace(/([A-Z])/g, " $1").toLowerCase()}: finish the thing itself instead (${TOPIC_WORDS})`); }
+  const roles = (L.beats ?? []).map((b) => b.s), R = LENGTH[lengthSec];
   if (roles[0] !== "hook" || roles.at(-1) !== "congrats") P.push("the beats must start with hook and end with congrats");
   if (!roles.includes("name")) P.push('no "name" beat (This is a…)');
   if (new Set(roles).size !== roles.length) P.push("a role is used twice");

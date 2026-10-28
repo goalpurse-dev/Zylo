@@ -7,7 +7,7 @@
 //     a raised pipe ends at a part
 //  4. no tree stands over a part that acts (a tree over the gas flame)
 import { focusOf as focusRaw } from "./focus.js";
-import { SETTING_PROPS } from "./catalog.js";
+import { SETTING_PROPS, TOPIC_PROPS } from "./catalog.js";
 import { settingBoxes, settingFloor } from "./framing.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
@@ -36,7 +36,7 @@ export function clarityChecks(L, sentences) {
   for (const p of L.parts) {
     const isGrass = p.kind === "wipe" && /grass/i.test(p.params?.mat ?? "");
     if (green && (["shrubs", "youngTrees", "lawnWet"].includes(p.kind) || isGrass)) problems.push(`part ${p.id} (${isGrass ? "grass" : p.kind}) does not belong in the ${setting} setting: use its props (${[...allowed].join(", ")})`);
-    if (p.kind === "prop" && !allowed.has(`prop:${p.params?.type}`)) problems.push(`part ${p.id}: a ${p.params?.type} does not belong in the ${setting} setting (allowed: ${[...allowed].filter((x) => x.startsWith("prop:")).map((x) => x.slice(5)).join(", ")})`);
+    if (p.kind === "prop" && !TOPIC_PROPS.includes(p.params?.type) && !allowed.has(`prop:${p.params?.type}`)) problems.push(`part ${p.id}: a ${p.params?.type} does not belong in the ${setting} setting (allowed: ${[...allowed].filter((x) => x.startsWith("prop:")).map((x) => x.slice(5)).join(", ")})`);
   }
   // 2b. the "Add ..." line brings only finishing touches, never a new machine (a traffic light at a car wash)
   const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));

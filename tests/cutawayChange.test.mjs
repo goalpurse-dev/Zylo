@@ -155,3 +155,15 @@ test("the worker reports each cost once: 'planned' then 'done' with the same tot
   const a = fresh({ planUsd: 0.44, voiceUsd: 0.05 }), b = fresh({ planUsd: 0.44, voiceUsd: 0.05, gpuUsd: 0.02 });
   assert.deepEqual(a, { planUsd: 0.44, voiceUsd: 0.05 }); assert.deepEqual(b, { gpuUsd: 0.02 });
 });
+
+test("the finish completes the thing itself: topic props in any setting, generic decor refused on a new plan's finish", async () => {
+  const { TOPIC_PROPS, GENERIC_DECOR } = await import("../scripts/cutaway/proto3d/m2/catalog.js");
+  const { PROP_NAMES } = await import("../scripts/cutaway/proto3d/m2/clarityParts.js");
+  for (const t of ["rocks", "lilyPads", "fish", "rinkLines", "goalNets", "floodLight", "crosswalk", "stopLine", "streetSign", "stairs", "ceilingLight"]) { assert.ok(TOPIC_PROPS.includes(t), t); assert.ok(PROP_NAMES.includes(t), t); }
+  const { beatPlanProblems } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const L = (type, title = "How a Pond Works") => ({ title, parts: [{ id: "deco", kind: "prop", params: { type } }], beats: [{ s: "hook" }, { s: "finish", do: [{ p: "deco", v: "show" }] }, { s: "congrats" }] });
+  assert.ok(beatPlanProblems(L("trashCan"), {}, 30).some((p) => /finish adds a trash can/.test(p)));
+  assert.ok(!beatPlanProblems(L("lilyPads"), {}, 30).some((p) => /finish adds/.test(p)));
+  assert.ok(!beatPlanProblems(L("bench", "How a Park Bench Works"), {}, 30).some((p) => /finish adds/.test(p)), "a topic about the thing may add it");
+  assert.ok(GENERIC_DECOR.includes("pottedPlant"));
+});
