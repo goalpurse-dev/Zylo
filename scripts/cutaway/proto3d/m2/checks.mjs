@@ -117,14 +117,15 @@ export function previewTimes(tl, layout = null) {
     const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : [])), ...(shows ? (beat?.do ?? []).map((a) => a.p) : [])].filter(Boolean));
     // (only actions that start while the sentence is spoken: the next sentence's lead-in, a "So" that hides this beat's
     // seep 0.25 s early, belongs to the next beat; the free harness of 2026-10-27 found Landfill frames judged after it)
-    const framedRamps = Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps);
+    // (a held motion's tail, after the line, is never waited for: the frames are taken in the hold; compile.mjs holdRamps)
+    const framedRamps = Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps.filter((r) => !r.tail));
     // a motion of this beat, or of a later one (by the sentence it is anchored to; one tied to no sentence, as the end
     // card's pop, goes by its time)
     const order = (role) => tl.sentences.findIndex((x) => x.role === role);
     const mine = (r) => (r.s ? r.s === s.role : r.t0 >= s.t0 - 0.5 && r.t0 < next);
     const later = (r) => (r.s ? order(r.s) > i : r.t0 >= s.t1);
     const own = shows ? framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next + 0.4).map((r) => r.t1) : [];
-    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
+    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => !r.tail && mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
     // (the showing action on the last word, a canopy going up on "canopy", may settle just after the sentence: up to 0.4 s)
     // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed),
     // nor after the next beat starts changing what this one frames (the newspaper sinking on "But")
@@ -151,8 +152,15 @@ export function previewTimes(tl, layout = null) {
     const end = +Math.max(s.t0 + 0.3, tt).toFixed(2);
     const firstOwn = Math.min(Infinity, ...framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5).map((r) => r.t0));
     const start = +Math.max(s.t0 + 0.15, Number.isFinite(firstOwn) ? firstOwn + 0.05 : s.t0 + 0.15).toFixed(2);
-    const ts = end - start >= 0.6 ? [start, +((start + end) / 2).toFixed(2), end] : [end];
-    out.push({ role: s.role, text: s.text, t: end, ts, ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
+    // the middle frame in the hold: just after the sentence's last motion has peaked, before anything takes it back (a
+    // panel that "swings out and slams back" was judged before the swing and after the slam; round 3, 2026-10-28)
+    const peaks = framedRamps.filter((r) => mine(r) && r.amp > 0 && r.e !== "step" && r.t1 - r.t0 >= 0.25 && r.t1 > start + 0.2 && r.t1 < end - 0.15).map((r) => r.t1);
+    const mid = peaks.length ? +(Math.max(...peaks) + 0.05).toFixed(2) : +((start + end) / 2).toFixed(2);
+    const ts = end - start >= 0.6 ? [start, mid, end] : [end];
+    // the state label up at each moment (it is a caption, not in the canvas: previewStrips draws it on the frame)
+    const labels = (tl.audio?.cards ?? []).filter((c) => c.kind === "state");
+    const label = ts.map((x) => labels.find((c) => x >= c.s && x <= c.e)?.text ?? null);
+    out.push({ role: s.role, text: s.text, t: end, ts, ...(label.some(Boolean) ? { label } : {}), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
   });
   return out;
 }

@@ -1,0 +1,59 @@
+// The examples' ways of making a change read in one still frame (studied 2026-10-28; built in round 3): the red state
+// label, the hold at 70% of travel, the bump and the drive-off, the snap, the gauge, the fast cycle.
+import test from "node:test";
+import assert from "node:assert/strict";
+import { stateCards, holdRamps, STATE_WORDS } from "../scripts/cutaway/proto3d/m2/compile.mjs";
+import { previewTimes } from "../scripts/cutaway/proto3d/m2/checks.mjs";
+import { buildAss, STATE_Y } from "../render-worker/src/cutawayFinalPlan.mjs";
+import { RIG_MOVES, rigVerb, rigProblems } from "../scripts/cutaway/proto3d/m2/rig.js";
+import { VERBS, verbCues } from "../scripts/cutaway/proto3d/m2/verbs.js";
+import { CITY_CHANNELS } from "../scripts/cutaway/proto3d/m2/cityParts.js";
+
+const W = (text, t0) => text.split(" ").map((w, i) => ({ w, s: +(t0 + i * 0.3).toFixed(2), e: +(t0 + i * 0.3 + 0.25).toFixed(2) }));
+
+test("state label: a problem line gets its red label from its problem word to the line's end; the planner's own wins; never on other lines", () => {
+  const words = [...W("So you add a lamp.", 0), ...W("But now the cars crash into each other.", 2)];
+  const sentences = [{ role: "fix1", t0: 0, t1: 1.6, text: "So you add a lamp." }, { role: "problem2", t0: 2, t1: 4.3, text: "But now the cars crash into each other." }];
+  const [c] = stateCards(sentences, words, []);
+  assert.deepEqual({ text: c.text, kind: c.kind }, { text: "CRASH!", kind: "state" });
+  assert.equal(c.s, words.find((w) => w.w === "crash").s); assert.ok(c.e >= 4.3, "held to the line's end");
+  assert.equal(stateCards(sentences, words, [{ s: "problem2", state: { text: "TOO FAST", w: "cars" } }])[0].text, "TOO FAST");
+  assert.equal(stateCards([sentences[0]], words, []).length, 0);
+  assert.ok(STATE_WORDS.length >= 15);
+  // in the final mix: red, its own style, above the number cards
+  const ass = buildAss({ words, cards: [c] });
+  assert.match(ass, /Style: CardState,Lilita One,108,&H00303BFF/);
+  assert.match(ass, new RegExp(`CardState,,0,0,0,,\\{\\\\pos\\(540,${Math.round(1920 * STATE_Y)}\\)`));
+});
+
+test("hold: a motion that would finish at the line's end reaches 70% by 75% of the line and holds; the rest is a tail after it", () => {
+  const s = { t0: 10, t1: 14 };
+  const [a, b] = holdRamps({ t0: 13.4, t1: 15.6, amp: 1, e: "out", s: "fix1" }, s);
+  assert.equal(a.amp, 0.7); assert.ok(a.t0 <= 13 && a.t1 <= 13.4 && a.t1 > a.t0, JSON.stringify(a));
+  assert.equal(b.tail, true); assert.equal(b.t0, 14); assert.equal(+(a.amp + b.amp).toFixed(4), 1);
+  // an early, short or backward motion keeps its timing
+  for (const r of [{ t0: 10.2, t1: 11, amp: 1, e: "out" }, { t0: 13, t1: 13.1, amp: 1, e: "lin" }, { t0: 13, t1: 15, amp: -1, e: "inOut" }, { t0: 13, t1: 15, amp: 1, e: "step" }]) assert.deepEqual(holdRamps(r, s), [r]);
+});
+
+test("check frames: the middle frame is at the motion's peak, a hold's tail is never waited for, and a state label rides on the frames", () => {
+  const tl = { marks: { lengthEnd: 12 }, sentences: [{ role: "problem", t0: 2, t1: 6, text: "But the panel swings out and slams down." }, { role: "fix1", t0: 6.2, t1: 9 }],
+    tracks: { "door.flop": { ramps: [{ t0: 3, t1: 4.2, amp: 1, e: "inOut", s: "problem" }, { t0: 4.6, t1: 4.9, amp: -1, e: "inOut", s: "problem" }, { t0: 6, t1: 9.5, amp: 0.3, e: "inOut", s: "problem", tail: true }] } },
+    audio: { cards: [{ text: "TOO HEAVY", s: 2.5, e: 6, kind: "state" }] } };
+  const L = { parts: [{ id: "door", kind: "rig", params: { nodes: [] } }], beats: [{ s: "problem", shows: { p: "door" }, do: [{ p: "door", v: "flop" }] }] };
+  const [p] = previewTimes(tl, L);
+  assert.equal(p.ts.length, 3); assert.equal(p.ts[1], 4.25, "at the swing's peak, before the slam");
+  assert.ok(p.ts[2] < 6.5, "not after the tail"); assert.deepEqual(p.label, ["TOO HEAVY", "TOO HEAVY", "TOO HEAVY"].map((x, i) => (p.ts[i] >= 2.5 && p.ts[i] <= 6 ? x : null)));
+});
+
+test("kit: a spring snaps in two and stays broken until its fix; cars bump and drive off; the signal cycles fast", () => {
+  assert.ok(RIG_MOVES.includes("snap"));
+  const spring = { name: "door", pos: [0, 0.1, -2], nodes: [{ id: "frame", at: [0, 0, 0], shapes: [{ shape: "box", size: [2, 0.2, 0.3], at: [0, 0.1, 0] }] },
+    { id: "coil", parent: "frame", at: [0, 0.4, 0], shapes: [{ shape: "spring", r: 0.12, h: 1.2, axis: "x" }], moves: [{ name: "snap", type: "snap", axis: "x", gap: 0.4 }] }] };
+  assert.deepEqual(rigProblems({ id: "door", kind: "rig", params: spring }, { floor: 0.1 }), []);
+  assert.ok(rigVerb(spring, "snap")[0].amp > 0 && rigVerb(spring, "snapBack")[0].amp < 0);
+  assert.ok(CITY_CHANNELS.traffic.includes("bump") && CITY_CHANNELS.trafficLight.includes("fast"));
+  const lane = { id: "q", kind: "traffic", params: {} }, at = { s: "problem2" };
+  assert.equal(verbCues(lane, { v: "bump" }, at)[0].c, "bump"); assert.equal(verbCues(lane, { v: "unbump" }, at)[0].amp, -1);
+  assert.deepEqual(VERBS.trafficLight.cycleFast.map((r) => r.c), ["cycle", "fast"]);
+  assert.deepEqual(VERBS.trafficLight.stopCycle.map((r) => [r.c, r.amp]), [["cycle", -1], ["fast", -1]]);
+});

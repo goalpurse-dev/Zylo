@@ -38,7 +38,7 @@ async function visionCached({ apiKey, frames, log, cacheDir }) {
 }
 
 // each sentence's frames (start, middle, end of its action) side by side in one small jpg: what the checker sees
-async function previewStrips({ proto, layout, shots, out, ff }) {
+async function previewStrips({ proto, layout, shots, out, ff, wt = WT }) {
   const all = shots.flatMap((s) => s.ts ?? [s.t]);
   const pngs = await previewStills({ proto, layout, times: all, out });
   let k = 0;
@@ -46,9 +46,22 @@ async function previewStrips({ proto, layout, shots, out, ff }) {
     const n = (s.ts ?? [s.t]).length, mine = pngs.slice(k, k + n); k += n;
     const file = path.join(out, `strip_${String(i).padStart(2, "0")}.jpg`);
     const ins = mine.flatMap((p) => ["-i", p]);
-    execFileSync(ff, ["-v", "error", "-y", ...ins, "-filter_complex", n > 1 ? `${mine.map((_, j) => `[${j}]scale=270:-1[f${j}]`).join(";")};${mine.map((_, j) => `[f${j}]`).join("")}hstack=inputs=${n}` : "[0]scale=360:-1", "-q:v", "4", file]);
+    // the red state label is a caption in the final video, not in the canvas: drawn here so the checker sees what viewers see
+    const lab = (j) => (s.label?.[j] ? `${stateText(s.label[j])},` : "");
+    execFileSync(ff, ["-v", "error", "-y", ...ins, "-filter_complex", n > 1 ? `${mine.map((_, j) => `[${j}]${lab(j)}scale=270:-1[f${j}]`).join(";")};${mine.map((_, j) => `[f${j}]`).join("")}hstack=inputs=${n}` : `[0]${lab(0)}scale=360:-1`, "-q:v", "4", file], { cwd: fontHere(out, wt) });
     return { ...s, file, end: mine.at(-1) };
   });
+}
+
+// the caption font copied next to the frames (drawtext reads it by a plain relative name: no drive-letter escaping)
+function fontHere(out, wt) {
+  const f = path.join(wt, "supabase/functions/_shared/fonts/LilitaOne-Regular.ttf");
+  if (fs.existsSync(f) && !fs.existsSync(path.join(out, "font.ttf"))) fs.copyFileSync(f, path.join(out, "font.ttf"));
+  return out;
+}
+export function stateText(t) {
+  const x = String(t).toUpperCase().replace(/[^A-Z0-9 !?-]/g, "");
+  return `drawtext=fontfile=font.ttf:text='${x}':fontsize=h*0.075:fontcolor=0xFF3B30:borderw=6:bordercolor=white:x=(w-text_w)/2:y=h*0.2-text_h/2`;
 }
 
 async function previewStills({ proto, layout, times, out }) {
@@ -110,7 +123,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     const allTimes = previewTimes(tl, layout);
     const pngsAll = await previewStills({ proto, layout, times: allTimes.map((s) => s.t), out: path.join(out, "preview") });
     // the checked sentences as strips: the start, middle and end of each one's action
-    shots = shots.length ? await previewStrips({ proto, layout, shots, out: path.join(out, "preview_strips"), ff }) : [];
+    shots = shots.length ? await previewStrips({ proto, layout, shots, out: path.join(out, "preview_strips"), ff, wt }) : [];
     const jpgs = shots.map((s) => s.file);
     // the house style saturation (0.38-0.45): a topic that measures outside it gets its grading corrected
     const sat0 = saturationOf(ff, pngsAll), grade = gradingFor(sat0, layout.world?.sat ?? undefined);
@@ -133,7 +146,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = previewTimes(tl, layout).filter((s) => beats.some((f) => f.role === s.role));
-      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff });
+      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
       const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
@@ -162,7 +175,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = previewTimes(tl, layout).filter((s) => rw.changed.includes(s.role));
-      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff });
+      const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
       const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));

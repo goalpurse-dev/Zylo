@@ -19,7 +19,7 @@ export function marksFor(words, speechEnd) {
 }
 
 // the channels that are on/off switches (compile: they never stack past on or below off)
-export const SWITCHES = Object.freeze({ trafficLight: ["red", "yellow", "green", "cycle", "flash"] });
+export const SWITCHES = Object.freeze({ trafficLight: ["red", "yellow", "green", "cycle", "flash", "fast"] });
 
 // a setting's ambience file (makeAmbience.mjs): one per setting, the yard's for anything else
 export const AMBIENCE_OF = Object.freeze({ yard: "yard", street: "street", park: "park", garage: "garage", room: "room", carwash: "carwash" });
@@ -45,6 +45,55 @@ export function nameCards(sentences, words, cards = []) {
   return out;
 }
 
+/**
+ * The red state label (the examples' "TOO FAST", "NO POWER", "BROKEN", studied 2026-10-28): a problem line's card, on its
+ * problem word, held to the end of the line so any frame of it reads the state. The beat's own `state` ({text, w}) when the
+ * planner gave one, else one from the line's words (STATE_WORDS).
+ */
+export const STATE_WORDS = [
+  [/\btoo fast\b/i, "TOO FAST"], [/\btoo slow\b/i, "TOO SLOW"], [/\bno power\b|\bpower (?:goes|is) out\b/i, "NO POWER"],
+  [/\bcrash|\bbump|\bslam|\brear-end/i, "CRASH!"], [/\bsnaps?\b|\bbreaks?\b|\bbroke/i, "BROKEN"], [/\bjams?\b|\bstuck\b/i, "STUCK"],
+  [/\bpiles? up\b|\bbacks? up\b/i, "JAMMED"], [/\bflood|\boverflow/i, "FLOODED"], [/\bleaks?\b|\bseeps?\b/i, "LEAKING"],
+  [/\bclog/i, "CLOGGED"], [/\bfreez|\bfrozen\b/i, "FROZEN"], [/\bmelt/i, "MELTING"], [/\brots?\b|\brotting\b/i, "ROTTING"],
+  [/\bcracks?\b/i, "CRACKED"], [/\bdies?\b|\bdying\b/i, "DYING"], [/\bstinks?\b|\bsmells?\b/i, "STINKS"], [/\bheavy\b|\bweighs\b/i, "TOO HEAVY"],
+  [/\bhot\b|\boverheat/i, "TOO HOT"], [/\bdirty\b|\bmurky\b|\bgreen water\b/i, "DIRTY"], [/\bdrowns?\b|\bsoggy\b|\bwaterlogged\b/i, "SOAKED"],
+];
+export function stateCards(sentences, words, beats = [], cards = []) {
+  const out = [];
+  for (const s of sentences) {
+    if (!/^problem/.test(s.role ?? "")) continue;
+    const own = beats.find((b) => b.s === s.role)?.state;
+    let text = own?.text ?? (typeof own === "string" ? own : null), word = own?.w ?? null;
+    if (!text) for (const [re, label] of STATE_WORDS) { const m = re.exec(s.text ?? ""); if (m) { text = label; word = m[0].split(/\s+/)[0]; break; } }
+    if (!text || text.length > 14) continue;
+    const key = String(word ?? "").toLowerCase().replace(/[^a-z']/g, "");
+    const w = key && words.find((x) => x.s >= s.t0 - 0.01 && x.s <= s.t1 + 0.01 && x.w.toLowerCase().replace(/[^a-z']/g, "").startsWith(key));
+    const t = w ? w.s : s.t0 + 0.4, e = Math.max(t + 1.2, s.t1);
+    // (it sits higher than the number cards, so both can be up: "80 LB" and "TOO HEAVY")
+    if (cards.some((c) => c.kind === "state" && c.s < e && c.e > t)) continue;
+    out.push({ text: text.toUpperCase(), s: +t.toFixed(3), e: +e.toFixed(3), kind: "state" });
+  }
+  return out;
+}
+
+// The hold (the owner's rule of 2026-10-28, from the examples: the crane mast stays tilted, the elevator hangs mid-fall):
+// in a layout with hold: true, a beat's motion runs to 70% of its travel by 75% of its line and holds there, the rest
+// after the line ends; the check frames are taken during the hold (the tail ramp is marked so previewTimes skips it).
+// Only motions: a part's visibility and switches keep their timing.
+const HOLD_CH = { car: ["drive", "leave"], traffic: ["pile", "go"], dumpTruck: ["tip"], cabinet: ["open"], counter: ["count"] };
+const RIG_HOLD = new Set(["slide", "swing", "track", "extend", "snap", "fill"]);
+function holdable(part, ch) {
+  if (!part) return false;
+  if (part.kind === "rig") return (part.params?.nodes ?? []).some((n) => (n.moves ?? []).some((m) => m.name === ch && RIG_HOLD.has(m.type)));
+  return (HOLD_CH[part.kind] ?? []).includes(ch);
+}
+export function holdRamps(r, s) {
+  const dur = s.t1 - s.t0, len = r.t1 - r.t0;
+  if (dur < 1 || len < 0.25 || r.amp <= 0 || r.e === "step" || r.e === "bump" || r.t1 <= s.t0 + 0.75 * dur) return [r];
+  const t0 = Math.max(s.t0 + 0.1, Math.min(r.t0, s.t1 - 1.0)), tA = Math.max(t0 + 0.35, Math.min(t0 + 0.7 * len, s.t0 + 0.75 * dur));
+  return [{ ...r, t0: +t0.toFixed(4), t1: +tA.toFixed(4), amp: +(r.amp * 0.7).toFixed(4), e: "out" }, { ...r, t0: +s.t1.toFixed(4), t1: +(s.t1 + Math.max(0.3, 0.3 * len)).toFixed(4), amp: +(r.amp * 0.3).toFixed(4), e: "inOut", tail: true }];
+}
+
 export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
   const beats = expandBeats(layout0);
@@ -66,7 +115,9 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const t0 = at(c.a);
     const t1 = c.b ? at(c.b) : c.d != null ? t0 + Number(c.d) : t0;
     // (s: the sentence whose words it is anchored to, so the preview moment knows this beat's motions from the next one's)
-    (tracks[key] ??= { base: 0, ramps: [] }).ramps.push({ t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step"), ...(c.a?.s ? { s: c.a.s } : {}) });
+    const r = { t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step"), ...(c.a?.s ? { s: c.a.s } : {}) };
+    const sen = layout.hold && c.a?.s && holdable(layout.parts.find((p) => p.id === c.p), c.c) ? sentences.find((x) => x.role === c.a.s) : null;
+    (tracks[key] ??= { base: 0, ramps: [] }).ramps.push(...(sen ? holdRamps(r, sen) : [r]));
   }
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
@@ -130,6 +181,8 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   const audio = layout.audio ?? {};
   const cards = (audio.cards ?? []).map((c) => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }));
   cards.push(...nameCards(sentences, words, cards));
+  // the red state labels on problem lines, for a planner layout (premade keeps its approved cards)
+  if (layout.hold) cards.push(...stateCards(sentences, words, layout.beats ?? [], cards));
   return {
     key: layout.key,
     marks,

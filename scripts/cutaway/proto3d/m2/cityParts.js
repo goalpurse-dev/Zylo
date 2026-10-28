@@ -183,10 +183,12 @@ export function trafficLight(ctx, p, api) {
       const sh = api.ch("show", t); body.scale.setScalar(pop(sh)); body.visible = sh > 0.002;
       let ks = ["red", "yellow", "green"].map((c) => clamp(api.ch(c, t)));
       // running on its own: a cycle (green 4 s, yellow 1.5 s, red 4.5 s, round again) or a flashing red (1 a second)
-      if (api.ch("cycle", t) > 0.5) { const u = (t + (p.phase ?? 0)) % 10; ks = u < 4 ? [0, 0, 1] : u < 5.5 ? [0, 1, 0] : [1, 0, 0]; }
+      // (fast: a 3 s round, green 1.2, yellow 0.45, red 1.35, so one sentence shows all three lamps in turn)
+      if (api.ch("cycle", t) > 0.5) { const k = api.ch("fast", t) > 0.5 ? 0.3 : 1, u = ((t + (p.phase ?? 0)) % (10 * k)) / k; ks = u < 4 ? [0, 0, 1] : u < 5.5 ? [0, 1, 0] : [1, 0, 0]; }
       if (api.ch("flash", t) > 0.5) ks = [(t % 1) < 0.5 ? 1 : 0, 0, 0];
-      // an unlit lens is dark (its colour at a fifth), a lit one bright and glowing: "all red" reads as one red lamp
-      lamps.forEach((m, i) => { m.userData.base = m.userData.base ?? m.material.color.clone(); m.material.color.copy(m.userData.base).multiplyScalar(0.2 + 0.8 * ks[i]); m.material.emissiveIntensity = 0.02 + ks[i] * 1.8; });
+      // an unlit lens is dark (its colour at a tenth), a lit one bright and glowing: "all red" reads as one red lamp (at a fifth
+      // and 1.8 the green read "pale" in a wide queue shot and the dark red as lit; the re-judge of 2026-10-28)
+      lamps.forEach((m, i) => { m.userData.base = m.userData.base ?? m.material.color.clone(); m.material.color.copy(m.userData.base).multiplyScalar(0.1 + 0.9 * ks[i]); m.material.emissiveIntensity = 0.02 + ks[i] * 2.8; });
       light.intensity = Math.max(...ks) * 1.4; light.color.set(ks[2] > 0.5 ? 0x2fbf5a : ks[1] > 0.5 ? 0xf2b01e : 0xe0352b);
       const lp = api.ch("loop", t); loopG.visible = lp > 0.002; loopG.scale.set(pop(lp), 1, pop(lp)); wire.emissiveIntensity = 0.2 + lp * 0.5;
       const pu = api.ch("pulse", t);
@@ -277,10 +279,14 @@ export function atm(ctx, p, api) {
  * A lane of real cars (the creator's "cars pile up"): they arrive one by one and queue behind the stop line, then drive
  * off. lane [x, zStop] (the stop line), dir (1: driving toward the camera, +z, the queue backing up down the road; -1:
  * away), n (4), gap (5.6 m bumper to bumper), y (the road top), colors. Channels: pile (0..1: car k is in its place by
- * (k+1)/n), go (0..1: they pull away past the stop line).
+ * (k+1)/n), go (0..1: they pull away past the stop line), bump (0..1: the second car rear-ends the first; the dent and
+ * the impact star stay until bump goes back to 0, the fix).
+ * (go's first 70% (where a held motion stops, compile.mjs holdRamps) pulls them 10 m on, still in the frame with speed streaks behind them, the rest takes them away:
+ * a still held halfway shows cars driving off; the re-judge of 2026-10-28 saw them parked or already gone)
  */
 export function traffic(ctx, p, api) {
-  const { THREE, C } = parts(ctx);
+  const { THREE, C, add } = parts(ctx);
+  const streakM = ctx.std({ color: C("#ffffff"), roughness: 0.4, transparent: true, opacity: 0.75 }), starM = ctx.std({ color: C("#ffb020"), emissive: C("#ff7a1a"), emissiveIntensity: 1.2, roughness: 0.4 });
   const [lx, zStop] = p.lane ?? [-6, 4], dir = p.dir ?? 1, gap = p.gap ?? 5.6, y = p.y ?? 0.12;
   // driving away from the camera, the queue backs up toward the front edge: only as many as fit on the ground
   const n = dir < 0 ? Math.max(1, Math.min(p.n ?? 4, Math.floor((-0.6 - (zStop + 2.4 + 2.1)) / gap) + 1)) : p.n ?? 4;
@@ -291,15 +297,27 @@ export function traffic(ctx, p, api) {
     else { const m = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.4, 4.2), ctx.std({ color: C(colors[k % colors.length]), roughness: 0.4 })); m.position.y = 0.7; g.add(m); }
     // (driving away from the camera they come in over the front edge of the ground; toward it, from far down the road)
     const slot = zStop - dir * (2.4 + k * gap);
-    return { g, slot, far: dir < 0 ? Math.min(-0.4, slot + 10) : zStop - dir * (60 + k * gap) };
+    // speed streaks behind it (three white lines at the rear, out on the road)
+    const streaks = [-0.6, 0, 0.6].map((x, i) => { const m = add(g, new THREE.BoxGeometry(0.08, 0.08, 2.2 + i * 0.5), streakM, x, 0.5 + i * 0.25, -dir * (3.4 + i * 0.3), false); m.visible = false; return m; });
+    // the impact star where the second car hits the first (on the second car's front)
+    let star = null;
+    if (k === 1) { star = new THREE.Group(); for (let i = 0; i < 8; i++) { const r = add(star, new THREE.ConeGeometry(0.16, 1.0 - (i % 2) * 0.4, 6), starM, 0, 0, 0, false); r.rotation.z = (i / 8) * Math.PI * 2; r.position.set(Math.sin(-r.rotation.z) * 0.45, Math.cos(r.rotation.z) * 0.45, 0); } star.rotation.y = Math.PI / 2; star.scale.setScalar(1.6); star.position.set(0.9, 1.9, dir * 2.2); star.visible = false; g.add(star); }
+    return { g, slot, streaks, star, far: dir < 0 ? Math.min(-0.4, slot + 10) : zStop - dir * (60 + k * gap) };
   });
   return {
     update(t) {
-      const pl = clamp(api.ch("pile", t)), go = clamp(api.ch("go", t));
+      const pl = clamp(api.ch("pile", t)), go = clamp(api.ch("go", t)), bp = clamp(api.ch("bump", t));
       cars.forEach((c, k) => {
         const u = clamp(pl * n - k), arrived = u > 0.001;
         let zz = c.far + (c.slot - c.far) * (1 - (1 - u) * (1 - u));
-        zz += dir * go * (50 + k * gap * 0.6);
+        zz += dir * (go < 0.7 ? (go / 0.7) * 10 : 10 + ((go - 0.7) / 0.3) * (40 + k * gap * 0.6));
+        // the bump: the second car closes the gap to touch the first (cars are 4.2 m long), the first is shoved on a little
+        // and both pitch; held while bump stays up
+        if (k === 1) zz += dir * Math.max(0, gap - 4.3) * bp; if (k === 0) zz += dir * 0.35 * bp;
+        c.g.rotation.x = (k === 0 ? -1 : k === 1 ? 1 : 0) * dir * 0.06 * Math.sin(Math.min(1, bp) * Math.PI / 2);
+        if (c.star) { c.star.visible = bp > 0.05; c.star.scale.setScalar(1.6 * Math.max(0.001, Math.min(1, bp * 1.4))); }
+        const moving = go > 0.03 && go < 0.97;
+        for (const s of c.streaks) s.visible = moving;
         // only over the ground (z < 0), never past the cross street behind the shops
         c.g.position.set(lx, y, zz); c.g.visible = arrived && zz < -0.3 && zz > -40;
       });
@@ -311,12 +329,23 @@ export function traffic(ctx, p, api) {
  * A countdown on a dark panel (a crosswalk's walk timer, a timer box's display): the number ticks from `from` to `to` as
  * count goes 0 -> 1. pos [x, y, z] (its centre), size (0.8), color (#ff9d2e), label (optional, small, under the number).
  * Channels: show, count.
+ * bar: true makes it a meter (the examples' pressure and speed gauges): a tall bar beside the number fills with the value
+ * (from 0 to max: the larger of from and to) and turns red past `danger` (0.8 of max), so a change reads in one frame.
  */
 export function counter(ctx, p, api) {
   const { THREE, std, C, add, rb } = parts(ctx);
   const root = new THREE.Group(); root.position.set(...(p.pos ?? [0, 2.5, -1])); ctx.scene.add(root);
   const s = p.size ?? 0.8, from = p.from ?? 9, to = p.to ?? 0, col = p.color ?? "#ff9d2e";
   add(root, rb(s * 1.2, s * 1.2, 0.2, 0.05), std({ color: C("#14171a"), roughness: 0.5 }), 0, 0, 0);
+  let bar = null;
+  if (p.bar) {
+    const bh = s * 2.2, bx = s * 0.6 + s * 0.35, max = Math.max(Math.abs(from), Math.abs(to), 1), danger = (p.danger ?? 0.8) * max;
+    add(root, rb(s * 0.45, bh + 0.12, 0.2, 0.04), std({ color: C("#14171a"), roughness: 0.5 }), bx, (bh - s * 1.2) / 2, 0);
+    for (let i = 1; i < 5; i++) add(root, new THREE.BoxGeometry(s * 0.12, 0.025, 0.02), std({ color: C("#e8e8e8") }), bx - s * 0.2, -s * 0.6 + 0.06 + (bh * i) / 5, 0.11, false);
+    const fill = std({ color: C("#3ccf5a"), emissive: C("#3ccf5a"), emissiveIntensity: 0.7, roughness: 0.4 });
+    const m = add(root, new THREE.BoxGeometry(s * 0.3, bh, 0.06).translate(0, bh / 2, 0), fill, bx, -s * 0.6 + 0.06, 0.1, false);
+    bar = { m, fill, max, danger };
+  }
   const face = new THREE.Mesh(new THREE.PlaneGeometry(s, s), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(col), emissiveIntensity: 0.9, transparent: true }));
   face.position.z = 0.11; root.add(face);
   const tex = new Map();
@@ -334,6 +363,11 @@ export function counter(ctx, p, api) {
       const sh = api.ch("show", t); root.visible = sh > 0.002; root.scale.setScalar(pop(sh));
       const v = Math.round(from + (to - from) * clamp(api.ch("count", t)));
       if (v !== shown) { const tx = texFor(v); if (tx) { face.material.map = tx; face.material.emissiveMap = tx; face.material.needsUpdate = true; } shown = v; }
+      if (bar) {
+        const val = from + (to - from) * clamp(api.ch("count", t)), hot = Math.abs(val) >= bar.danger;
+        bar.m.scale.y = Math.max(0.02, Math.abs(val) / bar.max);
+        bar.fill.color.set(hot ? "#ff3b30" : "#3ccf5a"); bar.fill.emissive.set(hot ? "#ff3b30" : "#3ccf5a");
+      }
     },
   };
 }
@@ -382,8 +416,8 @@ export const CITY_CHANNELS = {
   cabinet: ["pop", "open", "lights"],
   car: ["drive", "leave"],
   carWash: ["arch", "spray", "brushes", "close", "spin", "foam", "rinse"],
-  trafficLight: ["show", "red", "yellow", "green", "loop", "pulse", "cycle", "flash"],
-  traffic: ["pile", "go"],
+  trafficLight: ["show", "red", "yellow", "green", "loop", "pulse", "cycle", "flash", "fast"],
+  traffic: ["pile", "go", "bump"],
   counter: ["show", "count"],
   hydrant: ["show", "barrel", "stem", "valve", "water", "spray", "drain"],
   atm: ["show", "screen", "card", "safe", "cassettes", "pick", "cash"],
