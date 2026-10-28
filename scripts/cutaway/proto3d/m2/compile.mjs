@@ -129,8 +129,11 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   for (const p of layout.parts) for (const [ch, base] of Object.entries(p.base ?? {})) tracks[`${p.id}.${ch}`] = { base, ramps: [] };
   for (const c of layout.cues) {
     const key = `${c.p}.${c.c}`;
-    const t0 = at(c.a);
-    const t1 = c.b ? at(c.b) : c.d != null ? t0 + Number(c.d) : t0;
+    // (in a planned layout, nothing the "Add ..." line adds appears before that line starts: a young tree led in 0.7 s
+    // early, layoutRules 7, popped up beside the gauge during the line before; free ice rink run, 2026-10-28)
+    const finS = layout.hold && c.a?.s === "finish" ? sentences.find((x) => x.role === "finish") : null;
+    const raw0 = at(c.a), t0 = finS ? Math.max(raw0, finS.t0 - 0.05) : raw0;
+    const t1 = Math.max(t0, c.b ? at(c.b) + (t0 - raw0) : c.d != null ? t0 + Number(c.d) : t0);
     // (s: the sentence whose words it is anchored to, so the preview moment knows this beat's motions from the next one's)
     const r = { t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step"), ...(c.a?.s ? { s: c.a.s } : {}) };
     const sen = layout.hold && c.a?.s && holdable(layout.parts.find((p) => p.id === c.p), c.c) ? sentences.find((x) => x.role === c.a.s) : null;
