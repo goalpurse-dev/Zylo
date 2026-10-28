@@ -222,7 +222,10 @@ export function placeSign(L, home, project) {
   const walls = [...sceneryBoxes(L), ...worldTrees(L), ...young, ...L.parts.filter((p) => p !== sign).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter((b) => b && b.max[1] > 1.5 && b.min[1] > -0.5)];
   // (the board's middle too, where its words are: rays to its top edge only cleared a tree that hid the text)
   const seen = (b) => { const mid = b.max[1] - Math.min(2.4, (b.max[1] - b.min[1]) * 0.35); const pts = [[(b.min[0] + b.max[0]) / 2, b.max[1] - 0.5, b.max[2]], [b.min[0] + 0.4, b.max[1] - 0.5, b.max[2]], [b.max[0] - 0.4, b.max[1] - 0.5, b.max[2]], [(b.min[0] + b.max[0]) / 2, mid, b.max[2]], [b.min[0] + 0.4, mid, b.max[2]], [b.max[0] - 0.4, mid, b.max[2]]]; return pts.every((p) => { const d = sub(p, home.pos), len = Math.hypot(...d), u = mul(d, 1 / len); return !walls.some((w) => hitBox(home.pos, u, w) < len - 0.3); }); };
-  if (cover(sign).share <= 0.1 && !hits(focusOf(sign, cut)) && seen(focusOf(sign, cut))) return { layout: L, moved: false };
+  // (a planned layout's card also stands near the build, within 3 m: the end view frames both, and a card 7 m off left the
+  // free ice rink run's rink a quarter of the width; the approved layouts keep theirs)
+  const sb0 = focusOf(sign, cut), gap = Math.max(0, sb0.min[0] - subj.max[0], subj.min[0] - sb0.max[0]), nearBuild = !L.codeShots || gap <= 3;
+  if (nearBuild && cover(sign).share <= 0.1 && !hits(sb0) && seen(sb0)) return { layout: L, moved: false };
   const [, y0, z0] = sign.params.at;
   // spots nearest the build first (1 m apart, either side), each at the sign's size, then a little smaller (1.0)
   const cands = [], dxs = Array.from({ length: 33 }, (_, i) => (i === 0 ? 0 : (i % 2 ? 1 : -1) * Math.ceil(i / 2)));

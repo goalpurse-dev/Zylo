@@ -197,7 +197,11 @@ export function directCamera(layout, shots, marks) {
   const build = union([subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
   // the home view, or (when the finished build reaches past it) a view of the whole build from the home angle
   const holds = (k) => { const r = projectBox(k.pos, k.tgt, build); return !r.behind && r.x0 >= 0.03 && r.x1 <= 0.97; };
-  const homeAll = holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })();
+  // (a planned layout, whose shots the code frames: the finished build itself fills about 80% of the width at the end,
+  // never the whole yard around it; the free ice rink run's 6 m rink was a quarter of the phone's width. The approved
+  // layouts keep their home view)
+  const tight = layout.codeShots ? (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.8, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })() : null;
+  const homeAll = tight ?? (holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })());
   const passes = (k) => { const m = measureKey(layout, k.pos, k.tgt); return { ok: m.empty <= CAMERA_LIMITS.emptyMax - 0.02 && m.subject >= CAMERA_LIMITS.subjectMin + 0.01, m }; };
   // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
   const anchor = (k, box, s) => {
@@ -343,7 +347,7 @@ export function directCamera(layout, shots, marks) {
   }
   // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
   const signPart = layout.parts.find((p) => p.kind === "sign");
-  const back0 = liftSoil(layout, scaleView(home, 1.18), build), back1 = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
+  const back0 = liftSoil(layout, tight ? scaleView(tight, 1.12) : scaleView(home, 1.18), build), back1 = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
   // the finished build stays in view with the sign beside it (the end card never hides what was built)
