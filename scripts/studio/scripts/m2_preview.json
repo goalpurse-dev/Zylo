@@ -27,12 +27,13 @@
         "style": 0.5,
         "speed": 1.05
       }
-    }
+    },
+    "default": "eleven"
   },
   "lead": 0.12,
   "gap_speaker": 0.2,
   "gap_same": 0.12,
-  "tail": 0.7,
+  "tail": 0.5,
   "music_db_under": 14,
   "lines": [
     {
@@ -76,8 +77,7 @@
         "Zyvo"
       ],
       "expr": "shocked",
-      "pose": "handsUp",
-      "pause_before": 1.6
+      "pose": "handsUp"
     },
     {
       "who": "zee",
@@ -94,7 +94,7 @@
           "sfx": "sparkle"
         }
       ],
-      "pause_before": 0.6
+      "pause_before": 0.15
     },
     {
       "who": "zee",
@@ -125,5 +125,14 @@
       "expr": "happy",
       "pose": "point"
     }
-  ]
+  ],
+  "clip": {
+    "file": "video/the-surprise-wedding-switch.mp4",
+    "in": 6.3,
+    "out": 8.45,
+    "after_line": 1,
+    "pre": 0.95,
+    "post": 0.25,
+    "note": "the banana: 'this might actually be our wedding.' (a real AI Fruit Story output, its own sound)"
+  }
 }

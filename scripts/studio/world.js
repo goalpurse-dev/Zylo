@@ -79,15 +79,34 @@ export function giantPhone(scene, { x = 0.1, y = 4.9, z = -3.6, h = 5.2 } = {}) 
   return { group: g, screen, mat, w, h };
 }
 
-/** Look B's wall of real outputs, as an arc behind the stage. Tiles start hidden (scale 0) for the reveal. */
-export function outputWall(scene, tl, files, { R = 10.5, cols = 9, rows = 3, cz = -1.2, y0 = 2.3, tw = 1.25 } = {}) {
+/** Look B's wall of real outputs, as an arc behind the stage. Tiles start hidden (scale 0) for the reveal.
+ *  items: [{ file, loop? }]. A tile with `loop` plays a muted 2 s loop of a real output VIDEO (a 6x4 sheet of
+ *  24 frames at 12 fps, cut from the video); every other tile gets a slow Ken Burns push, never a frozen frame. */
+export function outputWall(scene, tl, items, { R = 10.5, cols = 9, rows = 3, cz = -1.2, y0 = 2.3, tw = 1.25 } = {}) {
   const th = tw * 16 / 9, tiles = [];
-  files.slice(0, cols * rows).forEach((f, i) => {
+  items.slice(0, cols * rows).forEach((it, i) => {
     const col = i % cols, row = Math.floor(i / cols), a = (col - (cols - 1) / 2) * 0.128;
     const tile = new THREE.Group(); tile.position.set(Math.sin(a) * R, y0 + th / 2 + row * (th + 0.2), -Math.cos(a) * R + cz); tile.rotation.y = -a; scene.add(tile);
     add(tile, rbox(tw + 0.08, th + 0.08, 0.08, 0.08), new THREE.MeshStandardMaterial({ color: C("#0d0b16"), roughness: 0.4 }));
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(tw, th), imageScreen(tl, f, tw / th)); p.position.z = 0.045; tile.add(p);
-    tile.userData = { col, row, dist: Math.hypot(col - (cols - 1) / 2, (row - 1) * 1.4) };
+    let mat, update;
+    const phase = (i * 0.37) % 1;
+    if (it.loop) {
+      const t = tl.load(`/pics/${it.loop}`); t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(1 / 6, 1 / 4);
+      mat = new THREE.MeshBasicMaterial({ map: t, color: C("#ffffff").multiplyScalar(0.86), toneMapped: false });
+      update = (s) => { const f = Math.floor((s + phase * 2) * 12) % 24; t.offset.set((f % 6) / 6, 1 - (Math.floor(f / 6) + 1) / 4); };
+    } else {
+      mat = imageScreen(tl, it.file, tw / th);
+      const base = { r: null, o: null };
+      update = (s) => {
+        const m = mat.map; if (!m.image) return;
+        if (!base.r) { base.r = m.repeat.clone(); base.o = m.offset.clone(); }
+        const z = 1.06 + 0.05 * Math.sin(s * 0.35 + phase * 6.28), dx = Math.sin(s * 0.21 + phase * 9) * 0.02;
+        m.repeat.set(base.r.x / z, base.r.y / z);
+        m.offset.set(base.o.x + (base.r.x - m.repeat.x) / 2 + dx * base.r.x, base.o.y + (base.r.y - m.repeat.y) / 2);
+      };
+    }
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(tw, th), mat); p.position.z = 0.045; tile.add(p);
+    tile.userData = { col, row, dist: Math.hypot(col - (cols - 1) / 2, (row - 1) * 1.4), update };
     tile.scale.setScalar(0.0001); tiles.push(tile);
   });
   return tiles;

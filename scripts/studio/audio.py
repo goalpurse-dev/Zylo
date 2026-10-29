@@ -60,10 +60,17 @@ else:
 # ── 2. the voice track: short gaps, a little longer between speakers ──
 lead = S.get("lead", 0.15)
 voice, t, timed = [np.zeros(int(lead * SR), np.float32)], lead, []
+CLIP = S.get("clip")            # a REAL output's own moment, heard with its sound (owner, 2026-10-30)
+clip = None
 for n, (ln, x) in enumerate(zip(lines, takes)):
-    if n:
+    if n and CLIP and n == CLIP["after_line"] + 1:
+        # the camera pushes in (pre), the clip plays with its sound, a beat (post), then the next line
+        pre, post, dur = CLIP.get("pre", 0.95), CLIP.get("post", 0.35), CLIP["out"] - CLIP["in"]
+        clip = {"file": CLIP["file"], "in": CLIP["in"], "out": CLIP["out"], "start": round(t + pre, 3), "end": round(t + pre + dur, 3)}
+        voice.append(np.zeros(int((pre + dur + post) * SR), np.float32)); t += pre + dur + post
+    elif n:
         gap = S.get("gap_speaker", 0.22) if ln["who"] != lines[n - 1]["who"] else S.get("gap_same", 0.12)
-        gap += ln.get("pause_before", 0)          # room for a visual beat (the phone, the wall)
+        gap += ln.get("pause_before", 0)          # room for a visual beat (the wall)
         voice.append(np.zeros(int(gap * SR), np.float32)); t += gap
     timed.append({"who": ln["who"], "start": round(t, 3), "end": round(t + len(x) / SR, 3)})
     voice.append(x); t += len(x) / SR
@@ -173,11 +180,25 @@ def sfx(kind):
 
 
 bed = music(total)
+# the clip's own sound: matched to our voices, faded in/out; the music ducks under it
+clip_track = np.zeros_like(voice)
+if clip:
+    src = os.path.join(opt["--pics"], clip["file"])
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(clip["in"]), "-t", str(clip["out"] - clip["in"]), "-i", src, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
+    ca = np.frombuffer(pcm, dtype=np.float32).copy()
+    f = int(0.04 * SR); ca[:f] *= np.linspace(0, 1, f); ca[-f:] *= np.linspace(1, 0, f)
+    s0 = int(clip["start"] * SR); m = min(len(ca), len(clip_track) - s0); clip_track[s0:s0 + m] = ca[:m]
 speech = np.concatenate([voice[int(tl["start"] * SR):int(tl["end"] * SR)] for tl in timed])
 v_rms = np.sqrt(np.mean(speech ** 2)); m_rms = np.sqrt(np.mean(bed ** 2)) or 1
 under = S.get("music_db_under", 14)
 bed *= (v_rms / m_rms) * 10 ** (-under / 20)
-mix = voice + bed
+if clip:
+    c_rms = np.sqrt(np.mean(clip_track[int(clip["start"] * SR):int(clip["end"] * SR)] ** 2)) or 1
+    clip_track *= (v_rms / c_rms) * 0.95
+    duck = np.ones_like(bed); a, b, r = int((clip["start"] - 0.15) * SR), int((clip["end"] + 0.15) * SR), int(0.15 * SR)
+    duck[a:b] = 10 ** (-10 / 20); duck[a - r:a] = np.linspace(1, 10 ** (-10 / 20), r); duck[b:b + r] = np.linspace(10 ** (-10 / 20), 1, min(r, len(duck) - b))
+    bed *= duck
+mix = voice + bed + clip_track
 for e in events:
     if e.get("sfx"):
         x = sfx(e["sfx"]) * (v_rms / 0.2) * 0.9; s = int(e["t"] * SR); m = min(len(x), len(mix) - s)
@@ -193,7 +214,16 @@ mix = mix / (np.max(np.abs(mix)) or 1) * 0.92
 sf.write(os.path.join(out, "mix.wav"), mix, SR)
 measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 
-json.dump({"engine": engine, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
+# the phone's frames, decoded exactly: the clip plays continuously from when the phone lights up to the wall reveal
+phone = None
+if clip:
+    on = next((e["t"] for e in events if e["event"] == "phoneOn"), clip["start"]); off = next((e["t"] for e in events if e["event"] == "wall"), total) + 0.6
+    vt0 = max(0.0, clip["in"] + (on - 0.1 - clip["start"])); dur = clip["in"] + (off - clip["start"]) - vt0
+    pdir = os.path.join(out, "phone"); os.makedirs(pdir, exist_ok=True)
+    for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", "-q:v", "3", os.path.join(pdir, "f%05d.jpg")], check=True)
+    phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
+json.dump({"engine": engine, "clip": clip, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

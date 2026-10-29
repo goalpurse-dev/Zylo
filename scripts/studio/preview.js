@@ -21,20 +21,25 @@ const ov = makeOverlay(ctx);
 mainStage(scene);
 const phone = giantPhone(scene);
 const PHONE_Y = phone.group.position.y;
-const tiles = outputWall(scene, tl, WALL.map((w) => w.file));
+const tiles = outputWall(scene, tl, WALL);   // real outputs: video loops where a video exists, else a Ken Burns push
 const creator = makeCreator(), zee = makeZee();
 scene.add(creator.group, zee.group);
 creator.group.position.set(-1.05, 0, 0.6); zee.group.position.set(1.3, 0, 0.3);   // apart enough that neither pokes into the other's shot
 
-// the real output on the phone: drawn to a canvas after each exact seek (frame-accurate, headless-safe)
-const video = document.createElement("video");
-video.src = "/pics/video/the-surprise-wedding-switch.mp4"; video.muted = true; video.playsInline = true; video.preload = "auto";
-await new Promise((r) => video.addEventListener("loadeddata", r, { once: true }));
+// The real output PLAYS on the phone: its frames were decoded exactly by audio.py (/work/phone/f00001.jpg...), and
+// the clip's own sound is in the mix. (Seeking a <video> in headless Chrome gave frozen frames.)
 const vc = document.createElement("canvas"), vx = vc.getContext("2d");
-vc.width = video.videoWidth; vc.height = video.videoHeight;
+vc.width = 720; vc.height = 1280;
 const vtex = new THREE.CanvasTexture(vc); vtex.colorSpace = THREE.SRGBColorSpace;
 coverFit(vtex, phone.w / phone.h, vc.width, vc.height);
-const seek = (s) => new Promise((r) => { if (Math.abs(video.currentTime - s) < 0.004) return r(); video.addEventListener("seeked", r, { once: true }); video.currentTime = s; });
+let shownFrame = 0;
+async function phoneFrame(t) {
+  if (!T.phone || !T.clip) return;
+  const vt = T.clip.in + (t - T.clip.start), f = Math.min(T.phone.count, Math.max(1, Math.round((vt - T.phone.vt0) * T.phone.fps) + 1));
+  if (f === shownFrame) return;
+  const bmp = await createImageBitmap(await (await fetch(`/work/phone/f${String(f).padStart(5, "0")}.jpg`)).blob());
+  vx.drawImage(bmp, 0, 0, vc.width, vc.height); bmp.close(); vtex.needsUpdate = true; shownFrame = f;
+}
 
 /* ─── the plan ─── */
 const L = T.lines, EV = Object.fromEntries(T.events.map((e) => [e.event, e.t])), END = T.total;
@@ -44,7 +49,7 @@ const LISTEN = { 0: { zee: "neutral" }, 1: { creator: "thinking" }, 2: { zee: "h
 const ease = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 const V = (a) => new THREE.Vector3(...a);
 // where the characters face, per framing (radians about y): towards the camera, up at the phone, at the wall
-const FACE = { camera: { creator: 0.3, zee: -0.35 }, phone: { creator: Math.PI - 0.25, zee: Math.PI + 0.3 }, wall: { creator: Math.PI - 0.15, zee: Math.PI + 0.2 } };
+const FACE = { camera: { creator: 0.15, zee: -0.35 }, phone: { creator: Math.PI - 0.25, zee: Math.PI + 0.3 }, wall: { creator: Math.PI - 0.15, zee: Math.PI + 0.2 } };
 
 /** Camera and facing at time t: holds drift and creep in slowly; moves ease between framings. */
 function cameraAt(t) {
@@ -93,7 +98,7 @@ function setState(ts) {
   creator.parts.head.rotation.y = n >= 0 && L[n].who === "zee" && cam.facing.to === "camera" ? 0.28 : 0;
   const shrink = ease((ts - EV.wall) / 0.45);
   phone.group.scale.setScalar(Math.max(0.0001, 1 - shrink)); phone.group.position.y = PHONE_Y - shrink * 1.2;
-  for (const tile of tiles) { const a = (ts - EV.wall - 0.1 - tile.userData.dist * 0.08) / 0.32; tile.scale.setScalar(a <= 0 ? 0.0001 : a >= 1 ? 1 : 1 + 2.70158 * (a - 1) ** 3 + 1.70158 * (a - 1) ** 2); }
+  for (const tile of tiles) { const a = (ts - EV.wall - 0.1 - tile.userData.dist * 0.08) / 0.32; tile.scale.setScalar(a <= 0 ? 0.0001 : a >= 1 ? 1 : 1 + 2.70158 * (a - 1) ** 3 + 1.70158 * (a - 1) ** 2); tile.userData.update(ts); }
   return cam;
 }
 
@@ -106,8 +111,7 @@ const SUB = Number(Q.get("blur") ?? 7);   // motion-blur subframes on moves (180
 window.renderAt = async (t) => {
   // the phone's video frame (once per output frame)
   if (t >= EV.phoneOn) {
-    await seek(Math.min(video.duration - 0.05, t - EV.phoneOn + 0.4));
-    vx.drawImage(video, 0, 0, vc.width, vc.height); vtex.needsUpdate = true;
+    await phoneFrame(t);
     if (phone.mat.map !== vtex) { phone.mat.map = vtex; phone.mat.color.setScalar(0.9); phone.mat.needsUpdate = true; }
   }
   // the 3D frame: one render on a hold, several averaged on a move (motion blur)
@@ -133,9 +137,11 @@ window.renderAt = async (t) => {
   const counterOff = moveTo("creator")?.t0 ?? END;
   if (t >= EV.counter && t < counterOff) boxes.push(["counter", ov.counter(9, "SHORT-FORM TEMPLATES", t - EV.counter, Math.max(0.5, EV.counterEnd - EV.counter))]);
   if (T.end_chip && L.at(-1) && t >= L.at(-1).start + 0.4) boxes.push(["end chip", ov.endChip(T.end_chip, t - L.at(-1).start - 0.4)]);
+  // word captions never cover the phone while it plays (owner, 2026-10-30)
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  const capY = !cam.moving && cam.step.at === "phone" ? 1452 : 1300;
-  if (chunk) { ctx.save(); ctx.translate(0, capY - 1300); ov.caption(chunk, t); ctx.restore(); }
+  const ps = phone.group.scale.x > 0.5 ? screenBox(phone.screen, camera) : null;
+  const overPhone = ps && ps.y0 < 1300 + 70 && ps.y1 > 1300 - 70;
+  if (chunk && !overPhone) ov.caption(chunk, t);
 
   // checks: safe zones (faces, key props), overlays over key props, partial body parts at the edges (holds only)
   const faces = (obj) => { const q = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); return q.dot(camera.position.clone().sub(obj.getWorldPosition(new THREE.Vector3()))) > 0; };

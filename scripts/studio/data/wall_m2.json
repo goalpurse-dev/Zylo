@@ -2,52 +2,72 @@
  {
   "id": "424fb000-29c0-468d-99b8-df4e30b722bb",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-424fb000.webp"
+  "file": "ai_fruit_story-424fb000.webp",
+  "loop": "loops/loop1.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "5913bed0-44e6-4f56-8df8-f0830f7e490a",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-5913bed0.webp"
+  "file": "ai_fruit_story-5913bed0.webp",
+  "loop": "loops/loop2.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "0bcaa211-59d9-4500-a33f-ca22d9514e5e",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-0bcaa211.webp"
+  "file": "ai_fruit_story-0bcaa211.webp",
+  "loop": "loops/loop3.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "6959b86d-aba7-4e3e-b1f8-cf247c39f18b",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-6959b86d.webp"
+  "file": "ai_fruit_story-6959b86d.webp",
+  "loop": "loops/loop4.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "d837ff3c-5719-469a-aace-96a41486c461",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-d837ff3c.webp"
+  "file": "ai_fruit_story-d837ff3c.webp",
+  "loop": "loops/loop5.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "1d1fd527-9742-4b9c-9df3-6be570c938e1",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-1d1fd527.png"
+  "file": "ai_fruit_story-1d1fd527.png",
+  "loop": "loops/loop6.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "33c103c0-dab3-4bfe-840c-bf62d2a459ff",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-33c103c0.png"
+  "file": "ai_fruit_story-33c103c0.png",
+  "loop": "loops/loop7.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "39d36ff6-2b48-40ce-821a-025510f6ed09",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-39d36ff6.png"
+  "file": "ai_fruit_story-39d36ff6.png",
+  "loop": "loops/loop8.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "d9cc8f43-c65f-45e1-85cc-42ae7293b561",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-d9cc8f43.webp"
+  "file": "ai_fruit_story-d9cc8f43.webp",
+  "loop": "loops/loop9.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "18ee2c1d-270f-4da9-8446-6a076dce34cb",
   "tool": "ai_fruit_story",
-  "file": "ai_fruit_story-18ee2c1d.webp"
+  "file": "ai_fruit_story-18ee2c1d.webp",
+  "loop": "loops/loop10.jpg",
+  "loop_source": "owner's finished Fruit stories (real outputs), 2 s, muted"
  },
  {
   "id": "096de138-5621-4eb8-9cfa-3ecefa6cdbaf",
