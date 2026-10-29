@@ -63,6 +63,7 @@ voice, t, timed = [np.zeros(int(lead * SR), np.float32)], lead, []
 for n, (ln, x) in enumerate(zip(lines, takes)):
     if n:
         gap = S.get("gap_speaker", 0.22) if ln["who"] != lines[n - 1]["who"] else S.get("gap_same", 0.12)
+        gap += ln.get("pause_before", 0)          # room for a visual beat (the phone, the wall)
         voice.append(np.zeros(int(gap * SR), np.float32)); t += gap
     timed.append({"who": ln["who"], "start": round(t, 3), "end": round(t + len(x) / SR, 3)})
     voice.append(x); t += len(x) / SR
@@ -161,10 +162,13 @@ def sfx(kind):
             s = int(i * 0.07 * SR); m = len(out) - s; tt = np.arange(m) / SR
             out[s:] += 0.18 * np.sin(2 * np.pi * f * tt) * np.exp(-tt * 9)
         return out
-    if kind == "whoosh":
-        m = int(0.35 * SR); tt = np.arange(m) / SR
+    if kind.startswith("whoosh"):
+        # filtered noise swelling over the move (a whip is short and bright, a push longer and softer)
+        dur = float(kind.split(":")[1]) if ":" in kind else 0.35
+        m = int(dur * SR); tt = np.arange(m) / SR
         noise = np.random.default_rng(3).standard_normal(m)
-        return 0.15 * noise * np.sin(np.pi * tt / tt[-1]) ** 2
+        k = max(1, int(SR / 2500)); smooth = np.convolve(noise, np.ones(k) / k, mode="same")
+        return 0.5 * smooth * np.sin(np.pi * tt / tt[-1]) ** 2
     return np.zeros(1)
 
 
@@ -178,11 +182,18 @@ for e in events:
     if e.get("sfx"):
         x = sfx(e["sfx"]) * (v_rms / 0.2) * 0.9; s = int(e["t"] * SR); m = min(len(x), len(mix) - s)
         if m > 0: mix[s:s + m] += x[:m]
+moves_path = os.path.join(out, "moves.json")
+whooshes = []
+if os.path.exists(moves_path):
+    for mv in json.load(open(moves_path, encoding="utf-8")):
+        d = mv["t1"] - mv["t0"]; strength = 1.0 if mv["kind"] == "whip" else 0.55
+        x = sfx(f"whoosh:{d:.2f}") * (v_rms / 0.2) * strength; s = int(mv["t0"] * SR); m = min(len(x), len(mix) - s)
+        if m > 0: mix[s:s + m] += x[:m]; whooshes.append(round(mv["t0"], 2))
 mix = mix / (np.max(np.abs(mix)) or 1) * 0.92
 sf.write(os.path.join(out, "mix.wav"), mix, SR)
 measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 
-json.dump({"engine": engine, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1)},
+json.dump({"engine": engine, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

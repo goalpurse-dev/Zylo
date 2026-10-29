@@ -59,9 +59,9 @@ export const POSES = {
   rest: [[0.05, 0.12], [0.05, -0.12]],
   point: [[0.05, 0.12], [-1.45, -0.25]],
   pointUp: [[0.05, 0.12], [-0.5, -2.2]],
-  shrug: [[0.25, 0.95], [0.25, -0.95]],
-  handsUp: [[-0.35, 2.3], [-0.35, -2.3]],
-  wave: [[0.05, 0.12], [0, -2.6]],
+  shrug: [[0.3, 0.6], [0.3, -0.6]],          // kept narrow: hands stay inside a close-up
+  handsUp: [[-2.55, 0.45], [-2.55, -0.45]],   // raised FORWARD: in and out of the pose the hands stay inside a close-up
+  wave: [[0.05, 0.12], [-2.5, -0.5]],   // a forward wave: the arm never swings out to the frame edge
   holdCard: [[-1.1, 0.25], [-1.1, -0.25]],
   type: [[-0.95, 0.2], [-0.95, -0.2]],
   chin: [[0.05, 0.12], [-1.9, 0.55]],
@@ -173,7 +173,7 @@ export function makeZee({ finish = "gloss" } = {}) {
   const ringMesh = add(body, new THREE.TorusGeometry(0.27, 0.04, 12, 48), lime, 0, 0.53, 0, false); ringMesh.rotation.x = Math.PI / 2;
   const pool = new THREE.Mesh(new THREE.CircleGeometry(0.9, 48), new THREE.MeshBasicMaterial({ map: radial("#BEF264"), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
   pool.rotation.x = -Math.PI / 2; pool.position.y = 0.012; g.add(pool);
-  return rig(g, { body, head: face, arms, eyeSets, mouthSets, talk, kind: "zee", hover: 0.18 });
+  return rig(g, { body, head: face, arms, eyeSets, mouthSets, talk, kind: "zee", hover: 0.18, antenna });
 }
 
 export function radial(color, inner = 0, px = 128) {

@@ -33,16 +33,19 @@ export function makeOverlay(ctx) {
     ctx.textBaseline = "middle"; let cx = -w / 2 + h * 0.45;
     parts.forEach(([t, col], i) => { ctx.fillStyle = col ?? "#ffffff"; ctx.fillText(t, cx, 2); cx += widths[i]; });
     ctx.restore();
+    return { x0: x - (w / 2) * scale, y0: y - (h / 2) * scale, x1: x + (w / 2) * scale, y1: y + (h / 2) * scale };   // for the overlay-vs-props check
   };
   return {
     clear() { ctx.clearRect(0, 0, W, H); },
     /** The chapter chip at the top centre, just below the top bar. */
-    chip(parts, age) { if (age < 0) return; pill(SAFE_CX, SAFE.top + 52, 74, parts, { size: 38, scale: popScale(age) }); },
+    chip(parts, age) { if (age < 0) return null; return pill(SAFE_CX, SAFE.top + 52, 74, parts, { size: 38, scale: popScale(age) }); },
+    /** The end chip (teaser): a lime call to action under the caption, clear of faces and the antenna. */
+    endChip(text, age) { if (age < 0) return null; return pill(SAFE_CX, 1440, 100, [[text, "#BEF264"]], { size: 56, scale: popScale(age, 0.22), border: "rgba(190,242,100,0.8)" }); },
     /** The hook's stat pill ("MY LAST SHORT · 6 hours"). */
-    statPill(parts, age, y = SAFE.top + 170) { if (age < 0) return; pill(SAFE_CX, y, 96, parts, { size: 50, scale: popScale(age, 0.2), border: "rgba(255,212,59,0.6)" }); },
+    statPill(parts, age, y = SAFE.top + 150) { if (age < 0) return null; return pill(SAFE_CX, y, 96, parts, { size: 50, scale: popScale(age, 0.2), border: "rgba(255,212,59,0.6)" }); },
     /** A counter rolling to its (real) value, with a label. */
     counter(value, label, age, rollFor) {
-      if (age < 0) return;
+      if (age < 0) return null;
       const n = Math.round(value * ease(age / rollFor)), s = age < rollFor ? 1 : popScale(age - rollFor + 0.08, 0.2);
       ctx.save(); ctx.translate(SAFE_CX, SAFE.top + 280); ctx.scale(s, s);
       ctx.fillStyle = "rgba(9,10,10,0.84)"; ctx.beginPath(); ctx.roundRect(-300, -150, 600, 300, 44); ctx.fill();
@@ -51,6 +54,7 @@ export function makeOverlay(ctx) {
       ctx.font = `200px ${FONT}`; ctx.fillStyle = YELLOW; ctx.fillText(String(n), 0, -30);
       ctx.font = `40px ${FONT}`; ctx.fillStyle = "#ffffff"; ctx.fillText(label, 0, 92);
       ctx.restore();
+      return { x0: SAFE_CX - 300 * s, y0: SAFE.top + 280 - 150 * s, x1: SAFE_CX + 300 * s, y1: SAFE.top + 280 + 150 * s };
     },
     /** The spoken words, 1–3 at a time, the key word in yellow. */
     caption(chunk, t) {

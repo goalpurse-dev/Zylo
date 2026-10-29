@@ -69,7 +69,8 @@ export function mainStage(scene) {
 }
 
 /** The giant phone: a dark rounded body; the screen material is returned so a video or image can go on it. */
-export function giantPhone(scene, { x = 0.1, y = 3.55, z = -3.6, h = 5.2 } = {}) {
+// raised so the cast stands BELOW it in the phone shot (the camera can push in without anyone in the way)
+export function giantPhone(scene, { x = 0.1, y = 4.9, z = -3.6, h = 5.2 } = {}) {
   const g = new THREE.Group(); g.position.set(x, y, z); scene.add(g);
   const w = h * 0.5;
   add(g, rbox(w + 0.22, h + 0.22, 0.2, 0.28, 6), new THREE.MeshPhysicalMaterial({ color: C("#121318"), roughness: 0.25, metalness: 0.6, clearcoat: 1 }));
@@ -79,7 +80,7 @@ export function giantPhone(scene, { x = 0.1, y = 3.55, z = -3.6, h = 5.2 } = {})
 }
 
 /** Look B's wall of real outputs, as an arc behind the stage. Tiles start hidden (scale 0) for the reveal. */
-export function outputWall(scene, tl, files, { R = 10.5, cols = 9, rows = 3, cz = -1.2, y0 = 1.4, tw = 1.25 } = {}) {
+export function outputWall(scene, tl, files, { R = 10.5, cols = 9, rows = 3, cz = -1.2, y0 = 2.3, tw = 1.25 } = {}) {
   const th = tw * 16 / 9, tiles = [];
   files.slice(0, cols * rows).forEach((f, i) => {
     const col = i % cols, row = Math.floor(i / cols), a = (col - (cols - 1) / 2) * 0.128;
@@ -113,7 +114,7 @@ export const SAFE = { top: 320, bottom: 420, left: 110, right: 170 };
 const box3 = new THREE.Box3(), v3 = new THREE.Vector3();
 /** Screen-space box of an object (px), or null when it isn't on screen. */
 export function screenBox(obj, camera) {
-  box3.setFromObject(obj); if (box3.isEmpty()) return null;
+  box3.setFromObject(obj, true); if (box3.isEmpty()) return null;   // precise: from the vertices, not loose child boxes
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, behind = 0;
   for (const cx of [box3.min.x, box3.max.x]) for (const cy of [box3.min.y, box3.max.y]) for (const cz of [box3.min.z, box3.max.z]) {
     v3.set(cx, cy, cz).project(camera); if (v3.z > 1) behind++;

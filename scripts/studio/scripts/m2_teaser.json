@@ -1,0 +1,139 @@
+{
+  "title": "M2 teaser (part 1 of 2): hook + proof, ends on Part 2 tomorrow",
+  "notes": "The pain is a skit (fictional). Every Zyvo number is real: 9 short-form templates (fact short_templates). The phone plays a real AI Fruit Story output; the wall shows real outputs only (wall.json).",
+  "voices": {
+    "kokoro": {
+      "creator": {
+        "voice": "am_liam",
+        "speed": 1.12
+      },
+      "zee": {
+        "voice": "af_bella",
+        "speed": 1.12
+      }
+    },
+    "eleven": {
+      "creator": {
+        "id": "bIHbv24MWmeRgasZH58o",
+        "name": "Will - Relaxed Optimist (young, natural)",
+        "stability": 0.4,
+        "style": 0.35,
+        "speed": 1.05
+      },
+      "zee": {
+        "id": "cgSgspJ2msm6clMCkdW9",
+        "name": "Jessica - Playful, Bright, Warm",
+        "stability": 0.35,
+        "style": 0.5,
+        "speed": 1.05
+      }
+    }
+  },
+  "lead": 0.12,
+  "gap_speaker": 0.2,
+  "gap_same": 0.12,
+  "tail": 0.7,
+  "music_db_under": 14,
+  "lines": [
+    {
+      "who": "creator",
+      "text": "Zyvo, my last Short took six hours.",
+      "key": [
+        "six",
+        "hours."
+      ],
+      "expr": "sad",
+      "pose": "shrug",
+      "cues": [
+        {
+          "word": 0,
+          "event": "pill",
+          "sfx": "pop",
+          "offset": 0.2
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Six hours? Look at this.",
+      "key": [
+        "this."
+      ],
+      "expr": "smug",
+      "pose": "pointUp",
+      "cues": [
+        {
+          "word": 2,
+          "event": "phoneOn",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "creator",
+      "text": "Wait, Zyvo made that?",
+      "key": [
+        "Zyvo"
+      ],
+      "expr": "shocked",
+      "pose": "handsUp",
+      "pause_before": 1.6
+    },
+    {
+      "who": "zee",
+      "text": "That, and this whole wall.",
+      "key": [
+        "wall."
+      ],
+      "expr": "happy",
+      "pose": "point",
+      "cues": [
+        {
+          "word": 3,
+          "event": "wall",
+          "sfx": "sparkle"
+        }
+      ],
+      "pause_before": 0.6
+    },
+    {
+      "who": "zee",
+      "text": "Nine short-form templates, all in Zyvo.",
+      "key": [
+        "Nine"
+      ],
+      "expr": "smug",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "counter"
+        },
+        {
+          "word": 2,
+          "event": "counterEnd",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "creator",
+      "text": "Okay. Show me how!",
+      "key": [
+        "how!"
+      ],
+      "expr": "happy",
+      "pose": "point"
+    },
+    {
+      "who": "zee",
+      "text": "Part 2 tomorrow: how I made it.",
+      "key": [
+        "tomorrow:"
+      ],
+      "expr": "smug",
+      "pose": "wave"
+    }
+  ],
+  "end_chip": "FOLLOW FOR PART 2"
+}

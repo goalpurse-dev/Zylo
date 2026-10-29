@@ -42,3 +42,16 @@ Example:
     PROTO_DIR=... PICS_DIR=<real outputs + wall.json + video/> WORK_DIR=<work> AUDIO=<work>/mix.wav PAGE=preview.html node render.mjs <ffmpeg> out.mp4 <seconds> 30
 
 Previews go to `content/studio-previews/` (gitignored).
+
+## Continuous camera (2026-10-30)
+
+- `timeline.js`: the camera is planned as holds joined by eased moves (whip, push, pull, crane), never a hard cut.
+  - Every hold is at least 1.2 s; the push into the phone takes 0.95 s.
+  - The creator stays on the left and Zee on the right.
+  - `writeMoves.mjs` writes `moves.json`; `audio.py` adds a whoosh on each move.
+- `preview.js` renders 7 averaged subframes on each move (motion blur). Every frame is checked for:
+  - faces and key props inside the TikTok zones while the camera holds;
+  - chips, pills and counters never over a face, Zee's antenna or the phone screen;
+  - no partial body parts at the left or right edge during holds (exact vertex bounds).
+- `elevenTakes.mjs`: the PAID ElevenLabs takes, one per line. It needs `CAP_USD`, refuses when the worst case is over it, and never pays twice for a line. Voices: Will (creator) and Jessica (Zee).
+- `scripts/m2_teaser.json`: the teaser (+ "Part 2 tomorrow: how I made it." and the FOLLOW FOR PART 2 end chip).

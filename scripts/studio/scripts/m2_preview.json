@@ -1,5 +1,5 @@
 {
-  "title": "M2 preview: hook + proof (10 s)",
+  "title": "M2 preview: hook + proof (continuous camera)",
   "notes": "The pain is a skit (fictional). Every Zyvo number is real: 9 short-form templates (fact short_templates). The phone plays a real AI Fruit Story output; the wall shows real outputs only (wall.json).",
   "voices": {
     "kokoro": {
@@ -13,8 +13,20 @@
       }
     },
     "eleven": {
-      "creator": "a young male voice (picked with the owner)",
-      "zee": "a bright friendly voice (picked with the owner)"
+      "creator": {
+        "id": "bIHbv24MWmeRgasZH58o",
+        "name": "Will - Relaxed Optimist (young, natural)",
+        "stability": 0.4,
+        "style": 0.35,
+        "speed": 1.05
+      },
+      "zee": {
+        "id": "cgSgspJ2msm6clMCkdW9",
+        "name": "Jessica - Playful, Bright, Warm",
+        "stability": 0.35,
+        "style": 0.5,
+        "speed": 1.05
+      }
     }
   },
   "lead": 0.12,
@@ -64,7 +76,8 @@
         "Zyvo"
       ],
       "expr": "shocked",
-      "pose": "handsUp"
+      "pose": "handsUp",
+      "pause_before": 1.6
     },
     {
       "who": "zee",
@@ -80,7 +93,8 @@
           "event": "wall",
           "sfx": "sparkle"
         }
-      ]
+      ],
+      "pause_before": 0.6
     },
     {
       "who": "zee",
