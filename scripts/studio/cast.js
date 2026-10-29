@@ -59,6 +59,7 @@ export const POSES = {
   rest: [[0.05, 0.12], [0.05, -0.12]],
   point: [[0.05, 0.12], [-1.45, -0.25]],
   pointUp: [[0.05, 0.12], [-0.5, -2.2]],
+  pointUpL: [[-0.5, 2.2], [0.05, -0.12]],   // the other arm: points up to the character's left (the viewer's right)
   shrug: [[0.3, 0.6], [0.3, -0.6]],          // kept narrow: hands stay inside a close-up
   handsUp: [[-2.55, 0.45], [-2.55, -0.45]],   // raised FORWARD: in and out of the pose the hands stay inside a close-up
   wave: [[0.05, 0.12], [-2.5, -0.5]],   // a forward wave: the arm never swings out to the frame edge

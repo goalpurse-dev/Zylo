@@ -62,6 +62,10 @@ if (only) {
   console.log(`rendered ${n} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 const zones = await page.evaluate(() => window.zoneReport?.() ?? null);
-if (zones) console.log(Object.keys(zones).length ? `SAFE ZONES: ${JSON.stringify(zones)}` : "SAFE ZONES: every face and key prop inside on every frame");
+if (zones) {
+  const { _observations: obs, ...z } = zones;
+  console.log(Object.keys(z).length ? `SAFE ZONES: ${JSON.stringify(z)}` : "SAFE ZONES: every face and key prop inside on every frame");
+  if (obs) { console.log(`OBSERVATIONS: ${JSON.stringify(obs)}`); if (process.env.OBS_OUT) fs.writeFileSync(process.env.OBS_OUT, JSON.stringify({ zones: z, observations: obs }, null, 1)); }
+}
 await browser.close();
 server.close();

@@ -1,0 +1,29 @@
+{
+  "tool": "long_form",
+  "name": "Long Form",
+  "order": 2,
+  "status": "next: record the real flow (needs the owner's go and a cost quote: a Long Form episode is paid)",
+  "route": "/workspace/long-form",
+  "account": "zyvo",
+  "flow": {
+    "capture": "to build (like capture/fruitRun.mjs)",
+    "steps_from_facts": "lf_pipeline: Idea · Scenes · Edit · Publish (story plan, research, script, voice, scenes)",
+    "steps": [
+      { "n": 1, "chip": ["PICK A ", "NICHE"], "screen": "niche", "line": "Step one: pick a niche, or get ten ideas." },
+      { "n": 2, "chip": ["LENGTH & ", "STYLE"], "screen": "settings", "line": "Step two: length, style and a voice." },
+      { "n": 3, "chip": ["", "SCENES"], "screen": "scenes", "line": "Step three: it writes, researches and voices it." },
+      { "n": 4, "chip": ["", "EDIT"], "screen": "edit", "line": "Step four: change any scene you want." },
+      { "n": 5, "chip": ["", "DOWNLOAD"], "screen": "publish", "line": "Step five: download, with the title and tags written." }
+    ]
+  },
+  "facts": {
+    "twist": { "key": "lf_scenes", "counter": 150, "label": "SCENES IN 10 MINUTES", "line": "About a hundred and fifty scenes in a ten-minute video." },
+    "also": ["lf_niches", "lf_voices", "lf_styles", "lf_length", "lf_edit_scenes", "lf_youtube_text", "lf_free_preview", "no_youtube_upload"]
+  },
+  "outputs": { "wall": "Long Form stickman / cartoon scenes only (asset library tool long_form; Ken Burns; scene clips where a video exists)" },
+  "ctas": [
+    { "id": "comment_niche", "kind": "comment", "line": "Comment your niche and I'll make the next one about it.", "requires_owner": true },
+    { "id": "comment_longform", "kind": "comment", "line": "Comment LONG if you're actually gonna start that channel.", "chip": ["COMMENT ", "LONG"] },
+    { "id": "repost_friend", "kind": "repost", "line": "Repost this for the friend who keeps saying they'll start a channel.", "chip": ["REPOST FOR ", "THAT FRIEND"] }
+  ]
+}

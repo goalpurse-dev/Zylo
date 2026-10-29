@@ -60,13 +60,15 @@ else:
 # ── 2. the voice track: short gaps, a little longer between speakers ──
 lead = S.get("lead", 0.15)
 voice, t, timed = [np.zeros(int(lead * SR), np.float32)], lead, []
-CLIP = S.get("clip")            # a REAL output's own moment, heard with its sound (owner, 2026-10-30)
-clip = None
+# REAL outputs' own moments, heard with their sound (owner, 2026-10-30): "clips" (or the older single "clip"),
+# each after a line: the camera pushes in (pre), the clip plays, a beat (post), then the next line.
+CLIPS = S.get("clips") or ([S["clip"]] if S.get("clip") else [])
+clips = []
 for n, (ln, x) in enumerate(zip(lines, takes)):
-    if n and CLIP and n == CLIP["after_line"] + 1:
-        # the camera pushes in (pre), the clip plays with its sound, a beat (post), then the next line
-        pre, post, dur = CLIP.get("pre", 0.95), CLIP.get("post", 0.35), CLIP["out"] - CLIP["in"]
-        clip = {"file": CLIP["file"], "in": CLIP["in"], "out": CLIP["out"], "start": round(t + pre, 3), "end": round(t + pre + dur, 3)}
+    C = next((c for c in CLIPS if n and n == c["after_line"] + 1), None)
+    if C:
+        pre, post, dur = C.get("pre", 0.95), C.get("post", 0.35), C["out"] - C["in"]
+        clips.append({"name": C.get("name", f"clip{len(clips) + 1}"), "file": C["file"], "in": C["in"], "out": C["out"], "duck_db": C.get("duck_db", 10), "start": round(t + pre, 3), "end": round(t + pre + dur, 3)})
         voice.append(np.zeros(int((pre + dur + post) * SR), np.float32)); t += pre + dur + post
     elif n:
         gap = S.get("gap_speaker", 0.22) if ln["who"] != lines[n - 1]["who"] else S.get("gap_same", 0.12)
@@ -93,8 +95,25 @@ def norm(w):
     return "".join(c for c in w.lower() if c.isalnum())
 
 
+# First choice: the whole video in order. When whisper heard exactly as many words as the script has (hyphen parts
+# counted), each script word takes its heard time; no boundary guessing between close lines.
+all_parts = [(n, i, p) for n, ln in enumerate(lines) for i, sw in enumerate(ln["text"].split()) for p in sw.split("-")]
+if len(all_parts) == len(words):
+    for n, (ln, tl) in enumerate(zip(lines, timed)):
+        sw = ln["text"].split(); idx = [k for k, (m, _, _) in enumerate(all_parts) if m == n]
+        tl["words"] = [{"w": w, "s": min(words[k]["s"] for k in idx if all_parts[k][1] == i), "e": max(words[k]["e"] for k in idx if all_parts[k][1] == i)} for i, w in enumerate(sw)]
+        tl["heard"] = " ".join(words[k]["w"] for k in idx); tl["aligned"] = "whole"
+# Otherwise: each heard word belongs to the line whose take holds its midpoint (else the nearest line)
+def owner(w):
+    m = (w["s"] + w["e"]) / 2
+    return min(range(len(timed)), key=lambda i: 0 if timed[i]["start"] <= m <= timed[i]["end"] else min(abs(m - timed[i]["start"]), abs(m - timed[i]["end"])))
+owners = [owner(w) for w in words]
 for n, (ln, tl) in enumerate(zip(lines, timed)):
-    mine = [w for w in words if tl["start"] - 0.15 <= (w["s"] + w["e"]) / 2 <= tl["end"] + 0.15]
+    if tl.get("aligned") == "whole":
+        keys = {norm(k) for k in ln.get("key", [])}
+        for w in tl["words"]: w["key"] = norm(w["w"]) in keys
+        tl.update({k: ln[k] for k in ("text", "expr", "pose") if k in ln}); continue
+    mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
     parts = [(i, p) for i, sw in enumerate(script_words) for p in sw.split("-")]
@@ -182,7 +201,7 @@ def sfx(kind):
 bed = music(total)
 # the clip's own sound: matched to our voices, faded in/out; the music ducks under it
 clip_track = np.zeros_like(voice)
-if clip:
+for clip in clips:
     src = os.path.join(opt["--pics"], clip["file"])
     pcm = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(clip["in"]), "-t", str(clip["out"] - clip["in"]), "-i", src, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
     ca = np.frombuffer(pcm, dtype=np.float32).copy()
@@ -192,11 +211,13 @@ speech = np.concatenate([voice[int(tl["start"] * SR):int(tl["end"] * SR)] for tl
 v_rms = np.sqrt(np.mean(speech ** 2)); m_rms = np.sqrt(np.mean(bed ** 2)) or 1
 under = S.get("music_db_under", 14)
 bed *= (v_rms / m_rms) * 10 ** (-under / 20)
-if clip:
-    c_rms = np.sqrt(np.mean(clip_track[int(clip["start"] * SR):int(clip["end"] * SR)] ** 2)) or 1
-    clip_track *= (v_rms / c_rms) * 0.95
+for clip in clips:
+    a0, b0 = int(clip["start"] * SR), int(clip["end"] * SR)
+    c_rms = np.sqrt(np.mean(clip_track[a0:b0] ** 2)) or 1
+    clip_track[a0:b0] *= (v_rms / c_rms) * 0.95
+    g = 10 ** (-clip["duck_db"] / 20)
     duck = np.ones_like(bed); a, b, r = int((clip["start"] - 0.15) * SR), int((clip["end"] + 0.15) * SR), int(0.15 * SR)
-    duck[a:b] = 10 ** (-10 / 20); duck[a - r:a] = np.linspace(1, 10 ** (-10 / 20), r); duck[b:b + r] = np.linspace(10 ** (-10 / 20), 1, min(r, len(duck) - b))
+    duck[a:b] = g; duck[a - r:a] = np.linspace(1, g, r); duck[b:b + r] = np.linspace(g, 1, min(r, len(duck) - b))
     bed *= duck
 mix = voice + bed + clip_track
 for e in events:
@@ -216,14 +237,16 @@ measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 
 # the phone's frames, decoded exactly: the clip plays continuously from when the phone lights up to the wall reveal
 phone = None
+clip = clips[0] if clips else None
 if clip:
     on = next((e["t"] for e in events if e["event"] == "phoneOn"), clip["start"]); off = next((e["t"] for e in events if e["event"] == "wall"), total) + 0.6
     vt0 = max(0.0, clip["in"] + (on - 0.1 - clip["start"])); dur = clip["in"] + (off - clip["start"]) - vt0
+    if S.get("phone_full"): vt0, dur = 0.0, 1e4          # the whole video (several clips of one output)
     pdir = os.path.join(out, "phone"); os.makedirs(pdir, exist_ok=True)
     for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", "-q:v", "3", os.path.join(pdir, "f%05d.jpg")], check=True)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
-json.dump({"engine": engine, "clip": clip, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
+json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

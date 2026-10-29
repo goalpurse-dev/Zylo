@@ -1,0 +1,19 @@
+{
+  "tool": "clay_rescue",
+  "name": "Clay Rescue",
+  "order": 3,
+  "status": "to do: read the real flow from src/components/viral-tools/clay-rescue, then record it (paid: quote first)",
+  "route": "/workspace/clay-rescue",
+  "account": "zyvo",
+  "flow": { "capture": "to build", "steps": [] },
+  "facts": {
+    "twist": null,
+    "also": ["clay_rescue"],
+    "gap": "the fact sheet has one Clay Rescue line only; add real facts (length, shapes, what you choose) before a video is made"
+  },
+  "outputs": { "wall": "Clay Rescue outputs only (asset library: 12 stills; videos to collect from real runs)" },
+  "ctas": [
+    { "id": "comment_clay", "kind": "comment", "line": "Comment CLAY if you're actually gonna try it.", "chip": ["COMMENT ", "CLAY"] },
+    { "id": "repost_friend", "kind": "repost", "line": "Repost this for the friend who keeps saying they'll start a channel.", "chip": ["REPOST FOR ", "THAT FRIEND"] }
+  ]
+}

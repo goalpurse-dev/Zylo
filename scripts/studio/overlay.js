@@ -73,6 +73,53 @@ export function makeOverlay(ctx) {
       }
       ctx.restore();
     },
+    /** A step chip with the 5 progress dashes under it (the current one lit). */
+    stepChip(n, total, parts, age) {
+      if (age < 0) return null;
+      const b = pill(SAFE_CX, SAFE.top + 52, 74, parts, { size: 38, scale: popScale(age) });
+      const w = 56, gap = 12, x0 = SAFE_CX - (total * w + (total - 1) * gap) / 2;
+      for (let i = 0; i < total; i++) { ctx.fillStyle = i < n ? YELLOW : "rgba(255,255,255,0.25)"; ctx.beginPath(); ctx.roundRect(x0 + i * (w + gap), SAFE.top + 100, w, 8, 4); ctx.fill(); }
+      return { ...b, y1: SAFE.top + 108 };
+    },
+    /** A REAL screen as a floating card (sharp: drawn in 2D), sliding in; a "real time" badge; a tap ring. */
+    card(img, aspect, age, { width = 600, top = 448, badge = null, tap = null } = {}) {
+      if (age < 0 || !img) return null;
+      const k = Math.min(1, age / 0.28), e = 1 - Math.pow(1 - k, 3), w = width * (0.92 + 0.08 * e), h = w / aspect;
+      const x = SAFE_CX - w / 2, y = top + (1 - e) * 60;
+      ctx.save(); ctx.globalAlpha = e;
+      ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
+      ctx.fillStyle = "#0b0c0e"; ctx.beginPath(); ctx.roundRect(x - 8, y - 8, w + 16, h + 16, 28); ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+      ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 22); ctx.clip(); ctx.drawImage(img, x, y, w, h); ctx.restore();
+      ctx.strokeStyle = "rgba(190,242,100,0.55)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - 8, y - 8, w + 16, h + 16, 28); ctx.stroke();
+      if (badge) {   // the real time since the first click, as recorded
+        ctx.font = `34px ${FONT}`; const tw = ctx.measureText(badge).width + 40;
+        ctx.fillStyle = "rgba(9,10,10,0.9)"; ctx.beginPath(); ctx.roundRect(x + w - tw - 14, y + 14, tw, 54, 27); ctx.fill();
+        ctx.fillStyle = YELLOW; ctx.textBaseline = "middle"; ctx.fillText(badge, x + w - tw + 6, y + 42);
+      }
+      if (tap && age > 0.45) {   // where the real click was: a cursor and a ring
+        const ta = age - 0.45, px = x + tap[0] * w, py = y + tap[1] * h, r = 26 + ta * 90;
+        ctx.globalAlpha = Math.max(0, 1 - ta / 0.7); ctx.strokeStyle = YELLOW; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 8, py + 44); ctx.lineTo(px + 20, py + 32); ctx.lineTo(px + 38, py + 40); ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      ctx.restore();
+      return { x0: x - 8, y0: y - 8, x1: x + w + 8, y1: y + h + 8 };
+    },
+    /** A clock rolling up to a real measured time (seconds), with a label. */
+    timer(seconds, label, age, rollFor) {
+      if (age < 0) return null;
+      const v = Math.round(seconds * ease(age / rollFor)), s = age < rollFor ? 1 : popScale(age - rollFor + 0.08, 0.2);
+      const txt = `${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}`;
+      ctx.save(); ctx.translate(SAFE_CX, SAFE.top + 280); ctx.scale(s, s);
+      ctx.fillStyle = "rgba(9,10,10,0.84)"; ctx.beginPath(); ctx.roundRect(-300, -150, 600, 300, 44); ctx.fill();
+      ctx.strokeStyle = "rgba(190,242,100,0.5)"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = `180px ${FONT}`; ctx.fillStyle = YELLOW; ctx.fillText(txt, 0, -30);
+      ctx.font = `36px ${FONT}`; ctx.fillStyle = "#ffffff"; ctx.fillText(label, 0, 92);
+      ctx.restore();
+      return { x0: SAFE_CX - 300 * s, y0: SAFE.top + 280 - 150 * s, x1: SAFE_CX + 300 * s, y1: SAFE.top + 280 + 150 * s };
+    },
     /** For review: the TikTok zones in red. */
     zones() {
       ctx.save(); ctx.fillStyle = "rgba(255,40,80,0.22)";

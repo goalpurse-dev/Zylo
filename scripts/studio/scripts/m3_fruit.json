@@ -1,0 +1,254 @@
+{
+  "title": "M3: How I made this with Zyvo: AI Fruit Story",
+  "template": "ai_fruit_story",
+  "notes": "One template per video. The story was made live on the internal account on 2026-10-29 (Ten Years Out of Date, story 96d3191f): 230.2 s from the first click to the finished video, 159 credits, $1.64 of AI calls. Every claim is from the fact sheet (fruit_characters) or measured; 'too lazy' is an opinion line.",
+  "voices": {
+    "default": "eleven",
+    "eleven": {
+      "creator": {
+        "id": "bIHbv24MWmeRgasZH58o",
+        "name": "Will - Relaxed Optimist (young, natural)",
+        "stability": 0.4,
+        "style": 0.35,
+        "speed": 1.05
+      },
+      "zee": {
+        "id": "cgSgspJ2msm6clMCkdW9",
+        "name": "Jessica - Playful, Bright, Warm",
+        "stability": 0.35,
+        "style": 0.5,
+        "speed": 1.05
+      }
+    },
+    "kokoro": {
+      "creator": {
+        "voice": "am_liam",
+        "speed": 1.12
+      },
+      "zee": {
+        "voice": "af_bella",
+        "speed": 1.12
+      }
+    }
+  },
+  "lead": 0.12,
+  "gap_speaker": 0.2,
+  "gap_same": 0.14,
+  "tail": 0.6,
+  "music_db_under": 14,
+  "phone_full": true,
+  "clips": [
+    {
+      "name": "hook",
+      "file": "video/m3/ten-years-out-of-date.mp4",
+      "in": 4.05,
+      "out": 7.9,
+      "after_line": 0,
+      "pre": 0.95,
+      "post": 0.3,
+      "duck_db": 10,
+      "note": "the cherry: 'That's just, um, a really good angle.'"
+    },
+    {
+      "name": "payoff",
+      "file": "video/m3/ten-years-out-of-date.mp4",
+      "in": 0.0,
+      "out": 22.85,
+      "after_line": 10,
+      "pre": 1.0,
+      "post": 0.35,
+      "duck_db": 24,
+      "note": "the full real result, with its sound"
+    }
+  ],
+  "lines": [
+    {
+      "who": "creator",
+      "text": "Yo Zyvo, how do you make a video like this?",
+      "key": [
+        "this?"
+      ],
+      "expr": "thinking",
+      "pose": "pointUpL",
+      "cues": [
+        {
+          "word": 0,
+          "event": "phoneOn",
+          "offset": -0.1
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "It's simple. But most people are too lazy to actually do it.",
+      "key": [
+        "lazy"
+      ],
+      "expr": "smug",
+      "pose": "rest"
+    },
+    {
+      "who": "creator",
+      "text": "...show me.",
+      "key": [
+        "show"
+      ],
+      "expr": "thinking",
+      "pose": "rest"
+    },
+    {
+      "who": "zee",
+      "text": "Step one: pick an idea. Or write your own.",
+      "key": [
+        "idea."
+      ],
+      "expr": "happy",
+      "pose": "point",
+      "cues": [
+        {
+          "word": 0,
+          "event": "step1",
+          "sfx": "pop"
+        }
+      ],
+      "pause_before": 1.6
+    },
+    {
+      "who": "zee",
+      "text": "Step two: pick a length. I took thirty seconds.",
+      "key": [
+        "length."
+      ],
+      "expr": "happy",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "step2",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Step three: check every scene picture.",
+      "key": [
+        "picture."
+      ],
+      "expr": "thinking",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "step3",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Step four: animate. They talk, with sound.",
+      "key": [
+        "animate."
+      ],
+      "expr": "happy",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "step4",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Step five: make the final video.",
+      "key": [
+        "final"
+      ],
+      "expr": "happy",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "step5",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "And there are a hundred and fifty fruit characters to cast.",
+      "key": [
+        "fifty"
+      ],
+      "expr": "smug",
+      "pose": "point",
+      "pause_before": 0.15,
+      "cues": [
+        {
+          "word": 2,
+          "event": "wall",
+          "sfx": "sparkle"
+        },
+        {
+          "word": 3,
+          "event": "counter"
+        },
+        {
+          "word": 8,
+          "event": "counterEnd",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "creator",
+      "text": "Okay, how long did that take?",
+      "key": [
+        "long"
+      ],
+      "expr": "shocked",
+      "pose": "shrug"
+    },
+    {
+      "who": "zee",
+      "text": "Three minutes, fifty seconds. First click to final video.",
+      "key": [
+        "fifty"
+      ],
+      "expr": "smug",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "timer"
+        },
+        {
+          "word": 3,
+          "event": "timerEnd",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Comment FRUIT if you're actually gonna try it.",
+      "key": [
+        "FRUIT"
+      ],
+      "expr": "happy",
+      "pose": "wave",
+      "cues": [
+        {
+          "word": 0,
+          "event": "cta",
+          "sfx": "pop"
+        }
+      ]
+    }
+  ],
+  "cta": "comment_fruit",
+  "end_chip": null
+}

@@ -1,0 +1,210 @@
+{
+  "tool": "ai_fruit_story",
+  "name": "AI Fruit Story",
+  "order": 1,
+  "status": "made: M3 (2026-10-29 run, story 96d3191f)",
+  "route": "/workspace/ai-fruit-story",
+  "account": "zyvo",
+  "notes": "One template per video (owner, 2026-10-30). Everything shown is this template's real output and real flow, recorded live on the internal account (scripts/studio/capture/fruitRun.mjs).",
+  "flow": {
+    "capture": "scripts/studio/capture/fruitRun.mjs",
+    "settings": {
+      "quality": "V2",
+      "length": "30 sec",
+      "shape": "Tall 9:16",
+      "source": "an idea card"
+    },
+    "steps": [
+      {
+        "n": 1,
+        "chip": [
+          "PICK AN ",
+          "IDEA"
+        ],
+        "screen": "story_picked",
+        "line": "Step one: pick an idea. Or write your own."
+      },
+      {
+        "n": 2,
+        "chip": [
+          "LENGTH & ",
+          "QUALITY"
+        ],
+        "screen": "settings",
+        "line": "Step two: pick a length. I took thirty seconds."
+      },
+      {
+        "n": 3,
+        "chip": [
+          "SCENE ",
+          "PICTURES"
+        ],
+        "screen": "pictures_ready",
+        "line": "Step three: check every scene picture."
+      },
+      {
+        "n": 4,
+        "chip": [
+          "",
+          "ANIMATE"
+        ],
+        "screen": "clips_ready",
+        "line": "Step four: animate. They talk, with sound."
+      },
+      {
+        "n": 5,
+        "chip": [
+          "FINAL ",
+          "VIDEO"
+        ],
+        "screen": "final",
+        "line": "Step five: make the final video."
+      }
+    ],
+    "paid_buttons": [
+      "Make scene pictures",
+      "Animate all scenes",
+      "Make final video"
+    ]
+  },
+  "facts": {
+    "twist": {
+      "key": "fruit_characters",
+      "counter": 150,
+      "label": "FRUIT CHARACTERS",
+      "line": "And there are a hundred and fifty fruit characters to cast."
+    },
+    "also": [
+      "fruit_length",
+      "fruit_formats",
+      "fruit_series",
+      "cost_upfront"
+    ]
+  },
+  "time_claim": "measured live: from the first click to the finished video (fruitRun.mjs summary.json)",
+  "outputs": {
+    "hook_and_payoff": "the story made live on the internal account (its final video)",
+    "wall": "AI Fruit Story outputs only: the owner's finished Fruit stories as 2 s muted loops, plus Fruit stills from the asset library with a Ken Burns push"
+  },
+  "script": {
+    "hook": {
+      "who": "creator",
+      "text": "Yo Zyvo, how do you make a video like this?"
+    },
+    "answer": {
+      "who": "zee",
+      "text": "It's simple. But most people are too lazy to actually do it."
+    },
+    "beat": {
+      "who": "creator",
+      "text": "...show me."
+    },
+    "objection": {
+      "who": "creator",
+      "text": "Okay, how long did that take?"
+    }
+  },
+  "ctas": [
+    {
+      "id": "comment_fruit",
+      "kind": "comment",
+      "line": "Comment FRUIT if you're actually gonna try it.",
+      "chip": [
+        "COMMENT ",
+        "FRUIT"
+      ]
+    },
+    {
+      "id": "comment_star",
+      "kind": "comment",
+      "line": "Comment which fruit should star in the next one.",
+      "chip": [
+        "COMMENT THE NEXT ",
+        "STAR"
+      ]
+    },
+    {
+      "id": "repost_friend",
+      "kind": "repost",
+      "line": "Repost this for the friend who keeps saying they'll start a channel.",
+      "chip": [
+        "REPOST FOR ",
+        "THAT FRIEND"
+      ]
+    }
+  ],
+  "cards": {
+    "step1": {
+      "shots": [
+        "story_picked"
+      ],
+      "crop": [
+        236,
+        290,
+        687,
+        845
+      ],
+      "tap": [
+        462,
+        493
+      ],
+      "label": "the idea card"
+    },
+    "step2": {
+      "shots": [
+        "_settings"
+      ],
+      "crop": [
+        236,
+        290,
+        692,
+        845
+      ],
+      "tap": [
+        409,
+        572
+      ],
+      "label": "30 sec, V2, Tall"
+    },
+    "step3": {
+      "range": [
+        5,
+        13
+      ],
+      "every": 1,
+      "crop": [
+        700,
+        110,
+        1252,
+        850
+      ],
+      "label": "the scene pictures appearing"
+    },
+    "step4": {
+      "range": [
+        14,
+        33
+      ],
+      "every": 2,
+      "crop": [
+        700,
+        110,
+        1252,
+        850
+      ],
+      "label": "the clips animating"
+    },
+    "step5": {
+      "shots": [
+        "s_final.png"
+      ],
+      "crop": [
+        700,
+        110,
+        1252,
+        850
+      ],
+      "label": "your video is ready"
+    }
+  }
+}

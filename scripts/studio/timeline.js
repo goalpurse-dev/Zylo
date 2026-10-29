@@ -42,6 +42,42 @@ export function plan(T) {
   return out;
 }
 
+// M3 / per-template videos (owner, 2026-10-30): hook -> answer -> 5 steps -> twist -> objection -> payoff -> CTA.
+// The phone is raised (y 5.15) so the cast stands below it in the phone shots.
+export const FRAMINGS_T = {
+  ...FRAMINGS,
+  // the hook: the creator close up, the real video playing on the phone behind him (top right)
+  hook: { pos: [-0.85, 2.05, 8.6], look: [-0.9, 2.15, 0.6], facing: "camera" },
+  phone: { pos: [0.1, 4.88, 15.6], look: [0.1, 4.88, -3.6], facing: "phone" },
+  steps: { pos: [-1.0, 3.0, 9.6], look: [-1.1, 2.35, -1.0], facing: "phone", creep: 0.15 },
+  // Zee low in the frame, so a counter card above stays clear of the antenna
+  zeeLow: { pos: [1.25, 2.2, 8.6], look: [1.3, 2.28, 0.3], facing: "camera", creep: 0.08 },
+  phoneFull: { pos: [0.1, 4.9, 13.0], look: [0.1, 4.9, -3.6], facing: "phone", creep: 0.1 },
+};
+
+/** The camera plan of a per-template video (lines 0..11, clips hook + payoff). */
+export function planTemplate(T) {
+  const L = T.lines, clip = Object.fromEntries((T.clips ?? []).map((c) => [c.name, c]));
+  const moves = [];
+  let at = "hook", free = MIN_HOLD;
+  const go = (to, want, dur, kind) => { const t0 = Math.max(want, free); moves.push({ type: "move", from: at, to, t0, t1: t0 + dur, kind }); at = to; free = t0 + dur + MIN_HOLD; };
+  go("phone", L[0].end - 0.1, 0.95, "push");              // the question -> the real video plays
+  go("zee", clip.hook.end - 0.05, 0.6, "pull");             // "It's simple. But..."
+  go("creator", L[1].end - 0.05, 0.45, "whip");            // "...show me."
+  go("steps", L[2].end, 0.85, "crane");                    // steps 1-5: the real screens
+  go("wall", L[8].start - 0.2, 0.85, "crane");             // the twist (the template's own wall)
+  go("creator", L[9].start - 0.35, 0.7, "pull");           // "how long did that take?"
+  go("zeeLow", L[9].end - 0.05, 0.45, "whip");             // the measured time (the clock above Zee)
+  go("phoneFull", L[10].end - 0.1, 1.0, "push");           // the payoff: the full real result
+  go("zee", clip.payoff.end, 0.7, "pull");                 // the CTA
+  const out = []; let t = 0, cur = "hook";
+  for (const m of moves) { if (m.t0 > t) out.push({ type: "hold", t0: t, t1: m.t0, at: cur }); out.push(m); t = m.t1; cur = m.to; }
+  out.push({ type: "hold", t0: t, t1: Math.max(T.total, t + 0.5), at: cur });
+  return out;
+}
+export const planFor = (T) => (T.template ? planTemplate(T) : plan(T));
+export const framingsFor = (T) => (T.template ? FRAMINGS_T : FRAMINGS);
+
 /** Problems with a plan: short holds, moves that run past the end. */
 export function planProblems(p, T) {
   const probs = [];

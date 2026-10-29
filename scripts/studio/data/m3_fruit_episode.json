@@ -1,0 +1,64 @@
+{
+ "template": "ai_fruit_story",
+ "steps": [
+  {
+   "n": 1,
+   "chip": [
+    "PICK AN ",
+    "IDEA"
+   ],
+   "screen": "story_picked",
+   "line": "Step one: pick an idea. Or write your own."
+  },
+  {
+   "n": 2,
+   "chip": [
+    "LENGTH & ",
+    "QUALITY"
+   ],
+   "screen": "settings",
+   "line": "Step two: pick a length. I took thirty seconds."
+  },
+  {
+   "n": 3,
+   "chip": [
+    "SCENE ",
+    "PICTURES"
+   ],
+   "screen": "pictures_ready",
+   "line": "Step three: check every scene picture."
+  },
+  {
+   "n": 4,
+   "chip": [
+    "",
+    "ANIMATE"
+   ],
+   "screen": "clips_ready",
+   "line": "Step four: animate. They talk, with sound."
+  },
+  {
+   "n": 5,
+   "chip": [
+    "FINAL ",
+    "VIDEO"
+   ],
+   "screen": "final",
+   "line": "Step five: make the final video."
+  }
+ ],
+ "counter": {
+  "value": 150,
+  "label": "FRUIT CHARACTERS",
+  "fact": "fruit_characters"
+ },
+ "timer": {
+  "seconds": 230,
+  "label": "FIRST CLICK \u2192 FINAL VIDEO",
+  "source": "fruitRun summary.json (measured live)"
+ },
+ "cta": {
+  "id": "comment_fruit",
+  "chip": "COMMENT FRUIT"
+ }
+}
