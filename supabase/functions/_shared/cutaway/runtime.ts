@@ -47,6 +47,8 @@ async function urlsFor(admin: any, run: any, role: string, index?: number) {
   const planPut = role === "video" || role === "plan" ? Object.fromEntries(await Promise.all(keys.map(async (k) => [k, await putUrl(admin, (P.plan as any)[k])]))) : null;
   const planGet = run.plan_ready || role === "chunk" || role === "mix" ? Object.fromEntries(await Promise.all(keys.map(async (k) => [k, await getUrl(admin, (P.plan as any)[k])]))) : null;
   const out: any = { planPut, planGet };
+  // a retry before the plan was made: the earlier attempt's paid planner replies (null when it kept none)
+  if ((role === "video" || role === "plan") && !run.plan_ready && (run.attempt ?? 1) > 1) out.resume = await getUrl(admin, P.plan.steps);
   if (role === "video" || role === "plan") out.frames = await allUrls(admin, P.frames, (p) => putUrl(admin, p));
   if (role === "video" || role === "mix") { out.final = await putUrl(admin, P.final); out.web = await putUrl(admin, P.web); out.poster = await putUrl(admin, P.poster); }
   if (role === "chunk") out.segment = await putUrl(admin, P.chunk(index!));

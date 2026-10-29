@@ -8,8 +8,9 @@ import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText, SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
-import { solveLayout } from "./solver.js";
+import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
+import { guard, logBugs, splitBugs } from "./bookkeeping.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -17,6 +18,11 @@ import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../sup
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
 import { modelMatches, wordsOf } from "./models.js";
+
+// the bookkeeping bugs met while the current plan is made (planTopic starts a new list; bookkeeping.js): a crashed
+// layout check is one of them, never a failed run
+let BUGS = [];
+const solveLayout = (L, sentences) => guard("layout check", () => solveLayoutRaw(L, sentences), BUGS, () => ({ problems: [], warnings: [] }));
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
@@ -29,6 +35,8 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 // (the approved premade scripts have up to 13)
 export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12] }, 60: { words: [200, 240], sentences: [18, 24], beats: [18, 24] } };
 export const WORD_TOLERANCE = 0.05;
+// the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
+export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
 export const wordCount = (t) => String(t ?? "").split(/\s+/).filter(Boolean).length;
 export const overWords = (n, lengthSec) => n > Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
 
@@ -417,7 +425,7 @@ export const KIT_CANNOT = [
   [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
   [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],
 ];
-const checkScript = (s, lengthSec, roles, { lengthIsTarget = false } = {}) => {
+const checkScript = (s, lengthSec, roles, { lengthIsTarget = false, bugs = BUGS } = {}) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
   // (a target, not a check, for a new plan: the owner's rule of 2026-10-29; the premade path keeps it, it reverts long lines)
@@ -433,8 +441,8 @@ const checkScript = (s, lengthSec, roles, { lengthIsTarget = false } = {}) => {
   // up down both roads" and the street has one road, so the preview check failed it twice
   for (const x of s.sentences) for (const [re, why] of KIT_CANNOT) if (re.test(x.text)) P.push(`"${x.text.slice(0, 50)}…": ${why}`);
   // the story chain: strict for a new layout; a saved layout's fixed roles (made before the rule) get it as guidance
-  P.push(...chainProblems(s, { strict: !roles, lengthSec }));
-  return P;
+  P.push(...guard("chain check", () => chainProblems(s, { strict: !roles, lengthSec, bugs }), bugs, []));
+  return splitBugs(P, bugs);
 };
 
 // ---------- visuals first, words second (the owner's rule of 2026-10-27) ----------
@@ -689,15 +697,17 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
     const draft = draftSentences(conv.layout, ideas);
     const solved = solveLayout(conv.layout, draft);
-    const problems = [...conv.problems, ...beatPlanProblems(conv.layout, story, lengthSec), ...solved.problems];
+    // (a bookkeeping slip is logged and skipped: never a paid repair, bookkeeping.js)
+    const problems = splitBugs([...conv.problems, ...guard("beat plan check", () => beatPlanProblems(conv.layout, story, lengthSec), BUGS, []), ...solved.problems], BUGS);
     return { scene, story, conv, ideas, draft, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
   };
-  // 1. the beat plan
-  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+  // 1. the beat plan (120,000 tokens: the real 60 s swimming pool plan of 2026-10-29 used 45,000 of the old 64,000, and
+  // a cut-off reply is a failed attempt; it costs only what is used)
+  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS });
   let B = plan(r);
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
-    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: 64000 }); // (medium: it fixes listed problems; at high it cost as much as the plan)
+    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS }); // (medium: it fixes listed problems; at high it cost as much as the plan)
     const B2 = plan(r);
     // a repeat opening after the repair is a warning: the video still goes on
     const opening = openingProblems(B2.conv.layout, lastOpening);
@@ -787,8 +797,8 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const wordsCheck = (script) => {
     const rt = retargetCues(layout, script.sentences); layout = rt.layout;
     const cues = cuesOf(), P = [];
-    for (const s of script.sentences) for (const p of sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums })) P.push(`${s.role}: ${p}`);
-    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }));
+    for (const s of script.sentences) for (const p of guard("sentence check", () => sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums }), BUGS, [])) P.push(`${s.role}: ${p}`);
+    P.push(...guard("script check", () => checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }), BUGS, []));
     const n = script.sentences.reduce((k, s) => k + wordCount(s.text), 0), L = LENGTH[lengthSec];
     // (the length as guidance for a rewrite that runs for something else; and a visible-consequence line whose picture shows
     // it is no reason to rewrite: the free swimming pool run of 2026-10-29 rewrote for it and came back too long)
@@ -850,7 +860,15 @@ export async function rewordBeats({ apiKey, topic, script, layout, failing, log,
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
+export async function planTopic(args) {
+  // the bookkeeping bugs met on the way: out of the problems (they never fail a plan), into the trace and the warnings
+  const bugs = (BUGS = []);
+  const r = await planTopicRaw(args);
+  const problems = splitBugs(r.problems, bugs), seen = [...new Set(bugs)];
+  if (seen.length) { r.trace.push({ label: "bookkeeping bugs (skipped)", bugs: seen }); logBugs(seen, "plan"); }
+  return { ...r, problems, warnings: [...r.warnings, ...seen.map((b) => `BUG (ours, skipped): ${b}`)], bugs: seen };
+}
+async function planTopicRaw({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -901,7 +919,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     // a new topic whose problems still don't chain and escalate after the repair is refused (the owner's rule): it stops
     // here as a plan that didn't pass (refunded), before the fact-check, the scene and the voice are paid for. The script
     // goes into the error, so the owner's Details show what was refused.
-    const chainLeft = saved ? [] : chainProblems(script, { strict: true, lengthSec });
+    const chainLeft = saved ? [] : guard("chain check", () => chainProblems(script, { strict: true, lengthSec, bugs: BUGS }), BUGS, []);
     if (chainLeft.length) throw Object.assign(new Error(`the script's story does not chain: ${chainLeft.join("; ")}\n\nThe script:\n${(script.sentences ?? []).map((x, i) => `${i + 1}. ${x.text}`).join("\n")}`), { code: "PLAN_FAILED", retryable: false });
 
     // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive). A saved layout

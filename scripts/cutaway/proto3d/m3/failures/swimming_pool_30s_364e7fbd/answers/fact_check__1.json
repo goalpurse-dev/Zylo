@@ -1,0 +1,93 @@
+{
+ "hash": "*",
+ "by": "real run 364e7fbd-6ceb-4053-b9f0-739c8cb71534",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "A typical backyard pool holds roughly 15,000 to 20,000 gallons of water.",
+    "why": "Vita Filters says the average residential pool holds 15,000-20,000 gallons, and Swimming Pool Steve gives 17,280 gallons for a 16'x32' pool. Above-ground pools run smaller, about 13,500 gallons. The sources are industry ones only.",
+    "sources": [
+     {
+      "url": "https://www.vitafilters.com/blogs/news/how-many-gallons-are-in-my-pool",
+      "title": "How Many Gallons Is My Pool"
+     },
+     {
+      "url": "https://www.swimmingpoolsteve.com/pages/average-pool.html",
+      "title": "What Is The Average Pool Size?"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Many in-ground pool shells are gunite or shotcrete, which is concrete sprayed through a hose. Gunite is the dry-mix version and shotcrete the wet-mix version.",
+    "why": "The sources support the sprayed-concrete description but give no market-share data, so \"most\" is unsupported. Vinyl-liner and fiberglass in-ground pools also exist.",
+    "sources": [
+     {
+      "url": "https://articles.bluehaven.com/what-is-a-gunite-swimming-pool",
+      "title": "What Is a Gunite Pool? Cost, Considerations & Why It’s the Best Option"
+     },
+     {
+      "url": "https://www.hotspringspools.net/blog/what-is-a-gunite-pool",
+      "title": "What Is a Gunite Pool? A Carolinas Builder's Guide"
+     },
+     {
+      "url": "https://www.ferraripools.com/post/what-is-a-gunite-swimming-pool-a-complete-homeowner-guide",
+      "title": "What Is a Gunite Swimming Pool? A Complete Homeowner Guide"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "A residential pool pump is typically sized to turn over the pool's water about once every 6 to 8 hours (some retailers say 8 to 10). Public pools are held to faster turnover, with the CDC Model Aquatic Health Code targeting 6 hours.",
+    "why": "The 8-hour figure is common but not a single fixed standard. Sources range from 6-8 to 8-10 hours. The 6-hour MAHC figure is secondhand, from AJ Designer.",
+    "sources": [
+     {
+      "url": "https://www.thepoolnerd.com/pool-pump-size-calculator",
+      "title": "Pool Pump Size Calculator: What Size Pump Does Your Pool Need?"
+     },
+     {
+      "url": "https://www.ajdesigner.com/swimming-pool/",
+      "title": "Swimming Pool Water Maintenance Calculator"
+     },
+     {
+      "url": "https://longhornpools.com/pool-turnover-rate-problems/",
+      "title": "Homeowners: Measure GPM First to Fix Pool Turnover Rate Problems"
+     },
+     {
+      "url": "https://poolpartstogo.com/blogs/articles/how-many-times-does-pool-water-need-to-be-turned-over",
+      "title": "How Many Times Does Pool Water Need to Be Turned Over?"
+     },
+     {
+      "url": "https://www.swimuniversity.com/run-pool-pump/",
+      "title": "How Long Should I Run My Pool Pump Every Day?"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "The strong chlorine smell at pools comes from chloramines, chlorine that has bonded with sweat, urine and oils.",
+    "why": "The CDC says the chlorine smell is probably chloramines. Industry sources (Mavaquadoc) describe them as forming when chlorine binds to sweat, oils and urine.",
+    "sources": [
+     {
+      "url": "https://www.cdc.gov/healthy-swimming/prevention/preventing-eye-irritation-from-pool-chemicals.html",
+      "title": "Preventing Eye Irritation from Pool Chemicals"
+     },
+     {
+      "url": "https://www.mavaquadoc.com/blogs/pool-maintenance-blog/pool-chlorine-smell-fix-chloramines-2026",
+      "title": "Why Does My Pool Smell Like Chlorine and What to Do About It"
+     },
+     {
+      "url": "https://www.healthypools.org/hygiene-and-health/",
+      "title": "Hygiene and Health - PHTA Healthy Pools"
+     }
+    ]
+   }
+  ]
+ }
+}

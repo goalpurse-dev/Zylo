@@ -1,7 +1,7 @@
 // M2: the voice for a planned script: one ElevenLabs take with Eric's approved livelier settings (stability 0.3,
 // style 0.45, speed 1.1), then the free re-time by real silences (voiceSilence.mjs: pauses shrunk or padded to the
-// creator's, speech never sped up). Paid: the character cost x $0.0002, refused above `capUsd`. A take that already
-// exists in the folder is re-used, never paid for twice.
+// creator's, speech never sped up). Paid: the character cost x $0.0002, never refused for money (the plan is made by
+// then). A take that already exists in the folder is re-used, never paid for twice.
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -17,12 +17,17 @@ const PER_CHAR = 0.0002;
 // approved model at about $0.025 more a video.
 // Every take is transcribed locally and compared word by word with the script (voiceCheck.mjs, free). A failing take is
 // paid for again once; a second failure stops the video (the user is refunded).
-export async function makeVoice({ text, out, ff, wt, capUsd = 0.4, log, sectionWords = [], model = "eleven_multilingual_v2", check = true, python = process.env.PYTHON ?? "python" }) {
+// a narration this long is a runaway plan, not a video (a 60 s one is about 1,400 characters). There is no money cap on
+// the voice: once the plan is made it always runs (the owner's rule of 2026-10-29). A $0.40 cap here refused every
+// 60 s voice before the call, and its plain error was retried as ours: the swimming pool 60 s run of 2026-10-29 then
+// paid for its whole plan a second time.
+export const VOICE_MAX_CHARS = 4000;
+export async function makeVoice({ text, out, ff, wt, log, sectionWords = [], model = "eleven_multilingual_v2", check = true, python = process.env.PYTHON ?? "python" }) {
   fs.mkdirSync(out, { recursive: true });
   const raw = path.join(out, "raw.mp3"), rawWords = path.join(out, "raw.words.json"), final = path.join(out, "voice.mp3");
   let usd = 0;
   const take = async () => {
-    if (text.length * PER_CHAR * 2 > capUsd) throw new Error(`voice: worst case $${(text.length * PER_CHAR * 2).toFixed(3)} (two takes) is over the $${capUsd} cap`);
+    if (text.length > VOICE_MAX_CHARS) throw Object.assign(new Error(`voice: the narration is ${text.length} characters (a runaway plan; at most ${VOICE_MAX_CHARS})`), { code: "PLAN_FAILED", retryable: false });
     // the free harness: a recorded take or a free local one, never ElevenLabs (providers.mjs)
     if (!REPLAY) allow("voice");
     if (REPLAY) { const r = replayVoice({ text, mp3: raw, ff, log }); fs.writeFileSync(rawWords, JSON.stringify(r.words)); fs.writeFileSync(path.join(out, "voice.json"), JSON.stringify({ text, model, chars: text.length, replay: true, simulatedUsd: r.simulatedUsd }, null, 1)); return; }

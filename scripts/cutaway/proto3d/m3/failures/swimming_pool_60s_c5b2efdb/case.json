@@ -1,0 +1,64 @@
+{
+ "runId": "c5b2efdb-6b0d-4650-b37f-9cf7a45e98b7",
+ "topic": "swimming pool",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-10-29T22:31:46.561602+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: chain: no entry for problem sentence 3",
+  "stage": "scene",
+  "attempts": 2
+ },
+ "costUsd": 1.72236,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "chain: no entry for problem sentence 3"
+ ],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.51106,
+   "outputTokens": 44998,
+   "at": "2026-10-29T22:46:42.676Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.13823,
+   "outputTokens": 2921,
+   "at": "2026-10-29T22:47:12.523Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02488,
+   "outputTokens": 1290,
+   "at": "2026-10-29T22:47:20.891Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01468,
+   "outputTokens": 729,
+   "at": "2026-10-29T22:47:25.774Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.02216,
+   "outputTokens": 1580,
+   "at": "2026-10-29T22:47:36.374Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01373,
+   "outputTokens": 725,
+   "at": "2026-10-29T22:47:42.521Z"
+  }
+ ]
+}

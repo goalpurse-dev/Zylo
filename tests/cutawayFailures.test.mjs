@@ -1,0 +1,74 @@
+// Real failures, replayed free (the owner's rule of 2026-10-30: the same bug never costs money twice). Each folder in
+// scripts/cutaway/proto3d/m3/failures is a failed production run's recorded replies (m3/failureCase.mjs); its plan is
+// replayed through the planner here, and the whole video by m3/replayFailures.mjs (the harness).
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { chainProblems } from "../scripts/cutaway/proto3d/m2/chain.js";
+import { guard, isBug, splitBugs } from "../scripts/cutaway/proto3d/m2/bookkeeping.js";
+
+const M3 = path.join(path.dirname(fileURLToPath(import.meta.url)), "../scripts/cutaway/proto3d/m3");
+const FAILURES = path.join(M3, "failures");
+
+for (const name of fs.existsSync(FAILURES) ? fs.readdirSync(FAILURES).sort() : []) {
+  const c = JSON.parse(fs.readFileSync(path.join(FAILURES, name, "case.json"), "utf8"));
+  test(`real failure ${name} (${c.topic}, ${c.lengthSec} s, ${c.failed.code} after $${c.costUsd}): its plan passes, free`, () => {
+    const p = spawnSync(process.execPath, [path.join(M3, "replayPlan.mjs"), path.join(FAILURES, name)], { encoding: "utf8", timeout: 240000 });
+    const line = (p.stdout ?? "").split("\n").find((l) => l.startsWith("RESULT "));
+    assert.ok(line, `no result: ${(p.stderr ?? "").slice(-800)}`);
+    const r = JSON.parse(line.slice(7));
+    assert.equal(r.error ?? null, null, r.error);
+    assert.equal(r.pending, null, `it asks a paid call the real run never made: ${r.pending}`);
+    assert.deepEqual(r.problems, [], `it still stops: ${r.problems.join("; ")}`);
+  });
+}
+
+test("chain: a 60 s plan's \"But now…\" stakes line is not a problem, its \"Then a storm…\" problem3 is (swimming pool, 2026-10-29)", () => {
+  const S = [["hook", "If you dig a hole in the yard and fill it with water, you have a pool."], ["problem", "But the water soaks into the soil and leaks away."], ["stakes", "But now the wet walls slump in, since soil is heavy."],
+    ["fix1", "So you pour a concrete floor and walls."], ["fix2", "So you fill the shell with water."], ["problem2", "But now the water turns green in the sun."], ["problem3", "Then a storm blows leaves and mud in, and the water gets murkier."], ["fix3", "So you add chlorine."], ["name", "This is a swimming pool."]]
+    .map(([role, text]) => ({ role, text }));
+  const chain = [{ problem: 1, causedBy: -1, shows: "water seeps down through the soil", stakes: "the pool never holds water", size: 4 }, { problem: 5, causedBy: 4, shows: "the clear water turns green", stakes: "swimmers cannot see", size: 6 }, { problem: 6, causedBy: 4, shows: "a storm drops mud into the water", stakes: "the pool turns filthy", size: 8 }];
+  const bugs = [];
+  assert.deepEqual(chainProblems({ sentences: S, chain }, { strict: false, lengthSec: 60, bugs }), []);
+  assert.deepEqual(bugs, []);
+  // an entry the chain lacks is our bookkeeping: logged, never a problem
+  const left = [];
+  assert.deepEqual(chainProblems({ sentences: S, chain: chain.slice(0, 2) }, { strict: false, lengthSec: 60, bugs: left }), []);
+  assert.match(left.join(), /no entry for problem sentence 6 \(problem3\)/);
+});
+
+test("a retry replays the earlier attempt's paid planner replies, and the run keeps why each attempt failed (swimming pool 60 s: planned twice, $1.59, attempt 1's error lost)", async () => {
+  const { jobFor, paths } = await import("../supabase/functions/_shared/cutaway/jobs.js");
+  const { failOrRetry } = await import("../supabase/functions/_shared/cutaway/orchestrate.js");
+  const run = { id: "r1", user_id: "u", env: "test", topic: "swimming pool", length_sec: 60, kind: "custom", attempt: 1, provider: "runpod", status: "scene", plan_ready: false };
+  assert.match(paths(run).plan.steps, /\/plan\/steps\.json$/);
+  const urls = { planPut: { steps: "put-steps" }, resume: "get-steps" };
+  assert.equal(jobFor(run, { role: "video", urls }).plan.resume, undefined, "a first attempt replays nothing");
+  assert.equal(jobFor({ ...run, attempt: 2 }, { role: "video", urls }).plan.resume, "get-steps");
+  assert.equal(jobFor({ ...run, attempt: 2 }, { role: "video", urls }).plan.put.steps, "put-steps", "and keeps its own for the next");
+  const r1 = failOrRetry(run, { code: "RENDER_FAILED", message: "TypeError: x is undefined" });
+  assert.equal(r1.patch.attempt, 2);
+  assert.match(r1.patch.error_message, /^attempt 1: RENDER_FAILED TypeError: x is undefined/);
+  const r2 = failOrRetry({ ...run, ...r1.patch }, { code: "PLAN_FAILED", message: "the plan did not pass: a content problem", retryable: false });
+  assert.match(r2.patch.error_message, /^the plan did not pass: a content problem\n\nEarlier: attempt 1: RENDER_FAILED TypeError/);
+});
+
+test("the voice has no money cap: a 60 s narration is voiced (attempt 1 of the swimming pool 60 s run was refused before the call by a $0.40 cap, then retried and re-planned)", async () => {
+  const { VOICE_MAX_CHARS } = await import("../scripts/cutaway/proto3d/m2/voice.mjs");
+  const src = fs.readFileSync(path.join(M3, "../m2/voice.mjs"), "utf8");
+  assert.doesNotMatch(src, /capUsd/);
+  assert.ok(VOICE_MAX_CHARS >= 2 * 1400, "well above a 60 s narration (about 1,400 characters)");
+});
+
+test("bookkeeping never fails a run: a mismatch or a crashed check is a logged bug, a content problem stays a problem", () => {
+  for (const p of ["chain: no entry for problem sentence 3", "surprise \"A pool holds 83 tons…\": no beat fix9", "beat finish: the script has no sentence with that role", "card \"83 TONS\": the word \"83\" is not in sentence 5", "fix2: no such sentence", "layout check crashed: Cannot read properties of undefined (reading 'x0')"]) assert.ok(isBug(p), p);
+  for (const p of ["problem \"But the pool…\" is not something you can see happen: say the visible consequence", "the story needs at least 3 problems (\"But…\" sentences), each caused by the fix before it; it has 2", "chain: every problem must be bigger than the one before (sizes 4, 3)"]) assert.ok(!isBug(p), p);
+  const bugs = [];
+  assert.deepEqual(splitBugs(["chain: no entry for problem sentence 3", "the hook is 30 words"], bugs), ["the hook is 30 words"]);
+  assert.deepEqual(guard("timeline check", () => { throw new TypeError("x is undefined"); }, bugs, () => ({ problems: [] })), { problems: [] });
+  assert.equal(bugs.length, 2);
+  assert.match(bugs[1], /^timeline check crashed: x is undefined/);
+});
