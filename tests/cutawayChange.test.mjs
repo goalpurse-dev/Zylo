@@ -167,3 +167,11 @@ test("the finish completes the thing itself: topic props in any setting, generic
   assert.ok(!beatPlanProblems(L("bench", "How a Park Bench Works"), {}, 30).some((p) => /finish adds/.test(p)), "a topic about the thing may add it");
   assert.ok(GENERIC_DECOR.includes("pottedPlant"));
 });
+
+test("every production job carries its run's spending limit, and the worker hands it to the pipeline", async () => {
+  const { jobFor, runCapFor, RUN_CAP_USD } = await import("../supabase/functions/_shared/cutaway/jobs.js");
+  assert.equal(runCapFor({ kind: "custom", length_sec: 30 }), RUN_CAP_USD.custom30); assert.equal(runCapFor({ kind: "custom", length_sec: 60 }), RUN_CAP_USD.custom60); assert.equal(runCapFor({ kind: "premade", length_sec: 30 }), RUN_CAP_USD.premade);
+  assert.equal(jobFor({ id: "r", kind: "custom", length_sec: 60, topic: "x" }, { role: "video", mode: "gpu", urls: { planPut: "p", final: "f" }, callback: "c" }).capUsd, 1.2);
+  assert.ok(4 * RUN_CAP_USD.custom30 + RUN_CAP_USD.custom60 <= 4.0001, "the owner's launch batch fits its $4");
+  assert.match(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m3/videoJob.mjs", import.meta.url), "utf8"), /maxUsd: Number\(job\.capUsd\) \|\| Infinity/);
+});
