@@ -43,7 +43,7 @@ test("the 12-hour open check: under the rate stops, at or over it does not, noth
 
 test("the sender: seed copies only for waiting days, once, real subject; open check stops later days of the series", () => {
   const src = read("supabase/functions/campaign-sender/index.ts");
-  assert.match(src, /from\("email_campaigns"\)\.select\("\*"\)\.eq\("status", "waiting"\)\.not\("seed_to", "is", null\)\.is\("seed_sent_at", null\)/);
+  assert.match(src, /from\("email_campaigns"\)\.select\("\*"\)\.in\("status", \["waiting", "approved"\]\)\.not\("seed_to", "is", null\)\.is\("seed_sent_at", null\)/);
   assert.match(src, /update\(\{ seed_sent_at: now\.toISOString\(\) \}\)\.eq\("id", c\.id\)\.is\("seed_sent_at", null\)/);
   assert.match(src, /await test\(c\.id, c\.seed_to, \{ asSent: true \}\)/);
   assert.match(src, /\.like\("id", `\$\{series\}%`\)\.in\("status", \["waiting", "approved"\]\)\.gt\("starts_at", c\.starts_at\)/);

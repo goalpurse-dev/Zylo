@@ -160,11 +160,12 @@ async function tick() {
   return out;
 }
 
-// The seed copy of a waiting day: once, at seed_at, the real email (real subject) to seed_to. One
+// The seed copy of a day that has not started: once, at seed_at, the real email (real subject) to seed_to. One
 // that could not go within 2 hours of its time is dropped, never sent late; the owner is told.
 async function seedCopies(out: Record<string, string>) {
   const now = new Date();
-  const { data: due } = await sb.from("email_campaigns").select("*").eq("status", "waiting").not("seed_to", "is", null).is("seed_sent_at", null).lte("seed_at", now.toISOString());
+  // Also for a day the owner approved ahead (owner, 2026-10-29: "the seed still goes, send even if it lands in spam").
+  const { data: due } = await sb.from("email_campaigns").select("*").in("status", ["waiting", "approved"]).not("seed_to", "is", null).is("seed_sent_at", null).lte("seed_at", now.toISOString());
   for (const c of due ?? []) {
     const { data: mine } = await sb.from("email_campaigns").update({ seed_sent_at: now.toISOString() }).eq("id", c.id).is("seed_sent_at", null).select("id");
     if (!mine?.length) continue; // another call sent it

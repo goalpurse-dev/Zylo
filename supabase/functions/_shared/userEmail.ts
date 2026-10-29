@@ -33,7 +33,8 @@ export async function unsubscribeLinks(userId: string): Promise<{ pageUrl: strin
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const token = b64url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`unsub:${userId}`))));
   const q = `u=${encodeURIComponent(userId)}&t=${token}`;
-  return { pageUrl: `${APP_URL}/unsubscribe?${q}`, oneClickUrl: `${Deno.env.get("SUPABASE_URL")}/functions/v1/email-unsubscribe?${q}` };
+  // One-click goes to our own domain (owner, 2026-10-29), which passes it on to the email-unsubscribe function.
+  return { pageUrl: `${APP_URL}/unsubscribe?${q}`, oneClickUrl: `${APP_URL}/api/email-unsubscribe?${q}` };
 }
 
 // Step 1: ask the gate. Nothing may be sent without an ok claim.

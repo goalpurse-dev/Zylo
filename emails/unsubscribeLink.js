@@ -10,11 +10,13 @@ export function unsubscribeToken(userId, secret) {
 }
 
 // pageUrl: the footer link (tryzyvo.com/unsubscribe — unsubscribes on open, with Undo).
-// oneClickUrl: the List-Unsubscribe header target (RFC 8058 one-click POST).
+// oneClickUrl: the List-Unsubscribe header target (RFC 8058 one-click POST): api/email-unsubscribe.js,
+// which passes it on to the email-unsubscribe function (supabaseUrl is no longer used here).
 export function unsubscribeLinks(userId, { secret, supabaseUrl, app = "https://tryzyvo.com" }) {
   const q = `u=${encodeURIComponent(userId)}&t=${unsubscribeToken(userId, secret)}`;
   return {
     pageUrl: `${app}/unsubscribe?${q}`,
-    oneClickUrl: `${supabaseUrl}/functions/v1/email-unsubscribe?${q}`,
+    // On our own domain (owner, 2026-10-29): www, because tryzyvo.com answers a POST with a redirect.
+    oneClickUrl: `https://www.tryzyvo.com/api/email-unsubscribe?${q}`,
   };
 }
