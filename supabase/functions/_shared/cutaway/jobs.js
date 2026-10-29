@@ -42,10 +42,10 @@ export function sameToken(a, b) {
  * A job for the worker. urls: signed URLs the server made for this job ({ planPut, planGet, frames, final, web, poster,
  * segment, segments }); layout: an approved layout to reuse (premade), or null.
  */
-// The most one attempt may spend on paid calls (the worker refuses a call that could pass it before sending it, code
-// BUDGET, refunded). The owner's launch test of 2026-10-29 capped its batch at $4 inside each run; real custom runs cost
-// $0.38-0.52 (30 s), a premade about $0.10.
-export const RUN_CAP_USD = Object.freeze({ premade: 0.6, custom30: 0.7, custom60: 1.2 });
+// The most one attempt may spend on OPTIONAL paid calls: an emergency brake, not a budget (the owner's rule of 2026-10-29:
+// the swimming pool was stopped by a $0.70 cap at its preview check, after everything costly was paid). Well under what
+// customers pay (custom $2.72 / $3.90); the final steps (the voice, the first preview check, the post text) always run.
+export const RUN_CAP_USD = Object.freeze({ premade: 0.6, custom30: 1.5, custom60: 2.2 });
 export const runCapFor = (run) => (run.kind === "custom" ? (Number(run.length_sec) >= 60 ? RUN_CAP_USD.custom60 : RUN_CAP_USD.custom30) : RUN_CAP_USD.premade);
 
 export function jobFor(run, { role, mode, urls, callback, layout = null, chunk = null, library = null }) {

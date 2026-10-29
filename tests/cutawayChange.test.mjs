@@ -171,8 +171,8 @@ test("the finish completes the thing itself: topic props in any setting, generic
 test("every production job carries its run's spending limit, and the worker hands it to the pipeline", async () => {
   const { jobFor, runCapFor, RUN_CAP_USD } = await import("../supabase/functions/_shared/cutaway/jobs.js");
   assert.equal(runCapFor({ kind: "custom", length_sec: 30 }), RUN_CAP_USD.custom30); assert.equal(runCapFor({ kind: "custom", length_sec: 60 }), RUN_CAP_USD.custom60); assert.equal(runCapFor({ kind: "premade", length_sec: 30 }), RUN_CAP_USD.premade);
-  assert.equal(jobFor({ id: "r", kind: "custom", length_sec: 60, topic: "x" }, { role: "video", mode: "gpu", urls: { planPut: "p", final: "f" }, callback: "c" }).capUsd, 1.2);
-  assert.ok(4 * RUN_CAP_USD.custom30 + RUN_CAP_USD.custom60 <= 4.0001, "the owner's launch batch fits its $4");
+  assert.equal(jobFor({ id: "r", kind: "custom", length_sec: 60, topic: "x" }, { role: "video", mode: "gpu", urls: { planPut: "p", final: "f" }, callback: "c" }).capUsd, 2.2);
+  assert.ok(RUN_CAP_USD.custom30 < 2.72 && RUN_CAP_USD.custom60 < 3.9, "an emergency brake well under what customers pay");
   assert.match(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m3/videoJob.mjs", import.meta.url), "utf8"), /maxUsd: Number\(job\.capUsd\) \|\| Infinity/);
 });
 
@@ -188,4 +188,13 @@ test("a target never fails a run: word and beat counts guide, far over drops the
   assert.deepEqual(d.script.chain.map((c) => c.problem), [1, 9], "the chain follows its sentences");
   // over the beat cap alone (13 > 12): one pair out, never a refusal
   assert.deepEqual(dropBeats({ layout, lengthSec: 30 }).dropped, ["myth", "mythFact"]);
+});
+
+test("the cap is an emergency brake: the final steps (the voice, the first preview check, the post text) are never refused; repairs and their looks are", async () => {
+  const B = await import("../scripts/cutaway/proto3d/m2/budget.mjs");
+  B.setRunCap(0.7); B.add(0.69);
+  for (const l of ["voice", "vision check", "vision check (re-ask)", "post text"]) assert.doesNotThrow(() => B.allow(l), l);
+  for (const l of ["preview repair", "repair look", "beats repair"]) assert.throws(() => B.allow(l), /cap/, l);
+  const job = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m3/videoJob.mjs", import.meta.url), "utf8");
+  assert.match(job, /whatever the stop, what was made is kept/); assert.match(job, /JSON\.stringify\(\{ \.\.\.script, failed: true, trace, report, vision, spend \}\)/);
 });

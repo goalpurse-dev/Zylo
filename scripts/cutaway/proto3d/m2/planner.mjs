@@ -697,7 +697,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   let B = plan(r);
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
-    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: 64000 }); // (medium: it fixes listed problems; at high it cost as much as the plan)
     const B2 = plan(r);
     // a repeat opening after the repair is a warning: the video still goes on
     const opening = openingProblems(B2.conv.layout, lastOpening);
@@ -996,7 +996,7 @@ export async function repairLayout({ apiKey, topic, script, layout, problems, lo
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {
-    r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "high", maxTokens: 64000,
+    r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "medium", maxTokens: 64000,
       user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is. Return ONLY what changes, as sceneJson = {\"beats\": [each beat you change, whole, with its s], \"parts\": [each part you change or add, whole, with its id], \"world\": {only the world keys you change}}; leave out everything that stays the same.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
   }

@@ -187,7 +187,7 @@ const VISION_SYSTEM = `Each sentence comes as ONE image: a strip of up to 3 fram
 const VISION_SYSTEM_ONE = `When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
 
 /** 2b. the vision check (paid: about $0.01 per frame at 540x960). multi: false = the one-frame check (premade) */
-export async function visionCheck({ apiKey, frames, log, model, multi = true }) {
+export async function visionCheck({ apiKey, frames, log, model, multi = true, label: L0 = "vision check" }) {
   const ask = async (fs0, label) => {
     const content = [];
     for (const f of fs0) {
@@ -199,13 +199,13 @@ export async function visionCheck({ apiKey, frames, log, model, multi = true }) 
     // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
     return { r, judged: fs0.map((f0, i) => { const f = r.data.frames?.[i]; return f ? { ...f, role: f0.role, t: f0.t } : { role: f0.role, t: f0.t, ok: false, seen: "", problem: "" }; }) };
   };
-  const first = await ask(frames, "vision check");
+  const first = await ask(frames, L0);
   let judged = first.judged, cost = first.r.costUsd;
   // an empty verdict (no answer for a frame, nothing seen and no problem) is asked again once, never counted as a failure
   // (the paid traffic light check of 2026-10-28 failed a frame on one)
   const blank = judged.map((f, i) => (!f.ok && !String(f.seen ?? "").trim() && !String(f.problem ?? "").trim() ? i : -1)).filter((i) => i >= 0);
   if (blank.length) {
-    const again = await ask(blank.map((i) => frames[i]), "vision check (re-ask)");
+    const again = await ask(blank.map((i) => frames[i]), `${L0} (re-ask)`);
     cost += again.r.costUsd;
     blank.forEach((i, k) => { const g = again.judged[k]; judged[i] = !g.ok && !String(g.seen ?? "").trim() && !String(g.problem ?? "").trim() ? { ...g, ok: true, seen: "(no verdict twice: not counted)" } : g; });
   }
