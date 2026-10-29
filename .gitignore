@@ -22,3 +22,6 @@ emails/.preview/
 
 # Seamless-niche research scratch (frames, audio, test runs)
 research/seamless-niche/work/
+
+# Content Machine reference-video inbox: videos are never committed
+content/reference-videos/
