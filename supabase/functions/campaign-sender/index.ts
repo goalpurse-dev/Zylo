@@ -13,7 +13,9 @@
 //      address, then the email gate (claim_email_send, as marketing), then the
 //      send through _shared/userEmail.ts
 //   3. nothing left → done, and the owner gets the numbers by email
-// A campaign in status "waiting" is never touched: the owner has not said go.
+// A campaign in status "waiting" is never sent: the owner has not said go. Only its seed copy goes
+// out (seed_to at seed_at, owner 2026-10-29), so the owner can see where the real email lands.
+// min_open_rate: 12 hours after a day started, opens under it stop every later day of the series.
 //   POST { action: "tick" }                         the cron call
 //   POST { action: "test", campaign, to }           ONE proof copy to one address (subject "[TEST] …")
 //        + asSent: true   the subject exactly as users got it (owner, 2026-10-28: a spam-placement check)
@@ -21,7 +23,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, ownerEmailsFrom, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
 import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
@@ -152,8 +154,48 @@ async function tick() {
     out[c.id] = await sendOne(c, def);
     if (out[c.id] === "nothing_due" && n.queued === 0) { await finish(c, "done", null); out[c.id] = "done"; }
   }
+  await seedCopies(out);
+  await openChecks(out);
   await followUpReports(out);
   return out;
+}
+
+// The seed copy of a waiting day: once, at seed_at, the real email (real subject) to seed_to. One
+// that could not go within 2 hours of its time is dropped, never sent late; the owner is told.
+async function seedCopies(out: Record<string, string>) {
+  const now = new Date();
+  const { data: due } = await sb.from("email_campaigns").select("*").eq("status", "waiting").not("seed_to", "is", null).is("seed_sent_at", null).lte("seed_at", now.toISOString());
+  for (const c of due ?? []) {
+    const { data: mine } = await sb.from("email_campaigns").update({ seed_sent_at: now.toISOString() }).eq("id", c.id).is("seed_sent_at", null).select("id");
+    if (!mine?.length) continue; // another call sent it
+    if (Date.parse(c.seed_at) < now.getTime() - 2 * 3600_000) {
+      await alertAdmin(`Zyvo campaign ${c.id}: seed copy NOT sent (it is over 2 hours late)`, `The seed copy was due at ${c.seed_at}. Nothing was sent.`, "campaign");
+      out[`${c.id}:seed`] = "too late, not sent"; continue;
+    }
+    const r = await test(c.id, c.seed_to, { asSent: true });
+    out[`${c.id}:seed`] = r.sent ? "sent" : `not sent: ${r.reason}`;
+    if (!r.sent) await alertAdmin(`Zyvo campaign ${c.id}: seed copy FAILED (${r.reason})`, `The seed copy to the test inbox could not be sent: ${r.reason}.`, "campaign");
+  }
+}
+
+// 12 hours after a day with min_open_rate started: opens under it → every later day of the same
+// series (same id without its trailing number) that has not started is stopped, and the owner is told.
+async function openChecks(out: Record<string, string>) {
+  const cutoff = new Date(Date.now() - 12 * 3600_000).toISOString();
+  const { data: due } = await sb.from("email_campaigns").select("*").not("min_open_rate", "is", null).is("open_check_at", null).in("status", ["sending", "done"]).lte("starts_at", cutoff);
+  for (const c of due ?? []) {
+    const { data: mine } = await sb.from("email_campaigns").update({ open_check_at: new Date().toISOString() }).eq("id", c.id).is("open_check_at", null).select("id");
+    if (!mine?.length) continue;
+    const n = await campaignNumbers(sb, c.id, c.starts_at);
+    const problem = openRateProblem(Number(c.min_open_rate), n);
+    if (!problem) { out[`${c.id}:opens`] = "ok"; continue; }
+    const series = c.id.replace(/\d+$/, "");
+    const { data: stopped } = await sb.from("email_campaigns").update({ status: "stopped", stop_reason: `${c.id}: ${problem}`, finished_at: new Date().toISOString(), followup_report_at: new Date().toISOString() })
+      .like("id", `${series}%`).in("status", ["waiting", "approved"]).gt("starts_at", c.starts_at).select("id");
+    await alertAdmin(`Zyvo campaign ${c.id} STOPPED the later days: ${problem}`,
+      [`${c.id}: ${problem}.`, "", `Stopped, nothing more will be sent: ${(stopped ?? []).map((s: any) => s.id).join(", ") || "(no later days were waiting)"}.`].join("\n"), "campaign");
+    out[`${c.id}:opens`] = `stopped later days: ${problem}`;
+  }
 }
 
 // 48 hours after a campaign ended the owner gets its numbers again: by then the opens, the

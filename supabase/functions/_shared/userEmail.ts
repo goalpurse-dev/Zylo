@@ -22,7 +22,7 @@ const UNSUBSCRIBE_SECRET = () => Deno.env.get("EMAIL_UNSUBSCRIBE_SECRET") ?? "";
 export type EmailCategory = "marketing" | "account" | "test"; // test: a proof copy for the owner (20 a day)
 export type Claim = { ok: true; id: number } | { ok: false; reason: string };
 // Reasons that will never change for this email: don't retry it.
-export const FINAL_REASONS = new Set(["bad_address", "bad_request", "suppressed", "no_consent", "already_sent"]);
+export const FINAL_REASONS = new Set(["bad_address", "bad_request", "suppressed", "no_consent", "already_sent", "unengaged"]);
 
 const b64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 

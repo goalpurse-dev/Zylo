@@ -52,6 +52,19 @@ ${footer.html}
   };
 }
 
+// A plain personal email with NO link at all (owner, 2026-10-29): paragraphs, the signature, the footer.
+// The footer keeps its unsubscribe link: that one is required.
+function plainEmailNoLink(paragraphs, signature) {
+  return (footer) => ({
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#222222;max-width:560px;">
+${paragraphs.map((p) => `<p style="margin:0 0 16px 0;">${esc(p)}</p>`).join("\n")}
+<p style="margin:0;">${esc(signature)}</p>
+${footer.html}
+</div>`,
+    text: `${paragraphs.join("\n\n")}\n\n${signature}\n\n--\n${footer.text}`,
+  });
+}
+
 // The warm-up email, days 1–3 (owner's text). Only the line about when they signed up differs between the days.
 const warmup = (signedUpLine, extra = {}) => ({
   from: SENDERS.niko,
@@ -105,6 +118,23 @@ const stillWantToHear = {
   ], "Niko"),
 };
 
+// The Gmail reputation week (owner, 2026-10-29, after Day 4 landed in spam): plain, no images,
+// no link, no offer; only to the engaged group (public.engaged_group), best first.
+const didYouTry = {
+  from: SENDERS.niko,
+  replyTo: REPLY_TO.niko,
+  subject: "did you get to try it?",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  render: plainEmailNoLink([
+    "Hey,",
+    "It's Niko from Zyvo. Quick check-in.",
+    "Did you get to make a video with Zyvo yet? What kind of page are you making videos for?",
+    "Just hit reply, I read every answer.",
+  ], "Niko"),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -124,7 +154,25 @@ export const CAMPAIGNS = {
   still_want_updates: stillWantToHear,
   still_want_updates_1: stillWantToHear,
   still_want_updates_2: stillWantToHear,
+  // The reputation week, Thu 29 Oct – Wed 4 Nov: 50, 100, 150, 200, 300, 400, 500, 16:00–21:00
+  // Finnish time. A seed copy goes to the owner's test inbox at 15:00; a day sends only after the
+  // owner's "go" (status waiting → approved), and only if the day before went well (depends_on).
+  checkin_day1: didYouTry,
+  checkin_day2: didYouTry,
+  checkin_day3: didYouTry,
+  checkin_day4: didYouTry,
+  checkin_day5: didYouTry,
+  checkin_day6: didYouTry,
+  checkin_day7: didYouTry,
 };
+
+// The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
+// it started → stop. n: campaignNumbers. → the problem in words, or null.
+export function openRateProblem(minRate, n) {
+  if (minRate == null || !n || n.sent === 0) return null;
+  const rate = (n.opened ?? 0) / n.sent;
+  return rate < minRate ? `opens ${(rate * 100).toFixed(1)}% (${n.opened ?? 0} of ${n.sent}) 12 hours after the start, under ${Math.round(minRate * 100)}%` : null;
+}
 
 // The owner's stop rules for a running campaign (2026-10-10):
 //   - any spam complaint                         → stop
