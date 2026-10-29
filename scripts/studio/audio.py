@@ -49,7 +49,7 @@ if engine == "kokoro":
     voices = S["voices"]["kokoro"]
     for ln in lines:
         v = voices[ln["who"]]
-        samples, sr = k.create(ln["text"], voice=v["voice"], speed=v.get("speed", 1.1), lang="en-us")
+        samples, sr = k.create(ln.get("say", ln["text"]), voice=v["voice"], speed=v.get("speed", 1.1), lang="en-us")
         takes.append(trim(resample(np.asarray(samples, dtype=np.float32), sr)))
 elif engine == "eleven":
     for n, ln in enumerate(lines):
@@ -87,7 +87,7 @@ sf.write(os.path.join(out, "voice.wav"), voice, SR)
 # ── 3. word times (local faster-whisper on our own voice track) ───────
 from faster_whisper import WhisperModel
 v16 = resample(voice, SR, 16000)
-segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(v16, word_timestamps=True, vad_filter=False, initial_prompt=" ".join(l["text"] for l in lines))
+segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(v16, word_timestamps=True, vad_filter=False, initial_prompt=" ".join(l.get("say", l["text"]) for l in lines))
 words = [{"w": w.word.strip(), "s": round(w.start, 3), "e": round(w.end, 3)} for s in segs for w in (s.words or [])]
 
 
@@ -97,11 +97,18 @@ def norm(w):
 
 # First choice: the whole video in order. When whisper heard exactly as many words as the script has (hyphen parts
 # counted), each script word takes its heard time; no boundary guessing between close lines.
-all_parts = [(n, i, p) for n, ln in enumerate(lines) for i, sw in enumerate(ln["text"].split()) for p in sw.split("-")]
+# A line may be spoken differently from how it is shown ("say": "Try zyvo dot com" for "tryzyvo.com"): align on
+# what is spoken; then the shown words share that line's real span by their length.
+all_parts = [(n, i, p) for n, ln in enumerate(lines) for i, sw in enumerate(ln.get("say", ln["text"]).split()) for p in sw.split("-")]
 if len(all_parts) == len(words):
     for n, (ln, tl) in enumerate(zip(lines, timed)):
-        sw = ln["text"].split(); idx = [k for k, (m, _, _) in enumerate(all_parts) if m == n]
-        tl["words"] = [{"w": w, "s": min(words[k]["s"] for k in idx if all_parts[k][1] == i), "e": max(words[k]["e"] for k in idx if all_parts[k][1] == i)} for i, w in enumerate(sw)]
+        sw = ln.get("say", ln["text"]).split(); idx = [k for k, (m, _, _) in enumerate(all_parts) if m == n]
+        said = [{"w": w, "s": min(words[k]["s"] for k in idx if all_parts[k][1] == i), "e": max(words[k]["e"] for k in idx if all_parts[k][1] == i)} for i, w in enumerate(sw)]
+        if "say" in ln:
+            shown = ln["text"].split(); a0, a1 = said[0]["s"], said[-1]["e"]; tot = sum(len(w) + 1 for w in shown); acc = 0; tl["words"] = []
+            for w in shown:
+                s0 = a0 + (a1 - a0) * acc / tot; acc += len(w) + 1; tl["words"].append({"w": w, "s": round(s0, 3), "e": round(a0 + (a1 - a0) * acc / tot, 3)})
+        else: tl["words"] = said
         tl["heard"] = " ".join(words[k]["w"] for k in idx); tl["aligned"] = "whole"
 # Otherwise: each heard word belongs to the line whose take holds its midpoint (else the nearest line)
 def owner(w):
@@ -241,10 +248,10 @@ clip = clips[0] if clips else None
 if clip:
     on = next((e["t"] for e in events if e["event"] == "phoneOn"), clip["start"]); off = next((e["t"] for e in events if e["event"] == "wall"), total) + 0.6
     vt0 = max(0.0, clip["in"] + (on - 0.1 - clip["start"])); dur = clip["in"] + (off - clip["start"]) - vt0
-    if S.get("phone_full"): vt0, dur = 0.0, 1e4          # the whole video (several clips of one output)
+    if S.get("phone_full"): vt0, dur = S.get("phone_range", [0.0, 1e4])[0], S.get("phone_range", [0.0, 1e4])[1] - S.get("phone_range", [0.0, 1e4])[0]   # the part of the video used
     pdir = os.path.join(out, "phone"); os.makedirs(pdir, exist_ok=True)
     for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", "-q:v", "3", os.path.join(pdir, "f%05d.jpg")], check=True)
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
 json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)

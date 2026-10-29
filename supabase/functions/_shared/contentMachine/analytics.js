@@ -135,7 +135,8 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
   }
   return {
     totals: totalsOf(rows), byPlatform, byAccount, table, top5, series,
-    averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type") },
+    // Studio videos (owner, 2026-10-30): which CTA variant and which template did better (the A/B test)
+    averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type"), cta: groupAvg("cta").filter((g) => g.key !== "unknown"), template: groupAvg("template").filter((g) => g.key !== "unknown") },
     formula: SCORE_FORMULA, filtered: rows.length, total: all.length,
   };
 }

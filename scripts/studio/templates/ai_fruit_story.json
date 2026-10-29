@@ -136,6 +136,7 @@
   "cards": {
     "step1": {
       "shots": [
+        "story_ideas",
         "story_picked"
       ],
       "crop": [
@@ -152,7 +153,8 @@
     },
     "step2": {
       "shots": [
-        "_settings"
+        "_settings",
+        "before_make_scene_pictures"
       ],
       "crop": [
         236,

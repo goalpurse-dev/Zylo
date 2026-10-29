@@ -368,10 +368,10 @@ export function AnalyticsTab({ extra = null }) {
             )}
           </Card>
           <div className="grid gap-4 lg:grid-cols-3">
-            {[["format", "By format"], ["style", "By style"], ["hook", "By hook"]].map(([k, title]) => (
+            {[["format", "By format"], ["style", "By style"], ["hook", "By hook"], ["cta", "By CTA (Studio videos)"], ["template", "By template (Studio videos)"]].filter(([k]) => (data.averages[k] ?? []).length || ["format", "style", "hook"].includes(k)).map(([k, title]) => (
               <Card key={k} title={title}>
                 <table className="w-full text-left text-[12.5px]"><thead className="text-white/45"><tr><th className="py-1 font-semibold" /><th className="font-semibold">Posts</th><th className="font-semibold">At 24 h</th><th className="font-semibold">Score</th></tr></thead>
-                  <tbody className="divide-y divide-white/[0.06] text-white/85">{data.averages[k].map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td>{g.posts}</td><td className="tabular-nums">{fmt(g.views24)}</td><td className="tabular-nums">{fmt(g.score)}</td></tr>)}</tbody>
+                  <tbody className="divide-y divide-white/[0.06] text-white/85">{(data.averages[k] ?? []).map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td>{g.posts}</td><td className="tabular-nums">{fmt(g.views24)}</td><td className="tabular-nums">{fmt(g.score)}</td></tr>)}</tbody>
                 </table>
               </Card>
             ))}

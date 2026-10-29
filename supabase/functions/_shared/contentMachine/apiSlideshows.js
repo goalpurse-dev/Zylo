@@ -48,13 +48,14 @@ export function cleanLibraryRow(body) {
 
 /** What the page needs to show one idea: slides, recipe, packages, file links (15 minutes), cost. */
 export function ideaView(idea, costs, urls) {
-  const gen = (idea.cm_generations ?? []).find((g) => g.kind === "slideshow") ?? null;
+  // a slideshow, or a Studio video ("making_of": a "how I made this with Zyvo" video, owner 2026-10-30)
+  const gen = (idea.cm_generations ?? []).find((g) => g.kind === "slideshow") ?? (idea.cm_generations ?? []).find((g) => g.kind === "making_of") ?? null;
   const f = gen?.files ?? {};
   const url = (p) => (p ? urls[p] ?? null : null);
   return {
-    id: idea.id, run_id: idea.run_id, status: idea.status, account: idea.account ?? idea.recipe?.account ?? "creator",
+    id: idea.id, run_id: idea.run_id, status: idea.status, account: idea.account ?? idea.recipe?.account ?? "creator", kind: gen?.kind === "making_of" ? "video" : "slideshow",
     // Rendered with older slide templates than today's (zones, sizes): shown as "Outdated" in the Queue.
-    outdated: Boolean(f.pngs?.length) && (gen?.layout_version ?? 0) < LAYOUT_VERSION, created_at: idea.created_at, dry_run: idea.dry_run,
+    outdated: gen?.kind === "slideshow" && Boolean(f.pngs?.length) && (gen?.layout_version ?? 0) < LAYOUT_VERSION, created_at: idea.created_at, dry_run: idea.dry_run,
     title: idea.title, hook: idea.hook, topic: idea.topic, hypothesis: idea.hypothesis, recipe: idea.recipe,
     virality_score: idea.virality_score, compliance: idea.compliance, error: idea.error, source: idea.source,
     slides: idea.script?.slides ?? [], tools_checked: idea.script?.tools_checked ?? [], ai_label_required: Boolean(idea.script?.ai_label_required),
@@ -120,7 +121,7 @@ function cleanLogoRow(body, existing = null) {
 }
 
 // The folders a fresh link may be made for: renders, post screenshots, the asset library, logos, the Zyvo screen.
-export const FRESH_PATH = /^(slideshows|posts|library|logos|assets)\/[A-Za-z0-9/_.\-]+$/;
+export const FRESH_PATH = /^(slideshows|posts|library|logos|assets|studio)\/[A-Za-z0-9/_.\-]+$/;   // studio/: Zyvo Studio videos
 export const FRESH_SECONDS = 300;
 
 export function slideshowActions({ cm, files, kick, store, guard, now }) {

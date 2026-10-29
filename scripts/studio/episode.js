@@ -16,9 +16,12 @@ const T = await (await fetch("/work/timing.json")).json();
 const WALL = await (await fetch("/work/wall.json")).json();
 const CARDS = await (await fetch("/work/cards/cards.json")).json();
 const CFG = await (await fetch("/work/episode.json")).json();   // counter, chips, CTA (from the template config)
+// the payoff, full screen: its frames upscaled 2x locally (Real-ESRGAN, $0) from the original file, lossless PNG
+const HQ = await (await fetch("/work/payoff_hq.json")).json().catch(() => null);
 const { renderer, scene, manager, tl } = setup();
 const loaded = new Promise((r) => (manager.onLoad = r));
 const out = document.getElementById("out"), ctx = out.getContext("2d");
+ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
 const ov = makeOverlay(ctx);
 
 mainStage(scene);
@@ -47,20 +50,29 @@ const desk = new THREE.Group(); desk.position.set(-1.05, 0, -0.25); scene.add(de
 // the result on the phone: exact decoded frames (/work/phone/), its sound is in the mix
 const vc = document.createElement("canvas"), vx = vc.getContext("2d"); vc.width = 720; vc.height = 1280;
 const vtex = new THREE.CanvasTexture(vc); vtex.colorSpace = THREE.SRGBColorSpace; coverFit(vtex, phone.w / phone.h, vc.width, vc.height);
+vtex.generateMipmaps = false; vtex.minFilter = THREE.LinearFilter; vtex.anisotropy = 16;   // no mipmap blur on the real video
 phone.mat.map = vtex; phone.mat.color.setScalar(0.9); phone.mat.needsUpdate = true;
 let shown = 0;
+let hqShown = 0, hqBmp = null;
+async function payoffFrame(vt) {
+  const f = Math.min(HQ.count, Math.max(1, Math.round((vt - HQ.start) * HQ.fps) + 1));
+  if (f !== hqShown) { hqBmp?.close?.(); hqBmp = await createImageBitmap(await (await fetch(`/work/payoff_hq/f${String(f).padStart(5, "0")}.png`)).blob()); hqShown = f; }
+  return hqBmp;
+}
+/** How full-screen the payoff is at t: 0 = on the phone, 1 = full screen (it grows as the camera lands). */
+const fullK = (t) => (!CL.payoff?.fullscreen && !CFG.payoffFullscreen) ? 0 : Math.min(1, Math.max(0, (t - (CL.payoff.start - 0.4)) / 0.4)) * (1 - Math.min(1, Math.max(0, (t - CL.payoff.end) / 0.35)));
 const CL = Object.fromEntries((T.clips ?? []).map((c) => [c.name, c]));
 const DUR = (T.phone.count - 1) / T.phone.fps;
 /** Which moment of the result the phone shows at time t: the hook moment, muted run-on, then the payoff from 0. */
 function videoTime(t) {
-  if (t >= CL.payoff.start - 1.0 && t < CL.payoff.start) return DUR - 1.0 + (t - (CL.payoff.start - 1.0));   // its last second, muted, as the camera arrives
-  if (t >= CL.payoff.start) return Math.min(DUR, t - CL.payoff.start);
+  // the payoff's own lead-in, muted, as the camera arrives: the same moment the full-screen layer grows from (no ghosting)
+  if (t >= CL.payoff.start - 1.0) return Math.min(DUR, CL.payoff.in + (t - CL.payoff.start));
   return ((CL.hook.in + (t - CL.hook.start)) % DUR + DUR) % DUR;
 }
 async function phoneFrame(t) {
   const f = Math.min(T.phone.count, Math.max(1, Math.round(videoTime(t) * T.phone.fps) + 1));
   if (f === shown) return;
-  const bmp = await createImageBitmap(await (await fetch(`/work/phone/f${String(f).padStart(5, "0")}.jpg`)).blob());
+  const bmp = await createImageBitmap(await (await fetch(`/work/phone/f${String(f).padStart(5, "0")}.png`)).blob());
   vx.drawImage(bmp, 0, 0, vc.width, vc.height); bmp.close(); vtex.needsUpdate = true; shown = f;
 }
 
@@ -146,11 +158,22 @@ window.renderAt = async (t) => {
   if (cf && cf.f.file !== lastLap) { const im = cardImg[cf.f.file]; lx.fillStyle = "#0b0c0e"; lx.fillRect(0, 0, 860, 540); const h = 540, w = h * cf.c.aspect; lx.drawImage(im, (860 - w) / 2, 0, w, h); ltex.needsUpdate = true; lastLap = cf.f.file; }
   let cam = cameraAt(t);
   const nsub = cam.moving ? SUB : 1;
-  for (let i = 0; i < nsub; i++) { const ts = nsub === 1 ? t : t + (i / (nsub - 1) - 0.5) * (0.5 / 30); cam = setState(ts); comp.render(); ctx.globalAlpha = 1 / (i + 1); ctx.drawImage(renderer.domElement, 0, 0); }
+  for (let i = 0; i < nsub; i++) { const ts = nsub === 1 ? t : t + (i / (nsub - 1) - 0.5) * (0.5 / 30); cam = setState(ts); comp.render(); ctx.globalAlpha = 1 / (i + 1); ctx.drawImage(renderer.domElement, 0, 0, W, H); }
   ctx.globalAlpha = 1; cam = setState(t);
   const where = cam.moving ? `${cam.step.kind} ${cam.step.from}->${cam.step.to}` : `hold on ${cam.step.at}`;
 
   // overlays
+  // the payoff: the real result grows out of the phone to full screen (sharp: drawn in 2D from the upscaled frames)
+  const fk = HQ ? fullK(t) : 0;
+  if (fk > 0) {
+    const bmp = await payoffFrame(CL.payoff.in + Math.max(0, Math.min(t, CL.payoff.end - 0.01) - CL.payoff.start));
+    const sc = 1.06, fw = W * sc, fh = fw * 16 / 9, full = { x0: (W - fw) / 2, y0: -120, x1: (W + fw) / 2, y1: -120 + fh };   // its own captions land at y ~1467, inside the zone
+    const from = screenBox(phone.screen, camera) ?? { x0: W * 0.3, y0: H * 0.3, x1: W * 0.7, y1: H * 0.7 };
+    const e = fk * fk * (3 - 2 * fk), r = { x0: from.x0 + (full.x0 - from.x0) * e, y0: from.y0 + (full.y0 - from.y0) * e, x1: from.x1 + (full.x1 - from.x1) * e, y1: from.y1 + (full.y1 - from.y1) * e };
+    ctx.save(); ctx.globalAlpha = Math.min(1, fk * 3); ctx.beginPath(); ctx.roundRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 28 * (1 - e)); ctx.clip();
+    ctx.drawImage(bmp, r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0); ctx.restore();
+    if (fk > 0.99) obs.fullscreenPayoff = obs.fullscreenPayoff ?? +t.toFixed(2);
+  }
   const boxes = [], inPayoff = t >= CL.payoff.start - 1.0 && t < CL.payoff.end + 0.2;
   if (n) {
     const s = CFG.steps[n - 1];
@@ -158,18 +181,24 @@ window.renderAt = async (t) => {
     const secs = n === 5 ? CFG.timer.seconds : cf.f.t;   // step 5: the measured "ready" time, as the clock says
     const badge = `⏱ ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
     // sized so the caption line (1254–1346) always stays free: muted viewers read the steps
-    boxes.push(["step card", ov.card(cardImg[cf.f.file], cf.c.aspect, t - STEP_T[n - 1], { width: n <= 2 ? 600 : 560, badge, tap: cf.c.tap })]);
+    // the tap lands 0.35 s before the second screen (the click, then what it did); one-screen cards tap at 0.45 s
+    const span = Math.max(0.6, L[2 + n].end - L[2 + n].start + 0.3), tapAt = cf.c.frames.length === 2 ? span / 2 - 0.35 : 0.45;
+    boxes.push(["step card", ov.card(cardImg[cf.f.file], cf.c.aspect, t - STEP_T[n - 1], { width: n <= 2 ? 600 : 560, badge, tap: cf.c.tap, tapAt })]);
   } else if (!inPayoff) {
-    const chip = t < L[1].start ? [["HOW DO YOU MAKE ", "#ffffff"], ["THIS?", YELLOW]] : t < STEP_T[0] ? [["IT'S ", "#ffffff"], ["SIMPLE", YELLOW]]
-      : t < L[9].start ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : [["FIRST CLICK → ", "#ffffff"], ["FINAL VIDEO", YELLOW]];
-    const chipT0 = t < L[1].start ? 0.05 : t < STEP_T[0] ? L[1].start : t < L[9].start ? EV.wall : L[9].start;
-    if (t < EV.cta) boxes.push(["chip", ov.chip(chip, t - chipT0)]);   // at the CTA only its own chip shows
+    const chip = t < L[1].start ? [["HOW DO YOU MAKE ", "#ffffff"], ["THIS?", YELLOW]] : t < (EV.lazy ?? Infinity) ? [["IT'S ", "#ffffff"], ["SIMPLE", YELLOW]] : t < STEP_T[0] ? [["MOST PEOPLE ARE ", "#ffffff"], ["TOO LAZY", YELLOW]]
+      : t < L[9].start ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : t < CL.payoff.start ? [["FIRST CLICK → ", "#ffffff"], ["FINAL VIDEO", YELLOW]]
+      : t < EV.cta ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : [["tryzyvo.com", "#ffffff"]];   // at the CTA: the website stays, small
+    const chipT0 = t < L[1].start ? 0.05 : t < (EV.lazy ?? Infinity) ? L[1].start : t < STEP_T[0] ? EV.lazy : t < L[9].start ? EV.wall : t < CL.payoff.start ? L[9].start : t < EV.cta ? CL.payoff.end : EV.cta;
+    boxes.push(["chip", ov.chip(chip, t - chipT0)]);
   }
   const counterOff = PLAN.find((p) => p.type === "move" && p.from === "wall")?.t0 ?? END;
   if (t >= EV.counter && t < counterOff) boxes.push(["counter", ov.counter(CFG.counter.value, CFG.counter.label, t - EV.counter, Math.max(0.5, EV.counterEnd - EV.counter))]);
   // the clock waits for the camera to land on Zee (it sits above Zee, not over the creator)
   const zeeLowAt = PLAN.find((p) => p.type === "move" && p.to === "zeeLow")?.t1 ?? EV.timer, timerT0 = Math.max(EV.timer, zeeLowAt);
   if (t >= timerT0 && t < CL.payoff.start - 1.0) boxes.push(["timer", ov.timer(CFG.timer.seconds, CFG.timer.label, t - timerT0, Math.max(0.5, EV.timerEnd - timerT0))]);
+  // the website, said and shown big (owner, 2026-10-30), then the comment CTA
+  // on "link in bio" the chip grows to say so (something new every 2.5 s)
+  if (EV.site != null && t >= EV.site && t < EV.cta) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (t >= EV.cta + 0.3) boxes.push(["CTA chip", ov.endChip(CFG.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
   const ps = phone.group.scale.x > 0.5 ? screenBox(phone.screen, camera) : null;
@@ -182,7 +211,8 @@ window.renderAt = async (t) => {
   const keys = [];
   for (const [name, c] of [["creator", creator], ["Zee", zee]]) if (faces(c.parts.head)) keys.push([`${name} face`, c.parts.head]);
   if (faces(zee.parts.head)) keys.push(["Zee antenna", zee.parts.antenna]);
-  if (!cam.moving && (cam.step.at === "phone" || cam.step.at === "phoneFull")) keys.push(["phone screen", phone.screen]);
+  // the phone is a key prop in its shots; a full-screen payoff is the video itself (TikTok's own UI sits on any video)
+  if (!cam.moving && (cam.step.at === "phone" || (cam.step.at === "phoneFull" && fk < 0.01))) keys.push(["phone screen", phone.screen]);
   for (const [name, obj] of keys) {
     const b = screenBox(obj, camera); if (!b) continue;
     if (!cam.moving) for (const p of zoneProblems(b)) note(`${name}: ${p}`, t, where);

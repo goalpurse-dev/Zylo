@@ -60,5 +60,7 @@
  "cta": {
   "id": "comment_fruit",
   "chip": "COMMENT FRUIT"
- }
+ },
+ "payoffFullscreen": true,
+ "website": "tryzyvo.com"
 }

@@ -39,7 +39,7 @@ await page.goto(`http://localhost:${port}/${process.env.PAGE ?? "look.html"}`);
 await page.waitForFunction("window.ready === true", { timeout: 60000 });
 
 // the composited frame (#out: 3D + overlays) when the page has one, else the WebGL canvas
-const grab = (t, q) => page.evaluate(async (t, q) => { await window.renderAt(t); return (document.getElementById("out") ?? document.querySelector("canvas")).toDataURL("image/jpeg", q); }, t, q);
+const grab = (t, q) => page.evaluate(async (t, q) => { await window.renderAt(t); return (document.getElementById("out") ?? document.querySelector("canvas")).toDataURL(q === "png" ? "image/png" : "image/jpeg", q === "png" ? undefined : q); }, t, q);
 if (only) {
   for (const t of only.split(",")) {
     const data = await grab(Number(t), 0.92);
@@ -50,10 +50,14 @@ if (only) {
   const n = Math.round(Number(secs) * Number(fps));
   // AUDIO=<wav>: muxed in as AAC (the mix made by audio.py)
   const audio = process.env.AUDIO ? ["-i", process.env.AUDIO, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "192k", "-shortest"] : [];
-  const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", ...audio, "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
+  // Lossless PNG frames in; H.264 High, 14 Mbps target (16 Mbps cap), TV-range BT.709 (owner, 2026-10-30: the old
+  // JPEG -> MJPEG -> CRF 18 chain gave 5.8 Mbps full-range "yuvj420p", which players and TikTok re-map: soft and flat).
+  const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "png", "-r", fps, "-i", "-", ...audio,
+    "-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p", "-c:v", "libx264", "-profile:v", "high", "-preset", "slow", "-b:v", process.env.VBITRATE ?? "14M", "-maxrate", "16M", "-bufsize", "28M",   // a 14 Mbps target: CRF alone gave ~6 Mbps on these flat dark frames, and TikTok re-encodes a richer source better
+    "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv", "-r", fps, "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
   for (let f = 0; f < n; f++) {
-    const data = await grab(f / Number(fps), 0.95);
+    const data = await grab(f / Number(fps), "png");
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }

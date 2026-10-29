@@ -1,7 +1,7 @@
 {
   "title": "M3: How I made this with Zyvo: AI Fruit Story",
   "template": "ai_fruit_story",
-  "notes": "One template per video. The story was made live on the internal account on 2026-10-29 (Ten Years Out of Date, story 96d3191f): 230.2 s from the first click to the finished video, 159 credits, $1.64 of AI calls. Every claim is from the fact sheet (fruit_characters) or measured; 'too lazy' is an opinion line.",
+  "notes": "One template per video. The story was made live on the internal account on 2026-10-29 (Ten Years Out of Date, story 96d3191f): 230.2 s from the first click to the finished video, 159 credits, $1.64 of AI calls. Every claim is from the fact sheet (fruit_characters) or measured; 'too lazy' is an opinion line. M3 v2 (owner, 2026-10-30): a 6.8 s payoff full screen, the website said and shown before the CTA.",
   "voices": {
     "default": "eleven",
     "eleven": {
@@ -52,13 +52,14 @@
     {
       "name": "payoff",
       "file": "video/m3/ten-years-out-of-date.mp4",
-      "in": 0.0,
-      "out": 22.85,
+      "in": 7.9,
+      "out": 14.7,
       "after_line": 10,
       "pre": 1.0,
       "post": 0.35,
       "duck_db": 24,
-      "note": "the full real result, with its sound"
+      "note": "the best 6.8 s: 'You've had three jobs since that photo, Bing.' / 'My date thinks I still deliver pizzas, okay?' (continues from the hook; skips the line naming Google)",
+      "fullscreen": true
     }
   ],
   "lines": [
@@ -85,7 +86,13 @@
         "lazy"
       ],
       "expr": "smug",
-      "pose": "rest"
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 2,
+          "event": "lazy"
+        }
+      ]
     },
     {
       "who": "creator",
@@ -234,6 +241,28 @@
     },
     {
       "who": "zee",
+      "text": "It's called Zyvo. tryzyvo.com, link in bio.",
+      "say": "It's called Zyvo. Try zyvo dot com, link in bio.",
+      "key": [
+        "tryzyvo.com,"
+      ],
+      "expr": "happy",
+      "pose": "point",
+      "cues": [
+        {
+          "word": 3,
+          "event": "site",
+          "sfx": "pop"
+        },
+        {
+          "word": 4,
+          "event": "bio",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "zee",
       "text": "Comment FRUIT if you're actually gonna try it.",
       "key": [
         "FRUIT"
@@ -250,5 +279,9 @@
     }
   ],
   "cta": "comment_fruit",
-  "end_chip": null
+  "end_chip": null,
+  "phone_range": [
+    0.0,
+    15.2
+  ]
 }

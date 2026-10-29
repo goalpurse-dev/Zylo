@@ -17,9 +17,10 @@ export const rbox = (w, h, d, r = 0.05, seg = 4) => new RoundedBoxGeometry(w, h,
 export const add = (parent, geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; parent.add(m); return m; };
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
-export function setup() {
+/** ss: supersampling (the 3D renders at ss x 1080x1920 and is drawn down to 1080x1920 with high-quality smoothing). */
+export function setup({ ss = Number(new URLSearchParams(location.search).get("ss") ?? 1.5) } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-  renderer.setSize(W, H, false); renderer.setPixelRatio(1);
+  renderer.setPixelRatio(ss); renderer.setSize(W, H, false);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
@@ -113,9 +114,10 @@ export function outputWall(scene, tl, items, { R = 10.5, cols = 9, rows = 3, cz 
 }
 
 export function composer(renderer, scene, camera, { bloom = 0.35, sat = 1.06, con = 1.06, vig = 0.6 } = {}) {
-  const rt = new THREE.WebGLRenderTarget(W, H, { samples: 4, type: THREE.HalfFloatType });
+  const pr = renderer.getPixelRatio();
+  const rt = new THREE.WebGLRenderTarget(W * pr, H * pr, { samples: 4, type: THREE.HalfFloatType });
   const c = new EffectComposer(renderer, rt);
-  const ao = new N8AOPass(scene, camera, W, H);
+  const ao = new N8AOPass(scene, camera, W * pr, H * pr);
   Object.assign(ao.configuration, { aoRadius: 0.8, distanceFalloff: 1.0, intensity: 2.4, aoSamples: 16, denoiseSamples: 8, denoiseRadius: 12, halfRes: false, gammaCorrection: false });
   c.addPass(ao);
   if (bloom) c.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), bloom, 0.55, 0.92));
@@ -124,6 +126,7 @@ export function composer(renderer, scene, camera, { bloom = 0.35, sat = 1.06, co
     vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
     fragmentShader: "uniform sampler2D tDiffuse; uniform float sat; uniform float con; varying vec2 vUv; void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = mix(vec3(l), c.rgb, sat); c.rgb = (c.rgb - 0.5) * con + 0.5; gl_FragColor = vec4(clamp(c.rgb, 0.0, 1.0), c.a); }" }));
   const v = new ShaderPass(VignetteShader); v.uniforms.offset.value = 0.95; v.uniforms.darkness.value = vig; c.addPass(v);
+  c.setPixelRatio(pr); c.setSize(W, H);   // every pass at the supersampled size
   return c;
 }
 

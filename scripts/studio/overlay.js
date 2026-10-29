@@ -82,7 +82,7 @@ export function makeOverlay(ctx) {
       return { ...b, y1: SAFE.top + 108 };
     },
     /** A REAL screen as a floating card (sharp: drawn in 2D), sliding in; a "real time" badge; a tap ring. */
-    card(img, aspect, age, { width = 600, top = 448, badge = null, tap = null } = {}) {
+    card(img, aspect, age, { width = 600, top = 448, badge = null, tap = null, tapAt = 0.45 } = {}) {
       if (age < 0 || !img) return null;
       const k = Math.min(1, age / 0.28), e = 1 - Math.pow(1 - k, 3), w = width * (0.92 + 0.08 * e), h = w / aspect;
       const x = SAFE_CX - w / 2, y = top + (1 - e) * 60;
@@ -97,8 +97,8 @@ export function makeOverlay(ctx) {
         ctx.fillStyle = "rgba(9,10,10,0.9)"; ctx.beginPath(); ctx.roundRect(x + w - tw - 14, y + 14, tw, 54, 27); ctx.fill();
         ctx.fillStyle = YELLOW; ctx.textBaseline = "middle"; ctx.fillText(badge, x + w - tw + 6, y + 42);
       }
-      if (tap && age > 0.45) {   // where the real click was: a cursor and a ring
-        const ta = age - 0.45, px = x + tap[0] * w, py = y + tap[1] * h, r = 26 + ta * 90;
+      if (tap && age > tapAt) {   // where the real click was: a cursor and a ring (just before the clicked screen shows)
+        const ta = age - tapAt, px = x + tap[0] * w, py = y + tap[1] * h, r = 26 + ta * 90;
         ctx.globalAlpha = Math.max(0, 1 - ta / 0.7); ctx.strokeStyle = YELLOW; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.stroke();
         ctx.globalAlpha = 1; ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 8, py + 44); ctx.lineTo(px + 20, py + 32); ctx.lineTo(px + 38, py + 40); ctx.closePath(); ctx.fill(); ctx.stroke();

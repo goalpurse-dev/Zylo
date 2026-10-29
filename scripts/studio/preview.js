@@ -37,7 +37,7 @@ async function phoneFrame(t) {
   if (!T.phone || !T.clip) return;
   const vt = T.clip.in + (t - T.clip.start), f = Math.min(T.phone.count, Math.max(1, Math.round((vt - T.phone.vt0) * T.phone.fps) + 1));
   if (f === shownFrame) return;
-  const bmp = await createImageBitmap(await (await fetch(`/work/phone/f${String(f).padStart(5, "0")}.jpg`)).blob());
+  const bmp = await createImageBitmap(await (await fetch(`/work/phone/f${String(f).padStart(5, "0")}.png`)).blob());
   vx.drawImage(bmp, 0, 0, vc.width, vc.height); bmp.close(); vtex.needsUpdate = true; shownFrame = f;
 }
 
@@ -120,7 +120,7 @@ window.renderAt = async (t) => {
   for (let i = 0; i < n; i++) {
     const ts = n === 1 ? t : t + (i / (n - 1) - 0.5) * (0.5 / 30);
     cam = setState(ts); comp.render();
-    ctx.globalAlpha = 1 / (i + 1); ctx.drawImage(renderer.domElement, 0, 0);
+    ctx.globalAlpha = 1 / (i + 1); ctx.drawImage(renderer.domElement, 0, 0, W, H);
   }
   ctx.globalAlpha = 1;
   cam = setState(t);   // the checks use the frame's own time
