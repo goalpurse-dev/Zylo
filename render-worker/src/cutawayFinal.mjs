@@ -60,7 +60,7 @@ export async function renderCutaway(job, dir, outName = "final.mp4") {
     await mkdir(path.join(dir, fontsDir), { recursive: true });
     await copyFile(FONT, path.join(dir, fontsDir, path.basename(FONT)));
     assFile = "captions.ass";
-    await writeFile(path.join(dir, assFile), buildAss({ words: job.captions ?? [], cards: job.cards ?? [], width: job.width ?? 1080, height: job.height ?? 1920 }), "utf8");
+    await writeFile(path.join(dir, assFile), buildAss({ words: job.captions ?? [], cards: job.cards ?? [], width: job.width ?? 1080, height: job.height ?? 1920, until: job.captionsUntil ?? Infinity }), "utf8");
   }
   let chimeFile = null;
   if (job.chimes?.length) {

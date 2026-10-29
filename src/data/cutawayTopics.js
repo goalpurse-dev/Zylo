@@ -7,10 +7,13 @@ export { classifyTopic, closestPremade, kitCheck, premadeByKey };
 
 export const KIT_TOPICS = PREMADE.map((p) => ({ key: p.key, topic: p.topic, hook: p.hook, ready: p.layout }));
 
-/** Premade topics the user hasn't made yet, in catalog order (the ones with a saved layout come first). */
-export function freshSuggestions(usedTopics = [], count = 6) {
-  const used = new Set(usedTopics.map(normTopic));
-  return KIT_TOPICS.filter((t) => !used.has(normTopic(t.topic))).slice(0, count);
+/**
+ * Premade topics the user hasn't made yet, in catalog order (the ones with a saved layout come first).
+ * approved: only these keys (the owner-approved layouts the server reports); null = the whole catalog.
+ */
+export function freshSuggestions(usedTopics = [], count = 6, approved = null) {
+  const used = new Set(usedTopics.map(normTopic)), only = approved == null ? null : new Set(approved);
+  return KIT_TOPICS.filter((t) => !used.has(normTopic(t.topic)) && (!only || only.has(t.key))).slice(0, count);
 }
 
 export const isKitTopic = (topic) => classifyTopic(topic).kind === "premade";

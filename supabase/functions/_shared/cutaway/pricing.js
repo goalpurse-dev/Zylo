@@ -58,34 +58,63 @@ export function workFor(lengthSec) {
 
 const credits = (usd) => Math.ceil((usd * BASIS.markup) / USD_PER_CREDIT);
 
-// ---------- the 3D video: one price per video, premade or custom (research/seamless-niche/M2_PLAN.md, section 4) ----------
-// Our cost per video (USD), from the M2 plan's figures: Claude Opus 5.5 at $4/$20 per 1M tokens, web search $0.01
-// a search, Eric ~$0.045 per 30 s, new sound effects $0.007-0.03, a GPU render ~$0.03 per 30 s (M3 to confirm).
-//  premade: a saved layout and saved facts: script, timeline + one repair round, the preview-frame vision check,
-//    voice, render. A premade topic without a saved layout yet (septic, pool, well, road, gutter, sewer) is charged
-//    the same: we absorb its first build (about the custom cost), and its layout is saved for everyone after it.
-//  custom: a new layout: the same steps plus the fact-check and the scene plan, planned with Claude Sonnet 5.5
-//    (about half the Opus cost), plus a 20% buffer for the plans that fail the checks and are re-planned on Opus,
-//    plus the kit check (Haiku 5.5, ~$0.0005).
-export const MODELS_3D = Object.freeze({ premade: "claude-opus-5-5", custom: "claude-sonnet-5-5", customFallback: "claude-opus-5-5", kitCheck: "claude-haiku-5-5" });
-export const COSTS_3D = Object.freeze({
-  premade: Object.freeze({ 30: 0.38, 60: 0.59 }),
-  custom: Object.freeze({ 30: Number((0.52 * 1.2 + 0.0005).toFixed(4)), 60: Number((0.755 * 1.2 + 0.0005).toFixed(4)) }),
+// ---------- the 3D video: one price per video, premade or custom (the owner's credit rule, 2026-10-24) ----------
+// ONE PLACE for the price: when our costs change, change MEASURED (and RUNTIME_RATES) and re-run the tests; the
+// migration's tool_prices rows must match PRICE_ROWS (tests/cutaway.test.mjs holds them together).
+//
+// The rule: 1 credit = $0.01 of OUR cost. The user pays $0.02 a credit, so the price is always 2x our cost.
+//   credits for a video = our full real cost of one delivered video in USD / $0.01, rounded up.
+// "Full real cost" counts everything: the planning, the voice (and its word check's second take), the checks, the post
+// text, the GPU (it waits on the planner, then renders), storage, AND the attempts that fail and are refunded: each
+// delivered video carries (1 - pass rate) / pass rate of a failed attempt.
+//   premade: a topic with an owner-approved layout (cutaway_layouts.approved): the scene is reused, the script is new,
+//            only the changed sentences are checked
+//   custom:  a new layout: the script and its fact-check, the scene plan, the solver, the preview gate with repairs
+export const MODELS_3D = Object.freeze({ planner: "claude-sonnet-5-5", strong: "claude-opus-5-5", small: "claude-haiku-5-5", kitCheck: "claude-haiku-5-5" });
+export const CREDIT = Object.freeze({ ourUsd: 0.01, userUsd: 0.02 });
+
+/** what the provider time costs us (USD a second): the RunPod 16 GB tier, a Fly performance-8x machine */
+export const RUNTIME_RATES = Object.freeze({ runpodUsdPerSec: 0.00016, flyUsdPerSec: 0.0000957 });
+
+/**
+ * Our cost per attempt, by kind and length (USD), and the pass rate, MEASURED (sources in each note). attempt: what one
+ * attempt that delivers costs; failed: what one that fails costs us on average (it stops early, before the render).
+ */
+export const MEASURED = Object.freeze({
+  premade: Object.freeze({
+    30: Object.freeze({ attempt: { script: 0.09, voice: 0.05, checks: 0.04, post: 0.002, gpu: 0.05, storage: 0.002 }, failed: 0.15, passRate: 0.95 }),
+    60: Object.freeze({ attempt: { script: 0.13, voice: 0.1, checks: 0.06, post: 0.002, gpu: 0.09, storage: 0.004 }, failed: 0.22, passRate: 0.95 }),
+  }),
+  custom: Object.freeze({
+    // plan: measured 2026-10-24 on 8 topics, at the live (not batch) price: script $0.046 + fact research $0.112 +
+    // fact-check $0.026 + scene plan $0.215 + scene repair $0.130 = $0.53. checks: the car wash's two preview checks
+    // ($0.22 and $0.13). passRate: still the estimate (no topic has run the whole path in production yet)
+    // design (2026-10-26): a part the kit lacks, designed from building blocks: the NEW PARTS instructions (~1,400 tokens
+    // in, twice: plan and repair, $0.008) and the recipe written out (~1,000 tokens out, twice, $0.03); counted on every
+    // custom video (most topics design one) and on its failed attempts
+    30: Object.freeze({ attempt: { plan: 0.53, design: 0.04, voice: 0.05, checks: 0.18, post: 0.002, kitCheck: 0.0005, gpu: 0.09, storage: 0.002 }, failed: 0.69, passRate: 0.6 }),
+    60: Object.freeze({ attempt: { plan: 0.78, design: 0.05, voice: 0.1, checks: 0.24, post: 0.002, kitCheck: 0.0005, gpu: 0.14, storage: 0.004 }, failed: 0.95, passRate: 0.6 }),
+  }),
 });
-// 2.5-3x our cost (owner, 2026-10-21): 2.8x, rounded up to whole credits.
-export const MARKUP_3D = 2.8;
-const credits3d = (usd) => Math.ceil((usd * MARKUP_3D) / USD_PER_CREDIT);
 export const KINDS = Object.freeze(["premade", "custom"]);
+
+const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
+/** our full real cost of one delivered video (USD): its attempt plus its share of the failed attempts we refund */
+export function fullCostUsd(kind, lengthSec) {
+  const m = MEASURED[kind]?.[lengthSec];
+  if (!m) throw new Error(`no Cutaway cost for ${kind} ${lengthSec} s`);
+  return Number((sum(m.attempt) + (m.failed * (1 - m.passRate)) / m.passRate).toFixed(4));
+}
+/** what one attempt is expected to cost us: the caps check this before a start (guard.js) */
+export const costBasisUsd = (kind, lengthSec) => Number(sum(MEASURED[kind][lengthSec].attempt).toFixed(4));
 
 /** The credit prices the user is charged (tool_prices rows). */
 export const PRICES = Object.freeze({
   // One flat row per kind and length: cutaway:premade-30, cutaway:premade-60, cutaway:custom-30, cutaway:custom-60.
   video: Object.freeze({
     toolKey: (kind, s) => `cutaway:${kind}-${s}`,
-    credits: Object.freeze(Object.fromEntries(KINDS.map((k) => [k, Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, credits3d(COSTS_3D[k][s])])))]))),
+    credits: Object.freeze(Object.fromEntries(KINDS.map((k) => [k, Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, Math.ceil(fullCostUsd(k, s) / CREDIT.ourUsd - 1e-9)])))]))),
   }),
-  // The old AI-video pipeline's "regenerate one wide image" (still in the engine until M2 replaces it).
-  regenerate: Object.freeze({ toolKey: () => "cutaway:image", credits: credits(COSTS.imageUsd + COSTS.visionUsd) }),
 });
 
 /** Credits for one video: the server charges this, from the topic it classified itself (topics.js). */
@@ -96,7 +125,4 @@ export function videoCredits(kind, lengthSec) {
 }
 
 /** The rows for public.tool_prices, as the migration writes them. */
-export const PRICE_ROWS = Object.freeze([
-  ...KINDS.flatMap((k) => LENGTHS.map((s) => ({ tool_key: PRICES.video.toolKey(k, s), flat_credits: PRICES.video.credits[k][s], credits_per_second: null, allowed_durations: null }))),
-  { tool_key: "cutaway:image", flat_credits: PRICES.regenerate.credits, credits_per_second: null, allowed_durations: null },
-]);
+export const PRICE_ROWS = Object.freeze(KINDS.flatMap((k) => LENGTHS.map((s) => ({ tool_key: PRICES.video.toolKey(k, s), flat_credits: PRICES.video.credits[k][s], credits_per_second: null, allowed_durations: null }))));

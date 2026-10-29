@@ -16,7 +16,10 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(f).pipe(res);
 }).listen(0);
 const port = server.address().port;
-const browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: process.env.SOFTWARE_GL ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu"] : ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"] });
+// a render server sets CHROME_PATH and its GPU flags in CHROME_ARGS (JSON); puppeteer's own SwiftShader flag is then left
+// out, so WebGL can't fall back to software without the GPU check seeing it
+const chromeArgs = process.env.CHROME_ARGS ? JSON.parse(process.env.CHROME_ARGS) : null;
+const browser = await puppeteer.launch({ executablePath: process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, ...(chromeArgs ? { ignoreDefaultArgs: ["--use-angle=swiftshader-webgl", "--disable-gpu"] } : {}), args: chromeArgs ?? (process.env.SOFTWARE_GL ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-gpu"] : ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"]) });
 const page = await browser.newPage();
 page.on("console", (m) => console.log("page:", m.text()));
 page.on("pageerror", (e) => console.log("page error:", e.message));
@@ -32,16 +35,19 @@ if (only) { // stills at given times for a quick look
   }
 } else {
   const n = Math.round(Number(secs) * Number(fps));
+  // FRAME_FROM / FRAME_TO: one chunk of the video (the CPU fallback splits a video over several machines; the chunks are
+  // joined by stream copy, so each is a whole x264 stream of its own frames)
+  const f0 = Math.max(0, Number(process.env.FRAME_FROM ?? 0)), f1 = Math.min(n, Number(process.env.FRAME_TO ?? n));
   const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
-  for (let f = 0; f < n; f++) {
+  for (let f = f0; f < f1; f++) {
     const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.95); }, f / Number(fps));
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }
   enc.stdin.end();
   await new Promise((r) => enc.on("close", r));
-  console.log(`rendered ${n} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+  console.log(`rendered ${f1 - f0} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 await browser.close();
 server.close();

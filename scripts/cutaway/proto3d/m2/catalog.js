@@ -1,0 +1,169 @@
+// M2: the kit catalog the scene planner reads: the world, every part kind with its settings, its verbs, and the
+// materials. A planner may only use what is here (the layout check refuses anything else).
+import { VERBS } from "./verbs.js";
+import { MATERIAL_NAMES } from "./materials.js";
+
+// the finishing touches each setting allows ("Add a ..." sentences): a prop out of place (grass at a car wash) is refused
+export const SETTING_PROPS = Object.freeze({
+  yard: ["shrubs", "youngTrees", "fence", "grass", "prop:mailbox", "prop:planter", "prop:bench"],
+  park: ["shrubs", "youngTrees", "fence", "grass", "prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack"],
+  street: ["prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack", "prop:mailbox"],
+  carwash: ["prop:kiosk", "prop:vacuum", "prop:towelRack", "prop:trashCan", "canopy"],
+  garage: ["prop:toolbox", "prop:trashCan", "prop:pottedPlant", "prop:bikeRack"],
+  room: ["prop:pottedPlant", "prop:trashCan"],
+  plain: ["prop:planter", "prop:trashCan"],
+});
+// the topic props (2026-10-29): finishing touches that complete the thing itself, allowed in any setting
+export const TOPIC_PROPS = Object.freeze(["rocks", "lilyPads", "fish", "rinkLines", "goalNets", "floodLight", "crosswalk", "stopLine", "streetSign", "stairs", "ceilingLight", "steppingStones"]);
+// generic decor: refused on a new plan's "Add ..." line unless the topic is about it (the finish always added a trash can,
+// a planter or a bench)
+export const GENERIC_DECOR = Object.freeze(["trashCan", "bench", "planter", "pottedPlant", "toolbox", "bikeRack", "mailbox"]);
+export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is the plane z = 0 facing the camera, ground surface y = 0)
+- A lawn and a house behind a cutaway of the ground. The viewer sees the ground in section on the face z = 0:
+  soil strata down to y = -26, a stony band with a glossy groundwater film at y -11 to -14, roots, rocks.
+- world.cut {x0, x1, z0, depth}: ONE box cut dug into the ground, open on the face (it runs from z0 < 0 to z = 0).
+  The ground mesh has a hole there. Everything the video builds in the ground goes in or next to the cut.
+  Examples: landfill pit {x0:-5, x1:5, z0:-8, depth:6}; French drain trench along the house {x0:-11.4, x1:0.8, z0:-2, depth:3.6}.
+  A narrow deep shaft (a well) is fine: {x0:-0.7, x1:0.7, z0:-1.4, depth:13}. Keep |x| <= 14, depth <= 20, z0 >= -10.
+- world.house [x, 0, z]: the house (11 wide, 6.5 deep, 9.4 tall with its roof; default [-8, 0, -30], far behind).
+  world.porch false removes its porch (when a trench runs along its front). The house must not overlap the cut.
+- world.trees [[x, z, scale?], [x, z, scale?]]: the two big trees; world.road [x, 0.01, z]: the road (it runs along z).
+- world.roots {pad, to}: roots near the cut move right of x = to;  world.rocksAvoid [[x0, x1, y0, y1], ...]: no rocks
+  or roots on the face in these boxes (pipe runs, pits you will build in the face).
+- THE SETTING: pick the one that fits the topic; the videos must not all look the same.
+  The yard (the default: lawn, house, trees, road) suits things around a house: drains, wells, septic tanks, pools, gutters.
+  world.backdrop {type: "street", sign: "SHOP NAME", lampX, benchX, road: {side: -1 | 1}}: a sidewalk over the cut ground with a
+    two-lane road running away from the camera beside the cut (on its left, side -1, or its right, side 1): curbs, a double
+    yellow centre line, a stop line in the lane going away and a crosswalk near the cross street; shop fronts on either side
+    of the road 15 m back (back -15), taller buildings behind. The camera looks along the road. It suits city things: a
+    traffic light (on the corner at the stop line, its arm over the lane), a fire hydrant, a vending machine, a manhole, a
+    bus stop, a storm drain. The sidewalk top is y 0.12, so props stand at y 0.12; nothing but vehicles stands on the road.
+    The world's cut is left open in the sidewalk.
+  world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
+  world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
+    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door, a water heater, a sump.
+    The garage stands with its front at z = back, its opening from x - 4.05 to x + 4.05 and 3.1 tall (floor y 0.08), the wall
+    over it 0.4 thick (z back - 0.2 to back + 0.2: hang a piece meant to be seen in front of it, z > back + 0.25); a video
+    about the door builds its own door there as a rig named a door (the backdrop then leaves its own out).
+  world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX}: a room in section: a wood floor (top y 0.12)
+    over the cut ground, a back wall with a window, the left wall, the ceiling and a roof slice; an armchair, a lamp, a rug.
+    It suits things inside a home: an air conditioner, a radiator, a toilet, a sump pump in the floor, a smoke detector.
+    Use it for every basement or indoor topic (a sump pump, a water heater, a furnace): the cut below its floor is the basement.
+  world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
+    y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
+  The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
+  A car, a machine or a person stands on solid floor beside the cut, never over its open hole (the cut is the ground in section).
+- SETTING PROPS: the "Add ..." finishing touches come only from the setting's list: yard: shrubs, young trees, a fence, a grass cap, a mailbox, a planter, a bench; park: shrubs, young trees, a fence, grass, a bench, a trash can, a planter, a bike rack; street: a bench, a trash can, a planter, a bike rack, a mailbox; carwash: a payment kiosk, a vacuum station, a towel rack, a trash can, a canopy; garage: a toolbox, a trash can, a potted plant, a bike rack; room: a potted plant, a trash can. Never grass or bushes at a car wash, a street, a garage or a room.
+- REALISTIC SETTINGS: nothing natural where it would not be. A creek, a stream or a pond never lies on a paved floor
+  (a car wash lot, a sidewalk, a garage, a room): it is a stream beside the setting on the grass (creek axis "z"), and
+  water running off the floor reaches it the real way: across the floor to a storm drain grate, down a pipeRun in the cut
+  face, out into the stream. In the street, garage, room and car wash, dug dirt is taken away (it never stays as a pile).
+- NOTHING FLOATS: every part rests on the ground, the floor or another part. A roof is a canopy (it has its posts). Pipes start and end at a part, the ground or the cut face.
+  world.house false removes the house; world.worker false removes the worker figure (keep it only if the topic has a worker);
+    world.moreTrees false removes the four far trees; world.road false removes the far road. With a backdrop, set all four to false.
+- NO CUT WHEN NOTHING IS UNDERGROUND: when no part of the story is below ground, the ground is a thin slab (the
+  pipeline sets world.shallow by itself); hidden things in the road (a wire loop) are drawn on its surface.
+- THE MACHINE WORKS ON ITS WORDS: lights switch on the word that names the colour (red, yellow, green, allRed), a
+  timer's number ticks while it is said (counter count), cars queue on "pile up" and pull away on "go" (traffic), a
+  night line ("at 3 a.m.", "at night") turns the light to night and the next line back to day. At "Add ..." and
+  "Congratulations" a machine is shown working as it should (a traffic light on cycle, a car passing), not frozen.
+- The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
+  (water soaking down from a soak pit) paint the face itself.`;
+
+// per kind: what it is, its params, and notes. Positions are world coordinates.
+export const KIND_DOCS = {
+  settle: ["any open container seen in section (a septic tank, an oil-water separator, a sump basin, a settling pit): its walls and floor pop in, water fills it, sand or sludge grains SINK and pile up on the floor, a dark oil or scum layer RISES to the top, the water clears. Use it whenever a sentence needs a tank, a basin or a pit that holds something", "box {x0,x1,y0,y1,z0,z1} (the inside, seen at the face: z1 = 0), wallColor (a plastic basin, e.g. #2f6fb0; default concrete), lid (false: keep it open so the layers read), murky, clearColor", "verbs show (the tank walls), fill, sink (the sand falls), float (the oil rises), clear"],
+  creek: ["a creek on the ground with banks and ripples drifting downstream; it can turn dirty (soap, oil) and clean again. Use it whenever a sentence names a creek, a river or a stream", "in a yard or a park: x0, x1 (its length, along x; beside the cut, not over it), width (2.4), depth (0.7), y (the ground top), dir (1 or -1); it runs along the front edge, so the face shows it in section. Beside a paved setting (a car wash, a street, a garage): axis \"z\", x (its centre, past the paved floor: a car wash lot ends at x 13, a street at 26), z0 (its far end, -26), width (2.6), depth (0.8): a stream on the grass running toward the camera, the face shows it in section; water from the lot reaches it through a grate (storm drain) and a pipeRun in the cut face", "verbs show, dirty, clean"],
+  flow: ["blobs moving along a path over a faint ribbon: water running across a slab to a drain or down to a creek, sludge pouring through a drain or a pipe, soap down a slope. Use it for every 'runs', 'pours', 'flows' action", "path [[x,y,z],...] (from where it starts to where it ends), look water|spray (a hose or nozzle jet: pale drops fanning out; water that starts in the air is a spray)|sludge|soap|oil|mud, size (0.16), speed, count", "verbs start, stop"],
+  prop: ["a finishing touch that completes the thing (see THE FINISH): a topic prop, allowed in any setting, or one of the setting's own props", "type: a topic prop: rocks {size [w, d]: stones along that edge, pos its centre, open: [front] leaves the cut face side open for a pond} | lilyPads {size [w, d] of the water, pos y = the water top} | fish {size [w, d], pos y = mid-water: they swim} | rinkLines {size [w, d] of the ice, pos y = the ice top} | goalNets {size [w, d] of the rink} | floodLight (a lamp on a 4 m pole) | crosswalk {size [w, d] across the road, pos y = the road top} | stopLine {size [w]} | streetSign {text} | stairs {h (height), w (width): rising +x from pos} | ceilingLight {h (the ceiling height above pos), drop} | steppingStones {size [length]}; or the setting's list. pos [x, y, z] (y = the floor top unless said), rotY, scale (1)", "verb show"],
+  grate: ["a dark slotted drain grate set into a slab or the floor (the drain the water and sludge run into)", "pos [x, y, z] (y = the slab top), width (1.6), depth (0.8)", "verb show"],
+  canopy: ["a roof or canopy that stands on four posts (a roof must never float): the posts grow up, then the roof goes on", "x0, x1, z0, z1, y (the floor top), h (the post height, 4), color", "verb build"],
+  car: ["a real car (or a fire truck: model \"firetruck\") that drives in, stops, and drives on (wheels turn)", "pos [x, y, z] (where it stops; y = the setting's floor top), from, to (along x; on a street the pipeline moves it into the road's lane, along z), color, model (sedan, suv, taxi, police, ambulance, firetruck), scale (1)", "verbs arrive, leave; give each car an id (a carWash names its car)"],
+  traffic: ["a lane of real cars that queue behind the stop line one by one (\"cars pile up\") and then pull away", "lane [x, zStop] (the lane and its stop line; on a street the pipeline puts it in the road), dir (-1: driving away from the camera), n (how many), gap (5.6), colors", "verbs pile (they arrive and queue; d stretches it), go (they drive off with speed streaks), bump (the second car rear-ends the first: an impact star and the dent stay), unbump (the fix)"],
+  cabinet: ["a traffic controller's cabinet: grey metal on a concrete pad with a rain hood and vents; its door swings open on a rack of modules whose lights blink (the signal controller, the 'gray box on the corner')", "pos [x, y, z] (its centre), size [w, h, d] (0.9, 1.3, 0.6)", "verbs show, open (the door), close, lights"],
+  counter: ["a countdown or timer display: a dark panel with a glowing number that ticks down on its words", "pos [x, y, z] (its centre: on a pole, a cabinet, a box), size (0.8), from (9), to (0), color, bar (true: a gauge, a bar beside the number fills with the value and turns red past danger, 0.8 of the larger of from and to)", "verbs show, count (from -> to over the line; d sets how long), hide (take it away when its story is over)"],
+  carWash: ["a car wash's machine over the bay: a spray arch and two spinning side brushes; it puts foam on the car in the bay", "pos [x, y, z] (the bay centre, where the car stops), width (3.6), height (3.4), car (the car part's id)", "verbs show (the arch), spray, stopSpray, brushes, close (brushes swing in), open, spin, foam, rinse"],
+  trafficLight: ["a real traffic signal: a dark three-lamp head with visors and a yellow-bordered backplate, on a pole or hanging from a mast arm over the road, and the wire loop sawn into the road that feels a car's metal", "pos [x, y, z], height (5), arm (the mast arm's length; 0: the head on top of the pole), armDir (-1 left, 1 right), loop [x, z, w, d] (in the lane before the stop line), phase (s: offsets its cycle)", "verbs show, red, yellow, green (switch lamps), allRed (every lamp red), cycle (runs green, yellow, red by itself), cycleFast (a 3 s round: one sentence shows all three) and stopCycle, flash (blinking red) and stopFlash, loop (the wire loop appears), pulse (its field rings), stopPulse"],
+  hydrant: ["a dry-barrel fire hydrant: the body above ground, the barrel down to the main valve deep below (in section at the face), the drain hole at the valve", "pos [x, y, z] (y = the sidewalk top), depth (3.2: the valve below the frost line), color", "verbs show, barrel, open (the stem turns, the valve opens), fill (water rises in the barrel), spray, close, drain (the barrel empties through the drain hole), stopDrain"],
+  atm: ["a cash machine cut open on its right side: screen, keypad, card slot, the cassettes inside a safe, the belt up to the cash slot", "pos [x, y, z] (its base centre), color", "verbs show, screen, card, safe, cassettes, pick (a note travels from a cassette to the slot), cash"],
+  vendingMachine: ["a vending machine on the lawn, cut open on its right side (coils, motors, coin chute, bin, drop sensor, cooler, lit header)", "pos [x, y, z] (its base centre; it faces the camera), color, header (the lit sign text)", "channels show, snacks, slot, steal, glass, coils, coin, spinA/spinB (turns), fallA/fallB, beam, cooler, light; give it a focus box"],
+  miniMachines: ["a crowd of small drink machines popping up across the lawn", "area [x0, x1, z0, z1], count", "channels pop (a ramp: they pop one by one within it), gone"],
+  dig: ["dig the world cut open (a plug sinks, dirt clumps fly to a mound)", "mound {x, z, rx, rz, h} (beside the cut, on the lawn), clumps (150), dark (true for a narrow shaft under 2.5 wide: its inside is shaded so the hole reads)", "channels dig, refill. The first beat when something goes underground; no dig when nothing does (a street topic: a wire loop is drawn in a saw cut on the road)."],
+  panels: ["anchored boxes that wipe in from one side (liners, clay walls, covers, caps)", "panels: [{ch, mat, size [sx,sy,sz], anchor [ax,ay,az] (per axis, the way the panel extends from pos: 1 toward +, -1 toward -, 0 centred on pos; e.g. a pond floor from x -5 to 5 is pos x -5 with ax 1, a wall hanging down from the surface is pos y 0 with ay -1), pos [x,y,z] (the anchor point), axis 'x'|'y'|'z' (the growing axis) or null (pops in), vis (0), r (0.04), uv [u,v]?}]", "each panel names its own channel ch; verbs: grow (with ch), pop (with ch)"],
+  box: ["a plain static box (a foundation, a slab)", "mat, size [sx,sy,sz], pos [x,y,z] (its center), r (0.04), receiveShadow", "no verbs"],
+  bags: ["a layer of trash bags that falls in and can lift out of the way and settle back", "area {x0,x1,z0,z1}, h (1.6), grid [5,4], n0, y0 (its floor), stagger, dur, fromAbove {xScale, y} or fromTruck {part, x, y, dz}", ""],
+  dumpTruck: ["a dump truck that drives in along z, tips its bed and drives away", "x", "base {z: -40, load: 1}"],
+  pipeRun: ["a solid pipe along a path of points that grows at constant speed (joints at bends)", "path [[x,y,z],...], r (0.24), radial, jointR, joints (true), mat (pipeWhite)", "pipes in the face sit at z = -0.06 (seen in section)"],
+  pipeRunFlow: ["dark liquid dots running along a pipeRun", "pipe (a pipeRun id), count, size, speed, dz, mat (juice)", ""],
+  tank: ["a cylindrical tank that pops in", "pos [x,0,z] (its base), r (1.3), h (2.6), bands [y...], mat (tankBlue)", ""],
+  riser: ["a vertical pipe rising from y0 to y1", "x, z, y0, y1, r (0.2), mat (metal)", ""],
+  boxPop: ["a box that pops in (a wellhead, a pump head, a valve, a meter)", "size [sx,sy,sz], pos [x,y,z] (center), r, mat", ""],
+  flare: ["a cartoon gas flame with a glow and a warm light", "pos [x,y,z] (its base), intensity (30)", ""],
+  bubbles: ["gas bubbles rising through a layer of the face", "x0, x1, y0, y1, z (-0.15), count, speed", ""],
+  machine: ["a generator / pump box (grey with an orange band) that pops in", "pos [x,0,z], rotY", ""],
+  fence: ["fence posts that pop in one after another, then rails", "x0, x1, step, zBack, sideStart, zFront, railZ", ""],
+  youngTrees: ["small trees that pop in one after another", "trees [[x, z, scale]], stagger", ""],
+  sheet: ["a printed newspaper page that rises out of the ground and sinks back", "masthead, date, headline, from [x,y,z], to [x,y,z], sink", ""],
+  book: ["a book (canvas cover text) that rises out of the ground and sinks back", "w, h, bg, book true, spine, lines [{text, font, color, y} | {rule:true, y, color}], from, to, rot [rx,ry,rz]", ""],
+  flag: ["a flag on a pole that pops in, gets a red 'no' cross, and goes", "at [x,0,z], colors [3 stripes], w, h, pole", "for a myth-bust about a country or a name"],
+  shrubs: ["round bushes that pop in staggered (finishing touches)", "list [[x, z, scale]], stagger", ""],
+  sign: ["the end card sign (Make videos like this with Zyvo)", "at [x,y,z] (on the lawn in front of the house, clear of the cut), rotY, scale (1.3-1.5)", "ALWAYS include one; it pops by itself after the voice"],
+  crack: ["a dark crack with a pale edge that grows across a wall or the soil face; it stays until a fix covers it", "points [[x,y,z],...] (on the wall surface; on the soil face z 0.02, in open soil clear of pipes and layers), r (0.08 or more)", "verb grow"],
+  drops: ["mud lumps dropping onto a surface and stopping there", "x0, x1, count, fromY, landY, z, mat (mud)", ""],
+  water: ["water filling a box (a flooded ditch, a full shaft, a pond, a pool); it sinks into gravel if `gravel` names a gravel part; it can drain away, turn algae green (dirty) and clear again (clean)", "box {x0,x1,y0,y1,z0,z1}, gravel?, mat (water), dirtyColor (#4e7d2c)", "verbs trickle, flood, drain (the level falls away), dirty (turns green), clean, hide"],
+  gravel: ["a gravel fill with real pebbles on its face, stones pouring in, a water level inside, and a lift (to lay a pipe under it)", "box, faceBox (box inset, z1 0.04), pourBox, pourFrom, pourCount, water? (a water part), waterTop, waterSpan, drainDrop, mat (gravel), pebbleMat (pebbles)", ""],
+  soakPit: ["a gravel soak pit in the face with pebbles and a water level", "box, faceBox, mat (gravelPit), pebbleMat (pebblesPit)", "base {wetY: box.y0}"],
+  wipe: ["a block that wipes in along an axis (a soil cap, a grass strip, a slab, a concrete seal)", "box {x0,x1,y0,y1,z0,z1}, mat, axis ('x'|'y'|'z'), r, uvScale", ""],
+  wrap: ["filter fabric wrapping a fill", "box, opts {thick, sides ['back','floor','top','left','right'], along 'x'|'z', stagger, dur}, mat (fabric)", ""],
+  pipe: ["a perforated or solid pipe along a path, grown at constant speed", "path [[x,y,z],...], opts {r (0.3), color, perforated (false), holeSpacing}", "pipes in the face sit at z = -0.06; a vertical pipe is a path of 2 points"],
+  pipeFlow: ["blue water dots running inside a kit pipe", "pipe (a pipe id), opts {count, size, offset [0,0,0.33]}, speed", ""],
+  puddles: ["flat water patches on the lawn that spread and dry up", "list [[x, z, rx, rz]], rise [stagger], fall [stagger]", ""],
+  rain: ["rain streaks over the scene", "x0, x1, z0, z1, yTop, yBot, count, width, opacity", ""],
+  stream: ["water pouring off an edge (a roof eave, a pipe outlet)", "x0, x1, z, yTop, yBot, count", ""],
+  light: ["the sun and sky: a storm (overcast), a quick 'time passes' dip, and night (the sun down, the sky dark, lamps and lenses glowing)", "storm (true if the layout has a storm)", "include one 'light' part; verbs night and day for a night line"],
+  lawnWet: ["the lawn going dark and wet in the rain", "{}", ""],
+  soilLeak: ["landfill seeps painted on the face and the murky groundwater", "x1, x2, murkX", "base {y1: -6, y2: -6}"],
+  wetBand: ["a dark wet band in the soil round the cut", "cx, halfW, bottom", ""],
+  soak: ["water soaking down from a soak pit toward the groundwater", "x0, x1, top", "base {front: top}"],
+  arrows: ["pulsing white block arrows (in the face, or flat on a surface)", "list [{at [x,y,z], dir [dx,dy], travel, phase}], opts {scale, speed, flat}", "the explainer layer: show where something moves"],
+  outline: ["a glowing yellow outline traced around the named part", "points [[x,y,z],...] (in front of the face: z 0.06-0.12), opts {r: line thickness, 0.11 by default; on a part under a metre use about a twentieth of its size, closed}", "for the 'This is a…' sentence"],
+  seepFlow: ["murky dots seeping down the face and spreading in the groundwater", "count, width, y0, fall, floor", ""],
+  rig: ["a NEW PART you design from building blocks when no kind above is the thing (a garage door, a rain barrel, a toilet's flush valve): see NEW PARTS below", "name, synonyms [..], pos [x, y, z] (its base on the floor), rotY, scale (1), mount (\"wall\" only for a thing hung on a wall), nodes [{id, parent?, at [x,y,z], shapes [..], moves [..]}]", "verbs: show, hide, and each of its moves by name (\"open\"), undone by name + Back (\"openBack\")"],
+};
+
+// how to design a new part: the building blocks, the moves, the rules and one worked recipe (rig.js)
+const RIG_DOC = `NEW PARTS (kind "rig"): when the topic needs a thing no kind above is (check the SAVED PARTS and CC0 MODELS lists first,
+when the request has them), design it as a rig: named nodes (the pieces that move separately), each a group of shapes,
+each with its own moves. Build it the way the real thing is built, simple and readable at phone size, in the toy look.
+- Shapes (metres, from the node's pivot; look: metal, plastic, wood, glass, rubber, paint, concrete; color "#rrggbb"):
+  box {size [w,h,d], at, rot? [deg x,y,z]}, panel {size [w,h], thick, at, rot?}, cylinder {r, h, axis, at},
+  wheel {r, w, axis, at}, gear {r, w, teeth, axis, at}, hinge {r, h, axis, at}, spring {r, h, turns, wire, axis, at},
+  tube or cable {path [[x,y,z]...], r}, rail or track {path, w}, chain or belt {path, w}, button {r, at},
+  light {r, at, color} (a lamp, dark until a light or blink move), beam {from [x,y,z], to, r (0.04), color} (a glowing ray:
+  a sensor beam, a laser; lit like a lamp), screen {size [w,h], at} (a number on a count move),
+  model {file, size, at, rotY?} (a CC0 model from the CC0 MODELS list).
+- Moves (each one a verb by its name; "<name>Back" undoes it; one name on several nodes moves them together): appear (the piece pops in on its word; it is hidden
+  until then: build a thing step by step), slide {to [dx,dy,dz]}, swing {axis, angle (deg)} (about the
+  node's pivot: put a door's pivot on its hinge edge), track {path} (the pivot runs along the path: a door rolling up its
+  rails), spin {axis, turns per second} (stays on until "<name>Back"), extend {axis, k}, light, blink {rate},
+  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color} (dots running along a path), count {from, to}, snap {axis, gap} (the piece breaks in two along its axis and the halves stay apart, tilted, until "<name>Back": a spring or cable that snaps). A beam shape (a light ray across an opening) is r 0.06 or more, and the box it comes from (a sensor, an opener) at least 0.5 m, so it reads at phone size. Sections that roll up a door's tracks: a track move on EACH section along the track's path (up, then back along the ceiling), not one swing.
+- Rules (code checks them): pos y is the floor top and the lowest shape rests on it (or the part sits in the cut); every
+  node's shapes touch its parent's; at most 40 nodes and 160 shapes; sizes in real metres (a door 2.4 wide, a barrel
+  0.9 tall); every move you use is defined on a node. Give it name and synonyms: a part that passes is saved to the kit.
+- The beats use it like any part: {p: "door", v: "show"}, {p: "door", v: "open", w: "lifts"}; shows names it. A shot frames
+  one piece (and the pieces hung on it) as "part.node": focus ["door.motor"], so a small piece is seen, not the whole thing.
+  Put the pieces where the camera can see them (the front, not behind a wall).
+Worked recipe, a hinged mailbox (base on the lawn, the lid swings open, the flag swings up, a light blinks):
+{"id":"mailbox","kind":"rig","params":{"name":"mailbox","synonyms":["letter box"],"pos":[3,0,-2],"nodes":[
+ {"id":"post","at":[0,0,0],"shapes":[{"shape":"box","size":[0.12,1.1,0.12],"at":[0,0.55,0],"look":"wood"},{"shape":"box","size":[0.5,0.4,0.8],"at":[0,1.3,0],"look":"metal","color":"#3d6fb0"}]},
+ {"id":"lid","parent":"post","at":[0,1.5,0.4],"shapes":[{"shape":"panel","size":[0.5,0.4],"thick":0.04,"at":[0,-0.2,0.02],"look":"metal","color":"#3d6fb0"}],"moves":[{"name":"open","type":"swing","axis":"x","angle":80}]},
+ {"id":"flag","parent":"post","at":[0.27,1.3,0.1],"shapes":[{"shape":"box","size":[0.04,0.3,0.04],"at":[0,0.15,0],"look":"paint"},{"shape":"panel","size":[0.18,0.12],"at":[0,0.27,0.09],"rot":[0,90,0],"look":"paint","color":"#e23b2e"}],"moves":[{"name":"raise","type":"swing","axis":"z","angle":-90}]},
+ {"id":"lamp","parent":"post","at":[0,1.55,-0.3],"shapes":[{"shape":"light","r":0.06,"color":"#ffd23d"}],"moves":[{"name":"blink","type":"blink","rate":2}]}]}}`;
+
+export function catalogText() {
+  const kinds = Object.entries(KIND_DOCS).map(([k, [what, params, notes]]) => {
+    const verbs = Object.keys(VERBS[k] ?? {});
+    return `- ${k}: ${what}\n    params: ${params}${notes ? `\n    notes: ${notes}` : ""}\n    verbs: ${verbs.length ? verbs.join(", ") : k === "panels" ? "grow (ch), pop (ch)" : k === "rig" ? "show, hide, its moves by name" : "(none)"}`;
+  });
+  return `${WORLD_DOC}\n\nPART KINDS\n${kinds.join("\n")}\n\n${RIG_DOC}\n\nMATERIALS (the only names a 'mat' may use)\n${MATERIAL_NAMES.join(", ")}\n\nSOUND LIBRARY (sfx 'lib' names)\ndirt (digging, pouring), drip (seeping), water_rush (water flowing in a pipe or flooding), flame, motor_hum (a pump or machine running); rain is only the rain bed (audio.rain)`;
+}

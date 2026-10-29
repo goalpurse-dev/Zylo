@@ -13,6 +13,8 @@
 
 export const CAPTION_Y = 0.52;
 export const CARD_Y = 0.3;
+// the red state label ("TOO FAST") sits higher, over the picture's sky, so it never covers a number card
+export const STATE_Y = 0.2;
 
 /** "pours," -> "Pours" (the references capitalise every caption word). */
 export function captionWord(w) {
@@ -30,23 +32,27 @@ const assTime = (sec) => {
 };
 
 /** ASS subtitles: each word from its start to the next word's start (or its end + 0.25 s), plus the number cards. */
-export function buildAss({ words, cards = [], width = 1080, height = 1920, fontName = "Lilita One" }) {
+// until (optional): no caption after it (the end card pops there and a caption must never sit on it)
+export function buildAss({ words, cards = [], width = 1080, height = 1920, fontName = "Lilita One", until = Infinity }) {
   const x = Math.round(width / 2);
   const y = Math.round(height * CAPTION_Y);
   const cy = Math.round(height * CARD_Y);
   const lines = [];
   words.forEach((w, i) => {
     const text = captionWord(w.w);
-    if (!text) return;
+    if (!text || w.s >= until - 0.05) return;
     const next = words[i + 1];
-    const end = next ? Math.max(w.e, next.s) : w.e + 0.25;
+    const end = Math.min(until, next ? Math.max(w.e, next.s) : w.e + 0.25);
     lines.push(`Dialogue: 0,${assTime(w.s)},${assTime(end)},Word,,0,0,0,,{\\pos(${x},${y})}${text}`);
   });
   for (const c of cards) {
     const text = String(c.text).replace(/[{}\\]/g, "");
     // As on the creator's account: comparison cards ("= 6 CARS") yellow, unit/time cards ("33 FT", "YEAR 2") white.
-    const style = /^\s*=/.test(text) ? "Card" : "CardWhite";
-    lines.push(`Dialogue: 1,${assTime(c.s)},${assTime(c.e)},${style},,0,0,0,,{\\pos(${x},${cy})\\fad(80,220)\\fscx70\\fscy70\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)}${text}`);
+    // a name label (compile.mjs nameCards: "SIGNAL CONTROLLER") is smaller and teal, like the creator's part labels
+    // a state label (compile.mjs stateCards: "TOO FAST", "BROKEN") is red and sits above the number cards, as in the examples
+    const style = c.kind === "name" ? "CardName" : c.kind === "state" ? "CardState" : /^\s*=/.test(text) ? "Card" : "CardWhite";
+    const py = c.kind === "state" ? Math.round(height * STATE_Y) : cy;
+    lines.push(`Dialogue: 1,${assTime(c.s)},${assTime(c.e)},${style},,0,0,0,,{\\pos(${x},${py})\\fad(80,220)\\fscx70\\fscy70\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)}${text}`);
   }
   return [
     "[Script Info]",
@@ -60,6 +66,8 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
     `Style: Word,${fontName},${Math.round(width * 0.085)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H64000000,0,0,0,0,100,100,0,0,1,${Math.round(width * 0.0065)},2,5,0,0,0,1`,
     `Style: Card,${fontName},${Math.round(width * 0.12)},&H004DE1FF,&H004DE1FF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
     `Style: CardWhite,${fontName},${Math.round(width * 0.12)},&H00FFFFFF,&H00FFFFFF,&H00141414,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.009)},3,5,0,0,0,1`,
+    `Style: CardState,${fontName},${Math.round(width * 0.1)},&H00303BFF,&H00303BFF,&H00FFFFFF,&H78000000,0,0,0,0,100,100,1,0,1,${Math.round(width * 0.008)},3,5,0,0,0,1`,
+    `Style: CardName,${fontName},${Math.round(width * 0.075)},&H00E6F07C,&H00E6F07C,&H00141414,&H78000000,0,0,0,0,100,100,2,0,1,${Math.round(width * 0.007)},2,5,0,0,0,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

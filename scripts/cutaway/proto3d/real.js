@@ -14,7 +14,10 @@ import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 
 const Q = new URLSearchParams(location.search);
 const R = Number(Q.get("r") ?? 1);
-const W = 1080, H = 1920;
+// render-cost options (M3, off by default so the locked look is unchanged): ?res=720 renders 720x1280 (for an upscale),
+// ?lite=1 lighter shadows (2048 map), half-resolution ambient occlusion with 8 samples and 2x MSAA
+const RES = Number(Q.get("res") ?? 1080), LITE = Q.get("lite") === "1";
+const W = RES === 720 ? 720 : 1080, H = RES === 720 ? 1280 : 1920;
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, H, false); renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -60,7 +63,7 @@ if (R === 2) scene.fog = new THREE.Fog(C("#f4f8fc"), 120, 400);
 if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);
 scene.add(new THREE.HemisphereLight(LOOK.hemiCols?.[0] ?? "#dfeeff", LOOK.hemiCols?.[1] ?? "#8a7258", LOOK.hemi));
 const sun = new THREE.DirectionalLight(LOOK.sun[0], LOOK.sun[1]); sun.position.set(...LOOK.sun[2]); sun.castShadow = true;
-sun.shadow.mapSize.set(4096, 4096); Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 34, bottom: -34, near: 1, far: 140 });
+sun.shadow.mapSize.set(LITE ? 2048 : 4096, LITE ? 2048 : 4096); Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 34, bottom: -34, near: 1, far: 140 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; if (R === 4) sun.shadow.radius = 4; scene.add(sun);
 if (LOOK.rim) { const rim = new THREE.DirectionalLight(LOOK.rim[0], LOOK.rim[1]); rim.position.set(...LOOK.rim[2]); scene.add(rim); }
 
@@ -332,10 +335,10 @@ if (R === 3) {
 // ---------------- camera + post ----------------
 const camera = new THREE.PerspectiveCamera(R === 4 ? 24 : 35, W / H, 0.1, 1200);
 if (R === 4) { camera.position.set(30, 26, 64); camera.lookAt(0.0, -5.0, -7); } else if (R === 1) { camera.position.set(13, 9.5, 33); camera.lookAt(0.2, 0.2, -9); } else { camera.position.set(16.5, 14.5, 37); camera.lookAt(0.6, 0.6, -7.5); }
-const rt = new THREE.WebGLRenderTarget(W, H, { samples: 4, type: THREE.HalfFloatType });
+const rt = new THREE.WebGLRenderTarget(W, H, { samples: LITE ? 2 : 4, type: THREE.HalfFloatType });
 const composer = new EffectComposer(renderer, rt);
 const ao = new N8AOPass(scene, camera, W, H);
-Object.assign(ao.configuration, { aoRadius: 2.6, distanceFalloff: 1.0, intensity: LOOK.ao, aoSamples: 16, denoiseSamples: 8, denoiseRadius: 12, halfRes: false, gammaCorrection: false });
+Object.assign(ao.configuration, { aoRadius: 2.6, distanceFalloff: 1.0, intensity: LOOK.ao, aoSamples: LITE ? 8 : 16, denoiseSamples: LITE ? 4 : 8, denoiseRadius: 12, halfRes: LITE, gammaCorrection: false });
 composer.addPass(ao);
 if (LOOK.dof) composer.addPass(new BokehPass(scene, camera, LOOK.dof));
 if (LOOK.bloom) composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), LOOK.bloom, 0.6, 1.4));

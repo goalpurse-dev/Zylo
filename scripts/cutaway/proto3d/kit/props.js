@@ -71,17 +71,23 @@ export function puddle(ctx, { x, z, rx = 1.2, rz = 0.8, y = 0.02, mat }) {
 }
 
 /** a crack on a wall plane: points in world space, grows from the first point */
-export function crack(ctx, points, { color = "#1b1712", r = 0.045 } = {}) {
+export function crack(ctx, points, { color = "#1b1712", r = 0.045, halo = true } = {}) {
   const { THREE, scene } = ctx;
   const P = points.map((p) => new THREE.Vector3(...p));
   const path = new THREE.CurvePath(); for (let i = 0; i < P.length - 1; i++) path.add(new THREE.LineCurve3(P[i], P[i + 1]));
   const geo = new THREE.TubeGeometry(path, 24 * P.length, r, 6, false);
   const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 1 })); m.visible = false; scene.add(m);
-  const total = geo.index.count;
-  return { set(k) { m.visible = k > 0.001; geo.setDrawRange(0, Math.floor((total * Math.min(1, k)) / 6) * 6); } };
+  // (a pale edge just behind it: a dark crack on the dark soil face of the free ice rink run could not be seen; halo:
+  // false leaves it out)
+  const hgeo = halo ? new THREE.TubeGeometry(path, 24 * P.length, r * 2.3, 6, false) : null;
+  const h = hgeo ? new THREE.Mesh(hgeo, new THREE.MeshStandardMaterial({ color: "#f4ead2", emissive: "#f4ead2", emissiveIntensity: 0.25, roughness: 1 })) : null;
+  // (the dark line steps forward and the pale edge stays on the surface: an edge pushed back sank into the soil face)
+  if (h) { h.position.z = 0.05; m.position.z = 0.05 + r * 1.6; h.visible = false; scene.add(h); }
+  const total = geo.index.count, htotal = hgeo?.index.count ?? 0;
+  return { set(k) { m.visible = k > 0.001; geo.setDrawRange(0, Math.floor((total * Math.min(1, k)) / 6) * 6); if (h) { h.visible = m.visible; hgeo.setDrawRange(0, Math.floor((htotal * Math.min(1, k)) / 6) * 6); } } };
 }
 
-export function endSign(ctx, { at, rotY = 0.3, scale = 1.5 }) {
+export function endSign(ctx, { at, rotY = 0.3, scale = 1.5, postsReceiveShadow = false }) {
   const { THREE, scene } = ctx;
   const sign = new THREE.Group(); sign.position.set(...at); sign.rotation.y = rotY; sign.scale.setScalar(0); scene.add(sign);
   const t = canvasTex(THREE, 1024, 560, (g) => {
@@ -92,6 +98,6 @@ export function endSign(ctx, { at, rotY = 0.3, scale = 1.5 }) {
   });
   const face = new THREE.MeshStandardMaterial({ map: t, roughness: 0.55 }), edge = new THREE.MeshStandardMaterial({ color: "#e9e4d8", roughness: 0.6 });
   const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 3.06, 0.18), [edge, edge, edge, edge, face, edge]); board.position.y = 3.2; board.castShadow = true; sign.add(board);
-  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 })); p.position.set(x, 1.0, -0.05); p.castShadow = true; sign.add(p); }
+  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 })); p.position.set(x, 1.0, -0.05); p.castShadow = true; p.receiveShadow = postsReceiveShadow; sign.add(p); }
   return { update(t, a, on = true) { sign.visible = on; sign.scale.setScalar(scale * pop(t, a, 0.45)); } };
 }

@@ -1,32 +1,127 @@
-/* Cutaway Explainer micro-interactions: fast (150-300 ms), never blocking (opacity / transform only), all off for
-   "reduce motion". Staggered items set --d (a delay) inline. Fill mode is backwards, never forwards/both: an element
-   that keeps a transform animation applied becomes the containing block of its fixed children (the sticky Generate
-   bar would scroll with the panel). */
+/* Cutaway Explainer motion. Everything animates transform and opacity only (GPU-composited, 60 fps on phones),
+   and everything is off for "reduce motion" (the bottom block). Staggered items set --d (a delay) inline.
+
+   Micro-interactions are fast (150-300 ms). The few "moments" are longer on purpose: the hero's cut opening, the
+   generating sequence and the reveal of a finished video.
+
+   Fill mode is backwards, never forwards/both, on anything that can hold a fixed child: an element that keeps a
+   transform animation applied becomes the containing block of its fixed children (the sticky Generate bar would
+   scroll with the panel). Only leaf decorations (the hero lid, the reveal curtains) keep their end state. */
+
+/* ---------- views and micro-interactions ---------- */
 @keyframes cwViewIn { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
 @keyframes cwFadeUp { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: none; } }
 @keyframes cwPop { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
-@keyframes cwReveal { from { opacity: 0; transform: scale(.94); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
-@keyframes cwGlow { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, .55); } 100% { box-shadow: 0 0 0 26px rgba(74, 222, 128, 0); } }
+@keyframes cwReveal { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes cwGlow { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
 @keyframes cwCaret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes cwSheen { from { transform: translateX(-100%); } to { transform: translateX(220%); } }
+@keyframes cwSheen { from { transform: translateX(-100%); } to { transform: translateX(320%); } }
+@keyframes cwTick { from { opacity: 0; transform: translate3d(0, 55%, 0); } to { opacity: 1; transform: none; } }
+@keyframes cwRipple { from { opacity: .5; transform: translate(-50%, -50%) scale(0); } to { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+@keyframes cwWiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 40% { transform: rotate(11deg); } 60% { transform: rotate(-7deg); } 80% { transform: rotate(4deg); } }
+@keyframes cwShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } }
+@keyframes cwPing { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+
+/* --d is meant for the element that sets it: nested animated elements start from 0 unless they set their own */
+.cw-fade-up *, .cw-pop *, .cw-stage-in *, .cw-assemble *, .cw-reveal * { --d: 0ms; }
 
 .cw-view { animation: cwViewIn 260ms cubic-bezier(.2, .8, .2, 1) backwards; }
 .cw-fade-up { animation: cwFadeUp 240ms cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
 .cw-pop { animation: cwPop 260ms cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: var(--d, 0ms); }
-.cw-reveal { animation: cwReveal 300ms cubic-bezier(.2, .8, .2, 1) backwards; }
-.cw-glow { animation: cwGlow 300ms ease-out 1 backwards; }
+.cw-reveal { animation: cwReveal 300ms cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
+.cw-glow { position: relative; }
+.cw-glow::after { content: ""; position: absolute; inset: -2px; border-radius: inherit; box-shadow: 0 0 0 2px rgba(74, 222, 128, .75), 0 0 46px rgba(74, 222, 128, .45); opacity: 0; pointer-events: none; animation: cwGlow 300ms ease-out 1 backwards; animation-delay: var(--d, 0ms); }
 .cw-caret { display: inline-block; width: 2px; height: 1em; margin-left: 1px; vertical-align: -2px; background: currentColor; animation: cwCaret 900ms steps(1) infinite; }
 .cw-sheen { position: relative; overflow: hidden; }
-.cw-sheen::after { content: ""; position: absolute; inset: 0; width: 45%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent); animation: cwSheen 1.4s ease-in-out infinite; }
+.cw-sheen::after { content: ""; position: absolute; inset: 0; width: 35%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent); animation: cwSheen 1.4s ease-in-out infinite; pointer-events: none; }
+.cw-tick { display: inline-block; animation: cwTick 260ms cubic-bezier(.2, .8, .2, 1) backwards; }
+.cw-ripple { position: absolute; width: 260%; aspect-ratio: 1; border-radius: 9999px; background: rgba(255, 255, 255, .55); pointer-events: none; animation: cwRipple 620ms cubic-bezier(.2, .8, .2, 1) forwards; }
+.cw-wiggle { animation: cwWiggle 420ms ease-in-out; }
+.cw-shake { animation: cwShake 320ms ease-in-out; }
+.cw-ping { animation: cwPing 1.8s cubic-bezier(0, 0, .2, 1) infinite; }
 
-.cw-press { transition: transform 150ms cubic-bezier(.2, .8, .2, 1), background-color 150ms, border-color 150ms, color 150ms, box-shadow 200ms, opacity 150ms; }
+.cw-press { transition: transform 160ms cubic-bezier(.2, .8, .2, 1), background-color 160ms, border-color 160ms, color 160ms, box-shadow 200ms, opacity 160ms; -webkit-tap-highlight-color: transparent; }
 .cw-press:hover { transform: translateY(-1px); }
-.cw-press:active { transform: scale(.97); }
+.cw-press:active { transform: scale(.96); transition-duration: 80ms; }
 .cw-press:disabled { transform: none; }
 
+/* a switch knob that lands with a little overshoot */
+.cw-knob { transition: transform 280ms cubic-bezier(.34, 1.56, .64, 1); }
+/* the sliding thumb of a segmented control */
+.cw-thumb { transition: transform 300ms cubic-bezier(.3, 1.3, .5, 1); }
+
+/* ---------- hero: the ground slices open, layers settle in depth ---------- */
+@keyframes cwStageIn { from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes cwCutLine { 0% { opacity: 0; transform: scaleX(0); } 30% { opacity: 1; } 70% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes cwLidOpen { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(0, 104%, 0); } }
+@keyframes cwLidFade { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cwSettle { from { opacity: .35; transform: translate3d(0, -3%, 0) scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes cwScan { from { opacity: 0; transform: translate3d(0, -40%, 0); } 15% { opacity: 1; } to { opacity: 0; transform: translate3d(0, 520%, 0); } }
+@keyframes cwLabelIn { 0% { opacity: 0; transform: translate3d(0, 8px, 0) scale(.8); } 70% { opacity: 1; transform: translate3d(0, -1px, 0) scale(1.04); } 100% { opacity: 1; transform: none; } }
+@keyframes cwFloat { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -4px, 0); } }
+@keyframes cwSway { 0%, 100% { transform: rotateX(4deg) rotateY(-7deg); } 50% { transform: rotateX(1deg) rotateY(5deg); } }
+@keyframes cwLineUp { from { opacity: 0; transform: translate3d(0, 105%, 0); } to { opacity: 1; transform: none; } }
+@keyframes cwBackCard { from { opacity: 0; transform: translate3d(40px, 20px, 0) rotate(2deg) scale(.9); } to { opacity: .55; transform: translate3d(0, 0, 0) rotate(-9deg) scale(.86); } }
+
+.cw-stage-in { animation: cwStageIn 700ms cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
+.cw-cut-line { transform-origin: 50% 50%; animation: cwCutLine 900ms cubic-bezier(.65, 0, .35, 1) 260ms both; }
+.cw-lid { animation: cwLidOpen 1050ms cubic-bezier(.75, 0, .2, 1) 640ms both, cwLidFade 1050ms linear 640ms both; }
+.cw-settle { animation: cwSettle 1250ms cubic-bezier(.2, .8, .2, 1) 640ms backwards; }
+.cw-scan { animation: cwScan 1500ms cubic-bezier(.4, 0, .2, 1) 900ms both; }
+.cw-label { animation: cwLabelIn 520ms cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: var(--d, 1400ms); }
+.cw-float { animation: cwFloat var(--t, 5s) ease-in-out infinite; animation-delay: var(--fd, 0s); }
+.cw-sway { animation: cwSway 11s ease-in-out infinite; }
+.cw-line-up { display: block; animation: cwLineUp 760ms cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
+.cw-back-card { opacity: .55; transform: rotate(-9deg) scale(.86); animation: cwBackCard 900ms cubic-bezier(.2, .8, .2, 1) 300ms backwards; }
+/* pointer parallax: the tilt and each layer follow --px / --py (-1..1), set on the stage by the hero's rAF loop */
+.cw-tilt { transform: rotateX(calc(var(--py, 0) * -6deg)) rotateY(calc(var(--px, 0) * 8deg)); transition: transform 600ms cubic-bezier(.2, .8, .2, 1); transform-style: preserve-3d; }
+.is-live .cw-tilt { transition-duration: 120ms; }
+.cw-depth { transform: translate3d(calc(var(--px, 0) * var(--z, 0px)), calc(var(--py, 0) * var(--z, 0px)), 0); transition: transform 600ms cubic-bezier(.2, .8, .2, 1); }
+.is-live .cw-depth { transition-duration: 120ms; }
+
+/* ---------- generating ---------- */
+@keyframes cwGridDrift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 32px, 0); } }
+@keyframes cwAssemble { 0% { opacity: 0; transform: translate3d(0, 22px, 0) scale(.7) rotate(-5deg); } 65% { opacity: 1; transform: translate3d(0, -2px, 0) scale(1.04) rotate(1deg); } 100% { opacity: 1; transform: none; } }
+@keyframes cwDevelop { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes cwRing { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes cwBreath { 0%, 100% { opacity: .55; transform: scale(.96); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes cwFrameIn { 0% { opacity: 0; transform: translate3d(0, 14px, 0) rotateX(35deg) scale(.8); } 100% { opacity: 1; transform: none; } }
+
+.cw-grid { animation: cwGridDrift 2.6s linear infinite; }
+.cw-assemble { animation: cwAssemble 520ms cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: var(--d, 0ms); }
+.cw-develop { animation: cwDevelop 700ms cubic-bezier(.2, .8, .2, 1) backwards; }
+.cw-ring { animation: cwRing 2.4s cubic-bezier(.2, .8, .2, 1) infinite; animation-delay: var(--d, 0ms); }
+.cw-breath { animation: cwBreath 2.4s ease-in-out infinite; }
+.cw-frame-in { animation: cwFrameIn 480ms cubic-bezier(.2, .8, .2, 1) backwards; }
+.cw-bar { transform-origin: 0 50%; transition: transform 400ms cubic-bezier(.2, .8, .2, 1); }
+
+/* ---------- the reveal of a finished video ---------- */
+@keyframes cwCurtainUp { 0%, 22% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(0, -102%, 0); } }
+@keyframes cwCurtainDown { 0%, 22% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(0, 102%, 0); } }
+@keyframes cwSeam { 0% { opacity: 0; transform: scaleX(0); } 25% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes cwBurst { 0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } 100% { opacity: 0; transform: translate3d(var(--tx, 0), var(--ty, 0), 0) scale(.4); } }
+@keyframes cwBadgeIn { 0% { opacity: 0; transform: translate3d(-50%, 10px, 0) scale(.8); } 15% { opacity: 1; transform: translate3d(-50%, 0, 0) scale(1.04); } 25% { transform: translate3d(-50%, 0, 0) scale(1); } 80% { opacity: 1; transform: translate3d(-50%, 0, 0); } 100% { opacity: 0; transform: translate3d(-50%, -8px, 0); } }
+
+.cw-curtain-up { animation: cwCurtainUp 950ms cubic-bezier(.75, 0, .2, 1) both; }
+.cw-curtain-down { animation: cwCurtainDown 950ms cubic-bezier(.75, 0, .2, 1) both; }
+.cw-seam { animation: cwSeam 700ms cubic-bezier(.65, 0, .35, 1) both; }
+.cw-burst { animation: cwBurst 900ms cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--d, 300ms); }
+.cw-badge { animation: cwBadgeIn 2600ms cubic-bezier(.2, .8, .2, 1) 500ms both; }
+
+/* ---------- copy / download confirmations ---------- */
+@keyframes cwRise { 0% { opacity: 0; transform: translate3d(-50%, 6px, 0) scale(.9); } 20% { opacity: 1; transform: translate3d(-50%, -6px, 0) scale(1); } 100% { opacity: 0; transform: translate3d(-50%, -34px, 0); } }
+@keyframes cwFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.cw-rise { animation: cwRise 1100ms cubic-bezier(.2, .8, .2, 1) both; }
+.cw-fill { transform-origin: 0 50%; animation: cwFill 380ms cubic-bezier(.2, .8, .2, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .cw-view, .cw-fade-up, .cw-pop, .cw-reveal, .cw-glow { animation: none !important; }
-  .cw-caret { animation: none; }
-  .cw-sheen::after { display: none; }
+  .cw-view, .cw-fade-up, .cw-pop, .cw-reveal, .cw-glow::after, .cw-tick, .cw-wiggle, .cw-shake, .cw-stage-in, .cw-settle, .cw-label, .cw-line-up,
+  .cw-assemble, .cw-develop, .cw-frame-in, .cw-back-card { animation: none !important; }
+  .cw-caret, .cw-float, .cw-sway, .cw-grid, .cw-ring, .cw-breath, .cw-ping { animation: none !important; }
+  .cw-sheen::after, .cw-ripple, .cw-cut-line, .cw-scan, .cw-burst, .cw-seam, .cw-badge, .cw-rise { display: none !important; }
+  .cw-lid, .cw-curtain-up, .cw-curtain-down { display: none !important; }
   .cw-press, .cw-press:hover, .cw-press:active { transform: none !important; }
+  .cw-knob, .cw-thumb, .cw-bar, .cw-tilt, .cw-depth { transition: none !important; }
+  .cw-tilt, .cw-depth { transform: none !important; }
+  .cw-fill { animation: none !important; }
 }

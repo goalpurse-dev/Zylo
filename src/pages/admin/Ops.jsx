@@ -88,7 +88,7 @@ function BlockyCard({ b, onChange }) {
         <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set limit"}</button>
         {note && <span role="status" className="text-white/60">{note}</span>}
       </form>
-      <p className="mt-2 text-[12.5px] text-white/50">At the limit, new stories see "High demand right now, please try again shortly", nothing is charged, stories in progress finish, and you get an email. Also in force: {money(b.limits.userDailyUsd)} of our cost per user per day. All of Blocky today, tests too: {money(b.today.spentUsd)}.</p>
+      <p className="mt-2 text-[12.5px] text-white/50">At the limit, new stories see "High demand right now, please try again shortly", nothing is charged, stories in progress finish, and you get an email. No limit per user. All of Blocky today, tests too: {money(b.today.spentUsd)}.</p>
       {b.alerts.map((a) => (
         <p key={a.kind} className={`mt-3 text-[12.5px] ${ALERTS[a.kind]?.[1] ?? "text-amber-200"}`}>
           {ALERTS[a.kind]?.[0] ?? "Alert"} (last seen {new Date(a.lastSeen).toLocaleString()}): {a.message}
@@ -99,9 +99,118 @@ function BlockyCard({ b, onChange }) {
   );
 }
 
+// Cutaway Explainer's emergency cap (its own function, cutaway-api: the same owner check on the server). One cap for
+// everyone together over 24 hours, changed right here; no money limit per user. Emails at 50 % and 80 % and when reached.
+function CutawayCard({ c, onChange }) {
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [note, setNote] = useState(null);
+  if (!c) return <Card title="Cutaway Explainer · emergency cap" testid="ops-cutaway"><p className="text-[14px] text-white/60">Couldn't load Cutaway's numbers.</p></Card>;
+  const share = Math.min(100, Math.round((c.usedUsd / c.capUsd) * 100));
+  const full = c.usedUsd >= c.capUsd;
+  const save = async (e) => {
+    e.preventDefault();
+    const usd = Number(draft);
+    if (!(usd >= c.range.min && usd <= c.range.max)) { setNote(`Enter a whole number of dollars between ${c.range.min} and ${num(c.range.max)}.`); return; }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetDailyCap", usd } });
+    setSaving(false);
+    if (error || !data || data.error) { setNote("Couldn't save the cap. Try again."); return; }
+    setDraft("");
+    setNote(`Saved. The cap is ${money(data.capUsd)} per 24 hours, in force now.`);
+    onChange(data);
+  };
+  return (
+    <Card title="Cutaway Explainer · emergency cap" tone={full ? "bad" : share >= 50 ? "warn" : "plain"} testid="ops-cutaway">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat label="All users · last 24 hours" value={`${money(c.usedUsd)} of ${money(c.capUsd)}`} sub={full ? "at the cap: new videos wait" : `${share} % used`} />
+        <Stat label="Paid calls" value={c.paidCalls ? "On" : "Off"} sub={c.paidCalls ? "videos can be made" : "no new videos"} />
+        <Stat label="Videos being made" value={num(c.running)} />
+        <Stat label="Per user" value={`${c.perUser.maxRunning} at once`} sub={`${c.perUser.startsPerHour} starts an hour · no money limit`} />
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]" role="img" aria-label={`${share} % of the 24-hour cap used`}>
+        <div className={`h-full rounded-full ${full ? "bg-red-300" : share >= 50 ? "bg-amber-300" : "bg-lime-300"}`} style={{ width: `${Math.max(share, c.usedUsd > 0 ? 2 : 0)}%` }} />
+      </div>
+      <form onSubmit={save} className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <label htmlFor="ops-cutaway-cap" className="font-semibold text-white">Emergency cap per 24 hours, all Cutaway users together:</label>
+        <span className="flex items-center gap-1">
+          $<input id="ops-cutaway-cap" data-testid="ops-cutaway-cap" type="number" inputMode="decimal" min={c.range.min} max={c.range.max} step="1" value={draft} onChange={(e) => { setDraft(e.target.value); setNote(null); }} placeholder={String(c.capUsd)} className="w-24 rounded-lg border border-white/15 bg-white/[0.05] px-2 py-1.5 tabular-nums text-white outline-none focus:border-lime-300/60" />
+        </span>
+        <button type="submit" disabled={saving || draft === ""} className="rounded-lg bg-lime-300 px-3 py-1.5 font-semibold text-[#071006] transition enabled:hover:bg-lime-200 disabled:opacity-40">{saving ? "Saving…" : "Set cap"}</button>
+        {note && <span role="status" className="text-white/60">{note}</span>}
+      </form>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <span className="font-semibold text-white">Custom topics for customers:</span>
+        <span data-testid="ops-cutaway-custom" className={c.customEnabled ? "text-lime-200" : "text-amber-200"}>{c.customEnabled ? "On" : "Coming soon (premade only)"}</span>
+        <button type="button" disabled={saving} onClick={async () => {
+          if (!c.customEnabled && !window.confirm("Switch custom topics on for every customer? They cost about 5x a premade video and pass less reliably.")) return;
+          setSaving(true);
+          const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetCustom", on: !c.customEnabled } });
+          setSaving(false);
+          if (error || !data || data.error) { setNote("Couldn't change custom topics. Try again."); return; }
+          setNote(data.customEnabled ? "Custom topics are on for everyone." : "Custom topics are back to Coming soon.");
+          onChange(data);
+        }} className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/[0.06] disabled:opacity-40">{c.customEnabled ? "Back to Coming soon" : "Switch on"}</button>
+        <span className="text-white/45">(you can always test custom topics yourself)</span>
+      </div>
+      <p className="mt-2 text-[12.5px] text-white/50">Only for runaway bugs or retry loops. You get an email at 50 % and 80 %; at the cap, new videos see "High demand right now, please try again shortly", nothing is charged, and videos in progress finish.</p>
+      {c.alerts.map((a) => <p key={`${a.level}-${a.at}`} className={`mt-2 text-[12.5px] ${a.level >= 100 ? "text-red-200" : "text-amber-200"}`}>{a.level >= 100 ? "The cap was reached" : `${a.level} % of the cap was used`} · emailed {new Date(a.at).toLocaleString()}</p>)}
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px] text-white/70">
+        <span className="font-semibold text-white">"Beta" badge on custom topics:</span>
+        <span data-testid="ops-cutaway-beta">{c.customBeta ? "Shown" : "Off"}</span>
+        <button type="button" disabled={saving} onClick={async () => {
+          setSaving(true);
+          const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsSetBeta", on: !c.customBeta } });
+          setSaving(false);
+          if (error || !data || data.error) { setNote("Couldn't change the badge. Try again."); return; }
+          onChange(data);
+        }} className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/[0.06] disabled:opacity-40">{c.customBeta ? "Hide" : "Show"}</button>
+      </div>
+      <CutawayLists c={c} onChange={onChange} />
+    </Card>
+  );
+}
+
+// what users ask for: the parts the kit designed and saved (retire a bad one), the topics refused, the videos that failed
+function CutawayLists({ c, onChange }) {
+  const [busy, setBusy] = useState(null);
+  const retire = async (id) => {
+    if (!window.confirm("Retire this part? No later video will be shown it.")) return;
+    setBusy(id);
+    const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsRetirePart", id } });
+    setBusy(null);
+    if (!error && data && !data.error) onChange(data);
+  };
+  const when = (iso) => new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const live = (c.parts ?? []).filter((p) => !p.retired_at);
+  return (
+    <div className="mt-4 grid gap-4 lg:grid-cols-3" data-testid="ops-cutaway-lists">
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Parts the kit learned · {live.length}</div>
+        {!live.length && <p className="text-[12.5px] text-white/45">None yet: a part designed for a video is saved when the video passes every check.</p>}
+        {live.map((p) => (
+          <div key={p.id} className="flex items-center justify-between gap-2 border-t border-white/[0.06] py-1 text-[12.5px]">
+            <span className="min-w-0 truncate text-white/80" title={(p.synonyms ?? []).join(", ")}>{p.name} <span className="text-white/40">· used {p.uses}× · from "{p.topic}"</span></span>
+            <button type="button" disabled={busy === p.id} onClick={() => retire(p.id)} className="shrink-0 rounded-md border border-white/15 px-2 py-0.5 text-white/70 hover:bg-white/[0.06] disabled:opacity-40">Retire</button>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Topics refused · {(c.refused ?? []).length}</div>
+        {(c.refused ?? []).map((r, i) => <div key={i} className="border-t border-white/[0.06] py-1 text-[12.5px] text-white/75">"{r.topic}" <span className="text-white/40">· {(r.missing ?? []).join(", ") || "-"} · {when(r.created_at)}</span></div>)}
+      </div>
+      <div>
+        <div className="mb-1 text-[13px] font-semibold text-white">Videos that failed · {(c.failed ?? []).length}</div>
+        {(c.failed ?? []).map((r, i) => <div key={i} className="border-t border-white/[0.06] py-1 text-[12.5px] text-white/75" title={r.error_message}>"{r.topic}" <span className="text-white/40">· {r.stage} · {r.error_code} · ${Number(r.cost_usd).toFixed(2)} · {when(r.created_at)}</span></div>)}
+      </div>
+    </div>
+  );
+}
+
 export default function Ops() {
   const [data, setData] = useState(null);
   const [blocky, setBlocky] = useState(null);
+  const [cutaway, setCutaway] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | denied | error
   const load = useCallback(async () => {
     const { data: d, error } = await supabase.functions.invoke("ops-status", { body: {} });
@@ -110,6 +219,8 @@ export default function Ops() {
     // Blocky's card has its own source; a failure there never hides the rest of the page.
     const { data: b, error: blockyError } = await supabase.functions.invoke("blocky-story-api", { body: { action: "opsStatus" } });
     setBlocky(!blockyError && b?.ok ? b.data : null);
+    const { data: c, error: cutawayError } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsStatus" } });
+    setCutaway(!cutawayError && c && !c.error ? c : null);
   }, []);
   useEffect(() => { document.title = "Ops | Zyvo"; load(); const t = setInterval(load, 30_000); return () => clearInterval(t); }, [load]);
 
@@ -142,6 +253,8 @@ export default function Ops() {
       </Card>
 
       <BlockyCard b={blocky} onChange={setBlocky} />
+
+      <CutawayCard c={cutaway} onChange={setCutaway} />
 
       <Card title="Failures per hour · last 24 hours" testid="ops-failures">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">

@@ -1,0 +1,1344 @@
+{
+ "key": "car_wash",
+ "title": "How a Car Wash Works",
+ "template": true,
+ "roles": [
+  "hook",
+  "problem",
+  "fix1",
+  "problem2",
+  "fix2",
+  "name",
+  "how",
+  "fact",
+  "myth",
+  "mythFact",
+  "finish",
+  "congrats"
+ ],
+ "world": {
+  "cut": {
+   "x0": -5.5,
+   "x1": -1.5,
+   "z0": -4,
+   "depth": 6
+  },
+  "house": false,
+  "worker": false,
+  "moreTrees": false,
+  "road": false,
+  "backdrop": {
+   "type": "carwash",
+   "x0": -7,
+   "x1": 7,
+   "back": -8,
+   "h": 5.2,
+   "sign": "SPLASH CAR WASH",
+   "color": "#2f6fb0"
+  },
+  "porch": false,
+  "trees": [
+   [
+    -13,
+    -11.5,
+    1
+   ],
+   [
+    22,
+    -3.4,
+    0.9
+   ]
+  ],
+  "rocksAvoid": [
+   [
+    -6.8,
+    -0.9,
+    -5.4,
+    -0.8
+   ],
+   [
+    10.4,
+    15.2,
+    -1.9,
+    0.1
+   ]
+  ],
+  "roots": {
+   "pad": 0.8,
+   "to": 7
+  },
+  "sat": 1.404
+ },
+ "parts": [
+  {
+   "id": "light",
+   "kind": "light",
+   "params": {
+    "storm": false
+   }
+  },
+  {
+   "id": "car",
+   "kind": "car",
+   "params": {
+    "pos": [
+     2,
+     0.1,
+     -3
+    ],
+    "from": 16,
+    "color": "#7a5a36"
+   }
+  },
+  {
+   "id": "hose",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      6.6,
+      0.1,
+      -0.4
+     ],
+     [
+      5.6,
+      0.1,
+      -0.5
+     ],
+     [
+      5,
+      0.15,
+      -0.8
+     ]
+    ],
+    "r": 0.07,
+    "jointR": 0.07,
+    "mat": "leaf"
+   }
+  },
+  {
+   "id": "hoseSpray",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      5,
+      0.27,
+      -0.8
+     ],
+     [
+      5,
+      0.62,
+      -0.8
+     ],
+     [
+      5,
+      0.62,
+      -0.8
+     ],
+     [
+      4.95,
+      1.25,
+      -0.8500000000000001
+     ],
+     [
+      4.1,
+      1.1,
+      -1.5
+     ],
+     [
+      3.2,
+      0.95,
+      -2.1
+     ]
+    ],
+    "look": "spray",
+    "size": 0.2,
+    "speed": 5,
+    "count": 36
+   }
+  },
+  {
+   "id": "mudSmear",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      0.4,
+      0.7,
+      -2.12
+     ],
+     [
+      3.6,
+      1,
+      -2.12
+     ],
+     [
+      0.6,
+      0.85,
+      -2.12
+     ],
+     [
+      3.4,
+      1.2,
+      -2.12
+     ]
+    ],
+    "look": "mud",
+    "size": 0.24,
+    "speed": 2.5,
+    "count": 34
+   }
+  },
+  {
+   "id": "arch",
+   "kind": "carWash",
+   "params": {
+    "pos": [
+     2,
+     0.1,
+     -3
+    ],
+    "width": 3.6,
+    "height": 3.4,
+    "car": "car"
+   }
+  },
+  {
+   "id": "creek",
+   "kind": "creek",
+   "params": {
+    "axis": "z",
+    "x": 15.6,
+    "z0": -26,
+    "width": 2.6,
+    "depth": 0.8,
+    "y": 0.02
+   }
+  },
+  {
+   "id": "soapFlow",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      2,
+      0.24,
+      -1.6
+     ],
+     [
+      6.5,
+      0.24,
+      -1.3
+     ],
+     [
+      11.2,
+      0.24,
+      -1
+     ]
+    ],
+    "look": "soap",
+    "size": 0.28,
+    "speed": 3,
+    "count": 26
+   }
+  },
+  {
+   "id": "dig",
+   "kind": "dig",
+   "params": {
+    "clumps": 150,
+    "mound": {
+     "x": -3.5,
+     "z": -5.6,
+     "rx": 1.6,
+     "rz": 1,
+     "h": 1
+    },
+    "haul": true
+   }
+  },
+  {
+   "id": "grate",
+   "kind": "grate",
+   "params": {
+    "pos": [
+     -3.5,
+     0.1,
+     -1.8
+    ],
+    "width": 2.6,
+    "depth": 1.6
+   }
+  },
+  {
+   "id": "soapDrain",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      2,
+      0.24000000000000002,
+      -1.7
+     ],
+     [
+      -1.5,
+      0.24000000000000002,
+      -1.8
+     ],
+     [
+      -3.2,
+      0.12,
+      -1.8
+     ]
+    ],
+    "look": "soap",
+    "size": 0.16,
+    "speed": 3,
+    "count": 14
+   }
+  },
+  {
+   "id": "tank",
+   "kind": "settle",
+   "params": {
+    "box": {
+     "x0": -5.1,
+     "x1": -1.9,
+     "y0": -4.8,
+     "y1": -1.4,
+     "z0": -3.6,
+     "z1": 0
+    },
+    "wallColor": "#2f6fb0",
+    "lid": false,
+    "murky": true,
+    "clearColor": "#8fd0e8"
+   }
+  },
+  {
+   "id": "intoTank",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      -3.5,
+      0.1,
+      -1.8
+     ],
+     [
+      -3.5,
+      -1.3,
+      -1.2
+     ]
+    ],
+    "look": "sludge",
+    "size": 0.14,
+    "speed": 2.5,
+    "count": 10
+   }
+  },
+  {
+   "id": "tankOutline",
+   "kind": "outline",
+   "params": {
+    "points": [
+     [
+      -5.239999999999999,
+      -1.3599999999999999,
+      0.1
+     ],
+     [
+      -5.239999999999999,
+      -4.9399999999999995,
+      0.1
+     ],
+     [
+      -1.7599999999999998,
+      -4.9399999999999995,
+      0.1
+     ],
+     [
+      -1.7599999999999998,
+      -1.3599999999999999,
+      0.1
+     ]
+    ],
+    "opts": {
+     "r": 0.06,
+     "closed": true
+    }
+   }
+  },
+  {
+   "id": "outPipe",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      -5.1,
+      -4.2,
+      -0.06
+     ],
+     [
+      -6.2,
+      -4.2,
+      -0.06
+     ],
+     [
+      -6.2,
+      -0.3,
+      -0.06
+     ]
+    ],
+    "r": 0.2,
+    "mat": "pipeWhite"
+   }
+  },
+  {
+   "id": "outFlow",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "outPipe",
+    "count": 12,
+    "size": 0.16,
+    "speed": 2.5,
+    "dz": 0.28,
+    "mat": "water"
+   }
+  },
+  {
+   "id": "pump",
+   "kind": "machine",
+   "params": {
+    "pos": [
+     -6.2,
+     0.1,
+     -0.9
+    ],
+    "rotY": 0
+   }
+  },
+  {
+   "id": "returnPipe",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      -6.2,
+      0.35,
+      -1.5
+     ],
+     [
+      -6.2,
+      0.3,
+      -7.3
+     ],
+     [
+      0.2,
+      0.3,
+      -7.3
+     ],
+     [
+      0.2,
+      0.3,
+      -3.3
+     ]
+    ],
+    "r": 0.16,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "returnFlow",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "returnPipe",
+    "count": 14,
+    "size": 0.13,
+    "speed": 3,
+    "dz": 0.24,
+    "mat": "water"
+   }
+  },
+  {
+   "id": "wasteWater",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": 0.5,
+     "x1": 4.6,
+     "y0": 0.10500000000000001,
+     "y1": 0.14,
+     "z0": -1.8,
+     "z1": -0.01
+    },
+    "mat": "puddle"
+   }
+  },
+  {
+   "id": "kiosk",
+   "kind": "prop",
+   "params": {
+    "type": "kiosk",
+    "pos": [
+     8.6,
+     0.1,
+     -1.6
+    ],
+    "rotY": 0,
+    "scale": 1
+   }
+  },
+  {
+   "id": "vacuum",
+   "kind": "prop",
+   "params": {
+    "type": "vacuum",
+    "pos": [
+     9.6,
+     0.1,
+     -2.6
+    ],
+    "rotY": 0,
+    "scale": 1
+   }
+  },
+  {
+   "id": "canopy",
+   "kind": "canopy",
+   "params": {
+    "x0": 7.9,
+    "x1": 10.1,
+    "z0": -4.2,
+    "z1": -0.6,
+    "y": 0.1,
+    "h": 3.2,
+    "color": "#2e9d63",
+    "postColor": "#3a4046"
+   }
+  },
+  {
+   "id": "sign",
+   "kind": "sign",
+   "params": {
+    "at": [
+     9.5,
+     0.1,
+     -9
+    ],
+    "rotY": 0.2,
+    "scale": 1
+   }
+  },
+  {
+   "id": "stormDrain",
+   "kind": "grate",
+   "params": {
+    "pos": [
+     11.2,
+     0.1,
+     -1
+    ],
+    "width": 1.3,
+    "depth": 0.9
+   }
+  },
+  {
+   "id": "stormPipe",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      11.2,
+      -0.15,
+      -0.06
+     ],
+     [
+      11.2,
+      -1.4,
+      -0.06
+     ],
+     [
+      14.7,
+      -1.4,
+      -0.06
+     ],
+     [
+      14.7,
+      -0.45,
+      -0.06
+     ]
+    ],
+    "r": 0.2,
+    "mat": "concrete"
+   }
+  },
+  {
+   "id": "stormFlow",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "stormPipe",
+    "count": 14,
+    "size": 0.16,
+    "speed": 2.6,
+    "dz": 0.28,
+    "mat": "water"
+   }
+  },
+  {
+   "id": "stormPipeOutfall",
+   "kind": "flow",
+   "params": {
+    "path": [
+     [
+      14.7,
+      -0.45,
+      0.04000000000000001
+     ],
+     [
+      15.149999999999999,
+      -0.2,
+      -0.25
+     ],
+     [
+      15.599999999999998,
+      0.06,
+      -0.9
+     ]
+    ],
+    "look": "soap",
+    "size": 0.2,
+    "speed": 2.4
+   }
+  },
+  {
+   "id": "tankWater",
+   "kind": "water",
+   "params": {
+    "box": {
+     "x0": -5.08,
+     "x1": -1.92,
+     "y0": -4.78,
+     "y1": -1.7,
+     "z0": -3.58,
+     "z1": -0.01
+    },
+    "mat": "water"
+   }
+  }
+ ],
+ "cues": [],
+ "beats": [
+  {
+   "s": "hook",
+   "shows": {
+    "p": "hoseSpray",
+    "does": "hose sprays the muddy car"
+   },
+   "do": [
+    {
+     "p": "car",
+     "v": "arrive",
+     "o": -1.1
+    },
+    {
+     "p": "hose",
+     "v": "grow",
+     "w": "hose"
+    },
+    {
+     "p": "hoseSpray",
+     "v": "start",
+     "w": "hose",
+     "o": 0.4
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       0,
+       0,
+       -3.5
+      ],
+      "max": [
+       6.8,
+       2.2,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "s": "problem",
+   "shows": {
+    "p": "mudSmear",
+    "does": "mud smears along the paint"
+   },
+   "do": [
+    {
+     "p": "hoseSpray",
+     "v": "stop",
+     "w": "But"
+    },
+    {
+     "p": "mudSmear",
+     "v": "start",
+     "w": "smears"
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -0.8,
+       0,
+       -3.5
+      ],
+      "max": [
+       4.6,
+       2.2,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "s": "fix1",
+   "shows": {
+    "p": "arch",
+    "does": "arch sprays soap and spins cloth strips"
+   },
+   "do": [
+    {
+     "p": "mudSmear",
+     "v": "stop",
+     "w": "So"
+    },
+    {
+     "p": "arch",
+     "v": "show",
+     "w": "arch"
+    },
+    {
+     "p": "arch",
+     "v": "spray",
+     "w": "soap"
+    },
+    {
+     "p": "arch",
+     "v": "brushes",
+     "w": "cloth"
+    },
+    {
+     "p": "arch",
+     "v": "close",
+     "w": "strips"
+    },
+    {
+     "p": "arch",
+     "v": "spin",
+     "w": "strips",
+     "o": 0.2
+    },
+    {
+     "p": "arch",
+     "v": "foam",
+     "w": "strips",
+     "o": 0.6
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "arch",
+      "car"
+     ],
+     "type": "mid"
+    }
+   ]
+  },
+  {
+   "s": "problem2",
+   "shows": {
+    "p": "soapFlow",
+    "does": "soapy water runs across the lot into the storm drain, down the pipe and into the creek"
+   },
+   "do": [
+    {
+     "p": "arch",
+     "v": "stopSpray",
+     "w": "But"
+    },
+    {
+     "p": "creek",
+     "v": "show",
+     "w": "But"
+    },
+    {
+     "p": "stormDrain",
+     "v": "show",
+     "w": "But"
+    },
+    {
+     "p": "stormPipe",
+     "v": "grow",
+     "w": "But"
+    },
+    {
+     "p": "soapFlow",
+     "v": "start",
+     "w": "runs"
+    },
+    {
+     "p": "stormFlow",
+     "v": "show",
+     "w": "into"
+    },
+    {
+     "p": "creek",
+     "v": "dirty",
+     "w": "creek"
+    },
+    {
+     "p": "stormPipeOutfall",
+     "v": "start",
+     "w": "into",
+     "o": 0.4
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       7.5,
+       -1.6,
+       -3
+      ],
+      "max": [
+       18,
+       1.6,
+       0.3
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "s": "fix2",
+   "shows": {
+    "p": "tank",
+    "does": "floor drain cut into the ground, tank pops in below"
+   },
+   "do": [
+    {
+     "p": "soapFlow",
+     "v": "stop",
+     "w": "So"
+    },
+    {
+     "p": "stormFlow",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "creek",
+     "v": "clean",
+     "w": "into"
+    },
+    {
+     "p": "dig",
+     "v": "dig",
+     "w": "cut"
+    },
+    {
+     "p": "grate",
+     "v": "show",
+     "w": "drain"
+    },
+    {
+     "p": "soapDrain",
+     "v": "start",
+     "w": "drain",
+     "o": 0.5
+    },
+    {
+     "p": "tank",
+     "v": "show",
+     "w": "tank"
+    },
+    {
+     "p": "intoTank",
+     "v": "start",
+     "w": "tank",
+     "o": 0.8
+    },
+    {
+     "p": "stormPipeOutfall",
+     "v": "stop",
+     "w": "So",
+     "o": 0.4
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "tank",
+      "grate"
+     ],
+     "width": 0.8
+    }
+   ]
+  },
+  {
+   "s": "name",
+   "shows": {
+    "p": "tankWater",
+    "does": "blue water rises inside the tank while the outline traces it"
+   },
+   "do": [
+    {
+     "p": "soapDrain",
+     "v": "stop",
+     "w": "This"
+    },
+    {
+     "p": "tankWater",
+     "v": "flood",
+     "w": "This",
+     "d": 2.2
+    },
+    {
+     "p": "tank",
+     "v": "fill",
+     "w": "This",
+     "d": 2.2
+    },
+    {
+     "p": "tankOutline",
+     "v": "show",
+     "w": "water"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "tank"
+     ],
+     "width": 0.6,
+     "hero": true
+    }
+   ]
+  },
+  {
+   "s": "how",
+   "shows": {
+    "p": "tank",
+    "does": "sand sinks, oil rises, water clears and goes to the pump"
+   },
+   "do": [
+    {
+     "p": "tankOutline",
+     "v": "hide",
+     "w": "Sand"
+    },
+    {
+     "p": "tankWater",
+     "v": "hide",
+     "w": "Sand"
+    },
+    {
+     "p": "tank",
+     "v": "sink",
+     "w": "sinks"
+    },
+    {
+     "p": "tank",
+     "v": "float",
+     "w": "rises"
+    },
+    {
+     "p": "tank",
+     "v": "clear",
+     "w": "clean"
+    },
+    {
+     "p": "intoTank",
+     "v": "stop",
+     "w": "clean"
+    },
+    {
+     "p": "outPipe",
+     "v": "grow",
+     "w": "goes"
+    },
+    {
+     "p": "pump",
+     "v": "show",
+     "w": "pump"
+    },
+    {
+     "p": "outFlow",
+     "v": "show",
+     "w": "pump",
+     "o": 0.2
+    }
+   ],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -7.2,
+       -5.3,
+       -4
+      ],
+      "max": [
+       -1,
+       0.8,
+       0.5
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "s": "fact",
+   "shows": {
+    "p": "returnPipe",
+    "does": "pump sends water through a pipe back to the arch"
+   },
+   "do": [
+    {
+     "p": "returnPipe",
+     "v": "grow",
+     "w": "sends",
+     "d": 2.2
+    },
+    {
+     "p": "returnFlow",
+     "v": "show",
+     "w": "percent"
+    },
+    {
+     "p": "arch",
+     "v": "spray",
+     "w": "arch"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "returnPipe",
+      "tank",
+      "arch"
+     ],
+     "width": 1
+    }
+   ]
+  },
+  {
+   "s": "myth",
+   "shows": {
+    "p": "wasteWater",
+    "does": "hose floods the floor, the wrong idea"
+   },
+   "do": [
+    {
+     "p": "arch",
+     "v": "stopSpray",
+     "w": "And"
+    },
+    {
+     "p": "wasteWater",
+     "v": "flood",
+     "w": "waste"
+    },
+    {
+     "p": "hoseSpray",
+     "v": "start",
+     "w": "hose"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "car",
+      "wasteWater"
+     ],
+     "type": "mid"
+    }
+   ]
+  },
+  {
+   "s": "mythFact",
+   "shows": {
+    "p": "arch",
+    "does": "arch sprays little fresh water while the hose runs"
+   },
+   "do": [
+    {
+     "p": "wasteWater",
+     "v": "hide",
+     "w": "It"
+    },
+    {
+     "p": "arch",
+     "v": "spray",
+     "w": "uses"
+    },
+    {
+     "p": "arch",
+     "v": "rinse",
+     "w": "fresh"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "arch",
+      "tank",
+      "hoseSpray"
+     ],
+     "width": 1
+    }
+   ]
+  },
+  {
+   "s": "finish",
+   "shows": {
+    "p": "canopy",
+    "does": "kiosk, vacuum and canopy are added"
+   },
+   "do": [
+    {
+     "p": "hoseSpray",
+     "v": "stop",
+     "w": "Add"
+    },
+    {
+     "p": "arch",
+     "v": "stopSpray",
+     "w": "Add"
+    },
+    {
+     "p": "arch",
+     "v": "open",
+     "w": "Add"
+    },
+    {
+     "p": "returnFlow",
+     "v": "hide",
+     "w": "Add"
+    },
+    {
+     "p": "outFlow",
+     "v": "hide",
+     "w": "Add"
+    },
+    {
+     "p": "dig",
+     "v": "refill",
+     "w": "Add"
+    },
+    {
+     "p": "kiosk",
+     "v": "show",
+     "w": "kiosk"
+    },
+    {
+     "p": "vacuum",
+     "v": "show",
+     "w": "vacuum"
+    },
+    {
+     "p": "canopy",
+     "v": "build",
+     "w": "canopy",
+     "o": -0.7
+    }
+   ],
+   "shots": [
+    {
+     "focus": "home"
+    }
+   ]
+  },
+  {
+   "s": "congrats",
+   "do": [],
+   "shots": [
+    {
+     "box": {
+      "min": [
+       -7,
+       -1,
+       -5
+      ],
+      "max": [
+       7.5,
+       4,
+       1
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "audio": {
+  "cards": [
+   {
+    "text": "80 PERCENT",
+    "at": {
+     "s": "fact",
+     "w": "80"
+    },
+    "d": 1.6
+   },
+   {
+    "text": "15 GALLONS",
+    "at": {
+     "s": "mythFact",
+     "w": "15"
+    },
+    "d": 1.6
+   },
+   {
+    "text": "140 GALLONS",
+    "at": {
+     "s": "mythFact",
+     "w": "140"
+    },
+    "d": 1.6
+   }
+  ],
+  "sfx": [
+   {
+    "lib": "water_rush",
+    "at": {
+     "s": "hook",
+     "w": "hose",
+     "o": 0.4
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "motor_hum",
+    "at": {
+     "s": "fix1",
+     "w": "strips"
+    },
+    "d": 1.5
+   },
+   {
+    "lib": "water_rush",
+    "at": {
+     "s": "problem2",
+     "w": "runs"
+    },
+    "d": 1.3
+   },
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "fix2",
+     "w": "cut",
+     "o": 0.05
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "drip",
+    "at": {
+     "s": "how",
+     "w": "sinks"
+    },
+    "d": 1.3
+   },
+   {
+    "lib": "motor_hum",
+    "at": {
+     "s": "fact",
+     "w": "sends"
+    },
+    "d": 2
+   }
+  ],
+  "chimes": [
+   {
+    "s": "name"
+   },
+   {
+    "s": "fact",
+    "w": "80"
+   },
+   {
+    "s": "mythFact",
+    "w": "15"
+   },
+   {
+    "s": "mythFact",
+    "w": "140"
+   },
+   {
+    "s": "congrats"
+   }
+  ]
+ },
+ "why": "A car wash in section: the car arrives, a hose smears mud, an arch with soap and cloth strips fixes it, and a floor drain leads to an underground reclaim tank where sand sinks and oil rises. A pump returns the water to the arch, and the myth is shown with a hose flooding the floor. I changed the two props to the allowed types kiosk and vacuum, ended the waste-water fill at the face, and re-aimed or tightened the shots so they hold the cut.",
+ "approved": false,
+ "facts": [
+  {
+   "index": 0,
+   "verdict": "keep",
+   "claim": "Driveway wash water flows untreated into storm drains and then into creeks, carrying soap, oil and grime.",
+   "why": "EPA says wash water goes untreated into rivers and creeks. The CU Anschutz stormwater office says soap, grease and grime flow untreated into storm drains that run to streams.",
+   "sources": [
+    {
+     "url": "https://cfpub.epa.gov/npstbx/files/tbsd_car_washing.pdf",
+     "title": "Car Washing - Environmental Protection Agency (EPA)"
+    },
+    {
+     "url": "https://www.cuanschutz.edu/offices/facilities-management/sustainability/stormwater/stormwater-at-home/vehicle-maintenance",
+     "title": "Vehicle Maintenance"
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "verdict": "keep",
+   "claim": "Reclaim systems can reuse up to 80 percent of the water in each wash.",
+   "why": "Trade magazine sources report reclaiming up to 80% of wash water. It is an upper-range figure, and the wording 'up to' fits.",
+   "sources": [
+    {
+     "url": "https://www.carwash.com/the-nitty-gritty-of-reclaim/",
+     "title": "The nitty-gritty of water reclaim - Professional Carwashing & Detailing"
+    },
+    {
+     "url": "https://www.carwash.com/carwash-water-recycling/",
+     "title": "What to know about carwash water recycling - Professional Carwashing & Detailing"
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "verdict": "reword",
+   "claim": "A professional car wash uses about 45 gallons per car, while a home hose can use over 100 gallons.",
+   "why": "The International Carwash Association says a professional wash uses 9 to 15 gallons of fresh water per vehicle, and home washing uses 40 to 140 gallons. The 45-gallon figure comes only from a calculator site. The script is reworded to the association's numbers.",
+   "sources": [
+    {
+     "url": "https://www.wewashcars.org/page/WaterConservation",
+     "title": "Water Conservation & Professional Car Washes"
+    },
+    {
+     "url": "https://gocarwash.com/how-drive-thru-car-washes-save-water",
+     "title": "How Drive-Thru Car Washes Save Water"
+    }
+   ]
+  }
+ ],
+ "savedFrom": "clarity/car_wash_c (passed the paid preview check 2026-10-24)",
+ "savedAt": "2026-10-24T20:21:48.961Z"
+}

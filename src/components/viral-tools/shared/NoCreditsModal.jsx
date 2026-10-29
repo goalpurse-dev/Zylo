@@ -14,6 +14,12 @@ const VARIANTS = {
     iconTile: "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-lime-300/20 to-lime-500/20 border border-lime-300/30",
     cta: "block w-full rounded-2xl bg-gradient-to-r from-lime-300 to-lime-500 py-3 text-center text-[15px] font-bold text-[#071006] hover:opacity-90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0F0D]",
   },
+  // Cutaway Explainer's green (tailwind `cutaway`)
+  cutaway: {
+    panel: "relative w-full max-w-sm rounded-3xl border border-cutaway/[0.16] bg-[#0C0F0D] p-6 shadow-2xl",
+    iconTile: "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cutaway/20 to-cutaway-deep/20 border border-cutaway/30",
+    cta: "block w-full rounded-2xl bg-cutaway py-3 text-center text-[15px] font-black text-cutaway-ink hover:bg-cutaway-soft transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cutaway/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0F0D]",
+  },
 };
 
 export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, creditBalance = 0, variant = "default" }) {

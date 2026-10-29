@@ -1,0 +1,1485 @@
+{
+ "key": "landfill",
+ "title": "How a landfill works",
+ "template": true,
+ "roles": [
+  "hook",
+  "problem",
+  "fix1",
+  "fix2",
+  "name",
+  "how",
+  "fact",
+  "factProof",
+  "problem2",
+  "myth",
+  "finish",
+  "congrats"
+ ],
+ "world": {
+  "cut": {
+   "x0": -5,
+   "x1": 5,
+   "z0": -8,
+   "depth": 6
+  }
+ },
+ "parts": [
+  {
+   "id": "dig",
+   "kind": "dig",
+   "params": {
+    "clumps": 150,
+    "margin": 0.6,
+    "endY": 1,
+    "arc": 4.2,
+    "uvFlip": true,
+    "mound": {
+     "x": 9.6,
+     "z": -11.8,
+     "rx": 2,
+     "rz": 1.625,
+     "flat": 0.5,
+     "base": 0.05,
+     "gain": 2.6,
+     "sx": 1.15,
+     "sy": 1,
+     "sz": 1
+    }
+   }
+  },
+  {
+   "id": "pit",
+   "kind": "panels",
+   "params": {
+    "panels": [
+     {
+      "ch": "clayFloor",
+      "mat": "clay",
+      "size": [
+       10,
+       0.5,
+       8
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       -5.75,
+       -8
+      ],
+      "axis": "z"
+     },
+     {
+      "ch": "clayWalls",
+      "mat": "clay",
+      "size": [
+       10,
+       6,
+       0.5
+      ],
+      "anchor": [
+       0,
+       1,
+       0
+      ],
+      "pos": [
+       0,
+       -6,
+       -7.75
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "clayWalls",
+      "mat": "clay",
+      "size": [
+       0.5,
+       6,
+       8
+      ],
+      "anchor": [
+       0,
+       1,
+       0
+      ],
+      "pos": [
+       -4.75,
+       -6,
+       -4
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "clayWalls",
+      "mat": "clay",
+      "size": [
+       0.5,
+       6,
+       8
+      ],
+      "anchor": [
+       0,
+       1,
+       0
+      ],
+      "pos": [
+       4.75,
+       -6,
+       -4
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "linerBack",
+      "mat": "liner",
+      "size": [
+       9,
+       5.5,
+       0.16
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       0,
+       0,
+       -7.42
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "linerSides",
+      "mat": "liner",
+      "size": [
+       0.16,
+       5.5,
+       7.5
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       -4.42,
+       0,
+       -3.75
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "linerSides",
+      "mat": "liner",
+      "size": [
+       0.16,
+       5.5,
+       7.5
+      ],
+      "anchor": [
+       0,
+       -1,
+       0
+      ],
+      "pos": [
+       4.42,
+       0,
+       -3.75
+      ],
+      "axis": "y"
+     },
+     {
+      "ch": "linerFloor",
+      "mat": "liner",
+      "size": [
+       9,
+       0.16,
+       7.5
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       -5.42,
+       -7.5
+      ],
+      "axis": "z"
+     },
+     {
+      "ch": "linerLips",
+      "mat": "liner",
+      "size": [
+       10.6,
+       0.16,
+       1.1
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       0.08,
+       -8.6
+      ],
+      "axis": "z",
+      "vis": 0.001
+     },
+     {
+      "ch": "linerLips",
+      "mat": "liner",
+      "size": [
+       1.1,
+       0.16,
+       8
+      ],
+      "anchor": [
+       -1,
+       0,
+       0
+      ],
+      "pos": [
+       -4.5,
+       0.08,
+       -4
+      ],
+      "axis": "x",
+      "vis": 0.001
+     },
+     {
+      "ch": "linerLips",
+      "mat": "liner",
+      "size": [
+       1.1,
+       0.16,
+       8
+      ],
+      "anchor": [
+       1,
+       0,
+       0
+      ],
+      "pos": [
+       4.5,
+       0.08,
+       -4
+      ],
+      "axis": "x",
+      "vis": 0.001
+     },
+     {
+      "ch": "linerLips",
+      "mat": "linerRim",
+      "size": [
+       10.8,
+       0.06,
+       0.07
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       0,
+       0.19,
+       -8.62
+      ],
+      "axis": null,
+      "vis": 0.001,
+      "r": 0.02
+     },
+     {
+      "ch": "linerLips",
+      "mat": "linerRim",
+      "size": [
+       0.07,
+       0.06,
+       8
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       -5.62,
+       0.19,
+       -4
+      ],
+      "axis": null,
+      "vis": 0.001,
+      "r": 0.02
+     },
+     {
+      "ch": "linerLips",
+      "mat": "linerRim",
+      "size": [
+       0.07,
+       0.06,
+       8
+      ],
+      "anchor": [
+       0,
+       0,
+       0
+      ],
+      "pos": [
+       5.62,
+       0.19,
+       -4
+      ],
+      "axis": null,
+      "vis": 0.001,
+      "r": 0.02
+     },
+     {
+      "ch": "cover1",
+      "mat": "soilCover",
+      "size": [
+       8.68,
+       0.32,
+       7.34
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       -3.5799999999999996,
+       -7.34
+      ],
+      "axis": "z",
+      "r": 0.06
+     },
+     {
+      "ch": "cover2",
+      "mat": "soilCover",
+      "size": [
+       8.68,
+       0.32,
+       7.34
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       -1.66,
+       -7.34
+      ],
+      "axis": "z",
+      "r": 0.06
+     },
+     {
+      "ch": "capSoil",
+      "mat": "soilCover",
+      "size": [
+       10,
+       1.5199999999999998,
+       8.4
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       -0.7399999999999999,
+       -8.4
+      ],
+      "axis": "z",
+      "r": 0.08
+     },
+     {
+      "ch": "capGrass",
+      "mat": "grass",
+      "size": [
+       10.8,
+       0.28,
+       8.6
+      ],
+      "anchor": [
+       0,
+       0,
+       1
+      ],
+      "pos": [
+       0,
+       0.14,
+       -8.6
+      ],
+      "axis": "z",
+      "r": 0.14,
+      "uv": [
+       2.7,
+       2.2
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bags1",
+   "kind": "bags",
+   "params": {
+    "area": {
+     "x0": -4.34,
+     "x1": 4.34,
+     "z0": -7.34,
+     "z1": 0
+    },
+    "h": 1.6,
+    "grid": [
+     5,
+     4
+    ],
+    "n0": 0,
+    "y0": -6,
+    "stagger": 0.035,
+    "dur": 0.6,
+    "fromTruck": {
+     "part": "truck",
+     "x": 0,
+     "y": 2.8,
+     "dz": 3.8
+    },
+    "liftStagger": {
+     "up": 0.008,
+     "down": 0.012
+    }
+   }
+  },
+  {
+   "id": "bags2",
+   "kind": "bags",
+   "params": {
+    "area": {
+     "x0": -4.34,
+     "x1": 4.34,
+     "z0": -7.34,
+     "z1": 0
+    },
+    "h": 1.6,
+    "grid": [
+     5,
+     4
+    ],
+    "n0": 3,
+    "y0": -3.42,
+    "stagger": 0.03,
+    "dur": 0.55,
+    "fromAbove": {
+     "xScale": 0.6,
+     "y": 7
+    }
+   }
+  },
+  {
+   "id": "truck",
+   "kind": "dumpTruck",
+   "params": {
+    "x": 0
+   },
+   "base": {
+    "z": -40,
+    "load": 1
+   }
+  },
+  {
+   "id": "drainPipe",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      -4.3,
+      -5.55,
+      -0.06
+     ],
+     [
+      4.7,
+      -5.55,
+      -0.06
+     ],
+     [
+      7.6,
+      -5.55,
+      -0.06
+     ],
+     [
+      7.6,
+      0.35,
+      -0.06
+     ],
+     [
+      8.7,
+      0.35,
+      -0.06
+     ]
+    ],
+    "r": 0.24,
+    "radial": 24,
+    "jointR": 0.29,
+    "mat": "pipeWhite"
+   }
+  },
+  {
+   "id": "tank",
+   "kind": "tank",
+   "params": {
+    "pos": [
+     9.9,
+     0,
+     -0.9
+    ],
+    "r": 1.3,
+    "h": 2.6,
+    "bands": [
+     0.5,
+     2
+    ],
+    "mat": "tankBlue"
+   }
+  },
+  {
+   "id": "juice",
+   "kind": "pipeRunFlow",
+   "params": {
+    "pipe": "drainPipe",
+    "count": 14,
+    "size": 0.13,
+    "speed": 3.2,
+    "dz": 0.22,
+    "mat": "juice"
+   }
+  },
+  {
+   "id": "newspaper",
+   "kind": "sheet",
+   "params": {
+    "masthead": "THE DAILY NEWS",
+    "date": "JUNE 3, 1952",
+    "headline": "NEW HIGHWAY OPENS",
+    "from": [
+     0.3,
+     -2.82,
+     -1.4
+    ],
+    "to": [
+     0.3,
+     1,
+     -1.1
+    ],
+    "sink": 3.4
+   }
+  },
+  {
+   "id": "gasPipe",
+   "kind": "riser",
+   "params": {
+    "x": -2.6,
+    "z": -4.6,
+    "y0": -5.34,
+    "y1": 3,
+    "r": 0.2,
+    "radial": 20,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "wellhead",
+   "kind": "boxPop",
+   "params": {
+    "size": [
+     0.85,
+     0.5,
+     0.85
+    ],
+    "pos": [
+     -2.6,
+     3.2,
+     -4.6
+    ],
+    "r": 0.1,
+    "mat": "chassis"
+   }
+  },
+  {
+   "id": "flare",
+   "kind": "flare",
+   "params": {
+    "pos": [
+     -2.6,
+     3.45,
+     -4.6
+    ],
+    "intensity": 30
+   }
+  },
+  {
+   "id": "bubbles",
+   "kind": "bubbles",
+   "params": {
+    "x0": -4.34,
+    "x1": 4.34,
+    "z": -0.15,
+    "y0": -5.34,
+    "y1": -1.8199999999999998,
+    "count": 46,
+    "speed": 0.35
+   }
+  },
+  {
+   "id": "generator",
+   "kind": "machine",
+   "params": {
+    "pos": [
+     -8.4,
+     0,
+     -11.6
+    ],
+    "rotY": 0.5
+   }
+  },
+  {
+   "id": "gasLine",
+   "kind": "pipeRun",
+   "params": {
+    "path": [
+     [
+      -2.6,
+      0.2,
+      -5.199999999999999
+     ],
+     [
+      -2.6,
+      0.2,
+      -10.4
+     ],
+     [
+      -7.2,
+      0.2,
+      -11
+     ]
+    ],
+    "r": 0.15,
+    "radial": 16,
+    "joints": false,
+    "mat": "metal"
+   }
+  },
+  {
+   "id": "fence",
+   "kind": "fence",
+   "params": {
+    "x0": -6.2,
+    "x1": 6.2,
+    "step": 1.55,
+    "zBack": -9.6,
+    "sideStart": 1.55,
+    "zFront": -0.6,
+    "railZ": -5.1,
+    "stagger": 0.025
+   }
+  },
+  {
+   "id": "youngTrees",
+   "kind": "youngTrees",
+   "params": {
+    "trees": [
+     [
+      -8,
+      -3.6,
+      0.55
+     ],
+     [
+      8.2,
+      -6.8,
+      0.6
+     ],
+     [
+      -11.5,
+      -11.4,
+      0.5
+     ]
+    ],
+    "stagger": 0.12
+   }
+  },
+  {
+   "id": "sign",
+   "kind": "sign",
+   "params": {
+    "at": [
+     0,
+     0.25,
+     -2.2
+    ],
+    "rotY": 0.3,
+    "scale": 1.5,
+    "postsReceiveShadow": true
+   }
+  },
+  {
+   "id": "seepArrows",
+   "kind": "arrows",
+   "params": {
+    "list": [
+     {
+      "at": [
+       -2,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0
+     },
+     {
+      "at": [
+       -2,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0.5
+     },
+     {
+      "at": [
+       0,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0.25
+     },
+     {
+      "at": [
+       0,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0.75
+     },
+     {
+      "at": [
+       2,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0
+     },
+     {
+      "at": [
+       2,
+       -6.6,
+       0.35
+      ],
+      "dir": [
+       0,
+       -1
+      ],
+      "travel": 3.6,
+      "phase": 0.5
+     }
+    ],
+    "opts": {
+     "scale": 1.25,
+     "speed": 0.9
+    }
+   }
+  },
+  {
+   "id": "seepFlow",
+   "kind": "seepFlow",
+   "params": {
+    "count": 70,
+    "width": 4.4,
+    "y0": -6.2,
+    "fall": 6.2,
+    "floor": -11.2
+   }
+  },
+  {
+   "id": "linerOutline",
+   "kind": "outline",
+   "params": {
+    "points": [
+     [
+      -4.92,
+      0.1,
+      0.06
+     ],
+     [
+      -4.92,
+      -5.92,
+      0.06
+     ],
+     [
+      4.92,
+      -5.92,
+      0.06
+     ],
+     [
+      4.92,
+      0.1,
+      0.06
+     ]
+    ],
+    "opts": {
+     "r": 0.11
+    }
+   }
+  },
+  {
+   "id": "leak",
+   "kind": "soilLeak",
+   "params": {
+    "x1": 3,
+    "x2": 1.4,
+    "murkX": 0
+   },
+   "base": {
+    "y1": -6,
+    "y2": -6
+   }
+  },
+  {
+   "id": "light",
+   "kind": "light",
+   "params": {}
+  }
+ ],
+ "cues": [],
+ "beats": [
+  {
+   "s": "hook",
+   "do": [
+    {
+     "p": "truck",
+     "v": "arrive"
+    },
+    {
+     "p": "dig",
+     "v": "dig",
+     "w": "dig"
+    },
+    {
+     "p": "bags1",
+     "v": "drop",
+     "w": "throw"
+    },
+    {
+     "p": "truck",
+     "v": "tip",
+     "w": "throw"
+    },
+    {
+     "p": "truck",
+     "v": "untip",
+     "w": "landfill"
+    },
+    {
+     "p": "truck",
+     "v": "leave",
+     "w": "landfill"
+    }
+   ],
+   "shots": [
+    {
+     "focus": [
+      "bags1"
+     ],
+     "type": "close"
+    }
+   ],
+   "shows": {
+    "p": "truck",
+    "does": "arrive truck"
+   }
+  },
+  {
+   "s": "problem",
+   "do": [
+    {
+     "p": "seepArrows",
+     "v": "show",
+     "w": "leaks"
+    },
+    {
+     "p": "seepFlow",
+     "v": "show",
+     "w": "leaks"
+    },
+    {
+     "p": "leak",
+     "v": "seep1",
+     "w": "leaks"
+    },
+    {
+     "p": "leak",
+     "v": "murk",
+     "w": "groundwater"
+    }
+   ],
+   "shot": {
+    "focus": [
+     "seepFlow"
+    ],
+    "width": 0.7
+   },
+   "shows": {
+    "p": "seepFlow",
+    "does": "show seepFlow"
+   }
+  },
+  {
+   "s": "fix1",
+   "do": [
+    {
+     "p": "seepArrows",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "seepFlow",
+     "v": "hide",
+     "w": "So"
+    },
+    {
+     "p": "leak",
+     "v": "clear1",
+     "w": "So"
+    },
+    {
+     "p": "bags1",
+     "v": "lift",
+     "w": "So"
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "lay",
+     "ch": "clayFloor"
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "lay",
+     "ch": "clayWalls",
+     "o": 0.23,
+     "d": 0.55
+    },
+    {
+     "p": "bags1",
+     "v": "lower",
+     "w": "lay",
+     "amp": 0.8076923076923077
+    },
+    {
+     "p": "seepArrows",
+     "v": "show",
+     "w": "not",
+     "amp": 0.8
+    },
+    {
+     "p": "leak",
+     "v": "seep2",
+     "w": "not"
+    }
+   ],
+   "shot": {
+    "focus": "home",
+    "scale": 0.93
+   },
+   "shots": [
+    {
+     "at": {
+      "s": "fix1",
+      "w": "not"
+     },
+     "focus": [
+      "seepFlow"
+     ],
+     "width": 0.65
+    }
+   ],
+   "shows": {
+    "p": "bags1",
+    "does": "lift bags1"
+   }
+  },
+  {
+   "s": "fix2",
+   "do": [
+    {
+     "p": "seepArrows",
+     "v": "hide",
+     "w": "add",
+     "amp": 0.8
+    },
+    {
+     "p": "bags1",
+     "v": "lift",
+     "w": "add"
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "plastic",
+     "ch": "linerBack",
+     "o": -0.37
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "plastic",
+     "ch": "linerSides",
+     "o": -0.22
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "plastic",
+     "ch": "linerFloor",
+     "o": 0.03
+    },
+    {
+     "p": "pit",
+     "v": "pop",
+     "w": "plastic",
+     "ch": "linerLips",
+     "o": 0.4
+    },
+    {
+     "p": "bags1",
+     "v": "lower",
+     "w": "plastic",
+     "o": 0.25,
+     "amp": 0.9384615384615385
+    },
+    {
+     "p": "leak",
+     "v": "clear2",
+     "w": "plastic"
+    }
+   ],
+   "shows": {
+    "p": "bags1",
+    "does": "lift bags1"
+   }
+  },
+  {
+   "s": "name",
+   "do": [
+    {
+     "p": "linerOutline",
+     "v": "show",
+     "w": "liner"
+    }
+   ],
+   "shot": {
+    "focus": [
+     "pit"
+    ],
+    "width": 0.8,
+    "hero": true
+   },
+   "shows": {
+    "p": "linerOutline",
+    "does": "show linerOutline"
+   }
+  },
+  {
+   "s": "how",
+   "do": [
+    {
+     "p": "linerOutline",
+     "v": "hide",
+     "w": "pipe"
+    },
+    {
+     "p": "drainPipe",
+     "v": "grow",
+     "w": "pipe"
+    },
+    {
+     "p": "juice",
+     "v": "show",
+     "w": "drains",
+     "o": 0.5
+    },
+    {
+     "p": "tank",
+     "v": "show",
+     "w": "tank"
+    }
+   ],
+   "shot": {
+    "at": {
+     "s": "how",
+     "w": "drains"
+    },
+    "focus": [
+     "drainPipe",
+     "tank"
+    ],
+    "width": 1.15
+   },
+   "shows": {
+    "p": "drainPipe",
+    "does": "grow drainPipe"
+   }
+  },
+  {
+   "s": "fact",
+   "do": [
+    {
+     "p": "juice",
+     "v": "hide"
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "Sealed",
+     "ch": "cover1",
+     "o": -0.02,
+     "d": 0.6
+    },
+    {
+     "p": "bags2",
+     "v": "drop",
+     "w": "rots",
+     "o": -0.45
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "buried",
+     "ch": "cover2",
+     "o": -0.32,
+     "d": 0.6
+    }
+   ],
+   "shot": {
+    "focus": [
+     "pit"
+    ],
+    "width": 0.95
+   },
+   "shows": {
+    "p": "pit",
+    "does": "grow pit"
+   }
+  },
+  {
+   "s": "factProof",
+   "do": [
+    {
+     "p": "newspaper",
+     "v": "show",
+     "w": "newspaper"
+    },
+    {
+     "p": "light",
+     "v": "dip",
+     "w": "decades"
+    }
+   ],
+   "shot": {
+    "at": {
+     "s": "factProof",
+     "w": "newspaper"
+    },
+    "focus": [
+     "newspaper"
+    ],
+    "width": 0.45
+   },
+   "shows": {
+    "p": "newspaper",
+    "does": "show newspaper"
+   }
+  },
+  {
+   "s": "problem2",
+   "do": [
+    {
+     "p": "newspaper",
+     "v": "hide",
+     "w": "But"
+    },
+    {
+     "p": "bubbles",
+     "v": "show",
+     "w": "But",
+     "o": 0.4
+    },
+    {
+     "p": "gasPipe",
+     "v": "grow",
+     "w": "pipe",
+     "d": 0.92
+    },
+    {
+     "p": "wellhead",
+     "v": "show",
+     "w": "carries",
+     "o": 0.65
+    }
+   ],
+   "shot": {
+    "focus": "home",
+    "scale": 0.95
+   },
+   "shows": {
+    "p": "bubbles",
+    "does": "show bubbles"
+   }
+  },
+  {
+   "s": "myth",
+   "do": [
+    {
+     "p": "flare",
+     "v": "show",
+     "w": "flame",
+     "o": 0.05
+    },
+    {
+     "p": "gasLine",
+     "v": "grow",
+     "w": "electricity",
+     "o": -0.45,
+     "d": 0.8
+    },
+    {
+     "p": "generator",
+     "v": "show",
+     "w": "electricity",
+     "o": 0.25
+    }
+   ],
+   "shot": {
+    "at": {
+     "s": "myth",
+     "w": "flame"
+    },
+    "focus": [
+     "flare",
+     "wellhead"
+    ],
+    "width": 0.35
+   },
+   "shots": [
+    {
+     "at": {
+      "s": "myth",
+      "w": "electricity"
+     },
+     "focus": [
+      "generator",
+      "gasLine"
+     ],
+     "width": 0.6
+    }
+   ],
+   "shows": {
+    "p": "flare",
+    "does": "show flare"
+   }
+  },
+  {
+   "s": "finish",
+   "do": [
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "cap",
+     "ch": "capSoil",
+     "o": -0.37,
+     "d": 0.65
+    },
+    {
+     "p": "pit",
+     "v": "grow",
+     "w": "cap",
+     "ch": "capGrass",
+     "o": -0.17,
+     "d": 0.65
+    },
+    {
+     "p": "bubbles",
+     "v": "hide",
+     "w": "cap"
+    },
+    {
+     "p": "fence",
+     "v": "show",
+     "w": "fence"
+    },
+    {
+     "p": "youngTrees",
+     "v": "show",
+     "w": "trees"
+    }
+   ],
+   "shot": {
+    "focus": "home"
+   },
+   "shows": {
+    "p": "pit",
+    "does": "grow pit"
+   }
+  },
+  {
+   "s": "congrats",
+   "shot": {
+    "focus": "home",
+    "scale": 1.03
+   }
+  }
+ ],
+ "camera": {
+  "home": {
+   "pos": [
+    13,
+    10.8,
+    33.5
+   ],
+   "tgt": [
+    0.2,
+    2.3,
+    -9
+   ]
+  }
+ },
+ "audio": {
+  "cards": [
+   {
+    "text": "37 YEARS",
+    "at": {
+     "s": "factProof",
+     "w": "readable"
+    },
+    "d": 1.8
+   },
+   {
+    "text": "480 LANDFILLS",
+    "at": {
+     "s": "myth",
+     "w": "electricity"
+    },
+    "d": 1.8
+   }
+  ],
+  "sfx": [
+   {
+    "lib": "dirt",
+    "at": {
+     "s": "hook",
+     "w": "throw",
+     "o": 0.25
+    },
+    "d": 1.2
+   },
+   {
+    "lib": "drip",
+    "at": {
+     "s": "problem",
+     "w": "leaks"
+    },
+    "d": 1.3
+   },
+   {
+    "lib": "water_rush",
+    "at": {
+     "s": "how",
+     "w": "drains"
+    },
+    "d": 1.4
+   },
+   {
+    "lib": "flame",
+    "at": {
+     "s": "myth",
+     "w": "flame"
+    },
+    "d": 1.3
+   }
+  ],
+  "chimes": [
+   {
+    "s": "name"
+   },
+   {
+    "s": "factProof",
+    "w": "readable"
+   },
+   {
+    "s": "myth",
+    "w": "electricity"
+   },
+   {
+    "s": "congrats"
+   }
+  ]
+ },
+ "facts": [
+  {
+   "verdict": "keep",
+   "claim": "A 1952 newspaper dug up from a landfill decades later was still readable",
+   "sources": [
+    {
+     "url": "https://www.csmonitor.com/1992/1208/08131.html",
+     "title": "Christian Science Monitor"
+    }
+   ]
+  },
+  {
+   "verdict": "keep",
+   "claim": "About 490 US landfills feed their gas to energy projects",
+   "sources": [
+    {
+     "url": "https://www.epa.gov/lmop",
+     "title": "EPA LMOP"
+    }
+   ]
+  }
+ ]
+}

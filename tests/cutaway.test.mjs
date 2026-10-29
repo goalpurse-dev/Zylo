@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { PRICE_ROWS, PRICES, USD_PER_CREDIT, BASIS, LENGTHS, COSTS_3D, videoCredits } from "../supabase/functions/_shared/cutaway/pricing.js";
+import { PRICE_ROWS, PRICES, BASIS, LENGTHS, KINDS, CREDIT, MEASURED, fullCostUsd, costBasisUsd, videoCredits } from "../supabase/functions/_shared/cutaway/pricing.js";
+import { DEFAULT_SETTINGS } from "../supabase/functions/_shared/cutaway/guard.js";
 import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, wordsToFit, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
 import { alignmentWords } from "../supabase/functions/_shared/cutaway/voice.js";
@@ -56,30 +57,52 @@ test("lengths are 30 s (default) and 60 s", () => {
   assert.deepEqual([...LENGTHS], [30, 60]);
 });
 
-test("3D prices: premade 40 / 62 and custom 66 / 95 credits (30 / 60 s), each 2.5-3x our cost", () => {
-  assert.deepEqual(PRICES.video.credits, { premade: { 30: 40, 60: 62 }, custom: { 30: 66, 60: 95 } });
-  for (const k of ["premade", "custom"]) for (const s of LENGTHS) {
-    const x = (PRICES.video.credits[k][s] * USD_PER_CREDIT) / COSTS_3D[k][s];
-    assert.ok(x >= 2.5 && x <= 3, `${k} ${s}: ${x.toFixed(2)}x`);
-    assert.equal(videoCredits(k, s), PRICES.video.credits[k][s]);
+test("3D prices: credits = our full real cost / $0.01, rounded up (failed attempts included); the user pays 2x", () => {
+  assert.equal(CREDIT.ourUsd, 0.01);
+  assert.equal(CREDIT.userUsd, 2 * CREDIT.ourUsd);
+  for (const k of KINDS) for (const s of LENGTHS) {
+    const m = MEASURED[k][s], attempt = Object.values(m.attempt).reduce((a, b) => a + b, 0);
+    const full = attempt + (m.failed * (1 - m.passRate)) / m.passRate;
+    assert.ok(Math.abs(fullCostUsd(k, s) - full) < 1e-4);
+    assert.equal(videoCredits(k, s), Math.ceil(fullCostUsd(k, s) / 0.01 - 1e-9), `${k} ${s}`);
+    assert.ok(videoCredits(k, s) * CREDIT.userUsd >= 2 * fullCostUsd(k, s) - 1e-9, "never under 2x our cost");
+    assert.ok(costBasisUsd(k, s) <= fullCostUsd(k, s));
   }
+  assert.ok(videoCredits("premade", 30) < videoCredits("premade", 60) && videoCredits("premade", 60) < videoCredits("custom", 30) && videoCredits("custom", 30) < videoCredits("custom", 60));
   assert.throws(() => videoCredits("custom", 45));
   assert.equal(PRICES.video.toolKey("custom", 60), "cutaway:custom-60");
-  assert.equal(BASIS.markup, 2); // the old regenerate price keeps the template basis
+  assert.equal(BASIS.markup, 2); // the old engine keeps its basis
 });
 
 test("the migration's tool_prices rows match pricing.js", () => {
-  const sql = readFileSync(new URL("../supabase/migrations/20261106100000_cutaway_explainer.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20261124100000_cutaway_explainer.sql", import.meta.url), "utf8");
+  assert.equal(PRICE_ROWS.length, 4);
+  // (a later migration may set a row's price: the custom design cost of 2026-10-26)
+  const later = readFileSync(new URL("../supabase/migrations/20261127100000_cutaway_parts_library.sql", import.meta.url), "utf8");
   for (const row of PRICE_ROWS) {
+    const upd = later.match(new RegExp(`SET flat_credits = (\\d+) WHERE tool_key = '${row.tool_key}'`));
+    if (upd) { assert.equal(Number(upd[1]), row.flat_credits, row.tool_key); continue; }
     const line = sql.split("\n").find((l) => l.includes(`'${row.tool_key}'`) && l.trim().startsWith("("));
     assert.ok(line, `no row for ${row.tool_key}`);
-    if (row.flat_credits != null) assert.match(line, new RegExp(`'${row.tool_key}', NULL, ${row.flat_credits},`));
-    else assert.match(line, new RegExp(`'${row.tool_key}', ${row.credits_per_second}, NULL, ARRAY\\[30, 60\\]`));
+    assert.ok(line.includes(`'${row.tool_key}', NULL, ${row.flat_credits}, NULL,`), line);
   }
-  assert.match(sql, /length_sec IN \(30, 60\)/);
-  assert.doesNotMatch(sql, /cutaway:plan-|'cutaway:video'/, "the old two-step prices are gone");
-  assert.doesNotMatch(sql, /global_feature_flags|user_feature_flags/, "no flag rows: the template uses the build switch");
-  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.cutaway_parts_backlog/);
+  assert.ok(!existsSync(new URL("../supabase/migrations/20261106100000_cutaway_explainer.sql", import.meta.url)), "the unapplied draft is gone");
+  assert.match(sql, /length_sec\s+integer NOT NULL CHECK \(length_sec IN \(30, 60\)\)/);
+  assert.doesNotMatch(sql, /cutaway:plan-|'cutaway:video'|cutaway:image/, "the old prices are gone");
+  for (const t of ["cutaway_runs", "cutaway_layouts", "cutaway_settings", "cutaway_cost_ledger", "cutaway_parts_backlog"]) assert.ok(sql.includes(`CREATE TABLE IF NOT EXISTS public.${t} (`), t);
+  for (const fn of ["cutaway_start_run", "cutaway_refund", "cutaway_add_cost", "cutaway_guard"]) assert.match(sql, new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${fn}\\(.*TO service_role`));
+  assert.ok(sql.includes("'cutaway-renders', 'cutaway-renders', false, 524288000"));
+  assert.ok(sql.includes("cron.schedule('cutaway-watchdog', '*/2 * * * *'"));
+  // the settings row's defaults are guard.js DEFAULT_SETTINGS (the emergency cap's later migration changes one default
+  // and drops the per-user money cap and the others the owner removed on 2026-10-25)
+  const caps = readFileSync(new URL("../supabase/migrations/20261125100000_cutaway_emergency_cap.sql", import.meta.url), "utf8");
+  const changed = { daily_cap_usd: /ALTER COLUMN daily_cap_usd SET DEFAULT (\d+)/.exec(caps)?.[1] };
+  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
+    if (changed[k] != null) assert.equal(Number(changed[k]), v, k);
+    else assert.match(sql, new RegExp(`\\n\\s+${k}\\s+\\w+\\s+NOT NULL DEFAULT ${v}[,\\n]`), k);
+  }
+  for (const gone of ["window_cap_usd", "user_daily_usd", "user_fail_streak", "fail_pause_min", "max_running"]) assert.match(caps, new RegExp(`DROP COLUMN IF EXISTS ${gone}\\b`), gone);
+  assert.match(caps, /UPDATE public\.cutaway_settings SET daily_cap_usd = 20\b/);
 });
 
 // ---------- topics ----------
@@ -608,8 +631,9 @@ test("cutaway switch: the page, the Short Form menu and the server all use it, a
   const page = read("src/pages/workspace/CutawayExplainer.jsx"), menu = read("src/components/workspace/CreateMenu.jsx"), server = read("supabase/functions/cutaway-api/index.ts");
   assert.match(page, /if \(!CUTAWAY_ENABLED\) return <Navigate/);
   assert.match(menu, /enabled: CUTAWAY_ENABLED,/);
-  assert.match(server, /Deno\.env\.get\("CUTAWAY_ENABLED"\)/);
-  assert.match(server, /if \(!CUTAWAY_ENABLED\) throw new ApiError/);
+  assert.match(server, /const ENABLED = flag\("CUTAWAY_ENABLED"\) === "true";/);
+  assert.match(server, /if \(!ENABLED && !who\.tester\) throw new ApiError\("OFF"\);/, "off for everyone but the test users");
+  assert.match(server, /const TESTERS = adminEmailList\(Deno\.env\.get\("CUTAWAY_TEST_USERS"\)\);/);
   for (const [name, src] of [["page", page], ["menu", menu], ["server", server]]) {
     assert.doesNotMatch(src, /CUTAWAY_FLAG|"cutaway_explainer"/, `${name} still refers to the old flag`);
   }
@@ -633,9 +657,14 @@ test("access: signed out = guest, free/unknown plan = free, Starter and above (a
 test("access: the server enforces the same rule on every action, before anything is charged", () => {
   const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
   assert.match(server, /import \{ canGenerate \} from "\.\.\/_shared\/cutaway\/access\.js";/);
-  assert.match(server, /if \(!canGenerate\(profile\?\.plan_code \?\? "free"\)\) throw new ApiError\("Cutaway Explainer is for paid plans\.", 402\);/);
-  // every action goes through requireUser first: it is the first line of handle()
-  assert.match(server, /async function handle\(req: Request\) \{\r?\n  const userId = await requireUser\(req\);/);
+  assert.match(server, /if \(!canGenerate\(who\.plan\)\) throw new ApiError\("UPGRADE"\);/);
+  // start goes through requireGenerator (the switch or a test user, then a paid plan) before the caps and the charge
+  assert.match(server, /const who = action === "start" \? await requireGenerator\(req, trace\) : await requireUser\(req, trace\);/);
+  assert.ok(server.indexOf("requireGenerator(req, trace)") < server.indexOf('admin.rpc("cutaway_start_run"'));
+  // the owner's dry run stops before the charge
+  assert.ok(server.indexOf("body?.dryRun === true && who.tester") < server.indexOf('admin.rpc("cutaway_start_run"'));
+  // every other action after access needs a signed-in user and reads only that user's runs
+  assert.match(server, /\.eq\("id", runId\)\.eq\("user_id", who\.user\.id\)/);
   assert.doesNotMatch(server, /PAID_PLANS/, "no second copy of the plan list in the server");
 });
 
@@ -675,39 +704,51 @@ test("topics: a tapped chip or a typed topic naming one premade topic is premade
   for (const text of ["septic tank vs sewer", "pool heater", "how does a dry well work", "rain barrel", "how does a microwave work", "", "how well does a dishwasher clean"]) assert.equal(classifyTopic(text).kind, "custom", text);
 });
 
-test("kit check: yes for kit parts, no (with what is missing) for parts the kit lacks, unsure goes to the server's Haiku check", async () => {
+test("kit check: everything buildable is yes (a part the kit lacks is designed); only what cannot be a cutaway is no; a name goes to Haiku", async () => {
   const { kitCheck, closestPremade } = await import("../supabase/functions/_shared/cutaway/topics.js");
-  assert.equal(kitCheck("how does a dry well work").verdict, "yes");
-  assert.equal(kitCheck("rain barrel").verdict, "yes");
-  const no = kitCheck("how does a microwave work");
-  assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["kitchen appliances"]);
+  // (the owner, 2026-10-26: users will type topics the kit has never seen; they are built, not refused)
+  for (const t of ["how does a dry well work", "rain barrel", "how does a microwave work", "how does a jet engine work", "washing machine", "lightning rod", "garage door", "elevator"]) assert.equal(kitCheck(t).verdict, "yes", t);
+  const no = kitCheck("how does the human heart work");
+  assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["the human body"]);
   assert.equal(no.closest.length, 3);
-  assert.deepEqual(kitCheck("how does a jet engine work").missing, ["engines and vehicles' insides"]);
-  assert.equal(kitCheck("washing machine").verdict, "no");
-  assert.equal(kitCheck("lightning rod").verdict, "unsure");
+  assert.deepEqual(kitCheck("a black hole").missing, ["space"]);
+  assert.deepEqual(kitCheck("bitcoin").missing, ["an idea, not a thing you can build"]);
+  assert.equal(kitCheck("how Elon Musk builds rockets").verdict, "unsure", "a name that may be a real person: Claude Haiku decides");
   assert.deepEqual(closestPremade("how do toilets flush", 2), ["septic_tank", "sewer_pipe"]);
   assert.equal(closestPremade("how does flooding in a basement happen", 1)[0], "french_drain");
 });
 
 test("quote: the credits come from the topic, premade or custom, and say whether it can be built", async () => {
   const { quoteTopic, closestNames } = await import("../supabase/functions/_shared/cutaway/quote.js");
-  assert.deepEqual([quoteTopic("Septic tank", 30).credits, quoteTopic("how does a septic tank work", 60).credits], [40, 62]);
-  assert.deepEqual([quoteTopic("how does a dry well work", 30).credits, quoteTopic("rain barrel", 60).credits], [66, 95]);
-  const q = quoteTopic("how does a microwave work", 30);
+  assert.deepEqual([quoteTopic("Septic tank", 30).credits, quoteTopic("how does a septic tank work", 60).credits], [videoCredits("premade", 30), videoCredits("premade", 60)]);
+  assert.deepEqual([quoteTopic("how does a dry well work", 30).credits, quoteTopic("rain barrel", 60).credits], [videoCredits("custom", 30), videoCredits("custom", 60)]);
+  const q = quoteTopic("how does the human heart work", 30);
   assert.equal(q.kind, "custom"); assert.equal(q.check.verdict, "no");
   assert.equal(closestNames(q.check.closest).length, 3);
   assert.equal(quoteTopic("Road", 30).check.verdict, "yes", "premade topics are always buildable (septic, pool, well, road without a saved layout too)");
+  // the page quotes by the server's rule: premade only with an approved layout, so it never shows less than is charged
+  const approved = ["landfill", "car_wash"];
+  assert.equal(quoteTopic("Car wash", 30, approved).kind, "premade");
+  const septic = quoteTopic("Septic tank", 30, approved);
+  assert.deepEqual([septic.kind, septic.credits], ["custom", videoCredits("custom", 30)]);
+  assert.equal(quoteTopic("Landfill", 60, []).kind, "custom", "nothing approved (or the list unread): everything custom");
+  const { freshSuggestions } = await import("../src/data/cutawayTopics.js");
+  assert.deepEqual(freshSuggestions([], 6, approved).map((t) => t.key), ["landfill", "car_wash"]);
 });
 
 test("server: decides the price from the topic it got, checks the kit before charging, logs what it can't build, charges once", () => {
   const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
-  assert.match(server, /const quote = await serverQuote\(userId, topic, lengthSec, \{ log: action === "start" \}\);/);
-  assert.match(server, /if \(!quote\.buildable\) return \{ cantBuild: true, message: "We can't build this one yet\.", quote \}; \/\/ not charged/);
-  assert.match(server, /const credits = await price\(PRICES\.video\.toolKey\(quote\.kind, lengthSec\)\);/);
-  assert.ok(server.indexOf("if (!quote.buildable)") < server.indexOf("await charge(userId, credits);"), "the kit check comes before the charge");
+  assert.match(server, /const quote = await serverQuote\(who\.user\.id, topic, lengthSec, \{ log: action === "start" && body\?\.dryRun !== true \}\);/);
+  assert.match(server, /if \(!quote\.buildable\) throw new ApiError\("CANT_BUILD"/);
+  assert.match(server, /admin\.rpc\("compute_tool_price", \{ p_tool_key: PRICES\.video\.toolKey\(quote\.kind, lengthSec\)/);
+  const at = (s) => server.indexOf(s);
+  assert.ok(at("if (!quote.buildable)") < at('admin.rpc("cutaway_guard"') && at('admin.rpc("cutaway_guard"') < at('admin.rpc("cutaway_start_run"'), "kit check, then the caps, then the one charge");
+  assert.equal(server.split('admin.rpc("cutaway_start_run"').length, 2, "charged in one place");
   assert.match(server, /from\("cutaway_parts_backlog"\)\.insert\(/);
+  assert.match(server, /approved\.has\(c\.premade\)/, "premade only with an approved layout");
   assert.doesNotMatch(server, /body\?\.(credits|price|kind)\b/, "nothing the page sends about the price is read");
-  assert.doesNotMatch(server, /PRICES\.plan|PRICES\.video\.toolKey\(\)/, "no second charge: approve is free");
+  assert.doesNotMatch(server, /deduct_credits/, "no second charge path");
+  assert.match(server, /if \(body\?\.testFail === true && who\.tester && !ENABLED\)/, "the forced failure is for test users in owner test mode only");
 });
 
 test("kit check call: Haiku 5.5, low effort, a JSON schema answer (no forced tool), refusals count as not buildable", async () => {
@@ -727,10 +768,13 @@ test("page: 'Premade topics', the live price with its label, and the can't-build
   const builder = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayBuilder.jsx", import.meta.url), "utf8");
   assert.match(builder, />Premade topics</);
   assert.doesNotMatch(builder, /Topics it can build/);
-  assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec\), \[topic, lengthSec\]\);/);
+  assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec, approved \?\? \[\]\), \[topic, lengthSec, approved\]\);/);
+  // only approved topics are premade, and every one of them always shows (a topic already made or picked too)
+  assert.match(builder, /freshSuggestions\(\[\], 6, approved \?\? \[\]\)/, "all approved topics, always");
   assert.match(builder, /"Premade topic" : "Custom topic"/);
-  assert.match(builder, /We can't build this one yet/);
-  assert.ok(builder.indexOf('quote.check.verdict === "no"') < builder.indexOf("onGenerate({ topic: clean"), "the check runs before generating");
+  assert.match(builder, /We can't make this one/);
+  // the server decides (and logs every refusal for the owner): the page no longer refuses on its own
+  assert.doesNotMatch(builder, /quote.check.verdict === "no"/);
 });
 
 // ---------- one video at a time (the "plays twice" bug) and the redesigned views ----------
