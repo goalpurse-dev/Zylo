@@ -203,8 +203,9 @@ if (LOOK === "A") {
   scene.background = C("#101114");
   const fl = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: C("#16171b"), roughness: 0.9 })); fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl);
   lights({ key: ["#fff6ee", 2.6, [3, 7, 9]], rims: [[ZYVO.violet2, 1.2, [-6, 4, -5]]], fill: 0.4 });
-  creator.group.position.set(-0.62, -0.95, 0); zee.group.position.set(0.68, -0.35, 0); creator.group.rotation.y = 0.15; zee.group.rotation.y = -0.15;
-  camera.position.set(0, 1.25, 7.2); camera.lookAt(0, 1.15, 0); camera.fov = 22; camera.updateProjectionMatrix();
+  // the same wide framing as the main stage (look A), so the sheet shows what a phone really shows
+  creator.group.position.set(-0.85, 0, 0.6); zee.group.position.set(0.85, 0, 0.3); creator.group.rotation.y = 0.2; zee.group.rotation.y = -0.2;
+  camera.position.set(0, 2.2, 11.5); camera.lookAt(0, 1.75, 0); camera.fov = 30; camera.updateProjectionMatrix();
   bloom = 0.2;
 }
 const SHEET = ["neutral", "happy", "sad", "shocked", "smug", "thinking"];
@@ -223,6 +224,6 @@ composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, sat: { 
   fragmentShader: "uniform sampler2D tDiffuse; uniform float sat; uniform float con; varying vec2 vUv; void main(){ vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = mix(vec3(l), c.rgb, sat); c.rgb = (c.rgb - 0.5) * con + 0.5; gl_FragColor = vec4(clamp(c.rgb, 0.0, 1.0), c.a); }" }));
 { const v = new ShaderPass(VignetteShader); v.uniforms.offset.value = 0.95; v.uniforms.darkness.value = vig; composer.addPass(v); }
 window.renderAt = (t = 0) => {
-  if (LOOK === "E") { const e = SHEET[Math.floor(t) % SHEET.length]; for (const c of [creator, zee]) c.expr(e).pose(SHEET_POSE[e], 0.6).mouth(e === "happy" ? 0.5 : e === "shocked" ? 1 : 0); }
+  if (LOOK === "E") { const e = SHEET[Math.floor(t) % SHEET.length]; for (const c of [creator, zee]) c.expr(e).pose(SHEET_POSE[e], 0.6).mouth(0); }
   creator.idle(t); zee.idle(t, 0.7); const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };
 manager.onLoad = () => { window.ready = true; };

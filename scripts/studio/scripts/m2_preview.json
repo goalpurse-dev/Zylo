@@ -1,0 +1,115 @@
+{
+  "title": "M2 preview: hook + proof (10 s)",
+  "notes": "The pain is a skit (fictional). Every Zyvo number is real: 9 short-form templates (fact short_templates). The phone plays a real AI Fruit Story output; the wall shows real outputs only (wall.json).",
+  "voices": {
+    "kokoro": {
+      "creator": {
+        "voice": "am_liam",
+        "speed": 1.12
+      },
+      "zee": {
+        "voice": "af_bella",
+        "speed": 1.12
+      }
+    },
+    "eleven": {
+      "creator": "a young male voice (picked with the owner)",
+      "zee": "a bright friendly voice (picked with the owner)"
+    }
+  },
+  "lead": 0.12,
+  "gap_speaker": 0.2,
+  "gap_same": 0.12,
+  "tail": 0.7,
+  "music_db_under": 14,
+  "lines": [
+    {
+      "who": "creator",
+      "text": "Zyvo, my last Short took six hours.",
+      "key": [
+        "six",
+        "hours."
+      ],
+      "expr": "sad",
+      "pose": "shrug",
+      "cues": [
+        {
+          "word": 0,
+          "event": "pill",
+          "sfx": "pop",
+          "offset": 0.2
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Six hours? Look at this.",
+      "key": [
+        "this."
+      ],
+      "expr": "smug",
+      "pose": "pointUp",
+      "cues": [
+        {
+          "word": 2,
+          "event": "phoneOn",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "creator",
+      "text": "Wait, Zyvo made that?",
+      "key": [
+        "Zyvo"
+      ],
+      "expr": "shocked",
+      "pose": "handsUp"
+    },
+    {
+      "who": "zee",
+      "text": "That, and this whole wall.",
+      "key": [
+        "wall."
+      ],
+      "expr": "happy",
+      "pose": "point",
+      "cues": [
+        {
+          "word": 3,
+          "event": "wall",
+          "sfx": "sparkle"
+        }
+      ]
+    },
+    {
+      "who": "zee",
+      "text": "Nine short-form templates, all in Zyvo.",
+      "key": [
+        "Nine"
+      ],
+      "expr": "smug",
+      "pose": "rest",
+      "cues": [
+        {
+          "word": 0,
+          "event": "counter"
+        },
+        {
+          "word": 2,
+          "event": "counterEnd",
+          "sfx": "pop"
+        }
+      ]
+    },
+    {
+      "who": "creator",
+      "text": "Okay. Show me how!",
+      "key": [
+        "how!"
+      ],
+      "expr": "happy",
+      "pose": "point"
+    }
+  ]
+}

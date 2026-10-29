@@ -19,7 +19,7 @@ const puppeteer = createRequire(path.join(PROTO, "package.json"))("puppeteer-cor
 const types = { ".html": "text/html", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".hdr": "application/octet-stream", ".mp4": "video/mp4" };
 const resolve = (url) => {
   const p = decodeURIComponent(url.split("?")[0]);
-  const [base, rel] = p.startsWith("/node_modules/") || p.startsWith("/assets/") ? [PROTO, p] : p.startsWith("/pics/") && PICS ? [PICS, p.slice(5)] : [root, p];
+  const [base, rel] = p.startsWith("/node_modules/") || p.startsWith("/assets/") ? [PROTO, p] : p.startsWith("/pics/") && PICS ? [PICS, p.slice(5)] : p.startsWith("/work/") && process.env.WORK_DIR ? [process.env.WORK_DIR, p.slice(5)] : [root, p];
   const f = path.join(base, rel);
   return f.startsWith(path.resolve(base)) ? f : null;
 };
@@ -38,18 +38,22 @@ await page.setViewport({ width: 1080, height: 1920 });
 await page.goto(`http://localhost:${port}/${process.env.PAGE ?? "look.html"}`);
 await page.waitForFunction("window.ready === true", { timeout: 60000 });
 
+// the composited frame (#out: 3D + overlays) when the page has one, else the WebGL canvas
+const grab = (t, q) => page.evaluate(async (t, q) => { await window.renderAt(t); return (document.getElementById("out") ?? document.querySelector("canvas")).toDataURL("image/jpeg", q); }, t, q);
 if (only) {
   for (const t of only.split(",")) {
-    const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.92); }, Number(t));
+    const data = await grab(Number(t), 0.92);
     fs.writeFileSync(`${out}-${t}.jpg`, Buffer.from(data.split(",")[1], "base64"));
     console.log(`saved ${out}-${t}.jpg (${(await page.evaluate(() => window.lastMs ?? 0)).toFixed(0)} ms)`);
   }
 } else {
   const n = Math.round(Number(secs) * Number(fps));
-  const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
+  // AUDIO=<wav>: muxed in as AAC (the mix made by audio.py)
+  const audio = process.env.AUDIO ? ["-i", process.env.AUDIO, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "192k", "-shortest"] : [];
+  const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", ...audio, "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
   for (let f = 0; f < n; f++) {
-    const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.95); }, f / Number(fps));
+    const data = await grab(f / Number(fps), 0.95);
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }
@@ -57,5 +61,7 @@ if (only) {
   await new Promise((r) => enc.on("close", r));
   console.log(`rendered ${n} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
+const zones = await page.evaluate(() => window.zoneReport?.() ?? null);
+if (zones) console.log(Object.keys(zones).length ? `SAFE ZONES: ${JSON.stringify(zones)}` : "SAFE ZONES: every face and key prop inside on every frame");
 await browser.close();
 server.close();
