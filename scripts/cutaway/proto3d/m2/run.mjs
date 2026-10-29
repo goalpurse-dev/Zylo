@@ -28,11 +28,11 @@ const lastOpeningIn = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8"
 const progress = (o, cb) => { console.log(`PROGRESS ${JSON.stringify(o)}`); cb?.(o); };
 
 // the vision check, cached by the exact frames (and sentences) it is given: a re-run with the same frames is free
-async function visionCached({ apiKey, frames, log, cacheDir, multi = true }) {
+async function visionCached({ apiKey, frames, log, cacheDir, multi = true, label = "vision check" }) {
   const h = crypto.createHash("sha1"); h.update(multi ? "multi" : "one"); for (const f of frames) { h.update(f.text); h.update(fs.readFileSync(f.file)); }
   const file = path.join(cacheDir, `vision_${h.digest("hex").slice(0, 16)}.json`);
   if (fs.existsSync(file)) return { ...JSON.parse(fs.readFileSync(file, "utf8")), costUsd: 0 };
-  const r = await visionCheck({ apiKey, frames, log, multi });
+  const r = await visionCheck({ apiKey, frames, log, multi, label });
   fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1));
   return r;
 }
@@ -151,7 +151,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       preparePage({ layout, tl, proto });
       const again = one(previewTimes(tl, layout)).filter((s) => beats.some((f) => f.role === s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
       return true;
@@ -180,7 +180,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       preparePage({ layout, tl, proto });
       const again = one(previewTimes(tl, layout)).filter((s) => rw.changed.includes(s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
     };

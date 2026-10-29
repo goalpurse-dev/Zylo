@@ -149,7 +149,15 @@ async function main() {
     const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json"), vision = read("vision.json");
     const p = path.join(dir, "failed"); fs.mkdirSync(p, { recursive: true });
     if (layout && job.plan?.put?.layout) { fs.writeFileSync(path.join(p, "layout.json"), JSON.stringify(layout)); await put(job.plan.put.layout, path.join(p, "layout.json"), "application/json"); }
-    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report, vision })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    // (the spend log call by call, so the owner can see what each step cost; and the latest voice take with its words, so a
+    // stopped run can be resumed without paying for them again: the swimming pool of 2026-10-29 kept nothing)
+    const spend = fs.existsSync(spendLog) ? fs.readFileSync(spendLog, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
+    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report, vision, spend })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    const vdir = fs.existsSync(out) ? fs.readdirSync(out).filter((d) => /^voice(_r\d+)?$/.test(d)).sort().at(-1) : null;
+    if (vdir && fs.existsSync(path.join(out, vdir, "voice.mp3"))) {
+      if (job.plan?.put?.voice) await put(job.plan.put.voice, path.join(out, vdir, "voice.mp3"), "audio/mpeg");
+      if (job.plan?.put?.words && fs.existsSync(path.join(out, vdir, "voice.words.json"))) await put(job.plan.put.words, path.join(out, vdir, "voice.words.json"), "application/json");
+    }
   };
   const loadPlan = async () => {
     const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });
@@ -251,6 +259,8 @@ async function main() {
     throw new Error(`unknown role ${role}`);
   } catch (e) {
     clearInterval(beat);
+    // (whatever the stop, what was made is kept: a thrown cap or crash used to keep nothing)
+    if (role === "video" || role === "plan") await keepFailedPlan().catch((x) => console.error("[cutaway] the failed plan was not kept:", x?.message ?? x));
     const c = e.retryable === false ? { code: e.code ?? "RENDER_FAILED", retryable: false } : classify(e);
     Object.assign(costs, e.costs ?? {});
     // what this attempt spent, from its own log when the error didn't carry it (a crash, the voice check), and its GPU time
