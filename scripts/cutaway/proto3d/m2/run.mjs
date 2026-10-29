@@ -139,8 +139,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     // a repair round on the failing beats, then their frames looked at again (round: 2, 3)
     let still = failed;
     const repairRound = async (round, beats) => {
-      // a spending cap: no repair round that could take the video past it (a repair and its look cost about $0.2)
-      if (plan.costUsd + vUsd + extraUsd + 0.2 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return false; }
+      // a spending cap: no repair round that could take the video past it (at the in-run limit's worst case, budget.mjs: a
+      // repair $0.4 and its look $0.1; skipped, never a BUDGET stop of a video that is otherwise fine)
+      if (plan.costUsd + vUsd + extraUsd + 0.5 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return false; }
       P({ stage: "scene", step: round === 2 ? "repair" : "second repair", pct: 7 });
       const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: beats.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
       extraUsd += rp.costUsd;
@@ -165,7 +166,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       save("script.json", plan.script);
     };
     const wordsRound = async (round, beats) => {
-      if (plan.costUsd + vUsd + extraUsd + 0.08 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return; }
+      if (plan.costUsd + vUsd + extraUsd + 0.25 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return; }
       P({ stage: "scene", step: "repair", pct: 7 });
       const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: beats, log, cacheDir });
       extraUsd += rw.costUsd; visionReport[`words${round}`] = { changed: rw.changed, problems: rw.problems };

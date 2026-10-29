@@ -192,7 +192,7 @@ async function main() {
         // an approved layout for this topic: the worker's layouts folder gets it, the planner reuses it
         let reuse = null;
         if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
-        const r = await runTopic({ library: Array.isArray(job.library) ? job.library : [], topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog });
+        const r = await runTopic({ library: Array.isArray(job.library) ? job.library : [], topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog, maxUsd: Number(job.capUsd) || Infinity });
         if (!r.ok) {
           // the refused plan is kept (its layout, and its script with the planner's trace), so it can be replayed free
           await keepFailedPlan().catch((e) => console.error("[cutaway] the failed plan was not kept:", e?.message ?? e));
