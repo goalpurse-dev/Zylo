@@ -175,3 +175,17 @@ test("every production job carries its run's spending limit, and the worker hand
   assert.ok(4 * RUN_CAP_USD.custom30 + RUN_CAP_USD.custom60 <= 4.0001, "the owner's launch batch fits its $4");
   assert.match(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m3/videoJob.mjs", import.meta.url), "utf8"), /maxUsd: Number\(job\.capUsd\) \|\| Infinity/);
 });
+
+test("a target never fails a run: word and beat counts guide, far over drops the least important beats for free (the production swimming pool run of 2026-10-29 failed at 132 words)", async () => {
+  const { isTarget, dropBeats } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  for (const p of ["132 words (want 95-120)", "how: 36 words", "fix1: 30 words where the beat had 12", "the hook is 19 words: keep it to 16 or fewer so the first problem lands within about 4 seconds", 'how: cue word "eight" is missing']) assert.ok(isTarget(p), p);
+  for (const p of ["fix2: the number 40 is not in the verified facts", "the first problem (\"But…\") must be the second sentence, right after the hook (it is sentence 3)"]) assert.ok(!isTarget(p), p);
+  const roles = ["hook", "problem", "fix1", "problem2", "fix2", "name", "how", "fact", "myth", "mythFact", "finish", "congrats", "problem3"];
+  const layout = { roles, beats: roles.map((s) => ({ s, do: [] })) }, script = { sentences: roles.map((role) => ({ role, text: "word ".repeat(15).trim() + "." })), chain: [{ problem: 1, causedBy: -1 }, { problem: 12, causedBy: 4 }] };
+  const words = (sc) => sc.sentences.reduce((k, s) => k + s.text.split(/\s+/).length, 0);
+  const d = dropBeats({ script, layout, lengthSec: 30, over: (sc) => words(sc) > 156 });
+  assert.deepEqual(d.dropped, ["myth", "mythFact", "finish"]); assert.ok(words(d.script) <= 156);
+  assert.deepEqual(d.script.chain.map((c) => c.problem), [1, 9], "the chain follows its sentences");
+  // over the beat cap alone (13 > 12): one pair out, never a refusal
+  assert.deepEqual(dropBeats({ layout, lengthSec: 30 }).dropped, ["myth", "mythFact"]);
+});

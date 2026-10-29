@@ -389,6 +389,27 @@ export function trimNarration(script, { max, cues = {} } = {}) {
   for (const s of S) if (total() > max && /\band so\b/i.test(s.text.split(/\s+/).slice(2).join(" "))) { s.text = s.text.replace(/(\S+\s+\S+\s.*?)\band so\b/i, "$1and"); cut.push(`${s.role}: so`); }
   return { script: { ...script, sentences: S }, cut };
 }
+// what measures a target (the owner's rule of 2026-10-29): guidance for a rewrite, never a reason to pay for one or to fail
+const TARGET = [/^\d+ words \(want/, /: \d+ words$/, /: \d+ words where the beat had/, /^the hook is \d+ words/, /cue word .* is missing/];
+export const isTarget = (p) => TARGET.some((re) => re.test(p));
+// the beats a narration far over its target loses first, free: the myth pair, then the finish, then a fact line
+export const DROP_ORDER = [["myth", "mythFact"], ["finish"], ["fact"], ["factProof"]];
+/** far over the word target (30%), or over the beat cap: the least important beats out of the script and the layout */
+export function dropBeats({ script = null, layout, lengthSec, over = (sc) => false }) {
+  const dropped = [];
+  for (const group of DROP_ORDER) {
+    const roles = (layout.beats ?? []).map((b) => b.s);
+    if (!over(script) && !(roles.length > LENGTH[lengthSec].beats[1])) break;
+    if (!group.every((r) => roles.includes(r))) continue;
+    layout = { ...layout, beats: layout.beats.filter((b) => !group.includes(b.s)), roles: (layout.roles ?? roles).filter((r) => !group.includes(r)) };
+    if (script) {
+      const keep = script.sentences.filter((s) => !group.includes(s.role)), idx = (i) => keep.indexOf(script.sentences[i]);
+      script = { ...script, sentences: keep, chain: (script.chain ?? []).map((c) => ({ ...c, problem: idx(c.problem), causedBy: c.causedBy < 0 ? c.causedBy : idx(c.causedBy) })).filter((c) => c.problem >= 0), cards: (script.cards ?? []).filter((c) => !group.includes(script.sentences[c.sentence]?.role)).map((c) => ({ ...c, sentence: idx(c.sentence) })) };
+    }
+    dropped.push(...group);
+  }
+  return { script, layout, dropped };
+}
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
 export const KIT_CANNOT = [
@@ -396,10 +417,11 @@ export const KIT_CANNOT = [
   [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
   [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],
 ];
-const checkScript = (s, lengthSec, roles) => {
+const checkScript = (s, lengthSec, roles, { lengthIsTarget = false } = {}) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
-  if (n < L.words[0] - 8 || overWords(n, lengthSec)) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
+  // (a target, not a check, for a new plan: the owner's rule of 2026-10-29; the premade path keeps it, it reverts long lines)
+  if (!lengthIsTarget && (n < L.words[0] - 8 || overWords(n, lengthSec))) P.push(`${n} words (want ${L.words[0]}-${L.words[1]})`);
   const rs = s.sentences.map((x) => x.role);
   if (new Set(rs).size !== rs.length) P.push("a role is used twice");
   if (rs[0] !== "hook" || rs.at(-1) !== "congrats") P.push("the script must open with hook and end with congrats");
@@ -602,7 +624,8 @@ export function beatPlanProblems(L, story, lengthSec) {
   if (!roles.includes("name")) P.push('no "name" beat (This is a…)');
   if (new Set(roles).size !== roles.length) P.push("a role is used twice");
   for (const r of roles) if (!ROLES.includes(r)) P.push(`role "${r}" is not one of ${ROLES.join(", ")}`);
-  if (roles.length < R.beats[0] || roles.length > R.beats[1]) P.push(`${roles.length} beats (want ${R.beats[0]}-${R.beats[1]})`);
+  // (the beat count is a target: over the cap the plan's own step drops the least important beats, dropBeats; under it the
+  // video is shorter; the owner's rule of 2026-10-29)
   const ideas = new Map((story?.ideas ?? []).map((x) => [x.role, x.idea]));
   for (const r of roles) if (!String(ideas.get(r) ?? "").trim()) P.push(`beat ${r}: no idea`);
   const probs = roles.filter((r) => /^problem/.test(r)), need = lengthSec >= 60 ? 3 : 2;
@@ -659,7 +682,10 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const plan = (r) => {
     const scene = parseScene(r.data), story = fixStory(r.data.story ?? {}, scene);
     const roles = (scene.beats ?? []).map((b) => b.s);
-    const conv = layoutFromScene(scene, { key, title: story.title || topic, roles });
+    const conv0 = layoutFromScene(scene, { key, title: story.title || topic, roles });
+    // over the beat cap: the least important beats dropped here, free (never a problem)
+    const capped = dropBeats({ layout: conv0.layout, lengthSec }), conv = { ...conv0, layout: capped.layout };
+    if (capped.dropped.length) trace.push({ label: "beats over the cap (free)", dropped: capped.dropped });
     const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
     const draft = draftSentences(conv.layout, ideas);
     const solved = solveLayout(conv.layout, draft);
@@ -681,7 +707,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   // (hold: a custom plan's motions hold at 70% of travel through their line and its problem lines carry a red state
   // label; compile.mjs. Premade keeps its approved timing)
   let layout = { ...B.conv.layout, why: B.why, hold: true };
-  const roles = layout.beats.map((b) => b.s);
+  let roles = layout.beats.map((b) => b.s);
   if (B.problems.length) return { script: { title: B.story.title || topic, hero: B.story.hero, sentences: B.draft, chain: [], facts: [], cards: [] }, layout, problems: B.problems, warnings: B.warnings };
 
   // 2. the facts: the planned claims, researched and checked before any word is written
@@ -749,39 +775,49 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const cards = (layout.audio.cards ?? []).map((c) => ({ text: c.text, sentence: roles.indexOf(c.at.s), word: String(c.at.w ?? "") }));
     return { title: data.title || B.story.title || topic, hero: B.story.hero, sentences: linked.map((s) => ({ ...s, text: /[.!]$/.test(s.text.trim()) ? s.text : `${s.text.trim()}.` })), chain, cards, parts: B.story.parts ?? [], surprises: claims, facts: checks };
   };
+  // a problem line whose WORDING misses the visible-consequence list while its beat's picture shows a visible problem:
+  // a warning (the picture is planned first and the preview check judges it; the real traffic light run of 2026-10-28 was
+  // refused, after $0.38, for "the timer holds red for one lone car")
+  const shown = (p, sc) => {
+    const m = /^problem "(.{1,50})…" is not something you can see happen/.exec(p); if (!m) return false;
+    const s = sc.sentences.find((x) => x.text.startsWith(m[1]));
+    const b = s && layout.beats.find((x) => x.s === s.role);
+    return !!b && VISIBLE.test(`${b.shows?.does ?? ""} ${(B.story.chain ?? []).find((c) => c.problem === s.role)?.shows ?? ""}`);
+  };
   const wordsCheck = (script) => {
     const rt = retargetCues(layout, script.sentences); layout = rt.layout;
     const cues = cuesOf(), P = [];
     for (const s of script.sentences) for (const p of sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums })) P.push(`${s.role}: ${p}`);
-    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles));
-    return { P, moved: rt.moved };
+    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }));
+    const n = script.sentences.reduce((k, s) => k + wordCount(s.text), 0), L = LENGTH[lengthSec];
+    // (the length as guidance for a rewrite that runs for something else; and a visible-consequence line whose picture shows
+    // it is no reason to rewrite: the free swimming pool run of 2026-10-29 rewrote for it and came back too long)
+    const T = [...P.filter(isTarget), ...(n > L.words[1] ? [`${n} words: aim for ${L.words[0]}-${L.words[1]}`] : [])];
+    return { P: P.filter((p) => !isTarget(p) && !shown(p, script)), T, moved: rt.moved };
   };
   let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
   // the free trim first: a narration a few words over its limit loses filler words, never its cues, numbers or openings
   const maxW = Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
   const trimmed = (sc) => { const n = sc.sentences.reduce((k, s) => k + wordCount(s.text), 0); if (n <= maxW) return sc; const t = trimNarration(sc, { max: maxW, cues: cuesOf() }); if (t.cut.length) trace.push({ label: "words trim (free)", from: n, to: t.script.sentences.reduce((k, s) => k + wordCount(s.text), 0), cut: t.cut }); return t.script; };
   let script = trimmed(toScript(w.data)), wc = wordsCheck(script);
-  trace.push({ label: "words checks", problems: wc.P, moved: wc.moved });
+  trace.push({ label: "words checks", problems: wc.P, targets: wc.T, moved: wc.moved });
   for (let round = 1; round <= 2 && wc.P.length; round++) {
-    w = await step(round === 1 ? "words repair" : "words repair 2", { system: WORDS_SYSTEM, user: `${wordsUser({ topic, lengthSec, beats: roles.map((role) => ({ ...beats.find((b) => b.role === role), cues: cuesOf()[role] ?? [] })), facts: kept.map((c) => c.claim) })}\n\nYour narration below has problems the free checks found. Fix every one and return the whole narration again.\nProblems:\n- ${wc.P.join("\n- ")}\n\nYour narration:\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
+    w = await step(round === 1 ? "words repair" : "words repair 2", { system: WORDS_SYSTEM, user: `${wordsUser({ topic, lengthSec, beats: roles.map((role) => ({ ...beats.find((b) => b.role === role), cues: cuesOf()[role] ?? [] })), facts: kept.map((c) => c.claim) })}\n\nYour narration below has problems the free checks found. Fix every one and return the whole narration again.\nProblems:\n- ${wc.P.join("\n- ")}${wc.T.length ? `\nAlso aim for (targets, not problems):\n- ${wc.T.join("\n- ")}` : ""}\n\nYour narration:\n${script.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}`, schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
     script = trimmed(toScript(w.data)); wc = wordsCheck(script);
-    trace.push({ label: `words checks (repair ${round})`, problems: wc.P, moved: wc.moved });
+    trace.push({ label: `words checks (repair ${round})`, problems: wc.P, targets: wc.T, moved: wc.moved });
+  }
+  // far over the word target (30%): the least important beats dropped in code, free; over it by less, a longer video
+  const farOver = (sc) => sc.sentences.reduce((k, s) => k + wordCount(s.text), 0) > Math.round(LENGTH[lengthSec].words[1] * 1.3);
+  if (farOver(script)) {
+    const d = dropBeats({ script, layout, lengthSec, over: farOver });
+    if (d.dropped.length) { script = d.script; layout = d.layout; roles = layout.beats.map((b) => b.s); trace.push({ label: "words far over the target: beats dropped (free)", dropped: d.dropped }); }
   }
   // a cue word still missing: its actions fire at the start of its sentence (free; the picture still shows them)
   const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
   if (miss.length) { layout = dropWords(layout, miss); warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`)); }
-  // a problem line whose WORDING still misses the visible-consequence list after the repair, while its beat's picture
-  // shows a visible problem: a warning (the picture is planned first and the preview check judges it; the real traffic
-  // light run of 2026-10-28 was refused, after $0.38, for "the timer holds red for one lone car")
-  const shown = (p) => {
-    const m = /^problem "(.{1,50})…" is not something you can see happen/.exec(p); if (!m) return false;
-    const s = script.sentences.find((x) => x.text.startsWith(m[1]));
-    const b = s && layout.beats.find((x) => x.s === s.role);
-    return !!b && VISIBLE.test(`${b.shows?.does ?? ""} ${(B.story.chain ?? []).find((c) => c.problem === s.role)?.shows ?? ""}`);
-  };
-  for (const p of wc.P.filter(shown)) warnings.push(`${p} (its picture shows it: left to the preview check)`);
+  for (const t of wc.T) warnings.push(`${t} (a target: the video runs a little longer or shorter)`);
   // (the layout itself is solved by planTopic, after the opening fix)
-  return { script, layout, problems: wc.P.filter((p) => !/cue word .* is missing/.test(p) && !shown(p)), warnings, solve: true };
+  return { script, layout, problems: wc.P, warnings, solve: true };
 }
 
 /**
