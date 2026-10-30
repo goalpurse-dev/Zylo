@@ -19,12 +19,11 @@
    }
   }
  },
- "tempo": 1.1,
- "squeeze": 0.18,
+ "tempo": 1.04,
  "lead": 0,
- "gap_speaker": 0.14,
- "gap_same": 0.08,
- "tail": 0.55,
+ "gap_speaker": 0.22,
+ "gap_same": 0.16,
+ "tail": 0.7,
  "music_db_under": 14,
  "phone_full": true,
  "phone_range": [
@@ -59,8 +58,8 @@
   "variant": "V2",
   "hook_type": "result_first_fast",
   "length_s": [
-   15,
-   20
+   17,
+   23
   ],
   "loop": true,
   "frame0": "pizzas",
@@ -69,8 +68,8 @@
   "cta": "save_later"
  },
  "length_target": [
-  15,
-  20
+  17,
+  23
  ],
  "steps_total": 3,
  "clips": [
@@ -81,13 +80,12 @@
    "out": 14.85,
    "note": "the cherry panics: 'My date thinks I still deliver pizzas, okay?'",
    "at": "start",
-   "post": 0.12,
+   "post": 0.25,
    "duck_db": 10,
    "fullscreen": true,
    "enter": "cut",
    "punch": [
-    0.45,
-    1.9
+    0.05
    ],
    "hook": "THIS FRUIT DRAMA|TOOK *3:50* TO MAKE",
    "open_loop": {
@@ -240,19 +238,19 @@
   {
    "to": "steps",
    "at": "open.end+0.02",
-   "dur": 0.65,
+   "dur": 0.9,
    "kind": "crane"
   },
   {
    "to": "phoneFull",
-   "at": "payoff.start-1.1",
-   "dur": 0.8,
+   "at": "payoff.start-1.2",
+   "dur": 0.95,
    "kind": "push"
   },
   {
    "to": "zee",
    "at": "payoff.end+0.05",
-   "dur": 0.55,
+   "dur": 0.85,
    "kind": "pull"
   }
  ],

@@ -41,7 +41,7 @@ export const TEN_YEARS = {
 // the lines (takes under the scratchpad: studio-m7 = the Fruit v3 takes, studio-m5 = the M3 v1 takes, short = the triggers)
 const q = { role: "q", who: "creator", take: "studio-m7/takes/line01.mp3", text: "Yo Zyvo, how do you make a video like this?", key: ["this?"], expr: "thinking", pose: "pointUpL" };
 const answer = { role: "answer", who: "zee", take: "studio-m7/takes/line02.mp3", text: "It's simple. But most people are too lazy to actually do it.", key: ["lazy"], expr: "smug", pose: "rest",
-  cues: [{ word: 3, event: "lazy", sfx: "pop" }] };   // the chip turns to "TOO LAZY" as she says it (a visual change mid-line)
+};
 const step = (n, take, text, key, card, chip, extra = {}) => ({ role: `s${n}`, who: "zee", take: `studio-m7/takes/${take}`, from_word: 2, text, key: [key], expr: "happy", pose: n === 1 ? "point" : "rest", step: n, card, chip, ...extra });
 const steps = (kit) => ({
   nav: (n) => step(n, "line05.mp3", "Short Form, then AI Fruit Story.", "Fruit", "step1", ["SHORT FORM → ", "AI FRUIT STORY"]),
@@ -82,55 +82,56 @@ export function titleHook(title) {
 export function makeScript(recipe, kit = TEN_YEARS) {
   const V = recipe.variant, S = steps(kit), timed = !!kit.measured;
   const moment = (name) => kit.moments[name] ?? kit.moments.open;
-  const open = (extra) => ({ name: "open", file: kit.file, ...moment(kit.frame0?.[V] ?? "open"), at: "start", post: 0.12, duck_db: 10, fullscreen: true, enter: "cut", punch: [0.5, 2.1], ...extra });
+  const open = (extra) => ({ name: "open", file: kit.file, ...moment(kit.frame0?.[V] ?? "open"), at: "start", post: 0.25, duck_db: 10, fullscreen: true, enter: "cut", punch: [0.05], ...extra });   // the only zoom punch: frame 0
   const payoff = (after) => ({ name: "payoff", file: kit.file, ...moment("ending"), after_line: after, pre: 0.35, post: 0.02, duck_db: 24, fullscreen: true, enter: "grow", ...(kit.ending_sfx ? { sfx_at: kit.ending_sfx } : {}), pays_loop: { parts: [["THE ", W], ["ENDING 👀", Y]] } });
   const ol = (at) => loopChip(at, ...(kit.open_loops?.[V] ?? ["WAIT FOR THE ", "ENDING 👀"]));
-  const lazyChips = [{ from: "answer.start", to: "lazy.at", parts: [["IT'S ", W], ["SIMPLE", Y]] }, { from: "lazy.at", to: "s1.start", parts: [["MOST PEOPLE ARE ", W], ["TOO LAZY", Y]] }];
+  const lazyChips = [{ from: "answer.start", to: "s1.start", parts: [["MOST PEOPLE ARE ", W], ["TOO LAZY", Y]] }];
   const made = (to) => ({ from: "twist.start", to, parts: [["MADE WITH ", W], ["ZYVO", Y]] });
-  const tail = [{ to: "phoneFull", at: "payoff.start-1.15", dur: 0.85, kind: "push" }, { to: "zee", at: "payoff.end+0.05", dur: 0.6, kind: "pull" }];
-  const toWall = { to: "wall", at: "twist.start-0.25", dur: 0.8, kind: "crane" }, toSteps = { to: "steps", at: "s1.start-0.55", dur: 0.7, kind: "crane" };
+  // eased moves of 0.8–1.0 s (owner, 2026-10-30: calm after the first second; whips only where M3 had them)
+  const tail = [{ to: "phoneFull", at: "payoff.start-1.2", dur: 0.95, kind: "push" }, { to: "zee", at: "payoff.end+0.05", dur: 0.85, kind: "pull" }];
+  const toWall = { to: "wall", at: "twist.start-0.3", dur: 0.95, kind: "crane" }, toSteps = { to: "steps", at: "s1.start-0.7", dur: 0.95, kind: "crane" };
   let v;
   if (V === "V1") {   // RESULT-FIRST: the funniest real moment full screen on frame 0; fast steps; 25–30 s
     const lines = [q, S.nav(1), S.idea(2), S.pics(3), S.anim(4), S.final(5), twist, site];
     v = { variant: "v1_result_first", title: timed ? "Studio V1 · Result first: I made this in under 4 minutes" : `Studio V1 · Result first: ${kit.title}`,
-      recipe: { variant: "V1", hook_type: "result_first", length_s: [25, 30], loop: true, frame0: kit.frame0?.V1 ?? "open", open_loop: kit.open_loops?.V1 ? "wait till she walks in → the ending" : "wait for the ending → the ending", ...(kit.notes?.V1 ? { note: kit.notes.V1 } : {}) },
-      length_target: [25, 30], steps_total: 5,
+      recipe: { variant: "V1", hook_type: "result_first", length_s: [28, 35], loop: true, frame0: kit.frame0?.V1 ?? "open", open_loop: kit.open_loops?.V1 ? "wait till she walks in → the ending" : "wait for the ending → the ending", ...(kit.notes?.V1 ? { note: kit.notes.V1 } : {}) },
+      length_target: [28, 35], steps_total: 5,
       clips: [open({ hook: kit.hooks?.V1 ?? "I MADE THIS|IN *5 STEPS*", open_loop: ol(1.2) }), payoff(idx(lines, "twist"))], lines,
-      shots: [{ to: "hook", at: "open.end+0.02", dur: 0.55, kind: "pull" }, toSteps, toWall, ...tail],
+      shots: [{ to: "hook", at: "open.end+0.02", dur: 0.85, kind: "pull" }, toSteps, toWall, ...tail],
       chips: [{ from: "q.start", to: "s1.start", parts: [["HOW DO YOU MAKE ", W], ["THIS?", Y]] }, made("payoff.start")] };
   } else if (V === "V2") {   // FAST 20 s: hook clip -> 3 fast steps -> payoff -> reveal
     const lines = [S.idea(1), S.anim(2), S.final(3), siteShort];
     v = { variant: "v2_fast20", title: timed ? "Studio V2 · Fast 20 s: this fruit drama took 3:50 to make" : `Studio V2 · Fast 20 s: ${kit.title}`,
-      recipe: { variant: "V2", hook_type: "result_first_fast", length_s: [15, 20], loop: true, frame0: kit.frame0?.V2 ?? "open", open_loop: "wait for the ending → the ending" },
-      length_target: [15, 20], steps_total: 3, tempo: 1.1,
-      clips: [open({ hook: kit.hooks?.V2 ?? "THIS WHOLE DRAMA|IS *AI-MADE*", punch: [0.45, 1.9], open_loop: ol(1.0) }), payoff(idx(lines, "s3"))], lines,
-      shots: [{ to: "steps", at: "open.end+0.02", dur: 0.65, kind: "crane" }, { to: "phoneFull", at: "payoff.start-1.1", dur: 0.8, kind: "push" }, { to: "zee", at: "payoff.end+0.05", dur: 0.55, kind: "pull" }],
+      recipe: { variant: "V2", hook_type: "result_first_fast", length_s: [17, 23], loop: true, frame0: kit.frame0?.V2 ?? "open", open_loop: "wait for the ending → the ending" },
+      length_target: [17, 23], steps_total: 3,
+      clips: [open({ hook: kit.hooks?.V2 ?? "THIS WHOLE DRAMA|IS *AI-MADE*", open_loop: ol(1.0) }), payoff(idx(lines, "s3"))], lines,
+      shots: [{ to: "steps", at: "open.end+0.02", dur: 0.9, kind: "crane" }, ...tail],
       chips: [] };
   } else if (V === "V3") {   // POV over the real result, then a fast tour
     const lines = [answer, S.nav(1), S.idea(2), S.pics(3), S.anim(4), S.final(5), twist, site];
     v = { variant: "v3_pov", title: timed ? "Studio V3 · POV: you found the fruit video site" : `Studio V3 · POV: ${kit.title}`,
-      recipe: { variant: "V3", hook_type: "pov", length_s: [25, 30], loop: true, frame0: kit.frame0?.V3 ?? "open", open_loop: "wait for the ending → the ending", ...(kit.notes?.V3 ? { note: kit.notes.V3 } : {}) },
-      length_target: [25, 30], steps_total: 5,
+      recipe: { variant: "V3", hook_type: "pov", length_s: [28, 35], loop: true, frame0: kit.frame0?.V3 ?? "open", open_loop: "wait for the ending → the ending", ...(kit.notes?.V3 ? { note: kit.notes.V3 } : {}) },
+      length_target: [28, 35], steps_total: 5,
       clips: [open({ hook: "POV: YOU FOUND THE|*FRUIT VIDEO* SITE", open_loop: ol(1.2) }), payoff(idx(lines, "twist"))], lines,
-      shots: [{ to: "zee", at: "open.end+0.02", dur: 0.55, kind: "pull" }, toSteps, toWall, ...tail],
+      shots: [{ to: "zee", at: "open.end+0.02", dur: 0.85, kind: "pull" }, toSteps, toWall, ...tail],
       chips: [...lazyChips, made("payoff.start")] };
   } else if (V === "V4") {   // STUDIO DIALOGUE, FASTER: the real clip big at 0.0, 30–35 s (the clock only when measured)
     const lines = [q, answer, S.nav(1), S.idea(2), S.pics(3), S.anim(4), S.final(5), twist, ...(timed ? [objection, time] : []), site];
     v = { variant: "v4_studio_fast", title: timed ? "Studio V4 · Studio dialogue, faster: how do you make this?" : `Studio V4 · How do you make this? ${kit.title}`,
-      recipe: { variant: "V4", hook_type: "question", length_s: [30, 35], loop: true, frame0: kit.frame0?.V4 ?? "open", open_loop: "website at the end → the website", open_loop_paid_by: "site" },
-      length_target: timed ? [30, 35] : [25, 32], steps_total: 5, tempo: 1.15,
+      recipe: { variant: "V4", hook_type: "question", length_s: [33, 42], loop: true, frame0: kit.frame0?.V4 ?? "open", open_loop: "website at the end → the website", open_loop_paid_by: "site" },
+      length_target: timed ? [33, 42] : [28, 36], steps_total: 5,
       clips: [open({ hook: "HOW DO YOU|MAKE *THIS?*", open_loop: loopChip(1.2, "WEBSITE AT THE ", "END 👀") }), payoff(idx(lines, timed ? "time" : "twist"))], lines,
-      shots: [{ to: "hook", at: "open.end+0.02", dur: 0.55, kind: "pull" }, { to: "zee", at: "answer.start-0.1", dur: 0.45, kind: "whip" }, toSteps, toWall,
-        ...(timed ? [{ to: "creator", at: "objection.start-0.35", dur: 0.6, kind: "pull" }, { to: "zeeLow", at: "objection.end-0.05", dur: 0.45, kind: "whip" }, { to: "phoneFull", at: "payoff.start-1.1", dur: 0.85, kind: "push" }] : [tail[0]]), tail[1]],
+      shots: [{ to: "hook", at: "open.end+0.02", dur: 0.85, kind: "pull" }, { to: "zee", at: "answer.start-0.3", dur: 0.8, kind: "pull" }, toSteps, toWall,
+        ...(timed ? [{ to: "creator", at: "objection.start-0.4", dur: 0.75, kind: "pull" }, { to: "zeeLow", at: "objection.end-0.05", dur: 0.45, kind: "whip" }, { to: "phoneFull", at: "payoff.start-1.2", dur: 0.95, kind: "push" }] : [tail[0]]), tail[1]],
       chips: [{ from: "q.start", to: "answer.start", parts: [["HOW DO YOU MAKE ", W], ["THIS?", Y]] }, ...lazyChips,
         ...(timed ? [made("objection.start"), { from: "objection.start", to: "payoff.start", parts: [["FIRST CLICK → ", W], ["FINAL VIDEO", Y]] }] : [made("payoff.start")])] };
   } else if (V === "V5") {   // CLIFFHANGER: the most dramatic line, a freeze "how does this end?", the steps, the ending
     const lines = [answer, S.nav(1), S.idea(2), S.pics(3), S.anim(4), S.final(5), twist, site];
     v = { variant: "v5_cliffhanger", title: timed ? "Studio V5 · Cliffhanger: how does this end?" : `Studio V5 · Cliffhanger: ${kit.title}`,
-      recipe: { variant: "V5", hook_type: "cliffhanger", length_s: [25, 30], loop: true, frame0: kit.frame0?.V5 ? `${kit.frame0.V5} + freeze` : "open + freeze", open_loop: "how does this end? → the ending" },
-      length_target: [25, 30], steps_total: 5,
-      clips: [open({ hook: kit.hooks?.V5 ?? titleHook(kit.title), punch: [0.45, 1.9], open_loop: loopChip(1.1, "HOW DOES THIS ", "END? 👀"), freeze: { secs: 1.25, text: "HOW DOES|THIS *END?*" } }), payoff(idx(lines, "twist"))], lines,
-      shots: [{ to: "zee", at: "open.freeze_end+0.02", dur: 0.55, kind: "pull" }, toSteps, toWall, ...tail],
+      recipe: { variant: "V5", hook_type: "cliffhanger", length_s: [28, 35], loop: true, frame0: kit.frame0?.V5 ? `${kit.frame0.V5} + freeze` : "open + freeze", open_loop: "how does this end? → the ending" },
+      length_target: [28, 35], steps_total: 5,
+      clips: [open({ hook: kit.hooks?.V5 ?? titleHook(kit.title), open_loop: loopChip(1.1, "HOW DOES THIS ", "END? 👀"), freeze: { secs: 1.25, text: "HOW DOES|THIS *END?*" } }), payoff(idx(lines, "twist"))], lines,
+      shots: [{ to: "zee", at: "open.freeze_end+0.02", dur: 0.85, kind: "pull" }, toSteps, toWall, ...tail],
       chips: [...lazyChips, made("payoff.start")] };
   } else throw new Error(`unknown variant ${V}`);
   const hook = v.clips[0].hook;
@@ -138,7 +139,8 @@ export function makeScript(recipe, kit = TEN_YEARS) {
   const trigger = recipe.end_trigger ?? { V1: "comment", V2: "save", V3: "repost", V4: "comment", V5: "repost" }[V];
   const loop = recipe.loop !== false;
   return {
-    template: "ai_fruit_story", voices: VOICES, tempo: 1.15, squeeze: 0.18, lead: 0, gap_speaker: 0.14, gap_same: 0.08, tail: 0.55, music_db_under: 14,
+    // ~170–185 wpm with natural short pauses (the M3 pacing): the takes as recorded, a little faster, no squeezing
+    template: "ai_fruit_story", voices: VOICES, tempo: 1.04, lead: 0, gap_speaker: 0.22, gap_same: 0.16, tail: 0.7, music_db_under: 14,
     phone_full: true, phone_range: [0.0, kit.duration], hq_dir: kit.hq_dir, phone_skip: kit.phone_skip ?? [], max_gap: 0.4, start_at: "phone", ...(loop ? { loop_end: { secs: 0.5 } } : {}),
     counter: { value: 150, label: "FRUIT CHARACTERS", fact: "fruit_characters" }, ...(timed ? { timer: { seconds: kit.measured, label: "FIRST CLICK → FINAL VIDEO", source: "fruitRun summary.json (measured live)" } } : {}),
     ...v, lines: [...v.lines, CTA[trigger].line], cta: CTA[trigger].cta,

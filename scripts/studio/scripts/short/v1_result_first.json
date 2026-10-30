@@ -19,12 +19,11 @@
    }
   }
  },
- "tempo": 1.15,
- "squeeze": 0.18,
+ "tempo": 1.04,
  "lead": 0,
- "gap_speaker": 0.14,
- "gap_same": 0.08,
- "tail": 0.55,
+ "gap_speaker": 0.22,
+ "gap_same": 0.16,
+ "tail": 0.7,
  "music_db_under": 14,
  "phone_full": true,
  "phone_range": [
@@ -59,8 +58,8 @@
   "variant": "V1",
   "hook_type": "result_first",
   "length_s": [
-   25,
-   30
+   28,
+   35
   ],
   "loop": true,
   "frame0": "angle",
@@ -70,8 +69,8 @@
   "cta": "comment_fruit"
  },
  "length_target": [
-  25,
-  30
+  28,
+  35
  ],
  "steps_total": 5,
  "clips": [
@@ -82,13 +81,12 @@
    "out": 8.08,
    "note": "the cherry close up: 'That's just, um, a really good angle.'",
    "at": "start",
-   "post": 0.12,
+   "post": 0.25,
    "duck_db": 10,
    "fullscreen": true,
    "enter": "cut",
    "punch": [
-    0.5,
-    2.1
+    0.05
    ],
    "hook": "I MADE THIS IN|*UNDER 4 MINUTES*",
    "open_loop": {
@@ -314,31 +312,31 @@
   {
    "to": "hook",
    "at": "open.end+0.02",
-   "dur": 0.55,
+   "dur": 0.85,
    "kind": "pull"
   },
   {
    "to": "steps",
-   "at": "s1.start-0.55",
-   "dur": 0.7,
+   "at": "s1.start-0.7",
+   "dur": 0.95,
    "kind": "crane"
   },
   {
    "to": "wall",
-   "at": "twist.start-0.25",
-   "dur": 0.8,
+   "at": "twist.start-0.3",
+   "dur": 0.95,
    "kind": "crane"
   },
   {
    "to": "phoneFull",
-   "at": "payoff.start-1.15",
-   "dur": 0.85,
+   "at": "payoff.start-1.2",
+   "dur": 0.95,
    "kind": "push"
   },
   {
    "to": "zee",
    "at": "payoff.end+0.05",
-   "dur": 0.6,
+   "dur": 0.85,
    "kind": "pull"
   }
  ],

@@ -21,11 +21,11 @@ export const STUDIO_TEMPLATES = Object.freeze({
 
 /** The five starter recipes (the first experiments, rendered 2026-10-30 from "Ten Years Out of Date"). */
 export const STARTERS = Object.freeze([
-  { variant: "V1", hook_type: "result_first", length_s: [25, 30], end_trigger: "comment", loop: true },
-  { variant: "V2", hook_type: "result_first_fast", length_s: [15, 20], end_trigger: "save", loop: true },
-  { variant: "V3", hook_type: "pov", length_s: [25, 30], end_trigger: "repost", loop: true },
-  { variant: "V4", hook_type: "question", length_s: [30, 35], end_trigger: "comment", loop: true },
-  { variant: "V5", hook_type: "cliffhanger", length_s: [25, 30], end_trigger: "repost", loop: true },
+  { variant: "V1", hook_type: "result_first", length_s: [28, 35], end_trigger: "comment", loop: true },
+  { variant: "V2", hook_type: "result_first_fast", length_s: [17, 23], end_trigger: "save", loop: true },
+  { variant: "V3", hook_type: "pov", length_s: [28, 35], end_trigger: "repost", loop: true },
+  { variant: "V4", hook_type: "question", length_s: [33, 42], end_trigger: "comment", loop: true },
+  { variant: "V5", hook_type: "cliffhanger", length_s: [28, 35], end_trigger: "repost", loop: true },
 ]);
 const TRIGGERS = ["comment", "save", "repost"];
 

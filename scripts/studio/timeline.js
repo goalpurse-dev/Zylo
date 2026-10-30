@@ -5,6 +5,8 @@
 //   - fast moves get a whoosh (audio.py mixes them from moves.json)
 // Used by preview.js in the browser and by node (writeMoves.mjs) for the audio.
 export const MIN_HOLD = 1.2;
+/** Short videos (owner, 2026-10-30, after "too fast and jumpy"): every hold at least 2 s, step screens up ~2.5 s. */
+export const SHORT_MIN_HOLD = 2.0, SCREEN_SECONDS = 2.5;
 
 // Framings: camera position and look target, plus where the characters face. y-up, metres.
 export const FRAMINGS = {
@@ -106,7 +108,7 @@ export function planShots(T) {
   for (const s of S.shots) {
     const t0 = Math.max(anchor(T, s.at), free);
     moves.push({ type: "move", from: at, to: s.to, t0, t1: t0 + s.dur, kind: s.kind });
-    at = s.to; free = t0 + s.dur + (s.hold ?? MIN_HOLD);
+    at = s.to; free = t0 + s.dur + (s.hold ?? SHORT_MIN_HOLD);
   }
   const out = []; let t = 0, cur = S.start_at ?? "phone";
   for (const m of moves) { if (m.t0 > t) out.push({ type: "hold", t0: t, t1: m.t0, at: cur }); out.push(m); t = m.t1; cur = m.to; }
@@ -121,17 +123,20 @@ export function shortSteps(T) {
 }
 /** A short video's card frame for a step at time t: its frames spread over the line (+0.3 s), a tap 0.35 s before the next. */
 export function stepFrames(step, cards) {
-  const c = cards[step.card]; if (!c) return null;
-  const span = Math.max(0.6, Math.min(step.t1 - step.t0, step.line.end - step.line.start + 0.3)), dur = span / c.frames.length;
-  return { c, span, dur, frames: c.frames.map((f, i) => ({ f, t: step.t0 + i * dur, tapAt: c.frames.length > 1 ? (i + 1) * dur - 0.35 : 0.45 })) };
+  const c0 = cards[step.card]; if (!c0) return null;
+  // the step's whole window; as many real screens as can each stay up ~2.5 s (evenly picked, the last one kept)
+  const span = Math.max(0.6, step.t1 - step.t0), n = Math.max(1, Math.min(c0.frames.length, Math.round(span / SCREEN_SECONDS)));
+  const pick = n === 1 ? [c0.frames.length - 1] : Array.from({ length: n }, (_, k) => Math.round((k * (c0.frames.length - 1)) / (n - 1)));
+  const c = { ...c0, frames: pick.map((i) => c0.frames[i]) }, dur = span / n;
+  return { c, span, dur, frames: c.frames.map((f, i) => ({ f, t: step.t0 + i * dur, tapAt: n > 1 ? (i + 1) * dur - 0.35 : Math.min(0.9, span - 0.4) })) };
 }
 export const planFor = (T) => (T.short?.shots ? planShots(T) : T.template ? planTemplate(T) : plan(T));
 export const framingsFor = (T) => (T.template ? FRAMINGS_T : FRAMINGS);
 
 /** Problems with a plan: short holds, moves that run past the end. */
-export function planProblems(p, T) {
+export function planProblems(p, T, minHold = T.short ? SHORT_MIN_HOLD : MIN_HOLD) {
   const probs = [];
-  for (const s of p) if (s.type === "hold" && s.t1 - s.t0 < MIN_HOLD - 1e-3 && s.t1 < T.total) probs.push(`hold on ${s.at} only ${(s.t1 - s.t0).toFixed(2)} s at ${s.t0.toFixed(2)}`);
+  for (const s of p) if (s.type === "hold" && s.t1 - s.t0 < minHold - 1e-3 && s.t1 < T.total) probs.push(`hold on ${s.at} only ${(s.t1 - s.t0).toFixed(2)} s at ${s.t0.toFixed(2)}`);
   const last = p.filter((s) => s.type === "move").at(-1);
   if (last && last.t1 > T.total) probs.push(`the last move ends at ${last.t1.toFixed(2)} s, after the audio (${T.total} s)`);
   return probs;
