@@ -77,7 +77,9 @@ export function layoutRules(L) {
   const floorTop = { street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[L.world?.backdrop?.type];
   if (floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
     const b = w.params.box;
-    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
+    // (a flood planned taller than 0.25 m keeps its height: it rises up the curb or the basement wall; flattened, "the
+    // water rises" could never be shown, 60 s free storm drain and sump pump runs of 2026-10-30)
+    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08 && b.y1 - b.y0 <= 0.25) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
   }
   // 6. a canopy stands in the open: one under the setting's own roof (the car wash bay's) moves out past the roof's edge,
   // with the props standing under it (a canopy under a roof read as the building's roof)
@@ -214,6 +216,9 @@ export function layoutRules(L) {
     const hits = (b) => placed.some((q) => b.max[0] > q.min[0] && b.min[0] < q.max[0] && b.max[2] > q.min[2] && b.min[2] < q.max[2]);
     for (const p of stands) {
       if (group.has(p)) continue;
+      // (road markings belong on the road: the finish's crosswalk and stop line were moved onto the sidewalk, 60 s free
+      // traffic light run, 2026-10-30)
+      if (p.kind === "prop" && /^(crosswalk|stopLine)$/.test(p.params?.type ?? "")) continue;
       const b = boxOf(p); if (!onRoad(b)) continue;
       move(p, +(side < 0 ? R.x1 + 0.5 - b.min[0] : R.x0 - 0.5 - b.max[0]).toFixed(2));
       for (let k = 0; k < 6 && hits(boxOf(p)); k++) move(p, 0, -1.6);

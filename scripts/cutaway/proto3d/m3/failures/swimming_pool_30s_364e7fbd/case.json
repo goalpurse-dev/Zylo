@@ -1,0 +1,27 @@
+{
+ "runId": "364e7fbd-6ceb-4053-b9f0-739c8cb71534",
+ "topic": "swimming pool",
+ "lengthSec": 30,
+ "kind": "custom",
+ "at": "2026-10-29T20:26:04.814233+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: 132 words (want 95-120)",
+  "stage": "scene",
+  "attempts": 1
+ },
+ "costUsd": 0.54292,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "132 words (want 95-120)"
+ ],
+ "spend": []
+}

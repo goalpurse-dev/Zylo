@@ -18,6 +18,7 @@ import { compile } from "./compile.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { gradingFor, MECHANISM, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
 import { sheet } from "./sheet.mjs";
+import { guard, logBugs, splitBugs } from "./bookkeeping.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WT = path.resolve(here, "../../../..");
@@ -82,7 +83,9 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     : await planTopic({ apiKey, topic, lengthSec, reuse, log, script, cacheDir, library, lastOpening: reuse ? null : lastOpeningIn(openings), onStep: (s) => P({ stage: /scene|anchor/.test(s.step) ? "scene" : "script", step: s.step, pct: /scene|anchor/.test(s.step) ? 3 : 2 }) });
   save("script.json", plan.script); save("layout.json", plan.layout); save("trace.json", plan.trace);
   P({ stage: "scene", pct: 4, title: plan.script.title, narration: plan.script.sentences.map((s) => s.text).join(" "), facts: plan.script.facts ?? [], parts: plan.layout.parts.map((p) => p.id) });
-  const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, planSeconds: (Date.now() - t0) / 1000 };
+  // (the last net: a bookkeeping problem never fails the plan; bookkeeping.js)
+  const late = []; plan.problems = splitBugs(plan.problems, late); if (late.length) { logBugs(late, "plan gate"); plan.warnings = [...(plan.warnings ?? []), ...late.map((b) => `BUG (ours, skipped): ${b}`)]; }
+  const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, bugs: [...(plan.bugs ?? []), ...late], planSeconds: (Date.now() - t0) / 1000 };
   save("plan_report.json", report);
   if (!reuse && !plan.resumed && !plan.problems.length && openings) fs.appendFileSync(openings, JSON.stringify({ topic, at: new Date().toISOString(), ...openingOf(plan.layout) }) + "\n");
   if (plan.problems.length > maxProblems) { P({ stage: "failed", reason: "plan", problems: plan.problems }); return { ...report, ok: false }; }
@@ -100,7 +103,8 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   const accepted = path.join(cacheDir, "accepted_layout.json");
   let layout = fs.existsSync(accepted) ? JSON.parse(fs.readFileSync(accepted, "utf8")) : plan.layout, extraUsd = 0;
   // the timeline checks (free), then the preview frames and the vision check (one repair round)
-  const checkAll = () => { const tl = compile(layout, words, speechEnd(ff, voice), { roles }); return { tl, checks: timelineChecks(layout, tl) }; };
+  // (the timeline checks only report: one that crashes is a logged bug, never a failed run)
+  const checkAll = () => { const tl = compile(layout, words, speechEnd(ff, voice), { roles }), bugs = []; const checks = guard("timeline check", () => timelineChecks(layout, tl), bugs, () => ({ problems: [], warnings: [] })); logBugs(bugs, "timeline"); return { tl, checks: bugs.length ? { ...checks, bugs } : checks }; };
   let { tl, checks } = checkAll();
   save("timeline_checks.json", checks);
   let visionReport = null;
@@ -227,7 +231,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   // the full render, the sound, the checks on the result
   const made = await makeVideo({ layout, voice, words, out, proto, ff, roles, wt, onProgress, noend: endCard === false, only });
   P({ stage: "render", step: "checks", pct: 98 });
-  const measured = renderChecks({ ff, video: made.files.end, out: path.join(out, "checks") });
+  const rcBugs = [], measured = guard("render check", () => renderChecks({ ff, video: made.files.end, out: path.join(out, "checks") }), rcBugs, null); logBugs(rcBugs, "render");
   const final = { ...report, ok: true, voiceUsd: vUsd, checksUsd: +extraUsd.toFixed(4), totalUsd: +(plan.costUsd + vUsd + extraUsd).toFixed(4), timelineChecks: checks, vision: visionReport, measured, timing: made.timing, files: made.files, director: made.director, seconds: (Date.now() - t0) / 1000 };
   save("run_report.json", final);
   P({ stage: "done", pct: 100, file: made.files.end });

@@ -1,0 +1,90 @@
+{
+ "hash": "*",
+ "by": "real run c5b2efdb-6b0d-4650-b37f-9cf7a45e98b7",
+ "searches": 0,
+ "data": {
+  "title": "How a Swimming Pool Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a hole in the yard and fill it with water, you have a pool."
+   },
+   {
+    "role": "problem",
+    "text": "But the water soaks into the soil and leaks away."
+   },
+   {
+    "role": "flood",
+    "text": "Within an hour, the hole is empty bare mud."
+   },
+   {
+    "role": "stakes",
+    "text": "But now the wet walls slump in, since a cubic yard of soil can weigh about 3,000 pounds."
+   },
+   {
+    "role": "fix1",
+    "text": "So you pour a concrete floor and walls to hold back the water and soil."
+   },
+   {
+    "role": "fix2",
+    "text": "So you fill the shell with 20,000 gallons, which weigh around 83 tons."
+   },
+   {
+    "role": "fix3",
+    "text": "But now the water goes stale, so a pipe from the bottom carries it to a pump."
+   },
+   {
+    "role": "fix4",
+    "text": "Then a filter tank catches the dirt, and a second pipe sends clean water back."
+   },
+   {
+    "role": "name",
+    "text": "This is a swimming pool."
+   },
+   {
+    "role": "name2",
+    "text": "The pump, filter and pipes together are the circulation system."
+   },
+   {
+    "role": "how",
+    "text": "The pump pulls water from the bottom, the filter strains out dirt, and clean water flows back."
+   },
+   {
+    "role": "fact",
+    "text": "A typical pump pushes the pool's whole volume through the filter about once every 8 hours."
+   },
+   {
+    "role": "factProof",
+    "text": "The clock ticks through 8 hours, and many pools run 8 to 10 hours a day."
+   },
+   {
+    "role": "problem2",
+    "text": "But a filter cannot stop living algae, so in the sun the water turns green."
+   },
+   {
+    "role": "problem3",
+    "text": "But now a storm blows leaves and mud in, and the water gets murkier."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add chlorine, and the water clears."
+   },
+   {
+    "role": "myth",
+    "text": "And the blue color is not paint on the pool."
+   },
+   {
+    "role": "mythFact",
+    "text": "Water itself absorbs red light and sends blue back, so it looks blue."
+   },
+   {
+    "role": "finish",
+    "text": "Add a fence, bushes and young trees around the pool."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a swimming pool."
+   }
+  ]
+ }
+}

@@ -59,7 +59,7 @@ log(`start: ${q.kind}${q.premade ? ` (${q.premade})` : ""}, ${q.credits} credits
 // the approved layout as the server sends it (cutaway_layouts, seeded from these templates; facts from the layout)
 const layoutFor = (key) => { if (!key) return null; const L = JSON.parse(fs.readFileSync(path.join(M2, "layouts", `${key}.template.json`), "utf8")); return { ...L, key, facts: L.facts ?? [] }; };
 const run = { id: `harness-${CASE}`, topic: TOPIC, length_sec: LENGTH, kind: q.kind, attempt: 1, status: "queued", stage: "queued", provider: "runpod", layout_key: q.premade, end_card: true, plan_ready: false, created_at: new Date().toISOString() };
-const files = { layout: "layout.json", script: "script.json", words: "words.json", voice: "voice.mp3", post: "post.json" };
+const files = { layout: "layout.json", script: "script.json", words: "words.json", voice: "voice.mp3", post: "post.json", steps: "steps.json" };
 const plan = Object.fromEntries(Object.entries(files).map(([k, f]) => [k, url(path.join(DIR, "plan", f))]));
 const urls = { planPut: plan, planGet: plan, frames: Array.from({ length: 8 }, (_, i) => url(path.join(DIR, "frames", `frame_${i}.jpg`))), final: url(path.join(DIR, "out", "final.mp4")), web: url(path.join(DIR, "out", "web.mp4")), poster: url(path.join(DIR, "out", "poster.jpg")) };
 
@@ -98,7 +98,8 @@ const t0 = Date.now();
 let attempt = 0;
 for (;;) {
   attempt++;
-  const job = jobFor(run, { role: "video", mode: "local", urls, callback, layout: layoutFor(q.premade), library: [] });
+  // (a retry gets the earlier attempt's paid replies, as the server sends them: runtime.ts urlsFor)
+  const job = jobFor(run, { role: "video", mode: "local", urls: { ...urls, ...(run.attempt > 1 && !run.plan_ready ? { resume: plan.steps } : {}) }, callback, layout: layoutFor(q.premade), library: [] });
   if (a.cap) job.capUsd = Number(a.cap);
   log(`worker attempt ${run.attempt}${job.plan.get ? " (the plan already made)" : ""}`);
   const code = await worker(job);
@@ -160,6 +161,8 @@ if (run.status === "done" && fs.existsSync(path.join(DIR, "out", "final.mp4"))) 
   }
 }
 fs.writeFileSync(path.join(DIR, "sheet.json"), JSON.stringify(sheet, null, 1));
-const r = result({ ok: run.status === "done", code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, real: REAL, realUsd: +ledger.reduce((s, c) => s + Object.values(c ?? {}).reduce((x, y) => x + (Number(y) || 0), 0), 0).toFixed(4), durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
+// the bookkeeping bugs the worker met and skipped (m2/bookkeeping.js): each one is ours to fix, though it failed nothing
+const bugs = [...new Set(fs.readdirSync(DIR).filter((f) => /^worker_\d+\.log$/.test(f)).flatMap((f) => fs.readFileSync(path.join(DIR, f), "utf8").split("\n").filter((l) => l.includes("[cutaway] bookkeeping bug")).map((l) => l.replace(/^.*\[cutaway\] bookkeeping bug /, "").trim())))];
+const r = result({ ok: run.status === "done", bugs, code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, real: REAL, realUsd: +ledger.reduce((s, c) => s + Object.values(c ?? {}).reduce((x, y) => x + (Number(y) || 0), 0), 0).toFixed(4), durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
 log(`${r.ok ? "DONE" : `FAILED ${r.code}`} (${r.seconds} s, would have cost about $${simulatedUsd})`);
 process.exit(r.ok ? 0 : 1);

@@ -153,6 +153,13 @@ async function main() {
     // stopped run can be resumed without paying for them again: the swimming pool of 2026-10-29 kept nothing)
     const spend = fs.existsSync(spendLog) ? fs.readFileSync(spendLog, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
     if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report, vision, spend })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    // the paid planner replies (each step's saved reply): a retry replays them free, and the failure becomes a free test
+    // case even when the planner stopped before its script was made (m3/failureCase.mjs)
+    const sd = path.join(out, "steps");
+    if (job.plan?.put?.steps && fs.existsSync(sd)) {
+      const files = Object.fromEntries(fs.readdirSync(sd).filter((f) => /^step_\d+_.*\.json$/.test(f)).map((f) => [f, JSON.parse(fs.readFileSync(path.join(sd, f), "utf8"))]));
+      if (Object.keys(files).length) { fs.writeFileSync(path.join(p, "steps.json"), JSON.stringify({ files })); await put(job.plan.put.steps, path.join(p, "steps.json"), "application/json"); }
+    }
     const vdir = fs.existsSync(out) ? fs.readdirSync(out).filter((d) => /^voice(_r\d+)?$/.test(d)).sort().at(-1) : null;
     if (vdir && fs.existsSync(path.join(out, vdir, "voice.mp3"))) {
       if (job.plan?.put?.voice) await put(job.plan.put.voice, path.join(out, vdir, "voice.mp3"), "audio/mpeg");
@@ -199,6 +206,16 @@ async function main() {
       else {
         // an approved layout for this topic: the worker's layouts folder gets it, the planner reuses it
         let reuse = null;
+        // a retry: the earlier attempt's paid planner replies go where the planner looks first (its step cache), so the
+        // plan is replayed free in seconds; a missing or unreadable bundle just means planning again
+        if (job.plan?.resume) {
+          try {
+            const { files } = JSON.parse((await get(job.plan.resume)).toString("utf8")), sd = path.join(out, "steps");
+            fs.mkdirSync(sd, { recursive: true });
+            for (const [f, r] of Object.entries(files ?? {})) if (/^step_\d+_[\w-]+\.json$/.test(f)) fs.writeFileSync(path.join(sd, f), JSON.stringify(r));
+            console.log(`[cutaway] retry: ${Object.keys(files ?? {}).length} paid planner replies replayed from the earlier attempt`);
+          } catch (e) { console.error("[cutaway] retry: no earlier replies to replay:", e?.message ?? e); }
+        }
         if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
         const r = await runTopic({ library: Array.isArray(job.library) ? job.library : [], topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog, maxUsd: Number(job.capUsd) || Infinity });
         if (!r.ok) {

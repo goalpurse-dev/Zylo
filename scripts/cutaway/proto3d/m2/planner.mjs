@@ -8,8 +8,9 @@ import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
 import { catalogText, SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
-import { solveLayout } from "./solver.js";
+import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
+import { guard, logBugs, splitBugs } from "./bookkeeping.js";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -17,6 +18,11 @@ import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../sup
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
 import { modelMatches, wordsOf } from "./models.js";
+
+// the bookkeeping bugs met while the current plan is made (planTopic starts a new list; bookkeeping.js): a crashed
+// layout check is one of them, never a failed run
+let BUGS = [];
+const solveLayout = (L, sentences) => guard("layout check", () => solveLayoutRaw(L, sentences), BUGS, () => ({ problems: [], warnings: [] }));
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // a saved layout, with its side-story props moved beside the cut (the same rule as a new layout; deterministic)
@@ -29,6 +35,8 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 // (the approved premade scripts have up to 13)
 export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12] }, 60: { words: [200, 240], sentences: [18, 24], beats: [18, 24] } };
 export const WORD_TOLERANCE = 0.05;
+// the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
+export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
 export const wordCount = (t) => String(t ?? "").split(/\s+/).filter(Boolean).length;
 export const overWords = (n, lengthSec) => n > Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
 
@@ -174,7 +182,9 @@ export function finishPropsLine(topic) {
   const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
   // (the finish completes the thing itself: the topic props first; the setting's own props are not finishing touches)
   if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
-  return `The "Add ..." finishing line may only name things the setting it lives in has: a yard: ${propWords("yard")}; a street: ${propWords("street")}; a park: ${propWords("park")}; a garage: ${propWords("garage")}; a room: ${propWords("room")}; it can also add a lid or cover to the thing itself.`;
+  // (the same rule as a known setting: the garage list, a toolbox and a trash can, was offered here and then refused as
+  // generic decor, 60 s free garage door run of 2026-10-30)
+  return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox). Never grass or bushes on a street, in a garage or a room.`;
 }
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
@@ -417,7 +427,7 @@ export const KIT_CANNOT = [
   [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
   [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],
 ];
-const checkScript = (s, lengthSec, roles, { lengthIsTarget = false } = {}) => {
+const checkScript = (s, lengthSec, roles, { lengthIsTarget = false, bugs = BUGS } = {}) => {
   const P = [], L = LENGTH[lengthSec];
   const n = s.sentences.reduce((k, x) => k + x.text.split(/\s+/).filter(Boolean).length, 0);
   // (a target, not a check, for a new plan: the owner's rule of 2026-10-29; the premade path keeps it, it reverts long lines)
@@ -433,8 +443,8 @@ const checkScript = (s, lengthSec, roles, { lengthIsTarget = false } = {}) => {
   // up down both roads" and the street has one road, so the preview check failed it twice
   for (const x of s.sentences) for (const [re, why] of KIT_CANNOT) if (re.test(x.text)) P.push(`"${x.text.slice(0, 50)}…": ${why}`);
   // the story chain: strict for a new layout; a saved layout's fixed roles (made before the rule) get it as guidance
-  P.push(...chainProblems(s, { strict: !roles, lengthSec }));
-  return P;
+  P.push(...guard("chain check", () => chainProblems(s, { strict: !roles, lengthSec, bugs }), bugs, []));
+  return splitBugs(P, bugs);
 };
 
 // ---------- visuals first, words second (the owner's rule of 2026-10-27) ----------
@@ -585,6 +595,12 @@ const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, requir
 const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
 const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.`;
 
+// a card's number as said and shown: as its verified claim writes it (a year stays 1993; "SINCE 1,993" was the garage
+// door's card on the 60 s free run of 2026-10-30), else with thousands commas
+export const cardNumber = (n, claim = "") => {
+  const commas = Number(n).toLocaleString("en-US");
+  return new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(String(claim)) && !String(claim).includes(commas) ? String(n) : commas;
+};
 const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
 /** stand-in sentences for a beat plan (its idea and its cue words), so the free checks run before the words exist */
 export function draftSentences(L, ideas) {
@@ -592,7 +608,7 @@ export function draftSentences(L, ideas) {
   return (L.beats ?? []).map((b) => {
     const idea = speakable(String(ideas[b.s] ?? b.shows?.does ?? b.s)).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
     const extra = (cues[b.s] ?? []).filter((w) => !have.has(tok(w)));
-    return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you) (but|so you)\b/i, "$1") };
+    return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you|This is|If you) (but|so you|this is|if you)\b/i, "$1") };
   });
 }
 /** the beat plan's story (free): roles in order, the chain of problems (caused by the fix before, bigger each time), the surprises */
@@ -689,15 +705,17 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
     const draft = draftSentences(conv.layout, ideas);
     const solved = solveLayout(conv.layout, draft);
-    const problems = [...conv.problems, ...beatPlanProblems(conv.layout, story, lengthSec), ...solved.problems];
+    // (a bookkeeping slip is logged and skipped: never a paid repair, bookkeeping.js)
+    const problems = splitBugs([...conv.problems, ...guard("beat plan check", () => beatPlanProblems(conv.layout, story, lengthSec), BUGS, []), ...solved.problems], BUGS);
     return { scene, story, conv, ideas, draft, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
   };
-  // 1. the beat plan
-  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: 64000 });
+  // 1. the beat plan (120,000 tokens: the real 60 s swimming pool plan of 2026-10-29 used 45,000 of the old 64,000, and
+  // a cut-off reply is a failed attempt; it costs only what is used)
+  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS });
   let B = plan(r);
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
-    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: 64000 }); // (medium: it fixes listed problems; at high it cost as much as the plan)
+    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS }); // (medium: it fixes listed problems; at high it cost as much as the plan)
     const B2 = plan(r);
     // a repeat opening after the repair is a warning: the video still goes on
     const opening = openingProblems(B2.conv.layout, lastOpening);
@@ -731,7 +749,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
       const i = was.indexOf(String(card.at.w ?? "").replace(/,/g, ""));
       if (i < 0) return [card];
       if (!now[i]) return [];
-      return [{ ...card, at: { ...card.at, w: Number(now[i]).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(now[i]).toLocaleString("en-US")) }];
+      return [{ ...card, at: { ...card.at, w: cardNumber(now[i], c.claim) }, text: card.text.replace(/[\d,.]+/, cardNumber(now[i], c.claim)) }];
     });
     // cue words that were a dropped or changed number fire at the sentence's start instead
     for (const b of layout.beats) if (b.s === c.role) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !now.includes(String(a.w).replace(/,/g, ""))) delete a.w;
@@ -750,7 +768,8 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     if (nums.includes(w)) return [card];
     const used = new Set((layout.audio.cards ?? []).filter((x) => x !== card && x.at?.s === card.at?.s).map((x) => String(x.at?.w ?? "").replace(/,/g, "")));
     const n = nums.find((x) => !used.has(x));
-    return n ? [{ ...card, at: { ...card.at, w: Number(n).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(n).toLocaleString("en-US")) }] : [];
+    const claim = kept.filter((c) => c.role === card.at?.s).map((c) => c.claim).join(" ");
+    return n ? [{ ...card, at: { ...card.at, w: cardNumber(n, claim) }, text: card.text.replace(/[\d,.]+/, cardNumber(n, claim)) }] : [];
   });
   for (const b of layout.beats) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !kept.some((c) => c.role === b.s && numbersIn(c.claim).includes(String(a.w).replace(/,/g, "")))) delete a.w;
   // the chime that rings with a card, a sound or a shot on a number: it follows the card's verified number, or starts
@@ -787,8 +806,12 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const wordsCheck = (script) => {
     const rt = retargetCues(layout, script.sentences); layout = rt.layout;
     const cues = cuesOf(), P = [];
-    for (const s of script.sentences) for (const p of sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums })) P.push(`${s.role}: ${p}`);
-    P.push(...checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }));
+    // (a number a counter already shows on screen may be said: the plan's counter to 320 gallons, four times a verified
+    // 80, was refused in the words on the 60 s free water well run of 2026-10-30, a check no rewrite could pass)
+    const onScreen = (layout.parts ?? []).filter((p) => p.kind === "counter").flatMap((p) => [p.params?.from, p.params?.to]).filter((n) => Number.isFinite(Number(n))).map((n) => String(Math.abs(Number(n))));
+    const allowed = [...verifiedNums, ...onScreen];
+    for (const s of script.sentences) for (const p of guard("sentence check", () => sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed }), BUGS, [])) P.push(`${s.role}: ${p}`);
+    P.push(...guard("script check", () => checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }), BUGS, []));
     const n = script.sentences.reduce((k, s) => k + wordCount(s.text), 0), L = LENGTH[lengthSec];
     // (the length as guidance for a rewrite that runs for something else; and a visible-consequence line whose picture shows
     // it is no reason to rewrite: the free swimming pool run of 2026-10-29 rewrote for it and came back too long)
@@ -850,7 +873,15 @@ export async function rewordBeats({ apiKey, topic, script, layout, failing, log,
  * The whole planner. topic, lengthSec (30 | 60); reuse: a saved layout key (its roles, its scene) or null for a
  * new layout. Returns { script, facts, layout, problems, warnings, costUsd, trace }.
  */
-export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
+export async function planTopic(args) {
+  // the bookkeeping bugs met on the way: out of the problems (they never fail a plan), into the trace and the warnings
+  const bugs = (BUGS = []);
+  const r = await planTopicRaw(args);
+  const problems = splitBugs(r.problems, bugs), seen = [...new Set(bugs)];
+  if (seen.length) { r.trace.push({ label: "bookkeeping bugs (skipped)", bugs: seen }); logBugs(seen, "plan"); }
+  return { ...r, problems, warnings: [...r.warnings, ...seen.map((b) => `BUG (ours, skipped): ${b}`)], bugs: seen };
+}
+async function planTopicRaw({ apiKey, topic, lengthSec = 30, reuse = null, log, script: given = null, lastOpening = null, defer = null, model = MODEL.default, onStep = () => {}, cacheDir = null, example = exampleFor(topic), library = [] }) {
   const SCENE = sceneSystem(example);
   const trace = [];
   let cost = 0, n = 0;
@@ -901,7 +932,7 @@ export async function planTopic({ apiKey, topic, lengthSec = 30, reuse = null, l
     // a new topic whose problems still don't chain and escalate after the repair is refused (the owner's rule): it stops
     // here as a plan that didn't pass (refunded), before the fact-check, the scene and the voice are paid for. The script
     // goes into the error, so the owner's Details show what was refused.
-    const chainLeft = saved ? [] : chainProblems(script, { strict: true, lengthSec });
+    const chainLeft = saved ? [] : guard("chain check", () => chainProblems(script, { strict: true, lengthSec, bugs: BUGS }), BUGS, []);
     if (chainLeft.length) throw Object.assign(new Error(`the script's story does not chain: ${chainLeft.join("; ")}\n\nThe script:\n${(script.sentences ?? []).map((x, i) => `${i + 1}. ${x.text}`).join("\n")}`), { code: "PLAN_FAILED", retryable: false });
 
     // 2. the fact-check, with web search (a second script round if fewer than 2 surprises survive). A saved layout
@@ -997,7 +1028,7 @@ export async function repairLayout({ apiKey, topic, script, layout, problems, lo
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {
     r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "medium", maxTokens: 64000,
-      user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is. Return ONLY what changes, as sceneJson = {\"beats\": [each beat you change, whole, with its s], \"parts\": [each part you change or add, whole, with its id], \"world\": {only the world keys you change}}; leave out everything that stays the same.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
+      user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : layout.codeShots ? " (their parts' settings, their verbs, and which parts a shot is on (focus) and the word it starts on: the camera's box, view, width and type are set by code and ignored, so a frame that misses something needs that part in the shot's focus, or a part moved, sized or shown)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is. Return ONLY what changes, as sceneJson = {\"beats\": [each beat you change, whole, with its s], \"parts\": [each part you change or add, whole, with its id], \"world\": {only the world keys you change}}; leave out everything that stays the same.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
   }
   // the reply is a patch: changed beats (by sentence), changed or new parts (by id), changed world keys

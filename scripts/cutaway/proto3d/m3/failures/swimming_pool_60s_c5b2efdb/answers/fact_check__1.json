@@ -1,0 +1,89 @@
+{
+ "hash": "*",
+ "by": "real run c5b2efdb-6b0d-4650-b37f-9cf7a45e98b7",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "A cubic yard of soil can weigh about 3,000 pounds.",
+    "why": "OSHA says a cubic yard of soil can weigh nearly 3,000 pounds, as much as a car. Texas Department of Insurance says up to 3,000 pounds. Murray State says over 3,000 lb. The \"can weigh\" wording fits because this is a maximum for dense or wet soil, not an average.",
+    "sources": [
+     {
+      "url": "https://www.osha.gov/vtools/construction/trench-fnl-eng-web-transcript",
+      "title": "Trenching"
+     },
+     {
+      "url": "https://www.tdi.texas.gov/tips/safety/trench-safety.html",
+      "title": "Preventing trench collapses - Texas Department of Insurance"
+     },
+     {
+      "url": "https://www.murraystate.edu/about/Offices/esh/OccupationalSafetyHealth/TrenchingShoring/SoilTypes.aspx",
+      "title": "Soil Types"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "A 20,000-gallon pool holds about 83 US tons of water (roughly 167,000 pounds).",
+    "why": "A US gallon of water weighs about 8.34 lb, so 20,000 gallons is about 166,800 lb. That is about 83.4 US short tons, but only about 75.7 metric tonnes. The unit must be specified.",
+    "sources": [
+     {
+      "url": "https://sciencenotes.org/much-gallon-water-weigh-easy-calculation/",
+      "title": "How Much Does a Gallon of Water Weigh? Easy Calculation"
+     },
+     {
+      "url": "https://www.epicwaterfilters.com/blogs/quick-drips/how-much-does-water-weigh",
+      "title": "How Much Does Water Weigh?"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "Residential pools are generally designed to turn over the full volume at least once about every 8 hours, and many are run 8–10 hours a day.",
+    "why": "Sources give the 8-hour turnover as a minimum standard for residential pools. Full turnover often takes 8 to 10 hours, and public pools use shorter times. So it is not exactly \"typical once every 8 hours\".",
+    "sources": [
+     {
+      "url": "https://www.thepoolnerd.com/pool-pump-size-calculator",
+      "title": "Pool Pump Size Calculator: What Size Pump Does Your Pool Need?"
+     },
+     {
+      "url": "https://cleanwavespools.com/knowledgebase/pool-maintenance/pool-pump-maintenance-guide",
+      "title": "Pool Pump Maintenance Guide — How Long to Run It"
+     },
+     {
+      "url": "https://www.swimuniversity.com/run-pool-pump/",
+      "title": "How Long Should I Run My Pool Pump Every Day?"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "Water is faintly blue on its own because it absorbs red light. Pool finish and sky reflection tint or intensify that color but don't cause it.",
+    "why": "The physics rests on water's absorption of red light, per Wikipedia. Finish and sky reflection enhance the blue, so \"not because of paint\" needs this nuance.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Electromagnetic_absorption_by_water",
+      "title": "Electromagnetic absorption by water"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Blue_ice_(glacial)",
+      "title": "Blue ice (glacial)"
+     },
+     {
+      "url": "https://waterscapespools.com/truth-about-blue-pool-water/",
+      "title": "The Truth About Blue Pool Water"
+     },
+     {
+      "url": "https://aquabellatile.com/articles/how-pool-finishes-affect-water-color/",
+      "title": "How Pool Finishes Affect Water Color - Aquabella tile"
+     }
+    ]
+   }
+  ]
+ }
+}

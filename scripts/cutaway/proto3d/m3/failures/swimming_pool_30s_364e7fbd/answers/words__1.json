@@ -1,0 +1,54 @@
+{
+ "hash": "*",
+ "by": "real run 364e7fbd-6ceb-4053-b9f0-739c8cb71534",
+ "searches": 0,
+ "data": {
+  "title": "How a Swimming Pool Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a deep hole in the yard and fill it with water, you have a pool."
+   },
+   {
+    "role": "problem",
+    "text": "But the ground drinks it, and a hole holding 20,000 gallons will drain empty into the soil."
+   },
+   {
+    "role": "fix1",
+    "text": "So you spray a concrete shell onto the floor and walls, and the water stays."
+   },
+   {
+    "role": "problem2",
+    "text": "But now leaves and dirt fall in, and the still water turns green."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a pump, a pipe to carry the water, and a tank of sand."
+   },
+   {
+    "role": "name",
+    "text": "This is a pool filter."
+   },
+   {
+    "role": "how",
+    "text": "The pump pulls water from the floor, the sand traps the dirt, and clean water flows back."
+   },
+   {
+    "role": "myth",
+    "text": "And the strong chlorine smell is not a sign of a clean pool."
+   },
+   {
+    "role": "mythFact",
+    "text": "It is chlorine bonded with sweat, urine and oils, so a truly clean pool barely smells."
+   },
+   {
+    "role": "finish",
+    "text": "Add a fence, bushes and young trees to finish the pool and keep it safe."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a swimming pool."
+   }
+  ]
+ }
+}

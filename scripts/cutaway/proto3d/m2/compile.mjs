@@ -148,6 +148,16 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     let s = Math.min(1, Math.max(0, tr.base ?? 0));
     for (const r of [...tr.ramps].sort((a, b) => a.t0 - b.t0)) { const next = Math.min(1, Math.max(0, s + r.amp)); r.amp = +(next - s).toFixed(4); s = next; }
   }
+  // (in a planned layout a move that reverses the one before it on the same channel waits until that one is done: ramps
+  // add up, so a door closing over 1.4 s and opening 0.6 s later cancelled out and never visibly closed; the 60 s free
+  // garage door run of 2026-10-30)
+  if (layout.hold) for (const tr of Object.values(tracks)) {
+    const rs = [...tr.ramps].sort((a, b) => a.t0 - b.t0);
+    for (let i = 1; i < rs.length; i++) {
+      const a = rs[i - 1], b = rs[i];
+      if (Math.sign(a.amp) && Math.sign(b.amp) === -Math.sign(a.amp) && b.t0 < a.t1 && a.t1 > a.t0) { const d = b.t1 - b.t0; b.t0 = +a.t1.toFixed(4); b.t1 = +(a.t1 + d).toFixed(4); }
+    }
+  }
 
   const keysFor = (which) => (layout.camera?.keys ?? []).filter((k) => !k.only || k.only === which).map((k) => [+at(k.at).toFixed(4), k.pos, k.tgt]);
   let camera, director = null;

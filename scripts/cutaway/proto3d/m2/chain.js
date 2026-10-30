@@ -21,15 +21,22 @@ const stem = (w) => w.replace(/(ings?|ed|es|s)$/, "");
 // free harness, 2026-10-28, was refused for it)
 const isProblem = (t, role = "") => /^\s*but\b/i.test(t) && !/^fix/.test(role);
 const isFix = (t) => /^\s*so\b/i.test(t);
+// the problem lines: by role when the script has problem roles (a plan made from beats keys its chain by them, so a
+// "But now the walls slump in" stakes line is not one and a "Then a storm blows mud in" problem3 line is: the swimming
+// pool 60 s run of 2026-10-29 was refused after $1.72 for the first), else by the words ("But…")
+const problemIndexes = (S) => {
+  const byRole = S.some((s) => /^problem/.test(s.role ?? ""));
+  return S.map((s, i) => ((byRole ? /^problem/.test(s.role ?? "") : isProblem(s.text, s.role)) ? i : -1)).filter((i) => i >= 0);
+};
 
 /**
  * The chain's problems, for a script { sentences, chain }. strict: a new layout (the roles are free); with a saved
  * layout the roles are fixed (its scene was made before this rule), so only the chain metadata, the visibility and the
  * escalation are checked.
  */
-export function chainProblems(script, { strict = true, lengthSec = 30 } = {}) {
+export function chainProblems(script, { strict = true, lengthSec = 30, bugs = null } = {}) {
   const P = [], S = script.sentences ?? [], chain = script.chain ?? [];
-  const probs = S.map((s, i) => (isProblem(s.text, s.role) ? i : -1)).filter((i) => i >= 0);
+  const probs = problemIndexes(S);
   const need = lengthSec >= 60 ? 3 : 2;
   if (probs.length < need) P.push(`the story needs at least ${need} problems ("But…" sentences), each caused by the fix before it; it has ${probs.length}`);
   if (!probs.length) return P;
@@ -54,13 +61,15 @@ export function chainProblems(script, { strict = true, lengthSec = 30 } = {}) {
   });
   // the chain the writer returns: one entry per problem, what it shows, and bigger every time
   const byProblem = new Map(chain.map((c) => [c.problem, c]));
-  for (const pi of probs) {
+  // (no chain at all: an approved premade script, made before the rule; there is nothing to compare, so no check)
+  for (const pi of chain.length ? probs : []) {
     const c = byProblem.get(pi);
-    if (!c) { P.push(`chain: no entry for problem sentence ${pi}`); continue; }
+    // (no entry is our bookkeeping, never the video's fault: logged and skipped, the owner's rule of 2026-10-30)
+    if (!c) { bugs?.push(`chain: no entry for problem sentence ${pi} (${S[pi].role ?? "no role"})`); continue; }
     if (String(c.shows ?? "").split(/\s+/).filter(Boolean).length < 3) P.push(`chain: problem sentence ${pi} must say what is seen happening on screen`);
     if (String(c.stakes ?? "").split(/\s+/).filter(Boolean).length < 2) P.push(`chain: problem sentence ${pi} must say who or what suffers`);
   }
-  const sizes = probs.map((pi) => Number(byProblem.get(pi)?.size));
+  const sizes = probs.filter((pi) => byProblem.has(pi)).map((pi) => Number(byProblem.get(pi).size));
   if (sizes.every(Number.isFinite)) for (let k = 1; k < sizes.length; k++) if (!(sizes[k] > sizes[k - 1])) { P.push(`chain: every problem must be bigger than the one before (sizes ${sizes.join(", ")})`); break; }
   return P;
 }
@@ -74,7 +83,7 @@ const UNLINKED = /^problem ".*" must follow from the fix before it/;
  */
 export function linkProblems(script) {
   const S = (script.sentences ?? []).map((s) => ({ ...s })), linked = [];
-  const probs = S.map((s, i) => (isProblem(s.text, s.role) ? i : -1)).filter((i) => i >= 0);
+  const probs = problemIndexes(S);
   const causedBy = new Map((script.chain ?? []).map((c) => [c.problem, c.causedBy]));
   probs.forEach((pi, k) => {
     if (k === 0 || /\bnow\b/i.test(S[pi].text)) return;
@@ -82,7 +91,8 @@ export function linkProblems(script) {
     if (f < 0 || (causedBy.has(pi) && causedBy.get(pi) !== f)) return;
     const fw = new Set(words(S[f].text).map(stem));
     if (words(S[pi].text).some((w) => fw.has(stem(w)))) return;
-    const m = S[pi].text.match(/^(\s*but)\b,?\s*(.*)$/is);
+    // (a problem line that doesn't open with "But", "Then a storm…": left as written)
+    const m = S[pi].text.match(/^(\s*but)\b,?\s*(.*)$/is); if (!m) return;
     const rest = m[2], comma = /^(at|in|on|by|after|when|once|if|then|soon)\b/i.test(rest) ? "," : "";
     S[pi].text = `${m[1]} now${comma} ${rest}`;
     linked.push(pi);

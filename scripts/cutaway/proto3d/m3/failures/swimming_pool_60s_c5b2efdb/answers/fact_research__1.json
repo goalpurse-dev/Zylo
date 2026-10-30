@@ -1,0 +1,230 @@
+{
+ "hash": "*",
+ "by": "real run c5b2efdb-6b0d-4650-b37f-9cf7a45e98b7",
+ "searches": 6,
+ "data": {
+  "text": "**Claim 0: \"A cubic yard of soil can weigh about 3,000 pounds.\" Supported as written.**\n- OSHA's trenching transcript says \"One cubic yard of soil can weigh as much as a car, nearly 3,000 pounds\". It adds that cave-in protection is needed for trenches more than 5 feet deep. https://www.osha.gov/vtools/construction/trench-fnl-eng-web-transcript\n- Texas Department of Insurance says a single cubic yard of soil coming down on a worker weighs up to 3,000 pounds, as much as a car. https://www.tdi.texas.gov/tips/safety/trench-safety.html\n- Murray State's safety office says a cubic foot can weigh as much as 114 pounds, and a cubic yard can weigh over 3,000 lb. https://www.murraystate.edu/about/Offices/esh/OccupationalSafetyHealth/TrenchingShoring/SoilTypes.aspx\n- The \"can weigh\" and \"about\" wording fits. The figure is a maximum for dense or wet soil, not an average.\n\n**Claim 1: \"A 20,000-gallon pool holds about 83 tons of water.\" Supported, with a qualifier on the unit.**\n- The sources I found were commercial water-filter sites, not government or engineering ones. My search didn't surface a USGS page.\n- Science Notes says a US gallon of water weighs 8.34 lbs or 3.78 kg at 62 °F (17 °C). https://sciencenotes.org/much-gallon-water-weigh-easy-calculation/\n- Epic Water Filters says a US gallon of water weighs about 8.34 pounds at room temperature. https://www.epicwaterfilters.com/blogs/quick-drips/how-much-does-water-weigh\n- My arithmetic: 20,000 × 8.34 = 166,800 lb. That is about 83.4 US (short) tons of 2,000 lb, or about 75.7 metric tonnes.\n- \"83 tons\" is therefore correct only for US short tons. The script should say \"about 83 US tons (roughly 167,000 pounds)\".\n\n**Claim 2: \"A typical pool pump circulates the whole pool volume through the filter about once every 8 hours.\" Supported in a slightly corrected form.**\n- The Pool Nerd says industry standards call for at least one complete turnover every 8 hours for residential pools. https://www.thepoolnerd.com/pool-pump-size-calculator\n- Clean Waves Pools says the target is to turn over the pool's full volume at least once every 8 hours. https://cleanwavespools.com/knowledgebase/pool-maintenance/pool-pump-maintenance-guide\n- Swim University says a full turnover usually takes 8 to 10 hours. https://www.swimuniversity.com/run-pool-pump/\n- CPO training gives an example where an eight-hour turnover means the pump and filtration system can circulate the pool's full volume in eight hours at its actual operating flow rate. https://cpo.training/pool-turnover-rate/\n- Corrected form: \"Residential pools are generally designed to turn over the full volume at least once about every 8 hours, and many are run 8–10 hours a day.\" Public and commercial pools use much shorter turnover times. These sources are mostly pool-industry sites rather than government ones.\n\n**Claim 3: \"Pool water looks blue because water absorbs red light, not because of paint.\" Supported in a corrected form.**\n- Wikipedia's page on electromagnetic absorption by water says an absorption band at 698 nm is a 3rd overtone and tails off into the visible region. It is responsible for the intrinsic blue color of water. https://en.wikipedia.org/wiki/Electromagnetic_absorption_by_water\n- Wikipedia's page on glacial blue ice says large quantities of liquid water are blue because of an overtone of an O–H bond stretch that absorbs light at the red end of the visible spectrum. https://en.wikipedia.org/wiki/Blue_ice_(glacial)\n- On paint, the Waterscapes Pools article says the blue comes from a reflection of the sky or an optical illusion from pools painted blue at the bottom. These can enhance the blue hue, but neither is the reason. https://waterscapespools.com/truth-about-blue-pool-water/\n- Pool-finish sources say the finish still matters. Aquabella Tile says deeper water appears more saturated because light travels farther through the water, intensifying the color effect from the finish below. https://aquabellatile.com/articles/how-pool-finishes-affect-water-color/\n- Corrected form: \"Water is faintly blue on its own because it absorbs red light. Pool finish and sky reflection tint or intensify that color but don't cause it.\" The blue comes from absorption of red light, not from scattering as in the sky. Water in a glass looks clear because the path through it is too short.\n- The pool-finish and water-color sources are trade sites. The physics claim rests on the Wikipedia pages.",
+  "sources": [
+   {
+    "url": "https://www.osha.gov/vtools/construction/trench-fnl-eng-web-transcript",
+    "title": "Trenching"
+   },
+   {
+    "url": "https://www.murraystate.edu/about/Offices/esh/OccupationalSafetyHealth/TrenchingShoring/SoilTypes.aspx",
+    "title": "Soil Types"
+   },
+   {
+    "url": "https://www.tdi.texas.gov/tips/safety/trench-safety.html",
+    "title": "Preventing trench collapses - Texas Department of Insurance"
+   },
+   {
+    "url": "https://isienvironmental.com/blog/trench-safety-1926-652-cave-in-protection-construction/",
+    "title": "Why Four Feet of Dirt Is Enough to Kill: Subpart P Cave-In Protection and the June 15-19 Stand Down for Construction Crews"
+   },
+   {
+    "url": "https://hpsafetyconsulting.com/blog/trenching-excavation-protective-systems/",
+    "title": "Trenching and Excavation: Five Feet and What Comes Before It"
+   },
+   {
+    "url": "https://shepherdsafetyconsulting.com/trench-collapse-it-happens-fast-and-its-100-preventable/",
+    "title": "Trench Collapse: It Happens Fast"
+   },
+   {
+    "url": "https://pwsafetycenter.com/confined-space-trench-safety/a-deep-dive-on-osha-soil-types-a-b-and-c-what-work-crews-must-know-before-excavating.html",
+    "title": "A Deep Dive on OSHA Soil Types A, B, and C: What Work Crews Must Know Before Excavating"
+   },
+   {
+    "url": "https://www.lawsuitlegal.com/construction-accident-lawyer/trench-collapse-accidents.php",
+    "title": "Trench Collapse Lawyers"
+   },
+   {
+    "url": "https://www.toolgrit.com/guides/osha-trench-safety",
+    "title": "OSHA Trench Safety Guide"
+   },
+   {
+    "url": "https://www.epicwaterfilters.com/blogs/quick-drips/how-much-does-water-weigh",
+    "title": "How Much Does Water Weigh?"
+   },
+   {
+    "url": "https://sciencenotes.org/much-gallon-water-weigh-easy-calculation/",
+    "title": "How Much Does a Gallon of Water Weigh? Easy Calculation"
+   },
+   {
+    "url": "https://glacierfreshfilter.com/blogs/news/how-much-does-water-weigh-in-different-units",
+    "title": "How Much Does Water Weigh? (Gallon, Liter, Cup & Easy Conversion Guide)"
+   },
+   {
+    "url": "https://www.frizzlife.com/blogs/guide/how-much-does-water-weigh-exact-weights-guide",
+    "title": "How Much Does Water Weigh? Exact Weights Guide"
+   },
+   {
+    "url": "https://crystalquest.com/blogs/water/how-much-does-a-gallon-of-water-weigh",
+    "title": "How Much Does a Gallon of Water Weigh? Charts & Guide"
+   },
+   {
+    "url": "https://build-construct.com/water-resources/how-much-does-a-gallon-of-water-weigh-a-practical-weight-guide/",
+    "title": "How Much Does a Gallon of Water Weigh? A Practical Weight Guide"
+   },
+   {
+    "url": "https://www.oztogallon.com/blog/how-much-does-a-gallon-of-water-weigh/",
+    "title": "How Much Does a Gallon of Water Weigh? About 8.34 lb (3.78 kg)"
+   },
+   {
+    "url": "https://www.scaleforgram.com/blog/how-much-does-a-gallon-of-water-weigh",
+    "title": "How Much Does a Gallon of Water Weigh? Exact Weight (2026)"
+   },
+   {
+    "url": "https://scaleforgrams.com/blog/water-weight-per-gallon-is-8-34-pounds-here-s-the-math-112110d1",
+    "title": "Water Weight per Gallon Is 8.34 Pounds, Here's the Math"
+   },
+   {
+    "url": "https://scaleforgrams.com/blog/water-weight-how-much-does-a-gallon-of-water-weigh-624a8017",
+    "title": "Water Weight: How Much Does a Gallon of Water Weigh?"
+   },
+   {
+    "url": "https://lesliespool.com/blog/how-to-calculate-pool-pump-run-time.html",
+    "title": "How to Calculate Pool Pump Run Time"
+   },
+   {
+    "url": "https://www.thepoolnerd.com/pool-pump-size-calculator",
+    "title": "Pool Pump Size Calculator: What Size Pump Does Your Pool Need?"
+   },
+   {
+    "url": "https://www.swimuniversity.com/run-pool-pump/",
+    "title": "How Long Should I Run My Pool Pump Every Day?"
+   },
+   {
+    "url": "https://beatbot.com/blogs/pool-care-solutions/how-long-to-run-pool-pump",
+    "title": "How Long Should You Run a Pool Pump Every Day?"
+   },
+   {
+    "url": "https://cleanwavespools.com/knowledgebase/pool-maintenance/pool-pump-maintenance-guide",
+    "title": "Pool Pump Maintenance Guide — How Long to Run It"
+   },
+   {
+    "url": "https://cpo.training/pool-turnover-rate/",
+    "title": "Pool Turnover Rate: How to Calculate It Correctly - Online CPO Certification"
+   },
+   {
+    "url": "https://www.dogdayspools.com/poolserviceblog/how-long-to-run-pool-pump",
+    "title": "How Long to Run Your Pool Pump: The 1-Turnover Rule — Dog Days Pools"
+   },
+   {
+    "url": "https://www.carefreepoolclub.com/2026/06/02/how-long-should-you-run-your-pool-pump-each-day/",
+    "title": "How Long Should You Run Your Pool Pump Each Day? - CareFree Pool Club"
+   },
+   {
+    "url": "https://ultimatecalculators.com/calculator/pool-turnover-rate-calculator/",
+    "title": "Pool Turnover Rate Calculator: Optimize Circulation for Crystal Water"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Ocean_color",
+    "title": "Ocean color"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Color_of_water",
+    "title": "Color of water"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/12495201",
+    "title": "Underwater video light system"
+   },
+   {
+    "url": "https://what-makes-swimming-pool-water-blue.pages.dev/posts/what-makes-swimming-pool-water-blue/",
+    "title": "Ever wondered what makes swimming pool water blue?"
+   },
+   {
+    "url": "https://bonavistapools.com/blog/why-are-swimming-pools-blue/",
+    "title": "Why Are Swimming Pools Blue? - BonaVista Pools"
+   },
+   {
+    "url": "https://fiestapoolsandspas.com/why-are-swimming-pools-blue/",
+    "title": "Why Are Swimming Pools Blue?"
+   },
+   {
+    "url": "https://biologyinsights.com/why-does-pool-water-look-blue-the-science-explained/",
+    "title": "Why Does Pool Water Look Blue? The Science Explained - Biology Insights"
+   },
+   {
+    "url": "https://adultswimminglessons.sg/why-swimming-pool-water-is-blue/",
+    "title": "Why Swimming Pool Water Is Blue?"
+   },
+   {
+    "url": "https://free-floating.com/swimming-pools/pool-water-blue-reason/",
+    "title": "Why Is Swimming Pool Water Blue? - Free Floating"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Electromagnetic_absorption_by_water",
+    "title": "Electromagnetic absorption by water"
+   },
+   {
+    "url": "https://pooltile.ca/what-pool-tile-colors-make-water-look-bluer/",
+    "title": "Pool Tile Colors for Blue Water"
+   },
+   {
+    "url": "https://aquabellatile.com/articles/how-pool-finishes-affect-water-color/",
+    "title": "How Pool Finishes Affect Water Color - Aquabella tile"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Blue_ice_(glacial)",
+    "title": "Blue ice (glacial)"
+   },
+   {
+    "url": "https://waterscapespools.com/truth-about-blue-pool-water/",
+    "title": "The Truth About Blue Pool Water"
+   },
+   {
+    "url": "https://www.gresaragon.com/en/how-is-the-color-of-a-swimming-pool-perceived-factors-keep-in-mind/",
+    "title": "What Factors Influence the Color of Pool Water?"
+   },
+   {
+    "url": "https://biologyinsights.com/what-color-is-water-the-science-behind-the-blue/",
+    "title": "What Color Is Water? The Science Behind the Blue - Biology Insights"
+   },
+   {
+    "url": "https://schillerpools.com/pool-water-color/",
+    "title": "How Pool Color Affects Water Color and Appearance? - Schiller Pools"
+   },
+   {
+    "url": "https://leisurepoolscanada.ca/pool-colors/swimming-pool-colors/",
+    "title": "Eight Best Swimming Pool Colors - Leisure Pools Canada"
+   },
+   {
+    "url": "https://pebbletec.com/more-to-explore/a-guide-to-choosing-a-pool-finish-for-the-best-pool-water-color/",
+    "title": "A Guide to Choosing a Pool Finish for the Best Pool Water Color"
+   },
+   {
+    "url": "https://happyhautehome.com/2020/07/20/deciding-on-water-color-when-building-a-swimming-pool/",
+    "title": "Deciding on Water Color of a Swimming Pool - Happy Haute Home"
+   },
+   {
+    "url": "https://www.aquapool.com/pool-design/pool-finishes-that-change-the-color-of-the-water/",
+    "title": "Pool Finishes that Change the Color of the Water"
+   },
+   {
+    "url": "https://www.sgm.cc/how-pool-finishes-affect-water-color/",
+    "title": "How Pool Finishes Impact Water Color"
+   },
+   {
+    "url": "https://www.skinmicroplaster.com/pool-plaster-color-chart/",
+    "title": "Pool Plaster Color Chart: Popular Shades (& Water Effects)"
+   },
+   {
+    "url": "https://www.venturepoolco.com/resources/blog/pool-water-color-guide",
+    "title": "What Your Pool Water Color Is Telling You (And What Makes It That Blue)"
+   },
+   {
+    "url": "https://minibuckettest.com/blogs/news/the-pros-and-cons-of-dark-vs-light-pool-plaster-finishes-what-pool-owners-should-know-before-choosing-a-look",
+    "title": "The Pros and Cons of Dark vs. Light Pool Plaster Finishes: What Pool Owners Should Know Before Choosing a Look"
+   },
+   {
+    "url": "https://swanpools.com/blog/how-to-choose-pool-plaster-colors-for-your-orange-county-pool/",
+    "title": "How to Choose Pool Plaster Colors for Your Orange County Pool - Swan Pools"
+   },
+   {
+    "url": "https://www.walmart.com/c/kp/pool-color-plaster",
+    "title": "Pool Color Plaster"
+   }
+  ]
+ }
+}

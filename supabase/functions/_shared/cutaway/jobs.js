@@ -6,8 +6,10 @@ export const BUCKET = "cutaway-renders";
 export const FRAMES = 8;              // preview frames the page shows while the video renders
 export const CHUNK_FRAMES = 110;      // the CPU fallback: frames a machine renders (~6 min on performance-8x)
 export const MAX_CHUNKS = 20;
-export const PLAN_FILES = Object.freeze(["layout", "script", "words", "voice", "post"]);
-const EXT = { layout: "json", script: "json", words: "json", voice: "mp3", post: "json" };
+// (steps: the planner's paid replies of a failed attempt, so the retry replays them instead of paying again: the
+// swimming pool 60 s run of 2026-10-29 paid for its plan twice, $1.59, and took 16 minutes)
+export const PLAN_FILES = Object.freeze(["layout", "script", "words", "voice", "post", "steps"]);
+const EXT = { layout: "json", script: "json", words: "json", voice: "mp3", post: "json", steps: "json" };
 
 export const runDir = (run) => `${run.env ?? "prod"}/${run.user_id}/${run.id}`;
 export const paths = (run) => ({
@@ -55,7 +57,11 @@ export function jobFor(run, { role, mode, urls, callback, layout = null, chunk =
   };
   if (role === "video" || role === "plan") {
     if (run.plan_ready && urls.planGet) job.plan = { get: urls.planGet };
-    else { job.plan = { put: urls.planPut }; if (layout) job.layout = layout; if (library?.length) job.library = library; }
+    else {
+      job.plan = { put: urls.planPut }; if (layout) job.layout = layout; if (library?.length) job.library = library;
+      // a retry: the earlier attempt's paid planner replies, replayed for free (they may be missing: the worker goes on)
+      if ((run.attempt ?? 1) > 1 && urls.resume) job.plan.resume = urls.resume;
+    }
   } else job.plan = { get: urls.planGet };
   if (role === "video" || role === "plan") job.out = { frames: urls.frames ?? [] };
   if (role === "video" || role === "mix") job.out = { ...(job.out ?? {}), final: urls.final, web: urls.web, poster: urls.poster };
