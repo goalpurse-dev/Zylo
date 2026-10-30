@@ -4,7 +4,7 @@
 import { SAFE, W, H } from "./world.js";
 
 export const SAFE_CX = (SAFE.left + (W - SAFE.right)) / 2;   // 510
-const FONT = '"Segoe UI Black", "Segoe UI", Arial';
+const FONT = '"Segoe UI Black", "Segoe UI", "Segoe UI Emoji", Arial';   // the emoji font draws 👀 (no empty boxes)
 const YELLOW = "#FFD43B", LIME = "#BEF264";
 const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const popScale = (age, d = 0.16) => (age < 0 ? 0 : age < d ? 0.6 + 0.55 * Math.sin((age / d) * Math.PI * 0.75) : 1);

@@ -55,20 +55,29 @@ export const FRAMINGS_T = {
   phoneFull: { pos: [0.1, 4.9, 13.0], look: [0.1, 4.9, -3.6], facing: "phone", creep: 0.1 },
 };
 
-/** The camera plan of a per-template video (lines 0..11, clips hook + payoff). */
+/** Lines by role (hook, answer, beat, tease, step1..5, twist, objection, time, site, cta); else by the old order. */
+export function roles(L) {
+  const by = Object.fromEntries(L.filter((l) => l.role).map((l) => [l.role, l]));
+  if (by.hook) return by;
+  const old = ["hook", "answer", "beat", "step1", "step2", "step3", "step4", "step5", "twist", "objection", "time", "site", "cta"];
+  return Object.fromEntries(L.map((l, i) => [old[i], l]));
+}
+
+/** The camera plan of a per-template video (by role; clips hook + payoff). */
 export function planTemplate(T) {
   const L = T.lines, clip = Object.fromEntries((T.clips ?? []).map((c) => [c.name, c]));
+  const R = roles(L);
   const moves = [];
   let at = "hook", free = MIN_HOLD;
   const go = (to, want, dur, kind) => { const t0 = Math.max(want, free); moves.push({ type: "move", from: at, to, t0, t1: t0 + dur, kind }); at = to; free = t0 + dur + MIN_HOLD; };
-  go("phone", L[0].end - 0.1, 0.95, "push");              // the question -> the real video plays
+  go("phone", R.hook.end - 0.1, 0.95, "push");             // the question -> the real video plays
   go("zee", clip.hook.end - 0.05, 0.6, "pull");             // "It's simple. But..."
-  go("creator", L[1].end - 0.05, 0.45, "whip");            // "...show me."
-  go("steps", L[2].end, 0.85, "crane");                    // steps 1-5: the real screens
-  go("wall", L[8].start - 0.2, 0.85, "crane");             // the twist (the template's own wall)
-  go("creator", L[9].start - 0.35, 0.7, "pull");           // "how long did that take?"
-  go("zeeLow", L[9].end - 0.05, 0.45, "whip");             // the measured time (the clock above Zee)
-  go("phoneFull", L[10].end - 0.1, 1.0, "push");           // the payoff: the full real result
+  go("creator", R.answer.end - 0.05, 0.45, "whip");       // "...show me."
+  go("steps", R.beat.end, 0.85, "crane");                 // steps 1-5 (the website tease is said on the way)
+  go("wall", R.twist.start - 0.2, 0.85, "crane");         // the twist (the template's own wall)
+  go("creator", R.objection.start - 0.35, 0.7, "pull");   // "how long did that take?"
+  go("zeeLow", R.objection.end - 0.05, 0.45, "whip");     // the measured time (the clock above Zee)
+  go("phoneFull", R.time.end - 0.1, 1.0, "push");         // the payoff: the real result, full screen
   go("zee", clip.payoff.end, 0.7, "pull");                 // the CTA
   const out = []; let t = 0, cur = "hook";
   for (const m of moves) { if (m.t0 > t) out.push({ type: "hold", t0: t, t1: m.t0, at: cur }); out.push(m); t = m.t1; cur = m.to; }

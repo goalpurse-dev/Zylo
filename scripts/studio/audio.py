@@ -119,7 +119,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     if tl.get("aligned") == "whole":
         keys = {norm(k) for k in ln.get("key", [])}
         for w in tl["words"]: w["key"] = norm(w["w"]) in keys
-        tl.update({k: ln[k] for k in ("text", "expr", "pose") if k in ln}); continue
+        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role") if k in ln}); continue
     mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
@@ -137,7 +137,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     keys = {norm(k) for k in ln.get("key", [])}
     for w in tl["words"]:
         w["key"] = norm(w["w"]) in keys
-    tl.update({k: ln[k] for k in ("text", "expr", "pose") if k in ln})
+    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role") if k in ln})
 
 # ── 4. mouth envelope per line (30 fps, 0..1) ──────────────────────────
 for tl, x in zip(timed, takes):
@@ -195,6 +195,19 @@ def sfx(kind):
             s = int(i * 0.07 * SR); m = len(out) - s; tt = np.arange(m) / SR
             out[s:] += 0.18 * np.sin(2 * np.pi * f * tt) * np.exp(-tt * 9)
         return out
+    if kind == "tick":   # a screen flips / a clock starts: a short bright tick
+        m = int(0.03 * SR); tt = np.arange(m) / SR
+        return 0.35 * np.sin(2 * np.pi * 3200 * tt) * np.exp(-tt * 160)
+    if kind == "click":  # a real click (the tap ring): a soft mouse click
+        m = int(0.025 * SR); tt = np.arange(m) / SR
+        return 0.45 * np.random.default_rng(7).standard_normal(m) * np.exp(-tt * 260) + 0.2 * np.sin(2 * np.pi * 1800 * tt) * np.exp(-tt * 200)
+    if kind.startswith("keys"):  # soft typing across a quiet stretch (keys:<seconds>)
+        dur = float(kind.split(":")[1]); out = np.zeros(int(dur * SR), np.float32); rng = np.random.default_rng(11); t0 = 0.0
+        while t0 < dur - 0.03:
+            m = int(0.018 * SR); s0 = int(t0 * SR); tt = np.arange(m) / SR
+            out[s0:s0 + m] += (0.12 + 0.06 * rng.random()) * rng.standard_normal(m) * np.exp(-tt * 300)
+            t0 += 0.07 + 0.09 * rng.random()
+        return out
     if kind.startswith("whoosh"):
         # filtered noise swelling over the move (a whip is short and bright, a push longer and softer)
         dur = float(kind.split(":")[1]) if ":" in kind else 0.35
@@ -231,14 +244,46 @@ for e in events:
     if e.get("sfx"):
         x = sfx(e["sfx"]) * (v_rms / 0.2) * 0.9; s = int(e["t"] * SR); m = min(len(x), len(mix) - s)
         if m > 0: mix[s:s + m] += x[:m]
+# visual events from the camera plan (writeMoves.mjs): every flip, tap and chip change gets its own sound
+fx = np.zeros_like(mix)
+vis_path = os.path.join(out, "visual_events.json")
+if os.path.exists(vis_path):
+    for e in json.load(open(vis_path, encoding="utf-8")):
+        x = sfx(e["sfx"]) * (v_rms / 0.2) * e.get("gain", 0.7); s0 = int(e["t"] * SR); m = min(len(x), len(fx) - s0)
+        if 0 <= s0 and m > 0: fx[s0:s0 + m] += x[:m]
 moves_path = os.path.join(out, "moves.json")
 whooshes = []
 if os.path.exists(moves_path):
     for mv in json.load(open(moves_path, encoding="utf-8")):
         d = mv["t1"] - mv["t0"]; strength = 1.0 if mv["kind"] == "whip" else 0.55
         x = sfx(f"whoosh:{d:.2f}") * (v_rms / 0.2) * strength; s = int(mv["t0"] * SR); m = min(len(x), len(mix) - s)
-        if m > 0: mix[s:s + m] += x[:m]; whooshes.append(round(mv["t0"], 2))
-mix = mix / (np.max(np.abs(mix)) or 1) * 0.92
+        if m > 0: fx[s:s + m] += x[:m]; whooshes.append(round(mv["t0"], 2))
+# event sounds (pops, sparkles) were mixed into `mix` above; collect the foreground = everything but the music
+fg = mix - bed + fx
+# no dead air (owner, 2026-10-30): any foreground stretch quieter than -40 dB for more than 0.45 s gets soft typing
+def quiet_runs(sig, thr_db=-40.0, min_len=0.45, scale=1.0):
+    hop = int(0.05 * SR); n = len(sig) // hop
+    r = np.sqrt(np.mean((sig[: n * hop] * scale).reshape(n, hop) ** 2, axis=1) + 1e-12); q = 20 * np.log10(r) < thr_db
+    runs, i = [], 0
+    while i < n:
+        if q[i]:
+            j = i
+            while j < n and q[j]: j += 1
+            if (j - i) * 0.05 >= min_len: runs.append((i * 0.05, j * 0.05))
+            i = j
+        else: i += 1
+    return runs
+peak = np.max(np.abs(fg + bed)) or 1
+filled = []
+for a, b in quiet_runs(fg, scale=0.92 / peak):
+    if b > total - 0.3: continue   # the very end may fade
+    x = sfx(f"keys:{b - a + 0.1:.2f}") * (v_rms / 0.2); s0 = int(max(0, a - 0.05) * SR); m = min(len(x), len(fx) - s0)
+    if m > 0: fx[s0:s0 + m] += x[:m]; filled.append([round(a, 2), round(b, 2)])
+fg = mix - bed + fx
+mix = fg + bed
+peak = np.max(np.abs(mix)) or 1
+sf.write(os.path.join(out, "fg.wav"), fg / peak * 0.92, SR)   # for the scorecard's "longest near-silence"
+mix = mix / peak * 0.92
 sf.write(os.path.join(out, "mix.wav"), mix, SR)
 measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 
@@ -253,7 +298,7 @@ if clip:
     for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
-json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes},
+json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

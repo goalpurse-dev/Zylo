@@ -8,7 +8,7 @@ import * as THREE from "three";
 import { makeCreator, makeZee, ZYVO } from "./cast.js";
 import { W, H, setup, mainStage, giantPhone, outputWall, composer, coverFit, screenBox, zoneProblems, rbox, add } from "./world.js";
 import { makeOverlay, captionChunks, YELLOW } from "./overlay.js";
-import { planFor, framingsFor, easeInOut } from "./timeline.js";
+import { planFor, framingsFor, easeInOut, roles } from "./timeline.js";
 import { zShape } from "./cast.js";
 
 const Q = new URLSearchParams(location.search);
@@ -84,6 +84,7 @@ const ltex = new THREE.CanvasTexture(lc); ltex.colorSpace = THREE.SRGBColorSpace
 
 /* ─── the plan ─── */
 const L = T.lines, EV = Object.fromEntries(T.events.map((e) => [e.event, e.t])), END = T.total;
+const R = roles(L);   // lines by role (hook, answer, beat, tease, step1..5, twist, objection, time, site, cta)
 const PLAN = planFor(T), FR = framingsFor(T);
 const STEP_T = [1, 2, 3, 4, 5].map((n) => EV[`step${n}`]);
 const stepAt = (t) => { let n = 0; STEP_T.forEach((s, i) => { if (t >= s - 0.05) n = i + 1; }); return t < (EV.wall ?? Infinity) - 0.3 ? n : 0; };
@@ -113,7 +114,10 @@ const blinkK = (who, t) => { const p = who === "zee" ? 3.1 : 2.7, o = who === "z
 function act(who, c, t) {
   const n = lineAt(t), speaking = n >= 0 && L[n].who === who;
   if (speaking) c.expr(L[n].expr);
-  else if (n >= 0) c.expr(who === "creator" ? (n >= 3 && n <= 8 ? "happy" : n === 10 ? "shocked" : "thinking") : (n === 9 ? "smug" : "happy"));
+  else if (n >= 0) {   // listening, by what is being said
+    const role = L[n].role ?? "";
+    c.expr(who === "creator" ? (/^(tease|step|twist)/.test(role) ? "happy" : role === "time" ? "shocked" : "thinking") : (role === "objection" ? "smug" : "happy"));
+  }
   c.mouth(speaking ? L[n].env[Math.floor((t - L[n].start) * T.fps)] ?? 0 : 0);
   c.blink(blinkK(who, t));
   let pose = who === "creator" && stepAt(t) ? "type" : "rest", k = who === "creator" && stepAt(t) ? 0.75 : 0;
@@ -140,8 +144,10 @@ function setState(ts) {
 /** The card frame for a step at time t (steps 3–4 flip through the real progress screens over the line). */
 function cardFrame(n, t) {
   const c = CARDS[`step${n}`]; if (!c) return null;
-  const line = L[2 + n], span = Math.max(0.6, line.end - line.start + 0.3), k = Math.min(0.999, Math.max(0, (t - STEP_T[n - 1]) / span));
-  return { c, f: c.frames[Math.floor(k * c.frames.length)] };
+  const line = R[`step${n}`], span = Math.max(0.6, line.end - line.start + 0.3), k = Math.min(0.999, Math.max(0, (t - STEP_T[n - 1]) / span));
+  const i = Math.floor(k * c.frames.length), dur = span / c.frames.length;
+  // a frame's tap lands 0.35 s before the next screen (the click, then what it did); a lone frame taps at 0.45 s
+  return { c, f: c.frames[i], tap: c.frames[i].tap, tapAt: c.frames.length > 1 ? (i + 1) * dur - 0.35 : 0.45 };
 }
 
 const log = {};
@@ -181,14 +187,13 @@ window.renderAt = async (t) => {
     const secs = n === 5 ? CFG.timer.seconds : cf.f.t;   // step 5: the measured "ready" time, as the clock says
     const badge = `⏱ ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
     // sized so the caption line (1254–1346) always stays free: muted viewers read the steps
-    // the tap lands 0.35 s before the second screen (the click, then what it did); one-screen cards tap at 0.45 s
-    const span = Math.max(0.6, L[2 + n].end - L[2 + n].start + 0.3), tapAt = cf.c.frames.length === 2 ? span / 2 - 0.35 : 0.45;
-    boxes.push(["step card", ov.card(cardImg[cf.f.file], cf.c.aspect, t - STEP_T[n - 1], { width: n <= 2 ? 600 : 560, badge, tap: cf.c.tap, tapAt })]);
+    const navCard = cf.c.nav;   // the real menu path: no time badge (it is before the first click of the run)
+    boxes.push(["step card", ov.card(cardImg[cf.f.file], cf.c.aspect, t - STEP_T[n - 1], { width: n <= 2 ? 600 : 560, badge: navCard ? null : badge, tap: cf.tap, tapAt: cf.tapAt })]);
   } else if (!inPayoff) {
-    const chip = t < L[1].start ? [["HOW DO YOU MAKE ", "#ffffff"], ["THIS?", YELLOW]] : t < (EV.lazy ?? Infinity) ? [["IT'S ", "#ffffff"], ["SIMPLE", YELLOW]] : t < STEP_T[0] ? [["MOST PEOPLE ARE ", "#ffffff"], ["TOO LAZY", YELLOW]]
-      : t < L[9].start ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : t < CL.payoff.start ? [["FIRST CLICK → ", "#ffffff"], ["FINAL VIDEO", YELLOW]]
+    const chip = t < R.answer.start ? [["HOW DO YOU MAKE ", "#ffffff"], ["THIS?", YELLOW]] : t < (EV.lazy ?? Infinity) ? [["IT'S ", "#ffffff"], ["SIMPLE", YELLOW]] : t < STEP_T[0] ? [["MOST PEOPLE ARE ", "#ffffff"], ["TOO LAZY", YELLOW]]
+      : t < R.objection.start ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : t < CL.payoff.start ? [["FIRST CLICK → ", "#ffffff"], ["FINAL VIDEO", YELLOW]]
       : t < EV.cta ? [["MADE WITH ", "#ffffff"], ["ZYVO", YELLOW]] : [["tryzyvo.com", "#ffffff"]];   // at the CTA: the website stays, small
-    const chipT0 = t < L[1].start ? 0.05 : t < (EV.lazy ?? Infinity) ? L[1].start : t < STEP_T[0] ? EV.lazy : t < L[9].start ? EV.wall : t < CL.payoff.start ? L[9].start : t < EV.cta ? CL.payoff.end : EV.cta;
+    const chipT0 = t < R.answer.start ? 0.05 : t < (EV.lazy ?? Infinity) ? R.answer.start : t < STEP_T[0] ? EV.lazy : t < R.objection.start ? EV.wall : t < CL.payoff.start ? R.objection.start : t < EV.cta ? CL.payoff.end : EV.cta;
     boxes.push(["chip", ov.chip(chip, t - chipT0)]);
   }
   const counterOff = PLAN.find((p) => p.type === "move" && p.from === "wall")?.t0 ?? END;
@@ -200,6 +205,8 @@ window.renderAt = async (t) => {
   // on "link in bio" the chip grows to say so (something new every 2.5 s)
   if (EV.site != null && t >= EV.site && t < EV.cta) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (t >= EV.cta + 0.3) boxes.push(["CTA chip", ov.endChip(CFG.cta.chip, t - EV.cta - 0.3)]);
+  // the website tease, once, during the steps (owner, 2026-10-30): the address itself only comes at the end
+  if (EV.teaseChip != null && t >= EV.teaseChip && t < EV.teaseChip + 2.2) boxes.push(["tease chip", ov.endChip("WEBSITE AT THE END 👀", t - EV.teaseChip)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
   const ps = phone.group.scale.x > 0.5 ? screenBox(phone.screen, camera) : null;
   const card = boxes.find(([k]) => k === "step card")?.[1];

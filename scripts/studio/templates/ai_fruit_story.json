@@ -18,20 +18,18 @@
       {
         "n": 1,
         "chip": [
-          "PICK AN ",
-          "IDEA"
+          "SHORT FORM → ",
+          "AI FRUIT STORY"
         ],
-        "screen": "story_picked",
-        "line": "Step one: pick an idea. Or write your own."
+        "line": "Step one: Short Form, then AI Fruit Story."
       },
       {
         "n": 2,
         "chip": [
-          "LENGTH & ",
-          "QUALITY"
+          "IDEA + ",
+          "LENGTH"
         ],
-        "screen": "settings",
-        "line": "Step two: pick a length. I took thirty seconds."
+        "line": "Step two: pick an idea and a length."
       },
       {
         "n": 3,
@@ -39,7 +37,6 @@
           "SCENE ",
           "PICTURES"
         ],
-        "screen": "pictures_ready",
         "line": "Step three: check every scene picture."
       },
       {
@@ -48,7 +45,6 @@
           "",
           "ANIMATE"
         ],
-        "screen": "clips_ready",
         "line": "Step four: animate. They talk, with sound."
       },
       {
@@ -57,7 +53,6 @@
           "FINAL ",
           "VIDEO"
         ],
-        "screen": "final",
         "line": "Step five: make the final video."
       }
     ],
@@ -135,26 +130,37 @@
   ],
   "cards": {
     "step1": {
-      "shots": [
-        "story_ideas",
-        "story_picked"
-      ],
+      "nav": true,
       "crop": [
-        236,
-        290,
-        687,
-        845
+        0,
+        40,
+        700,
+        860
       ],
-      "tap": [
-        462,
-        493
-      ],
-      "label": "the idea card"
+      "label": "home -> Short Form -> AI Fruit Story"
     },
     "step2": {
-      "shots": [
-        "_settings",
-        "before_make_scene_pictures"
+      "frames": [
+        {
+          "shot": "story_ideas",
+          "tap": [
+            462,
+            493
+          ]
+        },
+        {
+          "shot": "story_picked"
+        },
+        {
+          "shot": "_settings",
+          "tap": [
+            409,
+            572
+          ]
+        },
+        {
+          "shot": "before_make_scene_pictures"
+        }
       ],
       "crop": [
         236,
@@ -162,11 +168,7 @@
         692,
         845
       ],
-      "tap": [
-        409,
-        572
-      ],
-      "label": "30 sec, V2, Tall"
+      "label": "an idea, then 30 sec"
     },
     "step3": {
       "range": [
@@ -197,8 +199,10 @@
       "label": "the clips animating"
     },
     "step5": {
-      "shots": [
-        "s_final.png"
+      "frames": [
+        {
+          "shot": "s_final.png"
+        }
       ],
       "crop": [
         700,
@@ -208,5 +212,9 @@
       ],
       "label": "your video is ready"
     }
-  }
+  },
+  "menu": [
+    "Short Form",
+    "AI Fruit Story"
+  ]
 }

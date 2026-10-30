@@ -57,7 +57,18 @@ if (only) {
     "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv", "-r", fps, "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
   for (let f = 0; f < n; f++) {
-    const data = await grab(f / Number(fps), "png");
+    // a long supersampled render can crash the tab (GPU/memory): reload and carry on from this frame (every frame
+    // depends only on its own time, so the output is the same)
+    let data;
+    for (let attempt = 0; ; attempt++) {
+      try { data = await grab(f / Number(fps), "png"); break; }
+      catch (e) {
+        if (attempt >= 3) throw e;
+        console.log(`frame ${f}: ${String(e.message).slice(0, 80)} -> reloading the page (attempt ${attempt + 1})`);
+        await page.reload({ waitUntil: "load" }).catch(() => {});
+        await page.waitForFunction("window.ready === true", { timeout: 90000 });
+      }
+    }
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }
