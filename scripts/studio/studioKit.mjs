@@ -51,7 +51,14 @@ async function main() {
   if (!fs.readdirSync(path.join(vdir, "src_png")).length) execFileSync("ffmpeg", ["-v", "error", "-y", "-i", final, "-vf", "fps=30", path.join(vdir, "src_png", "f%05d.png")]);
   const nsrc = fs.readdirSync(path.join(vdir, "src_png")).length;
   if (fs.readdirSync(path.join(vdir, "hq")).length < nsrc) {
-    if (ESRGAN) execFileSync(path.join(ESRGAN, "realesrgan-ncnn-vulkan.exe"), ["-i", path.join(vdir, "src_png"), "-o", path.join(vdir, "hq"), "-n", "realesr-animevideov3", "-s", "2", "-f", "png"], { cwd: ESRGAN, stdio: "ignore" });
+    // resumes after a stop: only the frames still missing (the newest one may be half written, so it is done again)
+    const hqDir = path.join(vdir, "hq"), have = fs.readdirSync(hqDir).map((f) => ({ f, t: fs.statSync(path.join(hqDir, f)).mtimeMs })).sort((a, b) => b.t - a.t);
+    if (have[0]) { fs.rmSync(path.join(hqDir, have[0].f)); have.shift(); }
+    const done = new Set(have.map((x) => x.f)), todo = path.join(vdir, "src_todo");
+    fs.rmSync(todo, { recursive: true, force: true }); fs.mkdirSync(todo);
+    for (const f of fs.readdirSync(path.join(vdir, "src_png"))) if (!done.has(f)) fs.copyFileSync(path.join(vdir, "src_png", f), path.join(todo, f));
+    console.log(`[kit] ${fs.readdirSync(todo).length} of ${nsrc} frames to upscale (one time only, about 6 minutes for the whole video)`);
+    if (ESRGAN) { execFileSync(path.join(ESRGAN, "realesrgan-ncnn-vulkan.exe"), ["-i", todo, "-o", hqDir, "-n", "realesr-animevideov3", "-s", "2", "-f", "png"], { cwd: ESRGAN, stdio: "ignore" }); fs.rmSync(todo, { recursive: true, force: true }); }
     else for (const f of fs.readdirSync(path.join(vdir, "src_png"))) execFileSync("ffmpeg", ["-v", "error", "-y", "-i", path.join(vdir, "src_png", f), "-vf", "scale=iw*2:ih*2:flags=lanczos", path.join(vdir, "hq", f)]);
   }
 

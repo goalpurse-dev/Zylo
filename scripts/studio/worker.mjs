@@ -11,7 +11,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { admin } from "file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs";
 import { makeScript } from "./shortScripts.mjs";
@@ -39,18 +39,23 @@ async function claim() {
   return rows[0] ?? null;   // another worker took it
 }
 const progress = async (job, text) => { console.log(`[${job.id.slice(0, 8)}] ${text}`); await db.from("cm_studio_jobs").update({ progress: text, heartbeat_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id); };
-const run = (cmd, args, opts = {}) => {
-  const r = spawnSync(cmd, args, { encoding: "utf8", maxBuffer: 1 << 26, ...opts, env: { ...env, MSYS_NO_PATHCONV: "1", ...(opts.env ?? {}) } });
-  if (r.status !== 0) throw new Error(`${path.basename(args[0] ?? cmd)} failed: ${(r.stderr || r.stdout || "").trim().split("\n").slice(-3).join(" | ").slice(0, 300)}`);
-  return r.stdout;
-};
+// Never blocks: the heartbeat keeps beating through a long step (a blocking call made the tab say "off" mid-job), and
+// the step's own lines show in the window.
+const run = (cmd, args, opts = {}) => new Promise((resolve, reject) => {
+  const c = spawn(cmd, args, { ...opts, stdio: ["ignore", "pipe", "pipe"], env: { ...env, MSYS_NO_PATHCONV: "1", ...(opts.env ?? {}) } });
+  let out = "", err = "";
+  c.stdout.on("data", (d) => { out += d; process.stdout.write(d); });
+  c.stderr.on("data", (d) => { err += d; });
+  c.on("error", reject);
+  c.on("close", (code) => (code === 0 ? resolve(out) : reject(new Error(`${path.basename(args[0] ?? cmd)} failed: ${(err || out).trim().split("\n").slice(-3).join(" | ").slice(0, 300)}`))));
+});
 
 async function make(job) {
   if (job.source?.kind !== "fruit_story") throw new Error("this job needs a NEW creation: that generation (~$1.70) runs separately after your go (fruitRun.mjs on the internal account), not in the worker");
   const sid = job.source.id;
   await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
   const kitFile = path.join(KITS, sid, "kit.json");
-  if (!fs.existsSync(kitFile)) run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
+  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
   const K = JSON.parse(fs.readFileSync(kitFile, "utf8"));
   const brandSpans = K.moments.shots.filter((s) => s.brand).map((s) => [s.a, s.b]);
   const kit = { file: K.file, hq_dir: K.hq_dir, duration: K.duration, measured: null, input: K.input, title: K.story.title, phone_skip: brandSpans, moments: { open: K.moments.open, ending: K.moments.ending } };
@@ -61,22 +66,22 @@ async function make(job) {
   fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
 
   await progress(job, `rendering ${script.variant} (voices reused, laptop GPU)`);
-  run("bash", [path.join(HERE, "buildShort.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SRC_WORK: winPath(path.join(KITS, sid, "work")), PAYOFF_WORDS: winPath(K.words) } });
+  await run("bash", [path.join(HERE, "buildShort.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SRC_WORK: winPath(path.join(KITS, sid, "work")), PAYOFF_WORDS: winPath(K.words) } });
   if (!fs.existsSync(mp4)) throw new Error("the render made no video");
 
   let spend = 0;
   const s = must(await db.from("cm_settings").select("studio_rate_frame0").eq("id", true).single(), "settings");
   if (s.studio_rate_frame0) {
     await progress(job, "rating frame 0 (the fast model, ~$0.0006)");
-    const out = run("node", [path.join(HERE, "rateFrame0.mjs"), mp4, winPath(work)], { env: { CAP_USD: "0.002" } });
+    const out = await run("node", [path.join(HERE, "rateFrame0.mjs"), mp4, winPath(work)], { env: { CAP_USD: "0.002" } });
     spend += Number(out.match(/total \$([\d.]+)/)?.[1] ?? 0);
-    run("node", [path.join(HERE, "scoreShort.mjs"), winPath(work), mp4, mp4.replace(/\.mp4$/, "_scorecard.md")], { env: { PAYOFF_WORDS: winPath(K.words) } });
+    await run("node", [path.join(HERE, "scoreShort.mjs"), winPath(work), mp4, mp4.replace(/\.mp4$/, "_scorecard.md")], { env: { PAYOFF_WORDS: winPath(K.words) } });
   }
 
   await progress(job, "putting it in the Queue");
   const spec = path.join(work, "publish.json");
-  run("node", [path.join(HERE, "shortPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), ...(spend ? [String(spend), "studio.frame0_rating (fast model)"] : [])], { env: { KIT: winPath(kitFile) } });
-  const pub = run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]);
+  await run("node", [path.join(HERE, "shortPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), ...(spend ? [String(spend), "studio.frame0_rating (fast model)"] : [])], { env: { KIT: winPath(kitFile) } });
+  const pub = await run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]);
   const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
   if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
   const card = JSON.parse(fs.readFileSync(mp4.replace(/\.mp4$/, "_scorecard.json"), "utf8"));
@@ -85,6 +90,9 @@ async function make(job) {
 
 console.log(`studio worker ${ID}: ${ONCE ? "one job" : "waiting for jobs"} (Ctrl+C stops it; jobs wait while it's off)`);
 await heartbeat();
+// jobs this laptop's worker was running when it stopped go back in line, in their order (they'd stay "Rendering" forever)
+const orphans = must(await db.from("cm_studio_jobs").update({ status: "queued", worker: null, started_at: null, heartbeat_at: null, progress: null, updated_at: new Date().toISOString() }).eq("status", "claimed").eq("worker", ID).select("id"), "orphans");
+if (orphans.length) console.log(`${orphans.length} unfinished job(s) put back in line`);
 const beat = setInterval(() => heartbeat().catch(() => {}), 30_000);
 for (;;) {
   const job = await claim().catch((e) => { console.log(`claim: ${e.message}`); return null; });
