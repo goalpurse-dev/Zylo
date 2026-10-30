@@ -88,3 +88,20 @@ test("60 s free harness fixes (2026-10-30): tall thin subjects framed whole, car
   assert.match(src, /crosswalk\|stopLine/);
   assert.match(fs.readFileSync(path.join(M3, "../m2/compile.mjs"), "utf8"), /a move that reverses the one before it/);
 });
+
+test("the salvage (swimming pool 60 s refused at the gate after $1.40, 2026-10-30): failing extras dropped with the chain kept whole, the hook reworded, nothing left anchored to a dropped line", async () => {
+  const { salvagePlan, dropFrom } = await import("../scripts/cutaway/proto3d/m2/salvage.mjs");
+  const roles = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
+  const sp = salvagePlan(roles, ["hook", "flood", "stakes", "problem3", "fix5"]);
+  assert.deepEqual(sp.reword, ["hook"]);
+  assert.deepEqual(sp.drop, ["flood", "stakes", "problem2", "problem3", "fix5"], "problem2 lost its only fix (fix5): it goes too");
+  for (const r of ["hook", "problem", "fix1", "name", "congrats"]) assert.ok(sp.keep.includes(r));
+  assert.deepEqual(salvagePlan(roles, ["name", "fix1"]).drop, [], "the name and the first fix are reworded, never dropped");
+  const L = { beats: roles.map((s) => ({ s, do: [] })), roles, parts: [], audio: { rain: { from: { s: "problem3" }, to: { s: "fix5" } }, sfx: [{ lib: "rain", at: { s: "problem3" } }, { lib: "pop", at: { s: "fix1" } }], cards: [] } };
+  const S = { sentences: roles.map((role) => ({ role, text: `${role}.` })), cards: [] };
+  const d = dropFrom(S, L, sp.drop);
+  assert.equal(d.script.sentences.length, 15);
+  assert.equal(d.layout.audio.rain, undefined, "the rain anchored to a dropped line goes");
+  assert.deepEqual(d.layout.audio.sfx.map((x) => x.lib), ["pop"]);
+  assert.ok(!JSON.stringify(d.layout).includes("problem3"));
+});

@@ -1,0 +1,156 @@
+{
+ "hash": "*",
+ "by": "real run 847d0af0-f604-4d06-abc6-52e0e9ad32b0",
+ "searches": 0,
+ "data": {
+  "why": "A backyard swimming pool in the yard setting, dug into the cut, built up the way a real one is: a hole that drains away, a concrete shell, a blue liner, then water, then a pump and pipes. The camera opens close on the dig, follows the pit as it drains and cracks, then pulls out to the pump loop, the algae, the storm overflow and the finish with edge rocks, steps and a light. Counters show the 8-hour turnover and the 2,500 gallons an hour, and the myth is shown by taking the water away so the blue liner is left.",
+  "sceneJson": "{\"world\":{\"cut\":[-6,6,-8,3],\"house\":[-8,0,-30],\"porch\":true,\"trees\":[[-14.5,-12],[13.5,-14,0.9]],\"road\":[9,0.01,-57],\"rocksAvoid\":[[5.5,11,-3.4,0.3],[-8,-5.5,-3.6,0.5]],\"worker\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":170,\"mound\":{\"x\":10.5,\"z\":-10,\"rx\":1.8,\"rz\":1.4,\"h\":1.2}}},{\"id\":\"poolWater\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.7,\"x1\":5.7,\"y0\":-2.74,\"y1\":-0.4,\"z0\":-7.7,\"z1\":-0.02},\"mat\":\"water\"}},{\"id\":\"overflow\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-6.4,\"x1\":6.4,\"y0\":-0.45,\"y1\":0.2,\"z0\":-8.4,\"z1\":-0.02},\"mat\":\"water\"}},{\"id\":\"seep\",\"kind\":\"seepFlow\",\"params\":{\"count\":36,\"width\":11,\"y0\":-3,\"fall\":8,\"floor\":-12}},{\"id\":\"soak\",\"kind\":\"soak\",\"params\":{\"x0\":-5.5,\"x1\":5.5,\"top\":-3},\"base\":{\"front\":-3}},{\"id\":\"wetBand\",\"kind\":\"wetBand\",\"params\":{\"cx\":0,\"halfW\":7.5,\"bottom\":-5}},{\"id\":\"drops\",\"kind\":\"drops\",\"params\":{\"x0\":-5.5,\"x1\":5.5,\"count\":26,\"fromY\":-0.3,\"landY\":-2.9,\"z\":0.12,\"mat\":\"mud\"}},{\"id\":\"crack\",\"kind\":\"crack\",\"params\":{\"points\":[[-6.6,-0.1,0.02],[-7.1,-0.8,0.02],[-6.7,-1.5,0.02],[-7.2,-2.2,0.02],[-6.8,-3,0.02]],\"r\":0.09}},{\"id\":\"shell\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"floor\",\"mat\":\"concrete\",\"size\":[12,0.2,8],\"anchor\":[1,1,-1],\"pos\":[-6,-3,0],\"axis\":\"x\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallL\",\"mat\":\"concrete\",\"size\":[0.2,3,8],\"anchor\":[1,1,-1],\"pos\":[-6,-3,0],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallR\",\"mat\":\"concrete\",\"size\":[0.2,3,8],\"anchor\":[-1,1,-1],\"pos\":[6,-3,0],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallB\",\"mat\":\"concrete\",\"size\":[12,3,0.2],\"anchor\":[1,1,1],\"pos\":[-6,-3,-8],\"axis\":\"y\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"liner\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"lfloor\",\"mat\":\"tankBlue\",\"size\":[11.6,0.06,7.8],\"anchor\":[1,1,-1],\"pos\":[-5.8,-2.8,0],\"axis\":\"x\",\"vis\":0,\"r\":0.02},{\"ch\":\"lL\",\"mat\":\"tankBlue\",\"size\":[0.06,2.8,7.8],\"anchor\":[1,1,-1],\"pos\":[-5.8,-2.8,0],\"axis\":\"y\",\"vis\":0,\"r\":0.02},{\"ch\":\"lR\",\"mat\":\"tankBlue\",\"size\":[0.06,2.8,7.8],\"anchor\":[-1,1,-1],\"pos\":[5.8,-2.8,0],\"axis\":\"y\",\"vis\":0,\"r\":0.02},{\"ch\":\"lB\",\"mat\":\"tankBlue\",\"size\":[11.6,2.8,0.06],\"anchor\":[1,1,1],\"pos\":[-5.8,-2.8,-7.8],\"axis\":\"y\",\"vis\":0,\"r\":0.02}]}},{\"id\":\"pump\",\"kind\":\"machine\",\"params\":{\"pos\":[9.6,0,-0.9],\"rotY\":0}},{\"id\":\"suction\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[5.9,-2.5,-0.06],[10.2,-2.5,-0.06],[10.2,0,-0.06]],\"r\":0.22,\"mat\":\"pipeWhite\"}},{\"id\":\"returnPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[9,0,-0.06],[9,-0.9,-0.06],[5.9,-0.9,-0.06]],\"r\":0.22,\"mat\":\"pipeWhite\"}},{\"id\":\"flowIn\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"suction\",\"count\":18,\"size\":0.12,\"speed\":3,\"dz\":0.25,\"mat\":\"water\"}},{\"id\":\"flowOut\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"returnPipe\",\"count\":14,\"size\":0.12,\"speed\":3,\"dz\":0.25,\"mat\":\"water\"}},{\"id\":\"pullArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[4.4,-2.5,0.35],\"dir\":[1,0],\"travel\":1.2,\"phase\":0},{\"at\":[4.4,-0.9,0.35],\"dir\":[-1,0],\"travel\":1.2,\"phase\":0.5}],\"opts\":{\"scale\":0.9,\"color\":\"#3ad6ff\"}}},{\"id\":\"lightArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3,1.8,0.3],\"dir\":[0,-1],\"travel\":2.2,\"phase\":0},{\"at\":[0,1.8,0.3],\"dir\":[0,-1],\"travel\":2.2,\"phase\":0.3},{\"at\":[3,1.8,0.3],\"dir\":[0,-1],\"travel\":2.2,\"phase\":0.6}],\"opts\":{\"scale\":1.1,\"color\":\"#ffffff\"}}},{\"id\":\"poolOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-6.2,0.15,0.12],[-6.2,-3.2,0.12],[6.2,-3.2,0.12],[6.2,0.15,0.12]]}},{\"id\":\"pumpOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[8.6,-0.1,0.15],[8.6,1.7,0.15],[10.6,1.7,0.15],[10.6,-0.1,0.15]],\"opts\":{\"r\":0.07,\"closed\":true}}},{\"id\":\"turn\",\"kind\":\"counter\",\"params\":{\"pos\":[9.6,2.1,-0.3],\"size\":0.9,\"from\":0,\"to\":8,\"bar\":true,\"danger\":99,\"color\":\"#3ad6ff\"}},{\"id\":\"rate\",\"kind\":\"counter\",\"params\":{\"pos\":[9.6,2.1,-0.3],\"size\":0.9,\"from\":0,\"to\":2500,\"bar\":true,\"danger\":99,\"color\":\"#3ad6ff\"}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-20,\"x1\":14,\"z0\":-18,\"z1\":-0.1,\"yTop\":20,\"yBot\":-0.4,\"count\":1300,\"width\":0.02,\"opacity\":0.36}},{\"id\":\"lawn\",\"kind\":\"lawnWet\",\"params\":{}},{\"id\":\"puddles\",\"kind\":\"puddles\",\"params\":{\"list\":[[8.2,-5,1.4,1],[-9,-6,1.3,0.9],[-8.5,-1.2,1.4,0.6],[2,-9.8,2,0.8]],\"rise\":[0.3,0.2],\"fall\":[0.2,0]}},{\"id\":\"grate\",\"kind\":\"grate\",\"params\":{\"pos\":[-7.8,0,-2.6],\"width\":1.6,\"depth\":0.8}},{\"id\":\"runoff\",\"kind\":\"flow\",\"params\":{\"path\":[[-10.8,0.1,-1.6],[-8.6,0.08,-2.4],[-7.9,0.06,-2.6]],\"look\":\"water\",\"size\":0.18,\"count\":14}},{\"id\":\"rocks\",\"kind\":\"prop\",\"params\":{\"type\":\"rocks\",\"size\":[13,8.8],\"pos\":[0,0,-4],\"open\":[\"front\"]}},{\"id\":\"stairs\",\"kind\":\"prop\",\"params\":{\"type\":\"stairs\",\"h\":2.6,\"w\":1.8,\"pos\":[3.2,-2.78,-4]}},{\"id\":\"floodLamp\",\"kind\":\"prop\",\"params\":{\"type\":\"floodLight\",\"pos\":[7.8,0,-7]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-10.5,0.08,-6],\"rotY\":0.22,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"dig a pit and water pours in\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\"},{\"p\":\"poolWater\",\"v\":\"flood\",\"w\":\"water\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem\",\"shows\":{\"p\":\"poolWater\",\"does\":\"water drains into the soil\"},\"state\":{\"text\":\"DRAINING\",\"w\":\"drinks\"},\"do\":[{\"p\":\"soak\",\"v\":\"show\",\"w\":\"drinks\"},{\"p\":\"seep\",\"v\":\"show\",\"w\":\"drinks\"},{\"p\":\"poolWater\",\"v\":\"drain\",\"w\":\"drinks\",\"d\":3.2}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"flood\",\"shows\":{\"p\":\"drops\",\"does\":\"wet mud slumps into the empty pit\"},\"do\":[{\"p\":\"wetBand\",\"v\":\"wet\",\"w\":\"wet\"},{\"p\":\"drops\",\"v\":\"fall\",\"w\":\"slumps\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"crack\",\"does\":\"a crack grows in the soil wall\"},\"do\":[{\"p\":\"crack\",\"v\":\"grow\",\"w\":\"cracks\"}],\"shots\":[{\"focus\":[\"crack\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"shell\",\"does\":\"concrete floor and walls grow\"},\"do\":[{\"p\":\"seep\",\"v\":\"hide\",\"w\":\"So\"},{\"p\":\"soak\",\"v\":\"hide\",\"w\":\"So\"},{\"p\":\"drops\",\"v\":\"hide\",\"w\":\"So\"},{\"p\":\"wetBand\",\"v\":\"dry\",\"w\":\"So\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"floor\",\"ch\":\"floor\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"ch\":\"wallL\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0.1,\"ch\":\"wallR\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0.2,\"ch\":\"wallB\"}],\"shots\":[{\"focus\":[\"shell\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"liner\",\"does\":\"a blue liner grows over the concrete\"},\"do\":[{\"p\":\"liner\",\"v\":\"grow\",\"w\":\"liner\",\"ch\":\"lfloor\"},{\"p\":\"liner\",\"v\":\"grow\",\"w\":\"liner\",\"o\":0.3,\"ch\":\"lL\"},{\"p\":\"liner\",\"v\":\"grow\",\"w\":\"liner\",\"o\":0.4,\"ch\":\"lR\"},{\"p\":\"liner\",\"v\":\"grow\",\"w\":\"liner\",\"o\":0.5,\"ch\":\"lB\"}],\"shots\":[{\"focus\":[\"shell\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"poolWater\",\"does\":\"water fills the lined pool\"},\"do\":[{\"p\":\"poolWater\",\"v\":\"flood\",\"w\":\"fill\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"suction\",\"does\":\"a pump pops in and pipes grow to it\"},\"do\":[{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pump\"},{\"p\":\"suction\",\"v\":\"grow\",\"w\":\"pipes\"},{\"p\":\"returnPipe\",\"v\":\"grow\",\"w\":\"pipes\",\"o\":0.6}],\"shots\":[{\"focus\":[\"poolWater\",\"pump\"],\"view\":\"home\",\"width\":0.95,\"type\":\"\",\"hero\":false}]},{\"s\":\"name\",\"shows\":{\"p\":\"poolOutline\",\"does\":\"outline traces the pool\"},\"do\":[{\"p\":\"poolOutline\",\"v\":\"show\",\"w\":\"swimming\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":true}]},{\"s\":\"name2\",\"shows\":{\"p\":\"pumpOutline\",\"does\":\"outline traces the pump\"},\"do\":[{\"p\":\"poolOutline\",\"v\":\"hide\",\"w\":\"Its\"},{\"p\":\"pumpOutline\",\"v\":\"show\",\"w\":\"filtration\"}],\"shots\":[{\"focus\":[\"pump\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":true}]},{\"s\":\"how\",\"shows\":{\"p\":\"flowIn\",\"does\":\"water runs out, through the pump, and back in\"},\"do\":[{\"p\":\"pumpOutline\",\"v\":\"hide\",\"w\":\"leaves\"},{\"p\":\"flowIn\",\"v\":\"show\",\"w\":\"leaves\"},{\"p\":\"pullArrows\",\"v\":\"show\",\"w\":\"leaves\"},{\"p\":\"flowOut\",\"v\":\"show\",\"w\":\"returns\"}],\"shots\":[{\"focus\":[\"pump\",\"poolWater\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false}]},{\"s\":\"fact\",\"shows\":{\"p\":\"turn\",\"does\":\"counter ticks up to 8 hours\"},\"do\":[{\"p\":\"turn\",\"v\":\"show\",\"w\":\"drop\"},{\"p\":\"turn\",\"v\":\"count\",\"w\":\"trip\",\"d\":3.5}],\"shots\":[{\"focus\":[\"pump\",\"turn\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"factProof\",\"shows\":{\"p\":\"rate\",\"does\":\"gauge climbs to 2500 gallons an hour\"},\"do\":[{\"p\":\"turn\",\"v\":\"hide\",\"w\":\"So\"},{\"p\":\"rate\",\"v\":\"show\",\"w\":\"pump\"},{\"p\":\"rate\",\"v\":\"count\",\"w\":\"pushes\",\"d\":3}],\"shots\":[{\"focus\":[\"pump\",\"rate\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"poolWater\",\"does\":\"water turns green\"},\"state\":{\"text\":\"ALGAE\",\"w\":\"algae\"},\"do\":[{\"p\":\"rate\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"flowIn\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"flowOut\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"pullArrows\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"poolWater\",\"v\":\"dirty\",\"w\":\"green\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"overflow\",\"does\":\"storm rain makes the pool spill over the lawn\"},\"state\":{\"text\":\"OVERFLOW\",\"w\":\"overflows\"},\"do\":[{\"p\":\"light\",\"v\":\"storm\",\"w\":\"storm\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"storm\"},{\"p\":\"lawn\",\"v\":\"wet\",\"w\":\"storm\"},{\"p\":\"puddles\",\"v\":\"rise\",\"w\":\"overflows\"},{\"p\":\"overflow\",\"v\":\"flood\",\"w\":\"overflows\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"poolWater\",\"does\":\"water clears and the extra drains into a grate\"},\"do\":[{\"p\":\"poolWater\",\"v\":\"clean\",\"w\":\"chlorine\"},{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"chlorine\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"chlorine\"},{\"p\":\"grate\",\"v\":\"show\",\"w\":\"drain\"},{\"p\":\"runoff\",\"v\":\"start\",\"w\":\"carry\"},{\"p\":\"overflow\",\"v\":\"drain\",\"w\":\"carry\",\"d\":2},{\"p\":\"puddles\",\"v\":\"dry\",\"w\":\"carry\",\"d\":2.5},{\"p\":\"lawn\",\"v\":\"dry\",\"w\":\"carry\"}],\"shots\":[{\"focus\":[\"poolWater\",\"grate\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false}]},{\"s\":\"myth\",\"shows\":{\"p\":\"poolWater\",\"does\":\"the blue water is taken away, leaving the liner\"},\"do\":[{\"p\":\"runoff\",\"v\":\"stop\",\"w\":\"And\"},{\"p\":\"poolWater\",\"v\":\"hide\",\"w\":\"not\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"lightArrows\",\"does\":\"light shines down as clear water refills over the blue liner\"},\"do\":[{\"p\":\"lightArrows\",\"v\":\"show\",\"w\":\"absorbs\"},{\"p\":\"poolWater\",\"v\":\"flood\",\"w\":\"absorbs\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false}]},{\"s\":\"finish\",\"shows\":{\"p\":\"rocks\",\"does\":\"rocks, steps and a light are added\"},\"do\":[{\"p\":\"lightArrows\",\"v\":\"hide\",\"w\":\"Add\"},{\"p\":\"rocks\",\"v\":\"show\",\"w\":\"rocks\"},{\"p\":\"stairs\",\"v\":\"show\",\"w\":\"steps\"},{\"p\":\"floodLamp\",\"v\":\"show\",\"w\":\"light\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false}]}],\"audio\":{\"cards\":[{\"text\":\"20,000 GALLONS\",\"at\":{\"s\":\"problem\",\"w\":\"20000\",\"o\":0},\"d\":1.8},{\"text\":\"8 HOURS\",\"at\":{\"s\":\"fact\",\"w\":\"eight\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"drip\",\"at\":{\"s\":\"problem\",\"w\":\"drinks\",\"o\":0},\"d\":1.5},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix3\",\"w\":\"fill\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix4\",\"w\":\"pump\",\"o\":0},\"d\":1.6},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem3\",\"w\":\"overflows\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"problem\",\"w\":\"20000\",\"o\":0},{\"s\":\"fact\",\"w\":\"eight\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem3\",\"w\":\"storm\",\"o\":0},{\"s\":\"fix5\",\"w\":\"chlorine\",\"o\":0.6}]}}",
+  "story": {
+   "title": "How a swimming pool works",
+   "hero": "a swimming pool",
+   "parts": [
+    "pit",
+    "soil",
+    "concrete shell",
+    "blue liner",
+    "water",
+    "pump",
+    "pipes",
+    "filter",
+    "algae",
+    "storm rain",
+    "drain",
+    "rocks",
+    "steps",
+    "light"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a hole in the yard and pour water into it, and you think you have a pool"
+    },
+    {
+     "role": "problem",
+     "idea": "the thirsty soil drinks all 20,000 gallons and the hole drains dry"
+    },
+    {
+     "role": "flood",
+     "idea": "the pit is left empty and the wet dirt slumps off its walls"
+    },
+    {
+     "role": "stakes",
+     "idea": "soaked soil is heavy, so the walls of the hole crack"
+    },
+    {
+     "role": "fix1",
+     "idea": "pour a concrete floor and walls to hold the dirt back"
+    },
+    {
+     "role": "fix2",
+     "idea": "concrete drinks water too, so a blue liner goes over it"
+    },
+    {
+     "role": "fix3",
+     "idea": "fill the sealed shell and the water finally stays"
+    },
+    {
+     "role": "fix4",
+     "idea": "still water goes bad, so a pump and pipes keep it moving"
+    },
+    {
+     "role": "name",
+     "idea": "a lined, filled and sealed hole is a swimming pool"
+    },
+    {
+     "role": "name2",
+     "idea": "the pump and pipes together are a filtration system"
+    },
+    {
+     "role": "how",
+     "idea": "water leaves through a drain, passes the filter and returns clean through a jet"
+    },
+    {
+     "role": "fact",
+     "idea": "every drop makes a full trip through the filter about once every eight hours"
+    },
+    {
+     "role": "factProof",
+     "idea": "so the pump pushes about 2,500 gallons an hour through one pipe"
+    },
+    {
+     "role": "problem2",
+     "idea": "the sun warms the water, algae grows and the pool turns green"
+    },
+    {
+     "role": "problem3",
+     "idea": "a storm adds rain, the green pool overflows over the lawn"
+    },
+    {
+     "role": "fix5",
+     "idea": "chlorine clears the algae and a drain carries the extra water away"
+    },
+    {
+     "role": "myth",
+     "idea": "everyone thinks pool water is blue, so we take the water away to leave only the liner"
+    },
+    {
+     "role": "mythFact",
+     "idea": "water absorbs red light and the blue liner does the rest"
+    },
+    {
+     "role": "finish",
+     "idea": "add rocks round the edge, steps into the water and a light"
+    },
+    {
+     "role": "congrats",
+     "idea": "a calm, clear, finished swimming pool"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the filled hole drains dry into the soil",
+     "stakes": "20,000 gallons of water are lost and the yard is left a muddy pit",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix4",
+     "shows": "the warm, still water turns green with algae",
+     "stakes": "nobody can swim in it",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix4",
+     "shows": "a storm dumps rain and the green pool spills across the lawn",
+     "stakes": "the lawn floods and the algae spreads to the whole yard",
+     "size": 9
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "An average backyard pool holds about 15,000 to 20,000 gallons of water",
+     "role": "problem",
+     "search": "average backyard swimming pool volume gallons"
+    },
+    {
+     "claim": "A pool pump should turn over all of the pool water about once every 8 hours",
+     "role": "fact",
+     "search": "pool turnover rate 8 hours recommended"
+    },
+    {
+     "claim": "Free chlorine in a pool should stay at about 1 to 3 parts per million",
+     "role": "fix5",
+     "search": "recommended free chlorine level pool ppm"
+    },
+    {
+     "claim": "Water absorbs red light, so deep pool water looks blue",
+     "role": "mythFact",
+     "search": "why does pool water look blue absorbs red light"
+    }
+   ]
+  }
+ }
+}

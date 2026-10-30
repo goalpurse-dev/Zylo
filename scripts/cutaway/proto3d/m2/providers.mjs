@@ -17,12 +17,53 @@ export const REPLAY = process.env.CUTAWAY_PROVIDERS === "replay";
 const DIR = process.env.CUTAWAY_REPLAY_DIR ?? "";
 const PAID = /(^|\.)(api\.anthropic\.com|api\.elevenlabs\.io|api\.runware\.ai)$/i;
 
+// the real checker in the free harness (the owner's rule of 2026-10-30: the stand-in frame judge was softer than the real
+// one, and a 13/13 free pass met a refused paid video): CUTAWAY_REAL_VISION=1 sends the frame checks (and only them) to
+// the real API, everything else stays replayed. A ledger file shared by the whole batch (CUTAWAY_REAL_VISION_LEDGER)
+// refuses a check that could pass CUTAWAY_REAL_VISION_CAP (dollars).
+export const REAL_VISION = REPLAY && process.env.CUTAWAY_REAL_VISION === "1";
+export const realCall = (label) => REAL_VISION && /^(vision check|repair look)/.test(String(label ?? ""));
+const LEDGER = process.env.CUTAWAY_REAL_VISION_LEDGER ?? "", CAP = Number(process.env.CUTAWAY_REAL_VISION_CAP) || 0;
+const spentAll = () => { try { return JSON.parse(fs.readFileSync(LEDGER, "utf8")).spent ?? 0; } catch { return 0; } };
+export function realAllow(label, worst = 0.12) {
+  if (!LEDGER || !CAP) throw Object.assign(new Error("real checker: needs CUTAWAY_REAL_VISION_LEDGER and CUTAWAY_REAL_VISION_CAP"), { code: "BUDGET", retryable: false });
+  const s = spentAll();
+  if (s + worst > CAP) throw Object.assign(new Error(`real checker: the batch's $${CAP} cap: $${s.toFixed(3)} spent, "${label}" could cost up to $${worst}`), { code: "BUDGET", retryable: false });
+}
+/**
+ * The real checker's reply, kept in the case folder (real/<label>__<n>.json, n counted per run): the report reads it,
+ * and a rerun of the same case reuses it (the n-th check of a run gets the n-th recorded reply: a rerun after an answer
+ * is written renders the same plan again, and paid twice for the same verdict)
+ */
+const realSeen = new Map();
+const realFile = (label) => { const k = slug(label), n = (realSeen.get(k) ?? 0) + 1; realSeen.set(k, n); return path.join(DIR, "real", `${k}__${n}.json`); };
+export function realRecorded(label) {
+  const f = realFile(label);
+  return { file: f, reply: fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null };
+}
+export function realRecord(file, label, data, usd) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ label, usd, data }, null, 1));
+}
+export function realAdd(label, usd) {
+  const cur = (() => { try { return JSON.parse(fs.readFileSync(LEDGER, "utf8")); } catch { return { spent: 0, calls: [] }; } })();
+  cur.spent = +((cur.spent ?? 0) + (Number(usd) || 0)).toFixed(5); (cur.calls ??= []).push({ at: new Date().toISOString(), dir: path.basename(DIR), label, usd });
+  fs.writeFileSync(LEDGER, JSON.stringify(cur, null, 1));
+}
+export function realKey(envFile = "C:/Users/Public/Zylo/.env.local") {
+  for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) { const m = line.match(/^\s*ANTHROPIC_API_KEY\s*=\s*(.*)\s*$/); if (m) return m[1].replace(/^["']|["']$/g, ""); }
+  throw new Error("real checker: no ANTHROPIC_API_KEY");
+}
+let realOpen = 0;
+export async function withReal(fn) { realOpen++; try { return await fn(); } finally { realOpen--; } }
+
 if (REPLAY) {
   if (!DIR) throw new Error("CUTAWAY_PROVIDERS=replay needs CUTAWAY_REPLAY_DIR");
   const real = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
     const host = (() => { try { return new URL(typeof url === "string" ? url : url.url).hostname; } catch { return ""; } })();
-    if (PAID.test(host)) throw Object.assign(new Error(`replay mode: the paid provider ${host} is blocked`), { code: "PAID_BLOCKED" });
+    // (the real checker's own call only: Anthropic, while a frame check is being sent)
+    if (PAID.test(host) && !(realOpen > 0 && /anthropic\.com$/i.test(host))) throw Object.assign(new Error(`replay mode: the paid provider ${host} is blocked`), { code: "PAID_BLOCKED" });
     return real(url, init);
   };
 }

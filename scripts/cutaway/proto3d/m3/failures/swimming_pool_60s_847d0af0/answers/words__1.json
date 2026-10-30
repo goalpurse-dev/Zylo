@@ -1,0 +1,90 @@
+{
+ "hash": "*",
+ "by": "real run 847d0af0-f604-4d06-abc6-52e0e9ad32b0",
+ "searches": 0,
+ "data": {
+  "title": "How a Swimming Pool Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a hole in the yard and pour water in, you have a pool."
+   },
+   {
+    "role": "problem",
+    "text": "But the thirsty soil drinks all 20,000 gallons, and the hole drains dry."
+   },
+   {
+    "role": "flood",
+    "text": "The pit sits empty, and the wet dirt slumps off its walls."
+   },
+   {
+    "role": "stakes",
+    "text": "But soaked soil is heavy, so the wall of the hole cracks."
+   },
+   {
+    "role": "fix1",
+    "text": "So you pour a concrete floor and thick walls to hold the dirt back."
+   },
+   {
+    "role": "fix2",
+    "text": "But concrete drinks water too, so you lay a blue liner over it."
+   },
+   {
+    "role": "fix3",
+    "text": "Now you fill the sealed shell, and the water finally stays."
+   },
+   {
+    "role": "fix4",
+    "text": "But still water goes bad, so you add a pump and pipes to keep it moving."
+   },
+   {
+    "role": "name",
+    "text": "This is a swimming pool."
+   },
+   {
+    "role": "name2",
+    "text": "Its pump and pipes are a filtration system."
+   },
+   {
+    "role": "how",
+    "text": "Water leaves through a drain, passes the filter, and returns clean through a jet."
+   },
+   {
+    "role": "fact",
+    "text": "Every drop makes a full trip through the filter about once every eight hours."
+   },
+   {
+    "role": "factProof",
+    "text": "So the pump pushes about 2,500 gallons an hour through one pipe."
+   },
+   {
+    "role": "problem2",
+    "text": "But the sun warms the water, algae grows, and the pool turns green."
+   },
+   {
+    "role": "problem3",
+    "text": "Then a storm adds rain, and the green pool overflows across the lawn."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add chlorine to clear the algae, and a drain to carry the extra water away."
+   },
+   {
+    "role": "myth",
+    "text": "And the blue water everyone knows is not blue, so we drain it and leave only the liner."
+   },
+   {
+    "role": "mythFact",
+    "text": "Water absorbs red light, so deep pool water looks blue, and the liner does the rest."
+   },
+   {
+    "role": "finish",
+    "text": "Add rocks round the edge, steps into the water, and a light."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a swimming pool."
+   }
+  ]
+ }
+}

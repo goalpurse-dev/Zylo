@@ -31,6 +31,15 @@ for (const f of ["spend.jsonl", "events.jsonl", "harness.log"]) fs.rmSync(path.j
 // process answers the server's own kit check from the same replay folder, behind the same paid-host guard
 const REAL = a.real === true;
 if (!REAL) { process.env.CUTAWAY_PROVIDERS = "replay"; process.env.CUTAWAY_REPLAY_DIR = DIR; }
+// --real-vision: the frames judged by the real checker (a few cents a video, the owner's rule of 2026-10-30), planning
+// and voice still free stand-ins; --vision-cap dollars for the whole batch (its ledger: --ledger, shared by every case);
+// --skip-repairs: straight from the first check to the salvage (the batch's lower bound, within the cap)
+if (!REAL && a["real-vision"]) {
+  process.env.CUTAWAY_REAL_VISION = "1";
+  process.env.CUTAWAY_REAL_VISION_CAP = String(Number(a["vision-cap"] ?? 1));
+  process.env.CUTAWAY_REAL_VISION_LEDGER = path.resolve(a.ledger ?? path.join(a.root, "real_vision_ledger.json"));
+}
+if (a["skip-repairs"]) process.env.CUTAWAY_SKIP_REPAIRS = "1";
 const { replayLLM } = REAL ? { replayLLM: () => { throw Object.assign(new Error("a real kit check is not run by the harness"), { code: "REPLAY_PENDING" }); } } : await import(url(path.join(M2, "providers.mjs")));
 const { topicProblem, decide, DEFAULT_SETTINGS } = await import(url(path.join(SH, "guard.js")));
 const { quoteTopic } = await import(url(path.join(SH, "quote.js")));
@@ -99,7 +108,8 @@ let attempt = 0;
 for (;;) {
   attempt++;
   // (a retry gets the earlier attempt's paid replies, as the server sends them: runtime.ts urlsFor)
-  const job = jobFor(run, { role: "video", mode: "local", urls: { ...urls, ...(run.attempt > 1 && !run.plan_ready ? { resume: plan.steps } : {}) }, callback, layout: layoutFor(q.premade), library: [] });
+  // (--gate-only: the plan role, which stops once the preview gate passes and the plan is saved; no render)
+  const job = jobFor(run, { role: a["gate-only"] ? "plan" : "video", mode: "local", urls: { ...urls, ...(run.attempt > 1 && !run.plan_ready ? { resume: plan.steps } : {}) }, callback, layout: layoutFor(q.premade), library: [] });
   if (a.cap) job.capUsd = Number(a.cap);
   log(`worker attempt ${run.attempt}${job.plan.get ? " (the plan already made)" : ""}`);
   const code = await worker(job);
@@ -118,7 +128,7 @@ for (;;) {
     result({ ok: null, waiting: key, stage: run.stage });
     process.exit(2);
   }
-  if (run.status === "done") break;
+  if (run.status === "done" || (a["gate-only"] && run.plan_ready)) break;
   const next = actionsSeen.filter((x) => x.type === "dispatch").at(-1);
   if (run.status === "failed" || !next || code === null) break;
   if (next.target === "fly") { log("the server sends it to the Fly fallback (not run here: SwiftShader on this laptop takes about an hour)"); break; }
@@ -163,6 +173,8 @@ if (run.status === "done" && fs.existsSync(path.join(DIR, "out", "final.mp4"))) 
 fs.writeFileSync(path.join(DIR, "sheet.json"), JSON.stringify(sheet, null, 1));
 // the bookkeeping bugs the worker met and skipped (m2/bookkeeping.js): each one is ours to fix, though it failed nothing
 const bugs = [...new Set(fs.readdirSync(DIR).filter((f) => /^worker_\d+\.log$/.test(f)).flatMap((f) => fs.readFileSync(path.join(DIR, f), "utf8").split("\n").filter((l) => l.includes("[cutaway] bookkeeping bug")).map((l) => l.replace(/^.*\[cutaway\] bookkeeping bug /, "").trim())))];
-const r = result({ ok: run.status === "done", bugs, code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, real: REAL, realUsd: +ledger.reduce((s, c) => s + Object.values(c ?? {}).reduce((x, y) => x + (Number(y) || 0), 0), 0).toFixed(4), durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
+// the real checker's verdicts (--real-vision: m2/providers.mjs realRecord), call by call
+const vision = fs.existsSync(path.join(DIR, "real")) ? fs.readdirSync(path.join(DIR, "real")).sort().map((f) => { const r = JSON.parse(fs.readFileSync(path.join(DIR, "real", f), "utf8")); return { call: f.replace(/\.json$/, ""), usd: r.usd, failed: (r.data?.frames ?? []).filter((x) => !x.ok).map((x) => ({ role: x.role, problem: x.problem })), passed: (r.data?.frames ?? []).filter((x) => x.ok).map((x) => x.role) }; }) : null;
+const r = result({ ok: a["gate-only"] ? !!run.plan_ready : run.status === "done", gateOnly: !!a["gate-only"], vision, bugs, code: run.error_code ?? null, stage: run.stage, status: run.status, message: run.error_message ?? null, attempts: run.attempt, refunded: actionsSeen.some((x) => x.type === "refund") || events.some((e) => e.event === "failed" && run.status === "failed"), simulatedUsd, real: REAL, realUsd: +ledger.reduce((s, c) => s + Object.values(c ?? {}).reduce((x, y) => x + (Number(y) || 0), 0), 0).toFixed(4), durationSec: last?.files?.durationSec ?? null, seconds: +((Date.now() - t0) / 1000).toFixed(1), narration: (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, "plan", "script.json"), "utf8")).sentences.map((s) => `${s.role}: ${s.text}`); } catch { return null; } })(), frames: sheet.length });
 log(`${r.ok ? "DONE" : `FAILED ${r.code}`} (${r.seconds} s, would have cost about $${simulatedUsd})`);
 process.exit(r.ok ? 0 : 1);

@@ -81,6 +81,22 @@ export function layoutRules(L) {
     // water rises" could never be shown, 60 s free storm drain and sump pump runs of 2026-10-30)
     if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08 && b.y1 - b.y0 <= 0.25) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
   }
+  // 5b. water over the brim in the open (a pool overflowing onto the lawn): its part above the ground is a thin sheet on
+  // the grass, never a slab of water standing in the air (the real checker refused the swimming pool's 18 m slab,
+  // 2026-10-30)
+  if (!floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
+    const b = w.params.box;
+    if (b.y1 > 0.12 && b.y0 < 0.05) { w.params.box = { ...b, y1: 0.07 }; notes.push(`${w.id} spills as a sheet on the ground`); }
+  }
+  // 5b2. water filling a pit in the hook fills over 1.8 s, so it is seen rising (in 0.45 s the real checker's strip saw
+  // the pool already full: "water appears without pouring in", 2026-10-30)
+  for (const b of (L.beats ?? []).filter((x) => x.s === "hook")) for (const a of b.do ?? []) {
+    const p = parts.find((q) => q.id === a.p);
+    if (p?.kind === "water" && a.v === "flood" && a.d == null) { a.d = 1.8; notes.push(`hook: ${p.id} fills over 1.8 s`); }
+  }
+  // 5c. a crack is a crack, never a ribbon: at most 8 cm thick (its pale edge is 2.3 times that; at 0.2 m it stood out of
+  // the soil face as a white zigzag strip, real checker 2026-10-30)
+  for (const c of parts.filter((p) => p.kind === "crack" && Number(p.params?.r) > 0.08)) { c.params = { ...c.params, r: 0.08 }; notes.push(`${c.id} is 8 cm thick`); }
   // 6. a canopy stands in the open: one under the setting's own roof (the car wash bay's) moves out past the roof's edge,
   // with the props standing under it (a canopy under a roof read as the building's roof)
   const roofs = settingBoxes(L.world?.backdrop, L.world?.cut ?? null).filter((b) => b.min[1] > 2);

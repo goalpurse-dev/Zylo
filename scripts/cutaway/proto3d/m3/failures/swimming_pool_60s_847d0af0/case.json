@@ -1,0 +1,122 @@
+{
+ "runId": "847d0af0-f604-4d06-abc6-52e0e9ad32b0",
+ "topic": "swimming pool",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-10-30T16:03:37.093686+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: hook, flood, stakes, problem3, fix5",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 1.39949,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json"
+ ],
+ "voice": true,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.42429,
+   "outputTokens": 36323,
+   "at": "2026-10-30T16:07:53.220Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.13204,
+   "outputTokens": 10898,
+   "at": "2026-10-30T16:08:41.572Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.10146,
+   "outputTokens": 2489,
+   "at": "2026-10-30T16:09:06.452Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02439,
+   "outputTokens": 1441,
+   "at": "2026-10-30T16:09:14.620Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01485,
+   "outputTokens": 729,
+   "at": "2026-10-30T16:09:19.553Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01388,
+   "outputTokens": 725,
+   "at": "2026-10-30T16:09:23.981Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.1148,
+   "outputTokens": null,
+   "at": "2026-10-30T16:09:28.121Z"
+  },
+  {
+   "label": "vision check",
+   "usd": 0.03919,
+   "outputTokens": 1354,
+   "at": "2026-10-30T16:10:57.336Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.00652,
+   "outputTokens": 254,
+   "at": "2026-10-30T16:11:00.375Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.1164,
+   "outputTokens": null,
+   "at": "2026-10-30T16:11:04.230Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.1164,
+   "outputTokens": null,
+   "at": "2026-10-30T16:11:24.327Z"
+  },
+  {
+   "label": "repair look",
+   "usd": 0.01466,
+   "outputTokens": 697,
+   "at": "2026-10-30T16:12:07.851Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.10541,
+   "outputTokens": 3132,
+   "at": "2026-10-30T16:12:30.844Z"
+  },
+  {
+   "label": "repair look",
+   "usd": 0.01391,
+   "outputTokens": 676,
+   "at": "2026-10-30T16:12:56.053Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.05431,
+   "outputTokens": 3055,
+   "at": "2026-10-30T16:13:13.065Z"
+  },
+  {
+   "label": "repair look",
+   "usd": 0.0126,
+   "outputTokens": 664,
+   "at": "2026-10-30T16:13:35.220Z"
+  }
+ ]
+}
