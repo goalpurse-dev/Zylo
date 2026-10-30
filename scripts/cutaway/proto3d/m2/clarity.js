@@ -40,7 +40,9 @@ export function clarityChecks(L, sentences) {
   }
   // 2b. the "Add ..." line brings only finishing touches, never a new machine (a traffic light at a car wash)
   const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));
-  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
+  // (a car rolling into a garage is how a garage door finishes, the planner's own rule: the 60 s free garage door run of
+  // 2026-10-30 was refused for it)
+  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && !(p.kind === "car" && setting === "garage") && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
   // 2c. realistic settings: no natural water (a creek, a stream) on a paved floor; it lies beside the setting (axis "z",
   // past the floor's edge), and what runs off the floor reaches it through a storm drain and a pipe
   const F = settingFloor(W.backdrop);

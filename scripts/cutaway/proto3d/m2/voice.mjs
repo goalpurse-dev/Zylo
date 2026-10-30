@@ -68,6 +68,10 @@ export async function makeVoice({ text, out, ff, wt, log, sectionWords = [], mod
       await take();
     }
   }
-  execFileSync(process.execPath, [path.join(here, "..", "voiceSilence.mjs"), ff, raw, rawWords, final], { env: { ...process.env, ...(sectionWords.length ? { SECTION_WORDS: sectionWords.join("|") } : {}) }, stdio: ["ignore", "pipe", "inherit"] });
+  // (its outputs are written last: a crash after them is Node's own exit on Windows, "UV_HANDLE_CLOSING", and the re-time
+  // is done; it failed a free 60 s traffic light run as RENDER_FAILED)
+  const t0 = Date.now(), wordsOut = final.replace(/\.mp3$/, ".words.json");
+  try { execFileSync(process.execPath, [path.join(here, "..", "voiceSilence.mjs"), ff, raw, rawWords, final], { env: { ...process.env, ...(sectionWords.length ? { SECTION_WORDS: sectionWords.join("|") } : {}) }, stdio: ["ignore", "pipe", "inherit"] }); }
+  catch (e) { if (![final, wordsOut].every((f) => fs.existsSync(f) && fs.statSync(f).mtimeMs >= t0 - 1000 && fs.statSync(f).size > 0)) throw e; console.error(`[cutaway] the re-time exited badly after writing its files (kept): ${String(e.message).slice(0, 120)}`); }
   return { voice: final, words: JSON.parse(fs.readFileSync(final.replace(/\.mp3$/, ".words.json"), "utf8")), usd };
 }

@@ -64,9 +64,9 @@ export function bandHits(rect) {
  * so the box sits in a free zone ("bottom" | "top" | "mid" | "auto" | "center": no zone, e.g. the home view).
  * Returns { pos, tgt, rect, zone, ok, why }.
  */
-export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone", minField = MIN_FIELD } = {}) {
+export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone", minField = MIN_FIELD, wholeTall = minField > 0 } = {}) {
   // never closer than MIN_FIELD of world across: a thin part (a pipe, a crack) at a big width would fill the frame
-  const sx = box.max[0] - box.min[0];
+  const sx = box.max[0] - box.min[0], tallThin = box.max[1] - box.min[1] > 2 * Math.max(sx, box.max[2] - box.min[2], 0.3);
   if (sx < minField * width) { const c0 = (box.min[0] + box.max[0]) / 2, h = (minField * width) / 2; box = { min: [c0 - h, box.min[1], box.min[2]], max: [c0 + h, box.max[1], box.max[2]] }; }
   const dir = norm(Array.isArray(view) ? view : VIEWS[view] ?? VIEWS.home);
   const c = boxCenter(box);
@@ -82,6 +82,10 @@ export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit 
   let loose = false;
   if (!chosen && fit === "loose") { chosen = "bottom"; loose = true; }
   if (!chosen) { chosen = zones[0]; const [a, b] = ZONES[chosen]; const k = Math.min(rect.h / (b - a) * 1.02, rect.w / MIN_WIDTH); d *= k; ({ pos, tgt } = at(d)); rect = projectBox(pos, tgt, box); }
+  // a tall thin subject (a 13 m well shaft 1.4 m wide) sized by its width alone was a slice of soil from its middle: it
+  // steps back until it is whole in height (the 60 s free water well run, 2026-10-30). Not a hero (minField 0): it frames
+  // its own top part
+  if (wholeTall && tallThin && !rect.behind && rect.h > 0.9) { d *= rect.h / 0.9; ({ pos, tgt } = at(d)); rect = projectBox(pos, tgt, box); }
   // pan (camera and target together, so the view direction stays) until the box is centred in its zone
   const want = chosen === "center" ? 0.5 : loose ? Math.max(0.5, 0.96 - rect.h / 2) : (ZONES[chosen][0] + ZONES[chosen][1]) / 2;
   let shift = [0, 0, 0];

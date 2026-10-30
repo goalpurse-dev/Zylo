@@ -182,7 +182,9 @@ export function finishPropsLine(topic) {
   const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
   // (the finish completes the thing itself: the topic props first; the setting's own props are not finishing touches)
   if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
-  return `The "Add ..." finishing line may only name things the setting it lives in has: a yard: ${propWords("yard")}; a street: ${propWords("street")}; a park: ${propWords("park")}; a garage: ${propWords("garage")}; a room: ${propWords("room")}; it can also add a lid or cover to the thing itself.`;
+  // (the same rule as a known setting: the garage list, a toolbox and a trash can, was offered here and then refused as
+  // generic decor, 60 s free garage door run of 2026-10-30)
+  return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox). Never grass or bushes on a street, in a garage or a room.`;
 }
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
@@ -593,6 +595,12 @@ const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, requir
 const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
 const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.`;
 
+// a card's number as said and shown: as its verified claim writes it (a year stays 1993; "SINCE 1,993" was the garage
+// door's card on the 60 s free run of 2026-10-30), else with thousands commas
+export const cardNumber = (n, claim = "") => {
+  const commas = Number(n).toLocaleString("en-US");
+  return new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(String(claim)) && !String(claim).includes(commas) ? String(n) : commas;
+};
 const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
 /** stand-in sentences for a beat plan (its idea and its cue words), so the free checks run before the words exist */
 export function draftSentences(L, ideas) {
@@ -600,7 +608,7 @@ export function draftSentences(L, ideas) {
   return (L.beats ?? []).map((b) => {
     const idea = speakable(String(ideas[b.s] ?? b.shows?.does ?? b.s)).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
     const extra = (cues[b.s] ?? []).filter((w) => !have.has(tok(w)));
-    return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you) (but|so you)\b/i, "$1") };
+    return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you|This is|If you) (but|so you|this is|if you)\b/i, "$1") };
   });
 }
 /** the beat plan's story (free): roles in order, the chain of problems (caused by the fix before, bigger each time), the surprises */
@@ -741,7 +749,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
       const i = was.indexOf(String(card.at.w ?? "").replace(/,/g, ""));
       if (i < 0) return [card];
       if (!now[i]) return [];
-      return [{ ...card, at: { ...card.at, w: Number(now[i]).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(now[i]).toLocaleString("en-US")) }];
+      return [{ ...card, at: { ...card.at, w: cardNumber(now[i], c.claim) }, text: card.text.replace(/[\d,.]+/, cardNumber(now[i], c.claim)) }];
     });
     // cue words that were a dropped or changed number fire at the sentence's start instead
     for (const b of layout.beats) if (b.s === c.role) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !now.includes(String(a.w).replace(/,/g, ""))) delete a.w;
@@ -760,7 +768,8 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     if (nums.includes(w)) return [card];
     const used = new Set((layout.audio.cards ?? []).filter((x) => x !== card && x.at?.s === card.at?.s).map((x) => String(x.at?.w ?? "").replace(/,/g, "")));
     const n = nums.find((x) => !used.has(x));
-    return n ? [{ ...card, at: { ...card.at, w: Number(n).toLocaleString("en-US") }, text: card.text.replace(/[\d,.]+/, Number(n).toLocaleString("en-US")) }] : [];
+    const claim = kept.filter((c) => c.role === card.at?.s).map((c) => c.claim).join(" ");
+    return n ? [{ ...card, at: { ...card.at, w: cardNumber(n, claim) }, text: card.text.replace(/[\d,.]+/, cardNumber(n, claim)) }] : [];
   });
   for (const b of layout.beats) for (const a of b.do ?? []) if (/^\d/.test(a.w ?? "") && !kept.some((c) => c.role === b.s && numbersIn(c.claim).includes(String(a.w).replace(/,/g, "")))) delete a.w;
   // the chime that rings with a card, a sound or a shot on a number: it follows the card's verified number, or starts
@@ -797,7 +806,11 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const wordsCheck = (script) => {
     const rt = retargetCues(layout, script.sentences); layout = rt.layout;
     const cues = cuesOf(), P = [];
-    for (const s of script.sentences) for (const p of guard("sentence check", () => sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed: verifiedNums }), BUGS, [])) P.push(`${s.role}: ${p}`);
+    // (a number a counter already shows on screen may be said: the plan's counter to 320 gallons, four times a verified
+    // 80, was refused in the words on the 60 s free water well run of 2026-10-30, a check no rewrite could pass)
+    const onScreen = (layout.parts ?? []).filter((p) => p.kind === "counter").flatMap((p) => [p.params?.from, p.params?.to]).filter((n) => Number.isFinite(Number(n))).map((n) => String(Math.abs(Number(n))));
+    const allowed = [...verifiedNums, ...onScreen];
+    for (const s of script.sentences) for (const p of guard("sentence check", () => sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed }), BUGS, [])) P.push(`${s.role}: ${p}`);
     P.push(...guard("script check", () => checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }), BUGS, []));
     const n = script.sentences.reduce((k, s) => k + wordCount(s.text), 0), L = LENGTH[lengthSec];
     // (the length as guidance for a rewrite that runs for something else; and a visible-consequence line whose picture shows

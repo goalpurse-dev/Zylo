@@ -214,6 +214,9 @@ export function layoutRules(L) {
     const hits = (b) => placed.some((q) => b.max[0] > q.min[0] && b.min[0] < q.max[0] && b.max[2] > q.min[2] && b.min[2] < q.max[2]);
     for (const p of stands) {
       if (group.has(p)) continue;
+      // (road markings belong on the road: the finish's crosswalk and stop line were moved onto the sidewalk, 60 s free
+      // traffic light run, 2026-10-30)
+      if (p.kind === "prop" && /^(crosswalk|stopLine)$/.test(p.params?.type ?? "")) continue;
       const b = boxOf(p); if (!onRoad(b)) continue;
       move(p, +(side < 0 ? R.x1 + 0.5 - b.min[0] : R.x0 - 0.5 - b.max[0]).toFixed(2));
       for (let k = 0; k < 6 && hits(boxOf(p)); k++) move(p, 0, -1.6);
