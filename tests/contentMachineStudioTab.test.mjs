@@ -27,6 +27,7 @@ function studioApi({ stories = [], history = [], workers = [], settings = {} } =
     async createStudioJobs(rows) { const out = rows.map((r, i) => ({ id: `J${jobs.length + i + 1}`, created_at: NOW.toISOString(), ...r })); jobs.push(...out); return out; },
     async updateStudioJob(id, patch, from) { const j = jobs.find((x) => x.id === id && from.includes(x.status)); if (!j) return null; Object.assign(j, patch); return j; },
     async listStudioJobs() { return [...jobs].reverse(); },
+    async studioJobVideos() { return {}; },
   };
   Object.assign(world.db, extra);
   const { call } = apiFor(world);

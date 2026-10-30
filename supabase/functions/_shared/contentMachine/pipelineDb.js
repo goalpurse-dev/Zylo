@@ -226,6 +226,12 @@ export function createPipelineDb(db) {
       const rows = must(await db.from("cm_studio_jobs").update({ ...patch, updated_at: nowIso() }).eq("id", id).in("status", fromStatuses).select("*"), "update studio job");
       return rows[0] ?? null;
     },
+    /** The finished video of each Queue item: {idea id: path}. */
+    async studioJobVideos(ideaIds) {
+      if (!ideaIds.length) return {};
+      const rows = must(await db.from("cm_generations").select("idea_id, video_path").eq("kind", "making_of").in("idea_id", ideaIds), "studio videos");
+      return Object.fromEntries(rows.filter((r) => r.video_path).map((r) => [r.idea_id, r.video_path]));
+    },
     async listStudioJobs(limit = 40) { return must(await db.from("cm_studio_jobs").select("*").order("created_at", { ascending: false }).limit(limit), "studio jobs"); },
   };
   return api;

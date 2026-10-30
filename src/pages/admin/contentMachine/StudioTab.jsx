@@ -17,6 +17,17 @@ const TRIGGER = { comment: "Comment", save: "Save", repost: "Send to a friend" }
 const recipeText = (r) => `${r.variant} · ${String(r.hook_type ?? "").replace(/_/g, " ")} · ${r.length_s?.[0] ?? "?"}–${r.length_s?.[1] ?? "?"} s · ends: ${TRIGGER[r.end_trigger] ?? r.end_trigger} · ${r.loop ? "loops" : "no loop"}`;
 const mins = (m) => (m ? `${m[0]}–${m[1]} min` : "–");
 
+/** A finished video, watchable right away. Keeps its first link: the tab refreshes every 15 s and playback must not restart. */
+function JobVideo({ url }) {
+  const [src] = useState(url);
+  return (
+    <div className="mt-2 flex w-full items-end gap-3" data-testid="cm-studio-video">
+      <video src={src} controls preload="metadata" className="h-64 rounded-lg border border-white/10 bg-black" />
+      <a href={src} download className="text-[12.5px] text-lime-300 underline">Download</a>
+    </div>
+  );
+}
+
 function WorkerBadge({ w }) {
   if (!w) return null;
   return (
@@ -131,6 +142,7 @@ export function StudioTab() {
                   {j.progress && j.status === "claimed" && <span className="text-white/60">· {j.progress}</span>}
                   {j.error && <span className="text-rose-300">· {j.error}</span>}
                   {j.status === "done" && j.idea_id && <span className="text-lime-300">· in the Queue (Studio video)</span>}
+                  {j.status === "done" && j.video_url && <JobVideo key={j.id} url={j.video_url} />}
                   <span className="ml-auto flex gap-2">
                     {j.status === "waiting_go" && <button type="button" className={primary} onClick={() => act("studioApprove", j.id)}>Go: ~{money(j.estimate?.generation_usd)}</button>}
                     {["waiting_go", "queued"].includes(j.status) && <button type="button" className={ghost} onClick={() => act("studioCancel", j.id)}>Cancel</button>}

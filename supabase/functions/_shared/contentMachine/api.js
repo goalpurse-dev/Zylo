@@ -49,7 +49,7 @@ export function createHandler({ getUser, emails, store, guard, cors, env = {}, n
   const ACTIONS = {
     ...(cm ? slideshowActions({ cm, files, kick, store, guard, now }) : {}),
     ...(cm ? learningActions({ cm, store, kick, now }) : {}),
-    ...(cm ? studioActions({ cm, store, now }) : {}),
+    ...(cm ? studioActions({ cm, store, now, files }) : {}),
     ...(cm ? postsActions({ cm, files, store, guard, now, ai, env: { anthropicKey: env.ANTHROPIC_API_KEY }, models }) : {}),
     whoami: async ({ user }) => ({ email: user.email }),
     status: async () => status(),

@@ -131,7 +131,7 @@ export function templateFromPrompt(text) {
 }
 
 /* ─── the API ─────────────────────────────────────────────────────────── */
-export function studioActions({ cm, store, now }) {
+export function studioActions({ cm, store, now, files }) {
   async function history() {
     const rows = await cm.studioPostHistory();
     return rows.map((r) => ({ recipe: r.recipe, template: r.template, score: studioScore(r.stats, r.seconds) }));
@@ -176,7 +176,8 @@ export function studioActions({ cm, store, now }) {
       if (body?.sourceId && !p.sources.some((x) => x.id === body.sourceId)) throw new ApiError("VALIDATION", "That creation can't be reused (too old, deleted, or not clean).");
       const source = body?.sourceId ? p.sources.find((x) => x.id === body.sourceId) : p.source;
       const batch = crypto.randomUUID();
-      const rows = p.recipes.map((r) => ({ batch_id: batch, template: p.template, mode: p.mode, prompt: body?.prompt ? String(body.prompt).slice(0, 300) : null, recipe: r,
+      const t0 = now().getTime();
+      const rows = p.recipes.map((r, i) => ({ created_at: new Date(t0 + i).toISOString(), batch_id: batch, template: p.template, mode: p.mode, prompt: body?.prompt ? String(body.prompt).slice(0, 300) : null, recipe: r,
         source: source.kind === "generate" ? { kind: "generate" } : { kind: source.kind, id: source.id, title: source.title, skip_scenes: source.filter?.skip ?? [] },
         estimate: { ...p.estimate, usd: Math.round((p.estimate.usd / p.count) * 10000) / 10000 }, status: source.kind === "generate" ? "waiting_go" : "queued", created_by: user.email }));
       const jobs = await cm.createStudioJobs(rows);
@@ -199,10 +200,16 @@ export function studioActions({ cm, store, now }) {
       return { job };
     },
 
-    studioJobs: async ({ body }) => ({
-      jobs: await cm.listStudioJobs(Math.min(100, Math.max(1, Number(body?.limit) || 40))),
-      worker: workerState(await cm.studioWorkers(), now()),
-      templates: Object.entries(STUDIO_TEMPLATES).map(([k, t]) => ({ key: k, name: t.name, ready: t.ready, why: t.why ?? null })),
-    }),
+    // A finished job carries its video at once (owner, 2026-10-30): each one is watchable as soon as it is ready
+    studioJobs: async ({ body }) => {
+      const jobs = await cm.listStudioJobs(Math.min(100, Math.max(1, Number(body?.limit) || 40)));
+      const videos = await cm.studioJobVideos(jobs.filter((j) => j.status === "done" && j.idea_id).map((j) => j.idea_id));
+      const urls = await files.signedUrls(Object.values(videos), 3600);
+      return {
+        jobs: jobs.map((j) => ({ ...j, video_url: urls[videos[j.idea_id]] ?? null })),
+        worker: workerState(await cm.studioWorkers(), now()),
+        templates: Object.entries(STUDIO_TEMPLATES).map(([k, t]) => ({ key: k, name: t.name, ready: t.ready, why: t.why ?? null })),
+      };
+    },
   };
 }
