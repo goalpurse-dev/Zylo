@@ -15,6 +15,10 @@ import { welcomeEmail, WELCOME_SUBJECT, WELCOME_WHY } from "../_shared/welcomeEm
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+// Paused (owner, 2026-10-30): welcome emails land in Gmail spam, so none go out until the
+// sending reputation recovers. Checked before the flag below, so the account is not marked as sent.
+const WELCOME_PAUSED = true;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
@@ -24,6 +28,7 @@ Deno.serve(async (req) => {
   const { data: auth, error: authError } = token ? await admin.auth.getUser(token) : { data: null, error: null } as any;
   const user = auth?.user;
   if (authError || !user?.id || !user.email) return err(req, "Not signed in", 401);
+  if (WELCOME_PAUSED) return ok(req, { skipped: "paused" });
 
   // 2. One per account: only the request that flips the flag goes on.
   const { data: claimed, error: flagError } = await admin.from("profiles")
