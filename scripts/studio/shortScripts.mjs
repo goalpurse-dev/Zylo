@@ -97,13 +97,13 @@ export function makeScript(recipe, kit = TEN_YEARS) {
       recipe: { variant: "V1", hook_type: "result_first", length_s: [28, 35], loop: true, frame0: kit.frame0?.V1 ?? "open", open_loop: kit.open_loops?.V1 ? "wait till she walks in → the ending" : "wait for the ending → the ending", ...(kit.notes?.V1 ? { note: kit.notes.V1 } : {}) },
       length_target: [28, 35], steps_total: 5,
       clips: [open({ hook: kit.hooks?.V1 ?? "I MADE THIS|IN *5 STEPS*", open_loop: ol(1.2) }), payoff(idx(lines, "twist"))], lines,
-      shots: [{ to: "hook", at: "open.end+0.02", dur: 0.85, kind: "pull" }, toSteps, toWall, ...tail],
+      shots: [{ to: "hook", at: "open.end-0.8", dur: 0.85, kind: "pull" }, toSteps, toWall, ...tail],
       chips: [{ from: "q.start", to: "s1.start", parts: [["HOW DO YOU MAKE ", W], ["THIS?", Y]] }, made("payoff.start")] };
   } else if (V === "V2") {   // FAST 20 s: hook clip -> 3 fast steps -> payoff -> reveal
     const lines = [S.idea(1), S.anim(2), S.final(3), siteShort];
     v = { variant: "v2_fast20", title: timed ? "Studio V2 · Fast 20 s: this fruit drama took 3:50 to make" : `Studio V2 · Fast 20 s: ${kit.title}`,
       recipe: { variant: "V2", hook_type: "result_first_fast", length_s: [17, 23], loop: true, frame0: kit.frame0?.V2 ?? "open", open_loop: "wait for the ending → the ending" },
-      length_target: [17, 23], steps_total: 3,
+      length_target: [15, 23], steps_total: 3, tempo: 1.17,
       clips: [open({ hook: kit.hooks?.V2 ?? "THIS WHOLE DRAMA|IS *AI-MADE*", open_loop: ol(1.0) }), payoff(idx(lines, "s3"))], lines,
       shots: [{ to: "steps", at: "open.end+0.02", dur: 0.9, kind: "crane" }, ...tail],
       chips: [] };
@@ -119,7 +119,7 @@ export function makeScript(recipe, kit = TEN_YEARS) {
     const lines = [q, answer, S.nav(1), S.idea(2), S.pics(3), S.anim(4), S.final(5), twist, ...(timed ? [objection, time] : []), site];
     v = { variant: "v4_studio_fast", title: timed ? "Studio V4 · Studio dialogue, faster: how do you make this?" : `Studio V4 · How do you make this? ${kit.title}`,
       recipe: { variant: "V4", hook_type: "question", length_s: [33, 42], loop: true, frame0: kit.frame0?.V4 ?? "open", open_loop: "website at the end → the website", open_loop_paid_by: "site" },
-      length_target: timed ? [33, 42] : [28, 36], steps_total: 5,
+      length_target: timed ? [33, 42] : [28, 36], steps_total: 5, tempo: 0.96,
       clips: [open({ hook: "HOW DO YOU|MAKE *THIS?*", open_loop: loopChip(1.2, "WEBSITE AT THE ", "END 👀") }), payoff(idx(lines, timed ? "time" : "twist"))], lines,
       shots: [{ to: "hook", at: "open.end+0.02", dur: 0.85, kind: "pull" }, { to: "zee", at: "answer.start-0.3", dur: 0.8, kind: "pull" }, toSteps, toWall,
         ...(timed ? [{ to: "creator", at: "objection.start-0.4", dur: 0.75, kind: "pull" }, { to: "zeeLow", at: "objection.end-0.05", dur: 0.45, kind: "whip" }, { to: "phoneFull", at: "payoff.start-1.2", dur: 0.95, kind: "push" }] : [tail[0]]), tail[1]],

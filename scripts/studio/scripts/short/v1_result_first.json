@@ -311,7 +311,7 @@
  "shots": [
   {
    "to": "hook",
-   "at": "open.end+0.02",
+   "at": "open.end-0.8",
    "dur": 0.85,
    "kind": "pull"
   },

@@ -227,7 +227,7 @@ window.renderAt = async (t) => {
     const secs = st.line.badge ?? cf.f.t;
     const badge = sf.c.nav || secs == null ? null : `⏱ ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
     // the card waits for the camera to land (it never slides in over a face mid-move)
-    if (!cam.moving) boxes.push(["step card", ov.card(cardImg[cf.f.file], sf.c.aspect, t - st.t0, { width: st.card === "step1" || st.card === "step2" ? 600 : 560, badge, tap: cf.f.tap, tapAt: cf.tapAt })]);
+    if (!cam.moving && cam.step.at === "steps") boxes.push(["step card", ov.card(cardImg[cf.f.file], sf.c.aspect, t - st.t0, { width: st.card === "step1" || st.card === "step2" ? 600 : 560, badge, tap: cf.f.tap, tapAt: cf.tapAt })]);
   } else {
     const ch = CHIPS.find((c) => t >= c.t0 && t < c.t1);
     if (ch) boxes.push(["chip", ov.chip(ch.parts, t - ch.t0)]);

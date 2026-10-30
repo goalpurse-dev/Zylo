@@ -19,7 +19,7 @@
    }
   }
  },
- "tempo": 1.04,
+ "tempo": 1.17,
  "lead": 0,
  "gap_speaker": 0.22,
  "gap_same": 0.16,
@@ -68,7 +68,7 @@
   "cta": "save_later"
  },
  "length_target": [
-  17,
+  15,
   23
  ],
  "steps_total": 3,
