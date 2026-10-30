@@ -123,3 +123,22 @@ test("first finished 60 s video (78.6 s, black frames, labels piled on the house
   const src = fs.readFileSync(path.join(M3, "../render.mjs"), "utf8");
   assert.match(src, /re-rendered/); assert.match(src, /gl\?\.finish\?\.\(\)/);
 });
+
+test("the first finished video's review (2026-10-31): chlorine falls into the water and dissolves, a rig's unused appear runs with its show, narration never describes the graphics", async () => {
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  const { sentenceProblems } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const L = { world: { cut: { x0: -6, x1: 6, z0: -8, depth: 5 } }, parts: [
+    { id: "water2", kind: "water", params: { box: { x0: -5, x1: 5, y0: -3, y1: -0.4, z0: -7, z1: 0 } } },
+    { id: "chlorine", kind: "boxPop", params: { size: [0.4, 0.3, 0.4], pos: [6, 0.2, -0.4], mat: "tankBlue" } },
+    { id: "lamp", kind: "rig", params: { pos: [0, -3, -1], nodes: [{ id: "n", at: [0, 0, 0], shapes: [{ shape: "box", size: [0.5, 0.3, 0.4], at: [0, 0.15, 0] }], moves: [{ name: "appear", type: "appear" }] }] } }],
+    beats: [{ s: "fix5", shows: { p: "chlorine", does: "x" }, do: [{ p: "chlorine", v: "show", w: "chlorine" }, { p: "water2", v: "clean", w: "soon" }] }, { s: "finish", do: [{ p: "lamp", v: "show", w: "light" }] }], audio: {} };
+  const r = layoutRules(L).layout, fix5 = r.beats.find((b) => b.s === "fix5"), fin = r.beats.find((b) => b.s === "finish");
+  assert.equal(r.parts.find((p) => p.id === "chlorine").kind, "drops");
+  assert.equal(fix5.shows.p, "water2");
+  assert.deepEqual(fix5.do.filter((a) => a.p === "chlorine").map((a) => a.v), ["fall", "hide"]);
+  assert.deepEqual(fin.do.map((a) => a.v), ["show", "appear"]);
+  assert.ok(r.parts.find((p) => p.id === "lamp").params.scale > 1.5, "a small finishing rig is made big enough to see");
+  assert.ok(sentenceProblems("And a strong chlorine smell is not a sign of a clean pool, as the page says.", {}).length);
+  assert.ok(sentenceProblems("This is a swimming pool, and a glowing outline traces its whole shape.", {}).length);
+  assert.deepEqual(sentenceProblems("And a strong chlorine smell does not mean a clean pool.", {}), []);
+});

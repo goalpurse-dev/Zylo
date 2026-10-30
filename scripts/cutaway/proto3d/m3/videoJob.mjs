@@ -238,6 +238,9 @@ async function main() {
       tell("progress", { stage: "upload", pct: 99 });
       const files = await deliver(made, ready);
       clearInterval(beat);
+      // (its GPU time, from here: asked from RunPod when "done" lands, the job is still running and it said 0, so no
+      // finished video ever booked its GPU; the first swimming pool's ledger, 2026-10-30)
+      if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
       await tell("done", { costs, renderer, files, seconds: +((Date.now() - t0) / 1000).toFixed(1) });
       return { ok: true };
     }

@@ -429,6 +429,9 @@ export function dropBeats({ script = null, layout, lengthSec, over = (sc) => fal
 const parseScene = (d) => { try { return JSON.parse(d.sceneJson); } catch (e) { return { _bad: e.message }; } };
 
 export const KIT_CANNOT = [
+  // (the narration says what is true, never what the graphics do: "a glowing outline traces its whole shape" and "...not a
+  // sign of a clean pool, as the page says" were in the first finished swimming pool, from its reword; review of 2026-10-31)
+  [/\b(glowing )?outline traces\b|\bglowing outline\b|\bas the (page|paper|newspaper|book|sign|label) says\b|\bthe (page|paper|newspaper) says\b|\bon screen\b|\bin this (frame|shot)\b/i, "say what is true about the thing, never what the picture or a prop does: a myth line says the belief plainly (\"And a strong chlorine smell does not mean a clean pool.\")"],
   [/\b(both|two|all|four|every|each|other)\s+(roads|streets|directions|ways)\b|\bcross[- ]?(road|street|traffic)\b|\bside street\b/i, "the street has ONE road going away from the camera: say what happens on that road (cars queue at the red, one car waits)"],
   [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
   [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],

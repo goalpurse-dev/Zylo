@@ -90,9 +90,50 @@ export function layoutRules(L) {
   }
   // 5b2. water filling a pit in the hook fills over 1.8 s, so it is seen rising (in 0.45 s the real checker's strip saw
   // the pool already full: "water appears without pouring in", 2026-10-30)
-  for (const b of (L.beats ?? []).filter((x) => x.s === "hook")) for (const a of b.do ?? []) {
+  for (const b of beats.filter((x) => x.s === "hook")) for (const a of b.do ?? []) {
     const p = parts.find((q) => q.id === a.p);
     if (p?.kind === "water" && a.v === "flood" && a.d == null) { a.d = 1.8; notes.push(`hook: ${p.id} fills over 1.8 s`); }
+  }
+  // 5b3. something added to water falls INTO it: a small box the plan calls chlorine, a tablet or a chemical, in a beat
+  // that treats a water part, becomes drops falling onto that water, and the beat looks at the water (the first finished
+  // swimming pool poured its chlorine onto the skimmer, in a close-up of a box; the owner's review of 2026-10-31)
+  for (const b of beats) {
+    const wa = (b.do ?? []).find((a) => /^(clean|clear|dirty)$/.test(a.v) && parts.find((q) => q.id === a.p)?.kind === "water");
+    if (!wa) continue;
+    const w = parts.find((q) => q.id === wa.p), box = w.params.box;
+    for (const a of b.do) {
+      const p = parts.find((q) => q.id === a.p);
+      if (!p || p.kind !== "boxPop" || !/chlor|chemical|tablet|shock|dose|powder/i.test(p.id) || Math.max(...(p.params.size ?? [9])) > 1) continue;
+      p.kind = "drops";
+      p.params = { x0: box.x0 + 1, x1: box.x1 - 1, count: 34, fromY: box.y1 + 3.2, landY: box.y1, z: (box.z0 + box.z1) / 2, mat: p.params.mat ?? "tankBlue" };
+      a.v = "fall";
+      // (it dissolves as the water clears)
+      b.do = [...b.do, { p: p.id, v: "hide", ...(wa.w ? { w: wa.w } : {}), o: 0.8 }];
+      if (b.shows?.p === p.id) b.shows = { ...b.shows, p: w.id };
+      for (const s of [b.shot, ...(b.shots ?? [])].filter(Boolean)) if ([].concat(s.focus ?? []).includes(p.id)) s.focus = [].concat(s.focus).map((x) => (x === p.id ? w.id : x));
+      notes.push(`${p.id} falls into ${w.id}`);
+    }
+  }
+  // 5b3b. a rig's piece with an "appear" move stays hidden until that move runs: one no beat ever calls runs with the rig's
+  // "show" (the pool's steps and light, the rain barrel's screen and guard never appeared; review of 2026-10-31)
+  for (const p of parts.filter((q) => q.kind === "rig")) {
+    const appears = [...new Set((p.params?.nodes ?? []).flatMap((n) => (n.moves ?? []).filter((m) => m.type === "appear").map((m) => m.name)))];
+    const called = new Set(beats.flatMap((b) => (b.do ?? []).filter((a) => a.p === p.id).map((a) => a.v)));
+    for (const b of beats) {
+      const i = (b.do ?? []).findIndex((a) => a.p === p.id && a.v === "show"); if (i < 0) continue;
+      const add = appears.filter((n) => !called.has(n));
+      if (add.length) { b.do.splice(i + 1, 0, ...add.map((v) => ({ ...b.do[i], v }))); notes.push(`${p.id}: ${add.join(", ")} run with its show`); }
+      break;
+    }
+  }
+  // 5b4. what the "Add ..." line adds must be seen: a rig under 1.2 m (the pool's light, 0.7 m under the water and a wide
+  // shot away, never showed) is 1.6 times as big
+  const addB = beats.find((b) => b.s === "finish");
+  for (const a of addB?.do ?? []) {
+    const p = parts.find((q) => q.id === a.p);
+    if (p?.kind !== "rig" || p.params?.scale > 1.5) continue;
+    const r = focusOf({ ...p, focus: undefined }, null);
+    if (r && Math.max(r.max[0] - r.min[0], r.max[1] - r.min[1], r.max[2] - r.min[2]) < 1.2) { p.params = { ...p.params, scale: 1.6 }; notes.push(`${p.id} is 1.6 times as big, so it is seen`); }
   }
   // 5c. a crack is a crack, never a ribbon: at most 8 cm thick (its pale edge is 2.3 times that; at 0.2 m it stood out of
   // the soil face as a white zigzag strip, real checker 2026-10-30)
