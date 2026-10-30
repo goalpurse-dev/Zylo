@@ -72,9 +72,14 @@ export function stateCards(sentences, words, beats = [], cards = []) {
     const w = key && words.find((x) => x.s >= s.t0 - 0.01 && x.s <= s.t1 + 0.01 && x.w.toLowerCase().replace(/[^a-z']/g, "").startsWith(key));
     // (to the line's end, never into the fix that follows: a DIRTY label 1.2 s from a late word sat on the fix's frame)
     const next = sentences[i + 1]?.t0 ?? Infinity, t = w ? w.s : s.t0 + 0.4, e = Math.min(Math.max(t + 0.7, s.t1 + 0.1), next - 0.05);
-    // (it sits higher than the number cards, so both can be up: "80 LB" and "TOO HEAVY")
     if (cards.some((c) => c.kind === "state" && c.s < e && c.e > t)) continue;
-    out.push({ text: text.toUpperCase(), s: +t.toFixed(3), e: +e.toFixed(3), kind: "state" });
+    // labels never pile up (the owner's rule of 2026-10-30: LEAKING, 20,000 TONS and the caption stood on the house
+    // together): a number or name card up at that moment goes first and the state follows it, or stays away if under
+    // 0.8 s of the line is left
+    let t1 = t;
+    for (const c of [...cards].filter((x) => x.kind !== "state").sort((a, b) => a.s - b.s)) if (c.s < e && c.e > t1) t1 = c.e + 0.05;
+    if (e - t1 < 0.8) continue;
+    out.push({ text: text.toUpperCase(), s: +t1.toFixed(3), e: +e.toFixed(3), kind: "state" });
   }
   return out;
 }

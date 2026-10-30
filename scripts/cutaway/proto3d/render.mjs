@@ -40,11 +40,35 @@ if (only) { // stills at given times for a quick look
   const f0 = Math.max(0, Number(process.env.FRAME_FROM ?? 0)), f1 = Math.min(n, Number(process.env.FRAME_TO ?? n));
   const enc = spawn(ff, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", fps, "-i", "-", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out], { stdio: ["pipe", "inherit", "inherit"] });
   const t0 = Date.now();
+  // a blank capture: on the GPU server (NVIDIA, ANGLE on EGL) a frame sometimes comes back empty, never on this laptop: the
+  // first finished swimming pool video of 2026-10-30 had 24 single black frames, the first at frame 0. A capture far
+  // smaller than the last good one is rendered again; still small AND truly dark, the last good frame is used instead
+  const blankTest = new Set(String(process.env.CUTAWAY_BLANK_TEST ?? "").split(",").filter(Boolean).map(Number));
+  const grab = (t, forceBlank = false) => page.evaluate((t, forceBlank) => {
+    window.renderAt(t);
+    const c = document.querySelector("canvas"), gl = c.getContext("webgl2");
+    gl?.finish?.();
+    if (forceBlank) { gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }
+    return c.toDataURL("image/jpeg", 0.95);
+  }, t, forceBlank);
+  const dark = (data) => page.evaluate(async (src) => {
+    const im = new Image(); im.src = src; await im.decode();
+    const c2 = document.createElement("canvas"); c2.width = c2.height = 32; const g = c2.getContext("2d"); g.drawImage(im, 0, 0, 32, 32);
+    const px = g.getImageData(0, 0, 32, 32).data; let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+    return sum / (3 * 1024) < 12;
+  }, data);
+  let lastLen = 0, lastBuf = null, redone = 0, reused = 0;
   for (let f = f0; f < f1; f++) {
-    const data = await page.evaluate((t) => { window.renderAt(t); return document.querySelector("canvas").toDataURL("image/jpeg", 0.95); }, f / Number(fps));
-    if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
+    const t = f / Number(fps), small = (d) => (lastLen ? d.length < lastLen * 0.35 : d.length < 160000);
+    let data = await grab(t, blankTest.has(f));
+    for (let k = 0; k < 6 && small(data); k++) { redone++; await new Promise((r) => setTimeout(r, 40 * (k + 1))); data = await grab(t); }
+    let buf = Buffer.from(data.split(",")[1], "base64");
+    if (small(data) && lastBuf && await dark(data)) { buf = lastBuf; reused++; console.log(`frame ${f}: blank after its retries, the last good frame is used`); }
+    else { lastLen = data.length; lastBuf = buf; }
+    if (!enc.stdin.write(buf)) await new Promise((r) => enc.stdin.once("drain", r));
     if (f % 60 === 0) console.log(`frame ${f}/${n}`);
   }
+  if (redone || reused) console.log(`blank captures: ${redone} re-rendered, ${reused} replaced`);
   enc.stdin.end();
   await new Promise((r) => enc.on("close", r));
   console.log(`rendered ${f1 - f0} frames in ${((Date.now() - t0) / 1000).toFixed(1)} s`);

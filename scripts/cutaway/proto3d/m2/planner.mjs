@@ -11,6 +11,7 @@ import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA
 import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
 import { guard, logBugs, splitBugs } from "./bookkeeping.js";
+import { dropFrom } from "./salvage.mjs";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
 import { VERBS } from "./verbs.js";
@@ -33,7 +34,10 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 // 30 s, 2026-10-28; a free trim and a second rewrite come before a refusal). beats: a new plan's most beats (the owner's
 // cap of 2026-10-28: 12 for 30 s, scaled for 60 s; 13 beats made the words overrun); sentences: what a script may have
 // (the approved premade scripts have up to 13)
-export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12] }, 60: { words: [200, 240], sentences: [18, 24], beats: [18, 24] } };
+// (60 s: the voice runs 3.77 words a second with a 2.2 s end card, measured on the first finished swimming pool video of
+// 2026-10-30, 288 words in 76.5 s, 78.6 s long: 200-235 words land at 55-65 s, and 14-18 beats of 12-15 words reach it.
+// over: more words than this lose beats, free; maxSpeech: a voice longer than this has its least important lines cut out)
+export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12], over: 156 }, 60: { words: [200, 235], sentences: [14, 18], beats: [14, 18], over: 235, maxSpeech: 62.8 } };
 export const WORD_TOLERANCE = 0.05;
 // the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
 export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
@@ -402,16 +406,18 @@ export function trimNarration(script, { max, cues = {} } = {}) {
 // what measures a target (the owner's rule of 2026-10-29): guidance for a rewrite, never a reason to pay for one or to fail
 const TARGET = [/^\d+ words \(want/, /: \d+ words$/, /: \d+ words where the beat had/, /^the hook is \d+ words/, /cue word .* is missing/];
 export const isTarget = (p) => TARGET.some((re) => re.test(p));
-// the beats a narration far over its target loses first, free: the myth pair, then the finish, then a fact line
-export const DROP_ORDER = [["myth", "mythFact"], ["finish"], ["fact"], ["factProof"]];
-/** far over the word target (30%), or over the beat cap: the least important beats out of the script and the layout */
+// the beats a narration over its limit loses first, free: the myth pair, the second name, the fact's proof, the flood and
+// stakes lines, the finish, then the fact
+export const DROP_ORDER = [["myth", "mythFact"], ["name2"], ["factProof"], ["flood"], ["stakes"], ["finish"], ["fact"]];
+/** over the word limit, or over the beat cap: the least important beats out of the script and the layout */
 export function dropBeats({ script = null, layout, lengthSec, over = (sc) => false }) {
   const dropped = [];
   for (const group of DROP_ORDER) {
     const roles = (layout.beats ?? []).map((b) => b.s);
     if (!over(script) && !(roles.length > LENGTH[lengthSec].beats[1])) break;
     if (!group.every((r) => roles.includes(r))) continue;
-    layout = { ...layout, beats: layout.beats.filter((b) => !group.includes(b.s)), roles: (layout.roles ?? roles).filter((r) => !group.includes(r)) };
+    // (with everything anchored to those lines: a sound or the rain left on a dropped line stops the compile; salvage.mjs)
+    layout = { ...dropFrom({ sentences: [], cards: [] }, layout, group).layout, roles: (layout.roles ?? roles).filter((r) => !group.includes(r)) };
     if (script) {
       const keep = script.sentences.filter((s) => !group.includes(s.role)), idx = (i) => keep.indexOf(script.sentences[i]);
       script = { ...script, sentences: keep, chain: (script.chain ?? []).map((c) => ({ ...c, problem: idx(c.problem), causedBy: c.causedBy < 0 ? c.causedBy : idx(c.causedBy) })).filter((c) => c.problem >= 0), cards: (script.cards ?? []).filter((c) => !group.includes(script.sentences[c.sentence]?.role)).map((c) => ({ ...c, sentence: idx(c.sentence) })) };
@@ -602,6 +608,24 @@ export const cardNumber = (n, claim = "") => {
   return new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(String(claim)) && !String(claim).includes(commas) ? String(n) : commas;
 };
 const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
+/**
+ * A number card says what its sentence says: its unit is the word said after the number ("20,000 gallons" never carded
+ * "20,000 TONS", the swimming pool of 2026-10-30), and a number the sentence does not say has no card (free)
+ */
+export function cardsAsSaid(cards = [], sentences = []) {
+  const SKIP = new Set(["a", "an", "and", "are", "as", "at", "by", "for", "in", "is", "of", "on", "or", "the", "to", "times", "or"]);
+  const stem = (w) => w.toLowerCase().replace(/s$/, "");
+  return cards.flatMap((c) => {
+    const num = String(c.at?.w ?? "").replace(/,/g, "");
+    if (!/^\d/.test(num) || !/\d/.test(c.text ?? "") || /^\s*=/.test(c.text ?? "")) return [c];
+    const toks = String(sentences.find((s) => s.role === c.at?.s)?.text ?? "").split(/[\s-]+/);
+    const i = toks.findIndex((t) => t.replace(/[^\d.]/g, "").replace(/\.$/, "") === num);
+    if (i < 0) return [];
+    const said = (toks[i + 1] ?? "").replace(/[^A-Za-z]/g, ""), unit = String(c.text).replace(/^[^A-Za-z]*/, "").trim().split(/\s+/)[0] ?? "";
+    if (!said || SKIP.has(said.toLowerCase()) || !unit || stem(said) === stem(unit)) return [c];
+    return [{ ...c, text: String(c.text).replace(/[A-Za-z].*$/, said.toUpperCase()) }];
+  });
+}
 /** stand-in sentences for a beat plan (its idea and its cue words), so the free checks run before the words exist */
 export function draftSentences(L, ideas) {
   const cues = anchorWords(L);
@@ -748,6 +772,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
       if (card.at?.s !== c.role) return [card];
       const i = was.indexOf(String(card.at.w ?? "").replace(/,/g, ""));
       if (i < 0) return [card];
+      // (a number the checked claim still says keeps its card: by position alone, a claim that gained numbers turned the
+      // swimming pool's "83 TONS" into a false "20,000 TONS", 2026-10-30)
+      if (now.includes(was[i])) return [card];
       if (!now[i]) return [];
       return [{ ...card, at: { ...card.at, w: cardNumber(now[i], c.claim) }, text: card.text.replace(/[\d,.]+/, cardNumber(now[i], c.claim)) }];
     });
@@ -829,8 +856,8 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     script = trimmed(toScript(w.data)); wc = wordsCheck(script);
     trace.push({ label: `words checks (repair ${round})`, problems: wc.P, targets: wc.T, moved: wc.moved });
   }
-  // far over the word target (30%): the least important beats dropped in code, free; over it by less, a longer video
-  const farOver = (sc) => sc.sentences.reduce((k, s) => k + wordCount(s.text), 0) > Math.round(LENGTH[lengthSec].words[1] * 1.3);
+  // over the length's word limit: the least important beats dropped in code, free (60 s: over 235 words, or it runs past 65 s)
+  const farOver = (sc) => sc.sentences.reduce((k, s) => k + wordCount(s.text), 0) > LENGTH[lengthSec].over;
   if (farOver(script)) {
     const d = dropBeats({ script, layout, lengthSec, over: farOver });
     if (d.dropped.length) { script = d.script; layout = d.layout; roles = layout.beats.map((b) => b.s); trace.push({ label: "words far over the target: beats dropped (free)", dropped: d.dropped }); }
@@ -839,6 +866,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
   if (miss.length) { layout = dropWords(layout, miss); warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`)); }
   for (const t of wc.T) warnings.push(`${t} (a target: the video runs a little longer or shorter)`);
+  layout = { ...layout, audio: { ...layout.audio, cards: cardsAsSaid(layout.audio?.cards, script.sentences) } };
   // (the layout itself is solved by planTopic, after the opening fix)
   return { script, layout, problems: wc.P, warnings, solve: true };
 }

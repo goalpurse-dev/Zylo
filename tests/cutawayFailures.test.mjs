@@ -105,3 +105,21 @@ test("the salvage (swimming pool 60 s refused at the gate after $1.40, 2026-10-3
   assert.deepEqual(d.layout.audio.sfx.map((x) => x.lib), ["pop"]);
   assert.ok(!JSON.stringify(d.layout).includes("problem3"));
 });
+
+test("first finished 60 s video (78.6 s, black frames, labels piled on the house, 2026-10-30): the length limits, one label at a time, cards as said, commas in captions, blank frames re-rendered", async () => {
+  const { LENGTH, cardsAsSaid } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const PACE = 288 / 76.47, END = 2.2, len = (w) => w / PACE + END;
+  assert.ok(len(LENGTH[60].words[0]) >= 55 && len(LENGTH[60].words[1]) <= 65, "200-235 words land at 55-65 s at the real pace");
+  assert.ok(LENGTH[60].maxSpeech + END <= 65.01);
+  assert.deepEqual(cardsAsSaid([{ text: "20,000 TONS", at: { s: "problem", w: "20,000" } }, { text: "8 HOURS", at: { s: "fact", w: "8" } }, { text: "99 LB", at: { s: "fact", w: "99" } }], [{ role: "problem", text: "But the soil will soak up 20,000 gallons, and it falls." }, { role: "fact", text: "It runs about once every 8 hours." }]).map((c) => c.text), ["20,000 GALLONS", "8 HOURS"]);
+  const { stateCards } = await import("../scripts/cutaway/proto3d/m2/compile.mjs");
+  const words = [{ w: "But", s: 3.4, e: 3.6 }, { w: "it", s: 3.6, e: 3.8 }, { w: "leaks", s: 4.2, e: 4.6 }];
+  const S = [{ role: "problem", text: "But it leaks away.", t0: 3.4, t1: 7.2 }];
+  const up = stateCards(S, words, [{ s: "problem", state: { text: "LEAKING", w: "leaks" } }], [{ text: "83 TONS", s: 4.6, e: 6.4 }]);
+  assert.equal(up.length, 1); assert.ok(up[0].s >= 6.4, "the state waits for the number card");
+  assert.deepEqual(stateCards(S, words, [{ s: "problem", state: { text: "LEAKING", w: "leaks" } }], [{ text: "83 TONS", s: 4.6, e: 7.0 }]), [], "no room left: no state label");
+  const { captionWord } = await import("../render-worker/src/cutawayFinalPlan.mjs");
+  assert.deepEqual(["20,000", "2,500,", "hours.", "3.5"].map(captionWord), ["20,000", "2,500", "Hours", "3.5"]);
+  const src = fs.readFileSync(path.join(M3, "../render.mjs"), "utf8");
+  assert.match(src, /re-rendered/); assert.match(src, /gl\?\.finish\?\.\(\)/);
+});

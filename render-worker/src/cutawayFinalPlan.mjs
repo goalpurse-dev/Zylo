@@ -18,7 +18,8 @@ export const STATE_Y = 0.2;
 
 /** "pours," -> "Pours" (the references capitalise every caption word). */
 export function captionWord(w) {
-  const clean = String(w ?? "").replace(/[^\p{L}\p{N}'’-]/gu, "");
+  // (a comma or point inside a number stays: the caption read "20000" for "20,000")
+  const clean = String(w ?? "").replace(/[^\p{L}\p{N}'’,.-]/gu, "").replace(/(?<!\p{N})[,.]|[,.](?!\p{N})/gu, "");
   return clean ? clean[0].toUpperCase() + clean.slice(1) : "";
 }
 
