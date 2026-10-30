@@ -66,9 +66,17 @@ export function dropFrom(script, layout, drop) {
     return out;
   };
   const { beats, roles, ...rest } = layout;
+  const kept = clean((beats ?? []).filter((b) => keepS(b.s)));
+  // a part only the dropped beats acted on goes with them (a book that only rose in the dropped myth line had no "up"
+  // cue left, and the page stopped: the vending machine's salvage, 2026-10-30)
+  const used = (bs) => new Set(bs.flatMap((b) => [...(b.do ?? []).map((a) => a.p), b.shows?.p].filter(Boolean)));
+  const was = used(beats ?? []), now = used(kept), orphan = new Set([...was].filter((p) => !now.has(p)));
+  const out = clean(rest);
+  out.parts = (out.parts ?? []).filter((p) => !orphan.has(p.id));
+  out.cues = (out.cues ?? []).filter((c) => !orphan.has(c.p));
   return {
     script: { ...script, sentences, cards: (script.cards ?? []).filter((c) => keepS(script.sentences[c.sentence]?.role)).map((c) => ({ ...c, sentence: sentences.indexOf(script.sentences[c.sentence]) })) },
-    layout: { ...clean(rest), beats: clean((beats ?? []).filter((b) => keepS(b.s))), ...(roles ? { roles: roles.filter(keepS) } : {}) },
+    layout: { ...out, beats: kept, ...(roles ? { roles: roles.filter(keepS) } : {}) },
   };
 }
 

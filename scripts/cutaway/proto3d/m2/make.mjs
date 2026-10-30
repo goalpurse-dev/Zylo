@@ -23,7 +23,8 @@ function run(cmd, args, opts = {}, onLine = null) {
     let err = "";
     const lines = (buf) => { for (const l of String(buf).split(/\r?\n/)) if (l.trim()) onLine?.(l); };
     p.stdout.on("data", lines); p.stderr.on("data", (d) => { err += d; lines(d); });
-    p.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`${path.basename(cmd)} exited ${code}: ${err.slice(-600)}`))));
+    // (the error line itself first, then the tail: the tail alone was a stack without its message)
+    p.on("close", (code) => { if (code === 0) return resolve(); const head = err.split("\n").find((l) => /error|exception|cannot|undefined|not a function|failed/i.test(l) && !/^\s+at /.test(l)) ?? ""; reject(new Error(`${path.basename(cmd)} exited ${code}: ${head.trim().slice(0, 400)}${head ? " | " : ""}${err.slice(-500)}`)); });
   });
 }
 
