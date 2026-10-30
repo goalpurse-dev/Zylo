@@ -80,10 +80,21 @@ export function makeOverlay(ctx) {
      *  sized to the safe width. Whole from age 0 (frame 0 must read at once) unless pop; a pulse on zoom punches. */
     hook(text, age, { y = 1040, pop = false, pulse = 0 } = {}) {
       if (age < 0) return null;
-      const rows = text.split("|").map((r) => r.trim().split(/\s+/).map((w) => ({ w: w.replace(/\*/g, ""), key: /^\*.*\*$/.test(w) })));
+      // *a key phrase* may span words ("*UNDER 4 MINUTES*"): every word inside the asterisks is yellow
+      let inKey = false;
+      let rows = text.split("|").map((r) => r.trim().split(/\s+/).map((w) => {
+        const opens = w.startsWith("*"), closes = w.endsWith("*") && (w.length > 1 || inKey);
+        const key = inKey || opens; inKey = (inKey || opens) && !closes;
+        return { w: w.replace(/\*/g, ""), key };
+      }));
       let size = 104; ctx.font = `${size}px ${FONT}`;
-      const rowW = (r) => ctx.measureText(r.map((x) => x.w).join(" ")).width;
-      while (Math.max(...rows.map(rowW)) > (W - SAFE.left - SAFE.right - 30) / 1.1 && size > 60) { size -= 4; ctx.font = `${size}px ${FONT}`; }   // room for the punch pulse
+      const rowW = (r) => ctx.measureText(r.map((x) => x.w).join(" ")).width, maxW = (W - SAFE.left - SAFE.right - 30) / 1.1;   // room for the punch pulse
+      // too long for two big rows: rewrap into more, shorter rows rather than shrink (the hook must read at a glance)
+      if (Math.max(...rows.map(rowW)) > maxW) {
+        const words = rows.flat(); rows = [[]];
+        for (const w of words) { const r = rows.at(-1); if (r.length && rowW([...r, w]) > maxW) rows.push([w]); else r.push(w); }
+      }
+      while (Math.max(...rows.map(rowW)) > maxW && size > 60) { size -= 4; ctx.font = `${size}px ${FONT}`; }
       const s = (pop ? popScale(age, 0.2) : 1) * (1 + pulse * 0.25), lh = size * 1.08, h = rows.length * lh;
       ctx.save(); ctx.translate(SAFE_CX, y); ctx.scale(s, s); ctx.textBaseline = "middle"; ctx.lineJoin = "round";
       let x1 = 0;
