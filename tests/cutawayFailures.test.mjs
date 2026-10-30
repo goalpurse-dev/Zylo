@@ -72,3 +72,19 @@ test("bookkeeping never fails a run: a mismatch or a crashed check is a logged b
   assert.equal(bugs.length, 2);
   assert.match(bugs[1], /^timeline check crashed: x is undefined/);
 });
+
+test("60 s free harness fixes (2026-10-30): tall thin subjects framed whole, card years as written, the yellow lamp alone, road markings stay, reversed moves play in turn", async () => {
+  const { frameBox, projectBox } = await import("../scripts/cutaway/proto3d/m2/director.js");
+  const shaft = { min: [-0.7, -13, -1.4], max: [0.7, 0, 0] };
+  const f = frameBox(shaft, { width: 0.8, fit: "loose" });
+  assert.ok(projectBox(f.pos, f.tgt, shaft).h <= 0.92, "a 13 m shaft is whole in height, not a slice of soil");
+  const { cardNumber } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  assert.equal(cardNumber("1993", "Sectional doors became common in 1993."), "1993");
+  assert.equal(cardNumber("1500", "It holds 1,500 gallons."), "1,500");
+  assert.equal(cardNumber("10000", "about 10000 cycles"), "10000");
+  const { VERBS } = await import("../scripts/cutaway/proto3d/m2/verbs.js");
+  assert.deepEqual(VERBS.trafficLight.yellow.map((r) => [r.c ?? r[0] ?? r.ch, r.amp ?? r[3]].join()).length, 3, "yellow turns red and green off");
+  const src = fs.readFileSync(path.join(M3, "../m2/layoutRules.js"), "utf8");
+  assert.match(src, /crosswalk\|stopLine/);
+  assert.match(fs.readFileSync(path.join(M3, "../m2/compile.mjs"), "utf8"), /a move that reverses the one before it/);
+});
