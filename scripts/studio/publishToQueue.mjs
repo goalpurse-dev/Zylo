@@ -47,6 +47,11 @@ if (updateId) {
     files: { mp4: `${base}/${v}_video.mp4`, pngs: [`${base}/${v}_cover.png`], sha256: sha, previous: g.files }, cost_usd: Number(g.cost_usd) + add, updated_at: new Date().toISOString() }).eq("id", g.id).select("id"), "update the video");
   if (spec.spendNew?.length) must(await db.from("cm_spend_ledger").insert(spec.spendNew.map((x) => ({ idea_id: updateId, provider: "other", lane: "studio", operation: x.operation, estimated_usd: x.usd, actual_usd: x.usd, status: "settled", local_day: x.day, request_ref: x.ref ?? null, settled_at: new Date().toISOString() }))).select("id"), "ledger");
   if (spec.packages) for (const [platform, pk] of Object.entries(spec.packages)) must(await db.from("cm_packages").update({ caption: pk.caption, title: pk.title ?? null, hashtags: pk.hashtags ?? [] }).eq("generation_id", g.id).eq("platform", platform).select("id"), `package ${platform}`);
+  // a re-render keeps the item in step: its measured length feeds the Studio score, its scorecard stays with it
+  if (spec.recipe) {
+    const [idea] = must(await db.from("cm_ideas").select("recipe, compliance").eq("id", updateId), "the idea");
+    must(await db.from("cm_ideas").update({ recipe: { ...idea.recipe, ...spec.recipe }, hook: spec.hook, ...(spec.retention ? { compliance: { ...idea.compliance, retention: spec.retention } } : {}) }).eq("id", updateId).select("id"), "update the idea");
+  }
   console.log(`updated: idea ${updateId} now plays ${v}_video.mp4 (${dur.toFixed(1)} s); +$${add.toFixed(4)} recorded`);
   process.exit(0);
 }
