@@ -264,46 +264,59 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     // down instead; only a hook or a "This is a…" line that still fails stops it
     const wouldBlock = () => still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role));
     if (wouldBlock() && !approvedSaved && still.length) {
+      // 1. every failing line reworded to say what its frame shows (one cheap call), only those lines voiced again and
+      // spliced into the paid take, and looked at again; 2. the extras that still fail are dropped (cut out, free)
       P({ stage: "scene", step: "repair", pct: 7 });
-      const sp = salvagePlan(roles, still.map((f) => f.role));
-      visionReport.salvage = { reword: sp.reword, drop: sp.drop };
-      const oldWords = words, oldVoice = voice, oldRoles = roles, oldS = sentencesOf(oldWords, oldRoles), oldSentences = plan.script.sentences;
+      visionReport.salvage = { failing: still.map((f) => f.role) };
+      // the voice rebuilt by sentence: each from the take it is said in now (the current voice, or a new take)
+      const splice = (from, take = null, changed = []) => {
+        const S0 = sentencesOf(from.words, from.roles), order = plan.script.sentences.filter((s) => changed.includes(s.role)).map((s) => s.role);
+        const pieces = plan.script.sentences.map((s) => (changed.includes(s.role) ? { file: take.voice, words: take.words, index: order.indexOf(s.role) } : { file: from.voice, words: from.words, index: S0.findIndex((x) => x.role === s.role) }));
+        return spliceVoice({ ff, pieces, out: path.join(out, `voice_spliced_${Date.now()}`) });
+      };
       let reworded = [];
-      if (sp.reword.length) {
-        const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: still.filter((f) => sp.reword.includes(f.role)), log, cacheDir });
-        extraUsd += rw.costUsd; reworded = rw.changed; plan.script = rw.script; visionReport.salvage.reworded = reworded;
-      }
-      ({ script: plan.script, layout } = dropFrom(plan.script, layout, sp.drop));
-      roles = plan.script.sentences.map((s) => s.role);
-      const miss = missingWords(layout, plan.script.sentences); if (miss.length) layout = dropWords(layout, miss);
-      // the voice: the paid take with the dropped sentences cut out, and only the reworded sentences voiced again
-      let take = null;
-      if (reworded.length) {
-        P({ stage: "scene", step: "voice", pct: 7 });
-        try { take = await makeVoice({ text: plan.script.sentences.filter((s) => reworded.includes(s.role)).map((s) => s.text.trim()).join(" "), out: path.join(out, "voice_salvage"), ff, wt, log }); vUsd += take.usd; }
-        catch (e) {
-          // (a new take that fails its own check: those lines keep their old words and their paid audio)
-          if (e.code === "BUDGET" || /credit balance|insufficient/i.test(e.message)) throw e;
-          visionReport.salvage.voiceFailed = String(e.message).slice(0, 200);
-          plan.script = { ...plan.script, sentences: plan.script.sentences.map((s) => (reworded.includes(s.role) ? { ...oldSentences.find((o) => o.role === s.role) } : s)) };
-          reworded = [];
+      const toReword = still.filter((f) => f.role !== "congrats");
+      if (toReword.length) {
+        const before = { voice, words, roles }, oldSentences = plan.script.sentences;
+        const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: toReword, log, cacheDir });
+        extraUsd += rw.costUsd; reworded = rw.changed;
+        if (reworded.length) {
+          plan.script = rw.script;
+          const miss = missingWords(layout, plan.script.sentences); if (miss.length) layout = dropWords(layout, miss);
+          P({ stage: "scene", step: "voice", pct: 7 });
+          try {
+            const take = await makeVoice({ text: plan.script.sentences.filter((s) => reworded.includes(s.role)).map((s) => s.text.trim()).join(" "), out: path.join(out, "voice_salvage"), ff, wt, log });
+            vUsd += take.usd; ({ voice, words } = splice(before, take, reworded));
+          } catch (e) {
+            // (a new take that fails its own check: those lines keep their old words and their paid audio)
+            if (e.code === "BUDGET" || /credit balance|insufficient/i.test(e.message)) throw e;
+            visionReport.salvage.voiceFailed = String(e.message).slice(0, 200);
+            plan.script = { ...plan.script, sentences: oldSentences }; reworded = [];
+          }
+        }
+        visionReport.salvage.reworded = reworded;
+        if (reworded.length) {
+          ({ tl, checks } = checkAll()); preparePage({ layout, tl, proto });
+          const again = one(previewTimes(tl, layout)).filter((s) => reworded.includes(s.role));
+          const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, "preview_salvage"), ff, wt });
+          const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "vision check (salvage)" }); extraUsd += vc2.costUsd;
+          visionReport.salvageLook = vc2.frames; visionReport.costUsd += vc2.costUsd;
+          still = still.filter((f) => !reworded.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
         }
       }
-      const pieces = plan.script.sentences.map((s) => (reworded.includes(s.role)
-        ? { file: take.voice, words: take.words, index: reworded.filter((r) => roles.indexOf(r) >= 0).sort((a, b) => roles.indexOf(a) - roles.indexOf(b)).indexOf(s.role) }
-        : { file: oldVoice, words: oldWords, index: oldS.findIndex((x) => x.role === s.role) }));
-      ({ voice, words } = spliceVoice({ ff, pieces, out: path.join(out, "voice_spliced") }));
-      save("script.json", plan.script); save("layout.json", layout);
-      ({ tl, checks } = checkAll());
-      preparePage({ layout, tl, proto });
-      still = still.filter((f) => !sp.drop.includes(f.role) && !reworded.includes(f.role));
-      if (reworded.length) {
-        const again = one(previewTimes(tl, layout)).filter((s) => reworded.includes(s.role));
-        const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, "preview_salvage"), ff, wt });
-        const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "vision check (salvage)" }); extraUsd += vc2.costUsd;
-        visionReport.salvageLook = vc2.frames; visionReport.costUsd += vc2.costUsd;
-        still = still.concat(vc2.frames.filter((f) => !f.ok));
+      // 2. what still fails: the extras dropped with the story chain kept whole (the hook and the name stay, and stop it)
+      const sp = salvagePlan(roles, still.map((f) => f.role));
+      visionReport.salvage.drop = sp.drop;
+      if (sp.drop.length) {
+        const before = { voice, words, roles };
+        ({ script: plan.script, layout } = dropFrom(plan.script, layout, sp.drop));
+        ({ voice, words } = splice(before));
+        roles = plan.script.sentences.map((s) => s.role);
+        ({ tl, checks } = checkAll()); preparePage({ layout, tl, proto });
+        still = still.filter((f) => !sp.drop.includes(f.role));
       }
+      roles = plan.script.sentences.map((s) => s.role);
+      save("script.json", plan.script); save("layout.json", layout);
     }
     visionReport.failing = still.map((f) => f.role);
     save("vision.json", visionReport);
