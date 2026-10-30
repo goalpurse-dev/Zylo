@@ -1,0 +1,158 @@
+{
+ "hash": "*",
+ "by": "real run 847d0af0-f604-4d06-abc6-52e0e9ad32b0",
+ "searches": 4,
+ "data": {
+  "text": "I ran one search per claim. Most of what came back was manufacturer, trade and encyclopedia material. I found no primary government or engineering document for claims 0 and 1, so those two verdicts are weaker than the others.\n\n**Claim 0: an average backyard pool holds about 15,000 to 20,000 gallons. Verdict: supported, with a caveat.**\n- Vita Filters (a manufacturer) says \"The average residential swimming pool holds between 15,000 and 20,000 gallons of water.\" https://www.vitafilters.com/blogs/news/how-many-gallons-are-in-my-pool\n- Swimming Pool Steve calculates an average of 17,280 gallons. That is for a 16'x32' pool with a 4.5' average depth. https://www.swimmingpoolsteve.com/pages/average-pool.html\n- A pool-service company gives a wider range. It says a 16x32 ft pool is typical and holds \"between 10,000 and 20,000 gallons.\" https://westernlehighservices.com/what-is-the-average-pool-size-for-your-backyard/\n- The caveat is that these are industry estimates, not survey data. The 15,000–20,000 figure sits at the upper-middle of the range. A safer line would be \"roughly 10,000 to 20,000 gallons.\"\n\n**Claim 1: a pool pump should turn over all the water about once every 8 hours. Verdict: supported in a corrected form.**\n- Swim University says \"A full turnover usually takes 8 to 10 hours.\" It calls that the minimum run time for your pump. https://www.swimuniversity.com/run-pool-pump/\n- Leslie's says \"Most pool owners target an 8–10 hour turnover.\" https://lesliespool.com/blog/how-to-calculate-pool-pump-run-time.html\n- California Pools says industry standards recommend \"a minimum target turnover rate of 6 hours.\" It adds that requirements vary by local health code. https://www.californiapools.com/blog/california-pools-blog/pool-maintenance-care/how-long-should-you-run-your-pool-pump-/\n- A US patent filing says \"A typical-use pool should have a pump and filtration system capable of pumping the entire contents of the pool through the filters every six hours.\" https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/12017170\n- Another patent filing says home timers typically limit pump operation to \"between 8 and 12 hours per day.\" https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11168911\n- **Corrected form:** \"Residential pools are commonly run for a turnover of about 8 to 10 hours. Public and commercial standards are stricter, around 6 hours, and local codes vary.\" The single figure of 8 hours is not a universal rule.\n\n**Claim 2: free chlorine should stay at about 1 to 3 ppm. Verdict: supported in a corrected form.**\n- Sensorex says \"The ideal range for free chlorine in a pool is between 1-3 parts per million (ppm).\" https://sensorex.com/understanding-free-chlorine-levels-in-pools/\n- iopool also gives 1–3 ppm for ordinary pools. It gives 0.5–1.5 ppm for saltwater pools. https://iopool.com/blogs/pool-advices/pool-chlorine-levels-what-they-should-be-and-why-they-keep-changing\n- Sensorex also reports that the CDC's Model Aquatic Health Code sets a minimum of 1 ppm free chlorine in pools. For spas the minimum is 3 ppm, and the maximum is 10 ppm. https://sensorex.com/free-chlorine-vs-total-chlorine/\n- Pool Calculator says the Association of Pool and Spa Professionals recommends 2.0–4.0 ppm. https://www.poolcalculator.com/pool-maintenance/what-should-chlorine-levels-be-in-swimming-pools-and-hot-tubs/\n- Beltway Pools gives 2–4 ppm for most residential pools. It adds that CDC guidance is at least 2 ppm when cyanuric acid (stabilizer) is in use. https://www.beltwaypools.com/articles/pool-water-chemistry-101/\n- **Corrected form:** \"The CDC minimum is 1 ppm. Common residential targets run from 1–3 ppm up to 2–4 ppm, and higher if the pool uses stabilizer.\" The 3 ppm in the CDC figure is the spa minimum, not a pool maximum.\n\n**Claim 3: water absorbs red light, so deep pool water looks blue. Verdict: supported as written, with a minor refinement.**\n- Wikipedia's \"Ocean color\" article says \"water preferentially absorbs red light, which means that blue light remains and is reflected back out of the water.\" https://en.wikipedia.org/wiki/Ocean_color\n- Wikipedia's \"Color of water\" article says hydrogen bonding in liquid water at 20 °C causes red absorption at around 740 nm and 660 nm. https://en.wikipedia.org/wiki/Color_of_water\n- CNN quotes a scientist who says the blue is noticeable in a large volume of water. The deeper the pool, the bluer it looks. The same happens under artificial lighting. https://www.cnn.com/2016/08/12/sport/why-are-swimming-pools-blue\n- The refinement is that real pools also look blue because of the light-colored pool surface and sky reflections. The absorption effect is real but weak in a typical 1–3 m pool. \"Large volume\" matters, as does \"deep\".",
+  "sources": [
+   {
+    "url": "https://sensorex.com/understanding-free-chlorine-levels-in-pools/",
+    "title": "Free Chlorine in Pools: Essential Guide & Levels - Sensorex Liquid Analysis Technology"
+   },
+   {
+    "url": "https://iopool.com/blogs/pool-advices/pool-chlorine-levels-what-they-should-be-and-why-they-keep-changing",
+    "title": "Pool Chlorine Levels: What They Should Be and Why They Keep Changing"
+   },
+   {
+    "url": "https://sensorex.com/free-chlorine-vs-total-chlorine/",
+    "title": "Free Chlorine vs Total Chlorine: Key Differences Explained - Sensorex Liquid Analysis Technology"
+   },
+   {
+    "url": "https://blog.poolsharkh2o.com/free-vs-combined-vs-total-chlorine-commercial-public-pool-operators",
+    "title": "Free, vs Combined vs Total Chlorine - A Guide for Commercial or Public Pool Operators"
+   },
+   {
+    "url": "https://www.poolcalculator.com/pool-maintenance/what-should-chlorine-levels-be-in-swimming-pools-and-hot-tubs/",
+    "title": "What Should Chlorine Levels Be in Swimming Pools and Hot Tubs? - Pool Calculator"
+   },
+   {
+    "url": "https://www.beltwaypools.com/articles/pool-water-chemistry-101/",
+    "title": "Ideal Pool Water Chemistry Levels: A Practical Guide"
+   },
+   {
+    "url": "https://www.poolchemtracker.com/blog/pool-chlorine-levels-chart",
+    "title": "Pool Chlorine Levels Chart — Safe FC Ranges by CYA Level"
+   },
+   {
+    "url": "https://sportsgeardaily.com/guides/what-is-the-highest-chlorine-level-safe-to-swim-in",
+    "title": "Safe Chlorine Level to Swim In: Max ppm Guidelines"
+   },
+   {
+    "url": "https://sccoastalpools.com/lexicon/chlorine-pool-maintenance/",
+    "title": "Chlorine for Pool Maintenance — Charleston Sanitizer Guide"
+   },
+   {
+    "url": "https://cdc.gov/healthy-swimming/toolkit/operating-public-pools-hot-tubs-and-splash-pads.html",
+    "title": "Operating and Managing Public Pools, Hot Tubs and Splash Pads"
+   },
+   {
+    "url": "https://www.swimmingpoolsteve.com/pages/average-pool.html",
+    "title": "What Is The Average Pool Size?"
+   },
+   {
+    "url": "https://www.vitafilters.com/blogs/news/how-many-gallons-are-in-my-pool",
+    "title": "How Many Gallons Is My Pool"
+   },
+   {
+    "url": "https://www.vitafilters.com/blogs/news/what-is-an-average-backyard-pool-size",
+    "title": "What Are the Average Pool Sizes"
+   },
+   {
+    "url": "https://westernlehighservices.com/what-is-the-average-pool-size-for-your-backyard/",
+    "title": "What Is the Average Pool Size for Your Backyard?"
+   },
+   {
+    "url": "https://www.backyardcitypools.com/Pool-Volume-Calculate.htm",
+    "title": "Pool Water Volume Calculator In Gallons with Size Charts"
+   },
+   {
+    "url": "https://familypoolfun.com/blog/how-much-water-does-an-above-ground-pool-hold",
+    "title": "How Much Water Does An Above-Ground Pool Hold?"
+   },
+   {
+    "url": "https://www.doheny.com/help/calculate-pool-volume",
+    "title": "How To Calculate Pool Volume"
+   },
+   {
+    "url": "https://store.waterpumpsupply.com/pocaca.html",
+    "title": "Common Pool Sizes and Its Capacity In Gallons"
+   },
+   {
+    "url": "https://gilbertpoolservice.org/average-pool-size/",
+    "title": "What Is The Average Pool Size? - Gilbert Pool Service"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11168911",
+    "title": "Fluid circulation monitoring system"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10221853",
+    "title": "Fluid circulation monitoring system"
+   },
+   {
+    "url": "https://www.swimuniversity.com/run-pool-pump/",
+    "title": "How Long Should I Run My Pool Pump Every Day?"
+   },
+   {
+    "url": "https://www.californiapools.com/blog/california-pools-blog/pool-maintenance-care/how-long-should-you-run-your-pool-pump-/",
+    "title": "How Long Should You Run Your Pool Pump? - California Pools"
+   },
+   {
+    "url": "https://lesliespool.com/blog/how-to-calculate-pool-pump-run-time.html",
+    "title": "How to Calculate Pool Pump Run Time"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/12017170",
+    "title": "Systems and methods of filtering particulate matter from a fluid"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11052338",
+    "title": "Systems and methods of filtering particulate matter from a fluid"
+   },
+   {
+    "url": "https://larryspool.com/pool-turnover-calculator/",
+    "title": "Swimming Pool Turnover Rate Calculator - Accurate Flow & Time"
+   },
+   {
+    "url": "https://www.mavaquadoc.com/blogs/pool-maintenance-blog/pool-pump-runtime-the-daily-hours-that-actually-keep-your-pool-clean",
+    "title": "Pool Pump Runtime: The Daily Hours That Actually Keep Your Pool Clean"
+   },
+   {
+    "url": "https://www.cnn.com/2016/08/12/sport/why-are-swimming-pools-blue",
+    "title": "Why are swimming pools usually blue?"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Ocean_color",
+    "title": "Ocean color"
+   },
+   {
+    "url": "https://rosagres.com/en/what-color-will-my-pools-water-be/",
+    "title": "What color will my pool’s water be?"
+   },
+   {
+    "url": "https://www.swimmingpoolsteve.com/pages/poolwater-blue.html",
+    "title": "What Makes Pool Water Look Blue?"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Color_of_water",
+    "title": "Color of water"
+   },
+   {
+    "url": "https://fiestapoolsandspas.com/why-are-swimming-pools-blue/",
+    "title": "Why Are Swimming Pools Blue?"
+   },
+   {
+    "url": "https://waterscapespools.com/what-turns-pool-water-blue/",
+    "title": "What Turns Pool Water Blue?"
+   },
+   {
+    "url": "https://bonavistapools.com/blog/why-are-swimming-pools-blue/",
+    "title": "Why Are Swimming Pools Blue? - BonaVista Pools"
+   },
+   {
+    "url": "https://free-floating.com/swimming-pools/pool-water-blue-reason/",
+    "title": "Why Is Swimming Pool Water Blue? - Free Floating"
+   }
+  ]
+ }
+}

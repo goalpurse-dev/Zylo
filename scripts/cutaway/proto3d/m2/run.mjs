@@ -19,6 +19,9 @@ import { speechEnd } from "../speechEnd.mjs";
 import { gradingFor, MECHANISM, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
 import { sheet } from "./sheet.mjs";
 import { guard, logBugs, splitBugs } from "./bookkeeping.js";
+import { dropFrom, salvagePlan, spliceVoice } from "./salvage.mjs";
+import { sentencesOf } from "./curves.js";
+import { draftWords } from "./plan.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WT = path.resolve(here, "../../../..");
@@ -91,6 +94,49 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   if (plan.problems.length > maxProblems) { P({ stage: "failed", reason: "plan", problems: plan.problems }); return { ...report, ok: false }; }
   if (planOnly) return { ...report, ok: true };
 
+  // the first frame check, BEFORE the voice is bought (the owner's rule of 2026-10-30): a new plan's frames on draft word
+  // times; failing lines are reworded for free (no voice yet), broken frames get one picture repair, and a hook or "This
+  // is a…" line that still fails stops the video here, before the voice (custom only; CUTAWAY_PREVOICE=0 turns it off)
+  let preUsd = 0;
+  if (vision && !reuse && !voice && !plan.resumed && process.env.CUTAWAY_PREVOICE !== "0") {
+    P({ stage: "scene", step: "preview frames", pct: 5 });
+    const roles0 = () => plan.script.sentences.map((s) => s.role);
+    const draft = () => { const dw = draftWords(plan.script.sentences); return compile(plan.layout, dw, dw.at(-1).e + 0.1, { roles: roles0() }); };
+    const look = async (only, label, dir) => {
+      const tl0 = draft(); preparePage({ layout: plan.layout, tl: tl0, proto });
+      const shots0 = previewTimes(tl0, plan.layout).filter((s) => !only || only.includes(s.role));
+      const strips0 = shots0.length ? await previewStrips({ proto, layout: plan.layout, shots: shots0, out: path.join(out, dir), ff, wt }) : [];
+      const vc0 = strips0.length ? await visionCached({ apiKey, frames: strips0, log, cacheDir, multi: true, label }) : { frames: [], costUsd: 0 };
+      preUsd += vc0.costUsd; return vc0.frames;
+    };
+    const pre = { round1: await look(null, "vision check (before voice)", "prevoice") };
+    let bad = pre.round1.filter((f) => !f.ok);
+    const broken = (f) => /\bfloat|black|empty frame|blank|inside (the )?(house|geometry|wall)|cut off|clipped|camera (is )?(in|inside)|nothing (is )?(visible|on screen)/i.test(`${f.problem} ${f.seen}`);
+    if (bad.length && process.env.CUTAWAY_SKIP_REPAIRS !== "1") {
+      // the words first (free of any voice cost now), then one picture repair for broken or mechanism frames
+      const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout: plan.layout, failing: bad.filter((f) => !broken(f)), log, cacheDir });
+      preUsd += rw.costUsd; pre.reworded = rw.changed;
+      if (rw.changed.length) { plan.script = rw.script; const miss = missingWords(plan.layout, plan.script.sentences); if (miss.length) plan.layout = dropWords(plan.layout, miss); }
+      const pic = bad.filter((f) => broken(f) || MECHANISM.includes(f.role));
+      if (pic.length && plan.costUsd + preUsd + 0.5 <= maxUsd) {
+        const rp = await repairLayout({ apiKey, topic, script: plan.script, layout: plan.layout, problems: pic.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: false });
+        preUsd += rp.costUsd; if (!rp.problems.length) { plan.layout = rp.layout; pre.repaired = pic.map((f) => f.role); }
+      }
+      // a hook or name line that failed: looked at again; still failing, the video stops before its voice is paid for
+      const key = bad.filter((f) => ["hook", "name"].includes(f.role)).map((f) => f.role);
+      if (key.length) {
+        const again = await look(key, "vision check (before voice, again)", "prevoice2");
+        pre.again = again; bad = again.filter((f) => !f.ok);
+        if (bad.length) {
+          save("vision_prevoice.json", pre);
+          P({ stage: "failed", reason: "preview", problems: bad.map((f) => `${f.role}: ${f.problem}`) });
+          return { ...report, ok: false, vision: { failing: bad.map((f) => f.role), prevoice: pre }, voiceUsd: 0, checksUsd: +preUsd.toFixed(4), totalUsd: +(plan.costUsd + preUsd).toFixed(4) };
+        }
+      }
+    }
+    save("vision_prevoice.json", pre); save("script.json", plan.script); save("layout.json", plan.layout);
+  }
+
   // the voice (one paid take, re-timed by silence)
   P({ stage: "scene", step: "voice", pct: 5 });
   let vUsd = 0;
@@ -98,10 +144,10 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), out: path.join(out, "voice"), ff, wt, log });
     voice = v.voice; words = v.words; vUsd = v.usd;
   }
-  const roles = plan.script.sentences.map((s) => s.role);
+  let roles = plan.script.sentences.map((s) => s.role);
   // a layout that already passed the preview check in this folder (after its repair) is the one to re-render
   const accepted = path.join(cacheDir, "accepted_layout.json");
-  let layout = fs.existsSync(accepted) ? JSON.parse(fs.readFileSync(accepted, "utf8")) : plan.layout, extraUsd = 0;
+  let layout = fs.existsSync(accepted) ? JSON.parse(fs.readFileSync(accepted, "utf8")) : plan.layout, extraUsd = preUsd;
   // the timeline checks (free), then the preview frames and the vision check (one repair round)
   // (the timeline checks only report: one that crashes is a logged bug, never a failed run)
   const checkAll = () => { const tl = compile(layout, words, speechEnd(ff, voice), { roles }), bugs = []; const checks = guard("timeline check", () => timelineChecks(layout, tl), bugs, () => ({ problems: [], warnings: [] })); logBugs(bugs, "timeline"); return { tl, checks: bugs.length ? { ...checks, bugs } : checks }; };
@@ -200,7 +246,8 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
         visionReport.reverted = back;
         still = still.filter((f) => !back.includes(f.role));
       }
-    } else if (failed.length && !failed.every((f) => f.role === "hook")) {
+    } else if (failed.length && !failed.every((f) => f.role === "hook") && process.env.CUTAWAY_SKIP_REPAIRS !== "1") {
+      // (CUTAWAY_SKIP_REPAIRS: the harness's real-checker batch goes straight to the salvage, a lower bound)
       // only the hook flagged: no repair (the approved videos' hooks are flagged as well)
       const byWords = failed.filter((f) => !broken(f));
       if (byWords.length) await wordsRound(2, byWords);
@@ -213,11 +260,57 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
         if (ok && still.length) await repairRound(4, still);
       }
     }
+    // the salvage (the owner's rule of 2026-10-30, salvage.mjs): a paid video the gate would refuse is reworded and cut
+    // down instead; only a hook or a "This is a…" line that still fails stops it
+    const wouldBlock = () => still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role));
+    if (wouldBlock() && !approvedSaved && still.length) {
+      P({ stage: "scene", step: "repair", pct: 7 });
+      const sp = salvagePlan(roles, still.map((f) => f.role));
+      visionReport.salvage = { reword: sp.reword, drop: sp.drop };
+      const oldWords = words, oldVoice = voice, oldRoles = roles, oldS = sentencesOf(oldWords, oldRoles), oldSentences = plan.script.sentences;
+      let reworded = [];
+      if (sp.reword.length) {
+        const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: still.filter((f) => sp.reword.includes(f.role)), log, cacheDir });
+        extraUsd += rw.costUsd; reworded = rw.changed; plan.script = rw.script; visionReport.salvage.reworded = reworded;
+      }
+      ({ script: plan.script, layout } = dropFrom(plan.script, layout, sp.drop));
+      roles = plan.script.sentences.map((s) => s.role);
+      const miss = missingWords(layout, plan.script.sentences); if (miss.length) layout = dropWords(layout, miss);
+      // the voice: the paid take with the dropped sentences cut out, and only the reworded sentences voiced again
+      let take = null;
+      if (reworded.length) {
+        P({ stage: "scene", step: "voice", pct: 7 });
+        try { take = await makeVoice({ text: plan.script.sentences.filter((s) => reworded.includes(s.role)).map((s) => s.text.trim()).join(" "), out: path.join(out, "voice_salvage"), ff, wt, log }); vUsd += take.usd; }
+        catch (e) {
+          // (a new take that fails its own check: those lines keep their old words and their paid audio)
+          if (e.code === "BUDGET" || /credit balance|insufficient/i.test(e.message)) throw e;
+          visionReport.salvage.voiceFailed = String(e.message).slice(0, 200);
+          plan.script = { ...plan.script, sentences: plan.script.sentences.map((s) => (reworded.includes(s.role) ? { ...oldSentences.find((o) => o.role === s.role) } : s)) };
+          reworded = [];
+        }
+      }
+      const pieces = plan.script.sentences.map((s) => (reworded.includes(s.role)
+        ? { file: take.voice, words: take.words, index: reworded.filter((r) => roles.indexOf(r) >= 0).sort((a, b) => roles.indexOf(a) - roles.indexOf(b)).indexOf(s.role) }
+        : { file: oldVoice, words: oldWords, index: oldS.findIndex((x) => x.role === s.role) }));
+      ({ voice, words } = spliceVoice({ ff, pieces, out: path.join(out, "voice_spliced") }));
+      save("script.json", plan.script); save("layout.json", layout);
+      ({ tl, checks } = checkAll());
+      preparePage({ layout, tl, proto });
+      still = still.filter((f) => !sp.drop.includes(f.role) && !reworded.includes(f.role));
+      if (reworded.length) {
+        const again = one(previewTimes(tl, layout)).filter((s) => reworded.includes(s.role));
+        const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, "preview_salvage"), ff, wt });
+        const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "vision check (salvage)" }); extraUsd += vc2.costUsd;
+        visionReport.salvageLook = vc2.frames; visionReport.costUsd += vc2.costUsd;
+        still = still.concat(vc2.frames.filter((f) => !f.ok));
+      }
+    }
     visionReport.failing = still.map((f) => f.role);
     save("vision.json", visionReport);
     // the gate, calibrated on the approved videos (they fail 2-3 of 12-13 frames of this check): after the repair rounds
-    // the video goes on with at most VISION_FAILS_OK failing beats, and never with a failing mechanism beat
-    const blocking = still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role));
+    // the video goes on with at most VISION_FAILS_OK failing beats, and never with a failing mechanism beat; after a
+    // salvage, only a failing hook or name line stops it
+    const blocking = visionReport.salvage ? still.some((f) => ["hook", "name"].includes(f.role)) : wouldBlock();
     visionReport.passedGate = !blocking;
     save("vision.json", visionReport);
     if (!blocking) fs.writeFileSync(accepted, JSON.stringify(layout, null, 1));

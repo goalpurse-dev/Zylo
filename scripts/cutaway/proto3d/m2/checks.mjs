@@ -151,7 +151,9 @@ export function previewTimes(tl, layout = null) {
     // such as "drives off" or "snaps" shows ACROSS frames, never in one still; the owner's rule of 2026-10-28)
     const end = +Math.max(s.t0 + 0.3, tt).toFixed(2);
     const firstOwn = Math.min(Infinity, ...framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5).map((r) => r.t0));
-    const start = +Math.max(s.t0 + 0.15, Number.isFinite(firstOwn) ? firstOwn + 0.05 : s.t0 + 0.15).toFixed(2);
+    // (never in the opening fade: the real checker saw the swimming pool's hook strip open on a black frame at 0.2 s and
+    // failed it, 2026-10-30)
+    const start = +Math.max(0.6, s.t0 + 0.15, Number.isFinite(firstOwn) ? firstOwn + 0.05 : s.t0 + 0.15).toFixed(2);
     // the middle frame in the hold: just after the sentence's last motion has peaked, before anything takes it back (a
     // panel that "swings out and slams back" was judged before the swing and after the slam; round 3, 2026-10-28)
     const peaks = framedRamps.filter((r) => mine(r) && r.amp > 0 && r.e !== "step" && r.t1 - r.t0 >= 0.25 && r.t1 > start + 0.2 && r.t1 < end - 0.15).map((r) => r.t1);
@@ -196,6 +198,14 @@ export async function visionCheck({ apiKey, frames, log, model, multi = true, la
     }
     content.push({ type: "text", text: "Check every frame, in order." });
     const r = await callJSON({ apiKey, model, system: multi ? VISION_SYSTEM : VISION_SYSTEM_ONE, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label, log });
+    // one strip judged as several verdicts (its start, middle and end: the real checker did this on the salvage look of
+    // the swimming pool's hook, 2026-10-30, and the order mapping kept only the passing "start"): one verdict, ok only if
+    // every part is, with the failing parts' problems
+    const got = r.data.frames ?? [];
+    if (fs0.length === 1 && got.length > 1) {
+      const bad = got.filter((f) => !f.ok);
+      return { r, judged: [{ role: fs0[0].role, t: fs0[0].t, ok: !bad.length, seen: got.map((f) => f.seen).filter(Boolean).join(" "), problem: bad.map((f) => f.problem).filter(Boolean).join(" ") }] };
+    }
     // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
     return { r, judged: fs0.map((f0, i) => { const f = r.data.frames?.[i]; return f ? { ...f, role: f0.role, t: f0.t } : { role: f0.role, t: f0.t, ok: false, seen: "", problem: "" }; }) };
   };
