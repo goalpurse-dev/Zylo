@@ -66,12 +66,27 @@ export function dropFrom(script, layout, drop) {
     return out;
   };
   const { beats, roles, ...rest } = layout;
-  const kept = clean((beats ?? []).filter((b) => keepS(b.s)));
+  // a dropped beat's actions on a part a later kept beat still uses move to the start of the next kept beat (the sump
+  // pump's dropped fix2 was where the pump appeared; its later beats would show no pump)
+  const B = (beats ?? []).map((b) => ({ ...b, do: [...(b.do ?? [])] }));
+  B.forEach((b, i) => {
+    if (keepS(b.s)) return;
+    const next = B.slice(i + 1).find((x) => keepS(x.s)); if (!next) return;
+    const later = new Set(B.slice(i + 1).filter((x) => keepS(x.s)).flatMap((x) => [...(x.do ?? []).map((a) => a.p), x.shows?.p]));
+    // (and the parts those name: a flow's pipe, so the water does not run without it)
+    for (const id of [...later]) { const p = (layout.parts ?? []).find((q) => q.id === id); for (const v of Object.values(p?.params ?? {})) if (typeof v === "string" && (layout.parts ?? []).some((q) => q.id === v)) later.add(v); }
+    const carry = (b.do ?? []).filter((a) => later.has(a.p)).map(({ w, o, ...a }) => a);
+    next.do = [...carry, ...next.do];
+  });
+  const kept = clean(B.filter((b) => keepS(b.s)));
   // a part only the dropped beats acted on goes with them (a book that only rose in the dropped myth line had no "up"
   // cue left, and the page stopped: the vending machine's salvage, 2026-10-30)
   const used = (bs) => new Set(bs.flatMap((b) => [...(b.do ?? []).map((a) => a.p), b.shows?.p].filter(Boolean)));
   const was = used(beats ?? []), now = used(kept), orphan = new Set([...was].filter((p) => !now.has(p)));
   const out = clean(rest);
+  // (only when nothing kept names it: a pipe's flow, a shot or a focus kept the sump pump's pipe, 2026-10-30)
+  const named = (id) => JSON.stringify({ ...out, parts: (out.parts ?? []).filter((p) => p.id !== id), beats: kept }).includes(`"${id}"`);
+  for (const id of [...orphan]) if (named(id)) orphan.delete(id);
   out.parts = (out.parts ?? []).filter((p) => !orphan.has(p.id));
   out.cues = (out.cues ?? []).filter((c) => !orphan.has(c.p));
   return {
