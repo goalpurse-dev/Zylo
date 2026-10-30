@@ -77,7 +77,9 @@ export function layoutRules(L) {
   const floorTop = { street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[L.world?.backdrop?.type];
   if (floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
     const b = w.params.box;
-    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
+    // (a flood planned taller than 0.25 m keeps its height: it rises up the curb or the basement wall; flattened, "the
+    // water rises" could never be shown, 60 s free storm drain and sump pump runs of 2026-10-30)
+    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08 && b.y1 - b.y0 <= 0.25) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
   }
   // 6. a canopy stands in the open: one under the setting's own roof (the car wash bay's) moves out past the roof's edge,
   // with the props standing under it (a canopy under a roof read as the building's roof)
