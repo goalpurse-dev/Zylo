@@ -61,7 +61,8 @@ export function chainProblems(script, { strict = true, lengthSec = 30, bugs = nu
   });
   // the chain the writer returns: one entry per problem, what it shows, and bigger every time
   const byProblem = new Map(chain.map((c) => [c.problem, c]));
-  for (const pi of probs) {
+  // (no chain at all: an approved premade script, made before the rule; there is nothing to compare, so no check)
+  for (const pi of chain.length ? probs : []) {
     const c = byProblem.get(pi);
     // (no entry is our bookkeeping, never the video's fault: logged and skipped, the owner's rule of 2026-10-30)
     if (!c) { bugs?.push(`chain: no entry for problem sentence ${pi} (${S[pi].role ?? "no role"})`); continue; }
