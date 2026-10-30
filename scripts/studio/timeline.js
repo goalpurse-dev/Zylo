@@ -58,7 +58,7 @@ export const FRAMINGS_T = {
 /** Lines by role (hook, answer, beat, tease, step1..5, twist, objection, time, site, cta); else by the old order. */
 export function roles(L) {
   const by = Object.fromEntries(L.filter((l) => l.role).map((l) => [l.role, l]));
-  if (by.hook) return by;
+  if (Object.keys(by).length) return by;
   const old = ["hook", "answer", "beat", "step1", "step2", "step3", "step4", "step5", "twist", "objection", "time", "site", "cta"];
   return Object.fromEntries(L.map((l, i) => [old[i], l]));
 }
@@ -84,7 +84,48 @@ export function planTemplate(T) {
   out.push({ type: "hold", t0: t, t1: Math.max(T.total, t + 0.5), at: cur });
   return out;
 }
-export const planFor = (T) => (T.template ? planTemplate(T) : plan(T));
+/** A time named in a short video's script: "<line role>.start|end", "<clip>.start|end|freeze_end", "+0.2" offsets. */
+export function anchor(T, a) {
+  if (typeof a === "number") return a;
+  const m = String(a).match(/^([\w]+)\.(start|end|freeze_end|at)([+-][\d.]+)?$/);
+  if (!m) throw new Error(`anchor "${a}": use role.start / clip.end / event.at (+/- seconds)`);
+  if (m[2] === "at") {   // a cue's event ("lazy.at": when the word is said)
+    const ev = T.events.find((e) => e.event === m[1]); if (!ev) throw new Error(`anchor "${a}": no event "${m[1]}"`);
+    return ev.t + Number(m[3] ?? 0);
+  }
+  const R = roles(T.lines), clip = (T.clips ?? []).find((c) => c.name === m[1]);
+  const obj = R[m[1]] ?? clip; if (!obj) throw new Error(`anchor "${a}": no line role or clip "${m[1]}"`);
+  const v = m[2] === "freeze_end" ? (obj.freeze_end ?? obj.end) : obj[m[2]];
+  return v + Number(m[3] ?? 0);
+}
+
+/** Short videos (Retention Engine): the camera plan is in the script ("shots": [{to, at, dur, kind}]), from "start_at". */
+export function planShots(T) {
+  const S = T.short, moves = [];
+  let at = S.start_at ?? "phone", free = 0;
+  for (const s of S.shots) {
+    const t0 = Math.max(anchor(T, s.at), free);
+    moves.push({ type: "move", from: at, to: s.to, t0, t1: t0 + s.dur, kind: s.kind });
+    at = s.to; free = t0 + s.dur + (s.hold ?? MIN_HOLD);
+  }
+  const out = []; let t = 0, cur = S.start_at ?? "phone";
+  for (const m of moves) { if (m.t0 > t) out.push({ type: "hold", t0: t, t1: m.t0, at: cur }); out.push(m); t = m.t1; cur = m.to; }
+  out.push({ type: "hold", t0: t, t1: Math.max(T.total, t + 0.5), at: cur });
+  return out;
+}
+/** A short video's steps: the lines marked "step" (n, card key, chip), each on screen until the next one starts. */
+export function shortSteps(T) {
+  const st = T.lines.filter((l) => l.step != null).map((l) => ({ n: l.step, card: l.card, chip: l.chip, line: l, t0: l.start - 0.05 }));
+  st.forEach((s, i) => { s.t1 = st[i + 1]?.t0 ?? s.line.end + 0.45; });
+  return st;
+}
+/** A short video's card frame for a step at time t: its frames spread over the line (+0.3 s), a tap 0.35 s before the next. */
+export function stepFrames(step, cards) {
+  const c = cards[step.card]; if (!c) return null;
+  const span = Math.max(0.6, Math.min(step.t1 - step.t0, step.line.end - step.line.start + 0.3)), dur = span / c.frames.length;
+  return { c, span, dur, frames: c.frames.map((f, i) => ({ f, t: step.t0 + i * dur, tapAt: c.frames.length > 1 ? (i + 1) * dur - 0.35 : 0.45 })) };
+}
+export const planFor = (T) => (T.short?.shots ? planShots(T) : T.template ? planTemplate(T) : plan(T));
 export const framingsFor = (T) => (T.template ? FRAMINGS_T : FRAMINGS);
 
 /** Problems with a plan: short holds, moves that run past the end. */

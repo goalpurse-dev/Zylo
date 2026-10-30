@@ -3,7 +3,7 @@
 // 2026-10-30): whatever changes on screen is also heard.
 //   node writeMoves.mjs <work dir>
 import fs from "node:fs";
-import { planFor, planProblems, roles } from "./timeline.js";
+import { planFor, planProblems, roles, shortSteps, stepFrames, anchor } from "./timeline.js";
 const [work] = process.argv.slice(2);
 const T = JSON.parse(fs.readFileSync(`${work}/timing.json`, "utf8"));
 const p = planFor(T);
@@ -12,7 +12,25 @@ fs.writeFileSync(`${work}/moves.json`, JSON.stringify(p.filter((s) => s.type ===
 // the same card timing as episode.js#cardFrame: a step's frames spread over its line (+0.3 s); a tap 0.35 s before the next
 const ev = [];
 const EV = Object.fromEntries(T.events.map((e) => [e.event, e.t]));
-if (T.template && fs.existsSync(`${work}/cards/cards.json`)) {
+if (T.short) {
+  // short videos: every step flip/tap, chip, clip growing/shrinking and the loop fade is heard
+  const CARDS = JSON.parse(fs.readFileSync(`${work}/cards/cards.json`, "utf8"));
+  for (const st of shortSteps(T)) {
+    const sf = stepFrames(st, CARDS); if (!sf) continue;
+    if (!(st.line.cues ?? []).length) ev.push({ t: +st.t0.toFixed(3), sfx: "pop", gain: 0.6, what: `step ${st.n} chip` });
+    sf.frames.forEach((f, i) => {
+      if (i > 0) ev.push({ t: +f.t.toFixed(3), sfx: "tick", gain: 0.55, what: `step ${st.n} screen ${i + 1}` });
+      if (f.f.tap) ev.push({ t: +(st.t0 + f.tapAt).toFixed(3), sfx: "click", gain: 0.8, what: `step ${st.n} tap` });
+    });
+  }
+  for (const c of T.short.chips ?? []) ev.push({ t: +anchor(T, c.from).toFixed(3), sfx: "pop", gain: 0.45, what: `chip: ${c.parts.map((p) => p[0]).join("")}` });
+  for (const c of T.clips ?? []) {
+    if (c.fullscreen && c.enter !== "cut") ev.push({ t: +(c.start - 0.4).toFixed(3), sfx: "whoosh:0.45", gain: 0.6, what: `${c.name} grows full screen` });
+    if (c.fullscreen) ev.push({ t: +(c.freeze_end ?? c.end).toFixed(3), sfx: "whoosh:0.35", gain: 0.5, what: `${c.name} shrinks into the phone` });
+    if (c.pays_loop) ev.push({ t: +(c.start - 0.1).toFixed(3), sfx: "sparkle", gain: 0.5, what: "the loop pays off" });
+  }
+  if (T.short.loop_end) ev.push({ t: +(T.total - (T.short.loop_end.secs ?? 0.5) - 0.05).toFixed(3), sfx: `whoosh:${(T.short.loop_end.secs ?? 0.5).toFixed(2)}`, gain: 0.7, what: "the loop: back to frame 0" });
+} else if (T.template && fs.existsSync(`${work}/cards/cards.json`)) {
   const CARDS = JSON.parse(fs.readFileSync(`${work}/cards/cards.json`, "utf8")), R = roles(T.lines);
   for (let n = 1; n <= 5; n++) {
     const c = CARDS[`step${n}`], s = EV[`step${n}`], line = R[`step${n}`]; if (!c || s == null || !line) continue;

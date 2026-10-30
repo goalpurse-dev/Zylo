@@ -1,0 +1,265 @@
+{
+ "template": "ai_fruit_story",
+ "voices": {
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.4,
+    "style": 0.35,
+    "speed": 1.05
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.05
+   }
+  }
+ },
+ "tempo": 1.1,
+ "squeeze": 0.18,
+ "lead": 0,
+ "gap_speaker": 0.14,
+ "gap_same": 0.08,
+ "tail": 0.55,
+ "music_db_under": 14,
+ "phone_full": true,
+ "phone_range": [
+  0,
+  22.9
+ ],
+ "hq_dir": "video/m3/hq",
+ "phone_skip": [
+  [
+   15.2,
+   19
+  ]
+ ],
+ "max_gap": 0.4,
+ "start_at": "phone",
+ "loop_end": {
+  "secs": 0.5
+ },
+ "counter": {
+  "value": 150,
+  "label": "FRUIT CHARACTERS",
+  "fact": "fruit_characters"
+ },
+ "timer": {
+  "seconds": 230,
+  "label": "FIRST CLICK → FINAL VIDEO",
+  "source": "fruitRun summary.json (measured live)"
+ },
+ "variant": "v2_fast20",
+ "title": "Studio V2 · Fast 20 s: this fruit drama took 3:50 to make",
+ "recipe": {
+  "variant": "V2",
+  "hook_type": "result_first_fast",
+  "length_s": [
+   15,
+   20
+  ],
+  "loop": true,
+  "frame0": "pizzas",
+  "open_loop": "wait for the ending → the ending",
+  "end_trigger": "save",
+  "cta": "save_later"
+ },
+ "length_target": [
+  15,
+  20
+ ],
+ "steps_total": 3,
+ "clips": [
+  {
+   "name": "open",
+   "file": "video/m3/ten-years-out-of-date.mp4",
+   "in": 12.08,
+   "out": 14.85,
+   "note": "the cherry panics: 'My date thinks I still deliver pizzas, okay?'",
+   "at": "start",
+   "post": 0.12,
+   "duck_db": 10,
+   "fullscreen": true,
+   "enter": "cut",
+   "punch": [
+    0.45,
+    1.9
+   ],
+   "hook": "THIS FRUIT DRAMA|TOOK *3:50* TO MAKE",
+   "open_loop": {
+    "at": 1,
+    "parts": [
+     [
+      "WAIT FOR THE ",
+      "#ffffff"
+     ],
+     [
+      "ENDING 👀",
+      "Y"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "payoff",
+   "file": "video/m3/ten-years-out-of-date.mp4",
+   "in": 19,
+   "out": 22.35,
+   "note": "the ending: 'Too late, she's walking in right now.' + the lemon's smirk (after the line naming Google)",
+   "after_line": 2,
+   "pre": 0.35,
+   "post": 0.02,
+   "duck_db": 24,
+   "fullscreen": true,
+   "enter": "grow",
+   "sfx_at": [
+    [
+     2.95,
+     "sparkle"
+    ]
+   ],
+   "pays_loop": {
+    "parts": [
+     [
+      "THE ",
+      "#ffffff"
+     ],
+     [
+      "ENDING 👀",
+      "Y"
+     ]
+    ]
+   }
+  }
+ ],
+ "lines": [
+  {
+   "role": "s1",
+   "who": "zee",
+   "take": "studio-m7/takes/line06.mp3",
+   "from_word": 2,
+   "text": "Pick an idea and a length.",
+   "key": [
+    "idea"
+   ],
+   "expr": "happy",
+   "pose": "point",
+   "step": 1,
+   "card": "step2",
+   "chip": [
+    "IDEA + ",
+    "LENGTH"
+   ]
+  },
+  {
+   "role": "s2",
+   "who": "zee",
+   "take": "studio-m7/takes/line08.mp3",
+   "from_word": 2,
+   "text": "Animate. They talk, with sound.",
+   "key": [
+    "Animate."
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 2,
+   "card": "step4",
+   "chip": [
+    "",
+    "ANIMATE"
+   ]
+  },
+  {
+   "role": "s3",
+   "who": "zee",
+   "take": "studio-m7/takes/line09.mp3",
+   "from_word": 2,
+   "text": "Make the final video.",
+   "key": [
+    "final"
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 3,
+   "card": "step5",
+   "chip": [
+    "FINAL ",
+    "VIDEO"
+   ],
+   "badge": 230
+  },
+  {
+   "role": "site",
+   "who": "zee",
+   "take": "studio-m7/takes/line13.mp3",
+   "text": "tryzyvo.com, link in bio.",
+   "say": "Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "pose": "point",
+   "cues": [
+    {
+     "word": 0,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 1,
+     "event": "bio",
+     "sfx": "pop"
+    }
+   ],
+   "from_word": 3
+  },
+  {
+   "role": "cta",
+   "who": "zee",
+   "take": "short/takes/save_later.mp3",
+   "text": "Save this for later.",
+   "key": [
+    "Save"
+   ],
+   "expr": "happy",
+   "pose": "wave",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ]
+  }
+ ],
+ "shots": [
+  {
+   "to": "steps",
+   "at": "open.end+0.02",
+   "dur": 0.65,
+   "kind": "crane"
+  },
+  {
+   "to": "phoneFull",
+   "at": "payoff.start-1.1",
+   "dur": 0.8,
+   "kind": "push"
+  },
+  {
+   "to": "zee",
+   "at": "payoff.end+0.05",
+   "dur": 0.55,
+   "kind": "pull"
+  }
+ ],
+ "chips": [],
+ "cta": {
+  "id": "save_later",
+  "kind": "save",
+  "chip": "SAVE FOR LATER"
+ }
+}

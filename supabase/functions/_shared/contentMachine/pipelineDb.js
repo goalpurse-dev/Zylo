@@ -192,6 +192,41 @@ export function createPipelineDb(db) {
 
     async getPackage(id) { return must(await db.from("cm_packages").select("*").eq("id", id).single(), "package"); },
     async updatePackage(id, patch) { return must(await db.from("cm_packages").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update package"); },
+
+    /* ─── the Studio tab (studio.js) ─── */
+    /** The owner's finished AI Fruit Stories since `sinceIso`, with their scene lines (read-only). */
+    async ownerFruitStories(email, sinceIso) {
+      const prof = must(await db.from("profiles").select("id").eq("email", email).maybeSingle(), "owner");
+      if (!prof) return [];
+      const stories = must(await db.from("fruit_stories").select("id, title, input, length_sec, final_url, created_at").eq("user_id", prof.id).eq("final_status", "ready").not("final_url", "is", null)
+        .is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "owner stories");
+      if (!stories.length) return [];
+      const scenes = must(await db.from("fruit_story_scenes").select("story_id, idx, line, clip_status").in("story_id", stories.map((s) => s.id)), "story scenes");
+      return stories.map((s) => ({ ...s, scenes: scenes.filter((x) => x.story_id === s.id) }));
+    },
+    /** How often each creation was already used by a Studio job (not cancelled). */
+    async studioSourceUse() {
+      const rows = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").limit(2000), "studio sources");
+      const out = {};
+      for (const r of rows) if (r.source?.id) out[r.source.id] = (out[r.source.id] ?? 0) + 1;
+      return out;
+    },
+    /** Posted Studio videos with their recipe, length and latest numbers (for the learning rule). */
+    async studioPostHistory() {
+      const rows = must(await db.from("cm_ideas").select("id, recipe, zyvo_tool, cm_generations(duration_s, kind), cm_posts(platform, cm_post_stats(*))").eq("recipe->>kind", "video").eq("status", "posted").limit(500), "studio posts");
+      return rows.map((r) => {
+        const stats = (r.cm_posts ?? []).flatMap((p) => (p.cm_post_stats ?? []).map((s) => ({ ...s, platform: p.platform }))).sort((a, b) => String(b.taken_at).localeCompare(String(a.taken_at)));
+        return { recipe: r.recipe, template: r.recipe?.template ?? r.zyvo_tool, seconds: Number((r.cm_generations ?? []).find((g) => g.kind === "making_of")?.duration_s) || null, stats: stats.find((s) => s.platform === "tiktok") ?? stats[0] ?? null };
+      });
+    },
+    async studioWorkers() { return must(await db.from("cm_studio_workers").select("*").order("last_seen", { ascending: false }).limit(5), "studio workers"); },
+    async createStudioJobs(rows) { return must(await db.from("cm_studio_jobs").insert(rows).select("*"), "create studio jobs"); },
+    /** Moves a job on only from one of `fromStatuses` (null when it wasn't in one of them). */
+    async updateStudioJob(id, patch, fromStatuses) {
+      const rows = must(await db.from("cm_studio_jobs").update({ ...patch, updated_at: nowIso() }).eq("id", id).in("status", fromStatuses).select("*"), "update studio job");
+      return rows[0] ?? null;
+    },
+    async listStudioJobs(limit = 40) { return must(await db.from("cm_studio_jobs").select("*").order("created_at", { ascending: false }).limit(limit), "studio jobs"); },
   };
   return api;
 }

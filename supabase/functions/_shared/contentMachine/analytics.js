@@ -1,3 +1,4 @@
+import { studioScore } from "./studio.js";
 // Content Machine, Part 2: what the posted slideshows did. Pure functions (no database), so every number on
 // the Posted and Analytics tabs can be tested. Each post has a timeline of stats snapshots (cm_post_stats):
 // hours since posting → the numbers read at that moment.
@@ -133,8 +134,23 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
       series.push({ day: new Date(at).toISOString().slice(0, 10), views: total });
     }
   }
+  // Studio videos (owner, 2026-10-30): their own score (3 s hold first, then watch %, completion, shares, saves,
+  // comments, likes) from the latest snapshot, the drop-off second from the retention graph, averages per recipe
+  const studioRows = rows.filter((r) => r.recipe.kind === "video").map((r) => {
+    const last = [...(r.post.stats ?? [])].sort((a, b) => String(b.taken_at).localeCompare(String(a.taken_at)))[0] ?? null;
+    const seconds = Number(r.recipe.length_s) || null;
+    return { id: r.post.id, platform: r.post.platform, title: r.post.idea?.title ?? null, post_url: r.post.post_url, recipe: r.recipe, seconds,
+      score: studioScore(last, seconds), hold3: num(last?.hold_3s_pct), hold5: num(last?.hold_5s_pct), hold10: num(last?.hold_10s_pct), dropoff: num(last?.dropoff_s),
+      avgWatch: num(last?.avg_watch_sec), full: num(last?.watched_full_pct) };
+  });
+  const studioBy = (k) => {
+    const g = {};
+    for (const r of studioRows) (g[r.recipe[k] ?? "unknown"] ??= []).push(r);
+    return Object.entries(g).map(([key, l]) => ({ key, posts: l.length, score: avg(l.map((r) => r.score)), hold3: avg(l.map((r) => r.hold3)), dropoff: avg(l.map((r) => r.dropoff)) })).sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  };
   return {
     totals: totalsOf(rows), byPlatform, byAccount, table, top5, series,
+    studio: { posts: studioRows, byVariant: studioBy("variant"), byHook: studioBy("hook_type"), byTrigger: studioBy("end_trigger"), formula: "3 s hold 35% · average watch 25% · completion 20% · shares 8% · saves 6% · comments 4% · likes 2%" },
     // Studio videos (owner, 2026-10-30): which CTA variant and which template did better (the A/B test)
     averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type"), cta: groupAvg("cta").filter((g) => g.key !== "unknown"), template: groupAvg("template").filter((g) => g.key !== "unknown") },
     formula: SCORE_FORMULA, filtered: rows.length, total: all.length,

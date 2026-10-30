@@ -26,6 +26,9 @@ export function captionChunks(lines) {
 export function makeOverlay(ctx) {
   const pill = (x, y, h, parts, { bg = "rgba(9,10,10,0.82)", border = "rgba(190,242,100,0.45)", size = 40, scale = 1 } = {}) => {
     ctx.save(); ctx.font = `${size}px ${FONT}`;
+    // a long label shrinks to fit the safe width (it never pokes out of the safe zone)
+    const maxW = (W - SAFE.left - SAFE.right - 20) / 1.16;   // room for the pop-in overshoot (popScale peaks ~1.15)
+    while (parts.reduce((a, [t]) => a + ctx.measureText(t).width, 0) + h * 0.9 > maxW && size > 24) { size -= 2; ctx.font = `${size}px ${FONT}`; }
     const widths = parts.map(([t]) => ctx.measureText(t).width), w = widths.reduce((a, b) => a + b, 0) + h * 0.9;
     ctx.translate(x, y); ctx.scale(scale, scale);
     ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, h / 2); ctx.fill();
@@ -72,6 +75,28 @@ export function makeOverlay(ctx) {
         x += ww;
       }
       ctx.restore();
+    },
+    /** Bold hook text over a real clip (short videos): "LINE ONE|LINE *TWO*" (| breaks, *word* yellow), centred at y,
+     *  sized to the safe width. Whole from age 0 (frame 0 must read at once) unless pop; a pulse on zoom punches. */
+    hook(text, age, { y = 1040, pop = false, pulse = 0 } = {}) {
+      if (age < 0) return null;
+      const rows = text.split("|").map((r) => r.trim().split(/\s+/).map((w) => ({ w: w.replace(/\*/g, ""), key: /^\*.*\*$/.test(w) })));
+      let size = 104; ctx.font = `${size}px ${FONT}`;
+      const rowW = (r) => ctx.measureText(r.map((x) => x.w).join(" ")).width;
+      while (Math.max(...rows.map(rowW)) > (W - SAFE.left - SAFE.right - 30) / 1.1 && size > 60) { size -= 4; ctx.font = `${size}px ${FONT}`; }   // room for the punch pulse
+      const s = (pop ? popScale(age, 0.2) : 1) * (1 + pulse * 0.25), lh = size * 1.08, h = rows.length * lh;
+      ctx.save(); ctx.translate(SAFE_CX, y); ctx.scale(s, s); ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+      let x1 = 0;
+      rows.forEach((r, i) => {
+        const tw = rowW(r); x1 = Math.max(x1, tw / 2); let x = -tw / 2; const yy = -h / 2 + lh * (i + 0.5);
+        for (const [j, w] of r.entries()) {
+          const word = w.w + (j < r.length - 1 ? " " : ""), ww = ctx.measureText(word).width;
+          ctx.lineWidth = size * 0.2; ctx.strokeStyle = "rgba(0,0,0,0.92)"; ctx.strokeText(word, x, yy);
+          ctx.fillStyle = w.key ? YELLOW : "#ffffff"; ctx.fillText(word, x, yy); x += ww;
+        }
+      });
+      ctx.restore();
+      return { x0: SAFE_CX - (x1 + size * 0.1) * s, y0: y - (h / 2 + size * 0.1) * s, x1: SAFE_CX + (x1 + size * 0.1) * s, y1: y + (h / 2 + size * 0.1) * s };
     },
     /** A step chip with the 5 progress dashes under it (the current one lit). */
     stepChip(n, total, parts, age) {

@@ -14,6 +14,7 @@ import { FreshImg, OpenFileButton } from "./freshFiles";
 const TZ = "Europe/Helsinki";
 const PLATFORMS = [["tiktok", "TikTok"], ["instagram", "Instagram"], ["youtube", "YouTube"]];
 const PLATFORM_NAME = Object.fromEntries(PLATFORMS);
+const RETENTION = ["hold_3s_pct", "hold_5s_pct", "hold_10s_pct", "dropoff_s"];
 const input = "rounded-lg border border-white/15 bg-white/[0.05] px-2.5 py-2 text-[14px] text-white outline-none focus:border-lime-300/60";
 const button = "rounded-lg bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white hover:bg-white/15 disabled:opacity-40";
 const primary = "rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-semibold text-[#071006] disabled:opacity-40";
@@ -101,42 +102,53 @@ async function shrinkImage(file) {
 function StatsForm({ post, existing, onSaved, onCancel }) {
   const [f, setF] = useState(() => ({ takenAt: existing?.taken_local ?? nowLocal(), ...Object.fromEntries(STAT_FIELDS.map(([k]) => [k, existing?.[k] ?? ""])) }));
   const [shot, setShot] = useState(null);
+  const [graph, setGraph] = useState(null);           // the TikTok retention graph (Studio videos)
+  const [target, setTarget] = useState("stats");      // where the next Ctrl+V goes
   const [reading, setReading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
   const box = useRef(null);
   useEffect(() => { box.current?.focus(); }, []);
-  const readImage = async (file) => {
+  const readImage = async (file, kind = target) => {
     if (!file) return;
     setNote(null); setReading(true);
     try {
       const img = await shrinkImage(file);
-      setShot(img);
+      (kind === "retention" ? setGraph : setShot)(img);
       const r = await api("readStatsScreenshot", { contentType: img.contentType, dataBase64: img.dataBase64 });
       const n = r.numbers ?? {};
-      setF((old) => ({ ...old, ...Object.fromEntries(STAT_FIELDS.map(([k]) => [k, n[k] ?? ""])) }));
+      // a retention graph only fills what it shows (the hold % and the drop-off); the analytics screenshot fills the rest
+      const keys = STAT_FIELDS.map(([k]) => k).filter((k) => (kind === "retention" ? RETENTION.includes(k) : !RETENTION.includes(k) || n[k] != null));
+      setF((old) => ({ ...old, ...Object.fromEntries(keys.map((k) => [k, n[k] ?? (kind === "retention" ? old[k] : "")])) }));
       setNote(`Read from the screenshot${r.costUsd != null ? ` (${money(r.costUsd, 4)})` : ""}${n.note ? `: ${n.note}` : ""}. Check the numbers, then Save.`);
     } catch (e) { setNote(e.message); }
     setReading(false);
   };
   const onPaste = (e) => {
     const item = [...(e.clipboardData?.items ?? [])].find((i) => i.type.startsWith("image/"));
-    if (item) { e.preventDefault(); readImage(item.getAsFile()); }
+    if (item) { e.preventDefault(); readImage(item.getAsFile(), target); }
   };
   const save = async (e) => {
     e.preventDefault(); setBusy(true); setNote(null);
     try {
       const { takenAt, ...stats } = f;
-      await api("saveStats", { postId: post.id, id: existing?.id, takenAt, stats, screenshot: shot ? { contentType: shot.contentType, dataBase64: shot.dataBase64 } : undefined });
+      await api("saveStats", { postId: post.id, id: existing?.id, takenAt, stats, screenshot: shot ? { contentType: shot.contentType, dataBase64: shot.dataBase64 } : undefined,
+        retentionScreenshot: graph ? { contentType: graph.contentType, dataBase64: graph.dataBase64 } : undefined });
       onSaved();
     } catch (err) { setNote(err.message); }
     setBusy(false);
   };
   return (
     <form onSubmit={save} onPaste={onPaste} ref={box} tabIndex={-1} className="space-y-3 rounded-xl border border-white/15 bg-black/25 p-3 outline-none focus:border-lime-300/50" data-testid="cm-stats-form">
-      <div className="rounded-lg border border-dashed border-white/20 px-3 py-2.5 text-[12.5px] text-white/65">
-        {reading ? "Reading the screenshot…" : <>Paste a screenshot of the post's analytics here (<b>Ctrl+V</b>), or <label className="cursor-pointer underline">choose one<input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => readImage(e.target.files?.[0])} /></label>. The numbers are read for you; nothing is saved until you press Save.</>}
-        {shot && <img src={shot.preview} alt="Pasted screenshot" className="mt-2 max-h-48 rounded-lg border border-white/10" />}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div onClick={() => setTarget("stats")} className={`rounded-lg border border-dashed px-3 py-2.5 text-[12.5px] text-white/65 ${target === "stats" ? "border-lime-300/60" : "border-white/20"}`}>
+          {reading && target === "stats" ? "Reading the screenshot…" : <>Analytics: paste a screenshot (<b>Ctrl+V</b>) after clicking here, or <label className="cursor-pointer underline">choose one<input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => readImage(e.target.files?.[0], "stats")} /></label>. The numbers are read for you; nothing is saved until you press Save.</>}
+          {shot && <img src={shot.preview} alt="Pasted screenshot" className="mt-2 max-h-48 rounded-lg border border-white/10" />}
+        </div>
+        <div onClick={() => setTarget("retention")} className={`rounded-lg border border-dashed px-3 py-2.5 text-[12.5px] text-white/65 ${target === "retention" ? "border-lime-300/60" : "border-white/20"}`} data-testid="cm-retention-drop">
+          {reading && target === "retention" ? "Reading the graph…" : <>TikTok <b>retention graph</b> (Studio videos): click here, then Ctrl+V, or <label className="cursor-pointer underline">choose one<input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => readImage(e.target.files?.[0], "retention")} /></label>. Fills the % still watching at 3 / 5 / 10 s and the biggest drop-off second.</>}
+          {graph && <img src={graph.preview} alt="Pasted retention graph" className="mt-2 max-h-48 rounded-lg border border-white/10" />}
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <label className="col-span-2 text-[12px] text-white/60">Taken at (Helsinki)<input type="datetime-local" required value={f.takenAt} onChange={(e) => setF({ ...f, takenAt: e.target.value })} className={`${input} mt-1 block w-full`} /></label>
@@ -198,6 +210,7 @@ function PostCard({ post, onChanged }) {
             <span className="font-semibold text-white/85">{m.views == null ? "no stats yet" : `${fmt(m.views)} views`}</span>
             {m.engagementRate != null && <span>engagement {pct(m.engagementRate)}</span>}
             <span>{post.stats.length} snapshot{post.stats.length === 1 ? "" : "s"}</span>
+            {(() => { const r = [...post.stats].reverse().find((x) => x.dropoff_s != null || x.hold_3s_pct != null); return r ? <span className="text-amber-100" data-testid="cm-dropoff">{r.hold_3s_pct != null ? `${fmt(r.hold_3s_pct)}% at 3 s` : ""}{r.hold_3s_pct != null && r.dropoff_s != null ? " · " : ""}{r.dropoff_s != null ? `biggest drop at ${fmt(r.dropoff_s, 1)} s` : ""}</span> : null; })()}
             <span className="ml-auto text-white/40">{open ? "Hide ▲" : "Open ▼"}</span>
           </div>
         </div>
@@ -234,6 +247,7 @@ function PostCard({ post, onChanged }) {
                     {STAT_FIELDS.map(([k]) => <td key={k} className="pr-3 tabular-nums">{fmt(s[k], 2)}</td>)}
                     <td className="whitespace-nowrap">
                       {s.screenshot_path && <OpenFileButton path={s.screenshot_path} className="mr-2 underline">screenshot</OpenFileButton>}
+                      {s.retention_screenshot_path && <OpenFileButton path={s.retention_screenshot_path} className="mr-2 underline">retention graph</OpenFileButton>}
                       <button type="button" onClick={() => setForm(s)} className="mr-2 underline">Edit</button>
                       <button type="button" onClick={() => { if (window.confirm("Delete this snapshot?")) run(() => api("deleteStats", { id: s.id })); }} className="text-red-200 underline">Delete</button>
                     </td>
@@ -376,6 +390,35 @@ export function AnalyticsTab({ extra = null }) {
               </Card>
             ))}
           </div>
+          {data.studio?.posts?.length > 0 && (
+            <Card title="Studio videos (retention)">
+              <p className="mb-2 text-[11.5px] text-white/45">Score: {data.studio.formula}. From each post's latest snapshot; paste the TikTok retention graph to fill the 3 s hold and the drop-off.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-[12.5px]" data-testid="cm-studio-analytics">
+                  <thead className="text-white/45"><tr><th className="py-1 pr-3 font-semibold">Video</th><th className="pr-3 font-semibold">Recipe</th><th className="pr-3 font-semibold">Score</th><th className="pr-3 font-semibold">3 s hold</th><th className="pr-3 font-semibold">5 s</th><th className="pr-3 font-semibold">10 s</th><th className="pr-3 font-semibold">Drop-off</th><th className="pr-3 font-semibold">Avg watch</th><th className="font-semibold">Full</th></tr></thead>
+                  <tbody className="divide-y divide-white/[0.06] text-white/85">
+                    {data.studio.posts.map((r) => (
+                      <tr key={r.id}>
+                        <td className="py-1.5 pr-3"><a href={r.post_url} target="_blank" rel="noreferrer" className="underline">{r.title ?? "Studio video"}</a> <span className="text-white/40">{PLATFORM_NAME[r.platform]}</span></td>
+                        <td className="pr-3 text-white/65">{[r.recipe.variant, nice(r.recipe.hook_type), r.recipe.end_trigger].filter(Boolean).join(" · ")}</td>
+                        <td className="pr-3 tabular-nums">{fmt(r.score, 1)}</td>
+                        <td className="pr-3 tabular-nums">{r.hold3 == null ? "–" : `${fmt(r.hold3)}%`}</td><td className="pr-3 tabular-nums">{r.hold5 == null ? "–" : `${fmt(r.hold5)}%`}</td><td className="pr-3 tabular-nums">{r.hold10 == null ? "–" : `${fmt(r.hold10)}%`}</td>
+                        <td className="pr-3 tabular-nums">{r.dropoff == null ? "–" : `${fmt(r.dropoff, 1)} s`}</td>
+                        <td className="pr-3 tabular-nums">{r.avgWatch == null ? "–" : `${fmt(r.avgWatch, 1)} s`}</td><td className="tabular-nums">{r.full == null ? "–" : `${fmt(r.full, 1)}%`}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                {[["byVariant", "By recipe"], ["byHook", "By hook type"], ["byTrigger", "By end trigger"]].map(([k, t]) => (
+                  <div key={k}><div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">{t}</div>
+                    <table className="w-full text-left text-[12.5px]"><tbody className="divide-y divide-white/[0.06] text-white/85">{data.studio[k].map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td className="pr-2 text-white/50">{g.posts}</td><td className="pr-2 tabular-nums">{fmt(g.score, 1)}</td><td className="tabular-nums text-white/60">{g.dropoff == null ? "" : `drop ${fmt(g.dropoff, 1)} s`}</td></tr>)}</tbody></table>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </>
       )}
       {extra}
@@ -455,6 +498,7 @@ export function LearningCard({ account = "creator" }) {
             {r.retire?.length > 0 && <div><b>Retire:</b> {r.retire.map((e) => `${e.kind} ${nice(e.key)} (${e.why})`).join(" · ")}</div>}
             {r.trend_notes && <div><b>Trends:</b> {r.trend_notes}</div>}
             <details><summary className="cursor-pointer text-white/70">Proposed playbook</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.playbook}</pre></details>
+            {r.studio_playbook && <details open data-testid="cm-studio-playbook"><summary className="cursor-pointer text-violet-200">Studio playbook (what keeps people watching)</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.studio_playbook}</pre></details>}
             {account !== "both" && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Replace this account's playbook with this proposal? You can still edit it after.")) act("apply", async () => { const x = await api("applyAnalysis", { id: shown.id }); setText(x.playbook); }); }} className={button}>{shown.applied_at ? "Applied ✓ (apply again)" : "Apply this playbook"}</button>}
           </div>
         )}

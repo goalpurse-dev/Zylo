@@ -1,0 +1,380 @@
+{
+ "template": "ai_fruit_story",
+ "voices": {
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.4,
+    "style": 0.35,
+    "speed": 1.05
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.05
+   }
+  }
+ },
+ "tempo": 1.15,
+ "squeeze": 0.18,
+ "lead": 0,
+ "gap_speaker": 0.14,
+ "gap_same": 0.08,
+ "tail": 0.55,
+ "music_db_under": 14,
+ "phone_full": true,
+ "phone_range": [
+  0,
+  22.9
+ ],
+ "hq_dir": "video/m3/hq",
+ "phone_skip": [
+  [
+   15.2,
+   19
+  ]
+ ],
+ "max_gap": 0.4,
+ "start_at": "phone",
+ "loop_end": {
+  "secs": 0.5
+ },
+ "counter": {
+  "value": 150,
+  "label": "FRUIT CHARACTERS",
+  "fact": "fruit_characters"
+ },
+ "timer": {
+  "seconds": 230,
+  "label": "FIRST CLICK → FINAL VIDEO",
+  "source": "fruitRun summary.json (measured live)"
+ },
+ "variant": "v1_result_first",
+ "title": "Studio V1 · Result first: I made this in under 4 minutes",
+ "recipe": {
+  "variant": "V1",
+  "hook_type": "result_first",
+  "length_s": [
+   25,
+   30
+  ],
+  "loop": true,
+  "frame0": "angle",
+  "open_loop": "wait till she walks in → the ending",
+  "note": "'ONE sentence' is not true for this run (an idea card was clicked), so the hook uses the measured time",
+  "end_trigger": "comment",
+  "cta": "comment_fruit"
+ },
+ "length_target": [
+  25,
+  30
+ ],
+ "steps_total": 5,
+ "clips": [
+  {
+   "name": "open",
+   "file": "video/m3/ten-years-out-of-date.mp4",
+   "in": 4.06,
+   "out": 8.08,
+   "note": "the cherry close up: 'That's just, um, a really good angle.'",
+   "at": "start",
+   "post": 0.12,
+   "duck_db": 10,
+   "fullscreen": true,
+   "enter": "cut",
+   "punch": [
+    0.5,
+    2.1
+   ],
+   "hook": "I MADE THIS IN|*UNDER 4 MINUTES*",
+   "open_loop": {
+    "at": 1.2,
+    "parts": [
+     [
+      "WAIT TILL SHE ",
+      "#ffffff"
+     ],
+     [
+      "WALKS IN 👀",
+      "Y"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "payoff",
+   "file": "video/m3/ten-years-out-of-date.mp4",
+   "in": 19,
+   "out": 22.35,
+   "note": "the ending: 'Too late, she's walking in right now.' + the lemon's smirk (after the line naming Google)",
+   "after_line": 6,
+   "pre": 0.35,
+   "post": 0.02,
+   "duck_db": 24,
+   "fullscreen": true,
+   "enter": "grow",
+   "sfx_at": [
+    [
+     2.95,
+     "sparkle"
+    ]
+   ],
+   "pays_loop": {
+    "parts": [
+     [
+      "THE ",
+      "#ffffff"
+     ],
+     [
+      "ENDING 👀",
+      "Y"
+     ]
+    ]
+   }
+  }
+ ],
+ "lines": [
+  {
+   "role": "q",
+   "who": "creator",
+   "take": "studio-m7/takes/line01.mp3",
+   "text": "Yo Zyvo, how do you make a video like this?",
+   "key": [
+    "this?"
+   ],
+   "expr": "thinking",
+   "pose": "pointUpL"
+  },
+  {
+   "role": "s1",
+   "who": "zee",
+   "take": "studio-m7/takes/line05.mp3",
+   "from_word": 2,
+   "text": "Short Form, then AI Fruit Story.",
+   "key": [
+    "Fruit"
+   ],
+   "expr": "happy",
+   "pose": "point",
+   "step": 1,
+   "card": "step1",
+   "chip": [
+    "SHORT FORM → ",
+    "AI FRUIT STORY"
+   ]
+  },
+  {
+   "role": "s2",
+   "who": "zee",
+   "take": "studio-m7/takes/line06.mp3",
+   "from_word": 2,
+   "text": "Pick an idea and a length.",
+   "key": [
+    "idea"
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 2,
+   "card": "step2",
+   "chip": [
+    "IDEA + ",
+    "LENGTH"
+   ]
+  },
+  {
+   "role": "s3",
+   "who": "zee",
+   "take": "studio-m7/takes/line07.mp3",
+   "from_word": 2,
+   "text": "Check every scene picture.",
+   "key": [
+    "picture."
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 3,
+   "card": "step3",
+   "chip": [
+    "SCENE ",
+    "PICTURES"
+   ]
+  },
+  {
+   "role": "s4",
+   "who": "zee",
+   "take": "studio-m7/takes/line08.mp3",
+   "from_word": 2,
+   "text": "Animate. They talk, with sound.",
+   "key": [
+    "Animate."
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 4,
+   "card": "step4",
+   "chip": [
+    "",
+    "ANIMATE"
+   ]
+  },
+  {
+   "role": "s5",
+   "who": "zee",
+   "take": "studio-m7/takes/line09.mp3",
+   "from_word": 2,
+   "text": "Make the final video.",
+   "key": [
+    "final"
+   ],
+   "expr": "happy",
+   "pose": "rest",
+   "step": 5,
+   "card": "step5",
+   "chip": [
+    "FINAL ",
+    "VIDEO"
+   ],
+   "badge": 230
+  },
+  {
+   "role": "twist",
+   "who": "zee",
+   "take": "studio-m7/takes/line10.mp3",
+   "text": "And there are a hundred and fifty fruit characters to cast.",
+   "key": [
+    "fifty"
+   ],
+   "expr": "smug",
+   "pose": "point",
+   "cues": [
+    {
+     "word": 2,
+     "event": "wall",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 3,
+     "event": "counter"
+    },
+    {
+     "word": 8,
+     "event": "counterEnd",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "role": "site",
+   "who": "zee",
+   "take": "studio-m7/takes/line13.mp3",
+   "text": "It's called Zyvo. tryzyvo.com, link in bio.",
+   "say": "It's called Zyvo. Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "pose": "point",
+   "cues": [
+    {
+     "word": 3,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 4,
+     "event": "bio",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "role": "cta",
+   "who": "zee",
+   "take": "studio-m7/takes/line14.mp3",
+   "text": "Comment FRUIT if you're actually gonna try it.",
+   "key": [
+    "FRUIT"
+   ],
+   "expr": "happy",
+   "pose": "wave",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ]
+  }
+ ],
+ "shots": [
+  {
+   "to": "hook",
+   "at": "open.end+0.02",
+   "dur": 0.55,
+   "kind": "pull"
+  },
+  {
+   "to": "steps",
+   "at": "s1.start-0.55",
+   "dur": 0.7,
+   "kind": "crane"
+  },
+  {
+   "to": "wall",
+   "at": "twist.start-0.25",
+   "dur": 0.8,
+   "kind": "crane"
+  },
+  {
+   "to": "phoneFull",
+   "at": "payoff.start-1.15",
+   "dur": 0.85,
+   "kind": "push"
+  },
+  {
+   "to": "zee",
+   "at": "payoff.end+0.05",
+   "dur": 0.6,
+   "kind": "pull"
+  }
+ ],
+ "chips": [
+  {
+   "from": "q.start",
+   "to": "s1.start",
+   "parts": [
+    [
+     "HOW DO YOU MAKE ",
+     "#ffffff"
+    ],
+    [
+     "THIS?",
+     "Y"
+    ]
+   ]
+  },
+  {
+   "from": "twist.start",
+   "to": "payoff.start",
+   "parts": [
+    [
+     "MADE WITH ",
+     "#ffffff"
+    ],
+    [
+     "ZYVO",
+     "Y"
+    ]
+   ]
+  }
+ ],
+ "cta": {
+  "id": "comment_fruit",
+  "kind": "comment",
+  "chip": "COMMENT FRUIT"
+ }
+}

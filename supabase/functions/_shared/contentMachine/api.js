@@ -14,6 +14,7 @@ import { ApiError } from "./errors.js";
 import { slideshowActions } from "./apiSlideshows.js";
 import { postsActions } from "./apiPosts.js";
 import { learningActions } from "./apiLearning.js";
+import { studioActions } from "./studio.js";
 
 
 const PUBLIC_SETTINGS = [
@@ -21,7 +22,7 @@ const PUBLIC_SETTINGS = [
   "slideshows_per_day", "format_mix", "auto_produce", "end_card", "kill_switch", "dry_run", "run_time_local",
   "timezone", "watchlist", "brand_rules", "models", "updated_at", "updated_by",
   "experiment_days", "experiment_started_on", "daily_auto_run", "winners_per_day", "experiments_per_day", "use_batch_for_daily",
-  "half_life_days", "winner_min_successes", "analysis_suggest_after", "daily_scout",
+  "half_life_days", "winner_min_successes", "analysis_suggest_after", "daily_scout", "studio_batch_size", "studio_rate_frame0",
 ];
 const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o?.[k] ?? null]));
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -48,6 +49,7 @@ export function createHandler({ getUser, emails, store, guard, cors, env = {}, n
   const ACTIONS = {
     ...(cm ? slideshowActions({ cm, files, kick, store, guard, now }) : {}),
     ...(cm ? learningActions({ cm, store, kick, now }) : {}),
+    ...(cm ? studioActions({ cm, store, now }) : {}),
     ...(cm ? postsActions({ cm, files, store, guard, now, ai, env: { anthropicKey: env.ANTHROPIC_API_KEY }, models }) : {}),
     whoami: async ({ user }) => ({ email: user.email }),
     status: async () => status(),

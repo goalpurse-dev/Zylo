@@ -35,9 +35,60 @@ def trim(x, thr=0.01, pad=0.03):
     return x[a:b]
 
 
-def ffmpeg_decode(path):
-    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
+def ffmpeg_decode(path, tempo=1.0):
+    af = ["-af", f"atempo={tempo:.3f}"] if abs(tempo - 1) > 1e-3 else []   # faster, same pitch (short videos: 200-230 wpm)
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", path, *af, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
     return np.frombuffer(pcm, dtype=np.float32).copy()
+
+
+_wm = None
+def take_words(path):
+    """Word times inside one take (local whisper, cached next to it): a short video can reuse part of a paid take."""
+    cache = path + ".words.json"
+    if os.path.exists(cache):
+        return json.load(open(cache, encoding="utf-8"))
+    global _wm
+    from faster_whisper import WhisperModel
+    _wm = _wm or WhisperModel("small", device="cpu", compute_type="int8")
+    segs, _ = _wm.transcribe(resample(ffmpeg_decode(path), SR, 16000), word_timestamps=True, vad_filter=False)
+    ws = [{"w": w.word.strip(), "s": round(w.start, 3), "e": round(w.end, 3)} for s in segs for w in (s.words or [])]
+    json.dump(ws, open(cache, "w", encoding="utf-8"))
+    return ws
+
+
+def take_for(ln, n):
+    """A line's take: its own (line01.mp3...) or a reused one ("take": "m7/line06.mp3"), optionally from a word on
+    ("from_word": 2 drops "Step two:"), sped up by the script's tempo."""
+    path = os.path.join(opt["--takes"], ln.get("take", f"line{n + 1:02d}.mp3"))
+    x = ffmpeg_decode(path)
+    if ln.get("from_word"):
+        ws = take_words(path)
+        cut = max(0.0, ws[ln["from_word"]]["s"] - 0.04)
+        x = x[int(cut * SR):]
+    tempo = ln.get("tempo", S.get("tempo", 1.0))
+    if abs(tempo - 1) > 1e-3:   # atempo on the cut piece (ffmpeg via a temp wav)
+        tmp = os.path.join(out, "_tempo.wav"); sf.write(tmp, x, SR); x = ffmpeg_decode(tmp, tempo); os.remove(tmp)
+    if S.get("squeeze"): x = squeeze(x, S["squeeze"])
+    return trim(x)
+
+
+def squeeze(x, keep=0.18, thr_db=-38.0):
+    """Short videos: a pause inside a take ("Animate. ... They talk") longer than keep seconds is cut down to keep."""
+    hop = int(0.01 * SR); n = len(x) // hop
+    if n < 3: return x
+    q = 20 * np.log10(np.sqrt(np.mean(x[: n * hop].reshape(n, hop) ** 2, axis=1)) + 1e-9) < thr_db
+    out_parts, i, last = [], 0, 0
+    while i < n:
+        if q[i]:
+            j = i
+            while j < n and q[j]: j += 1
+            if i > 0 and j < n and (j - i) * 0.01 > keep:   # inside the take only (the edges are trimmed anyway)
+                half = int(keep / 2 * SR)
+                out_parts.append(x[last: i * hop + half]); last = j * hop - half
+            i = j
+        else: i += 1
+    out_parts.append(x[last:])
+    return np.concatenate(out_parts)
 
 
 # ── 1. one take per line ──────────────────────────────────────────────
@@ -53,7 +104,7 @@ if engine == "kokoro":
         takes.append(trim(resample(np.asarray(samples, dtype=np.float32), sr)))
 elif engine == "eleven":
     for n, ln in enumerate(lines):
-        takes.append(trim(ffmpeg_decode(os.path.join(opt["--takes"], f"line{n + 1:02d}.mp3"))))
+        takes.append(take_for(ln, n))
 else:
     sys.exit("engine: kokoro or eleven")
 
@@ -64,12 +115,18 @@ voice, t, timed = [np.zeros(int(lead * SR), np.float32)], lead, []
 # each after a line: the camera pushes in (pre), the clip plays, a beat (post), then the next line.
 CLIPS = S.get("clips") or ([S["clip"]] if S.get("clip") else [])
 clips = []
+# short videos (Retention Engine, owner 2026-10-30): a clip "at": "start" plays from frame 0, before the first line;
+# "freeze": {"secs"} holds its last frame after it ends (a cliffhanger); the extra keys go to the page as they are
+CLIP_KEYS = ("sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
 for n, (ln, x) in enumerate(zip(lines, takes)):
-    C = next((c for c in CLIPS if n and n == c["after_line"] + 1), None)
+    C = next((c for c in CLIPS if (n == 0 and c.get("at") == "start") or (n and n == c.get("after_line", -9) + 1)), None)
     if C:
-        pre, post, dur = C.get("pre", 0.95), C.get("post", 0.35), C["out"] - C["in"]
-        clips.append({"name": C.get("name", f"clip{len(clips) + 1}"), "file": C["file"], "in": C["in"], "out": C["out"], "duck_db": C.get("duck_db", 10), "start": round(t + pre, 3), "end": round(t + pre + dur, 3)})
-        voice.append(np.zeros(int((pre + dur + post) * SR), np.float32)); t += pre + dur + post
+        if C.get("at") == "start": voice = [np.zeros(0, np.float32)]; t = 0.0   # frame 0: no lead
+        pre, post, dur = (0.0 if C.get("at") == "start" else C.get("pre", 0.95)), C.get("post", 0.35), C["out"] - C["in"]
+        hold = (C.get("freeze") or {}).get("secs", 0)
+        clips.append({"name": C.get("name", f"clip{len(clips) + 1}"), "file": C["file"], "in": C["in"], "out": C["out"], "duck_db": C.get("duck_db", 10), "start": round(t + pre, 3), "end": round(t + pre + dur, 3),
+                      **({"freeze_end": round(t + pre + dur + hold, 3)} if hold else {}), **{k: C[k] for k in CLIP_KEYS if k in C}})
+        voice.append(np.zeros(int((pre + dur + hold + post) * SR), np.float32)); t += pre + dur + hold + post
     elif n:
         gap = S.get("gap_speaker", 0.22) if ln["who"] != lines[n - 1]["who"] else S.get("gap_same", 0.12)
         gap += ln.get("pause_before", 0)          # room for a visual beat (the wall)
@@ -89,6 +146,10 @@ from faster_whisper import WhisperModel
 v16 = resample(voice, SR, 16000)
 segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(v16, word_timestamps=True, vad_filter=False, initial_prompt=" ".join(l.get("say", l["text"]) for l in lines))
 words = [{"w": w.word.strip(), "s": round(w.start, 3), "e": round(w.end, 3)} for s in segs for w in (s.words or [])]
+n_said = sum(len(l.get("say", l["text"]).split()) for l in lines)
+if len(words) < 0.8 * n_said:   # the prompt can make whisper skip a long stretch (a track that starts with 4 s of clip): again without it
+    segs, _ = WhisperModel("small", device="cpu", compute_type="int8").transcribe(v16, word_timestamps=True, vad_filter=False)
+    words = [{"w": w.word.strip(), "s": round(w.start, 3), "e": round(w.end, 3)} for s in segs for w in (s.words or [])]
 
 
 def norm(w):
@@ -110,16 +171,47 @@ if len(all_parts) == len(words):
                 s0 = a0 + (a1 - a0) * acc / tot; acc += len(w) + 1; tl["words"].append({"w": w, "s": round(s0, 3), "e": round(a0 + (a1 - a0) * acc / tot, 3)})
         else: tl["words"] = said
         tl["heard"] = " ".join(words[k]["w"] for k in idx); tl["aligned"] = "whole"
+# Second choice: match the spoken words to the heard ones in order (difflib), then give every unmatched word a share of
+# the time between its matched neighbours, inside its own line's take ("150" heard for "a hundred and fifty")
+else:
+    import difflib
+    said_parts = [(n, i, norm(p)) for n, ln in enumerate(lines) for i, sw in enumerate(ln.get("say", ln["text"]).split()) for p in sw.split("-")]
+    sm = difflib.SequenceMatcher(None, [p for _, _, p in said_parts], [norm(w["w"]) for w in words], autojunk=False)
+    got = {}
+    for a, b, size in sm.get_matching_blocks():
+        for k in range(size):
+            n, _, _ = said_parts[a + k]; w = words[b + k]
+            if timed[n]["start"] - 0.3 <= w["s"] <= timed[n]["end"] + 0.3: got[a + k] = (w["s"], w["e"])
+    if len(got) >= 0.6 * len(said_parts):
+        for n, (ln, tl) in enumerate(zip(lines, timed)):
+            idx = [k for k, (m, _, _) in enumerate(said_parts) if m == n]
+            # unmatched runs: spread between the neighbours (or the take's own edges)
+            times, k = {}, 0
+            while k < len(idx):
+                if idx[k] in got: times[idx[k]] = got[idx[k]]; k += 1; continue
+                j = k
+                while j < len(idx) and idx[j] not in got: j += 1
+                a0 = got[idx[k - 1]][1] if k else tl["start"]; b0 = got[idx[j]][0] if j < len(idx) else tl["end"]
+                for q in range(k, j): s0 = a0 + (b0 - a0) * (q - k) / (j - k); times[idx[q]] = (s0, a0 + (b0 - a0) * (q - k + 1) / (j - k))
+                k = j
+            sw = ln.get("say", ln["text"]).split()
+            said = [{"w": w, "s": round(min(times[x][0] for x in idx if said_parts[x][1] == i), 3), "e": round(max(times[x][1] for x in idx if said_parts[x][1] == i), 3)} for i, w in enumerate(sw)]
+            if "say" in ln:
+                shown = ln["text"].split(); a0, a1 = said[0]["s"], said[-1]["e"]; tot = sum(len(w) + 1 for w in shown); acc = 0; tl["words"] = []
+                for w in shown:
+                    s0 = a0 + (a1 - a0) * acc / tot; acc += len(w) + 1; tl["words"].append({"w": w, "s": round(s0, 3), "e": round(a0 + (a1 - a0) * acc / tot, 3)})
+            else: tl["words"] = said
+            tl["heard"] = f"{sum(1 for x in idx if x in got)}/{len(idx)} words matched"; tl["aligned"] = "matched"
 # Otherwise: each heard word belongs to the line whose take holds its midpoint (else the nearest line)
 def owner(w):
     m = (w["s"] + w["e"]) / 2
     return min(range(len(timed)), key=lambda i: 0 if timed[i]["start"] <= m <= timed[i]["end"] else min(abs(m - timed[i]["start"]), abs(m - timed[i]["end"])))
 owners = [owner(w) for w in words]
 for n, (ln, tl) in enumerate(zip(lines, timed)):
-    if tl.get("aligned") == "whole":
+    if tl.get("aligned") in ("whole", "matched"):
         keys = {norm(k) for k in ln.get("key", [])}
         for w in tl["words"]: w["key"] = norm(w["w"]) in keys
-        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role") if k in ln}); continue
+        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge") if k in ln}); continue
     mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
@@ -137,7 +229,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     keys = {norm(k) for k in ln.get("key", [])}
     for w in tl["words"]:
         w["key"] = norm(w["w"]) in keys
-    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role") if k in ln})
+    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge") if k in ln})
 
 # ── 4. mouth envelope per line (30 fps, 0..1) ──────────────────────────
 for tl, x in zip(timed, takes):
@@ -154,6 +246,18 @@ for ln, tl in zip(lines, timed):
     for c in ln.get("cues", []):
         w = tl["words"][min(c.get("word", 0), len(tl["words"]) - 1)]
         events.append({"t": round(w["s"] + c.get("offset", 0), 3), "event": c["event"], "sfx": c.get("sfx")})
+# the real clips' own beats (short videos): a hit on frame 0, a punch on each zoom, a record scratch + riser on a
+# freeze, a pop when the open-loop chip lands; "loopPlant"/"loopPaid" for the scorecard
+for c in clips:
+    if c.get("enter") == "cut": events.append({"t": c["start"], "event": f"{c['name']}On", "sfx": "hit"})
+    for p in c.get("punch", []): events.append({"t": round(c["start"] + p, 3), "event": f"{c['name']}Punch", "sfx": "punch"})
+    if c.get("freeze_end"):
+        events.append({"t": c["end"], "event": f"{c['name']}Freeze", "sfx": "scratch"})
+        events.append({"t": round(c["end"] + 0.25, 3), "event": f"{c['name']}Riser", "sfx": f"riser:{c['freeze_end'] - c['end'] - 0.15:.2f}"})
+    if c.get("open_loop"): events.append({"t": round(c["start"] + c["open_loop"]["at"], 3), "event": "loopPlant", "sfx": "pop"})
+    if c.get("pays_loop"): events.append({"t": c["start"], "event": "loopPaid", "sfx": None})
+    for at, kind in c.get("sfx_at", []): events.append({"t": round(c["start"] + at, 3), "event": f"{c['name']}Beat", "sfx": kind})   # a beat inside the clip (a smirk)
+for e in S.get("events_extra", []): events.append(e)
 events.sort(key=lambda e: e["t"])
 
 # ── 6. our own music bed + pops (made here: no licence questions) ─────
@@ -208,6 +312,22 @@ def sfx(kind):
             out[s0:s0 + m] += (0.12 + 0.06 * rng.random()) * rng.standard_normal(m) * np.exp(-tt * 300)
             t0 += 0.07 + 0.09 * rng.random()
         return out
+    if kind == "hit":    # frame 0: a deep boom + a bright snap (the scroll-stop)
+        m = int(0.45 * SR); tt = np.arange(m) / SR
+        boom = 0.9 * np.sin(2 * np.pi * (48 + 140 * np.exp(-tt * 22)) * tt) * np.exp(-tt * 7)
+        snap = 0.5 * np.random.default_rng(5).standard_normal(m) * np.exp(-tt * 70)
+        return boom + snap
+    if kind == "punch":  # a zoom punch: a short low thud
+        m = int(0.2 * SR); tt = np.arange(m) / SR
+        return 0.7 * np.sin(2 * np.pi * (70 + 120 * np.exp(-tt * 40)) * tt) * np.exp(-tt * 16) + 0.15 * np.random.default_rng(6).standard_normal(m) * np.exp(-tt * 120)
+    if kind == "scratch":  # a record scratch: noise swept down and up
+        m = int(0.42 * SR); tt = np.arange(m) / SR
+        f = 900 + 700 * np.sin(2 * np.pi * 3.2 * tt)
+        return 0.55 * np.sin(2 * np.pi * np.cumsum(f) / SR) * np.random.default_rng(8).uniform(0.6, 1, m) * np.exp(-tt * 3)
+    if kind.startswith("riser"):  # tension under a freeze: a rising tone with a little noise
+        dur = float(kind.split(":")[1]); m = int(max(0.1, dur) * SR); tt = np.arange(m) / SR
+        f = 220 * (1 + 2 * tt / tt[-1])
+        return (0.22 * np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.05 * np.random.default_rng(9).standard_normal(m)) * (tt / tt[-1]) ** 1.5
     if kind.startswith("whoosh"):
         # filtered noise swelling over the move (a whip is short and bright, a push longer and softer)
         dur = float(kind.split(":")[1]) if ":" in kind else 0.35
@@ -219,6 +339,7 @@ def sfx(kind):
 
 
 bed = music(total)
+bed = np.pad(bed, (0, max(0, len(voice) - len(bed))))[: len(voice)]   # exactly the voice track's length (rounding)
 # the clip's own sound: matched to our voices, faded in/out; the music ducks under it
 clip_track = np.zeros_like(voice)
 for clip in clips:
@@ -298,7 +419,8 @@ if clip:
     for f in os.listdir(pdir): os.remove(os.path.join(pdir, f))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
-json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled},
+json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled,
+           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "length_target", "hq_dir", "tempo", "phone_skip") if k in S} or None},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

@@ -6,6 +6,9 @@ export const STAT_FIELDS = Object.freeze([
   ["views", "Views", "int"], ["likes", "Likes", "int"], ["comments", "Comments", "int"], ["shares", "Shares", "int"], ["saves", "Saves", "int"],
   ["avg_watch_sec", "Average watch time (s)", "dec"], ["watched_full_pct", "Watched full (%)", "pct"],
   ["profile_visits", "Profile visits", "int"], ["new_followers", "New followers", "int"], ["link_clicks", "Link clicks", "int"],
+  // the TikTok retention graph (Studio videos, owner 2026-10-30): % still watching at 3 / 5 / 10 s, the biggest drop
+  ["hold_3s_pct", "Still watching at 3 s (%)", "pct"], ["hold_5s_pct", "Still watching at 5 s (%)", "pct"], ["hold_10s_pct", "Still watching at 10 s (%)", "pct"],
+  ["dropoff_s", "Biggest drop-off (second)", "dec"],
 ]);
 
 const nullableNumber = { type: ["number", "null"] };
@@ -24,13 +27,14 @@ Return each number exactly as shown, as a plain number: "1.2K" → 1200, "3,4 t.
 - views: video views / plays / post views. likes, comments, shares, saves (also "favorites" / "bookmarks").
 - avg_watch_sec: average watch time in seconds. watched_full_pct: "watched full video" / "completion rate" in %.
 - profile_visits: profile views / visits from this post. new_followers: followers gained from this post. link_clicks: clicks on a link or the link in bio, only if the screenshot shows them.
+- A retention graph ("% of viewers still watching" over the seconds of the video): hold_3s_pct, hold_5s_pct, hold_10s_pct = the % still watching at 3, 5 and 10 seconds, read off the curve where the axis makes it readable (to the nearest whole %); dropoff_s = the second where the curve falls the most. Only from a retention graph; null otherwise.
 - platform: which app the screenshot is from, if you can tell.
 A number that is not clearly visible is null. Never estimate, add up or infer a number. note: one short line if anything is unclear, else null.
 Return only the JSON object.`;
 
 export function statsRequest({ model, contentType, dataBase64 }) {
   return {
-    model, max_tokens: 600,
+    model, max_tokens: 800,
     system: [{ type: "text", text: STATS_SYSTEM, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: contentType, data: dataBase64 } }, { type: "text", text: "Read the numbers." }] }],
     output_config: { effort: "low", format: { type: "json_schema", schema: STATS_SCHEMA } },

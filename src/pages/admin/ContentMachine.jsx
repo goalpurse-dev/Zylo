@@ -7,6 +7,7 @@ import { api } from "./contentMachine/cmApi";
 import { AllTab, AssetsTab, LibraryTab, QueueTab } from "./contentMachine/SlideshowTabs";
 import { AnalyticsTab, PostedTab } from "./contentMachine/PostedTabs";
 import { AccountsTab } from "./contentMachine/AccountsTab";
+import { StudioTab } from "./contentMachine/StudioTab";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const money = (n, d = 2) => (n == null ? "–" : `$${Number(n).toFixed(d)}`);
@@ -252,6 +253,7 @@ const toForm = (s, models) => ({
   experiment_days: String(s.experiment_days ?? 14), daily_auto_run: s.daily_auto_run ?? true, winners_per_day: String(s.winners_per_day ?? 3),
   experiments_per_day: String(s.experiments_per_day ?? 2), use_batch_for_daily: s.use_batch_for_daily ?? true,
   half_life_days: String(s.half_life_days ?? 14), winner_min_successes: String(s.winner_min_successes ?? 3), analysis_suggest_after: String(s.analysis_suggest_after ?? 10),
+  studio_batch_size: String(s.studio_batch_size ?? 5), studio_rate_frame0: s.studio_rate_frame0 ?? false,
   models: { main: s.models?.main ?? "", fast: s.models?.fast ?? "" }, modelsInUse: models,
 });
 const capsOut = (o) => Object.fromEntries(Object.entries(o).filter(([k, v]) => k && v !== "").map(([k, v]) => [k, Number(v)]));
@@ -265,6 +267,7 @@ const fromForm = (f) => ({
   experiment_days: Number(f.experiment_days), daily_auto_run: f.daily_auto_run, winners_per_day: Number(f.winners_per_day),
   experiments_per_day: Number(f.experiments_per_day), use_batch_for_daily: f.use_batch_for_daily,
   half_life_days: Number(f.half_life_days), winner_min_successes: Number(f.winner_min_successes), analysis_suggest_after: Number(f.analysis_suggest_after),
+  studio_batch_size: Number(f.studio_batch_size), studio_rate_frame0: f.studio_rate_frame0,
 });
 
 function Field({ label, hint, children, htmlFor }) {
@@ -373,6 +376,13 @@ function SettingsTab({ st, onStatus }) {
         </div>
       </Card>
 
+      <Card title="Studio videos">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Videos per batch (Let AI decide)" htmlFor="cm-studio_batch_size" hint="After 3+ Studio posts above the median: 3 of the winning recipe + the rest one-change experiments.">{num("studio_batch_size", { min: 1, max: 10, step: 1 })}</Field>
+        </div>
+        <div className="mt-3">{toggleRow("studio_rate_frame0", "Rate frame 0 with the fast model", "The worker asks \"would a cold viewer stop scrolling?\" (1–10) for every Studio video; under 7 = a new hook. Paid: about $0.0006 a video.")}</div>
+      </Card>
+
       <Card title="Writing">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Main model (scout, ideas)" htmlFor="cm-model-main" hint={`Empty: ${f.modelsInUse.main} (the function secret or the default).`}>
@@ -401,7 +411,7 @@ function SettingsTab({ st, onStatus }) {
 
 /* ─── page ───────────────────────────────────────────────────────────── */
 
-const TABS = [["today", "Queue"], ["all", "All"], ["posted", "Posted"], ["analytics", "Analytics"],["accounts", "Accounts"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
+const TABS = [["today", "Queue"], ["studio", "Studio"], ["all", "All"], ["posted", "Posted"], ["analytics", "Analytics"],["accounts", "Accounts"], ["library", "Library"], ["assets", "Assets"], ["budget", "Budget"], ["settings", "Settings"]];
 
 export default function ContentMachine() {
   const [st, setSt] = useState(null);
@@ -437,6 +447,7 @@ export default function ContentMachine() {
       {tab === "today" && <QueueTab st={st} onChanged={load} />}
       {tab === "posted" && <PostedTab />}
       {tab === "analytics" && <AnalyticsTab />}
+      {tab === "studio" && <StudioTab />}
       {tab === "all" && <AllTab />}
       {tab === "accounts" && <AccountsTab />}
       {tab === "library" && <LibraryTab />}

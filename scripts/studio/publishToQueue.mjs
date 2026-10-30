@@ -58,13 +58,14 @@ for (const [path, file, type] of [[`${base}/video.mp4`, spec.mp4, "video/mp4"], 
 must(await db.from("cm_ideas").insert({
   id: ideaId, status: "done", source: "machine", format: `studio_${spec.template}`, zyvo_tool: spec.template, title: spec.title, hook: spec.hook, concept: spec.concept,
   script: spec.script, making_of_angle: "how I made this with Zyvo", target_platforms: Object.keys(spec.packages), account: spec.account,
-  recipe: { kind: "video", template: spec.template, cta: spec.cta, format: `studio_${spec.template}`, style: "studio", hook_type: "question", account: spec.account, platform: "tiktok" },
-  compliance: { ok: true, flagged: false, problems: [], claims: spec.claims, measured: spec.measured }, dry_run: false,
+  // short videos carry their recipe (hook type, length, end trigger, loop: Analytics compares them) and the Retention scorecard
+  recipe: { kind: "video", template: spec.template, cta: spec.cta, format: `studio_${spec.template}`, style: "studio", hook_type: "question", account: spec.account, platform: "tiktok", ...(spec.recipe ?? {}) },
+  compliance: { ok: true, flagged: false, problems: [], claims: spec.claims, measured: spec.measured, ...(spec.retention ? { retention: spec.retention } : {}) }, dry_run: false,
 }).select("id"), "idea");
 const gen = must(await db.from("cm_generations").insert({
   idea_id: ideaId, kind: "making_of", status: "done", video_path: `${base}/video.mp4`, thumbnail_path: `${base}/cover.png`, duration_s: dur, aspect: "9:16",
   files: { mp4: `${base}/video.mp4`, pngs: [`${base}/cover.png`], sha256: sha }, cost_usd: spec.spend.reduce((a, s) => a + s.usd, 0),
 }).select("id").single(), "generation");
 must(await db.from("cm_packages").insert(packages.map((p) => ({ ...p, generation_id: gen.id }))).select("id"), "packages");
-must(await db.from("cm_spend_ledger").insert(spec.spend.map((s) => ({ idea_id: ideaId, provider: "other", lane: "studio", operation: s.operation, estimated_usd: s.usd, actual_usd: s.usd, status: "settled", local_day: s.day, request_ref: s.ref ?? null, settled_at: new Date().toISOString() }))).select("id"), "ledger");
+if (spec.spend.length) must(await db.from("cm_spend_ledger").insert(spec.spend.map((s) => ({ idea_id: ideaId, provider: "other", lane: "studio", operation: s.operation, estimated_usd: s.usd, actual_usd: s.usd, status: "settled", local_day: s.day, request_ref: s.ref ?? null, settled_at: new Date().toISOString() }))).select("id"), "ledger");
 console.log(`in the Queue: idea ${ideaId} (Zyvo account), ${packages.length} packages, $${spec.spend.reduce((a, s) => a + s.usd, 0).toFixed(4)} recorded`);
