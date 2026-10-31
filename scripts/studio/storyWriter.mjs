@@ -18,7 +18,7 @@ const LINE = { type: "object", additionalProperties: false, required: ["who", "t
   expr: { type: "string", enum: ["neutral", "happy", "sad", "shocked", "smug", "thinking"] },
   pose: { type: "string", enum: ["rest", "point", "pointUp", "pointUpL", "shrug", "handsUp", "wave", "chin"] },
   shot: { type: "string", enum: ["two_shot", "creator_close", "zee_close", "low_hero", "high_wide", "side_left", "side_right", "prop_focus"] },
-  visual: VISUAL, screen: { type: ["string", "null"], enum: ["s_menu", "s_ideas", "s_length", "s_pictures", "s_anim", "s_final", "typed", null] }, sticker: { type: ["string", "null"] }, stamp: { type: ["string", "null"] }, keep: { type: "boolean" },
+  visual: VISUAL, screen: { anyOf: [{ type: "string", enum: ["s_menu", "s_ideas", "s_length", "s_pictures", "s_anim", "s_final", "typed"] }, { type: "null" }] }, sticker: { type: ["string", "null"] }, stamp: { type: ["string", "null"] }, keep: { type: "boolean" },
 } };
 const SCHEMA = { type: "object", additionalProperties: false, required: ["title", "search_title", "caption", "hashtags", "hook_type", "headline", "chip", "lines", "early_payoff_after", "big_payoff_after", "end_line", "end_chip"], properties: {
   title: { type: "string" }, search_title: { type: "string" }, caption: { type: "string" }, hashtags: { type: "array", items: { type: "string" } }, hook_type: { type: "string" },
@@ -36,6 +36,7 @@ Every line MUST have a visual that SHOWS it: a prop ("visual"), a real app scree
 Honesty, always:
 - Claims about Zyvo ONLY from this fact sheet: ${facts}
 - A number that is not on the sheet needs a real source in "stamp"; an opinion is stamped "My read, not a study." Never invent numbers, users, reviews or testimonials.
+- A fact about one tool (Blocky Stories, Long Form, the image generator) is NOT a fact about another: this video is about AI Fruit Story unless told otherwise.
 - Video on Zyvo needs a paid plan: if price comes up, say so.
 - Name Claude, ChatGPT, Gemini, CapCut, TikTok or YouTube only in true statements; never imply a partnership.
 - The story shown is a finished one; do not say it was made in a certain time.
