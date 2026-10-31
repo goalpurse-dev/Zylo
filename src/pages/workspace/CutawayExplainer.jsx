@@ -24,8 +24,8 @@ const DEV_PLAN = { free: "free", paid: "starter", starter: "starter", pro: "pro"
 const DEV = import.meta.env.DEV && Boolean(DEV_AS || DEV_MOCK);
 
 /**
- * Who sees the template: everyone when the build switch is on (CUTAWAY_ENABLED: local dev, Vercel previews, or
- * VITE_CUTAWAY_ENABLED=true), and otherwise only a signed-in tester (the cutaway-api `access` action, asked once per
+ * Who sees the template: everyone when the build switch is on (CUTAWAY_ENABLED: on unless
+ * VITE_CUTAWAY_ENABLED=false), and otherwise only a signed-in tester (the cutaway-api `access` action, asked once per
  * session). While that answer is on its way the page waits quietly instead of redirecting.
  */
 export default function CutawayExplainer() {

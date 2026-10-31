@@ -615,12 +615,13 @@ test("captions: one word at 52%; number cards at 30% with a pop", () => {
 
 // ---------- one switch for the whole template (no per-user flag) ----------
 
-test("cutaway switch: on in local dev and Vercel previews, off in production unless VITE_CUTAWAY_ENABLED says so", async () => {
+test("cutaway switch: launched, on everywhere unless VITE_CUTAWAY_ENABLED says false", async () => {
   const { cutawayEnabled } = await import("../src/data/cutawayExplainer.js");
   assert.equal(cutawayEnabled({ DEV: true }), true, "local dev");
   assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "preview" }), true, "Vercel preview");
-  assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "production" }), false, "production build");
-  assert.equal(cutawayEnabled({}), false, "a build outside Vercel");
+  assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "production" }), true, "production build");
+  assert.equal(cutawayEnabled({}), true, "a build outside Vercel");
+  assert.equal(cutawayEnabled({ VITE_VERCEL_ENV: "production", VITE_CUTAWAY_ENABLED: "false" }), false, "explicit off wins in production");
   assert.equal(cutawayEnabled({ DEV: false, VITE_VERCEL_ENV: "production", VITE_CUTAWAY_ENABLED: "true" }), true, "explicit on");
   assert.equal(cutawayEnabled({ DEV: true, VITE_CUTAWAY_ENABLED: "false" }), false, "explicit off wins in dev");
   assert.equal(cutawayEnabled({ VITE_VERCEL_ENV: "preview", VITE_CUTAWAY_ENABLED: " FALSE " }), false, "explicit off wins on a preview");
