@@ -15,8 +15,12 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { admin } from "file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs";
 import { makeScript } from "./shortScripts.mjs";
+import { writeStory, recentScripts } from "./storyWriter.mjs";
+import { createBudgetGuard } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/budgetGuard.js";
+import { createStore } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/store.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+for (const line of fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/)) { const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/); if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, ""); }
 const ONCE = process.argv.includes("--once");
 const env = process.env;
 for (const k of ["PROTO_DIR", "PICS_DIR", "STUDIO_SCRATCH", "SRC_WORK"]) if (!env[k]) { console.error(`set ${k}`); process.exit(2); }
@@ -50,7 +54,61 @@ const run = (cmd, args, opts = {}) => new Promise((resolve, reject) => {
   c.on("close", (code) => (code === 0 ? resolve(out) : reject(new Error(`${path.basename(args[0] ?? cmd)} failed: ${(err || out).trim().split("\n").slice(-3).join(" | ").slice(0, 300)}`))));
 });
 
+// Studio v2 (Master Prompt v2): a job with an angle: the script is written fresh, its new voice lines made, both through
+// the Budget Guard; rendered by story.js in its own world; into the Queue with captions, a search title and its recipe.
+const guard = createBudgetGuard({ store: createStore(db) });
+const VOICE_USD_PER_CHAR = 0.0002, VOICE_CAP_PER_VIDEO = 0.25;
+async function makeStoryJob(job) {
+  const sid = job.source.id;
+  await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
+  const kitFile = path.join(KITS, sid, "kit.json");
+  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
+  const kit = JSON.parse(fs.readFileSync(kitFile, "utf8"));
+  const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
+  const scriptFile = path.join(work, "script.json");
+  let script, usd = 0;
+  if (fs.existsSync(scriptFile)) script = JSON.parse(fs.readFileSync(scriptFile, "utf8"));   // a restart keeps the paid script
+  else {
+    await progress(job, "writing the script");
+    const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
+    const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
+    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent: recentScripts(KITS) });
+    script = w.script; usd += w.usd;
+    script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
+    fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
+  }
+  const takes = path.join(env.STUDIO_SCRATCH, "story", job.id); fs.mkdirSync(takes, { recursive: true });
+  const chars = script.lines.filter((l, i) => !fs.existsSync(path.join(takes, `line${String(i + 1).padStart(2, "0")}.mp3`))).reduce((a, l) => a + (l.say ?? l.text).length, 0);
+  if (chars) {
+    await progress(job, `making its voices (${chars} characters)`);
+    const est = chars * VOICE_USD_PER_CHAR; if (est > VOICE_CAP_PER_VIDEO) throw new Error(`the voices would cost up to $${est.toFixed(2)}, over the $${VOICE_CAP_PER_VIDEO} cap for a video`);
+    const r = await guard.spend("other", "studio.voice_lines", est, async () => {
+      const out = await run("node", [path.join(HERE, "elevenTakes.mjs"), winPath(scriptFile), winPath(takes)], { env: { CAP_USD: String(VOICE_CAP_PER_VIDEO) } });
+      return { result: out, actualUsd: Number(out.match(/total \$([\d.]+)/)?.[1] ?? est) };
+    }, { lane: "studio", live: true });
+    usd += r.actualUsd ?? est;
+  }
+  const mp4 = winPath(path.join(OUT, `studio_${job.id.slice(0, 8)}_${job.recipe.angle}.mp4`));
+  await progress(job, `rendering in the ${job.recipe.world} world (laptop GPU)`);
+  // the kit's own typed-idea screen, cropped like the others
+  const typed = path.join(work, "typed.jpg"), shots = path.join(KITS, sid, "input", "shots");
+  if (!fs.existsSync(typed) && fs.existsSync(shots)) { const f = fs.readdirSync(shots).filter((x) => /typed|picked/.test(x)).at(-1); if (f) await run("python", ["-c", `from PIL import Image; Image.open(r"${path.join(shots, f)}").convert("RGB").crop((708,1320,2076,2400)).save(r"${typed}", quality=94)`]); }
+  const screens = path.join(work, "_screens"); fs.mkdirSync(screens, { recursive: true });
+  for (const f of fs.readdirSync(path.join(env.SRC_WORK, "screens"))) fs.copyFileSync(path.join(env.SRC_WORK, "screens", f), path.join(screens, f));
+  if (fs.existsSync(typed)) fs.copyFileSync(typed, path.join(screens, "typed.jpg"));
+  await run("bash", [path.join(HERE, "buildStory.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SCREENS: winPath(screens), MEDIA: winPath(path.join(KITS, sid, "media")) } });
+  if (!fs.existsSync(mp4)) throw new Error("the render made no video");
+  await progress(job, "putting it in the Queue");
+  const spec = path.join(work, "publish.json");
+  await run("node", [path.join(HERE, "storyPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), String(usd)]);
+  const pub = await run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]);
+  const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
+  if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
+  return { ideaId, spend: usd, passed: script.recipe.angle };
+}
+
 async function make(job) {
+  if (job.recipe?.angle && job.source?.kind === "fruit_story") return makeStoryJob(job);
   if (job.source?.kind !== "fruit_story") throw new Error("this job needs a NEW creation: that generation (~$1.70) runs separately after your go (fruitRun.mjs on the internal account), not in the worker");
   const sid = job.source.id;
   await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
@@ -99,8 +157,8 @@ for (;;) {
   if (!job) { if (ONCE) break; await new Promise((r) => setTimeout(r, 20_000)); continue; }
   try {
     const r = await make(job);
-    await db.from("cm_studio_jobs").update({ status: "done", idea_id: r.ideaId, spend_usd: r.spend, progress: `in the Queue · scorecard ${r.passed} rows pass`, finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id);
-    console.log(`[${job.id.slice(0, 8)}] done: idea ${r.ideaId} (${r.passed} rows pass)`);
+    await db.from("cm_studio_jobs").update({ status: "done", idea_id: r.ideaId, spend_usd: r.spend, progress: "in the Queue", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id);
+    console.log(`[${job.id.slice(0, 8)}] done: idea ${r.ideaId}`);
   } catch (e) {
     await db.from("cm_studio_jobs").update({ status: "failed", error: String(e.message).slice(0, 500), finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id);
     console.log(`[${job.id.slice(0, 8)}] failed: ${e.message}`);

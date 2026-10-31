@@ -57,6 +57,19 @@ export const FRAMINGS_T = {
   phoneFull: { pos: [0.1, 4.9, 13.0], look: [0.1, 4.9, -3.6], facing: "phone", creep: 0.1 },
 };
 
+// Master Prompt v2: the 8 camera setups of every world (the cast stands at the same marks everywhere). A prop floats
+// above the cast; the faces stay big and turned to the camera in all of them.
+export const SETUPS = {
+  two_shot: { pos: [0.12, 2.75, 13.6], look: [0.12, 2.6, 0], creep: 0.25 },
+  creator_close: { pos: [-0.72, 2.7, 9.2], look: [-0.72, 2.65, 0.6], creep: 0.2 },
+  zee_close: { pos: [1.12, 2.3, 10.4], look: [1.12, 2.2, 0.3], creep: 0.2 },
+  low_hero: { pos: [0.2, 1.05, 13.2], look: [0.2, 2.75, 0], creep: 0.2 },
+  high_wide: { pos: [0.2, 5.4, 13.8], look: [0.2, 2.25, 0], creep: 0.2 },
+  side_left: { pos: [-3.6, 2.75, 13.0], look: [0.22, 2.6, 0], creep: 0.2 },
+  side_right: { pos: [4.0, 2.75, 12.8], look: [0.18, 2.6, 0], creep: 0.2 },
+  prop_focus: { pos: [0.2, 2.6, 12.4], look: [0.2, 2.45, 0], creep: 0.25 },
+};
+
 /** Lines by role (hook, answer, beat, tease, step1..5, twist, objection, time, site, cta); else by the old order. */
 export function roles(L) {
   const by = Object.fromEntries(L.filter((l) => l.role).map((l) => [l.role, l]));

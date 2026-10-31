@@ -219,6 +219,21 @@ export function createPipelineDb(db) {
         return { recipe: r.recipe, template: r.recipe?.template ?? r.zyvo_tool, seconds: Number((r.cm_generations ?? []).find((g) => g.kind === "making_of")?.duration_s) || null, stats: stats.find((s) => s.platform === "tiktok") ?? stats[0] ?? null };
       });
     },
+    /** Creations shown in the last days (jobs and Queue items): the same footage never twice within 14 days. */
+    async studioRecentSources(sinceIso) {
+      const jobs = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").neq("status", "failed").gte("created_at", sinceIso).limit(500), "recent jobs");
+      const ideas = must(await db.from("cm_ideas").select("recipe").eq("recipe->>kind", "video").gte("created_at", sinceIso).limit(500), "recent videos");
+      return [...new Set([...jobs.map((j) => j.source?.id), ...ideas.map((i) => i.recipe?.source_story)].filter(Boolean))];
+    },
+    async studioAngles(all = false) {
+      let q = db.from("cm_studio_angles").select("*").order("sort");
+      if (!all) q = q.eq("status", "active");
+      return must(await q, "studio angles");
+    },
+    async saveStudioAngle(key, patch) {
+      const rows = must(await db.from("cm_studio_angles").update({ ...patch, updated_at: nowIso() }).eq("key", key).select("*"), "save angle");
+      return rows[0] ?? null;
+    },
     async studioWorkers() { return must(await db.from("cm_studio_workers").select("*").order("last_seen", { ascending: false }).limit(5), "studio workers"); },
     async createStudioJobs(rows) { return must(await db.from("cm_studio_jobs").insert(rows).select("*"), "create studio jobs"); },
     /** Moves a job on only from one of `fromStatuses` (null when it wasn't in one of them). */

@@ -400,7 +400,7 @@ export function AnalyticsTab({ extra = null }) {
                     {data.studio.posts.map((r) => (
                       <tr key={r.id}>
                         <td className="py-1.5 pr-3"><a href={r.post_url} target="_blank" rel="noreferrer" className="underline">{r.title ?? "Studio video"}</a> <span className="text-white/40">{PLATFORM_NAME[r.platform]}</span></td>
-                        <td className="pr-3 text-white/65">{[r.recipe.variant, nice(r.recipe.hook_type), r.recipe.end_trigger].filter(Boolean).join(" · ")}</td>
+                        <td className="pr-3 text-white/65">{[r.recipe.angle ?? r.recipe.variant, r.recipe.world, nice(r.recipe.hook_type), r.recipe.end_trigger].filter(Boolean).join(" · ")}</td>
                         <td className="pr-3 tabular-nums">{fmt(r.score, 1)}</td>
                         <td className="pr-3 tabular-nums">{r.hold3 == null ? "–" : `${fmt(r.hold3)}%`}</td><td className="pr-3 tabular-nums">{r.hold5 == null ? "–" : `${fmt(r.hold5)}%`}</td><td className="pr-3 tabular-nums">{r.hold10 == null ? "–" : `${fmt(r.hold10)}%`}</td>
                         <td className="pr-3 tabular-nums">{r.dropoff == null ? "–" : `${fmt(r.dropoff, 1)} s`}</td>
@@ -411,7 +411,7 @@ export function AnalyticsTab({ extra = null }) {
                 </table>
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                {[["byVariant", "By recipe"], ["byHook", "By hook type"], ["byTrigger", "By end trigger"]].map(([k, t]) => (
+                {[["byAngle", "By angle"], ["byWorld", "By world"], ["byLength", "By length"], ["byHook", "By hook type"], ["byTrigger", "By end trigger"]].map(([k, t]) => (
                   <div key={k}><div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">{t}</div>
                     <table className="w-full text-left text-[12.5px]"><tbody className="divide-y divide-white/[0.06] text-white/85">{data.studio[k].map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td className="pr-2 text-white/50">{g.posts}</td><td className="pr-2 tabular-nums">{fmt(g.score, 1)}</td><td className="tabular-nums text-white/60">{g.dropoff == null ? "" : `drop ${fmt(g.dropoff, 1)} s`}</td></tr>)}</tbody></table>
                   </div>

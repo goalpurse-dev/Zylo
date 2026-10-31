@@ -33,7 +33,7 @@ Rules:
 - experiments: exactly 2 new format × style × hook combinations worth testing next, with why (use keys from the library).
 - retire: formats, styles or hooks to retire, only with evidence (the program's own retire list is a strong hint), with why.
 - trend_notes: what the latest scout report suggests trying, if one is given, else "".
-- studio_playbook: only when there are Studio videos (recipe kind "video": short "how I made this with Zyvo" videos with a recipe variant, hook_type, end_trigger, loop): short imperative lines on what keeps people watching, from their 3 s / 5 s / 10 s hold, the biggest drop-off second, average watch and completion (in that order of importance), then shares, saves, comments, likes. Name the drop-off moments (what is on screen at that second for that recipe) and what to change. Else "".
+- studio_playbook: only when there are Studio videos (recipe kind "video": each has an angle, hook_type, world, length_bucket, famous_name, end_trigger): short imperative lines on what keeps people watching, from their 3 s / 5 s / 10 s hold, the biggest drop-off second, average watch and completion (in that order of importance), then shares, saves, comments, likes. Say which angles, hooks, worlds and lengths win; name the drop-off moments and what to change; propose new angles when the data or the scout suggests them. Else "".
 Return only the JSON object.`;
 
 export function analysisRequest({ model, posts, learning, playbook, rules, library, scout, account = "creator" }) {
@@ -59,7 +59,7 @@ export function analysisRequest({ model, posts, learning, playbook, rules, libra
 export function analystPosts(rows) {
   return rows.map((r) => ({
     title: r.post.idea?.title ?? null, platform: r.post.platform, posted: r.post.posted_at?.slice(0, 16),
-    recipe: Object.fromEntries(["format", "style", "hook_type", "zyvo_position", "cta_type", "text_density", "post_time", "mode", "kind", "variant", "end_trigger", "loop", "length_s"].filter((k) => r.recipe?.[k] != null || !["kind", "variant", "end_trigger", "loop", "length_s"].includes(k)).map((k) => [k, r.recipe?.[k] ?? null])),
+    recipe: Object.fromEntries(["format", "style", "hook_type", "zyvo_position", "cta_type", "text_density", "post_time", "mode", "kind", "angle", "world", "length_bucket", "famous_name", "end_trigger", "source_story"].filter((k) => r.recipe?.[k] != null || !["kind", "angle", "world", "length_bucket", "famous_name", "end_trigger", "source_story"].includes(k)).map((k) => [k, r.recipe?.[k] ?? null])),
     score: r.m.score, freshness: r.w != null ? Math.round(r.w * 100) / 100 : null, views24: r.m.views24, views7d: r.m.views7d,
     engagement: r.m.engagementRate != null ? Math.round(r.m.engagementRate * 1000) / 1000 : null,
     account: r.post.account ?? r.post.idea?.account ?? "creator",

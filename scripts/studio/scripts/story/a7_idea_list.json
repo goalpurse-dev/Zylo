@@ -1,0 +1,413 @@
+{
+ "variant": "a7_idea_list",
+ "title": "5 fruit drama ideas you can steal",
+ "template": "ai_fruit_story",
+ "voices": {
+  "kokoro": {
+   "creator": {
+    "voice": "am_liam",
+    "speed": 1.05
+   },
+   "zee": {
+    "voice": "af_bella",
+    "speed": 1.05
+   }
+  },
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.38,
+    "style": 0.45,
+    "speed": 1.03
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.03
+   }
+  }
+ },
+ "world": "sunny",
+ "music_bpm": 108,
+ "music_shift": 3,
+ "no_phone": true,
+ "creation": "glass",
+ "source_story": "9f3c9af6-20b4-468f-9cd7-33d28fcda067",
+ "search_title": null,
+ "caption": null,
+ "hashtags": null,
+ "lead": 0.15,
+ "gap_speaker": 0.2,
+ "gap_same": 0.16,
+ "tail": 0.7,
+ "music_db_under": 14,
+ "max_gap": 0.4,
+ "start_at": "creator_close",
+ "hq_dir": "video/studio/9f3c9af6-20b4-468f-9cd7-33d28fcda067/hq",
+ "headline": {
+  "text": "*5 FRUIT DRAMA IDEAS* YOU CAN STEAL",
+  "chip": "5 IDEAS TO STEAL",
+  "secs": 7
+ },
+ "recipe": {
+  "angle": "A7",
+  "hook_type": "list",
+  "length_bucket": "30-45",
+  "famous_name": false,
+  "end_trigger": "comment",
+  "kind": "video",
+  "template": "ai_fruit_story",
+  "world": "sunny",
+  "template_shown": "ai_fruit_story",
+  "cta": "comment_number",
+  "source_story": "9f3c9af6-20b4-468f-9cd7-33d28fcda067"
+ },
+ "cta": {
+  "id": "comment_number",
+  "kind": "comment",
+  "chip": "COMMENT 1 TO 5"
+ },
+ "clips": [
+  {
+   "name": "payoff",
+   "file": "video/studio/9f3c9af6-20b4-468f-9cd7-33d28fcda067/final.mp4",
+   "in": 0.02,
+   "out": 11.09,
+   "hq_dir": "video/studio/9f3c9af6-20b4-468f-9cd7-33d28fcda067/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 8,
+   "pays_loop": true
+  }
+ ],
+ "lines": [
+  {
+   "pose": "shrug",
+   "who": "creator",
+   "text": "I want to post fruit drama, but I have zero ideas.",
+   "key": [
+    "zero"
+   ],
+   "expr": "sad",
+   "shot": "creator_close",
+   "role": "hook",
+   "visual": {
+    "kind": "sign",
+    "text": "0 IDEAS",
+    "rim": "#FF6B6B",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a7_idea_list/line01.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show1",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "Steal these. Five ideas, and number five I already made.",
+   "key": [
+    "Steal"
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "stakes",
+   "listen": "shocked",
+   "visual": {
+    "kind": "sign",
+    "text": "5 IDEAS",
+    "sub": "free to steal",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a7_idea_list/line02.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show2",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "One. The fake business trip. He's supposedly in Tokyo. His car is parked outside her favorite restaurant.",
+   "key": [
+    "car"
+   ],
+   "expr": "happy",
+   "shot": "side_left",
+   "role": "i1",
+   "listen": "shocked",
+   "visual": {
+    "kind": "idea",
+    "n": 1,
+    "title": "The fake business trip",
+    "text": "He's 'in Tokyo'. His car is outside her favorite restaurant."
+   },
+   "take": "story/a7_idea_list/line03.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show3",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Two. The secret twin. Mia sees Marco across the street, while he's sitting next to her.",
+   "key": [
+    "twin."
+   ],
+   "expr": "happy",
+   "shot": "side_right",
+   "role": "i2",
+   "listen": "shocked",
+   "visual": {
+    "kind": "idea",
+    "n": 2,
+    "title": "The secret twin",
+    "text": "Mia sees Marco across the street. He's sitting next to her."
+   },
+   "take": "story/a7_idea_list/line04.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show4",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "creator",
+   "text": "Okay, that one's good.",
+   "key": [
+    "good."
+   ],
+   "expr": "happy",
+   "shot": "creator_close",
+   "role": "react",
+   "keep": true,
+   "take": "story/a7_idea_list/line05.mp3",
+   "cues": []
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Three. Grandpa's love letters. None of them are to Grandma.",
+   "key": [
+    "None"
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "i3",
+   "listen": "shocked",
+   "visual": {
+    "kind": "idea",
+    "n": 3,
+    "title": "Grandpa's love letters",
+    "text": "None of them are to Grandma."
+   },
+   "take": "story/a7_idea_list/line06.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show5",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Four. A blind date with fake photos. His profile is ten years and three jobs old.",
+   "key": [
+    "fake"
+   ],
+   "expr": "happy",
+   "shot": "low_hero",
+   "role": "i4",
+   "visual": {
+    "kind": "idea",
+    "n": 4,
+    "title": "Blind date with fake photos",
+    "text": "His profile is ten years and three jobs old."
+   },
+   "take": "story/a7_idea_list/line07.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show6",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "chin",
+   "who": "creator",
+   "text": "And five?",
+   "key": [
+    "five?"
+   ],
+   "expr": "thinking",
+   "shot": "creator_close",
+   "role": "ask",
+   "keep": true,
+   "take": "story/a7_idea_list/line08.mp3",
+   "cues": []
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Five. The door was locked. But the walls are glass.",
+   "key": [
+    "glass."
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "i5",
+   "stamp": "All five are ready-made ideas in the app",
+   "visual": {
+    "kind": "idea",
+    "n": 5,
+    "title": "The door was locked",
+    "text": "The office gossip walks in. The walls are glass."
+   },
+   "take": "story/a7_idea_list/line09.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show7",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Made with Zyvo. tryzyvo.com, link in bio.",
+   "say": "Made with Zyvo. Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "role": "site",
+   "cues": [
+    {
+     "word": 3,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 4,
+     "event": "bio",
+     "sfx": "pop"
+    },
+    {
+     "word": 0,
+     "event": "show8",
+     "sfx": "pop"
+    }
+   ],
+   "shot": "two_shot",
+   "visual": {
+    "kind": "sign",
+    "text": "tryzyvo.com",
+    "sub": "link in bio"
+   },
+   "take": "story/a7_idea_list/line10.mp3"
+  },
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Which one would you make? Comment a number.",
+   "key": [
+    "number."
+   ],
+   "expr": "happy",
+   "role": "cta",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a7_idea_list/line11.mp3",
+   "shot": "two_shot"
+  }
+ ],
+ "shots": [
+  {
+   "to": "two_shot",
+   "at": "stakes.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "side_left",
+   "at": "i1.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "side_right",
+   "at": "i2.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "react.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "i3.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "low_hero",
+   "at": "i4.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "ask.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "i5.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  }
+ ],
+ "events_extra": [
+  {
+   "t": 0,
+   "event": "open",
+   "sfx": "hit"
+  }
+ ]
+}

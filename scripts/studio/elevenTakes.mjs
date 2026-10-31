@@ -12,7 +12,9 @@ const worst = todo.reduce((a, l) => a + (l.say ?? l.text).length, 0) * PER;
 if (!CAP || worst > CAP) throw new Error(`budget: worst case $${worst.toFixed(4)} for ${todo.length} lines; CAP_USD is ${CAP || "not set"}`);
 fs.mkdirSync(OUT, { recursive: true });
 let total = 0;
+const STOP = Number(process.env.STOP_USD ?? Infinity);   // the real spend stops here (the header bills less than the worst case)
 for (const l of todo) {
+  if (total >= STOP) { console.log(`stopped at $${total.toFixed(4)} (STOP_USD)`); break; }
   const v = V[l.who];
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${v.id}?output_format=mp3_44100_128`, {
     method: "POST", headers: { "xi-api-key": process.env.ELEVENLABS_KEY, "Content-Type": "application/json" },

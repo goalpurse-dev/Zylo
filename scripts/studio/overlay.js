@@ -60,13 +60,13 @@ export function makeOverlay(ctx) {
       return { x0: SAFE_CX - 300 * s, y0: SAFE.top + 280 - 150 * s, x1: SAFE_CX + 300 * s, y1: SAFE.top + 280 + 150 * s };
     },
     /** The spoken words, 1–3 at a time, the key word in yellow. */
-    caption(chunk, t) {
+    caption(chunk, t, y = 1300) {
       if (!chunk) return;
       let size = 92; ctx.font = `${size}px ${FONT}`;
       const text = chunk.words.map((w) => w.w).join(" ");
       while (ctx.measureText(text).width > W - SAFE.left - SAFE.right - 40 && size > 56) { size -= 4; ctx.font = `${size}px ${FONT}`; }
       const s = popScale(t - chunk.s, 0.12);
-      ctx.save(); ctx.translate(SAFE_CX, 1300); ctx.scale(s, s); ctx.textBaseline = "middle";
+      ctx.save(); ctx.translate(SAFE_CX, y); ctx.scale(s, s); ctx.textBaseline = "middle";
       const total = ctx.measureText(text).width; let x = -total / 2;
       for (const [i, w] of chunk.words.entries()) {
         const word = w.w + (i < chunk.words.length - 1 ? " " : ""), ww = ctx.measureText(word).width;
@@ -78,7 +78,7 @@ export function makeOverlay(ctx) {
     },
     /** Bold hook text over a real clip (short videos): "LINE ONE|LINE *TWO*" (| breaks, *word* yellow), centred at y,
      *  sized to the safe width. Whole from age 0 (frame 0 must read at once) unless pop; a pulse on zoom punches. */
-    hook(text, age, { y = 1040, pop = false, pulse = 0 } = {}) {
+    hook(text, age, { y = 1040, pop = false, pulse = 0, size: size0 = 104, top = null } = {}) {
       if (age < 0) return null;
       // *a key phrase* may span words ("*UNDER 4 MINUTES*"): every word inside the asterisks is yellow
       let inKey = false;
@@ -87,7 +87,7 @@ export function makeOverlay(ctx) {
         const key = inKey || opens; inKey = (inKey || opens) && !closes;
         return { w: w.replace(/\*/g, ""), key };
       }));
-      let size = 104; ctx.font = `${size}px ${FONT}`;
+      let size = size0; ctx.font = `${size}px ${FONT}`;
       const rowW = (r) => ctx.measureText(r.map((x) => x.w).join(" ")).width, maxW = (W - SAFE.left - SAFE.right - 30) / 1.1;   // room for the punch pulse
       // too long for two big rows: rewrap into more, shorter rows rather than shrink (the hook must read at a glance)
       if (Math.max(...rows.map(rowW)) > maxW) {
@@ -96,6 +96,7 @@ export function makeOverlay(ctx) {
       }
       while (Math.max(...rows.map(rowW)) > maxW && size > 60) { size -= 4; ctx.font = `${size}px ${FONT}`; }
       const s = (pop ? popScale(age, 0.2) : 1) * (1 + pulse * 0.25), lh = size * 1.08, h = rows.length * lh;
+      if (top != null) y = top + h / 2;
       ctx.save(); ctx.translate(SAFE_CX, y); ctx.scale(s, s); ctx.textBaseline = "middle"; ctx.lineJoin = "round";
       let x1 = 0;
       rows.forEach((r, i) => {
@@ -108,6 +109,43 @@ export function makeOverlay(ctx) {
       });
       ctx.restore();
       return { x0: SAFE_CX - (x1 + size * 0.1) * s, y0: y - (h / 2 + size * 0.1) * s, x1: SAFE_CX + (x1 + size * 0.1) * s, y1: y + (h / 2 + size * 0.1) * s };
+    },
+    /** The headline question (Master Prompt v2): big at the top for its first seconds, whole from frame 0, one word yellow. */
+    headline(text, t, secs) {
+      const out = Math.min(1, Math.max(0, (t - (secs - 0.3)) / 0.3));
+      ctx.save(); ctx.globalAlpha = 1 - out;
+      const b = this.hook(text, 1, { size: 74, top: SAFE.top + 10 });
+      ctx.restore();
+      return b;
+    },
+    /** A REAL screen BIG: ~80% of the width (x 40..910, clear of the icon column), readable on a phone, with one sticker. */
+    bigScreen(img, aspect, age, { outAge = -1, sticker = null, top = 400 } = {}) {
+      if (!img) return null;
+      const k = Math.min(1, Math.max(0, age) / 0.3), e = 1 - Math.pow(1 - k, 3), fade = outAge > 0 ? Math.max(0, 1 - outAge / 0.25) : 1;
+      const x0 = 40, w = 870, h = Math.min(w / aspect, 830), ww = h * aspect, x = x0 + (w - ww) / 2, y = top + (1 - e) * 70;
+      ctx.save(); ctx.globalAlpha = e * fade;
+      ctx.shadowColor = "rgba(0,0,0,0.55)"; ctx.shadowBlur = 44; ctx.shadowOffsetY = 16;
+      ctx.fillStyle = "#0b0c0e"; ctx.beginPath(); ctx.roundRect(x - 8, y - 8, ww + 16, h + 16, 30); ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+      ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, ww, h, 24); ctx.clip(); ctx.drawImage(img, x, y, ww, h); ctx.restore();
+      ctx.strokeStyle = "rgba(190,242,100,0.75)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(x - 8, y - 8, ww + 16, h + 16, 30); ctx.stroke();
+      if (sticker && age > 0.45) {
+        const px = x + sticker.x * ww, py = y + sticker.y * h, s = popScale(age - 0.45, 0.22), sx = x + (sticker.tx ?? sticker.x) * ww, sy = y + (sticker.ty ?? Math.max(0.06, sticker.y - 0.14)) * h;
+        // a ring on the exact spot, a sticker next to it
+        ctx.strokeStyle = YELLOW; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(px, py, 34 + Math.sin(age * 5) * 5, 0, Math.PI * 2); ctx.stroke();
+        ctx.save(); ctx.translate(Math.min(Math.max(sx, 200), 750), sy); ctx.rotate(-0.04); ctx.scale(s, s);
+        ctx.font = `46px ${FONT}`; const tw = ctx.measureText(sticker.text).width + 48;
+        ctx.fillStyle = YELLOW; ctx.beginPath(); ctx.roundRect(-tw / 2, -40, tw, 80, 20); ctx.fill();
+        ctx.fillStyle = "#141414"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(sticker.text, 0, 3);
+        ctx.restore();
+      }
+      ctx.restore();
+      return { x0: x - 8, y0: y - 8, x1: x + ww + 8, y1: y + h + 8 };
+    },
+    /** A small source stamp: where a fact comes from, or that it is an estimate. */
+    stamp(text, age, y = 1212) {
+      if (age < 0.2) return null;
+      return pill(SAFE_CX, y, 50, [[text, "#e9e9ef"]], { size: 25, scale: 1, border: "rgba(255,255,255,0.3)", bg: "rgba(9,10,10,0.72)" });
     },
     /** A step chip with the 5 progress dashes under it (the current one lit). */
     stepChip(n, total, parts, age) {

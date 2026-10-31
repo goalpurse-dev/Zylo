@@ -1,0 +1,621 @@
+{
+ "variant": "a6_tutorial",
+ "title": "How to make AI fruit videos",
+ "template": "ai_fruit_story",
+ "voices": {
+  "kokoro": {
+   "creator": {
+    "voice": "am_liam",
+    "speed": 1.05
+   },
+   "zee": {
+    "voice": "af_bella",
+    "speed": 1.05
+   }
+  },
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.38,
+    "style": 0.45,
+    "speed": 1.03
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.03
+   }
+  }
+ },
+ "world": "studio",
+ "music_bpm": 100,
+ "music_shift": 2,
+ "no_phone": true,
+ "creation": "pairs",
+ "source_story": "c591c05d-aa52-40f8-9751-7f8cbcdfc55f",
+ "search_title": null,
+ "caption": null,
+ "hashtags": null,
+ "lead": 0.15,
+ "gap_speaker": 0.2,
+ "gap_same": 0.16,
+ "tail": 0.7,
+ "music_db_under": 14,
+ "max_gap": 0.4,
+ "start_at": "two_shot",
+ "hq_dir": "video/studio/c591c05d-aa52-40f8-9751-7f8cbcdfc55f/hq",
+ "headline": {
+  "text": "HOW TO MAKE *AI FRUIT VIDEOS*",
+  "chip": "HOW TO MAKE AI FRUIT VIDEOS",
+  "secs": 8
+ },
+ "recipe": {
+  "angle": "A6",
+  "hook_type": "search_question",
+  "length_bucket": "60-90",
+  "famous_name": false,
+  "end_trigger": "save",
+  "kind": "video",
+  "template": "ai_fruit_story",
+  "world": "studio",
+  "template_shown": "ai_fruit_story",
+  "cta": "save_first_one",
+  "source_story": "c591c05d-aa52-40f8-9751-7f8cbcdfc55f"
+ },
+ "cta": {
+  "id": "save_first_one",
+  "kind": "save",
+  "chip": "SAVE THIS"
+ },
+ "clips": [
+  {
+   "name": "glimpse",
+   "file": "video/studio/c591c05d-aa52-40f8-9751-7f8cbcdfc55f/final.mp4",
+   "in": 0.02,
+   "out": 4.83,
+   "hq_dir": "video/studio/c591c05d-aa52-40f8-9751-7f8cbcdfc55f/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.45,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 2
+  },
+  {
+   "name": "payoff",
+   "file": "video/studio/c591c05d-aa52-40f8-9751-7f8cbcdfc55f/final.mp4",
+   "in": 4.89,
+   "out": 17.57,
+   "hq_dir": "video/studio/c591c05d-aa52-40f8-9751-7f8cbcdfc55f/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 15,
+   "pays_loop": true,
+   "stamp": "A different story, same six steps"
+  }
+ ],
+ "lines": [
+  {
+   "pose": "shrug",
+   "who": "creator",
+   "text": "How do you make those AI fruit videos? I can't edit, and I'm not filming myself.",
+   "key": [
+    "fruit"
+   ],
+   "expr": "sad",
+   "shot": "two_shot",
+   "role": "hook",
+   "visual": {
+    "kind": "clock",
+    "text": "HOURS OF EDITING?",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a6_tutorial/line01.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show1",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "You don't have to. Six steps. And step four is the tip most people skip.",
+   "key": [
+    "four"
+   ],
+   "expr": "smug",
+   "shot": "zee_close",
+   "role": "stakes",
+   "listen": "happy",
+   "visual": {
+    "kind": "sign",
+    "text": "6 STEPS",
+    "sub": "step 4 saves you money",
+    "scale": 0.8
+   },
+   "take": "story/a6_tutorial/line02.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show2",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Here's what we're making.",
+   "key": [
+    "making."
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "glimpse",
+   "visual": {
+    "kind": "tiles",
+    "images": [
+     "/work/media/scene0.jpg",
+     "/work/media/scene1.jpg",
+     "/work/media/scene2.jpg"
+    ],
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a6_tutorial/line03.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show3",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step one. Short Form, then AI Fruit Story.",
+   "key": [
+    "Fruit"
+   ],
+   "expr": "happy",
+   "role": "s1",
+   "screen": {
+    "file": "s_menu.jpg",
+    "sticker": {
+     "text": "tap here",
+     "x": 0.67,
+     "y": 0.39,
+     "ty": 0.86
+    }
+   },
+   "take": "story/a6_tutorial/line04.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show4",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step two. Pick an idea. Or write your own.",
+   "key": [
+    "own."
+   ],
+   "expr": "happy",
+   "role": "s2",
+   "screen": {
+    "file": "s_ideas.jpg",
+    "sticker": {
+     "text": "pick one",
+     "x": 0.5,
+     "y": 0.42,
+     "ty": 0.14
+    }
+   },
+   "take": "story/a6_tutorial/line05.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show5",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "shrug",
+   "who": "creator",
+   "text": "What if my idea is bad?",
+   "key": [
+    "bad?"
+   ],
+   "expr": "sad",
+   "shot": "creator_close",
+   "role": "ob1",
+   "visual": {
+    "kind": "sign",
+    "text": "BAD IDEA?",
+    "rim": "#FF6B6B"
+   },
+   "take": "story/a6_tutorial/line06.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show6",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Then pick a ready one. There are a hundred and fifty characters to cast.",
+   "key": [
+    "fifty"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "chars",
+   "visual": {
+    "kind": "roll",
+    "value": 150,
+    "label": "FRUIT CHARACTERS"
+   },
+   "take": "story/a6_tutorial/line07.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show7",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step three. Length. For your first one, stay short: the app itself says twenty to thirty seconds.",
+   "key": [
+    "short:"
+   ],
+   "expr": "happy",
+   "role": "s3",
+   "screen": {
+    "file": "s_length.jpg",
+    "sticker": {
+     "text": "start with 20–30 s",
+     "x": 0.5,
+     "y": 0.3,
+     "ty": 0.05
+    }
+   },
+   "take": "story/a6_tutorial/line08.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show8",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "chin",
+   "who": "creator",
+   "text": "Is it free?",
+   "key": [
+    "free?"
+   ],
+   "expr": "thinking",
+   "shot": "creator_close",
+   "role": "ob2",
+   "visual": {
+    "kind": "tag",
+    "text": "FREE?"
+   },
+   "take": "story/a6_tutorial/line09.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show9",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Honest answer: no. Video needs a paid plan. But you see the credit cost before you start.",
+   "key": [
+    "no."
+   ],
+   "expr": "neutral",
+   "shot": "zee_close",
+   "role": "price",
+   "stamp": "Zyvo pricing + fact sheet, Oct 2026",
+   "visual": {
+    "kind": "tag",
+    "text": "COST UP FRONT",
+    "sub": "video needs a paid plan",
+    "color": "#BEF264"
+   },
+   "take": "story/a6_tutorial/line10.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show10",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step four. Make the scene pictures, and check every single one.",
+   "key": [
+    "check"
+   ],
+   "expr": "happy",
+   "role": "s4",
+   "screen": {
+    "file": "s_pictures.jpg",
+    "sticker": {
+     "text": "check these first",
+     "x": 0.5,
+     "y": 0.5,
+     "ty": 0.1
+    }
+   },
+   "take": "story/a6_tutorial/line11.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show11",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "chin",
+   "who": "creator",
+   "text": "Why does that matter?",
+   "key": [
+    "matter?"
+   ],
+   "expr": "thinking",
+   "shot": "creator_close",
+   "role": "ob3",
+   "keep": true,
+   "take": "story/a6_tutorial/line12.mp3",
+   "cues": []
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "Because a bad picture becomes a bad clip. Fix it now. That's the tip most people skip.",
+   "key": [
+    "Fix"
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "tip",
+   "listen": "shocked",
+   "stamp": "My tip, from making these",
+   "visual": {
+    "kind": "sign",
+    "text": "FIX PICTURES FIRST",
+    "rim": "#FFD43B"
+   },
+   "take": "story/a6_tutorial/line13.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show12",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step five. Animate. They talk, with sound.",
+   "key": [
+    "Animate."
+   ],
+   "expr": "happy",
+   "role": "s5",
+   "screen": {
+    "file": "s_anim.jpg",
+    "sticker": {
+     "text": "each one talks",
+     "x": 0.5,
+     "y": 0.6,
+     "ty": 0.12
+    }
+   },
+   "take": "story/a6_tutorial/line14.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show13",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Step six. Make the final video. My thirty second test took three minutes, fifty seconds.",
+   "key": [
+    "fifty"
+   ],
+   "expr": "happy",
+   "role": "s6",
+   "stamp": "My run, Oct 29: 230 s from first click, 159 credits",
+   "screen": {
+    "file": "s_final.jpg",
+    "sticker": {
+     "text": "3:50, first click to here",
+     "x": 0.35,
+     "y": 0.5,
+     "ty": 0.06
+    }
+   },
+   "take": "story/a6_tutorial/line15.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show14",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "creator",
+   "text": "Okay, show me a real one.",
+   "key": [
+    "real"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "ask",
+   "visual": {
+    "kind": "conveyor",
+    "text": "IDEA",
+    "image": "/work/media/scene0.jpg"
+   },
+   "take": "story/a6_tutorial/line16.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show15",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Made with Zyvo. tryzyvo.com, link in bio.",
+   "say": "Made with Zyvo. Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "role": "site",
+   "cues": [
+    {
+     "word": 3,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 4,
+     "event": "bio",
+     "sfx": "pop"
+    },
+    {
+     "word": 0,
+     "event": "show16",
+     "sfx": "pop"
+    }
+   ],
+   "shot": "two_shot",
+   "visual": {
+    "kind": "sign",
+    "text": "tryzyvo.com",
+    "sub": "link in bio"
+   },
+   "take": "story/a6_tutorial/line17.mp3"
+  },
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Save this for when you make your first one.",
+   "key": [
+    "Save"
+   ],
+   "expr": "happy",
+   "role": "cta",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a6_tutorial/line18.mp3",
+   "shot": "two_shot"
+  }
+ ],
+ "shots": [
+  {
+   "to": "zee_close",
+   "at": "stakes.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "glimpse.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "ob1.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "chars.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "ob2.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "zee_close",
+   "at": "price.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "ob3.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "tip.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  }
+ ],
+ "events_extra": [
+  {
+   "t": 0,
+   "event": "open",
+   "sfx": "hit"
+  }
+ ]
+}

@@ -1,35 +1,29 @@
-// Content Machine: the Studio tab (owner, 2026-10-30). Short "how I made this with Zyvo" videos, rendered on the
-// laptop by the local studio worker (scripts/studio/worker.mjs, $0) from a REAL finished creation:
-//   1. reuse first: the owner's own finished creations of that template (last 30 days; lines naming a third-party
-//      brand are skipped), no generation cost; only when nothing is usable, a new one on the internal account, which
-//      waits for the owner's go with the cost
-//   2. the recipe (hook type, length, end trigger, loop): the five starters until there is data; after 3+ Studio
-//      posts above the median, "Let AI decide" makes 3 of the winning recipe + 2 experiments, each changing ONE thing
-//   3. the score: 3 s hold first, then average watch %, completion %, then shares, saves, comments, likes
+// Content Machine: the Studio tab (Master Prompt v2, owner 2026-10-31). "How I made this" became "videos people watch":
+// each video picks ONE angle (cm_studio_angles), starts on the viewer's problem and has Zyvo as the answer. A batch is
+// genuinely different videos: different angles, creations, worlds, lengths and end triggers; rendered on the laptop by
+// the studio worker (scripts/studio/worker.mjs), which writes each script and checks it against the batch.
+//   What the platforms reward (keep in mind when changing this): TikTok weighs interactions and finishing a longer video,
+//   and avoids repetition; YouTube Shorts starts with a seed audience, watching vs swiping away, and reduces re-uploads;
+//   near-identical templated videos get demoted. So: different footage and concept each time; value over length.
 // Pure parts are exported for the tests; studioActions() is the API.
 import { ApiError } from "./errors.js";
 
 export const OWNER_EMAIL = "upwardlift6@gmail.com";
-export const REUSE_DAYS = 30;
+export const REUSE_DAYS = 60;              // the owner's finished creations this far back
+export const NO_REPEAT_DAYS = 14;          // the same footage never twice within this
+export const WORLDS = ["factory", "cozy", "studio", "sunny"];
+export const WINNERS_AFTER_POSTS = 10;     // posts with numbers before batches = 3 winners + 2 experiments
+export const VIDEO_USD = 0.1;              // the script (~$0.02) and its new voice lines (~$0.05–0.10); the render is $0
 
-/** The templates the Studio can make (the worker has a capture kit and a script for "ready" ones). */
+/** The templates the Studio can make (the worker has a capture kit for "ready" ones). */
 export const STUDIO_TEMPLATES = Object.freeze({
   ai_fruit_story: { name: "AI Fruit Story", ready: true, source: "fruit_story", menu: ["Short Form", "AI Fruit Story"], generate_usd: 1.7, generate_credits: 174 },
-  long_form: { name: "Long Form", ready: false, why: "parked by the owner (2026-10-30)" },
-  clay_rescue: { name: "Clay Rescue", ready: false, why: "needs real facts on the fact sheet first" },
+  long_form: { name: "Long Form", ready: false, why: "no capture kit yet (parked by the owner on 2026-10-30)" },
+  clay_rescue: { name: "Clay Rescue", ready: false, why: "needs real facts on the fact sheet and a capture kit first" },
 });
+const TRIGGERS = ["comment", "repost", "save"];
 
-/** The five starter recipes (the first experiments, rendered 2026-10-30 from "Ten Years Out of Date"). */
-export const STARTERS = Object.freeze([
-  { variant: "V1", hook_type: "result_first", length_s: [28, 35], end_trigger: "comment", loop: true },
-  { variant: "V2", hook_type: "result_first_fast", length_s: [17, 23], end_trigger: "save", loop: true },
-  { variant: "V3", hook_type: "pov", length_s: [28, 35], end_trigger: "repost", loop: true },
-  { variant: "V4", hook_type: "question", length_s: [33, 42], end_trigger: "comment", loop: true },
-  { variant: "V5", hook_type: "cliffhanger", length_s: [28, 35], end_trigger: "repost", loop: true },
-]);
-const TRIGGERS = ["comment", "save", "repost"];
-
-// Third-party brands a line must not name (the real result is shown with its sound: such a scene is skipped)
+// Third-party brands a line of a reused creation must not name (it is shown with its sound: such a scene is skipped)
 const BRANDS = /\b(google|tiktok|instagram|youtube|facebook|whatsapp|snapchat|twitter|netflix|amazon|apple|iphone|android|samsung|microsoft|uber|tinder|starbucks|mcdonald'?s|coca[- ]?cola|pepsi|nike|adidas|disney|marvel|spotify|chatgpt|openai)\b/i;
 
 /** Scenes of a story that may not be shown (a line naming a brand), and whether enough is left to make a video. */
@@ -39,68 +33,85 @@ export function sceneFilter(scenes) {
   return { skip, usable: ok.length >= 2, reason: ok.length >= 2 ? null : "fewer than 2 clean, finished scenes" };
 }
 
-/** Reusable creations, best first: usable, used least by earlier Studio jobs, newest. */
-export function rankSources(stories, usedCounts = {}) {
+/** Reusable creations, best first: usable, not shown in the last 14 days, used least by earlier jobs, newest. */
+export function rankSources(stories, usedCounts = {}, recent = []) {
   return stories
     .map((s) => ({ ...s, used: usedCounts[s.id] ?? 0 }))
-    .filter((s) => s.filter.usable)
+    .filter((s) => s.filter.usable && !recent.includes(s.id))
     .sort((a, b) => a.used - b.used || String(b.created_at).localeCompare(String(a.created_at)));
 }
 
-/** A Studio post's score (0–100): 3 s hold first, then watch %, completion %, then shares, saves, comments, likes. */
+/** A Studio post's score (0–100): 40% 3 s hold, 30% average % watched, 20% shares + saves per view, 10% comments + likes. */
 export function studioScore(st, seconds) {
   if (!st) return null;
   const views = Number(st.views) || 0;
-  const rate = (n) => (views ? Math.min(1, (Number(n) || 0) / views) : 0);
+  const rate = (n, k) => (views ? Math.min(1, ((Number(n) || 0) / views) * k) : null);
   const hold3 = st.hold_3s_pct != null ? Number(st.hold_3s_pct) / 100 : null;
   const watch = st.avg_watch_sec != null && seconds ? Math.min(1, Number(st.avg_watch_sec) / seconds) : null;
-  const full = st.watched_full_pct != null ? Number(st.watched_full_pct) / 100 : null;
-  const parts = [[hold3, 0.35], [watch, 0.25], [full, 0.2], [Math.min(1, rate(st.shares) * 20), 0.08], [Math.min(1, rate(st.saves) * 20), 0.06], [Math.min(1, rate(st.comments) * 20), 0.04], [Math.min(1, rate(st.likes) * 10), 0.02]];
-  const known = parts.filter(([v]) => v != null);
-  if (!known.length || (hold3 == null && watch == null && full == null)) return null;
-  const w = known.reduce((a, [, k]) => a + k, 0);
+  if (hold3 == null && watch == null) return null;
+  const parts = [[hold3, 0.4], [watch, 0.3], [rate((Number(st.shares) || 0) + (Number(st.saves) || 0), 20), 0.2], [rate((Number(st.comments) || 0) + (Number(st.likes) || 0), 10), 0.1]];
+  const known = parts.filter(([v]) => v != null), w = known.reduce((a, [, k]) => a + k, 0);
   return Math.round((known.reduce((a, [v, k]) => a + v * k, 0) / w) * 1000) / 10;
 }
 
-const key = (r) => `${r.variant}|${r.end_trigger}|${r.loop ? 1 : 0}`;
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
+/** Angles with 4 or more posts below the median: retired from new batches. */
+export function retiredAngles(history) {
+  const scored = history.filter((h) => h.score != null && h.recipe?.angle);
+  if (!scored.length) return [];
+  const med = median(scored.map((h) => h.score)), below = {};
+  for (const h of scored) if (h.score < med) below[h.recipe.angle] = (below[h.recipe.angle] ?? 0) + 1;
+  return Object.entries(below).filter(([, n]) => n >= 4).map(([k]) => k);
+}
+
 /**
- * The recipes for a batch. history: [{recipe, score}] of posted Studio videos with numbers.
- * Fewer than 3 posts above the median: the starters, least tried first. Otherwise 3 × the winner + experiments that
- * each change ONE thing (the format/hook, the end trigger or the loop), never one already tried as often.
+ * The recipes of a batch. Fewer than 10 posts with numbers: different angles, least tried first, lengths mixed (one
+ * short, one 60–90 s when there's room). After that: 3 × the best recipe + experiments, each changing ONE variable.
+ * Worlds and triggers differ across the batch. only: restrict to these angle keys (the prompt bar).
  */
-export function chooseRecipes(history, n = 5) {
-  const scored = history.filter((h) => h.score != null && h.recipe?.variant);
-  const med = scored.length ? median(scored.map((h) => h.score)) : null;
-  const above = scored.filter((h) => h.score > med);
-  const tried = {};
-  for (const h of history) if (h.recipe?.variant) tried[key(h.recipe)] = (tried[key(h.recipe)] ?? 0) + 1;
-  if (above.length < 3) {
-    const starters = STARTERS.map((r, i) => ({ r, i, t: tried[key(r)] ?? 0 })).sort((a, b) => a.t - b.t || a.i - b.i).map((x) => ({ ...x.r, why: x.t ? `starter, tried ${x.t}×` : "starter, not tried yet" }));
-    return Array.from({ length: n }, (_, i) => starters[i % starters.length]);
+export function planRecipes({ angles, history = [], n = 5, only = null }) {
+  const retired = retiredAngles(history);
+  const pool = angles.filter((a) => a.status !== "retired" && !retired.includes(a.key) && (!only || only.includes(a.key)));
+  if (!pool.length) return [];
+  const tried = {}; for (const h of history) if (h.recipe?.angle) tried[h.recipe.angle] = (tried[h.recipe.angle] ?? 0) + 1;
+  const scored = history.filter((h) => h.score != null && h.recipe?.angle);
+  const base = (a) => ({ angle: a.key, angle_name: a.name, length_bucket: a.length_bucket, example_hook: a.hooks?.[0] ?? null });
+  let out;
+  if (scored.length >= WINNERS_AFTER_POSTS && !only) {
+    const by = {};
+    for (const h of scored) { const k = `${h.recipe.angle}|${h.recipe.world ?? ""}|${h.recipe.end_trigger ?? ""}`; (by[k] ??= { recipe: h.recipe, s: [] }).s.push(h.score); }
+    const best = Object.values(by).map((x) => ({ ...x, avg: x.s.reduce((a, b) => a + b, 0) / x.s.length })).sort((a, b) => b.avg - a.avg)[0];
+    const W = pool.find((a) => a.key === best.recipe.angle) ?? pool[0], winner = { ...base(W), world: best.recipe.world, end_trigger: best.recipe.end_trigger };
+    out = Array.from({ length: Math.min(3, n) }, () => ({ ...winner, why: `the best recipe so far (score ${best.avg.toFixed(1)} over ${best.s.length} posts), a new topic and new footage` }));
+    const ex = [
+      ...pool.filter((a) => a.key !== W.key).sort((a, b) => (tried[a.key] ?? 0) - (tried[b.key] ?? 0)).map((a) => ({ ...winner, ...base(a), changes: "angle", why: `experiment: the angle "${a.name}" instead of "${W.name}"` })),
+      ...WORLDS.filter((x) => x !== winner.world).map((x) => ({ ...winner, world: x, changes: "world", why: `experiment: the ${x} world` })),
+      ...TRIGGERS.filter((x) => x !== winner.end_trigger).map((x) => ({ ...winner, end_trigger: x, changes: "end trigger", why: `experiment: ends on "${x}"` })),
+    ];
+    // every experiment changes one variable; two of them change different ones
+    const seen = new Set(); for (const e of ex) { if (out.length >= n) break; if (seen.has(e.changes)) continue; seen.add(e.changes); out.push(e); }
+    for (const e of ex) { if (out.length >= n) break; if (!out.includes(e)) out.push(e); }
+  } else {
+    const sorted = [...pool].sort((a, b) => (tried[a.key] ?? 0) - (tried[b.key] ?? 0) || (a.sort ?? 0) - (b.sort ?? 0));
+    const pick = sorted.slice(0, n);
+    // the length mix: at least one 60–90 s and one 20–35/30–45 s
+    if (n >= 3 && !pick.some((a) => a.length_bucket === "60-90")) { const l = sorted.find((a) => a.length_bucket === "60-90"); if (l) pick[pick.length - 1] = l; }
+    if (n >= 3 && !pick.some((a) => ["20-35", "30-45"].includes(a.length_bucket))) { const s = sorted.find((a) => ["20-35", "30-45"].includes(a.length_bucket)); if (s) pick[0] = s; }
+    out = pick.map((a) => ({ ...base(a), why: tried[a.key] ? `tried ${tried[a.key]}×` : "not tried yet" }));
   }
-  const byKey = {};
-  for (const h of scored) (byKey[key(h.recipe)] ??= { recipe: h.recipe, scores: [] }).scores.push(h.score);
-  const best = Object.values(byKey).map((x) => ({ ...x, avg: x.scores.reduce((a, b) => a + b, 0) / x.scores.length })).sort((a, b) => b.avg - a.avg)[0];
-  const W = { variant: best.recipe.variant, hook_type: best.recipe.hook_type, length_s: best.recipe.length_s, end_trigger: best.recipe.end_trigger, loop: best.recipe.loop !== false };
-  const winners = Math.min(3, n), out = Array.from({ length: winners }, () => ({ ...W, why: `the winner (average score ${best.avg.toFixed(1)} over ${best.scores.length} posts)` }));
-  const candidates = [
-    ...STARTERS.filter((s) => s.variant !== W.variant).map((s) => ({ ...W, variant: s.variant, hook_type: s.hook_type, length_s: s.length_s, changes: "format + hook", why: `experiment: the ${s.hook_type} format instead of ${W.hook_type}` })),
-    ...TRIGGERS.filter((t) => t !== W.end_trigger).map((t) => ({ ...W, end_trigger: t, changes: "end trigger", why: `experiment: ends on "${t}" instead of "${W.end_trigger}"` })),
-    { ...W, loop: !W.loop, changes: "loop", why: `experiment: ${W.loop ? "no" : "a"} seamless loop` },
-  ].map((c) => ({ ...c, experiment_of: key(W) })).sort((a, b) => (tried[key(a)] ?? 0) - (tried[key(b)] ?? 0));
-  for (const c of candidates) { if (out.length >= n) break; out.push(c); }
+  // worlds and end triggers differ across the batch
+  const usedW = new Set(out.map((r) => r.world).filter(Boolean)); let wi = 0;
+  for (const r of out) { if (r.world) continue; while (usedW.has(WORLDS[wi % WORLDS.length]) && usedW.size < WORLDS.length) wi++; r.world = WORLDS[wi++ % WORLDS.length]; usedW.add(r.world); }
+  out.forEach((r, i) => { r.end_trigger ??= TRIGGERS[i % TRIGGERS.length]; r.famous_name = r.angle === "A2"; r.template = "ai_fruit_story"; });
   return out;
 }
 
-/** What a batch will cost and take, before anything starts. */
-export function studioEstimate({ count, reuse, rateFrame0, generateUsd = 1.7 }) {
-  const rate = rateFrame0 ? 0.0006 : 0;
-  if (reuse) return { usd: Math.round(count * rate * 10000) / 10000, generation_usd: 0, minutes: [6 * count, 10 * count],
-    why: `Reuses a finished creation: no generation. The voices are reused takes; the render runs on the laptop ($0).${rateFrame0 ? " The fast model rates each frame 0 (~$0.0006 a video)." : ""}` };
-  return { usd: Math.round((generateUsd + count * rate) * 100) / 100, generation_usd: generateUsd, minutes: [6 * count + 5, 10 * count + 8],
-    why: `No usable creation in the last ${REUSE_DAYS} days: a new one is made on the internal account first (~$${generateUsd.toFixed(2)}, measured on the live run). It waits for your go.` };
+/** One screen's worth of cost and time, before anything starts. */
+export function studioEstimate({ count, reused, generateUsd = 1.7 }) {
+  const fresh = Math.max(0, count - reused), usd = Math.round((count * VIDEO_USD + fresh * generateUsd) * 100) / 100;
+  return { usd, generation_usd: Math.round(fresh * generateUsd * 100) / 100, minutes: [8 * count, 14 * count + 8 * fresh],
+    why: `About $${VIDEO_USD.toFixed(2)} a video: the script and its new voice lines; the render is on the laptop ($0).${fresh ? ` ${fresh} new creation${fresh > 1 ? "s" : ""} on the internal account after your go (~$${generateUsd.toFixed(2)} each).` : " Reuses your finished creations: no generation."}` };
 }
 
 const WORKER_FRESH_S = 90;
@@ -108,7 +119,7 @@ export function workerState(rows, now) {
   const last = rows.map((r) => new Date(r.last_seen).getTime()).sort((a, b) => b - a)[0];
   const ago = last ? Math.round((now.getTime() - last) / 1000) : null;
   return { online: ago != null && ago <= WORKER_FRESH_S, last_seen_s: ago, workers: rows.map((r) => ({ id: r.id, last_seen: r.last_seen, info: r.info })),
-    note: "Jobs wait until the laptop worker runs (node scripts/studio/worker.mjs). A GPU server instead: about $0.50–1.00 an hour on demand (a 25 s video renders in ~6–10 min), not set up." };
+    note: "Jobs wait until the laptop worker runs (the desktop file). A GPU server instead: about $0.50–1.00 an hour on demand, not set up." };
 }
 
 /** "Let AI decide": the ready template whose Studio posts score best, else the first ready one. */
@@ -120,14 +131,24 @@ export function pickTemplate(history) {
   return best?.[0] ?? ready[0];
 }
 
-/** "Type a template": the template a prompt names ("fruit", "make a fruit story video"), or null. */
+/** The prompt bar: the template a prompt names ("fruit", "long form"), or null. */
 export function templateFromPrompt(text) {
   const t = String(text ?? "").toLowerCase();
   for (const [k, v] of Object.entries(STUDIO_TEMPLATES)) if (t.includes(k.replace(/_/g, " ")) || t.includes(v.name.toLowerCase())) return k;
   if (/\bfruit/.test(t)) return "ai_fruit_story";
-  if (/long ?form|youtube/.test(t)) return "long_form";
+  if (/long ?form/.test(t)) return "long_form";
   if (/clay/.test(t)) return "clay_rescue";
   return null;
+}
+/** The prompt bar: the angles a prompt names ("make an A2 one", "a tutorial", "idea list"). */
+export function anglesFromPrompt(text, angles) {
+  const t = String(text ?? ""), keys = [...t.matchAll(/\bA(\d{1,2})\b/gi)].map((m) => `A${m[1]}`).filter((k) => angles.some((a) => a.key === k));
+  if (keys.length) return keys;
+  const low = t.toLowerCase(), named = angles.filter((a) => low.includes(a.name.toLowerCase().split(/\s+/).slice(0, 2).join(" "))).map((a) => a.key);
+  if (/tutorial|how to/.test(low)) named.push("A6");
+  if (/idea/.test(low)) named.push("A7");
+  if (/\bclaude|chatgpt\b/.test(low)) named.push("A2");
+  return named.length ? [...new Set(named)] : null;
 }
 
 /* ─── the API ─────────────────────────────────────────────────────────── */
@@ -139,53 +160,51 @@ export function studioActions({ cm, store, now, files }) {
   async function sources(template) {
     const T = STUDIO_TEMPLATES[template];
     if (T?.source !== "fruit_story") return [];
-    const since = new Date(now().getTime() - REUSE_DAYS * 864e5).toISOString();
-    const stories = await cm.ownerFruitStories(OWNER_EMAIL, since);
-    const used = await cm.studioSourceUse();
-    return rankSources(stories.map((s) => ({ kind: "fruit_story", id: s.id, title: s.title, created_at: s.created_at, length_sec: s.length_sec, final_url: s.final_url, input: s.input,
-      filter: sceneFilter(s.scenes ?? []), scenes: (s.scenes ?? []).length })), used);
+    const at = (days) => new Date(now().getTime() - days * 864e5).toISOString();
+    const stories = await cm.ownerFruitStories(OWNER_EMAIL, at(REUSE_DAYS));
+    const used = await cm.studioSourceUse(), recent = await cm.studioRecentSources(at(NO_REPEAT_DAYS));
+    return rankSources(stories.map((s) => ({ kind: "fruit_story", id: s.id, title: s.title, created_at: s.created_at, length_sec: s.length_sec, final_url: s.final_url,
+      filter: sceneFilter(s.scenes ?? []), scenes: (s.scenes ?? []).length })), used, recent);
   }
 
   async function plan(body) {
     const mode = body?.mode === "ai_decide" ? "ai_decide" : "prompt";
     const s = await cm.settings();
-    const h = await history();
-    const template = mode === "ai_decide" ? pickTemplate(h) : (STUDIO_TEMPLATES[body?.template] ? body.template : templateFromPrompt(body?.prompt));
-    if (!template) throw new ApiError("VALIDATION", `Name a template (${Object.values(STUDIO_TEMPLATES).map((t) => t.name).join(", ")}) or let AI decide.`);
+    const h = await history(), angles = await cm.studioAngles();
+    const template = mode === "ai_decide" ? pickTemplate(h) : (STUDIO_TEMPLATES[body?.template] ? body.template : templateFromPrompt(body?.prompt) ?? "ai_fruit_story");
     const T = STUDIO_TEMPLATES[template];
     if (!T.ready) throw new ApiError("VALIDATION", `${T.name} can't be made yet: ${T.why}.`);
+    const only = mode === "prompt" ? anglesFromPrompt(body?.prompt, angles) : null;
+    if (mode === "prompt" && !only && !templateFromPrompt(body?.prompt)) throw new ApiError("VALIDATION", `Name a template (${Object.values(STUDIO_TEMPLATES).map((t) => t.name).join(", ")}) or an angle (A1–A12), or let AI decide.`);
     const count = Math.min(10, Math.max(1, Number(body?.count) || (mode === "ai_decide" ? s.studio_batch_size ?? 5 : 1)));
     const found = await sources(template);
-    const recipes = chooseRecipes(h, count);
-    const reuse = found.length > 0;
+    const recipes = planRecipes({ angles, history: h, n: count, only });
+    // a different creation for each video; fewer creations than videos: the rest wait for a new one (with your go)
+    const videos = recipes.map((r, i) => ({ recipe: r, source: found[i] ?? { kind: "generate" } }));
+    const reused = videos.filter((v) => v.source.kind !== "generate").length;
     return {
-      mode, template, name: T.name, count, recipes,
-      sources: found.slice(0, 8).map(({ input, ...x }) => x), source: found[0] ?? { kind: "generate" },
-      estimate: studioEstimate({ count, reuse, rateFrame0: Boolean(s.studio_rate_frame0), generateUsd: T.generate_usd }),
+      mode, template, name: T.name, count: videos.length, videos,
+      estimate: studioEstimate({ count: videos.length, reused, generateUsd: T.generate_usd }),
       worker: workerState(await cm.studioWorkers(), now()),
-      learning: { posts_with_numbers: h.filter((x) => x.score != null).length, rule: "3+ Studio posts above the median → 3 × the winning recipe + 2 one-change experiments" },
+      learning: { posts_with_numbers: h.filter((x) => x.score != null).length, retired: retiredAngles(h), rule: `After ${WINNERS_AFTER_POSTS} posts with numbers: 3 winning recipes + 2 one-change experiments; an angle retires after 4 posts below the median.` },
     };
   }
 
   return {
     studioPlan: async ({ body }) => plan(body),
 
-    // Starts a batch: one job per recipe. Reuse → queued for the worker; a new generation waits for the owner's go.
+    // One job per video. Reuse → queued for the worker; a new creation waits for the owner's go with its cost.
     studioStart: async ({ user, body }) => {
       const p = await plan(body);
-      if (body?.sourceId && !p.sources.some((x) => x.id === body.sourceId)) throw new ApiError("VALIDATION", "That creation can't be reused (too old, deleted, or not clean).");
-      const source = body?.sourceId ? p.sources.find((x) => x.id === body.sourceId) : p.source;
-      const batch = crypto.randomUUID();
-      const t0 = now().getTime();
-      const rows = p.recipes.map((r, i) => ({ created_at: new Date(t0 + i).toISOString(), batch_id: batch, template: p.template, mode: p.mode, prompt: body?.prompt ? String(body.prompt).slice(0, 300) : null, recipe: r,
+      const batch = crypto.randomUUID(), t0 = now().getTime();
+      const rows = p.videos.map(({ recipe, source }, i) => ({ created_at: new Date(t0 + i).toISOString(), batch_id: batch, template: p.template, mode: p.mode, prompt: body?.prompt ? String(body.prompt).slice(0, 300) : null, recipe,
         source: source.kind === "generate" ? { kind: "generate" } : { kind: source.kind, id: source.id, title: source.title, skip_scenes: source.filter?.skip ?? [] },
-        estimate: { ...p.estimate, usd: Math.round((p.estimate.usd / p.count) * 10000) / 10000 }, status: source.kind === "generate" ? "waiting_go" : "queued", created_by: user.email }));
+        estimate: studioEstimate({ count: 1, reused: source.kind === "generate" ? 0 : 1, generateUsd: STUDIO_TEMPLATES[p.template].generate_usd }), status: source.kind === "generate" ? "waiting_go" : "queued", created_by: user.email }));
       const jobs = await cm.createStudioJobs(rows);
-      await store.audit(user.email, "studio.start", { batch, template: p.template, count: rows.length, source: rows[0].source, estimate: p.estimate });
+      await store.audit(user.email, "studio.start", { batch, template: p.template, count: rows.length, angles: rows.map((r) => r.recipe.angle), estimate: p.estimate });
       return { batch, jobs, estimate: p.estimate, worker: p.worker };
     },
 
-    // The owner's go for a paid generation (the cost was shown on the job)
     studioApprove: async ({ user, body }) => {
       const job = await cm.updateStudioJob(String(body?.id ?? ""), { status: "queued", approved_by: user.email }, ["waiting_go"]);
       if (!job) throw new ApiError("VALIDATION", "Only a job waiting for your go can be approved.");
@@ -210,6 +229,20 @@ export function studioActions({ cm, store, now, files }) {
         worker: workerState(await cm.studioWorkers(), now()),
         templates: Object.entries(STUDIO_TEMPLATES).map(([k, t]) => ({ key: k, name: t.name, ready: t.ready, why: t.why ?? null })),
       };
+    },
+
+    studioAngles: async () => ({ angles: await cm.studioAngles(true) }),
+
+    saveStudioAngle: async ({ user, body }) => {
+      const key = String(body?.key ?? "");
+      const patch = {};
+      if (body?.status != null) { if (!["active", "retired"].includes(body.status)) throw new ApiError("VALIDATION", "Status: active or retired."); patch.status = body.status; }
+      for (const f of ["name", "viewer_gets", "zyvo_role", "structure"]) if (body?.[f] != null) { const v = String(body[f]).trim(); if (!v || v.length > 500) throw new ApiError("VALIDATION", `${f}: 1 to 500 characters.`); patch[f] = v; }
+      if (body?.hooks != null) patch.hooks = (Array.isArray(body.hooks) ? body.hooks : String(body.hooks).split("\n")).map((x) => String(x).trim()).filter(Boolean).slice(0, 10);
+      const angle = await cm.saveStudioAngle(key, { ...patch, updated_by: user.email });
+      if (!angle) throw new ApiError("VALIDATION", "No such angle.");
+      await store.audit(user.email, "studio.angle", { key, fields: Object.keys(patch) });
+      return { angle };
     },
   };
 }

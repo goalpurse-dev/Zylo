@@ -3,7 +3,7 @@
 // the moments of a real result, and the short-video scripts (no time claim without a measurement).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { chooseRecipes, studioScore, sceneFilter, rankSources, templateFromPrompt, pickTemplate, studioEstimate, workerState, STARTERS } from "../supabase/functions/_shared/contentMachine/studio.js";
+import { planRecipes, retiredAngles, anglesFromPrompt, studioScore, sceneFilter, rankSources, templateFromPrompt, pickTemplate, studioEstimate, workerState } from "../supabase/functions/_shared/contentMachine/studio.js";
 import { analytics } from "../supabase/functions/_shared/contentMachine/analytics.js";
 import { cleanStats, STAT_FIELDS } from "../supabase/functions/_shared/contentMachine/statsReader.js";
 import { pickMoments } from "../scripts/studio/moments.js";
@@ -11,6 +11,7 @@ import { makeScript, titleHook, TEN_YEARS } from "../scripts/studio/shortScripts
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
 const NOW = new Date("2026-10-30T12:00:00Z");
+const ANGLES = [["A1", "45-60"], ["A2", "30-45"], ["A3", "45-60"], ["A4", "20-35"], ["A5", "20-35"], ["A6", "60-90"], ["A7", "30-45"], ["A8", "30-45"]].map(([key, length_bucket], sort) => ({ key, name: `Angle ${key}`, length_bucket, sort, status: "active", hooks: [`hook ${key}`] }));
 const story = (id, title, days, lines = ["Hi.", "Oh no!"], over = {}) => ({ id, title, input: { source: "idea" }, length_sec: 30, final_url: `https://x/${id}.mp4`,
   created_at: new Date(NOW.getTime() - days * 864e5).toISOString(), scenes: lines.map((line, idx) => ({ idx, line, clip_status: "ready" })), ...over });
 
@@ -28,6 +29,8 @@ function studioApi({ stories = [], history = [], workers = [], settings = {} } =
     async updateStudioJob(id, patch, from) { const j = jobs.find((x) => x.id === id && from.includes(x.status)); if (!j) return null; Object.assign(j, patch); return j; },
     async listStudioJobs() { return [...jobs].reverse(); },
     async studioJobVideos() { return {}; },
+    async studioRecentSources() { return []; },
+    async studioAngles() { return ANGLES; },
   };
   Object.assign(world.db, extra);
   const { call } = apiFor(world);
@@ -35,26 +38,29 @@ function studioApi({ stories = [], history = [], workers = [], settings = {} } =
 }
 
 test("reuse first: the owner's finished stories of the last 30 days, a brand line skipped, least used first; $0 to generate", async () => {
-  const { call, jobs } = studioApi({ stories: [story("S1", "Ken Reads Everything", 3, ["Ken!", "He reads it all?", "Ask Google."]), story("S2", "Old one", 40), story("S3", "Twenty Pairs", 10)] });
+  const { call, jobs } = studioApi({ stories: [story("S1", "Ken Reads Everything", 3, ["Ken!", "He reads it all?", "Ask Google."]), story("S2", "Old one", 70), story("S3", "Twenty Pairs", 10)] });
   const p = (await call({ action: "studioPlan", mode: "prompt", prompt: "a fruit story video" })).data;
   assert.equal(p.template, "ai_fruit_story");
-  assert.deepEqual(p.sources.map((s) => s.id), ["S1", "S3"], "40 days old is too old; newest first");
-  assert.deepEqual(p.sources[0].filter.skip, [2], "the line naming Google is skipped");
+  assert.equal(p.videos[0].source.id, "S1", "newest first");
+  assert.deepEqual(p.videos[0].source.filter.skip, [2], "the line naming Google is skipped");
   assert.equal(p.estimate.generation_usd, 0);
-  assert.ok(p.estimate.usd < 0.01 && /no generation/i.test(p.estimate.why));
+  assert.ok(/no generation/i.test(p.estimate.why));
   assert.equal(p.count, 1);
   assert.equal(jobs.length, 0, "a plan starts nothing");
-  const r = (await call({ action: "studioStart", mode: "prompt", prompt: "fruit", sourceId: "S3" })).data;
+  const r = (await call({ action: "studioStart", mode: "prompt", prompt: "fruit" })).data;
   assert.equal(r.jobs[0].status, "queued");
-  assert.equal(r.jobs[0].source.id, "S3");
-  // the next plan prefers the one not used yet
-  assert.equal((await call({ action: "studioPlan", mode: "prompt", prompt: "fruit" })).data.source.id, "S1");
+  assert.equal(r.jobs[0].source.id, "S1");
+  // the next plan prefers the one not used yet; "Old one" (over 60 days) is never offered
+  assert.equal((await call({ action: "studioPlan", mode: "prompt", prompt: "fruit" })).data.videos[0].source.id, "S3");
+  const b = (await call({ action: "studioPlan", mode: "ai_decide", count: 3 })).data;
+  assert.equal(new Set(b.videos.map((v) => v.recipe.angle)).size, 3);
+  assert.equal(b.videos.filter((v) => v.source.kind === "generate").length, 1, "two unused creations... S1 used once still counts; the third waits for a go");
 });
 
 test("nothing usable: the job waits for the owner's go with the cost; approve and cancel only from the right state", async () => {
   const { call, jobs } = studioApi({ stories: [story("S9", "Brands", 2, ["Google it", "On TikTok"])] });
   const p = (await call({ action: "studioPlan", mode: "ai_decide", count: 2 })).data;
-  assert.equal(p.sources.length, 0);
+  assert.equal(p.videos.every((v) => v.source.kind === "generate"), true);
   assert.ok(p.estimate.generation_usd > 1 && p.estimate.usd >= p.estimate.generation_usd);
   const r = (await call({ action: "studioStart", mode: "ai_decide", count: 2 })).data;
   assert.deepEqual(r.jobs.map((j) => j.status), ["waiting_go", "waiting_go"]);
@@ -77,26 +83,28 @@ test("templates: typed names, parked ones refused, Let AI decide takes a ready o
   assert.equal(workerState([], NOW).online, false);
   assert.equal(workerState([{ id: "w", last_seen: new Date(NOW.getTime() - 20_000).toISOString() }], NOW).online, true);
   assert.match(workerState([], NOW).note, /GPU server/);
-  assert.match(studioEstimate({ count: 1, reuse: true, rateFrame0: true }).why, /rates each frame 0/);
+  assert.equal(studioEstimate({ count: 5, reused: 5 }).generation_usd, 0);
 });
 
-test("the learning rule: starters until 3 posts beat the median, then 3 × the winner + experiments that change ONE thing", () => {
-  const first = chooseRecipes([], 5);
-  assert.deepEqual(first.map((r) => r.variant), ["V1", "V2", "V3", "V4", "V5"]);
-  const tried = chooseRecipes([{ recipe: { ...STARTERS[0] }, score: null }], 5);
-  assert.equal(tried[0].variant, "V2", "the least tried starters first");
-  const h = [
-    { recipe: { ...STARTERS[4] }, score: 80 }, { recipe: { ...STARTERS[4] }, score: 70 }, { recipe: { ...STARTERS[0] }, score: 65 },
-    { recipe: { ...STARTERS[1] }, score: 10 }, { recipe: { ...STARTERS[2] }, score: 12 }, { recipe: { ...STARTERS[3] }, score: 20 },
-  ];
-  const b = chooseRecipes(h, 5);
-  assert.deepEqual(b.slice(0, 3).map((r) => r.variant), ["V5", "V5", "V5"], "the winner, three times");
+test("a batch is different videos: angles least tried first, lengths mixed, worlds differ; 10+ posts = 3 winners + one-change experiments; retired angles go", () => {
+  const first = planRecipes({ angles: ANGLES, n: 5 });
+  assert.equal(new Set(first.map((r) => r.angle)).size, 5);
+  assert.ok(first.some((r) => r.length_bucket === "60-90"), "a 60–90 s value video");
+  assert.ok(first.some((r) => ["20-35", "30-45"].includes(r.length_bucket)));
+  assert.ok(new Set(first.map((r) => r.world)).size >= 4, "worlds differ");
+  const h = Array.from({ length: 12 }, (_, i) => ({ recipe: { angle: i < 6 ? "A2" : "A7", world: i < 6 ? "cozy" : "sunny", end_trigger: "comment" }, score: i < 6 ? 80 + i : 5 + i }));
+  const b = planRecipes({ angles: ANGLES, history: h, n: 5 });
+  assert.deepEqual(b.slice(0, 3).map((r) => r.angle), ["A2", "A2", "A2"], "the best recipe, three times");
   const W = b[0];
   for (const e of b.slice(3)) {
-    const changed = ["variant", "end_trigger", "loop"].filter((k) => e[k] !== W[k]);
+    const changed = ["angle", "world", "end_trigger"].filter((k) => e[k] !== W[k]);
     assert.equal(changed.length, 1, `an experiment changes ONE thing (${changed})`);
-    assert.ok(e.experiment_of && e.why.startsWith("experiment"));
+    assert.ok(e.why.startsWith("experiment"));
   }
+  assert.deepEqual(retiredAngles(h), ["A7"], "6 posts below the median retire an angle");
+  assert.ok(!b.some((r) => r.angle === "A7"));
+  assert.deepEqual(anglesFromPrompt("make an A2 one with fruit", ANGLES), ["A2"]);
+  assert.deepEqual(anglesFromPrompt("a tutorial please", ANGLES), ["A6"]);
 });
 
 test("the Studio score: 3 s hold counts most, then watch and completion; nothing without retention numbers", () => {
@@ -119,7 +127,7 @@ test("retention numbers: the form fields, cleaned, and Analytics shows each Stud
   assert.equal(a.studio.posts[0].hold3, 64);
   assert.equal(a.studio.posts[0].dropoff, 1.5);
   assert.ok(a.studio.posts[0].score > 0);
-  assert.equal(a.studio.byVariant[0].key, "V5");
+  assert.ok(a.studio.byAngle && a.studio.byWorld);
 });
 
 test("a real result's moments: the ending is the last clean shot, frame 0 an earlier strong one, a brand shot never", () => {

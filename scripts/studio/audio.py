@@ -117,7 +117,7 @@ CLIPS = S.get("clips") or ([S["clip"]] if S.get("clip") else [])
 clips = []
 # short videos (Retention Engine, owner 2026-10-30): a clip "at": "start" plays from frame 0, before the first line;
 # "freeze": {"secs"} holds its last frame after it ends (a cliffhanger); the extra keys go to the page as they are
-CLIP_KEYS = ("sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
+CLIP_KEYS = ("stamp", "headline", "hq_dir", "sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
 for n, (ln, x) in enumerate(zip(lines, takes)):
     C = next((c for c in CLIPS if (n == 0 and c.get("at") == "start") or (n and n == c.get("after_line", -9) + 1)), None)
     if C:
@@ -211,7 +211,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     if tl.get("aligned") in ("whole", "matched"):
         keys = {norm(k) for k in ln.get("key", [])}
         for w in tl["words"]: w["key"] = norm(w["w"]) in keys
-        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge") if k in ln}); continue
+        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot") if k in ln}); continue
     mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
@@ -229,7 +229,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     keys = {norm(k) for k in ln.get("key", [])}
     for w in tl["words"]:
         w["key"] = norm(w["w"]) in keys
-    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge") if k in ln})
+    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot") if k in ln})
 
 # ── 4. mouth envelope per line (30 fps, 0..1) ──────────────────────────
 for tl, x in zip(timed, takes):
@@ -269,9 +269,10 @@ def note(f, n, kind="pad"):
     return np.sin(2 * np.pi * f * tt)
 
 
-def music(seconds, bpm=98):
-    n = int(seconds * SR); y = np.zeros(n, np.float32); beat = 60 / bpm
-    chords = [[220.0, 261.63, 329.63, 392.0], [174.61, 220.0, 261.63, 329.63], [261.63, 329.63, 392.0, 493.88], [196.0, 246.94, 293.66, 392.0]]
+def music(seconds, bpm=98, shift=0):
+    # bpm + shift (semitones): each video has its own bed (the feed avoids the same sound back to back)
+    n = int(seconds * SR); y = np.zeros(n, np.float32); beat = 60 / bpm; k = 2 ** (shift / 12)
+    chords = [[f * k for f in ch] for ch in [[220.0, 261.63, 329.63, 392.0], [174.61, 220.0, 261.63, 329.63], [261.63, 329.63, 392.0, 493.88], [196.0, 246.94, 293.66, 392.0]]]
     bar = int(4 * beat * SR)
     for b in range(0, n, bar):
         ch = chords[(b // bar) % 4]; m = min(bar, n - b)
@@ -338,7 +339,7 @@ def sfx(kind):
     return np.zeros(1)
 
 
-bed = music(total)
+bed = music(total, S.get("music_bpm", 98), S.get("music_shift", 0))
 bed = np.pad(bed, (0, max(0, len(voice) - len(bed))))[: len(voice)]   # exactly the voice track's length (rounding)
 # the clip's own sound: matched to our voices, faded in/out; the music ducks under it
 clip_track = np.zeros_like(voice)
@@ -411,7 +412,7 @@ measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 # the phone's frames, decoded exactly: the clip plays continuously from when the phone lights up to the wall reveal
 phone = None
 clip = clips[0] if clips else None
-if clip:
+if clip and not S.get("no_phone"):
     on = next((e["t"] for e in events if e["event"] == "phoneOn"), clip["start"]); off = next((e["t"] for e in events if e["event"] == "wall"), total) + 0.6
     vt0 = max(0.0, clip["in"] + (on - 0.1 - clip["start"])); dur = clip["in"] + (off - clip["start"]) - vt0
     if S.get("phone_full"): vt0, dur = S.get("phone_range", [0.0, 1e4])[0], S.get("phone_range", [0.0, 1e4])[1] - S.get("phone_range", [0.0, 1e4])[0]   # the part of the video used
@@ -420,7 +421,7 @@ if clip:
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
 json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled,
-           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "length_target", "hq_dir", "tempo", "phone_skip") if k in S} or None},
+           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "length_target", "hq_dir", "tempo", "phone_skip", "world", "headline") if k in S} or None},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

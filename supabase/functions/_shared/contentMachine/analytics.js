@@ -150,7 +150,7 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
   };
   return {
     totals: totalsOf(rows), byPlatform, byAccount, table, top5, series,
-    studio: { posts: studioRows, byVariant: studioBy("variant"), byHook: studioBy("hook_type"), byTrigger: studioBy("end_trigger"), formula: "3 s hold 35% · average watch 25% · completion 20% · shares 8% · saves 6% · comments 4% · likes 2%" },
+    studio: { posts: studioRows, byAngle: studioBy("angle"), byWorld: studioBy("world"), byHook: studioBy("hook_type"), byLength: studioBy("length_bucket"), byTrigger: studioBy("end_trigger"), formula: "3 s hold 40% · average % watched 30% · shares + saves per view 20% · comments + likes 10%" },
     // Studio videos (owner, 2026-10-30): which CTA variant and which template did better (the A/B test)
     averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type"), cta: groupAvg("cta").filter((g) => g.key !== "unknown"), template: groupAvg("template").filter((g) => g.key !== "unknown") },
     formula: SCORE_FORMULA, filtered: rows.length, total: all.length,
