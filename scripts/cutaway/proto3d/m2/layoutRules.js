@@ -105,7 +105,7 @@ export function layoutRules(L) {
       const p = parts.find((q) => q.id === a.p);
       if (!p || p.kind !== "boxPop" || !/chlor|chemical|tablet|shock|dose|powder/i.test(p.id) || Math.max(...(p.params.size ?? [9])) > 1) continue;
       p.kind = "drops";
-      p.params = { x0: box.x0 + 1, x1: box.x1 - 1, count: 34, fromY: box.y1 + 3.2, landY: box.y1, z: (box.z0 + box.z1) / 2, mat: p.params.mat ?? "tankBlue" };
+      p.params = { x0: box.x0 + 1, x1: box.x1 - 1, count: 26, size: 2.6, fromY: box.y1 + 3.2, landY: box.y1, z: (box.z0 + box.z1) / 2, mat: p.params.mat ?? "tankBlue" };
       a.v = "fall";
       // (it dissolves as the water clears)
       b.do = [...b.do, { p: p.id, v: "hide", ...(wa.w ? { w: wa.w } : {}), o: 0.8 }];

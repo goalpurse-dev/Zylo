@@ -230,10 +230,11 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // caption's band goes to the first free band instead (planned layouts; the approved ones keep theirs)
   const captionY = {};
   if (layout.codeShots && camera?.end?.length) {
-    const counters = layout.parts.filter((p) => p.kind === "counter").map((p) => ({ box: focusOf(p, layout.world?.cut), show: tracks[`${p.id}.show`] })).filter((c) => c.box);
+    // (and a prop to read: the caption sat on the newspaper and the book)
+    const counters = layout.parts.filter((p) => ["counter", "book", "sheet"].includes(p.kind)).map((p) => ({ box: focusOf(p, layout.world?.cut), show: tracks[`${p.id}.${p.kind === "counter" ? "show" : "up"}`], gone: p.kind === "counter" ? null : tracks[`${p.id}.down`] })).filter((c) => c.box);
     const onAt = (tr, t) => { let v = tr?.base ?? 0; for (const r of tr?.ramps ?? []) if (t >= r.t1) v += r.amp; else if (t > r.t0) v += r.amp * (t - r.t0) / Math.max(0.01, r.t1 - r.t0); return v > 0.5; };
     words.forEach((w, i) => {
-      const k = cameraAt(camera.end, w.s), up = counters.filter((c) => onAt(c.show, w.s)).map((c) => projectBox(k.pos, k.tgt, c.box)).filter((r) => !r.behind && r.x1 > 0.2 && r.x0 < 0.8);
+      const k = cameraAt(camera.end, w.s), up = counters.filter((c) => onAt(c.show, w.s) && !onAt(c.gone, w.s)).map((c) => projectBox(k.pos, k.tgt, c.box)).filter((r) => !r.behind && r.x1 > 0.2 && r.x0 < 0.8);
       const hits = (y) => up.some((r) => r.y0 < y + 0.04 && r.y1 > y - 0.04);
       if (hits(0.52)) { const y = [0.68, 0.76, 0.42, 0.84].find((b) => !hits(b)); if (y) captionY[i] = y; }
     });
