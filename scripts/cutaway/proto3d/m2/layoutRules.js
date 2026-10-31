@@ -211,7 +211,13 @@ export function layoutRules(L) {
       const keep = Object.fromEntries(Object.entries(s).filter(([k]) => ["at", "word", "hero"].includes(k)));
       // the width is the code's too: one part fills most of the frame, one piece a little less (its part around it is
       // context), several parts together fill it (a 45% default left an 8 m garage door a quarter of a phone screen)
-      const width = s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      // a part of the build is shown in its context, with the main subject filling the frame: a pump alone was a grey box
+      // filling the screen, or the pool cut off at the frame's edge (the owner's review of 2026-10-31). A prop to read (a
+      // book, a newspaper) keeps its own frame, from the start of its line: it was small and far until its late word
+      const main = parts.find((p) => p.main)?.id, reads = ids.some((id) => ["book", "sheet", "flag"].includes(byId.get(String(id).split(".")[0])?.kind));
+      if (reads) return { ...keep, at: { s: b.s }, focus: ids, width: 0.75, zone: "center" };
+      if (main && !pieces.length && !ids.includes(main)) ids.push(main);
+      const width = main && ids.includes(main) ? 0.94 : s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
       return { ...keep, focus: ids, width };
     });
     notes.push(`${b.s}: shots framed by the code`);

@@ -16,8 +16,9 @@ export async function buildAudio({ wt, ff, timeline: tl, voice, words, out }) {
   const { buildAss } = await import(pathToFileURL(path.join(wt, "render-worker/src/cutawayFinalPlan.mjs")).href);
   // the video with the end card has no caption once the card pops (the last word's caption sat on the sign); the one
   // without it keeps them all
-  fs.writeFileSync(path.join(out, "captions.ass"), buildAss({ words, cards: A.cards }));
-  fs.writeFileSync(path.join(out, "captions_end.ass"), buildAss({ words, cards: A.cards, until: M.signPop }));
+  const placed = words.map((w, i) => (tl.captionY?.[i] ? { ...w, y: tl.captionY[i] } : w));
+  fs.writeFileSync(path.join(out, "captions.ass"), buildAss({ words: placed, cards: A.cards }));
+  fs.writeFileSync(path.join(out, "captions_end.ass"), buildAss({ words: placed, cards: A.cards, until: M.signPop }));
   const { renderMix, loudness } = await import(pathToFileURL(path.join(wt, "render-worker/src/cutawayFinal.mjs")).href);
   const lib = (k) => path.join(wt, "render-worker/assets/sfx", `lib-${k}.mp3`);
   // (a library sound that is not there is left out: the video goes on without it)

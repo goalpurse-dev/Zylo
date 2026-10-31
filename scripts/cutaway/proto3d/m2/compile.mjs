@@ -32,7 +32,8 @@ export const AMBIENCE_OF = Object.freeze({ yard: "yard", street: "street", park:
 export function nameCards(sentences, words, cards = []) {
   const out = [];
   for (const s of sentences) {
-    const m = /\bthis is (?:an? |the |your )?([a-z][a-z' -]*?)(?=[,.!?;]|$| that | which | and | but )/i.exec(s.text ?? "");
+    // (a second name line may end "...is a skimmer": the card says which box it is, the owner's review of 2026-10-31)
+    const m = /\bthis is (?:an? |the |your )?([a-z][a-z' -]*?)(?=[,.!?;]|$| that | which | and | but )/i.exec(s.text ?? "") ?? (s.role === "name2" ? /\b(?:is|are) (?:an? |the )?([a-z][a-z' -]*?)[.!?]?$/i.exec(s.text ?? "") : null);
     if (!m) continue;
     const name = m[1].trim().replace(/\s+/g, " ");
     if (!name || name.length > 22 || name.split(" ").length > 3) continue;
@@ -206,8 +207,10 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       // (and everything the beat's own shot names with it: a shot of the showing part alone dropped the rest, a meter framed
       // without the fish it measured; the owner's round of 2026-10-28)
       const named = [...new Set([b.shows.p, ...(b.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : [])).filter((id) => id !== "home" && layout.parts.some((q) => q.id === String(id).split(".")[0]))])];
-      const own = qb ? { box: qb, width: 0.9, zone: "center" } : named.length > 1 ? { focus: named, width: 0.8, ...(flat ? { view: "high" } : {}) } : { focus: [b.shows.p], type: w < 0.05 && !flat ? "close" : "mid", ...(flat ? { view: "high" } : {}) };
-      if (r.behind || w < 0.12 || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : own), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
+      // (a planned layout shows the part with the main subject, never alone: a grey box filling the screen, review of 2026-10-31)
+      const mainP = layout.codeShots ? layout.parts.find((q) => q.main)?.id : null;
+      const own = qb ? { box: qb, width: 0.9, zone: "center" } : mainP ? { focus: [...new Set([...named, mainP])], width: 0.94 } : named.length > 1 ? { focus: named, width: 0.8, ...(flat ? { view: "high" } : {}) } : { focus: [b.shows.p], type: w < 0.05 && !flat ? "close" : "mid", ...(flat ? { view: "high" } : {}) };
+      if (r.behind || w < (layout.codeShots ? 0.05 : 0.12) || r.x1 < 0.05 || r.x0 > 0.95 || targetOut) extra.push({ ...(target ? { box: arrival(), width: 0.85, zone: "center" } : own), t: Math.max(0, t - 0.1), at: { s: b.s }, auto: true });
     }
     // an auto shot takes the place of a planned shot just before it (closer than a move's gap it would be dropped),
     // starting at that shot's time
@@ -223,9 +226,22 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   cards.push(...nameCards(sentences, words, cards));
   // the red state labels on problem lines, for a planner layout (premade keeps its approved cards)
   if (layout.hold) cards.push(...stateCards(sentences, words, layout.beats ?? [], cards));
+  // a caption never sits on a counter or gauge (the owner's review of 2026-10-31): a word said while one is up in the
+  // caption's band goes to the first free band instead (planned layouts; the approved ones keep theirs)
+  const captionY = {};
+  if (layout.codeShots && camera?.end?.length) {
+    const counters = layout.parts.filter((p) => p.kind === "counter").map((p) => ({ box: focusOf(p, layout.world?.cut), show: tracks[`${p.id}.show`] })).filter((c) => c.box);
+    const onAt = (tr, t) => { let v = tr?.base ?? 0; for (const r of tr?.ramps ?? []) if (t >= r.t1) v += r.amp; else if (t > r.t0) v += r.amp * (t - r.t0) / Math.max(0.01, r.t1 - r.t0); return v > 0.5; };
+    words.forEach((w, i) => {
+      const k = cameraAt(camera.end, w.s), up = counters.filter((c) => onAt(c.show, w.s)).map((c) => projectBox(k.pos, k.tgt, c.box)).filter((r) => !r.behind && r.x1 > 0.2 && r.x0 < 0.8);
+      const hits = (y) => up.some((r) => r.y0 < y + 0.04 && r.y1 > y - 0.04);
+      if (hits(0.52)) { const y = [0.68, 0.76, 0.42, 0.84].find((b) => !hits(b)); if (y) captionY[i] = y; }
+    });
+  }
   return {
     key: layout.key,
     marks,
+    ...(Object.keys(captionY).length ? { captionY } : {}),
     lengthSec: marks.lengthEnd,
     sentences: sentences.map(({ id, role, t0, t1, text }) => ({ id, role, t0, t1, text })),
     tracks,

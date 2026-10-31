@@ -497,6 +497,9 @@ MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what i
 FINISH    "Add [the finishing touches shown]." (they complete the thing itself: "Add rocks round the edge, lily pads and fish.") then "Congratulations, you have built a [thing]."
 Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
 Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
+Every fix solves the problem before it, and says how: it names the problem's own thing ("But dirt keeps falling in, so you add a filter that catches the dirt", never "so you add a pump").
+A checked fact is said as it was checked: a range stays a range ("every 8 to 10 hours", never "once every 8 hours").
+Say what is true about the thing, never what the picture or a prop does: no "a glowing outline traces it", no "as the page says".
 Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
 const NARRATION_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "sentences"], properties: { title: { type: "string" }, sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } } } };
 
@@ -611,6 +614,18 @@ export const cardNumber = (n, claim = "") => {
   return new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(String(claim)) && !String(claim).includes(commas) ? String(n) : commas;
 };
 const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
+/**
+ * A sentence says its checked fact as checked: one end of a range alone is drift ("about once every 8 hours" for a checked
+ * "every 8 to 10 hours", the swimming pool of 2026-10-30). Returns the problems (free).
+ */
+export function factDrift(text, claim) {
+  const P = [], says = (n) => new RegExp(`(?<![\\d,.])${n.replace(/[.]/g, "\\.")}(?![\\d,])`).test(String(text).replace(/(\d),(\d)/g, "$1$2"));
+  for (const m of String(claim ?? "").replace(/(\d),(\d)/g, "$1$2").matchAll(/(\d[\d.]*)\s*(?:to|-|–)\s*(\d[\d.]*)/g)) {
+    const a = says(m[1]), b = says(m[2]);
+    if (a !== b) P.push(`the checked fact says ${m[1]} to ${m[2]}: say the whole range`);
+  }
+  return P;
+}
 /**
  * A number card says what its sentence says: its unit is the word said after the number ("20,000 gallons" never carded
  * "20,000 TONS", the swimming pool of 2026-10-30), and a number the sentence does not say has no card (free)
@@ -841,6 +856,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const onScreen = (layout.parts ?? []).filter((p) => p.kind === "counter").flatMap((p) => [p.params?.from, p.params?.to]).filter((n) => Number.isFinite(Number(n))).map((n) => String(Math.abs(Number(n))));
     const allowed = [...verifiedNums, ...onScreen];
     for (const s of script.sentences) for (const p of guard("sentence check", () => sentenceProblems(s.text, { cues: cues[s.role] ?? [], allowed }), BUGS, [])) P.push(`${s.role}: ${p}`);
+    for (const s of script.sentences) for (const p of factDrift(s.text, factOf(s.role))) P.push(`${s.role}: ${p}`);
     P.push(...guard("script check", () => checkScript({ ...script, cards: [] }, lengthSec, roles, { lengthIsTarget: true }), BUGS, []));
     const n = script.sentences.reduce((k, s) => k + wordCount(s.text), 0), L = LENGTH[lengthSec];
     // (the length as guidance for a rewrite that runs for something else; and a visible-consequence line whose picture shows
@@ -871,7 +887,10 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   for (const t of wc.T) warnings.push(`${t} (a target: the video runs a little longer or shorter)`);
   layout = { ...layout, audio: { ...layout.audio, cards: cardsAsSaid(layout.audio?.cards, script.sentences) } };
   // (the layout itself is solved by planTopic, after the opening fix)
-  return { script, layout, problems: wc.P, warnings, solve: true };
+  // (the story and fact-wording rules get their rewrites above but never fail a paid plan: the preview check judges it)
+  const soft = (x) => /does not solve|say the whole range/.test(x);
+  warnings.push(...wc.P.filter(soft));
+  return { script, layout, problems: wc.P.filter((x) => !soft(x)), warnings, solve: true };
 }
 
 /**

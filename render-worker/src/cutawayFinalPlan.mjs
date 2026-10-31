@@ -44,7 +44,8 @@ export function buildAss({ words, cards = [], width = 1080, height = 1920, fontN
     if (!text || w.s >= until - 0.05) return;
     const next = words[i + 1];
     const end = Math.min(until, next ? Math.max(w.e, next.s) : w.e + 0.25);
-    lines.push(`Dialogue: 0,${assTime(w.s)},${assTime(end)},Word,,0,0,0,,{\\pos(${x},${y})}${text}`);
+    // (w.y: this word's own band, moved off a counter; compile.mjs captionY)
+    lines.push(`Dialogue: 0,${assTime(w.s)},${assTime(end)},Word,,0,0,0,,{\\pos(${x},${w.y ? Math.round(height * w.y) : y})}${text}`);
   });
   for (const c of cards) {
     const text = String(c.text).replace(/[{}\\]/g, "");
