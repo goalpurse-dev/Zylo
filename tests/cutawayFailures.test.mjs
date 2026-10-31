@@ -165,3 +165,10 @@ test("the owner's contact-sheet review (2026-10-31): story logic and fact drift 
   const { makePage } = await import("../scripts/cutaway/proto3d/m2/makePage.mjs");
   assert.match(makePage({ key: "t", codeShots: true, world: {}, parts: [] }), /c \* vec3\(0\.46, 0\.38, 0\.32\)/);
 });
+
+test("launch check (2026-10-31): a layout approved on /admin/ops travels with its script, and two failures in a row alert from the first videos", () => {
+  const root = path.join(M3, "../../../..");
+  assert.match(fs.readFileSync(path.join(root, "supabase/functions/_shared/cutaway/runtime.ts"), "utf8"), /approvedScript: \{ title: data\.script\.title/);
+  assert.match(fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8"), /const A = saved\.approvedScript\?\.sentences \? saved\.approvedScript : approvedScript\(key\)/);
+  assert.match(fs.readFileSync(path.join(root, "supabase/functions/cutaway-watchdog/index.ts"), "utf8"), /\(runs\.length >= 5 && rate > 0\.2\) \|\| twoInARow/);
+});

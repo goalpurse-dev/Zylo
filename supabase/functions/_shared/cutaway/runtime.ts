@@ -68,7 +68,7 @@ async function partsLibrary(admin: any) {
 async function approvedLayout(admin: any, run: any) {
   if (!run.layout_key) return null;
   const { data } = await admin.from("cutaway_layouts").select("key, layout, script").eq("key", run.layout_key).eq("approved", true).is("retired_at", null).maybeSingle();
-  return data ? { ...data.layout, key: data.key, facts: data.script?.facts ?? data.layout?.facts ?? [] } : null;
+  return data ? { ...data.layout, key: data.key, facts: data.script?.facts ?? data.layout?.facts ?? [], ...(data.script?.sentences ? { approvedScript: { title: data.script.title, hero: data.script.hero, sentences: data.script.sentences, cards: data.script.cards ?? [], parts: data.script.parts ?? [] } } : {}) } : null;
 }
 
 // ---------- RunPod ----------

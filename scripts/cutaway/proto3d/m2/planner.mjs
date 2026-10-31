@@ -550,8 +550,10 @@ export function sentenceProblems(text, { cues = [], allowed = null, must = [], w
  * if the whole fails). Returns { script, changedRoles, costUsd } or null (no approved script: the old path).
  */
 async function planPremade({ step, topic, lengthSec, saved, key, trace }) {
-  const A = approvedScript(key);
-  if (!A || A.sentences.map((s) => s.role).join() !== (saved.roles ?? []).join()) return null;
+  // (the server sends a layout approved on /admin/ops with its script: the image file only knows the first three topics, and
+  // the approved swimming pool fell to the old script-first path under the premade cap; launch check of 2026-10-31)
+  const A = saved.approvedScript?.sentences ? saved.approvedScript : approvedScript(key);
+  if (!A || A.sentences.map((s) => s.role).join() !== (saved.roles ?? (saved.beats ?? []).map((b) => b.s)).join()) return null;
   const cues = anchorWords(saved);
   const beats = A.sentences.map((s) => ({ role: s.role, approved: s.text, sees: beatBrief(saved, s.role), cues: cues[s.role] ?? [] }));
   const facts = (saved.facts ?? []).filter((f) => f.verdict !== "drop").map((f) => f.claim);
@@ -958,7 +960,7 @@ async function planTopicRaw({ apiKey, topic, lengthSec = 30, reuse = null, log, 
     if (pp) {
       const layout = { ...saved, title: pp.script.title || saved.title };
       const solved = solveLayout(layout, pp.script.sentences);
-      return { script: pp.script, layout, problems: solved.problems, warnings: solved.warnings, costUsd: +cost.toFixed(4), trace, changedRoles: pp.changedRoles, approved: saved.approved !== false, approvedScript: approvedScript(reuse) };
+      return { script: pp.script, layout, problems: solved.problems, warnings: solved.warnings, costUsd: +cost.toFixed(4), trace, changedRoles: pp.changedRoles, approved: saved.approved !== false, approvedScript: saved.approvedScript?.sentences ? saved.approvedScript : approvedScript(reuse) };
     }
   }
   if (!given && !saved) {

@@ -32,7 +32,8 @@ async function failureRate() {
   const { data } = await admin.from("cutaway_runs").select("status, error_code").in("status", ["done", "failed"]).eq("env", "prod").order("finished_at", { ascending: false }).limit(10);
   const runs = data ?? [], ours = (r: any) => r.status === "failed" && !["GATE_FAILED", "PLAN_FAILED"].includes(r.error_code);
   const rate = runs.length ? runs.filter(ours).length / runs.length : 0, twoInARow = runs.length >= 2 && ours(runs[0]) && ours(runs[1]);
-  if (runs.length >= 5 && (rate > 0.2 || twoInARow)) await alertOnce(admin, "cutaway-failure-rate", 3 * 3600, "Cutaway: videos are failing", `${Math.round(rate * 100)}% of the last ${runs.length} videos failed on our side${twoInARow ? ", the last two in a row" : ""}. Codes: ${runs.filter(ours).map((r: any) => r.error_code).join(", ")}.`);
+  // (two in a row alert from the very first videos: launch day has fewer than five)
+  if ((runs.length >= 5 && rate > 0.2) || twoInARow) await alertOnce(admin, "cutaway-failure-rate", 3 * 3600, "Cutaway: videos are failing", `${Math.round(rate * 100)}% of the last ${runs.length} videos failed on our side${twoInARow ? ", the last two in a row" : ""}. Codes: ${runs.filter(ours).map((r: any) => r.error_code).join(", ")}.`);
   return { rate: +rate.toFixed(2), twoInARow };
 }
 
