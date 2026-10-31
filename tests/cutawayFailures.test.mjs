@@ -172,3 +172,14 @@ test("launch check (2026-10-31): a layout approved on /admin/ops travels with it
   assert.match(fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8"), /const A = saved\.approvedScript\?\.sentences \? saved\.approvedScript : approvedScript\(key\)/);
   assert.match(fs.readFileSync(path.join(root, "supabase/functions/cutaway-watchdog/index.ts"), "utf8"), /\(runs\.length >= 5 && rate > 0\.2\) \|\| twoInARow/);
 });
+
+test("Beta: 3 custom videos per user per 24 hours, refunded ones included, closed when unreadable; premade and the owner are exempt in the start check", async () => {
+  const { customDayLimit } = await import("../supabase/functions/_shared/cutaway/guard.js");
+  const now = Date.parse("2026-10-31T12:00:00Z"), at = (h) => ({ created_at: new Date(now - h * 3600000).toISOString() });
+  assert.equal(customDayLimit([at(1), at(2)], now).ok, true);
+  const full = customDayLimit([at(23), at(2), at(1)], now);
+  assert.equal(full.ok, false); assert.equal(full.code, "LIMIT"); assert.equal(full.retryAfterSec, 3600); assert.match(full.message, /3 custom videos a day/);
+  assert.equal(customDayLimit(null, now).ok, false);
+  const src = fs.readFileSync(path.join(M3, "../../../../supabase/functions/cutaway-api/index.ts"), "utf8");
+  assert.match(src, /quote\.kind === "custom" && !who\.owner/);
+});
