@@ -85,8 +85,8 @@ test("code decides HOW a shot is framed: the plan's camera box, view and width a
   };
   const out = layoutRules(L).layout, B = Object.fromEntries(out.beats.map((b) => [b.s, b]));
   assert.equal(out.codeShots, true);
-  assert.deepEqual(B.problem2.shots, [{ focus: ["lone", "tl"], width: 0.8 }], "no box, no view: the car and its signal");
-  assert.deepEqual(B.hook.shots, [{ focus: ["tl"], width: 0.7 }], "no type: the code's width");
+  assert.deepEqual(B.problem2.shots, [{ focus: ["lone", "tl"], width: 0.94 }], "no box, no view: the car and its signal, with the main subject filling the frame");
+  assert.deepEqual(B.hook.shots, [{ focus: ["tl"], width: 0.94 }], "no type: the code's width");
   // (the finish frames the build and what it adds, close enough to read them: 2026-10-29)
   assert.deepEqual(B.finish.shots, [{ focus: ["tl", "bench"], width: 0.85 }]);
   assert.equal(out.parts.find((p) => p.id === "tl").main, true, "the hook builds the subject");

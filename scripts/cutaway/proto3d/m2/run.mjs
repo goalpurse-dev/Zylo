@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { planTopic, repairLayout, openingOf, rewordBeats, missingWords, dropWords } from "./planner.mjs";
+import { DROP_ORDER, LENGTH, planTopic, repairLayout, openingOf, rewordBeats, missingWords, dropWords } from "./planner.mjs";
 import { loadKey } from "./llm.mjs";
 import { makeVoice } from "./voice.mjs";
 import { makeVideo, preparePage, runProcess } from "./make.mjs";
@@ -145,6 +145,23 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     voice = v.voice; words = v.words; vUsd = v.usd;
   }
   let roles = plan.script.sentences.map((s) => s.role);
+  // the length, measured on the paid voice (the owner's rule of 2026-10-31: a 60 s video lands at 55-65 s; the first
+  // finished one ran 78.6 s): a voice over the limit has its least important lines cut out, free, before the frame checks
+  const maxSpeech = !reuse ? LENGTH[lengthSec]?.maxSpeech : null;
+  if (maxSpeech && words.at(-1).e > maxSpeech) {
+    const cut = [];
+    for (const group of DROP_ORDER) {
+      const S0 = sentencesOf(words, roles), end = words.at(-1).e;
+      if (end <= maxSpeech) break;
+      if (!group.every((r) => roles.includes(r))) continue;
+      const before = { voice, words, roles };
+      ({ script: plan.script, layout: plan.layout } = dropFrom(plan.script, plan.layout, group));
+      roles = plan.script.sentences.map((s) => s.role);
+      ({ voice, words } = spliceVoice({ ff, pieces: plan.script.sentences.map((s) => ({ file: before.voice, words: before.words, index: S0.findIndex((x) => x.role === s.role) })), out: path.join(out, `voice_cut_${cut.length}`) }));
+      cut.push(...group);
+    }
+    save("length_cut.json", { maxSpeech, cut, speech: words.at(-1).e }); save("script.json", plan.script); save("layout.json", plan.layout);
+  }
   // a layout that already passed the preview check in this folder (after its repair) is the one to re-render
   const accepted = path.join(cacheDir, "accepted_layout.json");
   let layout = fs.existsSync(accepted) ? JSON.parse(fs.readFileSync(accepted, "utf8")) : plan.layout, extraUsd = preUsd;

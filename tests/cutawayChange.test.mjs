@@ -116,7 +116,7 @@ test("the multi-frame check is for custom only: premade keeps the one-frame prom
 test("round 5: a narration a little over its limit is tolerated, then trimmed for free, before any rewrite is paid for", async () => {
   const { overWords, trimNarration, wordCount, LENGTH } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
   assert.equal(overWords(121, 30), false, "121 of 120 is inside the 5% tolerance"); assert.equal(overWords(127, 30), true);
-  assert.deepEqual(LENGTH[30].beats, [10, 12]); assert.deepEqual(LENGTH[60].beats, [18, 24]);
+  assert.deepEqual(LENGTH[30].beats, [10, 12]); assert.deepEqual(LENGTH[60].beats, [14, 18]);
   const s = { sentences: [{ role: "fix2", text: "So you add a yellow lamp that just really warns drivers then." }, { role: "how", text: "Inside, the box also reads the loop and turns green." }] };
   const t = trimNarration(s, { max: 19, cues: { how: ["also"] } });
   assert.ok(t.script.sentences.reduce((k, x) => k + wordCount(x.text), 0) <= 19);

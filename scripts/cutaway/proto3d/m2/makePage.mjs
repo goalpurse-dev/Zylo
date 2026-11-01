@@ -47,11 +47,11 @@ export function makePage(layout) {
       c = mix(c, vec3(0.2, 0.17, 0.05), wmask * clamp((uMurk.y - md) / 2.0, 0.0, 1.0) * uMurk.z);
       float wetx = 1.0 - smoothstep(uWet.y, uWet.y + 1.6, abs(vW.x - uWet.x));
       float wety = smoothstep(uWet.z - 0.9, uWet.z + 0.3, vW.y) * (1.0 - smoothstep(-0.2, 0.1, vW.y));
-      c = mix(c, c * vec3(0.56, 0.6, 0.74), clamp(wetx * wety * uWet.w, 0.0, 1.0));
+      c = mix(c, c * vec3(${layout.codeShots ? "0.46, 0.38, 0.32" : "0.56, 0.6, 0.74"}), clamp(wetx * wety * uWet.w, 0.0, 1.0));
       float spread = max(0.0, uSoak.z - vW.y) * 0.32;
       float sx = 1.0 - smoothstep(0.0, 0.9, max(uSoak.x - spread - vW.x, vW.x - uSoak.y - spread));
       float sy = smoothstep(uSoak.w - 0.6, uSoak.w + 0.3, vW.y) * (1.0 - smoothstep(uSoak.z, uSoak.z + 0.4, vW.y));
-      c = mix(c, c * vec3(0.5, 0.52, 0.56) + vec3(0.0, 0.03, 0.08), clamp(sx * sy * uSoakOn * 0.85, 0.0, 1.0));
+      c = mix(c, ${layout.codeShots ? "c * vec3(0.46, 0.38, 0.32)" : "c * vec3(0.5, 0.52, 0.56) + vec3(0.0, 0.03, 0.08)"}, clamp(sx * sy * uSoakOn * 0.85, 0.0, 1.0));
       diffuseColor.rgb = c;\`);`);
   rep('m.customProgramCacheKey = () => "soil" + R;\n  return m;', 'm.customProgramCacheKey = () => "soil" + R;\n  m.userData.u = u;\n  return m;');
   if (W.roots) rep("if (x0 > PIT.x0 - 0.5 && x0 < PIT.x1 + 0.5) x0 += 11;", `if (x0 > PIT.x0 - ${n(W.roots.pad)} && x0 < ${n(W.roots.to)}) x0 = ${n(W.roots.to)} + (x0 - PIT.x0) * 0.6;`);

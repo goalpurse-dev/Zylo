@@ -59,6 +59,15 @@ export function chainProblems(script, { strict = true, lengthSec = 30, bugs = nu
     const fw = new Set(words(S[f].text).map(stem)), linked = words(text).some((w) => fw.has(stem(w))) || /\bnow\b/i.test(text);
     if (!linked) P.push(`problem ${short} must follow from the fix before it ("${S[f].text.slice(0, 40)}…"): name what that fix did, or say "But now…"`);
   });
+  // every fix solves the problem before it, and says how (the owner's rule of 2026-10-31: "But dirt keeps falling in, so
+  // you add a pump" solves nothing). A code check can only read one form: a fix line holding its own problem, "But X, so
+  // you add Y", where Y must name X's thing. Only a plan with a chain (premade lines were approved before this rule)
+  if (chain.length) S.forEach((s) => {
+    const m = /^\s*but\b(.*?)[,;]?\s*\bso you\b(.*)$/is.exec(s.text);
+    if (!/^fix/.test(s.role ?? "") || !m) return;
+    const need = new Set(words(m[1]).map(stem));
+    if (need.size && !words(m[2]).some((w) => need.has(stem(w)))) P.push(`fix "${s.text.slice(0, 50)}…" does not solve "${m[1].trim().slice(0, 40)}": say how it stops that very problem`);
+  });
   // the chain the writer returns: one entry per problem, what it shows, and bigger every time
   const byProblem = new Map(chain.map((c) => [c.problem, c]));
   // (no chain at all: an approved premade script, made before the rule; there is nothing to compare, so no check)

@@ -356,9 +356,11 @@ export function counter(ctx, p, api) {
     cv.width = cv.height = 256; const g = cv.getContext("2d");
     g.fillStyle = "#000"; g.fillRect(0, 0, 256, 256); g.fillStyle = col; g.textAlign = "center"; g.textBaseline = "middle";
     // (the number shrinks to fit the face: at 200 px "3000" ran off both edges, "976" and "300(" on the 60 s water well)
-    g.font = "bold 200px Arial, sans-serif"; const w = g.measureText(String(v)).width;
+    // (with its thousands comma: "20,000", never "20000")
+    const label = Math.abs(v) >= 1000 ? Number(v).toLocaleString("en-US") : String(v);
+    g.font = "bold 200px Arial, sans-serif"; const w = g.measureText(label).width;
     if (w > 232) g.font = `bold ${Math.floor((200 * 232) / w)}px Arial, sans-serif`;
-    g.fillText(String(v), 128, 138);
+    g.fillText(label, 128, 138);
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; tex.set(v, t); return t;
   };
   let shown = null;

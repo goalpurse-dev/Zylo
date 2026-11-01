@@ -21,7 +21,8 @@ for (const name of fs.existsSync(FAILURES) ? fs.readdirSync(FAILURES).sort() : [
     assert.ok(line, `no result: ${(p.stderr ?? "").slice(-800)}`);
     const r = JSON.parse(line.slice(7));
     assert.equal(r.error ?? null, null, r.error);
-    assert.equal(r.pending, null, `it asks a paid call the real run never made: ${r.pending}`);
+    // (a rewrite the newer free checks ask of an old plan is fine: it is cheap and they never fail it; anything else is new)
+    assert.ok(r.pending == null || /^words_repair/.test(r.pending), `it asks a paid call the real run never made: ${r.pending}`);
     assert.deepEqual(r.problems, [], `it still stops: ${r.problems.join("; ")}`);
   });
 }
@@ -104,4 +105,81 @@ test("the salvage (swimming pool 60 s refused at the gate after $1.40, 2026-10-3
   assert.equal(d.layout.audio.rain, undefined, "the rain anchored to a dropped line goes");
   assert.deepEqual(d.layout.audio.sfx.map((x) => x.lib), ["pop"]);
   assert.ok(!JSON.stringify(d.layout).includes("problem3"));
+});
+
+test("first finished 60 s video (78.6 s, black frames, labels piled on the house, 2026-10-30): the length limits, one label at a time, cards as said, commas in captions, blank frames re-rendered", async () => {
+  const { LENGTH, cardsAsSaid } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const PACE = 288 / 76.47, END = 2.2, len = (w) => w / PACE + END;
+  assert.ok(len(LENGTH[60].words[0]) >= 55 && len(LENGTH[60].words[1]) <= 65, "200-235 words land at 55-65 s at the real pace");
+  assert.ok(LENGTH[60].maxSpeech + END <= 65.01);
+  assert.deepEqual(cardsAsSaid([{ text: "20,000 TONS", at: { s: "problem", w: "20,000" } }, { text: "8 HOURS", at: { s: "fact", w: "8" } }, { text: "99 LB", at: { s: "fact", w: "99" } }], [{ role: "problem", text: "But the soil will soak up 20,000 gallons, and it falls." }, { role: "fact", text: "It runs about once every 8 hours." }]).map((c) => c.text), ["20,000 GALLONS", "8 HOURS"]);
+  const { stateCards } = await import("../scripts/cutaway/proto3d/m2/compile.mjs");
+  const words = [{ w: "But", s: 3.4, e: 3.6 }, { w: "it", s: 3.6, e: 3.8 }, { w: "leaks", s: 4.2, e: 4.6 }];
+  const S = [{ role: "problem", text: "But it leaks away.", t0: 3.4, t1: 7.2 }];
+  const up = stateCards(S, words, [{ s: "problem", state: { text: "LEAKING", w: "leaks" } }], [{ text: "83 TONS", s: 4.6, e: 6.4 }]);
+  assert.equal(up.length, 1); assert.ok(up[0].s >= 6.4, "the state waits for the number card");
+  assert.deepEqual(stateCards(S, words, [{ s: "problem", state: { text: "LEAKING", w: "leaks" } }], [{ text: "83 TONS", s: 4.6, e: 7.0 }]), [], "no room left: no state label");
+  const { captionWord } = await import("../render-worker/src/cutawayFinalPlan.mjs");
+  assert.deepEqual(["20,000", "2,500,", "hours.", "3.5"].map(captionWord), ["20,000", "2,500", "Hours", "3.5"]);
+  const src = fs.readFileSync(path.join(M3, "../render.mjs"), "utf8");
+  assert.match(src, /re-rendered/); assert.match(src, /gl\?\.finish\?\.\(\)/);
+});
+
+test("the first finished video's review (2026-10-31): chlorine falls into the water and dissolves, a rig's unused appear runs with its show, narration never describes the graphics", async () => {
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  const { sentenceProblems } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const L = { world: { cut: { x0: -6, x1: 6, z0: -8, depth: 5 } }, parts: [
+    { id: "water2", kind: "water", params: { box: { x0: -5, x1: 5, y0: -3, y1: -0.4, z0: -7, z1: 0 } } },
+    { id: "chlorine", kind: "boxPop", params: { size: [0.4, 0.3, 0.4], pos: [6, 0.2, -0.4], mat: "tankBlue" } },
+    { id: "lamp", kind: "rig", params: { pos: [0, -3, -1], nodes: [{ id: "n", at: [0, 0, 0], shapes: [{ shape: "box", size: [0.5, 0.3, 0.4], at: [0, 0.15, 0] }], moves: [{ name: "appear", type: "appear" }] }] } }],
+    beats: [{ s: "fix5", shows: { p: "chlorine", does: "x" }, do: [{ p: "chlorine", v: "show", w: "chlorine" }, { p: "water2", v: "clean", w: "soon" }] }, { s: "finish", do: [{ p: "lamp", v: "show", w: "light" }] }], audio: {} };
+  const r = layoutRules(L).layout, fix5 = r.beats.find((b) => b.s === "fix5"), fin = r.beats.find((b) => b.s === "finish");
+  assert.equal(r.parts.find((p) => p.id === "chlorine").kind, "drops");
+  assert.equal(fix5.shows.p, "water2");
+  assert.deepEqual(fix5.do.filter((a) => a.p === "chlorine").map((a) => a.v), ["fall", "hide"]);
+  assert.deepEqual(fin.do.map((a) => a.v), ["show", "appear"]);
+  assert.ok(r.parts.find((p) => p.id === "lamp").params.scale > 1.5, "a small finishing rig is made big enough to see");
+  assert.ok(sentenceProblems("And a strong chlorine smell is not a sign of a clean pool, as the page says.", {}).length);
+  assert.ok(sentenceProblems("This is a swimming pool, and a glowing outline traces its whole shape.", {}).length);
+  assert.deepEqual(sentenceProblems("And a strong chlorine smell does not mean a clean pool.", {}), []);
+});
+
+test("the owner's contact-sheet review (2026-10-31): story logic and fact drift are caught for free, a second name line gets its card, a caption leaves a counter's band, planned shots hold the subject whole, wet soil is brown", async () => {
+  const { chainProblems } = await import("../scripts/cutaway/proto3d/m2/chain.js");
+  const { factDrift } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const chain = [{ problem: 1, causedBy: -1, shows: "water drains into the soil", stakes: "the pool empties", size: 2 }];
+  const S = (text) => ({ sentences: [{ role: "hook", text: "If you dig a hole, you have a pool." }, { role: "problem", text: "But the water drains away." }, { role: "fix3", text }], chain });
+  assert.ok(chainProblems(S("But dirt keeps falling in, so you add a pump that pulls water through a pipe."), { strict: false, lengthSec: 60 }).some((p) => /does not solve/.test(p)));
+  assert.ok(!chainProblems(S("But dirt keeps falling in, so you add a filter that catches the dirt."), { strict: false, lengthSec: 60 }).some((p) => /does not solve/.test(p)));
+  assert.equal(factDrift("A home pump runs the pool about once every 8 hours.", "about once every 8 to 10 hours").length, 1);
+  assert.deepEqual(factDrift("A home pump runs the pool every 8 to 10 hours.", "about once every 8 to 10 hours"), []);
+  const { nameCards } = await import("../scripts/cutaway/proto3d/m2/compile.mjs");
+  assert.equal(nameCards([{ role: "name2", text: "The box at the edge that pulls in surface water is a skimmer.", t0: 35, t1: 38 }], [{ w: "skimmer.", s: 37.5, e: 38 }])[0].text, "SKIMMER");
+  const { buildAss } = await import("../render-worker/src/cutawayFinalPlan.mjs");
+  assert.ok(buildAss({ words: [{ w: "pump", s: 1, e: 1.4, y: 0.68 }] }).includes(`pos(540,${Math.round(1920 * 0.68)})`));
+  const { directCamera, projectBox } = await import("../scripts/cutaway/proto3d/m2/director.js");
+  const L = { key: "t", codeShots: true, world: { cut: { x0: -6, x1: 6, z0: -8, depth: 3 }, house: [-4, 0, -24] }, parts: [{ id: "dig", kind: "dig", main: true, params: {} }, { id: "pump", kind: "boxPop", params: { pos: [7, 0.6, -0.5], size: [1.4, 1.2, 1.2] } }], beats: [] };
+  const d = directCamera(L, [{ focus: ["pump", "dig"], width: 0.94, t: 5, at: { s: "fix3" } }], { speechEnd: 20, lengthEnd: 22, signPop: 20.4 });
+  const k = d.end.find((x) => x[0] >= 5) ?? d.end.at(-1), r = projectBox(k[1], k[2], { min: [-6, -3, -8], max: [6, 0, 0] });
+  assert.ok(r.w >= 0.75, `the pool holds the frame with its pump, not lost at the edge: ${r.w}`);
+  const { makePage } = await import("../scripts/cutaway/proto3d/m2/makePage.mjs");
+  assert.match(makePage({ key: "t", codeShots: true, world: {}, parts: [] }), /c \* vec3\(0\.46, 0\.38, 0\.32\)/);
+});
+
+test("launch check (2026-10-31): a layout approved on /admin/ops travels with its script, and two failures in a row alert from the first videos", () => {
+  const root = path.join(M3, "../../../..");
+  assert.match(fs.readFileSync(path.join(root, "supabase/functions/_shared/cutaway/runtime.ts"), "utf8"), /approvedScript: \{ title: data\.script\.title/);
+  assert.match(fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8"), /const A = saved\.approvedScript\?\.sentences \? saved\.approvedScript : approvedScript\(key\)/);
+  assert.match(fs.readFileSync(path.join(root, "supabase/functions/cutaway-watchdog/index.ts"), "utf8"), /\(runs\.length >= 5 && rate > 0\.2\) \|\| twoInARow/);
+});
+
+test("Beta: 3 custom videos per user per 24 hours, refunded ones included, closed when unreadable; premade and the owner are exempt in the start check", async () => {
+  const { customDayLimit } = await import("../supabase/functions/_shared/cutaway/guard.js");
+  const now = Date.parse("2026-10-31T12:00:00Z"), at = (h) => ({ created_at: new Date(now - h * 3600000).toISOString() });
+  assert.equal(customDayLimit([at(1), at(2)], now).ok, true);
+  const full = customDayLimit([at(23), at(2), at(1)], now);
+  assert.equal(full.ok, false); assert.equal(full.code, "LIMIT"); assert.equal(full.retryAfterSec, 3600); assert.match(full.message, /3 custom videos a day/);
+  assert.equal(customDayLimit(null, now).ok, false);
+  const src = fs.readFileSync(path.join(M3, "../../../../supabase/functions/cutaway-api/index.ts"), "utf8");
+  assert.match(src, /quote\.kind === "custom" && !who\.owner/);
 });

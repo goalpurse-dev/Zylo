@@ -116,7 +116,9 @@ export const underground = (b) => !!b && b.max[1] <= 0.5 && b.min[1] < -1.5;
 export function liftSoil(layout, k, keep = null) {
   if (layout.camera?.home || !k?.pos) return k;
   const m0 = measureKey(layout, k.pos, k.tgt);
-  if (m0.soil <= CAMERA_LIMITS.soilMax) return k;
+  // (a planned layout may show more of its cut face: it looks down on the subject, which fills the frame)
+  const soilMax = layout.codeShots ? 0.45 : CAMERA_LIMITS.soilMax;
+  if (m0.soil <= soilMax) return k;
   // (a subject the shot holds is never lost by the lift; a shot of something else, beside the lot, has none to lose)
   const hadSubject = m0.subject >= CAMERA_LIMITS.subjectMin + 0.01;
   // what must stay in is the part above ground (a build that reaches down into its cut keeps its top)
@@ -128,7 +130,7 @@ export function liftSoil(layout, k, keep = null) {
     const m = measureKey(layout, q.pos, q.tgt);
     if (hadSubject && m.subject < CAMERA_LIMITS.subjectMin) break;
     best = q;
-    if (m.soil <= CAMERA_LIMITS.soilMax) break;
+    if (m.soil <= soilMax) break;
   }
   return best;
 }
@@ -189,7 +191,17 @@ export function heroBox(layout) {
 export function directCamera(layout, shots, marks) {
   const parts = new Map(layout.parts.map((p) => [p.id, p]));
   const cut = layout.world?.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
-  const home = homeView(layout);
+  let home = homeView(layout);
+  // a planned layout looks down on its subject, which holds the whole width: at the old 11 degrees a 12 m pool was 10% of a
+  // tall frame with the house and lawn around it (the owner's review of 2026-10-31: the subject fills the frame). About 30
+  // degrees still shows the cut face, and 45 showed the void under the soil block; the approved layouts keep their view
+  let baseView = "home";
+  if (layout.codeShots && !layout.camera?.home) {
+    const d0 = sub(home.pos, home.tgt), yaw = Math.atan2(d0[0], d0[2]), el = 30 * Math.PI / 180;
+    baseView = [Math.sin(yaw) * Math.cos(el), Math.sin(el), Math.cos(yaw) * Math.cos(el)];
+    const f0 = frameBox(subjectBox(layout), { view: baseView, width: 0.94, zone: "center", minField: 0 });
+    home = { pos: f0.pos, tgt: f0.tgt };
+  }
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
   const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
@@ -204,7 +216,7 @@ export function directCamera(layout, shots, marks) {
   // (a planned layout, whose shots the code frames: the finished build itself fills about 80% of the width at the end,
   // never the whole yard around it; the free ice rink run's 6 m rink was a quarter of the phone's width. The approved
   // layouts keep their home view)
-  const tight = layout.codeShots ? (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.8, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })() : null;
+  const tight = layout.codeShots ? (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.94, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })() : null;
   const homeAll = tight ?? (holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })());
   const passes = (k) => { const m = measureKey(layout, k.pos, k.tgt); return { ok: m.empty <= CAMERA_LIMITS.emptyMax - 0.02 && m.subject >= CAMERA_LIMITS.subjectMin + 0.01, m }; };
   // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
@@ -219,7 +231,7 @@ export function directCamera(layout, shots, marks) {
     for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok && keeps(q)) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
     // holding both (the subject and a creek far off to the side) may sit on the bare limits, without the safety margin
     const bare = (m) => m.empty <= CAMERA_LIMITS.emptyMax && m.subject >= CAMERA_LIMITS.subjectMin;
-    for (const w of [0.7, 0.8, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? "home", width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok || bare(p.m)) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
+    for (const w of [0.7, 0.8, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? baseView, width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok || bare(p.m)) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
     return { k: home, m: passes(home).m, how: "replaced by the home view" };
   };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
@@ -260,8 +272,8 @@ export function directCamera(layout, shots, marks) {
   const hookClose = (k, box, s) => {
     if (!hookB || projectBox(k.pos, k.tgt, hookB).w >= 0.36) return k;
     const both = union([hookB, box]), w = Math.min(0.9, Math.max(0.4, (0.38 * (both.max[0] - both.min[0])) / Math.max(0.5, hookB.max[0] - hookB.min[0])));
-    let g = frameBox(both, { view: s.view ?? "home", width: w, zone: "center", minField: 0 });
-    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? "home", width: 0.4, zone: "center", minField: 0 });
+    let g = frameBox(both, { view: s.view ?? baseView, width: w, zone: "center", minField: 0 });
+    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? baseView, width: 0.4, zone: "center", minField: 0 });
     return { pos: g.pos, tgt: g.tgt };
   };
   // the whole subject in the frame (the creator's newer videos, 2026-10-25: every shot holds the thing it explains whole,
@@ -304,11 +316,11 @@ export function directCamera(layout, shots, marks) {
         ids = ids.filter((_, i) => boxes[i]); boxes = boxes.filter(Boolean);
         if (!boxes.length) continue;
       }
-      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : minField });
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? baseView, width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero || (layout.codeShots && ids.some((id) => ["book", "sheet", "flag"].includes(parts.get(String(id))?.kind))) ? 0 : minField });
       // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
-      if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
+      if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? baseView] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
-      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
+      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? baseView, width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
       // a car never looms (a planned layout whose shots the code frames, layoutRules 14): a car more than 45% of the width,
       // or cut by the frame's bottom edge, steps the camera back (a garage motor shot had the parked car's roof filling
       // the frame; the cars waiting nearest the lens were cut in half)
@@ -317,7 +329,12 @@ export function directCamera(layout, shots, marks) {
       // the hero keeps its own frame (the bands rule); every other shot is anchored on the subject
       // the opening shot (the hook object, first frame) keeps its own aim: it only has to avoid open lawn and sky
       const opening = keys.length === 1 && start < 0.4;
-      const an = s.hero || (opening && passes(f).m.empty <= CAMERA_LIMITS.emptyMax - 0.02) ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
+      // (a planned shot that holds the whole main subject keeps its size: over the empty limit it slides down, showing the cut
+      // face instead of lawn, never wider; a prop to read keeps its own frame; the owner's review of 2026-10-31)
+      const planMain = layout.codeShots && [].concat(s.focus ?? []).some((id) => parts.get(String(id))?.main);
+      const planRead = layout.codeShots && [].concat(s.focus ?? []).some((id) => ['book', 'sheet', 'flag'].includes(parts.get(String(id))?.kind));
+      const aimLow = (k0) => { let q = { pos: k0.pos, tgt: k0.tgt }; for (let dy = 0.3; dy <= 6 && measureKey(layout, q.pos, q.tgt).empty > CAMERA_LIMITS.emptyMax - 0.02; dy += 0.3) { const down = (p) => [p[0], +(p[1] - 0.3).toFixed(3), p[2]], n = { pos: down(q.pos), tgt: down(q.tgt) }; if (projectBox(n.pos, n.tgt, box).y0 < 0.04) break; q = n; } return q; };
+      const an = planMain ? (() => { const q = aimLow(f); return { k: q, m: measureKey(layout, q.pos, q.tgt), how: null }; })() : planRead ? { k: f, m: passes(f).m, how: null } : s.hero || (opening && passes(f).m.empty <= CAMERA_LIMITS.emptyMax - 0.02) ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
       if (an.how) notes.push(`shot at ${s.t.toFixed(2)} s (${ids}): ${an.how} (it was ${(passes(f).m.empty * 100).toFixed(0)}% empty, ${(passes(f).m.subject * 100).toFixed(0)}% on the subject)`);
       const realA = projectBox(an.k.pos, an.k.tgt, union(boxes));
       frames.push({ t: s.t, ids, hero: !!s.hero, rect: an.how ? realA : real, zone: f.zone, measure: an.m, anchored: an.how, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
@@ -326,9 +343,12 @@ export function directCamera(layout, shots, marks) {
       if (opening && !layout.camera?.home) k = hookClose(k, box, s);
       // the cut face at most ~35% of the frame, unless the sentence is about something underground
       if (!underground(box)) k = liftSoil(layout, k, box);
-      if (!opening && !layout.camera?.home) k = pushToward(k, s, box);
+      // (a planned shot that holds the whole main subject stays on it: pushing in on its small part lost the pool, review of
+      // 2026-10-31)
+      const holdsMain = layout.codeShots && [].concat(s.focus ?? []).some((id) => parts.get(String(id))?.main);
+      if (!opening && !layout.camera?.home && !holdsMain && !planRead) k = pushToward(k, s, box);
       // last: what the sentence is about stays whole (the hook object on the opening frame)
-      k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      if (!planRead) k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
       // and after everything else: a car never looms (a planned layout whose shots the code frames, layoutRules 14): a
       // car there in this sentence more than 45% of the width, or cut by the frame's bottom edge, steps the camera back
       // (a garage motor shot had the parked car's roof filling the frame; the cars waiting nearest the lens were cut in
