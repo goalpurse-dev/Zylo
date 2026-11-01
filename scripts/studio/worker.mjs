@@ -42,6 +42,11 @@ async function claim() {
     .eq("id", next.id).eq("status", "queued").select("*"), "claim");
   return rows[0] ?? null;   // another worker took it
 }
+const retry = async (fn, what, tries = 6) => {
+  for (let i = 1; ; i++) { try { return await fn(); } catch (e) { if (i >= tries) throw e; console.log(`${what} failed (${String(e.message).slice(0, 90)}): trying again in 30 s`); await new Promise((r) => setTimeout(r, 30000)); } }
+};
+/** A job's final state must land: a failed write is thrown and retried instead of being lost. */
+const setJob = (id, patch) => retry(async () => { const r = await db.from("cm_studio_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id).select("id"); if (r.error) throw new Error(r.error.message); }, "the job update");
 const progress = async (job, text) => { console.log(`[${job.id.slice(0, 8)}] ${text}`); await db.from("cm_studio_jobs").update({ progress: text, heartbeat_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id); };
 // Never blocks: the heartbeat keeps beating through a long step (a blocking call made the tab say "off" mid-job), and
 // the step's own lines show in the window.
@@ -70,13 +75,15 @@ async function makeStoryJob(job) {
   const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
   const scriptFile = path.join(work, "script.json");
   let script, usd = 0;
+  const paidFile = path.join(work, "paid.json"), paid = (x) => { usd += x; fs.writeFileSync(paidFile, JSON.stringify({ usd })); };
+  if (fs.existsSync(paidFile)) usd = JSON.parse(fs.readFileSync(paidFile, "utf8")).usd;
   if (fs.existsSync(scriptFile)) script = JSON.parse(fs.readFileSync(scriptFile, "utf8"));   // a restart keeps the paid script
   else {
     await progress(job, "writing the script");
     const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
     const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
     const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent: recentScripts(KITS), spots: screensSpots(job.template) });
-    script = w.script; usd += w.usd;
+    script = w.script; paid(w.usd);
     script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
     fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
   }
@@ -89,7 +96,7 @@ async function makeStoryJob(job) {
       const out = await run("node", [path.join(HERE, "elevenTakes.mjs"), winPath(scriptFile), winPath(takes)], { env: { CAP_USD: String(VOICE_CAP_PER_VIDEO) } });
       return { result: out, actualUsd: Number(out.match(/total \$([\d.]+)/)?.[1] ?? est) };
     }, { lane: "studio", live: true });
-    usd += r.actualUsd ?? est;
+    paid(r.actualUsd ?? est);
   }
   const mp4 = winPath(path.join(OUT, `studio_${job.id.slice(0, 8)}_${job.recipe.angle}.mp4`));
   await progress(job, `rendering in the ${job.recipe.world} world (laptop GPU)`);
@@ -101,12 +108,15 @@ async function makeStoryJob(job) {
   const shared = path.join(env.SRC_WORK, job.template === "ai_fruit_story" ? "screens" : `screens_${job.template}`);
   for (const f of fs.readdirSync(shared)) if (f.endsWith(".jpg")) fs.copyFileSync(path.join(shared, f), path.join(screens, f));
   if (fs.existsSync(typed)) fs.copyFileSync(typed, path.join(screens, "typed.jpg"));
-  await run("bash", [path.join(HERE, "buildStory.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SCREENS: winPath(screens), MEDIA: winPath(path.join(KITS, sid, "media")) } });
+  // a restart keeps a finished render (it is whole when ffprobe can read it)
+  const whole = fs.existsSync(mp4) && (await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4]).then((o) => Number(o) > 1).catch(() => false));
+  if (!whole) await run("bash", [path.join(HERE, "buildStory.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SCREENS: winPath(screens), MEDIA: winPath(path.join(KITS, sid, "media")) } });
   if (!fs.existsSync(mp4)) throw new Error("the render made no video");
   await progress(job, "putting it in the Queue");
   const spec = path.join(work, "publish.json");
-  await run("node", [path.join(HERE, "storyPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), String(usd)]);
-  const pub = await run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]);
+  await run("node", [path.join(HERE, "storyPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), String(usd)], { env: { IN_LEDGER: "1" } });
+  // the network can be down for a while after the laptop wakes: the upload is tried again, not lost
+  const pub = await retry(() => run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]), "the upload");
   const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
   if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
   return { ideaId, spend: usd, passed: script.recipe.angle };
@@ -162,10 +172,10 @@ for (;;) {
   if (!job) { if (ONCE) break; await new Promise((r) => setTimeout(r, 20_000)); continue; }
   try {
     const r = await make(job);
-    await db.from("cm_studio_jobs").update({ status: "done", idea_id: r.ideaId, spend_usd: r.spend, progress: "in the Queue", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id);
+    await setJob(job.id, { status: "done", idea_id: r.ideaId, spend_usd: r.spend, progress: "in the Queue", finished_at: new Date().toISOString() });
     console.log(`[${job.id.slice(0, 8)}] done: idea ${r.ideaId}`);
   } catch (e) {
-    await db.from("cm_studio_jobs").update({ status: "failed", error: String(e.message).slice(0, 500), finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", job.id);
+    await setJob(job.id, { status: "failed", error: String(e.message).slice(0, 500), finished_at: new Date().toISOString() });
     console.log(`[${job.id.slice(0, 8)}] failed: ${e.message}`);
   }
   if (ONCE) break;

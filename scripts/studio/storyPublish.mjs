@@ -24,6 +24,7 @@ const spec = {
     youtube: { title: `${search} (made with Zyvo)`.slice(0, 95), caption: `${search}. ${caption} Try it: tryzyvo.com`, hashtags: ["#shorts", ...tags.slice(0, 3)] },
   },
   spend: Number(usd) ? [{ operation: "studio.script_and_voices", usd: Number(usd), day }] : [],
+  spend_in_ledger: process.env.IN_LEDGER === "1",   // the worker's calls went through the Budget Guard: already on the ledger
 };
 fs.writeFileSync(outPath, JSON.stringify(spec, null, 1));
 console.log(`${outPath}: ${S.variant}`);

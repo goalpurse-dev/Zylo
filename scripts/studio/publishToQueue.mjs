@@ -72,5 +72,5 @@ const gen = must(await db.from("cm_generations").insert({
   files: { mp4: `${base}/video.mp4`, pngs: [`${base}/cover.png`], sha256: sha }, cost_usd: spec.spend.reduce((a, s) => a + s.usd, 0),
 }).select("id").single(), "generation");
 must(await db.from("cm_packages").insert(packages.map((p) => ({ ...p, generation_id: gen.id }))).select("id"), "packages");
-if (spec.spend.length) must(await db.from("cm_spend_ledger").insert(spec.spend.map((s) => ({ idea_id: ideaId, provider: "other", lane: "studio", operation: s.operation, estimated_usd: s.usd, actual_usd: s.usd, status: "settled", local_day: s.day, request_ref: s.ref ?? null, settled_at: new Date().toISOString() }))).select("id"), "ledger");
+if (spec.spend.length && !spec.spend_in_ledger) must(await db.from("cm_spend_ledger").insert(spec.spend.map((s) => ({ idea_id: ideaId, provider: "other", lane: "studio", operation: s.operation, estimated_usd: s.usd, actual_usd: s.usd, status: "settled", local_day: s.day, request_ref: s.ref ?? null, settled_at: new Date().toISOString() }))).select("id"), "ledger");
 console.log(`in the Queue: idea ${ideaId} (Zyvo account), ${packages.length} packages, $${spec.spend.reduce((a, s) => a + s.usd, 0).toFixed(4)} recorded`);
