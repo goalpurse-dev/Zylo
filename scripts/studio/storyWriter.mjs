@@ -9,6 +9,13 @@ import { createMessage, estimateUsd } from "file:///C:/Users/Public/Zylo-content
 import { assembleStory, validateStory, similarity, CTA_LINES, STICKER_SPOTS } from "./storyScripts.mjs";
 
 const MODEL = process.env.STUDIO_WRITER_MODEL ?? "claude-sonnet-5-5";
+// What each template is and which real screens exist for it (scripts/studio: src_work/screens_<template>)
+const TEMPLATES = {
+  ai_fruit_story: { name: "AI Fruit Story", screens: { s_menu: "Home menu, Short Form > AI Fruit Story", s_ideas: "ready ideas", s_length: "length + the credit cost shown up front", s_pictures: "checking scene pictures", s_anim: "clips animating", s_final: "the finished video", typed: "this creation's idea typed in" } },
+  blocky_stories: { name: "Blocky Stories", screens: { s_menu: "Home menu, Short Form > Blocky Stories", s_input: "the start screen: pick an idea, describe it or paste a script", typed: "this creation's story typed in" } },
+  cutaway: { name: "Cutaway Explainer", screens: { s_menu: "Home menu, Short Form > Cutaway Explainer", s_input: "the topic box, premade topics, 30 or 60 seconds", typed: "this creation's topic typed in" } },
+  long_form: { name: "Long Form", screens: { s_menu: "Home menu, Long Form", s_input: "start with a topic, or discover ideas", typed: "this creation's topic typed in" } },
+};
 const VISUAL = { type: ["object", "null"], additionalProperties: false, required: ["kind", "text", "sub", "value", "label", "n", "title", "from"], properties: {
   kind: { type: "string", enum: ["sign", "roll", "tag", "clock", "timeline", "bubble", "conveyor", "trophy", "tiles", "idea"] },
   text: { type: ["string", "null"] }, sub: { type: ["string", "null"] }, value: { type: ["number", "null"] }, label: { type: ["string", "null"] }, n: { type: ["integer", "null"] }, title: { type: ["string", "null"] }, from: { type: ["string", "null"] },
@@ -18,25 +25,25 @@ const LINE = { type: "object", additionalProperties: false, required: ["who", "t
   expr: { type: "string", enum: ["neutral", "happy", "sad", "shocked", "smug", "thinking"] },
   pose: { type: "string", enum: ["rest", "point", "pointUp", "pointUpL", "shrug", "handsUp", "wave", "chin"] },
   shot: { type: "string", enum: ["two_shot", "creator_close", "zee_close", "low_hero", "high_wide", "side_left", "side_right", "prop_focus"] },
-  visual: VISUAL, screen: { anyOf: [{ type: "string", enum: ["s_menu", "s_ideas", "s_length", "s_pictures", "s_anim", "s_final", "typed"] }, { type: "null" }] }, sticker: { type: ["string", "null"] }, stamp: { type: ["string", "null"] }, keep: { type: "boolean" },
+  visual: VISUAL, screen: { anyOf: [{ type: "string", enum: ["s_menu", "s_ideas", "s_input", "s_length", "s_pictures", "s_anim", "s_final", "typed"] }, { type: "null" }] }, sticker: { type: ["string", "null"] }, stamp: { type: ["string", "null"] }, keep: { type: "boolean" },
 } };
 const SCHEMA = { type: "object", additionalProperties: false, required: ["title", "search_title", "caption", "hashtags", "hook_type", "headline", "chip", "lines", "early_payoff_after", "big_payoff_after", "end_line", "end_chip"], properties: {
   title: { type: "string" }, search_title: { type: "string" }, caption: { type: "string" }, hashtags: { type: "array", items: { type: "string" } }, hook_type: { type: "string" },
   headline: { type: "string" }, chip: { type: "string" }, lines: { type: "array", items: LINE }, early_payoff_after: { type: ["integer", "null"] }, big_payoff_after: { type: "integer" }, end_line: { type: "string" }, end_chip: { type: "string" },
 } };
 
-const SYSTEM = (facts) => `You write scripts for short vertical videos on Zyvo's own account (Zyvo makes AI videos). Two 3D characters talk on a bright set: "creator", the viewer's stand-in, confused and expressive, who asks the viewer's questions and objections; and "zee", a calm, funny expert.
+const SYSTEM = (facts, tpl) => `You write scripts for short vertical videos on Zyvo's own account (Zyvo makes AI videos). Two 3D characters talk on a bright set: "creator", the viewer's stand-in, confused and expressive, who asks the viewer's questions and objections; and "zee", a calm, funny expert.
 
 THE CORE RULE: viewer problem -> story -> Zyvo as the answer. In the first 2 seconds a stranger must see why they should care. Zyvo is NEVER in the hook or the headline; it appears at the end only ("Made with Zyvo. tryzyvo.com, link in bio." is added for you, so do not write it).
 
 Structure: a hook (line 1 names the viewer's problem or curiosity) -> stakes and a promise ("the last one is what most people skip") -> escalating answers, one piece of information every 3-5 seconds -> the creator's objections ("But I can't edit", "Is it free?") -> a tip most people skip -> an early glimpse of the real result within about 15 seconds -> the big real result near the end.
 
-Every line MUST have a visual that SHOWS it: a prop ("visual"), a real app screen ("screen" with a short "sticker"), or "keep": true to stay on the previous line's visual (short reactions only). Props: sign {text, sub}; roll {value, label} (a number rolling up, only real numbers); tag {text, sub}; clock {text}; timeline {text} (a messy edit collapsing into one button); bubble {text, from}; conveyor {text} (an idea becoming a video); trophy {text}; tiles (the creation's real pictures); idea {n, title, text}. Prop text must be 1-5 words so it reads on a phone. Screens: s_menu (Home menu, Short Form > AI Fruit Story), s_ideas (ready ideas), s_length (length + the credit cost shown up front), s_pictures (checking scene pictures), s_anim (clips animating), s_final (the finished video), typed (this creation's idea typed in). Vary "shot" (at least 4 different ones); never the same shot for more than 2 lines in a row.
+Every line MUST have a visual that SHOWS it: a prop ("visual"), a real app screen ("screen" with a short "sticker"), or "keep": true to stay on the previous line's visual (short reactions only). Props: sign {text, sub}; roll {value, label} (a number rolling up, only real numbers); tag {text, sub}; clock {text}; timeline {text} (a messy edit collapsing into one button); bubble {text, from}; conveyor {text} (an idea becoming a video); trophy {text}; tiles (the creation's real pictures); idea {n, title, text}. Prop text must be 1-5 words so it reads on a phone. Screens available (use ONLY these): ${Object.entries(tpl.screens).map(([k, v]) => `${k} (${v})`).join(", ")}. Vary "shot" (at least 4 different ones); never the same shot for more than 2 lines in a row.
 
 Honesty, always:
 - Claims about Zyvo ONLY from this fact sheet: ${facts}
 - A number that is not on the sheet needs a real source in "stamp"; an opinion is stamped "My read, not a study." Never invent numbers, users, reviews or testimonials.
-- A fact about one tool (Blocky Stories, Long Form, the image generator) is NOT a fact about another: this video is about AI Fruit Story unless told otherwise.
+- A fact about one tool is NOT a fact about another: this video is about ${tpl.name}.
 - Video on Zyvo needs a paid plan: if price comes up, say so.
 - Name Claude, ChatGPT, Gemini, CapCut, TikTok or YouTube only in true statements; never imply a partnership.
 - The story shown is a finished one; do not say it was made in a certain time.
@@ -63,20 +70,22 @@ async function askClaude({ guard, key, kit }) {
 }
 
 /** Writes and checks one script. Returns {script, usd}. recent: scripts of the batch and the last 14 days. */
-export async function writeStory({ guard, apiKey, facts, recipe, angle, kit, kitKey, recent = [] }) {
-  const factText = facts.map((f) => f.claim).join("; ");
+export async function writeStory({ guard, apiKey, facts, recipe, angle, kit, kitKey, recent = [], spots = {} }) {
+  const factText = facts.map((f) => f.claim).join("; "), tpl = TEMPLATES[kit.template] ?? TEMPLATES.ai_fruit_story;
   const prior = recent.flatMap((s) => s.lines.map((l) => l.text));
+  // the reuse rule: different clips and never the same opening shot as an earlier video of this creation
+  const shown = recent.filter((s) => s.source_story === kit.story.id).flatMap((s) => (s.clips ?? []).map((c) => [c.in, c.out]));
   let usd = 0, a2 = null, lastProblems = [];
   if (recipe.angle === "A2") { a2 = await askClaude({ guard, key: apiKey, kit }); usd += a2.usd; }
   for (let attempt = 0; attempt < 2; attempt++) {
     const user = brief(recipe, angle, kit, recipe.length_bucket, prior, a2) + (lastProblems.length ? `\nYour last draft was rejected: ${lastProblems.join("; ")}. Fix that.` : "");
     const r = await guard.spend("anthropic", "studio.write_script", estimateUsd({ model: MODEL, inputTokens: 3000, outputTokens: 2500 }), async (ticket) => {
-      const out = await createMessage(ticket, { apiKey, request: { model: MODEL, max_tokens: 6000, system: SYSTEM(factText), messages: [{ role: "user", content: user }], output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } } } });
+      const out = await createMessage(ticket, { apiKey, request: { model: MODEL, max_tokens: 6000, system: SYSTEM(factText, tpl), messages: [{ role: "user", content: user }], output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } } } });
       return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
     }, { lane: "studio", live: true });
     usd += r.actualUsd ?? 0;
     const w = JSON.parse(r.result.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
-    const script = assembleWritten(w, recipe, kit, kitKey);
+    const script = assembleWritten(w, recipe, kit, kitKey, shown, spots);
     if (a2) script.claude_log = a2;
     lastProblems = validateStory(script);
     const sim = similarity([script, ...recent]).filter((x) => x.a === script.variant && x.share > 0.3);
@@ -86,14 +95,17 @@ export async function writeStory({ guard, apiKey, facts, recipe, angle, kit, kit
   throw new Error(`the script failed its checks: ${lastProblems.join("; ").slice(0, 300)}`);
 }
 
-function assembleWritten(w, recipe, kit, kitKey) {
-  const shots = kit.moments.shots.filter((s) => !s.brand), payoff = (name, a, b, after, extra = {}) => ({ name, file: kit.file, in: +(a.a + 0.02).toFixed(2), out: +(b.b - 0.04).toFixed(2), hq_dir: kit.hq_dir, fullscreen: true, enter: "grow", pre: 0.5, post: 0.1, duck_db: 22, after_line: after, ...extra });
+function assembleWritten(w, recipe, kit, kitKey, shown = [], spots = {}) {
+  const fresh = kit.moments.shots.filter((s) => !s.brand && !shown.some(([a, b]) => s.a < b && s.b > a));
+  if (fresh.length < 1) throw new Error("no clip of this creation is left unshown: pick another creation");
+  // short on fresh shots: one payoff only; each stays under a sensible length
+  const shots = fresh.length >= 2 ? fresh : [fresh[0], fresh[0]], payoff = (name, a, b, after, extra = {}) => ({ name, file: kit.file, in: +(a.a + 0.02).toFixed(2), out: +Math.min(b.b - 0.04, a.a + 20).toFixed(2), hq_dir: kit.hq_dir, hq_ext: kit.hq_ext, wide: !!kit.wide, fullscreen: true, enter: "grow", pre: 0.5, post: 0.1, duck_db: 22, after_line: after, ...extra });
   const n = w.lines.length;
   const lines = w.lines.map((l, i) => {
     const out = { who: l.who, text: l.text, key: [l.key], expr: l.expr, pose: l.pose, shot: l.shot, role: `l${i}` };
     if (l.stamp) out.stamp = l.stamp;
     if (l.keep && !l.visual && !l.screen) out.keep = true;
-    if (l.screen) { const spot = STICKER_SPOTS[l.screen] ?? { x: 0.5, y: 0.5, ty: 0.1 }; out.screen = { file: l.screen === "typed" ? "typed.jpg" : `${l.screen}.jpg`, sticker: l.sticker ? { text: l.sticker, ...spot } : null }; }
+    if (l.screen) { const spot = spots[l.screen] ?? STICKER_SPOTS[l.screen] ?? { x: 0.5, y: 0.5, ty: 0.1 }; out.screen = { file: l.screen === "typed" ? "typed.jpg" : `${l.screen}.jpg`, sticker: l.sticker ? { text: l.sticker, ...spot } : null }; }
     else if (l.visual) {
       const v = Object.fromEntries(Object.entries(l.visual).filter(([, x]) => x != null));
       if (v.kind === "tiles") v.images = kit.scene_images.slice(0, 3).map((p) => `/work/media/${path.basename(p)}`);
@@ -109,7 +121,7 @@ function assembleWritten(w, recipe, kit, kitKey) {
   clips.push(payoff("payoff", shots[early != null ? 1 : 0], shots.at(-1), big, { pays_loop: true }));
   const c = CTA_LINES(recipe.end_trigger, w.end_line, w.end_chip);
   return assembleStory(`job_${recipe.angle}_${Date.now().toString(36)}`, {
-    title: w.title, world: recipe.world, music_bpm: 86 + Math.floor(Math.random() * 24), music_shift: Math.floor(Math.random() * 7) - 3, creation: kitKey,
+    title: w.title, template: kit.template, world: recipe.world, music_bpm: 86 + Math.floor(Math.random() * 24), music_shift: Math.floor(Math.random() * 7) - 3, creation: kitKey,
     recipe: { angle: recipe.angle, hook_type: w.hook_type, length_bucket: recipe.length_bucket, famous_name: !!recipe.famous_name, end_trigger: recipe.end_trigger },
     headline: { text: w.headline, chip: w.chip, secs: 8 }, lines: [...lines, { ...SITE_LINE, shot: "zee_close", visual: { kind: "sign", text: "tryzyvo.com", sub: "link in bio" } }], clips, end: c,
     search_title: w.search_title, caption: w.caption, hashtags: w.hashtags,
@@ -120,6 +132,9 @@ const SITE_LINE = { who: "zee", text: "Made with Zyvo. tryzyvo.com, link in bio.
 /** The recent scripts this laptop rendered (the batch's and the last 14 days'), for the similarity check. */
 export function recentScripts(kitsDir, days = 14) {
   const out = [], cut = Date.now() - days * 864e5;
+  // the hand-written first batch counts too
+  const batch = new URL("./scripts/story/", import.meta.url);
+  if (fs.existsSync(batch)) for (const f of fs.readdirSync(batch)) { const p = new URL(f, batch); if (f.endsWith(".json") && fs.statSync(p).mtimeMs > cut) out.push(JSON.parse(fs.readFileSync(p, "utf8"))); }
   if (!fs.existsSync(kitsDir)) return out;
   for (const k of fs.readdirSync(kitsDir)) { const j = path.join(kitsDir, k, "jobs"); if (!fs.existsSync(j)) continue;
     for (const d of fs.readdirSync(j)) { const f = path.join(j, d, "script.json"); if (fs.existsSync(f) && fs.statSync(f).mtimeMs > cut) { try { const s = JSON.parse(fs.readFileSync(f, "utf8")); if (s.recipe?.angle) out.push(s); } catch { /* a half-written file */ } } } }

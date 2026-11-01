@@ -117,7 +117,7 @@ CLIPS = S.get("clips") or ([S["clip"]] if S.get("clip") else [])
 clips = []
 # short videos (Retention Engine, owner 2026-10-30): a clip "at": "start" plays from frame 0, before the first line;
 # "freeze": {"secs"} holds its last frame after it ends (a cliffhanger); the extra keys go to the page as they are
-CLIP_KEYS = ("stamp", "headline", "hq_dir", "sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
+CLIP_KEYS = ("stamp", "headline", "hq_dir", "hq_ext", "wide", "sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
 for n, (ln, x) in enumerate(zip(lines, takes)):
     C = next((c for c in CLIPS if (n == 0 and c.get("at") == "start") or (n and n == c.get("after_line", -9) + 1)), None)
     if C:

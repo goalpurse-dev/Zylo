@@ -204,6 +204,21 @@ export function createPipelineDb(db) {
       const scenes = must(await db.from("fruit_story_scenes").select("story_id, idx, line, clip_status").in("story_id", stories.map((s) => s.id)), "story scenes");
       return stories.map((s) => ({ ...s, scenes: scenes.filter((x) => x.story_id === s.id) }));
     },
+    /** The owner's finished creations of a template (read-only): {id, title, created_at, length_sec, final_url, scenes?}. */
+    async ownerCreations(template, email, sinceIso) {
+      const prof = must(await db.from("profiles").select("id").eq("email", email).maybeSingle(), "owner");
+      if (!prof) return [];
+      if (template === "ai_fruit_story") return api.ownerFruitStories(email, sinceIso);
+      if (template === "blocky_stories") {
+        const rows = must(await db.from("blocky_stories").select("id, title, length_sec, final_url, created_at").eq("user_id", prof.id).eq("final_status", "ready").not("final_url", "is", null).is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "blocky");
+        if (!rows.length) return [];
+        const scenes = must(await db.from("blocky_story_scenes").select("story_id, idx, line, clip_status").in("story_id", rows.map((s) => s.id)), "blocky scenes");
+        return rows.map((s) => ({ ...s, scenes: scenes.filter((x) => x.story_id === s.id) }));
+      }
+      if (template === "cutaway") return must(await db.from("cutaway_runs").select("id, title, topic, length_sec, created_at").eq("user_id", prof.id).eq("status", "done").gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "cutaway").map((r) => ({ ...r, title: r.title ?? r.topic }));
+      if (template === "long_form") return must(await db.from("long_form_projects").select("id, selected_title, topic, created_at").eq("user_id", prof.id).eq("status", "complete").not("final_video_path", "is", null).is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "long form").map((p) => ({ id: p.id, title: p.selected_title ?? p.topic, created_at: p.created_at, length_sec: 40 }));
+      return [];
+    },
     /** How often each creation was already used by a Studio job (not cancelled). */
     async studioSourceUse() {
       const rows = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").limit(2000), "studio sources");
@@ -219,11 +234,15 @@ export function createPipelineDb(db) {
         return { recipe: r.recipe, template: r.recipe?.template ?? r.zyvo_tool, seconds: Number((r.cm_generations ?? []).find((g) => g.kind === "making_of")?.duration_s) || null, stats: stats.find((s) => s.platform === "tiktok") ?? stats[0] ?? null };
       });
     },
-    /** Creations shown in the last days (jobs and Queue items): the same footage never twice within 14 days. */
+    /** Creations shown in the last days and the angles they were used with: {id: [angles]} (a reuse must change the angle). */
     async studioRecentSources(sinceIso) {
-      const jobs = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").neq("status", "failed").gte("created_at", sinceIso).limit(500), "recent jobs");
-      const ideas = must(await db.from("cm_ideas").select("recipe").eq("recipe->>kind", "video").gte("created_at", sinceIso).limit(500), "recent videos");
-      return [...new Set([...jobs.map((j) => j.source?.id), ...ideas.map((i) => i.recipe?.source_story)].filter(Boolean))];
+      const jobs = must(await db.from("cm_studio_jobs").select("source, recipe, idea_id").neq("status", "cancelled").neq("status", "failed").gte("created_at", sinceIso).limit(500), "recent jobs");
+      const ideas = must(await db.from("cm_ideas").select("id, recipe").eq("recipe->>kind", "video").gte("created_at", sinceIso).limit(500), "recent videos");
+      const out = {}, add = (id, angle) => { if (!id) return; (out[id] ??= []).push(angle ?? "old"); };
+      const fromJobs = new Set(jobs.map((j) => j.idea_id).filter(Boolean));
+      for (const j of jobs) if (j.source?.id) add(j.source.id, j.recipe?.angle);
+      for (const i of ideas) if (!fromJobs.has(i.id) && i.recipe?.source_story) add(i.recipe.source_story, i.recipe.angle);
+      return out;
     },
     async studioAngles(all = false) {
       let q = db.from("cm_studio_angles").select("*").order("sort");

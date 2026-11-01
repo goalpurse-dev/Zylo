@@ -162,9 +162,9 @@ export function assembleStory(key, s, kits, sourceId) {
     lines.forEach((l) => { if (l.role === "site") l.shot = "two_shot"; });   // both on screen for the reveal
   const closing = lines.at(-1); closing.shot = "two_shot";
   return {
-    variant: key, title: s.title, template: "ai_fruit_story", voices: VOICES, world: s.world, music_bpm: s.music_bpm, music_shift: s.music_shift, no_phone: true, creation: s.creation, source_story: sourceId, search_title: s.search_title ?? null, caption: s.caption ?? null, hashtags: s.hashtags ?? null,
+    variant: key, title: s.title, template: s.template ?? "ai_fruit_story", voices: VOICES, world: s.world, music_bpm: s.music_bpm, music_shift: s.music_shift, no_phone: true, creation: s.creation, source_story: sourceId, search_title: s.search_title ?? null, caption: s.caption ?? null, hashtags: s.hashtags ?? null,
     lead: s.no_lead ? 0 : 0.15, gap_speaker: 0.2, gap_same: 0.16, tail: 0.7, music_db_under: 14, max_gap: 0.4, start_at: first, hq_dir: kits[s.creation].hq_dir,
-    headline: s.headline, recipe: { ...s.recipe, kind: "video", template: "ai_fruit_story", world: s.world, template_shown: "ai_fruit_story", cta: s.end.cta.id, source_story: sourceId }, cta: s.end.cta,
+    headline: s.headline, recipe: { ...s.recipe, kind: "video", template: s.template ?? "ai_fruit_story", world: s.world, template_shown: s.template ?? "ai_fruit_story", cta: s.end.cta.id, source_story: sourceId }, cta: s.end.cta,
     ...(s.loop ? { loop_end: { secs: 0.5 } } : {}), clips: s.clips, lines, shots: shotsOf(lines, first),
     ...(s.lines.length ? {} : {}), events_extra: s.no_lead ? [] : [{ t: 0, event: "open", sfx: "hit" }],
   };

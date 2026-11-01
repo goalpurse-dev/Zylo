@@ -7,12 +7,12 @@ const [scriptPath, mp4, outPath, usd] = process.argv.slice(2);
 const S = JSON.parse(fs.readFileSync(scriptPath, "utf8"));
 const plain = (t) => t.replace(/[|*]/g, " ").replace(/\s+/g, " ").trim();
 const hook = plain(S.headline.text), trigger = S.lines.at(-1).text;
-const tags = S.hashtags?.length ? S.hashtags : ["#aifruit", "#aivideo", "#fruitdrama", "#zyvo"];
+const tags = S.hashtags?.length ? S.hashtags : ["#aivideo", "#zyvo"];
 const search = S.search_title ?? S.title;
 const caption = S.caption ?? `${S.title}. ${trigger} tryzyvo.com`;
 const day = new Date().toISOString().slice(0, 10);
 const spec = {
-  mp4, coverAt: 0.3, title: S.title, account: "zyvo", template: S.template, route: "/workspace/ai-fruit-story", cta: S.cta.id, hook,
+  mp4, coverAt: 0.3, title: S.title, account: "zyvo", template: S.template, route: { ai_fruit_story: "/workspace/ai-fruit-story", blocky_stories: "/workspace/blocky-stories", cutaway: "/workspace/cutaway-explainer", long_form: "/long-form" }[S.template] ?? "/", cta: S.cta.id, hook,
   concept: `Studio v2 ${S.recipe.angle}: ${S.title}. World: ${S.world}. Shows the real creation ${S.source_story?.slice(0, 8)}.`,
   script: { source: "studio v2", lines: S.lines.map((l) => `${l.who}: ${l.text}`), ...(S.claude_log ? { claude_log: S.claude_log } : {}) },
   recipe: { ...S.recipe, studio_variant: S.variant, experiment: "studio_v2" },

@@ -16,12 +16,12 @@ const story = (id, title, days, lines = ["Hi.", "Oh no!"], over = {}) => ({ id, 
   created_at: new Date(NOW.getTime() - days * 864e5).toISOString(), scenes: lines.map((line, idx) => ({ idx, line, clip_status: "ready" })), ...over });
 
 /** The admin API with an in-memory Studio: the owner's stories, jobs, the worker's heartbeat, posted Studio videos. */
-function studioApi({ stories = [], history = [], workers = [], settings = {} } = {}) {
+function studioApi({ stories = [], others = {}, recent = {}, history = [], workers = [], settings = {} } = {}) {
   const world = fakeWorld({ studio_batch_size: 5, studio_rate_frame0: false, ...settings });
   world.clock = { now: NOW };
   const jobs = [];
   const extra = {
-    async ownerFruitStories(email, since) { assert.equal(email, "upwardlift6@gmail.com"); return stories.filter((s) => s.created_at >= since); },
+    async ownerCreations(template, email, since) { assert.equal(email, "upwardlift6@gmail.com"); return template === "ai_fruit_story" ? stories.filter((s) => s.created_at >= since) : (others[template] ?? []); },
     async studioSourceUse() { const o = {}; for (const j of jobs) if (j.source?.id && j.status !== "cancelled") o[j.source.id] = (o[j.source.id] ?? 0) + 1; return o; },
     async studioPostHistory() { return history; },
     async studioWorkers() { return workers; },
@@ -29,7 +29,7 @@ function studioApi({ stories = [], history = [], workers = [], settings = {} } =
     async updateStudioJob(id, patch, from) { const j = jobs.find((x) => x.id === id && from.includes(x.status)); if (!j) return null; Object.assign(j, patch); return j; },
     async listStudioJobs() { return [...jobs].reverse(); },
     async studioJobVideos() { return {}; },
-    async studioRecentSources() { return []; },
+    async studioRecentSources() { return recent; },
     async studioAngles() { return ANGLES; },
   };
   Object.assign(world.db, extra);
@@ -76,8 +76,8 @@ test("templates: typed names, parked ones refused, Let AI decide takes a ready o
   assert.equal(templateFromPrompt("long form please"), "long_form");
   assert.equal(templateFromPrompt("hello"), null);
   const { call } = studioApi({ stories: [story("S1", "A", 1)] });
-  const parked = await call({ action: "studioPlan", mode: "prompt", prompt: "long form" });
-  assert.equal(parked.ok, false); assert.match(parked.message, /parked/);
+  const parked = await call({ action: "studioPlan", mode: "prompt", prompt: "clay rescue" });
+  assert.equal(parked.ok, false); assert.match(parked.message, /facts/);
   assert.equal(pickTemplate([]), "ai_fruit_story");
   assert.equal((await call({ action: "studioPlan", mode: "ai_decide" })).data.count, 5, "a batch is studio_batch_size");
   assert.equal(workerState([], NOW).online, false);
@@ -128,6 +128,22 @@ test("retention numbers: the form fields, cleaned, and Analytics shows each Stud
   assert.equal(a.studio.posts[0].dropoff, 1.5);
   assert.ok(a.studio.posts[0].score > 0);
   assert.ok(a.studio.byAngle && a.studio.byWorld);
+});
+
+test("kits: each template's own angles, the Blocky filter, a reuse within 14 days must change the angle", async () => {
+  const s = (id, title) => ({ id, title, created_at: NOW.toISOString(), length_sec: 25, final_url: "u", scenes: [{ idx: 0, line: "a", clip_status: "ready" }, { idx: 1, line: "b", clip_status: "ready" }] });
+  const { call } = studioApi({ others: { blocky_stories: [s("418ba8bd-b692-40d0-9c0e-a2bdd0762e89", "No Hats Allowed"), s("LAVA", "The Floor Is Lava")], cutaway: [{ id: "C1", title: "How a Pool Works", created_at: NOW.toISOString(), length_sec: 30 }] } });
+  const p = (await call({ action: "studioPlan", mode: "ai_decide", count: 5 })).data;
+  const reused = p.videos.filter((v) => v.source.kind !== "generate");
+  assert.ok(!reused.some((v) => v.source.title === "No Hats Allowed"), "the Roblox-lookalike story is filtered out");
+  const lava = reused.find((v) => v.source.id === "LAVA"); assert.ok(["A5", "A8", "A9"].includes(lava.recipe.angle)); assert.equal(lava.recipe.template, "blocky_stories");
+  const pool = reused.find((v) => v.source.id === "C1"); assert.ok(["A1", "A4", "A5", "A6"].includes(pool.recipe.angle));
+  // used once with A5: the second video may not be A5; used twice: not offered
+  const one = studioApi({ others: { cutaway: [{ id: "C1", title: "P", created_at: NOW.toISOString(), length_sec: 30 }] }, recent: { C1: ["A1"] } });
+  const q = (await one.call({ action: "studioPlan", mode: "prompt", prompt: "cutaway explainer" })).data;
+  assert.notEqual(q.videos[0].recipe.angle, "A1");
+  const two = studioApi({ others: { cutaway: [{ id: "C1", title: "P", created_at: NOW.toISOString(), length_sec: 30 }] }, recent: { C1: ["A1", "A4"] } });
+  assert.equal((await two.call({ action: "studioPlan", mode: "prompt", prompt: "cutaway explainer", reuse_only: true })).data.count, 0);
 });
 
 test("a real result's moments: the ending is the last clean shot, frame 0 an earlier strong one, a brand shot never", () => {

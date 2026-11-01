@@ -38,7 +38,7 @@ async function bitmap(url) {
   if (frameCache.size > 6) { const [k, old] = frameCache.entries().next().value; old.close?.(); frameCache.delete(k); }
   return b;
 }
-const hqUrl = (c, vt) => `/pics/${c.hq_dir ?? SH.hq_dir}/f${String(Math.max(0, Math.round(vt * 30)) + 1).padStart(5, "0")}.png`;
+const hqUrl = (c, vt) => `/pics/${c.hq_dir ?? SH.hq_dir}/f${String(Math.max(0, Math.round(vt * 30)) + 1).padStart(5, "0")}.${c.hq_ext ?? "png"}`;
 const clipEnd = (c) => c.freeze_end ?? c.end;
 const clipVT = (c, t) => Math.min(c.out - 0.02, Math.max(c.in, c.in + (t - c.start)));
 function fullK(c, t) {
@@ -56,8 +56,10 @@ async function drawClip(c, t, k, vtOverride = null) {
   const bmp = await bitmap(hqUrl(c, vtOverride ?? clipVT(c, t)));
   const { z, flash, sat } = vtOverride != null ? { z: 1, flash: 0, sat: 1 } : punchState(c, t);
   // it grows from the middle of the frame, over the world
-  const fw = W * 1.06, fh = fw * 16 / 9, full = { x0: (W - fw) / 2, y0: -120, x1: (W + fw) / 2, y1: -120 + fh };
-  const from = { x0: W * 0.28, y0: H * 0.24, x1: W * 0.72, y1: H * 0.24 + W * 0.44 * 16 / 9 };
+  // a wide video (Long Form): whole, across the frame, over a dark blurred copy of itself
+  if (c.wide && k > 0.02) { ctx.save(); ctx.globalAlpha = Math.min(1, k * 3); ctx.filter = "blur(40px) brightness(0.45)"; const cw = H * 16 / 9; ctx.drawImage(bmp, (W - cw) / 2, 0, cw, H); ctx.restore(); }
+  const fw = c.wide ? W : W * 1.06, fh = c.wide ? W * 9 / 16 : fw * 16 / 9, fy0 = c.wide ? 640 : -120, full = { x0: (W - fw) / 2, y0: fy0, x1: (W + fw) / 2, y1: fy0 + fh };
+  const from = c.wide ? { x0: W * 0.2, y0: 800, x1: W * 0.8, y1: 800 + W * 0.6 * 9 / 16 } : { x0: W * 0.28, y0: H * 0.24, x1: W * 0.72, y1: H * 0.24 + W * 0.44 * 16 / 9 };
   const e = k * k * (3 - 2 * k), r = { x0: from.x0 + (full.x0 - from.x0) * e, y0: from.y0 + (full.y0 - from.y0) * e, x1: from.x1 + (full.x1 - from.x1) * e, y1: from.y1 + (full.y1 - from.y1) * e };
   const fx = (r.x0 + r.x1) / 2, fy = r.y0 + (r.y1 - r.y0) * 0.36;
   ctx.save(); ctx.globalAlpha = Math.min(1, k * 3); ctx.beginPath(); ctx.roundRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 28 * (1 - e)); ctx.clip();

@@ -57,12 +57,15 @@ const run = (cmd, args, opts = {}) => new Promise((resolve, reject) => {
 // Studio v2 (Master Prompt v2): a job with an angle: the script is written fresh, its new voice lines made, both through
 // the Budget Guard; rendered by story.js in its own world; into the Queue with captions, a search title and its recipe.
 const guard = createBudgetGuard({ store: createStore(db) });
+// the input panel in each template's page, CSS px of 1280x860
+const TYPED_CROP = { ai_fruit_story: [236, 440, 692, 800], blocky_stories: [236, 240, 692, 560], cutaway: [236, 130, 668, 480], long_form: [120, 130, 1200, 560] };
+const screensSpots = (t) => { const f = path.join(env.SRC_WORK, `screens_${t}`, "spots.json"); return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : {}; };
 const VOICE_USD_PER_CHAR = 0.0002, VOICE_CAP_PER_VIDEO = 0.25;
 async function makeStoryJob(job) {
   const sid = job.source.id;
   await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
   const kitFile = path.join(KITS, sid, "kit.json");
-  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
+  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS, job.template], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
   const kit = JSON.parse(fs.readFileSync(kitFile, "utf8"));
   const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
   const scriptFile = path.join(work, "script.json");
@@ -72,7 +75,7 @@ async function makeStoryJob(job) {
     await progress(job, "writing the script");
     const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
     const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
-    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent: recentScripts(KITS) });
+    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent: recentScripts(KITS), spots: screensSpots(job.template) });
     script = w.script; usd += w.usd;
     script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
     fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
@@ -92,9 +95,11 @@ async function makeStoryJob(job) {
   await progress(job, `rendering in the ${job.recipe.world} world (laptop GPU)`);
   // the kit's own typed-idea screen, cropped like the others
   const typed = path.join(work, "typed.jpg"), shots = path.join(KITS, sid, "input", "shots");
-  if (!fs.existsSync(typed) && fs.existsSync(shots)) { const f = fs.readdirSync(shots).filter((x) => /typed|picked/.test(x)).at(-1); if (f) await run("python", ["-c", `from PIL import Image; Image.open(r"${path.join(shots, f)}").convert("RGB").crop((708,1320,2076,2400)).save(r"${typed}", quality=94)`]); }
+  const C = TYPED_CROP[job.template] ?? TYPED_CROP.ai_fruit_story;
+  if (!fs.existsSync(typed) && fs.existsSync(shots)) { const f = fs.readdirSync(shots).filter((x) => /typed|picked/.test(x)).at(-1); if (f) await run("python", ["-c", `from PIL import Image; Image.open(r"${path.join(shots, f)}").convert("RGB").crop((${C.map((x) => x * 3).join(",")})).save(r"${typed}", quality=94)`]); }
   const screens = path.join(work, "_screens"); fs.mkdirSync(screens, { recursive: true });
-  for (const f of fs.readdirSync(path.join(env.SRC_WORK, "screens"))) fs.copyFileSync(path.join(env.SRC_WORK, "screens", f), path.join(screens, f));
+  const shared = path.join(env.SRC_WORK, job.template === "ai_fruit_story" ? "screens" : `screens_${job.template}`);
+  for (const f of fs.readdirSync(shared)) if (f.endsWith(".jpg")) fs.copyFileSync(path.join(shared, f), path.join(screens, f));
   if (fs.existsSync(typed)) fs.copyFileSync(typed, path.join(screens, "typed.jpg"));
   await run("bash", [path.join(HERE, "buildStory.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SCREENS: winPath(screens), MEDIA: winPath(path.join(KITS, sid, "media")) } });
   if (!fs.existsSync(mp4)) throw new Error("the render made no video");
@@ -108,7 +113,7 @@ async function makeStoryJob(job) {
 }
 
 async function make(job) {
-  if (job.recipe?.angle && job.source?.kind === "fruit_story") return makeStoryJob(job);
+  if (job.recipe?.angle && job.source?.kind && job.source.kind !== "generate") return makeStoryJob(job);
   if (job.source?.kind !== "fruit_story") throw new Error("this job needs a NEW creation: that generation (~$1.70) runs separately after your go (fruitRun.mjs on the internal account), not in the worker");
   const sid = job.source.id;
   await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
