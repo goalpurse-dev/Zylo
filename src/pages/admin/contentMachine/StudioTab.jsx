@@ -4,6 +4,7 @@
 // Each finished video is watchable in its row at once, and is in the Queue with captions and tracked links.
 import React, { useCallback, useEffect, useState } from "react";
 import { api, money, when } from "./cmApi";
+import { MarkPosted } from "./PostedTabs";
 
 const input = "rounded-lg border border-white/15 bg-white/[0.05] px-3 py-2 text-[14px] text-white outline-none focus:border-lime-300/60";
 const primary = "rounded-lg bg-lime-300 px-3.5 py-2 text-[13.5px] font-semibold text-[#071006] disabled:opacity-40";
@@ -92,7 +93,7 @@ export function StudioTab() {
     try { const r = await api("studioStart", body()); setNote(`${r.jobs.length} video${r.jobs.length > 1 ? "s" : ""} started${r.worker.online ? "" : " (they wait until the laptop worker runs)"}.`); setPlan(null); loadJobs(); } catch (err) { setNote(err.message); }
     setBusy(false);
   };
-  const act = async (action, id) => { setNote(null); try { await api(action, { id }); loadJobs(); } catch (e) { setNote(e.message); } };
+  const act = async (action, args, done = null) => { setNote(null); try { await api(action, args); if (done) setNote(done); loadJobs(); } catch (e) { setNote(e.message); } };
   const fresh = plan?.videos?.filter((v) => v.source.kind === "generate").length ?? 0;
 
   return (
@@ -153,7 +154,8 @@ export function StudioTab() {
         {!jobs ? <p className="text-white/50">Loading…</p> : !jobs.jobs.length ? <p className="text-[13px] text-white/50">No Studio jobs yet.</p> : (
           <ul className="divide-y divide-white/10 rounded-2xl border border-white/10" data-testid="cm-studio-jobs">
             {jobs.jobs.map((j) => {
-              const [label, tone] = STATUS[j.status] ?? [j.status, "text-white/60"];
+              const posted = j.idea?.status === "posted";
+              const [label, tone] = posted ? ["Posted", "text-lime-300"] : STATUS[j.status] ?? [j.status, "text-white/60"];
               return (
                 <li key={j.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-[13px]">
                   <span className={`font-semibold ${tone}`}>{label}</span>
@@ -162,9 +164,17 @@ export function StudioTab() {
                   {j.progress && j.status === "claimed" && <span className="text-white/60">· {j.progress}</span>}
                   {j.error && <span className="text-rose-300">· {j.error}</span>}
                   {j.status === "done" && j.video_url && <JobVideo key={j.id} url={j.video_url} />}
+                  {j.status === "done" && j.idea && (
+                    <div className="mt-1 flex w-full flex-wrap items-center gap-2" data-testid="cm-studio-actions">
+                      {(j.idea.posts ?? []).map((p) => <a key={p.post_url} href={p.post_url} target="_blank" rel="noreferrer" className="text-[12.5px] text-lime-300 underline">Posted on {p.platform}</a>)}
+                      <MarkPosted idea={j.idea} onDone={loadJobs} />
+                      {posted && <button type="button" className={ghost} data-testid="cm-studio-undo-posted" onClick={() => { if (window.confirm("Undo posted? Its posts and their stats are removed, and it goes back to Not posted (in the Queue).")) act("unmarkPosted", { ideaId: j.idea.id }); }}>Undo posted</button>}
+                      {!posted && j.recipe?.angle && <button type="button" className={ghost} data-testid="cm-studio-remake" onClick={() => { if (window.confirm("Make this video again? The same angle, world, creation and ending, with a new script and new voices. About $0.10, within the caps; the worker makes it next.")) act("studioRemake", { id: j.id }, "The remake is waiting for the worker. The first video stays until you reject or post it."); }}>Remake same idea</button>}
+                    </div>
+                  )}
                   <span className="ml-auto flex gap-2">
-                    {j.status === "waiting_go" && <button type="button" className={primary} onClick={() => act("studioApprove", j.id)}>Go: ~{money(j.estimate?.generation_usd)}</button>}
-                    {["waiting_go", "queued"].includes(j.status) && <button type="button" className={ghost} onClick={() => act("studioCancel", j.id)}>Cancel</button>}
+                    {j.status === "waiting_go" && <button type="button" className={primary} onClick={() => act("studioApprove", { id: j.id })}>Go: ~{money(j.estimate?.generation_usd)}</button>}
+                    {["waiting_go", "queued"].includes(j.status) && <button type="button" className={ghost} onClick={() => act("studioCancel", { id: j.id })}>Cancel</button>}
                   </span>
                 </li>
               );

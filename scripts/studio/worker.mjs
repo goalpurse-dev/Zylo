@@ -82,7 +82,9 @@ async function makeStoryJob(job) {
     await progress(job, "writing the script");
     const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
     const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
-    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent: recentScripts(KITS), spots: screensSpots(job.template) });
+    // a remake replaces its video: the same creation under the same angle may show the same clips again
+    const recent = recentScripts(KITS).filter((s) => !(job.source.remake_of && s.source_story === sid && s.recipe?.angle === job.recipe.angle));
+    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent, spots: screensSpots(job.template) });
     script = w.script; paid(w.usd);
     script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
     fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));

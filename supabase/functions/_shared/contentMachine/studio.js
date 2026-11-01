@@ -251,13 +251,31 @@ export function studioActions({ cm, store, now, files }) {
       return { job };
     },
 
+    // "Remake same idea" before posting (owner, 2026-11-01): a new job with the same recipe and creation, a new script
+    // and voices. The first video stays in the Queue, as with a slideshow's remake.
+    studioRemake: async ({ user, body }) => {
+      const s = await store.readSettings();
+      if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
+      const job = (await cm.listStudioJobs(100)).find((j) => j.id === String(body?.id ?? ""));
+      if (!job || job.status !== "done" || !job.idea_id) throw new ApiError("VALIDATION", "Only a finished Studio video can be remade.");
+      if (!job.recipe?.angle) throw new ApiError("VALIDATION", "This older video has no angle to remake.");
+      const idea = (await cm.studioJobIdeas([job.idea_id]))[job.idea_id];
+      if (idea?.status === "posted") throw new ApiError("VALIDATION", "This video is already posted.");
+      const [copy] = await cm.createStudioJobs([{ created_at: now().toISOString(), batch_id: crypto.randomUUID(), template: job.template, mode: job.mode, prompt: job.prompt, recipe: job.recipe,
+        source: { ...job.source, remake_of: job.id }, estimate: studioEstimate({ count: 1, reused: 1, generateUsd: STUDIO_TEMPLATES.ai_fruit_story.generate_usd }), status: "queued", created_by: user.email }]);
+      await store.audit(user.email, "studio.remake", { id: job.id, newId: copy.id, angle: job.recipe.angle });
+      return { job: copy };
+    },
+
     // A finished job carries its video at once (owner, 2026-10-30): each one is watchable as soon as it is ready
     studioJobs: async ({ body }) => {
       const jobs = await cm.listStudioJobs(Math.min(100, Math.max(1, Number(body?.limit) || 40)));
-      const videos = await cm.studioJobVideos(jobs.filter((j) => j.status === "done" && j.idea_id).map((j) => j.idea_id));
+      const finished = jobs.filter((j) => j.status === "done" && j.idea_id).map((j) => j.idea_id);
+      const videos = await cm.studioJobVideos(finished);
+      const ideas = await cm.studioJobIdeas(finished);
       const urls = await files.signedUrls(Object.values(videos), 3600);
       return {
-        jobs: jobs.map((j) => ({ ...j, video_url: urls[videos[j.idea_id]] ?? null })),
+        jobs: jobs.map((j) => ({ ...j, video_url: urls[videos[j.idea_id]] ?? null, idea: ideas[j.idea_id] ?? null })),
         worker: workerState(await cm.studioWorkers(), now()),
         templates: Object.entries(STUDIO_TEMPLATES).map(([k, t]) => ({ key: k, name: t.name, ready: t.ready, why: t.why ?? null })),
       };

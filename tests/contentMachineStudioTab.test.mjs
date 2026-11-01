@@ -19,7 +19,7 @@ const story = (id, title, days, lines = ["Hi.", "Oh no!"], over = {}) => ({ id, 
 function studioApi({ stories = [], others = {}, recent = {}, history = [], workers = [], settings = {} } = {}) {
   const world = fakeWorld({ studio_batch_size: 5, studio_rate_frame0: false, ...settings });
   world.clock = { now: NOW };
-  const jobs = [];
+  const jobs = [], postedIdeas = new Set();
   const extra = {
     async ownerCreations(template, email, since) { assert.equal(email, "upwardlift6@gmail.com"); return template === "ai_fruit_story" ? stories.filter((s) => s.created_at >= since) : (others[template] ?? []); },
     async studioSourceUse() { const o = {}; for (const j of jobs) if (j.source?.id && j.status !== "cancelled") o[j.source.id] = (o[j.source.id] ?? 0) + 1; return o; },
@@ -29,13 +29,32 @@ function studioApi({ stories = [], others = {}, recent = {}, history = [], worke
     async updateStudioJob(id, patch, from) { const j = jobs.find((x) => x.id === id && from.includes(x.status)); if (!j) return null; Object.assign(j, patch); return j; },
     async listStudioJobs() { return [...jobs].reverse(); },
     async studioJobVideos() { return {}; },
+    async studioJobIdeas(ids) { return Object.fromEntries(ids.map((id) => [id, { id, status: postedIdeas.has(id) ? "posted" : "done", account: "zyvo", posts: [] }])); },
     async studioRecentSources() { return recent; },
     async studioAngles() { return ANGLES; },
   };
   Object.assign(world.db, extra);
   const { call } = apiFor(world);
-  return { call, jobs, world };
+  return { call, jobs, world, postedIdeas };
 }
+
+test("a finished video: the row carries its idea for Mark as posted; Remake keeps the recipe and creation, only before posting", async () => {
+  const { call, jobs, postedIdeas } = studioApi();
+  const recipe = { angle: "A1", world: "factory", end_trigger: "comment", template: "cutaway" };
+  jobs.push({ id: "D1", created_at: NOW.toISOString(), template: "cutaway", mode: "ai_decide", prompt: null, recipe, source: { kind: "cutaway_run", id: "C1", title: "Pool" }, status: "done", idea_id: "I1" },
+    { id: "OLD", created_at: NOW.toISOString(), template: "ai_fruit_story", recipe: { variant: "V5" }, source: { kind: "fruit_story", id: "S1" }, status: "done", idea_id: "I2" });
+  const row = (await call({ action: "studioJobs" })).data.jobs.find((j) => j.id === "D1");
+  assert.deepEqual(row.idea, { id: "I1", status: "done", account: "zyvo", posts: [] });
+  const r = await call({ action: "studioRemake", id: "D1" });
+  assert.equal(r.data.job.status, "queued");
+  assert.deepEqual(r.data.job.recipe, recipe);
+  assert.equal(r.data.job.source.id, "C1");
+  assert.equal(r.data.job.source.remake_of, "D1");
+  assert.equal(jobs.find((j) => j.id === "D1").status, "done", "the first video stays");
+  assert.equal((await call({ action: "studioRemake", id: "OLD" })).ok, false, "an older video has no angle");
+  postedIdeas.add("I1");
+  assert.match((await call({ action: "studioRemake", id: "D1" })).message, /already posted/);
+});
 
 test("reuse first: the owner's finished stories of the last 30 days, a brand line skipped, least used first; $0 to generate", async () => {
   const { call, jobs } = studioApi({ stories: [story("S1", "Ken Reads Everything", 3, ["Ken!", "He reads it all?", "Ask Google."]), story("S2", "Old one", 70), story("S3", "Twenty Pairs", 10)] });

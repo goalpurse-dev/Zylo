@@ -223,7 +223,7 @@ export function createPipelineDb(db) {
     async studioSourceUse() {
       const rows = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").limit(2000), "studio sources");
       const out = {};
-      for (const r of rows) if (r.source?.id) out[r.source.id] = (out[r.source.id] ?? 0) + 1;
+      for (const r of rows) if (r.source?.id && !r.source.remake_of) out[r.source.id] = (out[r.source.id] ?? 0) + 1;   // a remake replaces its video: no extra use
       return out;
     },
     /** Posted Studio videos with their recipe, length and latest numbers (for the learning rule). */
@@ -240,7 +240,7 @@ export function createPipelineDb(db) {
       const ideas = must(await db.from("cm_ideas").select("id, recipe").eq("recipe->>kind", "video").gte("created_at", sinceIso).limit(500), "recent videos");
       const out = {}, add = (id, angle) => { if (!id) return; (out[id] ??= []).push(angle ?? "old"); };
       const fromJobs = new Set(jobs.map((j) => j.idea_id).filter(Boolean));
-      for (const j of jobs) if (j.source?.id) add(j.source.id, j.recipe?.angle);
+      for (const j of jobs) if (j.source?.id && !j.source.remake_of) add(j.source.id, j.recipe?.angle);
       for (const i of ideas) if (!fromJobs.has(i.id) && i.recipe?.source_story) add(i.recipe.source_story, i.recipe.angle);
       return out;
     },
@@ -265,6 +265,12 @@ export function createPipelineDb(db) {
       if (!ideaIds.length) return {};
       const rows = must(await db.from("cm_generations").select("idea_id, video_path").eq("kind", "making_of").in("idea_id", ideaIds), "studio videos");
       return Object.fromEntries(rows.filter((r) => r.video_path).map((r) => [r.idea_id, r.video_path]));
+    },
+    /** What the Studio rows need to mark a video as posted: {idea id: {id, status, account, posts}}. */
+    async studioJobIdeas(ideaIds) {
+      if (!ideaIds.length) return {};
+      const rows = must(await db.from("cm_ideas").select("id, status, account, cm_posts(platform, post_url)").in("id", ideaIds), "studio ideas");
+      return Object.fromEntries(rows.map(({ cm_posts, ...r }) => [r.id, { ...r, posts: cm_posts ?? [] }]));
     },
     async listStudioJobs(limit = 40) { return must(await db.from("cm_studio_jobs").select("*").order("created_at", { ascending: false }).limit(limit), "studio jobs"); },
   };
