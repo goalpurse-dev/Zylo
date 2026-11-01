@@ -51,9 +51,9 @@ async function main() {
   if (!fs.readdirSync(path.join(vdir, "src_png")).length) execFileSync("ffmpeg", ["-v", "error", "-y", "-i", final, "-vf", "fps=30", path.join(vdir, "src_png", "f%05d.png")]);
   const nsrc = fs.readdirSync(path.join(vdir, "src_png")).length;
   if (fs.readdirSync(path.join(vdir, "hq")).length < nsrc) {
-    // resumes after a stop: only the frames still missing (the newest one may be half written, so it is done again)
+    // resumes after a stop: only the frames still missing (the newest ones may be half written, so they are done again)
     const hqDir = path.join(vdir, "hq"), have = fs.readdirSync(hqDir).map((f) => ({ f, t: fs.statSync(path.join(hqDir, f)).mtimeMs })).sort((a, b) => b.t - a.t);
-    if (have[0]) { fs.rmSync(path.join(hqDir, have[0].f)); have.shift(); }
+    for (const x of have.splice(0, 8)) fs.rmSync(path.join(hqDir, x.f));   // several are written at once: all of the last few are redone
     const done = new Set(have.map((x) => x.f)), todo = path.join(vdir, "src_todo");
     fs.rmSync(todo, { recursive: true, force: true }); fs.mkdirSync(todo);
     for (const f of fs.readdirSync(path.join(vdir, "src_png"))) if (!done.has(f)) fs.copyFileSync(path.join(vdir, "src_png", f), path.join(todo, f));

@@ -18,4 +18,4 @@ FF="$(cygpath -m "$(which ffmpeg)")"
 if [ "$MODE" = "--stills" ]; then
   WORK_DIR="$WORK" PAGE="story.html" node render.mjs "$FF" "$OUT" 1 30 "$ARG" 2>&1 | grep -E "SAFE|rror" ; exit 0
 fi
-WORK_DIR="$WORK" AUDIO="$WORK/mix.wav" OBS_OUT="$WORK/render_checks.json" PAGE="story.html" node render.mjs "$FF" "$OUT" "$TOT" 30 2>&1 | grep -E "rendered|SAFE|error|reloading"
+WORK_DIR="$WORK" AUDIO="$WORK/mix.wav" OBS_OUT="$WORK/render_checks.json" PAGE="story.html" node render.mjs "$FF" "$OUT" "$TOT" 30 2>&1 | grep -E "rendered|SAFE|rror|reloading|reopen|Target"

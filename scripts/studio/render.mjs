@@ -30,13 +30,19 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(f).pipe(res);
 }).listen(0);
 const port = server.address().port;
-const browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"] });
-const page = await browser.newPage();
-page.on("console", (m) => console.log("page:", m.text()));
-page.on("pageerror", (e) => console.log("page error:", e.message));
-await page.setViewport({ width: 1080, height: 1920 });
-await page.goto(`http://localhost:${port}/${process.env.PAGE ?? "look.html"}`);
-await page.waitForFunction("window.ready === true", { timeout: 60000 });
+let browser, page;
+// a graphics driver reset can kill the whole browser, not just the tab: then it starts again (every frame depends only on its time)
+async function open() {
+  await browser?.close().catch(() => {});
+  browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, protocolTimeout: 300000, args: ["--use-angle=default", "--enable-webgl", "--ignore-gpu-blocklist"] });
+  page = await browser.newPage();
+  page.on("console", (m) => console.log("page:", m.text()));
+  page.on("pageerror", (e) => console.log("page error:", e.message));
+  await page.setViewport({ width: 1080, height: 1920 });
+  await page.goto(`http://localhost:${port}/${process.env.PAGE ?? "look.html"}`);
+  await page.waitForFunction("window.ready === true", { timeout: 120000 });
+}
+await open();
 
 // the composited frame (#out: 3D + overlays) when the page has one, else the WebGL canvas
 const grab = (t, q) => page.evaluate(async (t, q) => { await window.renderAt(t); return (document.getElementById("out") ?? document.querySelector("canvas")).toDataURL(q === "png" ? "image/png" : "image/jpeg", q === "png" ? undefined : q); }, t, q);
@@ -63,10 +69,10 @@ if (only) {
     for (let attempt = 0; ; attempt++) {
       try { data = await grab(f / Number(fps), "png"); break; }
       catch (e) {
-        if (attempt >= 3) throw e;
+        if (attempt >= 5) throw e;
         console.log(`frame ${f}: ${String(e.message).slice(0, 80)} -> reloading the page (attempt ${attempt + 1})`);
-        await page.reload({ waitUntil: "load" }).catch(() => {});
-        await page.waitForFunction("window.ready === true", { timeout: 90000 });
+        await new Promise((r) => setTimeout(r, 5000));   // let the driver recover
+        await open().catch((x) => console.log(`reopen failed: ${String(x.message).slice(0, 80)}`));
       }
     }
     if (!enc.stdin.write(Buffer.from(data.split(",")[1], "base64"))) await new Promise((r) => enc.stdin.once("drain", r));
@@ -82,5 +88,6 @@ if (zones) {
   console.log(Object.keys(z).length ? `SAFE ZONES: ${JSON.stringify(z)}` : "SAFE ZONES: every face and key prop inside on every frame");
   if (obs) { console.log(`OBSERVATIONS: ${JSON.stringify(obs)}`); if (process.env.OBS_OUT) fs.writeFileSync(process.env.OBS_OUT, JSON.stringify({ zones: z, observations: obs }, null, 1)); }
 }
-await browser.close();
+await Promise.race([browser.close().catch(() => {}), new Promise((r) => setTimeout(r, 15000))]);
 server.close();
+process.exit(0);   // the video is written: never hang here (closing a browser after a driver reset can wait forever)

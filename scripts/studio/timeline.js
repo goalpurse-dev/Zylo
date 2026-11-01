@@ -61,7 +61,7 @@ export const FRAMINGS_T = {
 // above the cast; the faces stay big and turned to the camera in all of them.
 export const SETUPS = {
   two_shot: { pos: [0.12, 2.75, 13.6], look: [0.12, 2.6, 0], creep: 0.25 },
-  creator_close: { pos: [-0.72, 2.7, 9.2], look: [-0.72, 2.65, 0.6], creep: 0.2 },
+  creator_close: { pos: [-0.62, 2.7, 9.2], look: [-0.62, 2.82, 0.6], creep: 0.2 },
   zee_close: { pos: [1.12, 2.3, 10.4], look: [1.12, 2.2, 0.3], creep: 0.2 },
   low_hero: { pos: [0.2, 1.05, 13.2], look: [0.2, 2.75, 0], creep: 0.2 },
   high_wide: { pos: [0.2, 5.4, 13.8], look: [0.2, 2.25, 0], creep: 0.2 },

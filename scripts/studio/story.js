@@ -24,7 +24,7 @@ renderer.toneMappingExposure = look.exposure;
 
 const creator = makeCreator(), zee = makeZee();
 scene.add(creator.group, zee.group);
-creator.group.position.set(-0.85, 0, 0.6); zee.group.position.set(1.0, 0, 0.3);
+creator.group.position.set(-0.75, 0, 0.6); zee.group.position.set(1.0, 0, 0.3);
 const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 400);
 const comp = composer(renderer, scene, camera, { bloom: look.bloom, sat: look.sat, con: 1.04, vig: look.vig });
 
@@ -172,9 +172,11 @@ window.renderAt = async (t) => {
   }
   // the headline: big for its first seconds, then a small chip
   if (headlineAt && !(inClip && !inClip.headline) && t < (EV.site ?? END)) {
-    const big = headlineAt.secs;
+    // it gives way as soon as a full-size card or a screen needs the room
+    const crowded = beat && !inClip && (beat.screen || (beat.visual && beat.visual.up == null));
+    const big = crowded ? Math.min(headlineAt.secs, beat.t0) : headlineAt.secs;
     if (t < big) boxes.push(["headline", ov.headline(headlineAt.text, t, big)]);
-    else if (!shot) boxes.push(["headline chip", ov.chip([[headlineAt.chip, YELLOW]], t - big)]);
+    else if (!shot && !inClip) boxes.push(["headline chip", ov.chip([[headlineAt.chip, YELLOW]], t - big)]);   // never on top of a real clip's faces
   }
   if (beat?.line.stamp && !inClip) boxes.push(["stamp", ov.stamp(beat.line.stamp, t - beat.t0, shot ? shot.y1 + 34 : 898)]);
   if (inClip?.stamp) boxes.push(["stamp", ov.stamp(inClip.stamp, t - inClip.start, 1212)]);

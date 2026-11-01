@@ -1,0 +1,155 @@
+{
+ "variant": "a8_story_first",
+ "title": "She has no idea it's her wedding",
+ "template": "ai_fruit_story",
+ "voices": {
+  "kokoro": {
+   "creator": {
+    "voice": "am_liam",
+    "speed": 1.05
+   },
+   "zee": {
+    "voice": "af_bella",
+    "speed": 1.05
+   }
+  },
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.38,
+    "style": 0.45,
+    "speed": 1.03
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.03
+   }
+  }
+ },
+ "world": "sunny",
+ "music_bpm": 90,
+ "music_shift": -3,
+ "no_phone": true,
+ "creation": "wedding",
+ "source_story": "3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e",
+ "search_title": null,
+ "caption": null,
+ "hashtags": null,
+ "lead": 0,
+ "gap_speaker": 0.2,
+ "gap_same": 0.16,
+ "tail": 0.7,
+ "music_db_under": 14,
+ "max_gap": 0.4,
+ "start_at": "zee_close",
+ "hq_dir": "video/studio/3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e/hq",
+ "headline": {
+  "text": "SHE DOESN'T KNOW IT'S *HER WEDDING*",
+  "chip": "PART 1",
+  "secs": 6
+ },
+ "recipe": {
+  "angle": "A8",
+  "hook_type": "story",
+  "length_bucket": "30-45",
+  "famous_name": false,
+  "end_trigger": "comment",
+  "kind": "video",
+  "template": "ai_fruit_story",
+  "world": "sunny",
+  "template_shown": "ai_fruit_story",
+  "cta": "comment_yes_no",
+  "source_story": "3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e"
+ },
+ "cta": {
+  "id": "comment_yes_no",
+  "kind": "comment",
+  "chip": "YES OR NO?"
+ },
+ "loop_end": {
+  "secs": 0.5
+ },
+ "clips": [
+  {
+   "name": "open",
+   "file": "video/studio/3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e/final.mp4",
+   "in": 0.02,
+   "out": 28.87,
+   "hq_dir": "video/studio/3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e/hq",
+   "fullscreen": true,
+   "enter": "cut",
+   "pre": 0.5,
+   "post": 0.15,
+   "duck_db": 22,
+   "at": "start",
+   "headline": true,
+   "punch": [
+    0.05
+   ]
+  }
+ ],
+ "lines": [
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Made with Zyvo. Part two?",
+   "key": [
+    "two?"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "site",
+   "visual": {
+    "kind": "sign",
+    "text": "PART 2?",
+    "sub": "made with Zyvo · tryzyvo.com"
+   },
+   "cues": [
+    {
+     "word": 2,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 0,
+     "event": "show1",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a8_story_first/line01.mp3"
+  },
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Should she say yes? Comment.",
+   "key": [
+    "yes?"
+   ],
+   "expr": "happy",
+   "role": "cta",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a8_story_first/line02.mp3",
+   "shot": "two_shot"
+  }
+ ],
+ "shots": [
+  {
+   "to": "two_shot",
+   "at": "site.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  }
+ ],
+ "events_extra": []
+}

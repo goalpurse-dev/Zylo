@@ -99,7 +99,8 @@ const KINDS = {
   },
   /** A belt carrying a box into a machine; a real picture comes out (a sentence becomes a video). */
   conveyor(g, s, ctx) {
-    add(g, rbox(3.6, 0.16, 0.5, 0.04), new THREE.MeshStandardMaterial({ color: C("#444a5c"), roughness: 0.6 }), 0, -0.72, 0);
+    board(g, 3.4, 1.9, "#fff7e0", "#7C4DFF"); g.children.forEach((m) => { m.position.z -= 0.4; });
+    add(g, rbox(3.2, 0.16, 0.5, 0.04), new THREE.MeshStandardMaterial({ color: C("#444a5c"), roughness: 0.6 }), 0, -0.72, 0);
     add(g, rbox(1.1, 1.3, 0.8, 0.14), new THREE.MeshStandardMaterial({ color: C("#7C4DFF"), roughness: 0.45 }), 0, -0.05, 0);
     const box = new THREE.Group(); g.add(box);
     add(box, rbox(0.86, 0.5, 0.3, 0.06), new THREE.MeshStandardMaterial({ color: C("#ffffff"), roughness: 0.5 }));
@@ -108,8 +109,8 @@ const KINDS = {
     if (s.image) { const t = ctx.tl.load(s.image); t.colorSpace = THREE.SRGBColorSpace; tile.material.map = t; }
     return (age) => {
       const a = (age % 2.4) / 2.4;
-      box.position.set(-1.7 + Math.min(1, a / 0.45) * 1.7, -0.38, 0.2); box.scale.setScalar(a < 0.45 ? 1 : 0.0001);
-      const b = Math.max(0, (a - 0.5) / 0.3); tile.position.set(Math.min(1, b) * 1.45, -0.05, 0.22); tile.scale.setScalar(b <= 0 ? 0.0001 : Math.min(1, b));
+      box.position.set(-1.45 + Math.min(1, a / 0.45) * 1.45, -0.38, 0.2); box.scale.setScalar(a < 0.45 ? 1 : 0.0001);
+      const b = Math.max(0, (a - 0.5) / 0.3); tile.position.set(Math.min(1, b) * 1.15, -0.05, 0.22); tile.scale.setScalar(b <= 0 ? 0.0001 : Math.min(1, b));
     };
   },
   /** A trophy with a label. */
