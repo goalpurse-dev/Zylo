@@ -266,11 +266,13 @@ export function createPipelineDb(db) {
       const rows = must(await db.from("cm_generations").select("idea_id, video_path").eq("kind", "making_of").in("idea_id", ideaIds), "studio videos");
       return Object.fromEntries(rows.filter((r) => r.video_path).map((r) => [r.idea_id, r.video_path]));
     },
-    /** What the Studio rows need to mark a video as posted: {idea id: {id, status, account, posts}}. */
+    /** What the Studio rows need to post a video: {idea id: {id, status, account, posts, packages}}. */
     async studioJobIdeas(ideaIds) {
       if (!ideaIds.length) return {};
-      const rows = must(await db.from("cm_ideas").select("id, status, account, cm_posts(platform, post_url)").in("id", ideaIds), "studio ideas");
-      return Object.fromEntries(rows.map(({ cm_posts, ...r }) => [r.id, { ...r, posts: cm_posts ?? [] }]));
+      const rows = must(await db.from("cm_ideas").select("id, status, account, cm_posts(platform, post_url), cm_generations(kind, cm_packages(*))").in("id", ideaIds), "studio ideas");
+      const order = ["tiktok", "youtube", "instagram"];
+      return Object.fromEntries(rows.map(({ cm_posts, cm_generations, ...r }) => [r.id, { ...r, posts: cm_posts ?? [],
+        packages: (cm_generations ?? []).filter((g) => g.kind === "making_of").flatMap((g) => g.cm_packages ?? []).sort((a, b) => order.indexOf(a.platform) - order.indexOf(b.platform)) }]));
     },
     async listStudioJobs(limit = 40) { return must(await db.from("cm_studio_jobs").select("*").order("created_at", { ascending: false }).limit(limit), "studio jobs"); },
   };

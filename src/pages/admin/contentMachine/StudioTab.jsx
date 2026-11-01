@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { api, money, when } from "./cmApi";
 import { MarkPosted } from "./PostedTabs";
+import { PackageTabs } from "./SlideshowTabs";
 
 const input = "rounded-lg border border-white/15 bg-white/[0.05] px-3 py-2 text-[14px] text-white outline-none focus:border-lime-300/60";
 const primary = "rounded-lg bg-lime-300 px-3.5 py-2 text-[13.5px] font-semibold text-[#071006] disabled:opacity-40";
@@ -164,6 +165,7 @@ export function StudioTab() {
                   {j.progress && j.status === "claimed" && <span className="text-white/60">· {j.progress}</span>}
                   {j.error && <span className="text-rose-300">· {j.error}</span>}
                   {j.status === "done" && j.video_url && <JobVideo key={j.id} url={j.video_url} />}
+                  {j.status === "done" && j.idea?.packages?.length > 0 && <div className="mt-1 w-full max-w-2xl" data-testid="cm-studio-packages"><PackageTabs packages={j.idea.packages} onSaved={loadJobs} /></div>}
                   {j.status === "done" && j.idea && (
                     <div className="mt-1 flex w-full flex-wrap items-center gap-2" data-testid="cm-studio-actions">
                       {(j.idea.posts ?? []).map((p) => <a key={p.post_url} href={p.post_url} target="_blank" rel="noreferrer" className="text-[12.5px] text-lime-300 underline">Posted on {p.platform}</a>)}

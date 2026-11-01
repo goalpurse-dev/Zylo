@@ -81,7 +81,7 @@ function SlidePreview({ slide, index, total, style, images, zyvoShot, logos, png
   );
 }
 
-function PackageTabs({ packages, onSaved }) {
+export function PackageTabs({ packages, onSaved }) {
   const [tab, setTab] = useState(packages[0]?.platform ?? "tiktok");
   const [edit, setEdit] = useState(null);
   const [note, setNote] = useState(null);
