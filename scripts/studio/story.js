@@ -24,7 +24,8 @@ renderer.toneMappingExposure = look.exposure;
 
 const creator = makeCreator(), zee = makeZee();
 scene.add(creator.group, zee.group);
-creator.group.position.set(-0.75, 0, 0.6); zee.group.position.set(1.0, 0, 0.3);
+const HOME = { creator: -0.75, zee: 1.0 };
+creator.group.position.set(HOME.creator, 0, 0.6); zee.group.position.set(HOME.zee, 0, 0.3);
 const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 400);
 const comp = composer(renderer, scene, camera, { bloom: look.bloom, sat: look.sat, con: 1.04, vig: look.vig });
 
@@ -76,6 +77,9 @@ const PLAN = planFor(T);
 const lineAt = (t) => L.findIndex((l) => t >= l.start - 0.05 && t <= l.end + 0.05);
 const ease = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 const V = (a) => new THREE.Vector3(...a);
+// a screen line can change screen on a word ("flip|s_anim.jpg") and show real clicks on it ("tap|x|y", 0..1 of the screen)
+const FLIPS = T.events.filter((e) => e.event.startsWith("flip|")).map((e) => ({ t: e.t, file: e.event.split("|")[1] }));
+const TAPS = T.events.filter((e) => e.event.startsWith("tap|")).map((e) => { const [, x, y] = e.event.split("|"); return { t: e.t, x: Number(x), y: Number(y) }; });
 const ACTS = T.events.filter((e) => e.event.startsWith("act|")).map((e) => { const [, who, expr, dur] = e.event.split("|"); return { t: e.t, who, expr, until: e.t + Number(dur ?? 1.2) }; });
 
 // A line's visual stays until the next line that has one (or a clip takes over)
@@ -88,7 +92,7 @@ for (const b of beats) {
   if (b.visual) { const p = makeProp(b.visual, { tl }); b.prop = p; p.group.visible = false; scene.add(p.group); p.group.position.set(...(b.visual.pos ?? [0.2, 4.05, -0.3])); p.base = p.group.position.clone(); p.scale = b.visual.scale ?? 1; }
 }
 const screenImg = {};
-await Promise.all(beats.filter((b) => b.screen).map((b) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${b.screen.file}`; screenImg[b.screen.file] = im; })));
+await Promise.all([...new Set([...beats.filter((b) => b.screen).map((b) => b.screen.file), ...FLIPS.map((f) => f.file)])].map((file) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${file}`; screenImg[file] = im; })));
 
 function cameraAt(t) {
   const s = PLAN.find((p) => t >= p.t0 && t < p.t1) ?? PLAN.at(-1);
@@ -109,12 +113,16 @@ function act(who, c, t) {
   if (beat) c.expr(beat.expr);
   else if (speaking) c.expr(l.expr ?? "happy");
   else c.expr(l?.listen ?? (who === "creator" ? "thinking" : "happy"));
-  c.mouth(speaking ? l.env[Math.floor((t - l.start) * T.fps)] ?? 0 : 0);
+  c.mouth(speaking ? (l.env[Math.floor((t - l.start) * T.fps)] ?? 0) * (l.shake ? 1.5 : 1) + (l.shake ? 0.3 : 0) : 0);   // a yell keeps the mouth wide
   c.blink(blinkK(who, t));
   let pose = "rest", k = 0;
   for (const x of L) if (x.who === who) { const a = (x.start < 0.05 ? 1 : ease((t - x.start + 0.1) / 0.25)) * (1 - ease((t - x.end - 0.25) / 0.3)); if (a > k) { k = a; pose = x.pose ?? "rest"; } }
   c.poseMix("rest", pose, k);
   c.idle(t, who === "zee" ? 0.7 : 0);
+  // a line can shake with rage (arms, head, body)
+  const shake = speaking ? l.shake ?? 0 : 0;
+  c.group.position.x = HOME[who] + shake * 0.05 * Math.sin(t * 43);
+  if (shake) { c.parts.head.rotation.z += shake * 0.05 * Math.sin(t * 37); c.parts.arms.forEach((a, i) => { a.pivot.rotation.x += shake * 0.09 * Math.sin(t * 29 + i * 2); a.pivot.rotation.z += shake * 0.07 * Math.sin(t * 41 + i); }); }
 }
 function setState(ts) {
   const cam = cameraAt(ts);
@@ -168,9 +176,11 @@ window.renderAt = async (t) => {
   // the real screen, BIG, with its one sticker
   let shot = null;
   if (beat?.screen && !inClip) {
-    const im = screenImg[beat.screen.file], sc = beat.screen;
-    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, t - beat.t0, { outAge: t - beat.t1 + 0.25, sticker: sc.sticker });
+    const sc = beat.screen, flip = FLIPS.filter((f) => f.t >= beat.t0 && f.t < beat.t1 && t >= f.t).at(-1), im = screenImg[flip?.file ?? sc.file];
+    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, t - (flip?.t ?? beat.t0), { outAge: t - beat.t1 + 0.25, sticker: sc.sticker, ...(sc.chip ? { top: 430 } : {}) });
     boxes.push(["screen", shot]);
+    if (sc.chip) boxes.push(["step chip", ov.chip([[sc.chip, YELLOW]], t - beat.t0)]);
+    for (const tap of TAPS) if (tap.t >= beat.t0 && tap.t < beat.t1) ov.tapRing(shot.x0 + 8 + tap.x * (shot.x1 - shot.x0 - 16), shot.y0 + 8 + tap.y * (shot.y1 - shot.y0 - 16), t - tap.t);
   }
   // the headline: big for its first seconds, then a small chip
   if (headlineAt && !(inClip && !inClip.headline) && t < (EV.site ?? END)) {
@@ -187,7 +197,7 @@ window.renderAt = async (t) => {
   if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
+  if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 
   if (LOOP?.first && t > END - LOOP.secs) {
     const a = Math.min(1, (t - (END - LOOP.secs)) / Math.max(0.05, LOOP.secs - 1 / 30));

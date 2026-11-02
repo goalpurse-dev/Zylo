@@ -62,6 +62,7 @@ export const FRAMINGS_T = {
 export const SETUPS = {
   two_shot: { pos: [0.12, 2.75, 13.6], look: [0.12, 2.6, 0], creep: 0.25 },
   face_hook: { pos: [-0.72, 2.4, 5.6], look: [-0.72, 2.55, 0.6], creep: 0.12 },   // frame 0: the creator's face fills about half the frame
+  rage_hook: { pos: [-0.76, 2.05, 5.6], look: [-0.76, 2.2, 0.6], creep: 0.12 },   // face_hook raised clear of the bottom captions, the caption under the chin
   creator_close: { pos: [-0.62, 2.7, 9.2], look: [-0.62, 2.82, 0.6], creep: 0.2 },
   zee_close: { pos: [1.12, 2.3, 10.4], look: [1.12, 2.2, 0.3], creep: 0.2 },
   low_hero: { pos: [0.2, 1.05, 13.2], look: [0.2, 2.75, 0], creep: 0.2 },

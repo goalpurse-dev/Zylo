@@ -142,6 +142,13 @@ export function makeOverlay(ctx) {
       ctx.restore();
       return { x0: x - 8, y0: y - 8, x1: x + ww + 8, y1: y + h + 8 };
     },
+    /** A tap on a real screen: a ring that lands on the spot and stays a moment. */
+    tapRing(x, y, age) {
+      if (age < 0 || age > 0.85) return;
+      ctx.save(); ctx.globalAlpha = Math.min(1, (0.85 - age) / 0.2); ctx.strokeStyle = YELLOW; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.arc(x, y, 70 - 26 * ease(age / 0.18) + Math.sin(age * 7) * 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    },
     /** A small source stamp: where a fact comes from, or that it is an estimate. */
     stamp(text, age, y = 1212) {
       if (age < 0.2) return null;

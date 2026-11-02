@@ -41,10 +41,12 @@ const board = (g, w, h, color = "#14121f", rim = "#BEF264") => {
   add(g, rbox(w + 0.12, h + 0.12, 0.1, 0.16), new THREE.MeshStandardMaterial({ color: C(rim), roughness: 0.45 }), 0, 0, -0.03);
   add(g, rbox(w, h, 0.12, 0.14), new THREE.MeshStandardMaterial({ color: C(color), roughness: 0.55 }), 0, 0, 0);
 };
-const fmtRoll = (v, spec) => (spec.format === "M" ? `${Math.round(v)}M` : String(Math.round(v)));
+const fmtRoll = (v, spec) => (spec.format === "M" ? `${Math.round(v)}M` : spec.format === "clock" ? `${Math.floor(v / 60)}:${String(Math.round(v) % 60).padStart(2, "0")}` : String(Math.round(v)));
 const easeOut = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 
 const KINDS = {
+  /** Nothing: ends the line before's prop or screen. */
+  none() {},
   /** A board: a big title, an optional small line. */
   sign(g, s) {
     board(g, 3.0, 1.55, s.color, s.rim);
