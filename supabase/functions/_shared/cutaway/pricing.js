@@ -117,6 +117,12 @@ export const PRICES = Object.freeze({
   }),
 });
 
+/**
+ * The lengths a kind of video can be made in. Premade is 30 s only for now (owner, 2026-11-02): a saved layout has 11-13
+ * sentences, so a "60 s" premade video came out at 35-45 s. Back to LENGTHS once there are real 60 s layouts.
+ */
+export const lengthsFor = (kind) => (kind === "premade" ? [30] : LENGTHS);
+
 /** Credits for one video: the server charges this, from the topic it classified itself (topics.js). */
 export function videoCredits(kind, lengthSec) {
   const c = PRICES.video.credits[kind]?.[lengthSec];

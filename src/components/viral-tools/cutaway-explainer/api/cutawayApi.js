@@ -139,7 +139,7 @@ export const downloadName = (run) => `${String(run?.title || run?.topic || "cuta
 // charging, so nothing the page shows or sends can change the price.
 export { quoteTopic, closestNames } from "../../../../../supabase/functions/_shared/cutaway/quote.js";
 import { classifyTopic } from "../../../../../supabase/functions/_shared/cutaway/topics.js";
-export { PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
+export { lengthsFor, PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
 
 export const STEPS = [
   ["script", "Script"],

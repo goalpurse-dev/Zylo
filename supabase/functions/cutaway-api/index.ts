@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
 import { ERRORS } from "../_shared/cutaway/contract.js";
-import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
+import { LENGTHS, lengthsFor, PRICES } from "../_shared/cutaway/pricing.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
 import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
@@ -176,6 +176,7 @@ async function handle(req: Request, trace: Trace) {
     const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
     if (action === "quote") return { quote };
     if (!quote.buildable) throw new ApiError("CANT_BUILD", undefined, { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
+    if (!lengthsFor(quote.kind).includes(lengthSec)) throw new ApiError("BAD_INPUT", "Premade topics are 30 seconds for now.");
 
     // the caps, read fresh (fail closed), before anything is charged
     trace.step = "cap check";
