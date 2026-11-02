@@ -285,7 +285,13 @@ async function allRows(build) {
 // Everything the stop rules and the report need, counted fresh. sb: a service-role Supabase client.
 // withPurchases: also count plans bought within 48 hours (for the reports, not for every tick).
 export async function campaignNumbers(sb, id, startsAt, { withPurchases = false } = {}) {
-  const count = async (table, build) => (await build(sb.from(table).select("id", { count: "exact", head: true }).eq("campaign", id))).count ?? 0;
+  // A failed read throws, it never counts as 0: "0 waiting" closed checkin_day1 early with 41 still queued (2026-10-30),
+  // and 0 bounces or complaints would blind the stop rules. The caller sends nothing and the next tick reads again.
+  const count = async (table, build) => {
+    const { count: c, error } = await build(sb.from(table).select("id", { count: "exact", head: true }).eq("campaign", id));
+    if (error || c === null || c === undefined) throw new Error(`campaign numbers of ${id}: ${table} could not be counted: ${error?.message ?? "no count"}`);
+    return c;
+  };
   const q = (status) => count("email_campaign_queue", (x) => x.eq("status", status));
   const ev = (type) => count("email_events", (x) => x.eq("type", type));
   // email_events holds one row per email and type, so "opened" counts emails opened at least once.

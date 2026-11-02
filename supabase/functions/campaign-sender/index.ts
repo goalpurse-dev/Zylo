@@ -32,10 +32,10 @@ const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 async function finish(c: any, status: "done" | "stopped", reason: string | null) {
+  const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true }); // first: a failed read leaves the campaign open for the next tick
   const { data: changed } = await sb.from("email_campaigns").update({ status, stop_reason: reason, finished_at: new Date().toISOString() })
     .eq("id", c.id).in("status", ["approved", "sending"]).select("id");
   if (!changed?.length) return; // another call got there first: one email to the owner, not two
-  const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true });
   const head = status === "stopped" ? `Zyvo campaign ${c.id} STOPPED: ${reason}` : `Zyvo campaign ${c.id} finished: ${n.sent} sent, ${n.opened} opened, ${n.bounced} bounced, ${n.complained} complaints`;
   await alertAdmin(head, `${campaignReportText(c.id, { ...c, status, stop_reason: reason }, n)}\n\n${status === "stopped" ? "Nothing more will be sent for this campaign." : "Opens, purchases, late bounces and unsubscribes still come in: you get these numbers again 48 hours after the last email."}`, "campaign");
 }
@@ -185,9 +185,9 @@ async function openChecks(out: Record<string, string>) {
   const cutoff = new Date(Date.now() - 12 * 3600_000).toISOString();
   const { data: due } = await sb.from("email_campaigns").select("*").not("min_open_rate", "is", null).is("open_check_at", null).in("status", ["sending", "done"]).lte("starts_at", cutoff);
   for (const c of due ?? []) {
+    const n = await campaignNumbers(sb, c.id, c.starts_at); // before the claim: a failed read must not use up the check
     const { data: mine } = await sb.from("email_campaigns").update({ open_check_at: new Date().toISOString() }).eq("id", c.id).is("open_check_at", null).select("id");
     if (!mine?.length) continue;
-    const n = await campaignNumbers(sb, c.id, c.starts_at);
     const problem = openRateProblem(Number(c.min_open_rate), n);
     if (!problem) { out[`${c.id}:opens`] = "ok"; continue; }
     const series = c.id.replace(/\d+$/, "");
@@ -206,9 +206,9 @@ async function followUpReports(out: Record<string, string>) {
   const cutoff = new Date(Date.now() - 48 * 3600_000).toISOString();
   const { data: ended } = await sb.from("email_campaigns").select("*").in("status", ["done", "stopped"]).is("followup_report_at", null).lt("finished_at", cutoff);
   for (const c of ended ?? []) {
+    const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true }); // before the claim: a failed read must not lose the report
     const { data: mine } = await sb.from("email_campaigns").update({ followup_report_at: new Date().toISOString() }).eq("id", c.id).is("followup_report_at", null).select("id");
     if (!mine?.length) continue; // another call sent it
-    const n = await campaignNumbers(sb, c.id, c.starts_at, { withPurchases: true });
     if (n.sent === 0) { out[c.id] = "no follow-up (nothing was sent)"; continue; }
     await alertAdmin(`Zyvo campaign ${c.id}, 48 hours later: ${n.sent} sent, ${n.opened} opened, ${n.purchases?.people ?? 0} bought, ${n.bounced} bounced, ${n.complained} complaints, ${n.unsubscribed} unsubscribed`,
       `${campaignReportText(c.id, c, n)}\n\nThese are the numbers 48 hours after the last email.`, "campaign");

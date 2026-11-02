@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emailFooter } from "../supabase/functions/_shared/emailRules.js";
-import { CAMPAIGNS, openRateProblem } from "../supabase/functions/_shared/campaigns.js";
+import { CAMPAIGNS, campaignNumbers, openRateProblem } from "../supabase/functions/_shared/campaigns.js";
 
 // The Gmail reputation week (owner, 2026-10-29): "did you get to try it?", plain, no link, no offer;
 // seed copies before every day; no marketing for anyone with 2 marketing emails and no open;
@@ -39,6 +39,17 @@ test("the 12-hour open check: under the rate stops, at or over it does not, noth
   assert.equal(openRateProblem(0.1, { sent: 50, opened: 5 }), null);
   assert.equal(openRateProblem(0.1, { sent: 0, opened: 0 }), null);
   assert.equal(openRateProblem(null, { sent: 50, opened: 0 }), null);
+});
+
+test("a failed count throws instead of reading as 0, so a day can't close early", async () => {
+  const fake = (result) => {
+    const q = { select: () => q, eq: () => q, ilike: () => q, gte: () => q, order: () => q, range: async () => ({ data: [] }), then: (ok) => ok(result) };
+    return { from: () => q };
+  };
+  await assert.rejects(campaignNumbers(fake({ count: null, error: { message: "timeout" } }), "checkin_day1", "2026-10-30T14:00:00Z"), /could not be counted: timeout/);
+  await assert.rejects(campaignNumbers(fake({ count: null, error: null }), "checkin_day1", "2026-10-30T14:00:00Z"), /could not be counted/);
+  const n = await campaignNumbers(fake({ count: 41, error: null }), "checkin_day1", "2026-10-30T14:00:00Z");
+  assert.equal(n.queued, 82); // queued + sending, both 41 here
 });
 
 test("the sender: seed copies only for waiting days, once, real subject; open check stops later days of the series", () => {
