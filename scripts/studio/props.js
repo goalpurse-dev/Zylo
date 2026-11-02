@@ -6,7 +6,7 @@ import { rbox, add } from "./world.js";
 
 const FONT = '"Segoe UI Black", "Segoe UI", "Segoe UI Emoji", Arial';
 const C = (h) => new THREE.Color(h);
-export const PROP_KINDS = ["sign", "roll", "tag", "clock", "timeline", "bubble", "conveyor", "trophy", "tiles", "idea"];
+export const PROP_KINDS = ["sign", "roll", "tag", "clock", "timeline", "bubble", "conveyor", "trophy", "tiles", "idea", "typed_result"];
 
 function wrap(x, text, maxW) {
   const words = String(text).split(/\s+/), rows = []; let r = "";
@@ -22,7 +22,7 @@ function labelCanvas(lines, w, h, bg) {
     x.textAlign = "center"; x.textBaseline = "middle";
     const laid = lines.map((l) => { x.font = `${l.size * k}px ${FONT}`; return { ...l, rows: wrap(x, l.text, w - 70), lh: l.size * k * 1.14 }; });
     const total = laid.reduce((a, l) => a + l.rows.length * l.lh, 0);
-    if (total > h - 40) return false;
+    if (total > h - 40 || laid.some((l) => { x.font = `${l.size * k}px ${FONT}`; return l.rows.some((r) => x.measureText(r).width > w - 16); })) return false;   // one long word must fit too
     let y = (h - total) / 2;
     for (const l of laid) { x.font = `${l.size * k}px ${FONT}`; x.fillStyle = l.color ?? "#ffffff"; for (const r of l.rows) { x.fillText(r, w / 2, y + l.lh / 2 + 3); y += l.lh; } }
     return true;
@@ -120,6 +120,16 @@ const KINDS = {
     add(g, new THREE.TorusGeometry(0.28, 0.06, 12, 24), gold, -0.66, 0.42, 0); add(g, new THREE.TorusGeometry(0.28, 0.06, 12, 24), gold, 0.66, 0.42, 0);
     add(g, new THREE.CylinderGeometry(0.09, 0.09, 0.36, 16), gold, 0, -0.26, 0); add(g, rbox(0.9, 0.16, 0.5, 0.04), gold, 0, -0.5, 0);
     if (s.text) { const m = labelPlane([{ text: s.text, size: 90, color: "#ffffff" }], 3.2, 0.62, { px: 200, bg: "#14121f" }); m.position.set(0, -1.0, 0.3); g.add(m); }
+  },
+  /** "What I typed" next to "what came out": the creation's real idea and its real picture. */
+  typed_result(g, s, ctx) {
+    board(g, 3.5, 2.05, "#14121f", "#BEF264");
+    const typedHead = labelPlane([{ text: "WHAT I TYPED", size: 62, color: "#BEF264" }], 1.66, 0.28, { px: 120 }); typedHead.position.set(-0.84, 0.66, 0.075); g.add(typedHead);
+    const typed = labelPlane([{ text: `"${s.text}"`, size: 92, color: "#ffffff" }], 1.56, 1.3); typed.position.set(-0.84, -0.14, 0.075); g.add(typed);
+    const head = labelPlane([{ text: "WHAT CAME OUT", size: 62, color: "#BEF264" }], 1.66, 0.28, { px: 120 }); head.position.set(0.84, 0.66, 0.075); g.add(head);
+    const t = ctx.tl.load(s.image); t.colorSpace = THREE.SRGBColorSpace;
+    const pw = s.wide ? 1.6 : 0.72, ph = s.wide ? 0.9 : 1.28;
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); pic.position.set(0.84, -0.16, 0.08); g.add(pic);
   },
   /** Real pictures from the creation, side by side (never AI art passed off as output: these ARE its outputs). */
   tiles(g, s, ctx) {

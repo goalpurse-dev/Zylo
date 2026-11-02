@@ -8,6 +8,8 @@ import { analytics } from "../supabase/functions/_shared/contentMachine/analytic
 import { cleanStats, STAT_FIELDS } from "../supabase/functions/_shared/contentMachine/statsReader.js";
 import { pickMoments } from "../scripts/studio/moments.js";
 import { makeScript, titleHook, TEN_YEARS } from "../scripts/studio/shortScripts.mjs";
+import { validateFriend } from "../scripts/studio/storyScripts.mjs";
+import { freshPasses, lengthBudget } from "../scripts/studio/storyWriter.mjs";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
 const NOW = new Date("2026-10-30T12:00:00Z");
@@ -37,6 +39,40 @@ function studioApi({ stories = [], others = {}, recent = {}, history = [], worke
   const { call } = apiFor(world);
   return { call, jobs, world, postedIdeas };
 }
+
+test("the friend rules: the disappointed name first, plain words before any step, menu names on stickers, at most 3 big moments", () => {
+  const good = () => ({ recipe: { angle: "A6" }, energy: { reveal_lines: [2], reveal_clips: ["payoff"] }, lines: [
+    { who: "creator", text: "Zyvo… why does my video look so cheap?", visual: { kind: "sign" } },
+    { who: "zee", text: "Zyvo is a website where you type an idea and it makes the whole video.", visual: { kind: "typed_result" } },
+    { who: "creator", text: "Wait, what do I type?", keep: true },
+    { who: "zee", text: "Just one line.", screen: { sticker: { text: "here" } } },
+    { who: "creator", text: "That's it?", keep: true },
+    { who: "zee", text: "Made with Zyvo.", role: "site" }, { who: "zee", text: "Save this.", role: "cta" },
+  ] });
+  const after = (change) => { const s = good(); change(s); return validateFriend(s).join("; "); };
+  assert.deepEqual(validateFriend(good()), []);
+  assert.match(after((s) => { s.lines[0].text = "Why does my video look cheap?"; }), /line 1/);
+  assert.match(after((s) => { s.lines[0].text = "Claude… why does my video look cheap?"; }), /line 1/, "Claude only when it is about Claude");
+  assert.equal(after((s) => { s.recipe.angle = "A2"; s.lines[0].text = "Claude… why does my video look cheap?"; }), "");
+  assert.match(after((s) => { s.lines.splice(1, 1); }), /what Zyvo is/);
+  assert.match(after((s) => { const [plain] = s.lines.splice(1, 1); s.lines.splice(3, 0, plain); }), /before any step/);
+  assert.match(after((s) => { s.lines[3].text = "Open Short Form first."; }), /stickers/);
+  assert.match(after((s) => { s.lines[1].visual = { kind: "sign" }; }), /typed_result/);
+  assert.match(after((s) => { s.energy.reveal_lines = [1, 2, 3]; }), /big moments/);
+});
+
+test("the length budget leaves room for the real clip, and a 101 s test video's 220 words no longer fit 60-90", () => {
+  assert.deepEqual(lengthBudget("60-90"), { clip: 20, words: 182 });
+  assert.deepEqual(lengthBudget("20-35"), { clip: 11, words: 62 });
+  assert.ok(220 > lengthBudget("60-90").words * 1.1);
+});
+
+test("the fresh viewer passes only when a stranger can say Zyvo makes videos and where to go", () => {
+  assert.equal(freshPasses({ what_is_zyvo: "A website that makes videos from an idea.", what_next: "Go to tryzyvo.com." }), true);
+  assert.equal(freshPasses({ what_is_zyvo: null, what_next: "Go to the website." }), false);
+  assert.equal(freshPasses({ what_is_zyvo: "A funny robot.", what_next: "Go to the website." }), false);
+  assert.equal(freshPasses({ what_is_zyvo: "A video website.", what_next: null }), false);
+});
 
 test("a finished video: the row carries its idea for Mark as posted; Remake keeps the recipe and creation, only before posting", async () => {
   const { call, jobs, postedIdeas } = studioApi();

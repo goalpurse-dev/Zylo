@@ -18,7 +18,8 @@ for (const l of todo) {
   const v = V[l.who];
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${v.id}?output_format=mp3_44100_128`, {
     method: "POST", headers: { "xi-api-key": process.env.ELEVENLABS_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ text: l.say ?? l.text, model_id: "eleven_multilingual_v2", voice_settings: { stability: v.stability ?? 0.35, similarity_boost: 0.75, style: v.style ?? 0.4, use_speaker_boost: true, speed: v.speed ?? 1.05 } }),
+    // previous_text steers the delivery and isn't spoken: the opener's disappointed "Zyvo…" (more feeling, less steady)
+    body: JSON.stringify({ ...(l.tone ? { previous_text: l.tone } : {}), text: l.say ?? l.text, model_id: "eleven_multilingual_v2", voice_settings: { stability: l.tone ? 0.25 : v.stability ?? 0.35, similarity_boost: 0.75, style: l.tone ? 0.7 : v.style ?? 0.4, use_speaker_boost: true, speed: v.speed ?? 1.05 } }),
   });
   if (!res.ok) { console.log(`line ${l.n} failed (not billed): ${res.status} ${(await res.text()).slice(0, 200)}`); continue; }
   const chars = Number(res.headers.get("character-cost")) || l.text.length;

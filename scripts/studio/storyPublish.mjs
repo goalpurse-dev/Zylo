@@ -15,7 +15,7 @@ const spec = {
   mp4, coverAt: 0.3, title: S.title, account: "zyvo", template: S.template, route: { ai_fruit_story: "/workspace/ai-fruit-story", blocky_stories: "/workspace/blocky-stories", cutaway: "/workspace/cutaway-explainer", long_form: "/long-form" }[S.template] ?? "/", cta: S.cta.id, hook,
   concept: `Studio v2 ${S.recipe.angle}: ${S.title}. World: ${S.world}. Shows the real creation ${S.source_story?.slice(0, 8)}.`,
   script: { source: "studio v2", lines: S.lines.map((l) => `${l.who}: ${l.text}`), ...(S.claude_log ? { claude_log: S.claude_log } : {}) },
-  recipe: { ...S.recipe, studio_variant: S.variant, experiment: "studio_v2" },
+  recipe: { ...S.recipe, studio_variant: S.variant, experiment: S.energy ? "studio_friend_v3" : "studio_v2" },
   claims: S.lines.filter((l) => l.stamp).map((l) => l.stamp),
   measured: {},
   packages: {

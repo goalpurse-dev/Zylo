@@ -290,7 +290,58 @@ def music(seconds, bpm=98, shift=0):
     return y
 
 
+def music_drive(seconds, bpm=124, shift=0, drop_t=0.8):
+    """High energy, made here (no licence questions): plucks, an off-beat bass, a kick that pumps everything, claps and
+    hats. Filtered and kickless from frame 0 until the drop on the hook; the full bed after it."""
+    n = int(seconds * SR); beat = 60 / bpm; k = 2 ** (shift / 12); step = beat / 2
+    low, top = np.zeros(n, np.float32), np.zeros(n, np.float32); rng = np.random.default_rng(int(bpm))
+    chords = [[220.0, 261.63, 329.63], [174.61, 220.0, 261.63], [261.63, 329.63, 392.0], [196.0, 246.94, 293.66]]
+    order = [0, 1, 2, 1, 0, 2, 1, 2]
+    for i in range(int(seconds / step) + 1):
+        s = int(i * step * SR)
+        if s >= n: break
+        ch = chords[(i // 16) % 4]
+        m = min(int(step * 1.5 * SR), n - s); tt = np.arange(m) / SR; f = ch[order[i % 8]] * k * 2
+        top[s:s + m] += 0.2 * sum(np.sin(2 * np.pi * f * h * tt) / h for h in (1, 2, 3, 4)) * np.exp(-tt * 8)
+        if i % 2:   # the off-beat bass
+            m = min(int(step * SR), n - s); tt = np.arange(m) / SR
+            low[s:s + m] += 0.26 * np.tanh(2.5 * np.sin(2 * np.pi * ch[0] * k / 2 * tt)) * np.exp(-tt * 5)
+        m = min(int(0.035 * SR), n - s); tt = np.arange(m) / SR
+        top[s:s + m] += 0.09 * np.diff(rng.standard_normal(m + 1)) * np.exp(-tt * 110)   # a hat on every eighth
+    pump = np.ones(n, np.float32)
+    for i in range(int(seconds / beat) + 1):
+        s = int(i * beat * SR); m = min(int(0.24 * SR), n - s)
+        if m <= 0: break
+        tt = np.arange(m) / SR
+        low[s:s + m] += 0.44 * np.sin(2 * np.pi * (52 + 110 * np.exp(-tt * 34)) * tt) * np.exp(-tt * 13)
+        pump[s:s + m] *= 1 - 0.5 * np.exp(-tt * 14)
+        if i % 2:   # a clap on two and four
+            m = min(int(0.13 * SR), n - s); tt = np.arange(m) / SR
+            top[s:s + m] += 0.28 * np.diff(rng.standard_normal(m + 1)) * np.exp(-tt * 28)
+    top *= pump
+    y = low + top
+    d = min(n, int(drop_t * SR)); w = 90
+    y[:d] = 0.9 * np.convolve(top, np.ones(w) / w, mode="same")[:d]
+    r = int(0.3 * SR); y[-r:] *= np.linspace(1, 0, r)
+    return y
+
+
 def sfx(kind):
+    if kind == "react_up":    # surprise: a quick slide up
+        m = int(0.2 * SR); tt = np.arange(m) / SR
+        return 0.5 * np.sin(2 * np.pi * np.cumsum(420 + 1500 * (tt / tt[-1]) ** 2) / SR) * np.sin(np.pi * tt / tt[-1])
+    if kind == "react_down":  # let down: a slow slide down
+        m = int(0.38 * SR); tt = np.arange(m) / SR
+        return 0.45 * np.sin(2 * np.pi * np.cumsum(620 - 380 * tt / tt[-1] + 18 * np.sin(2 * np.pi * 9 * tt)) / SR) * np.sin(np.pi * tt / tt[-1])
+    if kind == "react_pop":   # two quick notes
+        a = int(0.07 * SR); tt = np.arange(a) / SR; e = np.exp(-tt * 30)
+        return 0.5 * np.concatenate([np.sin(2 * np.pi * 880 * tt) * e, np.sin(2 * np.pi * 1320 * tt) * e])
+    if kind == "bass":        # the payoff: a long sub hit
+        m = int(0.75 * SR); tt = np.arange(m) / SR
+        return 1.3 * np.tanh(1.8 * np.sin(2 * np.pi * (44 + 90 * np.exp(-tt * 26)) * tt)) * np.exp(-tt * 4.5)
+    if kind == "drop":        # the hook: a boom and a bright sweep down
+        m = int(0.7 * SR); tt = np.arange(m) / SR; noise = np.random.default_rng(12).standard_normal(m)
+        return 1.1 * np.sin(2 * np.pi * (46 + 120 * np.exp(-tt * 24)) * tt) * np.exp(-tt * 5) + 0.22 * np.diff(noise, prepend=0) * np.exp(-tt * 9)
     if kind == "pop":
         m = int(0.09 * SR); tt = np.arange(m) / SR
         return 0.6 * np.sin(2 * np.pi * (1100 * np.exp(-tt * 25) + 260) * tt) * np.exp(-tt * 38)
@@ -339,7 +390,22 @@ def sfx(kind):
     return np.zeros(1)
 
 
-bed = music(total, S.get("music_bpm", 98), S.get("music_shift", 0))
+# energy swings (owner, 2026-11-02; measured on the references): a drop on the hook, the music cut for 0.4 s before each
+# reveal, a bass hit on it. The last reveal gets a record scratch too.
+E = S.get("energy")
+reveals = []
+if E:
+    first = timed[0]["words"]
+    drop_t = first[min(1, len(first) - 1)]["s"]
+    events.append({"t": drop_t, "event": "drop", "sfx": "drop"})
+    reveals = sorted([timed[i]["start"] for i in E.get("reveal_lines", [])] + [c["start"] for c in clips if c["name"] in E.get("reveal_clips", [])])
+    for i, r in enumerate(reveals):
+        events.append({"t": r, "event": f"reveal{i}", "sfx": "bass"})
+        if i == len(reveals) - 1: events.append({"t": round(r - 0.42, 3), "event": "scratch", "sfx": "scratch"})
+    events.sort(key=lambda e: e["t"])
+    bed = music_drive(total, S.get("music_bpm", 124), S.get("music_shift", 0), drop_t)
+else:
+    bed = music(total, S.get("music_bpm", 98), S.get("music_shift", 0))
 bed = np.pad(bed, (0, max(0, len(voice) - len(bed))))[: len(voice)]   # exactly the voice track's length (rounding)
 # the clip's own sound: matched to our voices, faded in/out; the music ducks under it
 clip_track = np.zeros_like(voice)
@@ -361,6 +427,15 @@ for clip in clips:
     duck = np.ones_like(bed); a, b, r = int((clip["start"] - 0.15) * SR), int((clip["end"] + 0.15) * SR), int(0.15 * SR)
     duck[a:b] = g; duck[a - r:a] = np.linspace(1, g, r); duck[b:b + r] = np.linspace(g, 1, min(r, len(duck) - b))
     bed *= duck
+gate = np.ones_like(bed)
+if E:
+    w = int(0.08 * SR); env = np.convolve(np.abs(voice), np.ones(w) / w, mode="same")
+    bed *= 1 - 0.3 * np.minimum(env / (np.percentile(env, 90) or 1), 1)   # the bed breathes under the words
+    f = int(0.02 * SR)
+    for r in reveals:
+        a, b = max(0, int((r - 0.4) * SR)), int(r * SR)
+        gate[a:b] = 0; gate[max(0, a - f):a] = np.linspace(1, 0, a - max(0, a - f)); gate[b:b + f] = np.linspace(0, 1, len(gate[b:b + f]))
+    bed *= gate
 mix = voice + bed + clip_track
 for e in events:
     if e.get("sfx"):
@@ -380,6 +455,7 @@ if os.path.exists(moves_path):
         d = mv["t1"] - mv["t0"]; strength = 1.0 if mv["kind"] == "whip" else 0.55
         x = sfx(f"whoosh:{d:.2f}") * (v_rms / 0.2) * strength; s = int(mv["t0"] * SR); m = min(len(x), len(mix) - s)
         if m > 0: fx[s:s + m] += x[:m]; whooshes.append(round(mv["t0"], 2))
+fx *= gate
 # event sounds (pops, sparkles) were mixed into `mix` above; collect the foreground = everything but the music
 fg = mix - bed + fx
 # no dead air (owner, 2026-10-30): any foreground stretch quieter than -40 dB for more than 0.45 s gets soft typing
@@ -397,7 +473,7 @@ def quiet_runs(sig, thr_db=-40.0, min_len=0.45, scale=1.0):
     return runs
 peak = np.max(np.abs(fg + bed)) or 1
 filled = []
-for a, b in quiet_runs(fg, scale=0.92 / peak):
+for a, b in [] if E else quiet_runs(fg, scale=0.92 / peak):   # with the drive bed there is no dead air, and the cuts are on purpose
     if b > total - 0.3: continue   # the very end may fade
     x = sfx(f"keys:{b - a + 0.1:.2f}") * (v_rms / 0.2); s0 = int(max(0, a - 0.05) * SR); m = min(len(x), len(fx) - s0)
     if m > 0: fx[s0:s0 + m] += x[:m]; filled.append([round(a, 2), round(b, 2)])
@@ -406,6 +482,22 @@ mix = fg + bed
 peak = np.max(np.abs(mix)) or 1
 sf.write(os.path.join(out, "fg.wav"), fg / peak * 0.92, SR)   # for the scorecard's "longest near-silence"
 mix = mix / peak * 0.92
+
+
+def lufs(sig):
+    tmp = os.path.join(out, "_lufs.wav"); sf.write(tmp, sig, SR)
+    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", tmp, "-af", "aformat=channel_layouts=stereo,ebur128", "-f", "null", "-"], capture_output=True).stderr.decode("utf8", "replace")
+    os.remove(tmp)
+    return next(float(l.split(":")[1].split()[0]) for l in log[log.rfind("Summary:"):].splitlines() if l.strip().startswith("I:"))
+
+
+if E:   # the references' loudness (-20 to -15 LUFS, the short ones about -15): a soft limiter keeps the swings
+    gain = 1.0
+    for _ in range(5):
+        y = np.tanh(mix * gain) * 0.84; level = lufs(y)
+        if abs(level - S.get("lufs_target", -16)) < 0.3: break
+        gain *= 10 ** ((S.get("lufs_target", -16) - level) / 20)
+    mix = y
 sf.write(os.path.join(out, "mix.wav"), mix, SR)
 measured = 20 * np.log10(v_rms / (np.sqrt(np.mean(bed ** 2)) or 1))
 
