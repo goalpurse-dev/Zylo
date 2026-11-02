@@ -11,7 +11,7 @@ import "./onboarding.css";
 // The owner's dial: how long the screen stays, in seconds. The lines share it evenly.
 export const PLAN_SCREEN_SECONDS = 10;
 
-const LINES = ["Building your plan...", "Matching templates to your goals...", "Finding the most viral topic for you...", "Getting your first video ready...", "Done! ✓"];
+const LINES = ["Building your plan...", "Matching templates to your goals...", "Finding the best first video for you...", "Getting your first video ready...", "Done! ✓"];
 const RING = 2 * Math.PI * 92;
 const SPARKS = Array.from({ length: 22 }, (_, i) => ({ a: `${(i * 360) / 22}deg`, d: `${110 + ((i * 37) % 90)}px`, size: 5 + (i % 4) * 2, delay: `${(i % 5) * 25}ms` }));
 const ORBITS = [{ r: 112, s: 7, n: 5 }, { r: 134, s: 11, n: 7 }];

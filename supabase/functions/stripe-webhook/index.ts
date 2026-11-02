@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared/stripePlanPrices.js";
 import { OFFER, offerBonusFor } from "../_shared/offer.js";
+import { SIGNUP_BONUS, signupBonusFor } from "../_shared/signupBonus.js";
 
 /* =================== CONFIG =================== */
 /** Recurring plan prices → plan + monthly credits (current and legacy), with the
@@ -467,9 +468,26 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       if (!bonus) console.log(`[stripe-webhook] offer ${OFFER_NOW.id}: user ${userId} already had the bonus`);
     }
 
+    // The sign-up bonus (_shared/signupBonus.js): their first plan, paid before THEIR stored end time; once per account.
+    // Only worth a read for a free account buying a plan. A missing table (migration not run yet) means no bonus;
+    // any other failed read throws, so Stripe retries and the bonus isn't lost (the plan and credits above are once-only).
+    let signupBonus = false;
+    const buysFirstPlan = String(profile.plan_code ?? "free").toLowerCase().trim() === "free" && (inv?.billing_reason === "subscription_create" || inv?.billing_reason === "subscription_update");
+    if (buysFirstPlan) {
+      const row = await sb.from("signup_bonuses").select("expires_at").eq("user_id", userId).maybeSingle();
+      if (row.error && !["42P01", "PGRST205"].includes(row.error.code)) must(row, `sign-up bonus end time for user ${userId}`);
+      const decision = signupBonusFor({ billingReason: inv?.billing_reason, planAfter: plan ?? changedTo?.plan, planBefore: profile.plan_code, paidAt: paidAtIso, expiresAt: row.data?.expires_at });
+      if (decision.eligible) {
+        signupBonus = must(
+          await sb.rpc("grant_offer_bonus", { p_user_id: userId, p_offer_id: SIGNUP_BONUS.id, p_credits: SIGNUP_BONUS.credits, p_invoice_id: inv.id, p_paid_at: paidAtIso }),
+          `sign-up bonus (invoice ${inv.id}) for user ${userId}`,
+        ) === true;
+      } else if (row.data) console.log(`[stripe-webhook] sign-up bonus for user ${userId}: ${decision.why}`);
+    }
+
     return hasProration
-      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}) }
-      : { ok: true, plan_credits: planCredits, granted, ...(offer.eligible ? { bonus } : {}) };
+      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}) }
+      : { ok: true, plan_credits: planCredits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}) };
   }
 
   /* ── invoice.payment_failed ───────────────────────────────────────── */

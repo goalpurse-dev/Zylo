@@ -2,8 +2,9 @@
 // preview they haven't made yet. Everyone else never sees it, and never makes the call.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Gift, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useSignupBonus } from "../../lib/useSignupBonus";
 import { FIRST_VIDEO_PATH, adminPreviewMode, fetchOnboardingStatus } from "../../lib/onboarding";
 import { DEMO_POSTER, demoStateFor } from "../../lib/onboardingDemo";
 import { cutawayServer } from "../viral-tools/cutaway-explainer/api/cutawayApi";
@@ -15,6 +16,7 @@ const DONE_PCT = Math.round((PREVIEW.seconds / VIDEO_SEC) * 100);
 export default function FirstVideoHomeCard() {
   const { user, loading } = useAuth();
   const [state, setState] = useState(null);
+  const bonus = useSignupBonus();
   useEffect(() => {
     if (loading || !user?.id) return undefined;
     let live = true;
@@ -49,6 +51,7 @@ export default function FirstVideoHomeCard() {
           <span className="block text-[17px] font-black text-white">{card.title}</span>
           <span className="block text-[13px] text-white/65">{card.line}</span>
           {card.waiting && <span className="mt-2 block h-[7px] max-w-[320px] overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-lime-300" style={{ width: `${DONE_PCT}%` }} /></span>}
+          {card.waiting && bonus.line && <span className="mt-2 flex items-center gap-1.5 text-[12.5px] font-black text-lime-200" data-testid="home-card-bonus"><Gift className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> <span>{bonus.head}<span className="whitespace-nowrap">{bonus.tail}</span></span></span>}
         </span>
         <span className="flex min-h-[46px] w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-lime-300 px-4 py-2.5 text-[15px] font-black text-[#11150D] sm:w-auto">{card.cta} <ArrowRight className="h-4 w-4" /></span>
       </Link>

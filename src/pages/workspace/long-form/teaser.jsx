@@ -126,7 +126,7 @@ function UpgradeCard({ teaser, account }) {
             {TEASER_PLANS.map((planId) => <PlanCard key={planId} planId={planId} prices={prices} tiers={tiers} pay={pay} onChoose={choose} />)}
           </div>
           <p className="mt-4 text-[12px] leading-5 text-white/45">
-            Monthly{prices.status === "ready" && prices.prices?.vatIncluded ? ", VAT included" : ""}. After payment you come straight back here and the full video starts in V2 quality. <Link to="/pricing" className="underline underline-offset-2 hover:text-white/70" data-testid="teaser-all-plans">See all plans</Link>
+            Monthly. After payment you come straight back here and the full video starts in V2 quality. <Link to="/pricing" className="underline underline-offset-2 hover:text-white/70" data-testid="teaser-all-plans">See all plans</Link>
           </p>
         </>
       )}

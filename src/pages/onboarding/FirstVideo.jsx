@@ -43,7 +43,7 @@ function Bubble({ children }) {
 function TopicClip({ topic }) {
   const still = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!topic.clipUrl || still) return topic.poster ? <img src={topic.poster} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null;
-  return <video src={topic.clipUrl} poster={topic.poster} muted loop autoPlay playsInline preload="auto" disablePictureInPicture data-testid="first-video-topic-clip" onTimeUpdate={(e) => { if (e.currentTarget.currentTime >= LOOP_SEC) e.currentTarget.currentTime = 0; }} className="absolute inset-0 h-full w-full object-cover" />;
+  return <video ref={(el) => { if (el) { el.muted = true; el.setAttribute("muted", ""); } }} src={topic.clipUrl} poster={topic.poster} muted loop autoPlay playsInline preload="auto" disablePictureInPicture data-testid="first-video-topic-clip" onTimeUpdate={(e) => { if (e.currentTarget.currentTime >= LOOP_SEC) e.currentTarget.currentTime = 0; }} className="absolute inset-0 h-full w-full object-cover" />;
 }
 
 // The stages read the run: queued -> the plan is fetched, render -> the frames, 86 %+ -> the sound and the captions.
@@ -86,7 +86,7 @@ function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine, onUnloc
     v.play().catch(() => { v.muted = true; setMuted(true); v.play().catch(() => {}); });
   }, [src, locked]);
   return (
-    <div className={`relative mx-auto overflow-hidden rounded-3xl bg-black transition-all duration-500 ${locked ? "aspect-[9/13] w-[58%] max-w-[230px] border-2 border-lime-300/55 shadow-[0_0_44px_rgba(190,242,100,0.28)] md:aspect-[9/16] md:w-full md:max-w-[380px]" : "aspect-[9/16] w-full max-w-[320px] border border-white/10"}`} onContextMenu={(e) => e.preventDefault()} data-testid="first-video-player">
+    <div className={`relative mx-auto overflow-hidden rounded-3xl bg-black transition-all duration-500 ${locked ? "aspect-[9/12] w-[50%] max-w-[190px] border-2 border-lime-300/55 shadow-[0_0_44px_rgba(190,242,100,0.28)] md:aspect-[9/16] md:w-full md:max-w-[380px]" : "aspect-[9/16] w-full max-w-[320px] border border-white/10"}`} onContextMenu={(e) => e.preventDefault()} data-testid="first-video-player">
       <video ref={ref} src={src} poster={poster} playsInline controlsList="nodownload" disablePictureInPicture onEnded={onEnded} onLoadedMetadata={(e) => { const v = e.currentTarget; if (locked && v.currentTime === 0) v.currentTime = Math.max(0, Math.min(stopAt ?? v.duration, v.duration) - 0.05); }} onTimeUpdate={stopAt ? (e) => { if (!locked && e.currentTarget.currentTime >= stopAt) { e.currentTarget.pause(); onEnded(); } } : undefined} muted={muted} className={`h-full w-full object-cover transition duration-500 ${locked ? "scale-105 blur-md brightness-50" : ""}`} />
       {!locked && muted && (
         <button type="button" data-testid="first-video-sound" onClick={() => { const v = ref.current; if (v) { v.muted = false; v.play().catch(() => {}); } setMuted(false); }}
@@ -96,9 +96,9 @@ function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine, onUnloc
       )}
       {locked && (
         <button type="button" onClick={onUnlock} data-testid="first-video-lock" className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center md:gap-3 md:px-6">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-lime-300 text-[#11150D] shadow-[0_0_0_9px_rgba(190,242,100,0.18)]"><Lock className="h-6 w-6" strokeWidth={2.6} /></span>
-          <span className="mt-1 text-[11px] font-black uppercase tracking-[0.12em] text-lime-300 md:text-[12px]">What happens next</span>
-          <span className="text-[14px] font-black leading-snug text-white [text-shadow:0_1px_8px_#000] md:text-[20px]" data-testid="first-video-cliffhanger">{lockLine}</span>
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-lime-300 text-[#11150D] shadow-[0_0_0_6px_rgba(190,242,100,0.18)] md:h-14 md:w-14 md:shadow-[0_0_0_9px_rgba(190,242,100,0.18)]"><Lock className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2.6} /></span>
+          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-lime-300 md:mt-1 md:text-[12px]">What happens next</span>
+          <span className="text-[13px] font-black leading-snug text-white [text-shadow:0_1px_8px_#000] md:text-[20px]" data-testid="first-video-cliffhanger">{lockLine}</span>
         </button>
       )}
     </div>
@@ -131,7 +131,7 @@ function Plans() {
           );
         })}
       </div>
-      <p className="mt-3 text-center text-[12px] text-white/40">Monthly{prices.status === "ready" && prices.prices?.vatIncluded ? ", VAT included" : ""}. Cancel anytime. <Link to="/pricing" className="underline underline-offset-2">See all plans</Link></p>
+      <p className="mt-3 text-center text-[12px] text-white/40">Monthly. Cancel anytime. <Link to="/pricing" className="underline underline-offset-2">See all plans</Link></p>
     </section>
   );
 }
@@ -318,7 +318,7 @@ export default function FirstVideo() {
     }
     if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
     return (
-      <div className={screen}>{adminBar}<div className={locked ? "mx-auto my-auto grid w-full max-w-[1000px] items-center gap-4 py-2 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-12" : column}>
+      <div className={screen}>{adminBar}<div className={locked ? "mx-auto my-auto grid w-full max-w-[1000px] items-center gap-3 pb-28 pt-1 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-12 md:py-2" : column}>
         {!locked && <Confetti />}
         {!locked && <h1 className="mb-4 text-center text-[26px] font-black leading-tight tracking-tight text-white">Your first video is coming to life 🎉</h1>}
         <div className="w-full">

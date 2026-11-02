@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, Megaphone, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, trackFunnel } from "../../lib/onboarding";
-import { BrandTile } from "./brandLogos.jsx";
+import { BrandLogo } from "./brandLogos.jsx";
 import BuildingPlan from "./BuildingPlan.jsx";
 import "./onboarding.css";
 
@@ -31,10 +31,11 @@ const HEARD = [
 ];
 const TOTAL = 4;
 
-function IconTile({ icon: Icon, picked }) {
+// One tile for every answer: our icons and the real logos look like one set.
+function IconTile({ icon: Icon, brand, picked }) {
   return (
-    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border transition ${picked ? "border-lime-300/60 bg-lime-300 text-[#11150D]" : "border-lime-300/25 bg-gradient-to-b from-lime-300/25 to-lime-300/[0.06] text-lime-200"}`}>
-      <Icon className="h-[22px] w-[22px]" strokeWidth={2.2} aria-hidden="true" />
+    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border bg-gradient-to-b from-lime-300/25 to-lime-300/[0.06] text-lime-200 transition ${picked ? "border-lime-300/70" : "border-lime-300/25"}`}>
+      {brand ? <BrandLogo brand={brand} /> : <Icon className="h-[22px] w-[22px]" strokeWidth={2.2} aria-hidden="true" />}
     </span>
   );
 }
@@ -43,7 +44,7 @@ function AnswerCard({ icon, brand, label, picked, onClick, testId }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={picked} data-testid={testId}
       className={`flex min-h-[68px] w-full items-center gap-3.5 rounded-2xl border-2 px-3.5 py-3 text-left text-[15.5px] font-bold transition ${picked ? "ob-pick border-lime-300 bg-lime-300/[0.1] text-white shadow-[0_0_26px_rgba(190,242,100,0.28)]" : "border-white/10 bg-white/[0.04] text-white/85 hover:border-white/25 hover:bg-white/[0.06]"}`}>
-      {brand ? <BrandTile brand={brand} /> : <IconTile icon={icon} picked={picked} />}
+      <IconTile icon={icon} brand={brand} picked={picked} />
       <span className="flex-1">{label}</span>
       {picked && <span className="ob-check grid h-6 w-6 shrink-0 place-items-center rounded-full bg-lime-300 text-[#11150D]"><Check className="h-4 w-4" strokeWidth={3.5} aria-hidden="true" /></span>}
     </button>
