@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { PREVIEW, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
+import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
 import { failOrRetry, onEvent } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
@@ -18,6 +18,45 @@ test("the localhost test: dev server only, a walk-through only, no real survey o
   assert.match(gate, /if \(!userId \|\| loading \|\| localOnboardingTest\(\)\) return;\n\s+const age/);
   assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /const paidReturn = !demo && /);
   assert.match(read(".gitignore"), /^\.env\.local\s*$/m);
+});
+
+test("the lock's cliffhanger is a real line of the script they haven't heard yet", () => {
+  const script = "If you dig a pit and throw your trash in, you have a landfill. But dirty trash juice leaks straight down into the groundwater you drink. So you lay a thick clay base, but it is still not enough. You add a thick black plastic sheet. This is a landfill liner.";
+  assert.equal(cliffhangerLine(script), "You add a thick black plastic sheet.");
+  assert.equal(cliffhangerLine("Too short."), "");
+  assert.equal(cliffhangerLine(null), "");
+});
+
+test("the survey has no emojis; the real logos are its only brand marks", () => {
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.doesNotMatch(survey, /\p{Extended_Pictographic}/u);
+  for (const brand of ["tiktok", "instagram", "youtube", "google"]) assert.match(survey, new RegExp(`brand: "${brand}"`));
+});
+
+test("the plan screen: one number sets its length, and it fetches the real topics for their answers", () => {
+  const plan = read("src/components/onboarding/BuildingPlan.jsx");
+  assert.match(plan, /export const PLAN_SCREEN_SECONDS = 10;/);
+  assert.match(plan, /demoStateFor\(goals\)/);
+  assert.match(plan, /cutawayServer\.freePreviewState\(/);
+  assert.match(plan, /if \(!s\?\.topics\?\.length\) \{ done\.current\(\); return; \}/, "no videos on offer: no pretending");
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /if \(!skipped && withPlan\) setBuilding\(true\); else onDone/);
+});
+
+test("the upgrade screen: no discount or countdown, the offer only while it runs, a real way out", () => {
+  const up = read("src/components/onboarding/UpgradeScreen.jsx");
+  assert.match(up, /const showOffer = offer\.live \|\| adminLook;/);
+  assert.doesNotMatch(up, /30%|% off|countdown/i);
+  assert.match(up, /Explore Zyvo first/);
+  assert.match(up, /Your video finishes right after payment\./);
+  assert.match(up, /choose\(RECOMMENDED_PLAN\)/);
+});
+
+test("a walk-through never reaches Stripe or a render", () => {
+  const up = read("src/components/onboarding/UpgradeScreen.jsx"), page = read("src/pages/onboarding/FirstVideo.jsx");
+  assert.match(up, /adminLook \? setAdminNote\(true\) : pay\.run\(/);
+  assert.match(page, /<UpgradeScreen run=\{run\} adminLook=\{Boolean\(adminMode\)\}/);
+  assert.match(page, /const paidReturn = !demo && /);
 });
 
 test("a free preview needs the switch and the rollout", () => {

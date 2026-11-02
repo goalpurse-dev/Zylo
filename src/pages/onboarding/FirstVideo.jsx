@@ -3,22 +3,23 @@
 // gift. The server decides everything that costs money (cutaway-api, _shared/cutaway/freePreview.js).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Check, Download, Loader2, Lock, Volume2, VolumeX } from "lucide-react";
+import { Check, Download, Hand, Loader2, Lock, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
-import { startCheckout } from "../../lib/payments";
-import usePaymentAction from "../../hooks/usePaymentAction";
 import { formatMoney, usePlanPrices } from "../../lib/planPrices";
 import { PRICING_PLANS } from "../../lib/pricingOutputs";
 import { saveMediaToDevice } from "../../lib/downloadMedia";
 import { cutawayServer, PRICES } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
 import { Confetti } from "../../components/onboarding/FirstGenFlow.jsx";
-import { adminPreviewMode, browserId, DEMO_POSTER, DEMO_STATE, DEMO_VIDEO, endAdminPreview, FIRST_VIDEO_PATH, trackFunnel } from "../../lib/onboarding";
+import UpgradeScreen, { ExploreButton, RECOMMENDED_PLAN, lockLineFor, usePlanCheckout } from "../../components/onboarding/UpgradeScreen.jsx";
+import { adminPreviewMode, browserId, endAdminPreview, lastSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import { demoPreviewRun, demoStateFor } from "../../lib/onboardingDemo";
+import "../../components/onboarding/onboarding.css";
 
 const PLAN_IDS = ["starter", "pro", "generative"];
-const BEST_VALUE = "pro";
 const EXAMPLE_VIDEO = "/cutaway-explainer/example-french-drain.mp4";
 const POLL_MS = 3000;
+const LOOP_SEC = 5; // a topic card plays this much of its video, over and over
 
 function Dots({ step }) {
   return (
@@ -28,8 +29,21 @@ function Dots({ step }) {
   );
 }
 
+// An instruction, not a button: a speech bubble pointing down at the thing to tap.
 function Bubble({ children }) {
-  return <p className="rounded-2xl bg-lime-300 px-4 py-2 text-[14px] font-black text-[#11150D] shadow-[0_8px_32px_rgba(190,242,100,0.35)]" role="status">{children}</p>;
+  return (
+    <p className="ob-nudge relative inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-[#1C1F1C] px-4 py-2 text-[14px] font-semibold text-white/85" role="status" data-testid="first-video-bubble">
+      <Hand className="h-4 w-4 text-lime-300" aria-hidden="true" /> {children}
+      <span className="absolute -bottom-[6px] left-1/2 h-[11px] w-[11px] -translate-x-1/2 rotate-45 border-b border-r border-white/15 bg-[#1C1F1C]" aria-hidden="true" />
+    </p>
+  );
+}
+
+// A card: its video plays muted, the first few seconds over and over. Asked for less motion: the still.
+function TopicClip({ topic }) {
+  const still = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!topic.clipUrl || still) return topic.poster ? <img src={topic.poster} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null;
+  return <video src={topic.clipUrl} poster={topic.poster} muted loop autoPlay playsInline preload="auto" disablePictureInPicture data-testid="first-video-topic-clip" onTimeUpdate={(e) => { if (e.currentTarget.currentTime >= LOOP_SEC) e.currentTarget.currentTime = 0; }} className="absolute inset-0 h-full w-full object-cover" />;
 }
 
 // The stages read the run: queued -> the plan is fetched, render -> the frames, 86 %+ -> the sound and the captions.
@@ -62,7 +76,7 @@ function Rendering({ run }) {
 
 // The clip, big. With sound when the browser allows it, a "Tap for sound" button when it doesn't; no download, and at the
 // end the last frame stays, blurred, under the lock.
-function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine = "Upgrade to finish your video", onUnlock }) {
+function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine, onUnlock }) {
   const ref = useRef(null);
   const [muted, setMuted] = useState(false);
   useEffect(() => {
@@ -72,8 +86,8 @@ function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine = "Upgra
     v.play().catch(() => { v.muted = true; setMuted(true); v.play().catch(() => {}); });
   }, [src, locked]);
   return (
-    <div className="relative mx-auto aspect-[9/16] w-full max-w-[320px] overflow-hidden rounded-3xl border border-white/10 bg-black" onContextMenu={(e) => e.preventDefault()} data-testid="first-video-player">
-      <video ref={ref} src={src} poster={poster} playsInline controlsList="nodownload" disablePictureInPicture onEnded={onEnded} onTimeUpdate={stopAt ? (e) => { if (!locked && e.currentTarget.currentTime >= stopAt) { e.currentTarget.pause(); onEnded(); } } : undefined} muted={muted} className={`h-full w-full object-cover transition duration-500 ${locked ? "scale-105 blur-md brightness-50" : ""}`} />
+    <div className={`relative mx-auto overflow-hidden rounded-3xl bg-black transition-all duration-500 ${locked ? "aspect-[9/13] w-[58%] max-w-[230px] border-2 border-lime-300/55 shadow-[0_0_44px_rgba(190,242,100,0.28)] md:aspect-[9/16] md:w-full md:max-w-[380px]" : "aspect-[9/16] w-full max-w-[320px] border border-white/10"}`} onContextMenu={(e) => e.preventDefault()} data-testid="first-video-player">
+      <video ref={ref} src={src} poster={poster} playsInline controlsList="nodownload" disablePictureInPicture onEnded={onEnded} onLoadedMetadata={(e) => { const v = e.currentTarget; if (locked && v.currentTime === 0) v.currentTime = Math.max(0, Math.min(stopAt ?? v.duration, v.duration) - 0.05); }} onTimeUpdate={stopAt ? (e) => { if (!locked && e.currentTarget.currentTime >= stopAt) { e.currentTarget.pause(); onEnded(); } } : undefined} muted={muted} className={`h-full w-full object-cover transition duration-500 ${locked ? "scale-105 blur-md brightness-50" : ""}`} />
       {!locked && muted && (
         <button type="button" data-testid="first-video-sound" onClick={() => { const v = ref.current; if (v) { v.muted = false; v.play().catch(() => {}); } setMuted(false); }}
           className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-2 rounded-full bg-lime-300 px-4 py-2 text-[14px] font-black text-[#11150D] shadow-lg">
@@ -81,49 +95,42 @@ function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine = "Upgra
         </button>
       )}
       {locked && (
-        <button type="button" onClick={onUnlock} data-testid="first-video-lock" className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-lime-300 text-[#11150D]"><Lock className="h-6 w-6" strokeWidth={2.6} /></span>
-          <span className="text-[20px] font-black leading-tight text-white">{lockLine}</span>
+        <button type="button" onClick={onUnlock} data-testid="first-video-lock" className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center md:gap-3 md:px-6">
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-lime-300 text-[#11150D] shadow-[0_0_0_9px_rgba(190,242,100,0.18)]"><Lock className="h-6 w-6" strokeWidth={2.6} /></span>
+          <span className="mt-1 text-[11px] font-black uppercase tracking-[0.12em] text-lime-300 md:text-[12px]">What happens next</span>
+          <span className="text-[14px] font-black leading-snug text-white [text-shadow:0_1px_8px_#000] md:text-[20px]" data-testid="first-video-cliffhanger">{lockLine}</span>
         </button>
       )}
     </div>
   );
 }
 
-function Plans({ runId, hasVideo, adminLook = false }) {
+function Plans() {
   const prices = usePlanPrices();
-  const pay = usePaymentAction();
+  const { choose, busy } = usePlanCheckout(false);
   const videosFor = (planId) => Math.floor(PRICING_PLANS[planId].credits / PRICES.video.credits.premade[30]);
-  const [adminNote, setAdminNote] = useState(false);
-  const choose = (planId) => adminLook ? setAdminNote(true) : pay.run(planId, () => startCheckout({
-    type: "subscription", planId, billing: "monthly",
-    successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
-    cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}`,
-  }));
   return (
-    <section id="first-video-plans" className="mt-8 w-full scroll-mt-4" data-testid="first-video-plans" data-run={runId ?? ""}>
-      <h2 className="text-center text-[24px] font-black leading-tight tracking-tight text-white">{hasVideo ? "Unlock the full video + start creating" : "Start creating videos like this"}</h2>
-      {hasVideo && <p className="mt-1.5 text-center text-[14px] text-white/60">Your video is finished right after you pay, as a gift. It uses none of your credits.</p>}
+    <section id="first-video-plans" className="mt-8 w-full scroll-mt-4" data-testid="first-video-plans">
+      <h2 className="text-center text-[24px] font-black leading-tight tracking-tight text-white">Start creating videos like this</h2>
       <div className="mt-5 grid gap-3">
         {PLAN_IDS.map((planId) => {
-          const best = planId === BEST_VALUE, plan = prices.status === "ready" ? prices.prices?.plans?.[planId] : null;
+          const best = planId === RECOMMENDED_PLAN, plan = prices.status === "ready" ? prices.prices?.plans?.[planId] : null;
           return (
             <div key={planId} data-testid="first-video-plan" data-plan={planId} className={`relative rounded-2xl border p-4 ${best ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.03]"}`}>
-              {best && <span className="absolute -top-2.5 left-4 rounded-full bg-lime-300 px-2.5 py-0.5 text-[10.5px] font-black uppercase tracking-wide text-[#11150D]">Best value</span>}
+              {best && <span className="absolute -top-2.5 left-4 rounded-full bg-lime-300 px-2.5 py-0.5 text-[10.5px] font-black uppercase tracking-wide text-[#11150D]">Most popular</span>}
               <div className="flex items-baseline justify-between gap-2">
                 <h3 className="text-[16px] font-black text-white">{PRICING_PLANS[planId].name}</h3>
                 <p className="text-[13px] text-white/55"><span className="text-[21px] font-black text-white">{plan ? formatMoney(plan.monthly, prices.prices.currency) : "…"}</span> / month</p>
               </div>
               <p className="mt-1.5 text-[13px] text-white/70">{PRICING_PLANS[planId].credits.toLocaleString("en-US")} credits a month: about {videosFor(planId)} videos like this one</p>
-              <button type="button" disabled={pay.busy != null} onClick={() => choose(planId)} data-testid="first-video-plan-button" data-plan={planId}
+              <button type="button" disabled={busy != null} onClick={() => choose(planId)} data-testid="first-video-plan-button" data-plan={planId}
                 className={`mt-3 inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl text-[15px] font-black transition disabled:opacity-60 ${best ? "bg-lime-300 text-[#11150D] hover:bg-lime-200" : "border border-lime-300/45 text-lime-200 hover:bg-lime-300/10"}`}>
-                {pay.busy === planId && <Loader2 className="h-4 w-4 animate-spin" />} Get {PRICING_PLANS[planId].name}
+                {busy === planId && <Loader2 className="h-4 w-4 animate-spin" />} Get {PRICING_PLANS[planId].name}
               </button>
             </div>
           );
         })}
       </div>
-      {adminNote && <p className="mt-3 text-center text-[13px] font-bold text-amber-200" role="status">Admin preview: a customer goes to Stripe here.</p>}
       <p className="mt-3 text-center text-[12px] text-white/40">Monthly{prices.status === "ready" && prices.prices?.vatIncluded ? ", VAT included" : ""}. Cancel anytime. <Link to="/pricing" className="underline underline-offset-2">See all plans</Link></p>
     </section>
   );
@@ -153,8 +160,9 @@ function Finished({ run }) {
 function AdminBar({ mode, onFinished, onExit }) {
   return (
     <div className="fixed inset-x-0 top-0 z-[60] flex items-center justify-center gap-3 bg-amber-300 px-3 py-1.5 text-[12px] font-bold text-black" data-testid="first-video-admin-bar">
-      <span>{mode === "demo" ? "Admin preview: nothing saved, charged or rendered" : "Admin preview: a real render, no checkout"}</span>
-      {mode === "demo" && <button type="button" onClick={onFinished} className="underline">Finished screen</button>}
+      <span className="hidden sm:inline">{mode === "demo" ? "Admin preview: nothing saved, charged or rendered" : "Admin preview: a real render, no checkout"}</span>
+      <span className="sm:hidden">{mode === "demo" ? "Test: nothing saved or charged" : "Test: real render"}</span>
+      {mode === "demo" && <button type="button" onClick={onFinished} className="whitespace-nowrap underline">Finished screen</button>}
       <button type="button" onClick={onExit} className="underline">Exit</button>
     </div>
   );
@@ -167,6 +175,7 @@ export default function FirstVideo() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const paidReturn = !demo && params.get("paid") === "1"; // a walk-through never asks the server to finish a video
+  const unlock = params.get("unlock") === "1"; // from Home's "Your video is waiting": straight to the lock, no second watch
   const [state, setState] = useState(null);
   const [picked, setPicked] = useState(null);
   const [run, setRun] = useState(null);
@@ -175,17 +184,18 @@ export default function FirstVideo() {
   const [notice, setNotice] = useState(null);
   const [blocked, setBlocked] = useState(false);
   const [starting, setStarting] = useState(false);
-  const plansRef = useRef(null);
 
   useEffect(() => { document.title = "Your first video | Zyvo"; }, []);
 
   const load = useCallback(async () => {
-    const s = demo ? DEMO_STATE : await cutawayServer.freePreviewState({ force: adminMode === "real" });
+    const s = demo ? demoStateFor() : await cutawayServer.freePreviewState({ force: adminMode === "real" });
     setState(s);
     if (s?.preview) setRun(s.preview);
+    else if (demo && unlock) setRun(demoPreviewRun());
     if (s?.finish) setFinish(s.finish);
+    if (unlock && (demo || s?.preview?.step === "done")) { setLocked(true); trackFunnel("upgrade_screen_shown", { runId: s?.preview?.id ?? null, from: "home" }); }
     return s;
-  }, [adminMode, demo]);
+  }, [adminMode, demo, unlock]);
 
   const leave = useCallback(async (skipped) => {
     if (skipped) trackFunnel("tutorial_skipped", { step: run ? 2 : picked ? 2 : 1 });
@@ -239,7 +249,7 @@ export default function FirstVideo() {
       setRun({ id: "demo", step: "queued" });
       setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 45 }), 1500);
       setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 90 }), 3000);
-      setTimeout(() => setRun({ id: "demo", step: "done", finalUrl: DEMO_VIDEO, poster: DEMO_POSTER }), 4500);
+      setTimeout(() => setRun(demoPreviewRun(picked)), 4500);
       setStarting(false);
       return;
     }
@@ -253,17 +263,16 @@ export default function FirstVideo() {
     }
   };
 
-  const showPlans = () => {
-    trackFunnel("upgrade_screen_shown", { runId: run?.id ?? null });
-    setTimeout(() => plansRef.current?.querySelector("#first-video-plans")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  };
+  // The lock and its next line stay in view: the page starts at the top, and tapping the lock brings the button to the middle.
   const clipEnded = () => {
     setLocked(true);
     trackFunnel("preview_watched_to_end", { runId: run?.id ?? null });
-    showPlans();
+    trackFunnel("upgrade_screen_shown", { runId: run?.id ?? null });
+    window.scrollTo({ top: 0 });
   };
+  const toButton = () => document.querySelector("[data-testid=first-video-plan-button]")?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  const adminBar = adminMode ? <AdminBar mode={adminMode} onFinished={() => { setRun(null); setFinish({ id: "demo", step: "done", finalUrl: DEMO_VIDEO, poster: DEMO_POSTER, title: "Demo" }); }} onExit={() => { endAdminPreview(); navigate("/"); }} /> : null;
+  const adminBar = adminMode ? <AdminBar mode={adminMode} onFinished={() => { setRun(null); setFinish({ ...demoPreviewRun(), title: "Demo" }); }} onExit={() => { endAdminPreview(); navigate("/"); }} /> : null;
   const screen = `flex min-h-[100dvh] w-full flex-col bg-[#090A0A] px-4 pb-10 ${adminMode ? "pt-10" : "pt-4"} text-white`;
   const column = "mx-auto my-auto flex w-full max-w-[460px] flex-col items-center py-4";
 
@@ -286,11 +295,11 @@ export default function FirstVideo() {
   // ---------- no preview available for this network: an example and the plans, never a dead end ----------
   if (blocked) {
     return (
-      <div className={screen}><div className={column} ref={plansRef}>
+      <div className={screen}><div className={column}>
         <p className="mb-4 text-center text-[14px] text-white/70" role="status">{notice}</p>
         <video src={EXAMPLE_VIDEO} controls playsInline className="mx-auto aspect-[9/16] w-full max-w-[280px] rounded-3xl border border-white/10 bg-black object-cover" />
-        <Plans hasVideo={false} />
-        <button type="button" onClick={() => leave(true)} className="mt-4 text-[13px] font-semibold text-white/40">Not now</button>
+        <Plans />
+        <ExploreButton onClick={() => leave(true)} />
       </div></div>
     );
   }
@@ -309,19 +318,21 @@ export default function FirstVideo() {
     }
     if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
     return (
-      <div className={screen}>{adminBar}<div className={column} ref={plansRef}>
+      <div className={screen}>{adminBar}<div className={locked ? "mx-auto my-auto grid w-full max-w-[1000px] items-center gap-4 py-2 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-12" : column}>
         {!locked && <Confetti />}
-        <h1 className="mb-4 text-center text-[26px] font-black leading-tight tracking-tight text-white">Your first video is coming to life 🎉</h1>
-        <PreviewPlayer src={run.finalUrl} poster={locked ? run.poster : undefined} locked={locked} onEnded={clipEnded} onUnlock={showPlans} stopAt={demo ? 10 : undefined} />
+        {!locked && <h1 className="mb-4 text-center text-[26px] font-black leading-tight tracking-tight text-white">Your first video is coming to life 🎉</h1>}
+        <div className="w-full">
+          <PreviewPlayer src={run.finalUrl} poster={locked ? run.poster : undefined} locked={locked} onEnded={clipEnded} onUnlock={toButton} stopAt={demo ? 10 : undefined} lockLine={lockLineFor(run) || `The other ${(Number(run.lengthSec) || 30) - 10} seconds`} />
+        </div>
         {!locked && <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/50"><Volume2 className="h-4 w-4" /> Your free 10-second preview</p>}
-        {locked && <Plans runId={run.id} hasVideo adminLook={Boolean(adminMode)} />}
-        <button type="button" onClick={() => leave(false)} className="mt-5 text-[13px] font-semibold text-white/40">Not now</button>
+        {locked && <UpgradeScreen run={run} adminLook={Boolean(adminMode)} onExplore={() => leave(false)} />}
       </div></div>
     );
   }
 
   // ---------- steps 1 and 2: pick, then Generate. Everything but the one thing to tap is dimmed ----------
   const step = picked ? 2 : 1;
+  const matched = lastSurveyGoals().length > 0; // they just told us what they want: the order on this page comes from it
   return (
     <div className={screen} data-testid="first-video-tutorial">
       {adminBar}
@@ -329,26 +340,34 @@ export default function FirstVideo() {
         <Dots step={step} />
         <button type="button" data-testid="first-video-skip" onClick={() => leave(true)} className="text-[13px] font-semibold text-white/40 transition hover:text-white/70">Skip</button>
       </div>
-      <div className={column}>
-        <h1 className="text-center text-[27px] font-black leading-tight tracking-tight text-white">Pick your first video</h1>
-        <p className="mt-1.5 text-center text-[14.5px] font-semibold text-lime-200" data-testid="first-video-free-line">You'll get a free 10-second preview. No credits, no card.</p>
-        {step === 1 && <div className="mt-4"><Bubble>Pick an idea</Bubble></div>}
-        <div className="mt-4 grid w-full grid-cols-3 gap-2.5">
-          {(state.topics ?? []).map((t) => (
-            <button key={t.key} type="button" data-testid="first-video-topic" data-topic={t.key} aria-pressed={picked === t.key}
-              onClick={() => { setPicked(t.key); trackFunnel("tutorial_step_completed", { step: 1, topic: t.key }); }}
-              className={`relative aspect-[9/16] overflow-hidden rounded-2xl border-2 bg-black text-left transition active:scale-[.97] ${picked === t.key ? "border-lime-300" : step === 1 ? "border-lime-300/40 ring-4 ring-lime-300/15" : "border-white/10 opacity-30"}`}>
-              {t.clipUrl ? <video src={t.clipUrl} poster={t.poster} muted loop autoPlay playsInline className="absolute inset-0 h-full w-full object-cover" /> : t.poster && <img src={t.poster} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent px-2 pb-2 pt-8 text-[13px] font-black leading-tight text-white">{t.topic}</span>
-            </button>
-          ))}
+      <div className="mx-auto my-auto flex w-full max-w-[1000px] flex-col items-center py-2">
+        <h1 className="text-center text-[28px] font-black leading-tight tracking-tight text-white md:text-[34px]">Pick your first video</h1>
+        <p className="mt-1 text-center text-[14.5px] font-semibold text-lime-200" data-testid="first-video-free-line">You'll get a free 10-second preview. No credits, no card.</p>
+        <div className="mt-3 flex h-[42px] items-center">{step === 1 && <Bubble>Pick an idea</Bubble>}</div>
+        {/* phones: big cards to swipe through, the next one peeking in. Larger screens: all side by side, as tall as fits. */}
+        <div className="-mx-4 mt-2 flex w-screen snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 pt-1 [scrollbar-width:none] md:mx-auto md:grid md:w-[min(100%,calc((100dvh-340px)*27/16+48px))] md:grid-cols-3 md:gap-6 md:overflow-visible md:p-0">
+          {(state.topics ?? []).map((t, i) => {
+            const on = picked === t.key;
+            return (
+              <button key={t.key} type="button" data-testid="first-video-topic" data-topic={t.key} aria-pressed={on}
+                onClick={() => { setPicked(t.key); trackFunnel("tutorial_step_completed", { step: 1, topic: t.key }); }}
+                className={`relative aspect-[9/16] w-[min(66vw,calc((100dvh-290px)*9/16))] shrink-0 snap-center overflow-hidden rounded-3xl border-[3px] bg-black text-left transition duration-200 md:w-full ${on ? "ob-pick border-lime-300 shadow-[0_0_40px_rgba(190,242,100,0.5)]" : picked ? "border-white/10 opacity-50 hover:opacity-80" : "border-white/15 hover:-translate-y-1 hover:border-lime-300/60"}`}>
+                <TopicClip topic={t} />
+                {i === 0 && matched && <span className="absolute left-2.5 top-2.5 rounded-full bg-black/70 px-2.5 py-1 text-[11.5px] font-black text-lime-300 backdrop-blur-sm">Best match for you</span>}
+                {on && <span className="ob-check absolute right-2.5 top-2.5 grid h-9 w-9 place-items-center rounded-full bg-lime-300 text-[#11150D] shadow-lg"><Check className="h-5 w-5" strokeWidth={3.5} aria-hidden="true" /></span>}
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent px-3.5 pb-3.5 pt-12 text-[18px] font-black leading-tight text-white">{t.topic}</span>
+              </button>
+            );
+          })}
         </div>
-        {step === 2 && <div className="mt-5"><Bubble>Now hit Generate</Bubble></div>}
-        {notice && <p className="mt-3 text-center text-[13px] text-red-300" role="alert">{notice}</p>}
-        <button type="button" disabled={!picked || starting} onClick={generate} data-testid="first-video-generate"
-          className={`mt-4 inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-2xl text-[18px] font-black transition ${picked ? "bg-lime-300 text-[#11150D] shadow-[0_0_44px_rgba(190,242,100,0.45)] hover:bg-lime-200" : "bg-white/10 text-white/25"}`}>
-          {starting && <Loader2 className="h-5 w-5 animate-spin" />} Generate
-        </button>
+        <div className="sticky bottom-3 z-10 mt-2 flex w-full max-w-[460px] flex-col items-center md:mt-5">
+          {step === 2 && <div className="mb-3"><Bubble>Now hit Generate</Bubble></div>}
+          {notice && <p className="mb-2 text-center text-[13px] text-red-300" role="alert">{notice}</p>}
+          <button type="button" disabled={!picked || starting} onClick={generate} data-testid="first-video-generate"
+            className={`inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-2xl text-[19px] font-black transition ${picked ? "ob-cta-pulse bg-lime-300 text-[#11150D] hover:bg-lime-200" : "bg-[#1C1F1C] text-white/30"}`}>
+            {starting && <Loader2 className="h-5 w-5 animate-spin" />} Generate
+          </button>
+        </div>
       </div>
     </div>
   );

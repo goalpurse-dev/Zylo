@@ -66,7 +66,7 @@ export default function OnboardingGate() {
   if (!showSurvey) return null;
   return (
     <Suspense fallback={null}>
-      <OnboardingSurvey preview={previewSurvey} onDone={() => {
+      <OnboardingSurvey preview={previewSurvey} withPlan={previewSurvey || !location.pathname.startsWith("/long-form")} onDone={() => {
         setShowSurvey(false);
         if (previewSurvey) { navigate(FIRST_VIDEO_PATH); return; }
         fetchOnboardingStatus(userId, { fresh: true });

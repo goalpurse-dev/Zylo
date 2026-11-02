@@ -18,15 +18,14 @@ export function takeSignupRoute() {
 // owner gets an answer from opsStatus. The mark in this tab only changes what this page shows; real=1 is refused by the
 // server for anyone else.
 const ADMIN_PREVIEW_KEY = "zyvo:onboarding-admin-preview";
-export const DEMO_VIDEO = "/cutaway-explainer/example-french-drain-clean.mp4";
-export const DEMO_POSTER = "/cutaway-explainer/example-french-drain.jpg";
-export const DEMO_STATE = {
-  on: true, plan: "free", preview: null, finish: null, demo: true,
-  topics: [
-    { key: "french_drain", topic: "How a French drain works", poster: DEMO_POSTER },
-    { key: "landfill", topic: "What's inside a landfill", poster: "/cutaway-explainer/example-landfill.jpg" },
-  ],
-};
+// What this browser just answered: the first card can say it was picked for them.
+const SURVEY_GOALS_KEY = "zyvo:onboarding-goals";
+export function rememberSurveyGoals(goals) {
+  try { sessionStorage.setItem(SURVEY_GOALS_KEY, JSON.stringify(goals)); } catch { /* the badge just doesn't show */ }
+}
+export function lastSurveyGoals() {
+  try { return JSON.parse(sessionStorage.getItem(SURVEY_GOALS_KEY)) ?? []; } catch { return []; }
+}
 // Localhost only: VITE_ONBOARDING_LOCAL_TEST=1 in .env.local gives ANY account signed in here that same walk-through, and
 // never a real render. DEV is false in every build, so the build drops this: Vercel's previews and production can't have it.
 export function localOnboardingTest() {

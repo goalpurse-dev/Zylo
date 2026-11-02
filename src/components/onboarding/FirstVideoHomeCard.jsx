@@ -1,11 +1,16 @@
-// Home, for accounts in the new flow: "Your video is waiting" with an Upgrade button, a finish in progress, or the free
+// Home, for accounts in the new flow: "Your video is waiting" with its frozen frame, a finish in progress, or the free
 // preview they haven't made yet. Everyone else never sees it, and never makes the call.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { DEMO_POSTER, DEMO_STATE, FIRST_VIDEO_PATH, adminPreviewMode, fetchOnboardingStatus } from "../../lib/onboarding";
+import { FIRST_VIDEO_PATH, adminPreviewMode, fetchOnboardingStatus } from "../../lib/onboarding";
+import { DEMO_POSTER, demoStateFor } from "../../lib/onboardingDemo";
 import { cutawayServer } from "../viral-tools/cutaway-explainer/api/cutawayApi";
+import { PREVIEW } from "../../../supabase/functions/_shared/cutaway/freePreview.js";
+
+const VIDEO_SEC = 30;
+const DONE_PCT = Math.round((PREVIEW.seconds / VIDEO_SEC) * 100);
 
 export default function FirstVideoHomeCard() {
   const { user, loading } = useAuth();
@@ -14,7 +19,7 @@ export default function FirstVideoHomeCard() {
     if (loading || !user?.id) return undefined;
     let live = true;
     const adminMode = adminPreviewMode();
-    if (adminMode === "demo") { setState({ ...DEMO_STATE, preview: { step: "done", poster: DEMO_POSTER } }); return undefined; }
+    if (adminMode === "demo") { setState({ ...demoStateFor(), preview: { step: "done", poster: DEMO_POSTER } }); return undefined; }
     fetchOnboardingStatus(user.id).then((status) => {
       if (!status.enrolled && adminMode !== "real") return null;
       return cutawayServer.freePreviewState({ force: adminMode === "real" }).then((s) => { if (live) setState(s); });
@@ -28,23 +33,24 @@ export default function FirstVideoHomeCard() {
   let card = null;
   if (finish && finish.step !== "done") card = { title: "Your video is being finished", line: "It's a gift from us. It lands here when it's ready.", cta: "Watch it", to: `${FIRST_VIDEO_PATH}?paid=1` };
   else if (finish) card = null;
-  else if (done && state.plan === "free") card = { title: "Your video is waiting", line: "Upgrade to finish the rest of your video. It's on us: no credits.", cta: "Upgrade", to: FIRST_VIDEO_PATH, poster: preview.poster };
+  else if (done && state.plan === "free") card = { title: "Your video is waiting", line: `${DONE_PCT}% done. The other ${VIDEO_SEC - PREVIEW.seconds} seconds are free when you start a plan.`, cta: "Finish my video", to: `${FIRST_VIDEO_PATH}?unlock=1`, poster: preview.poster, waiting: true };
   else if (preview && !done && preview.step !== "failed") card = { title: "Your first video is being made", line: "Your free 10-second preview will be ready in a moment.", cta: "Watch it", to: FIRST_VIDEO_PATH };
   else if (state.on && state.topics?.length) card = { title: "Make your first video free", line: "Pick an idea and get a free 10-second preview.", cta: "Start", to: FIRST_VIDEO_PATH };
   if (!card) return null;
 
   return (
     <div className="mx-auto mt-4 w-full max-w-[1100px] px-4 md:px-[50px]" data-testid="first-video-home-card">
-      <Link to={card.to} className="flex items-center gap-4 rounded-2xl border border-lime-300/40 bg-lime-300/[0.07] p-3 transition hover:bg-lime-300/[0.12]">
-        <span className="relative grid h-16 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-black/60">
-          {card.poster && <img src={card.poster} alt="" className="absolute inset-0 h-full w-full object-cover blur-[2px] brightness-50" />}
+      <Link to={card.to} className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-lime-300/40 bg-lime-300/[0.07] p-3 transition hover:bg-lime-300/[0.12] sm:flex-nowrap">
+        <span className="relative grid h-[88px] w-[62px] shrink-0 place-items-center overflow-hidden rounded-xl bg-black/60">
+          {card.poster && <img src={card.poster} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover blur-[3px] brightness-50" />}
           <Lock className="relative h-5 w-5 text-lime-300" />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-black text-white">{card.title}</span>
+        <span className="min-w-0 flex-1 basis-[55%]">
+          <span className="block text-[17px] font-black text-white">{card.title}</span>
           <span className="block text-[13px] text-white/65">{card.line}</span>
+          {card.waiting && <span className="mt-2 block h-[7px] max-w-[320px] overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-lime-300" style={{ width: `${DONE_PCT}%` }} /></span>}
         </span>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-xl bg-lime-300 px-4 py-2.5 text-[14px] font-black text-[#11150D]">{card.cta} <ArrowRight className="h-4 w-4" /></span>
+        <span className="flex min-h-[46px] w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-lime-300 px-4 py-2.5 text-[15px] font-black text-[#11150D] sm:w-auto">{card.cta} <ArrowRight className="h-4 w-4" /></span>
       </Link>
     </div>
   );
