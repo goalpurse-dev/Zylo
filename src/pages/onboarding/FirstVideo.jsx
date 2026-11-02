@@ -166,7 +166,7 @@ export default function FirstVideo() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const paidReturn = params.get("paid") === "1";
+  const paidReturn = !demo && params.get("paid") === "1"; // a walk-through never asks the server to finish a video
   const [state, setState] = useState(null);
   const [picked, setPicked] = useState(null);
   const [run, setRun] = useState(null);

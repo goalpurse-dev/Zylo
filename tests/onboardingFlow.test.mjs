@@ -10,6 +10,16 @@ import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
 const read = (f) => readFileSync(f, "utf8");
 const allowed = { switchOn: true, enrolled: true, plan: "free", existing: null, ipCount: 0, deviceCount: 0, spent24h: 0, capUsd: 10, hasPlan: true };
 
+test("the localhost test: dev server only, a walk-through only, no real survey or welcome email", () => {
+  const lib = read("src/lib/onboarding.js"), gate = read("src/components/onboarding/OnboardingGate.jsx");
+  assert.match(lib, /import\.meta\.env\.DEV && import\.meta\.env\.VITE_ONBOARDING_LOCAL_TEST === "1" && \["localhost", "127\.0\.0\.1"\]/);
+  assert.match(lib, /if \(localOnboardingTest\(\)\) return "demo";/);
+  assert.match(lib, /if \(localOnboardingTest\(\)\) return Promise\.resolve\(\{ enrolled: true, surveyDone: true \}\)/);
+  assert.match(gate, /if \(!userId \|\| loading \|\| localOnboardingTest\(\)\) return;\n\s+const age/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /const paidReturn = !demo && /);
+  assert.match(read(".gitignore"), /^\.env\.local\s*$/m);
+});
+
 test("a free preview needs the switch and the rollout", () => {
   assert.equal(previewDecision(allowed).ok, true);
   assert.equal(previewDecision({ ...allowed, switchOn: false }).code, "OFF");

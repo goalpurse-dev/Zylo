@@ -27,13 +27,20 @@ export const DEMO_STATE = {
     { key: "landfill", topic: "What's inside a landfill", poster: "/cutaway-explainer/example-landfill.jpg" },
   ],
 };
+// Localhost only: VITE_ONBOARDING_LOCAL_TEST=1 in .env.local gives ANY account signed in here that same walk-through, and
+// never a real render. DEV is false in every build, so the build drops this: Vercel's previews and production can't have it.
+export function localOnboardingTest() {
+  return import.meta.env.DEV && import.meta.env.VITE_ONBOARDING_LOCAL_TEST === "1" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+}
 export function adminPreviewMode() {
+  if (localOnboardingTest()) return "demo";
   try { return sessionStorage.getItem(ADMIN_PREVIEW_KEY); } catch { return null; }
 }
 export function endAdminPreview() {
   try { sessionStorage.removeItem(ADMIN_PREVIEW_KEY); } catch { /* nothing kept */ }
 }
 export async function beginAdminPreview(mode) {
+  if (localOnboardingTest()) return true;
   const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsStatus" } }).catch(() => ({ error: true }));
   if (error || !data) return false;
   try { sessionStorage.setItem(ADMIN_PREVIEW_KEY, mode); } catch { return false; }
@@ -50,6 +57,7 @@ export function trackFunnel(event, props = {}) {
 let cached = { userId: null, promise: null };
 export function fetchOnboardingStatus(userId, { fresh = false } = {}) {
   if (!userId) return Promise.resolve({ enrolled: false });
+  if (localOnboardingTest()) return Promise.resolve({ enrolled: true, surveyDone: true }); // the real survey, which saves, stays away
   if (fresh || cached.userId !== userId || !cached.promise) {
     cached = { userId, promise: supabase.rpc("onboarding_status").then(({ data, error }) => (error || !data ? { enrolled: false, failed: true } : data), () => ({ enrolled: false, failed: true })) };
   }
