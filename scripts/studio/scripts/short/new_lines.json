@@ -1,0 +1,33 @@
+{
+ "voices": {
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.4,
+    "style": 0.35,
+    "speed": 1.05
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.05
+   }
+  }
+ },
+ "lines": [
+  {
+   "who": "zee",
+   "text": "Save this for later.",
+   "file": "save_later.mp3"
+  },
+  {
+   "who": "zee",
+   "text": "Send this to that friend.",
+   "file": "send_friend.mp3"
+  }
+ ]
+}

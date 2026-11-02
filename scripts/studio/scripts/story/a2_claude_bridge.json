@@ -1,0 +1,412 @@
+{
+ "variant": "a2_claude_bridge",
+ "title": "I asked Claude which video idea would go viral",
+ "template": "ai_fruit_story",
+ "voices": {
+  "kokoro": {
+   "creator": {
+    "voice": "am_liam",
+    "speed": 1.05
+   },
+   "zee": {
+    "voice": "af_bella",
+    "speed": 1.05
+   }
+  },
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.38,
+    "style": 0.45,
+    "speed": 1.03
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.03
+   }
+  }
+ },
+ "world": "cozy",
+ "music_bpm": 86,
+ "music_shift": -2,
+ "no_phone": true,
+ "creation": "ken",
+ "source_story": "b102da41-abee-4e66-b4ff-c01e20bfc716",
+ "search_title": null,
+ "caption": null,
+ "hashtags": null,
+ "lead": 0.15,
+ "gap_speaker": 0.2,
+ "gap_same": 0.16,
+ "tail": 0.7,
+ "music_db_under": 14,
+ "max_gap": 0.4,
+ "start_at": "two_shot",
+ "hq_dir": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/hq",
+ "headline": {
+  "text": "I ASKED *CLAUDE* FOR A VIRAL IDEA",
+  "chip": "CLAUDE'S PICK",
+  "secs": 7
+ },
+ "recipe": {
+  "angle": "A2",
+  "hook_type": "famous_name",
+  "length_bucket": "30-45",
+  "famous_name": true,
+  "end_trigger": "repost",
+  "kind": "video",
+  "template": "ai_fruit_story",
+  "world": "cozy",
+  "template_shown": "ai_fruit_story",
+  "cta": "repost_ideas_friend",
+  "source_story": "b102da41-abee-4e66-b4ff-c01e20bfc716"
+ },
+ "cta": {
+  "id": "repost_ideas_friend",
+  "kind": "repost",
+  "chip": "SEND TO THAT FRIEND"
+ },
+ "clips": [
+  {
+   "name": "glimpse",
+   "file": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/final.mp4",
+   "in": 0.02,
+   "out": 3.48,
+   "hq_dir": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 3,
+   "stamp": "Made earlier from this same idea"
+  },
+  {
+   "name": "payoff",
+   "file": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/final.mp4",
+   "in": 12.7,
+   "out": 26.14,
+   "hq_dir": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 7,
+   "pays_loop": true,
+   "stamp": "Made earlier from this same idea"
+  }
+ ],
+ "lines": [
+  {
+   "pose": "pointUpL",
+   "who": "creator",
+   "text": "I asked Claude which video idea would go viral. Then I actually made it.",
+   "key": [
+    "Claude"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "hook",
+   "stamp": "Real prompt and answer, logged Oct 31 2026",
+   "visual": {
+    "kind": "bubble",
+    "from": "ME, TO CLAUDE",
+    "text": "Which idea would you bet on?",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a2_claude_bridge/line01.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show1",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Most people stop at the idea. Because an idea isn't a video.",
+   "key": [
+    "isn't"
+   ],
+   "expr": "smug",
+   "shot": "zee_close",
+   "role": "stakes",
+   "listen": "sad",
+   "visual": {
+    "kind": "sign",
+    "text": "IDEA ≠ VIDEO",
+    "rim": "#FF6B6B",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a2_claude_bridge/line02.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show2",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "creator",
+   "text": "It picked this one. The IT guy reads everything.",
+   "key": [
+    "IT"
+   ],
+   "expr": "shocked",
+   "shot": "creator_close",
+   "role": "pick",
+   "visual": {
+    "kind": "bubble",
+    "from": "CLAUDE'S PICK",
+    "text": "The IT guy reads everything",
+    "tail": "right"
+   },
+   "take": "story/a2_claude_bridge/line03.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show3",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "Its reason? Everyone has an email they'd hate anyone to read.",
+   "key": [
+    "email"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "why",
+   "listen": "shocked",
+   "visual": {
+    "kind": "bubble",
+    "from": "CLAUDE, WORD FOR WORD",
+    "text": "everyone has an email they'd hate anyone to read",
+    "tail": "right"
+   },
+   "take": "story/a2_claude_bridge/line04.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show4",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "shrug",
+   "who": "creator",
+   "text": "Fine. But I can't edit. Now what?",
+   "key": [
+    "edit."
+   ],
+   "expr": "sad",
+   "shot": "creator_close",
+   "role": "objection",
+   "visual": {
+    "kind": "timeline",
+    "text": "NO EDITING",
+    "at": 1.2
+   },
+   "take": "story/a2_claude_bridge/line05.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show5",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Type it in here. That's the whole input.",
+   "key": [
+    "here."
+   ],
+   "expr": "happy",
+   "role": "input",
+   "screen": {
+    "file": "ken_typed.jpg",
+    "sticker": {
+     "text": "your idea goes here",
+     "x": 0.5,
+     "y": 0.45,
+     "ty": 0.2
+    }
+   },
+   "take": "story/a2_claude_bridge/line06.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show6",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Then pick the length. You see the credit cost before anything starts.",
+   "key": [
+    "cost"
+   ],
+   "expr": "happy",
+   "role": "cost",
+   "stamp": "On the app's screen, Oct 29 2026",
+   "screen": {
+    "file": "s_length.jpg",
+    "sticker": {
+     "text": "the cost, up front",
+     "x": 0.62,
+     "y": 0.9,
+     "ty": 0.72
+    }
+   },
+   "take": "story/a2_claude_bridge/line07.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show7",
+     "sfx": "tick"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "creator",
+   "text": "And that's a full video?",
+   "key": [
+    "full"
+   ],
+   "expr": "shocked",
+   "shot": "two_shot",
+   "role": "ask",
+   "visual": {
+    "kind": "tiles",
+    "images": [
+     "/work/media/scene0.jpg",
+     "/work/media/scene1.jpg",
+     "/work/media/scene2.jpg"
+    ],
+    "scale": 0.9
+   },
+   "take": "story/a2_claude_bridge/line08.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show8",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Made with Zyvo. tryzyvo.com, link in bio.",
+   "say": "Made with Zyvo. Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "role": "site",
+   "cues": [
+    {
+     "word": 3,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 4,
+     "event": "bio",
+     "sfx": "pop"
+    },
+    {
+     "word": 0,
+     "event": "show9",
+     "sfx": "pop"
+    }
+   ],
+   "shot": "two_shot",
+   "visual": {
+    "kind": "sign",
+    "text": "tryzyvo.com",
+    "sub": "link in bio"
+   },
+   "take": "story/a2_claude_bridge/line09.mp3"
+  },
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Send this to the friend with a hundred ideas and zero videos.",
+   "key": [
+    "friend"
+   ],
+   "expr": "happy",
+   "role": "cta",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a2_claude_bridge/line10.mp3",
+   "shot": "two_shot"
+  }
+ ],
+ "shots": [
+  {
+   "to": "zee_close",
+   "at": "stakes.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "pick.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "why.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "objection.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "ask.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  }
+ ],
+ "events_extra": [
+  {
+   "t": 0,
+   "event": "open",
+   "sfx": "hit"
+  }
+ ]
+}

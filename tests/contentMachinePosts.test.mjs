@@ -125,7 +125,7 @@ test("stats input: commas and spaces in numbers, percentages, nothing negative",
   assert.equal(cleanStats({ views: "1,200" }).views, 1200);
   assert.equal(cleanStats({ views: "1.2K" }).views, 1200);
   assert.equal(cleanStats({ views: "3M" }).views, 3000000);
-  assert.deepEqual(cleanStats({ views: "12 500", avg_watch_sec: "4,25", watched_full_pct: "18.5" }), { views: 12500, likes: null, comments: null, shares: null, saves: null, avg_watch_sec: 4.25, watched_full_pct: 18.5, profile_visits: null, new_followers: null, link_clicks: null });
+  assert.deepEqual(cleanStats({ views: "12 500", avg_watch_sec: "4,25", watched_full_pct: "18.5" }), { views: 12500, likes: null, comments: null, shares: null, saves: null, avg_watch_sec: 4.25, watched_full_pct: 18.5, profile_visits: null, new_followers: null, link_clicks: null, hold_3s_pct: null, hold_5s_pct: null, hold_10s_pct: null, dropoff_s: null });
   assert.throws(() => cleanStats({ views: -3 }), /0 or more/);
 });
 

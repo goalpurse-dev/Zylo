@@ -1,0 +1,34 @@
+{
+  "mp4": "C:/Users/Public/Zylo-contentmachine/content/studio-previews/m3_fruit_story.mp4",
+  "coverAt": 1.2,
+  "title": "How I made this AI Fruit Story with Zyvo",
+  "account": "zyvo",
+  "template": "ai_fruit_story",
+  "route": "/workspace/ai-fruit-story",
+  "cta": "comment_fruit",
+  "hook": "Yo Zyvo, how do you make a video like this?",
+  "concept": "One template per video: the real flow of AI Fruit Story, recorded live on the internal account, and the real result.",
+  "script": { "source": "scripts/studio/scripts/m3_fruit.json", "story": "Ten Years Out of Date (96d3191f)" },
+  "claims": ["fruit_characters: 150 fruit characters to cast from (fact sheet)", "3:50 from the first click to the finished video (measured live, 2026-10-29)"],
+  "measured": { "first_click_to_final_s": 230.2, "credits": 159, "story_ai_usd": 1.6371, "recorded": "2026-10-29T20:55:49Z" },
+  "packages": {
+    "tiktok": {
+      "title": "How I made this AI Fruit Story",
+      "caption": "Made this in 3 minutes 50 seconds with Zyvo: pick an idea, pick a length, check the pictures, animate, done. Comment FRUIT if you're actually gonna try it. tryzyvo.com",
+      "hashtags": ["#aifruitstory", "#zyvo", "#aivideo", "#fruitdrama", "#howto"]
+    },
+    "instagram": {
+      "caption": "How I made this AI Fruit Story with Zyvo, start to finish in 3:50. 5 steps, no editing. Comment FRUIT if you're actually gonna try it. Link in bio: tryzyvo.com",
+      "hashtags": ["#aifruitstory", "#zyvo", "#aivideo", "#fruitdrama", "#reels"]
+    },
+    "youtube": {
+      "title": "How I made an AI Fruit Story in 3:50 (Zyvo)",
+      "caption": "The real flow, start to finish: pick an idea, pick a length, check every scene picture, animate, make the final video. 3 minutes 50 seconds from the first click. Try it: tryzyvo.com",
+      "hashtags": ["#shorts", "#aifruitstory", "#zyvo", "#aivideo"]
+    }
+  },
+  "spend": [
+    { "operation": "studio.fruit_story (the real story, 6 pictures + 6 V2 clips + script)", "usd": 1.6371, "day": "2026-10-29", "ref": "fruit_story 96d3191f" },
+    { "operation": "studio.voices (ElevenLabs, 13 lines)", "usd": 0.0486, "day": "2026-10-30", "ref": "elevenTakes cost.log" }
+  ]
+}

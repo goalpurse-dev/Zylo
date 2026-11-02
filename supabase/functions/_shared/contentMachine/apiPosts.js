@@ -46,7 +46,8 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
     return {
       id: p.id, platform: p.platform, account: p.account ?? idea?.account ?? "creator", post_url: p.post_url, posted_at: p.posted_at, posted_local: utcToLocal(p.posted_at, zone),
       idea: idea && { id: idea.id, title: idea.title, recipe: idea.recipe, account: idea.account ?? "creator" }, thumbnail: png ? urls[png] ?? null : null, thumbnail_path: png,
-      stats: stats.map((s) => ({ ...s, taken_local: utcToLocal(s.taken_at, zone), screenshot: s.screenshot_path ? urls[s.screenshot_path] ?? null : null })),
+      stats: stats.map((s) => ({ ...s, taken_local: utcToLocal(s.taken_at, zone), screenshot: s.screenshot_path ? urls[s.screenshot_path] ?? null : null,
+        retention_screenshot: s.retention_screenshot_path ? urls[s.retention_screenshot_path] ?? null : null })),
       metrics: m,
     };
   };
@@ -81,7 +82,7 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
 
     deletePost: async ({ user, body }) => {
       const post = await cm.getPost(String(body?.id ?? ""));
-      for (const s of await cm.statsOfPost(post.id)) if (s.screenshot_path) await files.remove?.(s.screenshot_path);
+      for (const s of await cm.statsOfPost(post.id)) for (const f of [s.screenshot_path, s.retention_screenshot_path]) if (f) await files.remove?.(f);
       await cm.deletePost(post.id);
       const left = await cm.postsOfIdea(post.idea_id);
       if (!left.length) await cm.updateIdea(post.idea_id, { status: "approved" });   // back to Today
@@ -96,7 +97,7 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
       if (idea?.status !== "posted") throw new ApiError("VALIDATION", "This slideshow isn't marked as posted.");
       const removed = [];
       for (const post of await cm.postsOfIdea(idea.id)) {
-        for (const s of await cm.statsOfPost(post.id)) if (s.screenshot_path) await files.remove?.(s.screenshot_path);
+        for (const s of await cm.statsOfPost(post.id)) for (const f of [s.screenshot_path, s.retention_screenshot_path]) if (f) await files.remove?.(f);
         await cm.deletePost(post.id);
         removed.push(post.platform);
       }
@@ -108,7 +109,7 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
     posts: async () => {
       const zone = await tz();
       const rows = await cm.listPosts();
-      const paths = rows.flatMap((p) => [p.cm_ideas?.cm_generations?.[0]?.files?.pngs?.[0], ...(p.cm_post_stats ?? []).map((s) => s.screenshot_path)]).filter(Boolean);
+      const paths = rows.flatMap((p) => [p.cm_ideas?.cm_generations?.[0]?.files?.pngs?.[0], ...(p.cm_post_stats ?? []).flatMap((s) => [s.screenshot_path, s.retention_screenshot_path])]).filter(Boolean);
       const urls = await files.signedUrls(paths, 900);
       return { posts: rows.map((p) => view(p, zone, urls)), timezone: zone, fields: STAT_FIELDS };
     },
@@ -134,13 +135,21 @@ export function postsActions({ cm, files, store, guard, now, ai = null, env = {}
         await files.upload(path, Uint8Array.from(atob(shot.dataBase64), (c) => c.charCodeAt(0)), shot.contentType);
         row = await cm.saveStats({ id: row.id, screenshot_path: path });
       }
+      // the TikTok retention graph, kept next to the numbers read off it (owner, 2026-10-30)
+      const graph = body?.retentionScreenshot;
+      if (graph) {
+        if (!IMAGE_TYPES[graph.contentType] || String(graph.dataBase64 ?? "").length > MAX_IMAGE_B64) throw new ApiError("VALIDATION", "The retention graph must be a PNG, JPEG or WebP under 5 MB.");
+        const path = `posts/${post.id}/${row.id}_retention.${IMAGE_TYPES[graph.contentType]}`;
+        await files.upload(path, Uint8Array.from(atob(graph.dataBase64), (c) => c.charCodeAt(0)), graph.contentType);
+        row = await cm.saveStats({ id: row.id, retention_screenshot_path: path });
+      }
       await store.audit(user.email, existing ? "stats.edit" : "stats.add", { post: post.id, id: row.id, views: row.views });
       return { stats: row };
     },
 
     deleteStats: async ({ user, body }) => {
       const s = await cm.getStats(String(body?.id ?? ""));
-      if (s.screenshot_path) await files.remove?.(s.screenshot_path);
+      for (const f of [s.screenshot_path, s.retention_screenshot_path]) if (f) await files.remove?.(f);
       await cm.deleteStats(s.id);
       await store.audit(user.email, "stats.delete", { post: s.post_id, id: s.id });
       return { deleted: s.id };

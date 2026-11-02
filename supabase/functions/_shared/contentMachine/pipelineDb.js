@@ -192,6 +192,89 @@ export function createPipelineDb(db) {
 
     async getPackage(id) { return must(await db.from("cm_packages").select("*").eq("id", id).single(), "package"); },
     async updatePackage(id, patch) { return must(await db.from("cm_packages").update({ ...patch, updated_at: nowIso() }).eq("id", id).select("*").single(), "update package"); },
+
+    /* ─── the Studio tab (studio.js) ─── */
+    /** The owner's finished AI Fruit Stories since `sinceIso`, with their scene lines (read-only). */
+    async ownerFruitStories(email, sinceIso) {
+      const prof = must(await db.from("profiles").select("id").eq("email", email).maybeSingle(), "owner");
+      if (!prof) return [];
+      const stories = must(await db.from("fruit_stories").select("id, title, input, length_sec, final_url, created_at").eq("user_id", prof.id).eq("final_status", "ready").not("final_url", "is", null)
+        .is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "owner stories");
+      if (!stories.length) return [];
+      const scenes = must(await db.from("fruit_story_scenes").select("story_id, idx, line, clip_status").in("story_id", stories.map((s) => s.id)), "story scenes");
+      return stories.map((s) => ({ ...s, scenes: scenes.filter((x) => x.story_id === s.id) }));
+    },
+    /** The owner's finished creations of a template (read-only): {id, title, created_at, length_sec, final_url, scenes?}. */
+    async ownerCreations(template, email, sinceIso) {
+      const prof = must(await db.from("profiles").select("id").eq("email", email).maybeSingle(), "owner");
+      if (!prof) return [];
+      if (template === "ai_fruit_story") return api.ownerFruitStories(email, sinceIso);
+      if (template === "blocky_stories") {
+        const rows = must(await db.from("blocky_stories").select("id, title, length_sec, final_url, created_at").eq("user_id", prof.id).eq("final_status", "ready").not("final_url", "is", null).is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "blocky");
+        if (!rows.length) return [];
+        const scenes = must(await db.from("blocky_story_scenes").select("story_id, idx, line, clip_status").in("story_id", rows.map((s) => s.id)), "blocky scenes");
+        return rows.map((s) => ({ ...s, scenes: scenes.filter((x) => x.story_id === s.id) }));
+      }
+      if (template === "cutaway") return must(await db.from("cutaway_runs").select("id, title, topic, length_sec, created_at").eq("user_id", prof.id).eq("status", "done").gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "cutaway").map((r) => ({ ...r, title: r.title ?? r.topic }));
+      if (template === "long_form") return must(await db.from("long_form_projects").select("id, selected_title, topic, created_at").eq("user_id", prof.id).eq("status", "complete").not("final_video_path", "is", null).is("deleted_at", null).gte("created_at", sinceIso).order("created_at", { ascending: false }).limit(30), "long form").map((p) => ({ id: p.id, title: p.selected_title ?? p.topic, created_at: p.created_at, length_sec: 40 }));
+      return [];
+    },
+    /** How often each creation was already used by a Studio job (not cancelled). */
+    async studioSourceUse() {
+      const rows = must(await db.from("cm_studio_jobs").select("source").neq("status", "cancelled").limit(2000), "studio sources");
+      const out = {};
+      for (const r of rows) if (r.source?.id && !r.source.remake_of) out[r.source.id] = (out[r.source.id] ?? 0) + 1;   // a remake replaces its video: no extra use
+      return out;
+    },
+    /** Posted Studio videos with their recipe, length and latest numbers (for the learning rule). */
+    async studioPostHistory() {
+      const rows = must(await db.from("cm_ideas").select("id, recipe, zyvo_tool, cm_generations(duration_s, kind), cm_posts(platform, cm_post_stats(*))").eq("recipe->>kind", "video").eq("status", "posted").limit(500), "studio posts");
+      return rows.map((r) => {
+        const stats = (r.cm_posts ?? []).flatMap((p) => (p.cm_post_stats ?? []).map((s) => ({ ...s, platform: p.platform }))).sort((a, b) => String(b.taken_at).localeCompare(String(a.taken_at)));
+        return { recipe: r.recipe, template: r.recipe?.template ?? r.zyvo_tool, seconds: Number((r.cm_generations ?? []).find((g) => g.kind === "making_of")?.duration_s) || null, stats: stats.find((s) => s.platform === "tiktok") ?? stats[0] ?? null };
+      });
+    },
+    /** Creations shown in the last days and the angles they were used with: {id: [angles]} (a reuse must change the angle). */
+    async studioRecentSources(sinceIso) {
+      const jobs = must(await db.from("cm_studio_jobs").select("source, recipe, idea_id").neq("status", "cancelled").neq("status", "failed").gte("created_at", sinceIso).limit(500), "recent jobs");
+      const ideas = must(await db.from("cm_ideas").select("id, recipe").eq("recipe->>kind", "video").gte("created_at", sinceIso).limit(500), "recent videos");
+      const out = {}, add = (id, angle) => { if (!id) return; (out[id] ??= []).push(angle ?? "old"); };
+      const fromJobs = new Set(jobs.map((j) => j.idea_id).filter(Boolean));
+      for (const j of jobs) if (j.source?.id && !j.source.remake_of) add(j.source.id, j.recipe?.angle);
+      for (const i of ideas) if (!fromJobs.has(i.id) && i.recipe?.source_story) add(i.recipe.source_story, i.recipe.angle);
+      return out;
+    },
+    async studioAngles(all = false) {
+      let q = db.from("cm_studio_angles").select("*").order("sort");
+      if (!all) q = q.eq("status", "active");
+      return must(await q, "studio angles");
+    },
+    async saveStudioAngle(key, patch) {
+      const rows = must(await db.from("cm_studio_angles").update({ ...patch, updated_at: nowIso() }).eq("key", key).select("*"), "save angle");
+      return rows[0] ?? null;
+    },
+    async studioWorkers() { return must(await db.from("cm_studio_workers").select("*").order("last_seen", { ascending: false }).limit(5), "studio workers"); },
+    async createStudioJobs(rows) { return must(await db.from("cm_studio_jobs").insert(rows).select("*"), "create studio jobs"); },
+    /** Moves a job on only from one of `fromStatuses` (null when it wasn't in one of them). */
+    async updateStudioJob(id, patch, fromStatuses) {
+      const rows = must(await db.from("cm_studio_jobs").update({ ...patch, updated_at: nowIso() }).eq("id", id).in("status", fromStatuses).select("*"), "update studio job");
+      return rows[0] ?? null;
+    },
+    /** The finished video of each Queue item: {idea id: path}. */
+    async studioJobVideos(ideaIds) {
+      if (!ideaIds.length) return {};
+      const rows = must(await db.from("cm_generations").select("idea_id, video_path").eq("kind", "making_of").in("idea_id", ideaIds), "studio videos");
+      return Object.fromEntries(rows.filter((r) => r.video_path).map((r) => [r.idea_id, r.video_path]));
+    },
+    /** What the Studio rows need to post a video: {idea id: {id, status, account, posts, packages}}. */
+    async studioJobIdeas(ideaIds) {
+      if (!ideaIds.length) return {};
+      const rows = must(await db.from("cm_ideas").select("id, status, account, cm_posts(platform, post_url), cm_generations(kind, cm_packages(*))").in("id", ideaIds), "studio ideas");
+      const order = ["tiktok", "youtube", "instagram"];
+      return Object.fromEntries(rows.map(({ cm_posts, cm_generations, ...r }) => [r.id, { ...r, posts: cm_posts ?? [],
+        packages: (cm_generations ?? []).filter((g) => g.kind === "making_of").flatMap((g) => g.cm_packages ?? []).sort((a, b) => order.indexOf(a.platform) - order.indexOf(b.platform)) }]));
+    },
+    async listStudioJobs(limit = 40) { return must(await db.from("cm_studio_jobs").select("*").order("created_at", { ascending: false }).limit(limit), "studio jobs"); },
   };
   return api;
 }

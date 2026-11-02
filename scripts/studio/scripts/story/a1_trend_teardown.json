@@ -1,0 +1,394 @@
+{
+ "variant": "a1_trend_teardown",
+ "title": "Why AI fruit videos go viral",
+ "template": "ai_fruit_story",
+ "voices": {
+  "kokoro": {
+   "creator": {
+    "voice": "am_liam",
+    "speed": 1.05
+   },
+   "zee": {
+    "voice": "af_bella",
+    "speed": 1.05
+   }
+  },
+  "default": "eleven",
+  "eleven": {
+   "creator": {
+    "id": "bIHbv24MWmeRgasZH58o",
+    "name": "Will - Relaxed Optimist (young, natural)",
+    "stability": 0.38,
+    "style": 0.45,
+    "speed": 1.03
+   },
+   "zee": {
+    "id": "cgSgspJ2msm6clMCkdW9",
+    "name": "Jessica - Playful, Bright, Warm",
+    "stability": 0.35,
+    "style": 0.5,
+    "speed": 1.03
+   }
+  }
+ },
+ "world": "factory",
+ "music_bpm": 92,
+ "music_shift": 0,
+ "no_phone": true,
+ "creation": "dinner",
+ "source_story": "721f55be-3249-4d9f-9f31-c466d933831b",
+ "search_title": null,
+ "caption": null,
+ "hashtags": null,
+ "lead": 0.15,
+ "gap_speaker": 0.2,
+ "gap_same": 0.16,
+ "tail": 0.7,
+ "music_db_under": 14,
+ "max_gap": 0.4,
+ "start_at": "creator_close",
+ "hq_dir": "video/studio/721f55be-3249-4d9f-9f31-c466d933831b/hq",
+ "headline": {
+  "text": "WHY DO PEOPLE WATCH *FRUIT CHEAT?*",
+  "chip": "WHY FRUIT DRAMA WORKS",
+  "secs": 8
+ },
+ "recipe": {
+  "angle": "A1",
+  "hook_type": "curiosity",
+  "length_bucket": "45-60",
+  "famous_name": false,
+  "end_trigger": "comment",
+  "kind": "video",
+  "template": "ai_fruit_story",
+  "world": "factory",
+  "template_shown": "ai_fruit_story",
+  "cta": "comment_who_worse",
+  "source_story": "721f55be-3249-4d9f-9f31-c466d933831b"
+ },
+ "cta": {
+  "id": "comment_who_worse",
+  "kind": "comment",
+  "chip": "KAI OR PIPER?"
+ },
+ "clips": [
+  {
+   "name": "glimpse",
+   "file": "video/studio/721f55be-3249-4d9f-9f31-c466d933831b/final.mp4",
+   "in": 0.02,
+   "out": 3.9,
+   "hq_dir": "video/studio/721f55be-3249-4d9f-9f31-c466d933831b/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 3
+  },
+  {
+   "name": "payoff",
+   "file": "video/studio/721f55be-3249-4d9f-9f31-c466d933831b/final.mp4",
+   "in": 3.96,
+   "out": 12.48,
+   "hq_dir": "video/studio/721f55be-3249-4d9f-9f31-c466d933831b/hq",
+   "fullscreen": true,
+   "enter": "grow",
+   "pre": 0.5,
+   "post": 0.1,
+   "duck_db": 22,
+   "after_line": 7,
+   "pays_loop": true
+  }
+ ],
+ "lines": [
+  {
+   "pose": "handsUp",
+   "who": "creator",
+   "text": "Wait. Why did a fruit dating show get thirty nine million views?",
+   "key": [
+    "million"
+   ],
+   "expr": "shocked",
+   "shot": "creator_close",
+   "role": "hook",
+   "stamp": "One show, reported by SAYS. Not platform data.",
+   "visual": {
+    "kind": "roll",
+    "value": 39,
+    "format": "M",
+    "label": "VIEWS ON ONE AI FRUIT SHOW",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "cues": [
+    {
+     "word": 9,
+     "event": "act|zee|smug|1.4"
+    },
+    {
+     "word": 0,
+     "event": "show1",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a1_trend_teardown/line01.mp3"
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "Because it's a formula. Three parts. And most people skip the third one.",
+   "key": [
+    "third"
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "stakes",
+   "listen": "thinking",
+   "visual": {
+    "kind": "sign",
+    "text": "3 PARTS",
+    "sub": "most people skip the last",
+    "scale": 0.72,
+    "up": 0.7
+   },
+   "take": "story/a1_trend_teardown/line02.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show2",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "chin",
+   "who": "creator",
+   "text": "Okay. Part one?",
+   "key": [
+    "one?"
+   ],
+   "expr": "thinking",
+   "shot": "creator_close",
+   "keep": true,
+   "role": "l2",
+   "take": "story/a1_trend_teardown/line03.mp3",
+   "cues": []
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Faces you can read in one second. A panicked cherry needs no backstory.",
+   "key": [
+    "second."
+   ],
+   "expr": "happy",
+   "shot": "prop_focus",
+   "role": "part1",
+   "listen": "happy",
+   "visual": {
+    "kind": "tiles",
+    "images": [
+     "/work/media/scene0.jpg",
+     "/work/media/scene1.jpg",
+     "/work/media/scene2.jpg"
+    ],
+    "scale": 1
+   },
+   "take": "story/a1_trend_teardown/line04.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show3",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "rest",
+   "who": "zee",
+   "text": "Part two: someone gets caught in the very first line. No intro.",
+   "key": [
+    "caught"
+   ],
+   "expr": "smug",
+   "shot": "zee_close",
+   "role": "part2",
+   "visual": {
+    "kind": "sign",
+    "text": "CAUGHT IN LINE ONE",
+    "rim": "#FF6B6B"
+   },
+   "take": "story/a1_trend_teardown/line05.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show4",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "shrug",
+   "who": "creator",
+   "text": "So what's the part people skip?",
+   "key": [
+    "skip?"
+   ],
+   "expr": "thinking",
+   "shot": "creator_close",
+   "role": "ask3",
+   "keep": true,
+   "take": "story/a1_trend_teardown/line06.mp3",
+   "cues": []
+  },
+  {
+   "pose": "pointUp",
+   "who": "zee",
+   "text": "Stop before it's solved. No ending means people argue in the comments.",
+   "key": [
+    "ending"
+   ],
+   "expr": "smug",
+   "shot": "two_shot",
+   "role": "part3",
+   "stamp": "My read of the format, not a study.",
+   "listen": "shocked",
+   "visual": {
+    "kind": "sign",
+    "text": "NO ENDING = COMMENTS",
+    "rim": "#FFD43B"
+   },
+   "take": "story/a1_trend_teardown/line07.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show5",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Watch it happen. Fifteen seconds, one idea.",
+   "key": [
+    "Fifteen"
+   ],
+   "expr": "happy",
+   "shot": "two_shot",
+   "role": "watch",
+   "visual": {
+    "kind": "conveyor",
+    "text": "IDEA",
+    "image": "/work/media/scene0.jpg"
+   },
+   "take": "story/a1_trend_teardown/line08.mp3",
+   "cues": [
+    {
+     "word": 0,
+     "event": "show6",
+     "sfx": "pop"
+    }
+   ]
+  },
+  {
+   "pose": "point",
+   "who": "zee",
+   "text": "Made with Zyvo. tryzyvo.com, link in bio.",
+   "say": "Made with Zyvo. Try zyvo dot com, link in bio.",
+   "key": [
+    "tryzyvo.com,"
+   ],
+   "expr": "happy",
+   "role": "site",
+   "cues": [
+    {
+     "word": 3,
+     "event": "site",
+     "sfx": "sparkle"
+    },
+    {
+     "word": 4,
+     "event": "bio",
+     "sfx": "pop"
+    },
+    {
+     "word": 0,
+     "event": "show7",
+     "sfx": "pop"
+    }
+   ],
+   "shot": "two_shot",
+   "visual": {
+    "kind": "sign",
+    "text": "tryzyvo.com",
+    "sub": "link in bio"
+   },
+   "take": "story/a1_trend_teardown/line09.mp3"
+  },
+  {
+   "pose": "wave",
+   "who": "zee",
+   "text": "Who's worse, Kai or Piper? Comment.",
+   "key": [
+    "worse,"
+   ],
+   "expr": "happy",
+   "role": "cta",
+   "cues": [
+    {
+     "word": 0,
+     "event": "cta",
+     "sfx": "pop"
+    }
+   ],
+   "take": "story/a1_trend_teardown/line10.mp3",
+   "shot": "two_shot"
+  }
+ ],
+ "shots": [
+  {
+   "to": "two_shot",
+   "at": "stakes.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "l2.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "prop_focus",
+   "at": "part1.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "zee_close",
+   "at": "part2.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "creator_close",
+   "at": "ask3.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  },
+  {
+   "to": "two_shot",
+   "at": "part3.start-0.55",
+   "dur": 0.85,
+   "kind": "pull"
+  }
+ ],
+ "events_extra": [
+  {
+   "t": 0,
+   "event": "open",
+   "sfx": "hit"
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "tFirstIso": "2026-10-29T20:55:49.015Z",
+ "log": [
+  {
+   "t": 0,
+   "what": "click idea \"Blind date with fake photos\" (timer starts)"
+  },
+  {
+   "t": 3.1,
+   "what": "next: settings"
+  },
+  {
+   "t": 5,
+   "what": "settings: V2, 30 sec, Tall 9:16"
+  },
+  {
+   "t": 5.8,
+   "what": "click \"Make scene pictures\" (paid, once)"
+  },
+  {
+   "t": 7.4,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"250\" | button \"\" | button[disabled] \"Single video One complete story\" | button \"V2 FAST & CHEAP\" | button \"V3 PRO\" | button \"V4 GENERATIVE\" | input \"30\" | button \"20 sec about 116\" | button \"30 sec about 174\" | button \"45 sec about 261\" | button \"1 min about 348\" | button \"Tall 9:16\""
+  },
+  {
+   "t": 49.4,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"250\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Painting scenes · 0 of 6\" | button[disabled] \"Edit 4\" | button[disabled] \"Regenerate 4\""
+  },
+  {
+   "t": 56.5,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"226\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Painting scenes · 0 of 6\" | button[disabled] \"Edit 4\" | button[disabled] \"Regenerate 4\""
+  },
+  {
+   "t": 64.5,
+   "what": "click \"Animate all scenes\" (paid, once)"
+  },
+  {
+   "t": 66.1,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"226\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Animating · 0 of 6\" | button[disabled] \"Regenerate clip 20\" | button[disabled] \"Regenerate clip 25\""
+  },
+  {
+   "t": 80.2,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"91\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Animating · 0 of 6\" | button[disabled] \"Regenerate clip 20\" | button[disabled] \"Regenerate clip 25\""
+  },
+  {
+   "t": 157.4,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"91\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Animating · 1 of 6\" | button \"Regenerate clip 20\" | button[disabled] \"Regenerate clip 20\" | button[disabled] \"Regenerate clip 25\""
+  },
+  {
+   "t": 178.2,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"91\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Animating · 4 of 6\" | button \"Regenerate clip 20\" | button \"Regenerate clip 25\" | button[disabled] \"Regenerate clip 25\" | button[disabled] \"Regenerate clip 20\""
+  },
+  {
+   "t": 200.8,
+   "what": "click \"Make final video\" (paid, once)"
+  },
+  {
+   "t": 202.4,
+   "what": "controls: button \"✕\" | button \"Learn more →\" | button \"91\" | button \"\" | button \"Single video One complete story\" | button[disabled] \"Making your video…\" | button[disabled] \"Regenerate clip 20\" | button[disabled] \"Regenerate clip 25\""
+  },
+  {
+   "t": 230.2,
+   "what": "FINAL VIDEO READY (timer stops)"
+  },
+  {
+   "t": 232.9,
+   "what": "credits left on screen: 91; total 232.9 s from the first click"
+  }
+ ]
+}
