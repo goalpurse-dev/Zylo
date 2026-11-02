@@ -13,7 +13,7 @@ import { PRICING_PLANS } from "../../lib/pricingOutputs";
 import { saveMediaToDevice } from "../../lib/downloadMedia";
 import { cutawayServer, PRICES } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
 import { Confetti } from "../../components/onboarding/FirstGenFlow.jsx";
-import { browserId, FIRST_VIDEO_PATH, trackFunnel } from "../../lib/onboarding";
+import { adminPreviewMode, browserId, DEMO_POSTER, DEMO_STATE, DEMO_VIDEO, endAdminPreview, FIRST_VIDEO_PATH, trackFunnel } from "../../lib/onboarding";
 
 const PLAN_IDS = ["starter", "pro", "generative"];
 const BEST_VALUE = "pro";
@@ -62,7 +62,7 @@ function Rendering({ run }) {
 
 // The clip, big. With sound when the browser allows it, a "Tap for sound" button when it doesn't; no download, and at the
 // end the last frame stays, blurred, under the lock.
-function PreviewPlayer({ src, poster, locked, onEnded, lockLine = "Upgrade to finish your video", onUnlock }) {
+function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine = "Upgrade to finish your video", onUnlock }) {
   const ref = useRef(null);
   const [muted, setMuted] = useState(false);
   useEffect(() => {
@@ -73,7 +73,7 @@ function PreviewPlayer({ src, poster, locked, onEnded, lockLine = "Upgrade to fi
   }, [src, locked]);
   return (
     <div className="relative mx-auto aspect-[9/16] w-full max-w-[320px] overflow-hidden rounded-3xl border border-white/10 bg-black" onContextMenu={(e) => e.preventDefault()} data-testid="first-video-player">
-      <video ref={ref} src={src} poster={poster} playsInline controlsList="nodownload" disablePictureInPicture onEnded={onEnded} muted={muted} className={`h-full w-full object-cover transition duration-500 ${locked ? "scale-105 blur-md brightness-50" : ""}`} />
+      <video ref={ref} src={src} poster={poster} playsInline controlsList="nodownload" disablePictureInPicture onEnded={onEnded} onTimeUpdate={stopAt ? (e) => { if (!locked && e.currentTarget.currentTime >= stopAt) { e.currentTarget.pause(); onEnded(); } } : undefined} muted={muted} className={`h-full w-full object-cover transition duration-500 ${locked ? "scale-105 blur-md brightness-50" : ""}`} />
       {!locked && muted && (
         <button type="button" data-testid="first-video-sound" onClick={() => { const v = ref.current; if (v) { v.muted = false; v.play().catch(() => {}); } setMuted(false); }}
           className="absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-2 rounded-full bg-lime-300 px-4 py-2 text-[14px] font-black text-[#11150D] shadow-lg">
@@ -90,11 +90,12 @@ function PreviewPlayer({ src, poster, locked, onEnded, lockLine = "Upgrade to fi
   );
 }
 
-function Plans({ runId, hasVideo }) {
+function Plans({ runId, hasVideo, adminLook = false }) {
   const prices = usePlanPrices();
   const pay = usePaymentAction();
   const videosFor = (planId) => Math.floor(PRICING_PLANS[planId].credits / PRICES.video.credits.premade[30]);
-  const choose = (planId) => pay.run(planId, () => startCheckout({
+  const [adminNote, setAdminNote] = useState(false);
+  const choose = (planId) => adminLook ? setAdminNote(true) : pay.run(planId, () => startCheckout({
     type: "subscription", planId, billing: "monthly",
     successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
     cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}`,
@@ -122,6 +123,7 @@ function Plans({ runId, hasVideo }) {
           );
         })}
       </div>
+      {adminNote && <p className="mt-3 text-center text-[13px] font-bold text-amber-200" role="status">Admin preview: a customer goes to Stripe here.</p>}
       <p className="mt-3 text-center text-[12px] text-white/40">Monthly{prices.status === "ready" && prices.prices?.vatIncluded ? ", VAT included" : ""}. Cancel anytime. <Link to="/pricing" className="underline underline-offset-2">See all plans</Link></p>
     </section>
   );
@@ -147,7 +149,20 @@ function Finished({ run }) {
   );
 }
 
+// The owner's look: says so on every screen, nothing a customer would see.
+function AdminBar({ mode, onFinished, onExit }) {
+  return (
+    <div className="fixed inset-x-0 top-0 z-[60] flex items-center justify-center gap-3 bg-amber-300 px-3 py-1.5 text-[12px] font-bold text-black" data-testid="first-video-admin-bar">
+      <span>{mode === "demo" ? "Admin preview: nothing saved, charged or rendered" : "Admin preview: a real render, no checkout"}</span>
+      {mode === "demo" && <button type="button" onClick={onFinished} className="underline">Finished screen</button>}
+      <button type="button" onClick={onExit} className="underline">Exit</button>
+    </div>
+  );
+}
+
 export default function FirstVideo() {
+  const adminMode = adminPreviewMode();
+  const demo = adminMode === "demo";
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -165,18 +180,18 @@ export default function FirstVideo() {
   useEffect(() => { document.title = "Your first video | Zyvo"; }, []);
 
   const load = useCallback(async () => {
-    const s = await cutawayServer.freePreviewState();
+    const s = demo ? DEMO_STATE : await cutawayServer.freePreviewState({ force: adminMode === "real" });
     setState(s);
     if (s?.preview) setRun(s.preview);
     if (s?.finish) setFinish(s.finish);
     return s;
-  }, []);
+  }, [adminMode, demo]);
 
   const leave = useCallback(async (skipped) => {
     if (skipped) trackFunnel("tutorial_skipped", { step: run ? 2 : picked ? 2 : 1 });
-    await supabase.rpc("finish_onboarding_tutorial").then(() => {}, () => {});
+    if (!adminMode) await supabase.rpc("finish_onboarding_tutorial").then(() => {}, () => {});
     navigate("/");
-  }, [navigate, picked, run]);
+  }, [adminMode, navigate, picked, run]);
 
   useEffect(() => {
     if (loading || !user) return;
@@ -190,7 +205,7 @@ export default function FirstVideo() {
 
   // the preview being made
   useEffect(() => {
-    if (!run || !["queued", "script", "scene", "render"].includes(run.step)) return undefined;
+    if (demo || !run || !["queued", "script", "scene", "render"].includes(run.step)) return undefined;
     const t = setTimeout(() => cutawayServer.status(run.id).then((r) => { if (r) setRun(r); }).catch(() => setRun((cur) => ({ ...cur }))), POLL_MS);
     return () => clearTimeout(t);
   }, [run]);
@@ -219,8 +234,17 @@ export default function FirstVideo() {
     setStarting(true);
     setNotice(null);
     trackFunnel("tutorial_step_completed", { step: 2, topic: picked });
+    if (demo) {
+      // the stages as a customer sees them, sped up
+      setRun({ id: "demo", step: "queued" });
+      setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 45 }), 1500);
+      setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 90 }), 3000);
+      setTimeout(() => setRun({ id: "demo", step: "done", finalUrl: DEMO_VIDEO, poster: DEMO_POSTER }), 4500);
+      setStarting(false);
+      return;
+    }
     try {
-      setRun(await cutawayServer.startFreePreview({ topicKey: picked, deviceId: browserId() }));
+      setRun(await cutawayServer.startFreePreview({ topicKey: picked, deviceId: browserId(), force: adminMode === "real" }));
     } catch (e) {
       if (e?.code === "PREVIEW_LIMIT" || e?.code === "PREVIEW_USED") { setBlocked(true); setNotice(e.message); trackFunnel("upgrade_screen_shown", { blocked: e.code }); }
       else setNotice(e?.message ?? "That didn't work. Please try again.");
@@ -239,12 +263,13 @@ export default function FirstVideo() {
     showPlans();
   };
 
-  const screen = "flex min-h-[100dvh] w-full flex-col bg-[#090A0A] px-4 pb-10 pt-4 text-white";
+  const adminBar = adminMode ? <AdminBar mode={adminMode} onFinished={() => { setRun(null); setFinish({ id: "demo", step: "done", finalUrl: DEMO_VIDEO, poster: DEMO_POSTER, title: "Demo" }); }} onExit={() => { endAdminPreview(); navigate("/"); }} /> : null;
+  const screen = `flex min-h-[100dvh] w-full flex-col bg-[#090A0A] px-4 pb-10 ${adminMode ? "pt-10" : "pt-4"} text-white`;
   const column = "mx-auto my-auto flex w-full max-w-[460px] flex-col items-center py-4";
 
   // ---------- after the upgrade ----------
   if (paidReturn || (finish && !run)) {
-    if (finish?.step === "done") return <div className={screen}><div className={column}><Finished run={finish} /></div></div>;
+    if (finish?.step === "done") return <div className={screen}>{adminBar}<div className={column}><Finished run={finish} /></div></div>;
     const failed = finish?.step === "failed";
     return (
       <div className={screen}><div className={column}>
@@ -282,14 +307,14 @@ export default function FirstVideo() {
         </div></div>
       );
     }
-    if (run.step !== "done") return <div className={screen}><div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
+    if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
     return (
-      <div className={screen}><div className={column} ref={plansRef}>
+      <div className={screen}>{adminBar}<div className={column} ref={plansRef}>
         {!locked && <Confetti />}
         <h1 className="mb-4 text-center text-[26px] font-black leading-tight tracking-tight text-white">Your first video is coming to life 🎉</h1>
-        <PreviewPlayer src={run.finalUrl} poster={locked ? run.poster : undefined} locked={locked} onEnded={clipEnded} onUnlock={showPlans} />
+        <PreviewPlayer src={run.finalUrl} poster={locked ? run.poster : undefined} locked={locked} onEnded={clipEnded} onUnlock={showPlans} stopAt={demo ? 10 : undefined} />
         {!locked && <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/50"><Volume2 className="h-4 w-4" /> Your free 10-second preview</p>}
-        {locked && <Plans runId={run.id} hasVideo />}
+        {locked && <Plans runId={run.id} hasVideo adminLook={Boolean(adminMode)} />}
         <button type="button" onClick={() => leave(false)} className="mt-5 text-[13px] font-semibold text-white/40">Not now</button>
       </div></div>
     );
@@ -299,6 +324,7 @@ export default function FirstVideo() {
   const step = picked ? 2 : 1;
   return (
     <div className={screen} data-testid="first-video-tutorial">
+      {adminBar}
       <div className="flex items-center justify-between">
         <Dots step={step} />
         <button type="button" data-testid="first-video-skip" onClick={() => leave(true)} className="text-[13px] font-semibold text-white/40 transition hover:text-white/70">Skip</button>

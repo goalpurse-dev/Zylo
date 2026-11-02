@@ -39,7 +39,7 @@ function AnswerCard({ emoji, label, picked, onClick, testId }) {
   );
 }
 
-export default function OnboardingSurvey({ onDone }) {
+export default function OnboardingSurvey({ onDone, preview = false }) {
   const [step, setStep] = useState(1);
   const [goals, setGoals] = useState([]);
   const [experience, setExperience] = useState(null);
@@ -51,6 +51,7 @@ export default function OnboardingSurvey({ onDone }) {
   const answered = (question, answer) => trackFunnel("survey_answer", { question, answer });
   const finish = async (skipped) => {
     if (saving) return;
+    if (preview) { onDone({ goals, skipped }); return; } // the owner's look: no answers saved
     setSaving(true);
     trackFunnel(skipped ? "survey_skipped" : "survey_completed", skipped ? { atStep: step } : {});
     const { error } = await supabase.rpc("save_onboarding_survey", {

@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
-import { FIRST_VIDEO_PATH, fetchOnboardingStatus, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
+import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
 import { hasCheckoutIntent } from "../../lib/payments";
 
 const OnboardingSurvey = lazy(() => import("./OnboardingSurvey.jsx"));
@@ -17,6 +17,7 @@ export default function OnboardingGate() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showSurvey, setShowSurvey] = useState(false);
+  const [previewSurvey, setPreviewSurvey] = useState(false);
   const userId = user?.id ?? null;
 
   // A new account, once in this browser: the funnel's signed_up (the server counts it once anyway) and the welcome email
@@ -33,8 +34,18 @@ export default function OnboardingGate() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loading]);
 
+  // ?onboarding=force: the owner's look at the whole flow, from the survey on. Anyone else: nothing happens.
+  const force = new URLSearchParams(location.search);
+  const forceMode = force.get("onboarding") === "force" ? (force.get("real") === "1" ? "real" : "demo") : null;
   useEffect(() => {
-    if (!userId || loading || WAIT_ON.some((p) => location.pathname.startsWith(p))) return undefined;
+    if (!userId || loading || !forceMode) return undefined;
+    let live = true;
+    beginAdminPreview(forceMode).then((ok) => { if (live && ok) { setPreviewSurvey(true); setShowSurvey(true); } });
+    return () => { live = false; };
+  }, [userId, loading, forceMode]);
+
+  useEffect(() => {
+    if (!userId || loading || forceMode || WAIT_ON.some((p) => location.pathname.startsWith(p))) return undefined;
     // Someone on their way to Stripe pays first: they answer when they are back.
     if (hasCheckoutIntent()) return undefined;
     let live = true;
@@ -45,8 +56,9 @@ export default function OnboardingGate() {
   if (!showSurvey) return null;
   return (
     <Suspense fallback={null}>
-      <OnboardingSurvey onDone={() => {
+      <OnboardingSurvey preview={previewSurvey} onDone={() => {
         setShowSurvey(false);
+        if (previewSurvey) { navigate(FIRST_VIDEO_PATH); return; }
         fetchOnboardingStatus(userId, { fresh: true });
         // Long Form keeps its own free preview, already on its way: no tutorial on top of it.
         if (!location.pathname.startsWith("/long-form")) navigate(FIRST_VIDEO_PATH);

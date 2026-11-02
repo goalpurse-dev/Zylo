@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { FIRST_VIDEO_PATH, fetchOnboardingStatus } from "../../lib/onboarding";
+import { DEMO_POSTER, DEMO_STATE, FIRST_VIDEO_PATH, adminPreviewMode, fetchOnboardingStatus } from "../../lib/onboarding";
 import { cutawayServer } from "../viral-tools/cutaway-explainer/api/cutawayApi";
 
 export default function FirstVideoHomeCard() {
@@ -13,9 +13,11 @@ export default function FirstVideoHomeCard() {
   useEffect(() => {
     if (loading || !user?.id) return undefined;
     let live = true;
+    const adminMode = adminPreviewMode();
+    if (adminMode === "demo") { setState({ ...DEMO_STATE, preview: { step: "done", poster: DEMO_POSTER } }); return undefined; }
     fetchOnboardingStatus(user.id).then((status) => {
-      if (!status.enrolled) return null;
-      return cutawayServer.freePreviewState().then((s) => { if (live) setState(s); });
+      if (!status.enrolled && adminMode !== "real") return null;
+      return cutawayServer.freePreviewState({ force: adminMode === "real" }).then((s) => { if (live) setState(s); });
     }).catch(() => {});
     return () => { live = false; };
   }, [loading, user?.id]);

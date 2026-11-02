@@ -171,9 +171,11 @@ async function previewTopics(goals: string[]) {
     return { key, topic: premadeByKey(key)?.topic ?? key, hook: premadeByKey(key)?.hook ?? "", title: plan.title, clipUrl: dir ? await getUrl(admin, `${dir}/web.mp4`, 3600) : null, poster: dir ? await getUrl(admin, `${dir}/poster.jpg`, 3600) : null };
   }));
 }
-async function freePreviewState(who: any) {
+// force: the owner's look at the flow, on any plan, at any rollout (?onboarding=force&real=1). Ignored for anyone else.
+async function freePreviewState(who: any, body: any = {}) {
+  const forced = who.owner && body?.force === true;
   const { settings, onboarding, existing } = await previewFacts(who.user.id);
-  const on = Boolean(settings?.free_preview_on && onboarding?.enrolled);
+  const on = forced || Boolean(settings?.free_preview_on && onboarding?.enrolled);
   const live = existing && existing.status !== "failed" ? existing : null;
   const { data: run } = live?.run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.run_id).maybeSingle() : { data: null };
   const { data: finish } = live?.finish_run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.finish_run_id).maybeSingle() : { data: null };
@@ -187,7 +189,12 @@ async function freePreviewState(who: any) {
 }
 async function startFreePreview(req: Request, who: any, body: any) {
   const key = String(body?.topicKey ?? "");
-  const { settings, onboarding, existing } = await previewFacts(who.user.id);
+  const forced = who.owner && body?.force === true;
+  const facts = await previewFacts(who.user.id);
+  const { settings, onboarding } = facts;
+  // the owner can look again: an earlier failed look is cleared, the money cap below still counts
+  if (forced && facts.existing?.status === "failed") await admin.from("cutaway_free_previews").delete().eq("user_id", who.user.id);
+  const existing = forced && facts.existing?.status === "failed" ? null : facts.existing;
   const since = new Date(Date.now() - PREVIEW.windowDays * 86400000).toISOString();
   const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || req.headers.get("cf-connecting-ip") || "";
   const device = String(body?.deviceId ?? "").slice(0, 80);
@@ -202,7 +209,7 @@ async function startFreePreview(req: Request, who: any, body: any) {
     PREVIEW_TOPIC_KEYS.includes(key) ? admin.from("cutaway_preview_plans").select("source_run").eq("topic_key", key).eq("active", true).maybeSingle() : Promise.resolve({ data: null }),
     count("ip_hash", ipHash), count("device_hash", deviceHash), freePreviewSpend(),
   ]);
-  const d = previewDecision({ switchOn: Boolean(settings?.free_preview_on) && !PAID_OFF, enrolled: Boolean(onboarding?.enrolled), plan: who.plan, existing, ipCount, deviceCount, spent24h, capUsd: Number(settings?.free_preview_daily_cap_usd ?? 0), hasPlan: Boolean(plan) });
+  const d = previewDecision({ switchOn: (forced || Boolean(settings?.free_preview_on)) && !PAID_OFF, enrolled: forced || Boolean(onboarding?.enrolled), plan: forced ? "free" : who.plan, existing, ipCount, deviceCount, spent24h, capUsd: Number(settings?.free_preview_daily_cap_usd ?? 0), hasPlan: Boolean(plan) });
   if (!d.ok) {
     if (d.code === "PREVIEW_USED" && existing?.run_id) { const { data: cur } = await admin.from("cutaway_runs").select("*").eq("id", existing.run_id).maybeSingle(); if (cur) return await viewOf(admin, cur); }
     throw new ApiError(d.code as any, d.message);
@@ -320,7 +327,7 @@ async function handle(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
 
   // ---------- the free 10 s preview of the new-user tutorial (freePreview.js) ----------
-  if (action === "freePreviewState") return await freePreviewState(who);
+  if (action === "freePreviewState") return await freePreviewState(who, body);
   if (action === "startFreePreview") return await startFreePreview(req, who, body);
   if (action === "finishFreePreview") {
     const run = await startGiftFinish(admin, who.user.id);
