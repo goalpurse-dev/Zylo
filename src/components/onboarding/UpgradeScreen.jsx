@@ -20,13 +20,16 @@ const OTHER_PLANS = ["pro", "generative"];
 const videosFor = (planId) => Math.floor(PRICING_PLANS[planId].credits / PRICES.video.credits.premade[30]);
 const QUIET = "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-2 text-[14px] font-bold text-white/80 transition hover:border-white/35 hover:text-white";
 
-export function usePlanCheckout(adminLook) {
+// plain: no video to finish, so Stripe returns to the normal success page (the tutorial's ?paid=1 would wait for a video forever).
+export function usePlanCheckout(adminLook, { plain = false } = {}) {
   const pay = usePaymentAction();
   const [adminNote, setAdminNote] = useState(false);
   const choose = (planId) => (adminLook ? setAdminNote(true) : pay.run(planId, () => startCheckout({
     type: "subscription", planId, billing: "monthly",
-    successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
-    cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?unlock=1`,
+    ...(plain ? {} : {
+      successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
+      cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?unlock=1`,
+    }),
   })));
   return { choose, busy: pay.busy, adminNote };
 }

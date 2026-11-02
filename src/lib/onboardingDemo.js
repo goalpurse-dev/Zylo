@@ -15,7 +15,7 @@ export const DEMO_POSTER = "/onboarding/demo/french_drain.jpg";
 
 export function demoPreviewRun(key) {
   const known = TOPICS[key] ? key : "french_drain", t = TOPICS[known];
-  return { id: "demo", step: "done", finalUrl: t.video, poster: `/onboarding/demo/${known}.jpg`, narration: t.narration, lengthSec: 30 };
+  return { id: "demo", step: "done", topic: t.topic, finalUrl: t.video, poster: `/onboarding/demo/${known}.jpg`, narration: t.narration, lengthSec: 30 };
 }
 
 export function demoStateFor(goals = lastSurveyGoals()) {

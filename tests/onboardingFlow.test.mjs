@@ -112,6 +112,36 @@ test("compare plans uses live data; phones keep one sticky button", () => {
   assert.match(up, /className="ob-fade /, "a transform here would pin the sticky button to the section");
 });
 
+test("sign-up on phones: no clips rendered at all", () => {
+  const auth = read("src/components/auth/AuthSplit.jsx");
+  assert.match(auth, /if \(!useIsDesktop\(\)\) return null;/);
+  assert.match(auth, /\(min-width: 1024px\)/);
+});
+
+test("Home's Long Form card and What's new art come with the site, not from storage", () => {
+  const home = read("src/components/home-v2/HomeV2Sections.jsx");
+  assert.match(home, /media=\{<img src="\/home\/long-form-card\.webp"/);
+  assert.match(home, /HUNT_THUMBS = \["\/home\/launch\/spear-or-patience\.jpg"/);
+  for (const f of ["public/home/long-form-card.webp", "public/home/launch/spear-or-patience.jpg", "public/home/launch/how-did-this-kill.jpg", "public/home/launch/what-does-it-prove.jpg"]) assert.ok(readFileSync(f).length > 1000, f);
+});
+
+test("after the payment: the finished video and straight on to the next one", () => {
+  const page = read("src/pages/onboarding/FirstVideo.jsx");
+  assert.match(page, /Make your next video/);
+  assert.match(page, /\$\{CUTAWAY_PATH\}\?topic=\$\{encodeURIComponent\(topic\)\}/);
+  assert.match(page, /eq\("offer_id", SIGNUP_BONUS\.id\)/, "the bonus chip only when the webhook really gave it");
+  assert.match(read("src/components/viral-tools/cutaway-explainer/CutawayStudio.jsx"), /get\("topic"\)/);
+});
+
+test("5 of 5 free images: the waiting video, or the plans; checkout never waits for a video that doesn't exist", () => {
+  const screen = read("src/components/onboarding/ImageLimitScreen.jsx");
+  assert.match(read("src/components/ImageGenerator/Generate.jsx"), /<ImageLimitScreen/);
+  assert.match(screen, /s\?\.plan === "free" && s\.preview\?\.step === "done" && !s\.finish/);
+  assert.match(screen, /usePlanCheckout\(demo, \{ plain: !run \}\)/);
+  assert.match(screen, /Maybe later/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /usePlanCheckout\(false, \{ plain: true \}\)/);
+});
+
 test("the upgrade screen: no discount or countdown, a real way out", () => {
   const up = read("src/components/onboarding/UpgradeScreen.jsx");
   assert.doesNotMatch(up, /30%|% off|countdown/i);

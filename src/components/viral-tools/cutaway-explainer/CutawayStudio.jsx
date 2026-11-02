@@ -33,7 +33,8 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
   const liveCustomOpen = useCutawayCustomOpen(mode), customOpen = mock?.customOpen ?? liveCustomOpen;
   const liveBeta = useCutawayCustomBeta(mode), customBeta = mock?.customBeta ?? liveBeta;
   const [mobilePanel, setMobilePanel] = useState(mock?.run ? "results" : "builder");
-  const [values, setValues] = useState(mock?.values ? { ...EMPTY, ...mock.values } : EMPTY);
+  // ?topic=Car%20wash: "Make your next video" after the first one opens with that topic picked
+  const [values, setValues] = useState(() => (mock?.values ? { ...EMPTY, ...mock.values } : { ...EMPTY, topic: (new URLSearchParams(window.location.search).get("topic") ?? "").slice(0, 80) }));
   const [notice, setNotice] = useState(mock?.notice ?? null); // a refusal from the server, shown above Generate
   const { run, recent, starting, start, open, reset, remove, approveLayout } = useCutawayRun({ mode, listOnMount, initialRun: mock?.run ?? null, initialRecent: mock?.recent ?? [] });
   // a finished video or an example is open: the Generate side shows what it was made with, read-only

@@ -1,21 +1,35 @@
 // The sign-up and login look, on the pages and in the pop-up: the pitch on the left, the form card on the right. On phones
-// a compact pitch comes first (three clips, no list), so the form stays near the top.
+// only the headline and the creator count come first, so the form stays near the top.
+import { useEffect, useState } from "react";
 import { Check, Users } from "lucide-react";
 import Logo from "../../assets/Logo.png";
 import { GoogleLogo } from "../onboarding/brandLogos.jsx";
 import { useCreatorCount } from "../../lib/creatorCount";
 
 const BENEFITS = ["Faceless videos for TikTok, Reels and Shorts", "3D explainers, stories and images in one place", "5 free images, no credit card needed"];
-// Short loops cut from our own videos (public/library and public/cutaway-explainer). The first three show on phones.
+// Short loops cut from our own videos (public/library and public/cutaway-explainer).
 const CLIPS = ["story", "cutaway", "xray", "skeleton"];
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Desktop only: on phones nothing renders, so nothing downloads and the form stays at the top (owner, 2026-11-02).
+function useIsDesktop() {
+  const query = "(min-width: 1024px)";
+  const [on, setOn] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query), change = () => setOn(mq.matches);
+    mq.addEventListener("change", change);
+    return () => mq.removeEventListener("change", change);
+  }, []);
+  return on;
+}
+
 function VideoStrip() {
   const still = reducedMotion();
+  if (!useIsDesktop()) return null;
   return (
-    <div className="mt-3 grid grid-cols-3 gap-2 lg:mt-6 lg:grid-cols-4 lg:gap-3" aria-hidden="true" data-testid="auth-videos">
-      {CLIPS.map((name, i) => (
-        <div key={name} className={`relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-[#151715] lg:aspect-[9/16] lg:rounded-2xl ${i === 3 ? "hidden lg:block" : ""}`}>
+    <div className="mt-6 grid grid-cols-4 gap-3" aria-hidden="true" data-testid="auth-videos">
+      {CLIPS.map((name) => (
+        <div key={name} className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 bg-[#151715]">
           {still
             ? <img src={`/onboarding/auth/${name}.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />
             : <video ref={(el) => { if (el) { el.muted = true; el.setAttribute("muted", ""); } }} src={`/onboarding/auth/${name}.mp4`} poster={`/onboarding/auth/${name}.jpg`} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture className="absolute inset-0 h-full w-full object-cover" />}

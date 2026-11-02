@@ -9,7 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { fetchShowcase, isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
 import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
-import { ShowcaseRow } from "../launch/LaunchUI.jsx";
+import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import { coverFor, fetchProjectCovers, projectTitle } from "../../pages/workspace/long-form/projectCovers";
 import { NeutralCover } from "../../pages/workspace/long-form/shared";
@@ -19,7 +19,8 @@ import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
 const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
-export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
+// Served with the site, so they load even when the storage server can't be reached.
+export const HUNT_THUMBS = ["/home/launch/spear-or-patience.jpg", "/home/launch/how-did-this-kill.jpg", "/home/launch/what-does-it-prove.jpg"];
 // Baked scene loops (scripts/bakeSceneLoop.mjs): 7 caption-free f90160bc
 // scenes, 3.5 s each with a slow zoom and crossfades, seamless, silent.
 // Same scenes, different order per card so the two never match.
@@ -121,9 +122,53 @@ function PathCard({ onClick, to, media, icon: Icon, name, line, cta, primary, is
   );
 }
 
+// Phones: four compact tiles instead of the two big cards, everything visible at once.
+const PHONE_TOOLS = [
+  { name: "Short Form", line: "Viral 9:16 clips", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", open: true, testId: "tool-short" },
+  { name: "Long Form", line: "8–15 min YouTube videos", image: "/home/long-form-card.webp", to: "/long-form", testId: "tool-long" },
+  { name: "3D Explainers", line: "See how things work", image: "/onboarding/demo/landfill.jpg", to: CUTAWAY_PATH, testId: "tool-explainers" },
+  { name: "Images", line: "5 free images", image: "/template/2am-world/preview.png", to: "/workspace/image-generator", testId: "tool-images" },
+];
+export function PhoneTools() {
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2.5 px-4 md:hidden" data-testid="phone-tools">
+      {PHONE_TOOLS.map((t) => {
+        const Tag = t.to ? Link : "button";
+        return (
+          <Tag key={t.name} {...(t.to ? { to: t.to, draggable: false } : { type: "button" })} data-testid={t.testId}
+            onClick={t.open ? () => { trackLaunch("path_short_form", { placement: "home_tools" }); window.dispatchEvent(new CustomEvent("zyvo:open-create-menu")); } : undefined}
+            className="relative block h-[118px] overflow-hidden rounded-2xl border border-white/10 bg-[#101312] text-left">
+            <img src={t.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 p-2.5">
+              <span className="block text-[15.5px] font-black leading-tight text-white">{t.name}</span>
+              <span className="block text-[11.5px] leading-snug text-white/75">{t.line}</span>
+            </span>
+          </Tag>
+        );
+      })}
+    </div>
+  );
+}
+
+// Phones: the first templates as tiles (the coverflow is for larger screens).
+export function PhoneTemplates({ items }) {
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2.5 px-4 md:hidden" data-testid="phone-templates">
+      {items.slice(0, 6).map((t) => (
+        <ToolLink key={t.name} to={t.path} className="relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 bg-[#101312]">
+          <img src={t.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+          <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+          <span className="absolute inset-x-0 bottom-0 p-2.5 text-[14px] font-black leading-tight text-white">{t.name}</span>
+        </ToolLink>
+      ))}
+    </div>
+  );
+}
+
 export function PathCards() {
   return (
-    <div className={`relative z-10 mx-auto mt-5 grid w-full ${HOME_MAX_W} gap-4 md:mt-6 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
+    <div className={`relative z-10 mx-auto mt-5 hidden w-full ${HOME_MAX_W} gap-4 md:mt-6 md:grid md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
       <PathCard
         testId="path-short"
         onClick={() => { trackLaunch("path_short_form", { placement: "home_hero" }); window.dispatchEvent(new CustomEvent("zyvo:open-create-menu")); }}
@@ -141,7 +186,7 @@ export function PathCards() {
         primary isNew={isLongFormNew()}
         to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "home_hero" })}
         icon={Clapperboard} name="Long Form" line="8–15 min YouTube explainers from one idea" cta="Start a video"
-        media={<LazyLoopVideo {...LONG_FORM_LOOP} className="h-full" priority />}
+        media={<img src="/home/long-form-card.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />}
       />
     </div>
   );
@@ -204,7 +249,7 @@ function BannerCard({ art, title, sub, cta, onClick, href, to, testId, display =
       </div>
     </>
   );
-  const cls = `group relative ${display} h-[180px] w-[84%] shrink-0 snap-start overflow-hidden rounded-[20px] border border-white/10 bg-[#101312] text-left transition hover:border-white/25 md:h-[196px] md:w-auto`;
+  const cls = `group relative ${display} h-[132px] w-full shrink-0 overflow-hidden rounded-[20px] border border-white/10 bg-[#101312] text-left transition hover:border-white/25 md:h-[196px] md:w-auto`;
   if (href) return <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className={cls} data-testid={testId}>{inner}</a>;
   if (to) return <Link to={to} draggable={false} onClick={onClick} className={cls} data-testid={testId}>{inner}</Link>;
   return <button type="button" onClick={onClick} className={cls} data-testid={testId}>{inner}</button>;
@@ -222,7 +267,7 @@ export function WhatsNewRow() {
     return () => { live = false; };
   }, []);
   const cards = [
-    <BannerCard key="lf" testId="wn-long-form" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
+    <BannerCard key="lf" testId="wn-long-form" display="hidden md:block" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "whats_new_row" })} />,
     hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
@@ -236,9 +281,10 @@ export function WhatsNewRow() {
   // Columns = the cards on screen: every card but "Earn" below 1920 px, all of them from there up.
   const columns = { 1: "md:grid-cols-1 min-[1920px]:grid-cols-2", 2: "md:grid-cols-2 min-[1920px]:grid-cols-3", 3: "md:grid-cols-3 min-[1920px]:grid-cols-4" }[cards.length - 1];
   return (
-    <section className={`mt-8 w-full ${SECTION_X}`} data-testid="whats-new-row">
+    // (phones leave out the Long Form card: with nothing else to show, no empty heading)
+    <section className={`mt-8 w-full ${SECTION_X} ${!hunt && !tutorial ? "hidden md:block" : ""}`} data-testid="whats-new-row">
       <SectionHeader title="What's new" subtitle="Fresh on Zyvo this week." />
-      <div className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden ${columns}`}>
+      <div className={`flex flex-col gap-3 md:grid md:gap-4 ${columns}`}>
         {cards}
       </div>
       {rewardsOpen && <CreatorRewardsModal onClose={() => { if (user) localStorage.setItem(`zyvo_creator_rewards_seen:${user.id}`, "1"); setRewardsOpen(false); }} />}
@@ -347,8 +393,8 @@ export function LongFormSection() {
     <section className={`mt-12 w-full ${SECTION_X}`} data-testid="long-form-section">
       <SectionHeader title="Make a YouTube video with Long Form" subtitle="8–15 minute explainers. You pick the idea, Zyvo does the rest." badge={isLongFormNew() ? <NewPill /> : null}
         action="Start a video" onAction={() => { trackLaunch("try_long_form", { placement: "home_how_it_works" }); navigate("/long-form"); }} />
-      <HowItWorks />
-      <Link to="/ai-stickman-video-generator" className="mt-4 inline-block text-[13px] font-semibold text-white/55 underline-offset-4 transition hover:text-lime-300 hover:underline">How the AI stickman video generator works →</Link>
+      <div className="hidden md:block"><HowItWorks /></div>
+      <Link to="/ai-stickman-video-generator" className="inline-block text-[13px] md:mt-4 font-semibold text-white/55 underline-offset-4 transition hover:text-lime-300 hover:underline">How the AI stickman video generator works →</Link>
 
       <div className="mb-3 mt-9 flex items-end justify-between gap-4">
         <div>
@@ -356,10 +402,11 @@ export function LongFormSection() {
           <p className="mt-0.5 text-sm text-white/40">Tap one to start a video in it.</p>
         </div>
       </div>
-      <div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:-mx-[50px] md:scroll-px-[50px] md:gap-4 md:px-[50px] [&::-webkit-scrollbar]:hidden" data-testid="niche-row">
-        {ALL_NICHES.map((n) => (
+      {/* phones: four whole cards, nothing cut off; larger screens: the full row to scroll */}
+      <div className="grid grid-cols-2 gap-3 pb-2 md:-mx-[50px] md:flex md:snap-x md:scroll-px-[50px] md:gap-4 md:overflow-x-auto md:px-[50px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" data-testid="niche-row">
+        {ALL_NICHES.map((n, i) => (
           <Link key={n.id} to="/long-form" draggable={false} onClick={(event) => openNiche(event, n.id)}
-            className="group block w-[190px] shrink-0 snap-start text-left md:w-[232px]">
+            className={`group min-w-0 shrink-0 snap-start text-left md:block md:w-[232px] ${i < 4 ? "block" : "hidden"}`}>
             <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-lime-300/45">
               <img {...optImg(`/images/niches/${n.id}.webp`, "232px", 480)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
             </div>
@@ -367,8 +414,6 @@ export function LongFormSection() {
           </Link>
         ))}
       </div>
-
-      <ShowcaseRow id="made-with-zyvo" placement="home" title="Made with Zyvo" subtitle="Long Form videos on YouTube, each one started from a single idea." className="mt-9 md:hidden" />
     </section>
   );
 }

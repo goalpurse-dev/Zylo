@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { optImg } from "../../lib/optImage";
 
-// `compact` (new Home): ~70% headline, no pill, tighter top spacing.
+// `compact` (new Home): ~70% headline, no pill, tighter top spacing; on phones a small headline and no line under it.
 export default function GlowHeader({ compact = false } = {}) {
   return (
     <section className={`relative w-full overflow-hidden ${compact ? "pt-3 sm:pt-4 md:pt-6" : "pt-4 sm:pt-7 md:pt-10"}`}>
@@ -14,14 +14,14 @@ export default function GlowHeader({ compact = false } = {}) {
           <span className="h-1.5 w-1.5 rounded-full bg-[#a970ff] shadow-[0_0_10px_#a970ff]" />
           AI creation suite for viral content
         </motion.div>}
-        <h1 className={`mx-auto max-w-4xl font-black leading-[1.04] tracking-[-0.045em] ${compact ? "text-[22px] sm:text-[26px] md:text-[36px] lg:text-[40px] xl:text-[45px]" : "text-[30px] sm:text-[36px] md:text-[52px] lg:text-[58px] xl:text-[64px]"}`}>
+        <h1 className={`mx-auto max-w-4xl font-black leading-[1.04] tracking-[-0.045em] ${compact ? "text-[19px] sm:text-[26px] md:text-[36px] lg:text-[40px] xl:text-[45px]" : "text-[30px] sm:text-[36px] md:text-[52px] lg:text-[58px] xl:text-[64px]"}`}>
           <span className="block text-white">
             AI Video Generator for{" "}
             <span className="bg-gradient-to-r from-[#d8c1ff] via-[#a970ff] to-[#e879f9] bg-clip-text text-transparent">YouTube, TikTok and Reels</span>
           </span>
         </h1>
         {/* The old headline, now the line under it. One text node, so it reads "to create" with its space. */}
-        <p className="mx-auto mt-2 max-w-2xl text-[15px] font-semibold text-white/65 sm:text-[17px] md:mt-3 md:text-[20px]">
+        <p className={`mx-auto mt-2 max-w-2xl text-[15px] font-semibold text-white/65 sm:text-[17px] md:mt-3 md:text-[20px] ${compact ? "hidden md:block" : ""}`}>
           What would you like to create today?
           <img
             {...optImg("/home/click.png", "44px", 96)}
