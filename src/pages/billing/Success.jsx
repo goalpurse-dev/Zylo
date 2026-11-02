@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { SUPPORT_EMAIL, clearPendingCheckout, readPendingCheckout } from "../../lib/payments";
 import { purchaseArrived } from "../../lib/purchaseArrived";
+import { OFFER } from "../../lib/useOffer";
 
 // Where Stripe Checkout returns after a payment (?session_id=cs_…). The plan
 // and credits are added by the Stripe webhook a few seconds later, so this page
@@ -45,6 +46,30 @@ export default function Success() {
     return () => { stopped = true; clearTimeout(timer); };
   }, [pending]);
 
+  // The +50 bonus offer: shown only when the webhook really gave it (offer_redemptions, the user's
+  // own row). It is given in the same webhook call as the plan, a moment after: look a few times.
+  const [bonus, setBonus] = useState(null);
+  useEffect(() => {
+    if (state.phase !== "active" || pending?.kind === "topup") return undefined;
+    let stopped = false, tries = 0, timer;
+    const look = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (stopped || !session?.user) return;
+      const { data: row } = await supabase.from("offer_redemptions").select("credits").eq("user_id", session.user.id).eq("offer_id", OFFER.id).maybeSingle();
+      if (stopped) return;
+      if (row?.credits) {
+        const { data: p } = await supabase.from("profiles").select("plan_code, credit_balance").eq("id", session.user.id).maybeSingle();
+        if (stopped) return;
+        setBonus(row.credits);
+        if (p) setState((s) => ({ ...s, profile: p }));
+        return;
+      }
+      if (++tries < 6) timer = setTimeout(look, POLL_MS);
+    };
+    look().catch(() => {});
+    return () => { stopped = true; clearTimeout(timer); };
+  }, [state.phase, pending]);
+
   const isPack = pending?.kind === "topup";
   const { phase, profile } = state;
   const planName = PLAN_NAMES[String(profile?.plan_code || "").toLowerCase()];
@@ -69,6 +94,11 @@ export default function Success() {
               {isPack || !planName ? <>Your credits are in. You now have <span className="font-bold text-white">{credits} credits</span>.</>
                 : <><span className="font-bold text-white">{planName}</span> is active and you have <span className="font-bold text-white">{credits} credits</span>.</>}
             </p>
+            {bonus && (
+              <p className="mt-3 inline-flex items-center rounded-lg bg-lime-300 px-3 py-1.5 text-[14px] font-black text-[#0B0D0F]" data-testid="offer-bonus-added">
+                +{bonus} bonus credits added
+              </p>
+            )}
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to="/" className={PRIMARY}>Start creating</Link>
               <Link to="/settings?tab=billing" className={SECONDARY}>View billing</Link>

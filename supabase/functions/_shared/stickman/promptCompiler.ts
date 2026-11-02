@@ -181,9 +181,14 @@ export function propName(block: string): string {
 
 // A beat's settingVariant (free text from the director) -> a canonical
 // variant: the variant whose name appears in it, else "default".
+// The variant whose name the scene asks for; else "default"; else the setting's first variant.
+// A model-made bible can name its variants freely ("sun_rocks", "hot_spring_ground") with none
+// called "default": returning "default" there read a missing variant and crashed the scene
+// ("reading 'midground'", 2026-10-25), which the ladder then took for a Runware outage.
 export function pickVariant(variants: Record<string, SettingVariant>, wanted: string | null | undefined): string {
   const w = String(wanted ?? "").toLowerCase();
-  return Object.keys(variants).find((k) => k !== "default" && w.includes(k.toLowerCase())) ?? "default";
+  const keys = Object.keys(variants ?? {});
+  return keys.find((k) => k !== "default" && w.includes(k.toLowerCase())) ?? (keys.includes("default") ? "default" : keys[0] ?? "default");
 }
 
 /* ============================ Frame / text ============================ */
@@ -588,7 +593,9 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
   const buildSetting = (settingId: string | null, dropMidground: boolean) => {
     const s = settingId ? set.settings[settingId] : null;
     if (!s) return { block: GRAPHIC_TREATMENTS.has(c.treatment) ? NO_SETTING_BLOCK : OWN_PLACE_SETTING_BLOCK, lighting: null as string | null };
-    const v = s.variants[pickVariant(s.variants, c.settingVariant)];
+    const v = s.variants?.[pickVariant(s.variants, c.settingVariant)];
+    // A setting with no variant at all: the scene describes its own place, like a scene with no setting.
+    if (!v) return { block: GRAPHIC_TREATMENTS.has(c.treatment) ? NO_SETTING_BLOCK : OWN_PLACE_SETTING_BLOCK, lighting: null as string | null };
     const block = settingBlock(s.name, v, { dropMidground });
     return { block: opts.noTextAnywhere ? scrubSettingForNoText(block) : block, lighting: v.lighting ? lightingLine(v) : null };
   };

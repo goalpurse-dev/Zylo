@@ -3,7 +3,7 @@
 //   node --env-file=.env.local scripts/phase6cQaCostCheck.mjs <publicImageUrl>
 const url = process.argv[2];
 const small = `${url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/")}?width=768&height=432&resize=contain&quality=85`;
-const key = process.env.OPENAI_API_KEY ?? process.env.VITE_OPENAI_API_KEY;
+const key = process.env.OPENAI_API_KEY;
 const SCHEMA = { type: "object", additionalProperties: false, required: ["ocr", "style", "cast", "concept"], properties: { ocr: { type: "string" }, style: { type: "boolean" }, cast: { type: "boolean" }, concept: { type: "boolean" } } };
 async function qa(imageUrl) {
   // Inline both copies (base64) so the comparison measures tokens, not download speed.

@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
 import { ERRORS } from "../_shared/cutaway/contract.js";
-import { LENGTHS, PRICES } from "../_shared/cutaway/pricing.js";
+import { LENGTHS, lengthsFor, PRICES } from "../_shared/cutaway/pricing.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
 import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
@@ -25,7 +25,8 @@ import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem,
 import { alertOnce } from "../_shared/adminAlert.ts";
 import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
 import { BUCKET, runDir } from "../_shared/cutaway/jobs.js";
-import { advance, CONFIG, dispatchNew, expectedUsd, layoutKeyOf, viewOf, watch } from "../_shared/cutaway/runtime.ts";
+import { PREVIEW, PREVIEW_TOPIC_KEYS, previewDecision, topicsForGoals } from "../_shared/cutaway/freePreview.js";
+import { advance, CONFIG, dispatchNew, expectedUsd, getUrl, layoutKeyOf, newRunFromPlan, startGiftFinish, viewOf, watch } from "../_shared/cutaway/runtime.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -140,6 +141,101 @@ const namedPremade = (topic: string) => { const c = classifyTopic(topic); return
 const topicKey = (topic: string) => normTopic(topic).replace(/^(a|an|the) /, "").replace(/\b(how|does|do|work|works|a|an|the)\b/g, " ").trim().replace(/\s+/g, "_").slice(0, 40);
 
 // ---------- actions ----------
+// ---------- the free preview ----------
+const hash = async (salt: string, value: string) => {
+  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`zyvo-preview:${salt}:${value}`)));
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+async function previewFacts(userId: string) {
+  const [{ data: settings }, { data: onboarding }, { data: existing }] = await Promise.all([
+    admin.from("onboarding_settings").select("*").eq("id", 1).maybeSingle(),
+    admin.from("user_onboarding").select("enrolled, goals").eq("user_id", userId).maybeSingle(),
+    admin.from("cutaway_free_previews").select("*").eq("user_id", userId).maybeSingle(),
+  ]);
+  return { settings, onboarding, existing };
+}
+async function freePreviewSpend() {
+  const since = new Date(Date.now() - 86400000).toISOString();
+  const { data, error } = await admin.from("cutaway_runs").select("status, cost_usd").eq("free_preview", true).gte("created_at", since);
+  if (error) return Infinity; // fails closed
+  return (data ?? []).reduce((a: number, r: any) => a + (["done", "failed"].includes(r.status) ? Number(r.cost_usd) || 0 : Math.max(Number(r.cost_usd) || 0, PREVIEW.expectedUsd)), 0);
+}
+/** the videos on offer: a ready shared plan, in the order the survey's first answer asks for, each with its own clip */
+async function previewTopics(goals: string[]) {
+  const [{ data: plans }, approved] = await Promise.all([admin.from("cutaway_preview_plans").select("topic_key, source_run, title").eq("active", true), approvedKeys()]);
+  const ready = (plans ?? []).filter((p: any) => approved.has(p.topic_key));
+  const order = topicsForGoals(goals, PREVIEW_TOPIC_KEYS.length).filter((k: string) => ready.some((p: any) => p.topic_key === k)).slice(0, 3);
+  const { data: sources } = await admin.from("cutaway_runs").select("*").in("id", ready.map((p: any) => p.source_run));
+  return await Promise.all(order.map(async (key: string) => {
+    const plan = ready.find((p: any) => p.topic_key === key), source = (sources ?? []).find((r: any) => r.id === plan.source_run), dir = source ? runDir(source) : null;
+    return { key, topic: premadeByKey(key)?.topic ?? key, hook: premadeByKey(key)?.hook ?? "", title: plan.title, clipUrl: dir ? await getUrl(admin, `${dir}/web.mp4`, 3600) : null, poster: dir ? await getUrl(admin, `${dir}/poster.jpg`, 3600) : null };
+  }));
+}
+// force: the owner's look at the flow, on any plan, at any rollout (?onboarding=force&real=1). Ignored for anyone else.
+async function freePreviewState(who: any, body: any = {}) {
+  const forced = who.owner && body?.force === true;
+  const { settings, onboarding, existing } = await previewFacts(who.user.id);
+  const on = forced || Boolean(settings?.free_preview_on && onboarding?.enrolled);
+  const live = existing && existing.status !== "failed" ? existing : null;
+  const { data: run } = live?.run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.run_id).maybeSingle() : { data: null };
+  const { data: finish } = live?.finish_run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.finish_run_id).maybeSingle() : { data: null };
+  return {
+    on, plan: who.plan,
+    preview: run ? await viewOf(admin, run) : null,
+    finish: finish ? await viewOf(admin, finish) : null,
+    paid: Boolean(live?.paid_at),
+    topics: on && !live ? await previewTopics(onboarding?.goals ?? []) : [],
+  };
+}
+async function startFreePreview(req: Request, who: any, body: any) {
+  const key = String(body?.topicKey ?? "");
+  const forced = who.owner && body?.force === true;
+  const facts = await previewFacts(who.user.id);
+  const { settings, onboarding } = facts;
+  // the owner can look again: an earlier failed look is cleared, the money cap below still counts
+  if (forced && facts.existing?.status === "failed") await admin.from("cutaway_free_previews").delete().eq("user_id", who.user.id);
+  const existing = forced && facts.existing?.status === "failed" ? null : facts.existing;
+  const since = new Date(Date.now() - PREVIEW.windowDays * 86400000).toISOString();
+  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || req.headers.get("cf-connecting-ip") || "";
+  const device = String(body?.deviceId ?? "").slice(0, 80);
+  const ipHash = ip ? await hash("ip", ip) : null, deviceHash = device ? await hash("device", device) : null;
+  const count = async (col: string, value: string | null) => {
+    if (!value) return 0;
+    const { count: n, error } = await admin.from("cutaway_free_previews").select("user_id", { count: "exact", head: true }).eq(col, value).neq("status", "failed").neq("user_id", who.user.id).gte("created_at", since);
+    if (error) throw new ApiError("BUSY", undefined, {}, error.message); // fails closed
+    return n ?? 0;
+  };
+  const [{ data: plan }, ipCount, deviceCount, spent24h] = await Promise.all([
+    PREVIEW_TOPIC_KEYS.includes(key) ? admin.from("cutaway_preview_plans").select("source_run").eq("topic_key", key).eq("active", true).maybeSingle() : Promise.resolve({ data: null }),
+    count("ip_hash", ipHash), count("device_hash", deviceHash), freePreviewSpend(),
+  ]);
+  const d = previewDecision({ switchOn: (forced || Boolean(settings?.free_preview_on)) && !PAID_OFF, enrolled: forced || Boolean(onboarding?.enrolled), plan: forced ? "free" : who.plan, existing, ipCount, deviceCount, spent24h, capUsd: Number(settings?.free_preview_daily_cap_usd ?? 0), hasPlan: Boolean(plan) });
+  if (!d.ok) {
+    if (d.code === "PREVIEW_USED" && existing?.run_id) { const { data: cur } = await admin.from("cutaway_runs").select("*").eq("id", existing.run_id).maybeSingle(); if (cur) return await viewOf(admin, cur); }
+    throw new ApiError(d.code as any, d.message);
+  }
+  // the one preview: a row in this table, on the server. Two starts at once can't both get it.
+  const row = { user_id: who.user.id, topic_key: key, ip_hash: ipHash, device_hash: deviceHash, status: "reserved", run_id: null, updated_at: new Date().toISOString() };
+  if (existing) {
+    const { data: taken } = await admin.from("cutaway_free_previews").update(row).eq("user_id", who.user.id).eq("status", "failed").select("user_id");
+    if (!taken?.length) throw new ApiError("PREVIEW_USED");
+  } else {
+    const { error } = await admin.from("cutaway_free_previews").insert(row);
+    if (error?.code === "23505") throw new ApiError("PREVIEW_USED");
+    if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+  }
+  try {
+    const { data: source } = await admin.from("cutaway_runs").select("*").eq("id", plan!.source_run).single();
+    const run = await newRunFromPlan(admin, source, { user_id: who.user.id, free_preview: true, end_card: true });
+    await admin.from("cutaway_free_previews").update({ run_id: run.id }).eq("user_id", who.user.id);
+    const patch = await dispatchNew(admin, run);
+    return await viewOf(admin, { ...run, ...patch });
+  } catch (e: any) {
+    await admin.from("cutaway_free_previews").update({ status: "failed" }).eq("user_id", who.user.id);
+    throw new ApiError("BUSY", undefined, {}, e?.message ?? "the preview didn't start");
+  }
+}
+
 async function handle(req: Request, trace: Trace) {
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action ?? "");
@@ -176,6 +272,7 @@ async function handle(req: Request, trace: Trace) {
     const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
     if (action === "quote") return { quote };
     if (!quote.buildable) throw new ApiError("CANT_BUILD", undefined, { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
+    if (!lengthsFor(quote.kind).includes(lengthSec)) throw new ApiError("BAD_INPUT", "Premade topics are 30 seconds for now.");
 
     // the caps, read fresh (fail closed), before anything is charged
     trace.step = "cap check";
@@ -229,6 +326,23 @@ async function handle(req: Request, trace: Trace) {
 
   const who = await requireUser(req, trace);
 
+  // ---------- the free 10 s preview of the new-user tutorial (freePreview.js) ----------
+  if (action === "freePreviewState") return await freePreviewState(who, body);
+  if (action === "startFreePreview") return await startFreePreview(req, who, body);
+  if (action === "finishFreePreview") {
+    const run = await startGiftFinish(admin, who.user.id);
+    return { finish: run ? await viewOf(admin, run) : null };
+  }
+  if (action === "opsPreparePreviewPlan") {
+    if (!who.owner) throw new ApiError("NOT_FOUND");
+    const key = String(body?.topicKey ?? "");
+    if (!PREVIEW_TOPIC_KEYS.includes(key) || !(await approvedKeys()).has(key)) throw new ApiError("BAD_INPUT", "Pick an approved premade topic.");
+    const { data: run, error } = await admin.from("cutaway_runs").insert({ user_id: who.user.id, env: "test", topic: premadeByKey(key)?.topic ?? key, topic_key: key, length_sec: 30, kind: "premade", layout_key: key, layout_used: true, end_card: true, credits_charged: 0, free_preview: true, preview_pool: true }).select("*").single();
+    if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    const patch = await dispatchNew(admin, run);
+    return await viewOf(admin, { ...run, ...patch }, { owner: true });
+  }
+
   // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it
   if (["opsStatus", "opsSetDailyCap", "opsSetCustom", "opsSetBeta", "opsRetirePart"].includes(action)) {
     if (!who.owner) throw new ApiError("NOT_FOUND");
@@ -272,7 +386,7 @@ async function handle(req: Request, trace: Trace) {
   }
 
   if (action === "list") {
-    const { data } = await admin.from("cutaway_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
+    const { data } = await admin.from("cutaway_runs").select("*").eq("user_id", who.user.id).eq("free_preview", false).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
     return { runs: await Promise.all((data ?? []).map((r: any) => viewOf(admin, r, { owner: who.owner }))) };
   }
 

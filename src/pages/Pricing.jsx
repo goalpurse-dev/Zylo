@@ -10,6 +10,7 @@ import PlanCards, { DISPLAY_FONT, formatPlanDate } from "../components/pricing/P
 import PlanFinder from "../components/pricing/PlanFinder";
 import { CompareTable, WhatCanYouCreate } from "../components/pricing/OutputTables";
 import { EveryPlanIncludes, Faq, FreePlan, MadeWithZyvo, Topups } from "../components/pricing/PricingExtras";
+import { OfferBanner } from "../components/offer/OfferBanners.jsx";
 
 // Pricing page at /pricing: public, prerendered, in the sitemap (title,
 // description and canonical come from data/routeSeoPolicy.js). Logged-out
@@ -107,6 +108,7 @@ function PricingBody({ billing, setBilling }) {
   const [askPlan, setAskPlan] = useState(null);
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-14 px-4 pb-28 pt-10 sm:px-6 md:gap-20 md:pb-20 md:pt-16">
+      <OfferBanner />
       <header className="flex flex-col items-center gap-6 text-center">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-lime-300">Pricing</p>

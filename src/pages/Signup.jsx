@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
 import { signUpWithEmailPassword, signInWithGoogle } from "../lib/auth";
+import { rememberSignupRoute } from "../lib/onboarding";
 import { authError, formatCountdown } from "../lib/authErrors";
 import { useCooldown } from "../hooks/useCooldown";
 import ConfirmEmailNotice from "../components/auth/ConfirmEmailNotice.jsx";
@@ -31,6 +32,7 @@ async function handleSubmit(e) {
   setErr(""); setMsg(""); setConfirmFor(""); setLoading(true);
 
   try {
+    rememberSignupRoute("signup_page_email");
     const res = await signUpWithEmailPassword(email, password);
 
     if (res.status === "created") {
@@ -64,6 +66,7 @@ async function handleSubmit(e) {
 
   async function handleGoogle() {
     setErr(""); setMsg("");
+    rememberSignupRoute("signup_page_google");
     try { await signInWithGoogle(); } 
     catch (e2) { setErr(authError(e2, "Google sign-in failed.").message); }
   }

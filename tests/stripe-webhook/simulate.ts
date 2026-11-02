@@ -16,6 +16,9 @@ Deno.env.set("SUPABASE_URL", "http://fake");
 Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "fake");
 Deno.env.set("STRIPE_SECRET_KEY", "sk_test_fake");
 Deno.env.set("STRIPE_WEBHOOK_SECRET_SUPABASE", SECRET);
+// The offer (supabase/functions/_shared/offer.js) is pinned to a window in the past here, so these
+// checks keep their numbers whatever the date; tests/stripe-webhook/simulateOffer.ts covers the offer.
+Deno.env.set("SIMULATION_OFFER_JSON", JSON.stringify({ startsAt: "2000-01-01T00:00:00Z", endsAt: "2000-01-02T00:00:00Z" }));
 Deno.env.set("STRIPE_TEST_PRICE_ALIASES", JSON.stringify({ price_test_starter: "price_1TmVZZHtn4q5rIncOuf5aKP4" }));
 
 // ---- fake Stripe API ----

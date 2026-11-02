@@ -8,7 +8,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sameToken } from "../_shared/cutaway/jobs.js";
-import { CONFIG, watch } from "../_shared/cutaway/runtime.ts";
+import { CONFIG, startGiftFinish, watch } from "../_shared/cutaway/runtime.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -43,6 +43,11 @@ Deno.serve(async (req) => {
   let looked = 0;
   for (const run of running ?? []) {
     try { await watch(admin, run); looked++; } catch (e: any) { console.error("[cutaway-watchdog]", run.id, e?.message ?? e); }
+  }
+  // paid, but the page never came back (a closed tab): the free preview's video is still finished as promised
+  const { data: toFinish } = await admin.from("cutaway_free_previews").select("user_id").not("paid_at", "is", null).is("finish_run_id", null).eq("status", "ready").limit(20);
+  for (const row of toFinish ?? []) {
+    try { await startGiftFinish(admin, row.user_id); } catch (e: any) { console.error("[cutaway-watchdog] gift finish", e?.message ?? e); }
   }
   // the slower checks once an hour (minute 0-1 of the hour)
   const hourly = new Date().getUTCMinutes() < 2 ? { balance: await balances(), failures: await failureRate() } : null;

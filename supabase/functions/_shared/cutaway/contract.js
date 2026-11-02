@@ -45,6 +45,8 @@ export const ERRORS = Object.freeze({
   CANT_BUILD: { status: 422, message: "We can't make this one." },
   SOON: { status: 403, message: "Custom topics are coming soon. Pick a premade topic." },
   LIMIT: { status: 429, message: "You've hit a limit for now. Try again a little later." },
+  PREVIEW_USED: { status: 409, message: "You've already made your free preview." },
+  PREVIEW_LIMIT: { status: 429, message: "Free previews have already been used from this network." },
   BUSY: { status: 503, message: "We're making a lot of videos right now. Try again in a few minutes." },
   BAD_INPUT: { status: 400, message: "That didn't look right. Please try again." },
   NOT_FOUND: { status: 404, message: "We couldn't find that video." },

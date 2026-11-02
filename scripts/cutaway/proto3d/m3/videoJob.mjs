@@ -21,6 +21,8 @@ import { compile } from "../m2/compile.mjs";
 import { callJSON, loadKey, MODEL } from "../m2/llm.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { useGpu, useSoftware } from "./gpu.mjs";
+import { previewCutSec } from "./previewCut.mjs";
+import { FONTS } from "../m2/make.mjs";
 import { setRunCap } from "../m2/budget.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -184,7 +186,19 @@ async function main() {
   };
 
   // ---------- the finished video: the delivered copy, the web copy, the poster ----------
+  // a free preview: the first seconds only, a small Zyvo mark burned in, no full file to download
+  const previewSec = Number(job.previewSec) || 0, secs = (ready) => (previewSec ? previewCutSec(ready.words, previewSec) : null);
+  const deliverPreview = async (made) => {
+    const marked = path.join(dir, "preview.mp4"), poster = path.join(dir, "poster.jpg");
+    execFileSync(FF, ["-v", "error", "-y", "-i", made.files.web, "-vf", "drawtext=fontfile=LilitaOne-Regular.ttf:text=Zyvo:fontsize=h*0.032:fontcolor=white@0.85:borderw=2:bordercolor=black@0.45:x=w-tw-24:y=h-th-36", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "copy", "-movflags", "+faststart", marked], { cwd: FONTS });
+    execFileSync(FF, ["-v", "error", "-y", "-sseof", "-0.15", "-i", marked, "-frames:v", "1", "-vf", "scale=720:-1", "-q:v", "3", poster]);
+    const len = Number(execFileSync(FF.replace(/ffmpeg(\.exe)?$/, (m) => m.replace("ffmpeg", "ffprobe")), ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", marked], { encoding: "utf8" }));
+    if (job.out?.web) await put(job.out.web, marked, "video/mp4");
+    if (job.out?.poster) await put(job.out.poster, poster, "image/jpeg");
+    return { durationSec: +len.toFixed(2), sizes: { web: fs.statSync(marked).size } };
+  };
   const deliver = async (made, ready) => {
+    if (previewSec) return deliverPreview(made);
     const src = made.files[version] ?? made.files.end, final = path.join(dir, "final.mp4"), poster = path.join(dir, "poster.jpg");
     execFileSync(FF, ["-v", "error", "-y", "-i", src, "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-c:a", "copy", "-movflags", "+faststart", final]);
     const len = Number(execFileSync(FF.replace(/ffmpeg(\.exe)?$/, (m) => m.replace("ffmpeg", "ffprobe")), ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", final], { encoding: "utf8" }).trim()) || 30;
@@ -234,7 +248,7 @@ async function main() {
       if (role === "plan") { clearInterval(beat); return { ok: true }; }
       // the render, the sound, the copies (the GPU job, or a GPU retry of a plan already made)
       tell("progress", { stage: "render", pct: 0 });
-      const made = await makeVideo({ layout: ready.layout, voice: ready.voice, words: ready.words, out: path.join(dir, "made"), proto: PROTO, ff: FF, roles: ready.roles, onProgress: progress, only: version });
+      const made = await makeVideo({ layout: ready.layout, voice: ready.voice, words: ready.words, out: path.join(dir, "made"), proto: PROTO, ff: FF, roles: ready.roles, onProgress: progress, only: version, secs: secs(ready) });
       tell("progress", { stage: "upload", pct: 99 });
       const files = await deliver(made, ready);
       clearInterval(beat);

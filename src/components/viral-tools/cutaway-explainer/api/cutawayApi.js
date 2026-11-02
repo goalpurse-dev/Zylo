@@ -120,6 +120,10 @@ export const cutawayServer = {
     return toRun(data);
   }),
   status: (runId) => cutawayCall("status", { runId }).then(toRun),
+  // the new-user tutorial's free preview (_shared/cutaway/freePreview.js)
+  freePreviewState: ({ force = false } = {}) => cutawayCall("freePreviewState", force ? { force: true } : {}).then((s) => ({ ...s, preview: s?.preview ? toRun(s.preview) : null, finish: s?.finish ? toRun(s.finish) : null })),
+  startFreePreview: ({ topicKey, deviceId, force = false }) => cutawayCall("startFreePreview", { topicKey, deviceId, ...(force ? { force: true } : {}) }).then(toRun),
+  finishFreePreview: () => cutawayCall("finishFreePreview").then((r) => ({ finish: r?.finish ? toRun(r.finish) : null })),
   list: () => cutawayCall("list").then((r) => (Array.isArray(r?.runs) ? r.runs.map(toRun).filter(Boolean) : [])),
   remove: (runId) => cutawayCall("remove", { runId }),
   approveLayout: (runId, approve) => cutawayCall("approveLayout", { runId, approve: approve === true }),
@@ -139,7 +143,7 @@ export const downloadName = (run) => `${String(run?.title || run?.topic || "cuta
 // charging, so nothing the page shows or sends can change the price.
 export { quoteTopic, closestNames } from "../../../../../supabase/functions/_shared/cutaway/quote.js";
 import { classifyTopic } from "../../../../../supabase/functions/_shared/cutaway/topics.js";
-export { PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
+export { lengthsFor, PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
 
 export const STEPS = [
   ["script", "Script"],

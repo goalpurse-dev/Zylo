@@ -7,6 +7,9 @@ import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
 import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
 import { PAUSED_COPY } from "../_shared/stuckJobs.ts";
 import { OUT_OF_CREDITS, plainJobError } from "../_shared/jobErrors.ts";
+
+const FREE_IMAGE_LIMIT = 5; // the same allowance as shared/eligibility.ts
+const FREE_IMAGE_LIMIT_COPY = "You've used your 5 free images for the last 30 days. Upgrade to keep creating.";
 import { gate, HIGH_DEMAND_COPY, HIGH_DEMAND_ENDED_COPY, overBatchCap, overloadedTooLong, OVERLOAD_BACKUP_MODEL, OVERLOAD_GIVE_UP_S, OVERLOAD_SWITCH_AFTER_S, RAMP_RECHECK_S, readBreaker } from "../_shared/modelOverload.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
 import {
@@ -520,8 +523,31 @@ Deno.serve(async (req) => {
     // get the picture drawn (we paid the provider), the charge then failed and the job hung at
     // 98 % for ever (456 jobs since August). Now it is said at once, before any provider call.
     if (job.type === "image" && !isReservationJob && Number(job.charge_credits ?? 0) > 0) {
-      const { data: payer } = await sbAdmin.from("profiles").select("credit_balance").eq("id", job.user_id).maybeSingle();
-      if (payer && Number(payer.credit_balance ?? 0) < Number(job.charge_credits)) {
+      const { data: payer } = await sbAdmin.from("profiles").select("credit_balance, plan_code").eq("id", job.user_id).maybeSingle();
+      // A free account's allowance (5 base-model images per 30 days) costs no credits. Since the server-side prices of
+      // 2026-10-08 this job carried 1 credit, so every free image with a balance of 0 was refused here (211 in 30 days).
+      if (payer && job.tool_key === "image:flux.base" && String(payer.plan_code ?? "free").toLowerCase().trim() === "free") {
+        const since = new Date(Date.now() - 30 * 86_400_000).toISOString(), recent = new Date(Date.now() - 15 * 60_000).toISOString();
+        const [done, running] = await Promise.all([
+          sbAdmin.from("jobs").select("id", { count: "exact", head: true }).eq("user_id", job.user_id).eq("type", "image").eq("status", "succeeded").gte("created_at", since),
+          sbAdmin.from("jobs").select("id", { count: "exact", head: true }).eq("user_id", job.user_id).eq("type", "image").neq("id", jobId).in("status", ["queued", "running", "processing"]).gte("created_at", recent),
+        ]);
+        if (done.error || running.error) {
+          await failAndRefundJob(sbAdmin, jobId, "FREE_LIMIT_CHECK_FAILED", "Could not check your free images. Please try again.");
+          return fail(req, "Could not check your free images. Please try again.", 503);
+        }
+        if ((done.count ?? 0) + (running.count ?? 0) >= FREE_IMAGE_LIMIT) {
+          logEvent("info", "free_image_limit_reached", { jobId, userId: job.user_id });
+          await failAndRefundJob(sbAdmin, jobId, "FREE_LIMIT", FREE_IMAGE_LIMIT_COPY);
+          return fail(req, FREE_IMAGE_LIMIT_COPY, 402);
+        }
+        const { error: freeError } = await sbAdmin.from("jobs").update({ charge_credits: 0 }).eq("id", jobId);
+        if (freeError) {
+          await failAndRefundJob(sbAdmin, jobId, "PRICE_CORRECTION_FAILED", "Could not apply the server price");
+          return fail(req, "Could not apply the server price", 500);
+        }
+        job.charge_credits = 0;
+      } else if (payer && Number(payer.credit_balance ?? 0) < Number(job.charge_credits)) {
         logEvent("warn", "insufficient_credits_before_dispatch", { jobId, toolKey: job.tool_key, userId: job.user_id, price: job.charge_credits, balance: payer.credit_balance });
         await failAndRefundJob(sbAdmin, jobId, "INSUFFICIENT_CREDITS", OUT_OF_CREDITS);
         return fail(req, OUT_OF_CREDITS, 402);

@@ -7,6 +7,7 @@ import KeyButton from "../ui/zyvo/KeyButton";
 import { cx } from "../ui/zyvo/styles";
 import { toast } from "sonner";
 import { LoadError, Num, PLAN_BEFORE_PORTAL_KEY, PLAN_COPY, usePricingData } from "./PricingData";
+import { OfferCredits } from "../offer/OfferBanners.jsx";
 
 export const DISPLAY_FONT = { fontFamily: "'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif", fontStretch: "condensed" };
 
@@ -70,7 +71,7 @@ function CreditsBox({ planId }) {
   return (
     <div className="rounded-2xl border border-white/[0.07] bg-black/25 p-4">
       <p className="text-[22px] font-black leading-none tracking-[-0.02em] text-white tabular-nums">
-        {PRICING_PLANS[planId].credits.toLocaleString("en-US")} <span className="text-[13px] font-bold tracking-normal text-white/55">credits / month</span>
+        <OfferCredits credits={PRICING_PLANS[planId].credits} /> <span className="text-[13px] font-bold tracking-normal text-white/55">credits / month</span>
       </p>
       <ul className="mt-3 space-y-1.5 text-[13.5px] leading-snug text-white/80">
         <li>≈ <Num status={costs.status} value={fruitCount} className="font-bold text-lime-300" /> AI Fruit TikToks ({fruit.headline.sec} s)</li>

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { PRICE_ROWS, PRICES, BASIS, LENGTHS, KINDS, CREDIT, MEASURED, fullCostUsd, costBasisUsd, videoCredits } from "../supabase/functions/_shared/cutaway/pricing.js";
+import { PRICE_ROWS, PRICES, BASIS, LENGTHS, KINDS, CREDIT, MEASURED, fullCostUsd, costBasisUsd, lengthsFor, videoCredits } from "../supabase/functions/_shared/cutaway/pricing.js";
 import { DEFAULT_SETTINGS } from "../supabase/functions/_shared/cutaway/guard.js";
 import { validatePlan, planProblems, planWarnings, shapeProblems, framesOf, clipPrompt, narrationText, normBox, targetWords, boxJump } from "../supabase/functions/_shared/cutaway/planner.js";
 import { placeBeats, clipTimings, voiceTempo, wordsToFit, cropPixels, upscaleFactor, evenBeats, cueTimeline } from "../supabase/functions/_shared/cutaway/beats.js";
@@ -55,6 +55,13 @@ function samplePlan() {
 
 test("lengths are 30 s (default) and 60 s", () => {
   assert.deepEqual([...LENGTHS], [30, 60]);
+});
+
+test("premade topics are 30 s only for now, custom topics keep both; the server refuses the rest", () => {
+  assert.deepEqual([...lengthsFor("premade")], [30]);
+  assert.deepEqual([...lengthsFor("custom")], [30, 60]);
+  const server = readFileSync("supabase/functions/cutaway-api/index.ts", "utf8");
+  assert.ok(server.indexOf("lengthsFor(quote.kind).includes(lengthSec)") < server.indexOf('admin.rpc("cutaway_start_run"'), "refused before anything is charged");
 });
 
 test("3D prices: credits = our full real cost / $0.01, rounded up (failed attempts included); the user pays 2x", () => {

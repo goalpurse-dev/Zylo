@@ -76,7 +76,6 @@ test("price ids come from the shared map only", () => {
     "src/components/viral-tools/ai-fruit-story/FruitStoryPaywall.jsx",
     "src/components/viral-tools/face-asmr/FaceAsmrPaywall.jsx",
     "src/components/viral-tools/two-am/TwoAmPaywall.jsx",
-    "src/components/EmailConsentModal.jsx",
     "src/lib/payments.ts",
     "supabase/functions/create-checkout-session/index.ts",
   ]) assert.doesNotMatch(read(f), /price_1[A-Za-z0-9]{10,}/, `${f} has a typed price id`);
@@ -96,7 +95,7 @@ test("every purchase button has a busy state, one lock and an error toast", () =
     assert.match(src, /usePaymentAction\(\)/);
     assert.equal((src.match(/disabled=\{pay\.busy != null\}/g) || []).length, 2, `${f}: both plan buttons lock`);
   }
-  assert.match(read("src/components/EmailConsentModal.jsx"), /toast\.error\(paymentErrorMessage\(err\)\)/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /pay\.run\(planId,/, "the tutorial's plan cards use the same lock");
   // The helpers throw instead of failing quietly.
   const payments = read("src/lib/payments.ts");
   assert.match(payments, /throw new PaymentError\("PORTAL"\)/);

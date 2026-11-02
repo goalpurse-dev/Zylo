@@ -35,7 +35,7 @@ const WORST: [number, string][] = [
 
 const env: Record<string, string> = {};
 for (const line of (await Deno.readTextFile(".env.local")).split(/\r?\n/)) { const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*"?(.*?)"?\s*$/); if (m) env[m[1]] = m[2]; }
-const URL_ = env.SUPABASE_URL, KEY = env.SUPABASE_SERVICE_ROLE_KEY, OPENAI = env.OPENAI_API_KEY ?? env.VITE_OPENAI_API_KEY;
+const URL_ = env.SUPABASE_URL, KEY = env.SUPABASE_SERVICE_ROLE_KEY, OPENAI = env.OPENAI_API_KEY;
 const admin = createClient(URL_, KEY, { auth: { persistSession: false } });
 const outDir = Deno.args[0];
 await Deno.mkdir(`${outDir}/after`, { recursive: true });

@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowRight, BadgeCheck, Check, ChevronRight, Clock3, Hourglass, Layers, Loader2, Lock, PackageX, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { freshSuggestions } from "../../../data/cutawayTopics";
-import { canRemoveEndCard, DEFAULT_LENGTH, LENGTHS, PRICES, quoteTopic } from "./api/cutawayApi";
+import { canRemoveEndCard, DEFAULT_LENGTH, LENGTHS, lengthsFor, PRICES, quoteTopic } from "./api/cutawayApi";
 import CutawayUpgradeModal from "./CutawayUpgradeModal";
 import { FailureDetails } from "./CutawayResults";
 
@@ -42,7 +42,9 @@ const waitText = (sec) => {
 // the upgrade popup), "paid" or "unknown" (Generate runs; the server checks the plan again on every call).
 export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true, customBeta = false }) {
   const topic = values?.topic ?? "";
-  const lengthSec = values?.lengthSec ?? DEFAULT_LENGTH;
+  // Premade topics are 30 s only for now, so only a typed custom topic is offered 60 s (the server refuses the rest).
+  const lengthChoices = lengthsFor(topic.trim().length >= 3 ? quoteTopic(topic, DEFAULT_LENGTH, approved ?? []).kind : "premade");
+  const lengthSec = lengthChoices.includes(values?.lengthSec) ? values.lengthSec : DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
   const canRemove = canRemoveEndCard(planCode);
   const removeWatermark = canRemove && values?.removeWatermark === true;
@@ -202,9 +204,9 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
 
           <div style={{ "--d": "90ms" }} className="cw-fade-up">
             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40 lg:mb-1.5">Length</p>
-            <div className="relative grid grid-cols-2 gap-1 rounded-xl border border-white/[0.07] bg-[#0E1012] p-1">
-              <span aria-hidden="true" className={`cw-thumb absolute inset-y-1 left-1 w-[calc(50%-6px)] rounded-lg bg-white shadow-[0_4px_14px_rgba(0,0,0,.3)] ${lengthSec === LENGTHS[1] ? "translate-x-[calc(100%+4px)]" : ""}`} />
-              {LENGTHS.map((s) => (
+            <div className={`relative grid ${lengthChoices.length > 1 ? "grid-cols-2" : "grid-cols-1"} gap-1 rounded-xl border border-white/[0.07] bg-[#0E1012] p-1`}>
+              <span aria-hidden="true" className={`cw-thumb absolute inset-y-1 left-1 ${lengthChoices.length > 1 ? "w-[calc(50%-6px)]" : "right-1"} rounded-lg bg-white shadow-[0_4px_14px_rgba(0,0,0,.3)] ${lengthSec === LENGTHS[1] ? "translate-x-[calc(100%+4px)]" : ""}`} />
+              {lengthChoices.map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -270,7 +272,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
               <li><span className="font-bold text-cutaway/80">3.</span> Render: one continuous vertical video with captions and sound.</li>
             </ol>
             <p className="mt-2 text-[10.5px] font-semibold text-white/35">
-              {lengthSec} s video: {PRICES.video.credits.premade[lengthSec]} credits for a premade topic{soon ? " (custom topics are coming soon)" : `, ${PRICES.video.credits.custom[lengthSec]} for a custom one`}. Charged once, when it starts; back in full if it fails.
+              {lengthSec} s video: {lengthsFor("premade").includes(lengthSec) ? <>{PRICES.video.credits.premade[lengthSec]} credits for a premade topic{soon ? " (custom topics are coming soon)" : `, ${PRICES.video.credits.custom[lengthSec]} for a custom one`}</> : `${PRICES.video.credits.custom[lengthSec]} credits for a custom topic`}. Charged once, when it starts; back in full if it fails.
             </p>
           </div>
         </div>

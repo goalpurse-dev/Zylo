@@ -25,6 +25,7 @@ const iso = (ms) => new Date(ms).toISOString();
 /** failed and refunded, once; an alert when it wasn't the video's own doing */
 function terminal(run, f, now) {
   const actions = [{ type: "refund" }];
+  if (run.free_preview && !run.preview_pool) actions.push({ type: "releasePreview" }); // a failed free preview is given back
   if (run.provider === "runpod" && run.provider_job_id) actions.push({ type: "cancel", provider: "runpod", jobId: run.provider_job_id });
   if (f.code === "PROVIDER_BALANCE") actions.push({ type: "alert", key: "cutaway-provider-balance", subject: "Cutaway: a provider is out of balance", text: `Run ${run.id} failed: ${f.message ?? f.code}. New videos are paused until the balance is topped up.` });
   else if (!NO_RETRY.has(f.code)) actions.push({ type: "alert", key: "cutaway-render-failed", subject: "Cutaway: a video failed on our side", text: `Run ${run.id} (${run.topic}) failed after its retries: ${f.code} ${String(f.message ?? "").slice(0, 400)}` });
@@ -43,6 +44,8 @@ export function failOrRetry(run, f, now = Date.now()) {
   if (run.provider !== "fly" && attempt < LIMITS.attempts && f.code !== "NO_GPU_SLOT") {
     return { patch: { attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] };
   }
+  // a free preview never goes to the slow, costly CPU fallback
+  if (run.free_preview) return terminal(run, f, now);
   if (run.provider !== "fly") {
     const phase = run.plan_ready ? "chunks" : "plan";
     return { patch: { provider: "fly", attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null, fallback: { phase, chunks: [], tries: {} } }, actions: [phase === "plan" ? { type: "dispatch", target: "fly", role: "plan" } : { type: "dispatch", target: "fly", role: "chunks" }] };
@@ -95,6 +98,8 @@ export function onEvent(run, ev, now = Date.now()) {
     }
     case "done":
       actions.push({ type: "settle", seconds: ev.seconds ?? null, renderer: ev.renderer ?? null }, { type: "saveLayout" });
+      if (run.free_preview) actions.push({ type: "previewDone" });
+      if (run.gift_finish) actions.push({ type: "finishDone" });
       return { patch: { ...beat, status: "done", stage: "done", pct: 100, finished_at: iso(now), files: ev.files ?? null, renderer: ev.renderer ?? null, error_code: null, error_message: null }, actions };
     case "failed": {
       const r = failOrRetry(run, { code: ev.code ?? "RENDER_FAILED", message: ev.message, retryable: ev.retryable, stage: typeof ev.stage === "string" ? ev.stage.slice(0, 40) : undefined, piece: ev.role === "chunk" ? `chunk_${ev.index}` : ev.role === "mix" || ev.role === "plan" ? ev.role : undefined }, now);

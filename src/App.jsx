@@ -69,6 +69,7 @@ const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
 const AIFruitStory = lazy(() => import("./pages/workspace/AIFruitStory"));
 const BlockyStories = lazy(() => import("./pages/workspace/BlockyStories"));
 const CutawayExplainer = lazy(() => import("./pages/workspace/CutawayExplainer"));
+const FirstVideo = lazy(() => import("./pages/onboarding/FirstVideo.jsx"));
 const SkeletonShorts = lazy(() => import("./pages/workspace/SkeletonShorts"));
 
 const ImageGenTest = lazy(() => import("./pages/image-gen-test.jsx"));
@@ -193,8 +194,7 @@ const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 
 import ScrollToTop from "./components/ScrollToTop";
 import CookieConsent from "./components/CookieConsent";
-import EmailConsentModal from "./components/EmailConsentModal";
-import WelcomeModal from "./components/WelcomeModal";
+import OnboardingGate from "./components/onboarding/OnboardingGate.jsx";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicContentLayout from "./components/seo/PublicContentLayout.jsx";
@@ -429,41 +429,6 @@ export default function App({ ssrPath } = {}) {
 function AppWithRouting() {
   const location = useLocation();
   const { user } = useAuth();
-const [profile, setProfile] = React.useState(null);
-const [showOnboarding, setShowOnboarding] = React.useState(false);
-const [showWelcomeNotif, setShowWelcomeNotif] = React.useState(false);
-const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
-
-// WelcomeModal via zyvo_show_welcome flag disabled — WelcomeScreen in layout.jsx handles this
-// React.useEffect(() => {
-//   if (localStorage.getItem("zyvo_show_welcome") === "1") {
-//     setShowWelcomeModal(true);
-//     localStorage.removeItem("zyvo_show_welcome");
-//   }
-// }, []);
-
-React.useEffect(() => {
-  if (!user) return;
-
- const loadProfile = async () => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("email_updates, onboarding_completed")
-    .eq("id", user.id)
-    .single();
-
-  if (!error && data) {
-    setProfile(data);
-
-    // 🔥 THIS CONTROLS MODAL — set to true to re-enable onboarding
-    // setShowOnboarding(!data.onboarding_completed);
-    setShowOnboarding(false);
-  }
-};
-
-  loadProfile();
-}, [user]);
-
   // Prefixes where the top navbar should be hidden
   const HIDE_NAV_PREFIXES = [
     "/",
@@ -492,7 +457,8 @@ React.useEffect(() => {
     "/pricing",
     "/text-to-voice",
     "/workspace",
-    "/long-form"
+    "/long-form",
+    "/welcome"
   ];
 
   const computeHide = React.useCallback(
@@ -518,29 +484,16 @@ return (
  <>
   <CookieConsent />
 
-{user && profile && showOnboarding && (
-  <EmailConsentModal
-    user={user}
-    onComplete={() => {
-      setShowOnboarding(false);
-      setProfile(prev => ({ ...prev, onboarding_completed: true }));
-      // Set flag in localStorage so it survives the page refresh
-      localStorage.setItem("zyvo_show_welcome", "1");
-    }}
-  />
-)}
-
   {!hideNav && <Navbar />}
   {/* Phase 6a: toasts + "your script is ready" notifications. */}
   <Toaster theme="dark" position="bottom-right" richColors />
   {/* A plan picked while logged out continues to checkout right after sign-up. */}
   <ResumeCheckout />
+  {/* Right after any sign-up: the funnel, the welcome email and (in the rollout) the survey. */}
+  <OnboardingGate />
   {/* A reset-password link that lands anywhere in the app goes on to "set a new password". */}
   <PasswordRecoveryRedirect />
   <LongFormScriptReadyNotifier />
-
-{/* WelcomeModal disabled — WelcomeScreen in layout.jsx handles new user welcome */}
-{/* {showWelcomeModal && <WelcomeModal onClose={() => setShowWelcomeModal(false)} />} */}
 
     <main className={mainClass}>
    <Suspense fallback={
@@ -908,6 +861,8 @@ return (
             }
           />
 
+          {/* The new-user tutorial: the free 10-second preview, then the plans. */}
+          <Route path="/welcome/first-video" element={<RequireAuth><FirstVideo /></RequireAuth>} />
           <Route path="/billing/success" element={<BillingSuccess />} />
           <Route path="/billing/cancel" element={<BillingCancel />} />
 

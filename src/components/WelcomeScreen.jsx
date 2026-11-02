@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabaseClient";
 
+// A tick turns emails on; an unticked box never turns off someone who already opted in (set_email_consent).
 async function saveEmailPreference(value) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("profiles").update({ email_updates: value }).eq("id", user.id);
+    await supabase.rpc("set_email_consent", { p_consent: value, p_text: value ? "Send me tips, updates, and early access to new Zyvo features" : null });
   } catch { /* non-blocking */ }
 }
 

@@ -21,7 +21,7 @@ const planId = p.autopilot?.scenes?.planId;
 const { data: rows } = await admin.from("long_form_beats").select("id, sequence, narration_text, contract").eq("beat_plan_version_id", planId).order("sequence");
 const beats = (rows ?? []).map((r: any) => ({ id: r.id, sequence: r.sequence, narrationText: r.narration_text, contract: r.contract }));
 const before = beats.filter((b: any) => b.contract?.textIntent?.text).map((b: any) => ({ n: b.sequence, mode: b.contract.textIntent.mode, text: b.contract.textIntent.text, kind: textKindOf(b.contract) }));
-const picked = await pickHeadlines(env.OPENAI_API_KEY ?? env.VITE_OPENAI_API_KEY, beats, p.on_screen_text_density);
+const picked = await pickHeadlines(env.OPENAI_API_KEY, beats, p.on_screen_text_density);
 const acc = acceptHeadlines(beats, picked.picks, p.on_screen_text_density);
 const next = applyTextPass(beats, acc.accepted);
 console.log(JSON.stringify({ beats: beats.length, density: p.on_screen_text_density, directorText: before, target: acc.target, added: acc.accepted, rejected: acc.rejected, costUsd: picked.costUsd }, null, 1));

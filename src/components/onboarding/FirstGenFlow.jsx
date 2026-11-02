@@ -66,7 +66,7 @@ function injectStyle(css) {
 function removeStyle() { document.getElementById(STYLE_ID)?.remove(); }
 
 /* ─── Confetti ────────────────────────────────────────────────────── */
-function Confetti() {
+export function Confetti() {
   const COLORS = ["#7A3BFF", "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF", "#FF6FC8", "#FF9E4F"];
   const particles = useRef(
     Array.from({ length: 70 }, (_, i) => ({
