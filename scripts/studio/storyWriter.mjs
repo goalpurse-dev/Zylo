@@ -55,7 +55,7 @@ export const lengthBudget = (bucket) => { const top = parseInt(String(bucket).sp
 const brief = (recipe, T, kit, clipText, prior, a2) => { const length = recipe.length_bucket, most = recipe.length_bucket === "60-90" ? 12 : 6; return `Write one video about ${T.about}.
 The thread, line by line (the lines may differ, the thread may not):
 ${T.shape.map((s, i) => `${i + 1}. ${s}`).join("\n")}
-That is 4 to ${most} lines in total, counting end_line. At most ${lengthBudget(length).words} spoken words. End trigger: ${recipe.end_trigger}.${length === "15-25" ? " The last words lead naturally back into line 1, so the video loops." : ""}
+That is 4 to ${most} lines in total, counting end_line. At most ${lengthBudget(length).words} spoken words in total, counting end_line: aim for ${lengthBudget(length).words - 6}. End trigger: ${recipe.end_trigger}.${length === "15-25" ? " The last words lead naturally back into line 1, so the video loops." : ""}
 The real creation: "${kit.story.title}" (idea: ${kit.story.idea_text}). All its words, in order: ${kit.moments.shots.filter((s) => !s.brand).map((s) => `"${s.text}"`).join(" ")}
 The clip the viewer sees at [clip] says: "${clipText}". The line before it must set up exactly that, and the line after it must react to exactly that.
 ${a2 ? `This video reports a REAL exchange with Claude. Prompt: "${a2.prompt}" Claude answered: "${a2.answer}". Quote it faithfully and do not add to what it said.` : ""}
@@ -80,6 +80,9 @@ function pickClip(fresh, limit) {
   return { in: +(a.a + 0.02).toFixed(2), out: +out.toFixed(2), text: fresh.filter((s) => s.a >= a.a && s.b <= out + 0.1).map((s) => s.text).join(" ") || a.text };
 }
 
+/** What the next attempt is told: the rejected draft itself, so it can cut or fix that one instead of writing another blind. */
+export const revisionNote = (problems, draft) => `\nYour last draft was rejected: ${problems.join("; ")}. Fix that and change as little else as you can. The draft, line by line:\n${draft.lines.map((l) => `${l.who}: ${l.say ?? l.text}`).join("\n")}`;
+
 /** Writes and checks one script. Returns {script, usd}. recent: scripts of the batch and the last 14 days. */
 export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, kit, kitKey, recent = [], spots = {} }) {
   // 15-25 s by default, whatever length the angle had; a long tutorial only when asked for (owner, 2026-11-02)
@@ -91,10 +94,10 @@ export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, k
   const fresh = kit.moments.shots.filter((s) => !s.brand && !shown.some(([a, b]) => s.a < b && s.b > a));
   if (fresh.length < 1) throw new Error("no clip of this creation is left unshown: pick another creation");
   const clip = pickClip(fresh, lengthBudget(recipe.length_bucket).clip);
-  let usd = 0, a2 = null, lastProblems = [];
+  let usd = 0, a2 = null, lastProblems = [], lastDraft = null;
   if (recipe.angle === "A2") { a2 = await askClaude({ guard, key: apiKey, kit }); usd += a2.usd; }
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const user = brief(recipe, T, kit, clip.text, prior, a2) + (lastProblems.length ? `\nYour last draft was rejected: ${lastProblems.join("; ")}. Fix that.` : "");
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const user = brief(recipe, T, kit, clip.text, prior, a2) + (lastDraft ? revisionNote(lastProblems, lastDraft) : "");
     const r = await guard.spend("anthropic", "studio.write_script", estimateUsd({ model: MODEL, inputTokens: 3000, outputTokens: 2500 }), async (ticket) => {
       const out = await createMessage(ticket, { apiKey, request: { model: MODEL, max_tokens: 6000, system: SYSTEM(factText, tpl, T.mode), messages: [{ role: "user", content: user }], output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } } } });
       return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
@@ -107,8 +110,9 @@ export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, k
     const sim = similarity([script, ...recent]).filter((x) => x.a === script.variant && x.share > 0.3);
     if (sim.length) lastProblems.push(`it shares over 30% of its lines with ${sim[0].b}`);
     const said = script.lines.reduce((a, l) => a + (l.say ?? l.text).trim().split(/\s+/).length, 0), budget = lengthBudget(recipe.length_bucket).words;
-    if (said > budget * 1.1) lastProblems.push(`it has ${said} spoken words, too long for ${recipe.length_bucket} seconds: at most ${budget}`);
+    if (said > budget * 1.1) lastProblems.push(`it has ${said} spoken words, too long for ${recipe.length_bucket} seconds: at most ${budget}, so cut at least ${said - budget} words`);
     if (!lastProblems.length) return { script, usd };
+    lastDraft = script;
   }
   throw new Error(`the script failed its checks: ${lastProblems.join("; ").slice(0, 300)}`);
 }

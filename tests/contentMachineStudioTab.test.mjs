@@ -9,7 +9,7 @@ import { cleanStats, STAT_FIELDS } from "../supabase/functions/_shared/contentMa
 import { pickMoments } from "../scripts/studio/moments.js";
 import { makeScript, titleHook, TEN_YEARS } from "../scripts/studio/shortScripts.mjs";
 import { validateThread } from "../scripts/studio/storyScripts.mjs";
-import { lengthBudget } from "../scripts/studio/storyWriter.mjs";
+import { lengthBudget, revisionNote, writeStory } from "../scripts/studio/storyWriter.mjs";
 import { templateFor, ANGLE_TEMPLATES } from "../scripts/studio/storyTemplates.mjs";
 import { applyScriptEdits, onScreen } from "../supabase/functions/_shared/contentMachine/scriptEdit.js";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
@@ -77,6 +77,34 @@ test("the length budget leaves room for the real clip, and a 101 s test video's 
   assert.deepEqual(lengthBudget("20-35"), { clip: 11, words: 62 });
   assert.deepEqual(lengthBudget("15-25"), { clip: 8, words: 44 });
   assert.ok(220 > lengthBudget("60-90").words * 1.1);
+});
+
+test("a script that runs long goes back with its own words and the number to cut, and gets three tries", async () => {
+  const note = revisionNote(["it has 49 spoken words, too long"], { lines: [{ who: "creator", text: "My pool is losing water." }, { who: "zee", text: "Written.", say: "Spoken." }] });
+  assert.match(note, /49 spoken words/);
+  assert.match(note, /creator: My pool is losing water\./);
+  assert.match(note, /zee: Spoken\./);
+
+  const shots = [{ a: 0, b: 5, text: "Water soaks into the soil.", brand: false }, { a: 5, b: 9, text: "A shell keeps it in.", brand: false }];
+  const kit = { template: "cutaway", story: { id: "s1", title: "Pools", idea_text: "pool" }, file: "f.mp4", hq_dir: "hq", hq_ext: "png", wide: false, words: [], duration: 9, moments: { shots }, measured: {}, input: null, input_dir: null, scene_images: ["C:/m/a.jpg"] };
+  const blank = { who: "zee", key: "x", expr: "happy", pose: "rest", shot: "two_shot", visual: null, screen: null, sticker: null, stamp: null, keep: false };
+  const draft = (extra) => ({ title: "Pools leak", search_title: "how a pool works", caption: "How a pool works. Made with Zyvo.", hashtags: ["#pool"], hook_type: "curiosity", headline: "POOLS *LEAK*", chip: "POOLS", clip_after: 1, end_line: "Which part surprised you? Comment.", end_chip: "COMMENT", lines: [
+    { ...blank, who: "creator", text: "My pool is losing water and nobody knows why.", key: "water", expr: "sad", shot: "creator_close" },
+    { ...blank, text: `Warm water leaves through the ground. ${extra}`.trim(), key: "ground", visual: { kind: "sign", text: "Through the ground", sub: null, value: null, label: null, n: null, title: null, from: null } },
+    { ...blank, who: "creator", text: "Through the ground? Show me.", key: "Show", expr: "shocked", keep: true },
+  ] });
+  const guardFor = (drafts) => { let calls = 0; return { get calls() { return calls; }, spend: async () => ({ result: { content: [{ type: "text", text: JSON.stringify(drafts[Math.min(calls++, drafts.length - 1)]) }] }, actualUsd: 0.01 }) }; };
+  const args = { apiKey: "none", facts: [], recipe: { angle: "A1", length_bucket: "15-25", world: "factory", end_trigger: "comment" }, angle: { key: "A1" }, kit, kitKey: "this" };
+  const long = draft(Array(40).fill("word").join(" "));
+
+  const third = guardFor([long, long, draft("")]);
+  const ok = await writeStory({ ...args, guard: third });
+  assert.equal(third.calls, 3);
+  assert.equal(ok.usd, 0.03);
+
+  const never = guardFor([long]);
+  await assert.rejects(writeStory({ ...args, guard: never }), /too long for 15-25 seconds: at most 44, so cut at least \d+ words/);
+  assert.equal(never.calls, 3);
 });
 
 test("script approval: a written script waits, the owner's edits go with the approval, only then it can render", async () => {
