@@ -41,6 +41,10 @@ for (const x of edits) {
   segs.push({ s: cur, e: x.s + keep / 2, pad }); cur = x.e - keep / 2;
 }
 segs.push({ s: cur, e: Math.min(end, N / 100), pad: 0.4 });
+// pieces in order and never empty: a pause placed from slightly-off word times could end a piece before it starts,
+// which ffmpeg refuses (found by the free harness, 2026-10-27); such a piece keeps its pause, not its (no) audio
+for (let i = 1; i < segs.length; i++) segs[i].s = Math.max(segs[i].s, segs[i - 1].e);
+for (let i = segs.length - 2; i >= 0; i--) if (segs[i].e - segs[i].s < 0.02) { segs[i > 0 ? i - 1 : i + 1].pad += segs[i].pad; segs.splice(i, 1); }
 const fc = segs.map((g, i) => `[0:a]atrim=start=${g.s.toFixed(3)}:end=${g.e.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=0.004,afade=t=out:st=${Math.max(0, g.e - g.s - 0.006).toFixed(3)}:d=0.006,apad=pad_dur=${g.pad.toFixed(3)}[g${i}]`).join(";") + `;${segs.map((_, i) => `[g${i}]`).join("")}concat=n=${segs.length}:v=0:a=1[o]`;
 execFileSync(ff, ["-v", "error", "-y", "-i", inFile, "-filter_complex", fc, "-map", "[o]", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "192k", outFile]);
 // remap word times: output time = position inside its keep-segment + everything before it

@@ -21,6 +21,7 @@ import { compile } from "../m2/compile.mjs";
 import { callJSON, loadKey, MODEL } from "../m2/llm.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { useGpu, useSoftware } from "./gpu.mjs";
+import { setRunCap } from "../m2/budget.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PROTO = process.env.CUTAWAY_PROTO ?? "/app/proto", FF = process.env.FFMPEG ?? "ffmpeg", FPS = 30;
@@ -49,6 +50,7 @@ export function classify(e) {
   const msg = String(e?.message ?? e);
   if (e?.code === "NO_GPU") return { code: "NO_GPU", retryable: true };
   if (/voice check failed twice/i.test(msg)) return { code: "VOICE_FAILED", retryable: false };
+  if (e?.code === "BUDGET" || /over the run's \$/.test(msg)) return { code: "BUDGET", retryable: false };
   if (/credit balance|insufficient.?(credit|fund|quota)|quota_exceeded|payment required|\b402\b/i.test(msg)) return { code: "PROVIDER_BALANCE", retryable: false };
   if (/overloaded|\b529\b|\b503\b|rate.?limit|\b429\b/i.test(msg)) return { code: "PROVIDER_BUSY", retryable: true };
   return { code: e?.code ?? "RENDER_FAILED", retryable: true };
@@ -78,8 +80,11 @@ export function framesOf({ layout, words, voice, roles }, version = "end") {
 }
 
 async function main() {
-  const input = process.argv[2] ? JSON.parse(process.argv[2]) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
+  // (CUTAWAY_JOB_FILE: the free harness's job, too long for a Windows command line)
+  const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.CUTAWAY_JOB_FILE ? JSON.parse(fs.readFileSync(process.env.CUTAWAY_JOB_FILE, "utf8")) : JSON.parse(process.env.CUTAWAY_JOB ?? "{}");
   const job = input.job ?? input, role = job.role ?? "video", mode = job.mode ?? (role === "video" ? "gpu" : "cpu");
+  // the run's spending limit (budget.mjs): every paid call checks it before it is sent
+  if (job.capUsd) setRunCap(job.capUsd);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cutaway-")), out = path.join(dir, "run");
   const version = job.endCard === false ? "noend" : "end", t0 = Date.now(), costs = { planUsd: 0, voiceUsd: 0, checksUsd: 0, postUsd: 0 };
   fs.mkdirSync(out, { recursive: true });
@@ -92,8 +97,21 @@ async function main() {
   };
 
   // ---------- the callback ----------
-  let lastTell = 0, lastStage = null;
-  const tell = async (event, data = {}) => {
+  let lastTell = 0, lastStage = null, queue = Promise.resolve();
+  // one at a time, in order: sent side by side, the "scene" event (with the narration) landed after the "voice" one, so a
+  // voice failure showed "Scene plan" as its step (the production Landfill of 2026-10-27)
+  // each cost is reported once: an event carries only what was not sent before (the server adds every event's costs to
+  // the ledger, and "planned" then "done" with the same totals counted a finished video twice; the real traffic light
+  // run of 2026-10-28 cost $0.518 and was booked at $1.036)
+  const sent = {};
+  const fresh = (costs) => {
+    if (!costs) return costs;
+    const out = {};
+    for (const [k, v] of Object.entries(costs)) { const d = +((Number(v) || 0) - (sent[k] ?? 0)).toFixed(6); if (d > 0) { out[k] = d; sent[k] = (sent[k] ?? 0) + d; } }
+    return out;
+  };
+  const tell = (event, data = {}) => (queue = queue.then(() => send(event, data.costs ? { ...data, costs: fresh(data.costs) } : data)));
+  const send = async (event, data) => {
     if (!job.callback?.url) { console.log(`EVENT ${event} ${JSON.stringify(data).slice(0, 300)}`); return; }
     const body = JSON.stringify({ runId: job.runId, token: job.callback.token, role, attempt: job.attempt ?? 1, event, ...data });
     for (let i = 0; i < 4; i++) {
@@ -127,10 +145,26 @@ async function main() {
   // a plan that didn't pass: what the planner left in its folder goes to the run's plan files (never read back for a render)
   const keepFailedPlan = async () => {
     const read = (f) => (fs.existsSync(path.join(out, f)) ? JSON.parse(fs.readFileSync(path.join(out, f), "utf8")) : null);
-    const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json");
+    // (the preview check's verdicts too: the Landfill of 2026-10-27 failed the gate and its verdicts were lost)
+    const layout = read("layout.json"), script = read("script.json"), trace = read("trace.json"), report = read("plan_report.json"), vision = read("vision.json");
     const p = path.join(dir, "failed"); fs.mkdirSync(p, { recursive: true });
     if (layout && job.plan?.put?.layout) { fs.writeFileSync(path.join(p, "layout.json"), JSON.stringify(layout)); await put(job.plan.put.layout, path.join(p, "layout.json"), "application/json"); }
-    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    // (the spend log call by call, so the owner can see what each step cost; and the latest voice take with its words, so a
+    // stopped run can be resumed without paying for them again: the swimming pool of 2026-10-29 kept nothing)
+    const spend = fs.existsSync(spendLog) ? fs.readFileSync(spendLog, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
+    if (script && job.plan?.put?.script) { fs.writeFileSync(path.join(p, "script.json"), JSON.stringify({ ...script, failed: true, trace, report, vision, spend })); await put(job.plan.put.script, path.join(p, "script.json"), "application/json"); }
+    // the paid planner replies (each step's saved reply): a retry replays them free, and the failure becomes a free test
+    // case even when the planner stopped before its script was made (m3/failureCase.mjs)
+    const sd = path.join(out, "steps");
+    if (job.plan?.put?.steps && fs.existsSync(sd)) {
+      const files = Object.fromEntries(fs.readdirSync(sd).filter((f) => /^step_\d+_.*\.json$/.test(f)).map((f) => [f, JSON.parse(fs.readFileSync(path.join(sd, f), "utf8"))]));
+      if (Object.keys(files).length) { fs.writeFileSync(path.join(p, "steps.json"), JSON.stringify({ files })); await put(job.plan.put.steps, path.join(p, "steps.json"), "application/json"); }
+    }
+    const vdir = fs.existsSync(out) ? fs.readdirSync(out).filter((d) => /^voice(_r\d+)?$/.test(d)).sort().at(-1) : null;
+    if (vdir && fs.existsSync(path.join(out, vdir, "voice.mp3"))) {
+      if (job.plan?.put?.voice) await put(job.plan.put.voice, path.join(out, vdir, "voice.mp3"), "audio/mpeg");
+      if (job.plan?.put?.words && fs.existsSync(path.join(out, vdir, "voice.words.json"))) await put(job.plan.put.words, path.join(out, vdir, "voice.words.json"), "application/json");
+    }
   };
   const loadPlan = async () => {
     const p = path.join(dir, "plan"); fs.mkdirSync(p, { recursive: true });
@@ -172,8 +206,18 @@ async function main() {
       else {
         // an approved layout for this topic: the worker's layouts folder gets it, the planner reuses it
         let reuse = null;
+        // a retry: the earlier attempt's paid planner replies go where the planner looks first (its step cache), so the
+        // plan is replayed free in seconds; a missing or unreadable bundle just means planning again
+        if (job.plan?.resume) {
+          try {
+            const { files } = JSON.parse((await get(job.plan.resume)).toString("utf8")), sd = path.join(out, "steps");
+            fs.mkdirSync(sd, { recursive: true });
+            for (const [f, r] of Object.entries(files ?? {})) if (/^step_\d+_[\w-]+\.json$/.test(f)) fs.writeFileSync(path.join(sd, f), JSON.stringify(r));
+            console.log(`[cutaway] retry: ${Object.keys(files ?? {}).length} paid planner replies replayed from the earlier attempt`);
+          } catch (e) { console.error("[cutaway] retry: no earlier replies to replay:", e?.message ?? e); }
+        }
         if (job.layout) { fs.mkdirSync(LAYOUTS, { recursive: true }); fs.writeFileSync(path.join(LAYOUTS, `${job.layout.key}.template.json`), JSON.stringify({ ...job.layout, template: true, approved: true })); reuse = job.layout.key; }
-        const r = await runTopic({ library: Array.isArray(job.library) ? job.library : [], topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog });
+        const r = await runTopic({ library: Array.isArray(job.library) ? job.library : [], topic: job.topic, out, proto: PROTO, ff: FF, lengthSec: job.lengthSec, reuse, endCard: job.endCard !== false, openings: null, onProgress: progress, render: false, log: spendLog, maxUsd: Number(job.capUsd) || Infinity });
         if (!r.ok) {
           // the refused plan is kept (its layout, and its script with the planner's trace), so it can be replayed free
           await keepFailedPlan().catch((e) => console.error("[cutaway] the failed plan was not kept:", e?.message ?? e));
@@ -194,6 +238,9 @@ async function main() {
       tell("progress", { stage: "upload", pct: 99 });
       const files = await deliver(made, ready);
       clearInterval(beat);
+      // (its GPU time, from here: asked from RunPod when "done" lands, the job is still running and it said 0, so no
+      // finished video ever booked its GPU; the first swimming pool's ledger, 2026-10-30)
+      if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
       await tell("done", { costs, renderer, files, seconds: +((Date.now() - t0) / 1000).toFixed(1) });
       return { ok: true };
     }
@@ -232,13 +279,17 @@ async function main() {
     throw new Error(`unknown role ${role}`);
   } catch (e) {
     clearInterval(beat);
+    // (whatever the stop, what was made is kept: a thrown cap or crash used to keep nothing)
+    if (role === "video" || role === "plan") await keepFailedPlan().catch((x) => console.error("[cutaway] the failed plan was not kept:", x?.message ?? x));
     const c = e.retryable === false ? { code: e.code ?? "RENDER_FAILED", retryable: false } : classify(e);
     Object.assign(costs, e.costs ?? {});
     // what this attempt spent, from its own log when the error didn't carry it (a crash, the voice check), and its GPU time
     const logged = spentSoFar();
     for (const k of Object.keys(logged)) costs[k] = Math.max(Number(costs[k]) || 0, +logged[k].toFixed(5));
     if (mode === "gpu") costs.gpuUsd = +(((Date.now() - t0) / 1000) * GPU_USD_PER_SEC).toFixed(5);
-    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 3500), costs });
+    // the step it failed in, for the owner's Details
+    const stage = c.code === "VOICE_FAILED" ? "voice" : c.code === "GATE_FAILED" ? "preview" : lastStage;
+    await tell("failed", { code: c.code, retryable: c.retryable, message: String(e.message ?? e).slice(0, 3500), costs, ...(stage ? { stage } : {}) });
     return { ok: false, code: c.code, error: String(e.message ?? e).slice(0, 1500) };
   }
 }

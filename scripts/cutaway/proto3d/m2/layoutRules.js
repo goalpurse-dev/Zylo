@@ -8,6 +8,8 @@
 //  5. standing water on a paved floor is a thin glossy puddle, not a 35 cm slab
 //  6. a canopy stands in the open (not under the setting.s roof) and stands out from the building beside it
 import { focusOf, signalQueueBox } from "./focus.js";
+import { verbCues } from "./verbs.js";
+import { LIBS } from "./solver.js";
 import { settingBoxes } from "./framing.js";
 import { STREET_BACK, streetRoad } from "../kit/street.js";
 
@@ -75,8 +77,67 @@ export function layoutRules(L) {
   const floorTop = { street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[L.world?.backdrop?.type];
   if (floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
     const b = w.params.box;
-    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
+    // (a flood planned taller than 0.25 m keeps its height: it rises up the curb or the basement wall; flattened, "the
+    // water rises" could never be shown, 60 s free storm drain and sump pump runs of 2026-10-30)
+    if (b.y0 >= floorTop - 0.05 && b.y0 <= floorTop + 0.1 && b.y1 - b.y0 > 0.08 && b.y1 - b.y0 <= 0.25) { w.params.box = { ...b, y0: floorTop + 0.005, y1: floorTop + 0.04 }; w.params.mat = "puddle"; notes.push(`${w.id} is a puddle`); }
   }
+  // 5b. water over the brim in the open (a pool overflowing onto the lawn): its part above the ground is a thin sheet on
+  // the grass, never a slab of water standing in the air (the real checker refused the swimming pool's 18 m slab,
+  // 2026-10-30)
+  if (!floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
+    const b = w.params.box;
+    if (b.y1 > 0.12 && b.y0 < 0.05) { w.params.box = { ...b, y1: 0.07 }; notes.push(`${w.id} spills as a sheet on the ground`); }
+  }
+  // 5b2. water filling a pit in the hook fills over 1.8 s, so it is seen rising (in 0.45 s the real checker's strip saw
+  // the pool already full: "water appears without pouring in", 2026-10-30)
+  for (const b of beats.filter((x) => x.s === "hook")) for (const a of b.do ?? []) {
+    const p = parts.find((q) => q.id === a.p);
+    if (p?.kind === "water" && a.v === "flood" && a.d == null) { a.d = 1.8; notes.push(`hook: ${p.id} fills over 1.8 s`); }
+  }
+  // 5b3. something added to water falls INTO it: a small box the plan calls chlorine, a tablet or a chemical, in a beat
+  // that treats a water part, becomes drops falling onto that water, and the beat looks at the water (the first finished
+  // swimming pool poured its chlorine onto the skimmer, in a close-up of a box; the owner's review of 2026-10-31)
+  for (const b of beats) {
+    const wa = (b.do ?? []).find((a) => /^(clean|clear|dirty)$/.test(a.v) && parts.find((q) => q.id === a.p)?.kind === "water");
+    if (!wa) continue;
+    const w = parts.find((q) => q.id === wa.p), box = w.params.box;
+    for (const a of b.do) {
+      const p = parts.find((q) => q.id === a.p);
+      if (!p || p.kind !== "boxPop" || !/chlor|chemical|tablet|shock|dose|powder/i.test(p.id) || Math.max(...(p.params.size ?? [9])) > 1) continue;
+      p.kind = "drops";
+      p.params = { x0: box.x0 + 1, x1: box.x1 - 1, count: 26, size: 2.6, fromY: box.y1 + 3.2, landY: box.y1, z: (box.z0 + box.z1) / 2, mat: p.params.mat ?? "tankBlue" };
+      a.v = "fall";
+      // (it dissolves as the water clears)
+      b.do = [...b.do, { p: p.id, v: "hide", ...(wa.w ? { w: wa.w } : {}), o: 0.8 }];
+      if (b.shows?.p === p.id) b.shows = { ...b.shows, p: w.id };
+      for (const s of [b.shot, ...(b.shots ?? [])].filter(Boolean)) if ([].concat(s.focus ?? []).includes(p.id)) s.focus = [].concat(s.focus).map((x) => (x === p.id ? w.id : x));
+      notes.push(`${p.id} falls into ${w.id}`);
+    }
+  }
+  // 5b3b. a rig's piece with an "appear" move stays hidden until that move runs: one no beat ever calls runs with the rig's
+  // "show" (the pool's steps and light, the rain barrel's screen and guard never appeared; review of 2026-10-31)
+  for (const p of parts.filter((q) => q.kind === "rig")) {
+    const appears = [...new Set((p.params?.nodes ?? []).flatMap((n) => (n.moves ?? []).filter((m) => m.type === "appear").map((m) => m.name)))];
+    const called = new Set(beats.flatMap((b) => (b.do ?? []).filter((a) => a.p === p.id).map((a) => a.v)));
+    for (const b of beats) {
+      const i = (b.do ?? []).findIndex((a) => a.p === p.id && a.v === "show"); if (i < 0) continue;
+      const add = appears.filter((n) => !called.has(n));
+      if (add.length) { b.do.splice(i + 1, 0, ...add.map((v) => ({ ...b.do[i], v }))); notes.push(`${p.id}: ${add.join(", ")} run with its show`); }
+      break;
+    }
+  }
+  // 5b4. what the "Add ..." line adds must be seen: a rig under 1.2 m (the pool's light, 0.7 m under the water and a wide
+  // shot away, never showed) is 1.6 times as big
+  const addB = beats.find((b) => b.s === "finish");
+  for (const a of addB?.do ?? []) {
+    const p = parts.find((q) => q.id === a.p);
+    if (p?.kind !== "rig" || p.params?.scale > 1.5) continue;
+    const r = focusOf({ ...p, focus: undefined }, null);
+    if (r && Math.max(r.max[0] - r.min[0], r.max[1] - r.min[1], r.max[2] - r.min[2]) < 1.2) { p.params = { ...p.params, scale: 1.6 }; notes.push(`${p.id} is 1.6 times as big, so it is seen`); }
+  }
+  // 5c. a crack is a crack, never a ribbon: at most 8 cm thick (its pale edge is 2.3 times that; at 0.2 m it stood out of
+  // the soil face as a white zigzag strip, real checker 2026-10-30)
+  for (const c of parts.filter((p) => p.kind === "crack" && Number(p.params?.r) > 0.08)) { c.params = { ...c.params, r: 0.08 }; notes.push(`${c.id} is 8 cm thick`); }
   // 6. a canopy stands in the open: one under the setting's own roof (the car wash bay's) moves out past the roof's edge,
   // with the props standing under it (a canopy under a roof read as the building's roof)
   const roofs = settingBoxes(L.world?.backdrop, L.world?.cut ?? null).filter((b) => b.min[1] > 2);
@@ -114,6 +175,52 @@ export function layoutRules(L) {
   if (world.cut && !world.shallow && !parts.some((p) => p.kind === "dig")) {
     const c = world.cut, dig = { id: "dig", kind: "dig", params: { clumps: 120, mound: { x: +(c.x1 + 2.5).toFixed(2), z: +(c.z0 / 2).toFixed(2), rx: 1.2, rz: 1, h: 0.6 }, ...(world.backdrop ? { haul: true } : {}) } };
     if (!byId.has("dig")) { parts.unshift(dig); byId.set("dig", dig); const hook = beats.find((b) => b.s === "hook"); if (hook) hook.do.unshift({ p: "dig", v: "dig" }); notes.push("a cut with nothing digging it: dug at the start of the hook"); }
+  }
+  // 14. the plan says WHAT a shot looks at, the code decides HOW (the owner's rule of 2026-10-26): a shot keeps the parts
+  // it names and the part its sentence shows; its own camera box, view, width and type are dropped (the paid traffic
+  // light test of 2026-10-26 boxed a low view a metre behind a car's bumper, and three sentences failed on cars jammed
+  // against the lens or cut by the frame's edge). The director frames what is left whole, at a distance it chooses.
+  // A car on a street with a signal is framed with the signal: the car's story is the lamp it waits at.
+  const known = (id) => byId.has(String(id).split(".")[0]);
+  const sigOf = parts.find((p) => p.kind === "trafficLight");
+  // (nothing marked main: the thing the hook builds is the subject, "...you have a traffic light"; the named part can be
+  // a piece of it, the controller box, and the finished-build shot framed the box and a bench without the signal)
+  const hookB = beats.find((b) => b.s === "hook");
+  if (!parts.some((p) => p.main) && hookB?.shows?.p && byId.has(String(hookB.shows.p).split(".")[0])) { byId.get(String(hookB.shows.p).split(".")[0]).main = true; notes.push(`${String(hookB.shows.p).split(".")[0]} is the main subject (the hook builds it)`); }
+  for (const b of beats) {
+    if (b.s === "congrats" || !b.shots?.length) continue;
+    const shown = b.shows?.p && known(b.shows.p) ? [b.shows.p] : [];
+    // (the "Add ..." line shows the whole finished build, the things it adds arriving on it: a run framed one bench)
+    // (the build itself and what the line adds, framed close enough to read them: the whole yard left an ice rink's lines
+    // and nets specks; the owner's finish round of 2026-10-29)
+    if (b.s === "finish") { const main = parts.find((p) => p.main)?.id, adds = b.do.filter((a) => /^(show|build|grow|arrive|pop|fill)$/.test(a.v) && known(a.p) && !["light", "rain", "sign", "outline", "arrows"].includes(byId.get(a.p).kind)).map((a) => a.p), ids = [...new Set([main, ...adds].filter(Boolean))]; b.shots = ids.length ? [{ focus: ids, width: 0.85 }] : [{ focus: "home" }]; notes.push("finish: the build and what it adds"); continue; }
+    b.shots = b.shots.map((s) => {
+      if (s.focus === "home" || (Array.isArray(s.focus) && s.focus.includes("home"))) return s;
+      // (a shot of one piece, "door.spring", stays on that piece: the part it hangs on is not added back)
+      // (on a small thing, under 2.5 m, a piece is framed as the whole thing: a toilet's tank alone left its bowl cut off)
+      const small = (id) => { try { const b = focusOf(byId.get(id), cut); return Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) < 2.5; } catch { return false; } };
+      const named0 = [...new Set([].concat(s.focus ?? []).filter(known).map((id) => (String(id).includes(".") && small(String(id).split(".")[0]) ? String(id).split(".")[0] : id)))], pieces = named0.filter((id) => String(id).includes("."));
+      const named = pieces.length ? named0.filter((id) => String(id).includes(".") || !pieces.some((q) => q.startsWith(`${id}.`))) : named0;
+      const piece = (id) => named.some((q) => q.startsWith(`${id}.`));
+      // (nothing named: the parts acting in the sentence, not the scenery switches)
+      const acting = b.do.map((a) => a.p).filter((id) => known(id) && !["light", "rain", "sign", "outline", "arrows"].includes(byId.get(id).kind));
+      const ids = [...new Set([...named, ...shown.filter((id) => !piece(id))])];
+      if (!ids.length) ids.push(...new Set(acting));
+      if (!ids.length) return s;
+      if (sigOf && ids.some((id) => byId.get(String(id).split(".")[0])?.kind === "car") && !ids.includes(sigOf.id)) ids.push(sigOf.id);
+      const keep = Object.fromEntries(Object.entries(s).filter(([k]) => ["at", "word", "hero"].includes(k)));
+      // the width is the code's too: one part fills most of the frame, one piece a little less (its part around it is
+      // context), several parts together fill it (a 45% default left an 8 m garage door a quarter of a phone screen)
+      // a part of the build is shown in its context, with the main subject filling the frame: a pump alone was a grey box
+      // filling the screen, or the pool cut off at the frame's edge (the owner's review of 2026-10-31). A prop to read (a
+      // book, a newspaper) keeps its own frame, from the start of its line: it was small and far until its late word
+      const main = parts.find((p) => p.main)?.id, reads = ids.some((id) => ["book", "sheet", "flag"].includes(byId.get(String(id).split(".")[0])?.kind));
+      if (reads) return { ...keep, at: { s: b.s }, focus: ids, width: 0.75, zone: "center" };
+      if (main && !pieces.length && !ids.includes(main)) ids.push(main);
+      const width = main && ids.includes(main) ? 0.94 : s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      return { ...keep, focus: ids, width };
+    });
+    notes.push(`${b.s}: shots framed by the code`);
   }
   // 9. a street looks along its road (kit/street.js): the road on the side of the cut with fewer parts; nothing stands on
   // it but vehicles; a traffic signal stands on its corner at the stop line with its arm over the lane going away, its
@@ -172,6 +279,9 @@ export function layoutRules(L) {
     const hits = (b) => placed.some((q) => b.max[0] > q.min[0] && b.min[0] < q.max[0] && b.max[2] > q.min[2] && b.min[2] < q.max[2]);
     for (const p of stands) {
       if (group.has(p)) continue;
+      // (road markings belong on the road: the finish's crosswalk and stop line were moved onto the sidewalk, 60 s free
+      // traffic light run, 2026-10-30)
+      if (p.kind === "prop" && /^(crosswalk|stopLine)$/.test(p.params?.type ?? "")) continue;
       const b = boxOf(p); if (!onRoad(b)) continue;
       move(p, +(side < 0 ? R.x1 + 0.5 - b.min[0] : R.x0 - 0.5 - b.max[0]).toFixed(2));
       for (let k = 0; k < 6 && hits(boxOf(p)); k++) move(p, 0, -1.6);
@@ -246,7 +356,53 @@ export function layoutRules(L) {
     const over = world.cut && x > world.cut.x0 - 2.2 && x < world.cut.x1 + 2.2 && z > world.cut.z0 - 1.2;
     if (z > -1.2 || over) { z = over ? +(world.cut.z0 - 1.4).toFixed(2) : -1.2; c.params.pos = [x, y, z]; notes.push(`${c.id} stands on the ground`); }
   }
+  // 15. a meter is readable on a phone: at least 1.4 m (the free runs' 0.8 m meters read as specks in a wide shot)
+  for (const c of parts.filter((p) => p.kind === "counter")) if (!(Number(c.params.size) >= 1.4)) { c.params.size = 1.4; notes.push(`${c.id} is 1.4 m, readable on a phone`); }
+  // 16. a roof stops hiding what is under it: in each sentence after the one that builds it whose showing part stands under
+  // it (not the finish and congrats: the finished build has its roof), the roof turns see-through, and back after
+  // (the free aquarium run: a shade roof covered the tank and its pipes in every later shot)
+  for (const c of parts.filter((p) => p.kind === "canopy")) {
+    const P = c.params, built = beats.findIndex((b) => b.do.some((a) => a.p === c.id && a.v === "build"));
+    if (built < 0) continue;
+    // (near it counts: the camera looks down past the roof edge at what stands beside it, a filter and pipes behind a tank;
+    // and the parts the beat's shot names count with its showing part: a flow along a pipe has no box of its own)
+    const M = 3, near = (id0) => {
+      const id = String(id0 ?? "").split(".")[0]; if (!id || id === c.id || !byId.has(id)) return false;
+      let q = null; try { q = focusOf(byId.get(id), world.cut); } catch { return false; } if (!q) return false;
+      const mx = (q.min[0] + q.max[0]) / 2, mz = (q.min[2] + q.max[2]) / 2;
+      return mx > (P.x0 ?? -3) - M && mx < (P.x1 ?? 3) + M && mz > (P.z0 ?? -5) - M && mz < (P.z1 ?? -1) + M && q.min[1] < (P.y ?? 0) + (P.h ?? 4);
+    };
+    const under = (b) => [b.shows?.p, ...(b.shots ?? []).flatMap((s) => (Array.isArray(s.focus) ? s.focus : []))].some(near);
+    let on = false;
+    for (const b of beats.slice(built + 1)) {
+      const want = !["finish", "congrats"].includes(b.s) && under(b);
+      if (want !== on) { b.do.unshift({ p: c.id, v: want ? "ghost" : "unghost" }); on = want; notes.push(`${c.id} ${want ? "turns see-through" : "comes back"} in ${b.s}`); }
+    }
+  }
+  // 17. a thin upright layer in the soil (a coating, a membrane, a liner on a wall) is only seen edge-on at the cut face: at least
+  // 0.35 m thick there, so its band reads (the free basement run's rubber coat was a thin stripe)
+  for (const pp of parts.filter((p) => p.kind === "panels")) { pp.params.panels = (pp.params.panels ?? []).map((q) => ({ ...q })); }
+  for (const pp of parts.filter((p) => p.kind === "panels")) for (const q of pp.params.panels) {
+    const [sx, sy, sz] = q.size ?? [], low = Array.isArray(q.pos) && q.pos[1] < 0;
+    if (!low || ![sx, sy, sz].every(Number.isFinite) || !/liner|coat|seal|membrane|tar|rubber|foam/i.test(`${q.ch} ${q.mat}`)) continue;
+    // (an upright layer on a wall only: a liner floor seen edge-on stays as thin as it is)
+    const i = 0, t = sx;
+    if (sx < sy && t < 0.35 && sy > 0.6 && sz > 0.6) { q.size = q.size.map((v, k) => (k === i ? 0.35 : v)); notes.push(`${pp.id}.${q.ch} is 0.35 m thick, readable at the face`); }
+  }
+  // 18. free fixes before any check can refuse the plan (the owner's rule of 2026-10-28: a run fails only when nothing
+  // free can fix it): an action on a part that does not exist, or a verb its part does not have, is dropped; a beat for
+  // a role the script does not have is dropped; an unknown library sound is dropped; the cut is kept inside the ground;
+  // a missing end card gets one (it is placed where the end camera sees it, framing.js)
+  for (const b of beats) b.do = b.do.filter((a) => { const p = byId.get(a.p); if (!p) { notes.push(`${b.s}: dropped ${a.p} ${a.v} (no such part)`); return false; } try { verbCues(p, a, { s: b.s }); return true; } catch { notes.push(`${b.s}: dropped ${a.p} ${a.v} (${p.kind} has no such verb)`); return false; } });
+  if (Array.isArray(L.roles) && L.roles.length) for (let i = beats.length - 1; i >= 0; i--) if (!L.roles.includes(beats[i].s)) { notes.push(`dropped beat ${beats[i].s} (no such role)`); beats.splice(i, 1); }
+  const audio = { ...(L.audio ?? {}) };
+  if (Array.isArray(audio.sfx)) { const keep = audio.sfx.filter((s) => LIBS.includes(s.lib)); if (keep.length < audio.sfx.length) notes.push(`dropped ${audio.sfx.length - keep.length} unknown library sounds`); audio.sfx = keep; }
+  if (world.cut && [world.cut.x0, world.cut.x1, world.cut.z0, world.cut.depth].every(Number.isFinite)) {
+    const c = { ...world.cut, x0: Math.max(-14, world.cut.x0), x1: Math.min(14, world.cut.x1), z0: Math.max(-10, world.cut.z0), depth: Math.min(20, world.cut.depth) };
+    if (JSON.stringify(c) !== JSON.stringify(world.cut)) { world.cut = c; notes.push("the cut is kept inside the ground (|x| <= 14, z0 >= -10, depth <= 20)"); }
+  }
+  if (!parts.some((p) => p.kind === "sign")) { const x = (world.cut?.x1 ?? 4) + 3; parts.push({ id: "sign", kind: "sign", params: { at: [x, 0.12, -6], rotY: -0.2, scale: 1.3 } }); notes.push("an end card was added"); }
   // 13. a garage whose door the video builds itself (a designed part named a door): the backdrop leaves its own door out
   if (world.backdrop?.type === "garage" && world.backdrop.door !== false && parts.some((p) => p.kind === "rig" && /door/i.test(`${p.id} ${p.params?.name ?? ""}`))) { world.backdrop = { ...world.backdrop, door: false }; notes.push("the garage leaves its own door out: the video builds one"); }
-  return { layout: { ...L, world, parts, beats }, notes };
+  return { layout: { ...L, world, parts, beats, audio, codeShots: true }, notes };
 }

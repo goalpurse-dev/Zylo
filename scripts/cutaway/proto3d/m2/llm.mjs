@@ -2,6 +2,8 @@
 // outputs (output_config.format); the web search server tool for the fact-check (pause_turn resumed). Every call is
 // priced from its usage and appended to the spend log, so the BUILD_PLAN tally can be checked against it.
 import fs from "node:fs";
+import { REPLAY, replayLLM, realAdd, realAllow, realCall, realKey, realRecord, realRecorded, withReal } from "./providers.mjs";
+import { allow, add } from "./budget.mjs";
 
 // small: the simple steps (re-anchoring words, the post text, the kit check), where it passes the same checks
 export const MODEL = { default: "claude-sonnet-5-5", strong: "claude-opus-5-5", small: "claude-haiku-5-5" };
@@ -45,6 +47,7 @@ async function readStream(res) {
 }
 
 export function loadKey(envFile = "C:/Users/Public/Zylo/.env.local") {
+  if (REPLAY) return "replay";
   if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
   for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) { const m = line.match(/^\s*ANTHROPIC_API_KEY\s*=\s*(.*)\s*$/); if (m) return m[1].replace(/^["']|["']$/g, ""); }
   throw new Error("no ANTHROPIC_API_KEY");
@@ -55,6 +58,24 @@ export function loadKey(envFile = "C:/Users/Public/Zylo/.env.local") {
  * log: the spend log file (one JSON line per call).
  */
 export async function callJSON({ apiKey, model = MODEL.default, system, user, schema, search = 0, effort = "high", maxTokens = 32000, label, log, timeoutMs = 600_000 }) {
+  // the free harness: a recorded or written answer, never the API (providers.mjs)
+  // (a frame check in the harness's real-checker mode goes to the API, under the batch's own cap: providers.mjs)
+  if (REPLAY && realCall(label)) {
+    const rec = realRecorded(label);
+    if (rec.reply) return { data: rec.reply.data, costUsd: 0, usage: null, searches: 0, sources: [] };
+    realAllow(label);
+    const out = await withReal(() => callOnce({ apiKey: realKey(), model, system, user, schema, search, effort, maxTokens, label, log, timeoutMs })).catch((e) => { realAdd(label, e.costUsd ?? 0); throw e; });
+    realAdd(label, out.costUsd); realRecord(rec.file, label, out.data, out.costUsd);
+    return out;
+  }
+  if (REPLAY) return replayLLM({ label, model, system, user, schema, search, log });
+  // the run's spending limit: refused before it is sent if it could pass the cap (budget.mjs)
+  allow(label);
+  const out = await callOnce({ apiKey, model, system, user, schema, search, effort, maxTokens, label, log, timeoutMs }).catch((e) => { add(e.costUsd); throw e; });
+  add(out.costUsd);
+  return out;
+}
+async function callOnce({ apiKey, model, system, user, schema, search, effort, maxTokens, label, log, timeoutMs }) {
   const body = {
     model, max_tokens: maxTokens, stream: true,
     system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],

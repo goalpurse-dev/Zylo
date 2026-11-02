@@ -18,13 +18,13 @@ export const VERBS = {
   flow: { start: [R("on", 0, 0.8)], stop: [R("off", 0, 0.4)] },
   prop: { show: [R("pop", -0.1, 0.3, 1, "lin")] },
   grate: { show: [R("show", -0.1, 0.3, 1, "lin")] },
-  canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")] },
+  canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")], ghost: [R("ghost", -0.3, 0.2, 1, "inOut")], unghost: [R("ghost", -0.2, 0.3, -1, "inOut")] },
   car: { arrive: [R("drive", -0.2, 1.4, 1, "inOut")], leave: [R("leave", 0, 1.4, 1, "in2")] },
-  traffic: { pile: [R("pile", 0, 2.4)], go: [R("go", 0, 2.2, 1, "in2")] },
+  traffic: { pile: [R("pile", 0, 2.4)], go: [R("go", 0, 2.2, 1, "out")], bump: [R("bump", 0, 0.3, 1, "out")], unbump: [R("bump", 0, 0.5, -1, "inOut")] },
   cabinet: { show: [R("pop", -0.1, 0.3, 1, "back")], open: [R("open", 0, 0.7, 1, "out")], close: [R("open", 0, 0.6, -1, "inOut")], lights: [R("lights", 0, 0.2)] },
-  counter: { show: [R("show", -0.1, 0.3, 1, "back")], count: [R("count", 0, 9, 1, "lin")] },
+  counter: { show: [R("show", -0.1, 0.3, 1, "back")], hide: [R("show", 0, 0.3, -1, "inOut")], count: [R("count", 0, 9, 1, "lin")] },
   carWash: { show: [R("arch", -0.1, 0.3, 1, "back")], spray: [R("spray", 0, 0.4)], stopSpray: [R("spray", 0, 0.3, -1)], brushes: [R("brushes", -0.1, 0.3, 1, "back")], close: [R("close", 0, 0.6, 1, "inOut")], open: [R("close", 0, 0.5, -1, "inOut")], spin: [R("spin", 0, 3, 3)], foam: [R("foam", 0, 0.8)], rinse: [R("rinse", 0, 1.0)] },
-  trafficLight: { show: [R("show", -0.1, 0.3, 1, "back")], red: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], allRed: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], cycle: [R("cycle", 0, 0.1, 1, "step")], stopCycle: [R("cycle", 0, 0.1, -1, "step")], flash: [R("flash", 0, 0.1, 1, "step")], stopFlash: [R("flash", 0, 0.1, -1, "step")], yellow: [R("yellow", 0, 0.1, 1, "step")], green: [R("green", 0, 0.1, 1, "step"), R("red", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], loop: [R("loop", 0, 0.5, 1, "out")], pulse: [R("pulse", 0, 0.3)], stopPulse: [R("pulse", 0, 0.3, -1)] },
+  trafficLight: { show: [R("show", -0.1, 0.3, 1, "back")], red: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], allRed: [R("red", 0, 0.1, 1, "step"), R("green", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], cycle: [R("cycle", 0, 0.1, 1, "step")], cycleFast: [R("cycle", 0, 0.1, 1, "step"), R("fast", 0, 0.1, 1, "step")], stopCycle: [R("cycle", 0, 0.1, -1, "step"), R("fast", 0, 0.1, -1, "step")], flash: [R("flash", 0, 0.1, 1, "step")], stopFlash: [R("flash", 0, 0.1, -1, "step")], yellow: [R("yellow", 0, 0.1, 1, "step"), R("red", 0, 0.1, -1, "step"), R("green", 0, 0.1, -1, "step")], green: [R("green", 0, 0.1, 1, "step"), R("red", 0, 0.1, -1, "step"), R("yellow", 0, 0.1, -1, "step")], loop: [R("loop", 0, 0.5, 1, "out")], pulse: [R("pulse", 0, 0.3)], stopPulse: [R("pulse", 0, 0.3, -1)] },
   hydrant: { show: [R("show", -0.1, 0.3, 1, "back")], barrel: [R("barrel", 0, 0.7, 1, "out")], open: [R("stem", 0, 0.8), R("valve", 0.1, 0.6, 1, "inOut")], fill: [R("water", 0, 0.9, 1, "out")], spray: [R("spray", 0, 0.3)], close: [R("stem", 0, 0.8, -1), R("valve", 0.1, 0.6, -1, "inOut"), R("spray", 0, 0.3, -1)], drain: [R("water", 0, 1.2, -1, "lin"), R("drain", 0, 0.2)], stopDrain: [R("drain", 0, 0.2, -1)] },
   atm: { show: [R("show", -0.1, 0.3, 1, "back")], screen: [R("screen", 0, 0.3, 1, "out")], card: [R("card", 0, 0.6, 1, "inOut")], safe: [R("safe", -0.1, 0.4, 1, "back")], cassettes: [R("cassettes", 0, 0.7, 1, "back")], pick: [R("pick", 0, 1.2)], cash: [R("cash", 0, 0.6, 1, "out")] },
   vendingMachine: { show: [R("show", -0.1, 0.3, 1, "back")], fill: [R("snacks", 0, 0.8)], slot: [R("slot", -0.1, 0.25, 1, "back")], steal: [R("steal", 0, 1.1)], glass: [R("glass", 0, 0.6, 1, "out")], coils: [R("coils", -0.05, 0.4, 1, "back")], coin: [R("coin", 0, 0.9)], turnA: [R("spinA", 0, 1.0, 1, "inOut")], dropA: [R("fallA", 0, 0.45, 1, "lin")], turnB: [R("spinB", 0, 0.8, 0.75, "inOut")], retryB: [R("spinB", 0, 0.7, 0.35, "inOut")], dropB: [R("fallB", 0, 0.45, 1, "lin")], beam: [R("beam", -0.1, 0.2)], cooler: [R("cooler", -0.1, 0.35, 1, "back")], light: [R("light", 0, 0.5, 1, "out")] },
@@ -89,15 +89,15 @@ export function verbCues(part, act, at) {
 }
 
 /** a layout's beats -> cues (added to its own cues) and shots for the camera director */
-export function expandBeats(layout) {
+export function expandBeats(layout, { lenient = false } = {}) {
   const parts = new Map(layout.parts.map((p) => [p.id, p]));
   const cues = [], shots = [];
   for (const beat of layout.beats ?? []) {
     for (const act of beat.do ?? []) {
       const part = parts.get(act.p);
-      if (!part) throw new Error(`beat ${beat.s}: no part ${act.p}`);
+      if (!part) { if (lenient) continue; throw new Error(`beat ${beat.s}: no part ${act.p}`); }
       const at = act.w ? { s: beat.s, w: act.w, ...(act.n ? { n: act.n } : {}) } : act.at ?? { s: beat.s };
-      cues.push(...verbCues(part, act, at));
+      try { cues.push(...verbCues(part, act, at)); } catch (e) { if (!lenient) throw e; }
     }
     for (const shot of [beat.shot, ...(beat.shots ?? [])].filter(Boolean)) shots.push({ ...shot, at: shot.at ?? { s: beat.s } });
   }

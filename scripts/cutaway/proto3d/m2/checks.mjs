@@ -112,17 +112,57 @@ export function previewTimes(tl, layout = null) {
     // the moment after the sentence's showing action has settled (else after its last action)
     // (and of every part the sentence's own shot frames: "a pump that pushes the water through a filter box" was judged
     // when the pump had popped in, before the filter and the flow had come, and failed for a missing filter)
-    const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : []))].filter(Boolean));
-    const own = shows ? Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next).map((r) => r.t1)) : [];
-    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
+    // (and of every part the beat itself acts on: "so a pipe carries it" was judged on the bubbles alone, before the gas
+    // pipe had grown, in the free harness of 2026-10-27)
+    const framed = new Set([shows?.p, ...(beat?.shots ?? []).flatMap((x) => (Array.isArray(x.focus) ? x.focus : [])), ...(shows ? (beat?.do ?? []).map((a) => a.p) : [])].filter(Boolean));
+    // (only actions that start while the sentence is spoken: the next sentence's lead-in, a "So" that hides this beat's
+    // seep 0.25 s early, belongs to the next beat; the free harness of 2026-10-27 found Landfill frames judged after it)
+    // (a held motion's tail, after the line, is never waited for: the frames are taken in the hold; compile.mjs holdRamps)
+    const framedRamps = Object.entries(tl.tracks).filter(([k]) => framed.has(k.split(".")[0])).flatMap(([, tr]) => tr.ramps.filter((r) => !r.tail));
+    // a motion of this beat, or of a later one (by the sentence it is anchored to; one tied to no sentence, as the end
+    // card's pop, goes by its time)
+    const order = (role) => tl.sentences.findIndex((x) => x.role === role);
+    const mine = (r) => (r.s ? r.s === s.role : r.t0 >= s.t0 - 0.5 && r.t0 < next);
+    const later = (r) => (r.s ? order(r.s) > i : r.t0 >= s.t1);
+    const own = shows ? framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next + 0.4).map((r) => r.t1) : [];
+    const ends = own.length ? own : Object.values(tl.tracks).flatMap((tr) => tr.ramps.filter((r) => !r.tail && mine(r) && r.t0 >= s.t0 - 0.5 && r.t0 < next - 0.3).map((r) => r.t1));
     // (the showing action on the last word, a canopy going up on "canopy", may settle just after the sentence: up to 0.4 s)
-    // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed)
+    // and never after the camera has set off for the next sentence's shot (a frame mid-move loses what this one framed),
+    // nor after the next beat starts changing what this one frames (the newspaper sinking on "But")
     const moveOff = Math.min(Infinity, ...(tl.director?.frames ?? []).filter((f) => f.t >= next - 0.05).map((f) => f.t - MOVE.lead - 0.05));
-    const lim = Math.min(own.length ? next + 0.4 : next - 0.15, moveOff);
-    const t = Math.min(lim, Math.max(s.t0 + 1.0, ...ends.map((e) => Math.min(e + 0.2, lim))));
+    const changeOff = Math.min(Infinity, ...framedRamps.filter((r) => later(r) && r.t0 >= s.t0 && r.t0 < next + 0.4).map((r) => r.t0 - 0.03));
+    // nor after this beat takes its own shown thing away again (a myth's wrong idea: the toilet's push arrows came on
+    // "pushing" and went on "not", and the frame after both showed nothing; free harness, 2026-10-28)
+    // (only its visibility channel coming back down: a designed part's other channels, a toilet's gas or water, go up and
+    // down as its story runs)
+    const part = layout?.parts?.find((p) => p.id === shows?.p);
+    const appear = new Set(["on", "pop", "show", "appear", ...((part?.params?.nodes ?? []).flatMap((n) => (n.moves ?? []).filter((m) => m.type === "appear").map((m) => m.name)))]);
+    let hideOff = Infinity;
+    if (shows) for (const [k, tr] of Object.entries(tl.tracks)) {
+      const [p, ch] = k.split("."); if (p !== shows.p || !appear.has(ch)) continue;
+      const rs = tr.ramps.filter(mine).sort((a, b) => a.t0 - b.t0), on = rs.find((r) => r.amp > 0);
+      if (on) hideOff = Math.min(hideOff, ...rs.filter((r) => r.amp < 0 && r.t0 >= on.t1).map((r) => r.t0 - 0.03));
+    }
+    const lim = Math.min(own.length ? next + 0.4 : next - 0.15, moveOff, changeOff, hideOff);
+    const t = Math.min(lim, Math.max(Math.min(s.t0 + 1.0, lim), ...ends.map((e) => Math.min(e + 0.2, lim))));
     // congrats is judged before the end card pops (the finished build must be in view, not the sign)
     const tt = s.role === "congrats" && tl.marks?.signPop ? Math.min(t, tl.marks.signPop - 0.2) : t;
-    out.push({ role: s.role, text: s.text, t: +Math.max(s.t0 + 0.3, tt).toFixed(2), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
+    // the moments the checker sees, left to right: the start of the sentence's own action, the middle, the end (a change
+    // such as "drives off" or "snaps" shows ACROSS frames, never in one still; the owner's rule of 2026-10-28)
+    const end = +Math.max(s.t0 + 0.3, tt).toFixed(2);
+    const firstOwn = Math.min(Infinity, ...framedRamps.filter((r) => mine(r) && r.t0 >= s.t0 - 0.5).map((r) => r.t0));
+    // (never in the opening fade: the real checker saw the swimming pool's hook strip open on a black frame at 0.2 s and
+    // failed it, 2026-10-30)
+    const start = +Math.max(0.6, s.t0 + 0.15, Number.isFinite(firstOwn) ? firstOwn + 0.05 : s.t0 + 0.15).toFixed(2);
+    // the middle frame in the hold: just after the sentence's last motion has peaked, before anything takes it back (a
+    // panel that "swings out and slams back" was judged before the swing and after the slam; round 3, 2026-10-28)
+    const peaks = framedRamps.filter((r) => mine(r) && r.amp > 0 && r.e !== "step" && r.t1 - r.t0 >= 0.25 && r.t1 > start + 0.2 && r.t1 < end - 0.15).map((r) => r.t1);
+    const mid = peaks.length ? +(Math.max(...peaks) + 0.05).toFixed(2) : +((start + end) / 2).toFixed(2);
+    const ts = end - start >= 0.6 ? [start, mid, end] : [end];
+    // the state label up at each moment (it is a caption, not in the canvas: previewStrips draws it on the frame)
+    const labels = (tl.audio?.cards ?? []).filter((c) => c.kind === "state");
+    const label = ts.map((x) => labels.find((c) => x >= c.s && x <= c.e)?.text ?? null);
+    out.push({ role: s.role, text: s.text, t: end, ts, ...(label.some(Boolean) ? { label } : {}), ...(mustFor(s.role, shows) ? { must: mustFor(s.role, shows) } : {}) });
   });
   return out;
 }
@@ -142,21 +182,44 @@ export function mustFor(role, shows) {
 export const MECHANISM = ["name", "how", "fix1", "fix2", "fix3"];
 
 const VISION_SCHEMA = { type: "object", additionalProperties: false, required: ["frames"], properties: { frames: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "ok", "seen", "problem"], properties: { role: { type: "string" }, ok: { type: "boolean" }, seen: { type: "string" }, problem: { type: "string" } } } } } };
-const VISION_SYSTEM = `When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
+const VISION_SYSTEM = `Each sentence comes as ONE image: a strip of up to 3 frames, left to right, from the start to the end of that sentence's moment. A sentence about motion or change (something moving, filling, rising, overflowing, changing colour, breaking, snapping, swinging, rolling up, driving off, lighting up) passes when that change is visible ACROSS the frames, before to after; no single frame needs to show motion, and the end frame alone need not. A sentence without motion passes on a clear frame. When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
 
-/** 2b. the vision check (paid: about $0.01 per frame at 540x960) */
-export async function visionCheck({ apiKey, frames, log, model }) {
-  const frames0 = frames;
-  const content = [];
-  for (const f of frames) {
-    content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
-    content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(f.file).toString("base64") } });
+// the one-frame check (before 2026-10-28): premade keeps it, its approved scenes were judged by it (the owner's decision
+// of 2026-10-28: the multi-frame check is for custom only)
+const VISION_SYSTEM_ONE = `When a frame's line says "visible, no action needed", ok is true if that thing is clearly in view and readable at phone size; it need not be doing anything. When a frame says what it must clearly show, ok is true only if that thing is on screen, readable at phone size and visibly DOING it in this frame (water flowing along its path, sludge moving through the pipe, sand lying on the tank floor, a dark oil layer on top, the part built where the sentence says). Arrows alone never count as the action. Nothing may float in the air. You check preview frames of a 3D cutaway explainer video (a lawn and a house with the ground cut open in section; the viewer sees the ground's cut face). Each frame is the moment after one sentence of the narration. For each frame, say what you see and whether it SHOWS what its sentence says: the named thing is visible and readable at phone size, it is in the scene where the sentence puts it, and nothing is broken (floating parts, parts inside the house, a part cut off by the frame edge, a black or empty frame, the camera inside geometry). Captions and number cards are added later, so their absence is fine. Be strict about the named part and lenient about style. ok = true when the frame shows the sentence well enough for a viewer; problem = "" when ok, otherwise one short sentence saying what is wrong and what to change.`;
+
+/** 2b. the vision check (paid: about $0.01 per frame at 540x960). multi: false = the one-frame check (premade) */
+export async function visionCheck({ apiKey, frames, log, model, multi = true, label: L0 = "vision check" }) {
+  const ask = async (fs0, label) => {
+    const content = [];
+    for (const f of fs0) {
+      content.push({ type: "text", text: `Frame ${f.role} at ${f.t} s${f.ts?.length > 1 ? ` (a strip of ${f.ts.length} frames, ${f.ts[0]} to ${f.t} s, left to right)` : ""}. Sentence: "${f.text}"${f.must ? `\nIt must clearly show: ${f.must}` : ""}` });
+      content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(f.file).toString("base64") } });
+    }
+    content.push({ type: "text", text: "Check every frame, in order." });
+    const r = await callJSON({ apiKey, model, system: multi ? VISION_SYSTEM : VISION_SYSTEM_ONE, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label, log });
+    // one strip judged as several verdicts (its start, middle and end: the real checker did this on the salvage look of
+    // the swimming pool's hook, 2026-10-30, and the order mapping kept only the passing "start"): one verdict, ok only if
+    // every part is, with the failing parts' problems
+    const got = r.data.frames ?? [];
+    if (fs0.length === 1 && got.length > 1) {
+      const bad = got.filter((f) => !f.ok);
+      return { r, judged: [{ role: fs0[0].role, t: fs0[0].t, ok: !bad.length, seen: got.map((f) => f.seen).filter(Boolean).join(" "), problem: bad.map((f) => f.problem).filter(Boolean).join(" ") }] };
+    }
+    // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
+    return { r, judged: fs0.map((f0, i) => { const f = r.data.frames?.[i]; return f ? { ...f, role: f0.role, t: f0.t } : { role: f0.role, t: f0.t, ok: false, seen: "", problem: "" }; }) };
+  };
+  const first = await ask(frames, L0);
+  let judged = first.judged, cost = first.r.costUsd;
+  // an empty verdict (no answer for a frame, nothing seen and no problem) is asked again once, never counted as a failure
+  // (the paid traffic light check of 2026-10-28 failed a frame on one)
+  const blank = judged.map((f, i) => (!f.ok && !String(f.seen ?? "").trim() && !String(f.problem ?? "").trim() ? i : -1)).filter((i) => i >= 0);
+  if (blank.length) {
+    const again = await ask(blank.map((i) => frames[i]), `${L0} (re-ask)`);
+    cost += again.r.costUsd;
+    blank.forEach((i, k) => { const g = again.judged[k]; judged[i] = !g.ok && !String(g.seen ?? "").trim() && !String(g.problem ?? "").trim() ? { ...g, ok: true, seen: "(no verdict twice: not counted)" } : g; });
   }
-  content.push({ type: "text", text: "Check every frame, in order." });
-  const r = await callJSON({ apiKey, model, system: VISION_SYSTEM, user: content, schema: VISION_SCHEMA, effort: "medium", maxTokens: 16000, label: "vision check", log });
-  // the verdicts belong to the frames in the order they were sent (the model sometimes writes a part name as the role)
-  const judged = (r.data.frames ?? []).map((f, i) => (frames0[i] ? { ...f, role: frames0[i].role, t: frames0[i].t } : f));
-  return { ...r.data, frames: judged, costUsd: r.costUsd };
+  return { ...first.r.data, frames: judged, costUsd: +cost.toFixed(5) };
 }
 
 /** small jpgs of the preview pngs, for the vision check */

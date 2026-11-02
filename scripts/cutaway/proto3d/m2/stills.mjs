@@ -31,7 +31,11 @@ await page.waitForFunction("window.ready === true", { timeout: 60000 });
 const t0 = Date.now();
 for (let i = 0; i < times.length; i++) {
   // a time "t@c": the scene at t, the camera at c (the flicker check)
-  const data = await page.evaluate((t) => { if (Array.isArray(t)) window.renderAt(t[0], t[1]); else window.renderAt(t); return document.querySelector("canvas").toDataURL("image/png"); }, times[i]);
+  const grab = () => page.evaluate((t) => { if (Array.isArray(t)) window.renderAt(t[0], t[1]); else window.renderAt(t); const c = document.querySelector("canvas"); c.getContext("webgl2")?.finish?.(); return c.toDataURL("image/png"); }, times[i]);
+  // (a blank capture on the GPU server, as in render.mjs, is taken again: the real checker failed a pool hook for a black
+  // frame in its strip, 2026-10-30; a real frame's PNG is megabytes, an empty one a few KB)
+  let data = await grab();
+  for (let k = 0; k < 6 && data.length < 200000; k++) { await new Promise((r) => setTimeout(r, 40 * (k + 1))); data = await grab(); }
   fs.writeFileSync(path.join(outDir, `f_${String(i).padStart(3, "0")}.png`), Buffer.from(data.split(",")[1], "base64"));
 }
 fs.writeFileSync(path.join(outDir, "times.json"), JSON.stringify(times));

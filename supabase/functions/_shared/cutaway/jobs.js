@@ -6,8 +6,10 @@ export const BUCKET = "cutaway-renders";
 export const FRAMES = 8;              // preview frames the page shows while the video renders
 export const CHUNK_FRAMES = 110;      // the CPU fallback: frames a machine renders (~6 min on performance-8x)
 export const MAX_CHUNKS = 20;
-export const PLAN_FILES = Object.freeze(["layout", "script", "words", "voice", "post"]);
-const EXT = { layout: "json", script: "json", words: "json", voice: "mp3", post: "json" };
+// (steps: the planner's paid replies of a failed attempt, so the retry replays them instead of paying again: the
+// swimming pool 60 s run of 2026-10-29 paid for its plan twice, $1.59, and took 16 minutes)
+export const PLAN_FILES = Object.freeze(["layout", "script", "words", "voice", "post", "steps"]);
+const EXT = { layout: "json", script: "json", words: "json", voice: "mp3", post: "json", steps: "json" };
 
 export const runDir = (run) => `${run.env ?? "prod"}/${run.user_id}/${run.id}`;
 export const paths = (run) => ({
@@ -42,14 +44,24 @@ export function sameToken(a, b) {
  * A job for the worker. urls: signed URLs the server made for this job ({ planPut, planGet, frames, final, web, poster,
  * segment, segments }); layout: an approved layout to reuse (premade), or null.
  */
+// The most one attempt may spend on OPTIONAL paid calls: an emergency brake, not a budget (the owner's rule of 2026-10-29:
+// the swimming pool was stopped by a $0.70 cap at its preview check, after everything costly was paid). Well under what
+// customers pay (custom $2.72 / $3.90); the final steps (the voice, the first preview check, the post text) always run.
+export const RUN_CAP_USD = Object.freeze({ premade: 0.6, custom30: 1.5, custom60: 2.2 });
+export const runCapFor = (run) => (run.kind === "custom" ? (Number(run.length_sec) >= 60 ? RUN_CAP_USD.custom60 : RUN_CAP_USD.custom30) : RUN_CAP_USD.premade);
+
 export function jobFor(run, { role, mode, urls, callback, layout = null, chunk = null, library = null }) {
   const job = {
     v: 1, runId: run.id, role, mode, attempt: run.attempt ?? 1, topic: run.topic, lengthSec: run.length_sec, kind: run.kind,
-    endCard: run.end_card !== false, callback,
+    endCard: run.end_card !== false, callback, capUsd: runCapFor(run),
   };
   if (role === "video" || role === "plan") {
     if (run.plan_ready && urls.planGet) job.plan = { get: urls.planGet };
-    else { job.plan = { put: urls.planPut }; if (layout) job.layout = layout; if (library?.length) job.library = library; }
+    else {
+      job.plan = { put: urls.planPut }; if (layout) job.layout = layout; if (library?.length) job.library = library;
+      // a retry: the earlier attempt's paid planner replies, replayed for free (they may be missing: the worker goes on)
+      if ((run.attempt ?? 1) > 1 && urls.resume) job.plan.resume = urls.resume;
+    }
   } else job.plan = { get: urls.planGet };
   if (role === "video" || role === "plan") job.out = { frames: urls.frames ?? [] };
   if (role === "video" || role === "mix") job.out = { ...(job.out ?? {}), final: urls.final, web: urls.web, poster: urls.poster };

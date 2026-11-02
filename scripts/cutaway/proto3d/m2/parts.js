@@ -326,13 +326,14 @@ export const KINDS = {
   /** a book (cover text) that rises out of the ground and sinks back (kit paperProp); channels: up, down (steps) */
   book(ctx, p, api) {
     const b = paperProp(ctx, p);
-    return { update(t) { const u = api.cue("up"), d = api.cue("down"); b.update(t, u.t0, p.from, p.to, d ? d.t0 : Infinity, p.rot); } };
+    // (a book whose "up" never comes stays away: no cue was a stopped page)
+    return { update(t) { const u = api.cue("up"), d = api.cue("down"); b.update(t, u ? u.t0 : Infinity, p.from, p.to, d ? d.t0 : Infinity, p.rot); } };
   },
 
   /** a flag that pops in, gets a red "no" cross, then goes (kit flagProp); channels: show, cross, gone (steps) */
   flag(ctx, p, api) {
     const f = flagProp(ctx, p);
-    return { update(t) { f.update(t, api.cue("show").t0, api.cue("cross")?.t0 ?? Infinity, api.cue("gone")?.t0 ?? Infinity); } };
+    return { update(t) { f.update(t, api.cue("show")?.t0 ?? Infinity, api.cue("cross")?.t0 ?? Infinity, api.cue("gone")?.t0 ?? Infinity); } };
   },
 
   /** bushes that pop in staggered (kit shrubs); channel: start (a step) */
@@ -357,7 +358,7 @@ export const KINDS = {
   drops(ctx, p, api) {
     const { THREE, scene, rnd } = ctx;
     const N = p.count ?? 22, im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), api.mat(p.mat ?? "mud"), N); im.renderOrder = 4; scene.add(im);
-    const data = Array.from({ length: N }, (_, i) => ({ x: p.x0 + 0.6 + (i + rnd() * 0.6) * (p.x1 - p.x0 - 1.2) / N, ph: rnd() * 0.35, s: 0.07 + rnd() * 0.04 }));
+    const data = Array.from({ length: N }, (_, i) => ({ x: p.x0 + 0.6 + (i + rnd() * 0.6) * (p.x1 - p.x0 - 1.2) / N, ph: rnd() * 0.35, s: (p.size ?? 1) * (0.07 + rnd() * 0.04) }));
     const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v4 = new THREE.Vector3(), s4 = new THREE.Vector3();
     return {
       update(t) {

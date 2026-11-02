@@ -28,20 +28,24 @@ function terminal(run, f, now) {
   if (run.provider === "runpod" && run.provider_job_id) actions.push({ type: "cancel", provider: "runpod", jobId: run.provider_job_id });
   if (f.code === "PROVIDER_BALANCE") actions.push({ type: "alert", key: "cutaway-provider-balance", subject: "Cutaway: a provider is out of balance", text: `Run ${run.id} failed: ${f.message ?? f.code}. New videos are paused until the balance is topped up.` });
   else if (!NO_RETRY.has(f.code)) actions.push({ type: "alert", key: "cutaway-render-failed", subject: "Cutaway: a video failed on our side", text: `Run ${run.id} (${run.topic}) failed after its retries: ${f.code} ${String(f.message ?? "").slice(0, 400)}` });
-  // (the stage keeps the step it failed in: the owner's Details show it)
-  return { patch: { status: "failed", error_code: f.code, error_message: String(f.message ?? "").slice(0, 3500), finished_at: iso(now) }, actions };
+  // (the stage keeps the step it failed in: the owner's Details show it; the worker names it when it knows)
+  // (and the earlier attempts' errors stay below it: the swimming pool 60 s run of 2026-10-29 lost why attempt 1 failed)
+  const earlier = (run.attempt ?? 1) > 1 && run.error_message ? `\n\nEarlier: ${run.error_message}` : "";
+  return { patch: { status: "failed", error_code: f.code, error_message: `${String(f.message ?? "").slice(0, 3000)}${earlier}`.slice(0, 3500), finished_at: iso(now), ...(f.stage ? { stage: f.stage } : {}) }, actions };
 }
+/** a retried attempt's error, kept (the next attempt's failure shows it as "Earlier") */
+const tried = (run, f) => `${run.error_message ? `${run.error_message}\n` : ""}attempt ${run.attempt ?? 1}: ${f.code} ${String(f.message ?? "").slice(0, 600)}`.slice(-1500);
 
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
 export function failOrRetry(run, f, now = Date.now()) {
   if (NO_RETRY.has(f.code) || f.retryable === false) return terminal(run, f, now);
   const attempt = run.attempt ?? 1;
   if (run.provider !== "fly" && attempt < LIMITS.attempts && f.code !== "NO_GPU_SLOT") {
-    return { patch: { attempt: attempt + 1, error_code: f.code, heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] };
+    return { patch: { attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] };
   }
   if (run.provider !== "fly") {
     const phase = run.plan_ready ? "chunks" : "plan";
-    return { patch: { provider: "fly", attempt: attempt + 1, error_code: f.code, heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null, fallback: { phase, chunks: [], tries: {} } }, actions: [phase === "plan" ? { type: "dispatch", target: "fly", role: "plan" } : { type: "dispatch", target: "fly", role: "chunks" }] };
+    return { patch: { provider: "fly", attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null, fallback: { phase, chunks: [], tries: {} } }, actions: [phase === "plan" ? { type: "dispatch", target: "fly", role: "plan" } : { type: "dispatch", target: "fly", role: "chunks" }] };
   }
   // on the fallback: the piece that failed gets one more try
   const fb = run.fallback ?? { phase: "plan", chunks: [], tries: {} }, key = f.piece ?? fb.phase, tries = (fb.tries?.[key] ?? 1);
@@ -93,7 +97,7 @@ export function onEvent(run, ev, now = Date.now()) {
       actions.push({ type: "settle", seconds: ev.seconds ?? null, renderer: ev.renderer ?? null }, { type: "saveLayout" });
       return { patch: { ...beat, status: "done", stage: "done", pct: 100, finished_at: iso(now), files: ev.files ?? null, renderer: ev.renderer ?? null, error_code: null, error_message: null }, actions };
     case "failed": {
-      const r = failOrRetry(run, { code: ev.code ?? "RENDER_FAILED", message: ev.message, retryable: ev.retryable, piece: ev.role === "chunk" ? `chunk_${ev.index}` : ev.role === "mix" || ev.role === "plan" ? ev.role : undefined }, now);
+      const r = failOrRetry(run, { code: ev.code ?? "RENDER_FAILED", message: ev.message, retryable: ev.retryable, stage: typeof ev.stage === "string" ? ev.stage.slice(0, 40) : undefined, piece: ev.role === "chunk" ? `chunk_${ev.index}` : ev.role === "mix" || ev.role === "plan" ? ev.role : undefined }, now);
       return { patch: r.patch, actions: [...actions, ...r.actions] };
     }
     case "runpod": {

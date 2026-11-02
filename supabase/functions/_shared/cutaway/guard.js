@@ -50,3 +50,12 @@ export function decide(settings, counts, addUsd, { envOff = false } = {}) {
   if (n("user_starts_1h") >= s.user_starts_per_hour) return { ok: false, code: "LIMIT", reason: "That's a lot of videos in an hour. Try again a little later.", retryAfterSec: 900 };
   return { ok: true, code: null, reason: null, retryAfterSec: 0 };
 }
+
+/** Beta: custom videos per user per 24 hours (the owner's rule of 2026-10-31). runs: their custom runs of the last 24 h, or null when unreadable (closed). */
+export const CUSTOM_PER_DAY = 3;
+export function customDayLimit(runs, now = Date.now()) {
+  if (!Array.isArray(runs)) return { ok: false, code: "BUSY", message: "Video making is paused on our side right now.", retryAfterSec: 300 };
+  if (runs.length < CUSTOM_PER_DAY) return { ok: true };
+  const oldest = Math.min(...runs.map((r) => Date.parse(r.created_at)));
+  return { ok: false, code: "LIMIT", message: `During the Beta you can make ${CUSTOM_PER_DAY} custom videos a day. Premade topics have no such limit.`, retryAfterSec: Math.max(60, Math.ceil((oldest + 86400000 - now) / 1000)) };
+}

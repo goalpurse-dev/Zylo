@@ -5,6 +5,7 @@ import { KIND_CHANNELS } from "./parts.js";
 import { homeView, projectBox, SHOTS } from "./director.js";
 import { liftToFloor, placeLifeProps, placeSign } from "./framing.js";
 import { layoutRules } from "./layoutRules.js";
+import { PROP_NAMES } from "./clarityParts.js";
 
 export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
@@ -66,12 +67,17 @@ export function layoutFromScene(scene, { key, title, roles }) {
   if (scene.world.trees?.length === 2) world.trees = scene.world.trees;
   if (Array.isArray(scene.world.road) && scene.world.road.length === 3) world.road = scene.world.road;
   if (scene.world.rocksAvoid?.length) { world.rocksAvoid = scene.world.rocksAvoid; world.roots = { pad: 0.8, to: Math.max(7, x1 + 2) }; }
-  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true; const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
+  const parts = (scene.parts ?? []).map((p) => { const out = { id: p.id, kind: p.kind, params: p.params ?? json(p.paramsJson, `part ${p.id} params`) }; if (p.main) out.main = true;
+    // a prop named in words ("potted plant", the real garage door plan of 2026-10-26) is the kit's prop of that name
+    if (out.kind === "prop" && typeof out.params?.type === "string") { const n = out.params.type.toLowerCase().replace(/[^a-z]/g, ""); const hit = PROP_NAMES.find((x) => x.toLowerCase() === n); if (hit) out.params = { ...out.params, type: hit }; } const base = p.base ?? json(p.baseJson, `part ${p.id} base`); if (base && Object.keys(base).length) out.base = base; return out; });
   const beats = scene.beats.map((b) => ({
     s: b.s,
     // what this sentence visibly shows: the part that does its verb (the solver checks it acts in this beat)
     ...(b.shows?.p ? { shows: { p: String(b.shows.p), does: String(b.shows.does ?? "") } } : {}),
-    do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp && a.amp !== 1) o.amp = a.amp; if (a.ch) o.ch = a.ch; return o; }),
+    // the red state label the planner gave a problem beat (compile.mjs stateCards; it was dropped here, so only the
+    // fallback word list ever labelled a line: the aquarium's "TOO HOT" never showed, free harness 2026-10-28)
+    ...(b.state?.text || typeof b.state === "string" ? { state: typeof b.state === "string" ? { text: b.state } : { text: String(b.state.text), ...(b.state.w ? { w: String(b.state.w) } : {}) } } : {}),
+    do: (b.do ?? []).map((a) => { const o = { p: a.p, v: a.v }; if (a.w) o.w = a.w; if (a.o) o.o = a.o; if (a.d) o.d = a.d; if (a.amp != null && Number.isFinite(Number(a.amp)) && Number(a.amp) !== 1) o.amp = Number(a.amp); /* (amp 0 is kept: it became 1, a full extra pop) */ if (a.ch) o.ch = a.ch; return o; }),
     shots: (b.shots ?? []).map((s) => {
       const o = (s.focus ?? []).includes("home") ? { focus: "home" } : s.box?.length === 6 ? { box: { min: s.box.slice(0, 3), max: s.box.slice(3) } } : { focus: s.focus };
       if (s.view && s.view !== "home") { if (VIEWS.includes(s.view)) o.view = s.view; else problems.push(`shot view "${s.view}": use one of ${VIEWS.join(", ")}`); } if (s.width) o.width = s.width; if (s.type) { if (SHOT_TYPES.includes(s.type)) o.type = s.type; else problems.push(`shot type "${s.type}": use one of ${SHOT_TYPES.join(", ")}`); } if (s.hero) o.hero = true; if (s.word) o.at = { s: b.s, w: s.word };
@@ -105,6 +111,7 @@ export function sceneFromLayout(L) {
     beats: L.beats.map((b) => ({
       s: b.s,
       ...(b.shows ? { shows: b.shows } : {}),
+      ...(b.state ? { state: b.state } : {}),
       do: (b.do ?? []).map((a) => ({ p: a.p, v: a.v, w: a.w ?? "", o: a.o ?? 0, d: a.d ?? 0, amp: a.amp ?? 1, ch: a.ch ?? "" })),
       shots: [b.shot, ...(b.shots ?? [])].filter(Boolean).map((s) => ({ focus: s.focus === "home" ? ["home"] : s.focus ?? [], view: typeof s.view === "string" ? s.view : "home", width: s.width ?? 0, type: s.type ?? "", hero: !!s.hero, word: s.at?.w ?? "", box: s.box ? [...s.box.min, ...s.box.max] : [] })),
     })),

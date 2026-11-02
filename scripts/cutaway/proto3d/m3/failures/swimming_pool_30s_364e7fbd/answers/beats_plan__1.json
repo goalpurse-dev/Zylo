@@ -1,0 +1,108 @@
+{
+ "hash": "*",
+ "by": "real run 364e7fbd-6ceb-4053-b9f0-739c8cb71534",
+ "searches": 0,
+ "data": {
+  "why": "A backyard swimming pool built in the yard cut: we open close on the hole filling with water, watch it drain into the soil, then line it with a concrete shell, and the algae problem is fixed by a pump, pipes and a sand filter tank beside the pool, with the camera moving from the pool to the equipment and back to home view for the fence, bushes and young trees.",
+  "sceneJson": "{\"world\":{\"cut\":[-6,6,-7,3],\"house\":[0,0,-22],\"porch\":true,\"trees\":[[-14.5,-12],[14,-13,0.9]],\"road\":[17,0.01,-57],\"rocksAvoid\":[[-6.5,14,-3.4,0.5]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":160,\"mound\":{\"x\":-10.5,\"z\":-2.5,\"rx\":1.9,\"rz\":1.5,\"h\":1.2}}},{\"id\":\"waterA\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.98,\"x1\":5.98,\"y0\":-3,\"y1\":-0.4,\"z0\":-6.98,\"z1\":-0.01},\"mat\":\"water\"}},{\"id\":\"shell\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"sFloor\",\"mat\":\"concrete\",\"size\":[12,0.25,7],\"anchor\":[1,1,1],\"pos\":[-6,-3,-7],\"axis\":\"x\",\"vis\":0,\"r\":0.03},{\"ch\":\"sBack\",\"mat\":\"concrete\",\"size\":[12,2.6,0.25],\"anchor\":[1,1,1],\"pos\":[-6,-3,-7],\"axis\":\"x\",\"vis\":0,\"r\":0.03},{\"ch\":\"sLeft\",\"mat\":\"concrete\",\"size\":[0.25,2.6,7],\"anchor\":[1,1,1],\"pos\":[-6,-3,-7],\"axis\":\"z\",\"vis\":0,\"r\":0.03},{\"ch\":\"sRight\",\"mat\":\"concrete\",\"size\":[0.25,2.6,7],\"anchor\":[-1,1,1],\"pos\":[6,-3,-7],\"axis\":\"z\",\"vis\":0,\"r\":0.03}]}},{\"id\":\"waterB\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.74,\"x1\":5.74,\"y0\":-2.74,\"y1\":-0.4,\"z0\":-6.74,\"z1\":-0.01},\"mat\":\"water\",\"dirtyColor\":\"#4e7d2c\"}},{\"id\":\"soak\",\"kind\":\"soak\",\"params\":{\"x0\":-6,\"x1\":6,\"top\":-3},\"base\":{\"front\":-3}},{\"id\":\"wetBand\",\"kind\":\"wetBand\",\"params\":{\"cx\":0,\"halfW\":7,\"bottom\":-4.6}},{\"id\":\"soakArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3.5,-3.3,0.4],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0},{\"at\":[0,-3.3,0.4],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.33},{\"at\":[3.5,-3.3,0.4],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.66}],\"opts\":{\"scale\":1.2,\"color\":\"#3ad6ff\"}}},{\"id\":\"leaves\",\"kind\":\"drops\",\"params\":{\"x0\":-5,\"x1\":5,\"count\":20,\"fromY\":3,\"landY\":-0.45,\"z\":-3,\"mat\":\"mud\"}},{\"id\":\"pump\",\"kind\":\"machine\",\"params\":{\"pos\":[8.3,0,-0.6],\"rotY\":0}},{\"id\":\"pipeIn\",\"kind\":\"pipe\",\"params\":{\"path\":[[5.5,-2.4,-0.06],[8.3,-2.4,-0.06],[8.3,0.35,-0.06]],\"opts\":{\"r\":0.24,\"color\":\"#f4f3ee\"}}},{\"id\":\"pipeMid\",\"kind\":\"pipe\",\"params\":{\"path\":[[8.8,0.35,-0.06],[10.6,0.35,-0.06]],\"opts\":{\"r\":0.24,\"color\":\"#f4f3ee\"}}},{\"id\":\"filterTank\",\"kind\":\"tank\",\"params\":{\"pos\":[11.4,0,-0.6],\"r\":1,\"h\":2,\"bands\":[0.6,1.4],\"mat\":\"tankBlue\"}},{\"id\":\"pipeBack\",\"kind\":\"pipe\",\"params\":{\"path\":[[12.2,0.4,-0.06],[12.9,0.4,-0.06],[12.9,-1.2,-0.06],[5.5,-1.2,-0.06]],\"opts\":{\"r\":0.24,\"color\":\"#f4f3ee\"}}},{\"id\":\"flowIn\",\"kind\":\"pipeFlow\",\"params\":{\"pipe\":\"pipeIn\",\"opts\":{\"count\":14,\"size\":0.11,\"offset\":[0,0,0.28]},\"speed\":3.4}},{\"id\":\"flowMid\",\"kind\":\"pipeFlow\",\"params\":{\"pipe\":\"pipeMid\",\"opts\":{\"count\":6,\"size\":0.11,\"offset\":[0,0,0.28]},\"speed\":3.4}},{\"id\":\"flowBack\",\"kind\":\"pipeFlow\",\"params\":{\"pipe\":\"pipeBack\",\"opts\":{\"count\":16,\"size\":0.11,\"offset\":[0,0,0.28]},\"speed\":3.4}},{\"id\":\"filterOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[10.2,-0.1,0.55],[10.2,2.2,0.55],[12.6,2.2,0.55],[12.6,-0.1,0.55]],\"opts\":{\"r\":0.11,\"closed\":true}}},{\"id\":\"smell\",\"kind\":\"bubbles\",\"params\":{\"x0\":-4,\"x1\":4,\"y0\":-2.6,\"y1\":-0.5,\"z\":-0.15,\"count\":40,\"speed\":1}},{\"id\":\"oilFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[-4,-0.45,-1.5],[4,-0.45,-1.5]],\"look\":\"oil\",\"size\":0.2,\"count\":14}},{\"id\":\"fence\",\"kind\":\"fence\",\"params\":{\"x0\":-13.5,\"x1\":13.5,\"step\":1.5,\"zBack\":-8.8,\"sideStart\":-8,\"zFront\":1.5,\"railZ\":-8.8}},{\"id\":\"bushes\",\"kind\":\"shrubs\",\"params\":{\"list\":[[-9,-8,1],[-4,-8.3,1],[3,-8.3,0.9],[6.5,-8.4,1],[-11.5,-5.5,0.9]],\"stagger\":0.09}},{\"id\":\"trees\",\"kind\":\"youngTrees\",\"params\":{\"trees\":[[-12,-7,1],[12.5,-7,1]],\"stagger\":0.15}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[10.5,0.08,-5],\"rotY\":-0.3,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"waterA\",\"does\":\"hole fills with water\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"waterA\",\"v\":\"flood\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterA\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"state\":{\"text\":\"DRAINING\",\"w\":\"drain\"},\"shows\":{\"p\":\"waterA\",\"does\":\"water drains into the soil\"},\"do\":[{\"p\":\"soakArrows\",\"v\":\"show\",\"w\":\"ground\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"soak\",\"v\":\"show\",\"w\":\"ground\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wetBand\",\"v\":\"wet\",\"w\":\"ground\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"waterA\",\"v\":\"drain\",\"w\":\"drain\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterA\",\"soak\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"shell\",\"does\":\"concrete shell grows on floor and walls, water fills\"},\"do\":[{\"p\":\"waterA\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"soakArrows\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"soak\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wetBand\",\"v\":\"dry\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"shell\",\"o\":0,\"d\":0.6,\"amp\":1,\"ch\":\"sFloor\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"shell\",\"o\":0.4,\"d\":0.6,\"amp\":1,\"ch\":\"sBack\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"shell\",\"o\":0.6,\"d\":0.6,\"amp\":1,\"ch\":\"sLeft\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"shell\",\"o\":0.6,\"d\":0.6,\"amp\":1,\"ch\":\"sRight\"},{\"p\":\"waterB\",\"v\":\"flood\",\"w\":\"stays\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shell\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"state\":{\"text\":\"GREEN WATER\",\"w\":\"green\"},\"shows\":{\"p\":\"waterB\",\"does\":\"dirt falls in and the water turns green\"},\"do\":[{\"p\":\"leaves\",\"v\":\"fall\",\"w\":\"leaves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"waterB\",\"v\":\"dirty\",\"w\":\"green\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterB\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"pipeIn\",\"does\":\"pump, pipes and a sand tank appear\"},\"do\":[{\"p\":\"leaves\",\"v\":\"hide\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipeIn\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipeMid\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":1,\"d\":0.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipeBack\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":1.6,\"d\":1.4,\"amp\":1,\"ch\":\"\"},{\"p\":\"filterTank\",\"v\":\"show\",\"w\":\"tank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\",\"filterTank\",\"pipeIn\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"filterOutline\",\"does\":\"outline traces the filter tank\"},\"do\":[{\"p\":\"filterOutline\",\"v\":\"show\",\"w\":\"filter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"filterTank\",\"pump\"],\"view\":\"home\",\"width\":0.45,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"flowIn\",\"does\":\"water flows out through the filter and back, green clears\"},\"do\":[{\"p\":\"filterOutline\",\"v\":\"hide\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flowIn\",\"v\":\"show\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flowMid\",\"v\":\"show\",\"w\":\"pulls\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flowBack\",\"v\":\"show\",\"w\":\"pulls\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"waterB\",\"v\":\"clean\",\"w\":\"clean\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterB\",\"pump\",\"filterTank\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"smell\",\"does\":\"bubbles of smell rise, then vanish on not\"},\"do\":[{\"p\":\"smell\",\"v\":\"show\",\"w\":\"smell\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smell\",\"v\":\"hide\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterB\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"oilFlow\",\"does\":\"sweat and oil streaks drift across the pool water\"},\"do\":[{\"p\":\"oilFlow\",\"v\":\"start\",\"w\":\"sweat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"waterB\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"fence\",\"does\":\"fence, bushes and young trees pop in\"},\"do\":[{\"p\":\"oilFlow\",\"v\":\"stop\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fence\",\"v\":\"show\",\"w\":\"fence\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bushes\",\"v\":\"show\",\"w\":\"bushes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trees\",\"v\":\"show\",\"w\":\"trees\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"20,000 GALLONS\",\"at\":{\"s\":\"problem\",\"w\":\"20,000\",\"o\":0},\"d\":1.8},{\"text\":\"8 HOURS\",\"at\":{\"s\":\"how\",\"w\":\"eight\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"hook\",\"w\":\"water\",\"o\":0},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem\",\"w\":\"drain\",\"o\":0},\"d\":1.6},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"pump\",\"o\":0},\"d\":1.8},{\"lib\":\"water_rush\",\"at\":{\"s\":\"how\",\"w\":\"pulls\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"problem\",\"w\":\"20,000\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"how\",\"w\":\"eight\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How a swimming pool works",
+   "hero": "a pool filter",
+   "parts": [
+    "hole",
+    "water",
+    "concrete shell",
+    "pump",
+    "pipes",
+    "sand filter tank",
+    "fence",
+    "bushes",
+    "young trees"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a deep hole in the yard and fill it with water, and that is a pool"
+    },
+    {
+     "role": "problem",
+     "idea": "the ground drinks the water, so a pool-sized hole drains empty into the soil"
+    },
+    {
+     "role": "fix1",
+     "idea": "a sprayed concrete shell on the floor and walls holds the water in"
+    },
+    {
+     "role": "problem2",
+     "idea": "leaves and dirt fall in and the still water turns green"
+    },
+    {
+     "role": "fix2",
+     "idea": "a pump pushes the water through pipes into a tank of sand"
+    },
+    {
+     "role": "name",
+     "idea": "the pump and sand tank together are a pool filter"
+    },
+    {
+     "role": "how",
+     "idea": "the pump pulls water from the floor, sand traps the dirt, and clean water returns, cycling all of it every eight hours"
+    },
+    {
+     "role": "myth",
+     "idea": "everyone thinks the strong chlorine smell means a clean pool, but the smell is not chlorine itself"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the smell is chlorine stuck to sweat and oils, so a truly clean pool barely smells"
+    },
+    {
+     "role": "finish",
+     "idea": "a fence, bushes and young trees complete the pool and keep it safe"
+    },
+    {
+     "role": "congrats",
+     "idea": "the pool stands calm and clear, so you have built a swimming pool"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the water level falls away and soaks down into the wet soil under the hole",
+     "stakes": "a 20,000 gallon pool is gone and the pool sits empty",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "leaves and mud drop in and the still water turns green",
+     "stakes": "the pool is unusable and unhealthy to swim in",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A typical backyard pool holds roughly 15,000 to 20,000 gallons of water.",
+     "role": "problem",
+     "search": "average backyard swimming pool volume gallons"
+    },
+    {
+     "claim": "Most in-ground pool shells are gunite or shotcrete, concrete that is sprayed through a hose.",
+     "role": "fix1",
+     "search": "gunite pool shell sprayed concrete shotcrete"
+    },
+    {
+     "claim": "A pool pump is sized to cycle all the pool water through the filter about once every 8 hours.",
+     "role": "how",
+     "search": "pool pump turnover rate 8 hours"
+    },
+    {
+     "claim": "The strong chlorine smell at pools comes from chloramines, chlorine that has bonded with sweat, urine and oils.",
+     "role": "mythFact",
+     "search": "pool chlorine smell chloramines cause"
+    }
+   ]
+  }
+ }
+}

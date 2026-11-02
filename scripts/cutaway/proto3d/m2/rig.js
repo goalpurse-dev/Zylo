@@ -23,11 +23,13 @@
 // Every part also has show / hide (it pops in, pops out).
 
 export const RIG_SHAPES = ["box", "panel", "cylinder", "wheel", "gear", "hinge", "spring", "tube", "cable", "rail", "track", "chain", "belt", "button", "light", "beam", "screen", "model"];
-export const RIG_MOVES = ["appear", "slide", "swing", "track", "spin", "extend", "light", "blink", "fill", "flow", "count"];
+// snap {axis, gap (m)}: the piece breaks in two along its axis and the halves stay apart, tilted (the damage stays in
+// place until "<name>Back", the fix); the garage door's spring "snaps in two" could not be shown (2026-10-28)
+export const RIG_MOVES = ["appear", "slide", "swing", "track", "spin", "extend", "light", "blink", "fill", "flow", "count", "snap"];
 const PATHS = new Set(["tube", "cable", "rail", "track", "chain", "belt"]);
 const LOOKS = { metal: ["#b9c0c7", 0.3, 0.8], plastic: ["#e8e4dc", 0.45, 0], wood: ["#a8743f", 0.75, 0], glass: ["#cfe8f5", 0.05, 0], rubber: ["#24262a", 0.9, 0], paint: ["#d64535", 0.4, 0], concrete: ["#b9b4aa", 0.9, 0] };
 // how long a move takes on its word (s), and whether it is a state that stays on (spin, blink, flow, light)
-const DUR = { appear: 0.35, slide: 0.9, swing: 0.9, track: 1.2, extend: 0.8, fill: 1.2, count: 1.5, light: 0.2, blink: 0.2, spin: 0.3, flow: 0.3 };
+const DUR = { appear: 0.35, slide: 0.9, swing: 0.9, track: 1.2, extend: 0.8, fill: 1.2, count: 1.5, light: 0.2, blink: 0.2, spin: 0.3, flow: 0.3, snap: 0.35 };
 
 const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const v3 = (a, d = [0, 0, 0]) => (Array.isArray(a) && a.length === 3 && a.every((x) => Number.isFinite(Number(x))) ? a.map(Number) : d);
@@ -116,6 +118,7 @@ function nodeBoxes(p) {
         swept.push(b);
       }
       if (m.type === "extend") { const i = AX[m.axis] ?? 1, k = Math.max(1, num(m.k, 1.5)); const b = { min: [...rest.min], max: [...rest.max] }; b.max[i] = pv[i] + (rest.max[i] - pv[i]) * k; b.min[i] = pv[i] + (rest.min[i] - pv[i]) * k; swept.push(b); }
+      if (m.type === "snap") { const i = AX[m.axis] ?? 1, g = num(m.gap, 0.25) / 2 + 0.05; const b = { min: [...rest.min], max: [...rest.max] }; b.min[i] -= g; b.max[i] += g; swept.push(b); }
     }
     out.set(n.id, { rest, swept: unionB(swept), pivot: pv });
   }
@@ -206,7 +209,7 @@ export function rig(ctx, p, api) {
   const place = (mesh, s, parent) => { mesh.position.set(...v3(s.at)); if (Array.isArray(s.rot)) mesh.rotation.set(...s.rot.map((a) => (num(a) * Math.PI) / 180)); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh; };
   const alongAxis = (geo, axis) => { if (axis === "x") geo.rotateZ(Math.PI / 2); else if (axis === "z") geo.rotateX(Math.PI / 2); return geo; };
   const curve = (pts) => new THREE.CatmullRomCurve3(pts.map((q) => new THREE.Vector3(...v3(q))), false, "catmullrom", 0.05);
-  const groups = new Map(), lamps = new Map(), screens = new Map(), fills = [], flows = [];
+  const groups = new Map(), lamps = new Map(), screens = new Map(), fills = [], flows = [], snaps = [];
   const screenTex = new Map();
   const numTex = (v, col) => {
     const key = `${v}|${col}`; if (screenTex.has(key)) return screenTex.get(key);
@@ -295,6 +298,12 @@ export function rig(ctx, p, api) {
     g.position.set(...v3(n.at)); parent.add(g);
     groups.set(n.id, { g, n, base: g.position.clone() });
     for (const s of n.shapes ?? []) build(s, g, n.id);
+    // a piece that can snap: its second half is a copy, shown once it breaks
+    for (const m of (n.moves ?? []).filter((x) => x.type === "snap")) {
+      const half = g.clone(true); half.visible = false; parent.add(half);
+      const bb = new THREE.Box3().setFromObject(g), ax = AX[m.axis] ?? 1, L = Math.max(0.05, bb.max.getComponent(ax) - bb.min.getComponent(ax));
+      snaps.push({ id: n.id, half, m, L, ax });
+    }
     for (const m of n.moves ?? []) {
       if (m.type === "fill" && m.box?.size) {
         const [w, h, d] = v3(m.box.size, [0.5, 0.5, 0.5]), fm = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), std({ color: C(m.box.color ?? "#3d8fd6"), roughness: 0.15, transparent: true, opacity: 0.8 }));
@@ -320,12 +329,22 @@ export function rig(ctx, p, api) {
         for (const m of n.moves ?? []) {
           const v = clamp01(api.ch(m.name, t)), ax = AX[m.axis] ?? 1;
           if (m.type === "slide") { const d = v3(m.to); g.position.x += d[0] * v; g.position.y += d[1] * v; g.position.z += d[2] * v; }
-          if (m.type === "swing") g.rotation.setFromVector3(new THREE.Vector3(...[0, 1, 2].map((i) => (i === ax ? (num(m.angle, 90) * Math.PI / 180) * v : 0))));
+          // (swings and spins add up: a panel with a "flop" and a "jam" swing showed only the last one, at rest, so the garage
+          // door never swung out; round 3, 2026-10-28)
+          if (m.type === "swing") g.rotation["xyz"[ax]] += (num(m.angle, 90) * Math.PI / 180) * v;
           if (m.type === "track" && Array.isArray(m.path) && m.path.length >= 2) { const q = curve(m.path).getPointAt(v); g.position.set(base.x + q.x, base.y + q.y, base.z + q.z); }
-          if (m.type === "spin") { const a = integral(m.name, t) * num(m.turns, 1) * Math.PI * 2; g.rotation.setFromVector3(new THREE.Vector3(...[0, 1, 2].map((i) => (i === ax ? a : 0)))); }
+          if (m.type === "spin") g.rotation["xyz"[ax]] += integral(m.name, t) * num(m.turns, 1) * Math.PI * 2;
           if (m.type === "extend") { const k = 1 + (num(m.k, 1.5) - 1) * v; g.scale.setComponent(ax, k); }
           if (m.type === "appear") { const a = api.ch(m.name, t); g.visible = a > 0.002; g.scale.multiplyScalar(Math.max(0.001, a)); }
           if (m.type === "light" || m.type === "blink") for (const l of lamps.get(n.id) ?? []) l.material.emissiveIntensity = m.type === "light" ? 2 * v : v * (((t * num(m.rate, 2)) % 1) < 0.5 ? 2.2 : 0.15);
+          if (m.type === "snap") {
+            // the piece shortened to one half, pushed one way; its copy the other way: two pieces with a gap, tilted
+            const sn = snaps.find((x) => x.id === n.id && x.m === m), k = 1 - 0.5 * v, off = (sn.L / 4 + num(m.gap, 0.25) / 2) * v, tilt = 0.18 * v;
+            g.scale.setComponent(sn.ax, g.scale.getComponent(sn.ax) * k); g.position.setComponent(sn.ax, g.position.getComponent(sn.ax) - off);
+            g.rotation.z += tilt;
+            sn.half.visible = v > 0.01 && g.visible; sn.half.position.copy(base); sn.half.position.setComponent(sn.ax, base.getComponent(sn.ax) + off);
+            sn.half.scale.set(1, 1, 1); sn.half.scale.setComponent(sn.ax, k); sn.half.rotation.set(0, 0, -tilt);
+          }
           if (m.type === "count") { const sc = screens.get(n.id); if (sc) { const val = Math.round(num(m.from, 9) + (num(m.to, 0) - num(m.from, 9)) * v); if (val !== sc.shown) { const tx = numTex(val, sc.col); if (tx) { sc.face.material.map = tx; sc.face.material.emissiveMap = tx; sc.face.material.needsUpdate = true; } sc.shown = val; } } }
         }
       }

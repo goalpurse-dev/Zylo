@@ -7,7 +7,7 @@
 //     a raised pipe ends at a part
 //  4. no tree stands over a part that acts (a tree over the gas flame)
 import { focusOf as focusRaw } from "./focus.js";
-import { SETTING_PROPS } from "./catalog.js";
+import { SETTING_PROPS, TOPIC_PROPS } from "./catalog.js";
 import { settingBoxes, settingFloor } from "./framing.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
@@ -36,11 +36,13 @@ export function clarityChecks(L, sentences) {
   for (const p of L.parts) {
     const isGrass = p.kind === "wipe" && /grass/i.test(p.params?.mat ?? "");
     if (green && (["shrubs", "youngTrees", "lawnWet"].includes(p.kind) || isGrass)) problems.push(`part ${p.id} (${isGrass ? "grass" : p.kind}) does not belong in the ${setting} setting: use its props (${[...allowed].join(", ")})`);
-    if (p.kind === "prop" && !allowed.has(`prop:${p.params?.type}`)) problems.push(`part ${p.id}: a ${p.params?.type} does not belong in the ${setting} setting (allowed: ${[...allowed].filter((x) => x.startsWith("prop:")).map((x) => x.slice(5)).join(", ")})`);
+    if (p.kind === "prop" && !TOPIC_PROPS.includes(p.params?.type) && !allowed.has(`prop:${p.params?.type}`)) problems.push(`part ${p.id}: a ${p.params?.type} does not belong in the ${setting} setting (allowed: ${[...allowed].filter((x) => x.startsWith("prop:")).map((x) => x.slice(5)).join(", ")})`);
   }
   // 2b. the "Add ..." line brings only finishing touches, never a new machine (a traffic light at a car wash)
   const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));
-  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
+  // (a car rolling into a garage is how a garage door finishes, the planner's own rule: the 60 s free garage door run of
+  // 2026-10-30 was refused for it)
+  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && !(p.kind === "car" && setting === "garage") && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
   // 2c. realistic settings: no natural water (a creek, a stream) on a paved floor; it lies beside the setting (axis "z",
   // past the floor's edge), and what runs off the floor reaches it through a storm drain and a pipe
   const F = settingFloor(W.backdrop);
@@ -62,7 +64,10 @@ export function clarityChecks(L, sentences) {
       const small = b.max[0] - b.min[0] <= 1.2 && b.max[2] - b.min[2] <= 1.2;
       const risers = small ? L.parts.filter((x) => x.kind === "riser").map((x) => focusOf(x, cut)).filter(Boolean) : [];
       const holders = [...all.filter((x) => !(x.id === p.id && x.b.ch === b.ch)).map((x) => x.b), ...solids, ...risers];
-      const under = holders.some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
+      // (and the top end of an upright pipe: a well casing built as a pipe run holds its cap, as a riser does; the water
+      // well plan of the free harness, 2026-10-28, was refused as "floats" for it)
+      const pipeTop = small && L.parts.some((x) => ["pipe", "pipeRun"].includes(x.kind) && (x.params?.path ?? []).some((q) => Array.isArray(q) && q[0] >= b.min[0] - 0.05 && q[0] <= b.max[0] + 0.05 && q[2] >= b.min[2] - 0.05 && q[2] <= b.max[2] + 0.05 && Math.abs(q[1] - b.min[1]) <= 0.25));
+      const under = pipeTop || holders.some((o) => overlapXZ(o, b, 0.02) && Math.abs(o.max[1] - b.min[1]) <= 0.25); // its top meets this part's bottom
       // a thin panel mounted on a solid's front face (layoutRules: a timer as a display on the controller cabinet; a
       // traffic light run's plan was refused as "floats" for it): its back on the face, within the face's height and width
       const thin = b.max[2] - b.min[2] <= 0.15;

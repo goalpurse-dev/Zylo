@@ -64,9 +64,9 @@ export function bandHits(rect) {
  * so the box sits in a free zone ("bottom" | "top" | "mid" | "auto" | "center": no zone, e.g. the home view).
  * Returns { pos, tgt, rect, zone, ok, why }.
  */
-export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone", minField = MIN_FIELD } = {}) {
+export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit = "zone", minField = MIN_FIELD, wholeTall = minField > 0 } = {}) {
   // never closer than MIN_FIELD of world across: a thin part (a pipe, a crack) at a big width would fill the frame
-  const sx = box.max[0] - box.min[0];
+  const sx = box.max[0] - box.min[0], tallThin = box.max[1] - box.min[1] > 2 * Math.max(sx, box.max[2] - box.min[2], 0.3);
   if (sx < minField * width) { const c0 = (box.min[0] + box.max[0]) / 2, h = (minField * width) / 2; box = { min: [c0 - h, box.min[1], box.min[2]], max: [c0 + h, box.max[1], box.max[2]] }; }
   const dir = norm(Array.isArray(view) ? view : VIEWS[view] ?? VIEWS.home);
   const c = boxCenter(box);
@@ -82,6 +82,10 @@ export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit 
   let loose = false;
   if (!chosen && fit === "loose") { chosen = "bottom"; loose = true; }
   if (!chosen) { chosen = zones[0]; const [a, b] = ZONES[chosen]; const k = Math.min(rect.h / (b - a) * 1.02, rect.w / MIN_WIDTH); d *= k; ({ pos, tgt } = at(d)); rect = projectBox(pos, tgt, box); }
+  // a tall thin subject (a 13 m well shaft 1.4 m wide) sized by its width alone was a slice of soil from its middle: it
+  // steps back until it is whole in height (the 60 s free water well run, 2026-10-30). Not a hero (minField 0): it frames
+  // its own top part
+  if (wholeTall && tallThin && !rect.behind && rect.h > 0.9) { d *= rect.h / 0.9; ({ pos, tgt } = at(d)); rect = projectBox(pos, tgt, box); }
   // pan (camera and target together, so the view direction stays) until the box is centred in its zone
   const want = chosen === "center" ? 0.5 : loose ? Math.max(0.5, 0.96 - rect.h / 2) : (ZONES[chosen][0] + ZONES[chosen][1]) / 2;
   let shift = [0, 0, 0];
@@ -112,7 +116,9 @@ export const underground = (b) => !!b && b.max[1] <= 0.5 && b.min[1] < -1.5;
 export function liftSoil(layout, k, keep = null) {
   if (layout.camera?.home || !k?.pos) return k;
   const m0 = measureKey(layout, k.pos, k.tgt);
-  if (m0.soil <= CAMERA_LIMITS.soilMax) return k;
+  // (a planned layout may show more of its cut face: it looks down on the subject, which fills the frame)
+  const soilMax = layout.codeShots ? 0.45 : CAMERA_LIMITS.soilMax;
+  if (m0.soil <= soilMax) return k;
   // (a subject the shot holds is never lost by the lift; a shot of something else, beside the lot, has none to lose)
   const hadSubject = m0.subject >= CAMERA_LIMITS.subjectMin + 0.01;
   // what must stay in is the part above ground (a build that reaches down into its cut keeps its top)
@@ -124,7 +130,7 @@ export function liftSoil(layout, k, keep = null) {
     const m = measureKey(layout, q.pos, q.tgt);
     if (hadSubject && m.subject < CAMERA_LIMITS.subjectMin) break;
     best = q;
-    if (m.soil <= CAMERA_LIMITS.soilMax) break;
+    if (m.soil <= soilMax) break;
   }
   return best;
 }
@@ -185,7 +191,17 @@ export function heroBox(layout) {
 export function directCamera(layout, shots, marks) {
   const parts = new Map(layout.parts.map((p) => [p.id, p]));
   const cut = layout.world?.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
-  const home = homeView(layout);
+  let home = homeView(layout);
+  // a planned layout looks down on its subject, which holds the whole width: at the old 11 degrees a 12 m pool was 10% of a
+  // tall frame with the house and lawn around it (the owner's review of 2026-10-31: the subject fills the frame). About 30
+  // degrees still shows the cut face, and 45 showed the void under the soil block; the approved layouts keep their view
+  let baseView = "home";
+  if (layout.codeShots && !layout.camera?.home) {
+    const d0 = sub(home.pos, home.tgt), yaw = Math.atan2(d0[0], d0[2]), el = 30 * Math.PI / 180;
+    baseView = [Math.sin(yaw) * Math.cos(el), Math.sin(el), Math.cos(yaw) * Math.cos(el)];
+    const f0 = frameBox(subjectBox(layout), { view: baseView, width: 0.94, zone: "center", minField: 0 });
+    home = { pos: f0.pos, tgt: f0.tgt };
+  }
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
   const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
@@ -197,7 +213,11 @@ export function directCamera(layout, shots, marks) {
   const build = union([subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
   // the home view, or (when the finished build reaches past it) a view of the whole build from the home angle
   const holds = (k) => { const r = projectBox(k.pos, k.tgt, build); return !r.behind && r.x0 >= 0.03 && r.x1 <= 0.97; };
-  const homeAll = holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })();
+  // (a planned layout, whose shots the code frames: the finished build itself fills about 80% of the width at the end,
+  // never the whole yard around it; the free ice rink run's 6 m rink was a quarter of the phone's width. The approved
+  // layouts keep their home view)
+  const tight = layout.codeShots ? (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.94, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })() : null;
+  const homeAll = tight ?? (holds(home) ? home : (() => { const f = frameBox(build, { view: sub(home.pos, home.tgt), width: 0.88, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; })());
   const passes = (k) => { const m = measureKey(layout, k.pos, k.tgt); return { ok: m.empty <= CAMERA_LIMITS.emptyMax - 0.02 && m.subject >= CAMERA_LIMITS.subjectMin + 0.01, m }; };
   // a shot that loses the subject or shows mostly lawn and sky: re-aim it toward the subject, then hold both, then home
   const anchor = (k, box, s) => {
@@ -211,7 +231,7 @@ export function directCamera(layout, shots, marks) {
     for (const a of [0.25, 0.5, 0.75]) { const tgt = k.tgt.map((v, i) => v + (sc[i] - v) * a), q = { pos: add(tgt, sub(k.pos, k.tgt)), tgt }; p = passes(q); if (p.ok && keeps(q)) return { k: q, m: p.m, how: `re-aimed ${a * 100}% toward the subject` }; }
     // holding both (the subject and a creek far off to the side) may sit on the bare limits, without the safety margin
     const bare = (m) => m.empty <= CAMERA_LIMITS.emptyMax && m.subject >= CAMERA_LIMITS.subjectMin;
-    for (const w of [0.7, 0.8, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? "home", width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok || bare(p.m)) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
+    for (const w of [0.7, 0.8, 0.9]) { const g = frameBox(union([box, subj]), { view: s.view ?? baseView, width: w, zone: "center", minField: 0 }); p = passes(g); if (p.ok || bare(p.m)) return { k: g, m: p.m, how: "widened to hold the subject too" }; }
     return { k: home, m: passes(home).m, how: "replaced by the home view" };
   };
   const push = (t, k) => { const tt = +t.toFixed(4); if (tt - keys.at(-1)[0] < 0.05) keys.pop(); keys.push([tt, k.pos, k.tgt]); };
@@ -252,8 +272,8 @@ export function directCamera(layout, shots, marks) {
   const hookClose = (k, box, s) => {
     if (!hookB || projectBox(k.pos, k.tgt, hookB).w >= 0.36) return k;
     const both = union([hookB, box]), w = Math.min(0.9, Math.max(0.4, (0.38 * (both.max[0] - both.min[0])) / Math.max(0.5, hookB.max[0] - hookB.min[0])));
-    let g = frameBox(both, { view: s.view ?? "home", width: w, zone: "center", minField: 0 });
-    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? "home", width: 0.4, zone: "center", minField: 0 });
+    let g = frameBox(both, { view: s.view ?? baseView, width: w, zone: "center", minField: 0 });
+    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? baseView, width: 0.4, zone: "center", minField: 0 });
     return { pos: g.pos, tgt: g.tgt };
   };
   // the whole subject in the frame (the creator's newer videos, 2026-10-25: every shot holds the thing it explains whole,
@@ -288,19 +308,33 @@ export function directCamera(layout, shots, marks) {
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
     if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
     else {
-      const ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
-      if (boxes.some((b) => !b)) { notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`); continue; }
-      let box = union(boxes), f = frameBox(box, { view: s.view ?? "home", width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero ? 0 : minField });
+      let ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
+      // (a part with no box of its own, a wet band or a flow, is left out of the shot; the shot keeps the rest: the whole
+      // shot was dropped, and the free basement run's myth line kept the camera on the pit)
+      if (boxes.some((b) => !b)) {
+        notes.push(`shot at ${s.t.toFixed(2)} s: no focus box for ${ids.filter((_, i) => !boxes[i]).join(", ")}`);
+        ids = ids.filter((_, i) => boxes[i]); boxes = boxes.filter(Boolean);
+        if (!boxes.length) continue;
+      }
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? baseView, width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero || (layout.codeShots && ids.some((id) => ["book", "sheet", "flag"].includes(parts.get(String(id))?.kind))) ? 0 : minField });
       // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
-      if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? "home"] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
+      if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? baseView] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
-      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? "home", width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
+      for (let k = 0; s.hero && !f.ok && k < 12; k++) { box = { min: [box.min[0], box.max[1] - (box.max[1] - box.min[1]) * 0.8, box.min[2]], max: box.max }; f = frameBox(box, { view: s.view ?? baseView, width: Math.max(0.2, s.width ?? 0.45), zone: "auto", fit: "zone", minField: 0 }); }
+      // a car never looms (a planned layout whose shots the code frames, layoutRules 14): a car more than 45% of the width,
+      // or cut by the frame's bottom edge, steps the camera back (a garage motor shot had the parked car's roof filling
+      // the frame; the cars waiting nearest the lens were cut in half)
       // the part itself on screen (the framed box may be wider: MIN_FIELD)
       const real = projectBox(f.pos, f.tgt, union(boxes));
       // the hero keeps its own frame (the bands rule); every other shot is anchored on the subject
       // the opening shot (the hook object, first frame) keeps its own aim: it only has to avoid open lawn and sky
       const opening = keys.length === 1 && start < 0.4;
-      const an = s.hero || (opening && passes(f).m.empty <= CAMERA_LIMITS.emptyMax - 0.02) ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
+      // (a planned shot that holds the whole main subject keeps its size: over the empty limit it slides down, showing the cut
+      // face instead of lawn, never wider; a prop to read keeps its own frame; the owner's review of 2026-10-31)
+      const planMain = layout.codeShots && [].concat(s.focus ?? []).some((id) => parts.get(String(id))?.main);
+      const planRead = layout.codeShots && [].concat(s.focus ?? []).some((id) => ['book', 'sheet', 'flag'].includes(parts.get(String(id))?.kind));
+      const aimLow = (k0) => { let q = { pos: k0.pos, tgt: k0.tgt }; for (let dy = 0.3; dy <= 6 && measureKey(layout, q.pos, q.tgt).empty > CAMERA_LIMITS.emptyMax - 0.02; dy += 0.3) { const down = (p) => [p[0], +(p[1] - 0.3).toFixed(3), p[2]], n = { pos: down(q.pos), tgt: down(q.tgt) }; if (projectBox(n.pos, n.tgt, box).y0 < 0.04) break; q = n; } return q; };
+      const an = planMain ? (() => { const q = aimLow(f); return { k: q, m: measureKey(layout, q.pos, q.tgt), how: null }; })() : planRead ? { k: f, m: passes(f).m, how: null } : s.hero || (opening && passes(f).m.empty <= CAMERA_LIMITS.emptyMax - 0.02) ? { k: f, m: passes(f).m, how: null } : anchor(f, box, s);
       if (an.how) notes.push(`shot at ${s.t.toFixed(2)} s (${ids}): ${an.how} (it was ${(passes(f).m.empty * 100).toFixed(0)}% empty, ${(passes(f).m.subject * 100).toFixed(0)}% on the subject)`);
       const realA = projectBox(an.k.pos, an.k.tgt, union(boxes));
       frames.push({ t: s.t, ids, hero: !!s.hero, rect: an.how ? realA : real, zone: f.zone, measure: an.m, anchored: an.how, ok: f.ok && real.w >= MIN_WIDTH - 1e-3, why: real.w >= MIN_WIDTH - 1e-3 ? f.why : [...f.why, `the part is ${(real.w * 100).toFixed(0)}% wide`] });
@@ -309,9 +343,25 @@ export function directCamera(layout, shots, marks) {
       if (opening && !layout.camera?.home) k = hookClose(k, box, s);
       // the cut face at most ~35% of the frame, unless the sentence is about something underground
       if (!underground(box)) k = liftSoil(layout, k, box);
-      if (!opening && !layout.camera?.home) k = pushToward(k, s, box);
+      // (a planned shot that holds the whole main subject stays on it: pushing in on its small part lost the pool, review of
+      // 2026-10-31)
+      const holdsMain = layout.codeShots && [].concat(s.focus ?? []).some((id) => parts.get(String(id))?.main);
+      if (!opening && !layout.camera?.home && !holdsMain && !planRead) k = pushToward(k, s, box);
       // last: what the sentence is about stays whole (the hook object on the opening frame)
-      k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      if (!planRead) k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      // and after everything else: a car never looms (a planned layout whose shots the code frames, layoutRules 14): a
+      // car there in this sentence more than 45% of the width, or cut by the frame's bottom edge, steps the camera back
+      // (a garage motor shot had the parked car's roof filling the frame; the cars waiting nearest the lens were cut in
+      // half). Only the cars there: from the sentence they arrive in to the one they leave in; a parked car always.
+      if (layout.codeShots && !s.hero) {
+        const B = layout.beats ?? [], at = B.findIndex((b) => b.s === s.at?.s), idx = (id, re) => B.findIndex((b) => (b.do ?? []).some((a) => a.p === id && re.test(a.v)));
+        const there = (p) => { const a = idx(p.id, /^(arrive|show)$/), l = idx(p.id, /^(leave|hide)$/); return at < 0 || ((a < 0 || a <= at) && (l < 0 || l >= at)); };
+        const carB = layout.parts.filter((p) => p.kind === "car" && there(p)).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean);
+        const looms = (q) => carB.some((c) => { const r = projectBox(q.pos, q.tgt, c); return !r.behind && r.x1 > 0 && r.x0 < 1 && r.y0 < 1 && (r.w > 0.45 || r.y1 > 1.02); });
+        let n = 0;
+        for (; n < 6 && looms(k); n++) k = { pos: add(k.tgt, mul(sub(k.pos, k.tgt), 1.25)).map((v) => +v.toFixed(3)), tgt: k.tgt };
+        if (n) notes.push(`shot at ${s.t.toFixed(2)} s: stepped back ${n} time${n > 1 ? "s" : ""} so no car looms`);
+      }
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
       if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
     }
@@ -327,7 +377,7 @@ export function directCamera(layout, shots, marks) {
   }
   // the end: hold drifting, pull back to the calm scene until the sign pops, then push gently toward the sign
   const signPart = layout.parts.find((p) => p.kind === "sign");
-  const back0 = liftSoil(layout, scaleView(home, 1.18), build), back1 = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
+  const back0 = liftSoil(layout, tight ? scaleView(tight, 1.12) : scaleView(home, 1.18), build), back1 = holds(back0) ? back0 : liftSoil(layout, homeAll, build);
   const signC = signPart ? boxCenter(focusOf(signPart, cut)) : home.tgt;
   // the end: a gentle push that ends on the sign, readable, centred, filling about 70% of the width (the home angle)
   // the finished build stays in view with the sign beside it (the end card never hides what was built)

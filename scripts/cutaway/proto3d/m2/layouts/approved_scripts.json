@@ -1,0 +1,268 @@
+{
+ "_note": "The approved videos' scripts, sentence by sentence (the owner approved these videos). A premade run writes fresh words around the approved beats; any sentence that fails its free checks, or the preview check, falls back to the approved one here.",
+ "landfill": {
+  "title": "How a landfill works",
+  "hero": "a landfill liner",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a pit and throw your trash in, you have a landfill."
+   },
+   {
+    "role": "problem",
+    "text": "But dirty trash juice leaks straight down into the groundwater you drink."
+   },
+   {
+    "role": "fix1",
+    "text": "So you lay a thick clay base, but it is still not enough."
+   },
+   {
+    "role": "fix2",
+    "text": "You add a thick black plastic sheet."
+   },
+   {
+    "role": "name",
+    "text": "This is a landfill liner."
+   },
+   {
+    "role": "how",
+    "text": "A pipe drains the collected juice into a tank beside the pit."
+   },
+   {
+    "role": "fact",
+    "text": "Sealed this tight, trash barely rots at all once it is buried."
+   },
+   {
+    "role": "factProof",
+    "text": "A 1952 newspaper dug up decades later was still readable word for word."
+   },
+   {
+    "role": "problem2",
+    "text": "But trapped trash still makes gas, so a pipe carries it out."
+   },
+   {
+    "role": "myth",
+    "text": "That flame is not waste burning, it is gas making electricity nearby."
+   },
+   {
+    "role": "finish",
+    "text": "Add a grass cap, a fence, and a few young trees."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a landfill."
+   }
+  ],
+  "cards": [
+   {
+    "text": "37 YEARS",
+    "sentence": 7,
+    "word": "readable"
+   },
+   {
+    "text": "480 LANDFILLS",
+    "sentence": 9,
+    "word": "electricity"
+   }
+  ],
+  "parts": [
+   "pit",
+   "dump truck",
+   "trash bags",
+   "trash juice seeping to the groundwater",
+   "clay base",
+   "plastic liner",
+   "drain pipe",
+   "tank",
+   "soil covers",
+   "a 1952 newspaper",
+   "gas bubbles",
+   "gas pipe",
+   "flare",
+   "generator",
+   "grass cap",
+   "fence",
+   "young trees"
+  ]
+ },
+ "french_drain": {
+  "title": "How a French drain works",
+  "hero": "a French drain",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a ditch along your house, you have a drain."
+   },
+   {
+    "role": "problem",
+    "text": "But one inch of rain on a small roof dumps over 600 gallons right by your walls."
+   },
+   {
+    "role": "flood",
+    "text": "The ditch floods."
+   },
+   {
+    "role": "stakes",
+    "text": "Five feet down, that water pushes over 300 pounds on each square foot, and the wall cracks."
+   },
+   {
+    "role": "fix1",
+    "text": "So you fill the ditch with gravel, but the water still sits at the bottom."
+   },
+   {
+    "role": "fix2",
+    "text": "So you lay a pipe full of holes under the gravel."
+   },
+   {
+    "role": "name",
+    "text": "This is a French drain."
+   },
+   {
+    "role": "how",
+    "text": "Water seeps in through the holes, and the pipe slopes downhill to carry it away."
+   },
+   {
+    "role": "fix3",
+    "text": "Wrap the gravel in fabric so mud can't clog it."
+   },
+   {
+    "role": "myth",
+    "text": "And the French in French drain is not France."
+   },
+   {
+    "role": "mythFact",
+    "text": "It is Henry French, a New England farmer and judge who wrote the book on drains in 1859."
+   },
+   {
+    "role": "finish",
+    "text": "Add the grass back on top."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a French drain."
+   }
+  ],
+  "cards": [
+   {
+    "text": "600 GALLONS",
+    "sentence": 1,
+    "word": "600"
+   },
+   {
+    "text": "300 LB",
+    "sentence": 3,
+    "word": "300"
+   },
+   {
+    "text": "1859",
+    "sentence": 10,
+    "word": "1859"
+   }
+  ],
+  "parts": [
+   "trench along the house",
+   "rain",
+   "foundation wall",
+   "crack",
+   "gravel",
+   "perforated pipe",
+   "outlet pipe",
+   "soak pit",
+   "filter fabric",
+   "mud",
+   "a French flag",
+   "an 1859 book",
+   "grass cap",
+   "bushes"
+  ]
+ },
+ "car_wash": {
+  "title": "How a Car Wash Works",
+  "hero": "car wash arch",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you spray a muddy car with a hose, you have a car wash."
+   },
+   {
+    "role": "problem",
+    "text": "But the mud just smears on the paint."
+   },
+   {
+    "role": "fix1",
+    "text": "So you build an arch with soap sprays and cloth strips."
+   },
+   {
+    "role": "problem2",
+    "text": "But the soapy water runs into the creek."
+   },
+   {
+    "role": "fix2",
+    "text": "So you cut a floor drain into an underground tank."
+   },
+   {
+    "role": "name",
+    "text": "This is a water reclaim tank."
+   },
+   {
+    "role": "how",
+    "text": "Sand sinks, oil rises, and clean water goes to a pump."
+   },
+   {
+    "role": "fact",
+    "text": "That pump sends up to 80 percent of the water back to the arch."
+   },
+   {
+    "role": "myth",
+    "text": "And a car wash does not waste more water than a hose."
+   },
+   {
+    "role": "mythFact",
+    "text": "It uses about 15 gallons of fresh water a car, but a hose can use up to 140."
+   },
+   {
+    "role": "finish",
+    "text": "Add a pay kiosk, a vacuum station, and a canopy."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a car wash."
+   }
+  ],
+  "cards": [
+   {
+    "text": "80 PERCENT",
+    "sentence": 7,
+    "word": "80"
+   },
+   {
+    "text": "15 GALLONS",
+    "sentence": 9,
+    "word": "15"
+   },
+   {
+    "text": "140 GALLONS",
+    "sentence": 9,
+    "word": "140"
+   }
+  ],
+  "parts": [
+   "muddy car",
+   "garden hose",
+   "wash arch",
+   "soap spray",
+   "cloth strips",
+   "lawn",
+   "creek",
+   "floor drain",
+   "underground tank",
+   "sand",
+   "oil",
+   "clean water",
+   "pump",
+   "pay kiosk",
+   "vacuum station",
+   "canopy"
+  ]
+ }
+}

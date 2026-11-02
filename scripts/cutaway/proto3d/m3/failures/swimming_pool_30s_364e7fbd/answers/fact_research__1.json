@@ -1,0 +1,194 @@
+{
+ "hash": "*",
+ "by": "real run 364e7fbd-6ceb-4053-b9f0-739c8cb71534",
+ "searches": 5,
+ "data": {
+  "text": "## Claim 0: \"A typical backyard pool holds roughly 15,000 to 20,000 gallons of water.\"\n\n**What sources say**\n- Swimming Pool Steve (a pool builder) says the average residential swimming pool size in gallons is 17,280. That figure is calculated from a 16'x32' pool. https://www.swimmingpoolsteve.com/pages/average-pool.html\n- The same page puts the average above ground pool volume around 13,500 gallons. It says a 20'x40' pool with a 9' deep end would be around 36,000 gallons.\n- Vita Filters (a manufacturer) says the average residential swimming pool holds between 15,000 and 20,000 gallons of water. https://www.vitafilters.com/blogs/news/how-many-gallons-are-in-my-pool\n- Vita Filters' other page says most residential pools fall within the 10,000 to 20,000-gallon range. https://www.vitafilters.com/blogs/news/what-is-an-average-backyard-pool-size\n- Western Lehigh Services says the average 16 by 32 ft pool holds between 10,000 and 20,000 gallons. https://westernlehighservices.com/what-is-the-average-pool-size-for-your-backyard/\n\n**Verdict: supported as written, with a caveat.** The 15,000–20,000 figure matches the typical in-ground pool. Above-ground pools run smaller, at about 13,500 gallons. I found no government or engineering source for this figure, only industry sources.\n\n## Claim 1: \"Most in-ground pool shells are gunite or shotcrete, concrete that is sprayed through a hose.\"\n\n**What sources say**\n- Blue Haven says gunite and shotcrete are both types of sprayed concrete used to build pool shells. https://articles.bluehaven.com/what-is-a-gunite-swimming-pool\n- Hot Springs Pools says it refers to dry-mix shotcrete: the dry blend of sand and cement travels through the hose, and the operator (the \"nozzleman\") adds water at the nozzle as he sprays. It adds that shotcrete is the umbrella term for concrete that's sprayed from a hose. https://www.hotspringspools.net/blog/what-is-a-gunite-pool\n- Ferrari Pools says gunite uses a dry mix, with water added through the nozzle at the job site. It says shotcrete is a wet mix prepared at a plant and delivered to the site already combined with water. https://www.ferraripools.com/post/what-is-a-gunite-swimming-pool-a-complete-homeowner-guide\n\n**Verdict: the \"sprayed concrete\" description is supported. The \"most in-ground pools\" part is not supported.** The sources only describe how gunite and shotcrete work. None gave a market-share figure showing that most in-ground shells are gunite or shotcrete, and in-ground vinyl-liner and fiberglass pools also exist. I didn't search for share data. Suggested correction: \"Many in-ground pool shells are gunite or shotcrete, which is concrete sprayed through a hose. Gunite is the dry-mix version and shotcrete the wet-mix version.\" Alternatively, find a source with market-share data before keeping \"most.\"\n\n## Claim 2: \"A pool pump is sized to cycle all the pool water through the filter about once every 8 hours.\"\n\n**What sources say**\n- The Pool Nerd says for most residential pools, you want a full turnover every 8 hours. It also says industry standards call for at least one complete turnover every 8 hours for residential pools, though some situations call for faster circulation. https://www.thepoolnerd.com/pool-pump-size-calculator\n- AJ Designer says most health-department codes recommend a complete turnover at least every 6–8 hours. It says California Title 22 and the CDC Model Aquatic Health Code both target 6-hour maximum turnover for general-use pools. https://www.ajdesigner.com/swimming-pool/\n- Long Horn Pools says residential pools typically aim for a 6 to 8 hour turnover. https://longhornpools.com/pool-turnover-rate-problems/\n- Pool Parts To Go says most residential pools utilize a turnover rate of 8-10 hours. https://poolpartstogo.com/blogs/articles/how-many-times-does-pool-water-need-to-be-turned-over\n- Swim University says a full turnover usually takes 8 to 10 hours. https://www.swimuniversity.com/run-pool-pump/\n\n**Verdict: supported in a corrected form.** Corrected: \"A residential pool pump is typically sized to turn over the pool's water about once every 6 to 8 hours (some retailers say 8 to 10). Public pools are held to faster turnover, with the CDC Model Aquatic Health Code targeting 6 hours.\" The 8-hour figure is common but not a single fixed standard. The 6-hour MAHC figure is secondhand, from AJ Designer, and I didn't open the CDC code itself.\n\n## Claim 3: \"The strong chlorine smell at pools comes from chloramines, chlorine that has bonded with sweat, urine and oils.\"\n\n**What sources say**\n- The CDC says if you smell \"chlorine\" at the place you swim, you are probably smelling chloramines. https://www.cdc.gov/healthy-swimming/prevention/preventing-eye-irritation-from-pool-chemicals.html\n- The same CDC page says chloramines are chemical irritants. It also says the chloramines that form in pool water are different from the chloramine that is sometimes used to treat drinking water.\n- Mavaquadoc, a pool-care retailer, says chloramines are compounds that form when free chlorine binds to nitrogen-based contaminants like sweat, body oils, sunscreen, and urine. It names trichloramine as the one responsible for that strong chemical smell. https://www.mavaquadoc.com/blogs/pool-maintenance-blog/pool-chlorine-smell-fix-chloramines-2026\n- Healthypools.org (the Water Quality & Health Council) says the pool water scent does not come from the chlorine itself but from chemical compounds called chloramines. https://www.healthypools.org/hygiene-and-health/\n\n**Verdict: supported as written.** The CDC supports the chloramine claim. The sweat, urine and oils detail comes from the industry sources rather than the CDC page I retrieved.",
+  "sources": [
+   {
+    "url": "https://www.ajdesigner.com/swimming-pool/",
+    "title": "Swimming Pool Water Maintenance Calculator"
+   },
+   {
+    "url": "https://poolpartstogo.com/blogs/articles/how-many-times-does-pool-water-need-to-be-turned-over",
+    "title": "How Many Times Does Pool Water Need to Be Turned Over?"
+   },
+   {
+    "url": "https://pooldial.com/turnover-compliance-calculator",
+    "title": "Free Pool Turnover Compliance Calculator"
+   },
+   {
+    "url": "https://www.californiapools.com/blog/california-pools-blog/pool-maintenance-care/how-long-should-you-run-your-pool-pump-/",
+    "title": "How Long Should You Run Your Pool Pump? - California Pools"
+   },
+   {
+    "url": "https://longhornpools.com/pool-turnover-rate-problems/",
+    "title": "Homeowners: Measure GPM First to Fix Pool Turnover Rate Problems"
+   },
+   {
+    "url": "https://ultimatecalculators.com/calculator/pool-turnover-rate-calculator/",
+    "title": "Pool Turnover Rate Calculator: Optimize Circulation for Crystal Water"
+   },
+   {
+    "url": "https://www.panther-pools.com/fast-vs-slow-pool-turnover-which-rate-keeps-your-pool-clean/",
+    "title": "Fast vs. Slow Pool Turnover: Which Rate Keeps Your Pool Clean?"
+   },
+   {
+    "url": "https://all-waterparks.com/home-pool/pool-pump-turnover-rate/",
+    "title": "Turnover Rate: How Long to Run Your Pump - All Waterparks"
+   },
+   {
+    "url": "https://thepoolandlawn.com/what-is-the-turnover-rate-of-a-pool/",
+    "title": "Understanding Pool Turnover Rate: What It Is and Why It Matters - ThePoolAndLawn"
+   },
+   {
+    "url": "https://articles.bluehaven.com/what-is-a-gunite-swimming-pool",
+    "title": "What Is a Gunite Pool? Cost, Considerations & Why It’s the Best Option"
+   },
+   {
+    "url": "https://elevate-outdoor.com/what-is-gunite-gunite-vs-concrete-vs-shotcrete-explained/",
+    "title": "What Is Gunite? Gunite vs. Concrete vs. Shotcrete Explained"
+   },
+   {
+    "url": "https://www.ferraripools.com/post/what-is-a-gunite-swimming-pool-a-complete-homeowner-guide",
+    "title": "What Is a Gunite Swimming Pool? A Complete Homeowner Guide"
+   },
+   {
+    "url": "https://copperleafpools.com/the-pool-building-process/shotcrete/",
+    "title": "Shotcrete Shell"
+   },
+   {
+    "url": "https://www.hotspringspools.net/blog/what-is-a-gunite-pool",
+    "title": "What Is a Gunite Pool? A Carolinas Builder's Guide"
+   },
+   {
+    "url": "https://www.millers-pools.com/products/gunitepool",
+    "title": "Gunite Pool"
+   },
+   {
+    "url": "https://sccoastalpools.com/lexicon/concrete-gunite-pool/",
+    "title": "Concrete and Gunite Pools — Construction, Finishes, and Maintenance"
+   },
+   {
+    "url": "https://swanpools.com/blog/shotcrete-vs-gunite/",
+    "title": "Shotcrete vs. Gunite: Which Is Better? - Swan Pools"
+   },
+   {
+    "url": "https://scottpaynecustompools.com/categories/pool-types/gunite-vs-concrete-vs-shotcrete-whats-the-difference",
+    "title": "Gunite vs Concrete vs Shotcrete: The Real Differences for"
+   },
+   {
+    "url": "https://www.swimuniversity.com/run-pool-pump/",
+    "title": "How Long Should I Run My Pool Pump Every Day?"
+   },
+   {
+    "url": "https://beatbot.com/blogs/pool-care-solutions/how-long-to-run-pool-pump",
+    "title": "How Long Should You Run a Pool Pump Every Day?"
+   },
+   {
+    "url": "https://www.thepoolnerd.com/pool-pump-turnover",
+    "title": "Pool Pump Turnover: How Long to Run Your Pump and Why It Matters"
+   },
+   {
+    "url": "https://www.thepoolnerd.com/pool-pump-size-calculator",
+    "title": "Pool Pump Size Calculator: What Size Pump Does Your Pool Need?"
+   },
+   {
+    "url": "https://www.californiapools.com/blog/california-pools-blog/pool-maintenance-care/how-long-should-you-run-your-pool-pump-/",
+    "title": "How Long Should You Run Your Pool Pump? - California Pools"
+   },
+   {
+    "url": "https://www.mavaquadoc.com/blogs/pool-maintenance-blog/pool-pump-runtime-the-daily-hours-that-actually-keep-your-pool-clean",
+    "title": "Pool Pump Runtime: The Daily Hours That Actually Keep Your Pool Clean"
+   },
+   {
+    "url": "https://poolpartstogo.com/blogs/articles/how-many-times-does-pool-water-need-to-be-turned-over",
+    "title": "How Many Times Does Pool Water Need to Be Turned Over?"
+   },
+   {
+    "url": "https://cleanwavespools.com/knowledgebase/pool-maintenance/pool-pump-maintenance-guide",
+    "title": "Pool Pump Maintenance Guide — How Long to Run It"
+   },
+   {
+    "url": "https://larryspool.com/pool-turnover-calculator/",
+    "title": "Swimming Pool Turnover Rate Calculator - Accurate Flow & Time"
+   },
+   {
+    "url": "https://backyardpoolspa.com/2026/08/14/pool-pump-run-time-the-right-hours-for-your-pool-size-and-setup/",
+    "title": "Pool Pump Run Time: The Right Hours for Your Pool Size and Setup"
+   },
+   {
+    "url": "https://www.yahoo.com/lifestyle/cdc-warns-pool-smells-strong-152400294.html",
+    "title": "CDC Warns That If A Pool Smells Like Strong Chlorine It Might Have \"Lots Of Pee, Poop, Sweat\" In It"
+   },
+   {
+    "url": "https://www.cdc.gov/healthy-swimming/prevention/preventing-eye-irritation-from-pool-chemicals.html",
+    "title": "Preventing Eye Irritation from Pool Chemicals"
+   },
+   {
+    "url": "https://www.mavaquadoc.com/blogs/pool-maintenance-blog/pool-chlorine-smell-fix-chloramines-2026",
+    "title": "Why Does My Pool Smell Like Chlorine and What to Do About It"
+   },
+   {
+    "url": "https://blog.poolsharkh2o.com/pool-chlorine-smell",
+    "title": "Why does my pool smell like chlorine?"
+   },
+   {
+    "url": "https://www.healthypools.org/hygiene-and-health/",
+    "title": "Hygiene and Health - PHTA Healthy Pools"
+   },
+   {
+    "url": "https://www.frizzlife.com/blogs/guide/smell-of-chlorine-causes-effects-amp-elimination-guide",
+    "title": "Smell of Chlorine: Causes, Effects & Elimination Guide"
+   },
+   {
+    "url": "https://poolproguide.com/pool-chlorine-smell-causes/",
+    "title": "Pool Chlorine Smell Causes: It's Not What You Think (2026)"
+   },
+   {
+    "url": "https://www.chemicalsafetyfacts.org/health-and-safety/chloramines-understanding-pool-smell/",
+    "title": "Chloramines: Understanding “Pool Smell” - Chemical Safety Facts"
+   },
+   {
+    "url": "https://www.in.gov/localhealth/stjosephcounty/files/Indoor_Pools_Irritants_1.pdf",
+    "title": "Indoor Pools Irritants 1"
+   },
+   {
+    "url": "https://www.swimmingpoolsteve.com/pages/average-pool.html",
+    "title": "What Is The Average Pool Size?"
+   },
+   {
+    "url": "https://www.vitafilters.com/blogs/news/how-many-gallons-are-in-my-pool",
+    "title": "How Many Gallons Is My Pool"
+   },
+   {
+    "url": "https://www.vitafilters.com/blogs/news/what-is-an-average-backyard-pool-size",
+    "title": "What Are the Average Pool Sizes"
+   },
+   {
+    "url": "https://westernlehighservices.com/what-is-the-average-pool-size-for-your-backyard/",
+    "title": "What Is the Average Pool Size for Your Backyard?"
+   },
+   {
+    "url": "https://www.backyardcitypools.com/Pool-Volume-Calculate.htm",
+    "title": "Pool Water Volume Calculator In Gallons with Size Charts"
+   },
+   {
+    "url": "https://familypoolfun.com/blog/how-much-water-does-an-above-ground-pool-hold",
+    "title": "How Much Water Does An Above-Ground Pool Hold?"
+   },
+   {
+    "url": "https://www.doheny.com/help/calculate-pool-volume",
+    "title": "How To Calculate Pool Volume"
+   },
+   {
+    "url": "https://gilbertpoolservice.org/average-pool-size/",
+    "title": "What Is The Average Pool Size? - Gilbert Pool Service"
+   },
+   {
+    "url": "https://www.pressreader.com/usa/the-morning-journal-lorain-oh/20141006/281728382753712",
+    "title": "The Morning Journal (Lorain, OH)"
+   }
+  ]
+ }
+}

@@ -11,6 +11,8 @@ import { compile } from "./compile.mjs";
 import { makePage } from "./makePage.mjs";
 import { buildAudio } from "./audio.mjs";
 import { speechEnd } from "../speechEnd.mjs";
+import { cameraAt, projectBox } from "./director.js";
+import { placeSign } from "./framing.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const progress = (o) => console.log(`PROGRESS ${JSON.stringify(o)}`);
@@ -21,7 +23,8 @@ function run(cmd, args, opts = {}, onLine = null) {
     let err = "";
     const lines = (buf) => { for (const l of String(buf).split(/\r?\n/)) if (l.trim()) onLine?.(l); };
     p.stdout.on("data", lines); p.stderr.on("data", (d) => { err += d; lines(d); });
-    p.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`${path.basename(cmd)} exited ${code}: ${err.slice(-600)}`))));
+    // (the error line itself first, then the tail: the tail alone was a stack without its message)
+    p.on("close", (code) => { if (code === 0) return resolve(); const head = err.split("\n").find((l) => /error|exception|cannot|undefined|not a function|failed/i.test(l) && !/^\s+at /.test(l)) ?? ""; reject(new Error(`${path.basename(cmd)} exited ${code}: ${head.trim().slice(0, 400)}${head ? " | " : ""}${err.slice(-500)}`)); });
   });
 }
 
@@ -57,7 +60,14 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   fs.mkdirSync(out, { recursive: true });
   progress({ stage: "timeline", pct: 2 });
   const se = speechEnd(ff, voice);
-  const tl = compile(layout, words, se, { roles });
+  let tl = compile(layout, words, se, { roles });
+  // the end card checked from the camera the video really ends on (with the real word times), and moved to a clear spot
+  // if something stands between (a young tree hid half the Landfill's sign, 2026-10-28); free, before the render
+  for (let i = 0; i < 2 && tl.marks?.signPop != null && tl.camera?.end; i++) {
+    const k = cameraAt(tl.camera.end, tl.marks.signPop + 0.6), ps = placeSign(layout, { pos: k.pos, tgt: k.tgt }, projectBox);
+    if (!ps.moved) break;
+    layout = ps.layout; tl = compile(layout, words, se, { roles }); timing.signMoved = (timing.signMoved ?? 0) + 1;
+  }
   fs.writeFileSync(path.join(out, "timeline.json"), JSON.stringify(tl, null, 1));
   preparePage({ layout, tl, proto });
   timing.prepare = (Date.now() - t0) / 1000;
