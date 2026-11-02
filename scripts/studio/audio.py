@@ -216,7 +216,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     if tl.get("aligned") in ("whole", "matched"):
         keys = {norm(k) for k in ln.get("key", [])}
         for w in tl["words"]: w["key"] = norm(w["w"]) in keys
-        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot") if k in ln}); continue
+        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake") if k in ln}); continue
     mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
@@ -234,7 +234,19 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     keys = {norm(k) for k in ln.get("key", [])}
     for w in tl["words"]:
         w["key"] = norm(w["w"]) in keys
-    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot") if k in ln})
+    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake") if k in ln})
+
+# a line can say its first word starts with the line (whisper puts it late after a clip's sound)
+for ln, tl in zip(lines, timed):
+    if ln.get("snap_start"): tl["words"][0]["s"] = tl["start"]
+
+# a censor bleep over one word, from a script's "bleep": {line, word, show}: the word's sound is gone, a tone in its place
+if S.get("bleep"):
+    b = S["bleep"]; w = timed[b["line"]]["words"][b["word"]]
+    a0, a1 = int((w["s"] - 0.06) * SR), int((w["e"] + 0.08) * SR); fade = int(0.004 * SR)
+    tone = 0.45 * np.sin(2 * np.pi * 1000 * np.arange(a1 - a0) / SR).astype(np.float32); tone[:fade] *= np.linspace(0, 1, fade); tone[-fade:] *= np.linspace(1, 0, fade)
+    voice[a0:a1] = tone
+    w["w"] = b["show"]
 
 # ── 4. mouth envelope per line (30 fps, 0..1) ──────────────────────────
 for tl, x in zip(timed, takes):
@@ -402,12 +414,15 @@ reveals = []
 if E:
     first = timed[0]["words"]
     no_music = S.get("music_style") == "none"
-    drop_t = 0.0 if no_music else first[min(1, len(first) - 1)]["s"]
+    drop_t = 0.0 if no_music or E.get("from_frame0") else first[min(1, len(first) - 1)]["s"]
     events.append({"t": drop_t, "event": "drop", "sfx": "punch" if no_music else "drop"})
     reveals = sorted([timed[i]["start"] for i in E.get("reveal_lines", [])] + [c["start"] for c in clips if c["name"] in E.get("reveal_clips", [])])
     for i, r in enumerate(reveals):
         events.append({"t": r, "event": f"reveal{i}", "sfx": "bass"})
         if i == len(reveals) - 1: events.append({"t": round(r - 0.42, 3), "event": "scratch", "sfx": "scratch"})
+    # a hard stop on one word, the music back on a clip's first frame: {line, word, clip}
+    HS = E.get("hard_stop")
+    if HS: hard_a, hard_b = timed[HS["line"]]["words"][HS["word"]]["s"] - 0.03, clips[HS["clip"]]["start"]; events.append({"t": hard_b, "event": "dropBack", "sfx": "bass"})
     events.sort(key=lambda e: e["t"])
     bed = np.zeros(int(total * SR), np.float32) if no_music else music_drive(total, S.get("music_bpm", 124), S.get("music_shift", 0), drop_t)
 else:
@@ -441,6 +456,9 @@ if E:
     for r in reveals:
         a, b = max(0, int((r - 0.4) * SR)), int(r * SR)
         gate[a:b] = 0; gate[max(0, a - f):a] = np.linspace(1, 0, a - max(0, a - f)); gate[b:b + f] = np.linspace(0, 1, len(gate[b:b + f]))
+    if E.get("hard_stop"):
+        a, b, f2 = int(hard_a * SR), int(hard_b * SR), int(0.005 * SR)
+        gate[a:b] = 0; gate[a - f2:a] = np.linspace(1, 0, f2)
     bed *= gate
 mix = voice + bed + clip_track
 for e in events:

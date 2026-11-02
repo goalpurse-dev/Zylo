@@ -9,7 +9,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 export const ZYVO = { violet: "#7C4DFF", violet2: "#9F5CFF", lime: "#BEF264", ink: "#090A0A" };
-export const EXPRESSIONS = ["neutral", "happy", "sad", "shocked", "smug", "thinking"];
+export const EXPRESSIONS = ["neutral", "happy", "sad", "shocked", "smug", "thinking", "angry"];
 const C = (h) => new THREE.Color(h);
 const rbox = (w, h, d, r = 0.06, seg = 4) => new RoundedBoxGeometry(w, h, d, seg, Math.min(r, w / 2 - 1e-3, h / 2 - 1e-3, d / 2 - 1e-3));
 
@@ -61,6 +61,7 @@ export const POSES = {
   pointUp: [[0.05, 0.12], [-0.5, -2.2]],
   pointUpL: [[-0.5, 2.2], [0.05, -0.12]],   // the other arm: points up to the character's left (the viewer's right)
   shrug: [[0.3, 0.6], [0.3, -0.6]],          // kept narrow: hands stay inside a close-up
+  rage: [[-2.95, 0.3], [-2.95, -0.3]],   // both fists up beside the head
   handsUp: [[-2.55, 0.45], [-2.55, -0.45]],   // raised FORWARD: in and out of the pose the hands stay inside a close-up
   wave: [[0.05, 0.12], [-2.5, -0.5]],   // a forward wave: the arm never swings out to the frame edge
   holdCard: [[-1.1, 0.25], [-1.1, -0.25]],
@@ -194,6 +195,8 @@ const CREATOR_EXPR = {
   shocked: { brow: [0.08, 0.15, 0], pupil: [0, 0.01], eye: 1.3, pupilScale: 0.7 },
   smug: { brow: [0.0, -0.1, 0.07], pupil: [0.03, -0.01], eye: 0.7, lids: 0.3, tilt: -0.08 },
   thinking: { brow: [0.02, 0.2, 0.06], pupil: [0.035, 0.04], eye: 1, tilt: 0.09 },
+  angry: { brow: [-0.05, 0.62, 0], pupil: [0, -0.005], eye: 0.92, pupilScale: 0.72, lids: 0.18 },
+  angry: { brow: [-0.05, 0.62, 0], pupil: [0, -0.005], eye: 0.92, pupilScale: 0.72, lids: 0.18 },
 };
 
 function rig(g, p) {
@@ -213,7 +216,7 @@ function rig(g, p) {
   const api = {
     group: g, parts: p, get expression() { return name; },
     expr(n) {
-      name = EXPRESSIONS.includes(n) ? n : "neutral";
+      name = EXPRESSIONS.includes(n) && !(isZee && n === "angry") ? n : "neutral";
       if (!isZee) {
         const e = CREATOR_EXPR[name];
         p.brows.forEach((b, i) => { const s = i === 0 ? -1 : 1; b.position.y = base.brows[i] + e.brow[0] + (i === 0 ? e.brow[2] : 0); b.rotation.z = s * e.brow[1]; });
@@ -231,7 +234,7 @@ function rig(g, p) {
       for (const [n, s] of Object.entries(shapes)) s.visible = !talking && n === name;
       p.talk.visible = talking;
       if (isZee) { p.talk.scale.set(1 - 0.3 * openK, 1 + openK * 2.4, 1); return api; }
-      const h = 0.06 * (1 + openK * 2.4), w = name === "happy" ? 1.15 : name === "shocked" ? 0.7 : 1;
+      const h = 0.06 * (1 + openK * 2.4), w = name === "happy" ? 1.15 : name === "shocked" ? 0.7 : name === "angry" ? 1.7 : 1;
       p.talk.scale.set(w * (1 - 0.2 * openK), 1 + openK * 2.4, 1); p.talk.position.y = -openK * 0.03;
       p.tongueBox.visible = talking && openK > 0.45; p.tongueBox.scale.x = w * 0.9; p.tongueBox.position.y = -openK * 0.03 - h / 2 + 0.024;
       return api;

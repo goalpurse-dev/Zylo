@@ -39,6 +39,14 @@
 - Our music was quiet and soft, about 6 dB under theirs overall, with a third of their bass.
 - Almost no "typed next to what came out" moment.
 
+## The owner's yelling Fruit video (2026-11-02)
+
+Written by the owner line by line, made by hand, not in the Queue: `content/studio-previews/fruit-yell/` (bleep and uncensored, 28.2 s, voices $0.053).
+
+- **Yelling needs ElevenLabs `eleven_v3` with tags** (`[shouting] [furious]`). The usual model at its most extreme measured -19 to -23 LUFS and 122-158 Hz; v3 measured -13.9 LUFS and 262 Hz, same voice. Nobody has listened yet: these are measurements.
+- New script options, all off unless a script asks: `bleep`, `energy.hard_stop`, `energy.from_frame0`, `shake`, `snap_start`, expression `angry`, pose `rage`, shot `rage_hook`, prop `none`, roll `format: "clock"`, cues `tap|x|y` and `flip|file`, `screen.chip`.
+- Whisper ends words early: a bleep needs padding, or the "-ing" stays audible.
+
 ## Round 3: one story per video (2026-11-02)
 
 The owner read the last 2 scripts as incoherent: "Ditches shouldn't be this addictive", then "Zyvo is a website…", then "why it's called French". Each stacked rule forced in its own line, so nothing followed from the line before.
