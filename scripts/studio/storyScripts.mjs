@@ -163,7 +163,7 @@ export function assembleStory(key, s, kits, sourceId) {
   const closing = lines.at(-1); closing.shot = "two_shot";
   return {
     variant: key, title: s.title, template: s.template ?? "ai_fruit_story", voices: VOICES, world: s.world, music_bpm: s.music_bpm, music_shift: s.music_shift, no_phone: true, creation: s.creation, source_story: sourceId, search_title: s.search_title ?? null, caption: s.caption ?? null, hashtags: s.hashtags ?? null,
-    lead: s.no_lead ? 0 : 0.15, gap_speaker: 0.2, gap_same: 0.16, tail: 0.7, music_db_under: s.music_db_under ?? 14, max_gap: 0.4, ...(s.energy ? { energy: s.energy, music_style: "drive" } : {}), start_at: first, hq_dir: kits[s.creation].hq_dir,
+    lead: s.no_lead ? 0 : 0.15, gap_speaker: 0.2, gap_same: 0.16, tail: s.tail ?? 0.7, ...(s.first_second ? { first_second: true } : {}), music_db_under: s.music_db_under ?? 14, max_gap: 0.4, ...(s.energy ? { energy: s.energy, music_style: s.music_style ?? "drive" } : {}), start_at: first, hq_dir: kits[s.creation].hq_dir,
     headline: s.headline, recipe: { ...s.recipe, kind: "video", template: s.template ?? "ai_fruit_story", world: s.world, template_shown: s.template ?? "ai_fruit_story", cta: s.end.cta.id, source_story: sourceId }, cta: s.end.cta,
     ...(s.loop ? { loop_end: { secs: 0.5 } } : {}), clips: s.clips, lines, shots: shotsOf(lines, first),
     ...(s.lines.length ? {} : {}), events_extra: s.no_lead || s.energy ? [] : [{ t: 0, event: "open", sfx: "hit" }],
@@ -186,9 +186,12 @@ const MENU_WORDS = /\b(short form|long form|home menu|sidebar|blocky stories|ai 
 /** The friend rules (owner, 2026-11-02; content/studio-notes/LEARNINGS.md), for written scripts. */
 export function validateFriend(s) {
   const problems = [], L = s.lines, first = L[0];
-  const names = s.recipe.angle === "A2" ? /^(claude|zyvo|zee)\s*(…|\.\.\.)/i : /^(zyvo|zee)\s*(…|\.\.\.)/i;
-  if (first.who !== "creator" || !names.test(first.text)) problems.push(`line 1 must be the creator, starting with the AI's name and an ellipsis ("Zyvo…"; "Claude…" only in A2): "${first.text}"`);
-  if (first.text.replace(names, "").trim().split(/\s+/).length < 3) problems.push("line 1 must name the problem right after the name");
+  const short = s.recipe.length_bucket === "15-25";
+  if (first.who !== "creator") problems.push("line 1 must be the creator: a big face on frame 0");
+  if (/\b(zyvo|zee)\b/i.test(first.text)) problems.push(`line 1 never says Zyvo or Zee, an unknown name has no pull: "${first.text}"`);
+  if (/^(how (to|do|can)\b|wait\b|so\b|okay\b)/i.test(first.text)) problems.push(`line 1 needs a strong first word and curiosity, not a how-to: "${first.text}"`);
+  if (first.text.trim().split(/\s+/).length > 12) problems.push("line 1 is over 12 words");
+  if (/^how to\b/i.test((s.headline?.text ?? "").replace(/\*/g, ""))) problems.push("the how-to goes in the caption, not the headline");
   const plain = L.findIndex((l) => /\bzyvo\b/i.test(l.text) && /\b(website|site|app|tool)\b/i.test(l.text) && /\bvideos?\b/i.test(l.text) && l.role !== "site");
   const firstScreen = L.findIndex((l) => l.screen);
   if (plain < 1) problems.push("no line says what Zyvo is in plain words (a website or app that makes the video)");
@@ -197,8 +200,8 @@ export function validateFriend(s) {
   if (spoken) problems.push(`menu names go on stickers, not in speech: "${spoken.text}"`);
   const bare = L.find((l) => l.screen && !l.screen.sticker);
   if (bare) problems.push(`a screen needs a sticker: "${bare.text}"`);
-  if (L.filter((l) => l.who === "creator" && l.text.includes("?")).length < 2) problems.push("the creator must ask at least 2 of the viewer's confused questions");
-  if (!L.some((l) => l.visual?.kind === "typed_result")) problems.push('one line must show visual "typed_result" (what I typed next to what came out)');
+  if (!short && L.filter((l) => l.who === "creator" && l.text.includes("?")).length < 2) problems.push("the creator must ask at least 2 of the viewer's confused questions");
+  if (!short && !L.some((l) => l.visual?.kind === "typed_result")) problems.push('one line must show visual "typed_result" (what I typed next to what came out)');
   const big = (s.energy?.reveal_lines?.length ?? 0) + (s.energy?.reveal_clips?.length ?? 0);
   if (big < 1 || big > 3) problems.push(`1 to 3 big moments, not ${big}`);
   return problems;

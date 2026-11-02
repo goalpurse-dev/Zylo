@@ -13,7 +13,9 @@ import { assembleStory, validateStory, validateFriend, similarity, CTA_LINES, ST
 
 const MODEL = process.env.STUDIO_WRITER_MODEL ?? "claude-sonnet-5-5";
 const FAST_MODEL = process.env.STUDIO_FAST_MODEL ?? "claude-haiku-5-5";
-const OPENER_TONE = "\"Ugh,\" he sighed, disappointed and frustrated, and said in a let-down voice:";
+const OPENER_TONE = "\"Honestly!\" he burst out, loud, worked up and emotional, right away:";
+// what's left to say beside the closing: the short closing below, or the full one in longer videos
+const SHORT_SITE = { who: "zee", text: "Made with Zyvo. tryzyvo.com.", say: "Made with Zyvo. Try zyvo dot com.", key: ["tryzyvo.com."], expr: "happy", pose: "point", role: "site", cues: [{ word: 3, event: "site", sfx: "sparkle" }] };
 // What each template is and which real screens exist for it (scripts/studio: src_work/screens_<template>)
 const TEMPLATES = {
   ai_fruit_story: { name: "AI Fruit Story", screens: { s_menu: "Home menu, Short Form > AI Fruit Story", s_ideas: "ready ideas", s_length: "length + the credit cost shown up front", s_pictures: "checking scene pictures", s_anim: "clips animating", s_final: "the finished video", typed: "this creation's idea typed in" } },
@@ -40,11 +42,11 @@ const SCHEMA = { type: "object", additionalProperties: false, required: ["title"
 
 const SYSTEM = (facts, tpl) => `You write scripts for short vertical videos on Zyvo's own account (Zyvo makes AI videos). Two 3D characters talk on a bright set: "creator", the viewer's stand-in, confused and expressive, who asks the viewer's questions and objections; and "zee", a calm, funny expert.
 
-THE OPENING overrides the angle's shape for line 1. Line 1 is the creator, let down and frustrated, starting with the AI's name and an ellipsis, then the problem in the same breath: "Zyvo… why does my video look like everyone else's?" or "Zee… I've been trying for hours." An instant emotion and a problem in the first second. Use expr "sad" or "shocked" and the shot "creator_close". Say "Claude…" instead ONLY when the video is really about using Claude (angle A2). The frustration must be true to life and carry no invented number: no made-up view counts, hours or money. The headline names the viewer's problem and has no Zyvo in it.
+THE FIRST SECOND decides everything: viewers leave at 0:01. Line 1 overrides the angle's shape. It is the creator, at most 10 words, with an instant emotion. It starts with a name everyone knows or a pain or curiosity anyone has, and its FIRST word is strong and loud. It NEVER says Zyvo or Zee: an unknown name has no pull. Patterns, write a NEW one: "ChatGPT can write the script… but who makes the video?" and "I can't animate. At all." It must be true: name a tool only in a true statement, and invent no number, no view count, hours or money. It is broad curiosity, never "How to…" or "How do I…", and never starts with "Wait", "So" or "Okay". The how-to phrase belongs in "caption" and "search_title" for search. Use expr "shocked" or "sad". The headline is 2-5 words, shown small, with no Zyvo; it must not repeat line 1. Line 1 of this video must be a different kind of hook from the recent ones listed below.
 
-EXPLAIN LIKE A FRIEND. The viewer has never heard of Zyvo and doesn't know the words. Within the first 3 lines, before any step or screen, Zee says what Zyvo is in plain words, using the words website and video: Zyvo is a website where you type an idea and it makes the whole video for you. Steps are what you do and why, in everyday words. Menu and button names go ONLY in "sticker"; never speak them (never say "Short Form", "Long Form", "Blocky Stories", "AI Fruit Story", "Cutaway Explainer", "sidebar" or "menu"; say "the explainer one" or "the blocky one" instead). The creator asks at least 2 of the viewer's confused questions in their own words ("Wait, what's that?", "But I can't edit, so what do I do?"); Zee answers simply, and any new idea gets an everyday comparison ("it's like..."). Say the cost honestly and plainly when price comes up. Include "the mistake everybody makes" or "the tip most people skip".
+EXPLAIN LIKE A FRIEND. The viewer has never heard of Zyvo and doesn't know the words. Right after the hook, before any step or screen, Zee says what Zyvo is in plain words, using the words website and video: Zyvo is a website where you type an idea and it makes the whole video for you. Steps are what you do and why, in everyday words. Menu and button names go ONLY in "sticker"; never speak them (never say "Short Form", "Long Form", "Blocky Stories", "AI Fruit Story", "Cutaway Explainer", "sidebar" or "menu"; say "the explainer one" or "the blocky one" instead). The creator asks at least 2 of the viewer's confused questions in their own words ("Wait, what's that?", "But I can't edit, so what do I do?"); Zee answers simply, and any new idea gets an everyday comparison ("it's like..."). Say the cost honestly and plainly when price comes up. Include "the mistake everybody makes" or "the tip most people skip".
 
-At most 3 big moments: "big_moments" is the 0-based indexes of 1 or 2 lines that are real reveals (the music cuts out before them and a bass hit lands on them); the real clip is one more. Exactly one line uses the visual "typed_result" (what I typed next to what came out; its words and picture are filled in with the real ones, so leave its text null). Keep other lines plain so those moments stand out. Add reactions: short lines of 1-4 words from the creator ("Wait, what?", "That's it?") with a matching expr; each gets a sound. Just before the end, one short joke that calls back to line 1.
+At most 3 big moments: "big_moments" is the 0-based indexes of the lines that are real reveals (a sound cut before them and a bass hit on them); the real clip is one more. Videos over 30 seconds: 1 or 2 such lines, exactly one line uses the visual "typed_result" (what I typed next to what came out; its words and picture are filled in with the real ones, so leave its text null), and one short joke just before the end calls back to line 1. Add reactions: short lines of 1-4 words from the creator ("That's it?") with a matching expr; each gets a sound. Line 1's visual is replaced by the creation's real picture, so give it null.
 
 THE STORY: viewer problem -> Zyvo as the answer ("Made with Zyvo. tryzyvo.com, link in bio." is added for you, so do not write it).
 
@@ -70,6 +72,7 @@ Example hooks (patterns; write a NEW one): ${(angle.hooks ?? []).join(" | ")}
 Length: ${length} seconds in total: at most ${lengthBudget(length).words - 15} spoken words in "lines" (the real clip, the closing line and the end trigger take the rest). End trigger: ${recipe.end_trigger}.
 The real creation it shows: "${kit.story.title}" (${kit.story.length_sec} s, idea: ${kit.story.idea_text}). Its lines, in order: ${kit.moments.shots.filter((s) => !s.brand).map((s) => `"${s.text}"`).join(" ")}
 ${a2 ? `This video reports a REAL exchange with Claude. Prompt: "${a2.prompt}" Claude answered: "${a2.answer}". Quote it faithfully and do not add to what it said.` : ""}
+${length === "15-25" ? `This is a SHORT video: ONE idea only, 3 to 5 lines before the closing, no numbered steps, big_moments empty or one line. Its last words must lead naturally back into line 1, so the video loops.` : ""}
 ${prior.length ? `Do NOT reuse these hooks or lines from recent videos: ${prior.slice(0, 40).map((x) => `"${x}"`).join(" ")}` : ""}`;
 
 /** A real question to Claude for an A2 video: its answer becomes part of the script, and both are logged. */
@@ -97,7 +100,9 @@ async function freshViewer({ guard, apiKey, script }) {
 }
 
 /** Writes and checks one script. Returns {script, usd}. recent: scripts of the batch and the last 14 days. */
-export async function writeStory({ guard, apiKey, facts, recipe, angle, kit, kitKey, recent = [], spots = {} }) {
+export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, kit, kitKey, recent = [], spots = {} }) {
+  // 15-25 s by default, whatever length the angle had; a long tutorial only when asked for (owner, 2026-11-02)
+  const recipe = { ...asked, length_bucket: asked.length_bucket === "60-90" ? "60-90" : "15-25" };
   const factText = facts.map((f) => f.claim).join("; "), tpl = TEMPLATES[kit.template] ?? TEMPLATES.ai_fruit_story;
   const prior = recent.flatMap((s) => s.lines.map((l) => l.text));
   // the reuse rule: different clips and never the same opening shot as an earlier video of this creation
@@ -140,16 +145,17 @@ function assembleWritten(w, recipe, kit, kitKey, shown = [], spots = {}) {
   const reveal_lines = [...new Set(w.big_moments ?? [])].filter((i) => i > 0 && i < n).slice(0, 2);
   const lines = w.lines.map((l, i) => {
     const out = { who: l.who, text: l.text, key: [l.key], expr: l.expr, pose: l.pose, shot: l.shot, role: `l${i}` };
-    if (i === 0) out.tone = OPENER_TONE;
+    if (i === 0) Object.assign(out, { tone: OPENER_TONE, shot: "face_hook", expr: l.expr === "sad" ? "sad" : "shocked" });
     if (reveal_lines.includes(i)) out.pause_before = 0.4;
     if (l.text.trim().split(/\s+/).length <= 4) out.cues = [{ word: 0, event: `react${i}`, sfx: { shocked: "react_up", sad: "react_down" }[l.expr] ?? "react_pop" }];
     if (l.stamp) out.stamp = l.stamp;
     if (l.keep && !l.visual && !l.screen) out.keep = true;
+    // frame 0: a big face + the creation's real picture, whole at once (no pop-in)
+    if (i === 0) { delete out.keep; out.visual = { kind: "tiles", images: [`/work/media/${path.basename(kit.scene_images[0])}`], wide: !!kit.wide, w: 1.85, crop: !kit.wide, instant: true, up: 1.03 }; return out; }
     if (l.screen) { const spot = spots[l.screen] ?? STICKER_SPOTS[l.screen] ?? { x: 0.5, y: 0.5, ty: 0.1 }; out.screen = { file: l.screen === "typed" ? "typed.jpg" : `${l.screen}.jpg`, sticker: l.sticker ? { text: l.sticker, ...spot } : null }; }
     else if (l.visual) {
       const v = Object.fromEntries(Object.entries(l.visual).filter(([, x]) => x != null));
       if (/^(creator|zee)$/i.test(v.from ?? "")) delete v.from;   // not a label a viewer should read
-      if (i === 0) Object.assign(v, { scale: 0.72, up: 0.7 });   // under the headline, which holds through the opening
       if (v.kind === "tiles") v.images = kit.scene_images.slice(0, 3).map((p) => `/work/media/${path.basename(p)}`);
       if (v.kind === "conveyor") v.image = `/work/media/${path.basename(kit.scene_images[0])}`;
       if (v.kind === "typed_result") Object.assign(v, { text: String(kit.story.idea_text).slice(0, 80), image: `/work/media/${path.basename(kit.scene_images[Math.min(1, kit.scene_images.length - 1)])}`, wide: !!kit.wide, scale: 0.8 });
@@ -158,15 +164,16 @@ function assembleWritten(w, recipe, kit, kitKey, shown = [], spots = {}) {
     return out;
   });
   const clips = [];
-  const early = shots.length > 2 && w.early_payoff_after != null && w.early_payoff_after >= 0 && w.early_payoff_after < n - 1 ? w.early_payoff_after : null;
+  const short = recipe.length_bucket === "15-25";
+  const early = !short && shots.length > 2 && w.early_payoff_after != null && w.early_payoff_after >= 0 && w.early_payoff_after < n - 1 ? w.early_payoff_after : null;
   if (early != null) clips.push(payoff("glimpse", shots[0], shots[0], early, { post: 0.1 }));
   const big = Math.min(n - 1, Math.max(w.big_payoff_after, (early ?? -1) + 1));
   clips.push(payoff("payoff", shots[early != null ? 1 : 0], shots.at(-1), big, { pays_loop: true }));
   const c = CTA_LINES(recipe.end_trigger, w.end_line, w.end_chip);
   return assembleStory(`job_${recipe.angle}_${Date.now().toString(36)}`, {
-    title: w.title, template: kit.template, world: recipe.world, music_bpm: 116 + Math.floor(Math.random() * 16), music_shift: Math.floor(Math.random() * 7) - 3, music_db_under: 7, energy: { reveal_lines, reveal_clips: ["payoff"] }, creation: kitKey,
+    title: w.title, template: kit.template, world: recipe.world, music_bpm: 116 + Math.floor(Math.random() * 16), music_shift: Math.floor(Math.random() * 7) - 3, music_style: "none", no_lead: true, first_second: true, tail: short ? 0.15 : 0.5, energy: { reveal_lines: short ? reveal_lines.slice(0, 1) : reveal_lines, reveal_clips: ["payoff"] }, creation: kitKey,
     recipe: { angle: recipe.angle, hook_type: w.hook_type, length_bucket: recipe.length_bucket, famous_name: !!recipe.famous_name, end_trigger: recipe.end_trigger },
-    headline: { text: w.headline, chip: w.chip, secs: 8 }, lines: [...lines, { ...SITE_LINE, shot: "zee_close", visual: { kind: "sign", text: "tryzyvo.com", sub: "link in bio" } }], clips, end: c,
+    headline: { text: w.headline, chip: w.chip, secs: short ? 2.5 : 4, size: 50 }, lines: [...lines, { ...(short ? SHORT_SITE : SITE_LINE), shot: "zee_close", visual: { kind: "sign", text: "tryzyvo.com", sub: "link in bio" } }], clips, end: c,
     search_title: w.search_title, caption: w.caption, hashtags: w.hashtags,
   }, { [kitKey]: kit }, kit.story.id);
 }

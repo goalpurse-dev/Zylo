@@ -40,9 +40,9 @@ function studioApi({ stories = [], others = {}, recent = {}, history = [], worke
   return { call, jobs, world, postedIdeas };
 }
 
-test("the friend rules: the disappointed name first, plain words before any step, menu names on stickers, at most 3 big moments", () => {
+test("the first-second and friend rules: no Zyvo in line 1, no how-to hook, plain words before any step, menu names on stickers, at most 3 big moments", () => {
   const good = () => ({ recipe: { angle: "A6" }, energy: { reveal_lines: [2], reveal_clips: ["payoff"] }, lines: [
-    { who: "creator", text: "Zyvo… why does my video look so cheap?", visual: { kind: "sign" } },
+    { who: "creator", text: "I can't animate. At all.", visual: { kind: "tiles" } },
     { who: "zee", text: "Zyvo is a website where you type an idea and it makes the whole video.", visual: { kind: "typed_result" } },
     { who: "creator", text: "Wait, what do I type?", keep: true },
     { who: "zee", text: "Just one line.", screen: { sticker: { text: "here" } } },
@@ -51,9 +51,12 @@ test("the friend rules: the disappointed name first, plain words before any step
   ] });
   const after = (change) => { const s = good(); change(s); return validateFriend(s).join("; "); };
   assert.deepEqual(validateFriend(good()), []);
-  assert.match(after((s) => { s.lines[0].text = "Why does my video look cheap?"; }), /line 1/);
-  assert.match(after((s) => { s.lines[0].text = "Claude… why does my video look cheap?"; }), /line 1/, "Claude only when it is about Claude");
-  assert.equal(after((s) => { s.recipe.angle = "A2"; s.lines[0].text = "Claude… why does my video look cheap?"; }), "");
+  assert.match(after((s) => { s.lines[0].text = "Zyvo… why does my video look cheap?"; }), /never says Zyvo/);
+  assert.match(after((s) => { s.lines[0].text = "How do I make an explainer video?"; }), /how-to/);
+  assert.match(after((s) => { s.lines[0].text = "Wait. Nobody filmed this?"; }), /strong first word/);
+  assert.match(after((s) => { s.lines[0].who = "zee"; }), /big face/);
+  assert.equal(after((s) => { s.lines[0].text = "ChatGPT can write the script… but who makes the video?"; }), "");
+  assert.equal(after((s) => { s.recipe.length_bucket = "15-25"; s.lines[1].visual = { kind: "sign" }; s.lines[2].text = "Really."; }), "", "a short video has one idea: no typed card or question needed");
   assert.match(after((s) => { s.lines.splice(1, 1); }), /what Zyvo is/);
   assert.match(after((s) => { const [plain] = s.lines.splice(1, 1); s.lines.splice(3, 0, plain); }), /before any step/);
   assert.match(after((s) => { s.lines[3].text = "Open Short Form first."; }), /stickers/);
@@ -64,6 +67,7 @@ test("the friend rules: the disappointed name first, plain words before any step
 test("the length budget leaves room for the real clip, and a 101 s test video's 220 words no longer fit 60-90", () => {
   assert.deepEqual(lengthBudget("60-90"), { clip: 20, words: 182 });
   assert.deepEqual(lengthBudget("20-35"), { clip: 11, words: 62 });
+  assert.deepEqual(lengthBudget("15-25"), { clip: 8, words: 44 });
   assert.ok(220 > lengthBudget("60-90").words * 1.1);
 });
 
@@ -141,11 +145,11 @@ test("templates: typed names, parked ones refused, Let AI decide takes a ready o
   assert.equal(studioEstimate({ count: 5, reused: 5 }).generation_usd, 0);
 });
 
-test("a batch is different videos: angles least tried first, lengths mixed, worlds differ; 10+ posts = 3 winners + one-change experiments; retired angles go", () => {
+test("a batch is different videos: angles least tried first, 15-25 s by default, worlds differ; 10+ posts = 3 winners + one-change experiments; retired angles go", () => {
   const first = planRecipes({ angles: ANGLES, n: 5 });
   assert.equal(new Set(first.map((r) => r.angle)).size, 5);
-  assert.ok(first.some((r) => r.length_bucket === "60-90"), "a 60–90 s value video");
-  assert.ok(first.some((r) => ["20-35", "30-45"].includes(r.length_bucket)));
+  assert.ok(first.every((r) => r.length_bucket === "15-25"), "short by default");
+  assert.equal(planRecipes({ angles: ANGLES, n: 1, only: ["A6"] })[0].length_bucket, "60-90", "a long tutorial only when asked for by name");
   assert.ok(new Set(first.map((r) => r.world)).size >= 4, "worlds differ");
   const h = Array.from({ length: 12 }, (_, i) => ({ recipe: { angle: i < 6 ? "A2" : "A7", world: i < 6 ? "cozy" : "sunny", end_trigger: "comment" }, score: i < 6 ? 80 + i : 5 + i }));
   const b = planRecipes({ angles: ANGLES, history: h, n: 5 });

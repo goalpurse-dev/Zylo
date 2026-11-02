@@ -92,11 +92,12 @@ export function retiredAngles(history) {
  */
 export function planRecipes({ angles, history = [], n = 5, only = null }) {
   const retired = retiredAngles(history);
-  const pool = angles.filter((a) => a.status !== "retired" && !retired.includes(a.key) && (!only || only.includes(a.key)));
+  // default 15-25 s, one idea, loopable (owner, 2026-11-02); a long tutorial only when it is asked for by name
+  const pool = angles.filter((a) => a.status !== "retired" && !retired.includes(a.key) && (only ? only.includes(a.key) : a.length_bucket !== "60-90"));
   if (!pool.length) return [];
   const tried = {}; for (const h of history) if (h.recipe?.angle) tried[h.recipe.angle] = (tried[h.recipe.angle] ?? 0) + 1;
   const scored = history.filter((h) => h.score != null && h.recipe?.angle);
-  const base = (a) => ({ angle: a.key, angle_name: a.name, length_bucket: a.length_bucket, example_hook: a.hooks?.[0] ?? null });
+  const base = (a) => ({ angle: a.key, angle_name: a.name, length_bucket: a.length_bucket === "60-90" ? a.length_bucket : "15-25", example_hook: a.hooks?.[0] ?? null });
   let out;
   if (scored.length >= WINNERS_AFTER_POSTS && !only) {
     const by = {};
@@ -115,9 +116,6 @@ export function planRecipes({ angles, history = [], n = 5, only = null }) {
   } else {
     const sorted = [...pool].sort((a, b) => (tried[a.key] ?? 0) - (tried[b.key] ?? 0) || (a.sort ?? 0) - (b.sort ?? 0));
     const pick = sorted.slice(0, n);
-    // the length mix: at least one 60–90 s and one 20–35/30–45 s
-    if (n >= 3 && !pick.some((a) => a.length_bucket === "60-90")) { const l = sorted.find((a) => a.length_bucket === "60-90"); if (l) pick[pick.length - 1] = l; }
-    if (n >= 3 && !pick.some((a) => ["20-35", "30-45"].includes(a.length_bucket))) { const s = sorted.find((a) => ["20-35", "30-45"].includes(a.length_bucket)); if (s) pick[0] = s; }
     out = pick.map((a) => ({ ...base(a), why: tried[a.key] ? `tried ${tried[a.key]}×` : "not tried yet" }));
   }
   // worlds and end triggers differ across the batch

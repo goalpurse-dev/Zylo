@@ -39,6 +39,39 @@
 - Our music was quiet and soft, about 6 dB under theirs overall, with a third of their bass.
 - Almost no "typed next to what came out" moment.
 
+## Round 2: the first second (2026-11-02)
+
+**The owner's numbers:** every video stalls at about 300 views, TikTok says most viewers stop at 0:01 on all of them, and average watch is 4 to 8 s on 50 to 100 s videos, with likes at about 3% of views. These come from the owner's TikTok screens. Whether the first second is the whole cause is a hypothesis these tests will check.
+
+**What the first 0.5 s of our videos measured** (the 5 v2 videos, the 2 Studio shorts marked posted, and the friend test):
+
+- No video fade and no audio fade on the voice, but the voice started at about 0.15 s, after a sound effect.
+- The first word was sometimes followed by near silence ("Wait." then -39 dB at 0.4 to 0.6 s).
+- The characters were small, with a face about a tenth of the frame.
+- The prop scaled in until about 0.3 s, and the captions popped in small.
+- The headline was large at the top, which reads like a title card.
+- Most rows marked posted in the database (slideshows of 14 to 16 s) have no sound track at all and don't move in the first second. The v2 videos aren't marked as posted there, so their stats aren't in the database.
+
+**New rules** (these replace rule 1 below, and "Zyvo…" as an opener is gone):
+
+- Line 1 never says Zyvo or Zee. It starts with a known name or a universal pain or curiosity, stays true, and never starts with "How to", "How do I", "Wait", "So" or "Okay". The how-to phrase goes in the caption and search title.
+- Frame 0 is whole at once: the creator's face at about half the frame (`face_hook` shot), the creation's real picture as a wide card, a small headline, and the voice on the first sample with a louder first word.
+- Default length is 15-25 s, one idea, ending on words that lead back to line 1. 60-90 s only when asked for by name.
+- No music bed, because the owner didn't like it. Sound effects stay.
+
+**The 2 tests** ($0.148 in total), both in the Queue:
+
+| Video | Hook | Length | Cost |
+|---|---|---|---|
+| `studio_d3be4768_A5.mp4` (Blocky) | "I can't animate. At all." | 23.4 s | $0.079 |
+| `studio_45051bb3_A1.mp4` (Cutaway) | "Ditches shouldn't be this addictive. Why?" | 23.5 s | $0.069 |
+
+Both passed the fresh-viewer check first time, and both measure -7 dB in the first 50 ms.
+
+**Seen in their frames, not fixed:** the second line's conveyor prop is cut off at the left edge and shows an empty box, in both videos and in the earlier test.
+
+**What to watch once posted:** the 3-second hold and the average watch, against about 300 views. Recipe tag: `studio_first_second_v4`.
+
 ## The Studio rules now (all in the code)
 
 Written scripts must pass these or get rewritten (`validateFriend` in `scripts/studio/storyScripts.mjs`, prompt in `scripts/studio/storyWriter.mjs`):

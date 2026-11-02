@@ -112,7 +112,7 @@ function act(who, c, t) {
   c.mouth(speaking ? l.env[Math.floor((t - l.start) * T.fps)] ?? 0 : 0);
   c.blink(blinkK(who, t));
   let pose = "rest", k = 0;
-  for (const x of L) if (x.who === who) { const a = ease((t - x.start + 0.1) / 0.25) * (1 - ease((t - x.end - 0.25) / 0.3)); if (a > k) { k = a; pose = x.pose ?? "rest"; } }
+  for (const x of L) if (x.who === who) { const a = (x.start < 0.05 ? 1 : ease((t - x.start + 0.1) / 0.25)) * (1 - ease((t - x.end - 0.25) / 0.3)); if (a > k) { k = a; pose = x.pose ?? "rest"; } }
   c.poseMix("rest", pose, k);
   c.idle(t, who === "zee" ? 0.7 : 0);
 }
@@ -131,7 +131,7 @@ function setState(ts) {
     if (!b.prop) continue;
     const a = ts - b.t0, on = ts >= b.t0 && ts < b.t1 + 0.2, p = b.prop;
     p.group.visible = on; if (!on) continue;
-    const inK = a / 0.32, s = inK <= 0 ? 0.0001 : inK >= 1 ? 1 : 1 + 2.7 * (inK - 1) ** 3 + 1.7 * (inK - 1) ** 2, outK = 1 - ease((ts - b.t1) / 0.2);
+    const inK = b.visual.instant ? 1 : a / 0.32, s = inK <= 0 ? 0.0001 : inK >= 1 ? 1 : 1 + 2.7 * (inK - 1) ** 3 + 1.7 * (inK - 1) ** 2, outK = 1 - ease((ts - b.t1) / 0.2);
     p.group.scale.setScalar(Math.max(0.0001, s * outK * p.scale));
     // locked to the screen, above the heads: always whole and readable whatever the camera does (a slow float)
     const fwd = cam.look.clone().sub(cam.pos).normalize(), right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize(), up = new THREE.Vector3().crossVectors(right, fwd);
@@ -177,7 +177,7 @@ window.renderAt = async (t) => {
     // it gives way as soon as a full-size card or a screen needs the room
     const crowded = beat && !inClip && (beat.screen || (beat.visual && beat.visual.up == null));
     const big = crowded ? Math.min(headlineAt.secs, beat.t0) : headlineAt.secs;
-    if (t < big) boxes.push(["headline", ov.headline(headlineAt.text, t, big)]);
+    if (t < big) boxes.push(["headline", ov.headline(headlineAt.text, t, big, headlineAt.size)]);
     else if (!shot && !inClip) boxes.push(["headline chip", ov.chip([[headlineAt.chip, YELLOW]], t - big)]);   // never on top of a real clip's faces
   }
   if (beat?.line.stamp && !inClip) boxes.push(["stamp", ov.stamp(beat.line.stamp, t - beat.t0, shot ? shot.y1 + 34 : 898)]);
@@ -187,7 +187,7 @@ window.renderAt = async (t) => {
   if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  if (chunk && !inClip) ov.caption(chunk, t, boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
+  if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 
   if (LOOP?.first && t > END - LOOP.secs) {
     const a = Math.min(1, (t - (END - LOOP.secs)) / Math.max(0.05, LOOP.secs - 1 / 30));

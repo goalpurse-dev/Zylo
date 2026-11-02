@@ -133,9 +133,10 @@ const KINDS = {
   },
   /** Real pictures from the creation, side by side (never AI art passed off as output: these ARE its outputs). */
   tiles(g, s, ctx) {
-    const n = s.images.length, w = Math.min(1.05, 3.3 / n - 0.1), h = w * 16 / 9;
+    const n = s.images.length, w = s.w ?? (s.wide ? 3.0 : Math.min(1.05, 3.3 / n - 0.1)), h = s.wide || s.crop ? w * 9 / 16 : w * 16 / 9;
     s.images.forEach((src, i) => {
       const t = ctx.tl.load(src); t.colorSpace = THREE.SRGBColorSpace;
+      if (s.crop) { t.repeat.set(1, 0.316); t.offset.set(0, 0.342); }   // a wide card from a vertical picture shows its middle
       const x = (i - (n - 1) / 2) * (w + 0.1);
       add(g, rbox(w + 0.08, h + 0.08, 0.06, 0.06), new THREE.MeshStandardMaterial({ color: C("#ffffff"), roughness: 0.5 }), x, 0, -0.02);
       const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); m.position.set(x, 0, 0.03); g.add(m);

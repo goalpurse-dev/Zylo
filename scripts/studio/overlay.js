@@ -65,7 +65,7 @@ export function makeOverlay(ctx) {
       let size = 92; ctx.font = `${size}px ${FONT}`;
       const text = chunk.words.map((w) => w.w).join(" ");
       while (ctx.measureText(text).width > W - SAFE.left - SAFE.right - 40 && size > 56) { size -= 4; ctx.font = `${size}px ${FONT}`; }
-      const s = popScale(t - chunk.s, 0.12);
+      const s = chunk.s < 0.05 ? 1 : popScale(t - chunk.s, 0.12);   // the first words are whole on frame 0
       ctx.save(); ctx.translate(SAFE_CX, y); ctx.scale(s, s); ctx.textBaseline = "middle";
       const total = ctx.measureText(text).width; let x = -total / 2;
       for (const [i, w] of chunk.words.entries()) {
@@ -111,10 +111,10 @@ export function makeOverlay(ctx) {
       return { x0: SAFE_CX - (x1 + size * 0.1) * s, y0: y - (h / 2 + size * 0.1) * s, x1: SAFE_CX + (x1 + size * 0.1) * s, y1: y + (h / 2 + size * 0.1) * s };
     },
     /** The headline question (Master Prompt v2): big at the top for its first seconds, whole from frame 0, one word yellow. */
-    headline(text, t, secs) {
+    headline(text, t, secs, size = 74) {
       const out = Math.min(1, Math.max(0, (t - (secs - 0.3)) / 0.3));
       ctx.save(); ctx.globalAlpha = 1 - out;
-      const b = this.hook(text, 1, { size: 74, top: SAFE.top + 10 });
+      const b = this.hook(text, 1, { size, top: SAFE.top + 10 });
       ctx.restore();
       return b;
     },

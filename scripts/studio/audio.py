@@ -108,6 +108,11 @@ elif engine == "eleven":
 else:
     sys.exit("engine: kokoro or eleven")
 
+# the first second (owner, 2026-11-02): the voice starts on the first sample, and the first word is loud
+if S.get("first_second"):
+    takes[0] = trim(takes[0], thr=0.02, pad=0.0).copy()
+    n0 = min(len(takes[0]), int(0.7 * SR)); takes[0][:n0] *= np.linspace(1.4, 1.0, n0)
+
 # ── 2. the voice track: short gaps, a little longer between speakers ──
 lead = S.get("lead", 0.15)
 voice, t, timed = [np.zeros(int(lead * SR), np.float32)], lead, []
@@ -396,14 +401,15 @@ E = S.get("energy")
 reveals = []
 if E:
     first = timed[0]["words"]
-    drop_t = first[min(1, len(first) - 1)]["s"]
-    events.append({"t": drop_t, "event": "drop", "sfx": "drop"})
+    no_music = S.get("music_style") == "none"
+    drop_t = 0.0 if no_music else first[min(1, len(first) - 1)]["s"]
+    events.append({"t": drop_t, "event": "drop", "sfx": "punch" if no_music else "drop"})
     reveals = sorted([timed[i]["start"] for i in E.get("reveal_lines", [])] + [c["start"] for c in clips if c["name"] in E.get("reveal_clips", [])])
     for i, r in enumerate(reveals):
         events.append({"t": r, "event": f"reveal{i}", "sfx": "bass"})
         if i == len(reveals) - 1: events.append({"t": round(r - 0.42, 3), "event": "scratch", "sfx": "scratch"})
     events.sort(key=lambda e: e["t"])
-    bed = music_drive(total, S.get("music_bpm", 124), S.get("music_shift", 0), drop_t)
+    bed = np.zeros(int(total * SR), np.float32) if no_music else music_drive(total, S.get("music_bpm", 124), S.get("music_shift", 0), drop_t)
 else:
     bed = music(total, S.get("music_bpm", 98), S.get("music_shift", 0))
 bed = np.pad(bed, (0, max(0, len(voice) - len(bed))))[: len(voice)]   # exactly the voice track's length (rounding)
