@@ -8,8 +8,10 @@ import { analytics } from "../supabase/functions/_shared/contentMachine/analytic
 import { cleanStats, STAT_FIELDS } from "../supabase/functions/_shared/contentMachine/statsReader.js";
 import { pickMoments } from "../scripts/studio/moments.js";
 import { makeScript, titleHook, TEN_YEARS } from "../scripts/studio/shortScripts.mjs";
-import { validateFriend } from "../scripts/studio/storyScripts.mjs";
-import { freshPasses, lengthBudget } from "../scripts/studio/storyWriter.mjs";
+import { validateThread } from "../scripts/studio/storyScripts.mjs";
+import { lengthBudget } from "../scripts/studio/storyWriter.mjs";
+import { templateFor, ANGLE_TEMPLATES } from "../scripts/studio/storyTemplates.mjs";
+import { applyScriptEdits, onScreen } from "../supabase/functions/_shared/contentMachine/scriptEdit.js";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
 const NOW = new Date("2026-10-30T12:00:00Z");
@@ -40,28 +42,34 @@ function studioApi({ stories = [], others = {}, recent = {}, history = [], worke
   return { call, jobs, world, postedIdeas };
 }
 
-test("the first-second and friend rules: no Zyvo in line 1, no how-to hook, plain words before any step, menu names on stickers, at most 3 big moments", () => {
-  const good = () => ({ recipe: { angle: "A6" }, energy: { reveal_lines: [2], reveal_clips: ["payoff"] }, lines: [
-    { who: "creator", text: "I can't animate. At all.", visual: { kind: "tiles" } },
-    { who: "zee", text: "Zyvo is a website where you type an idea and it makes the whole video.", visual: { kind: "typed_result" } },
-    { who: "creator", text: "Wait, what do I type?", keep: true },
-    { who: "zee", text: "Just one line.", screen: { sticker: { text: "here" } } },
-    { who: "creator", text: "That's it?", keep: true },
-    { who: "zee", text: "Made with Zyvo.", role: "site" }, { who: "zee", text: "Save this.", role: "cta" },
+test("one story: 4-6 lines, the first line, and a video is about the topic or about making it, never both", () => {
+  const making = () => ({ story_mode: "making", caption: "c", recipe: { angle: "A5", length_bucket: "15-25" }, lines: [
+    { who: "creator", text: "I can't animate. At all." }, { who: "zee", text: "You don't have to. Type one sentence into Zyvo." },
+    { who: "creator", text: "One sentence? Like what?" }, { who: "zee", text: "Repost this for that friend.", role: "cta" },
   ] });
-  const after = (change) => { const s = good(); change(s); return validateFriend(s).join("; "); };
-  assert.deepEqual(validateFriend(good()), []);
-  assert.match(after((s) => { s.lines[0].text = "Zyvo… why does my video look cheap?"; }), /never says Zyvo/);
-  assert.match(after((s) => { s.lines[0].text = "How do I make an explainer video?"; }), /how-to/);
-  assert.match(after((s) => { s.lines[0].text = "Wait. Nobody filmed this?"; }), /strong first word/);
-  assert.match(after((s) => { s.lines[0].who = "zee"; }), /big face/);
-  assert.equal(after((s) => { s.lines[0].text = "ChatGPT can write the script… but who makes the video?"; }), "");
-  assert.equal(after((s) => { s.recipe.length_bucket = "15-25"; s.lines[1].visual = { kind: "sign" }; s.lines[2].text = "Really."; }), "", "a short video has one idea: no typed card or question needed");
-  assert.match(after((s) => { s.lines.splice(1, 1); }), /what Zyvo is/);
-  assert.match(after((s) => { const [plain] = s.lines.splice(1, 1); s.lines.splice(3, 0, plain); }), /before any step/);
-  assert.match(after((s) => { s.lines[3].text = "Open Short Form first."; }), /stickers/);
-  assert.match(after((s) => { s.lines[1].visual = { kind: "sign" }; }), /typed_result/);
-  assert.match(after((s) => { s.energy.reveal_lines = [1, 2, 3]; }), /big moments/);
+  const topic = () => ({ story_mode: "topic", caption: "Made with Zyvo.", recipe: { angle: "A1", length_bucket: "15-25" }, lines: [
+    { who: "creator", text: "Ditches flood your house." }, { who: "zee", text: "Because water fills them first." },
+    { who: "creator", text: "So what stops it?" }, { who: "zee", text: "Which one surprised you?", role: "cta" },
+  ] });
+  const after = (make, change) => { const s = make(); change(s); return validateThread(s).join("; "); };
+  assert.deepEqual(validateThread(making()), []);
+  assert.deepEqual(validateThread(topic()), []);
+  assert.match(after(making, (s) => { s.lines.splice(1, 1); }), /3 lines/);
+  assert.match(after(making, (s) => { s.lines.push(...s.lines.slice(0, 3)); }), /7 lines/);
+  assert.match(after(topic, (s) => { s.lines[1].text = "Zyvo made this."; }), /about the topic/, "the topic video never says Zyvo");
+  assert.match(after(topic, (s) => { s.lines[1].screen = { file: "s_menu.jpg" }; }), /no app screens/);
+  assert.match(after(topic, (s) => { s.caption = "A ditch."; }), /caption/);
+  assert.match(after(making, (s) => { s.lines[1].text = "You don't have to."; }), /making it with Zyvo/);
+  assert.match(after(making, (s) => { s.lines[0].text = "Zyvo… why does my video look cheap?"; }), /never says Zyvo/);
+  assert.match(after(making, (s) => { s.lines[0].text = "How do I make an explainer video?"; }), /how-to/);
+  assert.match(after(making, (s) => { s.lines[0].who = "zee"; }), /big face/);
+  for (const [key, t] of Object.entries(ANGLE_TEMPLATES)) {
+    assert.ok(["topic", "making"].includes(t.mode), key);
+    assert.ok(t.shape.length >= 4 && t.shape.length <= 6, `${key} has a 4-6 line thread`);
+    assert.ok(t.shape.some((x) => x.includes("[clip]")), `${key} shows the real clip`);
+    if (t.mode === "topic") assert.ok(!t.shape.join(" ").includes("Zyvo"), `${key} is about the topic`);
+  }
+  assert.equal(templateFor("A5").mode, "making");
 });
 
 test("the length budget leaves room for the real clip, and a 101 s test video's 220 words no longer fit 60-90", () => {
@@ -71,11 +79,31 @@ test("the length budget leaves room for the real clip, and a 101 s test video's 
   assert.ok(220 > lengthBudget("60-90").words * 1.1);
 });
 
-test("the fresh viewer passes only when a stranger can say Zyvo makes videos and where to go", () => {
-  assert.equal(freshPasses({ what_is_zyvo: "A website that makes videos from an idea.", what_next: "Go to tryzyvo.com." }), true);
-  assert.equal(freshPasses({ what_is_zyvo: null, what_next: "Go to the website." }), false);
-  assert.equal(freshPasses({ what_is_zyvo: "A funny robot.", what_next: "Go to the website." }), false);
-  assert.equal(freshPasses({ what_is_zyvo: "A video website.", what_next: null }), false);
+test("script approval: a written script waits, the owner's edits go with the approval, only then it can render", async () => {
+  const { call, jobs } = studioApi();
+  const script = { title: "T", headline: { text: "H" }, caption: "C", clips: [], lines: [
+    { who: "creator", text: "I can't animate.", key: ["animate."], say: "I can't animate", visual: { kind: "sign", text: "Old sign" } },
+    { who: "zee", text: "Type it in.", screen: { file: "s_input.jpg", sticker: { text: "here" } } },
+    { who: "zee", text: "See?", visual: { kind: "typed_result", text: "swimming pool" } },
+  ] };
+  jobs.push({ id: "S1", status: "script_review", script, recipe: { angle: "A5" }, source: { id: "C" } }, { id: "Q1", status: "queued", recipe: { angle: "A5" }, source: { id: "C" } });
+  assert.equal((await call({ action: "studioScriptApprove", id: "Q1" })).ok, false, "a job with no script can't be approved");
+  assert.match((await call({ action: "studioScriptApprove", id: "S1", edits: { lines: [{ text: " " }] } })).message, /can't be empty/);
+  assert.equal(jobs[0].status, "script_review", "a bad edit changes nothing");
+  const r = await call({ action: "studioScriptApprove", id: "S1", edits: { caption: "New", lines: [{ text: "I can't draw.", on: "New sign" }, { on: "type here" }] } });
+  assert.equal(r.ok, true);
+  assert.equal(jobs[0].status, "queued");
+  assert.ok(jobs[0].script_approved_at);
+  assert.equal(jobs[0].script.caption, "New");
+  assert.equal(jobs[0].script.lines[0].text, "I can't draw.");
+  assert.equal(jobs[0].script.lines[0].say, undefined, "the voice reads the edited words");
+  assert.equal(jobs[0].script.lines[0].visual.text, "New sign");
+  assert.equal(jobs[0].script.lines[1].screen.sticker.text, "type here");
+  assert.equal((await call({ action: "studioScriptApprove", id: "S1" })).ok, false, "only once");
+  jobs.push({ id: "S2", status: "script_review", script, recipe: {}, source: {} });
+  assert.equal((await call({ action: "studioCancel", id: "S2" })).data.job.status, "cancelled");
+  assert.equal(onScreen(script.lines[2]).editable, false, "what was really typed isn't edited");
+  assert.throws(() => applyScriptEdits(script, { lines: [{}, {}, {}, { text: "x" }] }), /fewer lines/);
 });
 
 test("a finished video: the row carries its idea for Mark as posted; Remake keeps the recipe and creation, only before posting", async () => {

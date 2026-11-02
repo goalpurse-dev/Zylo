@@ -6,12 +6,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { api, money, when } from "./cmApi";
 import { MarkPosted } from "./PostedTabs";
 import { PackageTabs } from "./SlideshowTabs";
+import { onScreen } from "../../../../supabase/functions/_shared/contentMachine/scriptEdit.js";
 
 const input = "rounded-lg border border-white/15 bg-white/[0.05] px-3 py-2 text-[14px] text-white outline-none focus:border-lime-300/60";
 const primary = "rounded-lg bg-lime-300 px-3.5 py-2 text-[13.5px] font-semibold text-[#071006] disabled:opacity-40";
 const ghost = "rounded-lg border border-white/15 px-3 py-1.5 text-[13px] text-white/80 hover:bg-white/[0.05] disabled:opacity-40";
 const STATUS = {
-  waiting_go: ["Waiting for your go", "text-amber-300"], queued: ["Waiting for the worker", "text-sky-300"], claimed: ["Rendering", "text-lime-300"],
+  waiting_go: ["Waiting for your go", "text-amber-300"], script_review: ["Script ready: your approval", "text-amber-300"], queued: ["Waiting for the worker", "text-sky-300"], claimed: ["Rendering", "text-lime-300"],
   done: ["In the Queue", "text-lime-300"], failed: ["Failed", "text-rose-300"], cancelled: ["Cancelled", "text-white/40"],
 };
 const TRIGGER = { comment: "Comment", save: "Save", repost: "Send to a friend" };
@@ -70,6 +71,52 @@ function AnglesPanel() {
   );
 }
 
+/** The full script, right after it's written. Edit anything; nothing renders until Approve. Keeps its edits through the refresh. */
+function ScriptReview({ job, onDone }) {
+  const s = job.script, say = s.lines.map(onScreen);
+  const [title, setTitle] = useState(s.title ?? "");
+  const [headline, setHeadline] = useState(s.headline?.text ?? "");
+  const [caption, setCaption] = useState(s.caption ?? "");
+  const [lines, setLines] = useState(() => s.lines.map((l, i) => ({ text: l.text, on: say[i].text })));
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState(null);
+  const voiceUsd = lines.reduce((a, l) => a + l.text.length, 0) * 0.0002;
+  const set = (i, patch) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
+  const approve = async () => {
+    setBusy(true); setNote(null);
+    try { await api("studioScriptApprove", { id: job.id, edits: { title, headline, caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
+    catch (e) { setNote(e.message); setBusy(false); }
+  };
+  return (
+    <div className="mt-2 w-full space-y-2 rounded-xl border border-amber-300/40 bg-amber-300/[0.05] p-3" data-testid="cm-studio-script">
+      <div className="text-[12.5px] font-semibold text-amber-200">{s.story_mode === "topic" ? "About the topic: Zyvo only in the caption and on the end card" : "About making it with Zyvo"}</div>
+      <label className="block text-[12px] text-white/60">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+      <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+      <ol className="space-y-2">
+        {s.lines.map((l, i) => (
+          <li key={i} className="space-y-1">
+            <div className="grid gap-2 sm:grid-cols-[4.5rem_1fr_1fr]">
+              <span className="pt-2 text-[12.5px] font-semibold text-white/70">{i + 1}. {l.who === "zee" ? "Zee" : "Creator"}</span>
+              <textarea rows={2} value={lines[i].text} onChange={(e) => set(i, { text: e.target.value })} aria-label={`Line ${i + 1}`} className={`${input} w-full`} />
+              <div className="text-[12.5px] text-white/60">
+                <div>On screen: {say[i].what}</div>
+                {say[i].editable ? <input value={lines[i].on} onChange={(e) => set(i, { on: e.target.value })} aria-label={`On-screen text of line ${i + 1}`} className={`${input} mt-1 block w-full`} /> : say[i].text && <div className="text-white/80">"{say[i].text}"</div>}
+              </div>
+            </div>
+            {(s.clips ?? []).filter((c) => c.after_line === i).map((c) => <div key={c.name} className="rounded-lg bg-black/30 px-3 py-1.5 text-[12.5px] text-lime-200">Then the real clip plays, {Math.round(c.out - c.in)} s{c.text ? `: "${c.text}"` : ""}</div>)}
+          </li>
+        ))}
+      </ol>
+      <label className="block text-[12px] text-white/60">Caption<textarea rows={3} value={caption} onChange={(e) => setCaption(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" disabled={busy} onClick={approve} className={primary} data-testid="cm-studio-script-approve">{busy ? "Sending…" : `Approve and render (voices about ${money(voiceUsd)})`}</button>
+        <span className="text-[12px] text-white/50">The script cost {money(job.spend_usd, 3)}. Nothing renders until you approve.</span>
+        {note && <span className="text-[12.5px] text-red-200">{note}</span>}
+      </div>
+    </div>
+  );
+}
+
 export function StudioTab() {
   const [mode, setMode] = useState("ai_decide");
   const [prompt, setPrompt] = useState("");
@@ -117,7 +164,7 @@ export function StudioTab() {
           <button type="submit" disabled={busy || (mode === "prompt" && !prompt.trim())} className={primary} data-testid="cm-studio-plan">Show the plan and the cost</button>
           <button type="button" onClick={() => setShowAngles(!showAngles)} className={ghost}>{showAngles ? "Hide angles" : "Angles"}</button>
         </div>
-        <p className="text-[12px] text-white/45">Nothing starts until you press Start. Every video gets its own angle, world and creation; reuse first, no generation cost.</p>
+        <p className="text-[12px] text-white/45">Nothing starts until you press Start. Each script then waits for your approval before it renders. Every video gets its own angle, world and creation; reuse first, no generation cost.</p>
       </form>
 
       {showAngles && <AnglesPanel />}
@@ -164,6 +211,7 @@ export function StudioTab() {
                   <span className="text-white/45">{j.source?.kind === "generate" ? "new creation" : `shows "${j.source?.title ?? "?"}"`} · est. {money(j.estimate?.usd)} · {when(j.created_at)}</span>
                   {j.progress && j.status === "claimed" && <span className="text-white/60">· {j.progress}</span>}
                   {j.error && <span className="text-rose-300">· {j.error}</span>}
+                  {j.status === "script_review" && j.script && <ScriptReview key={j.id} job={j} onDone={loadJobs} />}
                   {j.status === "done" && j.video_url && <JobVideo key={j.id} url={j.video_url} />}
                   {j.status === "done" && j.idea?.packages?.length > 0 && <div className="mt-1 w-full max-w-2xl" data-testid="cm-studio-packages"><PackageTabs packages={j.idea.packages} onSaved={loadJobs} /></div>}
                   {j.status === "done" && j.idea && (
@@ -176,7 +224,7 @@ export function StudioTab() {
                   )}
                   <span className="ml-auto flex gap-2">
                     {j.status === "waiting_go" && <button type="button" className={primary} onClick={() => act("studioApprove", { id: j.id })}>Go: ~{money(j.estimate?.generation_usd)}</button>}
-                    {["waiting_go", "queued"].includes(j.status) && <button type="button" className={ghost} onClick={() => act("studioCancel", { id: j.id })}>Cancel</button>}
+                    {["waiting_go", "script_review", "queued"].includes(j.status) && <button type="button" className={ghost} onClick={() => act("studioCancel", { id: j.id })}>Cancel</button>}
                   </span>
                 </li>
               );

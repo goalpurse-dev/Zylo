@@ -7,6 +7,7 @@
 //   near-identical templated videos get demoted. So: different footage and concept each time; value over length.
 // Pure parts are exported for the tests; studioActions() is the API.
 import { ApiError } from "./errors.js";
+import { applyScriptEdits } from "./scriptEdit.js";
 
 export const OWNER_EMAIL = "upwardlift6@gmail.com";
 export const REUSE_DAYS = 60;              // the owner's finished creations this far back
@@ -243,9 +244,23 @@ export function studioActions({ cm, store, now, files }) {
     },
 
     studioCancel: async ({ user, body }) => {
-      const job = await cm.updateStudioJob(String(body?.id ?? ""), { status: "cancelled", finished_at: now().toISOString() }, ["waiting_go", "queued"]);
+      const job = await cm.updateStudioJob(String(body?.id ?? ""), { status: "cancelled", finished_at: now().toISOString() }, ["waiting_go", "script_review", "queued"]);
       if (!job) throw new ApiError("VALIDATION", "Only a job that hasn't started can be cancelled.");
       await store.audit(user.email, "studio.cancel", { id: job.id });
+      return { job };
+    },
+
+    // Nothing renders without this (owner, 2026-11-02): the owner's edits and approval send the script on to the worker.
+    studioScriptApprove: async ({ user, body }) => {
+      const s = await store.readSettings();
+      if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
+      const id = String(body?.id ?? ""), current = (await cm.listStudioJobs(100)).find((j) => j.id === id);
+      if (current?.status !== "script_review" || !current.script) throw new ApiError("VALIDATION", "Only a script waiting for you can be approved.");
+      let script;
+      try { script = applyScriptEdits(current.script, body?.edits ?? {}); } catch (e) { throw new ApiError("VALIDATION", e.message); }
+      const job = await cm.updateStudioJob(id, { status: "queued", script, script_approved_at: now().toISOString(), approved_by: user.email, progress: null }, ["script_review"]);
+      if (!job) throw new ApiError("VALIDATION", "Only a script waiting for you can be approved.");
+      await store.audit(user.email, "studio.script_approve", { id, edited: JSON.stringify(script) !== JSON.stringify(current.script) });
       return { job };
     },
 

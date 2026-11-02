@@ -39,6 +39,25 @@
 - Our music was quiet and soft, about 6 dB under theirs overall, with a third of their bass.
 - Almost no "typed next to what came out" moment.
 
+## Round 3: one story per video (2026-11-02)
+
+The owner read the last 2 scripts as incoherent: "Ditches shouldn't be this addictive", then "Zyvo is a website…", then "why it's called French". Each stacked rule forced in its own line, so nothing followed from the line before.
+
+**What replaced the rules:**
+
+- One template per angle (`scripts/studio/storyTemplates.mjs`): 4-6 lines that follow one thread.
+- A video is about the TOPIC (Zyvo only in the caption and on the end card) or about MAKING IT WITH ZYVO. Never both.
+- The owner approves or edits each script in the Studio tab before anything renders. The worker refuses to render a job without that approval.
+- A script appears in about a minute, even for a new creation: the slow frame work now comes after the approval.
+
+**Gone:** the "say what Zyvo is before any step" line, the 2-question rule, the required typed-next-to-result card, big moments, the fresh-viewer check (the owner's read replaces it) and the conveyor prop (it rendered cut off).
+
+**Kept:** the first-second rules for line 1 and frame 0, 15-25 s by default, no music bed, the word budget, honesty rules.
+
+**Clips** now end on a shot boundary where they can, and the writer is told what the clip says, so the lines around it follow from it.
+
+Not rendered yet at the time of writing: the first approved script is the first real test.
+
 ## Round 2: the first second (2026-11-02)
 
 **The owner's numbers:** every video stalls at about 300 views, TikTok says most viewers stop at 0:01 on all of them, and average watch is 4 to 8 s on 50 to 100 s videos, with likes at about 3% of views. These come from the owner's TikTok screens. Whether the first second is the whole cause is a hypothesis these tests will check.

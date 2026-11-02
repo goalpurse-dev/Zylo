@@ -75,6 +75,9 @@ async function main() {
 
   // full-screen frames: a small vertical source is upscaled 2x (once); a sharp or wide one is used as it is
   const upscale = !wide && width < 1000, ext = upscale ? "png" : "jpg";
+  // KIT_LIGHT: enough to write the script in about a minute; the frames and the input screens come after the approval
+  const light = process.env.KIT_LIGHT === "1";
+  if (!light) {
   step(upscale ? "its frames, upscaled 2x (local)" : "its frames");
   if (!upscale) { if (!fs.readdirSync(hq).length) execFileSync("ffmpeg", ["-v", "error", "-y", "-i", final, "-vf", "fps=30", "-q:v", "2", path.join(hq, "f%05d.jpg")]); }
   else {
@@ -93,10 +96,12 @@ async function main() {
     }
   }
 
-  step("its input re-entered on the internal account (free, nothing submitted)");
+  }
+
+  step(light ? "the script needs no input screens yet" : "its input re-entered on the internal account (free, nothing submitted)");
   const inputDir = path.join(kdir, "input");
   const lengthLabel = c.length_sec <= 22 ? "20 sec" : c.length_sec <= 37 ? "30 sec" : c.length_sec <= 52 ? "45 sec" : "1 min";
-  if (!fs.existsSync(path.join(inputDir, "input.json"))) {
+  if (!light && !fs.existsSync(path.join(inputDir, "input.json"))) {
     if (template === "ai_fruit_story") execFileSync("node", [path.join(HERE, "capture", "inputCapture.mjs"), inputDir, c.idea_text, lengthLabel, c.idea_title ?? ""], { stdio: "inherit" });
     else execFileSync("node", [path.join(HERE, "capture", "templateCapture.mjs"), template, inputDir, c.idea_text], { stdio: "inherit" });
   }
@@ -112,7 +117,7 @@ async function main() {
   const kit = {
     template, story: { id, title: c.title, length_sec: c.length_sec, idea: c.idea_title, idea_text: c.idea_text },
     file: `${rel}/final.mp4`, hq_dir: `${rel}/hq`, hq_ext: ext, wide, words: wordsFile, duration: +duration.toFixed(2), moments, measured: null,
-    input: JSON.parse(fs.readFileSync(path.join(inputDir, "input.json"), "utf8")).how, input_dir: inputDir, scene_images: imgs.slice(0, 6),
+    input: light ? null : JSON.parse(fs.readFileSync(path.join(inputDir, "input.json"), "utf8")).how, input_dir: inputDir, scene_images: imgs.slice(0, 6), ...(light ? { light: true } : {}),
   };
   fs.writeFileSync(path.join(kdir, "kit.json"), JSON.stringify(kit, null, 1));
   console.log(`[kit] ready: ${path.join(kdir, "kit.json")}`);

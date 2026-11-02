@@ -14,7 +14,6 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { admin } from "file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs";
-import { makeScript } from "./shortScripts.mjs";
 import { writeStory, recentScripts } from "./storyWriter.mjs";
 import { createBudgetGuard } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/budgetGuard.js";
 import { createStore } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/store.js";
@@ -66,29 +65,40 @@ const guard = createBudgetGuard({ store: createStore(db) });
 const TYPED_CROP = { ai_fruit_story: [236, 440, 692, 800], blocky_stories: [236, 240, 692, 560], cutaway: [236, 130, 668, 480], long_form: [120, 130, 1200, 560] };
 const screensSpots = (t) => { const f = path.join(env.SRC_WORK, `screens_${t}`, "spots.json"); return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : {}; };
 const VOICE_USD_PER_CHAR = 0.0002, VOICE_CAP_PER_VIDEO = 0.25;
+const buildKit = (job, light) => run("node", [path.join(HERE, "studioKit.mjs"), job.source.id, KITS, job.template], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "", ...(light ? { KIT_LIGHT: "1" } : {}) } });
+
+/** Step 1: write the script and stop. It waits for the owner's approval in the Studio tab. */
+async function writeScriptJob(job) {
+  const sid = job.source.id, kitFile = path.join(KITS, sid, "kit.json");
+  await progress(job, "reading the creation (its words and moments)");
+  if (!fs.existsSync(kitFile)) await buildKit(job, true);
+  const kit = JSON.parse(fs.readFileSync(kitFile, "utf8"));
+  await progress(job, "writing the script");
+  const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
+  const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
+  // a remake replaces its video: the same creation under the same angle may show the same clips again
+  const recent = recentScripts(KITS).filter((s) => !(job.source.remake_of && s.source_story === sid && s.recipe?.angle === job.recipe.angle));
+  const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent, spots: screensSpots(job.template) });
+  const script = w.script;
+  script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
+  const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
+  fs.writeFileSync(path.join(work, "paid.json"), JSON.stringify({ usd: w.usd }));
+  await setJob(job.id, { status: "script_review", script, spend_usd: w.usd, progress: "script ready: waiting for your approval", worker: null });
+}
+
+/** Step 2, only after the approval: the voices, the frames, the render, the Queue. */
 async function makeStoryJob(job) {
+  if (!job.script_approved_at || !job.script) throw new Error("this script was never approved: nothing renders without your approval");
   const sid = job.source.id;
   await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
   const kitFile = path.join(KITS, sid, "kit.json");
-  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS, job.template], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
-  const kit = JSON.parse(fs.readFileSync(kitFile, "utf8"));
+  if (!fs.existsSync(kitFile) || JSON.parse(fs.readFileSync(kitFile, "utf8")).light) await buildKit(job, false);
   const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
-  const scriptFile = path.join(work, "script.json");
-  let script, usd = 0;
+  const scriptFile = path.join(work, "script.json"), script = job.script;
+  let usd = 0;
   const paidFile = path.join(work, "paid.json"), paid = (x) => { usd += x; fs.writeFileSync(paidFile, JSON.stringify({ usd })); };
   if (fs.existsSync(paidFile)) usd = JSON.parse(fs.readFileSync(paidFile, "utf8")).usd;
-  if (fs.existsSync(scriptFile)) script = JSON.parse(fs.readFileSync(scriptFile, "utf8"));   // a restart keeps the paid script
-  else {
-    await progress(job, "writing the script");
-    const facts = must(await db.from("cm_facts").select("claim").eq("status", "active"), "facts");
-    const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
-    // a remake replaces its video: the same creation under the same angle may show the same clips again
-    const recent = recentScripts(KITS).filter((s) => !(job.source.remake_of && s.source_story === sid && s.recipe?.angle === job.recipe.angle));
-    const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent, spots: screensSpots(job.template) });
-    script = w.script; paid(w.usd);
-    script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
-    fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
-  }
+  fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));   // the approved script, with the owner's edits
   const takes = path.join(env.STUDIO_SCRATCH, "story", job.id); fs.mkdirSync(takes, { recursive: true });
   const chars = script.lines.filter((l, i) => !fs.existsSync(path.join(takes, `line${String(i + 1).padStart(2, "0")}.mp3`))).reduce((a, l) => a + (l.say ?? l.text).length, 0);
   if (chars) {
@@ -125,42 +135,9 @@ async function makeStoryJob(job) {
 }
 
 async function make(job) {
-  if (job.recipe?.angle && job.source?.kind && job.source.kind !== "generate") return makeStoryJob(job);
-  if (job.source?.kind !== "fruit_story") throw new Error("this job needs a NEW creation: that generation (~$1.70) runs separately after your go (fruitRun.mjs on the internal account), not in the worker");
-  const sid = job.source.id;
-  await progress(job, "building the kit (the real video, its moments, its input screens re-entered)");
-  const kitFile = path.join(KITS, sid, "kit.json");
-  if (!fs.existsSync(kitFile)) await run("node", [path.join(HERE, "studioKit.mjs"), sid, KITS], { env: { ESRGAN_DIR: env.ESRGAN_DIR ?? "" } });
-  const K = JSON.parse(fs.readFileSync(kitFile, "utf8"));
-  const brandSpans = K.moments.shots.filter((s) => s.brand).map((s) => [s.a, s.b]);
-  const kit = { file: K.file, hq_dir: K.hq_dir, duration: K.duration, measured: null, input: K.input, title: K.story.title, phone_skip: brandSpans, moments: { open: K.moments.open, ending: K.moments.ending } };
-  const script = makeScript(job.recipe, kit);
-  const work = path.join(KITS, sid, "jobs", job.id), mp4 = winPath(path.join(OUT, `studio_${job.id.slice(0, 8)}_${script.variant}.mp4`));
-  fs.mkdirSync(work, { recursive: true });
-  const scriptFile = path.join(work, "script.json");
-  fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
-
-  await progress(job, `rendering ${script.variant} (voices reused, laptop GPU)`);
-  await run("bash", [path.join(HERE, "buildShort.sh"), winPath(scriptFile), winPath(work), mp4], { env: { SRC_WORK: winPath(path.join(KITS, sid, "work")), PAYOFF_WORDS: winPath(K.words) } });
-  if (!fs.existsSync(mp4)) throw new Error("the render made no video");
-
-  let spend = 0;
-  const s = must(await db.from("cm_settings").select("studio_rate_frame0").eq("id", true).single(), "settings");
-  if (s.studio_rate_frame0) {
-    await progress(job, "rating frame 0 (the fast model, ~$0.0006)");
-    const out = await run("node", [path.join(HERE, "rateFrame0.mjs"), mp4, winPath(work)], { env: { CAP_USD: "0.002" } });
-    spend += Number(out.match(/total \$([\d.]+)/)?.[1] ?? 0);
-    await run("node", [path.join(HERE, "scoreShort.mjs"), winPath(work), mp4, mp4.replace(/\.mp4$/, "_scorecard.md")], { env: { PAYOFF_WORDS: winPath(K.words) } });
-  }
-
-  await progress(job, "putting it in the Queue");
-  const spec = path.join(work, "publish.json");
-  await run("node", [path.join(HERE, "shortPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), ...(spend ? [String(spend), "studio.frame0_rating (fast model)"] : [])], { env: { KIT: winPath(kitFile) } });
-  const pub = await run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]);
-  const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
-  if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
-  const card = JSON.parse(fs.readFileSync(mp4.replace(/\.mp4$/, "_scorecard.json"), "utf8"));
-  return { ideaId, spend, passed: `${card.rows.filter((r) => r.result === "PASS").length}/${card.rows.length}` };
+  if (!job.recipe?.angle || !job.source?.kind || job.source.kind === "generate") throw new Error("this job has no script to write: a NEW creation runs separately after your go, and older jobs aren't rendered here");
+  if (!job.script_approved_at) { await writeScriptJob(job); return null; }
+  return makeStoryJob(job);
 }
 
 console.log(`studio worker ${ID}: ${ONCE ? "one job" : "waiting for jobs"} (Ctrl+C stops it; jobs wait while it's off)`);
@@ -174,6 +151,7 @@ for (;;) {
   if (!job) { if (ONCE) break; await new Promise((r) => setTimeout(r, 20_000)); continue; }
   try {
     const r = await make(job);
+    if (!r) { if (ONCE) break; continue; }   // the script waits for the owner
     await setJob(job.id, { status: "done", idea_id: r.ideaId, spend_usd: r.spend, progress: "in the Queue", finished_at: new Date().toISOString() });
     console.log(`[${job.id.slice(0, 8)}] done: idea ${r.ideaId}`);
   } catch (e) {
