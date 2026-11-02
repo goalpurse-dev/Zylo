@@ -2,6 +2,8 @@
 // A job carries signed URLs and a callback token only: never a key. Storage: the private bucket cutaway-renders
 // (1 GB a file), one folder a run: <env>/<user>/<run>/{plan/*, frames/*, chunks/*, final.mp4, web.mp4, poster.jpg}.
 
+import { PREVIEW } from "./freePreview.js";
+
 export const BUCKET = "cutaway-renders";
 export const FRAMES = 8;              // preview frames the page shows while the video renders
 export const CHUNK_FRAMES = 110;      // the CPU fallback: frames a machine renders (~6 min on performance-8x)
@@ -66,6 +68,8 @@ export function jobFor(run, { role, mode, urls, callback, layout = null, chunk =
   if (role === "video" || role === "plan") job.out = { frames: urls.frames ?? [] };
   if (role === "video" || role === "mix") job.out = { ...(job.out ?? {}), final: urls.final, web: urls.web, poster: urls.poster };
   if (role === "chunk") { job.chunk = chunk; job.out = { segment: urls.segment }; }
+  // a free preview: only the first seconds, watermarked, and no full file to download
+  if (run.free_preview) { job.previewSec = PREVIEW.seconds; if (job.out) delete job.out.final; }
   if (role === "mix") job.segments = urls.segments;
   return job;
 }

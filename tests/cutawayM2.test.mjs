@@ -358,13 +358,14 @@ test("m2 clarity camera: the soap is seen running into the creek, and the canopy
 });
 
 import { normWords, compareWords } from "../scripts/cutaway/proto3d/m2/voiceCheck.mjs";
+import { oneSentence } from "../scripts/cutaway/proto3d/m2/planner.mjs";
 test("m2 voice check: the Flash take's garbles fail, number words and a misheard little word pass", () => {
   assert.deepEqual(normWords("up to 80 % of it, about one hundred forty gallons"), ["up", "to", "80", "percent", "of", "it", "about", "140", "gallons"]);
   const script = "Sand sinks, oil rises, and clean water goes to a pump. It uses about 15 gallons of fresh water a car.";
   // what faster-whisper heard in the car wash's Flash take (2026-10-24)
   const flash = compareWords(script, "Sand sinks, oil rises, and in mind, clean water goes to a pump. It uses about fifteen gallons of fresh water or a car, car.");
   assert.equal(flash.ok, false);
-  assert.ok(flash.problems.some((p) => /extra "mind"/.test(p)) && flash.problems.some((p) => /extra "car"/.test(p)));
+  assert.ok(flash.problems.some((p) => /extra "in mind"/.test(p)) && flash.problems.some((p) => /repeated "car"/.test(p)), flash.problems.join("; "));
   // the approved French drain: "the French in French drain" heard with "and" is a mishearing, not a failure
   const drain = compareWords("And the French in French drain is not France.", "And the French and French drain is not France.");
   assert.equal(drain.ok, true); assert.equal(drain.notes.length, 1);
@@ -373,7 +374,7 @@ test("m2 voice check: the Flash take's garbles fail, number words and a misheard
   const add = compareWords("up to 140. Add a pay kiosk.", "up to 140 at a pay kiosk.");
   assert.equal(add.ok, true); assert.equal(add.notes.length, 1);
   assert.equal(compareWords("at about 490 US landfills", "at about 490 U.S. landfills").ok, true);
-  assert.equal(compareWords("at about 490 US landfills", "at about 490 landfills").ok, false, "a missing word still fails");
+  assert.equal(compareWords("at about 490 US landfills feed it", "at about 490 feed it").ok, false, "a missing chunk of 2 words fails");
   assert.equal(compareWords("dig a pit", "dig a pot").ok, false, "a different short word still fails");
   // the production Pond test: "1,500" heard as "1 500" is the same number; two numbers in a row stay apart
   assert.equal(compareWords("holds about 1,500 gallons", "holds about 1 500 gallons").ok, true);
@@ -382,7 +383,48 @@ test("m2 voice check: the Flash take's garbles fail, number words and a misheard
   // the garage door test (2026-10-26): "10,000" heard as "10 ,000", "hinged" as "hinge", "close" as "closed"
   assert.equal(compareWords("for about 10,000 open-and-close cycles", "for about 10 ,000 open and closed cycles").ok, true);
   assert.equal(compareWords("split the panel into hinged sections", "split the panel into hinge sections").ok, true);
-  assert.equal(compareWords("a big panel", "a big pane").ok, false, "a different word still fails");
+  assert.equal(compareWords("so the pump runs", "so the dump runs").ok, false, "a different word still fails");
+});
+
+test("m2 voice check, robust (the owner's rule of 2026-10-27): spellings pass, real problems fail", () => {
+  const ok = (s, h) => { const r = compareWords(s, h); assert.equal(r.ok, true, `"${s}" | "${h}": ${r.problems.join("; ")}`); };
+  const bad = (s, h) => assert.equal(compareWords(s, h).ok, false, `"${s}" | "${h}" should fail`);
+  // the production Landfill of 2026-10-27: "can not" heard "cannot", "US" heard as letters
+  ok("so water can not seep out", "so water cannot seep out");
+  ok("so water can't seep out", "so water can not seep out");
+  for (const h of ["U.S.", "U. S.", "U S", "u s", "U-S", "US"]) ok("about 490 US landfills feed it", `about 490 ${h} landfills feed it`);
+  ok("it rolls into the pipe", "it rolls in to the pipe");
+  ok("the groundwater you drink", "the ground water you drink");
+  ok("a box-shaped pond", "a box shaped pond");
+  // numbers in any format
+  for (const h of ["1,500", "1 500", "1500", "one thousand five hundred", "fifteen hundred", "1.500"]) ok("holds about 1,500 gallons", `holds about ${h} gallons`);
+  for (const h of ["10,000", "10 ,000", "ten thousand", "10 thousand"]) ok("for about 10,000 cycles", `for about ${h} cycles`);
+  ok("a 1952 newspaper", "a nineteen fifty-two newspaper");
+  ok("up to 140 gallons", "up to one hundred and forty gallons");
+  ok("about 100 times", "about a hundred times");
+  ok("up to 80 percent", "up to 80%");
+  ok("pushes 312 lb per square foot", "pushes 312 pounds per square foot");
+  // the transcript's spellings, and one stray or dropped word
+  ok("it is Henry Flagg's railway", "it is Henry Flag's railway");
+  ok("a stop line, and grass.", "a stop line and grasp");
+  ok("the septic tank holds solids", "the septic tank holds solid");
+  ok("Sand sinks as sludge, and oil rises.", "Sand sinks as sludge and mean oil rises.");
+  // real problems
+  bad("holds about 1,500 gallons", "holds about 500 gallons");
+  bad("holds about 1,500 gallons", "holds about 1,600 gallons");
+  bad("a 1952 newspaper", "a 1925 newspaper");
+  bad("water goes to a pump and back", "water goes to a pump pump and back");
+  bad("so you lay a clay base under it", "so you lay under it");
+  bad("oil rises and clean water goes", "oil rises and in mind clean water goes");
+  bad("the trash barely rots", "the trash rarely rots");
+  // the writer's narration in the one standard form, free, whatever it wrote
+  assert.equal(oneSentence("So water can not seep out."), "So water cannot seep out.");
+  assert.equal(oneSentence("About 490 US landfills feed it."), "About 490 American landfills feed it.");
+  assert.equal(oneSentence("Most landfills in the U.S. are lined."), "Most landfills in America are lined.");
+  assert.equal(oneSentence("A 1,000 sq ft roof, 312 lb, 10000 cycles in 1952."), "A 1,000 square feet roof, 312 pounds, 10,000 cycles in 1952.");
+  assert.equal(oneSentence("Let us show you."), "Let us show you.");
+  // many small slips: garbled, even though each alone is a note
+  bad("so you lay a clay base and then a black sheet over the clay in the pit to seal it", "so you lay the clay base in then the black sheet of the clay on the pit at seal it");
 });
 
 import { underground } from "../scripts/cutaway/proto3d/m2/director.js";

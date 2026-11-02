@@ -411,6 +411,14 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
     // month; the yearly top-up job counts its months back from this date.)
     const planLineEnds = lines.filter((ln) => PRICE_MAP[ln?.price?.id]).map((ln) => Number(ln?.period?.end) || 0);
     const periodEndIso = unixToIso(planLineEnds.length ? Math.max(...planLineEnds) : lines[0]?.period?.end);
+    // The funnel, and a free preview waiting to be finished (the Cutaway watchdog finishes it once the plan is in).
+    // Bookkeeping: it never fails a payment.
+    if (plan && inv?.billing_reason === "subscription_create") {
+      const eventRow = await sb.from("funnel_events").insert({ user_id: profile.id, event: "upgraded", props: { plan, invoice: inv?.id ?? null } });
+      if (eventRow.error && eventRow.error.code !== "23505") console.warn("[stripe-webhook] funnel:", eventRow.error.message);
+      const previewRow = await sb.from("cutaway_free_previews").update({ paid_at: new Date().toISOString() }).eq("user_id", profile.id).is("paid_at", null);
+      if (previewRow.error) console.warn("[stripe-webhook] free preview:", previewRow.error.message);
+    }
     const patch: Record<string, unknown> = {
       stripe_subscription_status: inv?.status ?? "paid",
       cancel_at_period_end:       Boolean(inv?.subscription_details?.cancel_at_period_end),

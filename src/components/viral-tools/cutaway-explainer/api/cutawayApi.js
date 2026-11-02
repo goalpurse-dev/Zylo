@@ -120,6 +120,10 @@ export const cutawayServer = {
     return toRun(data);
   }),
   status: (runId) => cutawayCall("status", { runId }).then(toRun),
+  // the new-user tutorial's free preview (_shared/cutaway/freePreview.js)
+  freePreviewState: () => cutawayCall("freePreviewState").then((s) => ({ ...s, preview: s?.preview ? toRun(s.preview) : null, finish: s?.finish ? toRun(s.finish) : null })),
+  startFreePreview: ({ topicKey, deviceId }) => cutawayCall("startFreePreview", { topicKey, deviceId }).then(toRun),
+  finishFreePreview: () => cutawayCall("finishFreePreview").then((r) => ({ finish: r?.finish ? toRun(r.finish) : null })),
   list: () => cutawayCall("list").then((r) => (Array.isArray(r?.runs) ? r.runs.map(toRun).filter(Boolean) : [])),
   remove: (runId) => cutawayCall("remove", { runId }),
   approveLayout: (runId, approve) => cutawayCall("approveLayout", { runId, approve: approve === true }),

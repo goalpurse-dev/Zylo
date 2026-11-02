@@ -28,19 +28,7 @@ export async function signUpWithEmailPassword(email, password) {
 
   if (error) throw error;
 
-  // ✅ ONLY SEND HERE (not in Signup.jsx)
-  // The send-welcome-email function emails the signed-in account's own address:
-  // it takes the session token, not an address. No session yet (email
-  // confirmation pending) means no call.
-  if (data?.user && data.session?.access_token) {
-    try {
-      await supabase.functions.invoke("send-welcome-email", {
-        headers: { Authorization: `Bearer ${data.session.access_token}` },
-      });
-    } catch (err) {
-      console.error("Welcome email failed:", err);
-    }
-  }
+  // The welcome email goes out from one place for every sign-up route: components/onboarding/OnboardingGate.jsx.
 
   if (data.session) {
     return { status: "created", user: data.user, session: data.session };

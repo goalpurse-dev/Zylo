@@ -43,8 +43,7 @@ test("the welcome email is sent by an edge function, to the signed-in account's 
   assert.match(src, /return err\(req, "Not signed in", 401\);/);
   assert.match(src, /\.eq\("id", user\.id\)\.eq\("welcome_email_sent", false\)/, "the flag is claimed before sending: one email per account");
   assert.match(src, /claimEmail\(admin, address\.email, "welcome", "account"\)/, "and the email gate is asked before the send");
-  const auth = read("src/lib/auth.js");
+  const auth = read("src/components/onboarding/OnboardingGate.jsx");
   assert.match(auth, /supabase\.functions\.invoke\("send-welcome-email"/);
-  assert.match(auth, /Authorization: `Bearer \$\{data\.session\.access_token\}`/);
   assert.doesNotMatch(auth, /\/api\/send-welcome-email|user_id: data\.user\.id|email: data\.user\.email/, "the app no longer sends an address or a user id");
 });

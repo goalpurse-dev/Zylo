@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { readFirstTouch } from "../lib/firstTouch";
+import { rememberSignupRoute } from "../lib/onboarding";
 import { authError, formatCountdown, isEmailNotConfirmed } from "../lib/authErrors";
 import ConfirmEmailNotice from "./auth/ConfirmEmailNotice.jsx";
 import { checkSignupEmail } from "../lib/emailCheck";
@@ -56,8 +57,10 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
   };
 
   const rememberReturn = () => { if (returnTo) { try { localStorage.setItem(POST_AUTH_RETURN_KEY, JSON.stringify({ path: returnTo, at: Date.now() })); } catch { /* no storage: lands on Home */ } } };
+  const signupRoute = (how) => `${returnTo ? "generate" : "popup"}_${how}`;
   const handleGoogle = async () => {
     rememberReturn();
+    rememberSignupRoute(signupRoute("google"));
     onSignUp?.();
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -77,6 +80,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
       if (!check.ok) { setError(check.message); setLoading(false); return; }
       const firstTouch = readFirstTouch();
       rememberReturn();
+      rememberSignupRoute(signupRoute("email"));
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

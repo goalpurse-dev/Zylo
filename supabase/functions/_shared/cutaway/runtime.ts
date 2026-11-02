@@ -13,6 +13,8 @@ import { BUCKET, chunksFor, FRAMES, jobFor, paths, tokenFor } from "./jobs.js";
 import { onEvent, onWatch } from "./orchestrate.js";
 import { FAILED_MESSAGE } from "./contract.js";
 import { costBasisUsd, RUNTIME_RATES } from "./pricing.js";
+import { canGenerate } from "./access.js";
+import { endCardFor } from "./endCard.js";
 import { alertOnce } from "../adminAlert.ts";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
@@ -39,6 +41,7 @@ async function getUrl(admin: any, path: string, seconds = 3 * 3600, download?: s
   if (error || !data?.signedUrl) return null;
   return data.signedUrl as string;
 }
+export { getUrl };
 const allUrls = async (admin: any, list: string[], f: (p: string) => Promise<string | null>) => Promise.all(list.map(f));
 
 /** the signed URLs a job of this role needs */
@@ -179,11 +182,15 @@ export async function applyActions(admin: any, run: any, actions: any[]) {
       else if (a.type === "cancel" && a.jobId) await rp(`/cancel/${a.jobId}`, { method: "POST" }).catch(() => null);
       else if (a.type === "settle") await ledger(admin, run, { gpuUsd: await gpuUsd(run.provider === "runpod" ? run.provider_job_id : null), flyUsd: run.provider === "fly" ? Number((((a.seconds ?? 0) + 60) * RUNTIME_RATES.flyUsdPerSec).toFixed(6)) : 0 });
       else if (a.type === "saveLayout") await saveLayout(admin, run);
+      else if (a.type === "releasePreview") await admin.from("cutaway_free_previews").update({ status: "failed", updated_at: new Date().toISOString() }).eq("run_id", run.id);
+      else if (a.type === "previewDone") await previewDone(admin, run);
+      else if (a.type === "finishDone") await funnel(admin, run.user_id, "full_video_completed_after_upgrade", { runId: run.id, topic: run.topic_key });
       else if (a.type === "verifyDone") {
         // RunPod says done but the worker's own "done" never arrived: the video in storage settles it
         const P = paths(run), dirOf = P.final.slice(0, P.final.lastIndexOf("/"));
-        const { data } = await admin.storage.from(BUCKET).list(dirOf, { search: "final.mp4" });
-        if ((data ?? []).some((f: any) => f.name === "final.mp4")) Object.assign(patch, (await advance(admin, run, { event: "done", attempt: run.attempt, files: null })).patch ?? {});
+        const mainFile = run.free_preview ? "web.mp4" : "final.mp4";
+        const { data } = await admin.storage.from(BUCKET).list(dirOf, { search: mainFile });
+        if ((data ?? []).some((f: any) => f.name === mainFile)) Object.assign(patch, (await advance(admin, run, { event: "done", attempt: run.attempt, files: null })).patch ?? {});
       } else if (a.type === "dispatch") {
         const p = a.target === "runpod" ? await dispatchRunPod(admin, { ...run, ...patch }) : await dispatchFly(admin, { ...run, ...patch }, a.role, a.index);
         patch = { ...patch, ...p };
@@ -247,6 +254,66 @@ export async function watch(admin: any, run: any) {
   return applyActions(admin, { ...run, ...r.patch }, r.actions);
 }
 
+// ---------- the free preview and its gift finish (freePreview.js has the rules) ----------
+/** a funnel event (funnel_events); never fails what it reports on */
+export async function funnel(admin: any, userId: string, event: string, props: Record<string, unknown> = {}) {
+  const { error } = await admin.from("funnel_events").insert({ user_id: userId, event, props });
+  if (error && error.code !== "23505") console.error("[cutaway] funnel:", event, error.message);
+}
+async function previewDone(admin: any, run: any) {
+  if (run.preview_pool) {
+    await admin.from("cutaway_preview_plans").upsert({ topic_key: run.topic_key, source_run: run.id, title: run.title ?? run.topic, active: true });
+    return;
+  }
+  await admin.from("cutaway_free_previews").update({ status: "ready", updated_at: new Date().toISOString() }).eq("run_id", run.id);
+  await funnel(admin, run.user_id, "preview_generated", { runId: run.id, topic: run.topic_key });
+}
+/** the plan files of one run, copied to another: nothing is planned or voiced twice */
+export async function copyPlan(admin: any, from: any, to: any) {
+  const a = paths(from).plan as any, b = paths(to).plan as any;
+  for (const k of Object.keys(a)) {
+    const { error } = await admin.storage.from(BUCKET).copy(a[k], b[k]);
+    if (error && !["post", "steps"].includes(k)) throw new Error(`the plan's ${k} didn't copy: ${error.message}`);
+  }
+}
+/** a new run that renders from another run's plan, charged nothing */
+export async function newRunFromPlan(admin: any, source: any, fields: Record<string, unknown>) {
+  const { data, error } = await admin.from("cutaway_runs").insert({
+    env: "prod", topic: source.topic, topic_key: source.topic_key, length_sec: 30, kind: "premade", layout_key: source.layout_key, layout_used: true, plan_ready: true,
+    title: source.title, narration: source.narration, parts: source.parts, facts: source.facts, post: source.post, frames_total: source.frames_total, credits_charged: 0, ...fields,
+  }).select("*").single();
+  if (error) throw Object.assign(new Error(error.message), { code: error.code });
+  await copyPlan(admin, source, data);
+  return data;
+}
+/**
+ * After an upgrade: the same video, in full, as a gift. Safe to call any number of times, from the page coming back from
+ * Stripe and from the watchdog (a closed tab still gets its video). Null while the plan hasn't arrived from Stripe yet.
+ */
+export async function startGiftFinish(admin: any, userId: string) {
+  const { data: row } = await admin.from("cutaway_free_previews").select("*").eq("user_id", userId).maybeSingle();
+  if (!row || row.status !== "ready" || !row.run_id) return null;
+  if (row.finish_run_id) {
+    const { data: cur } = await admin.from("cutaway_runs").select("*").eq("id", row.finish_run_id).maybeSingle();
+    if (cur && cur.status !== "failed") return cur;
+  }
+  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", userId).maybeSingle();
+  if (!canGenerate(profile?.plan_code)) return null;
+  const { data: source } = await admin.from("cutaway_runs").select("*").eq("id", row.run_id).maybeSingle();
+  if (!source) return null;
+  let run: any;
+  try {
+    run = await newRunFromPlan(admin, source, { user_id: userId, gift_finish: true, source_run_id: source.id, end_card: endCardFor(profile?.plan_code, false) });
+  } catch (e: any) {
+    if (e?.code !== "23505") throw e;
+    const { data: cur } = await admin.from("cutaway_runs").select("*").eq("source_run_id", source.id).eq("gift_finish", true).neq("status", "failed").maybeSingle();
+    return cur;
+  }
+  await admin.from("cutaway_free_previews").update({ finish_run_id: run.id, updated_at: new Date().toISOString() }).eq("user_id", userId);
+  const patch = await dispatchNew(admin, run);
+  return { ...run, ...patch };
+}
+
 /** start a new run's video on RunPod (the API's start); a run that can't be sent anywhere is refunded */
 export async function dispatchNew(admin: any, run: any) {
   return applyActions(admin, run, [{ type: "dispatch", target: "runpod", role: "video" }]);
@@ -268,8 +335,9 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
     narration: run.narration ?? "", parts: run.parts ?? [], frames, framesShown: done ? frames.length : run.status === "render" ? Math.floor(((Number(run.pct) || 0) / 100) * frames.length) : 0,
     facts: (run.facts ?? []).filter((f: any) => f?.verdict !== "drop").map((f: any) => ({ claim: f.claim, sources: (f.sources ?? []).map((s: any) => ({ label: String(s.title ?? "").slice(0, 40) || host(s.url), url: s.url })) })),
     post: run.post ?? null,
-    finalUrl: done ? await getUrl(admin, P.web, 7 * DAY) : null, // the light web copy plays; the download is the full file
-    downloadUrl: done ? await getUrl(admin, P.final, 7 * DAY, `${slug}.mp4`) : null,
+    finalUrl: done ? await getUrl(admin, P.web, run.free_preview ? DAY : 7 * DAY) : null, // the light web copy plays; the download is the full file
+    downloadUrl: done && !run.free_preview ? await getUrl(admin, P.final, 7 * DAY, `${slug}.mp4`) : null,
+    freePreview: Boolean(run.free_preview), giftFinish: Boolean(run.gift_finish),
     poster: done ? await getUrl(admin, P.poster, 7 * DAY) : null,
     endCard: run.end_card !== false,
     error: run.status === "failed" ? FAILED_MESSAGE : null,

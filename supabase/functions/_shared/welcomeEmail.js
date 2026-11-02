@@ -2,7 +2,7 @@
 // The footer (why, unsubscribe, company line) comes from _shared/emailRules.js.
 import { APP_URL } from "./emailRules.js";
 
-export const WELCOME_SUBJECT = "You’ve got 3 free image generations waiting";
+export const WELCOME_SUBJECT = "You’ve got 5 free image generations waiting";
 export const WELCOME_WHY = "You're getting this because you created a Zyvo account.";
 
 export function welcomeEmail(footer) {
@@ -15,7 +15,7 @@ export function welcomeEmail(footer) {
       </p>
 
       <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
-        You currently have <b>3 free image generations</b> waiting for you — use them to create scroll-stopping content in seconds.
+        You currently have <b>5 free image generations</b> waiting for you — use them to create scroll-stopping content in seconds.
       </p>
 
       <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
@@ -41,7 +41,7 @@ export function welcomeEmail(footer) {
 
       <div style="text-align:center;margin:32px 0;">
         <a
-          href="${APP_URL}/workspace?source=welcome"
+          href="${APP_URL}/?source=welcome"
           style="background:#7A3BFF;color:white;padding:14px 28px;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;display:inline-block;"
         >
           Use My Free Generations

@@ -1,0 +1,56 @@
+// Right after any sign-up, on any route: reports the sign-up once (the funnel and the welcome email), and shows the survey
+// to accounts in the rollout. Everything else about who sees what is decided on the server (onboarding_status).
+import { lazy, Suspense, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabaseClient";
+import { FIRST_VIDEO_PATH, fetchOnboardingStatus, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
+import { hasCheckoutIntent } from "../../lib/payments";
+
+const OnboardingSurvey = lazy(() => import("./OnboardingSurvey.jsx"));
+const NEW_ACCOUNT_MS = 10 * 60 * 1000;
+// Pages a survey must not cover: finishing a sign-in or a password reset, and coming back from a payment.
+const WAIT_ON = ["/auth/", "/billing/", "/unsubscribe"];
+
+export default function OnboardingGate() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [showSurvey, setShowSurvey] = useState(false);
+  const userId = user?.id ?? null;
+
+  // A new account, once in this browser: the funnel's signed_up (the server counts it once anyway) and the welcome email
+  // (the function keeps its own once-per-account flag, and answers "paused" while it is paused).
+  useEffect(() => {
+    if (!userId || loading) return;
+    const age = Date.now() - Date.parse(user.created_at ?? "");
+    if (!(age >= 0 && age < NEW_ACCOUNT_MS)) return;
+    const key = `zyvo:signup-reported:${userId}`;
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { /* reported again at worst: both are once-only on the server */ }
+    const provider = user.app_metadata?.provider ?? "email";
+    trackFunnel("signed_up", { route: takeSignupRoute() ?? "unknown", provider });
+    supabase.functions.invoke("send-welcome-email", { method: "POST", body: {} }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, loading]);
+
+  useEffect(() => {
+    if (!userId || loading || WAIT_ON.some((p) => location.pathname.startsWith(p))) return undefined;
+    // Someone on their way to Stripe pays first: they answer when they are back.
+    if (hasCheckoutIntent()) return undefined;
+    let live = true;
+    fetchOnboardingStatus(userId).then((status) => { if (live && status.enrolled && !status.surveyDone) setShowSurvey(true); });
+    return () => { live = false; };
+  }, [userId, loading, location.pathname]);
+
+  if (!showSurvey) return null;
+  return (
+    <Suspense fallback={null}>
+      <OnboardingSurvey onDone={() => {
+        setShowSurvey(false);
+        fetchOnboardingStatus(userId, { fresh: true });
+        // Long Form keeps its own free preview, already on its way: no tutorial on top of it.
+        if (!location.pathname.startsWith("/long-form")) navigate(FIRST_VIDEO_PATH);
+      }} />
+    </Suspense>
+  );
+}

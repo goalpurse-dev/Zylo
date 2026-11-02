@@ -75,6 +75,11 @@ export function saveCheckoutIntent(params: CheckoutParams) {
 }
 
 /** The saved choice, once: reading it removes it. Null when there is none or it is over an hour old. */
+/** Is a plan picked while logged out still waiting to go to checkout? Doesn't use it up. */
+export function hasCheckoutIntent(): boolean {
+  try { return Boolean(localStorage.getItem(INTENT_KEY)); } catch { return false; }
+}
+
 export function takeCheckoutIntent(): CheckoutParams | null {
   try {
     const raw = localStorage.getItem(INTENT_KEY);

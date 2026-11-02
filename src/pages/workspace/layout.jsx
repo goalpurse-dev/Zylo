@@ -14,6 +14,8 @@ import PastDueNotice from "../../components/billing/PastDueNotice.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 import { COOKIE_CONSENT_EVENT, hasCookieConsent } from "../../lib/cookieConsent";
 import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "../../data/blockyStories";
+import { useAuth } from "../../context/AuthContext";
+import { fetchOnboardingStatus } from "../../lib/onboarding";
 
 // A logged-out visitor has no profile to remember "seen" on: it is kept in this browser.
 const WHATS_NEW_GUEST_KEY = `zyvo:whats-new:seen:${LONG_FORM_ANNOUNCEMENT}`;
@@ -24,6 +26,7 @@ export default function WorkspaceLayout() {
   const noticeRef = useRef(null);
 
   const location = useLocation();
+  const { user: authUser } = useAuth();
   const offer = useOffer();
   // Phase 6d-1: the mobile Edit page is a full-screen editor — no promo banner there.
   const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
@@ -68,6 +71,9 @@ export default function WorkspaceLayout() {
       const isFree = (profile?.plan_code || "free").toLowerCase() === "free";
       const welcomeKey = `zyvo_workspace_welcome:${user.id}`;
 
+      // An account in the new flow has the survey and the tutorial (components/onboarding) instead of the Welcome screen.
+      const { enrolled } = await fetchOnboardingStatus(user.id);
+      if (enrolled) return;
       if (isFree && !localStorage.getItem(welcomeKey)) {
         // Brand new account — the Welcome screen. (The "Earn free credits"
         // popup that used to follow it by itself is gone; it still opens from
@@ -86,7 +92,8 @@ export default function WorkspaceLayout() {
     };
 
     run();
-  }, []);
+    // (again on signing in: a sign-up in the top bar's pop-up stays on this page, so this used to wait for the next page load)
+  }, [authUser?.id]);
 
   // Setting up a video or watching its free preview (a new account lands here
   // straight after the sign-up): the Welcome screen waits for the next page.
