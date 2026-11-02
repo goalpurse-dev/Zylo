@@ -45,6 +45,24 @@ const fmtRoll = (v, spec) => (spec.format === "M" ? `${Math.round(v)}M` : spec.f
 const easeOut = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 
 const KINDS = {
+  /** A made-up 3D program gone wrong (no real product's look or logo): panels, a grid, and a pipe in two pieces, dripping. */
+  messy3d(g) {
+    board(g, 3.3, 1.9, "#26282e", "#4a4e58");
+    const mat = (c) => new THREE.MeshStandardMaterial({ color: C(c), roughness: 0.6 });
+    add(g, rbox(3.2, 0.14, 0.02, 0.01), mat("#3a3d45"), 0, 0.84, 0.08);
+    for (let i = 0; i < 9; i++) add(g, rbox(0.12, 0.08, 0.02, 0.01), mat(i % 3 ? "#6a6e78" : "#E8833A"), -1.5 + i * 0.17, 0.84, 0.095);
+    add(g, rbox(0.3, 1.5, 0.02, 0.01), mat("#32353c"), -1.42, -0.06, 0.08);
+    add(g, rbox(0.46, 1.5, 0.02, 0.01), mat("#32353c"), 1.34, -0.06, 0.08);
+    for (let i = 0; i < 7; i++) { add(g, rbox(0.18, 0.11, 0.02, 0.01), mat(i % 2 ? "#7a7e88" : "#565a64"), -1.42, 0.56 - i * 0.2, 0.095); add(g, rbox(0.36, 0.06, 0.02, 0.01), mat(i === 3 ? "#E8833A" : "#5e626c"), 1.34, 0.56 - i * 0.2, 0.095); }
+    add(g, rbox(2.36, 1.5, 0.02, 0.01), mat("#1c1e23"), -0.04, -0.06, 0.08);
+    for (let i = 0; i < 8; i++) add(g, rbox(0.012, 1.48, 0.01, 0.002), mat("#3b3f49"), -1.14 + i * 0.315, -0.06, 0.095);
+    for (let i = 0; i < 6; i++) add(g, rbox(2.34, 0.012, 0.01, 0.002), mat("#3b3f49"), -0.04, 0.6 - i * 0.26, 0.095);
+    const steel = new THREE.MeshStandardMaterial({ color: C("#b9c0cc"), roughness: 0.3, metalness: 0.5 });
+    const pipe = (x, y, tilt, len) => { const m = add(g, new THREE.CylinderGeometry(0.15, 0.15, len, 24), steel, x, y, 0.28); m.rotation.z = Math.PI / 2 + tilt; return m; };
+    pipe(-0.62, 0.42, 0.06, 0.95); pipe(0.5, 0.26, -0.3, 0.85);
+    const drops = [0, 1, 2].map(() => add(g, new THREE.SphereGeometry(0.05, 12, 10), new THREE.MeshStandardMaterial({ color: C("#4DA6FF"), roughness: 0.2 }), -0.1, 0.3, 0.3));
+    return (age) => { drops.forEach((d, i) => { const k = ((age * 0.9 + i / 3) % 1); d.position.y = 0.3 - k * 0.95; d.scale.setScalar(1 - k * 0.4); }); };
+  },
   /** Nothing: ends the line before's prop or screen. */
   none() {},
   /** A board: a big title, an optional small line. */

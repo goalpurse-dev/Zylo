@@ -177,7 +177,7 @@ window.renderAt = async (t) => {
   let shot = null;
   if (beat?.screen && !inClip) {
     const sc = beat.screen, flip = FLIPS.filter((f) => f.t >= beat.t0 && f.t < beat.t1 && t >= f.t).at(-1), im = screenImg[flip?.file ?? sc.file];
-    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, t - (flip?.t ?? beat.t0), { outAge: t - beat.t1 + 0.25, sticker: sc.sticker, ...(sc.chip ? { top: 430 } : {}) });
+    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, flip ? 1 : t - beat.t0, { outAge: t - beat.t1 + 0.25, sticker: sc.sticker, ...(sc.chip ? { top: 430 } : {}) });
     boxes.push(["screen", shot]);
     if (sc.chip) boxes.push(["step chip", ov.chip([[sc.chip, YELLOW]], t - beat.t0)]);
     for (const tap of TAPS) if (tap.t >= beat.t0 && tap.t < beat.t1) ov.tapRing(shot.x0 + 8 + tap.x * (shot.x1 - shot.x0 - 16), shot.y0 + 8 + tap.y * (shot.y1 - shot.y0 - 16), t - tap.t);

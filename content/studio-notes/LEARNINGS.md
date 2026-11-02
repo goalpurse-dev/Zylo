@@ -47,6 +47,10 @@ Written by the owner line by line, made by hand, not in the Queue: `content/stud
 - New script options, all off unless a script asks: `bleep`, `energy.hard_stop`, `energy.from_frame0`, `shake`, `snap_start`, expression `angry`, pose `rage`, shot `rage_hook`, prop `none`, roll `format: "clock"`, cues `tap|x|y` and `flip|file`, `screen.chip`.
 - Whisper ends words early: a bleep needs padding, or the "-ing" stays audible.
 
+## Rage hook, the recipe (2026-11-02)
+
+The owner called the yelling Fruit video the best yet and asked to keep it as a recipe: `scripts/studio/rageHook.mjs`, one JSON per video in `scripts/studio/recipes/` (README there). Second video: Cutaway, French drain, 29.85 s, voices $0.054. Line 1 took 3 v3 takes; the score (loudness + pitch) picked one. Time from the job log: 4:48, a premade topic; custom topics took much longer.
+
 ## Round 3: one story per video (2026-11-02)
 
 The owner read the last 2 scripts as incoherent: "Ditches shouldn't be this addictive", then "Zyvo is a website…", then "why it's called French". Each stacked rule forced in its own line, so nothing followed from the line before.

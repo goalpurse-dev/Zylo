@@ -11,6 +11,8 @@ import { makeScript, titleHook, TEN_YEARS } from "../scripts/studio/shortScripts
 import { validateThread } from "../scripts/studio/storyScripts.mjs";
 import { lengthBudget, revisionNote, writeStory } from "../scripts/studio/storyWriter.mjs";
 import { templateFor, ANGLE_TEMPLATES } from "../scripts/studio/storyTemplates.mjs";
+import fs from "node:fs";
+import { rageHookScript, rageTakes } from "../scripts/studio/rageHook.mjs";
 import { applyScriptEdits, onScreen } from "../supabase/functions/_shared/contentMachine/scriptEdit.js";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
@@ -105,6 +107,25 @@ test("a script that runs long goes back with its own words and the number to cut
   const never = guardFor([long]);
   await assert.rejects(writeStory({ ...args, guard: never }), /too long for 15-25 seconds: at most 44, so cut at least \d+ words/);
   assert.equal(never.calls, 3);
+});
+
+test("Rage hook: the bleep is on the swear word, the beat stops on Watch, the result follows the time, three takes of the yell", () => {
+  const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_cutaway_drain.json", import.meta.url), "utf8"));
+  const { raw, censored } = rageHookScript(R);
+  assert.equal(raw.bleep, undefined);
+  assert.equal(raw.lines[0].text.split(" ")[censored.bleep.word], "fucking");
+  assert.equal(censored.bleep.show, "f***ing");
+  assert.equal(raw.lines[1].text.split(" ")[raw.energy.hard_stop.word], "Watch.");
+  assert.equal(raw.headline, undefined);
+  assert.equal(raw.lines[raw.clips[1].after_line].role, "time");
+  assert.equal(raw.lines[raw.clips[0].after_line].role, "calm");
+  for (const c of raw.clips) assert.ok(c.out - c.in <= 3.2);
+  assert.equal(new Set(raw.lines.map((l) => l.text)).size, raw.lines.length);
+  const takes = rageTakes(R, raw);
+  assert.deepEqual(takes.slice(0, 3).map((t) => t.file), ["yell_a.mp3", "yell_b.mp3", "yell_c.mp3"]);
+  assert.ok(takes.slice(0, 3).every((t) => t.model === "eleven_v3" && t.text.includes("[shouting]")));
+  assert.equal(rageHookScript({ ...R, music: false }).raw.music_style, "none");
+  assert.throws(() => rageHookScript({ ...R, clips: [R.clips[0]] }), /two clips/);
 });
 
 test("script approval: a written script waits, the owner's edits go with the approval, only then it can render", async () => {

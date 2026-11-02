@@ -1,0 +1,40 @@
+{
+  "key": "rage_cutaway_drain",
+  "title": "I can't model one pipe",
+  "template": "cutaway",
+  "world": "studio",
+  "cap_usd": 0.3,
+  "out_dir": "content/studio-previews/rage-cutaway",
+  "screens": "screens_cutaway",
+  "creation": {
+    "id": "ec0b89b3-2ab7-47b1-a7a5-499537860da7",
+    "title": "How a French Drain Works",
+    "file": "video/studio/ec0b89b3-2ab7-47b1-a7a5-499537860da7/final.mp4",
+    "hq_dir": "video/studio/ec0b89b3-2ab7-47b1-a7a5-499537860da7/hq",
+    "hq_ext": "png"
+  },
+  "yell": {
+    "text": "I can't fucking model ONE pipe in Blender!",
+    "swear": "fucking",
+    "show": "f***ing",
+    "key": "ONE",
+    "pose": "grabHead",
+    "prop": { "kind": "messy3d" }
+  },
+  "calm": "Skip Blender. Watch.",
+  "clips": [
+    { "name": "first", "in": 18.42, "out": 21.56, "says": "Water seeps in and the pipe slopes downhill to carry it away." },
+    { "name": "result", "in": 32.02, "out": 34.02, "says": "Congratulations, you have built a French drain." }
+  ],
+  "reaction": "Wait… that's not Blender?!",
+  "steps": [
+    { "text": "Step one: open Zyvo and pick Cutaway Explainer.", "key": "Cutaway", "screen": "s_menu.jpg", "taps": [[3, 0.21, 0.228], [6, 0.7, 0.453]] },
+    { "text": "Step two: type what you want explained. Like how a French drain works.", "key": "French", "screen": "s_typed_french_drain.jpg", "taps": [[2, 0.52, 0.25], [9, 0.52, 0.25]] },
+    { "text": "Step three: it writes it, voices it, and builds the whole 3D scene.", "key": "3D", "screen": "s_gen_script.jpg", "flips": [[6, "s_gen_scene.jpg"], [11, "s_gen_render.jpg"]] }
+  ],
+  "time": { "say": "Under five minutes.", "key": "five", "seconds": 288, "label": "REAL JOB LOG: FRENCH DRAIN, START TO VIDEO", "source": "cutaway_runs ec0b89b3: created 2026-10-25 14:13:28, finished 14:18:16" },
+  "excited": "I'm uninstalling Blender.",
+  "excited_key": "uninstalling",
+  "end": { "text": "It's called Zyvo. Link in bio. Comment 3D if you're trying it.", "key": ["Zyvo.", "3D"], "name_word": 2, "comment_word": 6, "chip": "COMMENT 3D" },
+  "caption": "3 days in Blender for ONE pipe 😤 So I tried this… How to make 3D explainer videos without Blender: link in bio. #3danimation #blender #aivideo #explainer #fyp"
+}
