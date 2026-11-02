@@ -27,7 +27,7 @@ export default function Faq() {
 
         <FaqItem
     question="How many free generations do I get?"
-    answer="Every new account gets 10 free generations to try Zyvo. These reset monthly and work across both the image and video generators. No credit card required to start."
+    answer="Every new account gets 5 free AI images every 30 days in the image generator. Making videos needs a paid plan. No credit card required to start."
 />
 
         <FaqItem

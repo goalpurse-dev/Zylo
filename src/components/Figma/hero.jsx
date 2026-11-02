@@ -145,7 +145,7 @@ export default function Hero() {
           transition={{ delay: 0.65, duration: 0.5 }}
           className="mt-5 text-xs font-medium text-white/45"
         >
-          10 free generations · No credit card required
+          5 free images · No credit card required
         </motion.p>
       </div>
     </section>

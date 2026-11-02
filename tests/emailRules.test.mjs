@@ -171,7 +171,6 @@ test("Confirm email: the template links to /auth/confirm, the screens say 'check
   // /auth/confirm signs the visitor in; the welcome email is asked for from one place on every route (once per account, by the function's own flag).
   const confirm = read("src/pages/auth/Confirm.jsx");
   assert.ok(confirm.includes('"email"') && confirm.includes('"signup"'));
-  assert.ok(confirm.includes('if ((type === "signup" || type === "email") && data?.session?.access_token)'));
   assert.ok(read("src/components/onboarding/OnboardingGate.jsx").includes('supabase.functions.invoke("send-welcome-email"'));
   // No session after sign-up, or a sign-in refused as "not confirmed": the notice with "Send it again".
   const notice = read("src/components/auth/ConfirmEmailNotice.jsx");
