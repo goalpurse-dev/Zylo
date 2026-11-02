@@ -11,6 +11,7 @@ import { PRICING_PLANS } from "../../lib/pricingOutputs";
 import { saveMediaToDevice } from "../../lib/downloadMedia";
 import { cutawayServer, PRICES } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
 import { Confetti } from "../../components/onboarding/FirstGenFlow.jsx";
+import FloatingClips from "../../components/onboarding/FloatingClips.jsx";
 import UpgradeScreen, { ExploreButton, RECOMMENDED_PLAN, lockLineFor, usePlanCheckout } from "../../components/onboarding/UpgradeScreen.jsx";
 import { adminPreviewMode, browserId, endAdminPreview, lastSurveyGoals, trackFunnel } from "../../lib/onboarding";
 import { demoPreviewRun, demoStateFor } from "../../lib/onboardingDemo";
@@ -59,13 +60,15 @@ const STAGES = ["Loading your script", "Creating scenes", "Adding voice"];
 function Rendering({ run }) {
   const stage = stageOf(run), pct = run?.step === "render" ? run.renderPct ?? 0 : 4;
   return (
-    <section className="w-full text-center" data-testid="first-video-rendering">
+    <section className="relative z-10 w-full text-center" data-testid="first-video-rendering">
+      <FloatingClips />
+      <div className="relative z-10">
       <h1 className="text-[27px] font-black leading-tight tracking-tight text-white">Your video is coming to life</h1>
-      <p className="mt-1.5 text-[14px] text-white/55">This usually takes a minute or two. You can leave: it stays on your home page.</p>
-      <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
+      <p className="mt-1.5 text-[14px] text-white/70">This usually takes a minute or two. You can leave: it stays on your home page.</p>
+      <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
       <ol className="mt-6 grid gap-2.5 text-left">
         {STAGES.map((label, i) => (
-          <li key={label} className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-[15px] font-bold transition ${i === stage ? "border-lime-300/60 bg-lime-300/[0.08] text-white" : i < stage ? "border-white/10 text-white/70" : "border-white/[0.06] text-white/35"}`}>
+          <li key={label} className={`flex items-center gap-3 rounded-2xl border bg-[#090A0A]/85 px-4 py-3 text-[15px] font-bold transition ${i === stage ? "border-lime-300/60 text-white" : i < stage ? "border-white/15 text-white/80" : "border-white/10 text-white/50"}`}>
             <span className={`grid h-7 w-7 place-items-center rounded-full ${i < stage ? "bg-lime-300 text-[#11150D]" : "border border-white/15"}`}>
               {i < stage ? <Check className="h-4 w-4" strokeWidth={3} /> : i === stage ? <Loader2 className="h-4 w-4 animate-spin text-lime-300" /> : null}
             </span>
@@ -73,6 +76,7 @@ function Rendering({ run }) {
           </li>
         ))}
       </ol>
+      </div>
     </section>
   );
 }

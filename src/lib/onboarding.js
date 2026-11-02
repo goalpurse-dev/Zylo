@@ -52,6 +52,12 @@ export function trackFunnel(event, props = {}) {
   try { supabase.rpc("track_funnel_event", { p_event: event, p_props: props }).then(() => {}, () => {}); } catch { /* tracking must never break the page */ }
 }
 
+/** The welcome email: when "Building your plan" finishes or the survey is skipped. The server decides whether it goes. Never waits, never throws. */
+export function requestWelcomeEmail() {
+  if (adminPreviewMode()) return;
+  try { supabase.functions.invoke("send-welcome-email", { method: "POST", body: { trigger: "plan_finished" } }).catch(() => {}); } catch { /* the flow goes on */ }
+}
+
 // Asked once per account per page load. A failed read means "not in the new flow": the old Welcome screen still works.
 let cached = { userId: null, promise: null };
 export function fetchOnboardingStatus(userId, { fresh = false } = {}) {

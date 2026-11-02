@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
+import { funnelStats } from "../supabase/functions/_shared/funnelStats.js";
+import { welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
 import { failOrRetry, onEvent } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
@@ -41,7 +43,7 @@ test("the plan screen: one number sets its length, and it fetches the real topic
   assert.match(plan, /cutawayServer\.freePreviewState\(/);
   assert.match(plan, /if \(!s\?\.topics\?\.length\) \{ done\.current\(\); return; \}/, "no videos on offer: no pretending");
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
-  assert.match(survey, /if \(!skipped && withPlan\) setBuilding\(true\); else onDone/);
+  assert.match(survey, /if \(!skipped && withPlan\) setBuilding\(true\); else leave\(skipped\)/);
 });
 
 test("the sign-up bonus: their own 3 days, first plan only, judged by the payment time", () => {
@@ -110,6 +112,68 @@ test("compare plans uses live data; phones keep one sticky button", () => {
   assert.doesNotMatch(sheet, /€|\b(750|1,?600|3,?200)\b/, "no typed-in prices or credits");
   assert.match(up, /fixed inset-x-0 bottom-0 z-40[^"]*md:static/);
   assert.match(up, /className="ob-fade /, "a transform here would pin the sticky button to the section");
+});
+
+test("the funnel: distinct people of the period's sign-ups, drop-off between steps, owner and tests left out", () => {
+  const t = "2026-11-02T10:00:00Z", ev = (user_id, event, props = {}, created_at = t) => ({ user_id, event, props, created_at });
+  const s = funnelStats({
+    from: "2026-11-02T00:00:00Z", to: "2026-11-03T00:00:00Z", excluded: ["owner"], sends: [{ id: 1 }, { id: 2 }],
+    events: [
+      ev("a", "signed_up"), ev("b", "signed_up"), ev("c", "signed_up"), ev("owner", "signed_up"), ev("old", "signed_up", {}, "2026-11-01T10:00:00Z"),
+      ev("a", "survey_answer"), ev("b", "survey_started"), ev("a", "survey_completed"), ev("b", "survey_skipped"), ev("owner", "survey_completed"),
+      ev("a", "tutorial_step_completed", { step: 1, topic: "landfill" }), ev("a", "tutorial_step_completed", { step: 2, topic: "car_wash" }), ev("a", "tutorial_step_completed", { step: 2, topic: "car_wash" }),
+      ev("a", "upgrade_screen_shown"), ev("a", "upgrade_click", { button: "compare" }), ev("a", "upgrade_click", { button: "compare" }), ev("a", "compare_plan_click", { plan: "pro" }), ev("a", "checkout_opened"), ev("a", "upgraded"),
+      ev("a", "welcome_email_clicked"), ev("old", "upgraded"),
+    ],
+    onboarding: [{ user_id: "a", goals: ["faceless", "business"], experience: "few", heard_from: "tiktok_creator", heard_creator: " SomeOne ", survey_done_at: t, email_consent_at: t }, { user_id: "b", goals: ["faceless"], survey_done_at: t }, { user_id: "old", goals: ["longform"], survey_done_at: t }],
+    emailEvents: [{ resend_id: "x", type: "email.delivered" }, { resend_id: "x", type: "email.delivered" }, { resend_id: "y", type: "email.bounced" }, { resend_id: "x", type: "email.opened" }],
+  });
+  const step = (k) => s.steps.find((x) => x.key === k);
+  assert.equal(s.total, 3);
+  assert.equal(step("survey_started").users, 2);
+  assert.equal(step("survey_started").lostFromPrevious, 1);
+  assert.equal(step("generate_clicked").users, 1, "counted once");
+  assert.equal(step("upgraded").pctOfSignups, 33);
+  assert.equal(step("plan_screen_finished").notTracked, true, "no such event at all: not tracked, not a drop-off");
+  assert.equal(step("tutorial_started").lostFromPrevious, 2);
+  assert.equal(step("checkout_opened").notTracked, undefined);
+  assert.deepEqual(s.surveyEnds, { completed: 1, skipped: 1 });
+  assert.equal(s.clicks[0].label, "Compare plans"); assert.equal(s.clicks[0].n, 1);
+  assert.equal(s.comparePlans[0].key, "pro");
+  assert.equal(s.topics[0].key, "car_wash");
+  assert.equal(s.survey.goals[0].n, 2, "old sign-ups stay out");
+  assert.equal(s.survey.creators[0].key, "someone");
+  assert.equal(s.survey.optInPct, 50);
+  assert.deepEqual(s.email, { sent: 2, delivered: 1, opened: 1, clicked: 1, bounced: 1, spam: 0 });
+});
+
+test("the welcome email: off by default, new accounts only, once, offer only with opt-in", () => {
+  const fn = read("supabase/functions/send-welcome-email/index.ts");
+  assert.match(fn, /settings\?\.welcome_email_on !== true\) return ok\(req, \{ skipped: "paused" \}\)/);
+  assert.match(fn, /onboarding\?\.enrolled !== true\) return ok\(req, \{ skipped: "not_in_new_flow" \}\)/);
+  assert.match(fn, /body\?\.trigger !== "plan_finished"/);
+  assert.match(fn, /eq\("welcome_email_sent", false\)/);
+  assert.match(fn, /if \(onboarding\.email_consent_at\)/);
+  assert.match(read("supabase/migrations/20261130120000_funnel_tracking_and_welcome_switch.sql"), /welcome_email_on boolean NOT NULL DEFAULT false/);
+  const footer = { html: "<f>", text: "f" };
+  const plain = welcomeEmail(footer), offer = welcomeEmail(footer, { bonusEndsAt: "2026-11-05T21:02:00Z" });
+  assert.doesNotMatch(plain.html + plain.text, /bonus|credits/i, "no offer without the opt-in");
+  assert.match(offer.text, /50 bonus credits/);
+  assert.match(offer.text, /Thursday 5 November, 21:02 UTC/);
+  assert.match(plain.html, /\/welcome\/first-video\?from=email/);
+  assert.match(plain.html, /\/workspace\/image-generator\?from=email/);
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /requestWelcomeEmail\(\); onDone/);
+  assert.doesNotMatch(read("src/components/onboarding/OnboardingGate.jsx"), /send-welcome-email/, "not at sign-up any more");
+});
+
+test("the coming-to-life clips: small files, baked blur, still for reduced motion", () => {
+  const f = read("src/components/onboarding/FloatingClips.jsx");
+  assert.match(f, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(f, /blur-/, "the blur is in the files: no live filter on a phone");
+  let total = 0;
+  for (const k of ["landfill", "carwash", "drain", "pool"]) { const size = readFileSync(`public/onboarding/float/${k}.mp4`).length; assert.ok(size < 120 * 1024, `${k} is ${size} bytes`); total += size; }
+  assert.ok(total < 400 * 1024);
 });
 
 test("sign-up on phones: no clips rendered at all", () => {
@@ -248,9 +312,8 @@ test("every sign-up route is named, the welcome email has one trigger, and conse
   assert.match(read("src/components/AuthModal.jsx"), /rememberSignupRoute\(signupRoute\("email"\)\)/);
   assert.match(read("src/pages/Signup.jsx"), /signup_page_email/);
   assert.match(read("src/pages/Signup.jsx"), /signup_page_google/);
-  assert.match(read("src/components/onboarding/OnboardingGate.jsx"), /send-welcome-email/);
+  assert.match(read("src/lib/onboarding.js"), /functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(read("src/lib/auth.js"), /functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(read("src/components/WelcomeScreen.jsx"), /update\(\{ email_updates/);
-  assert.match(read("supabase/functions/send-welcome-email/index.ts"), /const WELCOME_PAUSED = true/);
-  assert.match(read("supabase/functions/_shared/welcomeEmail.js"), /5 free image generations/);
+  assert.match(read("supabase/functions/_shared/welcomeEmail.js"), /5 free images/);
 });

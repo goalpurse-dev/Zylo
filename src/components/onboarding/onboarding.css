@@ -62,6 +62,14 @@
 }
 .ob-done { animation: ob-done .5s cubic-bezier(.3, 1.5, .5, 1) both; }
 
+/* "Coming to life": clips drifting behind the steps; only a transform, so the phone's graphics chip does it. */
+@keyframes ob-drift {
+  from { transform: translate3d(-10px, 14px, 0); }
+  to { transform: translate3d(14px, -18px, 0); }
+}
+.ob-drift { animation: ob-drift var(--ob-drift, 40s) ease-in-out infinite alternate; will-change: transform; }
+
 @media (prefers-reduced-motion: reduce) {
+  .ob-drift,
   .ob-pick, .ob-check, .ob-cta-pulse, .ob-nudge, .ob-enter, .ob-fade, .ob-orb, .ob-orbit, .ob-burst, .ob-done { animation: none; }
 }

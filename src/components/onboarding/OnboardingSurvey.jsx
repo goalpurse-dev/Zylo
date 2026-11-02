@@ -1,10 +1,10 @@
 // The new-user survey: full screen, one question at a time, a progress bar, Back and a small Skip.
 // (The step layout and answer cards grew out of the old EmailConsentModal.)
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, Megaphone, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, requestWelcomeEmail, trackFunnel } from "../../lib/onboarding";
 import { BrandLogo } from "./brandLogos.jsx";
 import BuildingPlan from "./BuildingPlan.jsx";
 import "./onboarding.css";
@@ -62,11 +62,14 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => { trackFunnel("survey_started"); }, []);
   const answered = (question, answer) => trackFunnel("survey_answer", { question, answer });
+  // the end of the survey, however it ends: the welcome email goes now (the server decides whether it may)
+  const leave = (skipped) => { requestWelcomeEmail(); onDone({ goals, skipped }); };
   const finish = async (skipped) => {
     if (saving) return;
     rememberSurveyGoals(skipped ? [] : goals);
-    const next = () => { if (!skipped && withPlan) setBuilding(true); else onDone({ goals, skipped }); };
+    const next = () => { if (!skipped && withPlan) setBuilding(true); else leave(skipped); };
     if (preview) { next(); return; } // the owner's look: no answers saved
     setSaving(true);
     trackFunnel(skipped ? "survey_skipped" : "survey_completed", skipped ? { atStep: step } : {});
@@ -78,7 +81,7 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
     next();
   };
 
-  if (building) return <BuildingPlan goals={goals} goalLabels={GOALS.filter((g) => goals.includes(g.id)).map((g) => g.label)} onDone={() => onDone({ goals, skipped: false })} />;
+  if (building) return <BuildingPlan goals={goals} goalLabels={GOALS.filter((g) => goals.includes(g.id)).map((g) => g.label)} onDone={() => leave(false)} />;
 
   const body = {
     1: (

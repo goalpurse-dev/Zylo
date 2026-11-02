@@ -54,6 +54,7 @@ const HelpCenter = lazy(() => import("./pages/help/HelpCenter"));
 const Feedback = lazy(() => import("./pages/help/Feedback"));
 const FeedbackAnalytics = lazy(() => import("./pages/admin/FeedbackAnalytics"));
 const OpsPage = lazy(() => import("./pages/admin/Ops"));
+const FunnelPage = lazy(() => import("./pages/admin/Funnel"));
 const ContentMachinePage = lazy(() => import("./pages/admin/ContentMachine"));
 const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
@@ -917,6 +918,7 @@ return (
      
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
           <Route path="/admin/ops" element={<OpsPage />} />
+          <Route path="/admin/funnel" element={<FunnelPage />} />
           <Route path="/admin/content-machine" element={<ContentMachinePage />} />
 
         

@@ -3,7 +3,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { supabase } from "../../lib/supabaseClient";
 import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, localOnboardingTest, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
 import { hasCheckoutIntent } from "../../lib/payments";
 
@@ -11,6 +10,8 @@ const OnboardingSurvey = lazy(() => import("./OnboardingSurvey.jsx"));
 const NEW_ACCOUNT_MS = 10 * 60 * 1000;
 // Pages a survey must not cover: finishing a sign-in or a password reset, and coming back from a payment.
 const WAIT_ON = ["/auth/", "/billing/", "/unsubscribe"];
+// Read once on load: a login on the way can drop the address's ?from=email.
+let cameFromEmail = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("from") === "email";
 
 export default function OnboardingGate() {
   const { user, loading } = useAuth();
@@ -20,8 +21,15 @@ export default function OnboardingGate() {
   const [previewSurvey, setPreviewSurvey] = useState(false);
   const userId = user?.id ?? null;
 
-  // A new account, once in this browser: the funnel's signed_up (the server counts it once anyway) and the welcome email
-  // (the function keeps its own once-per-account flag, and answers "paused" while it is paused).
+  // A link in the welcome email (?from=email): the click is counted here, once the account is known. Click tracking stays off at Resend.
+  useEffect(() => {
+    if (!userId || loading || !cameFromEmail) return;
+    cameFromEmail = null;
+    trackFunnel("welcome_email_clicked", { path: location.pathname });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, loading]);
+
+  // A new account, once in this browser: the funnel's signed_up (the server counts it once anyway).
   useEffect(() => {
     if (!userId || loading || localOnboardingTest()) return;
     const age =Date.now() - Date.parse(user.created_at ?? "");
@@ -30,7 +38,6 @@ export default function OnboardingGate() {
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { /* reported again at worst: both are once-only on the server */ }
     const provider = user.app_metadata?.provider ?? "email";
     trackFunnel("signed_up", { route: takeSignupRoute() ?? "unknown", provider });
-    supabase.functions.invoke("send-welcome-email", { method: "POST", body: {} }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loading]);
 

@@ -22,7 +22,7 @@ const UNSUBSCRIBE_SECRET = () => Deno.env.get("EMAIL_UNSUBSCRIBE_SECRET") ?? "";
 export type EmailCategory = "marketing" | "account" | "test"; // test: a proof copy for the owner (20 a day)
 export type Claim = { ok: true; id: number } | { ok: false; reason: string };
 // Reasons that will never change for this email: don't retry it.
-export const FINAL_REASONS = new Set(["bad_address", "bad_request", "suppressed", "no_consent", "already_sent"]);
+export const FINAL_REASONS = new Set(["bad_address", "bad_request", "suppressed", "no_consent", "already_sent", "unengaged"]);
 
 const b64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
@@ -33,7 +33,8 @@ export async function unsubscribeLinks(userId: string): Promise<{ pageUrl: strin
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const token = b64url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`unsub:${userId}`))));
   const q = `u=${encodeURIComponent(userId)}&t=${token}`;
-  return { pageUrl: `${APP_URL}/unsubscribe?${q}`, oneClickUrl: `${Deno.env.get("SUPABASE_URL")}/functions/v1/email-unsubscribe?${q}` };
+  // One-click goes to our own domain (owner, 2026-10-29), which passes it on to the email-unsubscribe function.
+  return { pageUrl: `${APP_URL}/unsubscribe?${q}`, oneClickUrl: `${APP_URL}/api/email-unsubscribe?${q}` };
 }
 
 // Step 1: ask the gate. Nothing may be sent without an ok claim.
