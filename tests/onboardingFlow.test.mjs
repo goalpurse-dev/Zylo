@@ -15,7 +15,7 @@ test("the localhost test: dev server only, a walk-through only, no real survey o
   assert.match(lib, /import\.meta\.env\.DEV && import\.meta\.env\.VITE_ONBOARDING_LOCAL_TEST === "1" && \["localhost", "127\.0\.0\.1"\]/);
   assert.match(lib, /if \(localOnboardingTest\(\)\) return "demo";/);
   assert.match(lib, /if \(localOnboardingTest\(\)\) return Promise\.resolve\(\{ enrolled: true, surveyDone: true \}\)/);
-  assert.match(gate, /if \(!userId \|\| loading \|\| localOnboardingTest\(\)\) return;\n\s+const age/);
+  assert.match(gate, /if \(!userId \|\| loading \|\| localOnboardingTest\(\)\) return;\s+const age/);
   assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /const paidReturn = !demo && /);
   assert.match(read(".gitignore"), /^\.env\.local\s*$/m);
 });
