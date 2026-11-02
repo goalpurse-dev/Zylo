@@ -53,7 +53,8 @@ test("logged out: Generate opens the sign-up dialog and the setup survives the s
   assert.ok(!/localStorage/.test(view.replace(/\/\/.*$/gm, "")));
   // The dialog offers Google and email, and comes back through the auth callback.
   const modal = read("src/components/AuthModal.jsx");
-  assert.match(modal, /Continue with Google/);
+  assert.match(modal, /<GoogleButton onClick=\{handleGoogle\}/);
+  assert.match(read("src/components/auth/AuthSplit.jsx"), /Continue with Google/);
   assert.match(modal, /type="email"/);
   assert.match(modal, /localStorage\.setItem\(POST_AUTH_RETURN_KEY/);
   // onSignUp fires for Google and for a new email account that is signed in at once: never for a password sign-in.

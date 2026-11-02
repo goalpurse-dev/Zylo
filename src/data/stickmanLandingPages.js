@@ -60,8 +60,8 @@ export const STICKMAN_VIDEOS = {
   },
 };
 
-// Monthly prices: the live plan-prices function on 2026-10-03 (EUR, VAT
-// included). Videos per month = plan credits / 250, rounded down; 250 credits
+// Monthly prices: the live plan-prices function on 2026-10-03 (EUR).
+// Videos per month = plan credits / 250, rounded down; 250 credits
 // is a 10-minute video on the Fast tier (tool_prices longform:v2, 25 a minute).
 // Plan credits come from PLAN_CREDITS (750 / 1,600 / 3,200), the one table the
 // Stripe webhook, the price function and the Pricing page all read.
@@ -186,7 +186,7 @@ const MAIN_PAGE = {
   pricing: {
     title: "What a video costs",
     lead: "Long Form uses the credits in your plan. A video costs 25 credits per minute on the Fast tier, so a 10-minute video starts at 250 credits. The price is fixed before you start and covers the script, the voice, the scenes and the 1080p render.",
-    note: "Monthly prices in euros, VAT included. Pro adds the High Quality scene tier and Generative adds Ultra; both use more credits per minute.",
+    note: "Monthly prices in euros. Pro adds the High Quality scene tier and Generative adds Ultra; both use more credits per minute.",
   },
 
   faq: [
@@ -350,7 +350,7 @@ const HISTORY_PAGE = {
   pricing: {
     title: "What a history video costs",
     lead: "A 10-minute history video costs 250 credits on the Fast tier, and the research, fact-check, voice and scenes are all inside that price.",
-    note: "Prices are in euros with VAT included. Longer videos cost more in proportion: 25 credits for each minute.",
+    note: "Prices are in euros. Longer videos cost more in proportion: 25 credits for each minute.",
   },
 
   faqTitle: "History video questions",

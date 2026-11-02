@@ -1,0 +1,67 @@
+/* The new-user flow's motion. Everything stops for people who ask for less motion. */
+@keyframes ob-pick {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.035); }
+  70% { transform: scale(.99); }
+  100% { transform: scale(1); }
+}
+.ob-pick { animation: ob-pick .32s cubic-bezier(.3, 1.5, .5, 1); }
+
+@keyframes ob-check {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.ob-check { animation: ob-check .28s cubic-bezier(.3, 1.5, .5, 1) both; }
+
+@keyframes ob-cta-pulse {
+  0%, 100% { box-shadow: 0 0 28px rgba(190, 242, 100, .4); transform: scale(1); }
+  50% { box-shadow: 0 0 58px 8px rgba(190, 242, 100, .7); transform: scale(1.015); }
+}
+.ob-cta-pulse { animation: ob-cta-pulse 1.5s ease-in-out infinite; }
+
+@keyframes ob-nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+.ob-nudge { animation: ob-nudge 1.1s ease-in-out infinite; }
+
+@keyframes ob-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ob-enter { animation: ob-enter .4s ease-out both; }
+
+/* Opacity only: a transform here would pin a fixed child to this element instead of the screen. */
+@keyframes ob-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ob-fade { animation: ob-fade .4s ease-out both; }
+
+/* "Building your plan" */
+@keyframes ob-orb {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.09); filter: brightness(1.18); }
+}
+.ob-orb { animation: ob-orb 2.4s ease-in-out infinite; }
+
+@keyframes ob-orbit { to { transform: rotate(360deg); } }
+.ob-orbit { animation: ob-orbit var(--ob-orbit, 6s) linear infinite; }
+
+@keyframes ob-burst {
+  0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(.2); opacity: 0; }
+}
+.ob-burst { animation: ob-burst .95s cubic-bezier(.15, .7, .3, 1) both; }
+
+@keyframes ob-done {
+  0% { transform: scale(.6); }
+  55% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+.ob-done { animation: ob-done .5s cubic-bezier(.3, 1.5, .5, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-pick, .ob-check, .ob-cta-pulse, .ob-nudge, .ob-enter, .ob-fade, .ob-orb, .ob-orbit, .ob-burst, .ob-done { animation: none; }
+}

@@ -25,6 +25,20 @@ export function topicsForGoals(goals = [], count = 3) {
   return (ORDER_BY_GOAL[first] ?? PREVIEW_TOPIC_KEYS).slice(0, count);
 }
 
+// The fastest our narration runs, words per second. Reading a little ahead means the line is never one they already heard.
+const FASTEST_WORDS_PER_SEC = 3.8;
+/** The real line of the video that comes after the preview stops: the first sentence that starts past the cut. "" if none. */
+export function cliffhangerLine(narration, seconds = PREVIEW.seconds) {
+  const sentences = String(narration ?? "").match(/[^.!?]+[.!?]+/g) ?? [];
+  const heard = seconds * FASTEST_WORDS_PER_SEC;
+  let words = 0;
+  for (const s of sentences) {
+    if (words >= heard) return s.trim();
+    words += s.trim().split(/\s+/).length;
+  }
+  return "";
+}
+
 /**
  * May this account start a free preview now? { ok, code, message }. Reads nothing: the caller passes the fresh facts.
  * enrolled: in the rollout. existing: its cutaway_free_previews row (a failed one doesn't count). spent24h: what free

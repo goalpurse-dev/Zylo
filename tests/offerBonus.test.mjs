@@ -67,7 +67,7 @@ test("the website reads the same window and shows nothing outside it", () => {
   assert.match(read("src/components/pricing/PlanCards.jsx"), /<OfferCredits credits=\{PRICING_PLANS\[planId\]\.credits\} \/>/);
   assert.match(read("src/pages/workspace/layout.jsx"), /location\.pathname === "\/" && offer\.live \? <OfferBar \/> : <AnnouncementBar \/>/);
   const ok = read("src/pages/billing/Success.jsx");
-  assert.match(ok, /from\("offer_redemptions"\)\.select\("credits"\)\.eq\("user_id", session\.user\.id\)\.eq\("offer_id", OFFER\.id\)/, "only when the webhook really gave it");
+  assert.match(ok, /from\("offer_redemptions"\)\.select\("credits"\)\.eq\("user_id", session\.user\.id\)\.in\("offer_id", \[OFFER\.id, SIGNUP_BONUS\.id\]\)/, "only when the webhook really gave it");
   assert.match(ok, /\+\{bonus\} bonus credits added/);
 });
 

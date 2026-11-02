@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
-import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
+import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, localOnboardingTest, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
 import { hasCheckoutIntent } from "../../lib/payments";
 
 const OnboardingSurvey = lazy(() => import("./OnboardingSurvey.jsx"));
@@ -23,8 +23,8 @@ export default function OnboardingGate() {
   // A new account, once in this browser: the funnel's signed_up (the server counts it once anyway) and the welcome email
   // (the function keeps its own once-per-account flag, and answers "paused" while it is paused).
   useEffect(() => {
-    if (!userId || loading) return;
-    const age = Date.now() - Date.parse(user.created_at ?? "");
+    if (!userId || loading || localOnboardingTest()) return;
+    const age =Date.now() - Date.parse(user.created_at ?? "");
     if (!(age >= 0 && age < NEW_ACCOUNT_MS)) return;
     const key = `zyvo:signup-reported:${userId}`;
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { /* reported again at worst: both are once-only on the server */ }
@@ -44,6 +44,16 @@ export default function OnboardingGate() {
     return () => { live = false; };
   }, [userId, loading, forceMode]);
 
+  // Localhost with the local test on: the same walk-through by itself, once per account in this tab.
+  useEffect(() => {
+    if (!userId || loading || forceMode || !localOnboardingTest() || hasCheckoutIntent() || WAIT_ON.some((p) => location.pathname.startsWith(p))) return;
+    const key = `zyvo:onboarding-local-shown:${userId}`;
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, "1"); } catch { /* shown again at worst */ }
+    setPreviewSurvey(true);
+    setShowSurvey(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, loading, location.pathname]);
+
   useEffect(() => {
     if (!userId || loading || forceMode || WAIT_ON.some((p) => location.pathname.startsWith(p))) return undefined;
     // Someone on their way to Stripe pays first: they answer when they are back.
@@ -56,7 +66,7 @@ export default function OnboardingGate() {
   if (!showSurvey) return null;
   return (
     <Suspense fallback={null}>
-      <OnboardingSurvey preview={previewSurvey} onDone={() => {
+      <OnboardingSurvey preview={previewSurvey} withPlan={previewSurvey || !location.pathname.startsWith("/long-form")} onDone={() => {
         setShowSurvey(false);
         if (previewSurvey) { navigate(FIRST_VIDEO_PATH); return; }
         fetchOnboardingStatus(userId, { fresh: true });

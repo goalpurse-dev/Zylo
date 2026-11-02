@@ -2,44 +2,58 @@
 // (The step layout and answer cards grew out of the old EmailConsentModal.)
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, Megaphone, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { EMAIL_CONSENT_TEXT, trackFunnel } from "../../lib/onboarding";
+import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import { BrandLogo } from "./brandLogos.jsx";
+import BuildingPlan from "./BuildingPlan.jsx";
+import "./onboarding.css";
 
 const GOALS = [
-  { id: "faceless", emoji: "📱", label: "Faceless TikTok, Reels or Shorts" },
-  { id: "longform", emoji: "🎬", label: "Long-form YouTube videos" },
-  { id: "business", emoji: "💼", label: "Content for my business or brand" },
-  { id: "exploring", emoji: "👀", label: "Just exploring" },
+  { id: "faceless", icon: Smartphone, label: "Faceless TikTok, Reels or Shorts" },
+  { id: "longform", icon: Clapperboard, label: "Long-form YouTube videos" },
+  { id: "business", icon: Briefcase, label: "Content for my business or brand" },
+  { id: "exploring", icon: Compass, label: "Just exploring" },
 ];
 const EXPERIENCE = [
-  { id: "never", emoji: "🌱", label: "Never" },
-  { id: "few", emoji: "🎞️", label: "A few" },
-  { id: "regular", emoji: "🚀", label: "I post regularly" },
+  { id: "never", icon: Sprout, label: "Never" },
+  { id: "few", icon: Film, label: "A few" },
+  { id: "regular", icon: Rocket, label: "I post regularly" },
 ];
 const HEARD = [
-  { id: "tiktok_creator", emoji: "🌟", label: "TikTok creator" },
-  { id: "tiktok_ad", emoji: "📣", label: "TikTok ad" },
-  { id: "instagram", emoji: "📸", label: "Instagram" },
-  { id: "youtube", emoji: "▶️", label: "YouTube" },
-  { id: "google", emoji: "🔎", label: "Google" },
-  { id: "friend", emoji: "🤝", label: "Friend" },
-  { id: "other", emoji: "✨", label: "Other" },
+  { id: "tiktok_creator", brand: "tiktok", label: "TikTok creator" },
+  { id: "tiktok_ad", icon: Megaphone, label: "TikTok ad" },
+  { id: "instagram", brand: "instagram", label: "Instagram" },
+  { id: "youtube", brand: "youtube", label: "YouTube" },
+  { id: "google", brand: "google", label: "Google" },
+  { id: "friend", icon: Users, label: "Friend" },
+  { id: "other", icon: MoreHorizontal, label: "Other" },
 ];
 const TOTAL = 4;
 
-function AnswerCard({ emoji, label, picked, onClick, testId }) {
+// One tile for every answer: our icons and the real logos look like one set.
+function IconTile({ icon: Icon, brand, picked }) {
+  return (
+    <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border bg-gradient-to-b from-lime-300/25 to-lime-300/[0.06] text-lime-200 transition ${picked ? "border-lime-300/70" : "border-lime-300/25"}`}>
+      {brand ? <BrandLogo brand={brand} /> : <Icon className="h-[22px] w-[22px]" strokeWidth={2.2} aria-hidden="true" />}
+    </span>
+  );
+}
+
+function AnswerCard({ icon, brand, label, picked, onClick, testId }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={picked} data-testid={testId}
-      className={`flex min-h-[64px] w-full items-center gap-3.5 rounded-2xl border px-4 py-3 text-left text-[15.5px] font-bold transition active:scale-[.98] ${picked ? "border-lime-300 bg-lime-300/[0.1] text-white" : "border-white/10 bg-white/[0.04] text-white/85 hover:border-white/25"}`}>
-      <span className="text-[22px]" aria-hidden="true">{emoji}</span>
+      className={`flex min-h-[68px] w-full items-center gap-3.5 rounded-2xl border-2 px-3.5 py-3 text-left text-[15.5px] font-bold transition ${picked ? "ob-pick border-lime-300 bg-lime-300/[0.1] text-white shadow-[0_0_26px_rgba(190,242,100,0.28)]" : "border-white/10 bg-white/[0.04] text-white/85 hover:border-white/25 hover:bg-white/[0.06]"}`}>
+      <IconTile icon={icon} brand={brand} picked={picked} />
       <span className="flex-1">{label}</span>
-      {picked && <Check className="h-5 w-5 shrink-0 text-lime-300" strokeWidth={3} aria-hidden="true" />}
+      {picked && <span className="ob-check grid h-6 w-6 shrink-0 place-items-center rounded-full bg-lime-300 text-[#11150D]"><Check className="h-4 w-4" strokeWidth={3.5} aria-hidden="true" /></span>}
     </button>
   );
 }
 
-export default function OnboardingSurvey({ onDone, preview = false }) {
+// withPlan: the "Building your plan" screen comes after the last step (not on the way to Long Form, or after a Skip: nothing to build on).
+export default function OnboardingSurvey({ onDone, preview = false, withPlan = true }) {
+  const [building, setBuilding] = useState(false);
   const [step, setStep] = useState(1);
   const [goals, setGoals] = useState([]);
   const [experience, setExperience] = useState(null);
@@ -51,7 +65,9 @@ export default function OnboardingSurvey({ onDone, preview = false }) {
   const answered = (question, answer) => trackFunnel("survey_answer", { question, answer });
   const finish = async (skipped) => {
     if (saving) return;
-    if (preview) { onDone({ goals, skipped }); return; } // the owner's look: no answers saved
+    rememberSurveyGoals(skipped ? [] : goals);
+    const next = () => { if (!skipped && withPlan) setBuilding(true); else onDone({ goals, skipped }); };
+    if (preview) { next(); return; } // the owner's look: no answers saved
     setSaving(true);
     trackFunnel(skipped ? "survey_skipped" : "survey_completed", skipped ? { atStep: step } : {});
     const { error } = await supabase.rpc("save_onboarding_survey", {
@@ -59,8 +75,10 @@ export default function OnboardingSurvey({ onDone, preview = false }) {
       p_email_consent: consent, p_consent_text: consent ? EMAIL_CONSENT_TEXT : null, p_skipped: skipped,
     });
     if (error) console.error("survey not saved:", error.message); // the flow goes on: a lost answer must not stop anyone
-    onDone({ goals, skipped });
+    next();
   };
+
+  if (building) return <BuildingPlan goals={goals} goalLabels={GOALS.filter((g) => goals.includes(g.id)).map((g) => g.label)} onDone={() => onDone({ goals, skipped: false })} />;
 
   const body = {
     1: (
@@ -104,7 +122,7 @@ export default function OnboardingSurvey({ onDone, preview = false }) {
       <>
         <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">Get tips, templates and offers by email?</h1>
         <p className="mt-1.5 text-[14px] text-white/55">Only if you want them. You can change this any time in Settings.</p>
-        <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4">
+        <label className={`mt-5 flex cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 py-4 transition ${consent ? "ob-pick border-lime-300 bg-lime-300/[0.1] shadow-[0_0_26px_rgba(190,242,100,0.28)]" : "border-white/10 bg-white/[0.04]"}`}>
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} data-testid="survey-consent" className="h-5 w-5 accent-lime-300" />
           <span className="text-[15px] font-semibold text-white/85">Yes, email me tips, templates and offers</span>
         </label>

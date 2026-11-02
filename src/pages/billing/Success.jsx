@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { SUPPORT_EMAIL, clearPendingCheckout, readPendingCheckout } from "../../lib/payments";
 import { purchaseArrived } from "../../lib/purchaseArrived";
 import { OFFER } from "../../lib/useOffer";
+import { SIGNUP_BONUS } from "../../../supabase/functions/_shared/signupBonus.js";
 
 // Where Stripe Checkout returns after a payment (?session_id=cs_…). The plan
 // and credits are added by the Stripe webhook a few seconds later, so this page
@@ -55,7 +56,7 @@ export default function Success() {
     const look = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (stopped || !session?.user) return;
-      const { data: row } = await supabase.from("offer_redemptions").select("credits").eq("user_id", session.user.id).eq("offer_id", OFFER.id).maybeSingle();
+      const { data: row } = await supabase.from("offer_redemptions").select("credits").eq("user_id", session.user.id).in("offer_id", [OFFER.id, SIGNUP_BONUS.id]).limit(1).maybeSingle();
       if (stopped) return;
       if (row?.credits) {
         const { data: p } = await supabase.from("profiles").select("plan_code, credit_balance").eq("id", session.user.id).maybeSingle();

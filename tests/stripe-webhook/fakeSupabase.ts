@@ -1,6 +1,6 @@
 // In-memory stand-in for supabase-js, just enough for stripe-webhook/index.ts.
 // deno-lint-ignore-file no-explicit-any
-export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [] };
+export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [], signup_bonuses: [] };
 /** Return an error message to make the matching call fail. */
 export const inject: { fail: ((call: { table?: string; op: string; payload?: any }) => string | null) | null } = { fail: null };
 const UNIQUE: Record<string, string> = { credit_grants: "external_id", billing_events_processed: "event_id" };

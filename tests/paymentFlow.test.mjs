@@ -95,7 +95,7 @@ test("every purchase button has a busy state, one lock and an error toast", () =
     assert.match(src, /usePaymentAction\(\)/);
     assert.equal((src.match(/disabled=\{pay\.busy != null\}/g) || []).length, 2, `${f}: both plan buttons lock`);
   }
-  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /pay\.run\(planId,/, "the tutorial's plan cards use the same lock");
+  assert.match(read("src/components/onboarding/UpgradeScreen.jsx"), /pay\.run\(planId,/, "the tutorial's plan buttons use the same lock");
   // The helpers throw instead of failing quietly.
   const payments = read("src/lib/payments.ts");
   assert.match(payments, /throw new PaymentError\("PORTAL"\)/);
