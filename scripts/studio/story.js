@@ -53,8 +53,30 @@ function punchState(c, t) {
   if (c.freeze_end && t > c.end) { const k = Math.min(1, (t - c.end) / (c.freeze_end - c.end)); z += 0.05 * easeInOut(k); sat = 1 - 0.6 * Math.min(1, (t - c.end) / 0.15); }
   return { z, flash: Math.max(0, flash), sat };
 }
+/** A clip on a device in the world (owner, 2026-11-03: a full-screen clip "breaks the scene"): "tv" keeps a wide video
+ *  16:9 on a TV, "phone" an upright one on a phone; the cast stays in view below, watching. Above the faces, in the safe zone. */
+function drawDevice(c, bmp, k) {
+  const e = k * k * (3 - 2 * k), s = 0.86 + 0.14 * e, cx = 510;
+  const tv = c.frame === "tv", sw = tv ? 760 : 410, sh = tv ? sw * 9 / 16 : sw * 16 / 9, top = tv ? 420 : 350, bez = tv ? 18 : 16, rad = tv ? 14 : 46;
+  ctx.save(); ctx.globalAlpha = Math.min(1, k * 2.5);
+  ctx.translate(cx, top + sh / 2); ctx.scale(s, s); ctx.translate(-cx, -(top + sh / 2));
+  const x = cx - sw / 2, y = top;
+  ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 50; ctx.shadowOffsetY = 18;
+  ctx.fillStyle = "#15161a"; ctx.beginPath(); ctx.roundRect(x - bez, y - bez, sw + 2 * bez, sh + 2 * bez, rad + bez); ctx.fill();
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  if (tv) { ctx.fillStyle = "#15161a"; ctx.beginPath(); ctx.moveTo(cx - 40, y + sh + bez); ctx.lineTo(cx + 40, y + sh + bez); ctx.lineTo(cx + 90, y + sh + bez + 46); ctx.lineTo(cx - 90, y + sh + bez + 46); ctx.closePath(); ctx.fill(); }
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, sw, sh, rad); ctx.clip();
+  // fills the screen, cropped in the middle if the shapes differ (a wide video on a TV is shown whole)
+  const r = Math.max(sw / bmp.width, sh / bmp.height), dw = bmp.width * r, dh = bmp.height * r;
+  ctx.drawImage(bmp, x + (sw - dw) / 2, y + (sh - dh) / 2, dw, dh);
+  ctx.restore();
+  if (!tv) { ctx.fillStyle = "#15161a"; ctx.beginPath(); ctx.roundRect(cx - 52, y + 10, 104, 26, 13); ctx.fill(); }   // the phone's notch
+  ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - bez, y - bez, sw + 2 * bez, sh + 2 * bez, rad + bez); ctx.stroke();
+  ctx.restore();
+}
 async function drawClip(c, t, k, vtOverride = null) {
   const bmp = await bitmap(hqUrl(c, vtOverride ?? clipVT(c, t)));
+  if (c.frame) return drawDevice(c, bmp, k);
   const { z, flash, sat } = vtOverride != null ? { z: 1, flash: 0, sat: 1 } : punchState(c, t);
   // it grows from the middle of the frame, over the world
   // a wide video (Long Form): whole, across the frame, over a dark blurred copy of itself
@@ -163,7 +185,7 @@ const LOOP = SH.loop_end ? { secs: SH.loop_end.secs ?? 0.5, first: CLIPS.find((c
 const headlineAt = SH.headline?.hidden ? null : SH.headline;   // hidden: kept for the Queue and the approval form, never drawn
 
 window.renderAt = async (t) => {
-  const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([, k]) => k > 0.999);
+  const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([c, k]) => k > 0.999 && !c.frame);   // a TV or phone leaves the world in view
   const beat = beats.find((b) => t >= b.t0 && t < b.t1);
   let cam = cameraAt(t);
   if (!covered) {

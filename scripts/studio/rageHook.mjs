@@ -78,12 +78,15 @@ export function rageHookV2(R) {
     { who: "creator", text: R.punchline.text, key: [R.punchline.key], expr: R.punchline.expr ?? "shocked", pose: R.punchline.pose ?? "handsUp", shot: "creator_close", role: "punch", visual: { kind: "none" } },
   ];
   const c = R.clip;
-  const clip = { name: "result", file: R.creation.file, in: c.in, out: c.out, hq_dir: R.creation.hq_dir, ...(R.creation.hq_ext ? { hq_ext: R.creation.hq_ext } : {}), fullscreen: true, enter: "grow", pre: 0.5, post: 0.1, duck_db: 7, after_line: 1 };
+  // the result plays on a device in the scene, in its own shape (owner, 2026-11-03): a wide Long Form video on a TV, the rest on a phone
+  const clip = { name: "result", file: R.creation.file, in: c.in, out: c.out, hq_dir: R.creation.hq_dir, ...(R.creation.hq_ext ? { hq_ext: R.creation.hq_ext } : {}), frame: c.frame ?? (R.template === "long_form" ? "tv" : "phone"), enter: "grow", pre: 0.5, post: 0.1, duck_db: 7, after_line: 1 };
   const last = R.end.text.split(/\s+/).length - 1;
+  // no music unless a recipe asks for it (owner, 2026-11-03, after hearing the first four): the slam, the silence and the bass hits stay
+  const music = R.music === true;
   const s = assembleStory(R.key, {
-    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: R.music === false ? "none" : "drive", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
-    // "Watch." stops the beat; the clip's first frame brings it back with a bass hit; the reveal gets its own bass hit
-    energy: { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, ...(R.music === false ? {} : { hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } }) },
+    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: music ? "drive" : "none", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
+    // "Watch." stops the beat (with music) and is followed by silence; the clip's first frame brings a bass hit; the reveal gets its own
+    energy: { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } },
     recipe: { angle: "RH", angle_name: "Rage hook", hook_type: "rage_hook", length_bucket: "20-25", famous_name: false, end_trigger: "comment" },
     lines, clips: [clip],
     end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: "act|creator|angry|3" }] }, cta: { id: `comment_${R.key}`, kind: "comment", chip: R.end.chip } },
@@ -96,6 +99,9 @@ export function rageHookV2(R) {
   Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook" });
   // short lines after the steps: the camera follows each speaker at once (the 2 s minimum hold would leave it behind)
   for (const m of s.shots) if (/^(reveal|punch|cta)\./.test(m.at)) m.hold = 0.5;
+  // during the silence after "Watch." the camera pulls back to both of them, under the device, and stays for the steps
+  for (const m of s.shots) if (m.at.startsWith("s1.")) Object.assign(m, { at: "calm.end+0.02", dur: 0.45, hold: 0.5 });
+  for (const m of s.shots) if (m.at.startsWith("calm.")) m.hold = 0.2;   // short: the pull back to both must land as the device appears
   // the end: up to both faces for the name, then a whip back into the raging creator (frame 0) as the video loops
   for (const m of s.shots) if (m.at.startsWith("cta.")) m.to = "end_two";
   s.lines.at(-1).shot = "end_two";

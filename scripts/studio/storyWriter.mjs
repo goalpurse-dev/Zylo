@@ -138,7 +138,8 @@ function assembleWritten(w, recipe, kit, kitKey, clip, mode, spots = {}) {
     return out;
   });
   const short = recipe.length_bucket === "15-25";
-  const clips = [{ name: "payoff", file: kit.file, in: clip.in, out: clip.out, text: clip.text, hq_dir: kit.hq_dir, hq_ext: kit.hq_ext, wide: !!kit.wide, fullscreen: true, enter: "grow", pre: 0.5, post: 0.1, duck_db: 14, after_line: Math.max(0, Math.min(n - 1, w.clip_after)), pays_loop: true }];
+  // the real result plays on a TV (a wide video, in its own shape) or a phone in the scene, never full screen (owner, 2026-11-03)
+  const clips = [{ name: "payoff", file: kit.file, in: clip.in, out: clip.out, text: clip.text, hq_dir: kit.hq_dir, hq_ext: kit.hq_ext, wide: !!kit.wide, frame: kit.wide ? "tv" : "phone", enter: "grow", pre: 0.5, post: 0.1, duck_db: 14, after_line: Math.max(0, Math.min(n - 1, w.clip_after)), pays_loop: true }];
   const c = CTA_LINES(recipe.end_trigger, w.end_line, w.end_chip);
   // the end card: Zyvo only here (and in the caption) when the video is about the topic
   c.line.shot = "two_shot"; c.line.visual = mode === "topic" ? { kind: "sign", text: "Made with Zyvo", sub: "tryzyvo.com" } : { kind: "sign", text: "tryzyvo.com", sub: "link in bio" };

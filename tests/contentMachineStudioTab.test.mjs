@@ -140,6 +140,9 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
     const [clip] = raw.clips;
     assert.equal(raw.clips.length, 1); assert.equal(clip.after_line, 1); assert.equal(clip.pre, 0.5, "0.5 s of silence after Watch.");
     assert.ok(clip.out - clip.in >= 2 && clip.out - clip.in <= 3, "the result plays 2-3 s");
+    assert.equal(clip.frame, R.template === "long_form" ? "tv" : "phone", "the result plays on a device in the scene, in its own shape");
+    assert.equal(clip.fullscreen, undefined);
+    assert.equal(raw.music_style, "none", "no music unless a recipe asks");
     assert.deepEqual(raw.energy, { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, hard_stop: { line: 1, word: 0, clip: 0 } });
     raw.lines.slice(2, 5).forEach((l, i) => {
       assert.deepEqual([l.screen.chip, l.screen.big], [`STEP ${i + 1}`, true]);
