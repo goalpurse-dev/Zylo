@@ -27,3 +27,8 @@ research/seamless-niche/work/
 content/reference-videos/
 content/studio-previews/
 content/studio-worker/
+
+# Blocky Worlds reference inbox: creator videos, frames, transcripts and voice clips are never committed
+reference/blocky-worlds/videos/
+reference/blocky-worlds/work/
+reference/blocky-worlds/voice-samples/
