@@ -386,6 +386,15 @@ def sfx(kind):
         boom = 0.9 * np.sin(2 * np.pi * (48 + 140 * np.exp(-tt * 22)) * tt) * np.exp(-tt * 7)
         snap = 0.5 * np.random.default_rng(5).standard_normal(m) * np.exp(-tt * 70)
         return boom + snap
+    if kind == "slam":   # fists on a desk (a heavy thud) and the keyboard jumping under them (a burst of key clacks)
+        m = int(0.55 * SR); tt = np.arange(m) / SR; rng = np.random.default_rng(13)
+        out = 1.2 * np.sin(2 * np.pi * (58 + 160 * np.exp(-tt * 30)) * tt) * np.exp(-tt * 11) + 0.55 * rng.standard_normal(m) * np.exp(-tt * 45)
+        t0 = 0.012
+        while t0 < 0.42:
+            k = int(0.014 * SR); s0 = int(t0 * SR); kt = np.arange(k) / SR
+            out[s0:s0 + k] += (0.5 - t0) * 0.9 * rng.standard_normal(k) * np.exp(-kt * 320) + 0.18 * np.sin(2 * np.pi * (2200 + 900 * rng.random()) * kt) * np.exp(-kt * 260)
+            t0 += 0.025 + 0.035 * rng.random()
+        return out
     if kind == "punch":  # a zoom punch: a short low thud
         m = int(0.2 * SR); tt = np.arange(m) / SR
         return 0.7 * np.sin(2 * np.pi * (70 + 120 * np.exp(-tt * 40)) * tt) * np.exp(-tt * 16) + 0.15 * np.random.default_rng(6).standard_normal(m) * np.exp(-tt * 120)
@@ -415,11 +424,12 @@ if E:
     first = timed[0]["words"]
     no_music = S.get("music_style") == "none"
     drop_t = 0.0 if no_music or E.get("from_frame0") else first[min(1, len(first) - 1)]["s"]
-    events.append({"t": drop_t, "event": "drop", "sfx": "punch" if no_music else "drop"})
+    # "slam" (Rage hook, owner 2026-11-03): the rage is already happening on frame 0, a desk slam + keyboard smash at 0.0
+    events.append({"t": drop_t, "event": "drop", "sfx": "slam" if E.get("slam") else "punch" if no_music else "drop"})
     reveals = sorted([timed[i]["start"] for i in E.get("reveal_lines", [])] + [c["start"] for c in clips if c["name"] in E.get("reveal_clips", [])])
     for i, r in enumerate(reveals):
         events.append({"t": r, "event": f"reveal{i}", "sfx": "bass"})
-        if i == len(reveals) - 1: events.append({"t": round(r - 0.42, 3), "event": "scratch", "sfx": "scratch"})
+        if i == len(reveals) - 1 and E.get("scratch", True): events.append({"t": round(r - 0.42, 3), "event": "scratch", "sfx": "scratch"})
     # a hard stop on one word, the music back on a clip's first frame: {line, word, clip}
     HS = E.get("hard_stop")
     if HS: hard_a, hard_b = timed[HS["line"]]["words"][HS["word"]]["s"] - 0.03, clips[HS["clip"]]["start"]; events.append({"t": hard_b, "event": "dropBack", "sfx": "bass"})
@@ -537,7 +547,7 @@ if clip and not S.get("no_phone"):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
 json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled,
-           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "length_target", "hq_dir", "tempo", "phone_skip", "world", "headline") if k in S} or None},
+           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "loop_back", "length_target", "hq_dir", "tempo", "phone_skip", "world", "headline") if k in S} or None},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

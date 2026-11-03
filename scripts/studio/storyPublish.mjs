@@ -6,7 +6,7 @@ import fs from "node:fs";
 const [scriptPath, mp4, outPath, usd] = process.argv.slice(2);
 const S = JSON.parse(fs.readFileSync(scriptPath, "utf8"));
 const plain = (t) => t.replace(/[|*]/g, " ").replace(/\s+/g, " ").trim();
-const hook = plain(S.headline.text), trigger = S.lines.at(-1).text;
+const hook = plain(S.headline?.text ?? S.lines[0].text), trigger = S.lines.at(-1).text;   // a Rage hook has no headline: its yell is the hook
 const tags = S.hashtags?.length ? S.hashtags : ["#aivideo", "#zyvo"];
 const search = S.search_title ?? S.title;
 const caption = S.caption ?? `${S.title}. ${trigger} tryzyvo.com`;
@@ -16,7 +16,7 @@ const spec = {
   concept: `Studio v2 ${S.recipe.angle}: ${S.title}. World: ${S.world}. Shows the real creation ${S.source_story?.slice(0, 8)}.`,
   script: { source: "studio v2", lines: S.lines.map((l) => `${l.who}: ${l.text}`), ...(S.claude_log ? { claude_log: S.claude_log } : {}) },
   recipe: { ...S.recipe, studio_variant: S.variant, experiment: S.story_mode ? "studio_one_story_v5" : S.first_second ? "studio_first_second_v4" : S.energy ? "studio_friend_v3" : "studio_v2" },
-  claims: S.lines.filter((l) => l.stamp).map((l) => l.stamp),
+  claims: [...S.lines.filter((l) => l.stamp).map((l) => l.stamp), ...(S.claims ?? [])],
   measured: {},
   packages: {
     tiktok: { title: search, caption: `${caption} ${trigger === caption ? "" : ""}`.trim(), hashtags: tags },

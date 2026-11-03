@@ -84,14 +84,15 @@ function ScriptReview({ job, onDone }) {
   const set = (i, patch) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
   const approve = async () => {
     setBusy(true); setNote(null);
-    try { await api("studioScriptApprove", { id: job.id, edits: { title, headline, caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
+    try { await api("studioScriptApprove", { id: job.id, edits: { title, ...(s.headline ? { headline } : {}), caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
     catch (e) { setNote(e.message); setBusy(false); }
   };
   return (
     <div className="mt-2 w-full space-y-2 rounded-xl border border-amber-300/40 bg-amber-300/[0.05] p-3" data-testid="cm-studio-script">
       <div className="text-[12.5px] font-semibold text-amber-200">{s.story_mode === "topic" ? "About the topic: Zyvo only in the caption and on the end card" : "About making it with Zyvo"}</div>
       <label className="block text-[12px] text-white/60">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
-      <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+      {s.headline ? <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+        : <div className="text-[12px] text-white/50">No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept.</div>}
       <ol className="space-y-2">
         {s.lines.map((l, i) => (
           <li key={i} className="space-y-1">
@@ -143,6 +144,8 @@ export function StudioTab() {
   };
   const act = async (action, args, done = null) => { setNote(null); try { await api(action, args); if (done) setNote(done); loadJobs(); } catch (e) { setNote(e.message); } };
   const fresh = plan?.videos?.filter((v) => v.source.kind === "generate").length ?? 0;
+  // the "Rage hook" presets: the recipes on the laptop worker (it lists them in its heartbeat)
+  const presets = jobs?.worker?.workers?.flatMap((w) => w.info?.rage_hook ?? []) ?? [];
 
   return (
     <div className="space-y-5" data-testid="cm-studio">
@@ -166,6 +169,21 @@ export function StudioTab() {
         </div>
         <p className="text-[12px] text-white/45">Nothing starts until you press Start. Each script then waits for your approval before it renders. Every video gets its own angle, world and creation; reuse first, no generation cost.</p>
       </form>
+
+      <section className="space-y-2 rounded-2xl border border-rose-400/40 bg-rose-400/[0.05] p-4" data-testid="cm-studio-rage">
+        <h2 className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-white/80">Preset · Rage hook</h2>
+        <p className="text-[12px] text-white/55">The "I couldn't animate" recipe: a yelling creator on frame 0 (3 takes, the loudest kept), "Watch." and silence, the real result on a beat drop, 3 numbered steps with real screens big, a real number, the punchline, a loop. 20–25 s. The script waits for your approval; voices about $0.05–0.10, the render $0.</p>
+        {!presets.length ? <p className="text-[12.5px] text-white/50">No Rage hook recipes yet: they show here when the laptop worker is on.</p> : (
+          <div className="flex flex-wrap gap-2">
+            {presets.map((p) => (
+              <button key={p.key} type="button" className={ghost} data-testid="cm-studio-rage-start" title={p.yell}
+                onClick={() => act("studioPreset", { preset: "rage_hook", key: p.key }, `"${p.title}" started: its script shows here for your approval.`)}>
+                Rage hook · {p.title} <span className="text-white/45">({p.creation})</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
 
       {showAngles && <AnglesPanel />}
       {note && <p className="text-[13px] text-white/75" role="status">{note}</p>}

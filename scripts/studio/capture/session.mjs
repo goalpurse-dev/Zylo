@@ -10,8 +10,8 @@ const REF = new URL(SUPABASE_URL).hostname.split(".")[0];
 const { chromium } = createRequire("C:/Users/Public/Zylo/package.json")("playwright");
 
 /** A browser context logged in as the internal account (desktop 1280x860 at 3x unless told otherwise). */
-export async function openApp({ width = 1280, height = 860, scale = 3, video = null } = {}) {
-  const s = await userSession(INTERNAL_EMAIL);
+export async function openApp({ width = 1280, height = 860, scale = 3, video = null, email = INTERNAL_EMAIL } = {}) {
+  const s = await userSession(email);
   const { data } = await s.client.auth.getSession();   // the whole session (access + refresh token, user), as supabase-js stores it
   const session = data.session;
   const browser = await chromium.launch({ headless: true });

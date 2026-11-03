@@ -1,0 +1,32 @@
+{
+  "key": "rage_fruit_fyp",
+  "structure": "v2",
+  "title": "How do they make these fruit videos",
+  "search_title": "how to make AI fruit videos",
+  "template": "ai_fruit_story",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "out_dir": "content/studio-previews/rage-fruit-trend",
+  "screens": "screens",
+  "creation": {
+    "id": "96d3191f-eda8-4975-8646-de24620d6b93",
+    "title": "Ten Years Out of Date",
+    "file": "video/m3/ten-years-out-of-date.mp4",
+    "hq_dir": "video/m3/hq",
+    "hq_ext": "png"
+  },
+  "yell": { "text": "My whole For You page is these fruit soap operas and I STILL don't know how they make them!", "key": "STILL", "pose": "rage", "prop": { "kind": "none" } },
+  "calm": "Watch.",
+  "clip": { "in": 8.3, "out": 10.94, "says": "You've had three jobs since that photo." },
+  "steps": [
+    { "text": "Step one: open Zyvo and pick AI Fruit Story.", "key": "Fruit", "screen": "s_menu.jpg", "taps": [[3, 0.21, 0.2], [6, 0.67, 0.39]] },
+    { "text": "Step two: pick an idea, or type your own.", "key": "own.", "screen": "s_ideas.jpg", "taps": [[4, 0.5, 0.445], [7, 0.5, 0.208]] },
+    { "text": "Step three: it draws it, animates it and voices it.", "key": "animates", "screen": "s_pictures.jpg", "flips": [[5, "s_anim.jpg"]] }
+  ],
+  "reveal": { "text": "Under four minutes.", "key": "four", "visual": { "value": 230, "format": "clock", "label": "MY REAL RUN: FIRST CLICK TO VIDEO" } },
+  "punchline": { "text": "…so THAT'S how they post every day.", "key": "THAT'S", "expr": "shocked", "pose": "handsUp", "tags": "[shocked] [realizing]" },
+  "end": { "text": "It's called Zyvo. Link in bio. Comment FRUIT and tell me your idea.", "key": ["Zyvo.", "FRUIT"], "name_word": 2, "comment_word": 6, "chip": "COMMENT FRUIT + YOUR IDEA" },
+  "caption": "My whole For You page is fruit soap operas 🍓 So THAT'S how they make them… How to make AI fruit videos: link in bio.",
+  "hashtags": ["#aifruit", "#fruitdrama", "#aivideo", "#fyp"],
+  "claims": ["Under four minutes: 3:50 from the first click to the finished video, the run that made this story (measured live, 2026-10-29)"]
+}

@@ -12,7 +12,7 @@ import { validateThread } from "../scripts/studio/storyScripts.mjs";
 import { lengthBudget, revisionNote, writeStory } from "../scripts/studio/storyWriter.mjs";
 import { templateFor, ANGLE_TEMPLATES } from "../scripts/studio/storyTemplates.mjs";
 import fs from "node:fs";
-import { rageHookScript, rageTakes } from "../scripts/studio/rageHook.mjs";
+import { rageHookScript, rageTakes, rageScripts, rageRecipes } from "../scripts/studio/rageHook.mjs";
 import { applyScriptEdits, onScreen } from "../supabase/functions/_shared/contentMachine/scriptEdit.js";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
@@ -126,6 +126,56 @@ test("Rage hook: the bleep is on the swear word, the beat stops on Watch, the re
   assert.ok(takes.slice(0, 3).every((t) => t.model === "eleven_v3" && t.text.includes("[shouting]")));
   assert.equal(rageHookScript({ ...R, music: false }).raw.music_style, "none");
   assert.throws(() => rageHookScript({ ...R, clips: [R.clips[0]] }), /two clips/);
+});
+
+test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, the result on a bass drop, 3 big steps, a real number, a loop", () => {
+  for (const f of ["rage_hook_long_form_weekend.json", "rage_hook_fruit_trend.json"]) {
+    const R = JSON.parse(fs.readFileSync(new URL(`../scripts/studio/recipes/${f}`, import.meta.url), "utf8"));
+    const { raw, censored } = rageScripts(R);
+    assert.equal(censored, null, "no swear: one version only");
+    assert.deepEqual(raw.lines.map((l) => l.role), ["yell", "calm", "s1", "s2", "s3", "reveal", "punch", "cta"]);
+    assert.equal(raw.lines[1].text, "Watch.");
+    assert.equal(raw.headline, undefined);
+    assert.equal(new Set(raw.lines.map((l) => l.text)).size, raw.lines.length, "no repeated lines");
+    const [clip] = raw.clips;
+    assert.equal(raw.clips.length, 1); assert.equal(clip.after_line, 1); assert.equal(clip.pre, 0.5, "0.5 s of silence after Watch.");
+    assert.ok(clip.out - clip.in >= 2 && clip.out - clip.in <= 3, "the result plays 2-3 s");
+    assert.deepEqual(raw.energy, { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, hard_stop: { line: 1, word: 0, clip: 0 } });
+    raw.lines.slice(2, 5).forEach((l, i) => {
+      assert.deepEqual([l.screen.chip, l.screen.big], [`STEP ${i + 1}`, true]);
+      assert.ok(l.cues.some((c) => c.word === 0 && c.sfx === "whoosh"), "a whoosh on each step");
+    });
+    assert.equal(raw.lines[5].visual.kind, "roll");
+    assert.equal(raw.loop_back, 0.08);
+    assert.deepEqual(raw.shots.at(-1), { to: "rage_hook", at: "cta.end+0.08", dur: 0.3, kind: "whip", hold: 0 }, "the end whips back to frame 0");
+    assert.equal(raw.recipe.angle, "RH"); assert.equal(raw.recipe.length_bucket, "20-25"); assert.ok(raw.claims.length);
+    // an edited yell is what gets voiced, three times
+    const edited = structuredClone(raw); edited.lines[0].text = "I lost my whole weekend!";
+    assert.ok(rageTakes(R, edited).slice(0, 3).every((t) => t.text.includes("I LOST MY WHOLE WEEKEND!!!")));
+  }
+  const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_long_form_weekend.json", import.meta.url), "utf8"));
+  const sw = rageScripts({ ...R, yell: { ...R.yell, text: "I spent ALL WEEKEND fucking editing!", swear: "fucking", show: "f***ing" } });
+  assert.equal(sw.censored.bleep.word, 4);
+  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["rage_fruit_fyp", "rage_lf_weekend"], "only v2 recipes are presets");
+});
+
+test("the Rage hook preset: one click makes one job from a recipe the worker lists; nothing renders before the approval", async () => {
+  const workers = [{ id: "w", last_seen: NOW.toISOString(), info: { rage_hook: [{ key: "rage_lf_weekend", title: "I spent all weekend editing", template: "long_form", creation: "What If", creation_id: "LF1" }] } }];
+  const { call, jobs } = studioApi({ workers });
+  assert.match((await call({ action: "studioPreset", preset: "rage_hook", key: "nope" })).message, /isn't on the laptop worker/);
+  assert.match((await call({ action: "studioPreset", preset: "other", key: "rage_lf_weekend" })).message, /Unknown preset/);
+  const r = await call({ action: "studioPreset", preset: "rage_hook", key: "rage_lf_weekend" });
+  assert.equal(r.ok, true);
+  assert.equal(jobs.length, 1);
+  assert.deepEqual([jobs[0].status, jobs[0].template, jobs[0].recipe.preset, jobs[0].recipe.recipe_key, jobs[0].source.kind, jobs[0].source.id], ["queued", "long_form", "rage_hook", "rage_lf_weekend", "long_form_project", "LF1"]);
+  assert.equal(jobs[0].script_approved_at, undefined);
+  // the approval works for a script with no headline
+  jobs[0].status = "script_review"; jobs[0].script = { title: "T", caption: "C", clips: [], lines: [{ who: "creator", text: "I spent ALL WEEKEND!" }] };
+  assert.equal((await call({ action: "studioScriptApprove", id: jobs[0].id, edits: { title: "T", caption: "C", lines: [{ text: "I spent ALL WEEKEND!" }] } })).ok, true);
+  assert.equal(jobs[0].script.headline, undefined);
+  const off = studioApi({ workers, settings: { kill_switch: true } });
+  assert.equal((await off.call({ action: "studioPreset", preset: "rage_hook", key: "rage_lf_weekend" })).ok, false);
+  assert.equal(off.jobs.length, 0);
 });
 
 test("script approval: a written script waits, the owner's edits go with the approval, only then it can render", async () => {

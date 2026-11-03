@@ -42,6 +42,8 @@ export function makeOverlay(ctx) {
     clear() { ctx.clearRect(0, 0, W, H); },
     /** The chapter chip at the top centre, just below the top bar. */
     chip(parts, age) { if (age < 0) return null; return pill(SAFE_CX, SAFE.top + 52, 74, parts, { size: 38, scale: popScale(age) }); },
+    /** The Rage hook's numbered step (owner, 2026-11-03: "big numbered chips"): twice the chapter chip, above a big screen. */
+    bigStepChip(text, age) { if (age < 0) return null; return pill(SAFE_CX, SAFE.top + 70, 124, [[text, "#FFD43B"]], { size: 78, scale: popScale(age, 0.2), border: "rgba(255,212,59,0.85)" }); },
     /** The end chip (teaser): a lime call to action under the caption, clear of faces and the antenna. */
     endChip(text, age) { if (age < 0) return null; return pill(SAFE_CX, 1440, 100, [[text, "#BEF264"]], { size: 56, scale: popScale(age, 0.22), border: "rgba(190,242,100,0.8)" }); },
     /** The hook's stat pill ("MY LAST SHORT · 6 hours"). */
@@ -119,10 +121,12 @@ export function makeOverlay(ctx) {
       return b;
     },
     /** A REAL screen BIG: ~80% of the width (x 40..910, clear of the icon column), readable on a phone, with one sticker. */
-    bigScreen(img, aspect, age, { outAge = -1, sticker = null, top = 400 } = {}) {
+    bigScreen(img, aspect, age, { outAge = -1, sticker = null, top = 400, big = false } = {}) {
       if (!img) return null;
       const k = Math.min(1, Math.max(0, age) / 0.3), e = 1 - Math.pow(1 - k, 3), fade = outAge > 0 ? Math.max(0, 1 - outAge / 0.25) : 1;
-      const x0 = 40, w = 870, h = Math.min(w / aspect, 830), ww = h * aspect, x = x0 + (w - ww) / 2, y = top + (1 - e) * 70;
+      // big: the whole safe width and taller (a square or upright crop fills it), never past the safe zone
+      const [x0, w, maxH] = big ? [SAFE.left + 8, W - SAFE.left - SAFE.right - 16, 880] : [40, 870, 830];
+      const h = Math.min(w / aspect, maxH), ww = h * aspect, x = x0 + (w - ww) / 2, y = top + (1 - e) * 70;
       ctx.save(); ctx.globalAlpha = e * fade;
       ctx.shadowColor = "rgba(0,0,0,0.55)"; ctx.shadowBlur = 44; ctx.shadowOffsetY = 16;
       ctx.fillStyle = "#0b0c0e"; ctx.beginPath(); ctx.roundRect(x - 8, y - 8, ww + 16, h + 16, 30); ctx.fill();

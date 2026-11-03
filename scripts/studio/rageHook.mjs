@@ -57,32 +57,89 @@ export function rageHookScript(R) {
   return { raw: s, censored: { ...s, bleep: { line: 0, word: swear, show: R.yell.show } } };
 }
 
-/** What each paid take is. Three takes of the yell, then every other line once. */
+/** Rage hook v2 (owner, 2026-11-03: pain hooks hold 40-45% at 3 s, result-first 32%): 20-25 s. Mid-yell on frame 0 with a
+ *  slam; "Watch." then 0.5 s of total silence; the real result (a full sentence) on a beat drop and a bass hit; three
+ *  numbered steps, real screens BIG, a whoosh each; a real number revealed on a bass hit; the creator's punchline; the
+ *  name and an easy comment question; the last frame whips back to the raging creator, so the end leads into frame 0.
+ *  { raw, censored }: censored is null when the yell has no swear. */
+export function rageHookV2(R) {
+  const swear = R.yell.swear ? R.yell.text.split(/\s+/).findIndex((w) => w.toLowerCase().replace(/^\W+/, "").startsWith(R.yell.swear)) : -1;
+  if (R.yell.swear && swear < 0) throw new Error(`the yell has no "${R.yell.swear}"`);
+  if (R.steps.length !== 3) throw new Error("a Rage hook has three steps");
+  const tempo = R.step_tempo ?? 1.12;   // ~3 s a step
+  const lines = [
+    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: "angry", pose: R.yell.pose ?? "rage", shake: 0.8, shot: "rage_hook", role: "yell", visual: { instant: true, up: 1.32, scale: 1.05, ...(R.yell.prop ?? { kind: "none" }) } },
+    { who: "zee", text: R.calm ?? "Watch.", key: [(R.calm ?? "Watch.").split(/\s+/).at(-1)], expr: "smug", pose: "pointUp", shot: "zee_close", role: "calm", listen: "angry" },
+    ...R.steps.map((s, i) => ({ who: "zee", text: s.text, key: [s.key], expr: "happy", role: `s${i + 1}`, tempo, ...(i === 0 ? { shot: "two_shot" } : {}),
+      screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true },
+      cues: [{ word: 0, event: `step${i + 1}`, sfx: "whoosh" }, ...(s.taps ?? []).map((t) => tap(...t)), ...(s.flips ?? []).map(([word, file]) => ({ word, event: `flip|${file}`, sfx: "tick" }))] })),
+    { who: "zee", text: R.reveal.text, key: [R.reveal.key], expr: "smug", pose: "point", shot: "zee_close", role: "reveal", listen: "shocked", tempo,
+      visual: { kind: "roll", secs: 0.8, scale: 0.78, up: 1.35, ...R.reveal.visual } },
+    { who: "creator", text: R.punchline.text, key: [R.punchline.key], expr: R.punchline.expr ?? "shocked", pose: R.punchline.pose ?? "handsUp", shot: "creator_close", role: "punch", visual: { kind: "none" } },
+  ];
+  const c = R.clip;
+  const clip = { name: "result", file: R.creation.file, in: c.in, out: c.out, hq_dir: R.creation.hq_dir, ...(R.creation.hq_ext ? { hq_ext: R.creation.hq_ext } : {}), fullscreen: true, enter: "grow", pre: 0.5, post: 0.1, duck_db: 7, after_line: 1 };
+  const last = R.end.text.split(/\s+/).length - 1;
+  const s = assembleStory(R.key, {
+    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: R.music === false ? "none" : "drive", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
+    // "Watch." stops the beat; the clip's first frame brings it back with a bass hit; the reveal gets its own bass hit
+    energy: { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, ...(R.music === false ? {} : { hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } }) },
+    recipe: { angle: "RH", angle_name: "Rage hook", hook_type: "rage_hook", length_bucket: "20-25", famous_name: false, end_trigger: "comment" },
+    lines, clips: [clip],
+    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: "act|creator|angry|3" }] }, cta: { id: `comment_${R.key}`, kind: "comment", chip: R.end.chip } },
+    caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
+  }, { this: { hq_dir: R.creation.hq_dir } }, R.creation.id);
+  delete s.headline;   // no title card: the yell is the hook
+  for (const l of s.lines) if (l.screen || l.visual?.kind === "none") l.cues = l.cues.filter((x) => !x.event.startsWith("show"));
+  Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook" });
+  // short lines after the steps: the camera follows each speaker at once (the 2 s minimum hold would leave it behind)
+  for (const m of s.shots) if (/^(reveal|punch|cta)\./.test(m.at)) m.hold = 0.5;
+  // the end: up to both faces for the name, then a whip back into the raging creator (frame 0) as the video loops
+  for (const m of s.shots) if (m.at.startsWith("cta.")) m.to = "end_two";
+  s.lines.at(-1).shot = "end_two";
+  s.shots.push({ to: "rage_hook", at: "cta.end+0.08", dur: 0.3, kind: "whip", hold: 0 });
+  s.loop_back = 0.08;   // story.js: the creator back in the yell, the end chips gone
+  return { raw: s, censored: swear >= 0 ? { ...s, bleep: { line: 0, word: swear, show: R.yell.show } } : null };
+}
+/** A recipe's scripts, by its structure. */
+export const rageScripts = (R) => (R.structure === "v2" ? rageHookV2(R) : rageHookScript(R));
+export const RECIPES_DIR = path.join(HERE, "recipes");
+/** The one-click presets (Studio tab): the v2 recipes. */
+export function rageRecipes(dir = RECIPES_DIR) {
+  return fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")))
+    .filter((R) => R.structure === "v2").map((R) => ({ key: R.key, title: R.title, template: R.template, creation: R.creation.title, creation_id: R.creation.id, yell: R.yell.text }));
+}
+export const loadRecipe = (key, dir = RECIPES_DIR) => {
+  const f = fs.readdirSync(dir).find((x) => x.endsWith(".json") && JSON.parse(fs.readFileSync(path.join(dir, x), "utf8")).key === key);
+  if (!f) throw new Error(`no Rage hook recipe "${key}"`);
+  return JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+};
+
+/** What each paid take is. Three takes of the yell (as the script now says it), then every other line once. */
 export function rageTakes(R, S) {
   const shout = (text) => text.toUpperCase().replace(/[.!?…]+$/, "") + "!!!";
   const creator = { voice: S.voices.eleven.creator.id, model: "eleven_v3", stability: 0 };
   const zee = { voice: S.voices.eleven.zee.id, model: null, stability: 0.6, style: 0.2, speed: 1.05 };
+  const tags = (l) => (l.role === "how" ? REACT_TAGS : l.role === "punch" ? R.punchline?.tags ?? REACT_TAGS : EXCITED_TAGS);
   return [
-    ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: `${YELL_TAGS} ${shout(R.yell.text)}`, ...creator })),
+    ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: `${YELL_TAGS} ${shout(S.lines[0].text)}`, ...creator })),
     ...S.lines.slice(1).map((l, i) => {
       const file = `line${String(i + 2).padStart(2, "0")}.mp3`;
       if (l.who === "zee") return { file, text: l.say ?? l.text, ...zee };
-      return { file, text: `${l.role === "how" ? REACT_TAGS : EXCITED_TAGS} ${l.text}`, ...creator };
+      return { file, text: `${tags(l)} ${l.text}`, ...creator };
     }),
   ];
 }
 
-async function makeTakes(R, S, dir) {
-  const { admin } = await import("file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs");
-  const { createBudgetGuard } = await import("../../supabase/functions/_shared/contentMachine/budgetGuard.js");
-  const { createStore } = await import("../../supabase/functions/_shared/contentMachine/store.js");
+/** The paid takes through the Budget Guard (skips takes already made), then line 1 = the most intense yell. -> { usd } */
+export async function makeRageTakes({ R, S, dir, guard, cap, log = console.log }) {
   for (const line of fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/)) { const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/); if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, ""); }
+  fs.mkdirSync(dir, { recursive: true });
   const V2 = fs.readFileSync(path.join(HERE, "elevenTakes.mjs"), "utf8").match(/model_id: "([^"]+)"/)[1];   // the model every calm line uses
   const jobs = rageTakes(R, S).filter((j) => !fs.existsSync(path.join(dir, j.file)));
   const worst = jobs.reduce((a, j) => a + j.text.length, 0) * PER_CHAR;
-  console.log(`${jobs.length} takes, worst case $${worst.toFixed(4)}, cap $${R.cap_usd}`);
-  if (worst > R.cap_usd) throw new Error(`over the $${R.cap_usd} cap`);
-  const guard = createBudgetGuard({ store: createStore(admin()) });
+  log(`${jobs.length} takes, worst case $${worst.toFixed(4)}, cap $${cap}`);
+  if (worst > cap) throw new Error(`the voices would cost up to $${worst.toFixed(2)}, over the $${cap} cap`);
   let total = 0;
   for (const j of jobs) {
     const r = await guard.spend("other", "studio.voice_lines", j.text.length * PER_CHAR, async () => {
@@ -94,17 +151,17 @@ async function makeTakes(R, S, dir) {
       return { result: chars, actualUsd: chars * PER_CHAR };
     }, { lane: "studio", live: true });
     total += r.actualUsd ?? 0;
-    console.log(`${j.file}: ${r.result} characters`);
+    log(`${j.file}: ${r.result} characters`);
   }
-  fs.appendFileSync(path.join(dir, "cost.log"), `${new Date().toISOString()} ${jobs.length} takes $${total.toFixed(4)}\n`);
-  console.log(`spent $${total.toFixed(4)}`);
+  if (jobs.length) fs.appendFileSync(path.join(dir, "cost.log"), `${new Date().toISOString()} ${jobs.length} takes $${total.toFixed(4)}\n`);
+  log(`spent $${total.toFixed(4)}`);
   // the most intense yell: loudest and highest (measureTakes.py)
   const scores = JSON.parse(execFileSync("python", [path.join(HERE, "measureTakes.py"), ...["a", "b", "c"].map((k) => path.join(dir, `yell_${k}.mp3`))], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }));
   const best = scores.sort((a, b) => b.score - a.score)[0];
-  for (const x of scores) console.log(`${path.basename(x.file)}: ${x.seconds} s, ${x.lufs} LUFS, pitch ${x.pitch} Hz, score ${x.score}: "${x.text}"`);
+  for (const x of scores) log(`${path.basename(x.file)}: ${x.seconds} s, ${x.lufs} LUFS, pitch ${x.pitch} Hz, score ${x.score}: "${x.text}"`);
   fs.copyFileSync(best.file, path.join(dir, "line01.mp3"));
-  console.log(`line 1 is ${path.basename(best.file)}`);
-  setTimeout(() => process.exit(0), 300);
+  log(`line 1 is ${path.basename(best.file)}`);
+  return { usd: total };
 }
 
 function render(R) {
@@ -112,6 +169,7 @@ function render(R) {
   const out = path.resolve(HERE, "../..", R.out_dir); fs.mkdirSync(out, { recursive: true });
   const env = { ...process.env, STUDIO_SCRATCH: win(path.join(WORKER, "scratch")), PICS_DIR: win(path.join(WORKER, "pool")), PROTO_DIR: win(path.join(WORKER, "proto")), SCREENS: win(path.join(WORKER, "src_work", R.screens)), MEDIA: "/nonexistent" };
   for (const [script, suffix] of [["script.json", "bleep"], ["script_raw.json", "uncensored"]]) {
+    if (!fs.existsSync(path.join(WORKER, "scratch", "story", R.key, script))) continue;
     const work = path.join(WORKER, "scratch", `${R.key}_${suffix}`); fs.mkdirSync(work, { recursive: true });
     const log = execFileSync("bash", [path.join(HERE, "buildStory.sh"), win(path.join(WORKER, "scratch", "story", R.key, script)), win(work), win(path.join(out, `${R.key}_${suffix}.mp4`))], { env, encoding: "utf8", maxBuffer: 1e8 });
     console.log(log.split("\n").filter((l) => /rendered|SAFE|^eleven|PROBLEM|rror/.test(l)).map((l) => l.slice(0, 500)).join("\n"));
@@ -122,11 +180,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const [file, step] = process.argv.slice(2);
   const R = JSON.parse(fs.readFileSync(file, "utf8")), dir = path.join(WORKER, "scratch", "story", R.key);
   fs.mkdirSync(dir, { recursive: true });
-  const { raw, censored } = rageHookScript(R);
-  fs.writeFileSync(path.join(dir, "script.json"), JSON.stringify(censored, null, 1));
+  const { raw, censored } = rageScripts(R);
+  if (censored) fs.writeFileSync(path.join(dir, "script.json"), JSON.stringify(censored, null, 1));
   fs.writeFileSync(path.join(dir, "script_raw.json"), JSON.stringify(raw, null, 1));
   if (step === "script") console.log(raw.lines.map((l, i) => `${i + 1} ${l.who} ${l.shot ?? "-"}: ${l.text}`).join("\n"));
-  else if (step === "takes") await makeTakes(R, raw, dir);
-  else if (step === "render") render(R);
+  else if (step === "takes") {
+    const { admin } = await import("file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs");
+    const { createBudgetGuard } = await import("../../supabase/functions/_shared/contentMachine/budgetGuard.js");
+    const { createStore } = await import("../../supabase/functions/_shared/contentMachine/store.js");
+    await makeRageTakes({ R, S: raw, dir, guard: createBudgetGuard({ store: createStore(admin()) }), cap: R.cap_usd });
+    setTimeout(() => process.exit(0), 300);
+  } else if (step === "render") render(R);
   else throw new Error("the step: script, takes or render");
 }

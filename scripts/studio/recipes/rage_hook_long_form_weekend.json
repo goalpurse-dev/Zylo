@@ -1,0 +1,33 @@
+{
+  "key": "rage_lf_weekend",
+  "structure": "v2",
+  "title": "I spent all weekend editing",
+  "search_title": "how to make a full YouTube video without editing",
+  "template": "long_form",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "out_dir": "content/studio-previews/rage-long-form",
+  "screens": "screens_rage_long_form",
+  "creation": {
+    "id": "9310e95c-35ce-4b36-902d-51f8f43e39ab",
+    "title": "What If Ancient Humans Had Modern Medicine?",
+    "file": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_517.mp4",
+    "hq_dir": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_hq",
+    "hq_ext": "jpg",
+    "segment": "517.374 s (the scene cut) to 520.3 s of the 9:17 final (render job a5e53ce5)"
+  },
+  "yell": { "text": "I spent ALL WEEKEND editing ONE YouTube video!", "key": "WEEKEND", "pose": "grabHead", "prop": { "kind": "timeline", "at": 999 } },
+  "calm": "Watch.",
+  "clip": { "in": 0.0, "out": 2.48, "says": "That vial never cured the village." },
+  "steps": [
+    { "text": "Step one: open Zyvo, pick Long Form.", "key": "Long", "screen": "s_menu.jpg", "taps": [[5, 0.24, 0.45]] },
+    { "text": "Step two: pick a niche and an idea.", "key": "niche", "screen": "s_lf_niche.jpg", "taps": [[4, 0.3, 0.147]] },
+    { "text": "Step three: it writes it, voices it and draws every scene.", "key": "every", "screen": "s_lf_scenes.jpg" }
+  ],
+  "reveal": { "text": "A full nine-minute YouTube video. 141 scenes.", "key": "141", "visual": { "value": 141, "label": "SCENES IN MY REAL 9:17 VIDEO" } },
+  "punchline": { "text": "…I want my weekend back.", "key": "weekend", "expr": "sad", "pose": "shrug", "tags": "[exhausted] [sighs]" },
+  "end": { "text": "It's called Zyvo. Link in bio. Comment your niche.", "key": ["Zyvo.", "niche."], "name_word": 2, "comment_word": 6, "chip": "COMMENT YOUR NICHE" },
+  "caption": "I spent ALL WEEKEND editing ONE YouTube video 😤 So I tried this… How to make a full YouTube video without editing: link in bio.",
+  "hashtags": ["#youtube", "#faceless", "#aivideo", "#youtubeautomation", "#fyp"],
+  "claims": ["9:17 and 141 scenes: the owner's Long Form project 9310e95c (What If Ancient Humans Had Modern Medicine?), as its own editor and publish page show (captured 2026-11-03)"]
+}

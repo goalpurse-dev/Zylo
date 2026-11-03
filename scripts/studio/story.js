@@ -81,6 +81,7 @@ const V = (a) => new THREE.Vector3(...a);
 const FLIPS = T.events.filter((e) => e.event.startsWith("flip|")).map((e) => ({ t: e.t, file: e.event.split("|")[1] }));
 const TAPS = T.events.filter((e) => e.event.startsWith("tap|")).map((e) => { const [, x, y] = e.event.split("|"); return { t: e.t, x: Number(x), y: Number(y) }; });
 const ACTS = T.events.filter((e) => e.event.startsWith("act|")).map((e) => { const [, who, expr, dur] = e.event.split("|"); return { t: e.t, who, expr, until: e.t + Number(dur ?? 1.2) }; });
+const LOOP_BACK = SH.loop_back != null ? L.at(-1).end + SH.loop_back : null;   // seconds after the last word
 
 // A line's visual stays until the next line that has one (or a clip takes over)
 const PROP_DIST = 11.5, PROP_UP = 0.98;
@@ -117,10 +118,13 @@ function act(who, c, t) {
   c.blink(blinkK(who, t));
   let pose = "rest", k = 0;
   for (const x of L) if (x.who === who) { const a = (x.start < 0.05 ? 1 : ease((t - x.start + 0.1) / 0.25)) * (1 - ease((t - x.end - 0.25) / 0.3)); if (a > k) { k = a; pose = x.pose ?? "rest"; } }
+  // the loop (Rage hook): after the last word the creator is back in frame 0's rage, so the end runs into the start
+  const looping = who === L[0].who && LOOP_BACK != null && t >= LOOP_BACK;
+  if (looping) { c.expr(L[0].expr); c.mouth(0.9); pose = L[0].pose ?? "rest"; k = ease((t - LOOP_BACK) / 0.15); }
   c.poseMix("rest", pose, k);
   c.idle(t, who === "zee" ? 0.7 : 0);
   // a line can shake with rage (arms, head, body)
-  const shake = speaking ? l.shake ?? 0 : 0;
+  const shake = looping ? L[0].shake ?? 0 : speaking ? l.shake ?? 0 : 0;
   c.group.position.x = HOME[who] + shake * 0.05 * Math.sin(t * 43);
   if (shake) { c.parts.head.rotation.z += shake * 0.05 * Math.sin(t * 37); c.parts.arms.forEach((a, i) => { a.pivot.rotation.x += shake * 0.09 * Math.sin(t * 29 + i * 2); a.pivot.rotation.z += shake * 0.07 * Math.sin(t * 41 + i); }); }
 }
@@ -177,9 +181,9 @@ window.renderAt = async (t) => {
   let shot = null;
   if (beat?.screen && !inClip) {
     const sc = beat.screen, flip = FLIPS.filter((f) => f.t >= beat.t0 && f.t < beat.t1 && t >= f.t).at(-1), im = screenImg[flip?.file ?? sc.file];
-    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, flip ? 1 : t - beat.t0, { outAge: t - beat.t1 + 0.25, sticker: sc.sticker, ...(sc.chip ? { top: 430 } : {}) });
+    shot = ov.bigScreen(im, im.naturalWidth / im.naturalHeight, flip ? 1 : t - beat.t0, { outAge: t - beat.t1 + 0.25, sticker: sc.sticker, ...(sc.big ? { top: 480, big: true } : sc.chip ? { top: 430 } : {}) });
     boxes.push(["screen", shot]);
-    if (sc.chip) boxes.push(["step chip", ov.chip([[sc.chip, YELLOW]], t - beat.t0)]);
+    if (sc.chip) boxes.push(["step chip", sc.big ? ov.bigStepChip(sc.chip, t - beat.t0) : ov.chip([[sc.chip, YELLOW]], t - beat.t0)]);
     for (const tap of TAPS) if (tap.t >= beat.t0 && tap.t < beat.t1) ov.tapRing(shot.x0 + 8 + tap.x * (shot.x1 - shot.x0 - 16), shot.y0 + 8 + tap.y * (shot.y1 - shot.y0 - 16), t - tap.t);
   }
   // the headline: big for its first seconds, then a small chip
@@ -193,9 +197,10 @@ window.renderAt = async (t) => {
   if (beat?.line.stamp && !inClip) boxes.push(["stamp", ov.stamp(beat.line.stamp, t - beat.t0, shot ? shot.y1 + 34 : 898)]);
   if (inClip?.stamp) boxes.push(["stamp", ov.stamp(inClip.stamp, t - inClip.start, 1212)]);
   if (inClip?.freeze?.text && t >= inClip.end) boxes.push(["freeze text", ov.hook(inClip.freeze.text, t - inClip.end, { y: 1040, pop: true })]);
-  // the website at the end, then ONE trigger
-  if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
-  if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
+  // the website at the end, then ONE trigger (both gone once the loop goes back to frame 0)
+  const looped = LOOP_BACK != null && t >= LOOP_BACK;
+  if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
+  if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && !looped && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
   if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 

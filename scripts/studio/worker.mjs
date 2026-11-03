@@ -15,6 +15,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { admin } from "file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs";
 import { writeStory, recentScripts } from "./storyWriter.mjs";
+import { rageScripts, rageRecipes, loadRecipe, makeRageTakes } from "./rageHook.mjs";
 import { createBudgetGuard } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/budgetGuard.js";
 import { createStore } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/store.js";
 
@@ -32,7 +33,9 @@ const must = (r, what) => { if (r.error) throw new Error(`${what}: ${r.error.mes
 const winPath = (p) => p.replace(/\\/g, "/");
 
 async function heartbeat() {
-  await db.from("cm_studio_workers").upsert({ id: ID, last_seen: new Date().toISOString(), info: { host: os.hostname(), gpu: "laptop (local)", version: "studio-worker 1" } });
+  // the Rage hook recipes on this laptop: the Studio tab's one-click presets
+  let presets = []; try { presets = rageRecipes(); } catch { /* none */ }
+  await db.from("cm_studio_workers").upsert({ id: ID, last_seen: new Date().toISOString(), info: { host: os.hostname(), gpu: "laptop (local)", version: "studio-worker 1", rage_hook: presets } });
 }
 async function claim() {
   const [next] = must(await db.from("cm_studio_jobs").select("id").eq("status", "queued").order("created_at").limit(1), "queued jobs");
@@ -134,7 +137,51 @@ async function makeStoryJob(job) {
   return { ideaId, spend: usd, passed: script.recipe.angle };
 }
 
+/** The "Rage hook" preset (owner, 2026-11-03): the hand-written recipe's script, no writing cost; waits for approval. */
+async function writeRageJob(job) {
+  await progress(job, "laying out the Rage hook script");
+  const R = loadRecipe(job.recipe.recipe_key), { raw, censored } = rageScripts(R);
+  const script = { ...(censored ?? raw), variant: job.id.slice(0, 8), rage: R };
+  script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
+  await setJob(job.id, { status: "script_review", script, spend_usd: 0, progress: "script ready: waiting for your approval", worker: null });
+}
+
+/** After the approval: 3 takes of the yell + the other lines (Budget Guard), the render, the Queue. A swear: the bleeped
+ *  video goes to the Queue, the uncensored one stays next to it on the laptop. */
+async function makeRageJob(job) {
+  if (!job.script_approved_at || !job.script) throw new Error("this script was never approved: nothing renders without your approval");
+  const script = job.script, R = script.rage, work = path.join(env.STUDIO_SCRATCH, "rage", job.id);
+  fs.mkdirSync(work, { recursive: true });
+  const takes = path.join(env.STUDIO_SCRATCH, "story", job.id);
+  await progress(job, "making its voices (3 takes of the yell, the loudest kept)");
+  const { usd } = await makeRageTakes({ R, S: script, dir: takes, guard, cap: VOICE_CAP_PER_VIDEO, log: (m) => console.log(`[${job.id.slice(0, 8)}] ${m}`) });
+  const prior = Number(job.spend_usd) || 0, spent = prior + usd;
+  await db.from("cm_studio_jobs").update({ spend_usd: spent }).eq("id", job.id);
+  const renderOne = async (s, suffix) => {
+    const file = path.join(work, `script_${suffix}.json`); fs.writeFileSync(file, JSON.stringify(s, null, 1));
+    const mp4 = winPath(path.join(OUT, `studio_${job.id.slice(0, 8)}_rage_${suffix}.mp4`));
+    const whole = fs.existsSync(mp4) && (await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4]).then((o) => Number(o) > 1).catch(() => false));
+    if (!whole) await run("bash", [path.join(HERE, "buildStory.sh"), winPath(file), winPath(path.join(work, suffix)), mp4], { env: { SCREENS: winPath(path.join(env.SRC_WORK, R.screens)), MEDIA: "/nonexistent" } });
+    if (!fs.existsSync(mp4)) throw new Error("the render made no video");
+    return { file, mp4 };
+  };
+  await progress(job, `rendering in the ${R.world ?? "studio"} world (laptop GPU)`);
+  const main = await renderOne(script, script.bleep ? "bleep" : "main");
+  if (script.bleep) { const { bleep, ...raw } = script; await renderOne(raw, "uncensored"); }
+  await progress(job, "putting it in the Queue");
+  const spec = path.join(work, "publish.json");
+  await run("node", [path.join(HERE, "storyPublish.mjs"), winPath(main.file), main.mp4, winPath(spec), String(spent)], { env: { IN_LEDGER: "1" } });
+  const pub = await retry(() => run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]), "the upload");
+  const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
+  if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
+  return { ideaId, spend: spent, passed: "RH" };
+}
+
 async function make(job) {
+  if (job.recipe?.preset === "rage_hook") {
+    if (!job.script_approved_at) { await writeRageJob(job); return null; }
+    return makeRageJob(job);
+  }
   if (!job.recipe?.angle || !job.source?.kind || job.source.kind === "generate") throw new Error("this job has no script to write: a NEW creation runs separately after your go, and older jobs aren't rendered here");
   if (!job.script_approved_at) { await writeScriptJob(job); return null; }
   return makeStoryJob(job);

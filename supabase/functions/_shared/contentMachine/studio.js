@@ -280,6 +280,26 @@ export function studioActions({ cm, store, now, files }) {
       return { job: copy };
     },
 
+    // The "Rage hook" preset (owner, 2026-11-03): one click, one job from a recipe on the laptop worker (its heartbeat lists
+    // them). The worker lays out the hand-written script ($0) and it waits for the owner's approval like any script.
+    studioPreset: async ({ user, body }) => {
+      const s = await store.readSettings();
+      if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
+      if (body?.preset !== "rage_hook") throw new ApiError("VALIDATION", "Unknown preset.");
+      const recipes = (await cm.studioWorkers()).flatMap((w) => w.info?.rage_hook ?? []);
+      const r = recipes.find((x) => x.key === String(body?.key ?? ""));
+      if (!r) throw new ApiError("VALIDATION", "That Rage hook recipe isn't on the laptop worker. Start the worker and try again.");
+      const T = STUDIO_TEMPLATES[r.template];
+      if (!T) throw new ApiError("VALIDATION", `No Studio template "${r.template}".`);
+      const [job] = await cm.createStudioJobs([{ created_at: now().toISOString(), batch_id: crypto.randomUUID(), template: r.template, mode: "prompt", prompt: `Rage hook: ${r.key}`,
+        recipe: { angle: "RH", angle_name: "Rage hook", preset: "rage_hook", recipe_key: r.key, hook_type: "rage_hook", world: "studio", length_bucket: "20-25", end_trigger: "comment", famous_name: false, template: r.template },
+        source: { kind: T.source, id: r.creation_id, title: r.creation },
+        estimate: { usd: 0.1, why: "Hand-written script ($0); 3 takes of the yell and the other lines (about $0.05–0.10, at most $0.25); the render is on the laptop ($0)." },
+        status: "queued", created_by: user.email }]);
+      await store.audit(user.email, "studio.preset", { preset: "rage_hook", key: r.key, id: job.id });
+      return { job };
+    },
+
     // A finished job carries its video at once (owner, 2026-10-30): each one is watchable as soon as it is ready
     studioJobs: async ({ body }) => {
       const jobs = await cm.listStudioJobs(Math.min(100, Math.max(1, Number(body?.limit) || 40)));
