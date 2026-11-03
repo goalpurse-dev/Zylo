@@ -5,7 +5,8 @@ import { readFileSync } from "node:fs";
 import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
 import { funnelStats, hopeGroupsOf } from "../supabase/functions/_shared/funnelStats.js";
-import { WELCOME_QUESTION, welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
+import { WELCOME_QUESTION, welcomeEmail, welcomePlainEmail } from "../supabase/functions/_shared/welcomeEmail.js";
+import { welcomeDaily } from "../supabase/functions/_shared/funnelStats.js";
 import { WELCOME_SENDER } from "../supabase/functions/_shared/emailRules.js";
 import { failOrRetry, isWaitingInLine, LIMITS, onDispatchFailed, onEvent, onWatch } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
@@ -450,4 +451,43 @@ test("every sign-up route is named, the welcome email has one trigger, and conse
   assert.doesNotMatch(read("src/lib/auth.js"), /functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(read("src/components/WelcomeScreen.jsx"), /update\(\{ email_updates/);
   assert.match(read("supabase/functions/_shared/welcomeEmail.js"), /5 free images/);
+});
+
+test("the plain welcome (owner, 2026-11-03): a personal note, one link, no button or images, the question last; users keep the classic until the owner's ok", () => {
+  const footer = { html: '<p><a href="https://www.tryzyvo.com/unsubscribe?u=x">Unsubscribe</a></p>', text: "Unsubscribe: https://www.tryzyvo.com/unsubscribe?u=x" };
+  const { html, text } = welcomePlainEmail(footer);
+  const links = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).filter((l) => !l.includes("/unsubscribe"));
+  assert.deepEqual(links, ["https://www.tryzyvo.com/welcome/first-video?from=email"]);
+  assert.doesNotMatch(html, /<img|background:|<table|border-radius/i);
+  assert.match(text, /Thanks for joining Zyvo\. Your free video preview is waiting: it only takes a minute or two\./);
+  assert.match(text, /Quick question: what do you hope Zyvo helps you with\? Just hit reply, I read every answer\.\n\nNiko\n/);
+  assert.doesNotMatch(html + text, /bonus|credits|5 free images/i);
+  assert.ok(text.split("\n\nUnsubscribe")[0].split(/\s+/).length < 60, "short");
+  const fn = read("supabase/functions/send-welcome-email/index.ts");
+  assert.match(fn, /const USER_STYLE: Style = "classic";/);
+  assert.match(fn, /\.\.\.version\(USER_STYLE, bonusEndsAt\)/);
+  assert.match(fn, /sendOwnerTest\(req, body\?\.style === "plain" \? "plain" : "classic"\)/);
+  assert.match(fn, /style === "plain"\s*\? \{ render: \(footer: any\) => welcomePlainEmail\(footer\), plain: true \}/);
+});
+
+test("the welcome email's open rate per day: by delivery day in Finnish time, opens later count, machine-fast opens split out", () => {
+  const now = Date.parse("2026-11-04T10:00:00Z");
+  const rows = [
+    { resend_id: "a", type: "email.delivered", created_at: "2026-11-03T21:30:00Z" }, // 23:30 Finnish: 3 Nov
+    { resend_id: "a", type: "email.opened", created_at: "2026-11-03T21:30:05Z" },     // 5 seconds: machine-like
+    { resend_id: "b", type: "email.delivered", created_at: "2026-11-03T22:30:00Z" }, // 00:30 Finnish: 4 Nov
+    { resend_id: "b", type: "email.opened", created_at: "2026-11-04T08:00:00Z" },     // hours later
+    { resend_id: "c", type: "email.delivered", created_at: "2026-11-04T09:00:00Z" },
+    { resend_id: "c", type: "email.delivered", created_at: "2026-11-04T09:00:01Z" },  // counted once
+    { resend_id: "old", type: "email.delivered", created_at: "2026-10-01T09:00:00Z" }, // outside the 14 days
+  ];
+  const d = welcomeDaily(rows, { now });
+  assert.equal(d.length, 14);
+  assert.deepEqual(d[0], { day: "2026-11-04", delivered: 2, opened: 1, openedLater: 1, openPct: 50, laterPct: 50 });
+  assert.deepEqual(d[1], { day: "2026-11-03", delivered: 1, opened: 1, openedLater: 0, openPct: 100, laterPct: 0 });
+  assert.equal(d.reduce((n, r) => n + r.delivered, 0), 3);
+  const fn = read("supabase/functions/funnel-dashboard/index.ts");
+  assert.match(fn, /welcomeDaily: welcomeDaily\(daily\)/);
+  assert.match(fn, /eq\("campaign", "welcome"\)\.in\("type", \["email\.delivered", "email\.opened"\]\)/);
+  assert.match(read("src/pages/admin/Funnel.jsx"), /<WelcomeDaily rows=\{d\.welcomeDaily\} \/>/);
 });

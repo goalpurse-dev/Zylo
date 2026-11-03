@@ -15,13 +15,21 @@ import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { checkEmailAddress, REPLY_TO, WELCOME_SENDER } from "../_shared/emailRules.js";
 import { claimEmail, FINAL_REASONS, sendClaimedEmail } from "../_shared/userEmail.ts";
-import { welcomeEmail, WELCOME_SUBJECT, WELCOME_WHY } from "../_shared/welcomeEmail.js";
+import { welcomeEmail, welcomePlainEmail, WELCOME_SUBJECT, WELCOME_WHY } from "../_shared/welcomeEmail.js";
 import { signupBonusMsLeft } from "../_shared/signupBonus.js";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+// The version new users get. "plain" (the personal note, welcomePlainEmail) waits for the owner's ok (2026-11-03);
+// the owner's test can ask for either with { style: "plain" }.
+type Style = "classic" | "plain";
+const USER_STYLE: Style = "classic";
+const version = (style: Style, bonusEndsAt: string | null = null) => style === "plain"
+  ? { render: (footer: any) => welcomePlainEmail(footer), plain: true }
+  : { render: (footer: any) => welcomeEmail(footer, { bonusEndsAt }), plain: false };
+
 // One proof copy for the owner. The "campaign" tag is what makes resend-webhook keep its delivered and opened events.
-async function sendOwnerTest(req: Request) {
+async function sendOwnerTest(req: Request, style: Style) {
   const to = (Deno.env.get("ADMIN_EMAILS") ?? "").split(",")[0]?.trim();
   const address = checkEmailAddress(to ?? "");
   if (!address.ok) return err(req, "No owner address", 500);
@@ -31,7 +39,7 @@ async function sendOwnerTest(req: Request) {
   if (!claim.ok) return ok(req, { skipped: claim.reason });
   const sent = await sendClaimedEmail(admin, {
     claimId: claim.id, to: address.email, userId: profile.id, from: WELCOME_SENDER, replyTo: REPLY_TO.founder,
-    subject: WELCOME_SUBJECT, why: WELCOME_WHY, render: (footer) => welcomeEmail(footer),
+    subject: WELCOME_SUBJECT, why: WELCOME_WHY, ...version(style),
     tags: [{ name: "kind", value: "welcome_test" }, { name: "campaign", value: "welcome_test" }],
   });
   return sent ? ok(req, { success: true, test: true }) : err(req, "Email failed", 500);
@@ -43,7 +51,7 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
 
   const opsSecret = Deno.env.get("OPS_HEALTH_SECRET") ?? "";
-  if (body?.test === true && opsSecret && req.headers.get("x-ops-secret") === opsSecret) return await sendOwnerTest(req);
+  if (body?.test === true && opsSecret && req.headers.get("x-ops-secret") === opsSecret) return await sendOwnerTest(req, body?.style === "plain" ? "plain" : "classic");
 
   // 1. Who is asking: the session token, checked by Supabase Auth.
   const token = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
@@ -98,7 +106,7 @@ Deno.serve(async (req) => {
     replyTo: REPLY_TO.founder,
     subject: WELCOME_SUBJECT,
     why: WELCOME_WHY,
-    render: (footer) => welcomeEmail(footer, { bonusEndsAt }),
+    ...version(USER_STYLE, bonusEndsAt),
     tags: [{ name: "kind", value: "welcome" }, { name: "campaign", value: "welcome" }],
   });
   if (!sent) {

@@ -43,6 +43,41 @@ const ranked = (counts, labels = {}) => Object.entries(counts).map(([key, n]) =>
 const bump = (o, k) => { o[k] = (o[k] ?? 0) + 1; };
 
 /**
+ * The welcome email's open rate per day (owner, 2026-11-03), the last `days` days in Finnish time, newest first: the emails
+ * delivered that day, how many of them were opened (at any time since), and how many were first opened over a minute after
+ * delivery (an open within seconds is mostly mail software, not a person). rows: email_events of the welcome email
+ * { resend_id, type, created_at }.
+ */
+export function welcomeDaily(rows = [], { days = 14, now = Date.now() } = {}) {
+  const dayOf = (t) => new Date(t).toLocaleDateString("en-CA", { timeZone: "Europe/Helsinki" }); // YYYY-MM-DD
+  const first = (type) => {
+    const m = new Map();
+    for (const r of rows) {
+      if (r.type !== type) continue;
+      const t = Date.parse(r.created_at);
+      if (!m.has(r.resend_id) || t < m.get(r.resend_id)) m.set(r.resend_id, t);
+    }
+    return m;
+  };
+  const delivered = first("email.delivered"), opened = first("email.opened");
+  const byDay = new Map();
+  for (let i = 0; byDay.size < days && i < days + 2; i++) {
+    const day = dayOf(now - i * 86400000);
+    if (!byDay.has(day)) byDay.set(day, { day, delivered: 0, opened: 0, openedLater: 0 });
+  }
+  for (const [id, t] of delivered) {
+    const r = byDay.get(dayOf(t));
+    if (!r) continue;
+    r.delivered++;
+    const o = opened.get(id);
+    if (o === undefined) continue;
+    r.opened++;
+    if (o - t > 60000) r.openedLater++;
+  }
+  return [...byDay.values()].map((r) => ({ ...r, openPct: pct(r.opened, r.delivered), laterPct: pct(r.openedLater, r.delivered) }));
+}
+
+/**
  * events: funnel_events rows { user_id, event, props, created_at }, from the start of the period on.
  * onboarding: user_onboarding rows of those people. excluded: user ids left out (the owner, test accounts).
  * from, to: the period (ISO): the group is who signed up inside it. emailEvents: email_events rows of the welcome email.

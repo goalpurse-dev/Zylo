@@ -22,6 +22,35 @@ function Card({ title, children, note }) {
   );
 }
 
+// The welcome email's open rate per day, last 14 days (Finnish time), only days with emails.
+function WelcomeDaily({ rows }) {
+  const shown = (rows ?? []).filter((r) => r.delivered > 0);
+  if (!shown.length) return <p className="text-[13px] text-white/45">No welcome emails delivered in the last 14 days.</p>;
+  const label = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  return (
+    <table className="w-full text-left text-[13px] tabular-nums" data-testid="welcome-daily">
+      <thead className="text-white/50">
+        <tr>
+          <th className="py-1 font-semibold">Day</th>
+          <th className="py-1 text-right font-semibold">Delivered</th>
+          <th className="py-1 text-right font-semibold">Opened</th>
+          <th className="py-1 text-right font-semibold">After 1 min</th>
+        </tr>
+      </thead>
+      <tbody>
+        {shown.map((r) => (
+          <tr key={r.day} className="border-t border-white/10">
+            <td className="py-1.5 text-white/80">{label(r.day)}</td>
+            <td className="py-1.5 text-right">{r.delivered}</td>
+            <td className="py-1.5 text-right font-bold text-white">{r.openPct}% <span className="font-normal text-white/45">({r.opened})</span></td>
+            <td className="py-1.5 text-right">{r.laterPct}% <span className="text-white/45">({r.openedLater})</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function Bars({ rows, of, empty = "Nothing yet." }) {
   if (!rows?.length) return <p className="text-[13px] text-white/45">{empty}</p>;
   const top = of ?? Math.max(...rows.map((r) => r.n));
@@ -154,6 +183,9 @@ export default function Funnel() {
                 <Stat label="Marked as spam" value={e.spam} bad />
                 <Stat label="Replied" value={e.replies} sub="In your inbox" />
               </div>
+              <h3 className="mb-2 mt-4 text-[13px] font-bold text-white/70">Open rate per day (last 14 days)</h3>
+              <WelcomeDaily rows={d.welcomeDaily} />
+              <p className="mt-2 text-[12px] leading-snug text-white/50">Each day counts the emails delivered that day and whether they were opened since. "After 1 min" leaves out opens in the first minute, which are mostly mail software, not people.</p>
               <h3 className="mb-2 mt-4 text-[13px] font-bold text-white/70">"Check your spam" note</h3>
               <div className="grid grid-cols-2 gap-2" data-testid="spam-note-stats">
                 <Stat label="Note shown" value={e.noteShown ?? 0} />
