@@ -1,6 +1,6 @@
 // Blocky Worlds, LOCAL DEV ONLY (?mock=1): the blocky-worlds-api actions in the browser, from the same mock steps the
 // server's mock mode uses (no network, no cost). Imported lazily only when import.meta.env.DEV, so a production build
-// never contains it. ?as=guest|free|starter|pro   who is looking;   &renderer=1   pretend the renderer is on.
+// never contains it. A finished test run plays one of the page clips. ?as=guest|free|starter|pro   who is looking;   &renderer=1   pretend the renderer is on.
 import { LENGTHS, DEFAULT_LENGTH, NARRATOR } from "../../../../../supabase/functions/_shared/blockyWorlds/config.js";
 import { MOODS } from "../../../../../supabase/functions/_shared/blockyWorlds/formulas.js";
 import { cardOf, IDEAS_PER_BATCH } from "../../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
@@ -22,7 +22,7 @@ const draftView = (d) => ({ id: d.id, source: d.source, ideaId: d.ideaId, title:
 const runView = (r) => {
   const t = (Date.now() - r.startedAt) / 1000;
   const status = t < 3 ? "queued" : t < 7 ? "voice" : t < 12 ? "plan" : t < 22 ? "render" : "done";
-  return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, pct: status === "render" ? Math.round(((t - 12) / 10) * 100) : status === "done" ? 100 : 0, post: status === "done" ? r.post : null, finalUrl: null, downloadUrl: null, poster: status === "done" ? "/blocky-worlds/hero.jpg" : null, error: null, refunded: false };
+  return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, pct: status === "render" ? Math.round(((t - 12) / 10) * 100) : status === "done" ? 100 : 0, post: status === "done" ? r.post : null, finalUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, poster: status === "done" ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
 };
 
 export async function devCall(action, body) {

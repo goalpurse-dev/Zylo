@@ -1,0 +1,110 @@
+/* Blocky Worlds' motion: the onboarding's curves and timings (onboarding.css: ob-pick, ob-enter, ob-cta-pulse, ob-burst,
+   ob-done, ob-orb, ob-orbit, ob-drift) plus the few this page adds. Only transforms and opacity move, so a phone keeps up.
+   Everything stops for people who ask for less motion. */
+@font-face { font-family: "BW Caption"; src: url("/blocky-worlds/LilitaOne.ttf") format("truetype"); font-display: swap; }
+
+.bw-caption {
+  font-family: "BW Caption", Inter, sans-serif;
+  color: #fff;
+  -webkit-text-stroke: 5px #0b0a12;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 14px rgba(0, 0, 0, .45);
+  letter-spacing: .01em;
+}
+
+/* the lime highlight block behind the headline's key words */
+.bw-mark {
+  position: relative; display: inline-block; padding: 0 .16em; margin: 0 -.04em;
+  color: #0D1208; background: #BEF264; border-radius: .14em; transform: rotate(-1.6deg);
+  box-shadow: 0 0 34px rgba(190, 242, 100, .45), 0 0 90px rgba(190, 242, 100, .22);
+}
+
+/* idea cards: in with a stagger (--i), lift and glow on hover, a pop on tap */
+@keyframes bw-card-in {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.bw-card-in { animation: bw-card-in .42s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(min(var(--i, 0), 10) * 55ms); }
+.bw-lift { transition: transform .22s cubic-bezier(.3, 1.5, .5, 1), box-shadow .22s ease, border-color .22s ease, background-color .22s ease; }
+@media (hover: hover) {
+  .bw-lift:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .8), 0 0 28px rgba(190, 242, 100, .16); border-color: rgba(190, 242, 100, .35); }
+}
+.bw-lift:active:not(:disabled) { transform: scale(.975); transition-duration: .08s; }
+
+/* "writing your script" on the picked card */
+@keyframes bw-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.bw-shimmer { position: relative; overflow: hidden; }
+.bw-shimmer::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 20%, rgba(190, 242, 100, .16) 50%, transparent 80%);
+  animation: bw-shimmer 1.1s ease-in-out infinite;
+}
+
+/* the hero input's glow when it has focus */
+.bw-input-glow { transition: box-shadow .3s ease, border-color .3s ease; }
+.bw-input-glow:focus-within { border-color: rgba(190, 242, 100, .55); box-shadow: 0 0 0 4px rgba(190, 242, 100, .1), 0 0 60px rgba(190, 242, 100, .18); }
+
+/* script lines reveal one by one; the caret on the typed first line */
+@keyframes bw-line-in {
+  from { opacity: 0; transform: translateX(-8px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.bw-line-in { animation: bw-line-in .38s ease-out both; animation-delay: calc(min(var(--i, 0), 30) * 45ms + 250ms); }
+@keyframes bw-caret { 50% { opacity: 0; } }
+.bw-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: #BEF264; animation: bw-caret .8s steps(1) infinite; }
+
+/* the live preview's caption words pop in like the video's */
+@keyframes bw-word {
+  0% { opacity: 0; transform: scale(.6) translateY(6px); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.bw-word { display: inline-block; animation: bw-word .26s cubic-bezier(.3, 1.5, .5, 1) both; }
+
+/* clip layers cross-fade; a slow push keeps stills alive */
+.bw-xfade { transition: opacity .9s ease; }
+@keyframes bw-push { from { transform: scale(1.02); } to { transform: scale(1.1); } }
+.bw-push { animation: bw-push 9s ease-in-out infinite alternate; }
+
+/* the Generate button: a light sweep across it, a press, and the onboarding's pulse when it's ready */
+@keyframes bw-sweep { 0%, 55% { transform: translateX(-120%) skewX(-18deg); } 100% { transform: translateX(260%) skewX(-18deg); } }
+.bw-sweep { position: relative; overflow: hidden; isolation: isolate; }
+.bw-sweep::before {
+  content: ""; position: absolute; inset: -2px auto -2px 0; width: 40%; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+  animation: bw-sweep 2.6s ease-in-out infinite;
+}
+.bw-press { transition: transform .12s ease; }
+.bw-press:active:not(:disabled) { transform: scale(.97); }
+
+/* blocky confetti for the finished video: little cubes falling and spinning (--x, --r, --c, --d set per piece) */
+@keyframes bw-confetti {
+  0% { opacity: 1; transform: translate3d(0, -20px, 0) rotate(0); }
+  100% { opacity: 0; transform: translate3d(var(--x), 520px, 0) rotate(var(--r)); }
+}
+.bw-confetti { position: absolute; top: 0; width: 9px; height: 9px; border-radius: 2px; background: var(--c); animation: bw-confetti var(--d, 1.6s) cubic-bezier(.2, .6, .4, 1) both; }
+
+/* the step and panel change */
+@keyframes bw-step-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.bw-step-in { animation: bw-step-in .45s cubic-bezier(.2, .9, .3, 1) both; }
+
+/* soft glow blobs drifting behind the page */
+@keyframes bw-glow { from { transform: translate3d(-30px, 0, 0) scale(1); } to { transform: translate3d(40px, 30px, 0) scale(1.15); } }
+.bw-glow { animation: bw-glow 14s ease-in-out infinite alternate; will-change: transform; }
+
+/* the live dot */
+@keyframes bw-ping { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(2.6); opacity: 0; } }
+.bw-ping { animation: bw-ping 1.4s cubic-bezier(0, 0, .2, 1) infinite; }
+
+/* the hero's preview cards drift a little out of step */
+@keyframes bw-bob { 0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-6px) rotate(var(--rot, 0deg)); } }
+.bw-bob { animation: bw-bob 5s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bw-card-in, .bw-shimmer::after, .bw-line-in, .bw-caret, .bw-word, .bw-push, .bw-sweep::before, .bw-confetti,
+  .bw-step-in, .bw-glow, .bw-ping, .bw-bob { animation: none; }
+  .bw-lift, .bw-xfade, .bw-input-glow { transition: none; }
+}

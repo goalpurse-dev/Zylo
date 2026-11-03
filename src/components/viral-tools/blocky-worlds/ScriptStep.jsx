@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowLeft, Check, Wand2 } from "lucide-react";
 import { FOCUS, OptionChip, PrimaryButton, SectionLabel, Toggle, cx } from "../../ui/zyvo";
 import { PARTS } from "../../../../supabase/functions/_shared/blockyWorlds/script.js";
 import { clock } from "./api/blockyWorldsApi";
+import { useReducedMotion } from "./clips";
+import "../../onboarding/onboarding.css";
+import "./blockyWorlds.css";
 
 const LABEL = Object.fromEntries(PARTS.map((p) => [p.id, p.label]));
 
@@ -20,11 +23,11 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack }) {
   const ready = !problems.length && !lengthMismatch && !flow.edited;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="bw-step-in flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <button type="button" onClick={onBack} className={cx("mb-1 flex items-center gap-1 text-[11px] font-bold text-white/45 hover:text-white", FOCUS)}><ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />Ideas</button>
-          <h2 className="truncate text-[18px] font-black tracking-[-0.02em] text-white">{draft.title || "Your script"}</h2>
+          <h2 className="truncate text-[26px] font-black tracking-[-0.02em] text-white">{draft.title || "Your script"}</h2>
           <p className="mt-0.5 text-[11.5px] text-white/45">{check.words} words · about {clock(check.seconds)} at the narrator&apos;s pace · read by {access?.narrator?.name}</p>
         </div>
       </div>
@@ -49,11 +52,11 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack }) {
           {lines.map((l, i) => {
             const first = i === 0 || lines[i - 1].part !== l.part;
             return (
-              <li key={i}>
+              <li key={`${draft.updatedAt}-${i}`} className="bw-line-in" style={{ "--i": i }}>
                 {first && l.part !== "own" && <p className="mb-0.5 mt-2 text-[9.5px] font-black uppercase tracking-[0.14em] text-lime-300/70">{LABEL[l.part] ?? l.part}</p>}
-                <textarea aria-label={`Line ${i + 1}`} rows={1} value={l.text} onChange={(e) => flow.editLine(i, e.target.value)}
+                {i === 0 && !flow.edited ? <TypedFirstLine key={draft.updatedAt} text={l.text} onEdit={(t) => flow.editLine(0, t)} /> : <textarea aria-label={`Line ${i + 1}`} rows={1} value={l.text} onChange={(e) => flow.editLine(i, e.target.value)}
                   className={cx("w-full resize-none overflow-hidden rounded-lg border border-transparent bg-transparent px-2 py-1 text-[13px] leading-snug text-white/90 outline-none transition hover:border-white/10 focus:border-lime-300/35 focus:bg-[#111315]", i === 0 && "font-bold text-white")}
-                  style={{ fieldSizing: "content" }} />
+                  style={{ fieldSizing: "content" }} />}
               </li>
             );
           })}
@@ -92,8 +95,22 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack }) {
       {access?.canRemoveWatermark && <Toggle checked={flow.removeWatermark} onChange={flow.setRemoveWatermark} label="Remove the Zyvo end card" />}
 
       {notice && <p className="rounded-lg bg-white/[0.05] px-3 py-2 text-[11.5px] leading-relaxed text-white/70" role="status">{notice}</p>}
-      <PrimaryButton price={price} busy={busy === "starting" ? "Starting" : undefined} disabled={!ready || Boolean(busy)} onClick={onGenerate}>Make the video</PrimaryButton>
+      <PrimaryButton price={price} busy={busy === "starting" ? "Starting" : undefined} disabled={!ready || Boolean(busy)} onClick={onGenerate} className={cx("bw-press rounded-2xl py-4 text-[16px]", ready && !busy && "bw-sweep ob-cta-pulse")}>Make the video</PrimaryButton>
       {!access?.renderer && !notice && <p className="-mt-2 text-center text-[10.5px] leading-relaxed text-white/35">Video making switches on soon. Your script is saved.</p>}
     </div>
   );
+}
+
+/** The first line types itself in (the hook the whole video hangs on), then it is an ordinary editable line. */
+function TypedFirstLine({ text, onEdit }) {
+  const still = useReducedMotion();
+  const [n, setN] = useState(still ? text.length : 0);
+  useEffect(() => {
+    if (n >= text.length) return undefined;
+    const t = setTimeout(() => setN((c) => Math.min(text.length, c + 2)), 24);
+    return () => clearTimeout(t);
+  }, [n, text]);
+  const field = "w-full resize-none overflow-hidden rounded-lg border border-transparent px-2 py-1 text-[15px] font-black leading-snug text-white outline-none";
+  if (n < text.length) return <p className={field} aria-label="Line 1">{text.slice(0, n)}<span className="bw-caret" /></p>;
+  return <textarea aria-label="Line 1" rows={1} value={text} onChange={(e) => onEdit(e.target.value)} className={cx(field, "bg-transparent transition hover:border-white/10 focus:border-lime-300/35 focus:bg-[#111315]")} style={{ fieldSizing: "content" }} />;
 }

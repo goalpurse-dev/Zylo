@@ -22,7 +22,7 @@ const KEY = Q.get("look") ?? "L"; // L = the locked look (owner, 2026-11-03)
 const NIGHT = KEY.endsWith("n");
 const STYLE = { L: { world: "real", people: "cloth", dof: false }, A: { world: "real", people: "simple", dof: false }, B: { world: "real", people: "detailed", dof: true }, C: { world: "clean", people: "simple", dof: false } }[KEY[0]];
 const REAL = STYLE.world === "real";
-const W = 1080, H = 1920;
+const W = Number(Q.get("w") ?? 1080), H = Math.round(W * 16 / 9); // ?w=540: the page's preview clips (clips.mjs)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, H, false); renderer.setPixelRatio(1);
@@ -520,6 +520,11 @@ window.snapshot = () => {
   p.drawImage(renderer.domElement, 0, 0);
   if (!Q.has("nocap")) caption(p, Q.get("word") ?? "everyone");
   return out.toDataURL("image/jpeg", 0.92);
+};
+/** clips.mjs: move the camera ([x, y, z, tx, ty, tz]) and the bus (z) between frames. */
+window.setShot = (cam, busZ) => {
+  camera.position.set(cam[0], cam[1], cam[2]); camera.lookAt(cam[3], cam[4], cam[5]);
+  if (Number.isFinite(busZ)) theBus.position.z = busZ;
 };
 window.timeFrames = (n) => {
   const gl = renderer.getContext(), px = new Uint8Array(4);

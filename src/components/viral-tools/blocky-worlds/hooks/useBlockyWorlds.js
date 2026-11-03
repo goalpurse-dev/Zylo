@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isWorking, worldsCall } from "../api/blockyWorldsApi";
 
-const EMPTY_IDEAS = { status: "idle", items: [], error: null, fromLibrary: false };
+const EMPTY_IDEAS = { status: "idle", items: [], error: null, fromLibrary: false, libraryDone: false };
 const POLL_MS = 4000;
+/** Below this many ideas for the picked mood, the page asks for more by itself (once per mood). */
+const IDEAS_SHOWN = 6;
+
+/** New cards added after the ones already shown (never twice: same id or same first line). */
+function appendIdeas(items, more) {
+  const seen = new Set(items.flatMap((i) => [i.id, i.opener.toLowerCase()]));
+  return [...items, ...more.filter((i) => !seen.has(i.id) && !seen.has(i.opener.toLowerCase()))];
+}
 
 /**
  * The Blocky Worlds flow: idea -> script -> settings -> generate -> result (docs/blocky-worlds-protocol.md).
@@ -11,7 +19,7 @@ const POLL_MS = 4000;
  */
 export default function useBlockyWorlds({ enabled = true } = {}) {
   const [access, setAccess] = useState(null);
-  const [tab, setTab] = useState("idea"); // "idea" | "topic" | "own"
+  const [tab, setTab] = useState("idea"); // "idea" (ideas + your topic) | "own"
   const [mood, setMood] = useState(null);
   const [ideas, setIdeas] = useState(EMPTY_IDEAS);
   const [topic, setTopic] = useState("");
@@ -51,15 +59,36 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     try { return { ok: true, value: await fn() }; } catch (error) { return { ok: false, error }; } finally { setBusy(null); }
   }, []);
 
+  // Ideas pile up as the user scrolls ("More ideas" adds a batch below); the mood chips filter what's loaded at once.
+  const asking = useRef(false);
   const askIdeas = useCallback(async ({ more = false } = {}) => {
+    if (asking.current) return { ok: true };
+    asking.current = true;
     setIdeas((s) => ({ ...s, status: "loading", error: null }));
-    try { const r = await worldsCall("ideas", { mood, more }); setIdeas({ status: "ready", items: r.ideas, error: null, fromLibrary: Boolean(r.fromLibrary) }); return { ok: true }; }
-    catch (error) { setIdeas((s) => ({ ...s, status: "error", error: error.message })); return { ok: false, error }; }
+    try {
+      const r = await worldsCall("ideas", { mood, more });
+      // a batch from the live writer (not the judged library) means the library has nothing new: no more auto-loading
+      setIdeas((s) => ({ status: "ready", items: appendIdeas(s.items, r.ideas), error: null, fromLibrary: Boolean(r.fromLibrary), libraryDone: !r.fromLibrary }));
+      return { ok: true };
+    } catch (error) { setIdeas((s) => ({ ...s, status: "error", error: error.message })); return { ok: false, error }; }
+    finally { asking.current = false; }
   }, [mood]);
+
+  // signed in: ideas are there when the page opens, and a mood with too few loaded asks for its own batch (once)
+  const autoAsked = useRef(new Set());
+  const shownIdeas = mood ? ideas.items.filter((i) => i.mood === mood) : ideas.items;
+  useEffect(() => {
+    if (!access?.signedIn || tab !== "idea") return;
+    const key = mood ?? "any";
+    if (shownIdeas.length >= IDEAS_SHOWN || autoAsked.current.has(key)) return;
+    autoAsked.current.add(key);
+    askIdeas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [access?.signedIn, mood, tab]);
 
   const askTopic = useCallback(async () => {
     setTopicIdeas((s) => ({ ...s, status: "loading", error: null }));
-    try { const r = await worldsCall("topicIdeas", { topic, mood }); setTopicIdeas({ status: "ready", items: r.ideas, error: null, fromLibrary: false }); return { ok: true }; }
+    try { const r = await worldsCall("topicIdeas", { topic, mood }); setTopicIdeas({ status: "ready", items: r.ideas, error: null, fromLibrary: false, libraryDone: false }); return { ok: true }; }
     catch (error) { setTopicIdeas((s) => ({ ...s, status: "error", error: error.message })); return { ok: false, error }; }
   }, [topic, mood]);
 
@@ -113,7 +142,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const startOver = useCallback(() => { setDraft(null); setEdited(null); setPickedId(null); setRun(null); }, []);
 
   return {
-    access, tab, setTab, mood, setMood, ideas, askIdeas, topic, setTopic, topicIdeas, askTopic, ownText, setOwnText,
+    access, tab, setTab, mood, setMood, ideas, shownIdeas, askIdeas, topic, setTopic, topicIdeas, askTopic, ownText, setOwnText,
     lengthSec, setLengthSec, draft, lines: edited ?? draft?.lines ?? [], edited: Boolean(edited), editLine, saveEdits,
     busy, pickedId, writeFromIdea, saveOwn, rewrite, fixOpener, removeWatermark, setRemoveWatermark,
     run, recent, generate, sendEvent, openRun, startOver,

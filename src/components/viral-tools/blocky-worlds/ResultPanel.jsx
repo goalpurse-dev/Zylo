@@ -1,20 +1,29 @@
 import { Check, Copy, Download, ThumbsDown, ThumbsUp } from "lucide-react";
-import { useState } from "react";
-import { FOCUS, ProgressBar, cx } from "../../ui/zyvo";
+import { useEffect, useRef, useState } from "react";
+import { FOCUS, cx } from "../../ui/zyvo";
 import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsApi";
+import LivePreview, { Clip } from "./LivePreview";
+import { CLIPS, useReducedMotion } from "./clips";
+import "../../onboarding/onboarding.css";
+import "./blockyWorlds.css";
 
-/** The right side: the video being made (its steps), the finished video with the upload text and thumbs, or the hero. */
-export default function ResultPanel({ run, recent, onOpen, onEvent }) {
+/**
+ * The right side: the live preview (clips with the story's captions playing), the video being made (the onboarding's
+ * orb and ring), or the finished video with a celebration the first time it lands, the upload text and the thumbs.
+ */
+export default function ResultPanel({ run, recent, onOpen, onEvent, preview }) {
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto rounded-2xl border border-white/[0.06] bg-[#0E1012] p-4">
-      {run ? <RunView run={run} onEvent={onEvent} /> : <Hero />}
+    <div className="relative flex h-full flex-col gap-4 overflow-y-auto overflow-x-hidden rounded-[28px] border border-white/[0.06] bg-[#0C0F0D]/80 p-5 backdrop-blur">
+      <div key={run ? run.id : "preview"} className="bw-step-in">
+        {run ? <RunView run={run} onEvent={onEvent} /> : <LivePreview {...preview} />}
+      </div>
       {recent.length > 0 && (
-        <div>
+        <div className="relative">
           <p className="mb-1.5 mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">Your videos</p>
           <ul className="flex flex-col gap-1">
             {recent.slice(0, 8).map((r) => (
               <li key={r.id}>
-                <button type="button" onClick={() => onOpen(r)} className={cx("flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition", FOCUS, r.id === run?.id ? "border-lime-300/35 bg-lime-300/[0.06]" : "border-white/[0.06] bg-white/[0.03] hover:border-white/15")}>
+                <button type="button" onClick={() => onOpen(r)} className={cx("bw-lift flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-[12px]", FOCUS, r.id === run?.id ? "border-lime-300/35 bg-lime-300/[0.06]" : "border-white/[0.06] bg-white/[0.03]")}>
                   <span className="truncate font-semibold text-white/85">{r.title || "Untitled"}</span>
                   <span className="shrink-0 text-[10.5px] text-white/45">{r.status === "done" ? clock(r.lengthSec) : STATUS_LABELS[r.status]}</span>
                 </button>
@@ -27,15 +36,66 @@ export default function ResultPanel({ run, recent, onOpen, onEvent }) {
   );
 }
 
-function Hero() {
+// while the world is built, a new little job comes up every couple of seconds
+const BUILD_LINES = ["Laying the sidewalk, block by block", "Painting the sky", "Parking the bus", "Teaching the townsfolk their lines", "Planting the trees", "Switching on the streetlights", "Adding the captions"];
+const RING = 2 * Math.PI * 92;
+const SPARKS = Array.from({ length: 22 }, (_, i) => ({ a: `${(i * 360) / 22}deg`, d: `${110 + ((i * 37) % 90)}px`, size: 5 + (i % 4) * 2, delay: `${(i % 5) * 25}ms` }));
+const CONFETTI = Array.from({ length: 34 }, (_, i) => ({ left: `${(i * 29) % 100}%`, x: `${((i * 53) % 120) - 60}px`, r: `${((i * 97) % 720) - 360}deg`, c: ["#BEF264", "#FFD32A", "#FF6FB5", "#18B8A5", "#FF7A1A", "#FFFFFF"][i % 6], d: `${1.3 + ((i * 7) % 9) / 10}s`, delay: `${(i % 8) * 60}ms` }));
+
+/** How far along the whole run is, 0..1 (the render step is the long one). */
+function progressOf(run) {
+  const at = Math.max(0, RUN_STEPS.indexOf(run.status));
+  const within = run.status === "render" ? (run.pct ?? 0) / 100 : 0.5;
+  const weights = { queued: 0.05, voice: 0.15, plan: 0.15, render: 0.65 };
+  let p = 0;
+  RUN_STEPS.forEach((s, i) => { if (i < at) p += weights[s] ?? 0; });
+  return Math.min(0.98, p + (weights[run.status] ?? 0) * within);
+}
+
+function Building({ run }) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 2200); return () => clearInterval(t); }, []);
+  const at = RUN_STEPS.indexOf(run.status);
+  const p = progressOf(run);
+  const line = run.status === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STATUS_LABELS[run.status];
   return (
-    <div className="mx-auto flex w-full max-w-[340px] flex-col gap-3">
-      <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/[0.07]">
-        <img src="/blocky-worlds/hero.jpg" alt="A sunny blocky street: townsfolk waiting at a bus stop as a yellow bus pulls in" className="h-full w-full object-cover" />
-        <span className="absolute inset-x-0 top-[66%] text-center text-[34px] font-black text-white [-webkit-text-stroke:2px_#0b0a12] [paint-order:stroke]">everyone</span>
+    <div className="relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-2 py-6 text-center" aria-live="polite">
+      {/* our clips drifting behind, dimmed, like the onboarding's "coming to life" */}
+      <div className="pointer-events-none absolute inset-0 opacity-25" aria-hidden="true">
+        {CLIPS.map((c, i) => (
+          <div key={c.key} className={cx("ob-drift absolute aspect-[9/16] w-[92px] overflow-hidden rounded-2xl blur-[1px]", ["-left-6 top-0", "-right-6 top-8", "-bottom-16 -left-4", "-bottom-20 -right-6"][i])} style={{ "--ob-drift": `${38 + i * 4}s`, animationDelay: `${-i * 9}s` }}>
+            <Clip clip={c.key} playing={i % 2 === tick % 2} />
+          </div>
+        ))}
       </div>
-      <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-lime-300">Pick a world · get a story video</p>
-      <h2 className="text-center text-[20px] font-black leading-tight tracking-[-0.03em] text-white">&ldquo;In this town&hellip;&rdquo; stories, narrated and built in blocks.</h2>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-[60%] rounded-full bg-lime-300/[0.08] blur-[80px]" />
+      <div className="relative h-[240px] w-[240px]">
+        {[{ r: 100, s: 7, n: 5 }, { r: 118, s: 11, n: 7 }].map((o) => (
+          <div key={o.r} className="ob-orbit absolute inset-0" style={{ "--ob-orbit": `${o.s}s` }}>
+            {Array.from({ length: o.n }, (_, i) => (
+              <span key={i} className="absolute left-1/2 top-1/2 rounded-[2px] bg-lime-200 shadow-[0_0_10px_rgba(190,242,100,0.9)]" style={{ width: 4 + (i % 3) * 2, height: 4 + (i % 3) * 2, opacity: 0.35 + (i % 3) * 0.25, transform: `rotate(${(i * 360) / o.n}deg) translateY(-${o.r}px)` }} />
+            ))}
+          </div>
+        ))}
+        <svg viewBox="0 0 200 200" className="absolute inset-[30px] -rotate-90" aria-hidden="true">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
+          <circle cx="100" cy="100" r="92" fill="none" stroke="#BEF264" strokeWidth="7" strokeLinecap="round" strokeDasharray={RING} strokeDashoffset={RING * (1 - p)} style={{ filter: "drop-shadow(0 0 8px rgba(190,242,100,0.8))", transition: "stroke-dashoffset .8s ease" }} />
+        </svg>
+        <div className="ob-orb absolute inset-[78px] grid place-items-center rounded-[22px] bg-[radial-gradient(circle_at_35%_30%,#F4FFD6,#BEF264_45%,#65A30D)] shadow-[0_0_60px_18px_rgba(190,242,100,0.35)]">
+          <span className="text-[24px] font-black tabular-nums text-[#11150D]">{Math.round(p * 100)}%</span>
+        </div>
+      </div>
+      <p key={line} className="ob-enter relative mt-4 text-[21px] font-black leading-tight tracking-tight text-white">{line}&hellip;</p>
+      <p className="relative mt-1 max-w-[300px] truncate text-[13px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo;</p>
+      <ol className="relative mt-5 flex flex-wrap justify-center gap-1.5">
+        {RUN_STEPS.map((s, i) => (
+          <li key={s} className={cx("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition", i < at ? "border-lime-300/40 bg-lime-300/10 text-lime-200" : i === at ? "border-white/40 text-white" : "border-white/10 text-white/30")}>
+            {i < at ? <Check className="ob-check h-3 w-3" strokeWidth={3.5} aria-hidden="true" /> : <span className={cx("h-1.5 w-1.5 rounded-full", i === at ? "bg-lime-300" : "bg-white/25")} />}
+            {STATUS_LABELS[s]}
+          </li>
+        ))}
+      </ol>
+      <p className="relative mt-4 text-[11px] text-white/40">About 3 to 4 minutes. You can leave this page; it keeps going.</p>
     </div>
   );
 }
@@ -43,24 +103,17 @@ function Hero() {
 function RunView({ run, onEvent }) {
   const [thumb, setThumb] = useState(null);
   const [copied, setCopied] = useState(false);
-  if (isWorking(run)) {
-    const at = RUN_STEPS.indexOf(run.status);
-    return (
-      <div className="mx-auto flex w-full max-w-[380px] flex-col gap-3 pt-6" aria-live="polite">
-        <h2 className="text-[17px] font-black text-white">Making &ldquo;{run.title}&rdquo;</h2>
-        <ol className="flex flex-col gap-1.5">
-          {RUN_STEPS.map((s, i) => (
-            <li key={s} className={cx("flex items-center gap-2 text-[12.5px]", i < at ? "text-white/45" : i === at ? "font-bold text-white" : "text-white/25")}>
-              <span className={cx("grid h-4 w-4 place-items-center rounded-full border text-[9px]", i < at ? "border-lime-300/50 text-lime-300" : i === at ? "border-white/60" : "border-white/15")}>{i < at ? <Check className="h-2.5 w-2.5" /> : i + 1}</span>
-              {STATUS_LABELS[s]}
-            </li>
-          ))}
-        </ol>
-        {run.status === "render" && <ProgressBar value={run.pct ?? 0} label="Building the world" />}
-        <p className="text-[11px] text-white/40">About 3 to 4 minutes. You can leave this page; it keeps going.</p>
-      </div>
-    );
-  }
+  const still = useReducedMotion();
+  // the celebration only when we watched it finish (not when an old video is opened from the list)
+  const sawWorking = useRef(isWorking(run));
+  const [party, setParty] = useState(false);
+  useEffect(() => {
+    if (isWorking(run)) sawWorking.current = true;
+    else if (run.status === "done" && sawWorking.current) { sawWorking.current = false; setParty(true); const t = setTimeout(() => setParty(false), 2600); return () => clearTimeout(t); }
+    return undefined;
+  }, [run]);
+
+  if (isWorking(run)) return <Building run={run} />;
   if (run.status === "failed") {
     return <div className="mx-auto max-w-[380px] pt-6 text-[13px] leading-relaxed text-white/75" role="alert">{run.error}{run.refunded && <span className="mt-1 block text-[11.5px] text-lime-300">Your {run.credits} credits are back.</span>}</div>;
   }
@@ -68,20 +121,30 @@ function RunView({ run, onEvent }) {
   const postText = [post.title, post.description, (post.hashtags ?? []).join(" ")].filter(Boolean).join("\n\n");
   const vote = (kind) => { if (thumb) return; setThumb(kind); onEvent(kind); };
   return (
-    <div className="mx-auto flex w-full max-w-[360px] flex-col gap-3">
-      <div className="aspect-[9/16] overflow-hidden rounded-2xl border border-white/[0.07] bg-black">
-        {run.finalUrl ? <video src={run.finalUrl} poster={run.poster ?? undefined} controls playsInline className="h-full w-full object-contain" /> : <img src={run.poster ?? "/blocky-worlds/hero.jpg"} alt="" className="h-full w-full object-cover opacity-80" />}
+    <div className="relative mx-auto flex w-full max-w-[340px] flex-col gap-3">
+      {party && !still && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[520px] overflow-hidden" aria-hidden="true">
+          {CONFETTI.map((c, i) => <span key={i} className="bw-confetti" style={{ left: c.left, "--x": c.x, "--r": c.r, "--c": c.c, "--d": c.d, animationDelay: c.delay }} />)}
+        </div>
+      )}
+      <div className="text-center">
+        <p className={cx("text-[22px] font-black tracking-[-0.02em] text-white", party && "ob-done")}>{party ? "Your world is ready!" : run.title}</p>
+        {party && <p className="ob-enter text-[12px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo; · {clock(run.lengthSec)}</p>}
+      </div>
+      <div className={cx("relative aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-black shadow-[0_0_50px_rgba(190,242,100,0.15)]", party && "ob-done")}>
+        {run.finalUrl ? <video src={run.finalUrl} poster={run.poster ?? undefined} controls autoPlay={party} muted={party} loop playsInline className="h-full w-full object-contain" /> : <img src={run.poster ?? "/blocky-worlds/hero.jpg"} alt="" className="h-full w-full object-cover opacity-80" />}
+        {party && !still && SPARKS.map((s, i) => <span key={i} className="ob-burst absolute left-1/2 top-1/2 rounded-[2px] bg-lime-200" style={{ "--a": s.a, "--d": s.d, width: s.size, height: s.size, animationDelay: s.delay }} />)}
       </div>
       <div className="flex gap-2">
-        {run.downloadUrl && <a href={run.downloadUrl} onClick={() => onEvent("downloaded")} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-lime-300 px-3 py-2.5 text-[13px] font-black text-black", FOCUS)}><Download className="h-4 w-4" aria-hidden="true" />Download</a>}
-        <button type="button" aria-pressed={thumb === "thumb_up"} onClick={() => vote("thumb_up")} disabled={Boolean(thumb)} className={cx("grid w-11 place-items-center rounded-xl border border-white/10", FOCUS, thumb === "thumb_up" && "border-lime-300/50 text-lime-300")} aria-label="I like this story"><ThumbsUp className="h-4 w-4" /></button>
-        <button type="button" aria-pressed={thumb === "thumb_down"} onClick={() => vote("thumb_down")} disabled={Boolean(thumb)} className={cx("grid w-11 place-items-center rounded-xl border border-white/10", FOCUS, thumb === "thumb_down" && "border-rose-300/50 text-rose-300")} aria-label="I don't like this story"><ThumbsDown className="h-4 w-4" /></button>
+        {run.downloadUrl && <a href={run.downloadUrl} download onClick={() => onEvent("downloaded")} className={cx("bw-press flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-lime-300 px-3 py-3 text-[14px] font-black text-[#11150D] shadow-[0_0_24px_rgba(190,242,100,0.35)]", party && "bw-sweep", FOCUS)}><Download className="h-4 w-4" aria-hidden="true" />Download</a>}
+        <button type="button" aria-pressed={thumb === "thumb_up"} onClick={() => vote("thumb_up")} disabled={Boolean(thumb)} className={cx("bw-press grid w-12 place-items-center rounded-2xl border border-white/10 text-white/70", FOCUS, thumb === "thumb_up" && "ob-pick border-lime-300/50 text-lime-300")} aria-label="I like this story"><ThumbsUp className="h-4 w-4" /></button>
+        <button type="button" aria-pressed={thumb === "thumb_down"} onClick={() => vote("thumb_down")} disabled={Boolean(thumb)} className={cx("bw-press grid w-12 place-items-center rounded-2xl border border-white/10 text-white/70", FOCUS, thumb === "thumb_down" && "ob-pick border-rose-300/50 text-rose-300")} aria-label="I don't like this story"><ThumbsDown className="h-4 w-4" /></button>
       </div>
-      {thumb && <p className="text-[11px] text-white/45">Thanks. This helps pick better ideas.</p>}
+      {thumb && <p className="ob-enter text-[11px] text-white/45">Thanks. This helps pick better ideas.</p>}
       {postText && (
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
           <div className="mb-1 flex items-center justify-between"><p className="text-[10.5px] font-black uppercase tracking-[0.12em] text-white/40">Upload text</p>
-            <button type="button" onClick={() => { navigator.clipboard?.writeText(postText); setCopied(true); }} className={cx("flex items-center gap-1 text-[10.5px] font-bold text-white/55 hover:text-lime-300", FOCUS)}>{copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}{copied ? "Copied" : "Copy"}</button>
+            <button type="button" onClick={() => { navigator.clipboard?.writeText(postText); setCopied(true); }} className={cx("flex items-center gap-1 text-[10.5px] font-bold text-white/55 hover:text-lime-300", FOCUS)}>{copied ? <Check className="ob-check h-3 w-3" /> : <Copy className="h-3 w-3" />}{copied ? "Copied" : "Copy"}</button>
           </div>
           <p className="whitespace-pre-line text-[12px] leading-relaxed text-white/75">{postText}</p>
         </div>
