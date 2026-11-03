@@ -1,0 +1,85 @@
+{
+ "hash": "*",
+ "by": "real run 0d0d7a11-b387-4bb1-a49a-8669480b83d9",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "A common passenger elevator rating is 1,000 kg, about 13 people (other common ratings are 630 kg and 800 kg).",
+    "why": "Sources list 1,000 kg/13 persons as a standard rating, but it is one common rating rather than the single typical one; 630 and 800 kg are also common. The person count comes from a floor-area table (about 75 kg per person).",
+    "sources": [
+     {
+      "url": "https://elevation.fandom.com/wiki/Passenger_elevator",
+      "title": "Passenger elevator"
+     },
+     {
+      "url": "https://www.starelevatorglobal.com/passenger-elevator-dimensions/",
+      "title": "Mastering Passenger Elevator Dimensions: Your Ultimate Guide"
+     },
+     {
+      "url": "https://www.fujixd.com/standard-elevator-dimensions/",
+      "title": "Standard Elevator Dimensions Guide 2026"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "A counterweight usually weighs as much as the car plus about 40 to 50 percent of its rated load",
+    "why": "The elevator.tr glossary gives car tare weight plus 40-50% of rated load. Elevator World confirms 50% was common practice and 40% was used in some cases.",
+    "sources": [
+     {
+      "url": "https://elevator.tr/en/glossary/counterweight",
+      "title": "Elevator Counterweight"
+     },
+     {
+      "url": "https://elevatorworld.com/article/counterweight-evolution/",
+      "title": "Counterweight Evolution - Elevator World"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "At the 1854 New York Crystal Palace exhibition, Elisha Otis rode a platform up high and had the hoisting rope cut, and his safety catch held the platform.",
+    "why": "Sources differ on whether Otis cut the rope himself or ordered it cut; Britannica says he ordered it cut, while the 1854 account has him doing it. The venue was the Crystal Palace exhibition, usually called the New York World's Fair.",
+    "sources": [
+     {
+      "url": "https://www.britannica.com/biography/Elisha-Otis",
+      "title": "Elisha Otis"
+     },
+     {
+      "url": "https://elevatorworld.com/article/elisha-otis-improved-elevator/",
+      "title": "Elisha Otis' \"Improved Elevator\" - Elevator World"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Exhibition_of_the_Industry_of_All_Nations",
+      "title": "Exhibition of the Industry of All Nations"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "Traction elevators hang from several steel ropes, usually four to eight (never fewer than three on modern passenger lifts), and a single rope may be strong enough to hold the car alone.",
+    "why": "Walker Consultants says modern passenger traction elevators have at least three ropes, most use four to eight, and a single rope may be strong enough depending on size. 'Each rope alone' is firmer than the engineering source supports.",
+    "sources": [
+     {
+      "url": "https://walkerconsultants.com/think-elevators-arent-safe-think-again/",
+      "title": "Think Elevators Aren't Safe? Think Again."
+     },
+     {
+      "url": "https://www.scienceabc.com/innovation/how-safe-are-you-in-an-elevator",
+      "title": "Find Out Why Elevators Are Safer Than You Thought"
+     },
+     {
+      "url": "https://science.howstuffworks.com/transport/engines-equipment/elevator4.htm",
+      "title": "Safety Systems - How Elevators Work"
+     }
+    ]
+   }
+  ]
+ }
+}

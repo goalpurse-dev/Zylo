@@ -1,0 +1,390 @@
+{
+ "hash": "*",
+ "by": "real run 4d6a7f0d-37a2-4f6f-a29c-1b70c1fd21a3",
+ "searches": 10,
+ "data": {
+  "text": "Results are strings of JSON; parse.I searched every claim. The search tool then hit its usage limit, so I couldn't run a second, more authoritative search for claims 0 and 1. Claim 0 rests on commercial soil-weight pages and a textbook chapter whose text I only saw in part. Claim 1 rests on a magazine and secondary sites, with no official Cheyenne Mountain or Air Force page.\n\n**Claim 0: Saturated soil weighs over 100 lb/ft³ (about 110–130).** Supported, with a note that the range depends on soil type.\n- A hydrovac contractor's reference lists saturated clay at 130 lbs per cubic foot. Source: https://hydrovacattm.com/blogs/info/1-cu-ft-soil-weight\n- A topsoil supplier gives saturated topsoil at 96–111 lbs per cubic foot, which is not over 100 at the low end. Source: https://topsoil.com/blog/how-much-does-a-cubic-yard-of-topsoil-weigh/\n- Das, *Principles of Geotechnical Engineering* (Ch. 3), uses lb/ft³ for unit weight and has worked saturated-soil problems. The search excerpt didn't show its typical saturated values. Source: https://demo.webassign.net/dasprincgeoeng10si/Das_10e_SI_Ch_3.pdf\n- Verdict: \"over 100 lb/ft³\" holds for most soils, but saturated organic or topsoil can be slightly under 100. \"About 110–130\" is a fair typical range. A safer wording is \"roughly 100 to 130 lb/ft³ for most saturated soils.\"\n\n**Claim 1: Cheyenne Mountain blast doors weigh about 25 tons each and are about 3 feet thick.** Supported as written, with some caution.\n- Smithsonian Air & Space says the two steel blast doors each weigh 25 tons and measure three feet thick. The excerpt cuts off after \"three\". Source: https://www.smithsonianmag.com/air-space-magazine/06_sep2018-norad-at-1-180969908/\n- Other sites give different numbers: roughly 20 to 25 tons each and about a meter, or approximately three and a half feet, thick. Source: https://everything-everywhere.com/the-cheyenne-mountain-complex/\n- Another says 3.5 feet thick and around 23 tons. Source: https://envzone.com/cheyenne-mountain-complex-the-pinnacle-of-security/\n- Verdict: \"about 25 tons, about 3 feet thick\" matches the best source I found. Because the figures vary, \"roughly 25 tons and 3 or more feet thick\" would be safer.\n\n**Claim 2: Three feet of packed soil cuts gamma radiation about 1000-fold (ten half-value layers of 3.6 inches).** Supported, with a caveat that other civil-defense material gives a thicker figure.\n- A shielding table lists packed soil with a halving thickness of 3.6 inches and a PF1000 thickness of 36.0 inches. It states about 36 inches, or 3 feet, achieves approximately PF1000. It also notes that multiplying the halving thickness by 10 gives a PF of about 1000 (1024). Source: https://modernsurvivalblog.com/nuclear/nuclear-radiation-shielding-protection/ (a blog, so it is weaker than the sources you asked for).\n- The TACDA civil-defense basics course says ten half-value thicknesses of earth give a PF of 1,000 and need about 48 inches of earth cover. It also says forty inches of dirt gives the required 10 doublings. Its own figures disagree: 48 inches implies about 4.8 inches per layer, and 40 inches implies about 4 inches. Source: https://tacda.org/wp-content/uploads/2018/10/TACDA_Academy_CDBasics_6Radiation.pdf\n- Verdict: the arithmetic of ten halvings giving about 1000 is right (2¹⁰ = 1024). The 3.6-inch value comes from a blog, and the older civil-defense course uses about 4 inches or more. A corrected form is \"about 3 to 4 feet of packed earth (half-value layer roughly 3.6 to 4.8 inches) cuts gamma radiation about 1000-fold.\" I couldn't retrieve a primary government table in the search.\n\n**Claim 3: By the 7-10 rule, about 49 hours after a blast, fallout radiation falls to roughly 1% of its one-hour level.** Supported as written.\n- TACDA describes the seven-ten rule as a rule of thumb. It applies only to fallout of the same effective age. Source: https://tacda.org/radiation-issues/\n- Another source gives the rule as for every sevenfold increase in time after the blast, radiation levels decrease by a factor of ten, citing FEMA. Source: https://protocolsurvival.com/en/blog/nuclear-fallout-preparedness\n- A fallout-radiation presentation says at 7 hours after detonation, fission product activity falls to about 10%. Source: http://www.falloutradiation.com/johnwayne7\n- Other sources say at about 49 hours, the dose rate is roughly 1% of its 1-hour value (https://phaenyx.com/guides/fallout-7-10-rule). The arithmetic is 1 h → 7 h (10%) → 49 h (1%).\n- Verdict: supported. The script should call it a rule of thumb, since it is approximate and assumes fallout of the same effective age.",
+  "sources": [
+   {
+    "url": "https://smart.columbus.gov/columbus-news/understanding-soil-unit-weight-a-key-geotechnical-factor-1764800210",
+    "title": "Understanding Soil Unit Weight: A Key Geotechnical Factor"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Specific_weight",
+    "title": "Specific weight"
+   },
+   {
+    "url": "https://demo.webassign.net/dasprincgeoeng10si/Das_10e_SI_Ch_3.pdf",
+    "title": "62 Chapter3 Weight–Volume Relationships 3.1 Introduction 63 3.2 Weight–Volume"
+   },
+   {
+    "url": "https://hydrovacattm.com/blogs/info/1-cu-ft-soil-weight",
+    "title": "What Is 1 cu ft soil weight? A Practical Guide"
+   },
+   {
+    "url": "https://buildrefs.com/calculators/earthwork-site/soil-weight-calculator/",
+    "title": "Free Soil Weight Calculator — Topsoil, Dirt, Compost per Cubic Yard"
+   },
+   {
+    "url": "https://disposalassist.com/weights/dirt-soil/",
+    "title": "How Much Does a Yard of Dirt Weigh? By Type & Moisture"
+   },
+   {
+    "url": "https://aigardenplanner.com/blog/post/understanding-soil-density-calculating-weight-of-2-cubic-feet-of-soil-2616",
+    "title": "Understanding Soil Density: Calculating Weight of 2 Cubic..."
+   },
+   {
+    "url": "https://harvestmath.com/calculators/soil-weight-calculator/",
+    "title": "Soil Weight Calculator: Pounds & Tons per Cubic Yard"
+   },
+   {
+    "url": "https://topsoil.com/blog/how-much-does-a-cubic-yard-of-topsoil-weigh/",
+    "title": "Cubic Yard of Topsoil Weight: 1,500-3,000 lbs Explained"
+   },
+   {
+    "url": "https://www.answers.com/computers/How_many_pounds_in_one_cubic_foot_of_soil",
+    "title": "How many pounds in one cubic foot of soil? - Answers"
+   },
+   {
+    "url": "https://smart.columbus.gov/columbus-news/understanding-soil-unit-weight-a-key-geotechnical-factor-1764800210",
+    "title": "Understanding Soil Unit Weight: A Key Geotechnical Factor"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Specific_weight",
+    "title": "Specific weight"
+   },
+   {
+    "url": "https://demo.webassign.net/dasprincgeoeng10si/Das_10e_SI_Ch_3.pdf",
+    "title": "62 Chapter3 Weight–Volume Relationships 3.1 Introduction 63 3.2 Weight–Volume"
+   },
+   {
+    "url": "https://hydrovacattm.com/blogs/info/1-cu-ft-soil-weight",
+    "title": "What Is 1 cu ft soil weight? A Practical Guide"
+   },
+   {
+    "url": "https://buildrefs.com/calculators/earthwork-site/soil-weight-calculator/",
+    "title": "Free Soil Weight Calculator — Topsoil, Dirt, Compost per Cubic Yard"
+   },
+   {
+    "url": "https://disposalassist.com/weights/dirt-soil/",
+    "title": "How Much Does a Yard of Dirt Weigh? By Type & Moisture"
+   },
+   {
+    "url": "https://harvestmath.com/calculators/soil-weight-calculator/",
+    "title": "Soil Weight Calculator: Pounds & Tons per Cubic Yard"
+   },
+   {
+    "url": "https://aigardenplanner.com/blog/post/understanding-soil-density-calculating-weight-of-2-cubic-feet-of-soil-2616",
+    "title": "Understanding Soil Density: Calculating Weight of 2 Cubic..."
+   },
+   {
+    "url": "https://topsoil.com/blog/how-much-does-a-cubic-yard-of-topsoil-weigh/",
+    "title": "Cubic Yard of Topsoil Weight: 1,500-3,000 lbs Explained"
+   },
+   {
+    "url": "https://www.answers.com/computers/How_many_pounds_in_one_cubic_foot_of_soil",
+    "title": "How many pounds in one cubic foot of soil? - Answers"
+   },
+   {
+    "url": "https://smart.columbus.gov/columbus-news/understanding-soil-unit-weight-a-key-geotechnical-factor-1764800210",
+    "title": "Understanding Soil Unit Weight: A Key Geotechnical Factor"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Specific_weight",
+    "title": "Specific weight"
+   },
+   {
+    "url": "https://demo.webassign.net/dasprincgeoeng10si/Das_10e_SI_Ch_3.pdf",
+    "title": "62 Chapter3 Weight–Volume Relationships 3.1 Introduction 63 3.2 Weight–Volume"
+   },
+   {
+    "url": "https://hydrovacattm.com/blogs/info/1-cu-ft-soil-weight",
+    "title": "What Is 1 cu ft soil weight? A Practical Guide"
+   },
+   {
+    "url": "https://buildrefs.com/calculators/earthwork-site/soil-weight-calculator/",
+    "title": "Free Soil Weight Calculator — Topsoil, Dirt, Compost per Cubic Yard"
+   },
+   {
+    "url": "https://disposalassist.com/weights/dirt-soil/",
+    "title": "How Much Does a Yard of Dirt Weigh? By Type & Moisture"
+   },
+   {
+    "url": "https://harvestmath.com/calculators/soil-weight-calculator/",
+    "title": "Soil Weight Calculator: Pounds & Tons per Cubic Yard"
+   },
+   {
+    "url": "https://aigardenplanner.com/blog/post/understanding-soil-density-calculating-weight-of-2-cubic-feet-of-soil-2616",
+    "title": "Understanding Soil Density: Calculating Weight of 2 Cubic..."
+   },
+   {
+    "url": "https://topsoil.com/blog/how-much-does-a-cubic-yard-of-topsoil-weigh/",
+    "title": "Cubic Yard of Topsoil Weight: 1,500-3,000 lbs Explained"
+   },
+   {
+    "url": "https://www.answers.com/computers/How_many_pounds_in_one_cubic_foot_of_soil",
+    "title": "How many pounds in one cubic foot of soil? - Answers"
+   },
+   {
+    "url": "https://everything-everywhere.com/the-cheyenne-mountain-complex/",
+    "title": "The Cheyenne Mountain Complex"
+   },
+   {
+    "url": "https://www.smithsonianmag.com/air-space-magazine/06_sep2018-norad-at-1-180969908/",
+    "title": "The Secret World of NORAD"
+   },
+   {
+    "url": "https://envzone.com/cheyenne-mountain-complex-the-pinnacle-of-security/",
+    "title": "Cheyenne Mountain Complex: The Pinnacle of Security Excellence"
+   },
+   {
+    "url": "https://lawnpros.biz/10-things-never-knew-cheyenne-mountain-complex-will-blow-mind/",
+    "title": "10 Things You Never Knew About The Cheyenne Mountain Complex That Will Blow Your Mind"
+   },
+   {
+    "url": "https://citystatezipcode.com/facts-hidden-behind-cheyenne-mountains-25-ton-blast-doors/",
+    "title": "10 Facts Hidden Behind Cheyenne Mountain’s 25-Ton Blast Doors - City State Zip Code"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Bank_vault",
+    "title": "Bank vault"
+   },
+   {
+    "url": "https://thedarkatlas.com/posts/norad-cheyenne-mountain-complex",
+    "title": "Cheyenne Mountain: The Underground Fortress for the End of the World"
+   },
+   {
+    "url": "https://spacedaily.com/j-cheyenne-mountain-in-colorado-was-hollowed-out-in-the-1960s-into-a-45-acre-complex-of-buildings-mounted-on-1319-steel-springs-each-weighing-about-1000-pounds-designed-so-that-the-entire-underground/",
+    "title": "Cheyenne Mountain in Colorado was hollowed out in the 1960s into a 4.5-acre complex of buildings mounted on 1,319 steel springs, each weighing about 1,000 pounds, designed so that the entire underground city could sway during a nuclear blast without snapping the wiring inside."
+   },
+   {
+    "url": "https://www.foxnews.com/us/things-to-know-the-most-secure-facility-in-the-world.amp",
+    "title": "Things to know: 'The most secure facility in the world'"
+   },
+   {
+    "url": "https://www.battlbox.com/blogs/outdoors/what-are-fallout-shelters-made-of-understanding-the-structure-and-materials",
+    "title": "What Are Fallout Shelters Made Of? Best Shielding Materials - Battlbox.com"
+   },
+   {
+    "url": "https://www.battlbox.com/blogs/outdoors/how-far-underground-to-survive-nuclear-fallout",
+    "title": "How Deep Underground to Survive Nuclear Fallout? Key Facts - Battlbox.com"
+   },
+   {
+    "url": "https://www.bionity.com/en/encyclopedia/Fallout_shelter.html",
+    "title": "Fallout_shelter"
+   },
+   {
+    "url": "https://modernsurvivalblog.com/nuclear/nuclear-radiation-shielding-protection/",
+    "title": "Nuclear Radiation Shielding Protection and Halving Thickness Values"
+   },
+   {
+    "url": "https://www.battlbox.com/blogs/outdoors/how-to-build-a-nuclear-fallout-shelter-a-comprehensive-guide",
+    "title": "How to Build a Nuclear Fallout Shelter: Practical Steps - Battlbox.com"
+   },
+   {
+    "url": "https://www.chemeurope.com/en/encyclopedia/Radiation_protection.html",
+    "title": "Radiation_protection"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7893414",
+    "title": "Apparatus and method for absorption of incident gamma radiation and its conversion to outgoing radiation at less penetrating, lower energies and frequencies"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Half-value_layer",
+    "title": "Half-value layer"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11913969",
+    "title": "Method for calibrating a radiometric density measuring device"
+   },
+   {
+    "url": "https://engineerfix.com/how-deep-does-a-bunker-need-to-be/",
+    "title": "How Deep Does a Bunker Need to Be? - Engineer Fix"
+   },
+   {
+    "url": "https://preparedness.miraheze.org/wiki/Fallout_Decay",
+    "title": "Fallout Decay - Preparedness Wiki"
+   },
+   {
+    "url": "https://phaenyx.com/guides/fallout-7-10-rule",
+    "title": "How fast does nuclear fallout decay? The 7-10 rule · Phaenyx"
+   },
+   {
+    "url": "http://www.falloutradiation.com/johnwayne7",
+    "title": "Decay Information - Fallout Radiation.com"
+   },
+   {
+    "url": "https://www.nuclearready.com/guides/how-long-radiation-lasts/",
+    "title": "How Long Does Radiation Last After a Nuclear Attack? The 7:10 Rule Explained"
+   },
+   {
+    "url": "https://bunkersinindia.com/guides/fallout-7-10-rule/",
+    "title": "How Long to Stay in a Shelter: The 7:10 Rule"
+   },
+   {
+    "url": "https://www.civildefenseatlas.com/guides/nuclear-preparedness/fallout-7-10-rule",
+    "title": "Using the 7-10 Rule to Plan Nuclear Fallout Shelter Time — Civil Defense Atlas"
+   },
+   {
+    "url": "https://nukeprepkit.com/radiation-exposure-timeline-when-its-most-dangerous/",
+    "title": "Radiation Exposure Timeline: When It’s Most Dangerous - Nuclear War Prep"
+   },
+   {
+    "url": "https://www.defconlevel.com/nuclear-fallout-map",
+    "title": "Nuclear Fallout Map: How to Interpret Fallout Risk"
+   },
+   {
+    "url": "https://www.calendar-canada.ca/frequently-asked-questions/what-is-the-7-10-rule-of-thumb",
+    "title": "What is the 7/10 Rule of thumb?"
+   },
+   {
+    "url": "https://www.theburningplatform.com/2026/08/21/thermonuclear-twilight-when-the-7-10-rule-becomes-your-death-sentence-and-first-responders-calculate-your-life-in-roentgens/",
+    "title": "Thermonuclear Twilight: When the 7/10 Rule Becomes Your Death Sentence and First Responders Calculate Your Life in Roentgens"
+   },
+   {
+    "url": "https://everything-everywhere.com/the-cheyenne-mountain-complex/",
+    "title": "The Cheyenne Mountain Complex"
+   },
+   {
+    "url": "https://historyofinformation.com/detail.php?id=2755",
+    "title": "History of Information"
+   },
+   {
+    "url": "https://envzone.com/cheyenne-mountain-complex-the-pinnacle-of-security/",
+    "title": "Cheyenne Mountain Complex: The Pinnacle of Security Excellence"
+   },
+   {
+    "url": "https://www.deepundergroundmilitarybases.com/database/underground-facilities/usa/cheyenne-mountain",
+    "title": "Cheyenne Mountain Complex - NORAD Underground Command Center"
+   },
+   {
+    "url": "https://wheninyourstate.com/colorado/cheyenne-mountain-hides-a-classified-bunker-behind-25-ton-blast-doors/",
+    "title": "Cheyenne Mountain Hides a Classified Bunker Behind 25-Ton Blast Doors"
+   },
+   {
+    "url": "https://citystatezipcode.com/facts-hidden-behind-cheyenne-mountains-25-ton-blast-doors/",
+    "title": "10 Facts Hidden Behind Cheyenne Mountain’s 25-Ton Blast Doors - City State Zip Code"
+   },
+   {
+    "url": "https://lawnpros.biz/10-things-never-knew-cheyenne-mountain-complex-will-blow-mind/",
+    "title": "10 Things You Never Knew About The Cheyenne Mountain Complex That Will Blow Your Mind"
+   },
+   {
+    "url": "https://thedarkatlas.com/posts/norad-cheyenne-mountain-complex",
+    "title": "Cheyenne Mountain: The Underground Fortress for the End of the World"
+   },
+   {
+    "url": "https://spacedaily.com/j-cheyenne-mountain-in-colorado-was-hollowed-out-in-the-1960s-into-a-45-acre-complex-of-buildings-mounted-on-1319-steel-springs-each-weighing-about-1000-pounds-designed-so-that-the-entire-underground/",
+    "title": "Cheyenne Mountain in Colorado was hollowed out in the 1960s into a 4.5-acre complex of buildings mounted on 1,319 steel springs, each weighing about 1,000 pounds, designed so that the entire underground city could sway during a nuclear blast without snapping the wiring inside."
+   },
+   {
+    "url": "https://modernsurvivalblog.com/nuclear/nuclear-radiation-shielding-protection/",
+    "title": "Nuclear Radiation Shielding Protection and Halving Thickness Values"
+   },
+   {
+    "url": "https://www.battlbox.com/blogs/outdoors/what-are-fallout-shelters-made-of-understanding-the-structure-and-materials",
+    "title": "What Are Fallout Shelters Made Of? Best Shielding Materials - Battlbox.com"
+   },
+   {
+    "url": "https://cityofpendletonor.civicweb.net/document/11425/",
+    "title": "2393.docx"
+   },
+   {
+    "url": "https://tacda.org/wp-content/uploads/2018/10/TACDA_Academy_CDBasics_6Radiation.pdf",
+    "title": "TACDA ACADEMY"
+   },
+   {
+    "url": "http://www.alpharubicon.com/basicnbc/nukefalloutmechanic.htm",
+    "title": "Nuclear Fallout Protection"
+   },
+   {
+    "url": "https://www.battlbox.com/blogs/outdoors/how-far-underground-to-survive-nuclear-fallout",
+    "title": "How Deep Underground to Survive Nuclear Fallout? Key Facts - Battlbox.com"
+   },
+   {
+    "url": "https://survivalblog.com/2005/10/31/radiation-protection-factors-f/",
+    "title": "Radiation Protection Factors for Dummies - by L.H. - SurvivalBlog.com"
+   },
+   {
+    "url": "https://www.bionity.com/en/encyclopedia/Fallout_shelter.html",
+    "title": "Fallout_shelter"
+   },
+   {
+    "url": "https://engineerfix.com/how-deep-does-a-bunker-need-to-be/",
+    "title": "How Deep Does a Bunker Need to Be? - Engineer Fix"
+   },
+   {
+    "url": "https://www.hardened-tech.com.au/post/the-ultimate-guide-to-surviving-nuclear-radiation",
+    "title": "The Ultimate Guide to Surviving Nuclear Radiation"
+   },
+   {
+    "url": "https://protocolsurvival.com/en/blog/nuclear-fallout-preparedness",
+    "title": "Nuclear Fallout Preparedness: First 24 Hours Checklist"
+   },
+   {
+    "url": "https://tacda.org/radiation-issues/",
+    "title": "Radiation Issues - The American Civil Defense Association"
+   },
+   {
+    "url": "https://www.nuclearready.com/guides/how-long-radiation-lasts/",
+    "title": "How Long Does Radiation Last After a Nuclear Attack? The 7:10 Rule Explained"
+   },
+   {
+    "url": "https://phaenyx.com/guides/fallout-7-10-rule",
+    "title": "How fast does nuclear fallout decay? The 7-10 rule · Phaenyx"
+   },
+   {
+    "url": "https://www.defconlevel.com/nuclear-fallout-map",
+    "title": "Nuclear Fallout Map: How to Interpret Fallout Risk"
+   },
+   {
+    "url": "https://www.saltandprepper.com/learn/shelter/fallout-shelter-basics",
+    "title": "Fallout Shelter Basics: Shielding by Material Type"
+   },
+   {
+    "url": "https://simulations4all.com/simulations/nuclear-fallout-dispersion-decay-modeler",
+    "title": "Nuclear Fallout Dispersion & Decay Modeler - Free Online Tool"
+   },
+   {
+    "url": "https://www.vintageisthenewold.com/game-pedia/what-is-the-7-10-rule",
+    "title": "What is the 7 10 rule?"
+   },
+   {
+    "url": "https://everything-everywhere.com/the-cheyenne-mountain-complex/",
+    "title": "The Cheyenne Mountain Complex"
+   },
+   {
+    "url": "https://envzone.com/cheyenne-mountain-complex-the-pinnacle-of-security/",
+    "title": "Cheyenne Mountain Complex: The Pinnacle of Security Excellence"
+   },
+   {
+    "url": "https://www.deepundergroundmilitarybases.com/database/underground-facilities/usa/cheyenne-mountain",
+    "title": "Cheyenne Mountain Complex - NORAD Underground Command Center"
+   },
+   {
+    "url": "https://lawnpros.biz/10-things-never-knew-cheyenne-mountain-complex-will-blow-mind/",
+    "title": "10 Things You Never Knew About The Cheyenne Mountain Complex That Will Blow Your Mind"
+   },
+   {
+    "url": "https://www.revlox.com/mystery/the-cheyenne-mountain-complex-what-really-goes-on-inside-the-bunkers/",
+    "title": "Inside Cheyenne Mountain: What Really Happens?"
+   },
+   {
+    "url": "https://thedarkatlas.com/posts/norad-cheyenne-mountain-complex",
+    "title": "Cheyenne Mountain: The Underground Fortress for the End of the World"
+   },
+   {
+    "url": "https://coolinterestingnews.com/strange-military-bases-cheyenne-mountain-complex/",
+    "title": "Strange Military Bases - Cheyenne Mountain Complex"
+   },
+   {
+    "url": "https://spacedaily.com/j-cheyenne-mountain-in-colorado-was-hollowed-out-in-the-1960s-into-a-45-acre-complex-of-buildings-mounted-on-1319-steel-springs-each-weighing-about-1000-pounds-designed-so-that-the-entire-underground/",
+    "title": "Cheyenne Mountain in Colorado was hollowed out in the 1960s into a 4.5-acre complex of buildings mounted on 1,319 steel springs, each weighing about 1,000 pounds, designed so that the entire underground city could sway during a nuclear blast without snapping the wiring inside."
+   },
+   {
+    "url": "https://jann.substack.com/p/ib-010",
+    "title": "ib 010"
+   }
+  ]
+ }
+}

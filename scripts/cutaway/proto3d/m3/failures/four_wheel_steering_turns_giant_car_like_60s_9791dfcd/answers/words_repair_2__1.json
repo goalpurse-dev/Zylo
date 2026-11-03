@@ -1,0 +1,78 @@
+{
+ "hash": "*",
+ "by": "real run 9791dfcd-4e7d-4c3a-87e2-6441e66e92e7",
+ "searches": 0,
+ "data": {
+  "title": "How four-wheel steering turns a giant car like a compact",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you steer only the front wheels of a long car, you get a wide circle."
+   },
+   {
+    "role": "problem",
+    "text": "But the long car swings so wide that its nose hits the wall."
+   },
+   {
+    "role": "stakes",
+    "text": "A giant car takes about 12 meters to turn around, more than most driveways have."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a motor that turns the rear wheels opposite, and the car pivots tighter."
+   },
+   {
+    "role": "name",
+    "text": "This is four-wheel steering."
+   },
+   {
+    "role": "how",
+    "text": "At low speed the car pivots, and the turn shrinks from 12 to 10 meters."
+   },
+   {
+    "role": "problem2",
+    "text": "But at highway speed the opposite rear wheels make the tail swing out and the car twitchy."
+   },
+   {
+    "role": "fix2",
+    "text": "So above 60 kilometers per hour the rear wheels turn the same way as the front."
+   },
+   {
+    "role": "name2",
+    "text": "This is called in-phase steering."
+   },
+   {
+    "role": "fact",
+    "text": "A Mercedes S-Class turns rear wheels up to 10 degrees, cutting the turning circle by up to about 2 meters."
+   },
+   {
+    "role": "factProof",
+    "text": "The GMC Hummer EV turns all four wheels the same way at low speed, so the truck slides diagonally."
+   },
+   {
+    "role": "problem3",
+    "text": "But if the rear motor jams with the wheels turned, the car veers sideways."
+   },
+   {
+    "role": "fix3",
+    "text": "So a computer watches both axles and straightens the rear wheels the instant anything fails."
+   },
+   {
+    "role": "myth",
+    "text": "And four-wheel steering is not four-wheel drive, because spinning wheels are a different idea."
+   },
+   {
+    "role": "mythFact",
+    "text": "Steering only points the wheels, and which wheels push the car is a separate job."
+   },
+   {
+    "role": "finish",
+    "text": "Add a speed sensor, the body panels and headlights."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a car with four-wheel steering."
+   }
+  ]
+ }
+}

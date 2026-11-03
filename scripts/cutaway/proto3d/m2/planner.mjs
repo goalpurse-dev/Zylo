@@ -890,7 +890,10 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   layout = { ...layout, audio: { ...layout.audio, cards: cardsAsSaid(layout.audio?.cards, script.sentences) } };
   // (the layout itself is solved by planTopic, after the opening fix)
   // (the story and fact-wording rules get their rewrites above but never fail a paid plan: the preview check judges it)
-  const soft = (x) => /does not solve|say the whole range/.test(x);
+  // (so are the chain's wording rules, a problem line's visible verb and its link to the fix: after two rewrites they are
+  // warnings, not a refusal; five of six paid custom videos of 2026-11-01..03 were refused after about $1 each for one
+  // such line, a counterweight that "swings", a tail that "whips around", a tower that "sways")
+  const soft = (x) => /does not solve|say the whole range|is not something you can see happen|reads like a dry fact|must follow from the fix before it/.test(x);
   warnings.push(...wc.P.filter(soft));
   return { script, layout, problems: wc.P.filter((x) => !soft(x)), warnings, solve: true };
 }

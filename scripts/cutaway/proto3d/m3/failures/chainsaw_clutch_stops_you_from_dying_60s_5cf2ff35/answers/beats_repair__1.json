@@ -1,0 +1,143 @@
+{
+ "hash": "*",
+ "by": "real run 5cf2ff35-add7-4a2c-bb91-f5d573e9ee61",
+ "searches": 0,
+ "data": {
+  "why": "A chainsaw clutch explained on a garage workbench stand: a cutaway saw shows the shaft, drum, shoes, ring spring, brake band and trigger working. The camera holds mid and close shots on the clutch and ends on the finished saw. The only change is the clutch cover: it now hangs on posts that reach back to the saw body, so it no longer floats.",
+  "sceneJson": "{\"world\":{\"cut\":[7,9,-4,1.5],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false,\"backdrop\":{\"type\":\"garage\",\"x\":0,\"back\":-9,\"color\":\"#c9c2b4\"}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"saw\",\"kind\":\"rig\",\"params\":{\"name\":\"chainsaw clutch\",\"synonyms\":[\"chainsaw\",\"saw\"],\"pos\":[-1,0.08,-3],\"main\":true,\"nodes\":[{\"id\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2.3,0.5,1],\"at\":[-0.3,0.25,0],\"look\":\"wood\",\"color\":\"#8a6a43\"}]},{\"id\":\"gauge\",\"parent\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,1.12,0.14],\"at\":[-1,0.56,0.57],\"look\":\"metal\",\"color\":\"#7d858e\"}],\"moves\":[{\"name\":\"poleOn\",\"type\":\"appear\"}]},{\"id\":\"body\",\"parent\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.8,0.7],\"at\":[-0.35,0.9,0],\"look\":\"plastic\",\"color\":\"#e8731c\"}]},{\"id\":\"crank\",\"parent\":\"body\",\"at\":[0.05,0.95,0.35],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.05,\"h\":0.78,\"axis\":\"z\",\"at\":[0,0,0.39],\"look\":\"metal\",\"color\":\"#b8bfc7\"},{\"shape\":\"cylinder\",\"r\":0.1,\"h\":0.1,\"axis\":\"z\",\"at\":[0,0,0.15],\"look\":\"metal\",\"color\":\"#7d858e\"}],\"moves\":[{\"name\":\"crankSpin\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"drum\",\"parent\":\"body\",\"at\":[0.05,0.95,0.35],\"shapes\":[{\"shape\":\"gear\",\"r\":0.32,\"w\":0.1,\"teeth\":14,\"axis\":\"z\",\"at\":[0,0,0.05],\"look\":\"metal\",\"color\":\"#c9ced4\"}],\"moves\":[{\"name\":\"sprocket\",\"type\":\"appear\"},{\"name\":\"drumSpin\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"wall\",\"parent\":\"drum\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.3,0,0.13],[0.26,0.15,0.13],[0.15,0.26,0.13],[0,0.3,0.13],[-0.15,0.26,0.13],[-0.26,0.15,0.13],[-0.3,0,0.13],[-0.26,-0.15,0.13],[-0.15,-0.26,0.13],[0,-0.3,0.13],[0.15,-0.26,0.13],[0.26,-0.15,0.13],[0.3,0,0.13]],\"r\":0.035,\"look\":\"metal\",\"color\":\"#c9ced4\"},{\"shape\":\"tube\",\"path\":[[0.3,0,0.2],[0.26,0.15,0.2],[0.15,0.26,0.2],[0,0.3,0.2],[-0.15,0.26,0.2],[-0.26,0.15,0.2],[-0.3,0,0.2],[-0.26,-0.15,0.2],[-0.15,-0.26,0.2],[0,-0.3,0.2],[0.15,-0.26,0.2],[0.26,-0.15,0.2],[0.3,0,0.2]],\"r\":0.035,\"look\":\"metal\",\"color\":\"#c9ced4\"}],\"moves\":[{\"name\":\"cup\",\"type\":\"appear\"}]},{\"id\":\"band\",\"parent\":\"wall\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.365,0,0.2],[0.316,0.183,0.2],[0.183,0.316,0.2],[0,0.365,0.2],[-0.183,0.316,0.2],[-0.316,0.183,0.2],[-0.365,0,0.2],[-0.316,-0.183,0.2],[-0.183,-0.316,0.2],[0,-0.365,0.2],[0.183,-0.316,0.2],[0.316,-0.183,0.2],[0.365,0,0.2]],\"r\":0.03,\"look\":\"metal\",\"color\":\"#d12a2a\"}],\"moves\":[{\"name\":\"bandOn\",\"type\":\"appear\"}]},{\"id\":\"shoeA\",\"parent\":\"crank\",\"at\":[0,0.14,0.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.17,0.1,0.1],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#d9462b\"},{\"shape\":\"light\",\"r\":0.04,\"at\":[0,0,0.06],\"color\":\"#ff5a1f\"}],\"moves\":[{\"name\":\"shoesOn\",\"type\":\"appear\"},{\"name\":\"fling\",\"type\":\"slide\",\"to\":[0,0.07,0]},{\"name\":\"hot\",\"type\":\"light\"}]},{\"id\":\"shoeB\",\"parent\":\"crank\",\"at\":[-0.121,-0.07,0.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.17,0.1,0.1],\"at\":[0,0,0],\"rot\":[0,0,120],\"look\":\"paint\",\"color\":\"#d9462b\"},{\"shape\":\"light\",\"r\":0.04,\"at\":[0,0,0.06],\"color\":\"#ff5a1f\"}],\"moves\":[{\"name\":\"shoesOn\",\"type\":\"appear\"},{\"name\":\"fling\",\"type\":\"slide\",\"to\":[-0.061,-0.035,0]},{\"name\":\"hot\",\"type\":\"light\"}]},{\"id\":\"shoeC\",\"parent\":\"crank\",\"at\":[0.121,-0.07,0.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.17,0.1,0.1],\"at\":[0,0,0],\"rot\":[0,0,60],\"look\":\"paint\",\"color\":\"#d9462b\"},{\"shape\":\"light\",\"r\":0.04,\"at\":[0,0,0.06],\"color\":\"#ff5a1f\"}],\"moves\":[{\"name\":\"shoesOn\",\"type\":\"appear\"},{\"name\":\"fling\",\"type\":\"slide\",\"to\":[0.061,-0.035,0]},{\"name\":\"hot\",\"type\":\"light\"}]},{\"id\":\"garter\",\"parent\":\"crank\",\"at\":[0,0,0.15],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.2,0,0],[0.173,0.1,0],[0.1,0.173,0],[0,0.2,0],[-0.1,0.173,0],[-0.173,0.1,0],[-0.2,0,0],[-0.173,-0.1,0],[-0.1,-0.173,0],[0,-0.2,0],[0.1,-0.173,0],[0.173,-0.1,0],[0.2,0,0]],\"r\":0.014,\"look\":\"metal\",\"color\":\"#e6b422\"},{\"shape\":\"cylinder\",\"r\":0.11,\"h\":0.02,\"axis\":\"z\",\"at\":[0,0,0.055],\"look\":\"metal\",\"color\":\"#e6b422\"}],\"moves\":[{\"name\":\"springOn\",\"type\":\"appear\"}]},{\"id\":\"bar\",\"parent\":\"body\",\"at\":[0.05,0.95,0.35],\"shapes\":[{\"shape\":\"box\",\"size\":[1.3,0.4,0.1],\"at\":[0.95,0,0.05],\"look\":\"metal\",\"color\":\"#8d949c\"},{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.1,\"axis\":\"z\",\"at\":[1.6,0,0.05],\"look\":\"metal\",\"color\":\"#8d949c\"}],\"moves\":[{\"name\":\"kick\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":38}]},{\"id\":\"chain\",\"parent\":\"bar\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"chain\",\"path\":[[1.6,0.22,0.05],[0.45,0.22,0.05],[0.24,0.24,0.05],[0,0.34,0.05],[-0.24,0.24,0.05],[-0.34,0,0.05],[-0.24,-0.24,0.05],[0,-0.34,0.05],[0.24,-0.24,0.05],[0.45,-0.22,0.05],[1.6,-0.22,0.05],[1.76,-0.15,0.05],[1.82,0,0.05],[1.76,0.15,0.05],[1.6,0.22,0.05]],\"w\":0.1,\"look\":\"metal\",\"color\":\"#2b2f33\"}],\"moves\":[{\"name\":\"chainOn\",\"type\":\"appear\"},{\"name\":\"run\",\"type\":\"flow\",\"path\":[[1.6,0.22,0.05],[0.45,0.22,0.05],[0.24,0.24,0.05],[0,0.34,0.05],[-0.24,0.24,0.05],[-0.34,0,0.05],[-0.24,-0.24,0.05],[0,-0.34,0.05],[0.24,-0.24,0.05],[0.45,-0.22,0.05],[1.6,-0.22,0.05],[1.76,-0.15,0.05],[1.82,0,0.05],[1.76,0.15,0.05],[1.6,0.22,0.05]],\"color\":\"#ffb347\"}]},{\"id\":\"guard\",\"parent\":\"body\",\"at\":[0.35,1.3,0.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.08,0.5,0.5],\"at\":[0,0.25,0.1],\"look\":\"plastic\",\"color\":\"#f2b01e\"}],\"moves\":[{\"name\":\"guardOn\",\"type\":\"appear\"},{\"name\":\"knock\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-30}]},{\"id\":\"handle\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-1,1.3,0],[-1.45,1.6,0],[-1.85,1.5,0],[-1.85,0.95,0],[-1.25,0.9,0]],\"r\":0.07,\"look\":\"rubber\",\"color\":\"#222222\"}],\"moves\":[{\"name\":\"handleOn\",\"type\":\"appear\"}]},{\"id\":\"trigger\",\"parent\":\"handle\",\"at\":[-1.45,1.58,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.22,0.08],\"at\":[0,-0.11,0],\"look\":\"plastic\",\"color\":\"#d12a2a\"}],\"moves\":[{\"name\":\"handleOn\",\"type\":\"appear\"},{\"name\":\"squeeze\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":25}]},{\"id\":\"front\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-0.9,1.3,0],[-0.9,1.75,0],[-0.3,1.75,0],[-0.3,1.3,0]],\"r\":0.06,\"look\":\"rubber\",\"color\":\"#222222\"}],\"moves\":[{\"name\":\"frontOn\",\"type\":\"appear\"}]},{\"id\":\"starter\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-1.25,1.1,0.1],[-1.5,1.2,0.35],[-1.55,1.05,0.5]],\"r\":0.02,\"look\":\"rubber\",\"color\":\"#222222\"},{\"shape\":\"box\",\"size\":[0.1,0.18,0.1],\"at\":[-1.55,0.95,0.5],\"look\":\"plastic\",\"color\":\"#d12a2a\"}],\"moves\":[{\"name\":\"cordOn\",\"type\":\"appear\"}]},{\"id\":\"cover\",\"parent\":\"body\",\"at\":[0.05,0.95,0.35],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.95,0.95],\"thick\":0.05,\"at\":[0,0,0.4],\"look\":\"plastic\",\"color\":\"#2f343a\"},{\"shape\":\"cylinder\",\"r\":0.04,\"h\":0.43,\"axis\":\"z\",\"at\":[0.38,0.38,0.2],\"look\":\"metal\",\"color\":\"#8d949c\"},{\"shape\":\"cylinder\",\"r\":0.04,\"h\":0.43,\"axis\":\"z\",\"at\":[-0.38,-0.38,0.2],\"look\":\"metal\",\"color\":\"#8d949c\"}],\"moves\":[{\"name\":\"coverOn\",\"type\":\"appear\"}]}]}},{\"id\":\"post\",\"kind\":\"rig\",\"params\":{\"name\":\"fence post\",\"synonyms\":[\"post\"],\"pos\":[0.97,0.08,-2.6],\"nodes\":[{\"id\":\"post\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,1.9,0.2],\"at\":[0,0.95,0],\"look\":\"wood\",\"color\":\"#a47a4a\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"snap\",\"axis\":\"y\",\"gap\":0.25}]}]}},{\"id\":\"rpm\",\"kind\":\"counter\",\"params\":{\"pos\":[-2,1.6,-2.43],\"size\":0.8,\"from\":2700,\"to\":4000,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":1.5}},{\"id\":\"rpmHigh\",\"kind\":\"counter\",\"params\":{\"pos\":[-2,1.6,-2.43],\"size\":0.8,\"from\":13000,\"to\":2700,\"color\":\"#ff8a2a\",\"bar\":true}},{\"id\":\"outArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-0.95,1.27,-1.9],\"dir\":[0,1],\"travel\":0.12,\"phase\":0},{\"at\":[-1.158,0.91,-1.9],\"dir\":[-0.87,-0.5],\"travel\":0.12,\"phase\":0.3},{\"at\":[-0.742,0.91,-1.9],\"dir\":[0.87,-0.5],\"travel\":0.12,\"phase\":0.6}],\"opts\":{\"scale\":0.35,\"color\":\"#ffd23d\"}}},{\"id\":\"heatArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-1.2,1.55,-1.9],\"dir\":[0,1],\"travel\":0.3,\"phase\":0},{\"at\":[-0.95,1.6,-1.9],\"dir\":[0,1],\"travel\":0.3,\"phase\":0.3},{\"at\":[-0.7,1.55,-1.9],\"dir\":[0,1],\"travel\":0.3,\"phase\":0.6}],\"opts\":{\"scale\":0.5,\"color\":\"#ff8a2a\"}}},{\"id\":\"clutchOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-0.48,1.03,-1.8],[-0.618,1.362,-1.8],[-0.95,1.5,-1.8],[-1.282,1.362,-1.8],[-1.42,1.03,-1.8],[-1.282,0.698,-1.8],[-0.95,0.56,-1.8],[-0.618,0.698,-1.8]],\"opts\":{\"r\":0.045,\"closed\":true}}},{\"id\":\"springOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-0.68,1.03,-1.8],[-0.76,1.22,-1.8],[-0.95,1.3,-1.8],[-1.14,1.22,-1.8],[-1.22,1.03,-1.8],[-1.14,0.84,-1.8],[-0.95,0.76,-1.8],[-0.76,0.84,-1.8]],\"opts\":{\"r\":0.02,\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[3.6,0.08,-2.2],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"saw\",\"does\":\"chain bolts onto the engine shaft\"},\"do\":[{\"p\":\"saw\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"sprocket\",\"w\":\"bolt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"chainOn\",\"w\":\"chain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"saw\",\"does\":\"engine spins and the chain whirls\"},\"state\":{\"text\":\"NEVER STOPS\",\"w\":\"never\"},\"do\":[{\"p\":\"saw\",\"v\":\"crankSpin\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpin\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"run\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"post\",\"does\":\"chain slices the post in two\"},\"do\":[{\"p\":\"post\",\"v\":\"show\",\"w\":\"chain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"post\",\"v\":\"slice\",\"w\":\"slices\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\",\"post\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"saw\",\"does\":\"loose drum cup appears, drum and chain stop while the shaft spins\"},\"do\":[{\"p\":\"post\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"cup\",\"w\":\"drum\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpinBack\",\"w\":\"free\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"runBack\",\"w\":\"free\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"saw\",\"does\":\"three shoes appear, fling out and spin the drum and chain\"},\"do\":[{\"p\":\"saw\",\"v\":\"shoesOn\",\"w\":\"shoes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"fling\",\"w\":\"fling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpin\",\"w\":\"grab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"run\",\"w\":\"grab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"saw\",\"does\":\"ring spring appears and pulls the shoes back, drum stops\"},\"do\":[{\"p\":\"saw\",\"v\":\"springOn\",\"w\":\"spring\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"flingBack\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpinBack\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"runBack\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"clutchOutline\",\"does\":\"glowing outline round the clutch\"},\"do\":[{\"p\":\"clutchOutline\",\"v\":\"show\",\"w\":\"centrifugal\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"springOutline\",\"does\":\"glowing outline round the ring spring\"},\"do\":[{\"p\":\"clutchOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"springOutline\",\"v\":\"show\",\"w\":\"garter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.garter\"],\"view\":\"home\",\"width\":0.35,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"saw\",\"does\":\"shoes fling out, grab the drum, chain runs\"},\"do\":[{\"p\":\"springOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"outArrows\",\"v\":\"show\",\"w\":\"fling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"fling\",\"w\":\"fling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpin\",\"w\":\"grab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"run\",\"w\":\"grab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"rpm\",\"does\":\"rpm counter climbs from idle to the grab speed\"},\"do\":[{\"p\":\"outArrows\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"flingBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpinBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"runBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"poleOn\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpm\",\"v\":\"show\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpm\",\"v\":\"count\",\"w\":\"clutch\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"fling\",\"w\":\"clutch\",\"o\":1.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpin\",\"w\":\"clutch\",\"o\":1.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"run\",\"w\":\"clutch\",\"o\":1.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\",\"rpm\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"saw\",\"does\":\"bar kicks up with the chain still running\"},\"state\":{\"text\":\"KICKBACK\",\"w\":\"kicks\"},\"do\":[{\"p\":\"rpm\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"kick\",\"w\":\"kicks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"saw\",\"does\":\"hand guard knocks forward, brake band clamps the drum, chain stops\"},\"do\":[{\"p\":\"saw\",\"v\":\"kickBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"bandOn\",\"w\":\"band\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"guardOn\",\"w\":\"guard\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"knock\",\"w\":\"knocks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"drumSpinBack\",\"w\":\"stops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"runBack\",\"w\":\"stops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"saw\",\"does\":\"shoes fling out, grind the stopped drum and glow red\"},\"state\":{\"text\":\"OVERHEATING\",\"w\":\"glow\"},\"do\":[{\"p\":\"rpmHigh\",\"v\":\"show\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"fling\",\"w\":\"grind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"hot\",\"w\":\"glow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatArrows\",\"v\":\"show\",\"w\":\"glow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\",\"rpmHigh\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"rpmHigh\",\"does\":\"trigger squeezed then released, rpm falls to idle, shoes pull back, glow goes\"},\"do\":[{\"p\":\"saw\",\"v\":\"handleOn\",\"w\":\"trigger\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"squeeze\",\"w\":\"trigger\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"squeezeBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpmHigh\",\"v\":\"count\",\"w\":\"idle\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"flingBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"hotBack\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatArrows\",\"v\":\"hide\",\"w\":\"idle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw\",\"rpmHigh\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"saw\",\"does\":\"shaft stops (the wrong idea) then spins again on not\"},\"do\":[{\"p\":\"rpmHigh\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"poleOnBack\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"crankSpinBack\",\"w\":\"\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"crankSpin\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"clutchOutline\",\"does\":\"outline on the clutch while the shaft turns and the drum rests\"},\"do\":[{\"p\":\"clutchOutline\",\"v\":\"show\",\"w\":\"clutch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"saw.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"saw\",\"does\":\"cover, front handle and starter cord appear\"},\"do\":[{\"p\":\"clutchOutline\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"coverOn\",\"w\":\"cover\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"frontOn\",\"w\":\"handle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"saw\",\"v\":\"cordOn\",\"w\":\"cord\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"50 MPH\",\"at\":{\"s\":\"stakes\",\"w\":\"50\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"problem\",\"w\":\"engine\",\"o\":0},\"d\":1.6},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"how\",\"w\":\"grab\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"problem2\",\"w\":\"kicks\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"problem3\",\"w\":\"grind\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"stakes\",\"w\":\"50\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How a chainsaw clutch stops you from dying",
+   "hero": "a centrifugal clutch",
+   "parts": [
+    "engine shaft",
+    "chain",
+    "clutch drum",
+    "clutch shoes",
+    "garter spring",
+    "brake band",
+    "hand guard",
+    "trigger",
+    "clutch cover"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "bolt the chain straight onto the engine shaft and you have a saw that can only ever spin"
+    },
+    {
+     "role": "problem",
+     "idea": "the engine never stops turning, so the chain whirls around the bar every second the saw is on"
+    },
+    {
+     "role": "stakes",
+     "idea": "at about 50 mph that chain slices clean through a wooden post, so anything it touches is cut"
+    },
+    {
+     "role": "fix1",
+     "idea": "hang the chain on a loose drum so the engine spins free inside it, though now the chain won't move at all"
+    },
+    {
+     "role": "fix2",
+     "idea": "bolt heavy shoes to the shaft so that when it spins fast they fling out, grab the drum and drive the chain"
+    },
+    {
+     "role": "fix3",
+     "idea": "a ring spring pulls the shoes back in so at idle they let go and the chain rests"
+    },
+    {
+     "role": "name",
+     "idea": "this whole shoes-drum-spring assembly is called a centrifugal clutch"
+    },
+    {
+     "role": "name2",
+     "idea": "the ring that holds the shoes in is a garter spring"
+    },
+    {
+     "role": "how",
+     "idea": "at idle the spring wins and the shoes stay in, but as the engine revs they fling out, grab the drum and the chain runs"
+    },
+    {
+     "role": "fact",
+     "idea": "a saw idles near 2,700 rpm but the shoes only grab at about 4,000, so the chain waits"
+    },
+    {
+     "role": "problem2",
+     "idea": "if the bar tip catches, the saw kicks up toward your face with the chain still racing"
+    },
+    {
+     "role": "fix4",
+     "idea": "a brake band round the drum clamps it when the hand guard knocks forward, and the chain stops in a blink"
+    },
+    {
+     "role": "problem3",
+     "idea": "with the brake on and the engine still screaming, the shoes grind against the stopped drum and glow red hot"
+    },
+    {
+     "role": "fix5",
+     "idea": "a spring-loaded trigger drops the engine back to idle the moment you let go, so the shoes pull in and cool"
+    },
+    {
+     "role": "myth",
+     "idea": "a stopped chain does not mean a stopped engine"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the engine keeps turning at idle the whole time and only the clutch lets the chain rest"
+    },
+    {
+     "role": "finish",
+     "idea": "add a clutch cover, a front handle and a starter cord to complete the saw"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: the finished chainsaw sits with its chain still and its engine idling"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the chain whirls around the bar as soon as the engine turns",
+     "stakes": "anyone or anything near a running saw",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix3",
+     "shows": "the bar tip catches and the saw kicks up with the chain still racing",
+     "stakes": "the sawyer's face",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix4",
+     "shows": "with the brake clamped and the engine still screaming, the shoes grind and glow red",
+     "stakes": "the clutch burns out and the saw is wrecked",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A running chainsaw chain moves at roughly 50 mph (about 80 km/h).",
+     "role": "stakes",
+     "search": "chainsaw chain speed mph"
+    },
+    {
+     "claim": "A chainsaw idles at about 2,700 rpm and its clutch only engages at about 4,000 rpm.",
+     "role": "fact",
+     "search": "chainsaw idle rpm clutch engagement rpm"
+    },
+    {
+     "claim": "A chainsaw engine can reach roughly 13,000 rpm at full throttle.",
+     "role": "problem3",
+     "search": "chainsaw maximum engine speed rpm"
+    },
+    {
+     "claim": "A chainsaw chain brake can stop the chain in about a tenth of a second.",
+     "role": "fix4",
+     "search": "chainsaw chain brake stopping time seconds standard"
+    }
+   ]
+  }
+ }
+}

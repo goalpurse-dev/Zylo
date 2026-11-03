@@ -1,0 +1,33 @@
+{
+ "runId": "56f25b9c-dbea-4d85-9eee-3ea6392c4ccc",
+ "topic": "Landfill",
+ "lengthSec": 30,
+ "kind": "premade",
+ "at": "2026-11-03T20:36:08.354209+00:00",
+ "failed": {
+  "code": "RENDER_FAILED",
+  "message": "node exited 1: reject(new Error([ | browser process! undefined\n[751:751:1103/203842.533323:ERROR:content/browser/zygote_host/zygote_host_impl_linux.cc:103] Running as root without --no-sandbox is not supported. See https://crbug.com/638180.\n\n\nTROUBLESHOOTING: https://pptr.dev/troubleshooting\n\n    at ChildProcess.onClose (file:///app/proto/node_modules/@puppeteer/browsers/lib/esm/launch.js:303:24)\n    at ChildProcess.emit (node:events:531:35)\n    at ChildProcess._handle.onexit (node:internal/child_process:293:12)\n\nNode.js v22.23.4\n\n\nEarlier: attempt 1: NO_GPU NO_GPU: egl: ANGLE (Mesa, llvmpipe (LLVM 19.1.7 256 bits), OpenGL ES 3.2) | eglNvidiaOnly: no webgl2 | vulkan: no webgl2; NVIDIA_DRIVER_CAPABILITIES=all; devices: ls: cannot access '/dev/dri': No such file or directory /dev/nvidia-modeset /dev/nvidia-uvm /dev/nvidia-uvm-tools /dev/nvidia0 /dev/nvidiactl  /dev/nvidia-caps: nvidia-cap57 nvidia-cap58; gpus: GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-f596dc4c-0b55-75e1-b2a7-86bf111f834c)\n  MIG 1g.24gb     Device  0: (UUID: MIG-c385cb83-f4ba-54c5-b6ca-c08b38ff35b1); egl vendors: 10_nvidia.json 50_mesa.json\nattempt 2: NO_GPU NO_GPU: egl: ANGLE (Mesa, llvmpipe (LLVM 19.1.7 256 bits), OpenGL ES 3.2) | eglNvidiaOnly: no webgl2 | vulkan: no webgl2; NVIDIA_DRIVER_CAPABILITIES=all; devices: ls: cannot access '/dev/dri': No such file or directory /dev/nvidia-modeset /dev/nvidia-uvm /dev/nvidia-uvm-tools /dev/nvidia0 /dev/nvidiactl  /dev/nvidia-caps: nvidia-cap57 nvidia-cap58; gpus: GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-f596dc4c-0b55-75e1-b2a7-86bf111f834c)\n  MIG 1g.24gb     Device  0: (UUID: MIG-c385cb83-f4ba-54c5-b6ca-c08b38ff35b1); egl vendors: 10_nvidia.json 50_mesa.json",
+  "stage": "preview",
+  "attempts": 3
+ },
+ "costUsd": 0.20096,
+ "answers": [
+  "words__1.json"
+ ],
+ "voice": true,
+ "problems": [],
+ "spend": [
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0626,
+   "outputTokens": null,
+   "at": "2026-11-03T20:38:06.531Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0626,
+   "outputTokens": null,
+   "at": "2026-11-03T20:38:28.349Z"
+  }
+ ]
+}

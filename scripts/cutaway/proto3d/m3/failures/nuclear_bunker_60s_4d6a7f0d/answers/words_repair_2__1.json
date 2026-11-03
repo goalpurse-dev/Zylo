@@ -1,0 +1,82 @@
+{
+ "hash": "*",
+ "by": "real run 4d6a7f0d-37a2-4f6f-a29c-1b70c1fd21a3",
+ "searches": 0,
+ "data": {
+  "title": "How to Build a Nuclear Bunker",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a deep hole in your yard, you have a bunker."
+   },
+   {
+    "role": "problem",
+    "text": "But the first storm soaks the lawn and the rain pours straight into the hole."
+   },
+   {
+    "role": "flood",
+    "text": "Water fills the hole to the brim like a bathtub."
+   },
+   {
+    "role": "stakes",
+    "text": "Wet soil weighs roughly 100 to 130 pounds per cubic foot, so the walls crack and cave in."
+   },
+   {
+    "role": "fix1",
+    "text": "So you drain it, then pour a concrete floor and walls to hold the soil back."
+   },
+   {
+    "role": "fix2",
+    "text": "Next you cap the box with a thick roof and pile three feet of soil on top."
+   },
+   {
+    "role": "fix3",
+    "text": "Then you hang a steel door on the only way in, and the biggest ones weigh 25 tons."
+   },
+   {
+    "role": "name",
+    "text": "This is a nuclear bunker."
+   },
+   {
+    "role": "how",
+    "text": "Soil and concrete soak up the radiation, while the door and roof stop the blast wave."
+   },
+   {
+    "role": "fact",
+    "text": "Three feet of packed soil cuts gamma rays by a factor of about 1000."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the box is sealed, so the people keep breathing and the air goes stale."
+   },
+   {
+    "role": "fix4",
+    "text": "So you add a filter and a fan that pull fresh air down a pipe from outside."
+   },
+   {
+    "role": "problem3",
+    "text": "But now a blast wave rushes straight down the pipe into the room."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add a blast valve on the pipe that slams shut when the shock arrives."
+   },
+   {
+    "role": "myth",
+    "text": "And hiding underground for years is not what a bunker is for."
+   },
+   {
+    "role": "mythFact",
+    "text": "Fallout fades fast, and within days, after about 49 hours, the radiation is down to around 1 percent."
+   },
+   {
+    "role": "finish",
+    "text": "Add a ceiling light, bunk beds, and the grass back on top."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a nuclear bunker."
+   }
+  ]
+ }
+}

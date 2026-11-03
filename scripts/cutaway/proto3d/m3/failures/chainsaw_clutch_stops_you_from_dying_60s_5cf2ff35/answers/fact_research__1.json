@@ -1,0 +1,266 @@
+{
+ "hash": "*",
+ "by": "real run 5cf2ff35-add7-4a2c-bb91-f5d573e9ee61",
+ "searches": 7,
+ "data": {
+  "text": "**Summary:** Claim 3 holds with a tweak. Claim 0 needs a rounding correction. Claims 1 and 2 hold only as ranges for specific models, and claim 2 has weak sourcing.\n\nI flag where a source is a forum or blog. Those are not reliable sources and I did not rely on them for any verdict.\n\n**Claim 0: chain moves at roughly 50 mph (80 km/h). Supported in a corrected form.**\n- Stihl manuals give chain speed at maximum power. The MS 210/230/250 manual lists 22.3 m/s as the ISO 11681 maximum for one chain, and 18.6 m/s at maximum power. https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-208-0121-C_ZBA_04_01.pdf\n- The MS 290/310/390 manual lists 27.5 m/s as the ISO 11681 maximum and 21.7 m/s at maximum power. https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-209-0121-B_ZBA_03_01.pdf\n- Husqvarna lists \"Chain speed at max power\" as 55 ft/s for the 120, 56.76 ft/s for the 445 and 62.7 ft/s for the 545 Mark II. https://www.husqvarna.com/us/chainsaws/120/ and https://www.husqvarna.com/ca-en/chainsaws/445/ and https://www.husqvarna.com/us/chainsaws/545-mark-ii/\n- My conversions: 18.6–21.7 m/s is about 42–49 mph (67–78 km/h), and 55–62.7 ft/s is about 37–43 mph (60–69 km/h).\n- A sharper source note: the ISO maximum is higher than the real working speed. SIP Protection notes that Stihl's 24.8 m/s figure for the MS 211C is its nominal speed plus 33%, and that 18.6 m/s is the real chain speed. https://sip-protection.com/en/insights/which-chain-speed-class-do-i-need\n- **Corrected claim:** \"Roughly 40–50 mph (about 65–80 km/h) at full power, depending on the saw.\" Only the ISO test maximum on big saws reaches about 60 mph. \"About 50 mph\" is the top of the normal range, not the typical value.\n\n**Claim 1: idles at about 2,700 rpm, clutch engages at about 4,000 rpm. Supported as a typical example, but the figures vary by model.**\n- The Shindaiwa instruction manual lists idle speed 2,700 RPM and clutch engagement speed 4,100 RPM. https://www.shindaiwa-usa.com/getattachment/272cde5a-c242-45bf-a1ee-2559169ed7b0/402Ses_C37414_082715.pdf\n- Husqvarna lists these figures (clutch engagement ±120 rpm):\n\n| Model | Idle | Clutch engagement |\n|---|---|---|\n| 120 | 3,000 rpm | 4,000 rpm |\n| 445 | 2,700 rpm | 4,300 rpm |\n| 545 Mark II | — | 3,900 rpm |\n\n  (The 545 Mark II idle figure was cut off in my results.) Sources: https://www.husqvarna.com/us/chainsaws/120/ and https://www.husqvarna.com/ca-en/chainsaws/445/ and https://www.husqvarna.com/ca-en/chainsaws/545-mark-ii/\n- Stihl's idle speed is in the same range. The MS 462 manual gives 2800 ± 50 rpm (ISO 11681), and the MS 162/172 manual gives 3000 ± 50 rpm. https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-790-8321-B_ZBA_05_01.pdf\n- **Corrected claim:** \"Idle is typically about 2,700–3,000 rpm and the clutch engages at about 3,900–4,300 rpm, depending on the saw.\" The figures are not universal.\n\n**Claim 2: engine can reach roughly 13,000 rpm at full throttle. Plausible, but I found no reliable source for a specific figure, so I'd call it unverified.**\n- No manufacturer or government source in my results states a maximum engine speed. The Stihl and Husqvarna manuals list power and chain speed, not a maximum rpm.\n- Husqvarna's spec pages give torque peaks (6,300–7,200 rpm), which are not maximum speed. The pages for the 120, 445 and 545 Mark II (URLs above) show this.\n- Only weak sources give 12,000–14,000 rpm: a blog (https://medium.com/@martinalonso01/how-fast-does-a-chainsaw-spin-unveiling-the-speed-secrets-06e91dd8f604), a Quora answer, and forum posts. The forum posts quote 13,500 rpm for a Husqvarna and 14,000 rpm for the Stihl MS 260.\n- **Suggested wording:** \"Can exceed 12,000 rpm\" is the safest phrasing. \"Roughly 13,000\" is fair for a pro-class saw, but cite a specific model's manual before you say it.\n\n**Claim 3: chain brake can stop the chain in about a tenth of a second. Supported, with a small tweak.**\n- CCOHS says CSA Standard Z62.1-15 (R2020) Chain Saws recommends that the average brake stopping time not exceed 0.12 seconds, and the maximum stopping time not exceed 0.15 seconds. https://www.ccohs.ca/oshanswers/safety_haz/chainsaws/maintenance.html\n- New Zealand's government gazette notice sets the same limits: maximum 0.15 seconds, average not above 0.12 seconds. https://gazette.govt.nz/notice/id/2012-go3557\n- The Shindaiwa manual cites ANSI B175.1 as requiring the brake to stop the chain in 0.12 seconds.\n- **Corrected claim:** \"Standards require a chain brake to stop the chain in about 0.12 seconds on average, and no more than 0.15 seconds.\" That is about a tenth of a second. It is a test limit, so real-world stopping depends on brake condition and cleanliness.",
+  "sources": [
+   {
+    "url": "https://gazette.govt.nz/notice/id/2012-go3557",
+    "title": "Unsafe Goods (Chainsaws Without a Chain Brake) Indefinite Prohibition Notice 2012 - 2012-go3557"
+   },
+   {
+    "url": "https://www.stihlusa.com/en/technology/chain-braking-systems",
+    "title": "Chain Braking Systems"
+   },
+   {
+    "url": "https://www.ccohs.ca/oshanswers/safety_haz/chainsaws/maintenance.html",
+    "title": "CCOHS: Chainsaws - Maintenance and Service"
+   },
+   {
+    "url": "https://thomasacres.com/best-chainsaws/",
+    "title": "Only Four Mention a Chain Brake: Chainsaws - Thomas Acres"
+   },
+   {
+    "url": "https://www.ccohs.ca/oshanswers/safety_haz/chainsaws/maintenance.pdf",
+    "title": "Chainsaws - Maintenance and Service CCOHS Chainsaws"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Hot_Saw",
+    "title": "Hot Saw"
+   },
+   {
+    "url": "https://www.shindaiwa-usa.com/getattachment/272cde5a-c242-45bf-a1ee-2559169ed7b0/402Ses_C37414_082715.pdf",
+    "title": "Instruction Manual"
+   },
+   {
+    "url": "https://www.boutique.afnor.org/en-gb/standard/iso-65352015/portable-chainsaws-chain-brake-performance/xs022918/123214",
+    "title": "ISO 6535:2015"
+   },
+   {
+    "url": "https://brevets-patents.ic.gc.ca/opic-cipo/cpd/fra/brevet/1236378/sommaire.html",
+    "title": "brevets-patents.ic.gc.ca"
+   },
+   {
+    "url": "https://www.quora.com/How-fast-does-a-chainsaw-move",
+    "title": "How fast does a chainsaw move? - Quora"
+   },
+   {
+    "url": "https://medium.com/@martinalonso01/how-fast-does-a-chainsaw-spin-unveiling-the-speed-secrets-06e91dd8f604",
+    "title": "How Fast Does a Chainsaw Spin: Unveiling the Speed Secrets"
+   },
+   {
+    "url": "https://medium.com/@martinalonso01/understanding-chainsaw-rpms-what-you-need-to-know-5e8f20e9a2df",
+    "title": "How Many Rpms Does a Chainsaw Run"
+   },
+   {
+    "url": "https://www.quora.com/How-many-RPMs-is-a-chainsaw",
+    "title": "How many RPMs is a chainsaw? - Quora"
+   },
+   {
+    "url": "https://www.lawnmowerfixed.com/should-you-run-chainsaw-at-full-throttle/",
+    "title": "Should You Run Chainsaw At Full Throttle? (Cut Like a Pro)"
+   },
+   {
+    "url": "https://chainsawguru.com/how-fast-does-chainsaw-spin/",
+    "title": "How Fast Does a Chainsaw Spin? Measuring RPM of the Tool"
+   },
+   {
+    "url": "https://tooltrip.com/how-many-rpm-does-a-chainsaw-run/",
+    "title": "How Many RPM Does a Chainsaw Run? A Comprehensive Guide - Tool Trip"
+   },
+   {
+    "url": "https://kylesgarage.com/everything-you-need-to-know-about-chainsaw-rpm/",
+    "title": "Everything you need to know about chainsaw RPM - Kyle's Garage"
+   },
+   {
+    "url": "https://axeandanswered.com/how-fast-does-a-chainsaw-spin/",
+    "title": "How Fast Does A Chainsaw Spin? RPM, Chain Speed, And What It Means For Cutting Performance"
+   },
+   {
+    "url": "https://arboristsite.com/threads/ideal-idle-rpm-of-a-chainsaw-chain-just-not-moving-vs-a-lower-speed.350532/",
+    "title": "Ideal idle rpm of a chainsaw - chain just not moving vs a lower speed"
+   },
+   {
+    "url": "https://opeforum.com/threads/too-much-power-for-clutch-springs.2810/",
+    "title": "Too much power for clutch springs?"
+   },
+   {
+    "url": "https://arboristsite.com/threads/chain-spins-at-idle.261217/",
+    "title": "chain spins at idle"
+   },
+   {
+    "url": "https://arboristsite.com/threads/chain-keeps-spinning-at-idle.105258/",
+    "title": "chain keeps spinning at idle"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Clutch",
+    "title": "Clutch"
+   },
+   {
+    "url": "https://dorkythorpy.blogspot.com/2015/05/chainsaw-chain-keeps-moving-at-idle.html",
+    "title": "Dorky Thorpy Blog: Chainsaw Chain Keeps Moving at Idle"
+   },
+   {
+    "url": "https://genpower.zendesk.com/hc/en-us/articles/360017787398-How-to-Adjust-the-Carburettor-on-a-Petrol-Chainsaw",
+    "title": "How to Adjust the Carburettor on a Petrol Chainsaw"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Clutch_control",
+    "title": "Clutch control"
+   },
+   {
+    "url": "https://www.tractorbynet.com/forums/threads/3901-hst-rpm-for-engaging-pto-vs-rpm-for-operation.439405/post-6026695",
+    "title": "3901 HST RPM for engaging PTO vs RPM for operation"
+   },
+   {
+    "url": "https://medium.com/@martinalonso01/how-fast-does-a-chainsaw-spin-unveiling-the-speed-secrets-06e91dd8f604",
+    "title": "How Fast Does a Chainsaw Spin: Unveiling the Speed Secrets"
+   },
+   {
+    "url": "https://arboristsite.com/threads/chain-speed-vs-torque.88397/",
+    "title": "Chain Speed vs. Torque"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Snow_chains",
+    "title": "Snow chains"
+   },
+   {
+    "url": "https://forestryforum.com/board/index.php?topic=95641.0",
+    "title": "Chain Speed"
+   },
+   {
+    "url": "https://www.sawmillchainsaws.com/sawfacts.htm",
+    "title": "Chain Speed for Milling Lumber"
+   },
+   {
+    "url": "https://donhit.com/en/calculator/chainsaw-chain-speed-calculator/",
+    "title": "Chainsaw Chain Speed Calculator - DonHit"
+   },
+   {
+    "url": "https://savvycalculator.com/chainsaw-chain-speed-calculator-2",
+    "title": "Chainsaw Chain Speed Calculator - Savvy Calculator"
+   },
+   {
+    "url": "https://www.answers.com/motorcycles-and-offroad-vehicles/How_fast_does_a_chain_on_a_chainsaw_go",
+    "title": "How fast does a chain on a chainsaw go? - Answers"
+   },
+   {
+    "url": "https://toolsadvisers.com/how-fast-does-a-chainsaw-chain-spin/",
+    "title": "How Fast Does A Chainsaw Chain Spin? - Complete Guide"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-172-0121-A_ZBA_03_01.pdf",
+    "title": "MS 260 2 - 45 Instruction Manual"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-208-0121-C_ZBA_04_01.pdf",
+    "title": "MS 210, 230, 250 2 - 45 Instruction Manual"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-209-0121-B_ZBA_03_01.pdf",
+    "title": "MS 290, 310, 390 2 - 42 Instruction Manual"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-207-8321-C_ZBA_03_01.pdf",
+    "title": "MS 170, 180 2 - 39 Instruction Manual"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-200-8321-A_ZBA_06_01.pdf",
+    "title": "MS 162, 172 2 - 30 Instruction Manual"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-790-8321-B_ZBA_05_01.pdf",
+    "title": "MS 462 C-M 2 - 29 Instruction Manual"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Chainsaw_safety_clothing",
+    "title": "Chainsaw safety clothing"
+   },
+   {
+    "url": "https://sip-protection.com/en/how-to/how-to-find-your-class-of-chainsaw-protection",
+    "title": "Find your class of chainsaw protection"
+   },
+   {
+    "url": "https://standards.iteh.ai/catalog/standards/cen/fab29e36-1dc9-4984-ac4b-c9e775b10533/en-iso-11681-1-2022",
+    "title": "EN ISO 11681-1:2022 - Portable Chain-Saw Safety Requirements and Testing"
+   },
+   {
+    "url": "https://sip-protection.com/en/insights/which-chain-speed-class-do-i-need",
+    "title": "Find your class of chainsaw protection"
+   },
+   {
+    "url": "https://arbtalk.co.uk/forums/topic/23717-stihl-261-max-chain-speed/",
+    "title": "Stihl 261 Max Chain Speed - Chainsaws - Arbtalk"
+   },
+   {
+    "url": "https://arboristsite.com/threads/chain-speed-calculation-discrepancy-and-ppe-help-me-understand.359059/",
+    "title": "Chain speed calculation discrepancy and PPE - Help me understand"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-153-8321-C_ZBA_03_01.pdf",
+    "title": "STIHL MS 261 C-M"
+   },
+   {
+    "url": "https://blog.stihl.co.uk/ms-500i-chainsaw-revealed/",
+    "title": "The MS 500i Chainsaw Revealed"
+   },
+   {
+    "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-542-0121-F_ZBA_04_01.pdf",
+    "title": "STIHL MS 311, 391"
+   },
+   {
+    "url": "https://forestryforum.com/board/index.php?topic=95641.0",
+    "title": "Chain Speed"
+   },
+   {
+    "url": "https://medium.com/@martinalonso01/how-fast-does-a-chainsaw-spin-unveiling-the-speed-secrets-06e91dd8f604",
+    "title": "How Fast Does a Chainsaw Spin: Unveiling the Speed Secrets"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Hot_Saw",
+    "title": "Hot Saw"
+   },
+   {
+    "url": "https://support.echo-usa.com/en/Chainsaws/Specifications-3853",
+    "title": "CS-590 Specifications - Chainsaws"
+   },
+   {
+    "url": "https://support.echo-usa.com/en/Chainsaws/Specifications-cfb6",
+    "title": "Specifications"
+   },
+   {
+    "url": "https://www.husqvarna.com/ca-en/chainsaws/545-mark-ii/",
+    "title": "Husqvarna 545 Mark II Chainsaw"
+   },
+   {
+    "url": "https://www.husqvarna.com/us/chainsaws/120/",
+    "title": "Husqvarna 120"
+   },
+   {
+    "url": "https://www.husqvarna.com/ca-en/chainsaws/445/",
+    "title": "Husqvarna 445 Chainsaw"
+   },
+   {
+    "url": "https://www.husqvarna.com/us/chainsaws/545-mark-ii/",
+    "title": "545 Mark II Gas Chainsaw"
+   },
+   {
+    "url": "https://images.thdstatic.com/catalog/pdfImages/66/66753fec-19f6-48b4-aa99-de1bd6a5d5f0.pdf",
+    "title": "45CC 18\" GAS CHAINSAW"
+   },
+   {
+    "url": "https://www.echo.ca/getattachment/7421739a-b93f-4503-a978-6449e415e613/v2_CS300034003450esT1E_060302_1.pdf",
+    "title": "X7503200005 99922202726 05/02 Chain Saw Operator’s Manual MODELS :"
+   },
+   {
+    "url": "http://chainsawusermanual.com/Chainsaw-Service-Manual-4th-Edition.php",
+    "title": "Chainsaw Service Manual 4th Edition"
+   },
+   {
+    "url": "https://sinpeks.elastyc.net/docs/dynuploaded03-03-2020_041454_33444.pdf",
+    "title": "HUSQVARNA 346 XP®"
+   }
+  ]
+ }
+}

@@ -1,0 +1,136 @@
+{
+ "hash": "*",
+ "by": "real run 0d0d7a11-b387-4bb1-a49a-8669480b83d9",
+ "searches": 0,
+ "data": {
+  "why": "A tall room-in-section shows a traction elevator built as one rig: a car on a rope over a wheel, then a counterweight, rails and a safety gear. The camera starts on the car and rope, moves to the motor and its load gauge, then stays wide on the whole shaft. Every problem is visible (a red load gauge, a stalled car, a swinging car, a snapped rope) and each fix is a part that appears and cancels it. The finish adds doors, a button panel and a ceiling light inside the car, which then glides to the floor.",
+  "sceneJson": "{\"world\":{\"cut\":[6.5,8.2,-3,0.4],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false,\"backdrop\":{\"type\":\"room\",\"x0\":-9,\"x1\":9,\"back\":-7,\"h\":9.4,\"windowX\":-6,\"chairX\":-6.5}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"lift\",\"kind\":\"rig\",\"params\":{\"name\":\"elevator\",\"synonyms\":[\"lift\",\"traction elevator\"],\"pos\":[0,0.12,-3],\"main\":true,\"nodes\":[{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[6.4,0.12,2.4],\"at\":[0.7,0.06,0],\"look\":\"concrete\",\"color\":\"#8b8f96\"},{\"shape\":\"box\",\"size\":[0.2,7,0.2],\"at\":[-1.7,3.62,-1],\"look\":\"metal\",\"color\":\"#5b616b\"},{\"shape\":\"box\",\"size\":[0.2,7,0.2],\"at\":[3.1,3.62,-1],\"look\":\"metal\",\"color\":\"#5b616b\"},{\"shape\":\"box\",\"size\":[5.2,0.3,0.5],\"at\":[0.7,7.27,-1],\"look\":\"metal\",\"color\":\"#4a505a\"},{\"shape\":\"box\",\"size\":[0.25,0.25,0.6],\"at\":[0,7.27,-0.45],\"look\":\"metal\",\"color\":\"#3a3f47\"},{\"shape\":\"box\",\"size\":[0.25,0.25,0.6],\"at\":[1.45,7.27,-0.45],\"look\":\"metal\",\"color\":\"#3a3f47\"}]},{\"id\":\"motor\",\"parent\":\"frame\",\"at\":[2.3,7.87,-1],\"shapes\":[{\"shape\":\"box\",\"size\":[1.4,0.9,0.5],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#5d6b7a\"},{\"shape\":\"box\",\"size\":[1.42,0.14,0.52],\"at\":[0,0.15,0],\"look\":\"paint\",\"color\":\"#f08a24\"}]},{\"id\":\"sheave\",\"parent\":\"frame\",\"at\":[0.725,7.27,-0.5],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.725,\"h\":0.6,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#7c828c\"},{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.7,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2f343b\"},{\"shape\":\"box\",\"size\":[1.2,0.1,0.64],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2f343b\"},{\"shape\":\"box\",\"size\":[0.1,1.2,0.64],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2f343b\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":0.25},{\"name\":\"turnDown\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":-0.25}]},{\"id\":\"carRope\",\"parent\":\"frame\",\"at\":[0,7.27,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,4.75,0.09],\"at\":[0,-2.375,0],\"look\":\"metal\",\"color\":\"#25282d\"}],\"moves\":[{\"name\":\"rise\",\"type\":\"extend\",\"axis\":\"y\",\"k\":0.263},{\"name\":\"snap\",\"type\":\"snap\",\"axis\":\"y\",\"gap\":0.6}]},{\"id\":\"cwRope\",\"parent\":\"frame\",\"at\":[1.45,7.27,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,0.15,0.09],\"at\":[0,-0.075,0],\"look\":\"metal\",\"color\":\"#25282d\"}],\"moves\":[{\"name\":\"hang\",\"type\":\"appear\"},{\"name\":\"rise\",\"type\":\"extend\",\"axis\":\"y\",\"k\":24.3}]},{\"id\":\"cw\",\"parent\":\"frame\",\"at\":[1.45,7.12,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,1.8,0.6],\"at\":[0,-0.9,0],\"look\":\"metal\",\"color\":\"#3d4249\"},{\"shape\":\"box\",\"size\":[0.64,0.12,0.64],\"at\":[0,-0.4,0],\"look\":\"paint\",\"color\":\"#e0b13a\"},{\"shape\":\"box\",\"size\":[0.64,0.12,0.64],\"at\":[0,-1.4,0],\"look\":\"paint\",\"color\":\"#e0b13a\"}],\"moves\":[{\"name\":\"hang\",\"type\":\"appear\"},{\"name\":\"rise\",\"type\":\"slide\",\"to\":[0,-3.5,0]},{\"name\":\"sway\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-9}]},{\"id\":\"rails\",\"parent\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,7,0.14],\"at\":[-1,3.62,-0.5],\"look\":\"metal\",\"color\":\"#a3aab5\"},{\"shape\":\"box\",\"size\":[0.14,7,0.14],\"at\":[1,3.62,-0.5],\"look\":\"metal\",\"color\":\"#a3aab5\"},{\"shape\":\"box\",\"size\":[0.14,7,0.14],\"at\":[1.9,3.62,-0.5],\"look\":\"metal\",\"color\":\"#a3aab5\"}],\"moves\":[{\"name\":\"bolt\",\"type\":\"appear\"}]},{\"id\":\"car\",\"parent\":\"frame\",\"at\":[0,2.52,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.1,1.6],\"at\":[0,-2.35,0.5],\"look\":\"wood\",\"color\":\"#7a5f45\"},{\"shape\":\"box\",\"size\":[1.8,0.1,1.6],\"at\":[0,-0.05,0.5],\"look\":\"paint\",\"color\":\"#8f959e\"},{\"shape\":\"box\",\"size\":[1.8,2.2,0.08],\"at\":[0,-1.2,-0.26],\"look\":\"paint\",\"color\":\"#dfe3ea\"},{\"shape\":\"box\",\"size\":[0.08,2.2,1.6],\"at\":[-0.86,-1.2,0.5],\"look\":\"paint\",\"color\":\"#c4c9d3\"},{\"shape\":\"box\",\"size\":[0.08,2.2,1.6],\"at\":[0.86,-1.2,0.5],\"look\":\"paint\",\"color\":\"#c4c9d3\"},{\"shape\":\"box\",\"size\":[0.1,2.2,0.12],\"at\":[-0.85,-1.2,1.28],\"look\":\"paint\",\"color\":\"#aeb4bf\"},{\"shape\":\"box\",\"size\":[0.1,2.2,0.12],\"at\":[0.85,-1.2,1.28],\"look\":\"paint\",\"color\":\"#aeb4bf\"},{\"shape\":\"box\",\"size\":[1.8,0.2,0.12],\"at\":[0,-0.2,1.28],\"look\":\"paint\",\"color\":\"#aeb4bf\"}],\"moves\":[{\"name\":\"rise\",\"type\":\"slide\",\"to\":[0,3.5,0]},{\"name\":\"drop\",\"type\":\"slide\",\"to\":[0,-3.5,0]},{\"name\":\"sway\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":9}]},{\"id\":\"gear\",\"parent\":\"car\",\"at\":[0,-2,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.36,0.45,0.34],\"at\":[-1,0,0],\"look\":\"paint\",\"color\":\"#f08a24\"},{\"shape\":\"box\",\"size\":[0.36,0.45,0.34],\"at\":[1,0,0],\"look\":\"paint\",\"color\":\"#f08a24\"}],\"moves\":[{\"name\":\"clamp\",\"type\":\"appear\"}]},{\"id\":\"gearLamp\",\"parent\":\"gear\",\"at\":[0,0.28,0],\"shapes\":[{\"shape\":\"light\",\"r\":0.07,\"at\":[-1,0,0.2],\"color\":\"#ff3030\"},{\"shape\":\"light\",\"r\":0.07,\"at\":[1,0,0.2],\"color\":\"#ff3030\"}],\"moves\":[{\"name\":\"clamp\",\"type\":\"appear\"},{\"name\":\"grip\",\"type\":\"blink\",\"rate\":4}]},{\"id\":\"ropeCarX\",\"parent\":\"frame\",\"at\":[0,7.27,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,4.75,0.09],\"at\":[0,-2.375,-0.24],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,4.75,0.09],\"at\":[0,-2.375,-0.12],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,4.75,0.09],\"at\":[0,-2.375,0.12],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,4.75,0.09],\"at\":[0,-2.375,0.24],\"look\":\"metal\",\"color\":\"#25282d\"}],\"moves\":[{\"name\":\"ropes\",\"type\":\"appear\"},{\"name\":\"rise\",\"type\":\"extend\",\"axis\":\"y\",\"k\":0.263}]},{\"id\":\"ropeCwX\",\"parent\":\"frame\",\"at\":[1.45,7.27,-0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,0.15,0.09],\"at\":[0,-0.075,-0.24],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,0.15,0.09],\"at\":[0,-0.075,-0.12],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,0.15,0.09],\"at\":[0,-0.075,0.12],\"look\":\"metal\",\"color\":\"#25282d\"},{\"shape\":\"box\",\"size\":[0.09,0.15,0.09],\"at\":[0,-0.075,0.24],\"look\":\"metal\",\"color\":\"#25282d\"}],\"moves\":[{\"name\":\"ropes\",\"type\":\"appear\"},{\"name\":\"rise\",\"type\":\"extend\",\"axis\":\"y\",\"k\":24.3}]},{\"id\":\"cross\",\"parent\":\"car\",\"at\":[0,0.45,0.25],\"shapes\":[{\"shape\":\"box\",\"size\":[1.1,0.1,0.06],\"at\":[0,0,0],\"rot\":[0,0,45],\"look\":\"paint\",\"color\":\"#e23b2e\"},{\"shape\":\"box\",\"size\":[1.1,0.1,0.06],\"at\":[0,0,0],\"rot\":[0,0,-45],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"mark\",\"type\":\"appear\"}]},{\"id\":\"doorL\",\"parent\":\"car\",\"at\":[-0.4,-1.2,1.31],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,2.2,0.05],\"at\":[0,0,0],\"look\":\"glass\",\"color\":\"#a8d8ea\"}],\"moves\":[{\"name\":\"doors\",\"type\":\"appear\"},{\"name\":\"open\",\"type\":\"slide\",\"to\":[-0.45,0,0]}]},{\"id\":\"doorR\",\"parent\":\"car\",\"at\":[0.4,-1.2,1.35],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,2.2,0.05],\"at\":[0,0,0],\"look\":\"glass\",\"color\":\"#a8d8ea\"}],\"moves\":[{\"name\":\"doors\",\"type\":\"appear\"},{\"name\":\"open\",\"type\":\"slide\",\"to\":[0.45,0,0]}]},{\"id\":\"buttons\",\"parent\":\"car\",\"at\":[0.8,-1.1,0.3],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.8,0.25],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2b2f36\"},{\"shape\":\"light\",\"r\":0.045,\"at\":[-0.05,0.28,0],\"color\":\"#ffd23d\"},{\"shape\":\"light\",\"r\":0.045,\"at\":[-0.05,0.1,0],\"color\":\"#ffd23d\"},{\"shape\":\"light\",\"r\":0.045,\"at\":[-0.05,-0.08,0],\"color\":\"#ffd23d\"},{\"shape\":\"light\",\"r\":0.045,\"at\":[-0.05,-0.26,0],\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"buttons\",\"type\":\"appear\"},{\"name\":\"press\",\"type\":\"blink\",\"rate\":2}]},{\"id\":\"lamp\",\"parent\":\"car\",\"at\":[0,-0.12,0.5],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.06,0.35],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#f4f4f0\"},{\"shape\":\"light\",\"r\":0.1,\"at\":[0,-0.06,0],\"color\":\"#fff2b0\"}],\"moves\":[{\"name\":\"fixture\",\"type\":\"appear\"},{\"name\":\"glow\",\"type\":\"light\"}]}]}},{\"id\":\"load\",\"kind\":\"counter\",\"params\":{\"pos\":[2.3,7.99,-3.7],\"size\":0.8,\"from\":0,\"to\":1000,\"color\":\"#ff5a3a\",\"bar\":true}},{\"id\":\"load2\",\"kind\":\"counter\",\"params\":{\"pos\":[2.3,7.99,-3.7],\"size\":0.8,\"from\":1000,\"to\":250,\"color\":\"#3ad68a\",\"bar\":true}},{\"id\":\"tOut\",\"kind\":\"outline\",\"params\":{\"points\":[[-2.1,0.2,-2.1],[-2.1,8.7,-2.1],[3.5,8.7,-2.1],[3.5,0.2,-2.1]],\"opts\":{\"r\":0.12,\"closed\":true}}},{\"id\":\"gOut\",\"kind\":\"outline\",\"params\":{\"points\":[[0.7,3.8,-3.2],[1.3,3.8,-3.2],[1.3,4.5,-3.2],[0.7,4.5,-3.2]],\"opts\":{\"r\":0.03,\"closed\":true}}},{\"id\":\"weights\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0,4.9,-2],\"dir\":[0,-1],\"travel\":1,\"phase\":0},{\"at\":[1.45,2.9,-2],\"dir\":[0,-1],\"travel\":1,\"phase\":0}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[5.5,0.12,-1.5],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"lift\",\"does\":\"car rises on a rope over the wheel\"},\"do\":[{\"p\":\"lift\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"rise\",\"w\":\"pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"turn\",\"w\":\"pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"load\",\"does\":\"load gauge climbs into the red\"},\"state\":{\"text\":\"TOO HEAVY\",\"w\":\"weighs\"},\"do\":[{\"p\":\"lift\",\"v\":\"turnBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"count\",\"w\":\"weighs\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.motor\",\"load\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"lift\",\"does\":\"car sinks back to the floor\"},\"state\":{\"text\":\"STALLED\",\"w\":\"stalls\"},\"do\":[{\"p\":\"lift\",\"v\":\"riseBack\",\"w\":\"sinks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"lift\",\"does\":\"counterweight appears and the load gauge falls\"},\"do\":[{\"p\":\"lift\",\"v\":\"hang\",\"w\":\"counterweight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"hide\",\"w\":\"counterweight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load2\",\"v\":\"show\",\"w\":\"counterweight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load2\",\"v\":\"count\",\"w\":\"counterweight\",\"o\":0,\"d\":3,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"tOut\",\"does\":\"outline traces the whole elevator\"},\"do\":[{\"p\":\"tOut\",\"v\":\"show\",\"w\":\"traction\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"lift\",\"does\":\"wheel turns, car rises while counterweight sinks\"},\"do\":[{\"p\":\"tOut\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"rise\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"turn\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.sheave\",\"lift.car\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"weights\",\"does\":\"equal weight arrows on car and counterweight\"},\"do\":[{\"p\":\"weights\",\"v\":\"show\",\"w\":\"weighs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"lift\",\"does\":\"car and counterweight swing loose\"},\"state\":{\"text\":\"SWAYING\",\"w\":\"swing\"},\"do\":[{\"p\":\"weights\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"turnBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"sway\",\"w\":\"swing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"lift\",\"does\":\"steel rails go up and the car straightens\"},\"do\":[{\"p\":\"lift\",\"v\":\"bolt\",\"w\":\"rails\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"swayBack\",\"w\":\"rails\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"lift\",\"does\":\"rope snaps and the car plunges\"},\"state\":{\"text\":\"FALLING\",\"w\":\"falling\"},\"do\":[{\"p\":\"lift\",\"v\":\"snap\",\"w\":\"snaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"drop\",\"w\":\"snaps\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"lift\",\"does\":\"rope mended, car back up, clamps appear on the rails\"},\"do\":[{\"p\":\"lift\",\"v\":\"snapBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"dropBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"clamp\",\"w\":\"clamp\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.car\",\"lift.gear\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"gOut\",\"does\":\"outline on the blinking clamp\"},\"do\":[{\"p\":\"gOut\",\"v\":\"show\",\"w\":\"safety\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"grip\",\"w\":\"safety\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.gear\"],\"view\":\"home\",\"width\":0.4,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"lift\",\"does\":\"red cross over the single rope\"},\"do\":[{\"p\":\"gOut\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"gripBack\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"mark\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.carRope\",\"lift.cross\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"lift\",\"does\":\"cross goes, more steel ropes appear\"},\"do\":[{\"p\":\"lift\",\"v\":\"markBack\",\"w\":\"ropes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"ropes\",\"w\":\"ropes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lift.sheave\",\"lift.ropeCarX\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"lift\",\"does\":\"doors, button panel and ceiling light added as the car glides down\"},\"do\":[{\"p\":\"lift\",\"v\":\"riseBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"turnDown\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"doors\",\"w\":\"doors\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"open\",\"w\":\"doors\",\"o\":1.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"buttons\",\"w\":\"button\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"fixture\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"glow\",\"w\":\"light\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"lift\",\"does\":\"calm car at the floor with doors open\"},\"do\":[{\"p\":\"lift\",\"v\":\"turnDownBack\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"press\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"1,000 KG\",\"at\":{\"s\":\"problem\",\"w\":\"thousand\",\"o\":0},\"d\":1.8},{\"text\":\"40%\",\"at\":{\"s\":\"fact\",\"w\":\"forty\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"hook\",\"w\":\"pull\",\"o\":0},\"d\":1.6},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"how\",\"w\":\"turns\",\"o\":0},\"d\":1.8},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"finish\",\"w\":\"Add\",\"o\":0},\"d\":1.8}],\"chimes\":[{\"s\":\"problem\",\"w\":\"thousand\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"forty\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How an elevator works",
+   "hero": "a traction elevator",
+   "parts": [
+    "car",
+    "rope",
+    "wheel",
+    "motor",
+    "counterweight",
+    "steel rails",
+    "safety gear",
+    "doors",
+    "button panel",
+    "ceiling light"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "pull a box up on a rope over a wheel and you already have an elevator"
+    },
+    {
+     "role": "problem",
+     "idea": "a full car weighs about a thousand kilograms and the motor alone has to lift all of it"
+    },
+    {
+     "role": "stakes",
+     "idea": "the motor stalls and the car sinks back to the floor"
+    },
+    {
+     "role": "fix1",
+     "idea": "hang a counterweight on the other end of the rope so the motor lifts only the difference"
+    },
+    {
+     "role": "name",
+     "idea": "this whole rope, wheel, motor and counterweight machine is a traction elevator"
+    },
+    {
+     "role": "how",
+     "idea": "the motor turns a grooved wheel, the ropes grip it, and the car rises as the counterweight sinks"
+    },
+    {
+     "role": "fact",
+     "idea": "the counterweight weighs as much as the car plus about forty percent of a full load, so the two nearly balance"
+    },
+    {
+     "role": "problem2",
+     "idea": "the light car and the counterweight now swing loose in the shaft"
+    },
+    {
+     "role": "fix2",
+     "idea": "bolt steel rails up the shaft so the car rides on them and stops swinging"
+    },
+    {
+     "role": "problem3",
+     "idea": "if a rope snaps, nothing stops the car from falling"
+    },
+    {
+     "role": "fix3",
+     "idea": "add a safety clamp that grips the rails, the trick Elisha Otis showed in 1854"
+    },
+    {
+     "role": "name2",
+     "idea": "the clamp that bites the rails is called a safety gear"
+    },
+    {
+     "role": "myth",
+     "idea": "one rope is not all that holds you up (the single rope gets crossed out)"
+    },
+    {
+     "role": "mythFact",
+     "idea": "a real car hangs from four to eight steel ropes, each strong enough to hold it alone"
+    },
+    {
+     "role": "finish",
+     "idea": "add sliding doors, a button panel and a ceiling light, and the car glides down to the floor"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: the finished elevator waits at the floor with its doors open"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the load gauge climbs into the red and the car sinks back to the floor",
+     "stakes": "the motor stalls and nobody can ride",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the car and counterweight swing loose in the shaft",
+     "stakes": "riders get thrown about and the car scrapes the walls",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "a rope snaps and the car plunges down its track",
+     "stakes": "everyone inside would fall to the bottom",
+     "size": 9
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A typical passenger elevator is rated for about 1,000 kilograms, roughly 13 people",
+     "role": "problem",
+     "search": "typical passenger elevator capacity 1000 kg 13 persons"
+    },
+    {
+     "claim": "A counterweight usually weighs as much as the car plus about 40 to 50 percent of its rated load",
+     "role": "fact",
+     "search": "elevator counterweight car weight plus 40 percent of rated load"
+    },
+    {
+     "claim": "Elisha Otis showed his safety elevator brake at the 1854 New York World's Fair by cutting the rope himself",
+     "role": "fix3",
+     "search": "Elisha Otis 1854 Crystal Palace safety elevator demonstration cut rope"
+    },
+    {
+     "claim": "Traction elevators hang from four to eight steel ropes, and each rope alone is strong enough to hold the car",
+     "role": "mythFact",
+     "search": "how many steel ropes hold an elevator car each rope can hold the car"
+    }
+   ]
+  }
+ }
+}

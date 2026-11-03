@@ -1,0 +1,39 @@
+{
+ "runId": "4710c980-18b5-4301-abcd-9354044f1efc",
+ "topic": "Landfill",
+ "lengthSec": 30,
+ "kind": "premade",
+ "at": "2026-11-03T16:58:56.622653+00:00",
+ "failed": {
+  "code": "VOICE_FAILED",
+  "message": "voice check failed twice (stop and refund): take 1: wrong number: \"1952\" heard as \"1950\" (after \"is buried a\") | heard: \"If you dig a pit and throw your trash in, you have a landfill. But dirty trash juice leaks straight down into the groundwater you drink. So you lay a thick clay base, but it is still not enough. You add a thick black plastic sheet. This is a landfill liner. A pipe drains the collected juice into a tank beside the pit. Sealed this tight, trash barely rots at all once it is buried. A 1950 newspaper \" || take 2: wrong number: \"1952\" heard as \"1950\" (after \"is buried a\") | heard: \"If you dig a pit and throw your trash in, you have a landfill. But dirty trash juice leaks straight down into the groundwater you drink. So you lay a thick clay base, but it is still not enough. You add a thick black plastic sheet. This is a landfill liner. A pipe drains the collected juice into a tank beside the pit. Sealed this tight, trash barely rots at all once it is buried. A 1950 newspaper \"",
+  "stage": "voice",
+  "attempts": 1
+ },
+ "costUsd": 0.13356,
+ "answers": [
+  "words__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "words",
+   "usd": 0.01086,
+   "outputTokens": 393,
+   "at": "2026-11-03T16:59:11.745Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0588,
+   "outputTokens": null,
+   "at": "2026-11-03T16:59:14.176Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0588,
+   "outputTokens": null,
+   "at": "2026-11-03T16:59:26.991Z"
+  }
+ ]
+}

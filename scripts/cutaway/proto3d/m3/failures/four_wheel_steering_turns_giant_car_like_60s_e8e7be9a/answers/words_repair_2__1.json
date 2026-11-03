@@ -1,0 +1,74 @@
+{
+ "hash": "*",
+ "by": "real run e8e7be9a-9e0e-4d9d-9907-4b464df2c739",
+ "searches": 0,
+ "data": {
+  "title": "Four-Wheel Steering",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you only steer the front wheels of a long truck, you have a truck that cannot turn tight."
+   },
+   {
+    "role": "problem",
+    "text": "But the long body cannot pivot, so its tail swings out wide and nearly hits a post."
+   },
+   {
+    "role": "stakes",
+    "text": "The swinging tail clips the post and knocks it flat, which in a tight street means a crunched bumper."
+   },
+   {
+    "role": "fix1",
+    "text": "So you bolt a steering motor onto the rear axle, so the back wheels can turn too."
+   },
+   {
+    "role": "name",
+    "text": "This is four-wheel steering."
+   },
+   {
+    "role": "how",
+    "text": "At a crawl, the motor turns the rear wheels against the front ones, so the truck pivots in a tight circle like a compact."
+   },
+   {
+    "role": "fact",
+    "text": "A Mercedes S-Class turns its rear wheels up to 10 degrees, which cuts its turning circle by up to about 2 meters."
+   },
+   {
+    "role": "problem2",
+    "text": "But at highway speed, turning the rear wheels against the front makes the tail whip around and the truck slides sideways."
+   },
+   {
+    "role": "fix2",
+    "text": "So above about 37 miles per hour the rear wheels turn the same way as the front, and the truck tracks straight."
+   },
+   {
+    "role": "name2",
+    "text": "Turning the same way is called in-phase steering, and the tight low-speed turn is called counter-phase."
+   },
+   {
+    "role": "problem3",
+    "text": "But if the motor fails, the rod can snap and leave the rear wheels stuck, so the truck veers off the road."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a spring that pulls the rear wheels back to center and holds them straight."
+   },
+   {
+    "role": "myth",
+    "text": "And four-wheel steering is not four-wheel drive, though all four wheels seem to be doing something."
+   },
+   {
+    "role": "mythFact",
+    "text": "It only swivels the wheels left and right, and Honda offered it on its Prelude from 1987."
+   },
+   {
+    "role": "finish",
+    "text": "Add a ceiling light and let the truck crab sideways into the garage."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a truck that parks like a compact car."
+   }
+  ]
+ }
+}

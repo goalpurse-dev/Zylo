@@ -1,0 +1,147 @@
+{
+ "hash": "*",
+ "by": "real run 4d6a7f0d-37a2-4f6f-a29c-1b70c1fd21a3",
+ "searches": 0,
+ "data": {
+  "why": "A nuclear bunker built the way the account builds things: a deep hole in a yard section, where rain floods it and the walls cave in, then concrete walls, a roof slab, soil and a steel blast door fix it one problem at a time. Each fix opens the next problem: the sealed room goes stale, so an air pipe goes in, and then a blast wave can rush down that pipe, so a valve slams it shut. The camera opens close on the hole, widens to the whole cut, uses number counters beside the soil for the radiation facts, and ends on the calm finished bunker with a ceiling light, bunk beds and grass on top.",
+  "sceneJson": "{\"world\":{\"cut\":[-5,5,-7,6],\"house\":[-9,0,-22],\"porch\":true,\"trees\":[[-13,-14],[13,-12,0.9]],\"road\":[11.5,0.01,-45],\"rocksAvoid\":[[-7.6,7.6,-6.6,0.4]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":170,\"mound\":{\"x\":0,\"z\":-10.6,\"rx\":3,\"rz\":1.8,\"h\":1.3}}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-14,\"x1\":14,\"z0\":-16,\"z1\":-0.1,\"yTop\":18,\"yBot\":-0.4,\"count\":1200,\"width\":0.02,\"opacity\":0.36}},{\"id\":\"lawn\",\"kind\":\"lawnWet\",\"params\":{}},{\"id\":\"puddles\",\"kind\":\"puddles\",\"params\":{\"list\":[[8.6,-3,1.1,0.8],[-8.4,-4,1,0.7],[7.6,-9,0.9,0.6]],\"rise\":[0.3,0.2],\"fall\":[0.2,0]}},{\"id\":\"holeWater\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-4.98,\"x1\":4.98,\"z0\":-6.98,\"z1\":-0.01,\"y0\":-6,\"y1\":-0.9},\"mat\":\"water\"}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-6.2,-2.5,0.4],\"dir\":[1,0],\"travel\":1.2,\"phase\":0},{\"at\":[6.2,-2.5,0.4],\"dir\":[-1,0],\"travel\":1.2,\"phase\":0.3},{\"at\":[-6.2,-4.2,0.4],\"dir\":[1,0],\"travel\":1.2,\"phase\":0.5},{\"at\":[6.2,-4.2,0.4],\"dir\":[-1,0],\"travel\":1.2,\"phase\":0.8}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"crackL\",\"kind\":\"crack\",\"params\":{\"points\":[[-6,0.1,0.02],[-6.5,-0.9,0.02],[-6,-1.9,0.02],[-6.6,-2.9,0.02],[-6.1,-4,0.02],[-6.5,-5,0.02]],\"r\":0.08}},{\"id\":\"crackR\",\"kind\":\"crack\",\"params\":{\"points\":[[6,0.1,0.02],[6.5,-0.9,0.02],[6,-1.9,0.02],[6.6,-2.9,0.02],[6.1,-4,0.02],[6.5,-5,0.02]],\"r\":0.08}},{\"id\":\"cave\",\"kind\":\"drops\",\"params\":{\"x0\":-4.8,\"x1\":4.8,\"count\":26,\"fromY\":0.6,\"landY\":-0.9,\"z\":-1,\"mat\":\"mud\"}},{\"id\":\"shell\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"floor\",\"mat\":\"concrete\",\"size\":[10,0.6,7.02],\"anchor\":[1,1,1],\"pos\":[-5,-6,-6.98],\"axis\":\"x\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallL\",\"mat\":\"concrete\",\"size\":[0.6,4.5,7.02],\"anchor\":[1,1,1],\"pos\":[-5,-5.4,-6.98],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallR\",\"mat\":\"concrete\",\"size\":[0.6,4.5,7.02],\"anchor\":[-1,1,1],\"pos\":[5,-5.4,-6.98],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"back\",\"mat\":\"concrete\",\"size\":[8.8,4.5,0.6],\"anchor\":[1,1,1],\"pos\":[-4.4,-5.4,-7],\"axis\":\"x\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"roof\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"roof\",\"mat\":\"concrete\",\"size\":[10,0.9,7.02],\"anchor\":[1,1,1],\"pos\":[-5,-1.8,-6.98],\"axis\":\"x\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"soilCap\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-5,\"x1\":5,\"y0\":-0.9,\"y1\":-0.02,\"z0\":-7,\"z1\":0.04},\"mat\":\"soilCover\",\"axis\":\"x\",\"r\":0.04}},{\"id\":\"blastDoor\",\"kind\":\"rig\",\"params\":{\"name\":\"blast door\",\"synonyms\":[\"steel door\",\"bunker door\"],\"pos\":[-1.2,-5.4,-6.4],\"nodes\":[{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2.7,2.9,0.2],\"at\":[0,1.45,0.1],\"look\":\"concrete\",\"color\":\"#6f7780\"}]},{\"id\":\"leaf\",\"parent\":\"frame\",\"at\":[-1,0.1,0.2],\"shapes\":[{\"shape\":\"box\",\"size\":[2,2.5,0.3],\"at\":[1,1.25,0.15],\"look\":\"metal\",\"color\":\"#8d98a3\"},{\"shape\":\"hinge\",\"r\":0.09,\"h\":0.5,\"axis\":\"y\",\"at\":[0,0.5,0.15]},{\"shape\":\"hinge\",\"r\":0.09,\"h\":0.5,\"axis\":\"y\",\"at\":[0,2,0.15]}],\"moves\":[{\"name\":\"open\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-100}]},{\"id\":\"wheel\",\"parent\":\"leaf\",\"at\":[1,1.25,0.3],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.1,\"axis\":\"z\",\"at\":[0,0,0.05],\"look\":\"metal\",\"color\":\"#d8b341\"},{\"shape\":\"cylinder\",\"r\":0.08,\"h\":0.2,\"axis\":\"z\",\"at\":[0,0,0.1],\"look\":\"metal\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":0.4}]}]}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"points\":[[-5.2,0.15,0.12],[-5.2,-6.2,0.12],[5.2,-6.2,0.12],[5.2,0.15,0.12]],\"opts\":{\"r\":0.12}}},{\"id\":\"rays\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-4,3.2,0.5],\"dir\":[0,-1],\"travel\":2.8,\"phase\":0},{\"at\":[-2.3,3.2,0.5],\"dir\":[0,-1],\"travel\":2.8,\"phase\":0.35},{\"at\":[-0.6,3.2,0.5],\"dir\":[0,-1],\"travel\":2.8,\"phase\":0.7}],\"opts\":{\"scale\":1.1,\"color\":\"#ff8a2a\"}}},{\"id\":\"shock\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0.9,3.2,0.5],\"dir\":[0,-1],\"travel\":2.8,\"phase\":0.2},{\"at\":[2.1,3.2,0.5],\"dir\":[0,-1],\"travel\":2.8,\"phase\":0.6}],\"opts\":{\"scale\":1.1,\"color\":\"#ffd23d\"}}},{\"id\":\"boxR\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.7,1.1,0.5],\"pos\":[6.6,0.55,-0.4],\"mat\":\"metal\"}},{\"id\":\"boxL\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.7,1.1,0.5],\"pos\":[-6.6,0.55,-0.4],\"mat\":\"metal\"}},{\"id\":\"dose\",\"kind\":\"counter\",\"params\":{\"pos\":[6.6,1.6,-0.4],\"size\":0.9,\"from\":1000,\"to\":1,\"bar\":true,\"color\":\"#ffd23d\"}},{\"id\":\"days\",\"kind\":\"counter\",\"params\":{\"pos\":[-6.6,1.6,-0.4],\"size\":0.9,\"from\":0,\"to\":365,\"bar\":false,\"color\":\"#ffffff\"}},{\"id\":\"decay\",\"kind\":\"counter\",\"params\":{\"pos\":[6.6,1.6,-0.4],\"size\":0.9,\"from\":100,\"to\":1,\"bar\":true,\"color\":\"#3ad6ff\"}},{\"id\":\"stale\",\"kind\":\"bubbles\",\"params\":{\"x0\":-4,\"x1\":2,\"y0\":-5.2,\"y1\":-2,\"z\":-1.5,\"count\":36,\"speed\":0.6}},{\"id\":\"filter\",\"kind\":\"rig\",\"params\":{\"name\":\"air filter\",\"synonyms\":[\"filter\",\"ventilation fan\"],\"pos\":[3.3,-5.4,-0.3],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.1,1.3,0.8],\"at\":[0,0.65,-0.1],\"look\":\"metal\",\"color\":\"#4f6b8a\"},{\"shape\":\"cylinder\",\"r\":0.24,\"h\":0.4,\"axis\":\"y\",\"at\":[-0.28,1.5,-0.1],\"look\":\"paint\",\"color\":\"#e08a2e\"}]},{\"id\":\"fan\",\"parent\":\"body\",\"at\":[-0.2,0.7,0.3],\"shapes\":[{\"shape\":\"gear\",\"r\":0.34,\"w\":0.08,\"teeth\":6,\"axis\":\"z\",\"at\":[0,0,0.04],\"look\":\"metal\",\"color\":\"#dcdcdc\"}],\"moves\":[{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1.5}]},{\"id\":\"duct\",\"parent\":\"body\",\"at\":[0.3,1.3,0.3],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0,0,0],[0,5.6,0],[0.8,5.6,0]],\"r\":0.17,\"look\":\"metal\",\"color\":\"#9aa4ad\"}],\"moves\":[{\"name\":\"air\",\"type\":\"flow\",\"path\":[[0,0,0.22],[0,5.6,0.22],[0.8,5.6,0.22]],\"color\":\"#cfeaff\"}]},{\"id\":\"valve\",\"parent\":\"duct\",\"at\":[0,4.6,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.7,0.5],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#b33a2e\"}],\"moves\":[{\"name\":\"addValve\",\"type\":\"appear\"}]},{\"id\":\"lever\",\"parent\":\"valve\",\"at\":[0.3,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.8,0.12,0.12],\"at\":[0.4,0,0.2],\"look\":\"paint\",\"color\":\"#e8c23a\"}],\"moves\":[{\"name\":\"slam\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-80}]}]}},{\"id\":\"ventBlast\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[3.6,3.4,0.6],\"dir\":[0,-1],\"travel\":4.6,\"phase\":0},{\"at\":[3.6,2.4,0.6],\"dir\":[0,-1],\"travel\":4.6,\"phase\":0.5}],\"opts\":{\"scale\":1,\"color\":\"#ffd23d\"}}},{\"id\":\"lamp\",\"kind\":\"prop\",\"params\":{\"type\":\"ceilingLight\",\"pos\":[0.9,-5.4,-3],\"h\":3.6,\"drop\":0.5}},{\"id\":\"bunk\",\"kind\":\"rig\",\"params\":{\"name\":\"bunk bed\",\"synonyms\":[\"bunk beds\"],\"pos\":[-3.2,-5.4,-4.4],\"nodes\":[{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.1,1.8,0.1],\"at\":[-0.95,0.9,-0.4],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[0.1,1.8,0.1],\"at\":[0.95,0.9,-0.4],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[0.1,1.8,0.1],\"at\":[-0.95,0.9,0.4],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[0.1,1.8,0.1],\"at\":[0.95,0.9,0.4],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[1.9,0.1,0.8],\"at\":[0,0.4,0],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[1.8,0.14,0.72],\"at\":[0,0.52,0],\"look\":\"paint\",\"color\":\"#4a7fb5\"},{\"shape\":\"box\",\"size\":[0.4,0.1,0.5],\"at\":[-0.65,0.64,0],\"look\":\"paint\",\"color\":\"#f2efe6\"},{\"shape\":\"box\",\"size\":[1.9,0.1,0.8],\"at\":[0,1.25,0],\"look\":\"wood\",\"color\":\"#8a5a33\"},{\"shape\":\"box\",\"size\":[1.8,0.14,0.72],\"at\":[0,1.37,0],\"look\":\"paint\",\"color\":\"#c0553f\"},{\"shape\":\"box\",\"size\":[0.4,0.1,0.5],\"at\":[-0.65,1.49,0],\"look\":\"paint\",\"color\":\"#f2efe6\"}]}]}},{\"id\":\"grassCap\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-5.1,\"x1\":5.1,\"y0\":-0.15,\"y1\":0.09,\"z0\":-7.1,\"z1\":0.04},\"mat\":\"grass\",\"axis\":\"x\",\"r\":0.08,\"uvScale\":0.25}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[9.4,0.08,-4.2],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"dig the hole\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"holeWater\",\"does\":\"rain runs into the hole\"},\"state\":{\"text\":\"RAIN IN\",\"w\":\"rain\"},\"do\":[{\"p\":\"light\",\"v\":\"storm\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lawn\",\"v\":\"wet\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puddles\",\"v\":\"rise\",\"w\":\"lawn\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"holeWater\",\"v\":\"trickle\",\"w\":\"hole\",\"o\":0,\"d\":2.4,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"flood\",\"shows\":{\"p\":\"holeWater\",\"does\":\"water fills the hole\"},\"do\":[{\"p\":\"holeWater\",\"v\":\"flood\",\"w\":\"fills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"holeWater\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"crackL\",\"does\":\"cracks grow, mud caves in\"},\"do\":[{\"p\":\"weight\",\"v\":\"show\",\"w\":\"weighs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"crackL\",\"v\":\"grow\",\"w\":\"crack\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"crackR\",\"v\":\"grow\",\"w\":\"crack\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cave\",\"v\":\"fall\",\"w\":\"cave\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"crackL\",\"crackR\"],\"view\":\"home\",\"width\":0.95,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"shell\",\"does\":\"floor and walls grow\"},\"do\":[{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cave\",\"v\":\"hide\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"holeWater\",\"v\":\"drain\",\"w\":\"drain\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lawn\",\"v\":\"dry\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puddles\",\"v\":\"dry\",\"w\":\"drain\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"floor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"floor\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"wallL\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0.15,\"d\":0,\"amp\":1,\"ch\":\"wallR\"},{\"p\":\"shell\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"back\"}],\"shots\":[{\"focus\":[\"shell\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"roof\",\"does\":\"roof slab grows, soil piles on\"},\"do\":[{\"p\":\"roof\",\"v\":\"grow\",\"w\":\"roof\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"roof\"},{\"p\":\"soilCap\",\"v\":\"grow\",\"w\":\"soil\",\"o\":0,\"d\":1.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"roof\",\"soilCap\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"blastDoor\",\"does\":\"steel door appears, wheel turns\"},\"do\":[{\"p\":\"blastDoor\",\"v\":\"show\",\"w\":\"door\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"blastDoor\",\"v\":\"turn\",\"w\":\"door\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"blastDoor\"],\"view\":\"home\",\"width\":0.4,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"glowing outline round the bunker\"},\"do\":[{\"p\":\"blastDoor\",\"v\":\"turnBack\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"outline\",\"v\":\"show\",\"w\":\"nuclear\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shell\",\"roof\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"rays\",\"does\":\"radiation and blast arrows hit the soil and roof\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"Soil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rays\",\"v\":\"show\",\"w\":\"radiation\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shock\",\"v\":\"show\",\"w\":\"blast\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"roof\",\"rays\",\"shock\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"dose\",\"does\":\"dose counter falls from 1000 to 1 beside the soil\"},\"do\":[{\"p\":\"rays\",\"v\":\"hide\",\"w\":\"Three\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shock\",\"v\":\"hide\",\"w\":\"Three\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boxR\",\"v\":\"show\",\"w\":\"Three\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dose\",\"v\":\"show\",\"w\":\"Three\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dose\",\"v\":\"count\",\"w\":\"cuts\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dose\",\"soilCap\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"stale\",\"does\":\"stale air bubbles fill the room\"},\"state\":{\"text\":\"STALE AIR\",\"w\":\"stale\"},\"do\":[{\"p\":\"dose\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stale\",\"v\":\"show\",\"w\":\"stale\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shell\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"filter\",\"does\":\"fan spins and air runs down the pipe\"},\"do\":[{\"p\":\"filter\",\"v\":\"show\",\"w\":\"filter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"spin\",\"w\":\"fan\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stale\",\"v\":\"hide\",\"w\":\"fresh\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"air\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[1.8,-5.6,-1,5.2,1.8,1]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"ventBlast\",\"does\":\"blast arrows rush down the vent pipe\"},\"state\":{\"text\":\"BLAST IN\",\"w\":\"hole\"},\"do\":[{\"p\":\"ventBlast\",\"v\":\"show\",\"w\":\"blast\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[1.8,-5.6,-1,5.2,1.8,1]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"filter\",\"does\":\"valve appears and its lever slams shut\"},\"do\":[{\"p\":\"filter\",\"v\":\"addValve\",\"w\":\"valve\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"slam\",\"w\":\"slams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ventBlast\",\"v\":\"hide\",\"w\":\"shut\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[1.8,-5.6,-1,5.2,1.8,1]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"days\",\"does\":\"day counter climbs to 365, then goes\"},\"do\":[{\"p\":\"boxL\",\"v\":\"show\",\"w\":\"years\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"days\",\"v\":\"show\",\"w\":\"years\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"days\",\"v\":\"count\",\"w\":\"years\",\"o\":0.4,\"d\":1.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"days\",\"v\":\"hide\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"days\",\"shell\"],\"view\":\"home\",\"width\":0.95,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"decay\",\"does\":\"radiation gauge falls from 100 to 1\"},\"do\":[{\"p\":\"decay\",\"v\":\"show\",\"w\":\"days\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"decay\",\"v\":\"count\",\"w\":\"49\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"decay\",\"shell\"],\"view\":\"home\",\"width\":0.95,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"grassCap\",\"does\":\"ceiling light, bunk beds, grass cap\"},\"do\":[{\"p\":\"decay\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp\",\"v\":\"show\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bunk\",\"v\":\"show\",\"w\":\"bunk\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"grassCap\",\"v\":\"grow\",\"w\":\"grass\",\"o\":-0.1,\"d\":0.9,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"100 LB\",\"at\":{\"s\":\"stakes\",\"w\":\"100\",\"o\":0},\"d\":1.8},{\"text\":\"25 TONS\",\"at\":{\"s\":\"fix3\",\"w\":\"25\",\"o\":0},\"d\":1.6},{\"text\":\"1000X\",\"at\":{\"s\":\"fact\",\"w\":\"1000\",\"o\":0},\"d\":1.6},{\"text\":\"365 DAYS\",\"at\":{\"s\":\"myth\",\"w\":\"years\",\"o\":0},\"d\":1.4},{\"text\":\"49 HOURS\",\"at\":{\"s\":\"mythFact\",\"w\":\"49\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"flood\",\"w\":\"fills\",\"o\":-0.05},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix1\",\"w\":\"drain\",\"o\":0},\"d\":1.4},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix2\",\"w\":\"soil\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix4\",\"w\":\"fan\",\"o\":0},\"d\":1.5}],\"chimes\":[{\"s\":\"stakes\",\"w\":\"100\",\"o\":0},{\"s\":\"fix3\",\"w\":\"25\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"1000\",\"o\":0},{\"s\":\"myth\",\"w\":\"years\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"49\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem\",\"w\":\"But\",\"o\":0},{\"s\":\"fix1\",\"w\":\"drain\",\"o\":0}]}}",
+  "story": {
+   "title": "How a Nuclear Bunker Works",
+   "hero": "a nuclear bunker",
+   "parts": [
+    "hole",
+    "rain",
+    "concrete walls",
+    "roof slab",
+    "soil",
+    "blast door",
+    "air filter",
+    "fan",
+    "vent pipe",
+    "blast valve",
+    "ceiling light",
+    "bunk beds",
+    "grass"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "you start with the naive thing: dig a deep hole in your yard and call it a bunker"
+    },
+    {
+     "role": "problem",
+     "idea": "the first storm runs off the lawn and pours straight into the open hole"
+    },
+    {
+     "role": "flood",
+     "idea": "the hole fills to the brim like a bathtub"
+    },
+    {
+     "role": "stakes",
+     "idea": "wet soil is heavy, over 100 pounds a cubic foot, so the walls crack and cave in"
+    },
+    {
+     "role": "fix1",
+     "idea": "you pump it dry and pour a concrete floor and walls to hold the soil back"
+    },
+    {
+     "role": "fix2",
+     "idea": "you cap the box with a thick roof slab and pile three feet of soil on top"
+    },
+    {
+     "role": "fix3",
+     "idea": "you hang a steel blast door on the only way in; the biggest ones weigh 25 tons"
+    },
+    {
+     "role": "name",
+     "idea": "this sealed box of concrete, soil and steel is a nuclear bunker"
+    },
+    {
+     "role": "how",
+     "idea": "soil and concrete soak up the radiation while the door and roof stop the blast wave"
+    },
+    {
+     "role": "fact",
+     "idea": "three feet of packed soil cuts gamma rays by a factor of about 1000"
+    },
+    {
+     "role": "problem2",
+     "idea": "sealed in, the people breathe and the air goes stale"
+    },
+    {
+     "role": "fix4",
+     "idea": "a filter and a fan pull fresh air down a pipe from outside"
+    },
+    {
+     "role": "problem3",
+     "idea": "that pipe is a hole in the shield, and a blast wave would rush straight down it"
+    },
+    {
+     "role": "fix5",
+     "idea": "a blast valve on the pipe slams shut when the shock arrives"
+    },
+    {
+     "role": "myth",
+     "idea": "everyone pictures hiding underground for years, but that is not what a bunker is for"
+    },
+    {
+     "role": "mythFact",
+     "idea": "fallout fades fast: after about 49 hours the radiation is down to around one percent"
+    },
+    {
+     "role": "finish",
+     "idea": "add a ceiling light, bunk beds and the grass back on top to finish the shelter"
+    },
+    {
+     "role": "congrats",
+     "idea": "a calm, finished bunker under a quiet lawn"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "rain runs off the lawn into the open hole, which floods, and the wet walls crack and cave in",
+     "stakes": "anyone inside would be buried or drowned",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix3",
+     "shows": "bubbles of stale air fill the sealed room",
+     "stakes": "the people inside cannot keep breathing",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix4",
+     "shows": "blast arrows rush down the open vent pipe into the room",
+     "stakes": "the shock would hit everyone inside through the one hole in the shield",
+     "size": 9
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Saturated soil weighs over 100 pounds per cubic foot (about 110 to 130 lb/ft3).",
+     "role": "stakes",
+     "search": "saturated soil unit weight lb per cubic foot"
+    },
+    {
+     "claim": "The blast doors at Cheyenne Mountain weigh about 25 tons each and are about 3 feet thick.",
+     "role": "fix3",
+     "search": "Cheyenne Mountain blast door weight 25 tons 3 feet thick"
+    },
+    {
+     "claim": "About three feet of packed soil cuts gamma radiation by roughly a factor of 1000 (ten half-value layers of about 3.6 inches).",
+     "role": "fact",
+     "search": "half value layer soil gamma radiation 3.6 inches fallout shelter"
+    },
+    {
+     "claim": "By the 7-10 rule, about 49 hours after a blast fallout radiation falls to roughly 1 percent of its level at one hour.",
+     "role": "mythFact",
+     "search": "7-10 rule fallout decay 49 hours 1 percent"
+    }
+   ]
+  }
+ }
+}
