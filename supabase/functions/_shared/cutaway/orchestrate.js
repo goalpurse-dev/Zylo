@@ -44,6 +44,17 @@ const userPreview = (run) => Boolean(run.free_preview && !run.preview_pool);
 
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
 export function failOrRetry(run, f, now = Date.now()) {
+  const r = nextTry(run, f, now);
+  // a worker without graphics (gpu.mjs): its RunPod retry waits until that worker has gone (idle 5 s, then stopped), and
+  // the watchdog sends it a minute on (onWatch), so a fresh worker takes it; sent at once, the same graphics-less GPU took
+  // both tries of a paid run (56f25b9c, 2026-11-03). The attempt counts up when it is sent.
+  if (f.code === "NO_GPU" && r.actions.some((a) => a.type === "dispatch" && a.target === "runpod")) {
+    return { patch: { error_code: "NO_GPU", error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [] };
+  }
+  return r;
+}
+
+function nextTry(run, f, now) {
   if (NO_RETRY.has(f.code) || f.retryable === false) return terminal(run, f, now);
   const attempt = run.attempt ?? 1;
   const again = () => ({ patch: { attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] });
@@ -145,8 +156,10 @@ export function onWatch(run, rp, now = Date.now()) {
   }
   // RunPod
   const sent = Date.parse(run.dispatched_at ?? run.created_at);
-  // a free preview whose sending failed (onDispatchFailed): sent again a minute later
-  if (userPreview(run) && !run.provider_job_id && now - sent > LIMITS.redispatchSec * 1000) return failOrRetry(run, { code: "DISPATCH_FAILED", message: run.error_code === "DISPATCH_FAILED" ? "sending it failed" : "it was never sent" }, now);
+  // a free preview whose sending failed (onDispatchFailed), or any run held back after a worker without graphics
+  // (failOrRetry): sent again a minute later
+  const held = run.error_code === "NO_GPU";
+  if ((userPreview(run) || held) && !run.provider_job_id && now - sent > LIMITS.redispatchSec * 1000) return failOrRetry(run, held ? { code: "NO_GPU_RESEND", message: "sent again after the worker without graphics had gone" } : { code: "DISPATCH_FAILED", message: run.error_code === "DISPATCH_FAILED" ? "sending it failed" : "it was never sent" }, now);
   const st = String(rp?.status ?? "").toUpperCase();
   const queueSec = userPreview(run) ? LIMITS.previewQueueSec : LIMITS.queueSec;
   if (st === "IN_QUEUE" && now - sent > queueSec * 1000) {
