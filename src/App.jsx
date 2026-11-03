@@ -24,6 +24,7 @@ import PasswordRecoveryRedirect from "./components/auth/PasswordRecoveryRedirect
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
 import { CUTAWAY_PATH } from "./data/cutawayExplainer";
+import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
 
 // pages…
 //import Home from "./pages/Home";
@@ -70,6 +71,7 @@ const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
 const AIFruitStory = lazy(() => import("./pages/workspace/AIFruitStory"));
 const BlockyStories = lazy(() => import("./pages/workspace/BlockyStories"));
 const CutawayExplainer = lazy(() => import("./pages/workspace/CutawayExplainer"));
+const BlockyWorlds = lazy(() => import("./pages/workspace/BlockyWorlds"));
 const FirstVideo = lazy(() => import("./pages/onboarding/FirstVideo.jsx"));
 const SkeletonShorts = lazy(() => import("./pages/workspace/SkeletonShorts"));
 
@@ -804,6 +806,7 @@ return (
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path={BLOCKY_STORIES_PATH} element={<BlockyStories />} />
   <Route path={CUTAWAY_PATH} element={<CutawayExplainer />} />
+  <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorlds />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
