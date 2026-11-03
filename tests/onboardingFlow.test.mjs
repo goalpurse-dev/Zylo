@@ -346,7 +346,14 @@ test("a free preview waits in line: 4 tries on RunPod, a longer wait for a GPU, 
   assert.equal(requeued.patch.attempt, 2);
   assert.deepEqual(requeued.actions.map((a) => a.type), ["cancel", "dispatch"]);
   // a worker without graphics or a lost worker: tried again up to the 4th attempt, then failed and given back
-  for (const attempt of [1, 2, 3]) assert.equal(failOrRetry({ ...run, attempt }, { code: "NO_GPU", message: "no graphics" }, NOW).patch.attempt, attempt + 1);
+  for (const attempt of [1, 2, 3]) {
+    const held = failOrRetry({ ...run, attempt }, { code: "NO_GPU", message: "no graphics" }, NOW);
+    assert.deepEqual(held.actions, [], "held back until the worker without graphics has gone");
+    const resent = onWatch({ ...run, attempt, ...held.patch }, null, NOW + (LIMITS.redispatchSec + 1) * 1000);
+    assert.equal(resent.patch.attempt, attempt + 1);
+    assert.deepEqual(resent.actions, [{ type: "dispatch", target: "runpod", role: "video" }]);
+  }
+  assert.equal(failOrRetry({ ...run, attempt: 2 }, { code: "LOST", message: "worker gone" }, NOW).patch.attempt, 3, "other failures are sent again at once");
   const last = failOrRetry({ ...run, attempt: LIMITS.previewAttempts }, { code: "NO_GPU_SLOT", message: "no GPU" }, NOW);
   assert.equal(last.patch.status, "failed");
   assert.ok(last.actions.some((a) => a.type === "releasePreview"));
@@ -354,6 +361,27 @@ test("a free preview waits in line: 4 tries on RunPod, a longer wait for a GPU, 
   // the owner's preparation runs and paying customers keep their old path
   assert.equal(failOrRetry({ ...run, preview_pool: true, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.status, "failed");
   assert.equal(failOrRetry({ ...run, free_preview: false, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.provider, "fly");
+});
+
+test("a worker without graphics: the retry waits until that worker has gone, never sent straight back to it", () => {
+  const NOW = Date.parse("2026-11-03T20:37:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  // the paid run of 2026-11-03 (56f25b9c): both RunPod tries landed on the same MIG slice
+  const run = { id: "r", topic: "t", status: "queued", provider: "runpod", provider_job_id: "j1", attempt: 1, free_preview: false, created_at: ago(60), dispatched_at: ago(55) };
+  const held = onEvent(run, { event: "failed", attempt: 1, code: "NO_GPU", retryable: true, message: "NO_GPU: llvmpipe" }, NOW);
+  assert.deepEqual(held.actions, []);
+  assert.equal(held.patch.provider_job_id, null);
+  assert.equal(held.patch.attempt, undefined, "the attempt counts up when it is sent");
+  const waiting = { ...run, ...held.patch };
+  // the old job's own end (RunPod's webhook) no longer moves the run
+  assert.deepEqual(onEvent(waiting, { event: "runpod", jobId: "j1", status: "FAILED", output: { ok: false, code: "NO_GPU" } }, NOW + 5000), { patch: {}, actions: [] });
+  assert.deepEqual(onWatch(waiting, null, NOW + 30000).actions, [], "not before a minute");
+  const resent = onWatch(waiting, null, NOW + 61000);
+  assert.equal(resent.patch.attempt, 2);
+  assert.deepEqual(resent.actions, [{ type: "dispatch", target: "runpod", role: "video" }]);
+  assert.match(resent.patch.error_message, /attempt 1: NO_GPU NO_GPU: llvmpipe/, "the first failure stays in the trail");
+  // its second try without graphics: straight to the Fly fallback, as before
+  const second = { ...waiting, ...resent.patch, provider_job_id: "j2" };
+  assert.equal(onEvent(second, { event: "failed", attempt: 2, code: "NO_GPU", retryable: true, message: "again" }, NOW + 120000).patch.provider, "fly");
 });
 
 test("a free preview whose sending failed is sent again a minute later, not failed", () => {

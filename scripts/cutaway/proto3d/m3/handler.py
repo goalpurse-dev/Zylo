@@ -21,7 +21,12 @@ def handler(job):
     data = job["input"]
     if "job" in data:
         p, result = run("videoJob.mjs", data, 2700)
-        return result if result else {"ok": False, "code": "WORKER_CRASHED", "error": (p.stderr or p.stdout)[-1500:]}
+        if not result:
+            return {"ok": False, "code": "WORKER_CRASHED", "error": (p.stderr or p.stdout)[-1500:]}
+        # a worker without graphics (a MIG slice, gpu.mjs) retires after this job, so no later job lands on it again
+        if result.get("code") == "NO_GPU":
+            result["refresh_worker"] = True
+        return result
     p, result = run("worker.mjs", data, 1500)
     if p.returncode != 0 or not result or not result.get("ok"):
         detail = result if result else {"error": (p.stderr or p.stdout)[-1500:]}
