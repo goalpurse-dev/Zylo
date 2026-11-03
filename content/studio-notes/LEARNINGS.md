@@ -142,6 +142,55 @@ The fresh viewer passed first time. Measured only: nobody has yet listened and j
 - The headline vanished after frame 0, covered by the first prop.
 - Line 1 was mild ("how do I make an explainer video?") and the face was small, more curious than let down. This is not fixed.
 
+## Two new references (2026-11-03)
+
+### Zyvo's own skeleton slideshow (pinned, 6,445 likes · 411 comments · 4,086 saves · 517 shares)
+
+There are five photo slides, all filmed off a monitor with a phone and a finger in the frame. There's no voice, and the sound is a borrowed track ("som original - 777"). Each slide has a single white caption with an emoji speaker:
+1. "1.3M views in 3 Days with AI??😳😳". The proof is someone else's YouTube channel with the 1.3M Short circled in red marker.
+2. "😳: How can I make these videos?" over our home page's "What's Hot" row, with Viral Skeleton first.
+3. "😈: Making them in 3 clicks" over a grid of skeleton images it made.
+4. "😈: Simple Prompt" over the Image tool (Nano Banana 2, "Skeleton wearing sneakers in ancient greece").
+5. "😈: Do it before it's too late" over the home page.
+
+What made it work:
+- **It gets saved.** Saves come to 63% of likes. People keep it as a how-to.
+- **Its proof is someone else's result.** The hook number is another channel's, and it isn't presented as Zyvo's. That's honest and still hits hard.
+- **Two speakers in one caption line.** 😳 is the viewer and 😈 is the insider. It's dialogue with no voice and no character.
+- **It looks hand-made.** Phone on a monitor, a finger, a red circle. It looks like a person sharing a trick, not an ad.
+- **The steps match the product.** Prompt, then style, then grid, all real screens.
+
+A Studio slideshow version costs about $0 (screenshots + captions, no voice). The one hard rule is that any view count shown must be the real public number on that channel, never made up.
+
+### "Novato vs Pro" (Spanish, 38 s, word-by-word motion graphics)
+
+This is the format the owner wants to test: "what you'd do in CapCut, but without touching anything". The whole video is flat vector motion graphics (two little characters, cards, calendars and counters) under a voice, with captions word by word and the key word boxed (a selection frame like an editor's). There's no filming, no screens and no face.
+
+**Structure: a week-by-week split.** Gray "NOVATO" on a dark smoke background against blue "PRO" on blue, with a glowing line between them.
+- **Month 1 (0–4 s):** the same phone screen twice, "A mano" (by hand) against an "Automático" toggle. Both press "Crear canal".
+- **Week 1:** a calendar flips. The novato edits one video for 7 days (a window cycles day/night, "DÍA 1…7", coffee cups pile up, he falls asleep, "7 días · 1 vídeo"). The pro fills a gumball machine "SUBIDOS 0/7 → 7/7" with 7 different format tiles.
+- **Week 2:** the novato's "perfect video" goes on an easel, and a counter rolls to 200 views with a sad tag. The pro checks his data: 6 tiles get a red ✕ and 1 "explodes" to 50,000.
+- **Week 3:** the novato starts "DE CERO" (from zero) at 0%. The pro clones the winning format with an "IA ×0→×10" machine and only checks the work (green ticks).
+- **Week 4:** 2 videos against a stack counting up to 30. The pro gets a phone notification for 1,000,000 views, with confetti.
+- **Point:** two clocks both read "8 h al día" with an "=" between them. The difference is the test gauge: 1 a week against 1 a day.
+- **CTA:** a bio card with a "Clase gratuita" (free class) button. The other tiles fade, a gift pops out with confetti, and both characters cheer.
+
+What made it work:
+- **Something changes on screen every 0.5–1 s.** Counters roll, cards flip, ✕ marks and ticks stamp in. The eye always has a new thing to read.
+- **One contrast, repeated four times.** Each calendar flip resets the comparison, so it's a loop with a growing gap.
+- **Numbers do the storytelling:** 0/7 → 7/7, 200 vs 50,000, ×10, 2 vs 30, 1,000,000. Every one rolls in as a counter.
+- **The captions are the edit.** About 2 words on screen at a time, with the boxed keyword.
+
+**What fits Zyvo:**
+- It's a pure render: no capture and no clip, only voice lines (Budget Guard, about $0.03–0.05 each).
+- The split screen, counters, calendars and stamps are the same kind of overlays we already draw in story.js (bigStepChip, roll reveal).
+- The story writes itself for Zyvo: "by hand" is a creator editing one Long Form video for a week, and "Zyvo" is one script a day. Every week shows a real step in the app.
+
+**Rules if we build it:**
+- The other video's numbers (50,000, 1,000,000) are story, not proof. Ours must be real (our own render times, scene counts, credits used) or labeled as an example.
+- The two characters are stand-ins, not real people.
+- No borrowed music, in line with the owner's no-music call.
+
 ## Still open
 
 - **Which of this actually works.** Only post numbers can say. These videos carry the recipe tag `studio_friend_v3`, so the Studio score can compare them with `studio_v2` once enough are posted.
