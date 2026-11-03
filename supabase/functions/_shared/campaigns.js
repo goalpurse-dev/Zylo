@@ -137,7 +137,7 @@ const didYouTry = {
 
 // The same check-in from the main domain (owner, 2026-11-04: both seed inboxes got it in Gmail's
 // Primary from niko@tryzyvo.com). A one-off test of 20 real people; everything else stays on mail.
-// Open tracking is off for tryzyvo.com (the seed copies that landed in Primary had no pixel either).
+// Open tracking: the owner switched it on for tryzyvo.com before the send (2026-11-04).
 export const ROOT_NIKO = "Niko <niko@tryzyvo.com>";
 const didYouTryRoot = { ...didYouTry, from: ROOT_NIKO };
 
