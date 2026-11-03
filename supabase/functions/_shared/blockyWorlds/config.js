@@ -36,9 +36,14 @@ export const DEFAULT_LENGTH = 90;
 
 /** Claude models for the writing steps (the 3D shot plan is the renderer's: not built yet). */
 export const MODELS = Object.freeze({
-  ideas: "claude-haiku-5-5",
+  ideas: "claude-haiku-5-5",     // live ideas for "Your topic" (and a fallback when a user has seen the whole library)
+  library: "claude-sonnet-5-5",  // the library batch job: ideas are reused by many users, so the stronger writer
+  judge: "claude-sonnet-5-5",    // the AI judge that scores every library idea before anyone sees it
+  card: "claude-haiku-5-5",      // a pasted script turned into an idea card
+  beats: "claude-sonnet-5-5",    // the beat sheet
   script: "claude-sonnet-5-5",
   opener: "claude-haiku-5-5",
+  shots: "claude-sonnet-5-5",    // the shot plan (the renderer's step)
 });
 
 /** Words the narration should have for a length: the target pace, rounded to whole words. */

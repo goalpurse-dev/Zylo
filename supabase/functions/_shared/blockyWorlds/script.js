@@ -130,11 +130,12 @@ const ideaText = (idea) => [
 ].join("\n");
 
 /** The user message for a new script (or a rewrite: previous + the user's note). */
-export function scriptPrompt({ idea, lengthSec, previous = null, note = "" }) {
+export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null }) {
   const total = targetWords(lengthSec);
   const budgets = partBudgets(lengthSec).map((b) => `${b.id} ~${b.words}`).join(", ");
   return [
     `THE IDEA\n${ideaText(idea)}`,
+    ...(beats?.length ? [`THE BEAT SHEET (follow it part by part)\n${beats.map((b) => `[${b.part}] ${b.summary} | on screen: ${b.shows} | ~${b.words} words`).join("\n")}`] : []),
     `LENGTH: ${lengthSec} seconds = ${total} words in total (between ${Math.round(total * BAND.written[0])} and ${Math.round(total * BAND.written[1])}). Words per part: ${budgets}. That is about ${Math.round(total / LINE.targetMedian)} lines.`,
     ...(previous ? [`THE PREVIOUS VERSION (write a better one, keep what works):\n${previous.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}`] : []),
     ...(note ? [`THE USER ASKS: ${String(note).slice(0, 300)}`] : []),

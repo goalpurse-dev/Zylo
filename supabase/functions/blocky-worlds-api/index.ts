@@ -8,6 +8,9 @@
 //   BLOCKY_WORLDS_PAID_CALLS=off     a hard off switch for every paid call
 //   BLOCKY_WORLDS_RENDERER           unset = video making is off: start refuses BEFORE anything is charged (the 3D
 //                                    renderer is not built yet); a tester's dryRun still runs every check and the price
+// The protocol (docs/blocky-worlds-protocol.md): "Pick an idea" serves unseen ideas from the judged library first; every
+// source becomes a complete idea card; then card -> beat sheet -> script, each step checked and retried on its own.
+// Learning: picked / rewritten / generated / downloaded / thumbs are counted per library idea (event action).
 // The price comes from the length here and the script is re-checked here: nothing the page sends about either is
 // trusted. Credits are charged once, at start, in the same transaction that creates the run (blocky_worlds_start_run).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -23,7 +26,9 @@ import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { providerFrom, repairOpener, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { cardFromScript, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
+import { cardProblems } from "../_shared/blockyWorlds/protocol.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -121,6 +126,14 @@ async function runView(r: any, { owner = false } = {}) {
   };
 }
 
+/** Count one learning event (the row, and the library idea's stat). Returns false when it was already counted. */
+async function countEvent(userId: string, libraryId: string | null, kind: string, { draftId = null, runId = null }: { draftId?: string | null; runId?: string | null } = {}) {
+  const { error } = await admin.from("blocky_worlds_events").insert({ user_id: userId, library_id: libraryId, draft_id: draftId, run_id: runId, kind });
+  if (error) { if (!/duplicate key/i.test(error.message)) console.error("[blocky-worlds-api] event:", error.message); return false; }
+  if (libraryId) await admin.rpc("blocky_worlds_bump", { p_library: libraryId, p_kind: kind });
+  return true;
+}
+
 /** The kind of checks a draft gets: ours keep their parts; anything the user saved is checked as their own. */
 const kindOf = (d: any) => (d.checks?.kind === "written" ? "written" : "own");
 function recheck(d: any, lengthSec = d.length_sec) {
@@ -172,6 +185,20 @@ async function handle(req: Request, trace: Trace) {
     const who = await requireUser(req, trace);
     const topic = action === "topicIdeas" ? String(body?.topic ?? "").trim().replace(/\s+/g, " ") : null;
     if (topic != null) { const bad = topicProblem(topic); if (bad) throw new ApiError("BAD_INPUT", bad); }
+    if (topic == null) {
+      // the judged library: only ideas this user hasn't seen, mixed across formulas and moods; no call, no daily limit
+      trace.step = "library";
+      const mood = moodOf(body?.mood);
+      const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: 60 });
+      if (cErr) console.error("[blocky-worlds-api] library:", cErr.message);
+      const chosen = pickForUser(cands ?? [], IDEAS_PER_BATCH, mood);
+      if (chosen.length >= IDEAS_PER_BATCH) {
+        const { data: rows, error } = await admin.from("blocky_worlds_ideas").insert(chosen.map((c: any) => ({ user_id: who.user.id, source: "library", library_id: c.id, idea: c.idea }))).select("id, idea");
+        if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+        await admin.rpc("blocky_worlds_mark_seen", { p_user: who.user.id, p_ids: chosen.map((c: any) => c.id) });
+        return { ideas: (rows ?? []).map((r: any) => cardOf(r.idea, r.id)), batchesLeft: null, fromLibrary: true };
+      }
+    }
     trace.step = "limits";
     const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : 0.01, "writing");
     const allowed = ideaBatchesFor(who.plan), used = Number(counts.user_ideas_today ?? 0);
@@ -231,22 +258,38 @@ async function handle(req: Request, trace: Trace) {
       ideaRow = (await admin.from("blocky_worlds_ideas").select("*").eq("id", body.ideaId).eq("user_id", who.user.id).maybeSingle()).data;
       if (!ideaRow) throw new ApiError("NOT_FOUND", "We couldn't find that idea. Get new ideas and pick one.");
     }
-    const idea = ideaRow?.idea ?? { opener: d?.lines?.[0]?.text ?? "", title: d?.title ?? "", premise: narrationOf({ lines: (d?.lines ?? []).slice(0, 6) }), price: "", examples: [], narrator: "a kid", prop: "", twist: "keep the script's own ending", closer: d?.lines?.at(-1)?.text ?? "", formula: "", twistType: "", mood: "", setting: "" };
+    // step 1: the complete idea card (a library or topic idea is one already; a user's own script is read back into one)
+    let card: any = d?.card ?? ideaRow?.idea ?? null, costUsd = 0;
+    const libraryId = ideaRow?.library_id ?? null;
+    trace.step = "card";
+    if (!card || cardProblems(card).length) {
+      if (!d?.lines?.length) throw new ApiError("NOT_FOUND", "We couldn't find that idea. Get new ideas and pick one.");
+      try { const c = await cardFromScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, lines: d.lines }); costUsd += c.costUsd; card = c.card; } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
+    }
+    // step 2: the beat sheet (kept across rewrites of the same length)
+    trace.step = "beats";
+    let beats: any = d?.beats && d.length_sec === lengthSec ? d.beats : null;
+    if (!beats) {
+      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
+    }
+    // step 3: the script, following the beats
     trace.step = "writer";
     let written: any;
     try {
-      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea, lengthSec, previous: d ? { lines: d.lines } : null, note: String(body?.note ?? "").slice(0, 300) });
+      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note: String(body?.note ?? "").slice(0, 300), beats });
     } catch (e: any) {
-      await logCall(who.user.id, "script", e?.costUsd ?? 0, false);
+      await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
       throw writerError(e);
     }
-    await logCall(who.user.id, "script", written.costUsd);
+    await logCall(who.user.id, "script", written.costUsd + costUsd);
     const s = written.script, checks = { ...written.check, kind: "written" };
-    const row = { title: s.title, length_sec: lengthSec, lines: s.lines, post: s.post, checks, updated_at: new Date().toISOString() };
+    const row = { title: s.title, length_sec: lengthSec, lines: s.lines, post: s.post, checks, card, beats, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update({ ...row, writes: d.writes + 1 }).eq("id", d.id).select("*").single()
       : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, idea_id: ideaRow.id, source: ideaRow.source === "topic" ? "topic" : "idea", writes: 1 }).select("*").single();
     if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
+    // learning: a library idea was picked (its first script) or rewritten
+    if (libraryId) await countEvent(who.user.id, libraryId, d ? "rewritten" : "picked", { draftId: saved.data.id });
     return { ...draftView(saved.data), writesLeft: await scriptsLeft(who.user.id) };
   }
 
@@ -262,7 +305,11 @@ async function handle(req: Request, trace: Trace) {
     if (!script.lines.length) throw new ApiError("BAD_INPUT", "Write or paste a script first.");
     if (!script.post.title) script.post.title = script.title || script.lines[0].text.slice(0, 70);
     const checks = { ...checkScript(script, lengthSec, "own"), kind: "own" };
-    const row = { title: script.title || script.post.title, length_sec: lengthSec, lines: script.lines, post: script.post, checks, updated_at: new Date().toISOString() };
+    let card: any = d?.card ?? null;
+    if (!card && !checks.problems.length) {
+      try { const c = await cardFromScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, lines: script.lines }); card = c.card; await logCall(who.user.id, "script", c.costUsd); } catch (e: any) { console.error("[blocky-worlds-api] card from script:", e?.message ?? e); }
+    }
+    const row = { title: script.title || script.post.title, length_sec: lengthSec, lines: script.lines, post: script.post, checks, card, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update(row).eq("id", d.id).select("*").single()
       : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, source: "own" }).select("*").single();
@@ -305,8 +352,11 @@ async function handle(req: Request, trace: Trace) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
+    const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
+    await admin.from("blocky_worlds_runs").update({ card: d.card ?? null, library_id: ideaLib }).eq("id", run.id);
+    if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the renderer picks queued runs up (its dispatch is part of the renderer milestone)
-    return await runView(run, { owner: who.owner });
+    return await runView({ ...run, library_id: ideaLib }, { owner: who.owner });
   }
 
   // ---------- 5. results ----------
@@ -320,6 +370,20 @@ async function handle(req: Request, trace: Trace) {
   const { data: run } = await admin.from("blocky_worlds_runs").select("*").eq("id", runId).eq("user_id", who.user.id).is("deleted_at", null).maybeSingle();
   if (!run) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
   if (action === "status") return await runView(run, { owner: who.owner });
+  if (action === "event") {
+    const kind = String(body?.kind ?? "");
+    if (!["downloaded", "thumb_up", "thumb_down"].includes(kind)) throw new ApiError("BAD_INPUT");
+    if (run.status !== "done") throw new ApiError("BAD_INPUT", "This video isn't ready yet.");
+    const fresh = await countEvent(who.user.id, run.library_id, kind, { draftId: run.draft_id, runId: run.id });
+    // a user's own idea (topic or pasted) that made a good video joins the library as "pending": anonymised (only the
+    // idea card, no user data), and the AI judge decides on the next library tick whether anyone else sees it
+    if (fresh && !run.library_id && (kind === "thumb_up" || kind === "downloaded") && run.card && !cardProblems(run.card).length) {
+      const c = run.card;
+      const { error } = await admin.from("blocky_worlds_library").insert({ idea: c, opener: c.opener, opener_key: openerKey(c.opener), formula: c.formula, twist: c.twistType, mood: c.mood, setting: c.setting, status: "pending", source: "user", source_draft: run.draft_id });
+      if (error && !/duplicate key/i.test(error.message)) console.error("[blocky-worlds-api] promote:", error.message);
+    }
+    return { ok: true };
+  }
   if (action === "remove") {
     if (!["done", "failed"].includes(run.status)) throw new ApiError("BAD_INPUT", "This video is still being made.");
     await admin.from("blocky_worlds_runs").update({ deleted_at: new Date().toISOString() }).eq("id", runId);
