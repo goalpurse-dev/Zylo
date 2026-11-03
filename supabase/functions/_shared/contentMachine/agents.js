@@ -74,6 +74,8 @@ export const SCOUT_SCHEMA = obj({
   hooks: strs,
   sounds: strs,
   sources: { type: "array", items: obj({ title: str, url: str }) },
+  // the Trend radar's candidates (owner, 2026-11-03): the laptop checks each one's real public view counts before anything is made
+  ai_video_trends: { type: "array", items: obj({ name: str, looks_like: str, search_phrase: str, queries: strs, example_urls: strs }) },
 });
 
 export const SCOUT_SYSTEM = `You scout short-form content trends for Zyvo's own accounts (faceless YouTube / TikTok creators, AI video and AI tools; photo carousels and slideshows on TikTok and Instagram, YouTube Shorts).
@@ -82,6 +84,7 @@ Use web search to find what is working RIGHT NOW (the last 2–4 weeks): slidesh
 - top_formats: up to 5, each with why it works and one example description (no links to copyrighted material needed).
 - hooks: up to 8 hook patterns. sounds: up to 5 sound / audio trends for photo posts, if any are reported.
 - sources: every page you used (title, url).
+- ai_video_trends: up to 8 AI-made video FORMATS rising right now (several different creators posting the same kind of video in the last 2–4 weeks, with 1M+ views), e.g. "skeleton educational videos", "giant caught on camera", "What If explainers". For each: name, looks_like (one line), search_phrase (what a viewer would search: "how to make ___ videos"), queries (2–3 YouTube/TikTok search terms that find the examples), example_urls (direct youtube.com/watch, youtube.com/shorts or tiktok.com/@user/video links you actually saw; none rather than guessed). Views are checked on the pages later: never state view counts here.
 Never invent numbers or trends; if search finds little, say so in trend_brief. Return only the JSON object.`;
 
 export function scoutRequest({ model, today, maxSearches = 5 }) {

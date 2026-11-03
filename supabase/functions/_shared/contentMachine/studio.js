@@ -26,6 +26,13 @@ export const STUDIO_TEMPLATES = Object.freeze({
   long_form: { name: "Long Form", ready: true, source: "long_form_project", menu: ["Long Form"], route: "/long-form", angles: ["A6", "A10", "A12"] },
   clay_rescue: { name: "Clay Rescue", ready: false, why: "needs real facts on the fact sheet and a capture kit first" },
 });
+/** The one-click presets: hand-written recipes on the laptop worker (its heartbeat lists them under the preset's key). */
+export const STUDIO_PRESETS = Object.freeze({
+  rage_hook: { name: "Rage hook", recipe: { angle: "RH", angle_name: "Rage hook", hook_type: "rage_hook", length_bucket: "20-25", end_trigger: "comment" },
+    estimate: { usd: 0.1, why: "Hand-written script ($0); 3 takes of the yell and the other lines (about $0.05–0.10, at most $0.25); the render is on the laptop ($0)." } },
+  trend_howto: { name: "Trend how-to", recipe: { angle: "TH", angle_name: "Trend how-to", hook_type: "trend_howto", length_bucket: "20-40", end_trigger: "link_in_bio" },
+    estimate: { usd: 0.05, why: "Hand-written script ($0); its voice lines once (about $0.04–0.06, at most $0.25); the render is on the laptop ($0)." } },
+});
 const TRIGGERS = ["comment", "repost", "save"];
 
 // Third-party brands a line of a reused creation must not name (it is shown with its sound: such a scene is skipped)
@@ -282,21 +289,23 @@ export function studioActions({ cm, store, now, files }) {
 
     // The "Rage hook" preset (owner, 2026-11-03): one click, one job from a recipe on the laptop worker (its heartbeat lists
     // them). The worker lays out the hand-written script ($0) and it waits for the owner's approval like any script.
+    // "Trend how-to" (owner, 2026-11-03: the main format) works the same way from the worker's trend_howto list.
     studioPreset: async ({ user, body }) => {
       const s = await store.readSettings();
       if (s.kill_switch) throw new ApiError("KILL_SWITCH", "The kill switch is on. Turn it off first.", 409);
-      if (body?.preset !== "rage_hook") throw new ApiError("VALIDATION", "Unknown preset.");
-      const recipes = (await cm.studioWorkers()).flatMap((w) => w.info?.rage_hook ?? []);
+      const P = STUDIO_PRESETS[body?.preset];
+      if (!P) throw new ApiError("VALIDATION", "Unknown preset.");
+      const recipes = (await cm.studioWorkers()).flatMap((w) => w.info?.[body.preset] ?? []);
       const r = recipes.find((x) => x.key === String(body?.key ?? ""));
-      if (!r) throw new ApiError("VALIDATION", "That Rage hook recipe isn't on the laptop worker. Start the worker and try again.");
+      if (!r) throw new ApiError("VALIDATION", `That ${P.name} recipe isn't on the laptop worker. Start the worker and try again.`);
       const T = STUDIO_TEMPLATES[r.template];
       if (!T) throw new ApiError("VALIDATION", `No Studio template "${r.template}".`);
-      const [job] = await cm.createStudioJobs([{ created_at: now().toISOString(), batch_id: crypto.randomUUID(), template: r.template, mode: "prompt", prompt: `Rage hook: ${r.key}`,
-        recipe: { angle: "RH", angle_name: "Rage hook", preset: "rage_hook", recipe_key: r.key, hook_type: "rage_hook", world: "studio", length_bucket: "20-25", end_trigger: "comment", famous_name: false, template: r.template },
+      const [job] = await cm.createStudioJobs([{ created_at: now().toISOString(), batch_id: crypto.randomUUID(), template: r.template, mode: "prompt", prompt: `${P.name}: ${r.key}`,
+        recipe: { ...P.recipe, preset: body.preset, recipe_key: r.key, world: "studio", famous_name: false, template: r.template },
         source: { kind: T.source, id: r.creation_id, title: r.creation },
-        estimate: { usd: 0.1, why: "Hand-written script ($0); 3 takes of the yell and the other lines (about $0.05–0.10, at most $0.25); the render is on the laptop ($0)." },
+        estimate: P.estimate,
         status: "queued", created_by: user.email }]);
-      await store.audit(user.email, "studio.preset", { preset: "rage_hook", key: r.key, id: job.id });
+      await store.audit(user.email, "studio.preset", { preset: body.preset, key: r.key, id: job.id });
       return { job };
     },
 

@@ -1,0 +1,22 @@
+[
+ {
+  "template": "long_form",
+  "fits": "what if|hypothetical",
+  "source_kind": "long_form_project",
+  "why": "The owner's real What-If Long Form video (9310e95c, 9:17, 141 scenes) and its real step screens (screens_trend_whatif). Only a What-If trend uses it: the video shown must be the same kind as the trend.",
+  "recipe": {
+   "template": "long_form", "world": "studio", "cap_usd": 0.15, "step_tempo": 1.0, "screens": "screens_trend_whatif",
+   "creation": { "id": "9310e95c-35ce-4b36-902d-51f8f43e39ab", "title": "What If Ancient Humans Had Modern Medicine?", "file": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_517.mp4", "hq_dir": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_hq", "hq_ext": "jpg" },
+   "calm": "Watch. I made this one with Zyvo.",
+   "clip": { "in": 0.0, "out": 2.48, "says": "That vial never cured the village." },
+   "steps": [
+    { "text": "Step one: open Zyvo, pick Long Form.", "key": "Long", "screen": "s_menu.jpg", "taps": [[5, 0.24, 0.45]] },
+    { "text": "Step two: type your What If question.", "key": "question.", "screen": "s_lf_typed.jpg" },
+    { "text": "Step three: it writes, voices and draws every scene.", "key": "every", "screen": "s_lf_scenes.jpg" }
+   ],
+   "reveal": { "text": "Nine minutes. 141 scenes.", "key": "141", "visual": { "value": 141, "label": "SCENES IN MY REAL 9:17 VIDEO" } },
+   "end": { "text": "It's called Zyvo. Link in bio.", "key": ["Zyvo.", "bio."] },
+   "claims": ["9:17 and 141 scenes: the owner's Long Form project 9310e95c, as its own editor and publish page show (captured 2026-11-03)"]
+  }
+ }
+]

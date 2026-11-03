@@ -547,7 +547,7 @@ if clip and not S.get("no_phone"):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{vt0:.3f}", "-t", f"{dur:.3f}", "-i", os.path.join(opt["--pics"], clip["file"]), "-vf", "fps=30", os.path.join(pdir, "f%05d.png")], check=True)   # lossless frames (no JPEG step)
     phone = {"vt0": round(vt0, 3), "fps": 30, "count": len(os.listdir(pdir))}
 json.dump({"engine": engine, "template": S.get("template"), "clip": clip, "clips": clips, "phone": phone, "total": round(total, 3), "fps": FPS, "lines": timed, "events": events, "music_db_under_voice": round(float(measured), 1), "end_chip": S.get("end_chip"), "whooshes": whooshes, "filled_quiet": filled,
-           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "loop_back", "length_target", "hq_dir", "tempo", "phone_skip", "world", "headline") if k in S} or None},
+           "short": {k: S[k] for k in ("variant", "recipe", "shots", "start_at", "chips", "steps_total", "cta", "counter", "timer", "loop_end", "loop_back", "split","length_target", "hq_dir", "tempo", "phone_skip", "world", "headline") if k in S} or None},
           open(os.path.join(out, "timing.json"), "w", encoding="utf-8"), indent=1)
 print(f"{engine}: {total:.2f} s, {sum(len(t['words']) for t in timed)} words, music {measured:.1f} dB under the voice, spread lines: {[i for i, t in enumerate(timed) if t.get('spread')]}")
 for tl in timed:

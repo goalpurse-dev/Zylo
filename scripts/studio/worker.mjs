@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { admin } from "file:///C:/Users/Public/Zylo/scripts/blocky/lib.mjs";
 import { writeStory, recentScripts } from "./storyWriter.mjs";
 import { rageScripts, rageRecipes, loadRecipe, makeRageTakes } from "./rageHook.mjs";
+import { trendHowTo, trendRecipes } from "./trendHowTo.mjs";
 import { createBudgetGuard } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/budgetGuard.js";
 import { createStore } from "file:///C:/Users/Public/Zylo-contentmachine/supabase/functions/_shared/contentMachine/store.js";
 
@@ -29,13 +30,26 @@ const OUT = path.join(HERE, "..", "..", "content", "studio-previews", "worker");
 fs.mkdirSync(OUT, { recursive: true });
 const ID = `${os.hostname().toLowerCase().replace(/[^a-z0-9-]/g, "")}-studio`.slice(0, 60);
 const db = admin();
+const RADAR_FILE = path.join(HERE, "..", "..", "content", "studio-worker", "radar", "radar.json");
+/** The Trend radar once a day, after 10:00 on the laptop (the daily scout has named its candidates by then). $0. */
+async function dailyRadar() {
+  const today = new Date().toISOString().slice(0, 10);
+  let day = null; try { day = JSON.parse(fs.readFileSync(RADAR_FILE, "utf8")).day; } catch { /* first run */ }
+  if (day === today || new Date().getHours() < 10) return;
+  console.log("trend radar: checking today's trends");
+  await run("node", [path.join(HERE, "trendRadar.mjs"), "--queue"]).catch((e) => console.log(`trend radar: ${e.message}`));
+  await heartbeat().catch(() => {});
+}
 const must = (r, what) => { if (r.error) throw new Error(`${what}: ${r.error.message}`); return r.data; };
 const winPath = (p) => p.replace(/\\/g, "/");
 
 async function heartbeat() {
   // the Rage hook recipes on this laptop: the Studio tab's one-click presets
-  let presets = []; try { presets = rageRecipes(); } catch { /* none */ }
-  await db.from("cm_studio_workers").upsert({ id: ID, last_seen: new Date().toISOString(), info: { host: os.hostname(), gpu: "laptop (local)", version: "studio-worker 1", rage_hook: presets } });
+  let presets = [], trends = []; try { presets = rageRecipes(); } catch { /* none */ }
+  try { trends = trendRecipes(); } catch { /* none */ }
+  // the Trend radar's last report (the Studio tab shows the rising trends and the Template ideas list)
+  let radar = null; try { const r = JSON.parse(fs.readFileSync(RADAR_FILE, "utf8")); radar = { day: r.day, trends: r.trends.filter((t) => t.rising).map((t) => ({ name: t.name, status: t.status, fit: t.fit?.name ?? null, recipe_key: t.recipe_key ?? null, examples: t.examples.slice(0, 3).map(({ url, views, channel, platform, age_days }) => ({ url, views, channel, platform, age_days })) })), template_ideas: r.template_ideas }; } catch { /* no report yet */ }
+  await db.from("cm_studio_workers").upsert({ id: ID, last_seen: new Date().toISOString(), info: { host: os.hostname(), gpu: "laptop (local)", version: "studio-worker 1", rage_hook: presets, trend_howto: trends, radar } });
 }
 async function claim() {
   const [next] = must(await db.from("cm_studio_jobs").select("id").eq("status", "queued").order("created_at").limit(1), "queued jobs");
@@ -177,7 +191,54 @@ async function makeRageJob(job) {
   return { ideaId, spend: spent, passed: "RH" };
 }
 
+/** The "Trend how-to" preset (owner, 2026-11-03: the main format): the recipe's script ($0); waits for approval. */
+async function writeTrendJob(job) {
+  await progress(job, "laying out the Trend how-to script");
+  const R = loadRecipe(job.recipe.recipe_key);
+  const script = { ...trendHowTo(R), variant: job.id.slice(0, 8), trend_recipe: R };
+  script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
+  await setJob(job.id, { status: "script_review", script, spend_usd: 0, progress: "script ready: waiting for your approval", worker: null });
+}
+
+/** After the approval: each line's voice once (Budget Guard, capped), the render, the Queue. */
+async function makeTrendJob(job) {
+  if (!job.script_approved_at || !job.script) throw new Error("this script was never approved: nothing renders without your approval");
+  const script = job.script, R = script.trend_recipe, work = path.join(env.STUDIO_SCRATCH, "trend", job.id);
+  fs.mkdirSync(work, { recursive: true });
+  const scriptFile = path.join(work, "script.json"); fs.writeFileSync(scriptFile, JSON.stringify(script, null, 1));
+  const takes = path.join(env.STUDIO_SCRATCH, "story", job.id); fs.mkdirSync(takes, { recursive: true });
+  let spent = Number(job.spend_usd) || 0;
+  const chars = script.lines.filter((l, i) => !fs.existsSync(path.join(takes, `line${String(i + 1).padStart(2, "0")}.mp3`))).reduce((a, l) => a + (l.say ?? l.text).length, 0);
+  if (chars) {
+    await progress(job, `making its voices (${chars} characters)`);
+    const est = chars * VOICE_USD_PER_CHAR, cap = Math.min(VOICE_CAP_PER_VIDEO, R.cap_usd ?? VOICE_CAP_PER_VIDEO);
+    if (est > cap) throw new Error(`the voices would cost up to $${est.toFixed(2)}, over the $${cap} cap`);
+    const r = await guard.spend("other", "studio.voice_lines", est, async () => {
+      const out = await run("node", [path.join(HERE, "elevenTakes.mjs"), winPath(scriptFile), winPath(takes)], { env: { CAP_USD: String(cap) } });
+      return { result: out, actualUsd: Number(out.match(/total \$([\d.]+)/)?.[1] ?? est) };
+    }, { lane: "studio", live: true });
+    spent += r.actualUsd ?? est;
+    await db.from("cm_studio_jobs").update({ spend_usd: spent }).eq("id", job.id);
+  }
+  const mp4 = winPath(path.join(OUT, `studio_${job.id.slice(0, 8)}_trend.mp4`));
+  await progress(job, "rendering in the studio world (laptop GPU)");
+  const whole = fs.existsSync(mp4) && (await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4]).then((o) => Number(o) > 1).catch(() => false));
+  if (!whole) await run("bash", [path.join(HERE, "buildStory.sh"), winPath(scriptFile), winPath(path.join(work, "render")), mp4], { env: { SCREENS: winPath(path.join(env.SRC_WORK, R.screens)), MEDIA: "/nonexistent" } });
+  if (!fs.existsSync(mp4)) throw new Error("the render made no video");
+  await progress(job, "putting it in the Queue");
+  const spec = path.join(work, "publish.json");
+  await run("node", [path.join(HERE, "storyPublish.mjs"), winPath(scriptFile), mp4, winPath(spec), String(spent)], { env: { IN_LEDGER: "1" } });
+  const pub = await retry(() => run("node", [path.join(HERE, "publishToQueue.mjs"), winPath(spec), "--apply"]), "the upload");
+  const ideaId = pub.match(/idea ([0-9a-f-]{36})/)?.[1];
+  if (!ideaId) throw new Error(`publish: ${pub.trim().slice(-200)}`);
+  return { ideaId, spend: spent, passed: "TH" };
+}
+
 async function make(job) {
+  if (job.recipe?.preset === "trend_howto") {
+    if (!job.script_approved_at) { await writeTrendJob(job); return null; }
+    return makeTrendJob(job);
+  }
   if (job.recipe?.preset === "rage_hook") {
     if (!job.script_approved_at) { await writeRageJob(job); return null; }
     return makeRageJob(job);
@@ -195,7 +256,7 @@ if (orphans.length) console.log(`${orphans.length} unfinished job(s) put back in
 const beat = setInterval(() => heartbeat().catch(() => {}), 30_000);
 for (;;) {
   const job = await claim().catch((e) => { console.log(`claim: ${e.message}`); return null; });
-  if (!job) { if (ONCE) break; await new Promise((r) => setTimeout(r, 20_000)); continue; }
+  if (!job) { if (ONCE) break; await dailyRadar(); await new Promise((r) => setTimeout(r, 20_000)); continue; }
   try {
     const r = await make(job);
     if (!r) { if (ONCE) break; continue; }   // the script waits for the owner

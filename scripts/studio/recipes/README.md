@@ -34,3 +34,15 @@ yell (mid-yell on frame 0, a desk slam) → "Watch." → 0.5 s of total silence 
 - Free layout check before anyone pays: `content/studio-worker/scratch/story/rage_preview/preview.mjs <key> [stills t1,t2,...]` uses Windows' built-in voice in place of the paid takes.
 
 **Screens that need the running state:** `capture/cutawayProgress.mjs` photographs the Cutaway progress screens from the local dev page's built-in sample states. The screens are real, but their percent and timer are sample values.
+
+## Trend how-to (`"structure": "trend_howto"`, the main format since 2026-11-03)
+
+A search answer to a rising "how to make ___" question (`trendHowTo.mjs`). The rules are checked in code:
+- `search_phrase` must appear in line 1 (`hook`), `title`, `search_title` and `caption`.
+- `examples` must hold two real public videos of the trend. Each one carries its `url`, `views` (rounded down), `credit` and the day its count was `checked`. They're drawn on frame 0 with the big yellow title and are never presented as ours.
+- `urgency` (a "before it's too late" style line) is allowed only with `rising.evidence`.
+- The Zyvo-made clip plays on a TV (Long Form) or a phone. After it come 3 `steps` on real screens, the `reveal` and "Link in bio."
+
+`trendRadar.mjs` writes these recipes for rising trends (see the file's header). The worker runs it once a day.
+
+Free preview: `content/studio-worker/scratch/story/rage_preview/trend_preview.mjs <recipe file name>`.

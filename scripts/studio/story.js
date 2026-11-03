@@ -114,8 +114,10 @@ for (const b of beats) {
   const c = CLIPS.find((x) => x.start > b.t0 && x.start < b.t1); if (c) b.t1 = c.start - 0.45;   // out of the way of a clip
   if (b.visual) { const p = makeProp(b.visual, { tl }); b.prop = p; p.group.visible = false; scene.add(p.group); p.group.position.set(...(b.visual.pos ?? [0.2, 4.05, -0.3])); p.base = p.group.position.clone(); p.scale = b.visual.scale ?? 1; }
 }
+// the Trend how-to's frame 0: two real examples of the trend + the title, until the line `until_line` starts
+const SPLIT = SH.split ? { ...SH.split, out: L[SH.split.until_line ?? 2].start - 0.3 } : null;
 const screenImg = {};
-await Promise.all([...new Set([...beats.filter((b) => b.screen).map((b) => b.screen.file), ...FLIPS.map((f) => f.file)])].map((file) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${file}`; screenImg[file] = im; })));
+await Promise.all([...new Set([...beats.filter((b) => b.screen).map((b) => b.screen.file), ...FLIPS.map((f) => f.file), ...(SPLIT?.cards ?? []).map((c) => c.file)])].map((file) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${file}`; screenImg[file] = im; })));
 
 function cameraAt(t) {
   const s = PLAN.find((p) => t >= p.t0 && t < p.t1) ?? PLAN.at(-1);
@@ -185,7 +187,8 @@ const LOOP = SH.loop_end ? { secs: SH.loop_end.secs ?? 0.5, first: CLIPS.find((c
 const headlineAt = SH.headline?.hidden ? null : SH.headline;   // hidden: kept for the Queue and the approval form, never drawn
 
 window.renderAt = async (t) => {
-  const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([c, k]) => k > 0.999 && !c.frame);   // a TV or phone leaves the world in view
+  const splitOn = SPLIT && t < SPLIT.out + 0.35;
+  const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([c, k]) => k > 0.999 && !c.frame) || (splitOn && t < SPLIT.out);   // a TV or phone leaves the world in view
   const beat = beats.find((b) => t >= b.t0 && t < b.t1);
   let cam = cameraAt(t);
   if (!covered) {
@@ -198,6 +201,7 @@ window.renderAt = async (t) => {
   for (const [c, k] of full) await drawClip(c, t, k);
   const inClip = full.find(([, k]) => k > 0.5)?.[0];
   const boxes = [];
+  if (splitOn) boxes.push(["trend split", ov.trendSplit(SPLIT.cards.map((c) => ({ ...c, img: screenImg[c.file] })), SPLIT.title, t, t - SPLIT.out)]);
 
   // the real screen, BIG, with its one sticker
   let shot = null;
@@ -224,7 +228,7 @@ window.renderAt = async (t) => {
   if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && !looped && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
+  if (chunk && !inClip) ov.caption(chunk, t, splitOn ? 1460 : L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 
   if (LOOP?.first && t > END - LOOP.secs) {
     const a = Math.min(1, (t - (END - LOOP.secs)) / Math.max(0.05, LOOP.secs - 1 / 30));
@@ -233,7 +237,7 @@ window.renderAt = async (t) => {
   }
 
   // checks (faces, antenna; a real screen or clip is allowed over the cast: the voice carries on over it)
-  if (!covered && !shot && !cam.moving && !full.length) {
+  if (!covered && !shot && !cam.moving && !full.length && !splitOn) {
     const faces = (obj) => { const q = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())); return q.dot(camera.position.clone().sub(obj.getWorldPosition(new THREE.Vector3()))) > 0; };
     const keys = [];
     for (const [name, c] of [["creator", creator], ["Zee", zee]]) if (faces(c.parts.head)) keys.push([`${name} face`, c.parts.head]); else note(`${name} back to camera`, t, where);
@@ -248,7 +252,7 @@ window.renderAt = async (t) => {
     }
   }
   if (Q.get("zones")) ov.zones();
-  if (t < 0.01) obs.frame0 = { covered, headline: headlineAt?.text ?? null };
+  if (t < 0.01) obs.frame0 = { covered, headline: headlineAt?.text ?? SPLIT?.title.join(" ") ?? null };
   return true;
 };
 loaded.then(() => { window.ready = true; });

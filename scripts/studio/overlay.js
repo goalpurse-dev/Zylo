@@ -146,6 +146,42 @@ export function makeOverlay(ctx) {
       ctx.restore();
       return { x0: x - 8, y0: y - 8, x1: x + ww + 8, y1: y + h + 8 };
     },
+    /** The Trend how-to's frame 0 (owner, 2026-11-03): two REAL public examples of the trend stacked, each with its real
+     *  view count and a small credit (not ours), a big two-row title across the seam ("HOW TO MAKE" over a yellow
+     *  "WHAT IF VIDEOS"). Whole from age 0; slides up and fades from outAge >= 0. */
+    trendSplit(cards, title, age, outAge = -1) {
+      const k = outAge > 0 ? Math.min(1, outAge / 0.35) : 0, e = k * k, dy = -260 * e;
+      ctx.save(); ctx.globalAlpha = 1 - e;
+      ctx.fillStyle = "#0c0d11"; ctx.fillRect(0, 0, W, H);
+      const cw = 900, ch = cw * 9 / 16, tops = [300, 300 + ch + 64];
+      cards.forEach((c, i) => {
+        const x = (W - cw) / 2 - 45, y = tops[i] + dy;   // left of centre: clear of the icon column's middle
+        ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, cw, ch, 22); ctx.clip();
+        if (c.img) { const r = Math.max(cw / c.img.naturalWidth, ch / c.img.naturalHeight); ctx.drawImage(c.img, x + (cw - c.img.naturalWidth * r) / 2, y + (ch - c.img.naturalHeight * r) / 2, c.img.naturalWidth * r, c.img.naturalHeight * r); }
+        ctx.restore();
+        ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x, y, cw, ch, 22); ctx.stroke();
+        // the view count, as on the platform (bottom left), and the credit under it
+        ctx.font = `46px ${FONT}`; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+        const bx = Math.max(SAFE.left + 6, x + 22), by = y + ch - 74;
+        // the play triangle is drawn (the emoji font would paint ▶ as a blue tile)
+        ctx.beginPath(); ctx.moveTo(bx, by - 17); ctx.lineTo(bx + 30, by); ctx.lineTo(bx, by + 17); ctx.closePath();
+        ctx.lineWidth = 8; ctx.strokeStyle = "rgba(0,0,0,0.9)"; ctx.stroke(); ctx.fillStyle = "#ffffff"; ctx.fill();
+        ctx.lineWidth = 9; ctx.strokeText(c.views, bx + 44, by); ctx.fillText(c.views, bx + 44, by);
+        ctx.font = `26px ${FONT}`; ctx.lineWidth = 6; ctx.strokeText(c.credit, bx, by + 42); ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.fillText(c.credit, bx, by + 42);
+      });
+      // the title over the top of the second card: both view counts and credits stay readable
+      const seam = tops[1] + 70 + dy;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      let size = 84; ctx.font = `${size}px ${FONT}`;
+      const maxW = W - SAFE.left - SAFE.right - 30;
+      while (Math.max(ctx.measureText(title[0]).width, ctx.measureText(title[1]).width + 50) > maxW && size > 50) { size -= 4; ctx.font = `${size}px ${FONT}`; }
+      ctx.lineWidth = size * 0.2; ctx.strokeStyle = "rgba(0,0,0,0.92)"; ctx.strokeText(title[0], SAFE_CX, seam - size * 0.62); ctx.fillStyle = "#ffffff"; ctx.fillText(title[0], SAFE_CX, seam - size * 0.62);
+      const tw = ctx.measureText(title[1]).width + 50, th = size * 1.12;
+      ctx.fillStyle = YELLOW; ctx.beginPath(); ctx.roundRect(SAFE_CX - tw / 2, seam + size * 0.55 - th / 2, tw, th, 12); ctx.fill();
+      ctx.fillStyle = "#0c0d11"; ctx.fillText(title[1], SAFE_CX, seam + size * 0.58);
+      ctx.restore();
+      return { x0: SAFE.left, y0: tops[0] + dy, x1: W - SAFE.right, y1: tops[1] + ch + dy };
+    },
     /** A tap on a real screen: a ring that lands on the spot and stays a moment. */
     tapRing(x, y, age) {
       if (age < 0 || age > 0.85) return;

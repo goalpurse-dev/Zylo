@@ -1,0 +1,83 @@
+[
+ {
+  "name": "What If explainer videos",
+  "looks_like": "a simple cartoon character in \"What if you …?\" explainers",
+  "search_phrase": "how to make What If videos",
+  "queries": [
+   "what if you",
+   "what if explainer animation"
+  ],
+  "match": "^what if (you|your|every|we|humans|earth|the (earth|sun|moon))\\b"
+ },
+ {
+  "name": "AI skeleton educational videos",
+  "looks_like": "a 3D skeleton living through history (\"what if you lived in ancient Rome\")",
+  "search_phrase": "how to make skeleton videos",
+  "queries": [
+   "ai skeleton",
+   "skeleton what if"
+  ],
+  "match": "skeleton"
+ },
+ {
+  "name": "Giant caught on camera videos",
+  "looks_like": "giants filmed like real phone footage",
+  "search_phrase": "how to make giant caught on camera videos",
+  "queries": [
+   "giant caught on camera ai",
+   "giant creature caught on camera"
+  ],
+  "match": "giant.*(caught|on camera)|(caught|camera).*giant"
+ },
+ {
+  "name": "Doodle ASMR videos",
+  "looks_like": "a flat white doodle squeezing real slime",
+  "search_phrase": "how to make doodle ASMR videos",
+  "queries": [
+   "doodle asmr",
+   "doodle slime asmr"
+  ],
+  "match": "doodle.*asmr|asmr.*doodle"
+ },
+ {
+  "name": "AI fruit drama videos",
+  "looks_like": "fruit people in a soap-opera story",
+  "search_phrase": "how to make AI fruit videos",
+  "queries": [
+   "ai fruit drama",
+   "fruit love island"
+  ],
+  "match": "fruit.*(drama|love|cheat|story)|(drama|love island).*fruit"
+ },
+ {
+  "name": "Realistic cartoon POV videos",
+  "looks_like": "walking into a cartoon's house filmed like it's real",
+  "search_phrase": "how to make realistic cartoon POV videos",
+  "queries": [
+   "cartoon in real life pov ai",
+   "realistic cartoon pov"
+  ],
+  "match": "(cartoon|spongebob|simpsons).*(real life|realistic|pov)|pov.*(cartoon|spongebob)"
+ },
+ {
+  "name": "AI food slide videos",
+  "looks_like": "a baby sliding down giant food",
+  "search_phrase": "how to make AI food slide videos",
+  "queries": [
+   "ai food slide",
+   "oddly satisfying ai food slide"
+  ],
+  "match": "food slide|sliding on (pizza|food|cake)",
+  "hard": "Medium: single clips already work with Image Generator + Video Generator; a one-click template needs a food-slide preset (giant food set + a cartoon baby reference) and a long-video stitcher (the examples are ~20 min compilations). Caution: the top three are the same 19:55 video on different channels, so the trend may be re-uploads."
+ },
+ {
+  "name": "Blocky story videos",
+  "looks_like": "short stories in a blocky toy world",
+  "search_phrase": "how to make blocky story videos",
+  "queries": [
+   "blocky story animation",
+   "lego story ai"
+  ],
+  "match": "(blocky|lego).*(story|animation)"
+ }
+]

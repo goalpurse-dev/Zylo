@@ -13,6 +13,8 @@ import { lengthBudget, revisionNote, writeStory } from "../scripts/studio/storyW
 import { templateFor, ANGLE_TEMPLATES } from "../scripts/studio/storyTemplates.mjs";
 import fs from "node:fs";
 import { rageHookScript, rageTakes, rageScripts, rageRecipes } from "../scripts/studio/rageHook.mjs";
+import { trendHowTo, trendRecipes } from "../scripts/studio/trendHowTo.mjs";
+import { checkTrend, fitOf, draftRecipe } from "../scripts/studio/trendRadar.mjs";
 import { applyScriptEdits, onScreen } from "../supabase/functions/_shared/contentMachine/scriptEdit.js";
 import { fakeWorld, apiFor } from "./helpers/contentMachineFakes.mjs";
 
@@ -179,6 +181,65 @@ test("the Rage hook preset: one click makes one job from a recipe the worker lis
   const off = studioApi({ workers, settings: { kill_switch: true } });
   assert.equal((await off.call({ action: "studioPreset", preset: "rage_hook", key: "rage_lf_weekend" })).ok, false);
   assert.equal(off.jobs.length, 0);
+});
+
+test("Trend how-to (owner, 2026-11-03): the search phrase everywhere, two real credited examples on frame 0, the real clip on a TV, 3 steps, link in bio", () => {
+  const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/trend_howto_what_if.json", import.meta.url), "utf8"));
+  const S = trendHowTo(R);
+  assert.match(S.lines[0].text, /how to make What If videos/);
+  assert.deepEqual(S.split.title, ["HOW TO MAKE", "WHAT IF VIDEOS"]);
+  assert.equal(S.split.cards.length, 2);
+  assert.ok(S.split.cards.every((c) => c.views && c.credit && c.file));
+  assert.equal(S.split.until_line, 2);   // the split leaves as "Watch." starts and the real clip comes in
+  assert.deepEqual([S.clips[0].frame, S.clips[0].after_line], ["tv", 2]);
+  assert.deepEqual(S.lines.filter((l) => l.screen).map((l) => l.screen.chip), ["STEP 1", "STEP 2", "STEP 3"]);
+  assert.match(S.lines.at(-1).text, /Link in bio/);
+  assert.equal(S.music_style, "none");
+  assert.ok(S.claims.some((c) => c.includes(R.examples[0].url)));   // every example's real count is on the record
+  assert.equal(S.recipe.angle, "TH");
+  // the rules refuse a broken recipe
+  assert.throws(() => trendHowTo({ ...R, hook: { text: "These are amazing.", key: "amazing." } }), /first line must contain/);
+  assert.throws(() => trendHowTo({ ...R, caption: "Look at this." }), /caption must contain/);
+  assert.throws(() => trendHowTo({ ...R, examples: [R.examples[0]] }), /two real examples/);
+  assert.throws(() => trendHowTo({ ...R, examples: [R.examples[0], { ...R.examples[1], checked: null }] }), /two real examples/);
+  assert.throws(() => trendHowTo({ ...R, urgency: true, rising: null }), /urgency line needs the evidence/);
+  assert.ok(trendRecipes().some((p) => p.key === "th_what_if"));
+});
+
+test("Trend radar: only real public numbers, rising = 2+ creators with 1M+ in 4 weeks, unrelated titles never count; YES -> a recipe, NO -> a template idea", async () => {
+  const yt = { "what if you": [
+    { url: "u1", id: "a", title: "What If You Could Stop Time?", channel: "A", views: 2_400_000, age_days: 14, platform: "YouTube" },
+    { url: "u2", id: "b", title: "What If Your Reaction Time Was 10x Faster?", channel: "B", views: 4_600_000, age_days: 21, platform: "YouTube" },
+    { url: "u3", id: "c", title: "What If They Never Met?", channel: "C", views: 35_000_000, age_days: 21, platform: "YouTube" },   // a vlog, not the format
+    { url: "u4", id: "d", title: "What If You Doubled in Size?", channel: "D", views: 3_000_000, age_days: 40, platform: "YouTube" },   // too old
+    { url: "u5", id: "e", title: "What If You Fell?", channel: "E", views: 900_000, age_days: 5, platform: "YouTube" },   // under 1M
+  ] };
+  const search = async (q) => yt[q] ?? [];
+  const seed = { name: "What If explainer videos", search_phrase: "how to make What If videos", queries: ["what if you"], match: "^what if (you|your)\\b" };
+  const r = await checkTrend(seed, { search, tiktok: async () => null, pause: 0 });
+  assert.deepEqual(r.examples.map((v) => v.url), ["u2", "u1"]);
+  assert.equal(r.rising, true);
+  assert.equal((await checkTrend({ ...seed, queries: ["nothing"] }, { search, tiktok: async () => null, pause: 0 })).rising, false);
+  // one creator twice is not a trend
+  const solo = async () => [{ url: "x1", title: "What If You A", channel: "A", views: 2e6, age_days: 3 }, { url: "x2", title: "What If You B", channel: "A", views: 2e6, age_days: 4 }];
+  assert.equal((await checkTrend(seed, { search: solo, tiktok: async () => null, pause: 0 })).rising, false);
+  assert.equal(fitOf(seed).template, "long_form");
+  assert.equal(fitOf({ name: "AI food slide videos", looks_like: "a baby sliding down giant food" }), null);   // no template: a Template idea
+  const base = JSON.parse(fs.readFileSync(new URL("../scripts/studio/radar/bases.json", import.meta.url), "utf8"))[0];
+  const D = draftRecipe(r, base);
+  const S = trendHowTo(D);   // a radar recipe passes the format's own rules
+  assert.equal(S.split.cards[0].views, "4.6M");   // rounded down, never more than the real count
+  assert.match(D.rising.evidence, /4,600,000 \(B, 21 days\)/);
+  assert.equal(D.urgency, false);
+});
+
+test("the Trend how-to preset: one click makes one job from a recipe the worker lists", async () => {
+  const workers = [{ id: "w", last_seen: NOW.toISOString(), info: { trend_howto: [{ key: "th_what_if", title: "HOW TO MAKE WHAT IF VIDEOS", template: "long_form", creation: "What If", creation_id: "LF1" }] } }];
+  const { call, jobs } = studioApi({ workers });
+  assert.match((await call({ action: "studioPreset", preset: "trend_howto", key: "nope" })).message, /Trend how-to recipe isn't on the laptop worker/);
+  assert.equal((await call({ action: "studioPreset", preset: "trend_howto", key: "th_what_if" })).ok, true);
+  assert.deepEqual([jobs[0].status, jobs[0].recipe.preset, jobs[0].recipe.angle, jobs[0].recipe.recipe_key, jobs[0].source.id], ["queued", "trend_howto", "TH", "th_what_if", "LF1"]);
+  assert.equal(jobs[0].script_approved_at, undefined);
 });
 
 test("script approval: a written script waits, the owner's edits go with the approval, only then it can render", async () => {
