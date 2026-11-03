@@ -25,8 +25,10 @@ const REG = PROD && env.CUTAWAY_FLY_PROD_TOKEN ? { name: NAME, token: env.CUTAWA
 const FLY_TOKEN = REG.token;
 if (!KEY || !FLY_TOKEN) throw new Error(`missing ${PROD ? "CUTAWAY_RUNPOD_PROD_API_KEY or CUTAWAY_FLY_PROD_TOKEN" : "RUNPOD_API_KEY or FLY_CUTAWAY_STAGING_TOKEN"} in .env.local`);
 // the 16 GB workstation tier: RunPod schedules by price tier, and the 24 GB tier (L4, A5000, 3090) also hands out MIG slices
-// (a slice of an RTX PRO 6000 Blackwell came up), which have no graphics: WebGL falls back to software there
-export const GPUS = ["NVIDIA RTX A4000", "NVIDIA RTX 4000 Ada Generation", "NVIDIA RTX A4500", "NVIDIA RTX 2000 Ada Generation"];
+// (a slice of an RTX PRO 6000 Blackwell came up), which have no graphics: WebGL falls back to software there.
+// A5000 and 3090 come last, as fallbacks when the 16 GB tier runs out (owner, 2026-11-03: previews failed on "no GPU for
+// 8 minutes"); a graphics-less slice fails fast with NO_GPU (gpu.mjs) and the run is retried.
+export const GPUS = ["NVIDIA RTX A4000", "NVIDIA RTX 4000 Ada Generation", "NVIDIA RTX A4500", "NVIDIA RTX 2000 Ada Generation", "NVIDIA RTX A5000", "NVIDIA GeForce RTX 3090"];
 const rp = async (p, init = {}) => { const r = await fetch(`https://rest.runpod.io/v1${p}`, { ...init, headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" } }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; } if (!r.ok) throw new Error(`${init.method ?? "GET"} ${p}: ${r.status} ${t.slice(0, 300)}`); return j; };
 
 const auths = await rp("/containerregistryauth").catch(() => []);

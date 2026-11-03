@@ -6,7 +6,7 @@ import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../su
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
 import { funnelStats } from "../supabase/functions/_shared/funnelStats.js";
 import { welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
-import { failOrRetry, onEvent } from "../supabase/functions/_shared/cutaway/orchestrate.js";
+import { failOrRetry, isWaitingInLine, LIMITS, onDispatchFailed, onEvent, onWatch } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
 
@@ -268,13 +268,59 @@ test("a preview's job asks for the first seconds only and has no full file", () 
 });
 
 test("a failed free preview never reaches the CPU fallback, and is given back", () => {
-  const run = { id: "r", topic: "t", status: "render", provider: "runpod", provider_job_id: "j", attempt: 2, free_preview: true };
+  const run = { id: "r", topic: "t", status: "render", provider: "runpod", provider_job_id: "j", attempt: LIMITS.previewAttempts, free_preview: true };
   const r = failOrRetry(run, { code: "NO_GPU_SLOT", message: "no GPU" });
   assert.equal(r.patch.status, "failed");
   assert.ok(r.actions.some((a) => a.type === "releasePreview"));
   assert.equal(r.patch.provider, undefined);
   const paying = failOrRetry({ ...run, free_preview: false }, { code: "NO_GPU_SLOT", message: "no GPU" });
   assert.equal(paying.patch.provider, "fly", "a paying customer's video keeps its fallback");
+});
+
+test("a free preview waits in line: 4 tries on RunPod, a longer wait for a GPU, then given back", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { id: "r", topic: "t", status: "queued", provider: "runpod", provider_job_id: "j", attempt: 1, free_preview: true, created_at: ago(700), dispatched_at: ago(700) };
+  // the paid wait (8 min) isn't enough to give up on a preview; 10 min is: a new place in line, the old job cancelled
+  assert.deepEqual(onWatch({ ...run, dispatched_at: ago(LIMITS.queueSec + 5) }, { status: "IN_QUEUE" }, NOW).actions, []);
+  const requeued = onWatch(run, { status: "IN_QUEUE" }, NOW);
+  assert.equal(requeued.patch.attempt, 2);
+  assert.deepEqual(requeued.actions.map((a) => a.type), ["cancel", "dispatch"]);
+  // a worker without graphics or a lost worker: tried again up to the 4th attempt, then failed and given back
+  for (const attempt of [1, 2, 3]) assert.equal(failOrRetry({ ...run, attempt }, { code: "NO_GPU", message: "no graphics" }, NOW).patch.attempt, attempt + 1);
+  const last = failOrRetry({ ...run, attempt: LIMITS.previewAttempts }, { code: "NO_GPU_SLOT", message: "no GPU" }, NOW);
+  assert.equal(last.patch.status, "failed");
+  assert.ok(last.actions.some((a) => a.type === "releasePreview"));
+  assert.equal(failOrRetry({ ...run, attempt: 1 }, { code: "GATE_FAILED" }, NOW).patch.status, "failed", "the video's own failures are never retried");
+  // the owner's preparation runs and paying customers keep their old path
+  assert.equal(failOrRetry({ ...run, preview_pool: true, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.status, "failed");
+  assert.equal(failOrRetry({ ...run, free_preview: false, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.provider, "fly");
+});
+
+test("a free preview whose sending failed is sent again a minute later, not failed", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { id: "r", topic: "t", status: "queued", provider: null, provider_job_id: null, attempt: 1, free_preview: true, created_at: ago(5) };
+  const wait = onDispatchFailed(run, "runpod", "upload URL: Service Unavailable", NOW);
+  assert.equal(wait.patch.error_code, "DISPATCH_FAILED");
+  assert.deepEqual(wait.actions, []);
+  const waiting = { ...run, ...wait.patch };
+  assert.deepEqual(onWatch(waiting, null, NOW + 30000).actions, [], "not before a minute");
+  const again = onWatch(waiting, null, NOW + 61000);
+  assert.equal(again.patch.attempt, 2);
+  assert.deepEqual(again.actions, [{ type: "dispatch", target: "runpod", role: "video" }]);
+  assert.equal(onDispatchFailed({ ...run, attempt: LIMITS.previewAttempts }, "runpod", "x", NOW), null, "out of tries: the usual end");
+  assert.equal(onDispatchFailed({ ...run, free_preview: false }, "runpod", "x", NOW), null, "a paid run keeps its path");
+});
+
+test("the page's 'in line': a free preview no worker has yet, after 90 s or a retry", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { status: "queued", attempt: 1, free_preview: true, dispatched_at: ago(30), heartbeat_at: null };
+  assert.equal(isWaitingInLine(run, NOW), false, "the first seconds are normal");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(LIMITS.busySec + 5) }, NOW), true);
+  assert.equal(isWaitingInLine({ ...run, attempt: 2, status: "render" }, NOW), true, "a retry waits in line again");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), heartbeat_at: ago(10) }, NOW), false, "a worker has it");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), free_preview: false }, NOW), false);
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), status: "failed" }, NOW), false);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /run\?\.inLine[\s\S]*High demand, your video is in line/);
 });
 
 test("finishing reports to the funnel: the preview ready, and the gift video done", () => {

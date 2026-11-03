@@ -63,8 +63,17 @@ function Rendering({ run }) {
     <section className="relative z-10 w-full text-center" data-testid="first-video-rendering">
       <FloatingClips />
       <div className="relative z-10">
-      <h1 className="text-[27px] font-black leading-tight tracking-tight text-white">Your video is coming to life</h1>
-      <p className="mt-1.5 text-[14px] text-white/70">This usually takes a minute or two. You can leave: it stays on your home page.</p>
+      {run?.inLine ? (
+        <>
+          <h1 className="text-[27px] font-black leading-tight tracking-tight text-white" data-testid="first-video-in-line">High demand, your video is in line</h1>
+          <p className="mt-1.5 text-[14px] text-white/70">Lots of people are making videos right now. Yours starts as soon as a spot is free. You can leave: it stays on your home page.</p>
+        </>
+      ) : (
+        <>
+          <h1 className="text-[27px] font-black leading-tight tracking-tight text-white">Your video is coming to life</h1>
+          <p className="mt-1.5 text-[14px] text-white/70">This usually takes a minute or two. You can leave: it stays on your home page.</p>
+        </>
+      )}
       <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
       <ol className="mt-6 grid gap-2.5 text-left">
         {STAGES.map((label, i) => (
