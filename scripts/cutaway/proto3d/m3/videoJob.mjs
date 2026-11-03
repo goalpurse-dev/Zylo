@@ -211,7 +211,9 @@ async function main() {
 
   try {
     // (mode "local": this laptop's own GPU, for the local test of the roles)
-    const renderer = mode === "local" ? "local" : role === "video" && mode === "gpu" ? await useGpu() : role === "plan" ? "none" : useSoftware();
+    // (the plan role renders too: its preview check takes stills, and without the software flags Chrome refused to start
+    // as root on the Fly machine, so every paid video that lost its GPU before its plan failed there; 56f25b9c, 2026-11-03)
+    const renderer = mode === "local" ? "local" : role === "video" && mode === "gpu" ? await useGpu() : useSoftware();
     tell("progress", { stage: job.plan?.get ? "render" : "script", renderer });
 
     if (role === "video" || role === "plan") {
