@@ -75,6 +75,7 @@ test("checkin_root1 (owner, 2026-11-04): the same check-in, only the sender is n
   const root = CAMPAIGNS.checkin_root1, day = CAMPAIGNS.checkin_day1;
   assert.equal(root.from, "Niko <niko@tryzyvo.com>");
   assert.equal(day.from, "Niko <niko@mail.tryzyvo.com>");
-  for (const k of ["replyTo", "subject", "why", "plain", "opensTracked"]) assert.equal(root[k], day[k], k);
+  for (const k of ["replyTo", "subject", "why", "plain"]) assert.equal(root[k], day[k], k);
+  assert.equal(root.opensTracked, false, "no open tracking on tryzyvo.com: the report says opens were not measured");
   assert.deepEqual(root.render(footer, {}), day.render(footer, {}));
 });
