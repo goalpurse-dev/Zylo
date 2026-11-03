@@ -6,8 +6,10 @@ import { MOODS } from "../../../../../supabase/functions/_shared/blockyWorlds/fo
 import { cardOf, IDEAS_PER_BATCH } from "../../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
 import { PRICES } from "../../../../../supabase/functions/_shared/blockyWorlds/pricing.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../../../../../supabase/functions/_shared/blockyWorlds/script.js";
-import { cardFromScript, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../../../../../supabase/functions/_shared/blockyWorlds/llm.js";
+import { cardFromScript, writeBeats, writeIdeas, writeScript } from "../../../../../supabase/functions/_shared/blockyWorlds/llm.js";
 import { errorFromReply } from "../api/blockyWorldsApi";
+// the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
+import LIBRARY from "./libraryFixture.json";
 
 const Q = new URLSearchParams(window.location.search);
 // the renderer is pretended ON by default so the whole flow can be clicked through (?renderer=0 shows the "off" state)
@@ -15,7 +17,26 @@ const AS = Q.get("as") ?? "starter", RENDERER = Q.get("renderer") !== "0";
 const PAID = ["starter", "pro", "generative"].includes(AS);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const id = () => crypto.randomUUID();
-const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0 };
+const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0, served: new Set() };
+
+/** The next library ideas this visitor hasn't seen, best first with a little shuffle (like the server's pickForUser). */
+function libraryBatch(mood) {
+  const fresh = LIBRARY.filter((r) => !state.served.has(r.id) && (!mood || r.idea.mood === mood));
+  const picked = fresh.map((r, i) => ({ r, k: i + Math.random() * 12 })).sort((a, b) => a.k - b.k).slice(0, IDEAS_PER_BATCH).map((x) => x.r);
+  picked.forEach((r) => state.served.add(r.id));
+  return picked.map((r) => r.idea);
+}
+/** "Your topic" in test mode: three worlds built around the words typed (no writer call), on library ideas' bones. */
+function topicIdeasFor(topic, mood) {
+  const t = String(topic).trim().toLowerCase(), T = t.replace(/^./, (c) => c.toUpperCase());
+  const rules = [
+    [`In this town, ${t} is in charge, and everybody obeys.`, `${T} Is in Charge`, `Everybody obeyed. Except me.`],
+    [`In this world, if you say "${t}" out loud, it shows up at your door that night.`, `Never Say ${T}`, `I said it in my sleep.`],
+    [`In this town, every night ${t} gets one wish, and the whole street pays for it.`, `${T}'s Wish`, `Then it wished for me.`],
+  ];
+  const bones = LIBRARY.filter((r) => !mood || r.idea.mood === mood);
+  return rules.map(([opener, title, teaser], i) => ({ ...bones[(state.seed * 3 + i) % bones.length].idea, opener, title, teaser }));
+}
 const fail = (code, error, extra = {}) => { throw errorFromReply({ code, error, ...extra }); };
 
 const draftView = (d) => ({ id: d.id, source: d.source, ideaId: d.ideaId, title: d.title, lengthSec: d.lengthSec, lines: d.lines, post: d.post, credits: PRICES[d.lengthSec], check: d.check, ready: !d.check.problems.length, updatedAt: d.updatedAt, writesLeft: 14 });
@@ -30,9 +51,14 @@ export async function devCall(action, body) {
   if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3 };
   if (AS === "guest") fail("SIGN_IN");
   if (action === "ideas" || action === "topicIdeas") {
-    const r = action === "ideas" ? await writeIdeas({ provider: "mock", seed: state.seed++, mood: body.mood ?? null }) : await writeTopicIdeas({ provider: "mock", topic: body.topic, mood: body.mood ?? null, seed: state.seed++ });
-    const cards = r.ideas.slice(0, action === "ideas" ? IDEAS_PER_BATCH : 3).map((idea) => { const k = id(); state.ideas.set(k, { idea, source: action === "ideas" ? "library" : "topic" }); return cardOf(idea, k); });
-    return { ideas: cards, batchesLeft: null, fromLibrary: action === "ideas" };
+    // the library first (like the server); once a mood's library is used up, the mock writer, as the live writer would
+    const fromLib = action === "ideas" ? libraryBatch(body.mood ?? null) : [];
+    const fromLibrary = fromLib.length >= IDEAS_PER_BATCH;
+    const ideas = action === "topicIdeas" ? topicIdeasFor(body.topic, body.mood ?? null)
+      : fromLibrary ? fromLib : (await writeIdeas({ provider: "mock", seed: ++state.seed, mood: body.mood ?? null })).ideas;
+    state.seed++;
+    const cards = ideas.slice(0, action === "ideas" ? IDEAS_PER_BATCH : 3).map((idea) => { const k = id(); state.ideas.set(k, { idea, source: action === "ideas" ? "library" : "topic" }); return cardOf(idea, k); });
+    return { ideas: cards, batchesLeft: null, fromLibrary };
   }
   if (!PAID) fail("UPGRADE");
   if (action === "writeScript" || action === "rewrite") {

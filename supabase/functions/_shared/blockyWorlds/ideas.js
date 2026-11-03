@@ -107,7 +107,7 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
 /** The user message for a library batch call: the slots the batch job planned (library.js planSlots), with settings. */
 export function slotsPrompt(slots, avoid = []) {
   return `Write ${slots.length} ideas, one for each slot, in this order:\n${slotText(slots)}\n${slots.map((s, i) => `Slot ${i + 1} setting: ${s.setting ?? "any"}`).join("\n")}` +
-    (avoid.length ? `\n\nAlready in the library (never repeat or lightly reword these rules):\n${avoid.slice(0, 60).map((a) => `- ${a}`).join("\n")}` : "");
+    (avoid.length ? `\n\nAlready in the library (never repeat or lightly reword these rules; the same rule with new nouns is a repeat too: a candle for a nightlight, pie for soup, a toy store for a department store):\n${avoid.slice(0, 60).map((a) => `- ${a}`).join("\n")}` : "");
 }
 
 /** An idea as the writer returned it, cleaned: the opener fixed when it is a near miss, words trimmed. */

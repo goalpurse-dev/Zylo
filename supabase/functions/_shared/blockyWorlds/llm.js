@@ -68,14 +68,27 @@ async function callJson({ apiKey, model, system, user, schema, effort = "low", m
 
 // ---------- the free mock provider ----------
 const hash = (s) => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-// seed 0: the hand-written examples (the UI flow); later seeds: synthetic ideas from word lists, each its own rule, so the
-// library job's dedup, judge and ranking can be exercised for free
-const THINGS = ["umbrella", "mailbox", "lighthouse", "scarecrow", "fountain", "kite", "piano", "snowglobe", "lantern", "bicycle", "teapot", "clocktower", "billboard", "carousel", "weathervane", "doorbell", "treehouse", "jukebox"];
-const DOINGS = ["follows the last person who laughed", "remembers every lie told near it", "swaps places with you at midnight", "grows one size for every secret", "sings the name of whoever is lost", "only works for the saddest kid in town", "eats one shadow every full moon", "rings when someone is about to move away", "keeps the town's missing socks", "points at whoever broke the rule"];
+// seed 0: the hand-written examples (the UI flow); later seeds: synthetic ideas, one per rule below (each its own thing
+// and its own rule, never one rule with the noun swapped), repeating after the list, so the library job's dedup, judge
+// and ranking can be exercised for free
+const RULES = [
+  ["umbrella", "opens by itself whenever somebody tells a lie"], ["mailbox", "delivers letters from next Tuesday"],
+  ["lighthouse", "shines on whoever is most homesick"], ["scarecrow", "trades hats with the bravest farmer at dawn"],
+  ["kite", "pulls its owner up to the clouds when they giggle"], ["piano", "plays your worst memory out loud on Sundays"],
+  ["snowglobe", "shakes the real weather every time it is dropped"], ["bicycle", "pedals backwards through yesterday"],
+  ["teapot", "pours whatever its holder truly wishes for"], ["clocktower", "steals one minute from every sleepy kid"],
+  ["billboard", "prints the mayor's private diary each morning"], ["carousel", "turns riders into the animal they sit on"],
+  ["weathervane", "points toward someone about to cry"], ["doorbell", "answers back in grandpa's voice"],
+  ["treehouse", "grows another floor for each friend made"], ["jukebox", "chooses which neighbor must dance at noon"],
+  ["bathtub", "drains into the ocean under the school"], ["vending machine", "only takes compliments as coins"],
+  ["crosswalk", "moves to wherever the fastest runner stands"], ["trampoline", "bounces kids into tomorrow's homework"],
+  ["sandbox", "buries one forgotten birthday wish each night"], ["chimney", "breathes out dreams the town had"],
+  ["shopping cart", "races every shopper home after closing"], ["garden gnome", "collects the names of rude neighbors"],
+];
 const PRICES_M = ["you lose your shadow for a week", "your house forgets your name", "every clock you own runs backwards", "your voice turns into birdsong", "you wake up on the roof", "your dog moves next door", "it follows you to school"];
 const TWISTS_M = ["it was protecting the town from something worse", "the rule was written by a lonely kid long ago", "the mayor broke the rule first", "it only obeys whoever is kindest", "the narrator's grandma built it", "it was asleep the whole time", "the warning sign was upside down"];
 const mockIdea = (slot, n) => {
-  const thing = THINGS[n % THINGS.length], doing = DOINGS[Math.floor(n / THINGS.length) % DOINGS.length];
+  const [thing, doing] = RULES[n % RULES.length];
   const price = PRICES_M[(n * 3) % PRICES_M.length], twist = TWISTS_M[(n * 5) % TWISTS_M.length];
   return {
     opener: `In this town, the old ${thing} ${doing}.`, title: `The ${thing[0].toUpperCase()}${thing.slice(1)}`,
@@ -84,7 +97,7 @@ const mockIdea = (slot, n) => {
     examples: [`Mr. Ortiz built a fence around his ${thing}.`, `The baker sings to the ${thing} at dawn.`, `School closes when the ${thing} sulks.`],
     narrator: `Remy, the one kid the ${thing} never notices.`, prop: `a chipped ${thing} key`,
     twist: `Turns out ${twist}, and the chipped ${thing} key proves it.`,
-    teaser: `It noticed everyone except me.`, closer: `Now the ${thing} only listens to me.`,
+    teaser: [`Nobody warned me about the ${thing}.`, `The ${thing} picked the wrong kid.`, `I was the only one it skipped.`, `Then the ${thing} looked at me.`][n % 4], closer: `Now the ${thing} only listens to me.`,
     formula: slot.formula, twistType: slot.twist, mood: slot.mood, setting: slot.setting ?? "town square",
   };
 };

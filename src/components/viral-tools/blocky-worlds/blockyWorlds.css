@@ -103,7 +103,27 @@
 @keyframes bw-bob { 0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-6px) rotate(var(--rot, 0deg)); } }
 .bw-bob { animation: bw-bob 5s ease-in-out infinite; animation-delay: var(--delay, 0s); }
 
+/* the story engine: a lime light running round its border, a soft glow that grows when you type */
+@keyframes bw-spin { to { transform: rotate(360deg); } }
+.bw-engine { position: relative; overflow: hidden; isolation: isolate; background: rgba(255, 255, 255, .1); box-shadow: 0 0 46px rgba(190, 242, 100, .14), 0 20px 50px -24px rgba(0, 0, 0, .9); transition: box-shadow .3s ease; }
+.bw-engine::before {
+  content: ""; position: absolute; inset: -150% -10%; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0 52%, rgba(190, 242, 100, .25) 62%, #BEF264 72%, #4ADE80 78%, transparent 88%);
+  animation: bw-spin 4.5s linear infinite;
+}
+.bw-engine:focus-within { box-shadow: 0 0 0 4px rgba(190, 242, 100, .1), 0 0 80px rgba(190, 242, 100, .28), 0 20px 50px -24px rgba(0, 0, 0, .9); }
+
+/* the idea card's world tile: blocky checker, a wiggle on hover */
+.bw-checker::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background-image: repeating-conic-gradient(rgba(255, 255, 255, .1) 0 25%, transparent 0 50%); background-size: 16px 16px;
+}
+@keyframes bw-wiggle { 0%, 100% { transform: rotate(0) scale(1); } 30% { transform: rotate(-8deg) scale(1.08); } 60% { transform: rotate(6deg) scale(1.08); } }
+.bw-tile { transition: transform .25s cubic-bezier(.3, 1.5, .5, 1); }
+@media (hover: hover) { .group:hover .bw-tile { animation: bw-wiggle .55s ease-in-out; transform: scale(1.06); } }
+
 @media (prefers-reduced-motion: reduce) {
+  .bw-engine::before, .group:hover .bw-tile { animation: none; }
   .bw-card-in, .bw-shimmer::after, .bw-line-in, .bw-caret, .bw-word, .bw-push, .bw-sweep::before, .bw-confetti,
   .bw-step-in, .bw-glow, .bw-ping, .bw-bob { animation: none; }
   .bw-lift, .bw-xfade, .bw-input-glow { transition: none; }

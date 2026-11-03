@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { contentWords, duplicateOf, openerKey, similarity, scoreVerdict, RUBRIC, ACCEPT, rankOf, mixWeights, planSlots, pickForUser, batchCost, judgeSchema } from "../supabase/functions/_shared/blockyWorlds/library.js";
+import { contentWords, duplicateOf, openerKey, ruleSimilarity, SWAP_AT, similarity, scoreVerdict, RUBRIC, ACCEPT, rankOf, mixWeights, planSlots, pickForUser, batchCost, judgeSchema } from "../supabase/functions/_shared/blockyWorlds/library.js";
 import { cardProblems, beatProblems, propProblems, callbackProblem, shotProblems, SHOTS, USES, beatsSchema, shotsSchema } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "../supabase/functions/_shared/blockyWorlds/examples.js";
 import { normalizeScript, PART_IDS } from "../supabase/functions/_shared/blockyWorlds/script.js";
@@ -22,6 +22,22 @@ test("dedup: the same rule in other words is a duplicate; a different rule is no
   assert.ok(similarity(lava, lava2) >= 0.42, `similarity ${similarity(lava, lava2)}`);
   assert.equal(duplicateOf(lava2, [{ ...lava, key: openerKey(lava.opener) }])?.title, lava.title);
   assert.equal(duplicateOf(listener, [{ ...lava, key: openerKey(lava.opener) }]), null);
+});
+
+test("dedup: the same rule with one noun swapped, or swapped for a near-synonym, is a duplicate (2026-11-04)", () => {
+  const base = { price: "", twist: "" };
+  const piano = { ...base, title: "Piano", opener: "In this town, the old piano follows the last person who laughed." };
+  const globe = { ...base, title: "Globe", opener: "In this town, the old snowglobe follows the last person who laughed." };
+  assert.equal(duplicateOf(globe, [piano])?.title, "Piano");
+  const candle = { ...base, title: "Candle", opener: "In this world, kids who own a candle are Keepers who sleep upstairs, and kids without one sleep in the dark cellar halls." };
+  const nightlight = { ...base, title: "Nightlight", opener: "In this world, kids with a nightlight get the upstairs bedrooms, and the rest of us sleep in the dark basement." };
+  assert.ok(ruleSimilarity(candle, nightlight) >= SWAP_AT, `rule similarity ${ruleSimilarity(candle, nightlight)}`);
+  assert.equal(duplicateOf(nightlight, [candle])?.title, "Candle");
+  // the same formula with a different rule stays: "every family leaves..." is shared by design
+  const soup = { ...base, title: "Soup", opener: "In this town, every family leaves one bowl of soup at the woods edge, every night, for the Hungry Stump." };
+  const sock = { ...base, title: "Sock", opener: "In this town, every kid leaves one sock on the porch every night for the Lamp Walker." };
+  assert.equal(duplicateOf(sock, [soup]), null);
+  assert.equal(duplicateOf(listener, [candle, soup]), null);
 });
 
 // ---------- the judge ----------
@@ -112,15 +128,18 @@ test("protocol: beat sheets and shot plans are checked against the 7 parts and t
 test("library job: ticks generate, check, dedup, judge and store until the target; only accepted ideas go live", async () => {
   await noNetwork(async () => {
     const store = memoryStore();
-    // the mock writer's word lists allow only a few dozen truly different rules, so the target is small; the dedup
-    // blocking the rest is part of what this test shows
-    let batch = { id: "b1", requested: 8, status: "running", accepted: 0 };
+    // the mock writer has 24 different rules (llm.js RULES), so the target is small; the dedup blocking its repeats is
+    // part of what this test shows
+    let batch = { id: "b1", requested: 6, status: "running", accepted: 0 };
     for (let i = 0; i < 40 && batch.status === "running"; i++) ({ batch } = await tick({ store, batch, provider: "mock", maxUsd: Infinity, callsPerTick: 3, seed: 11 + i * 7 }));
     const live = store.rows.filter((r) => r.status === "live"), rejected = store.rows.filter((r) => r.status === "rejected");
     assert.equal(batch.status, "done");
-    assert.ok(live.length >= 8, `live ${live.length}`);
+    assert.ok(live.length >= 6, `live ${live.length}`);
     assert.ok(rejected.length > 0, "the judge rejects some");
-    assert.ok(batch.duplicates > 0, "dedup catches repeats");
+    // a second batch from the same seeds writes the same rules again: the dedup blocks them
+    let again = { id: "b2", requested: 1, status: "running", accepted: 0 };
+    ({ batch: again } = await tick({ store, batch: again, provider: "mock", maxUsd: Infinity, callsPerTick: 1, seed: 11 }));
+    assert.ok(batch.duplicates + again.duplicates > 0, "dedup catches repeats");
     // a revision may keep its rejected original's opener; among live ideas a key is unique (the database's rule too)
     assert.equal(new Set(live.map((r) => r.opener_key)).size, live.length, "no two live ideas share a key");
     for (const r of live) { assert.deepEqual(cardProblems(r.idea), []); assert.ok(r.score >= ACCEPT.minScore); }

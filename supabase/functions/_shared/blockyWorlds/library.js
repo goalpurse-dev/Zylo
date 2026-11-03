@@ -26,12 +26,33 @@ export function similarity(a, b) {
   return Number((0.75 * rule + 0.25 * twist).toFixed(3));
 }
 export const DUPLICATE_AT = 0.42;
-/** The library idea this one duplicates (same key, or similarity >= DUPLICATE_AT), or null. */
+
+// Ideas that are the same rule with the nouns swapped for near-synonyms ("a candle" / "a nightlight", "the cellar" /
+// "the basement") share no words, so similarity() misses them. Each word below stands for its family; two openers
+// whose family words mostly match are the same rule. (2026-11-04: six such groups were found in the live library.)
+const FAMILIES = {
+  light: "light nightlight candle lantern torch flame glow glowing lamp flashlight bulb firefly mushroom",
+  below: "basement cellar underground downstairs",
+  above: "upstairs attic",
+  store: "store shop mall supermarket department toy",
+};
+const FAMILY_OF = new Map(Object.entries(FAMILIES).flatMap(([fam, words]) => words.split(" ").map((w) => [contentWords(w)[0] ?? w, fam])));
+// the formulas' own words ("every family leaves...", "we all live inside a giant...", "everyone... except me") are
+// shared by design, so they never make two ideas the same rule
+const FORMULA_WORDS = new Set(contentWords("family families leave leaves night nights live lives inside giant except everyone born kid kids whole all who own get gets"));
+/** The opener's distinctive words, each near-synonym replaced by its family. */
+export const ruleWords = (opener) => [...new Set(contentWords(opener).filter((w) => !FORMULA_WORDS.has(w)).map((w) => FAMILY_OF.get(w) ?? w))];
+/** How alike two rules are once synonyms count as the same word (0-1, openers only). */
+export const ruleSimilarity = (a, b) => Number(jaccard(ruleWords(a.opener), ruleWords(b.opener)).toFixed(3));
+export const SWAP_AT = 0.4;
+
+/** The library idea this one duplicates (same key, similarity >= DUPLICATE_AT, or the same rule with swapped nouns), or null. */
 export function duplicateOf(idea, library) {
   const key = openerKey(idea.opener);
   for (const other of library) {
     if (other.key === key || openerKey(other.opener) === key) return other;
     if (similarity(idea, other) >= DUPLICATE_AT) return other;
+    if (ruleSimilarity(idea, other) >= SWAP_AT) return other;
   }
   return null;
 }
