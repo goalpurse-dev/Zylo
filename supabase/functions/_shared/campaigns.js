@@ -135,6 +135,11 @@ const didYouTry = {
   ], "Niko"),
 };
 
+// The same check-in from the main domain (owner, 2026-11-04: both seed inboxes got it in Gmail's
+// Primary from niko@tryzyvo.com). A one-off test of 20 real people; everything else stays on mail.
+export const ROOT_NIKO = "Niko <niko@tryzyvo.com>";
+const didYouTryRoot = { ...didYouTry, from: ROOT_NIKO };
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -164,6 +169,8 @@ export const CAMPAIGNS = {
   checkin_day5: didYouTry,
   checkin_day6: didYouTry,
   checkin_day7: didYouTry,
+  // Wed 4 Nov 11:00–13:00 Finnish: 20 people, ON, logged in during the 48 hours before, no check-in yet, mostly Gmail.
+  checkin_root1: didYouTryRoot,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after

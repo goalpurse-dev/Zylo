@@ -70,3 +70,11 @@ test("the gate: 2 marketing emails and no open → unengaged; the cron wakes for
   assert.match(sql, /seed_at = c\.seed_at \+ interval '24 hours'/);
   assert.match(sql, /revoke all on function public\.fill_campaign_from_engaged/);
 });
+
+test("checkin_root1 (owner, 2026-11-04): the same check-in, only the sender is niko@tryzyvo.com", () => {
+  const root = CAMPAIGNS.checkin_root1, day = CAMPAIGNS.checkin_day1;
+  assert.equal(root.from, "Niko <niko@tryzyvo.com>");
+  assert.equal(day.from, "Niko <niko@mail.tryzyvo.com>");
+  for (const k of ["replyTo", "subject", "why", "plain", "opensTracked"]) assert.equal(root[k], day[k], k);
+  assert.deepEqual(root.render(footer, {}), day.render(footer, {}));
+});
