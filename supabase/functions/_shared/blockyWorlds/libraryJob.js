@@ -6,7 +6,7 @@
 // to what was spent, and stops if that could pass the cap. A failed call's cost still counts; 3 failures in a row stop.
 // The store is passed in (Supabase in the endpoint and the local runner, memory in the tests).
 import { duplicateOf, mixWeights, openerKey, planSlots, rankOf, BATCH_TOKENS } from "./library.js";
-import { judgeIdeas, LIBRARY_MAX_TOKENS, worstCaseUsd, writeLibraryIdeas } from "./llm.js";
+import { judgeIdeas, LIBRARY_MAX_TOKENS, reviseIdeas, worstCaseUsd, writeLibraryIdeas } from "./llm.js";
 import { MODELS } from "./config.js";
 import { cardProblems } from "./protocol.js";
 
@@ -14,6 +14,8 @@ import { cardProblems } from "./protocol.js";
 export const WRITE_WORST_USD = worstCaseUsd(MODELS.library, LIBRARY_MAX_TOKENS.write);
 export const JUDGE_WORST_USD = worstCaseUsd(MODELS.judge, LIBRARY_MAX_TOKENS.judge);
 export const MAX_FAILS_IN_A_ROW = 3;
+/** Rejected ideas scoring at least this get one revision with the judge's note (the accept line is 72). */
+export const REVISE_FROM = 58;
 
 /**
  * One tick of a batch. batch: { id, requested, accepted, cost_usd, ... }. Returns the updated batch numbers and a log.
@@ -84,6 +86,33 @@ export async function tick({ store, batch, provider = "anthropic", apiKey = "", 
     await store.insert(rows);
     library.push(...rows.map((r) => ({ ...r.idea, ...r, key: r.opener_key })));
     log.push(`call ${call + 1}: ${w.ideas.length} written, ${fresh.length} judged, ${rows.filter((r) => r.status === "live").length} live ($${Number(b.cost_usd).toFixed(4)} so far)`);
+
+    // near misses get one revision with the judge's note, then the judge again (cheaper than writing new ones)
+    const near = rows.filter((r) => r.status === "rejected" && r.score >= REVISE_FROM && r.judge.reason !== "not safe or names a real thing");
+    if (!near.length || b.accepted >= b.requested) continue;
+    if (wouldPass(WRITE_WORST_USD + JUDGE_WORST_USD)) { stop("the next revise + judge calls could pass the cap"); break; }
+    let rv;
+    try { rv = await reviseIdeas({ apiKey, provider, items: near.map((r) => ({ idea: r.idea, note: r.judge.better })) }); }
+    catch (e) { await failed(e, "revising"); continue; }
+    await spend(rv.costUsd); b.fails = 0;
+    const others = (orig) => library.filter((x) => x.opener_key !== orig.opener_key);
+    const unchanged = (idea, k) => JSON.stringify(idea) === JSON.stringify(near[k].idea); // nothing to judge again
+    const revised = rv.ideas.map((idea, k) => (idea && !unchanged(idea, k) && !cardProblems(idea).length && !duplicateOf(idea, others(near[k])) ? { ...idea, key: openerKey(idea.opener) } : null)).filter(Boolean);
+    if (!revised.length) continue;
+    let jr;
+    try { jr = await judgeIdeas({ apiKey, provider, ideas: revised }); }
+    catch (e) { await failed(e, "judging revisions"); continue; }
+    await spend(jr.costUsd);
+    b.judged += revised.length; b.revised = Number(b.revised || 0) + revised.length;
+    const rrows = revised.map((idea, k) => {
+      const v = jr.verdicts[k];
+      const { key, ...card } = idea;
+      if (v.accepted) b.accepted++; else b.rejected++;
+      return { idea: card, opener: card.opener, opener_key: key, formula: card.formula, twist: card.twistType, mood: card.mood, setting: card.setting, score: v.score, judge: { ...v, revised: true }, status: v.accepted ? "live" : "rejected", source: "batch", batch_id: b.id, rank: rankOf({ score: v.score }) };
+    });
+    await store.insert(rrows);
+    library.push(...rrows.map((r) => ({ ...r.idea, ...r, key: r.opener_key })));
+    log.push(`  revised ${revised.length}: ${rrows.filter((r) => r.status === "live").length} live ($${Number(b.cost_usd).toFixed(4)} so far)`);
   }
   if (b.accepted >= b.requested) b.status = "done";
   // a stall (every new idea a duplicate or dropped) costs money for nothing: two such ticks in a row end the batch

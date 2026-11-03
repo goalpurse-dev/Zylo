@@ -6,7 +6,7 @@
 // examples.js, so the whole flow and the library job can be run for free.
 import { MODELS, targetWords } from "./config.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
-import { batchPrompt, ideasSchema, IDEAS_SYSTEM, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
+import { batchPrompt, ideasSchema, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
 import { checkScript, normalizeScript, OPENER_SYSTEM, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM } from "./script.js";
 import { hasOpener } from "./opener.js";
 import { judgePrompt, judgeSchema, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
@@ -146,6 +146,21 @@ export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", s
     : await callJson({ apiKey, model: MODELS.library, system: IDEAS_SYSTEM, user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
   const ideas = usableIdeas(reply.data, slots);
   return { ideas, dropped: Math.max(0, (reply.data?.ideas?.length ?? 0) - ideas.length), costUsd: reply.costUsd };
+}
+
+/**
+ * One revision pass for near-miss ideas (each with the judge's note). Returns { ideas, costUsd }; ideas that fail the
+ * code checks come back as null in their place.
+ * @param {{apiKey?: string, provider?: string, items: {idea: object, note: string}[]}} input
+ */
+export async function reviseIdeas({ apiKey = "", provider = "anthropic", items }) {
+  const reply = provider === "mock"
+    ? { data: { ideas: items.map((it) => it.idea) }, costUsd: 0 }
+    : await callJson({ apiKey, model: MODELS.library, system: REVISE_SYSTEM, user: revisePrompt(items), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
+  const slots = items.map((it) => ({ formula: it.idea.formula, twist: it.idea.twistType }));
+  const raw = reply.data?.ideas ?? [];
+  const ideas = items.map((_, k) => { const ok = usableIdeas({ ideas: [raw[k]] }, [slots[k]]); return ok[0] ?? null; });
+  return { ideas, costUsd: reply.costUsd };
 }
 
 /**

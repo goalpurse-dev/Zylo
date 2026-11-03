@@ -62,7 +62,8 @@ if (memory) {
 }
 console.log(`batch ${batch.id}: target ${target} accepted ideas, ${mock ? "MOCK (free)" : `real calls, cap $${maxUsd}`}; worst case per write $${WRITE_WORST_USD}, per judge $${JUDGE_WORST_USD}`);
 const t0 = Date.now();
-for (let n = 1; n <= 400 && batch.status === "running"; n++) {
+const maxTicks = Math.max(1, Math.floor(Number(opt("ticks", 400))));
+for (let n = 1; n <= maxTicks && batch.status === "running"; n++) {
   const r = await tick({ store, batch, provider, apiKey: E.ANTHROPIC_API_KEY ?? "", maxUsd, callsPerTick: 3, seed: (Date.now() % 100000) + n * 977 });
   batch = r.batch;
   for (const line of r.log) console.log(`  ${line}`);

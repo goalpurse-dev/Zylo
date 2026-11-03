@@ -4,6 +4,7 @@
 import { FORMULAS, MOODS, SETTINGS, TWISTS, slotsForBatch } from "./formulas.js";
 import { hasOpener, fixOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
+import { EXAMPLE_IDEAS } from "./examples.js";
 
 export const IDEAS_PER_BATCH = 6;
 export const TOPIC_IDEAS = 3;
@@ -50,7 +51,24 @@ RULES
 
 SETTINGS: ${SETTINGS.join("; ")}.
 
+A STRICT JUDGE SCORES EVERY IDEA. Most ideas fail for the same few reasons; avoid them:
+- The price is vague or invisible. Make it concrete and something the town has SEEN happen ("Mr. Pickett's parrot said hello. Now he has a truck and an empty cage.").
+- The planted object appears from nowhere at the end. Plant it early (in the narrator line), make it ordinary, and make it the ONLY way to win.
+- The twist adds new magic, a new creature or a new fact at the end. The twist must come from the rule itself or the planted object: guessable in hindsight.
+- The narrator has no real reason to be the underdog. Give them a specific, visible exception to the rule.
+- The idea is a reskin of the examples' formulas ("every family leaves X for Y", "we all live inside giant Z" with a new noun). Invent a NEW rule; the examples only show the shape.
+- The escalation is not filmable. The middle must escalate in three visible steps.
+
+A STRONG IDEA (the bar; never reuse it):
+${JSON.stringify(EXAMPLE_IDEAS[0])}
+
 Return only the JSON object.`;
+
+/** One revision pass for ideas that just missed: each comes with the judge's note. */
+export const REVISE_SYSTEM = `${IDEAS_SYSTEM}
+
+REVISION: you get ideas that a strict judge almost accepted, each with the judge's note. Rewrite each idea so the note is fully fixed. Keep the idea's world and rule unless the note says the rule itself is the problem; keep its formula, twistType, mood and setting ids. Return the ideas in the same order.`;
+export const revisePrompt = (items) => items.map((it, k) => `IDEA ${k + 1}\nJUDGE'S NOTE: ${it.note}\n${JSON.stringify(it.idea)}`).join("\n\n");
 
 const FIELDS = ["opener", "title", "premise", "price", "examples", "narrator", "prop", "twist", "teaser", "closer", "formula", "twistType", "mood", "setting"];
 

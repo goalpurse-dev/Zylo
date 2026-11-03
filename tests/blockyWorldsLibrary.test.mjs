@@ -121,7 +121,8 @@ test("library job: ticks generate, check, dedup, judge and store until the targe
     assert.ok(live.length >= 8, `live ${live.length}`);
     assert.ok(rejected.length > 0, "the judge rejects some");
     assert.ok(batch.duplicates > 0, "dedup catches repeats");
-    assert.equal(new Set(store.rows.map((r) => r.opener_key)).size, store.rows.length, "no two stored ideas share a key");
+    // a revision may keep its rejected original's opener; among live ideas a key is unique (the database's rule too)
+    assert.equal(new Set(live.map((r) => r.opener_key)).size, live.length, "no two live ideas share a key");
     for (const r of live) { assert.deepEqual(cardProblems(r.idea), []); assert.ok(r.score >= ACCEPT.minScore); }
     assert.equal(batch.cost_usd, 0);
     const rr = await rerank({ store });
