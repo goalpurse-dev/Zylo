@@ -6,6 +6,7 @@ import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../su
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
 import { funnelStats, hopeGroupsOf } from "../supabase/functions/_shared/funnelStats.js";
 import { WELCOME_QUESTION, welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
+import { WELCOME_SENDER } from "../supabase/functions/_shared/emailRules.js";
 import { failOrRetry, isWaitingInLine, LIMITS, onDispatchFailed, onEvent, onWatch } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
@@ -214,6 +215,12 @@ test("the welcome email: off by default, new accounts only, once, offer only wit
   assert.match(offer.text, /50 bonus credits/);
   assert.match(offer.text, /Thursday 5 November, 21:02 UTC/);
   assert.match(plain.html, /\/welcome\/first-video\?from=email/);
+  // owner, 2026-11-03: the wording, and the welcome on its own domain (both sends: users and the owner's test)
+  assert.match(plain.text, /Thanks for joining Zyvo\. Your free video preview is waiting: it only takes a minute or two\./);
+  assert.doesNotMatch(plain.text + plain.html, /ready to start/);
+  assert.equal(fn.match(/from: WELCOME_SENDER/g)?.length, 2);
+  assert.doesNotMatch(fn, /SENDERS\./);
+  assert.equal(WELCOME_SENDER, "Niko from Zyvo <niko@notify.tryzyvo.com>");
   assert.match(plain.html, /\/workspace\/image-generator\?from=email/);
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
   assert.match(survey, /requestWelcomeEmail\(\); onDone/);

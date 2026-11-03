@@ -28,7 +28,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:8px 4px;color:#1f2328">
       <p style="${p}">Hi,</p>
-      <p style="${p}">Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.</p>
+      <p style="${p}">Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.</p>
       <p style="margin:0 0 20px"><a href="${WELCOME_VIDEO_URL}" style="display:inline-block;background:#1f2328;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px">Go to my video</a></p>
       <p style="${p}">You also have 5 free images. <a href="${WELCOME_IMAGES_URL}" style="color:#1f2328">Try one here</a>.</p>
       ${ends ? `<p style="${p}">Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.</p>` : ""}
@@ -38,7 +38,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
     </div>`;
   const text = [
     "Hi,", "",
-    "Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.", "",
+    "Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.", "",
     `Go to my video: ${WELCOME_VIDEO_URL}`, "",
     `You also have 5 free images. Try one here: ${WELCOME_IMAGES_URL}`, "",
     ...(ends ? [`Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.`, ""] : []),

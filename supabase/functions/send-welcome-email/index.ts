@@ -13,7 +13,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { checkEmailAddress, REPLY_TO, SENDERS } from "../_shared/emailRules.js";
+import { checkEmailAddress, REPLY_TO, WELCOME_SENDER } from "../_shared/emailRules.js";
 import { claimEmail, FINAL_REASONS, sendClaimedEmail } from "../_shared/userEmail.ts";
 import { welcomeEmail, WELCOME_SUBJECT, WELCOME_WHY } from "../_shared/welcomeEmail.js";
 import { signupBonusMsLeft } from "../_shared/signupBonus.js";
@@ -30,7 +30,7 @@ async function sendOwnerTest(req: Request) {
   const claim = await claimEmail(admin, address.email, `welcome_test_${Date.now()}`, "test");
   if (!claim.ok) return ok(req, { skipped: claim.reason });
   const sent = await sendClaimedEmail(admin, {
-    claimId: claim.id, to: address.email, userId: profile.id, from: SENDERS.founder, replyTo: REPLY_TO.founder,
+    claimId: claim.id, to: address.email, userId: profile.id, from: WELCOME_SENDER, replyTo: REPLY_TO.founder,
     subject: WELCOME_SUBJECT, why: WELCOME_WHY, render: (footer) => welcomeEmail(footer),
     tags: [{ name: "kind", value: "welcome_test" }, { name: "campaign", value: "welcome_test" }],
   });
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     claimId: claim.id,
     to: address.email,
     userId: user.id,
-    from: SENDERS.founder,
+    from: WELCOME_SENDER,
     replyTo: REPLY_TO.founder,
     subject: WELCOME_SUBJECT,
     why: WELCOME_WHY,
