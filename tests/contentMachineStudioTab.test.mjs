@@ -135,7 +135,7 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
     assert.equal(censored, null, "no swear: one version only");
     assert.deepEqual(raw.lines.map((l) => l.role), ["yell", "calm", "s1", "s2", "s3", "reveal", "punch", "cta"]);
     assert.equal(raw.lines[1].text, "Watch.");
-    assert.equal(raw.headline, undefined);
+    assert.deepEqual(raw.headline, { text: R.yell.text, hidden: true }, "never drawn; the approval form and the Queue read it");
     assert.equal(new Set(raw.lines.map((l) => l.text)).size, raw.lines.length, "no repeated lines");
     const [clip] = raw.clips;
     assert.equal(raw.clips.length, 1); assert.equal(clip.after_line, 1); assert.equal(clip.pre, 0.5, "0.5 s of silence after Watch.");

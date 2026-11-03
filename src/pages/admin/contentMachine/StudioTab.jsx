@@ -91,7 +91,7 @@ function ScriptReview({ job, onDone }) {
     <div className="mt-2 w-full space-y-2 rounded-xl border border-amber-300/40 bg-amber-300/[0.05] p-3" data-testid="cm-studio-script">
       <div className="text-[12.5px] font-semibold text-amber-200">{s.story_mode === "topic" ? "About the topic: Zyvo only in the caption and on the end card" : "About making it with Zyvo"}</div>
       <label className="block text-[12px] text-white/60">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
-      {s.headline ? <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
+      {s.headline && !s.headline.hidden ? <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
         : <div className="text-[12px] text-white/50">No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept.</div>}
       <ol className="space-y-2">
         {s.lines.map((l, i) => (

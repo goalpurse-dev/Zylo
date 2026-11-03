@@ -89,7 +89,9 @@ export function rageHookV2(R) {
     end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: "act|creator|angry|3" }] }, cta: { id: `comment_${R.key}`, kind: "comment", chip: R.end.chip } },
     caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
   }, { this: { hq_dir: R.creation.hq_dir } }, R.creation.id);
-  delete s.headline;   // no title card: the yell is the hook
+  // no title card: the yell is the hook. The hidden headline is never drawn; it keeps the approval form (which always sends
+  // a headline) and the Queue's hook field working
+  s.headline = { text: R.yell.text, hidden: true };
   for (const l of s.lines) if (l.screen || l.visual?.kind === "none") l.cues = l.cues.filter((x) => !x.event.startsWith("show"));
   Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook" });
   // short lines after the steps: the camera follows each speaker at once (the 2 s minimum hold would leave it behind)

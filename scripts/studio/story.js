@@ -160,7 +160,7 @@ const note = (k, t, where) => { log[k] ??= { first: +t.toFixed(2), last: 0, fram
 window.zoneReport = () => ({ ...log, _observations: obs });
 const SUB = Number(Q.get("blur") ?? 5);
 const LOOP = SH.loop_end ? { secs: SH.loop_end.secs ?? 0.5, first: CLIPS.find((c) => c.enter === "cut") } : null;
-const headlineAt = SH.headline;
+const headlineAt = SH.headline?.hidden ? null : SH.headline;   // hidden: kept for the Queue and the approval form, never drawn
 
 window.renderAt = async (t) => {
   const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([, k]) => k > 0.999);
