@@ -14,8 +14,8 @@ import { cardProblems } from "./protocol.js";
 export const WRITE_WORST_USD = worstCaseUsd(MODELS.library, LIBRARY_MAX_TOKENS.write);
 export const JUDGE_WORST_USD = worstCaseUsd(MODELS.judge, LIBRARY_MAX_TOKENS.judge);
 export const MAX_FAILS_IN_A_ROW = 3;
-/** Rejected ideas scoring at least this get one revision with the judge's note (the accept line is 72). */
-export const REVISE_FROM = 58;
+/** Rejected ideas scoring at least this get one revision with the judge's note (the accept line is 65). */
+export const REVISE_FROM = 55;
 
 /**
  * One tick of a batch. batch: { id, requested, accepted, cost_usd, ... }. Returns the updated batch numbers and a log.

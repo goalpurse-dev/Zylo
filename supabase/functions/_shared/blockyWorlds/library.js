@@ -49,7 +49,9 @@ export const RUBRIC = Object.freeze([
   Object.freeze({ id: "originality", weight: 8, ask: "Is it original (not a famous story with names changed, not a tired plot)?" }),
   Object.freeze({ id: "buildable", weight: 6, ask: "Can it be shown in one or two blocky sets with a few characters (no crowds of special effects, no real places)?" }),
 ]);
-export const ACCEPT = Object.freeze({ minScore: 72, minCore: 3, core: Object.freeze(["hook", "twist", "closer"]) });
+// The accept line, calibrated on 2026-11-03: the same judge scored six real ~300k-like hits as cards at 45-69 (the four
+// strongest 67-69; scripts/blockyWorlds/calibrateJudge.mjs). 65 lets ideas as strong as the best hits in and keeps the rest out.
+export const ACCEPT = Object.freeze({ minScore: 65, minCore: 3, core: Object.freeze(["hook", "twist", "closer"]) });
 
 export const JUDGE_SYSTEM = `You are the strict judge of story ideas for Blocky Worlds: 1-2 minute narrated videos where a kid explains an absurd world rule ("In this world, ..." / "In this town, ...") and the story pushes it to its most extreme consequence. Only ideas as strong as viral hits (about 300k likes each) may pass.
 
