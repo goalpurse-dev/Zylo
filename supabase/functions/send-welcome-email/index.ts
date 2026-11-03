@@ -105,5 +105,8 @@ Deno.serve(async (req) => {
     await giveFlagBack();
     return err(req, "Email failed", 500);
   }
+  // the page's "check your spam" note shows only after this
+  const { error: markError } = await admin.from("user_onboarding").update({ welcome_sent_at: new Date().toISOString() }).eq("user_id", user.id);
+  if (markError) console.error("[send-welcome-email] welcome_sent_at not saved:", markError.message);
   return ok(req, { success: true });
 });

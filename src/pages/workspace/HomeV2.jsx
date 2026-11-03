@@ -13,6 +13,7 @@ import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyS
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 import FirstVideoHomeCard from "../../components/onboarding/FirstVideoHomeCard.jsx";
+import SpamNote from "../../components/onboarding/SpamNote.jsx";
 
 export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
@@ -38,6 +39,7 @@ export default function HomeV2() {
       <div className="relative isolate flex flex-col overflow-hidden bg-[#090A0A] pb-2">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[80px] bg-[radial-gradient(ellipse_75%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)] md:h-[140px] md:bg-[radial-gradient(ellipse_40%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)]" data-testid="hero-spotlight" />
         <Glow compact />
+        <SpamNote where="home" />
         <FirstVideoHomeCard />
         <PhoneTools />
         <PathCards />

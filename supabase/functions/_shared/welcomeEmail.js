@@ -9,6 +9,8 @@ export const WELCOME_SUBJECT = "Your first video is waiting";
 export const WELCOME_WHY = "You're getting this because you just created a Zyvo account.";
 export const WELCOME_VIDEO_URL = `${APP_URL}/welcome/first-video?from=email`;
 export const WELCOME_IMAGES_URL = `${APP_URL}/workspace/image-generator?from=email`;
+// the last line, a question to answer by reply (Reply-To: REPLY_TO.founder, the owner's inbox)
+export const WELCOME_QUESTION = "Quick question: what do you hope Zyvo helps you with? Just hit reply, I read every answer.";
 
 /** "Thursday 5 November, 21:02 UTC": the same moment for everyone, wherever they read it. */
 export function bonusEndText(expiresAt) {
@@ -30,7 +32,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
       <p style="margin:0 0 20px"><a href="${WELCOME_VIDEO_URL}" style="display:inline-block;background:#1f2328;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px">Go to my video</a></p>
       <p style="${p}">You also have 5 free images. <a href="${WELCOME_IMAGES_URL}" style="color:#1f2328">Try one here</a>.</p>
       ${ends ? `<p style="${p}">Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.</p>` : ""}
-      <p style="${p}">If you get stuck, just reply. I read these myself.</p>
+      <p style="${p}">${WELCOME_QUESTION}</p>
       <p style="${p}">Niko<br>Zyvo</p>
       ${footer.html}
     </div>`;
@@ -40,7 +42,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
     `Go to my video: ${WELCOME_VIDEO_URL}`, "",
     `You also have 5 free images. Try one here: ${WELCOME_IMAGES_URL}`, "",
     ...(ends ? [`Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.`, ""] : []),
-    "If you get stuck, just reply. I read these myself.", "",
+    WELCOME_QUESTION, "",
     "Niko", "Zyvo", "",
     footer.text,
   ].join("\n");

@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
-import { funnelStats } from "../supabase/functions/_shared/funnelStats.js";
-import { welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
+import { funnelStats, hopeGroupsOf } from "../supabase/functions/_shared/funnelStats.js";
+import { WELCOME_QUESTION, welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
 import { failOrRetry, isWaitingInLine, LIMITS, onDispatchFailed, onEvent, onWatch } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
@@ -144,7 +144,60 @@ test("the funnel: distinct people of the period's sign-ups, drop-off between ste
   assert.equal(s.survey.goals[0].n, 2, "old sign-ups stay out");
   assert.equal(s.survey.creators[0].key, "someone");
   assert.equal(s.survey.optInPct, 50);
-  assert.deepEqual(s.email, { sent: 2, delivered: 1, opened: 1, clicked: 1, bounced: 1, spam: 0 });
+  assert.deepEqual(s.email, { sent: 2, delivered: 1, opened: 1, clicked: 1, bounced: 1, spam: 0, noteShown: 0, noteFound: 0, replies: null });
+});
+
+test("the survey's last question: optional, saved, every answer on the dashboard newest first, grouped by words", () => {
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /const TOTAL = 5/);
+  assert.match(survey, /What do you hope Zyvo will help you create\?/);
+  assert.match(survey, /HOPE_PLACEHOLDER = "Faceless videos for my TikTok about history"/);
+  assert.match(survey, /data-testid="survey-hope-skip"/);
+  assert.match(survey, /p_hope: skipped \? null : hope\.trim\(\) \|\| null/);
+  assert.ok(survey.indexOf("What do you hope Zyvo") < survey.indexOf("Get tips, templates and offers by email?"), "right before the email step");
+  const sql = read("supabase/migrations/20261130130000_survey_hope_and_spam_note.sql");
+  assert.match(sql, /DROP FUNCTION IF EXISTS public\.save_onboarding_survey\(text\[\], text, text, text, boolean, text, boolean\);/, "no overload: the live page's call stays unambiguous");
+  assert.match(sql, /p_hope text DEFAULT NULL/);
+  assert.match(sql, /'spam_note_shown', 'spam_note_found'/);
+  assert.match(read("src/pages/support/SupportPolicyArticle.jsx"), /what you hope Zyvo will help you create/);
+
+  assert.deepEqual(hopeGroupsOf("Faceless videos for my TikTok about history"), ["short", "faceless", "history"]);
+  assert.deepEqual(hopeGroupsOf("ads for my bakery"), ["business"]);
+  assert.deepEqual(hopeGroupsOf("idk"), ["other"]);
+  const t = (h) => `2026-11-02T${h}:00:00Z`;
+  const s = funnelStats({
+    from: "2026-11-02T00:00:00Z", to: "2026-11-03T00:00:00Z",
+    events: ["a", "b", "c"].map((u) => ({ user_id: u, event: "signed_up", props: {}, created_at: t("01") })).concat([{ user_id: "a", event: "spam_note_shown", props: {}, created_at: t("02") }, { user_id: "a", event: "spam_note_shown", props: {}, created_at: t("03") }, { user_id: "a", event: "spam_note_found", props: {}, created_at: t("03") }]),
+    onboarding: [
+      { user_id: "a", goals: ["faceless"], experience: "never", heard_from: "tiktok_ad", hope: " Horror stories for TikTok ", survey_done_at: t("02") },
+      { user_id: "b", goals: ["business"], hope: "Product ads", survey_done_at: t("05") },
+      { user_id: "c", goals: ["longform"], hope: "   ", survey_done_at: t("04") },
+    ],
+  });
+  assert.equal(s.survey.hopeCount, 2, "an empty answer isn't one");
+  assert.deepEqual(s.survey.hopes.map((h) => h.text), ["Product ads", "Horror stories for TikTok"], "newest first");
+  assert.deepEqual(s.survey.hopes[1].goals, ["Faceless TikTok, Reels or Shorts"]);
+  assert.equal(s.survey.hopes[1].heard, "TikTok ad");
+  assert.deepEqual(s.survey.hopeGroups.map((g) => g.key).sort(), ["business", "short", "stories"]);
+  assert.equal(s.email.noteShown, 1, "people, not views");
+  assert.equal(s.email.noteFound, 1);
+});
+
+test("the spam note: only after a real send, gone for good after 'I found it'; the email ends with the reply question", () => {
+  const note = read("src/components/onboarding/SpamNote.jsx");
+  assert.match(note, /s\?\.welcomeSent && !s\.spamNoteDismissed/);
+  assert.match(note, /supabase\.rpc\("dismiss_spam_note"\)/);
+  assert.match(note, /We just sent you an email at/);
+  assert.match(note, /user\?\.email/);
+  assert.match(note, /I found it ✓/);
+  assert.match(read("src/pages/workspace/HomeV2.jsx"), /<SpamNote where="home" \/>/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /<Rendering run=\{run\} spamNote \/>/);
+  const fn = read("supabase/functions/send-welcome-email/index.ts");
+  assert.ok(fn.indexOf("welcome_sent_at") > fn.indexOf("if (!sent)"), "marked only after the email went");
+  assert.match(fn, /replyTo: REPLY_TO\.founder/);
+  const mail = welcomeEmail({ html: "", text: "" });
+  assert.match(mail.text, /Quick question: what do you hope Zyvo helps you with\? Just hit reply, I read every answer\.\n/);
+  assert.ok(mail.html.includes(WELCOME_QUESTION));
 });
 
 test("the welcome email: off by default, new accounts only, once, offer only with opt-in", () => {

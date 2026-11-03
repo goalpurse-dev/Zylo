@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     const events = await allRows((a, b) => admin.from("funnel_events").select("user_id, event, props, created_at").gte("created_at", fromIso).order("created_at", { ascending: true }).range(a, b));
     const ids = [...new Set(events.filter((e) => e.event === "signed_up").map((e) => e.user_id))];
     const [onboarding, profiles, sends, emailEvents] = await Promise.all([
-      byUsers(ids, (chunk) => admin.from("user_onboarding").select("user_id, goals, experience, heard_from, heard_creator, survey_done_at, email_consent_at").in("user_id", chunk)),
+      byUsers(ids, (chunk) => admin.from("user_onboarding").select("user_id, goals, experience, heard_from, heard_creator, hope, survey_done_at, email_consent_at").in("user_id", chunk)),
       byUsers(ids, (chunk) => admin.from("profiles").select("id, email").in("id", chunk)),
       allRows((a, b) => admin.from("email_sends").select("id").eq("kind", "welcome").gte("sent_at", fromIso).lt("sent_at", toIso).range(a, b)),
       allRows((a, b) => admin.from("email_events").select("resend_id, type").eq("campaign", "welcome").gte("created_at", fromIso).lt("created_at", toIso).range(a, b)),

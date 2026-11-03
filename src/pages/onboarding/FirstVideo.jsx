@@ -18,6 +18,7 @@ import { demoPreviewRun, demoStateFor } from "../../lib/onboardingDemo";
 import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { PREVIEW_TOPIC_KEYS, topicsForGoals } from "../../../supabase/functions/_shared/cutaway/freePreview.js";
 import { SIGNUP_BONUS } from "../../../supabase/functions/_shared/signupBonus.js";
+import SpamNote from "../../components/onboarding/SpamNote.jsx";
 import "../../components/onboarding/onboarding.css";
 
 const PLAN_IDS = ["starter", "pro", "generative"];
@@ -57,7 +58,7 @@ function stageOf(run) {
 }
 const STAGES = ["Loading your script", "Creating scenes", "Adding voice"];
 
-function Rendering({ run }) {
+function Rendering({ run, spamNote = false }) {
   const stage = stageOf(run), pct = run?.step === "render" ? run.renderPct ?? 0 : 4;
   return (
     <section className="relative z-10 w-full text-center" data-testid="first-video-rendering">
@@ -74,6 +75,7 @@ function Rendering({ run }) {
           <p className="mt-1.5 text-[14px] text-white/70">This usually takes a minute or two. You can leave: it stays on your home page.</p>
         </>
       )}
+      {spamNote && <SpamNote where="coming_to_life" />}
       <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
       <ol className="mt-6 grid gap-2.5 text-left">
         {STAGES.map((label, i) => (
@@ -383,7 +385,7 @@ export default function FirstVideo() {
         </div></div>
       );
     }
-    if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
+    if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} spamNote /></div></div></div>;
     return (
       <div className={screen}>{adminBar}<div className={locked ? "mx-auto my-auto grid w-full max-w-[1000px] items-center gap-3 pb-28 pt-1 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-12 md:py-2" : column}>
         {!locked && <Confetti />}

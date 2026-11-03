@@ -57,10 +57,37 @@ function Steps({ steps, surveyEnds }) {
   );
 }
 
+const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "");
+
+function Hopes({ hopes, total }) {
+  const [all, setAll] = useState(false);
+  if (!hopes?.length) return <p className="text-[13px] text-white/45">No answers yet.</p>;
+  const shown = all ? hopes : hopes.slice(0, 15);
+  return (
+    <>
+      <ul className="grid gap-2.5" data-testid="hope-list">
+        {shown.map((h, i) => (
+          <li key={`${h.at}-${i}`} className="min-w-0 rounded-xl bg-white/[0.05] p-3">
+            <p className="break-words text-[14.5px] font-semibold leading-snug text-white">“{h.text}”</p>
+            <p className="mt-1 text-[12px] leading-snug text-white/50">
+              {when(h.at)}
+              {h.goals.length > 0 && <> · {h.goals.join(", ")}</>}
+              {h.experience && <> · Made videos: {h.experience}</>}
+              {h.heard && <> · Heard via {h.heard}{h.creator ? ` (${h.creator})` : ""}</>}
+            </p>
+          </li>
+        ))}
+      </ul>
+      {hopes.length > shown.length && <button type="button" onClick={() => setAll(true)} className="mt-3 min-h-[40px] w-full rounded-xl border border-white/15 text-[13.5px] font-bold text-white/80">Show all {hopes.length}</button>}
+      {total > hopes.length && <p className="mt-2 text-[12px] text-white/45">The newest {hopes.length} of {total}.</p>}
+    </>
+  );
+}
+
 const Stat = ({ label, value, sub, bad }) => (
   <div className="rounded-xl bg-white/[0.05] p-3">
     <div className="text-[12px] text-white/55">{label}</div>
-    <div className={`text-[22px] font-black tabular-nums ${bad && value > 0 ? "text-red-300" : "text-white"}`}>{value}</div>
+    <div className={`text-[22px] font-black tabular-nums ${bad && value > 0 ? "text-red-300" : "text-white"}`}>{value ?? "–"}</div>
     {sub && <div className="text-[11.5px] text-white/50">{sub}</div>}
   </div>
 );
@@ -111,6 +138,11 @@ export default function Funnel() {
             <Card title="Have they made videos before"><Bars rows={d.survey.experience} of={d.survey.answered || undefined} /></Card>
             <Card title="How they heard about Zyvo"><Bars rows={d.survey.heard} of={d.survey.answered || undefined} /></Card>
             <Card title="Creators they named"><Bars rows={d.survey.creators} empty="No names typed in yet." /></Card>
+            <Card title="What they hope Zyvo helps them create" note={`${d.survey.hopeCount ?? 0} of ${d.survey.answered} wrote something. Grouped by the words they used; one answer can be in two groups.`}>
+              <Bars rows={d.survey.hopeGroups} empty="No answers yet." />
+              <h3 className="mb-2 mt-5 text-[13px] font-bold text-white/70">Every answer, newest first</h3>
+              <Hopes hopes={d.survey.hopes} total={d.survey.hopeCount} />
+            </Card>
             <Card title="Email opt-in"><p className="text-[28px] font-black tabular-nums" data-testid="optin-pct">{d.survey.optInPct}%</p><p className="text-[13px] text-white/55">{d.survey.optedIn} of the {d.survey.answered} who finished the survey</p></Card>
             <Card title="Welcome email" note={d.welcomeOn ? "On. Emails sent in this period." : "Off for users until you say so."}>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="welcome-stats">
@@ -120,8 +152,14 @@ export default function Funnel() {
                 <Stat label="Clicked" value={e.clicked} sub={sent ? `${Math.round((e.clicked / sent) * 100)}%` : null} />
                 <Stat label="Bounced" value={e.bounced} bad />
                 <Stat label="Marked as spam" value={e.spam} bad />
+                <Stat label="Replied" value={e.replies} sub="In your inbox" />
               </div>
-              <p className="mt-2 text-[12px] leading-snug text-white/50">Gmail doesn't report spam clicks to us, so "Marked as spam" misses Gmail. For that, use Google Postmaster Tools.</p>
+              <h3 className="mb-2 mt-4 text-[13px] font-bold text-white/70">"Check your spam" note</h3>
+              <div className="grid grid-cols-2 gap-2" data-testid="spam-note-stats">
+                <Stat label="Note shown" value={e.noteShown ?? 0} />
+                <Stat label="Tapped “I found it”" value={e.noteFound ?? 0} sub={e.noteShown ? `${Math.round(((e.noteFound ?? 0) / e.noteShown) * 100)}%` : null} />
+              </div>
+              <p className="mt-2 text-[12px] leading-snug text-white/50">Gmail doesn't report spam clicks to us, so "Marked as spam" misses Gmail. For that, use Google Postmaster Tools. Replies go straight to your inbox, so they aren't counted here.</p>
             </Card>
           </div>
         )}
