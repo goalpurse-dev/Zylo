@@ -33,6 +33,7 @@
 //   finalUrl the video to play (signed, 1080p), downloadUrl (signed, with a download filename), poster
 //   endCard  true when the Zyvo end card is in the video (Starter), false when removed (Pro and above)
 //   error    a friendly message when failed, refunded true when the credits went back (creditsRefunded)
+//   inLine   true while a free preview waits for a GPU (after a retry, or 90 s): "High demand, your video is in line"
 //   owner    true for the owner (shows "Approve layout"), layoutApproved true|false|null
 
 export const STATUSES = Object.freeze(["queued", "script", "scene", "render", "done", "failed"]);

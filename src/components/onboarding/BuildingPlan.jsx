@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check } from "lucide-react";
 import { cutawayServer } from "../viral-tools/cutaway-explainer/api/cutawayApi";
-import { adminPreviewMode } from "../../lib/onboarding";
+import { adminPreviewMode, trackFunnel } from "../../lib/onboarding";
 import { demoStateFor } from "../../lib/onboardingDemo";
 import "./onboarding.css";
 
@@ -25,6 +25,7 @@ export default function BuildingPlan({ goals, goalLabels, onDone }) {
 
   useEffect(() => {
     let live = true;
+    trackFunnel("plan_screen_shown");
     const adminMode = adminPreviewMode();
     const ask = adminMode === "demo" ? Promise.resolve(demoStateFor(goals)) : cutawayServer.freePreviewState({ force: adminMode === "real" });
     ask.then((s) => {
@@ -47,7 +48,7 @@ export default function BuildingPlan({ goals, goalLabels, onDone }) {
       if (t < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
-    const end = setTimeout(() => done.current(), ms);
+    const end = setTimeout(() => { trackFunnel("plan_screen_finished"); done.current(); }, ms);
     return () => { cancelAnimationFrame(frame); clearTimeout(end); };
   }, []);
 

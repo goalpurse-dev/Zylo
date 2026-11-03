@@ -19,7 +19,7 @@ function LongFormLaunchBar({ onDismiss }) {
           <span className="font-black tracking-wide text-lime-300">NEW</span>
           <span className="text-white/35"> — </span>
           <span className="hidden sm:inline">Long Form is here: turn one idea into a full YouTube video.</span>
-          <span className="sm:hidden">Long Form: one idea, a full YouTube video.</span>
+          <span className="sm:hidden">Long Form is here</span>
         </p>
         <button
           type="button"

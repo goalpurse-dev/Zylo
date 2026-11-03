@@ -1,10 +1,10 @@
 // The new-user survey: full screen, one question at a time, a progress bar, Back and a small Skip.
 // (The step layout and answer cards grew out of the old EmailConsentModal.)
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, Megaphone, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, requestWelcomeEmail, trackFunnel } from "../../lib/onboarding";
 import { BrandLogo } from "./brandLogos.jsx";
 import BuildingPlan from "./BuildingPlan.jsx";
 import "./onboarding.css";
@@ -29,7 +29,8 @@ const HEARD = [
   { id: "friend", icon: Users, label: "Friend" },
   { id: "other", icon: MoreHorizontal, label: "Other" },
 ];
-const TOTAL = 4;
+const TOTAL = 5;
+export const HOPE_PLACEHOLDER = "Faceless videos for my TikTok about history";
 
 // One tile for every answer: our icons and the real logos look like one set.
 function IconTile({ icon: Icon, brand, picked }) {
@@ -59,26 +60,30 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
   const [experience, setExperience] = useState(null);
   const [heardFrom, setHeardFrom] = useState(null);
   const [creator, setCreator] = useState("");
+  const [hope, setHope] = useState("");
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => { trackFunnel("survey_started"); }, []);
   const answered = (question, answer) => trackFunnel("survey_answer", { question, answer });
+  // the end of the survey, however it ends: the welcome email goes now (the server decides whether it may)
+  const leave = (skipped) => { requestWelcomeEmail(); onDone({ goals, skipped }); };
   const finish = async (skipped) => {
     if (saving) return;
     rememberSurveyGoals(skipped ? [] : goals);
-    const next = () => { if (!skipped && withPlan) setBuilding(true); else onDone({ goals, skipped }); };
+    const next = () => { if (!skipped && withPlan) setBuilding(true); else leave(skipped); };
     if (preview) { next(); return; } // the owner's look: no answers saved
     setSaving(true);
     trackFunnel(skipped ? "survey_skipped" : "survey_completed", skipped ? { atStep: step } : {});
     const { error } = await supabase.rpc("save_onboarding_survey", {
       p_goals: goals, p_experience: experience, p_heard_from: heardFrom, p_heard_creator: heardFrom === "tiktok_creator" ? creator.trim() || null : null,
-      p_email_consent: consent, p_consent_text: consent ? EMAIL_CONSENT_TEXT : null, p_skipped: skipped,
+      p_email_consent: consent, p_consent_text: consent ? EMAIL_CONSENT_TEXT : null, p_skipped: skipped, p_hope: skipped ? null : hope.trim() || null,
     });
     if (error) console.error("survey not saved:", error.message); // the flow goes on: a lost answer must not stop anyone
     next();
   };
 
-  if (building) return <BuildingPlan goals={goals} goalLabels={GOALS.filter((g) => goals.includes(g.id)).map((g) => g.label)} onDone={() => onDone({ goals, skipped: false })} />;
+  if (building) return <BuildingPlan goals={goals} goalLabels={GOALS.filter((g) => goals.includes(g.id)).map((g) => g.label)} onDone={() => leave(false)} />;
 
   const body = {
     1: (
@@ -119,6 +124,18 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
       </>
     ),
     4: (
+      <>
+        <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">What do you hope Zyvo will help you create?</h1>
+        <p className="mt-1.5 text-[14px] text-white/55">Optional. A few words is plenty.</p>
+        <textarea id="survey-hope" value={hope} maxLength={300} rows={3} onChange={(e) => setHope(e.target.value)} placeholder={`e.g. ${HOPE_PLACEHOLDER}`} aria-label="What do you hope Zyvo will help you create? (optional)" data-testid="survey-hope"
+          className="mt-5 w-full resize-none rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-[15.5px] leading-snug text-white outline-none placeholder:text-white/35 focus:border-lime-300/60" />
+        <button type="button" data-testid="survey-next" onClick={() => { answered("hope", hope.trim() ? "written" : "empty"); setStep(5); }}
+          className="mt-4 min-h-[54px] w-full rounded-2xl bg-lime-300 text-[16px] font-black text-[#11150D] transition hover:bg-lime-200">Next</button>
+        <button type="button" data-testid="survey-hope-skip" onClick={() => { setHope(""); answered("hope", "skipped"); setStep(5); }}
+          className="mx-auto mt-3 block px-2 py-1 text-[13.5px] font-semibold text-white/50 underline-offset-2 transition hover:text-white/80 hover:underline">Skip</button>
+      </>
+    ),
+    5: (
       <>
         <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">Get tips, templates and offers by email?</h1>
         <p className="mt-1.5 text-[14px] text-white/55">Only if you want them. You can change this any time in Settings.</p>

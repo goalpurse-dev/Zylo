@@ -11,8 +11,10 @@
 //   4. A failure the video itself caused (the plan didn't pass, the preview gate blocked it, the voice failed its word
 //      check twice) or an empty provider balance: no retry, the run fails and is refunded at once.
 //   5. Any failure past the retries, or 45 minutes from the start: failed and refunded, once.
+//   A free preview never goes to the CPU fallback; instead it waits longer for a GPU and is tried up to 4 times on RunPod
+//   (the page says "High demand, your video is in line"), then fails and is given back (owner, 2026-11-03).
 
-export const LIMITS = Object.freeze({ attempts: 2, staleSec: 300, queueSec: 480, hardMin: 45, pieceTries: 2 });
+export const LIMITS = Object.freeze({ attempts: 2, staleSec: 300, queueSec: 480, hardMin: 45, pieceTries: 2, previewAttempts: 4, previewQueueSec: 600, redispatchSec: 60, busySec: 90 });
 const TERMINAL = new Set(["done", "failed"]);
 const ORDER = ["queued", "script", "scene", "render", "done"];
 // failures the video itself caused (or an empty balance): a second try would fail the same way
@@ -37,13 +39,17 @@ function terminal(run, f, now) {
 /** a retried attempt's error, kept (the next attempt's failure shows it as "Earlier") */
 const tried = (run, f) => `${run.error_message ? `${run.error_message}\n` : ""}attempt ${run.attempt ?? 1}: ${f.code} ${String(f.message ?? "").slice(0, 600)}`.slice(-1500);
 
+/** a customer's free preview (not the owner's preparation of the shared plans) */
+const userPreview = (run) => Boolean(run.free_preview && !run.preview_pool);
+
 /** a failure on our side: retry on RunPod once, then the Fly fallback, then fail */
 export function failOrRetry(run, f, now = Date.now()) {
   if (NO_RETRY.has(f.code) || f.retryable === false) return terminal(run, f, now);
   const attempt = run.attempt ?? 1;
-  if (run.provider !== "fly" && attempt < LIMITS.attempts && f.code !== "NO_GPU_SLOT") {
-    return { patch: { attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] };
-  }
+  const again = () => ({ patch: { attempt: attempt + 1, error_code: f.code, error_message: tried(run, f), heartbeat_at: null, dispatched_at: iso(now), provider_job_id: null }, actions: [{ type: "dispatch", target: "runpod", role: "video" }] });
+  // a free preview: another place in RunPod's line, a GPU slot that never came included
+  if (userPreview(run)) return attempt < LIMITS.previewAttempts ? again() : terminal(run, f, now);
+  if (run.provider !== "fly" && attempt < LIMITS.attempts && f.code !== "NO_GPU_SLOT") return again();
   // a free preview never goes to the slow, costly CPU fallback
   if (run.free_preview) return terminal(run, f, now);
   if (run.provider !== "fly") {
@@ -138,9 +144,13 @@ export function onWatch(run, rp, now = Date.now()) {
     return failOrRetry(run, { code: "LOST", message: "a fallback machine stopped reporting", piece }, now);
   }
   // RunPod
+  const sent = Date.parse(run.dispatched_at ?? run.created_at);
+  // a free preview whose sending failed (onDispatchFailed): sent again a minute later
+  if (userPreview(run) && !run.provider_job_id && now - sent > LIMITS.redispatchSec * 1000) return failOrRetry(run, { code: "DISPATCH_FAILED", message: run.error_code === "DISPATCH_FAILED" ? "sending it failed" : "it was never sent" }, now);
   const st = String(rp?.status ?? "").toUpperCase();
-  if (st === "IN_QUEUE" && now - Date.parse(run.dispatched_at ?? run.created_at) > LIMITS.queueSec * 1000) {
-    const r = failOrRetry(run, { code: "NO_GPU_SLOT", message: `no GPU for ${LIMITS.queueSec / 60} minutes` }, now);
+  const queueSec = userPreview(run) ? LIMITS.previewQueueSec : LIMITS.queueSec;
+  if (st === "IN_QUEUE" && now - sent > queueSec * 1000) {
+    const r = failOrRetry(run, { code: "NO_GPU_SLOT", message: `no GPU for ${queueSec / 60} minutes` }, now);
     return { patch: r.patch, actions: [{ type: "cancel", provider: "runpod", jobId: run.provider_job_id }, ...r.actions] };
   }
   if (["FAILED", "CANCELLED", "TIMED_OUT"].includes(st)) return failOrRetry(run, { code: st === "TIMED_OUT" ? "TIMEOUT" : "RENDER_FAILED", message: `RunPod says ${st}` }, now);
@@ -150,4 +160,21 @@ export function onWatch(run, rp, now = Date.now()) {
     return { patch: r.patch, actions: [...(run.provider_job_id ? [{ type: "cancel", provider: "runpod", jobId: run.provider_job_id }] : []), ...r.actions] };
   }
   return { patch: {}, actions: [] };
+}
+
+/**
+ * Sending a run to RunPod failed (RunPod or storage briefly down). A free preview with tries left waits for the
+ * watchdog to send it again (onWatch); null: everything else takes the usual path (failOrRetry, NO_GPU_SLOT).
+ */
+export function onDispatchFailed(run, target, message, now = Date.now()) {
+  if (target !== "runpod" || !userPreview(run) || (run.attempt ?? 1) >= LIMITS.previewAttempts) return null;
+  return { patch: { provider_job_id: null, dispatched_at: iso(now), error_code: "DISPATCH_FAILED", error_message: tried(run, { code: "DISPATCH_FAILED", message }) }, actions: [] };
+}
+
+/** the page's "High demand, your video is in line": a free preview still waiting for a GPU, after a retry or 90 s */
+export function isWaitingInLine(run, now = Date.now()) {
+  if (!userPreview(run) || TERMINAL.has(run.status)) return false;
+  const sent = Date.parse(run.dispatched_at ?? run.created_at), beat = run.heartbeat_at ? Date.parse(run.heartbeat_at) : 0;
+  if (beat >= sent) return false; // a worker has it
+  return (run.attempt ?? 1) > 1 || now - sent > LIMITS.busySec * 1000;
 }

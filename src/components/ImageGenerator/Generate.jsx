@@ -1,4 +1,4 @@
-import {  useState, useMemo } from "react";
+import {  lazy, Suspense, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -12,7 +12,8 @@ import { ChevronRight, Folder, VideoIcon } from "lucide-react";
 import Toast from "../../components/ImageGenerator/Toast";
 import ProgressToast from "../../components/ImageGenerator/ProgressToast";
 import FirstGenModal from "../../components/ImageGenerator/FirstGenModal";
-import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast";
+import { adminPreviewMode } from "../../lib/onboarding";
+const ImageLimitScreen = lazy(() => import("../onboarding/ImageLimitScreen.jsx"));
 import GuestGenerateModal from "../../components/ImageGenerator/GuestGenerateModal";
 import { IMAGE_SIZES } from "../../lib/image-generator/sizes";
 import CreditLogo from "../../assets/toolshell/credit.png"
@@ -409,7 +410,8 @@ const [firstGenModal, setFirstGenModal] = useState(null); // imageUrl | null
 const firstGenJobRef = useRef(null); // tracks job ID if this is user's first generation
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
-const [limitToastOpen, setLimitToastOpen] = useState(false);
+// (?limit=1 in the owner's walk-through: a look at the screen without using up five images)
+const [limitToastOpen, setLimitToastOpen] = useState(() => adminPreviewMode() === "demo" && new URLSearchParams(window.location.search).get("limit") === "1");
 const [resetAt, setResetAt] = useState(null);
 const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano.2")
@@ -1586,10 +1588,12 @@ md:group-hover:brightness-110
 )}
 
 {limitToastOpen && (
-  <LimitReachedToast
-    resetAt={resetAt}
-    onClose={() => setLimitToastOpen(false)}
-  />
+  <Suspense fallback={null}>
+    <ImageLimitScreen
+      resetAt={resetAt}
+      onClose={() => setLimitToastOpen(false)}
+    />
+  </Suspense>
 )}
 
 {firstGenModal && (

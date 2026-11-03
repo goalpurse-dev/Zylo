@@ -10,7 +10,7 @@
 //   CUTAWAY_CALLBACK_SECRET                          signs each run's callback token (any long random string)
 //   CUTAWAY_ANTHROPIC_API_KEY, CUTAWAY_ELEVENLABS_KEY the production model keys (the kit check here; the Fly machines' env)
 import { BUCKET, chunksFor, FRAMES, jobFor, paths, tokenFor } from "./jobs.js";
-import { onEvent, onWatch } from "./orchestrate.js";
+import { isWaitingInLine, onDispatchFailed, onEvent, onWatch } from "./orchestrate.js";
 import { FAILED_MESSAGE } from "./contract.js";
 import { costBasisUsd, RUNTIME_RATES } from "./pricing.js";
 import { canGenerate } from "./access.js";
@@ -198,6 +198,9 @@ export async function applyActions(admin: any, run: any, actions: any[]) {
     } catch (e: any) {
       console.error(`[cutaway] action ${a.type} failed:`, e?.message ?? e);
       if (a.type === "dispatch") {
+        // a free preview waits a minute and is sent again (the watchdog)
+        const wait = onDispatchFailed({ ...run, ...patch }, a.target, String(e?.message ?? e));
+        if (wait) { patch = { ...patch, ...wait.patch }; continue; }
         // nowhere to send it: the next step of the path (or the end, refunded)
         const r = await advance(admin, { ...run, ...patch }, { event: "failed", attempt: run.attempt, code: a.target === "runpod" ? "NO_GPU_SLOT" : "FALLBACK_FAILED", retryable: a.target === "runpod", message: String(e?.message ?? e) });
         patch = { ...patch, ...(r.patch ?? {}) };
@@ -338,6 +341,8 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
     finalUrl: done ? await getUrl(admin, P.web, run.free_preview ? DAY : 7 * DAY) : null, // the light web copy plays; the download is the full file
     downloadUrl: done && !run.free_preview ? await getUrl(admin, P.final, 7 * DAY, `${slug}.mp4`) : null,
     freePreview: Boolean(run.free_preview), giftFinish: Boolean(run.gift_finish),
+    // a free preview still waiting for a GPU: "High demand, your video is in line"
+    inLine: isWaitingInLine(run),
     poster: done ? await getUrl(admin, P.poster, 7 * DAY) : null,
     endCard: run.end_card !== false,
     error: run.status === "failed" ? FAILED_MESSAGE : null,

@@ -37,13 +37,14 @@ test("the welcome email is sent by an edge function, to the signed-in account's 
   for (const f of ["send-welcome-email.js", "welcomeEmail.js"]) assert.ok(!existsSync(join(root, "api", f)), `api/${f} must not exist`);
   for (const f of apiFiles) assert.doesNotMatch(read(`api/${f}`), /resend\.emails\.send|api\.resend\.com|nodemailer/, `api/${f} must not send email`);
   const src = read("supabase/functions/send-welcome-email/index.ts");
-  assert.doesNotMatch(src, /req\.json\(\)|req\.text\(\)|req\.formData\(\)/, "nothing in the request body is read: no address, no user id");
+  assert.doesNotMatch(src, /body\??\.(email|to|address|user|userId|user_id)\b/, "no address and no user id is read from the request");
+  assert.match(src, /\.split\(","\)\[0\]/, "the owner's test copy goes to the owner's own address");
   assert.match(src, /req\.headers\.get\("authorization"\)/);
   assert.match(src, /admin\.auth\.getUser\(token\)/);
   assert.match(src, /return err\(req, "Not signed in", 401\);/);
   assert.match(src, /\.eq\("id", user\.id\)\.eq\("welcome_email_sent", false\)/, "the flag is claimed before sending: one email per account");
   assert.match(src, /claimEmail\(admin, address\.email, "welcome", "account"\)/, "and the email gate is asked before the send");
-  const auth = read("src/components/onboarding/OnboardingGate.jsx");
+  const auth = read("src/lib/onboarding.js");
   assert.match(auth, /supabase\.functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(auth, /\/api\/send-welcome-email|user_id: data\.user\.id|email: data\.user\.email/, "the app no longer sends an address or a user id");
 });

@@ -19,7 +19,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 export function makePage(layout) {
   const W = layout.world ?? {};
-  let s = fs.readFileSync(path.join(here, "..", "real.js"), "utf8");
+  // (a Windows checkout has CRLF line endings; the replacements below are written with LF)
+  let s = fs.readFileSync(path.join(here, "..", "real.js"), "utf8").replace(/\r\n/g, "\n");
   const rep = (from, to) => { if (!s.includes(from)) throw new Error(`not found: ${from.slice(0, 80)}`); s = s.replace(from, to); };
   const cut = (from, to) => { const a = s.indexOf(from), b = s.indexOf(to); if (a < 0 || b < 0 || b < a) throw new Error(`markers not found: ${from} / ${to}`); s = s.slice(0, a) + s.slice(b); };
   const n = (v) => String(v);

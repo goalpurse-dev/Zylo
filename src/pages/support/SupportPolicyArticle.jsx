@@ -21,10 +21,11 @@ const POLICIES = {
 
   privacy: {
     title: "Privacy Policy",
-    updated: "2026-03-14",
+    updated: "2026-11-03",
     body: [
       "We respect your privacy and only collect the data necessary to operate the service.",
       "Information collected may include account email, usage data, and payment details processed via Stripe.",
+      "When you sign up, we may ask a few optional questions: what you want to create, whether you have made videos before, how you heard about Zyvo, and what you hope Zyvo will help you create. Your answers are used to set up your first video and to improve Zyvo. You can skip any of them.",
       "We do not sell personal data to third parties.",
       "Analytics may be used to improve Zyvo's features and performance.",
       "Users can request deletion of their account data by contacting support."

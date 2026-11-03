@@ -8,7 +8,7 @@ import usePaymentAction from "../../hooks/usePaymentAction";
 import { formatMoney, usePlanPrices } from "../../lib/planPrices";
 import { PRICING_PLANS } from "../../lib/pricingOutputs";
 import { useSignupBonus } from "../../lib/useSignupBonus";
-import { FIRST_VIDEO_PATH } from "../../lib/onboarding";
+import { FIRST_VIDEO_PATH, trackFunnel } from "../../lib/onboarding";
 import { PRICES } from "../viral-tools/cutaway-explainer/api/cutawayApi";
 import { PREVIEW, cliffhangerLine } from "../../../supabase/functions/_shared/cutaway/freePreview.js";
 import ComparePlansSheet from "./ComparePlansSheet.jsx";
@@ -20,14 +20,20 @@ const OTHER_PLANS = ["pro", "generative"];
 const videosFor = (planId) => Math.floor(PRICING_PLANS[planId].credits / PRICES.video.credits.premade[30]);
 const QUIET = "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-2 text-[14px] font-bold text-white/80 transition hover:border-white/35 hover:text-white";
 
-export function usePlanCheckout(adminLook) {
+// plain: no video to finish, so Stripe returns to the normal success page (the tutorial's ?paid=1 would wait for a video forever).
+export function usePlanCheckout(adminLook, { plain = false } = {}) {
   const pay = usePaymentAction();
   const [adminNote, setAdminNote] = useState(false);
-  const choose = (planId) => (adminLook ? setAdminNote(true) : pay.run(planId, () => startCheckout({
-    type: "subscription", planId, billing: "monthly",
-    successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
-    cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?unlock=1`,
-  })));
+  const choose = (planId) => (adminLook ? setAdminNote(true) : pay.run(planId, () => {
+    trackFunnel("checkout_opened", { plan: planId });
+    return startCheckout({
+      type: "subscription", planId, billing: "monthly",
+      ...(plain ? {} : {
+        successUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?paid=1`,
+        cancelUrl: `${window.location.origin}${FIRST_VIDEO_PATH}?unlock=1`,
+      }),
+    });
+  }));
   return { choose, busy: pay.busy, adminNote };
 }
 
@@ -82,7 +88,7 @@ export default function UpgradeScreen({ run, adminLook = false, onExplore }) {
       )}
       {/* Phones: stuck to the bottom of the screen while scrolling. */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#090A0A]/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:static md:mt-3 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none" data-testid="first-video-cta-bar">
-        <button type="button" disabled={busy != null} onClick={() => choose(RECOMMENDED_PLAN)} data-testid="first-video-plan-button" data-plan={RECOMMENDED_PLAN}
+        <button type="button" disabled={busy != null} onClick={() => { trackFunnel("upgrade_click", { button: "finish" }); choose(RECOMMENDED_PLAN); }} data-testid="first-video-plan-button" data-plan={RECOMMENDED_PLAN}
           className="ob-cta-pulse block min-h-[68px] w-full rounded-[20px] bg-lime-300 px-3 py-2.5 text-center text-[#11150D] transition hover:bg-lime-200 disabled:opacity-60 md:min-h-[72px]">
           <span className="flex items-center justify-center gap-2 text-[22px] font-black leading-tight md:text-[23px]">{busy === RECOMMENDED_PLAN && <Loader2 className="h-5 w-5 animate-spin" />} Finish my video</span>
           <span className="mt-0.5 block text-[13.5px] font-bold">{main.name}: {priceOf(RECOMMENDED_PLAN)} a month</span>
@@ -95,7 +101,7 @@ export default function UpgradeScreen({ run, adminLook = false, onExplore }) {
       <p className="mt-3 hidden flex-wrap justify-center gap-x-2.5 gap-y-1 text-[12px] font-semibold text-white/55 md:flex" data-testid="first-video-trust"><span>Cancel anytime</span><span>·</span><span>Secure payment by Stripe</span><span>·</span><span>Apple Pay &amp; Google Pay</span></p>
       <div className="mt-4 hidden gap-2 border-t border-white/10 pt-3.5 md:grid md:grid-cols-2" data-testid="first-video-other-plans">
         {OTHER_PLANS.map((id) => (
-          <button key={id} type="button" disabled={busy != null} onClick={() => choose(id)} data-testid="first-video-plan-button" data-plan={id}
+          <button key={id} type="button" disabled={busy != null} onClick={() => { trackFunnel("upgrade_click", { button: `plan:${id}` }); choose(id); }} data-testid="first-video-plan-button" data-plan={id}
             className="flex min-h-[48px] flex-col justify-center rounded-xl border border-white/15 px-3 py-2 text-left text-[13px] text-white/70 transition hover:border-white/30 disabled:opacity-60">
             <span className="flex items-center justify-between gap-2"><b className="text-white">{PRICING_PLANS[id].name}</b><span>{priceOf(id)} a month</span></span>
             <span className="text-[12px] text-white/50">about {videosFor(id)} videos a month</span>
@@ -104,11 +110,11 @@ export default function UpgradeScreen({ run, adminLook = false, onExplore }) {
       </div>
       {adminNote && <p className="mt-3 text-center text-[13px] font-bold text-amber-200" role="status">Admin preview: a customer goes to Stripe here.</p>}
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <button type="button" onClick={() => setComparing(true)} data-testid="first-video-compare" className={QUIET}><Scale className="h-4 w-4" aria-hidden="true" /> Compare plans</button>
-        <button type="button" onClick={onExplore} data-testid="first-video-explore" className={QUIET}><Compass className="h-4 w-4" aria-hidden="true" /> Explore Zyvo first</button>
+        <button type="button" onClick={() => { trackFunnel("upgrade_click", { button: "compare" }); setComparing(true); }} data-testid="first-video-compare" className={QUIET}><Scale className="h-4 w-4" aria-hidden="true" /> Compare plans</button>
+        <button type="button" onClick={() => { trackFunnel("upgrade_click", { button: "explore" }); onExplore(); }} data-testid="first-video-explore" className={QUIET}><Compass className="h-4 w-4" aria-hidden="true" /> Explore Zyvo first</button>
       </div>
       <p className="mt-2 text-center text-[12.5px] leading-snug text-white/50">5 free images and every template to browse. Your video stays waiting on Home.</p>
-      {comparing && <ComparePlansSheet prices={prices} choose={choose} busy={busy} adminNote={adminNote} onClose={closeCompare} />}
+      {comparing && <ComparePlansSheet prices={prices} choose={(id) => { trackFunnel("compare_plan_click", { plan: id }); choose(id); }} busy={busy} adminNote={adminNote} onClose={closeCompare} />}
     </section>
   );
 }

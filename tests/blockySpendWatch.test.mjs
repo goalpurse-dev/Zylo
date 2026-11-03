@@ -240,7 +240,8 @@ test("Blocky is on Home while it is switched on for everyone (the global switch;
   assert.match(home, /const blockyLive = blockySwitch\.loading \? BLOCKY_STORIES_LAUNCHED : blockySwitch\.enabled;/);
   assert.equal(home.split("BLOCKY_TEMPLATE").length - 1, 2, "imported, and used once");
   assert.match(home, /\{blockyLive && <FeaturedTemplate template=\{BLOCKY_TEMPLATE\} testId="featured-blocky" \/>\}/);
-  assert.match(home, /items=\{suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive \}\)\}/);
+  assert.match(home, /const templates = suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive \}\);/);
+  assert.match(home, /items=\{templates\}/);
   // Its own section comes right before the featured one (Cartoon Drive By).
   assert.ok(home.indexOf("featured-blocky") < home.indexOf("<FeaturedTemplate />") && home.indexOf("featured-blocky") > home.indexOf("ZyvoSuiteCarousel title="));
   const sections = read("src/components/home-v2/HomeV2Sections.jsx");

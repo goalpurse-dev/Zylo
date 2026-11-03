@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PREVIEW, cliffhangerLine, previewDecision, topicsForGoals } from "../supabase/functions/_shared/cutaway/freePreview.js";
 import { SIGNUP_BONUS, signupBonusEmailLine, signupBonusFor, signupBonusLine, signupBonusTimeLeft } from "../supabase/functions/_shared/signupBonus.js";
-import { failOrRetry, onEvent } from "../supabase/functions/_shared/cutaway/orchestrate.js";
+import { funnelStats, hopeGroupsOf } from "../supabase/functions/_shared/funnelStats.js";
+import { WELCOME_QUESTION, welcomeEmail } from "../supabase/functions/_shared/welcomeEmail.js";
+import { failOrRetry, isWaitingInLine, LIMITS, onDispatchFailed, onEvent, onWatch } from "../supabase/functions/_shared/cutaway/orchestrate.js";
 import { jobFor } from "../supabase/functions/_shared/cutaway/jobs.js";
 import { previewCutSec } from "../scripts/cutaway/proto3d/m3/previewCut.mjs";
 
@@ -41,7 +43,7 @@ test("the plan screen: one number sets its length, and it fetches the real topic
   assert.match(plan, /cutawayServer\.freePreviewState\(/);
   assert.match(plan, /if \(!s\?\.topics\?\.length\) \{ done\.current\(\); return; \}/, "no videos on offer: no pretending");
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
-  assert.match(survey, /if \(!skipped && withPlan\) setBuilding\(true\); else onDone/);
+  assert.match(survey, /if \(!skipped && withPlan\) setBuilding\(true\); else leave\(skipped\)/);
 });
 
 test("the sign-up bonus: their own 3 days, first plan only, judged by the payment time", () => {
@@ -112,6 +114,151 @@ test("compare plans uses live data; phones keep one sticky button", () => {
   assert.match(up, /className="ob-fade /, "a transform here would pin the sticky button to the section");
 });
 
+test("the funnel: distinct people of the period's sign-ups, drop-off between steps, owner and tests left out", () => {
+  const t = "2026-11-02T10:00:00Z", ev = (user_id, event, props = {}, created_at = t) => ({ user_id, event, props, created_at });
+  const s = funnelStats({
+    from: "2026-11-02T00:00:00Z", to: "2026-11-03T00:00:00Z", excluded: ["owner"], sends: [{ id: 1 }, { id: 2 }],
+    events: [
+      ev("a", "signed_up"), ev("b", "signed_up"), ev("c", "signed_up"), ev("owner", "signed_up"), ev("old", "signed_up", {}, "2026-11-01T10:00:00Z"),
+      ev("a", "survey_answer"), ev("b", "survey_started"), ev("a", "survey_completed"), ev("b", "survey_skipped"), ev("owner", "survey_completed"),
+      ev("a", "tutorial_step_completed", { step: 1, topic: "landfill" }), ev("a", "tutorial_step_completed", { step: 2, topic: "car_wash" }), ev("a", "tutorial_step_completed", { step: 2, topic: "car_wash" }),
+      ev("a", "upgrade_screen_shown"), ev("a", "upgrade_click", { button: "compare" }), ev("a", "upgrade_click", { button: "compare" }), ev("a", "compare_plan_click", { plan: "pro" }), ev("a", "checkout_opened"), ev("a", "upgraded"),
+      ev("a", "welcome_email_clicked"), ev("old", "upgraded"),
+    ],
+    onboarding: [{ user_id: "a", goals: ["faceless", "business"], experience: "few", heard_from: "tiktok_creator", heard_creator: " SomeOne ", survey_done_at: t, email_consent_at: t }, { user_id: "b", goals: ["faceless"], survey_done_at: t }, { user_id: "old", goals: ["longform"], survey_done_at: t }],
+    emailEvents: [{ resend_id: "x", type: "email.delivered" }, { resend_id: "x", type: "email.delivered" }, { resend_id: "y", type: "email.bounced" }, { resend_id: "x", type: "email.opened" }],
+  });
+  const step = (k) => s.steps.find((x) => x.key === k);
+  assert.equal(s.total, 3);
+  assert.equal(step("survey_started").users, 2);
+  assert.equal(step("survey_started").lostFromPrevious, 1);
+  assert.equal(step("generate_clicked").users, 1, "counted once");
+  assert.equal(step("upgraded").pctOfSignups, 33);
+  assert.equal(step("plan_screen_finished").notTracked, true, "no such event at all: not tracked, not a drop-off");
+  assert.equal(step("tutorial_started").lostFromPrevious, 2);
+  assert.equal(step("checkout_opened").notTracked, undefined);
+  assert.deepEqual(s.surveyEnds, { completed: 1, skipped: 1 });
+  assert.equal(s.clicks[0].label, "Compare plans"); assert.equal(s.clicks[0].n, 1);
+  assert.equal(s.comparePlans[0].key, "pro");
+  assert.equal(s.topics[0].key, "car_wash");
+  assert.equal(s.survey.goals[0].n, 2, "old sign-ups stay out");
+  assert.equal(s.survey.creators[0].key, "someone");
+  assert.equal(s.survey.optInPct, 50);
+  assert.deepEqual(s.email, { sent: 2, delivered: 1, opened: 1, clicked: 1, bounced: 1, spam: 0, noteShown: 0, noteFound: 0, replies: null });
+});
+
+test("the survey's last question: optional, saved, every answer on the dashboard newest first, grouped by words", () => {
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /const TOTAL = 5/);
+  assert.match(survey, /What do you hope Zyvo will help you create\?/);
+  assert.match(survey, /HOPE_PLACEHOLDER = "Faceless videos for my TikTok about history"/);
+  assert.match(survey, /data-testid="survey-hope-skip"/);
+  assert.match(survey, /p_hope: skipped \? null : hope\.trim\(\) \|\| null/);
+  assert.ok(survey.indexOf("What do you hope Zyvo") < survey.indexOf("Get tips, templates and offers by email?"), "right before the email step");
+  const sql = read("supabase/migrations/20261130130000_survey_hope_and_spam_note.sql");
+  assert.match(sql, /DROP FUNCTION IF EXISTS public\.save_onboarding_survey\(text\[\], text, text, text, boolean, text, boolean\);/, "no overload: the live page's call stays unambiguous");
+  assert.match(sql, /p_hope text DEFAULT NULL/);
+  assert.match(sql, /'spam_note_shown', 'spam_note_found'/);
+  assert.match(read("src/pages/support/SupportPolicyArticle.jsx"), /what you hope Zyvo will help you create/);
+
+  assert.deepEqual(hopeGroupsOf("Faceless videos for my TikTok about history"), ["short", "faceless", "history"]);
+  assert.deepEqual(hopeGroupsOf("ads for my bakery"), ["business"]);
+  assert.deepEqual(hopeGroupsOf("idk"), ["other"]);
+  const t = (h) => `2026-11-02T${h}:00:00Z`;
+  const s = funnelStats({
+    from: "2026-11-02T00:00:00Z", to: "2026-11-03T00:00:00Z",
+    events: ["a", "b", "c"].map((u) => ({ user_id: u, event: "signed_up", props: {}, created_at: t("01") })).concat([{ user_id: "a", event: "spam_note_shown", props: {}, created_at: t("02") }, { user_id: "a", event: "spam_note_shown", props: {}, created_at: t("03") }, { user_id: "a", event: "spam_note_found", props: {}, created_at: t("03") }]),
+    onboarding: [
+      { user_id: "a", goals: ["faceless"], experience: "never", heard_from: "tiktok_ad", hope: " Horror stories for TikTok ", survey_done_at: t("02") },
+      { user_id: "b", goals: ["business"], hope: "Product ads", survey_done_at: t("05") },
+      { user_id: "c", goals: ["longform"], hope: "   ", survey_done_at: t("04") },
+    ],
+  });
+  assert.equal(s.survey.hopeCount, 2, "an empty answer isn't one");
+  assert.deepEqual(s.survey.hopes.map((h) => h.text), ["Product ads", "Horror stories for TikTok"], "newest first");
+  assert.deepEqual(s.survey.hopes[1].goals, ["Faceless TikTok, Reels or Shorts"]);
+  assert.equal(s.survey.hopes[1].heard, "TikTok ad");
+  assert.deepEqual(s.survey.hopeGroups.map((g) => g.key).sort(), ["business", "short", "stories"]);
+  assert.equal(s.email.noteShown, 1, "people, not views");
+  assert.equal(s.email.noteFound, 1);
+});
+
+test("the spam note: only after a real send, gone for good after 'I found it'; the email ends with the reply question", () => {
+  const note = read("src/components/onboarding/SpamNote.jsx");
+  assert.match(note, /s\?\.welcomeSent && !s\.spamNoteDismissed/);
+  assert.match(note, /supabase\.rpc\("dismiss_spam_note"\)/);
+  assert.match(note, /We just sent you an email at/);
+  assert.match(note, /user\?\.email/);
+  assert.match(note, /I found it ✓/);
+  assert.match(read("src/pages/workspace/HomeV2.jsx"), /<SpamNote where="home" \/>/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /<Rendering run=\{run\} spamNote \/>/);
+  const fn = read("supabase/functions/send-welcome-email/index.ts");
+  assert.ok(fn.indexOf("welcome_sent_at") > fn.indexOf("if (!sent)"), "marked only after the email went");
+  assert.match(fn, /replyTo: REPLY_TO\.founder/);
+  const mail = welcomeEmail({ html: "", text: "" });
+  assert.match(mail.text, /Quick question: what do you hope Zyvo helps you with\? Just hit reply, I read every answer\.\n/);
+  assert.ok(mail.html.includes(WELCOME_QUESTION));
+});
+
+test("the welcome email: off by default, new accounts only, once, offer only with opt-in", () => {
+  const fn = read("supabase/functions/send-welcome-email/index.ts");
+  assert.match(fn, /settings\?\.welcome_email_on !== true\) return ok\(req, \{ skipped: "paused" \}\)/);
+  assert.match(fn, /onboarding\?\.enrolled !== true\) return ok\(req, \{ skipped: "not_in_new_flow" \}\)/);
+  assert.match(fn, /body\?\.trigger !== "plan_finished"/);
+  assert.match(fn, /eq\("welcome_email_sent", false\)/);
+  assert.match(fn, /if \(onboarding\.email_consent_at\)/);
+  assert.match(read("supabase/migrations/20261130120000_funnel_tracking_and_welcome_switch.sql"), /welcome_email_on boolean NOT NULL DEFAULT false/);
+  const footer = { html: "<f>", text: "f" };
+  const plain = welcomeEmail(footer), offer = welcomeEmail(footer, { bonusEndsAt: "2026-11-05T21:02:00Z" });
+  assert.doesNotMatch(plain.html + plain.text, /bonus|credits/i, "no offer without the opt-in");
+  assert.match(offer.text, /50 bonus credits/);
+  assert.match(offer.text, /Thursday 5 November, 21:02 UTC/);
+  assert.match(plain.html, /\/welcome\/first-video\?from=email/);
+  assert.match(plain.html, /\/workspace\/image-generator\?from=email/);
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /requestWelcomeEmail\(\); onDone/);
+  assert.doesNotMatch(read("src/components/onboarding/OnboardingGate.jsx"), /send-welcome-email/, "not at sign-up any more");
+});
+
+test("the coming-to-life clips: small files, baked blur, still for reduced motion", () => {
+  const f = read("src/components/onboarding/FloatingClips.jsx");
+  assert.match(f, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(f, /blur-/, "the blur is in the files: no live filter on a phone");
+  let total = 0;
+  for (const k of ["landfill", "carwash", "drain", "pool"]) { const size = readFileSync(`public/onboarding/float/${k}.mp4`).length; assert.ok(size < 120 * 1024, `${k} is ${size} bytes`); total += size; }
+  assert.ok(total < 400 * 1024);
+});
+
+test("sign-up on phones: no clips rendered at all", () => {
+  const auth = read("src/components/auth/AuthSplit.jsx");
+  assert.match(auth, /if \(!useIsDesktop\(\)\) return null;/);
+  assert.match(auth, /\(min-width: 1024px\)/);
+});
+
+test("Home's Long Form card and What's new art come with the site, not from storage", () => {
+  const home = read("src/components/home-v2/HomeV2Sections.jsx");
+  assert.match(home, /media=\{<img src="\/home\/long-form-card\.webp"/);
+  assert.match(home, /HUNT_THUMBS = \["\/home\/launch\/spear-or-patience\.jpg"/);
+  for (const f of ["public/home/long-form-card.webp", "public/home/launch/spear-or-patience.jpg", "public/home/launch/how-did-this-kill.jpg", "public/home/launch/what-does-it-prove.jpg"]) assert.ok(readFileSync(f).length > 1000, f);
+});
+
+test("after the payment: the finished video and straight on to the next one", () => {
+  const page = read("src/pages/onboarding/FirstVideo.jsx");
+  assert.match(page, /Make your next video/);
+  assert.match(page, /\$\{CUTAWAY_PATH\}\?topic=\$\{encodeURIComponent\(topic\)\}/);
+  assert.match(page, /eq\("offer_id", SIGNUP_BONUS\.id\)/, "the bonus chip only when the webhook really gave it");
+  assert.match(read("src/components/viral-tools/cutaway-explainer/CutawayStudio.jsx"), /get\("topic"\)/);
+});
+
+test("5 of 5 free images: the waiting video, or the plans; checkout never waits for a video that doesn't exist", () => {
+  const screen = read("src/components/onboarding/ImageLimitScreen.jsx");
+  assert.match(read("src/components/ImageGenerator/Generate.jsx"), /<ImageLimitScreen/);
+  assert.match(screen, /s\?\.plan === "free" && s\.preview\?\.step === "done" && !s\.finish/);
+  assert.match(screen, /usePlanCheckout\(demo, \{ plain: !run \}\)/);
+  assert.match(screen, /Maybe later/);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /usePlanCheckout\(false, \{ plain: true \}\)/);
+});
+
 test("the upgrade screen: no discount or countdown, a real way out", () => {
   const up = read("src/components/onboarding/UpgradeScreen.jsx");
   assert.doesNotMatch(up, /30%|% off|countdown/i);
@@ -174,13 +321,59 @@ test("a preview's job asks for the first seconds only and has no full file", () 
 });
 
 test("a failed free preview never reaches the CPU fallback, and is given back", () => {
-  const run = { id: "r", topic: "t", status: "render", provider: "runpod", provider_job_id: "j", attempt: 2, free_preview: true };
+  const run = { id: "r", topic: "t", status: "render", provider: "runpod", provider_job_id: "j", attempt: LIMITS.previewAttempts, free_preview: true };
   const r = failOrRetry(run, { code: "NO_GPU_SLOT", message: "no GPU" });
   assert.equal(r.patch.status, "failed");
   assert.ok(r.actions.some((a) => a.type === "releasePreview"));
   assert.equal(r.patch.provider, undefined);
   const paying = failOrRetry({ ...run, free_preview: false }, { code: "NO_GPU_SLOT", message: "no GPU" });
   assert.equal(paying.patch.provider, "fly", "a paying customer's video keeps its fallback");
+});
+
+test("a free preview waits in line: 4 tries on RunPod, a longer wait for a GPU, then given back", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { id: "r", topic: "t", status: "queued", provider: "runpod", provider_job_id: "j", attempt: 1, free_preview: true, created_at: ago(700), dispatched_at: ago(700) };
+  // the paid wait (8 min) isn't enough to give up on a preview; 10 min is: a new place in line, the old job cancelled
+  assert.deepEqual(onWatch({ ...run, dispatched_at: ago(LIMITS.queueSec + 5) }, { status: "IN_QUEUE" }, NOW).actions, []);
+  const requeued = onWatch(run, { status: "IN_QUEUE" }, NOW);
+  assert.equal(requeued.patch.attempt, 2);
+  assert.deepEqual(requeued.actions.map((a) => a.type), ["cancel", "dispatch"]);
+  // a worker without graphics or a lost worker: tried again up to the 4th attempt, then failed and given back
+  for (const attempt of [1, 2, 3]) assert.equal(failOrRetry({ ...run, attempt }, { code: "NO_GPU", message: "no graphics" }, NOW).patch.attempt, attempt + 1);
+  const last = failOrRetry({ ...run, attempt: LIMITS.previewAttempts }, { code: "NO_GPU_SLOT", message: "no GPU" }, NOW);
+  assert.equal(last.patch.status, "failed");
+  assert.ok(last.actions.some((a) => a.type === "releasePreview"));
+  assert.equal(failOrRetry({ ...run, attempt: 1 }, { code: "GATE_FAILED" }, NOW).patch.status, "failed", "the video's own failures are never retried");
+  // the owner's preparation runs and paying customers keep their old path
+  assert.equal(failOrRetry({ ...run, preview_pool: true, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.status, "failed");
+  assert.equal(failOrRetry({ ...run, free_preview: false, attempt: 2 }, { code: "NO_GPU" }, NOW).patch.provider, "fly");
+});
+
+test("a free preview whose sending failed is sent again a minute later, not failed", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { id: "r", topic: "t", status: "queued", provider: null, provider_job_id: null, attempt: 1, free_preview: true, created_at: ago(5) };
+  const wait = onDispatchFailed(run, "runpod", "upload URL: Service Unavailable", NOW);
+  assert.equal(wait.patch.error_code, "DISPATCH_FAILED");
+  assert.deepEqual(wait.actions, []);
+  const waiting = { ...run, ...wait.patch };
+  assert.deepEqual(onWatch(waiting, null, NOW + 30000).actions, [], "not before a minute");
+  const again = onWatch(waiting, null, NOW + 61000);
+  assert.equal(again.patch.attempt, 2);
+  assert.deepEqual(again.actions, [{ type: "dispatch", target: "runpod", role: "video" }]);
+  assert.equal(onDispatchFailed({ ...run, attempt: LIMITS.previewAttempts }, "runpod", "x", NOW), null, "out of tries: the usual end");
+  assert.equal(onDispatchFailed({ ...run, free_preview: false }, "runpod", "x", NOW), null, "a paid run keeps its path");
+});
+
+test("the page's 'in line': a free preview no worker has yet, after 90 s or a retry", () => {
+  const NOW = Date.parse("2026-11-03T12:00:00Z"), ago = (s) => new Date(NOW - s * 1000).toISOString();
+  const run = { status: "queued", attempt: 1, free_preview: true, dispatched_at: ago(30), heartbeat_at: null };
+  assert.equal(isWaitingInLine(run, NOW), false, "the first seconds are normal");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(LIMITS.busySec + 5) }, NOW), true);
+  assert.equal(isWaitingInLine({ ...run, attempt: 2, status: "render" }, NOW), true, "a retry waits in line again");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), heartbeat_at: ago(10) }, NOW), false, "a worker has it");
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), free_preview: false }, NOW), false);
+  assert.equal(isWaitingInLine({ ...run, dispatched_at: ago(200), status: "failed" }, NOW), false);
+  assert.match(read("src/pages/onboarding/FirstVideo.jsx"), /run\?\.inLine[\s\S]*High demand, your video is in line/);
 });
 
 test("finishing reports to the funnel: the preview ready, and the gift video done", () => {
@@ -218,9 +411,8 @@ test("every sign-up route is named, the welcome email has one trigger, and conse
   assert.match(read("src/components/AuthModal.jsx"), /rememberSignupRoute\(signupRoute\("email"\)\)/);
   assert.match(read("src/pages/Signup.jsx"), /signup_page_email/);
   assert.match(read("src/pages/Signup.jsx"), /signup_page_google/);
-  assert.match(read("src/components/onboarding/OnboardingGate.jsx"), /send-welcome-email/);
+  assert.match(read("src/lib/onboarding.js"), /functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(read("src/lib/auth.js"), /functions\.invoke\("send-welcome-email"/);
   assert.doesNotMatch(read("src/components/WelcomeScreen.jsx"), /update\(\{ email_updates/);
-  assert.match(read("supabase/functions/send-welcome-email/index.ts"), /const WELCOME_PAUSED = true/);
-  assert.match(read("supabase/functions/_shared/welcomeEmail.js"), /5 free image generations/);
+  assert.match(read("supabase/functions/_shared/welcomeEmail.js"), /5 free images/);
 });

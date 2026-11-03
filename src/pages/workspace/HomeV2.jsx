@@ -6,13 +6,14 @@ import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
-import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
+import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { BLOCKY_TEMPLATE, HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 import FirstVideoHomeCard from "../../components/onboarding/FirstVideoHomeCard.jsx";
+import SpamNote from "../../components/onboarding/SpamNote.jsx";
 
 export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
@@ -27,6 +28,10 @@ export default function HomeV2() {
     fetchShowcase("home").then(setLongFormCreations);
   }, []);
 
+  const [phone, setPhone] = useState(false);
+  useEffect(() => { setPhone(window.matchMedia("(max-width: 767px)").matches); }, []);
+  const templates = suiteTemplates(Date.now(), { blocky: blockyLive });
+
   return (
     <div className="flex-1 pb-24 lg:pb-12">
       {/* HERO: near-black ground, one soft neutral spotlight from the top
@@ -34,7 +39,9 @@ export default function HomeV2() {
       <div className="relative isolate flex flex-col overflow-hidden bg-[#090A0A] pb-2">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[80px] bg-[radial-gradient(ellipse_75%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)] md:h-[140px] md:bg-[radial-gradient(ellipse_40%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)]" data-testid="hero-spotlight" />
         <Glow compact />
+        <SpamNote where="home" />
         <FirstVideoHomeCard />
+        <PhoneTools />
         <PathCards />
       </div>
 
@@ -46,10 +53,13 @@ export default function HomeV2() {
 
       {/* Short Form: the "short form suite" coverflow is the templates section */}
       <div className="mt-12">
-        <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates(Date.now(), { blocky: blockyLive })} subtitle="Short Form templates for TikTok, Reels & Shorts" />
+        {/* The coverflow keeps animating when hidden, so a phone drops it once it knows (the first render keeps its links for crawlers). */}
+        {!phone && <div className="hidden md:block"><ZyvoSuiteCarousel title="short form suite" items={templates} subtitle="Short Form templates for TikTok, Reels & Shorts" /></div>}
+        <div className="px-4 md:hidden"><SectionHeader title="Short Form templates" subtitle="For TikTok, Reels & Shorts." /></div>
+        <PhoneTemplates items={templates} />
         <p className="mt-5 px-4 text-center text-[13px] text-white/55 md:px-[50px]" data-testid="home-fruit-link">
-          New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.
-          <span className="mt-1 block text-white/45" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
+          <span className="hidden md:inline">New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.</span>
+          <span className="block text-white/45 md:mt-1" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
         </p>
       </div>
 

@@ -1,66 +1,50 @@
-// The welcome email: one per account, sent by the send-welcome-email function.
-// The footer (why, unsubscribe, company line) comes from _shared/emailRules.js.
+// The welcome email: one per new account, sent by the send-welcome-email function when "Building your plan" finishes (or
+// someone skips the survey). Short and personal, not a campaign. An offer appears only for someone who ticked the email
+// opt-in, with the bonus's real end time. The footer (why, unsubscribe, company line) comes from _shared/emailRules.js.
+// Links carry ?from=email: the app records the click itself, so click tracking stays off at Resend (it rewrites links,
+// which hurts delivery: the owner's rule of 2026-10-12).
 import { APP_URL } from "./emailRules.js";
 
-export const WELCOME_SUBJECT = "You’ve got 5 free image generations waiting";
-export const WELCOME_WHY = "You're getting this because you created a Zyvo account.";
+export const WELCOME_SUBJECT = "Your first video is waiting";
+export const WELCOME_WHY = "You're getting this because you just created a Zyvo account.";
+export const WELCOME_VIDEO_URL = `${APP_URL}/welcome/first-video?from=email`;
+export const WELCOME_IMAGES_URL = `${APP_URL}/workspace/image-generator?from=email`;
+// the last line, a question to answer by reply (Reply-To: REPLY_TO.founder, the owner's inbox)
+export const WELCOME_QUESTION = "Quick question: what do you hope Zyvo helps you with? Just hit reply, I read every answer.";
 
-export function welcomeEmail(footer) {
+/** "Thursday 5 November, 21:02 UTC": the same moment for everyone, wherever they read it. */
+export function bonusEndText(expiresAt) {
+  const d = new Date(expiresAt);
+  if (!Number.isFinite(d.getTime())) return null;
+  const day = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).replace(",", "");
+  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+  return `${day}, ${time} UTC`;
+}
+
+/** bonusEndsAt: only for someone who opted in to offers, with a sign-up bonus still running. Otherwise no offer at all. */
+export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
+  const ends = bonusEndsAt ? bonusEndText(bonusEndsAt) : null;
+  const p = "margin:0 0 16px;font-size:16px;line-height:1.55;color:#1f2328";
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;background:#0f1117;color:white;border-radius:16px">
-      <h1 style="color:white;margin-bottom:12px;">Welcome to Zyvo 🚀</h1>
-
-      <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
-        Your AI creator workspace is ready.
-      </p>
-
-      <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
-        You currently have <b>5 free image generations</b> waiting for you — use them to create scroll-stopping content in seconds.
-      </p>
-
-      <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
-        Inside Zyvo, you can generate:
-      </p>
-
-      <ul style="color:#d1d5db;line-height:1.8;padding-left:20px;">
-        <li>AI images</li>
-        <li>AI videos</li>
-        <li>Product photos</li>
-        <li>Viral content for TikTok, Reels and Shorts</li>
-      </ul>
-
-      <p style="color:#d1d5db;font-size:16px;line-height:1.6;">
-        Try one of these:
-      </p>
-
-      <ul style="color:#d1d5db;line-height:1.8;padding-left:20px;">
-        <li>"Luxury product photo with cinematic lighting"</li>
-        <li>"Anime character in neon cyberpunk city"</li>
-        <li>"Ultra realistic portrait photography"</li>
-      </ul>
-
-      <div style="text-align:center;margin:32px 0;">
-        <a
-          href="${APP_URL}/?source=welcome"
-          style="background:#7A3BFF;color:white;padding:14px 28px;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;display:inline-block;"
-        >
-          Use My Free Generations
-        </a>
-      </div>
-
-      <p style="color:#9ca3af;font-size:15px;line-height:1.6;">
-        Need more images, video generations, and higher limits later? You can upgrade to Starter anytime inside Zyvo.
-      </p>
-
-      <p style="margin-top:28px;color:#9ca3af;font-size:14px;">
-        Just reply if you need help — I read these myself.
-      </p>
-
-      <p style="color:#9ca3af;font-size:14px;">
-        — Niko, Founder of Zyvo
-      </p>
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:8px 4px;color:#1f2328">
+      <p style="${p}">Hi,</p>
+      <p style="${p}">Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.</p>
+      <p style="margin:0 0 20px"><a href="${WELCOME_VIDEO_URL}" style="display:inline-block;background:#1f2328;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px">Go to my video</a></p>
+      <p style="${p}">You also have 5 free images. <a href="${WELCOME_IMAGES_URL}" style="color:#1f2328">Try one here</a>.</p>
+      ${ends ? `<p style="${p}">Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.</p>` : ""}
+      <p style="${p}">${WELCOME_QUESTION}</p>
+      <p style="${p}">Niko<br>Zyvo</p>
       ${footer.html}
-    </div>
-    `;
-  return { html };
+    </div>`;
+  const text = [
+    "Hi,", "",
+    "Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.", "",
+    `Go to my video: ${WELCOME_VIDEO_URL}`, "",
+    `You also have 5 free images. Try one here: ${WELCOME_IMAGES_URL}`, "",
+    ...(ends ? [`Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.`, ""] : []),
+    WELCOME_QUESTION, "",
+    "Niko", "Zyvo", "",
+    footer.text,
+  ].join("\n");
+  return { html, text };
 }

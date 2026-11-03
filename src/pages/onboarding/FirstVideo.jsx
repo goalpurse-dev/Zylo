@@ -11,9 +11,14 @@ import { PRICING_PLANS } from "../../lib/pricingOutputs";
 import { saveMediaToDevice } from "../../lib/downloadMedia";
 import { cutawayServer, PRICES } from "../../components/viral-tools/cutaway-explainer/api/cutawayApi";
 import { Confetti } from "../../components/onboarding/FirstGenFlow.jsx";
+import FloatingClips from "../../components/onboarding/FloatingClips.jsx";
 import UpgradeScreen, { ExploreButton, RECOMMENDED_PLAN, lockLineFor, usePlanCheckout } from "../../components/onboarding/UpgradeScreen.jsx";
 import { adminPreviewMode, browserId, endAdminPreview, lastSurveyGoals, trackFunnel } from "../../lib/onboarding";
 import { demoPreviewRun, demoStateFor } from "../../lib/onboardingDemo";
+import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
+import { PREVIEW_TOPIC_KEYS, topicsForGoals } from "../../../supabase/functions/_shared/cutaway/freePreview.js";
+import { SIGNUP_BONUS } from "../../../supabase/functions/_shared/signupBonus.js";
+import SpamNote from "../../components/onboarding/SpamNote.jsx";
 import "../../components/onboarding/onboarding.css";
 
 const PLAN_IDS = ["starter", "pro", "generative"];
@@ -53,16 +58,28 @@ function stageOf(run) {
 }
 const STAGES = ["Loading your script", "Creating scenes", "Adding voice"];
 
-function Rendering({ run }) {
+function Rendering({ run, spamNote = false }) {
   const stage = stageOf(run), pct = run?.step === "render" ? run.renderPct ?? 0 : 4;
   return (
-    <section className="w-full text-center" data-testid="first-video-rendering">
-      <h1 className="text-[27px] font-black leading-tight tracking-tight text-white">Your video is coming to life</h1>
-      <p className="mt-1.5 text-[14px] text-white/55">This usually takes a minute or two. You can leave: it stays on your home page.</p>
-      <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
+    <section className="relative z-10 w-full text-center" data-testid="first-video-rendering">
+      <FloatingClips />
+      <div className="relative z-10">
+      {run?.inLine ? (
+        <>
+          <h1 className="text-[27px] font-black leading-tight tracking-tight text-white" data-testid="first-video-in-line">High demand, your video is in line</h1>
+          <p className="mt-1.5 text-[14px] text-white/70">Lots of people are making videos right now. Yours starts as soon as a spot is free. You can leave: it stays on your home page.</p>
+        </>
+      ) : (
+        <>
+          <h1 className="text-[27px] font-black leading-tight tracking-tight text-white">Your video is coming to life</h1>
+          <p className="mt-1.5 text-[14px] text-white/70">This usually takes a minute or two. You can leave: it stays on your home page.</p>
+        </>
+      )}
+      {spamNote && <SpamNote where="coming_to_life" />}
+      <div className="mt-6 h-3 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-lime-300 transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} /></div>
       <ol className="mt-6 grid gap-2.5 text-left">
         {STAGES.map((label, i) => (
-          <li key={label} className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-[15px] font-bold transition ${i === stage ? "border-lime-300/60 bg-lime-300/[0.08] text-white" : i < stage ? "border-white/10 text-white/70" : "border-white/[0.06] text-white/35"}`}>
+          <li key={label} className={`flex items-center gap-3 rounded-2xl border bg-[#090A0A]/85 px-4 py-3 text-[15px] font-bold transition ${i === stage ? "border-lime-300/60 text-white" : i < stage ? "border-white/15 text-white/80" : "border-white/10 text-white/50"}`}>
             <span className={`grid h-7 w-7 place-items-center rounded-full ${i < stage ? "bg-lime-300 text-[#11150D]" : "border border-white/15"}`}>
               {i < stage ? <Check className="h-4 w-4" strokeWidth={3} /> : i === stage ? <Loader2 className="h-4 w-4 animate-spin text-lime-300" /> : null}
             </span>
@@ -70,6 +87,7 @@ function Rendering({ run }) {
           </li>
         ))}
       </ol>
+      </div>
     </section>
   );
 }
@@ -107,7 +125,7 @@ function PreviewPlayer({ src, poster, locked, onEnded, stopAt, lockLine, onUnloc
 
 function Plans() {
   const prices = usePlanPrices();
-  const { choose, busy } = usePlanCheckout(false);
+  const { choose, busy } = usePlanCheckout(false, { plain: true }); // no video to finish here
   const videosFor = (planId) => Math.floor(PRICING_PLANS[planId].credits / PRICES.video.credits.premade[30]);
   return (
     <section id="first-video-plans" className="mt-8 w-full scroll-mt-4" data-testid="first-video-plans">
@@ -136,21 +154,72 @@ function Plans() {
   );
 }
 
-function Finished({ run }) {
+// The next videos on offer, in the order their answers ask for, without the one they just made (these three have pictures).
+const NEXT_TOPICS = { landfill: "Landfill", car_wash: "Car wash", french_drain: "French drain" };
+function nextTopics(run) {
+  const made = String(run?.topic ?? "").toLowerCase();
+  return topicsForGoals(lastSurveyGoals(), PREVIEW_TOPIC_KEYS.length).filter((k) => NEXT_TOPICS[k] && NEXT_TOPICS[k].toLowerCase() !== made).slice(0, 2).map((key) => ({ key, topic: NEXT_TOPICS[key] }));
+}
+const topicLink = (topic) => `${CUTAWAY_PATH}?topic=${encodeURIComponent(topic)}`;
+
+// After the payment: the finished video, what they now have, and straight on to the next one.
+function Finished({ run, demo, userId }) {
   const [saving, setSaving] = useState(false);
+  const [facts, setFacts] = useState(() => (demo ? { plan: "Starter", credits: 800, bonus: SIGNUP_BONUS.credits } : null));
+  useEffect(() => {
+    if (demo || !userId) return undefined;
+    let live = true;
+    Promise.all([
+      supabase.from("profiles").select("plan_code, credit_balance").eq("id", userId).maybeSingle(),
+      supabase.from("offer_redemptions").select("credits").eq("user_id", userId).eq("offer_id", SIGNUP_BONUS.id).maybeSingle(),
+    ]).then(([p, b]) => { if (live && p.data) setFacts({ plan: PRICING_PLANS[String(p.data.plan_code).toLowerCase()]?.name ?? null, credits: Number(p.data.credit_balance) || 0, bonus: b.data?.credits ?? null }); }, () => {});
+    return () => { live = false; };
+  }, [demo, userId]);
   const save = async () => {
     setSaving(true);
     try { await saveMediaToDevice({ url: run.downloadUrl || run.finalUrl, filename: "my-first-zyvo-video.mp4", title: run.title }); } finally { setSaving(false); }
   };
+  const next = nextTopics(run);
+  const quiet = "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-2 text-[14px] font-bold text-white/80 transition hover:border-white/35 hover:text-white disabled:opacity-60";
   return (
-    <section className="w-full text-center" data-testid="first-video-finished">
+    <section className="grid w-full items-center gap-4 md:grid-cols-[330px_minmax(0,1fr)] md:gap-12" data-testid="first-video-finished">
       <Confetti />
-      <h1 className="text-[28px] font-black leading-tight tracking-tight text-white">Your video is finished 🎉</h1>
-      <p className="mt-1.5 text-[14px] text-white/60">A gift from us: this one used none of your credits.</p>
-      <video src={run.finalUrl} poster={run.poster} controls playsInline autoPlay className="mx-auto mt-5 aspect-[9/16] w-full max-w-[320px] rounded-3xl border border-white/10 bg-black object-cover" />
-      <div className="mt-5 grid gap-2.5">
-        <button type="button" onClick={save} disabled={saving} className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-lime-300 text-[16px] font-black text-[#11150D] transition hover:bg-lime-200 disabled:opacity-60"><Download className="h-5 w-5" /> {saving ? "Saving…" : "Download my video"}</button>
-        <Link to="/" className="inline-flex min-h-[48px] items-center justify-center rounded-2xl border border-white/15 text-[15px] font-bold text-white/80">Start creating</Link>
+      <video src={run.finalUrl} poster={run.poster} controls playsInline autoPlay className="mx-auto aspect-[9/16] w-[46%] max-w-[176px] rounded-3xl border-2 border-lime-300/55 bg-black object-cover shadow-[0_0_44px_rgba(190,242,100,0.28)] md:w-full md:max-w-[330px]" />
+      <div className="min-w-0 text-center md:text-left">
+        <p className="flex items-center justify-center gap-2 text-[13px] font-black text-lime-300 md:justify-start"><span className="grid h-5 w-5 place-items-center rounded-full bg-lime-300 text-[#11150D]"><Check className="h-3.5 w-3.5" strokeWidth={3.5} aria-hidden="true" /></span> Your video is ready</p>
+        <h1 className="mt-1.5 text-[28px] font-black leading-tight tracking-tight text-white md:text-[36px]">Your video is finished 🎉</h1>
+        <p className="mt-1.5 text-[14.5px] leading-snug text-white/65">A gift from us: it used none of your credits. Post it, then make the next one while you're here.</p>
+        {facts && (
+          <div className="mt-3 flex flex-wrap justify-center gap-1.5 md:justify-start" data-testid="first-video-facts">
+            {[facts.plan && `${facts.plan} active`, `${facts.credits.toLocaleString("en-US")} credits`, facts.bonus && `+${facts.bonus} sign-up bonus added`].filter(Boolean).map((t) => (
+              <span key={t} className="rounded-full border border-lime-300/40 bg-lime-300/[0.14] px-3 py-1 text-[12.5px] font-extrabold text-lime-200">{t}</span>
+            ))}
+          </div>
+        )}
+        {next[0] && (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#090A0A]/95 px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 backdrop-blur md:static md:mt-4 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+            <Link to={topicLink(next[0].topic)} data-testid="first-video-next" className="block rounded-[20px] bg-lime-300 px-3 py-2.5 text-center text-[#11150D] shadow-[0_0_34px_rgba(190,242,100,0.4)] transition hover:bg-lime-200">
+              <span className="block text-[22px] font-black leading-tight">Make your next video</span>
+              <span className="mt-0.5 block text-[13.5px] font-bold">{next[0].topic}, ready to go: {PRICES.video.credits.premade[30]} credits</span>
+            </Link>
+          </div>
+        )}
+        <div className="mt-3 grid grid-cols-3 gap-2 md:mt-4">
+          {next.map((t, i) => (
+            <Link key={t.key} to={topicLink(t.topic)} data-testid="first-video-next-topic" className={`relative block aspect-square overflow-hidden rounded-2xl border-2 text-left md:aspect-[9/12] ${i === 0 ? "border-lime-300" : "border-white/15"}`}>
+              <img src={`/onboarding/demo/${t.key}.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent px-2 pb-1.5 pt-6 text-[12.5px] font-black text-white">{t.topic}</span>
+            </Link>
+          ))}
+          <Link to="/" className="relative block aspect-square overflow-hidden rounded-2xl border-2 border-white/15 text-left md:aspect-[9/12]">
+            <img src="/onboarding/auth/skeleton.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent px-2 pb-1.5 pt-6 text-[12.5px] font-black text-white">More templates</span>
+          </Link>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 pb-28 md:pb-0">
+          <button type="button" onClick={save} disabled={saving} className={quiet}><Download className="h-4 w-4" /> {saving ? "Saving…" : "Download my video"}</button>
+          <Link to="/" className={quiet}>Go to Home</Link>
+        </div>
       </div>
     </section>
   );
@@ -278,7 +347,7 @@ export default function FirstVideo() {
 
   // ---------- after the upgrade ----------
   if (paidReturn || (finish && !run)) {
-    if (finish?.step === "done") return <div className={screen}>{adminBar}<div className={column}><Finished run={finish} /></div></div>;
+    if (finish?.step === "done") return <div className={screen}>{adminBar}<div className="mx-auto my-auto w-full max-w-[980px] py-2"><Finished run={finish} demo={demo} userId={user?.id} /></div></div>;
     const failed = finish?.step === "failed";
     return (
       <div className={screen}><div className={column}>
@@ -316,7 +385,7 @@ export default function FirstVideo() {
         </div></div>
       );
     }
-    if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} /></div></div></div>;
+    if (run.step !== "done") return <div className={screen}>{adminBar}<div className={column}><Dots step={3} /><div className="mt-6 w-full"><Rendering run={run} spamNote /></div></div></div>;
     return (
       <div className={screen}>{adminBar}<div className={locked ? "mx-auto my-auto grid w-full max-w-[1000px] items-center gap-3 pb-28 pt-1 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-12 md:py-2" : column}>
         {!locked && <Confetti />}
