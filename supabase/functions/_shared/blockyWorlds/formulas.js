@@ -5,32 +5,32 @@ export const FORMULAS = Object.freeze({
   F1: Object.freeze({
     name: "Everyone has X, except me",
     rule: "Everyone in the place has a visible gift, stat or marker (wings, a number over their head, their own weather). The narrator lacks it or has the worst one.",
-    example: "In this world, everyone is born with wings, except me.",
+    example: "In this world, everyone has a price tag floating over their head, and mine says one cent.",
   }),
   F2: Object.freeze({
     name: "Never do X, or Y comes",
     rule: "A simple, physical curfew-style rule with a creature or force attached. Breaking it has a price everyone has seen.",
-    example: "In this town, every house has a white chalk line drawn around it. After sundown, anything outside a line belongs to the collector.",
+    example: "In this town, if you talk above a whisper, the Listener in the water tower hears your name.",
   }),
   F3: Object.freeze({
     name: "Every night we give X to Y",
     rule: "An offering, deal or bargain with something unseen that the whole place keeps up.",
-    example: "In this town, every family leaves one plate of dinner on the porch, every night, for the great beast.",
+    example: "In this town, every night we give the Fountain Pigeon one loaf of bread, and it promises not to tell anyone's secrets.",
   }),
   F4: Object.freeze({
     name: "Our whole town lives inside Z",
     rule: "The world is a container (a giant animal, a building, a vehicle, a hole, a sky). The container's own quirks are daily life, and later the tools.",
-    example: "In this town, we all live inside a giant whale.",
+    example: "In this town, we all live inside a giant refrigerator, and every time the door opens we freeze in place.",
   }),
   F5: Object.freeze({
     name: "Everyone gets X when Y happens",
     rule: "A lottery of fate: a power, gift or change arrives at a set moment. The narrator's draw looks useless.",
-    example: "In this world, everyone gets a random superpower on the worst day of their life.",
+    example: "In this world, when you sneeze, a tiny copy of you pops out and runs away.",
   }),
   F6: Object.freeze({
     name: "Some are A, the rest of us are B",
     rule: "Two classes of people with a clear, visible line between them. The narrator is a B who breaks the system.",
-    example: "In this world, the smaller you are, the stronger your magic, so the tiniest people rule.",
+    example: "In this world, kids with a bike helmet rule the street, and kids without one must walk and bow.",
   }),
 });
 

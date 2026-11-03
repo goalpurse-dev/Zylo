@@ -6,6 +6,7 @@
 //   - serving: a user's next cards (only unseen, mixed across formulas and moods)
 // The rulebook for all of it: docs/blocky-worlds-protocol.md.
 import { FORMULA_IDS, FORMULAS, MOOD_IDS, MOOD_TWISTS, MOODS, SETTINGS, TWIST_IDS, TWISTS } from "./formulas.js";
+import { REFERENCE_RULE } from "./references.js";
 
 // ---------- dedup ----------
 const STOP = new Set("a an the in this world town every everyone each of to and or but is are was be you your their its it his her our we they who that when if for on at by with from as into than then so not no nobody anyone has have had gets get got only one can will".split(" "));
@@ -46,7 +47,7 @@ export const RUBRIC = Object.freeze([
   Object.freeze({ id: "escalation", weight: 10, ask: "Can it escalate in three visible, filmable steps?" }),
   Object.freeze({ id: "twist", weight: 14, ask: "Does the twist use the world's own logic (guessable in hindsight), with no new magic at the end?" }),
   Object.freeze({ id: "closer", weight: 10, ask: "Is the closer quotable and does it flip or echo the opener?" }),
-  Object.freeze({ id: "originality", weight: 8, ask: "Is it original (not a famous story with names changed, not a tired plot)?" }),
+  Object.freeze({ id: "originality", weight: 8, ask: "Is it original (not a famous story with names changed, not a tired plot)? Score 1 if it copies one of the reference premises below together with its twist, at most 2 if it copies the premise only." }),
   Object.freeze({ id: "buildable", weight: 6, ask: "Can it be shown in one or two blocky sets with a few characters (no crowds of special effects, no real places)?" }),
 ]);
 // The accept line, calibrated on 2026-11-03: the same judge scored six real ~300k-like hits as cards at 45-69 (the four
@@ -61,6 +62,8 @@ CRITERIA
 ${RUBRIC.map((c) => `- ${c.id}: ${c.ask}`).join("\n")}
 
 Also set safe=false if anything is not fine for a young audience (gore, weapons, romance, anything copyable and dangerous) or names a real game, platform, brand, film, book or person.
+
+${REFERENCE_RULE}
 
 Return only the JSON object, one verdict per idea, in the same order.`;
 

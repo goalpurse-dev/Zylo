@@ -5,6 +5,7 @@ import { FORMULAS, MOODS, SETTINGS, TWISTS, slotsForBatch } from "./formulas.js"
 import { hasOpener, fixOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_IDEAS } from "./examples.js";
+import { REFERENCE_RULE } from "./references.js";
 
 export const IDEAS_PER_BATCH = 6;
 export const TOPIC_IDEAS = 3;
@@ -16,12 +17,12 @@ const wc = (s) => String(s ?? "").trim().split(/\s+/).filter(Boolean).length;
 
 const STUDY = `WHAT MAKES THESE STORIES GO VIRAL (from 19 videos with ~300k likes each)
 - One absurd world rule, stated as plain fact in the very first line. Never "imagine if". It's just how the town works.
-- The rule has a PRICE everyone has seen ("...belongs to the collector", "...gone by morning").
-- Three quick, concrete examples with named neighbours make it funny and lived-in ("The pizza guy stops delivering at six.", "Mr. Pickett wished for a truck. Now he has a truck and an empty cage.").
-- The narrator is a kid who is the EXCEPTION or the underdog (no wings, a blank shirt, zero, one sad bulb).
-- An object is planted early (chalk in a pocket, a rope coil, a feather duster) and wins the climax.
+- The rule has a PRICE everyone has seen ("...and by morning your chair is gone", "...your house forgets your name").
+- Three quick, concrete examples with named neighbours make it funny and lived-in ("Mr. Plunk stood up to sneeze. Now he teaches sitting on a bucket.", "The mailman delivers by catapult from behind the line.").
+- The narrator is a kid who is the EXCEPTION or the underdog (the one-cent price tag, the only kid with no helmet, the squeakiest sneeze).
+- An object is planted early (a roll of tape, a stale bagel, a fridge magnet) and wins the climax.
 - It escalates in three visible steps, then the narrator wins with the world's own logic. No new magic at the end.
-- The last line flips the first ("Everyone here has wings. But now, when it rains, they call me.") or, for horror, reopens it ("So whose light is that?").
+- The last line flips the first ("Everyone here stays in their seat. We just take the seat with us.") or, for horror, reopens it with a sting.
 - Family stakes under the absurdity: a missing brother, a mom with a secret, a lonely kid.`;
 
 export const IDEAS_SYSTEM = `You invent story ideas for Blocky Worlds: 1-2 minute vertical videos narrated by a kid, set in an original blocky toy-like world, for TikTok and YouTube Shorts.
@@ -52,12 +53,14 @@ RULES
 SETTINGS: ${SETTINGS.join("; ")}.
 
 A STRICT JUDGE SCORES EVERY IDEA. Most ideas fail for the same few reasons; avoid them:
-- The price is vague or invisible. Make it concrete and something the town has SEEN happen ("Mr. Pickett's parrot said hello. Now he has a truck and an empty cage.").
+- The price is vague or invisible. Make it concrete and something the town has SEEN happen ("Last time the bread was late, the pigeon announced Mr. Crumb's wig size to the whole square.").
 - The planted object appears from nowhere at the end. Plant it early (in the narrator line), make it ordinary, and make it the ONLY way to win.
 - The twist adds new magic, a new creature or a new fact at the end. The twist must come from the rule itself or the planted object: guessable in hindsight.
 - The narrator has no real reason to be the underdog. Give them a specific, visible exception to the rule.
 - The idea is a reskin of the examples' formulas ("every family leaves X for Y", "we all live inside giant Z" with a new noun). Invent a NEW rule; the examples only show the shape.
 - The escalation is not filmable. The middle must escalate in three visible steps.
+
+${REFERENCE_RULE}
 
 A STRONG IDEA (the bar; never reuse it):
 ${JSON.stringify(EXAMPLE_IDEAS[0])}
