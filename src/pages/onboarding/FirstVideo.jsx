@@ -253,6 +253,7 @@ export default function FirstVideo() {
   const [notice, setNotice] = useState(null);
   const [blocked, setBlocked] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [retryNote, setRetryNote] = useState(false);
 
   useEffect(() => { document.title = "Your first video | Zyvo"; }, []);
 
@@ -278,6 +279,13 @@ export default function FirstVideo() {
       // Nothing to offer here (a paid plan, not in the rollout, no plan prepared yet): Home.
       if (!paidReturn && s && !s.preview && (!s.on || !s.topics?.length)) { navigate("/", { replace: true }); return; }
       if (s?.on && !s.preview) trackFunnel("tutorial_started");
+      // back after a failed preview: the same video picked, a line saying why; Home's "Try again" starts it at once
+      const last = s?.lastFailed?.topicKey;
+      if (!s?.preview && last && s.topics?.some((t) => t.key === last)) {
+        setPicked(last);
+        setRetryNote(true);
+        if (params.get("retry") === "1") generate(last);
+      }
     }).catch(() => navigate("/", { replace: true }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user?.id]);
@@ -308,22 +316,23 @@ export default function FirstVideo() {
     return () => clearTimeout(t);
   }, [finish]);
 
-  const generate = async () => {
-    if (!picked || starting) return;
+  // key: "Try again" starts the same video at once (the failed screen, or Home's "Try again")
+  const generate = async (key = picked) => {
+    if (!key || starting) return;
     setStarting(true);
     setNotice(null);
-    trackFunnel("tutorial_step_completed", { step: 2, topic: picked });
+    trackFunnel("tutorial_step_completed", { step: 2, topic: key, ...(key !== picked ? { retry: true } : {}) });
     if (demo) {
       // the stages as a customer sees them, sped up
       setRun({ id: "demo", step: "queued" });
       setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 45 }), 1500);
       setTimeout(() => setRun({ id: "demo", step: "render", renderPct: 90 }), 3000);
-      setTimeout(() => setRun(demoPreviewRun(picked)), 4500);
+      setTimeout(() => setRun(demoPreviewRun(key)), 4500);
       setStarting(false);
       return;
     }
     try {
-      setRun(await cutawayServer.startFreePreview({ topicKey: picked, deviceId: browserId(), force: adminMode === "real" }));
+      setRun(await cutawayServer.startFreePreview({ topicKey: key, deviceId: browserId(), force: adminMode === "real" }));
     } catch (e) {
       if (e?.code === "PREVIEW_LIMIT" || e?.code === "PREVIEW_USED") { setBlocked(true); setNotice(e.message); trackFunnel("upgrade_screen_shown", { blocked: e.code }); }
       else setNotice(e?.message ?? "That didn't work. Please try again.");
@@ -376,12 +385,19 @@ export default function FirstVideo() {
   // ---------- the preview: being made, failed, or playing ----------
   if (run) {
     if (run.step === "failed") {
+      // the same video again in one tap; if its topic is gone, back to the picker
+      const again = async () => {
+        const key = run.topicKey;
+        setRun(null);
+        const s = await load().catch(() => null);
+        if (key && s?.topics?.some((t) => t.key === key)) { setPicked(key); generate(key); }
+      };
       return (
-        <div className={screen}><div className={column}>
-          <h1 className="text-center text-[24px] font-black">We couldn't make this one</h1>
-          <p className="mt-2 text-center text-[14px] text-white/60">It's not your fault, and your free preview is still yours.</p>
-          <button type="button" onClick={() => { setRun(null); load(); }} className="mt-5 min-h-[52px] w-full rounded-2xl bg-lime-300 text-[16px] font-black text-[#11150D]">Try again</button>
-          <button type="button" onClick={() => leave(true)} className="mt-3 text-[13px] font-semibold text-white/40">Skip</button>
+        <div className={screen}>{adminBar}<div className={column} data-testid="first-video-failed">
+          <h1 className="text-center text-[24px] font-black">Something went wrong on our side</h1>
+          <p className="mt-2 text-center text-[14.5px] text-white/65">It's not your fault, and your free preview is still yours. Tap Try again and we'll make it again: it takes about 2 minutes.</p>
+          <button type="button" onClick={again} data-testid="first-video-try-again" className="mt-5 min-h-[52px] w-full rounded-2xl bg-lime-300 text-[16px] font-black text-[#11150D]">Try again</button>
+          <button type="button" onClick={() => leave(true)} className="mt-3 min-h-[40px] text-[13px] font-semibold text-white/45">Go to Home</button>
         </div></div>
       );
     }
@@ -411,7 +427,9 @@ export default function FirstVideo() {
       </div>
       <div className="mx-auto my-auto flex w-full max-w-[1000px] flex-col items-center py-2">
         <h1 className="text-center text-[28px] font-black leading-tight tracking-tight text-white md:text-[34px]">Pick your first video</h1>
-        <p className="mt-1 text-center text-[14.5px] font-semibold text-lime-200" data-testid="first-video-free-line">You'll get a free 10-second preview. No credits, no card.</p>
+        {retryNote
+          ? <p className="mt-1 max-w-[460px] text-center text-[14.5px] font-semibold text-lime-200" data-testid="first-video-retry-line">Your last preview didn't go through. That's on us, and it's still free: hit Generate to try again.</p>
+          : <p className="mt-1 text-center text-[14.5px] font-semibold text-lime-200" data-testid="first-video-free-line">You'll get a free 10-second preview. No credits, no card.</p>}
         <div className="mt-3 flex h-[42px] items-center">{step === 1 && <Bubble>Pick an idea</Bubble>}</div>
         {/* phones: big cards to swipe through, the next one peeking in. Larger screens: all side by side, as tall as fits. */}
         <div className="-mx-4 mt-2 flex w-screen snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 pt-1 [scrollbar-width:none] md:mx-auto md:grid md:w-[min(100%,calc((100dvh-340px)*27/16+48px))] md:grid-cols-3 md:gap-6 md:overflow-visible md:p-0">
@@ -432,7 +450,7 @@ export default function FirstVideo() {
         <div className="sticky bottom-3 z-10 mt-2 flex w-full max-w-[460px] flex-col items-center md:mt-5">
           {step === 2 && <div className="mb-3"><Bubble>Now hit Generate</Bubble></div>}
           {notice && <p className="mb-2 text-center text-[13px] text-red-300" role="alert">{notice}</p>}
-          <button type="button" disabled={!picked || starting} onClick={generate} data-testid="first-video-generate"
+          <button type="button" disabled={!picked || starting} onClick={() => generate()} data-testid="first-video-generate"
             className={`inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-2xl text-[19px] font-black transition ${picked ? "ob-cta-pulse bg-lime-300 text-[#11150D] hover:bg-lime-200" : "bg-[#1C1F1C] text-white/30"}`}>
             {starting && <Loader2 className="h-5 w-5 animate-spin" />} Generate
           </button>

@@ -330,7 +330,7 @@ export async function viewOf(admin: any, run: any, { owner = false } = {}) {
   const frames = n ? (await allUrls(admin, P.frames.slice(0, n), (p) => getUrl(admin, p, 3600))).filter(Boolean) : [];
   const slug = String(run.title ?? run.topic).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "cutaway";
   return {
-    id: run.id, topic: run.topic, title: run.title ?? run.topic, lengthSec: run.length_sec, kind: run.kind, credits: run.credits_charged,
+    id: run.id, topic: run.topic, topicKey: run.topic_key ?? null, title: run.title ?? run.topic, lengthSec: run.length_sec, kind: run.kind, credits: run.credits_charged,
     // the finished video's real length (a "30 s" video runs about 36 s with its end card)
     durationSec: Number(run.files?.durationSec) || null,
     createdAt: run.created_at, doneAt: run.finished_at ?? null,
