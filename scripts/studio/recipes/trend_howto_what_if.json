@@ -1,44 +1,125 @@
 {
-  "key": "th_what_if",
-  "structure": "trend_howto",
-  "trend": "What If explainer videos (a simple cartoon character, \"What if you …?\")",
-  "search_phrase": "how to make What If videos",
-  "title": ["HOW TO MAKE", "WHAT IF VIDEOS"],
-  "search_title": "How to make What If videos with AI (3 steps)",
-  "template": "long_form",
-  "world": "studio",
-  "cap_usd": 0.15,
-  "step_tempo": 1.0,
-  "screens": "screens_trend_whatif",
-  "rising": {
-    "evidence": "YouTube search, uploaded this month, sorted by views (2026-11-03): four channels posting the same format; two uploads past 1M within 3 weeks (4,676,384 in 3 weeks; 2,367,904 in 2 weeks), more at 650K and 220K in 2 weeks",
-    "checked": "2026-11-03"
+ "key": "th_what_if",
+ "structure": "trend_howto",
+ "trend": "What If explainer videos (a simple cartoon character, \"What if you …?\")",
+ "search_phrase": "how to make What If videos",
+ "title": [
+  "HOW TO MAKE",
+  "WHAT IF VIDEOS"
+ ],
+ "search_title": "How to make What If videos with AI (3 steps)",
+ "template": "long_form",
+ "world": "studio",
+ "cap_usd": 0.15,
+ "step_tempo": 1.0,
+ "screens": "screens_trend_whatif",
+ "rising": {
+  "evidence": "YouTube search, uploaded this month, sorted by views (2026-11-03): four channels posting the same format; two uploads past 1M within 3 weeks (4,676,384 in 3 weeks; 2,367,904 in 2 weeks), more at 650K and 220K in 2 weeks",
+  "checked": "2026-11-03"
+ },
+ "urgency": false,
+ "examples": [
+  {
+   "file": "ex1.jpg",
+   "views": "4.6M",
+   "credit": "Ifverse · YouTube",
+   "url": "https://www.youtube.com/watch?v=MroF1XmHOZw",
+   "title": "What If Your Reaction Time Was 10x Faster?",
+   "checked": "2026-11-03 (4,676,384 views)"
   },
-  "urgency": false,
-  "examples": [
-    { "file": "ex1.jpg", "views": "4.6M", "credit": "Ifverse · YouTube", "url": "https://www.youtube.com/watch?v=MroF1XmHOZw", "title": "What If Your Reaction Time Was 10x Faster?", "checked": "2026-11-03 (4,676,384 views)" },
-    { "file": "ex2.jpg", "views": "2.3M", "credit": "AFTER THE DOOR · YouTube", "url": "https://www.youtube.com/watch?v=ylnTesFVoOo", "title": "What If Every Step Made You Twice as Big?", "checked": "2026-11-03 (2,367,904 views)" }
-  ],
-  "creation": {
-    "id": "9310e95c-35ce-4b36-902d-51f8f43e39ab",
-    "title": "What If Ancient Humans Had Modern Medicine?",
-    "file": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_517.mp4",
-    "hq_dir": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_hq",
-    "hq_ext": "jpg",
-    "segment": "517.374 s (the scene cut) to 520.3 s of the 9:17 final (render job a5e53ce5)"
+  {
+   "file": "ex2.jpg",
+   "views": "2.3M",
+   "credit": "AFTER THE DOOR · YouTube",
+   "url": "https://www.youtube.com/watch?v=ylnTesFVoOo",
+   "title": "What If Every Step Made You Twice as Big?",
+   "checked": "2026-11-03 (2,367,904 views)"
+  }
+ ],
+ "creation": {
+  "id": "9310e95c-35ce-4b36-902d-51f8f43e39ab",
+  "title": "What If Ancient Humans Had Modern Medicine?",
+  "file": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_517.mp4",
+  "hq_dir": "video/studio/9310e95c-35ce-4b36-902d-51f8f43e39ab/rage_hq",
+  "hq_ext": "jpg",
+  "segment": "517.374 s (the scene cut) to 520.3 s of the 9:17 final (render job a5e53ce5)"
+ },
+ "hook": {
+  "text": "Here's how to make What If videos with AI.",
+  "key": "What"
+ },
+ "proof": {
+  "text": "Wait, these get millions of views?",
+  "key": "millions"
+ },
+ "calm": "Watch. I made this one with Zyvo.",
+ "clip": {
+  "in": 0.0,
+  "out": 2.48,
+  "says": "That vial never cured the village."
+ },
+ "steps": [
+  {
+   "text": "Step one: open Zyvo, pick Long Form.",
+   "key": "Long",
+   "screen": "s_menu_lf.jpg",
+   "taps": [
+    [
+     5,
+     0.42,
+     0.49
+    ]
+   ]
   },
-  "hook": { "text": "Here's how to make What If videos with AI.", "key": "What" },
-  "proof": { "text": "Wait, these get millions of views?", "key": "millions" },
-  "calm": "Watch. I made this one with Zyvo.",
-  "clip": { "in": 0.0, "out": 2.48, "says": "That vial never cured the village." },
-  "steps": [
-    { "text": "Step one: open Zyvo, pick Long Form.", "key": "Long", "screen": "s_menu.jpg", "taps": [[5, 0.24, 0.45]] },
-    { "text": "Step two: type your What If question.", "key": "question.", "screen": "s_lf_typed.jpg" },
-    { "text": "Step three: it writes, voices and draws every scene.", "key": "every", "screen": "s_lf_scenes.jpg" }
-  ],
-  "reveal": { "text": "Nine minutes. 141 scenes.", "key": "141", "visual": { "value": 141, "label": "SCENES IN MY REAL 9:17 VIDEO" } },
-  "end": { "text": "It's called Zyvo. Link in bio.", "key": ["Zyvo.", "bio."] },
-  "caption": "How to make What If videos with AI, in 3 steps 🤯 These are pulling millions of views right now (examples: Ifverse and AFTER THE DOOR on YouTube, not mine). Mine was made with Zyvo Long Form: 9:17 and 141 scenes. Link in bio.",
-  "hashtags": ["#howtomakewhatifvideos", "#whatifvideos", "#whatif", "#aivideo", "#facelessyoutube", "#youtubeautomation"],
-  "claims": ["9:17 and 141 scenes: the owner's Long Form project 9310e95c (What If Ancient Humans Had Modern Medicine?), as its own editor and publish page show (captured 2026-11-03)", "Step two's screen: the real Long Form start page with that question typed in, on the internal account, not submitted (2026-11-03)"]
+  {
+   "text": "Step two: type your What If question.",
+   "key": "question.",
+   "screen": "s_lf_typed.jpg",
+   "sticker": {
+    "x": 0.45,
+    "y": 0.62,
+    "ty": 0.9,
+    "text": "your What If question"
+   }
+  },
+  {
+   "text": "Step three: it writes, voices and draws every scene.",
+   "key": "every",
+   "screen": "s_lf_editor.jpg",
+   "sticker": {
+    "x": 0.55,
+    "y": 0.82,
+    "ty": 0.6,
+    "text": "141 scenes"
+   }
+  }
+ ],
+ "reveal": {
+  "text": "Nine minutes. 141 scenes.",
+  "key": "141",
+  "visual": {
+   "value": 141,
+   "label": "SCENES IN MY REAL 9:17 VIDEO"
+  }
+ },
+ "end": {
+  "text": "It's called Zyvo. Link in bio.",
+  "key": [
+   "Zyvo.",
+   "bio."
+  ]
+ },
+ "caption": "How to make What If videos with AI, in 3 steps 🤯 These are pulling millions of views right now (examples: Ifverse and AFTER THE DOOR on YouTube, not mine). Mine was made with Zyvo Long Form: 9:17 and 141 scenes. Link in bio.",
+ "hashtags": [
+  "#howtomakewhatifvideos",
+  "#whatifvideos",
+  "#whatif",
+  "#aivideo",
+  "#facelessyoutube",
+  "#youtubeautomation"
+ ],
+ "claims": [
+  "9:17 and 141 scenes: the owner's Long Form project 9310e95c (What If Ancient Humans Had Modern Medicine?), as its own editor and publish page show (captured 2026-11-03)",
+  "Step two's screen: the real Long Form start page with that question typed in, on the internal account, not submitted (2026-11-03)"
+ ]
 }

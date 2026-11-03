@@ -22,11 +22,13 @@ export function trendHowTo(R) {
   if (R.urgency && !R.rising?.evidence) throw new Error("an urgency line needs the evidence that the trend is rising");
   const tempo = R.step_tempo ?? 1.12;
   const lines = [
-    { who: "zee", text: R.hook.text, key: [R.hook.key], expr: "happy", pose: "point", shot: "two_shot", role: "hook", visual: { kind: "none" } },
-    { who: "creator", text: R.proof.text, key: [R.proof.key], expr: "shocked", pose: "handsUp", shot: "two_shot", role: "proof", visual: { kind: "none" } },
+    // frame 0: a hit on the first frame, a tick as each view count rolls up; the creator's face below reacts
+    { who: "zee", text: R.hook.text, key: [R.hook.key], expr: "happy", pose: "point", shot: "split_face", role: "hook", listen: "shocked", visual: { kind: "none" },
+      cues: [{ word: 0, event: "open", sfx: "hit" }, ...[1, 2, 3, 4].map((w) => ({ word: w, event: `roll${w}`, sfx: "tick" }))] },
+    { who: "creator", text: R.proof.text, key: [R.proof.key], expr: "shocked", pose: "handsUp", shot: "split_face", role: "proof", visual: { kind: "none" } },
     { who: "zee", text: R.calm ?? "Watch. I made this one with Zyvo.", key: ["Zyvo."], expr: "smug", pose: "pointUp", shot: "two_shot", role: "calm", listen: "shocked" },
     ...R.steps.map((s, i) => ({ who: "zee", text: s.text, key: [s.key], expr: "happy", role: `s${i + 1}`, tempo,
-      screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true },
+      screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true, ...(s.sticker ? { sticker: s.sticker } : {}) },
       cues: [{ word: 0, event: `step${i + 1}`, sfx: "whoosh" }, ...(s.taps ?? []).map((t) => tap(...t))] })),
     { who: "zee", text: R.reveal.text, key: [R.reveal.key], expr: "smug", pose: "point", shot: "zee_close", role: "reveal", listen: "shocked", tempo,
       visual: { kind: "roll", secs: 0.8, scale: 0.78, up: 1.35, ...R.reveal.visual } },
@@ -46,7 +48,9 @@ export function trendHowTo(R) {
   }, { this: { hq_dir: R.creation.hq_dir } }, R.creation.id);
   // the frame-0 split replaces the title card; the hidden headline keeps the approval form and the Queue's hook field working
   s.headline = { text: R.title.join(" "), hidden: true };
-  s.split = { title: R.title, until_line: 2, cards: R.examples.map((e) => ({ file: e.file, views: e.views, credit: e.credit })) };
+  // the view counts roll up to the real numbers; the real result plays on the TV as soon as the split leaves
+  const views = (v) => { const m = String(v).match(/([\d.]+)\s*([KMB])?/i); return Math.round(Number(m[1]) * ({ K: 1e3, M: 1e6, B: 1e9 }[(m[2] ?? "").toUpperCase()] ?? 1)); };
+  s.split = { title: R.title, until_line: 2, preroll: "result", cards: R.examples.map((e) => ({ file: e.file, views: e.views, value: views(e.views), credit: e.credit })) };
   for (const l of s.lines) if (l.screen || l.visual?.kind === "none") l.cues = l.cues.filter((x) => !x.event.startsWith("show"));
   Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: [...(R.claims ?? []), ...R.examples.map((e) => `${e.views} views: ${e.url} (${e.credit}), checked ${e.checked}`)], preset: "trend_howto" });
   // the camera holds both of them under the device for the steps, then follows each short line at once
