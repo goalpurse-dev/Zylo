@@ -9,6 +9,7 @@ import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
 import { CUTAWAY_ENABLED, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
+import { BLOCKY_WORLDS_NAME, BLOCKY_WORLDS_PATH, BLOCKY_WORLDS_VISIBLE } from "../../data/blockyWorlds";
 import useCutawayAccess from "../viral-tools/cutaway-explainer/api/cutawayAccess";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
@@ -136,6 +137,18 @@ export const FLAGGED_CREATE_TOOLS = [
     color: "#4ADE80",
     enabled: CUTAWAY_ENABLED,
     after: "cartoon-drive-by",
+  },
+  {
+    // Blocky Worlds: localhost only (free mock mode) until launch; hidden in every production build
+    id: "blocky-worlds",
+    label: BLOCKY_WORLDS_NAME,
+    sublabel: "",
+    path: BLOCKY_WORLDS_PATH,
+    preview: "/blocky-worlds/hero.jpg",
+    previewPosition: "object-top",
+    color: "#bef264",
+    enabled: BLOCKY_WORLDS_VISIBLE,
+    after: "ai-fruit-story",
   },
 ].map((tool) => ({
   ...tool,

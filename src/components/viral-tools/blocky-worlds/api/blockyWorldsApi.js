@@ -4,7 +4,8 @@
 import { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 export { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS };
 
-export const DEV_MOCK = import.meta.env.DEV && new URLSearchParams(window.location.search).has("mock");
+// localhost runs the free mock by default (the API isn't deployed yet); ?live=1 talks to the real server instead
+export const DEV_MOCK = import.meta.env.DEV && !new URLSearchParams(window.location.search).has("live");
 
 /** An error from blocky-worlds-api, with the contract's code and the extras some codes carry. */
 export class BlockyWorldsError extends Error {

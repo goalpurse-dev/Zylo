@@ -10,7 +10,8 @@ import { cardFromScript, writeBeats, writeIdeas, writeScript, writeTopicIdeas } 
 import { errorFromReply } from "../api/blockyWorldsApi";
 
 const Q = new URLSearchParams(window.location.search);
-const AS = Q.get("as") ?? "starter", RENDERER = Q.has("renderer");
+// the renderer is pretended ON by default so the whole flow can be clicked through (?renderer=0 shows the "off" state)
+const AS = Q.get("as") ?? "starter", RENDERER = Q.get("renderer") !== "0";
 const PAID = ["starter", "pro", "generative"].includes(AS);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const id = () => crypto.randomUUID();

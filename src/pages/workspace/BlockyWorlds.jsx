@@ -10,7 +10,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { supabase } from "../../lib/supabaseClient";
 
-// Local dev only: ?mock=1&as=guest|free|starter|pro (&renderer=1). See components/viral-tools/blocky-worlds/dev/devApi.js.
+// Local dev (npm run dev) runs the free mock by default: ?as=guest|free|starter|pro picks who is looking (starter if
+// not given), ?renderer=0 shows the "video making is off" state, ?live=1 talks to the real server. See dev/devApi.js.
 const DEV_AS = DEV_MOCK ? new URLSearchParams(window.location.search).get("as") ?? "starter" : null;
 
 /**
