@@ -18,7 +18,7 @@ import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js
 import { batchCost, LIBRARY, rankOf } from "../_shared/blockyWorlds/library.js";
 import { MODELS } from "../_shared/blockyWorlds/config.js";
 import { PRICE, providerFrom } from "../_shared/blockyWorlds/llm.js";
-import { rerank, tick } from "../_shared/blockyWorlds/libraryJob.js";
+import { rerank, supabaseStore, tick } from "../_shared/blockyWorlds/libraryJob.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -41,27 +41,8 @@ async function owner(req: Request) {
   return data?.user && isAdmin(data.user, OWNERS) ? data.user : null;
 }
 
-/** The job's store on Supabase (libraryJob.js memoryStore is the same shape). */
-const store = {
-  async library() {
-    const { data, error } = await admin.from("blocky_worlds_library").select(COLS).in("status", ["live", "pending", "rejected"]).order("created_at", { ascending: true }).limit(10000);
-    if (error) throw new Error(`library read: ${error.message}`);
-    return (data ?? []).map((r: any) => ({ ...r.idea, ...r, key: r.opener_key }));
-  },
-  async pending(limit: number) {
-    const { data } = await admin.from("blocky_worlds_library").select(COLS).eq("status", "pending").order("created_at", { ascending: true }).limit(limit);
-    return data ?? [];
-  },
-  async insert(rows: any[]) {
-    for (const r of rows) { const { error } = await admin.from("blocky_worlds_library").insert(r); if (error && !/duplicate key/i.test(error.message)) throw new Error(`library insert: ${error.message}`); }
-  },
-  async update(id: string, patch: any) { await admin.from("blocky_worlds_library").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id); },
-  async saveBatch(b: any) {
-    const { id, ...rest } = b;
-    await admin.from("blocky_worlds_idea_batches").update({ generated: rest.generated, dropped: rest.dropped, duplicates: rest.duplicates, judged: rest.judged, accepted: rest.accepted, rejected: rest.rejected, cost_usd: rest.cost_usd, status: rest.status ?? "running", finished_at: ["done", "stopped", "failed"].includes(rest.status) ? new Date().toISOString() : null }).eq("id", id);
-  },
-  async logCost(purpose: string, usd: number) { if (usd > 0) await admin.from("blocky_worlds_ai_calls").insert({ user_id: null, purpose, provider: PROVIDER, usd }); },
-};
+/** The job's store on Supabase (shared with the local runner, scripts/blockyWorlds/runLibraryBatch.mjs). */
+const store = supabaseStore(admin, PROVIDER);
 
 async function handle(req: Request) {
   const body = await req.json().catch(() => ({}));

@@ -22,6 +22,14 @@ export const costOf = (model, u = {}) => {
   return Number((((u.input_tokens ?? 0) * p.input + (u.output_tokens ?? 0) * p.output + (u.cache_read_input_tokens ?? 0) * p.cacheRead + (u.cache_creation_input_tokens ?? 0) * p.cacheWrite) / 1e6).toFixed(5));
 };
 
+/**
+ * The library job's output ceilings (tokens, thinking included). They bound what one call can cost, so the job can stop
+ * before any call that could pass its money cap (libraryJob.js worstCaseUsd).
+ */
+export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
+/** The most one call can cost (USD): every output token used, plus a generous input. */
+export const worstCaseUsd = (model, maxTokens, inputTokens = 12000) => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * p.cacheWrite) / 1e6).toFixed(4)); };
+
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
 async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000 }) {
   const sonnet = model.startsWith("claude-sonnet-5-5");
@@ -135,7 +143,7 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
 export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", slots, avoid = [], seed = 1 }) {
   const reply = provider === "mock"
     ? await MOCK.ideas({ seed, slots })
-    : await callJson({ apiKey, model: MODELS.library, system: IDEAS_SYSTEM, user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000 });
+    : await callJson({ apiKey, model: MODELS.library, system: IDEAS_SYSTEM, user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
   const ideas = usableIdeas(reply.data, slots);
   return { ideas, dropped: Math.max(0, (reply.data?.ideas?.length ?? 0) - ideas.length), costUsd: reply.costUsd };
 }
@@ -147,7 +155,7 @@ export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", s
 export async function judgeIdeas({ apiKey = "", provider = "anthropic", ideas }) {
   const reply = provider === "mock"
     ? await MOCK.judge({ ideas })
-    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgePrompt(ideas), schema: judgeSchema(), effort: "medium" });
+    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgePrompt(ideas), schema: judgeSchema(), effort: "medium", maxTokens: LIBRARY_MAX_TOKENS.judge });
   const raw = reply.data?.verdicts ?? [];
   return { verdicts: ideas.map((_, i) => scoreVerdict(raw[i])), costUsd: reply.costUsd };
 }
