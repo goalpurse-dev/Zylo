@@ -14,6 +14,7 @@ import { fillBlock, pebbles, pour, wipeBlock } from "../kit/fill.js";
 import { pipePath } from "../kit/pipe.js";
 import { arrows, outline } from "../kit/overlay.js";
 import { rain, stream } from "../kit/weather.js";
+import { fx } from "../kit/fx.js";
 import { wrapSheet } from "../kit/sheet.js";
 import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/props.js";
 import { EASES, rampU } from "./curves.js";
@@ -47,6 +48,8 @@ export const KINDS = {
   rig,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
   car, carWash, trafficLight, hydrant, atm, traffic, counter, cabinet,
+  // ================= effects (kit/fx.js): a blast, a crack, fire, a splash... on the word that names it =================
+  fx(ctx, p, api) { return fx(ctx, p, api); },
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
   settle, creek, flow, prop, canopy, grate,
@@ -546,5 +549,5 @@ export const KIND_CHANNELS = {
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
   water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
-  arrows: ["on"], outline: ["on"], seepFlow: ["on"],
+  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"],
 };

@@ -3,6 +3,7 @@
 //   node m2/compile.mjs <layout.json> <words.json> <speechEndSec> <out timeline.json> [roles.json]
 import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
+import { fillGaps, motionGaps, storyFx } from "./storyFx.js";
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
 import { focusOf, signalQueueBox, union } from "./focus.js";
@@ -105,6 +106,11 @@ export function holdRamps(r, s) {
 }
 
 export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
+  // what the narration says happens on screen (storyFx.js: the event words, the "Add ..." line), on a planned layout
+  // (its beats); the layout itself gets the parts it adds, so the page has them (CUTAWAY_STORYFX=0 turns it off)
+  // (not an approved layout with its own camera path: the owner approved those as they are)
+  const fxOn = process.env.CUTAWAY_STORYFX !== "0" && Array.isArray(layout0.beats) && layout0.beats.length && roles.length && (layout0.codeShots || !layout0.camera);
+  const story = fxOn ? storyFx(layout0, sentencesOf(words, roles).map((s) => ({ role: s.role, text: s.text }))) : { notes: [], stats: {} };
   // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
   const beats = expandBeats(layout0, { lenient: true });
   const layout = { ...layout0, cues: [...(layout0.cues ?? []), ...beats.cues], shots: [...(layout0.shots ?? []), ...beats.shots] };
@@ -164,6 +170,16 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       if (Math.sign(a.amp) && Math.sign(b.amp) === -Math.sign(a.amp) && b.t0 < a.t1 && a.t1 > a.t0) { const d = b.t1 - b.t0; b.t0 = +a.t1.toFixed(4); b.t1 = +(a.t1 + d).toFixed(4); }
     }
   }
+  // the "Add ..." line is over before "Congratulations": nothing it plays runs on into that line (the bunker rerun's decay
+  // counter counted on 0.5 s into it)
+  const finS = fxOn ? sentences.find((x) => x.role === "finish") : null, conS = finS ? sentences.find((x) => x.role === "congrats") : null;
+  if (finS && conS) for (const tr of Object.values(tracks)) for (const r of tr.ramps) if (r.s === "finish" && r.t1 > conS.t0 - 0.05 && r.t0 < conS.t0) r.t1 = +Math.max(r.t0 + 0.04, conS.t0 - 0.05).toFixed(4);
+  // never a still moment: a stretch of more than storyFx GAP s with nothing moving gets life (the shown part's own
+  // motion again, or drifting specks), from the first word to the last
+  const gaps = fxOn ? motionGaps(layout, tracks, sentences, { from: sentences[0]?.t0 ?? 0, to: sentences.at(-1)?.t1 }) : [];
+  if (gaps.length) story.notes.push(...fillGaps(layout, tracks, sentences, gaps));
+  story.stats.gaps = gaps.length;
+  notes.push(...story.notes);
 
   const keysFor = (which) => (layout.camera?.keys ?? []).filter((k) => !k.only || k.only === which).map((k) => [+at(k.at).toFixed(4), k.pos, k.tgt]);
   let camera, director = null;
@@ -242,6 +258,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   return {
     key: layout.key,
     marks,
+    story: story.stats,
     ...(Object.keys(captionY).length ? { captionY } : {}),
     lengthSec: marks.lengthEnd,
     sentences: sentences.map(({ id, role, t0, t1, text }) => ({ id, role, t0, t1, text })),

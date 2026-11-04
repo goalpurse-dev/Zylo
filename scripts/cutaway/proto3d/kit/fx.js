@@ -1,0 +1,108 @@
+// M2 kit: effects, so every event the narration names happens on screen (the owner's rule of 2026-11-05: "a blast"
+// showed nothing). One part per effect, at a point, sized to the thing it happens to:
+//   one-shot, channel "go" (0 -> 1 over its length; it plays as the channel rises and leaves what it made):
+//     blast    a white-orange flash, a shockwave ring along the ground, debris flying out and falling
+//     crash    an impact: a small flash, chunks knocked off, a dust puff (also: smash, snap, break, burst)
+//     crack    dark jagged cracks spreading over the face from the point, a puff of dust; they stay
+//     collapse chunks dropping and a rolling dust cloud (cave in, crumble)
+//   states, channel "on" (they run while it is on):
+//     fire     flickering flames     smoke   grey puffs rising      drip   drops falling from the point
+//     splash   water spraying up     spark   electric sparks        frost  white frost crystals spreading
+//     swirl    curved arrows circling (a spin)                       motes  slow drifting specks (life in a still moment)
+import { clamp01 } from "./verbs.js";
+
+const rand = (i, k) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
+
+export function fx(ctx, p, api) {
+  const { THREE, C } = ctx, std = ctx.std;
+  const root = new THREE.Group(); root.position.set(...(p.at ?? [0, 0, 0])); ctx.scene.add(root);
+  const s = Number(p.size ?? 1), type = p.type ?? "blast";
+  const mesh = (geo, mat) => { const m = new THREE.Mesh(geo, mat); m.castShadow = false; root.add(m); return m; };
+  const glowM = (col, op = 1) => new THREE.MeshBasicMaterial({ color: C(col), transparent: true, opacity: op, depthWrite: false, toneMapped: false });
+  const solid = (col, rough = 0.9) => std({ color: C(col), roughness: rough });
+  const parts = [];
+  // pieces: n chunks with their own direction, speed and spin
+  const chunks = (n, col, size) => Array.from({ length: n }, (_, i) => {
+    const m = mesh(new THREE.BoxGeometry(size * (0.6 + rand(i, 1) * 0.8), size * (0.5 + rand(i, 2) * 0.6), size * (0.6 + rand(i, 3) * 0.7)), solid(col));
+    const a = rand(i, 4) * Math.PI * 2, up = 0.4 + rand(i, 5) * 0.9, sp = 0.6 + rand(i, 6);
+    return { m, d: [Math.cos(a) * sp, up, Math.sin(a) * sp * 0.6 + 0.35], r: [rand(i, 7) * 9, rand(i, 8) * 9] };
+  });
+  const puffs = (n, col, op) => Array.from({ length: n }, (_, i) => ({ m: mesh(new THREE.SphereGeometry(0.5 * s, 12, 10), glowM(col, op)), a: rand(i, 9) * Math.PI * 2, k: 0.5 + rand(i, 10) }));
+  let update = () => {};
+
+  if (type === "blast" || type === "crash" || type === "collapse") {
+    const big = type === "blast";
+    const flash = mesh(new THREE.SphereGeometry(0.6 * s, 20, 16), glowM("#fff1c2", 1)), core = mesh(new THREE.SphereGeometry(0.4 * s, 16, 12), glowM("#ff9a2e", 1));
+    const ring = mesh(new THREE.TorusGeometry(1, 0.06 * s, 8, 48), glowM("#ffffff", 0.8)); ring.rotation.x = Math.PI / 2;
+    const deb = chunks(big ? 18 : type === "collapse" ? 14 : 10, type === "blast" ? "#5b5148" : "#7a6a58", 0.18 * s);
+    const dust = puffs(big ? 10 : 8, "#bfb2a0", 0.55);
+    update = (t) => {
+      const u = clamp01(api.ch("go", t)), on = u > 0.001;
+      root.visible = on; if (!on) return;
+      const fl = big || type === "crash" ? Math.max(0, 1 - u / 0.25) : 0;
+      flash.visible = fl > 0.01; flash.scale.setScalar(0.4 + (1 - fl) * (big ? 2.4 : 1.2)); flash.material.opacity = fl;
+      core.visible = fl > 0.01; core.scale.setScalar(0.5 + (1 - fl) * 1.6); core.material.opacity = fl;
+      const rw = big ? Math.min(1, u / 0.6) : 0; ring.visible = big && rw < 1; ring.scale.setScalar(0.3 + rw * 4 * s); ring.material.opacity = 0.8 * (1 - rw);
+      for (const c of deb) {
+        const k = type === "collapse" ? 0.3 : 1, x = c.d[0] * u * 2.2 * s * k, z = c.d[2] * u * 1.6 * s * k, y = type === "collapse" ? 1.2 * s * (1 - u) - 0.2 : Math.max(-0.1, c.d[1] * u * 2.8 * s - 4.5 * s * u * u);
+        c.m.position.set(x, y, z); c.m.rotation.set(c.r[0] * u, c.r[1] * u, 0);
+      }
+      dust.forEach((d, i) => { const k = clamp01(u * 1.4 - 0.1); d.m.position.set(Math.cos(d.a) * k * 1.6 * s, 0.25 * s + k * 0.6 * s * d.k, Math.sin(d.a) * k * 0.8 * s + 0.3); d.m.scale.setScalar(0.4 + k * 1.3 * d.k); d.m.material.opacity = 0.55 * (1 - k * 0.85); });
+    };
+  } else if (type === "crack") {
+    // a few jagged lines from the point across the face (z = the point's), growing with "go", staying
+    const lines = [];
+    for (let j = 0; j < 5; j++) {
+      const pts = [new THREE.Vector3(0, 0, 0)]; let a = (j / 5) * Math.PI * 2 + rand(j, 1);
+      for (let k = 1; k <= 6; k++) { a += (rand(j, k) - 0.5) * 1.1; const last = pts[pts.length - 1]; pts.push(new THREE.Vector3(last.x + Math.cos(a) * 0.35 * s, last.y + Math.sin(a) * 0.3 * s, 0.01)); }
+      const m = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0), 40, 0.035 * s, 6), new THREE.MeshBasicMaterial({ color: C("#1a1410") }));
+      m.geometry.setDrawRange(0, 0); lines.push(m);
+    }
+    const dust = puffs(5, "#c9bca8", 0.5);
+    update = (t) => {
+      const u = clamp01(api.ch("go", t)); root.visible = u > 0.001; if (!root.visible) return;
+      for (const m of lines) m.geometry.setDrawRange(0, Math.floor(m.geometry.index.count * u));
+      dust.forEach((d, i) => { const k = clamp01(u * 2); d.m.position.set(Math.cos(d.a) * k * 0.8 * s, k * 0.4 * s, 0.25); d.m.scale.setScalar(0.3 + k * 0.6); d.m.material.opacity = 0.5 * Math.max(0, 1 - u * 1.3); });
+    };
+  } else {
+    // the states: n particles on a loop while "on"
+    const spec = {
+      fire: { n: 14, col: "#ff8a1e", col2: "#ffd34d", glow: true }, smoke: { n: 10, col: "#7c7f84", glow: false }, drip: { n: 6, col: "#4aa3e8", glow: false },
+      splash: { n: 16, col: "#6fb8ee", glow: false }, spark: { n: 12, col: "#fff27a", glow: true }, frost: { n: 26, col: "#eaf6ff", glow: false },
+      swirl: { n: 3, col: "#ffffff", glow: false }, motes: { n: 30, col: "#fffbe8", glow: true },
+    }[type] ?? { n: 10, col: "#ffffff" };
+    const P = Array.from({ length: spec.n }, (_, i) => {
+      let geo;
+      if (type === "swirl") { const curve = new THREE.EllipseCurve(0, 0, 1.1 * s, 0.7 * s, i * 2.1, i * 2.1 + 1.6); geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curve.getPoints(16).map((q) => new THREE.Vector3(q.x, 0, q.y))), 24, 0.06 * s, 6); }
+      else if (type === "frost") geo = new THREE.OctahedronGeometry(0.09 * s * (0.6 + rand(i, 3)), 0);
+      else if (type === "spark") geo = new THREE.BoxGeometry(0.02 * s, 0.22 * s, 0.02 * s);
+      else if (type === "fire") geo = new THREE.SphereGeometry(0.16 * s, 12, 10);
+      else geo = new THREE.SphereGeometry((type === "smoke" ? 0.28 : type === "motes" ? Math.min(0.075, 0.1 / Math.max(s, 0.01)) : 0.07) * s, 10, 8);
+      const mat = spec.glow ? glowM(i % 2 && spec.col2 ? spec.col2 : spec.col, 0.9) : solid(spec.col, type === "frost" ? 0.3 : 0.6);
+      if (type === "smoke") { mat.transparent = true; mat.opacity = 0.6; mat.depthWrite = false; }
+      return { m: mesh(geo, mat), ph: rand(i, 1), a: rand(i, 2) * Math.PI * 2, k: rand(i, 4) };
+    });
+    update = (t) => {
+      const on = clamp01(api.ch("on", t)); root.visible = on > 0.01; if (!root.visible) return;
+      P.forEach((q, i) => {
+        const f = (t * (type === "smoke" ? 0.35 : type === "motes" ? 0.12 : type === "drip" ? 0.9 : 1.4) + q.ph) % 1, m = q.m;
+        m.visible = true;
+        if (type === "fire") { m.position.set(Math.cos(q.a) * 0.35 * s * (1 - f), f * 0.9 * s, Math.sin(q.a) * 0.2 * s); m.scale.set(1 - f * 0.7, 1.6 - f, 1 - f * 0.7); }
+        else if (type === "smoke") { m.position.set(Math.sin(f * 3 + q.a) * 0.3 * s, f * 2.2 * s, 0.1); m.scale.setScalar(0.5 + f * 1.6); m.material.opacity = 0.6 * (1 - f) * on; }
+        else if (type === "drip") { m.position.set((q.k - 0.5) * 0.4 * s, -f * 1.6 * s, 0.05); m.scale.set(1, 1.6, 1); }
+        else if (type === "splash") { const d = f; m.position.set(Math.cos(q.a) * d * 0.9 * s, d * 1.6 * s - d * d * 2.2 * s, Math.sin(q.a) * d * 0.5 * s + 0.1); }
+        else if (type === "spark") { m.position.set(Math.cos(q.a) * f * 0.8 * s, Math.sin(q.a) * f * 0.8 * s, 0.1); m.rotation.z = q.a + Math.PI / 2; m.visible = f < 0.6; }
+        else if (type === "frost") { const r = Math.min(1, on * 1.2) * (0.2 + q.k * 1.2) * s; m.position.set(Math.cos(q.a) * r, Math.sin(q.a) * r * 0.6, 0.05); m.rotation.set(q.a, q.k * 3, 0); m.scale.setScalar(on); }
+        else if (type === "swirl") { root.rotation.y = t * 2.4; m.position.set(0, i * 0.02, 0); }
+        else if (type === "motes") { m.position.set((q.k - 0.5) * 3 * s + Math.sin(t * 0.9 + q.a) * 0.35 * s, ((q.ph + t * 0.22) % 1) * 2.4 * s, Math.cos(q.a) * 0.8 * s + 0.3); m.material.opacity = 0.95 * on * Math.sin(Math.PI * ((q.ph + t * 0.22) % 1)); }
+      });
+    };
+  }
+  return { group: root, update(t) { update(t); } };
+}
+
+/** the box an effect covers (the camera and the checks) */
+export function fxBox(p) {
+  const [x, y, z] = p.at ?? [0, 0, 0], s = Number(p.size ?? 1), r = (p.type === "blast" ? 4 : p.type === "smoke" ? 2.2 : 1.6) * s;
+  return { min: [x - r, y - 0.2, z - r * 0.5], max: [x + r, y + r, z + r * 0.5] };
+}

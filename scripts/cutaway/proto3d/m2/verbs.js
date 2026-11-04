@@ -65,6 +65,8 @@ export const VERBS = {
   },
   wetBand: { wet: [R("amount", -0.4, 1.6, 0.75)], dry: [R("amount", 0, 3.9, -0.75)] },
   soak: { show: [R("on", 0.1, 0.5), R("front", 0.2, 3.7, -4.6, "out")], hide: [R("on", 0, 5.2, -1)] },
+  // an effect (kit/fx.js): a one-shot plays on "go" (blast, crash, crack, collapse); a state runs from "start" to "stop"
+  fx: { go: [R("go", 0, 1.6)], start: [R("on", -0.1, 0.3)], stop: [R("on", 0, 0.5, -1)] },
   arrows: ONOFF(), outline: { show: [R("on", -0.175, 0.075)], hide: [R("on", 0.025, 0.275, -1)] }, seepFlow: ONOFF(),
 };
 
