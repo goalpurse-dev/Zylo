@@ -161,7 +161,7 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
   const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_long_form_weekend.json", import.meta.url), "utf8"));
   const sw = rageScripts({ ...R, yell: { ...R.yell, text: "I spent ALL WEEKEND fucking editing!", swear: "fucking", show: "f***ing" } });
   assert.equal(sw.censored.bleep.word, 4);
-  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend"], "only v2 recipes are presets");
+  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "pain_cutaway_save", "rage_fruit_comment", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend"], "only v2 recipes are presets");
 });
 
 test("the Rage hook preset: one click makes one job from a recipe the worker lists; nothing renders before the approval", async () => {
@@ -441,4 +441,13 @@ test("Rage hook v2: a pain opening (no yell, no slam), no time line, and a save 
   assert.deepEqual([share.lines[0].expr, share.recipe.hook_type, share.recipe.end_trigger], ["angry", "rage_hook", "repost"]);
   assert.match(share.lines.at(-1).text, /Send this to the friend/);
   assert.equal(rageScripts(loadRecipe("rage_fruit_fyp")).raw.lines.filter((l) => l.role === "reveal").length, 1, "the first recipe keeps its time");
+});
+
+test("a hidden headline (rage / pain hooks) is never checked and follows line 1", async () => {
+  const { applyScriptEdits } = await import("../supabase/functions/_shared/contentMachine/scriptEdit.js");
+  const s = { title: "t", headline: { text: "x".repeat(90), hidden: true }, lines: [{ text: "x".repeat(90), key: [] }, { text: "Watch.", key: ["Watch."] }] };
+  const out = applyScriptEdits(s, { headline: "y".repeat(90), lines: [{ text: "Short new line one." }] });
+  assert.equal(out.headline.text, "Short new line one.");
+  assert.equal(out.headline.hidden, true);
+  assert.throws(() => applyScriptEdits({ ...s, headline: { text: "h" } }, { headline: "y".repeat(90) }), /over 80/, "a shown headline is still checked");
 });

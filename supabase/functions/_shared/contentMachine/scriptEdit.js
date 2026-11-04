@@ -24,7 +24,8 @@ const clean = (x, max, what) => {
 export function applyScriptEdits(script, edits = {}) {
   const s = structuredClone(script);
   if (edits.title != null) s.title = clean(edits.title, 150, "The title");
-  if (edits.headline != null) s.headline = { ...s.headline, text: clean(edits.headline, 80, "The headline") };
+  // a hidden headline (rage / pain hooks: line 1 is the hook) is never checked; it follows line 1 (owner, 2026-11-04)
+  if (edits.headline != null && !s.headline?.hidden) s.headline = { ...s.headline, text: clean(edits.headline, 80, "The headline") };
   if (edits.caption != null) s.caption = clean(edits.caption, 2000, "The caption");
   (edits.lines ?? []).forEach((e, i) => {
     const l = s.lines[i];
@@ -41,5 +42,6 @@ export function applyScriptEdits(script, edits = {}) {
       if (l.screen) l.screen.sticker.text = on; else l.visual[TEXT_FIELD[l.visual.kind]] = on;
     }
   });
+  if (s.headline?.hidden && s.lines[0]) s.headline.text = s.lines[0].text;
   return s;
 }

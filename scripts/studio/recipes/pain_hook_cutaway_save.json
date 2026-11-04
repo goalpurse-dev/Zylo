@@ -1,0 +1,31 @@
+{
+  "key": "pain_cutaway_save",
+  "structure": "v2",
+  "title": "How are these 3D house videos made",
+  "search_title": "how to make 3D cutaway videos",
+  "template": "cutaway",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "length_bucket": "15-25",
+  "out_dir": "content/studio-previews/pain-cutaway-save",
+  "screens": "screens_cutaway",
+  "creation": {
+    "id": "f32e2f20-0525-4d50-a4c0-5fefc82bb4fc",
+    "title": "How a Car Wash Works",
+    "file": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/final.mp4",
+    "hq_dir": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/hq",
+    "hq_ext": "png"
+  },
+  "yell": { "mood": "pain", "text": "I could watch these 3D house videos forever… and I have no idea how they're made.", "key": "forever", "pose": "grabHead", "prop": { "kind": "none" } },
+  "calm": "It's way simpler than it looks. Watch.",
+  "clip": { "in": 2.45, "out": 6.55, "says": "But the mud only smears around, so you build an arch with soap and cloth strips." },
+  "steps": [
+    { "text": "Step one: open Zyvo, pick Cutaway Explainer.", "key": "Cutaway", "screen": "s_menu.jpg", "taps": [[3, 0.21, 0.228], [5, 0.7, 0.453]] },
+    { "text": "Step two: type a topic, or tap a ready one.", "key": "ready", "screen": "s_typed_car_wash.jpg", "taps": [[2, 0.3, 0.25], [8, 0.76, 0.9]] },
+    { "text": "Step three: it writes, voices and builds the 3D scene.", "key": "3D", "screen": "s_scene_carwash_a.jpg", "flips": [[6, "s_scene_carwash_b.jpg"]] }
+  ],
+  "end": { "text": "It's called Zyvo. Link in bio. Save this for your first video.", "key": ["Zyvo.", "Save"], "name_word": 2, "cta_word": 6, "trigger": "save", "chip": "SAVE THIS" },
+  "caption": "I could watch these 3D house videos forever 🏠 How to make 3D cutaway videos in 3 steps. Save this for your first video. #3danimation #explainer #aivideo #fyp",
+  "hashtags": ["#3danimation", "#explainer", "#aivideo", "#fyp"],
+  "claims": ["The clip and the step-three frames are the owner's own Cutaway Explainer creation \"How a Car Wash Works\" (f32e2f20), 2.45-6.55 s; step two is its real topic screen. No number is claimed."]
+}
