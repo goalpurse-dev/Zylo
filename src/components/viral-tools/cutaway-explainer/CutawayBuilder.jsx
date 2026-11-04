@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, BadgeCheck, Check, ChevronRight, Clock3, Hourglass, Layers, Loader2, Lock, PackageX, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { freshSuggestions } from "../../../data/cutawayTopics";
-import { canRemoveEndCard, DEFAULT_LENGTH, LENGTHS, lengthsFor, PRICES, quoteTopic } from "./api/cutawayApi";
+import { canRemoveEndCard, cantBuildMessage, DEFAULT_LENGTH, KIT_BEST, KIT_EXAMPLES, LENGTHS, lengthsFor, PRICES, quoteTopic } from "./api/cutawayApi";
 import CutawayUpgradeModal from "./CutawayUpgradeModal";
 import { FailureDetails } from "./CutawayResults";
 
@@ -69,8 +69,14 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const isWorking = phase === "working";
   const isDone = phase === "done";
   const locked = historyMode || isWorking || starting;
+  // the page's own kit check (the same free rules the server runs before charging): a topic Cutaway can't build is
+  // refused as soon as the typing pauses, before Generate ("car" while "car wash" is still being typed shows nothing)
+  const [settledTopic, setSettledTopic] = useState(topic);
+  useEffect(() => { const t = window.setTimeout(() => setSettledTopic(topic), 600); return () => window.clearTimeout(t); }, [topic]);
+  const localNo = !soon && hasTopic && quote.kind === "custom" && quote.check?.verdict === "no";
+  const localCantBuild = localNo && settledTopic === topic ? { topic: topic.trim(), missing: quote.check.missing } : null;
   // a "can't build" from the page's own check, or from the server's (it asks Claude Haiku on unsure topics)
-  const shownCantBuild = cantBuild ?? (notice?.kind === "CANT_BUILD" ? notice : null);
+  const shownCantBuild = cantBuild ?? localCantBuild ?? (notice?.kind === "CANT_BUILD" ? notice : null);
   const calm = notice && notice.kind !== "CANT_BUILD" ? notice : null;
   const pill = access === "guest" ? null : PLAN_PILL[String(planCode ?? "").toLowerCase()] ?? null;
 
@@ -92,6 +98,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
     const clean = topic.trim();
     if (clean.length < 3) { setValidationError(soon ? "Pick a premade topic." : "Type what the video should explain."); return; }
     if (customBlocked) return;
+    if (localNo) { setCantBuild({ topic: clean, missing: quote.check.missing }); return; }
     setValidationError("");
     // The kit check is the server's, before anything is charged (free rules, Claude Haiku only for a name that may be a
     // real person): a refusal comes back as CANT_BUILD with suggestions, and it is logged for the owner (/admin/ops)
@@ -148,6 +155,11 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
                 className={`relative h-[96px] w-full resize-none rounded-2xl border bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition-colors placeholder:text-white/25 disabled:opacity-60 ${validationError ? "cw-shake border-red-400/50" : "border-white/[0.08] focus:border-cutaway/35"}`}
               />
             </div>
+            {!soon && !shownCantBuild && (
+              <p data-testid="cutaway-works-best" className="mt-2 text-[11px] font-medium leading-relaxed text-white/45">
+                Works best for {KIT_BEST}. Try: {KIT_EXAMPLES.join(", ")}.
+              </p>
+            )}
             <p className="mb-1.5 mt-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Premade topics</p>
             <div className="flex flex-wrap gap-1.5">
               {suggestions.map((s, i) => {
@@ -182,15 +194,15 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
             )}
             {shownCantBuild && (
               <div role="status" className="cw-fade-up mt-3 rounded-xl border border-[#F5C042]/25 bg-[#F5C042]/[0.06] px-3 py-2.5">
-                <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't make this one</p>
-                <p className="mt-1 text-[11px] font-medium leading-relaxed text-white/55">
-                  “{shownCantBuild.topic}” can't be a cutaway video{shownCantBuild.missing?.length ? ` (it's about ${shownCantBuild.missing.join(", ")})` : ""}. We build machines, structures and how things work. You weren't charged.
+                <p className="flex items-center gap-1.5 text-[12px] font-black text-[#F5C042]"><PackageX className="h-4 w-4" />We can't make this one yet</p>
+                <p data-testid="cutaway-cant-build" className="mt-1 text-[11px] font-medium leading-relaxed text-white/55">
+                  {cantBuildMessage(shownCantBuild.missing)} Nothing was charged.
                 </p>
-                {shownCantBuild.closest?.length > 0 && (
+                {KIT_EXAMPLES.length > 0 && (
                   <>
-                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Try one of these</p>
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Try</p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      {shownCantBuild.closest.map((name, i) => (
+                      {KIT_EXAMPLES.map((name, i) => (
                         <button key={name} type="button" style={{ "--d": `${60 + i * 50}ms` }} onClick={() => pickTopic(name)} className="cw-press cw-pop rounded-full border border-cutaway/30 bg-cutaway/10 px-2.5 py-1 text-[11px] font-bold text-cutaway hover:bg-cutaway/20">
                           {name}
                         </button>
@@ -297,7 +309,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
           data-testid="cutaway-generate"
           onPointerDown={(e) => { if (!isWorking && !starting) ripple(e); }}
           onClick={historyMode ? onDone : isDone ? onReset : handleGenerate}
-          disabled={isWorking || starting || (customBlocked && !historyMode && !isDone && access !== "guest" && access !== "free")}
+          disabled={isWorking || starting || ((customBlocked || localNo) && !historyMode && !isDone && access !== "guest" && access !== "free")}
           aria-busy={starting || undefined}
           className={`cw-press relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl py-3.5 text-[14px] font-black lg:py-2.5 ${starting ? "cw-sheen cursor-wait bg-cutaway text-cutaway-ink" : isWorking ? "cursor-not-allowed bg-cutaway/15 text-cutaway/50" : customBlocked && !historyMode && !isDone && access !== "guest" && access !== "free" ? "cursor-not-allowed border border-white/10 bg-white/[0.05] text-white/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-cutaway text-cutaway-ink shadow-[0_10px_30px_-8px_rgba(74,222,128,.55)] hover:bg-cutaway-soft"}`}
         >

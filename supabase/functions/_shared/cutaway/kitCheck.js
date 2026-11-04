@@ -1,4 +1,5 @@
 // Cutaway Explainer: the near-free kit check for a custom topic the free rules (topics.js kitCheck) can't decide.
+// (Since 2026-11-04 the rules send every topic that names no kit word here, not only possible real names.)
 // One Claude Haiku 5.5 call at low effort with a JSON answer: about 2.5k tokens in, 300 out (thinking included)
 // = about $0.0005 at $0.10 / $0.50 per 1M tokens. Runs on the server before any charge; never charged to the user.
 import { MODELS_3D } from "./pricing.js";
@@ -6,14 +7,20 @@ import { PREMADE } from "./topics.js";
 
 const PRICE = { input: 0.1, output: 0.5 }; // USD per 1M tokens, Claude Haiku 5.5 (prompts up to 100k tokens)
 
-export const KIT_SYSTEM = `You decide whether a topic can be a short "how it works" 3D cutaway video: one continuous shot of a toy-like
-diorama (a yard, a street, a room, a garage) where the thing is built step by step and its working parts move. Any physical
-thing people build or use can be one: the kit designs a part it lacks from building blocks (boxes, panels, pipes, wheels,
-springs, gears, rails, lights, screens) that slide, swing, roll, spin, fill and flow. A machine, an appliance, a vehicle, a
-building part, a gadget or a product named by its brand is buildable.
-Answer "buildable": false ONLY when the topic cannot be such a video at all: the human or animal body, space and the sky,
-an abstract idea (money, history, feelings, politics), a real named person, or something unsafe. Then put the reason in
-missing as a few plain words ("a real person", "the human body", "space", "an idea, not a thing").
+// Strict since the owner's rule of 2026-11-04: only the kit's world (yards, houses, streets, water, pipes) is buildable.
+export const KIT_SYSTEM = `You decide whether a topic can be a short "how it works" 3D cutaway video made with our parts kit. The kit
+builds ONE small toy-like scene: a house and its yard, or one street, cut open to show the ground below. It is good at things
+dug into the ground (pits, trenches, wells, tanks, ponds, pools, foundations, basements), water and how it flows (rain,
+drainage, floods, groundwater, plumbing, sewers, gutters, pipes, pumps, irrigation), and simple house, yard and street
+structures (roofs, sheds, fences, retaining walls, driveways, roads, sidewalks, manholes, gardens, compost).
+Answer "buildable": true ONLY when the topic fits that world. Answer false for everything else, for example: engines, cars and
+their parts (steering, suspension, gearboxes, brakes), machines and tools (chainsaws, elevators, lawnmowers), vehicles
+(planes, boats, trains, rockets), electronics and chips, home appliances (stoves, fridges, washing machines), factories,
+skyscrapers and big bridges, the human or animal body, space and the sky, ideas (money, history, feelings, politics), a
+real named person, or something unsafe. When in doubt, answer false.
+When false, put in missing ONE short plain label that completes "Cutaway can't build ___ yet.", for example
+"engine and car parts", "machines and vehicles", "electronics", "home appliances", "factories", "large buildings",
+"the human body", "animals", "space and the sky", "ideas like money or history", "real people".
 Also pick the 3 closest premade topics (by key) from this list: ${PREMADE.map((p) => `${p.key} (${p.topic})`).join(", ")}.`;
 
 export const KIT_SCHEMA = {

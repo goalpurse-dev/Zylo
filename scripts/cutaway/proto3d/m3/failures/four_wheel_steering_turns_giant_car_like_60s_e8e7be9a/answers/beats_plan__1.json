@@ -1,0 +1,135 @@
+{
+ "hash": "*",
+ "by": "real run e8e7be9a-9e0e-4d9d-9907-4b464df2c739",
+ "searches": 0,
+ "data": {
+  "why": "A flatbed truck stands on the driveway in front of the garage, seen from the side with its chassis open, so the wheels, the rear steering motor, the tie rod and the spring all show. With front steering only, the tail swings out and knocks over a post. Rear steering turns the truck tightly, then in-phase at speed, then adds a failsafe spring. The camera starts on the truck, moves to the tail and rear axle for the fixes, and ends on the truck crabbing into the garage.",
+  "sceneJson": "{\"world\":{\"cut\":[9,12,-5,1],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false,\"backdrop\":{\"type\":\"garage\",\"x\":0,\"back\":-9}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{}},{\"id\":\"giant\",\"kind\":\"rig\",\"params\":{\"name\":\"flatbed truck\",\"synonyms\":[\"truck\",\"giant truck\",\"pickup\"],\"pos\":[0,0.08,-3],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[5.6,0.2,2.0],\"at\":[0,0.85,0],\"look\":\"paint\",\"color\":\"#394150\"},{\"shape\":\"box\",\"size\":[1.9,1.1,1.9],\"at\":[1.55,1.5,0],\"look\":\"paint\",\"color\":\"#c0392b\"},{\"shape\":\"box\",\"size\":[0.06,0.55,1.5],\"at\":[2.52,1.8,0],\"look\":\"glass\",\"color\":\"#9fd8ff\"},{\"shape\":\"box\",\"size\":[0.3,0.3,1.9],\"at\":[2.65,1.1,0],\"look\":\"metal\",\"color\":\"#9aa0a6\"}],\"moves\":[{\"name\":\"yaw\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":14},{\"name\":\"tight\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":30},{\"name\":\"tuck\",\"type\":\"slide\",\"to\":[0.6,0,-1.0]},{\"name\":\"whip\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":40},{\"name\":\"veer\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":12},{\"name\":\"park\",\"type\":\"slide\",\"to\":[1.0,0,-4.0]}]},{\"id\":\"fl\",\"parent\":\"body\",\"at\":[1.9,0.6,1.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.6,0.3],\"at\":[0,0.3,-0.1],\"look\":\"metal\",\"color\":\"#9aa0a6\"}],\"moves\":[{\"name\":\"frontTurn\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":28}]},{\"id\":\"flt\",\"parent\":\"fl\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.6,\"w\":0.35,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1f1f1f\"},{\"shape\":\"wheel\",\"r\":0.3,\"w\":0.4,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"}],\"moves\":[{\"name\":\"drive\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1}]},{\"id\":\"fr\",\"parent\":\"body\",\"at\":[1.9,0.6,-1.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.6,0.3],\"at\":[0,0.3,0.1],\"look\":\"metal\",\"color\":\"#9aa0a6\"}],\"moves\":[{\"name\":\"frontTurn\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":28}]},{\"id\":\"frt\",\"parent\":\"fr\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.6,\"w\":0.35,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1f1f1f\"},{\"shape\":\"wheel\",\"r\":0.3,\"w\":0.4,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"}],\"moves\":[{\"name\":\"drive\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1}]},{\"id\":\"rl\",\"parent\":\"body\",\"at\":[-1.9,0.6,1.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.6,0.3],\"at\":[0,0.3,-0.1],\"look\":\"metal\",\"color\":\"#9aa0a6\"}],\"moves\":[{\"name\":\"rearTurn\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-22},{\"name\":\"rearSame\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":8}]},{\"id\":\"rlt\",\"parent\":\"rl\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.6,\"w\":0.35,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1f1f1f\"},{\"shape\":\"wheel\",\"r\":0.3,\"w\":0.4,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"}],\"moves\":[{\"name\":\"drive\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1}]},{\"id\":\"rr\",\"parent\":\"body\",\"at\":[-1.9,0.6,-1.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.6,0.3],\"at\":[0,0.3,0.1],\"look\":\"metal\",\"color\":\"#9aa0a6\"}],\"moves\":[{\"name\":\"rearTurn\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-22},{\"name\":\"rearSame\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":8}]},{\"id\":\"rrt\",\"parent\":\"rr\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.6,\"w\":0.35,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1f1f1f\"},{\"shape\":\"wheel\",\"r\":0.3,\"w\":0.4,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"}],\"moves\":[{\"name\":\"drive\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1}]},{\"id\":\"motor\",\"parent\":\"body\",\"at\":[-1.9,1.35,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.8,0.5],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#e67e22\"},{\"shape\":\"light\",\"r\":0.09,\"at\":[0,0.46,0],\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"motorOn\",\"type\":\"appear\"},{\"name\":\"run\",\"type\":\"blink\",\"rate\":3}]},{\"id\":\"rod\",\"parent\":\"motor\",\"at\":[0,-0.3,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.15,0.15,2.1],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"}],\"moves\":[{\"name\":\"rodOn\",\"type\":\"appear\"},{\"name\":\"rodSlide\",\"type\":\"slide\",\"to\":[0,0,0.3]},{\"name\":\"break\",\"type\":\"snap\",\"axis\":\"z\",\"gap\":0.3}]},{\"id\":\"spring\",\"parent\":\"body\",\"at\":[-1.2,1.07,0],\"shapes\":[{\"shape\":\"spring\",\"r\":0.12,\"h\":1.7,\"turns\":8,\"wire\":0.03,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2ecc71\"}],\"moves\":[{\"name\":\"springOn\",\"type\":\"appear\"}]}]}},{\"id\":\"bollard\",\"kind\":\"rig\",\"params\":{\"name\":\"bollard\",\"synonyms\":[\"post\"],\"pos\":[-2.75,0.08,-1.25],\"nodes\":[{\"id\":\"post\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.24,1.1,0.24],\"at\":[0,0.55,0],\"look\":\"paint\",\"color\":\"#ff7a1a\"},{\"shape\":\"box\",\"size\":[0.26,0.16,0.26],\"at\":[0,0.85,0],\"look\":\"paint\",\"color\":\"#ffffff\"}],\"moves\":[{\"name\":\"fall\",\"type\":\"swing\",\"axis\":\"x\",\"angle\":85}]}]}},{\"id\":\"standA\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.3,2.3,0.3],\"pos\":[-4.9,1.23,-2.2],\"mat\":\"metal\"}},{\"id\":\"standS\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.3,2.3,0.3],\"pos\":[4.6,1.23,-2.2],\"mat\":\"metal\"}},{\"id\":\"angle\",\"kind\":\"counter\",\"params\":{\"pos\":[-4.9,2.75,-2.2],\"size\":1.0,\"from\":0,\"to\":10,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":2}},{\"id\":\"speed\",\"kind\":\"counter\",\"params\":{\"pos\":[4.6,2.75,-2.2],\"size\":1.0,\"from\":5,\"to\":70,\"color\":\"#ffd23d\",\"bar\":true}},{\"id\":\"carOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-3.3,0.05,-1.45],[-3.3,2.7,-1.45],[3.3,2.7,-1.45],[3.3,0.05,-1.45]],\"opts\":{\"closed\":true,\"r\":0.09}}},{\"id\":\"rearOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-3.1,0.05,-1.45],[-3.1,2.0,-1.45],[-0.9,2.0,-1.45],[-0.9,0.05,-1.45]],\"opts\":{\"closed\":true,\"r\":0.07}}},{\"id\":\"garageLight\",\"kind\":\"prop\",\"params\":{\"type\":\"ceilingLight\",\"pos\":[0,0.08,-11],\"h\":3.0,\"drop\":0.5}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[7,0.08,-2.5],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"giant\",\"does\":\"front wheels turn\"},\"do\":[{\"p\":\"giant\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"frontTurn\",\"w\":\"steer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"giant\",\"does\":\"tail swings out toward the post\"},\"state\":{\"text\":\"TAIL SWINGS\",\"w\":\"swings\"},\"do\":[{\"p\":\"bollard\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"yaw\",\"w\":\"tail\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\",\"bollard\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"bollard\",\"does\":\"post falls over\"},\"state\":{\"text\":\"CRUNCH!\",\"w\":\"clips\"},\"do\":[{\"p\":\"bollard\",\"v\":\"fall\",\"w\":\"clips\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.6,0,-3.4,-0.6,2.6,-0.2]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"giant\",\"does\":\"rear motor and rod appear\"},\"do\":[{\"p\":\"bollard\",\"v\":\"fallBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"yawBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"motorOn\",\"w\":\"motor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rodOn\",\"w\":\"axle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"low\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.2,0,-4.5,-0.2,2.6,-1.3]}]},{\"s\":\"name\",\"shows\":{\"p\":\"carOutline\",\"does\":\"outline traces the truck\"},\"do\":[{\"p\":\"carOutline\",\"v\":\"show\",\"w\":\"This\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":1.0,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"giant\",\"does\":\"rear wheels turn against the front and the truck pivots tight\"},\"do\":[{\"p\":\"carOutline\",\"v\":\"hide\",\"w\":\"crawl\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"run\",\"w\":\"motor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rodSlide\",\"w\":\"motor\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rearTurn\",\"w\":\"rear\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"tight\",\"w\":\"pivots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"tuck\",\"w\":\"pivots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"high\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"angle\",\"does\":\"counter ticks up to 10 degrees\"},\"do\":[{\"p\":\"standA\",\"v\":\"show\",\"w\":\"Mercedes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"angle\",\"v\":\"show\",\"w\":\"Mercedes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"angle\",\"v\":\"count\",\"w\":\"turns\",\"o\":0,\"d\":1.8,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\",\"angle\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"giant\",\"does\":\"tail whips around while the speed climbs\"},\"state\":{\"text\":\"TAIL WHIPS\",\"w\":\"whip\"},\"do\":[{\"p\":\"angle\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"standS\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"count\",\"w\":\"But\",\"o\":0,\"d\":2.4,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"tightBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"tuckBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"whip\",\"w\":\"whip\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\",\"speed\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"giant\",\"does\":\"rear wheels turn the same way and the truck straightens\"},\"do\":[{\"p\":\"giant\",\"v\":\"whipBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rearTurnBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rearSame\",\"w\":\"same\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"hide\",\"w\":\"tracks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"rearOutline\",\"does\":\"outline traces the rear wheels\"},\"do\":[{\"p\":\"rearOutline\",\"v\":\"show\",\"w\":\"called\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"giant\",\"does\":\"rod snaps and the truck veers\"},\"state\":{\"text\":\"STUCK\",\"w\":\"stuck\"},\"do\":[{\"p\":\"rearOutline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"runBack\",\"w\":\"fails\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"break\",\"w\":\"snap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"veer\",\"w\":\"veers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.4,0,-4.6,0.2,2.6,-1.0]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"giant\",\"does\":\"spring appears and centers the rear wheels\"},\"do\":[{\"p\":\"giant\",\"v\":\"veerBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"breakBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"springOn\",\"w\":\"spring\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rearSameBack\",\"w\":\"center\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.4,0,-4.6,0.2,2.6,-1.0]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"giant\",\"does\":\"all four wheels spin, then stop\"},\"do\":[{\"p\":\"giant\",\"v\":\"drive\",\"w\":\"And\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"driveBack\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"giant\",\"does\":\"front wheels swivel straight\"},\"do\":[{\"p\":\"giant\",\"v\":\"frontTurnBack\",\"w\":\"swivels\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"giant\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"giant\",\"does\":\"truck crabs into the garage under a ceiling light\"},\"do\":[{\"p\":\"garageLight\",\"v\":\"show\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"frontTurn\",\"w\":\"crab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"rearSame\",\"w\":\"crab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"giant\",\"v\":\"park\",\"w\":\"crab\",\"o\":0.2,\"d\":3,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"10 DEGREES\",\"at\":{\"s\":\"fact\",\"w\":\"10\",\"o\":0},\"d\":1.8},{\"text\":\"70 MPH\",\"at\":{\"s\":\"problem2\",\"w\":\"70\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"motor\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"how\",\"w\":\"motor\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"finish\",\"w\":\"crab\",\"o\":0},\"d\":1.6}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"10\",\"o\":0},{\"s\":\"problem2\",\"w\":\"70\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How four-wheel steering turns a giant truck like a compact",
+   "hero": "four-wheel steering",
+   "parts": [
+    "truck",
+    "front wheels",
+    "rear wheels",
+    "rear steering motor",
+    "tie rod",
+    "centering spring",
+    "post",
+    "speed gauge",
+    "garage light"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "if only the front wheels of a long truck steer, it cannot turn tight"
+    },
+    {
+     "role": "problem",
+     "idea": "the long body cannot pivot, so its tail swings out wide toward a post"
+    },
+    {
+     "role": "stakes",
+     "idea": "the swinging tail clips the post and knocks it flat, which in a tight street means a crunched bumper"
+    },
+    {
+     "role": "fix1",
+     "idea": "you bolt a steering motor onto the rear axle so the back wheels can turn too"
+    },
+    {
+     "role": "name",
+     "idea": "a truck whose rear wheels steer as well is four-wheel steering"
+    },
+    {
+     "role": "how",
+     "idea": "at a crawl the motor turns the rear wheels against the front ones, so the truck pivots in a tight circle like a compact"
+    },
+    {
+     "role": "fact",
+     "idea": "a Mercedes S-Class turns its rear wheels up to 10 degrees, which shrinks its turning circle by about two meters"
+    },
+    {
+     "role": "problem2",
+     "idea": "at highway speed, turning the rear wheels against the front makes the tail whip around"
+    },
+    {
+     "role": "fix2",
+     "idea": "above about 37 mph the rear wheels turn the same way as the front, so the truck tracks straight"
+    },
+    {
+     "role": "name2",
+     "idea": "turning the same way is in-phase steering, and the tight low-speed turn is counter-phase"
+    },
+    {
+     "role": "problem3",
+     "idea": "if the motor fails, the rod can snap and leave the rear wheels stuck, so the truck veers"
+    },
+    {
+     "role": "fix3",
+     "idea": "a spring pulls the rear wheels back to center and locks them straight"
+    },
+    {
+     "role": "myth",
+     "idea": "four-wheel steering is not four-wheel drive, even though all four wheels seem to be doing something"
+    },
+    {
+     "role": "mythFact",
+     "idea": "it only swivels the wheels left and right, and Honda's 1987 Prelude already did it"
+    },
+    {
+     "role": "finish",
+     "idea": "add a ceiling light and let the truck crab sideways into the garage"
+    },
+    {
+     "role": "congrats",
+     "idea": "the truck now parks like a compact car, calm and finished"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the long truck's tail swings out wide toward a post",
+     "stakes": "the post and the truck's bumper",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "at 70 mph the opposite-turning rear wheels whip the tail around",
+     "stakes": "the driver loses control at speed",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the rear steering rod snaps and the stuck wheels make the truck veer",
+     "stakes": "a heavy truck veering off its line",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The Mercedes S-Class turns its rear wheels up to 10 degrees, which cuts its turning circle by about 2 meters",
+     "role": "fact",
+     "search": "Mercedes S-Class rear-axle steering 10 degrees turning circle 2 metres"
+    },
+    {
+     "claim": "On the Mercedes S-Class, the rear wheels turn opposite the front below about 60 km/h (37 mph) and the same way above that",
+     "role": "fix2",
+     "search": "Mercedes rear-axle steering 60 km/h opposite direction same direction"
+    },
+    {
+     "claim": "Honda offered four-wheel steering on its Prelude from 1987",
+     "role": "mythFact",
+     "search": "Honda Prelude 4WS 1987 mechanical four wheel steering"
+    },
+    {
+     "claim": "Rear-wheel steering systems are built to fail safe, locking the rear wheels straight ahead if the actuator faults",
+     "role": "fix3",
+     "search": "rear-axle steering fail-safe locks rear wheels straight fault"
+    }
+   ]
+  }
+ }
+}

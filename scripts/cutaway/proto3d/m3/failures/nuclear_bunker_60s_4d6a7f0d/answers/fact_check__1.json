@@ -1,0 +1,85 @@
+{
+ "hash": "*",
+ "by": "real run 4d6a7f0d-37a2-4f6f-a29c-1b70c1fd21a3",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "Saturated soil typically weighs roughly 100 to 130 pounds per cubic foot, depending on soil type (saturated clay is about 130 lb/ft3).",
+    "why": "Saturated clay is listed at 130 lb/ft3, but a topsoil supplier gives saturated topsoil at 96-111 lb/ft3, so 'over 100' is not true for all soils. The notes suggest 'roughly 100 to 130 lb/ft3 for most saturated soils'. Support comes from commercial pages, and the textbook excerpt did not show the values.",
+    "sources": [
+     {
+      "url": "https://hydrovacattm.com/blogs/info/1-cu-ft-soil-weight",
+      "title": "What Is 1 cu ft soil weight? A Practical Guide"
+     },
+     {
+      "url": "https://topsoil.com/blog/how-much-does-a-cubic-yard-of-topsoil-weigh/",
+      "title": "Cubic Yard of Topsoil Weight: 1,500-3,000 lbs Explained"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Cheyenne Mountain's blast doors are reported to weigh about 25 tons each and to be roughly 3 feet thick, though some sources give 3.5 feet and about 23 tons.",
+    "why": "Smithsonian Air & Space gives 25 tons and three feet thick, but its excerpt cuts off and other sites give 20-25 tons and about 3.5 feet. No official source was found, so the figures should be hedged.",
+    "sources": [
+     {
+      "url": "https://www.smithsonianmag.com/air-space-magazine/06_sep2018-norad-at-1-180969908/",
+      "title": "The Secret World of NORAD"
+     },
+     {
+      "url": "https://envzone.com/cheyenne-mountain-complex-the-pinnacle-of-security/",
+      "title": "Cheyenne Mountain Complex: The Pinnacle of Security Excellence"
+     },
+     {
+      "url": "https://everything-everywhere.com/the-cheyenne-mountain-complex/",
+      "title": "The Cheyenne Mountain Complex"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "About 3 to 4 feet of packed earth (half-value layer roughly 3.6 to 4.8 inches) cuts gamma radiation about 1000-fold, since ten halvings give 2^10 = 1024.",
+    "why": "A blog gives 3.6 inches per halving and 36 inches for PF1000, but the TACDA civil-defense course says about 40-48 inches is needed. The 3-foot figure holds only with the blog's value, so a range is safer.",
+    "sources": [
+     {
+      "url": "https://modernsurvivalblog.com/nuclear/nuclear-radiation-shielding-protection/",
+      "title": "Nuclear Radiation Shielding Protection and Halving Thickness Values"
+     },
+     {
+      "url": "https://tacda.org/wp-content/uploads/2018/10/TACDA_Academy_CDBasics_6Radiation.pdf",
+      "title": "TACDA ACADEMY"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "By the 7-10 rule of thumb, about 49 hours after a blast fallout radiation falls to roughly 1 percent of its level at one hour.",
+    "why": "Sources describe the rule: each sevenfold increase in time cuts radiation tenfold, so 1 h to 7 h gives 10% and 49 h gives 1%. It is a rule of thumb that assumes fallout of the same effective age.",
+    "sources": [
+     {
+      "url": "https://tacda.org/radiation-issues/",
+      "title": "Radiation Issues - The American Civil Defense Association"
+     },
+     {
+      "url": "https://protocolsurvival.com/en/blog/nuclear-fallout-preparedness",
+      "title": "Nuclear Fallout Preparedness: First 24 Hours Checklist"
+     },
+     {
+      "url": "https://phaenyx.com/guides/fallout-7-10-rule",
+      "title": "How fast does nuclear fallout decay? The 7-10 rule · Phaenyx"
+     },
+     {
+      "url": "http://www.falloutradiation.com/johnwayne7",
+      "title": "Decay Information - Fallout Radiation.com"
+     }
+    ]
+   }
+  ]
+ }
+}

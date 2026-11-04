@@ -1,0 +1,230 @@
+{
+ "hash": "*",
+ "by": "real run e8e7be9a-9e0e-4d9d-9907-4b464df2c739",
+ "searches": 6,
+ "data": {
+  "text": "Results are probably dicts wrapped oddly.Strings; parse JSON.**Summary:** Claims 0, 1 and 2 are supported, though claim 2 needs a small caveat. Claim 3 is only partly supported: I found no authoritative general source, so it should be softened.\n\n**Claim 0: S-Class rear wheels turn up to 10°, cutting the turning circle by about 2 m. Supported as written.**\n- Mercedes' own footage, as quoted on YouTube, says the steering angle at the rear axle is up to ten degrees and the turning circle is reduced by up to two metres. (https://m.youtube.com/watch?pp=ygUNI3dheW9mWWFycmllcg%3D%3D&v=48X-qz0B2xo). Mercedes' press text is reproduced at https://www.germancarforum.com/threads/official-mercedes-benz-s-class-w223.60931/page-6.\n- Autoevolution reports the turning circle is decreased by 6.5 feet (2 meters) and ends up about the same as the much smaller A-Class. It also says the 10° figure applies to one of two options. (https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html)\n- Mercedesblog says there are two options, one with a rear steering angle of up to 4.5 degrees and one with up to 10 degrees. With the 10° option, the long-wheelbase S-Class has a turning circle of only 11 meters. (https://mercedesblog.com/the-new-mercedes-s-class-w223-received-rear-axle-steering-and-e-active-body-control-suspension/)\n- Caveat for the script: the 2 m figure is \"up to\", and 10° is the optional larger system. The base system is 4.5°.\n\n**Claim 1: Opposite the front below about 60 km/h (37 mph), same way above. Supported as written.**\n- Motor1: at speeds of up to 37 mph (60 km/h), it turns the rear wheels in the opposite direction to the front ones, and at higher speeds all four wheels turn the same way. (https://www.motor1.com/news/534741/2023-mercedes-glc-rear-wheel-steering/)\n- Mercedesblog: up to 60 km/h the rear wheels are oriented in the opposite direction to the front ones and at over 60 km/h in the same direction. (URL above)\n- CarExpert says the same for Mercedes' 4.5° system. (https://www.carexpert.com.au/car-news/rear-wheel-steering-what-is-it)\n\n**Claim 2: Honda offered four-wheel steering on the Prelude from 1987. Supported, with a caveat.**\n- Honda's own tech site: \"In 1987, Honda introduced the world's first steering angle sensing 4WS system in the Prelude.\" It also says the Prelude was launched with 4WS as an option. (https://global.honda/en/tech/serial/Honda_Super_Handling_part01/)\n- A 1987 UPI road test calls the Prelude one of the first cars to have four wheel steering. (https://www.upi.com/Archives/1987/12/29/Honda-Prelude-Si-4WS-The-rear-wheels-steer-too/2646567752400/)\n- Dealer and enthusiast pages call it the first mechanical 4WS on a mass-produced car. That is weaker sourcing, so I would avoid \"first ever\". The automotivehistory.org page dates the Prelude Si 4WS to 1988. That probably reflects the US model year, but I did not confirm it. (https://automotivehistory.org/prelude-4ws-four-wheel-steering/)\n- Safe wording: \"Honda offered 4WS on the Prelude from 1987.\" Avoid \"first\" unless you qualify it as Honda's \"steering angle sensing\" system.\n\n**Claim 3: Rear steering is built to fail safe, locking the rear wheels straight ahead. Supported in a corrected form, with only limited evidence.**\n- I found no engineering, government or manufacturer source stating this as a general rule. The two searches returned mostly forums and repair pages.\n- The best source is a trade case study on a DAF truck rear-steer axle. It says the system has a self-centering fail safe built into the cylinder, which in the event of a malfunction will force the cylinder back to center and straighten the wheels. (https://www.picoauto.com/library/case-studies/daf-rear-steering-fault)\n- A parts-retailer page on BMW Integral Active Steering says the system fails by locking the rear wheels straight, so the car stays drivable but loses the added stability and maneuverability. (https://www.go-parts.com/garage/steering-gear-poppet-rack-bmw-750i-bmw-alpina-b7-bmw-x7-2016-2024)\n- A NHTSA-hosted Mercedes technical bulletin (https://static.nhtsa.gov/odi/tsbs/2024/MC-11005348-0001.pdf) shows the S-Class rear-axle steering can report an \"actuator blocked\" fault. It does not describe the fail-safe behavior.\n- Corrected wording: \"Rear-steer systems are designed so a fault leaves the rear wheels centred or straight. This is documented for some systems, such as BMW's and one DAF truck axle.\" Don't claim it applies to every system or to the S-Class specifically without a Mercedes source.",
+  "sources": [
+   {
+    "url": "https://www.motor1.com/news/534741/2023-mercedes-glc-rear-wheel-steering/",
+    "title": "2023 Mercedes GLC Spied Putting Rear-Wheel Steering To Work"
+   },
+   {
+    "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+    "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+   },
+   {
+    "url": "https://www.carexpert.com.au/car-news/rear-wheel-steering-what-is-it",
+    "title": "Rear wheel steering: What is it?"
+   },
+   {
+    "url": "https://www.electrive.com/2026/06/25/mercedes-vle-first-drive-luxury-electric-travel-with-800-volt-technology-and-open-windows/",
+    "title": "Mercedes VLE first drive: Luxury electric travel with 800-volt technology and open windows - electrive.com"
+   },
+   {
+    "url": "https://mercedesblog.com/the-new-mercedes-s-class-w223-received-rear-axle-steering-and-e-active-body-control-suspension/",
+    "title": "The new Mercedes S-Class W223 received rear axle steering and E-Active body control suspension"
+   },
+   {
+    "url": "https://www.autoblog.com/features/2021-mercedes-benz-s-class-tech-preview",
+    "title": "2021 Mercedes-Benz S-Class gets rear-axle steering and trick new airbag tech - Autoblog"
+   },
+   {
+    "url": "https://www.motor1.com/news/521960/mercedes-eqs-rear-wheel-steering/",
+    "title": "Mercedes Charging $575 Per Year In Germany For 10-Degree Rear Steering On EQS"
+   },
+   {
+    "url": "https://www.drivingeco.com/en/mercedes-benz-lleva-modelo-suscripcion-nuevo-nivel-eqs/",
+    "title": "Mercedes-Benz takes the subscription model to another level with the EQS"
+   },
+   {
+    "url": "https://www.mbscottsdale.com/blog/mercedes-benz-rear-axle-steering-and-adaptive-damping-explained",
+    "title": "Mercedes-Benz Rear-Axle Steering and Adaptive Damping Explained"
+   },
+   {
+    "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+    "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+   },
+   {
+    "url": "https://www.germancarforum.com/threads/official-mercedes-benz-s-class-w223.60931/page-6",
+    "title": "S-Class (W223) - [Official] Mercedes-Benz S-Class (W223)"
+   },
+   {
+    "url": "https://m.youtube.com/watch?pp=ygUNI3dheW9mZWFycmllcg%3D%3D&v=48X-qz0B2xo",
+    "title": "Mercedes S-CLASS 2021 - REAR AXLE steering (10 degrees ..."
+   },
+   {
+    "url": "https://www.rushlane.com/2021-mercedes-s-class-4-wheel-steering-12375171.html",
+    "title": "2021 Mercedes S Class Front as well as Rear wheels help turn the Big car"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_with_EQ_Technology",
+    "title": "Mercedes-Benz C-Class with EQ Technology"
+   },
+   {
+    "url": "https://www.carwale.com/news/2021-mercedesbenz-sclass-all-features-explained-indepth/",
+    "title": "2021 Mercedes-Benz S-Class - Features explained in detail - CarWale"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_Electric",
+    "title": "Mercedes-Benz C-Class Electric"
+   },
+   {
+    "url": "https://emercedesbenz.com/uncategorized/did-you-know-interesting-mercedes-benz-s-class-facts-and-figures/",
+    "title": "Did You Know? Interesting Mercedes-Benz S-Class Facts and Figures"
+   },
+   {
+    "url": "https://www.autoblog.com/features/2021-mercedes-benz-s-class-tech-preview",
+    "title": "2021 Mercedes-Benz S-Class gets rear-axle steering and trick new airbag tech - Autoblog"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_S-Class_(W223)",
+    "title": "Mercedes-Benz S-Class (W223)"
+   },
+   {
+    "url": "https://www.picoauto.com/library/case-studies/daf-rear-steering-fault",
+    "title": "DAF CF75"
+   },
+   {
+    "url": "https://www.go-parts.com/garage/steering-gear-poppet-rack-bmw-750i-bmw-alpina-b7-bmw-x7-2016-2024",
+    "title": "BMW Integral Active Steering Failure: Clunks, Warnings & Rear-Steer Fixes for 7-Series, X7 & More (2016-2024)"
+   },
+   {
+    "url": "https://rennlist.com/forums/991-gt3-gt3rs-gt2rs-and-911r/1288729-rear-axle-steering-failure-991-1-gt3.html",
+    "title": "Rear Axle Steering failure (991.1 GT3) - Rennlist - Porsche Discussion Forums"
+   },
+   {
+    "url": "https://www.supertracker.com/blog/why-is-the-steering-wheel-not-straight-after-a-wheel-alignment",
+    "title": "Steering Wheel Not Straight After Alignment?"
+   },
+   {
+    "url": "https://www.gm-trucks.com/forums/topic/176096-rear-wheels-locking-up-on-turns/",
+    "title": "Rear Wheels Locking Up On Turns - Troubleshooting & Recalls - GM-Trucks.com"
+   },
+   {
+    "url": "https://www.epermittest.com/drivers-education/steering-failure",
+    "title": "Handling Steering Failure: Power Steering, Common Causes & What To Do"
+   },
+   {
+    "url": "https://www.ctsvowners.com/threads/v3-rear-axle-fault-or-service-power-steering-and-service-rear-axle.156244/",
+    "title": "V3 Rear Axle Fault or Service Power Steering/ and Service rear axle."
+   },
+   {
+    "url": "https://data.epo.org/publication-server/rest/v1.2/publication-dates/19940202/patents/EP0350020NWB1/document.html",
+    "title": "data.epo.org"
+   },
+   {
+    "url": "https://data.epo.org/publication-server/rest/v1.2/patents/EP0350020NWA1/document.html",
+    "title": "data.epo.org"
+   },
+   {
+    "url": "https://global.honda/en/tech/serial/Honda_Super_Handling_part01/",
+    "title": "Honda Four-Wheel Steering System (Honda 4WS) Technology (1987)"
+   },
+   {
+    "url": "https://classicmotorsports.com/cars-for-sale/four-wheel-steering-not-just-exotics-honda-prelude-4ws-sale-1987-prelude-4ws/",
+    "title": "Four-wheel steering: not just for exotics"
+   },
+   {
+    "url": "https://www.upi.com/Archives/1987/12/29/Honda-Prelude-Si-4WS-The-rear-wheels-steer-too/2646567752400/",
+    "title": "Honda Prelude Si 4WS -- The rear wheels steer, too - UPI Archives"
+   },
+   {
+    "url": "https://grassrootsmotorsports.com/forum/classic-cars-sale/four-wheel-steering-not-just/191605/page1/",
+    "title": "Four-wheel steering: not just for exotics"
+   },
+   {
+    "url": "https://carbuzz.com/honda-prelude-four-wheel-steering-history/",
+    "title": "The Steering Revolution Nobody Asked For (And Why Honda Was Right All Along)"
+   },
+   {
+    "url": "https://automotivehistory.org/prelude-4ws-four-wheel-steering/",
+    "title": "The Honda Prelude 4WS: A Brilliant Idea That Didn’t Quite Stick - This Day In Automotive History"
+   },
+   {
+    "url": "https://www.preludepower.com/threads/road-track-aug-1987-honda-prelude-2-0-si-4ws-review.342136/",
+    "title": "Road & Track, Aug 1987 - Honda Prelude 2.0 Si (4WS review)"
+   },
+   {
+    "url": "https://hondaride.com/automotive-history/the-technical-legacy-of-the-honda-prelude-s-four-wheel-steering-4ws-evolution/",
+    "title": "how does honda prelude 4ws work"
+   },
+   {
+    "url": "https://www.thetvdb.com/series/regular-car-reviews/episodes/6800073",
+    "title": "www.thetvdb.com"
+   },
+   {
+    "url": "https://www.benzworld.org/threads/steering-reluctant-to-return-to-center.3113163/",
+    "title": "Steering reluctant to return to center."
+   },
+   {
+    "url": "https://www.benzworld.org/threads/heres-an-interesting-one-steering-wont-return-to-center-after-left-turn.1657201/",
+    "title": "here's an interesting one... steering wont return to center after left turn"
+   },
+   {
+    "url": "https://beefytools.com/mercedes-steering-rack-issues-symptoms-fixes-you-need-to-know/",
+    "title": "Mercedes Steering Rack Issues: Symptoms & Fixes You Need to Know... - Mercedes enthusiasts"
+   },
+   {
+    "url": "https://www.tibao.hk/parts/mercedes/Power-Steering-Malfunction-Mercedes.html",
+    "title": "Power Steering Malfunction Mercedes? Quick Fix & Reset Guide!"
+   },
+   {
+    "url": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005348-0001.pdf",
+    "title": "Model series 290 - Rear axle steering: Messa-"
+   },
+   {
+    "url": "https://www.autonags.com/auto-motor/mercedes-steering-rack-return-checks/",
+    "title": "Mercedes Steering Rack Return Checks - Autonags"
+   },
+   {
+    "url": "https://www.mbeqclub.com/threads/rear-wheel-steer-not-working.4406/",
+    "title": "Rear Wheel Steer not working?"
+   },
+   {
+    "url": "https://patents.google.com/patent/US5048627",
+    "title": "US5048627A - Fail-safe rear wheel steering system for vehicle - Google Patents"
+   },
+   {
+    "url": "https://data.epo.org/publication-server/rest/v1.2/publication-dates/19940202/patents/EP0350020NWB1/document.html",
+    "title": "data.epo.org"
+   },
+   {
+    "url": "https://www.pistonheads.com/gassing/topic.asp?h=0&f=48&t=1526453",
+    "title": "Center Lock Wheel Came Loose - Page 1 - Porsche General - PistonHeads UK"
+   },
+   {
+    "url": "https://rennlist.com/forums/991-turbo/1419863-wheel-alignment-w-rear-axle-steering.html",
+    "title": "Wheel alignment w/ Rear Axle Steering - Rennlist - Porsche Discussion Forums"
+   },
+   {
+    "url": "https://rennlist.com/forums/993-forum/534678-rack-s-on-but-can-t-center-steering-wheel-help.html",
+    "title": "Rack's On, But Can't Center Steering Wheel-Help! - Rennlist - Porsche Discussion Forums"
+   },
+   {
+    "url": "https://rennlist.com/forums/992/1219860-rear-axle-steering-how-to-verify.html",
+    "title": "Rear axle steering - how to verify - Rennlist - Porsche Discussion Forums"
+   },
+   {
+    "url": "https://rennlist.com/forums/cayenne-9y0-2019/1366078-rear-axle-steering-not-working.html",
+    "title": "Rear Axle Steering not Working? - Rennlist - Porsche Discussion Forums"
+   },
+   {
+    "url": "http://forums.pelicanparts.com/porsche-924-944-968-technical-forum/516340-rear-wheels-locked-up.html",
+    "title": "Rear wheels locked up - Pelican Parts Forums"
+   },
+   {
+    "url": "https://www.pca.org/tech/steering-wheel-in-locked-position-cannot-relieve-steering-",
+    "title": "Tech Q&A - Steering Wheel In Locked Position And Cannot Relieve Steering"
+   },
+   {
+    "url": "https://www.taycanforum.com/forum/threads/disable-rear-axle-steering.15670/",
+    "title": "Disable Rear Axle Steering?"
+   },
+   {
+    "url": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10188292-0001.pdf",
+    "title": "MC 10188292 0001"
+   }
+  ]
+ }
+}

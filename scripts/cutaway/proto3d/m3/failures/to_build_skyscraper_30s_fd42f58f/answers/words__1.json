@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "real run fd42f58f-247d-46e4-b085-8db5df130956",
+ "searches": 0,
+ "data": {
+  "title": "How to Build a Skyscraper",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you stack floors on a sidewalk, you have a pile of blocks."
+   },
+   {
+    "role": "problem",
+    "text": "But all that weight sinks into the soft ground and the stack leans."
+   },
+   {
+    "role": "fix1",
+    "text": "So you dig a pit and drive 192 concrete piles down to solid rock."
+   },
+   {
+    "role": "fix2",
+    "text": "But the piles stand apart, so you pour a thick concrete mat that spreads the load over all of them."
+   },
+   {
+    "role": "name",
+    "text": "This is a piled raft foundation."
+   },
+   {
+    "role": "how",
+    "text": "Steel columns rise floor by floor, and the piles pass the weight down to the rock."
+   },
+   {
+    "role": "problem2",
+    "text": "But a tall, slim tower catches the wind like a sail and sways."
+   },
+   {
+    "role": "fix3",
+    "text": "So you hang a giant steel weight near the top that swings against the sway and calms it."
+   },
+   {
+    "role": "myth",
+    "text": "And people think thick walls hold a building up, but that is not true, because the frame still stands without them."
+   },
+   {
+    "role": "mythFact",
+    "text": "The steel skeleton carries the load, an idea first used in Chicago in 1885."
+   },
+   {
+    "role": "finish",
+    "text": "Add glass walls, a spire and entrance steps."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a skyscraper."
+   }
+  ]
+ }
+}

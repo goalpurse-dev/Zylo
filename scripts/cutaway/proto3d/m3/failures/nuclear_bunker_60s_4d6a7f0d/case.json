@@ -1,0 +1,64 @@
+{
+ "runId": "4d6a7f0d-37a2-4f6f-a29c-1b70c1fd21a3",
+ "topic": "nuclear bunker",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-03T15:20:13.472159+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: problem \"But now a blast wave rushes straight down the pipe…\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)",
+  "stage": "scene",
+  "attempts": 1
+ },
+ "costUsd": 1.06226,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "problem \"But now a blast wave rushes straight down the pipe…\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)"
+ ],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.70277,
+   "outputTokens": 64171,
+   "at": "2026-11-03T15:29:48.596Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.19757,
+   "outputTokens": 3957,
+   "at": "2026-11-03T15:30:47.854Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.03261,
+   "outputTokens": 1413,
+   "at": "2026-11-03T15:30:56.936Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01485,
+   "outputTokens": 692,
+   "at": "2026-11-03T15:31:02.335Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01393,
+   "outputTokens": 712,
+   "at": "2026-11-03T15:31:07.842Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01365,
+   "outputTokens": 698,
+   "at": "2026-11-03T15:31:12.713Z"
+  }
+ ]
+}

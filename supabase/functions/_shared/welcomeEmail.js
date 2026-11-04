@@ -12,6 +12,33 @@ export const WELCOME_IMAGES_URL = `${APP_URL}/workspace/image-generator?from=ema
 // the last line, a question to answer by reply (Reply-To: REPLY_TO.founder, the owner's inbox)
 export const WELCOME_QUESTION = "Quick question: what do you hope Zyvo helps you with? Just hit reply, I read every answer.";
 
+/**
+ * The personal-note version (owner, 2026-11-03: aim for Gmail's Primary tab, not Promotions): plain text style, no button,
+ * no images, one link (besides the footer's unsubscribe), short, the reply question last, no offer. Sent with the plain footer.
+ */
+export function welcomePlainEmail(footer) {
+  const p = "margin:0 0 14px";
+  const shown = WELCOME_VIDEO_URL.replace(/^https:\/\//, "").replace(/\?.*$/, "");
+  const html = `
+    <div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222222">
+      <p style="${p}">Hi,</p>
+      <p style="${p}">Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.</p>
+      <p style="${p}">You can start it here: <a href="${WELCOME_VIDEO_URL}">${shown}</a></p>
+      <p style="${p}">${WELCOME_QUESTION}</p>
+      <p style="${p}">Niko</p>
+      ${footer.html}
+    </div>`;
+  const text = [
+    "Hi,", "",
+    "Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.", "",
+    `You can start it here: ${WELCOME_VIDEO_URL}`, "",
+    WELCOME_QUESTION, "",
+    "Niko", "",
+    footer.text,
+  ].join("\n");
+  return { html, text };
+}
+
 /** "Thursday 5 November, 21:02 UTC": the same moment for everyone, wherever they read it. */
 export function bonusEndText(expiresAt) {
   const d = new Date(expiresAt);
@@ -28,7 +55,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:8px 4px;color:#1f2328">
       <p style="${p}">Hi,</p>
-      <p style="${p}">Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.</p>
+      <p style="${p}">Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.</p>
       <p style="margin:0 0 20px"><a href="${WELCOME_VIDEO_URL}" style="display:inline-block;background:#1f2328;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px">Go to my video</a></p>
       <p style="${p}">You also have 5 free images. <a href="${WELCOME_IMAGES_URL}" style="color:#1f2328">Try one here</a>.</p>
       ${ends ? `<p style="${p}">Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.</p>` : ""}
@@ -38,7 +65,7 @@ export function welcomeEmail(footer, { bonusEndsAt = null } = {}) {
     </div>`;
   const text = [
     "Hi,", "",
-    "Thanks for joining Zyvo. Your first video is ready to start, and it only takes a minute or two.", "",
+    "Thanks for joining Zyvo. Your free video preview is waiting: it only takes a minute or two.", "",
     `Go to my video: ${WELCOME_VIDEO_URL}`, "",
     `You also have 5 free images. Try one here: ${WELCOME_IMAGES_URL}`, "",
     ...(ends ? [`Since you asked to hear about offers: start a plan by ${ends} and you get 50 bonus credits.`, ""] : []),

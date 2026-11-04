@@ -142,6 +142,8 @@ export const downloadName = (run) => `${String(run?.title || run?.topic || "cuta
 // from the same rule the server charges by (quote.js): the server recomputes the quote from the topic text before
 // charging, so nothing the page shows or sends can change the price.
 export { quoteTopic, closestNames } from "../../../../../supabase/functions/_shared/cutaway/quote.js";
+// what the kit builds best, and the refusal the server sends too (the owner's strict rule of 2026-11-04)
+export { cantBuildMessage, KIT_BEST, KIT_EXAMPLES } from "../../../../../supabase/functions/_shared/cutaway/topics.js";
 import { classifyTopic } from "../../../../../supabase/functions/_shared/cutaway/topics.js";
 export { lengthsFor, PRICES } from "../../../../../supabase/functions/_shared/cutaway/pricing.js";
 

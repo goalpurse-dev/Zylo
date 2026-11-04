@@ -1,0 +1,162 @@
+{
+ "hash": "*",
+ "by": "real run 0d0d7a11-b387-4bb1-a49a-8669480b83d9",
+ "searches": 4,
+ "data": {
+  "text": "Sources checked for all four claims. I searched once for each claim. Two sources (Elevator World on Otis, Walker Consultants on ropes) were read only in the excerpts the search returned.\n\n**0. About 1,000 kg, roughly 13 people: supported as written.**\n- The Elevation Wiki (a fandom wiki) lists standard ratings. They include \"1,000 kg/13 persons\", alongside 630 kg/8 persons, 800 kg/10 persons and 1,200 kg/16 persons. https://elevation.fandom.com/wiki/Passenger_elevator\n- Manufacturers say much the same. Star Elevator says a 13-person passenger elevator is commonly associated with approximately 1000 kg capacity. https://www.starelevatorglobal.com/passenger-elevator-dimensions/\n- Fuji says a common standard passenger elevator capacity is approximately 630–1000 kg. https://www.fujixd.com/standard-elevator-dimensions/\n- Two caveats:\n  - 1,000 kg is one common rating, not the single typical one. 630 kg and 800 kg are also common.\n  - The person count comes from a floor-area table, not from weighing people. It works out to about 75 kg per person.\n\n**1. Counterweight = car plus 40–50% of rated load: supported as written.**\n- The elevator.tr glossary says the counterweight's mass is typically set at car tare weight plus 40–50 % of rated load. https://elevator.tr/en/glossary/counterweight\n- Elevator World's \"Counterweight Evolution\" gives historical context. Car weight plus 50% of the load was common practice. During wartime in Australia, many lifts had it cut to 40% to save power. https://elevatorworld.com/article/counterweight-evolution/\n- \"Usually\" is a fair word. The exact figure varies by design.\n\n**2. Otis, 1854 World's Fair, cut the rope himself: supported in a corrected form.**\n- Britannica says in May 1854 at the Crystal Palace in New York City, he demonstrated his elevator by riding the platform high in the air and ordering the rope cut. https://www.britannica.com/biography/Elisha-Otis\n- Elevator World's contemporary account says Otis stood upon the platform, ran the machine up to a considerable height, then cut the rope. https://elevatorworld.com/article/elisha-otis-improved-elevator/\n- The same Elevator World article says Otis would \"occasionally\" cut the rope. It also says the usual retelling of the story rests on a limited set of facts.\n- Britannica says he ordered the rope cut, so sources differ on whether he cut it himself or had someone else do it. The 1854 account has him doing it.\n- The event was at the Crystal Palace in New York. Wikipedia names the fair as the \"Exhibition of the Industry of All Nations\". It is usually called the New York World's Fair. https://en.wikipedia.org/wiki/Exhibition_of_the_Industry_of_All_Nations\n- Corrected wording: \"At the 1854 New York Crystal Palace exhibition, Elisha Otis rode a platform up high and had the hoisting rope cut. His safety catch held the platform.\" If you keep \"cutting it himself\", attribute it to the 1854 account.\n\n**3. Four to eight steel ropes, each strong enough alone: supported in a corrected form.**\n- ScienceABC says each car is held by four to eight steel ropes (any one of which can support the car alone). https://www.scienceabc.com/innovation/how-safe-are-you-in-an-elevator\n- Walker Consultants is more careful. It says modern passenger traction elevators have no fewer than three steel wire ropes, and most use four to eight. It adds that depending on the size of the ropes, a single rope may be strong enough to hold the entire elevator car. https://walkerconsultants.com/think-elevators-arent-safe-think-again/\n- The Washington Post says most elevators feature between two and eight woven steel cables. It says the number of ropes depends on a building-code \"factor of safety\". https://www.washingtonpost.com/national/health-science/elevator-plunges-are-rare-because-brakes-and-cables-provide-fail-safe-protections/2013/06/07/e44227f6-cc5a-11e2-8845-d970ccb04497_story.html\n- HowStuffWorks says one rope can support the car and counterweight on its own. https://science.howstuffworks.com/transport/engines-equipment/elevator4.htm\n- Corrected wording: \"Traction elevators hang from several steel ropes, usually four to eight (never fewer than three on modern passenger lifts). Each rope is typically strong enough to hold the car alone.\" \"Each\" is firmer than the engineering source's \"may be\". The number of ropes is set by code safety factors.",
+  "sources": [
+   {
+    "url": "https://elevatorworld.com/article/counterweight-evolution/",
+    "title": "Counterweight Evolution - Elevator World"
+   },
+   {
+    "url": "https://www.explainthatstuff.com/how-elevators-work.html",
+    "title": "How do elevators and lifts work? - Explain that Stuff"
+   },
+   {
+    "url": "https://elevator.tr/en/glossary/counterweight",
+    "title": "Elevator Counterweight"
+   },
+   {
+    "url": "https://thingsbehind.in/what-is-a-counterweight-in-an-elevator/",
+    "title": "What Is a Counterweight in an Elevator and Why Is It So Important? A Complete Guide (2026) - thingsbehind.in"
+   },
+   {
+    "url": "https://weightofstuff.com/how-much-does-an-elevator-weigh/",
+    "title": "How Much Does An Elevator Weigh"
+   },
+   {
+    "url": "https://craneelevator.com/elevator-problems-physics/",
+    "title": "Elevator Problems Physics and Solving Real Issues & Spot Causes - Crane Elevator Company - Detroit, Ann Arbor, Lansing, Flint"
+   },
+   {
+    "url": "https://fujispace-elevator.com/info/elevator-weight-balancing-system-introduction.html",
+    "title": "Elevator Weight Balancing System Introduction"
+   },
+   {
+    "url": "https://www.airconelevators.com/what-is-an-elevator-counterweight/",
+    "title": "Elevator Counterweight: How It Works & Why It's Important"
+   },
+   {
+    "url": "https://joylivelift.com/elevator-weight-limits/",
+    "title": "Elevator Weight Limits and Load Capacity Guide"
+   },
+   {
+    "url": "https://elevation.fandom.com/wiki/Passenger_elevator",
+    "title": "Passenger elevator"
+   },
+   {
+    "url": "https://www.fujixd.com/standard-elevator-dimensions/",
+    "title": "Standard Elevator Dimensions Guide 2026"
+   },
+   {
+    "url": "https://technoelevators.com/passenger-elevator-load-capacity-guide/",
+    "title": "Passenger Elevator Load Capacity Guide (6–13 Person Lifts)"
+   },
+   {
+    "url": "https://www.starelevatorglobal.com/passenger-elevator-dimensions/",
+    "title": "Mastering Passenger Elevator Dimensions: Your Ultimate Guide"
+   },
+   {
+    "url": "https://dazenelevator.com/passenger-lift-sizes/",
+    "title": "All About Passenger Lift Sizes - Dazen Elevator"
+   },
+   {
+    "url": "https://ekcnelift.com/elevator-car-dimensions-size-guide/",
+    "title": "Elevator Car Dimensions & Size Guide丨EKCNE"
+   },
+   {
+    "url": "https://joylivelift.com/all-about-passenger-lift-sizes/",
+    "title": "All About Passenger Lift Sizes: Dimensions, Standards, and Selection Guide"
+   },
+   {
+    "url": "https://www.safe-elevators.com/news/passenger-elevator-load-standard-84991252.html",
+    "title": "Passenger Elevator Load Standard - Industry Knowledge - News"
+   },
+   {
+    "url": "https://www.delfarelevator.com/passenger-lift-sizes.html",
+    "title": "Passenger Lift Sizes: What You Need to Know"
+   },
+   {
+    "url": "https://www.britannica.com/biography/Elisha-Otis",
+    "title": "Elisha Otis"
+   },
+   {
+    "url": "https://elevatorworld.com/article/elisha-otis-improved-elevator/",
+    "title": "Elisha Otis’ “Improved Elevator” - Elevator World"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Elisha_Otis",
+    "title": "Elisha Otis"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Exhibition_of_the_Industry_of_All_Nations",
+    "title": "Exhibition of the Industry of All Nations"
+   },
+   {
+    "url": "https://retailrelates.substack.com/p/march-23-1857-the-floor-above-everything",
+    "title": "🛗 March 23, 1857"
+   },
+   {
+    "url": "https://talk.build/construct-iq/the-elevator-that-changed-the-world-when-elisha-otis-cut-the-rope",
+    "title": "The elevator that changed the world when Elisha Otis cut the rope - Talk.Build"
+   },
+   {
+    "url": "https://davedoeshistory.org/2025/03/23/all-safe-gentlemen-all-safe/",
+    "title": "All Safe, Gentlemen. All Safe…"
+   },
+   {
+    "url": "https://heartfelthistory.com/elisha-otis-and-the-safety-elevator/",
+    "title": "Elisha Otis and the Safety Elevator - Heartfelt History™"
+   },
+   {
+    "url": "https://alexdenne.com/inventions/safety-elevator/",
+    "title": "Safety elevator - Invention History"
+   },
+   {
+    "url": "https://wattsandwild.com/articles/otis-safety-elevator-skyscraper",
+    "title": "A man stood on a high platform, had an axe cut the only rope holding him up, and did not fall, and that stunt made the modern city possible"
+   },
+   {
+    "url": "https://www.scienceabc.com/innovation/how-safe-are-you-in-an-elevator",
+    "title": "Find Out Why Elevators Are Safer Than You Thought"
+   },
+   {
+    "url": "https://science.howstuffworks.com/transport/engines-equipment/elevator4.htm",
+    "title": "Safety Systems - How Elevators Work"
+   },
+   {
+    "url": "https://walkerconsultants.com/think-elevators-arent-safe-think-again/",
+    "title": "Think Elevators Aren’t Safe? Think Again."
+   },
+   {
+    "url": "https://www.premierliftgroup.co.uk/platform-lifts/elevators-are-the-safest-form-of-transport-heres-why-premier-lift-group",
+    "title": "Elevators are the safest form of transport: Here’s why - Premier Lift Group"
+   },
+   {
+    "url": "https://www.washingtonpost.com/national/health-science/elevator-plunges-are-rare-because-brakes-and-cables-provide-fail-safe-protections/2013/06/07/e44227f6-cc5a-11e2-8845-d970ccb04497_story.html?0p19G=c",
+    "title": "Elevator plunges are rare because brakes and cables provide fail-safe protections - The Washington Post"
+   },
+   {
+    "url": "https://www.elevatorone.ca/blog/elevator-cable-and-rope-replacement-what-building-owners-should-know/",
+    "title": "Elevator Cable & Rope Replacement"
+   },
+   {
+    "url": "https://kone.com/en/news-and-insights/stories/top-6-elevator-myths-debunked.aspx",
+    "title": "Top 6 elevator myths debunked"
+   },
+   {
+    "url": "https://www.sterlingelevatorcons.com/resources/white-papers/common-elevator-myths-truths/",
+    "title": "Elevator Myths & Truths"
+   },
+   {
+    "url": "https://www.linselevator.com/Elevator_Myths.htm",
+    "title": "Elevator Facts and Myths"
+   },
+   {
+    "url": "https://konespares.com/top-6-elevator-myths-debunked/",
+    "title": "Top 6 Elevator Myths Debunked"
+   }
+  ]
+ }
+}

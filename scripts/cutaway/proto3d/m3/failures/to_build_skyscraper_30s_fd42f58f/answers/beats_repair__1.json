@@ -1,0 +1,108 @@
+{
+ "hash": "*",
+ "by": "real run fd42f58f-247d-46e4-b085-8db5df130956",
+ "searches": 0,
+ "data": {
+  "why": "A street-side build in section: a block stack sinks beside the open cut, then piles, a mat and a rising steel tower show how a skyscraper really stands. The tower rig is shortened (floors 3.4 m, walls 13.6 m, spire shorter) so no panel exceeds 16 m and the whole rig stays under 18 m. The camera uses boxes to frame the deep foundation and then the full tower.",
+  "sceneJson": "{\"world\":{\"cut\":[-5,5,-7,3],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"moreTrees\":false,\"worker\":false,\"rocksAvoid\":[[-14,14,-22,-3]],\"backdrop\":{\"type\":\"street\",\"sign\":\"SKYLINE\",\"lampX\":-13,\"benchX\":13,\"road\":{\"side\":1}}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"stack\",\"kind\":\"rig\",\"params\":{\"name\":\"stack of floors\",\"synonyms\":[\"block stack\"],\"pos\":[-9,0.12,-3],\"nodes\":[{\"id\":\"pad\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3.4,0.1,3.4],\"at\":[0,0.05,0],\"look\":\"concrete\",\"color\":\"#8c8c88\"}],\"moves\":[{\"name\":\"lean\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-14},{\"name\":\"sink\",\"type\":\"slide\",\"to\":[0,-0.6,0]}]},{\"id\":\"b1\",\"parent\":\"pad\",\"at\":[0,0.1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#b9b4aa\"}],\"moves\":[{\"name\":\"f1\",\"type\":\"appear\"}]},{\"id\":\"b2\",\"parent\":\"b1\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#a39e94\"}],\"moves\":[{\"name\":\"f2\",\"type\":\"appear\"}]},{\"id\":\"b3\",\"parent\":\"b2\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#b9b4aa\"}],\"moves\":[{\"name\":\"f3\",\"type\":\"appear\"}]},{\"id\":\"b4\",\"parent\":\"b3\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#a39e94\"}],\"moves\":[{\"name\":\"f4\",\"type\":\"appear\"}]},{\"id\":\"b5\",\"parent\":\"b4\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#b9b4aa\"}],\"moves\":[{\"name\":\"f5\",\"type\":\"appear\"}]},{\"id\":\"b6\",\"parent\":\"b5\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3,1,3],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#a39e94\"}],\"moves\":[{\"name\":\"f6\",\"type\":\"appear\"}]}]}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-9.8,8.6,-1.6],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0},{\"at\":[-9,8.6,-1.6],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.3},{\"at\":[-8.2,8.6,-1.6],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.6}],\"opts\":{\"scale\":1.1,\"color\":\"#ffd23d\"}}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":120,\"mound\":{\"x\":9,\"z\":-4,\"rx\":1.5,\"rz\":1.2,\"h\":1}}},{\"id\":\"bedrock\",\"kind\":\"box\",\"params\":{\"mat\":\"stones\",\"size\":[26,4,3],\"pos\":[0,-19.5,-1.485],\"r\":0.04}},{\"id\":\"piles\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"p1\",\"mat\":\"concrete\",\"size\":[0.9,14.5,1],\"anchor\":[0,-1,-1],\"pos\":[-4,-3,0.015],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"p2\",\"mat\":\"concrete\",\"size\":[0.9,14.5,1],\"anchor\":[0,-1,-1],\"pos\":[-2,-3,0.015],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"p3\",\"mat\":\"concrete\",\"size\":[0.9,14.5,1],\"anchor\":[0,-1,-1],\"pos\":[0,-3,0.015],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"p4\",\"mat\":\"concrete\",\"size\":[0.9,14.5,1],\"anchor\":[0,-1,-1],\"pos\":[2,-3,0.015],\"axis\":\"y\",\"vis\":0,\"r\":0.04},{\"ch\":\"p5\",\"mat\":\"concrete\",\"size\":[0.9,14.5,1],\"anchor\":[0,-1,-1],\"pos\":[4,-3,0.015],\"axis\":\"y\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"mat\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-4.98,\"x1\":4.98,\"y0\":-2.98,\"y1\":0.12,\"z0\":-6.98,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"x\",\"r\":0.04}},{\"id\":\"foundationOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-5.3,0.5,0.12],[-5.3,-17.7,0.12],[5.3,-17.7,0.12],[5.3,0.5,0.12]],\"opts\":{\"r\":0.18,\"closed\":true}}},{\"id\":\"load\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-4,-6,0.4],\"dir\":[0,-1],\"travel\":5,\"phase\":0},{\"at\":[-2,-6,0.4],\"dir\":[0,-1],\"travel\":5,\"phase\":0.2},{\"at\":[0,-6,0.4],\"dir\":[0,-1],\"travel\":5,\"phase\":0.4},{\"at\":[2,-6,0.4],\"dir\":[0,-1],\"travel\":5,\"phase\":0.6},{\"at\":[4,-6,0.4],\"dir\":[0,-1],\"travel\":5,\"phase\":0.8}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"tower\",\"kind\":\"rig\",\"params\":{\"name\":\"skyscraper frame\",\"synonyms\":[\"tower\",\"steel frame\"],\"pos\":[0,0.12,-3.5],\"nodes\":[{\"id\":\"plate\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[5.4,0.8,4.4],\"at\":[0,0.4,0],\"look\":\"concrete\",\"color\":\"#7d7f82\"}],\"moves\":[{\"name\":\"sway\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":4}]},{\"id\":\"l1\",\"parent\":\"plate\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[5.2,0.3,4.2],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#9aa0a6\"},{\"shape\":\"box\",\"size\":[1.2,3.25,1.6],\"at\":[0,1.625,0],\"look\":\"concrete\",\"color\":\"#8d8f93\"}],\"moves\":[{\"name\":\"l1\",\"type\":\"appear\"}]},{\"id\":\"l2\",\"parent\":\"l1\",\"at\":[0,3.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[5.2,0.3,4.2],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#9aa0a6\"},{\"shape\":\"box\",\"size\":[1.2,3.25,1.6],\"at\":[0,1.625,0],\"look\":\"concrete\",\"color\":\"#8d8f93\"}],\"moves\":[{\"name\":\"l2\",\"type\":\"appear\"}]},{\"id\":\"l3\",\"parent\":\"l2\",\"at\":[0,3.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[5.2,0.3,4.2],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#9aa0a6\"},{\"shape\":\"box\",\"size\":[1.2,3.25,1.6],\"at\":[0,1.625,0],\"look\":\"concrete\",\"color\":\"#8d8f93\"}],\"moves\":[{\"name\":\"l3\",\"type\":\"appear\"}]},{\"id\":\"l4\",\"parent\":\"l3\",\"at\":[0,3.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,-1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[-2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[0.4,3.4,0.4],\"at\":[2.3,1.7,1.8],\"look\":\"metal\",\"color\":\"#d4572a\"},{\"shape\":\"box\",\"size\":[5.2,0.3,4.2],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#9aa0a6\"},{\"shape\":\"box\",\"size\":[1.2,3.25,1.6],\"at\":[0,1.625,0],\"look\":\"concrete\",\"color\":\"#8d8f93\"}],\"moves\":[{\"name\":\"l4\",\"type\":\"appear\"}]},{\"id\":\"damper\",\"parent\":\"l4\",\"at\":[1.4,3.1,0],\"shapes\":[{\"shape\":\"cable\",\"path\":[[0,0,0],[0,-1.6,0]],\"r\":0.06,\"look\":\"metal\"},{\"shape\":\"cylinder\",\"r\":0.65,\"h\":0.9,\"axis\":\"y\",\"at\":[0,-2.05,0],\"look\":\"metal\",\"color\":\"#2e3440\"}],\"moves\":[{\"name\":\"damp\",\"type\":\"appear\"},{\"name\":\"tune\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":14}]},{\"id\":\"wallFront\",\"parent\":\"plate\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[5.2,13.6],\"thick\":0.2,\"at\":[0,6.8,2.15],\"look\":\"paint\",\"color\":\"#a8553a\"}],\"moves\":[{\"name\":\"brick\",\"type\":\"appear\"}]},{\"id\":\"wallSide\",\"parent\":\"plate\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[4,13.6],\"thick\":0.2,\"at\":[2.65,6.8,0],\"rot\":[0,90,0],\"look\":\"paint\",\"color\":\"#a8553a\"}],\"moves\":[{\"name\":\"brick\",\"type\":\"appear\"}]},{\"id\":\"glassFront\",\"parent\":\"plate\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[5.2,13.6],\"thick\":0.1,\"at\":[0,6.8,2.15],\"look\":\"glass\",\"color\":\"#8fd3f0\"}],\"moves\":[{\"name\":\"glass\",\"type\":\"appear\"}]},{\"id\":\"glassSide\",\"parent\":\"plate\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[4,13.6],\"thick\":0.1,\"at\":[2.65,6.8,0],\"rot\":[0,90,0],\"look\":\"glass\",\"color\":\"#8fd3f0\"}],\"moves\":[{\"name\":\"glass\",\"type\":\"appear\"}]},{\"id\":\"spire\",\"parent\":\"l4\",\"at\":[0,3.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,2.5,0.3],\"at\":[0,1.25,0],\"look\":\"metal\",\"color\":\"#cfd3d8\"},{\"shape\":\"light\",\"r\":0.2,\"at\":[0,2.6,0],\"color\":\"#ff3b30\"}],\"moves\":[{\"name\":\"spire\",\"type\":\"appear\"},{\"name\":\"beacon\",\"type\":\"blink\",\"rate\":1}]}]}},{\"id\":\"wind\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-7,14,-0.5],\"dir\":[1,0],\"travel\":3,\"phase\":0},{\"at\":[-7,10,-0.5],\"dir\":[1,0],\"travel\":3,\"phase\":0.3},{\"at\":[-7,6,-0.5],\"dir\":[1,0],\"travel\":3,\"phase\":0.6}],\"opts\":{\"scale\":1.5,\"color\":\"#ffffff\"}}},{\"id\":\"frameLoad\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-2.3,14,-0.9],\"dir\":[0,-1],\"travel\":3,\"phase\":0},{\"at\":[2.3,14,-0.9],\"dir\":[0,-1],\"travel\":3,\"phase\":0.25},{\"at\":[-2.3,8,-0.9],\"dir\":[0,-1],\"travel\":3,\"phase\":0.5},{\"at\":[2.3,8,-0.9],\"dir\":[0,-1],\"travel\":3,\"phase\":0.75}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"steps\",\"kind\":\"prop\",\"params\":{\"type\":\"stairs\",\"h\":0.8,\"w\":1.8,\"pos\":[0,0.12,-0.1],\"rotY\":1.5708}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-10,0.12,-2],\"rotY\":0.3,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"stack\",\"does\":\"floors pop onto a stack\"},\"do\":[{\"p\":\"stack\",\"v\":\"show\",\"w\":\"stack\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f1\",\"w\":\"stack\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f2\",\"w\":\"stack\",\"o\":0.25,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f3\",\"w\":\"stack\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f4\",\"w\":\"stack\",\"o\":0.75,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f5\",\"w\":\"stack\",\"o\":1,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"f6\",\"w\":\"stack\",\"o\":1.25,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stack\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"stack\",\"does\":\"sinks into the ground and leans\"},\"state\":{\"text\":\"LEANING\",\"w\":\"leans\"},\"do\":[{\"p\":\"weight\",\"v\":\"show\",\"w\":\"weight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"sink\",\"w\":\"sinks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stack\",\"v\":\"lean\",\"w\":\"leans\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stack\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"piles\",\"does\":\"concrete piles grow down to the rock\"},\"do\":[{\"p\":\"stack\",\"v\":\"hide\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"piles\",\"v\":\"grow\",\"w\":\"piles\",\"o\":0,\"d\":1.2,\"amp\":1,\"ch\":\"p1\"},{\"p\":\"piles\",\"v\":\"grow\",\"w\":\"piles\",\"o\":0.15,\"d\":1.2,\"amp\":1,\"ch\":\"p2\"},{\"p\":\"piles\",\"v\":\"grow\",\"w\":\"piles\",\"o\":0.3,\"d\":1.2,\"amp\":1,\"ch\":\"p3\"},{\"p\":\"piles\",\"v\":\"grow\",\"w\":\"piles\",\"o\":0.45,\"d\":1.2,\"amp\":1,\"ch\":\"p4\"},{\"p\":\"piles\",\"v\":\"grow\",\"w\":\"piles\",\"o\":0.6,\"d\":1.2,\"amp\":1,\"ch\":\"p5\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-19,-8,7,2,1]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"mat\",\"does\":\"concrete mat is poured over the piles\"},\"do\":[{\"p\":\"mat\",\"v\":\"grow\",\"w\":\"mat\",\"o\":0,\"d\":1.4,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-19,-8,7,2,1]}]},{\"s\":\"name\",\"shows\":{\"p\":\"foundationOutline\",\"does\":\"glowing outline round piles and mat\"},\"do\":[{\"p\":\"foundationOutline\",\"v\":\"show\",\"w\":\"piled\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[-7,-19,-8,7,2,1]}]},{\"s\":\"how\",\"shows\":{\"p\":\"tower\",\"does\":\"steel columns rise floor by floor, arrows carry weight down the piles\"},\"do\":[{\"p\":\"foundationOutline\",\"v\":\"hide\",\"w\":\"columns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"show\",\"w\":\"columns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"l1\",\"w\":\"columns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"l2\",\"w\":\"columns\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"l3\",\"w\":\"columns\",\"o\":1,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"l4\",\"w\":\"columns\",\"o\":1.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"show\",\"w\":\"weight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-1,-8,7,18,1]},{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"piles\",\"box\":[-7,-19,-8,7,2,1]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"tower\",\"does\":\"the tower sways side to side in the wind\"},\"state\":{\"text\":\"SWAYING\",\"w\":\"sways\"},\"do\":[{\"p\":\"load\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wind\",\"v\":\"show\",\"w\":\"wind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"sway\",\"w\":\"sways\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8,-1,-8,8,19,1]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"tower\",\"does\":\"a steel weight appears near the top and swings against the sway\"},\"do\":[{\"p\":\"wind\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"damp\",\"w\":\"weight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"tune\",\"w\":\"swings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"swayBack\",\"w\":\"swings\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-5,9,-7,5,19,1]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"tower\",\"does\":\"brick walls cover the frame, then vanish while the frame stands\"},\"do\":[{\"p\":\"tower\",\"v\":\"brick\",\"w\":\"walls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"brickBack\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-1,-8,7,19,1]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"frameLoad\",\"does\":\"arrows run down the steel columns\"},\"do\":[{\"p\":\"frameLoad\",\"v\":\"show\",\"w\":\"skeleton\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-1,-8,7,19,1]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"tower\",\"does\":\"glass walls and a blinking spire go on, entrance steps appear\"},\"do\":[{\"p\":\"frameLoad\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"glass\",\"w\":\"glass\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"spire\",\"w\":\"spire\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"beacon\",\"w\":\"spire\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steps\",\"v\":\"show\",\"w\":\"steps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,-1,-8,12,20,1]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"tower\",\"does\":\"finished tower stands calm\"},\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,-1,-8,12,20,1]}]}],\"audio\":{\"cards\":[{\"text\":\"192 PILES\",\"at\":{\"s\":\"fix1\",\"w\":\"192\",\"o\":0},\"d\":1.8},{\"text\":\"1885\",\"at\":{\"s\":\"mythFact\",\"w\":\"1885\",\"o\":0},\"d\":1.3}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix2\",\"w\":\"mat\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"how\",\"w\":\"columns\",\"o\":0},\"d\":1.8},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"swings\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"fix1\",\"w\":\"192\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"1885\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How to Build a Skyscraper",
+   "hero": "a piled raft foundation",
+   "parts": [
+    "stack of floors",
+    "concrete piles",
+    "bedrock",
+    "concrete mat",
+    "steel frame",
+    "steel weight",
+    "brick walls",
+    "glass walls",
+    "spire",
+    "entrance steps"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "stacking floors on a sidewalk looks like a skyscraper, but it is only a pile of blocks"
+    },
+    {
+     "role": "problem",
+     "idea": "all that weight sinks into the soft ground and the stack leans over"
+    },
+    {
+     "role": "fix1",
+     "idea": "dig a pit and drive concrete piles down through the soft soil to solid rock"
+    },
+    {
+     "role": "fix2",
+     "idea": "pour a thick concrete mat across the pile tops so the load spreads over all of them"
+    },
+    {
+     "role": "name",
+     "idea": "the piles plus the mat are called a piled raft foundation"
+    },
+    {
+     "role": "how",
+     "idea": "steel columns rise floor by floor and the piles pass the weight down to the rock"
+    },
+    {
+     "role": "problem2",
+     "idea": "a tall, slim tower catches the wind like a sail and sways"
+    },
+    {
+     "role": "fix3",
+     "idea": "a giant steel weight hung near the top swings against the sway and calms it"
+    },
+    {
+     "role": "myth",
+     "idea": "people think the thick walls hold the building up, but take the walls away and the frame still stands"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the steel skeleton carries the load, an idea first used in Chicago in 1885"
+    },
+    {
+     "role": "finish",
+     "idea": "add glass walls, a spire and entrance steps to complete the tower"
+    },
+    {
+     "role": "congrats",
+     "idea": "a finished tower stands calm on its deep foundation"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the stack sinks into the ground and tilts over",
+     "stakes": "the whole tower would topple on the street",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix2",
+     "shows": "the finished frame leans and sways in the wind",
+     "stakes": "people inside would feel sick and the frame could be damaged",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The Burj Khalifa stands on 192 concrete piles, each about 1.5 m wide and 43 m long, under a 3.7 m thick concrete mat",
+     "role": "fix1",
+     "search": "Burj Khalifa foundation 192 piles 43 m long 3.7 m mat"
+    },
+    {
+     "claim": "Taipei 101 hangs a steel ball damper of about 660 tonnes near the top to cut the sway in wind",
+     "role": "fix3",
+     "search": "Taipei 101 tuned mass damper 660 tonnes"
+    },
+    {
+     "claim": "The Home Insurance Building in Chicago, finished in 1885, is often called the first skyscraper because it used a steel and iron skeleton",
+     "role": "mythFact",
+     "search": "Home Insurance Building 1885 first skyscraper steel frame"
+    }
+   ]
+  }
+ }
+}

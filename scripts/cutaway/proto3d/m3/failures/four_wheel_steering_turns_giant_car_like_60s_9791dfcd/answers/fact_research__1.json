@@ -1,0 +1,170 @@
+{
+ "hash": "*",
+ "by": "real run 9791dfcd-4e7d-4c3a-87e2-6441e66e92e7",
+ "searches": 4,
+ "data": {
+  "text": "I searched each claim. Source quality varies, and I note this where it matters.\n\n**Claim 0: Suburban turning circle of about 39 ft (about 12 m). Not supported. Corrected: about 42–43 ft (about 13 m).**\n- GM Authority's 2024 Suburban spec sheet lists a turning circle of 42.3 ft / 12.9 m with 18-inch wheels, and 43.3 ft / 13.2 m with 20- and 22-inch wheels. https://gmauthority.com/blog/gm/chevrolet/suburban/2024-chevrolet-suburban/2024-chevrolet-suburban-specifications/ (GM Authority is a trade site that reproduces GM's published specs.)\n- KBB's 2026 specs list a turning diameter of 41.5 feet on the first two trims and 43.3 feet on the rest. https://www.kbb.com/chevrolet/suburban/2026/specs/\n- I found no source giving 39 ft. The figure is about 3–4 ft too small, and 12 m is closer to 13 m. For the script, use \"about 43 feet, roughly 13 meters.\"\n\n**Claim 1: Mercedes S-Class rear steering turns up to 10° and cuts the turning circle by up to about 2 m. Supported as written.**\n- Mercedes' own S-Class (W223) material, quoted on a forum thread, says the turning circle is reduced by up to 2 metres with rear-axle steering compared to a model without it, and the maximum steering angle is 10°. It also says that even the long-wheelbase S-Class gets a turning circle under 11 metres. https://www.germancarforum.com/threads/official-mercedes-benz-s-class-w223.60931/page-6 (This is a forum repost of the press text, so it is secondary.)\n- Autoevolution says the turning circle is decreased by 6.5 feet (2 meters), giving roughly the same turning circle as the much smaller A-Class. https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html\n- Two versions exist. The 10° system is the larger one, and a 4.5° version is based on existing technology. Say \"optional\" and \"up to 10°.\"\n\n**Claim 2: Rear wheels steer opposite the front at low speed and the same way at higher speed, with the switch at about 60 km/h. Partly supported. The principle is correct, but 60 km/h is not a universal figure.**\n- Motor Authority, on the S-Class, says that at low speeds the rear wheels move opposite to the front wheels, and at higher speeds front and rear turn in unison for stability. https://www.motorauthority.com/news/1129048_mercedes-adds-improved-active-body-control-and-rear-wheel-steering-to-new-s-class\n- Autoevolution's explainer on BMW-style integral steering says under 60 km/h the wheels steer in opposing directions, and above 80 km/h they turn in the same direction. https://www.autoevolution.com/news/integral-steering-system-explained-20848.html That gives a transition band, not a single switch point at 60.\n- Porsche's Taycan figure, quoted on a forum, is opposite-direction steering at speeds up to about 50 km/h, with a maximum of 2.8 degrees. https://www.taycanforum.com/forum/threads/rear-axle-steering.1440/page-3 (Forum source, so treat it as weak.) The threshold therefore varies by manufacturer.\n- Corrected wording: \"At low speeds, roughly below 50–60 km/h depending on the car, the rear wheels steer opposite the front. At higher speeds they steer the same way.\" I found no Mercedes figure for the S-Class switch speed.\n\n**Claim 3: The GMC Hummer EV's CrabWalk turns all four wheels the same way so the truck drives diagonally. Supported, with a caveat about angle and speed.**\n- Cars.com says CrabWalk allows all four wheels to be turned in the same direction up to a 10-degree angle. https://www.cars.com/articles/what-is-the-gmc-hummer-evs-crabwalk-feature-443574/\n- A GMC dealer's explainer says that at low speeds or stopped, you can turn all four wheels in unison up to 10 degrees, so the Hummer crawls diagonally like a crab. https://www.cochranbuickgmcyoungstown.com/blog/what-is-the-hummer-ev-crab-walk/ (Dealer source, so it is secondary.) I did not find the GMC press page itself.\n- Add \"at low speed, up to 10°.\" The truck moves diagonally at a modest angle, not sideways.\n\n**Other points for the script**\n- Claim 1 supports the \"like a compact\" framing. Mercedes says the S-Class gets turning circle under 11 metres. The Mercedes C-Class, a smaller car, gets 11.2 m (37 ft) with 4.5° rear steering, per Wikipedia (https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_with_EQ_Technology).\n- Do not pair the S-Class with the Suburban figure as if the same system were fitted. The S-Class system is a Mercedes option, not something the Suburban has.",
+  "sources": [
+   {
+    "url": "https://giftsandentertainment.roche.com/open-outlook/chevrolet-suburban-2012-size-and-dimensions-guide-1767647687",
+    "title": "Chevrolet Suburban 2012: Size And Dimensions Guide"
+   },
+   {
+    "url": "https://gmauthority.com/blog/gm/chevrolet/suburban/2024-chevrolet-suburban/2024-chevrolet-suburban-specifications/",
+    "title": "2024 Chevrolet Suburban Specifications"
+   },
+   {
+    "url": "https://www.autopadre.com/turning-radius/chevrolet-suburban",
+    "title": "Chevrolet Suburban Turning Radius (2002 - 2023): Your Go-To Guide"
+   },
+   {
+    "url": "https://www.sangerchevroletbuickgmc.com/suburban-vs-expedition/",
+    "title": "Suburban Vs Expedition"
+   },
+   {
+    "url": "https://www.kbb.com/chevrolet/suburban/2026/specs/",
+    "title": "2026 Chevrolet Suburban Specs, Features & Options"
+   },
+   {
+    "url": "https://parkingday.org/how-long-is-a-chevrolet-suburban/",
+    "title": "How long is a Chevrolet Suburban? - Park(ing) Day"
+   },
+   {
+    "url": "https://matthewbikelog.com/what-size-is-chevy-suburban/",
+    "title": "What Size Is Chevy Suburban? You Won't Believe the Answer! - MatthewBikelog"
+   },
+   {
+    "url": "https://www.kbb.com/chevrolet/suburban/2023/premier",
+    "title": "www.kbb.com"
+   },
+   {
+    "url": "https://www.kbb.com/chevrolet/suburban/2023/ls",
+    "title": "www.kbb.com"
+   },
+   {
+    "url": "https://www.kbb.com/chevrolet/suburban/2026/z71",
+    "title": "www.kbb.com"
+   },
+   {
+    "url": "https://www.autoevolution.com/news/integral-steering-system-explained-20848.html",
+    "title": "Integral Steering System Explained - autoevolution"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9821842",
+    "title": "Rear wheel steering system and control method thereof"
+   },
+   {
+    "url": "https://www.taycanforum.com/forum/threads/rear-axle-steering.1440/page-3",
+    "title": "Rear axle steering"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10752284",
+    "title": "Apparatus and method for controlling rear wheel steering"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5048629",
+    "title": "Rear wheel steering method for a four wheel steering vehicle"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4958698",
+    "title": "Method for steering a motor vehicle"
+   },
+   {
+    "url": "https://global.honda/en/tech/serial/Honda_Super_Handling_part01/",
+    "title": "Honda Four-Wheel Steering System (Honda 4WS) Technology (1987)"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4625822",
+    "title": "Rear wheel steering control for vehicle"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4939653",
+    "title": "Method of and apparatus for controlling steering operation of a motor vehicle with steerable front and rear wheels"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4313514",
+    "title": "Steering apparatus for vehicles"
+   },
+   {
+    "url": "https://www.germancarforum.com/threads/official-mercedes-benz-s-class-w223.60931/page-6",
+    "title": "S-Class (W223) - [Official] Mercedes-Benz S-Class (W223)"
+   },
+   {
+    "url": "https://m.youtube.com/watch?pp=0gcJCfcAhR29_xXO&v=48X-qz0B2xo",
+    "title": "Mercedes S-CLASS 2021 - REAR AXLE steering (10 degrees ..."
+   },
+   {
+    "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+    "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_with_EQ_Technology",
+    "title": "Mercedes-Benz C-Class with EQ Technology"
+   },
+   {
+    "url": "https://www.motorauthority.com/news/1129048_mercedes-adds-improved-active-body-control-and-rear-wheel-steering-to-new-s-class",
+    "title": "Mercedes adds improved Active Body Control and rear-wheel steering to new S-Class"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_Electric",
+    "title": "Mercedes-Benz C-Class Electric"
+   },
+   {
+    "url": "https://media.mbusa.com/releases/release-c6a0fc4cd0a15b0df355e2b18d101d81-meet-the-s-class-digital-innovation-by-intelligence",
+    "title": "Meet the S-Class DIGITAL: \"Innovation by Intelligence\""
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_(W206)",
+    "title": "Mercedes-Benz C-Class (W206)"
+   },
+   {
+    "url": "https://www.go-parts.com/garage/power-steering-pump-mercedes-benz-s-class-2021-2026",
+    "title": "2021-2026 Mercedes S-Class (W223) Rear-Axle Steering: A Guide to the Hydraulic System"
+   },
+   {
+    "url": "https://emercedesbenz.com/uncategorized/did-you-know-interesting-mercedes-benz-s-class-facts-and-figures/",
+    "title": "Did You Know? Interesting Mercedes-Benz S-Class Facts and Figures"
+   },
+   {
+    "url": "https://www.cars.com/articles/what-is-the-gmc-hummer-evs-crabwalk-feature-443574/",
+    "title": "What Is the GMC Hummer EV's CrabWalk Feature?"
+   },
+   {
+    "url": "https://www.valleygmc.com/crabwalk-is-more-than-a-gimmick/",
+    "title": "​​The CrabWalk Feature Is Way More Than a Gimmick​ - Special Features"
+   },
+   {
+    "url": "https://www.cargurudiy.co.uk/2026/06/gmc-hummer-ev-crabwalk-when-truck-moves.html",
+    "title": "GMC Hummer EV “CrabWalk”"
+   },
+   {
+    "url": "https://www.cochranbuickgmcyoungstown.com/blog/what-is-the-hummer-ev-crab-walk/",
+    "title": "The Hummer EV Crab Walk: Everything You Need to Know"
+   },
+   {
+    "url": "https://www.starlingbuickgmcstuart.com/hummer-ev-crab-walk-explained/",
+    "title": "Hummer Crab Walk Explained: How It Works, Models & Benefits"
+   },
+   {
+    "url": "https://www.deyarmanchevygmc.com/manufacturer-information/gmc-hummer-ev-crabwalk/",
+    "title": "What is the GMC Hummer EV CrabWalk?"
+   },
+   {
+    "url": "https://www.libertygmcaz.com/gmc-research/gmc-hummer-ev-crabwalk/",
+    "title": "What is the GMC Hummer EV CrabWalk?"
+   },
+   {
+    "url": "https://www.nimnichtbuickgmc.com/hummer-ev-crabwalk-mode-parking/",
+    "title": "Hummer EV CrabWalk Mode: Everything You Need To Know"
+   },
+   {
+    "url": "https://www.buickgmcbrooksville.com/manufacturer-research/gmc-hummer-ev-crabwalk/",
+    "title": "What is the GMC Hummer EV CrabWalk?"
+   },
+   {
+    "url": "https://www.youngbuickgmc.com/blog/2026/may/28/crabwalk-and-beyond-the-tech-that-makes-the-hummer-ev-a-top-tier-4x4.htm",
+    "title": "CrabWalk and Beyond: The Tech That Makes the Hummer EV a Top-Tier 4x4"
+   }
+  ]
+ }
+}

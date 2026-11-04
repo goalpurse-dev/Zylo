@@ -712,16 +712,18 @@ test("topics: a tapped chip or a typed topic naming one premade topic is premade
   for (const text of ["septic tank vs sewer", "pool heater", "how does a dry well work", "rain barrel", "how does a microwave work", "", "how well does a dishwasher clean"]) assert.equal(classifyTopic(text).kind, "custom", text);
 });
 
-test("kit check: everything buildable is yes (a part the kit lacks is designed); only what cannot be a cutaway is no; a name goes to Haiku", async () => {
+test("kit check: strict (2026-11-04): the kit's world is yes, engines, machines, appliances and bodies are no, the rest goes to Haiku", async () => {
   const { kitCheck, closestPremade } = await import("../supabase/functions/_shared/cutaway/topics.js");
-  // (the owner, 2026-10-26: users will type topics the kit has never seen; they are built, not refused)
-  for (const t of ["how does a dry well work", "rain barrel", "how does a microwave work", "how does a jet engine work", "washing machine", "lightning rod", "garage door", "elevator"]) assert.equal(kitCheck(t).verdict, "yes", t);
+  // (the owner, 2026-11-04: a topic the kit can't build is refused up front; this replaces "build everything" of 2026-10-26)
+  for (const t of ["how does a dry well work", "rain barrel"]) assert.equal(kitCheck(t).verdict, "yes", t);
+  for (const t of ["how does a microwave work", "how does a jet engine work", "washing machine", "elevator"]) assert.equal(kitCheck(t).verdict, "no", t);
+  for (const t of ["lightning rod", "garage door"]) assert.equal(kitCheck(t).verdict, "unsure", t);
   const no = kitCheck("how does the human heart work");
   assert.equal(no.verdict, "no"); assert.deepEqual(no.missing, ["the human body"]);
   assert.equal(no.closest.length, 3);
-  assert.deepEqual(kitCheck("a black hole").missing, ["space"]);
-  assert.deepEqual(kitCheck("bitcoin").missing, ["an idea, not a thing you can build"]);
-  assert.equal(kitCheck("how Elon Musk builds rockets").verdict, "unsure", "a name that may be a real person: Claude Haiku decides");
+  assert.deepEqual(kitCheck("a black hole").missing, ["space and the sky"]);
+  assert.deepEqual(kitCheck("bitcoin").missing, ["ideas like money or history"]);
+  assert.equal(kitCheck("how Elon Musk builds things").verdict, "unsure", "a name that may be a real person: Claude Haiku decides");
   assert.deepEqual(closestPremade("how do toilets flush", 2), ["septic_tank", "sewer_pipe"]);
   assert.equal(closestPremade("how does flooding in a basement happen", 1)[0], "french_drain");
 });

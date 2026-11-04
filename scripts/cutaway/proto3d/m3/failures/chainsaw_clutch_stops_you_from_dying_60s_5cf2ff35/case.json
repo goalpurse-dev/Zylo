@@ -1,0 +1,71 @@
+{
+ "runId": "5cf2ff35-add7-4a2c-bb91-f5d573e9ee61",
+ "topic": "How a chainsaw clutch stops you from dying",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-03T13:46:09.608216+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: problem \"But if the bar tip catches, the saw kicks up towar…\" must follow from the fix before it (\"So you bolt heavy shoes to the shaft, an…\"): name what that fix did, or say \"But now…\"",
+  "stage": "scene",
+  "attempts": 1
+ },
+ "costUsd": 1.50886,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "problem \"But if the bar tip catches, the saw kicks up towar…\" must follow from the fix before it (\"So you bolt heavy shoes to the shaft, an…\"): name what that fix did, or say \"But now…\""
+ ],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.89833,
+   "outputTokens": 83725,
+   "at": "2026-11-03T13:57:54.823Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.25186,
+   "outputTokens": 16676,
+   "at": "2026-11-03T13:59:11.454Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.1646,
+   "outputTokens": 3731,
+   "at": "2026-11-03T13:59:51.925Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02999,
+   "outputTokens": 1569,
+   "at": "2026-11-03T14:00:01.078Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01619,
+   "outputTokens": 799,
+   "at": "2026-11-03T14:00:07.269Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01526,
+   "outputTokens": 803,
+   "at": "2026-11-03T14:00:13.397Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01525,
+   "outputTokens": 811,
+   "at": "2026-11-03T14:00:18.773Z"
+  }
+ ]
+}

@@ -18,7 +18,7 @@ import { ERRORS } from "../_shared/cutaway/contract.js";
 import { LENGTHS, lengthsFor, PRICES } from "../_shared/cutaway/pricing.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
 import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
-import { classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
+import { cantBuildMessage, classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
 import { closestNames } from "../_shared/cutaway/quote.js";
 import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
 import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem, customDayLimit } from "../_shared/cutaway/guard.js";
@@ -179,13 +179,43 @@ async function freePreviewState(who: any, body: any = {}) {
   const live = existing && existing.status !== "failed" ? existing : null;
   const { data: run } = live?.run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.run_id).maybeSingle() : { data: null };
   const { data: finish } = live?.finish_run_id ? await admin.from("cutaway_runs").select("*").eq("id", live.finish_run_id).maybeSingle() : { data: null };
+  // a preview made again after a failure (ours or theirs: started 10+ minutes after their first try), finished and not
+  // watched to the end yet: Home says "watch it", not "finish it"
+  const again = Boolean(run && live && Date.parse(run.created_at) - Date.parse(live.created_at) > 600000);
+  const { count: watchedCount } = run?.status === "done" && again ? await admin.from("funnel_events").select("id", { count: "exact", head: true }).eq("user_id", who.user.id).eq("event", "preview_watched_to_end") : { count: 1 };
   return {
     on, plan: who.plan,
     preview: run ? await viewOf(admin, run) : null,
     finish: finish ? await viewOf(admin, finish) : null,
     paid: Boolean(live?.paid_at),
+    unseen: (watchedCount ?? 1) === 0,
+    // their last preview failed (it's theirs again): the page and Home say so and offer the same video again
+    lastFailed: existing?.status === "failed" ? { topicKey: existing.topic_key ?? null } : null,
     topics: on && !live ? await previewTopics(onboarding?.goals ?? []) : [],
   };
+}
+/** the owner's re-run of a customer's failed free preview, on the same topic (owner, 2026-11-03: the GPU failures) */
+async function rerunFailedPreview(userId: string) {
+  const [{ data: row }, { data: profile }] = await Promise.all([
+    admin.from("cutaway_free_previews").select("*").eq("user_id", userId).maybeSingle(),
+    admin.from("profiles").select("plan_code").eq("id", userId).maybeSingle(),
+  ]);
+  if (!row || row.status !== "failed") throw new ApiError("BAD_INPUT", "that preview is not a failed one");
+  if ((profile?.plan_code ?? "free") !== "free") throw new ApiError("BAD_INPUT", "that account has a plan now");
+  const { data: plan } = await admin.from("cutaway_preview_plans").select("source_run").eq("topic_key", row.topic_key).eq("active", true).maybeSingle();
+  if (!plan) throw new ApiError("BAD_INPUT", "no plan for that topic");
+  const { data: taken } = await admin.from("cutaway_free_previews").update({ status: "reserved", run_id: null, updated_at: new Date().toISOString() }).eq("user_id", userId).eq("status", "failed").select("user_id");
+  if (!taken?.length) throw new ApiError("BAD_INPUT", "already taken");
+  try {
+    const { data: source } = await admin.from("cutaway_runs").select("*").eq("id", plan.source_run).single();
+    const run = await newRunFromPlan(admin, source, { user_id: userId, free_preview: true, end_card: true });
+    await admin.from("cutaway_free_previews").update({ run_id: run.id }).eq("user_id", userId);
+    const patch = await dispatchNew(admin, run);
+    return { id: run.id, step: patch?.status ?? "queued" };
+  } catch (e: any) {
+    await admin.from("cutaway_free_previews").update({ status: "failed" }).eq("user_id", userId);
+    throw new ApiError("BUSY", undefined, {}, e?.message ?? "the preview didn't start");
+  }
 }
 async function startFreePreview(req: Request, who: any, body: any) {
   const key = String(body?.topicKey ?? "");
@@ -271,7 +301,7 @@ async function handle(req: Request, trace: Trace) {
     trace.step = "kit check";
     const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
     if (action === "quote") return { quote };
-    if (!quote.buildable) throw new ApiError("CANT_BUILD", undefined, { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
+    if (!quote.buildable) throw new ApiError("CANT_BUILD", cantBuildMessage(quote.missing), { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
     if (!lengthsFor(quote.kind).includes(lengthSec)) throw new ApiError("BAD_INPUT", "Premade topics are 30 seconds for now.");
 
     // the caps, read fresh (fail closed), before anything is charged
@@ -341,6 +371,10 @@ async function handle(req: Request, trace: Trace) {
     if (error) throw new ApiError("SERVER", undefined, {}, error.message);
     const patch = await dispatchNew(admin, run);
     return await viewOf(admin, { ...run, ...patch }, { owner: true });
+  }
+  if (action === "opsRerunFailedPreview") {
+    if (!who.owner) throw new ApiError("NOT_FOUND");
+    return await rerunFailedPreview(String(body?.userId ?? ""));
   }
 
   // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it
