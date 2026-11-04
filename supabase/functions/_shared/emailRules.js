@@ -19,9 +19,12 @@ export const COMPANY_FOOTER = [COMPANY_NAME, COMPANY_ADDRESS, COMPANY_CONTACT].f
 // drag those into spam. tests/emailRules.test.mjs holds this split.
 export const SENDERS = {
   updates: "Zyvo <updates@mail.tryzyvo.com>",          // campaigns
-  founder: "Niko from Zyvo <niko@mail.tryzyvo.com>",   // welcome, checkout reminders
+  founder: "Niko from Zyvo <niko@mail.tryzyvo.com>",   // checkout reminders
   niko: "Niko <niko@mail.tryzyvo.com>",                // plain personal emails (the warm-up)
 };
+// The welcome email goes from notify.tryzyvo.com (owner, 2026-11-03): mail.tryzyvo.com's Gmail reputation
+// is low after the campaigns, and a welcome must not share it.
+export const WELCOME_SENDER = "Niko from Zyvo <niko@notify.tryzyvo.com>";
 // Replies go to tryzyvo.com mailboxes (Cloudflare forwards them to the owner).
 export const REPLY_TO = { updates: "support@tryzyvo.com", founder: "niko@tryzyvo.com", niko: "niko@tryzyvo.com" };
 export const APP_URL = "https://www.tryzyvo.com";      // www: tryzyvo.com answers with a redirect
