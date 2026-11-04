@@ -97,7 +97,7 @@ function normCtx(ctx) {
     : new Map(Object.entries(ctx.people ?? {}).map(([id, p]) => [id, typeof p === "string" ? { name: p } : { ...p }]));
   people.delete("me");
   const alias = ctx.alias ?? {};
-  const monster = ctx.monster ? { key: ctx.monster.key ?? norm(String(ctx.monster.name ?? "").replace(/^the\s+/i, "")), name: ctx.monster.name ?? "the monster" } : null;
+  const monster = ctx.monster ? { key: ctx.monster.key ?? norm(String(ctx.monster.name ?? "").replace(/^the\s+/i, "")), name: ctx.monster.name ?? "the monster", keys: ctx.monster.keys, words: ctx.monster.words } : null;
   const vw = { people, alias, narrator: ctx.narrator ?? "Me", monster, looseNames: new Set(ctx.looseNames ?? []), prop: ctx.prop ?? null };
   const gender = { ...(ctx.gender ?? {}) };
   const genderFor = (id) => {
@@ -212,6 +212,13 @@ function subjectAt(toks, keys, k, i1, N, prev, keyAt) {
   for (; j <= i1; j++) {
     const tj = toks[j], x = keyAt(j);
     if (x?.kind === "monster") return { id: "monster", kind: "monster", via: "name" };
+    // a name nobody in the cast owns: "the Hendersons" / "the Stompers" (a family, a group: plural), "Twins Ava and
+    // Ben" (two names), "Barnaby" (someone)
+    if (x?.kind === "name" && !x.on) {
+      const two = keys.some((y) => y !== x && y.kind === "name" && y.k > x.end && y.k <= i1 && toks.slice(x.end + 1, y.k).every((t) => /^(and|or|&)$/.test(t.c)));
+      if (/s$/.test(tj.c) && !/ss$/.test(tj.c) || two) return { id: "group", kind: "group", via: "names" };
+      return { id: "someone", kind: "someone", via: "name" };
+    }
     if (x?.kind === "person" && !x.poss) {
       // "my baby sister did...", "my little sister giggled"
       return { id: x.id, kind: "person", via: "name" };

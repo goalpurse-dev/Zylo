@@ -174,3 +174,17 @@ window), `car` (state "alarm": flashing orange/red lights + sound lines), `photo
 photo backdrop), `crib` (a baby crib), `house_front` (a house facade with windows that can be dark/lit/open, people
 leaning out when open), `stories_book` (a big open storybook on a stand), plus anything else the planner's line
 review needs. Hand props added to `makeHeld`: `whistle` (brass), `baby` (handled by the engine via cast).
+
+## Addendum 2026-11-04 (b): the coverage kit (130 library ideas)
+
+One catalog for both sides: `lib/catalog.js` (pure data). `THINGS` (weather, town, country, home, underground scene
+objects), `ANIMALS` (one object per species), `CREATURE_OBJECTS` (`<kind>_creature`: a small monster look), `item` (any
+hand prop, big, on a crate: state = the prop kind), `HELD` (hand props by word), `CREATURES` (monster looks).
+- `page/kit/things.js` builds every THINGS / ANIMALS / creature / item name; `page/kit/objects.js` merges them into
+  `OBJECTS` (`makeObject` works the same). `page/kit/heldMore.js` builds the HELD props; `makeHeld` checks them first.
+- Timeline `monster` may carry `variant` (`dragon, bird, serpent, squid, fish, goblin, stump, giant, scarecrow, beast,
+  boxy, yeti, troll, ghost, mannequin`) and `species` (the very creature: "goat", "moose", "pigeon"...). `makeMonster`
+  dresses the tall / furry rig (or builds a rig with the same joints), so `animateMonster` drives every look.
+- Checks: `dev/coverage.mjs` (all 130 ideas as stand-in scripts -> `out/coverage/report.md`), `dev/coverage.test.mjs`,
+  `dev/coverageKit.mjs` (headless Chrome: every name the planner can emit builds), `dev/coverageRender.mjs` (contact
+  sheets in `out/coverage/sheets/`).

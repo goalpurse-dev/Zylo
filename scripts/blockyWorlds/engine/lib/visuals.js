@@ -12,10 +12,12 @@
 //         "name"   a name said aloud that no cast member owns ("Barnaby") -> a name tag with that text
 //         "noun"   any other content noun -> held prop if holdable, else a picture card
 import { norm, tokens } from "./planText.js";
+import { catalogObjects, heldIndex } from "./catalog.js";
 
 // ------------------------------------------------------------------ the object catalog (mirror of page/kit/objects.js)
-/** Planner-side mirror of the OBJECTS agent's catalog (CONTRACT addendum). The check accepts these names. */
+/** Planner-side mirror of the OBJECTS agent's catalog (CONTRACT addendum) + the coverage kit (lib/catalog.js). */
 export const OBJECT_CATALOG = Object.freeze({
+  ...catalogObjects(),
   ice_cream_truck: { aliases: ["ice cream truck", "ice cream van", "ice cream", "truck", "van"], states: ["mime"], big: true },
   football_field: { aliases: ["football", "soccer", "team", "stadium", "field", "game", "match", "crowd", "players", "bleachers"], states: [], big: true },
   birthday_party: { aliases: ["birthday", "party", "parties", "cake", "balloons", "presents", "guests"], states: [], big: false },
@@ -23,12 +25,31 @@ export const OBJECT_CATALOG = Object.freeze({
   car: { aliases: ["car", "cars", "alarm", "car alarm", "honk", "horn"], states: ["alarm"], big: false },
   photo_set: { aliases: ["photo", "photos", "picture", "pictures", "camera", "school photo", "portrait", "selfie"], states: [], big: false },
   crib: { aliases: ["crib", "cribs", "cradle", "babies"], states: [], big: false },
-  house_front: { aliases: ["house", "houses", "home", "window", "windows", "lights"], states: ["dark", "lit", "open"], big: true },
+  house_front: { aliases: ["house", "houses", "home", "window", "windows", "lights", "roof", "roofs", "rooftop", "rooftops", "chimney", "chimneys", "attic", "attics", "windowsill", "windowsills", "shutters", "front door", "garage", "garages"], states: ["dark", "lit", "open"], big: true },
   stories_book: { aliases: ["story", "stories", "book", "books", "storybook", "tale", "tales"], states: [], big: false },
 });
 
 /** Hand props page/kit/props.js makeHeld draws (anything else -> a simple box, so we prefer a card for those). */
-export const HOLDABLE = new Set(["sock", "flashlight", "torch", "candle", "book", "phone", "bag", "key", "ball", "box", "sign", "bread", "whistle", "tissue", "tissues", "camera", "notebook", "kite", "string", "horn", "letter", "note", "map", "cake", "cookie", "apple", "toy", "teddy", "umbrella", "lamp", "lantern"]);
+const HELD_INDEX = heldIndex();
+// the first kit's hand props (kit/props.js makeHeld) by word -> builder
+const BASE_HELD = { sock: "sock", socks: "sock", flashlight: "flashlight", torch: "flashlight", candle: "candle", candles: "candle", book: "book", books: "book", phone: "phone",
+  bag: "bag", sack: "bag", purse: "bag", key: "key", keys: "key", ball: "ball", balls: "ball", box: "box", boxes: "box", present: "box", presents: "box", gift: "box", gifts: "box",
+  package: "box", parcel: "box", bread: "bread", loaf: "bread", loaves: "bread", roll: "bread", rolls: "bread", whistle: "whistle", tissue: "tissues", tissues: "tissues",
+  camera: "camera", notebook: "book", diary: "book", journal: "book", string: "string", yarn: "string", thread: "string", note: "paper", notes: "paper", map: "paper", maps: "paper",
+  umbrella: "umbrella", glass: "cup", shoebox: "box", shoeboxes: "box", crate: "box", crates: "box", lostandfound: "box", lantern: "lantern", lanterns: "lantern", rope: "rope", ropes: "rope", cup: "cup", cups: "cup", mug: "cup", mugs: "cup", coffee: "cup", tea: "cup" };
+export const HOLDABLE = new Set([...Object.keys(BASE_HELD), ...[...HELD_INDEX.keys()].filter((w) => !/ /.test(w))]);
+/** The hand-prop builder a word draws (kit/props.js): "boots" and "slipper" are both a shoe. */
+export function heldKind(word) {
+  const w = String(word ?? "").toLowerCase();
+  return BASE_HELD[w] ?? HELD_INDEX.get(w) ?? BASE_HELD[singularOf(w)] ?? HELD_INDEX.get(singularOf(w)) ?? null;
+}
+/** The catalog object a noun names ("pigeons" -> pigeon, "gate" -> fence), or null. */
+export function objectForNoun(word) {
+  const w = String(word ?? "").toLowerCase(), s = singularOf(w);
+  for (const [name, o] of Object.entries(OBJECT_CATALOG)) if (o.aliases.includes(w) || o.aliases.includes(s)) return name;
+  return null;
+}
+function singularOf(w) { return /ies$/.test(w) ? w.slice(0, -3) + "y" : /(ss|us)$/.test(w) ? w : /(ches|shes|xes|ses)$/.test(w) ? w.slice(0, -2) : /s$/.test(w) ? w.slice(0, -1) : w; }
 
 // ------------------------------------------------------------------ picture-card icons (fallback for nouns)
 export const ICONS = Object.freeze({
@@ -63,7 +84,19 @@ export const ABSTRACT = new Set(("time times thing things way purpose life top m
   "minutes hour hours second seconds morning evening afternoon sound noise thought question answer story's job trouble problem rule " +
   "rules nothing something everything anything someone somebody one ones none half while once twice again yet front back left right " +
   "bit piece pieces number numbers kind sort type air lens handle button lid edge corner inside outside lots plenty " +
-  "everyone everybody anyone anybody nobody mine yours ours theirs hers").split(" "));
+  "everyone everybody anyone anybody nobody mine yours ours theirs hers " +
+  // abstract nouns of the library's rules and twists (coverage, 2026-11-04): ideas, not things to show
+  "deal deals law laws rank ranks promise promises joke jokes wish wishes plan plans power powers order orders math sentence spell " +
+  "clue clues complaint complaints contract manners honor shame attitude company pace pulse scent escape rescue goodbye goodnight " +
+  "month months inch inches mile miles size sizes word words line lines loophole loopholes claim claims trick tricks luck chance " +
+  "truth lie lies fib fibs secret's problem's mistake mistakes memory memories dream dreams fear fears habit habits game's turn turns " +
+  "rest's version style way's shape shapes count counts total number's level levels score's tax taxes fee fees bill bills price prices " +
+  "cost costs fine fines debt reward rewards prize's offering offerings gift's spot spots space room's distance length weight height " +
+  "silence's peace quiet's dare dares bet bets vote votes favor favour credit blame credit's duty duties job's chore chores task tasks " +
+  "pair pairs row rows pile piles copy copies sunday sundays monday mondays tuesday tuesdays wednesday wednesdays thursday thursdays friday fridays saturday saturdays " +
+  "dent dents throws lifts joins pinch pinches weekend weekends winter winters summer summers spring autumn fall's anthem beat beats bank banks stub stubs safe's carries " +
+  "lesson lessons test's grade grades class's term terms season's moment's evening's noon midnight's dawn's sundown sunset's " +
+  "everything's anything's somebody's nobody's anyone's someone's thank thanks hello sorry yes's no's okay").split(" "));
 const STOP = new Set(("the a an and or but so if then than that this these those to of in on at for from with by into onto over under " +
   "up down out off away past through toward towards around about after before behind across until till when while because as is are was " +
   "were be been being am do does did done have has had having can cant could couldnt would wouldnt will wont shall should may might must " +
@@ -75,7 +108,15 @@ const ADJ = new Set(("old new big little small tiny huge giant long longer short
   "real own whole last first secret brass golden silver dark bright red blue green yellow black white pink purple orange grey gray brown " +
   "young younger older oldest baby crumpled cracked lost found weighted favorite favourite only other same entire empty full broken late early " +
   "scary creepy happy sad angry funny weird strange magic magical wooden metal shiny dusty dirty clean wet dry cold hot warm sleepy " +
-  "biggest smallest tallest fastest slowest strongest").split(" "));
+  "biggest smallest tallest fastest slowest strongest " +
+  // the library's describing words (coverage, 2026-11-04)
+  "rubber blank burnt squeaky spare single higher lower lumpy stale rusty sticky soft heavy slow stuck torn dead smudgy stubby offkey off-key " +
+  "shadowless windup wind-up rolledup upsidedown upside-down squelchy slimy slippery smoky squishy stinky stiff stubborn stuttery fuzzy " +
+  "holey hard high low clear exact perfect free faint fine frozen hungry magnificent national royal weak wild deep deeper bigger smaller " +
+  "calm clumsy blind dim endless thick thin squawky cloudless crooked lopsided runny frosted hollow boiled stacked tired lonely " +
+  "proud polite rude brave shy grumpy cozy fresh rotten sour sweet salty spicy bald fancy plain heavier lighter louder quieter " +
+  "wooden glowing floating flying sleeping hidden whole important official only extra enough instead third second fourth twelve " +
+  "eleven twenty thirty forty hundred thousand million zero").split(" "));
 export const NEG_RE = /^(never|nobody|no|not|cant|dont|doesnt|didnt|wont|isnt|wasnt|arent|werent|couldnt|neither|nor|without|none)$/;
 const VERBISH = /^(is|are|was|were|has|had|have|says|said|goes|went|gets|got|makes|made|takes|took|knows|knew|meant|means|needs|needed|owns|plays|hears|heard|sees|saw|keeps|kept|comes|came|turned|started|stopped|learned|remembered|creaked|unfolded|flicked|flew|shaped|looking|walks|walked)$/;
 
@@ -123,12 +164,12 @@ export const RULES = [
     hold: "book", show: { objects: ["stories_book"], holds: ["book", "notebook"] } },
   { id: "whistle", kind: "hold", label: "whistle", re: W("(?:brass |old |tin )?whistles?"), hold: "whistle", icon: "📯",
     show: { holds: ["whistle"], poses: ["blow"] }, also: ["brass"] },
-  { id: "sign", kind: "insert", label: "sign", re: W("signs?(?! language)|notes?|letters?|posters?|notices?|newspapers?"), icon: "🪧",
-    show: { insertKinds: ["sign", "note", "card"] } },
-  { id: "tower", kind: "place", label: "water tower", re: W("(?:water |clock |bell )?towers?|catwalk"), icon: "🗼",
+  { id: "sign", kind: "insert", label: "sign", re: W("signs?(?! language)|notes?|letters?|posters?|notices?|newspapers?"), icon: "🪧", hold: "letter",
+    show: { insertKinds: ["sign", "note", "card"], holds: ["sign", "note", "letter", "paper", "envelope", "clipboard", "label", "poster", "newspaper"] } },
+  { id: "tower", kind: "place", label: "water tower", re: W("(?<!(?:hat|pillow|cushion|sock|book|block|pancake|box|cheese|plate|chair) )(?:water |clock |bell )?towers?|catwalk"), icon: "🗼",
     show: { monsterSpot: "tower", sets: ["street", "woods"] } },
-  { id: "ladder", kind: "place", label: "ladder", re: W("(?:the )?ladders?|rungs?"), icon: "🪜",
-    show: { monsterSpot: "tower", holds: ["ladder"] } },
+  { id: "ladder", kind: "place", label: "ladder", re: W("(?:the )?ladders?|rungs?"), icon: "🪜", object: { name: "ladder" },
+    show: { monsterSpot: "tower", holds: ["ladder"], objects: ["ladder"] } },
 
   // ---------------- actions (poses / expressions)
   { id: "sign_language", kind: "action", label: "sign language", re: W("sign language|signing|signs? to"), pose: "wave", expr: "shush", icon: "🤟",
@@ -137,26 +178,26 @@ export const RULES = [
     show: { poses: ["sneeze"], exprs: ["sneeze"] } },
   { id: "blow", kind: "action", label: "blew", re: W("blew|blow|blows|blowing"), pose: "blow", hold: "whistle", icon: "📯",
     show: { poses: ["blow"] } },
-  { id: "yell", kind: "action", label: "yell", re: W("scream\\w*|yell\\w*|shout\\w*|holler\\w*|roar\\w*|loud|louder|loudest|out loud|too loud|voices?|top of (?:her|his|my|their|our|your) lungs|lungs"),
+  { id: "yell", kind: "action", label: "yell", re: W("scream\\w*|yell\\w*|shout\\w*|holler\\w*|roar\\w*|loud|louder|loudest|out loud|too loud|voices?|top of (?:her|his|my|their|our|your) lungs|lungs|burp\\w*|belch\\w*|howl\\w*|honk\\w*|bellow\\w*"),
     pose: "yell", expr: "yell", icon: "📢",
     show: { poses: ["yell", "blow"], exprs: ["yell"], holds: ["whistle", "horn"], objects: ["car"] } },
   { id: "whisper", kind: "action", label: "whisper", re: W("whisper\\w*|quiet\\w*|shh+|hush\\w*|secrets?|silen\\w*|mime"), expr: "shush", icon: "🤫",
     show: { exprs: ["shush"], insertWords: ["WHISPER", "SHH", "QUIET", "SECRET", "HUSH", "???"], marker: "tag" } },
   { id: "talk", kind: "action", label: "talk", re: W("talk\\w*|say|said|says|speak\\w*|spoke|told|tell\\w*"), pose: "talk", icon: "💬",
     show: { poses: ["talk", "yell", "wave"], exprs: ["shush", "yell"], insertWords: ["TALKING", "TALK"] } },
-  { id: "cheer", kind: "action", label: "cheer", re: W("cheer\\w*|celebrat\\w*|hooray|danc\\w*|party"), pose: "cheer", expr: "excited", icon: "🎉",
+  { id: "cheer", kind: "action", label: "cheer", re: W("cheer\\w*|celebrat\\w*|hooray|danc\\w*|party|clap\\w*|applau\\w*|parades?|festivals?|contests?|competitions?"), pose: "cheer", expr: "excited", icon: "🎉",
     show: { poses: ["cheer"], exprs: ["excited", "happy"] } },
   { id: "run", kind: "action", label: "ran", re: W("ran|run|runs|running|raced|sprinted|fled|rushed|chased|bolted"), pose: "run", icon: "🏃",
     show: { poses: ["run", "walk"], monsterMove: true } },
-  { id: "walk", kind: "action", label: "walk", re: W("walk\\w*|climb\\w*|crept|tiptoe\\w*|marched|stepped|wander\\w*"), pose: "walk", icon: "🚶",
+  { id: "walk", kind: "action", label: "walk", re: W("walk\\w*|climb\\w*|crept|tiptoe\\w*|marched|stepped|wander\\w*|stomp\\w*|clomp\\w*|squeak\\w*|footsteps?|steppers?|sneak\\w*|stroll\\w*|hik\\w*"), pose: "walk", icon: "🚶",
     show: { poses: ["walk", "run"], monsterMove: true } },
   { id: "cry", kind: "action", label: "cry", re: W("cried|cry|cries|crying|tears|sobbed|sob\\w*"), expr: "cry", icon: "😢", show: { exprs: ["cry", "sad"] } },
-  { id: "sleep", kind: "action", label: "sleep", re: W("slept|asleep|sleep\\w*|nap\\w*|bedtime"), pose: "sleep", expr: "sleepy", icon: "😴", show: { poses: ["sleep"], exprs: ["sleepy"] } },
-  { id: "grab", kind: "action", label: "grab", re: W("grabbed|grabs|grab|held|holds|carried|carries|hugged|hugs|picked up|lifted|taped"), pose: "carry", icon: "✋",
+  { id: "sleep", kind: "action", label: "sleep", re: W("slept|asleep|sleep\\w*|nap\\w*|bedtime|snor\\w*|dream\\w*|tuck\\w*|yawn\\w*"), pose: "sleep", expr: "sleepy", icon: "😴", show: { poses: ["sleep"], exprs: ["sleepy"] } },
+  { id: "grab", kind: "action", label: "grab", re: W("grabbed|grabs|grab|held|holds|carried|carries|hugged|hugs|hug|hugging|picked up|lifted|taped|tapes|ties|tied|tie|hands? (?:it|them|him|her)|handed"), pose: "carry", icon: "✋",
     show: { poses: ["carry", "blow"], anyHold: true } },
   { id: "wave", kind: "action", label: "wave", re: W("wav(?:ed|es|e|ing)"), pose: "wave", icon: "👋", show: { poses: ["wave"] } },
   { id: "point", kind: "action", label: "point", re: W("point(?:ed|s|ing)"), pose: "point", icon: "👉", show: { poses: ["point"] } },
-  { id: "scared", kind: "action", label: "scared", re: W("scared|afraid|terrified|froze|trembl\\w*|shaking|shook|hid|hide|hiding|panick\\w*"), pose: "scared", expr: "scared", icon: "😱",
+  { id: "scared", kind: "action", label: "scared", re: W("scared|afraid|terrified|froze|trembl\\w*|shaking|shook|shake|shakes|hid|hide|hiding|panick\\w*|rumbl\\w*|quak\\w*|wobbl\\w*|shiver\\w*|gasp\\w*"), pose: "scared", expr: "scared", icon: "😱",
     show: { poses: ["scared"], exprs: ["scared", "surprised"] } },
   { id: "laugh", kind: "action", label: "laugh", re: W("laugh\\w*|smil\\w*|grin\\w*|giggl\\w*"), expr: "happy", icon: "😄", show: { exprs: ["happy", "excited", "smirk"] } },
   { id: "sit", kind: "action", label: "sit", re: W("sat|sit|sits|sitting"), pose: "sit", icon: "🪑", show: { poses: ["sit"] } },
@@ -172,23 +213,33 @@ export const RULES = [
     show: { marker: "tag" } },
 
   // ---------------- places (sets)
-  { id: "school", kind: "place", label: "school", re: W("school|class(?:room)?|teachers?|hallways?|lockers?|cafeteria|recess|principal|homework"), set: "school", icon: "🏫",
+  { id: "school", kind: "place", label: "school", re: W("school|schools|class(?:room)?s?|teachers?|hallways?|halls|lockers?|cafeteria|lunchroom|gym|recess|principal|homework|detention|chalkboards?|blackboards?|library|stage|lessons?"), set: "school", icon: "🏫",
     show: { sets: ["school"] } },
-  { id: "woods", kind: "place", label: "hill", re: W("woods|forest|trees?|hills?|hilltop|creek|caves?|river|lake|mountains?|trail|cliff|field|campfires?|camp|campsite|tents?|park"), set: "woods", icon: "⛰️",
-    show: { sets: ["woods"] } },
-  { id: "bedroom", kind: "place", label: "bedroom", re: W("bedrooms?|beds?|room|closet|kitchen|upstairs|bathroom|pillows?|blankets?"), set: "bedroom", icon: "🛏️",
-    show: { sets: ["bedroom"] } },
+  { id: "woods", kind: "place", label: "hill", re: W("woods|woods edge|forest|trees?|treeline|hills?|hilltops?|creek|caves?|cavern|river|lake|ponds?|mountains?|trails?|cliffs?|cliff ?tops?|canyons?|valley|meadows?|field|fields|orchard|swamp|beach|shore|island|wilderness|campfires?|camp|campsite|tents?|park|bushes|bush|nests?"), set: "woods", icon: "⛰️",
+    show: { sets: ["woods"], objects: ["stump", "barn", "windmill", "haystack", "mushroom", "rock"] }, stand: "stump" },
+  { id: "bedroom", kind: "place", label: "bedroom", re: W("bedrooms?|beds?|room|closet|kitchen|upstairs|bathroom"), set: "bedroom", icon: "🛏️",
+    show: { sets: ["bedroom"], objects: ["couch", "drawer", "fridge", "stove", "crib"] }, stand: "couch" },
   { id: "door", kind: "place", label: "door", re: W("(?:back |front )?doors?|doorways?"), set: "street", icon: "🚪", show: { sets: ["street", "bedroom", "school"], spots: ["door"] } },
-  { id: "street", kind: "place", label: "street", re: W("streets?|town|towns|roads?|sidewalks?|porch(?:es)?|yards?|outside|houses?|homes?|neighbou?rhood|square|lawns?|driveways?|city"), set: "street", icon: "🏘️",
-    show: { sets: ["street"], objects: ["house_front", "bakery", "ice_cream_truck", "car"] } },
+  { id: "street", kind: "place", label: "street", re: W("streets?|town|towns|roads?|sidewalks?|porch(?:es)?|yards?|backyards?|outside|houses?|homes?|neighbou?rhood|square|town square|lawns?|driveways?|city|village|downtown|plaza|market|alleys?|stores?|shops?|garages?|blocks|doorsteps?|crosswalks?|avenue"), set: "street", icon: "🏘️",
+    show: { sets: ["street"], objects: ["house_front", "bakery", "ice_cream_truck", "car", "fountain", "mailbox"] }, stand: "house_front" },
   // ---------------- light
   { id: "night", kind: "light", label: "night", re: W("night|nights|tonight|midnight|moon\\w*|dark"), light: "night", icon: "🌙",
     show: { light: ["night"], setStateWindows: ["dark"] } },
-  { id: "day", kind: "light", label: "morning", re: W("morning|sunrise|noon|daytime|sunny"), light: "day", icon: "☀️", show: { light: ["day", "warm"] } },
+  { id: "day", kind: "light", label: "morning", re: W("morning|mornings|noon|daytime|sunny|afternoon|lunchtime|sunshine|sun"), light: "day", icon: "☀️", show: { light: ["day", "warm"] } },
+  { id: "dusk", kind: "light", label: "sunset", re: W("dawn|dawns|sunrise|sunset|sunsets|sundown|dusk|evening|evenings|twilight"), light: "warm", icon: "🌅", show: { light: ["warm", "day", "night"] } },
+  // the ground under everyone: any real shot of a set shows it ("on the floor", "the cave floor")
+  { id: "floor", kind: "place", label: "floor", re: W("floors?|ground|grounds|carpet|rug|rugs|tiles?|doormat|doormats|mats?|curbs?|pavement|dirt|mud|puddles?|grass|lawn|paths?|aisles?|corridors?|stripes?|circles?|squares? on the|ceilings?|cellars?|basements?"), icon: "🟫",
+    show: { sets: ["street", "bedroom", "school", "woods"] } },
+  { id: "sky", kind: "place", label: "sky", re: W("sky|skies|air|horizon"), icon: "🌌", show: { sets: ["street", "woods"] } },
   // ---------------- people + bodies
-  { id: "people", kind: "people", label: "people", re: W("kids?|children|man|men|woman|women|girls?|boys?|friends?|best friend|neighbou?rs?|everyone|everybody|anyone|anyone's|anybody|people|nobody|townsfolk|family|grown-?ups?|parents?|guests?|crowd|whole town|mayor|teachers?|coach|principal|sheriff|officers?|police|doctors?|nurses?|mailman|mail carrier|postman|neighbor|stranger|lady|guy|grandparents?|adults?|twins?|cousins?|uncle|aunt"),
+  { id: "people", kind: "people", label: "people", re: W("kids?|children|man|men|woman|women|girls?|boys?|friends?|best friend|neighbou?rs?|everyone|everybody|anyone|anyone's|anybody|people|nobody|townsfolk|family|grown-?ups?|parents?|guests?|crowd|whole town|mayor|teachers?|coach|principal|sheriff|officers?|police|doctors?|nurses?|mailman|mail carrier|postman|neighbor|stranger|lady|guy|grandparents?|adults?|twins?|cousins?|uncle|aunt|" +
+    "families|janitors?|cooks?|chefs?|lunch lad(?:y|ies)|captains?|judges?|barbers?|paperboys?|kings?|queens?|lords?|ladies|knights?|servants?|guards?|" +
+    "jesters?|carriers?|farmers?|miners?|drivers?|sailors?|pirates?|students?|classmates?|whistlers?|sleepers?|owners?|helpers?|movers?|workers?|" +
+    "babysitters?|kids'|townspeople|villagers?|citizens?|residents?|elders?|grandkids?|siblings?|sisters|brothers|bosses|boss|princes?|princess(?:es)?|wizards?|witch(?:es)?|"
+    + "baker|bakers|clowns?|mimes?|tourists?|visitors?|strangers|everyone else|the rest of us|rest of us|nobody else|anyone else|" +
+    "kid|crew|club|band|choir|audience|line of kids"),
     icon: "👥", show: { people: 1 } },
-  { id: "body", kind: "body", label: "body", re: W("mouths?|faces?|heads?|hands?|arms?|legs?|eyes?|ears?|feet|foot|breath|pockets?|nose|teeth|fingers?|hair|shadow|claws?|fur|lips"),
+  { id: "body", kind: "body", label: "body", re: W("mouths?|faces?|heads?|hands?|arms?|legs?|eyes?|ears?|feet|foot|breath|pockets?|nose|teeth|fingers?|hair|shadows?|claws?|fur|lips|heartbeats?|tummy|belly|bellies|stomach|toes?|knees?|elbows?|wrists?|shoulders?|backs|necks?|chins?|cheeks?|eyebrows?|whiskers|tongues?|throat|spine"),
     icon: "👤", show: { body: true } },
 ];
 const RULE_BY_ID = Object.fromEntries(RULES.map((r) => [r.id, r]));
@@ -228,7 +279,7 @@ export const iconFor = (word) => ICONS[word] ?? ICONS[singular(word)] ?? GENERIC
  *     looseNames: Set(lowercase), prop }
  */
 const FAMILY = { mom: "mom", mum: "mom", mommy: "mom", mother: "mom", dad: "dad", daddy: "dad", father: "dad", grandma: "grandma", granny: "grandma", nana: "grandma", grandpa: "grandpa", grandad: "grandpa", grandfather: "grandpa", grandmother: "grandma", brother: "brother", sister: "sister" };
-const TITLES = /^(mr|mrs|ms|miss|dr|coach|aunt|uncle|officer|principal|sheriff|mayor)$/;
+const TITLES = /^(mr|mrs|ms|miss|dr|coach|aunt|uncle|officer|principal|sheriff|mayor|baker|farmer|postman|mailman|captain|lady|lord|king|queen|sir|dame|fisher|cook|chef|nurse|judge|professor|prince|princess|old|big|little|young|sergeant|doctor|mister|madam|janitor|teacher|count|duke|baron|grandma|grandpa|granny|nana)$/;
 
 /**
  * The key nouns / actions of a text. `opts.neg` marks negated actions ("nobody talks", "never heard a cheer").
@@ -254,7 +305,12 @@ export function extractKeys(text, vw, opts = {}) {
     if (used[k]) return;
     const c = t.c;
     if ((TITLES.test(c) || FAMILY[c]) && toks[k + 1] && vw.people.has(toks[k + 1].c)) { keys.push({ kind: "person", id: toks[k + 1].c, label: vw.people.get(toks[k + 1].c).name, k, end: k + 1, poss: toks[k + 1].poss }); take(k, k + 1); return; }
-    if (vw.monster && (c.startsWith(vw.monster.key) || c === "monster" || c === "creature")) { keys.push({ kind: "monster", label: vw.monster.name ?? c, k, end: k }); take(k, k); return; }
+    if (vw.monster) {
+      // the whole name ("the Detention Dragon"), else its head / creature word ("the dragon"), "monster", "creature"
+      const ws = vw.monster.words ?? [vw.monster.key];
+      if (ws.length > 1 && ws.every((w, i) => toks[k + i]?.c === w)) { keys.push({ kind: "monster", label: vw.monster.name ?? c, k, end: k + ws.length - 1 }); take(k, k + ws.length - 1); return; }
+      if ((vw.monster.keys ?? [vw.monster.key]).some((m) => c.startsWith(m)) || c === "monster" || c === "creature") { keys.push({ kind: "monster", label: vw.monster.name ?? c, k, end: k }); take(k, k); return; }
+    }
     if (c === norm(vw.narrator) && k > 0 && /^(im|i am|called|named)$/.test(toks[k - 1].c)) { keys.push({ kind: "name", label: vw.narrator, name: vw.narrator, on: "me", k: k - 1, end: k }); take(k, k); return; }
     if (c === norm(vw.narrator) && c !== "me") { keys.push({ kind: "person", id: "me", label: vw.narrator, k, end: k, poss: t.poss }); take(k, k); return; }
     if (vw.people.has(c) && c !== "me") { keys.push({ kind: "person", id: c, label: vw.people.get(c).name, k, end: k, poss: t.poss }); take(k, k); return; }
@@ -293,6 +349,8 @@ export function extractKeys(text, vw, opts = {}) {
     if (used[k]) return;
     const c = t.c;
     if (STOP.has(c) || ABSTRACT.has(c) || VERBISH.test(c) || c.length < 3 || /^\d+$/.test(c)) return;
+    // "a roll of tape", "a slice of toast": the thing is what comes after "of"
+    if (/^(roll|rolls|slice|slices|piece|pieces|pair|pairs|bit|bits|stack|stacks|pile|piles|scrap|scraps|chunk|chunks|bunch|lot|lots|handful|crumb|crumbs|sort|kind)$/.test(c) && toks[k + 1]?.c === "of" && !t.end && !t.comma) return;
     const icon = ICONS[c] ?? ICONS[singular(c)];
     let afterDet = false, start = k;
     for (let i = k - 1; i >= 0 && i >= k - 4; i--) {
@@ -301,7 +359,8 @@ export function extractKeys(text, vw, opts = {}) {
       // "that"/"this" are determiners only before a known thing ("that whistle"), else relative ("a shadow that quits")
       if ((DETS.has(p.c) && (icon || !/^(that|this|these|those)$/.test(p.c))) || p.poss) { afterDet = true; break; }
       // modifiers: adjectives; before a known thing also a singular noun / unknown adjective ("kite string", "late bus")
-      const mod = ADJ.has(p.c) || /est$/.test(p.c) || (icon && k - i <= 2 && !/s$/.test(p.c) && !STOP.has(p.c) && !VERBISH.test(p.c) && !NEG_RE.test(p.c) && !used[i]);
+      // (a thing a rule already showed can be a modifier too: "a giant hollow cliff-top bell")
+      const mod = ADJ.has(p.c) || /est$/.test(p.c) || (icon && k - i <= 2 && !/s$/.test(p.c) && !STOP.has(p.c) && !VERBISH.test(p.c) && !NEG_RE.test(p.c) && (!used[i] || ruleOwned[i]));
       if (!mod) break;
       start = i;
     }
@@ -357,6 +416,9 @@ export function covers(key, s, cast = {}) {
   if (key.kind === "name") return marks.some((m) => wordIn(key.name, m.text)) || textual(key.name);
   if (key.kind === "noun") {
     if (actors.some((a) => a.hold && singular(a.hold) === key.noun)) return true;
+    const hk = heldKind(key.noun) ?? heldKind(key.label);
+    if (hk && actors.some((a) => a.hold && heldKind(a.hold) === hk)) return true;
+    if (hk && (s.objects ?? []).some((o) => objName(o) === "item" && o.state === hk)) return true;
     if (objs.some((o) => OBJECT_CATALOG[o]?.aliases.some((al) => al === key.label || al === key.noun))) return true;
     return textual(key.noun) || textual(key.label);
   }
@@ -376,7 +438,7 @@ export function covers(key, s, cast = {}) {
   }
   if (sh.poses && actors.some((a) => sh.poses.includes(a.pose))) return true;
   if (sh.exprs && actors.some((a) => sh.exprs.includes(a.expr))) return true;
-  if (sh.holds && actors.some((a) => sh.holds.includes(a.hold))) return true;
+  if (sh.holds && actors.some((a) => a.hold && (sh.holds.includes(a.hold) || (heldKind(a.hold) && sh.holds.some((h) => heldKind(h) === heldKind(a.hold)))))) return true;
   if (sh.anyHold && actors.some((a) => a.hold)) return true;
   if (sh.sets && sh.sets.includes(s.set) && !(r.kind === "place" && s.camera === "insert")) {
     if (r.id !== "tower" || s.monsterState || s.camera === "wide") return true;

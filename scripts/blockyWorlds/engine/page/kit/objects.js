@@ -20,6 +20,8 @@
 import * as THREE from "three";
 import { rng, hashSeed, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, canvasTex, loadKitFonts, kitFont, fitText, darker } from "./kitCommon.js";
 import { makePerson, posePerson, setFace, reach } from "./people.js";
+import { catalogObjects } from "../../lib/catalog.js";
+import { THING_BUILD } from "./things.js";
 
 await loadKitFonts();
 
@@ -34,6 +36,8 @@ export const OBJECTS = {
   house_front: { aliases: ["house", "home", "window", "windows", "houses", "every house", "every window", "building", "house front"], height: 7.4, width: 6.4, place: "street", states: ["dark", "lit", "open", "yell"], state: "lit" },
   stories_book: { aliases: ["stories", "story", "storybook", "story book", "book of stories", "grandpa's stories", "fairy tale", "tales", "big book"], height: 1.6, width: 1.4, place: "floor", states: ["on"], state: "on" },
 };
+// the coverage kit (lib/catalog.js + kit/things.js): weather, town, country, home, animals, creatures, the item display
+for (const [k, v] of Object.entries(catalogObjects())) if (!OBJECTS[k]) OBJECTS[k] = { aliases: v.aliases, height: v.big ? 6 : 2, width: v.big ? 5 : 1.5, place: v.place ?? "floor", states: v.states, state: v.state };
 
 const norm = (s) => String(s ?? "").toLowerCase().replace(/[_\-]+/g, " ").replace(/\s+/g, " ").trim();
 const ALIAS = new Map();
@@ -610,7 +614,7 @@ export function makeObject(name, opts = {}) {
   if (!def.states.includes(state)) throw new Error(`makeObject: object "${key}" has no state "${state}" (${def.states.join(", ")})`);
   const g = new THREE.Group(); g.name = `object:${key}:${state}`;
   g.userData = { kind: "object", name: key, state, actors: "front", push: 0.8 };
-  BUILD[key](g, state);
+  (BUILD[key] ?? THING_BUILD[key])(g, state);
   g.traverse((o) => { if (o.isMesh && o.castShadow === undefined) o.castShadow = true; });
   return g;
 }

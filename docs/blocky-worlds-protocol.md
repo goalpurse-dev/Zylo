@@ -10,6 +10,11 @@
 >   use a clear fallback that shows that very thing (a picture card with its name and icon). Never a random or
 >   unrelated shot, never filler townsfolk standing in for a noun.
 > - Testing focuses on it: every planner or kit change is checked against many different ideas, not just one.
+> - **A missing kit object or world never fails a run** (owner, 2026-11-05). The engine builds what a line needs in
+>   real time: the kit first, then the shared library of things built for earlier videos, then an AI-designed block
+>   blueprint (objects) or world spec (places) that the engine builds, checked by a quick still + an AI vision check
+>   (up to 2 retries). Only if that fails: a clear picture card of that thing. Everything built is saved to the shared
+>   library so the kit grows with every video.
 
 The single rulebook for how a Blocky Worlds video is made. Code follows this file; when they disagree, fix one of them in the same commit.
 

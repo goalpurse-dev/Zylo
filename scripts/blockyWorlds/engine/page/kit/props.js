@@ -3,6 +3,9 @@
 import * as THREE from "three";
 import { rng, hashSeed, boxGeo, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, canvasTex, loadKitFonts, kitFont, fitText } from "./kitCommon.js";
 
+import { heldIndex } from "../../lib/catalog.js";
+import { HELD_BUILD } from "./heldMore.js";
+
 await loadKitFonts(); // so the first sign/note/marker is drawn in Lilita, not a fallback
 
 // =====================================================================================================
@@ -196,8 +199,8 @@ export function animateMarker(m, t) {
 // =====================================================================================================
 const HELD_ALIASES = [
   [/sock/, "sock"], [/flash|torch/, "flashlight"], [/candle/, "candle"], [/book|diary|journal/, "book"], [/phone|mobile/, "phone"],
-  [/bag|purse|sack/, "bag"], [/key/, "key"], [/ball/, "ball"], [/box|package|parcel|gift|present/, "box"], [/sign|placard|poster/, "sign"],
-  [/bread|loaf|sandwich|food/, "bread"], [/cup|mug|coffee|tea/, "cup"], [/lantern|lamp/, "lantern"], [/rope/, "rope"], [/umbrella/, "umbrella"],
+  [/bag|purse|sack/, "bag"], [/key/, "key"], [/ball/, "ball"], [/box|package|parcel|gift|present|crate|lostandfound/, "box"], [/sign|placard|poster|label|tag|notice|sticker/, "sign"],
+  [/bread|loaf|loaves|roll|sandwich|food/, "bread"], [/cup|mug|coffee|tea|glass/, "cup"], [/lantern|lamp/, "lantern"], [/rope/, "rope"], [/umbrella/, "umbrella"],
   [/note|letter|paper|map|envelope/, "paper"], [/whistle/, "whistle"],
 ];
 // checked first (before the list above): names the older patterns would catch wrongly ("notebook" stays a book)
@@ -324,12 +327,20 @@ const BUILD = {
 };
 /** a small hand prop by keyword (sock, flashlight, candle, book, phone, bag, key, ball, box, sign, bread, cup, lantern,
  *  rope, umbrella, paper/letter/note; anything else -> a small box). Origin at the grip. */
+const HELD_INDEX = heldIndex();
+/** the coverage kit's builder for a word ("boots" -> shoe, "bowl" -> soup), by the whole name, then its last word */
+function moreKind(n) {
+  const w = n.replace(/[^a-z' ]/g, " ").trim(), last = w.split(/\s+/).at(-1) ?? "";
+  for (const x of [w, w.replace(/s$/, ""), last, last.replace(/s$/, ""), last.replace(/es$/, "")]) { const k = HELD_INDEX.get(x); if (k && HELD_BUILD[k]) return k; if (HELD_BUILD[x]) return x; }
+  return null;
+}
 export function makeHeld(name) {
   if (!name) return null;
   const n = String(name).toLowerCase();
-  const kind = HELD_FIRST.find(([re]) => re.test(n))?.[1] ?? HELD_ALIASES.find(([re]) => re.test(n))?.[1] ?? "fallback";
+  const more = moreKind(n);
+  const kind = more ?? HELD_FIRST.find(([re]) => re.test(n))?.[1] ?? HELD_ALIASES.find(([re]) => re.test(n))?.[1] ?? "fallback";
   let proto = PROTO.get(kind);
-  if (!proto) { proto = new THREE.Group(); proto.name = `held:${kind}`; BUILD[kind](proto); PROTO.set(kind, proto); }
+  if (!proto) { proto = new THREE.Group(); proto.name = `held:${kind}`; (BUILD[kind] ?? HELD_BUILD[kind])(proto); PROTO.set(kind, proto); }
   const o = proto.clone(); // shares geometry and materials
   o.userData.kind = kind;
   o.userData.beam = o.getObjectByName("beam") ?? null;

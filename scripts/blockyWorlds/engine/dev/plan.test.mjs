@@ -237,7 +237,7 @@ test("made-up lines from other ideas: every noun on screen, never filler", () =>
   assert.deepEqual(checkTimeline(T), []);
   assert.deepEqual(checkVisuals(T, script), []);
   const shows = (i, pred) => T.shots.filter((s) => s.lines.includes(i)).some(pred);
-  assert.ok(shows(1, (s) => s.objects?.some((o) => o.name === "bakery")) && shows(1, (s) => s.insert?.icon === "🐈" || (s.markers ?? [s.marker]).some((m) => /CAT/.test(m?.text ?? ""))), "cat + bakery");
+  assert.ok(shows(1, (s) => s.objects?.some((o) => o.name === "bakery")) && shows(1, (s) => s.objects?.some((o) => o.name === "cat") || s.insert?.icon === "🐈" || (s.markers ?? [s.marker]).some((m) => /CAT/.test(m?.text ?? ""))), "cat + bakery");
   assert.ok(shows(2, (s) => s.objects?.some((o) => o.name === "ice_cream_truck")), "ice cream truck");
   assert.ok(shows(3, (s) => s.setState?.windows === "dark"), "windows dark");
   assert.ok(shows(4, (s) => s.objects?.some((o) => o.name === "football_field")) && shows(4, (s) => s.actors.some((a) => a.pose === "blow" && a.hold === "whistle")), "coach blows the whistle at the game");

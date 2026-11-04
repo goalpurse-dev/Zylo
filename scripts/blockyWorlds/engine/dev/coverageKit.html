@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","three/examples/jsm/":"/node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+// The kit check (coverage, 2026-11-04): every scene object the planner can emit (lib/visuals.js OBJECT_CATALOG, all its
+// states), every hand prop (lib/catalog.js HELD + the first kit's), every monster look builds in the browser.
+import * as THREE from "three";
+import { OBJECT_CATALOG, HOLDABLE, heldKind } from "/lib/visuals.js";
+import { CREATURES, HELD } from "/lib/catalog.js";
+const out = { objects: 0, held: 0, monsters: 0, errors: [], fallbackHeld: [] };
+try {
+  const { makeObject, animateObject, resolveObject, OBJECTS } = await import("/page/kit/objects.js");
+  const { makeHeld } = await import("/page/kit/props.js");
+  const { makeMonster, animateMonster } = await import("/page/kit/monsters.js");
+  for (const [name, c] of Object.entries(OBJECT_CATALOG)) {
+    if (resolveObject(name) !== name) out.errors.push(`object ${name}: not in kit/objects.js OBJECTS`);
+    for (const st of [...new Set([...(c.states ?? []), undefined])]) {
+      try { const o = makeObject(name, st ? { state: st } : {}); animateObject(o, st ?? OBJECTS[name]?.state, 1.3); if (!o.children.length) out.errors.push(`object ${name}/${st}: empty`); out.objects++; }
+      catch (e) { out.errors.push(`object ${name}/${st ?? "-"}: ${e.message}`); }
+    }
+  }
+  const words = new Set([...HOLDABLE, ...Object.keys(HELD)]);
+  for (const w of words) {
+    try { const h = makeHeld(w); if (!h) out.errors.push(`held ${w}: null`); else { out.held++; if (h.userData.kind === "fallback") out.fallbackHeld.push(w); } }
+    catch (e) { out.errors.push(`held ${w}: ${e.message}`); }
+  }
+  for (const v of [null, ...Object.keys(CREATURES)]) for (const sp of v ? [null, ...CREATURES[v].words] : [null]) {
+    try { const m = makeMonster({ type: v ? CREATURES[v].base : "tall", variant: v, species: sp, glow: "#9be8ff", name: "x" }); for (const s of ["lurk", "reach", "reveal", "flee"]) animateMonster(m, s, 1.1); if (!(m.userData.height > 0.5)) out.errors.push(`monster ${v}/${sp}: height ${m.userData.height}`); out.monsters++; }
+    catch (e) { out.errors.push(`monster ${v}/${sp}: ${e.message}`); }
+  }
+} catch (e) { out.errors.push(`load: ${e.stack ?? e.message}`); }
+window.kitCheck = out;
+</script></body></html>

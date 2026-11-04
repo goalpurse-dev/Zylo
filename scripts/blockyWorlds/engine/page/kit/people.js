@@ -14,6 +14,7 @@ import * as THREE from "three";
 import { rng, hashSeed, cloth, fabric, skinMat, solid, darker, rbx, bx, addMesh, cachedGeo } from "./kitCommon.js";
 import { EXPRS as FACE_EXPRS, faceMaterial } from "./faces.js";
 import { makeHeld } from "./props.js";
+import { SMALL_HELD } from "./heldMore.js";
 
 // 2026-11-04 (OBJECTS agent): yell (lean forward, arms down and back, mouth wide), sneeze (wind-up "ah-" then the head
 // snaps forward at t = 0.4 s, hand to the face), blow (the held prop, e.g. "whistle", at the mouth, cheeks puffed),
@@ -490,7 +491,7 @@ export function releasePerson(person, parent) {
   person.userData.carriedBy = null;
 }
 
-const SMALL = new Set(["sock", "key", "phone", "candle", "cup", "ball", "bread", "book", "paper", "flashlight", "whistle", "camera", "tissues", "string"]);
+const SMALL = new Set(["sock", "key", "phone", "candle", "cup", "ball", "bread", "book", "paper", "flashlight", "whistle", "camera", "tissues", "string", ...SMALL_HELD]);
 function ensureHeld(person, name) {
   const u = person.userData;
   if (name !== u.heldName) {
