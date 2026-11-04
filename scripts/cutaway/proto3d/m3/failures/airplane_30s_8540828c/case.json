@@ -1,0 +1,72 @@
+{
+ "runId": "8540828c-0927-4dbf-824b-0f02448f7bf6",
+ "topic": "airplane",
+ "lengthSec": 30,
+ "kind": "custom",
+ "at": "2026-11-04T09:32:39.934446+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: hook, name",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 0.86756,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.47088,
+   "outputTokens": 40982,
+   "at": "2026-11-04T09:38:02.263Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.15073,
+   "outputTokens": 3125,
+   "at": "2026-11-04T09:38:32.857Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02513,
+   "outputTokens": 1181,
+   "at": "2026-11-04T09:38:40.058Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01019,
+   "outputTokens": 413,
+   "at": "2026-11-04T09:38:43.635Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.02474,
+   "outputTokens": 973,
+   "at": "2026-11-04T09:39:17.606Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.00474,
+   "outputTokens": 189,
+   "at": "2026-11-04T09:39:20.007Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.08181,
+   "outputTokens": 1352,
+   "at": "2026-11-04T09:39:29.490Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00467,
+   "outputTokens": 254,
+   "at": "2026-11-04T09:39:41.066Z"
+  }
+ ]
+}

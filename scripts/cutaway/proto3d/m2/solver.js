@@ -8,7 +8,7 @@ import { expandBeats, VERBS } from "./verbs.js";
 import { compile } from "./compile.mjs";
 import { draftWords } from "./plan.js";
 import { clarityChecks } from "./clarity.js";
-import { rigProblems } from "./rig.js";
+import { rigBox, rigProblems } from "./rig.js";
 
 // the settings each kind cannot do without
 export const REQUIRED = {
@@ -51,7 +51,21 @@ export function solveLayout(L, sentences) {
   }
   // a designed part (rig.js): its recipe builds, is a sensible size, every piece joined, standing on the floor
   const floor = W.backdrop?.walkTop ?? ({ street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[W.backdrop?.type] ?? 0);
-  for (const p of L.parts) if (p.kind === "rig") problems.push(...rigProblems(p, { floor, cut }));
+  // A rig may stand on another rig (a cart on a bridge deck). One that hangs in the air over nothing is set down on the
+  // floor here, a free repair with a warning, instead of failing the plan (the owner's check fixes of 2026-11-04)
+  const rigs = L.parts.filter((p) => p.kind === "rig" && p.params?.nodes?.length);
+  const restBox = (p) => { try { return rigBox(p.params, { swept: false }); } catch { return null; } };
+  for (const p of rigs) {
+    const b = restBox(p), others = rigs.filter((q) => q !== p).map(restBox).filter(Boolean);
+    const over = (s) => b.min[0] < s.max[0] && s.min[0] < b.max[0] && b.min[2] < s.max[2] && s.min[2] < b.max[2];
+    const inCut = b && b.min[1] < -0.2 && b.min[0] < cut.x1 && b.max[0] > cut.x0 && b.max[2] > cut.z0;
+    if (!b || inCut || p.params.mount === "wall" || b.min[1] - floor <= 0.3 || others.some((s) => over(s) && b.min[1] >= s.max[1] - 0.3)) continue;
+    const pos = [...(p.params.pos ?? [0, 0, 0])];
+    pos[1] = +(pos[1] - (b.min[1] - floor)).toFixed(3);
+    p.params = { ...p.params, pos };
+    warnings.push(`part ${p.id} (rig): it hung in the air (lowest point y ${b.min[1].toFixed(2)}), set down on the floor`);
+  }
+  for (const p of L.parts) if (p.kind === "rig") problems.push(...rigProblems(p, { floor, cut, supports: rigs.filter((q) => q !== p).map(restBox).filter(Boolean) }));
   for (const s of L.audio?.sfx ?? []) if (!LIBS.includes(s.lib)) problems.push(`audio.sfx: no library sound "${s.lib}" (use ${LIBS.join(", ")})`);
   if (!L.parts.some((p) => p.kind === "sign")) problems.push("no sign part (the end card)");
   if (!L.parts.some((p) => p.kind === "light")) warnings.push("no light part");

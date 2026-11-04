@@ -1,0 +1,74 @@
+{
+ "hash": "*",
+ "by": "real run 47125f2b-2297-4fc1-8945-c17103289471",
+ "searches": 0,
+ "data": {
+  "title": "How Air Suspension Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you swap the steel spring under a car for a rubber bag of air, you have air suspension."
+   },
+   {
+    "role": "problem",
+    "text": "But the bag leaks and goes flat, so the car sags down onto its tire."
+   },
+   {
+    "role": "stakes",
+    "text": "Now over 4000 pounds of car press down on a flat bag that cannot hold it."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a compressor that pumps air down a hose into the bag, and the car lifts."
+   },
+   {
+    "role": "problem2",
+    "text": "But the little pump is slow, so after every dip the car stays low."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a tank that stores pressurized air, and the bag refills in seconds."
+   },
+   {
+    "role": "problem3",
+    "text": "But with nothing to stop the air, it rushes in, the bag swells, and the car shoots up too high."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a valve that lets air in or out, and the car settles at the right height."
+   },
+   {
+    "role": "name",
+    "text": "This bag is called an air spring."
+   },
+   {
+    "role": "name2",
+    "text": "And the bag, pump, tank and valve together are called air suspension."
+   },
+   {
+    "role": "fact",
+    "text": "The bag at about 100 psi lifts roughly 2800 pounds, though real bags give a bit less."
+   },
+   {
+    "role": "how",
+    "text": "The compressor fills the tank, the valve opens, air lifts the car, then the valve lets it drops."
+   },
+   {
+    "role": "myth",
+    "text": "And air suspension is not only for show cars."
+   },
+   {
+    "role": "mythFact",
+    "text": "Buses and ambulances ride on air springs, and about three-quarters of new semi trailers use them."
+   },
+   {
+    "role": "finish",
+    "text": "Add a remote with a height button and a pressure light, then park the car rolling in."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a bagged car."
+   }
+  ]
+ }
+}

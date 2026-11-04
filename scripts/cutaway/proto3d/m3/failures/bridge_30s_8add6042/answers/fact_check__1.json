@@ -1,0 +1,93 @@
+{
+ "hash": "*",
+ "by": "real run 8add6042-765a-4fa9-bd5b-e6782cf417aa",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "In a loaded beam bridge the top of the beam is squeezed (compression) while the bottom is stretched (tension).",
+    "why": "Several independent sources (ISBE bridge unit, Midas, a US patent) state compression at the top and tension at the bottom.",
+    "sources": [
+     {
+      "url": "https://www.isbe.net/CTEDocuments/TEE-L610023.pdf",
+      "title": "Bridge Design and Construction Unit: Technology"
+     },
+     {
+      "url": "https://resource.midasuser.com/en/blog/bridge/understanding-beam-bridges-design-components-and-construction-methods",
+      "title": "Understanding Beam Bridges: Design, Components, and Construction Methods"
+     },
+     {
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8752225",
+      "title": "Tunable load sharing arch bridge"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Floods and scour are the leading cause of US bridge failures. One study of failures from 1989 to 2000 put them at about 53%, and other estimates range from roughly 48% to 60%.",
+    "why": "The 53% figure is 'almost 53%' and covers flood and scour combined, not scour alone. It comes from a single 1989-2000 sample inflated by the 1993 flood. Other sources give 48% and 60%, so 'more than half' is not safe.",
+    "sources": [
+     {
+      "url": "https://www.researchgate.net/publication/237828707_Analysis_of_Recent_Bridge_Failures_in_the_United_States",
+      "title": "Analysis of Recent Bridge Failures in the United States"
+     },
+     {
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S2214391221000386",
+      "title": "Bridge Pier Scour: An overview of factors affecting the phenomenon and comparative evaluation of selected models - ScienceDirect"
+     },
+     {
+      "url": "https://www.hsaj.org/resources/uploads/2022/05/supplement.4.2.pdf",
+      "title": "Vibration Based Damage Detections of Scour in Coastal Bridges"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Bridge_scour",
+      "title": "Bridge scour"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Piling rocks (riprap) around a pier's foot is a standard defence against scour.",
+    "why": "Sources describe riprap as the most commonly used pier scour countermeasure. It must be designed and sized properly, since some reviews note its deficiencies.",
+    "sources": [
+     {
+      "url": "https://www.researchgate.net/publication/331806713_A_novel_method_for_riprap_design_of_scour_protection_at_bridge_piers",
+      "title": "(PDF) A novel method for riprap design of scour protection at bridge piers"
+     },
+     {
+      "url": "https://www.sciencedirect.com/science/article/pii/S2215098626000935",
+      "title": "Recent trends in local scour countermeasure for bridge piers - ScienceDirect"
+     },
+     {
+      "url": "https://www.researchgate.net/publication/225732566_Scour_and_scour_countermeasures_at_bridge_sites",
+      "title": "(PDF) Scour and scour countermeasures at bridge sites"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A 100 m steel bridge span grows about 6 cm when the temperature rises by 50 degrees C (steel expands about 12 millionths per degree).",
+    "why": "The coefficient of about 12e-6 per °C is sourced (AASHTO 6.5e-6 per °F is about 11.7e-6 per °C). The arithmetic 12e-6 x 100 m x 50 = 0.06 m checks out.",
+    "sources": [
+     {
+      "url": "https://physicsfundamentals.org/blog/thermal-expansion",
+      "title": "Thermal Expansion Explained — ΔL = αL₀ΔT and Worked Examples"
+     },
+     {
+      "url": "https://apps.itd.idaho.gov/apps/bridge/manual/14%20Joints%20and%20Bearings/A14.6%20Expansion%20Joint%20Design%20Procedure.pdf",
+      "title": "A14.6 Page 1 of 6 11/2019 / EXPANSION JOINTS NOTATIONS θ = Skew angle."
+     },
+     {
+      "url": "https://blog.chasecorp.com/bridge-and-highway/cold-expansion-joints",
+      "title": "Solving the Impact of Temperature Change on Bridge Deck Expansion Joints"
+     }
+    ]
+   }
+  ]
+ }
+}

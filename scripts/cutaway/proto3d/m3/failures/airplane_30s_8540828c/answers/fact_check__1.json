@@ -1,0 +1,77 @@
+{
+ "hash": "*",
+ "by": "real run 8540828c-0927-4dbf-824b-0f02448f7bf6",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "A Cessna 172S needs about 960 ft (about 293 m) of ground roll at sea level, per its handbook.",
+    "why": "The 960 ft ground roll figure is for the 172S model (180 hp), confirmed by the AOPA guide and the POH, and 960 ft is about 293 m, so 'roughly 300 m' is fair. The notes could not confirm the POH test conditions, and older 172s with less power have different numbers, so the claim should name the 172S and avoid stating conditions as verified.",
+    "sources": [
+     {
+      "url": "https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172",
+      "title": "Cessna 172S - AOPA"
+     },
+     {
+      "url": "https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf",
+      "title": "CESSNA MODEL 172S NOTICE INTRODUCTION"
+     },
+     {
+      "url": "https://flyawaysimulation.com/ask/answers/cessna-runway-length-takeoff-landing/",
+      "title": "How much runway does a Cessna 172 need to take off and land?"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Flaps let a plane lift off and land at a lower speed and in a shorter distance",
+    "why": "AOPA says flaps lower stall speed, allow slower approach speeds and steeper approach angles, and usually shorten the ground roll. Wikipedia agrees that flaps on takeoff reduce ground roll, though at the cost of climb rate.",
+    "sources": [
+     {
+      "url": "https://www.aopa.org/news-and-media/all-news/2018/february/flight-training-magazine/how-it-works-flaps",
+      "title": "How It Works: Flaps - AOPA"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Flap_(aeronautics)",
+      "title": "Flap (aeronautics)"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A wing lifts by deflecting air downward, which pushes the wing up (Newton's third law)",
+    "why": "NASA says a wing creates lift in part by deflecting air downward, in keeping with Newton's Third Law, and AvWeb agrees. The pressure difference is the other side of the same physics.",
+    "sources": [
+     {
+      "url": "https://www.hiller.org/wp-content/uploads/docs/TheWingsTheThing_v2.pdf",
+      "title": "National Aeronautics and Space Administration The Wing's the Thing"
+     },
+     {
+      "url": "https://avweb.com/features/theories-of-lift/",
+      "title": "Theories Of Lift"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "The 'equal transit time' explanation of lift is wrong, because a symmetric wing with equal-length upper and lower surfaces still generates lift.",
+    "why": "NASA firmly supports that equal transit time is an incorrect theory. The 'arrives first' detail comes only from a secondary pilot-education site, not NASA, so it is safer to lean on the NASA-backed part.",
+    "sources": [
+     {
+      "url": "https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/wrong1.html",
+      "title": "Incorrect Lift Theory"
+     },
+     {
+      "url": "https://www.angleofattack.com/what-is-bernoullis-principle-in-aviation/",
+      "title": "Bernoulli's Principle in Aviation: How a Wing Really Makes Lift"
+     }
+    ]
+   }
+  ]
+ }
+}

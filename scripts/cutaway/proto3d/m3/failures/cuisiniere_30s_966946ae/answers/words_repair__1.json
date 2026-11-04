@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "real run 966946ae-5dea-4b97-9f45-e09e7f089db1",
+ "searches": 0,
+ "data": {
+  "title": "Cuisinière",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you set a pot over an open fire, you have a stove."
+   },
+   {
+    "role": "problem",
+    "text": "But heat blasts out of the open flame, and cooking is the leading cause of reported home fires."
+   },
+   {
+    "role": "fix1",
+    "text": "So you box the fire in with steel walls and set the pot on a grate."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the trapped heat is all or nothing, so the soup boils over and runs down the front."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a gas valve and a knob that turns the flame down."
+   },
+   {
+    "role": "name",
+    "text": "This is a gas range."
+   },
+   {
+    "role": "how",
+    "text": "Gas flows through the valve to the burner, and a rotten egg smell is added so you notice leaks."
+   },
+   {
+    "role": "fact",
+    "text": "The blue flame burns at about 1,960 degrees Celsius in air at most, so the knob matters."
+   },
+   {
+    "role": "myth",
+    "text": "And the gas stove is not a French invention, whatever the word cuisinière suggests."
+   },
+   {
+    "role": "mythFact",
+    "text": "It was an Englishman, James Sharp, who patented it in 1826."
+   },
+   {
+    "role": "finish",
+    "text": "Add an oven door, a pot lid and a hood with a light."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a gas range."
+   }
+  ]
+ }
+}

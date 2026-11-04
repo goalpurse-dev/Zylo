@@ -1,0 +1,115 @@
+{
+ "hash": "*",
+ "by": "real run 966946ae-5dea-4b97-9f45-e09e7f089db1",
+ "searches": 0,
+ "data": {
+  "why": "A gas range (cuisinière) in a room: the story starts with a pot on an open flame on a stone hearth, then builds the range around it one real part at a time (steel walls and a grate, a valve and a knob, then an oven door, lid and hood). The camera opens close on the pot and flame, stays mid on the range for the problems and fixes, and ends on the home view with the flame working calmly.",
+  "sceneJson": "{\"world\":{\"cut\":[6,8,-2,1],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false,\"backdrop\":{\"type\":\"room\",\"x0\":-9,\"x1\":9,\"back\":-7,\"h\":4.2,\"windowX\":3.5,\"chairX\":-6.5}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{}},{\"id\":\"range\",\"kind\":\"rig\",\"params\":{\"name\":\"range\",\"synonyms\":[\"stove\",\"cooker\",\"cuisinière\",\"gas range\"],\"main\":true,\"pos\":[0,0.12,-4.5],\"nodes\":[{\"id\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.9,0.9,1.4],\"at\":[0,0.45,0],\"look\":\"concrete\",\"color\":\"#8d867c\"}],\"moves\":[{\"name\":\"hearth\",\"type\":\"appear\"}]},{\"id\":\"stones\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.45,0.2],\"at\":[-0.5,1.125,0.1],\"look\":\"concrete\",\"color\":\"#6f6b64\"},{\"shape\":\"box\",\"size\":[0.2,0.45,0.2],\"at\":[0.5,1.125,0.1],\"look\":\"concrete\",\"color\":\"#6f6b64\"},{\"shape\":\"box\",\"size\":[0.2,0.45,0.2],\"at\":[0,1.125,-0.5],\"look\":\"concrete\",\"color\":\"#6f6b64\"}],\"moves\":[{\"name\":\"hearth\",\"type\":\"appear\"}]},{\"id\":\"pot\",\"parent\":\"stones\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.45,\"h\":0.5,\"axis\":\"y\",\"at\":[0,1.6,0],\"look\":\"metal\",\"color\":\"#c44a3a\"},{\"shape\":\"box\",\"size\":[0.2,0.06,0.06],\"at\":[-0.55,1.75,0],\"look\":\"plastic\",\"color\":\"#222222\"},{\"shape\":\"box\",\"size\":[0.2,0.06,0.06],\"at\":[0.55,1.75,0],\"look\":\"plastic\",\"color\":\"#222222\"}],\"moves\":[{\"name\":\"potOn\",\"type\":\"appear\"}]},{\"id\":\"lid\",\"parent\":\"pot\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.48,\"h\":0.05,\"axis\":\"y\",\"at\":[0,1.875,0],\"look\":\"metal\",\"color\":\"#c44a3a\"},{\"shape\":\"box\",\"size\":[0.12,0.08,0.12],\"at\":[0,1.94,0],\"look\":\"plastic\",\"color\":\"#222222\"}],\"moves\":[{\"name\":\"lid\",\"type\":\"appear\"}]},{\"id\":\"wallL\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.4,1.4],\"at\":[-0.92,1.1,0],\"look\":\"metal\",\"color\":\"#cfd4d9\"}],\"moves\":[{\"name\":\"walls\",\"type\":\"appear\"}]},{\"id\":\"wallR\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.4,1.4],\"at\":[0.92,1.1,0],\"look\":\"metal\",\"color\":\"#cfd4d9\"}],\"moves\":[{\"name\":\"walls\",\"type\":\"appear\"}]},{\"id\":\"wallB\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.9,0.4,0.06],\"at\":[0,1.1,-0.67],\"look\":\"metal\",\"color\":\"#cfd4d9\"}],\"moves\":[{\"name\":\"walls\",\"type\":\"appear\"}]},{\"id\":\"grate\",\"parent\":\"wallL\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.9,0.05,0.07],\"at\":[0,1.325,-0.3],\"look\":\"metal\",\"color\":\"#2f3235\"},{\"shape\":\"box\",\"size\":[1.9,0.05,0.07],\"at\":[0,1.325,0.3],\"look\":\"metal\",\"color\":\"#2f3235\"},{\"shape\":\"box\",\"size\":[0.07,0.05,1.2],\"at\":[0,1.325,0],\"look\":\"metal\",\"color\":\"#2f3235\"}],\"moves\":[{\"name\":\"grate\",\"type\":\"appear\"}]},{\"id\":\"burner\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.28,\"h\":0.08,\"axis\":\"y\",\"at\":[0,0.94,0],\"look\":\"metal\",\"color\":\"#3a3d40\"}],\"moves\":[{\"name\":\"valve\",\"type\":\"appear\"}]},{\"id\":\"valve\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.2,0.3],\"at\":[0,1.0,0.6],\"look\":\"metal\",\"color\":\"#555b61\"},{\"shape\":\"tube\",\"path\":[[0,0.98,0.45],[0,0.97,0.1]],\"r\":0.05,\"look\":\"metal\",\"color\":\"#555b61\"}],\"moves\":[{\"name\":\"valve\",\"type\":\"appear\"}]},{\"id\":\"knob\",\"parent\":\"base\",\"at\":[0.6,0.7,0.75],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.13,\"h\":0.1,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#222222\"},{\"shape\":\"box\",\"size\":[0.04,0.14,0.04],\"at\":[0,0.07,0.07],\"look\":\"paint\",\"color\":\"#f2f2f2\"}],\"moves\":[{\"name\":\"knob\",\"type\":\"appear\"},{\"name\":\"turn\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":90}]},{\"id\":\"stand\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,1.0,0.5],\"at\":[1.4,0.5,0],\"look\":\"metal\",\"color\":\"#7c848c\"}],\"moves\":[{\"name\":\"standOn\",\"type\":\"appear\"}]},{\"id\":\"door\",\"parent\":\"base\",\"at\":[0,0.1,0.7],\"shapes\":[{\"shape\":\"panel\",\"size\":[1.5,0.4],\"thick\":0.05,\"at\":[0,0.2,0.03],\"look\":\"metal\",\"color\":\"#cfd4d9\"},{\"shape\":\"panel\",\"size\":[1.0,0.2],\"thick\":0.02,\"at\":[0,0.2,0.065],\"look\":\"glass\",\"color\":\"#26333d\"},{\"shape\":\"box\",\"size\":[1.1,0.05,0.06],\"at\":[0,0.38,0.09],\"look\":\"metal\",\"color\":\"#555b61\"}],\"moves\":[{\"name\":\"door\",\"type\":\"appear\"}]},{\"id\":\"hood\",\"parent\":\"wallB\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.9,0.9,0.06],\"at\":[0,1.75,-0.67],\"look\":\"metal\",\"color\":\"#b9bec4\"},{\"shape\":\"box\",\"size\":[1.9,0.35,0.9],\"at\":[0,2.38,-0.35],\"look\":\"metal\",\"color\":\"#b9bec4\"}],\"moves\":[{\"name\":\"hood\",\"type\":\"appear\"}]},{\"id\":\"lamp\",\"parent\":\"hood\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"light\",\"r\":0.1,\"at\":[0,2.18,-0.2],\"color\":\"#ffe9a0\"}],\"moves\":[{\"name\":\"glow\",\"type\":\"light\"}]}]}},{\"id\":\"flame\",\"kind\":\"flare\",\"params\":{\"pos\":[0,1.1,-4.5],\"intensity\":30}},{\"id\":\"heatArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-0.9,1.5,-4],\"dir\":[-1,0],\"travel\":1.2,\"phase\":0},{\"at\":[0.9,1.5,-4],\"dir\":[1,0],\"travel\":1.2,\"phase\":0.2},{\"at\":[0,2.3,-4],\"dir\":[0,1],\"travel\":1.2,\"phase\":0.4},{\"at\":[-0.7,2.0,-4],\"dir\":[-1,1],\"travel\":1.2,\"phase\":0.6},{\"at\":[0.7,2.0,-4],\"dir\":[1,1],\"travel\":1.2,\"phase\":0.8}],\"opts\":{\"scale\":0.9,\"color\":\"#ff8a2a\"}}},{\"id\":\"boil\",\"kind\":\"flow\",\"params\":{\"path\":[[0.3,1.9,-4.2],[0.3,1.85,-4.1],[0.3,1.45,-4.1],[0.3,1.05,-4.0],[0.3,1.04,-3.85],[0.3,0.9,-3.76],[0.3,0.5,-3.66],[0.3,0.15,-3.6]],\"look\":\"water\",\"size\":0.14,\"speed\":1.2,\"count\":26}},{\"id\":\"gas\",\"kind\":\"flow\",\"params\":{\"path\":[[0,1.1,-3.95],[0,1.09,-4.4]],\"look\":\"spray\",\"size\":0.1,\"speed\":1.5,\"count\":14}},{\"id\":\"rangeOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-1.05,0.14,-3.65],[1.05,0.14,-3.65],[1.05,2.0,-3.65],[-1.05,2.0,-3.65]],\"opts\":{\"r\":0.05,\"closed\":true}}},{\"id\":\"temp\",\"kind\":\"counter\",\"params\":{\"pos\":[1.4,1.52,-4.5],\"size\":0.8,\"from\":0,\"to\":1950,\"color\":\"#5ab4ff\",\"bar\":false}},{\"id\":\"flag\",\"kind\":\"flag\",\"params\":{\"at\":[-2.8,0.12,-5],\"colors\":[\"#0055a4\",\"#ffffff\",\"#ef4135\"],\"w\":1.4,\"h\":0.9,\"pole\":3}},{\"id\":\"book\",\"kind\":\"book\",\"params\":{\"w\":1.2,\"h\":1.6,\"bg\":\"#2b4a6f\",\"book\":true,\"spine\":\"#1c3149\",\"lines\":[{\"text\":\"GAS\",\"font\":\"bold 70px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":150},{\"text\":\"COOKER\",\"font\":\"bold 60px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":230},{\"rule\":true,\"y\":268,\"color\":\"#f2d58e\"},{\"text\":\"J. SHARP\",\"font\":\"bold 46px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":380},{\"text\":\"1826\",\"font\":\"bold 56px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":540}],\"from\":[-2.6,0.3,-4.6],\"to\":[-2.6,1.7,-4.6],\"rot\":[-0.12,0.25,0.02]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[4.2,0.12,-3],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"range\",\"does\":\"a pot sits over an open fire\"},\"do\":[{\"p\":\"range\",\"v\":\"hearth\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"potOn\",\"w\":\"pot\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flame\",\"v\":\"show\",\"w\":\"fire\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range.pot\",\"flame\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"heatArrows\",\"does\":\"heat blasts out of the open flame\"},\"state\":{\"text\":\"TOO HOT\",\"w\":\"heat\"},\"do\":[{\"p\":\"heatArrows\",\"v\":\"show\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"range\",\"does\":\"steel walls and a grate wrap the flame\"},\"do\":[{\"p\":\"heatArrows\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"walls\",\"w\":\"walls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"grate\",\"w\":\"grate\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"boil\",\"does\":\"the soup boils over and runs down the front\"},\"state\":{\"text\":\"BOILS OVER\",\"w\":\"boils\"},\"do\":[{\"p\":\"boil\",\"v\":\"start\",\"w\":\"boils\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"range\",\"does\":\"a valve and a knob appear and the knob turns\"},\"do\":[{\"p\":\"boil\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"valve\",\"w\":\"valve\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"knob\",\"w\":\"knob\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"turn\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range.knob\",\"range.valve\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"rangeOutline\",\"does\":\"a glowing outline traces the range\"},\"do\":[{\"p\":\"rangeOutline\",\"v\":\"show\",\"w\":\"gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"gas\",\"does\":\"gas drops flow from the valve to the burner\"},\"do\":[{\"p\":\"rangeOutline\",\"v\":\"hide\",\"w\":\"Gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gas\",\"v\":\"start\",\"w\":\"flows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range.valve\",\"range.burner\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"temp\",\"does\":\"the number beside the flame counts up to 1950\"},\"do\":[{\"p\":\"gas\",\"v\":\"stop\",\"w\":\"blue\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"standOn\",\"w\":\"blue\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"show\",\"w\":\"flame\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"count\",\"w\":\"burns\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"range\",\"range.stand\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"flag\",\"does\":\"a French flag gets crossed out\"},\"do\":[{\"p\":\"temp\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"standOnBack\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flag\",\"v\":\"show\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flag\",\"v\":\"cross\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flag\",\"range\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"book\",\"does\":\"a gas cooker book rises with the year 1826\"},\"do\":[{\"p\":\"flag\",\"v\":\"hide\",\"w\":\"It\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"book\",\"v\":\"show\",\"w\":\"James\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"book\",\"range\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"range\",\"does\":\"oven door, lid and hood with a lit lamp complete the range\"},\"do\":[{\"p\":\"book\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"door\",\"w\":\"door\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"lid\",\"w\":\"lid\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"hood\",\"w\":\"hood\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"range\",\"v\":\"glow\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"1950 °C\",\"at\":{\"s\":\"fact\",\"w\":\"1950\",\"o\":0},\"d\":1.8},{\"text\":\"1826\",\"at\":{\"s\":\"mythFact\",\"w\":\"1826\",\"o\":0},\"d\":1.3}],\"sfx\":[{\"lib\":\"flame\",\"at\":{\"s\":\"hook\",\"w\":\"fire\",\"o\":0},\"d\":1.5},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem2\",\"w\":\"boils\",\"o\":0},\"d\":1.4},{\"lib\":\"flame\",\"at\":{\"s\":\"fact\",\"w\":\"flame\",\"o\":0},\"d\":1.3}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"1950\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"1826\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How a gas range works",
+   "hero": "a gas range",
+   "parts": [
+    "pot",
+    "fire",
+    "hearth",
+    "steel walls",
+    "grate",
+    "gas valve",
+    "knob",
+    "burner",
+    "oven door",
+    "lid",
+    "hood",
+    "lamp"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "set a pot over an open fire and you already have the idea of a stove"
+    },
+    {
+     "role": "problem",
+     "idea": "the open flame throws heat all over the room, and cooking is the top cause of home fires"
+    },
+    {
+     "role": "fix1",
+     "idea": "box the fire in with steel walls and put the pot on a grate"
+    },
+    {
+     "role": "problem2",
+     "idea": "the trapped heat is all or nothing, so the soup boils over and runs down the front"
+    },
+    {
+     "role": "fix2",
+     "idea": "add a gas valve and a knob that turns the flame down"
+    },
+    {
+     "role": "name",
+     "idea": "this box with a burner, a valve and a knob is a gas range"
+    },
+    {
+     "role": "how",
+     "idea": "gas flows through the valve to the burner, and a rotten-egg smell is added so you notice leaks"
+    },
+    {
+     "role": "fact",
+     "idea": "the blue flame burns at about 1950 degrees, so the knob matters"
+    },
+    {
+     "role": "myth",
+     "idea": "the gas stove is not a French invention, whatever the French word cuisinière suggests"
+    },
+    {
+     "role": "mythFact",
+     "idea": "it was an Englishman, James Sharp, who patented it in 1826"
+    },
+    {
+     "role": "finish",
+     "idea": "an oven door, a pot lid and a hood with a light complete the range"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm end: the range stands finished with its flame burning under the lid"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "orange heat arrows blast out sideways and up from the open flame under the pot",
+     "stakes": "the room and the home could catch fire",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the pot boils over and water runs down the front of the range",
+     "stakes": "a scalding, messy spill for whoever cooks",
+     "size": 6
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Cooking equipment is the leading cause of home fires in the US, about half of reported home fires (NFPA)",
+     "role": "problem",
+     "search": "NFPA cooking leading cause of home fires percent"
+    },
+    {
+     "claim": "Utilities add mercaptan, a chemical that smells like rotten eggs, to odorless natural gas so leaks are noticed",
+     "role": "how",
+     "search": "why is mercaptan added to natural gas rotten egg smell"
+    },
+    {
+     "claim": "A natural gas flame burns at about 1950 degrees Celsius",
+     "role": "fact",
+     "search": "natural gas flame temperature in air celsius"
+    },
+    {
+     "claim": "James Sharp, an Englishman, patented a gas cooker in 1826 and opened a gas stove factory in 1836",
+     "role": "mythFact",
+     "search": "James Sharp gas stove 1826 patent Northampton"
+    }
+   ]
+  }
+ }
+}

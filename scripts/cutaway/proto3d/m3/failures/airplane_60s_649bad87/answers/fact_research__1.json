@@ -1,0 +1,158 @@
+{
+ "hash": "*",
+ "by": "real run 649bad87-7311-43c9-a585-c5c3c7e863d5",
+ "searches": 4,
+ "data": {
+  "text": "I ran one search per claim. Search results are mixed, and the best sources are a type certificate data sheet summary, the 172R and 172SP handbooks and data sheets, AOPA, Flying magazine and the NAFI mentor page. I've avoided forums and quiz sites as evidence. Two of the cited pages (studentpilot.com and the Flying magazine piece) are secondary summaries of the FAA data sheet and the pilot's operating handbook (POH).\n\n**Claim 0: maximum takeoff weight of about 1,111 kg (2,450 lb). Supported in a corrected form.**\n- A page summarizing the FAA type certificate data sheet lists the 172R (1996) at \"2,450 lb\" maximum takeoff weight. Source: https://studentpilot.com/learn-to-fly/training-aircraft/cessna-172/\n- The 172R handbook gives a different figure. It lists a takeoff weight of 2457 lb, and 2450 lb is the landing weight. It also lists the ramp weight. Source: https://wayman.edu/files/172R-POH.pdf\n- The 172S/SP is higher. Max T/O weight is 2,550 lb (1,157 kg). Sources: https://www.globalair.com/aircraft-specifications/cessna/cessna-172-sp-specifications/605 and https://www.thrustflight.com/cessna-172/\n- Earlier models are lower. One 1972 172N is listed at 2300 lb. Source: https://mentoneflyingclub.org/n6091d/\n- The 2,450 lb = 1,111 kg conversion is correct. A listing of 172R specs gives \"Gross weight: 2,450 lb (1,111 kg)\". Source: https://airshow.fandom.com/wiki/Cessna_172 (a fan wiki, so I used it only for the conversion).\n- **Corrected form:** \"Older Cessna 172s, such as the 172R, have a maximum takeoff weight of about 2,450 lb (1,111 kg). Newer 172S models are certified to 2,550 lb (1,157 kg).\"\n\n**Claim 1: lifts off at about 55 knots, roughly 100 km/h. Supported, with a wording tweak.**\n- Flying magazine says that, according to its POH, the Cessna 172's \"normal rotation or takeoff speed is about 55 knots indicated airspeed\". Source: https://www.flyingmag.com/how-fast-do-airplanes-take-off/\n- The Purdue Aviation 172SP data sheet lists \"Rotation speed Vr 55 KIAS\". Source: https://www.purdueaviationllc.com/storage/app/media/Data%20Sheets/C172SP%20Data%20Sheet.pdf\n- 55 kt × 1.852 = 101.9 km/h, so \"roughly 100 km/h\" is fine.\n- 55 KIAS is the speed at which the pilot starts raising the nose, and the plane then lifts off. It is also an indicated airspeed, not groundspeed.\n- **Suggested wording:** \"It rotates at about 55 knots indicated, roughly 100 km/h.\"\n\n**Claim 2: about 16 m² (174 sq ft) of wing, so about 70 kg per m² at takeoff. Supported as written.**\n- AOPA lists \"Wing Area 174 sq ft\" and \"Wing loading 14.7 lb/sq ft\". Source: https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172. The 14.7 figure matches the 2,550 lb weight (2,550 ÷ 174).\n- Another source gives \"The total wing area is 174 square feet (16.17 square meters)\". Source: https://www.thisdayinaviation.com/tag/cessna-172/\n- Cessna 172S: \"174 sq ft / 16.2 m²\". Source: https://aviationacademy.ro/en/fleet/cessna-172/\n- My calculation from these figures:\n  - 1,111 kg ÷ 16.17 m² ≈ 68.7 kg/m².\n  - 1,157 kg ÷ 16.17 m² ≈ 71.5 kg/m².\n  - Both are \"roughly 70 kg\".\n\n**Claim 3: engine off, glides about 9 m forward per 1 m of drop. Supported as written, as an approximate figure.**\n- The National Association of Flight Instructors (NAFI) says a 172 at its optimum glide speed of 65 knots travels 6,582 ft per minute. With a descent rate of 725 fpm, that gives \"a glide ratio of 9:1\". Source: https://nafimentor.org/mastering-the-glide/\n- Another source, which cites a 9:1 published ratio, says weight changes the best glide speed and sink rate but not the maximum glide ratio. Source: https://www.firgelliauto.com/blogs/calculators/glide-ratio-ld-calculator. It is a calculator site, so treat it as weaker evidence.\n- The 9:1 figure applies to still air, with the propeller windmilling and at the best-glide speed (about 65–68 KIAS, depending on the model and weight). Wind, turns and flap use reduce it. A pilot-discussion thread computes about 8.2 for one model, which is why I'd say \"about\".",
+  "sources": [
+   {
+    "url": "https://groups.google.com/g/rec.aviation.piloting/c/jaTWFFWzZOw",
+    "title": "Glide Distance for Cessna 172N"
+   },
+   {
+    "url": "https://nafimentor.org/mastering-the-glide/",
+    "title": "Mastering the Glide"
+   },
+   {
+    "url": "https://forums.x-plane.org/forums/topic/301245-default-cessna-172-engine-out-glide-performance/",
+    "title": "Default Cessna-172 Engine Out Glide Performance - General X-Plane Discussion - X-Plane.Org Forum"
+   },
+   {
+    "url": "https://forums.x-plane.org/forums/topic/94346-glide-ratio/",
+    "title": "Glide ratio - Airfoillabs - X-Plane.Org Forum"
+   },
+   {
+    "url": "https://www.firgelliauto.com/blogs/calculators/glide-ratio-ld-calculator",
+    "title": "Glide Ratio (L/D) Interactive Calculator"
+   },
+   {
+    "url": "https://www.youtube.com/watch?v=ZP8KL4j9yA8",
+    "title": "What's Your Aircraft's Glide Ratio?"
+   },
+   {
+    "url": "https://www.pilotsofamerica.com/community/threads/glide-ratios.46249/",
+    "title": "Glide Ratios"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Massey_Air_Museum",
+    "title": "Massey Air Museum"
+   },
+   {
+    "url": "https://www.airliners.net/forum/viewtopic.php?t=270137",
+    "title": "Glide Ratio Of Airline Jets Compared To A Light Ac - Airliners.net"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Cessna_170",
+    "title": "Cessna 170"
+   },
+   {
+    "url": "https://airshow.fandom.com/wiki/Cessna_172",
+    "title": "Cessna 172"
+   },
+   {
+    "url": "https://www.thisdayinaviation.com/tag/cessna-172/",
+    "title": "Cessna 172"
+   },
+   {
+    "url": "https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172",
+    "title": "Cessna 172S - AOPA"
+   },
+   {
+    "url": "https://ntps.edu/cessna-c-172/",
+    "title": "Cessna C-172"
+   },
+   {
+    "url": "https://aviationacademy.ro/en/fleet/cessna-172/",
+    "title": "Cessna 172 EN - Aviation Academy"
+   },
+   {
+    "url": "https://jettly.com/post/cessna-172s-skyhawk",
+    "title": "Comprehensive Overview of the Cessna 172S Skyhawk"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Cessna_170",
+    "title": "Cessna 170"
+   },
+   {
+    "url": "https://wingsflightschool.com/document/Cessna-172N-POH-1978.pdf",
+    "title": "Cessna 172 POH"
+   },
+   {
+    "url": "https://www.a-centaviation.com/cessna-172s",
+    "title": "Cessna 172S"
+   },
+   {
+    "url": "https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf",
+    "title": "CESSNA MODEL 172S NOTICE INTRODUCTION"
+   },
+   {
+    "url": "https://studentpilot.com/learn-to-fly/training-aircraft/cessna-172/",
+    "title": "Cessna 172 Specs: Skyhawk Cruise Speed, Fuel and Models"
+   },
+   {
+    "url": "https://www.globalair.com/aircraft-specifications/cessna/cessna-172-sp-specifications/605",
+    "title": "CESSNA 172 SP Specifications, Performance, and Range"
+   },
+   {
+    "url": "https://wayman.edu/files/172R-POH.pdf",
+    "title": "NOTICE AT THE TIME OF ISSUANCE, THIS INFORMATION MANUAL WAS AN EXACT"
+   },
+   {
+    "url": "https://www.thrustflight.com/cessna-172/",
+    "title": "The Cessna 172 Skyhawk - Thrust Flight"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Cessna_350_Corvalis",
+    "title": "Cessna 350 Corvalis"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Cessna_188",
+    "title": "Cessna 188"
+   },
+   {
+    "url": "https://jettly.com/post/range-of-cessna-172",
+    "title": "Range of Cessna 172: How Far a Skyhawk Can Really Fly"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Cessna_177_Cardinal",
+    "title": "Cessna 177 Cardinal"
+   },
+   {
+    "url": "https://flyawaysimulation.com/ask/answers/cessna-172-take-off-speed/",
+    "title": "What is the Cessna 172 take-off speed?"
+   },
+   {
+    "url": "https://www.flyingmag.com/how-fast-do-airplanes-take-off/",
+    "title": "How Fast Do Airplanes Take Off?"
+   },
+   {
+    "url": "https://quizlet.com/749023983/cessna-172-speeds-flash-cards/",
+    "title": "Cessna 172 Speeds Flashcards"
+   },
+   {
+    "url": "https://flyawaysimulation.com/ask/answers/cessna-172-v-speeds-meanings/",
+    "title": "Cessna 172 V-speeds: what are they and what do they mean?"
+   },
+   {
+    "url": "https://www.purdueaviationllc.com/storage/app/media/Data%20Sheets/C172SP%20Data%20Sheet.pdf",
+    "title": "Data Sheet- Cessna 172SP Weights Aircraft Number Empty Weight Empty Moment"
+   },
+   {
+    "url": "https://mentoneflyingclub.org/n6091d/",
+    "title": "N6091D C-172 Skyhawk"
+   },
+   {
+    "url": "https://www.scribd.com/document/315288407/Tech-Specific-172-R",
+    "title": "100% found this document useful (1 vote)"
+   },
+   {
+    "url": "https://www.scribd.com/document/52925159/Check-172",
+    "title": "0% found this document useful (0 votes)"
+   },
+   {
+    "url": "https://es.scribd.com/document/636919511/Untitled",
+    "title": "0% encontró este documento útil (0 votos)"
+   }
+  ]
+ }
+}

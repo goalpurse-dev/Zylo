@@ -1,0 +1,79 @@
+{
+ "runId": "47125f2b-2297-4fc1-8945-c17103289471",
+ "topic": "How air suspension (bagged cars) works the simple way",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-04T13:23:55.115234+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: hook, name",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 1.32894,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.62925,
+   "outputTokens": 62380,
+   "at": "2026-11-04T13:31:40.655Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.21283,
+   "outputTokens": 13406,
+   "at": "2026-11-04T13:32:42.246Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.15562,
+   "outputTokens": 3592,
+   "at": "2026-11-04T13:33:15.500Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.03124,
+   "outputTokens": 1601,
+   "at": "2026-11-04T13:33:24.378Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01364,
+   "outputTokens": 619,
+   "at": "2026-11-04T13:33:28.865Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.03189,
+   "outputTokens": 1303,
+   "at": "2026-11-04T13:34:09.504Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.007,
+   "outputTokens": 270,
+   "at": "2026-11-04T13:34:11.972Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.10406,
+   "outputTokens": 3168,
+   "at": "2026-11-04T13:34:27.810Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00569,
+   "outputTokens": 301,
+   "at": "2026-11-04T13:34:41.709Z"
+  }
+ ]
+}

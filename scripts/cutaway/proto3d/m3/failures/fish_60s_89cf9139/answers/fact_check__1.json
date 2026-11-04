@@ -1,0 +1,85 @@
+{
+ "hash": "*",
+ "by": "real run 89cf9139-ead7-42fd-bfcb-616961808405",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Nitrifying one gram of ammonia nitrogen into nitrate uses about 4.57 grams of oxygen.",
+    "why": "A Water Research paper and a wastewater patent both give 4.57 g O2 per g ammonia-N as the theoretical stoichiometry for complete oxidation to nitrate. It is a theoretical figure, and real systems differ slightly.",
+    "sources": [
+     {
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0043135412005623",
+      "title": "Probing the stoichiometry of the nitrification process using the respirometric approach - ScienceDirect"
+     },
+     {
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8287734",
+      "title": "Method for treating nitrogen in waste streams"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Goldfish can remember things for at least three months, not three seconds.",
+    "why": "Discover Wildlife says goldfish retain memories for at least three months. An AMNH student experiment tested recall at intervals up to six months. These are popular-science sources, not formal peer-reviewed studies, so avoid attributing the claim to a single study.",
+    "sources": [
+     {
+      "url": "https://www.discoverwildlife.com/animal-facts/fish/goldfish-memory",
+      "title": "Do goldfish really only have a 3 second memory?"
+     },
+     {
+      "url": "https://www.amnh.org/learn-teach/curriculum-collections/young-naturalist-awards/goldfish-as-a-model-for-understanding-learning-and-memory-more-complex-than-you-think",
+      "title": "Goldfish as a Model for Understanding Learning and Memory: More Complex Than You Think"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "Long-term exposure to unionized ammonia above about 0.02 mg per liter is generally considered potentially harmful to fish, including their gills; some guides put the damage point nearer 0.05 mg per liter.",
+    "why": "0.02 mg/L is a general or chronic safety threshold, not a specific gill-damage onset. Sources differ, and Texas A&M uses 0.05 mg/L. One tilapia study links continuous exposure above 0.02 mg/L to gill irritation.",
+    "sources": [
+     {
+      "url": "http://web.utk.edu/~rstrange/wfs556/html-content/05-ammonia.html",
+      "title": "Recirculation Aquaculture: Water Quality: Ammonia"
+     },
+     {
+      "url": "https://www.sciencedirect.com/science/article/pii/S2352513422003210",
+      "title": "Evaluation of acute toxicity of ammonia in Genetically Improved Farmed Tilapia - ScienceDirect"
+     },
+     {
+      "url": "https://extension.rwfm.tamu.edu/wp-content/uploads/sites/8/2013/09/Ammonia-in-Aquatic-Systems1.pdf",
+      "title": "FA16 Ammonia in Aquatic Systems1"
+     },
+     {
+      "url": "https://www.nature.org/content/dam/tnc/nature/en/documents/literature-review-ammonia.pdf",
+      "title": "A Literature Review of Effects of Ammonia on Fish November 2010 For By"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Fresh water holds about 14.6 mg of oxygen per liter at 0 degrees C but only about 7.6 mg per liter at 30 degrees C (at saturation and sea-level pressure).",
+    "why": "Tables give 14.60-14.62 mg/L at 0 C and 7.54-7.56 mg/L at 30 C, so about 7.6 is acceptable. This holds for saturated fresh water at sea-level pressure.",
+    "sources": [
+     {
+      "url": "https://www.engineersedge.com/calculators/oxygen_dissolved_in_water_16058.htm",
+      "title": "Oxygen Dissolved in Water Table, Formula and Calculator"
+     },
+     {
+      "url": "https://www.aquatext.com/tables/oxygen.htm",
+      "title": "Dissolved Oxygen Table"
+     },
+     {
+      "url": "https://global.oup.com/us/companion.websites/fdscontent/uscompanion/us/static/companion.websites/9780197651896/Table_18.2_Factors_affecting_O2_solubility.pdf",
+      "title": "Table 18.2 Factors affecting O2 solubility in water* A. Temperature T °C 0 5"
+     }
+    ]
+   }
+  ]
+ }
+}

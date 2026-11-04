@@ -1,0 +1,106 @@
+{
+ "hash": "*",
+ "by": "real run 8540828c-0927-4dbf-824b-0f02448f7bf6",
+ "searches": 0,
+ "data": {
+  "why": "An airplane in a green field, built as a rig: a tube with wings, wheels, a propeller and flaps that swing. It opens close on the plane rolling, and the chain is no lift, then an engine, then a runway that is too long (a gauge ticking to 300), then flaps and takeoff. The camera stays on the plane and the wing for the airfoil name, with white air flows for the myth and the real mechanism, and it ends on the plane back down with windows, a landing light and boarding stairs.",
+  "sceneJson": "{\"world\":{\"cut\":[-13.5,-12.5,-1.5,1],\"house\":false,\"porch\":false,\"trees\":[[-14,-14],[14,-13,0.9]],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"plane\",\"kind\":\"rig\",\"params\":{\"name\":\"airplane\",\"synonyms\":[\"plane\",\"aircraft\"],\"pos\":[-7,0,-4.5],\"main\":true,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[7,1.4,1.4],\"at\":[0.5,1.9,0],\"look\":\"paint\",\"color\":\"#f4f4f0\"},{\"shape\":\"box\",\"size\":[2.2,0.3,7],\"at\":[1,1.7,0],\"look\":\"paint\",\"color\":\"#d9362b\"},{\"shape\":\"box\",\"size\":[1.4,1.6,0.15],\"at\":[-2.6,3.4,0],\"look\":\"paint\",\"color\":\"#d9362b\"},{\"shape\":\"box\",\"size\":[1,0.12,2.8],\"at\":[-2.5,2.2,0],\"look\":\"paint\",\"color\":\"#d9362b\"},{\"shape\":\"box\",\"size\":[0.14,0.8,0.14],\"at\":[1.8,0.8,0.6],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.14,0.8,0.14],\"at\":[1.8,0.8,-0.6],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[-2.6,0.75,0],\"look\":\"metal\"}],\"moves\":[{\"name\":\"roll\",\"type\":\"slide\",\"to\":[5,0,0]},{\"name\":\"takeoff\",\"type\":\"track\",\"path\":[[0,0,0],[4,0,0],[10,4.5,0]]}]},{\"id\":\"wheelA\",\"parent\":\"body\",\"at\":[1.8,0.45,0.6],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,0.1],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":-1.5}]},{\"id\":\"wheelB\",\"parent\":\"body\",\"at\":[1.8,0.45,-0.6],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,-0.1],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":-1.5}]},{\"id\":\"wheelC\",\"parent\":\"body\",\"at\":[-2.6,0.3,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.3,\"w\":0.2,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":-2}]},{\"id\":\"prop\",\"parent\":\"body\",\"at\":[4.9,1.9,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.6,\"h\":0.8,\"axis\":\"x\",\"at\":[-0.5,0,0],\"look\":\"paint\",\"color\":\"#d9362b\"},{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.2,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.08,2.2,0.22],\"at\":[0.05,0,0],\"look\":\"metal\",\"color\":\"#2a2a2a\"},{\"shape\":\"box\",\"size\":[0.08,0.22,2.2],\"at\":[0.05,0,0],\"look\":\"metal\",\"color\":\"#2a2a2a\"}],\"moves\":[{\"name\":\"engine\",\"type\":\"appear\"},{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":3}]},{\"id\":\"flapL\",\"parent\":\"body\",\"at\":[-0.1,1.7,2.1],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.1,2.6],\"at\":[-0.35,0,0],\"look\":\"paint\",\"color\":\"#f4f4f0\"}],\"moves\":[{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":30}]},{\"id\":\"flapR\",\"parent\":\"body\",\"at\":[-0.1,1.7,-2.1],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.1,2.6],\"at\":[-0.35,0,0],\"look\":\"paint\",\"color\":\"#f4f4f0\"}],\"moves\":[{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":30}]},{\"id\":\"windows\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.4,0.06],\"at\":[-1.5,2.15,0.71],\"look\":\"glass\",\"color\":\"#6bbcff\"},{\"shape\":\"box\",\"size\":[0.5,0.4,0.06],\"at\":[-0.4,2.15,0.71],\"look\":\"glass\",\"color\":\"#6bbcff\"},{\"shape\":\"box\",\"size\":[0.5,0.4,0.06],\"at\":[0.7,2.15,0.71],\"look\":\"glass\",\"color\":\"#6bbcff\"},{\"shape\":\"box\",\"size\":[0.5,0.4,0.06],\"at\":[1.8,2.15,0.71],\"look\":\"glass\",\"color\":\"#6bbcff\"},{\"shape\":\"box\",\"size\":[0.7,0.45,0.06],\"at\":[3.1,2.2,0.71],\"look\":\"glass\",\"color\":\"#6bbcff\"}],\"moves\":[{\"name\":\"windows\",\"type\":\"appear\"}]},{\"id\":\"lamp\",\"parent\":\"body\",\"at\":[2.1,1.7,3],\"shapes\":[{\"shape\":\"light\",\"r\":0.2,\"color\":\"#fff3a0\",\"at\":[0.05,0,0]}],\"moves\":[{\"name\":\"glow\",\"type\":\"light\"}]}]}},{\"id\":\"pole\",\"kind\":\"box\",\"params\":{\"mat\":\"post\",\"size\":[0.3,1.5,0.3],\"pos\":[9.5,0.75,-3.2],\"r\":0.03}},{\"id\":\"counter\",\"kind\":\"counter\",\"params\":{\"pos\":[9.5,1.95,-3],\"size\":1.2,\"from\":0,\"to\":300,\"bar\":true,\"color\":\"#ffd23d\"}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-1.6,3.4,-1],\"dir\":[0,-1],\"travel\":0.9,\"phase\":0},{\"at\":[-0.2,3.4,-1],\"dir\":[0,-1],\"travel\":0.9,\"phase\":0.5}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"lift\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[3.4,5,-0.6],\"dir\":[0,1],\"travel\":0.9,\"phase\":0},{\"at\":[4.7,5,-0.6],\"dir\":[0,1],\"travel\":0.9,\"phase\":0.5}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"airReal\",\"kind\":\"flow\",\"params\":{\"path\":[[8.5,6.2,-0.7],[5.6,6.85,-0.7],[3.2,6.8,-0.7],[1.2,5.8,-0.7],[-1.5,4.2,-0.7]],\"look\":\"spray\",\"size\":0.14,\"speed\":3,\"count\":16}},{\"id\":\"airTop\",\"kind\":\"flow\",\"params\":{\"path\":[[8.5,6.2,-0.7],[5.6,6.9,-0.7],[3.2,6.85,-0.7],[0.2,6.2,-0.7]],\"look\":\"spray\",\"size\":0.14,\"speed\":3,\"count\":12}},{\"id\":\"airBottom\",\"kind\":\"flow\",\"params\":{\"path\":[[8.5,6.2,-0.7],[5.6,5.5,-0.7],[3.2,5.55,-0.7],[0.2,6.2,-0.7]],\"look\":\"spray\",\"size\":0.14,\"speed\":3,\"count\":12}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"points\":[[2.7,5.85,-0.7],[5.3,5.85,-0.7],[5.3,6.55,-0.7],[2.7,6.55,-0.7]],\"opts\":{\"r\":0.06,\"closed\":true}}},{\"id\":\"stairs\",\"kind\":\"prop\",\"params\":{\"type\":\"stairs\",\"h\":1.3,\"w\":1,\"pos\":[-9.5,0,-3.3]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[10,0.08,-7],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"plane\",\"does\":\"roll across the field\"},\"do\":[{\"p\":\"plane\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"turn\",\"w\":\"roll\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"roll\",\"w\":\"roll\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"weight\",\"does\":\"weight arrows press down, wheels keep turning\"},\"state\":{\"text\":\"NO LIFT\",\"w\":\"nothing\"},\"do\":[{\"p\":\"weight\",\"v\":\"show\",\"w\":\"nothing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"plane\",\"does\":\"engine pops in, propeller spins\"},\"do\":[{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"engine\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spin\",\"w\":\"propeller\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.prop\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"counter\",\"does\":\"gauge ticks up to 300 and turns red\"},\"state\":{\"text\":\"TOO LONG\",\"w\":\"300\"},\"do\":[{\"p\":\"counter\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"counter\",\"v\":\"count\",\"w\":\"300\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\",\"counter\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"plane\",\"does\":\"flaps swing down, plane lifts off\"},\"do\":[{\"p\":\"counter\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollBack\",\"w\":\"So\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flaps\",\"w\":\"flaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"takeoff\",\"w\":\"lifts\",\"o\":0,\"d\":3,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"turnBack\",\"w\":\"lifts\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.flapL\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"lifts\",\"box\":[-6,0,-6,9,7,1]}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"outline traces the wing\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"airfoil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[1,3.5,-3,8,8.5,0.5]}]},{\"s\":\"how\",\"shows\":{\"p\":\"airReal\",\"does\":\"air bends down off the wing, lift arrows push up\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"Its\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airReal\",\"v\":\"start\",\"w\":\"bends\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"show\",\"w\":\"pushed\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[0,3,-4,10,9,0.5]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"airTop\",\"does\":\"two air streams race to meet behind the wing, then vanish on not\"},\"do\":[{\"p\":\"airReal\",\"v\":\"stop\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airTop\",\"v\":\"start\",\"w\":\"racing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airBottom\",\"v\":\"start\",\"w\":\"racing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airTop\",\"v\":\"stop\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airBottom\",\"v\":\"stop\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[0,3,-4,10,9,0.5]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"airReal\",\"does\":\"wing throws air down, lift arrows push the plane up\"},\"do\":[{\"p\":\"airReal\",\"v\":\"start\",\"w\":\"throws\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"show\",\"w\":\"up\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[0,3,-4,10,9,0.5]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"stairs\",\"does\":\"plane lands, windows and landing light appear, stairs pop in\"},\"do\":[{\"p\":\"airReal\",\"v\":\"stop\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"takeoffBack\",\"w\":\"Add\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flapsBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"windows\",\"w\":\"windows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"glow\",\"w\":\"landing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stairs\",\"v\":\"show\",\"w\":\"stairs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"300 METERS\",\"at\":{\"s\":\"problem2\",\"w\":\"300\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"engine\",\"o\":0},\"d\":2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"problem2\",\"w\":\"But\",\"o\":0},\"d\":1.5},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"lifts\",\"o\":0},\"d\":2}],\"chimes\":[{\"s\":\"problem2\",\"w\":\"300\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How an Airplane Flies",
+   "hero": "an airfoil",
+   "parts": [
+    "plane",
+    "wings",
+    "propeller",
+    "flaps",
+    "wheels",
+    "runway gauge",
+    "stairs"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "bolt wings to a tube and roll it across a field and you think you have an airplane"
+    },
+    {
+     "role": "problem",
+     "idea": "at slow speed the wings lift nothing, so it only rolls along the grass with its weight pressing down"
+    },
+    {
+     "role": "fix1",
+     "idea": "an engine and a propeller pull it much faster"
+    },
+    {
+     "role": "problem2",
+     "idea": "even fast, a small plane needs hundreds of meters of runway before the wings lift it"
+    },
+    {
+     "role": "fix2",
+     "idea": "flaps swing down so the wing lifts sooner, and the plane leaves the ground"
+    },
+    {
+     "role": "name",
+     "idea": "the wing's curved shape is an airfoil"
+    },
+    {
+     "role": "how",
+     "idea": "the curved top bends the air downward, so the wing is pushed up"
+    },
+    {
+     "role": "myth",
+     "idea": "air racing over the top to catch up with the air below is not what lifts a wing"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the air on top actually gets there first, and the wing throws it down so the plane goes up"
+    },
+    {
+     "role": "finish",
+     "idea": "the plane comes back down and gets windows, a landing light and boarding stairs"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: a finished airplane on the grass"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the plane rolls along the grass with yellow weight arrows pressing down and nothing lifting",
+     "stakes": "the plane never leaves the ground, so it is only a rolling tube",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "a gauge beside the plane ticks up to 300 and turns red",
+     "stakes": "a field far too short means the plane never gets airborne",
+     "size": 6
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A Cessna 172 needs a takeoff ground roll of roughly 300 meters (about 960 feet) at sea level at maximum weight",
+     "role": "problem2",
+     "search": "Cessna 172 takeoff ground roll 960 feet sea level"
+    },
+    {
+     "claim": "Flaps let a plane lift off and land at a lower speed and in a shorter distance",
+     "role": "fix2",
+     "search": "how flaps shorten takeoff roll lower stall speed"
+    },
+    {
+     "claim": "A wing lifts by deflecting air downward, which pushes the wing up (Newton's third law)",
+     "role": "how",
+     "search": "NASA how wings generate lift deflecting air downward"
+    },
+    {
+     "claim": "Air over the top of a wing reaches the trailing edge before the air below it, so the equal transit time explanation is wrong",
+     "role": "mythFact",
+     "search": "equal transit time myth wing lift air over top arrives first"
+    }
+   ]
+  }
+ }
+}

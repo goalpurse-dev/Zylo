@@ -22,7 +22,10 @@ for (const name of fs.existsSync(FAILURES) ? fs.readdirSync(FAILURES).sort() : [
     const r = JSON.parse(line.slice(7));
     assert.equal(r.error ?? null, null, r.error);
     // (a rewrite the newer free checks ask of an old plan is fine: it is cheap and they never fail it; anything else is new)
-    assert.ok(r.pending == null || /^words_repair/.test(r.pending), `it asks a paid call the real run never made: ${r.pending}`);
+    // (and a plan that failed its checks now passing them reaches the next step, one the real run never got to: the
+    // ancient bridge's fact research after the rig-on-a-rig fix of 2026-11-04; the plan is fixed, there is nothing to replay)
+    const further = r.pending && c.failed.code === "PLAN_FAILED" && !fs.existsSync(path.join(FAILURES, name, "answers", `${r.pending.split(":")[0]}.json`));
+    assert.ok(r.pending == null || /^words_repair/.test(r.pending) || further, `it asks a paid call the real run never made: ${r.pending}`);
     assert.deepEqual(r.problems, [], `it still stops: ${r.problems.join("; ")}`);
   });
 }

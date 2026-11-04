@@ -1,0 +1,84 @@
+{
+ "runId": "3f835948-d429-4f32-aeb3-0f3df5d465e8",
+ "topic": "ancient bridge",
+ "lengthSec": 30,
+ "kind": "custom",
+ "at": "2026-11-04T13:29:40.240112+00:00",
+ "failed": {
+  "code": "VOICE_FAILED",
+  "message": "voice check failed twice (stop and refund): take 1: repeated \"bridge\" (after \"is an arch\"); different word: \"pons\" heard as \"ponce\" (after \"curve so the\") | heard: \"If you dig a channel and lay a plank across the water, you have a bridge. But a cart loaded with stone rolls on and the plank snaps. So you build stone piers in the river and lay flat slabs across the piers. But stone is typically about 10 to 20 times stronger in compression than in tension, so the slab cracks. So you set a wooden frame, curve wedge stones over it, and lock in a keystone. This is \" || take 2: different word: \"pons\" heard as \"ponce\" (after \"curve so the\"); different word: \"fabricius\" heard as \"fabrizio\" (after \"curve so the\") | heard: \"If you dig a channel and lay a plank across the water, you have a bridge. But a cart loaded with stone rolls on and the plank snaps. So you build stone piers in the river and lay flat slabs across the piers. But stone is typically about 10 to 20 times stronger in compression than in tension. So the slab cracks. So you set a wooden frame, curve wedge stones over it, and lock in a keystone. This is \"",
+  "stage": "voice",
+  "attempts": 1
+ },
+ "costUsd": 1.06267,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.54688,
+   "outputTokens": 54126,
+   "at": "2026-11-04T13:38:46.547Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.11823,
+   "outputTokens": 2743,
+   "at": "2026-11-04T13:39:16.071Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02286,
+   "outputTokens": 1160,
+   "at": "2026-11-04T13:39:23.544Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01146,
+   "outputTokens": 498,
+   "at": "2026-11-04T13:39:27.662Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.02333,
+   "outputTokens": 949,
+   "at": "2026-11-04T13:40:01.010Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.018,
+   "outputTokens": 1331,
+   "at": "2026-11-04T13:40:10.568Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.11082,
+   "outputTokens": 3669,
+   "at": "2026-11-04T13:40:33.742Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00413,
+   "outputTokens": 197,
+   "at": "2026-11-04T13:40:46.522Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0612,
+   "outputTokens": null,
+   "at": "2026-11-04T13:40:48.949Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0612,
+   "outputTokens": null,
+   "at": "2026-11-04T13:41:02.294Z"
+  }
+ ]
+}

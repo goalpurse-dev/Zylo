@@ -143,7 +143,7 @@ export function rigBox(p, { swept = true, node = null } = {}) {
  * The code checks on a recipe (free, before anything is paid for after the plan): a recipe the renderer can build, of a
  * sensible size, every piece joined to its parent, standing on the floor (or in the cut). problems: [strings].
  */
-export function rigProblems(part, { floor = 0, cut = null } = {}) {
+export function rigProblems(part, { floor = 0, cut = null, supports = [] } = {}) {
   const P = [], p = part.params ?? {}, id = part.id, nodes = nodesOf(p);
   if (!nodes.length) return [`part ${id} (rig): needs nodes, each with shapes`];
   if (nodes.length > 40) P.push(`part ${id} (rig): ${nodes.length} nodes (at most 40)`);
@@ -188,7 +188,9 @@ export function rigProblems(part, { floor = 0, cut = null } = {}) {
     if (Math.max(...size) > 18) P.push(`part ${id} (rig): ${Math.max(...size).toFixed(1)} m across (at most 18: sizes are in metres)`);
     if (Math.max(...size) < 0.15) P.push(`part ${id} (rig): too small to see (${Math.max(...size).toFixed(2)} m)`);
     const inCut = cut && b.min[1] < -0.2 && b.min[0] < cut.x1 && b.max[0] > cut.x0 && b.max[2] > cut.z0;
-    if (!inCut && p.mount !== "wall" && Math.abs(b.min[1] - floor) > 0.3) P.push(`part ${id} (rig): its lowest point is at y = ${b.min[1].toFixed(2)}, not on the floor (y ${floor}): set pos y to the floor and build up from the node pivots`);
+    // (or standing on another rig: the cart crossing the deck of the ancient bridge run of 2026-11-04 was refused at 4.2 m)
+    const onPart = supports.some((s) => Math.abs(b.min[1] - s.max[1]) <= 0.3 && b.min[0] < s.max[0] && s.min[0] < b.max[0] && b.min[2] < s.max[2] && s.min[2] < b.max[2]);
+    if (!inCut && !onPart && p.mount !== "wall" && Math.abs(b.min[1] - floor) > 0.3) P.push(`part ${id} (rig): its lowest point is at y = ${b.min[1].toFixed(2)}, not on the floor (y ${floor}): set pos y to the floor and build up from the node pivots`);
   }
   return P;
 }

@@ -1,0 +1,54 @@
+{
+ "hash": "*",
+ "by": "real run 8540828c-0927-4dbf-824b-0f02448f7bf6",
+ "searches": 0,
+ "data": {
+  "title": "How an Airplane Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you bolt wings to a tube and roll it across a field, you have an airplane."
+   },
+   {
+    "role": "problem",
+    "text": "But at slow speed the wings lift nothing, and it only rolls along the grass."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add an engine and a propeller that pull it much faster."
+   },
+   {
+    "role": "problem2",
+    "text": "But even fast, a Cessna 172S needs about 960 feet of ground roll before the wings lift it."
+   },
+   {
+    "role": "fix2",
+    "text": "So you swing down flaps, which lets the wing lift sooner and the plane lifts off in a shorter distance."
+   },
+   {
+    "role": "name",
+    "text": "This is an airfoil."
+   },
+   {
+    "role": "how",
+    "text": "Its curved top bends the air downward, so the wing is pushed up."
+   },
+   {
+    "role": "myth",
+    "text": "And air racing over the top to catch the air below is not what lifts a wing."
+   },
+   {
+    "role": "mythFact",
+    "text": "A symmetric wing still generates lift, because the wing throws air down and the plane goes up."
+   },
+   {
+    "role": "finish",
+    "text": "Add windows, a landing light and boarding stairs."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built an airplane."
+   }
+  ]
+ }
+}

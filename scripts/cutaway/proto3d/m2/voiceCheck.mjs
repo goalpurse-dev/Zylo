@@ -20,7 +20,17 @@ const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy:
 const SCALES = { thousand: 1e3, million: 1e6, billion: 1e9 };
 // a contraction, "cannot" and its like are their words ("can't", "can not" and "cannot" all read "can not"); a unit
 // written short is its word
-const EXPAND = { lb: "pounds", lbs: "pounds", ft: "feet", sq: "square", gal: "gallons", mph: "miles per hour", cannot: "can not", cant: "can not", dont: "do not", doesnt: "does not", didnt: "did not", isnt: "is not", arent: "are not", wasnt: "was not", werent: "were not", wont: "will not", wouldnt: "would not", shouldnt: "should not", couldnt: "could not", hasnt: "has not", havent: "have not", hadnt: "had not", its: "it is", thats: "that is", theres: "there is", whats: "what is", heres: "here is", youre: "you are", youve: "you have", youll: "you will", theyre: "they are", weve: "we have", lets: "let us" };
+const EXPAND = { lb: "pounds", lbs: "pounds", ft: "feet", sq: "square", gal: "gallons", mph: "miles per hour", cannot: "can not", cant: "can not", dont: "do not", doesnt: "does not", didnt: "did not", isnt: "is not", arent: "are not", wasnt: "was not", werent: "were not", wont: "will not", wouldnt: "would not", shouldnt: "should not", couldnt: "could not", hasnt: "has not", havent: "have not", hadnt: "had not", its: "it is", thats: "that is", theres: "there is", whats: "what is", heres: "here is", youre: "you are", youve: "you have", youll: "you will", theyre: "they are", weve: "we have", lets: "let us",
+  // units the voice says in full ("0.02 mg" is read "milligrams"; the fish video of 2026-11-04 stopped on it)
+  mg: "milligrams", kg: "kilograms", km: "kilometres", cm: "centimetres", mm: "millimetres", ml: "millilitres", kmh: "kilometres per hour",
+  // the same word, either way (the bridge video of 2026-11-04 stopped on "round" heard "around")
+  around: "round", toward: "towards", gray: "grey", aluminum: "aluminium", tire: "tyre", tires: "tyres", curb: "kerb", curbs: "kerbs" };
+// British and American spellings are one word ("metre"/"meter", "centre"/"center", "colour"/"color", "realise"/
+// "realize"): both texts are written the British way before comparing (the bridge video of 2026-11-04 stopped on four)
+const spelling = (w) => w.length < 5 || /\d/.test(w) ? w : w
+  .replace(/^(\w*(?:met|cent|lit|fib|theat|lust|sabr|spect))er(s?)$/, "$1re$2")
+  .replace(/^(\w*(?:col|harb|neighb|flav|behavi|lab|hon|hum|vap|od|rum|savi|arm|vig|val))or(s?)$/, "$1our$2")
+  .replace(/^(\w{3,})iz(e|es|ed|ing|ation|ations|er|ers)$/, "$1is$2").replace(/^(\w{2,})yz(e|es|ed|ing)$/, "$1ys$2");
 // the little words a listener barely hears: one heard for another, or one extra or missing, is a note ("not" and "no"
 // are never little: they turn a sentence round)
 const LITTLE = new Set(["a", "an", "the", "in", "on", "of", "to", "at", "or", "and", "but", "so", "is", "it", "as", "for", "with", "by", "from", "that", "this", "then", "than", "be", "are", "was", "were", "its", "their", "your", "our", "up", "out", "off", "just", "now", "there", "here", "which", "who", "also", "too", "very", "will", "has", "have", "had", "do", "does", "can", "into", "onto", "you", "we", "they", "he", "she", "them", "all"]);
@@ -59,7 +69,7 @@ export function normWords(text) {
   for (let i = 0; i < raw.length; i++) {
     if (/^[b-hj-z]$/.test(raw[i]) && /^[a-z]$/.test(raw[i + 1] ?? "")) { let k = i, w = ""; while (/^[a-z]$/.test(raw[k] ?? "")) w += raw[k++]; letters.push(w); i = k - 1; } else letters.push(raw[i]);
   }
-  const words = letters.flatMap((w) => (EXPAND[w] ?? w).split(" "));
+  const words = letters.flatMap((w) => (EXPAND[w] ?? EXPAND[spelling(w)] ?? spelling(w)).split(" ").map(spelling));
   const out = [];
   for (let i = 0; i < words.length; i++) {
     const w = words[i];
@@ -80,8 +90,9 @@ const ENDINGS = new Set(["s", "es", "d", "ed", "ing", "e", "r", "er", "ly"]);
 const ending = (x, y) => { const [s, l] = x.length <= y.length ? [x, y] : [y, x]; return s.length >= 3 && l.startsWith(s) && ENDINGS.has(l.slice(s.length)); };
 // a long word spelt one letter off ("Flagg"/"flag", "grass"/"grasp"): the transcript's spelling, not a different word
 // (short words must match: "pit" heard "pot" fails)
+// (a word of 8+ letters may differ in its second letter too: "nitrifying" heard "nutrifying", the fish video of 2026-11-04)
 const oneOff = (x, y) => {
-  if (Math.max(x.length, y.length) < 5 || Math.abs(x.length - y.length) > 1 || x.slice(0, 2) !== y.slice(0, 2)) return false;
+  if (Math.max(x.length, y.length) < 5 || Math.abs(x.length - y.length) > 1 || x.slice(0, Math.min(x.length, y.length) >= 8 ? 1 : 2) !== y.slice(0, Math.min(x.length, y.length) >= 8 ? 1 : 2)) return false;
   let i = 0; while (x[i] === y[i]) i++;
   return x.slice(i + 1) === y.slice(i + 1) || x.slice(i + 1) === y.slice(i) || x.slice(i) === y.slice(i + 1);
 };
@@ -114,7 +125,10 @@ export function compareWords(scriptText, heardText, { maxNoteRate = 0.08 } = {})
     else { ops.unshift({ op: "extra", s: i, h: j - 1 }); j--; }
   }
   const after = (s) => `(after "${a.slice(Math.max(0, s - 3), s).join(" ")}")`;
-  const problems = [], notes = [];
+  // spots[i]: the script word (index into normWords) problem i sits on, so the voice step can retake just that sentence
+  // (the owner's rule of 2026-11-04); null for a problem of the whole take (too many small differences)
+  const problems = [], notes = [], spots = [];
+  const flag = (msg, s) => { problems.push(msg); spots.push(s); };
   for (let k = 0; k < ops.length; k++) {
     if (ops[k].op === "same") continue;
     if (ops[k].op === "ending") { notes.push(`"${a[ops[k].s]}" heard as "${b[ops[k].h]}" ${after(ops[k].s)}`); continue; }
@@ -126,19 +140,33 @@ export function compareWords(scriptText, heardText, { maxNoteRate = 0.08 } = {})
     // a stutter: an extra word that repeats the word next to it ("a car, car")
     const repeated = run.filter((r) => r.op === "extra" && !LITTLE.has(b[r.h]) && (b[r.h] === b[r.h - 1] || b[r.h] === b[r.h + 1]));
     const gone = `${missing.length ? `missing "${missing.join(" ")}"` : ""}${missing.length && extra.length ? ", " : ""}${extra.length ? `extra "${extra.join(" ")}"` : ""}`;
-    if (repeated.length) problems.push(`repeated "${repeated.map((r) => b[r.h]).join(" ")}" ${at}`);
-    else if ([...missing, ...extra, ...subs.flat()].some(isNum)) problems.push(`wrong number: ${[gone, ...subs.map(([x, y]) => `"${x}" heard as "${y}"`)].filter(Boolean).join(", ")} ${at}`);
+    const spot = Math.min(run[0].s, n - 1);
+    if (repeated.length) flag(`repeated "${repeated.map((r) => b[r.h]).join(" ")}" ${at}`, spot);
+    else if ([...missing, ...extra, ...subs.flat()].some(isNum)) flag(`wrong number: ${[gone, ...subs.map(([x, y]) => `"${x}" heard as "${y}"`)].filter(Boolean).join(", ")} ${at}`, spot);
     // a chunk of 2+ words missing or extra (a garble: "and in mind, clean water" for "and clean water")
-    else if (missing.length + extra.length >= 2) problems.push(`${gone} ${at}`);
+    else if (missing.length + extra.length >= 2) flag(`${gone} ${at}`, spot);
     else {
       // one word missing or extra (the transcript drops or adds one now and then: "sludge and mean oil"): a note
       if (missing.length + extra.length) notes.push(`${gone} ${at}`);
-      for (const [x, y] of subs) (minor(x, y) ? notes : problems).push(`${minor(x, y) ? "" : "different word: "}"${x}" heard as "${y}" ${at}`);
+      for (const [x, y] of subs) if (minor(x, y)) notes.push(`"${x}" heard as "${y}" ${at}`); else flag(`different word: "${x}" heard as "${y}" ${at}`, spot);
     }
     k = e;
   }
-  if (notes.length > Math.max(3, maxNoteRate * n)) problems.push(`${notes.length} small differences in ${n} words: more than a clean take has`);
-  return { ok: problems.length === 0, problems, notes, scriptWords: n, heardWords: m };
+  if (notes.length > Math.max(3, maxNoteRate * n)) flag(`${notes.length} small differences in ${n} words: more than a clean take has`, null);
+  return { ok: problems.length === 0, problems, spots, notes, scriptWords: n, heardWords: m };
+}
+
+/**
+ * The sentences a failed check points at: each problem's script word mapped to its sentence (each sentence's words
+ * counted the same way the check counts them). null when any problem has no spot or the counts don't add up: then only
+ * a whole new take will do.
+ */
+export function badSentences(sentences, scriptText, spots) {
+  const counts = sentences.map((s) => normWords(s).length);
+  if (counts.reduce((x, y) => x + y, 0) !== normWords(scriptText).length || spots.some((s) => s == null)) return null;
+  const out = new Set();
+  for (const s of spots) { let k = 0, acc = counts[0]; while (s >= acc && k < counts.length - 1) acc += counts[++k]; out.add(k); }
+  return [...out].sort((x, y) => x - y);
 }
 
 /** transcribe a take (free, local) and compare it with the script text */

@@ -1,0 +1,170 @@
+{
+ "hash": "*",
+ "by": "real run 3b814122-b59e-451f-895e-67b8cf966322",
+ "searches": 4,
+ "data": {
+  "text": "I ran one search per claim. Claims 0 and 3 are only partly supported as written.\n\n**Claim 0: Silicon is made by heating quartz sand with carbon in an arc furnace at roughly 1,900 to 2,000 °C.**\n**Verdict: supported in a corrected form.** The process is right, but the sources give a wider temperature range for industrial furnaces.\n- Elkem, a silicon producer, describes mixing quartz with carbon material (coal, coke, charcoal, woodchips) and heating it to \"about 1500–2000 °C in a submerged electric arc furnace.\" (https://magazine.elkem.com/material-science-insights/from-quartz-to-silicon-to-silicones/)\n- A South African journal paper says silica is reduced by carbon in a submerged arc furnace \"at temperatures between 1300 and 2000°C under atmospheric pressure.\" The charge is quartz, sand or quartzite, plus coke, coal, charcoal and wood chips. (https://www.scielo.org.za/scielo.php?script=sci_arttext&pid=S2225-62532018000200011, also https://www.saimm.co.za/Journal/v118n02p143.pdf)\n- The 1900–2000 °C figure appears in a research paper on a small electric arc furnace that recycled silicon from solar-wafer cutting waste. It is not a general industrial figure. (https://www.researchgate.net/publication/331835055_Recycling_high_purity_silicon_from_solar_grade_silicon_cutting_slurry_waste_by_carbothermic_reduction_in_the_electric_arc_furnace)\n- Corrected line: \"heated with carbon in an electric arc furnace at up to about 2,000 °C.\" Industry ranges run from roughly 1,500 or 1,300 °C up to 2,000 °C.\n- The process makes metallurgical-grade silicon, not chip-grade silicon. It needs much more purification afterward.\n\n**Claim 1: Chip-grade silicon must be about 99.9999999 percent pure, one foreign atom per billion.**\n**Verdict: supported as written, with a caveat.** Nine nines is 99.9999999%, which is one impurity per billion, so the arithmetic holds.\n- A US patent says the semiconductor industry needs electronic-grade silicon \"having approximately a 99.9999999% purity (9N).\" (https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7727502)\n- Wafer World says it must be \"at least 99.9999999 percent pure\" and calls this \"nine-nines\" or 9N. (https://www.waferworld.com/post/9-things-you-might-not-have-known-about-silicon-wafers)\n- Rapidus says wafers reach 9N purity, and also that semiconductor silicon \"generally reaches approximately 99.999999999%\" (eleven nines). (https://www.rapidus.inc/en/tech/te0015/)\n- Another patent defines electronic-grade silicon as \"at least 99.99999 wt %,\" with a range of 99.9999–99.9999999%. (https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9238211)\n- So 9N is the commonly quoted figure, but the sources differ on the exact requirement. Safer wording: \"at least about nine nines pure, with top grades higher.\"\n\n**Claim 2: A single modern chip can hold over 20 billion transistors.**\n**Verdict: supported as written, but don't use the Apple A17 Pro as the example.**\n- Wikipedia lists the A17 Pro at 19 billion transistors, which is under 20 billion. (https://en.wikipedia.org/wiki/Apple_A17)\n- Wikipedia lists the A18 Pro at 20 billion, which is \"20 billion,\" not \"over 20.\" (https://en.wikipedia.org/wiki/Apple_A18)\n- Wikipedia's Apple M3 page lists the M3 at 25 billion and the M3 Pro at 37 billion. The M3 series spans \"25–184 billion.\" (https://en.wikipedia.org/wiki/Apple_M3)\n- The claim holds if you cite the M3 or a similar chip. The A17 Pro is a few billion short.\n\n**Claim 3: Spruce Pine, North Carolina supplies most of the world's high-purity quartz used for chipmaking crucibles.**\n**Verdict: supported, with the share given as a range.** The sources are secondary and give estimates, not an official figure.\n- Wikipedia's High-purity quartz article says high-purity quartz is used to make crucibles in semiconductor manufacturing. It calls the Spruce Pine Mining District in western North Carolina the largest producer of natural high-purity quartz. The mines are operated by Sibelco and The Quartz Corp. (https://en.wikipedia.org/wiki/High-purity_quartz)\n- Konvoy says Spruce Pine supplies \"an estimated 70 to 90 percent\" of the world's high-purity quartz used in semiconductor manufacturing. (https://www.konvoy.vc/newsletters/semiconductors-reliance-on-north-carolina)\n- Z2Data and Dealroom give the same 70–90% estimate. (https://www.z2data.com/insights/quartz-mine-disruption-in-spruce-pine-nc-threatens-semiconductor-manufacturing/, https://app.dealroom.co/news/note/spruce-pine-the-world-s-most-critical-quartz-choke-point)\n- A Substack post gives about 80%. (https://bycig.substack.com/p/the-500-million-mine-holding-up-a)\n- Suggested wording: \"an estimated 70 to 90 percent of the world's high-purity quartz for semiconductors.\"\n- I found no government source such as USGS in these searches, so the percentage rests on industry commentary.",
+  "sources": [
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_A17",
+    "title": "Apple A17"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_A17_Pro",
+    "title": "Apple A17 Pro"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_M3",
+    "title": "Apple M3"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_A18",
+    "title": "Apple A18"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_A16",
+    "title": "Apple A16"
+   },
+   {
+    "url": "https://medium.com/@rayyankhan45786/apple-a17-pro-the-new-chip-in-the-iphone-15-pro-pro-max-de50b1ae10ad",
+    "title": "Apple A17 Pro: The New Chip in the iPhone 15 Pro, Pro Max"
+   },
+   {
+    "url": "https://www.tomshardware.com/news/apple-a17-pro-3nm-iphone-15-pro",
+    "title": "Apple's A17 Pro Is a 3nm Chip Powering iPhone 15 Pro, Pro Max"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Apple_A15",
+    "title": "Apple A15"
+   },
+   {
+    "url": "https://www.business-standard.com/technology/tech-news/apple-a17-pro-everything-about-3nm-based-chip-powering-iphone-15-pro-line-123091300696_1.html",
+    "title": "Apple A17 Pro: Everything about 3nm-based chip powering iPhone 15 Pro line"
+   },
+   {
+    "url": "https://www.idownloadblog.com/2023/09/13/apple-a17-pro-chip-explained/",
+    "title": "Everything you need to know about Apple's new A17 Pro chip"
+   },
+   {
+    "url": "https://bycig.substack.com/p/the-500-million-mine-holding-up-a",
+    "title": "Spruce Pine: The Mine Holding Up the Chip Industry"
+   },
+   {
+    "url": "https://konvoy.beehiiv.com/p/semiconductor-s-reliance-on-north-carolina",
+    "title": "Semiconductor’s Reliance on North Carolina"
+   },
+   {
+    "url": "https://app.dealroom.co/news/note/spruce-pine-the-world-s-most-critical-quartz-choke-point",
+    "title": "Spruce Pine: The World's Most Critical Quartz Choke Point"
+   },
+   {
+    "url": "https://www.konvoy.vc/newsletters/semiconductors-reliance-on-north-carolina",
+    "title": "Semiconductor’s Reliance on North Carolina"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/High-purity_quartz",
+    "title": "High-purity quartz"
+   },
+   {
+    "url": "https://www.z2data.com/insights/quartz-mine-disruption-in-spruce-pine-nc-threatens-semiconductor-manufacturing/",
+    "title": "Quartz Mine Disruption in Spruce Pine, NC, Threatens Semiconductor Manufacturing"
+   },
+   {
+    "url": "https://www.viksnewsletter.com/p/the-semiconductor-apocalypse-no-one",
+    "title": "The Semiconductor Apocalypse No One Would See Coming"
+   },
+   {
+    "url": "https://highlyeducatedti.com/blogs/information/from-spruce-pine-to-your-dab-rig-the-journey-of-high-purity-quartz-nails",
+    "title": "From Spruce Pine to Your Dab Rig: The Journey of High‑Purity Quartz Na"
+   },
+   {
+    "url": "https://discoveryalert.com/education/high-purity-quartz-spruce-pine-global-supply/",
+    "title": "High-Purity Quartz: Why One County Controls Global Supply"
+   },
+   {
+    "url": "https://spacedaily.com/b-nearly-every-silicon-chip-on-earth-begins-its-life-in-a-crucible-of-ultra-pure-quartz-and-almost-all-of-that-quartz-comes-from-mines-outside-spruce-pine-a-north-carolina-town-of-about-2200-people/",
+    "title": "Nearly every silicon chip on Earth begins its life in a crucible of ultra-pure quartz, and almost all of that quartz comes from mines outside Spruce Pine, a North Carolina town of about 2,200 people, because almost no other deposit yet found is clean enough to melt semiconductor-grade silicon"
+   },
+   {
+    "url": "https://www.scielo.org.za/scielo.php?script=sci_arttext&pid=S2225-62532018000200011",
+    "title": "Production of metallurgical-grade silicon from Egyptian quartz"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/331835055_Recycling_high_purity_silicon_from_solar_grade_silicon_cutting_slurry_waste_by_carbothermic_reduction_in_the_electric_arc_furnace",
+    "title": "Recycling high purity silicon from solar grade silicon cutting slurry waste by carbothermic reduction in the electric arc furnace"
+   },
+   {
+    "url": "https://patents.google.com/patent/WO2017024378A1/en",
+    "title": "WO2017024378A1 - Silica to high purity silicon production process - Google Patents"
+   },
+   {
+    "url": "https://magazine.elkem.com/material-science-insights/from-quartz-to-silicon-to-silicones/",
+    "title": "From quartz to silicon to silicones"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/325571725_Production_of_metallurgical-grade_silicon_from_Egyptian_quartz",
+    "title": "(PDF) Production of metallurgical-grade silicon from Egyptian quartz"
+   },
+   {
+    "url": "https://www.saimm.co.za/Journal/v118n02p143.pdf",
+    "title": "Production of metallurgical-grade silicon from Egyptian ..."
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4314846",
+    "title": "Method for carbothermic production of aluminum"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4053303",
+    "title": "Method of carbothermically producing aluminum-silicon alloys"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4798659",
+    "title": "Addition of calcium compounds to the carbothermic reduction of silica"
+   },
+   {
+    "url": "https://ntrs.nasa.gov/api/citations/19860017220/downloads/19860017220.pdf",
+    "title": "SOLAR-GRADE SILICON PREPARED BY CARBOTHERMIC REDUCTION OF SILICA H.A."
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7727502",
+    "title": "Process for the production of medium and high purity silicon from metallurgical grade silicon"
+   },
+   {
+    "url": "https://www.waferworld.com/post/9-things-you-might-not-have-known-about-silicon-wafers",
+    "title": "Silicon Wafers Unveiled: 9 Lesser-Known Facts"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11784276",
+    "title": "Methods of recycling silicon swarf into electronic grade polysilicon or metallurgical-grade silicon"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11791435",
+    "title": "Methods of recycling silicon swarf into electronic grade polysilicon or metallurgical-grade silicon"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9238211",
+    "title": "Segmented silicon carbide liner"
+   },
+   {
+    "url": "https://www.rapidus.inc/en/tech/te0015/",
+    "title": "What Are the Raw Materials of Semiconductors? The Secrets of Their Purity and Diversity"
+   },
+   {
+    "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5181934/",
+    "title": "Analytical Chemistry and Material Purity in the Semiconductor Industry"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7294197",
+    "title": "Formation of a silicon sheet by cold surface casting"
+   },
+   {
+    "url": "https://eroptics.com/silicon-facts-your-lexicon-of-si/",
+    "title": "Silicon Facts: Your Lexicon of Si - E.R. Precision Optical"
+   },
+   {
+    "url": "https://www.addisonengineering.com/about-silicon.html",
+    "title": "Silicon Properties & Uses"
+   }
+  ]
+ }
+}

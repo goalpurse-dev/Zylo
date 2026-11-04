@@ -1,0 +1,274 @@
+{
+ "hash": "*",
+ "by": "real run 8add6042-765a-4fa9-bd5b-e6782cf417aa",
+ "searches": 7,
+ "data": {
+  "text": "I searched for each claim. Claims 0, 2 and 3 are supported. Claim 1 is supported only in a corrected form. I'm not quoting passages at length, so check the linked sources for the full wording.\n\n**Claim 0: top of a loaded beam is in compression, bottom in tension. Supported as written.**\n- The Illinois State Board of Education bridge unit says that in a beam bridge the beam's top surface \"compresses,\" while the bottom edge stretches under \"tension.\" Source: https://www.isbe.net/CTEDocuments/TEE-L610023.pdf\n- Midas (a bridge-engineering software maker) says that when a load is applied to the bridge deck, the beams bend, causing compression at the top and tension at the bottom. Source: https://resource.midasuser.com/en/blog/bridge/understanding-beam-bridges-design-components-and-construction-methods\n- A US patent describes the same pattern: the beam's own weight creates a downward deflection that creates tension in the lower flange and compressive forces in the upper flange. Source: https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8752225\n\n**Claim 1: flood scour causes more than half of US bridge failures (about 53% in one study). Supported in a corrected form.**\n- The 53% figure comes from Wardhana and Hadipriono (2003), who analysed US bridge failures from 1989 to 2000. A review citing the study says flood and scour, with the major 1993 flood disaster, contributed to the frequency peak of failures, almost 53% of all failures. Source: https://www.researchgate.net/publication/237828707_Analysis_of_Recent_Bridge_Failures_in_the_United_States\n- A ScienceDirect review describes the same study this way: an investigation of five hundred bridge failures between 1989 and 2000 across the US found 53% were due to flooding and scour related complications. Source: https://www.sciencedirect.com/science/article/abs/pii/S2214391221000386\n- Other sources give different numbers. One paper puts flood/scour at 48 percent (https://www.hsaj.org/resources/uploads/2022/05/supplement.4.2.pdf). Wikipedia says it has been estimated that 60% of all bridge failures result from scour and other hydraulic-related causes. (https://en.wikipedia.org/wiki/Bridge_scour)\n- The problems with the script:\n  - The 53% covers \"flood and scour\" together, not scour alone.\n  - It is \"almost 53%\", which is about half rather than clearly more than half.\n  - It is a single 1989–2000 sample.\n  - The 1993 flood inflated it.\n- Corrected wording: \"Floods and scour are the leading cause of US bridge failures. One study of failures from 1989 to 2000 put them at about 53%, and other estimates range from roughly 48% to 60%.\"\n\n**Claim 2: riprap around a pier's foot is a standard scour defence. Supported as written, with a caveat.**\n- A paper on riprap design says that to protect against scour, riprap has been the most commonly used pier scour countermeasure. Source: https://www.researchgate.net/publication/331806713_A_novel_method_for_riprap_design_of_scour_protection_at_bridge_piers\n- A ScienceDirect review lists riprap, gabions, cable-tied blocks, and mattress systems among the bed-armouring countermeasures that have long been the most widely used. Source: https://www.sciencedirect.com/science/article/pii/S2215098626000935\n- The FHWA's HEC-23 guidance covers riprap at piers. The text I found is a Scribd copy: https://www.scribd.com/document/60354060/HEC-23-Countermeasures. The official FHWA publication is at https://www.fhwa.dot.gov/engineering/hydraulics/pubs/09111/09112.pdf. I did not read the FHWA page directly.\n- Caveat: one review of riprap research highlights the deficiencies of riprap in arresting pier scour. (https://www.researchgate.net/publication/225732566_Scour_and_scour_countermeasures_at_bridge_sites) So it is standard, but it has to be designed and sized properly.\n\n**Claim 3: a 100 m steel span grows about 6 cm for a 50 °C rise (about 12 millionths per °C). Supported as written.**\n- A physics reference gives steel at about 12 × 10⁻⁶ per °C and lists bridges as a use. Source: https://physicsfundamentals.org/blog/thermal-expansion\n- US bridge practice uses the same value in °F. The Idaho Transportation Department's bridge manual gives 0.0000065/°F for steel. Source: https://apps.itd.idaho.gov/apps/bridge/manual/14%20Joints%20and%20Bearings/A14.6%20Expansion%20Joint%20Design%20Procedure.pdf\n- Chase Corp says according to AASHTO standards, the recommended coefficient of thermal expansion for steel girder bridges is 6.5x10−6 per °F. Source: https://blog.chasecorp.com/bridge-and-highway/cold-expansion-joints\n- 6.5 × 10⁻⁶ per °F is about 11.7 × 10⁻⁶ per °C, which rounds to 12.\n- My own calculation is ΔL = αLΔT = 12×10⁻⁶ × 100 m × 50 °C = 0.06 m, or 6 cm. The coefficient is the sourced part, and the arithmetic is mine.",
+  "sources": [
+   {
+    "url": "https://www.isbe.net/CTEDocuments/TEE-L610023.pdf",
+    "title": "Bridge Design and Construction Unit: Technology"
+   },
+   {
+    "url": "https://www.scribd.com/document/341785771/Ddd",
+    "title": "Forces in Beam Bridges: Compression & Tension"
+   },
+   {
+    "url": "https://www.ebsco.com/research-starters/science/beam-bridge/",
+    "title": "Beam bridge"
+   },
+   {
+    "url": "https://resource.midasuser.com/en/blog/bridge/understanding-beam-bridges-design-components-and-construction-methods",
+    "title": "Understanding Beam Bridges: Design, Components, and Construction Methods"
+   },
+   {
+    "url": "https://www.teachengineering.org/lessons/cub_brid_lesson01",
+    "title": "Bridging the Gaps - Lesson - Teach Engineering"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8752225",
+    "title": "Tunable load sharing arch bridge"
+   },
+   {
+    "url": "https://schcdn.fairfieldschools.org/rlms/content/uploads/2014/03/Bridge-Basics.pdf",
+    "title": "Bridge Basics"
+   },
+   {
+    "url": "https://constructionfrontier.com/beam-arch-and-truss-bridges-engineering/",
+    "title": "Beam, Arch, and Truss Bridges: 3 Essential Systems for Stronger Bridge Design - CONSTRUCTION FRONTIER"
+   },
+   {
+    "url": "https://bridges27blog.wordpress.com/bridges/",
+    "title": "Physics Behind It"
+   },
+   {
+    "url": "https://www.physicsforums.com/threads/calculate-temperature-for-closed-expansion-joint-on-steel-bridge.103654/",
+    "title": "Calculate Temperature for Closed Expansion Joint on Steel Bridge"
+   },
+   {
+    "url": "https://physicsfundamentals.org/blog/thermal-expansion",
+    "title": "Thermal Expansion Explained — ΔL = αL₀ΔT and Worked Examples"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5161728",
+    "title": "Ceramic-metal bonding"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9644323",
+    "title": "Train rail track structure systems"
+   },
+   {
+    "url": "https://www.samaterials.com/blog/coefficient-of-thermal-expansion.html",
+    "title": "Coefficient of Thermal Expansion"
+   },
+   {
+    "url": "https://baolaipipes.com/blog/thermal-expansion-steel-pipe/",
+    "title": "Coefficient of Thermal Expansion for Steel Pipe: Formula"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4270871",
+    "title": "Expansion joint"
+   },
+   {
+    "url": "https://www.baouch.fr/en/blog/dilatation-thermique-coefficient-materiaux/",
+    "title": "Thermal Expansion Coefficients: Chart, Formula and Calculator"
+   },
+   {
+    "url": "https://calcsteel.com/blog/thermal-expansion-steel",
+    "title": "Thermal Expansion of Steel: How Much It Moves in Summer — CalcSteel"
+   },
+   {
+    "url": "https://www.frontiersin.org/journals/built-environment/articles/10.3389/fbuil.2025.1731114/xml",
+    "title": "Introduction"
+   },
+   {
+    "url": "https://www.hsaj.org/resources/uploads/2022/05/supplement.4.2.pdf",
+    "title": "Vibration Based Damage Detections of Scour in Coastal Bridges"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9010176",
+    "title": "Scour sensor and method of using same"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Bridge_scour",
+    "title": "Bridge scour"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S2214391221000386",
+    "title": "Bridge Pier Scour: An overview of factors affecting the phenomenon and comparative evaluation of selected models - ScienceDirect"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S2352012421011395",
+    "title": "Assessment of scoured bridges subjected to ship impact - ScienceDirect"
+   },
+   {
+    "url": "https://digitalcommons.usf.edu/etd/9379/",
+    "title": "\"Assessment of Scoured Bridges Subjected to Vessel Impact Using Nonline\" by Amir S. Irhayyim"
+   },
+   {
+    "url": "https://www.colemanmoorecompany.com/feeds/blog/scour-protection",
+    "title": "Understanding Scour Protection: Complete Guide"
+   },
+   {
+    "url": "https://www.idvia.es/en/scour-and-its-relation-to-the-collapse-of-bridges-2/",
+    "title": "Scour and its relation to the collapse of bridges - IDVIA"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/225732566_Scour_and_scour_countermeasures_at_bridge_sites",
+    "title": "(PDF) Scour and scour countermeasures at bridge sites"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/pii/S2215098626000935",
+    "title": "Recent trends in local scour countermeasure for bridge piers - ScienceDirect"
+   },
+   {
+    "url": "https://ascelibrary.org/doi/10.1061/(ASCE)HY.1943-7900.0001967",
+    "title": "Novel Riprap Structure for Improved Bridge Pier Scour Protection"
+   },
+   {
+    "url": "https://link.springer.com/article/10.1007/s11600-024-01361-z",
+    "title": "Countermeasures for local scour around the bridge pier: a review"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/331806713_A_novel_method_for_riprap_design_of_scour_protection_at_bridge_piers",
+    "title": "(PDF) A novel method for riprap design of scour protection at bridge piers"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S1001627910600480",
+    "title": "Scour countermeasures for cylindrical piers using riprap and combination of collar and riprap - ScienceDirect"
+   },
+   {
+    "url": "https://pubs.lib.uiowa.edu/nhec/article/id/27574",
+    "title": "Scour Monitoring"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/bridge/17054/index.cfm",
+    "title": "U.S. Department of Transportation"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/bridge/17054/007.cfm",
+    "title": "U.S. Department of Transportation"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/bridge/17054/001.cfm",
+    "title": "U.S. Department of Transportation"
+   },
+   {
+    "url": "https://www.dot.ny.gov/divisions/engineering/structures/repository/events-news/2011_lbc_session3b-1.pdf",
+    "title": "HEC-23 Countermeasure Design for Bridge Scour g g ..."
+   },
+   {
+    "url": "https://www.scribd.com/document/60354060/HEC-23-Countermeasures",
+    "title": "HEC 23 Countermeasures"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/engineering/hydraulics/pubs/09111/09112.pdf",
+    "title": "Bridge Scour and Stream Instability Countermeasures"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8348553",
+    "title": "Bridge pier and abutment scour preventing apparatus with vortex generators"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/engineering/hydraulics/pubs/hif12003.pdf",
+    "title": "April 2012 Publication No. FHWA-HIF-12-003"
+   },
+   {
+    "url": "https://www.utrc2.org/sites/default/files/pubs/Handbook-of-Scour-Countermeasures-Designs.pdf",
+    "title": "FHWA NJ Handbook of Scour Countermeasures Designs FINAL REPORT September 2005"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/bridge/nbis/pubs/nhi23029.pdf",
+    "title": "Underwater Bridge Repair, Rehabilitation, and Countermeasures Reference Manual"
+   },
+   {
+    "url": "https://ifactoryapp.com/industries/infrastructure-management/bridge-scour-countermeasures-monitoring-fhwa-hec-23",
+    "title": "Bridge Scour Countermeasures and Monitoring per FHWA HEC 23"
+   },
+   {
+    "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/bridge/17054/001.cfm",
+    "title": "U.S. Department of Transportation"
+   },
+   {
+    "url": "https://www.hsaj.org/articles/212",
+    "title": "Vibration Based Damage Detections of Scour in Coastal Bridges - Homeland Security Affairs"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/237828707_Analysis_of_Recent_Bridge_Failures_in_the_United_States",
+    "title": "Analysis of Recent Bridge Failures in the United States"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S0029801823002330",
+    "title": "Progressive bridge collapse analysis under both scour and floods by coupling simulation in structural and hydraulic fields. Part Ⅰ: Numerical solver - ScienceDirect"
+   },
+   {
+    "url": "https://mdpi.com/2412-3811/11/11/406",
+    "title": "Condition Assessment of Roadway Bridge Inventory in a Harsh Hot-Arid Climate"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/376312696_Review_of_Hydraulic_Bridge_Failures_Historical_Statistic_Analysis_Failure_Modes_and_Prediction_Methods",
+    "title": "Review of Hydraulic Bridge Failures: Historical Statistic Analysis, Failure Modes, and Prediction Methods"
+   },
+   {
+    "url": "https://scholar.google.com/scholar_lookup?title=Analysis+of+recent+bridge+failures+in+the+United+States&amp=&author=K.+Wardhana&amp=&author=F.+C.+Hadipriono&amp=&publication_year=2003&amp=&journal=J.+Perform.+Constr.+Facil.&amp=&pages=144-150&amp=&doi=10.1061%2F%28ASCE%290887-3828%282003%2917%3A3%28144%29",
+    "title": "Google Scholar"
+   },
+   {
+    "url": "https://www.mdpi.com/2073-4441/18/21/2688",
+    "title": "Probabilistic Prediction and Reliability Analysis of Abutment Scour Depth Using Natural Gradient Boosting"
+   },
+   {
+    "url": "https://www.mdpi.com/2073-4441/17/24/3574",
+    "title": "Probabilistic Prediction of Local Scour at Bridge Piers with Interpretable Machine Learning"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S2214391221000386",
+    "title": "Bridge Pier Scour: An overview of factors affecting the phenomenon and comparative evaluation of selected models - ScienceDirect"
+   },
+   {
+    "url": "https://arxiv.org/pdf/2007.06314",
+    "title": "Assessment of bridge natural frequency as an indicator of scour using centrifuge modelling"
+   },
+   {
+    "url": "https://www.scribd.com/document/292838679/Expansion-Joints",
+    "title": "Expansion Joint Design for Steel Bridges"
+   },
+   {
+    "url": "https://blog.chasecorp.com/bridge-and-highway/cold-expansion-joints",
+    "title": "Solving the Impact of Temperature Change on Bridge Deck Expansion Joints"
+   },
+   {
+    "url": "https://scholarsmine.mst.edu/cgi/viewcontent.cgi?article=7713&context=masters_theses",
+    "title": "Scholars' Mine Scholars' Mine Masters Theses Student Theses and Dissertations"
+   },
+   {
+    "url": "https://apps.itd.idaho.gov/apps/bridge/manual/14%20Joints%20and%20Bearings/A14.6%20Expansion%20Joint%20Design%20Procedure.pdf",
+    "title": "A14.6 Page 1 of 6 11/2019 / EXPANSION JOINTS NOTATIONS θ = Skew angle."
+   },
+   {
+    "url": "https://www.steelconstruction.info/images/e/e7/SCI_P406.pdf",
+    "title": "Determining design displacements for bridge movement bearings"
+   },
+   {
+    "url": "https://sciencefix.blog/steel-expansion-coefficient-guide",
+    "title": "Steel Expansion: The Ultimate Coefficient Guide [US Edition] - Sciencefix.blog"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5161728",
+    "title": "Ceramic-metal bonding"
+   },
+   {
+    "url": "https://usmadesupply.com/resources/guides/bridge-expansion-joint-guide",
+    "title": "Bridge Expansion Joint Types: Selection Guide for Engineers"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5230924",
+    "title": "Metallized coatings on ceramics for high-temperature uses"
+   },
+   {
+    "url": "https://www.tarmacview.com/glossary/expansion-joint/",
+    "title": "Bridge Expansion Joints"
+   }
+  ]
+ }
+}

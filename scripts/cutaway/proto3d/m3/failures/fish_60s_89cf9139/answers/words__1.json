@@ -1,0 +1,82 @@
+{
+ "hash": "*",
+ "by": "real run 89cf9139-ead7-42fd-bfcb-616961808405",
+ "searches": 0,
+ "data": {
+  "title": "How a Fish Pond Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a hole, fill it with water and add goldfish, you have a fish pond."
+   },
+   {
+    "role": "problem",
+    "text": "But the fish make waste that feeds algae, so the clear water turns green."
+   },
+   {
+    "role": "stakes",
+    "text": "The waste turns into ammonia, and above about 0.02 mg per liter it can harm the fish's gills."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a pump and a pipe to pull the dirty water out of the pond."
+   },
+   {
+    "role": "fix2",
+    "text": "A settling tank lets sludge sink, scum floats on top, and clearer water goes back to the pond."
+   },
+   {
+    "role": "problem2",
+    "text": "But ammonia is dissolved, so the clear-looking water carries it straight back into the pond."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a bed of gravel on the return pipe, giving bacteria a place to live."
+   },
+   {
+    "role": "name",
+    "text": "This is a biofilter."
+   },
+   {
+    "role": "name2",
+    "text": "Its bacteria turn ammonia into nitrite and then nitrate, a process called nitrification."
+   },
+   {
+    "role": "how",
+    "text": "Water flows through the gravel, the bacteria eat the ammonia, the gauge falls to zero and the pond turns clear."
+   },
+   {
+    "role": "fact",
+    "text": "Nitrifying one gram of ammonia nitrogen into nitrate uses about 4.57 grams of oxygen from the water."
+   },
+   {
+    "role": "problem3",
+    "text": "But on a hot day, warm water holds less oxygen, so the bacteria and fish compete and the fish crowd the surface."
+   },
+   {
+    "role": "fix4",
+    "text": "So you add an air pump that blows bubbles up through the water, and the oxygen climbs back."
+   },
+   {
+    "role": "fix5",
+    "text": "Then you plant young trees behind the pond to shade it, so the water stays cool."
+   },
+   {
+    "role": "myth",
+    "text": "And the goldfish memory of three seconds is not true."
+   },
+   {
+    "role": "mythFact",
+    "text": "Goldfish remember things for at least three months, not three seconds."
+   },
+   {
+    "role": "finish",
+    "text": "Add rocks round the edge and lily pads on the water."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a fish pond."
+   }
+  ]
+ }
+}

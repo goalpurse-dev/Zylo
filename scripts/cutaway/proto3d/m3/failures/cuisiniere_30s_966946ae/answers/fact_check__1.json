@@ -1,0 +1,81 @@
+{
+ "hash": "*",
+ "by": "real run 966946ae-5dea-4b97-9f45-e09e7f089db1",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "Cooking is the leading cause of reported US home fires, roughly 44 to 49 percent depending on the NFPA report (44 percent in 2017–2021 data).",
+    "why": "The notes support cooking as the leading cause. The NFPA cooking report gives 44 percent and a Fire Prevention Week 2023 release gives 49 percent, so 'about half' is only loosely true.",
+    "sources": [
+     {
+      "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/US-Fire-Problem/Fire-causes/oscooking.pdf",
+      "title": "Home Cooking Fires (NFPA)"
+     },
+     {
+      "url": "https://www.wkgc.org/2023/10/04/cooking-fires-are-the-leading-cause-of-home-fires/",
+      "title": "Cooking Fires are the Leading Cause of Home Fires - 90.7 WKGC Public Media"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Utilities add mercaptan, a chemical that smells like rotten eggs, to odorless natural gas so leaks are noticed.",
+    "why": "FortisBC, the GAO and WFAA all support this: natural gas is odorless and mercaptan is added so leaks can be detected.",
+    "sources": [
+     {
+      "url": "https://www.fortisbc.com/about-us/news-events/stories/a-life-saving-scent-designed-to-grab-your-attention-fast",
+      "title": "What does natural gas smell like?"
+     },
+     {
+      "url": "https://www.gao.gov/assets/gao-18-409.pdf",
+      "title": "GAS PIPELINE SAFETY Stakeholders' and Officials' Views on Federal Odorizing"
+     },
+     {
+      "url": "https://www.wfaa.com/article/news/local/why-natural-gas-smells-like-rotten-eggs/287-bfab0cfe-59c8-487c-b743-e189904d2cdf",
+      "title": "Why does natural gas smell like rotten eggs?"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "A natural gas flame has a theoretical maximum (adiabatic) flame temperature of about 1,960 °C in air; real stove flames are usually cooler.",
+    "why": "Engineering ToolBox gives 1960 °C and Wikipedia gives 1,963 °C for methane in air. These are theoretical values, so 'about 1950' is close but not the sourced figure.",
+    "sources": [
+     {
+      "url": "https://www.engineeringtoolbox.com/flame-temperatures-gases-d_422.html",
+      "title": "Fuel Gases - Flame Temperatures"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Adiabatic_flame_temperature",
+      "title": "Adiabatic flame temperature"
+     },
+     {
+      "url": "https://sciencenotes.org/adiabatic-flame-temperature-chart/",
+      "title": "Adiabatic Flame Temperature Chart"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "James Sharp, an Englishman, patented a gas stove in Northampton in 1826 and opened a gas stove factory in 1836.",
+    "why": "Wikipedia's Gas stove article gives both dates and the Northampton location. A timeline source confirms the 1826 patent. The script should not call it the 'first' gas stove, since Winzler's 1802 stove came earlier.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Gas_stove",
+      "title": "Gas stove"
+     },
+     {
+      "url": "https://www.qssupplies.co.uk/history-of-heating-timeline.html",
+      "title": "History Of Heating Timeline"
+     }
+    ]
+   }
+  ]
+ }
+}

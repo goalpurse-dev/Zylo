@@ -1,0 +1,144 @@
+{
+ "hash": "*",
+ "by": "real run 3b814122-b59e-451f-895e-67b8cf966322",
+ "searches": 0,
+ "data": {
+  "why": "A yard scene where a muddy pit settles into sand, then the sand moves left to right through a furnace, a purifier tank, a crystal puller and a wafer stack, ending under a roof as a cleanroom. The camera opens close on the settling pit, follows the sand across the lawn, and goes wide when wind and rain blow mud into the open hall. Meters carry the numbers (current dropping to zero, furnace heat, billions of switches), and two newspaper sheets carry the myth and its fact.",
+  "sceneJson": "{\"world\":{\"cut\":[-9.5,-4,-4,4],\"house\":false,\"porch\":false,\"trees\":[[-14,-10],[14,-9]],\"road\":false,\"worker\":false,\"moreTrees\":false,\"rocksAvoid\":[[-9.8,-3.8,-4.2,0]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":150,\"mound\":{\"x\":-7,\"z\":-9,\"rx\":1.8,\"rz\":1.4,\"h\":1.2}}},{\"id\":\"pit\",\"kind\":\"settle\",\"params\":{\"box\":{\"x0\":-9.3,\"x1\":-4.2,\"y0\":-3.8,\"y1\":-0.4,\"z0\":-3.8,\"z1\":0},\"wallColor\":\"#8a8f94\",\"lid\":false,\"murky\":true,\"clearColor\":\"#7fc4e8\"}},{\"id\":\"post\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.3,1.6,0.3],\"pos\":[-10.6,0.8,-1],\"mat\":\"metal\"}},{\"id\":\"meter\",\"kind\":\"counter\",\"params\":{\"pos\":[-10.6,2.15,-0.8],\"size\":1,\"from\":9,\"to\":0,\"color\":\"#ffd23d\"}},{\"id\":\"furnace\",\"kind\":\"tank\",\"params\":{\"pos\":[-2,0,-2],\"r\":1.1,\"h\":2.8,\"bands\":[0.9,1.9],\"mat\":\"metal\"}},{\"id\":\"sandFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[-5.5,0.4,-1.5],[-4,2.6,-2],[-2,3.2,-2]],\"look\":\"mud\",\"size\":0.2,\"speed\":2,\"count\":30}},{\"id\":\"temp\",\"kind\":\"counter\",\"params\":{\"pos\":[-2,1.4,-0.8],\"size\":0.9,\"from\":20,\"to\":1900,\"color\":\"#ff8a2a\"}},{\"id\":\"flame\",\"kind\":\"flare\",\"params\":{\"pos\":[-2,2.8,-2],\"intensity\":14}},{\"id\":\"heatArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-2.5,3.5,-1.2],\"dir\":[0,1],\"travel\":1.4,\"phase\":0},{\"at\":[-1.5,3.5,-1.2],\"dir\":[0,1],\"travel\":1.4,\"phase\":0.5}],\"opts\":{\"scale\":0.9,\"color\":\"#ff8a2a\"}}},{\"id\":\"pipe1\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-0.9,2,-2],[0.5,2,-2]],\"r\":0.16,\"mat\":\"pipeWhite\"}},{\"id\":\"pipeFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"pipe1\",\"count\":8,\"size\":0.1,\"speed\":3,\"dz\":0,\"mat\":\"juice\"}},{\"id\":\"reactor\",\"kind\":\"tank\",\"params\":{\"pos\":[1.6,0,-2],\"r\":1.1,\"h\":2.6,\"bands\":[1.3],\"mat\":\"tankBlue\"}},{\"id\":\"puller\",\"kind\":\"rig\",\"params\":{\"name\":\"crystal puller\",\"synonyms\":[\"czochralski puller\",\"crystal grower\"],\"pos\":[6,0,-1.2],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":1,\"h\":1.2,\"axis\":\"y\",\"at\":[0,0.6,0],\"look\":\"metal\",\"color\":\"#7d8791\"},{\"shape\":\"box\",\"size\":[0.25,5.6,0.25],\"at\":[0.85,2.8,0],\"look\":\"metal\",\"color\":\"#7d8791\"},{\"shape\":\"box\",\"size\":[1.8,0.5,0.5],\"at\":[0,5.55,0],\"look\":\"metal\",\"color\":\"#5c6670\"},{\"shape\":\"cylinder\",\"r\":0.07,\"h\":2.35,\"axis\":\"y\",\"at\":[0,4.125,0],\"look\":\"metal\",\"color\":\"#c9d1d9\"}]},{\"id\":\"melt\",\"parent\":\"body\",\"at\":[0,1.2,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.85,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"paint\",\"color\":\"#ff8a2a\"}],\"moves\":[{\"name\":\"melt\",\"type\":\"appear\"}]},{\"id\":\"ingot\",\"parent\":\"melt\",\"at\":[0,0.05,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.4,\"h\":1.7,\"axis\":\"y\",\"at\":[0,0.85,0],\"look\":\"metal\",\"color\":\"#b8c2cc\"}],\"moves\":[{\"name\":\"pull\",\"type\":\"appear\"},{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"y\",\"turns\":0.4}]}]}},{\"id\":\"pullerOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[4.8,0.05,0.12],[4.8,6.1,0.12],[7.2,6.1,0.12],[7.2,0.05,0.12]],\"opts\":{\"r\":0.08,\"closed\":true}}},{\"id\":\"wafers\",\"kind\":\"rig\",\"params\":{\"name\":\"wafer stack\",\"synonyms\":[\"wafer\",\"silicon wafer\"],\"pos\":[9.8,0,-1.2],\"nodes\":[{\"id\":\"rack\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3.6,0.12,1],\"at\":[0,0.06,0],\"look\":\"metal\",\"color\":\"#6b7580\"}]},{\"id\":\"w1\",\"parent\":\"rack\",\"at\":[0,0.12,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#c8d3de\"},{\"shape\":\"cylinder\",\"r\":0.45,\"h\":0.06,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"plastic\",\"color\":\"#5c6670\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"w2\",\"parent\":\"w1\",\"at\":[0,0.16,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#c8d3de\"},{\"shape\":\"cylinder\",\"r\":0.45,\"h\":0.06,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"plastic\",\"color\":\"#5c6670\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"w3\",\"parent\":\"w2\",\"at\":[0,0.16,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#c8d3de\"},{\"shape\":\"cylinder\",\"r\":0.45,\"h\":0.06,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"plastic\",\"color\":\"#5c6670\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"w4\",\"parent\":\"w3\",\"at\":[0,0.16,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#c8d3de\"},{\"shape\":\"cylinder\",\"r\":0.45,\"h\":0.06,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"plastic\",\"color\":\"#5c6670\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"w5\",\"parent\":\"w4\",\"at\":[0,0.16,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":0.1,\"axis\":\"y\",\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#c8d3de\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"printer\",\"parent\":\"rack\",\"at\":[1.9,0.12,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.8,2,0.8],\"at\":[0,1,0],\"look\":\"metal\",\"color\":\"#4b6b8a\"},{\"shape\":\"box\",\"size\":[1.7,0.25,0.4],\"at\":[-0.85,1.9,0],\"look\":\"metal\",\"color\":\"#4b6b8a\"},{\"shape\":\"box\",\"size\":[0.6,0.3,0.6],\"at\":[-1.5,1.63,0],\"look\":\"metal\",\"color\":\"#34495e\"}],\"moves\":[{\"name\":\"machine\",\"type\":\"appear\"}]},{\"id\":\"beam\",\"parent\":\"printer\",\"at\":[-1.5,1.48,0],\"shapes\":[{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[0,-0.74,0],\"r\":0.07,\"color\":\"#7fd0ff\"}],\"moves\":[{\"name\":\"print\",\"type\":\"light\"}]}]}},{\"id\":\"chips\",\"kind\":\"counter\",\"params\":{\"pos\":[11.7,2.6,-0.75],\"size\":0.9,\"from\":0,\"to\":20,\"color\":\"#3ad6ff\"}},{\"id\":\"dust\",\"kind\":\"drops\",\"params\":{\"x0\":9.2,\"x1\":9.9,\"count\":10,\"fromY\":3.5,\"landY\":0.9,\"z\":-1.2,\"mat\":\"mud\"}},{\"id\":\"dust2\",\"kind\":\"drops\",\"params\":{\"x0\":7.8,\"x1\":11.4,\"count\":24,\"fromY\":5,\"landY\":0.15,\"z\":-1.2,\"mat\":\"mud\"}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":3.5,\"x1\":14,\"z0\":-8,\"z1\":-0.1,\"yTop\":14,\"yBot\":0,\"count\":700,\"width\":0.02,\"opacity\":0.4}},{\"id\":\"roof\",\"kind\":\"canopy\",\"params\":{\"x0\":4.4,\"x1\":12.6,\"z0\":-3.4,\"z1\":-0.1,\"y\":0,\"h\":6.6,\"color\":\"#d8dee6\"}},{\"id\":\"airArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[7.6,5.6,-0.4],\"dir\":[0,-1],\"travel\":3.8,\"phase\":0},{\"at\":[9.2,5.6,-0.4],\"dir\":[0,-1],\"travel\":3.8,\"phase\":0.3},{\"at\":[11,5.6,-0.4],\"dir\":[0,-1],\"travel\":3.8,\"phase\":0.6}],\"opts\":{\"scale\":1,\"color\":\"#ffffff\"}}},{\"id\":\"beachNews\",\"kind\":\"sheet\",\"params\":{\"masthead\":\"BEACH DAILY\",\"date\":\"SUMMER\",\"headline\":\"ANY SAND WILL DO\",\"from\":[-7,-0.8,-4.7],\"to\":[-7,3.4,-4.7]}},{\"id\":\"pineNews\",\"kind\":\"sheet\",\"params\":{\"masthead\":\"SPRUCE PINE, NC\",\"date\":\"QUARTZ\",\"headline\":\"PUREST QUARTZ ON EARTH\",\"from\":[-7,-0.8,-4.7],\"to\":[-7,3.4,-4.7]}},{\"id\":\"lamp1\",\"kind\":\"prop\",\"params\":{\"type\":\"ceilingLight\",\"h\":6.6,\"drop\":0.6,\"pos\":[8.8,0,-2.2]}},{\"id\":\"lamp2\",\"kind\":\"prop\",\"params\":{\"type\":\"ceilingLight\",\"h\":6.6,\"drop\":0.6,\"pos\":[11.6,0,-2.2]}},{\"id\":\"stones\",\"kind\":\"prop\",\"params\":{\"type\":\"steppingStones\",\"size\":[3],\"pos\":[3.2,0,0.5]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[8.5,0.05,2.6],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"pit\",\"does\":\"muddy water fills the pit and sand sinks\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pit\",\"v\":\"show\",\"w\":\"pit\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pit\",\"v\":\"fill\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pit\",\"v\":\"sink\",\"w\":\"settle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"meter\",\"does\":\"current reading drops to zero\"},\"state\":{\"text\":\"NO CURRENT\",\"w\":\"passes\"},\"do\":[{\"p\":\"post\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"meter\",\"v\":\"show\",\"w\":\"current\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"meter\",\"v\":\"count\",\"w\":\"passes\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\",\"meter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"pit\",\"does\":\"dark dirt layer rises in the pit\"},\"state\":{\"text\":\"TOO DIRTY\",\"w\":\"iron\"},\"do\":[{\"p\":\"pit\",\"v\":\"float\",\"w\":\"clay\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\",\"meter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"sandFlow\",\"does\":\"sand pours from the pit into a furnace\"},\"do\":[{\"p\":\"furnace\",\"v\":\"show\",\"w\":\"furnace\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandFlow\",\"v\":\"start\",\"w\":\"pour\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\",\"furnace\"],\"view\":\"home\",\"width\":0.75,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"temp\",\"does\":\"furnace temperature climbs and a flame burns\"},\"do\":[{\"p\":\"sandFlow\",\"v\":\"stop\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flame\",\"v\":\"show\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"show\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"count\",\"w\":\"heat\",\"o\":0.2,\"d\":2.4,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatArrows\",\"v\":\"show\",\"w\":\"gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"furnace\",\"temp\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"pipe1\",\"does\":\"pipe grows and gas runs into a second tank\"},\"do\":[{\"p\":\"heatArrows\",\"v\":\"hide\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipe1\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"\"},{\"p\":\"reactor\",\"v\":\"show\",\"w\":\"tank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipeFlow\",\"v\":\"show\",\"w\":\"tank\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"furnace\",\"reactor\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"puller\",\"does\":\"melt glows and a crystal ingot appears and turns\"},\"do\":[{\"p\":\"pipeFlow\",\"v\":\"hide\",\"w\":\"melt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"show\",\"w\":\"melt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"melt\",\"w\":\"melt\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"pull\",\"w\":\"pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"turn\",\"w\":\"crystal\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"puller\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"pullerOutline\",\"does\":\"glowing outline traces the crystal puller\"},\"do\":[{\"p\":\"pullerOutline\",\"v\":\"show\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"puller\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"wafers\",\"does\":\"thin discs pop in as a stack of wafers\"},\"do\":[{\"p\":\"pullerOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"show\",\"w\":\"Slice\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"slice\",\"w\":\"wafer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0.45,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"wafers\",\"does\":\"a printer machine fires a light beam onto the wafer\"},\"do\":[{\"p\":\"wafers\",\"v\":\"machine\",\"w\":\"Machines\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"print\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0.45,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"chips\",\"does\":\"switch counter climbs to 20 billion\"},\"do\":[{\"p\":\"chips\",\"v\":\"show\",\"w\":\"chip\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"chips\",\"v\":\"count\",\"w\":\"20\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\",\"chips\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"dust\",\"does\":\"dust lumps fall onto the wafer and stay\"},\"state\":{\"text\":\"DEAD CHIP\",\"w\":\"dust\"},\"do\":[{\"p\":\"dust\",\"v\":\"fall\",\"w\":\"dust\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"dust2\",\"does\":\"wind and rain blow mud into the open hall\"},\"state\":{\"text\":\"BATCH RUINED\",\"w\":\"mud\"},\"do\":[{\"p\":\"light\",\"v\":\"storm\",\"w\":\"wind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dust2\",\"v\":\"fall\",\"w\":\"mud\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"puller\",\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"roof\",\"does\":\"posts grow and a roof goes on, clean air flows down\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"roof\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"roof\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dust\",\"v\":\"hide\",\"w\":\"roof\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dust2\",\"v\":\"hide\",\"w\":\"roof\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"roof\",\"v\":\"build\",\"w\":\"roof\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airArrows\",\"v\":\"show\",\"w\":\"air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"roof\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"beachNews\",\"does\":\"a newspaper claiming any sand will do rises, then sinks\"},\"do\":[{\"p\":\"beachNews\",\"v\":\"show\",\"w\":\"beach\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"beachNews\",\"v\":\"hide\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\",\"beachNews\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"pineNews\",\"does\":\"a newspaper about Spruce Pine quartz rises\"},\"do\":[{\"p\":\"pineNews\",\"v\":\"show\",\"w\":\"Spruce\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pit\",\"pineNews\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"lamp1\",\"does\":\"ceiling lights and stepping stones appear, pit runs clear\"},\"do\":[{\"p\":\"pineNews\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airArrows\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"meter\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"chips\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp1\",\"v\":\"show\",\"w\":\"ceiling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp2\",\"v\":\"show\",\"w\":\"ceiling\",\"o\":0.15,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stones\",\"v\":\"show\",\"w\":\"stones\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pit\",\"v\":\"clear\",\"w\":\"clear\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"1 IN A BILLION\",\"at\":{\"s\":\"stakes\",\"w\":\"billion\",\"o\":0},\"d\":1.8},{\"text\":\"20 BILLION\",\"at\":{\"s\":\"fact\",\"w\":\"20\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"pour\",\"o\":0},\"d\":1.2},{\"lib\":\"flame\",\"at\":{\"s\":\"fix2\",\"w\":\"heat\",\"o\":0},\"d\":1.5},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix3\",\"w\":\"pipe\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix4\",\"w\":\"pull\",\"o\":0},\"d\":1.5}],\"chimes\":[{\"s\":\"stakes\",\"w\":\"billion\",\"o\":0},{\"s\":\"name\",\"w\":\"This\",\"o\":0},{\"s\":\"name2\",\"w\":\"Slice\",\"o\":0},{\"s\":\"fact\",\"w\":\"20\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem3\",\"w\":\"rain\",\"o\":0},{\"s\":\"fix5\",\"w\":\"roof\",\"o\":0}]}}",
+  "story": {
+   "title": "How a Puddle of Mud Becomes a Chip Factory",
+   "hero": "a crystal puller",
+   "parts": [
+    "pit",
+    "furnace",
+    "pipe",
+    "tank",
+    "crystal puller",
+    "wafer stack",
+    "printer",
+    "roof",
+    "ceiling light",
+    "stepping stones"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "muddy water settles in a pit and the sand sinks to the floor"
+    },
+    {
+     "role": "problem",
+     "idea": "sand is silicon locked to oxygen, so no current passes through it"
+    },
+    {
+     "role": "stakes",
+     "idea": "the sand is full of clay and iron, but a chip allows one stray atom in a billion"
+    },
+    {
+     "role": "fix1",
+     "idea": "you pour the sand into a furnace with carbon"
+    },
+    {
+     "role": "fix2",
+     "idea": "you heat it past 1,900 degrees and the oxygen burns off as gas"
+    },
+    {
+     "role": "fix3",
+     "idea": "you pipe the gas into a second tank so pure silicon forms"
+    },
+    {
+     "role": "fix4",
+     "idea": "you melt the pure silicon and pull one single crystal out of it"
+    },
+    {
+     "role": "name",
+     "idea": "this machine is a Czochralski crystal puller"
+    },
+    {
+     "role": "name2",
+     "idea": "you slice the crystal into thin discs called wafers"
+    },
+    {
+     "role": "how",
+     "idea": "machines print layer after layer of tiny switches onto each wafer with light"
+    },
+    {
+     "role": "fact",
+     "idea": "one chip holds over 20 billion of those switches"
+    },
+    {
+     "role": "problem2",
+     "idea": "a single speck of dust on a wafer can kill the chip"
+    },
+    {
+     "role": "problem3",
+     "idea": "in an open hall, wind and rain blow in mud and ruin a whole batch"
+    },
+    {
+     "role": "fix5",
+     "idea": "you roof the hall over and push filtered air down, making a cleanroom"
+    },
+    {
+     "role": "myth",
+     "idea": "ordinary beach sand is not chip sand"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the purest quartz comes from one small town, Spruce Pine in North Carolina"
+    },
+    {
+     "role": "finish",
+     "idea": "add ceiling lights and stepping stones, and the pit runs clear"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm, the finished factory stands under its roof"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the current meter drops to zero beside the pit of sand",
+     "stakes": "sand cannot carry any current, so it is useless as a chip",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix4",
+     "shows": "dust lumps fall onto the wafer and stay on it",
+     "stakes": "one speck kills a chip worth far more than the dust",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix4",
+     "shows": "wind and rain blow mud into the open hall onto the wafers and the floor",
+     "stakes": "a whole batch of wafers is ruined",
+     "size": 9
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Silicon is made by heating quartz sand with carbon in an arc furnace at roughly 1,900 to 2,000 degrees Celsius",
+     "role": "fix2",
+     "search": "silicon production carbothermic reduction quartz arc furnace temperature 1900 C"
+    },
+    {
+     "claim": "Chip-grade silicon must be about 99.9999999 percent pure, which is one foreign atom per billion",
+     "role": "stakes",
+     "search": "electronic grade silicon purity 99.9999999 percent nine nines"
+    },
+    {
+     "claim": "A single modern chip can hold over 20 billion transistors",
+     "role": "fact",
+     "search": "chip with more than 20 billion transistors Apple A17 Pro M1 Pro transistor count"
+    },
+    {
+     "claim": "Spruce Pine, North Carolina supplies most of the world's high-purity quartz used for chipmaking crucibles",
+     "role": "mythFact",
+     "search": "Spruce Pine North Carolina high purity quartz share of world supply semiconductor crucibles"
+    }
+   ]
+  }
+ }
+}

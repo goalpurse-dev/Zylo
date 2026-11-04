@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "real run 3f835948-d429-4f32-aeb3-0f3df5d465e8",
+ "searches": 0,
+ "data": {
+  "title": "Ancient Bridge",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a channel and lay a plank across, you have a bridge."
+   },
+   {
+    "role": "problem",
+    "text": "But a cart loaded with stone rolls on and the plank snaps."
+   },
+   {
+    "role": "fix1",
+    "text": "So you build stone piers in the river and rest flat slabs on top."
+   },
+   {
+    "role": "problem2",
+    "text": "But stone is typically about 10 to 20 times stronger in compression than in tension, so a long slab cracks underneath."
+   },
+   {
+    "role": "fix2",
+    "text": "So you set a wooden frame, curve wedge stones over it, and lock the top with a keystone."
+   },
+   {
+    "role": "name",
+    "text": "This is an arch bridge."
+   },
+   {
+    "role": "how",
+    "text": "The weight squeezes the stones down the curve into the piers, so the Pons Fabricius still carries walkers after more than 2000 years."
+   },
+   {
+    "role": "fix3",
+    "text": "So you pull the frame away, and the arch holds itself, as at Alcántara, where granite blocks sit without mortar."
+   },
+   {
+    "role": "myth",
+    "text": "And the Roman arch is not what everyone thinks, because the Romans did not invent it."
+   },
+   {
+    "role": "mythFact",
+    "text": "Mesopotamian builders were using brick arches about 4000 years ago, in drains and small structures."
+   },
+   {
+    "role": "finish",
+    "text": "Add a stone road and low walls over the arches, and a cart rolls across."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built an arch bridge."
+   }
+  ]
+ }
+}

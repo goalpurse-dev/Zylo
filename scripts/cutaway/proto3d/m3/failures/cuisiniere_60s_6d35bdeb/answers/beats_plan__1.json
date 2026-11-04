@@ -1,0 +1,140 @@
+{
+ "hash": "*",
+ "by": "real run 6d35bdeb-cccf-4a47-bd5e-be5dcfe738ad",
+ "searches": 0,
+ "data": {
+  "why": "A cookstove explained in a room cutaway: a pan on an open fire fills the room with smoke, and each fix (an iron firebox with a flue, a damper, an oven) causes the next problem. The camera opens close on the fire, then frames the stove with the gauge beside it, and shows the flue and the room only when the smoke and heat travel there. The finish adds the kettle, the stew pot and a chimney cap to the stove itself.",
+  "sceneJson": "{\"world\":{\"cut\":[6.5,8,-2,1.5],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"backdrop\":{\"type\":\"room\",\"x0\":-9,\"x1\":9,\"back\":-7,\"h\":4.2,\"windowX\":5,\"chairX\":7},\"worker\":false,\"moreTrees\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{}},{\"id\":\"openFire\",\"kind\":\"rig\",\"params\":{\"name\":\"open fire\",\"synonyms\":[\"campfire\",\"fire pit\"],\"pos\":[-2.6,0.12,-5.6],\"nodes\":[{\"id\":\"ring\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.35,0.5,0.35],\"at\":[-0.55,0.25,0],\"look\":\"concrete\",\"color\":\"#8a8478\"},{\"shape\":\"box\",\"size\":[0.35,0.5,0.35],\"at\":[0.55,0.25,0],\"look\":\"concrete\",\"color\":\"#8a8478\"},{\"shape\":\"box\",\"size\":[0.35,0.5,0.35],\"at\":[0,0.25,-0.5],\"look\":\"concrete\",\"color\":\"#8a8478\"}]},{\"id\":\"logs\",\"parent\":\"ring\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.09,\"h\":0.8,\"axis\":\"x\",\"at\":[0,0.09,0.05],\"look\":\"wood\",\"color\":\"#6b4423\"},{\"shape\":\"cylinder\",\"r\":0.09,\"h\":0.8,\"axis\":\"x\",\"at\":[0,0.09,-0.12],\"look\":\"wood\",\"color\":\"#5a381c\"}]},{\"id\":\"pan\",\"parent\":\"ring\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.5,\"h\":0.08,\"axis\":\"y\",\"at\":[0,0.54,0],\"look\":\"metal\",\"color\":\"#3b3b40\"},{\"shape\":\"box\",\"size\":[0.6,0.05,0.07],\"at\":[0.8,0.55,0],\"look\":\"metal\",\"color\":\"#3b3b40\"}]}]}},{\"id\":\"fire\",\"kind\":\"flare\",\"params\":{\"pos\":[-2.6,0.3,-5.6],\"intensity\":30}},{\"id\":\"smoke\",\"kind\":\"flow\",\"params\":{\"path\":[[-2.6,0.9,-5.6],[-2.6,3.0,-5.6],[-1.8,4.0,-5.4],[1.5,4.05,-4.8]],\"look\":\"oil\",\"size\":0.45,\"speed\":1.4,\"count\":36}},{\"id\":\"smokeBank\",\"kind\":\"flow\",\"params\":{\"path\":[[-2.6,4.0,-5.6],[2,4.05,-4.8],[6.5,3.9,-3.2],[8.4,2.5,-2.4],[8.4,0.6,-2.0]],\"look\":\"oil\",\"size\":0.7,\"speed\":1.2,\"count\":50}},{\"id\":\"coGauge\",\"kind\":\"counter\",\"params\":{\"pos\":[-0.1,2.3,-6.8],\"size\":1.1,\"from\":0,\"to\":400,\"color\":\"#ff4d3a\",\"bar\":true}},{\"id\":\"heatGauge\",\"kind\":\"counter\",\"params\":{\"pos\":[-0.1,2.3,-6.8],\"size\":1.1,\"from\":150,\"to\":650,\"color\":\"#ff8a2a\",\"bar\":true}},{\"id\":\"steadyGauge\",\"kind\":\"counter\",\"params\":{\"pos\":[-0.1,2.3,-6.8],\"size\":1.1,\"from\":650,\"to\":250,\"color\":\"#5fd16a\",\"bar\":true,\"danger\":1.5}},{\"id\":\"ovenGauge\",\"kind\":\"counter\",\"params\":{\"pos\":[-0.1,2.3,-6.8],\"size\":1.1,\"from\":20,\"to\":230,\"color\":\"#ffd23d\",\"bar\":true,\"danger\":1.5}},{\"id\":\"stove\",\"kind\":\"rig\",\"params\":{\"name\":\"cookstove\",\"synonyms\":[\"range\",\"stove\",\"wood stove\"],\"pos\":[-2,0.12,-5.6],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,0.1,0.14],\"at\":[-1.1,0.05,-0.4],\"look\":\"metal\",\"color\":\"#1e1e22\"},{\"shape\":\"box\",\"size\":[0.14,0.1,0.14],\"at\":[-1.1,0.05,0.4],\"look\":\"metal\",\"color\":\"#1e1e22\"},{\"shape\":\"box\",\"size\":[0.14,0.1,0.14],\"at\":[1.1,0.05,-0.4],\"look\":\"metal\",\"color\":\"#1e1e22\"},{\"shape\":\"box\",\"size\":[0.14,0.1,0.14],\"at\":[1.1,0.05,0.4],\"look\":\"metal\",\"color\":\"#1e1e22\"},{\"shape\":\"box\",\"size\":[1.1,0.08,1.0],\"at\":[-0.6,0.14,0],\"look\":\"metal\",\"color\":\"#2a2a2e\"},{\"shape\":\"box\",\"size\":[0.1,0.72,1.0],\"at\":[-1.15,0.54,0],\"look\":\"paint\",\"color\":\"#c24a34\"},{\"shape\":\"box\",\"size\":[2.4,0.72,0.1],\"at\":[0,0.54,-0.5],\"look\":\"paint\",\"color\":\"#c24a34\"},{\"shape\":\"box\",\"size\":[0.1,0.72,1.0],\"at\":[0,0.54,0],\"look\":\"paint\",\"color\":\"#c24a34\"},{\"shape\":\"box\",\"size\":[2.4,0.08,1.1],\"at\":[0,0.94,0],\"look\":\"metal\",\"color\":\"#222226\"}]},{\"id\":\"pan\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.38,\"h\":0.1,\"axis\":\"y\",\"at\":[-0.6,1.03,0.14],\"look\":\"metal\",\"color\":\"#3b3b40\"},{\"shape\":\"box\",\"size\":[0.5,0.05,0.07],\"at\":[-1.2,1.05,0.14],\"look\":\"metal\",\"color\":\"#3b3b40\"}],\"moves\":[{\"name\":\"panOn\",\"type\":\"appear\"}]},{\"id\":\"collar\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.15,\"h\":1.0,\"axis\":\"y\",\"at\":[-0.6,1.48,-0.42],\"look\":\"metal\",\"color\":\"#2a2a2e\"}],\"moves\":[{\"name\":\"pipeOn\",\"type\":\"appear\"}]},{\"id\":\"damper\",\"parent\":\"collar\",\"at\":[-0.6,1.65,-0.42],\"shapes\":[{\"shape\":\"box\",\"size\":[0.55,0.07,0.07],\"at\":[0.32,0,0],\"look\":\"metal\",\"color\":\"#d9a441\"},{\"shape\":\"box\",\"size\":[0.12,0.12,0.12],\"at\":[0.62,0,0],\"look\":\"metal\",\"color\":\"#d9a441\"}],\"moves\":[{\"name\":\"damperClose\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":60}]},{\"id\":\"ovenBox\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.1,0.72,1.0],\"at\":[1.15,0.54,0],\"look\":\"paint\",\"color\":\"#c24a34\"},{\"shape\":\"box\",\"size\":[1.1,0.08,1.0],\"at\":[0.6,0.14,0],\"look\":\"metal\",\"color\":\"#2a2a2e\"},{\"shape\":\"box\",\"size\":[1.0,0.03,0.8],\"at\":[0.6,0.45,-0.05],\"look\":\"metal\",\"color\":\"#8d8d94\"},{\"shape\":\"light\",\"r\":0.08,\"at\":[0.95,0.75,-0.35],\"color\":\"#ffcf6b\"}],\"moves\":[{\"name\":\"ovenOn\",\"type\":\"appear\"},{\"name\":\"ovenGlow\",\"type\":\"light\"}]},{\"id\":\"ovenDoor\",\"parent\":\"ovenBox\",\"at\":[0.6,0.18,0.5],\"shapes\":[{\"shape\":\"panel\",\"size\":[1.1,0.68],\"thick\":0.05,\"at\":[0,0.34,0],\"look\":\"glass\"},{\"shape\":\"box\",\"size\":[1.1,0.06,0.06],\"at\":[0,0.03,0],\"look\":\"metal\",\"color\":\"#2a2a2e\"},{\"shape\":\"box\",\"size\":[0.8,0.05,0.07],\"at\":[0,0.62,0.06],\"look\":\"metal\",\"color\":\"#d9a441\"}],\"moves\":[{\"name\":\"ovenOn\",\"type\":\"appear\"}]},{\"id\":\"loaf\",\"parent\":\"ovenBox\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.2,0.28],\"at\":[0.6,0.56,-0.05],\"look\":\"paint\",\"color\":\"#c98a4b\"}],\"moves\":[{\"name\":\"loafOn\",\"type\":\"appear\"}]},{\"id\":\"kettle\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.26,\"axis\":\"y\",\"at\":[0.9,1.11,-0.15],\"look\":\"metal\",\"color\":\"#3c78b4\"},{\"shape\":\"box\",\"size\":[0.18,0.05,0.05],\"at\":[1.12,1.15,-0.15],\"look\":\"metal\",\"color\":\"#3c78b4\"},{\"shape\":\"box\",\"size\":[0.08,0.06,0.08],\"at\":[0.9,1.27,-0.15],\"look\":\"metal\",\"color\":\"#2a2a2e\"},{\"shape\":\"tube\",\"path\":[[0.72,1.2,-0.15],[0.9,1.45,-0.15],[1.08,1.2,-0.15]],\"r\":0.02,\"look\":\"metal\",\"color\":\"#2a2a2e\"}],\"moves\":[{\"name\":\"kettleOn\",\"type\":\"appear\"}]},{\"id\":\"pot\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.28,\"h\":0.32,\"axis\":\"y\",\"at\":[0.3,1.14,0.1],\"look\":\"metal\",\"color\":\"#e0b341\"},{\"shape\":\"cylinder\",\"r\":0.29,\"h\":0.04,\"axis\":\"y\",\"at\":[0.3,1.32,0.1],\"look\":\"metal\",\"color\":\"#c99a2e\"},{\"shape\":\"box\",\"size\":[0.08,0.06,0.08],\"at\":[0.3,1.37,0.1],\"look\":\"metal\",\"color\":\"#2a2a2e\"}],\"moves\":[{\"name\":\"potOn\",\"type\":\"appear\"}]}]}},{\"id\":\"flue\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-2.6,2.1,-6.02],[-2.6,5.3,-6.02]],\"r\":0.15,\"joints\":false,\"mat\":\"metal\"}},{\"id\":\"flueFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"flue\",\"count\":14,\"size\":0.12,\"speed\":3,\"dz\":0.16,\"mat\":\"juice\"}},{\"id\":\"chimneyCap\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.55,0.14,0.55],\"pos\":[-2.6,5.37,-6.02],\"mat\":\"metal\"}},{\"id\":\"heatUp\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-2.1,2.8,-5.7],\"dir\":[0,1],\"travel\":1.0,\"phase\":0},{\"at\":[-2.1,3.8,-5.7],\"dir\":[0,1],\"travel\":1.0,\"phase\":0.5},{\"at\":[-2.1,4.7,-5.7],\"dir\":[0,1],\"travel\":1.0,\"phase\":0.25}],\"opts\":{\"scale\":0.8,\"color\":\"#ff8a2a\"}}},{\"id\":\"airIn\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-4.1,0.55,-5.0],\"dir\":[1,0],\"travel\":0.8,\"phase\":0},{\"at\":[-4.1,0.95,-5.0],\"dir\":[1,0],\"travel\":0.8,\"phase\":0.5}],\"opts\":{\"scale\":0.7,\"color\":\"#ffffff\"}}},{\"id\":\"ovenHeat\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-1.9,0.82,-4.95],\"dir\":[1,0],\"travel\":0.6,\"phase\":0},{\"at\":[-0.95,0.62,-4.95],\"dir\":[0,-1],\"travel\":0.4,\"phase\":0.3},{\"at\":[-1.4,0.3,-4.95],\"dir\":[-1,0],\"travel\":0.6,\"phase\":0.6}],\"opts\":{\"scale\":0.55,\"color\":\"#ff8a2a\"}}},{\"id\":\"outlineStove\",\"kind\":\"outline\",\"params\":{\"points\":[[-3.35,0.12,-4.95],[-3.35,1.12,-4.95],[-0.65,1.12,-4.95],[-0.65,0.12,-4.95]],\"opts\":{\"r\":0.05,\"closed\":true}}},{\"id\":\"outlinePipe\",\"kind\":\"outline\",\"params\":{\"points\":[[-2.95,2.05,-5.85],[-2.95,5.35,-5.85],[-2.25,5.35,-5.85],[-2.25,2.05,-5.85]],\"opts\":{\"r\":0.05,\"closed\":true}}},{\"id\":\"bookStove\",\"kind\":\"book\",\"params\":{\"w\":1.5,\"h\":2.0,\"bg\":\"#2e5d8a\",\"book\":true,\"spine\":\"#1d3d5c\",\"lines\":[{\"text\":\"CUISINIÈRE\",\"font\":\"bold 58px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":170},{\"rule\":true,\"y\":230,\"color\":\"#f2d58e\"},{\"text\":\"STOVE\",\"font\":\"bold 90px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":400}],\"from\":[1.7,-0.8,-5.2],\"to\":[1.7,1.7,-5.2],\"rot\":[-0.1,-0.25,0.02]}},{\"id\":\"bookCook\",\"kind\":\"book\",\"params\":{\"w\":1.5,\"h\":2.0,\"bg\":\"#a8432f\",\"book\":true,\"spine\":\"#6e2a1c\",\"lines\":[{\"text\":\"CUISINIÈRE\",\"font\":\"bold 58px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":170},{\"rule\":true,\"y\":230,\"color\":\"#f2d58e\"},{\"text\":\"ALSO\",\"font\":\"bold 70px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":340},{\"text\":\"A COOK\",\"font\":\"bold 80px Georgia, serif\",\"color\":\"#f2d58e\",\"y\":460}],\"from\":[1.7,-0.8,-5.2],\"to\":[1.7,1.7,-5.2],\"rot\":[-0.1,-0.25,0.02]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[3.2,0.12,-2.6],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"fire\",\"does\":\"flames lick the pan\"},\"do\":[{\"p\":\"openFire\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fire\",\"v\":\"show\",\"w\":\"fire\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"openFire\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"smoke\",\"does\":\"smoke rises to the ceiling\"},\"state\":{\"text\":\"SMOKY\",\"w\":\"smoke\"},\"do\":[{\"p\":\"smoke\",\"v\":\"start\",\"w\":\"smoke\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"openFire\",\"smoke\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"flood\",\"shows\":{\"p\":\"smokeBank\",\"does\":\"smoke banks down the walls\"},\"do\":[{\"p\":\"smokeBank\",\"v\":\"start\",\"w\":\"floods\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"coGauge\",\"does\":\"gauge climbs to 400\"},\"state\":{\"text\":\"TOXIC AIR\",\"w\":\"carbon\"},\"do\":[{\"p\":\"coGauge\",\"v\":\"show\",\"w\":\"carbon\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"coGauge\",\"v\":\"count\",\"w\":\"monoxide\",\"o\":0,\"d\":2.4,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"openFire\",\"coGauge\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"flue\",\"does\":\"pipe grows up through the roof\"},\"do\":[{\"p\":\"coGauge\",\"v\":\"hide\",\"w\":\"box\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"show\",\"w\":\"box\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"openFire\",\"v\":\"hide\",\"w\":\"box\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"panOn\",\"w\":\"box\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"pipeOn\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flue\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"stop\",\"w\":\"pipe\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smokeBank\",\"v\":\"stop\",\"w\":\"pipe\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flueFlow\",\"v\":\"show\",\"w\":\"pipe\",\"o\":1.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[\"flue\"],\"view\":\"home\",\"width\":0.45,\"type\":\"\",\"hero\":false,\"word\":\"pipe\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"heatGauge\",\"does\":\"gauge races into the red\"},\"state\":{\"text\":\"TOO HOT\",\"w\":\"roars\"},\"do\":[{\"p\":\"heatUp\",\"v\":\"show\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatGauge\",\"v\":\"show\",\"w\":\"roars\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatGauge\",\"v\":\"count\",\"w\":\"roars\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"heatGauge\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"stove\",\"does\":\"damper lever swings and the gauge falls\"},\"do\":[{\"p\":\"heatGauge\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatUp\",\"v\":\"hide\",\"w\":\"damper\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steadyGauge\",\"v\":\"show\",\"w\":\"damper\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steadyGauge\",\"v\":\"count\",\"w\":\"damper\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"damperClose\",\"w\":\"damper\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"steadyGauge\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"heatUp\",\"does\":\"heat arrows race up the pipe and out\"},\"state\":{\"text\":\"HEAT LOST\",\"w\":\"heat\"},\"do\":[{\"p\":\"steadyGauge\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heatUp\",\"v\":\"show\",\"w\":\"races\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"flue\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"stove\",\"does\":\"oven pops in beside the fire, hot gas loops round it\"},\"do\":[{\"p\":\"heatUp\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"ovenOn\",\"w\":\"oven\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"ovenGlow\",\"w\":\"oven\",\"o\":0.7,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ovenHeat\",\"v\":\"show\",\"w\":\"gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"outlineStove\",\"does\":\"glowing outline round the stove\"},\"do\":[{\"p\":\"ovenHeat\",\"v\":\"hide\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"outlineStove\",\"v\":\"show\",\"w\":\"cookstove\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"outlinePipe\",\"does\":\"glowing outline round the pipe\"},\"do\":[{\"p\":\"outlineStove\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"outlinePipe\",\"v\":\"show\",\"w\":\"flue\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flue\"],\"view\":\"home\",\"width\":0.4,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"ovenHeat\",\"does\":\"air arrows in, hot gas loops round the oven and up the flue\"},\"do\":[{\"p\":\"outlinePipe\",\"v\":\"hide\",\"w\":\"Air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airIn\",\"v\":\"show\",\"w\":\"Air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ovenHeat\",\"v\":\"show\",\"w\":\"gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"ovenGauge\",\"does\":\"oven gauge counts up to 230 beside a baking loaf\"},\"do\":[{\"p\":\"airIn\",\"v\":\"hide\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ovenHeat\",\"v\":\"hide\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ovenGauge\",\"v\":\"show\",\"w\":\"oven\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ovenGauge\",\"v\":\"count\",\"w\":\"bakes\",\"o\":0,\"d\":2.3,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"loafOn\",\"w\":\"bread\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"ovenGauge\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"bookStove\",\"does\":\"a book reading stove rises, then sinks away\"},\"do\":[{\"p\":\"ovenGauge\",\"v\":\"hide\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bookStove\",\"v\":\"show\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bookStove\",\"v\":\"hide\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"bookStove\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"bookCook\",\"does\":\"a book reading also a cook rises\"},\"do\":[{\"p\":\"bookCook\",\"v\":\"show\",\"w\":\"French\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stove\",\"bookCook\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"stove\",\"does\":\"kettle and stew pot pop onto the plate, cap on the chimney\"},\"do\":[{\"p\":\"bookCook\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"kettleOn\",\"w\":\"kettle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stove\",\"v\":\"potOn\",\"w\":\"pot\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"chimneyCap\",\"v\":\"show\",\"w\":\"cap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"3 FEET\",\"at\":{\"s\":\"fix1\",\"w\":\"three\",\"o\":0},\"d\":1.5},{\"text\":\"400 PPM\",\"at\":{\"s\":\"stakes\",\"w\":\"400\",\"o\":0},\"d\":1.8},{\"text\":\"230 °C\",\"at\":{\"s\":\"fact\",\"w\":\"230\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"flame\",\"at\":{\"s\":\"hook\",\"w\":\"fire\",\"o\":0},\"d\":1.2},{\"lib\":\"flame\",\"at\":{\"s\":\"problem2\",\"w\":\"roars\",\"o\":0},\"d\":1.4},{\"lib\":\"flame\",\"at\":{\"s\":\"how\",\"w\":\"fire\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"fix1\",\"w\":\"three\",\"o\":0},{\"s\":\"stakes\",\"w\":\"400\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"230\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How a cookstove works",
+   "hero": "a cookstove",
+   "parts": [
+    "pan",
+    "open fire",
+    "smoke",
+    "iron firebox",
+    "flue pipe",
+    "damper",
+    "oven",
+    "kettle",
+    "stew pot",
+    "chimney cap"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "a pan on an open fire is the simplest stove there is"
+    },
+    {
+     "role": "problem",
+     "idea": "the smoke has nowhere to go, so it rises and spreads over the ceiling"
+    },
+    {
+     "role": "flood",
+     "idea": "the smoke banks down the walls until the whole room is full of it"
+    },
+    {
+     "role": "stakes",
+     "idea": "the air turns toxic: carbon monoxide passes 400 parts per million, enough for a headache within about two hours"
+    },
+    {
+     "role": "fix1",
+     "idea": "box the fire in iron and run a pipe three feet above the roof, and the smoke leaves"
+    },
+    {
+     "role": "problem2",
+     "idea": "the pipe pulls air in so hard that the fire roars and the gauge races into the red"
+    },
+    {
+     "role": "fix2",
+     "idea": "a damper, a flap in the pipe, turns to slow the air and the gauge falls"
+    },
+    {
+     "role": "problem3",
+     "idea": "the heat still races straight up the pipe and out of the roof"
+    },
+    {
+     "role": "fix3",
+     "idea": "an oven beside the fire makes the hot gas loop around it before it leaves"
+    },
+    {
+     "role": "name",
+     "idea": "the whole thing is a cookstove"
+    },
+    {
+     "role": "name2",
+     "idea": "the pipe on top is called a flue"
+    },
+    {
+     "role": "how",
+     "idea": "air comes in at the front, feeds the fire, and the hot gas loops around the oven and out the flue"
+    },
+    {
+     "role": "fact",
+     "idea": "the oven bakes bread at about 230 degrees Celsius"
+    },
+    {
+     "role": "myth",
+     "idea": "a cuisinière is not only a stove: the stove book rises and is taken away"
+    },
+    {
+     "role": "mythFact",
+     "idea": "in French a cuisinière is also a woman who cooks"
+    },
+    {
+     "role": "finish",
+     "idea": "add a kettle, a pot of stew and a cap on the chimney to complete the cookstove"
+    },
+    {
+     "role": "congrats",
+     "idea": "the room is calm, the fire burns in its box and the smoke goes out the flue"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "smoke rises from the open fire, then banks down the walls and fills the room",
+     "stakes": "the cook and everyone in the room breathe toxic air (carbon monoxide gauge to 400 ppm)",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the pipe pulls air so hard that the fire roars and the heat gauge races into the red",
+     "stakes": "wood burns away in minutes and the iron gets dangerously hot",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "orange heat arrows race up the pipe and out of the roof",
+     "stakes": "the heat is wasted, so the room stays cold and the pot stays raw",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "At 400 ppm of carbon monoxide, a person gets a headache within 1 to 2 hours, and it becomes life-threatening within about 3 hours",
+     "role": "stakes",
+     "search": "carbon monoxide 400 ppm headache 1-2 hours life threatening 3 hours"
+    },
+    {
+     "claim": "A wood stove chimney must rise at least 3 feet above the roof where it passes through, and at least 2 feet higher than anything within 10 feet",
+     "role": "fix1",
+     "search": "NFPA 211 chimney 3 feet above roof 2 feet within 10 feet"
+    },
+    {
+     "claim": "A wood cookstove oven bakes at about 230 °C (450 °F)",
+     "role": "fact",
+     "search": "wood cookstove oven temperature 450 F 230 C baking"
+    },
+    {
+     "claim": "In French, cuisinière means both a cooking stove and a woman who cooks (the feminine of cuisinier)",
+     "role": "mythFact",
+     "search": "cuisinière meaning stove and female cook French"
+    }
+   ]
+  }
+ }
+}

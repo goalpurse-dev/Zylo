@@ -1,0 +1,114 @@
+{
+ "hash": "*",
+ "by": "real run 8add6042-765a-4fa9-bd5b-e6782cf417aa",
+ "searches": 0,
+ "data": {
+  "why": "A beam bridge built in the cut ground: a plank over a dug gap snaps under a car, then girders, a pier, a flood and a concrete jacket with rocks make the bridge. The camera starts close on the dig and the plank, then frames the whole span for the name and how beats, and the pier foot for the flood. The finish now adds rails, a centre line, a lamp and young trees, and the car only drives across in the congrats beat.",
+  "sceneJson": "{\"world\":{\"cut\":[-6,6,-4,6],\"house\":[-8,0,-30],\"porch\":true,\"trees\":[[-14,-12],[14,-9,0.9]],\"road\":[16,0.01,-57],\"rocksAvoid\":[[-6.5,6.5,-6.5,0.5]],\"worker\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":170,\"mound\":{\"x\":10,\"z\":-5.5,\"rx\":2,\"rz\":1.5,\"h\":1.3}}},{\"id\":\"bridge\",\"kind\":\"rig\",\"params\":{\"name\":\"plank bridge\",\"synonyms\":[\"bridge\",\"plank\",\"deck\"],\"pos\":[0,0,-2],\"nodes\":[{\"id\":\"plank\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[12.8,0.12,2.6],\"at\":[0,0.06,0],\"look\":\"wood\",\"color\":\"#b8844a\"}],\"moves\":[{\"name\":\"snap\",\"type\":\"snap\",\"axis\":\"x\",\"gap\":0.8},{\"name\":\"grow\",\"type\":\"slide\",\"to\":[0.3,0,0]}]},{\"id\":\"clamp\",\"parent\":\"plank\",\"at\":[6.2,0.12,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,0.6,2.6],\"at\":[0,0.3,0],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"lock\",\"type\":\"appear\"}]},{\"id\":\"rails\",\"parent\":\"plank\",\"at\":[0,0.12,0],\"shapes\":[{\"shape\":\"box\",\"size\":[12.4,0.08,0.08],\"at\":[0,0.9,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[12.4,0.08,0.08],\"at\":[0,0.9,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[-6,0.45,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[-3,0.45,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[0,0.45,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[3,0.45,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[6,0.45,1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[-6,0.45,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[-3,0.45,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[0,0.45,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[3,0.45,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"},{\"shape\":\"box\",\"size\":[0.1,0.9,0.1],\"at\":[6,0.45,-1.2],\"look\":\"metal\",\"color\":\"#dfe3e8\"}],\"moves\":[{\"name\":\"rails\",\"type\":\"appear\"}]},{\"id\":\"line\",\"parent\":\"plank\",\"at\":[0,0.12,0],\"shapes\":[{\"shape\":\"box\",\"size\":[11.8,0.02,0.12],\"at\":[0,0.01,0],\"look\":\"paint\",\"color\":\"#ffffff\"}],\"moves\":[{\"name\":\"line\",\"type\":\"appear\"}]}]}},{\"id\":\"girders\",\"kind\":\"rig\",\"params\":{\"name\":\"girders\",\"synonyms\":[\"steel beams\",\"girder\"],\"pos\":[0,-0.6,-2],\"nodes\":[{\"id\":\"girders\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[12.6,0.6,0.25],\"at\":[0,0.3,-0.8],\"look\":\"metal\",\"color\":\"#5f6b78\"},{\"shape\":\"box\",\"size\":[12.6,0.6,0.25],\"at\":[0,0.3,0.8],\"look\":\"metal\",\"color\":\"#5f6b78\"},{\"shape\":\"box\",\"size\":[0.2,0.4,1.6],\"at\":[-4,0.3,0],\"look\":\"metal\",\"color\":\"#5f6b78\"},{\"shape\":\"box\",\"size\":[0.2,0.4,1.6],\"at\":[-2,0.3,0],\"look\":\"metal\",\"color\":\"#5f6b78\"},{\"shape\":\"box\",\"size\":[0.2,0.4,1.6],\"at\":[2,0.3,0],\"look\":\"metal\",\"color\":\"#5f6b78\"},{\"shape\":\"box\",\"size\":[0.2,0.4,1.6],\"at\":[4,0.3,0],\"look\":\"metal\",\"color\":\"#5f6b78\"}]}]}},{\"id\":\"pier\",\"kind\":\"rig\",\"params\":{\"name\":\"pier\",\"synonyms\":[\"pillar\",\"support\"],\"pos\":[0,-6,-2],\"nodes\":[{\"id\":\"pier\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"model\",\"file\":\"roads/bridge-pillar.glb\",\"size\":[1.6,5.4,1.6],\"at\":[0,2.7,0]}]}]}},{\"id\":\"car\",\"kind\":\"car\",\"params\":{\"pos\":[-8.3,0,-2],\"from\":-16,\"to\":16,\"color\":\"#d9382c\",\"model\":\"sedan\"}},{\"id\":\"car2\",\"kind\":\"car\",\"params\":{\"pos\":[9.5,0,-2],\"from\":-16,\"to\":16,\"color\":\"#2f6fb0\",\"model\":\"suv\"}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3.2,1.3,-1.9],\"dir\":[0,-1],\"travel\":0.9,\"phase\":0},{\"at\":[0,1.3,-1.9],\"dir\":[0,-1],\"travel\":0.9,\"phase\":0.3},{\"at\":[3.2,1.3,-1.9],\"dir\":[0,-1],\"travel\":0.9,\"phase\":0.6},{\"at\":[0,-2,0.3],\"dir\":[0,-1],\"travel\":1,\"phase\":0.45}],\"opts\":{\"scale\":1.1,\"color\":\"#ffd23d\"}}},{\"id\":\"heat\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3,0.9,-1.9],\"dir\":[0,1],\"travel\":1,\"phase\":0},{\"at\":[0,0.9,-1.9],\"dir\":[0,1],\"travel\":1,\"phase\":0.3},{\"at\":[3,0.9,-1.9],\"dir\":[0,1],\"travel\":1,\"phase\":0.6}],\"opts\":{\"scale\":1.1,\"color\":\"#ff8a2a\"}}},{\"id\":\"bridgeOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-6.5,0.4,0.12],[6.5,0.4,0.12],[6.5,-0.8,0.12],[0.9,-0.8,0.12],[0.9,-6.1,0.12],[-0.9,-6.1,0.12],[-0.9,-0.8,0.12],[-6.5,-0.8,0.12],[-6.5,0.4,0.12]],\"opts\":{\"r\":0.1}}},{\"id\":\"river\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.98,\"x1\":5.98,\"y0\":-5.98,\"y1\":-1.6,\"z0\":-3.98,\"z1\":-0.01},\"mat\":\"water\"}},{\"id\":\"current\",\"kind\":\"flow\",\"params\":{\"path\":[[-5.6,-3.6,-1],[-1.3,-3.6,-1],[-0.85,-3.6,-1.5]],\"look\":\"water\",\"size\":0.25,\"speed\":3,\"count\":14}},{\"id\":\"pierCrack\",\"kind\":\"crack\",\"params\":{\"points\":[[-0.3,-5.6,-1.17],[0.25,-4.9,-1.17],[-0.2,-4.2,-1.17],[0.3,-3.5,-1.17]],\"r\":0.09}},{\"id\":\"wetBand\",\"kind\":\"wetBand\",\"params\":{\"cx\":0,\"halfW\":7,\"bottom\":-7}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-14,\"x1\":14,\"z0\":-12,\"z1\":-0.1,\"yTop\":20,\"yBot\":-0.4,\"count\":1200,\"width\":0.02,\"opacity\":0.36}},{\"id\":\"lawn\",\"kind\":\"lawnWet\",\"params\":{}},{\"id\":\"jacket\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-1,\"x1\":1,\"y0\":-5.9,\"y1\":-0.55,\"z0\":-2.9,\"z1\":-1.05},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.04}},{\"id\":\"riprap\",\"kind\":\"prop\",\"params\":{\"type\":\"rocks\",\"size\":[3.8,3],\"pos\":[0,-6,-2],\"open\":[\"front\"]}},{\"id\":\"lamp\",\"kind\":\"prop\",\"params\":{\"type\":\"floodLight\",\"pos\":[-7.2,0,-3.8]}},{\"id\":\"youngTrees\",\"kind\":\"youngTrees\",\"params\":{\"trees\":[[-10.5,-5.5,0.9],[7.5,-7,0.9]],\"stagger\":0.2}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-9,0.08,-8],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"dig a gap, plank laid across\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"show\",\"w\":\"plank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[\"bridge\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"plank\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"bridge\",\"does\":\"plank snaps in two\"},\"state\":{\"text\":\"SNAPPED\",\"w\":\"snaps\"},\"do\":[{\"p\":\"car\",\"v\":\"arrive\",\"w\":\"car\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"snap\",\"w\":\"snaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bridge\",\"car\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"girders\",\"does\":\"steel girders appear under the plank, plank lifts back\"},\"do\":[{\"p\":\"girders\",\"v\":\"show\",\"w\":\"girders\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"snapBack\",\"w\":\"girders\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"girders\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"pier\",\"does\":\"pier pops in under the middle\"},\"do\":[{\"p\":\"pier\",\"v\":\"show\",\"w\":\"pier\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pier\",\"girders\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"bridgeOutline\",\"does\":\"outline traces deck and pier\"},\"do\":[{\"p\":\"bridgeOutline\",\"v\":\"show\",\"w\":\"beam\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bridge\",\"pier\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"car\",\"does\":\"car drives across, weight arrows press down on deck and pier\"},\"do\":[{\"p\":\"bridgeOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"car\",\"v\":\"leave\",\"w\":\"car\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"weight\",\"v\":\"show\",\"w\":\"weight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bridge\",\"pier\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"river\",\"does\":\"flood fills the gap, current hits the pier, crack grows\"},\"state\":{\"text\":\"FLOODED\",\"w\":\"flood\"},\"do\":[{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lawn\",\"v\":\"wet\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"river\",\"v\":\"flood\",\"w\":\"flood\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"current\",\"v\":\"start\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pierCrack\",\"v\":\"grow\",\"w\":\"scours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wetBand\",\"v\":\"wet\",\"w\":\"scours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-5,-6.2,-3,5,1,0.5]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"jacket\",\"does\":\"concrete wraps the pier, rocks pile at its foot, flood drains\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lawn\",\"v\":\"dry\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"current\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"jacket\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0,\"d\":1.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"riprap\",\"v\":\"show\",\"w\":\"rocks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"river\",\"v\":\"drain\",\"w\":\"rocks\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"},{\"p\":\"wetBand\",\"v\":\"dry\",\"w\":\"rocks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-5,-6.2,-3,5,1,0.5]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"bridge\",\"does\":\"red clamp locks the deck end, then falls away\"},\"do\":[{\"p\":\"bridge\",\"v\":\"lock\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"lockBack\",\"w\":\"locked\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[3.5,-1.5,-3.5,9,2,0.5]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"bridge\",\"does\":\"heat arrows rise, deck slides longer\"},\"do\":[{\"p\":\"heat\",\"v\":\"show\",\"w\":\"summer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"grow\",\"w\":\"grows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[3.5,-1.5,-3.5,9,2,0.5]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"bridge\",\"does\":\"rails and centre line appear, lamp pops, young trees pop in\"},\"do\":[{\"p\":\"heat\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"growBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"rails\",\"w\":\"rails\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"line\",\"w\":\"line\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp\",\"v\":\"show\",\"w\":\"lamp\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"youngTrees\",\"v\":\"show\",\"w\":\"trees\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"car2\",\"does\":\"car drives across and off the finished bridge\"},\"do\":[{\"p\":\"car2\",\"v\":\"arrive\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"car2\",\"v\":\"leave\",\"w\":\"bridge\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"6 CM\",\"at\":{\"s\":\"mythFact\",\"w\":\"6\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem2\",\"w\":\"flood\",\"o\":0},\"d\":1.6},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix3\",\"w\":\"rocks\",\"o\":0},\"d\":1}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"6\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem2\",\"w\":\"But\",\"o\":0},{\"s\":\"fix3\",\"w\":\"So\",\"o\":0.5}]}}",
+  "story": {
+   "title": "How a Bridge Works",
+   "hero": "a beam bridge",
+   "parts": [
+    "plank",
+    "gap",
+    "car",
+    "girders",
+    "pier",
+    "flood",
+    "concrete",
+    "rocks",
+    "rails",
+    "lamp",
+    "young trees"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a gap, lay a plank across it, and you have a bridge"
+    },
+    {
+     "role": "problem",
+     "idea": "a car rolls up to the plank and it snaps in the middle"
+    },
+    {
+     "role": "fix1",
+     "idea": "a car rolls up and the plank snaps, so steel girders go under it to carry the load"
+    },
+    {
+     "role": "fix2",
+     "idea": "the girders still span a long gap, so a pier holds up the middle"
+    },
+    {
+     "role": "name",
+     "idea": "a deck on girders resting on banks and a pier is a beam bridge"
+    },
+    {
+     "role": "how",
+     "idea": "a car's weight bends the deck and pushes down through the girders to the pier and banks"
+    },
+    {
+     "role": "problem2",
+     "idea": "with a pier in the gap, a flood hammers it and scours its foot until it cracks"
+    },
+    {
+     "role": "fix3",
+     "idea": "concrete wraps the pier and rocks pile round its foot, and the flood drains away"
+    },
+    {
+     "role": "myth",
+     "idea": "people think a bridge is locked rigid, so a clamp shows then falls away"
+    },
+    {
+     "role": "mythFact",
+     "idea": "in summer heat the steel deck grows, about 6 cm over 100 metres, so it slides"
+    },
+    {
+     "role": "finish",
+     "idea": "rails, a centre line, a lamp and young trees complete it"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: a car drives across and off over the finished bridge"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "a car rolls up to the plank and it snaps in two over the gap",
+     "stakes": "the car cannot cross and the plank is destroyed",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix2",
+     "shows": "a flood fills the gap, the current hits the pier and a crack grows at its foot",
+     "stakes": "the pier and the whole bridge could be washed away",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "In a loaded beam bridge the top of the beam is squeezed (compression) while the bottom is stretched (tension).",
+     "role": "how",
+     "search": "beam bridge compression top tension bottom"
+    },
+    {
+     "claim": "Flood scour, water washing the soil from around piers, causes more than half of US bridge failures (about 53% in one study).",
+     "role": "problem2",
+     "search": "bridge failures caused by flood scour percentage United States"
+    },
+    {
+     "claim": "Piling rocks (riprap) around a pier's foot is a standard defence against scour.",
+     "role": "fix3",
+     "search": "riprap bridge pier scour countermeasure"
+    },
+    {
+     "claim": "A 100 m steel bridge span grows about 6 cm when the temperature rises by 50 degrees C (steel expands about 12 millionths per degree).",
+     "role": "mythFact",
+     "search": "steel bridge thermal expansion 100 m span 50 degrees expansion joint"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,82 @@
+{
+ "hash": "*",
+ "by": "real run 3b814122-b59e-451f-895e-67b8cf966322",
+ "searches": 0,
+ "data": {
+  "title": "How a puddle of mud can become a semiconductor factory",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a pit and let muddy water settle, you have a sandy floor."
+   },
+   {
+    "role": "problem",
+    "text": "But sand is silicon locked to oxygen, so no current passes through it."
+   },
+   {
+    "role": "stakes",
+    "text": "It is full of clay and iron, yet a chip allows only one foreign atom per billion."
+   },
+   {
+    "role": "fix1",
+    "text": "So you pour the sand into a furnace with carbon."
+   },
+   {
+    "role": "fix2",
+    "text": "So you heat it up to about 2,000 °C, and the oxygen burns off as gas."
+   },
+   {
+    "role": "fix3",
+    "text": "But now that gas escapes, so you pipe it into a second tank where pure silicon forms."
+   },
+   {
+    "role": "fix4",
+    "text": "So you melt the pure silicon and pull one single crystal out of it."
+   },
+   {
+    "role": "name",
+    "text": "This is a Czochralski crystal puller."
+   },
+   {
+    "role": "name2",
+    "text": "Slice the crystal into thin discs, and each disc is a wafer."
+   },
+   {
+    "role": "how",
+    "text": "Machines print layer after layer of tiny switches onto each wafer with light."
+   },
+   {
+    "role": "fact",
+    "text": "One modern chip can hold over 20 billion of those switches."
+   },
+   {
+    "role": "problem2",
+    "text": "But a single speck of dust landing on a wafer can kill the chip."
+   },
+   {
+    "role": "problem3",
+    "text": "In an open hall, wind and rain blow in mud and ruin a whole batch."
+   },
+   {
+    "role": "fix5",
+    "text": "So you build a roof over the hall and push filtered air down, making a cleanroom."
+   },
+   {
+    "role": "myth",
+    "text": "And beach sand is not chip sand, whatever everyone knows."
+   },
+   {
+    "role": "mythFact",
+    "text": "The purest quartz comes from Spruce Pine, North Carolina, which supplies an estimated 70 to 90 percent of the world's high-purity quartz."
+   },
+   {
+    "role": "finish",
+    "text": "Add ceiling lights and stepping stones, and the pit runs clear."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a semiconductor factory."
+   }
+  ]
+ }
+}

@@ -1,0 +1,194 @@
+{
+ "hash": "*",
+ "by": "real run 3f835948-d429-4f32-aeb3-0f3df5d465e8",
+ "searches": 5,
+ "data": {
+  "text": "I searched each claim. Claim 0 needs a correction. Claims 1 and 3 hold as written, with a small caveat on claim 3. Claim 2 holds, but the bridge was later repaired with mortar. I took the quoted wording from the search extracts, not from the full pages.\n\n**Claim 0: stone is about ten times stronger squeezed than stretched. Supported in a corrected form.**\n- A University of Toronto rock-engineering paper says <https://geogroup.utoronto.ca/wp-content/uploads/RockEng09/PDF/Session21/4063%20PAPER.pdf>:\n  - \"The tensile strength is generally low compared to its compressive strength.\"\n  - It reports a strength ratio R = σc/σt, and cites a 1974 source that the ratio of most rocks starts at 10.\n  - It says Murrell's failure criterion gives a compressive strength of 12 times the tensile strength.\n  - Its example granite has a uniaxial compressive strength of 225 MPa and a Brazilian-test tensile strength of 13.5 MPa. That is a ratio of about 17.\n- Colorado lecture notes say \"uniaxial tensile strengths are usually 10 to 20 times lower than unconfined compressive strengths.\" <https://ceae.colorado.edu/~amadei/CVEN5768/PDF/NOTES8.pdf>\n- A paper on granites puts the ratio at roughly 24 for the granites it tested. <https://www.researchgate.net/publication/270162174_Relation_between_tensile_and_compressive_engineering_properties_of_granites>\n- A Griffith-theory paper uses a ratio of 8. <https://www.researchgate.net/publication/283131964_Practical_analysis_of_compressive-tensile_strength_ratio_for_brittle_rock_-Taking_diorite_granite_and_sandstone_for_example>\n- **Correction:** \"Stone is typically about 10 to 20 times stronger in compression than in tension, depending on the rock.\" \"Roughly ten times\" is the low end. The \"flat slabs crack but arches hold\" explanation is a simplification that the sources don't address. An arch works because it keeps the stone mostly in compression.\n\n**Claim 1: Pons Fabricius, built 62 BC, still carries walkers after more than 2000 years. Supported as written.**\n- Ancient Rome Live says <https://ancientromelive.org/pons-fabricius/>:\n  - \"The Pons Fabricius is the oldest bridge in Rome still standing and in continuous use.\"\n  - It dates to 62 BCE and was commissioned by Lucius Fabricius, the curator of roads.\n- The same page also says it has stood for \"nearly 2000 years,\" which doesn't fit its own 62 BCE date. From 62 BC it is about 2,085 years old, so \"more than 2000\" is arithmetically correct.\n- I did not find a source in these results that says the bridge carries pedestrians today. \"Continuous use\" is the wording the source gives.\n\n**Claim 2: Alcántara Bridge, built 106 AD, has no mortar between its granite blocks. Supported with a caveat.**\n- Following Hadrian Photography says <https://followinghadrianphotography.com/2018/03/04/alcantara-bridge/>:\n  - It was built over the Tagus \"between AD 104 and 106.\"\n  - It is \"Built of granite and without mortar,\" with six semicircular arches on five pillars.\n- Wikipedia notes that the bridge was rebuilt in 1860 \"using mortared\" masonry for the repaired part. <https://en.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge> I only saw a fragment of that sentence.\n- **Corrected wording:** \"Built between AD 104 and 106 of granite blocks laid without mortar. Some later repairs did use mortar.\" The date is better given as a range than as 106.\n\n**Claim 3: Mesopotamian builders used brick arches more than 4000 years ago, long before Rome. Supported, with a caveat on the date.**\n- EBSCO Research Starters says <https://www.ebsco.com/research-starters/architecture/arch-architecture/>:\n  - \"The earliest arches were used in Mesopotamian architecture sometime in the second millennium B.C.E.\"\n  - Arches date back \"more than four thousand years.\"\n  - Corbel arches in Egyptian and Mesopotamian architecture date to almost 2000 B.C.E.\n- Britannica says <https://www.britannica.com/technology/construction/Bronze-Age-and-early-urban-cultures>:\n  - Fired bricks first appeared in Mesopotamia about 3000 BCE.\n  - \"It is in the roofs of these underground drains that the first surviving true arches in brick are found.\"\n  - A corbel arch is not a true arch.\n- Steelmaster says brick arches around 2000 BCE were used for underground drainage. <https://www.steelmasterusa.com/news/history-of-arches/>\n- WorldHistory.org says arches were created or developed in the Uruk period, about 4000–3100 BCE. <https://www.worldhistory.org/Mesopotamian_Art_and_Architecture/>\n- **Verdict:** the claim holds, since 2000 BCE is about 4,000 years ago and Rome's arches came much later. Dating to \"more than 4000 years\" is safe only if you rely on the looser sources. The more careful sources put the earliest surviving true brick arches at roughly 2000 BCE, in drains and small structures, so \"about 4000 years ago\" is safer. These were not bridges.",
+  "sources": [
+   {
+    "url": "https://geogroup.utoronto.ca/wp-content/uploads/RockEng09/PDF/Session21/4063%20PAPER.pdf",
+    "title": "A simple method to estimate tensile strength and Hoek- ..."
+   },
+   {
+    "url": "https://www.researchgate.net/publication/283131964_Practical_analysis_of_compressive-tensile_strength_ratio_for_brittle_rock_-Taking_diorite_granite_and_sandstone_for_example",
+    "title": "Practical analysis of compressive-tensile strength ratio for brittle rock -Taking diorite, granite and sandstone for example"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/270162174_Relation_between_tensile_and_compressive_engineering_properties_of_granites",
+    "title": "(PDF) Relation between tensile and compressive engineering properties of granites"
+   },
+   {
+    "url": "https://ceae.colorado.edu/~amadei/CVEN5768/PDF/NOTES8.pdf",
+    "title": "strength properties of rocks and rock masses"
+   },
+   {
+    "url": "https://www.hcworldstone.com/compressive-strength-stone-vs-concrete-2/",
+    "title": "A Data-Backed Analysis for 2026: Compressive Strength Stone vs Concrete - HC WORLD STONE"
+   },
+   {
+    "url": "https://www.hcworldstone.com/compressive-strength-stone-vs-concrete/",
+    "title": "A 2026 Data-Backed Analysis: The Compressive Strength of Stone vs Concrete - HC WORLD STONE"
+   },
+   {
+    "url": "https://www.ratani.in/granite-the-mechanical-strength-that-makes-it-superior/",
+    "title": "Granite - Superior Mechanical Strength and Durability Explained"
+   },
+   {
+    "url": "https://modulmarble.com/wp-content/uploads/2019/05/Natural-Stone-Physical-Mechanical-Characteristics.pdf",
+    "title": "Physical Mechanical Characteristics Natural Stone Marble (varies by stone)"
+   },
+   {
+    "url": "https://www.eastcarb.com/granite-compressive-strength/",
+    "title": "An In-depth Analysis of Granite Compressive Strength - East Carbon"
+   },
+   {
+    "url": "https://followinghadrianphotography.com/2018/03/04/alcantara-bridge/",
+    "title": "Alcántara Bridge"
+   },
+   {
+    "url": "https://simple.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge",
+    "title": "Alcántara Bridge"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge",
+    "title": "Alc%C3%A1ntara Bridge"
+   },
+   {
+    "url": "https://www.napoleon-series.org/military-info/virtual/c_alcantara.html",
+    "title": "The Destruction of the Bridge at Alcantara: 14 May, 1809"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Roman_temple_of_Alc%C3%A1ntara",
+    "title": "Roman temple of Alc%C3%A1ntara"
+   },
+   {
+    "url": "https://we-travel.at/the-roman-bridge-of-alcantara/",
+    "title": "The Roman Bridge of Alcántara"
+   },
+   {
+    "url": "https://followinghadrianphotography.com/tag/roman-bridge/",
+    "title": "Roman Bridge"
+   },
+   {
+    "url": "https://airial.travel/attractions/spain/alc%C3%A1ntara/alc%C3%A1ntara-roman-bridge--SUlr7VK",
+    "title": "Alcántara Roman Bridge (2025)"
+   },
+   {
+    "url": "https://www.animalsaroundtheglobe.com/11-historic-bridges-in-the-world-that-are-engineering-masterpieces-4-380253/",
+    "title": "11 Historic Bridges in The World That Are Engineering Masterpieces - Animals Around The Globe"
+   },
+   {
+    "url": "https://www.ebsco.com/research-starters/architecture/arch-architecture/",
+    "title": "Arch (architecture)"
+   },
+   {
+    "url": "https://www.worldhistory.org/Mesopotamian_Art_and_Architecture/",
+    "title": "Mesopotamian Art and Architecture: The Birth of Art and Architecture in the Ancient World - World History Encyclopedia"
+   },
+   {
+    "url": "https://www.wisdomlib.org/mesopotamian/book/the-civilization-of-babylonia-and-assyria/d/doc3961.html",
+    "title": "Part IV"
+   },
+   {
+    "url": "https://www.steelmasterusa.com/news/history-of-arches/",
+    "title": "The History of Arches: Connecting the Past to Modern Architecture"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Brick",
+    "title": "Brick"
+   },
+   {
+    "url": "https://www.britannica.com/technology/construction/Bronze-Age-and-early-urban-cultures",
+    "title": "Construction - Bronze Age, Urban Cultures"
+   },
+   {
+    "url": "https://discover.hubpages.com/education/-How-to-build-an-arch-the-beauty-mathematics-and-history-of-the-arch-in-architecture",
+    "title": "How to build a brick arch; the beauty, mathematics and history of building arches in architecture - HubPages"
+   },
+   {
+    "url": "https://inventionsarchive.com/arch/",
+    "title": "Arch [Ancient Inventions Series]"
+   },
+   {
+    "url": "https://builtheritageconservation.wordpress.com/2012/09/22/hello-world/",
+    "title": "BRICK & BRICK SIZES"
+   },
+   {
+    "url": "https://ancientromelive.org/pons-fabricius/",
+    "title": "Ancient Rome Live"
+   },
+   {
+    "url": "https://www.thetravel.com/pons-fabricius-discover-the-oldest-bridge-in-rome-still-in-its-original-state/",
+    "title": "Pons Fabricius: Discover The Oldest Bridge In Rome Still In Its Original State"
+   },
+   {
+    "url": "https://www.tripadvisor.com/Attraction_Review-g187791-d7362095-Reviews-Pont_Fabricius-Rome_Lazio.html",
+    "title": "Pont Fabricius - All You SHOULD Know Before Going (2026 Reviews)"
+   },
+   {
+    "url": "https://www.livius.org/articles/place/rome/rome-photos/rome-bridge-of-fabricius/",
+    "title": "Rome, Bridge of Fabricius - Livius"
+   },
+   {
+    "url": "https://ancientromelive.org/bridges-general/",
+    "title": "Ancient Rome Live"
+   },
+   {
+    "url": "https://x.com/histories_arch/status/2047570732222488656",
+    "title": "ArchaeoHistories on X: \"A Roman bridge still doing its job.... The Ponte Fabricio, built in 62 BC, is widely recognized as the oldest Roman bridge in Europe still standing in its original form and still in regular use. It links the left bank of the Tiber River to Tiber Island, an important crossi… / X"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Pons_Fabricius",
+    "title": "Pons Fabricius"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Pons_Cestius",
+    "title": "Pons Cestius"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/List_of_bridges_in_Italy",
+    "title": "List of bridges in Italy"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge",
+    "title": "Alc%C3%A1ntara Bridge"
+   },
+   {
+    "url": "https://commons.wikimedia.org/wiki/Alc%C3%A1ntara_Bridge",
+    "title": "Alcántara Bridge - Wikimedia Commons"
+   },
+   {
+    "url": "https://simple.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge",
+    "title": "Alcántara Bridge"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Alcon%C3%A9tar_Bridge",
+    "title": "Alcon%C3%A9tar Bridge"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/2nd_century_in_architecture",
+    "title": "2nd century in architecture"
+   },
+   {
+    "url": "https://followinghadrianphotography.com/2018/03/04/alcantara-bridge/",
+    "title": "Alcántara Bridge"
+   },
+   {
+    "url": "https://www.napoleon-series.org/military-info/virtual/c_alcantara.html",
+    "title": "The Destruction of the Bridge at Alcantara: 14 May, 1809"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Roman_temple_of_Alc%C3%A1ntara",
+    "title": "Roman temple of Alc%C3%A1ntara"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/List_of_Greek_and_Roman_architectural_records",
+    "title": "List of Greek and Roman architectural records"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/List_of_ancient_Greek_and_Roman_architectural_records",
+    "title": "List of ancient Greek and Roman architectural records"
+   }
+  ]
+ }
+}

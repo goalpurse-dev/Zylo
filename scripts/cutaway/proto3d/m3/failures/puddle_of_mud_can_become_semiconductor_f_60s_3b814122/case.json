@@ -1,0 +1,86 @@
+{
+ "runId": "3b814122-b59e-451f-895e-67b8cf966322",
+ "topic": "How a puddle of mud can become a semiconductor factory.",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-04T15:05:35.425263+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: hook",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 1.0679,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.60643,
+   "outputTokens": 54534,
+   "at": "2026-11-04T15:14:32.911Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.11553,
+   "outputTokens": 2956,
+   "at": "2026-11-04T15:15:01.296Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02608,
+   "outputTokens": 1467,
+   "at": "2026-11-04T15:15:09.503Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01476,
+   "outputTokens": 701,
+   "at": "2026-11-04T15:15:14.130Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01345,
+   "outputTokens": 704,
+   "at": "2026-11-04T15:15:18.482Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01342,
+   "outputTokens": 700,
+   "at": "2026-11-04T15:15:22.844Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.03444,
+   "outputTokens": 1217,
+   "at": "2026-11-04T15:16:14.924Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.00619,
+   "outputTokens": 245,
+   "at": "2026-11-04T15:16:17.317Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.11149,
+   "outputTokens": 3785,
+   "at": "2026-11-04T15:16:36.280Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00448,
+   "outputTokens": 302,
+   "at": "2026-11-04T15:16:49.863Z"
+  }
+ ]
+}

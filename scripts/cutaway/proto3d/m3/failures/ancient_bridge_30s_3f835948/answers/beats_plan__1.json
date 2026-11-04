@@ -1,0 +1,113 @@
+{
+ "hash": "*",
+ "by": "real run 3f835948-d429-4f32-aeb3-0f3df5d465e8",
+ "searches": 0,
+ "data": {
+  "why": "A ravine is dug in the ground with a river at the bottom, and the whole ancient-bridge story is built in section across it. A plank snaps under a cart, stone piers and flat slabs crack, and then a double stone arch on a wooden frame, with a keystone, saves the day. The camera opens close on the dug channel and the plank, stays mid on the span through the build, goes hero wide on the arch for the name, and ends on the home view with a cart rolling over the finished road.",
+  "sceneJson": "{\"world\":{\"cut\":[-4,4,-5,4],\"house\":[-8,0,-30],\"porch\":true,\"trees\":[[-14.5,-9.5],[13.5,-5.2,0.9]],\"road\":[8.5,0.01,-57],\"rocksAvoid\":[[-4.5,4.5,-4.2,0.5]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":150,\"mound\":{\"x\":-7.5,\"z\":-3.5,\"rx\":1.8,\"rz\":1.4,\"h\":1.1}}},{\"id\":\"river\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-3.98,\"x1\":3.98,\"y0\":-4,\"y1\":-2.6,\"z0\":-4.98,\"z1\":-0.01},\"mat\":\"water\"}},{\"id\":\"plank\",\"kind\":\"rig\",\"params\":{\"name\":\"plank bridge\",\"synonyms\":[\"plank\",\"board\"],\"pos\":[0,0,-1.5],\"nodes\":[{\"id\":\"plank\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[9.4,0.14,1.8],\"at\":[0,0.07,0],\"look\":\"wood\",\"color\":\"#9a6b3c\"}],\"moves\":[{\"name\":\"break\",\"type\":\"snap\",\"axis\":\"x\",\"gap\":0.6}]},{\"id\":\"cart\",\"parent\":\"plank\",\"at\":[-4.2,0.14,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.3,1.1],\"at\":[0,0.55,0],\"look\":\"wood\",\"color\":\"#6b4a2a\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"box\",\"size\":[1.2,0.8,0.9],\"at\":[0,1.1,0],\"look\":\"concrete\",\"color\":\"#8d8d86\"}],\"moves\":[{\"name\":\"roll\",\"type\":\"slide\",\"to\":[4.2,0,0]}]}]}},{\"id\":\"pier\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"pier\",\"mat\":\"stones\",\"size\":[1.2,4,2],\"anchor\":[0,1,0],\"pos\":[0,-4,-1.5],\"axis\":\"y\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"deck\",\"kind\":\"rig\",\"params\":{\"name\":\"stone slabs\",\"synonyms\":[\"slabs\",\"slab\"],\"pos\":[0,0,-1.5],\"nodes\":[{\"id\":\"deckL\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[4.1,0.7,2],\"at\":[-2.65,0.35,0],\"look\":\"concrete\",\"color\":\"#a8a49a\"}],\"moves\":[{\"name\":\"lay\",\"type\":\"appear\"}]},{\"id\":\"deckR\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[4.1,0.7,2],\"at\":[2.65,0.35,0],\"look\":\"concrete\",\"color\":\"#a8a49a\"}],\"moves\":[{\"name\":\"lay\",\"type\":\"appear\"}]},{\"id\":\"crack\",\"parent\":\"deckL\",\"at\":[-2.2,0.35,1.0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,0.72,0.08],\"at\":[0,0,0],\"rot\":[0,0,14],\"look\":\"paint\",\"color\":\"#1b1b1b\"}],\"moves\":[{\"name\":\"split\",\"type\":\"appear\"}]}]}},{\"id\":\"arch\",\"kind\":\"rig\",\"params\":{\"name\":\"stone arch\",\"synonyms\":[\"arch\",\"arches\"],\"pos\":[0,-2.02,-1.5],\"nodes\":[{\"id\":\"aL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-4.201,0.454,0],\"rot\":[0,0,167.14],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s0\",\"type\":\"appear\"}]},{\"id\":\"aL1\",\"parent\":\"aL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-3.825,1.236,0],\"rot\":[0,0,141.43],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s1\",\"type\":\"appear\"}]},{\"id\":\"aL2\",\"parent\":\"aL1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-3.146,1.777,0],\"rot\":[0,0,115.71],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s2\",\"type\":\"appear\"}]},{\"id\":\"aLk\",\"parent\":\"aL2\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-2.3,1.97,0],\"rot\":[0,0,90],\"look\":\"concrete\",\"color\":\"#e0c477\"}],\"moves\":[{\"name\":\"key\",\"type\":\"appear\"}]},{\"id\":\"bL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-0.399,0.454,0],\"rot\":[0,0,12.86],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s0\",\"type\":\"appear\"}]},{\"id\":\"bL1\",\"parent\":\"bL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-0.776,1.236,0],\"rot\":[0,0,38.57],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s1\",\"type\":\"appear\"}]},{\"id\":\"bL2\",\"parent\":\"bL1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[-1.454,1.777,0],\"rot\":[0,0,64.29],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s2\",\"type\":\"appear\"}]},{\"id\":\"cR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[0.399,0.454,0],\"rot\":[0,0,-12.86],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s0\",\"type\":\"appear\"}]},{\"id\":\"cR1\",\"parent\":\"cR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[0.776,1.236,0],\"rot\":[0,0,-38.57],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s1\",\"type\":\"appear\"}]},{\"id\":\"cR2\",\"parent\":\"cR1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[1.454,1.777,0],\"rot\":[0,0,-64.29],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s2\",\"type\":\"appear\"}]},{\"id\":\"cRk\",\"parent\":\"cR2\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[2.3,1.97,0],\"rot\":[0,0,-90],\"look\":\"concrete\",\"color\":\"#e0c477\"}],\"moves\":[{\"name\":\"key\",\"type\":\"appear\"}]},{\"id\":\"dR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[4.201,0.454,0],\"rot\":[0,0,-167.14],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s0\",\"type\":\"appear\"}]},{\"id\":\"dR1\",\"parent\":\"dR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[3.825,1.236,0],\"rot\":[0,0,-141.43],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s1\",\"type\":\"appear\"}]},{\"id\":\"dR2\",\"parent\":\"dR1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.82,2],\"at\":[3.146,1.777,0],\"rot\":[0,0,-115.71],\"look\":\"concrete\",\"color\":\"#b9b2a0\"}],\"moves\":[{\"name\":\"s2\",\"type\":\"appear\"}]},{\"id\":\"frameL\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-0.68,0.12,0.85],[-0.897,0.93,0.85],[-1.49,1.523,0.85],[-2.3,1.74,0.85],[-3.11,1.523,0.85],[-3.703,0.93,0.85],[-3.92,0.12,0.85]],\"r\":0.08,\"look\":\"wood\",\"color\":\"#9a6b3c\"},{\"shape\":\"tube\",\"path\":[[-0.68,0.12,-0.85],[-0.897,0.93,-0.85],[-1.49,1.523,-0.85],[-2.3,1.74,-0.85],[-3.11,1.523,-0.85],[-3.703,0.93,-0.85],[-3.92,0.12,-0.85]],\"r\":0.08,\"look\":\"wood\",\"color\":\"#9a6b3c\"}],\"moves\":[{\"name\":\"frame\",\"type\":\"appear\"}]},{\"id\":\"frameR\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.68,0.12,0.85],[0.897,0.93,0.85],[1.49,1.523,0.85],[2.3,1.74,0.85],[3.11,1.523,0.85],[3.703,0.93,0.85],[3.92,0.12,0.85]],\"r\":0.08,\"look\":\"wood\",\"color\":\"#9a6b3c\"},{\"shape\":\"tube\",\"path\":[[0.68,0.12,-0.85],[0.897,0.93,-0.85],[1.49,1.523,-0.85],[2.3,1.74,-0.85],[3.11,1.523,-0.85],[3.703,0.93,-0.85],[3.92,0.12,-0.85]],\"r\":0.08,\"look\":\"wood\",\"color\":\"#9a6b3c\"}],\"moves\":[{\"name\":\"frame\",\"type\":\"appear\"}]}]}},{\"id\":\"load\",\"kind\":\"rig\",\"params\":{\"name\":\"heavy block\",\"synonyms\":[\"weight\",\"load\"],\"pos\":[-2.3,0.2,-1.5],\"nodes\":[{\"id\":\"block\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.2,0.8,1.6],\"at\":[0,0.4,0],\"look\":\"concrete\",\"color\":\"#7d7a73\"}],\"moves\":[{\"name\":\"set\",\"type\":\"appear\"}]}]}},{\"id\":\"thrust\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-1.6,0.2,0.2],\"dir\":[0.6,-0.8],\"travel\":1,\"phase\":0},{\"at\":[-0.9,-0.35,0.2],\"dir\":[0.25,-1],\"travel\":1,\"phase\":0.3},{\"at\":[-3,0.2,0.2],\"dir\":[-0.6,-0.8],\"travel\":1,\"phase\":0.1},{\"at\":[-3.7,-0.35,0.2],\"dir\":[-0.25,-1],\"travel\":1,\"phase\":0.4},{\"at\":[1.6,0.2,0.2],\"dir\":[-0.6,-0.8],\"travel\":1,\"phase\":0.2},{\"at\":[0.9,-0.35,0.2],\"dir\":[-0.25,-1],\"travel\":1,\"phase\":0.5},{\"at\":[3,0.2,0.2],\"dir\":[0.6,-0.8],\"travel\":1,\"phase\":0.3},{\"at\":[3.7,-0.35,0.2],\"dir\":[0.25,-1],\"travel\":1,\"phase\":0.6}],\"opts\":{\"scale\":0.9,\"color\":\"#ffd23d\"}}},{\"id\":\"archOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-4.3,0.55,0.12],[4.3,0.55,0.12],[4.3,-2.4,0.12],[-4.3,-2.4,0.12],[-4.3,0.55,0.12]],\"opts\":{\"r\":0.09}}},{\"id\":\"flag\",\"kind\":\"flag\",\"params\":{\"at\":[5.2,0,-3.8],\"colors\":[\"#b3202a\",\"#e8b923\",\"#b3202a\"]}},{\"id\":\"brickArch\",\"kind\":\"rig\",\"params\":{\"name\":\"brick arch\",\"synonyms\":[\"brick arch\",\"arches\"],\"pos\":[6.4,0,-2.4],\"nodes\":[{\"id\":\"eL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.5,0.7],\"at\":[-0.713,0.292,0],\"rot\":[0,0,162],\"look\":\"paint\",\"color\":\"#b07d4f\"}],\"moves\":[{\"name\":\"bk0\",\"type\":\"appear\"}]},{\"id\":\"eL1\",\"parent\":\"eL0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.5,0.7],\"at\":[-0.441,0.667,0],\"rot\":[0,0,126],\"look\":\"paint\",\"color\":\"#b07d4f\"}],\"moves\":[{\"name\":\"bk1\",\"type\":\"appear\"}]},{\"id\":\"eK\",\"parent\":\"eL1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.5,0.7],\"at\":[0,0.81,0],\"rot\":[0,0,90],\"look\":\"paint\",\"color\":\"#c99a68\"}],\"moves\":[{\"name\":\"bkey\",\"type\":\"appear\"}]},{\"id\":\"fR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.5,0.7],\"at\":[0.713,0.292,0],\"rot\":[0,0,18],\"look\":\"paint\",\"color\":\"#b07d4f\"}],\"moves\":[{\"name\":\"bk0\",\"type\":\"appear\"}]},{\"id\":\"fR1\",\"parent\":\"fR0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.5,0.7],\"at\":[0.441,0.667,0],\"rot\":[0,0,54],\"look\":\"paint\",\"color\":\"#b07d4f\"}],\"moves\":[{\"name\":\"bk1\",\"type\":\"appear\"}]}]}},{\"id\":\"bridgeTop\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"road\",\"mat\":\"concrete\",\"size\":[9.2,0.3,2],\"anchor\":[1,1,0],\"pos\":[-4.6,0,-1.5],\"axis\":\"x\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallF\",\"mat\":\"stones\",\"size\":[9.2,0.5,0.25],\"anchor\":[1,1,0],\"pos\":[-4.6,0.3,-0.62],\"axis\":\"x\",\"vis\":0,\"r\":0.04},{\"ch\":\"wallB\",\"mat\":\"stones\",\"size\":[9.2,0.5,0.25],\"anchor\":[1,1,0],\"pos\":[-4.6,0.3,-2.38],\"axis\":\"x\",\"vis\":0,\"r\":0.04}]}},{\"id\":\"cart2\",\"kind\":\"rig\",\"params\":{\"name\":\"cart\",\"synonyms\":[\"cart\",\"wagon\"],\"pos\":[-4.2,0.3,-1.5],\"nodes\":[{\"id\":\"cart\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.3,1.1],\"at\":[0,0.55,0],\"look\":\"wood\",\"color\":\"#6b4a2a\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"box\",\"size\":[1.2,0.8,0.9],\"at\":[0,1.1,0],\"look\":\"concrete\",\"color\":\"#8d8d86\"}],\"moves\":[{\"name\":\"arrive\",\"type\":\"appear\"},{\"name\":\"roll\",\"type\":\"slide\",\"to\":[8.4,0,0]}]}]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[8.6,0.08,-1],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"plank\",\"does\":\"dig the channel and lay a plank across\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"river\",\"v\":\"flood\",\"w\":\"channel\",\"o\":0,\"d\":1.4,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"show\",\"w\":\"plank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"plank\",\"does\":\"cart rolls on, plank snaps\"},\"state\":{\"text\":\"SNAPPED\",\"w\":\"snaps\"},\"do\":[{\"p\":\"plank\",\"v\":\"roll\",\"w\":\"cart\",\"o\":0,\"d\":1.5,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"break\",\"w\":\"snaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plank\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"pier\",\"does\":\"stone pier grows, slabs laid on top\"},\"do\":[{\"p\":\"plank\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pier\",\"v\":\"grow\",\"w\":\"piers\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"pier\"},{\"p\":\"deck\",\"v\":\"lay\",\"w\":\"slabs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pier\",\"deck\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"deck\",\"does\":\"a crack splits the slab\"},\"state\":{\"text\":\"CRACKED\",\"w\":\"cracks\"},\"do\":[{\"p\":\"deck\",\"v\":\"split\",\"w\":\"cracks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"deck.deckL\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"arch\",\"does\":\"wooden frame, wedge stones, keystone go in\"},\"do\":[{\"p\":\"deck\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"frame\",\"w\":\"frame\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"s0\",\"w\":\"stones\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"s1\",\"w\":\"stones\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"s2\",\"w\":\"stones\",\"o\":1,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"key\",\"w\":\"keystone\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"arch\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"archOutline\",\"does\":\"glowing outline around the arch\"},\"do\":[{\"p\":\"archOutline\",\"v\":\"show\",\"w\":\"arch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"arch\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"load\",\"does\":\"block sits on the crown, arrows run down the curve\"},\"do\":[{\"p\":\"archOutline\",\"v\":\"hide\",\"w\":\"The\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"set\",\"w\":\"weight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"thrust\",\"v\":\"show\",\"w\":\"squeezes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"arch\",\"load\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"arch\",\"does\":\"wooden frame pulled away, arch stands alone\"},\"do\":[{\"p\":\"thrust\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"load\",\"v\":\"setBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"arch\",\"v\":\"frameBack\",\"w\":\"frame\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"arch\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"flag\",\"does\":\"flag appears, gets a red cross\"},\"do\":[{\"p\":\"flag\",\"v\":\"show\",\"w\":\"Roman\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flag\",\"v\":\"cross\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flag\",\"pier\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"brickArch\",\"does\":\"a small mud-brick arch is built stone by stone\"},\"do\":[{\"p\":\"flag\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"brickArch\",\"v\":\"bk0\",\"w\":\"arches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"brickArch\",\"v\":\"bk1\",\"w\":\"arches\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"brickArch\",\"v\":\"bkey\",\"w\":\"arches\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"brickArch\",\"pier\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"bridgeTop\",\"does\":\"road and walls grow over the arches, a cart rolls across\"},\"do\":[{\"p\":\"brickArch\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridgeTop\",\"v\":\"grow\",\"w\":\"road\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"road\"},{\"p\":\"bridgeTop\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"wallF\"},{\"p\":\"bridgeTop\",\"v\":\"grow\",\"w\":\"walls\",\"o\":0.2,\"d\":1,\"amp\":1,\"ch\":\"wallB\"},{\"p\":\"cart2\",\"v\":\"arrive\",\"w\":\"cart\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cart2\",\"v\":\"roll\",\"w\":\"cart\",\"o\":0,\"d\":3,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"2000 YEARS\",\"at\":{\"s\":\"how\",\"w\":\"2000\",\"o\":0},\"d\":1.6},{\"text\":\"4000 YEARS\",\"at\":{\"s\":\"mythFact\",\"w\":\"4000\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"hook\",\"w\":\"channel\",\"o\":0},\"d\":1.2},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"piers\",\"o\":0},\"d\":1},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix2\",\"w\":\"stones\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"how\",\"w\":\"2000\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"4000\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How an ancient arch bridge works",
+   "hero": "an arch bridge",
+   "parts": [
+    "plank",
+    "cart",
+    "stone pier",
+    "stone slab",
+    "wooden frame",
+    "wedge stones",
+    "keystone",
+    "brick arch",
+    "road",
+    "low walls"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a channel, fill it with water and lay one plank across: the simplest bridge"
+    },
+    {
+     "role": "fix1",
+     "idea": "stone piers stand in the river and flat slabs rest on top, so the span is strong and does not snap"
+    },
+    {
+     "role": "problem",
+     "idea": "a cart loaded with stone is too heavy for the plank, which snaps and drops it toward the water"
+    },
+    {
+     "role": "problem2",
+     "idea": "a long flat slab is weak when stretched underneath, so a crack opens in its middle"
+    },
+    {
+     "role": "fix2",
+     "idea": "a wooden frame holds wedge stones in a curve until the keystone locks the top"
+    },
+    {
+     "role": "name",
+     "idea": "the finished curve of stones is an arch bridge"
+    },
+    {
+     "role": "how",
+     "idea": "the weight squeezes the stones along the curve down into the piers, which is why old arches still stand"
+    },
+    {
+     "role": "fix3",
+     "idea": "the wooden frame is pulled away and the arch holds itself, with no glue"
+    },
+    {
+     "role": "myth",
+     "idea": "a Roman flag appears and is crossed out: the Romans did not invent the arch"
+    },
+    {
+     "role": "mythFact",
+     "idea": "Mesopotamian builders raised brick arches over 4000 years ago, as a small mud-brick arch shows"
+    },
+    {
+     "role": "finish",
+     "idea": "a stone road and low walls go on top, and a cart rolls across"
+    },
+    {
+     "role": "congrats",
+     "idea": "the arch bridge is done and calm, the cart has crossed"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "a cart loaded with stone rolls onto the plank, which snaps and tilts into the channel",
+     "stakes": "the cart and its load fall toward the river",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "a dark crack opens across a flat stone slab laid over the pier",
+     "stakes": "the whole span could collapse under the next cart",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Stone is roughly ten times stronger when squeezed than when stretched, which is why flat slabs crack but arches hold",
+     "role": "problem2",
+     "search": "stone compressive strength vs tensile strength ratio granite"
+    },
+    {
+     "claim": "The Pons Fabricius in Rome was built in 62 BC and still carries walkers after more than 2000 years",
+     "role": "how",
+     "search": "Pons Fabricius Rome built 62 BC oldest bridge still in use"
+    },
+    {
+     "claim": "The Alcantara Bridge in Spain, built in 106 AD, has no mortar between its granite blocks",
+     "role": "fix3",
+     "search": "Alcantara bridge Spain 106 AD built without mortar granite"
+    },
+    {
+     "claim": "Mesopotamian builders used brick arches more than 4000 years ago, long before Rome",
+     "role": "mythFact",
+     "search": "earliest arch Mesopotamia brick arches 4000 years ago"
+    }
+   ]
+  }
+ }
+}

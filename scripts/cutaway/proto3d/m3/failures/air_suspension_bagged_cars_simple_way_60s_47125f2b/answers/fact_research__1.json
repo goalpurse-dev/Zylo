@@ -1,0 +1,278 @@
+{
+ "hash": "*",
+ "by": "real run 47125f2b-2297-4fc1-8945-c17103289471",
+ "searches": 7,
+ "data": {
+  "text": "I searched every claim. The results came back as raw data, so I've given URLs and not citation tags.\n\n## Claim 0: \"The average new car weighs about 4,000 pounds.\"\n**Verdict: supported in a corrected form.** The figure is a little out of date. The newest EPA-based number is about 4,350 lb.\n- Jalopnik reports that the average new car sold in the U.S. weighs 4,354 pounds, citing the EPA's 2025 Automotive Trends Report, which covers final data through model year 2024. https://www.jalopnik.com/2215966/heres-how-much-average-car-weighs/\n- J.D. Power, citing EPA data, says the 2022 average was around 4,094 pounds. It describes this as a slight rise from 4,000 pounds in 2018. https://www.jdpower.com/cars/shopping-guides/average-weight-of-a-car\n- Capital One says EPA data show the average new vehicle in 2021 weighed 4,287 lbs. That is up from 4,060 lbs in the mid-1970s. https://www.capitalone.com/cars/learn/finding-the-right-car/are-new-cars-and-trucks-getting-heavier/1260\n- **Corrected line:** \"The average new car weighs a bit over 4,000 pounds, about 4,300 or more by recent EPA data.\" Saying \"about 4,000 pounds\" was accurate around 2018–2022.\n\n## Claim 1: \"A bag about six inches across at 100 psi can lift about 2800 pounds (pressure times area).\"\n**Verdict: supported as written, with one caveat.**\n- The physics holds. The Goodyear air spring data sheet says the load is supported by a force that is the product of gas gauge pressure and effective area. http://lhtech.com/pdf/automation/pneumatic/Goodyear-Air-Spring-Data.pdf\n- The formula \"Force (F) = Pressure (P) × Area (A)\" is also given for pneumatic cylinders. https://www.xcqd.com/news/calculate-pneumatic-cylinder-force-speed-air-consumption-guide/\n- The arithmetic checks out. A 6-inch circle has an area of π × 3² ≈ 28.3 in². At 100 psi that gives about 2,827 lb, which rounds to 2,800.\n- **Caveat:** real bags use the effective area, not the visible diameter. The effective area changes with the bag's height, and Firestone says the force of an air spring changes with height. https://www.firestoneairide.com/content/dam/fsip/pdfs/airmount/EMDG_Imperial_2022.pdf\n- Real ratings are lower than the idealized figure. Firestone's Ride-Rite catalog lists a spring with a 6.60\" maximum diameter at 1,600 lbs, and the load is nominal at 100 PSI. https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf\n- **Suggested wording:** \"A bag with an effective diameter of about six inches, at 100 psi, supports roughly 2,800 pounds. Real bags give a bit less, depending on their shape and height.\"\n\n## Claim 2: \"Bags typically run around 100 psi, fed from a tank at up to about 150 psi.\"\n**Verdict: supported in a corrected form.** The bag figure is right. The tank figure is on the low side.\n- **Bags:**\n  - Firestone lists its standard air springs as \"up to 100 PSI\". https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf\n  - Firestone's rail and off-highway guide gives a recommended static operating range of 20 to 100 psig for most air springs. https://www.firestoneairide.com/content/dam/fsip/airide/off-highway/pdfs/firestoneip-off-highway-rail-Airail.pdf\n  - An etrailer expert reply for an Air Lift kit says the minimum is 5 psi and the maximum is 100 psi. https://www.etrailer.com/question-86552.html\n  - Bags usually run well below 100 psi in normal use. 100 psi is the typical maximum, not the everyday setting.\n- **Tank and compressor:**\n  - These are retailer pages, not engineering sources.\n  - Air Lift's manual air management system is listed with a maximum pressure of 175 psi. https://www.airliftperformance.com/product/27666\n  - A universalair.com page for an Air Lift package says its fastest-filling compressor is only \"150 PSI rated\". The most popular option on that page is rated 200 PSI. https://www.universalair.com/shop/airlift-3p-h-air-management-package-782\n  - Aftermarket kits come with 150, 175 and 200 psi compressors, and with pressure switches such as 180 psi.\n- **Corrected line:** \"Bags usually top out around 100 psi, and the tank is typically filled to about 150–200 psi.\"\n\n## Claim 3: \"Most semi trailers and city buses ride on air suspension, and many ambulances do too.\"\n**Verdict: supported as written for trailers and buses. Ambulances are supported with a softer word than \"many\".**\n- **Semi trailers:**\n  - FAMA says approximately 75 percent of the trailers manufactured today and almost all highway tractors use air-ride suspensions. https://www.fama.org/forum_articles/understanding-air-ride-suspensions/\n  - Fleet Equipment magazine says air suspensions are specified on 85% to 90% of all new on-highway commercial vehicles in North America. https://www.fleetequipmentmag.com/air-suspensions-spec-ing-and-maintenance/\n  - One outlier is a MarketsandMarkets press release. It puts adoption at nearly 15–20% across trucks generally. That figure is mainly rigid trucks and is not specific to semi trailers. https://www.marketsandmarkets.com/PressReleases/air-suspension.asp\n- **Buses:**\n  - Wikipedia says air suspension is used in place of steel springs in heavy vehicle applications such as buses and trucks. https://en.wikipedia.org/wiki/Air_suspension\n  - Hendrickson's Comfort Air rear suspension is marketed for trucks, buses and ambulances. https://www.hendrickson-intl.com/products/comfort-air/comfort-air-15k-23k-rear-air-suspension\n  - I found no hard percentage for city buses. \"Most\" is plausible but I couldn't verify it with a number.\n- **Ambulances:**\n  - Hendrickson lists ambulances among the vehicles its air suspension is made for (same Hendrickson page). MAD Suspension Systems sells semi-air suspension for ambulances, rescue vehicles and fire trucks. https://mad-suspensionsystems.com/en/products/auxiliary-air-suspension/\n  - The sources show air suspension is available and used on ambulances. They give no share, so \"many\" is unquantified. A safer line is \"and it's common on ambulances and fire trucks, too.\"\n- **Suggested wording:** \"About three-quarters of new semi trailers use air suspension, and it's widely used on buses and ambulances.\"",
+  "sources": [
+   {
+    "url": "https://rodlesspneumatic.com/blog/calculating-force-from-pressure-and-area-in-pneumatic-systems/",
+    "title": "Calculating Force From Pressure And Area In Pneumatic ..."
+   },
+   {
+    "url": "https://calculatorshub.net/mechanical-calculators/air-suspension-load-psi-calculator/",
+    "title": "Air Suspension Load Psi Calculator"
+   },
+   {
+    "url": "https://calcforlife.com/air-cylinder-force-calculator/",
+    "title": "Air Cylinder Force Calculator - Free & Accurate - CalcForLife"
+   },
+   {
+    "url": "http://lhtech.com/pdf/automation/pneumatic/Goodyear-Air-Spring-Data.pdf",
+    "title": "BASIC PRINCIPLES OF AIR SPRINGS GENERAL DISCUSSION"
+   },
+   {
+    "url": "https://www.calculatorsoup.com/calculators/physics/pressure.php",
+    "title": "Pressure Calculator P = F/A"
+   },
+   {
+    "url": "https://www.xcqd.com/news/calculate-pneumatic-cylinder-force-speed-air-consumption-guide/",
+    "title": "How to Calculate Pneumatic Cylinder Force, Speed, and Air Consumption"
+   },
+   {
+    "url": "https://www.calctool.org/machines-and-mechanisms/pneumatic-cylinder-force",
+    "title": "Pneumatic Cylinder Force Calculator"
+   },
+   {
+    "url": "https://ese-co.com/knowledge/how-do-you-calculate-the-force-for-a-pneumatic-cylinder",
+    "title": "How do you calculate the force for a pneumatic cylinder?"
+   },
+   {
+    "url": "https://calculator.academy/psi-to-force-calculator/",
+    "title": "PSI to Force Calculator - Pressure, Area, Bore to lbf - Calculator Academy"
+   },
+   {
+    "url": "https://www.scribd.com/document/97463941/W01-358-7304",
+    "title": "0% found this document useful (0 votes)"
+   },
+   {
+    "url": "https://www.hendrickson-intl.com/getattachment/1d0f482e-3ca3-4a53-b644-b732d8f5a0f7/T15001.pdf",
+    "title": "TECHNICAL PROCEDURE Trailer Air Suspension Systems"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Air_suspension",
+    "title": "Air suspension"
+   },
+   {
+    "url": "https://www.truckspring.com/air-bag-suspension-kits.aspx",
+    "title": "Air Bag Suspension Kits for Towing & Hauling"
+   },
+   {
+    "url": "https://www.hendrickson-intl.com/products/comfort-air/comfort-air-15k-23k-rear-air-suspension",
+    "title": "COMFORT AIR Rear Air Suspension"
+   },
+   {
+    "url": "https://www.continental-industry.com/global/en/products-solutions/airsprings-suspension/commercial-vehicles/aftermarket",
+    "title": "Air Springs for the Aftermarket"
+   },
+   {
+    "url": "https://mad-suspensionsystems.com/en/products/auxiliary-air-suspension/",
+    "title": "MAD semi air suspension systems — MAD Suspension Systems"
+   },
+   {
+    "url": "https://www.fouresairspring.com/en/",
+    "title": "Foures Air Spring"
+   },
+   {
+    "url": "https://www.semiairbags.com/",
+    "title": "High Quality Air Bags for Semi Trucks, Trailers & Coaches, MJ Heavy Duty Parts"
+   },
+   {
+    "url": "https://vigorairride.com/",
+    "title": "Air Suspension Kits"
+   },
+   {
+    "url": "https://www.jalopnik.com/2215966/heres-how-much-average-car-weighs/",
+    "title": "Here's How Much The Average Car Weighs These Days, And Why It Matters - Jalopnik"
+   },
+   {
+    "url": "https://www.jdpower.com/cars/shopping-guides/average-weight-of-a-car",
+    "title": "Average Weight Of A Car"
+   },
+   {
+    "url": "https://mechanicbase.com/cars/car-weight/",
+    "title": "How Much Does An Average Car Weigh? - Mechanic Base"
+   },
+   {
+    "url": "https://www.capitalone.com/cars/learn/finding-the-right-car/are-new-cars-and-trucks-getting-heavier/1260",
+    "title": "Are New Cars and Trucks Getting Heavier?"
+   },
+   {
+    "url": "https://towratings.net/blog/what-does-a-car-weigh/",
+    "title": "How Much Does a Car Weigh? Averages by Class"
+   },
+   {
+    "url": "https://www.carzing.com/blog/car-buying-tips/how-much-does-your-car-weigh-and-why-it-matters-more-than-you-think/",
+    "title": "How Much Does Your Car Weigh - CarZing Blog"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/General_Motors_Ultralite",
+    "title": "General Motors Ultralite"
+   },
+   {
+    "url": "https://cartirereviews.com/how-heavy-is-the-average-car-curb-weight-versus-gross-weight/",
+    "title": "How Heavy Is The Average Car : Curb Weight Versus Gross Weight"
+   },
+   {
+    "url": "https://carcody.com/how-much-does-a-car-weigh-a-guide-to-vehicle-weight-and-mass/",
+    "title": "How Much Does a Car Weigh? Average, Curb Weight and GVWR"
+   },
+   {
+    "url": "https://thedailyautomotive.com/how-much-does-a-car-weigh/",
+    "title": "How Much Does a Car Weigh? Average Weight by Type (Lbs & Tons)"
+   },
+   {
+    "url": "https://www.amazon.com/CNRAQR-Compressor-Suspension-Aluminum-Compressed/dp/B0DM5XDZ72",
+    "title": "CNRAQR 3 Gallon Air Tank with 150PSI Air Compressor 2PCS for Suspension/Air Ride/Bag/Car Train Truck Horn Aluminum 12 Liter Compressed air Storage Tank Onboard System Air Suspension Compressor Kit : Tools & Home Improvement"
+   },
+   {
+    "url": "https://www.amazon.com/air-ride-tank-compressor-kit/s?k=air+ride+tank+and+compressor+kit",
+    "title": "Air Ride Tank And Compressor Kit"
+   },
+   {
+    "url": "https://www.amazon.com/air-bag-compressor-kit-tank/s?k=air+bag+compressor+kit+with+tank",
+    "title": "Air Bag Compressor Kit With Tank"
+   },
+   {
+    "url": "https://www.ebay.com/itm/362315800943",
+    "title": "AIR SUSPENSION KIT/SYSTEM FOR TRUCK/CAR BAG/RIDE/LIFT,150PSI COMPRESSOR, 2G TANK"
+   },
+   {
+    "url": "https://www.amazon.com/air-ride-compressor-tank/s?k=air+ride+compressor+and+tank",
+    "title": "Air Ride Compressor And Tank"
+   },
+   {
+    "url": "https://www.amazon.com/CNRAQR-Compressor-Aluminum-Onboard-Suspension/dp/B0DHRZGVNQ",
+    "title": "CNRAQR 150 PSI Air Compressor with 1.6 Gallon 200 PSI Air Tank Aluminum Air Compressor Onboard System 12V 1/4NPT for Train Truck Trailer Train Auto Air Lift Suspension Heavy Duty Air Horn Compressor : Automotive"
+   },
+   {
+    "url": "https://www.bagriders.com/learn/air-suspension-components-explained",
+    "title": "Air Suspension Components Explained"
+   },
+   {
+    "url": "https://www.bagriders.com/air-management/compressors/single-compressors.html",
+    "title": "Single Compressors"
+   },
+   {
+    "url": "https://www.ebay.de/str/newmaticsinc",
+    "title": "www.ebay.de"
+   },
+   {
+    "url": "https://www.thetruckersreport.com/truckingindustryforum/threads/what-exactly-is-air-ride-equipped.144755/",
+    "title": "What exactly is \"Air Ride Equipped\""
+   },
+   {
+    "url": "https://haletrailer.com/blog/types-of-semi-trailer-axles/",
+    "title": "Different Types of Semi-Trailer Axles - Hale Trailer"
+   },
+   {
+    "url": "https://www.marketsandmarkets.com/PressReleases/air-suspension.asp",
+    "title": "Air Suspension Market worth $13.9 billion by 2030"
+   },
+   {
+    "url": "https://www.fleetequipmentmag.com/air-suspensions-spec-ing-and-maintenance/",
+    "title": "Air suspensions: spec'ing and maintenance"
+   },
+   {
+    "url": "https://www.fama.org/forum_articles/understanding-air-ride-suspensions/",
+    "title": "Understanding Air-Ride Suspensions - FAMA.org"
+   },
+   {
+    "url": "https://www.motorindiaonline.in/indian-bus-market-fast-switching-to-air-suspension-technology/",
+    "title": "Indian bus market fast switching to air suspension technology"
+   },
+   {
+    "url": "http://chinasemitrailersupplier.com/blog/one-mechanical-suspension-or-air-ride-flatbed-truck/",
+    "title": "One Mechanical Suspension or Air Ride Flatbed Truck"
+   },
+   {
+    "url": "https://www.xtralease.com/about/news-articles/news/why-spring-ride",
+    "title": "Why Spring-Ride?"
+   },
+   {
+    "url": "https://www.globalgrowthinsights.com/market-reports/bus-air-suspension-system-market-101558",
+    "title": "Bus Air Suspension System Market Outlook & Trends 2035"
+   },
+   {
+    "url": "https://www.universalair.com/shop/airlift-3p-h-air-management-package-782",
+    "title": "Airlift 3P/H Air Management Package - Universal Air"
+   },
+   {
+    "url": "https://www.etrailer.com/question-86552.html",
+    "title": "What is the Minimum and Maximum Air Pressure for AirLift Air Bag Kit # AL88299"
+   },
+   {
+    "url": "https://www.dieselplace.com/threads/airlift-airbag-pressure.47860/",
+    "title": "AirLift airbag pressure?"
+   },
+   {
+    "url": "https://store.gaugemagazine.com/airlift-manual-air-management-system/",
+    "title": "Air Lift Manual Air Management System - Gauge-Store"
+   },
+   {
+    "url": "https://www.airliftperformance.com/product/27666",
+    "title": "Manual Air Management System - 27666"
+   },
+   {
+    "url": "https://switchsuspension.com/air-lift-manual-air-management-system/",
+    "title": "Air Lift Manual Air Management System - Switch Suspension"
+   },
+   {
+    "url": "https://forum.ih8mud.com/threads/airlift-1000-max-air-pressure.1204569/",
+    "title": "Airlift 1000 max air pressure"
+   },
+   {
+    "url": "https://hdrams.com/forum/threads/whats-your-air-bag-pressure.2787/",
+    "title": "whats your air bag pressure"
+   },
+   {
+    "url": "https://www.etrailer.com/faq-how-to-set-the-right-psi-for-your-air-bags.aspx",
+    "title": "How to Set the Right PSI for Your Air Bags"
+   },
+   {
+    "url": "https://www.ebay.de/str/newmaticsinc",
+    "title": "www.ebay.de"
+   },
+   {
+    "url": "https://store.livhaven.com/uploads/firestone_pdfs/w01-358-8010-firestone-air-spring-datasheet.pdf",
+    "title": "w01-358-8010-firestone-air-spring- ..."
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/airstroke/Actuators-and-Isolators-Imperial-Design-Guide.pdf",
+    "title": "EMDG1213 213 www.firestoneip.com Engineering Manual & Design Guide"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/airmount/EMDG_Imperial_2022.pdf",
+    "title": "EMDG0916 916 www.firestoneip.com Engineering Manual & Design Guide"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf",
+    "title": "APPLICATION GUIDE VALID FOR 2020 & OLDER VEHICLES riderite.com"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/airide/off-highway/pdfs/firestoneip-off-highway-rail-Airail.pdf",
+    "title": "Rail Applications Design Guide AIRAIL 0105"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/air-spring-tech-specs.pdf",
+    "title": "800-888-0650 riderite.com STANDARD AIR SPRINGS"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/firestone-ride-rite-catalog.pdf",
+    "title": "RIDE-RITE APPLICATION GUIDE VALID FOR 2022 & OLDER VEHICLES riderite.com"
+   },
+   {
+    "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/airstroke/Actuators-and-Isolators-Metric-Design-Guide.pdf",
+    "title": "MEMDG0414 0414 www.firestoneip.com Engineering Manual & Design Guide METRIC"
+   },
+   {
+    "url": "https://www.firestoneairide.com/rr-kit-install-manuals/W217602170.pdf",
+    "title": "INSTALLATION INSTRUCTIONS Congratulations - your new Ride-Rite Air Helper"
+   },
+   {
+    "url": "https://calculatorshub.net/mechanical-calculators/air-suspension-load-psi-calculator/",
+    "title": "Air Suspension Load Psi Calculator"
+   }
+  ]
+ }
+}

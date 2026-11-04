@@ -141,7 +141,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   P({ stage: "scene", step: "voice", pct: 5 });
   let vUsd = 0;
   if (!voice) {
-    const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), out: path.join(out, "voice"), ff, wt, log });
+    const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), sentences: plan.script.sentences.map((s) => s.text.trim()), out: path.join(out, "voice"), ff, wt, log });
     voice = v.voice; words = v.words; vUsd = v.usd;
   }
   let roles = plan.script.sentences.map((s) => s.role);
@@ -228,7 +228,7 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     // picture for what still fails and for frames that are broken. A new voice take follows changed words (the whole
     // narration: a take spliced from pieces would be heard, and a take costs about $0.025).
     const revoice = async (round) => {
-      const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), out: path.join(out, `voice_r${round}`), ff, wt, log });
+      const v = await makeVoice({ text: plan.script.sentences.map((s) => s.text.trim()).join(" "), sentences: plan.script.sentences.map((s) => s.text.trim()), out: path.join(out, `voice_r${round}`), ff, wt, log });
       voice = v.voice; words = v.words; vUsd += v.usd;
       save("script.json", plan.script);
     };

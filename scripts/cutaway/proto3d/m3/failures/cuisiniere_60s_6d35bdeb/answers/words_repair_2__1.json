@@ -1,0 +1,78 @@
+{
+ "hash": "*",
+ "by": "real run 6d35bdeb-cccf-4a47-bd5e-be5dcfe738ad",
+ "searches": 0,
+ "data": {
+  "title": "Cuisinière: How a Cookstove Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you cook a pan over an open fire, you have the simplest stove there is."
+   },
+   {
+    "role": "problem",
+    "text": "But the smoke has nowhere to go, so it rises and spreads across the ceiling."
+   },
+   {
+    "role": "flood",
+    "text": "Then it banks down the walls until it floods the whole room."
+   },
+   {
+    "role": "stakes",
+    "text": "The air turns toxic, because carbon monoxide passes 400 parts per million, enough for a headache within 1 to 2 hours."
+   },
+   {
+    "role": "fix1",
+    "text": "So you box the fire in iron and run a pipe three feet above the roof, and the smoke leaves."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the pipe pulls air in so hard that the fire roars and the gauge races into the red."
+   },
+   {
+    "role": "fix2",
+    "text": "So you turn a damper, a flap in the pipe, to slow the air, and the gauge falls."
+   },
+   {
+    "role": "problem3",
+    "text": "But now the heat races up the pipe and out of the roof, as arrows streak straight outside."
+   },
+   {
+    "role": "fix3",
+    "text": "So you put an oven beside the fire, and the hot gas loops around it before it leaves."
+   },
+   {
+    "role": "name",
+    "text": "This is a cookstove."
+   },
+   {
+    "role": "name2",
+    "text": "And the pipe on top is called a flue."
+   },
+   {
+    "role": "how",
+    "text": "Air comes in at the front and feeds the fire, and the hot gas loops around the oven and up the flue."
+   },
+   {
+    "role": "fact",
+    "text": "A hot oven bakes bread at around 230 degrees Celsius, though it has no thermostat."
+   },
+   {
+    "role": "myth",
+    "text": "And a cuisinière is not only a stove."
+   },
+   {
+    "role": "mythFact",
+    "text": "In French, cuisinière means both a cooking stove and a woman who cooks."
+   },
+   {
+    "role": "finish",
+    "text": "Add a kettle, a pot of stew and a cap on the chimney."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a cookstove."
+   }
+  ]
+ }
+}

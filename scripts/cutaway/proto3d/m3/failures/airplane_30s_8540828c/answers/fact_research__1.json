@@ -1,0 +1,266 @@
+{
+ "hash": "*",
+ "by": "real run 8540828c-0927-4dbf-824b-0f02448f7bf6",
+ "searches": 7,
+ "data": {
+  "text": "I ran searches for all four claims. Claim 0 is supported with a small correction to the framing. Claims 1 and 2 are supported as written. Claim 3 is supported, but the \"arrives first\" detail rests on a weaker source than I'd like. The URLs below are the sources I relied on.\n\n**Claim 0: Cessna 172 takeoff ground roll of about 300 m (960 ft) at sea level, max weight**\n- **AOPA aircraft guide for the 172S:** Takeoff distance ground roll is 960 ft, takeoff distance over a 50-ft obstacle is 1,630 ft, and rate of climb at sea level is 730 fpm. URL: https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172\n- **Cessna 172S Pilot's Operating Handbook (POH), Section 1:** It lists takeoff performance \"Ground Roll … 960 FEET\" and a maximum takeoff weight of 2550 pounds. URL: https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf\n- **Flyaway Simulation:** This is a secondary source. It gives 960 ft as about 293 m of ground roll. That makes \"roughly 300 m\" fair. URL: https://flyawaysimulation.com/ask/answers/cessna-runway-length-takeoff-landing/\n- **Verdict: supported, with a small correction.** The figure is for the 172S model (180 hp). The POH conditions (sea level, max weight, standard day, flaps, runway surface) weren't visible in the snippets I retrieved. Older 172s with less power have different numbers. Suggested wording: \"A Cessna 172S needs about 960 ft (≈293 m) of ground roll at sea level, per its handbook.\"\n\n**Claim 1: Flaps let a plane lift off and land at lower speed and in shorter distance**\n- **AOPA, \"How It Works: Flaps\":** Flaps typically lower an airplane's stall speed and allow steeper descent angles without gaining speed. They usually shorten the ground roll at the expense of a lower rate of climb. Full flaps allow slower approach speeds and steeper approach angles. URL: https://www.aopa.org/news-and-media/all-news/2018/february/flight-training-magazine/how-it-works-flaps\n- **Wikipedia, \"Flap (aeronautics)\":** Using flaps on takeoff reduces ground roll but also reduces the climb rate. The 172S POH recommends 10° of flaps on takeoff for soft ground or a short runway, otherwise 0°. URL: https://en.wikipedia.org/wiki/Flap_(aeronautics)\n- **Verdict: supported as written.** One nuance is that flaps help takeoff roll but cost climb rate. For landing, the shorter distance comes from the lower approach speed.\n\n**Claim 2: A wing lifts by deflecting air downward, pushing the wing up (Newton's third law)**\n- **NASA, \"The Wing's the Thing\" (hosted on hiller.org):** A wing creates lift in part by deflecting air downwards and in part due to the pressure difference, in keeping with Newton's Third Law. The text also says the airflow is turned downwards as the wings strike the air at an angle. URL: https://www.hiller.org/wp-content/uploads/docs/TheWingsTheThing_v2.pdf\n- **AvWeb, \"Theories of Lift\":** Both Bernoulli's principle and Newton's laws (action-reaction from downward air deflection) contribute to lift, though each is incomplete individually. URL: https://avweb.com/features/theories-of-lift/\n- **Verdict: supported as written.** If you want to be precise, NASA describes it as \"in part\" deflection and \"in part\" pressure difference. These are two descriptions of the same physics, not competing causes. You could add \"…and the pressure difference around the wing is the other side of the same effect.\"\n\n**Claim 3: Air over the top reaches the trailing edge before the air below, so equal transit time is wrong**\n- **NASA Glenn, \"Incorrect Lift Theory #1\":** The \"Longer Path\" or \"Equal Transit Time\" theory is described as one of the most widely circulated incorrect explanations. A symmetric airfoil, with upper and lower surfaces the same length, still generates plenty of lift. The page says that it is the flow turning that matters, not the distance. URL: https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/wrong1.html (also mirrored at https://commons.wikimedia.org/wiki/File:Equal_transit-time_NASA_wrong1.gif)\n- **Angle of Attack (pilot education site):** It calls the equal-transit idea a myth and says the air over the top actually arrives first. URL: https://www.angleofattack.com/what-is-bernoullis-principle-in-aviation/\n- **Verdict: supported.** The part that equal transit time is wrong is firmly supported by NASA. The retrieved NASA text didn't include an explicit \"arrives first\" sentence. That detail comes from the pilot-education site, which is not a government or engineering source. I'd cite NASA for \"wrong\" and treat \"arrives first\" as well-established but secondarily sourced. Suggested wording: \"Air over the top gets to the back edge first, so the 'equal transit time' explanation is wrong.\"",
+  "sources": [
+   {
+    "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/10_afh_ch9.pdf",
+    "title": "Airplane Flying Handbook (3C) Chapter 9"
+   },
+   {
+    "url": "https://www.faa.gov/sites/faa.gov/files/2022-01/Best%20Glide%20Speed%20and%20Distance.pdf",
+    "title": "FAA Aviation Safety Best Glide Speed and Distance www.FAASafety.gov"
+   },
+   {
+    "url": "https://www.faa.gov/documentlibrary/media/advisory_circular/ac_61-67c.pdf",
+    "title": "AC 61-67C - Stall and Spin Awareness Training"
+   },
+   {
+    "url": "https://download.aopa.org/epilot/2007/faa-h-8083-3a-ch8.pdf",
+    "title": "NORMAL APPROACH AND LANDING A normal approach and landing involves the use of"
+   },
+   {
+    "url": "https://www.angleofattack.com/what-affects-stall-speed/",
+    "title": "What Affects Stall Speed? The Real Factors"
+   },
+   {
+    "url": "https://www.faa.gov/sites/faa.gov/files/regulations_policies/handbooks_manuals/aviation/airplane_handbook/11_afh_ch10.pdf",
+    "title": "Airplane Flying Handbook (FAA-H-8083-3C) Chapter 10: Performance Maneuvers"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Power-off_accuracy_approach",
+    "title": "Power-off accuracy approach"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Flap_(aeronautics)",
+    "title": "Flap (aeronautics)"
+   },
+   {
+    "url": "https://www.faasafety.gov/files/gslac/courses/content/35/562/AFH%20Normal%20Approach%20&%20Landing.pdf",
+    "title": "NORMAL APPROACH AND LANDING A normal approach and landing involves the use of"
+   },
+   {
+    "url": "https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172",
+    "title": "Cessna 172S - AOPA"
+   },
+   {
+    "url": "https://flyawaysimulation.com/ask/answers/cessna-runway-length-takeoff-landing/",
+    "title": "How much runway does a Cessna 172 need to take off and land?"
+   },
+   {
+    "url": "https://www.pilotmall.com/blogs/news/cessna-172-10-things-you-need-to-know",
+    "title": "Cessna 172: Key Facts About This Beloved Aircraft"
+   },
+   {
+    "url": "https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf",
+    "title": "CESSNA MODEL 172S NOTICE INTRODUCTION"
+   },
+   {
+    "url": "https://epicflightacademy.com/cessna-172/",
+    "title": "Cessna 172 Skyhawk: Best Aircraft For Flight Training"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Dalton_Airport_(Michigan)",
+    "title": "Dalton Airport (Michigan)"
+   },
+   {
+    "url": "https://leopardaviation.com/how-far-can-a-cessna-172-fly/",
+    "title": "How Far Can a Cessna 172 Fly? Range, Fuel, and Performance"
+   },
+   {
+    "url": "https://airfleetcapital.com/blog/cessna-172-specs-dimensions/",
+    "title": "Cessna 172 Specs: Dimensions, Weight, & Performance"
+   },
+   {
+    "url": "https://www.citizendailypost.com/faq/how-long-is-a-runway-for-a-cessna",
+    "title": "How long is a runway for a Cessna?"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/File:Equal_transit-time_NASA_wrong1_en.svg",
+    "title": "File:Equal transit-time NASA wrong1 en.svg"
+   },
+   {
+    "url": "https://commons.wikimedia.org/wiki/File:Equal_transit-time_NASA_wrong1.gif",
+    "title": "File:Equal transit-time NASA wrong1.gif - Wikimedia Commons"
+   },
+   {
+    "url": "https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/wrong1.html",
+    "title": "Incorrect Lift Theory"
+   },
+   {
+    "url": "https://medium.com/@office.dosanko/nasa-says-your-physics-textbook-is-wrong-about-flight-heres-what-actually-lifts-a-plane-ff2cd71340f7",
+    "title": "NASA Says Your Physics Textbook Is Wrong About Flight. Here’s What Actually Lifts a Plane."
+   },
+   {
+    "url": "https://avweb.com/features/theories-of-lift/",
+    "title": "Theories Of Lift"
+   },
+   {
+    "url": "https://www.pprune.org/archive/index.php/t-242615.html",
+    "title": "Incorrect Lift Theory [Archive] - PPRuNe Forums"
+   },
+   {
+    "url": "https://www.pprune.org/flying-instructors-examiners/242615-incorrect-lift-theory.html",
+    "title": "Incorrect Lift Theory - PPRuNe Forums"
+   },
+   {
+    "url": "https://turns-out.com/article/how-airplanes-generate-lift/",
+    "title": "How Do Airplanes Generate Lift? The Real Physics (and Myths) Behind Flight - Turns Out"
+   },
+   {
+    "url": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/foilw1",
+    "title": "Equal Transit Theory Interactive"
+   },
+   {
+    "url": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/bernoulli-and-newton",
+    "title": "bernoulli and newton"
+   },
+   {
+    "url": "https://www.angleofattack.com/what-is-bernoullis-principle-in-aviation/",
+    "title": "Bernoulli's Principle in Aviation: How a Wing Really Makes Lift"
+   },
+   {
+    "url": "https://bereanfruit.substack.com/p/what-nobody-tells-you-about-how-wings",
+    "title": "What Nobody Tells You About How Wings Actually Work"
+   },
+   {
+    "url": "https://www.wificfi.com/post/bernoulli-principle-pressure-airflow-lift",
+    "title": "Bernoulli's Principle and Lift: Static vs. Dynamic Pressure and Why Air Speeds Up Over a Wing"
+   },
+   {
+    "url": "https://artwaste.land/strata/the-air-that-got-there-first/",
+    "title": "How Does a Wing Make Lift? The \"Equal Transit Time\" Myth"
+   },
+   {
+    "url": "https://turns-out.com/article/how-airplanes-generate-lift/",
+    "title": "How Do Airplanes Generate Lift? The Real Physics (and Myths) Behind Flight - Turns Out"
+   },
+   {
+    "url": "https://feynmanpedia.com/flight-and-fluids/how-planes-fly/",
+    "title": "How Planes Fly — The Honest Story of Lift"
+   },
+   {
+    "url": "https://tomiswonderland.org/articles/how-do-airplanes-fly",
+    "title": "How do airplanes fly? The real physics of lift"
+   },
+   {
+    "url": "https://arxiv.org/pdf/2110.00690",
+    "title": "On the Origins and Relevance of the Equal Transit Time Fallacy to Explain Lift"
+   },
+   {
+    "url": "https://scienceinsights.org/how-does-aerodynamic-lift-really-work/",
+    "title": "How Does Aerodynamic Lift Really Work? - ScienceInsights"
+   },
+   {
+    "url": "https://www.hiller.org/wp-content/uploads/docs/TheWingsTheThing_v2.pdf",
+    "title": "National Aeronautics and Space Administration The Wing’s the Thing"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7111810",
+    "title": "Forward pivoted full flying control tail boom"
+   },
+   {
+    "url": "https://calaero.edu/learn-to-fly/aeronautics/principles-of-flight/newtons-third-law-in-aviation/",
+    "title": "Thrust and Newton’s Third Law in Aviation - CAU"
+   },
+   {
+    "url": "https://avweb.com/features/theories-of-lift/",
+    "title": "Theories Of Lift"
+   },
+   {
+    "url": "https://arxiv.org/pdf/physics/0512224",
+    "title": "Explanation and discovery in aerodynamics"
+   },
+   {
+    "url": "https://arxiv.org/pdf/1810.11461",
+    "title": "Clearing certain misconception in the common explanations of the aerodynamic lift"
+   },
+   {
+    "url": "https://www.wificfi.com/post/downwash-lift-newton-momentum-vortices",
+    "title": "Downwash and Lift: How Deflecting Air Downward Holds an Airplane Up"
+   },
+   {
+    "url": "https://tomiswonderland.org/articles/how-do-airplanes-fly",
+    "title": "How do airplanes fly? The real physics of lift"
+   },
+   {
+    "url": "https://feynmanpedia.com/flight-and-fluids/how-planes-fly/",
+    "title": "How Planes Fly — The Honest Story of Lift"
+   },
+   {
+    "url": "https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf",
+    "title": "CESSNA MODEL 172S NOTICE INTRODUCTION"
+   },
+   {
+    "url": "https://www.aviatize.com/tools/weight-balance-calculator/cessna-172s",
+    "title": "Cessna 172S Weight & Balance Calculator"
+   },
+   {
+    "url": "https://www.pilotmall.com/blogs/news/cessna-172-10-things-you-need-to-know",
+    "title": "Cessna 172: Key Facts About This Beloved Aircraft"
+   },
+   {
+    "url": "https://wayman.edu/files/C172S-G1000-POH.pdf",
+    "title": "CESSNA INTRODUCTION MODEL 172S NAV III GFC 700 AFCS U.S. NOTICE"
+   },
+   {
+    "url": "https://aviationacademy.ro/en/fleet/cessna-172/",
+    "title": "Cessna 172 EN - Aviation Academy"
+   },
+   {
+    "url": "https://airmart.com/wp-content/uploads/2022/11/Cessna-172S-Skyhawk-Performance-and-Specs.pdf",
+    "title": "Cessna 172S Skyhawk Performance & Specifications"
+   },
+   {
+    "url": "https://www.greatbasinaviation.com/storage/6959/9fd0b337-3e18-44e7-91e8-10ef276ded5f/c172sp-naviii-poh.pdf",
+    "title": "CESSNA INTRODUCTION MODEL 172S NAV III U.S. NOTICE"
+   },
+   {
+    "url": "https://airfleetcapital.com/blog/cessna-172-specs-dimensions/",
+    "title": "Cessna 172 Specs: Dimensions, Weight, & Performance"
+   },
+   {
+    "url": "https://www.scribd.com/document/541634592/C-172",
+    "title": "100% found this document useful (2 votes)"
+   },
+   {
+    "url": "https://www.aopa.org/news-and-media/all-news/2018/february/flight-training-magazine/how-it-works-flaps",
+    "title": "How It Works: Flaps - AOPA"
+   },
+   {
+    "url": "https://blog.flyhaa.com/blog/how-do-aircraft-flaps-work",
+    "title": "How Do Aircraft Flaps Work?"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Flap_(aeronautics)",
+    "title": "Flap (aeronautics)"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/6241195",
+    "title": "Extendable/retractable airfoil assembly for fixed wing aircraft"
+   },
+   {
+    "url": "https://calaero.edu/learn-to-fly/aeronautics/airplane-parts/wing-flaps-function-and-purpose/",
+    "title": "Wing Flaps: How Do They Function and What Is Their Purpose?"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/12509213",
+    "title": "Auxiliary flap assembly"
+   },
+   {
+    "url": "https://www.aviation.govt.nz/licensing-and-certification/pilots/flight-training/flight-instructor-guide/advanced-stalling/",
+    "title": "Advanced stalling"
+   },
+   {
+    "url": "https://www.aviationtrainingexperts.com/article/flaps-slats-takeoff-landing",
+    "title": "Flaps and Slats: Aerodynamics for Takeoff and Landing"
+   },
+   {
+    "url": "https://graphsearch.epfl.ch/en/concept/703058/concepts",
+    "title": "graphsearch.epfl.ch"
+   }
+  ]
+ }
+}

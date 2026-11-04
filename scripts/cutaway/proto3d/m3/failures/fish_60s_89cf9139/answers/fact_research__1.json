@@ -1,0 +1,310 @@
+{
+ "hash": "*",
+ "by": "real run 89cf9139-ead7-42fd-bfcb-616961808405",
+ "searches": 8,
+ "data": {
+  "text": "Results are JSON strings.**Claim 0: Nitrifying 1 g of ammonia nitrogen into nitrate uses about 4.57 g of oxygen. Supported as written.**\n- A *Water Research* paper on nitrification stoichiometry says: Theoretically, 4.57 g of oxygen are needed to completely oxidize 1 g of ammonia–nitrogen. (https://www.sciencedirect.com/science/article/abs/pii/S0043135412005623)\n- A wastewater patent (US 8,287,734) says: Based on the theoretical stoichiometry for the biological nitrification process 4.57 g O2/g N is needed for complete oxidation of ammonia to nitrate. (https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8287734)\n- Both sources call it a theoretical figure. Real systems differ a little, because nitrifiers also take up some nitrogen to grow.\n\n**Claim 1: Goldfish can remember things for at least three months, not three seconds. Supported as written.**\n- Discover Wildlife says: goldfish can retain memories for at least three months, can be trained, and can also tell the time. (https://www.discoverwildlife.com/animal-facts/fish/goldfish-memory)\n- The American Museum of Natural History describes a student experiment. The goldfish were tested at two-, three-, four-, and six-month intervals to see whether they recalled the location of the food. (https://www.amnh.org/learn-teach/curriculum-collections/young-naturalist-awards/goldfish-as-a-model-for-understanding-learning-and-memory-more-complex-than-you-think)\n- Science ABC says experiments show recall for weeks to months. (https://www.scienceabc.com/nature/animals/do-goldfish-really-have-a-3-second-memory)\n- These are popular-science sources and a student project, not peer-reviewed papers. The \"at least three months\" wording is safe, but I would not attribute it to a single formal study without checking.\n\n**Claim 2: Unionized ammonia at about 0.02 mg/L can start to harm fish gills. Supported in a corrected form.**\n- The 0.02 mg/L figure is real, but it is usually described as a general or chronic safety threshold. It is not a specific gill-damage threshold. Sources differ on where harm starts.\n- A University of Tennessee fisheries course page says: The generally accepted rule of thumb is that un-ionized ammonia in excess of 0.02 mg/L is potentially toxic. (http://web.utk.edu/~rstrange/wfs556/html-content/05-ammonia.html)\n- A review by The Nature Conservancy says less than 0.020 mg/L unionized ammonia is considered safe for fish reproduction (EPA 1989). (https://www.nature.org/content/dam/tnc/nature/en/documents/literature-review-ammonia.pdf)\n- A *Genetically Improved Farmed Tilapia* study says: Continuous or frequent exposure to NH3 concentrations above 0.02 mg/L can cause intense irritation of the gills. (https://www.sciencedirect.com/science/article/pii/S2352513422003210)\n- Texas A&M AgriLife Extension (a government-affiliated source) uses a higher number: UIA is higher than 0.05 mg/L, the fish are being damaged. (https://extension.rwfm.tamu.edu/wp-content/uploads/sites/8/2013/09/Ammonia-in-Aquatic-Systems1.pdf)\n- The EPA says unionized ammonia is toxic because it can readily diffuse across gill membranes. It lists gill damage among the effects, but gives no 0.02 figure on that page. (https://www.epa.gov/caddis/ammonia)\n- **Corrected wording:** \"Long-term exposure to unionized ammonia above about 0.02 mg/L is generally considered potentially harmful to fish, including their gills. Some guides put the damage point nearer 0.05 mg/L.\" Sensitivity varies by species.\n\n**Claim 3: Fresh water holds about 14.6 mg/L of oxygen at 0 °C and about 7.6 mg/L at 30 °C. Supported as written.**\n- This holds for fresh water at saturation and sea-level pressure.\n- The Engineers Edge table lists 14.60 mg/L at 0 °C and 7.54 mg/L at 30 °C for fresh water. (https://www.engineersedge.com/calculators/oxygen_dissolved_in_water_16058.htm) AquaText gives the same pair: 14.6 and 7.54. (https://www.aquatext.com/tables/oxygen.htm)\n- An Oxford University Press table lists S = 14.62 mg/L at 0 °C and 7.56 mg/L at 30 °C. (https://global.oup.com/us/companion.websites/fdscontent/uscompanion/us/static/companion.websites/9780197651896/Table_18.2_Factors_affecting_O2_solubility.pdf)\n- The British Columbia government's dissolved-oxygen guideline cites freshwater solubilities of 14.6 mg/L at 0 °C. (https://www2.gov.bc.ca/assets/gov/environment/air-land-water/water/waterquality/water-quality-guidelines/approved-wqgs/dissolvedoxygen-tech.pdf)\n- The tables give 7.54–7.56 at 30 °C, which rounds to 7.5 or 7.6. \"About 7.6\" is acceptable. Adding \"at sea-level pressure, at saturation\" would make the claim more precise.",
+  "sources": [
+   {
+    "url": "https://www.discoverwildlife.com/animal-facts/fish/goldfish-memory",
+    "title": "Do goldfish really only have a 3 second memory?"
+   },
+   {
+    "url": "https://www.scienceabc.com/nature/animals/do-goldfish-really-have-a-3-second-memory",
+    "title": "Do Goldfish Really Have A 3-Second Memory? » ScienceABC"
+   },
+   {
+    "url": "https://www.amnh.org/learn-teach/curriculum-collections/young-naturalist-awards/goldfish-as-a-model-for-understanding-learning-and-memory-more-complex-than-you-think",
+    "title": "Goldfish as a Model for Understanding Learning and Memory: More Complex Than You Think"
+   },
+   {
+    "url": "https://scienceblog.com/m-goldfish-memory-myth-months-levers-colours/",
+    "title": "Most people think a goldfish forgets everything within seconds, which helps make the little bowl seem humane — but that is a myth: goldfish can remember for months, push levers and tell colours apart - ScienceBlog.com"
+   },
+   {
+    "url": "https://thegoldfishtank.com/goldfish-info/myth/goldfish-memory-three-second-memory-myth/",
+    "title": "Do Goldfish Really Have a 3 Second Memory?"
+   },
+   {
+    "url": "https://thefaunalist.com/fish/do-goldfish-have-good-memory/",
+    "title": "Do Goldfish Have Good Memory? Yes, Up to 3 Months"
+   },
+   {
+    "url": "https://www.geekfill.com/debunking-the-myth-that-goldfish-have-three-second-memories/",
+    "title": "Myth Busted: Do Goldfish Have a Three Second Memory (2026)?"
+   },
+   {
+    "url": "https://www.nahf.org/article/goldfish-memory",
+    "title": "Debunking the Myth: Goldfish Memory Capacity Revealed"
+   },
+   {
+    "url": "https://sites.psu.edu/siowfa15/2015/10/23/do-fish-have-a-three-second-memory",
+    "title": "Do fish have a three-second memory?"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8287734",
+    "title": "Method for treating nitrogen in waste streams"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S0043135412005623",
+    "title": "Probing the stoichiometry of the nitrification process using the respirometric approach - ScienceDirect"
+   },
+   {
+    "url": "https://www.tdx.cat/bitstream/handle/10803/5306/agc4de5.pdf?sequence=4",
+    "title": "CHAPTER VI.B Two-step nitrification model parameter identifiability"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/261738703_Oxygen_and_Carbon_Requirements_for_Biological_Nitrogen_Removal_Processes_Accomplishing_Nitrification_Nitritation_and_Anammox",
+    "title": "(PDF) Oxygen and Carbon Requirements for Biological Nitrogen Removal Processes Accomplishing Nitrification, Nitritation, and Anammox"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9505644",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8012352",
+    "title": "Optimized nutrient removal from wastewater"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8685246",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal with energy recovery"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9656893",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal with energy recovery"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/230849140_Probing_the_stoichiometry_of_the_nitrification_process_using_the_respirometric_approach",
+    "title": "(PDF) Probing the stoichiometry of the nitrification process using the respirometric approach"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8747671",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal"
+   },
+   {
+    "url": "https://www.nature.org/content/dam/tnc/nature/en/documents/literature-review-ammonia.pdf",
+    "title": "A Literature Review of Effects of Ammonia on Fish November 2010 For By"
+   },
+   {
+    "url": "https://www.fishwelfareinitiative.org/post/ammonia-change",
+    "title": "Changes in our Ammonia Measurement Protocols"
+   },
+   {
+    "url": "https://conductscience.com/tools/unionized-ammonia-calculator",
+    "title": "Free Unionized Ammonia (NH₃) Risk Calculator — Zebrafish"
+   },
+   {
+    "url": "https://extension.rwfm.tamu.edu/wp-content/uploads/sites/8/2013/09/Ammonia-in-Aquatic-Systems1.pdf",
+    "title": "FA16 Ammonia in Aquatic Systems1"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/pii/S2352513422003210",
+    "title": "Evaluation of acute toxicity of ammonia in Genetically Improved Farmed Tilapia - ScienceDirect"
+   },
+   {
+    "url": "https://thefishsite.com/articles/ammonia",
+    "title": "Ammonia"
+   },
+   {
+    "url": "https://www.simplydiscus.com/library/biology/nitrogen_cycle/ammonia3.shtml",
+    "title": "SimplyDiscus.com: Ammonia 1 by Ruth Francis-Floyd and Craig Watson"
+   },
+   {
+    "url": "https://www.theaquaponicsource.com/wp-content/uploads/2020/04/1d-How-to-calculate-your-unionized-ammonia-levels1-2.pdf",
+    "title": "How to calculate your Un-ionized ammonia levels"
+   },
+   {
+    "url": "http://web.utk.edu/~rstrange/wfs556/html-content/05-ammonia.html",
+    "title": "Recirculation Aquaculture: Water Quality: Ammonia"
+   },
+   {
+    "url": "https://fishingandfish.com/does-ammonia-do-permanent-damge-to-a-fishs-gills/",
+    "title": "Ammonia And Fish: Does It Cause Permanent Gills Damage And Toxicity Risks? [Updated On- 2025]"
+   },
+   {
+    "url": "https://aquariumscience.org/index.php/5-2-1-ammonia-in-depth/",
+    "title": "5.2.1. Ammonia in Depth - Aquarium Science"
+   },
+   {
+    "url": "https://www.nature.org/content/dam/tnc/nature/en/documents/literature-review-ammonia.pdf",
+    "title": "A Literature Review of Effects of Ammonia on Fish November 2010 For By"
+   },
+   {
+    "url": "https://conductscience.com/tools/unionized-ammonia-calculator",
+    "title": "Free Unionized Ammonia (NH₃) Risk Calculator — Zebrafish"
+   },
+   {
+    "url": "https://thefishsite.com/articles/ammonia",
+    "title": "Ammonia"
+   },
+   {
+    "url": "https://www.epa.gov/caddis/ammonia",
+    "title": "Ammonia"
+   },
+   {
+    "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12291887/",
+    "title": "Chronic Ammonia Stress in Chinese Perch (Siniperca chuatsi): Oxidative Response, Nitrogen Metabolism, and Multi-Enzyme-Mediated Molecular Detoxification Defense Mechanisms"
+   },
+   {
+    "url": "https://www.epa.gov/sites/default/files/2015-08/documents/aquatic-life-ambient-water-quality-criteria-for-ammonia-freshwater-2013.pdf",
+    "title": "United States Office of Water Environmental Protection 4304T EPA 822-R-18-002"
+   },
+   {
+    "url": "https://extension.rwfm.tamu.edu/wp-content/uploads/sites/8/2013/09/Ammonia-in-Aquatic-Systems1.pdf",
+    "title": "FA16 Ammonia in Aquatic Systems1"
+   },
+   {
+    "url": "https://www.noaa.gov/sites/default/files/legacy/document/2020/Oct/07354626285.pdf",
+    "title": "REVIEW PAPER Ammonia in estuaries and effects on fish F. B. EDDY"
+   },
+   {
+    "url": "https://19january2021snapshot.epa.gov/sites/static/files/2019-04/documents/toxic-action-water-soluble-pollutants-freshwater-fish.pdf",
+    "title": "@\u0002 WATER POLLUTION CONTROL RESEARCH SERIES • 18050 DST 12/70 TOXIC ACTION OF"
+   },
+   {
+    "url": "https://www.scienceabc.com/nature/animals/do-goldfish-really-have-a-3-second-memory",
+    "title": "Do Goldfish Really Have A 3-Second Memory? » ScienceABC"
+   },
+   {
+    "url": "https://www.amnh.org/learn-teach/curriculum-collections/young-naturalist-awards/goldfish-as-a-model-for-understanding-learning-and-memory-more-complex-than-you-think",
+    "title": "Goldfish as a Model for Understanding Learning and Memory: More Complex Than You Think"
+   },
+   {
+    "url": "https://www.discovermagazine.com/goldfish-may-have-longer-memories-than-just-three-seconds-46062",
+    "title": "Goldfish May Have a Longer Memory Span Than Just Three Seconds"
+   },
+   {
+    "url": "https://thegoldfishtank.com/goldfish-info/myth/goldfish-memory-three-second-memory-myth/",
+    "title": "Do Goldfish Really Have a 3 Second Memory?"
+   },
+   {
+    "url": "https://www.orangepet.in/blogs/posts/do-goldfish-really-have-a-3-second-memory",
+    "title": "Do Goldfish Really Have a 3-Second Memory?"
+   },
+   {
+    "url": "https://scicentric.org/goldfish-memory-span-myth",
+    "title": "Goldfish Memory Span: The 3-Second Myth Debunked [Scientific Truth] - scicentric.org"
+   },
+   {
+    "url": "https://www.geekfill.com/debunking-the-myth-that-goldfish-have-three-second-memories/",
+    "title": "Myth Busted: Do Goldfish Have a Three Second Memory (2026)?"
+   },
+   {
+    "url": "https://sciencerealitycheck.com/debunking-the-myth-how-long-can-goldfish-really-remember/",
+    "title": "Debunking the Myth: How Long Can Goldfish Really Remember?"
+   },
+   {
+    "url": "https://gulfnews.com/amp/story/world%2Foceania%2Fgoldfish-do-have-memories-1.1354741",
+    "title": "Goldfish do have memories"
+   },
+   {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S0043135412005623",
+    "title": "Probing the stoichiometry of the nitrification process using the respirometric approach - ScienceDirect"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/230849140_Probing_the_stoichiometry_of_the_nitrification_process_using_the_respirometric_approach",
+    "title": "(PDF) Probing the stoichiometry of the nitrification process using the respirometric approach"
+   },
+   {
+    "url": "https://headworksinternational.com/wp-content/uploads/2022/07/CEP-Paper-202004_Basu.pdf",
+    "title": "Controlling Nitrogen and Phosphorus in Wastewater"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9505644",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8747671",
+    "title": "Simultaneous anoxic biological phosphorus and nitrogen removal"
+   },
+   {
+    "url": "https://www.waterandwastewater.com/nitrification-denitrification-process-wastewater-2/",
+    "title": "Understanding Nitrification and Denitrification in Wastewater Treatment - Water & Wastewater"
+   },
+   {
+    "url": "https://www.waterandwastewater.com/nitrification-denitrification-process-wastewater/",
+    "title": "Understanding the Nitrification and Denitrification Process in Wastewater Treatment - Water & Wastewater"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/12060290",
+    "title": "Animal husbandry nutrient and odor management system"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/8012352",
+    "title": "Optimized nutrient removal from wastewater"
+   },
+   {
+    "url": "https://pubs.usgs.gov/tm/09/a6.2/tm9a6.2.pdf",
+    "title": "Dissolved Oxygen - USGS Publications Warehouse"
+   },
+   {
+    "url": "https://www.engineersedge.com/calculators/oxygen_dissolved_in_water_16058.htm",
+    "title": "Oxygen Dissolved in Water Table, Formula and Calculator"
+   },
+   {
+    "url": "https://www.aquatext.com/tables/oxygen.htm",
+    "title": "Dissolved Oxygen Table"
+   },
+   {
+    "url": "https://pubs.usgs.gov/wri/wri004190/htms/table2.htm",
+    "title": "Table 2"
+   },
+   {
+    "url": "https://nrtechstudio.com/tools/dissolved-oxygen/",
+    "title": "Dissolved Oxygen Saturation Calculator: Solubility by Temperature, Salinity, and Pressure"
+   },
+   {
+    "url": "https://watercalculator.us/calculators/science/dissolved-oxygen-calculator",
+    "title": "Dissolved Oxygen Calculator — DO Saturation in Water"
+   },
+   {
+    "url": "https://help.campbellsci.com/cs511/cs511/appendixes/dissolved-oxygen-tables.htm",
+    "title": "Dissolved oxygen tables"
+   },
+   {
+    "url": "https://water.usgs.gov/admin/memo/QW/qw81.11.html",
+    "title": "WATER QUALITY--New tables of dissolved oxygen saturation values"
+   },
+   {
+    "url": "https://www.ldeo.columbia.edu/edu/k12/snapshotday/2006/DO_06.pdf",
+    "title": "DO 06"
+   },
+   {
+    "url": "https://www2.gov.bc.ca/assets/gov/environment/air-land-water/water/waterquality/water-quality-guidelines/approved-wqgs/dissolvedoxygen-tech.pdf",
+    "title": "Water Quality Ambient Water Quality Guidelines for Dissolved Oxygen"
+   },
+   {
+    "url": "https://global.oup.com/us/companion.websites/fdscontent/uscompanion/us/static/companion.websites/9780197651896/Table_18.2_Factors_affecting_O2_solubility.pdf",
+    "title": "Table 18.2 Factors affecting O2 solubility in water* A. Temperature T °C 0 5"
+   },
+   {
+    "url": "https://nrtechstudio.com/tools/dissolved-oxygen/",
+    "title": "Dissolved Oxygen Saturation Calculator: Solubility by Temperature, Salinity, and Pressure"
+   },
+   {
+    "url": "https://watercalculator.us/calculators/science/dissolved-oxygen-calculator",
+    "title": "Dissolved Oxygen Calculator — DO Saturation in Water"
+   },
+   {
+    "url": "https://kairospacetech.com/classroom/gas-solubility.html",
+    "title": "How gases dissolve in water"
+   },
+   {
+    "url": "https://www.globalseafood.org/advocate/dissolved-oxygen-requirements-in-aquatic-animal-respiration/",
+    "title": "Dissolved oxygen requirements in aquatic animal respiration - Responsible Seafood Advocate"
+   },
+   {
+    "url": "https://www.waterboards.ca.gov/water_issues/programs/swamp/docs/cwt/guidance/3110en.pdf",
+    "title": "Fact Sheet 3.1.1.0 Dissolved Oxygen Fact Sheet What is Dissolved Oxygen?"
+   },
+   {
+    "url": "https://www.sciencedirect.com/topics/earth-and-planetary-sciences/dissolved-oxygen",
+    "title": "Dissolved Oxygen - an overview"
+   },
+   {
+    "url": "https://water.usgs.gov/software/DOTABLES",
+    "title": "water.usgs.gov"
+   }
+  ]
+ }
+}

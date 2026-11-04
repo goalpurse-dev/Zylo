@@ -1,0 +1,86 @@
+{
+ "runId": "649bad87-7311-43c9-a585-c5c3c7e863d5",
+ "topic": "airplane",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-04T09:40:10.544114+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: name",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 1.41561,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.76282,
+   "outputTokens": 70176,
+   "at": "2026-11-04T09:49:00.018Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.2283,
+   "outputTokens": 14562,
+   "at": "2026-11-04T09:50:13.509Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.10735,
+   "outputTokens": 2658,
+   "at": "2026-11-04T09:50:39.286Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02226,
+   "outputTokens": 1300,
+   "at": "2026-11-04T09:50:47.032Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01469,
+   "outputTokens": 673,
+   "at": "2026-11-04T09:50:52.080Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01333,
+   "outputTokens": 674,
+   "at": "2026-11-04T09:50:56.184Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.03297,
+   "outputTokens": 1221,
+   "at": "2026-11-04T09:51:40.581Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.00779,
+   "outputTokens": 317,
+   "at": "2026-11-04T09:51:43.409Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.07552,
+   "outputTokens": 137,
+   "at": "2026-11-04T09:51:46.960Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00431,
+   "outputTokens": 289,
+   "at": "2026-11-04T09:51:58.529Z"
+  }
+ ]
+}

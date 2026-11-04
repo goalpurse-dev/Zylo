@@ -1,0 +1,72 @@
+{
+ "runId": "89cf9139-ead7-42fd-bfcb-616961808405",
+ "topic": "fish",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-04T09:55:14.283523+00:00",
+ "failed": {
+  "code": "VOICE_FAILED",
+  "message": "voice check failed twice (stop and refund): take 1: different word: \"mg\" heard as \"milliguellers\" (after \"above about 0.02\"); different word: \"nitrifying\" heard as \"nutrifying\" (after \"pond turns clear\"); different word: \"round\" heard as \"around\" (after \"cool add rocks\") | heard: \"If you dig a hole, fill it with water and add goldfish, you have a fish pond. But the fish make waste that feeds algae, so the pond water turns green. The waste turns into ammonia, and above about 0 .02 milliguellers per liter, it can harm the fish's gills. So you add a pump and a pipe to pull the dirty water out of the pond. A settling tank lets sludge sink, scum floats on top, and clearer water \" || take 2: different word: \"mg\" heard as \"milligrams\" (after \"above about 0.02\"); different word: \"round\" heard as \"around\" (after \"cool add rocks\") | heard: \"If you dig a hole, fill it with water and add goldfish, you have a fish pond. But the fish make waste that feeds algae, so the pond water turns green. The waste turns into ammonia, and above about 0 .02 milligrams per liter, it can harm the fish's gills. So you add a pump and a pipe to pull the dirty water out of the pond. A settling tank lets sludge sink, scum floats on top, and clearer water goe\"",
+  "stage": "voice",
+  "attempts": 1
+ },
+ "costUsd": 1.0035,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.46569,
+   "outputTokens": 40447,
+   "at": "2026-11-04T10:00:06.254Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.18374,
+   "outputTokens": 3077,
+   "at": "2026-11-04T10:00:36.629Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.03103,
+   "outputTokens": 1497,
+   "at": "2026-11-04T10:00:44.758Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01532,
+   "outputTokens": 742,
+   "at": "2026-11-04T10:00:50.328Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.02871,
+   "outputTokens": 947,
+   "at": "2026-11-04T10:01:30.912Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.00233,
+   "outputTokens": 56,
+   "at": "2026-11-04T10:01:32.557Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.1056,
+   "outputTokens": null,
+   "at": "2026-11-04T10:01:36.138Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.1056,
+   "outputTokens": null,
+   "at": "2026-11-04T10:01:55.616Z"
+  }
+ ]
+}

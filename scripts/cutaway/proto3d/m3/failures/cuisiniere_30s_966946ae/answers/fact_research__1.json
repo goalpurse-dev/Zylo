@@ -1,0 +1,318 @@
+{
+ "hash": "*",
+ "by": "real run 966946ae-5dea-4b97-9f45-e09e7f089db1",
+ "searches": 8,
+ "data": {
+  "text": "**Claim 0: Cooking is the leading cause of US home fires, about half of reported home fires (NFPA)**\n- NFPA's cooking report (2017–2021 data) says cooking was the leading cause of reported home fires and home fire injuries. It was the second leading cause of home fire deaths. The same report gives 44 percent of reported home fires and 42 percent of home fire injuries. URL: https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/US-Fire-Problem/Fire-causes/oscooking.pdf\n- An NFPA Fire Prevention Week 2023 release, carried by WKGC, says cooking remains \"by far the leading cause\" of US home fires, with \"nearly half (49 percent)\" involving cooking equipment. URL: https://www.wkgc.org/2023/10/04/cooking-fires-are-the-leading-cause-of-home-fires/\n- NFPA's apartment/home report notes that cooking fires are a larger share in apartments: 61 percent of reported apartment fires, against 34 percent in one- or two-family homes. URL: https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/Building-and-life-safety/oshomes.pdf\n- **Verdict: supported in a corrected form.** Use \"the leading cause of reported US home fires, roughly 44 to 49 percent depending on the NFPA report (44 percent in 2017–2021 data).\" \"About half\" is only loosely true for the 44 percent figure. The NFPA figure for \"nearly half\" is 49 percent, which is a different report.\n\n**Claim 1: Utilities add mercaptan, which smells like rotten eggs, to odorless natural gas**\n- FortisBC says all the gas in its system is \"completely odourless on their own.\" The scent comes from a chemical called mercaptan, which gives \"that unmistakable rotten egg smell.\" It adds that most people can smell it well before gas levels become dangerous. URL: https://www.fortisbc.com/about-us/news-events/stories/a-life-saving-scent-designed-to-grab-your-attention-fast\n- The US GAO (report GAO-18-409) says natural gases are colorless and odorless, which is why odorizing them may be necessary. URL: https://www.gao.gov/assets/gao-18-409.pdf\n- Welker, an odorization equipment maker, says tertiary butyl mercaptan blends are the dominant odorant in North American gas distribution. URL: https://welker.com/process-fluids/natural-gas/odorization/\n- WFAA says the practice followed a 1937 school explosion in east Texas, and that gas companies add mercaptan so leaks can be detected. URL: https://www.wfaa.com/article/news/local/why-natural-gas-smells-like-rotten-eggs/287-bfab0cfe-59c8-487c-b743-e189904d2cdf\n- **Verdict: supported as written.** One precision: the odorant is a mercaptan blend, often tertiary butyl mercaptan. Also, the odorant is added by the gas supplier or distributor, and in the US it is required for distributed gas.\n\n**Claim 2: A natural gas flame burns at about 1950 °C**\n- Engineering ToolBox lists natural gas combusted with air at 1960 °C. This is the adiabatic flame temperature, with starting temperature 20 °C and stoichiometric combustion (no excess air). URL: https://www.engineeringtoolbox.com/flame-temperatures-gases-d_422.html\n- Wikipedia's adiabatic flame temperature table gives methane in air at 1,963 °C (constant pressure). URL: https://en.wikipedia.org/wiki/Adiabatic_flame_temperature\n- Science Notes also gives methane in air as 1963 °C. URL: https://sciencenotes.org/adiabatic-flame-temperature-chart/\n- A Brainly answer gives 1,700–1,900 °C. I'm not counting it as reliable, since it is a forum-type source.\n- **Verdict: supported in a corrected form.** Use \"a theoretical maximum (adiabatic) flame temperature of about 1,960 °C in air.\" Real stove flames are usually cooler because of heat loss and excess air. Saying it \"burns at about 1950 °C\" is close, but 1960 °C is the sourced figure.\n\n**Claim 3: James Sharp patented a gas cooker in 1826 and opened a gas stove factory in 1836**\n- Wikipedia's \"Gas stove\" article says Sharp \"patented a gas stove in Northampton, England in 1826 and opened a gas stove factory in 1836.\" It also says the first gas stoves were developed in the 1820s and a gas stove factory was established in England in 1836. URL: https://en.wikipedia.org/wiki/Gas_stove\n- A heating timeline from QS Supplies says Sharp patented a gas stove in Northampton in 1826, and that the firm Smith & Philips marketed it from 1828. It also says Zachäus Winzler developed the first gas stove in 1802. URL: https://www.qssupplies.co.uk/history-of-heating-timeline.html\n- **Verdict: supported as written.** Both dates and the Northampton location match the sources. The sources are an encyclopedia and a secondary timeline. I did not find a primary source such as the patent record. If the script says \"first gas stove,\" that is wrong, because Winzler's 1802 stove came earlier. Say \"patented a gas stove\" instead.",
+  "sources": [
+   {
+    "url": "https://www.worldcoppersmith.com/articles/kitchen-fire-statistics/",
+    "title": "16 Kitchen Fire Statistics, Trends, and Predictions"
+   },
+   {
+    "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/US-Fire-Problem/Fire-causes/oscooking.pdf?rev=3cf6f13a2049402789ff1f1a6d0cb515",
+    "title": "Home Cooking Fires Shelby Hall and Tucker McGree September 2023"
+   },
+   {
+    "url": "https://www.wkgc.org/2023/10/04/cooking-fires-are-the-leading-cause-of-home-fires/",
+    "title": "Cooking Fires are the Leading Cause of Home Fires - 90.7 WKGC Public Media"
+   },
+   {
+    "url": "https://southaven.org/DocumentView.aspx?DID=494",
+    "title": "Home Fires Involving Cooking Equipment"
+   },
+   {
+    "url": "https://www.hippo.com/blog/house-fire-statistics",
+    "title": "27 U.S. House Fire Statistics in 2024"
+   },
+   {
+    "url": "https://www.thezebra.com/resources/research/house-fire-statistics/",
+    "title": "House Fire Statistics in 2026"
+   },
+   {
+    "url": "https://www.congress.gov/118/meeting/house/115306/documents/HHRG-118-IF00-20230207-SD032.pdf",
+    "title": "Home Cooking Fires Marty Ahrens July 2020"
+   },
+   {
+    "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/Building-and-life-safety/oshomes.pdf?rev=7809c62e634445aa9e5b49a25ba65074",
+    "title": "Home Structure Fires Shelby Hall and Tucker McGree August 2025"
+   },
+   {
+    "url": "https://guardianprotection.com/blog/house-fire-statistics",
+    "title": "House Fire Statistics in the U.S. (Latest Data & Trends)"
+   },
+   {
+    "url": "https://newsroom.statefarm.com/state-farm-releases-latest-cooking-fire-statistics-and-safety-tips-to-help-prevent-kitchen-fires/",
+    "title": "State Farm® Releases Latest Cooking Fire Statistics and Safety Tips to Help Prevent Kitchen Fires"
+   },
+   {
+    "url": "https://www.qssupplies.co.uk/history-of-heating-timeline.html",
+    "title": "History Of Heating Timeline"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Gas_stove",
+    "title": "Gas stove"
+   },
+   {
+    "url": "https://www.youtube.com/watch?v=kTABEgnbECE",
+    "title": "History of the world's first commercially produced gas stove #GasStove#KitchenTechnology - YouTube"
+   },
+   {
+    "url": "https://thingscope.cs.columbia.edu/who-invented-good-stoves",
+    "title": "Unveiling the Mastermind: Who Invented the Modern Good Stove? - Columbia Insights"
+   },
+   {
+    "url": "https://cwcentraltexas.com/stoves-an-interesting-evolution/",
+    "title": "Stoves - An Interesting Evolution ⋆ C&W Appliance Service"
+   },
+   {
+    "url": "https://www.mww-mfg.com/gas-ranges-and-ovens.html",
+    "title": "Gas Ranges and Ovens"
+   },
+   {
+    "url": "https://www.grupoguma.mx/blog/post/como-fue-la-invencion-de-estufas-y-calentadores-de-gas",
+    "title": "¿Cómo fue la invención de estufas y calentadores de gas?"
+   },
+   {
+    "url": "https://www.chefsresource.com/when-was-the-first-gas-stove-invented/",
+    "title": "When was the first gas stove invented? - Chef's Resource"
+   },
+   {
+    "url": "https://www.dsource.in/resource/kitchen-products/stoves/lpg-stove",
+    "title": "D'source LPG Stove"
+   },
+   {
+    "url": "https://www.sawanonlinebookstore.com/gas-stove/",
+    "title": "Gas Stove - Sawan Books"
+   },
+   {
+    "url": "https://brainly.com/question/46663708",
+    "title": "[FREE] What is the flame temperature for natural gas? A. 1200 degrees Fahrenheit B. 2400 degrees Fahrenheit C. - brainly.com"
+   },
+   {
+    "url": "https://www.engineeringtoolbox.com/flame-temperatures-gases-d_422.html",
+    "title": "Fuel Gases - Flame Temperatures"
+   },
+   {
+    "url": "https://www.elgas.com.au/elgas-knowledge-hub/residential-lpg/blue-flame-gas-color-lpg-safety/",
+    "title": "Blue Flame - Blue Fire"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/6928821",
+    "title": "Dual fuel power generation system"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Adiabatic_flame_temperature",
+    "title": "Adiabatic flame temperature"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/6779333",
+    "title": "Dual fuel power generation system"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4135875",
+    "title": "Apparatus for burning gaseous fuel"
+   },
+   {
+    "url": "https://arxiv.org/pdf/2503.11826",
+    "title": "Adiabatic Flame Temperatures for Oxy-Methane, Oxy-Hydrogen, Air-Methane, and Air-Hydrogen Stoichiometric Combustion using the NASA CEARUN Tool, GRI-Mech 3.0 Reaction Mechanism, and Cantera Python Package"
+   },
+   {
+    "url": "https://biologyinsights.com/what-temperature-does-natural-gas-burn-at/",
+    "title": "What Temperature Does Natural Gas Burn At? - Biology Insights"
+   },
+   {
+    "url": "https://www.wfaa.com/article/news/local/why-natural-gas-smells-like-rotten-eggs/287-bfab0cfe-59c8-487c-b743-e189904d2cdf",
+    "title": "Why does natural gas smell like rotten eggs?"
+   },
+   {
+    "url": "https://www.fortisbc.com/about-us/news-events/stories/a-life-saving-scent-designed-to-grab-your-attention-fast",
+    "title": "What does natural gas smell like?"
+   },
+   {
+    "url": "https://www.nbcchicago.com/news/local/strong-chemical-odor-of-rotten-eggs-in-southeast-suburbs-emergency-officials-responding/3922506/",
+    "title": "‘Strong’ chemical odor of rotten eggs in southeast suburbs; emergency officials responding"
+   },
+   {
+    "url": "https://www.nocompressor.com/smell-methane-rotten-eggs-more",
+    "title": "The \"Rotten Egg\" Smell of Fracked Gas — No Compressor Station"
+   },
+   {
+    "url": "https://www.yzsystems.com/en/blog/why-does-natural-gas-have-an-odor/",
+    "title": "Why Does Natural Gas Have an Odor?"
+   },
+   {
+    "url": "https://www.burgessps.com/post/natural-gas-odorization-why-mercaptan-is-added-to-gas-and-how-it-works",
+    "title": "Why Mercaptan Is Added to Natural Gas"
+   },
+   {
+    "url": "https://www.gasodorizer.com/gas-leak-detection-through-odorants/",
+    "title": "Odorant in Natural Gas: Understanding Gas Safety & Detection!"
+   },
+   {
+    "url": "https://www.nagd.com/question/what-is-mercaptan/",
+    "title": "What is Mercaptan? - North Alabama Gas District"
+   },
+   {
+    "url": "https://scienceinsights.org/what-is-mercaptan-and-why-does-it-smell-so-strong/",
+    "title": "What Is Mercaptan and Why Does It Smell So Strong? - ScienceInsights"
+   },
+   {
+    "url": "https://smallbiz.monster.com/gas-leak-smell",
+    "title": "The Complete Guide to Gas Leak Smells"
+   },
+   {
+    "url": "https://www.carrollcountymd.gov/media/swhl4wry/cook-fire-report.pdf",
+    "title": "Home Cooking Fires Shelby Hall and Tucker McGree September 2023"
+   },
+   {
+    "url": "https://www.congress.gov/118/meeting/house/115306/documents/HHRG-118-IF00-20230207-SD032.pdf",
+    "title": "Home Cooking Fires Marty Ahrens July 2020"
+   },
+   {
+    "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/US-Fire-Problem/Fire-causes/oscooking.pdf?rev=3cf6f13a2049402789ff1f1a6d0cb515",
+    "title": "Home Cooking Fires Shelby Hall and Tucker McGree September 2023"
+   },
+   {
+    "url": "https://southaven.org/DocumentView.aspx?DID=494",
+    "title": "Home Fires Involving Cooking Equipment"
+   },
+   {
+    "url": "https://www.ansi.org/standards-news/member-updates/2-6-25-nfpa-releases-findings-on-home-heating-fires",
+    "title": "NFPA Releases Findings on Home Heating Fires"
+   },
+   {
+    "url": "https://www.twpbrm.ca/media/3qcmvndj/cooking-fact-sheet.pdf",
+    "title": "Home Fires Involving Cooking Equipment Fact Sheet"
+   },
+   {
+    "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/US-Fire-Problem/Fire-causes/osCookingTables.pdf?rev=15f7626509154110b9a27873138cd557&hash=FA0B4B8256F9EAE9A9BA66C089297947",
+    "title": "Home Cooking Fires: Supporting Tables September 2023"
+   },
+   {
+    "url": "https://www.usfa.fema.gov/downloads/pdf/statistics/v21i5.pdf",
+    "title": "Topical Fire Report Series National Fire Data Center 16825 S. Seton Ave."
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Structure_fire",
+    "title": "Structure fire"
+   },
+   {
+    "url": "https://content.nfpa.org/-/media/Project/Storefront/Catalog/Files/Research/NFPA-Research/Building-and-life-safety/oshomes.pdf?rev=7809c62e634445aa9e5b49a25ba65074",
+    "title": "Home Structure Fires Shelby Hall and Tucker McGree August 2025"
+   },
+   {
+    "url": "https://www.wikiwand.com/en/Gas_stove",
+    "title": "Gas stove - Wikiwand"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Gas_stove",
+    "title": "Gas stove"
+   },
+   {
+    "url": "https://www.edinformatics.com/inventions_inventors/gas_stove.htm",
+    "title": "History of the Stove -- The Gas Stove"
+   },
+   {
+    "url": "https://www.wmbriggs.com/post/50964/",
+    "title": "Yes, They Are Still Coming For Our Gas Stoves"
+   },
+   {
+    "url": "https://cwcentraltexas.com/stoves-an-interesting-evolution/",
+    "title": "Stoves - An Interesting Evolution ⋆ C&W Appliance Service"
+   },
+   {
+    "url": "https://en-wikipedia-org.translate.goog/wiki/Gas_stove?_x_tr_sl=en&_x_tr_tl=te&_x_tr_hl=te&_x_tr_pto=tc",
+    "title": "Gas stove"
+   },
+   {
+    "url": "https://www.timetoast.com/timelines/123476",
+    "title": "Timeline: Gas Stove Timeline"
+   },
+   {
+    "url": "https://www.sawanonlinebookstore.com/gas-stove/",
+    "title": "Gas Stove - Sawan Books"
+   },
+   {
+    "url": "https://gasstovehub.swoopcart.in/who-invented-the-first-gas-stove/",
+    "title": "Who Invented the First Gas Stove - Gas Stove Hub"
+   },
+   {
+    "url": "https://downloads.regulations.gov/PHMSA-2021-0039-0002/attachment_1.pdf",
+    "title": "1 U.S. Pipeline and Hazardous Materials Safety Administration (PHMSA)"
+   },
+   {
+    "url": "https://primis.phmsa.dot.gov/rd/FileGet/8632/21093_final_report_2014-04-21.pdf",
+    "title": "GTI PROJECT NUMBER 21093 Odorant Effectiveness DOT Prj# 363"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5304327",
+    "title": "Mercaptan injection apparatus for use with a pipeline"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7682410",
+    "title": "Gas odorant"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9587191",
+    "title": "Sulphur-free gas odorant"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7389786",
+    "title": "Ultrasonic and sonic odorization systems"
+   },
+   {
+    "url": "https://www.gao.gov/assets/gao-18-409.pdf",
+    "title": "GAS PIPELINE SAFETY Stakeholders’ and Officials’ Views on Federal Odorizing"
+   },
+   {
+    "url": "https://www.fortisbc.com/about-us/news-events/stories/a-life-saving-scent-designed-to-grab-your-attention-fast",
+    "title": "What does natural gas smell like?"
+   },
+   {
+    "url": "https://welker.com/process-fluids/natural-gas/odorization/",
+    "title": "Natural Gas Odorization: A Complete Industry Guide"
+   },
+   {
+    "url": "https://sciencenotes.org/adiabatic-flame-temperature-chart/",
+    "title": "Adiabatic Flame Temperature Chart"
+   },
+   {
+    "url": "https://www.engineeringtoolbox.com/flame-temperatures-gases-d_422.html",
+    "title": "Fuel Gases - Flame Temperatures"
+   },
+   {
+    "url": "https://arxiv.org/pdf/2503.11826",
+    "title": "Adiabatic Flame Temperatures for Oxy-Methane, Oxy-Hydrogen, Air-Methane, and Air-Hydrogen Stoichiometric Combustion using the NASA CEARUN Tool, GRI-Mech 3.0 Reaction Mechanism, and Cantera Python Package"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7089766",
+    "title": "Method of forming optical fiber preforms"
+   },
+   {
+    "url": "https://www.sciencedirect.com/topics/engineering/adiabatic-flame-temperature",
+    "title": "Adiabatic Flame Temperature - an overview"
+   },
+   {
+    "url": "https://www.chemeurope.com/en/encyclopedia/Adiabatic_flame_temperature.html",
+    "title": "Adiabatic_flame_temperature"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/307760852_Adiabatic_Flame_Temperature_for_Combustion_of_Methane",
+    "title": "(PDF) Adiabatic Flame Temperature for Combustion of Methane"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Adiabatic_flame_temperature",
+    "title": "Adiabatic flame temperature"
+   },
+   {
+    "url": "https://www.engineeringtoolbox.com/adiabatic-flame-temperature-d_996.html",
+    "title": "Adiabatic Flame Temperatures"
+   },
+   {
+    "url": "https://www.researchgate.net/publication/275439942_Adiabatic_Flame_Temperature_for_Combustion_of_Methane_II",
+    "title": "(PDF) Adiabatic Flame Temperature for Combustion of Methane II"
+   }
+  ]
+ }
+}

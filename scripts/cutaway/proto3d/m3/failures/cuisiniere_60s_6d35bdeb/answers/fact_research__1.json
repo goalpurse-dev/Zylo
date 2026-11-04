@@ -1,0 +1,198 @@
+{
+ "hash": "*",
+ "by": "real run 6d35bdeb-cccf-4a47-bd5e-be5dcfe738ad",
+ "searches": 5,
+ "data": {
+  "text": "**Claim 0: CO at 400 ppm. Supported as written.**\n- AICO says \"400 ppm – frontal headaches within 1-2 hours. These CO levels become life-threatening if exposed for longer than 3 hours.\" https://www.aico.co.uk/homeowner/articles/carbon-monoxide-levels-explained/\n- FireAngel says that at 400 ppm, frontal headaches can develop within 1-2 hours, and exposure becomes life-threatening after about three hours. https://www.fireangel.co.uk/homeowners/support/what-symptoms-do-you-get-at-different-carbon-monoxide-co-ppm-levels/\n- Kidde gives the same figures: frontal headaches within one to two hours at 400 ppm. https://www.kidde.com/support/carbon-monoxide-alarms/co-levels-info\n- Superior, WI (a municipal government page) is slightly different. It lists 400 ppm as \"Headache and nausea after 1-2 hours of exposure.\" https://www.superiorwi.gov/1089/Carbon-Monoxide-Alarms\n- Caveat: these are alarm makers and a city page. The figures are rough guides, and the 3-hour line comes from the manufacturers, not a medical source. Kidde also says a 400 ppm alarm sounds in 4 to 15 minutes. That is the alarm's response time, not the symptom time.\n\n**Claim 1: Chimney height. Supported as written.**\n- The \"3-2-10 rule\" is that the chimney must rise \"at least 3 feet above where it passes through the roof, and stand at least 2 feet taller than anything within 10 feet of it.\" https://www.flue-pipes.com/us/info/required-height_of_a_chimney\n- The same manufacturer says NFPA 211 sets this rule. https://www.flue-pipes.com/us/info/chimney-pipes-building-codes\n- Chimney Insight says IRC section R1003.9 mirrors NFPA 211: 3 ft above the roof at the point of penetration and at least 2 ft above any structure within a 10-foot horizontal radius. https://chimneyinsight.com/chimney-height-calculator-roof-obstruction-rules/\n- Caveat: I found no copy of the NFPA 211 text itself. These are secondary sources quoting it. Local codes and the stove maker's installation instructions may be stricter.\n\n**Claim 2: Wood cookstove oven at about 230 °C (450 °F). Supported in a corrected form.**\n- I found no engineering or manufacturer source giving a typical wood cookstove oven temperature. The sources I found cover ovens in general, and wood-fired pizza and masonry ovens.\n- Wikipedia's \"Oven temperatures\" lists a \"Hot oven\" at 400–450 °F (200–230 °C) and a \"Very hot oven\" at 450–500 °F (230–260 °C). https://en.wikipedia.org/wiki/Oven_temperatures\n- Conversion: 450 °F is 232.2 °C, usually written as 230 °C (gas mark 8). https://kitchenconvert.io/convert/450-f-to-c\n- Wood-fired oven guides give 400–450 °F (200–230 °C) for bread and general baking. https://chicagobrickoven.com/blogs/the-hangout/what-temperature-should-a-wood-fired-pizza-oven-be-a-simple-guide-for-beginners\n- Corrected form: \"A wood cookstove oven can reach a hot baking temperature of around 230 °C (450 °F).\" Or say \"can be brought up to.\" A wood stove has no thermostat, so the temperature depends on the fire. Typical baking runs from about 175 °C to 230 °C (350–450 °F). The 230 °C figure is the top of the hot-oven range, not a fixed value.\n\n**Claim 3: French \"cuisinière\". Supported as written.**\n- Wiktionary lists two senses. One is \"cook,\" the \"female equivalent of cuisinier.\" The other is \"stove, range\" (kitchen appliance). The word comes from *cuisine* + *-ière*. https://en.wiktionary.org/wiki/cuisini%C3%A8re\n- Dictionary.com defines it as \"a female cook or chef.\" https://www.dictionary.com/browse/cuisiniere\n- French Today says: \"Une cuisinière = a female cook but also a stove top, a range.\" https://frenchtoday.com/blog/french-vocabulary/how-to-say-to-cook-in-french-cuir-cuisiner-faire-la-cuisine\n- Caveat: Wiktionary also glosses the appliance as \"cooker.\" That is the British word for a stove.",
+  "sources": [
+   {
+    "url": "https://www.flue-pipes.com/us/info/required-height_of_a_chimney",
+    "title": "Chimney Height Above the Roof: How High? (IRC and NFPA 211)"
+   },
+   {
+    "url": "https://www.flue-pipes.com/us/info/chimney-pipes-building-codes",
+    "title": "What Are the Building Codes for Chimney Pipes?"
+   },
+   {
+    "url": "https://www.flue-pipes.com/us/info/through-the-wall-vs-through-the-roof-chimney",
+    "title": "Wood Stove Chimney: Through the Wall or the Roof?"
+   },
+   {
+    "url": "https://chimcarechimneycaps.com/extend-chimney-flue/nfpa-211-standards/",
+    "title": "NFPA 211 Standards"
+   },
+   {
+    "url": "https://chimneyinsight.com/chimney-height-calculator-roof-obstruction-rules/",
+    "title": "Chimney Height Calculator Based on Roof & Obstruction Rules"
+   },
+   {
+    "url": "https://nationalchimneyauthority.com/nfpa-211-chimney-standard.html",
+    "title": "NFPA 211: Standard for Chimneys, Fireplaces, Vents, and Appliances"
+   },
+   {
+    "url": "https://steadfastpavingandmasonry.com/average-chimney-sizes-2026-industry-standards/",
+    "title": "Average Chimney Sizes: 2026 Industry Standard"
+   },
+   {
+    "url": "https://www.toolgrit.com/tools/chimney-flue-calc",
+    "title": "Chimney Flue Sizing Calculator"
+   },
+   {
+    "url": "https://www.toolgrit.com/guides/chimney-flue-sizing-guide",
+    "title": "Chimney Flue Sizing Guide"
+   },
+   {
+    "url": "https://unitedchimney.net/nfpa-guidelines-for-chimney-safetey/",
+    "title": "Understanding NFPA Guidelines for Chimney Safety"
+   },
+   {
+    "url": "https://www.aico.co.uk/homeowner/articles/carbon-monoxide-levels-explained/",
+    "title": "Carbon Monoxide Levels Explained"
+   },
+   {
+    "url": "https://www.fireangel.co.uk/homeowners/support/what-symptoms-do-you-get-at-different-carbon-monoxide-co-ppm-levels/",
+    "title": "What symptoms do you get at different carbon monoxide (CO) ppm levels? - FireAngel"
+   },
+   {
+    "url": "https://www.superiorwi.gov/1089/Carbon-Monoxide-Alarms",
+    "title": "Carbon Monoxide Alarms"
+   },
+   {
+    "url": "https://www.engineeringtoolbox.com/carbon-monoxide-d_893.html",
+    "title": "Carbon Monoxide and Health Effects"
+   },
+   {
+    "url": "https://www.kidde.com/support/carbon-monoxide-alarms/co-levels-info",
+    "title": "Carbon Monoxide Levels"
+   },
+   {
+    "url": "https://www.adt.com/resources/how-long-does-carbon-monoxide-last",
+    "title": "How long does it take for carbon monoxide to dissipate"
+   },
+   {
+    "url": "https://allfirefighter.com/post/fire-safety/carbon-monoxide-guide-symptoms-response",
+    "title": "Carbon Monoxide Guide: Symptoms, Sources, CO Detector & Fire Response"
+   },
+   {
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9053626",
+    "title": "Programmable carbon monoxide safety device"
+   },
+   {
+    "url": "https://airshield.store/blog/how-long-does-carbon-monoxide-poisoning-take",
+    "title": "How Long Does Carbon Monoxide Poisoning Take? The Full Timeline"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Oven_temperatures",
+    "title": "Oven temperatures"
+   },
+   {
+    "url": "https://kitchenconvert.io/convert/450-f-to-c",
+    "title": "450 °F to °C — Exact Conversion & Oven Setting"
+   },
+   {
+    "url": "https://cookmeasure.com/oven/450-f-to-c",
+    "title": "450 °F to °C (Oven Temperature)"
+   },
+   {
+    "url": "https://chicagobrickoven.com/blogs/the-hangout/what-temperature-should-a-wood-fired-pizza-oven-be-a-simple-guide-for-beginners",
+    "title": "What Temperature Should a Wood-Fired Pizza Oven Be? Guide"
+   },
+   {
+    "url": "https://oventemps.com/450-f-to-c",
+    "title": "450°F to Celsius (232°C), Gas Mark & Fan Oven"
+   },
+   {
+    "url": "https://bakingcalc.com/oven-temperature-conversion/450-f-to-c",
+    "title": "450 F to C: 450°F = 232.2°C (Oven Temp) · BakingCalc"
+   },
+   {
+    "url": "https://woodstoveheaters.com/discover-the-joys-of-wood-fired-oven-cooking/",
+    "title": "Discover the Joys of Wood-Fired Oven Cooking - Wood Stove Heaters"
+   },
+   {
+    "url": "https://www.fornobravo.com/tech-resources/temperature-scale/",
+    "title": "Wood-Fired Pizza Oven Temperature"
+   },
+   {
+    "url": "https://www.atlanticse.com/blogs/cooking/oven-temperature-conversions",
+    "title": "Fahrenheit to Celsius Oven Temperature Conversion Chart"
+   },
+   {
+    "url": "https://www.inspiredtaste.net/23326/oven-temperature-conversion/",
+    "title": "Oven Temperature Conversion"
+   },
+   {
+    "url": "https://en.wiktionary.org/wiki/cuisini%C3%A8re",
+    "title": "cuisinière - Wiktionary, the free dictionary"
+   },
+   {
+    "url": "https://www.dictionary.com/browse/cuisiniere",
+    "title": "CUISINIÈRE Definition & Meaning"
+   },
+   {
+    "url": "https://www.collinsdictionary.com/dictionary/english/cuisiniere",
+    "title": "CUISINIÈRE definition and meaning"
+   },
+   {
+    "url": "https://frenchtoday.com/blog/french-vocabulary/how-to-say-to-cook-in-french-cuir-cuisiner-faire-la-cuisine",
+    "title": "How to Say \"to Cook\" in French: Cuire, Cuisiner, Faire la Cuisine?"
+   },
+   {
+    "url": "https://en.pons.com/translate/french-english/cuisini%C3%A8re",
+    "title": "CUISINIÈRE - Translation from French into English"
+   },
+   {
+    "url": "https://en.bab.la/dictionary/french-english/cuisini%C3%A8re",
+    "title": "CUISINIÈRE - Translation in English - bab.la"
+   },
+   {
+    "url": "https://en.bab.la/dictionary/english-french/female-cook",
+    "title": "What is the translation of \"female cook\" in French?"
+   },
+   {
+    "url": "https://www.learnwitholiver.com/french/translate-word-4584-cuisini%C3%A8re",
+    "title": "cuisinière - Translation from French into English - LearnWithOliver"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/La_Cuisini%C3%A8re_Cordon_Bleu",
+    "title": "La Cuisini%C3%A8re Cordon Bleu"
+   },
+   {
+    "url": "https://www.fontanaforniusa.com/blogs/news-1/a-guide-to-cooking-with-wood-fired-pizza-ovens",
+    "title": "A Guide to Cooking with Wood-Fired Pizza Ovens"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Oven_temperatures",
+    "title": "Oven temperatures"
+   },
+   {
+    "url": "https://flameauthority.com/blogs/design-ideas-and-lifestyle/wood-fired-oven-recipes-temperature-guide",
+    "title": "Wood-Fired Oven Recipes & Temperature Guide"
+   },
+   {
+    "url": "https://hypertextbook.com/facts/2005/JenniferZhong.shtml",
+    "title": "Temperature of a Home Oven - The Physics Factbook"
+   },
+   {
+    "url": "https://www.gramstocups.io/oven-temperature-guide",
+    "title": "Oven Temperature Chart: °F, °C & Gas Mark"
+   },
+   {
+    "url": "https://chicagobrickoven.com/blogs/the-hangout/what-temperature-should-a-wood-fired-pizza-oven-be-a-simple-guide-for-beginners",
+    "title": "What Temperature Should a Wood-Fired Pizza Oven Be? Guide"
+   },
+   {
+    "url": "https://www.mirabake.com/oven-temperature/",
+    "title": "Oven Temperature Guide for Better Baking 2026"
+   },
+   {
+    "url": "https://wood-fired-pizza-oven.us/blog/how-hot-do-wood-fired-pizza-ovens-get",
+    "title": "How Hot Do Wood Fired Pizza Ovens Get? (And Why It Matters)"
+   },
+   {
+    "url": "https://temperatures.com/guides/oven-temperature-conversion",
+    "title": "Oven Temperature Conversion Chart: °F, °C, Gas Mark & Fan"
+   }
+  ]
+ }
+}

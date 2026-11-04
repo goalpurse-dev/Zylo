@@ -1,0 +1,85 @@
+{
+ "hash": "*",
+ "by": "real run 649bad87-7311-43c9-a585-c5c3c7e863d5",
+ "searches": 0,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "Older Cessna 172s, such as the 172R, have a maximum takeoff weight of about 2,450 lb (1,111 kg); newer 172S models are certified to 2,550 lb (1,157 kg).",
+    "why": "The FAA data sheet summary lists 2,450 lb for the 172R, and the 1,111 kg conversion is correct. The 172S/SP is higher at 2,550 lb (1,157 kg), and earlier models are lower. So the figure is not true for every 172 and needs the model qualifier.",
+    "sources": [
+     {
+      "url": "https://studentpilot.com/learn-to-fly/training-aircraft/cessna-172/",
+      "title": "Cessna 172 Specs: Skyhawk Cruise Speed, Fuel and Models"
+     },
+     {
+      "url": "https://www.globalair.com/aircraft-specifications/cessna/cessna-172-sp-specifications/605",
+      "title": "CESSNA 172 SP Specifications, Performance, and Range"
+     },
+     {
+      "url": "https://www.thrustflight.com/cessna-172/",
+      "title": "The Cessna 172 Skyhawk - Thrust Flight"
+     },
+     {
+      "url": "https://airshow.fandom.com/wiki/Cessna_172",
+      "title": "Cessna 172"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "A Cessna 172 rotates at about 55 knots indicated airspeed, roughly 100 km/h.",
+    "why": "Flying magazine, citing the POH, and the Purdue 172SP data sheet both give 55 KIAS as the rotation speed. 55 kt is about 102 km/h. It is the speed at which the pilot raises the nose, not a groundspeed, so it is worded as rotation at indicated airspeed.",
+    "sources": [
+     {
+      "url": "https://www.flyingmag.com/how-fast-do-airplanes-take-off/",
+      "title": "How Fast Do Airplanes Take Off?"
+     },
+     {
+      "url": "https://www.purdueaviationllc.com/storage/app/media/Data%20Sheets/C172SP%20Data%20Sheet.pdf",
+      "title": "Data Sheet- Cessna 172SP Weights Aircraft Number Empty Weight Empty Moment"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A Cessna 172 has about 16 square meters (174 sq ft) of wing, so each square meter carries roughly 70 kg at takeoff.",
+    "why": "AOPA and other sources list a 174 sq ft (16.2 m²) wing area. At 1,111-1,157 kg, the load is about 69-72 kg/m², which is roughly 70 kg.",
+    "sources": [
+     {
+      "url": "https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172",
+      "title": "Cessna 172S - AOPA"
+     },
+     {
+      "url": "https://www.thisdayinaviation.com/tag/cessna-172/",
+      "title": "Cessna 172"
+     },
+     {
+      "url": "https://aviationacademy.ro/en/fleet/cessna-172/",
+      "title": "Cessna 172 EN - Aviation Academy"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A Cessna 172 with the engine off glides about 9 meters forward for every meter it drops.",
+    "why": "NAFI computes a 9:1 glide ratio at the 65-knot best glide speed. This holds in still air at best-glide speed, and wind, turns and flaps reduce it, so it is an approximate figure.",
+    "sources": [
+     {
+      "url": "https://nafimentor.org/mastering-the-glide/",
+      "title": "Mastering the Glide"
+     },
+     {
+      "url": "https://www.firgelliauto.com/blogs/calculators/glide-ratio-ld-calculator",
+      "title": "Glide Ratio (L/D) Interactive Calculator"
+     }
+    ]
+   }
+  ]
+ }
+}

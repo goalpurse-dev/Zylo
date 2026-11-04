@@ -1,0 +1,86 @@
+{
+ "runId": "6d35bdeb-cccf-4a47-bd5e-be5dcfe738ad",
+ "topic": "cuisiniere",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-04T01:08:03.79107+00:00",
+ "failed": {
+  "code": "GATE_FAILED",
+  "message": "the preview check blocked it: hook",
+  "stage": "preview",
+  "attempts": 1
+ },
+ "costUsd": 1.14181,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.68199,
+   "outputTokens": 62093,
+   "at": "2026-11-04T01:15:34.644Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.11486,
+   "outputTokens": 2318,
+   "at": "2026-11-04T01:15:58.004Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02454,
+   "outputTokens": 1387,
+   "at": "2026-11-04T01:16:05.545Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01411,
+   "outputTokens": 654,
+   "at": "2026-11-04T01:16:10.236Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01307,
+   "outputTokens": 669,
+   "at": "2026-11-04T01:16:14.516Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01303,
+   "outputTokens": 669,
+   "at": "2026-11-04T01:16:18.805Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.03592,
+   "outputTokens": 1485,
+   "at": "2026-11-04T01:16:55.945Z"
+  },
+  {
+   "label": "words repair (preview)",
+   "usd": 0.01151,
+   "outputTokens": 515,
+   "at": "2026-11-04T01:16:59.779Z"
+  },
+  {
+   "label": "preview repair",
+   "usd": 0.09825,
+   "outputTokens": 2332,
+   "at": "2026-11-04T01:17:13.266Z"
+  },
+  {
+   "label": "vision check (before voice, again)",
+   "usd": 0.00514,
+   "outputTokens": 370,
+   "at": "2026-11-04T01:17:25.363Z"
+  }
+ ]
+}

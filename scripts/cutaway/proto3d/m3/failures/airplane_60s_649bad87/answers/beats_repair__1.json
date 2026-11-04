@@ -1,0 +1,141 @@
+{
+ "hash": "*",
+ "by": "real run 649bad87-7311-43c9-a585-c5c3c7e863d5",
+ "searches": 0,
+ "data": {
+  "why": "A winged tube sits on a concrete runway and the camera follows it through fixes: engine, curved wing, tail, hinged surfaces, takeoff, gust, flaps, then the finished plane with door and stairs. In the problem beat the plane now visibly does something: it strains against the weight with its wheels spinning, and it stays on the ground. The fix also lifts the shot off the caption band and uses box shots to hold the whole plane in frame.",
+  "sceneJson": "{\"world\":{\"cut\":[-1,1,-1.2,1],\"house\":false,\"porch\":false,\"trees\":[[-16,-14],[16,-12,0.9]],\"road\":false,\"moreTrees\":false,\"worker\":false,\"rocksAvoid\":[]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"runway\",\"kind\":\"box\",\"params\":{\"mat\":\"concrete\",\"size\":[34,0.12,6.8],\"pos\":[0,0.06,-5.1],\"r\":0.03,\"receiveShadow\":true}},{\"id\":\"plane\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"airplane\",\"synonyms\":[\"plane\",\"aircraft\"],\"pos\":[-6,0.12,-4],\"rotY\":0,\"scale\":1,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":6,\"axis\":\"x\",\"at\":[0,1.5,0],\"look\":\"paint\",\"color\":\"#e9eef4\"},{\"shape\":\"cylinder\",\"r\":0.4,\"h\":2.4,\"axis\":\"x\",\"at\":[-4.2,1.6,0],\"look\":\"paint\",\"color\":\"#e9eef4\"},{\"shape\":\"box\",\"size\":[0.1,0.6,0.1],\"at\":[2.2,0.7,0],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.12,0.6,0.12],\"at\":[0.3,0.5,0],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.12,0.12,2.4],\"at\":[0.3,0.4,0],\"look\":\"metal\"}],\"moves\":[{\"name\":\"gust\",\"type\":\"swing\",\"axis\":\"x\",\"angle\":25},{\"name\":\"takeoff\",\"type\":\"track\",\"path\":[[0,0,0],[6,0,0],[10,1.5,0],[13,4.5,0]]}]},{\"id\":\"wheelL\",\"parent\":\"body\",\"at\":[0.3,0.4,1.3],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"wheelR\",\"parent\":\"body\",\"at\":[0.3,0.4,-1.3],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"wheelN\",\"parent\":\"body\",\"at\":[2.2,0.4,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.2,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"wing\",\"parent\":\"body\",\"at\":[0.6,2.2,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.6,0.12,11],\"at\":[0,0.06,0],\"look\":\"paint\",\"color\":\"#e23b2e\"},{\"shape\":\"button\",\"r\":0.12,\"at\":[-0.3,0.13,0.5],\"look\":\"metal\"},{\"shape\":\"button\",\"r\":0.12,\"at\":[-0.3,0.13,-0.5],\"look\":\"metal\"}],\"moves\":[{\"name\":\"wingsOn\",\"type\":\"appear\"}]},{\"id\":\"camber\",\"parent\":\"wing\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.25,\"h\":10.8,\"axis\":\"z\",\"at\":[0.45,0.37,0],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"curve\",\"type\":\"appear\"}]},{\"id\":\"aileronL\",\"parent\":\"wing\",\"at\":[-0.8,0.06,3.2],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,2.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"flapsOn\",\"type\":\"appear\"},{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":25}]},{\"id\":\"aileronR\",\"parent\":\"wing\",\"at\":[-0.8,0.06,-3.2],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,2.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"flapsOn\",\"type\":\"appear\"},{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":25}]},{\"id\":\"engine\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.6,\"h\":1,\"axis\":\"x\",\"at\":[3.5,1.5,0],\"look\":\"paint\",\"color\":\"#2f6fb0\"},{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.3,\"axis\":\"x\",\"at\":[4.15,1.5,0],\"look\":\"metal\"}],\"moves\":[{\"name\":\"engineOn\",\"type\":\"appear\"}]},{\"id\":\"prop\",\"parent\":\"engine\",\"at\":[4.3,1.5,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.1,2.4,0.22],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#333333\"}],\"moves\":[{\"name\":\"engineOn\",\"type\":\"appear\"},{\"name\":\"spinProp\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":5}]},{\"id\":\"tail\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,1.4,0.12],\"at\":[-5,2.65,0],\"look\":\"paint\",\"color\":\"#e23b2e\"},{\"shape\":\"box\",\"size\":[0.8,0.1,3.6],\"at\":[-5,1.6,0],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"tailOn\",\"type\":\"appear\"}]},{\"id\":\"elevator\",\"parent\":\"tail\",\"at\":[-5.4,1.6,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,0.08,3.4],\"at\":[-0.2,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"tailOn\",\"type\":\"appear\"},{\"name\":\"elevate\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-20}]},{\"id\":\"rudder\",\"parent\":\"tail\",\"at\":[-5.5,2.65,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,1.4,0.1],\"at\":[-0.2,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"tailOn\",\"type\":\"appear\"},{\"name\":\"steer\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":20}]},{\"id\":\"windows\",\"parent\":\"body\",\"at\":[0.9,1.5,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.5,0.4],\"thick\":0.04,\"at\":[-0.8,0,0.69],\"look\":\"glass\",\"color\":\"#9fd0f0\"},{\"shape\":\"panel\",\"size\":[0.5,0.4],\"thick\":0.04,\"at\":[0,0,0.69],\"look\":\"glass\",\"color\":\"#9fd0f0\"},{\"shape\":\"panel\",\"size\":[0.5,0.4],\"thick\":0.04,\"at\":[0.8,0,0.69],\"look\":\"glass\",\"color\":\"#9fd0f0\"}],\"moves\":[{\"name\":\"windowsOn\",\"type\":\"appear\"}]},{\"id\":\"door\",\"parent\":\"body\",\"at\":[-1.1,1.5,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.7,0.8],\"thick\":0.1,\"at\":[0,-0.05,0.68],\"look\":\"paint\",\"color\":\"#ffffff\"}],\"moves\":[{\"name\":\"doorOn\",\"type\":\"appear\"}]}]}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-5.4,4.6,-2.5],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0},{\"at\":[-5.4,4.6,-4],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.3},{\"at\":[-5.4,4.6,-5.5],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.6}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"airFlat\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3.8,3.1,-2.6],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0},{\"at\":[-3.8,3.1,-4.3],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0.3},{\"at\":[-3.8,3.1,-6],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0.6}],\"opts\":{\"scale\":1.1,\"color\":\"#ffffff\"}}},{\"id\":\"airFast\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-3.8,3.6,-2.6],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0},{\"at\":[-3.8,3.6,-4.3],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0.3},{\"at\":[-3.8,3.6,-6],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0.6}],\"opts\":{\"scale\":1.5,\"speed\":1.6,\"color\":\"#ffffff\"}}},{\"id\":\"lift\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-5.4,3.1,-3.4],\"dir\":[0,1],\"travel\":1.6,\"phase\":0},{\"at\":[-5.4,3.1,-5.1],\"dir\":[0,1],\"travel\":1.6,\"phase\":0.4}],\"opts\":{\"scale\":1.3,\"color\":\"#ffd23d\"}}},{\"id\":\"engineUp\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-1.7,2.6,-4.5],\"dir\":[0,1],\"travel\":1.4,\"phase\":0},{\"at\":[-1.7,2.6,-3.5],\"dir\":[0,1],\"travel\":1.4,\"phase\":0.5}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"gustArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[1.6,8.8,0.9],\"dir\":[0,-1],\"travel\":1.5,\"phase\":0}],\"opts\":{\"scale\":1.4,\"color\":\"#ffffff\"}}},{\"id\":\"pole1\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.2,2.2,0.2],\"pos\":[-3,1.1,-0.9],\"mat\":\"metal\"}},{\"id\":\"pole2\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.2,2.2,0.2],\"pos\":[8.5,1.1,-0.9],\"mat\":\"metal\"}},{\"id\":\"wCount\",\"kind\":\"counter\",\"params\":{\"pos\":[-3,2.7,-0.9],\"size\":1.2,\"from\":0,\"to\":1100,\"color\":\"#ff6a4a\",\"bar\":true}},{\"id\":\"gCount\",\"kind\":\"counter\",\"params\":{\"pos\":[-3,2.7,-0.9],\"size\":1.2,\"from\":0,\"to\":9,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":2}},{\"id\":\"speed\",\"kind\":\"counter\",\"params\":{\"pos\":[8.5,2.7,-0.9],\"size\":1.2,\"from\":0,\"to\":100,\"color\":\"#7be07b\",\"bar\":true,\"danger\":2}},{\"id\":\"landSpeed\",\"kind\":\"counter\",\"params\":{\"pos\":[8.5,2.7,-0.9],\"size\":1.2,\"from\":0,\"to\":100,\"color\":\"#ff6a4a\",\"bar\":true}},{\"id\":\"planeOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-11.8,0.2,2.2],[-11.8,3.6,2.2],[-1.3,3.6,2.2],[-1.3,0.2,2.2]],\"opts\":{\"r\":0.12,\"closed\":true}}},{\"id\":\"wingOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-6.5,3.5,1.9],[-6.5,3.5,-9.9],[-4.3,3.5,-9.9],[-4.3,3.5,1.9]],\"opts\":{\"r\":0.12,\"closed\":true}}},{\"id\":\"stairs\",\"kind\":\"prop\",\"params\":{\"type\":\"stairs\",\"h\":1.1,\"w\":0.9,\"pos\":[-8.9,0.12,-2.9]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-10,0.08,-0.2],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"plane\",\"does\":\"wings pop onto the tube\"},\"do\":[{\"p\":\"plane\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"wingsOn\",\"w\":\"wings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"problem\",\"state\":{\"text\":\"STUCK\",\"w\":\"sits\"},\"shows\":{\"p\":\"plane\",\"does\":\"wheels spin on the runway but the plane stays pinned under yellow weight arrows\"},\"do\":[{\"p\":\"weight\",\"v\":\"show\",\"w\":\"sits\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheels\",\"w\":\"sits\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"stakes\",\"state\":{\"text\":\"TOO HEAVY\",\"w\":\"weighs\"},\"shows\":{\"p\":\"wCount\",\"does\":\"weight counter ticks up to 1100 and its bar fills red\"},\"do\":[{\"p\":\"plane\",\"v\":\"rollWheelsBack\",\"w\":\"weighs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pole1\",\"v\":\"show\",\"w\":\"weighs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wCount\",\"v\":\"show\",\"w\":\"weighs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wCount\",\"v\":\"count\",\"w\":\"weighs\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\",\"wCount\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"plane\",\"does\":\"engine pops on, propeller spins, air streams straight past the flat wing\"},\"do\":[{\"p\":\"wCount\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"engineOn\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinProp\",\"w\":\"propeller\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airFlat\",\"v\":\"show\",\"w\":\"air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"plane\",\"does\":\"wing top bulges, fast air arrows run over it, yellow lift arrows rise\"},\"do\":[{\"p\":\"airFlat\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"curve\",\"w\":\"curve\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airFast\",\"v\":\"show\",\"w\":\"speeds\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"show\",\"w\":\"lifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.wing\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"plane\",\"does\":\"fin and stabilizer pop onto the tail\"},\"do\":[{\"p\":\"airFast\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"tailOn\",\"w\":\"tail\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"plane\",\"does\":\"rudder and elevator swing on their hinges\"},\"do\":[{\"p\":\"plane\",\"v\":\"elevate\",\"w\":\"up\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"steer\",\"w\":\"sideways\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"name\",\"shows\":{\"p\":\"planeOutline\",\"does\":\"yellow outline traces the whole plane\"},\"do\":[{\"p\":\"plane\",\"v\":\"steerBack\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"planeOutline\",\"v\":\"show\",\"w\":\"airplane\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"wingOutline\",\"does\":\"yellow outline traces the curved wing\"},\"do\":[{\"p\":\"planeOutline\",\"v\":\"hide\",\"w\":\"airfoil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wingOutline\",\"v\":\"show\",\"w\":\"airfoil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.wing\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"plane\",\"does\":\"wheels spin, the plane rolls down the runway and climbs off it while the speed counter ticks to 100\"},\"do\":[{\"p\":\"wingOutline\",\"v\":\"hide\",\"w\":\"At\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pole2\",\"v\":\"show\",\"w\":\"At\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"show\",\"w\":\"At\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"count\",\"w\":\"At\",\"o\":0,\"d\":4.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheels\",\"w\":\"At\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"takeoff\",\"w\":\"At\",\"o\":0,\"d\":6,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-9,12,9,3]}]},{\"s\":\"problem2\",\"state\":{\"text\":\"ROLLING\",\"w\":\"tips\"},\"shows\":{\"p\":\"plane\",\"does\":\"a gust pushes down one wing and the plane tips onto its side in the air\"},\"do\":[{\"p\":\"speed\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gustArrows\",\"v\":\"show\",\"w\":\"gust\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"gust\",\"w\":\"tips\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8,0,-10,12,10,3]}]},{\"s\":\"problem3\",\"state\":{\"text\":\"TOO FAST\",\"w\":\"land\"},\"shows\":{\"p\":\"landSpeed\",\"does\":\"speed gauge climbs and turns red while the tipped plane is still aloft\"},\"do\":[{\"p\":\"landSpeed\",\"v\":\"show\",\"w\":\"land\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"landSpeed\",\"v\":\"count\",\"w\":\"land\",\"o\":0,\"d\":3,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8,0,-10,12,10,3]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"plane\",\"does\":\"flaps pop on and tilt down, the plane levels out and settles back onto the runway\"},\"do\":[{\"p\":\"landSpeed\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gustArrows\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flapsOn\",\"w\":\"flaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"gustBack\",\"w\":\"level\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flaps\",\"w\":\"slow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"takeoffBack\",\"w\":\"slow\",\"o\":0.2,\"d\":5.5,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"elevateBack\",\"w\":\"slow\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,12,10,3]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"engineUp\",\"does\":\"yellow lift arrows over the engine vanish and the propeller stops\"},\"do\":[{\"p\":\"engineUp\",\"v\":\"show\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engineUp\",\"v\":\"hide\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinPropBack\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"gCount\",\"does\":\"fast air arrows and lift arrows over the wing while the glide counter ticks to nine\"},\"do\":[{\"p\":\"airFast\",\"v\":\"show\",\"w\":\"wing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"show\",\"w\":\"lifting\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gCount\",\"v\":\"show\",\"w\":\"nine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gCount\",\"v\":\"count\",\"w\":\"nine\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-12,0,-10,2,6,3]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"stairs\",\"does\":\"door and windows pop onto the fuselage and stairs appear beside it\"},\"do\":[{\"p\":\"airFast\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gCount\",\"v\":\"hide\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheelsBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flapsBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"doorOn\",\"w\":\"door\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"windowsOn\",\"w\":\"windows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stairs\",\"v\":\"show\",\"w\":\"stairs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"1100 KG\",\"at\":{\"s\":\"stakes\",\"w\":\"1100\",\"o\":0},\"d\":1.8},{\"text\":\"100 KM/H\",\"at\":{\"s\":\"how\",\"w\":\"100\",\"o\":0},\"d\":1.8},{\"text\":\"9 : 1\",\"at\":{\"s\":\"mythFact\",\"w\":\"nine\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"engine\",\"o\":0.1},\"d\":1.6},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"how\",\"w\":\"At\",\"o\":0},\"d\":3},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix5\",\"w\":\"slow\",\"o\":0},\"d\":2}],\"chimes\":[{\"s\":\"stakes\",\"w\":\"1100\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"how\",\"w\":\"100\",\"o\":0},{\"s\":\"mythFact\",\"w\":\"nine\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "How an Airplane Flies",
+   "hero": "an airplane",
+   "parts": [
+    "wings",
+    "tube",
+    "engine",
+    "propeller",
+    "curved wing",
+    "tail",
+    "rudder",
+    "elevator",
+    "flaps",
+    "wheels",
+    "stairs"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "bolt two wings onto a tube and you think you have an airplane"
+    },
+    {
+     "role": "problem",
+     "idea": "flat wings give no lift, so the wheels turn but the plane just sits on the runway"
+    },
+    {
+     "role": "stakes",
+     "idea": "it weighs about 1100 kilograms and gravity pins every kilogram down"
+    },
+    {
+     "role": "fix1",
+     "idea": "an engine and propeller push air past the wings, but a flat wing just lets it slide by"
+    },
+    {
+     "role": "fix2",
+     "idea": "curve the top of the wing so air speeds up over it and the wing is pushed up"
+    },
+    {
+     "role": "fix3",
+     "idea": "a tail with a fin and stabilizer keeps the nose pointing straight"
+    },
+    {
+     "role": "fix4",
+     "idea": "hinge the back of the tail so the rudder and elevator can swing the nose sideways and up"
+    },
+    {
+     "role": "name",
+     "idea": "this whole machine is an airplane"
+    },
+    {
+     "role": "name2",
+     "idea": "the curved wing shape has its own name, an airfoil"
+    },
+    {
+     "role": "how",
+     "idea": "at about 100 kilometers per hour the air over the wings lifts the plane off the runway"
+    },
+    {
+     "role": "problem2",
+     "idea": "a gust of wind pushes one wing down and the plane rolls onto its side"
+    },
+    {
+     "role": "problem3",
+     "idea": "to land it must slow down, but at 100 kilometers per hour it is far too fast"
+    },
+    {
+     "role": "fix5",
+     "idea": "flaps on the wings level the plane and slow it so it settles onto the runway"
+    },
+    {
+     "role": "myth",
+     "idea": "the engine is not what holds a plane up"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the wing does the lifting, so with the engine off a small plane glides nine meters forward for every meter it drops"
+    },
+    {
+     "role": "finish",
+     "idea": "add a door, windows and stairs so people can board"
+    },
+    {
+     "role": "congrats",
+     "idea": "the finished airplane stands calm on the runway"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the winged tube sits on the runway, wheels turning, under yellow weight arrows",
+     "stakes": "a plane that never leaves the ground, 1100 kg pinned down",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix4",
+     "shows": "a gust arrow pushes down one wing and the plane tips onto its side in the air",
+     "stakes": "a plane rolling over high above the runway",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix4",
+     "shows": "the speed gauge climbs and turns red while the plane is still in the air",
+     "stakes": "a plane that cannot slow down to touch down on the runway",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A Cessna 172 has a maximum takeoff weight of about 1,111 kg (2,450 lb)",
+     "role": "stakes",
+     "search": "Cessna 172 maximum takeoff weight 2450 lb"
+    },
+    {
+     "claim": "A Cessna 172 lifts off at about 55 knots, roughly 100 km/h",
+     "role": "how",
+     "search": "Cessna 172 rotation speed 55 knots takeoff"
+    },
+    {
+     "claim": "A Cessna 172 has about 16 square meters (174 sq ft) of wing, so each square meter carries roughly 70 kg at takeoff",
+     "role": "fix2",
+     "search": "Cessna 172 wing area 174 square feet"
+    },
+    {
+     "claim": "A Cessna 172 with the engine off glides about 9 meters forward for every meter it drops",
+     "role": "mythFact",
+     "search": "Cessna 172 best glide ratio 9:1"
+    }
+   ]
+  }
+ }
+}

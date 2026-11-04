@@ -1,0 +1,78 @@
+{
+ "hash": "*",
+ "by": "real run 649bad87-7311-43c9-a585-c5c3c7e863d5",
+ "searches": 0,
+ "data": {
+  "title": "How an Airplane Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you bolt two wings onto a tube, you have an airplane."
+   },
+   {
+    "role": "problem",
+    "text": "But the flat wings give no lift, so the wheels turn and the plane sits on the runway."
+   },
+   {
+    "role": "stakes",
+    "text": "A Cessna 172 weighs about 2,450 pounds, and gravity pins every pound of it down."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add an engine and a propeller that push air past the wings, but flat wings let the air slide by."
+   },
+   {
+    "role": "fix2",
+    "text": "So you curve the top of the wing, and the air speeds up over it and the wing lifts."
+   },
+   {
+    "role": "fix3",
+    "text": "But now the nose wanders, so you add a tail with a fin and stabilizer that hold the nose pointing straight."
+   },
+   {
+    "role": "fix4",
+    "text": "Then you hinge the back of the tail, so the rudder swings the nose sideways and the elevator swings it up."
+   },
+   {
+    "role": "name",
+    "text": "This is an airplane."
+   },
+   {
+    "role": "name2",
+    "text": "The curved wing shape is called an airfoil."
+   },
+   {
+    "role": "how",
+    "text": "At about 100 kilometers per hour, the air over the wings lifts the plane off the runway."
+   },
+   {
+    "role": "problem2",
+    "text": "But a gust of wind pushes one wing down, and the plane tips onto its side."
+   },
+   {
+    "role": "problem3",
+    "text": "And to land, the plane must slow down, but at 100 kilometers per hour it is far too fast."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add flaps on the wings that level the plane and slow it until it settles onto the runway."
+   },
+   {
+    "role": "myth",
+    "text": "And the engine is not what holds a plane up."
+   },
+   {
+    "role": "mythFact",
+    "text": "The wing does the lifting, so with the engine off a Cessna 172 glides about nine meters forward for every meter it drops."
+   },
+   {
+    "role": "finish",
+    "text": "Add a door, windows and stairs so people can board."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built an airplane."
+   }
+  ]
+ }
+}

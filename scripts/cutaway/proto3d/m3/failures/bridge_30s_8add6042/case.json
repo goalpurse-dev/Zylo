@@ -1,0 +1,87 @@
+{
+ "runId": "8add6042-765a-4fa9-bd5b-e6782cf417aa",
+ "topic": "bridge",
+ "lengthSec": 30,
+ "kind": "custom",
+ "at": "2026-11-04T13:19:34.514605+00:00",
+ "failed": {
+  "code": "VOICE_FAILED",
+  "message": "voice check failed twice (stop and refund): take 1: different word: \"round\" heard as \"around\" (after \"and pile rocks\"); different word: \"metre\" heard as \"meter\" (after \"summer a 100\"); different word: \"centimetres\" heard as \"centimeters\" (after \"grows about 6\"); different word: \"centre\" heard as \"center\" (after \"add rails a\") | heard: \"If you dig a gap and lay a plank across, you have a bridge, but a car rolls onto the plank and it snaps. So you add steel girders under the plank, but the girders span a long gap. So you add a pier to hold up the middle. This is a beam bridge. As the car crosses, its weight squeezes the top of the beam and stretches the bottom. But now a flood fills the river and the current scours the foot of the\" || take 2: different word: \"round\" heard as \"around\" (after \"and pile rocks\"); different word: \"metre\" heard as \"meter\" (after \"summer a 100\"); different word: \"centimetres\" heard as \"centimeters\" (after \"grows about 6\"); different word: \"centre\" heard as \"center\" (after \"add rails a\") | heard: \"If you dig a gap and lay a plank across, you have a bridge, but a car rolls onto the plank and it snaps. So you add steel girders under the plank, but the girders span a long gap, so you add a pier to hold up the middle. This is a beam bridge. As the car crosses, its weight squeezes the top of the beam and stretches the bottom. But now a flood fills the river and the current scours the foot of the\"",
+  "stage": "voice",
+  "attempts": 1
+ },
+ "costUsd": 0.92447,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.35004,
+   "outputTokens": 34442,
+   "at": "2026-11-04T13:24:07.268Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.13335,
+   "outputTokens": 11261,
+   "at": "2026-11-04T13:25:28.299Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.14243,
+   "outputTokens": 3274,
+   "at": "2026-11-04T13:26:02.986Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02931,
+   "outputTokens": 1521,
+   "at": "2026-11-04T13:26:11.070Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01087,
+   "outputTokens": 434,
+   "at": "2026-11-04T13:26:15.607Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.03121,
+   "outputTokens": 2632,
+   "at": "2026-11-04T13:26:33.286Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.00883,
+   "outputTokens": 412,
+   "at": "2026-11-04T13:26:36.543Z"
+  },
+  {
+   "label": "vision check (before voice)",
+   "usd": 0.02409,
+   "outputTokens": 785,
+   "at": "2026-11-04T13:27:12.733Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0606,
+   "outputTokens": null,
+   "at": "2026-11-04T13:27:15.056Z"
+  },
+  {
+   "label": "voice (ElevenLabs eleven_multilingual_v2)",
+   "usd": 0.0606,
+   "outputTokens": null,
+   "at": "2026-11-04T13:27:28.357Z"
+  }
+ ]
+}

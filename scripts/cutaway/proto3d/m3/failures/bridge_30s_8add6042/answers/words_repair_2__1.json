@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "real run 8add6042-765a-4fa9-bd5b-e6782cf417aa",
+ "searches": 0,
+ "data": {
+  "title": "How a Bridge Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a gap and lay a plank across, you have a bridge."
+   },
+   {
+    "role": "problem",
+    "text": "But a car rolls onto the plank and it snaps."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add steel girders under the plank."
+   },
+   {
+    "role": "fix2",
+    "text": "But the girders span a long gap, so you add a pier to hold up the middle."
+   },
+   {
+    "role": "name",
+    "text": "This is a beam bridge."
+   },
+   {
+    "role": "how",
+    "text": "As the car crosses, its weight squeezes the top of the beam and stretches the bottom."
+   },
+   {
+    "role": "problem2",
+    "text": "But now a flood fills the river, and the current scours the foot of the pier until it cracks."
+   },
+   {
+    "role": "fix3",
+    "text": "So you wrap the pier in concrete and pile rocks round its foot."
+   },
+   {
+    "role": "myth",
+    "text": "And a bridge is not locked rigid."
+   },
+   {
+    "role": "mythFact",
+    "text": "In summer, a 100 metre steel deck grows about 6 centimetres, so it slides."
+   },
+   {
+    "role": "finish",
+    "text": "Add rails, a centre line, a lamp and young trees."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a bridge."
+   }
+  ]
+ }
+}
