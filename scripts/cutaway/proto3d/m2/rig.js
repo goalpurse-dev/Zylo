@@ -14,22 +14,38 @@
 //   chain | belt {path, w (0.1)}   button {r, at}   light {r, at} (a lamp; lit by a light or blink move)
 //   beam {from, to, r (0.04), color} (a glowing ray between two points: a sensor beam, a laser; lit like a lamp)
 //   screen {size [w,h], at, rot?} (shows a number with a count move)   model {file (a CC0 model, kit/modelCatalog), size, at, rotY?}
+// The mechanism kit (phase 1 of the any-topic plan, 2026-11-04: appliances and cars are machines inside):
+//   drum {r, h, axis, holes (true)} (a hollow drum, open at the front, holed wall, lifter ribs: a washer or dryer drum)
+//   cone {r, r2 (0), h, axis}   sphere {r}   torus {r, tube, axis} (a ring round the axis: a seal, a tyre, a coil loop)
+//   fan {r, blades (5), w (0.08), axis} (a hub with pitched blades: a fan, an impeller, a turbine; spins with a spin move)
+//   element {r, turns (3), wire (0.03), axis (y)} (a flat spiral heating coil: a stove ring, a heater; glows on heat)
+//   flame {r, h (0.18)} (a ring of gas flames: hidden until a burn move on its node)
+//   bellows {r, h, folds (5), axis} (an accordion air bag: grows with extend, breathes with pump)
 // Moves (each is a timeline channel named by its name; the verb "<name>" plays it, "<name>Back" undoes it):
 //   appear (the piece pops in on its word: hidden until then, so a thing is built step by step)
 //   slide {to [dx,dy,dz]}   swing {axis, angle (degrees)}   track {path [[x,y,z]...]} (the pivot runs along the path)
 //   spin {axis, turns (per second while on)}   extend {axis, k (the scale reached)}   light (its lamps on)
 //   blink {rate (per second)}   fill {box {size [w,h,d], at, color}} (rises from the box floor)
 //   flow {path, color} (dots run along the path while on)   count {from, to} (its screen's number ticks)
+// The mechanism kit's moves:
+//   heat {color ("#ff3a0a")} (the node's shapes glow, a coil going red-hot)   chill {color ("#bfe6ff")} (they frost over)
+//   burn (its flame shapes light and flicker while on)   pump {axis, stroke (0.2), rate (1.5)} (back and forth while on:
+//   a piston, a compressor, an agitator)   shake {amp (0.03), rate (8)} (a jitter while on: a drum spinning fast)
+//   follow {of, ratio (1)} (turns with another node's spin or swing, times ratio: a meshing gear -r1/r2, rear wheels
+//   steering -0.3; always on, it moves whenever its node moves)   crank {of, axis (y), throw (0.2)} (slides along
+//   axis by throw x sin of that node's turn: a piston on a crankshaft; always on)
 // Every part also has show / hide (it pops in, pops out).
 
-export const RIG_SHAPES = ["box", "panel", "cylinder", "wheel", "gear", "hinge", "spring", "tube", "cable", "rail", "track", "chain", "belt", "button", "light", "beam", "screen", "model"];
+export const RIG_SHAPES = ["box", "panel", "cylinder", "wheel", "gear", "hinge", "spring", "tube", "cable", "rail", "track", "chain", "belt", "button", "light", "beam", "screen", "model", "drum", "cone", "sphere", "torus", "fan", "element", "flame", "bellows"];
 // snap {axis, gap (m)}: the piece breaks in two along its axis and the halves stay apart, tilted (the damage stays in
 // place until "<name>Back", the fix); the garage door's spring "snaps in two" could not be shown (2026-10-28)
-export const RIG_MOVES = ["appear", "slide", "swing", "track", "spin", "extend", "light", "blink", "fill", "flow", "count", "snap"];
+export const RIG_MOVES = ["appear", "slide", "swing", "track", "spin", "extend", "light", "blink", "fill", "flow", "count", "snap", "heat", "chill", "burn", "pump", "shake", "follow", "crank"];
+// the moves that copy another node's turn (always on: no verb plays them)
+const LINKED = new Set(["follow", "crank"]);
 const PATHS = new Set(["tube", "cable", "rail", "track", "chain", "belt"]);
 const LOOKS = { metal: ["#b9c0c7", 0.3, 0.8], plastic: ["#e8e4dc", 0.45, 0], wood: ["#a8743f", 0.75, 0], glass: ["#cfe8f5", 0.05, 0], rubber: ["#24262a", 0.9, 0], paint: ["#d64535", 0.4, 0], concrete: ["#b9b4aa", 0.9, 0] };
 // how long a move takes on its word (s), and whether it is a state that stays on (spin, blink, flow, light)
-const DUR = { appear: 0.35, slide: 0.9, swing: 0.9, track: 1.2, extend: 0.8, fill: 1.2, count: 1.5, light: 0.2, blink: 0.2, spin: 0.3, flow: 0.3, snap: 0.35 };
+const DUR = { appear: 0.35, slide: 0.9, swing: 0.9, track: 1.2, extend: 0.8, fill: 1.2, count: 1.5, light: 0.2, blink: 0.2, spin: 0.3, flow: 0.3, snap: 0.35, heat: 1.6, chill: 1.6, burn: 0.3, pump: 0.3, shake: 0.3, follow: 0.3, crank: 0.3};
 
 const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const v3 = (a, d = [0, 0, 0]) => (Array.isArray(a) && a.length === 3 && a.every((x) => Number.isFinite(Number(x))) ? a.map(Number) : d);
@@ -66,9 +82,12 @@ function shapeBox(s) {
   else if (s.shape === "screen") { const [w, h] = Array.isArray(s.size) ? s.size.map(Number) : [0.5, 0.35]; half = [w / 2 + 0.04, h / 2 + 0.04, 0.05]; }
   // (a model stands on its base at the shape's point: it rises from there)
   else if (s.shape === "model") { const k = num(s.size, 1) / 2; return { min: [at[0] - k, at[1], at[2] - k], max: [at[0] + k, at[1] + 2 * k, at[2] + k] }; }
-  else if (["button", "light"].includes(s.shape)) half = [r, r, r];
+  else if (["button", "light", "sphere"].includes(s.shape)) half = [r, r, r];
+  // (a flame ring rises from its point)
+  else if (s.shape === "flame") { const h = num(s.h, 0.18); return { min: [at[0] - r - 0.05, at[1], at[2] - r - 0.05], max: [at[0] + r + 0.05, at[1] + h, at[2] + r + 0.05] }; }
   else {
-    const len = s.shape === "wheel" || s.shape === "gear" ? num(s.w, 0.2) : num(s.h, 0.5), rad = s.shape === "gear" ? r * 1.15 : r;
+    const len = { wheel: num(s.w, 0.2), gear: num(s.w, 0.2), fan: num(s.w, 0.08), torus: 2 * num(s.tube, r * 0.25), element: 2 * num(s.wire, 0.03) + 0.02 }[s.shape] ?? num(s.h, 0.5);
+    const rad = s.shape === "gear" ? r * 1.15 : s.shape === "torus" ? r + num(s.tube, r * 0.25) : s.shape === "cone" ? Math.max(r, num(s.r2, 0)) : s.shape === "element" ? r + num(s.wire, 0.03) : r;
     half = [rad, rad, rad]; half[AX[s.axis] ?? 1] = len / 2;
   }
   // a rotated shape: its bounding sphere (safe for the camera and the floating check)
@@ -104,11 +123,15 @@ function nodeBoxes(p) {
     const swept = [rest];
     for (const m of n.moves ?? []) {
       if (m.type === "slide") swept.push(shift(rest, v3(m.to)));
+      // (a pump or crank travels its stroke both ways along its axis, a shake a little everywhere)
+      if (m.type === "pump" || m.type === "crank") { const d = [0, 0, 0]; d[AX[m.axis] ?? 1] = m.type === "pump" ? num(m.stroke, 0.2) : num(m.throw, 0.2); swept.push(shift(rest, d), shift(rest, d.map((x) => -x))); }
+      if (m.type === "shake") { const a = num(m.amp, 0.03); swept.push(shift(rest, [a, a, a]), shift(rest, [-a, -a, -a])); }
       if (m.type === "track") for (const q of m.path ?? []) swept.push(shift(rest, v3(q)));
       // (a swing turns the box's corners through its angle about the hinge, a spin all the way round; along the axis
       // the piece keeps its size)
-      if (m.type === "swing" || m.type === "spin") {
-        const a = AX[m.axis] ?? 1, [i, j] = [0, 1, 2].filter((q) => q !== a), deg = m.type === "spin" ? 360 : num(m.angle, 90), pts = [];
+      // (a follower turns as far as its node might: all the way round, as a spin)
+      if (m.type === "swing" || m.type === "spin" || m.type === "follow") {
+        const a = AX[m.axis] ?? 1, [i, j] = [0, 1, 2].filter((q) => q !== a), deg = m.type === "swing" ? num(m.angle, 90) : 360, pts = [];
         for (let st = 0; st <= 12; st++) {
           const r = (deg * Math.PI / 180) * (st / 12), c = Math.cos(r), s = Math.sin(r);
           for (const u of [rest.min[i], rest.max[i]]) for (const w of [rest.min[j], rest.max[j]]) { const du = u - pv[i], dw = w - pv[j]; pts.push([pv[i] + du * c - dw * s, pv[j] + du * s + dw * c]); }
@@ -177,7 +200,14 @@ export function rigProblems(part, { floor = 0, cut = null, supports = [] } = {})
     if (m.type === "flow" && !(Array.isArray(m.path) && m.path.length >= 2)) P.push(`part ${id} (rig): move ${m.name}: a flow needs a path of 2+ points`);
     if (m.type === "fill" && !m.box?.size) P.push(`part ${id} (rig): move ${m.name}: a fill needs box {size, at}`);
     if (m.type === "count" && !nodes.find((n) => n.id === m.node)?.shapes?.some((s) => s.shape === "screen")) P.push(`part ${id} (rig): move ${m.name}: a count needs a screen shape on its node`);
+    if (LINKED.has(m.type)) {
+      const src = nodes.find((n) => n.id === m.of);
+      if (!src) P.push(`part ${id} (rig): move ${m.name}: a ${m.type} names the node it copies in "of" (${m.of ?? "missing"} is not a node)`);
+      else if (src.id === m.node) P.push(`part ${id} (rig): move ${m.name}: a ${m.type} cannot copy its own node`);
+      else if (!(src.moves ?? []).some((x) => ["spin", "swing", "follow"].includes(x.type))) P.push(`part ${id} (rig): move ${m.name}: node ${src.id} never turns (give it a spin, swing or follow move)`);
+    }
   }
+  for (const n of nodes) if ((n.shapes ?? []).some((s) => s.shape === "flame") && !(n.moves ?? []).some((m) => m.type === "burn")) P.push(`part ${id} (rig): node ${n.id}: a flame shape stays hidden without a burn move on its node`);
   // every piece joined: a node's own shapes touch its parent's (or the base, for a top node standing on it)
   const nb = nodeBoxes(p), near = (a, b, pad = 0.12) => a && b && [0, 1, 2].every((i) => a.min[i] <= b.max[i] + pad && b.min[i] <= a.max[i] + pad);
   for (const n of nodes) if (n.parent && nb.get(n.id)?.rest && nb.get(n.parent)?.rest && !near(nb.get(n.id).rest, nb.get(n.parent).rest)) P.push(`part ${id} (rig): node ${n.id} floats apart from its parent ${n.parent} (move it so they touch)`);
@@ -211,7 +241,7 @@ export function rig(ctx, p, api) {
   const place = (mesh, s, parent) => { mesh.position.set(...v3(s.at)); if (Array.isArray(s.rot)) mesh.rotation.set(...s.rot.map((a) => (num(a) * Math.PI) / 180)); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh; };
   const alongAxis = (geo, axis) => { if (axis === "x") geo.rotateZ(Math.PI / 2); else if (axis === "z") geo.rotateX(Math.PI / 2); return geo; };
   const curve = (pts) => new THREE.CatmullRomCurve3(pts.map((q) => new THREE.Vector3(...v3(q))), false, "catmullrom", 0.05);
-  const groups = new Map(), lamps = new Map(), screens = new Map(), fills = [], flows = [], snaps = [];
+  const groups = new Map(), lamps = new Map(), screens = new Map(), flames = new Map(), fills = [], flows = [], snaps = [];
   const screenTex = new Map();
   const numTex = (v, col) => {
     const key = `${v}|${col}`; if (screenTex.has(key)) return screenTex.get(key);
@@ -282,6 +312,59 @@ export function rig(ctx, p, api) {
         const face = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(s.color ?? "#4dff7a"), emissiveIntensity: 0.6 }));
         face.position.z = 0.035; g.add(face); place(g, s, parent); screens.set(nodeId, { face, col: s.color ?? "#4dff7a", shown: null }); return g;
       }
+      case "drum": {
+        // a hollow drum open at the front (+ along its axis): the wall, a back plate, holes, three lifter ribs inside
+        const g = new THREE.Group(), h = num(s.h, 0.6), m = matOf({ look: "metal", ...s }), dk = std({ color: C("#2a2e34"), roughness: 0.7 });
+        const wall = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 40, 1, true), m); wall.material.side = THREE.DoubleSide; g.add(wall);
+        const back = new THREE.Mesh(new THREE.CircleGeometry(r, 40), m); back.rotation.x = Math.PI / 2; back.position.y = -h / 2; back.material.side = THREE.DoubleSide; g.add(back);
+        for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI * 2, rib = new THREE.Mesh(new THREE.BoxGeometry(r * 0.16, h * 0.9, r * 0.22), m); rib.position.set(Math.cos(a) * r * 0.9, 0, Math.sin(a) * r * 0.9); rib.rotation.y = -a; g.add(rib); }
+        if (s.holes !== false) for (let k = 0; k < 4; k++) for (let i = 0; i < 18; i++) { const a = ((i + (k % 2) * 0.5) / 18) * Math.PI * 2, d = new THREE.Mesh(new THREE.CircleGeometry(r * 0.045, 10), dk); d.position.set(Math.cos(a) * r * 1.002, (k / 3 - 0.5) * h * 0.75, Math.sin(a) * r * 1.002); d.lookAt(d.position.clone().multiplyScalar(2)); g.add(d); }
+        // (built along y with the open end up: turned so the open end faces + along its axis, the camera for "z")
+        if ((s.axis ?? "z") === "z") g.rotation.x = Math.PI / 2; else if (s.axis === "x") g.rotation.z = -Math.PI / 2;
+        const w = new THREE.Group(); w.add(g); return place(w, s, parent);
+      }
+      case "cone": return place(new THREE.Mesh(alongAxis(new THREE.CylinderGeometry(num(s.r2, 0), r, num(s.h, 0.5), 28), s.axis), matOf(s)), s, parent);
+      case "sphere": return place(new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), matOf(s)), s, parent);
+      case "torus": { const geo = new THREE.TorusGeometry(r, num(s.tube, r * 0.25), 12, 36); if ((s.axis ?? "y") === "y") geo.rotateX(Math.PI / 2); else if (s.axis === "x") geo.rotateY(Math.PI / 2); return place(new THREE.Mesh(geo, matOf({ look: "rubber", ...s })), s, parent); }
+      case "fan": {
+        const g = new THREE.Group(), n = Math.max(2, Math.round(num(s.blades, 5))), w = num(s.w, 0.08), m = matOf({ look: "plastic", ...s });
+        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r * 0.18, r * 0.18, w * 1.6, 20), m));
+        for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, b = new THREE.Mesh(new RoundedBoxGeometry(r * 0.8, w * 0.35, r * 0.34, 2, w * 0.15), m); b.position.set(Math.cos(a) * r * 0.55, 0, Math.sin(a) * r * 0.55); b.rotation.set(0, -a, 0.45); g.add(b); }
+        // (built in the x-z plane, turning about y)
+        if ((s.axis ?? "z") === "z") g.rotation.x = Math.PI / 2; else if (s.axis === "x") g.rotation.z = Math.PI / 2;
+        const w2 = new THREE.Group(); w2.add(g); return place(w2, s, parent);
+      }
+      case "element": {
+        // a flat spiral of wire from the centre out, in the plane across its axis
+        const turns = num(s.turns, 3), pts = [];
+        for (let i = 0; i <= turns * 32; i++) { const a = (i / 32) * Math.PI * 2, rr = r * (0.22 + 0.78 * (i / (turns * 32))); pts.push(new THREE.Vector3(Math.cos(a) * rr, 0, Math.sin(a) * rr)); }
+        const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 32, num(s.wire, 0.03), 8);
+        if (s.axis === "z") geo.rotateX(Math.PI / 2); else if (s.axis === "x") geo.rotateZ(Math.PI / 2);
+        return place(new THREE.Mesh(geo, matOf({ look: "metal", color: "#4a4d52", ...s })), s, parent);
+      }
+      case "flame": {
+        // a ring of small blue-and-orange gas flames (registered: dark until a burn move)
+        const g = new THREE.Group(), h = num(s.h, 0.18), n = Math.max(12, Math.round(r * 110));
+        const blue = std({ color: C("#3d7bff"), emissive: C("#3d7bff"), emissiveIntensity: 1.6, transparent: true, opacity: 0.85 }), tip = std({ color: C("#ffb23d"), emissive: C("#ffb23d"), emissiveIntensity: 1.4, transparent: true, opacity: 0.8 });
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2, f = new THREE.Group(); f.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+          const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.05, h * 0.55, 10), blue); c1.position.y = h * 0.27; f.add(c1);
+          const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.03, h * 0.4, 10), tip); c2.position.y = h * 0.68; f.add(c2);
+          for (const c of [c1, c2]) c.castShadow = false;
+          f.rotation.set(Math.sin(a) * 0.25, 0, -Math.cos(a) * 0.25); g.add(f);
+        }
+        // (a glowing blue ring at their foot joins them into one flame ring)
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.035, 8, 40), blue); ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; g.add(ring);
+        place(g, s, parent); g.visible = false; if (!flames.has(nodeId)) flames.set(nodeId, []); flames.get(nodeId).push(g); return g;
+      }
+      case "bellows": {
+        // an accordion air bag along its axis: a rubber skin with ribs at each fold
+        const g = new THREE.Group(), h = num(s.h, 0.5), n = Math.max(2, Math.round(num(s.folds, 5))), m = matOf({ look: "rubber", ...s });
+        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r * 0.88, r * 0.88, h, 28), m));
+        for (let i = 0; i < n; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(r * 0.9, r * 0.12, 10, 28), m); t.rotation.x = Math.PI / 2; t.position.y = ((i + 0.5) / n - 0.5) * h; g.add(t); }
+        if (s.axis === "z") g.rotation.x = Math.PI / 2; else if (s.axis === "x") g.rotation.z = Math.PI / 2;
+        const w = new THREE.Group(); w.add(g); return place(w, s, parent);
+      }
       case "model": {
         // a CC0 model (kit/models.js), on its base at the shape's point
         const g = new THREE.Group(); place(g, s, parent);
@@ -298,8 +381,13 @@ export function rig(ctx, p, api) {
   for (const n of order) {
     const g = new THREE.Group(), parent = (n.parent && groups.get(n.parent)?.g) || body;
     g.position.set(...v3(n.at)); parent.add(g);
-    groups.set(n.id, { g, n, base: g.position.clone() });
-    for (const s of n.shapes ?? []) build(s, g, n.id);
+    // (its own materials, as built: a heat or chill move tints them from there)
+    const mats = [];
+    groups.set(n.id, { g, n, base: g.position.clone(), mats });
+    for (const s of n.shapes ?? []) {
+      const o = build(s, g, n.id);
+      if (o && !["flame", "light", "beam"].includes(s.shape)) o.traverse((x) => { if (x.isMesh && x.material?.color && !mats.some((q) => q.m === x.material)) mats.push({ m: x.material, col: x.material.color.clone(), em: x.material.emissive?.clone(), ei: x.material.emissiveIntensity ?? 0 }); });
+    }
     // a piece that can snap: its second half is a copy, shown once it breaks
     for (const m of (n.moves ?? []).filter((x) => x.type === "snap")) {
       const half = g.clone(true); half.visible = false; parent.add(half);
@@ -326,8 +414,9 @@ export function rig(ctx, p, api) {
     group: root,
     update(t) {
       const pp = api.ch("pop", t); body.visible = pp > 0.002; body.scale.setScalar(Math.max(0.001, pp));
-      for (const { g, n, base } of groups.values()) {
+      for (const { g, n, base, mats } of groups.values()) {
         g.position.copy(base); g.rotation.set(0, 0, 0); g.scale.set(1, 1, 1); g.visible = true;
+        if ((n.moves ?? []).some((m) => m.type === "heat" || m.type === "chill")) for (const q of mats) { q.m.color.copy(q.col); if (q.em) q.m.emissive.copy(q.em); q.m.emissiveIntensity = q.ei; }
         for (const m of n.moves ?? []) {
           const v = clamp01(api.ch(m.name, t)), ax = AX[m.axis] ?? 1;
           if (m.type === "slide") { const d = v3(m.to); g.position.x += d[0] * v; g.position.y += d[1] * v; g.position.z += d[2] * v; }
@@ -347,9 +436,34 @@ export function rig(ctx, p, api) {
             sn.half.visible = v > 0.01 && g.visible; sn.half.position.copy(base); sn.half.position.setComponent(sn.ax, base.getComponent(sn.ax) + off);
             sn.half.scale.set(1, 1, 1); sn.half.scale.setComponent(sn.ax, k); sn.half.rotation.set(0, 0, -tilt);
           }
+          if (m.type === "heat" || m.type === "chill") {
+            // (red-hot: the colour goes to the glow and lights; frost: a pale blue-white with a faint cold glow)
+            const col = C(m.color ?? (m.type === "heat" ? "#ff3a0a" : "#bfe6ff")), hot = m.type === "heat";
+            if (v > 0.002) for (const q of mats) { q.m.color.lerp(col, (hot ? 0.9 : 0.75) * v); if (q.m.emissive) { q.m.emissive.copy(col); q.m.emissiveIntensity = Math.max(q.m.emissiveIntensity, (hot ? 0.9 : 0.25) * v); } }
+          }
+          if (m.type === "burn") (flames.get(n.id) ?? []).forEach((f, i) => { f.visible = v > 0.02; f.scale.set(1, Math.max(0.001, v * (0.85 + 0.2 * Math.sin(t * 23 + i * 1.7))), 1); });
+          if (m.type === "pump") g.position.setComponent(ax, g.position.getComponent(ax) + num(m.stroke, 0.2) * v * Math.sin(t * num(m.rate, 1.5) * Math.PI * 2));
+          if (m.type === "shake") { const a = num(m.amp, 0.03) * v, w = t * num(m.rate, 8) * Math.PI * 2; g.position.x += a * Math.sin(w * 1.3); g.position.y += a * Math.sin(w + 1); }
           if (m.type === "count") { const sc = screens.get(n.id); if (sc) { const val = Math.round(num(m.from, 9) + (num(m.to, 0) - num(m.from, 9)) * v); if (val !== sc.shown) { const tx = numTex(val, sc.col); if (tx) { sc.face.material.map = tx; sc.face.material.emissiveMap = tx; sc.face.material.needsUpdate = true; } sc.shown = val; } } }
         }
       }
+      // the linked moves, after every node has turned: a follower turns with its node (that node's own links first), a
+      // crank slides by the sine of its node's turn
+      const turnOf = (id) => {
+        const gg = groups.get(id), mv = gg && (gg.n.moves ?? []).find((m) => ["spin", "swing", "follow"].includes(m.type));
+        return mv ? gg.g.rotation["xyz"[AX[mv.axis] ?? 1]] : 0;
+      };
+      const done = new Set(), runLink = (gg, left = 8) => {
+        if (done.has(gg.n.id) || left < 0) return; done.add(gg.n.id);
+        for (const m of (gg.n.moves ?? []).filter((x) => LINKED.has(x.type))) {
+          const src = groups.get(m.of); if (!src) continue;
+          runLink(src, left - 1);
+          const turn = turnOf(m.of), ax = AX[m.axis] ?? (m.type === "crank" ? 1 : 2);
+          if (m.type === "follow") gg.g.rotation["xyz"[ax]] += turn * num(m.ratio, 1);
+          else gg.g.position.setComponent(ax, gg.g.position.getComponent(ax) + num(m.throw, 0.2) * Math.sin(turn + (num(m.phase, 0) * Math.PI) / 180));
+        }
+      };
+      for (const gg of groups.values()) runLink(gg);
       for (const { fm, m } of fills) { const v = clamp01(api.ch(m.name, t)); fm.visible = v > 0.002; fm.scale.y = Math.max(0.001, v); }
       for (const { c, dots, m } of flows) { const v = clamp01(api.ch(m.name, t)); dots.forEach((d, i) => { d.visible = v > 0.05; if (d.visible) { d.position.copy(c.getPointAt((((t * num(m.speed, 0.6)) + i / dots.length) % 1))); d.scale.setScalar(v); } }); }
     },

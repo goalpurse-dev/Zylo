@@ -142,11 +142,20 @@ each with its own moves. Build it the way the real thing is built, simple and re
   light {r, at, color} (a lamp, dark until a light or blink move), beam {from [x,y,z], to, r (0.04), color} (a glowing ray:
   a sensor beam, a laser; lit like a lamp), screen {size [w,h], at} (a number on a count move),
   model {file, size, at, rotY?} (a CC0 model from the CC0 MODELS list).
+  The machine parts (the insides of appliances, engines, cars): drum {r, h, axis, holes} (a hollow holed drum open at its
+  front: a washer or dryer drum), cone {r, r2, h, axis}, sphere {r}, torus {r, tube, axis} (a ring: a seal, a tyre),
+  fan {r, blades, w, axis} (a fan, an impeller, a turbine: give it a spin), element {r, turns, wire, axis} (a flat spiral
+  heating coil: give it a heat move), flame {r, h} (a ring of gas flames, hidden until its node's burn move),
+  bellows {r, h, folds, axis} (an accordion air bag: an air spring, a pump; extend it or pump it).
 - Moves (each one a verb by its name; "<name>Back" undoes it; one name on several nodes moves them together): appear (the piece pops in on its word; it is hidden
   until then: build a thing step by step), slide {to [dx,dy,dz]}, swing {axis, angle (deg)} (about the
   node's pivot: put a door's pivot on its hinge edge), track {path} (the pivot runs along the path: a door rolling up its
   rails), spin {axis, turns per second} (stays on until "<name>Back"), extend {axis, k}, light, blink {rate},
-  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color} (dots running along a path), count {from, to}, snap {axis, gap} (the piece breaks in two along its axis and the halves stay apart, tilted, until "<name>Back": a spring or cable that snaps). A beam shape (a light ray across an opening) is r 0.06 or more, and the box it comes from (a sensor, an opener) at least 0.5 m, so it reads at phone size. Sections that roll up a door's tracks: a track move on EACH section along the track's path (up, then back along the ceiling), not one swing.
+  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color} (dots running along a path), count {from, to}, snap {axis, gap} (the piece breaks in two along its axis and the halves stay apart, tilted, until "<name>Back": a spring or cable that snaps), heat {color} (its shapes glow red-hot: a coil, an element, a brake disc), chill {color} (they frost over: a fridge's coils), burn (its flame shapes light and flicker), pump {axis, stroke, rate} (back and forth while on: a piston, a compressor, an agitator), shake {amp, rate} (a jitter while on: a drum spinning fast), follow {of, ratio} (it turns whenever node "of" turns, times ratio: a meshing gear -r1/r2, a belt-driven pulley r1/r2, rear wheels steering -0.3; no verb needed), crank {of, axis, throw} (it slides along axis by throw x sine of node "of"'s turn: a piston on a crankshaft; no verb needed).
+- Machines (an appliance, an engine, a car's insides): build them cut open the way the real one is, with the working parts
+  in front where the camera sees them (no front panel or door in the way, or glass); real sizes in metres (indoors the code
+  builds a small machine bigger so it reads); one thing driving the next (a motor's spin, a belt, a follow, a crank), so
+  a single verb sets the whole chain moving. A beam shape (a light ray across an opening) is r 0.06 or more, and the box it comes from (a sensor, an opener) at least 0.5 m, so it reads at phone size. Sections that roll up a door's tracks: a track move on EACH section along the track's path (up, then back along the ceiling), not one swing.
 - Rules (code checks them): pos y is the floor top and the lowest shape rests on it (or the part sits in the cut); every
   node's shapes touch its parent's; at most 40 nodes and 160 shapes; sizes in real metres (a door 2.4 wide, a barrel
   0.9 tall); every move you use is defined on a node. Give it name and synonyms: a part that passes is saved to the kit.

@@ -11,10 +11,13 @@ import { focusOf, signalQueueBox } from "./focus.js";
 import { verbCues } from "./verbs.js";
 import { LIBS } from "./solver.js";
 import { settingBoxes } from "./framing.js";
+import { rigBox } from "./rig.js";
 import { STREET_BACK, streetRoad } from "../kit/street.js";
 
 const near = (a, b, d) => Math.hypot(a[0] - b[0], a[2] - b[2]) <= d;
 const hexClose = (a, b) => { const p = (h) => [1, 3, 5].map((i) => parseInt(String(h).slice(i, i + 2), 16)); try { const x = p(a), y = p(b); return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 60; } catch { return false; } };
+// the interior settings, where a machine is the subject (not a cut in the ground)
+const INDOOR = new Set(["room", "kitchen", "workshop"]);
 
 /** How far behind the stop line the first car waits on a street (m): the loop glows in the road in front of it. */
 export const FIRST_CAR = 6;
@@ -74,7 +77,7 @@ export function layoutRules(L) {
     notes.push(`${o.id} hugs ${tank.id}`);
   }
   // 5. standing water on a paved floor: a thin puddle
-  const floorTop = { street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[L.world?.backdrop?.type];
+  const floorTop = { street: 0.12, room: 0.12, kitchen: 0.12, carwash: 0.1, garage: 0.08, workshop: 0.08 }[L.world?.backdrop?.type];
   if (floorTop) for (const w of parts.filter((p) => p.kind === "water" && p.params.box)) {
     const b = w.params.box;
     // (a flood planned taller than 0.25 m keeps its height: it rises up the curb or the basement wall; flattened, "the
@@ -187,6 +190,13 @@ export function layoutRules(L) {
   // a piece of it, the controller box, and the finished-build shot framed the box and a bench without the signal)
   const hookB = beats.find((b) => b.s === "hook");
   if (!parts.some((p) => p.main) && hookB?.shows?.p && byId.has(String(hookB.shows.p).split(".")[0])) { byId.get(String(hookB.shows.p).split(".")[0]).main = true; notes.push(`${String(hookB.shows.p).split(".")[0]} is the main subject (the hook builds it)`); }
+  // a machine indoors (a stove, a washer, an engine) designed in real metres is built big, like every kit thing (the vending
+  // machine stands 3.2 m): the camera keeps a field of a few metres, and a real 1.2 m stove stayed a small box mid-room
+  const mainRig = parts.find((p) => p.main && p.kind === "rig");
+  if (INDOOR.has(world.backdrop?.type) && mainRig && !mainRig.params.scale) {
+    const b = rigBox(mainRig.params, { swept: false }), size = b ? Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) : 0;
+    if (size > 0.2 && size < 2) { mainRig.params = { ...mainRig.params, scale: +Math.min(3, 2.6 / size).toFixed(2) }; notes.push(`${mainRig.id} built at ${mainRig.params.scale}x (a ${size.toFixed(1)} m machine)`); }
+  }
   for (const b of beats) {
     if (b.s === "congrats" || !b.shots?.length) continue;
     const shown = b.shows?.p && known(b.shows.p) ? [b.shows.p] : [];
@@ -218,6 +228,9 @@ export function layoutRules(L) {
       if (reads) return { ...keep, at: { s: b.s }, focus: ids, width: 0.75, zone: "center" };
       if (main && !pieces.length && !ids.includes(main)) ids.push(main);
       const width = main && ids.includes(main) ? 0.94 : s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      // indoors a piece of a machine sits in the middle of the frame: a flat one (a stove's burners) was put at the bottom
+      // with the wall filling the rest, as a cut sits under its yard (phase 1, 2026-11-04)
+      if (INDOOR.has(world.backdrop?.type) && ids.every((id) => String(id).includes("."))) return { ...keep, focus: ids, width, zone: "center" };
       return { ...keep, focus: ids, width };
     });
     notes.push(`${b.s}: shots framed by the code`);
