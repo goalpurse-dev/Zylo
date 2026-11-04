@@ -156,7 +156,7 @@ each with its own moves. Build it the way the real thing is built, simple and re
   The machine parts (the insides of appliances, engines, cars): drum {r, h, axis, holes} (a hollow holed drum open at its
   front: a washer or dryer drum), cone {r, r2, h, axis}, sphere {r}, torus {r, tube, axis} (a ring: a seal, a tyre),
   fan {r, blades, w, axis} (a fan, an impeller, a turbine: give it a spin), element {r, turns, wire, axis} (a flat spiral
-  heating coil: give it a heat move), flame {r, h} (a ring of gas flames, hidden until its node's burn move),
+  heating coil: give it a heat move), flame {r, h, color} (a ring of gas flames, hidden until its node's burn move; blue by default, color "#ffb020" for a lazy yellow flame),
   bellows {r, h, folds, axis} (an accordion air bag: an air spring, a pump; extend it or pump it).
 - Moves (each one a verb by its name; "<name>Back" undoes it; one name on several nodes moves them together): appear (the piece pops in on its word; it is hidden
   until then: build a thing step by step), slide {to [dx,dy,dz]}, swing {axis, angle (deg)} (about the

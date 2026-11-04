@@ -62,3 +62,14 @@ test("a hole being dug keeps lawn on both sides (the real bunker run's hook read
   const shot = layoutRules(L).layout.beats[0].shots[0];
   assert.ok(shot.width <= 0.68, String(shot.width));
 });
+
+test("indoors, what the plan put around a small machine grows with it (the real stove run's outline sat in the oven)", () => {
+  const L = { key: "t", world: { cut: { x0: -3, x1: 3, z0: -4, depth: 0.6 }, shallow: true, house: false, road: false, worker: false, moreTrees: false, backdrop: { type: "kitchen" } },
+    parts: [{ id: "m", kind: "rig", main: true, params: { name: "m", pos: [0, 0.12, -1.8], nodes: [base, { id: "top", parent: "body", at: [0, 0.8, 0], shapes: [{ shape: "box", size: [1, 0.05, 0.6] }] }] } },
+      { id: "ring", kind: "outline", params: { points: [[-0.2, 0.9, -1.8], [0.2, 0.9, -1.8], [0.2, 1.1, -1.8]], opts: { r: 0.02 } } },
+      { id: "far", kind: "boxPop", params: { pos: [8, 0.12, -3], size: [1, 1, 1] } }],
+    beats: [{ s: "hook", do: [{ p: "m", v: "show" }], shots: [{ focus: ["m"] }], shows: { p: "m", does: "it" } }], roles: ["hook"] };
+  const out = layoutRules(L).layout, k = out.parts[0].params.scale;
+  assert.ok(Math.abs(out.parts[1].params.points[0][1] - (0.12 + (0.9 - 0.12) * k)) < 0.01);
+  assert.deepEqual(out.parts[2].params.pos, [8, 0.12, -3]);
+});

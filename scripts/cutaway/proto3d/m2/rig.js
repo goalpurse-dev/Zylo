@@ -343,18 +343,22 @@ export function rig(ctx, p, api) {
         return place(new THREE.Mesh(geo, matOf({ look: "metal", color: "#4a4d52", ...s })), s, parent);
       }
       case "flame": {
-        // a ring of small blue-and-orange gas flames (registered: dark until a burn move)
-        const g = new THREE.Group(), h = num(s.h, 0.18), n = Math.max(12, Math.round(r * 110));
-        const blue = std({ color: C("#3d7bff"), emissive: C("#3d7bff"), emissiveIntensity: 1.6, transparent: true, opacity: 0.85 }), tip = std({ color: C("#ffb23d"), emissive: C("#ffb23d"), emissiveIntensity: 1.4, transparent: true, opacity: 0.8 });
+        // a ring of soft teardrop flames in their colour (blue: a clean gas flame; color "#ffb020": a lazy yellow one), a
+        // bright core in each, overlapping into one crown (registered: dark until a burn move). Cones read as "yellow spikes",
+        // and the real stove run's checker could not see a blue flame at all, 2026-11-04
+        const g = new THREE.Group(), h = num(s.h, 0.18), col = s.color ?? "#2f6bff", n = Math.max(10, Math.round(r * 70));
+        const hsl = C(col).getHSL({}), cool = hsl.h > 0.45 && hsl.h < 0.8, w = Math.max(0.045, ((2 * Math.PI * r) / n) * 0.62);
+        const outer = std({ color: C(col), emissive: C(col), emissiveIntensity: 1.8, transparent: true, opacity: 0.7, depthWrite: false });
+        const core = std({ color: C(cool ? "#bfe2ff" : "#fff1b8"), emissive: C(cool ? "#9fd0ff" : "#ffe48a"), emissiveIntensity: 2.2, transparent: true, opacity: 0.9 });
         for (let i = 0; i < n; i++) {
           const a = (i / n) * Math.PI * 2, f = new THREE.Group(); f.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
-          const c1 = new THREE.Mesh(new THREE.ConeGeometry(0.05, h * 0.55, 10), blue); c1.position.y = h * 0.27; f.add(c1);
-          const c2 = new THREE.Mesh(new THREE.ConeGeometry(0.03, h * 0.4, 10), tip); c2.position.y = h * 0.68; f.add(c2);
-          for (const c of [c1, c2]) c.castShadow = false;
-          f.rotation.set(Math.sin(a) * 0.25, 0, -Math.cos(a) * 0.25); g.add(f);
+          const o = new THREE.Mesh(new THREE.SphereGeometry(w, 14, 10), outer); o.scale.set(1, h / w / 2, 1); o.position.y = h / 2; f.add(o);
+          const c = new THREE.Mesh(new THREE.SphereGeometry(w * 0.5, 12, 8), core); c.scale.set(1, (h * 0.45) / (w * 0.5) / 2, 1); c.position.y = h * 0.3; f.add(c);
+          for (const m of [o, c]) m.castShadow = false;
+          f.rotation.set(Math.sin(a) * 0.18, 0, -Math.cos(a) * 0.18); g.add(f);
         }
-        // (a glowing blue ring at their foot joins them into one flame ring)
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.035, 8, 40), blue); ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; g.add(ring);
+        // (a glowing ring at their foot joins them into one flame ring)
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(r, w * 0.7, 8, 40), outer); ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; g.add(ring);
         // the burner cap the flames come out of, always there (a dark ring with a hole at each flame): it reads as a gas
         // burner before it lights (the free stove proof's checker saw "a dark disc" and no holes, 2026-11-04)
         if (s.cap !== false) {

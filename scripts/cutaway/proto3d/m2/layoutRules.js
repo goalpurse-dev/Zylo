@@ -195,7 +195,27 @@ export function layoutRules(L) {
   const mainRig = parts.find((p) => p.main && p.kind === "rig");
   if (INDOOR.has(world.backdrop?.type) && mainRig && !mainRig.params.scale) {
     const b = rigBox(mainRig.params, { swept: false }), size = b ? Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) : 0;
-    if (size > 0.2 && size < 2) { mainRig.params = { ...mainRig.params, scale: +Math.min(3, 2.6 / size).toFixed(2) }; notes.push(`${mainRig.id} built at ${mainRig.params.scale}x (a ${size.toFixed(1)} m machine)`); }
+    if (size > 0.2 && size < 2) {
+      const k = +Math.min(3, 2.6 / size).toFixed(2), o = Array.isArray(mainRig.params.pos) ? mainRig.params.pos.map(Number) : [0, 0, 0];
+      mainRig.params = { ...mainRig.params, scale: k }; notes.push(`${mainRig.id} built at ${k}x (a ${size.toFixed(1)} m machine)`);
+      // what the plan put on or around it in real metres grows with it, about its base point: an outline round its burner,
+      // arrows in its pipes, a counter beside it (the real stove run's outline sat in the oven, its arrows below the burner)
+      const near = (q) => Array.isArray(q) && q.length === 3 && q.every((v) => Number.isFinite(Number(v))) && [0, 1, 2].every((i) => q[i] >= b.min[i] - 1 && q[i] <= b.max[i] + 1);
+      const grow = (q) => (near(q) ? q.map((v, i) => +(o[i] + (Number(v) - o[i]) * k).toFixed(3)) : q);
+      for (const p of parts) {
+        if (p === mainRig || ["light", "sign", "rain"].includes(p.kind) || !p.params) continue;
+        const P = p.params, pts = [P.pos, P.at, ...(P.points ?? []), ...(P.path ?? []), ...(P.list ?? []).map((x) => x?.at)];
+        if (!pts.some(near)) continue;
+        const Q = { ...P };
+        for (const key of ["pos", "at"]) if (Q[key]) Q[key] = grow(Q[key]);
+        for (const key of ["points", "path"]) if (Array.isArray(Q[key])) Q[key] = Q[key].map(grow);
+        if (Array.isArray(Q.list)) Q.list = Q.list.map((x) => (x?.at ? { ...x, at: grow(x.at), ...(Number.isFinite(x.travel) ? { travel: x.travel * k } : {}) } : x));
+        if (Q.opts && p.kind === "arrows") Q.opts = { ...Q.opts, scale: (Q.opts.scale ?? 1) * k };
+        if (Q.opts && p.kind === "outline") Q.opts = { ...Q.opts, r: (Q.opts.r ?? 0.05) * k };
+        p.params = Q;
+        notes.push(`${p.id} grown with ${mainRig.id}`);
+      }
+    }
   }
   for (const b of beats) {
     if (b.s === "congrats" || !b.shots?.length) continue;
