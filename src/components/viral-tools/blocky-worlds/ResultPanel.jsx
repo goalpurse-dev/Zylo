@@ -13,7 +13,7 @@ import "./blockyWorlds.css";
  */
 export default function ResultPanel({ run, recent, onOpen, onEvent, preview }) {
   return (
-    <div className="relative flex h-full flex-col gap-4 overflow-y-auto overflow-x-hidden rounded-[28px] border border-white/[0.06] bg-[#0C0F0D]/80 p-5 backdrop-blur">
+    <div className="relative flex h-full flex-col gap-4 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0E1012] p-5">
       <div key={run ? run.id : "preview"} className="bw-step-in">
         {run ? <RunView run={run} onEvent={onEvent} /> : <LivePreview {...preview} />}
       </div>
@@ -61,7 +61,7 @@ function Building({ run }) {
   return (
     <div className="relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-2 py-6 text-center" aria-live="polite">
       {/* our clips drifting behind, dimmed, like the onboarding's "coming to life" */}
-      <div className="pointer-events-none absolute inset-0 opacity-25" aria-hidden="true">
+      <div className="pointer-events-none absolute inset-0 opacity-15" aria-hidden="true">
         {CLIPS.map((c, i) => (
           <div key={c.key} className={cx("ob-drift absolute aspect-[9/16] w-[92px] overflow-hidden rounded-2xl blur-[1px]", ["-left-6 top-0", "-right-6 top-8", "-bottom-16 -left-4", "-bottom-20 -right-6"][i])} style={{ "--ob-drift": `${38 + i * 4}s`, animationDelay: `${-i * 9}s` }}>
             <Clip clip={c.key} playing={i % 2 === tick % 2} />
@@ -131,12 +131,12 @@ function RunView({ run, onEvent }) {
         <p className={cx("text-[22px] font-black tracking-[-0.02em] text-white", party && "ob-done")}>{party ? "Your world is ready!" : run.title}</p>
         {party && <p className="ob-enter text-[12px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo; · {clock(run.lengthSec)}</p>}
       </div>
-      <div className={cx("relative aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-black shadow-[0_0_50px_rgba(190,242,100,0.15)]", party && "ob-done")}>
+      <div className={cx("relative aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-black ", party && "ob-done")}>
         {run.finalUrl ? <video src={run.finalUrl} poster={run.poster ?? undefined} controls autoPlay={party} muted={party} loop playsInline className="h-full w-full object-contain" /> : <img src={run.poster ?? "/blocky-worlds/hero.jpg"} alt="" className="h-full w-full object-cover opacity-80" />}
         {party && !still && SPARKS.map((s, i) => <span key={i} className="ob-burst absolute left-1/2 top-1/2 rounded-[2px] bg-lime-200" style={{ "--a": s.a, "--d": s.d, width: s.size, height: s.size, animationDelay: s.delay }} />)}
       </div>
       <div className="flex gap-2">
-        {run.downloadUrl && <a href={run.downloadUrl} download onClick={() => onEvent("downloaded")} className={cx("bw-press flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-lime-300 px-3 py-3 text-[14px] font-black text-[#11150D] shadow-[0_0_24px_rgba(190,242,100,0.35)]", party && "bw-sweep", FOCUS)}><Download className="h-4 w-4" aria-hidden="true" />Download</a>}
+        {run.downloadUrl && <a href={run.downloadUrl} download onClick={() => onEvent("downloaded")} className={cx("bw-press flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-lime-300 px-3 py-3 text-[14px] font-black text-[#11150D]", FOCUS)}><Download className="h-4 w-4" aria-hidden="true" />Download</a>}
         <button type="button" aria-pressed={thumb === "thumb_up"} onClick={() => vote("thumb_up")} disabled={Boolean(thumb)} className={cx("bw-press grid w-12 place-items-center rounded-2xl border border-white/10 text-white/70", FOCUS, thumb === "thumb_up" && "ob-pick border-lime-300/50 text-lime-300")} aria-label="I like this story"><ThumbsUp className="h-4 w-4" /></button>
         <button type="button" aria-pressed={thumb === "thumb_down"} onClick={() => vote("thumb_down")} disabled={Boolean(thumb)} className={cx("bw-press grid w-12 place-items-center rounded-2xl border border-white/10 text-white/70", FOCUS, thumb === "thumb_down" && "ob-pick border-rose-300/50 text-rose-300")} aria-label="I don't like this story"><ThumbsDown className="h-4 w-4" /></button>
       </div>

@@ -21,13 +21,13 @@
 
 /* idea cards: in with a stagger (--i), lift and glow on hover, a pop on tap */
 @keyframes bw-card-in {
-  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-.bw-card-in { animation: bw-card-in .42s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(min(var(--i, 0), 10) * 55ms); }
+.bw-card-in { animation: bw-card-in .35s ease-out both; animation-delay: calc(min(var(--i, 0), 10) * 40ms); }
 .bw-lift { transition: transform .22s cubic-bezier(.3, 1.5, .5, 1), box-shadow .22s ease, border-color .22s ease, background-color .22s ease; }
 @media (hover: hover) {
-  .bw-lift:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .8), 0 0 28px rgba(190, 242, 100, .16); border-color: rgba(190, 242, 100, .35); }
+  .bw-lift:hover:not(:disabled) { transform: translateY(-1px); }
 }
 .bw-lift:active:not(:disabled) { transform: scale(.975); transition-duration: .08s; }
 
@@ -46,10 +46,10 @@
 
 /* script lines reveal one by one; the caret on the typed first line */
 @keyframes bw-line-in {
-  from { opacity: 0; transform: translateX(-8px); filter: blur(3px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; filter: none; }
 }
-.bw-line-in { animation: bw-line-in .38s ease-out both; animation-delay: calc(min(var(--i, 0), 30) * 45ms + 250ms); }
+.bw-line-in { animation: bw-line-in .35s ease-out both; animation-delay: calc(min(var(--i, 0), 12) * 50ms + 120ms); }
 @keyframes bw-caret { 50% { opacity: 0; } }
 .bw-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: #BEF264; animation: bw-caret .8s steps(1) infinite; }
 
@@ -86,10 +86,14 @@
 
 /* the step and panel change */
 @keyframes bw-step-in {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
 .bw-step-in { animation: bw-step-in .45s cubic-bezier(.2, .9, .3, 1) both; }
+
+/* a step change for anything holding a fixed child (the phone action bar): opacity only */
+@keyframes bw-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.bw-fade-in { animation: bw-fade-in .35s ease-out both; }
 
 /* soft glow blobs drifting behind the page */
 @keyframes bw-glow { from { transform: translate3d(-30px, 0, 0) scale(1); } to { transform: translate3d(40px, 30px, 0) scale(1.15); } }
@@ -125,6 +129,6 @@
 @media (prefers-reduced-motion: reduce) {
   .bw-engine::before, .group:hover .bw-tile { animation: none; }
   .bw-card-in, .bw-shimmer::after, .bw-line-in, .bw-caret, .bw-word, .bw-push, .bw-sweep::before, .bw-confetti,
-  .bw-step-in, .bw-glow, .bw-ping, .bw-bob { animation: none; }
+  .bw-step-in, .bw-fade-in, .bw-glow, .bw-ping, .bw-bob { animation: none; }
   .bw-lift, .bw-xfade, .bw-input-glow { transition: none; }
 }

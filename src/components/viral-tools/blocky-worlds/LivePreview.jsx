@@ -82,7 +82,7 @@ export default function LivePreview({ lines = null, label = null, meta = null })
 
   return (
     <div className="mx-auto flex w-full max-w-[330px] flex-col items-center gap-3">
-      <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[30px] border border-white/10 bg-black shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9),0_0_60px_rgba(190,242,100,0.12)]">
+      <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[30px] border border-white/10 bg-black shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]">
         {CLIPS.map((c, i) => (
           <div key={c.key} className={cx("bw-xfade absolute inset-0", i === clip ? "opacity-100" : "opacity-0")}>
             <Clip clip={c.key} playing={i === clip} />
