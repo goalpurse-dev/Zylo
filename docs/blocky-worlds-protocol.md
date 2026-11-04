@@ -1,5 +1,16 @@
 # Blocky Worlds protocol
 
+> **PERMANENT RULE (owner, 2026-11-04): the scene always matches the narration.**
+> Every line's key nouns, its actions and its subject (who or what the line is about) must be visible on screen in
+> that line's shot. This is the core of why these videos work. It is a hard requirement for every future change:
+> - The pre-render check always enforces it. `checkVisuals` (nouns and actions) and `checkSubjects` (who the line is
+>   about) run in `scripts/blockyWorlds/engine/plan.mjs`, and any miss stops the run before anything is rendered or
+>   charged. Never weaken, skip or bypass these checks to make a video pass.
+> - If an idea needs something the kit doesn't have, add it to the kit (`page/kit/objects.js`, `lib/visuals.js`) or
+>   use a clear fallback that shows that very thing (a picture card with its name and icon). Never a random or
+>   unrelated shot, never filler townsfolk standing in for a noun.
+> - Testing focuses on it: every planner or kit change is checked against many different ideas, not just one.
+
 The single rulebook for how a Blocky Worlds video is made. Code follows this file; when they disagree, fix one of them in the same commit.
 
 The research behind it is `reference/blocky-worlds/ANALYSIS.md`, a study of 19 viral videos. The code lives in `supabase/functions/_shared/blockyWorlds/`.

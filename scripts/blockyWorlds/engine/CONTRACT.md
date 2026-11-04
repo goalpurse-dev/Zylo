@@ -1,5 +1,10 @@
 # Blocky Worlds video engine: the MVP contract
 
+> **PERMANENT RULE (owner, 2026-11-04): the scene always matches the narration.** Every line's key nouns, actions and
+> subject (who/what it is about) are visible in its shot. `checkVisuals` + `checkSubjects` (plan.mjs) enforce it before
+> any render and must never be weakened or bypassed. Missing things get added to the kit or shown by a clear fallback
+> (a picture card of that thing), never a random shot. Full text: `docs/blocky-worlds-protocol.md` (top).
+
 One complete 90 s video, end to end: script + word timings -> **timeline** -> three.js frames in headless Chrome -> mp4
 with one-word captions, voice and a music bed. Free to run locally. The same code later runs on a RunPod GPU in
 parallel chunks.
