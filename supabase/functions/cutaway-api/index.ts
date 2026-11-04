@@ -18,7 +18,7 @@ import { ERRORS } from "../_shared/cutaway/contract.js";
 import { LENGTHS, lengthsFor, PRICES } from "../_shared/cutaway/pricing.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
 import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
-import { cantBuildMessage, classifyTopic, kitCheck, normTopic, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
+import { cantBuildMessage, CATEGORIES, classifyTopic, kitCheck, normTopic, openCategories, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
 import { closestNames } from "../_shared/cutaway/quote.js";
 import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
 import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem, customDayLimit } from "../_shared/cutaway/guard.js";
@@ -82,13 +82,13 @@ async function approvedKeys(): Promise<Set<string>> {
  * Premade only when the topic names a premade topic AND its layout is approved (the owner's rule: premade topics at
  * launch = only topics with an approved layout); otherwise custom, after the kit check (rules, then Haiku when unsure).
  */
-async function serverQuote(userId: string | null, topic: string, lengthSec: number, { log = false } = {}) {
+async function serverQuote(userId: string | null, topic: string, lengthSec: number, { log = false, open = [] as string[] } = {}) {
   const c = classifyTopic(topic), approved = await approvedKeys();
   const premade = c.kind === "premade" && c.premade && approved.has(c.premade) ? c.premade : null;
-  let check: any = premade ? { verdict: "yes", missing: [], closest: [] } : kitCheck(topic), checkedBy = "rules";
+  let check: any = premade ? { verdict: "yes", missing: [], closest: [] } : kitCheck(topic, { open }), checkedBy = "rules";
   if (!premade && check.verdict === "unsure") {
     if (!CONFIG.anthropic) throw new ApiError("BUSY", "The topic check isn't available right now. Try a premade topic.", {}, "no Anthropic key on the server");
-    const ai = await checkKitFit({ apiKey: CONFIG.anthropic, topic }).catch((e: any) => {
+    const ai = await checkKitFit({ apiKey: CONFIG.anthropic, topic, open }).catch((e: any) => {
       throw new ApiError("BUSY", e?.balance ? "Custom topics are paused on our side for now. Try a premade topic." : "We couldn't check this topic right now. Try again in a few minutes, or pick a premade topic.",
         { retryAfterSec: e?.balance ? 1800 : 120 }, `${e?.balance ? "Anthropic balance: " : ""}${e?.message ?? e}`);
     });
@@ -122,6 +122,16 @@ async function noteCapLevel(usedUsd: number, capUsd: number) {
     (level >= 100 ? "New videos are refused with \"High demand right now, please try again shortly\"; nothing is charged for them, and videos in progress finish.\n\n" : "") +
     "If this is real demand, raise the cap on /admin/ops (the Cutaway card): it takes effect at once. If it isn't, something may be looping: switch paid calls off there.";
   await alertOnce(admin, `cutaway:cap${level}`, 24 * 3600, subject, text).catch(() => false);
+}
+
+/**
+ * The categories open to this person (topics.js CATEGORIES; phase 0 of the any-topic plan, 2026-11-04): each opens only
+ * after its proof (cutaway_settings.categories {key: "open"}); the owner tests every one. Fails closed: unreadable = none.
+ */
+async function openFor(owner: boolean): Promise<string[]> {
+  if (owner) return CATEGORIES.map((c: any) => c.key);
+  const { data, error } = await admin.from("cutaway_settings").select("categories").eq("id", 1).maybeSingle();
+  return error ? [] : openCategories(data?.categories);
 }
 
 /** Custom topics for customers: off unless the owner switched them on (/admin/ops; fails closed). */
@@ -273,7 +283,7 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    const [approved, customOn, beta] = await Promise.all([approvedKeys(), customTopicsOn(), customBetaOn()]);
+    const [approved, customOn, beta, open] = await Promise.all([approvedKeys(), customTopicsOn(), customBetaOn(), openFor(Boolean(who?.owner))]);
     return {
       customBeta: beta,
       enabled: ENABLED, tester: Boolean(who?.tester), owner: Boolean(who?.owner), signedIn: Boolean(who), plan: who?.plan ?? null,
@@ -281,6 +291,8 @@ async function handle(req: Request, trace: Trace) {
       customOpen: customOn || Boolean(who?.owner),
       canGenerate: Boolean(who && (ENABLED || who.tester) && canGenerate(who.plan)), canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)),
       premade: PREMADE.filter((p) => approved.has(p.key)).map((p) => ({ key: p.key, topic: p.topic, hook: p.hook })),
+      // the categories that passed their proof (the page refuses the rest as you type, as the server does)
+      openCategories: open,
     };
   }
 
@@ -299,7 +311,7 @@ async function handle(req: Request, trace: Trace) {
       if (!customOn && !(named.kind === "premade" && named.premade && approved.has(named.premade))) throw new ApiError("SOON", undefined, {}, "custom topics are switched off (cutaway_settings.custom_enabled)");
     }
     trace.step = "kit check";
-    const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true });
+    const quote = await serverQuote(who.user.id, topic, lengthSec, { log: action === "start" && body?.dryRun !== true, open: await openFor(Boolean(who.owner)) });
     if (action === "quote") return { quote };
     if (!quote.buildable) throw new ApiError("CANT_BUILD", cantBuildMessage(quote.missing), { missing: quote.missing, closest: quote.closest }, `not buildable: ${quote.missing.join(", ") || "-"}`);
     if (!lengthsFor(quote.kind).includes(lengthSec)) throw new ApiError("BAD_INPUT", "Premade topics are 30 seconds for now.");

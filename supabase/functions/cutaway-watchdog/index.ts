@@ -10,6 +10,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sameToken } from "../_shared/cutaway/jobs.js";
 import { CONFIG, startGiftFinish, watch } from "../_shared/cutaway/runtime.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
+import { CATEGORIES, kitCheck, openCategories } from "../_shared/cutaway/topics.js";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const SECRET = (Deno.env.get("CUTAWAY_CRON_SECRET") ?? "").trim();
@@ -37,6 +38,32 @@ async function failureRate() {
   return { rate: +rate.toFixed(2), twoInARow };
 }
 
+/**
+ * Each open topic category closes itself (phase 0 of the any-topic plan, the owner's go of 2026-11-04): over 30% of its
+ * last 10 finished custom videos failed (any reason: every failure cost us money), with at least 3 finished, and it is
+ * refused again up front, with an email. The owner reopens it after a fix and a new proof.
+ */
+async function categoryGates() {
+  const { data: s } = await admin.from("cutaway_settings").select("categories").eq("id", 1).maybeSingle();
+  const open = openCategories(s?.categories);
+  if (!open.length) return null;
+  const { data } = await admin.from("cutaway_runs").select("topic, status, error_code").eq("kind", "custom").eq("env", "prod").in("status", ["done", "failed"]).order("finished_at", { ascending: false }).limit(300);
+  const all = CATEGORIES.map((c: any) => c.key), out: Record<string, unknown> = {};
+  for (const key of open) {
+    const runs = (data ?? []).filter((r: any) => kitCheck(r.topic, { open: all }).category === key).slice(0, 10);
+    const failed = runs.filter((r: any) => r.status === "failed"), rate = runs.length ? failed.length / runs.length : 0;
+    out[key] = { runs: runs.length, rate: +rate.toFixed(2) };
+    if (runs.length >= 3 && rate > 0.3) {
+      const next = { ...(s?.categories ?? {}), [key]: "refused" };
+      const { error } = await admin.from("cutaway_settings").update({ categories: next }).eq("id", 1);
+      await alertOnce(admin, `cutaway-category-closed:${key}`, 6 * 3600, `Cutaway: "${key}" topics closed again`,
+        `${failed.length} of the last ${runs.length} ${key} custom videos failed (${failed.map((r: any) => r.error_code).join(", ")}), so these topics are refused up front again${error ? " (the switch could not be written: " + error.message + ")" : ""}. Reopen them after a fix and a new proof.`);
+      out[key] = { ...(out[key] as object), closed: !error };
+    }
+  }
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (!SECRET || !sameToken(req.headers.get("x-cutaway-cron") ?? "", SECRET)) return json({ error: "refused" }, 403);
   const { data: running } = await admin.from("cutaway_runs").select("*").not("status", "in", "(done,failed)").order("created_at").limit(50);
@@ -50,6 +77,6 @@ Deno.serve(async (req) => {
     try { await startGiftFinish(admin, row.user_id); } catch (e: any) { console.error("[cutaway-watchdog] gift finish", e?.message ?? e); }
   }
   // the slower checks once an hour (minute 0-1 of the hour)
-  const hourly = new Date().getUTCMinutes() < 2 ? { balance: await balances(), failures: await failureRate() } : null;
+  const hourly = new Date().getUTCMinutes() < 2 ? { balance: await balances(), failures: await failureRate(), categories: await categoryGates().catch((e: any) => ({ error: String(e?.message ?? e) })) } : null;
   return json({ ok: true, looked, hourly });
 });

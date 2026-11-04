@@ -10,13 +10,13 @@ import { quoteTopic } from "../supabase/functions/_shared/cutaway/quote.js";
 test("strict kit check: the failed customer topics are refused instantly, with a label", () => {
   const cases = {
     "How four-wheel steering turns a giant car like a compact": "engine and car parts",
-    "How a chainsaw clutch stops you from dying": "engine and car parts",
+    "How a chainsaw clutch stops you from dying": "machines and tools",
     "How air suspension (bagged cars) works the simple way": "engine and car parts",
     "How a puddle of mud can become a semiconductor factory.": "electronics",
     "How a car engine works": "engine and car parts",
     "gearbox": "engine and car parts",
-    "How an elevator works": "machines and vehicles",
-    "airplane": "machines and vehicles",
+    "How an elevator works": "machines and tools",
+    "airplane": "planes, boats and trains",
     "cuisiniere": "home appliances",
     "washing machine": "home appliances",
     "how a smartphone battery works": "electronics",

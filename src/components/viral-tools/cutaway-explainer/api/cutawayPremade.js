@@ -7,7 +7,8 @@
 import { useEffect, useState } from "react";
 import { KIT_TOPICS } from "../../../../data/cutawayTopics";
 
-const KEY = "zyvo_cutaway_premade_v2";
+// (v3: the answer carries the open categories too, 2026-11-04)
+const KEY = "zyvo_cutaway_premade_v3";
 let pending = null;
 
 function fetchAccess() {
@@ -20,7 +21,7 @@ function fetchAccess() {
       const { supabase } = await import("../../../../lib/supabaseClient");
       const { data, error } = await supabase.functions.invoke("cutaway-api", { body: { action: "access" } });
       if (error || !Array.isArray(data?.premade)) return { keys: [], customOpen: false };
-      const value = { keys: data.premade.map((p) => p.key).filter(Boolean), customOpen: data.customOpen === true, customBeta: data.customBeta === true };
+      const value = { keys: data.premade.map((p) => p.key).filter(Boolean), customOpen: data.customOpen === true, customBeta: data.customBeta === true, openCategories: Array.isArray(data.openCategories) ? data.openCategories : [] };
       try { sessionStorage.setItem(KEY, JSON.stringify(value)); } catch { /* not kept */ }
       return value;
     } catch {
@@ -51,6 +52,12 @@ export default function useCutawayPremade(mode = "server") {
 /** The "Beta" badge on custom topics (off by default; the owner switches it on /admin/ops). */
 export function useCutawayCustomBeta(mode = "server") {
   return useAccess(mode)?.customBeta === true;
+}
+
+/** The topic categories open to this user (topics.js CATEGORIES): the page refuses the others as you type. */
+export function useCutawayOpenCategories(mode = "server") {
+  const v = useAccess(mode);
+  return v?.openCategories ?? (mode === "server" ? [] : ["appliances", "cars", "machines", "vehicles", "electronics", "body", "animals", "space", "ideas"]);
 }
 
 /** Custom topics open for this user: null while loading, then true or false ("Coming soon"). */

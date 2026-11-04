@@ -3,11 +3,16 @@
 // One Claude Haiku 5.5 call at low effort with a JSON answer: about 2.5k tokens in, 300 out (thinking included)
 // = about $0.0005 at $0.10 / $0.50 per 1M tokens. Runs on the server before any charge; never charged to the user.
 import { MODELS_3D } from "./pricing.js";
-import { PREMADE } from "./topics.js";
+import { CATEGORIES, PREMADE } from "./topics.js";
 
 const PRICE = { input: 0.1, output: 0.5 }; // USD per 1M tokens, Claude Haiku 5.5 (prompts up to 100k tokens)
 
-// Strict since the owner's rule of 2026-11-04: only the kit's world (yards, houses, streets, water, pipes) is buildable.
+// Strict since the owner's rule of 2026-11-04: only the kit's world (yards, houses, streets, water, pipes) is buildable,
+// plus each category that passed its proof (open: topics.js CATEGORIES keys).
+export const kitSystem = (open = []) => {
+  const opened = CATEGORIES.filter((c) => open.includes(c.key));
+  return opened.length ? `${KIT_SYSTEM}\nALSO BUILDABLE NOW (these passed our tests, so answer true for them even where the list above says false): ${opened.map((c) => c.kit).join("; ")}.` : KIT_SYSTEM;
+};
 export const KIT_SYSTEM = `You decide whether a topic can be a short "how it works" 3D cutaway video made with our parts kit. The kit
 builds ONE small toy-like scene: a house and its yard, or one street, cut open to show the ground below. It is good at things
 dug into the ground (pits, trenches, wells, tanks, ponds, pools, foundations, basements), water and how it flows (rain,
@@ -36,11 +41,11 @@ export const KIT_SCHEMA = {
 };
 
 /** The request body (exported for the tests; no call is made there). */
-export function kitCheckRequest(topic) {
+export function kitCheckRequest(topic, open = []) {
   return {
     model: MODELS_3D.kitCheck,
     max_tokens: 1500,
-    system: KIT_SYSTEM,
+    system: kitSystem(open),
     messages: [{ role: "user", content: `Topic: ${String(topic).slice(0, 120)}` }],
     output_config: { effort: "low", format: { type: "json_schema", schema: KIT_SCHEMA } },
   };
@@ -64,11 +69,11 @@ export function parseKitReply(body) {
 /** Anthropic's "out of credits" reply (a 400 whose message names the credit balance). */
 export const isBalanceError = (status, body) => status === 400 && /credit balance/i.test(String(body?.error?.message ?? ""));
 
-export async function checkKitFit({ apiKey, topic, timeoutMs = 20_000 }) {
+export async function checkKitFit({ apiKey, topic, open = [], timeoutMs = 20_000 }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify(kitCheckRequest(topic)),
+    body: JSON.stringify(kitCheckRequest(topic, open)),
     signal: AbortSignal.timeout(timeoutMs),
   });
   const body = await res.json().catch(() => null);

@@ -748,7 +748,7 @@ test("quote: the credits come from the topic, premade or custom, and say whether
 
 test("server: decides the price from the topic it got, checks the kit before charging, logs what it can't build, charges once", () => {
   const server = readFileSync(new URL("../supabase/functions/cutaway-api/index.ts", import.meta.url), "utf8");
-  assert.match(server, /const quote = await serverQuote\(who\.user\.id, topic, lengthSec, \{ log: action === "start" && body\?\.dryRun !== true \}\);/);
+  assert.match(server, /const quote = await serverQuote\(who\.user\.id, topic, lengthSec, \{ log: action === "start" && body\?\.dryRun !== true, open: await openFor\(Boolean\(who\.owner\)\) \}\);/);
   assert.match(server, /if \(!quote\.buildable\) throw new ApiError\("CANT_BUILD"/);
   assert.match(server, /admin\.rpc\("compute_tool_price", \{ p_tool_key: PRICES\.video\.toolKey\(quote\.kind, lengthSec\)/);
   const at = (s) => server.indexOf(s);
@@ -778,7 +778,7 @@ test("page: 'Premade topics', the live price with its label, and the can't-build
   const builder = readFileSync(new URL("../src/components/viral-tools/cutaway-explainer/CutawayBuilder.jsx", import.meta.url), "utf8");
   assert.match(builder, />Premade topics</);
   assert.doesNotMatch(builder, /Topics it can build/);
-  assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec, approved \?\? \[\]\), \[topic, lengthSec, approved\]\);/);
+  assert.match(builder, /const quote = useMemo\(\(\) => quoteTopic\(topic, lengthSec, approved \?\? \[\], openCategories\), \[topic, lengthSec, approved, openCategories\]\);/);
   // only approved topics are premade, and every one of them always shows (a topic already made or picked too)
   assert.match(builder, /freshSuggestions\(\[\], 6, approved \?\? \[\]\)/, "all approved topics, always");
   assert.match(builder, /"Premade topic" : "Custom topic"/);

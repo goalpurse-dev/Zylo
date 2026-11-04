@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import CutawayBuilder from "./CutawayBuilder";
-import useCutawayPremade, { useCutawayCustomBeta, useCutawayCustomOpen } from "./api/cutawayPremade";
+import useCutawayPremade, { useCutawayCustomBeta, useCutawayCustomOpen, useCutawayOpenCategories } from "./api/cutawayPremade";
 import CutawayHero from "./CutawayHero";
 import CutawayResults from "./CutawayResults";
 import CutawaySummary from "./CutawaySummary";
@@ -31,6 +31,8 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
   const approved = useCutawayPremade(mode);
   // custom topics: "Coming soon" until the owner switches them on (the demo can show either: mock.customOpen)
   const liveCustomOpen = useCutawayCustomOpen(mode), customOpen = mock?.customOpen ?? liveCustomOpen;
+  // the topic categories that passed their proof (the rest are refused as you type, as on the server)
+  const openCategories = useCutawayOpenCategories(mode);
   const liveBeta = useCutawayCustomBeta(mode), customBeta = mock?.customBeta ?? liveBeta;
   const [mobilePanel, setMobilePanel] = useState(mock?.run ? "results" : "builder");
   // ?topic=Car%20wash: "Make your next video" after the first one opens with that topic picked
@@ -45,7 +47,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
 
   const handleGenerate = async (input) => {
     if (onBeforeGenerate && !onBeforeGenerate()) return;
-    const q = quoteTopic(input.topic, input.lengthSec, approved ?? []);
+    const q = quoteTopic(input.topic, input.lengthSec, approved ?? [], openCategories);
     // the balance is known to be short: the add-credits popup before any call (the server checks again on start)
     if (balance > 0 && balance < q.credits) { onNoCredits?.(q.credits); return; }
     setNotice(null);
@@ -94,6 +96,7 @@ export default function CutawayStudio({ onBeforeGenerate, planCode = null, acces
     <CutawayBuilder
       values={values}
       approved={approved}
+      openCategories={openCategories}
       customOpen={customOpen}
       customBeta={customBeta}
       planCode={planCode}

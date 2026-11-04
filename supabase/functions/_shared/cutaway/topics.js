@@ -59,20 +59,33 @@ const KIT_WORDS = new Set("pit pits trench trenches ditch ditches hole holes pip
 const KIT_PHRASES = ["dry well", "rain barrel", "rain garden", "storm drain", "retaining wall", "fence post", "water main", "water line", "gas line", "septic system", "drain field", "sump pump", "ground loop"];
 // What Cutaway can't build (yet): refused before anything is charged, even when a kit word is in the topic too
 // ("a puddle of mud becomes a semiconductor factory"). The label completes "Cutaway can't build ___ yet."
-const BLOCKERS = [
-  ["engine and car parts", "engine engines gearbox gearboxes transmission transmissions clutch clutches piston pistons crankshaft camshaft turbo turbocharger supercharger carburetor carburettor brake brakes steering suspension axle axles differential drivetrain ignition horsepower tire tires tyre tyres 4wd awd"],
-  ["machines and vehicles", "chainsaw chainsaws lawnmower mower mowers drill drills tractor tractors elevator elevators escalator escalators airplane airplanes plane planes aircraft jet jets helicopter helicopters boat boats ship ships submarine submarines train trains locomotive rocket rockets drone drones robot robots"],
-  ["electronics", "semiconductor semiconductors chip chips microchip microchips transistor transistors circuit circuits computer computers laptop laptops phone phones smartphone smartphones cpu gpu processor battery batteries electronics electronic tv television radio camera cameras wifi router internet"],
-  ["home appliances", "fridge refrigerator freezer stove stoves oven ovens cuisiniere microwave microwaves dishwasher toaster blender kettle"],
-  ["the human body", "heart brain lungs lung body blood eye eyes ear ears virus dna stomach kidney liver muscle bone bones skeleton skin tooth teeth nerve nerves cell cells"],
-  ["animals", "animal animals fish dog dogs cat cats bird birds insect insects bee bees ant ants horse horses cow cows"],
-  ["space and the sky", "sun moon planet planets star stars galaxy galaxies satellite satellites mars jupiter universe spaceship astronaut"],
-  ["ideas like money or history", "money stock stocks economy love music language government politics bitcoin crypto religion history philosophy"],
-].map(([label, list]) => ({ label, set: new Set(list.split(" ")) }));
-const BLOCKER_PHRASES = [["space and the sky", "black hole"], ["space and the sky", "solar system"], ["the human body", "immune system"],
-  ["home appliances", "washing machine"], ["home appliances", "clothes dryer"], ["home appliances", "air conditioner"], ["home appliances", "air conditioning"]];
+// Phase 0 of the any-topic plan (the owner's go of 2026-11-04): each kind of topic is a CATEGORY that stays refused until
+// it passes its proof, then opens (cutaway_settings.categories {key: "open"}); the owner can always test every one.
+// `kit` (for Claude Haiku, kitCheck.js) says what the category covers once it is open.
+export const CATEGORIES = Object.freeze([
+  { key: "appliances", label: "home appliances", kit: "home appliances and what is inside them (stoves, fridges, washing machines, air conditioners, water heaters, microwaves)",
+    words: "fridge fridges refrigerator refrigerators freezer freezers stove stoves oven ovens cuisiniere microwave microwaves dishwasher dishwashers toaster toasters blender kettle", phrases: ["washing machine", "clothes dryer", "air conditioner", "air conditioning"] },
+  // (machines before cars: the first match names the category, and a chainsaw clutch is a machine)
+  { key: "machines", label: "machines and tools", kit: "machines and tools (chainsaws, lawnmowers, drills, elevators, escalators)",
+    words: "chainsaw chainsaws lawnmower mower mowers drill drills tractor tractors elevator elevators escalator escalators robot robots" },
+  { key: "cars", label: "engine and car parts", kit: "cars and their parts (engines, steering, suspension, brakes, gearboxes)",
+    words: "engine engines gearbox gearboxes transmission transmissions clutch clutches piston pistons crankshaft camshaft turbo turbocharger supercharger carburetor carburettor brake brakes steering suspension axle axles differential drivetrain ignition horsepower tire tires tyre tyres 4wd awd" },
+  { key: "vehicles", label: "planes, boats and trains", kit: "planes, boats, ships, submarines, trains and rockets",
+    words: "airplane airplanes aeroplane plane planes aircraft jet jets helicopter helicopters boat boats ship ships submarine submarines train trains locomotive rocket rockets drone drones" },
+  { key: "electronics", label: "electronics", kit: "electronics and how chips are made",
+    words: "semiconductor semiconductors chip chips microchip microchips transistor transistors circuit circuits computer computers laptop laptops phone phones smartphone smartphones cpu gpu processor battery batteries electronics electronic tv television radio camera cameras wifi router internet" },
+  { key: "body", label: "the human body", kit: "the human body", phrases: ["immune system"],
+    words: "heart brain lungs lung body blood eye eyes ear ears virus dna stomach kidney liver muscle bone bones skeleton skin tooth teeth nerve nerves cell cells" },
+  { key: "animals", label: "animals", kit: "animals", words: "animal animals fish dog dogs cat cats bird birds insect insects bee bees ant ants horse horses cow cows" },
+  { key: "space", label: "space and the sky", kit: "space and the sky", phrases: ["black hole", "solar system"],
+    words: "sun moon planet planets star stars galaxy galaxies satellite satellites mars jupiter universe spaceship astronaut" },
+  { key: "ideas", label: "ideas like money or history", kit: "ideas", words: "money stock stocks economy love music language government politics bitcoin crypto religion history philosophy" },
+].map((c) => Object.freeze({ ...c, set: new Set(c.words.split(" ")), phrases: c.phrases ?? [] })));
+export const categoryByKey = (key) => CATEGORIES.find((c) => c.key === key) ?? null;
 // Vehicles themselves: refused unless the topic is about the kit's world ("a driveway that drains rain off the cars" passes).
-const SOFT_BLOCKER = { label: "engine and car parts", set: new Set("car cars vehicle vehicles automobile automobiles truck trucks bus buses motorcycle motorcycles bike bikes bicycle bicycles motor motors".split(" ")) };
+const SOFT_CARS = new Set("car cars vehicle vehicles automobile automobiles truck trucks bus buses motorcycle motorcycles bike bikes bicycle bicycles motor motors".split(" "));
+/** the open categories from cutaway_settings.categories ({key: "open"}); anything else, or nothing, is refused */
+export const openCategories = (setting) => CATEGORIES.map((c) => c.key).filter((k) => setting?.[k] === "open");
 
 // What the page shows under the topic box and with a refusal.
 export const KIT_BEST = "yards, houses, streets, water and pipes";
@@ -81,21 +94,25 @@ export const KIT_EXAMPLES = Object.freeze(["septic tank", "sump pump", "pond"]);
 export const cantBuildMessage = (missing = []) => `Cutaway can't build ${missing?.[0] || "this kind of topic"} yet. It works best for ${KIT_BEST}.`;
 
 /**
- * The free kit check. verdict: "yes" (a premade topic, or one in the kit's world), "no" (Cutaway can't build it:
- * `missing` holds the label), "unsure" (neither: the server asks Claude Haiku 5.5, about $0.0005, see kitCheck.js).
- * `closest`: the 3 premade topics nearest to it.
+ * The free kit check. verdict: "yes" (a premade topic, one in the kit's world, or one in an open category), "no" (Cutaway
+ * can't build it: `missing` holds the label), "unsure" (neither: the server asks Claude Haiku 5.5, about $0.0005, see
+ * kitCheck.js). `category`: the category key the topic falls in ("home" for the kit's own world, null when unknown).
+ * open: the open category keys. `closest`: the 3 premade topics nearest to it.
  */
-export function kitCheck(text) {
-  const t = normTopic(text), w = words(text);
+export function kitCheck(text, { open = [] } = {}) {
+  const t = normTopic(text), w = words(text), isOpen = new Set(open);
   // a premade topic is one the kit was built for: buildable before its layout is approved, with no Claude check
-  if (classifyTopic(text).kind === "premade") return { verdict: "yes", missing: [], closest: closestPremade(text, 3) };
-  const missing = new Set();
-  for (const b of BLOCKERS) if (w.some((x) => b.set.has(x))) missing.add(b.label);
-  for (const [label, phrase] of BLOCKER_PHRASES) if (hasPhrase(t, phrase)) missing.add(label);
+  if (classifyTopic(text).kind === "premade") return { verdict: "yes", missing: [], category: "home", closest: closestPremade(text, 3) };
+  let hit = CATEGORIES.filter((c) => w.some((x) => c.set.has(x)) || c.phrases.some((p) => hasPhrase(t, p)));
+  // machines and vehicles have engines, clutches and brakes too: a chainsaw clutch is a machine, a plane's engine a plane
+  if (hit.some((c) => c.key === "machines" || c.key === "vehicles")) hit = hit.filter((c) => c.key !== "cars");
   const inKit = w.some((x) => KIT_WORDS.has(x)) || KIT_PHRASES.some((p) => hasPhrase(t, p));
-  if (!missing.size && !inKit && w.some((x) => SOFT_BLOCKER.set.has(x))) missing.add(SOFT_BLOCKER.label);
-  const verdict = missing.size ? "no" : inKit ? "yes" : "unsure";
-  return { verdict, missing: [...missing], closest: closestPremade(text, 3) };
+  // a car word on its own is the cars category; with a kit word it is the kit's world (a driveway, a car wash drain)
+  if (!hit.length && !inKit && w.some((x) => SOFT_CARS.has(x))) hit.push(categoryByKey("cars"));
+  const closed = hit.filter((c) => !isOpen.has(c.key));
+  const category = hit[0]?.key ?? (inKit ? "home" : null);
+  const verdict = closed.length ? "no" : hit.length || inKit ? "yes" : "unsure";
+  return { verdict, missing: closed.map((c) => c.label), category, closest: closestPremade(text, 3) };
 }
 
 /** The premade topics nearest to a text: shared words with their names, aliases and related words; ready ones first on ties. */

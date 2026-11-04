@@ -40,10 +40,10 @@ const waitText = (sec) => {
 
 // access: "guest" (signed out: the button reads "Sign up to generate" and opens sign-up), "free" (Generate opens
 // the upgrade popup), "paid" or "unknown" (Generate runs; the server checks the plan again on every call).
-export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true, customBeta = false }) {
+export default function CutawayBuilder({ values, onValuesChange, onGenerate, onReset, phase, historyMode = false, onDone, usedTopics = [], planCode = null, access = "unknown", onSignUp, onUpgrade, starting = false, notice = null, onDismissNotice, onShowRun, hero = null, approved = null, customOpen = true, customBeta = false, openCategories = [] }) {
   const topic = values?.topic ?? "";
   // Premade topics are 30 s only for now, so only a typed custom topic is offered 60 s (the server refuses the rest).
-  const lengthChoices = lengthsFor(topic.trim().length >= 3 ? quoteTopic(topic, DEFAULT_LENGTH, approved ?? []).kind : "premade");
+  const lengthChoices = lengthsFor(topic.trim().length >= 3 ? quoteTopic(topic, DEFAULT_LENGTH, approved ?? [], openCategories).kind : "premade");
   const lengthSec = lengthChoices.includes(values?.lengthSec) ? values.lengthSec : DEFAULT_LENGTH;
   const soundEffects = values?.soundEffects !== false;
   const canRemove = canRemoveEndCard(planCode);
@@ -58,7 +58,7 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const [ripples, setRipples] = useState([]);
   const pressRef = useRef(null);
   // The live price: premade (a chip, or a typed topic that names one) or custom, by the same rule the server charges by.
-  const quote = useMemo(() => quoteTopic(topic, lengthSec, approved ?? []), [topic, lengthSec, approved]);
+  const quote = useMemo(() => quoteTopic(topic, lengthSec, approved ?? [], openCategories), [topic, lengthSec, approved, openCategories]);
   const hasTopic = topic.trim().length >= 3;
   const credits = hasTopic ? quote.credits : PRICES.video.credits.premade[lengthSec];
   const kindLabel = !hasTopic ? null : quote.kind === "premade" ? "Premade topic" : "Custom topic";
