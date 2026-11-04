@@ -12,6 +12,8 @@ const NEW_ACCOUNT_MS = 10 * 60 * 1000;
 const WAIT_ON = ["/auth/", "/billing/", "/unsubscribe"];
 // Read once on load: a login on the way can drop the address's ?from=email.
 let cameFromEmail = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("from") === "email";
+// which email: a follow-up reminder's link adds r=<kind> (_shared/signupReminders.js); none is the welcome email
+const emailKind = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("r") ?? "").replace(/[^a-z0-9_]/g, "").slice(0, 40) || "welcome" : "welcome";
 
 export default function OnboardingGate() {
   const { user, loading } = useAuth();
@@ -21,11 +23,11 @@ export default function OnboardingGate() {
   const [previewSurvey, setPreviewSurvey] = useState(false);
   const userId = user?.id ?? null;
 
-  // A link in the welcome email (?from=email): the click is counted here, once the account is known. Click tracking stays off at Resend.
+  // A link in the welcome email or a reminder (?from=email): the click is counted here, once the account is known. Click tracking stays off at Resend.
   useEffect(() => {
     if (!userId || loading || !cameFromEmail) return;
     cameFromEmail = null;
-    trackFunnel("welcome_email_clicked", { path: location.pathname });
+    trackFunnel("welcome_email_clicked", { path: location.pathname, email: emailKind });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loading]);
 

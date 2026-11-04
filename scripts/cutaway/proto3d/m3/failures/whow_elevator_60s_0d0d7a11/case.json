@@ -1,0 +1,71 @@
+{
+ "runId": "0d0d7a11-b387-4bb1-a49a-8669480b83d9",
+ "topic": "wHow an elevator works",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-01T14:33:27.10678+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: problem \"But the light car and the counterweight now swing …\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)",
+  "stage": "scene",
+  "attempts": 1
+ },
+ "costUsd": 1.29226,
+ "answers": [
+  "beats_plan__1.json",
+  "beats_repair__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "problem \"But the light car and the counterweight now swing …\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)"
+ ],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.79222,
+   "outputTokens": 73115,
+   "at": "2026-11-01T14:42:26.447Z"
+  },
+  {
+   "label": "beats repair",
+   "usd": 0.22571,
+   "outputTokens": 14395,
+   "at": "2026-11-01T14:43:31.060Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.11191,
+   "outputTokens": 2863,
+   "at": "2026-11-01T14:44:00.706Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02142,
+   "outputTokens": 1190,
+   "at": "2026-11-01T14:44:08.405Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01352,
+   "outputTokens": 623,
+   "at": "2026-11-01T14:44:12.828Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01213,
+   "outputTokens": 624,
+   "at": "2026-11-01T14:44:16.993Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.01202,
+   "outputTokens": 616,
+   "at": "2026-11-01T14:44:20.811Z"
+  }
+ ]
+}

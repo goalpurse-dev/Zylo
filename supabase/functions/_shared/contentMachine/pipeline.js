@@ -24,7 +24,8 @@ import { LAYOUT_VERSION, domain } from "./slides/templates.js";
 import { assetUpdate, tagRequest } from "./assets.js";
 import { qaFindings, qaRequest } from "./qa.js";
 import { postMetrics, scorePosts } from "./analytics.js";
-import { LEARNING_RULES, featureBreakdown, freshness, learn } from "./learning.js";
+import { LEARNING_RULES, STUDIO_LEARNING_RULES, featureBreakdown, freshness, isStudioPost, learn, studioLearn } from "./learning.js";
+import { studioScore } from "./studio.js";
 import { SNAPSHOT_COLUMNS, analysisRequest, analystPosts, scoutRequest } from "./agents.js";
 import { citable } from "./zyvoLane.js";
 import { fitSlideshow, shortenCreator } from "./slotFit.js";
@@ -702,27 +703,31 @@ async function analyze(job, deps) {
   // One account's posts (its own medians and winners), or both for a combined report (owner, 2026-10-19).
   const account = a.account ?? job.payload?.account ?? "creator";
   const accountOf = (p) => p.account ?? p.idea?.account ?? p.idea?.recipe?.account ?? "creator";
-  const posts = (await postsForLearning(deps)).filter((p) => account === "both" || accountOf(p) === account);
-  const lane = account === "both" ? null : ((await deps.db.lanes?.()) ?? {})[account] ?? null;
+  // "studio" (owner, 2026-11-04): only the Studio videos, on the Studio score; the proposal is the Studio playbook
+  const studio = account === "studio";
+  const posts = (await postsForLearning(deps)).filter((p) => (studio ? isStudioPost(p) : account === "both" || accountOf(p) === account));
+  const lane = account === "both" || studio ? null : ((await deps.db.lanes?.()) ?? {})[account] ?? null;
   const now = deps.now();
-  const learned = learn(posts, { now, halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 });
+  const learned = (studio ? studioLearn : learn)(posts, { now, halfLife: s.half_life_days ?? 14, minSuccesses: s.winner_min_successes ?? 3 });
   // The Zyvo account: which features (cited facts) and hooks go with profile visits and link clicks.
   if (account === "zyvo") learned.features = featureBreakdown(posts, { now });
   // The analyst reads every post, scored or not, newest first, with its freshness weight.
   const rows = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
   scorePosts(rows);
+  if (studio) for (const r of rows) r.m.score = studioScore(r.m.latest, Number(r.recipe.length_s) || null);
   for (const r of rows) r.w = freshness((now.getTime() - Date.parse(r.post.posted_at)) / 86_400_000, s.half_life_days ?? 14);
   const lib = await deps.db.library();
   const library = [...lib.formats.map((x) => ({ ...x, kind: "format", status: "active" })), ...lib.styles.map((x) => ({ ...x, kind: "style", status: "active" })), ...lib.hooks.map((x) => ({ ...x, kind: "hook", status: "active" }))];
   const scoutReport = (await deps.db.listScouts?.(1))?.[0] ?? null;
-  const request = analysisRequest({ model: m.main, account, posts: { columns: SNAPSHOT_COLUMNS, rows: analystPosts(rows) }, learning: learned, playbook: lane ? lane.playbook : s.playbook, rules: LEARNING_RULES({ half_life_days: s.half_life_days ?? 14, winner_min_successes: s.winner_min_successes ?? 3 }), library, scout: scoutReport });
+  const knobs = { half_life_days: s.half_life_days ?? 14, winner_min_successes: s.winner_min_successes ?? 3 };
+  const request = analysisRequest({ model: m.main, account, posts: { columns: SNAPSHOT_COLUMNS, rows: analystPosts(rows) }, learning: learned, playbook: studio ? s.studio_playbook ?? "" : lane ? lane.playbook : s.playbook, rules: (studio ? STUDIO_LEARNING_RULES : LEARNING_RULES)(knobs), library, scout: scoutReport });
   await deps.db.updateAnalysis(a.id, { status: "running", model: m.main, learning: learned });
   try {
     const r = await deps.guard.spend("anthropic", "anthropic.analyze", estimateUsd({ model: m.main, inputTokens: 6000 + posts.length * 400, outputTokens: 4000 }), async (ticket) => {
       const out = await deps.ai.createMessage(ticket, { apiKey: deps.env.anthropicKey, request });
       return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };
     }, { lane: "analysis", live: true, mock: async () => ({ dry: true }) });
-    const report = r.dryRun ? { summary: "Dry run: no analysis was made.", what_works: [], what_doesnt: [], playbook: s.playbook ?? "", experiments: [], retire: [], trend_notes: "", confidence: "low" } : jsonFromMessage(r.result);
+    const report = r.dryRun ? { summary: "Dry run: no analysis was made.", what_works: [], what_doesnt: [], playbook: (studio ? s.studio_playbook : s.playbook) ?? "", experiments: [], retire: [], trend_notes: "", confidence: "low" } : jsonFromMessage(r.result);
     await deps.db.updateAnalysis(a.id, { status: "done", report, cost_usd: r.actualUsd ?? 0, error: null });
     return "analysed";
   } catch (e) {

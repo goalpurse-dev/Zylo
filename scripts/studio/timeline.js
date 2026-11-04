@@ -63,6 +63,7 @@ export const SETUPS = {
   two_shot: { pos: [0.12, 2.75, 13.6], look: [0.12, 2.6, 0], creep: 0.25 },
   face_hook: { pos: [-0.72, 2.4, 5.6], look: [-0.72, 2.55, 0.6], creep: 0.12 },   // frame 0: the creator's face fills about half the frame
   rage_hook: { pos: [-0.75, 2.05, 5.85], look: [-0.75, 2.2, 0.6], creep: 0.12 },   // face_hook raised clear of the bottom captions, the caption under the chin
+  split_face: { pos: [-1.45, 3.46, 14.5], look: [-1.45, 3.58, 0.6], creep: 0.1 },   // Trend how-to frame 0: the creator's face in the bottom slot (Zee just off-frame), under the examples and the title, above the bottom bar
   end_two: { pos: [0.12, 2.25, 13.6], look: [0.12, 2.1, 0], creep: 0.25 },   // two_shot with the cast higher: the caption and an end chip fit under their faces
   creator_close: { pos: [-0.62, 2.7, 9.2], look: [-0.62, 2.82, 0.6], creep: 0.2 },
   zee_close: { pos: [1.12, 2.3, 10.4], look: [1.12, 2.2, 0.3], creep: 0.2 },

@@ -1,0 +1,64 @@
+{
+ "runId": "9791dfcd-4e7d-4c3a-87e2-6441e66e92e7",
+ "topic": "How four-wheel steering turns a giant car like a compact",
+ "lengthSec": 60,
+ "kind": "custom",
+ "at": "2026-11-03T13:21:03.534963+00:00",
+ "failed": {
+  "code": "PLAN_FAILED",
+  "message": "the plan did not pass: problem \"But at highway speed the opposite rear wheels make…\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)",
+  "stage": "scene",
+  "attempts": 1
+ },
+ "costUsd": 0.92346,
+ "answers": [
+  "beats_plan__1.json",
+  "fact_research__1.json",
+  "fact_check__1.json",
+  "words__1.json",
+  "words_repair__1.json",
+  "words_repair_2__1.json"
+ ],
+ "voice": false,
+ "problems": [
+  "problem \"But at highway speed the opposite rear wheels make…\" is not something you can see happen: say the visible consequence (it floods, cars pile up, the wall cracks)"
+ ],
+ "spend": [
+  {
+   "label": "beats plan",
+   "usd": 0.65111,
+   "outputTokens": 58966,
+   "at": "2026-11-03T13:28:27.383Z"
+  },
+  {
+   "label": "fact research",
+   "usd": 0.11406,
+   "outputTokens": 2855,
+   "at": "2026-11-03T13:28:55.770Z"
+  },
+  {
+   "label": "fact-check",
+   "usd": 0.02344,
+   "outputTokens": 1249,
+   "at": "2026-11-03T13:29:05.271Z"
+  },
+  {
+   "label": "words",
+   "usd": 0.01488,
+   "outputTokens": 696,
+   "at": "2026-11-03T13:29:11.584Z"
+  },
+  {
+   "label": "words repair",
+   "usd": 0.01363,
+   "outputTokens": 696,
+   "at": "2026-11-03T13:29:16.210Z"
+  },
+  {
+   "label": "words repair 2",
+   "usd": 0.02932,
+   "outputTokens": 2270,
+   "at": "2026-11-03T13:29:31.137Z"
+  }
+ ]
+}

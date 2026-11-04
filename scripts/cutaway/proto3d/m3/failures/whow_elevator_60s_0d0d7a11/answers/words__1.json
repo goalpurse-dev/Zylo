@@ -1,0 +1,74 @@
+{
+ "hash": "*",
+ "by": "real run 0d0d7a11-b387-4bb1-a49a-8669480b83d9",
+ "searches": 0,
+ "data": {
+  "title": "How an Elevator Works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you pull a box up on a rope over a wheel, you have an elevator."
+   },
+   {
+    "role": "problem",
+    "text": "But a full car weighs about a thousand kilograms, and the motor alone has to lift all of it."
+   },
+   {
+    "role": "stats",
+    "text": "So the motor stalls, and the car sinks back down to the floor."
+   },
+   {
+    "role": "fix1",
+    "text": "So you hang a counterweight on the other end of the rope, and the motor lifts only the difference."
+   },
+   {
+    "role": "name",
+    "text": "This is a traction elevator."
+   },
+   {
+    "role": "how",
+    "text": "The motor turns a grooved wheel, the ropes grip it, and the car rises as the counterweight sinks."
+   },
+   {
+    "role": "fact",
+    "text": "The counterweight usually weighs as much as the car plus about 40 to 50 percent of its rated load, so the two nearly balance."
+   },
+   {
+    "role": "problem2",
+    "text": "But the light car and the counterweight now swing loose in the shaft."
+   },
+   {
+    "role": "fix2",
+    "text": "So you bolt steel rails up the shaft, and the car rides on the rails and stops swinging."
+   },
+   {
+    "role": "problem3",
+    "text": "But if a rope snaps, nothing stops the car from falling."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a safety clamp that grips the rails, the trick Elisha Otis showed in 1854."
+   },
+   {
+    "role": "name2",
+    "text": "This is a safety gear."
+   },
+   {
+    "role": "myth",
+    "text": "And one rope is not all that holds you up."
+   },
+   {
+    "role": "mythFact",
+    "text": "A real car hangs from usually four to eight steel ropes, and a single rope may be strong enough to hold the car alone."
+   },
+   {
+    "role": "finish",
+    "text": "Add sliding doors, a button panel and a ceiling light, and the car glides down to the floor."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built an elevator."
+   }
+  ]
+ }
+}

@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "real run 4710c980-18b5-4301-abcd-9354044f1efc",
+ "searches": 0,
+ "data": {
+  "title": "Landfill",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a pit and throw your trash in, you have a landfill."
+   },
+   {
+    "role": "problem",
+    "text": "But dirty trash juice leaks straight down into the groundwater you drink."
+   },
+   {
+    "role": "fix1",
+    "text": "So you lay a thick clay base, but it is still not enough."
+   },
+   {
+    "role": "fix2",
+    "text": "You add a thick black plastic sheet."
+   },
+   {
+    "role": "name",
+    "text": "This is a landfill liner."
+   },
+   {
+    "role": "how",
+    "text": "A pipe drains the collected juice into a tank beside the pit."
+   },
+   {
+    "role": "fact",
+    "text": "Sealed this tight, trash barely rots at all once it is buried."
+   },
+   {
+    "role": "factProof",
+    "text": "A 1952 newspaper dug up decades later was still readable."
+   },
+   {
+    "role": "problem2",
+    "text": "But trapped trash still makes gas, so a pipe carries it out."
+   },
+   {
+    "role": "myth",
+    "text": "That flame is not waste burning, it is gas making electricity nearby."
+   },
+   {
+    "role": "finish",
+    "text": "Add a grass cap, a fence, and a few young trees."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a landfill."
+   }
+  ]
+ }
+}

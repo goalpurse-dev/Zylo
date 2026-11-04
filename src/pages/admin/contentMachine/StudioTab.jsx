@@ -92,7 +92,14 @@ function ScriptReview({ job, onDone }) {
       <div className="text-[12.5px] font-semibold text-amber-200">{s.story_mode === "topic" ? "About the topic: Zyvo only in the caption and on the end card" : "About making it with Zyvo"}</div>
       <label className="block text-[12px] text-white/60">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
       {s.headline && !s.headline.hidden ? <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
-        : <div className="text-[12px] text-white/50">No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept.</div>}
+        : s.split ? null : <div className="text-[12px] text-white/50">No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept.</div>}
+      {s.split && (
+        <div className="rounded-lg bg-black/30 px-3 py-2 text-[12.5px] text-white/70" data-testid="cm-studio-script-split">
+          <div className="font-semibold text-amber-200">Frame 0: "{s.split.title.join(" ")}" over two real examples (credited, not ours)</div>
+          {(s.trend_recipe?.examples ?? []).map((e) => <div key={e.url}><a href={e.url} target="_blank" rel="noreferrer" className="underline">{e.views} · {e.credit}</a> <span className="text-white/45">· {e.title} · checked {e.checked}</span></div>)}
+          {s.trend_recipe?.rising?.evidence && <div className="mt-1 text-white/50">Rising: {s.trend_recipe.rising.evidence}</div>}
+        </div>
+      )}
       <ol className="space-y-2">
         {s.lines.map((l, i) => (
           <li key={i} className="space-y-1">
@@ -146,6 +153,10 @@ export function StudioTab() {
   const fresh = plan?.videos?.filter((v) => v.source.kind === "generate").length ?? 0;
   // the "Rage hook" presets: the recipes on the laptop worker (it lists them in its heartbeat)
   const presets = jobs?.worker?.workers?.flatMap((w) => w.info?.rage_hook ?? []) ?? [];
+  // the "Trend how-to" presets (the main format) and the Trend radar's last report, from the same heartbeat
+  const trendPresets = jobs?.worker?.workers?.flatMap((w) => w.info?.trend_howto ?? []) ?? [];
+  const radar = jobs?.worker?.workers?.map((w) => w.info?.radar).filter(Boolean).sort((a, b) => String(b.day).localeCompare(String(a.day)))[0] ?? null;
+  const views = (n) => (n >= 1e6 ? `${Math.floor(n / 1e5) / 10}M` : `${Math.floor(n / 1e2) / 10}K`);
 
   return (
     <div className="space-y-5" data-testid="cm-studio">
@@ -169,6 +180,50 @@ export function StudioTab() {
         </div>
         <p className="text-[12px] text-white/45">Nothing starts until you press Start. Each script then waits for your approval before it renders. Every video gets its own angle, world and creation; reuse first, no generation cost.</p>
       </form>
+
+      <section className="space-y-2 rounded-2xl border border-amber-300/50 bg-amber-300/[0.05] p-4" data-testid="cm-studio-trend">
+        <h2 className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-white/80">Preset · Trend how-to (main format)</h2>
+        <p className="text-[12px] text-white/55">A search answer to a rising "how to make ___" question: frame 0 shows two real viral examples with their real view counts (credited, not ours) and a big yellow "HOW TO MAKE ___"; then the same kind of video made with Zyvo, 3 real steps, the result, "link in bio". 20–40 s. The script waits for your approval; voices about $0.04–0.06, the render $0.</p>
+        {!trendPresets.length ? <p className="text-[12.5px] text-white/50">No Trend how-to recipes yet: they show here when the laptop worker is on.</p> : (
+          <div className="flex flex-wrap gap-2">
+            {trendPresets.map((p) => (
+              <button key={p.key} type="button" className={ghost} data-testid="cm-studio-trend-start" title={p.hook}
+                onClick={() => act("studioPreset", { preset: "trend_howto", key: p.key }, `"${p.title}" started: its script shows here for your approval.`)}>
+                Trend how-to · {p.title} <span className="text-white/45">({p.creation})</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="space-y-2 border-t border-white/10 pt-3" data-testid="cm-studio-radar">
+          <h3 className="text-[13px] font-bold text-white/80">Trend radar {radar ? <span className="font-normal text-white/45">· checked {radar.day} (real public view counts; rising = 2+ creators with 1M+ in 4 weeks)</span> : null}</h3>
+          {!radar ? <p className="text-[12.5px] text-white/50">No radar report yet: the laptop worker checks once a day after 10:00.</p> : (
+            <>
+              {!radar.trends.length ? <p className="text-[12.5px] text-white/50">Nothing rising today.</p> : (
+                <ul className="space-y-1.5 text-[12.5px]">
+                  {radar.trends.map((t) => (
+                    <li key={t.name} className="text-white/75">
+                      <span className="font-semibold text-white">{t.name}</span> · <span className="text-white/55">{t.status}{t.fit ? ` (${t.fit})` : ""}</span>
+                      <span className="block text-white/45">{t.examples.map((e) => <a key={e.url} href={e.url} target="_blank" rel="noreferrer" className="mr-3 underline">{views(e.views)} · {e.channel} · {e.age_days} d</a>)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <h3 className="pt-1 text-[13px] font-bold text-white/80">Template ideas <span className="font-normal text-white/45">· rising trends no Zyvo template makes yet: you decide whether to build one</span></h3>
+              {!radar.template_ideas?.length ? <p className="text-[12.5px] text-white/50">None yet.</p> : (
+                <ul className="space-y-1.5 text-[12.5px]" data-testid="cm-studio-template-ideas">
+                  {radar.template_ideas.map((t) => (
+                    <li key={t.name} className="text-white/75">
+                      <span className="font-semibold text-white">{t.name}</span> <span className="text-white/55">· {t.looks_like} · first seen {t.first_seen}</span>
+                      <span className="block text-white/45">{t.examples.map((e) => <a key={e.url} href={e.url} target="_blank" rel="noreferrer" className="mr-3 underline">{views(e.views)} · {e.channel} · {e.age_days} d</a>)}</span>
+                      <span className="block text-white/55">How hard: {t.hard}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       <section className="space-y-2 rounded-2xl border border-rose-400/40 bg-rose-400/[0.05] p-4" data-testid="cm-studio-rage">
         <h2 className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-white/80">Preset · Rage hook</h2>

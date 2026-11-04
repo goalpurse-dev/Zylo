@@ -100,7 +100,7 @@ async function shrinkImage(file) {
 }
 
 function StatsForm({ post, existing, onSaved, onCancel }) {
-  const [f, setF] = useState(() => ({ takenAt: existing?.taken_local ?? nowLocal(), ...Object.fromEntries(STAT_FIELDS.map(([k]) => [k, existing?.[k] ?? ""])) }));
+  const [f, setF] = useState(() => ({ takenAt: existing?.taken_local ?? nowLocal(), ...Object.fromEntries(STAT_FIELDS.map(([k]) => [k, existing?.[k] ?? ""])), top_countries: existing?.top_countries ?? "" }));
   const [shot, setShot] = useState(null);
   const [graph, setGraph] = useState(null);           // the TikTok retention graph (Studio videos)
   const [target, setTarget] = useState("stats");      // where the next Ctrl+V goes
@@ -119,7 +119,7 @@ function StatsForm({ post, existing, onSaved, onCancel }) {
       const n = r.numbers ?? {};
       // a retention graph only fills what it shows (the hold % and the drop-off); the analytics screenshot fills the rest
       const keys = STAT_FIELDS.map(([k]) => k).filter((k) => (kind === "retention" ? RETENTION.includes(k) : !RETENTION.includes(k) || n[k] != null));
-      setF((old) => ({ ...old, ...Object.fromEntries(keys.map((k) => [k, n[k] ?? (kind === "retention" ? old[k] : "")])) }));
+      setF((old) => ({ ...old, ...Object.fromEntries(keys.map((k) => [k, n[k] ?? (kind === "retention" ? old[k] : "")])), ...(n.top_countries ? { top_countries: n.top_countries } : {}) }));
       setNote(`Read from the screenshot${r.costUsd != null ? ` (${money(r.costUsd, 4)})` : ""}${n.note ? `: ${n.note}` : ""}. Check the numbers, then Save.`);
     } catch (e) { setNote(e.message); }
     setReading(false);
@@ -155,6 +155,7 @@ function StatsForm({ post, existing, onSaved, onCancel }) {
         {STAT_FIELDS.map(([k, label]) => (
           <label key={k} className="text-[12px] text-white/60">{label}<input inputMode="decimal" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} className={`${input} mt-1 block w-full`} aria-label={label} /></label>
         ))}
+        <label className="col-span-2 text-[12px] text-white/60">Top viewer countries (%)<input value={f.top_countries} onChange={(e) => setF({ ...f, top_countries: e.target.value })} placeholder="US 41, GB 9, CA 6" className={`${input} mt-1 block w-full`} aria-label="Top viewer countries" /></label>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <button type="submit" disabled={busy || reading} className={primary}>{busy ? "Saving…" : existing ? "Save changes" : "Save snapshot"}</button>
@@ -167,7 +168,11 @@ function StatsForm({ post, existing, onSaved, onCancel }) {
 
 /* ─── the account switch (Posted, Analytics) ─────────────────────────── */
 
-const ACCOUNT_VIEWS = [["both", "Both"], ["zyvo", "Zyvo"], ["creator", "Creator"]];
+// "studio" = only the Studio videos (rage hook, trend how-to, the story angles), from either account (owner, 2026-11-04)
+const ACCOUNT_VIEWS = [["both", "Both"], ["zyvo", "Zyvo"], ["creator", "Creator"], ["studio", "Studio"]];
+const ACCOUNT_TONE = { zyvo: "bg-violet-300/20 text-violet-100", creator: "bg-sky-300/15 text-sky-100", studio: "bg-amber-300/20 text-amber-100" };
+const inAccountView = (view, p) => view === "both" || (view === "studio" ? (p.idea?.recipe ?? p.recipe)?.kind === "video" : p.account === view);
+const FORMAT_NAME = { rage_hook: "Rage hook", trend_howto: "Trend how-to", story: "Story (angles)" };
 function useAccountView(key) {
   const [v, setV] = useState(() => { try { return localStorage.getItem(key) || "both"; } catch { return "both"; } });
   const pick = (x) => { setV(x); try { localStorage.setItem(key, x); } catch { /* private window */ } };
@@ -175,7 +180,7 @@ function useAccountView(key) {
     <div className="inline-flex gap-1 rounded-xl border border-white/10 bg-black/25 p-1" role="tablist" aria-label="Account" data-testid="cm-account-switch">
       {ACCOUNT_VIEWS.map(([k, l]) => (
         <button key={k} type="button" role="tab" aria-selected={v === k} onClick={() => pick(k)}
-          className={`rounded-lg px-3 py-1.5 text-[12.5px] font-bold ${v === k ? (k === "zyvo" ? "bg-violet-300/20 text-violet-100" : k === "creator" ? "bg-sky-300/15 text-sky-100" : "bg-white/15 text-white") : "text-white/55"}`}>{l}</button>
+          className={`rounded-lg px-3 py-1.5 text-[12.5px] font-bold ${v === k ? ACCOUNT_TONE[k] ?? "bg-white/15 text-white" : "text-white/55"}`}>{l}</button>
       ))}
     </div>
   );
@@ -239,12 +244,13 @@ function PostCard({ post, onChanged }) {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-[12.5px]">
-              <thead className="text-white/45"><tr><th className="py-1 pr-3 font-semibold">Taken (Helsinki)</th><th className="pr-3 font-semibold">Hours</th>{STAT_FIELDS.map(([k, l]) => <th key={k} className="pr-3 font-semibold">{l.replace(/ \(.*\)/, "")}</th>)}<th /></tr></thead>
+              <thead className="text-white/45"><tr><th className="py-1 pr-3 font-semibold">Taken (Helsinki)</th><th className="pr-3 font-semibold">Hours</th>{STAT_FIELDS.map(([k, l]) => <th key={k} className="pr-3 font-semibold">{l.replace(/ \(.*\)/, "")}</th>)}<th className="pr-3 font-semibold">Top countries</th><th /></tr></thead>
               <tbody className="divide-y divide-white/[0.06] text-white/85">
                 {post.stats.map((s) => (
                   <tr key={s.id}>
                     <td className="py-1.5 pr-3">{showLocal(s.taken_local)}</td><td className="pr-3">{fmt(s.hours_since_post, 1)}</td>
                     {STAT_FIELDS.map(([k]) => <td key={k} className="pr-3 tabular-nums">{fmt(s[k], 2)}</td>)}
+                    <td className="pr-3 text-white/70">{s.top_countries ?? "–"}</td>
                     <td className="whitespace-nowrap">
                       {s.screenshot_path && <OpenFileButton path={s.screenshot_path} className="mr-2 underline">screenshot</OpenFileButton>}
                       {s.retention_screenshot_path && <OpenFileButton path={s.retention_screenshot_path} className="mr-2 underline">retention graph</OpenFileButton>}
@@ -273,7 +279,7 @@ export function PostedTab() {
   const load = useCallback(async () => { try { setData(await api("posts")); } catch (e) { setNote(e.message); } }, []);
   useEffect(() => { load(); }, [load]);
   if (!data) return <p className="text-[13px] text-white/50">{note ?? "Loading…"}</p>;
-  const mine = data.posts.filter((p) => account === "both" || p.account === account);
+  const mine = data.posts.filter((p) => inAccountView(account, p));
   const due = mine.filter((p) => p.metrics.needs.length);
   const shown = mine.filter((p) => !filter || (filter === "needs" ? p.metrics.needs.length : p.platform === filter));
   const pill = (on) => `rounded-full border px-3 py-1.5 text-[12.5px] font-semibold ${on ? "border-lime-300/60 bg-lime-300/15 text-lime-100" : "border-white/10 bg-white/[0.03] text-white/70"}`;
@@ -306,9 +312,10 @@ export function AnalyticsTab({ extra = null }) {
   const [data, setData] = useState(null);
   const [lib, setLib] = useState(null);
   const [note, setNote] = useState(null);
+  const studio = account === "studio";   // the slideshow library's format / style / hook don't apply to Studio videos
   const load = useCallback(async () => {
-    try { setData(await api("analytics", { ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)), account })); } catch (e) { setNote(e.message); }
-  }, [f, account]);
+    try { setData(await api("analytics", { ...Object.fromEntries(Object.entries(f).filter(([k, v]) => v && !(studio && ["format", "style", "hook"].includes(k)))), account })); } catch (e) { setNote(e.message); }
+  }, [f, account, studio]);
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api("library").then((r) => setLib(r.rows)).catch(() => {}); }, []);
   const opts = (kind) => (lib ?? []).filter((r) => r.kind === kind);
@@ -321,14 +328,16 @@ export function AnalyticsTab({ extra = null }) {
   const cell = (k, r) => (k === "posted_at" ? showLocal(utcToLocal(r.posted_at, TZ)) : k === "engagementRate" ? pct(r.m[k]) : fmt(r.m[k], k === "viewsPerHour" ? 1 : 0));
   return (
     <div className="space-y-4" data-testid="cm-analytics">
-      <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[12.5px] text-white/55">Each account learns from its own posts: its own medians, winners and playbook. Both = a combined view.</span>{accountControl}</div>
+      <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[12.5px] text-white/55">{studio ? "Studio = only the Studio videos (rage hook, trend how-to, story angles) from both accounts, on the Studio score, with their own median, winners and playbook." : "Each account learns from its own posts: its own medians, winners and playbook. Both = a combined view."}</span>{accountControl}</div>
       <LearningCard key={account} account={account} />
       <Card title="Filter">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <select value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} className={input} aria-label="Platform"><option value="">all platforms</option>{PLATFORMS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-          <select value={f.format} onChange={(e) => setF({ ...f, format: e.target.value })} className={input} aria-label="Format"><option value="">all formats</option>{opts("format").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
-          <select value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })} className={input} aria-label="Style"><option value="">all styles</option>{opts("style").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
-          <select value={f.hook} onChange={(e) => setF({ ...f, hook: e.target.value })} className={input} aria-label="Hook"><option value="">all hooks</option>{opts("hook").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
+          {!studio && <>
+            <select value={f.format} onChange={(e) => setF({ ...f, format: e.target.value })} className={input} aria-label="Format"><option value="">all formats</option>{opts("format").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
+            <select value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })} className={input} aria-label="Style"><option value="">all styles</option>{opts("style").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
+            <select value={f.hook} onChange={(e) => setF({ ...f, hook: e.target.value })} className={input} aria-label="Hook"><option value="">all hooks</option>{opts("hook").map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}</select>
+          </>}
           <input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} className={input} aria-label="Posted from" />
           <input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} className={input} aria-label="Posted to" />
         </div>
@@ -350,6 +359,7 @@ export function AnalyticsTab({ extra = null }) {
           <Card title="Total views over time">
             <LineChart points={data.series.map((s, i) => ({ x: i, y: s.views, day: s.day }))} xLabel={(i) => data.series[Math.round(i)]?.day ?? ""} testid="cm-views-chart" />
           </Card>
+          {!studio && <>
           <Card title="Posts" right={<span className="text-[12px] text-white/45">click a column to sort</span>}>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-[12.5px]" data-testid="cm-posts-table">
@@ -390,9 +400,11 @@ export function AnalyticsTab({ extra = null }) {
               </Card>
             ))}
           </div>
+          </>}
+          {studio && !data.studio?.posts?.length && <p className="text-[13px] text-white/55">No Studio video is marked as posted yet. Mark one as posted from the Queue, then add its stats in Posted.</p>}
           {data.studio?.posts?.length > 0 && (
-            <Card title="Studio videos (retention)">
-              <p className="mb-2 text-[11.5px] text-white/45">Score: {data.studio.formula}. From each post's latest snapshot; paste the TikTok retention graph to fill the 3 s hold and the drop-off.</p>
+            <Card title="Studio videos (retention)" testid="cm-studio-retention" right={data.studio.median != null && <span className="text-[12px] text-white/55">Studio median {fmt(data.studio.median, 1)}</span>}>
+              <p className="mb-2 text-[11.5px] text-white/45">Score: {data.studio.formula}. From each post's latest snapshot; paste the TikTok retention graph to fill the 3 s hold and the drop-off, and the viewers screen for the top countries.</p>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] text-left text-[12.5px]" data-testid="cm-studio-analytics">
                   <thead className="text-white/45"><tr><th className="py-1 pr-3 font-semibold">Video</th><th className="pr-3 font-semibold">Recipe</th><th className="pr-3 font-semibold">Score</th><th className="pr-3 font-semibold">3 s hold</th><th className="pr-3 font-semibold">5 s</th><th className="pr-3 font-semibold">10 s</th><th className="pr-3 font-semibold">Drop-off</th><th className="pr-3 font-semibold">Avg watch</th><th className="font-semibold">Full</th></tr></thead>
@@ -400,7 +412,7 @@ export function AnalyticsTab({ extra = null }) {
                     {data.studio.posts.map((r) => (
                       <tr key={r.id}>
                         <td className="py-1.5 pr-3"><a href={r.post_url} target="_blank" rel="noreferrer" className="underline">{r.title ?? "Studio video"}</a> <span className="text-white/40">{PLATFORM_NAME[r.platform]}</span></td>
-                        <td className="pr-3 text-white/65">{[r.recipe.angle ?? r.recipe.variant, r.recipe.world, nice(r.recipe.hook_type), r.recipe.end_trigger].filter(Boolean).join(" · ")}</td>
+                        <td className="pr-3 text-white/65">{[FORMAT_NAME[r.recipe.studio_format] ?? nice(r.recipe.studio_format), r.recipe.template && nice(r.recipe.template), r.recipe.angle ?? r.recipe.variant, r.recipe.world, nice(r.recipe.hook_type), r.recipe.length_bucket, r.recipe.end_trigger].filter(Boolean).join(" · ")}</td>
                         <td className="pr-3 tabular-nums">{fmt(r.score, 1)}</td>
                         <td className="pr-3 tabular-nums">{r.hold3 == null ? "–" : `${fmt(r.hold3)}%`}</td><td className="pr-3 tabular-nums">{r.hold5 == null ? "–" : `${fmt(r.hold5)}%`}</td><td className="pr-3 tabular-nums">{r.hold10 == null ? "–" : `${fmt(r.hold10)}%`}</td>
                         <td className="pr-3 tabular-nums">{r.dropoff == null ? "–" : `${fmt(r.dropoff, 1)} s`}</td>
@@ -411,11 +423,17 @@ export function AnalyticsTab({ extra = null }) {
                 </table>
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                {[["byAngle", "By angle"], ["byWorld", "By world"], ["byLength", "By length"], ["byHook", "By hook type"], ["byTrigger", "By end trigger"]].map(([k, t]) => (
+                {[["byFormat", "By format"], ["byHook", "By hook type"], ["byTemplate", "By template"], ["byLength", "By length"], ["byAngle", "By angle"], ["byWorld", "By world"], ["byTrigger", "By end trigger"]].filter(([k]) => (data.studio[k] ?? []).length).map(([k, t]) => (
                   <div key={k}><div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">{t}</div>
-                    <table className="w-full text-left text-[12.5px]"><tbody className="divide-y divide-white/[0.06] text-white/85">{data.studio[k].map((g) => <tr key={g.key}><td className="py-1 pr-2">{nice(g.key)}</td><td className="pr-2 text-white/50">{g.posts}</td><td className="pr-2 tabular-nums">{fmt(g.score, 1)}</td><td className="tabular-nums text-white/60">{g.dropoff == null ? "" : `drop ${fmt(g.dropoff, 1)} s`}</td></tr>)}</tbody></table>
+                    <table className="w-full text-left text-[12.5px]"><tbody className="divide-y divide-white/[0.06] text-white/85">{data.studio[k].map((g) => <tr key={g.key}><td className="py-1 pr-2">{k === "byFormat" ? FORMAT_NAME[g.key] ?? nice(g.key) : nice(g.key)}</td><td className="pr-2 text-white/50">{g.posts}</td><td className="pr-2 tabular-nums">{fmt(g.score, 1)}</td><td className="tabular-nums text-white/60">{g.dropoff == null ? "" : `drop ${fmt(g.dropoff, 1)} s`}</td></tr>)}</tbody></table>
                   </div>
                 ))}
+                <div data-testid="cm-studio-countries"><div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Top viewer countries</div>
+                  {(data.studio.byCountry ?? []).length === 0 ? <p className="text-[12px] text-white/45">None yet: add the viewers screen (or type &quot;US 41, GB 9&quot;) with a post&apos;s stats.</p> : (
+                    <table className="w-full text-left text-[12.5px]"><tbody className="divide-y divide-white/[0.06] text-white/85">{data.studio.byCountry.map((g) => <tr key={g.key}><td className="py-1 pr-2">{g.key}</td><td className="pr-2 text-white/50">{g.posts}</td><td className="pr-2 tabular-nums">~{fmt(g.viewers)}</td><td className="tabular-nums text-white/60">avg {fmt(g.share, 1)}%</td></tr>)}</tbody></table>
+                  )}
+                  <p className="mt-1 text-[11px] text-white/40">Viewers = each post&apos;s views × that country&apos;s share (an estimate).</p>
+                </div>
               </div>
             </Card>
           )}
@@ -444,20 +462,22 @@ export function LearningCard({ account = "creator" }) {
   const shown = d.analyses.find((a) => a.status === "done") ?? null;
   const r = shown?.report;
   const libRow = (kind, key) => lib?.find((x) => x.kind === kind && x.key === key);
+  const studio = account === "studio";
   return (
-    <Card title={`Learning · ${{ zyvo: "Zyvo account", creator: "Creator account", both: "both accounts" }[account]}`} testid="cm-learning" right={
-      <button type="button" disabled={!!busy || running} data-testid="cm-analyze" onClick={() => { if (window.confirm("Let the agent analyze every post's stats and propose a playbook? One paid call to the main model, about $0.05–0.15, within the caps.")) act("analyze", () => api("analyze", { account })); }} className={primary}>
+    <Card title={`Learning · ${{ zyvo: "Zyvo account", creator: "Creator account", both: "both accounts", studio: "Studio videos" }[account]}`} testid="cm-learning" right={
+      <button type="button" disabled={!!busy || running} data-testid="cm-analyze" onClick={() => { if (window.confirm(studio ? "Let the agent analyze ONLY the Studio videos' stats and propose a Studio playbook (what the Studio writer follows)? One paid call to the main model, about $0.05–0.15, within the caps." : "Let the agent analyze every post's stats and propose a playbook? One paid call to the main model, about $0.05–0.15, within the caps.")) act("analyze", () => api("analyze", { account })); }} className={primary}>
         {running ? "Analyzing…" : "Let the agent analyze"}
       </button>}>
       <div className="space-y-4 text-[13px] text-white/80">
         {d.suggest && <div role="status" className="rounded-xl border border-lime-300/40 bg-lime-300/10 px-3 py-2 text-lime-100">{d.sinceLast} posts have new stats since the last analysis: a good moment to let the agent analyze.</div>}
         {latest?.status === "failed" && <p className="text-red-200">The last analysis failed: {latest.error}</p>}
-        <p className="text-[12px] text-white/50">{d.rules} {d.settings.winners_per_day} winners + {d.settings.experiments_per_day} experiments a day once the {d.settings.experiment_days}-day experiment phase is over{d.settings.experiment_started_on ? ` (started ${d.settings.experiment_started_on})` : " (not started yet)"}; change it in Settings.</p>
+        {studio ? <p className="text-[12px] text-white/50">{d.rules} Studio median now: {d.learned.median == null ? "none yet (no Studio video has retention or watch-time stats)" : fmt(d.learned.median, 1)}.</p>
+          : <p className="text-[12px] text-white/50">{d.rules} {d.settings.winners_per_day} winners + {d.settings.experiments_per_day} experiments a day once the {d.settings.experiment_days}-day experiment phase is over{d.settings.experiment_started_on ? ` (started ${d.settings.experiment_started_on})` : " (not started yet)"}; change it in Settings.</p>}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Winners ({d.learned.scored} scored posts)</div>
-            {d.learned.winners.length === 0 ? <p className="text-white/50">None yet: a recipe needs {d.settings.winner_min_successes} posts above the median.</p>
-              : <ul className="space-y-1">{d.learned.winners.map((w) => <li key={w.key}>{w.key.split("|").map(nice).join(" × ")} · {w.successes}/{w.posts} successes · score {w.score}</li>)}</ul>}
+            {d.learned.winners.length === 0 ? <p className="text-white/50">None yet: a recipe needs {d.settings.winner_min_successes} posts above the {studio ? "Studio " : ""}median.</p>
+              : <ul className="space-y-1">{d.learned.winners.map((w) => <li key={w.key}>{w.key.split("|").map((x) => FORMAT_NAME[x] ?? nice(x)).join(" × ")} ·{w.successes}/{w.posts} successes · score {w.score}</li>)}</ul>}
           </div>
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Below the median</div>
@@ -465,8 +485,8 @@ export function LearningCard({ account = "creator" }) {
               : <ul className="space-y-1">{d.learned.retire.map((x) => {
                 const row = libRow(x.kind, x.key);
                 return (
-                  <li key={`${x.kind}:${x.key}`} className="flex flex-wrap items-center gap-2">{x.kind} {nice(x.key)} · {x.posts} posts · score {x.score}
-                    {row?.status === "active" && <button type="button" disabled={!!busy} onClick={() => act("retire", () => api("saveLibrary", { ...row, status: "retired" }))} className="text-white/70 underline">Retire</button>}
+                  <li key={`${x.kind}:${x.key}`} className="flex flex-wrap items-center gap-2">{x.kind} {FORMAT_NAME[x.key] ?? nice(x.key)} ·{x.posts} posts · score {x.score}
+                    {!studio && row?.status === "active" && <button type="button" disabled={!!busy} onClick={() => act("retire", () => api("saveLibrary", { ...row, status: "retired" }))} className="text-white/70 underline">Retire</button>}
                     {row?.status === "retired" && <span className="text-white/40">retired</span>}
                   </li>
                 );
@@ -497,13 +517,13 @@ export function LearningCard({ account = "creator" }) {
             {r.experiments?.length > 0 && <div><b>Next experiments:</b> {r.experiments.map((e) => `${nice(e.format)} × ${nice(e.style)} × ${nice(e.hook_type)} (${e.why})`).join(" · ")}</div>}
             {r.retire?.length > 0 && <div><b>Retire:</b> {r.retire.map((e) => `${e.kind} ${nice(e.key)} (${e.why})`).join(" · ")}</div>}
             {r.trend_notes && <div><b>Trends:</b> {r.trend_notes}</div>}
-            <details><summary className="cursor-pointer text-white/70">Proposed playbook</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.playbook}</pre></details>
-            {r.studio_playbook && <details open data-testid="cm-studio-playbook"><summary className="cursor-pointer text-violet-200">Studio playbook (what keeps people watching)</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.studio_playbook}</pre></details>}
-            {account !== "both" && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm("Replace this account's playbook with this proposal? You can still edit it after.")) act("apply", async () => { const x = await api("applyAnalysis", { id: shown.id }); setText(x.playbook); }); }} className={button}>{shown.applied_at ? "Applied ✓ (apply again)" : "Apply this playbook"}</button>}
+            <details open={studio}><summary className="cursor-pointer text-white/70">{studio ? "Proposed Studio playbook" : "Proposed playbook"}</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.playbook}</pre></details>
+            {r.studio_playbook && !studio && <details open data-testid="cm-studio-playbook"><summary className="cursor-pointer text-violet-200">Studio playbook (what keeps people watching)</summary><pre className="mt-1 whitespace-pre-wrap font-sans text-[12.5px] text-white/80">{r.studio_playbook}</pre></details>}
+            {account !== "both" && <button type="button" disabled={!!busy} onClick={() => { if (window.confirm(studio ? "Replace the Studio playbook with this proposal? The Studio writer follows it from the next script. You can still edit it after." : "Replace this account's playbook with this proposal? You can still edit it after.")) act("apply", async () => { const x = await api("applyAnalysis", { id: shown.id }); setText(x.playbook); }); }} className={button}>{shown.applied_at ? "Applied ✓ (apply again)" : "Apply this playbook"}</button>}
           </div>
         )}
         {d.playbook != null && <div>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">Playbook of this account (its writer follows it){d.playbookUpdatedAt ? ` · saved ${showLocal(utcToLocal(d.playbookUpdatedAt, TZ))}` : ""}</div>
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">{studio ? "Studio playbook (the Studio writer follows it)" : "Playbook of this account (its writer follows it)"}{d.playbookUpdatedAt ? ` · saved ${showLocal(utcToLocal(d.playbookUpdatedAt, TZ))}` : ""}</div>
           <textarea rows={8} value={text ?? ""} onChange={(e) => setText(e.target.value)} placeholder="Empty: the writer uses only the library and the brand rules. Let the agent analyze to get a first proposal." className={`${input} w-full font-mono text-[12.5px]`} aria-label="Playbook" data-testid="cm-playbook" />
           <button type="button" disabled={!!busy || text === d.playbook} onClick={() => act("save", () => api("savePlaybook", { account, text }))} className={`${primary} mt-2`}>Save playbook</button>
         </div>}

@@ -1,0 +1,82 @@
+{
+ "hash": "*",
+ "by": "real run 5cf2ff35-add7-4a2c-bb91-f5d573e9ee61",
+ "searches": 0,
+ "data": {
+  "title": "How a Chainsaw Clutch Stops You From Dying",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you bolt a chain straight onto the engine shaft, you have a saw that only spins."
+   },
+   {
+    "role": "problem",
+    "text": "But the engine never stops turning, so the chain whirls around the bar every second the saw is on."
+   },
+   {
+    "role": "stakes",
+    "text": "At roughly 40 to 50 miles per hour, the chain slices clean through a wooden post, so anything it touches is cut."
+   },
+   {
+    "role": "fix1",
+    "text": "So you hang the chain on a loose drum, and the engine spins free inside it, though now the chain won't move."
+   },
+   {
+    "role": "fix2",
+    "text": "So you bolt heavy shoes to the shaft, and when it spins fast they fling out and grab the drum."
+   },
+   {
+    "role": "fix3",
+    "text": "But now the shoes never let go, so you add a ring spring that pulls them back in, letting go of the drum."
+   },
+   {
+    "role": "name",
+    "text": "This is a centrifugal clutch."
+   },
+   {
+    "role": "name2",
+    "text": "The ring that holds the shoes in is called a garter spring."
+   },
+   {
+    "role": "how",
+    "text": "At idle the spring wins, but as the engine revs, the shoes fling out, grab the drum and the chain runs."
+   },
+   {
+    "role": "fact",
+    "text": "A saw sits at idle near 2,700 to 3,000 rpm, and the clutch engages at about 3,900 to 4,300 rpm, so the chain waits."
+   },
+   {
+    "role": "problem2",
+    "text": "But if the bar tip catches, the saw kicks up toward your face with the chain still racing."
+   },
+   {
+    "role": "fix4",
+    "text": "So you add a brake band round the drum, and when the hand guard knocks forward, the chain stops in about 0.12 seconds on average."
+   },
+   {
+    "role": "problem3",
+    "text": "But with the brake on and the engine screaming, the shoes grind against the stopped drum and glow red hot."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add a spring-loaded trigger that drops the engine to idle when you let go, and the shoes pull in and cool."
+   },
+   {
+    "role": "myth",
+    "text": "And a stopped chain does not mean a stopped engine."
+   },
+   {
+    "role": "mythFact",
+    "text": "The engine keeps turning at idle the whole time, and only the clutch lets the chain rest."
+   },
+   {
+    "role": "finish",
+    "text": "Add a cover, a front handle and a starter cord."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a chainsaw."
+   }
+  ]
+ }
+}

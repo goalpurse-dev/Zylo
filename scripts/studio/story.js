@@ -114,8 +114,12 @@ for (const b of beats) {
   const c = CLIPS.find((x) => x.start > b.t0 && x.start < b.t1); if (c) b.t1 = c.start - 0.45;   // out of the way of a clip
   if (b.visual) { const p = makeProp(b.visual, { tl }); b.prop = p; p.group.visible = false; scene.add(p.group); p.group.position.set(...(b.visual.pos ?? [0.2, 4.05, -0.3])); p.base = p.group.position.clone(); p.scale = b.visual.scale ?? 1; }
 }
+// the Trend how-to's frame 0: two real examples of the trend + the title, until the line `until_line` starts
+const SPLIT = SH.split ? { ...SH.split, out: L[SH.split.until_line ?? 2].start - 0.3 } : null;
+// right after the split, the real result already plays on the TV (silent) until its own clip starts with its sound
+const PREROLL = SPLIT?.preroll ? CLIPS.find((c) => c.name === SPLIT.preroll) : null;
 const screenImg = {};
-await Promise.all([...new Set([...beats.filter((b) => b.screen).map((b) => b.screen.file), ...FLIPS.map((f) => f.file)])].map((file) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${file}`; screenImg[file] = im; })));
+await Promise.all([...new Set([...beats.filter((b) => b.screen).map((b) => b.screen.file), ...FLIPS.map((f) => f.file), ...(SPLIT?.cards ?? []).map((c) => c.file)])].map((file) => new Promise((r) => { const im = new Image(); im.onload = r; im.onerror = r; im.src = `/work/screens/${file}`; screenImg[file] = im; })));
 
 function cameraAt(t) {
   const s = PLAN.find((p) => t >= p.t0 && t < p.t1) ?? PLAN.at(-1);
@@ -185,6 +189,7 @@ const LOOP = SH.loop_end ? { secs: SH.loop_end.secs ?? 0.5, first: CLIPS.find((c
 const headlineAt = SH.headline?.hidden ? null : SH.headline;   // hidden: kept for the Queue and the approval form, never drawn
 
 window.renderAt = async (t) => {
+  const splitOn = SPLIT && t < SPLIT.out + 0.35;
   const full = CLIPS.map((c) => [c, fullK(c, t)]).filter(([, k]) => k > 0), covered = full.some(([c, k]) => k > 0.999 && !c.frame);   // a TV or phone leaves the world in view
   const beat = beats.find((b) => t >= b.t0 && t < b.t1);
   let cam = cameraAt(t);
@@ -198,6 +203,16 @@ window.renderAt = async (t) => {
   for (const [c, k] of full) await drawClip(c, t, k);
   const inClip = full.find(([, k]) => k > 0.5)?.[0];
   const boxes = [];
+  if (PREROLL && t >= SPLIT.out && t < PREROLL.start) {
+    const len = PREROLL.out - PREROLL.in, vt = PREROLL.in + ((t - SPLIT.out) % len);
+    if (!full.some(([c, k]) => c === PREROLL && k > 0.999)) drawDevice(PREROLL, await bitmap(hqUrl(PREROLL, vt)), Math.min(1, (t - SPLIT.out) / 0.35));
+  }
+  if (splitOn) {
+    const sp = ov.trendSplit(SPLIT.cards.map((c) => ({ ...c, img: screenImg[c.file] })), SPLIT.title, t, t - SPLIT.out);
+    sp.cards.forEach((b, i) => boxes.push([`example card ${i + 1}`, b])); boxes.push(["trend title", sp.title]);
+    // the title never covers a card or its view count
+    for (const b of sp.cards) if (sp.title.x0 < b.x1 && sp.title.x1 > b.x0 && sp.title.y0 < b.y1 && sp.title.y1 > b.y0) note("trend title over an example card", t, "frame 0 split");
+  }
 
   // the real screen, BIG, with its one sticker
   let shot = null;
@@ -224,7 +239,7 @@ window.renderAt = async (t) => {
   if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
   if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && !looped && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  if (chunk && !inClip) ov.caption(chunk, t, L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
+  if (chunk && !inClip) ov.caption(chunk, t, splitOn && t < SPLIT.out ? 1112 : L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 
   if (LOOP?.first && t > END - LOOP.secs) {
     const a = Math.min(1, (t - (END - LOOP.secs)) / Math.max(0.05, LOOP.secs - 1 / 30));
@@ -248,7 +263,7 @@ window.renderAt = async (t) => {
     }
   }
   if (Q.get("zones")) ov.zones();
-  if (t < 0.01) obs.frame0 = { covered, headline: headlineAt?.text ?? null };
+  if (t < 0.01) obs.frame0 = { covered, headline: headlineAt?.text ?? SPLIT?.title.join(" ") ?? null };
   return true;
 };
 loaded.then(() => { window.ready = true; });

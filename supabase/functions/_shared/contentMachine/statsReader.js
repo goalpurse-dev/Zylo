@@ -1,6 +1,7 @@
 // Content Machine, Part 2: reading a pasted analytics screenshot (TikTok / Instagram / YouTube) with
 // CM_MODEL_FAST. It only proposes numbers: the owner checks them in the form and saves. A number that isn't
 // clearly visible comes back null, never guessed.
+import { parseCountries } from "./studio.js";
 
 export const STAT_FIELDS = Object.freeze([
   ["views", "Views", "int"], ["likes", "Likes", "int"], ["comments", "Comments", "int"], ["shares", "Shares", "int"], ["saves", "Saves", "int"],
@@ -14,9 +15,10 @@ export const STAT_FIELDS = Object.freeze([
 const nullableNumber = { type: ["number", "null"] };
 export const STATS_SCHEMA = {
   type: "object", additionalProperties: false,
-  required: [...STAT_FIELDS.map(([k]) => k), "platform", "note"],
+  required: [...STAT_FIELDS.map(([k]) => k), "top_countries", "platform", "note"],
   properties: {
     ...Object.fromEntries(STAT_FIELDS.map(([k]) => [k, nullableNumber])),
+    top_countries: { type: ["string", "null"] },
     platform: { type: ["string", "null"], enum: ["tiktok", "instagram", "youtube", null] },
     note: { type: ["string", "null"] },
   },
@@ -28,6 +30,7 @@ Return each number exactly as shown, as a plain number: "1.2K" → 1200, "3,4 t.
 - avg_watch_sec: average watch time in seconds. watched_full_pct: "watched full video" / "completion rate" in %.
 - profile_visits: profile views / visits from this post. new_followers: followers gained from this post. link_clicks: clicks on a link or the link in bio, only if the screenshot shows them.
 - A retention graph ("% of viewers still watching" over the seconds of the video): hold_3s_pct, hold_5s_pct, hold_10s_pct = the % still watching at 3, 5 and 10 seconds, read off the curve where the axis makes it readable (to the nearest whole %); dropoff_s = the second where the curve falls the most. Only from a retention graph; null otherwise.
+- top_countries: only from a viewers / audience screen that lists countries: the top ones with their %, as "US 41, GB 9, CA 6" (two-letter codes where you can, highest first, at most 5). null otherwise.
 - platform: which app the screenshot is from, if you can tell.
 A number that is not clearly visible is null. Never estimate, add up or infer a number. note: one short line if anything is unclear, else null.
 Return only the JSON object.`;
@@ -64,5 +67,11 @@ export function cleanStats(input) {
     out[k] = kind === "int" ? Math.round(v) : Math.round(v * 100) / 100;
   }
   if (Object.values(out).every((v) => v == null)) throw new Error("Enter at least one number.");
+  // the top viewer countries (Studio videos, owner 2026-11-04): "US 41, GB 9", checked and kept in that form
+  if (input && "top_countries" in input) {
+    const text = String(input.top_countries ?? "").trim(), list = parseCountries(text);
+    if (text && !list.length) throw new Error("Top viewer countries: like \"US 41, GB 9, CA 6\".");
+    out.top_countries = list.length ? list.slice(0, 8).map((c) => `${c.country} ${c.pct}`).join(", ").slice(0, 200) : null;
+  }
   return out;
 }

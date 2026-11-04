@@ -268,3 +268,59 @@ test("with the daily scout on, today's automatic run waits for the scout (at mos
   assert.ok((await tick(deps)).daily, "after 10 minutes the run starts without a report");
   assert.equal(scoutCalls, 1, "the scout is tried once, never retried in a loop");
 });
+
+test("the Studio view: only Studio videos, the Studio score's own median, breakdowns and countries; its analysis writes the Studio playbook", async () => {
+  const world = await madeOne();
+  const report = { summary: "One video.", what_works: ["the split frame 0"], what_doesnt: [], playbook: "- First 3 seconds: two real examples with their views", studio_playbook: "- First 3 seconds: two real examples with their views", experiments: [], retire: [], trend_notes: "", confidence: "low" };
+  const p = fakeProviders(world);
+  const orig = p.ai.createMessage;
+  let analystReq = null;
+  p.ai.createMessage = async (t, a) => {
+    if (/^You are the analyst/.test(a.request.system[0].text)) {
+      analystReq = a.request;
+      const body = { id: "msg_s", model: "claude-sonnet-5-5", usage: { input_tokens: 5000, output_tokens: 900 }, content: [{ type: "text", text: JSON.stringify(report) }] };
+      return { body, costUsd: costOfUsage(body.usage, body.model) };
+    }
+    return orig(t, a);
+  };
+  const { call } = apiFor(world);
+  // a slideshow post (not Studio) and a Studio video post
+  const slide = (await call({ action: "markPosted", ideaId: world.ideas[0].id, platform: "tiktok", postUrl: "https://www.tiktok.com/@zyvo/photo/7", postedAt: "2026-10-17T09:00" })).data.post;
+  await call({ action: "saveStats", postId: slide.id, takenAt: "2026-10-18T09:00", stats: { views: 1500, saves: 20 } });
+  assert.match((await call({ action: "analyze", account: "studio" })).message, /Add stats to at least one posted Studio video/);
+  const video = { ...world.ideas[0], id: "I-video", title: "How to make What If videos", recipe: { kind: "video", preset: "trend_howto", template: "long_form", hook_type: "trend_howto", length_s: 23, length_bucket: "20-40" } };
+  world.ideas.push(video);
+  const vp = (await call({ action: "markPosted", ideaId: video.id, platform: "tiktok", postUrl: "https://www.tiktok.com/@zyvo/video/8", postedAt: "2026-10-17T10:00" })).data.post;
+  assert.match((await call({ action: "saveStats", postId: vp.id, takenAt: "2026-10-18T10:00", stats: { views: 2000, hold_3s_pct: 70, avg_watch_sec: 11.5, top_countries: "Canada 4.5%, US 41" } })).message ?? "", /^$/);
+  assert.equal(world.stats.at(-1).top_countries, "Canada 4.5, US 41");
+  assert.match((await call({ action: "saveStats", postId: vp.id, takenAt: "2026-10-18T11:00", stats: { views: 2100, top_countries: "lots" } })).message, /Top viewer countries/);
+
+  const a = (await call({ action: "analytics", account: "studio" })).data;
+  assert.equal(a.filtered, 1, "only the Studio video");
+  assert.equal(a.studio.posts.length, 1);
+  assert.equal(a.studio.median, a.studio.posts[0].score);
+  assert.deepEqual(a.studio.byFormat.map((g) => g.key), ["trend_howto"]);
+  assert.deepEqual(a.studio.byTemplate.map((g) => g.key), ["long_form"]);
+  assert.deepEqual(a.studio.byCountry.map((g) => [g.key, g.viewers]), [["US", 820], ["CANADA", 90]]);
+  assert.equal((await call({ action: "analytics", account: "creator" })).data.filtered, 2, "the account views are unchanged");
+
+  const l = (await call({ action: "learning", account: "studio" })).data;
+  assert.equal(l.learned.studio, true);
+  assert.equal(l.learned.scored, 1);
+  assert.equal(l.playbook, "");
+  assert.match(l.rules, /Studio score/);
+  assert.equal((await call({ action: "analyze", account: "studio" })).ok, true);
+  await drain(world, depsFor(world, p));
+  const done = world.analyses.find((x) => x.account === "studio");
+  assert.equal(done.status, "done");
+  assert.equal(done.posts_count, 1);
+  assert.match(analystReq.messages[0].content, /STUDIO VIDEOS ONLY/);
+  assert.match(analystReq.messages[0].content, /How to make What If videos/);
+  assert.ok(!analystReq.messages[0].content.includes("photo/7") && !/"views24":\s*1500/.test(analystReq.messages[0].content), "only Studio videos reach the analyst");
+  await call({ action: "applyAnalysis", id: done.id });
+  assert.equal(world.s.studio_playbook, report.playbook, "the Studio playbook");
+  assert.equal(world.lanes.creator.playbook, "", "the accounts keep theirs");
+  await call({ action: "savePlaybook", account: "studio", text: "- Keep frame 0 moving" });
+  assert.equal(world.s.studio_playbook, "- Keep frame 0 moving");
+  assert.equal((await call({ action: "learning", account: "studio" })).data.playbook, "- Keep frame 0 moving");
+});

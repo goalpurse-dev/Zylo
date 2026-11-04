@@ -41,7 +41,7 @@ export async function useGpu() {
     }
   }
   const sh = (c) => { try { return execFileSync("sh", ["-c", c], { encoding: "utf8" }).trim().slice(0, 300); } catch { return `(${c} failed)`; } };
-  throw Object.assign(new Error(`NO_GPU: ${tried.join(" | ")}; NVIDIA_DRIVER_CAPABILITIES=${process.env.NVIDIA_DRIVER_CAPABILITIES}; devices: ${sh("ls /dev/nvidia* /dev/dri 2>&1 | tr '\\n' ' '")}; gpus: ${sh("nvidia-smi -L 2>&1")}; egl vendors: ${sh("ls /usr/share/glvnd/egl_vendor.d 2>&1 | tr '\\n' ' '")}`), { code: "NO_GPU" });
+  throw Object.assign(new Error(`NO_GPU: ${tried.join(" | ")}; worker: ${process.env.RUNPOD_POD_ID ?? "-"}; NVIDIA_DRIVER_CAPABILITIES=${process.env.NVIDIA_DRIVER_CAPABILITIES}; devices: ${sh("ls /dev/nvidia* /dev/dri 2>&1 | tr '\\n' ' '")}; gpus: ${sh("nvidia-smi -L 2>&1")}; egl vendors: ${sh("ls /usr/share/glvnd/egl_vendor.d 2>&1 | tr '\\n' ' '")}`), { code: "NO_GPU" });
 }
 
 /** the CPU fallback: SwiftShader on purpose (a Fly machine has no GPU) */

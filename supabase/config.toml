@@ -192,6 +192,11 @@ verify_jwt = false
 [functions.send-welcome-email]
 verify_jwt = true
 
+# The follow-up reminders after sign-up: called every 10 minutes by the cron job signup-reminders (only while
+# onboarding_settings.reminders_on), which sends no Supabase JWT: the function checks x-ops-secret itself.
+[functions.signup-reminders]
+verify_jwt = false
+
 # Billing functions called by the signed-in app: the gateway checks the user's
 # JWT before the function runs (and the function reads the user from it again).
 [functions.create-checkout-session]

@@ -39,11 +39,11 @@ Return only the JSON object.`;
 export function analysisRequest({ model, posts, learning, playbook, rules, library, scout, account = "creator" }) {
   const keys = (kind) => library.filter((l) => l.kind === kind && l.status === "active").map((l) => l.key).join(", ");
   const user = [
-    `ACCOUNT: ${{ creator: "the creator account (go-viral / faceless-creator education, a soft Zyvo mention)", zyvo: "Zyvo's brand account (product carousels; claims only from the fact sheet). The program's numbers include \"features\": per cited fact, per hook and per format: posts, score, profile visits per 1,000 views and link clicks. In what_works, say which features and hooks drive profile visits and link clicks", both: "both accounts together: a combined report; the playbook you propose is a reading aid, not applied" }[account] ?? account}`,
+    `ACCOUNT: ${{ studio: "STUDIO VIDEOS ONLY (short 3D-character videos from both accounts; recipe kind \"video\"; the format is recipe.preset: rage_hook, trend_howto, or none = a story angle). Score = the Studio score 0-100 (3 s hold 40%, average % watched 30%, saves + shares per view 20%, comments + likes 10%); the program's median is the Studio median, not 100. Ignore the slideshow library. playbook = the STUDIO playbook the Studio writer follows: short imperative lines under headings like \"First 3 seconds\", \"Formats\", \"Hooks\", \"Templates\", \"Length\", \"Audience\" (from the top viewer countries: who watches and what that means for language, references and post times). studio_playbook = the same text. experiments: 2 Studio recipes to try next, with format = the preset, style = the template, hook_type = the hook. retire: only with evidence, kind format (a preset), style (a template) or hook", creator: "the creator account (go-viral / faceless-creator education, a soft Zyvo mention)", zyvo:"Zyvo's brand account (product carousels; claims only from the fact sheet). The program's numbers include \"features\": per cited fact, per hook and per format: posts, score, profile visits per 1,000 views and link clicks. In what_works, say which features and hooks drive profile visits and link clicks", both: "both accounts together: a combined report; the playbook you propose is a reading aid, not applied" }[account] ?? account}`,
     `LEARNING RULES: ${rules}`,
     `LIBRARY (active keys) · formats: ${keys("format")} · styles: ${keys("style")} · hooks: ${keys("hook")}`,
     `CURRENT PLAYBOOK:\n${playbook?.trim() || "(empty)"}`,
-    `THE PROGRAM'S OWN NUMBERS (score: 100 = this account's median post):\n${JSON.stringify(learning)}`,
+    `THE PROGRAM'S OWN NUMBERS (${account === "studio" ? "Studio score: median = learning.median" : "score: 100 = this account's median post"}):\n${JSON.stringify(learning)}`,
     `POSTS (newest first; hours → views/likes/... snapshots):\n${JSON.stringify(posts)}`,
     scout ? `LATEST SCOUT REPORT (${scout.created_at}):\n${scout.trend_brief}` : "LATEST SCOUT REPORT: none yet",
   ].join("\n\n");
@@ -59,14 +59,14 @@ export function analysisRequest({ model, posts, learning, playbook, rules, libra
 export function analystPosts(rows) {
   return rows.map((r) => ({
     title: r.post.idea?.title ?? null, platform: r.post.platform, posted: r.post.posted_at?.slice(0, 16),
-    recipe: Object.fromEntries(["format", "style", "hook_type", "zyvo_position", "cta_type", "text_density", "post_time", "mode", "kind", "angle", "world", "length_bucket", "famous_name", "end_trigger", "source_story"].filter((k) => r.recipe?.[k] != null || !["kind", "angle", "world", "length_bucket", "famous_name", "end_trigger", "source_story"].includes(k)).map((k) => [k, r.recipe?.[k] ?? null])),
+    recipe: Object.fromEntries(["format", "style", "hook_type", "zyvo_position", "cta_type", "text_density", "post_time", "mode", "kind", "preset", "template", "angle", "world", "length_bucket", "length_s", "famous_name", "end_trigger", "source_story"].filter((k) => r.recipe?.[k] != null || !["kind", "preset", "template", "angle", "world", "length_bucket", "length_s", "famous_name", "end_trigger", "source_story"].includes(k)).map((k) => [k, r.recipe?.[k] ?? null])),
     score: r.m.score, freshness: r.w != null ? Math.round(r.w * 100) / 100 : null, views24: r.m.views24, views7d: r.m.views7d,
     engagement: r.m.engagementRate != null ? Math.round(r.m.engagementRate * 1000) / 1000 : null,
     account: r.post.account ?? r.post.idea?.account ?? "creator",
-    snapshots: (r.post.stats ?? []).map((s) => [Number(s.hours_since_post), s.views, s.likes, s.comments, s.shares, s.saves, s.profile_visits, s.new_followers, s.avg_watch_sec, s.watched_full_pct, s.link_clicks ?? null, s.hold_3s_pct ?? null, s.hold_5s_pct ?? null, s.hold_10s_pct ?? null, s.dropoff_s ?? null]),
+    snapshots: (r.post.stats ?? []).map((s) => [Number(s.hours_since_post), s.views, s.likes, s.comments, s.shares, s.saves, s.profile_visits, s.new_followers, s.avg_watch_sec, s.watched_full_pct, s.link_clicks ?? null, s.hold_3s_pct ?? null, s.hold_5s_pct ?? null, s.hold_10s_pct ?? null, s.dropoff_s ?? null, s.top_countries ?? null]),
   }));
 }
-export const SNAPSHOT_COLUMNS = "hours, views, likes, comments, shares, saves, profile_visits, new_followers, avg_watch_sec, watched_full_pct, link_clicks, hold_3s_pct, hold_5s_pct, hold_10s_pct, dropoff_s";
+export const SNAPSHOT_COLUMNS = "hours, views, likes, comments, shares, saves, profile_visits, new_followers, avg_watch_sec, watched_full_pct, link_clicks, hold_3s_pct, hold_5s_pct, hold_10s_pct, dropoff_s, top_countries";
 
 export const SCOUT_SCHEMA = obj({
   trend_brief: str,
@@ -74,6 +74,8 @@ export const SCOUT_SCHEMA = obj({
   hooks: strs,
   sounds: strs,
   sources: { type: "array", items: obj({ title: str, url: str }) },
+  // the Trend radar's candidates (owner, 2026-11-03): the laptop checks each one's real public view counts before anything is made
+  ai_video_trends: { type: "array", items: obj({ name: str, looks_like: str, search_phrase: str, queries: strs, example_urls: strs }) },
 });
 
 export const SCOUT_SYSTEM = `You scout short-form content trends for Zyvo's own accounts (faceless YouTube / TikTok creators, AI video and AI tools; photo carousels and slideshows on TikTok and Instagram, YouTube Shorts).
@@ -82,6 +84,7 @@ Use web search to find what is working RIGHT NOW (the last 2–4 weeks): slidesh
 - top_formats: up to 5, each with why it works and one example description (no links to copyrighted material needed).
 - hooks: up to 8 hook patterns. sounds: up to 5 sound / audio trends for photo posts, if any are reported.
 - sources: every page you used (title, url).
+- ai_video_trends: up to 8 AI-made video FORMATS rising right now (several different creators posting the same kind of video in the last 2–4 weeks, with 1M+ views), e.g. "skeleton educational videos", "giant caught on camera", "What If explainers". For each: name, looks_like (one line), search_phrase (what a viewer would search: "how to make ___ videos"), queries (2–3 YouTube/TikTok search terms that find the examples), example_urls (direct youtube.com/watch, youtube.com/shorts or tiktok.com/@user/video links you actually saw; none rather than guessed). Views are checked on the pages later: never state view counts here.
 Never invent numbers or trends; if search finds little, say so in trend_brief. Return only the JSON object.`;
 
 export function scoutRequest({ model, today, maxSearches = 5 }) {

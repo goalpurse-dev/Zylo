@@ -7,7 +7,8 @@
 //               winners_per_day of them (after the experiment phase) and fills the rest with experiments.
 //   retire      a format, style or hook with 3+ scored posts whose fresh-weighted score is below the median
 //               (100): suggested for retiring in the Library (the owner decides).
-import { postMetrics, scorePosts } from "./analytics.js";
+import { median, postMetrics, scorePosts } from "./analytics.js";
+import { studioFormat, studioScore } from "./studio.js";
 
 export const SUCCESS_SCORE = 100;
 export const RETIRE_MIN_POSTS = 3;
@@ -42,6 +43,32 @@ export function learn(posts, { now = new Date(), halfLife = 14, minSuccesses = 3
     }
   }
   return { postsWithStats: rows.filter((r) => r.m.snapshots > 0).length, scored: scored.length, winners, retire: retire.sort((a, b) => a.score - b.score) };
+}
+
+/** A Studio video (rage hook, trend how-to, a story angle): its recipe is kind "video". */
+export const isStudioPost = (p) => (p.idea?.recipe ?? p.recipe)?.kind === "video";
+export const STUDIO_LEARNING_RULES = (s) => `Studio videos learn on their own, on the Studio score (0-100: 3 s hold 40%, average % watched 30%, saves + shares per view 20%, comments + likes 10%). A post's weight halves every ${s.half_life_days} days. A winner is a format × template × hook recipe with ${s.winner_min_successes}+ posts above the Studio median. A format, template, hook or length with ${RETIRE_MIN_POSTS}+ scored posts whose weighted score is under the median is suggested for retiring.`;
+
+/** The Studio view's own learning (owner, 2026-11-04): the shape of learn(), on the Studio score against the Studio median. */
+export function studioLearn(posts, { now = new Date(), halfLife = 14, minSuccesses = 3 } = {}) {
+  const latest = (p) => [...(p.stats ?? [])].sort((a, b) => String(b.taken_at).localeCompare(String(a.taken_at)))[0] ?? null;
+  const rows = posts.map((p) => { const recipe = p.idea?.recipe ?? {}; return { post: p, recipe: { ...recipe, format: studioFormat(recipe) }, score: studioScore(latest(p), Number(recipe.length_s) || null) }; });
+  const scored = rows.filter((r) => r.score != null);
+  for (const r of scored) r.w = freshness((now.getTime() - Date.parse(r.post.posted_at)) / 86_400_000, halfLife);
+  const med = median(scored.map((r) => r.score));
+  const weighted = (list) => { const w = list.reduce((a, r) => a + r.w, 0); return w ? Math.round((list.reduce((a, r) => a + r.w * r.score, 0) / w) * 10) / 10 : null; };
+  const keyOf = (r) => `${r.format}|${r.template ?? "unknown"}|${r.hook_type ?? "unknown"}`;
+  const groups = new Map();
+  for (const r of scored) { const k = keyOf(r.recipe); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+  const winners = [...groups].map(([key, list]) => ({ key, posts: list.length, successes: list.filter((r) => r.score > med).length, score: weighted(list) }))
+    .filter((g) => g.successes >= minSuccesses && g.score > med).sort((a, b) => b.score - a.score);
+  const retire = [];
+  for (const [kind, field] of [["format", "format"], ["template", "template"], ["hook", "hook_type"], ["length", "length_bucket"]]) {
+    const by = new Map();
+    for (const r of scored) { const k = r.recipe[field]; if (!k) continue; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
+    for (const [key, list] of by) { const score = weighted(list); if (list.length >= RETIRE_MIN_POSTS && score < med) retire.push({ kind, key, posts: list.length, score }); }
+  }
+  return { studio: true, median: med, postsWithStats: rows.filter((r) => (r.post.stats ?? []).length > 0).length, scored: scored.length, winners, retire: retire.sort((a, b) => a.score - b.score) };
 }
 
 /** True when enough posts got stats since the last analysis to make a new one worth it. */

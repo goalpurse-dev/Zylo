@@ -1,0 +1,139 @@
+{
+ "hash": "*",
+ "by": "real run 9791dfcd-4e7d-4c3a-87e2-6441e66e92e7",
+ "searches": 0,
+ "data": {
+  "why": "A garage driveway holds one cutaway big car I designed as a rig: an open chassis with four steerable wheels, a rear steering motor and a computer, plus a concrete block as the tight spot. The camera starts close on the front wheels turning, then follows each problem and fix: the nose hits the block, the rear wheels turn the other way, the car twitches at speed, the wheels turn the same way, and a jam is fixed by the computer. Counters show 12 m, 10 m, 60 km/h and 10 degrees. The finish adds a speed sensor, the body and headlights so the car completes itself, and it rolls calmly at the end.",
+  "sceneJson": "{\"world\":{\"cut\":[11,13,-2,1],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[],\"worker\":false,\"moreTrees\":false,\"backdrop\":{\"type\":\"garage\",\"x\":0,\"back\":-9}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{}},{\"id\":\"wall\",\"kind\":\"box\",\"params\":{\"mat\":\"concrete\",\"size\":[4,1,0.8],\"pos\":[-3,0.58,-6.4],\"r\":0.05,\"receiveShadow\":true}},{\"id\":\"pole\",\"kind\":\"box\",\"params\":{\"mat\":\"metal\",\"size\":[0.2,1.9,0.2],\"pos\":[4.6,1.03,-1.6],\"r\":0.03}},{\"id\":\"turnWide\",\"kind\":\"counter\",\"params\":{\"pos\":[4.6,2.3,-1.6],\"size\":1.1,\"from\":0,\"to\":12,\"color\":\"#ff5a4a\"}},{\"id\":\"turnTight\",\"kind\":\"counter\",\"params\":{\"pos\":[4.6,2.3,-1.6],\"size\":1.1,\"from\":12,\"to\":10,\"color\":\"#5be07a\"}},{\"id\":\"speed\",\"kind\":\"counter\",\"params\":{\"pos\":[4.6,2.3,-1.6],\"size\":1.1,\"from\":0,\"to\":60,\"color\":\"#ffd23d\"}},{\"id\":\"angle\",\"kind\":\"counter\",\"params\":{\"pos\":[4.6,2.3,-1.6],\"size\":1.1,\"from\":0,\"to\":10,\"color\":\"#3ad6ff\"}},{\"id\":\"wideArc\",\"kind\":\"flow\",\"params\":{\"path\":[[2,0.14,-5.4],[1,0.14,-5.9],[-0.5,0.14,-6.0],[-2,0.14,-5.7]],\"look\":\"soap\",\"size\":0.16,\"speed\":2,\"count\":18}},{\"id\":\"tightArc\",\"kind\":\"flow\",\"params\":{\"path\":[[2,0.14,-5.4],[1,0.14,-5.1],[-0.2,0.14,-4.7],[-1.3,0.14,-4.2]],\"look\":\"soap\",\"size\":0.16,\"speed\":2,\"count\":18}},{\"id\":\"carOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-1.5,0.18,0.9],[5.5,0.18,0.9],[5.5,0.18,-5.7],[-1.5,0.18,-5.7]],\"opts\":{\"r\":0.1,\"closed\":true}}},{\"id\":\"rearOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[-0.3,0.18,-1.2],[2.7,0.18,-1.2],[2.7,0.18,-3],[-0.3,0.18,-3]],\"opts\":{\"r\":0.1,\"closed\":true}}},{\"id\":\"bigCar\",\"kind\":\"rig\",\"params\":{\"name\":\"bigCar\",\"synonyms\":[\"car\",\"giant car\",\"big car\"],\"pos\":[2,0.08,-2.5],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.15,0.25,5.0],\"at\":[-0.55,0.55,0],\"look\":\"metal\",\"color\":\"#4a4f57\"},{\"shape\":\"box\",\"size\":[0.15,0.25,5.0],\"at\":[0.55,0.55,0],\"look\":\"metal\",\"color\":\"#4a4f57\"},{\"shape\":\"box\",\"size\":[1.25,0.15,0.2],\"at\":[0,0.55,-2.4],\"look\":\"metal\",\"color\":\"#4a4f57\"},{\"shape\":\"box\",\"size\":[1.25,0.15,0.2],\"at\":[0,0.55,2.4],\"look\":\"metal\",\"color\":\"#4a4f57\"},{\"shape\":\"box\",\"size\":[1.3,0.08,5.0],\"at\":[0,0.7,0],\"look\":\"metal\",\"color\":\"#8a919a\"},{\"shape\":\"box\",\"size\":[2.0,0.12,0.12],\"at\":[0,0.45,-1.9],\"look\":\"metal\",\"color\":\"#2b2e33\"},{\"shape\":\"box\",\"size\":[2.0,0.12,0.12],\"at\":[0,0.45,1.9],\"look\":\"metal\",\"color\":\"#2b2e33\"},{\"shape\":\"box\",\"size\":[1.0,0.5,1.2],\"at\":[0,0.99,-1.1],\"look\":\"metal\",\"color\":\"#6b7380\"},{\"shape\":\"box\",\"size\":[0.5,0.5,0.5],\"at\":[-0.35,0.99,0.6],\"look\":\"plastic\",\"color\":\"#2f3a4a\"},{\"shape\":\"box\",\"size\":[0.5,0.5,0.5],\"at\":[0.35,0.99,0.6],\"look\":\"plastic\",\"color\":\"#2f3a4a\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":35},{\"name\":\"drive\",\"type\":\"slide\",\"to\":[-1.5,0,-1]},{\"name\":\"tight\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":58},{\"name\":\"tightDrive\",\"type\":\"slide\",\"to\":[-0.8,0,-0.2]},{\"name\":\"twitch\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-16},{\"name\":\"lane\",\"type\":\"slide\",\"to\":[-0.8,0,-1.5]},{\"name\":\"crabDrive\",\"type\":\"slide\",\"to\":[-1.6,0,-1]},{\"name\":\"veer\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":18},{\"name\":\"veerDrive\",\"type\":\"slide\",\"to\":[1.6,0,-1]},{\"name\":\"roll\",\"type\":\"slide\",\"to\":[0,0,-1.8]}]},{\"id\":\"wFa\",\"parent\":\"body\",\"at\":[-1,0.45,-1.9],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.35,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1c1c1e\"},{\"shape\":\"gear\",\"r\":0.28,\"w\":0.4,\"teeth\":6,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#c8ccd2\"}],\"moves\":[{\"name\":\"steerFront\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":30},{\"name\":\"steerSmall\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":6},{\"name\":\"crab\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":16},{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":1.5}]},{\"id\":\"wFb\",\"parent\":\"body\",\"at\":[1,0.45,-1.9],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.35,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1c1c1e\"},{\"shape\":\"gear\",\"r\":0.28,\"w\":0.4,\"teeth\":6,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#c8ccd2\"}],\"moves\":[{\"name\":\"steerFront\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":30},{\"name\":\"steerSmall\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":6},{\"name\":\"crab\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":16},{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":1.5}]},{\"id\":\"wRa\",\"parent\":\"body\",\"at\":[-1,0.45,1.9],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.35,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1c1c1e\"},{\"shape\":\"gear\",\"r\":0.28,\"w\":0.4,\"teeth\":6,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#c8ccd2\"}],\"moves\":[{\"name\":\"rearOpp\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-12},{\"name\":\"rearSame\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":6},{\"name\":\"rearJam\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":20},{\"name\":\"crab\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":16},{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":1.5}]},{\"id\":\"wRb\",\"parent\":\"body\",\"at\":[1,0.45,1.9],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.45,\"w\":0.35,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#1c1c1e\"},{\"shape\":\"gear\",\"r\":0.28,\"w\":0.4,\"teeth\":6,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#c8ccd2\"}],\"moves\":[{\"name\":\"rearOpp\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-12},{\"name\":\"rearSame\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":6},{\"name\":\"rearJam\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":20},{\"name\":\"crab\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":16},{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":1.5}]},{\"id\":\"sensor\",\"parent\":\"wFb\",\"at\":[0.25,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.12,0.22,0.22],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"sensor\",\"type\":\"appear\"}]},{\"id\":\"rearMotor\",\"parent\":\"body\",\"at\":[0,0.7,1.9],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.4,0.5],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#f08a24\"}],\"moves\":[{\"name\":\"motor\",\"type\":\"appear\"}]},{\"id\":\"ecu\",\"parent\":\"body\",\"at\":[0,0.89,1.3],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.3,0.5],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#2f6fb0\"},{\"shape\":\"cable\",\"path\":[[0,0,0.2],[0,-0.19,0.5]],\"r\":0.04,\"color\":\"#111111\"},{\"shape\":\"light\",\"r\":0.06,\"at\":[0.2,0.17,0],\"color\":\"#7dffb0\"}],\"moves\":[{\"name\":\"computer\",\"type\":\"appear\"},{\"name\":\"blink\",\"type\":\"blink\",\"rate\":3}]},{\"id\":\"shell\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.7,0.6,5.3],\"at\":[0,0.95,0],\"look\":\"paint\",\"color\":\"#c23b3b\"},{\"shape\":\"box\",\"size\":[1.6,0.6,2.6],\"at\":[0,1.55,0.3],\"look\":\"glass\",\"color\":\"#8fc6e8\"}],\"moves\":[{\"name\":\"shellOn\",\"type\":\"appear\"}]},{\"id\":\"lamps\",\"parent\":\"shell\",\"at\":[0,0.95,-2.65],\"shapes\":[{\"shape\":\"light\",\"r\":0.14,\"at\":[-0.55,0,0],\"color\":\"#fff2b0\"},{\"shape\":\"light\",\"r\":0.14,\"at\":[0.55,0,0],\"color\":\"#fff2b0\"}],\"moves\":[{\"name\":\"lampsOn\",\"type\":\"appear\"},{\"name\":\"lit\",\"type\":\"light\"}]}]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-8.5,0.08,-3],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"bigCar\",\"does\":\"front wheels turn\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"steerFront\",\"w\":\"steer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wideArc\",\"v\":\"start\",\"w\":\"circle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar.wFb\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[\"bigCar\",\"wideArc\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"circle\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"bigCar\",\"does\":\"swings wide, nose hits wall\"},\"state\":{\"text\":\"TOO WIDE\",\"w\":\"wide\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"turn\",\"w\":\"swings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"drive\",\"w\":\"swings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\",\"wall\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"stakes\",\"shows\":{\"p\":\"turnWide\",\"does\":\"counts up to 12\"},\"do\":[{\"p\":\"turnWide\",\"v\":\"show\",\"w\":\"takes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turnWide\",\"v\":\"count\",\"w\":\"12\",\"o\":0,\"d\":1.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\",\"turnWide\",\"wall\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"bigCar\",\"does\":\"rear wheels turn opposite, car pivots tighter\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"turnBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"driveBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wideArc\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turnWide\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"motor\",\"w\":\"motor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOpp\",\"w\":\"opposite\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"tight\",\"w\":\"opposite\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"tightDrive\",\"w\":\"opposite\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar.rearMotor\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[\"bigCar\",\"wall\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"opposite\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"carOutline\",\"does\":\"outline traces the car\"},\"do\":[{\"p\":\"carOutline\",\"v\":\"show\",\"w\":\"steering\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"how\",\"shows\":{\"p\":\"turnTight\",\"does\":\"counter drops from 12 to 10\"},\"do\":[{\"p\":\"carOutline\",\"v\":\"hide\",\"w\":\"At\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tightArc\",\"v\":\"start\",\"w\":\"pivots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turnTight\",\"v\":\"show\",\"w\":\"pivots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turnTight\",\"v\":\"count\",\"w\":\"10\",\"o\":0,\"d\":1.2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\",\"turnTight\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"bigCar\",\"does\":\"tail swings out, car twitches\"},\"state\":{\"text\":\"TWITCHY\",\"w\":\"twitchy\"},\"do\":[{\"p\":\"tightArc\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turnTight\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"tightBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"tightDriveBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"steerFrontBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"twitch\",\"w\":\"twitchy\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"bigCar\",\"does\":\"rear and front wheels turn the same way\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"twitchBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOppBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"show\",\"w\":\"above\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"speed\",\"v\":\"count\",\"w\":\"60\",\"o\":0,\"d\":1.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"steerSmall\",\"w\":\"same\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearSame\",\"w\":\"same\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"lane\",\"w\":\"same\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\",\"speed\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name2\",\"shows\":{\"p\":\"rearOutline\",\"does\":\"outline traces the rear wheels\"},\"do\":[{\"p\":\"speed\",\"v\":\"hide\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rearOutline\",\"v\":\"show\",\"w\":\"steering\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar.wRa\",\"bigCar.wRb\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"angle\",\"does\":\"rear wheels turn, counter reaches 10\"},\"do\":[{\"p\":\"rearOutline\",\"v\":\"hide\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"laneBack\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"steerSmallBack\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearSameBack\",\"w\":\"A\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOpp\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"angle\",\"v\":\"show\",\"w\":\"up\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"angle\",\"v\":\"count\",\"w\":\"10\",\"o\":0,\"d\":1,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar.wRb\",\"angle\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"factProof\",\"shows\":{\"p\":\"bigCar\",\"does\":\"all four wheels point the same way, car slides diagonally\"},\"do\":[{\"p\":\"angle\",\"v\":\"hide\",\"w\":\"The\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOppBack\",\"w\":\"The\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"crab\",\"w\":\"wheels\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"crabDrive\",\"w\":\"slides\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"bigCar\",\"does\":\"rear wheels jam turned, car veers sideways\"},\"state\":{\"text\":\"JAMMED\",\"w\":\"jams\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"crabBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"crabDriveBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearJam\",\"w\":\"jams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"veer\",\"w\":\"veers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"veerDrive\",\"w\":\"veers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"bigCar\",\"does\":\"computer appears, rear wheels straighten\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"veerBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"veerDriveBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"computer\",\"w\":\"computer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"blink\",\"w\":\"watches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearJamBack\",\"w\":\"straightens\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar.ecu\",\"bigCar.rearMotor\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"myth\",\"shows\":{\"p\":\"bigCar\",\"does\":\"wheels spin (drive), then stop\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"spin\",\"w\":\"And\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"spinBack\",\"w\":\"not\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"mythFact\",\"shows\":{\"p\":\"bigCar\",\"does\":\"wheels point front and back\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"steerFront\",\"w\":\"points\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOpp\",\"w\":\"points\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bigCar\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"bigCar\",\"does\":\"sensor, body and headlights appear\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"steerFrontBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"rearOppBack\",\"w\":\"Add\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"sensor\",\"w\":\"sensor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"shellOn\",\"w\":\"body\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"lampsOn\",\"w\":\"headlights\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"lit\",\"w\":\"headlights\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"bigCar\",\"does\":\"the finished car rolls calmly\"},\"do\":[{\"p\":\"bigCar\",\"v\":\"roll\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bigCar\",\"v\":\"spin\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"12 METERS\",\"at\":{\"s\":\"stakes\",\"w\":\"12\",\"o\":0},\"d\":1.6},{\"text\":\"10 METERS\",\"at\":{\"s\":\"how\",\"w\":\"10\",\"o\":0},\"d\":1.6},{\"text\":\"60 KM/H\",\"at\":{\"s\":\"fix2\",\"w\":\"60\",\"o\":0},\"d\":1.6},{\"text\":\"10 DEGREES\",\"at\":{\"s\":\"fact\",\"w\":\"10\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"motor\",\"o\":0},\"d\":1.5},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"same\",\"o\":0},\"d\":1.3},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"computer\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"congrats\",\"w\":\"Congratulations\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"stakes\",\"w\":\"12\",\"o\":0},{\"s\":\"how\",\"w\":\"10\",\"o\":0},{\"s\":\"fix2\",\"w\":\"60\",\"o\":0},{\"s\":\"fact\",\"w\":\"10\",\"o\":0},{\"s\":\"name\",\"w\":\"steering\",\"o\":0},{\"s\":\"name2\",\"w\":\"steering\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "story": {
+   "title": "Four-wheel steering",
+   "hero": "four-wheel steering",
+   "parts": [
+    "car",
+    "front wheels",
+    "rear wheels",
+    "rear steering motor",
+    "computer",
+    "speed sensor",
+    "concrete block",
+    "turning counter",
+    "headlights"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "if you steer only the front wheels of a long car, you get a wide turning circle"
+    },
+    {
+     "role": "problem",
+     "idea": "the long car swings so wide that its nose hits the wall"
+    },
+    {
+     "role": "stakes",
+     "idea": "a giant car needs about 12 meters to turn around, more than most driveways have"
+    },
+    {
+     "role": "fix1",
+     "idea": "you add a motor that turns the rear wheels the opposite way, and the car pivots tighter"
+    },
+    {
+     "role": "name",
+     "idea": "this is four-wheel steering"
+    },
+    {
+     "role": "how",
+     "idea": "at low speed the rear wheels turn against the front, so the turn shrinks from 12 to 10 meters"
+    },
+    {
+     "role": "problem2",
+     "idea": "at highway speed those opposite rear wheels make the car twitchy and the tail swings out"
+    },
+    {
+     "role": "fix2",
+     "idea": "above 60 km/h the rear wheels turn the same way as the front, so the car glides smoothly"
+    },
+    {
+     "role": "name2",
+     "idea": "turning the same way is called in-phase steering"
+    },
+    {
+     "role": "fact",
+     "idea": "a Mercedes S-Class turns its rear wheels up to 10 degrees and trims the turning circle by about 2 meters"
+    },
+    {
+     "role": "factProof",
+     "idea": "the GMC Hummer EV points all four wheels the same way and slides diagonally"
+    },
+    {
+     "role": "problem3",
+     "idea": "if the rear motor jams with the wheels turned, the car veers sideways"
+    },
+    {
+     "role": "fix3",
+     "idea": "a computer watches both axles and straightens the rear wheels the instant anything fails"
+    },
+    {
+     "role": "myth",
+     "idea": "four-wheel steering is not four-wheel drive: spinning wheels are a different idea"
+    },
+    {
+     "role": "mythFact",
+     "idea": "steering only points the wheels, and which wheels push is a separate job"
+    },
+    {
+     "role": "finish",
+     "idea": "add a speed sensor, the body panels and headlights to complete the car"
+    },
+    {
+     "role": "congrats",
+     "idea": "the finished car rolls calmly, built with four-wheel steering"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the long car steered by the front wheels swings wide and its nose hits the concrete wall",
+     "stakes": "the car cannot get into a tight spot or driveway",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "opposite rear wheels at highway speed make the tail swing out",
+     "stakes": "the car is unstable and twitchy at speed",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the rear wheels jam turned and the car veers sideways",
+     "stakes": "a car veering into the next lane at speed",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A full-size SUV like the Chevrolet Suburban has a turning circle of about 39 feet, roughly 12 meters",
+     "role": "stakes",
+     "search": "Chevrolet Suburban turning circle feet"
+    },
+    {
+     "claim": "Mercedes S-Class rear-axle steering turns the rear wheels up to 10 degrees and cuts the turning circle by up to about 2 meters",
+     "role": "fact",
+     "search": "Mercedes S-Class rear-axle steering 10 degrees turning circle reduced"
+    },
+    {
+     "claim": "Rear-axle steering turns the rear wheels opposite the front at low speeds and the same way at higher speeds, with the switch at around 60 km/h",
+     "role": "fix2",
+     "search": "rear-axle steering opposite direction below 60 km/h same direction above"
+    },
+    {
+     "claim": "The GMC Hummer EV's CrabWalk turns all four wheels the same way so the truck drives diagonally",
+     "role": "factProof",
+     "search": "GMC Hummer EV CrabWalk four wheels same direction diagonal"
+    }
+   ]
+  }
+ }
+}

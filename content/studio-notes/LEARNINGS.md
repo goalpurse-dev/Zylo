@@ -191,6 +191,62 @@ What made it work:
 - The two characters are stand-ins, not real people.
 - No borrowed music, in line with the owner's no-music call.
 
+## Summer winners and the aicenturyclips format (2026-11-03)
+
+All TikTok numbers below were read from the public pages on 2026-11-03.
+
+### The best video we've ever had: "Learn how to create these viral skeleton videos with ZyvoAI before it's too late" (300kviews.mp4)
+
+Its numbers, from the owner: 304K views, 10K likes, 7,138 saves, 88.1% of traffic from search, and views still rising on days 5–7.
+
+- **Length and frame 0:** 40.6 s. Frame 0 is a split screen. The top half holds two real skeleton Shorts from the trend with their own captions. A plain white "How To Create Viral Videos" title sits across the middle, and a creator face looks at camera in the bottom half.
+- **Opening line:** "These viral skeleton educational videos are getting millions of views and tons of creators are milking YouTube Shorts. Here's their exact process in three easy steps." By about 1.5 s, the trend's own big view counts (1.9M, 3.8M, 8M, 21M) show as a YouTube grid.
+- **Steps:**
+  - A GPT (Skeleton Shorts) gives image prompts.
+  - Zyvo's Image Generator does the rest: Viral Skeleton style, Nano Banana, one reference image.
+  - Zyvo's Video Generator animates with Kling.
+  - Each step is a real screen recording with one word on screen at a time (big white word captions in the center).
+- **End:** "You will end up with videos that look like this." It shows the results, with no hard sell.
+- **Why it worked:**
+  - **It answered a search.** People who had seen the skeleton trend typed "how to make skeleton videos" and found this. 88% search traffic and growth on days 5–7 are what search looks like. The feed gives a spike; search keeps going.
+  - **It was posted while the trend was hot.**
+  - **The proof is the trend's numbers, not ours.**
+  - **The steps are short and real,** using our real tool.
+
+**Key lesson:** our biggest hit was a search answer to a trending "how to make X" question, posted while the trend was hot.
+
+### The "Pov: You found the best AI tool in 2026" fruit post (zyvoai, May)
+
+8 s, filmed off a monitor, with music only and the "Comment 'ai' to get it for free" line. It got 6,149 views. A feed-only post with no search phrase died. Compare the skeleton how-to above.
+
+### aicenturyclips (429K followers): split-screen "how to make ___" how-tos
+
+| Video | Length | TikTok views | Saves | Posted |
+|---|---|---|---|---|
+| Realistic Cartoon POV (SpongeBob's house) | 29.7 s | 46,000 | 1,384 | 14 Jul |
+| Giant creature caught on camera | 40.1 s | 3,026 | 41 | 19 Jul |
+| Doodle ASMR | 55.2 s | 4,488 | 104 | 24 Jul |
+| Giant inflatable backyard pools | 51.9 s | 3,695 | 67 | 1 Aug |
+
+- **Frame 0 is always the same layout.** The top half holds two real viral clips from the trend playing side by side, each with a white "▷ 4.0M" view-count badge bottom left. The bottom half is the creator's face. A big two-line title sits where they meet: white "HOW TO MAKE" over black-on-yellow "DOODLE ASMR" (or "GIANTS CAUGHT / ON CAMERA", "BREAKING DOWN / VIRAL NICHES · PART 1").
+- **Line 1 names the trend and its proof:**
+  - "These giant caught on camera videos are getting millions of views and they look completely real."
+  - "Doodle ASMR videos are blowing up right now. One clip alone has 13 million views."
+- **Then a 4–6 step walkthrough on real screens,** with one or two words on screen at a time.
+- **The ending is a comment trigger** ("Comment giant and I'll send you the full workflow") or "full guide on aicenturies.com".
+- **The face is in every second frame.** It works as a talking head, not just a hook.
+
+**Why most of theirs flopped on TikTok** (3–5K views on a 429K account): the best one was the most surprising result, SpongeBob's house filmed like it's real. The others were trends that had already peaked by the time they posted. A how-to only travels when people are still searching for the thing. That's the same lesson as our skeleton hit, seen from the other side. Their real payoff is probably YouTube search and their site, which we can't see.
+
+**What we take:**
+- **Frame 0:** the split of two real viral examples with their real view counts, plus the big yellow "HOW TO MAKE ___" title.
+- **Line 1** says the trend name and that it has millions of views.
+- **3 quick steps on real screens.**
+
+**What we don't take:**
+- A talking head we don't have. No cloned or stock faces.
+- Others' numbers presented as ours. Every example gets a small credit.
+
 ## Still open
 
 - **Which of this actually works.** Only post numbers can say. These videos carry the recipe tag `studio_friend_v3`, so the Studio score can compare them with `studio_v2` once enough are posted.

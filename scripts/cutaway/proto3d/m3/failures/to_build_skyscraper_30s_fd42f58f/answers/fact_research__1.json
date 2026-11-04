@@ -1,0 +1,234 @@
+{
+ "hash": "*",
+ "by": "real run fd42f58f-247d-46e4-b085-8db5df130956",
+ "searches": 6,
+ "data": {
+  "text": "**Claim 0: Burj Khalifa foundation. Supported in a corrected form (pile length).**\n- The official Burj Khalifa site says \"The reinforced concrete mat is 3.7 meters thick and was constructed in four separate pours totalling 12,500 cubic meters of concrete.\" (https://www.burjkhalifa.ae/the-tower/structures/)\n- Commercial Interior Design says the mat sits on 192 bored reinforced concrete piles (https://www.commercialinteriordesign.com/insight/updated-how-the-burj-khalifa-was-built-including-design-foundations-cladding-and-urban-myths).\n- The 192 piles and the 1.5 m diameter are consistent across sources. The 43 m length appears in only one source I found, a Scribd student document (https://www.scribd.com/document/382908693/Construction-Of-Burj-Khalifa). That document also says the piles are 1.5 m in diameter and 43 m long, buried over 50 m deep.\n- Other sources give different lengths. Several say the piles extend about 50 m below the raft, and a 47.5 m figure also appears (https://www.slideshare.net/slideshow/foundation-deisgn-of-burj-khalifa/16447928). A third count of 194 piles appears in one Scribd document.\n- These secondary sources disagree on pile length, so 43 m isn't firmly established.\n- **Corrected form:** \"192 bored concrete piles about 1.5 m in diameter and roughly 43 to 50 m long, under a 3.7 m thick concrete mat.\" I couldn't find an engineering or government source with the exact length. If you need a precise figure, say \"about 50 m deep\" or \"more than 40 m long.\"\n\n**Claim 1: Taipei 101 damper. Supported in a corrected form (wording).**\n- Britannica calls it a huge steel sphere weighing 660 metric tons (728 short tons) (https://www.britannica.com/place/Taipei-101).\n- The Civil Engineer says it's a 660 metric ton pendulum like tuned mass damper installed between floors 87 and 92 (https://www.thecivilengineer.org/news/taipei-101s-impressive-tuned-mass-damper).\n- Atlas Obscura describes an 18-foot diameter, 660-metric-ton steel sphere suspended by eight cables (https://www.atlasobscura.com/places/tuned-mass-damper-of-taipei-101).\n- The 728-ton figure (Amusing Planet) is the same mass in short tons, so it isn't a conflict.\n- \"About 660 tonnes\" is correct. Two details need adjusting. It's a sphere suspended as a pendulum, not a \"ball hung\" loosely, and it sits at floors 87–92, which is high in the tower but not the top. It also counters earthquakes and typhoon winds, not only wind.\n- **Corrected form:** \"a roughly 660-tonne steel sphere, suspended as a pendulum between floors 87 and 92, reduces the building's sway from wind.\" It's fine to call it a \"steel ball\" if you want to keep the wording.\n\n**Claim 2: Home Insurance Building. Supported in a corrected form (hedge \"first\" and \"steel\").**\n- Britannica says it was completed 1885, demolished 1931, generally considered to be the first metal-frame building and, at 10 stories, the world's first skyscraper (https://www.britannica.com/place/Home-Insurance-Company-Building).\n- Britannica also describes a metal skeleton of cast-iron columns, sheathed in masonry, and wrought-iron beams (same URL).\n- Guinness World Records says it was erected in 1884-1885 (https://www.guinnessworldrecords.com/world-records/first-skyscraper).\n- The \"first\" title is contested. Architectuul notes that the Ditherington Flax Mill was an earlier fireproof-metal-framed building but was only five stories tall (https://architectuul.com/architecture/home-insurance-building). Planetizen discusses the \"myth\" of the first skyscraper (https://www.planetizen.com/features/137468-myth-first-skyscraper-how-clever-pr-campaign-duped-world).\n- The frame was mostly iron, which fits the claim's \"steel and iron\" wording. The structure is described as cast-iron columns and wrought-iron beams, with steel used in some parts. Some sources say \"steel frame\" outright, which overstates it.\n- **Corrected form:** \"The 10-story Home Insurance Building in Chicago (completed 1885) is often called the first skyscraper because of its iron-and-steel skeleton frame, though the title is debated.\" Note that it was 10 stories as built, and Planetizen says nine.",
+  "sources": [
+   {
+    "url": "https://en.wikipedia.org/wiki/William_Le_Baron_Jenney",
+    "title": "William Le Baron Jenney"
+   },
+   {
+    "url": "https://www.britannica.com/place/Home-Insurance-Company-Building",
+    "title": "Home Insurance Company Building"
+   },
+   {
+    "url": "https://chicagology.com/biographies/lebaronjenney/",
+    "title": "William Le Baron Jenney"
+   },
+   {
+    "url": "https://chicagology.com/goldenage/goldenage076/",
+    "title": "Home Insurance Building"
+   },
+   {
+    "url": "https://www.planetizen.com/features/137468-myth-first-skyscraper-how-clever-pr-campaign-duped-world",
+    "title": "The myth of the 'first skyscraper:' How a clever PR campaign duped the world"
+   },
+   {
+    "url": "https://www.studiomatrx.org/architecture-canon/home-insurance-building",
+    "title": "Home Insurance Building: The First Skyscraper?"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Edward_Carson_Waller",
+    "title": "Edward Carson Waller"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Home_Insurance_Building",
+    "title": "Home Insurance Building"
+   },
+   {
+    "url": "https://www.history.com/articles/home-insurance-building",
+    "title": "Home Insurance Building"
+   },
+   {
+    "url": "https://www.amusingplanet.com/2014/08/the-728-ton-tuned-mass-damper-of-taipei.html",
+    "title": "The 728-Ton Tuned Mass Damper of Taipei 101"
+   },
+   {
+    "url": "https://www.britannica.com/place/Taipei-101",
+    "title": "Taipei 101"
+   },
+   {
+    "url": "https://www.tiktok.com/discover/what-is-the-name-of-taipei-101-ball-balance",
+    "title": "What Is The Name of Taipei 101 Ball Balance"
+   },
+   {
+    "url": "https://constructsteel.org/steel-projects/how-steel-helps-taipei-101-survive-earthquakes/",
+    "title": "How steel helps Taiwan's tallest building, Taipei 101, survive earthquakes - constructsteel.org"
+   },
+   {
+    "url": "https://kmarson.com/2023/10/08/taipei-101-damper-ball/",
+    "title": "Taipei 101 Damper Ball"
+   },
+   {
+    "url": "https://cavemancircus.com/2024/03/01/tuned-mass-damper/",
+    "title": "Picture of the Day - Caveman Circus"
+   },
+   {
+    "url": "https://www.archdaily.com/772017/this-damper-keeps-taipei-101-upright-in-a-typhoon/{{url}}",
+    "title": "Taipei 101 Sets New Record During Typhoon Soudelor"
+   },
+   {
+    "url": "https://www.archdaily.com/tag/typhoon",
+    "title": "1. ArchDaily"
+   },
+   {
+    "url": "https://el.hotels.com/see/go/taiwan/taipei-101",
+    "title": "Taipei 101"
+   },
+   {
+    "url": "https://www.scribd.com/document/56629546/TMD-TAIPEI101",
+    "title": "Tuned Mass Dampers for Taipei 101"
+   },
+   {
+    "url": "https://www.cnn.com/2024/04/04/style/taipei-101-earthquake-design-intl-hnk",
+    "title": "Taipei 101: How Taiwan’s tallest skyscraper withstands earthquakes"
+   },
+   {
+    "url": "https://www.thecivilengineer.org/news/taipei-101s-impressive-tuned-mass-damper",
+    "title": "Taipei 101’s impressive tuned mass damper"
+   },
+   {
+    "url": "https://www.atlasobscura.com/places/tuned-mass-damper-of-taipei-101",
+    "title": "Tuned Mass Damper of Taipei 101 in Taipei - Atlas Obscura"
+   },
+   {
+    "url": "https://www.youtube.com/watch?v=pQXP2yWRRIo",
+    "title": "The 660-Ton Pendulum That Protects Taipei 101 - YouTube"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Mechanical_resonance",
+    "title": "Mechanical resonance"
+   },
+   {
+    "url": "https://scanalyst.fourmilab.ch/t/taipei-101-skyscraper-mass-damper-in-taiwan-earthquake/2025",
+    "title": "Taipei 101 Skyscraper Mass Damper in Taiwan Earthquake - The Happening World - Scanalyst"
+   },
+   {
+    "url": "https://english.cw.com.tw/article/article.action?id=2374",
+    "title": "What keeps Taipei 101 steady during earthquakes and typhoons?｜Politics & Society｜2019-04-24｜web only"
+   },
+   {
+    "url": "https://old.skyscraper.org/EXHIBITIONS/TEN_TOPS/taipei101.php",
+    "title": "The Skyscraper Museum: TIMES SQUARE, 1984: The Postmodern Moment WALKTHROUGH"
+   },
+   {
+    "url": "https://es.scribd.com/presentation/430540815/Foundation-of-Burj-Khalifa-Ppt",
+    "title": "Burj Khalifa Foundation Depth and Design"
+   },
+   {
+    "url": "https://www.burjkhalifa.ae/the-tower/structures/",
+    "title": "Burj Khalifa Structure: Design and Construction"
+   },
+   {
+    "url": "https://www.scribd.com/document/382908693/Construction-Of-Burj-Khalifa",
+    "title": "Burj Khalifa Construction Details"
+   },
+   {
+    "url": "https://www.scribd.com/document/553806650/AR-402-PILE-FOUNDATION-2",
+    "title": "Burj Khalifa Foundation Pile Details"
+   },
+   {
+    "url": "https://www.slideshare.net/slideshow/pile-foundation-of-burj-khalifa/95415833",
+    "title": "pile foundation of burj khalifa"
+   },
+   {
+    "url": "https://www.commercialinteriordesign.com/insight/updated-how-the-burj-khalifa-was-built-including-design-foundations-cladding-and-urban-myths",
+    "title": "How Burj Khalifa was built - Commercial Interior Design"
+   },
+   {
+    "url": "https://alexcrouthamel.wixsite.com/burj-khalifa/analysis-and-description",
+    "title": "Analysis and Description"
+   },
+   {
+    "url": "https://www.citizendailypost.com/faq/how-deep-is-burj-khalifa-foundation",
+    "title": "How deep is Burj Khalifa Foundation?"
+   },
+   {
+    "url": "https://www.slideshare.net/slideshow/burj-khalifa-78523881/78523881",
+    "title": "BURJ KHALIFA"
+   },
+   {
+    "url": "https://www.britannica.com/place/Home-Insurance-Company-Building",
+    "title": "Home Insurance Company Building"
+   },
+   {
+    "url": "https://www.guinnessworldrecords.com/world-records/first-skyscraper",
+    "title": "First skyscraper"
+   },
+   {
+    "url": "https://architectuul.com/architecture/home-insurance-building",
+    "title": "Home Insurance Building"
+   },
+   {
+    "url": "https://kids.britannica.com/students/article/Home-Insurance-Building/326554",
+    "title": "Home Insurance Building - Students"
+   },
+   {
+    "url": "https://www.ebsco.com/research-starters/history/worlds-first-skyscraper-built/",
+    "title": "World's First Skyscraper Is Built"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Home_Insurance_Building",
+    "title": "Home Insurance Building"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/William_Le_Baron_Jenney",
+    "title": "William Le Baron Jenney"
+   },
+   {
+    "url": "https://www.optima.inc/chicago-skyscraper-history-home-insurance-building/",
+    "title": "Chicago Skyscraper History: Home Insurance Building - Optima"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/Architecture_of_Chicago",
+    "title": "Architecture of Chicago"
+   },
+   {
+    "url": "https://en.wikipedia.org/wiki/List_of_tallest_buildings_in_Chicago",
+    "title": "List of tallest buildings in Chicago"
+   },
+   {
+    "url": "https://www.scribd.com/doc/252197902/Burj-Khalifa",
+    "title": "Burj Khalifa Foundation Design Overview"
+   },
+   {
+    "url": "https://es.scribd.com/presentation/430540815/Foundation-of-Burj-Khalifa-Ppt",
+    "title": "Burj Khalifa Foundation Depth and Design"
+   },
+   {
+    "url": "https://www.scribd.com/document/257394295/Burj-Khalifa-Foundation",
+    "title": "Burj Khalifa Foundation Depth Details"
+   },
+   {
+    "url": "https://civil-eng.binus.ac.id/2026/08/26/a-strong-foundation-builds-big-dreams-burj-khalifa/",
+    "title": "A strong foundation builds big dreams, Burj Khalifa - Civil Engineering BINUS University"
+   },
+   {
+    "url": "https://theconstructor.org/structural-engg/burj-khalifa-construction/62758/",
+    "title": "Burj Khalifa: Construction of the Tallest Structure in the World"
+   },
+   {
+    "url": "https://www.slideshare.net/slideshow/foundation-deisgn-of-burj-khalifa/16447928",
+    "title": "Foundation Deisgn of Burj Khalifa"
+   },
+   {
+    "url": "https://www.slideshare.net/slideshow/foundation-design-of-burj-khalifa/42820992",
+    "title": "Foundation design of burj khalifa (deep foundation<piles>)"
+   },
+   {
+    "url": "https://www.scribd.com/presentation/439313308/burj-khalifa-pptx",
+    "title": "Burj Khalifa Foundation Depth Details"
+   },
+   {
+    "url": "https://build-construct.com/structures/the-role-of-burj-khalifa-construction-of-the-tallest-structure-in-the-world/",
+    "title": "The Role of burj Khalifa: Construction of the Tallest Structure in the World"
+   },
+   {
+    "url": "https://www.citizendailypost.com/faq/how-deep-is-burj-khalifa-foundation",
+    "title": "How deep is Burj Khalifa Foundation?"
+   }
+  ]
+ }
+}
