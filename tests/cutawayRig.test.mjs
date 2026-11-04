@@ -67,8 +67,10 @@ test("saved parts: the kit's learned parts are offered by name or synonym", () =
   assert.deepEqual(libraryMatches(lib, "how a toaster works"), []);
 });
 
-test("topic policy: new machines are built, only what the format cannot show is refused", () => {
-  for (const t of ["garage door", "rain barrel", "how a toilet flushes", "microwave", "traffic light"]) assert.equal(kitCheck(t).verdict, "yes", t);
+test("topic policy (strict, 2026-11-04): the kit's world and premade topics are built, machines are refused", () => {
+  for (const t of ["rain barrel", "traffic light"]) assert.equal(kitCheck(t).verdict, "yes", t);
+  for (const t of ["garage door", "how a toilet flushes"]) assert.equal(kitCheck(t).verdict, "unsure", t);
+  assert.equal(kitCheck("microwave").verdict, "no");
   for (const t of ["how the heart pumps blood", "a black hole", "the solar system"]) assert.equal(kitCheck(t).verdict, "no", t);
 });
 

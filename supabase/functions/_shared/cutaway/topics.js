@@ -52,24 +52,38 @@ export const premadeByKey = (key) => PREMADE.find((p) => p.key === key) ?? null;
 // The kit is a "yard + soil cut" world: a house, a lawn, a soil cut face with strata and groundwater, things dug
 // into the ground (pits, trenches, holes), fills (gravel, water, soil, clay), pipes along any path, tanks, sheets and
 // liners, rain and runoff, trucks, simple props. Topics that need other parts are refused before any charge.
-const KIT_WORDS = new Set("pit pits trench trenches ditch ditches hole holes pipe pipes piping pipeline tank tanks cistern barrel drain drains drainage culvert culverts gravel soil dirt groundwater aquifer rain rainwater stormwater storm flood flooding basement foundation footing footings sewer sewage septic leach pond ponds pool pools well wells pump sump gutter gutters downspout landfill trash garbage compost garden irrigation sprinkler sprinklers dig digging buried bury concrete slab driveway road roads asphalt pavement curb sidewalk geothermal soakaway puddle mud clay sand lawn retaining fence posts post".split(" "));
+// The owner's rule of 2026-11-04 (it replaces "everything buildable gets built" of 2026-10-26): custom topics are
+// strict. Engines, car parts, machines, electronics, appliances and bodies are refused up front, instantly, on the page
+// and on the server; a topic in the kit's world (yards, houses, streets, water, pipes) passes; Claude Haiku decides the rest.
+const KIT_WORDS = new Set("pit pits trench trenches ditch ditches hole holes pipe pipes piping pipeline plumbing tank tanks cistern barrel drain drains drainage culvert culverts gravel soil dirt groundwater aquifer water rain rainwater stormwater storm flood flooding basement foundation footing footings sewer sewage septic leach pond ponds pool pools well wells pump sump gutter gutters downspout landfill trash garbage compost garden irrigation sprinkler sprinklers dig digging buried bury concrete slab driveway road roads street streets asphalt pavement curb sidewalk manhole manholes geothermal soakaway puddle mud clay sand lawn yard backyard house houses roof roofs attic shed sheds patio retaining fence posts post".split(" "));
 const KIT_PHRASES = ["dry well", "rain barrel", "rain garden", "storm drain", "retaining wall", "fence post", "water main", "water line", "gas line", "septic system", "drain field", "sump pump", "ground loop"];
-// What cannot be a cutaway video at all (the owner, 2026-10-26: everything buildable gets built, a part the kit lacks is
-// designed from building blocks; only topics that do not fit the format are refused, before anything is charged).
+// What Cutaway can't build (yet): refused before anything is charged, even when a kit word is in the topic too
+// ("a puddle of mud becomes a semiconductor factory"). The label completes "Cutaway can't build ___ yet."
 const BLOCKERS = [
-  ["the human body", "heart brain lungs lung body blood eye eyes ear ears virus dna stomach kidney liver muscle bone bones skeleton skin"],
-  ["space", "sun moon planet planets star stars galaxy galaxies satellite satellites mars jupiter universe spaceship astronaut"],
-  ["an idea, not a thing you can build", "money stock stocks economy love music language government politics bitcoin crypto religion history philosophy"],
+  ["engine and car parts", "engine engines gearbox gearboxes transmission transmissions clutch clutches piston pistons crankshaft camshaft turbo turbocharger supercharger carburetor carburettor brake brakes steering suspension axle axles differential drivetrain ignition horsepower tire tires tyre tyres 4wd awd"],
+  ["machines and vehicles", "chainsaw chainsaws lawnmower mower mowers drill drills tractor tractors elevator elevators escalator escalators airplane airplanes plane planes aircraft jet jets helicopter helicopters boat boats ship ships submarine submarines train trains locomotive rocket rockets drone drones robot robots"],
+  ["electronics", "semiconductor semiconductors chip chips microchip microchips transistor transistors circuit circuits computer computers laptop laptops phone phones smartphone smartphones cpu gpu processor battery batteries electronics electronic tv television radio camera cameras wifi router internet"],
+  ["home appliances", "fridge refrigerator freezer stove stoves oven ovens cuisiniere microwave microwaves dishwasher toaster blender kettle"],
+  ["the human body", "heart brain lungs lung body blood eye eyes ear ears virus dna stomach kidney liver muscle bone bones skeleton skin tooth teeth nerve nerves cell cells"],
+  ["animals", "animal animals fish dog dogs cat cats bird birds insect insects bee bees ant ants horse horses cow cows"],
+  ["space and the sky", "sun moon planet planets star stars galaxy galaxies satellite satellites mars jupiter universe spaceship astronaut"],
+  ["ideas like money or history", "money stock stocks economy love music language government politics bitcoin crypto religion history philosophy"],
 ].map(([label, list]) => ({ label, set: new Set(list.split(" ")) }));
-const BLOCKER_PHRASES = [["space", "black hole"], ["space", "solar system"], ["the human body", "immune system"]];
-// two capitalised words in a row that are not a known topic: maybe a real person (refused) or a product (built): Claude
-// Haiku decides (kitCheck.js), about $0.0005
-const PROPER = /(?:^|[^.!?]\s)([A-Z][a-z]+\s+[A-Z][a-z]+)/;
+const BLOCKER_PHRASES = [["space and the sky", "black hole"], ["space and the sky", "solar system"], ["the human body", "immune system"],
+  ["home appliances", "washing machine"], ["home appliances", "clothes dryer"], ["home appliances", "air conditioner"], ["home appliances", "air conditioning"]];
+// Vehicles themselves: refused unless the topic is about the kit's world ("a driveway that drains rain off the cars" passes).
+const SOFT_BLOCKER = { label: "engine and car parts", set: new Set("car cars vehicle vehicles automobile automobiles truck trucks bus buses motorcycle motorcycles bike bikes bicycle bicycles motor motors".split(" ")) };
+
+// What the page shows under the topic box and with a refusal.
+export const KIT_BEST = "yards, houses, streets, water and pipes";
+export const KIT_EXAMPLES = Object.freeze(["septic tank", "sump pump", "pond"]);
+/** "Cutaway can't build engine and car parts yet. It works best for yards, houses, streets, water and pipes." */
+export const cantBuildMessage = (missing = []) => `Cutaway can't build ${missing?.[0] || "this kind of topic"} yet. It works best for ${KIT_BEST}.`;
 
 /**
- * The free kit check. verdict: "yes" (it can be a cutaway video: the kit builds it, designing any part it lacks), "no"
- * (it cannot be one at all: `missing` says why), "unsure" (it may name a real person: the server asks Claude Haiku 5.5,
- * about $0.0005, see kitCheck.js). `closest`: the 3 premade topics nearest to it, suggested with a refusal.
+ * The free kit check. verdict: "yes" (a premade topic, or one in the kit's world), "no" (Cutaway can't build it:
+ * `missing` holds the label), "unsure" (neither: the server asks Claude Haiku 5.5, about $0.0005, see kitCheck.js).
+ * `closest`: the 3 premade topics nearest to it.
  */
 export function kitCheck(text) {
   const t = normTopic(text), w = words(text);
@@ -78,7 +92,9 @@ export function kitCheck(text) {
   const missing = new Set();
   for (const b of BLOCKERS) if (w.some((x) => b.set.has(x))) missing.add(b.label);
   for (const [label, phrase] of BLOCKER_PHRASES) if (hasPhrase(t, phrase)) missing.add(label);
-  const verdict = missing.size ? "no" : PROPER.test(String(text)) ? "unsure" : "yes";
+  const inKit = w.some((x) => KIT_WORDS.has(x)) || KIT_PHRASES.some((p) => hasPhrase(t, p));
+  if (!missing.size && !inKit && w.some((x) => SOFT_BLOCKER.set.has(x))) missing.add(SOFT_BLOCKER.label);
+  const verdict = missing.size ? "no" : inKit ? "yes" : "unsure";
   return { verdict, missing: [...missing], closest: closestPremade(text, 3) };
 }
 
