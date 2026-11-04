@@ -227,7 +227,10 @@ export function layoutRules(L) {
       const main = parts.find((p) => p.main)?.id, reads = ids.some((id) => ["book", "sheet", "flag"].includes(byId.get(String(id).split(".")[0])?.kind));
       if (reads) return { ...keep, at: { s: b.s }, focus: ids, width: 0.75, zone: "center" };
       if (main && !pieces.length && !ids.includes(main)) ids.push(main);
-      const width = main && ids.includes(main) ? 0.94 : s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      const width0 = main && ids.includes(main) ? 0.94 : s.hero ? (s.width ?? 0.45) : ids.length > 1 ? 0.8 : String(ids[0]).includes(".") ? 0.55 : 0.7;
+      // a hole being dug keeps lawn on both sides of it: framed edge to edge, the cut face filled the phone with soil and
+      // read as a wall of dirt, not a hole in a yard (the real bunker run's hook stopped the video, 2026-11-04)
+      const width = ids.some((id) => byId.get(String(id).split(".")[0])?.kind === "dig") ? Math.min(width0, 0.68) : width0;
       // indoors a piece of a machine sits in the middle of the frame: a flat one (a stove's burners) was put at the bottom
       // with the wall filling the rest, as a cut sits under its yard (phase 1, 2026-11-04)
       if (INDOOR.has(world.backdrop?.type) && ids.every((id) => String(id).includes("."))) return { ...keep, focus: ids, width, zone: "center" };

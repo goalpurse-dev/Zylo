@@ -55,3 +55,10 @@ test("mechanism kit: the planner is told about the machine parts", () => {
   assert.match(t, /follow \{of, ratio\}/);
   assert.match(t, /crank \{of, axis, throw\}/);
 });
+
+test("a hole being dug keeps lawn on both sides (the real bunker run's hook read as a wall of dirt)", () => {
+  const L = { key: "t", world: { cut: { x0: -6, x1: 6, z0: -5, depth: 5.5 } }, parts: [{ id: "dig", kind: "dig", params: { mound: { x: 9, z: -4, rx: 1.6, rz: 1.3, h: 0.9 } } }],
+    beats: [{ s: "hook", do: [{ p: "dig", v: "dig" }], shots: [{ focus: ["dig"], type: "mid" }], shows: { p: "dig", does: "dig the hole" } }], roles: ["hook"] };
+  const shot = layoutRules(L).layout.beats[0].shots[0];
+  assert.ok(shot.width <= 0.68, String(shot.width));
+});
