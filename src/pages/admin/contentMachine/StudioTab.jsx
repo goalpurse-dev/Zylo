@@ -84,7 +84,7 @@ function ScriptReview({ job, onDone }) {
   const set = (i, patch) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
   const approve = async () => {
     setBusy(true); setNote(null);
-    try { await api("studioScriptApprove", { id: job.id, edits: { title, ...(s.headline ? { headline } : {}), caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
+    try { await api("studioScriptApprove", { id: job.id, edits: { title, ...(s.headline && !s.headline.hidden ? { headline } : {}), caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
     catch (e) { setNote(e.message); setBusy(false); }
   };
   return (

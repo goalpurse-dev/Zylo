@@ -442,3 +442,12 @@ test("Rage hook v2: a pain opening (no yell, no slam), no time line, and a save 
   assert.match(share.lines.at(-1).text, /Send this to the friend/);
   assert.equal(rageScripts(loadRecipe("rage_fruit_fyp")).raw.lines.filter((l) => l.role === "reveal").length, 1, "the first recipe keeps its time");
 });
+
+test("a hidden headline (rage / pain hooks) is never checked and follows line 1", async () => {
+  const { applyScriptEdits } = await import("../supabase/functions/_shared/contentMachine/scriptEdit.js");
+  const s = { title: "t", headline: { text: "x".repeat(90), hidden: true }, lines: [{ text: "x".repeat(90), key: [] }, { text: "Watch.", key: ["Watch."] }] };
+  const out = applyScriptEdits(s, { headline: "y".repeat(90), lines: [{ text: "Short new line one." }] });
+  assert.equal(out.headline.text, "Short new line one.");
+  assert.equal(out.headline.hidden, true);
+  assert.throws(() => applyScriptEdits({ ...s, headline: { text: "h" } }, { headline: "y".repeat(90) }), /over 80/, "a shown headline is still checked");
+});
