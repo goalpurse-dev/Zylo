@@ -84,6 +84,7 @@ export function kitProblems(tl, kit) {
   const out = [];
   (tl.shots ?? []).forEach((s, i) => {
     for (const o of s.objects ?? []) {
+      if (o?.asset) { if (tl.assets?.[o.asset]?.kind !== "object") out.push(`shot ${i} (#${s.line}): built object "${o.name}" has no blueprint in timeline.assets`); continue; }
       const key = kit.resolveObject(o?.name);
       if (!key) { out.push(`shot ${i} (#${s.line}): the kit has no object "${o?.name}"`); continue; }
       const states = kit.OBJECTS[key]?.states ?? [], st = o.state ?? kit.OBJECTS[key]?.state;
@@ -103,13 +104,31 @@ export function checkFailure(c) {
 const normalizeScript = (s) => ({ ...s, lines: (s?.lines ?? []).map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) });
 
 // ---------------------------------------------------------------- prepare: voice -> plan + checks -> mix
-export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null } = {}) {
+export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null, builder: builderIn = null } = {}) {
   const p = job.prepare ?? {}, timing = {};
   const lap = async (k, fn) => { const t = Date.now(); const r = await fn(); timing[k] = +((Date.now() - t) / 1000).toFixed(2); return r; };
   const script = normalizeScript(p.script);
   if (!script.lines.length) throw coded("BAD_JOB", "the script has no lines");
   const mp3 = path.join(dir, "voice.mp3"), takeJson = path.join(dir, "take.json");
 
+  // 0. the builder (lib/builder: a missing kit object or world never fails a run) starts early: the needs of a plan made
+  //    from estimated timings are resolved (kit -> library -> design + still + vision check) while the voice is made
+  const plan = planModule ?? (await import(pathToFileURL(path.join(ENGINE, "plan.mjs")).href));
+  const kit = kitModule ?? (await loadKit());
+  const B = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "index.js")).href);
+  const { snapshotCache } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "cache.js")).href);
+  const blog = [];
+  const library = snapshotCache(p.builder?.library ?? [], { onSave: async (asset) => { await post("built", { asset: { ...asset, still_path: asset.still_path ? path.basename(asset.still_path) : null } }); } });
+  const builder = builderIn ?? B.makeBuilder({
+    provider: await B.providerFromConfig({ provider: p.builder?.provider ?? process.env.BLOCKY_WORLDS_BUILDER ?? "off", idea: p.idea ?? null }),
+    cache: library, budget: p.builder?.budget ?? {}, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
+  });
+  try {
+    const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
+    const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
+    builder.prefetch(needsFromTimeline(early, { kit }), kit);
+  } catch (e) { console.log(`builder: no early start (${e.message})`); }
+  try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
   await post("progress", { stage: "voice", pct: 2 });
   const reuse = Boolean(p.voice?.get);
@@ -134,21 +153,22 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     }
   }
 
-  // 2. the plan and the three checks: any miss stops the run here, before any render
+  // 2. the plan, the builder's things put in (each change re-checked; one that breaks a check is undone), then the
+  //    three checks + the kit check: any miss stops the run here, before any render
   await post("progress", { stage: "plan", pct: 8 });
-  const plan = planModule ?? (await import(pathToFileURL(path.join(ENGINE, "plan.mjs")).href));
   const tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null }));
   tl.audio = { voice: "voice.wav", music: "music.wav" };
-  const checks = preRenderChecks(plan, tl, script, kitModule ?? (await loadKit()));
+  const built = await lap("build", () => builder.buildFor(tl, { plan, kit }));
+  const checks = preRenderChecks(plan, tl, script, kit);
   const checkFile = path.join(dir, "visual-check.json");
-  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null }, null, 1));
+  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog } }, null, 1));
   if (p.out?.visualCheck) await put(p.out.visualCheck, checkFile, "application/json");
   const bad = checkFailure(checks);
   if (bad) throw bad;
   const tlPath = path.join(dir, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl));
   await put(p.out.timeline, tlPath, "application/json");
-  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length };
+  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms } };
   await post("planned", planned);
 
   // 3. music A + the SFX cues + the final mix (the chunks render meanwhile)
@@ -159,7 +179,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const cues = p.sfx === false ? [] : sfxCues(tl);
   const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues }));
   await put(p.out.mix, mixM4a, "audio/mp4");
-  return { role: "prepare", planned, voice: { reused: reuse, costUsd: reuse ? 0 : v.costUsd ?? null, billedChars: v.billedChars ?? null, chars: v.chars ?? null, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing };
+  return { role: "prepare", planned, builder: { ...built.report, applied: built.applied, reverted: built.reverted, cards: built.cards, added: library.added.map((a) => ({ id: a.id, kind: a.kind, name: a.name })) }, voice: { reused: reuse, costUsd: reuse ? 0 : v.costUsd ?? null, billedChars: v.billedChars ?? null, chars: v.chars ?? null, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing };
+  } finally { await builder.close().catch(() => {}); }
 }
 
 // ---------------------------------------------------------------- chunk: frames [from, to) -> seg + web

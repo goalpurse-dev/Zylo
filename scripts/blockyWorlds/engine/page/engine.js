@@ -69,7 +69,9 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
     const at = `shot ${i} (${s.start}-${s.end})`;
     if (!(s.end > s.start)) bad.push(`${at}: end <= start`);
     if (i > 0 && Math.abs(s.start - tl.shots[i - 1].end) > 0.002) bad.push(`${at}: does not start where shot ${i - 1} ends (${tl.shots[i - 1].end})`);
-    if (setNames && !setNames.includes(s.set)) bad.push(`${at}: unknown set "${s.set}" (${setNames.join(", ")})`);
+    const worldId = /^world:/.test(s.set ?? "") ? s.set.slice(6) : null;
+    if (worldId) { if (tl.assets?.[worldId]?.kind !== "world" || !tl.assets[worldId].spec) bad.push(`${at}: built world "${worldId}" is not in timeline.assets`); }
+    else if (setNames && !setNames.includes(s.set)) bad.push(`${at}: unknown set "${s.set}" (${setNames.join(", ")})`);
     if (!LIGHTS.includes(s.light)) bad.push(`${at}: unknown light "${s.light}"`);
     if (!CAMERAS.includes(s.camera)) bad.push(`${at}: unknown camera "${s.camera}"`);
     const ids = (s.actors ?? []).map((a) => a.id);
@@ -86,6 +88,11 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
     const objs = s.objects ?? [];
     if (!Array.isArray(objs)) bad.push(`${at}: objects must be a list`);
     else for (const o of objs) {
+      if (o?.asset) { // built for this video (lib/builder): a block blueprint in timeline.assets
+        if (tl.assets?.[o.asset]?.kind !== "object" || !tl.assets[o.asset].blueprint) bad.push(`${at}: built object "${o.asset}" is not in timeline.assets`);
+        if (o.spot && !SPOTS.includes(o.spot) && !EXTRA_SPOTS.includes(o.spot)) bad.push(`${at}: object "${o.name}" on unknown spot "${o.spot}"`);
+        continue;
+      }
       if (!objects) { bad.push(`${at}: objects given but page/kit/objects.js is not loaded`); break; }
       const key = objects.resolve(o?.name);
       if (!key) { bad.push(`${at}: unknown object "${o?.name}" (${Object.keys(objects.catalog).join(", ")})`); continue; }
@@ -139,7 +146,10 @@ async function main() {
   const holdPerson = typeof peopleM.mod.holdPerson === "function" ? peopleM.mod.holdPerson : null; // optional (babies)
   const releasePerson = typeof peopleM.mod.releasePerson === "function" ? peopleM.mod.releasePerson : null;
   // scene objects (kit/objects.js): loaded only when the timeline uses them
-  const anyObjects = tl.shots.some((s) => s.objects?.length);
+  const anyObjects = tl.shots.some((s) => (s.objects ?? []).some((o) => !o.asset));
+  // built objects / worlds (lib/builder -> timeline.assets): page/kit/blueprint.js, page/sets/worldspec.js
+  const blueprintM = tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset)) ? await import("/page/kit/blueprint.js") : null;
+  const worldM = tl.shots.some((s) => /^world:/.test(s.set ?? "")) ? await import("/page/sets/worldspec.js") : null;
   let objectsM = null;
   if (anyObjects) {
     try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
@@ -193,7 +203,9 @@ async function main() {
   // ---------- sets ----------
   const SETS = {};
   for (const name of [...new Set(tl.shots.map((s) => s.set))]) {
-    const S = await buildSet(name, { THREE, scene, renderer, gltf, tex });
+    const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex }) : await buildSet(name, { THREE, scene, renderer, gltf, tex });
+    if (S?.problems?.length) console.warn(`engine: built world ${name}: ${S.problems.slice(0, 8).join("; ")}`);
+    S.blockers ??= [];
     if (!S?.root?.isObject3D) throw new Error(`engine: buildSet("${name}") returned no root Object3D`);
     const missing = SPOTS.filter((k) => !S.spots?.[k]?.isVector3);
     if (missing.length) throw new Error(`engine: set "${name}" lacks spots ${missing.join(", ")} (THREE.Vector3 each)`);
@@ -261,14 +273,15 @@ async function main() {
 
   // ---------- scene objects: one instance per (name, state) per use in a shot (a shot may hold three cribs) ----------
   const OBJ = new Map(); // "name|state" -> [Group]
-  const objKey = (o) => { const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}`; };
-  if (objectsM) {
+  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}`; };
+  if (objectsM || blueprintM) {
     const counts = new Map();
     for (const s of tl.shots) { const c = new Map(); for (const o of s.objects ?? []) { const k = objKey(o); c.set(k, (c.get(k) ?? 0) + 1); } for (const [k, n] of c) counts.set(k, Math.max(counts.get(k) ?? 0, n)); }
     for (const [k, n] of counts) {
       const [name, state] = k.split("|"), list = [];
       for (let i = 0; i < n; i++) {
-        const o = objectsM.makeObject(name, { state });
+        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state });
+        if (o?.userData?.problems?.length) console.warn(`engine: built object ${name}: ${o.userData.problems.slice(0, 8).join("; ")}`);
         if (!o?.isObject3D) throw new Error(`engine: makeObject("${name}", ${state}) returned no Object3D`);
         scene.add(o); o.visible = false; list.push(o);
       }
@@ -402,7 +415,8 @@ async function main() {
       obj.position.copy(pos);
       obj.rotation.set(0, faceYaw + ({ left: -0.6, right: 0.6, away: Math.PI }[o.facing] ?? 0), 0);
       obj.visible = true; obj.updateMatrixWorld(true);
-      objectsM.animateObject(obj, o.state ?? u.state, lt);
+      if (u.kind === "blueprint") blueprintM.animateBlueprint(obj, lt, o.state ?? null);
+      else objectsM.animateObject(obj, o.state ?? u.state, lt);
       if (u.big) anyBig = true;
       shotObjs.push({ o, obj, u });
       if (mode !== "front" && !spotRule[spot]) spotRule[spot] = { obj, u, mode };
@@ -564,7 +578,7 @@ async function main() {
       }
     }
     // birthday guests wear party hats
-    if (shotObjs.some((s) => s.u.name === "birthday_party") && objectsM.partyHat) {
+    if (shotObjs.some((s) => s.u.name === "birthday_party") && objectsM?.partyHat) {
       let k = 0;
       for (const p of placed) {
         const P = PEOPLE[p.id]; if (!P) continue;

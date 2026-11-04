@@ -18,8 +18,12 @@ blocky-worlds-api start
        voice: ElevenLabs take (key = RunPod secret), uploaded at once,
               "voiced" event (cost from the character-cost header)             status voice
        trim the pauses + word timings (voice/eleven.mjs)
-       planVideo + checkTimeline + checkVisuals + checkSubjects + kit check     status plan
-         any miss -> failed (VISUAL_CHECK / SUBJECT_CHECK / KIT_MISSING / PLAN_FAILED), no retry, refund. Nothing rendered.
+       (the builder starts before the voice: the needs of a plan from estimated timings are resolved meanwhile)
+       planVideo -> the builder (lib/builder: a missing object / world is taken from the kit, the shared library, or
+         designed + built + still + vision-checked now; else a picture card; each change re-checked) -> checkTimeline
+         + checkVisuals + checkSubjects + kit check                                 status plan
+         any miss -> failed (VISUAL_CHECK / SUBJECT_CHECK / PLAN_FAILED), no retry, refund. Nothing rendered.
+         A thing the kit lacks never fails the run (KIT_MISSING is left only as a guard for an engine bug).
        upload timeline.json + visual-check.json, "planned" event
          -> the server reads the timeline, splits it into K chunks            status render
          -> K CHUNK jobs at once (they render while the prepare job goes on)

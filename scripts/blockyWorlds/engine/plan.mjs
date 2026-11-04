@@ -745,7 +745,57 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
   const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
   const subjCol = (i) => [...new Set(shots.filter((s) => (s.lines ?? [s.line]).includes(i) && s.camera !== "insert").map((s) => `${label(s.subject)}${s.subjectAbsent ? " (gone)" : ""}`))].join(" / ") || label(lineSubj[i].id);
   tl.visualReport = lineReport(shots, lines, vw, cast).map((r) => ({ line: r.line, text: r.text, subject: subjCol(r.line), nouns: r.keys.map((k) => k.label), shows: r.shows, ok: !r.missing.length, ...(r.missing.length ? { missing: r.missing.map((k) => k.label) } : {}) }));
+  tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood);
   return tl;
+}
+
+/**
+ * What the builder (lib/builder/resolve.js) is asked to make for this video (the protocol's rule: a missing kit object or
+ * world never fails a run). The plan is complete and checked WITHOUT them (cards, the nearest of the 4 sets); a need
+ * that gets built replaces its stand-in in lib/builder/apply.js, and the checks run again.
+ *   { id, kind: "object" | "world", name, phrase, line, lineText, mood, fallbackSet }
+ * Objects: every picture card cut for a noun (shot.need = the need's id). Worlds: a setting none of the 4 sets fits
+ * (worldNeedOf); every shot on the base set carries shot.world = the need's id.
+ */
+function collectNeeds(tl, script, idea, baseSet, mood) {
+  const needs = [], byName = new Map();
+  const add = (n) => { const k = `${n.kind}|${n.name}`; if (byName.has(k)) return byName.get(k); const id = `need${needs.length + 1}`; const x = { id, ...n }; needs.push(x); byName.set(k, x); return x; };
+  for (const s of tl.shots) {
+    if (!s.need || typeof s.need !== "object") continue;
+    const n = add({ kind: "object", name: s.need.name, phrase: s.need.label, line: s.line, lineText: script.lines[s.line]?.text ?? s.text ?? "", mood, fallbackSet: s.set });
+    s.need = { id: n.id, host: s.need.host };
+  }
+  const w = worldNeedOf(script, idea);
+  if (w) {
+    const n = add({ kind: "world", name: w.name, phrase: w.phrase, line: 0, lineText: script.lines[0]?.text ?? "", mood, fallbackSet: baseSet, setting: idea?.setting ?? null });
+    for (const s of tl.shots) if (s.set === baseSet) s.world = n.id; // inserts too: the card / sign stands in the world
+  }
+  return needs;
+}
+
+// the settings the 4 hand-built sets show well (lib formulas' settings + common words); anything else is a built world
+const SET_FITS = /\b(suburb|street|streets|town square|square|snowy town|neighbou?rhood|village|downtown|main street|road|park|house|home|bedroom|kitchen|living room|attic|basement|apartment|school|classroom|hallway|cafeteria|stage|gym|woods?|forest|farm|canyon|cliff|mountain|trail|castle|town|city)\b/;
+const WORLD_WORDS = /\b(inside (?:of )?(?:a|an|the) [a-z' -]{3,40}|on the moon|on mars|in (?:outer )?space|under(?:neath)? the (?:sea|ocean|lake)|underwater|under ?ground|in a cave|in the clouds|on a cloud)\b/;
+/**
+ * The world a video needs built, or null when one of the 4 sets fits: { name, phrase }. Read from the idea's setting,
+ * and, for the "inside something giant" / unknown settings, the opener or premise ("we all live inside a giant turtle").
+ */
+export function worldNeedOf(script, idea = {}) {
+  const setting = String(idea?.setting ?? "").toLowerCase().trim();
+  const text = [script?.lines?.[0]?.text, idea?.opener, idea?.premise].filter(Boolean).join(" ").toLowerCase();
+  const said = (() => {
+    const m = text.match(WORLD_WORDS);
+    if (!m) return null;
+    let p = m[1].replace(/\b(that|which|where|who|when|and|but|so|because|with|everyone|everybody|people)\b.*$/, "").replace(/[^a-z' -]/g, " ").replace(/\s+/g, " ").trim();
+    p = p.split(" ").slice(0, 5).join(" ");
+    return p.length > 6 ? p : null;
+  })();
+  if (/inside something giant/.test(setting)) return said && /^inside/.test(said) ? { name: said, phrase: said } : null;
+  if (/underwater|submarine/.test(setting)) return { name: said && !/^inside/.test(said) ? said : "underwater town", phrase: setting };
+  if (/underground|cave/.test(setting)) return { name: "cave town", phrase: setting };
+  if (setting && !SET_FITS.test(setting)) return { name: setting.replace(/[^a-z' -]/g, " ").replace(/\s+/g, " ").trim().slice(0, 40), phrase: setting };
+  if (!setting && said) return { name: said, phrase: said };
+  return null;
 }
 
 /**
@@ -1321,6 +1371,9 @@ function cardShot(shots, lineShots, key, t, L) {
   const card = { start: cardFirst ? host.start : r3(c), end: cardFirst ? r3(c) : host.end, line: host.line, lines: host.lines, part: host.part, set: host.set, light: host.light,
     camera: "insert", focus: "insert", actors: [], monsterState: null, insert: cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label],
     subject: host.subject ?? null };
+  // the builder (lib/builder): a noun the kit can't show is a "need"; when it gets built, the card gives its time back to
+  // the host shot and the built object stands in it (lib/builder/apply.js), else the card stays
+  if (key.kind === "noun") card.need = { kind: "object", name: key.noun ?? key.label, label: key.label, host: cardFirst ? "next" : "prev" };
   const rest = { ...host, ...(cardFirst ? { start: r3(c) } : { end: r3(c) }) };
   shots.splice(i, 1, ...(cardFirst ? [card, rest] : [rest, card]));
   return true;
@@ -1593,7 +1646,8 @@ export function checkTimeline(tl) {
     if (i > 0 && Math.abs(s.start - shots[i - 1].end) > eps) out.push(`${at}: gap/overlap with the previous shot`);
     if (!(s.end > s.start)) out.push(`${at}: empty`);
     else if (s.end - s.start < 0.5) out.push(`${at}: shorter than 0.5 s`);
-    if (!SETS.includes(s.set)) out.push(`${at}: unknown set ${s.set}`);
+    const builtWorld = /^world:/.test(s.set ?? "") && tl.assets?.[s.set.slice(6)]?.kind === "world";
+    if (!SETS.includes(s.set) && !builtWorld) out.push(`${at}: unknown set ${s.set}`);
     if (!LIGHTS.includes(s.light)) out.push(`${at}: unknown light ${s.light}`);
     if (!CAMERAS.includes(s.camera)) out.push(`${at}: unknown camera ${s.camera}`);
     if (s.camera === "insert" && !s.insert) out.push(`${at}: insert camera without an insert`);
@@ -1608,7 +1662,8 @@ export function checkTimeline(tl) {
     if (new Set(ids).size !== ids.length) out.push(`${at}: an actor twice`);
     for (const a of s.actors ?? []) if (a.hold && tl.cast?.[a.hold] && tl.cast[a.hold].role !== "baby") out.push(`${at}: ${a.id} holds ${a.hold}, who is not a baby`);
     for (const o of s.objects ?? []) {
-      if (!OBJECTS.includes(o.name)) out.push(`${at}: unknown object ${o.name}`);
+      if (o.asset) { if (tl.assets?.[o.asset]?.kind !== "object") out.push(`${at}: object ${o.name}: unknown built asset ${o.asset}`); }
+      else if (!OBJECTS.includes(o.name)) out.push(`${at}: unknown object ${o.name}`);
       else if (o.state && !OBJECT_CATALOG[o.name].states.includes(o.state)) out.push(`${at}: object ${o.name} has no state ${o.state}`);
       if (!SPOTS.includes(o.spot)) out.push(`${at}: object ${o.name} at unknown spot ${o.spot}`);
     }

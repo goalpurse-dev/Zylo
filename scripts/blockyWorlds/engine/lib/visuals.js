@@ -410,7 +410,9 @@ export function covers(key, s, cast = {}) {
   const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0);
   const insertText = s.insert?.text ?? "";
   const marks = shotMarkers(s);
-  const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text));
+  // things built for this video (lib/builder): a built object's name + aliases, a built world's (shot.worldAliases)
+  const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? [])];
+  const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text)) || built.some((b) => wordIn(w, b));
   if (key.kind === "person") return actors.some((a) => a.id === key.id || a.hold === key.id) || textual(key.label);
   if (key.kind === "monster") return !!s.monsterState || textual(key.label);
   if (key.kind === "name") return marks.some((m) => wordIn(key.name, m.text)) || textual(key.name);
@@ -440,7 +442,8 @@ export function covers(key, s, cast = {}) {
   if (sh.exprs && actors.some((a) => sh.exprs.includes(a.expr))) return true;
   if (sh.holds && actors.some((a) => a.hold && (sh.holds.includes(a.hold) || (heldKind(a.hold) && sh.holds.some((h) => heldKind(h) === heldKind(a.hold)))))) return true;
   if (sh.anyHold && actors.some((a) => a.hold)) return true;
-  if (sh.sets && sh.sets.includes(s.set) && !(r.kind === "place" && s.camera === "insert")) {
+  // a built world stands in for the set it replaced (lib/builder/apply.js: shot.worldBase): inside the giant turtle IS the town
+  if (sh.sets && (sh.sets.includes(s.set) || sh.sets.includes(s.worldBase)) && !(r.kind === "place" && s.camera === "insert")) {
     if (r.id !== "tower" || s.monsterState || s.camera === "wide") return true;
   }
   if (sh.spots && actors.some((a) => sh.spots.includes(a.spot))) return true;

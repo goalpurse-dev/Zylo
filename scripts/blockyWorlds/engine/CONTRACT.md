@@ -188,3 +188,89 @@ hand prop, big, on a crate: state = the prop kind), `HELD` (hand props by word),
 - Checks: `dev/coverage.mjs` (all 130 ideas as stand-in scripts -> `out/coverage/report.md`), `dev/coverage.test.mjs`,
   `dev/coverageKit.mjs` (headless Chrome: every name the planner can emit builds), `dev/coverageRender.mjs` (contact
   sheets in `out/coverage/sheets/`).
+
+## Addendum 2026-11-05: built on demand (a missing kit object or world never fails a run)
+
+Owner's rule: customers type endless topics, so the engine builds what a line needs in real time, from blocks.
+Order for every need: **1. the kit -> 2. the shared library (things built for earlier videos) -> 3. an AI design** (a
+block blueprint for an object, a world spec for a place) that the engine builds, **4. a quick still + an AI vision
+check** (pass = ok and confidence >= 0.6; up to 2 retries with the vision's fix), **5. last resort: a clear picture
+card** of that very thing. Never a failed run, never an unrelated shot. Everything built is saved to the library. The
+PERMANENT RULE still holds: built things count as covering a noun only through their names / aliases, every change is
+re-checked (checkTimeline + checkVisuals + checkSubjects) and undone if it adds a problem, and the checks run again
+before any render.
+
+### Files
+| File | What |
+|---|---|
+| `lib/builder/spec.js` | the two schemas + `validateBlueprint` / `validateWorld` (pure; never throw; limits, clamps, colours) + `normName` |
+| `page/kit/blueprint.js` | `buildBlueprint(bp) -> Group` (origin at the front-centre floor, faces +z, kit userData), `animateBlueprint(obj, t, state)` |
+| `page/sets/worldspec.js` | `buildWorld(spec, ctx)` -> the buildSet shape (`root, spots, indoor, camDir, views, bounds, rig, update(t), problems`) |
+| `page/still.html` + `still.js`, `lib/builder/still.mjs` | the check still: one object (768 x 768, 3/4 view on pavement) or one world (432 x 768, the engine's wide shot with a kid) |
+| `lib/builder/design.js` | the style guide, 3 hand-written kit blueprints as few-shot, prompts + json_schemas, `callClaude` (llm.js's pattern), `anthropicProvider`, PRICE / worst cases |
+| `lib/builder/vision.js` | the vision check (image + line -> `{ ok, confidence, reads_as, fix }`) |
+| `lib/builder/cache.js` | the library: `memoryCache`, `fileCache`, `snapshotCache` (the worker), `supabaseCache` (server) |
+| `lib/builder/resolve.js` | `resolveNeeds`: kit -> library -> design -> still -> vision -> retry <= 2 -> save, else card; parallel; money / time / design caps |
+| `lib/builder/apply.js` | `needsFromTimeline`, `applyResolved` (built things into the timeline, each re-checked) |
+| `lib/builder/index.js` | `makeBuilder` (prefetch + buildFor), `providerFromConfig` ("off" default, "mock", "anthropic") |
+| `lib/builder/mock.js` | the free mock designer + vision (robot dentist, ladder, giant heart, inside a giant turtle; a labelled crate otherwise) |
+| `supabase/migrations/20261203100000_blocky_worlds_assets.sql` | the library table (NOT applied) |
+| `dev/builder.test.mjs`, `dev/builderRender.test.mjs`, `dev/builderDemo.mjs`, `dev/builderEstimate.mjs` | tests, the demo, the cost + wait estimate |
+
+### Blueprint (an object)
+```jsonc
+{ "name": "robot dentist", "aliases": ["dentist robot"], "height": 2.1,  // m; the build is scaled to it (max 40; 200 with "giant": true)
+  "width": 1.2,                                                          // m (a hint)
+  "parts": [{                                                            // <= 120
+    "id": "arm_r", "shape": "box | roundedBox | cylinder | cone | sphere | wedge | torus",
+    "size": [x, y, z], "pos": [x, y, z], "rot": [x, y, z],              // metres, ONE shared frame (y up, +z front); degrees
+    "color": "#rrggbb", "material": "matte | plastic | metal | glass | glow | fabric | wood | stone",
+    "pattern": "none | stripes | dots | plaid",                          // fabric only (the people kit's procedural fabric)
+    "parent": "body",                                                    // moves with that part ("" none)
+    "pivot": [x, y, z] }],                                               // hinge for swing / open ([] none)
+  "labels": [{ "part": "badge", "text": "DENTIST", "color": "#fff", "bg": "", "face": "front | back | left | right | top" }],
+  "anims": [{ "part": "arm_r", "kind": "bob | spin | swing | blink | wobble | open", "axis": "x|y|z", "amount": 12, "speed": 1.2 }],
+  "focus": [x, y, z], "footprint": [w, d] }
+```
+cylinder / cone / sphere: diameter = size x (z), height = size y. wedge: a ramp, tall at the back. torus: a ring in x-y,
+outer diameter size x, tube size z. Labels use the Lilita font. Unknown fields are ignored; a bad part gets defaults;
+parts beyond the limits, unknown parents and cycles are dropped (listed in `userData.problems`). To the engine a built
+object is an ordinary kit object (userData height / width / depth / focus / detail / frameH / push / big).
+
+### World spec (a place)
+```jsonc
+{ "name": "inside a giant turtle", "aliases": [], "kind": "outdoor | indoor | enclosure | creature_world",
+  "ground": { "material": "grass|dirt|sand|rock|snow|tiles|wood|flesh|metal|water|moon|gravel", "color": "#..", "shape": "flat|hilly|rocky|wet" },
+  "enclosure": { "type": "sky | cave | room | inside_creature | underwater | space", "color": "#..", "color2": "#..",
+                 "pattern": "none|ribs|scales|flesh|rock|panels|bricks|planks", "opening": "none|mouth|hole|window|door", "glow": "#.." },
+  "palette": ["#.."], "fog": { "color": "#..", "density": 0.35 }, "particles": "none|dust|bubbles|snow|spores",
+  "light": { "base": "day|night|warm", "tint": "#..", "ambient": 1.1, "practicals": [{ "color": "#..", "pos": [x, y, z], "intensity": 10 }] },
+  "landmark": "<blueprint>",                                             // big, behind the group, off-centre
+  "props": [{ "kit": "lamp | (empty)", "blueprint": "<blueprint>", "spot": "side_left|side_right|back_left|back_right|far|scatter", "count": 1 }],
+  // EPIC hooks (validated + passed through; built only by the EPIC agent's page/sets/creatureWorld.js):
+  "creature": { "species": "turtle", "scale": 60, "city": "on | inside" },                 // scale <= 200 m
+  "giants": [{ "kind": "giant", "blueprint": "<blueprint, giant: true>", "height": 120, "spot": "far" }],
+  "crowds": [{ "kind": "knights", "count": 400, "formation": "scatter|line|block|ring|march", "action": "stand|cheer|march|run|flee|fight|wave", "spot": "far" }] }
+```
+Every world shares one layout: the camera at +z looking down -z, the group at the centre spot, the enclosure closing in
+around a ~13 m corridor, spots `center left right back far door` (door = the opening). Light: the shot's day / night /
+warm through lighting.js applyLight with the spec's rig (fog, hemisphere tint, sun scale, practicals).
+`kind: "creature_world"` goes to `ctx.buildCreatureWorld(spec, ctx)` when the engine passes one (the EPIC builder);
+otherwise it is built as `inside_creature`.
+
+### Timeline fields
+```jsonc
+"assets": { "<id>": { "kind": "object", "name": "kazoo", "aliases": [], "blueprint": {} },
+            "<id>": { "kind": "world", "name": "inside a giant turtle", "aliases": [], "spec": {} } },
+"shots": [{ "set": "world:<id>", "worldBase": "street", "worldAliases": ["inside a giant turtle"],   // a built world
+            "objects": [{ "name": "kazoo", "asset": "<id>", "aliases": [], "spot": "right" }] }]  // a built object
+```
+`worldBase` is the set the world replaced: place words that set covered ("the whole town") stay covered. The planner
+marks needs before the builder runs (`timeline.needs`, a card's `need`, a shot's `world`); apply.js removes the markers.
+
+### Models, money, time
+Design: Claude Sonnet 5.5 (effort low). Vision: Claude Sonnet 5.5 (effort low); Haiku 5.5 is the alternative for the
+vision check if the paid demo's side-by-side (`--compare-vision`) agrees with Sonnet. Per-video caps (resolve.js
+DEFAULT_BUDGET): $0.60, 120 s, 6 new designs; a call starts only when its worst case fits under the money cap.
+Estimates: `node dev/builderEstimate.mjs`. The worker's provider is "off" (kit + library + cards) unless the job says
+`builder.provider: "anthropic"` and the worker has `ANTHROPIC_KEY`.
