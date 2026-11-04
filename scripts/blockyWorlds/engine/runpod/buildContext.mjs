@@ -1,8 +1,10 @@
 // Blocky Worlds: assemble the docker build context of the render worker (runpod/Dockerfile) in a folder. Free, local;
 // it builds nothing and pushes nothing.
-//   engine/  package.json + lock, lib/, page/, render.mjs, runpod/ (code only), and the assets the page code uses:
-//            a texture set / Poly Haven model folder / Kenney model / HDRI is kept when its name appears in page/ or
-//            lib/ source (the caption font always). --all-assets copies every asset.
+//   engine/  package.json + lock, lib/, page/, render.mjs, plan.mjs, voice/eleven.mjs, audio/ (mix, music A, the SFX
+//            wavs), runpod/ (code only), and the assets the page code uses: a texture set / Poly Haven model folder /
+//            Kenney model / HDRI is kept when its name appears in page/ or lib/ source (the caption font always).
+//            --all-assets copies every asset.
+//   shared/  supabase/functions/_shared/blockyWorlds/*.js (the narrator config + voice code the prepare role uses)
 //   handler.py, Dockerfile at the root.
 //   node runpod/buildContext.mjs <outDir> [--all-assets]
 import fs from "node:fs";
@@ -21,9 +23,16 @@ fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive:
 cp(path.join(here, "Dockerfile"), path.join(out, "Dockerfile"));
 cp(path.join(here, "handler.py"), path.join(out, "handler.py"));
 const E = path.join(out, "engine");
-for (const f of ["package.json", "package-lock.json", "render.mjs"]) cp(path.join(ENGINE, f), path.join(E, f));
+for (const f of ["package.json", "package-lock.json", "render.mjs", "plan.mjs"]) cp(path.join(ENGINE, f), path.join(E, f));
 for (const d of ["lib", "page"]) for (const f of walk(path.join(ENGINE, d))) cp(f, path.join(E, path.relative(ENGINE, f)));
 for (const f of ["gpu.mjs", "worker.mjs"]) cp(path.join(here, f), path.join(E, "runpod", f));
+// the production roles (prepare: the voice, the plan + its checks, music A + the SFX + the mix)
+cp(path.join(ENGINE, "voice", "eleven.mjs"), path.join(E, "voice", "eleven.mjs"));
+for (const f of ["mix.mjs", "backrooms.mjs", "music.mjs", "sfx.mjs"]) cp(path.join(ENGINE, "audio", f), path.join(E, "audio", f));
+for (const f of walk(path.join(ENGINE, "audio", "sfx")).filter((f) => f.endsWith(".wav"))) cp(f, path.join(E, "audio", "sfx", path.basename(f)));
+// the shared Blocky Worlds config + voice code (eleven.mjs imports ../../../../supabase/functions/_shared/blockyWorlds/)
+const SHARED = path.resolve(ENGINE, "../../../supabase/functions/_shared/blockyWorlds");
+for (const f of fs.readdirSync(SHARED).filter((f) => f.endsWith(".js"))) cp(path.join(SHARED, f), path.join(out, "shared", f));
 
 // the assets the code names
 const source = ["page", "lib"].flatMap((d) => walk(path.join(ENGINE, d))).filter((f) => /\.(m?js|html|json)$/.test(f)).map((f) => fs.readFileSync(f, "utf8")).join("\n");

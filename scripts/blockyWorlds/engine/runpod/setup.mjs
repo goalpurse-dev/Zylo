@@ -1,8 +1,10 @@
 // Blocky Worlds render worker: the RunPod side, created once (idempotent: items with the same name are reused).
 // The image lives in Cutaway's staging Fly registry under its own label (registry.fly.io/zyvo-cutaway-render-staging,
 // tag blocky-*), so RunPod pulls it with the registry login that already exists for Cutaway (no new credential).
-// 1. the serverless template on the image, pinned by digest (no model keys: the worker only renders);
-// 2. the endpoint: scale to zero, the 16 GB GPUs in order (Cutaway's list), 4 workers at most (4 chunks at once).
+// 1. the serverless template on the image, pinned by digest; the prepare role's ElevenLabs key is the RunPod secret
+//    "blocky_elevenlabs" (the owner creates it in RunPod's console; never in the image or in Supabase);
+// 2. the endpoint: scale to zero, the 16 GB GPUs in order (Cutaway's list), 12 workers at most (a video takes K + 1:
+//    8 chunks + its prepare job for 90 s; docs/blocky-worlds-pipeline.md), FlashBoot on.
 // Writes runpod/endpoint.json (ids only, no secrets).
 //   node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:...
 import fs from "node:fs";
@@ -31,13 +33,14 @@ console.log("registry auth (reused)", auth.id, auth.name);
 const tname = `${NAME}-${image.split("@sha256:")[1].slice(0, 12)}`;
 const templates = await rp("/templates");
 let tpl = (Array.isArray(templates) ? templates : []).find((t) => t.name === tname);
-if (!tpl) tpl = await rp("/templates", { method: "POST", body: JSON.stringify({ name: tname, imageName: image, isServerless: true, containerDiskInGb: 20, containerRegistryAuthId: auth.id, env: { NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all" }, dockerStartCmd: [], dockerEntrypoint: [], ports: [] }) });
+if (!tpl) tpl = await rp("/templates", { method: "POST", body: JSON.stringify({ name: tname, imageName: image, isServerless: true, containerDiskInGb: 20, containerRegistryAuthId: auth.id, env: { NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all", ELEVENLABS_KEY: "{{ RUNPOD_SECRET_blocky_elevenlabs }}" }, dockerStartCmd: [], dockerEntrypoint: [], ports: [] }) });
 console.log("template", tpl.id, tname);
 
 const endpoints = await rp("/endpoints");
 let ep = (Array.isArray(endpoints) ? endpoints : []).find((e) => e.name === NAME);
-const body = { templateId: tpl.id, name: NAME, computeType: "GPU", gpuTypeIds: GPUS, gpuCount: 1, workersMin: 0, workersMax: 4, idleTimeout: 5, executionTimeoutMs: 900000, flashboot: true, scalerType: "QUEUE_DELAY", scalerValue: 4 };
+const body = { templateId: tpl.id, name: NAME, computeType: "GPU", gpuTypeIds: GPUS, gpuCount: 1, workersMin: 0, workersMax: 12, idleTimeout: 5, executionTimeoutMs: 900000, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 };
+// (REQUEST_COUNT 1: one worker per waiting job at once, so all K chunks start together; QUEUE_DELAY waits 4 s first)
 if (!ep) ep = await rp("/endpoints", { method: "POST", body: JSON.stringify(body) });
-else ep = await rp(`/endpoints/${ep.id}`, { method: "PATCH", body: JSON.stringify({ templateId: tpl.id, gpuTypeIds: GPUS }) });
+else ep = await rp(`/endpoints/${ep.id}`, { method: "PATCH", body: JSON.stringify({ templateId: tpl.id, gpuTypeIds: GPUS, workersMax: 12, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 }) });
 console.log("endpoint", ep.id, "workersMin 0 (scales to zero)");
-fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 4, idleTimeout: 5, createdAt: new Date().toISOString() }, null, 1));
+fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 12, idleTimeout: 5, createdAt: new Date().toISOString() }, null, 1));

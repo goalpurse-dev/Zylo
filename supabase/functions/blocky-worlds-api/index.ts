@@ -6,8 +6,9 @@
 //   BLOCKY_WORLDS_ENABLED=true       the template for everyone (otherwise only BLOCKY_WORLDS_TEST_USERS, owner test mode)
 //   BLOCKY_WORLDS_LLM=mock           ideas and scripts from examples.js: no Anthropic call, no cost (the free flow test)
 //   BLOCKY_WORLDS_PAID_CALLS=off     a hard off switch for every paid call
-//   BLOCKY_WORLDS_RENDERER           unset = video making is off: start refuses BEFORE anything is charged (the 3D
-//                                    renderer is not built yet); a tester's dryRun still runs every check and the price
+//   BLOCKY_WORLDS_RENDERER=runpod    video making on (docs/blocky-worlds-pipeline.md), and only when RunPod and the
+//                                    callback secret are configured too (renderSupabase.ts); otherwise start refuses
+//                                    BEFORE anything is charged. A tester's dryRun still runs every check and the price
 // The protocol (docs/blocky-worlds-protocol.md): "Pick an idea" serves unseen ideas from the judged library first; every
 // source becomes a complete idea card; then card -> beat sheet -> script, each step checked and retried on its own.
 // Learning: picked / rewritten / generated / downloaded / thumbs are counted per library idea (event action).
@@ -29,6 +30,7 @@ import { topicProblem } from "../_shared/blockyWorlds/safety.js";
 import { cardFromScript, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems } from "../_shared/blockyWorlds/protocol.js";
+import { renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -40,7 +42,8 @@ const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
 const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
-const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim();
+// on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone
+const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
 const BUCKET = "blocky-worlds-renders";
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -119,7 +122,8 @@ async function runView(r: any, { owner = false } = {}) {
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
     status: r.status, stepAt: Date.parse(r.stage_at ?? r.created_at), pct: r.pct ?? 0, post: done ? r.post : null,
-    finalUrl: done ? await signed(files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
+    // the light 720p copy plays on the page; the download is the full 1080p file
+    finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
     poster: done ? await signed(files.poster) : null,
     error: r.status === "failed" ? FAILED_MESSAGE : null, refunded: Boolean(r.refunded_at),
     ...(owner && r.status === "failed" ? { debug: { code: r.error_code, message: r.error_message } } : {}),
@@ -334,7 +338,7 @@ async function handle(req: Request, trace: Trace) {
     if (action === "quote") return { credits: PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems };
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
     const dryRun = body?.dryRun === true && who.tester;
-    if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not set (the renderer is not built yet)");
+    if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
     trace.step = "cap check";
     await guardFor(who.user.id, costBasisUsd(lengthSec), "video");
     trace.step = "price";
@@ -355,8 +359,12 @@ async function handle(req: Request, trace: Trace) {
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
     await admin.from("blocky_worlds_runs").update({ card: d.card ?? null, library_id: ideaLib }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
-    // the renderer picks queued runs up (its dispatch is part of the renderer milestone)
-    return await runView({ ...run, library_id: ideaLib }, { owner: who.owner });
+    // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
+    // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute
+    trace.step = "dispatch";
+    let started: any = null;
+    try { started = await renderRuntime(admin).start(run.id); } catch (e: any) { console.error("[blocky-worlds-api] start dispatch:", run.id, e?.message ?? e); }
+    return await runView({ ...run, ...(started ?? {}), library_id: ideaLib }, { owner: who.owner });
   }
 
   // ---------- 5. results ----------

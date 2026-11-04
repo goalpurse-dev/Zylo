@@ -1,6 +1,7 @@
-# Blocky Worlds render worker (RunPod serverless GPU). Prepared only: not built, not pushed.
+# Blocky Worlds worker (RunPod serverless GPU): prepare (voice, plan + checks, mix), chunk (render), finish (join, mux).
 # Based on Cutaway's m3/Dockerfile.gpu without whisper: node 22 + Chrome + ffmpeg + the NVIDIA vendor files + runpod.
-# The build context comes from runpod/buildContext.mjs (engine/ = the engine code + the assets actually used).
+# The build context comes from runpod/buildContext.mjs. The repo layout is kept (/app/scripts/blockyWorlds/engine and
+# /app/supabase/functions/_shared/blockyWorlds), so the voice code's imports of the shared config resolve as in the repo.
 FROM node:22-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -22,14 +23,17 @@ RUN mkdir -p /usr/share/glvnd/egl_vendor.d /etc/vulkan/icd.d \
 
 RUN pip3 install --no-cache-dir --break-system-packages "runpod>=1.7,<2"
 
-WORKDIR /app/engine
+WORKDIR /app/scripts/blockyWorlds/engine
 COPY engine/package.json engine/package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 COPY engine/assets ./assets
 COPY engine/lib ./lib
 COPY engine/page ./page
-COPY engine/render.mjs ./render.mjs
+COPY engine/audio ./audio
+COPY engine/voice ./voice
+COPY engine/plan.mjs engine/render.mjs ./
 COPY engine/runpod ./runpod
+COPY shared /app/supabase/functions/_shared/blockyWorlds
 COPY handler.py /app/handler.py
 
 CMD ["python3", "-u", "/app/handler.py"]

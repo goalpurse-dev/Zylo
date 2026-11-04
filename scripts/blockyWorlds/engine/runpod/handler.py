@@ -1,23 +1,39 @@
-# Blocky Worlds: the RunPod serverless handler (prepared only; nothing is built or deployed).
-# Input: {"jobUrl": "https://..."} (a job JSON at a signed URL) or the job itself inline (see worker.mjs).
-# A chunk job renders its frame range(s) and uploads each mp4; a whole job renders, muxes and uploads final.mp4.
-# A failed render raises, so RunPod marks the job FAILED and the dispatcher retries it. NO_GPU returns with
-# refresh_worker, so RunPod retires that worker and the retry runs elsewhere.
+# Blocky Worlds: the RunPod serverless handler (docs/blocky-worlds-pipeline.md).
+#  - a production job ({"job": {...}} from blocky-worlds-render, role prepare | chunk | finish): runpod/worker.mjs runs
+#    it and reports to the callback itself; its RESULT is returned whether ok or not, so RunPod's webhook carries the
+#    error code too (the server treats COMPLETED + ok:false as a failed try)
+#  - a staging render ({"jobUrl": ...} or an inline ranges/whole job, runpod/dispatch.mjs): a failed render raises, so
+#    RunPod marks it FAILED and the dispatcher retries it
+# NO_GPU (a worker without graphics, gpu.mjs) returns with refresh_worker, so RunPod retires that worker and the retry
+# runs elsewhere (Cutaway's fix; 2026-11-04 every retry of a Blocky test landed on the same slice).
 import json
 import subprocess
 
 import runpod
 
-WORKER = "/app/engine/runpod/worker.mjs"
+ENGINE = "/app/scripts/blockyWorlds/engine"
+WORKER = f"{ENGINE}/runpod/worker.mjs"
+
+
+def run(payload, timeout):
+    p = subprocess.run(["node", WORKER, json.dumps(payload)], capture_output=True, text=True, timeout=timeout, cwd=ENGINE)
+    lines = [l for l in p.stdout.splitlines() if l.startswith("RESULT ")]
+    return p, (json.loads(lines[-1][7:]) if lines else None)
 
 
 def handler(job):
     data = job["input"]
-    p = subprocess.run(["node", WORKER, json.dumps(data)], capture_output=True, text=True, timeout=1500, cwd="/app/engine")
-    lines = [l for l in p.stdout.splitlines() if l.startswith("RESULT ")]
-    result = json.loads(lines[-1][7:]) if lines else None
-    # a worker without graphics (a MIG slice: gpu.mjs says NO_GPU) retires after this job, so the retry lands on another
-    # machine (Cutaway's fix; 2026-11-04 every retry of a Blocky test landed on the same slice)
+    if "job" in data:
+        try:
+            p, result = run(data, 900)
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "code": "JOB_TIMEOUT", "error": "the worker ran over 900 s"}
+        if not result:
+            return {"ok": False, "code": "WORKER_CRASHED", "error": (p.stderr or p.stdout)[-1500:]}
+        if result.get("code") == "NO_GPU":
+            result["refresh_worker"] = True
+        return result
+    p, result = run(data, 1500)
     if result and result.get("code") == "NO_GPU":
         result["refresh_worker"] = True
         return result

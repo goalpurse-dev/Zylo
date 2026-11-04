@@ -1,80 +1,310 @@
-// Blocky Worlds RunPod worker: one render job on the GPU (or CPU for tests). Prepared only, never deployed.
-// The job (inline, or a JSON file at a signed URL: { jobUrl }):
-//   { mode: "gpu" | "cpu",
-//     timelineUrl,                                   // the timeline JSON (plan.mjs output)
-//     pages: 1,                                      // parallel Chrome pages on this GPU (renderParallel)
-//     ranges: [{ from, to, upload }],                // chunk role: frames [from, to) -> an mp4 PUT to `upload`
-//     whole: { mixUrl, upload } | null,              // video role: every frame, muxed with the mix, PUT to `upload`
-//     uploads: { report } }                          // optional: the RESULT JSON is PUT here too
-// GPU mode first checks WebGL is on the NVIDIA GPU (gpu.mjs), else fails with NO_GPU so the dispatcher retries.
-// Prints `RESULT {...}` (handler.py returns it).
-//   node runpod/worker.mjs '{"jobUrl": "https://..."}'
+// Blocky Worlds RunPod worker (docs/blocky-worlds-pipeline.md). One job, then RESULT {...} on stdout (handler.py returns it).
+//
+// PRODUCTION ({ job: {...} } from blocky-worlds-render; signed URLs and a callback token only, never a storage key):
+//   role "prepare": the voice (ElevenLabs, ELEVENLABS_KEY from the RunPod secret; or the run's earlier take, never
+//                   bought twice) -> trim + word timings -> planVideo -> checkTimeline + checkVisuals + checkSubjects
+//                   (ANY miss stops here: nothing is rendered, the run is refunded; never skipped) -> timeline.json up
+//                   -> "planned" -> music A + SFX cues + the mix -> mix.m4a up. No GPU needed.
+//   role "chunk":   GPU check (NO_GPU -> handler.py retires this worker) -> frames [from, to) -> seg (1080p, squeezed
+//                   under the upload limit) + web (720p) up, progress events as it goes.
+//   role "finish":  the segments joined by stream copy + the mix -> final.mp4; the same for web.mp4; poster.jpg. No GPU.
+//   Events go to job.callback.url ({ runId, jobId, token, event, ... }); a callback that can't be reached never fails
+//   the job (RunPod's webhook and the sweeper cover it).
+//
+// STAGING (inline or { jobUrl }; runpod/dispatch.mjs): { mode, timelineUrl, pages, ranges: [{ from, to, upload }],
+//   whole: { mixUrl, upload } | null, uploads: { report } } as before.
+//
+// mode: "gpu" (RunPod), "cpu" (SwiftShader, tests), "local" (this laptop's GPU, the dry run).
+//   node runpod/worker.mjs '{"job": {...}}'  |  node runpod/worker.mjs '{"jobUrl": "https://..."}'
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { useGpu, useSoftware } from "./gpu.mjs";
-import { renderParallel } from "../render.mjs";
+import { concat, renderParallel } from "../render.mjs";
 
+const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
 const MAX_UPLOAD = 48 * 1024 * 1024;
-// chunk quality: a job may lower it so each chunk fits the storage bucket (50 MB a file)
-const t0 = Date.now(), timing = {};
-const lap = (k, t) => { timing[k] = +((Date.now() - t) / 1000).toFixed(2); };
-const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.JOB_FILE ? JSON.parse(fs.readFileSync(process.env.JOB_FILE, "utf8")) : { jobUrl: process.env.JOB_URL };
+const coded = (code, message) => Object.assign(new Error(message), { code });
 
-async function get(url, file) {
-  const b = url.startsWith("file://") ? fs.readFileSync(fileURLToPath(url)) : await fetch(url).then(async (r) => { if (!r.ok) throw new Error(`download ${r.status} ${url.split("?")[0]}`); return Buffer.from(await r.arrayBuffer()); });
+// ---------------------------------------------------------------- files by URL (https signed URLs, or file:// for tests)
+export async function get(url, file) {
+  if (!url) throw coded("BAD_JOB", `no URL for ${file ? path.basename(file) : "a download"}`);
+  const b = url.startsWith("file://") ? fs.readFileSync(fileURLToPath(url)) : await fetch(url, { signal: AbortSignal.timeout(120000) }).then(async (r) => { if (!r.ok) throw new Error(`download ${r.status} ${url.split("?")[0]}`); return Buffer.from(await r.arrayBuffer()); });
   if (file) fs.writeFileSync(file, b); return b;
 }
-async function put(url, file, type) {
-  if (url.startsWith("file://")) { fs.copyFileSync(file, fileURLToPath(url)); return; }
-  const r = await fetch(url, { method: "PUT", headers: { "Content-Type": type }, body: fs.readFileSync(file) });
-  if (!r.ok) throw new Error(`upload ${path.basename(file)} ${r.status} ${(await r.text()).slice(0, 200)}`);
+export async function put(url, file, type) {
+  if (!url) throw coded("BAD_JOB", `no upload URL for ${path.basename(file)}`);
+  if (url.startsWith("file://")) { const dst = fileURLToPath(url); fs.mkdirSync(path.dirname(dst), { recursive: true }); fs.copyFileSync(file, dst); return; }
+  for (let i = 1; ; i++) {
+    try {
+      const r = await fetch(url, { method: "PUT", headers: { "Content-Type": type, "x-upsert": "true" }, body: fs.readFileSync(file), signal: AbortSignal.timeout(180000) });
+      if (r.ok) return;
+      const t = (await r.text()).slice(0, 200);
+      if (r.status < 500 || i >= 3) throw coded("UPLOAD_FAILED", `upload ${path.basename(file)} ${r.status} ${t}`);
+    } catch (e) { if (e.code === "UPLOAD_FAILED" || i >= 3) throw coded("UPLOAD_FAILED", e.message); }
+    await new Promise((s) => setTimeout(s, 1500 * i));
+  }
+}
+const ffmpeg = (args) => { const p = spawnSync(FF, ["-v", "error", "-y", ...args], { encoding: "utf8", maxBuffer: 1 << 26 }); if (p.status !== 0) throw new Error(`ffmpeg failed: ${(p.stderr || "").slice(-500)}`); };
+const probeDuration = (f) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString());
+
+/** the callback: { runId, jobId, token, attempt, event, ...data }; 3 tries, never throws */
+export function poster(job) {
+  return async (event, data = {}) => {
+    if (!job.callback?.url) { console.log(`EVENT ${event} ${JSON.stringify(data).slice(0, 300)}`); return; }
+    const body = JSON.stringify({ runId: job.runId, jobId: job.jobId, token: job.callback.token, attempt: job.attempt ?? 1, event, ...data });
+    for (let i = 1; i <= 3; i++) {
+      try { const r = await fetch(job.callback.url, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: AbortSignal.timeout(15000) }); await r.body?.cancel(); if (r.ok || r.status < 500) return; } catch { /* try again */ }
+      await new Promise((s) => setTimeout(s, 1000 * i));
+    }
+  };
 }
 
-let job = null, report = null;
-try {
-  job = input.jobUrl ? JSON.parse(String(await get(input.jobUrl))) : input;
-  if (job.crf) process.env.RENDER_CRF = String(job.crf);
-  const mode = job.mode ?? "gpu", dir = fs.mkdtempSync(path.join(os.tmpdir(), "bw-"));
-  let t = Date.now();
-  const renderer = mode === "gpu" ? await useGpu() : useSoftware();
-  lap("gpuCheck", t);
-  t = Date.now();
-  const tlPath = path.join(dir, "timeline.json");
-  await get(job.timelineUrl, tlPath);
-  lap("download", t);
-  const chunks = [];
-  t = Date.now();
-  for (const [i, r] of (job.ranges ?? []).entries()) {
-    const out = path.join(dir, `chunk${i}.mp4`);
-    const res = await renderParallel({ timelinePath: tlPath, out, from: r.from, to: r.to, workers: job.pages ?? 1 });
-    // the storage bucket takes 50 MB a file: a busy chunk (the leafy daytime street) can pass it at CRF 20, so it is
-    // squeezed again (higher CRF, same frames) until it fits (2026-11-04: chunk 0 came out too big)
-    for (let crf = Number(job.crf ?? 20) + 4; fs.statSync(out).size > MAX_UPLOAD && crf <= 36; crf += 4) {
-      const smaller = out.replace(/.mp4$/, `_crf${crf}.mp4`);
-      execFileSync(FF, ["-v", "error", "-y", "-i", out, "-c:v", "libx264", "-crf", String(crf), "-preset", "medium", "-pix_fmt", "yuv420p", smaller]);
-      fs.renameSync(smaller, out);
-    }
-    if (r.upload) await put(r.upload, out, "video/mp4");
-    chunks.push({ from: r.from, to: r.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(out).size });
-  }
-  if (job.whole) {
-    const silent = path.join(dir, "silent.mp4"), mix = path.join(dir, "mix.m4a"), final = path.join(dir, "final.mp4");
-    const res = await renderParallel({ timelinePath: tlPath, out: silent, workers: job.pages ?? 1 });
-    await get(job.whole.mixUrl, mix);
-    const p = spawnSync(FF, ["-v", "error", "-y", "-i", silent, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { encoding: "utf8" });
-    if (p.status !== 0) throw new Error(`mux failed: ${p.stderr.slice(-400)}`);
-    if (job.whole.upload) await put(job.whole.upload, final, "video/mp4");
-    chunks.push({ whole: true, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(final).size });
-  }
-  lap("render", t);
-  report = { ok: true, mode, renderer, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), chunks, timing: { ...timing, total: +((Date.now() - t0) / 1000).toFixed(2) } };
-} catch (e) {
-  report = { ok: false, code: e.code ?? "RENDER_FAILED", error: String(e.message).slice(0, 1500), timing: { ...timing, total: +((Date.now() - t0) / 1000).toFixed(2) } };
+// ---------------------------------------------------------------- the pre-render checks (THE RULE)
+/**
+ * checkTimeline + checkVisuals + checkSubjects on a planned timeline. A planner without any of the three is a failure,
+ * never a skip. -> { passed, timeline, missing, subjects }; the caller stops before any render when !passed.
+ */
+export function preRenderChecks(plan, tl, script, kit) {
+  for (const f of ["checkTimeline", "checkVisuals", "checkSubjects"]) if (typeof plan?.[f] !== "function") throw coded("PLAN_FAILED", `plan.mjs has no ${f}(): the pre-render checks can't run, so nothing is rendered`);
+  const timeline = plan.checkTimeline(tl) ?? [], missing = plan.checkVisuals(tl, script) ?? [], subjects = plan.checkSubjects(tl) ?? [];
+  const kitMissing = kitProblems(tl, kit);
+  return { passed: !timeline.length && !missing.length && !subjects.length && !kitMissing.length, timeline, missing, subjects, kit: kitMissing };
 }
-if (job?.uploads?.report) { const f = path.join(os.tmpdir(), "bw-report.json"); fs.writeFileSync(f, JSON.stringify(report)); await put(job.uploads.report, f, "application/json").catch(() => {}); }
-console.log(`RESULT ${JSON.stringify(report)}`);
-process.exit(report.ok ? 0 : 1);
+/**
+ * Every object the plan puts on screen must be one the engine's kit can build (page/kit/objects.js resolveObject +
+ * its states): the engine page refuses the timeline otherwise, on every GPU, so it is checked here, before any render
+ * (2026-11-05 dry run: the planner placed a "ladder" the kit did not have yet; 8 GPU tries were spent on it).
+ */
+export function kitProblems(tl, kit) {
+  if (typeof kit?.resolveObject !== "function" || !kit?.OBJECTS) throw coded("PLAN_FAILED", "the kit's object catalog is not loaded: the pre-render checks can't run, so nothing is rendered");
+  const out = [];
+  (tl.shots ?? []).forEach((s, i) => {
+    for (const o of s.objects ?? []) {
+      const key = kit.resolveObject(o?.name);
+      if (!key) { out.push(`shot ${i} (#${s.line}): the kit has no object "${o?.name}"`); continue; }
+      const states = kit.OBJECTS[key]?.states ?? [], st = o.state ?? kit.OBJECTS[key]?.state;
+      if (states.length && !states.includes(st)) out.push(`shot ${i} (#${s.line}): object "${key}" has no state "${st}"`);
+    }
+  });
+  return out;
+}
+export const loadKit = () => import(pathToFileURL(path.join(ENGINE, "page", "kit", "objects.js")).href);
+export function checkFailure(c) {
+  if (c.missing.length) return coded("VISUAL_CHECK", `${c.missing.length} line(s) show nothing for a spoken noun: ${c.missing.slice(0, 5).map((m) => `#${m.line} ${(m.missing ?? []).join("/")}`).join(", ")}`);
+  if (c.subjects.length) return coded("SUBJECT_CHECK", `${c.subjects.length} shot(s) don't show who the line is about: ${c.subjects.slice(0, 5).map((m) => `shot ${m.shot} (#${m.line}) ${m.problem}`).join(", ")}`);
+  if (c.kit?.length) return coded("KIT_MISSING", `${c.kit.length} object(s) the engine's kit can't build: ${c.kit.slice(0, 5).join("; ")}`);
+  if (c.timeline.length) return coded("PLAN_FAILED", `the timeline has ${c.timeline.length} problem(s): ${c.timeline.slice(0, 5).join("; ")}`);
+  return null;
+}
+const normalizeScript = (s) => ({ ...s, lines: (s?.lines ?? []).map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) });
+
+// ---------------------------------------------------------------- prepare: voice -> plan + checks -> mix
+export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null } = {}) {
+  const p = job.prepare ?? {}, timing = {};
+  const lap = async (k, fn) => { const t = Date.now(); const r = await fn(); timing[k] = +((Date.now() - t) / 1000).toFixed(2); return r; };
+  const script = normalizeScript(p.script);
+  if (!script.lines.length) throw coded("BAD_JOB", "the script has no lines");
+  const mp3 = path.join(dir, "voice.mp3"), takeJson = path.join(dir, "take.json");
+
+  // 1. the voice: the run's earlier take, or one new paid take uploaded at once
+  await post("progress", { stage: "voice", pct: 2 });
+  const reuse = Boolean(p.voice?.get);
+  if (!reuse && !p.voice?.put) throw coded("BAD_JOB", "no voice URLs");
+  if (reuse) {
+    try { await get(p.voice.get.mp3, mp3); await get(p.voice.get.take, takeJson); } catch (e) { throw coded("VOICE_DOWNLOAD", `the run's take could not be downloaded: ${e.message}`); }
+  } else if (!process.env.ELEVENLABS_KEY && !voiceFn) throw coded("VOICE_CONFIG", "no ElevenLabs key in the worker (RunPod secret blocky_elevenlabs)");
+  const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
+  let v = null;
+  try {
+    v = await lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }));
+  } catch (e) {
+    const m = String(e.message ?? e);
+    throw coded(/VOICE_CONFIG/.test(m) ? "VOICE_CONFIG" : /quota|credits|payment|insufficient|\b40[12]\b/i.test(m) ? "PROVIDER_BALANCE" : /different script/.test(m) ? "BAD_JOB" : "VOICE_FAILED", m.slice(0, 600));
+  } finally {
+    // a take that was bought is kept even if the trim after it failed: a retry gets it back instead of paying again
+    if (!reuse && fs.existsSync(takeJson) && fs.existsSync(mp3)) {
+      const take = JSON.parse(fs.readFileSync(takeJson, "utf8"));
+      await put(p.voice.put.mp3, mp3, "audio/mpeg");
+      await put(p.voice.put.take, takeJson, "application/json");
+      await post("voiced", { costUsd: take.costUsd ?? null, billedChars: take.billedChars ?? null, chars: take.chars ?? null });
+    }
+  }
+
+  // 2. the plan and the three checks: any miss stops the run here, before any render
+  await post("progress", { stage: "plan", pct: 8 });
+  const plan = planModule ?? (await import(pathToFileURL(path.join(ENGINE, "plan.mjs")).href));
+  const tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null }));
+  tl.audio = { voice: "voice.wav", music: "music.wav" };
+  const checks = preRenderChecks(plan, tl, script, kitModule ?? (await loadKit()));
+  const checkFile = path.join(dir, "visual-check.json");
+  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null }, null, 1));
+  if (p.out?.visualCheck) await put(p.out.visualCheck, checkFile, "application/json");
+  const bad = checkFailure(checks);
+  if (bad) throw bad;
+  const tlPath = path.join(dir, "timeline.json");
+  fs.writeFileSync(tlPath, JSON.stringify(tl));
+  await put(p.out.timeline, tlPath, "application/json");
+  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length };
+  await post("planned", planned);
+
+  // 3. music A + the SFX cues + the final mix (the chunks render meanwhile)
+  const musicWav = path.join(dir, "music.wav"), mixM4a = path.join(dir, "mix.m4a");
+  const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
+  const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
+  await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
+  const cues = p.sfx === false ? [] : sfxCues(tl);
+  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues }));
+  await put(p.out.mix, mixM4a, "audio/mp4");
+  return { role: "prepare", planned, voice: { reused: reuse, costUsd: reuse ? 0 : v.costUsd ?? null, billedChars: v.billedChars ?? null, chars: v.chars ?? null, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing };
+}
+
+// ---------------------------------------------------------------- chunk: frames [from, to) -> seg + web
+async function renderer(mode) { return mode === "gpu" ? useGpu() : mode === "cpu" ? useSoftware() : "local (this machine's Chrome)"; }
+
+export async function chunk(job, dir, post) {
+  const c = job.chunk, timing = {};
+  let t = Date.now();
+  const gl = await renderer(job.mode ?? "gpu");
+  timing.gpuCheck = +((Date.now() - t) / 1000).toFixed(2);
+  const tlPath = path.join(dir, "timeline.json");
+  await get(c.timeline, tlPath);
+  if (c.crf) process.env.RENDER_CRF = String(c.crf);
+  const seg = path.join(dir, "seg.mp4"), web = path.join(dir, "web.mp4");
+  let lastPct = -1;
+  t = Date.now();
+  let res;
+  try {
+    res = await renderParallel({ timelinePath: tlPath, out: seg, from: c.from, to: c.to, workers: c.pages ?? 1, onProgress: (o) => { const step = Math.floor((o.pct ?? 0) / 20) * 20; if (step > lastPct) { lastPct = step; post("progress", { stage: "render", pct: Math.min(95, step) }).catch(() => {}); } } });
+  } catch (e) {
+    // the engine page refusing the timeline is the same on every GPU: no retry (render.js NO_RETRY)
+    if (/engine: the timeline has \d+ problem/.test(String(e.message))) throw coded("TIMELINE_INVALID", e.message);
+    throw e;
+  }
+  timing.render = +((Date.now() - t) / 1000).toFixed(2);
+  // the upload limit (50 MB a file): a busy chunk is squeezed again (higher CRF, same frames) until it fits
+  const max = Number(c.maxBytes ?? MAX_UPLOAD);
+  for (let crf = Number(c.crf ?? 21) + 4; fs.statSync(seg).size > max && crf <= 36; crf += 4) {
+    const smaller = seg.replace(/\.mp4$/, `_crf${crf}.mp4`);
+    ffmpeg(["-i", seg, "-c:v", "libx264", "-crf", String(crf), "-preset", "medium", "-pix_fmt", "yuv420p", smaller]);
+    fs.renameSync(smaller, seg);
+  }
+  if (fs.statSync(seg).size > max) throw coded("CHUNK_TOO_BIG", `chunk ${c.index} is ${fs.statSync(seg).size} bytes even at CRF 36`);
+  // the 720p web copy of this chunk (same settings in every chunk, so the finish joins them by stream copy)
+  t = Date.now();
+  ffmpeg(["-i", seg, "-vf", "scale=720:1280", "-c:v", "libx264", "-crf", "23", "-preset", "veryfast", "-pix_fmt", "yuv420p", web]);
+  timing.web = +((Date.now() - t) / 1000).toFixed(2);
+  t = Date.now();
+  await put(c.out.seg, seg, "video/mp4");
+  await put(c.out.web, web, "video/mp4");
+  timing.upload = +((Date.now() - t) / 1000).toFixed(2);
+  return { role: "chunk", index: c.index, from: c.from, to: c.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(seg).size, webBytes: fs.statSync(web).size, renderer: gl, timing };
+}
+
+// ---------------------------------------------------------------- finish: join + mux + poster
+export async function finish(job, dir) {
+  const f = job.finish, timing = {};
+  let t = Date.now();
+  const segs = [], webs = [], mix = path.join(dir, "mix.m4a");
+  await Promise.all([
+    ...f.segs.map(async (u, i) => { const p = path.join(dir, `seg_${String(i).padStart(3, "0")}.mp4`); await get(u, p); segs[i] = p; }),
+    ...f.webs.map(async (u, i) => { const p = path.join(dir, `web_${String(i).padStart(3, "0")}.mp4`); await get(u, p); webs[i] = p; }),
+    get(f.mix, mix),
+  ]);
+  timing.download = +((Date.now() - t) / 1000).toFixed(2);
+  t = Date.now();
+  const mux = async (parts, out) => {
+    const silent = out.replace(/\.mp4$/, "_silent.mp4");
+    await concat(parts, silent);
+    ffmpeg(["-i", silent, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-shortest", "-movflags", "+faststart", out]);
+    return out;
+  };
+  const final = await mux(segs, path.join(dir, "final.mp4")), web = await mux(webs, path.join(dir, "web.mp4"));
+  const durationSec = +probeDuration(final).toFixed(3);
+  const poster = path.join(dir, "poster.jpg");
+  ffmpeg(["-ss", String(Math.min(1.5, durationSec / 2)), "-i", web, "-frames:v", "1", "-q:v", "3", poster]);
+  timing.join = +((Date.now() - t) / 1000).toFixed(2);
+  t = Date.now();
+  await put(f.out.final, final, "video/mp4");
+  await put(f.out.web, web, "video/mp4");
+  await put(f.out.poster, poster, "image/jpeg");
+  timing.upload = +((Date.now() - t) / 1000).toFixed(2);
+  return { role: "finish", durationSec, bytes: fs.statSync(final).size, webBytes: fs.statSync(web).size, timing };
+}
+
+/** one production job -> its RESULT (never throws); the worker's own done/failed event goes to the callback too */
+export async function runJob(job, opts = {}) {
+  const t0 = Date.now(), post = opts.post ?? poster(job);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bw-${job.role}-`));
+  let result;
+  try {
+    const fn = { prepare, chunk, finish }[job.role];
+    if (!fn) throw coded("BAD_JOB", `unknown role ${job.role}`);
+    const r = await fn(job, dir, post, opts);
+    result = { ok: true, ...r, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), totalS: +((Date.now() - t0) / 1000).toFixed(2) };
+    await post("done", { output: result });
+  } catch (e) {
+    result = { ok: false, role: job.role, code: e.code ?? "RENDER_FAILED", error: String(e.message ?? e).slice(0, 1500), totalS: +((Date.now() - t0) / 1000).toFixed(2) };
+    await post("failed", { code: result.code, message: result.error });
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 300 }); } catch { /* a temp folder never fails a job */ }
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------- staging (runpod/dispatch.mjs), unchanged
+async function staging(input) {
+  const t0 = Date.now(), timing = {};
+  const lap = (k, t) => { timing[k] = +((Date.now() - t) / 1000).toFixed(2); };
+  let job = null, report = null;
+  try {
+    job = input.jobUrl ? JSON.parse(String(await get(input.jobUrl))) : input;
+    if (job.crf) process.env.RENDER_CRF = String(job.crf);
+    const mode = job.mode ?? "gpu", dir = fs.mkdtempSync(path.join(os.tmpdir(), "bw-"));
+    let t = Date.now();
+    const gl = await renderer(mode);
+    lap("gpuCheck", t);
+    t = Date.now();
+    const tlPath = path.join(dir, "timeline.json");
+    await get(job.timelineUrl, tlPath);
+    lap("download", t);
+    const chunks = [];
+    t = Date.now();
+    for (const [i, r] of (job.ranges ?? []).entries()) {
+      const out = path.join(dir, `chunk${i}.mp4`);
+      const res = await renderParallel({ timelinePath: tlPath, out, from: r.from, to: r.to, workers: job.pages ?? 1 });
+      for (let crf = Number(job.crf ?? 20) + 4; fs.statSync(out).size > MAX_UPLOAD && crf <= 36; crf += 4) {
+        const smaller = out.replace(/.mp4$/, `_crf${crf}.mp4`);
+        execFileSync(FF, ["-v", "error", "-y", "-i", out, "-c:v", "libx264", "-crf", String(crf), "-preset", "medium", "-pix_fmt", "yuv420p", smaller]);
+        fs.renameSync(smaller, out);
+      }
+      if (r.upload) await put(r.upload, out, "video/mp4");
+      chunks.push({ from: r.from, to: r.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(out).size });
+    }
+    if (job.whole) {
+      const silent = path.join(dir, "silent.mp4"), mix = path.join(dir, "mix.m4a"), final = path.join(dir, "final.mp4");
+      const res = await renderParallel({ timelinePath: tlPath, out: silent, workers: job.pages ?? 1 });
+      await get(job.whole.mixUrl, mix);
+      const p = spawnSync(FF, ["-v", "error", "-y", "-i", silent, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { encoding: "utf8" });
+      if (p.status !== 0) throw new Error(`mux failed: ${p.stderr.slice(-400)}`);
+      if (job.whole.upload) await put(job.whole.upload, final, "video/mp4");
+      chunks.push({ whole: true, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(final).size });
+    }
+    lap("render", t);
+    report = { ok: true, mode, renderer: gl, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), chunks, timing: { ...timing, total: +((Date.now() - t0) / 1000).toFixed(2) } };
+  } catch (e) {
+    report = { ok: false, code: e.code ?? "RENDER_FAILED", error: String(e.message).slice(0, 1500), timing: { ...timing, total: +((Date.now() - t0) / 1000).toFixed(2) } };
+  }
+  if (job?.uploads?.report) { const f = path.join(os.tmpdir(), "bw-report.json"); fs.writeFileSync(f, JSON.stringify(report)); await put(job.uploads.report, f, "application/json").catch(() => {}); }
+  return report;
+}
+
+if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+  const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.JOB_FILE ? JSON.parse(fs.readFileSync(process.env.JOB_FILE, "utf8")) : { jobUrl: process.env.JOB_URL };
+  const result = input.job ? await runJob(input.job) : await staging(input);
+  console.log(`RESULT ${JSON.stringify(result)}`);
+  process.exit(result.ok ? 0 : 1);
+}

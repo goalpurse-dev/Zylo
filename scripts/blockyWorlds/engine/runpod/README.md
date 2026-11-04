@@ -1,7 +1,24 @@
-# Blocky Worlds render worker on RunPod (prepared, NOT built / pushed / deployed)
+# Blocky Worlds render worker on RunPod
+
+## Production (2026-11-05, docs/blocky-worlds-pipeline.md; NOT built / pushed / deployed yet)
+`worker.mjs` now also runs the production roles from `blocky-worlds-render` (`{ job: { role, ... } }`):
+`prepare` (voice with the RunPod secret `blocky_elevenlabs`, plan + checkTimeline + checkVisuals + checkSubjects + the
+kit check, music A + SFX + mix), `chunk` (frames -> 1080p seg + 720p web), `finish` (join, mux, poster). The image
+keeps the repo layout (`/app/scripts/blockyWorlds/engine`, `/app/supabase/functions/_shared/blockyWorlds`).
+Free end-to-end check: `node dev/pipelineDryRun.mjs --lines 24` (local GPU, the paid test's take, no paid call).
+
+Owner steps, in order (each needs the go):
+1. Build + push: `node runpod/buildContext.mjs C:\Users\Public\bw-ctx`, then from that folder push it under a
+   `blocky-*` label to `registry.fly.io/zyvo-cutaway-render-staging` the way the first Blocky image was pushed
+   (e.g. `fly deploy --app zyvo-cutaway-render-staging --dockerfile Dockerfile --build-only --push --image-label blocky-pipeline1`), note the digest.
+2. RunPod console -> Secrets: create `blocky_elevenlabs` = the ElevenLabs key.
+3. `node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:<digest>` (new template with
+   `ELEVENLABS_KEY={{ RUNPOD_SECRET_blocky_elevenlabs }}`; endpoint PATCH: workersMax 12, FlashBoot, REQUEST_COUNT 1).
+   Check the account's worker quota allows 12.
+
+## Staging (the first paid test)
 
 Mirrors Cutaway's `scripts/cutaway/proto3d/m3/` (same base image, GPU check, handler, storage + RunPod dispatch).
-Nothing here has been run against RunPod, Fly or Supabase. Every step below needs the owner's go.
 
 ## Files
 | File | What |
