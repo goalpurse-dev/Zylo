@@ -161,7 +161,7 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
   const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_long_form_weekend.json", import.meta.url), "utf8"));
   const sw = rageScripts({ ...R, yell: { ...R.yell, text: "I spent ALL WEEKEND fucking editing!", swear: "fucking", show: "f***ing" } });
   assert.equal(sw.censored.bleep.word, 4);
-  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend"], "only v2 recipes are presets");
+  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "pain_cutaway_save", "rage_fruit_comment", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend"], "only v2 recipes are presets");
 });
 
 test("the Rage hook preset: one click makes one job from a recipe the worker lists; nothing renders before the approval", async () => {

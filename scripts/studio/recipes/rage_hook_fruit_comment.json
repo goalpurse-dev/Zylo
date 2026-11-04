@@ -1,0 +1,31 @@
+{
+  "key": "rage_fruit_comment",
+  "structure": "v2",
+  "title": "I still don't get how they're made",
+  "search_title": "how to make AI fruit videos",
+  "template": "ai_fruit_story",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "length_bucket": "15-25",
+  "out_dir": "content/studio-previews/rage-fruit-comment",
+  "screens": "screens",
+  "creation": {
+    "id": "b102da41-abee-4e66-b4ff-c01e20bfc716",
+    "title": "Ken Reads Everything",
+    "file": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/final.mp4",
+    "hq_dir": "video/studio/b102da41-abee-4e66-b4ff-c01e20bfc716/hq",
+    "hq_ext": "png"
+  },
+  "yell": { "text": "I've watched these fruit dramas ALL DAY and I still don't get how they're made!", "key": "ALL", "pose": "rage", "prop": { "kind": "none" } },
+  "calm": "Because nobody shows you the easy way. Watch.",
+  "clip": { "in": 0.02, "out": 3.45, "says": "I found a draft email you never sent, Rick." },
+  "steps": [
+    { "text": "Step one: open Zyvo, then AI Fruit Story.", "key": "Fruit", "screen": "s_menu.jpg", "taps": [[3, 0.21, 0.2], [6, 0.67, 0.39]] },
+    { "text": "Step two: grab an idea, or write your own.", "key": "own.", "screen": "s_ideas.jpg", "taps": [[4, 0.5, 0.445], [8, 0.5, 0.208]] },
+    { "text": "Step three: it builds every scene, with voices.", "key": "voices.", "screen": "s_pictures.jpg", "flips": [[6, "s_anim.jpg"]] }
+  ],
+  "end": { "text": "It's called Zyvo. Link in bio. Comment FRUIT if you're making one tonight.", "key": ["Zyvo.", "FRUIT"], "name_word": 2, "cta_word": 7, "trigger": "comment", "chip": "COMMENT FRUIT" },
+  "caption": "I've watched fruit dramas ALL DAY 🍓 How to make AI fruit videos in 3 steps, no editing. Link in bio. #aifruit #aivideo #faceless #fyp",
+  "hashtags": ["#aifruit", "#aivideo", "#faceless", "#fyp"],
+  "claims": ["The clip is the owner's own AI Fruit Story creation \"Ken Reads Everything\" (b102da41), 0.0-3.45 s. No number is claimed."]
+}
