@@ -121,7 +121,7 @@ export function reminderEmail(kind, { bonusEndsAt = null, hasPreview = false } =
     subject: "Your +50 bonus credits end tomorrow", why, category,
     render: (footer) => plain([
       "Hi,",
-      `A quick reminder: the 50 bonus credits you got for signing up end tomorrow, ${ends}.`,
+      `A quick reminder: your sign-up bonus of 50 extra credits ends tomorrow, ${ends}.`,
       "Start any plan before then and the 50 credits are added on top of it.",
       { before: hasPreview ? "You can finish your video and pick a plan here:" : "You can see the plans here:", link: hasPreview ? REMINDER_LINKS.bonus_day2_with_preview : REMINDER_LINKS.bonus_day2 },
       "Niko",
