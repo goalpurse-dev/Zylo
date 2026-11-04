@@ -4,7 +4,10 @@
 import * as THREE from "three";
 import { cachedMat } from "./kitCommon.js";
 
-export const EXPRS = ["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush"];
+// yell: eyes squeezed (> <), a huge open mouth, effort lines. sneeze: variant "talk" = the "ah-" wind-up (eyes half shut
+// looking up, small O mouth), "base" = the "CHOO" (eyes squeezed, mouth open, spray). mime: white-face make-up marks,
+// small dark-red lips. Any expression with variant "blow": puffed cheeks + a pursed mouth (pose "blow").
+export const EXPRS = ["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze", "mime"];
 const INK = "#2a1d24";
 const POSITIVE = new Set(["neutral", "happy", "excited", "smirk", "surprised"]);
 
@@ -44,8 +47,28 @@ function drawFace(p, expr, variant, { glasses, beard, skin }) {
 
   const closed = variant === "blink";
   const E = (o) => { if (closed) { shut(L.x, L.y); shut(R.x, R.y); } else { eye(L.x, L.y, 1, o); eye(R.x, R.y, -1, o); } };
+  const squeeze = () => { // > <
+    p.strokeStyle = INK; p.lineWidth = 8;
+    p.beginPath(); p.moveTo(L.x - 16, L.y - 13); p.lineTo(L.x + 13, L.y); p.lineTo(L.x - 16, L.y + 13); p.stroke();
+    p.beginPath(); p.moveTo(R.x + 16, R.y - 13); p.lineTo(R.x - 13, R.y); p.lineTo(R.x + 16, R.y + 13); p.stroke();
+  };
+  const effort = () => { // little strain lines at both temples
+    p.strokeStyle = INK; p.lineWidth = 5;
+    for (const [sx, x0] of [[-1, 40], [1, 216]]) for (const [dy, len] of [[-18, 16], [0, 20], [18, 16]]) { p.beginPath(); p.moveTo(x0, 92 + dy * 1.3); p.lineTo(x0 + sx * len, 92 + dy * 1.3 + dy * 0.6); p.stroke(); }
+  };
 
   switch (expr) {
+    case "yell": squeeze(); brows(74, -8); effort(); break;
+    case "sneeze":
+      if (variant === "talk") { E({ cover: 0.5, look: [0, -7] }); brows(62, 7); }
+      else { shut(L.x, L.y - 4, true); shut(R.x, R.y - 4, true); brows(86, -5); }
+      break;
+    case "mime": {
+      E({ open: 1.05 }); brows(64, 3);
+      p.strokeStyle = INK; p.lineWidth = 4; // make-up marks above and below each eye
+      for (const c of [L, R]) { p.beginPath(); p.moveTo(c.x, c.y - 52); p.lineTo(c.x, c.y - 34); p.moveTo(c.x, c.y + 30); p.lineTo(c.x, c.y + 50); p.stroke(); }
+      break;
+    }
     case "happy": E({}); brows(76, 1); blush(); break;
     case "excited": E({ open: 1.1, pupil: 1.15, sparkle: true }); brows(70, -2); blush(0.45); break;
     case "sad": E({ look: [0, 6], cover: 0.22, tilt: -0.35 }); brows(84, 6); break;
@@ -73,7 +96,29 @@ function drawFace(p, expr, variant, { glasses, beard, skin }) {
     p.fill();
     p.save(); p.clip(); p.fillStyle = "#ff8fa0"; p.beginPath(); p.ellipse(128, 172 + dy + h * (smile ? 1.9 : 1.6), w * 0.55, h * 0.6, 0, 0, Math.PI * 2); p.fill(); p.restore();
   };
-  if (variant === "talk" && expr !== "shush" && expr !== "sleepy") {
+  if (variant === "blow") { // puffed cheeks around a small pursed mouth
+    p.fillStyle = "rgba(255,150,160,0.75)"; p.strokeStyle = INK; p.lineWidth = 4;
+    for (const x of [70, 186]) { p.beginPath(); p.arc(x, 176, 27, 0, Math.PI * 2); p.fill(); p.stroke(); }
+    p.fillStyle = INK; p.beginPath(); p.ellipse(128, 186, 10, 9, 0, 0, Math.PI * 2); p.fill();
+  } else if (expr === "yell") {
+    p.beginPath(); p.moveTo(86, 160); p.quadraticCurveTo(128, 150, 170, 160); p.quadraticCurveTo(174, 220, 128, 224); p.quadraticCurveTo(82, 220, 86, 160); p.closePath();
+    p.fill();
+    p.save(); p.clip();
+    p.fillStyle = "#ffffff"; p.fillRect(80, 150, 96, 15); // top teeth
+    p.fillStyle = "#ff8fa0"; p.beginPath(); p.ellipse(128, 222, 28, 16, 0, 0, Math.PI * 2); p.fill(); // tongue
+    p.restore();
+    p.lineWidth = 6; p.stroke();
+  } else if (expr === "sneeze") {
+    if (variant === "talk") openMouth(13, 15, 4, false);
+    else {
+      openMouth(24, 15, 2, false);
+      p.fillStyle = "rgba(140,210,255,0.95)"; p.strokeStyle = INK; p.lineWidth = 3; // the spray
+      for (const [x, y, r] of [[92, 222, 7], [112, 234, 6], [140, 236, 7], [164, 224, 6], [78, 206, 5], [180, 208, 5], [126, 246, 5]]) { p.beginPath(); p.arc(x, y, r, 0, Math.PI * 2); p.fill(); p.stroke(); }
+    }
+  } else if (expr === "mime") {
+    p.fillStyle = "#b3122e"; p.strokeStyle = "#6e0a1c"; p.lineWidth = 3; // small dark-red lips
+    p.beginPath(); p.moveTo(110, 182); p.quadraticCurveTo(128, 172, 146, 182); p.quadraticCurveTo(128, 196, 110, 182); p.closePath(); p.fill(); p.stroke();
+  } else if (variant === "talk" && expr !== "shush" && expr !== "sleepy") {
     if (POSITIVE.has(expr)) openMouth(expr === "excited" ? 30 : 22, expr === "excited" ? 16 : 11);
     else openMouth(15, 13, expr === "cry" ? 8 : 2, false);
   } else switch (expr) {

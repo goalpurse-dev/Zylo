@@ -70,7 +70,7 @@ export const frameCount = (tl) => Math.round(tl.duration * (tl.fps ?? 24));
 
 function encoder(out, fps) {
   fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
-  const enc = spawn(FF, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", String(fps), "-i", "-", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-r", String(fps), out], { stdio: ["pipe", "inherit", "inherit"] });
+  const enc = spawn(FF, ["-v", "error", "-y", "-f", "image2pipe", "-c:v", "mjpeg", "-r", String(fps), "-i", "-", "-c:v", "libx264", "-crf", String(process.env.RENDER_CRF ?? 18), "-preset", "medium", "-pix_fmt", "yuv420p", "-r", String(fps), out], { stdio: ["pipe", "inherit", "inherit"] });
   const done = new Promise((res, rej) => enc.on("close", (c) => (c === 0 ? res() : rej(new Error(`ffmpeg exited ${c} for ${out}`)))));
   enc.stdin.on("error", () => {});
   return { write: async (buf) => { if (!enc.stdin.write(buf)) await new Promise((r) => enc.stdin.once("drain", r)); }, end: async () => { enc.stdin.end(); await done; } };

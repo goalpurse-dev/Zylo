@@ -12,12 +12,14 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { useGpu, useSoftware } from "./gpu.mjs";
 import { renderParallel } from "../render.mjs";
 
 const FF = process.env.FFMPEG ?? "ffmpeg";
+const MAX_UPLOAD = 48 * 1024 * 1024;
+// chunk quality: a job may lower it so each chunk fits the storage bucket (50 MB a file)
 const t0 = Date.now(), timing = {};
 const lap = (k, t) => { timing[k] = +((Date.now() - t) / 1000).toFixed(2); };
 const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.JOB_FILE ? JSON.parse(fs.readFileSync(process.env.JOB_FILE, "utf8")) : { jobUrl: process.env.JOB_URL };
@@ -35,6 +37,7 @@ async function put(url, file, type) {
 let job = null, report = null;
 try {
   job = input.jobUrl ? JSON.parse(String(await get(input.jobUrl))) : input;
+  if (job.crf) process.env.RENDER_CRF = String(job.crf);
   const mode = job.mode ?? "gpu", dir = fs.mkdtempSync(path.join(os.tmpdir(), "bw-"));
   let t = Date.now();
   const renderer = mode === "gpu" ? await useGpu() : useSoftware();
@@ -48,6 +51,13 @@ try {
   for (const [i, r] of (job.ranges ?? []).entries()) {
     const out = path.join(dir, `chunk${i}.mp4`);
     const res = await renderParallel({ timelinePath: tlPath, out, from: r.from, to: r.to, workers: job.pages ?? 1 });
+    // the storage bucket takes 50 MB a file: a busy chunk (the leafy daytime street) can pass it at CRF 20, so it is
+    // squeezed again (higher CRF, same frames) until it fits (2026-11-04: chunk 0 came out too big)
+    for (let crf = Number(job.crf ?? 20) + 4; fs.statSync(out).size > MAX_UPLOAD && crf <= 36; crf += 4) {
+      const smaller = out.replace(/.mp4$/, `_crf${crf}.mp4`);
+      execFileSync(FF, ["-v", "error", "-y", "-i", out, "-c:v", "libx264", "-crf", String(crf), "-preset", "medium", "-pix_fmt", "yuv420p", smaller]);
+      fs.renameSync(smaller, out);
+    }
     if (r.upload) await put(r.upload, out, "video/mp4");
     chunks.push({ from: r.from, to: r.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(out).size });
   }

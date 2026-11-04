@@ -28,6 +28,9 @@ const LIGHTS = ["day", "night", "warm"];
 const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
 const FACINGS = ["camera", "left", "right", "away", "monster"];
 const MONSTER_STATES = ["lurk", "reach", "reveal", "flee"];
+const INSERT_KINDS = ["sign", "note", "card"];
+const WINDOWS = ["dark", "lit", "open"];
+const OBJ_FACINGS = ["camera", "left", "right", "away"];
 
 async function load(name) {
   const url = stubbed.has(name) ? STUB[name] : REAL[name];
@@ -40,12 +43,28 @@ function need({ mod, url }, name) {
   return mod[name];
 }
 
-/** every problem in the timeline at once (planner bugs fail here, before a single frame) */
-function validate(tl, setNames) {
+/** a shot's markers: shot.markers (a list) or the single shot.marker; duplicates of the same marker dropped */
+function markersOf(s) {
+  const list = Array.isArray(s.markers) && s.markers.length ? [...s.markers] : [];
+  if (s.marker && !list.some((m) => m.on === s.marker.on && m.kind === s.marker.kind && m.text === s.marker.text)) list.unshift(s.marker);
+  return list.filter(Boolean);
+}
+/** who a marker floats over: "all" = every actor of the shot, "monster", or one cast id */
+const markerTargets = (mk, s) => (mk.on === "all" ? (s.actors ?? []).map((a) => a.id) : [mk.on]);
+
+/** a baby's cast id when actor `a` carries one (pose carry + hold = the baby's cast id) */
+const carriedBaby = (a, cast) => (a.hold && cast[a.hold]?.role === "baby" ? a.hold : null);
+
+/**
+ * every problem in the timeline at once (planner bugs fail here, before a single frame).
+ * lists: { setNames, poses, exprs, objects: { resolve(name) -> canonical | null, catalog } } (each optional)
+ */
+function validate(tl, { setNames = null, poses = null, exprs = null, objects = null } = {}) {
   const bad = [];
   if (!Array.isArray(tl.shots) || !tl.shots.length) bad.push("no shots");
   if (!(tl.duration > 0)) bad.push("no duration");
   const cast = tl.cast ?? {};
+  for (const [id, c] of Object.entries(cast)) if (c.role && !["kid", "adult", "elder", "baby"].includes(c.role)) bad.push(`cast "${id}": unknown role "${c.role}" (kid, adult, elder, baby)`);
   (tl.shots ?? []).forEach((s, i) => {
     const at = `shot ${i} (${s.start}-${s.end})`;
     if (!(s.end > s.start)) bad.push(`${at}: end <= start`);
@@ -54,22 +73,45 @@ function validate(tl, setNames) {
     if (!LIGHTS.includes(s.light)) bad.push(`${at}: unknown light "${s.light}"`);
     if (!CAMERAS.includes(s.camera)) bad.push(`${at}: unknown camera "${s.camera}"`);
     const ids = (s.actors ?? []).map((a) => a.id);
+    const carried = (s.actors ?? []).map((a) => carriedBaby(a, cast)).filter(Boolean);
     for (const a of s.actors ?? []) {
       if (!cast[a.id]) bad.push(`${at}: actor "${a.id}" is not in the cast`);
       if (!SPOTS.includes(a.spot) && !EXTRA_SPOTS.includes(a.spot)) bad.push(`${at}: actor "${a.id}" on unknown spot "${a.spot}"`);
       if (a.facing && !FACINGS.includes(a.facing) && !cast[a.facing]) bad.push(`${at}: actor "${a.id}" facing unknown "${a.facing}"`);
+      if (poses && a.pose && !poses.includes(a.pose)) bad.push(`${at}: actor "${a.id}" has unknown pose "${a.pose}" (${poses.join(", ")})`);
+      if (exprs && a.expr && !exprs.includes(a.expr)) bad.push(`${at}: actor "${a.id}" has unknown expr "${a.expr}" (${exprs.join(", ")})`);
+      if (a.hold && cast[a.hold] && cast[a.hold].role !== "baby") bad.push(`${at}: actor "${a.id}" holds cast member "${a.hold}", who is not a baby (only babies can be carried)`);
+      if (carriedBaby(a, cast) === a.id) bad.push(`${at}: actor "${a.id}" carries itself`);
     }
+    const objs = s.objects ?? [];
+    if (!Array.isArray(objs)) bad.push(`${at}: objects must be a list`);
+    else for (const o of objs) {
+      if (!objects) { bad.push(`${at}: objects given but page/kit/objects.js is not loaded`); break; }
+      const key = objects.resolve(o?.name);
+      if (!key) { bad.push(`${at}: unknown object "${o?.name}" (${Object.keys(objects.catalog).join(", ")})`); continue; }
+      const st = o.state ?? objects.catalog[key].state;
+      if (!objects.catalog[key].states.includes(st)) bad.push(`${at}: object "${key}" has no state "${st}" (${objects.catalog[key].states.join(", ")})`);
+      if (o.spot && !SPOTS.includes(o.spot) && !EXTRA_SPOTS.includes(o.spot)) bad.push(`${at}: object "${key}" on unknown spot "${o.spot}"`);
+      if (o.facing && !OBJ_FACINGS.includes(o.facing)) bad.push(`${at}: object "${key}" facing unknown "${o.facing}" (${OBJ_FACINGS.join(", ")})`);
+    }
+    if (s.insert && !INSERT_KINDS.includes(s.insert.kind ?? "sign")) bad.push(`${at}: unknown insert kind "${s.insert.kind}" (${INSERT_KINDS.join(", ")})`);
+    if (s.setState?.windows != null && !WINDOWS.includes(s.setState.windows)) bad.push(`${at}: unknown setState.windows "${s.setState.windows}" (${WINDOWS.join(", ")})`);
     const f = s.focus;
     if (f === "monster") { if (!tl.monster) bad.push(`${at}: focus "monster" but the timeline has no monster`); }
     else if (f === "insert") { if (!s.insert) bad.push(`${at}: focus "insert" but the shot has no insert`); }
+    else if (f === "object") { if (!objs.length) bad.push(`${at}: focus "object" but the shot has no objects`); }
     else if (f === "group") { /* the actors + extras */ }
-    else if (!ids.includes(f)) bad.push(`${at}: focus "${f}" is not one of its actors (${ids.join(", ") || "none"})`);
+    else if (!ids.includes(f) && !carried.includes(f)) bad.push(`${at}: focus "${f}" is not one of its actors (${ids.join(", ") || "none"})`);
     if (s.monsterState) {
       if (!tl.monster) bad.push(`${at}: monsterState but the timeline has no monster`);
       if (!MONSTER_STATES.includes(s.monsterState.state)) bad.push(`${at}: unknown monster state "${s.monsterState.state}"`);
       if (s.monsterState.spot && !SPOTS.includes(s.monsterState.spot) && !EXTRA_SPOTS.includes(s.monsterState.spot)) bad.push(`${at}: monster on unknown spot "${s.monsterState.spot}"`);
     }
-    if (s.marker && s.marker.on !== "all" && !ids.includes(s.marker.on)) bad.push(`${at}: marker on "${s.marker.on}", who is not in the shot`);
+    for (const mk of markersOf(s)) {
+      if (mk.on === "monster") { if (!tl.monster) bad.push(`${at}: marker on "monster" but the timeline has no monster`); }
+      else if (mk.on !== "all" && !ids.includes(mk.on) && !carried.includes(mk.on)) bad.push(`${at}: marker on "${mk.on}", who is not in the shot`);
+      if (mk.kind && !["tag", "ring", "icon"].includes(mk.kind)) bad.push(`${at}: unknown marker kind "${mk.kind}" (tag, ring, icon)`);
+    }
   });
   if (bad.length) throw new Error(`engine: the timeline has ${bad.length} problem(s):\n- ${bad.slice(0, 25).join("\n- ")}`);
 }
@@ -88,13 +130,28 @@ async function main() {
   const [peopleM, monstersM, propsM, setsM, cameraM, captionsM] = await Promise.all(["people", "monsters", "props", "sets", "camera", "captions"].map(load));
   const makePerson = need(peopleM, "makePerson"), posePerson = need(peopleM, "posePerson"), setFace = need(peopleM, "setFace"), personHeight = need(peopleM, "personHeight");
   const makeMonster = tl.monster ? need(monstersM, "makeMonster") : null, animateMonster = tl.monster ? need(monstersM, "animateMonster") : null;
-  const anyInsert = tl.shots.some((s) => s.insert), anyMarker = tl.shots.some((s) => s.marker);
+  const anyInsert = tl.shots.some((s) => s.insert), anyMarker = tl.shots.some((s) => markersOf(s).length);
   const makeInsert = anyInsert ? need(propsM, "makeInsert") : null, makeMarker = anyMarker ? need(propsM, "makeMarker") : null;
   const animateMarker = typeof propsM.mod.animateMarker === "function" ? propsM.mod.animateMarker : null; // optional
   const buildSet = need(setsM, "buildSet"), applyLight = need(setsM, "applyLight");
   const frameShot = need(cameraM, "frameShot");
   const drawCaption = need(captionsM, "drawCaption");
-  validate(tl, Array.isArray(setsM.mod.SETS) ? setsM.mod.SETS : null);
+  const holdPerson = typeof peopleM.mod.holdPerson === "function" ? peopleM.mod.holdPerson : null; // optional (babies)
+  const releasePerson = typeof peopleM.mod.releasePerson === "function" ? peopleM.mod.releasePerson : null;
+  // scene objects (kit/objects.js): loaded only when the timeline uses them
+  const anyObjects = tl.shots.some((s) => s.objects?.length);
+  let objectsM = null;
+  if (anyObjects) {
+    try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
+    for (const k of ["OBJECTS", "makeObject", "animateObject", "resolveObject"]) if (!(k in objectsM)) throw new Error(`engine: /page/kit/objects.js has no export ${k} (CONTRACT.md addendum)`);
+  }
+  const realPeople = !stubbed.has("people");
+  validate(tl, {
+    setNames: Array.isArray(setsM.mod.SETS) ? setsM.mod.SETS : null,
+    poses: realPeople && Array.isArray(peopleM.mod.POSES) ? peopleM.mod.POSES : null,
+    exprs: realPeople && Array.isArray(peopleM.mod.EXPRS) ? peopleM.mod.EXPRS : null,
+    objects: objectsM ? { resolve: objectsM.resolveObject, catalog: objectsM.OBJECTS } : null,
+  });
 
   // ---------- renderer, output canvas, post ----------
   const renderer = makeRenderer(W, H);
@@ -146,6 +203,7 @@ async function main() {
     const d = hz(S.spots.far).sub(hz(S.spots.center));
     S.depth = d.lengthSq() > 1e-4 ? d.normalize() : new THREE.Vector3(0, 0, -1);
     S.lateral = new THREE.Vector3(-S.depth.z, 0, S.depth.x);
+    S.setWindows ??= () => {}; // only the street has houses with windows
     SETS[name] = S;
   }
 
@@ -172,7 +230,7 @@ async function main() {
   const INSERTS = new Map(), MARKERS = new Map();
   for (const s of tl.shots) {
     if (s.insert) {
-      const k = `${s.insert.kind}|${s.insert.text}`;
+      const k = `${s.insert.kind}|${s.insert.text}|${s.insert.icon ?? ""}`;
       if (!INSERTS.has(k)) {
         const o = makeInsert(s.insert);
         if (!o?.isObject3D) throw new Error(`engine: makeInsert(${JSON.stringify(s.insert)}) returned no Object3D`);
@@ -181,17 +239,35 @@ async function main() {
         INSERTS.set(k, { obj: o, minY: box.min.y, h: box.max.y - box.min.y || 0.8 });
       }
     }
-    if (s.marker) {
-      const targets = s.marker.on === "all" ? (s.actors ?? []).map((a) => a.id) : [s.marker.on];
-      for (const id of targets) {
-        const k = `${id}|${s.marker.kind}|${s.marker.text ?? ""}`;
+    for (const mk of markersOf(s)) {
+      for (const id of markerTargets(mk, s)) {
+        const k = `${id}|${mk.kind}|${mk.text ?? ""}`;
         if (MARKERS.has(k)) continue;
-        const m = makeMarker({ kind: s.marker.kind, text: s.marker.text ?? "" });
-        if (!m?.isObject3D) throw new Error(`engine: makeMarker(${JSON.stringify(s.marker)}) returned no Object3D`);
+        const m = makeMarker({ kind: mk.kind, text: mk.text ?? "" });
+        if (!m?.isObject3D) throw new Error(`engine: makeMarker(${JSON.stringify(mk)}) returned no Object3D`);
         scene.add(m); m.visible = false; MARKERS.set(k, m);
       }
     }
   }
+
+  // ---------- scene objects: one instance per (name, state) per use in a shot (a shot may hold three cribs) ----------
+  const OBJ = new Map(); // "name|state" -> [Group]
+  const objKey = (o) => { const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}`; };
+  if (objectsM) {
+    const counts = new Map();
+    for (const s of tl.shots) { const c = new Map(); for (const o of s.objects ?? []) { const k = objKey(o); c.set(k, (c.get(k) ?? 0) + 1); } for (const [k, n] of c) counts.set(k, Math.max(counts.get(k) ?? 0, n)); }
+    for (const [k, n] of counts) {
+      const [name, state] = k.split("|"), list = [];
+      for (let i = 0; i < n; i++) {
+        const o = objectsM.makeObject(name, { state });
+        if (!o?.isObject3D) throw new Error(`engine: makeObject("${name}", ${state}) returned no Object3D`);
+        scene.add(o); o.visible = false; list.push(o);
+      }
+      OBJ.set(k, list);
+    }
+  }
+  const allObjects = [...OBJ.values()].flat();
+  const HATS = new Map(); // person id -> party hat (birthday_party shots)
 
   // ---------- the caption font ----------
   if (typeof captionsM.mod.loadCaptionFont === "function") await captionsM.mod.loadCaptionFont();
@@ -222,15 +298,66 @@ async function main() {
       lightKey = key;
     }
     S.update?.(t);
-    for (const p of allPeople) p.obj.visible = false;
+    for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
     for (const m of MARKERS.values()) m.visible = false;
     for (const i of INSERTS.values()) i.obj.visible = false;
+    for (const o of allObjects) o.visible = false;
+    for (const h of HATS.values()) h.visible = false;
+    S.setWindows(shot.setState?.windows ?? null);
 
-    // people: grouped by spot, spread sideways, then pushed apart so nobody overlaps
-    const placed = []; // { id, a (timeline actor or null for extras), pos }
+    // scene objects: at their spots, facing the camera side; big ones behind everybody, others behind the actors who
+    // share their spot (or the actors go behind / beside / onto them: userData.actors in kit/objects.js)
+    const cast = tl.cast ?? {};
+    const carried = new Map(); // baby id -> carrier actor
+    for (const a of shot.actors ?? []) { const b = carriedBaby(a, cast); if (b) carried.set(b, a); }
+    const free = (shot.actors ?? []).filter((a) => !carried.has(a.id));
+    const shotObjs = [], spotRule = {}, used = new Map();
+    const faceYaw = Math.atan2(-S.depth.x, -S.depth.z);
+    let anyBig = false;
+    for (const o of shot.objects ?? []) {
+      const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
+      const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
+      const here = free.filter((a) => a.spot === spot);
+      const mode = u.actors ?? "front";
+      const pos = base.clone();
+      // pushed back behind the actors: always for big ones, and for small ones when somebody shares the spot or would
+      // stand inside it (a car at "right" next to people at "center")
+      const crowded = mode === "front" && free.some((a) => { const p = spots[a.spot] ?? spots.center; return Math.abs(hz(p).sub(hz(base)).dot(S.lateral)) < (u.width ?? 1) / 2 + 0.4 && Math.abs(hz(p).sub(hz(base)).dot(S.depth)) < (u.depth ?? 1) + 0.4; });
+      if (mode === "front" && (u.big || here.length || crowded)) pos.addScaledVector(S.depth, (u.push ?? 0.8) + (crowded && !here.length && !u.big ? 0.4 : 0));
+      obj.position.copy(pos);
+      obj.rotation.set(0, faceYaw + ({ left: -0.6, right: 0.6, away: Math.PI }[o.facing] ?? 0), 0);
+      obj.visible = true; obj.updateMatrixWorld(true);
+      objectsM.animateObject(obj, o.state ?? u.state, lt);
+      if (u.big) anyBig = true;
+      shotObjs.push({ o, obj, u });
+      if (mode !== "front" && !spotRule[spot]) spotRule[spot] = { obj, u, mode };
+    }
+    S.setClutter?.(!anyBig && !shot.setState?.windows); // the bus shelter etc. step aside for big objects and window shots
+
+    // people: grouped by spot, spread sideways, then pushed apart so nobody overlaps (people in / on an object stay put)
+    const placed = []; // { id, a (timeline actor or null for extras), pos, fixed, opts }
     const bySpot = {};
-    for (const a of shot.actors ?? []) (bySpot[a.spot] ??= []).push(a);
-    for (const [spot, list] of Object.entries(bySpot)) list.forEach((a, i) => placed.push({ id: a.id, a, pos: (spots[spot] ?? spots.center).clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 0.95).setY((spots[spot] ?? spots.center).y) }));
+    for (const a of free) (bySpot[a.spot] ??= []).push(a);
+    for (const [spot, list] of Object.entries(bySpot)) {
+      const base = spots[spot] ?? spots.center, rule = spotRule[spot];
+      if (!rule) { list.forEach((a, i) => placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 0.95).setY(base.y) })); continue; }
+      const { obj, u, mode } = rule, fwd = new THREE.Vector3(Math.sin(obj.rotation.y), 0, Math.cos(obj.rotation.y));
+      const side = []; // actors that stand beside the object
+      list.forEach((a, i) => {
+        if (mode === "behind") placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 0.95).addScaledVector(S.depth, u.actorsBack ?? 1.2).setY(base.y) });
+        else if (mode === "bed" && cast[a.id]?.role === "baby" && !placed.some((p) => p.inBed === obj)) {
+          const p = obj.localToWorld(u.bed.clone()); p.y = base.y + u.bedH;
+          placed.push({ id: a.id, a, pos: p, fixed: true, inBed: obj });
+        } else if (mode === "seat" && !placed.some((p) => p.onSeat === obj)) {
+          const p = obj.localToWorld(u.seat.clone()); p.y = base.y;
+          const sc = PEOPLE[a.id].obj.userData.scale ?? 0.87;
+          if ((a.pose ?? "stand") === "sit") placed.push({ id: a.id, a, pos: p.addScaledVector(fwd, 0.38 * sc), fixed: true, onSeat: obj, opts: { seat: u.seatH } });
+          else placed.push({ id: a.id, a, pos: p.addScaledVector(fwd, 0.45), fixed: true, onSeat: obj });
+        } else side.push(a);
+      });
+      const half = (u.width ?? 1) / 2 + 0.45;
+      side.forEach((a, i) => { const s = i % 2 ? 1 : -1, k = Math.floor(i / 2); placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, s * (half + k * 0.9)).addScaledVector(fwd, 0.15).setY(base.y) }); });
+    }
     if (shot.focus === "group" && EXTRAS.length) {
       const r = rng((shot.seed ?? 1) * 7 + 3), n = 2 + r.int(0, 2), mood = shot.actors?.[0]?.pose;
       for (let i = 0; i < n; i++) {
@@ -241,9 +368,10 @@ async function main() {
     }
     for (let it = 0; it < 6; it++) for (let i = 0; i < placed.length; i++) for (let j = i + 1; j < placed.length; j++) {
       const A = placed[i].pos, B = placed[j].pos, d = hz(B).sub(hz(A)), L = d.length(), min = 0.85;
-      if (L >= min) continue;
+      if (L >= min || (placed[i].fixed && placed[j].fixed)) continue;
       const dir = L > 1e-3 ? d.divideScalar(L) : S.lateral.clone();
-      const push = (min - L) / 2; A.addScaledVector(dir, -push); B.addScaledVector(dir, push);
+      const ka = placed[i].fixed ? 0 : placed[j].fixed ? 2 : 1, kb = 2 - ka;
+      const push = (min - L) / 2; A.addScaledVector(dir, -push * ka); B.addScaledVector(dir, push * kb);
     }
     const where = Object.fromEntries(placed.map((p) => [p.id, p.pos]));
 
@@ -255,7 +383,7 @@ async function main() {
     // insert: in front of the center spot, toward the camera side, facing it
     let ins = null;
     if (shot.insert) {
-      ins = INSERTS.get(`${shot.insert.kind}|${shot.insert.text}`);
+      ins = INSERTS.get(`${shot.insert.kind}|${shot.insert.text}|${shot.insert.icon ?? ""}`);
       const base = spots.center.clone().addScaledVector(S.depth, -1.4);
       ins.obj.position.copy(base); ins.obj.position.y = base.y + (ins.minY < -0.05 ? 1.3 - (ins.minY + ins.h / 2) : -ins.minY);
       ins.obj.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0);
@@ -263,18 +391,63 @@ async function main() {
     }
 
     // the camera
-    let focus, focusHeight, other;
+    let focus, focusHeight, other, camType = shot.camera;
+    /** "insert" framing (straight, centred) that fits a person at `a` (height h) and an object (height capped at capH) */
+    function fitPair(a, h, { obj, u }, capH) {
+      const oc = obj.localToWorld((u.focus ?? new THREE.Vector3()).clone()).setY(obj.position.y);
+      const la = hz(a).sub(hz(oc)).dot(S.lateral), hw = (u.fitW ?? u.width ?? 2) / 2;
+      const lo = Math.min(-hw, la - 0.5), hi = Math.max(hw, la + 0.5);
+      const fitW = hi - lo, fitH = Math.max(h + 0.2, Math.min(u.fitH ?? u.height ?? 2, capH));
+      const fh = Math.max(fitH / 2.1, fitW / 1.35);
+      const f = hz(oc).addScaledVector(S.lateral, (lo + hi) / 2).addScaledVector(S.depth, hz(a).sub(hz(oc)).dot(S.depth) / 2);
+      f.y = Math.min(a.y, obj.position.y) + fitH / 2 - fh / 2;
+      return { focus: f, focusHeight: fh };
+    }
     if (shot.focus === "monster") { focus = monster.position.clone(); focusHeight = monsterH; other = placed[0]?.pos; }
     else if (shot.focus === "insert") { focus = ins.obj.position.clone().setY(ins.obj.position.y + ins.minY); focusHeight = ins.h; }
+    else if (shot.focus === "object") {
+      // wide / insert: fit the whole object (and anybody standing around it) with the "insert" framing (a straight,
+      // centred view, vertical span 2.4 H); medium / closeup / over_shoulder: its key detail (userData.detail) like a
+      // person of that height; low: from the ground, its full height
+      const { obj, u } = shotObjs[0];
+      const at = (v) => { const p = obj.localToWorld((v ?? new THREE.Vector3()).clone()); p.y = obj.position.y; return p; };
+      other = placed[0]?.pos;
+      if (shot.camera === "wide" || shot.camera === "insert") {
+        const c = at(u.focus);
+        let fitW = u.fitW ?? u.width ?? 2, fitH = u.fitH ?? u.height ?? 2;
+        for (const p of placed) { // people next to it widen the fit (a storybook between Grandpa and Pip)
+          const d = hz(p.pos).sub(hz(c)), lat = Math.abs(d.dot(S.lateral)), dep = Math.abs(d.dot(S.depth));
+          if (lat < 3 && dep < 2.5) { fitW = Math.max(fitW, 2 * lat + 0.9); fitH = Math.max(fitH, (PEOPLE[p.id]?.h ?? 1.7) + (p.pos.y - obj.position.y) + 0.2); }
+        }
+        const fitY = Math.max(u.fitY ?? fitH / 2, fitH / 2 * 0.8);
+        focusHeight = Math.max(fitH / 2.1, fitW / 1.35);
+        focus = c; focus.y = obj.position.y + fitY - focusHeight / 2;
+        camType = "insert";
+      } else if (shot.camera === "low") { focus = at(u.focus); focusHeight = u.fitH ?? u.height ?? 2; }
+      else {
+        const d = at(u.detail?.at ?? u.focus);
+        // somebody standing between the lens and the detail (Dobbs in front of the bakery): frame the two together
+        const blocker = placed.find((p) => { if (p.fixed) return false; const v = hz(p.pos).sub(hz(d)); const f = -v.dot(S.depth); return f > -0.2 && f < 2.8 && Math.abs(v.dot(S.lateral)) < 1.6; });
+        if (blocker) { ({ focus, focusHeight } = fitPair(blocker.pos, PEOPLE[blocker.id]?.h ?? 1.7, shotObjs[0], Math.max(2.6, PEOPLE[blocker.id]?.h ?? 1.7))); camType = "insert"; }
+        else { focus = d; focusHeight = u.detail?.h ?? Math.min(u.height ?? 2, 2); }
+      }
+    }
     else if (shot.focus === "group") {
       const g = placed.length ? placed : [{ pos: spots.center, id: null }];
       focus = g.reduce((s, p) => s.add(p.pos), new THREE.Vector3()).divideScalar(g.length);
       focusHeight = Math.max(...g.map((p) => PEOPLE[p.id]?.h ?? 1.7));
-    } else {
+    } else if (where[shot.focus] && shot.camera === "wide" && shotObjs.length) {
+      // a wide shot on an actor with an object in the shot: fit both (the "insert" framing, as for focus "object")
+      ({ focus, focusHeight } = fitPair(where[shot.focus], PEOPLE[shot.focus].h, shotObjs[0], 5)); camType = "insert";
+    } else if (where[shot.focus]) {
       focus = where[shot.focus].clone(); focusHeight = PEOPLE[shot.focus].h;
-      other = placed.find((p) => p.id !== shot.focus)?.pos ?? (monster?.visible ? monster.position : undefined);
+      other = shotObjs.length ? shotObjs[0].obj.localToWorld((shotObjs[0].u.focus ?? new THREE.Vector3()).clone()).setY(shotObjs[0].obj.position.y)
+        : placed.find((p) => p.id !== shot.focus)?.pos ?? (monster?.visible ? monster.position : undefined);
+    } else { // a carried baby: frame its carrier, a little tighter on the arms
+      const c = carried.get(shot.focus);
+      focus = where[c.id].clone(); focusHeight = PEOPLE[c.id].h * 0.85;
     }
-    frameShot(shot.camera, { THREE, camera, set: S, focus, focusHeight, other: other?.clone(), t: lt, dur, seed: shot.seed ?? si });
+    frameShot(camType, { THREE, camera, set: S, focus, focusHeight, other: other?.clone(), t: lt, dur, seed: shot.seed ?? si });
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
@@ -293,15 +466,44 @@ async function main() {
       else if (f !== "camera" && where[f] && f !== p.id) yaw = yawTo(p.pos, where[f]);
       else yaw = yawTo(p.pos, camPos);
       o.rotation.set(0, yaw, 0);
-      posePerson(o, a.pose ?? "stand", lt + (a.phase ?? 0), { hold: a.hold ?? null });
+      const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
+      posePerson(o, a.pose ?? "stand", lt + (a.phase ?? 0), { ...(p.opts ?? {}), hold: baby ? null : a.hold ?? null });
       setFace(o, a.expr ?? "neutral");
+      if (baby && holdPerson) { // the baby in the carrier's arms, posed from its own actor entry if it has one
+        const B = PEOPLE[baby].obj, ba = (shot.actors ?? []).find((x) => x.id === baby);
+        o.updateMatrixWorld(true);
+        holdPerson(o, B);
+        posePerson(B, ba?.pose && ba.pose !== "carry" ? ba.pose : "stand", lt + (ba?.phase ?? 0), {});
+        setFace(B, ba?.expr ?? "happy");
+        B.updateMatrixWorld(true);
+        where[baby] = B.getWorldPosition(new THREE.Vector3());
+      }
     }
-    if (shot.marker) {
-      const targets = shot.marker.on === "all" ? (shot.actors ?? []).map((a) => a.id) : [shot.marker.on];
-      for (const id of targets) {
-        const m = MARKERS.get(`${id}|${shot.marker.kind}|${shot.marker.text ?? ""}`);
-        if (!m || !where[id]) continue;
-        m.visible = true; m.position.copy(where[id]); m.position.y += PEOPLE[id].h + 0.15; // the marker's origin is its bottom (kit/props.js)
+    // birthday guests wear party hats
+    if (shotObjs.some((s) => s.u.name === "birthday_party") && objectsM.partyHat) {
+      let k = 0;
+      for (const p of placed) {
+        const P = PEOPLE[p.id]; if (!P) continue;
+        let h = HATS.get(p.id);
+        if (!h) { h = objectsM.partyHat(7 + k * 3); HATS.set(p.id, h); }
+        const lk = P.obj.userData.look ?? {}, j = P.obj.userData.joints;
+        if (!j?.head) continue;
+        if (h.parent !== j.head) j.head.add(h);
+        h.position.set(0, lk.hair === "afro" ? 0.5 : lk.hat ? 0.45 : lk.hair === "bun" ? 0.42 : 0.37, 0);
+        h.visible = true; k++;
+      }
+    }
+    for (const mk of markersOf(shot)) {
+      for (const id of markerTargets(mk, shot)) {
+        const m = MARKERS.get(`${id}|${mk.kind}|${mk.text ?? ""}`);
+        if (!m) continue;
+        if (id === "monster") { // above the monster's head
+          if (!monster?.visible) continue;
+          m.visible = true; m.position.copy(monster.position); m.position.y += monsterH + 0.3;
+        } else {
+          if (!where[id]) continue;
+          m.visible = true; m.position.copy(where[id]); m.position.y += PEOPLE[id].h + 0.15; // the marker's origin is its bottom (kit/props.js)
+        }
         m.rotation.set(0, 0, 0);
         animateMarker?.(m, lt);
         if (m.userData.billboard) m.quaternion.copy(camera.quaternion);
@@ -322,6 +524,8 @@ async function main() {
   // warm-up: the first frame of every (set, light) pair compiles its shaders and shadow maps (and fails here, loudly)
   const seen = new Set();
   for (const s of tl.shots) { const k = `${s.set}|${s.light}`; if (!seen.has(k)) { seen.add(k); renderAt(s.start); renderAt(s.start); } }
+  // ...and every shot with scene objects or a carried baby once (their materials compile here, not mid-render)
+  for (const s of tl.shots) if (s.objects?.length || (s.actors ?? []).some((a) => carriedBaby(a, tl.cast ?? {}))) renderAt(s.start + 0.01);
   renderAt(0);
 
   window.timeline = tl;

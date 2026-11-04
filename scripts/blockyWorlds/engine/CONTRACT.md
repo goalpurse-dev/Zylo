@@ -135,3 +135,37 @@ caption composited on top), `window.frameData()` returns that frame as a JPEG da
   `engine/lib/*` helpers you add (namespaced, e.g. `lib/kitUtil.js`). Do not edit `look/`, `supabase/`, `src/`.
 - Write files with the Write/Edit tools (bash heredocs mangle backslashes on this laptop).
 - Check your work visually: render stills to `out/dev/<yourname>/` and look at them.
+
+## Addendum 2026-11-04: every spoken noun gets a visual
+
+Owner's rule (from the references): every line's key nouns and actions must be visible in its shot. Never a random
+unrelated shot; when the kit lacks something, a simple version of it, or the closest clear visual (a picture card).
+
+### New timeline fields (all optional, per shot)
+```jsonc
+"objects": [{ "name": "ice_cream_truck", "spot": "center", "state": "mime", "facing": "camera" }],
+   // scene objects from page/kit/objects.js OBJECTS (catalog below), placed on the set's floor at a spot
+"focus": "object",                  // new focus value: the camera frames objects[0]
+"insert": { "kind": "card", "text": "GRANDPA'S STORIES", "icon": "📖" },   // new insert kind: a picture card
+"setState": { "windows": "dark" | "lit" | "open" },                         // street houses' windows
+"visuals": ["football team", "cheer"]   // what the planner meant to show (for the check + the report); ignored by the engine
+```
+New poses: `yell` (scream: arms down and back, leaning forward, mouth wide), `sneeze` (head snaps forward, hand to
+face), `blow` (a held whistle/horn at the mouth). New expressions: `yell` (mouth wide open, eyes squeezed), `sneeze`.
+New cast field: `"role": "baby"` (a baby: ~0.6 m, sits/lies, round head; carried by an adult with pose carry + hold = the
+baby's cast id, which the engine resolves to the baby person in the arms).
+
+### `page/kit/objects.js` (owner: OBJECTS agent)
+```js
+export const OBJECTS;   // { name: { aliases: [...], height, width, place: "floor" | "street" | "wall" } }
+export function makeObject(name, opts = { state }) -> THREE.Group  // origin on the floor at its front-centre, faces +z; userData.height, userData.width, userData.focus (Vector3, local)
+export function animateObject(obj, state, t)                       // optional per-frame (flashing alarm lights, balloons bob, the mime's arms)
+```
+Catalog (MVP, simple blocky versions in the look): `ice_cream_truck` (state "mime": a mime driver at the window: white
+face, striped shirt, beret, miming hands), `football_field` (goal posts, painted lines, players in jerseys, small
+bleachers with a seated crowd covering mouths), `birthday_party` (table, cake with candles, balloons, party hats,
+presents), `bakery` (shop front with a "BAKERY" sign, bread in the window; state "for_sale": a FOR SALE sign in the
+window), `car` (state "alarm": flashing orange/red lights + sound lines), `photo_set` (a camera on a tripod + a school
+photo backdrop), `crib` (a baby crib), `house_front` (a house facade with windows that can be dark/lit/open, people
+leaning out when open), `stories_book` (a big open storybook on a stand), plus anything else the planner's line
+review needs. Hand props added to `makeHeld`: `whistle` (brass), `baby` (handled by the engine via cast).

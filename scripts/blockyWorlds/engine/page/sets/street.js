@@ -53,6 +53,12 @@ export async function build(ctx) {
       bx(1.15, 1.35, 0.06, winGlass, { x: wx, y: wy, z: d / 2 + 0.08, parent: g, shadow: false });
       bx(0.05, 1.35, 0.1, frame, { x: wx, y: wy, z: d / 2 + 0.1, parent: g }); bx(1.15, 0.05, 0.1, frame, { x: wx, y: wy, z: d / 2 + 0.1, parent: g });
       for (const s of [-1, 1]) bx(0.4, 1.55, 0.06, shutter, { x: wx + s * 0.9, y: wy, z: d / 2 + 0.04, parent: g });
+      // casement panes swung out toward the street, shown only in setWindows("open") (merged into two meshes)
+      for (const s of [-1, 1]) {
+        const th = s * 1.55, cx = wx + s * 0.575 - s * Math.cos(th) * 0.29, cz = d / 2 + 0.12 + s * Math.sin(th) * 0.29;
+        bx(0.58, 1.4, 0.035, sashFrame, { x: cx, y: wy, z: cz, ry: th, parent: g, shadow: false });
+        bx(0.46, 1.24, 0.05, sashGlass, { x: cx, y: wy, z: cz, ry: th, parent: g, shadow: false });
+      }
     }
     bx(1.1, 2.2, 0.12, solid(DOORS[i % DOORS.length], { roughness: 0.4 }), { x: 0, y: 1.1, z: d / 2 + 0.04, parent: g });
     bx(1.5, 2.45, 0.08, frame, { x: 0, y: 1.2, z: d / 2 + 0.01, parent: g });
@@ -77,7 +83,9 @@ export async function build(ctx) {
     return g;
   }
   const plainGlass = glass();
-  const glowGlass = glow.add(Object.assign(glass(), { emissive: new THREE.Color("#ffb257") }), { day: 0, night: 1.8, warm: 0.25 }, { day: "#20303f", night: "#ffd38a", warm: "#20303f" });
+  const sashFrame = new THREE.MeshStandardMaterial({ color: "#fbfbf6", roughness: 0.5 });
+  const sashGlass = new THREE.MeshStandardMaterial({ color: "#ffd38a", emissive: "#ffb257", emissiveIntensity: 1.5, roughness: 0.4 });
+  const glowGlass =glow.add(Object.assign(glass(), { emissive: new THREE.Color("#ffb257") }), { day: 0, night: 1.8, warm: 0.25 }, { day: "#20303f", night: "#ffd38a", warm: "#20303f" });
   const porchMat = glow.add(new THREE.MeshStandardMaterial({ color: "#fff2c4", emissive: "#ffcf7a" }), { day: 0.2, night: 3, warm: 1.2 });
   const HZ = [10, -8, -26, -44, -62, -80];
   HZ.forEach((z, k) => { house(15.5, z, 1, k, { lit: k % 2 === 0 }); house(-15.5, z + 6, -1, k + 3, { lit: k % 3 === 0 }); });
@@ -102,13 +110,17 @@ export async function build(ctx) {
   K.instance(shrubA, [[8.6, -5], [-8.7, 1], [8.7, -21], [8.8, -41], [8.7, 4]].map(([x, z]) => ({ x, y: 0.1, z, ry: z })));
   K.instance(shrubB, [[8.8, -6.4], [-8.6, -20], [8.6, -19.6], [-8.7, -36]].map(([x, z]) => ({ x, y: 0.1, z, ry: z })));
   const LAMPZ = [-3.2, -24, -46];
-  K.instance(lampP, [...LAMPZ.map((z) => ({ x: 4.95, y: CURB, z, ry: -Math.PI / 2 })), ...[-14, -36].map((z) => ({ x: -4.95, y: CURB, z, ry: Math.PI / 2 }))]);
+  // the nearest lamp (z -3.2) is its own instance so setClutter can hide it (it stands where big objects go)
+  const nearLamp = K.instance(lampP, [{ x: 4.95, y: CURB, z: LAMPZ[0], ry: -Math.PI / 2 }]);
+  K.instance(lampP, [...LAMPZ.slice(1).map((z) => ({ x: 4.95, y: CURB, z, ry: -Math.PI / 2 })), ...[-14, -36].map((z) => ({ x: -4.95, y: CURB, z, ry: Math.PI / 2 }))]);
   const bulb = glow.add(new THREE.MeshStandardMaterial({ color: "#fff4d8", emissive: "#ffd28a" }), { day: 0, night: 5, warm: 1.5 });
-  for (const z of LAMPZ) mesh(new THREE.SphereGeometry(0.16, 12, 8), bulb, { x: 3.62, y: 5.72, z, shadow: false });
+  for (const z of LAMPZ) { const b = mesh(new THREE.SphereGeometry(0.16, 12, 8), bulb, { x: 3.62, y: 5.72, z, shadow: false, keep: z === LAMPZ[0] }); if (z === LAMPZ[0]) nearLamp.push(b); }
   for (const z of [-14, -36]) mesh(new THREE.SphereGeometry(0.16, 12, 8), bulb, { x: -3.62, y: 5.72, z, shadow: false });
-  K.place(hydrantP, 7.55, CURB, -12, 0.4);
-  K.place(binP, 7.45, CURB, -3.2, 0.3);
-  K.place(planterP, 7.4, CURB, -15, 0);
+  // sidewalk props a big scene object (kit/objects.js) needs out of the way: set.setClutter(false) hides them
+  const clutter = [...nearLamp];
+  clutter.push(K.place(hydrantP, 7.55, CURB, -12, 0.4));
+  clutter.push(K.place(binP, 7.45, CURB, -3.2, 0.3));
+  clutter.push(K.place(planterP, 7.4, CURB, -15, 0));
   K.place(sedan, -3.2, 0, -9, 0); K.place(suv, -3.2, 0, -22, 0); K.place(van, 3.25, 0, -40, Math.PI); K.place(taxi, -1.8, 0, -52, Math.PI);
 
   // ---------- the yellow bus (parked down the street) ----------
@@ -149,11 +161,11 @@ export async function build(ctx) {
 
   // ---------- the bus shelter and the stop sign ----------
   {
-    const g = new THREE.Group(); g.position.set(7.15, CURB, -6.2); root.add(g);
+    const g = new THREE.Group(); g.position.set(7.15, CURB, -6.2); root.add(g); clutter.push(g); g.userData.keep = true;
     const alu = new THREE.MeshStandardMaterial({ color: "#c7ccd3", metalness: 0.8, roughness: 0.3 });
     const pane = new THREE.MeshPhysicalMaterial({ color: "#d9f0ff", roughness: 0.05, transparent: true, opacity: 0.22, metalness: 0 });
-    for (const pz of [-1.8, 1.8]) for (const px of [-0.7, 0.7]) bx(0.08, 2.6, 0.08, alu, { x: px, y: 1.3, z: pz, parent: g });
-    bx(1.7, 0.12, 4.0, alu, { y: 2.65, parent: g });
+    for (const pz of [-1.8, 1.8]) for (const px of [-0.7, 0.7]) bx(0.08, 2.6, 0.08, alu, { x: px, y: 1.3, z: pz, parent: g, keep: true });
+    bx(1.7, 0.12, 4.0, alu, { y: 2.65, parent: g, keep: true });
     bx(0.04, 2.0, 3.5, pane, { x: 0.7, y: 1.35, parent: g, shadow: false, keep: true });
     bx(1.3, 2.0, 0.04, pane, { y: 1.35, z: -1.8, parent: g, shadow: false, keep: true });
     const ad = K.canvas(360, 540, (p) => {
@@ -161,22 +173,46 @@ export async function build(ctx) {
       p.fillStyle = "#fff"; p.font = "bold 70px sans-serif"; p.textAlign = "center"; p.fillText("SUMMER", 180, 160); p.fillText("FAIR", 180, 240);
       p.font = "bold 34px sans-serif"; p.fillText("SAT • TOWN SQUARE", 180, 330); p.beginPath(); p.arc(180, 440, 60, 0, Math.PI * 2); p.fillStyle = "#ffe66d"; p.fill();
     });
-    bx(1.25, 1.85, 0.06, glow.add(new THREE.MeshStandardMaterial({ map: ad, emissive: "#ffffff", emissiveMap: ad, roughness: 0.3 }), { day: 0.25, night: 0.9, warm: 0.4 }), { y: 1.35, z: 1.8, parent: g });
+    bx(1.25, 1.85, 0.06, glow.add(new THREE.MeshStandardMaterial({ map: ad, emissive: "#ffffff", emissiveMap: ad, roughness: 0.3 }), { day: 0.25, night: 0.9, warm: 0.4 }), { y: 1.35, z: 1.8, parent: g, keep: true });
     K.place(benchP, 0.0, 0, 0, -Math.PI / 2, 1, g);
   }
   {
     const x = 4.95, z = -1.6;
-    bx(0.08, 2.9, 0.08, new THREE.MeshStandardMaterial({ color: "#9aa1aa", metalness: 0.7, roughness: 0.35 }), { x, y: CURB + 1.45, z });
+    clutter.push(bx(0.08, 2.9, 0.08, new THREE.MeshStandardMaterial({ color: "#9aa1aa", metalness: 0.7, roughness: 0.35 }), { x, y: CURB + 1.45, z, keep: true }));
     const t = K.canvas(256, 256, (p) => {
       p.fillStyle = "#1f6fd6"; p.beginPath(); p.arc(128, 128, 124, 0, Math.PI * 2); p.fill(); p.fillStyle = "#fff"; p.beginPath(); p.arc(128, 128, 100, 0, Math.PI * 2); p.fill();
       p.fillStyle = "#1f6fd6"; p.font = "bold 82px sans-serif"; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText("BUS", 128, 132);
     });
     const back = t.clone(); back.wrapS = THREE.RepeatWrapping; back.repeat.set(-1, -1); back.offset.set(1, 1); back.needsUpdate = true;
     const m = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 32), [solid("#1f6fd6"), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4 }), new THREE.MeshStandardMaterial({ map: back, roughness: 0.4 })]);
-    m.position.set(x, CURB + 2.6, z); m.rotation.set(0, -Math.PI / 2 + 0.3, Math.PI / 2); m.castShadow = true; root.add(m);
+    m.position.set(x, CURB + 2.6, z); m.rotation.set(0, -Math.PI / 2 + 0.3, Math.PI / 2); m.castShadow = true; root.add(m); clutter.push(m);
   }
 
   mergeStatic(THREE, root);
+
+  // ---------- window states (setState.windows): null = the usual mix, "dark", "lit", "open" (lit + panes swung out) ----------
+  const sashMeshes = []; root.traverse((o) => { if (o.isMesh && (o.material === sashFrame || o.material === sashGlass)) sashMeshes.push(o); });
+  let lightMode = "day", winState = null, winKey = "";
+  const GLOW_DEFAULT = { day: 0, night: 1.8, warm: 0.25 }, PORCH = { day: 0.2, night: 3, warm: 1.2 };
+  function applyWindows() {
+    const key = `${lightMode}|${winState}`; if (key === winKey) return; winKey = key;
+    const m = lightMode;
+    if (!winState) {
+      plainGlass.emissiveIntensity = 0; plainGlass.color.set("#20303f");
+      glowGlass.emissiveIntensity = GLOW_DEFAULT[m] ?? 0; glowGlass.color.set(m === "night" ? "#ffd38a" : "#20303f");
+      porchMat.emissiveIntensity = PORCH[m] ?? 0.2;
+    } else if (winState === "dark") {
+      for (const gm of [plainGlass, glowGlass]) { gm.emissiveIntensity = 0; gm.color.set("#0a1018"); }
+      porchMat.emissiveIntensity = 0;
+    } else {
+      const k = { day: 0.7, night: 2.2, warm: 1.1 }[m] ?? 1;
+      for (const gm of [plainGlass, glowGlass]) { gm.emissive.set("#ffb257"); gm.emissiveIntensity = k; gm.color.set(m === "day" ? "#ffe9c4" : "#ffd38a"); }
+      sashGlass.emissiveIntensity = k * 0.8;
+      porchMat.emissiveIntensity = PORCH[m] ?? 0.2;
+    }
+    for (const s of sashMeshes) s.visible = winState === "open";
+  }
+  applyWindows();
 
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   return {
@@ -197,7 +233,14 @@ export async function build(ctx) {
         const porch2 = new THREE.PointLight("#ffbe6b", 14, 9, 2); porch2.position.set(10.8, 2.3, 10); L.push(porch2);
         return L;
       },
-      onLight(mode) { glow.apply(mode); onLight.forEach((f) => f(mode)); },
+      onLight(mode) { glow.apply(mode); onLight.forEach((f) => f(mode)); lightMode = mode; winKey = ""; applyWindows(); },
     },
+    /** the houses' windows: null (the usual mix) | "dark" | "lit" | "open"; cheap to call every frame */
+    setWindows(state) {
+      const s = state === "dark" || state === "lit" || state === "open" ? state : null;
+      if (s !== winState) { winState = s; applyWindows(); }
+    },
+    /** show/hide the sidewalk props (bus shelter, stop sign, bin, hydrant, planter) */
+    setClutter(visible) { for (const o of clutter) o.visible = !!visible; },
   };
 }

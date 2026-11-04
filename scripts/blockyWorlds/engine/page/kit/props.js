@@ -58,6 +58,29 @@ function noteTexture(text, seed) {
   p.strokeStyle = "rgba(120,100,60,0.25)"; p.lineWidth = 2; p.beginPath(); p.moveTo(0, H * 0.48); p.lineTo(W, H * 0.5); p.stroke(); // a fold
   return canvasTex(c);
 }
+/** a picture card: a big emoji / icon on a coloured disc, a short caption under it, a bold rim */
+const CARD_STYLES = [{ bg: "#fff8e7", rim: "#ff6b6b", disc: "#ffe08a", ink: "#2a1d24" }, { bg: "#f0fbff", rim: "#2e86de", disc: "#bfe3ff", ink: "#1b2a4a" }, { bg: "#fff0f6", rim: "#e84393", disc: "#ffd1e6", ink: "#3a1030" }, { bg: "#f3fff0", rim: "#20bf6b", disc: "#c8f7c5", ink: "#163a22" }];
+function cardTexture(text, icon, seed) {
+  const W = 880, H = 800, c = document.createElement("canvas"); c.width = W; c.height = H; const p = c.getContext("2d");
+  const R = rng(seed), st = CARD_STYLES[seed % CARD_STYLES.length];
+  p.fillStyle = st.rim; p.fillRect(0, 0, W, H);
+  p.fillStyle = st.bg; p.beginPath(); p.roundRect(34, 34, W - 68, H - 68, 40); p.fill();
+  const hasText = !!String(text ?? "").trim();
+  const cy = hasText ? 320 : H / 2, r = hasText ? 230 : 300;
+  p.fillStyle = st.disc; p.beginPath(); p.arc(W / 2, cy, r, 0, Math.PI * 2); p.fill();
+  p.strokeStyle = st.ink; p.lineWidth = 10; p.stroke();
+  const ic = String(icon || "★");
+  if (/\p{Extended_Pictographic}/u.test(ic)) { p.font = `${Math.round(r * 1.25)}px "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif`; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, W / 2, cy + r * 0.08); }
+  else { const { size } = fitText(p, ic, r * 1.5, r * 1.3, { maxSize: Math.round(r * 1.2), maxLines: 1 }); p.font = kitFont(size); p.fillStyle = st.ink; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, W / 2, cy + size * 0.05); }
+  if (hasText) {
+    const { lines, size } = fitText(p, String(text).toUpperCase(), W - 140, 190, { maxSize: 120, maxLines: 2, lineGap: 1.0 });
+    p.font = kitFont(size); p.textAlign = "center"; p.textBaseline = "middle"; p.lineJoin = "round";
+    const y0 = 662 - ((lines.length - 1) * size) / 2;
+    lines.forEach((l, i) => { p.lineWidth = size * 0.16; p.strokeStyle = "#ffffff"; p.strokeText(l, W / 2, y0 + i * size); p.fillStyle = st.ink; p.fillText(l, W / 2, y0 + i * size); });
+  }
+  wear(p, W, H, R, { spots: 30, ink: "rgba(60,40,20,0.08)", chips: "rgba(255,255,255,0.12)" });
+  return canvasTex(c);
+}
 const woodMat = () => fabric("#7a5534", "cotton");
 function postsAndBoard(g, w, h, boardMat) {
   const wood = woodMat();
@@ -70,11 +93,17 @@ function postsAndBoard(g, w, h, boardMat) {
   board.position.set(0, 1.4, 0); board.castShadow = board.receiveShadow = true; g.add(board);
   return board;
 }
-/** a story insert: { kind: "sign" | "note", text }. Origin on the ground; board centre at userData.focus. */
-export function makeInsert({ kind = "sign", text = "" } = {}) {
+/** a story insert: { kind: "sign" | "note" | "card", text, icon? (card: an emoji or a short word) }. Origin on the
+ *  ground; board centre at userData.focus. */
+export function makeInsert({ kind = "sign", text = "", icon = "" } = {}) {
   const g = new THREE.Group(); g.name = `insert:${kind}`;
-  const seed = hashSeed(`${kind}|${text}`);
-  if (kind === "note") {
+  const seed = hashSeed(`${kind}|${text}|${icon}`);
+  if (kind === "card") { // a picture card on the same two posts, a bit taller than a sign
+    const face = new THREE.MeshStandardMaterial({ map: cardTexture(text, icon, seed), roughness: 0.6, emissive: "#ffffff", emissiveIntensity: 0.06 });
+    face.emissiveMap = face.map;
+    postsAndBoard(g, 1.1, 1.0, face);
+    g.userData.size = [1.1, 1.0];
+  } else if (kind === "note") {
     const wood = fabric("#9a6b43", "pinstripe");
     // a little notice board of planks on two posts, the note taped on
     postsAndBoard(g, 1.3, 1.0, wood);
@@ -111,8 +140,9 @@ function tagTexture(text) {
   p.beginPath(); p.moveTo(80, 256); p.lineTo(150, 170); p.lineTo(450, 170); p.lineTo(450, 342); p.lineTo(150, 342); p.closePath();
   p.fillStyle = "#ffd84a"; p.fill(); p.lineWidth = 10; p.strokeStyle = "#2a1d24"; p.lineJoin = "round"; p.stroke();
   p.fillStyle = "#2a1d24"; p.beginPath(); p.arc(125, 256, 16, 0, Math.PI * 2); p.fill(); p.fillStyle = "#fff6c8"; p.beginPath(); p.arc(125, 256, 9, 0, Math.PI * 2); p.fill();
-  const { size } = fitText(p, text, 270, 140, { maxSize: 130, maxLines: 1 });
-  p.font = kitFont(size); p.fillStyle = "#2a1d24"; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(text, 305, 262);
+  const { lines, size } = fitText(p, text, 270, 150, { maxSize: 130, minSize: 24, maxLines: 2, lineGap: 1.0 }); // "BEAN + BARNABY" wraps
+  p.font = kitFont(size); p.fillStyle = "#2a1d24"; p.textAlign = "center"; p.textBaseline = "middle";
+  lines.forEach((l, i) => p.fillText(l, 305, 262 + (i - (lines.length - 1) / 2) * size));
   return canvasTex(c);
 }
 function iconTexture(text) {
@@ -121,13 +151,18 @@ function iconTexture(text) {
   p.fillStyle = "#ffffff"; p.beginPath(); p.arc(256, 256, 232, 0, Math.PI * 2); p.fill();
   p.fillStyle = "#ff4d6d"; p.beginPath(); p.arc(256, 256, 206, 0, Math.PI * 2); p.fill();
   p.fillStyle = "rgba(255,255,255,0.25)"; p.beginPath(); p.ellipse(200, 150, 120, 60, -0.5, 0, Math.PI * 2); p.fill();
-  const emoji = /\p{Extended_Pictographic}/u.test(text);
-  if (emoji) { p.font = `230px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(text, 256, 270); }
-  else {
-    const { size } = fitText(p, text, 330, 300, { maxSize: 220, maxLines: 2 });
+  // an emoji alone fills the badge; an emoji + word ("🐕 DOG") puts the emoji on top and the word under it
+  const EMO = /(\p{Extended_Pictographic}(️|‍\p{Extended_Pictographic})*)/u;
+  const em = String(text).match(EMO)?.[0] ?? null, rest = em ? String(text).replace(em, "").trim() : String(text);
+  const word = (t, y, maxW, maxH, maxSize) => {
+    const { lines, size } = fitText(p, t, maxW, maxH, { maxSize, minSize: 24, maxLines: 2, lineGap: 1.0 });
     p.font = kitFont(size); p.textAlign = "center"; p.textBaseline = "middle"; p.lineJoin = "round";
-    p.lineWidth = size * 0.14; p.strokeStyle = "#2a1d24"; p.strokeText(text, 256, 268); p.fillStyle = "#fff"; p.fillText(text, 256, 268);
-  }
+    lines.forEach((l, i) => { const yy = y + (i - (lines.length - 1) / 2) * size; p.lineWidth = size * 0.14; p.strokeStyle = "#2a1d24"; p.strokeText(l, 256, yy); p.fillStyle = "#fff"; p.fillText(l, 256, yy); });
+  };
+  p.textAlign = "center"; p.textBaseline = "middle";
+  if (em && !rest) { p.font = `230px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`; p.fillText(em, 256, 270); }
+  else if (em) { p.font = `170px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`; p.fillText(em, 256, 200); word(rest, 362, 300, 110, 110); }
+  else word(rest, 268, 330, 300, 220);
   return canvasTex(c);
 }
 /** { kind: "tag" | "ring" | "icon", text } -> a billboard (userData.billboard = true); origin at its bottom */
@@ -163,8 +198,10 @@ const HELD_ALIASES = [
   [/sock/, "sock"], [/flash|torch/, "flashlight"], [/candle/, "candle"], [/book|diary|journal/, "book"], [/phone|mobile/, "phone"],
   [/bag|purse|sack/, "bag"], [/key/, "key"], [/ball/, "ball"], [/box|package|parcel|gift|present/, "box"], [/sign|placard|poster/, "sign"],
   [/bread|loaf|sandwich|food/, "bread"], [/cup|mug|coffee|tea/, "cup"], [/lantern|lamp/, "lantern"], [/rope/, "rope"], [/umbrella/, "umbrella"],
-  [/note|letter|paper|map|envelope/, "paper"],
+  [/note|letter|paper|map|envelope/, "paper"], [/whistle/, "whistle"],
 ];
+// checked first (before the list above): names the older patterns would catch wrongly ("notebook" stays a book)
+const HELD_FIRST = [[/camera/, "camera"], [/tissue|hanky|handkerchief|kleenex/, "tissues"], [/string|yarn|thread|twine/, "string"]];
 const PROTO = new Map();
 const glowMat = (color, k) => cachedMat(`glow${color}${k}`, () => new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: color, emissiveIntensity: k, roughness: 0.4 }));
 const cyl = (r1, r2, h, seg = 14) => cachedGeo(`cyl${r1},${r2},${h},${seg}`, () => new THREE.CylinderGeometry(r1, r2, h, seg));
@@ -260,6 +297,29 @@ const BUILD = {
     bx(0.21, 0.28, 0.003, solid("#fbf6e6", { roughness: 0.9 }), { parent: g });
     for (let i = 0; i < 6; i++) bx(0.15, 0.008, 0.004, solid("#3c5aa8"), { x: -0.01, y: 0.09 - i * 0.035, parent: g, shadow: false });
   },
+  whistle(g) { // a brass pea whistle (a little oversized so it reads on a phone), origin at the mouthpiece tip, body +z
+    const brass = solid("#e0a82e", { metalness: 0.85, roughness: 0.25 });
+    bx(0.034, 0.022, 0.07, brass, { y: 0, z: 0.035, parent: g });
+    addMesh(cyl(0.036, 0.036, 0.05, 18), brass, { y: -0.008, z: 0.095, rz: Math.PI / 2, parent: g });
+    bx(0.02, 0.012, 0.022, solid("#5a3d24"), { y: 0.016, z: 0.075, parent: g }); // the air hole
+    addMesh(cachedGeo("whistleRing", () => new THREE.TorusGeometry(0.012, 0.004, 6, 12)), brass, { y: -0.048, z: 0.11, ry: Math.PI / 2, parent: g });
+    const cord = addMesh(cachedGeo("lanyard", () => new THREE.TorusGeometry(0.11, 0.006, 6, 28)), solid("#d63031", { roughness: 0.7 }), { y: -0.16, z: 0.11, ry: Math.PI / 2, parent: g });
+    cord.scale.set(1, 1, 1);
+  },
+  camera(g) { // a chunky photo camera, lens to the front
+    rbx(0.2, 0.13, 0.08, 0.015, solid("#1e1e22", { roughness: 0.4 }), { y: 0.02, parent: g });
+    addMesh(cyl(0.045, 0.05, 0.07), solid("#2c2c30", { roughness: 0.3 }), { y: 0.02, z: 0.07, rx: Math.PI / 2, parent: g });
+    addMesh(cachedGeo("camLens", () => new THREE.CircleGeometry(0.036, 16)), solid("#3d6fa8", { roughness: 0.05, metalness: 0.5 }), { y: 0.02, z: 0.106, parent: g, shadow: false });
+    bx(0.05, 0.03, 0.03, solid("#ffffff"), { x: 0.06, y: 0.1, z: 0.02, parent: g });
+  },
+  tissues(g) { // a tissue box with a tissue sticking out
+    rbx(0.2, 0.11, 0.12, 0.01, fabric("#7fd3ff", "dots"), { y: -0.02, parent: g });
+    const t = addMesh(cachedGeo("tissue", () => new THREE.ConeGeometry(0.05, 0.12, 6)), solid("#ffffff", { roughness: 0.9 }), { y: 0.08, parent: g }); t.rotation.z = 0.2;
+  },
+  string(g) { // a ball of red string with a loose end
+    addMesh(cachedGeo("yarnBall", () => new THREE.SphereGeometry(0.06, 12, 10)), fabric("#e84a5f", "stripes"), { y: -0.04, parent: g });
+    bx(0.008, 0.3, 0.008, solid("#e84a5f"), { x: 0.05, y: -0.2, rz: 0.15, parent: g, shadow: false });
+  },
   fallback(g) { rbx(0.18, 0.18, 0.18, 0.02, fabric("#8e7cc3", "cotton"), { parent: g }); },
 };
 /** a small hand prop by keyword (sock, flashlight, candle, book, phone, bag, key, ball, box, sign, bread, cup, lantern,
@@ -267,7 +327,7 @@ const BUILD = {
 export function makeHeld(name) {
   if (!name) return null;
   const n = String(name).toLowerCase();
-  const kind = HELD_ALIASES.find(([re]) => re.test(n))?.[1] ?? "fallback";
+  const kind = HELD_FIRST.find(([re]) => re.test(n))?.[1] ?? HELD_ALIASES.find(([re]) => re.test(n))?.[1] ?? "fallback";
   let proto = PROTO.get(kind);
   if (!proto) { proto = new THREE.Group(); proto.name = `held:${kind}`; BUILD[kind](proto); PROTO.set(kind, proto); }
   const o = proto.clone(); // shares geometry and materials
