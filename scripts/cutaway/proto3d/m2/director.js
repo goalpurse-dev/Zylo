@@ -23,6 +23,8 @@ export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap
 export const MIN_WIDTH = 0.15;
 // the narrowest field of view in world units (the approved close-ups: the holes ~4 m across, the crack ~5 m)
 export const MIN_FIELD = 4;
+// a planned video's build fills at least this share of the frame from its second line on (the owner, 2026-11-04)
+export const SUBJECT_FILL = 0.4;
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -349,6 +351,17 @@ export function directCamera(layout, shots, marks) {
       if (!opening && !layout.camera?.home && !holdsMain && !planRead) k = pushToward(k, s, box);
       // last: what the sentence is about stays whole (the hook object on the opening frame)
       if (!planRead) k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      // from the second line on, the build fills at least 40% of a planned shot: the house may be cut off at the top (the
+      // owner's review of the real bunker run, 2026-11-04: the house filled the top half, the bunker small at the bottom)
+      if (layout.codeShots && !opening && s.at?.s !== "congrats" && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
+        let best = null;
+        for (const w of [0.92, 1, 1.08]) {
+          const g = frameBox(subj, { view: sub(k.pos, k.tgt), width: w, zone: "center", minField: 0 }), m = measureKey(layout, g.pos, g.tgt);
+          if (!best || m.subject > best.m.subject) best = { g, m };
+          if (m.subject >= SUBJECT_FILL) break;
+        }
+        if (best && best.m.subject > measureKey(layout, k.pos, k.tgt).subject) { notes.push(`shot at ${s.t.toFixed(2)} s: pushed in so the build fills ${(best.m.subject * 100).toFixed(0)}% of the frame`); k = { pos: best.g.pos, tgt: best.g.tgt }; }
+      }
       // and after everything else: a car never looms (a planned layout whose shots the code frames, layoutRules 14): a
       // car there in this sentence more than 45% of the width, or cut by the frame's bottom edge, steps the camera back
       // (a garage motor shot had the parked car's roof filling the frame; the cars waiting nearest the lens were cut in

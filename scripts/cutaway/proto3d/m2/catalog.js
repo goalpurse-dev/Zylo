@@ -129,7 +129,7 @@ export const KIND_DOCS = {
   pipe: ["a perforated or solid pipe along a path, grown at constant speed", "path [[x,y,z],...], opts {r (0.3), color, perforated (false), holeSpacing}", "pipes in the face sit at z = -0.06; a vertical pipe is a path of 2 points"],
   pipeFlow: ["blue water dots running inside a kit pipe", "pipe (a pipe id), opts {count, size, offset [0,0,0.33]}, speed", ""],
   puddles: ["flat water patches on the lawn that spread and dry up", "list [[x, z, rx, rz]], rise [stagger], fall [stagger]", ""],
-  rain: ["rain streaks over the scene", "x0, x1, z0, z1, yTop, yBot, count, width, opacity", ""],
+  rain: ["rain streaks over the scene, or with style \"ash\" grey ash and dust flakes drifting down slowly (fallout, ash, soot, dust: never plain rain for those)", "x0, x1, z0, z1, yTop, yBot, count, width, opacity, style (\"rain\" or \"ash\")", ""],
   stream: ["water pouring off an edge (a roof eave, a pipe outlet)", "x0, x1, z, yTop, yBot, count", ""],
   light: ["the sun and sky: a storm (overcast), a quick 'time passes' dip, and night (the sun down, the sky dark, lamps and lenses glowing)", "storm (true if the layout has a storm)", "include one 'light' part; verbs night and day for a night line"],
   lawnWet: ["the lawn going dark and wet in the rain", "{}", ""],

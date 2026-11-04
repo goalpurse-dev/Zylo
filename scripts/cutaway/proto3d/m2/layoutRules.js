@@ -190,6 +190,8 @@ export function layoutRules(L) {
   // a piece of it, the controller box, and the finished-build shot framed the box and a bench without the signal)
   const hookB = beats.find((b) => b.s === "hook");
   if (!parts.some((p) => p.main) && hookB?.shows?.p && byId.has(String(hookB.shows.p).split(".")[0])) { byId.get(String(hookB.shows.p).split(".")[0]).main = true; notes.push(`${String(hookB.shows.p).split(".")[0]} is the main subject (the hook builds it)`); }
+  // fallout, ash, dust or soot falling is grey flakes drifting down, never rain streaks (owner, 2026-11-04)
+  for (const p of parts) if (p.kind === "rain" && !p.params?.style && /ash|dust|fallout|soot/i.test(p.id)) { p.params = { ...p.params, style: "ash" }; notes.push(`${p.id} falls as ash, not rain`); }
   // a machine indoors (a stove, a washer, an engine) designed in real metres is built big, like every kit thing (the vending
   // machine stands 3.2 m): the camera keeps a field of a few metres, and a real 1.2 m stove stayed a small box mid-room
   const mainRig = parts.find((p) => p.main && p.kind === "rig");
