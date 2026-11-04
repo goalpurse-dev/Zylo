@@ -5,7 +5,8 @@ const NAMES = { sign: "A sign", tag: "A tag", clock: "A clock", timeline: "A mes
 
 /** What a line shows: {what, text, editable}. */
 export function onScreen(line) {
-  if (line.screen) return { what: `The real app screen ${String(line.screen.file ?? "").replace(/\.jpg$/, "")}`, text: line.screen.sticker?.text ?? "", editable: Boolean(line.screen.sticker) };
+  // s_scene* files are real frames of the finished video (Blocky step 3, 2026-11-04), not app screens
+  if (line.screen) return { what: /^s_scene/.test(line.screen.file ?? "") ? "Real frames of the finished video" : `The real app screen ${String(line.screen.file ?? "").replace(/\.jpg$/, "")}`, text: line.screen.sticker?.text ?? "", editable: Boolean(line.screen.sticker) };
   const v = line.visual;
   if (!v) return { what: line.keep ? "Stays on the line before" : "The two characters", text: "", editable: false };
   const field = TEXT_FIELD[v.kind];
