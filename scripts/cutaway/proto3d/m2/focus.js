@@ -89,7 +89,9 @@ export function focusOf(part, cut) {
     case "puddles": return fromPoints(p.list.map(([x, z, rx, rz]) => [x - rx, 0, z - rz]).concat(p.list.map(([x, z, rx, rz]) => [x + rx, 0.05, z + rz])));
     case "pipeFlow": case "pipeRunFlow": return null; // inside its pipe
     case "arrows": return fromPoints(p.list.map((a) => a.at), 0.6 * (p.opts?.scale ?? 1.25));
-    case "outline": return fromPoints(p.points, 0.15);
+    // (an outline named by what it goes round, {of}, has no points until layoutRules traces it: the real washing machine
+    // run crashed framing its home view on one, 2026-11-05)
+    case "outline": return Array.isArray(p.points) && p.points.length ? fromPoints(p.points, 0.15) : null;
     case "seepFlow": return { min: [-(p.width ?? 4.4) / 2 - 2, p.floor ?? -11.2, 0], max: [(p.width ?? 4.4) / 2 + 2, p.y0 ?? -6.2, 0.3] };
     default: return null; // rain, stream, light, lawnWet, soilLeak, wetBand, soak
   }

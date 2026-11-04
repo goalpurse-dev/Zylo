@@ -519,7 +519,7 @@ export const KINDS = {
   arrows(ctx, p, api) { const a = arrows(ctx, p.list, p.opts ?? {}); return { update(t) { a.update(t, api.ch("on", t)); } }; },
 
   /** a glowing outline traced around a named part (kit outline); channel: on */
-  outline(ctx, p, api) { const o = outline(ctx, p.points, p.opts ?? {}); return { update(t) { o.update(t, api.ch("on", t)); } }; },
+  outline(ctx, p, api) { if (!Array.isArray(p.points) || p.points.length < 2) return { update() {} }; const o = outline(ctx, p.points, p.opts ?? {}); return { update(t) { o.update(t, api.ch("on", t)); } }; },
 
   /** murky dots seeping down the cut face and spreading in the groundwater; channel: on */
   seepFlow(ctx, p, api) {

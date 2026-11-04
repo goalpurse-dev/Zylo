@@ -43,3 +43,14 @@ test("never a still moment: a planned video's gaps over 2.5 s are filled, and no
   const con = tl.sentences.find((s) => s.role === "congrats");
   for (const tr of Object.values(tl.tracks)) for (const r of tr.ramps) if (r.s === "finish") assert.ok(r.t1 <= con.t0, JSON.stringify(r));
 });
+
+test("an outline named by what it goes round ({of}) is safe before it is traced, and is traced (the real washing machine run crashed, 2026-11-05)", async () => {
+  const { focusOf } = await import("../scripts/cutaway/proto3d/m2/focus.js");
+  const { layoutRules } = await import("../scripts/cutaway/proto3d/m2/layoutRules.js");
+  assert.equal(focusOf({ id: "outline", kind: "outline", params: { of: "washer" } }, null), null);
+  const L = { key: "of_test", world: { cut: { x0: -3, x1: 3, z0: -4, depth: 0.6 }, shallow: true, house: false, road: false, worker: false, moreTrees: false, backdrop: { type: "kitchen" } },
+    parts: [{ id: "washer", kind: "rig", main: true, params: { name: "washer", pos: [0, 0.12, -1.8], nodes: [{ id: "body", at: [0, 0, 0], shapes: [{ shape: "box", size: [0.6, 0.85, 0.6], at: [0, 0.43, 0] }] }] } }, { id: "outline", kind: "outline", params: { of: "washer" } }],
+    beats: [{ s: "hook", do: [{ p: "washer", v: "show" }], shows: { p: "washer" }, shots: [{ focus: ["washer"] }] }], roles: ["hook"] };
+  const out = layoutRules(L).layout.parts.find((p) => p.id === "outline");
+  assert.equal(out.params.points.length, 4);
+});
