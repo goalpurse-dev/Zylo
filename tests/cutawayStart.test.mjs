@@ -21,7 +21,7 @@ test("a premade topic without an approved layout is buildable by the rules (no C
     assert.equal(classifyTopic(t).kind, "premade", t);
     assert.equal(kitCheck(t).verdict, "yes", t);
   }
-  assert.equal(kitCheck("how does a microwave work").verdict, "yes", "built from building blocks (2026-10-26)");
+  assert.equal(kitCheck("how does a microwave work").verdict, "no", "home appliances are refused up front (2026-11-04)");
   assert.equal(kitCheck("the human heart").verdict, "no");
 });
 
