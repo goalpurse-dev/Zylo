@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emailFooter } from "../supabase/functions/_shared/emailRules.js";
-import { CAMPAIGNS, campaignNumbers, openRateProblem } from "../supabase/functions/_shared/campaigns.js";
+import { CAMPAIGNS, campaignNumbers, openRateProblem, realOpenCount } from "../supabase/functions/_shared/campaigns.js";
 
 // The Gmail reputation week (owner, 2026-10-29): "did you get to try it?", plain, no link, no offer;
 // seed copies before every day; no marketing for anyone with 2 marketing emails and no open;
@@ -77,4 +77,32 @@ test("checkin_root1 (owner, 2026-11-04): the same check-in, only the sender is n
   assert.equal(day.from, "Niko <niko@mail.tryzyvo.com>");
   for (const k of ["replyTo", "subject", "why", "plain", "opensTracked"]) assert.equal(root[k], day[k], k);
   assert.deepEqual(root.render(footer, {}), day.render(footer, {}));
+});
+
+test("checkin_root2 and 3 (owner, 2026-11-04): the same email from the main domain, and each needs 2 real opens the day before", () => {
+  for (const id of ["checkin_root2", "checkin_root3"]) {
+    const def = CAMPAIGNS[id];
+    assert.equal(def.from, "Niko <niko@tryzyvo.com>");
+    assert.equal(def.subject, "did you get to try it?");
+    assert.equal(def.minRealOpensBefore, 2);
+    assert.deepEqual(def.render(footer, {}), CAMPAIGNS.checkin_day1.render(footer, {}));
+  }
+  assert.equal(CAMPAIGNS.checkin_root1.minRealOpensBefore, undefined);
+  const src = read("supabase/functions/campaign-sender/index.ts");
+  assert.match(src, /c\.status === "approved" && def\.minRealOpensBefore/, "checked only before a day starts");
+  assert.match(src, /realOpenCount\(rows \?\? \[\]\)/);
+});
+
+test("real opens: the first open over a minute after delivery; machine opens and opens without a delivery don't count", () => {
+  const at = (s) => new Date(Date.parse("2026-11-04T09:00:00Z") + s * 1000).toISOString();
+  const rows = [
+    { resend_id: "a", type: "email.delivered", created_at: at(0) }, { resend_id: "a", type: "email.opened", created_at: at(2004) },
+    { resend_id: "b", type: "email.delivered", created_at: at(0) }, { resend_id: "b", type: "email.opened", created_at: at(1) },
+    { resend_id: "b", type: "email.opened", created_at: at(900) }, // a later open of a machine-opened email: the first open decides
+    { resend_id: "c", type: "email.delivered", created_at: at(0) }, { resend_id: "c", type: "email.opened", created_at: at(60) },
+    { resend_id: "d", type: "email.opened", created_at: at(500) },
+    { resend_id: "e", type: "email.delivered", created_at: at(0) }, { resend_id: "e", type: "email.opened", created_at: at(7681) },
+  ];
+  assert.equal(realOpenCount(rows), 2);
+  assert.equal(realOpenCount([]), 0);
 });

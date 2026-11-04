@@ -172,6 +172,11 @@ export const CAMPAIGNS = {
   checkin_day7: didYouTry,
   // Wed 4 Nov 11:00–13:00 Finnish: 20 people, ON, logged in during the 48 hours before, no check-in yet, mostly Gmail.
   checkin_root1: didYouTryRoot,
+  // Thu 5 Nov 40, Fri 6 Nov 80 (owner, 2026-11-04), same people rule, picked at 10:50 that morning
+  // (fill_checkin_root). Each starts only if the day before had 0 complaints, bounces under 2%
+  // (depends_on) and at least 2 real opens (minRealOpensBefore).
+  checkin_root2: { ...didYouTryRoot, minRealOpensBefore: 2 },
+  checkin_root3: { ...didYouTryRoot, minRealOpensBefore: 2 },
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
@@ -188,6 +193,26 @@ export function openRateProblem(minRate, n) {
 //     stops it on its own: 1 of the first 20 is 5%, and it says nothing yet)
 // And one of ours: Resend refusing 5 sends means something is broken.
 export const MAX_BOUNCE_RATE = 0.02;
+
+// A real open (owner, 2026-11-04): the email's first open came more than a minute after it was
+// delivered; an open within seconds is mostly mail software. rows: email_events of one campaign
+// { resend_id, type, created_at }. → how many emails had a real open.
+export const REAL_OPEN_AFTER_MS = 60_000;
+export function realOpenCount(rows = []) {
+  const first = (type) => {
+    const m = new Map();
+    for (const r of rows) {
+      if (r.type !== type) continue;
+      const t = Date.parse(r.created_at);
+      if (!m.has(r.resend_id) || t < m.get(r.resend_id)) m.set(r.resend_id, t);
+    }
+    return m;
+  };
+  const delivered = first("email.delivered");
+  let n = 0;
+  for (const [id, opened] of first("email.opened")) if (delivered.has(id) && opened - delivered.get(id) > REAL_OPEN_AFTER_MS) n++;
+  return n;
+}
 export function campaignStopReason({ sent = 0, bounced = 0, complained = 0, failed = 0 }) {
   if (complained > 0) return `a spam complaint (${complained})`;
   if (bounced >= 2 && bounced > sent * MAX_BOUNCE_RATE) return `bounces over 2%: ${bounced} of ${sent} sent`;

@@ -23,7 +23,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem } from "../_shared/campaigns.js";
+import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem, realOpenCount } from "../_shared/campaigns.js";
 import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
@@ -134,6 +134,16 @@ async function tick() {
       if (problem) {
         const why = `${c.status === "approved" ? "not started" : "stopped part-way"}: ${problem}`;
         await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
+      }
+      // At least this many real opens (first open over a minute after delivery) the day before, or the day does not start.
+      if (c.status === "approved" && def.minRealOpensBefore) {
+        const { data: rows, error } = await sb.from("email_events").select("resend_id, type, created_at").eq("campaign", c.depends_on).in("type", ["email.delivered", "email.opened"]).limit(5000);
+        if (error) { out[c.id] = "real opens could not be read"; continue; } // the next tick reads again
+        const real = realOpenCount(rows ?? []);
+        if (real < def.minRealOpensBefore) {
+          const why = `not started: ${c.depends_on} had ${real} real opens, under ${def.minRealOpensBefore}`;
+          await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
+        }
       }
     }
     // Not started yet: Runware or the voice provider failing in the last 3 hours → this day and every
