@@ -40,7 +40,10 @@ if (!REAL && a["real-vision"]) {
   process.env.CUTAWAY_REAL_VISION_LEDGER = path.resolve(a.ledger ?? path.join(a.root, "real_vision_ledger.json"));
 }
 if (a["skip-repairs"]) process.env.CUTAWAY_SKIP_REPAIRS = "1";
-const { replayLLM } = REAL ? { replayLLM: () => { throw Object.assign(new Error("a real kit check is not run by the harness"), { code: "REPLAY_PENDING" }); } } : await import(url(path.join(M2, "providers.mjs")));
+// (a real run's kit check: the owner's written verdict in answers/kit_check__1.json when there is one, the owner's own
+// call that the topic is buildable; the harness never pays for it)
+const KIT_WRITTEN = path.join(path.resolve(a.root, String(a.case)), "answers", "kit_check__1.json");
+const { replayLLM } = REAL ? { replayLLM: () => { if (fs.existsSync(KIT_WRITTEN)) return JSON.parse(fs.readFileSync(KIT_WRITTEN, "utf8")); throw Object.assign(new Error("a real kit check is not run by the harness"), { code: "REPLAY_PENDING" }); } } : await import(url(path.join(M2, "providers.mjs")));
 const { topicProblem, decide, DEFAULT_SETTINGS } = await import(url(path.join(SH, "guard.js")));
 const { quoteTopic } = await import(url(path.join(SH, "quote.js")));
 const { jobFor } = await import(url(path.join(SH, "jobs.js")));
