@@ -14,7 +14,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WORKER = path.resolve(HERE, "../../content/studio-worker");
 const PER_CHAR = 0.0002;
 // the settings that won the first video: the v3 model yells, the usual one measured 5 to 9 dB quieter
-export const YELL_TAGS = "[shouting] [furious]", REACT_TAGS = "[shocked] [shouting]", EXCITED_TAGS = "[excited] [loud]";
+export const YELL_TAGS = "[shouting] [furious]", REACT_TAGS = "[shocked] [shouting]", EXCITED_TAGS = "[excited] [loud]", PAIN_TAGS = "[frustrated] [sighs]";
 const FAST = 1.22;   // Zee's steps and last line
 
 const tap = (word, x, y) => ({ word, event: `tap|${x}|${y}`, sfx: "click" });
@@ -67,16 +67,22 @@ export function rageHookV2(R) {
   if (R.yell.swear && swear < 0) throw new Error(`the yell has no "${R.yell.swear}"`);
   if (R.steps.length !== 3) throw new Error("a Rage hook has three steps");
   const tempo = R.step_tempo ?? 1.12;   // ~3 s a step
+  // "pain" (owner, 2026-11-04: the pain hook held best on Blocky): a personal problem, said low and fed up, no yell, no slam
+  const pain = R.yell.mood === "pain", mood = pain ? "sad" : "angry";
   const lines = [
-    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: "angry", pose: R.yell.pose ?? "rage", shake: 0.8, shot: "rage_hook", role: "yell", visual: { instant: true, up: 1.32, scale: 1.05, ...(R.yell.prop ?? { kind: "none" }) } },
-    { who: "zee", text: R.calm ?? "Watch.", key: [(R.calm ?? "Watch.").split(/\s+/).at(-1)], expr: "smug", pose: "pointUp", shot: "zee_close", role: "calm", listen: "angry" },
+    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: mood, pose: R.yell.pose ?? (pain ? "grabHead" : "rage"), shake: pain ? 0 : 0.8, shot: "rage_hook", role: "yell", visual: { instant: true, up: 1.32, scale: 1.05, ...(R.yell.prop ?? { kind: "none" }) } },
+    { who: "zee", text: R.calm ?? "Watch.", key: [(R.calm ?? "Watch.").split(/\s+/).at(-1)], expr: "smug", pose: "pointUp", shot: "zee_close", role: "calm", listen: mood },
     ...R.steps.map((s, i) => ({ who: "zee", text: s.text, key: [s.key], expr: "happy", role: `s${i + 1}`, tempo, ...(i === 0 ? { shot: "two_shot" } : {}),
-      screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true },
+      screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true, ...(s.sticker ? { sticker: s.sticker } : {}) },
       cues: [{ word: 0, event: `step${i + 1}`, sfx: "whoosh" }, ...(s.taps ?? []).map((t) => tap(...t)), ...(s.flips ?? []).map(([word, file]) => ({ word, event: `flip|${file}`, sfx: "tick" }))] })),
-    { who: "zee", text: R.reveal.text, key: [R.reveal.key], expr: "smug", pose: "point", shot: "zee_close", role: "reveal", listen: "shocked", tempo,
-      visual: { kind: "roll", secs: 0.8, scale: 0.78, up: 1.35, ...R.reveal.visual } },
-    { who: "creator", text: R.punchline.text, key: [R.punchline.key], expr: R.punchline.expr ?? "shocked", pose: R.punchline.pose ?? "handsUp", shot: "creator_close", role: "punch", visual: { kind: "none" } },
+    // the real number and the punchline are optional: no measured time for a creation, no time line (owner, 2026-11-04)
+    ...(R.reveal ? [{ who: "zee", text: R.reveal.text, key: [R.reveal.key], expr: "smug", pose: "point", shot: "zee_close", role: "reveal", listen: "shocked", tempo,
+      visual: { kind: "roll", secs: 0.8, scale: 0.78, up: 1.35, ...R.reveal.visual } }] : []),
+    ...(R.punchline ? [{ who: "creator", text: R.punchline.text, key: [R.punchline.key], expr: R.punchline.expr ?? "shocked", pose: R.punchline.pose ?? "handsUp", shot: "creator_close", role: "punch", visual: { kind: "none" } }] : []),
   ];
+  const revealAt = lines.findIndex((l) => l.role === "reveal");
+  // the end: a comment question (default), or a reason to save or share (owner, 2026-11-04: saves and shares are low)
+  const trigger = R.end.trigger ?? "comment";
   const c = R.clip;
   // the result plays on a device in the scene, in its own shape (owner, 2026-11-03): a wide Long Form video on a TV, the rest on a phone
   const clip = { name: "result", file: R.creation.file, in: c.in, out: c.out, hq_dir: R.creation.hq_dir, ...(R.creation.hq_ext ? { hq_ext: R.creation.hq_ext } : {}), frame: c.frame ?? (R.template === "long_form" ? "tv" : "phone"), enter: "grow", pre: 0.5, post: 0.1, duck_db: 7, after_line: 1 };
@@ -86,15 +92,17 @@ export function rageHookV2(R) {
   const s = assembleStory(R.key, {
     title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: music ? "drive" : "none", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
     // "Watch." stops the beat (with music) and is followed by silence; the clip's first frame brings a bass hit; the reveal gets its own
-    energy: { reveal_lines: [5], reveal_clips: [], from_frame0: true, slam: true, scratch: false, hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } },
-    recipe: { angle: "RH", angle_name: "Rage hook", hook_type: "rage_hook", length_bucket: "20-25", famous_name: false, end_trigger: "comment" },
+    energy: { reveal_lines: revealAt >= 0 ? [revealAt] : [], reveal_clips: [], from_frame0: true, slam: !pain, scratch: false, hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } },
+    recipe: { angle: "RH", angle_name: pain ? "Pain hook" : "Rage hook", hook_type: pain ? "pain" : "rage_hook", length_bucket: R.length_bucket ?? "20-25", famous_name: false, end_trigger: trigger },
     lines, clips: [clip],
-    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: "act|creator|angry|3" }] }, cta: { id: `comment_${R.key}`, kind: "comment", chip: R.end.chip } },
+    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.cta_word ?? R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: `act|creator|${mood}|3` }] }, cta: { id: `${trigger}_${R.key}`, kind: trigger, chip: R.end.chip } },
     caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
   }, { this: { hq_dir: R.creation.hq_dir } }, R.creation.id);
   // no title card: the yell is the hook. The hidden headline is never drawn; it keeps the approval form (which always sends
   // a headline) and the Queue's hook field working
   s.headline = { text: R.yell.text, hidden: true };
+  // with no time or punchline, the last step's screen must leave as the ending starts
+  if (!R.reveal && !R.punchline) s.lines.at(-1).visual = { kind: "none" };
   for (const l of s.lines) if (l.screen || l.visual?.kind === "none") l.cues = l.cues.filter((x) => !x.event.startsWith("show"));
   Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook" });
   // short lines after the steps: the camera follows each speaker at once (the 2 s minimum hold would leave it behind)
@@ -129,8 +137,10 @@ export function rageTakes(R, S) {
   const creator = { voice: S.voices.eleven.creator.id, model: "eleven_v3", stability: 0 };
   const zee = { voice: S.voices.eleven.zee.id, model: null, stability: 0.6, style: 0.2, speed: 1.05 };
   const tags = (l) => (l.role === "how" ? REACT_TAGS : l.role === "punch" ? R.punchline?.tags ?? REACT_TAGS : EXCITED_TAGS);
+  // a pain hook is said, not yelled: fed up and a little embarrassed, as written
+  const first = R.yell.mood === "pain" ? `${PAIN_TAGS} ${S.lines[0].text}` : `${YELL_TAGS} ${shout(S.lines[0].text)}`;
   return [
-    ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: `${YELL_TAGS} ${shout(S.lines[0].text)}`, ...creator })),
+    ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: first, ...creator })),
     ...S.lines.slice(1).map((l, i) => {
       const file = `line${String(i + 2).padStart(2, "0")}.mp3`;
       if (l.who === "zee") return { file, text: l.say ?? l.text, ...zee };
