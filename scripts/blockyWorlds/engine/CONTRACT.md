@@ -274,3 +274,93 @@ vision check if the paid demo's side-by-side (`--compare-vision`) agrees with So
 DEFAULT_BUDGET): $0.60, 120 s, 6 new designs; a call starts only when its worst case fits under the money cap.
 Estimates: `node dev/builderEstimate.mjs`. The worker's provider is "off" (kit + library + cards) unless the job says
 `builder.provider: "anthropic"` and the worker has `ANTHROPIC_KEY`.
+
+## Addendum 2026-11-05 (c): the story director (a production list before any shot is planned)
+
+Owner's goal: whatever the user types, the engine builds the whole world and video for it, as a COMBINATION of general
+systems, never one big special case at a time. Before planning shots, an AI (the story director) reads the script +
+the idea card and writes a **production list**: every world, character, creature / giant, crowd, vehicle, prop,
+effect and event the story needs, and for every script line which of them must be on screen. A matcher maps every
+item onto the **capability registry**; what is missing goes to the builder (`resolveNeeds`); what no system can do yet
+is logged as a **capability gap** and gets the clearest fallback (a picture card of that thing). Never a failed run.
+This is how the PERMANENT RULE gets enforced from the story's meaning, not from word lists.
+
+### Files (owner: DIRECTOR)
+| File | What |
+|---|---|
+| `lib/capabilities.js` | the registry: `CAPABILITIES[id] = { group, does, status: ready / partial / planned, module, owner, params: { name: { ready, partial, planned } }, fallback, files }`, `supports(id, params)`, `installedStatus(id, exists)`, `registryTable()`, `registryForPrompt()`. EPIC's vocabulary is read from `lib/epic.js`, so its giants / crowds / cameras stay in step |
+| `lib/director/vocab.js` | the shared closed vocabularies (world kinds, scales, behaviours, crowd actions, effects, events, camera beats) + word tables |
+| `lib/director/spec.js` | `productionSchema()` (structured outputs: all fields required, no maxItems), `validateProduction(raw, { lineCount })` (never throws; one entry per line), `itemsOf`, `linesByItem` |
+| `lib/director/design.js` | the AI director: `DIRECTOR_SYSTEM`, `directorPrompt`, `anthropicDirector({ apiKey, model })` (llm.js's call shape), `directorTokens`, `callUsd` |
+| `lib/director/mock.js` | the free rule-based stand-in (`mockProduction`), so everything runs for $0 |
+| `lib/director/match.js` | `matchProduction(production, { kit, exists, script, mood })` -> `{ calls, builderNeeds, gaps, perLine, summary }` |
+| `lib/director/index.js` | `directStory({ script, idea, provider, apiKey, model, gapLog, runId, storyId, exists })` -> `{ production, match, problems, costUsd, ms, provider, fellBack }` |
+| `lib/director/check.js` | `checkProduction(tl, match)`: each line's required items on screen (advisory until the planner reads the list) |
+| `lib/gaps.js` | the gap log: `makeGapLog({ store })`, `memoryStore`, `jsonlStore`, `supabaseStore`, `rankGaps`, `formatRanked` |
+| `supabase/migrations/20261204100000_blocky_worlds_capability_gaps.sql` | table + ranked view (NOT applied) |
+| `dev/director.test.mjs`, `dev/directorDemo.mjs`, `dev/stress.mjs`, `dev/gapReport.mjs` | tests, the turtle-vs-wolf demo, the stress harness (free + prepared paid run with costs), the ranked gap list |
+
+### The production list (v1)
+```jsonc
+{ "version": 1, "summary": "a town on a giant turtle is attacked by a wolf army",
+  "worlds": [{ "id": "world_main", "name": "on a giant turtle", "kind": "outdoor|indoor|enclosed|creature|underwater|space|sky",
+               "base": "street|woods|bedroom|school",        // the hand-built set used when the place can't be built
+               "description": "", "creature": { "species": "turtle", "relation": "inside|on|outside|none", "heightM": 120 },
+               "light": "day|night|warm" }],
+  "cast": [{ "id": "me", "name": "Pip", "kind": "human|robot|animal|creature|object", "role": "narrator|kid|adult|elder|baby",
+             "look": "yellow raincoat, red boots", "job": "" }],                     // "me" is always the narrator
+  "creatures": [{ "id": "turtle", "name": "the giant turtle", "species": "turtle", "look": "", "scale": "tiny|small|human|big|giant|colossal",
+                  "heightM": 120, "count": 1, "behaviours": ["stomp", "swim"], "monster": false }],
+  "crowds": [{ "id": "wolf_crowd", "name": "wolf army", "member": "person|creature|robot|vehicle", "of": "wolf",   // of: a creature id
+               "count": 200, "actions": ["march", "charge", "flee"] }],
+  "vehicles": [{ "id": "bus", "name": "school bus", "kind": "bus", "motion": "parked|drive|fly|sail|crash|launch|float" }],
+  "props": [{ "id": "story_prop", "name": "tin whistle", "size": "hand|object|big|landmark", "heldBy": "me", "storyProp": true }],
+  "effects": [{ "id": "fire", "kind": "fire|explosion|glow|magic|transformation|grow|shrink|vanish|appear|smoke|sparkles", "target": "bakery", "into": "" }],
+  "events": [{ "id": "earthquake", "kind": "rain|snow|storm|fog|wind|lightning|flood|earthquake|eruption|tornado|falling|eclipse|meteor|heatwave|hail|night_falls",
+               "what": "the ground shook", "scope": "shot|world" }],
+  "scaleMoments": [{ "line": 0, "big": "turtle", "small": "me" }],
+  "lines": [{ "line": 0, "world": "world_main", "subject": "turtle", "who": ["me"], "action": "stand",
+              "needs": ["turtle", "townsfolk_crowd"], "camera": "normal|scale|shake|action|reveal", "light": "day" }] }
+```
+Ids are lower_snake_case and unique across all lists. `lines` has exactly one entry per script line, in order.
+
+### What the planner reads (the source of truth instead of guessing)
+`plan.mjs` gets `planVideo({ script, words, idea, lengthSec, direction })` where `direction` = directStory's result
+(`{ production, match }`). When it is present (and absent: today's rules, unchanged):
+1. **Worlds per line**: `production.lines[i].world` -> `match.calls` for that world: `route "set"` -> `shot.set = set`;
+   `route "builder"` -> the builder need `needId` (`kind: "world"`; `shot.world = needId`, fallback `set`); `route "epic"`
+   -> `call.epic = { creature, view, size }` for `creatureWorld.js` (EPIC's timeline field). Replaces `readWorld`'s
+   base set and `worldNeedOf` (several worlds per video, per line).
+2. **Cast**: `production.cast` (ids, names, roles, kind) replaces the name / title / family regexes of `readWorld`;
+   `who` and `subject` per line replace `whoIn` / `segSubject`'s guesses (lib/subjects.js keeps the pronoun work for
+   lines the director left without a subject). A non-human cast member's call (`route "kit"|"builder"`) is an object.
+3. **The monster**: the creature with `monster: true` -> `timeline.monster` (`call.kitName = "monster:<look>"`).
+4. **Creatures / giants / crowds**: `call.route "kit"` -> an object (`kitName`) in the line's shots; `route "epic"` ->
+   `call.epic` for `giants.js` (`{ kind, size, actions }`) or the crowd (`call.crowdKind`, `count`, `actions`) on
+   EPIC's shot fields; `route "builder"` -> the object need `needId` (giants: `giant: true, heightM`).
+5. **Per-line required items** (`match.perLine[i].required[]`: `{ id, kind, name, capability, status, route, kitName?,
+   set?, needId?, card? }`): every one must be on screen in that line's shots. `route "card"` -> a picture card shot cut
+   into the line (`card = { kind: "card", text, icon }`, as `cardShot`). This list is what checkVisuals checks once
+   the planner reads it (`lib/director/check.js checkProduction`, advisory until then).
+6. **Action + camera per line**: `action` -> the pose (`POSES`; others: `perLine[i].extras` says which capability is
+   missing and its fallback); `camera`: `scale` -> `extras` camera.scale (`establish` / `low`), `shake` -> camera.shake
+   `{ preset }`, `action` -> camera.action `{ beat }`, `reveal` -> `giant_close`; `route "epic"` on an extra means
+   EPIC's beat / camera fields, `"fallback"` the registry's fallback. `light` per line replaces the night rules.
+7. **Builder needs**: `match.builderNeeds` (resolveNeeds' shape + `source: "director"`, `item`, `hint` for worlds:
+   `{ kind, enclosure | creature, description }`, `giant`, `heightM` for giants) are merged into `timeline.needs`
+   before `makeBuilder().buildFor` (the prepare job can `prefetch` them right after the director, during the voice).
+
+### Hooks needed in the other agents' files (not edited by DIRECTOR)
+- `plan.mjs` (PLANNER / EPIC): the `direction` input above; `collectNeeds` merges `match.builderNeeds`.
+- `lib/builder/design.js` (BUILDER): `worldPrompt` / `objectPrompt` read `need.hint` and `need.giant / heightM`.
+- `runpod/worker.mjs` (RENDER): prepare job runs `directStory` in parallel with the voice (`Promise.all`), uploads
+  `production.json`, sends `gaps` in its "planned" event (the worker has no Supabase key); `builder.prefetch(match.builderNeeds)`.
+- `blocky-worlds-render` edge function: inserts the event's gaps with `supabaseStore` (bookkeeping never fails a run).
+- `page/engine.js`: nothing new beyond EPIC's and BUILDER's fields.
+
+### Models, money, time (per 90 s video, measured from the real prompts: `node dev/stress.mjs --costs`)
+One call: ~4,700 system tokens (cached) + ~670 user tokens in, ~3,600 out (thinking included). **Haiku 5.5 (default):
+~$0.002-0.003 a video, ~15-25 s; Sonnet 5.5: ~$0.04-0.05 a video, ~40-60 s** (latency to be measured on the first paid
+run: `directStory` returns `ms`). It needs only the script text, so it starts with the prepare job and runs while the
+voice is made (10-20 s): on Haiku it adds ~0-10 s to the wait. Any AI error, refusal or bad answer: one retry with the
+problems, then the mock's list (`fellBack: true`); the planner can always plan without it.
