@@ -413,7 +413,8 @@ export function describeShot(s, cast = {}) {
   if (s.monsterState) bits.push(`Listener ${s.monsterState.state}@${s.monsterState.spot}`.replace("Listener", "monster"));
   for (const m of shotMarkers(s)) bits.push(`${m.kind} "${m.text}"${m.on && m.on !== "all" ? ` on ${cast[m.on]?.name ?? m.on}` : ""}`);
   if (s.insert) bits.push(`${s.insert.kind} "${s.insert.text}"`);
-  return `${s.set}/${s.light} ${s.camera}: ${bits.join(", ") || "(empty)"}`;
+  const focus = s.focus && !["group", "object"].includes(s.focus) ? ` [on ${s.focus === "monster" ? "monster" : cast[s.focus]?.name ?? s.focus}]` : "";
+  return `${s.set}/${s.light} ${s.camera}${focus}: ${bits.join(", ") || "(empty)"}`;
 }
 
 /** The picture card for a key nobody can show otherwise. */

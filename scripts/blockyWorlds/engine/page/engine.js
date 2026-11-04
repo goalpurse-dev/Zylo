@@ -213,7 +213,16 @@ async function main() {
     const p = makePerson({ ...spec, id });
     if (!p?.isObject3D) throw new Error(`engine: makePerson("${id}") returned no Object3D`);
     scene.add(p); p.visible = false;
-    PEOPLE[id] = { obj: p, h: Number(personHeight(p)) || 1.7 };
+    const h = Number(personHeight(p)) || 1.7;
+    // the head (with hair / hat) at rest: its centre height above the feet and its radius, for the camera's head guard
+    let headC = h * 0.88, headR = Math.max(0.12, h * 0.12);
+    const hj = p.userData?.joints?.head;
+    if (hj) {
+      p.updateMatrixWorld(true);
+      const hb = new THREE.Box3().setFromObject(hj), size = hb.getSize(new THREE.Vector3());
+      if (!hb.isEmpty() && size.y > 0.02) { headC = hb.getCenter(new THREE.Vector3()).y - p.position.y; headR = Math.max(size.x, size.y, size.z) / 2; }
+    }
+    PEOPLE[id] = { obj: p, h, headC, headR };
   };
   for (const [id, spec] of Object.entries(tl.cast ?? {})) addPerson(id, spec);
   const EXTRAS = [];
@@ -284,6 +293,72 @@ async function main() {
   const shotIndex = (t) => { let lo = 0, hi = tl.shots.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (tl.shots[m].start <= t) lo = m; else hi = m - 1; } return lo; };
   const allPeople = Object.values(PEOPLE);
   const camPos = new THREE.Vector3(), camRight = new THREE.Vector3();
+
+  // ---------- the head guard (2026-11-04: a paid frame that was mostly the back of a head) ----------
+  // After frameShot places the camera: if a non-focus person's head is within ~1.1 m of the lens, fills more than ~20 %
+  // of the frame, or covers the focus' head (at the shot's start, middle or end), the camera is nudged back / up /
+  // sideways (away from that head) in fixed steps until clear. One nudge per shot (no jump inside a shot), cached;
+  // deterministic: it depends only on the shot.
+  const NUDGE = new Map();
+  const _v = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3();
+  const headY = (p) => { const P = PEOPLE[p.id]; const pose = p.a?.pose; return P.headC * (pose === "sit" ? 0.68 : pose === "sleep" ? 0.3 : 1); };
+  /** how badly the current camera is blocked: { score (0 = clear), x (ndc x of the worst head) } */
+  function headScore(heads, fh) {
+    camera.getWorldPosition(_c);
+    camera.getWorldDirection(_f);
+    const tanY = Math.tan((camera.fov * Math.PI) / 360);
+    let worst = 0, wx = 0;
+    const fp = fh ? fh.clone().project(camera) : null, fd = fh ? _v.copy(fh).sub(_c).dot(_f) : 0;
+    for (const h of heads) {
+      _v.copy(h.c).sub(_c);
+      const depth = _v.dot(_f), d = _v.length();
+      if (depth <= 0.05) continue;
+      const q = h.c.clone().project(camera);
+      const rY = h.r / (depth * tanY), rX = rY / camera.aspect;
+      const w = Math.max(0, Math.min(1, q.x + rX) - Math.max(-1, q.x - rX)), hh = Math.max(0, Math.min(1, q.y + rY) - Math.max(-1, q.y - rY));
+      const area = (w * hh) / 4;
+      if (area <= 0) continue;
+      let s = 0;
+      if (d < 1.1) s += 1 + (1.1 - d);
+      if (area > 0.2) s += area;
+      if (fp && fd > depth && Math.abs(fp.x - q.x) < rX * 1.05 && Math.abs(fp.y - q.y) < rY * 1.05) s += 1;
+      if (s > worst) { worst = s; wx = q.x; }
+    }
+    return { score: worst, x: wx };
+  }
+  function guardNudge(si, shot, camType, fctx, placed, where, carried) {
+    if (NUDGE.has(si)) return NUDGE.get(si);
+    const focusIds = new Set(shot.focus === "group" ? placed.map((p) => p.id) : [shot.focus]);
+    const carrier = carried.get(shot.focus); if (carrier) focusIds.add(carrier.id);
+    const heads = placed.filter((p) => !focusIds.has(p.id) && PEOPLE[p.id]).map((p) => ({ id: p.id, c: p.pos.clone().setY(p.pos.y + headY(p)), r: PEOPLE[p.id].headR }));
+    let best = null;
+    if (heads.length) {
+      const fid = carrier ? carrier.id : shot.focus;
+      const fh = shot.focus === "monster" && monster ? monster.position.clone().setY(monster.position.y + monsterH * 0.9)
+        : where[fid] && PEOPLE[fid] ? where[fid].clone().setY(where[fid].y + PEOPLE[fid].headC) : null;
+      const ts = [0, fctx.dur / 2, Math.max(0, fctx.dur - 1e-3)];
+      const evalN = (nudge) => {
+        let worst = 0, side = 0;
+        for (const t of ts) { frameShot(camType, { ...fctx, other: fctx.other?.clone(), t, nudge }); camera.updateMatrixWorld(); const r = headScore(heads, fh); if (r.score > worst) { worst = r.score; side = r.x; } }
+        return { worst, side };
+      };
+      const base = evalN(null);
+      if (base.worst > 0) {
+        const sgn = base.side > 0 ? -1 : 1;   // move the camera away from the head's side: the head slides to the frame edge
+        let bestScore = base.worst;
+        for (let i = 1; i <= 14; i++) {
+          const n = { back: 0.25 * i, up: 0.07 * i, lat: sgn * 0.12 * i };
+          const r = evalN(n);
+          if (r.worst < bestScore - 1e-6) { bestScore = r.worst; best = n; }
+          if (r.worst === 0) break;
+        }
+        console.log(`engine: head guard, shot ${si}: ${base.worst.toFixed(2)} -> ${bestScore.toFixed(2)}${best ? ` (back ${best.back.toFixed(2)}, up ${best.up.toFixed(2)}, side ${best.lat.toFixed(2)})` : ""}`);
+      }
+    }
+    NUDGE.set(si, best);
+    return best;
+  }
+  window.headGuard = NUDGE;
 
   function renderAt(t) {
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
@@ -403,7 +478,12 @@ async function main() {
       f.y = Math.min(a.y, obj.position.y) + fitH / 2 - fh / 2;
       return { focus: f, focusHeight: fh };
     }
-    if (shot.focus === "monster") { focus = monster.position.clone(); focusHeight = monsterH; other = placed[0]?.pos; }
+    let otherH;
+    if (shot.focus === "monster") {
+      // over the shoulder of the one it acts on ("It walked right past me"), else whoever stands in the shot
+      const o = placed.find((p) => (shot.subjectWith ?? []).includes(p.id)) ?? placed.find((p) => !p.fixed) ?? placed[0];
+      focus = monster.position.clone(); focusHeight = monsterH; other = o?.pos; otherH = o ? PEOPLE[o.id]?.h : undefined;
+    }
     else if (shot.focus === "insert") { focus = ins.obj.position.clone().setY(ins.obj.position.y + ins.minY); focusHeight = ins.h; }
     else if (shot.focus === "object") {
       // wide / insert: fit the whole object (and anybody standing around it) with the "insert" framing (a straight,
@@ -441,13 +521,17 @@ async function main() {
       ({ focus, focusHeight } = fitPair(where[shot.focus], PEOPLE[shot.focus].h, shotObjs[0], 5)); camType = "insert";
     } else if (where[shot.focus]) {
       focus = where[shot.focus].clone(); focusHeight = PEOPLE[shot.focus].h;
+      const op = placed.find((p) => p.id !== shot.focus);
       other = shotObjs.length ? shotObjs[0].obj.localToWorld((shotObjs[0].u.focus ?? new THREE.Vector3()).clone()).setY(shotObjs[0].obj.position.y)
-        : placed.find((p) => p.id !== shot.focus)?.pos ?? (monster?.visible ? monster.position : undefined);
+        : op?.pos ?? (monster?.visible ? monster.position : undefined);
+      otherH = !shotObjs.length && op ? PEOPLE[op.id]?.h : undefined;
     } else { // a carried baby: frame its carrier, a little tighter on the arms
       const c = carried.get(shot.focus);
       focus = where[c.id].clone(); focusHeight = PEOPLE[c.id].h * 0.85;
     }
-    frameShot(camType, { THREE, camera, set: S, focus, focusHeight, other: other?.clone(), t: lt, dur, seed: shot.seed ?? si });
+    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, dur, seed: shot.seed ?? si };
+    const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
+    frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();

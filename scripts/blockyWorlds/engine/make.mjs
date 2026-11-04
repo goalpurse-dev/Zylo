@@ -1,7 +1,10 @@
 // Blocky Worlds engine, end to end (free, local): script -> voice -> plan -> timeline.json -> music -> render -> mix ->
 // final.mp4 (+ a 720p web copy). Prints `PROGRESS {...}` lines and a timing report (seconds per stage).
 //   node make.mjs --example [--idea 0] [--out out/<name>] [--workers N] [--mode pages|browsers] [--secs N] [--silent]
-//                 [--stubs [list]]
+//                 [--stubs [list]] [--music A-E|loop.wav] [--no-sfx]
+//   --music: an original backrooms loop (audio/backrooms.mjs options A-E) or a seamless loop file; default A (the
+//   owner's pick, 2026-11-04: the same track under every video, looped to fit, with its clean ending).
+//   Sound effects on key moments come from lib/sfx.js (sfx_cues.json in the out folder); --no-sfx turns them off.
 //   --example: EXAMPLE_SCRIPT + EXAMPLE_IDEAS[--idea] from supabase/functions/_shared/blockyWorlds/examples.js
 //   --silent: no voice (the planner's estimateWords timings and a silent wav), --secs N: render only the first N s
 // API: makeVideo({ script, idea, out, workers, secs, silent, stubs, mode }) -> report
@@ -30,7 +33,7 @@ export function normalizeScript(s) {
   return { ...s, title: s.title, lines: s.lines.map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) };
 }
 
-export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "pages", secs = null, silent = false, stubs = null, onProgress = null, voice = "free", paid = false, renderVideo = true }) {
+export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "pages", secs = null, silent = false, stubs = null, onProgress = null, voice = "free", paid = false, renderVideo = true, music = "A", sfx = true }) {
   const progress = (o) => { console.log(`PROGRESS ${JSON.stringify(o)}`); onProgress?.(o); };
   const T0 = Date.now(), timing = {};
   const lap = async (k, fn) => { const t = Date.now(); const r = await fn(); timing[k] = +((Date.now() - t) / 1000).toFixed(2); return r; };
@@ -71,16 +74,23 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
   if (problems.length) console.log(`plan: ${problems.length} problem(s): ${problems.slice(0, 8).join("; ")}`);
   // every line's key nouns must be on screen (plan.mjs checkVisuals): a line still missing one stops the run before any render
   const missing = typeof plan.checkVisuals === "function" ? plan.checkVisuals(tl, script) : [];
-  fs.writeFileSync(path.join(out, "visual-check.json"), JSON.stringify({ missing, report: tl.visualReport ?? null }, null, 1));
+  // every shot's subject (who the line is about) must be on screen and featured (plan.mjs checkSubjects)
+  const subjects = typeof plan.checkSubjects === "function" ? plan.checkSubjects(tl) : [];
+  fs.writeFileSync(path.join(out, "visual-check.json"), JSON.stringify({ missing, subjects, report: tl.visualReport ?? null }, null, 1));
   if (missing.length) throw new Error(`VISUAL_CHECK: ${missing.length} line(s) show nothing for a spoken noun: ${missing.slice(0, 5).map((m) => `#${m.line} ${(m.missing ?? []).join("/")}`).join(", ")} (see visual-check.json)`);
+  if (subjects.length) throw new Error(`SUBJECT_CHECK: ${subjects.length} shot(s) don't show who the line is about: ${subjects.slice(0, 5).map((m) => `shot ${m.shot} (#${m.line}) ${m.problem}`).join(", ")} (see visual-check.json)`);
   const tlPath = path.join(out, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl, null, 1));
   const length = secs ? Math.min(Number(secs), tl.duration) : tl.duration;
 
-  // 3. music
+  // 3. music: --music A-E = an original backrooms loop (audio/backrooms.mjs) played to the length with its ending;
+  //    --music <file> = a seamless loop file; none = the old mood bed
   progress({ stage: "music", pct: 10 });
   const musicWav = path.join(out, "music.wav");
-  await lap("music", async () => { const { makeMusic } = await need("audio/music.mjs", ["makeMusic"]); await makeMusic({ out: musicWav, seconds: Math.ceil(tl.duration + 1), mood: idea.mood ?? "horror", seed: 1 }); });
+  await lap("music", async () => {
+    if (music) { const { bedFromLoop } = await need("audio/mix.mjs", ["bedFromLoop"]); await bedFromLoop(music, length, musicWav); return; }
+    const { makeMusic } = await need("audio/music.mjs", ["makeMusic"]); await makeMusic({ out: musicWav, seconds: Math.ceil(tl.duration + 1), mood: idea.mood ?? "horror", seed: 1 });
+  });
 
   // 4. render (silent video)
   const silentMp4 = path.join(out, "silent.mp4"), fps = tl.fps ?? 24;
@@ -90,11 +100,20 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
   // 5. mix
   progress({ stage: "mix", pct: 91 });
   const mixM4a = path.join(out, "mix.m4a");
-  await lap("mix", async () => { const { mixAudio } = await need("audio/mix.mjs", ["mixAudio"]); await mixAudio({ voice: voiceWav, music: musicWav, out: mixM4a, duration: length, shots: tl.shots }); });
+  // sound effects on the key moments (lib/sfx.js; --no-sfx switches them off), the bed under the voice at the references' level
+  let audioInfo = null;
+  await lap("mix", async () => {
+    const { mixAudio } = await need("audio/mix.mjs", ["mixAudio"]);
+    const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
+    const cues = sfx ? sfxCues(tl).filter((c) => c.t < length) : [];
+    fs.writeFileSync(path.join(out, "sfx_cues.json"), JSON.stringify(cues, null, 1));
+    audioInfo = await mixAudio({ voice: voiceWav, music: musicWav, out: mixM4a, duration: length, sfxCues: cues });
+    audioInfo.musicOption = music ?? `mood ${idea.mood ?? "horror"}`;
+  });
 
   if (!renderVideo) {
     timing.total = +((Date.now() - T0) / 1000).toFixed(2);
-    const report = { title: tl.title, duration: tl.duration, shots: tl.shots.length, voice: voiceInfo, timing, planProblems: problems, rendered: "no (--no-render)" };
+    const report = { title: tl.title, duration: tl.duration, shots: tl.shots.length, voice: voiceInfo, audio: audioInfo, timing, planProblems: problems, rendered: "no (--no-render)" };
     fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 1));
     return { ...report, files: { timeline: tlPath, mix: mixM4a } };
   }
@@ -106,19 +125,19 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
     await run(["-i", final, "-vf", "scale=720:1280", "-c:v", "libx264", "-crf", "23", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", web]);
   });
   timing.total = +((Date.now() - T0) / 1000).toFixed(2);
-  const report = { title: tl.title, duration: tl.duration, rendered: length, frames: rendered.frames, shots: tl.shots.length, workers: rendered.workers, mode, msPerFrame: rendered.msPerFrame, pageLoadS: rendered.loadS, silent, stubs, voice: voiceInfo, files: { final, web, timeline: tlPath }, sizes: { final: fs.statSync(final).size, web: fs.statSync(web).size }, timing, planProblems: problems };
+  const report = { title: tl.title, duration: tl.duration, rendered: length, frames: rendered.frames, shots: tl.shots.length, workers: rendered.workers, mode, msPerFrame: rendered.msPerFrame, pageLoadS: rendered.loadS, silent, stubs, voice: voiceInfo, audio: audioInfo, files: { final, web, timeline: tlPath }, sizes: { final: fs.statSync(final).size, web: fs.statSync(web).size }, timing, planProblems: problems };
   fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 1));
   progress({ stage: "done", pct: 100 });
   return report;
 }
 
 if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
-  const { opt } = parseArgs(process.argv.slice(2), ["out", "workers", "mode", "secs", "idea", "voice"]);
-  if (!opt.example) { console.error("usage: node make.mjs --example [--idea 0] [--out out/<name>] [--workers N] [--secs N] [--silent] [--stubs]"); process.exit(2); }
+  const { opt } = parseArgs(process.argv.slice(2), ["out", "workers", "mode", "secs", "idea", "voice", "music"]);
+  if (!opt.example) { console.error("usage: node make.mjs --example [--idea 0] [--out out/<name>] [--workers N] [--secs N] [--silent] [--stubs] [--music A-E|loop.wav] [--no-sfx]"); process.exit(2); }
   const { EXAMPLE_SCRIPT, EXAMPLE_IDEAS } = await import(pathToFileURL(EXAMPLES).href);
   const idea = EXAMPLE_IDEAS[Number(opt.idea ?? 0)];
   try {
-    const r = await makeVideo({ script: EXAMPLE_SCRIPT, idea, out: opt.out ?? path.join(ENGINE, "out", "example"), workers: Number(opt.workers ?? 2), mode: opt.mode ?? "pages", secs: opt.secs ? Number(opt.secs) : null, silent: !!opt.silent, stubs: opt.stubs ?? null, voice: opt.voice ?? "free", paid: !!opt.paid, renderVideo: !opt["no-render"] });
+    const r = await makeVideo({ script: EXAMPLE_SCRIPT, idea, out: opt.out ?? path.join(ENGINE, "out", "example"), workers: Number(opt.workers ?? 2), mode: opt.mode ?? "pages", secs: opt.secs ? Number(opt.secs) : null, silent: !!opt.silent, stubs: opt.stubs ?? null, voice: opt.voice ?? "free", paid: !!opt.paid, renderVideo: !opt["no-render"], music: opt.music ?? "A", sfx: !opt["no-sfx"] });
     console.log("timing (s):", JSON.stringify(r.timing));
     console.log(r.files.final ? `final: ${r.files.final}` : `ready for RunPod: ${r.files.timeline}`);
   } catch (e) { console.error(e.stack ?? e.message); process.exit(1); }

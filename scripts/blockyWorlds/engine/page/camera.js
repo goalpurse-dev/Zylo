@@ -5,7 +5,8 @@
 // (rooms for indoor sets) and in front of walls / houses (a ray check against the set's blockers); when it has to stand
 // closer than planned it widens the lens to keep the framing.
 //   type: wide | medium | closeup | low | over_shoulder | insert
-//   ctx:  { THREE, camera, set, focus: Vector3 (feet), focusHeight, other?: Vector3, t, dur, seed }
+//   ctx:  { THREE, camera, set, focus: Vector3 (feet), focusHeight, other?: Vector3, otherHeight?, t, dur, seed,
+//           nudge?: { back, up, lat } (metres; the engine's head guard moves a blocked camera back / up / to its right) }
 
 const hash = (n) => { let x = (Math.imul((n | 0) ^ 0x9e3779b9, 0x85ebca6b) >>> 0); x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35) >>> 0; x ^= x >>> 16; return x / 4294967296; };
 const ease = (p) => p * p * (3 - 2 * p);
@@ -75,15 +76,32 @@ export function frameShot(type, ctx) {
       break;
     }
     case "over_shoulder": {
+      // 2026-11-04 (the paid test: a frame that was mostly the back of a head): the camera stands ~2.1 m behind the
+      // near person, a little above their head and off to one side, so their head + shoulder sit low at one frame edge
+      // (the head centre at ~0.6 of the half-width: at most ~25-30 % of the frame) and never over the focus' face
       const o = ctx.other ? ctx.other.clone() : focus.clone().addScaledVector(side, 2.2);
+      const oh = Math.max(0.5, Number(ctx.otherHeight) || 1.6);
       const back = new THREE.Vector3(o.x - focus.x, 0, o.z - focus.z);
       if (back.lengthSq() < 0.04) back.copy(side); back.normalize();
       const lat = new THREE.Vector3(back.z, 0, -back.x).multiplyScalar(r(3) < 0.5 ? 1 : -1);
-      side = back.clone().multiplyScalar(1).addScaledVector(lat, 0.38).normalize();
       fov = 42;
-      const sep = Math.hypot(o.x - focus.x, o.z - focus.z);
-      dist = sep + 0.85; camY = o.y + Math.min(H, 1.7) * 0.93;
-      aim = new THREE.Vector3(focus.x, headY, focus.z); ndc = 0.3;
+      // a tall focus (the monster): further back, aimed at its chest, so its eyes and the near head both stay in frame
+      const tall = H > 2.4;
+      aim = new THREE.Vector3(focus.x, tall ? focus.y + H * 0.62 : headY, focus.z); ndc = tall ? 0.12 : 0.3;
+      // just above the near head (it sits low in the frame); for a tall focus the lens pitches up, so level with it
+      camY = o.y + (tall ? oh * 0.95 : oh + 0.18);
+      const aspect = camera.aspect || 9 / 16;
+      // the near head's angle off the view axis: its centre at 0.6 of the half-width (9:16 is narrow: at 0.8 the
+      // person was cut off the edge; at 0.6 their head + shoulder fill one lower corner, clear of the focus' face)
+      const want = Math.atan(0.6 * Math.tan(fov * DEG / 2) * aspect);
+      const B = tall ? 3.2 : 2.1, C = new THREE.Vector3();
+      for (let L = 0.15; L < 2.5; L += 0.03) {
+        C.copy(o).addScaledVector(back, B).addScaledVector(lat, L); C.y = 0;
+        const toAim = new THREE.Vector3(aim.x - C.x, 0, aim.z - C.z).normalize(), toNear = new THREE.Vector3(o.x - C.x, 0, o.z - C.z).normalize();
+        if (Math.acos(Math.min(1, toAim.dot(toNear))) >= want) break;
+      }
+      side = new THREE.Vector3(C.x - aim.x, 0, C.z - aim.z);
+      dist = Math.max(0.8, side.length()); side.normalize();
       break;
     }
     case "insert": {
@@ -96,9 +114,13 @@ export function frameShot(type, ctx) {
     default: return frameShot("medium", ctx);
   }
 
+  // the engine's head guard (page/engine.js): a per-shot nudge back / up / sideways when somebody's head would block
+  const nudge = ctx.nudge ?? null;
+  if (nudge) { dist += nudge.back ?? 0; camY += nudge.up ?? 0; }
+
   // stay in bounds and in front of walls: shorten the distance, widen the lens to keep the same framing
   const want = dist;
-  const key = `${set?.name}|${type}|${seed}|${focus.x.toFixed(2)},${focus.z.toFixed(2)}|${H.toFixed(2)}`;
+  const key = `${set?.name}|${type}|${seed}|${focus.x.toFixed(2)},${focus.z.toFixed(2)}|${H.toFixed(2)}|${dist.toFixed(2)},${camY.toFixed(2)}`;
   const p = new THREE.Vector3();
   if (set?.bounds?.length && !inside(set.bounds, new THREE.Vector3(aim.x, Math.min(camY, 1.5), aim.z))) {
     // the subject is outside the camera's area (a monster in the yard, seen through the window): stand at the nearest
@@ -115,6 +137,13 @@ export function frameShot(type, ctx) {
   if (!inside(set?.bounds, p)) { // still outside (e.g. standing at a wall): clamp into the nearest box
     let bestB = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; bestB = q; } }
     if (bestB) p.copy(bestB);
+  }
+  if (nudge?.lat) {
+    p.add(new THREE.Vector3(side.z, 0, -side.x).multiplyScalar(nudge.lat));   // camera-right
+    if (set?.bounds?.length && !inside(set.bounds, p)) {
+      let bestB = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; bestB = q; } }
+      if (bestB) p.copy(bestB);
+    }
   }
   if (dist < want) fov = Math.min(82, 2 * Math.atan(Math.tan(fov * DEG / 2) * want / Math.max(dist, 0.3)) / DEG);
 

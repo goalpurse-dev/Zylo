@@ -5,6 +5,12 @@
 //   checkTimeline(timeline) -> string[]            (problems; empty = valid)
 //   estimateWords(script, wpm = 260) -> [{ word, start, end }]   (silent fallback timings)
 //   checkVisuals(timeline, script) -> [{ line, text, missing: [...] }]   (lines whose key nouns/actions are not on screen)
+//   checkSubjects(timeline) -> [{ shot, line, text, subject, problem }]  (shots whose subject is off screen / not featured)
+//   subjectOf(line, ctx) -> { id, kind, with, absent, sentences, refs }  (lib/subjects.js: who a line is about)
+//
+// Every shot records `subject` (cast id | "me" | "monster" | "group" | "babies" | "someone" | "thing:<label>" | null),
+// `subjectWith` (who it acts on: in frame too) and `subjectAbsent` ("It never came back."). The subject is on screen and
+// is the focus; a name it is "looking for" is a "NAME?" badge on it, never a tag on the narrator.
 //
 // The rules, in order: time every line from the words -> cut lines into shots at word starts (long lines into 2-3,
 // a line with two places ("Past the school. Past the bakery.") into one shot per place, short shots merged) -> read
@@ -15,8 +21,9 @@
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens } from "./lib/planText.js";
 import { OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens } from "./lib/visuals.js";
+import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 
-export { estimateWords };
+export { estimateWords, subjectOf };
 
 export const SETS = ["street", "bedroom", "school", "woods"];
 export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
@@ -336,7 +343,7 @@ const PLACE_RE = /\b(every (window|house|light|door|street)|lights?|windows?|hou
 const ME_RE = /^(i|me|my|im|id|ive|ill|myself|mine)$/;
 
 /** Who is in a segment: [{ id, k (token index), possessive }], plus the group flag. */
-function whoIn(seg, world, ctx) {
+function whoIn(seg, world, ctx, refOf = () => undefined) {
   const toks = seg.toks.map((t) => t.raw);
   const found = [];
   const push = (id, k, possessive) => { if (!found.some((f) => f.id === id)) found.push({ id, k, possessive }); };
@@ -357,6 +364,9 @@ function whoIn(seg, world, ctx) {
       continue;
     }
     if (world.people.has(base) && base !== "me") { push(base, k, poss); ctx.last = base; continue; }
+    // he / she / him / her: the subject resolver's person (lib/subjects.js: gender + recency), else the last person named
+    const ref = /^(he|she|him|her|his)$/.test(n) ? refOf(seg.toks[k]) : undefined;
+    if (ref) { if (n !== "his") push(ref, k, false); ctx.last = ref; ctx.lastLine = seg.line; continue; }
     if (/^(he|she|him|her|they)$/.test(n) && ctx.last && ctx.lastLine >= seg.line - 2) { push(ctx.last, k, false); continue; }
     if (/^(we|us)$/.test(n)) { push("me", k, false); if (ctx.last && ctx.lastLine >= seg.line - 2) push(ctx.last, k, false); continue; }
   }
@@ -365,19 +375,23 @@ function whoIn(seg, world, ctx) {
   return { found, group: GROUP_RE.test(low), place: PLACE_RE.test(low) };
 }
 
-function monsterIn(seg, world, ctx, lineIdx, partInfo) {
+function monsterIn(seg, world, ctx, lineIdx, partInfo, sj = null) {
   const M = world.monster;
   if (!M) return null;
   const low = seg.text.toLowerCase(), n = seg.toks.map((t) => t.n);
-  const named = n.some((w) => w.startsWith(M.key)) || MONSTER_WORDS.test(low) || (seg.part !== "rule" && seg.part !== "tour" && /\bsomething\b/.test(low));
+  // the subject resolver says the shot is about the monster ("It turned away...", "Still looking for Barnaby.")
+  const forced = sj?.id === "monster" || (sj?.with ?? []).includes("monster");
+  const named = forced || n.some((w) => w.startsWith(M.key)) || MONSTER_WORDS.test(low) || (seg.part !== "rule" && seg.part !== "tour" && /\bsomething\b/.test(low));
   const lair = M.lair && n.includes(M.lair);
   const active = ctx.monsterLine != null && seg.line - ctx.monsterLine <= 4;
-  const itSubject = active && /(^|[.!?,]\s*|\band\s+|\bthen\s+)it\b(?!'s)/i.test(seg.text);
+  // "it" is the monster only when the resolver doesn't say it is a thing ("Everyone knew that whistle. It meant help.")
+  const itSubject = active && !(sj?.kind === "thing" && /^it=/.test(sj.via ?? "")) && /(^|[.!?,]\s*|\band\s+|\bthen\s+)it\b(?!'s)/i.test(seg.text);
   const body = active && seg.part !== "rule" && /\b(arms|legs|head|eyes|ear|ears|claws|teeth|fingers|fur|shaped like)\b/.test(low);
   const fragment = active && ctx.prevMonster && !seg.toks.some((t) => ME_RE.test(t.n)) && /^(still|any|and still|just|long|no|nothing)\b/i.test(seg.text);
   if (!(named || lair || itSubject || body || fragment)) return null;
   ctx.monsterLine = seg.line;
-  if (seg.part === "closer" && /\b(never came back|gone|never again|left)\b/.test(low)) return { spot: "far", state: "flee", absent: true };
+  if (sj?.id === "monster" && sj.absent) return { spot: "far", state: "flee", absent: true };
+  if (seg.part === "closer" &&/\b(never came back|gone|never again|left)\b/.test(low)) return { spot: "far", state: "flee", absent: true };
   const flee = /\b(turned away|away|past me|over the hill|looking for|ran off|left|fled|gone|followed)\b/.test(low);
   let state;
   if (seg.part === "rule" || seg.part === "tour" || seg.part === "me") state = /\b(comes? down|climbs? down|comes for|coming)\b/.test(low) ? "reach" : "lurk";
@@ -389,6 +403,8 @@ function monsterIn(seg, world, ctx, lineIdx, partInfo) {
   else state = flee ? "flee" : "reveal";
   if (seg.part === "closer") state = "flee";
   let spot = state === "lurk" || state === "flee" ? "far" : "back";
+  // leaving past someone ("It walked right past me"): close enough to share the frame with them
+  if (state === "flee" && (sj?.with ?? []).some((id) => id !== "monster")) spot = "back";
   // a monster that lives in a tower (the street and woods sets have one, spot "tower") is shown up on it while it lurks
   // there and while it comes down from it
   if (/\btower\b/.test(M.lairPhrase ?? "") && (state === "lurk" || state === "reach") && (lair || /\b(top of it|unfolded|ladder|climbed down|comes? down)\b/.test(low) || (state === "lurk" && (seg.part === "rule" || seg.part === "tour")))) spot = "tower";
@@ -458,11 +474,16 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
   const names = nameBook(world, title);
   const lineKeys = lines.map((L) => extractKeys(L.text, vw));
   const family = new Set(lines.flatMap((L) => tokens(L.text).map((w) => FAMILY[norm(w.replace(/'s\W*$/i, ""))])).filter(Boolean));
+  // who each line (each sentence) is about: lib/subjects.js, one story context for the whole script
+  const gender = genderMap(world);
+  const lineSubj = subjectsFor(lines, vw, gender);
+  const refOf = (t) => (t ? lineSubj[t.line]?.refs[t.k] : undefined);
 
   segs.forEach((seg, si) => {
     const low = seg.text.toLowerCase();
-    const who = whoIn(seg, world, ctx);
-    const monsterState = monsterIn(seg, world, ctx, seg.line, partRange);
+    const sj = segSubject(seg, lineSubj);
+    const who = whoIn(seg, world, ctx, refOf);
+    const monsterState = monsterIn(seg, world, ctx, seg.line, partRange, sj);
     ctx.prevMonster = !!monsterState;
     const ms = monsterState && !monsterState.absent ? { spot: monsterState.spot, state: monsterState.state } : null;
     const keys = extractKeys(seg.text, vw);
@@ -533,6 +554,18 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
       actors = (from.length ? from : prev.actors.slice(0, 1)).map((a) => ({ id: a.id, pose: gp.pose !== "stand" && gp.pose !== "carry" ? gp.pose : a.pose, hold: a.hold, neg: gp.neg }));
       carryOver = { prev, ids: actors.map((a) => a.id) };
     }
+    // the subject (and whoever it acts on) is in the shot: "She screamed..." is Bean, "He said..." is Grandpa; a
+    // fragment that carried the wrong people over gives way to its subject
+    if (sj && !insert) {
+      const need = [...(sj.kind === "person" || sj.kind === "narrator" ? [sj.id] : []), ...sj.with.filter((id) => id !== "monster")];
+      for (const id of need) {
+        if (actors.some((a) => a.id === id) || carried.has(id)) continue;
+        if (carryOver && id === sj.id) { actors = []; carryOver = null; }
+        const gp = poseFrom(seg.toks.map((t) => t.raw), 0, world);
+        const a = { id, pose: id === sj.id && gp.pose !== "carry" ? gp.pose : "stand", hold: null, neg: id === sj.id ? gp.neg : undefined };
+        if (id === sj.id) actors.unshift(a); else actors.push(a);
+      }
+    }
     // the monster alone twice in a row: cut to the kid watching it (threat / face / threat)
     if (ms && !actors.length && prev?.monsterState && !prev.actors.length && ms.state !== "flee") actors.push({ id: "me", pose: ms.state === "lurk" ? "look_up" : "scared", hold: null });
     // nobody named, no group, no monster, no insert: townsfolk doing the line (tour examples), or a place shot
@@ -567,7 +600,8 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
 
     // the visual pass: every key noun / action of this shot gets its object, pose, hold, name tag, window state
     const draft = { set, light, actors, monsterState: ms, insert, objects: [], markers: [], setState: null, part: seg.part, line: seg.line };
-    const V = { world, vw, who, ms, seg, keys, lineKeys, lines, names, pointRule, carryOver, fallbackTown, mood, ctx, mover, family };
+    const V = { world, vw, who, ms, seg, keys, lineKeys, lines, names, pointRule, carryOver, fallbackTown, mood, ctx, mover, family, subject: sj,
+      sentSubj: (i) => { const t = seg.toks[i]; return t ? lineSubj[t.line]?.sentences.find((x) => t.k >= x.k0 && t.k <= x.k1) ?? null : null; } };
     if (!insert) applyVisuals(draft, V);
     actors = draft.actors;
     actors.forEach((a) => used.add(a.id));
@@ -579,7 +613,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
     const named = actors.filter((a) => !a.id.startsWith("town"));
     const objectFocus = draft.objects.length && !ms && (draft.point || !named.length);
     let focus = insert ? "insert" : ms && (ms.state !== "lurk" || !actors.length) ? "monster" : objectFocus ? "object" : groupShot || (!named.length && actors.length > 1) ? "group" : actors[0]?.id ?? (ms ? "monster" : "group");
+    // the subject is the focus (a person: unless the shot is about the object they are at, which frames them both)
+    const subjFocus = insert || !sj?.id ? null : sj.id === "monster" ? (ms ? "monster" : null)
+      : (sj.kind === "person" || sj.kind === "narrator") && (actors.some((a) => a.id === sj.id) || actors.some((a) => a.hold === sj.id)) ? sj.id : null;
+    if (subjFocus && !(focus === "object" && subjFocus !== "monster")) focus = subjFocus;
     const prefs = [];
+    // the monster acting on someone ("It walked right past me"): over the shoulder of the one it passes, the monster featured
+    if (subjFocus === "monster" && sj.with.some((id) => actors.some((a) => a.id === id))) prefs.push("over_shoulder");
     const feeling = /\b(love|best friend|secret|remembered|just|not on purpose|real|only|loudest|scared|alone|breath)\b/.test(low);
     if (insert) prefs.push("insert");
     else if (objectFocus) prefs.push(OBJECT_CATALOG[draft.objects[0].name]?.big ? "wide" : "medium", "wide", "medium", "low");
@@ -598,7 +638,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
     else prefs.push("medium", "wide");
     if (ms?.state === "reveal" && seg.part === "climax" && hist.at(-1)?.camera !== "low") prefs.unshift("low");
     const camera = pickCamera(prefs, hist, seg, focus, actors.length, !!ms);
-    if (camera === "low" && ms) focus = "monster";
+    if (camera === "low" && ms && !(subjFocus && subjFocus !== "monster")) focus = "monster";
     if (camera === "closeup" && focus === "group") focus = actors.find((a) => a.id === "me")?.id ?? actors[0]?.id ?? "group";
     if (focus === "group" && !actors.length && draft.objects.length) focus = "object";
     hist.push({ camera, focus, set, line: seg.line });
@@ -609,7 +649,10 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
       start: r3(seg.start), end: r3(seg.end), line: seg.line, lines: seg.lines, part: seg.part, set, light: shotLight, camera, focus,
       actors, monsterState: ms, insert, marker: markers[0] ?? null,
       seed: R("seed") % 1000, text: seg.text,
+      subject: sj?.id ?? null,
     };
+    if (sj?.with?.length) shot.subjectWith = [...sj.with];
+    if (sj?.absent) shot.subjectAbsent = true;
     if (markers.length > 1) shot.markers = markers;
     if (draft.objects.length) shot.objects = draft.objects.map(({ babies, ...o }) => o);
     if (draft.setState) shot.setState = draft.setState;
@@ -629,6 +672,17 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
 
   // the visual check, then the re-plan of every line still missing a noun: a catalog visual, else a picture card
   fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+  // the subject check, then the re-plan of every shot whose subject is off screen / not the focus; the framing touches
+  // may move a focus, so the check runs again after them (and the noun check once more: a subject fix only adds, but a
+  // monster moved outdoors leaves its crib behind)
+  const keysOfShot = (s) => (s.lines ?? [s.line]).flatMap((i) => lineKeys[i]);
+  const subjAux = { used, names, W, world, vw, family, buildCast, keysOfShot, loose: new Set(world.looseNames) };
+  fixSubjects(shots, subjAux);
+  for (const s of shots) if (s.marker === undefined) s.marker = null;
+  framingPass(shots, buildCast());
+  fixSubjects(shots, subjAux);
+  fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+  fixSubjects(shots, subjAux);
   for (const s of shots) if (s.marker === undefined) s.marker = null;
   const cast = buildCast();
   // what each shot shows of its lines' key nouns / actions (for the check and the report; the engine ignores it)
@@ -637,8 +691,6 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
     s.visuals = [...new Set(ks.filter((k) => covers(k, s, cast)).map((k) => k.label))];
   }
 
-  framingPass(shots, cast);
-
   const tl = {
     version: 1, fps: 24, width: 1080, height: 1920, duration, title, lengthSec,
     cast,
@@ -646,10 +698,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
     shots,
     captions: W.map((w) => ({ word: w.word, start: r3(w.start), end: r3(w.end) })),
     audio: { voice: "voice.wav", music: "music.wav" },
-    lines: lines.map((L) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end) })),
-    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey },
+    lines: lines.map((L, i) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end), subject: lineSubj[i].id ?? null })),
+    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender },
   };
-  tl.visualReport = lineReport(shots, lines, vw, cast).map((r) => ({ line: r.line, text: r.text, nouns: r.keys.map((k) => k.label), shows: r.shows, ok: !r.missing.length, ...(r.missing.length ? { missing: r.missing.map((k) => k.label) } : {}) }));
+  // the report's subject column: who each of the line's shots is about (cards and signs left out)
+  const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
+  const subjCol = (i) => [...new Set(shots.filter((s) => (s.lines ?? [s.line]).includes(i) && s.camera !== "insert").map((s) => `${label(s.subject)}${s.subjectAbsent ? " (gone)" : ""}`))].join(" / ") || label(lineSubj[i].id);
+  tl.visualReport = lineReport(shots, lines, vw, cast).map((r) => ({ line: r.line, text: r.text, subject: subjCol(r.line), nouns: r.keys.map((k) => k.label), shows: r.shows, ok: !r.missing.length, ...(r.missing.length ? { missing: r.missing.map((k) => k.label) } : {}) }));
   return tl;
 }
 
@@ -750,7 +805,7 @@ function applyVisuals(d, V) {
   // "her name" / "his own name": the person the sentence (or the line before) is about
   const lastPersonBefore = (k) => keys.filter((x) => x.kind === "person" && x.k < k && x.id !== "me").at(-1)?.id ?? (V.ctx.last && V.ctx.lastLine >= seg.line - 2 ? V.ctx.last : null);
   const propRecent = !!world.propKey && (lineLow.includes(world.propKey) || prevLow.includes(world.propKey));
-  const subjectOf = (k) => {
+  const subjAtTok = (k) => {
     for (let i = k - 1; i >= 0; i--) {
       if (toks[i].end) break;
       if (subjAt.has(i)) {
@@ -819,7 +874,7 @@ function applyVisuals(d, V) {
 
   // 3. holds: the prop / a holdable noun in the hand of whoever has it
   const holder = (k) => {
-    const s = k != null ? subjectOf(k) : null;
+    const s = k != null ? subjAtTok(k) : null;
     const id = s && s !== "all" && s !== "monster" && s !== "prop" ? s : d.actors.find((x) => !isBabyId(x.id, world) && !holdsBaby(x) && !x.id.startsWith("town"))?.id ?? "me";
     if (isBabyId(id, world)) return null;
     return add(id, "carry", "neutral", null, id === "me");
@@ -852,7 +907,7 @@ function applyVisuals(d, V) {
       if (!d.actors.length && !crowdObj && !ms) { addTown("stand", "shush"); addTown("stand", "shush"); }
       continue;
     }
-    let s = subjectOf(k.k);
+    let s = subjAtTok(k.k);
     if (s === "monster") { if (r.show?.monsterMove) continue; s = null; }
     if (s === "prop") { if (d.actors.some((a) => a.hold === world.propKey)) continue; s = null; }
     let targets;
@@ -884,7 +939,16 @@ function applyVisuals(d, V) {
     if (k.kind !== "name" && !isNames) continue;
     if (k.kind === "name" && k.on === "me") { add("me"); mark("me", "tag", names.tag("me")); continue; }
     if (k.kind === "name") {
-      const s = subjectOf(k.k);
+      // a name the subject is looking for (or the monster's line): a "NAME?" badge on the subject, never a tag on the
+      // narrator ("Still looking for Barnaby." is the monster's)
+      const lookFor = k.k >= 2 && /^(looking|searching|hunting|calling|asking|waiting|listening|lookin)$/.test(toks[k.k - 2]?.c ?? "") && toks[k.k - 1]?.c === "for";
+      const sid = V.sentSubj?.(k.k)?.id ?? V.subject?.id;
+      if (sid === "monster" && ms) { mark("monster", "icon", `${k.name.toUpperCase()}?`); continue; }
+      if (lookFor && sid && sid !== "group" && sid !== "babies" && !sid.startsWith("thing:")) {
+        const a = d.actors.find((x) => x.id === sid) ?? add(sid);
+        if (a) { mark(a.id, "icon", `${k.name.toUpperCase()}?`); continue; }
+      }
+      const s = subjAtTok(k.k);
       const a = (s && s !== "all" && s !== "monster" && d.actors.find((x) => x.id === s)) || d.actors.find((x) => x.pose === "yell") || d.actors[0];
       if (s === "all" || (!a && false)) { mark("all", "tag", k.name.toUpperCase()); continue; }
       if (a) mark(d.actors.filter((x) => x.pose === "yell").length >= 2 ? "all" : a.id, "tag", k.name.toUpperCase());
@@ -899,7 +963,7 @@ function applyVisuals(d, V) {
     let owner = null;
     if (/^call/.test(k.text)) owner = keys.find((x) => x.kind === "person" && x.k > k.k)?.id ?? null;
     else if (det === "my") owner = "me";
-    else if (det === "his" || det === "her" || det === "their") { owner = subjectOf(k.k); if (!owner || owner === "all" || owner === "me") owner = lastPersonBefore(k.k) ?? owner; }
+    else if (det === "his" || det === "her" || det === "their") { owner = subjAtTok(k.k); if (!owner || owner === "all" || owner === "me") owner = lastPersonBefore(k.k) ?? owner; }
     if (owner === "all" || owner === "monster" || owner === "prop") owner = null;
     const secret = !/^call/.test(k.text) && /\b(secret|real name)\b/.test(low);
     const two = /\btwo names\b/.test(low) && anyLoose;
@@ -1099,7 +1163,8 @@ function cardShot(shots, lineShots, key, t, L) {
   // never three inserts in a row: the card's neighbours after the cut
   if (cardFirst ? ins(shots[i - 1]) && ins(shots[i - 2]) : ins(shots[i + 1]) && ins(shots[i + 2])) return false;
   const card = { start: cardFirst ? host.start : r3(c), end: cardFirst ? r3(c) : host.end, line: host.line, lines: host.lines, part: host.part, set: host.set, light: host.light,
-    camera: "insert", focus: "insert", actors: [], monsterState: null, insert: cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label] };
+    camera: "insert", focus: "insert", actors: [], monsterState: null, insert: cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label],
+    subject: host.subject ?? null };
   const rest = { ...host, ...(cardFirst ? { start: r3(c) } : { end: r3(c) }) };
   shots.splice(i, 1, ...(cardFirst ? [card, rest] : [rest, card]));
   return true;
@@ -1124,7 +1189,230 @@ function badge(s, key, aux) {
   return true;
 }
 
+// ---------------------------------------------------------------- 6c. subjects (lib/subjects.js): who each shot is about
+/** he / she for every cast member and family word: family words, titles, alias relations, common first names. */
+function genderMap(world) {
+  const g = {};
+  const ids = [...world.people.keys()].filter((id) => id !== "me");
+  for (const id of [...ids, "mom", "dad", "grandma", "grandpa", "brother", "sister"]) g[id] = genderOf(id, world.people.get(id) ?? { name: id }, world.alias);
+  return g;
+}
+/** Every line's subjects, read in order with one story context. */
+function subjectsFor(lines, vw, gender) {
+  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender };
+  return lines.map((L) => subjectOf(L.text, sctx));
+}
+/**
+ * A shot's subject: the sentence with most of its words (a shot holding "Barnaby! The Listener stopped..." is the
+ * monster's); the other sentences' people / monster must be on screen too (`with`).
+ */
+function segSubject(seg, lineSubj) {
+  const count = new Map();
+  for (const t of seg.toks) {
+    const S = lineSubj[t.line];
+    const si = S ? S.sentences.findIndex((x) => t.k >= x.k0 && t.k <= x.k1) : -1;
+    if (si < 0) continue;
+    const key = `${t.line}:${si}`;
+    count.set(key, (count.get(key) ?? 0) + 1);
+  }
+  if (!count.size) return null;
+  let best = null, bc = -1;
+  for (const [k, c] of count) if (c > bc) { bc = c; best = k; }
+  const [li, si] = best.split(":").map(Number);
+  const main = lineSubj[li].sentences[si];
+  const withIds = [...(main.with ?? [])];
+  for (const k of count.keys()) {
+    if (k === best) continue;
+    const [l2, s2] = k.split(":").map(Number);
+    const o = lineSubj[l2].sentences[s2];
+    if (o.id && o.id !== main.id && ["person", "narrator", "monster"].includes(o.kind) && !o.absent && !withIds.includes(o.id)) withIds.push(o.id);
+  }
+  return { id: main.id, kind: main.kind, via: main.via, absent: !!main.absent, with: withIds.filter((x) => x !== main.id) };
+}
+
+const markersList = (s) => {
+  const list = [...(s.markers ?? [])];
+  if (s.marker && !list.some((m) => m.on === s.marker.on && m.text === s.marker.text)) list.unshift(s.marker);
+  return list;
+};
+const setMarkers = (s, list) => { if (list.length > 1) s.markers = list; else delete s.markers; s.marker = list[0] ?? null; };
+
+/**
+ * What is wrong with a shot's subject: [{ code, msg, id?, key?, marker? }]. The rule: the subject is on screen and is
+ * the focus (a person may share the frame with the object they are at: focus "object" / "group"; a carried baby is
+ * featured by its carrier); whoever the subject acts on is in frame; a loose name's tag sits on the subject.
+ * Inserts (signs, picture cards) are cutaways and have no subject rule.
+ */
+function subjectIssues(s, cast, keysOfShot, loose) {
+  if (s.camera === "insert" || s.focus === "insert" || !s.subject) return [];
+  const out = [];
+  const actors = s.actors ?? [];
+  const ids = actors.map((a) => a.id);
+  const carrierOf = (id) => actors.find((a) => a.hold === id && cast[id]?.role === "baby");
+  const on = (id) => (id === "monster" ? !!s.monsterState : ids.includes(id) || !!carrierOf(id));
+  const nm = (id) => (id === "monster" ? "the monster" : cast[id]?.name ?? id);
+  const S = s.subject;
+  const objs = (s.objects ?? []).map((o) => o.name);
+  const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0);
+  if (S === "monster") {
+    if (!s.subjectAbsent) {
+      if (!s.monsterState) out.push({ code: "monster", id: S, msg: "the monster (the subject) is not on screen" });
+      else if (s.focus !== "monster") out.push({ code: "focus", id: S, msg: `focus is ${s.focus}, not the monster (the subject)` });
+    }
+  } else if (S === "group") {
+    if (people < 2) out.push({ code: "group", msg: `a line about everyone with ${people} person(s) on screen` });
+    else if (s.camera === "closeup") out.push({ code: "closeup", msg: "a closeup on a line about everyone" });
+  } else if (S === "babies") {
+    if (!actors.some((a) => cast[a.id]?.role === "baby" || cast[a.hold]?.role === "baby")) out.push({ code: "babies", msg: "no baby on screen" });
+  } else if (S === "someone") {
+    if (!actors.length) out.push({ code: "someone", msg: "nobody on screen" });
+  } else if (S.startsWith("thing:")) {
+    const label = S.slice(6);
+    const key = keysOfShot(s).find((k) => k.label === label || k.noun === label);
+    if (key && !covers(key, s, cast)) out.push({ code: "thing", key, msg: `the ${label} (the subject) is not on screen` });
+  } else if (!on(S)) out.push({ code: "person", id: S, msg: `${nm(S)} (the subject) is not on screen` });
+  else if (![S, carrierOf(S)?.id, "object", "group"].includes(s.focus)) out.push({ code: "focus", id: S, msg: `focus is ${s.focus}, not ${nm(S)} (the subject)` });
+  for (const w of s.subjectWith ?? []) if (!on(w)) out.push({ code: "with", id: w, msg: `${nm(w)} (acted on by the subject) is not on screen` });
+  if (S !== "group" && S !== "babies") {
+    for (const m of markersList(s)) {
+      if (m.kind !== "tag" || m.on === "all" || m.on === "monster" || !loose.has(String(m.text ?? "").toLowerCase())) continue;
+      // on the subject, or on a co-subject of a shot that holds two sentences ("Barnaby! | The Listener stopped...")
+      if (m.on !== S && !(s.subjectWith ?? []).includes(m.on)) out.push({ code: "tag", marker: m, msg: `tag "${m.text}" on ${nm(m.on)}, not on the subject (${nm(S)})` });
+    }
+  }
+  return out;
+}
+
+/** A camera for shot i other than `not`, that keeps the variety rule (never 3 in a row) and suits the shot. */
+function recam(shots, i, not) {
+  const s = shots[i], n = (s.actors ?? []).length;
+  const ok = (c) => {
+    if (c === not) return false;
+    if (c === "over_shoulder" && !(n >= 2 || (s.monsterState && n >= 1))) return false;
+    if (c === "closeup" && (n >= 3 || s.subject === "group" || !n)) return false;
+    if (i === 0 && c !== "wide") return false;
+    const p1 = shots[i - 1]?.camera, p2 = shots[i - 2]?.camera, n1 = shots[i + 1]?.camera, n2 = shots[i + 2]?.camera;
+    return !(c === p1 && c === p2) && !(c === p1 && c === n1) && !(c === n1 && c === n2);
+  };
+  return ["medium", "wide", "low", "over_shoulder", "closeup"].find(ok) ?? s.camera;
+}
+
+/** Re-plans every shot whose subject is not on screen / not the focus (the planner's own pre-render check). */
+function fixSubjects(shots, aux) {
+  for (let pass = 0; pass < 3; pass++) {
+    const cast = aux.buildCast();
+    let any = false;
+    shots.forEach((s, i) => {
+      for (const p of subjectIssues(s, cast, aux.keysOfShot, aux.loose)) { any = true; fixSubjectIssue(shots, i, p, aux, cast); }
+    });
+    if (!any) return;
+  }
+}
+
+function fixSubjectIssue(shots, i, p, aux, cast) {
+  const s = shots[i];
+  const { world } = aux;
+  const isBaby = (id) => cast[id]?.role === "baby" || !!world.people.get(id)?.baby || /^baby\d$/.test(id);
+  const dropActor = (id) => { s.actors = s.actors.filter((a) => a.id !== id); setMarkers(s, markersList(s).filter((m) => m.on !== id)); };
+  const addPerson = (id) => {
+    const have = s.actors.find((a) => a.id === id) ?? s.actors.find((a) => a.hold === id);
+    if (have) return have;
+    if (isBaby(id)) {
+      if (s.set === "bedroom" && !s.monsterState) {
+        const spot = freeSpot(s);
+        s.objects = [...(s.objects ?? []), { name: "crib", spot, facing: "camera" }];
+        const a = { id, spot, pose: "sit", expr: "happy", facing: "camera", hold: null };
+        s.actors.push(a); aux.used.add(id); return a;
+      }
+      let c = s.actors.find((a) => (isAdultId(a.id, world) || /^town/.test(a.id)) && !a.hold);
+      if (!c) c = addPerson(["mom", "dad", "grandma", "grandpa"].find((x) => aux.family.has(x)) ?? "town1");
+      if (!c) return null;
+      c.hold = id; c.pose = "carry"; aux.used.add(id);
+      return c;
+    }
+    if (s.actors.length >= 4) { const t = s.actors.find((a) => a.id.startsWith("town")); if (!t) return null; dropActor(t.id); }
+    const a = { id, spot: freeSpot(s), pose: "stand", expr: s.monsterState ? "scared" : "neutral", facing: s.monsterState ? "monster" : "camera", hold: null };
+    s.actors.push(a); aux.used.add(id);
+    return a;
+  };
+  const addMonster = () => {
+    if (!world.monster || s.monsterState) return;
+    if (s.set === "bedroom" || s.set === "school") {
+      s.set = "street";
+      s.objects = (s.objects ?? []).filter((o) => o.name !== "crib");
+      for (const a of [...s.actors]) if (isBaby(a.id)) dropActor(a.id);
+      if (!s.objects.length) delete s.objects;
+      if (s.focus === "object" && !s.objects?.length) s.focus = s.actors[0]?.id ?? "group";
+    }
+    const low = String(s.text ?? "").toLowerCase();
+    const state = s.part === "closer" ? "flee" : s.part === "climax" ? (/\b(away|past|over|looking for|left|gone|followed)\b/.test(low) ? "flee" : "reveal")
+      : s.part === "until" ? "reach" : s.part === "discovery" ? "reveal" : "lurk";
+    s.monsterState = { spot: state === "lurk" || state === "flee" ? "far" : "back", state };
+    for (const a of s.actors) if (a.facing === "camera") a.facing = "monster";
+  };
+  const focusOn = (id) => { const c = s.actors.find((a) => a.hold === id && isBaby(id)); s.focus = c ? c.id : id; };
+  switch (p.code) {
+    case "person": if (addPerson(p.id)) focusOn(p.id); break;
+    case "focus":
+      if (p.id === "monster") s.focus = "monster";
+      else focusOn(p.id);
+      if (s.camera === "closeup" && s.focus === "group") s.camera = recam(shots, i, "closeup");
+      break;
+    case "with": if (p.id === "monster") addMonster(); else addPerson(p.id); break;
+    case "monster": addMonster(); if (s.monsterState) s.focus = "monster"; break;
+    case "group": {
+      const pose = s.actors[0]?.pose ?? "stand";
+      for (const t of ["town1", "town2", "town3"]) {
+        if ((s.actors?.length ?? 0) >= 2) break;
+        if (!s.actors.some((a) => a.id === t)) { const a = addPerson(t); if (a) a.pose = pose === "carry" ? "stand" : pose; }
+      }
+      if (s.camera === "closeup") s.camera = recam(shots, i, "closeup");
+      break;
+    }
+    case "closeup": s.camera = recam(shots, i, "closeup"); break;
+    case "babies": addPerson(aux.vw.alias.baby ?? "baby2"); break;
+    case "someone": addPerson(["town1", "town2", "town3"].find((t) => !s.actors.some((a) => a.id === t)) ?? "town1"); break;
+    case "thing": forceKey(s, p.key, aux); break;
+    case "tag": {
+      const list = markersList(s).filter((m) => m !== p.marker && !(m.on === p.marker.on && m.text === p.marker.text));
+      if (s.subject === "monster" && s.monsterState) list.push({ on: "monster", kind: "icon", text: `${p.marker.text}?` });
+      else if (s.actors.some((a) => a.id === s.subject)) list.push({ ...p.marker, on: s.subject });
+      setMarkers(s, list);
+      break;
+    }
+  }
+  if (s.focus === "monster" && !s.monsterState) s.focus = s.actors[0]?.id ?? "group";
+}
+
 // ---------------------------------------------------------------- 7. the check
+/**
+ * The subject check (pre-render, next to checkVisuals): every shot's subject is on screen and featured, whoever it acts
+ * on is in frame, a looked-for name is not a tag on someone else; and every shot's recorded subject is one its lines
+ * are about (re-read from the text). [{ shot, line, text, subject, problem }]; empty = clean.
+ */
+export function checkSubjects(tl) {
+  const out = [];
+  if (!tl?.shots) return out;
+  const cast = tl.cast ?? {};
+  const vw = tl.visualWorld ? visualWorldFrom(tl.visualWorld) : null;
+  const lines = tl.lines ?? [];
+  const lineSubj = vw && lines.length ? subjectsFor(lines, vw, tl.visualWorld.gender ?? {}) : null;
+  const lineKeys = vw ? lines.map((l) => extractKeys(l.text, vw)) : [];
+  const keysOfShot = (s) => (s.lines ?? [s.line]).flatMap((i) => lineKeys[i] ?? []);
+  const loose = new Set(tl.visualWorld?.looseNames ?? []);
+  tl.shots.forEach((s, i) => {
+    if (s.camera === "insert" || s.focus === "insert") return;
+    const base = { shot: i, line: s.line, text: s.text, subject: s.subject ?? null };
+    if (!("subject" in s)) { out.push({ ...base, problem: "no subject recorded" }); return; }
+    if (lineSubj && s.subject != null) {
+      const said = (s.lines ?? [s.line]).flatMap((l) => lineSubj[l]?.sentences.map((x) => x.id) ?? []);
+      if (!said.includes(s.subject)) out.push({ ...base, problem: `subject ${s.subject} is not who its line is about (${[...new Set(said)].join(", ")})` });
+    }
+    for (const p of subjectIssues(s, cast, keysOfShot, loose)) out.push({ ...base, problem: p.msg });
+  });
+  return out;
+}
+
 /** Every line's key nouns/actions on screen: [{ line, text, missing: [labels] }] for the lines that miss one. */
 export function checkVisuals(tl, script) {
   const src = script?.lines ?? tl?.lines ?? [];
