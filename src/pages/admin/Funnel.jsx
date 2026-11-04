@@ -51,6 +51,31 @@ function WelcomeDaily({ rows }) {
   );
 }
 
+// The follow-up reminders (_shared/signupReminders.js reminderStats), one row each.
+function Reminders({ rows }) {
+  if (!rows) return <p className="text-[13px] text-white/45">Not set up yet.</p>;
+  const cols = [["Sent", "sent"], ["Opened", "opened"], ["After 1 min", "openedLater"], ["Clicked", "clicked"], ["Came back", "cameBack"], ["Made preview", "madePreview"], ["Paid", "paid"]];
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] text-left text-[13px] tabular-nums" data-testid="reminder-stats">
+        <thead className="text-white/50">
+          <tr><th className="py-1 font-semibold">Reminder</th>{cols.map(([label]) => <th key={label} className="py-1 text-right font-semibold">{label}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.kind} className="border-t border-white/10">
+              <td className="py-1.5 pr-2 text-white/80">{r.label}</td>
+              {cols.map(([label, key]) => (
+                <td key={label} className="py-1.5 text-right">{r[key]}{key !== "sent" && r.sent > 0 && <span className="text-white/45"> {Math.round((r[key] / r.sent) * 100)}%</span>}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Bars({ rows, of, empty = "Nothing yet." }) {
   if (!rows?.length) return <p className="text-[13px] text-white/45">{empty}</p>;
   const top = of ?? Math.max(...rows.map((r) => r.n));
@@ -192,6 +217,10 @@ export default function Funnel() {
                 <Stat label="Tapped “I found it”" value={e.noteFound ?? 0} sub={e.noteShown ? `${Math.round(((e.noteFound ?? 0) / e.noteShown) * 100)}%` : null} />
               </div>
               <p className="mt-2 text-[12px] leading-snug text-white/50">Gmail doesn't report spam clicks to us, so "Marked as spam" misses Gmail. For that, use Google Postmaster Tools. Replies go straight to your inbox, so they aren't counted here.</p>
+            </Card>
+            <Card title="Follow-up reminders" note={d.remindersOn ? "On. Reminders sent in this period, and what those people did after their own email." : "Off for users until you say so."}>
+              <Reminders rows={d.reminders} />
+              <p className="mt-2 text-[12px] leading-snug text-white/50">"After 1 min" leaves out opens in the first minute (mostly mail software). "Came back" is anything they did on the site after the email; reminders are never sent while someone is on the site.</p>
             </Card>
           </div>
         )}

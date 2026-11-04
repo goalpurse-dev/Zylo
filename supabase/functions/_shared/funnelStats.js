@@ -157,7 +157,8 @@ export function funnelStats({ events = [], onboarding = [], excluded = [], from,
     sent: sends.length,
     delivered: emailCount("email.delivered"),
     opened: emailCount("email.opened"),
-    clicked: new Set(events.filter((e) => e.event === "welcome_email_clicked" && !skip.has(e.user_id)).map((e) => e.user_id)).size,
+    // (a reminder's link says which one in props.email: not the welcome's click)
+    clicked: new Set(events.filter((e) => e.event === "welcome_email_clicked" && (e.props?.email ?? "welcome") === "welcome" && !skip.has(e.user_id)).map((e) => e.user_id)).size,
     bounced: emailCount("email.bounced"),
     spam: emailCount("email.complained"),
     // the "check your spam" note: people it was shown to, and who tapped "I found it"

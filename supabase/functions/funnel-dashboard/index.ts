@@ -5,6 +5,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { funnelStats, welcomeDaily } from "../_shared/funnelStats.js";
+import { REMINDER_KINDS, reminderStats } from "../_shared/signupReminders.js";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const OWNERS = (Deno.env.get("ADMIN_EMAILS") ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
@@ -56,7 +57,13 @@ Deno.serve(async (req) => {
     // the owner and test accounts don't count in the numbers
     const excluded = profiles.filter((p) => { const m = String(p.email ?? "").toLowerCase(); return OWNERS.includes(m) || /(\.test|\.invalid)$/.test(m); }).map((p) => p.id);
     const { data: settings } = await admin.from("onboarding_settings").select("*").eq("id", 1).maybeSingle();
-    return ok(req, { ...funnelStats({ events, onboarding, excluded, from: fromIso, to: toIso, emailEvents, sends }), welcomeOn: settings?.welcome_email_on === true, welcomeDaily: welcomeDaily(daily), from: fromIso, to: toIso });
+    // the follow-up reminders sent in the period, and what those people did after their own email. null before the
+    // migration 20261202100000 has run (no table yet): the rest of the page still works
+    const reminders = await Promise.all([
+      allRows((a, b) => admin.from("signup_reminders").select("user_id, kind, resend_id, sent_at").gte("sent_at", fromIso).lt("sent_at", toIso).range(a, b)),
+      allRows((a, b) => admin.from("email_events").select("resend_id, type, created_at").in("campaign", REMINDER_KINDS.map((k) => `reminder_${k}`)).gte("created_at", fromIso).order("id").range(a, b)),
+    ]).then(([sends, emailEvents]) => reminderStats({ sends, emailEvents, events, excluded }), (e) => { console.error("[funnel-dashboard] reminders:", String(e?.message ?? e)); return null; });
+    return ok(req, { ...funnelStats({ events, onboarding, excluded, from: fromIso, to: toIso, emailEvents, sends }), welcomeOn: settings?.welcome_email_on === true, welcomeDaily: welcomeDaily(daily), reminders, remindersOn: settings?.reminders_on === true, from: fromIso, to: toIso });
   } catch (e) {
     console.error("[funnel-dashboard]", String((e as any)?.message ?? e));
     return err(req, "Could not read the numbers", 500);
