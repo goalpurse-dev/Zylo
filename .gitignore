@@ -35,3 +35,8 @@ reference/blocky-worlds/voice-samples/
 
 # Blocky Worlds look scene: Poly Haven downloads (fetchPH.mjs), never committed
 scripts/blockyWorlds/look/ph/
+
+# Blocky Worlds render engine: downloaded CC0 assets, packages, renders (kept out of git)
+scripts/blockyWorlds/engine/assets/
+scripts/blockyWorlds/engine/node_modules/
+scripts/blockyWorlds/engine/out/

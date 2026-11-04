@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>captions preview</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+import { drawCaption, loadCaptionFont } from "/page/captions.js";
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+function background(kind) {
+  const g = ctx.createLinearGradient(0, 0, 0, 1920);
+  if (kind === "sky") { g.addColorStop(0, "#5fb4ff"); g.addColorStop(0.6, "#cfe9ff"); g.addColorStop(0.61, "#7bbf4a"); g.addColorStop(1, "#4d8a2c"); }
+  else { g.addColorStop(0, "#0d1024"); g.addColorStop(0.6, "#1b2240"); g.addColorStop(0.61, "#22262a"); g.addColorStop(1, "#111316"); }
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920);
+  // a few blocky shapes behind the caption so contrast is tested over busy areas
+  const blocks = kind === "sky" ? ["#f5f1e6", "#c94f3d", "#ffd36b", "#3d6fb0"] : ["#2a3150", "#ffcf7a", "#3a2f4a", "#9be8ff"];
+  for (let i = 0; i < 9; i++) { ctx.fillStyle = blocks[i % blocks.length]; ctx.fillRect(60 + i * 115, 1050 + (i % 3) * 70, 100, 220); }
+}
+window.ready = loadCaptionFont().then(() => true);
+window.still = (kind, captions, t) => {
+  background(kind);
+  drawCaption(ctx, captions, t);
+  return c.toDataURL("image/png");
+};
+</script></body></html>

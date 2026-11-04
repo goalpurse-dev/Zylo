@@ -1,0 +1,29 @@
+{
+  "version": 1, "fps": 24, "width": 1080, "height": 1920, "duration": 5.0, "title": "Engine test",
+  "cast": { "me": { "role": "kid", "name": "Pip", "seed": 3 }, "mom": { "role": "adult", "name": "Mom", "seed": 8 }, "dobbs": { "role": "adult", "name": "Mr. Dobbs", "seed": 21 } },
+  "monster": { "type": "tall", "name": "The Listener", "glow": "#9be8ff" },
+  "shots": [
+    { "start": 0.0, "end": 1.5, "line": 0, "part": "rule", "set": "street", "light": "day", "camera": "wide", "focus": "me",
+      "actors": [{ "id": "me", "spot": "center", "pose": "walk", "expr": "happy", "facing": "camera", "hold": null },
+                 { "id": "mom", "spot": "center", "pose": "talk", "expr": "neutral", "facing": "me", "hold": null }],
+      "monsterState": null, "insert": null, "marker": null, "seed": 17 },
+    { "start": 1.5, "end": 2.5, "line": 1, "part": "tour", "set": "street", "light": "day", "camera": "closeup", "focus": "me",
+      "actors": [{ "id": "me", "spot": "center", "pose": "scared", "expr": "scared", "facing": "camera", "hold": "sock" }],
+      "monsterState": null, "insert": null, "marker": { "on": "me", "kind": "tag", "text": "1¢" }, "seed": 4 },
+    { "start": 2.5, "end": 3.5, "line": 2, "part": "tour", "set": "bedroom", "light": "night", "camera": "medium", "focus": "monster",
+      "actors": [{ "id": "me", "spot": "left", "pose": "sleep", "expr": "sleepy", "facing": "monster", "hold": null }],
+      "monsterState": { "spot": "far", "state": "lurk" }, "insert": null, "marker": null, "seed": 9 },
+    { "start": 3.5, "end": 4.3, "line": 3, "part": "tour", "set": "school", "light": "day", "camera": "insert", "focus": "insert",
+      "actors": [], "monsterState": null, "insert": { "kind": "sign", "text": "NO TALKING ABOVE A WHISPER" }, "marker": null, "seed": 2 },
+    { "start": 4.3, "end": 5.0, "line": 4, "part": "twist", "set": "woods", "light": "warm", "camera": "wide", "focus": "group",
+      "actors": [{ "id": "me", "spot": "center", "pose": "cheer", "expr": "excited", "facing": "camera", "hold": null },
+                 { "id": "dobbs", "spot": "right", "pose": "wave", "expr": "happy", "facing": "camera", "hold": null }],
+      "monsterState": null, "insert": null, "marker": { "on": "all", "kind": "ring", "text": "" }, "seed": 31 }
+  ],
+  "captions": [
+    { "word": "In", "start": 0.1, "end": 0.35 }, { "word": "this", "start": 0.35, "end": 0.6 }, { "word": "town,", "start": 0.6, "end": 1.2 },
+    { "word": "whisper.", "start": 1.6, "end": 2.3 }, { "word": "It", "start": 2.6, "end": 2.9 }, { "word": "listens.", "start": 2.9, "end": 3.4 },
+    { "word": "NO", "start": 3.6, "end": 3.9 }, { "word": "TALKING.", "start": 3.9, "end": 4.2 }, { "word": "Barnaby!", "start": 4.4, "end": 4.95 }
+  ],
+  "audio": { "voice": "voice.wav", "music": "music.wav" }
+}

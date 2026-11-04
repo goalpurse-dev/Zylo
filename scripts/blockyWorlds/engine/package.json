@@ -1,0 +1,12 @@
+{
+  "name": "blocky-worlds-engine",
+  "private": true,
+  "type": "module",
+  "description": "Blocky Worlds video engine: timeline -> three.js frames in headless Chrome -> mp4",
+  "dependencies": {
+    "n8ao": "1.9.4",
+    "postprocessing": "6.36.3",
+    "puppeteer-core": "23.5.0",
+    "three": "0.169.0"
+  }
+}
