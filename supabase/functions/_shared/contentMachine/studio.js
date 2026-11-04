@@ -82,6 +82,15 @@ export function studioScore(st, seconds) {
   return Math.round((known.reduce((a, [v, k]) => a + v * k, 0) / w) * 1000) / 10;
 }
 
+/** A Studio video's format: its preset (rage hook, trend how-to, …), else the angle stories the batch writer makes. */
+export const studioFormat = (recipe) => recipe?.preset ?? "story";
+
+/** "US 41%, GB 9, Canada 6.5%" → [{country: "US", pct: 41}, …]: the top viewer countries as typed or read. */
+export function parseCountries(text) {
+  return String(text ?? "").split(/[,;\n]+/).map((x) => /^\s*([A-Za-z][A-Za-z .'-]*?)\s*[:=-]?\s*(\d+(?:[.,]\d+)?)\s*%?\s*$/.exec(x)).filter(Boolean)
+    .map((m) => ({ country: m[1].trim(), pct: Number(m[2].replace(",", ".")) })).filter((c) => c.pct > 0 && c.pct <= 100);
+}
+
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
 /** Angles with 4 or more posts below the median: retired from new batches. */

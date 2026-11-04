@@ -52,14 +52,15 @@ Numbers as words. "key" is one word of the line, spelled as in the line. headlin
 
 /** What fits a length bucket: the real clip's seconds and the spoken words left beside it (about 2.6 words a second). */
 export const lengthBudget = (bucket) => { const top = parseInt(String(bucket).split("-")[1], 10) || 60, clip = Math.round(Math.min(20, top * 0.3)); return { clip, words: Math.round((top - clip) * 2.6) }; };
-const brief = (recipe, T, kit, clipText, prior, a2) => { const length = recipe.length_bucket, most = recipe.length_bucket === "60-90" ? 12 : 6; return `Write one video about ${T.about}.
+const brief = (recipe, T, kit, clipText, prior, a2, playbook = "") => { const length = recipe.length_bucket, most = recipe.length_bucket === "60-90" ? 12 : 6; return `Write one video about ${T.about}.
 The thread, line by line (the lines may differ, the thread may not):
 ${T.shape.map((s, i) => `${i + 1}. ${s}`).join("\n")}
 That is 4 to ${most} lines in total, counting end_line. At most ${lengthBudget(length).words} spoken words in total, counting end_line: aim for ${lengthBudget(length).words - 6}. End trigger: ${recipe.end_trigger}.${length === "15-25" ? " The last words lead naturally back into line 1, so the video loops." : ""}
 The real creation: "${kit.story.title}" (idea: ${kit.story.idea_text}). All its words, in order: ${kit.moments.shots.filter((s) => !s.brand).map((s) => `"${s.text}"`).join(" ")}
 The clip the viewer sees at [clip] says: "${clipText}". The line before it must set up exactly that, and the line after it must react to exactly that.
 ${a2 ? `This video reports a REAL exchange with Claude. Prompt: "${a2.prompt}" Claude answered: "${a2.answer}". Quote it faithfully and do not add to what it said.` : ""}
-${prior.length ? `Don't reuse these lines from recent videos: ${prior.slice(0, 40).map((x) => `"${x}"`).join(" ")}` : ""}`; };
+${prior.length ? `Don't reuse these lines from recent videos: ${prior.slice(0, 40).map((x) => `"${x}"`).join(" ")}` : ""}
+${playbook?.trim() ? `The Studio playbook (learned from how our posted videos did; follow it where it fits this video, the rules above always win):\n${playbook.trim()}` : ""}`; };
 
 /** A real question to Claude for an A2 video: its answer becomes part of the script, and both are logged. */
 async function askClaude({ guard, key, kit }) {
@@ -84,7 +85,7 @@ function pickClip(fresh, limit) {
 export const revisionNote = (problems, draft) => `\nYour last draft was rejected: ${problems.join("; ")}. Fix that and change as little else as you can. The draft, line by line:\n${draft.lines.map((l) => `${l.who}: ${l.say ?? l.text}`).join("\n")}`;
 
 /** Writes and checks one script. Returns {script, usd}. recent: scripts of the batch and the last 14 days. */
-export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, kit, kitKey, recent = [], spots = {} }) {
+export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, kit, kitKey, recent = [], spots = {}, playbook = "" }) {
   // 15-25 s by default, whatever length the angle had; a long tutorial only when asked for (owner, 2026-11-02)
   const recipe = { ...asked, length_bucket: asked.length_bucket === "60-90" ? "60-90" : "15-25" };
   const factText = facts.map((f) => f.claim).join("; "), tpl = TEMPLATES[kit.template] ?? TEMPLATES.ai_fruit_story, T = templateFor(recipe.angle);
@@ -97,7 +98,7 @@ export async function writeStory({ guard, apiKey, facts, recipe: asked, angle, k
   let usd = 0, a2 = null, lastProblems = [], lastDraft = null;
   if (recipe.angle === "A2") { a2 = await askClaude({ guard, key: apiKey, kit }); usd += a2.usd; }
   for (let attempt = 0; attempt < 3; attempt++) {
-    const user = brief(recipe, T, kit, clip.text, prior, a2) + (lastDraft ? revisionNote(lastProblems, lastDraft) : "");
+    const user = brief(recipe, T, kit, clip.text, prior, a2, playbook) +(lastDraft ? revisionNote(lastProblems, lastDraft) : "");
     const r = await guard.spend("anthropic", "studio.write_script", estimateUsd({ model: MODEL, inputTokens: 3000, outputTokens: 2500 }), async (ticket) => {
       const out = await createMessage(ticket, { apiKey, request: { model: MODEL, max_tokens: 6000, system: SYSTEM(factText, tpl, T.mode), messages: [{ role: "user", content: user }], output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } } } });
       return { result: out.body, actualUsd: out.costUsd, requestRef: out.body?.id };

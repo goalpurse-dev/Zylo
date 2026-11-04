@@ -1,4 +1,4 @@
-import { studioScore } from "./studio.js";
+import { parseCountries, studioFormat, studioScore } from "./studio.js";
 // Content Machine, Part 2: what the posted slideshows did. Pure functions (no database), so every number on
 // the Posted and Analytics tabs can be tested. Each post has a timeline of stats snapshots (cm_post_stats):
 // hours since posting → the numbers read at that moment.
@@ -96,7 +96,9 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
   const all = posts.map((p) => ({ post: p, recipe: p.idea?.recipe ?? {}, m: postMetrics(p, now) }));
   scorePosts(all);   // the medians are the whole account's, whatever the filter
   const acc = (post) => post.account ?? post.idea?.account ?? post.idea?.recipe?.account ?? "creator";
-  const rows = all.filter(({ post, recipe }) => (!filters.account || acc(post) === filters.account) && (!filters.platform || post.platform === filters.platform)
+  // "studio": only the Studio videos, from either account (owner, 2026-11-04)
+  const inView = (post, recipe) => !filters.account || (filters.account === "studio" ? recipe.kind === "video" : acc(post) === filters.account);
+  const rows = all.filter(({ post, recipe }) => inView(post, recipe) &&(!filters.platform || post.platform === filters.platform)
     && (!filters.format || recipe.format === filters.format) && (!filters.style || recipe.style === filters.style)
     && (!filters.hook || recipe.hook_type === filters.hook)
     && (!filters.from || day(post.posted_at) >= filters.from) && (!filters.to || day(post.posted_at) <= filters.to));
@@ -148,9 +150,21 @@ export function analytics(posts, { filters = {}, now = new Date(), sort = "score
     for (const r of studioRows) (g[r.recipe[k] ?? "unknown"] ??= []).push(r);
     return Object.entries(g).map(([key, l]) => ({ key, posts: l.length, score: avg(l.map((r) => r.score)), hold3: avg(l.map((r) => r.hold3)), dropoff: avg(l.map((r) => r.dropoff)) })).sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
   };
+  for (const r of studioRows) r.recipe = { ...r.recipe, studio_format: studioFormat(r.recipe) };
+  // the top viewer countries (owner, 2026-11-04): viewers per country = each post's latest views × that country's share
+  const countries = {};
+  for (const r of rows.filter((x) => x.recipe.kind === "video")) {
+    const last = [...(r.post.stats ?? [])].sort((a, b) => String(b.taken_at).localeCompare(String(a.taken_at)))[0];
+    for (const c of parseCountries(last?.top_countries)) {
+      const k = c.country.toUpperCase(), g = (countries[k] ??= { key: k, posts: 0, viewers: 0, pcts: [] });
+      g.posts++; g.viewers += Math.round(((num(last.views) ?? 0) * c.pct) / 100); g.pcts.push(c.pct);
+    }
+  }
+  const byCountry = Object.values(countries).map(({ pcts, ...g }) => ({ ...g, share: avg(pcts) })).sort((a, b) => b.viewers - a.viewers).slice(0, 10);
+  const scores = studioRows.map((r) => r.score).filter((x) => x != null);
   return {
     totals: totalsOf(rows), byPlatform, byAccount, table, top5, series,
-    studio: { posts: studioRows, byAngle: studioBy("angle"), byWorld: studioBy("world"), byHook: studioBy("hook_type"), byLength: studioBy("length_bucket"), byTrigger: studioBy("end_trigger"), formula: "3 s hold 40% · average % watched 30% · shares + saves per view 20% · comments + likes 10%" },
+    studio: { posts: studioRows, median: median(scores), byFormat: studioBy("studio_format"), byTemplate: studioBy("template"), byAngle: studioBy("angle"), byWorld: studioBy("world"), byHook: studioBy("hook_type"), byLength: studioBy("length_bucket"), byTrigger: studioBy("end_trigger"), byCountry, formula: "3 s hold 40% · average % watched 30% · shares + saves per view 20% · comments + likes 10%" },
     // Studio videos (owner, 2026-10-30): which CTA variant and which template did better (the A/B test)
     averages: { format: groupAvg("format"), style: groupAvg("style"), hook: groupAvg("hook_type"), cta: groupAvg("cta").filter((g) => g.key !== "unknown"), template: groupAvg("template").filter((g) => g.key !== "unknown") },
     formula: SCORE_FORMULA, filtered: rows.length, total: all.length,

@@ -95,7 +95,9 @@ async function writeScriptJob(job) {
   const angle = must(await db.from("cm_studio_angles").select("*").eq("key", job.recipe.angle).single(), "angle");
   // a remake replaces its video: the same creation under the same angle may show the same clips again
   const recent = recentScripts(KITS).filter((s) => !(job.source.remake_of && s.source_story === sid && s.recipe?.angle === job.recipe.angle));
-  const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent, spots: screensSpots(job.template) });
+  // the Studio playbook (Analytics → Studio, owner 2026-11-04); empty until one is saved or applied
+  const playbook = (await db.from("cm_settings").select("*").eq("id", true).single()).data?.studio_playbook ?? "";
+  const w = await writeStory({ guard, apiKey: env.ANTHROPIC_API_KEY, facts, recipe: job.recipe, angle, kit, kitKey: "this", recent, spots: screensSpots(job.template), playbook });
   const script = w.script;
   script.variant = job.id.slice(0, 8); script.lines.forEach((l, i) => { l.take = `story/${job.id}/line${String(i + 1).padStart(2, "0")}.mp3`; });
   const work = path.join(KITS, sid, "jobs", job.id); fs.mkdirSync(work, { recursive: true });
