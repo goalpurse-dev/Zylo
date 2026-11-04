@@ -19,7 +19,7 @@ const names = (a.case ? [a.case] : fs.existsSync(FAILURES) ? fs.readdirSync(FAIL
 const summary = [];
 for (const name of names) {
   const c = JSON.parse(fs.readFileSync(path.join(FAILURES, name, "case.json"), "utf8")), dir = path.join(a.root, name);
-  fs.rmSync(dir, { recursive: true, force: true });
+  if (!a.keep) fs.rmSync(dir, { recursive: true, force: true });
   fs.cpSync(path.join(FAILURES, name, "answers"), path.join(dir, "answers"), { recursive: true });
   let out = null, waiting = null, autoPassed = 0;
   for (let i = 0; i < 8; i++) {
