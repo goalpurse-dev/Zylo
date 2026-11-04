@@ -1,0 +1,32 @@
+{
+  "key": "pain_blocky_save",
+  "structure": "v2",
+  "title": "Funniest story idea, zero animation skills",
+  "search_title": "how to make blocky story videos",
+  "template": "blocky_stories",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "length_bucket": "15-20",
+  "step_tempo": 1.15,
+  "out_dir": "content/studio-previews/pain-blocky-save",
+  "screens": "screens_blocky_stories",
+  "creation": {
+    "id": "ff39f9f6-6532-4b24-8c33-821540aba412",
+    "title": "The Floor Is Lava",
+    "file": "video/studio/ff39f9f6-6532-4b24-8c33-821540aba412/final.mp4",
+    "hq_dir": "video/studio/ff39f9f6-6532-4b24-8c33-821540aba412/hq",
+    "hq_ext": "png"
+  },
+  "yell": { "mood": "pain", "text": "I have the funniest story idea… and zero animation skills.", "key": "zero", "pose": "grabHead", "prop": { "kind": "none" } },
+  "calm": "Watch.",
+  "clip": { "in": 17.3, "out": 20.55, "says": "Told you, new sheriff in town." },
+  "steps": [
+    { "text": "Step one: open Blocky Stories.", "key": "Blocky", "screen": "s_menu.jpg", "taps": [[3, 0.702, 0.439]] },
+    { "text": "Step two: type your idea.", "key": "idea.", "screen": "s_typed.jpg", "sticker": { "text": "one sentence", "x": 0.5, "y": 0.78, "ty": 0.6 } },
+    { "text": "Step three: it animates the whole story.", "key": "whole", "screen": "s_scene1.jpg", "flips": [[4, "s_scene3.jpg"]] }
+  ],
+  "end": { "text": "It's called Zyvo. Link in bio. Save this for when you start your channel.", "key": ["Zyvo.", "Save"], "name_word": 2, "cta_word": 6, "trigger": "save", "chip": "SAVE THIS" },
+  "caption": "Funniest story idea, zero animation skills 😩 How to make blocky story videos in 3 steps. Save this for when you start your channel.",
+  "hashtags": ["#blockystories", "#aivideo", "#storytime", "#fyp"],
+  "claims": ["The clip and the step-three frames are the owner's own Blocky Stories creation \"The Floor Is Lava\" (ff39f9f6), 17.3-20.55 s; the steps are real Blocky Stories screens. No time is claimed."]
+}

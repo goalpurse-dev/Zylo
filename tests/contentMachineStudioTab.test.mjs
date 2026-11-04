@@ -161,7 +161,7 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
   const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_long_form_weekend.json", import.meta.url), "utf8"));
   const sw = rageScripts({ ...R, yell: { ...R.yell, text: "I spent ALL WEEKEND fucking editing!", swear: "fucking", show: "f***ing" } });
   assert.equal(sw.censored.bleep.word, 4);
-  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["rage_fruit_fyp", "rage_lf_weekend"], "only v2 recipes are presets");
+  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend"], "only v2 recipes are presets");
 });
 
 test("the Rage hook preset: one click makes one job from a recipe the worker lists; nothing renders before the approval", async () => {
@@ -423,4 +423,22 @@ test("short-video scripts: a reused creation makes no time claim; one trigger; h
   assert.equal(titleHook("x"), "WAIT FOR|*THE ENDING*");
   // the measured creation keeps its clock
   assert.equal(makeScript({ variant: "V4" }, TEN_YEARS).timer.seconds, 230);
+});
+
+test("Rage hook v2: a pain opening (no yell, no slam), no time line, and a save or share ending", async () => {
+  const { rageScripts, rageTakes, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const pain = loadRecipe("pain_blocky_save"), { raw, censored } = rageScripts(pain);
+  assert.equal(censored, null);
+  assert.equal(raw.lines[0].expr, "sad");
+  assert.equal(raw.lines[0].shake, 0);
+  assert.equal(raw.energy?.slam ?? false, false);
+  assert.ok(!raw.lines.some((l) => l.role === "reveal" || l.role === "punch"), "no time or punchline when the recipe has none");
+  assert.deepEqual([raw.recipe.hook_type, raw.recipe.end_trigger, raw.recipe.length_bucket], ["pain", "save", "15-20"]);
+  assert.equal(new Set(raw.lines.map((l) => l.text)).size, raw.lines.length, "no repeated lines");
+  const takes = rageTakes(pain, raw);
+  assert.ok(takes[0].text.startsWith("[frustrated]") && !/!!!$/.test(takes[0].text), "said, not yelled");
+  const share = rageScripts(loadRecipe("rage_fruit_share")).raw;
+  assert.deepEqual([share.lines[0].expr, share.recipe.hook_type, share.recipe.end_trigger], ["angry", "rage_hook", "repost"]);
+  assert.match(share.lines.at(-1).text, /Send this to the friend/);
+  assert.equal(rageScripts(loadRecipe("rage_fruit_fyp")).raw.lines.filter((l) => l.role === "reveal").length, 1, "the first recipe keeps its time");
 });

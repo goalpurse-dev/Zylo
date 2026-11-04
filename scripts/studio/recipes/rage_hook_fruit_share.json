@@ -1,0 +1,31 @@
+{
+  "key": "rage_fruit_share",
+  "structure": "v2",
+  "title": "Why are these fruit dramas everywhere",
+  "search_title": "how to make AI fruit drama videos",
+  "template": "ai_fruit_story",
+  "world": "studio",
+  "cap_usd": 0.2,
+  "length_bucket": "20-25",
+  "out_dir": "content/studio-previews/rage-fruit-share",
+  "screens": "screens",
+  "creation": {
+    "id": "3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e",
+    "title": "The Surprise Wedding Switch",
+    "file": "video/studio/3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e/final.mp4",
+    "hq_dir": "video/studio/3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e/hq",
+    "hq_ext": "png"
+  },
+  "yell": { "text": "Why are these fruit dramas EVERYWHERE and I can't make even ONE?!", "key": "EVERYWHERE", "pose": "rage", "prop": { "kind": "none" } },
+  "calm": "Watch.",
+  "clip": { "in": 0.02, "out": 4.4, "says": "Why is there a wedding cake at your engagement party, Benny?" },
+  "steps": [
+    { "text": "Step one: open Zyvo, tap AI Fruit Story.", "key": "Fruit", "screen": "s_menu.jpg", "taps": [[3, 0.21, 0.2], [6, 0.67, 0.39]] },
+    { "text": "Step two: pick a ready idea, or type yours.", "key": "yours.", "screen": "s_ideas.jpg", "taps": [[4, 0.5, 0.445], [8, 0.5, 0.208]] },
+    { "text": "Step three: it draws, animates and voices every scene.", "key": "voices", "screen": "s_pictures.jpg", "flips": [[4, "s_anim.jpg"]] }
+  ],
+  "end": { "text": "It's called Zyvo. Link in bio. Send this to the friend who keeps sending you these.", "key": ["Zyvo.", "friend"], "name_word": 2, "cta_word": 6, "trigger": "repost", "chip": "SEND TO THAT FRIEND" },
+  "caption": "Why are these fruit dramas EVERYWHERE 🍓 Here's how to make AI fruit drama videos in 3 steps. Link in bio.",
+  "hashtags": ["#aifruit", "#fruitdrama", "#aivideo", "#fyp"],
+  "claims": ["The clip is the owner's own AI Fruit Story creation \"The Surprise Wedding Switch\" (3628cf86), 0.0-4.4 s. No time is claimed: this creation has no measured run."]
+}
