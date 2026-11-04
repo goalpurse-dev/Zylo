@@ -355,6 +355,15 @@ export function rig(ctx, p, api) {
         }
         // (a glowing blue ring at their foot joins them into one flame ring)
         const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.035, 8, 40), blue); ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; g.add(ring);
+        // the burner cap the flames come out of, always there (a dark ring with a hole at each flame): it reads as a gas
+        // burner before it lights (the free stove proof's checker saw "a dark disc" and no holes, 2026-11-04)
+        if (s.cap !== false) {
+          const cap = new THREE.Group(), steel = std({ color: C("#2a2d31"), roughness: 0.45, metalness: 0.6 }), hole = std({ color: C("#08090a"), roughness: 0.9 });
+          const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.045, 10, 40), steel); rim.rotation.x = Math.PI / 2; rim.position.y = -0.01; cap.add(rim);
+          const disc = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.75, r * 0.85, 0.05, 32), steel); disc.position.y = -0.005; cap.add(disc);
+          for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, d = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), hole); d.position.set(Math.cos(a) * (r + 0.035), 0.02, Math.sin(a) * (r + 0.035)); cap.add(d); }
+          place(cap, s, parent);
+        }
         place(g, s, parent); g.visible = false; if (!flames.has(nodeId)) flames.set(nodeId, []); flames.get(nodeId).push(g); return g;
       }
       case "bellows": {
@@ -401,7 +410,10 @@ export function rig(ctx, p, api) {
       }
       if (m.type === "flow" && Array.isArray(m.path) && m.path.length >= 2) {
         const c = curve(m.path), dots = [], dm = std({ color: C(m.color ?? "#5aa9e6"), roughness: 0.3 });
-        for (let i = 0; i < 14; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(num(m.size, 0.07), 10, 8), dm); d.visible = false; g.add(d); dots.push(d); }
+        // (spaced about five dot widths apart: packed bead to bead on a short pipe they read as a still stack of balls, not
+        // something moving; the free stove proof's checker, 2026-11-04)
+        const size = num(m.size, 0.05), nDots = Math.max(3, Math.min(14, Math.round(c.getLength() / (size * 2 * 5))));
+        for (let i = 0; i < nDots; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(size, 10, 8), dm); d.visible = false; g.add(d); dots.push(d); }
         flows.push({ c, dots, m });
       }
     }

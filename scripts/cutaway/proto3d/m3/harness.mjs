@@ -54,7 +54,10 @@ const APPROVED = ["landfill", "french_drain", "car_wash"];
 // ---------- the server's start checks (cutaway-api "start") ----------
 const bad = topicProblem(TOPIC);
 if (bad) { result({ ok: false, code: "BAD_INPUT", stage: "topic", message: bad }); process.exit(1); }
-const q = quoteTopic(TOPIC, LENGTH, new Set(APPROVED));
+// --open appliances,cars: the topic categories open for this run (the owner's own runs have all of them; a category's
+// proof runs before it opens for customers)
+const OPEN = typeof a.open === "string" ? a.open.split(",").map((s) => s.trim()).filter(Boolean) : [];
+const q = quoteTopic(TOPIC, LENGTH, new Set(APPROVED), OPEN);
 let check = q.check;
 if (check.verdict === "unsure") {
   const r = (() => { try { return replayLLM({ label: "kit check", model: "claude-haiku-5-5", system: KIT_SYSTEM, user: `Topic: ${TOPIC}`, schema: KIT_SCHEMA }); } catch (e) { if (e.code === "REPLAY_PENDING") { log("waiting: kit check"); process.exit(2); } throw e; } })();

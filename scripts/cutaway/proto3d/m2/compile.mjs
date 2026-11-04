@@ -22,7 +22,7 @@ export function marksFor(words, speechEnd) {
 export const SWITCHES = Object.freeze({ trafficLight: ["red", "yellow", "green", "cycle", "flash", "fast"] });
 
 // a setting's ambience file (makeAmbience.mjs): one per setting, the yard's for anything else
-export const AMBIENCE_OF = Object.freeze({ yard: "yard", street: "street", park: "park", garage: "garage", room: "room", carwash: "carwash" });
+export const AMBIENCE_OF = Object.freeze({ yard: "yard", street: "street", park: "park", garage: "garage", room: "room", carwash: "carwash", kitchen: "room", workshop: "garage" });
 
 /**
  * The name label (the creator's newer videos, 2026-10-25: "INDUCTIVE LOOP" in caps on screen as the line names it): the

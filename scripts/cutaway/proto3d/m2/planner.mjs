@@ -65,6 +65,8 @@ WHAT THE SETTINGS REALLY CONTAIN (promise only what is there):
 - garage: a garage with one wide opening on a driveway, a car, shelves inside.
 - room: a room with a floor (the basement below in section), a wall with a window, an armchair.
 - car wash: a lot with a wash bay, a car going through.
+- kitchen: a kitchen in section (counters, cabinets, a splashback, a window); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- workshop: a home workshop (a concrete floor, a pegboard tool wall, a workbench, shelves); a car or a machine stands in the middle, cut open so its working parts show (pistons and a crankshaft, gears, wheels and steering, brakes, air bags).
 The account's formula:
 
 HOOK      "If you [one naive physical action], you have a [thing]."
@@ -484,6 +486,8 @@ WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
 - garage: a garage with one wide opening on a driveway, a car, shelves inside.
 - room: a room with a floor (the basement below in section), a wall with a window, an armchair.
 - car wash: a lot with a wash bay, a car going through.
+- kitchen: a kitchen in section (counters, cabinets, a splashback, a window); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- workshop: a home workshop (a concrete floor, a pegboard tool wall, a workbench, shelves); a car or a machine stands in the middle, cut open so its working parts show (pistons and a crankshaft, gears, wheels and steering, brakes, air bags).
 No people doing things, no maps, no long text on screens, no outer space or the body.`;
 
 const WORDS_SYSTEM = `You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.

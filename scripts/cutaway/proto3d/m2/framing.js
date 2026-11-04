@@ -39,9 +39,16 @@ export function settingBoxes(B, cut = null) {
     case "garage": { const b = back ?? -9, x = B.x ?? 0; return [{ min: [x - 4.7, 0, b - 7], max: [x + 4.7, 4.9, b] }, { min: [x - 14.7, 0, b - 7], max: [x - 4.7, 8, b] }]; }
     case "room": { const b = back ?? -7, x0 = B.x0 ?? -9, x1 = B.x1 ?? 9, h = B.h ?? 4.2; return [{ min: [x0 - 3, 0, b - 6.2], max: [x1 + 3, h + 6, b - 2.2] }, { min: [x0, 0, b - 0.35], max: [x1, h + 0.8, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h + 0.8, 0] }, { min: [x0 - 0.35, h, b - 0.35], max: [x1 + 0.4, h + 0.8, 0.4] }]; }
     case "carwash": { const b = back ?? -8, x0 = B.x0 ?? -7, x1 = B.x1 ?? 7, h = B.h ?? 5.2; return [{ min: [x0, 0, b - 0.3], max: [x1, h + 0.5, b] }, { min: [x0 - 0.4, 0, b], max: [x0, h + 0.5, 0] }, { min: [x0 - 0.3, h, b - 0.3], max: [x1 + 0.3, h + 0.5, 0.2] }]; }
+    // (the kitchen and the workshop, kit/backdrops.js: the back wall, the side walls, the kitchen's two cabinet runs)
+    case "kitchen": { const b = back ?? -7, x0 = B.x0 ?? -12, x1 = B.x1 ?? 12, h = B.h ?? 6.2, k = B.scale ?? 2.2, [g0, g1] = B.gap ?? [B.gapX0 ?? -1.8, B.gapX1 ?? 1.8], D = 0.62 * k, wt = 0.12 + 0.94 * k; return [{ min: [x0, 0, b - 0.35], max: [x1, h, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h, 0] }, { min: [x1, 0, b], max: [x1 + 0.35, h, 0] }, { min: [x0, 0, b], max: [g0, wt, b + D] }, { min: [g1, 0, b], max: [x1, wt, b + D] }]; }
+    case "workshop": { const b = back ?? -8, x0 = B.x0 ?? -10, x1 = B.x1 ?? 10, h = B.h ?? 5; return [{ min: [x0, 0, b - 0.35], max: [x1, h, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h, 0] }, { min: [x1, 0, b], max: [x1 + 0.35, h, 0] }]; }
     default: return [];
   }
 }
+
+/** an interior's floor (the kitchen, the workshop): its ground is floor, not open lawn, for the camera's empty share */
+const INDOOR_FLOOR = { kitchen: { back: -7, x0: -12, x1: 12 }, workshop: { back: -8, x0: -10, x1: 10 } };
+const floorOf = (B) => { const d = INDOOR_FLOOR[B?.type]; return d ? { b: B.back ?? d.back, x0: B.x0 ?? d.x0, x1: B.x1 ?? d.x1 } : null; };
 
 /** the house's box (or null), and the setting's backdrop box (or null) */
 export function sceneryBoxes(L) {
@@ -109,6 +116,7 @@ export function measureKey(L, pos, tgt) {
   const cut = cutOf(L), subj = subjectBox(L);
   const solids = [...sceneryBoxes(L), ...L.parts.map((p) => (["rain", "light", "sign"].includes(p.kind) ? null : solidOf(p, cut))).filter(Boolean)];
   let sky = 0, lawn = 0, onSubject = 0, soil = 0;
+  const floor = floorOf(L.world?.backdrop);
   const R = rays(pos, tgt);
   for (const { o, d } of R) {
     // the nearest of: a solid box, the ground (y = 0), the soil face (z = 0 below ground)
@@ -127,6 +135,7 @@ export function measureKey(L, pos, tgt) {
     const g = add(o, mul(d, tg));
     if (Math.hypot(g[0], g[2]) > FAR) { sky++; continue; } // past the island: haze and sky
     if (g[2] > 0) continue; // in front of the face (the cut-away front edge, soil below)
+    if (floor && g[0] >= floor.x0 && g[0] <= floor.x1 && g[2] >= floor.b) continue; // the room's own floor
     lawn++;
   }
   const n = R.length, c = subj.min.map((v, i) => (v + subj.max[i]) / 2);
@@ -248,6 +257,8 @@ export function settingFloor(B) {
     case "street": return [-26, 26, back ?? (B.road === false ? -8 : STREET_BACK), 0.04];
     case "garage": return [-7, 7, back ?? -9, 0.04];
     case "room": return [B.x0 ?? -9, B.x1 ?? 9, back ?? -7, 0.04];
+    case "kitchen": return [B.x0 ?? -12, B.x1 ?? 12, back ?? -7, 0.04];
+    case "workshop": return [B.x0 ?? -10, B.x1 ?? 10, back ?? -8, 0.04];
     case "carwash": return [(B.x0 ?? -7) - 6, (B.x1 ?? 7) + 6, back ?? -8, 0.04];
     default: return null;
   }

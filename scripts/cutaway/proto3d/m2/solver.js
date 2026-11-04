@@ -50,7 +50,7 @@ export function solveLayout(L, sentences) {
     for (const [k, v] of Object.entries(P)) if (/mat$/i.test(k) && typeof v === "string" && v === "") problems.push(`part ${p.id}: empty ${k}`);
   }
   // a designed part (rig.js): its recipe builds, is a sensible size, every piece joined, standing on the floor
-  const floor = W.backdrop?.walkTop ?? ({ street: 0.12, room: 0.12, carwash: 0.1, garage: 0.08 }[W.backdrop?.type] ?? 0);
+  const floor = W.backdrop?.walkTop ?? ({ street: 0.12, room: 0.12, kitchen: 0.12, carwash: 0.1, garage: 0.08, workshop: 0.08 }[W.backdrop?.type] ?? 0);
   // A rig may stand on another rig (a cart on a bridge deck). One that hangs in the air over nothing is set down on the
   // floor here, a free repair with a warning, instead of failing the plan (the owner's check fixes of 2026-11-04)
   const rigs = L.parts.filter((p) => p.kind === "rig" && p.params?.nodes?.length);

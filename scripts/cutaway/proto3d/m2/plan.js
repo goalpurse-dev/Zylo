@@ -11,7 +11,7 @@ export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
 export const SHOT_TYPES = Object.keys(SHOTS);
 // the settings besides the yard (kit/backdrops.js)
-export const SETTINGS = ["street", "park", "garage", "room", "carwash"];
+export const SETTINGS = ["street", "park", "garage", "room", "carwash", "kitchen", "workshop"];
 
 const obj = (properties) => ({ type: "object", properties, required: Object.keys(properties), additionalProperties: false });
 const str = { type: "string" }, num = { type: "number" }, int = { type: "integer" }, bool = { type: "boolean" };

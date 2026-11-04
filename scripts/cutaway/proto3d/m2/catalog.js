@@ -9,6 +9,8 @@ export const SETTING_PROPS = Object.freeze({
   park: ["shrubs", "youngTrees", "fence", "grass", "prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack"],
   street: ["prop:bench", "prop:trashCan", "prop:planter", "prop:bikeRack", "prop:mailbox"],
   carwash: ["prop:kiosk", "prop:vacuum", "prop:towelRack", "prop:trashCan", "canopy"],
+  kitchen: [],
+  workshop: [],
   garage: ["prop:toolbox", "prop:trashCan", "prop:pottedPlant", "prop:bikeRack"],
   room: ["prop:pottedPlant", "prop:trashCan"],
   plain: ["prop:planter", "prop:trashCan"],
@@ -51,7 +53,16 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     Use it for every basement or indoor topic (a sump pump, a water heater, a furnace): the cut below its floor is the basement.
   world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
     y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
-  The interior settings (room, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
+  world.backdrop {type: "kitchen", x0 (-12), x1 (12), back (-7), h (6.2), gap ([-1.8, 1.8]), color}: a kitchen in section: a tiled
+    floor (top y 0.12), counters with a wood worktop (about 2 m high, 1.4 m deep) and wall cabinets along the back wall on both
+    sides of an open gap, a window over the sink. The appliance the topic is about stands in front of the gap, centred near
+    x 0, z -1.8 (a wider one: widen the gap, gap [-2.4, 2.4]). It suits kitchen and home appliances: a stove or oven, a fridge,
+    a dishwasher, a microwave, a kettle, a toaster, a coffee machine, a washing machine, a dryer, a water heater.
+  world.backdrop {type: "workshop", x0 (-10), x1 (10), back (-8), h (5), color}: a home workshop (a garage seen from inside): a
+    concrete floor (top y 0.08), a closed roll-up door in the back wall, a pegboard of tools over a workbench on the left, a
+    tool chest and a shelf of boxes on the right; the floor x -3.5 to 3.5 in front is free. It suits a car (its engine,
+    brakes, steering, suspension, gearbox), a lawn mower, a power tool, a generator, a compressor, a bike.
+  The interior settings (room, kitchen, workshop, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
   A car, a machine or a person stands on solid floor beside the cut, never over its open hole (the cut is the ground in section).
 - SETTING PROPS: the "Add ..." finishing touches come only from the setting's list: yard: shrubs, young trees, a fence, a grass cap, a mailbox, a planter, a bench; park: shrubs, young trees, a fence, grass, a bench, a trash can, a planter, a bike rack; street: a bench, a trash can, a planter, a bike rack, a mailbox; carwash: a payment kiosk, a vacuum station, a towel rack, a trash can, a canopy; garage: a toolbox, a trash can, a potted plant, a bike rack; room: a potted plant, a trash can. Never grass or bushes at a car wash, a street, a garage or a room.
 - REALISTIC SETTINGS: nothing natural where it would not be. A creek, a stream or a pond never lies on a paved floor
