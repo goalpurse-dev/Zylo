@@ -137,7 +137,7 @@ export const KIND_DOCS = {
   wetBand: ["a dark wet band in the soil round the cut", "cx, halfW, bottom", ""],
   soak: ["water soaking down from a soak pit toward the groundwater", "x0, x1, top", "base {front: top}"],
   arrows: ["pulsing white block arrows (in the face, or flat on a surface)", "list [{at [x,y,z], dir [dx,dy], travel, phase}], opts {scale, speed, flat}", "the explainer layer: show where something moves"],
-  outline: ["a glowing yellow outline traced around the named part", "points [[x,y,z],...] (in front of the face: z 0.06-0.12), opts {r: line thickness, 0.11 by default; on a part under a metre use about a twentieth of its size, closed}", "for the 'This is a…' sentence"],
+  outline: ["a glowing yellow outline traced around the named part", "of: the part or piece it goes round (\"stove\", \"stove.head\"): the code traces it (prefer this), or points [[x,y,z],...] (in front of the face: z 0.06-0.12), opts {r: line thickness, 0.11 by default; on a part under a metre use about a twentieth of its size, closed}", "for the 'This is a…' sentence"],
   seepFlow: ["murky dots seeping down the face and spreading in the groundwater", "count, width, y0, fall, floor", ""],
   rig: ["a NEW PART you design from building blocks when no kind above is the thing (a garage door, a rain barrel, a toilet's flush valve): see NEW PARTS below", "name, synonyms [..], pos [x, y, z] (its base on the floor), rotY, scale (1), mount (\"wall\" only for a thing hung on a wall), nodes [{id, parent?, at [x,y,z], shapes [..], moves [..]}]", "verbs: show, hide, and each of its moves by name (\"open\"), undone by name + Back (\"openBack\")"],
 };

@@ -37,11 +37,13 @@ export function arrows(ctx, list, { color = "#ffffff", scale = 1.25, speed = 0.9
   };
 }
 
-export function outline(ctx, points, { color = "#ffd34d", r = 0.11, closed = false } = {}) {
+// over: drawn on top of everything (an outline traced round a machine at its middle depth, layoutRules: on its front edge it
+// looked far bigger than the machine to a close camera)
+export function outline(ctx, points, { color = "#ffd34d", r = 0.11, closed = false, over = false } = {}) {
   const { THREE, scene } = ctx;
   const P = points.map((p) => new THREE.Vector3(...p)); if (closed) P.push(P[0].clone());
   const path = new THREE.CurvePath(); for (let i = 0; i < P.length - 1; i++) path.add(new THREE.LineCurve3(P[i], P[i + 1]));
   const m = new THREE.Mesh(new THREE.TubeGeometry(path, 40 * (P.length - 1), r, 10, false), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, toneMapped: false, depthWrite: false, blending: THREE.AdditiveBlending }));
-  m.renderOrder = 6; scene.add(m);
+  m.renderOrder = over ? 20 : 6; if (over) { m.material.depthTest = false; m.material.blending = THREE.NormalBlending; } scene.add(m); // (solid on top: added light was faint on a pale kitchen floor)
   return { update(t, on) { m.visible = on > 0.01; m.material.opacity = on * (0.85 + 0.15 * Math.sin(t * 9)); } };
 }

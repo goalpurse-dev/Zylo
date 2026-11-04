@@ -7,7 +7,7 @@
 //  4. an outline hugs the tank it names (an outline 20 cm off the walls read as "offset")
 //  5. standing water on a paved floor is a thin glossy puddle, not a 35 cm slab
 //  6. a canopy stands in the open (not under the setting.s roof) and stands out from the building beside it
-import { focusOf, signalQueueBox } from "./focus.js";
+import { focusOf, focusOfId, signalQueueBox } from "./focus.js";
 import { verbCues } from "./verbs.js";
 import { LIBS } from "./solver.js";
 import { settingBoxes } from "./framing.js";
@@ -218,6 +218,23 @@ export function layoutRules(L) {
         notes.push(`${p.id} grown with ${mainRig.id}`);
       }
     }
+  }
+  // an outline traces what it names, by code: outline {of: "stove"} or {of: "stove.head"} goes round that part or piece on
+  // its front; on the "This is a…" line an outline round a designed part always traces the hero shot's part (the real
+  // stove reruns' hand-drawn corners missed the flame ring, then sat round the lower tube only, 2026-11-04)
+  const nameB = beats.find((b) => b.s === "name"), heroIds = (nameB?.shots ?? []).filter((s) => s.hero).flatMap((s) => [].concat(s.focus ?? []));
+  for (const p of parts.filter((x) => x.kind === "outline")) {
+    const shownOnName = (nameB?.do ?? []).some((a) => a.p === p.id && /^(show|draw|grow)$/.test(a.v));
+    const target = p.params?.of ?? (shownOnName ? heroIds.find((id) => byId.get(String(id).split(".")[0])?.kind === "rig") : null);
+    if (!target) continue;
+    // (a designed part at rest: its swept box, every move played at once, ran the outline off the frame)
+    const [tp, tn] = String(target).split("."), tpart = byId.get(tp);
+    const bx = tpart?.kind === "rig" ? rigBox(tpart.params ?? {}, { swept: false, node: tn ?? null }) : focusOfId(byId, target, world.cut ?? null);
+    if (!bx) continue;
+    const m = Math.max(0.06, 0.035 * Math.max(bx.max[0] - bx.min[0], bx.max[1] - bx.min[1])), z = +((bx.min[2] + bx.max[2]) / 2).toFixed(3), r3 = (v) => +v.toFixed(3);
+    const [x0, x1, y0, y1] = [r3(bx.min[0] - m), r3(bx.max[0] + m), r3(Math.max(bx.min[1] - m, 0.02)), r3(bx.max[1] + m + 0.12 * (bx.max[1] - bx.min[1]))]; // (the top edge clear of what stands on it: drawn on the front, it crossed the flame ring)
+    p.params = { ...p.params, of: target, points: [[x0, y0, z], [x0, y1, z], [x1, y1, z], [x1, y0, z]], opts: { ...(p.params?.opts ?? {}), closed: true, over: true } };
+    notes.push(`${p.id} traced round ${target}`);
   }
   for (const b of beats) {
     if (b.s === "congrats" || !b.shots?.length) continue;
