@@ -23,9 +23,13 @@ export const NARRATOR = Object.freeze({
   outputFormat: "mp3_44100_128",
 });
 
-/** The pace the script is sized for: the references speak at a median of ~260 words a minute (ANALYSIS.md 2.3). */
+/**
+ * The pace the script is sized for. The references speak at ~260 words a minute (ANALYSIS.md 2.3), but Little Dude II at
+ * its top speed reads ~219 after the pauses are trimmed (first paid test, 2026-11-04: 413 words -> 113 s). Scripts are
+ * sized at 220 so a 90 s video lasts ~90 s (owner, 2026-11-04: ~15% shorter scripts).
+ */
 export const PACE = Object.freeze({
-  targetWpm: 260,
+  targetWpm: 220,
   // the gap left between sentences after trimming the voice's own pauses (seconds); commas are left as spoken
   sentenceGapSec: 0.1,
 });

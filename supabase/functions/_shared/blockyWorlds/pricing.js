@@ -9,7 +9,7 @@
 // ESTIMATES until the owner's paid tests (2026-11-03: no paid run yet). After the tests, replace each ESTIMATE with what
 // the runs measured (the cost ledger: blocky_worlds_cost_ledger) and keep the migration's tool_prices rows equal to
 // PRICE_ROWS (tests/blockyWorlds.test.mjs holds them together).
-import { LENGTHS, NARRATOR, targetWords } from "./config.js";
+import { LENGTHS, NARRATOR } from "./config.js";
 
 export const CREDIT = Object.freeze({ ourUsd: 0.01, userUsd: 0.02 });
 
@@ -28,9 +28,12 @@ export const RATES = Object.freeze({
   storageUsd: 0.003,
 });
 
+const PRICED_WPM = 260;
 /** One delivered video's cost per part (USD), by length. ESTIMATES (see the top of the file). */
 export function attemptCost(lengthSec) {
-  const words = targetWords(lengthSec), chars = words * RATES.charsPerWord;
+  // priced on the old 260 wpm sizing (the price rows the owner applied), a little above the shorter 220 wpm scripts:
+  // the prices are revisited with the paid tests' real numbers, not on every pace change
+  const words = Math.round((lengthSec * PRICED_WPM) / 60), chars = words * RATES.charsPerWord;
   return {
     // ~2 script writes (Sonnet 5.5, ~9k cached prompt + ~2.5k out with thinking: ~$0.05 each) + ~2 idea batches
     // (Haiku 5.5, well under a cent) per delivered video

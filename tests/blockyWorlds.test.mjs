@@ -123,8 +123,8 @@ test("script: the example 90 s script passes, and is sized for the target pace",
   const lens = s.lines.slice(1).map((l) => wordCount(l.text)).sort((a, b) => a - b);
   assert.ok(lens[Math.floor(lens.length / 2)] <= 8, "median line is short");
   assert.ok(c.seconds > 85 && c.seconds < 100, `${c.seconds} s`);
-  assert.equal(PACE.targetWpm, 260);
-  assert.equal(targetWords(60), 260);
+  assert.equal(PACE.targetWpm, 220);
+  assert.equal(targetWords(60), 220);
   assert.equal(partBudgets(120).reduce((a, b) => a + b.words, 0) >= targetWords(120) - 5, true);
   assert.ok(SCRIPT_SYSTEM.includes("Barnaby"), "the style sample is in the writer's prompt");
 });
@@ -158,7 +158,7 @@ test("script: the user's own script is split into lines and checked more loosely
   assert.ok(!/Missing parts/.test(c.problems.join()));
   const longOwn = scriptFromText(narrationOf(EXAMPLE_SCRIPT));
   assert.deepEqual(checkScript(longOwn, 90, "own").problems, []);
-  assert.equal(estimateSeconds([{ text: "a b c" }]), Number(((3 / 260) * 60).toFixed(1)));
+  assert.equal(estimateSeconds([{ text: "a b c" }]), Number(((3 / 220) * 60).toFixed(1)));
 });
 
 test("script: the prompt carries the idea, the word budget and the rewrite note", () => {

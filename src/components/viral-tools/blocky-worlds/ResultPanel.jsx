@@ -1,4 +1,4 @@
-import { Check, Copy, Download, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Check, Copy, Download, Music2, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FOCUS, cx } from "../../ui/zyvo";
 import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsApi";
@@ -149,6 +149,10 @@ function RunView({ run, onEvent }) {
           <p className="whitespace-pre-line text-[12px] leading-relaxed text-white/75">{postText}</p>
         </div>
       )}
+      <p className="flex items-start gap-2 rounded-2xl border border-lime-300/15 bg-lime-300/[0.05] px-3 py-2.5 text-[11.5px] leading-relaxed text-white/70">
+        <Music2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" />
+        <span><b className="font-bold text-white/85">Tip:</b> for max reach, add a trending sound in TikTok when you post.</span>
+      </p>
     </div>
   );
 }
