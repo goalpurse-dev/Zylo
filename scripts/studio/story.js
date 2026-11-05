@@ -202,6 +202,8 @@ window.renderAt = async (t) => {
   const where = covered ? "real clip" : cam.moving ? `${cam.step.from}->${cam.step.to}` : `hold ${cam.step.at}`;
   for (const [c, k] of full) await drawClip(c, t, k);
   const inClip = full.find(([, k]) => k > 0.5)?.[0];
+  // a line spoken over a clip ("voice_over", owner 2026-11-05): its captions and end chips show on top of the clip
+  const quiet = inClip && inClip.voice_over == null;
   const boxes = [];
   if (PREROLL && t >= SPLIT.out && t < PREROLL.start) {
     const len = PREROLL.out - PREROLL.in, vt = PREROLL.in + ((t - SPLIT.out) % len);
@@ -236,10 +238,10 @@ window.renderAt = async (t) => {
   if (inClip?.freeze?.text && t >= inClip.end) boxes.push(["freeze text", ov.hook(inClip.freeze.text, t - inClip.end, { y: 1040, pop: true })]);
   // the website at the end, then ONE trigger (both gone once the loop goes back to frame 0)
   const looped = LOOP_BACK != null && t >= LOOP_BACK;
-  if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !inClip && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
-  if (EV.cta != null && t >= EV.cta + 0.3 && !inClip && !cam.moving && !looped && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
+  if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !quiet && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);
+  if (EV.cta != null && t >= EV.cta + 0.3 && !quiet && !cam.moving && !looped && SH.cta?.chip) boxes.push(["CTA chip", ov.endChip(SH.cta.chip, t - EV.cta - 0.3)]);
   const chunk = chunks.find((c) => t >= c.s && t < c.e);
-  if (chunk && !inClip) ov.caption(chunk, t, splitOn && t < SPLIT.out ? 1112 : L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
+  if (chunk && !quiet) ov.caption(chunk, t, splitOn && t < SPLIT.out ? 1112 : L[0].shot === "rage_hook" && t < L[0].end + 0.1 ? 1432 : L[0].shot === "face_hook" && t < L[0].end + 0.1 ? 900 : boxes.some(([k]) => k === "website chip" || k === "CTA chip") ? 1320 : 1400);   // below the faces and any screen, above an end chip
 
   if (LOOP?.first && t > END - LOOP.secs) {
     const a = Math.min(1, (t - (END - LOOP.secs)) / Math.max(0.05, LOOP.secs - 1 / 30));

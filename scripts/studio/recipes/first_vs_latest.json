@@ -9,19 +9,61 @@
   "length_bucket": "15-20",
   "out_dir": "content/studio-previews/first-vs-latest",
   "screens": "screens_cutaway",
-  "creation": { "id": "f32e2f20-0525-4d50-a4c0-5fefc82bb4fc", "title": "How a Car Wash Works" },
-  "yell": { "text": "This was my first AI video…", "key": "first", "pose": "shrug", "tags": "[embarrassed] [nervous laugh]" },
-  "answer": { "text": "And this is what I make now.", "key": "now." },
+  "creation": {
+    "id": "f32e2f20-0525-4d50-a4c0-5fefc82bb4fc",
+    "title": "How a Car Wash Works"
+  },
+  "yell": {
+    "text": "This was my first AI video…",
+    "key": "first",
+    "pose": "shrug",
+    "tags": "[embarrassed] [nervous laugh]"
+  },
+  "answer": {
+    "text": "And this is what I make now.",
+    "key": "now."
+  },
   "countdown": "3 · 2 · 1",
   "clips": [
-    { "name": "first", "file": "video/studio/jobs-7b7be3c4/final.mp4", "hq_dir": "video/studio/jobs-7b7be3c4/hq", "in": 1.5, "out": 4.5, "stamp": "MY FIRST · JULY 2026" },
-    { "name": "latest", "file": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/final.mp4", "hq_dir": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/hq", "in": 6.6, "out": 11.0, "stamp": "NOW · NOVEMBER 2026" }
+    {
+      "name": "first",
+      "file": "video/studio/jobs-7b7be3c4/final.mp4",
+      "hq_dir": "video/studio/jobs-7b7be3c4/hq",
+      "in": 1.5,
+      "out": 4.5,
+      "stamp": "MY FIRST · JULY 2026"
+    },
+    {
+      "name": "latest",
+      "file": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/final.mp4",
+      "hq_dir": "video/studio/f32e2f20-0525-4d50-a4c0-5fefc82bb4fc/hq",
+      "in": 2.5,
+      "out": 11,
+      "stamp": "NOW · NOVEMBER 2026",
+      "voice_over": 0.6,
+      "clip_gain": 0.3
+    }
   ],
-  "end": { "text": "It's called Zyvo. Link in bio. Send this to someone still editing by hand.", "key": ["Zyvo.", "Send"], "name_word": 2, "cta_word": 6, "trigger": "repost", "chip": "SEND THIS" },
+  "end": {
+    "text": "It's called Zyvo. Link in bio. Send this to someone still editing by hand.",
+    "key": [
+      "Zyvo.",
+      "Send"
+    ],
+    "name_word": 2,
+    "cta_word": 6,
+    "trigger": "repost",
+    "chip": "SEND THIS"
+  },
   "caption": "My first AI video vs my latest 😅 July → November. Made with Zyvo, link in bio. #aivideo #3danimation #faceless #fyp",
-  "hashtags": ["#aivideo", "#3danimation", "#faceless", "#fyp"],
+  "hashtags": [
+    "#aivideo",
+    "#3danimation",
+    "#faceless",
+    "#fyp"
+  ],
   "claims": [
     "First: the owner's own Video Generator clip of 2026-07-07 (job 7b7be3c4), 1.5-4.5 s, the oldest video on the account.",
-    "Latest: the owner's own Cutaway Explainer \"How a Car Wash Works\" of 2026-11-02 (f32e2f20), 6.6-11.0 s. Only the months are said; no other number."
+    "Latest: the owner's own Cutaway Explainer \"How a Car Wash Works\" of 2026-11-02 (f32e2f20), 2.5-11.0 s, the ending line spoken over it. Only the months are said; no other number."
   ]
 }

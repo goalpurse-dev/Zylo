@@ -122,7 +122,7 @@ CLIPS = S.get("clips") or ([S["clip"]] if S.get("clip") else [])
 clips = []
 # short videos (Retention Engine, owner 2026-10-30): a clip "at": "start" plays from frame 0, before the first line;
 # "freeze": {"secs"} holds its last frame after it ends (a cliffhanger); the extra keys go to the page as they are
-CLIP_KEYS = ("stamp", "headline", "hq_dir", "hq_ext", "wide", "frame", "sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y")
+CLIP_KEYS = ("stamp", "headline", "hq_dir", "hq_ext", "wide", "frame", "sfx_at", "fullscreen", "enter", "hook", "punch", "freeze", "open_loop", "vin", "pays_loop", "loop_frame", "text_y", "voice_over", "clip_gain")
 for n, (ln, x) in enumerate(zip(lines, takes)):
     C = next((c for c in CLIPS if (n == 0 and c.get("at") == "start") or (n and n == c.get("after_line", -9) + 1)), None)
     if C:
@@ -131,6 +131,15 @@ for n, (ln, x) in enumerate(zip(lines, takes)):
         hold = (C.get("freeze") or {}).get("secs", 0)
         clips.append({"name": C.get("name", f"clip{len(clips) + 1}"), "file": C["file"], "in": C["in"], "out": C["out"], "duck_db": C.get("duck_db", 10), "start": round(t + pre, 3), "end": round(t + pre + dur, 3),
                       **({"freeze_end": round(t + pre + dur + hold, 3)} if hold else {}), **{k: C[k] for k in CLIP_KEYS if k in C}})
+        # "voice_over": secs (owner, 2026-11-05: the last line over the full-screen reveal): the next line starts that
+        # long into the clip instead of after it; the clip's last frame holds if the line runs past its end
+        if C.get("voice_over") is not None:
+            vo = C["voice_over"]; voice.append(np.zeros(int((pre + vo) * SR), np.float32)); t += pre + vo
+            timed.append({"who": ln["who"], "start": round(t, 3), "end": round(t + len(x) / SR, 3)})
+            voice.append(x); t += len(x) / SR
+            if t + 0.15 > clips[-1]["end"]: clips[-1]["freeze_end"] = round(t + 0.15, 3)
+            t = max(t, clips[-1].get("freeze_end", clips[-1]["end"])); voice.append(np.zeros(max(0, int(t * SR) - sum(len(v) for v in voice)), np.float32))
+            continue
         voice.append(np.zeros(int((pre + dur + hold + post) * SR), np.float32)); t += pre + dur + hold + post
     elif n:
         gap = S.get("gap_speaker", 0.22) if ln["who"] != lines[n - 1]["who"] else S.get("gap_same", 0.12)
@@ -453,10 +462,10 @@ bed *= (v_rms / m_rms) * 10 ** (-under / 20)
 for clip in clips:
     a0, b0 = int(clip["start"] * SR), int(clip["end"] * SR)
     c_rms = np.sqrt(np.mean(clip_track[a0:b0] ** 2)) or 1
-    clip_track[a0:b0] *= (v_rms / c_rms) * 0.95
+    clip_track[a0:b0] *= (v_rms / c_rms) * 0.95 * clip.get("clip_gain", 1.0)   # under a voice-over: quieter
     g = 10 ** (-clip["duck_db"] / 20)
     duck = np.ones_like(bed); a, b, r = int((clip["start"] - 0.15) * SR), int((clip["end"] + 0.15) * SR), int(0.15 * SR)
-    duck[a:b] = g; duck[a - r:a] = np.linspace(1, g, r); duck[b:b + r] = np.linspace(g, 1, min(r, len(duck) - b))
+    duck[a:b] = g; duck[a - r:a] = np.linspace(1, g, r); duck[b:b + r] = np.linspace(g, 1, max(0, min(r, len(duck) - b)))   # a clip may run to the last frame
     bed *= duck
 gate = np.ones_like(bed)
 if E:

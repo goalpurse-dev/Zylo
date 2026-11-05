@@ -130,12 +130,12 @@ export function firstVsLatest(R) {
   ];
   const clip = (c, after, extra) => ({ name: c.name, file: c.file, in: c.in, out: c.out, hq_dir: c.hq_dir, hq_ext: c.hq_ext ?? "png", stamp: c.stamp, duck_db: 7, post: 0.1, after_line: after, ...extra });
   const s = assembleStory(R.key, {
-    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: "none", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
+    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: "none", music_db_under: 12, no_lead: true, first_second: true, tail: latest.voice_over != null ? 0.02 : 0.5, creation: "this",
     // the latest clip's first frame is the bass drop; the 0.4 s before it go silent (the freeze)
     energy: { reveal_lines: [], reveal_clips: [latest.name], from_frame0: true, slam: false, scratch: false },
     recipe: { angle: "FL", angle_name: "First vs latest", hook_type: "first_vs_latest", length_bucket: R.length_bucket ?? "15-20", famous_name: false, end_trigger: R.end.trigger ?? "repost" },
     lines,
-    clips: [clip(first, 0, { frame: "phone", enter: "grow", pre: 0.3 }), clip(latest, 1, { fullscreen: true, enter: "cut", pre: 1.1 })],
+    clips: [clip(first, 0, { frame: "phone", enter: "grow", pre: 0.3 }), clip(latest, 1, { fullscreen: true, enter: "cut", pre: 1.1, ...(latest.voice_over != null ? { voice_over: latest.voice_over, clip_gain: latest.clip_gain ?? 0.3 } : {}) })],
     end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.cta_word, event: "cta", sfx: "pop" }] }, cta: { id: `${R.end.trigger ?? "repost"}_${R.key}`, kind: R.end.trigger ?? "repost", chip: R.end.chip } },
     caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
   }, { this: { hq_dir: latest.hq_dir } }, R.creation.id);
