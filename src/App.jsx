@@ -321,6 +321,7 @@ const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
 const EarnPage                = lazy(() => import("./pages/workspace/earn/index.jsx"));
+const EarningsCalculatorPage  = lazy(() => import("./pages/workspace/earnings/index.jsx"));
 const LongFormPage            = lazy(() => import("./pages/workspace/long-form/index.jsx"));
 const LongFormNewPage         = lazy(() => import("./pages/workspace/long-form/new.jsx"));
 const LongFormStoryPage       = lazy(() => import("./pages/workspace/long-form/story.jsx"));
@@ -827,6 +828,8 @@ return (
   <Route path="/workspace/earn/payouts"     element={<EarnPage />} />
   <Route path="/workspace/earn/leaderboard" element={<EarnPage />} />
   <Route path="/workspace/earn/rules"       element={<EarnPage />} />
+  {/* Earnings Calculator (not the Earn referral program above). In the desktop tools shell only, not the bottom nav. */}
+  <Route path="/workspace/earnings"         element={<EarningsCalculatorPage />} />
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />

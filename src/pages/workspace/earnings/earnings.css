@@ -1,0 +1,99 @@
+/* Earnings Calculator: only what Tailwind classes can't do (keyframes, range thumbs). */
+
+.earn-money {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The glow when the hero number lands. */
+@keyframes earnLand {
+  0% { text-shadow: 0 0 0 rgba(190, 242, 100, 0); transform: scale(1); }
+  35% { text-shadow: 0 0 28px rgba(190, 242, 100, 0.55); transform: scale(1.025); }
+  100% { text-shadow: 0 0 10px rgba(190, 242, 100, 0.12); transform: scale(1); }
+}
+.earn-land {
+  display: inline-block;
+  animation: earnLand 520ms ease-out both;
+}
+
+/* Sliders: lime fill up to the thumb (--fill set inline). */
+.earn-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.earn-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #bef264 0%, #a3e635 var(--fill, 0%), rgba(255, 255, 255, 0.09) var(--fill, 0%));
+}
+.earn-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+.earn-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #bef264;
+}
+.earn-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 22px;
+  width: 22px;
+  margin-top: -8px;
+  border-radius: 999px;
+  background: #f7fee7;
+  border: 3px solid #bef264;
+  box-shadow: 0 0 0 4px rgba(190, 242, 100, 0.12), 0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: transform 120ms ease-out;
+}
+.earn-range:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+.earn-range::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 999px;
+  background: #f7fee7;
+  border: 3px solid #bef264;
+  box-shadow: 0 0 0 4px rgba(190, 242, 100, 0.12);
+}
+.earn-range:focus-visible {
+  outline: none;
+}
+.earn-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 6px rgba(190, 242, 100, 0.3);
+}
+
+/* Niche chips: one swipeable row, no scrollbar. */
+.earn-chips {
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+.earn-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bars and the progress bar grow with the same ease as the numbers. */
+.earn-bar {
+  transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Progress bar complete: a light sweep across it. */
+@keyframes earnSweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(220%); }
+}
+.earn-sweep {
+  animation: earnSweep 1.6s ease-in-out 0.3s 2 both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .earn-land, .earn-sweep { animation: none; }
+  .earn-bar { transition: none; }
+}
