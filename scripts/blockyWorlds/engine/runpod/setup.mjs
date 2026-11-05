@@ -42,9 +42,9 @@ console.log("template", tpl.id, tname);
 
 const endpoints = await rp("/endpoints");
 let ep = (Array.isArray(endpoints) ? endpoints : []).find((e) => e.name === NAME);
-const body = { templateId: tpl.id, name: NAME, computeType: "GPU", gpuTypeIds: GPUS, gpuCount: 1, workersMin: 0, workersMax: 12, idleTimeout: 5, executionTimeoutMs: 900000, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 };
+const body = { templateId: tpl.id, name: NAME, computeType: "GPU", gpuTypeIds: GPUS, gpuCount: 1, workersMin: 0, workersMax: 4, idleTimeout: 5, executionTimeoutMs: 900000, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 };
 // (REQUEST_COUNT 1: one worker per waiting job at once, so all K chunks start together; QUEUE_DELAY waits 4 s first)
 if (!ep) ep = await rp("/endpoints", { method: "POST", body: JSON.stringify(body) });
-else ep = await rp(`/endpoints/${ep.id}`, { method: "PATCH", body: JSON.stringify({ templateId: tpl.id, gpuTypeIds: GPUS, workersMax: 12, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 }) });
+else ep = await rp(`/endpoints/${ep.id}`, { method: "PATCH", body: JSON.stringify({ templateId: tpl.id, gpuTypeIds: GPUS, workersMax: 4, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 }) });
 console.log("endpoint", ep.id, "workersMin 0 (scales to zero)");
-fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 12, idleTimeout: 5, createdAt: new Date().toISOString() }, null, 1));
+fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 4, idleTimeout: 5, createdAt: new Date().toISOString() }, null, 1));
