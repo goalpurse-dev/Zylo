@@ -37,6 +37,7 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/publishv", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Publish" },
   { path: "/workspace/stats", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Stats" },
   { path: "/workspace/connections", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Connections" },
+  { path: "/workspace/earnings", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Earnings Calculator" },
   { path: "/workspace/image-gen-test", seoVisibility: "noindex", routeType: "test", title: "Zyvo Image Generator Test" },
   // The Long Form setup, also opened as /long-form/create?niche=<id>. Without
   // its own snapshot every one of those URLs served Home's HTML (Home's title,
