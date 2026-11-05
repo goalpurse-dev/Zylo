@@ -9,7 +9,7 @@ import { FORMULA_IDS, MOOD_IDS, MOOD_TWISTS, slotsForBatch } from "../supabase/f
 import { cardOf, ideaProblems, normalizeIdea, usableIdeas, ideasSchema, batchPrompt, topicPrompt, IDEAS_PER_BATCH } from "../supabase/functions/_shared/blockyWorlds/ideas.js";
 import { checkScript, estimateSeconds, narrationOf, normalizeScript, paceClean, partBudgets, PART_IDS, scriptFromText, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, wordCount } from "../supabase/functions/_shared/blockyWorlds/script.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "../supabase/functions/_shared/blockyWorlds/examples.js";
-import { costOf, providerFrom, writeIdeas, writeScript, writeTopicIdeas, repairOpener } from "../supabase/functions/_shared/blockyWorlds/llm.js";
+import { costOf, mockScriptFor, providerFrom, writeIdeas, writeScript, writeTopicIdeas, repairOpener } from "../supabase/functions/_shared/blockyWorlds/llm.js";
 import { CREDIT, fullCostUsd, PRICE_ROWS, PRICES, videoCredits } from "../supabase/functions/_shared/blockyWorlds/pricing.js";
 import { decide, DEFAULT_SETTINGS } from "../supabase/functions/_shared/blockyWorlds/guard.js";
 import { accessFor, canRemoveEndCard, canWrite, endCardFor } from "../supabase/functions/_shared/blockyWorlds/access.js";
@@ -184,8 +184,8 @@ test("mock: ideas, topic ideas, a script and an opener fix, with no call and no 
     assert.deepEqual(s.check.problems, []);
     assert.ok(hasOpener(s.script.lines[0].text));
     const s60 = await writeScript({ provider: "mock", idea: a.ideas[0], lengthSec: 60 });
-    assert.deepEqual(s60.check.problems, [], "mock turns length problems into warnings");
-    assert.ok(s60.check.warnings.some((w) => /\(mock\) Too long/.test(w)));
+    assert.deepEqual(s60.check.problems, [], "the mock script is sized to the length");
+    assert.ok(!s60.check.warnings.some((w) => /\(mock\) Too (long|short)/.test(w)), "and fits it (no length problem hidden as a warning)");
     const o = await repairOpener({ provider: "mock", line: "Every night the lights go out." });
     assert.equal(o.line, "In this town, every night the lights go out.");
   } finally {
@@ -207,11 +207,29 @@ test("pricing: 1 credit = $0.01 of our full cost, whole credits, and the migrati
     assert.ok(PRICES[s] * CREDIT.ourUsd >= fullCostUsd(s) && PRICES[s] * CREDIT.ourUsd < fullCostUsd(s) + CREDIT.ourUsd);
     assert.equal(videoCredits(s), PRICES[s]);
   }
-  assert.ok(PRICES[60] < PRICES[90] && PRICES[90] < PRICES[120]);
-  assert.throws(() => videoCredits(30));
-  const sql = readFileSync(new URL("../supabase/migrations/20261201100000_blocky_worlds.sql", import.meta.url), "utf8");
+  for (let i = 1; i < LENGTHS.length; i++) assert.ok(PRICES[LENGTHS[i - 1]] < PRICES[LENGTHS[i]], "longer costs more");
+  // the slider: 30 s to 3 min in 10 s steps; the first three lengths' prices are pinned (the owner applied them)
+  assert.deepEqual(LENGTHS, [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180]);
+  assert.deepEqual([PRICES[60], PRICES[90], PRICES[120]], [47, 62, 78]);
+  assert.throws(() => videoCredits(20));
+  assert.throws(() => videoCredits(95));
+  const sql = readFileSync(new URL("../supabase/migrations/20261205100000_blocky_worlds_lengths.sql", import.meta.url), "utf8");
   for (const r of PRICE_ROWS) assert.ok(new RegExp(`\\('${r.tool_key}', NULL, ${r.flat_credits}, NULL,`).test(sql), `${r.tool_key} = ${r.flat_credits} in the migration`);
-  for (const s of LENGTHS) assert.ok(sql.includes(`length_sec IN (${LENGTHS.join(", ")})`), "lengths in the table checks");
+  assert.equal(PRICE_ROWS.length, LENGTHS.length);
+  assert.ok(sql.includes(`CHECK (length_sec BETWEEN ${LENGTHS[0]} AND ${LENGTHS.at(-1)} AND length_sec % 10 = 0)`), "lengths in the table checks");
+  const first = readFileSync(new URL("../supabase/migrations/20261201100000_blocky_worlds.sql", import.meta.url), "utf8");
+  for (const s of [60, 90, 120]) assert.ok(first.includes(`('blocky-worlds:video-${s}', NULL, ${PRICES[s]}, NULL,`), `${s} s unchanged since the first migration`);
+});
+
+test("script: every length from 30 s to 3 min fits all seven parts (budgets add up; the sized mock passes its checks)", () => {
+  for (const s of LENGTHS) {
+    const b = partBudgets(s), sum = b.reduce((a, x) => a + x.words, 0), target = targetWords(s);
+    assert.ok(Math.abs(sum - target) <= 2, `${s} s: budgets ${sum} vs ${target}`);
+    assert.ok(b.find((x) => x.id === "rule").words >= 14, "the opener gets room");
+    const c = checkScript(normalizeScript(mockScriptFor(s)), s, "written");
+    assert.deepEqual(c.problems, [], `${s} s: ${c.problems.join("; ")}`);
+  }
+  assert.ok(checkScript(normalizeScript(mockScriptFor(90)), 95).problems.some((p) => /30 to 180 seconds/.test(p)));
 });
 
 test("guard: the same rules as Cutaway's; writing skips the per-user video limits", () => {

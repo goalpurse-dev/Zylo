@@ -137,7 +137,15 @@ kind + name; the check still stays on the worker). The run's `render.production`
 
 **What bounds the money of one video** (render.js `aiCeilingUsd`, sent to the job as `prepare.limits` and logged):
 - builder: `BLOCKY_WORLDS_BUILDER_MAX_USD`, enforced by the worker's purse (each design / vision call reserves its worst
-  case before it starts; at most 6 designs, 120 s). Only the first prepare try designs; a retry is kit + library only.
+  case before it starts; at most 6 designs, 120 s from the first resolve and never past the prepare job's own limit
+  minus 75 s). The cap is per video: a prepare retry designs only with what the earlier tries left (`builderSpentOf`,
+  at least $0.05, else kit + library). A still that fails is re-rendered with the same blueprint, never answered with a
+  new paid design; a still renderer that can't start makes every need a card before any design is bought.
+- prepare retries (2026-11-05, run 707609b1): the director's list is stored at once (`direction.json`) and a retry
+  reuses it ($0); a retry after the plan was split into chunks (`run.planned_at`) gets `prepare.resume.timeline` and
+  only makes the mix from THAT timeline (nothing re-directed, re-built, re-planned or re-checked), so the sound matches
+  the frames the chunks render. Each try's builder outcome per need (`source`, `reason`, verdicts) is on its job row
+  (`output.planned.builder.needs`, or `output.builder.needs` for a failed try); `dev/runTiming.mjs` prints them.
 - director: at most 2 calls per prepare try, 2 tries: Haiku $0.0071 a call worst case (~$0.03 a video), Sonnet $0.1425
   (~$0.57 a video).
 - voice ~$0.16 (bought once per run), GPU ~$0.12 (estimate()), storage.

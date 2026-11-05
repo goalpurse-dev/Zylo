@@ -12,26 +12,27 @@ const QUICK_TOPICS = ["my cat", "homework", "the school bus", "a haunted pool"];
 const SAMPLE_CARDS = EXAMPLE_IDEAS.map((idea, i) => cardOf(idea, `sample-${i}`));
 
 /**
- * Step 1 (the Cartoon Drive By layout: one calm panel, the action pinned at the bottom): the headline, one input for
- * your own world, then the ideas, there as soon as the page opens (more as you scroll; mood chips filter at once).
- * Tapping a card selects it; "Write this story" at the bottom writes the script.
+ * Step 1 (the Cartoon Drive By layout: one calm panel, the action pinned at the bottom): the headline, the prompt bar,
+ * then the ideas, there as soon as the page opens (more as you scroll; mood chips filter at once). Type your own idea
+ * and Continue: the AI turns it into a story. Tapping an idea card puts it into the bar; Continue writes it.
  */
-export default function StoryStep({ flow, onGate, onPeek, selected, onSelect }) {
+export default function StoryStep({ flow, onGate, onPeek }) {
   const own = flow.tab === "own";
-  const writing = flow.busy === "writing";
-  const write = () => selected && onGate(() => flow.writeFromIdea(selected.id), { write: true });
+  const ready = flow.topic.trim().length >= 2;
+  const go = () => ready && onGate(flow.continueStory, { write: true });
+  const selected = flow.picked;
+  const onSelect = (idea) => flow.pickIdea(idea);
   return (
     <>
       <StepBody>
-        <Hero flow={flow} onGate={onGate} />
+        <Hero flow={flow} onContinue={go} />
         {own ? <OwnScript flow={flow} /> : (
           <>
-            {flow.topicIdeas.status !== "idle" && (
+            {/* only after Continue made the worlds but couldn't write the script: they can be picked from here */}
+            {flow.topicIdeas.status === "ready" && flow.topicIdeas.items.length > 0 && (
               <section className="bw-step-in">
-                <Heading title={<>Worlds from &ldquo;{flow.topic.trim()}&rdquo;</>} action={<MoreButton loading={flow.topicIdeas.status === "loading"} disabled={Boolean(flow.busy)} onClick={() => onGate(flow.askTopic)} label="New ones" />} />
-                {flow.topicIdeas.status === "error"
-                  ? <ErrorBanner action="Try again" onAction={() => onGate(flow.askTopic)}>{flow.topicIdeas.error || "We couldn't turn that into ideas just now."}</ErrorBanner>
-                  : <IdeaList items={flow.topicIdeas.items} loading={flow.topicIdeas.status === "loading"} skeletons={3} flow={flow} selected={selected} onSelect={onSelect} onPeek={onPeek} />}
+                <Heading title="Worlds from your idea" />
+                <IdeaList items={flow.topicIdeas.items} loading={false} skeletons={0} flow={flow} selected={selected} onSelect={onSelect} onPeek={onPeek} />
               </section>
             )}
             <Ideas flow={flow} onGate={onGate} onPeek={onPeek} selected={selected} onSelect={onSelect} />
@@ -41,11 +42,11 @@ export default function StoryStep({ flow, onGate, onPeek, selected, onSelect }) 
       <ActionBar>
         {own ? (
           <ActionButton busy={flow.busy === "saving" ? "Checking your script…" : null} disabled={flow.ownText.trim().length < 20} onClick={() => onGate(flow.saveOwn, { write: true })}>
-            Check my script<ChevronRight className="h-4 w-4" />
+            Continue<ChevronRight className="h-4 w-4" />
           </ActionButton>
         ) : (
-          <ActionButton busy={writing ? "Writing your script…" : null} disabled={!selected || Boolean(flow.busy)} onClick={write}>
-            {selected ? <><span className="truncate">Write &ldquo;{selected.title}&rdquo;</span><ChevronRight className="h-4 w-4 shrink-0" /></> : "Pick an idea"}
+          <ActionButton busy={flow.busy === "turning" ? "Turning your idea into a story…" : flow.busy === "writing" ? "Writing your story…" : null} disabled={!ready || Boolean(flow.busy)} onClick={go}>
+            Continue<ChevronRight className="h-4 w-4 shrink-0" />
           </ActionButton>
         )}
       </ActionBar>
@@ -53,11 +54,11 @@ export default function StoryStep({ flow, onGate, onPeek, selected, onSelect }) 
   );
 }
 
-function Hero({ flow, onGate }) {
+function Hero({ flow, onContinue }) {
   const own = flow.tab === "own";
-  const loading = flow.topicIdeas.status === "loading";
+  const loading = flow.busy === "turning" || flow.busy === "writing";
   const ready = flow.topic.trim().length >= 2;
-  const submit = (e) => { e?.preventDefault(); if (ready && !loading) onGate(flow.askTopic); };
+  const submit = (e) => { e?.preventDefault(); if (ready && !loading) onContinue(); };
   return (
     <section>
       <h1 className="text-[34px] font-black leading-[1.02] tracking-[-0.045em] text-white sm:text-[40px]">
@@ -65,12 +66,14 @@ function Hero({ flow, onGate }) {
       </h1>
       <p className="mt-3 text-[13.5px] font-medium leading-snug text-white/50">One absurd rule, one kid who breaks it. We write it, narrate it and build it in blocks.</p>
 
-      <form onSubmit={submit} className="mt-5 flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[#111315] py-1.5 pl-4 pr-1.5 transition focus-within:border-lime-300/35 focus-within:ring-1 focus-within:ring-lime-300/30">
-        <label htmlFor="bw-topic" className="sr-only">Type your own world</label>
-        <input id="bw-topic" maxLength={120} value={flow.topic} autoComplete="off" placeholder="Type your own world…"
-          onChange={(e) => { flow.setTopic(e.target.value); if (own) flow.setTab("idea"); }}
-          className="min-w-0 flex-1 bg-transparent py-2 text-[15px] font-semibold text-white outline-none placeholder:text-white/25" />
-        <button type="submit" aria-label="Turn it into worlds" disabled={!ready || loading}
+      <form onSubmit={submit} className="mt-5 flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#111315] py-1.5 pl-4 pr-1.5 transition focus-within:border-lime-300/35 focus-within:ring-1 focus-within:ring-lime-300/30">
+        <label htmlFor="bw-topic" className="sr-only">Your idea: type a world, or tap an idea below</label>
+        <textarea id="bw-topic" rows={1} maxLength={200} value={flow.topic} autoComplete="off" placeholder="Type your own idea…"
+          onChange={(e) => { flow.setTopic(e.target.value.replace(/\s*\n\s*/g, " ")); if (own) flow.setTab("idea"); }}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) submit(e); }}
+          style={{ fieldSizing: "content" }}
+          className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent py-2 text-[15px] font-semibold leading-snug text-white outline-none placeholder:text-white/25" />
+        <button type="submit" aria-label="Continue" disabled={!ready || loading}
           className={cx("bw-press grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lime-300 text-[#11150D] transition hover:bg-lime-200 disabled:bg-white/[0.06] disabled:text-white/25", FOCUS)}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ArrowUp className="h-4 w-4" strokeWidth={3} aria-hidden="true" />}
         </button>

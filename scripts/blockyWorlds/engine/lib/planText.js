@@ -7,6 +7,22 @@ export const norm = (w) => String(w ?? "").toLowerCase().replace(/[’‘]/g, "'
 /** The spoken tokens of a line, with their raw text (punctuation attached). Empty tokens (a lone dash) are dropped. */
 export const tokens = (text) => String(text ?? "").trim().split(/\s+/).filter((w) => norm(w));
 
+const CARD_STOP = new Set(["A", "AN", "THE", "OF", "WITH", "AND", "THAT", "WHICH", "WHO", "TO", "ON", "IN", "AT", "FOR", "FROM", "BY", "OR", "ITS", "HIS", "HER", "THEIR", "OUR", "MY"]);
+/**
+ * The words of a picture card for a thing's name: capitals, at most 4 words, a long name cut at its first "with / that /
+ * which / who" clause, never ending on a little word ("crumpled scroll with a big paw print" -> "CRUMPLED SCROLL", not
+ * "CRUMPLED SCROLL WITH A": run 707609b1's badge read "A" and the production check could not find the scroll).
+ */
+export function cardLabel(name) {
+  let w = String(name ?? "").toUpperCase().replace(/[^A-Z0-9' ]/g, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  if (w.length > 4) { const cut = w.findIndex((x, i) => i > 0 && ["WITH", "THAT", "WHICH", "WHO"].includes(x)); if (cut > 0) w = w.slice(0, cut); }
+  w = w.slice(0, 4);
+  while (w.length > 1 && CARD_STOP.has(w.at(-1))) w.pop();
+  return w.join(" ");
+}
+/** The one word a badge shows for a card: its last meaningful word ("CRUMPLED SCROLL" -> "SCROLL"). */
+export const badgeWord = (text) => String(text ?? "").split(" ").filter((x) => x && !CARD_STOP.has(x.toUpperCase()) && norm(x).length > 1).at(-1) ?? String(text ?? "").split(" ").at(-1);
+
 /** Syllables in a word (vowel groups, a silent final e dropped); at least 1. Digits count one per digit. */
 export function syllables(word) {
   const w = norm(word);

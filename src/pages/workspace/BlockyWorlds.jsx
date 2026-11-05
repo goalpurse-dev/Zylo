@@ -10,8 +10,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { supabase } from "../../lib/supabaseClient";
 
-// Local dev (npm run dev) runs the free mock by default: ?as=guest|free|starter|pro picks who is looking (starter if
-// not given), ?renderer=0 shows the "video making is off" state, ?live=1 talks to the real server. See dev/devApi.js.
+// Local dev (npm run dev) talks to the real server by default. ?mock=1 runs the free mock (dev/devApi.js); only then
+// ?as=guest|free|starter|pro picks who is looking (starter if not given) and ?renderer=0 shows "video making is off".
 const DEV_AS = DEV_MOCK ? new URLSearchParams(window.location.search).get("as") ?? "starter" : null;
 
 /**

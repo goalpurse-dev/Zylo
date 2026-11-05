@@ -39,6 +39,8 @@ export async function makeStillRenderer({ outDir = null, size = 768 } = {}) {
     dir,
     /** render(kind, spec, opts) -> { file, jpeg, w, h, ms, problems }; calls are queued (one page) */
     render(kind, spec, opts = {}) { const p = queue.then(() => renderOne(kind, spec, opts)); queue = p.catch(() => {}); return p; },
+    /** Chrome + the still page open (the builder's preflight before any paid design) */
+    ready() { const p = queue.then(() => (page ? null : open())); queue = p.catch(() => {}); return p; },
     async close() { await browser.close().catch(() => {}); srv.close(); },
   };
 }

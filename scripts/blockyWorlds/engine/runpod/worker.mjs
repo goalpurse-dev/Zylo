@@ -114,46 +114,84 @@ export function checkFailure(c) {
 const normalizeScript = (s) => ({ ...s, lines: (s?.lines ?? []).map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) });
 
 // ---------------------------------------------------------------- prepare: voice -> plan + checks -> mix
+/** the builder's per-need outcome, small enough for the job row: why each thing was built, found or carded */
+export const builderLines = (report) => (report?.byNeed ?? []).slice(0, 30).map((n) => ({ name: String(n.name ?? "").slice(0, 60), kind: n.kind, source: n.source, reason: n.reason ? String(n.reason).slice(0, 160) : null, attempts: n.attempts ?? 0, costUsd: +Number(n.costUsd || 0).toFixed(5),
+  ...(n.verdicts?.length ? { verdicts: n.verdicts.slice(-3).map((v) => (v.error ? { error: String(v.error).slice(0, 120) } : v.problems ? { problems: v.problems.slice(0, 3).map((x) => String(x).slice(0, 80)) } : { ok: !!v.ok, confidence: v.confidence ?? null, reads_as: v.reads_as ? String(v.reads_as).slice(0, 60) : null })) } : {}) }));
+
+/** Chrome's flags for the prepare job's stills (the builder's vision check): the GPU when there is one, else
+ * SwiftShader; never Chrome's defaults (they lack --no-sandbox: Chrome refuses to start as root in the container) */
+async function stillChrome(mode) {
+  if (process.env.CHROME_ARGS || process.env.SOFTWARE_GL || mode === "local") return;
+  if (mode === "cpu") { useSoftware(); return; }
+  try { await useGpu(); } catch (e) { console.log(`builder stills: no GPU (${String(e.message).slice(0, 120)}), SwiftShader`); useSoftware(); }
+}
+
+/** the prepare job's own time limit (render.js RENDER.runSec.prepare); the builder must end this long before it */
+const PREPARE_SEC = 300, AFTER_BUILDER_SEC = 75;
+
 export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null, builder: builderIn = null } = {}) {
-  const p = job.prepare ?? {}, timing = {};
+  const p = job.prepare ?? {}, timing = {}, jobT0 = Date.now();
   const lap = async (k, fn) => { const t = Date.now(); const r = await fn(); timing[k] = +((Date.now() - t) / 1000).toFixed(2); return r; };
   const script = normalizeScript(p.script);
   if (!script.lines.length) throw coded("BAD_JOB", "the script has no lines");
   const mp3 = path.join(dir, "voice.mp3"), takeJson = path.join(dir, "take.json");
+  if (p.resume?.timeline) return resumePrepare(job, dir, post, { voiceFn, script, mp3, takeJson, timing, lap });
 
-  // 0. the builder (lib/builder: a missing kit object or world never fails a run) starts early: the needs of a plan made
-  //    from estimated timings are resolved (kit -> library -> design + still + vision check) while the voice is made
+  // 0. the builder (lib/builder: a missing kit object or world never fails a run)
   const plan = planModule ?? (await import(pathToFileURL(path.join(ENGINE, "plan.mjs")).href));
   const kit = kitModule ?? (await loadKit());
   const B = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "index.js")).href);
   const { snapshotCache } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "cache.js")).href);
   const blog = [];
   const library = snapshotCache(p.builder?.library ?? [], { onSave: async (asset) => { await post("built", { asset: { ...asset, still_path: asset.still_path ? path.basename(asset.still_path) : null } }); } });
+  const until = jobT0 + (Number(p.limits?.prepareSec) || PREPARE_SEC) * 1000 - AFTER_BUILDER_SEC * 1000;
   const builder = builderIn ?? B.makeBuilder({
     provider: await B.providerFromConfig({ provider: p.builder?.provider ?? process.env.BLOCKY_WORLDS_BUILDER ?? "off", idea: p.idea ?? null }),
-    cache: library, budget: p.builder?.budget ?? {}, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
+    cache: library, budget: { ...(p.builder?.budget ?? {}), until }, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
+    beforeStills: () => stillChrome(job.mode ?? "gpu"),
   });
   // what the director and the builder spent, for the server's cost ledger (render.js aiLedger): "planned" reports the
   // spend so far; the job's end (done output / failed event) reports the totals and what "planned" said, so a call that
   // ends after "planned", or a job that fails before it, is still billed once
   const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0 };
   const spendNow = () => ({ ...spend, builderUsd: +Number(builder.spent ?? spend.builderUsd ?? 0).toFixed(5) });
-  try {
-    const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
-    const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
-    builder.prefetch(needsFromTimeline(early, { kit }), kit);
-  } catch (e) { console.log(`builder: no early start (${e.message})`); }
+  let builtReport = null;
+  const directorOn = !(p.director === false || p.director?.provider === "off");
+  // without a story director the needs of a plan made from estimated timings are resolved early (kit -> library ->
+  // design + still + vision) while the voice is made. With one, the directed plan's needs are the ones that count: an
+  // undirected early start spent run 707609b1's designs and money on things the directed plan never showed
+  if (!directorOn) {
+    try {
+      const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
+      const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
+      builder.prefetch(needsFromTimeline(early, { kit }), kit);
+    } catch (e) { console.log(`builder: no early start (${e.message})`); }
+  }
   // the story director runs while the voice is made (it needs only the script) and never fails a run (directStory falls
   // back to the mock's list); as soon as it answers, the builder starts on what the list needs built: the needs of a
-  // plan made from its production list (match.builderNeeds after the planner's refinements, lib/direction.js)
+  // plan made from its production list (match.builderNeeds after the planner's refinements, lib/direction.js).
+  // A retry reuses the list an earlier try stored (p.director.stored: never paid for twice); a new list is stored at
+  // once (p.out.direction), before the expensive steps after it.
   const exists = (rel) => fs.existsSync(path.join(ENGINE, rel));
   const directing = (async () => {
-    if (p.director === false || p.director?.provider === "off") return null;
+    if (!directorOn) return null;
     try {
       const { directStory } = await import(pathToFileURL(path.join(ENGINE, "lib", "director", "index.js")).href);
-      const provider = p.director?.provider === "anthropic" && process.env.ANTHROPIC_KEY ? "anthropic" : "mock";
+      let stored = null;
+      if (p.director?.stored) {
+        try { stored = JSON.parse(String(await get(p.director.stored))); } catch (e) { console.log(`director: no stored list (${String(e.message).slice(0, 120)})`); }
+        if (!stored?.production?.lines) stored = null;
+      }
+      const provider = stored ? { model: stored.model ?? null, direct: async () => ({ data: stored.production, costUsd: 0, model: stored.model ?? null }) }
+        : p.director?.provider === "anthropic" && process.env.ANTHROPIC_KEY ? "anthropic" : "mock";
       const d = await directStory({ script, idea: p.idea ?? null, provider, apiKey: process.env.ANTHROPIC_KEY ?? null, ...(p.director?.model ? { model: p.director.model } : {}), exists, runId: job.runId ?? null, source: "prepare", log: (m) => console.log(`director: ${m}`) });
+      if (stored) { d.reused = true; d.ms = 0; if (stored.fellBack) d.fellBack = true; console.log("director: the list an earlier try stored (no paid call)"); }
       spend.directorUsd = Number(d?.costUsd) || 0; spend.directorModel = d?.model ?? null;
+      if (!stored && d?.provider === "anthropic" && !d.fellBack && p.out?.direction) {
+        const f = path.join(dir, "direction.json");
+        fs.writeFileSync(f, JSON.stringify({ v: 1, provider: d.provider, model: d.model ?? null, fellBack: false, costUsd: d.costUsd ?? 0, production: d.production }));
+        await put(p.out.direction, f, "application/json").catch((e) => console.log(`direction.json upload: ${e.message}`)); // bookkeeping never fails a run
+      }
       try {
         const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
         const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists });
@@ -199,6 +237,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   }
   tl.audio = { voice: "voice.wav", music: "music.wav" };
   const built = await lap("build", () => builder.buildFor(tl, { plan, kit }));
+  builtReport = built.report;
   const checks = preRenderChecks(plan, tl, script, kit);
   const checkFile = path.join(dir, "visual-check.json");
   fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog } }, null, 1));
@@ -208,8 +247,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const tlPath = path.join(dir, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl));
   await put(p.out.timeline, tlPath, "application/json");
-  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms },
-    ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),
+  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms, needs: builderLines(built.report) },
+    ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, reused: !!direction.reused, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),
     timing: { ...timing } };
   await post("planned", planned);
   spend.plannedBuilderUsd = Number(planned.builder.costUsd) || 0; spend.plannedDirectorUsd = Number(planned.director?.costUsd) || 0;
@@ -228,9 +267,39 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     let t;
     await Promise.race([directing, new Promise((s) => { t = setTimeout(s, 20000); })]).catch(() => {});
     clearTimeout(t);
-    try { e.spend = spendNow(); } catch { /* bookkeeping never hides the real error */ }
+    try { e.spend = spendNow(); if (builtReport) e.builder = { built: builtReport.built, cards: builtReport.cards, costUsd: builtReport.costUsd, needs: builderLines(builtReport) }; } catch { /* bookkeeping never hides the real error */ }
     throw e;
   } finally { await builder.close().catch(() => {}); }
+}
+
+/**
+ * A prepare RETRY after an earlier try already planned (the server split that plan into chunks and they render from its
+ * timeline.json): nothing is directed, built, planned or checked again (the checks passed on that very timeline and the
+ * server re-read their report); the stored timeline + the stored voice take give the music, the SFX and the mix, so the
+ * mix always matches the frames the chunks render (run 707609b1: try 2 re-planned with a new director list while try 1's
+ * chunks were rendering, and paid the director again).
+ */
+async function resumePrepare(job, dir, post, { voiceFn, script, mp3, takeJson, timing, lap }) {
+  const p = job.prepare;
+  if (!p.voice?.get) throw coded("BAD_JOB", "a resumed prepare needs the run's stored take");
+  await post("progress", { stage: "mix", pct: 10 });
+  const tlPath = path.join(dir, "timeline.json");
+  try { await get(p.resume.timeline, tlPath); } catch (e) { throw coded("BAD_JOB", `the planned timeline could not be downloaded: ${e.message}`); }
+  const tl = JSON.parse(fs.readFileSync(tlPath, "utf8"));
+  try { await get(p.voice.get.mp3, mp3); await get(p.voice.get.take, takeJson); } catch (e) { throw coded("VOICE_DOWNLOAD", `the run's take could not be downloaded: ${e.message}`); }
+  const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
+  let v;
+  try { v = await lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: null })); }
+  catch (e) { throw coded(/different script/.test(String(e.message)) ? "BAD_JOB" : "VOICE_FAILED", String(e.message ?? e).slice(0, 600)); }
+  const musicWav = path.join(dir, "music.wav"), mixM4a = path.join(dir, "mix.m4a");
+  const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
+  const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
+  await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
+  const cues = p.sfx === false ? [] : sfxCues(tl);
+  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues }));
+  await put(p.out.mix, mixM4a, "audio/mp4");
+  const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0 };
+  return { role: "prepare", resumed: true, planned: { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots?.length ?? 0 }, voice: { reused: true, costUsd: 0, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing, spend };
 }
 
 // ---------------------------------------------------------------- chunk: frames [from, to) -> seg + web
@@ -318,8 +387,8 @@ export async function runJob(job, opts = {}) {
     result = { ok: true, ...r, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), totalS: +((Date.now() - t0) / 1000).toFixed(2) };
     await post("done", { output: result });
   } catch (e) {
-    result = { ok: false, role: job.role, code: e.code ?? "RENDER_FAILED", error: String(e.message ?? e).slice(0, 1500), totalS: +((Date.now() - t0) / 1000).toFixed(2), ...(e.spend ? { spend: e.spend } : {}) };
-    await post("failed", { code: result.code, message: result.error, ...(e.spend ? { spend: e.spend } : {}) });
+    result = { ok: false, role: job.role, code: e.code ?? "RENDER_FAILED", error: String(e.message ?? e).slice(0, 1500), totalS: +((Date.now() - t0) / 1000).toFixed(2), ...(e.spend ? { spend: e.spend } : {}), ...(e.builder ? { builder: e.builder } : {}) };
+    await post("failed", { code: result.code, message: result.error, ...(e.spend ? { spend: e.spend } : {}), ...(e.builder ? { builder: e.builder } : {}) });
   } finally {
     try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 300 }); } catch { /* a temp folder never fails a job */ }
   }

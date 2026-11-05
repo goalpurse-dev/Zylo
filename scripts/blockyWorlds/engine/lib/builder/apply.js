@@ -13,6 +13,7 @@
 // The timeline gets `assets`: { [asset id]: { kind, name, aliases, blueprint | spec } } (the engine builds from it).
 
 import { ANIMAL_STATES } from "../catalog.js";
+import { badgeWord } from "../planText.js";
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const FREE_SPOTS = ["center", "left", "right", "back", "door", "far"];
 const freeSpot = (s) => { const taken = new Set([...(s.actors ?? []).map((a) => a.spot), ...(s.objects ?? []).map((o) => o.spot)]); return FREE_SPOTS.find((x) => !taken.has(x)) ?? "far"; };
@@ -68,7 +69,7 @@ function applyObjectOnShot(tl, need, r) {
       else if ((s.actors ?? []).length) { // the thing stays named on screen: a badge over someone (plan.mjs badge)
         const marks = [...(s.markers ?? (s.marker ? [s.marker] : []))], has = new Set(marks.map((m) => m.on));
         const on = s.actors.find((a) => !has.has(a.id))?.id;
-        if (on) { marks.push({ on, kind: "icon", text: `${r.card.icon} ${r.card.text.split(" ").at(-1)}` }); s.marker = marks[0]; if (marks.length > 1) s.markers = marks; }
+        if (on) { marks.push({ on, kind: "icon", text: `${r.card.icon} ${badgeWord(r.card.text)}` }); s.marker = marks[0]; if (marks.length > 1) s.markers = marks; }
       }
     }
   }

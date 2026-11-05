@@ -34,8 +34,12 @@ export const PACE = Object.freeze({
   sentenceGapSec: 0.1,
 });
 
-/** Video lengths the user can pick (seconds). The references run 66-170 s, median ~131 s. */
-export const LENGTHS = Object.freeze([60, 90, 120]);
+/**
+ * Video lengths the user can pick (seconds): 30 s to 3 min in 10 s steps (the page's slider; owner, 2026-11-05). The
+ * references run 66-170 s, median ~131 s. Every length has its own price row (tool_prices, pricing.js PRICE_ROWS).
+ */
+export const LENGTH_RANGE = Object.freeze({ min: 30, max: 180, step: 10 });
+export const LENGTHS = Object.freeze(Array.from({ length: (LENGTH_RANGE.max - LENGTH_RANGE.min) / LENGTH_RANGE.step + 1 }, (_, i) => LENGTH_RANGE.min + i * LENGTH_RANGE.step));
 export const DEFAULT_LENGTH = 90;
 
 /** Claude models for the writing steps (the 3D shot plan is the renderer's: not built yet). */

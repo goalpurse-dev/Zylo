@@ -59,13 +59,20 @@ export function estimateSeconds(lines) {
   return Number(((n / PACE.targetWpm) * 60 + Math.max(0, lines.length - 1) * PACE.sentenceGapSec * 0.3).toFixed(1));
 }
 
-/** Per-part word budgets for a length (they add up to the target). */
+/**
+ * Per-part word budgets for a length (they add up to the target, within a word or two). The rule is the opener, which
+ * runs 12-22 words at any length, so it gets at least 14 and the other six parts share the rest by their shares (at
+ * least 8 each): a 30 s script (110 words) still fits all seven parts inside its own band.
+ */
+export const RULE_MIN_WORDS = 14;
 export function partBudgets(lengthSec) {
   const total = targetWords(lengthSec);
-  return PARTS.map((p) => ({ id: p.id, words: Math.max(p.id === "rule" ? 8 : 10, Math.round(total * p.share)) }));
+  const rule = Math.max(RULE_MIN_WORDS, Math.round(total * PARTS[0].share));
+  const rest = total - rule, restShare = 1 - PARTS[0].share;
+  return PARTS.map((p) => ({ id: p.id, words: p.id === "rule" ? rule : Math.max(8, Math.round((rest * p.share) / restShare)) }));
 }
 
-export const SCRIPT_SYSTEM = `You write the narration for Blocky Worlds: 1-2 minute vertical videos narrated by one kid, set in an original blocky toy-like world, for TikTok and YouTube Shorts. The narration is read by a text-to-speech voice that is already at its top speed, and the videos must sound FAST (about 260 words a minute) like the viral references. The pace comes from YOUR LINES.
+export const SCRIPT_SYSTEM = `You write the narration for Blocky Worlds: 30-second to 3-minute vertical videos narrated by one kid, set in an original blocky toy-like world, for TikTok and YouTube Shorts. The narration is read by a text-to-speech voice that is already at its top speed, and the videos must sound FAST (about 260 words a minute) like the viral references. The pace comes from YOUR LINES.
 
 THE SHAPE (seven parts, in order)
 ${PARTS.map((p, i) => `${i + 1}. ${p.id}: ${p.what}`).join("\n")}
@@ -130,7 +137,7 @@ const ideaText = (idea) => [
 ].join("\n");
 
 /** The user message for a new script (or a rewrite: previous + the user's note). */
-export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null }) {
+export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
   const total = targetWords(lengthSec);
   const budgets = partBudgets(lengthSec).map((b) => `${b.id} ~${b.words}`).join(", ");
   return [
@@ -139,6 +146,7 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
     `LENGTH: ${lengthSec} seconds = ${total} words in total (between ${Math.round(total * BAND.written[0])} and ${Math.round(total * BAND.written[1])}). Words per part: ${budgets}. That is about ${Math.round(total / LINE.targetMedian)} lines.`,
     ...(previous ? [`THE PREVIOUS VERSION (write a better one, keep what works):\n${previous.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}`] : []),
     ...(note ? [`THE USER ASKS: ${String(note).slice(0, 300)}`] : []),
+    ...(failed?.length ? [`THE PREVIOUS VERSION FAILED THESE CHECKS (the new one must pass every one):\n${failed.map((p) => `- ${p}`).join("\n")}`] : []),
   ].join("\n\n");
 }
 
@@ -179,7 +187,7 @@ export const narrationOf = (script) => script.lines.map((l) => l.text).join(" ")
 export function checkScript(script, lengthSec, kind = "written") {
   const problems = [], warnings = [];
   const lines = script?.lines ?? [];
-  if (!LENGTHS.includes(lengthSec)) problems.push(`length must be one of ${LENGTHS.join(", ")} seconds`);
+  if (!LENGTHS.includes(lengthSec)) problems.push(`The length must be ${LENGTHS[0]} to ${LENGTHS.at(-1)} seconds, in 10 s steps.`);
   if (!lines.length) return { problems: ["The script is empty."], warnings, words: 0, seconds: 0 };
   const op = openerProblem(lines[0].text);
   if (op) problems.push(op);
@@ -205,6 +213,29 @@ export function checkScript(script, lengthSec, kind = "written") {
   }
   problems.push(...safetyProblems(`${script.title ?? ""}\n${narrationOf(script)}\n${script.post?.title ?? ""}\n${script.post?.description ?? ""}`));
   return { problems, warnings, words: total, seconds: estimateSeconds(lines) };
+}
+
+/**
+ * The part repair ("Fix it" on a blocked script): rewrite only the lines a check flagged (one part, or one line), keep
+ * every other line word for word. The reasons are the checks' own sentences.
+ */
+export const PART_FIX_SYSTEM = `You fix one part of a Blocky Worlds story narration that failed a check. You get the whole script (for context), the lines to replace, and exactly why they failed. Write replacement lines for ONLY those lines, so the checks pass.
+- Keep the story, the names and what happens; change only what the reasons require.
+- About the same number of words as the lines you replace (within a few), one short spoken sentence per line, most lines 5 to 10 words, never more than ${LINE.maxWords}.
+- No semicolons, colons, dashes, ellipses or brackets. Contractions. First person, past tense, the same voice.
+- If the planted object must pay off, the hero wins WITH it, and the line names it (its own word, like "the tape").
+- If the ending must call back the first line, the last lines reuse a word or picture from line 1.
+- Original names only, PG fear only.
+Return only the JSON object: { "lines": ["...", "..."] }.`;
+export const partFixSchema = () => ({ type: "object", additionalProperties: false, required: ["lines"], properties: { lines: { type: "array", items: { type: "string" } } } });
+export function partFixPrompt({ script, indexes, reasons, card = null }) {
+  const set = new Set(indexes);
+  return [
+    `THE SCRIPT (the lines marked >> are the ones to replace)\n${script.lines.map((l, i) => `${set.has(i) ? ">>" : "  "} ${i + 1} [${l.part}] ${l.text}`).join("\n")}`,
+    ...(card ? [`THE IDEA: planted object: ${card.prop ?? "-"} | twist: ${card.twist ?? "-"} | closer to aim for: ${card.closer ?? "-"}`] : []),
+    `WHY THEY FAILED (fix every one):\n${reasons.map((r) => `- ${r}`).join("\n")}`,
+    `Replace lines ${indexes.map((i) => i + 1).join(", ")} (${indexes.reduce((a, i) => a + wordCount(script.lines[i]?.text), 0)} words now).`,
+  ].join("\n\n");
 }
 
 /** The opener repair (one small call): rewrite only the first line, keeping its meaning. */

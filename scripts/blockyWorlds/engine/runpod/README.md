@@ -8,7 +8,10 @@ keeps the repo layout (`/app/scripts/blockyWorlds/engine`, `/app/supabase/functi
 Free end-to-end check: `node dev/pipelineDryRun.mjs --lines 24` (local GPU, the paid test's take, no paid call).
 
 Owner steps, in order (each needs the go):
-1. Build + push: `node runpod/buildContext.mjs C:\Users\Public\bw-ctx`, then from that folder push it under a
+1. Build + push: `node runpod/buildContext.mjs C:\Users\Public\bw-ctx` (it copies every engine file the worker can load,
+   found from `worker.mjs`'s imports, never a hand list, then SMOKE-TESTS the context: every module is imported from it in
+   the image's layout; on any failure it exits 1 and leaves no Dockerfile, so nothing can be built from it;
+   `runpod/contextSmoke.mjs <dir>` re-runs the check; 2026-11-05 the hand list missed `audio/sfxEpic.mjs`), then from that folder push it under a
    `blocky-*` label to `registry.fly.io/zyvo-cutaway-render-staging` the way the first Blocky image was pushed
    (e.g. `fly deploy --app zyvo-cutaway-render-staging --dockerfile Dockerfile --build-only --push --image-label blocky-pipeline1`), note the digest.
 2. RunPod console -> Secrets: create `blocky_elevenlabs` = the ElevenLabs key.

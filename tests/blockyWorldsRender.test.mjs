@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { aiCeilingUsd, assetRow, chunkPlan, chunkProblems, costSummary, DIRECTOR_WORST_USD, estimate, NO_RETRY, onJobEvent, paths, prepareProduction, productionSettings, reconcile, RENDER, retryOf, ROLES, sameToken, snapshotRows, tokenFor } from "../supabase/functions/_shared/blockyWorlds/render.js";
+import { aiCeilingUsd, assetRow, builderSpentOf, chunkPlan, chunkProblems, costSummary, DIRECTOR_WORST_USD, estimate, NO_RETRY, onJobEvent, paths, prepareProduction, productionSettings, reconcile, RENDER, retryOf, ROLES, sameToken, snapshotRows, tokenFor } from "../supabase/functions/_shared/blockyWorlds/render.js";
 import { makeRuntime } from "../supabase/functions/_shared/blockyWorlds/renderRuntime.js";
 import { STATUSES } from "../supabase/functions/_shared/blockyWorlds/contract.js";
 import { fileStorage, memoryDb, scriptedRunPod } from "../scripts/blockyWorlds/engine/dev/pipelineFakes.mjs";
@@ -35,6 +35,16 @@ test("chunks: a 90 s video is 8 chunks of ~270 frames, contiguous, covering ever
   for (const c of plan) assert.ok(Math.abs(c.to - c.from - N / 8) <= N / 8 * 0.13, `chunk ${c.index} is ${c.to - c.from} frames`);
   assert.equal(chunkPlan(timeline(60)).length, 6);
   assert.equal(chunkPlan(timeline(120)).length, 11);
+  // the slider's ends (30 s to 3 min): every frame covered, the chunk count inside [minChunks, maxChunks], and a
+  // 3 min chunk still renders well inside its run timeout
+  for (const s of [30, 180]) {
+    const p = chunkPlan(timeline(s));
+    assert.deepEqual(chunkProblems(p, s * 24), [], `${s} s`);
+    assert.ok(p.length >= RENDER.minChunks && p.length <= RENDER.maxChunks, `${s} s: ${p.length} chunks`);
+    for (const c of p) assert.ok((c.to - c.from) * 0.1 + 60 < RENDER.runSec.chunk, `${s} s chunk ${c.index}: ${c.to - c.from} frames`);
+  }
+  assert.equal(chunkPlan(timeline(30)).length, 3);
+  assert.equal(chunkPlan(timeline(180)).length, 12);
 });
 
 test("chunks: the expected size raises the count until every chunk fits the upload limit", () => {
@@ -461,14 +471,19 @@ test("production settings: the function secrets and their defaults (director moc
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_BUILDER_MAX_USD: "0" })).builderMaxUsd, 0);
 });
 
-test("production settings: the job fields are exactly what worker.mjs reads; a retry never designs again", () => {
+test("production settings: the job fields are exactly what worker.mjs reads; a retry designs with what is left of the cap", () => {
   assert.deepEqual(prepareProduction(undefined).director, { provider: "mock" });
   assert.deepEqual(prepareProduction({ ...PROD_ON, director: "off" }).director, { provider: "off" });
   assert.deepEqual(prepareProduction(PROD_ON).director, { provider: "anthropic", model: "claude-haiku-5-5" });
   assert.deepEqual(prepareProduction({ ...PROD_ON, director: "sonnet" }).director, { provider: "anthropic", model: "claude-sonnet-5-5" });
   const lib = [ASSET];
   assert.deepEqual(prepareProduction(PROD_ON, { attempt: 1, library: lib }).builder, { provider: "anthropic", library: lib, budget: { maxUsd: 0.6 } });
-  assert.deepEqual(prepareProduction(PROD_ON, { attempt: 2, library: lib }).builder, { provider: "off", library: lib, budget: { maxUsd: 0 } }, "a retry: kit + library (with what try 1 built) only");
+  // run 707609b1: try 1 spent $0.2263 and crashed after the plan; try 2 had the builder off -> every thing a card
+  assert.deepEqual(prepareProduction(PROD_ON, { attempt: 2, library: lib, builderSpentUsd: 0.2263 }).builder, { provider: "anthropic", library: lib, budget: { maxUsd: 0.3737 } }, "a retry: the rest of the per-video cap (+ the library with what try 1 built)");
+  assert.deepEqual(prepareProduction(PROD_ON, { attempt: 2, library: lib, builderSpentUsd: 0.58 }).builder, { provider: "off", library: lib, budget: { maxUsd: 0 } }, "less than one design left: kit + library only");
+  assert.deepEqual(prepareProduction(PROD_ON, { attempt: 1, library: lib, builderSpentUsd: 0.5 }).builder.budget, { maxUsd: 0.6 }, "try 1 has the whole cap");
+  assert.equal(prepareProduction(PROD_ON).limits.prepareSec, RENDER.runSec.prepare);
+  assert.equal(builderSpentOf([{ role: "prepare", attempt: 1, output: { planned: { builder: { costUsd: 0.2263 } } } }, { role: "prepare", attempt: 2, output: { spend: { builderUsd: 0.1 } } }, { role: "chunk", attempt: 1, output: { spend: { builderUsd: 9 } } }], 2), 0.2263);
   assert.deepEqual(prepareProduction({ ...PROD_ON, builder: "off" }, { library: lib }).builder, { provider: "off", library: [], budget: { maxUsd: 0 } });
 });
 
@@ -502,7 +517,7 @@ test("events: planned bills the director + builder once by ref; the job's end ad
   const job = { id: "p1", role: "prepare", idx: 0, attempt: 1, state: "running" };
   const planned = onJobEvent(job, { event: "planned", frames: 480, builder: { costUsd: 0.12, built: 1, cards: 2, ms: 41000 }, director: { provider: "anthropic", model: "claude-haiku-5-5", costUsd: 0.004, ms: 9000 }, timing: { voice: 12.5, director: 9.1, plan: 0.4, build: 30 }, gaps: [{}, {}] }, T0);
   assert.deepEqual(planned.ledger.map((l) => [l.stage, l.ref, l.usd]), [["director", "director:p1", 0.004], ["builder", "builder:p1", 0.12]]);
-  assert.deepEqual(planned.job.output.planned.builder, { costUsd: 0.12, built: 1, cards: 2, ms: 41000 });
+  assert.deepEqual(planned.job.output.planned.builder, { costUsd: 0.12, built: 1, cards: 2, ms: 41000, needs: [] });
   assert.equal(planned.job.output.planned.director.ms, 9000);
   assert.deepEqual(planned.job.output.planned.timing, { voice: 12.5, director: 9.1, plan: 0.4, build: 30 });
   assert.equal(planned.job.output.planned.gaps, 2);
@@ -559,7 +574,7 @@ test("runtime: the prepare job carries the director, the builder, the library sn
   h.cleanup();
 });
 
-test("runtime: a prepare try that fails before planning bills its AI spend; the retry is library-only (no new designs)", async () => {
+test("runtime: a prepare try that fails before planning bills its AI spend; the retry designs only with the rest of the cap", async () => {
   const h = harness({ production: PROD_ON });
   await h.rt.start(h.run.id);
   const p1 = h.runpod.last("prepare");
@@ -569,9 +584,64 @@ test("runtime: a prepare try that fails before planning bills its AI spend; the 
   assert.equal(costSummary(h.db.ledgerRows).byStage.director, 0.006);
   const p2 = h.runpod.last("prepare");
   assert.equal(p2.job.attempt, 2);
-  assert.deepEqual([p2.job.prepare.builder.provider, p2.job.prepare.builder.budget.maxUsd], ["off", 0]);
+  assert.deepEqual([p2.job.prepare.builder.provider, p2.job.prepare.builder.budget.maxUsd], ["anthropic", 0.3], "the cap is per video: $0.60 - $0.30 spent");
+  assert.equal(p2.job.prepare.resume, undefined, "nothing was planned: a full retry");
   assert.deepEqual(p2.job.prepare.builder.library.map((a) => a.name), ["ladder"], "what try 1 built is reused for free");
   h.cleanup();
+});
+
+test("runtime (run 707609b1): a prepare that dies after planning is retried on the SAME plan: the mix only, chunks untouched", async () => {
+  const h = harness({ production: PROD_ON });
+  await h.rt.start(h.run.id);
+  const p1 = h.runpod.last("prepare");
+  assert.ok(p1.job.prepare.out.direction, "try 1 can store the director's list");
+  assert.equal(p1.job.prepare.director.stored, undefined);
+  await h.ev(p1, "voiced", { costUsd: 0.16 });
+  h.storage.write(h.P.direction, JSON.stringify({ v: 1, provider: "anthropic", production: { lines: [] } }));
+  h.storage.write(h.P.visualCheck, JSON.stringify({ passed: true, timeline: [], missing: [], subjects: [] }));
+  h.storage.write(h.P.timeline, JSON.stringify(timeline(20)));
+  await h.ev(p1, "planned", { frames: 480, builder: { costUsd: 0.2263, built: 0, cards: 6, ms: 113000, needs: [{ name: "scroll", kind: "object", source: "card", reason: "the still renderer failed: x", attempts: 1, costUsd: 0.03 }] }, director: { provider: "anthropic", model: "claude-haiku-5-5", costUsd: 0.0125, ms: 88000 } });
+  assert.equal((await h.db.getJob(p1.job.jobId)).output.planned.builder.needs[0].reason, "the still renderer failed: x", "the job row says why each thing is a card");
+  const chunks1 = h.runpod.sent.filter((s) => s.job.role === "chunk").length;
+  assert.ok(chunks1 >= 2, "the chunks of try 1's plan were sent");
+  await h.ev(p1, "failed", { code: "ERR_MODULE_NOT_FOUND", message: "Cannot find module sfxEpic.mjs", spend: { builderUsd: 0.2263, directorUsd: 0.0125, plannedBuilderUsd: 0.2263, plannedDirectorUsd: 0.0125 } });
+  const p2 = h.runpod.last("prepare");
+  assert.equal(p2.job.attempt, 2);
+  assert.ok(p2.job.prepare.resume?.timeline, "the retry gets try 1's timeline");
+  assert.ok(p2.job.prepare.voice.get, "and the paid take");
+  assert.ok(p2.job.prepare.director.stored, "and the stored director list (never paid twice)");
+  assert.equal(h.runpod.sent.filter((s) => s.job.role === "chunk").length, chunks1, "no chunk is sent again");
+  assert.equal(costSummary(h.db.ledgerRows).byStage.builder, 0.2263, "billed once");
+  h.cleanup();
+});
+
+test("worker: a resumed prepare plans nothing (no director, builder, plan or check); a stored director list costs nothing", async () => {
+  const { runJob } = await import("../scripts/blockyWorlds/engine/runpod/worker.mjs");
+  const { mockProduction } = await import("../scripts/blockyWorlds/engine/lib/director/index.js");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bw-resume-test-")), storage = fileStorage(root), events = [];
+  const url = (p) => storage.signPut(p);
+  const script = { lines: [{ part: "rule", text: "In this town, a piano." }] };
+  storage.write("timeline.json", JSON.stringify({ duration: 2, fps: 24, shots: [] }));
+  storage.write("v/voice.mp3", "mp3"); storage.write("v/take.json", "{}");
+  const never = (what) => () => { throw new Error(`${what} must not run on a resumed prepare`); };
+  const voiceFn = async ({ outDir }) => ({ wav: path.join(outDir, "missing.wav"), words: [] });
+  const job = { role: "prepare", runId: "r", jobId: "j", attempt: 2, mode: "cpu", prepare: { director: { provider: "anthropic", model: "claude-haiku-5-5" }, builder: { provider: "anthropic", library: [], budget: { maxUsd: 0.3 } }, script, resume: { timeline: await storage.signGet("timeline.json") },
+    voice: { get: { mp3: await storage.signGet("v/voice.mp3"), take: await storage.signGet("v/take.json") } }, out: { timeline: await url("timeline.json"), visualCheck: await url("visual-check.json"), production: await url("production.json"), direction: await url("direction.json"), mix: await url("mix.m4a") } } };
+  const res = await runJob(job, { post: async (e, d) => events.push([e, d]), planModule: { planVideo: never("the plan") }, voiceFn, kitModule: KIT, builder: { prefetch: never("the builder"), buildFor: never("the builder"), async close() {}, spent: 0 } });
+  assert.ok(!events.some((e) => e[0] === "planned" || e[0] === "voiced"), "nothing re-planned, nothing re-bought");
+  if (!res.ok) assert.doesNotMatch(res.error, /must not run/, res.error); // (the mix itself needs a real wav: it may fail after)
+  // a full retry with the list try 1 stored: the director answers from it for $0
+  storage.write("direction.json", JSON.stringify({ v: 1, provider: "anthropic", model: "claude-haiku-5-5", production: mockProduction({ script }) }));
+  events.length = 0;
+  const job2 = { ...job, prepare: { ...job.prepare, resume: undefined, builder: { provider: "off", library: [], budget: { maxUsd: 0 } }, director: { provider: "anthropic", model: "claude-haiku-5-5", stored: await storage.signGet("direction.json") } } };
+  const okPlan = { planVideo: () => ({ duration: 2, fps: 24, shots: [] }), checkTimeline: () => [], checkVisuals: () => [], checkSubjects: () => [] };
+  const builder = { prefetch() {}, async buildFor() { return { report: { costUsd: 0, ms: 1 }, applied: [], reverted: [], cards: [] }; }, async close() {}, spent: 0 };
+  const prev = process.env.ANTHROPIC_KEY; delete process.env.ANTHROPIC_KEY;
+  try { await runJob(job2, { post: async (e, d) => events.push([e, d]), planModule: okPlan, voiceFn, kitModule: KIT, builder }); } finally { if (prev != null) process.env.ANTHROPIC_KEY = prev; }
+  const planned = events.find((e) => e[0] === "planned")?.[1];
+  assert.ok(planned, "planned was sent");
+  assert.deepEqual([planned.director.provider, planned.director.reused, planned.director.costUsd], ["anthropic", true, 0]);
+  fs.rmSync(root, { recursive: true, force: true });
 });
 
 test("runtime: defaults (no secrets) = the free path; a broken library table never stops a run", async () => {
@@ -626,7 +696,7 @@ test("worker: a failed prepare reports what the director and the builder spent; 
   await runJob(job, { post: async (e, d) => events.push([e, d]), planModule: ok, voiceFn, kitModule: KIT, builder });
   const planned = events.find((e) => e[0] === "planned")?.[1];
   assert.ok(planned, "planned was sent");
-  assert.deepEqual(planned.builder, { costUsd: 0.05, built: 0, cards: 0, ms: 1200 });
+  assert.deepEqual(planned.builder, { costUsd: 0.05, built: 0, cards: 0, ms: 1200, needs: [] });
   assert.equal(planned.director.provider, "mock");
   assert.ok(Number.isFinite(planned.director.ms));
   assert.ok(["voice", "director", "plan", "build"].every((k) => Number.isFinite(planned.timing[k])), JSON.stringify(planned.timing));

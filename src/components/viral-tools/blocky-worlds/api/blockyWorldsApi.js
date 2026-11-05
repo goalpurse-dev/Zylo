@@ -1,11 +1,13 @@
 // Blocky Worlds: the page's side of the blocky-worlds-api contract (supabase/functions/_shared/blockyWorlds/contract.js).
-// "server" mode: every preview and production build. "dev" mode: local dev only (?mock=1), the whole flow in the browser
+// "server" mode: every build, and localhost by default. "dev" mode: local dev only (?mock=1), the whole flow in the browser
 // from the same mock steps the server's mock mode uses (dev/devApi.js); a production build never reaches it.
 import { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 export { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS };
 
-// localhost runs the free mock by default (the API isn't deployed yet); ?live=1 talks to the real server instead
-export const DEV_MOCK = import.meta.env.DEV && !new URLSearchParams(window.location.search).has("live");
+// localhost talks to the REAL server by default (owner, 2026-11-05); ?mock=1 runs the free in-browser mock instead (fake
+// ideas, fake video, nothing charged; the page shows a big TEST MODE bar). Read once when this module loads, so the
+// mode stays put while the app navigates. import.meta.env.DEV is false in every build, so the mock never ships.
+export const DEV_MOCK = Boolean(import.meta.env.DEV) && new URLSearchParams(window.location.search).get("mock") === "1";
 
 /** An error from blocky-worlds-api, with the contract's code and the extras some codes carry. */
 export class BlockyWorldsError extends Error {

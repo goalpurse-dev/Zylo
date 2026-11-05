@@ -65,15 +65,80 @@ export function beatProblems(beats) {
 }
 
 // ---------- step 3: the script (script.js checkScript, plus these protocol checks) ----------
-/** The planted object pays off: its words appear in a me/tour line (set up) and in a climax line (pay off). */
+// The planted object, recognised the way a listener would (2026-11-05: a real climax said "I tore off a strip and wrote
+// ZERO" right after "I looked at Grandma's duct tape" and was refused, because only the card's exact words counted).
+// A line refers to the object when it uses:
+//   - any distinctive word of it ("tape", "duct", "the roll" for "Grandma's roll of duct tape"), singular or plural,
+//     possessive or not; the owner ("Grandma's") and plain size/age words ("old", "little") don't count on their own
+//   - a piece of it: "a strip of it", or a bare "a strip" when the object is something strips come from (tape, paper...)
+//   - a bare piece word ("a strip", "a piece") right after the object was named (the last two lines before the part)
+// A climax that never names the object, never uses a piece of it and doesn't follow straight on from it still fails.
+const PROP_STOP = new Set("a an the of and or with from for to in on at my your his her our their its this that these those some one two three".split(" "));
+const PROP_GENERIC = new Set("old little big small tiny giant huge new fresh brand magic magical special lucky favorite favourite secret shiny broken chipped tiny same last first real only own".split(" "));
+/** A word's singular, lowercase form: "tapes" -> "tape", "boxes" -> "box", "berries" -> "berry", "glass" stays. */
+export function nounKey(word) {
+  let w = String(word ?? "").toLowerCase().replace(/[’']s$/, "").replace(/[^a-z0-9]/g, "");
+  if (w.length > 4 && w.endsWith("ies")) w = `${w.slice(0, -3)}y`;
+  else if (w.length > 4 && /(ss|x|z|ch|sh)es$/.test(w)) w = w.slice(0, -2);
+  else if (w.length > 3 && w.endsWith("s") && !/(ss|us|is)$/.test(w)) w = w.slice(0, -1);
+  return w;
+}
+const tokens = (text) => String(text ?? "").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").split(/[^A-Za-z0-9']+/).map((t) => t.replace(/^'+|'+$/g, "")).filter(Boolean);
+/**
+ * The object's distinctive words (singular). The owner ("Grandma's") and plain size words only when nothing else is left,
+ * or with withOwner (the set-up check: "I live with Grandma" next to her tape was always enough there).
+ */
+export function propWords(prop, { withOwner = false } = {}) {
+  const raw = tokens(prop);
+  const all = raw.map((t) => ({ key: nounKey(t), owner: /'s$/i.test(t) })).filter((w) => w.key.length > 2 && !PROP_STOP.has(w.key));
+  const strong = all.filter((w) => (withOwner || !w.owner) && !PROP_GENERIC.has(w.key)).map((w) => w.key);
+  return [...new Set(strong.length ? strong : all.map((w) => w.key))];
+}
+/** Piece words, and the materials each comes from (a bare "a strip" counts for tape, never for a whistle). */
+const PIECES = Object.freeze({
+  flat: { pieces: "strip piece bit scrap shred sheet length square corner tear patch", stuff: "tape ribbon paper cloth fabric bandage foil wrap plaster sticker scarf blanket cardboard leather rubber gum note letter map poster flag sheet towel napkin envelope newspaper page wallpaper" },
+  cord: { pieces: "length piece bit knot loop coil end strand", stuff: "rope string thread yarn wire cord chain twine lace shoelace hose cable ribbon licorice leash vine" },
+  food: { pieces: "slice piece bit crumb chunk bite wedge", stuff: "bread cake cheese pie pizza cookie sandwich chocolate candy pancake toast muffin biscuit cracker carrot apple" },
+  breakable: { pieces: "shard piece bit chunk sliver fragment", stuff: "glass mirror crystal plate vase egg shell ice bottle window jar lens" },
+  pour: { pieces: "pinch handful drop dab splash sprinkle spoonful blob squirt spray", stuff: "salt sand dust powder glitter sugar flour pepper seed water juice soup paint ink glue honey syrup perfume potion slime mud" },
+  stick: { pieces: "stub piece bit chunk end sliver shaving", stuff: "chalk crayon candle pencil stick wood soap twig branch" },
+});
+const ALL_PIECES = new Set(Object.values(PIECES).flatMap((f) => f.pieces.split(" ")));
+const piecesFor = (words) => new Set(Object.values(PIECES).filter((f) => f.stuff.split(" ").some((s) => words.includes(s))).flatMap((f) => f.pieces.split(" ")));
+/**
+ * How a line refers to the planted object: "word" (it names it), "piece" (a piece of it: "a strip of it", or "a strip" of
+ * tape), "bare-piece" (a piece word that needs the object named just before), or null.
+ */
+export function propReference(prop, text, { withOwner = false } = {}) {
+  const words = propWords(prop, { withOwner });
+  if (!words.length) return null;
+  const toks = tokens(text).map(nounKey);
+  if (toks.some((t) => words.includes(t))) return "word";
+  const fits = piecesFor(words);
+  for (let i = 0; i < toks.length; i++) {
+    if (!ALL_PIECES.has(toks[i])) continue;
+    const ofIt = toks[i + 1] === "of" && ["it", "them", "that", "this"].includes(toks[i + 2]);
+    if (ofIt) return "piece";
+    if (toks[i + 1] === "of") continue; // "a piece of cake": a piece of something else
+    if (fits.has(toks[i])) return "piece";
+    return "bare-piece";
+  }
+  return null;
+}
+/** Whether a part refers to the object (a bare piece word counts when the object was named in the two lines before it). */
+function partRefersTo(prop, lines, parts, opts = {}) {
+  const at = lines.findIndex((l) => parts.includes(l.part));
+  if (at < 0) return false;
+  const before = lines.slice(Math.max(0, at - 2), at).some((l) => propReference(prop, l.text) === "word");
+  return lines.some((l) => parts.includes(l.part) && (() => { const r = propReference(prop, l.text, opts); return r === "word" || r === "piece" || (r === "bare-piece" && before); })());
+}
+/** The planted object pays off: it is set up in the tour or "me" part and used in the climax (propReference). */
 export function propProblems(card, script) {
-  const prop = contentWords(card?.prop).filter((w) => w.length > 3);
-  if (!prop.length) return [];
-  const linesOf = (parts) => script.lines.filter((l) => parts.includes(l.part)).map((l) => contentWords(l.text)).flat();
-  const setup = linesOf(["tour", "me"]), payoff = linesOf(["climax"]);
+  if (!propWords(card?.prop).length) return [];
+  const lines = script?.lines ?? [];
   const out = [];
-  if (!prop.some((w) => setup.includes(w))) out.push(`the planted object (${card.prop}) is never set up in the tour or "me" part`);
-  if (!prop.some((w) => payoff.includes(w))) out.push(`the planted object (${card.prop}) never pays off in the climax`);
+  if (!partRefersTo(card.prop, lines, ["tour", "me"], { withOwner: true })) out.push(`The object the story hangs on (${card.prop}) is never shown before the trouble starts: name it in the "Me" part.`);
+  if (!partRefersTo(card.prop, lines, ["climax"])) out.push(`The climax never pays off ${card.prop}: the hero should win with it (name it, or use a piece of it).`);
   return out;
 }
 /** The closer calls back line 1: the last two lines share a content word with the first line or with the card's closer. */
@@ -81,7 +146,32 @@ export function callbackProblem(card, script) {
   const first = contentWords(script.lines[0]?.text), lastTwo = script.lines.slice(-2).map((l) => contentWords(l.text)).flat();
   const cardCloser = contentWords(card?.closer);
   const echoes = lastTwo.some((w) => first.includes(w)) || cardCloser.filter((w) => lastTwo.includes(w)).length >= 2;
-  return echoes ? null : "the last lines don't call back the first line (reuse a word or image from it)";
+  return echoes ? null : "The ending doesn't call back the first line: reuse a word or picture from line 1 in the last two lines.";
+}
+
+/**
+ * Where each problem sits, so the page can show it next to that part and offer "Fix it" for just that part:
+ * [{ problem, part, lines: [index...], fix: "opener" | "part" | "rewrite" }]. A problem with no single place (too short,
+ * missing parts, the title) is fixed by a rewrite of the whole script.
+ */
+export function problemSpots(script, problems) {
+  const lines = script?.lines ?? [];
+  const partLines = (part) => lines.map((l, i) => (l.part === part ? i : -1)).filter((i) => i >= 0);
+  const spot = (problem, part, idx, fix = "part") => ({ problem, part, lines: idx, fix });
+  return (problems ?? []).map((p) => {
+    if (/^The first line must start/.test(p) && lines.length) return spot(p, lines[0].part, [0], "opener");
+    const lineNo = p.match(/^Line (\d+) has/);
+    if (lineNo && lines[Number(lineNo[1]) - 1]) { const i = Number(lineNo[1]) - 1; return spot(p, lines[i].part, [i]); }
+    if (/never shown before the trouble starts/.test(p)) { const part = partLines("me").length ? "me" : "tour"; return spot(p, part, partLines(part)); }
+    if (/never pays off/.test(p) && partLines("climax").length) return spot(p, "climax", partLines("climax"));
+    if (/call back the first line/.test(p) && lines.length) { const part = lines.at(-1).part; return spot(p, part, partLines(part)); }
+    const word = p.match(/^Uses "([^"]+)"/)?.[1];
+    if (word) {
+      const i = lines.findIndex((l) => safetyProblems(l.text).some((s) => s.includes(`"${word}"`)));
+      if (i >= 0) return spot(p, lines[i].part, [i]);
+    }
+    return spot(p, null, [], "rewrite");
+  });
 }
 
 // ---------- step 4: the shot plan (the fixed vocabulary the renderer can build) ----------

@@ -3,7 +3,8 @@
 // _shared/blockyWorlds/contract.js. The flow: idea -> script -> settings -> generate -> result.
 //
 // Switches (function secrets):
-//   BLOCKY_WORLDS_ENABLED=true       the template for everyone (otherwise only BLOCKY_WORLDS_TEST_USERS, owner test mode)
+//   BLOCKY_WORLDS_ENABLED=true       the template for everyone (otherwise only BLOCKY_WORLDS_TEST_USERS and the owner
+//                                    (ADMIN_EMAILS), in test mode: their runs are env "test")
 //   BLOCKY_WORLDS_LLM=mock           ideas and scripts from examples.js: no Anthropic call, no cost (the free flow test)
 //   BLOCKY_WORLDS_PAID_CALLS=off     a hard off switch for every paid call
 //   BLOCKY_WORLDS_RENDERER=runpod    video making on (docs/blocky-worlds-pipeline.md), and only when RunPod and the
@@ -18,7 +19,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
 import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
-import { ERRORS, FAILED_MESSAGE } from "../_shared/blockyWorlds/contract.js";
+import { ERRORS, FAILED_MESSAGE, failReason } from "../_shared/blockyWorlds/contract.js";
 import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/config.js";
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
@@ -27,9 +28,9 @@ import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { cardFromScript, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { cardFromScript, draftCheck, fixPart, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
-import { cardProblems } from "../_shared/blockyWorlds/protocol.js";
+import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -64,20 +65,23 @@ async function whoIs(req: Request) {
   const user = data.user;
   const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", user.id).single();
   const plan = String(profile?.plan_code ?? "free").toLowerCase();
-  return { user, plan, tester: isAdmin(user, TESTERS), owner: isAdmin(user, OWNERS) };
+  const owner = isAdmin(user, OWNERS);
+  // the owner always tests like a tester (BLOCKY_WORLDS_TEST_USERS may be empty): sees the template, dryRun, runs env "test"
+  return { user, plan, tester: owner || isAdmin(user, TESTERS), owner };
 }
 /** signed in, and the template is on for them */
 async function requireUser(req: Request, trace: Trace) {
   const who = await whoIs(req);
   if (!who) throw new ApiError("SIGN_IN");
   trace.owner = who.owner;
-  if (!ENABLED && !who.tester) throw new ApiError("OFF");
+  if (!ENABLED && !who.tester && !who.owner) throw new ApiError("OFF");
   return who;
 }
-/** may write scripts (and generate): a paid plan, the same rule for testers */
+/** may write scripts (and generate): a paid plan, the same rule for testers; the owner always (their test runs) */
+const writerOk = (who: { plan: string; owner: boolean }) => who.owner || canWrite(who.plan);
 async function requireWriter(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
-  if (!canWrite(who.plan)) throw new ApiError("UPGRADE");
+  if (!writerOk(who)) throw new ApiError("UPGRADE");
   return who;
 }
 
@@ -108,7 +112,7 @@ function draftView(d: any) {
   return {
     id: d.id, source: d.source, ideaId: d.idea_id, title: d.title, lengthSec: d.length_sec, lines: d.lines ?? [], post: d.post ?? {},
     credits: PRICES[d.length_sec] ?? null,
-    check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0 },
+    check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
     ready: !(check.problems ?? []).length, updatedAt: d.updated_at,
   };
 }
@@ -126,6 +130,7 @@ async function runView(r: any, { owner = false } = {}) {
     finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
     poster: done ? await signed(files.poster) : null,
     error: r.status === "failed" ? FAILED_MESSAGE : null, refunded: Boolean(r.refunded_at),
+    ...(r.status === "failed" ? (({ kind, text }) => ({ reason: text, failKind: kind }))(failReason(r.error_code)) : {}),
     ...(owner && r.status === "failed" ? { debug: { code: r.error_code, message: r.error_message } } : {}),
   };
 }
@@ -140,10 +145,14 @@ async function countEvent(userId: string, libraryId: string | null, kind: string
 
 /** The kind of checks a draft gets: ours keep their parts; anything the user saved is checked as their own. */
 const kindOf = (d: any) => (d.checks?.kind === "written" ? "written" : "own");
+/** The same checks the script was written against: ours get the protocol's too (the object pays off, the callback). */
 function recheck(d: any, lengthSec = d.length_sec) {
   const script = { title: d.title, lines: d.lines ?? [], post: d.post ?? {} };
-  return { ...checkScript(script, lengthSec, kindOf(d)), kind: kindOf(d) };
+  // the mock writer's sample script doesn't follow the card, so mock mode checks it without the card (like writeScript)
+  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null), kind: kindOf(d) };
 }
+/** "The rewrite still has a problem" in plain words (never a silent failing rewrite). */
+const stillFailing = (problems: string[]) => (problems.length ? `It still needs one fix: ${problems[0]}${problems.length > 1 ? ` (and ${problems.length - 1} more)` : ""}` : null);
 async function loadDraft(userId: string, draftId: unknown) {
   if (!/^[0-9a-f-]{36}$/i.test(String(draftId ?? ""))) throw new ApiError("BAD_INPUT");
   const { data } = await admin.from("blocky_worlds_drafts").select("*").eq("id", draftId).eq("user_id", userId).is("deleted_at", null).maybeSingle();
@@ -152,7 +161,7 @@ async function loadDraft(userId: string, draftId: unknown) {
 }
 const lengthOf = (v: unknown, fallback = DEFAULT_LENGTH) => {
   const n = v == null ? fallback : Number(v);
-  if (!LENGTHS.includes(n)) throw new ApiError("BAD_INPUT", `Pick ${LENGTHS.join(", ")} seconds.`);
+  if (!LENGTHS.includes(n)) throw new ApiError("BAD_INPUT", `Pick a length from ${LENGTHS[0]} to ${LENGTHS.at(-1)} seconds, in 10 s steps.`);
   return n;
 };
 const moodOf = (v: unknown) => (typeof v === "string" && (MOODS as any)[v] ? v : null);
@@ -168,7 +177,8 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    const visible = ENABLED || Boolean(who?.tester);
+    // the owner (ADMIN_EMAILS) always sees it, even with BLOCKY_WORLDS_TEST_USERS empty
+    const visible = ENABLED || Boolean(who?.tester) || Boolean(who?.owner);
     let ideaBatchesLeft = null;
     if (who && visible) {
       const { data } = await admin.rpc("blocky_worlds_guard", { p_user: who.user.id });
@@ -176,7 +186,7 @@ async function handle(req: Request, trace: Trace) {
     }
     return {
       enabled: ENABLED, signedIn: Boolean(who), plan: who?.plan ?? null, owner: Boolean(who?.owner), tester: Boolean(who?.tester),
-      visible, canWrite: Boolean(who && visible && canWrite(who.plan)), canGenerate: Boolean(who && visible && canGenerate(who.plan) && RENDERER),
+      visible, canWrite: Boolean(who && visible && writerOk(who)), canGenerate: Boolean(who && visible && (who.owner || canGenerate(who.plan)) && RENDERER),
       canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)), mock: PROVIDER === "mock", renderer: Boolean(RENDERER),
       lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName },
       moods: Object.entries(MOODS).map(([id, m]: any) => ({ id, label: m.label })), ideaBatchesLeft,
@@ -228,11 +238,11 @@ async function handle(req: Request, trace: Trace) {
   }
 
   // ---------- 2. the script (paid plans; writing is free, with a daily limit) ----------
-  if (action === "writeScript" || action === "rewrite" || action === "fixOpener") {
+  if (action === "writeScript" || action === "rewrite" || action === "fixOpener" || action === "fixPart") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
     trace.step = "limits";
-    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : action === "fixOpener" ? 0.005 : 0.08, "writing");
+    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : action === "fixOpener" ? 0.005 : action === "fixPart" ? 0.02 : 0.08, "writing");
     if (Number(counts.user_scripts_today ?? 0) >= WRITING.dailyScripts) throw new ApiError("DAILY_LIMIT", `That's today's ${WRITING.dailyScripts} script writes. Edit the script yourself, or come back tomorrow.`);
 
     if (action === "fixOpener") {
@@ -248,6 +258,34 @@ async function handle(req: Request, trace: Trace) {
       const checks = recheck(next);
       const { data } = await admin.from("blocky_worlds_drafts").update({ lines: next.lines, checks, writes: d.writes + 1, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
       return draftView(data);
+    }
+
+    // "Fix it": only the lines a check flagged in one part are rewritten; every other line stays word for word; the
+    // whole script is re-checked with the same checks (one retry with what's still wrong, inside fixPart)
+    if (action === "fixPart") {
+      const d = await loadDraft(who.user.id, body?.draftId);
+      const before = recheck(d);
+      const part = String(body?.part ?? "");
+      const spots = problemSpots({ lines: d.lines ?? [] }, before.problems).filter((s: any) => s.fix === "part" && s.part === part);
+      if (!spots.length) {
+        // nothing left to fix there (fixed meanwhile): the current state, no call
+        return { ...draftView({ ...d, checks: before }), fixed: !before.problems.length, writesLeft: await scriptsLeft(who.user.id, counts) };
+      }
+      const indexes = [...new Set(spots.flatMap((s: any) => s.lines))].sort((a: number, b: number) => a - b);
+      trace.step = "writer";
+      let fix: any;
+      try {
+        fix = await fixPart({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes, reasons: spots.map((s: any) => s.problem), card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d) });
+      } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
+      await logCall(who.user.id, "script", fix.costUsd);
+      // saved only when it's better than before (fewer problems); otherwise the draft stays as it was
+      if (fix.check.problems.length >= before.problems.length) {
+        throw new ApiError("WRITER", "We couldn't fix that part this time. Try Fix it once more, or edit those lines yourself.", {}, `fixPart ${part}: ${fix.check.problems.join(" | ")}`);
+      }
+      const checks = { ...fix.check, kind: kindOf(d) };
+      const { data, error } = await admin.from("blocky_worlds_drafts").update({ lines: fix.script.lines, checks, writes: d.writes + 1, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
+      if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+      return { ...draftView(data), fixed: fix.fixed, notice: stillFailing(checks.problems), writesLeft: await scriptsLeft(who.user.id) };
     }
 
     // the idea: from the card (writeScript), or the draft's (rewrite); a draft of the user's own gets a small idea
@@ -280,7 +318,9 @@ async function handle(req: Request, trace: Trace) {
     trace.step = "writer";
     let written: any;
     try {
-      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note: String(body?.note ?? "").slice(0, 300), beats });
+      // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
+      const failed = d ? recheck(d, lengthSec).problems : [];
+      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note: String(body?.note ?? "").slice(0, 300), beats, failed });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
       throw writerError(e);
@@ -294,7 +334,7 @@ async function handle(req: Request, trace: Trace) {
     if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
     // learning: a library idea was picked (its first script) or rewritten
     if (libraryId) await countEvent(who.user.id, libraryId, d ? "rewritten" : "picked", { draftId: saved.data.id });
-    return { ...draftView(saved.data), writesLeft: await scriptsLeft(who.user.id) };
+    return { ...draftView(saved.data), notice: stillFailing(checks.problems ?? []), writesLeft: await scriptsLeft(who.user.id) };
   }
 
   if (action === "saveScript") {
@@ -337,7 +377,7 @@ async function handle(req: Request, trace: Trace) {
     const checks = recheck(d, lengthSec);
     if (action === "quote") return { credits: PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems };
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
-    const dryRun = body?.dryRun === true && who.tester;
+    const dryRun = body?.dryRun === true && (who.tester || who.owner);
     if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
     trace.step = "cap check";
     await guardFor(who.user.id, costBasisUsd(lengthSec), "video");
@@ -346,14 +386,22 @@ async function handle(req: Request, trace: Trace) {
     if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
     const credits = Number(price), endCard = endCardFor(who.plan, body?.removeWatermark === true);
     if (dryRun) return { dryRun: true, credits, endCard, lengthSec, renderer: Boolean(RENDERER), checks };
+    // one video at a time per script: a double-tapped "Try again" never charges twice (the unique index
+    // blocky_worlds_runs_one_active_per_draft makes the same promise inside the start transaction)
+    trace.step = "one per script";
+    const busyMsg = "This script is already being made. Wait for it to finish.";
+    const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", d.id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
+    if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
     trace.step = "job creation";
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
       p_user: who.user.id, p_draft: d.id, p_title: d.title, p_length: lengthSec, p_lines: d.lines, p_narration: narrationOf(script), p_post: d.post,
-      p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: who.tester && !ENABLED ? "test" : "prod",
+      p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: (who.tester || who.owner) && !ENABLED ? "test" : "prod",
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
+      // the whole start (charge included) was rolled back: nothing was charged
+      if (/one_active_per_draft|duplicate key/i.test(error?.message ?? "")) throw new ApiError("LIMIT", busyMsg, {}, error?.message);
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;

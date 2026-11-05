@@ -27,6 +27,7 @@
 import { matchProduction } from "./director/match.js";
 import { GIANT_KINDS, CROWD_KINDS, EPIC_CAMERAS, BEATS } from "./epic.js";
 import { hashSeed } from "./rng.js";
+import { cardLabel } from "./planText.js";
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const lc = (s) => ` ${String(s ?? "").toLowerCase().replace(/[“”"’]/g, (c) => (c === "’" ? "'" : " ")).replace(/\s+/g, " ")} `;
@@ -161,7 +162,10 @@ export function refineProduction(production, { script, mock = false } = {}) {
   }
 
   // d. crowds: the same soldiers twice are one army; an army next to a giant is that giant's
-  const kindOfCrowd = (cw) => (cw.member === "person" ? (/knight/.test(cw.name) ? "knight" : SOLDIERY.test(cw.name) ? "soldier" : "townsfolk") : cw.member === "creature" && p.creatures.find((x) => x.id === cw.of)?.species === "wolf" ? "wolf_soldier" : cw.member);
+  // (an unnamed crowd is read by its id; robot / other members whose id or name says army are an army: run 707609b1's
+  // "soldiers" of robots and the "soldier_crowd" the words added were one army, not two)
+  const crowdWords = (cw) => `${String(cw.id ?? "").replace(/_/g, " ")} ${cw.name ?? ""}`.toLowerCase();
+  const kindOfCrowd = (cw) => (cw.member === "person" ? (/knight/.test(crowdWords(cw)) ? "knight" : SOLDIERY.test(crowdWords(cw)) ? "soldier" : "townsfolk") : cw.member === "creature" && p.creatures.find((x) => x.id === cw.of)?.species === "wolf" ? "wolf_soldier" : cw.member !== "creature" && SOLDIERY.test(crowdWords(cw)) ? "soldier" : cw.member);
   const armies = p.crowds.filter((cw) => ["soldier", "wolf_soldier"].includes(kindOfCrowd(cw)));
   for (const extra of armies.slice(1)) {
     const keep = armies[0];
@@ -563,7 +567,7 @@ export function onScreen(r, s, tl = {}) {
   // the item's own picture card (its text), or a card / badge naming it
   const cardWords = r.card?.text ? NW(r.card.text) : [];
   const cardSays = !!s.insert && (["card", "sign", "note"].includes(s.insert.kind) && NW(s.insert.text).some((w) => name.includes(w) || name.includes(sing(w)) || name.map(sing).includes(sing(w))) || (r.card?.text && s.insert.text === r.card.text));
-  const badge = markersOf(s).some((m) => NW(m.text).some((w) => name.includes(w) || name.map(sing).includes(sing(w)) || cardWords.at(-1) === w));
+  const badge = markersOf(s).some((m) => NW(m.text).some((w) => name.includes(w) || name.map(sing).includes(sing(w)) || cardWords.includes(w)));
   const objs = s.objects ?? [];
   const objHit = objs.some((o) => (r.needId && (o.needId === r.needId)) || (r.kitName && o.name === r.kitName) || (o.asset && [o.name, ...(o.aliases ?? [])].some((a) => NW(a).some((w) => name.includes(w)))) || NW(o.name).join(" ") === name.join(" "));
   const giants = s.giants ?? [], crowds = s.crowds ?? [];
@@ -586,8 +590,10 @@ export function onScreen(r, s, tl = {}) {
       if (crowds.some((c) => c.item === r.id)) return true;
       if (r.memberGiant && giants.some((g) => g.id === r.memberGiant)) return true;
       if (r.memberKit && objs.some((o) => o.name === r.memberKit)) return true;
-      if (!r.crowdKind && r.route !== "card") return actors.length >= 3 || objHit;
-      return false;
+      if (!r.crowdKind && r.route !== "card" && (actors.length >= 3 || objHit)) return true;
+      // the last resort (fixProduction): a badge naming the crowd over someone in the shot (its picture card is an
+      // insert, read above); a crowd EPIC can't stage there (an army inside the creature) is still named on screen
+      return badge;
     case "prop": case "vehicle":
       if (String(r.kitName ?? "").startsWith("held:")) { const h = r.kitName.slice(5); return actors.some((a) => a.hold === h || NW(a.hold).some((w) => name.includes(w))) || objs.some((o) => o.name === "item" && o.state === h) || objHit || badge; }
       if (r.kitName === "bus (street set)") return s.set === "street" || badge;
@@ -668,7 +674,7 @@ export function fixProduction(tl, D, aux) {
           }
         }
         if (!how) {
-          const card = r.card ?? { kind: "card", text: String(r.name ?? r.id).toUpperCase().replace(/[^A-Z0-9' ]/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" ") || "?", icon: "✨" };
+          const card = r.card ?? { kind: "card", text: cardLabel(r.name ?? r.id) || "?", icon: "✨" };
           if (aux.card(tl.shots, m.line, card, r)) how = "card";
           else if (aux.badge(host, card)) how = "badge";
         }

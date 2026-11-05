@@ -99,7 +99,7 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
   const slots = slotsForBatch(seed + 101, TOPIC_IDEAS, mood);
   return {
     slots,
-    text: `The user's topic: "${String(topic).slice(0, 120)}"\n\nTurn the topic into ${slots.length} different world rules that a whole town lives by, with a price, then into ideas. The topic must be at the heart of each rule (not a side detail). If the topic names a real game, film, brand or person, keep the idea behind it and drop the name.\nOne idea per slot, in this order:\n${slotText(slots)}` +
+    text: `The user's topic: "${String(topic).slice(0, 200)}"\n\nTurn the topic into ${slots.length} different world rules that a whole town lives by, with a price, then into ideas. The topic must be at the heart of each rule (not a side detail). If the topic names a real game, film, brand or person, keep the idea behind it and drop the name.\nOne idea per slot, in this order:\n${slotText(slots)}` +
       (avoid.length ? `\n\nAlready used (never repeat these):\n${avoid.slice(0, 40).map((a) => `- ${a}`).join("\n")}` : ""),
   };
 }

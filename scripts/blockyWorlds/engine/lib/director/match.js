@@ -15,6 +15,7 @@ import { itemsOf } from "./spec.js";
 import { OBJECT_CATALOG, heldKind, objectForNoun, iconFor } from "../visuals.js";
 import { ANIMALS, CREATURE_OBJECTS, creatureFor } from "../catalog.js";
 import { phraseIndex, findPhrases, VEHICLE_WORDS, ACTION_WORDS, POSES_N } from "./vocab.js";
+import { cardLabel } from "../planText.js";
 
 // the settings the 4 hand-built sets show well (a copy of plan.mjs SET_FITS: keep in step)
 const SET_FITS = /\b(suburb|street|streets|town square|square|snowy town|neighbou?rhood|village|downtown|main street|road|park|house|home|bedroom|kitchen|living room|attic|basement|apartment|school|classroom|hallway|cafeteria|stage|gym|woods?|forest|farm|canyon|cliff|mountain|trail|castle|town|city)\b/;
@@ -30,7 +31,20 @@ const FX_ICON = { fire: "🔥", explosion: "💥", glow: "✨", sparkles: "✨",
 const ENCLOSURE_OF = { enclosed: "cave", underwater: "underwater", space: "space", sky: "sky" };
 
 const words = (s) => String(s ?? "").toLowerCase().replace(/[^a-z' -]/g, " ").split(/[\s-]+/).filter(Boolean);
-const label = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9' ]/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" ");
+const label = (s) => cardLabel(s);
+/**
+ * The EPIC crowd kind closest to what was asked: a kind EPIC has stays; a crowd whose id / name says army (soldiers,
+ * troops, guards, warriors) is "soldier" whatever its members are made of (robot soldiers); people-like members are
+ * "townsfolk"; anything else stays as asked (no EPIC kind: the members' kit object or a picture card shows it).
+ */
+export function nearestCrowdKind(kind, words = "") {
+  if (["townsfolk", "soldier", "knight", "wolf_soldier", "kid"].includes(kind)) return kind;
+  const w = ` ${String(words).toLowerCase().replace(/[^a-z]+/g, " ")} `;
+  if (/ knights? /.test(w)) return "knight";
+  if (/ (soldiers?|army|armies|troops?|guards?|warriors?|legion|regiment|marchers) /.test(w)) return "soldier";
+  if (/^(people|person|human|humans|man|men|woman|women|villager|villagers|townsfolk|citizens?|kids?|children|students?)$/.test(String(kind ?? ""))) return "townsfolk";
+  return kind;
+}
 const cardOf = (name, key = null) => ({ kind: "card", text: label(name) || "?", icon: FX_ICON[key] ?? words(name).map((w) => iconFor(w)).find((i) => i !== "✨") ?? "✨" });
 
 /** The Node view of the kit: a scene object / hand prop / animal / creature look by name (whole name, then head noun). */
@@ -170,7 +184,8 @@ export function matchProduction(production, { kit = nodeKit(), exists = () => fa
 
   // ---------------------------------------------------------------- crowds
   for (const cw of p.crowds) {
-    const name = cw.name || cw.of || "crowd";
+    // a crowd the director left unnamed is called by its id ("soldiers"), never "crowd": its card / badge must say what it is
+    const name = cw.name || cw.of || String(cw.id ?? "").replace(/_/g, " ").trim() || "crowd";
     const member = cw.of ? calls.get(cw.of) : null;
     const species = cw.of ? (p.creatures.find((x) => x.id === cw.of)?.species ?? cw.of) : "";
     // EPIC's crowd kinds: townsfolk | soldier | knight | wolf_soldier; anything else is asked for by name (a gap)
@@ -178,7 +193,9 @@ export function matchProduction(production, { kit = nodeKit(), exists = () => fa
       : cw.member === "creature" ? (species === "wolf" ? "wolf_soldier" : (species || "creature")) : cw.member;
     const c = ask("crowd", { kind, action: cw.actions, count: cw.count }, cw, "crowd", name);
     const route = landed("crowd") ? "epic" : "kit";
-    put(cw, "crowd", name, { ...c, route, crowdKind: kind, of: cw.of || null, memberRoute: member?.route ?? (cw.member === "person" ? "kit" : null), fallback: cw.member === "person" ? `a group of up to 6 + a x${cw.count} badge` : `3 copies of the ${member?.kitName ?? cw.of ?? "member"} + a x${cw.count} badge` });
+    // the gap keeps the kind asked for (robot); the plan shows the nearest crowd EPIC has (an army of robot soldiers is
+    // an army), else the members / a card (THE PERMANENT RULE: a missing kind never fails a run; run 707609b1)
+    put(cw, "crowd", name, { ...c, route, crowdKind: nearestCrowdKind(kind, `${cw.id ?? ""} ${name}`), ...(nearestCrowdKind(kind, `${cw.id ?? ""} ${name}`) !== kind ? { askedKind: kind } : {}), of: cw.of || null, memberRoute: member?.route ?? (cw.member === "person" ? "kit" : null), fallback: cw.member === "person" ? `a group of up to 6 + a x${cw.count} badge` : `3 copies of the ${member?.kitName ?? cw.of ?? "member"} + a x${cw.count} badge` });
   }
 
   // ---------------------------------------------------------------- vehicles

@@ -12,6 +12,7 @@
 //   result = { needId, kind, name, source: "kit" | "cache" | "built" | "card", asset?, kitName?, card?, attempts,
 //              costUsd, ms, reason?, verdicts: [] }
 import { normName, validateBlueprint, validateWorld } from "./spec.js";
+import { cardLabel } from "../planText.js";
 
 export const DEFAULT_BUDGET = Object.freeze({ maxUsd: 0.6, maxMs: 120000, maxDesigns: 6, minConfidence: 0.6, retries: 2 });
 
@@ -20,7 +21,7 @@ const ICONS = { robot: "🤖", tooth: "🦷", dentist: "🦷", turtle: "🐢", m
 export function cardOf(need) {
   const words = normName(need.phrase || need.name).split(" ");
   const icon = words.map((w) => ICONS[w]).find(Boolean) ?? "✨";
-  return { kind: "card", text: String(need.phrase || need.name).toUpperCase().replace(/[^A-Z0-9' ]/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(0, 4).join(" "), icon };
+  return { kind: "card", text: cardLabel(need.phrase || need.name), icon };
 }
 
 /** one shared purse per video: a call is only started when its worst case still fits */
@@ -41,10 +42,11 @@ const withDeadline = (p, deadline, what) => {
   return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(Object.assign(new Error(`time cap reached during ${what}`), { timeout: true })), left); })]).finally(() => clearTimeout(t));
 };
 
-export async function resolveNeeds(needs, { provider = null, cache = null, render = null, kit = null, budget = {}, log = () => {}, purse: sharedPurse = null, memo = null, t0: start = null } = {}) {
+export async function resolveNeeds(needs, { provider = null, cache = null, render = null, kit = null, budget = {}, log = () => {}, purse: sharedPurse = null, memo = null, t0: start = null, offReason = null } = {}) {
   const B = { ...DEFAULT_BUDGET, ...budget };
-  // purse / memo / t0 may be shared by several calls of one video (index.js: the early prefetch and the final pass)
-  const t0 = start ?? Date.now(), deadline = t0 + B.maxMs, purse = sharedPurse ?? makePurse(B);
+  // purse / memo / t0 may be shared by several calls of one video (index.js: the early prefetch and the final pass);
+  // budget.until (epoch ms) is a hard end on top of maxMs (the prepare job's own time limit)
+  const t0 = start ?? Date.now(), deadline = Math.min(t0 + B.maxMs, Number(B.until) || Infinity), purse = sharedPurse ?? makePurse(B);
   const results = {};
   // one job per distinct thing (two lines needing "ladder" share one design)
   const groups = new Map();
@@ -65,7 +67,8 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
         if (hit) { cache.used?.(hit.id)?.catch?.(() => {}); return done({ source: "cache", asset: hit }); }
       } catch (e) { log(`library lookup failed for "${need.name}": ${e.message}`); }
       // 3. design + check
-      if (!provider || !render) return done({ reason: provider ? "no still renderer" : "the builder is off (no provider)" });
+      if (!provider || !render) return done({ reason: provider ? "no still renderer" : offReason ?? "the builder is off (no provider)" });
+      if (purse.stillBroken) return done({ reason: `the still renderer failed (${purse.stillBroken}): no design is bought without a way to check it` });
       if (!purse.takeDesign()) return done({ reason: `more than ${B.maxDesigns} new designs in one video` });
       let feedback = null, last = null;
       for (let attempt = 1; attempt <= 1 + B.retries; attempt++) {
@@ -94,8 +97,21 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
           feedback = `the blueprint had problems: ${serious.slice(0, 8).join("; ")}`;
           r.verdicts.push({ attempt, problems: serious.slice(0, 8) }); continue;
         }
-        try { still = await withDeadline(render(need.kind, spec, { name: `${need.kind}-${normName(need.name).replace(/ /g, "_")}-${attempt}` }), deadline, "the still"); }
-        catch (e) { purse.settle(visionCost, 0); if (e.timeout) return done({ reason: e.message }); r.verdicts.push({ attempt, error: `still: ${String(e.message).slice(0, 200)}` }); feedback = null; continue; }
+        // the still: a failure is the renderer's, not the design's, so it is tried once more with the SAME blueprint and
+        // never answered with a new (paid) design; a renderer that fails twice stops every design of this video
+        // (run 707609b1: Chrome could not start in the prepare job, every still failed, each failure bought a new design:
+        // $0.23 for 0 things built)
+        try {
+          const name = `${need.kind}-${normName(need.name).replace(/ /g, "_")}-${attempt}`;
+          try { still = await withDeadline(render(need.kind, spec, { name }), deadline, "the still"); }
+          catch (e) { if (e.timeout) throw e; r.verdicts.push({ attempt, error: `still: ${String(e.message).slice(0, 200)} (tried again)` }); still = await withDeadline(render(need.kind, spec, { name: `${name}b` }), deadline, "the still"); }
+        } catch (e) {
+          purse.settle(visionCost, 0);
+          if (e.timeout) return done({ reason: e.message });
+          purse.stillBroken ??= String(e.message).slice(0, 160);
+          r.verdicts.push({ attempt, error: `still: ${String(e.message).slice(0, 200)}` });
+          return done({ reason: `the still renderer failed: ${String(e.message).slice(0, 160)}` });
+        }
         let v;
         try { visionCalls++; v = await withDeadline(provider.vision({ need, kind: need.kind, still, spec, attempt }), deadline, "the vision check"); purse.settle(visionCost, v.costUsd); r.costUsd += v.costUsd ?? 0; }
         catch (e) { purse.settle(visionCost, e.costUsd ?? 0); r.costUsd += e.costUsd ?? 0; if (e.timeout) return done({ reason: e.message }); r.verdicts.push({ attempt, error: `vision: ${String(e.message).slice(0, 200)}` }); continue; }

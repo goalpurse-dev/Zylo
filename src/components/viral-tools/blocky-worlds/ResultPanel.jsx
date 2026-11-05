@@ -1,8 +1,9 @@
-import { Check, Copy, Download, Music2, ThumbsDown, ThumbsUp } from "lucide-react";
+import { AlertTriangle, Check, Copy, Download, Music2, RotateCcw, ThumbsDown, ThumbsUp, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FOCUS, cx } from "../../ui/zyvo";
 import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsApi";
 import LivePreview, { Clip } from "./LivePreview";
+import { ActionButton, CreditMark } from "./StepShell";
 import { CLIPS, useReducedMotion } from "./clips";
 import "../../onboarding/onboarding.css";
 import "./blockyWorlds.css";
@@ -11,11 +12,13 @@ import "./blockyWorlds.css";
  * The right side: the live preview (clips with the story's captions playing), the video being made (the onboarding's
  * orb and ring), or the finished video with a celebration the first time it lands, the upload text and the thumbs.
  */
-export default function ResultPanel({ run, recent, onOpen, onEvent, preview }) {
+export default function ResultPanel({ run, recent, onOpen, onEvent, preview, busy = null, prices = null, onRetry, onRewriteRetry }) {
+  // how many times this script has failed (the newest 20 runs): the second failure also offers a rewrite
+  const failures = run?.draftId ? recent.filter((r) => r.draftId === run.draftId && r.status === "failed").length : 0;
   return (
     <div className="relative flex h-full flex-col gap-4 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0E1012] p-5">
       <div key={run ? run.id : "preview"} className="bw-step-in">
-        {run ? <RunView run={run} onEvent={onEvent} /> : <LivePreview {...preview} />}
+        {run ? <RunView run={run} onEvent={onEvent} retry={{ busy, price: prices?.[run.lengthSec] ?? run.credits, failures, onRetry, onRewriteRetry }} /> : <LivePreview {...preview} />}
       </div>
       {recent.length > 0 && (
         <div className="relative">
@@ -100,7 +103,7 @@ function Building({ run }) {
   );
 }
 
-function RunView({ run, onEvent }) {
+function RunView({ run, onEvent, retry }) {
   const [thumb, setThumb] = useState(null);
   const [copied, setCopied] = useState(false);
   const still = useReducedMotion();
@@ -115,7 +118,7 @@ function RunView({ run, onEvent }) {
 
   if (isWorking(run)) return <Building run={run} />;
   if (run.status === "failed") {
-    return <div className="mx-auto max-w-[380px] pt-6 text-[13px] leading-relaxed text-white/75" role="alert">{run.error}{run.refunded && <span className="mt-1 block text-[11.5px] text-lime-300">Your {run.credits} credits are back.</span>}</div>;
+    return <FailedView run={run} {...retry} />;
   }
   const post = run.post ?? {};
   const postText = [post.title, post.description, (post.hashtags ?? []).join(" ")].filter(Boolean).join("\n\n");
@@ -153,6 +156,50 @@ function RunView({ run, onEvent }) {
         <Music2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" />
         <span><b className="font-bold text-white/85">Tip:</b> for max reach, add a trending sound in TikTok when you post.</span>
       </p>
+    </div>
+  );
+}
+
+/**
+ * A video that didn't make it: why, in plain words (contract.js failReason), the refund, and the way forward: "Try
+ * again" makes the SAME script again at the same length (it charges normally; the failed one was refunded). From the
+ * second failure of the same script (or at once when the builder couldn't show something the story needs) "Rewrite and
+ * try again" is offered too.
+ */
+function FailedView({ run, busy = null, price, failures = 1, onRetry, onRewriteRetry }) {
+  const [error, setError] = useState(null);
+  const canRetry = Boolean(run.draftId && onRetry);
+  const offerRewrite = canRetry && onRewriteRetry && (failures >= 2 || run.failKind === "story");
+  const go = async (fn) => {
+    setError(null);
+    const r = await fn(run);
+    if (r && !r.ok && r.error && !["SIGN_IN", "UPGRADE", "CREDITS"].includes(r.error.code)) setError(r.error.message);
+  };
+  const credits = <span className="flex items-center gap-1 text-[13px] font-semibold"><CreditMark />{price}</span>;
+  return (
+    <div className="mx-auto flex max-w-[380px] flex-col items-center gap-3 px-2 pt-10 text-center" role="alert">
+      <span className="grid h-12 w-12 place-items-center rounded-2xl border border-rose-300/25 bg-rose-300/10"><AlertTriangle className="h-5 w-5 text-rose-200" aria-hidden="true" /></span>
+      <p className="text-[20px] font-black tracking-[-0.02em] text-white">This video didn&rsquo;t make it</p>
+      <p className="max-w-[320px] truncate text-[12.5px] font-semibold text-white/45">&ldquo;{run.title}&rdquo;</p>
+      <p className="text-[13.5px] leading-relaxed text-white/80">{run.reason ?? run.error}</p>
+      <p className={cx("rounded-full px-3 py-1 text-[12px] font-bold", run.refunded ? "bg-lime-300/10 text-lime-300" : "bg-white/[0.05] text-white/60")}>
+        {run.refunded ? `Your ${run.credits} credits are back.` : "Your credits come back within a minute."}
+      </p>
+      {failures >= 2 && <p className="text-[11.5px] leading-relaxed text-white/45">This script failed {failures} times. A fresh version of it usually builds.</p>}
+      {canRetry && (
+        <div className="mt-2 flex w-full flex-col gap-2">
+          <ActionButton busy={busy === "retrying" ? "Starting…" : null} disabled={Boolean(busy)} onClick={() => go(onRetry)}>
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />Try again{credits}
+          </ActionButton>
+          {offerRewrite && (
+            <ActionButton variant="secondary" busy={busy === "rewriting" ? "Rewriting…" : null} disabled={Boolean(busy)} onClick={() => go(onRewriteRetry)}>
+              <Wand2 className="h-4 w-4" aria-hidden="true" />Rewrite and try again{credits}
+            </ActionButton>
+          )}
+          <p className="text-[11px] leading-relaxed text-white/40">Try again makes the same script at the same length.{offerRewrite ? " A rewrite starts only once the new version passes every check." : ""}</p>
+        </div>
+      )}
+      {error && <p className="text-[12px] font-semibold text-rose-200" role="status">{error}</p>}
     </div>
   );
 }

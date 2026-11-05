@@ -113,7 +113,7 @@ export function paths(run) {
   const d = runDir(run), pad = (i) => String(i).padStart(3, "0");
   return {
     voiceMp3: `${d}/voice/voice.mp3`, take: `${d}/voice/take.json`,
-    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, mix: `${d}/mix.m4a`,
+    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, direction: `${d}/direction.json`, mix: `${d}/mix.m4a`,
     seg: (i, a) => `${d}/chunks/seg_${pad(i)}_a${a}.mp4`, web: (i, a) => `${d}/chunks/web_${pad(i)}_a${a}.mp4`,
     final: `${d}/final.mp4`, webFinal: `${d}/web.mp4`, poster: `${d}/poster.jpg`,
   };
@@ -167,9 +167,10 @@ export function productionSettings(get = () => "") {
 
 /**
  * The most the AI part of one video can cost (USD), enforced by the worker: the builder's purse reserves each call's
- * worst case before it starts (lib/builder/resolve.js makePurse) and only the FIRST prepare try may design (a retry is
- * kit + library only, and the library then holds what the first try built); the director makes at most 2 calls per
- * prepare try, RENDER.attempts.prepare tries. The voice and the GPU come on top (estimate(), docs).
+ * worst case before it starts (lib/builder/resolve.js makePurse); the cap is for the whole video, so a prepare retry
+ * designs only with what the earlier tries left of it (prepareProduction builderSpentUsd), and the library holds what
+ * they built; the director makes at most 2 calls per prepare try, RENDER.attempts.prepare tries (a retry reuses the
+ * list a try stored: direction.json). The voice and the GPU come on top (estimate(), docs).
  */
 export function aiCeilingUsd(s = PRODUCTION_DEFAULTS, cfg = RENDER) {
   const model = DIRECTOR_MODELS[s.director] ?? null;
@@ -178,13 +179,33 @@ export function aiCeilingUsd(s = PRODUCTION_DEFAULTS, cfg = RENDER) {
   return { directorMaxUsd, builderMaxUsd, aiMaxUsd: +(directorMaxUsd + builderMaxUsd).toFixed(4) };
 }
 
-/** job.prepare.director + job.prepare.builder for one prepare try (attempt), with the library snapshot rows */
-export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, library = [] } = {}) {
+/** a prepare retry designs only when at least this much of the builder's cap is left (one design + its check) */
+export const BUILDER_MIN_LEFT_USD = 0.05;
+/**
+ * job.prepare.director + job.prepare.builder for one prepare try (attempt), with the library snapshot rows.
+ * builderSpentUsd: what the earlier tries of this run spent on the builder (builderSpentOf). A retry keeps the builder
+ * on with the rest of the per-video cap (run 707609b1: try 1 crashed after the plan, try 2 had the builder "off (no
+ * provider)" and every missing thing became a card).
+ */
+export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, library = [], builderSpentUsd = 0 } = {}) {
   const model = DIRECTOR_MODELS[s.director] ?? null;
   const director = s.director === "off" ? { provider: "off" } : model ? { provider: "anthropic", model } : { provider: "mock" };
-  const designs = s.builder === "on" && attempt <= 1;
-  const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? Number(s.builderMaxUsd) || 0 : 0 } };
-  return { director, builder, limits: aiCeilingUsd(s) };
+  const left = +Math.max(0, (Number(s.builderMaxUsd) || 0) - (attempt > 1 ? Math.max(0, Number(builderSpentUsd) || 0) : 0)).toFixed(5);
+  const designs = s.builder === "on" && left >= (attempt > 1 ? BUILDER_MIN_LEFT_USD : 1e-9);
+  const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? left : 0 } };
+  return { director, builder, limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare } };
+}
+
+/** what the earlier prepare tries of a run spent on the builder (their job rows: the done output's or the failed
+ * event's spend, else what "planned" reported) */
+export function builderSpentOf(jobs, beforeAttempt = Infinity) {
+  let sum = 0;
+  for (const j of jobs ?? []) {
+    if (j.role !== "prepare" || !(j.attempt < beforeAttempt)) continue;
+    const o = j.output ?? {};
+    sum += Math.max(Number(o.spend?.builderUsd) || 0, Number(o.planned?.builder?.costUsd) || 0, 0);
+  }
+  return +sum.toFixed(5);
 }
 
 /** a library row (blocky_worlds_assets) as the worker's snapshotCache reads it */
@@ -245,13 +266,24 @@ function aiLedger(job, ev) {
   return rows;
 }
 
+/** the builder's per-need lines from a worker (worker.mjs builderLines), bounded for the job row: why each thing was
+ * built, found in the library or the kit, or shown as a card */
+export function needLines(list) {
+  if (!Array.isArray(list)) return [];
+  const s = (v, k) => (v == null ? null : String(v).slice(0, k));
+  return list.slice(0, 30).filter((x) => x && typeof x === "object").map((x) => ({
+    name: s(x.name, 60), kind: s(x.kind, 10), source: s(x.source, 10), reason: s(x.reason, 160), attempts: Number(x.attempts) || 0, costUsd: usd(x.costUsd),
+    ...(Array.isArray(x.verdicts) && x.verdicts.length ? { verdicts: x.verdicts.slice(-3).map((v) => (v && typeof v === "object" ? { error: s(v.error, 120), ok: v.ok == null ? null : Boolean(v.ok), confidence: Number.isFinite(Number(v.confidence)) ? Number(v.confidence) : null, reads_as: s(v.reads_as, 60) } : null)).filter(Boolean) } : {}),
+  }));
+}
+
 /** what "planned" leaves on the prepare job's row (output.planned; the job's "done" output replaces it with its own) */
 export function plannedSummary(ev) {
   const n = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
   return {
     frames: n(ev.frames), duration: n(ev.duration), shots: n(ev.shots),
-    builder: ev.builder ? { costUsd: usd(ev.builder.costUsd), built: n(ev.builder.built), cards: n(ev.builder.cards), ms: n(ev.builder.ms) } : null,
-    director: ev.director ? { provider: String(ev.director.provider ?? "").slice(0, 20), model: ev.director.model ?? null, fellBack: Boolean(ev.director.fellBack), costUsd: usd(ev.director.costUsd), ms: n(ev.director.ms) } : null,
+    builder: ev.builder ? { costUsd: usd(ev.builder.costUsd), built: n(ev.builder.built), cards: n(ev.builder.cards), ms: n(ev.builder.ms), needs: needLines(ev.builder.needs) } : null,
+    director: ev.director ? { provider: String(ev.director.provider ?? "").slice(0, 20), model: ev.director.model ?? null, fellBack: Boolean(ev.director.fellBack), reused: Boolean(ev.director.reused), costUsd: usd(ev.director.costUsd), ms: n(ev.director.ms) } : null,
     timing: ev.timing && typeof ev.timing === "object" ? Object.fromEntries(Object.entries(ev.timing).filter(([, v]) => Number.isFinite(Number(v))).slice(0, 12).map(([k, v]) => [String(k).slice(0, 20), Number(v)])) : null,
     gaps: Array.isArray(ev.gaps) ? ev.gaps.length : 0,
   };
@@ -292,7 +324,12 @@ export function onJobEvent(job, ev, now = Date.now(), cfg = RENDER) {
     case "voiced": return { job: { state: "running", ...started, heartbeat_at: t, stage: "voice" }, run: { voice_ready: true }, ledger };
     case "planned": return { job: { state: "running", ...started, heartbeat_at: t, stage: "mix", output: { planned: plannedSummary(ev) } }, run: null, ledger };
     case "done": return { job: { state: "done", pct: 100, finished_at: t, output: ev.output ?? null }, run: null, ledger };
-    case "failed": return { job: { state: "failed", finished_at: t, error_code: String(ev.code ?? "RENDER_FAILED").slice(0, 40), error_message: String(ev.message ?? "").slice(0, 1500) }, run: null, ledger };
+    case "failed": {
+      // a prepare try keeps what it spent and why each needed thing was built or carded (the next try's builder budget
+      // is the cap minus this spend: builderSpentOf; the owner's Details read the reasons)
+      const keep = job.role === "prepare" && (ev.spend || ev.builder) ? { output: { ...(job.output ?? {}), ...(ev.spend && typeof ev.spend === "object" ? { spend: { builderUsd: usd(ev.spend.builderUsd), directorUsd: usd(ev.spend.directorUsd) } } : {}), ...(ev.builder && typeof ev.builder === "object" ? { builder: { built: Number(ev.builder.built) || 0, cards: Number(ev.builder.cards) || 0, costUsd: usd(ev.builder.costUsd), needs: needLines(ev.builder.needs) } } : {}) } } : {};
+      return { job: { state: "failed", finished_at: t, error_code: String(ev.code ?? "RENDER_FAILED").slice(0, 40), error_message: String(ev.message ?? "").slice(0, 1500), ...keep }, run: null, ledger };
+    }
     case "runpod": {
       const st = String(ev.status ?? "").toUpperCase(), out = ev.output ?? null;
       if (st === "COMPLETED" && out?.ok) return { job: { state: "done", pct: 100, finished_at: t, output: out }, run: null, ledger };

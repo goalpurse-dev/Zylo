@@ -1,12 +1,18 @@
 // Blocky Worlds, LOCAL DEV ONLY (?mock=1): the blocky-worlds-api actions in the browser, from the same mock steps the
 // server's mock mode uses (no network, no cost). Imported lazily only when import.meta.env.DEV, so a production build
 // never contains it. A finished test run plays one of the page clips. ?as=guest|free|starter|pro   who is looking;   &renderer=1   pretend the renderer is on.
+// Simulations: &blocked=1 (or a topic with "blocked" in it): the script comes back blocked by a real check (the climax
+// never uses the planted object), with Fix it; &fail=1 (or a topic with "fail" in it): every video fails after ~6 s with
+// a hiccup on our side (&fail=story: the builder couldn't show the story); the credits come back.
 import { LENGTHS, DEFAULT_LENGTH, NARRATOR } from "../../../../../supabase/functions/_shared/blockyWorlds/config.js";
 import { MOODS } from "../../../../../supabase/functions/_shared/blockyWorlds/formulas.js";
 import { cardOf, IDEAS_PER_BATCH } from "../../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
 import { PRICES } from "../../../../../supabase/functions/_shared/blockyWorlds/pricing.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../../../../../supabase/functions/_shared/blockyWorlds/script.js";
-import { cardFromScript, writeBeats, writeIdeas, writeScript } from "../../../../../supabase/functions/_shared/blockyWorlds/llm.js";
+import { cardFromScript, fixPart, scriptProtocolCheck, writeBeats, writeIdeas, writeScript } from "../../../../../supabase/functions/_shared/blockyWorlds/llm.js";
+import { EXAMPLE_IDEAS } from "../../../../../supabase/functions/_shared/blockyWorlds/examples.js";
+import { problemSpots } from "../../../../../supabase/functions/_shared/blockyWorlds/protocol.js";
+import { failReason } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 import { errorFromReply } from "../api/blockyWorldsApi";
 // the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
 import LIBRARY from "./libraryFixture.json";
@@ -14,6 +20,10 @@ import LIBRARY from "./libraryFixture.json";
 const Q = new URLSearchParams(window.location.search);
 // the renderer is pretended ON by default so the whole flow can be clicked through (?renderer=0 shows the "off" state)
 const AS = Q.get("as") ?? "starter", RENDERER = Q.get("renderer") !== "0";
+const BLOCKED = Q.get("blocked") === "1", FAIL = Q.get("fail");
+// the mock script is the example script, whose planted object is this card's (Grandpa's whistle): the real checks run on it
+const PROTO = EXAMPLE_IDEAS[0];
+const mentions = (row, word) => JSON.stringify(row ?? {}).toLowerCase().includes(word);
 const PAID = ["starter", "pro", "generative"].includes(AS);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const id = () => crypto.randomUUID();
@@ -39,9 +49,13 @@ function topicIdeasFor(topic, mood) {
 }
 const fail = (code, error, extra = {}) => { throw errorFromReply({ code, error, ...extra }); };
 
-const draftView = (d) => ({ id: d.id, source: d.source, ideaId: d.ideaId, title: d.title, lengthSec: d.lengthSec, lines: d.lines, post: d.post, credits: PRICES[d.lengthSec], check: d.check, ready: !d.check.problems.length, updatedAt: d.updatedAt, writesLeft: 14 });
+const draftView = (d) => ({ id: d.id, source: d.source, ideaId: d.ideaId, title: d.title, lengthSec: d.lengthSec, lines: d.lines, post: d.post, credits: PRICES[d.lengthSec], check: d.check, ready: !d.check.problems.length, updatedAt: d.updatedAt, writesLeft: 14, ...(d.notice ? { notice: d.notice } : {}) });
 const runView = (r) => {
   const t = (Date.now() - r.startedAt) / 1000;
+  if (r.failCode && t >= 6) {
+    const { kind, text } = failReason(r.failCode);
+    return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: new Date(r.startedAt + 6000).toISOString(), status: "failed", stepAt: r.startedAt, pct: 0, post: null, finalUrl: null, downloadUrl: null, poster: null, error: "We couldn't make this video. It's not your fault, and your credits are back.", reason: text, failKind: kind, refunded: true };
+  }
   const status = t < 3 ? "queued" : t < 7 ? "voice" : t < 12 ? "plan" : t < 22 ? "render" : "done";
   return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, pct: status === "render" ? Math.round(((t - 12) / 10) * 100) : status === "done" ? 100 : 0, post: status === "done" ? r.post : null, finalUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, poster: status === "done" ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
 };
@@ -68,9 +82,28 @@ export async function devCall(action, body) {
     const lengthSec = Number(body.lengthSec ?? prev?.lengthSec ?? DEFAULT_LENGTH);
     const beats = (await writeBeats({ provider: "mock", card: row.idea, lengthSec })).beats;
     const w = await writeScript({ provider: "mock", idea: row.idea, lengthSec, beats });
-    const d = { id: prev?.id ?? id(), source: row.source === "topic" ? "topic" : "idea", ideaId: body.ideaId ?? prev?.ideaId, card: row.idea, title: w.script.title, lengthSec, lines: w.script.lines, post: w.script.post, check: { ...w.check, kind: "written" }, updatedAt: new Date().toISOString() };
+    const d = { id: prev?.id ?? id(), source: row.source === "topic" ? "topic" : "idea", ideaId: body.ideaId ?? prev?.ideaId, card: row.idea, title: w.script.title, lengthSec, lines: w.script.lines, post: w.script.post, check: { ...w.check, kind: "written" }, updatedAt: new Date().toISOString(), blocked: prev?.blocked ?? (BLOCKED || mentions(row, "blocked")), failing: prev ? null : (FAIL ? (FAIL === "story" ? "PRODUCTION_CHECK" : "CHUNK_FAILED") : mentions(row, "fail") ? "CHUNK_FAILED" : null) };
+    if (d.blocked) {
+      // the simulated block: a first write whose climax never uses the planted object; checked by the real checks
+      const lastMe = d.lines.findLastIndex((l) => l.part === "me");
+      d.lines = d.lines.map((l, i) => (i === lastMe ? { ...l, text: "And in my pocket, I keep Grandpa's old brass whistle." } : !prev && l.part === "climax" && /whistle/i.test(l.text) ? { ...l, text: "Then I did the only thing I could." } : l));
+      d.check = { ...scriptProtocolCheck({ title: d.title, lines: d.lines, post: d.post }, lengthSec, PROTO), kind: "written" };
+      d.notice = d.check.problems.length ? `It still needs one fix: ${d.check.problems[0]}` : null;
+    }
     state.drafts.set(d.id, d);
     return draftView(d);
+  }
+  if (action === "fixPart") {
+    const d = state.drafts.get(body.draftId);
+    if (!d) fail("NOT_FOUND", "We couldn't find that script.");
+    const card = d.blocked ? PROTO : null;
+    const before = d.blocked ? scriptProtocolCheck(d, d.lengthSec, card) : checkScript(d, d.lengthSec, d.check.kind);
+    const spots = problemSpots(d, before.problems).filter((x) => x.fix === "part" && x.part === body.part);
+    if (!spots.length) return { ...draftView(d), fixed: !before.problems.length };
+    const r = await fixPart({ provider: "mock", script: { title: d.title, lines: d.lines, post: d.post }, indexes: spots.flatMap((x) => x.lines), reasons: spots.map((x) => x.problem), card, lengthSec: d.lengthSec, kind: d.check.kind });
+    if (r.check.problems.length >= before.problems.length) fail("WRITER", "We couldn't fix that part this time. Try Fix it once more, or edit those lines yourself.");
+    Object.assign(d, { lines: r.script.lines, check: { ...r.check, kind: d.check.kind }, updatedAt: new Date().toISOString(), notice: r.check.problems.length ? `It still needs one fix: ${r.check.problems[0]}` : null });
+    return { ...draftView(d), fixed: r.fixed };
   }
   if (action === "saveScript") {
     const prev = body.draftId ? state.drafts.get(body.draftId) : null;
@@ -98,7 +131,10 @@ export async function devCall(action, body) {
     const d = state.drafts.get(body.draftId);
     if (d.check.problems.length) fail("NOT_READY", d.check.problems[0], { problems: d.check.problems });
     if (!RENDERER) fail("RENDER_OFF");
-    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now() };
+    // one video at a time per script (like the server): a double-tapped Try again never charges twice
+    const active = state.runs.find((x) => x.draftId === d.id && ["queued", "voice", "plan", "render"].includes(runView(x).status));
+    if (active) fail("LIMIT", "This script is already being made. Wait for it to finish.", { runId: active.id });
+    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null };
     state.runs.unshift(r);
     return runView(r);
   }

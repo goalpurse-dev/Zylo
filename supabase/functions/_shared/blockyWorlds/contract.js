@@ -11,6 +11,8 @@
 //   rewrite      { draftId, note? }                   -> Draft                                    same limit
 //   saveScript   { draftId?, lengthSec, title?, lines?: [{part,text}], text? } -> Draft         the user's edits or own script (free)
 //   fixOpener    { draftId }                          -> Draft (only the first line rewritten)    same limit
+//   fixPart      { draftId, part }                    -> Draft + { fixed } (only that part's flagged lines rewritten,
+//                                                        every other line verbatim; the whole script re-checked)  same limit
 //   drafts       {}                                   -> { drafts: Draft[] } (newest 10)
 //   quote        { draftId, lengthSec? }              -> { credits, lengthSec, ready, problems }
 //   start        { draftId, removeWatermark? }        -> RunView (charged once, at start)
@@ -22,9 +24,13 @@
 //           prices: { [lengthSec]: credits }, narrator: { name }, moods: [{ id, label }], ideaBatchesLeft }
 // IdeaCard: { id, opener, title, premise, teaser, mood, moodLabel, setting }
 // Draft: { id, source ("idea"|"topic"|"own"), ideaId, title, lengthSec, lines: [{ part, text }], post, credits,
-//          check: { problems[], warnings[], words, seconds }, ready (no problems), writesLeft, updatedAt }
+//          check: { problems[], warnings[], words, seconds, spots: [{ problem, part, lines[], fix }] }, ready (no problems),
+//          writesLeft, updatedAt, notice? (a rewrite or fix that still has a problem says so here)
+//          spots: where each problem sits (protocol.js problemSpots); fix "opener" | "part" (fixPart) | "rewrite"
 // RunView: { id, draftId, title, lengthSec, credits, createdAt, doneAt, status, stepAt, pct, post, finalUrl,
-//            downloadUrl, poster, error, refunded }
+//            downloadUrl, poster, error, reason, failKind, refunded }
+//   a failed run: reason = the plain-words why (failReason below), failKind "ours" | "busy" | "story" | "paused"
+//   start refuses a second run of a draft while one is being made (code LIMIT, extra runId): a retry can never charge twice
 //   status "queued" | "voice" | "plan" | "render" | "done" | "failed"
 
 export const STATUSES = Object.freeze(["queued", "voice", "plan", "render", "done", "failed"]);
@@ -55,3 +61,26 @@ export const ERRORS = Object.freeze({
 
 /** The friendly message a failed run shows (the run keeps its own error code for us). */
 export const FAILED_MESSAGE = "We couldn't make this video. It's not your fault, and your credits are back.";
+
+/**
+ * A failed run's error code (render.js / renderRuntime.js) in plain words, without the credits sentence (the page adds
+ * "Your N credits are back." from the run's refund state). kind: "ours" (a hiccup: try again), "busy" (no machine free:
+ * try again in a minute), "story" (the builder couldn't show something the story needs: a rewrite works more often than
+ * the same script again), "paused" (switched off on our side for a while).
+ */
+const FAIL_KINDS = Object.freeze({
+  busy: ["NO_GPU", "QUEUE_TIMEOUT"],
+  story: ["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "KIT_MISSING", "PLAN_FAILED", "TIMELINE_INVALID"],
+  paused: ["NOT_CONFIGURED", "VOICE_CONFIG", "PROVIDER_BALANCE"],
+});
+export const FAIL_TEXT = Object.freeze({
+  ours: "Something broke on our side while building your video.",
+  busy: "All our video machines were busy, so your video couldn't start in time.",
+  story: "Our builder couldn't show everything your story needs (something in it isn't in our block world yet).",
+  paused: "Video making is paused on our side for a moment.",
+});
+export function failReason(code) {
+  const c = String(code ?? "").toUpperCase();
+  const kind = Object.keys(FAIL_KINDS).find((k) => FAIL_KINDS[k].includes(c)) ?? "ours";
+  return { kind, text: FAIL_TEXT[kind] };
+}

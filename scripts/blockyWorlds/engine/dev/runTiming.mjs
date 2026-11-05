@@ -38,7 +38,7 @@ const range = (l) => (l.length ? `${Math.min(...l).toFixed(1)}-${Math.max(...l).
 export function summarize(run, jobs, ledger, { check = null, production = null, gaps = null } = {}) {
   const t0 = ms(run.created_at), end = ms(run.finished_at);
   const by = (role) => jobs.filter((j) => j.role === role).sort((a, b) => a.idx - b.idx || a.attempt - b.attempt);
-  const span = (j) => ({ attempt: j.attempt, state: j.state, code: j.error_code ?? null, dispatched: ms(j.dispatched_at ?? j.created_at), started: ms(j.started_at), finished: ms(j.finished_at),
+  const span = (j) => ({ attempt: j.attempt, state: j.state, code: j.error_code ?? null, needs: j.role === "prepare" ? (j.output?.planned?.builder?.needs ?? j.output?.builder?.needs ?? null) : null, dispatched: ms(j.dispatched_at ?? j.created_at), started: ms(j.started_at), finished: ms(j.finished_at),
     queueS: j.started_at && j.dispatched_at ? (ms(j.started_at) - ms(j.dispatched_at)) / 1000 : null, runS: j.started_at && j.finished_at ? (ms(j.finished_at) - ms(j.started_at)) / 1000 : null });
   const prep = by("prepare"), last = prep.at(-1), out = last?.output ?? {};
   const planned = out.planned ?? {};
@@ -82,7 +82,11 @@ export function print(x) {
   L(`\n=== ${x.id}  "${x.title ?? ""}"  ${x.status}${x.error ? ` (${x.error})` : ""}  ${x.lengthSec ?? "?"} s video  ${new Date(t0).toISOString()}`);
   if (x.production) L(`    settings: director ${x.production.director}, builder ${x.production.builder} (cap $${x.production.builderMaxUsd})`);
   L(`  Generate pressed                 ${at(t0, t0)}`);
-  for (const p of x.prepare.tries) L(`  prepare try ${p.attempt}  dispatched ${at(p.dispatched, t0)}  started ${at(p.started, t0)}  finished ${at(p.finished, t0)}   queue ${s1(p.queueS)}, ran ${s1(p.runS)}  ${p.state}${p.code ? ` ${p.code}` : ""}`);
+  for (const p of x.prepare.tries) {
+    L(`  prepare try ${p.attempt}  dispatched ${at(p.dispatched, t0)}  started ${at(p.started, t0)}  finished ${at(p.finished, t0)}   queue ${s1(p.queueS)}, ran ${s1(p.runS)}  ${p.state}${p.code ? ` ${p.code}` : ""}`);
+    // the builder's reason per needed thing (job rows since 2026-11-05: planned.builder.needs, a failed try's builder.needs)
+    for (const n of p.needs ?? []) L(`     need "${n.name}" (${n.kind}): ${n.source}${n.reason ? ` - ${n.reason}` : ""}, ${n.attempts} tries, ${usd(n.costUsd)}${(n.verdicts ?? []).length ? `  [${n.verdicts.map((v) => v.error ?? `${v.ok ? "ok" : "no"} ${v.confidence ?? ""} ${v.reads_as ?? ""}`.trim()).join(" | ")}]` : ""}`);
+  }
   const i = x.prepare.inside;
   L(`     inside: voice ${s1(i.voiceS)} | director ${s1(i.directorS)} (parallel with the voice) | builder ${s1(i.builderS)} (from the job's start; final pass ${s1(i.buildPassS)}) | plan+checks ${s1(i.planS)} | music ${s1(i.musicS)} | mix ${s1(i.mixS)} | job ${s1(i.totalS)}`);
   if (x.prepare.director) L(`     director: ${x.prepare.director.provider}${x.prepare.director.model ? ` ${x.prepare.director.model}` : ""}${x.prepare.director.fellBack ? " (FELL BACK to the mock)" : ""}, ${usd(x.prepare.director.costUsd)}`);

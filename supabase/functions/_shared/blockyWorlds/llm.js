@@ -7,10 +7,10 @@
 import { MODELS, targetWords } from "./config.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
-import { checkScript, normalizeScript, OPENER_SYSTEM, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM } from "./script.js";
-import { hasOpener } from "./opener.js";
+import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM } from "./script.js";
+import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeSchema, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
-import { beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
+import { beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
 // USD per 1M tokens (Anthropic list prices, checked 2026-11-03). Cache writes 1.25x input, reads 0.1x.
 export const PRICE = Object.freeze({
@@ -109,9 +109,37 @@ const mockBeats = (card) => {
   const say = { rule: card.opener, tour: `${card.price} ${card.examples.join(" ")}`, me: `${card.narrator} Carries ${card.prop}.`, until: "Until one night, the rule breaks in three visible steps.", discovery: "The hidden truth about the rule.", climax: `${card.prop} wins. ${card.twist}`, closer: card.closer };
   return PART_IDS.map((part) => ({ part, summary: say[part], shows: `${card.setting}: ${say[part]}`.slice(0, 160), words: 0, uses: uses[part] }));
 };
+/**
+ * The mock script sized to a length: the example script's lines, part by part, cycled or cut to each part's budget, so a
+ * free test at any length (30 s to 3 min) gets a script that passes its own checks.
+ */
+export function mockScriptFor(lengthSec) {
+  const budgets = partBudgets(lengthSec), target = targetWords(lengthSec);
+  const count = (ls) => ls.reduce((a, l) => a + l.text.split(/\s+/).length, 0);
+  const lines = [];
+  for (const b of budgets) {
+    const pool = EXAMPLE_SCRIPT.lines.filter((l) => l.part === b.id);
+    if (b.id === "rule") { lines.push({ ...pool[0] }); continue; }
+    const part = [];
+    for (let i = 0; !part.length || count(part) + pool[i % pool.length].text.split(/\s+/).length <= b.words; i++) part.push({ ...pool[i % pool.length] });
+    lines.push(...part);
+  }
+  // the total into the middle of the band: drop or repeat climax lines (a part always keeps one)
+  const climax = EXAMPLE_SCRIPT.lines.filter((l) => l.part === "climax");
+  for (let k = 0; count(lines) < target * 0.97 && k < 200; k++) {
+    const at = lines.findLastIndex((l) => l.part === "climax");
+    lines.splice(at + 1, 0, { ...climax[k % climax.length] });
+  }
+  while (count(lines) > target * 1.03) {
+    const at = lines.findLastIndex((l, i) => l.part !== "rule" && lines.filter((m) => m.part === l.part).length > 1 && i > 0);
+    if (at < 0) break;
+    lines.splice(at, 1);
+  }
+  return { ...JSON.parse(JSON.stringify(EXAMPLE_SCRIPT)), lines };
+}
 const MOCK = Object.freeze({
   ideas: async ({ seed, slots }) => ({ data: { ideas: mockIdeas(slots, seed) }, costUsd: 0 }),
-  script: async () => ({ data: JSON.parse(JSON.stringify(EXAMPLE_SCRIPT)), costUsd: 0 }),
+  script: async ({ lengthSec = 90 } = {}) => ({ data: mockScriptFor(lengthSec), costUsd: 0 }),
   opener: async ({ line }) => ({ data: { line: hasOpener(line) ? line : `In this town, ${line.charAt(0).toLowerCase()}${line.slice(1)}` }, costUsd: 0 }),
   // a repeatable spread of scores: about half pass
   judge: async ({ ideas }) => ({ data: { verdicts: ideas.map((i) => { const h = hash(i.opener); return { scores: Object.fromEntries(RUBRIC.map((c, k) => [c.id, 2 + ((h >> k) % 4)])), safe: true, better: "(mock) sharpen the examples" }; }) }, costUsd: 0 }),
@@ -255,13 +283,13 @@ export function scriptProtocolCheck(script, lengthSec, card) {
  * attempts }. A script that still has problems comes back with them (it can't be generated until they're fixed).
  * @param {{apiKey?: string, provider?: string, idea: object, lengthSec: number, previous?: {lines: {part: string, text: string}[]} | null, note?: string, beats?: object[] | null}} input
  */
-export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null }) {
+export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = note;
   for (let round = 1; round <= 2; round++) {
     attempts++;
     const reply = provider === "mock"
-      ? await MOCK.script()
-      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000 });
+      ? await MOCK.script({ lengthSec })
+      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000 });
     costUsd += reply.costUsd;
     script = normalizeScript(reply.data);
     check = scriptProtocolCheck(script, lengthSec, provider === "mock" ? null : idea);
@@ -280,6 +308,64 @@ export async function writeScript({ apiKey = "", provider = "anthropic", idea, l
     extra = `${note ? `${note}\n` : ""}FIX THESE PROBLEMS:\n${check.problems.map((p) => `- ${p}`).join("\n")}`;
   }
   return { script, check, costUsd: Number(costUsd.toFixed(5)), attempts, words: targetWords(lengthSec) };
+}
+
+/** The checks a saved draft gets: ours (kind "written") with the protocol's, when its card is known; the user's own. */
+export function draftCheck(script, lengthSec, kind = "written", card = null) {
+  return kind === "written" ? scriptProtocolCheck(script, lengthSec, card) : checkScript(script, lengthSec, "own");
+}
+
+/** The free mock part fixer: the flagged lines, changed just enough to pass (names the object, calls back, splits). */
+function mockFixPart({ script, indexes, reasons, card }) {
+  let out = indexes.map((i) => script.lines[i].text);
+  const first = (script.lines[0]?.text ?? "").replace(/^In this (world|town),\s*/i, "").split(/\s+/).map((w) => w.replace(/[^A-Za-z]/g, "")).find((w) => w.length > 4) ?? "rule";
+  for (const r of reasons) {
+    if (/never pays off/.test(r) && card?.prop) out = [`I grabbed ${card.prop} and held it up high.`, ...out.slice(1)];
+    else if (/never shown before/.test(r) && card?.prop) out = [...out, `I always carried ${card.prop}.`];
+    else if (/call back the first line/.test(r)) out = [...out.slice(0, -1), `Now I smile at every ${first.toLowerCase()}.`];
+    else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });
+    else if (/^Uses "([^"]+)"/.test(r)) { const word = r.match(/^Uses "([^"]+)"/)[1]; out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "something")); }
+  }
+  return { data: { lines: out }, costUsd: 0 };
+}
+
+/**
+ * "Fix it" on a blocked script: rewrite ONLY the flagged lines (one part, or one line), keep every other line word for
+ * word, re-check the whole script with the same checks, and retry once with what is still wrong. Returns { script,
+ * check, fixed, costUsd, attempts }: fixed is true when no problem is left in that part and nothing new broke. The
+ * caller saves the result only when it is better than before.
+ * @param {{apiKey?: string, provider?: string, script: {title?: string, lines: {part: string, text: string}[], post?: object}, indexes: number[], reasons: string[], card?: object | null, lengthSec: number, kind?: string}} input
+ */
+export async function fixPart({ apiKey = "", provider = "anthropic", script, indexes, reasons, card = null, lengthSec, kind = "written" }) {
+  // one part only: from the first flagged line to the last flagged line of that same part (never across parts)
+  const from = Math.min(...indexes), part = script.lines[from].part, last = Math.max(...indexes);
+  let to = from;
+  while (to + 1 <= last && script.lines[to + 1]?.part === part) to++;
+  const span = Array.from({ length: to - from + 1 }, (_, k) => from + k);
+  const before = draftCheck(script, lengthSec, kind, card).problems;
+  // the same problem with another number in it ("Too short: 280 words" -> "Too short: 290 words") is not a new one
+  const key = (p) => p.replace(/\d+/g, "#"), had = new Set(before.map(key));
+  let costUsd = 0, attempts = 0, best = null, why = reasons;
+  for (let round = 1; round <= 2; round++) {
+    attempts++;
+    const reply = provider === "mock"
+      ? mockFixPart({ script, indexes: span, reasons: why, card })
+      : await callJson({ apiKey, model: MODELS.opener, system: PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
+    costUsd += reply.costUsd;
+    const fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
+    if (!fresh.length) { why = [...reasons, "Return the replacement lines (at least one)."]; continue; }
+    const lines = [...script.lines.slice(0, from), ...fresh.map((text) => ({ part, text })), ...script.lines.slice(to + 1)];
+    if (from === 0) { const fixed = fixOpener(lines[0].text); if (fixed) lines[0] = { ...lines[0], text: fixed }; }
+    const next = { ...script, lines };
+    const check = draftCheck(next, lengthSec, kind, card);
+    const here = problemSpots(next, check.problems).filter((s) => s.lines.some((i) => i >= from && i < from + fresh.length) || (s.part === part && s.fix !== "rewrite"));
+    const fixed = !here.length && check.problems.length < before.length && check.problems.every((p) => had.has(key(p)));
+    if (!best || check.problems.length < best.check.problems.length) best = { script: next, check, fixed };
+    if (fixed) { best = { script: next, check, fixed }; break; }
+    why = [...new Set([...here.map((s) => s.problem), ...check.problems.filter((p) => !had.has(key(p)))])];
+    if (!why.length) why = reasons;
+  }
+  return { ...(best ?? { script, check: draftCheck(script, lengthSec, kind, card), fixed: false }), costUsd: Number(costUsd.toFixed(5)), attempts };
 }
 
 // ---------- step 4: the shot plan ----------

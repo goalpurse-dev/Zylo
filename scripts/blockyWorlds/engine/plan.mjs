@@ -19,7 +19,7 @@
 // gets its object, pose, hold, name tag or window state) -> pick a camera with variety -> the visual check: a line
 // still missing a noun first gets a catalog visual, else a picture card shot cut into its time -> timeline.visualReport.
 import { hashSeed } from "./lib/rng.js";
-import { norm, tokens, estimateWords, alignTokens } from "./lib/planText.js";
+import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
 import { OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
@@ -772,7 +772,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     };
     const badgeFn = (s, card) => {
       if (!s) return false;
-      if (!s.actors?.length) { const t = ["town1", "town2", "town3"][0]; s.actors = [{ id: t, spot: "center", pose: "point", expr: "surprised", facing: "camera", hold: null }]; used.add(t); if (!["group", "object"].includes(s.focus) && !/^(giant:|crowd|world)/.test(s.focus ?? "") && s.focus !== "monster") s.focus = t; } const text = `${card.icon} ${card.text.split(" ").at(-1)}`; if (!markersList(s).some((m) => m.text === text)) setMarkers(s, [...markersList(s), { on: s.actors[0].id, kind: "icon", text }]); return true; };
+      if (!s.actors?.length) { const t = ["town1", "town2", "town3"][0]; s.actors = [{ id: t, spot: "center", pose: "point", expr: "surprised", facing: "camera", hold: null }]; used.add(t); if (!["group", "object"].includes(s.focus) && !/^(giant:|crowd|world)/.test(s.focus ?? "") && s.focus !== "monster") s.focus = t; } const text = `${card.icon} ${badgeWord(card.text)}`; if (!markersList(s).some((m) => m.text === text)) setMarkers(s, [...markersList(s), { on: s.actors[0].id, kind: "icon", text }]); return true; };
     prodFixes = fixProduction(tlStub, D, { used, card: cardFn, badge: badgeFn, isObject: (n) => !!OBJECT_CATALOG[n], stateOf: (r) => (r.kind === "event" && OBJECT_CATALOG[r.kitName]?.states?.includes(D.calls.get(r.id)?.state) ? D.calls.get(r.id).state : null) });
     fixSubjects(shots, subjAux);
     fixVisuals(shots, lines, vw, buildCast, { used, names, W });
@@ -1504,7 +1504,7 @@ function cardShot(shots, lineShots, key, t, L, insert = null, dirNeed = null) {
 function badge(s, key, aux) {
   if (!s) return false;
   const c = cardFor(key);
-  const text = `${c.icon} ${c.text.split(" ").at(-1)}`;
+  const text = `${c.icon} ${badgeWord(c.text)}`;
   s.markers = [...(s.markers ?? (s.marker ? [s.marker] : []))];
   const has = new Set(s.markers.map((m) => m.on));
   let on = (s.actors ?? []).find((a) => !has.has(a.id))?.id ?? (s.monsterState && !has.has("monster") ? "monster" : null);
