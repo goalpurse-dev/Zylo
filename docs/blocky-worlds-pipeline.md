@@ -66,7 +66,9 @@ The mix needs only the voice, the music and the cues, so it is made in the prepa
   `x-blocky-cron` = `BLOCKY_WORLDS_CRON_SECRET`. Deployed with `--no-verify-jwt`; nothing in it is public.
 - **Keys.** The worker never gets the service-role key: every file goes up and down by signed URLs the edge function
   makes for that job. The ElevenLabs key is a RunPod secret in the template env:
-  `ELEVENLABS_KEY = {{ RUNPOD_SECRET_blocky_elevenlabs }}`.
+  `ELEVENLABS_KEY = {{ RUNPOD_SECRET_blocky_elevenlabs }}`; the story director's and the builder's Anthropic key the same
+  way: `ANTHROPIC_KEY = {{ RUNPOD_SECRET_blocky_anthropic }}` (runpod/setup.mjs; only templates made after 2026-11-05
+  have it: without it the director uses the free mock list and the builder makes picture cards).
 - **The paid voice is bought once.** The prepare job uploads `voice.mp3` + `take.json` right after the take and says
   "voiced". A retried prepare job gets them back by signed URL and never calls ElevenLabs again.
 
@@ -74,7 +76,7 @@ The mix needs only the voice, the music and the cues, so it is made in the prepa
 
 | Failure | What happens |
 |---|---|
-| Check miss (VISUAL_CHECK, SUBJECT_CHECK, KIT_MISSING, PLAN_FAILED), the engine page refusing the timeline (TIMELINE_INVALID), VOICE_CONFIG, PROVIDER_BALANCE, BAD_JOB, NOT_CONFIGURED | the run fails at once, refunded, no retry |
+| Check miss (VISUAL_CHECK, SUBJECT_CHECK, PRODUCTION_CHECK, KIT_MISSING, PLAN_FAILED), the engine page refusing the timeline (TIMELINE_INVALID), VOICE_CONFIG, PROVIDER_BALANCE, BAD_JOB, NOT_CONFIGURED | the run fails at once, refunded, no retry |
 | NO_GPU (a worker without graphics) | handler.py returns `refresh_worker`, the same piece is sent again 20 s later (that worker is gone by then), up to 3 such retries on top of the normal tries |
 | A chunk fails (crash, render error, upload error) | retried up to 3 times (4 attempts); then the run fails, every live job is cancelled, refunded |
 | prepare fails (not a check) | 2 attempts; finish: 3 attempts |
@@ -116,4 +118,35 @@ six chunks waited for a free worker. The biggest remaining cost of time is the p
 | **Total** | **~$0.28** (price: 62 credits = $0.62 of cost basis) |
 
 Each stage writes its own ledger row (`blocky_worlds_cost_ledger`): voice from ElevenLabs' `character-cost` header,
-GPU from RunPod's `executionTime` (+ up to 15 s of the start-up in `delayTime`) at $0.00016/s.
+GPU from RunPod's `executionTime` (+ up to 15 s of the start-up in `delayTime`) at $0.00016/s, the story director
+(`director:<job>`) and the builder (`builder:<job>`) from the "planned" event, plus whatever they spent after it or in a
+prepare try that failed before it (`director_end:<job>`, `builder_end:<job>`, from the job's end: `spend`).
+
+## The story director and the builder (function secrets on blocky-worlds-render AND blocky-worlds-api)
+
+| Secret | Values (default) | The prepare job gets |
+|---|---|---|
+| `BLOCKY_WORLDS_DIRECTOR` | off, **mock**, haiku, sonnet | `director: { provider: "off" \| "mock" \| "anthropic", model? }` |
+| `BLOCKY_WORLDS_BUILDER` | **off**, on | `builder: { provider: "off" \| "anthropic", library, budget: { maxUsd } }` |
+| `BLOCKY_WORLDS_BUILDER_MAX_USD` | **0.60** (clamped 0..2) | the builder's money cap per video |
+
+Both functions dispatch jobs (api: the first prepare; render: retries) and read the same project-wide secrets. With the builder on,
+the server hands the job a snapshot of the shared library (`blocky_worlds_assets`, live, most-used first, at most 150
+rows / 2 MB; a missing table is an empty library) and saves each asset the job built ("built" event; once per
+kind + name; the check still stays on the worker). The run's `render.production` records the settings at planning.
+
+**What bounds the money of one video** (render.js `aiCeilingUsd`, sent to the job as `prepare.limits` and logged):
+- builder: `BLOCKY_WORLDS_BUILDER_MAX_USD`, enforced by the worker's purse (each design / vision call reserves its worst
+  case before it starts; at most 6 designs, 120 s). Only the first prepare try designs; a retry is kit + library only.
+- director: at most 2 calls per prepare try, 2 tries: Haiku $0.0071 a call worst case (~$0.03 a video), Sonnet $0.1425
+  (~$0.57 a video).
+- voice ~$0.16 (bought once per run), GPU ~$0.12 (estimate()), storage.
+- Two 90 s test videos with haiku + builder on at $0.60: at most ~2 x ($0.63 + $0.28) = ~$1.8 (< the $2.50 test cap).
+  Sonnet + builder can pass $2.50 at its worst: use haiku for the test. The 24 h emergency cap (`daily_cap_usd`) counts
+  these ledger rows too.
+
+**Timing of real runs:** `node scripts/blockyWorlds/engine/dev/runTiming.mjs [latest N | <run id> ...] [--json]`
+(read-only, service key from .env.local): Generate -> prepare (voice, director, builder, plan + checks, music, mix) ->
+planned -> render (first chunk start -> last chunk done, per chunk min/max) -> finish -> total; the cost per ledger
+line; picture-card fallbacks; gaps. The prepare job's row keeps `output.planned` (builder/director ms + cost, timings so
+far) from the "planned" event, replaced by the whole job output (with `timing`) when it ends.

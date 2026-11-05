@@ -6,31 +6,43 @@
 //            jobs(runId), getJob(id), insertJob(row) -> row | null (null: that attempt exists already),
 //            updateJob(id, patch, { live }) -> row | null, jobsMissingCost(limit), ledger(run, rows) -> usd added,
 //            refund(runId) -> credits, alert(key, subject, text)
+//            optional (the shared library, lib/builder/cache.js; both guarded: a missing table never breaks a run):
+//            assetLibrary(limit) -> rows (blocky_worlds_assets, live), saveAsset(row) -> boolean
+//   production: { director, builder, builderMaxUsd } (render.js productionSettings: the function secrets)
 //   storage: signPut(path) -> url, signGet(path, seconds?) -> url | null, readText(path) -> string | null
 //   runpod:  configured, run({ input, webhook, policy }) -> { id }, status(id) -> object | null, cancel(id)
 //
 // Every entry point is safe to call any number of times (duplicate callbacks, the sweeper, webhook retries).
-import { BUCKET, chunkPlan, onJobEvent, paths, reconcile, RENDER, sameToken, tokenFor } from "./render.js";
+import { assetRow, BUCKET, chunkPlan, LIBRARY_SNAPSHOT, onJobEvent, paths, prepareProduction, PRODUCTION_DEFAULTS, reconcile, RENDER, sameToken, snapshotRows, tokenFor } from "./render.js";
 
 export { BUCKET };
 const LIVE = ["sent", "running"];
 const MAX_UPLOAD = 48e6;
 
-export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null }) {
+export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null, production = PRODUCTION_DEFAULTS }) {
   const iso = () => new Date(now()).toISOString();
+
+  /** the shared library for the builder: a snapshot (the worker has no key); any error -> an empty library */
+  async function library() {
+    if (production?.builder !== "on" || typeof db.assetLibrary !== "function") return [];
+    try { return snapshotRows(await db.assetLibrary(LIBRARY_SNAPSHOT.rows)); } catch (e) { log(`library snapshot skipped: ${e?.message ?? e}`); return []; }
+  }
 
   // ---------- the job a worker gets: signed URLs and a callback token, never a key ----------
   async function jobInput(run, row, a, jobs) {
     const P = paths(run), token = await tokenFor(secret, run.id);
     const base = { v: 1, role: a.role, runId: run.id, jobId: row.id, attempt: a.attempt, mode, callback: { url: callbackUrl, token } };
     if (a.role === "prepare") {
+      // the story director + the builder (render.js prepareProduction: a retry never designs again; limits = the caps)
+      const prod = prepareProduction(production ?? PRODUCTION_DEFAULTS, { attempt: a.attempt, library: await library() });
       return {
         ...base,
         prepare: {
+          director: prod.director, builder: prod.builder, limits: prod.limits,
           script: { title: run.title, lines: run.lines }, idea: run.card ?? {}, lengthSec: run.length_sec, music: cfg.music, sfx: true,
           // the paid take is bought once: a retry gets it back (render.js onJobEvent "voiced" sets voice_ready)
           voice: run.voice_ready ? { get: { mp3: await storage.signGet(P.voiceMp3), take: await storage.signGet(P.take) } } : { put: { mp3: await storage.signPut(P.voiceMp3), take: await storage.signPut(P.take) } },
-          out: { timeline: await storage.signPut(P.timeline), visualCheck: await storage.signPut(P.visualCheck), mix: await storage.signPut(P.mix) },
+          out: { timeline: await storage.signPut(P.timeline), visualCheck: await storage.signPut(P.visualCheck), production: await storage.signPut(P.production), mix: await storage.signPut(P.mix) },
         },
       };
     }
@@ -63,7 +75,8 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
       });
       if (!res?.id) throw new Error(`RunPod gave no job id: ${JSON.stringify(res).slice(0, 200)}`);
       await db.updateJob(row.id, { provider_job_id: res.id, dispatched_at: iso() }, { live: true });
-      log(`run ${run.id}: ${a.role}${a.role === "chunk" ? ` ${a.idx}` : ""} try ${a.attempt} -> ${res.id}`);
+      const lim = input.prepare ? ` (director ${input.prepare.director.model ?? input.prepare.director.provider}, builder ${input.prepare.builder.provider} cap $${input.prepare.builder.budget.maxUsd}, library ${input.prepare.builder.library.length}, AI ceiling $${input.prepare.limits.aiMaxUsd})` : "";
+      log(`run ${run.id}: ${a.role}${a.role === "chunk" ? ` ${a.idx}` : ""} try ${a.attempt} -> ${res.id}${lim}`);
       return true;
     } catch (e) {
       log(`run ${run.id}: sending ${a.role} ${a.idx ?? 0} try ${a.attempt} failed: ${e?.message ?? e}`);
@@ -113,15 +126,16 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     const [tlText, checkText] = await Promise.all([storage.readText(P.timeline), storage.readText(P.visualCheck)]);
     if (!tlText || !checkText) return run; // not uploaded yet: the next event or the sweeper comes back
     const check = JSON.parse(checkText);
-    const misses = ["missing", "subjects", "kit", "timeline"].reduce((n, k) => n + (check[k] ?? []).length, 0);
+    const misses = ["missing", "subjects", "production", "kit", "timeline"].reduce((n, k) => n + (check[k] ?? []).length, 0);
     if (misses || check.passed !== true) {
-      await failRun(run, (check.missing ?? []).length ? "VISUAL_CHECK" : (check.subjects ?? []).length ? "SUBJECT_CHECK" : (check.kit ?? []).length ? "KIT_MISSING" : "PLAN_FAILED", `the pre-render check report has ${misses} miss(es) or did not pass`);
+      await failRun(run, (check.missing ?? []).length ? "VISUAL_CHECK" : (check.production ?? []).length ? "PRODUCTION_CHECK" : (check.subjects ?? []).length ? "SUBJECT_CHECK" : (check.kit ?? []).length ? "KIT_MISSING" : "PLAN_FAILED", `the pre-render check report has ${misses} miss(es) or did not pass`);
       return null;
     }
     const tl = JSON.parse(tlText);
     const plan = chunkPlan(tl, { cfg, limitFrames, k: chunks });
     const frames = plan.at(-1).to, fps = tl.fps ?? cfg.fps;
-    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan };
+    const p = production ?? PRODUCTION_DEFAULTS;
+    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan, production: { director: p.director, builder: p.builder, builderMaxUsd: p.builderMaxUsd } };
     const upd = await db.updateRun(run.id, { planned_at: iso(), render }, { notTerminal: true, plannedNull: true });
     if (upd) log(`run ${run.id}: planned, ${frames} frames in ${plan.length} chunks`);
     return upd ?? (await db.getRun(run.id));
@@ -161,6 +175,15 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     if (ev.event === "runpod" && job.provider_job_id && ev.providerJobId && ev.providerJobId !== job.provider_job_id) return { ok: true, ignored: "another RunPod job" };
     const run = await db.getRun(runId);
     if (!run) return { ok: false, ignored: "no such run" };
+    // a thing the builder made for this video: into the shared library (idempotent by kind + name_key; bookkeeping,
+    // never fails a run; the job and the run are untouched)
+    if (ev.event === "built") {
+      const row = assetRow(ev.asset, run.id);
+      if (!row || typeof db.saveAsset !== "function") return { ok: true, ignored: row ? "no library" : "not an asset" };
+      const saved = await Promise.resolve(db.saveAsset(row)).catch((e) => { log(`run ${run.id}: library save skipped: ${e?.message ?? e}`); return false; });
+      if (saved) log(`run ${run.id}: built ${row.kind} "${row.name}" saved to the library`);
+      return { ok: true, saved: Boolean(saved) };
+    }
     const r = onJobEvent(job, ev, now(), cfg);
     if (r.ledger.length) {
       await db.ledger(run, r.ledger);
@@ -188,7 +211,7 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     const ev = fromRunPod
       ? { event: "runpod", providerJobId: body?.id ?? null, status: body?.status, output: body?.output ?? null, error: body?.error ?? null, executionTime: body?.executionTime, delayTime: body?.delayTime }
       : { ...body, token: undefined, runId: undefined, jobId: undefined };
-    if (!fromRunPod && !["progress", "voiced", "planned", "done", "failed"].includes(ev.event)) return { status: 400, body: { error: "unknown event" } };
+    if (!fromRunPod && !["progress", "voiced", "planned", "built", "done", "failed"].includes(ev.event)) return { status: 400, body: { error: "unknown event" } };
     return { status: 200, body: await event(runId, jobId, ev) };
   }
 

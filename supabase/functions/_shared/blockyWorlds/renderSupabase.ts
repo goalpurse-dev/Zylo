@@ -6,9 +6,13 @@
 //   BLOCKY_WORLDS_RUNPOD_API_KEY (falls back to CUTAWAY_RUNPOD_API_KEY), BLOCKY_WORLDS_RUNPOD_ENDPOINT (zyvo-blocky-render)
 //   BLOCKY_WORLDS_CALLBACK_SECRET   signs each run's callback token (any long random string)
 //   BLOCKY_WORLDS_CRON_SECRET       the sweeper's header (also the vault secret blocky_worlds_cron_secret)
-// The ElevenLabs key is NOT here: it is a RunPod secret in the worker's template (blocky_elevenlabs).
+//   BLOCKY_WORLDS_DIRECTOR          off | mock | haiku | sonnet (default mock: free)       the prepare job's story director
+//   BLOCKY_WORLDS_BUILDER           off | on (default off: kit + shared library only)      the prepare job's builder
+//   BLOCKY_WORLDS_BUILDER_MAX_USD   the builder's money cap per video (default 0.60, at most 2)
+// The ElevenLabs and Anthropic keys are NOT here: they are RunPod secrets in the worker's template (blocky_elevenlabs,
+// blocky_anthropic: runpod/setup.mjs).
 import { makeRuntime } from "./renderRuntime.js";
-import { BUCKET } from "./render.js";
+import { BUCKET, productionSettings } from "./render.js";
 import { alertOnce } from "../adminAlert.ts";
 
 const env = (k: string) => (Deno.env.get(k) ?? "").trim();
@@ -18,6 +22,7 @@ export const RENDER_CONFIG = {
   callbackSecret: env("BLOCKY_WORLDS_CALLBACK_SECRET"),
   cronSecret: env("BLOCKY_WORLDS_CRON_SECRET"),
   callbackUrl: `${env("SUPABASE_URL")}/functions/v1/blocky-worlds-render`,
+  production: productionSettings(env),
 };
 /** everything a start needs: checked by blocky-worlds-api BEFORE anything is charged */
 export const renderConfigured = () => Boolean(RENDER_CONFIG.runpodKey && RENDER_CONFIG.endpoint && RENDER_CONFIG.callbackSecret);
@@ -69,6 +74,22 @@ export function supabaseDb(admin: any) {
       return Number(data) || 0;
     },
     async alert(key: string, subject: string, text: string) { await alertOnce(admin, key, 3600, subject, text); },
+    /** the shared library's snapshot for the builder (supabase/migrations/20261203100000_blocky_worlds_assets.sql);
+     * a missing table (not applied yet) or any error is an empty library, never a failed run */
+    async assetLibrary(limit: number) {
+      const { data, error } = await admin.from("blocky_worlds_assets").select("id,kind,name,name_key,aliases,keys,blueprint,still_path,status,uses")
+        .eq("status", "live").order("uses", { ascending: false }).order("updated_at", { ascending: false }).limit(limit);
+      if (error) { console.log("[blocky-worlds-render] library snapshot skipped:", error.message); return []; }
+      return data ?? [];
+    },
+    /** one built asset, once per kind + name_key (the first one built wins); never throws */
+    async saveAsset(row: any) {
+      try {
+        const { error } = await admin.from("blocky_worlds_assets").upsert(row, { onConflict: "kind,name_key", ignoreDuplicates: true });
+        if (error) { console.log("[blocky-worlds-render] library save skipped:", error.message); return false; }
+        return true;
+      } catch (e: any) { console.log("[blocky-worlds-render] library save skipped:", e?.message ?? e); return false; }
+    },
   };
 }
 
@@ -134,5 +155,5 @@ export async function logCapabilityGaps(admin: any, runId: string, ev: any): Pro
 }
 
 export function renderRuntime(admin: any) {
-  return makeRuntime({ db: supabaseDb(admin), storage: supabaseStorage(admin), runpod: runpodApi(), secret: RENDER_CONFIG.callbackSecret, callbackUrl: RENDER_CONFIG.callbackUrl });
+  return makeRuntime({ db: supabaseDb(admin), storage: supabaseStorage(admin), runpod: runpodApi(), secret: RENDER_CONFIG.callbackSecret, callbackUrl: RENDER_CONFIG.callbackUrl, production: RENDER_CONFIG.production });
 }

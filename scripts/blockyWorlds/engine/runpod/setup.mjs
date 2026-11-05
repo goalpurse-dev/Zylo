@@ -2,7 +2,11 @@
 // The image lives in Cutaway's staging Fly registry under its own label (registry.fly.io/zyvo-cutaway-render-staging,
 // tag blocky-*), so RunPod pulls it with the registry login that already exists for Cutaway (no new credential).
 // 1. the serverless template on the image, pinned by digest; the prepare role's ElevenLabs key is the RunPod secret
-//    "blocky_elevenlabs" (the owner creates it in RunPod's console; never in the image or in Supabase);
+//    "blocky_elevenlabs" (the owner creates it in RunPod's console; never in the image or in Supabase); the story
+//    director's and the builder's Anthropic key (ANTHROPIC_KEY, read by lib/director + lib/builder) is the RunPod secret
+//    "blocky_anthropic" the same way. A template is named by the image digest and created once: a template made before
+//    this line has no ANTHROPIC_KEY (the director then falls back to the free mock list, the builder to cards);
+//    a new image gets a new template with both;
 // 2. the endpoint: scale to zero, the 16 GB GPUs in order (Cutaway's list), 12 workers at most (a video takes K + 1:
 //    8 chunks + its prepare job for 90 s; docs/blocky-worlds-pipeline.md), FlashBoot on.
 // Writes runpod/endpoint.json (ids only, no secrets).
@@ -33,7 +37,7 @@ console.log("registry auth (reused)", auth.id, auth.name);
 const tname = `${NAME}-${image.split("@sha256:")[1].slice(0, 12)}`;
 const templates = await rp("/templates");
 let tpl = (Array.isArray(templates) ? templates : []).find((t) => t.name === tname);
-if (!tpl) tpl = await rp("/templates", { method: "POST", body: JSON.stringify({ name: tname, imageName: image, isServerless: true, containerDiskInGb: 20, containerRegistryAuthId: auth.id, env: { NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all", ELEVENLABS_KEY: "{{ RUNPOD_SECRET_blocky_elevenlabs }}" }, dockerStartCmd: [], dockerEntrypoint: [], ports: [] }) });
+if (!tpl) tpl = await rp("/templates", { method: "POST", body: JSON.stringify({ name: tname, imageName: image, isServerless: true, containerDiskInGb: 20, containerRegistryAuthId: auth.id, env: { NVIDIA_DRIVER_CAPABILITIES: "all", NVIDIA_VISIBLE_DEVICES: "all", ELEVENLABS_KEY: "{{ RUNPOD_SECRET_blocky_elevenlabs }}", ANTHROPIC_KEY: "{{ RUNPOD_SECRET_blocky_anthropic }}" }, dockerStartCmd: [], dockerEntrypoint: [], ports: [] }) });
 console.log("template", tpl.id, tname);
 
 const endpoints = await rp("/endpoints");

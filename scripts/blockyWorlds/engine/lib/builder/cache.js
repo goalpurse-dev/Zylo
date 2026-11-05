@@ -4,7 +4,7 @@
 //   fileCache(dir)                      local runs: <dir>/index.json + <dir>/stills/<id>.jpg
 //   snapshotCache(rows, { onSave })     the RunPod prepare job: a read-only snapshot of the library handed in by the server
 //                                       (the worker never gets a Supabase key); new assets are collected (and posted
-//                                       back through onSave -> the job's "assets" event / upload) for the server to insert
+//                                       back through onSave -> the job's "built" event) for the server to insert
 //   supabaseCache({ url, serviceKey })  server side / admin scripts: table blocky_worlds_assets + storage
 //                                       (supabase/migrations/20261203100000_blocky_worlds_assets.sql)
 // Interface:

@@ -32,7 +32,9 @@ const LIVE = new Set(["sent", "running"]);
 export const ROLES = Object.freeze(["prepare", "chunk", "finish"]);
 /** failures the video itself causes (or an empty balance / a missing config): a retry would fail the same way */
 // (KIT_MISSING: an object the engine kit can't build; TIMELINE_INVALID: the engine page refused the timeline, on any GPU)
-export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PLAN_FAILED", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
+// (PRODUCTION_CHECK: a line misses an item the story director listed; the same plan misses it again, and a retry would
+// pay the director and the builder twice)
+export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
 const NO_GPU = new Set(["NO_GPU"]);
 const ORDER = ["queued", "voice", "plan", "render", "done"];
 const iso = (ms) => new Date(ms).toISOString();
@@ -111,7 +113,7 @@ export function paths(run) {
   const d = runDir(run), pad = (i) => String(i).padStart(3, "0");
   return {
     voiceMp3: `${d}/voice/voice.mp3`, take: `${d}/voice/take.json`,
-    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, mix: `${d}/mix.m4a`,
+    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, mix: `${d}/mix.m4a`,
     seg: (i, a) => `${d}/chunks/seg_${pad(i)}_a${a}.mp4`, web: (i, a) => `${d}/chunks/web_${pad(i)}_a${a}.mp4`,
     final: `${d}/final.mp4`, webFinal: `${d}/web.mp4`, poster: `${d}/poster.jpg`,
   };
@@ -132,13 +134,138 @@ export function sameToken(a, b) {
   return d === 0;
 }
 
+// ---------------------------------------------------------------- the prepare job's story director + builder
+/**
+ * Function secrets (read by renderSupabase.ts; the defaults are what a missing or unknown value means):
+ *   BLOCKY_WORLDS_DIRECTOR          off | mock | haiku | sonnet   (mock: free, the old behaviour)
+ *   BLOCKY_WORLDS_BUILDER           off | on                       (off: the kit + the shared library only, never a paid call)
+ *   BLOCKY_WORLDS_BUILDER_MAX_USD   the builder's money cap per video (0.60; clamped to 0..2)
+ * The worker (engine/runpod/worker.mjs prepare) reads job.prepare.director = { provider: "off" | "mock" | "anthropic",
+ * model? } and job.prepare.builder = { provider: "off" | "anthropic", library: [asset], budget: { maxUsd } }; both paid
+ * paths need ANTHROPIC_KEY in the worker (the RunPod secret blocky_anthropic, runpod/setup.mjs).
+ */
+export const PRODUCTION_DEFAULTS = Object.freeze({ director: "mock", builder: "off", builderMaxUsd: 0.6 });
+export const DIRECTOR_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
+/**
+ * The most ONE director call can cost (a copy of engine/lib/director/design.js anthropicDirector().worstCase(): every
+ * one of its 12,000 output tokens + 9,000 input tokens written to the cache; tests keep the two equal). directStory makes
+ * at most 2 calls (one retry) per prepare try.
+ */
+export const DIRECTOR_WORST_USD = Object.freeze({ "claude-haiku-5-5": 0.00713, "claude-sonnet-5-5": 0.1425 });
+export const BUILDER_MAX_USD_CEILING = 2;
+export const LIBRARY_SNAPSHOT = Object.freeze({ rows: 150, bytes: 2e6 });
+
+/** the settings from a getter of the function secrets (k) -> string */
+export function productionSettings(get = () => "") {
+  const v = (k) => String(get(k) ?? "").trim().toLowerCase();
+  const director = ["off", "mock", "haiku", "sonnet"].includes(v("BLOCKY_WORLDS_DIRECTOR")) ? v("BLOCKY_WORLDS_DIRECTOR") : PRODUCTION_DEFAULTS.director;
+  const builder = ["on", "true", "1", "anthropic"].includes(v("BLOCKY_WORLDS_BUILDER")) ? "on" : "off";
+  const raw = v("BLOCKY_WORLDS_BUILDER_MAX_USD"), n = raw === "" ? NaN : Number(raw);
+  const builderMaxUsd = Number.isFinite(n) && n >= 0 ? Math.min(BUILDER_MAX_USD_CEILING, n) : PRODUCTION_DEFAULTS.builderMaxUsd;
+  return { director, builder, builderMaxUsd };
+}
+
+/**
+ * The most the AI part of one video can cost (USD), enforced by the worker: the builder's purse reserves each call's
+ * worst case before it starts (lib/builder/resolve.js makePurse) and only the FIRST prepare try may design (a retry is
+ * kit + library only, and the library then holds what the first try built); the director makes at most 2 calls per
+ * prepare try, RENDER.attempts.prepare tries. The voice and the GPU come on top (estimate(), docs).
+ */
+export function aiCeilingUsd(s = PRODUCTION_DEFAULTS, cfg = RENDER) {
+  const model = DIRECTOR_MODELS[s.director] ?? null;
+  const directorMaxUsd = model ? +(DIRECTOR_WORST_USD[model] * 2 * cfg.attempts.prepare).toFixed(4) : 0;
+  const builderMaxUsd = s.builder === "on" ? Number(s.builderMaxUsd) || 0 : 0;
+  return { directorMaxUsd, builderMaxUsd, aiMaxUsd: +(directorMaxUsd + builderMaxUsd).toFixed(4) };
+}
+
+/** job.prepare.director + job.prepare.builder for one prepare try (attempt), with the library snapshot rows */
+export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, library = [] } = {}) {
+  const model = DIRECTOR_MODELS[s.director] ?? null;
+  const director = s.director === "off" ? { provider: "off" } : model ? { provider: "anthropic", model } : { provider: "mock" };
+  const designs = s.builder === "on" && attempt <= 1;
+  const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? Number(s.builderMaxUsd) || 0 : 0 } };
+  return { director, builder, limits: aiCeilingUsd(s) };
+}
+
+/** a library row (blocky_worlds_assets) as the worker's snapshotCache reads it */
+export function snapshotRows(rows, { max = LIBRARY_SNAPSHOT.rows, bytes = LIBRARY_SNAPSHOT.bytes } = {}) {
+  const out = [];
+  let size = 0;
+  for (const r of rows ?? []) {
+    if (out.length >= max || !r || (r.kind !== "object" && r.kind !== "world") || !r.name || !r.blueprint) continue;
+    const a = { id: r.id, kind: r.kind, name: r.name, name_key: r.name_key, aliases: r.aliases ?? [], keys: r.keys ?? [], blueprint: r.blueprint, still_path: r.still_path ?? null, status: r.status ?? "live", uses: Number(r.uses) || 0 };
+    const n = JSON.stringify(a).length;
+    if (size + n > bytes) continue;
+    size += n; out.push(a);
+  }
+  return out;
+}
+
+/**
+ * The worker's "built" event -> a blocky_worlds_assets row, or null when it isn't one. The worker validated the
+ * blueprint (lib/builder/spec.js) and the vision check passed it; here only the shape and the size are checked. The
+ * still stays on the worker (it has no upload URL for it): still_path null.
+ */
+export function assetRow(a, runId = null) {
+  if (!a || typeof a !== "object" || (a.kind !== "object" && a.kind !== "world")) return null;
+  const name = String(a.name ?? "").trim().slice(0, 60), key = String(a.name_key ?? "").trim().toLowerCase().slice(0, 80);
+  if (!name || !key || !a.blueprint || typeof a.blueprint !== "object") return null;
+  if (JSON.stringify(a.blueprint).length > 190000) return null;
+  const strs = (l, n) => (Array.isArray(l) ? l : []).map((x) => String(x ?? "").slice(0, 80)).filter(Boolean).slice(0, n);
+  const cost = Number(a.cost_usd ?? a.costUsd);
+  return {
+    kind: a.kind, name, name_key: key, aliases: strs(a.aliases, 12), keys: [...new Set([key, ...strs(a.keys, 16)])],
+    blueprint: a.blueprint, still_path: null, verdict: a.verdict && typeof a.verdict === "object" ? a.verdict : null,
+    model: a.model == null ? null : String(a.model).slice(0, 60), cost_usd: Number.isFinite(cost) && cost >= 0 ? +Math.min(cost, 50).toFixed(5) : 0,
+    status: "live", run_id: runId ?? null,
+  };
+}
+
+const usd = (x) => { const n = Number(x); return Number.isFinite(n) && n > 0 ? +Math.min(n, 50).toFixed(6) : 0; };
+/**
+ * The story director's and the builder's spend as ledger rows. "planned" carries what was spent by then (refs
+ * director:<job> and builder:<job>); the job's end (done output.spend, failed spend) carries the totals and what
+ * "planned" reported, so anything spent after it (or everything, when the job failed before planning) is added under
+ * director_end:<job> / builder_end:<job>. Every ref once: a repeated event never bills twice.
+ */
+function aiLedger(job, ev) {
+  const rows = [];
+  if (job.role !== "prepare") return rows;
+  if (ev.event === "planned") {
+    const b = usd(ev.builder?.costUsd), d = usd(ev.director?.costUsd);
+    if (d) rows.push({ stage: "director", provider: "anthropic", model: ev.director?.model ?? null, ref: `director:${job.id}`, usd: d, units: { ms: Number(ev.director?.ms) || null, fellBack: Boolean(ev.director?.fellBack), attempt: job.attempt } });
+    if (b) rows.push({ stage: "builder", provider: "anthropic", model: null, ref: `builder:${job.id}`, usd: b, units: { built: Number(ev.builder?.built) || 0, cards: Number(ev.builder?.cards) || 0, ms: Number(ev.builder?.ms) || null, attempt: job.attempt } });
+    return rows;
+  }
+  const s = ev.event === "failed" ? ev.spend : ev.output?.spend;
+  if (!s || typeof s !== "object") return rows;
+  const d = usd(usd(s.directorUsd) - usd(s.plannedDirectorUsd)), b = usd(usd(s.builderUsd) - usd(s.plannedBuilderUsd));
+  if (d) rows.push({ stage: "director", provider: "anthropic", model: s.directorModel ?? null, ref: `director_end:${job.id}`, usd: d, units: { totalUsd: usd(s.directorUsd), attempt: job.attempt } });
+  if (b) rows.push({ stage: "builder", provider: "anthropic", model: null, ref: `builder_end:${job.id}`, usd: b, units: { totalUsd: usd(s.builderUsd), attempt: job.attempt } });
+  return rows;
+}
+
+/** what "planned" leaves on the prepare job's row (output.planned; the job's "done" output replaces it with its own) */
+export function plannedSummary(ev) {
+  const n = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
+  return {
+    frames: n(ev.frames), duration: n(ev.duration), shots: n(ev.shots),
+    builder: ev.builder ? { costUsd: usd(ev.builder.costUsd), built: n(ev.builder.built), cards: n(ev.builder.cards), ms: n(ev.builder.ms) } : null,
+    director: ev.director ? { provider: String(ev.director.provider ?? "").slice(0, 20), model: ev.director.model ?? null, fellBack: Boolean(ev.director.fellBack), costUsd: usd(ev.director.costUsd), ms: n(ev.director.ms) } : null,
+    timing: ev.timing && typeof ev.timing === "object" ? Object.fromEntries(Object.entries(ev.timing).filter(([, v]) => Number.isFinite(Number(v))).slice(0, 12).map(([k, v]) => [String(k).slice(0, 20), Number(v)])) : null,
+    gaps: Array.isArray(ev.gaps) ? ev.gaps.length : 0,
+  };
+}
+
 // ---------------------------------------------------------------- one event on one job
 /**
  * A worker's event or RunPod's webhook on one job row -> { job: patch | null, run: patch | null, ledger: rows[] }.
  * A job already done or failed takes no patch (duplicates, late webhooks of a timed-out try); its costs still count
  * once (ledger refs are unique).
  *   worker: { event: "progress", stage?, pct? } | { event: "voiced", costUsd, billedChars, chars }
- *           | { event: "planned", frames, duration, shots } | { event: "done", output } | { event: "failed", code, message }
+ *           | { event: "planned", frames, duration, shots, builder, director, timing, gaps } | { event: "done", output }
+ *           | { event: "failed", code, message, spend? }   (prepare: director/builder spend -> ledger rows, aiLedger)
+ *   ("built", a new library asset, is handled by the runtime: renderRuntime.js saveAsset)
  *   RunPod: { event: "runpod", status, output, executionTime, delayTime, providerJobId }
  */
 export function onJobEvent(job, ev, now = Date.now(), cfg = RENDER) {
@@ -152,6 +279,7 @@ export function onJobEvent(job, ev, now = Date.now(), cfg = RENDER) {
     ledger.push({ stage: `gpu_${job.role}`, provider: "runpod", ref: `gpu:${ev.providerJobId}`, usd: +((execS + coldS) * cfg.gpuUsdPerSec).toFixed(6), units: { executionS: +execS.toFixed(2), delayS: +(((Number(ev.delayTime) || 0) / 1000)).toFixed(2), billedS: +(execS + coldS).toFixed(2), role: job.role, idx: job.idx, attempt: job.attempt } });
   }
   if (ev.event === "voiced" && Number(ev.costUsd) > 0) ledger.push({ stage: "voice", provider: "elevenlabs", ref: `voice:${job.id}`, usd: +Number(ev.costUsd).toFixed(6), units: { billedChars: ev.billedChars ?? null, chars: ev.chars ?? null } });
+  ledger.push(...aiLedger(job, ev));
   if (!live) return { job: null, run: null, ledger };
   const t = iso(now), started = job.started_at ? {} : { started_at: t };
   switch (ev.event) {
@@ -162,7 +290,7 @@ export function onJobEvent(job, ev, now = Date.now(), cfg = RENDER) {
       return { job: p, run: null, ledger };
     }
     case "voiced": return { job: { state: "running", ...started, heartbeat_at: t, stage: "voice" }, run: { voice_ready: true }, ledger };
-    case "planned": return { job: { state: "running", ...started, heartbeat_at: t, stage: "mix" }, run: null, ledger };
+    case "planned": return { job: { state: "running", ...started, heartbeat_at: t, stage: "mix", output: { planned: plannedSummary(ev) } }, run: null, ledger };
     case "done": return { job: { state: "done", pct: 100, finished_at: t, output: ev.output ?? null }, run: null, ledger };
     case "failed": return { job: { state: "failed", finished_at: t, error_code: String(ev.code ?? "RENDER_FAILED").slice(0, 40), error_message: String(ev.message ?? "").slice(0, 1500) }, run: null, ledger };
     case "runpod": {

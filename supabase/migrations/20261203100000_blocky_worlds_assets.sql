@@ -1,6 +1,6 @@
 -- Blocky Worlds: the shared library of things the engine built for a video (scripts/blockyWorlds/engine/lib/builder).
 -- NOT APPLIED. The owner applies it (db query --linked -f, then migration repair; never db push), after
--- 20261202100000_blocky_worlds_render.sql.
+-- 20261202200000_blocky_worlds_render.sql.
 --
 -- A line needs an object or a place the kit doesn't have: the engine looks here first (by normalized name / alias,
 -- singular), else an AI designs it as a block blueprint (object) or a world spec (place), a still + an AI vision check
@@ -14,7 +14,7 @@
 --   verdict     the vision check's reply { ok, confidence, reads_as, fix } + attempts
 --   status      live | retired (the owner retires a bad one; it is then never served, and the next video rebuilds it)
 -- Only the edge functions (service role) read and write it: RLS on, no policies. The RunPod worker never sees a key:
--- the server hands the prepare job a snapshot and inserts what the job built (its "assets" event).
+-- the server hands the prepare job a snapshot and inserts what the job built (its "built" event; blocky-worlds-render).
 
 BEGIN;
 

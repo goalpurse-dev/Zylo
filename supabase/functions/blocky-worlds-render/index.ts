@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 // blocky-worlds-render: the Blocky Worlds production pipeline's server side (docs/blocky-worlds-pipeline.md).
-//   POST { runId, jobId, token, event, ... }              a worker's event (progress, voiced, planned, done, failed)
+//   POST { runId, jobId, token, event, ... }              a worker's event (progress, voiced, planned, built, done, failed)
+//                                                         (built: a new shared-library asset -> blocky_worlds_assets)
 //   POST ?src=runpod&run=<id>&job=<id>&token=<token>      RunPod's webhook when a job ends
 //   POST with header x-blocky-cron                        the sweeper (pg_cron every minute: stuck jobs, lost webhooks)
 // Each run's token is HMAC(BLOCKY_WORLDS_CALLBACK_SECRET, run id); the sweeper's header is BLOCKY_WORLDS_CRON_SECRET.

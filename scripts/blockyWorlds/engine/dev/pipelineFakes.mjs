@@ -12,10 +12,10 @@ const TERMINAL = ["done", "failed"], LIVE = ["sent", "running"];
 const clone = (o) => (o == null ? o : JSON.parse(JSON.stringify(o)));
 
 export function memoryDb({ now = () => Date.now() } = {}) {
-  const runs = new Map(), jobs = new Map(), ledgerRows = [], refunds = [], alerts = [];
+  const runs = new Map(), jobs = new Map(), ledgerRows = [], refunds = [], alerts = [], assets = [];
   const iso = () => new Date(now()).toISOString();
   return {
-    runs, jobsMap: jobs, ledgerRows, refunds, alerts,
+    runs, jobsMap: jobs, ledgerRows, refunds, alerts, assets,
     /** a charged run, as blocky_worlds_start_run leaves it */
     addRun(fields = {}) {
       const r = { id: randomUUID(), user_id: randomUUID(), env: "test", status: "queued", pct: 0, created_at: iso(), stage_at: iso(), length_sec: 90, title: "Test", lines: [], card: {}, credits_charged: 62, credits_refunded: 0, refunded_at: null, cost_usd: 0, render: null, planned_at: null, voice_ready: false, files: null, end_card: true, ...fields };
@@ -62,6 +62,9 @@ export function memoryDb({ now = () => Date.now() } = {}) {
       return r.credits_charged;
     },
     async alert(key, subject, text) { alerts.push({ key, subject, text }); },
+    /** blocky_worlds_assets: live rows by uses; one row per kind + name_key (the first one wins) */
+    async assetLibrary(limit) { return assets.filter((a) => a.status === "live").sort((a, b) => b.uses - a.uses).slice(0, limit).map(clone); },
+    async saveAsset(row) { if (!assets.some((a) => a.kind === row.kind && a.name_key === row.name_key)) assets.push({ id: randomUUID(), uses: 0, created_at: iso(), ...clone(row) }); return true; },
   };
 }
 
