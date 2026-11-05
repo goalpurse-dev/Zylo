@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { Pin, X } from "lucide-react";
+import { Pin, TrendingUp, X } from "lucide-react";
 import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
@@ -509,12 +509,7 @@ export const SHELL_ONLY_TOOLS = [
     sublabel: "",
     path: "/workspace/earnings",
     color: "#bef264",
-    icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <path d="M3 17l5-5 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M15 8h5v5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon: <TrendingUp className="h-5 w-5" strokeWidth={1.8} />, // same icon as the sidebar's Earnings item
   },
 ];
 
