@@ -35,3 +35,23 @@ export function guard(label, fn, bugs, fallback) {
 export function logBugs(bugs, where = "") {
   for (const b of bugs) console.error(`[cutaway] bookkeeping bug (skipped${where ? `, ${where}` : ""}): ${b}`);
 }
+
+// the owner's rule of 2026-11-05: every optional feature (outlines, effects, the motion fill, camera framing, labels,
+// counters, the Add line, the checks) is run softly: its crash is OUR bug, logged once and skipped, and the run goes on;
+// only a broken core (no scene, no voice, no render) may fail a run. RUN_BUGS: every one met in this process (the run's
+// report lists them; the crash sweep counts them).
+export const RUN_BUGS = [];
+const noteBug = (label, e) => {
+  const m = `${label} crashed: ${String(e?.message ?? e).slice(0, 300)}`;
+  if (!RUN_BUGS.includes(m)) { RUN_BUGS.push(m); console.error(`[cutaway] bug (ours, skipped): ${m}`); }
+};
+/** an optional feature: its crash is logged and `fallback` (a value, or a function of the error) is its result */
+export function soft(label, fn, fallback) {
+  try { return fn(); } catch (e) { noteBug(label, e); return typeof fallback === "function" ? fallback(e) : fallback; }
+}
+/** the same for an async feature */
+export async function softAsync(label, fn, fallback) {
+  try { return await fn(); } catch (e) { noteBug(label, e); return typeof fallback === "function" ? fallback(e) : fallback; }
+}
+/** an error caught by the feature's own code: logged as our bug (once) */
+export const reportBug = (label, e) => noteBug(label, e);

@@ -9,6 +9,7 @@ import { compile } from "./compile.mjs";
 import { draftWords } from "./plan.js";
 import { clarityChecks } from "./clarity.js";
 import { rigBox, rigProblems } from "./rig.js";
+import { soft } from "./bookkeeping.js";
 
 // the settings each kind cannot do without
 export const REQUIRED = {
@@ -22,7 +23,9 @@ export const LIBS = ["dirt", "drip", "water_rush", "flame", "motor_hum"];
 const overlap = (a, b, pad = 0) => [0, 1, 2].every((i) => a.min[i] < b.max[i] - pad && b.min[i] < a.max[i] - pad);
 const pts = (p) => [p.path, p.points, Array.isArray(p.list) && p.list.every((a) => a && !Array.isArray(a) && Array.isArray(a.at)) ? p.list.map((a) => a.at) : null].find(Array.isArray) ?? [];
 
-export function solveLayout(L, sentences) {
+/** the plan's free checks, softly: a check that crashes is our bug, logged, and finds nothing (the run goes on) */
+export function solveLayout(L, sentences) { return soft("the plan checks (solveLayout)", () => solveLayoutRaw(L, sentences), { problems: [], warnings: ["the plan checks were skipped (they crashed: our bug)"] }); }
+function solveLayoutRaw(L, sentences) {
   const problems = [], warnings = [];
   const W = L.world ?? {}, cut = W.cut;
   if (!cut || ![cut.x0, cut.x1, cut.z0, cut.depth].every(Number.isFinite)) return { problems: ["world.cut must be {x0, x1, z0, depth}"], warnings };

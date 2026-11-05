@@ -120,15 +120,19 @@ export function storyFx(layout, sentences) {
       if (!ev || seen.has(ev.type) || hit.has(i)) return;
       // (said as not happening: "That flame is not garbage burning" in the landfill myth line)
       if (low.slice(Math.max(0, i - 3), i).some((x) => /^(not|no|never|nothing|without)$|n't$/.test(x))) return;
+      // (a condition, not an event: "gas only burns when it meets air" put fire on a cold burner)
+      if (low.slice(Math.max(0, i - 3), i).includes("only") || low.slice(i + 1, i + 4).some((x) => /^(when|if|unless|once)$/.test(x))) return;
       // (a word the beat's own verbs or parts already name: "cracks" with a crack part growing, "burns" with a flame burning)
       const named = (b.do ?? []).some((a) => { const kd = kinds.get(a.p) ?? ""; return new RegExp(ev.type === "splash" ? "flood|water|splash|spray" : ev.type === "drip" ? "drip|leak|seep|drop|melt" : ev.type === "fire" ? "burn|fire|flame|ignite" : ev.type === "swirl" ? "spin|turn|rotat" : ev.type, "i").test(`${a.v} ${a.p} ${kd}`); });
       if (named) return;
       seen.add(ev.type);
-      const id = `auto_fx${++k}`, { at, size } = spot(layout, b, ev.type);
-      layout.parts.push({ id, kind: "fx", params: { type: ev.type, at, size } });
-      b.do.push({ p: id, v: ONE_SHOT.has(ev.type) ? "go" : "start", w: words[i].replace(/[^A-Za-z0-9'-]/g, ""), auto: true });
+      // (a leak of gas, air, steam or fumes is a puff of smoke, not water drops)
+      const type = ev.type === "drip" && low.some((x) => /^(gas|air|steam|fumes?|vapou?r|smoke)$/.test(x)) ? "smoke" : ev.type;
+      const id = `auto_fx${++k}`, { at, size } = spot(layout, b, type);
+      layout.parts.push({ id, kind: "fx", params: { type, at, size } });
+      b.do.push({ p: id, v: ONE_SHOT.has(type) ? "go" : "start", w: words[i].replace(/[^A-Za-z0-9'-]/g, ""), auto: true });
       // a state stops when the build fixes it: at the next sentence that is a fix (or the finish)
-      if (!ONE_SHOT.has(ev.type)) { const nb = layout.beats.slice(layout.beats.indexOf(b) + 1).find((x) => /^(fix|finish|name|congrats)/.test(x.s)); if (nb) nb.do.push({ p: id, v: "stop", auto: true }); }
+      if (!ONE_SHOT.has(type)) { const nb = layout.beats.slice(layout.beats.indexOf(b) + 1).find((x) => /^(fix|finish|name|congrats)/.test(x.s)); if (nb) nb.do.push({ p: id, v: "stop", auto: true }); }
       stats.events++; notes.push(`${b.s}: "${words[i]}" happens on screen (${ev.type})`);
     });
   }

@@ -10,7 +10,7 @@ import { catalogText, SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
-import { guard, logBugs, splitBugs } from "./bookkeeping.js";
+import { guard, logBugs, soft, splitBugs } from "./bookkeeping.js";
 import { dropFrom } from "./salvage.mjs";
 import { homeView, projectBox } from "./director.js";
 import { placeLifeProps, placeSign } from "./framing.js";
@@ -283,7 +283,9 @@ export function fixOpening(L) {
 }
 
 /** the opening rules: close on the hook object, and not the way the previous video opened */
-export function openingProblems(L, last) {
+/** the opening checks, softly (a crash is our bug, logged; no problems) */
+export function openingProblems(L, last) { return soft("the opening checks", () => openingProblemsRaw(L, last), []); }
+function openingProblemsRaw(L, last) {
   const o = openingOf(L), out = [];
   if (o.kind === "home") out.push("the hook opens on the home view: its first shot (no word) must frame the hook object close (type close or mid)");
   else if (last && o.kind === last.kind && o.setting === last.setting) out.push(`the video opens like the previous one (a ${o.kind} in the ${o.setting} setting): open on another kind of object${o.setting === "yard" ? " or in another setting" : ""}`);

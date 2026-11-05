@@ -13,6 +13,7 @@ import { buildAudio } from "./audio.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { cameraAt, projectBox } from "./director.js";
 import { placeSign } from "./framing.js";
+import { soft, softAsync } from "./bookkeeping.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const progress = (o) => console.log(`PROGRESS ${JSON.stringify(o)}`);
@@ -63,11 +64,11 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   let tl = compile(layout, words, se, { roles });
   // the end card checked from the camera the video really ends on (with the real word times), and moved to a clear spot
   // if something stands between (a young tree hid half the Landfill's sign, 2026-10-28); free, before the render
-  for (let i = 0; i < 2 && tl.marks?.signPop != null && tl.camera?.end; i++) {
+  soft("the end card's clear spot", () => { for (let i = 0; i < 2 && tl.marks?.signPop != null && tl.camera?.end; i++) {
     const k = cameraAt(tl.camera.end, tl.marks.signPop + 0.6), ps = placeSign(layout, { pos: k.pos, tgt: k.tgt }, projectBox);
     if (!ps.moved) break;
-    layout = ps.layout; tl = compile(layout, words, se, { roles }); timing.signMoved = (timing.signMoved ?? 0) + 1;
-  }
+    const L2 = ps.layout, tl2 = compile(L2, words, se, { roles }); layout = L2; tl = tl2; timing.signMoved = (timing.signMoved ?? 0) + 1;
+  } }, null);
   fs.writeFileSync(path.join(out, "timeline.json"), JSON.stringify(tl, null, 1));
   preparePage({ layout, tl, proto });
   timing.prepare = (Date.now() - t0) / 1000;
@@ -87,7 +88,11 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   }
   progress({ stage: "sound", pct: 86 });
   const t2 = Date.now();
-  const mixes = await buildAudio({ wt, ff, timeline: tl, voice, words, out });
+  const mixes = await softAsync("the sound mix (effects, music, ambience)", () => buildAudio({ wt, ff, timeline: tl, voice, words, out }), async () => {
+    // the voice alone, and no captions file of its own (the captions step below then runs without one)
+    for (const [v] of versions) await run(ff, ["-v", "error", "-y", "-i", voice, "-c:a", "libmp3lame", "-b:a", "192k", path.join(out, `mix_${v}.mp3`)], { cwd: out });
+    return { voiceOnly: true };
+  });
   timing.sound = (Date.now() - t2) / 1000;
   progress({ stage: "finish", pct: 92 });
   const t3 = Date.now();
@@ -98,7 +103,9 @@ export async function makeVideo({ layout, voice, words, out, proto, ff, roles = 
   const files = {};
   for (const [v] of versions) {
     const final = `${layout.key}_${v}.mp4`;
-    await run(ff, ["-v", "error", "-y", "-i", `silent_${v}.mp4`, "-i", `mix_${v}.mp3`, "-vf", `subtitles=${v === "end" && fs.existsSync(path.join(out, "captions_end.ass")) ? "captions_end.ass" : "captions.ass"}:fontsdir=fonts`, "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { cwd: out });
+    const subs = v === "end" && fs.existsSync(path.join(out, "captions_end.ass")) ? "captions_end.ass" : "captions.ass";
+    const mux = (vf) => run(ff, ["-v", "error", "-y", "-i", `silent_${v}.mp4`, "-i", `mix_${v}.mp3`, ...(vf ? ["-vf", vf] : []), "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", final], { cwd: out });
+    await softAsync("the captions", () => { if (!fs.existsSync(path.join(out, subs))) throw new Error(`no ${subs}`); return mux(`subtitles=${subs}:fontsdir=fonts`); }, () => mux(null));
     files[v] = path.join(out, final);
   }
   // the web copy of the version delivered (the end card version, or the clean one when only that was made)

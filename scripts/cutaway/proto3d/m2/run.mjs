@@ -18,7 +18,7 @@ import { compile } from "./compile.mjs";
 import { speechEnd } from "../speechEnd.mjs";
 import { gradingFor, MECHANISM, previewTimes, renderChecks, saturationOf, shrink, timelineChecks, visionCheck } from "./checks.mjs";
 import { sheet } from "./sheet.mjs";
-import { guard, logBugs, splitBugs } from "./bookkeeping.js";
+import { guard, logBugs, RUN_BUGS, softAsync, splitBugs } from "./bookkeeping.js";
 import { dropFrom, salvagePlan, spliceVoice } from "./salvage.mjs";
 import { sentencesOf } from "./curves.js";
 import { draftWords } from "./plan.js";
@@ -42,7 +42,9 @@ async function visionCached({ apiKey, frames, log, cacheDir, multi = true, label
 }
 
 // each sentence's frames (start, middle, end of its action) side by side in one small jpg: what the checker sees
-async function previewStrips({ proto, layout, shots, out, ff, wt = WT }) {
+/** the preview strips, softly: a crash is our bug, logged, and the check they were for is skipped (no frames) */
+async function previewStrips(o) { return softAsync("the preview strips", () => previewStripsRaw(o), []); }
+async function previewStripsRaw({ proto, layout, shots, out, ff, wt = WT }) {
   const all = shots.flatMap((s) => s.ts ?? [s.t]);
   const pngs = await previewStills({ proto, layout, times: all, out });
   let k = 0;
@@ -68,7 +70,9 @@ export function stateText(t) {
   return `drawtext=fontfile=font.ttf:text='${x}':fontsize=h*0.075:fontcolor=0xFF3B30:borderw=6:bordercolor=white:x=(w-text_w)/2:y=h*0.2-text_h/2`;
 }
 
-async function previewStills({ proto, layout, times, out }) {
+/** the preview stills, softly (as the strips) */
+async function previewStills(o) { return softAsync("the preview stills", () => previewStillsRaw(o), []); }
+async function previewStillsRaw({ proto, layout, times, out }) {
   await runProcess(process.execPath, [path.join(proto, "m2", "stills.mjs"), `m2_${layout.key}.html`, out, times.join(",")], { cwd: proto });
   return times.map((_, i) => path.join(out, `f_${String(i).padStart(3, "0")}.png`));
 }
@@ -90,6 +94,8 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   const late = []; plan.problems = splitBugs(plan.problems, late); if (late.length) { logBugs(late, "plan gate"); plan.warnings = [...(plan.warnings ?? []), ...late.map((b) => `BUG (ours, skipped): ${b}`)]; }
   const report = { topic, lengthSec, reuse, planUsd: plan.costUsd, problems: plan.problems, warnings: plan.warnings, bugs: [...(plan.bugs ?? []), ...late], planSeconds: (Date.now() - t0) / 1000 };
   save("plan_report.json", report);
+  // (every optional feature skipped on the way, as our bugs: each result carries the list as it is then; bookkeeping.js soft)
+  Object.defineProperty(report, "runBugs", { get: () => [...RUN_BUGS], enumerable: true });
   if (!reuse && !plan.resumed && !plan.problems.length && openings) fs.appendFileSync(openings, JSON.stringify({ topic, at: new Date().toISOString(), ...openingOf(plan.layout) }) + "\n");
   if (plan.problems.length > maxProblems) { P({ stage: "failed", reason: "plan", problems: plan.problems }); return { ...report, ok: false }; }
   if (planOnly) return { ...report, ok: true };

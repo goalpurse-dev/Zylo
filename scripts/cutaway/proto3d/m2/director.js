@@ -7,6 +7,7 @@
 //  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
 import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
+import { reportBug } from "./bookkeeping.js";
 import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 
 export { LENS };
@@ -303,7 +304,8 @@ export function directCamera(layout, shots, marks) {
     }
     return k;
   };
-  for (const s of shots) {
+  // (one shot that crashes keeps the camera where it was: our bug, logged; the owner's rule of 2026-11-05)
+  for (const s of shots) { try {
     const start = s.t - MOVE.lead;
     if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
     let k;
@@ -382,7 +384,7 @@ export function directCamera(layout, shots, marks) {
     if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));
     push(s.t + MOVE.settle, k);
     cur = k; lastMove = start;
-  }
+  } catch (e) { reportBug(`camera shot at ${Number(s?.t).toFixed?.(2)} s`, e); } }
   // the first half second moves (the creator's openings never sit still): a gentle push-in onto the first frame
   if (!layout.camera?.home && keys.length) {
     const k0 = { pos: keys[0][1], tgt: keys[0][2] }, tIn = Math.min(1.4, (keys[1]?.[0] ?? marks.signPop) - 0.3);

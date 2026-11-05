@@ -3,6 +3,7 @@
 // is derived from its params. Parts with no place of their own (light, soil shading) have none.
 
 import { rigBox } from "./rig.js";
+import { soft } from "./bookkeeping.js";
 import { fxBox } from "../kit/fx.js";
 
 const fromPoints = (pts, pad = 0) => {
@@ -30,14 +31,18 @@ export function signalQueueBox(sig, traffic, cut) {
 }
 
 /** a shot's focus id: a part, or "part.node" for one piece of a designed part (rig.js) */
-export function focusOfId(parts, id, cut) {
+/** a part's box (focusOfId): softly (its crash is our bug, logged; the fallback is used) */
+export function focusOfId(parts, id, cut) { return soft("a part's box (focusOfId)", () => focusOfIdRaw(parts, id, cut), null); }
+function focusOfIdRaw(parts, id, cut) {
   const [pid, node] = String(id).split(".");
   const p = parts.get(pid); if (!p) return null;
   if (node && p.kind === "rig") return rigBox(p.params ?? {}, { node });
   try { return focusOf(p, cut); } catch { return null; }
 }
 
-export function focusOf(part, cut) {
+/** a part's box (focusOf): softly (its crash is our bug, logged; the fallback is used) */
+export function focusOf(part, cut) { return soft("a part's box (focusOf)", () => focusOfRaw(part, cut), null); }
+function focusOfRaw(part, cut) {
   if (part.focus) return part.focus.min ? part.focus : centered(part.focus.c, part.focus.s);
   const p = part.params ?? {};
   const cutBox = cut ? { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] } : null;

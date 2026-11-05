@@ -4,6 +4,9 @@
 import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { fillGaps, motionGaps, storyFx } from "./storyFx.js";
+import { reportBug, soft } from "./bookkeeping.js";
+import { KIND_CHANNELS } from "./parts.js";
+const KIND_OK = (k) => !!KIND_CHANNELS[k];
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
 import { focusOf, signalQueueBox, union } from "./focus.js";
@@ -105,12 +108,41 @@ export function holdRamps(r, s) {
   return [{ ...r, t0: +t0.toFixed(4), t1: +tA.toFixed(4), amp: +(r.amp * 0.7).toFixed(4), e: "out" }, { ...r, t0: +s.t1.toFixed(4), t1: +(s.t1 + Math.max(0.3, 0.3 * len)).toFixed(4), amp: +(r.amp * 0.3).toFixed(4), e: "inOut", tail: true }];
 }
 
+/** the camera when the director crashes: one fixed high three-quarter view of the subject (or the cut) */
+function plainCamera(layout, marks) {
+  const parts = layout.parts.filter((p) => p.main), cut = layout.world?.cut;
+  let box = null; for (const p of parts) { try { box = focusOf(p, cut); } catch {} if (box) break; }
+  if (!box) box = cut ? { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] } : { min: [-5, 0, -6], max: [5, 3, 0] };
+  const c = box.min.map((v, i) => (v + box.max[i]) / 2), r = Math.max(4, ...box.max.map((v, i) => v - box.min[i])) * 1.4;
+  const pos = [+(c[0] + r * 0.35).toFixed(3), +(c[1] + r * 0.75).toFixed(3), +(c[2] + r * 1.2).toFixed(3)], tgt = c.map((v) => +v.toFixed(3)), end = marks.lengthEnd ?? 30;
+  const keys = [[0, pos, tgt], [end, pos, tgt]];
+  return { end: keys, noend: keys, notes: ["the plain camera (the director crashed)"], frames: [] };
+}
+
 export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // what the narration says happens on screen (storyFx.js: the event words, the "Add ..." line), on a planned layout
   // (its beats); the layout itself gets the parts it adds, so the page has them (CUTAWAY_STORYFX=0 turns it off)
   // (not an approved layout with its own camera path: the owner approved those as they are)
   const fxOn = process.env.CUTAWAY_STORYFX !== "0" && Array.isArray(layout0.beats) && layout0.beats.length && roles.length && (layout0.codeShots || !layout0.camera);
-  const story = fxOn ? storyFx(layout0, sentencesOf(words, roles).map((s) => ({ role: s.role, text: s.text }))) : { notes: [], stats: {} };
+  const story = fxOn ? soft("story effects", () => storyFx(layout0, sentencesOf(words, roles).map((s) => ({ role: s.role, text: s.text }))), { notes: [], stats: {} }) : { notes: [], stats: {} };
+  // (a position or size that is not three numbers gets safe ones: a NaN or a word in the main subject's position stopped
+  // the page, the crash sweep of 2026-11-05; each is our bug, logged, and the part is drawn at the fallback)
+  soft("part numbers", () => {
+    const fixed = [];
+    for (const p of layout0.parts ?? []) for (const k of ["pos", "at", "size"]) {
+      const v = p.params?.[k];
+      if (Array.isArray(v) && v.length === 3 && v.some((x) => !Number.isFinite(Number(x)) || x === null || x === "")) { p.params[k] = v.map((x) => (x === null || x === "" || !Number.isFinite(Number(x)) ? (k === "size" ? 1 : 0) : Number(x))); fixed.push(`${p.id}.${k}`); }
+    }
+    // (a path or a list of points: entries that are not three numbers are dropped, and one point left gets a second just
+    // beside it: a line needs two)
+    for (const p of layout0.parts ?? []) for (const k of ["path", "points"]) {
+      const v = p.params?.[k]; if (!Array.isArray(v) || (k === "points" && p.kind !== "outline")) continue;
+      const ok = v.filter((q) => Array.isArray(q) && q.length === 3 && q.every((x) => x !== null && x !== "" && Number.isFinite(Number(x)))).map((q) => q.map(Number));
+      if (ok.length === 1) ok.push([ok[0][0] + 0.05, ok[0][1], ok[0][2]]);
+      if (ok.length !== v.length || ok.some((q, i) => q !== v[i])) { if (ok.length >= 2 || v.length) { p.params[k] = ok; if (ok.length !== v.length) fixed.push(`${p.id}.${k}`); } }
+    }
+    if (fixed.length) reportBug("part numbers (not numbers, set to safe ones)", new Error(fixed.join(", ")));
+  }, null);
   // a planner layout says what happens as beats (kit verbs on words) and shots; they become cues here
   const beats = expandBeats(layout0, { lenient: true });
   const layout = { ...layout0, cues: [...(layout0.cues ?? []), ...beats.cues], shots: [...(layout0.shots ?? []), ...beats.shots] };
@@ -122,6 +154,24 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const bad = new Set(problems.map((p) => /^cue (\d+) /.exec(p)).filter(Boolean).filter((m) => !/unknown easing/.test(problems.find((p) => p.startsWith(`cue ${m[1]} `)) ?? "")).map((m) => Number(m[1])));
     layout.cues = layout.cues.map((c) => (c.e != null && /unknown easing/.test(problems.find((p) => p.startsWith(`cue ${layout.cues.indexOf(c)} `)) ?? "") ? { ...c, e: "lin" } : c)).filter((_, i) => !bad.has(i));
     notes.push(...problems.filter((p) => /^cue \d+ /.test(p)).map((p) => `fixed: ${p}`));
+    problems = validateLayout(layout);
+  }
+  // (the owner's rule of 2026-11-05: an optional thing never stops a video. A shot on a part or piece that is not there
+  // loses that name, and a shot left with none is dropped; no shot at all frames the main subject; a part of an unknown
+  // kind, or a second one with the same id, is left out. Each is our bug, logged. The crash sweep's 284 crashes.)
+  if (problems.some((p) => /^shot \d+: |^camera needs|^part \S+: (unknown kind|duplicate id|bad id)/.test(p))) {
+    const badPart = new Set(problems.map((p) => /^part (\S+): (unknown kind|duplicate id)/.exec(p)?.[1]).filter(Boolean));
+    if (badPart.size) {
+      const seen = new Set();
+      layout.parts = layout.parts.filter((p) => { const keep = p.main || !(badPart.has(p.id) && (seen.has(p.id) || !KIND_OK(p.kind))) ; const first = !seen.has(p.id); seen.add(p.id); return keep && (first || p.main); });
+      layout.cues = layout.cues.filter((c) => layout.parts.some((p) => p.id === c.p));
+    }
+    const pieceOk = (id) => { const [pid, node] = String(id).split("."), p = layout.parts.find((q) => q.id === pid); if (!p) return false; if (!node) return true; return p.kind === "rig" && (p.params?.nodes ?? []).some((n) => n?.id === node); };
+    // (a piece that is not there: the whole part instead, when the part is)
+    const fixId = (id) => (id === "home" || pieceOk(id) ? id : layout.parts.some((q) => q.id === String(id).split(".")[0]) ? String(id).split(".")[0] : null);
+    layout.shots = layout.shots.map((s) => { if (s.focus === "home" || !Array.isArray(s.focus)) return s; const f = [...new Set(s.focus.map(fixId).filter(Boolean))]; return f.length ? { ...s, focus: f } : null; }).filter(Boolean);
+    if (!layout.shots.length && !(layout.camera?.keys?.length >= 2)) { const m = layout.parts.find((p) => p.main) ?? layout.parts.find((p) => !["light", "sign", "rain"].includes(p.kind)); layout.shots = [{ focus: m ? [m.id] : "home", at: { s: roles[0] ?? null } }].map((s) => (s.at.s ? s : { ...s, at: { abs: 0 } })); }
+    reportBug("the layout (repaired before the timeline: bad shots or parts left out)", new Error(problems.filter((p) => /^shot |^camera|^part /.test(p)).join("; ").slice(0, 280)));
     problems = validateLayout(layout);
   }
   if (problems.length) throw new Error(`layout ${layout.key}: ${problems.join("; ")}`);
@@ -139,7 +189,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
 
   const tracks = {};
   for (const p of layout.parts) for (const [ch, base] of Object.entries(p.base ?? {})) tracks[`${p.id}.${ch}`] = { base, ramps: [] };
-  for (const c of layout.cues) {
+  for (const c of layout.cues) soft(`cue ${c.p}.${c.c}`, () => {
     const key = `${c.p}.${c.c}`;
     // (in a planned layout, nothing the "Add ..." line adds appears before that line starts: a young tree led in 0.7 s
     // early, layoutRules 7, popped up beside the gauge during the line before; free ice rink run, 2026-10-28)
@@ -150,7 +200,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const r = { t0: +t0.toFixed(4), t1: +t1.toFixed(4), amp: c.amp ?? 1, e: c.e ?? (c.b || c.d != null ? "lin" : "step"), ...(c.a?.s ? { s: c.a.s } : {}) };
     const sen = layout.hold && c.a?.s && holdable(layout.parts.find((p) => p.id === c.p), c.c) ? sentences.find((x) => x.role === c.a.s) : null;
     (tracks[key] ??= { base: 0, ramps: [] }).ramps.push(...(sen ? holdRamps(r, sen) : [r]));
-  }
+  }, null);
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
   // (in a planned layout a water level is kept between empty and full the same way: a trickle then a full drain left it
@@ -173,11 +223,11 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // the "Add ..." line is over before "Congratulations": nothing it plays runs on into that line (the bunker rerun's decay
   // counter counted on 0.5 s into it)
   const finS = fxOn ? sentences.find((x) => x.role === "finish") : null, conS = finS ? sentences.find((x) => x.role === "congrats") : null;
-  if (finS && conS) for (const tr of Object.values(tracks)) for (const r of tr.ramps) if (r.s === "finish" && r.t1 > conS.t0 - 0.05 && r.t0 < conS.t0) r.t1 = +Math.max(r.t0 + 0.04, conS.t0 - 0.05).toFixed(4);
+  if (finS && conS) soft("Add line end", () => { for (const tr of Object.values(tracks)) for (const r of tr.ramps) if (r.s === "finish" && r.t1 > conS.t0 - 0.05 && r.t0 < conS.t0) r.t1 = +Math.max(r.t0 + 0.04, conS.t0 - 0.05).toFixed(4); }, null);
   // never a still moment: a stretch of more than storyFx GAP s with nothing moving gets life (the shown part's own
   // motion again, or drifting specks), from the first word to the last
-  const gaps = fxOn ? motionGaps(layout, tracks, sentences, { from: sentences[0]?.t0 ?? 0, to: sentences.at(-1)?.t1 }) : [];
-  if (gaps.length) story.notes.push(...fillGaps(layout, tracks, sentences, gaps));
+  const gaps = fxOn ? soft("still moments", () => motionGaps(layout, tracks, sentences, { from: sentences[0]?.t0 ?? 0, to: sentences.at(-1)?.t1 }), []) : [];
+  if (gaps.length) story.notes.push(...soft("still moments fill", () => fillGaps(layout, tracks, sentences, gaps), []));
   story.stats.gaps = gaps.length;
   notes.push(...story.notes);
 
@@ -185,12 +235,12 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   let camera, director = null;
   if (layout.camera?.keys?.length) camera = { end: keysFor("end"), noend: keysFor("noend") };
   else {
-    const shots = layout.shots.map((s) => ({ ...s, t: at(s.at) })).sort((a, b) => a.t - b.t);
-    director = directCamera(layout, shots, marks);
+    const shots = layout.shots.map((s) => soft(`shot at ${JSON.stringify(s.at)}`, () => ({ ...s, t: at(s.at) }), null)).filter(Boolean).sort((a, b) => a.t - b.t);
+    director = soft("camera director", () => directCamera(layout, shots, marks), () => plainCamera(layout, marks));
     // every sentence's showing part at least 12% wide and in the frame while it acts: a shot on it where the camera
     // would miss it (then the camera is directed once more)
     const extra = [];
-    for (const b of layout.beats ?? []) {
+    soft("camera: showing parts in frame", () => { for (const b of layout.beats ?? []) {
       if (!b.shows || b.s === "congrats") continue;
       const part = layout.parts.find((p) => p.id === b.shows.p); let box = null; try { box = part && focusOf(part, layout.world?.cut); } catch {}
       const act = (b.do ?? []).find((a) => a.p === b.shows.p); if (!box || !act) continue;
@@ -235,17 +285,18 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     // the next sentence's planned shot was the one dropped: a storm drain's catch basin was never framed)
     for (let i = extra.length - 1; i >= 0; i--) if (kept.some((s) => s.at?.s !== extra[i].at?.s && s.t > extra[i].t && s.t - extra[i].t < MOVE.minGap)) extra.splice(i, 1);
     if (extra.length) director = directCamera(layout, [...kept, ...extra].sort((a, b) => a.t - b.t), marks);
+    }, null);
     camera = { end: director.end, noend: director.noend };
   }
   const audio = layout.audio ?? {};
-  const cards = (audio.cards ?? []).map((c) => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }));
-  cards.push(...nameCards(sentences, words, cards));
+  const cards = (audio.cards ?? []).map((c) => soft(`card ${c.text}`, () => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }), null)).filter(Boolean);
+  cards.push(...soft("name cards", () => nameCards(sentences, words, cards), []));
   // the red state labels on problem lines, for a planner layout (premade keeps its approved cards)
-  if (layout.hold) cards.push(...stateCards(sentences, words, layout.beats ?? [], cards));
+  if (layout.hold) cards.push(...soft("state cards", () => stateCards(sentences, words, layout.beats ?? [], cards), []));
   // a caption never sits on a counter or gauge (the owner's review of 2026-10-31): a word said while one is up in the
   // caption's band goes to the first free band instead (planned layouts; the approved ones keep theirs)
   const captionY = {};
-  if (layout.codeShots && camera?.end?.length) {
+  if (layout.codeShots && camera?.end?.length) soft("caption bands", () => {
     // (and a prop to read: the caption sat on the newspaper and the book)
     const counters = layout.parts.filter((p) => ["counter", "book", "sheet"].includes(p.kind)).map((p) => ({ box: focusOf(p, layout.world?.cut), show: tracks[`${p.id}.${p.kind === "counter" ? "show" : "up"}`], gone: p.kind === "counter" ? null : tracks[`${p.id}.down`] })).filter((c) => c.box);
     const onAt = (tr, t) => { let v = tr?.base ?? 0; for (const r of tr?.ramps ?? []) if (t >= r.t1) v += r.amp; else if (t > r.t0) v += r.amp * (t - r.t0) / Math.max(0.01, r.t1 - r.t0); return v > 0.5; };
@@ -254,7 +305,7 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       const hits = (y) => up.some((r) => r.y0 < y + 0.04 && r.y1 > y - 0.04);
       if (hits(0.52)) { const y = [0.68, 0.76, 0.42, 0.84].find((b) => !hits(b)); if (y) captionY[i] = y; }
     });
-  }
+  }, null);
   return {
     key: layout.key,
     marks,
@@ -267,10 +318,10 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     director: director && { notes: director.notes, frames: director.frames },
     ...(notes.length ? { fixes: notes } : {}),
     audio: {
-      sfx: (audio.sfx ?? []).map((s) => ({ lib: s.lib, start: +at(s.at).toFixed(3), duration: s.d ?? 1.4 })),
-      chimes: (audio.chimes ?? []).map((a) => +at(a).toFixed(3)),
+      sfx: (audio.sfx ?? []).map((s) => soft(`sound ${s.lib}`, () => ({ lib: s.lib, start: +at(s.at).toFixed(3), duration: s.d ?? 1.4 }), null)).filter(Boolean),
+      chimes: (audio.chimes ?? []).map((a) => soft("chime", () => +at(a).toFixed(3), null)).filter((x) => x != null),
       cards,
-      rain: audio.rain ? { from: at(audio.rain.from), to: at(audio.rain.to), underDb: audio.rain.underDb ?? 24 } : null,
+      rain: audio.rain ? soft("rain sound", () => ({ from: at(audio.rain.from), to: at(audio.rain.to), underDb: audio.rain.underDb ?? 24 }), null) : null,
       // the setting's sound bed under the whole video (render-worker/assets/sfx/amb-<setting>.mp3; the creator's
       // traffic light runs a road rumble under the voice), unless the layout turns it off
       ambience: audio.ambience === false ? null : { setting: AMBIENCE_OF[layout.world?.backdrop?.type ?? "yard"] ?? "yard", underDb: audio.ambienceUnderDb ?? 20 },

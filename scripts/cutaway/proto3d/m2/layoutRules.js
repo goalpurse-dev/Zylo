@@ -12,6 +12,7 @@ import { verbCues } from "./verbs.js";
 import { LIBS } from "./solver.js";
 import { settingBoxes } from "./framing.js";
 import { rigBox } from "./rig.js";
+import { soft } from "./bookkeeping.js";
 import { STREET_BACK, streetRoad } from "../kit/street.js";
 
 const near = (a, b, d) => Math.hypot(a[0] - b[0], a[2] - b[2]) <= d;
@@ -22,7 +23,9 @@ const INDOOR = new Set(["room", "kitchen", "workshop"]);
 /** How far behind the stop line the first car waits on a street (m): the loop glows in the road in front of it. */
 export const FIRST_CAR = 6;
 
-export function layoutRules(L) {
+/** the readability rules, softly: a crash keeps the layout as it was (our bug, logged) */
+export function layoutRules(L) { return soft("layout rules", () => layoutRulesRaw(L), () => ({ layout: L, notes: ["layout rules skipped (they crashed: our bug)"] })); }
+function layoutRulesRaw(L) {
   const cut = L.world?.cut, parts = L.parts.map((p) => ({ ...p, params: { ...(p.params ?? {}) } })), byId = new Map(parts.map((p) => [p.id, p]));
   const beats = (L.beats ?? []).map((b) => ({ ...b, do: [...(b.do ?? [])] }));
   const notes = [];

@@ -117,6 +117,9 @@ for (;;) {
   // (--gate-only: the plan role, which stops once the preview gate passes and the plan is saved; no render)
   const job = jobFor(run, { role: a["gate-only"] ? "plan" : "video", mode: "local", urls: { ...urls, ...(run.attempt > 1 && !run.plan_ready ? { resume: plan.steps } : {}) }, callback, layout: layoutFor(q.premade), library: [] });
   if (a.cap) job.capUsd = Number(a.cap);
+  // --resume-steps FILE: an earlier run's paid planner replies (its plan/steps.json), replayed free the way a retry replays
+  // them: only the steps after them are paid (the owner's rule of 2026-11-05: never pay for a plan twice)
+  if (typeof a["resume-steps"] === "string" && run.attempt === 1) { job.plan = { ...(job.plan ?? {}), resume: url(path.resolve(a["resume-steps"])) }; log(`resuming from ${a["resume-steps"]}`); }
   log(`worker attempt ${run.attempt}${job.plan.get ? " (the plan already made)" : ""}`);
   const code = await worker(job);
   await new Promise((r) => setTimeout(r, 300));

@@ -149,7 +149,9 @@ function nodeBoxes(p) {
 }
 
 /** the rig's box in world space (at rest and through its moves), for the camera and the checks */
-export function rigBox(p, { swept = true, node = null } = {}) {
+/** rigBox, softly (its crash is our bug, logged; no box) */
+export function rigBox(p, opts = {}) { return soft("a designed part's box (rigBox)", () => rigBoxRaw(p, opts), null); }
+function rigBoxRaw(p, { swept = true, node = null } = {}) {
   // (node: one piece and the pieces hung on it, for a shot of "part.node": the camera frames the motor, not the garage)
   const keep = node ? new Set([node]) : null;
   if (keep) for (let grown = true; grown;) { grown = false; for (const n of nodesOf(p)) if (n.parent && keep.has(n.parent) && !keep.has(n.id)) { keep.add(n.id); grown = true; } }
@@ -166,7 +168,9 @@ export function rigBox(p, { swept = true, node = null } = {}) {
  * The code checks on a recipe (free, before anything is paid for after the plan): a recipe the renderer can build, of a
  * sensible size, every piece joined to its parent, standing on the floor (or in the cut). problems: [strings].
  */
-export function rigProblems(part, { floor = 0, cut = null, supports = [] } = {}) {
+/** the recipe checks, softly (a check that crashes is our bug, logged, and finds nothing) */
+export function rigProblems(part, opts = {}) { return soft("the designed part checks (rigProblems)", () => rigProblemsRaw(part, opts), []); }
+function rigProblemsRaw(part, { floor = 0, cut = null, supports = [] } = {}) {
   const P = [], p = part.params ?? {}, id = part.id, nodes = nodesOf(p);
   if (!nodes.length) return [`part ${id} (rig): needs nodes, each with shapes`];
   if (nodes.length > 40) P.push(`part ${id} (rig): ${nodes.length} nodes (at most 40)`);
@@ -226,6 +230,7 @@ export function rigProblems(part, { floor = 0, cut = null, supports = [] } = {})
 }
 
 import { model } from "../kit/models.js";
+import { soft } from "./bookkeeping.js";
 
 // ---------- the renderer (the page): the shapes in the house style, and the moves on their channels ----------
 export function rig(ctx, p, api) {
@@ -242,6 +247,8 @@ export function rig(ctx, p, api) {
   const alongAxis = (geo, axis) => { if (axis === "x") geo.rotateZ(Math.PI / 2); else if (axis === "z") geo.rotateX(Math.PI / 2); return geo; };
   const curve = (pts) => new THREE.CatmullRomCurve3(pts.map((q) => new THREE.Vector3(...v3(q))), false, "catmullrom", 0.05);
   const groups = new Map(), lamps = new Map(), screens = new Map(), flames = new Map(), fills = [], flows = [], snaps = [];
+  // (the owner's rule of 2026-11-05: one bad shape or move of a designed part is skipped and logged as our bug, the part is still drawn)
+  const deadMoves = new Set(), rigBug = (what, e) => console.error(`[cutaway-bug] ${p.name ?? "rig"}: ${what} skipped: ${e?.message ?? e}`);
   const screenTex = new Map();
   const numTex = (v, col) => {
     const key = `${v}|${col}`; if (screenTex.has(key)) return screenTex.get(key);
@@ -398,7 +405,7 @@ export function rig(ctx, p, api) {
     const mats = [];
     groups.set(n.id, { g, n, base: g.position.clone(), mats });
     for (const s of n.shapes ?? []) {
-      const o = build(s, g, n.id);
+      let o = null; try { o = build(s, g, n.id); } catch (e) { rigBug(`shape ${s?.shape} on ${n.id}`, e); continue; }
       if (o && !["flame", "light", "beam"].includes(s.shape)) o.traverse((x) => { if (x.isMesh && x.material?.color && !mats.some((q) => q.m === x.material)) mats.push({ m: x.material, col: x.material.color.clone(), em: x.material.emissive?.clone(), ei: x.material.emissiveIntensity ?? 0 }); });
     }
     // a piece that can snap: its second half is a copy, shown once it breaks
@@ -433,7 +440,7 @@ export function rig(ctx, p, api) {
       for (const { g, n, base, mats } of groups.values()) {
         g.position.copy(base); g.rotation.set(0, 0, 0); g.scale.set(1, 1, 1); g.visible = true;
         if ((n.moves ?? []).some((m) => m.type === "heat" || m.type === "chill")) for (const q of mats) { q.m.color.copy(q.col); if (q.em) q.m.emissive.copy(q.em); q.m.emissiveIntensity = q.ei; }
-        for (const m of n.moves ?? []) {
+        for (const m of n.moves ?? []) { if (deadMoves.has(m)) continue; try {
           const v = clamp01(api.ch(m.name, t)), ax = AX[m.axis] ?? 1;
           if (m.type === "slide") { const d = v3(m.to); g.position.x += d[0] * v; g.position.y += d[1] * v; g.position.z += d[2] * v; }
           // (swings and spins add up: a panel with a "flop" and a "jam" swing showed only the last one, at rest, so the garage
@@ -461,7 +468,7 @@ export function rig(ctx, p, api) {
           if (m.type === "pump") g.position.setComponent(ax, g.position.getComponent(ax) + num(m.stroke, 0.2) * v * Math.sin(t * num(m.rate, 1.5) * Math.PI * 2));
           if (m.type === "shake") { const a = num(m.amp, 0.03) * v, w = t * num(m.rate, 8) * Math.PI * 2; g.position.x += a * Math.sin(w * 1.3); g.position.y += a * Math.sin(w + 1); }
           if (m.type === "count") { const sc = screens.get(n.id); if (sc) { const val = Math.round(num(m.from, 9) + (num(m.to, 0) - num(m.from, 9)) * v); if (val !== sc.shown) { const tx = numTex(val, sc.col); if (tx) { sc.face.material.map = tx; sc.face.material.emissiveMap = tx; sc.face.material.needsUpdate = true; } sc.shown = val; } } }
-        }
+        } catch (e) { deadMoves.add(m); rigBug(`move ${m.name} (${m.type}) on ${n.id}`, e); } }
       }
       // the linked moves, after every node has turned: a follower turns with its node (that node's own links first), a
       // crank slides by the sine of its node's turn
