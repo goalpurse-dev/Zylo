@@ -34,7 +34,12 @@ test("day 3 only if day 2 went well: finished, 0 spam complaints, bounces under 
   const done = { id: "warmup_day2", status: "done" };
   assert.equal(previousCampaignProblem(done, { sent: 300, bounced: 0, complained: 0 }), null);
   assert.equal(previousCampaignProblem(done, { sent: 300, bounced: 5, complained: 0 }), null, "5 of 300 is 1.7%: under");
-  assert.match(previousCampaignProblem(done, { sent: 300, bounced: 6, complained: 0 }), /bounces of 2% or more: 6 of 300/, "exactly 2% is not under 2%");
+  assert.equal(previousCampaignProblem(done, { sent: 300, bounced: 6, complained: 0 }), null, "exactly 2% is not over 2%");
+  assert.match(previousCampaignProblem(done, { sent: 300, bounced: 7, complained: 0 }), /bounces over 2%: 7 of 300/);
+  // owner, 2026-11-05: one bounce never stops the next day, even when it is over 2% (1 of 40 = 2.5%)
+  assert.equal(previousCampaignProblem(done, { sent: 40, bounced: 1, complained: 0 }), null);
+  assert.match(previousCampaignProblem(done, { sent: 40, bounced: 2, complained: 0 }), /bounces over 2%: 2 of 40/);
+  assert.match(previousCampaignProblem(done, { sent: 20, bounced: 1, complained: 1 }), /spam complaint/, "complaints still stop it");
   assert.match(previousCampaignProblem(done, { sent: 300, bounced: 0, complained: 1 }), /spam complaint/);
   assert.match(previousCampaignProblem({ id: "warmup_day2", status: "stopped", stop_reason: "a spam complaint (1)" }, { sent: 40, bounced: 0, complained: 1 }), /was stopped \(a spam complaint \(1\)\)/);
   assert.match(previousCampaignProblem({ id: "warmup_day2", status: "sending" }, { sent: 100, bounced: 0, complained: 0 }), /has not finished/);

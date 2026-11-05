@@ -221,7 +221,8 @@ export function campaignStopReason({ sent = 0, bounced = 0, complained = 0, fail
 }
 
 // A campaign with depends_on may only run if the one before it went well (owner, 2026-10-12):
-// it finished, with 0 spam complaints and bounces UNDER 2% of what it sent. → the problem, or null.
+// it finished, with 0 spam complaints, and not 2 or more bounces that are also over 2% of what it sent
+// (owner, 2026-11-05: one bounce alone never stops the next day, the same as the stop rule above). → the problem, or null.
 // prev: the earlier campaign's row (or null), n: its campaignNumbers.
 export function previousCampaignProblem(prev, n) {
   if (!prev) return "the campaign before it does not exist";
@@ -229,7 +230,7 @@ export function previousCampaignProblem(prev, n) {
   if (prev.status !== "done") return `${prev.id} has not finished (it is "${prev.status}")`;
   if (!n || n.sent === 0) return `${prev.id} sent nothing`;
   if (n.complained > 0) return `${prev.id} had a spam complaint (${n.complained})`;
-  if (n.bounced >= n.sent * MAX_BOUNCE_RATE) return `${prev.id} had bounces of 2% or more: ${n.bounced} of ${n.sent}`;
+  if (n.bounced >= 2 && n.bounced > n.sent * MAX_BOUNCE_RATE) return `${prev.id} had bounces over 2%: ${n.bounced} of ${n.sent}`;
   return null;
 }
 
