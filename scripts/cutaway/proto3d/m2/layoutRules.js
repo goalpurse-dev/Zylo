@@ -198,11 +198,16 @@ function layoutRulesRaw(L) {
   // a machine indoors (a stove, a washer, an engine) designed in real metres is built big, like every kit thing (the vending
   // machine stands 3.2 m): the camera keeps a field of a few metres, and a real 1.2 m stove stayed a small box mid-room
   const mainRig = parts.find((p) => p.main && p.kind === "rig");
-  if (INDOOR.has(world.backdrop?.type) && mainRig && !mainRig.params.scale) {
-    const b = rigBox(mainRig.params, { swept: false }), size = b ? Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1]) : 0;
-    if (size > 0.2 && size < 2) {
-      const k = +Math.min(3, 2.6 / size).toFixed(2), o = Array.isArray(mainRig.params.pos) ? mainRig.params.pos.map(Number) : [0, 0, 0];
-      mainRig.params = { ...mainRig.params, scale: k }; notes.push(`${mainRig.id} built at ${k}x (a ${size.toFixed(1)} m machine)`);
+  // (a scale the planner set itself counts, but too small is raised too: it built the real washing machine run's 0.6 m
+  // washer at 2x, a fifth of the frame wide, 2026-11-05)
+  const s0 = Number(mainRig?.params?.scale) > 0 ? Number(mainRig.params.scale) : 1;
+  if (INDOOR.has(world.backdrop?.type) && mainRig) {
+    const b0 = rigBox({ ...mainRig.params, scale: 1 }, { swept: false }), raw = b0 ? Math.max(b0.max[0] - b0.min[0], b0.max[1] - b0.min[1]) : 0, size = raw * s0;
+    // (what stands around it was placed around it at the plan's own scale)
+    const b = rigBox({ ...mainRig.params, scale: s0 }, { swept: false }) ?? b0;
+    if (raw > 0.2 && size < 2) {
+      const want = +Math.min(3, 2.6 / raw).toFixed(2), k = want / s0, o = Array.isArray(mainRig.params.pos) ? mainRig.params.pos.map(Number) : [0, 0, 0];
+      mainRig.params = { ...mainRig.params, scale: want }; notes.push(`${mainRig.id} built at ${want}x (a ${raw.toFixed(1)} m machine${s0 !== 1 ? `, planned at ${s0}x` : ""})`);
       // what the plan put on or around it in real metres grows with it, about its base point: an outline round its burner,
       // arrows in its pipes, a counter beside it (the real stove run's outline sat in the oven, its arrows below the burner)
       const near = (q) => Array.isArray(q) && q.length === 3 && q.every((v) => Number.isFinite(Number(v))) && [0, 1, 2].every((i) => q[i] >= b.min[i] - 1 && q[i] <= b.max[i] + 1);
@@ -238,6 +243,10 @@ function layoutRulesRaw(L) {
     const [x0, x1, y0, y1] = [r3(bx.min[0] - m), r3(bx.max[0] + m), r3(Math.max(bx.min[1] - m, 0.02)), r3(bx.max[1] + m + 0.12 * (bx.max[1] - bx.min[1]))]; // (the top edge clear of what stands on it: drawn on the front, it crossed the flame ring)
     p.params = { ...p.params, of: target, points: [[x0, y0, z], [x0, y1, z], [x1, y1, z], [x1, y0, z]], opts: { ...(p.params?.opts ?? {}), closed: true, over: true } };
     notes.push(`${p.id} traced round ${target}`);
+    // the "This is a…" outline goes at the next line unless the plan hides it itself (the real washing machine run's
+    // outline stayed round the machine to the end, 2026-11-05)
+    const i = beats.indexOf(nameB), later = i >= 0 ? beats.slice(i + 1) : [];
+    if (shownOnName && later.length && !later.some((b) => (b.do ?? []).some((a) => a.p === p.id && /^(hide|gone)$/.test(a.v)))) { later[0].do = [...(later[0].do ?? []), { p: p.id, v: "hide" }]; notes.push(`${p.id} hidden after the name line`); }
   }
   for (const b of beats) {
     if (b.s === "congrats" || !b.shots?.length) continue;
