@@ -61,7 +61,8 @@ test("the owner's tests never count: their accounts, their projects", () => {
   assert.match(fn, /filter\(\(j: any\) => real\(null, j\.user_id\)\)/);
   assert.match(fn, /if \(!SECRET \|\| req\.headers\.get\("x-ops-secret"\) !== SECRET\) return json\(\{ error: "Unauthorized" \}, 401\);/);
   assert.doesNotMatch(fn, /\.update\(|\.delete\(|markProviderDown|postpone/, "the health check only reads (and writes its own readings and log)");
-  // (The voice alerts skipping the owner's projects are tested on the ops-health branch with that Long Form code.)
+  const narr = read("supabase/functions/generate-long-form-narration-audio/index.ts");
+  assert.equal(narr.split("!(await isOwnerProject(admin, projectId))").length - 1, 2, "both voice alerts skip the owner's own projects");
   const sql = read("supabase/migrations/20261108300000_ops_health.sql");
   assert.match(sql, /cron\.schedule\('ops-health', '\*\/10 \* \* \* \*'/);
   assert.match(sql, /alter table public\.provider_balance_history enable row level security/);
@@ -76,8 +77,18 @@ test("alerts are grouped: the same alert (numbers aside) at most once per 6 hour
   assert.notEqual(alertGroupKey("Zyvo ALERT: Runware — balance is empty"), alertGroupKey("Zyvo ALERT: ElevenLabs — balance is empty"));
 });
 
-// (One failing project put aside — sceneLadder's classifyFailure/outageDecision — is tested on the
-// ops-health branch with that Long Form code.)
+test("one failing project is put aside: a crash in our code is never a provider outage, and drawing pauses only when other projects fail too", async () => {
+  const { classifyFailure, outageDecision } = await import("../supabase/functions/_shared/stickman/sceneLadder.ts");
+  assert.equal(classifyFailure("TypeError: Cannot read properties of undefined (reading 'midground')"), "code");
+  assert.equal(classifyFailure("backup: TypeError: x is not a function"), "code");
+  assert.equal(classifyFailure("TypeError: error sending request"), "provider", "a dropped connection is the provider, not our code");
+  assert.equal(classifyFailure("Runware 504 gateway timeout"), "provider");
+  const base = { failures: ["Runware 504", "safe: Runware 504", "backup: Runware 504"], readyLately: 0, pendingOthers: 5, outage: null, nowMs: Date.parse("2026-10-27T12:00:00Z") };
+  assert.equal(outageDecision({ ...base, otherProjectsFailing: 0 }).kind, "cover", "only this project fails: covered, nobody else waits");
+  assert.equal(outageDecision({ ...base, otherProjectsFailing: 2 }).kind, "wait", "several projects fail: a real outage, drawing pauses");
+  assert.equal(outageDecision({ ...base, failures: ["TypeError: Cannot read properties of undefined (reading 'midground')", "safe: TypeError: Cannot read properties of undefined (reading 'midground')", "backup: TypeError: Cannot read properties of undefined (reading 'midground')"], otherProjectsFailing: 3 }).kind, "cover", "our own bug never pauses everyone");
+  assert.match(read("supabase/functions/render-long-form-scene/index.ts"), /nowMs: Date\.now\(\), otherProjectsFailing \}\)/);
+});
 
 test("why a check failed: only a real quota or billing answer says add credit (owner, 2026-11-05)", () => {
   assert.equal(checkFailure("Signal timed out."), "timeout");
