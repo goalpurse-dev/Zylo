@@ -49,13 +49,14 @@ Blocky does not need is listed too, with the reason.
 
 | Date ported | Fruit commit | What the fix does | In Blocky | Live on `blocky-worker` / `blocky-story-api` |
 |---|---|---|---|---|
+| 2026-11-05 | `a1c5413f` (laptop-transfer, 2026-11-05) | Claude covers when OpenAI fails (owner's request by name, for Fruit and Blocky alike): `llm.js`'s OpenAI calls go through `openaiFetch`; on no answer in time, a 5xx, a rate limit, an empty balance or a refused key the same request goes to Claude and comes back in OpenAI's shape (the logged response carries `zyvo_backup`). Made in both engines in the same commit. | `llm.js` + its own `openaiBackup.js` (an identical copy of `_shared/openaiBackup.js`, so Blocky still imports only from this folder), `tests/openaiBackup.test.mjs`, `tests/openaiBackupFeatures.test.mjs` | no: waiting for the owner's go |
 | 2026-10-07 | `e1e1583` (main, 2026-10-07) | A job is given up on after 30 minutes, not 8 (picture) or 12 (clip): Runware delivered clips after we had refunded them. A status read the provider fumbles (429, 5xx, a balance refusal) is "no news yet", not a failed job: the job used to be sent again and paid twice. A balance refusal from our provider account waits and is retried every 5 minutes for 30 minutes before the refund. | `engine.js`, `tests/blockyEngine.test.mjs`, `tests/blockyProviderGuard.test.mjs` (commit `f4c5408`) | yes: both deployed 2026-10-07, 20:09 and 20:12 UTC, checked file by file against the branch |
 
 Fixes that went the other way, from Blocky into Fruit (only on the owner's
 request), are listed in `../fruit/README.md` ("Fixes ported from Blocky to
 Fruit"). First one: the one-caption-track fix, 2026-10-08.
 
-Last compared with Fruit: 2026-10-07, Fruit at commit `cbb630b`, fingerprint `e344c3d827c29e9f`
+Last compared with Fruit: 2026-11-05, Fruit at commit `a1c5413f`, fingerprint `29e4c461ca62e8c8`
 
 How it is kept: `tests/blockySeparation.test.mjs` fails as soon as one of
 Fruit's twin files differs from that fingerprint, in whatever session changed
