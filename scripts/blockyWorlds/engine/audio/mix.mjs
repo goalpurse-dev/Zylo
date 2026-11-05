@@ -78,7 +78,8 @@ function activeDb(x) {
  * level (loops tiled to cue.dur with a short fade). Written 12 dB down (headroom in 16-bit); mix it at +12 dB.
  */
 export async function writeCueTrack(file, duration, cues, { voiceActiveDb = -18 } = {}) {
-  const { SFX, sfxPath } = await import("./sfx.mjs");
+  const base = await import("./sfx.mjs"), epic = await import("./sfxEpic.mjs");
+  const SFX = { ...base.SFX, ...epic.SFX_EPIC }, sfxPath = (n) => (epic.SFX_EPIC[n] ? epic.sfxEpicPath(n) : base.sfxPath(n));
   const n = Math.round(duration * SR), L = new Float32Array(n), R = new Float32Array(n);
   const cache = new Map();
   for (const c of cues) {

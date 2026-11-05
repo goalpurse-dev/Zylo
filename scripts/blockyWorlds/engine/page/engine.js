@@ -59,7 +59,7 @@ const carriedBaby = (a, cast) => (a.hold && cast[a.hold]?.role === "baby" ? a.ho
  * every problem in the timeline at once (planner bugs fail here, before a single frame).
  * lists: { setNames, poses, exprs, objects: { resolve(name) -> canonical | null, catalog } } (each optional)
  */
-function validate(tl, { setNames = null, poses = null, exprs = null, objects = null } = {}) {
+function validate(tl, { setNames = null, poses = null, exprs = null, objects = null, epic = null } = {}) {
   const bad = [];
   if (!Array.isArray(tl.shots) || !tl.shots.length) bad.push("no shots");
   if (!(tl.duration > 0)) bad.push("no duration");
@@ -71,15 +71,16 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
     if (i > 0 && Math.abs(s.start - tl.shots[i - 1].end) > 0.002) bad.push(`${at}: does not start where shot ${i - 1} ends (${tl.shots[i - 1].end})`);
     const worldId = /^world:/.test(s.set ?? "") ? s.set.slice(6) : null;
     if (worldId) { if (tl.assets?.[worldId]?.kind !== "world" || !tl.assets[worldId].spec) bad.push(`${at}: built world "${worldId}" is not in timeline.assets`); }
+    else if (epic && /^creature:/.test(s.set ?? "")) { /* EPIC: a creature world (tl.worlds), checked by epic.problems() */ }
     else if (setNames && !setNames.includes(s.set)) bad.push(`${at}: unknown set "${s.set}" (${setNames.join(", ")})`);
     if (!LIGHTS.includes(s.light)) bad.push(`${at}: unknown light "${s.light}"`);
-    if (!CAMERAS.includes(s.camera)) bad.push(`${at}: unknown camera "${s.camera}"`);
+    if (!CAMERAS.includes(s.camera) && !epic?.cameras.includes(s.camera)) bad.push(`${at}: unknown camera "${s.camera}"`);
     const ids = (s.actors ?? []).map((a) => a.id);
     const carried = (s.actors ?? []).map((a) => carriedBaby(a, cast)).filter(Boolean);
     for (const a of s.actors ?? []) {
       if (!cast[a.id]) bad.push(`${at}: actor "${a.id}" is not in the cast`);
-      if (!SPOTS.includes(a.spot) && !EXTRA_SPOTS.includes(a.spot)) bad.push(`${at}: actor "${a.id}" on unknown spot "${a.spot}"`);
-      if (a.facing && !FACINGS.includes(a.facing) && !cast[a.facing]) bad.push(`${at}: actor "${a.id}" facing unknown "${a.facing}"`);
+      if (!SPOTS.includes(a.spot) && !EXTRA_SPOTS.includes(a.spot) && !epic?.spots.includes(a.spot)) bad.push(`${at}: actor "${a.id}" on unknown spot "${a.spot}"`);
+      if (a.facing && !FACINGS.includes(a.facing) && !cast[a.facing] && !tl.giants?.[a.facing]) bad.push(`${at}: actor "${a.id}" facing unknown "${a.facing}"`);
       if (poses && a.pose && !poses.includes(a.pose)) bad.push(`${at}: actor "${a.id}" has unknown pose "${a.pose}" (${poses.join(", ")})`);
       if (exprs && a.expr && !exprs.includes(a.expr)) bad.push(`${at}: actor "${a.id}" has unknown expr "${a.expr}" (${exprs.join(", ")})`);
       if (a.hold && cast[a.hold] && cast[a.hold].role !== "baby") bad.push(`${at}: actor "${a.id}" holds cast member "${a.hold}", who is not a baby (only babies can be carried)`);
@@ -108,6 +109,7 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
     else if (f === "insert") { if (!s.insert) bad.push(`${at}: focus "insert" but the shot has no insert`); }
     else if (f === "object") { if (!objs.length) bad.push(`${at}: focus "object" but the shot has no objects`); }
     else if (f === "group") { /* the actors + extras */ }
+    else if (epic && (/^(giant:|crowd)/.test(String(f)) || f === "world")) { /* EPIC focus */ }
     else if (!ids.includes(f) && !carried.includes(f)) bad.push(`${at}: focus "${f}" is not one of its actors (${ids.join(", ") || "none"})`);
     if (s.monsterState) {
       if (!tl.monster) bad.push(`${at}: monsterState but the timeline has no monster`);
@@ -120,6 +122,7 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
       if (mk.kind && !["tag", "ring", "icon"].includes(mk.kind)) bad.push(`${at}: unknown marker kind "${mk.kind}" (tag, ring, icon)`);
     }
   });
+  if (epic) bad.push(...epic.problems());
   if (bad.length) throw new Error(`engine: the timeline has ${bad.length} problem(s):\n- ${bad.slice(0, 25).join("\n- ")}`);
 }
 
@@ -150,6 +153,8 @@ async function main() {
   // built objects / worlds (lib/builder -> timeline.assets): page/kit/blueprint.js, page/sets/worldspec.js
   const blueprintM = tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset)) ? await import("/page/kit/blueprint.js") : null;
   const worldM = tl.shots.some((s) => /^world:/.test(s.set ?? "")) ? await import("/page/sets/worldspec.js") : null;
+  // EPIC stories (giants, crowds, creature worlds, scale cameras, beats): page/epicLayer.js, loaded only when used
+  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera))) ? await import("/page/epicLayer.js") : null;
   let objectsM = null;
   if (anyObjects) {
     try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
@@ -161,6 +166,7 @@ async function main() {
     poses: realPeople && Array.isArray(peopleM.mod.POSES) ? peopleM.mod.POSES : null,
     exprs: realPeople && Array.isArray(peopleM.mod.EXPRS) ? peopleM.mod.EXPRS : null,
     objects: objectsM ? { resolve: objectsM.resolveObject, catalog: objectsM.OBJECTS } : null,
+    epic: epicM ? { cameras: epicM.EPIC_CAMERA_TYPES, spots: epicM.EPIC_SPOTS, problems: () => [] } : null,
   });
 
   // ---------- renderer, output canvas, post ----------
@@ -202,8 +208,11 @@ async function main() {
 
   // ---------- sets ----------
   const SETS = {};
+  const epic = epicM ? await epicM.makeEpicLayer({ THREE, scene, tl, ctx: { THREE, scene, renderer, gltf, tex } }) : null;
+  if (epic) { const p = epic.problems(); if (p.length) throw new Error(`engine: the timeline has ${p.length} EPIC problem(s):\n- ${p.slice(0, 25).join("\n- ")}`); }
   for (const name of [...new Set(tl.shots.map((s) => s.set))]) {
-    const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex }) : await buildSet(name, { THREE, scene, renderer, gltf, tex });
+    const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex, ...(epic ? { buildCreatureWorld: epic.buildCreatureWorld } : {}) })
+      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex });
     if (S?.problems?.length) console.warn(`engine: built world ${name}: ${S.problems.slice(0, 8).join("; ")}`);
     S.blockers ??= [];
     if (!S?.root?.isObject3D) throw new Error(`engine: buildSet("${name}") returned no root Object3D`);
@@ -468,6 +477,7 @@ async function main() {
     const ms = shot.monsterState ?? (shot.focus === "monster" ? { spot: "far", state: "lurk" } : null);
     if (monster) monster.visible = !!ms;
     if (monster && ms) { monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far); animateMonster(monster, ms.state, lt); }
+    if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
 
     // insert: in front of the center spot, toward the camera side, facing it
     let ins = null;
@@ -480,6 +490,8 @@ async function main() {
     }
 
     // the camera
+    const epicCam = !!epic && epic.ownsFocus(shot) && epic.frame(shot, lt, S, where, camera, Object.fromEntries(placed.map((p) => [p.id, PEOPLE[p.id]?.h])));
+    if (!epicCam) {
     let focus, focusHeight, other, camType = shot.camera;
     /** "insert" framing (straight, centred) that fits a person at `a` (height h) and an object (height capped at capH) */
     function fitPair(a, h, { obj, u }, capH) {
@@ -546,6 +558,7 @@ async function main() {
     const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, dur, seed: shot.seed ?? si };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
+    }
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
@@ -562,6 +575,7 @@ async function main() {
       else if (f === "away") yaw = yawTo(p.pos, camPos) + Math.PI;
       else if (f === "monster") yaw = yawTo(p.pos, monster?.visible ? monster.position : spots.far);
       else if (f !== "camera" && where[f] && f !== p.id) yaw = yawTo(p.pos, where[f]);
+      else if (epic?.posOf(f)) yaw = yawTo(p.pos, epic.posOf(f));
       else yaw = yawTo(p.pos, camPos);
       o.rotation.set(0, yaw, 0);
       const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
@@ -609,6 +623,8 @@ async function main() {
       }
     }
 
+    // EPIC: crowd poses (LOD needs the camera), giant LOD, the beat's camera shake (after all framing)
+    epic?.after(shot, lt, S, camera);
     // render, then the caption on top in the output canvas
     post.render();
     ctx2d.drawImage(renderer.domElement, 0, 0);
@@ -623,11 +639,12 @@ async function main() {
   const seen = new Set();
   for (const s of tl.shots) { const k = `${s.set}|${s.light}`; if (!seen.has(k)) { seen.add(k); renderAt(s.start); renderAt(s.start); } }
   // ...and every shot with scene objects or a carried baby once (their materials compile here, not mid-render)
-  for (const s of tl.shots) if (s.objects?.length || (s.actors ?? []).some((a) => carriedBaby(a, tl.cast ?? {}))) renderAt(s.start + 0.01);
+  for (const s of tl.shots) if (s.objects?.length || s.giants?.length || s.crowds?.length || (s.actors ?? []).some((a) => carriedBaby(a, tl.cast ?? {}))) renderAt(s.start + 0.01);
   renderAt(0);
 
   window.timeline = tl;
   window.renderAt = renderAt;
+  window.engineDebug = { THREE, scene, camera, renderer, post }; // dev probes (e.g. dev/epicProbe.mjs finds non-finite pixels)
   window.frameData = (q = 0.9) => out.toDataURL("image/jpeg", q);
   window.engineInfo = { stubs: [...stubbed], sets: Object.keys(SETS), people: Object.keys(PEOPLE), renderer: (() => { const gl = renderer.getContext(), e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); })() };
   window.ready = true;

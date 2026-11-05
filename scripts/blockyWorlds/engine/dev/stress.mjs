@@ -286,7 +286,7 @@ export async function runReal({ mode, n, seed, apiKey, cardModel, scriptModel, d
     try { const r = await fn(); settle(worst, r.costUsd); return r; } catch (e) { settle(worst, e.costUsd ?? 0); if (e.fatal) stopped = e.message; throw e; }
   };
   const director = { model: directorModel, direct: (args) => paid(worstOf(directorModel, 12000), () => anthropicDirector({ apiKey, model: directorModel }).direct(args)) };
-  const results = [], cards = {}, scripts = {}, productions = {};
+  const results = [], cards = {}, scripts = {}, productions = {}, skips = [];
   let next = 0;
   async function worker() {
     while (next < topics.length && !stopped) {
@@ -307,12 +307,12 @@ export async function runReal({ mode, n, seed, apiKey, cardModel, scriptModel, d
         productions[t.id] = { production: r.production, problems: r.problems, fellBack: r.fellBack, error: r.error };
         results.push({ id: t.id, topic: t.topic, ms: r.ms, costUsd: r.costUsd, lines: r.production.lines.length, summary: r.match.summary, worlds: r.production.worlds.map((w) => `${w.kind}${w.creature.relation !== "none" ? `:${w.creature.relation}` : ""}`), capabilities: [...new Set(r.match.calls.map((x) => x.capability))], problems: r.problems.length, fellBack: r.fellBack });
         log(`${t.id} ${r.fellBack ? "FELL BACK" : "ok"} gaps ${r.match.summary.gaps}  spent $${spent.toFixed(4)}  ${t.topic}`);
-      } catch (e) { log(`${t.id} skipped: ${e.message}`); }
+      } catch (e) { skips.push({ id: t.id, topic: t.topic, error: String(e.message).slice(0, 300) }); log(`${t.id} skipped: ${e.message}`); }
     }
   }
   await Promise.all(Array.from({ length: concurrency }, worker));
   for (const [f, v] of [["cards.json", cards], ["scripts.json", scripts], ["productions.json", productions]]) fs.writeFileSync(path.join(dir, f), JSON.stringify(v, null, 1));
-  fs.writeFileSync(path.join(dir, "spend.json"), JSON.stringify({ spent: Number(spent.toFixed(5)), maxUsd, stopped, done: results.length, of: topics.length }, null, 1));
+  fs.writeFileSync(path.join(dir, "spend.json"), JSON.stringify({ spent: Number(spent.toFixed(5)), maxUsd, stopped, done: results.length, of: topics.length, skipped: skips.length, skipReasons: Object.entries(skips.reduce((m, s) => { const k = s.error.replace(/\d+/g, "N").slice(0, 120); m[k] = (m[k] ?? 0) + 1; return m; }, {})).sort((a, b) => b[1] - a[1]), skips }, null, 1));
   const agg = await aggregate({ results, gapLog, outDir: dir, quiet: log !== console.log, title: `REAL stress run (${mode}; card ${cardModel}, script ${mode === "script" ? scriptModel : "-"}, director ${directorModel}): ${results.length}/${topics.length} topics, $${spent.toFixed(4)}` });
   log(`\nspent $${spent.toFixed(4)} of the $${maxUsd} cap${stopped ? ` (stopped: ${stopped})` : ""}`);
   return { ...agg, spent, stopped, dir };

@@ -26,6 +26,10 @@ export const SFX_TIMING = {
   footsteps_walk: [2.0, 0, -7], footsteps_run: [1.2, 0, -6],
 };
 
+// EPIC stories (lib/epic.js): giants, armies and beats add their own candidates and sounds (audio/sfxEpic.mjs)
+import { epicSfxCandidates, EPIC_SFX_TIMING } from "./epic.js";
+const TIMING = { ...SFX_TIMING, ...EPIC_SFX_TIMING };
+
 // sparse on purpose (owner, 2026-11-04: "don't overdo the sound effects"): ~8 per 100 s, every sound once
 const MIN_GAP = 1.2, SAME_GAP = 10, MAX_SAME = 1, PER_100S = 8, DUCK = 4, TAIL_DUCK = 3, HIT_ON_WORD = -12, GAP_SNAP = 0.45, MOMENT = 0.28;
 
@@ -142,24 +146,24 @@ export function sfxCues(tl, opts = {}) {
   const duration = tl.duration ?? Math.max(0, ...(tl.shots ?? []).map((s) => s.end));
   const spans = speechSpans(tl.captions ?? []);
   const cap = opts.max ?? Math.max(3, Math.round((duration / 100) * PER_100S));
-  const cands = sfxCandidates(tl)
+  const cands = [...sfxCandidates(tl), ...epicSfxCandidates(tl)]
     .filter((c) => c.at >= 0.3 && c.at < duration - 0.3)
     .sort((a, b) => b.prio - a.prio || a.at - b.at || a.name.localeCompare(b.name));
   const taken = [];
   const free = (at) => !taken.some((x) => Math.abs(x.at - at) < MIN_GAP);
   for (const c of cands) {
     if (taken.length >= cap) break;
-    const [dur, anchor, baseDb] = SFX_TIMING[c.name];
+    const [dur, anchor, baseDb] = TIMING[c.name];
     const same = taken.filter((x) => x.name === c.name);
     if (same.length >= MAX_SAME || same.some((x) => Math.abs(x.at - c.at) < SAME_GAP)) continue;
     if (c.name.startsWith("whoosh") && taken.some((x) => x.name.startsWith("whoosh") && Math.abs(x.at - c.at) < 5)) continue;
     let at = c.at, gainDb = baseDb + (c.gainAdj ?? 0), how = "";
-    const isHit = c.name === "impact" || c.name === "stinger";
-    const sync = isHit || c.name.startsWith("whoosh") || c.name.startsWith("footsteps") || c.riser;
+    const isHit = c.name === "impact" || c.name === "stinger" || c.name === "impact_big" || c.name === "giant_stomp" || c.name === "giant_thud";
+    const sync = isHit || c.name.startsWith("whoosh") || c.name.startsWith("footsteps") || c.name === "army_march" || c.name === "giant_steps" || c.riser;
     const active = Math.min(0.7, dur - anchor);
     if (isHit) {
       if (overlaps(spans, at - 0.05, at + 0.35)) { gainDb = Math.min(gainDb, HIT_ON_WORD); how = "on a word, -12 dB"; }
-    } else if (c.name.startsWith("footsteps")) {
+    } else if (c.name.startsWith("footsteps") || c.dur) {
       if (overlaps(spans, at, at + (c.dur ?? dur))) { gainDb -= DUCK; how = "under the words"; }
     } else {
       // the sound's moment (its first ~0.3 s from the anchor) should land between words

@@ -364,3 +364,55 @@ One call: ~4,700 system tokens (cached) + ~670 user tokens in, ~3,600 out (think
 run: `directStory` returns `ms`). It needs only the script text, so it starts with the prepare job and runs while the
 voice is made (10-20 s): on Haiku it adds ~0-10 s to the wait. Any AI error, refusal or bad answer: one retry with the
 problems, then the mock's list (`fellBack: true`); the planner can always plan without it.
+
+## Addendum 2026-11-05 (c): EPIC stories (giants, armies, cities on / inside creatures)
+
+Owner's request: whole cities on / inside creatures, several giants and armies in one story ("In this town, we live
+inside a massive turtle", the Big Bad Wolf and his army hunt it). The PERMANENT RULE holds: every EPIC field exists so
+the line's nouns / actions / subject are on screen (the turtle, the town, the wolf, the army, the charge).
+The engine loads `page/epicLayer.js` only when a timeline uses these fields; ordinary timelines are untouched.
+
+### Files
+| File | What |
+|---|---|
+| `lib/epic.js` | pure core (Node + browser): vocabularies, `formationSlots`, `crowdMotion`, `gaitOf` / `giantFootfalls`, `shake`, `BEATS` / `beatPlan`, `validateEpicShot` / `validateEpic`, `epicSfxCandidates`, `EPIC_SFX_TIMING` |
+| `page/kit/giants.js` | `GIANT_PRESETS` (turtle, whale, elephant, snail, wolf, giant_human, bear, dog, cat, frog, dragon, crab) + `giantParams` (data-driven: any animal = a parameter set), `makeGiant`, `animateGiant`, `updateGiantLOD`, `giantSurface` |
+| `page/kit/crowd.js` | `makeCrowd` / `updateCrowd`: instanced crowds 1-2000 (one InstancedMesh per part), soldier / knight / wolf_soldier / townsfolk, LOD |
+| `page/kit/town.js` | `townLayout` + `makeTown`: instanced blocky houses, trees, lamps (windows glow at night) |
+| `page/sets/creatureWorld.js` | `buildCreatureWorld(spec, ctx)` (inside / on / outside; the buildSet shape + `giant`, `mount`, `groundY`, `surface`, `sway(t)`), `buildCreatureOutside` |
+| `page/cameraEpic.js` | `frameEpic(type, ctx)` (establish, hero_low, track, aerial, giant_close, duel, behind_army), `applyShake` |
+| `page/epicLayer.js` | the engine hooks: `makeEpicLayer` -> `buildSet`, `buildCreatureWorld`, `problems`, `ownsFocus`, `place`, `frame`, `after`, `posOf` |
+| `audio/sfxEpic.mjs`, `audio/sfxEpicBuild.mjs` | 12 EPIC sounds (synth + Kenney CC0) into `audio/sfx/`; `PAID_TAKES` lists the ElevenLabs takes that would be better (~$0.04 each, not made) |
+| `dev/epicTimeline.mjs` -> `dev/epic_turtle_wolf.json`, `dev/epic.test.mjs`, `dev/epicTiming.mjs`, `dev/epicProbe.mjs` | the owner's test story, tests, render-time table, NaN-pixel probe |
+
+### Timeline fields
+```jsonc
+"giants": { "wolf": { "kind": "wolf", "size": 75, "armour": true,          // size m: height for bipeds, length otherwise (5-200)
+                      "params": {} } },                                     // optional: overrides of giantParams (any animal; unknown kinds need params)
+"worlds": { "turtle_in": { "creature": "turtle", "view": "inside | on | outside", "size": 120, "seed": 11, "water": false } },
+   // creature "none" + view "outside": just the land (a battlefield). The BUILDER's world spec kind "creature_world"
+   // ({ creature: { species, scale, city } }) is built by the same code (worldspec.js -> ctx.buildCreatureWorld)
+"shots": [{
+  "set": "creature:turtle_in",                       // a creature world from timeline.worlds
+  "camera": "establish | hero_low | track | aerial | giant_close | duel | behind_army",   // or any normal camera
+  "focus": "giant:<id> | world | crowd | crowd:<i> | <cast id>",   // world = the creature the town lives on
+  "giants": [{ "id": "wolf | world", "spot": "far | giant_left | giant_right | back | ...", "pos": [x, y, z],
+               "action": "idle | walk | run | stomp | roar | attack | swim | hit | fall", "facing": "camera | left | right | away | <giant id> | <spot>",
+               "role": "attacker | target | chaser | faller | giant | swimmer", "move": { "to": "<spot>", "t0": 0, "t1": 1 } }],
+  "crowds": [{ "kind": "soldier | knight | wolf_soldier | townsfolk", "count": 300, "formation": "block | line | wedge | scatter | ring | march | column",
+               "action": "stand | march | charge | run | flee | cheer | fight | wave", "spot": "back", "pos": [x, y, z],
+               "facing": "...", "faction": "wolf | town | #rrggbb", "spacing": 1.3, "seed": 3, "onWorld": true, "role": "army | crowd" }],
+  "beat": { "type": "chase | attack | impact | fall | stomp | roar | charge | flee | cheer | march | swim_away", "shake": "none | impact | stomp | rumble | roar | fall", "at": 0.55 },
+  "shake": "rumble"                                   // a shake without a beat
+}]
+```
+- A crowd at a spot stands behind it (front rank on the spot). People may face a giant (`facing: "<giant id>"`).
+- Beats (`lib/epic.js BEATS`): roles say who moves where and which action; `beatPlan` gives the shake time and the SFX
+  cue names; `lib/sfx.js` merges `epicSfxCandidates` under its sparseness rules (each sound once, ~8 per 100 s).
+- Checks: `validateEpic` runs in the engine (and is pure, for the planner / director).
+
+### Hooks for the planner / director (not done here)
+`plan.mjs` / `lib/visuals.js` do not emit EPIC fields yet: a line naming a giant creature-city, a giant or an army should
+map to `worlds` / `giants` / `crowds` / `beat` (nouns: turtle/whale/elephant/snail town, giant <animal>, army, soldiers,
+knights, crowd; verbs: march, charge, attack, stomp, roar, flee, swim). Until then EPIC timelines are hand-made or from
+the director.

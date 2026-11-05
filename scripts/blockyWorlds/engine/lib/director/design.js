@@ -67,6 +67,24 @@ export function callUsd(model, { system, user, output }, { cached = false } = {}
   return ((cached ? system * p.cacheRead : system * p.cacheWrite) + user * p.input + output * p.output) / 1e6;
 }
 
+/**
+ * The schema sent to the API: the production list's shape without its enum lists. The full schema with every enum
+ * compiled into a grammar too large for structured outputs ("The compiled grammar is too large", every call refused in
+ * the first stress run, 2026-11-05); the allowed values are in the system prompt, and validateProduction checks and
+ * repairs them after the reply.
+ */
+export function apiSchema(schema = productionSchema()) {
+  const strip = (x) => {
+    if (Array.isArray(x)) return x.map(strip);
+    if (!x || typeof x !== "object") return x;
+    const out = {};
+    for (const [k, v] of Object.entries(x)) if (k !== "enum") out[k] = strip(v);
+    return out;
+  };
+  return strip(schema);
+}
+const GRAMMAR_TOO_LARGE = /compiled grammar is too large|grammar/i;
+
 export function anthropicDirector({ apiKey, model = DIRECTOR_MODELS.fast, fetchFn = fetch, effort = "low", timeoutMs = 120000 } = {}) {
   if (!apiKey) throw new Error("anthropicDirector: no apiKey");
   const sonnet = model.startsWith("claude-sonnet-5-5");
@@ -75,26 +93,30 @@ export function anthropicDirector({ apiKey, model = DIRECTOR_MODELS.fast, fetchF
     worstCase: () => Number(((DIRECTOR_MAX_TOKENS * (PRICE[model] ?? PRICE["claude-sonnet-5-5"]).output + 9000 * (PRICE[model] ?? PRICE["claude-sonnet-5-5"]).cacheWrite) / 1e6).toFixed(5)),
     async direct({ lines, idea = null, feedback = null }) {
       const t0 = Date.now();
-      const res = await fetchFn("https://api.anthropic.com/v1/messages", {
+      // structured output with the enum-free schema; if the API still refuses the grammar, plain JSON (validated after)
+      const send = (structured) => fetchFn("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(sonnet ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}) },
         body: JSON.stringify({
           model, max_tokens: DIRECTOR_MAX_TOKENS,
-          system: [{ type: "text", text: DIRECTOR_SYSTEM, cache_control: { type: "ephemeral" } }],
+          system: [{ type: "text", text: DIRECTOR_SYSTEM + (structured ? "" : "\n\nReturn only the JSON object (the production list), no prose, no code fence."), cache_control: { type: "ephemeral" } }],
           messages: [{ role: "user", content: directorPrompt({ lines, idea, feedback }) }],
-          output_config: { effort, format: { type: "json_schema", schema: productionSchema() } },
+          output_config: structured ? { effort, format: { type: "json_schema", schema: apiSchema() } } : { effort },
           ...(sonnet ? { fallbacks: "default" } : {}),
         }),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      const body = await res.json().catch(() => null);
+      let res = await send(true);
+      let body = await res.json().catch(() => null);
+      if (res.status === 400 && GRAMMAR_TOO_LARGE.test(JSON.stringify(body?.error ?? ""))) { res = await send(false); body = await res.json().catch(() => null); }
       const costUsd = costOf(body?.model ?? model, body?.usage);
       const base = { costUsd, usage: body?.usage ?? null, ms: Date.now() - t0, model: body?.model ?? model };
       if (!res.ok) throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), base, { balance: res.status === 400 && /credit balance/i.test(JSON.stringify(body?.error ?? "")) });
       if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED"), base, { refused: true });
       if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), base);
       const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
-      try { return { data: JSON.parse(text), ...base }; } catch { throw Object.assign(new Error("the reply was not JSON"), base); }
+      const json = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      try { return { data: JSON.parse(json), ...base }; } catch { throw Object.assign(new Error("the reply was not JSON"), base); }
     },
   };
 }

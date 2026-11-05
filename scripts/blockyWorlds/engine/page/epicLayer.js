@@ -1,0 +1,198 @@
+// Blocky Worlds EPIC (EPIC agent): the engine's EPIC layer. page/engine.js loads it only when a timeline uses EPIC
+// fields (CONTRACT.md addendum "EPIC stories") and calls these hooks; everything EPIC lives here and in the kit:
+//   page/kit/giants.js, page/kit/crowd.js, page/kit/town.js, page/sets/creatureWorld.js, page/cameraEpic.js, lib/epic.js
+//
+//   const E = await makeEpicLayer({ THREE, scene, tl, ctx })   ctx = the sets' build ctx { THREE, scene, renderer, gltf, tex }
+//   E.buildSet(name)            "creature:<id>" -> a creature world set (tl.worlds[id]); E.buildCreatureWorld for worldspec.js
+//   E.problems()                schema problems (lib/epic.js validateEpic)
+//   E.ownsFocus(shot)           true when the camera / focus is an EPIC one (giant, crowd, world, EPIC camera type)
+//   E.place(shot, lt, S)        shows + places + animates this shot's giants and crowds (before the camera)
+//   E.frame(shot, lt, S, where, camera, frameShot)  frames the camera for EPIC shots (returns true when it did)
+//   E.after(shot, lt, S, camera) the beat's camera shake, crowd poses (they need the camera for LOD), giant LOD
+//   E.posOf(id)                 a giant's current position (people can face it: facing "<giant id>")
+import { makeGiant, animateGiant, updateGiantLOD } from "/page/kit/giants.js";
+import { makeCrowd, updateCrowd, crowdExtent } from "/page/kit/crowd.js";
+import { buildCreatureWorld } from "/page/sets/creatureWorld.js";
+import { frameEpic, applyShake, EPIC_CAMERA_TYPES } from "/page/cameraEpic.js";
+import { validateEpic, beatPlan, beatProgress, CROWD_MOTION, EPIC_SPOTS } from "/lib/epic.js";
+
+/** does this timeline use EPIC fields? (the engine loads the layer only then) */
+export const usesEpic = (tl) => !!(tl.giants || tl.worlds || (tl.shots ?? []).some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || EPIC_CAMERA_TYPES.includes(s.camera)));
+export { EPIC_CAMERA_TYPES, EPIC_SPOTS };
+
+const MAP_STD = { wide: "establish", insert: "establish", low: "giant_close", medium: "giant_close", closeup: "giant_close", over_shoulder: "hero_low" };
+
+export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  // giants: one each (tl.giants: { id: { kind, size, params?, armour?, town? } })
+  const GIANTS = {};
+  for (const [id, spec] of Object.entries(tl.giants ?? {})) {
+    const g = makeGiant({ ...spec, id, tex: ctx.tex });
+    g.visible = false; scene.add(g); GIANTS[id] = g;
+  }
+  // crowds: built once per (kind, count, formation, faction, seed), reused by every shot that asks for the same crowd
+  const CROWDS = new Map();
+  const crowdKey = (c) => `${c.kind}|${c.count}|${c.formation ?? ""}|${c.faction ?? ""}|${c.seed ?? 3}`;
+  const usedCrowds = new Map(); // key -> how many a single shot needs at once
+  for (const s of tl.shots) { const n = new Map(); for (const c of s.crowds ?? []) { const k = crowdKey(c); n.set(k, (n.get(k) ?? 0) + 1); } for (const [k, v] of n) usedCrowds.set(k, Math.max(usedCrowds.get(k) ?? 0, v)); }
+  for (const s of tl.shots) for (const c of s.crowds ?? []) {
+    const k = crowdKey(c); if (CROWDS.has(k)) continue;
+    const list = []; for (let i = 0; i < usedCrowds.get(k); i++) { const g = makeCrowd({ ...c, seed: (c.seed ?? 3) + i * 7 }); g.visible = false; scene.add(g); list.push(g); }
+    CROWDS.set(k, list);
+  }
+  const allGiants = Object.values(GIANTS), allCrowds = [...CROWDS.values()].flat();
+  const live = { giants: new Map(), crowds: [], beat: null, shotKey: null };
+
+  /** a spot of the set by name (EPIC spots fall back to computed places for ordinary sets) */
+  function spotOf(S, name, size = 30) {
+    if (S.spots[name]?.isVector3) return S.spots[name].clone();
+    const far = S.spots.far.clone(), lat = S.lateral ?? V(1, 0, 0), dep = S.depth ?? V(0, 0, -1);
+    switch (name) {
+      case "near": return S.spots.center.clone().addScaledVector(dep, -3);
+      case "giant_left": return far.clone().addScaledVector(lat, -size * 0.7).addScaledVector(dep, size * 0.3);
+      case "giant_right": return far.clone().addScaledVector(lat, size * 0.7).addScaledVector(dep, size * 0.3);
+      case "horizon": return far.clone().addScaledVector(dep, 400);
+      case "shell": case "head": case "tail": return S.spots.center.clone();
+      default: return S.spots.center.clone();
+    }
+  }
+  const yawFacing = (S, from, facing, camPos = null) => {
+    const camDir = S.camDir ?? V(0, 0, 1);
+    if (facing === "away") return Math.atan2(-camDir.x, -camDir.z);
+    if (facing === "left") return Math.atan2(-camDir.z, camDir.x);
+    if (facing === "right") return Math.atan2(camDir.z, -camDir.x);
+    const tgt = GIANTS[facing] ? live.giants.get(facing)?.pos ?? GIANTS[facing].position : facing && S.spots[facing] ? S.spots[facing] : null;
+    if (tgt) return Math.atan2(tgt.x - from.x, tgt.z - from.z);
+    if (camPos) return Math.atan2(camPos.x - from.x, camPos.z - from.z);
+    return Math.atan2(camDir.x, camDir.z);
+  };
+
+  function place(shot, lt, S) {
+    const dur = shot.end - shot.start;
+    for (const g of allGiants) g.visible = false;
+    for (const c of allCrowds) c.visible = false;
+    live.giants.clear(); live.crowds = [];
+    const plan = shot.beat ? beatPlan(shot.beat.type, dur, shot.beat) : null; live.beat = plan;
+    const u = lt / Math.max(1e-3, dur);
+    const mount = S.mount ?? scene;
+    // the world's own giant (outside / on views): shot.giants entry with id "world" sets its action
+    const wEntry = (shot.giants ?? []).find((g) => g.id === "world");
+    if (S.giant && wEntry) animateGiant(S.giant, wEntry.action ?? "idle", lt, { dur, hitAt: plan?.shake?.at ?? 0.6, at: plan?.shake?.at, landAt: plan?.shake?.at ?? 1.0 });
+    // giants
+    for (const e of shot.giants ?? []) {
+      if (e.id === "world") continue;
+      const g = GIANTS[e.id]; if (!g) continue;
+      const role = plan?.roles?.[e.role] ?? null;
+      const action = e.action ?? role?.action ?? "idle";
+      let pos = e.pos ? V(...e.pos) : spotOf(S, e.spot ?? "far", g.userData.size);
+      if (!e.pos && !["center", "near", "left", "right"].includes(e.spot ?? "far")) pos.addScaledVector(S.depth ?? V(0, 0, -1), g.userData.length * 0.25);
+      pos.y = e.pos ? pos.y : (S.groundY ?? 0) + (e.y ?? 0);
+      // moves: a beat role's move or the entry's own { to, t0, t1 }
+      const mv = e.move ?? role?.move;
+      if (mv && mv.to) {
+        let to = null;
+        if (mv.to === "toward_target") { const tgt = (shot.giants ?? []).find((x) => x.role === "target"); const tp = tgt ? (tgt.id === "world" ? S.giant?.position : live.giants.get(tgt.id)?.pos ?? spotOf(S, tgt.spot ?? "far")) : null; if (tp) to = pos.clone().lerp(V(tp.x, pos.y, tp.z), mv.dist ?? 0.25); }
+        else if (mv.to !== "here" && mv.to !== "forward") to = spotOf(S, mv.to, g.userData.size);
+        if (to) { to.y = pos.y; pos.lerp(to, beatProgress(mv, u)); }
+      }
+      // walking giants advance along their heading (gait speed), so feet do not slide
+      const yaw = e.facing != null ? yawFacing(S, pos, e.facing) : yawFacing(S, pos, "camera");
+      if ((action === "walk" || action === "run") && !mv) { const sp = g.userData.gait.speed * (action === "run" ? 2 : 1) * (e.speed ?? 1); pos.x += Math.sin(yaw) * sp * lt; pos.z += Math.cos(yaw) * sp * lt; }
+      g.position.copy(pos); g.rotation.set(0, yaw, 0);
+      if (g.parent !== mount) mount.add(g);
+      animateGiant(g, action, lt, { dur, hitAt: plan?.shake?.at ?? 0.6, at: role?.at != null ? role.at * dur : plan?.shake?.at, landAt: plan?.shake?.at ?? 1.0 });
+      g.visible = true;
+      live.giants.set(e.id, { g, pos: pos.clone(), action, yaw });
+    }
+    // crowds
+    const used = new Map();
+    for (const c of shot.crowds ?? []) {
+      const k = crowdKey(c), n = used.get(k) ?? 0; used.set(k, n + 1);
+      const grp = CROWDS.get(k)[n];
+      const role = plan?.roles?.[c.role] ?? null;
+      const action = c.action ?? role?.action ?? "stand";
+      const origin = c.pos ? V(...c.pos) : spotOf(S, c.spot ?? "back");
+      if (!c.pos && c.onGround) origin.y = S.groundY ?? 0;
+      // a crowd at a spot stands BEHIND it (its front rank at the spot), never around the camera or the actors
+      if (!c.pos && (c.spot ?? "back") !== "center") origin.addScaledVector(S.depth ?? V(0, 0, -1), crowdExtent(grp) * 0.85);
+      const yaw = yawFacing(S, origin, c.facing ?? "camera");
+      if (grp.parent !== mount) mount.add(grp);
+      grp.visible = true;
+      live.crowds.push({ grp, c, action, origin, yaw, speed: c.speed });
+    }
+    return live;
+  }
+
+  /** the EPIC camera for a shot: returns true when it framed the camera */
+  function frame(shot, lt, S, where, camera, actorH = {}) {
+    const dur = shot.end - shot.start, seed = shot.seed ?? 1;
+    let type = EPIC_CAMERA_TYPES.includes(shot.camera) ? shot.camera : null;
+    const f = String(shot.focus ?? "");
+    const fg = f.startsWith("giant:") ? f.slice(6) : null, fc = f === "crowd" || f.startsWith("crowd:"), fw = f === "world";
+    if (!type && !(fg || fc || fw)) return false;
+    if (!type) type = MAP_STD[shot.camera] ?? "establish";
+    const firstGiant = [...live.giants.values()][0];
+    const worldG = S.giant && S.giant.visible !== false ? { g: S.giant, pos: S.giant.position.clone() } : null;
+    const giantInfo = (id) => (id === "world" ? worldG : live.giants.get(id)) ?? null;
+    const gInfo = fg ? giantInfo(fg) : null;
+    const anyGiant = gInfo ?? firstGiant ?? worldG;
+    const ctxE = { THREE, camera, t: lt, dur, seed, side: S.camDir };
+    const crowdAt = (i = 0) => {
+      const L = live.crowds[i]; if (!L) return null;
+      const M = CROWD_MOTION[L.action] ?? CROWD_MOTION.stand, sp = (L.speed ?? M.speed) * (L.action === "flee" ? -1 : 1);
+      const d = sp * Math.max(0, lt - 0.2);
+      return { pos: L.origin.clone().add(V(Math.sin(L.yaw) * d, 0, Math.cos(L.yaw) * d)), vel: V(Math.sin(L.yaw) * sp, 0, Math.cos(L.yaw) * sp), ext: crowdExtent(L.grp) };
+    };
+    if (fg && gInfo) { ctxE.focus = gInfo.pos.clone(); ctxE.focusHeight = gInfo.g.userData.height; ctxE.span = Math.max(gInfo.g.userData.length, gInfo.g.userData.width, gInfo.g.userData.height); }
+    else if (fc) { const ci = f.startsWith("crowd:") ? Number(f.slice(6)) || 0 : 0; const ca = crowdAt(ci); ctxE.focus = ca?.pos ?? S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = Math.max((ca?.ext ?? 10) * 1.6, type === "aerial" ? 44 : 8); ctxE.velocity = ca?.vel; }
+    else if (fw) { const g = worldG ?? anyGiant; ctxE.focus = g ? g.pos.clone() : S.spots.center.clone(); ctxE.focusHeight = g ? g.g.userData.height : 20; ctxE.span = g ? Math.max(g.g.userData.length, g.g.userData.height) * 1.1 : 60; }
+    else if (where[f]) { ctxE.focus = where[f].clone(); ctxE.focusHeight = actorH[f] ?? 1.2; ctxE.kidHeight = actorH[f] ?? 1.2; ctxE.span = 4; }
+    else { ctxE.focus = S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = 20; }
+    // the "other": the giant behind (hero_low), the second giant (duel)
+    if (type === "hero_low" || type === "duel") {
+      const others = [...live.giants.entries()].filter(([id]) => id !== fg).map(([, v]) => v);
+      const o = type === "duel" ? (others[0] ?? worldG) : (anyGiant ?? null);
+      if (o) { ctxE.other = o.pos.clone(); ctxE.otherHeight = o.g.userData.height; }
+      if (type === "duel" && worldG && o !== worldG && !fg) { ctxE.focus = worldG.pos.clone(); ctxE.focusHeight = worldG.g.userData.height; }
+    }
+    if (type === "track" && anyGiant && !fg) { ctxE.other = anyGiant.pos.clone(); ctxE.otherHeight = anyGiant.g.userData.height; }
+    if (type === "track" && !ctxE.velocity) { const ca = crowdAt(0); if (ca) { ctxE.velocity = ca.vel; if (!fc) { ctxE.focus = ca.pos; ctxE.span = ca.ext * 1.6; } } }
+    if (type === "giant_close" && (gInfo ?? anyGiant)) { const gi = gInfo ?? anyGiant; gi.g.updateMatrixWorld(true); const hj = gi.g.userData.joints.head; if (hj) ctxE.head = hj.getWorldPosition(V(0, 0, 0)); ctxE.focus = gi.pos.clone(); ctxE.focusHeight = gi.g.userData.height; }
+    if (type === "behind_army") {
+      // the army runs away from the lens toward its target: the attacked giant (role target / the world's creature / the first giant)
+      const tgtE = (shot.giants ?? []).find((g) => g.role === "target"), tg = tgtE ? giantInfo(tgtE.id) : worldG ?? firstGiant;
+      if (tg) { ctxE.other = tg.pos.clone(); ctxE.otherHeight = tg.g.userData.height; }
+      const ca = crowdAt(0); if (ca) { ctxE.focus = ca.pos; ctxE.velocity = ca.vel; ctxE.span = ca.ext * 1.6; }
+    }
+    frameEpic(type, ctxE);
+    // inside the set's camera area (the cavern), never under the ground / the creature's back
+    if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(camera.position))) { const q = S.bounds[0].clampPoint(camera.position, V(0, 0, 0)); camera.position.copy(q); if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
+    const gy = S.surface?.(camera.position.x, camera.position.z) ?? S.groundY ?? null;
+    if (gy != null && camera.position.y < gy + 1.2) { camera.position.y = gy + 1.2; camera.updateMatrixWorld(); }
+    return true;
+  }
+
+  function after(shot, lt, S, camera) {
+    const dur = shot.end - shot.start;
+    for (const L of live.crowds) updateCrowd(L.grp, lt, { action: L.action, origin: L.origin, yaw: L.yaw, camera, speed: L.speed, surface: L.c.onWorld && S.surface ? S.surface : null });
+    for (const { g } of live.giants.values()) updateGiantLOD(g, camera);
+    if (S.giant) updateGiantLOD(S.giant, camera);
+    const preset = shot.beat?.shake ?? live.beat?.shake?.preset ?? shot.shake ?? null;
+    if (preset && preset !== "none") {
+      const at = live.beat?.shake?.at ?? (shot.beat?.at != null ? shot.beat.at * dur : 0);
+      return applyShake(camera, preset, lt, { at, seed: shot.seed ?? 1, dur });
+    }
+    return null;
+  }
+
+  return {
+    GIANTS, CROWDS,
+    buildSet: async (name) => { const id = name.slice(9); const S = await buildCreatureWorld(tl.worlds[id], ctx); S.name = name; return S; },
+    buildCreatureWorld: (spec, c) => buildCreatureWorld(spec, c ?? ctx),
+    problems: () => validateEpic(tl),
+    ownsFocus: (shot) => EPIC_CAMERA_TYPES.includes(shot.camera) || /^(giant:|crowd)/.test(String(shot.focus ?? "")) || shot.focus === "world",
+    place, frame, after,
+    posOf: (id) => live.giants.get(id)?.pos ?? null,
+    hideAll: () => { for (const g of allGiants) g.visible = false; for (const c of allCrowds) c.visible = false; },
+  };
+}
