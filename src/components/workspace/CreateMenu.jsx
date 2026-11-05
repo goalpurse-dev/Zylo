@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { Pin, TrendingUp, X } from "lucide-react";
+import { Pin, X } from "lucide-react";
 import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
@@ -500,21 +500,9 @@ export const WORKSPACE_TOOLS = [
   },
 ];
 
-// Desktop tools shell only (Workspace panel + pinnable). Kept out of WORKSPACE_TOOLS on purpose:
-// the mobile bottom nav's Tools menu reads WORKSPACE_TOOLS, and these are not in the bottom nav yet.
-export const SHELL_ONLY_TOOLS = [
-  {
-    id: "earnings-calculator",
-    label: "Earnings Calculator",
-    sublabel: "",
-    path: "/workspace/earnings",
-    color: "#bef264",
-    icon: <TrendingUp className="h-5 w-5" strokeWidth={1.8} />, // same icon as the sidebar's Earnings item
-  },
-];
-
 // Flagged tools can be pinned too; the shell shows a pinned one only while its flag is on.
-export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS, ...WORKSPACE_TOOLS, ...SHELL_ONLY_TOOLS, ...PUBLISH_TOOLS];
+// (The Earnings Calculator is its own sidebar item in toolshell.jsx, not a Workspace tool.)
+export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS, ...WORKSPACE_TOOLS, ...PUBLISH_TOOLS];
 
 export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
@@ -523,7 +511,7 @@ export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onToggleP
 
   return (
     <DesktopPanel open={open} onClose={onClose} title="Workspace" subtitle="Your creation tools" sectionLabel="Generators" grid>
-      {[...WORKSPACE_TOOLS, ...SHELL_ONLY_TOOLS].map((tool) => (
+      {WORKSPACE_TOOLS.map((tool) => (
         <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
       ))}
     </DesktopPanel>
