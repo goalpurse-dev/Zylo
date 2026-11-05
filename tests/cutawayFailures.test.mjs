@@ -193,8 +193,21 @@ test("Beta: 3 custom videos per user per 24 hours, failed (refunded) ones not co
 
 test("a 60 s video is about 60 s (the owner's rule of 2026-11-05: a customer's 60 s video ran 40 s): a short narration is a problem the words repair fixes, and a premade grows each approved sentence", () => {
   const src = fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8");
-  assert.match(src, /const SHORT_SLACK = \{ 30: 10, 60: 15 \};/);
+  assert.match(src, /const SHORT_SLACK = \{ 30: 2, 60: 15 \};/);
   assert.match(src, /too short for \$\{lengthSec\} s: write/);
   assert.match(src, /aim: Math\.min\(30, Math\.round/);
   assert.match(src, /say the same thing in about \$\{b\.aim\} words/);
+});
+
+test("a 30 s video is 27-35 s (the owner's rule of 2026-11-05: a 30 s washer of 151 words ran 41 s): too long is a problem, a far-over plan drops beats, the voice is cut past 32.8 s, and a long premade shrinks", async () => {
+  const { LENGTH, WORD_TOLERANCE } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  // (the voice reads 3.77 words a second, then a 2.2 s end card)
+  const sec = (w) => w / 3.77 + 2.2, L = LENGTH[30];
+  assert.ok(sec(L.words[0] - 2) >= 26.8, `${sec(L.words[0] - 2)}`); assert.ok(sec(Math.round(L.words[1] * (1 + WORD_TOLERANCE))) <= 35.7);
+  assert.ok(sec(L.over) <= 35.7);
+  assert.equal(L.over, 126); assert.equal(L.maxSpeech, 32.8); assert.ok(L.maxSpeech + 2.2 <= 35);
+  const src = fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8");
+  assert.match(src, /too long for \$\{lengthSec\} s: write/);
+  assert.match(src, /total > LENGTH\[lengthSec\]\.over \? want \/ total : 1/);
+  assert.match(src, /This video is shorter than the approved one/);
 });

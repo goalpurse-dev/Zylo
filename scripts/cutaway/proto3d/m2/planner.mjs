@@ -38,8 +38,10 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 // 2026-10-30, 288 words in 76.5 s, 78.6 s long: 200-235 words land at 55-65 s, and 14-18 beats of 12-15 words reach it.
 // over: more words than this lose beats, free; maxSpeech: a voice longer than this has its least important lines cut out)
 // how far under the word range a narration may come before it is a problem (a 30 s video of 85 words is about 26 s)
-const SHORT_SLACK = { 30: 10, 60: 15 };
-export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12], over: 156 }, 60: { words: [200, 235], sentences: [14, 18], beats: [14, 18], over: 235, maxSpeech: 62.8 } };
+// (30 s: 27-35 s, the owner's rule of 2026-11-05, after a 30 s washer of 151 words ran 41 s: 93-126 words at the same
+// rate; maxSpeech 32.8 s of voice plus the end card is 35 s)
+const SHORT_SLACK = { 30: 2, 60: 15 };
+export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12], over: 126, maxSpeech: 32.8 }, 60: { words: [200, 235], sentences: [14, 18], beats: [14, 18], over: 235, maxSpeech: 62.8 } };
 export const WORD_TOLERANCE = 0.05;
 // the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
 export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
@@ -528,7 +530,7 @@ ${facts.length ? `Verified facts (the only numbers and claims you may use, word 
 The beats, in order:
 ${beats.map((b, i) => `${i + 1}. ${b.role}
    on screen: ${b.sees}${b.idea ? `\n   idea: ${b.idea}` : ""}
-   cue words: ${b.cues.length ? b.cues.map((w) => `"${w}"`).join(", ") : "(none)"}${b.fact ? `\n   its fact: ${b.fact}` : ""}${b.approved ? `\n   the approved sentence for this beat (it matches the picture): "${b.approved}". ${b.aim ? `This video is longer than the approved one: say the same thing in about ${b.aim} words, telling more about what the picture shows (never anything it does not show).` : "Say the same thing in fresh words, or keep it if it is already the best way to say it."}` : ""}`).join("\n")}`;
+   cue words: ${b.cues.length ? b.cues.map((w) => `"${w}"`).join(", ") : "(none)"}${b.fact ? `\n   its fact: ${b.fact}` : ""}${b.approved ? `\n   the approved sentence for this beat (it matches the picture): "${b.approved}". ${b.aim ? `${b.aim > wordCount(b.approved) ? `This video is longer than the approved one: say the same thing in about ${b.aim} words, telling more about what the picture shows (never anything it does not show).` : `This video is shorter than the approved one: say the same thing in about ${b.aim} words (keep the cue words, numbers and what the picture shows; drop the rest).`}` : "Say the same thing in fresh words, or keep it if it is already the best way to say it."}` : ""}`).join("\n")}`;
 }
 
 const tok = (w) => String(w ?? "").toLowerCase().replace(/[^a-z0-9']/g, "").replace(/'s$/, "");
@@ -565,8 +567,8 @@ async function planPremade({ step, topic, lengthSec, saved, key, trace }) {
   const cues = anchorWords(saved);
   // (a longer video than its approved script: each sentence aims for its share of the length's words, so a 60 s premade
   // is about 60 s; the approved 30 s scripts made 60 s videos of 35-45 s, the owner's rule of 2026-11-05)
-  const total = A.sentences.reduce((k, s) => k + s.text.split(/\s+/).filter(Boolean).length, 0), want = (LENGTH[lengthSec].words[0] + LENGTH[lengthSec].words[1]) / 2, grow = total < LENGTH[lengthSec].words[0] - SHORT_SLACK[lengthSec] ? want / total : 1;
-  const beats = A.sentences.map((s) => ({ role: s.role, approved: s.text, sees: beatBrief(saved, s.role), cues: cues[s.role] ?? [], ...(grow > 1 ? { aim: Math.min(30, Math.round(s.text.split(/\s+/).filter(Boolean).length * grow)) } : {}) }));
+  const total = A.sentences.reduce((k, s) => k + s.text.split(/\s+/).filter(Boolean).length, 0), want = (LENGTH[lengthSec].words[0] + LENGTH[lengthSec].words[1]) / 2, grow = total < LENGTH[lengthSec].words[0] - SHORT_SLACK[lengthSec] || total > LENGTH[lengthSec].over ? want / total : 1;
+  const beats = A.sentences.map((s) => ({ role: s.role, approved: s.text, sees: beatBrief(saved, s.role), cues: cues[s.role] ?? [], ...(grow !== 1 ? { aim: Math.min(30, Math.round(s.text.split(/\s+/).filter(Boolean).length * grow)) } : {}) }));
   const facts = (saved.facts ?? []).filter((f) => f.verdict !== "drop").map((f) => f.claim);
   let fresh = null;
   try { fresh = (await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 })).data; }
@@ -878,7 +880,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     // too short is a problem, not a target: the voice reads about 3.6 words a second, so a 60 s video of 140 words ran 40 s
     // (a customer's air suspension video, 2026-11-04; the owner's rule of 2026-11-05: a 60 s video is about 60 s)
     const short = n < L.words[0] - SHORT_SLACK[lengthSec] ? [`the narration is ${n} words, too short for ${lengthSec} s: write ${L.words[0]}-${L.words[1]} words (fuller sentences that say more about what each beat shows; keep every beat and cue)`] : [];
-    return { P: [...P.filter((p) => !isTarget(p) && !shown(p, script)), ...short], T, moved: rt.moved };
+    // (too long the same way: over the trim's limit after the free trim, a 30 s video runs past 35 s)
+    const long = n > maxW ? [`the narration is ${n} words, too long for ${lengthSec} s: write ${L.words[0]}-${L.words[1]} words (shorter sentences; keep every beat, cue word and number)`] : [];
+    return { P: [...P.filter((p) => !isTarget(p) && !shown(p, script)), ...short, ...long], T, moved: rt.moved };
   };
   let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
   // the free trim first: a narration a few words over its limit loses filler words, never its cues, numbers or openings
@@ -907,7 +911,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   // (so are the chain's wording rules, a problem line's visible verb and its link to the fix: after two rewrites they are
   // warnings, not a refusal; five of six paid custom videos of 2026-11-01..03 were refused after about $1 each for one
   // such line, a counterweight that "swings", a tail that "whips around", a tower that "sways")
-  const soft = (x) => /does not solve|say the whole range|is not something you can see happen|reads like a dry fact|must follow from the fix before it/.test(x);
+  // (too long, too: after its rewrites the free beat drop and the voice cut keep a 30 s video under 35 s; a replay of a real
+  // bridge plan still had 139 words after two rewrites)
+  const soft = (x) => /too long for \d+ s|does not solve|say the whole range|is not something you can see happen|reads like a dry fact|must follow from the fix before it/.test(x);
   warnings.push(...wc.P.filter(soft));
   return { script, layout, problems: wc.P.filter((x) => !soft(x)), warnings, solve: true };
 }
