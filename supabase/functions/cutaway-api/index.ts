@@ -330,10 +330,11 @@ async function handle(req: Request, trace: Trace) {
     }
     if (!g.ok) throw new ApiError(g.code as any, g.code === "LIMIT" ? g.reason ?? undefined : g.message ?? undefined, { retryAfterSec: g.retryAfterSec }, capDetail(g.reason, settings, counts, addUsd, cErr));
 
-    // during the Beta, custom videos per user per 24 hours (the owner's rule of 2026-10-31: it caps what failed custom runs
-    // can cost; a refunded run counts, it was still paid for). Premade has no such limit; the owner tests freely. Fails closed
+    // during the Beta, custom videos per user per 24 hours (the owner's rule of 2026-10-31); a failed, refunded run does not
+    // count (the owner's rule of 2026-11-05: a customer's failures used up their day). Premade has no such limit; the owner
+    // tests freely. Fails closed
     if (quote.kind === "custom" && !who.owner) {
-      const { data: recent, error: rErr } = await admin.from("cutaway_runs").select("created_at").eq("user_id", who.user.id).eq("kind", "custom").gte("created_at", new Date(Date.now() - 86400000).toISOString());
+      const { data: recent, error: rErr } = await admin.from("cutaway_runs").select("created_at, status").eq("user_id", who.user.id).eq("kind", "custom").gte("created_at", new Date(Date.now() - 86400000).toISOString());
       const lim = customDayLimit(rErr ? null : recent);
       if (!lim.ok) throw new ApiError(lim.code as any, lim.message, { retryAfterSec: lim.retryAfterSec }, rErr?.message ?? `custom runs in 24 h: ${recent?.length}`);
     }

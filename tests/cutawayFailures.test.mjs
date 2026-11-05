@@ -176,13 +176,25 @@ test("launch check (2026-10-31): a layout approved on /admin/ops travels with it
   assert.match(fs.readFileSync(path.join(root, "supabase/functions/cutaway-watchdog/index.ts"), "utf8"), /\(runs\.length >= 5 && rate > 0\.2\) \|\| twoInARow/);
 });
 
-test("Beta: 3 custom videos per user per 24 hours, refunded ones included, closed when unreadable; premade and the owner are exempt in the start check", async () => {
+test("Beta: 3 custom videos per user per 24 hours, failed (refunded) ones not counted, closed when unreadable; premade and the owner are exempt in the start check", async () => {
   const { customDayLimit } = await import("../supabase/functions/_shared/cutaway/guard.js");
-  const now = Date.parse("2026-10-31T12:00:00Z"), at = (h) => ({ created_at: new Date(now - h * 3600000).toISOString() });
+  const now = Date.parse("2026-10-31T12:00:00Z"), at = (h, status = "done") => ({ created_at: new Date(now - h * 3600000).toISOString(), status });
   assert.equal(customDayLimit([at(1), at(2)], now).ok, true);
-  const full = customDayLimit([at(23), at(2), at(1)], now);
+  const full = customDayLimit([at(23), at(2), at(1, "rendering")], now);
   assert.equal(full.ok, false); assert.equal(full.code, "LIMIT"); assert.equal(full.retryAfterSec, 3600); assert.match(full.message, /3 custom videos a day/);
+  // (the owner's rule of 2026-11-05: three failed runs leave the whole day)
+  assert.equal(customDayLimit([at(3, "failed"), at(2, "failed"), at(1, "failed")], now).ok, true);
+  assert.equal(customDayLimit([at(3, "failed"), at(2), at(1)], now).ok, true);
   assert.equal(customDayLimit(null, now).ok, false);
   const src = fs.readFileSync(path.join(M3, "../../../../supabase/functions/cutaway-api/index.ts"), "utf8");
   assert.match(src, /quote\.kind === "custom" && !who\.owner/);
+  assert.match(src, /select\("created_at, status"\)\.eq\("user_id", who\.user\.id\)\.eq\("kind", "custom"\)/);
+});
+
+test("a 60 s video is about 60 s (the owner's rule of 2026-11-05: a customer's 60 s video ran 40 s): a short narration is a problem the words repair fixes, and a premade grows each approved sentence", () => {
+  const src = fs.readFileSync(path.join(M3, "../m2/planner.mjs"), "utf8");
+  assert.match(src, /const SHORT_SLACK = \{ 30: 10, 60: 15 \};/);
+  assert.match(src, /too short for \$\{lengthSec\} s: write/);
+  assert.match(src, /aim: Math\.min\(30, Math\.round/);
+  assert.match(src, /say the same thing in about \$\{b\.aim\} words/);
 });
