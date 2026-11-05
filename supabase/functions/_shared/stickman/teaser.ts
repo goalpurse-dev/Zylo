@@ -15,6 +15,7 @@
 //     if the next step could pass the cap, the teaser stops there.
 // Pure helpers + the two provider calls (injected fetchers), so the whole flow
 // runs the same in the edge function and in a local measuring script.
+import { openaiFetch } from "../openaiBackup.js";
 import { renderTask, STICKMAN_RENDER_TIERS } from "./renderTiers.ts";
 import { STYLE_HEADER, OBJECTS_NO_FACES, AVOID_TAIL, V2_NO_TEXT_INSTRUCTION } from "./promptCompiler.ts";
 import { nicheGuidanceFor } from "./nicheGuidance.ts";
@@ -147,7 +148,7 @@ export function normalizePlan(raw: any, input: TeaserInput): TeaserPlan {
 // that breaks the cold-open rules gets at most TEASER_HOOK_FIXES tiny rewrite
 // calls, and is left out (never shown) if it still breaks them. `post` is
 // fetch-like (injected for tests). The cost returned covers every call made.
-export async function writeTeaserPlan(openaiKey: string, input: TeaserInput, post: typeof fetch = fetch) {
+export async function writeTeaserPlan(openaiKey: string, input: TeaserInput, post: typeof fetch = openaiFetch) {
   const ask = async (content: string, maxTokens: number, name: string, schema: unknown) => {
     const res = await post("https://api.openai.com/v1/chat/completions", {
       method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },

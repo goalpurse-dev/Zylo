@@ -15,7 +15,7 @@ export const SERVICES = [
     fix: "Top up at my.runware.ai (Billing). Turn on auto-reload there so it never runs dry.", autoTopUp: "Yes: auto-reload with a threshold, in the Runware dashboard (Billing)." },
   { id: "elevenlabs", name: "ElevenLabs", does: "voiceovers (Long Form; Cutaway tests)", kind: "plan", checked: true,
     fix: "Upgrade the plan or buy extra credits at elevenlabs.io (Subscription).", autoTopUp: "No top-up as such: buy Pay As You Go credits (used when the monthly quota runs out), or a bigger plan. Older plans can turn on usage-based billing." },
-  { id: "openai", name: "OpenAI", does: "writing and checks (Long Form scripts, picture checks, Fruit, Blocky)", kind: "balance", checked: true, statusPage: "status.openai.com",
+  { id: "openai", name: "OpenAI", does: "writing and checks (Long Form scripts, picture checks, Fruit, Blocky)", kind: "balance", checked: true, statusPage: "status.openai.com", creditSite: "platform.openai.com",
     fix: "Add credit at platform.openai.com (Billing).", autoTopUp: "Yes: auto recharge (threshold + amount + optional monthly limit) in Billing." },
   { id: "anthropic", name: "Anthropic (Claude)", does: "writing (Long Form research and scripts, Fruit, Blocky, Content Machine)", kind: "balance", checked: true, statusPage: "status.anthropic.com",
     fix: "Add credit at console.anthropic.com (Plans & Billing).", autoTopUp: "Yes: auto-reload (minimum balance + reload amount) in Plans & Billing." },
@@ -77,6 +77,12 @@ export function checkFailure(error) {
   return "down";
 }
 
+// openaiBackup.js's log rows since the last tick → { covered, coverFailed, coverReasons }.
+export function summarizeBackup(rows) {
+  const used = rows.filter((r) => r.event === "backup_used"), failed = rows.filter((r) => r.event === "backup_failed");
+  return { covered: used.length, coverFailed: failed.length, coverReasons: [...new Set([...used, ...failed].map((r) => r.details?.reason).filter(Boolean))] };
+}
+
 // What to do when a service didn't answer properly, by why.
 function downAdvice(service, failure) {
   const status = service.statusPage ? `check ${service.statusPage}` : "check the provider's status page";
@@ -90,9 +96,22 @@ function downAdvice(service, failure) {
 //   { reachable, error, tries, balance, unit, perDay, perDaySource, failingUsers, failures, note, resetsInDays }
 export function judge(service, s) {
   const red = [], todo = [];
+  // Real calls failing over to Claude (OpenAI only): first, so the alert says so.
+  const status = service.statusPage ? `check ${service.statusPage}` : "check the provider's status page";
+  const creditEmpty = (s.coverReasons ?? []).some((x) => /credit is empty/.test(x));
+  if (s.coverFailed >= 1) {
+    // No plural forms: the alert's subject must read the same for 1 and for 14 (adminAlert groups by it).
+    red.push(`failing, and the Claude backup failed too (${s.coverFailed} in the last 10 minutes): users are seeing failures`);
+    todo.push(creditEmpty ? service.fix : `${status} and status.anthropic.com.`);
+  } else if (s.covered >= 1) {
+    red.push(`failing, Claude is covering (${s.covered} in the last 10 minutes)`);
+    todo.push(creditEmpty ? service.fix : `Nothing breaks for users: their requests go to Claude until ${service.name} answers again. ${status[0].toUpperCase()}${status.slice(1)}.`);
+  }
   if (s.reachable === false) {
     const failure = checkFailure(s.error);
-    red.push(failure === "timeout" ? `didn't respond in time${s.tries > 1 ? ` (${s.tries} tries)` : ""}` : `not reachable: ${s.error ?? "no answer"}`);
+    red.push(failure === "timeout" ? `didn't respond in time${s.tries > 1 ? ` (${s.tries} tries)` : ""}`
+      : failure === "quota" && service.creditSite ? `credit is empty, add credit at ${service.creditSite}`
+      : `not reachable: ${s.error ?? "no answer"}`);
     todo.push(downAdvice(service, failure));
   }
   const left = daysLeft(s.balance, s.perDay);

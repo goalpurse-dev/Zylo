@@ -17,6 +17,7 @@
 // POST { projectId, beatIds: string[] }
 // Returns { ok:true, compiled: [{beatId, sceneId, renderStrategy, sceneType}], skipped: [{beatId, reason}] }
 
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
@@ -56,7 +57,7 @@ async function runSceneDirector(beats: any[]) {
     sketchContext: b.sketchContext, informationToCommunicate: b.informationToCommunicate, deltaInstruction: b.deltaInstruction,
     availableCameraAnchors: b.__availableCameraAnchors ?? [], narrativeFunction: b.narrativeFunction,
   }));
-  const response = await fetch(OPENAI_RESPONSES, {
+  const response = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({

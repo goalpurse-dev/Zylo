@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
 import { readRunwareBalance } from "../_shared/runwareBalance.ts";
-import { SERVICES, dailyReport, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI } from "../_shared/opsHealth.js";
+import { SERVICES, dailyReport, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, summarizeBackup } from "../_shared/opsHealth.js";
 
 const SECRET = Deno.env.get("OPS_HEALTH_SECRET") ?? "";
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -35,6 +35,8 @@ async function ping(url: string, init: RequestInit = {}, timeoutMs = 10_000): Pr
     return { ok: false, status: 0, body: null, error: String((e as any)?.message ?? e).slice(0, 120) };
   }
 }
+
+export const OPENAI_PROBE = { model: "gpt-4o-mini", max_tokens: 1, messages: [{ role: "user", content: "ok" }] };
 
 // One slow answer is not an outage (2026-11-05: two lone 10 s timeouts of OpenAI's models list sent
 // alerts while every real OpenAI call that day worked): 30 s, then one more try for no answer or a 5xx.
@@ -90,7 +92,12 @@ async function collect() {
   const real = (projectId: unknown, userId?: unknown) => !(projectId && own.projects.has(String(projectId))) && !(userId && own.users.has(String(userId)));
   const out: Record<string, any> = {};
   // Started first: with its longer wait and retry it runs alongside the other checks.
-  const openaiCheck = pingTwice("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${env("OPENAI_API_KEY")}` } });
+  // A real request, the smallest there is (owner, 2026-11-05): the free models list answers fine with an
+  // empty balance (OpenAI ran dry on 2026-10-27 and the report stayed green for 7 days). A 1-token answer
+  // from the cheapest model, about $0.000002 a check; an empty balance answers 429 insufficient_quota.
+  const openaiCheck = pingTwice("https://api.openai.com/v1/chat/completions", { method: "POST",
+    headers: { Authorization: `Bearer ${env("OPENAI_API_KEY")}`, "Content-Type": "application/json" },
+    body: JSON.stringify(OPENAI_PROBE) });
 
   // Runware: balance, rate, real users' failures in the last hour (Long Form scenes covered, failed tool jobs).
   {
@@ -141,7 +148,13 @@ async function collect() {
   // OpenAI / Anthropic: no balance can be read with an API key; do they answer, what we spend.
   {
     const r = await openaiCheck;
-    out.openai = { reachable: r.ok, error: r.error, tries: r.tries, perDay: await ledgerPerDay("openai"), perDaySource: "estimate", unit: "usd", note: "balance can't be read by API: keep auto recharge on" };
+    // How often Claude stood in for OpenAI (openaiBackup.js logs each time): since the last tick → the alert
+    // "OpenAI is failing, Claude is covering"; the last 24 h → the daily report.
+    const { count: covered } = await sb.from("system_logs").select("id", { count: "exact", head: true }).eq("source", "openai-backup").eq("event", "backup_used").gte("created_at", hoursAgo(24));
+    const { data: lately } = await sb.from("system_logs").select("event, details").eq("source", "openai-backup").in("event", ["backup_used", "backup_failed"]).gte("created_at", hoursAgo(10 / 60)).limit(1000);
+    const backup = summarizeBackup(lately ?? []);
+    out.openai = { reachable: r.ok, error: r.error, tries: r.tries, ...backup, perDay: await ledgerPerDay("openai"), perDaySource: "estimate", unit: "usd",
+      note: [r.ok ? "has credit (a real 1-token request answered)" : null, covered ? `Claude covered ${covered} OpenAI call${covered === 1 ? "" : "s"} in 24 h` : null, "keep auto recharge on"].filter(Boolean).join(" · ") };
   }
   {
     // The token count endpoint is free and needs the same permission as real requests (the models

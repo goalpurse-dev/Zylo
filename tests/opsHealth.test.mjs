@@ -99,8 +99,10 @@ test("why a check failed: only a real quota or billing answer says add credit (o
   assert.doesNotMatch(alert.text, /Add credit|Billing\)/);
 
   const empty = judge(openai, { reachable: false, error: "429 insufficient_quota You exceeded your current quota" });
-  assert.match(empty.red[0], /not reachable: 429 insufficient_quota/);
+  assert.deepEqual(empty.red, ["credit is empty, add credit at platform.openai.com"]);
   assert.equal(empty.todo, "Add credit at platform.openai.com (Billing).");
+  const emptyAlert = instantAlerts([{ service: openai, state: {}, judged: empty }])[0];
+  assert.equal(emptyAlert.subject, "Zyvo ALERT: OpenAI — credit is empty, add credit at platform.openai.com");
   assert.match(judge(openai, { reachable: false, error: "401 invalid_api_key Incorrect API key provided" }).todo, /refused our API key/);
   assert.match(judge(openai, { reachable: false, error: "503 Service Unavailable" }).todo, /answered with an error: check status\.openai\.com/);
   assert.match(judge(svc("stripe"), { reachable: false, error: "Signal timed out." }).todo, /^Stripe didn't respond in time\. .*the provider's status page/);
@@ -115,6 +117,16 @@ test("the OpenAI check waits about 30 s and tries once more before it counts as 
   assert.match(fn, /const first = await ping\(url, init, 30_000\);/);
   assert.match(fn, /if \(first\.ok \|\| \(first\.status >= 400 && first\.status < 500\)\) return \{ \.\.\.first, tries: 1 \};/, "a clear answer (a refused key, no quota) is not retried");
   assert.match(fn, /return \{ \.\.\.\(await ping\(url, init, 25_000\)\), tries: 2 \};/, "both tries fit in the cron's 60 s");
-  assert.match(fn, /const openaiCheck = pingTwice\("https:\/\/api\.openai\.com\/v1\/models"/);
+  assert.match(fn, /const openaiCheck = pingTwice\("https:\/\/api\.openai\.com\/v1\/chat\/completions"/);
   assert.match(fn, /out\.openai = \{ reachable: r\.ok, error: r\.error, tries: r\.tries,/);
+});
+
+test("the OpenAI check is a real request, the smallest there is, so an empty balance shows (owner, 2026-11-05)", () => {
+  const fn = read("supabase/functions/ops-health/index.ts");
+  assert.match(fn, /export const OPENAI_PROBE = \{ model: "gpt-4o-mini", max_tokens: 1, messages: \[\{ role: "user", content: "ok" \}\] \};/);
+  assert.match(fn, /body: JSON\.stringify\(OPENAI_PROBE\) \}\);/);
+  // 4xx answers (an empty balance is 429 insufficient_quota) are final at once; no answer or a 5xx is tried again.
+  assert.equal(checkFailure("429 insufficient_quota You exceeded your current quota, please check your plan and billing details."), "quota");
+  assert.equal(judge(svc("openai"), { reachable: false, error: "Signal timed out.", tries: 2 }).todo.includes("Add credit"), false, "a timeout never says add credit");
+  assert.match(fn, /Claude covered \$\{covered\} OpenAI call/);
 });

@@ -18,6 +18,7 @@
 // A failed UPSCALE never fails a scene: one retry, then the original picture is kept.
 //
 // POST { projectId, userId, sceneId? }
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
@@ -68,7 +69,7 @@ async function aiQa(imageURL: string, contract: any, castNames: string[]): Promi
     "style: true stickmen — circle heads, arms and legs as thin black stick lines (not filled trouser legs or sleeves), mitten hands; flat, no shading or 3D.",
     "cast: the required people are present. concept: it shows the intended picture.",
   ].join("\n");
-  const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: STICKMAN_QA.model, temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageURL, detail: STICKMAN_QA.detail } }] }], response_format: { type: "json_schema", json_schema: { name: "qa", strict: true, schema: QA_SCHEMA } } }) });
+  const res = await openaiFetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: STICKMAN_QA.model, temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageURL, detail: STICKMAN_QA.detail } }] }], response_format: { type: "json_schema", json_schema: { name: "qa", strict: true, schema: QA_SCHEMA } } }) });
   const j: any = await res.json();
   if (!res.ok) throw new Error(`qa ${res.status}`);
   const out = JSON.parse(j.choices[0].message.content);

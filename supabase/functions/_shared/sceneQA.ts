@@ -31,6 +31,7 @@
 // recomputeSceneApproval runs, so they're included here as optional
 // pass-through fields rather than schema properties.
 
+import { openaiFetch } from "./openaiBackup.js";
 import { GPT4O_MINI_INPUT_PER_M, GPT4O_MINI_OUTPUT_PER_M, QA_CALL_ESTIMATED_COST_USD } from "../../../src/lib/longFormPipelineConstants.ts";
 
 const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
@@ -456,7 +457,7 @@ export async function runSceneQA(args: { imageUrl: string; sceneType: string; re
   // guessing in either direction.
   const fallback = (reason: string): SceneQAResult => ({ requiredCharactersPresent: false, characterIdentityConsistent: false, locationIdentityConsistent: false, actionMatchesDescription: false, framingMatchesShotSize: false, isCharacterSheetLayout: false, referenceLeakageDetected: false, multiPanelViolation: false, castCloningDetected: false, duplicateCharacterInstanceDetected: false, semanticPolarityViolated: false, forbiddenEntityPresent: false, textArtifactSeverity: "major", styleMismatchSeverity: "none", corruptionArtifacts: false, environmentIrrelevant: false, approved: false, severity: "AUTO_READY", requiresReview: true, failureType: "QA_UNAVAILABLE", repairStrategy: null, reasons: [reason] });
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
