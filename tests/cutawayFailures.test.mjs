@@ -179,15 +179,22 @@ test("launch check (2026-10-31): a layout approved on /admin/ops travels with it
 test("Beta: 3 custom videos per user per 24 hours, failed (refunded) ones not counted, closed when unreadable; premade and the owner are exempt in the start check", async () => {
   const { customDayLimit } = await import("../supabase/functions/_shared/cutaway/guard.js");
   const now = Date.parse("2026-10-31T12:00:00Z"), at = (h, status = "done") => ({ created_at: new Date(now - h * 3600000).toISOString(), status });
-  assert.equal(customDayLimit([at(1), at(2)], now).ok, true);
-  const full = customDayLimit([at(23), at(2), at(1, "rendering")], now);
-  assert.equal(full.ok, false); assert.equal(full.code, "LIMIT"); assert.equal(full.retryAfterSec, 3600); assert.match(full.message, /3 custom videos a day/);
-  // (the owner's rule of 2026-11-05: three failed runs leave the whole day)
-  assert.equal(customDayLimit([at(3, "failed"), at(2, "failed"), at(1, "failed")], now).ok, true);
-  assert.equal(customDayLimit([at(3, "failed"), at(2), at(1)], now).ok, true);
-  assert.equal(customDayLimit(null, now).ok, false);
+  // (the owner's rule of 2026-11-05: 5 a day on the paid plans, a run in progress counts, failed runs do not)
+  for (const plan of ["starter", "pro", "affiliate", null]) {
+    assert.equal(customDayLimit([at(1), at(2), at(3), at(4)], now, plan).ok, true);
+    const full = customDayLimit([at(23), at(20), at(4), at(2), at(1, "rendering")], now, plan);
+    assert.equal(full.ok, false); assert.equal(full.code, "LIMIT"); assert.equal(full.retryAfterSec, 3600); assert.match(full.message, /5 custom videos a day/);
+    assert.equal(customDayLimit([at(5, "failed"), at(4, "failed"), at(3), at(2), at(1)], now, plan).ok, true);
+    assert.equal(customDayLimit(null, now, plan).ok, false);
+  }
+  // (6 runs: free again when the second-oldest turns 24 h old)
+  assert.equal(customDayLimit([at(23), at(22), at(4), at(3), at(2), at(1)], now, "pro").retryAfterSec, 7200);
+  // the highest plan: no limit, not even an unreadable list
+  assert.equal(customDayLimit(Array.from({ length: 40 }, (_, i) => at(i / 2)), now, "generative").ok, true);
+  assert.equal(customDayLimit(null, now, "Generative").ok, true);
   const src = fs.readFileSync(path.join(M3, "../../../../supabase/functions/cutaway-api/index.ts"), "utf8");
-  assert.match(src, /quote\.kind === "custom" && !who\.owner/);
+  assert.match(src, /quote\.kind === "custom" && !who\.owner && customDayCap\(who\.plan\) !== Infinity/);
+  assert.match(src, /customDayLimit\(rErr \? null : recent, Date\.now\(\), who\.plan\)/);
   assert.match(src, /select\("created_at, status"\)\.eq\("user_id", who\.user\.id\)\.eq\("kind", "custom"\)/);
 });
 

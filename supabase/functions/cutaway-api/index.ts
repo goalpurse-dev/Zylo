@@ -21,7 +21,7 @@ import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { cantBuildMessage, CATEGORIES, classifyTopic, kitCheck, normTopic, openCategories, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
 import { closestNames } from "../_shared/cutaway/quote.js";
 import { checkKitFit } from "../_shared/cutaway/kitCheck.js";
-import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem, customDayLimit } from "../_shared/cutaway/guard.js";
+import { capAlertLevel, DAILY_CAP_RANGE, decide, DEFAULT_SETTINGS, topicProblem, customDayLimit, customDayCap } from "../_shared/cutaway/guard.js";
 import { alertOnce } from "../_shared/adminAlert.ts";
 import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
 import { BUCKET, runDir } from "../_shared/cutaway/jobs.js";
@@ -332,10 +332,10 @@ async function handle(req: Request, trace: Trace) {
 
     // during the Beta, custom videos per user per 24 hours (the owner's rule of 2026-10-31); a failed, refunded run does not
     // count (the owner's rule of 2026-11-05: a customer's failures used up their day). Premade has no such limit; the owner
-    // tests freely. Fails closed
-    if (quote.kind === "custom" && !who.owner) {
+    // tests freely. Fails closed. 5 a day on the paid plans, none on Generative (customDayCap; the owner's rule of 2026-11-05)
+    if (quote.kind === "custom" && !who.owner && customDayCap(who.plan) !== Infinity) {
       const { data: recent, error: rErr } = await admin.from("cutaway_runs").select("created_at, status").eq("user_id", who.user.id).eq("kind", "custom").gte("created_at", new Date(Date.now() - 86400000).toISOString());
-      const lim = customDayLimit(rErr ? null : recent);
+      const lim = customDayLimit(rErr ? null : recent, Date.now(), who.plan);
       if (!lim.ok) throw new ApiError(lim.code as any, lim.message, { retryAfterSec: lim.retryAfterSec }, rErr?.message ?? `custom runs in 24 h: ${recent?.length}`);
     }
 

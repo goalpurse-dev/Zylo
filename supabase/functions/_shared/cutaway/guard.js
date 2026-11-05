@@ -55,12 +55,19 @@ export function decide(settings, counts, addUsd, { envOff = false } = {}) {
  * Beta: custom videos per user per 24 hours (the owner's rule of 2026-10-31). runs: their custom runs of the last 24 h
  * ({created_at, status}), or null when unreadable (closed). A failed run (refunded) does not count: the customer got
  * nothing for it (the owner's rule of 2026-11-05, after a customer's failed runs used up their day).
+ * Per plan (the owner's rule of 2026-11-05, a customer's request): 5 a day on the paid plans, no limit on the highest
+ * (generative). A run still in progress counts, so starting many at once cannot pass the limit.
  */
-export const CUSTOM_PER_DAY = 3;
-export function customDayLimit(runs0, now = Date.now()) {
+export const CUSTOM_PER_DAY = 5;
+export const UNLIMITED_PLANS = Object.freeze(["generative"]);
+export const customDayCap = (plan) => (UNLIMITED_PLANS.includes(String(plan ?? "").toLowerCase().trim()) ? Infinity : CUSTOM_PER_DAY);
+export function customDayLimit(runs0, now = Date.now(), plan = null) {
+  const cap = customDayCap(plan);
+  if (cap === Infinity) return { ok: true };
   if (!Array.isArray(runs0)) return { ok: false, code: "BUSY", message: "Video making is paused on our side right now.", retryAfterSec: 300 };
   const runs = runs0.filter((r) => r?.status !== "failed");
-  if (runs.length < CUSTOM_PER_DAY) return { ok: true };
-  const oldest = Math.min(...runs.map((r) => Date.parse(r.created_at)));
-  return { ok: false, code: "LIMIT", message: `During the Beta you can make ${CUSTOM_PER_DAY} custom videos a day. Premade topics have no such limit.`, retryAfterSec: Math.max(60, Math.ceil((oldest + 86400000 - now) / 1000)) };
+  if (runs.length < cap) return { ok: true };
+  // (free again when the run that brings them under the cap turns 24 h old)
+  const times = runs.map((r) => Date.parse(r.created_at)).sort((a, b) => a - b), freeAt = times[runs.length - cap] + 86400000;
+  return { ok: false, code: "LIMIT", message: `During the Beta you can make ${cap} custom videos a day on your plan (no limit on Generative). Premade topics have no such limit.`, retryAfterSec: Math.max(60, Math.ceil((freeAt - now) / 1000)) };
 }
