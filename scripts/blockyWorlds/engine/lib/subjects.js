@@ -104,7 +104,10 @@ function normCtx(ctx) {
     if (id in gender) return gender[id];
     return (gender[id] = genderOf(id, people.get(id) ?? { name: id }, alias));
   };
-  ctx._n = { vw, genderFor, state: { n: 0, persons: [], subjects: [], things: [], monsterAt: -99 } };
+  // beings (lib/direction.js, from the story director): things that are characters, a he / she as well as an it (the Big
+  // Bad Wolf as an EPIC giant): "He was taller than our turtle" after "stood the Big Bad Wolf" is the wolf
+  const beings = new Set((ctx.beings ?? []).map((b) => String(b).toLowerCase()));
+  ctx._n = { vw, genderFor, beings, state: { n: 0, persons: [], subjects: [], things: [], monsterAt: -99 } };
   return ctx._n;
 }
 
@@ -115,7 +118,7 @@ const touch = (st, id) => { if (!id || id === "me") return; const i = st.persons
 function resolveGendered(word, N) {
   const g = /^(she|her|hers|herself)$/.test(word) ? "f" : "m";
   const st = N.state;
-  return recentPerson(st, (id) => N.genderFor(id) === g) ?? recentPerson(st, (id) => N.genderFor(id) == null) ?? null;
+  return recentPerson(st, (id) => (N.beings?.size && id.startsWith("thing:")) || N.genderFor(id) === g) ?? recentPerson(st, (id) => N.genderFor(id) == null) ?? null;
 }
 
 /** it -> the monster or a recent non-human thing (never a person). */
@@ -191,7 +194,7 @@ function subjectAt(toks, keys, k, i1, N, prev, keyAt) {
   const t = toks[k], c = t.c, st = N.state;
   if (/^(i|im|ive|id|ill)$/.test(c)) return { id: "me", kind: "narrator", via: "I" };
   if (/^(we|us)$/.test(c)) return { id: "group", kind: "group", via: "we" };
-  if (/^(he|she|hes|shes)$/.test(c)) { const id = resolveGendered(c.slice(0, c === "hes" || c === "shes" ? -1 : undefined), N); return { id, kind: id ? "person" : null, via: c, ref: id }; }
+  if (/^(he|she|hes|shes)$/.test(c)) { const id = resolveGendered(c.slice(0, c === "hes" || c === "shes" ? -1 : undefined), N); return { id, kind: id?.startsWith("thing:") ? "thing" : id ? "person" : null, via: c, ref: id?.startsWith("thing:") ? undefined : id }; }
   if (/^(they|theyre|theyd|theyve)$/.test(c)) {
     const last = [...st.subjects].reverse().find((s) => s.n >= st.n - 3 && (s.kind === "group" || s.kind === "babies"));
     return last ? { id: last.id, kind: last.kind, via: "they" } : { id: "group", kind: "group", via: "they" };
@@ -291,16 +294,17 @@ export function subjectOf(line, ctx = {}) {
     const withIds = [];
     let seenSubject = false;
     // recency in reading order: the subject first ("Bean screamed her name": her = Bean), then each mention as it comes
-    if (s.kind === "person") touch(st, s.id);
+    if (s.kind === "person" || (s.kind === "thing" && N.beings?.has(s.id.slice(6)))) touch(st, s.id);
     for (let j = i0; j <= i1; j++) {
       const t = toks[j], x = keys.find((y) => y.k === j);
       if (x?.kind === "person" && j > s.k0) touch(st, x.id);
+      if (x?.kind === "noun" && N.beings?.has(x.label)) touch(st, `thing:${x.label}`);
       let id = null;
       if (/^(he|she|him|hes|shes)$/.test(t.c) || (t.c === "her" && (!toks[j + 1] || t.end || t.comma || PREP.test(toks[j + 1].c) || /^[A-Z]/.test(toks[j + 1].raw) || ADVERB.test(toks[j + 1].c)))) {
         id = r.ref && s.id === r.ref && !seenSubject && /^(he|she|hes|shes)$/.test(t.c) ? r.ref : resolveGendered(t.c.replace(/s$/, ""), N);
-        if (id) { refs[j] = id; touch(st, id); }
+        if (id) { touch(st, id); if (id.startsWith("thing:")) { if (id === s.id && !seenSubject) seenSubject = true; continue; } refs[j] = id; }
       } else if (/^(his|her)$/.test(t.c)) {
-        const o = resolveGendered(t.c, N); if (o) { refs[j] = o; touch(st, o); }
+        const o = resolveGendered(t.c, N); if (o) { touch(st, o); if (!o.startsWith("thing:")) refs[j] = o; }
         continue;
       } else if (/^(them)$/.test(t.c)) id = null;
       else if (t.c === "me" || t.c === "myself") id = "me";

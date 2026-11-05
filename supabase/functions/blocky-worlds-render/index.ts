@@ -10,7 +10,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sameToken } from "../_shared/blockyWorlds/render.js";
-import { RENDER_CONFIG, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
+import { RENDER_CONFIG, logCapabilityGaps, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -28,6 +28,8 @@ Deno.serve(async (req) => {
   const query = Object.fromEntries(url.searchParams.entries());
   try {
     const r = await runtime.handleCallback({ query, body });
+    // the story director's capability gaps ride on the accepted "planned" event (guarded: never breaks a run)
+    if (r.status === 200 && body?.event === "planned" && Array.isArray(body?.gaps) && body.gaps.length) await logCapabilityGaps(admin, String(body.runId ?? ""), body);
     return json(r.body, r.status);
   } catch (e: any) {
     console.error("[blocky-worlds-render]", query.run ?? body?.runId, e?.message ?? e);

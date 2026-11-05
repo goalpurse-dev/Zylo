@@ -1,10 +1,14 @@
 // Blocky Worlds RunPod worker (docs/blocky-worlds-pipeline.md). One job, then RESULT {...} on stdout (handler.py returns it).
 //
 // PRODUCTION ({ job: {...} } from blocky-worlds-render; signed URLs and a callback token only, never a storage key):
-//   role "prepare": the voice (ElevenLabs, ELEVENLABS_KEY from the RunPod secret; or the run's earlier take, never
-//                   bought twice) -> trim + word timings -> planVideo -> checkTimeline + checkVisuals + checkSubjects
-//                   (ANY miss stops here: nothing is rendered, the run is refunded; never skipped) -> timeline.json up
-//                   -> "planned" -> music A + SFX cues + the mix -> mix.m4a up. No GPU needed.
+//   role "prepare": the story director (lib/director directStory: mock by default, free; "anthropic" with the job's
+//                   director.provider + ANTHROPIC_KEY) IN PARALLEL with the voice (ElevenLabs, ELEVENLABS_KEY from the
+//                   RunPod secret; or the run's earlier take, never bought twice) -> trim + word timings -> planVideo
+//                   ({ direction }: the production list is the planner's source of truth) -> checkTimeline +
+//                   checkVisuals + checkSubjects + checkProduction (ANY miss stops here: nothing is rendered, the run is
+//                   refunded; never skipped) -> timeline.json (+ production.json) up -> "planned" (with the capability
+//                   gaps: the worker has no Supabase key, the edge function logs them) -> music A + SFX cues + the mix
+//                   -> mix.m4a up. No GPU needed.
 //   role "chunk":   GPU check (NO_GPU -> handler.py retires this worker) -> frames [from, to) -> seg (1080p, squeezed
 //                   under the upload limit) + web (720p) up, progress events as it goes.
 //   role "finish":  the segments joined by stream copy + the mix -> final.mp4; the same for web.mp4; poster.jpg. No GPU.
@@ -69,10 +73,12 @@ export function poster(job) {
  * never a skip. -> { passed, timeline, missing, subjects }; the caller stops before any render when !passed.
  */
 export function preRenderChecks(plan, tl, script, kit) {
-  for (const f of ["checkTimeline", "checkVisuals", "checkSubjects"]) if (typeof plan?.[f] !== "function") throw coded("PLAN_FAILED", `plan.mjs has no ${f}(): the pre-render checks can't run, so nothing is rendered`);
+  // checkProduction is required whenever the plan was made from a production list (tl.production)
+  for (const f of ["checkTimeline", "checkVisuals", "checkSubjects", ...(tl?.production ? ["checkProduction"] : [])]) if (typeof plan?.[f] !== "function") throw coded("PLAN_FAILED", `plan.mjs has no ${f}(): the pre-render checks can't run, so nothing is rendered`);
   const timeline = plan.checkTimeline(tl) ?? [], missing = plan.checkVisuals(tl, script) ?? [], subjects = plan.checkSubjects(tl) ?? [];
+  const production = tl?.production ? plan.checkProduction(tl) ?? [] : [];
   const kitMissing = kitProblems(tl, kit);
-  return { passed: !timeline.length && !missing.length && !subjects.length && !kitMissing.length, timeline, missing, subjects, kit: kitMissing };
+  return { passed: !timeline.length && !missing.length && !subjects.length && !production.length && !kitMissing.length, timeline, missing, subjects, production, kit: kitMissing };
 }
 /**
  * Every object the plan puts on screen must be one the engine's kit can build (page/kit/objects.js resolveObject +
@@ -96,6 +102,7 @@ export function kitProblems(tl, kit) {
 export const loadKit = () => import(pathToFileURL(path.join(ENGINE, "page", "kit", "objects.js")).href);
 export function checkFailure(c) {
   if (c.missing.length) return coded("VISUAL_CHECK", `${c.missing.length} line(s) show nothing for a spoken noun: ${c.missing.slice(0, 5).map((m) => `#${m.line} ${(m.missing ?? []).join("/")}`).join(", ")}`);
+  if (c.production?.length) return coded("PRODUCTION_CHECK", `${c.production.length} line(s) miss an item the story needs: ${c.production.slice(0, 5).map((m) => `#${m.line} ${(m.missing ?? []).map((x) => x.name).join("/")}`).join(", ")}`);
   if (c.subjects.length) return coded("SUBJECT_CHECK", `${c.subjects.length} shot(s) don't show who the line is about: ${c.subjects.slice(0, 5).map((m) => `shot ${m.shot} (#${m.line}) ${m.problem}`).join(", ")}`);
   if (c.kit?.length) return coded("KIT_MISSING", `${c.kit.length} object(s) the engine's kit can't build: ${c.kit.slice(0, 5).join("; ")}`);
   if (c.timeline.length) return coded("PLAN_FAILED", `the timeline has ${c.timeline.length} problem(s): ${c.timeline.slice(0, 5).join("; ")}`);
@@ -128,6 +135,24 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
     builder.prefetch(needsFromTimeline(early, { kit }), kit);
   } catch (e) { console.log(`builder: no early start (${e.message})`); }
+  // the story director runs while the voice is made (it needs only the script) and never fails a run (directStory falls
+  // back to the mock's list); as soon as it answers, the builder starts on what the list needs built: the needs of a
+  // plan made from its production list (match.builderNeeds after the planner's refinements, lib/direction.js)
+  const exists = (rel) => fs.existsSync(path.join(ENGINE, rel));
+  const directing = (async () => {
+    if (p.director === false || p.director?.provider === "off") return null;
+    try {
+      const { directStory } = await import(pathToFileURL(path.join(ENGINE, "lib", "director", "index.js")).href);
+      const provider = p.director?.provider === "anthropic" && process.env.ANTHROPIC_KEY ? "anthropic" : "mock";
+      const d = await directStory({ script, idea: p.idea ?? null, provider, apiKey: process.env.ANTHROPIC_KEY ?? null, ...(p.director?.model ? { model: p.director.model } : {}), exists, runId: job.runId ?? null, source: "prepare", log: (m) => console.log(`director: ${m}`) });
+      try {
+        const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
+        const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists });
+        builder.prefetch(needsFromTimeline(early, { kit }), kit);
+      } catch (e) { console.log(`builder: no directed early start (${e.message})`); }
+      return d;
+    } catch (e) { console.log(`director: skipped (${e.message})`); return null; }
+  })();
   try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
   await post("progress", { stage: "voice", pct: 2 });
@@ -139,7 +164,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
   let v = null;
   try {
-    v = await lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }));
+    [v] = await Promise.all([lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null })), lap("director", () => directing)]);
   } catch (e) {
     const m = String(e.message ?? e);
     throw coded(/VOICE_CONFIG/.test(m) ? "VOICE_CONFIG" : /quota|credits|payment|insufficient|\b40[12]\b/i.test(m) ? "PROVIDER_BALANCE" : /different script/.test(m) ? "BAD_JOB" : "VOICE_FAILED", m.slice(0, 600));
@@ -156,7 +181,13 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // 2. the plan, the builder's things put in (each change re-checked; one that breaks a check is undone), then the
   //    three checks + the kit check: any miss stops the run here, before any render
   await post("progress", { stage: "plan", pct: 8 });
-  const tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null }));
+  const direction = await directing;
+  const tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists }));
+  if (direction) {
+    const prodFile = path.join(dir, "production.json");
+    fs.writeFileSync(prodFile, JSON.stringify({ provider: direction.provider, model: direction.model, fellBack: direction.fellBack, costUsd: direction.costUsd, ms: direction.ms, problems: direction.problems, production: direction.production, refined: tl.production ?? null, gaps: direction.match.gaps, summary: direction.match.summary }));
+    if (p.out?.production) await put(p.out.production, prodFile, "application/json").catch((e) => console.log(`production.json upload: ${e.message}`)); // bookkeeping never fails a run
+  }
   tl.audio = { voice: "voice.wav", music: "music.wav" };
   const built = await lap("build", () => builder.buildFor(tl, { plan, kit }));
   const checks = preRenderChecks(plan, tl, script, kit);
@@ -168,7 +199,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const tlPath = path.join(dir, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl));
   await put(p.out.timeline, tlPath, "application/json");
-  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms } };
+  const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms },
+    ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}) };
   await post("planned", planned);
 
   // 3. music A + the SFX cues + the final mix (the chunks render meanwhile)

@@ -416,3 +416,38 @@ The engine loads `page/epicLayer.js` only when a timeline uses these fields; ord
 map to `worlds` / `giants` / `crowds` / `beat` (nouns: turtle/whale/elephant/snail town, giant <animal>, army, soldiers,
 knights, crowd; verbs: march, charge, attack, stomp, roar, flee, swim). Until then EPIC timelines are hand-made or from
 the director.
+
+## Addendum 2026-11-05 (d): INTEGRATION (the production list is the planner's source of truth)
+
+`planVideo({ script, words, idea, lengthSec, direction, exists })`: with `direction` (directStory's result) the planner
+plans as today, then `lib/direction.js` lays the production list over it; without it the plan is byte-identical to
+before (132/132 cases checked against HEAD). No special code per story: worlds, giants, crowds, beats and cameras come
+from the list's items and each line's words.
+- **Refinements** (general rules, listed in `tl.direction.notes`): describing words are not things; scenery words on a
+  creature-world line are the world's own; a creature called big / taller than a giant is a giant; duplicate armies are
+  one, an army next to a giant is that giant's (wolf -> wolf_soldier); a crowd word on a line with no crowd gets it;
+  mock only: a pronoun-led line is about the line before's subject. Then the list is matched again (match.js).
+- **Worlds per line**: an EPIC creature world -> `set: "creature:<species>_<view>[_sea]"` + `tl.worlds`: the line's own
+  relation (inside / on), "outside" when the line needs a non-world giant, an army, land / sea scenery or a scale shot of
+  the creature, "on" for "on / top of / edge of the shell"; both (town + outside) -> two shots, or "on" for one short
+  shot; after the creature swims, outside / on views are at sea; people never stand in the open sea (-> on). A world
+  routed to the builder -> `shot.world` need. Indoor base sets (bedroom / school) stay rooms of the town.
+- **Giants** `tl.giants` (non-world EPIC giants), per shot `giants: [{ id: "world" | id, action, spot, facing, role,
+  aliases }]`; **crowds** per shot `crowds: [{ kind, count, formation, action, spot, facing, faction, item, aliases }]`;
+  actions from the line's verbs (given to the giant / crowd named before each verb; negated verbs say nothing);
+  **beats** (attack > fall > stomp > roar > swim_away > charge > impact > march > cheer > flee) with roles; **cameras**
+  (hero_low for a person under a giant / before an army, giant_close for a roar / reveal, behind_army for a charge, track
+  for a march, establish for the creature / a giant, aerial for a town crowd); the director's **light** per line.
+  `aliases` on giants / crowds and `shot.worldAliases` let `checkVisuals` see them (lib/visuals.js covers); crowds count
+  as people for checkSubjects; EPIC giants are "beings" for lib/subjects.js ("He was taller..." = the wolf).
+- **Checks**: `checkProduction(tl)` (plan.mjs export, STRICT, reads `tl.production`) runs with checkTimeline +
+  checkVisuals + checkSubjects in make.mjs and in the worker's prepare (code PRODUCTION_CHECK); `checkTimeline` also
+  runs `validateEpic` and the production check. A miss is re-planned inside planVideo (`fixProduction`: the item by its
+  own system, else a picture card of it, else a badge), so a planned timeline comes out clean.
+- **Pipeline**: worker prepare runs directStory in parallel with the voice (mock unless `job.prepare.director.provider =
+  "anthropic"` + ANTHROPIC_KEY), prefetches the builder with the directed plan's needs, uploads `production.json`
+  (`job.prepare.out.production`, optional), sends `director` + `gaps` in "planned"; blocky-worlds-render inserts the gaps
+  (`logCapabilityGaps`, guarded, once per run). make.mjs: `--director mock|haiku|sonnet|off` (paid ones need --paid),
+  `--script file.json`.
+- Files: `lib/direction.js`, `dev/integration.mjs` (+ `--stills`), `dev/integration.test.mjs`,
+  `dev/integrationSheet.mjs`, `dev/scripts/turtle_wolf.json`; contact sheets in `out/integration/`.

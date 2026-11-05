@@ -23,8 +23,16 @@ import { norm, tokens, estimateWords, alignTokens } from "./lib/planText.js";
 import { OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
+import { readDirection, directShots, compactProduction, checkProduction as checkProductionStrict, fixProduction, isCreatureSet, epicVariety } from "./lib/direction.js";
+import { EPIC_CAMERAS, validateEpic } from "./lib/epic.js";
 
 export { estimateWords, subjectOf };
+/**
+ * The production check (pre-render, next to checkVisuals / checkSubjects / checkTimeline): every line's required items
+ * from the story director's production list (tl.production, kept by planVideo) are on screen in that line's shots.
+ * [{ line, text, missing: [{ id, kind, name, route }] }]; empty = clean (and always empty without a direction).
+ */
+export const checkProduction = (tl, prod) => checkProductionStrict(tl, prod ?? tl?.production);
 
 export const SETS = ["street", "bedroom", "school", "woods"];
 export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
@@ -483,8 +491,9 @@ function pickCamera(prefs, hist, seg, focus, actorsN, monster) {
 }
 
 // ---------------------------------------------------------------- 6. the plan
-export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
+export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null } = {}) {
   if (!script?.lines?.length) throw new Error("planVideo: script.lines is empty");
+  idea ??= {};
   const W = Array.isArray(words) && words.length ? words : estimateWords(script);
   const duration = r3(W.at(-1).end + PACE.tail);
   const lines = timeLines(script, W, duration);
@@ -492,6 +501,15 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
   const world = readWorld(script, idea);
   const title = script.title ?? idea.title ?? "Untitled";
   const mood = idea.mood ?? "horror";
+  // the story director's production list (lib/direction.js): when given, it is the source of truth for worlds, giants,
+  // crowds, the line's items, its camera beat and its light; a monster the list makes an EPIC giant is that giant
+  const D = direction?.production ? readDirection(direction, { script, idea, mood, exists }) : null;
+  if (D && world.monster) {
+    const epicWords = new Set([...Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]), ...[...D.worldCreature.values()].map((w) => w.species)]);
+    if ((world.monster.keys ?? [world.monster.key]).some((k) => epicWords.has(k)) || (world.monster.species && epicWords.has(world.monster.species))) world.monster = null;
+  }
+  // the EPIC giants are characters: "he" / "she" can be the Big Bad Wolf (lib/subjects.js beings)
+  if (D) world.beings = [...new Set(Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]).filter((w) => !/s$/.test(w) || w.endsWith("ss")))];
 
   const partRange = {};
   script.lines.forEach((l, i) => { partRange[l.part] = partRange[l.part] ? [partRange[l.part][0], i] : [i, i]; });
@@ -719,11 +737,41 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
   framingPass(shots, buildCast());
   fixSubjects(shots, subjAux);
   for (const s of shots) if (s.marker === undefined) s.marker = null;
-  // the video opens wide (or on the rule sign)
-  if (!["wide", "insert"].includes(shots[0].camera)) {
+  // the director's production list over the plan (lib/direction.js): worlds, giants, crowds, beats, EPIC cameras, light;
+  // then the picture cards those now show give their time back, the word + subject checks run again, and every line's
+  // required item that is still missing is re-planned (its system, else a picture card of it)
+  let production = null, prodFixes = [];
+  const tlStub = { shots, worlds: undefined, giants: undefined };
+  if (D) {
+    const split = (list, i, t) => splitShot(list, i, t, W);
+    directShots(tlStub, D, { lines, W, used, recam, split, objectAliases: (n) => OBJECT_CATALOG[n]?.aliases ?? [] });
+    dropCoveredCards(shots, lineKeys, buildCast);
+    fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+    fixSubjects(shots, subjAux);
+    production = compactProduction(D);
+    tlStub.production = production; tlStub.lines = lines.map((L) => ({ text: L.text }));
+    const cardFn = (list, li, card, r) => {
+      const L = lines[li];
+      const lineShots = list.filter((s) => (s.lines ?? [s.line]).includes(li));
+      const need = r?.needId ? D.match.builderNeeds.find((n) => n.id === r.needId) : null;
+      // the middle of the line first, then its start, then its end (a word start with room for both pieces)
+      return [0.5, 0.15, 0.85].some((f) => cardShot(list, list.filter((s) => (s.lines ?? [s.line]).includes(li)), { kind: "director", label: r?.name ?? card.text }, L.start + (L.end - L.start) * f, L, card, need));
+    };
+    const badgeFn = (s, card) => {
+      if (!s) return false;
+      if (!s.actors?.length) { const t = ["town1", "town2", "town3"][0]; s.actors = [{ id: t, spot: "center", pose: "point", expr: "surprised", facing: "camera", hold: null }]; used.add(t); if (!["group", "object"].includes(s.focus) && !/^(giant:|crowd|world)/.test(s.focus ?? "") && s.focus !== "monster") s.focus = t; } const text = `${card.icon} ${card.text.split(" ").at(-1)}`; if (!markersList(s).some((m) => m.text === text)) setMarkers(s, [...markersList(s), { on: s.actors[0].id, kind: "icon", text }]); return true; };
+    prodFixes = fixProduction(tlStub, D, { used, card: cardFn, badge: badgeFn, isObject: (n) => !!OBJECT_CATALOG[n], stateOf: (r) => (r.kind === "event" && OBJECT_CATALOG[r.kitName]?.states?.includes(D.calls.get(r.id)?.state) ? D.calls.get(r.id).state : null) });
+    fixSubjects(shots, subjAux);
+    fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+    epicVariety(shots, recam);
+    for (const s of shots) if (s.marker === undefined) s.marker = null;
+  }
+  // the video opens wide (or on the rule sign, or an EPIC establishing shot)
+  if (!["wide", "insert", ...(D ? ["establish", "aerial"] : [])].includes(shots[0].camera)) {
     shots[0].camera = "wide";
     if (shots[1]?.camera === "wide" && shots[2]?.camera === "wide") shots[1].camera = recam(shots, 1, "wide");
   }
+  if (D) epicVariety(shots, recam);
   const cast = buildCast();
   // what each shot shows of its lines' key nouns / actions (for the check and the report; the engine ignores it)
   for (const s of shots) {
@@ -739,14 +787,51 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
     captions: W.map((w) => ({ word: w.word, start: r3(w.start), end: r3(w.end) })),
     audio: { voice: "voice.wav", music: "music.wav" },
     lines: lines.map((L, i) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end), subject: lineSubj[i].id ?? null })),
-    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender },
+    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}) },
   };
   // the report's subject column: who each of the line's shots is about (cards and signs left out)
   const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
   const subjCol = (i) => [...new Set(shots.filter((s) => (s.lines ?? [s.line]).includes(i) && s.camera !== "insert").map((s) => `${label(s.subject)}${s.subjectAbsent ? " (gone)" : ""}`))].join(" / ") || label(lineSubj[i].id);
   tl.visualReport = lineReport(shots, lines, vw, cast).map((r) => ({ line: r.line, text: r.text, subject: subjCol(r.line), nouns: r.keys.map((k) => k.label), shows: r.shows, ok: !r.missing.length, ...(r.missing.length ? { missing: r.missing.map((k) => k.label) } : {}) }));
-  tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood);
+  if (D) {
+    if (tlStub.worlds) tl.worlds = tlStub.worlds;
+    if (tlStub.giants) tl.giants = tlStub.giants;
+    tl.production = production;
+    tl.direction = { provider: D.provider, mock: D.mock, notes: D.notes, fixes: prodFixes, gaps: D.match.gaps.length, summary: D.match.summary };
+  }
+  tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   return tl;
+}
+
+/** Splits shot i at the word start nearest t (both halves >= minShot). Returns true when it did. */
+function splitShot(shots, i, t, W) {
+  const s = shots[i];
+  const starts = W.map((w) => w.start).filter((c) => c >= s.start + PACE.minShot - 1e-9 && c <= s.end - PACE.minShot + 1e-9);
+  if (!starts.length) return false;
+  const c = r3(starts.reduce((b, x) => (Math.abs(x - t) < Math.abs(b - t) ? x : b), starts[0]));
+  const a = JSON.parse(JSON.stringify(s)), b = JSON.parse(JSON.stringify(s));
+  a.end = c; b.start = c; b.seed = (s.seed + 7) % 1000;
+  shots.splice(i, 1, a, b);
+  return true;
+}
+
+/**
+ * A picture card whose noun another shot of its line now shows (an EPIC army, the creature world's shell) gives its time
+ * back to its neighbour of the same line (the card was the stand-in; the real thing is on screen).
+ */
+function dropCoveredCards(shots, lineKeys, buildCast) {
+  const cast = buildCast();
+  for (let i = shots.length - 1; i >= 0; i--) {
+    const c = shots[i];
+    if (c.camera !== "insert" || c.insert?.kind !== "card" || !(c.visuals ?? []).length) continue;
+    const mine = shots.filter((s) => s !== c && s.camera !== "insert" && (s.lines ?? [s.line]).includes(c.line));
+    const keys = (c.visuals ?? []).map((lab) => (lineKeys[c.line] ?? []).find((k) => k.label === lab)).filter(Boolean);
+    if (!mine.length || keys.length !== c.visuals.length || !keys.every((k) => mine.some((s) => covers(k, s, cast)))) continue;
+    const nb = [shots[i - 1], shots[i + 1]].find((s) => s && s.camera !== "insert" && s.line === c.line);
+    if (!nb) continue;
+    nb.start = Math.min(nb.start, c.start); nb.end = Math.max(nb.end, c.end);
+    shots.splice(i, 1);
+  }
 }
 
 /**
@@ -757,13 +842,27 @@ export function planVideo({ script, words, idea = {}, lengthSec = null } = {}) {
  * Objects: every picture card cut for a noun (shot.need = the need's id). Worlds: a setting none of the 4 sets fits
  * (worldNeedOf); every shot on the base set carries shot.world = the need's id.
  */
-function collectNeeds(tl, script, idea, baseSet, mood) {
+function collectNeeds(tl, script, idea, baseSet, mood, D = null) {
   const needs = [], byName = new Map();
   const add = (n) => { const k = `${n.kind}|${n.name}`; if (byName.has(k)) return byName.get(k); const id = `need${needs.length + 1}`; const x = { id, ...n }; needs.push(x); byName.set(k, x); return x; };
   for (const s of tl.shots) {
     if (!s.need || typeof s.need !== "object") continue;
-    const n = add({ kind: "object", name: s.need.name, phrase: s.need.label, line: s.line, lineText: script.lines[s.line]?.text ?? s.text ?? "", mood, fallbackSet: s.set });
-    s.need = { id: n.id, host: s.need.host };
+    const { name, label, host, kind, ...extra } = s.need;
+    const n = add({ kind: "object", name, phrase: label, line: s.line, lineText: script.lines[s.line]?.text ?? s.text ?? "", mood, fallbackSet: isCreatureSet(s) ? (s.worldBase ?? "street") : s.set, ...extra });
+    s.need = { id: n.id, host };
+  }
+  if (D) {
+    // the director decides the worlds: a world routed to the builder (a place no set or EPIC world can make) is a need
+    // for every shot of its lines still on the fallback set
+    for (const L of D.lines) {
+      const c = L.worldCall;
+      if (c?.route !== "builder" || !c.needId) continue;
+      const dn = D.match.builderNeeds.find((x) => x.id === c.needId);
+      if (!dn) continue;
+      const n = add({ kind: "world", name: dn.name, phrase: dn.phrase, line: dn.line, lineText: dn.lineText, mood, fallbackSet: dn.fallbackSet, source: "director", item: dn.item, ...(dn.hint ? { hint: dn.hint } : {}), setting: idea?.setting ?? null });
+      for (const s of tl.shots) if (s.line === L.i && (s.set === c.set || s.set === dn.fallbackSet)) s.world = n.id;
+    }
+    return needs;
   }
   const w = worldNeedOf(script, idea);
   if (w) {
@@ -848,12 +947,12 @@ function visualWorld(world) {
     people: new Map([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, { name: p.name, baby: !!p.baby }])),
     alias: world.alias ?? {}, narrator: world.narrator,
     monster: world.monster ? { key: world.monster.key, keys: world.monster.keys ?? [world.monster.key], words: world.monster.words ?? [world.monster.key], name: world.monster.name } : null,
-    looseNames: new Set(world.looseNames ?? []), prop: world.propKey ?? null,
+    looseNames: new Set(world.looseNames ?? []), prop: world.propKey ?? null, ...(world.beings?.length ? { beings: world.beings } : {}),
   };
 }
 function visualWorldFrom(v) {
   return { people: new Map(Object.entries(v.people ?? {}).map(([id, name]) => [id, { name }])), alias: v.alias ?? {}, narrator: v.narrator ?? "Me",
-    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null };
+    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}) };
 }
 
 /** Names for the people the script doesn't name: townsfolk and extra babies get real first names (for name tags). */
@@ -1356,8 +1455,8 @@ function forceKey(s, key, aux) {
  * Cuts a picture card for the key into the line's time (>= minShot, at a word start, at most 2 cards a line, never 3
  * inserts in a row). Returns false when it doesn't fit (the caller then puts a badge on someone in the shot).
  */
-function cardShot(shots, lineShots, key, t, L) {
-  if (lineShots.filter((s) => s.insert?.kind === "card").length >= 2) return false;
+function cardShot(shots, lineShots, key, t, L, insert = null, dirNeed = null) {
+  if (lineShots.filter((s) => s.insert?.kind === "card").length >= (insert ? 3 : 2)) return false;
   const host = lineShots.filter((s) => s.camera !== "insert").find((s) => t >= s.start - 1e-9 && t < s.end) ?? lineShots.find((s) => s.camera !== "insert");
   if (!host) return false;
   const i = shots.indexOf(host);
@@ -1369,11 +1468,14 @@ function cardShot(shots, lineShots, key, t, L) {
   // never three inserts in a row: the card's neighbours after the cut
   if (cardFirst ? ins(shots[i - 1]) && ins(shots[i - 2]) : ins(shots[i + 1]) && ins(shots[i + 2])) return false;
   const card = { start: cardFirst ? host.start : r3(c), end: cardFirst ? r3(c) : host.end, line: host.line, lines: host.lines, part: host.part, set: host.set, light: host.light,
-    camera: "insert", focus: "insert", actors: [], monsterState: null, insert: cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label],
+    camera: "insert", focus: "insert", actors: [], monsterState: null, insert: insert ?? cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label],
     subject: host.subject ?? null };
   // the builder (lib/builder): a noun the kit can't show is a "need"; when it gets built, the card gives its time back to
   // the host shot and the built object stands in it (lib/builder/apply.js), else the card stays
   if (key.kind === "noun") card.need = { kind: "object", name: key.noun ?? key.label, label: key.label, host: cardFirst ? "next" : "prev" };
+  // the director's builder need (an object, a static giant blueprint): the same, with its hints (giant, heightM, hint)
+  if (dirNeed?.kind === "object") card.need = { kind: "object", name: dirNeed.name, label: dirNeed.phrase ?? dirNeed.name, host: cardFirst ? "next" : "prev", source: "director", item: dirNeed.item, ...(dirNeed.giant ? { giant: true, heightM: dirNeed.heightM } : {}), ...(dirNeed.hint ? { hint: dirNeed.hint } : {}) };
+  if (insert) delete card.visuals;
   const rest = { ...host, ...(cardFirst ? { start: r3(c) } : { end: r3(c) }) };
   shots.splice(i, 1, ...(cardFirst ? [card, rest] : [rest, card]));
   return true;
@@ -1408,7 +1510,7 @@ function genderMap(world) {
 }
 /** Every line's subjects, read in order with one story context. */
 function subjectsFor(lines, vw, gender) {
-  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender };
+  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender, ...(vw.beings?.length ? { beings: vw.beings } : {}) };
   return lines.map((L) => subjectOf(L.text, sctx));
 }
 /**
@@ -1462,7 +1564,7 @@ function subjectIssues(s, cast, keysOfShot, loose) {
   const nm = (id) => (id === "monster" ? "the monster" : cast[id]?.name ?? id);
   const S = s.subject;
   const objs = (s.objects ?? []).map((o) => o.name);
-  const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0);
+  const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0) + (s.crowds ?? []).reduce((n, c) => n + Math.min(10, c.count ?? 0), 0);
   if (S === "monster") {
     if (!s.subjectAbsent) {
       if (!s.monsterState) out.push({ code: "monster", id: S, msg: "the monster (the subject) is not on screen" });
@@ -1474,7 +1576,7 @@ function subjectIssues(s, cast, keysOfShot, loose) {
   } else if (S === "babies") {
     if (!actors.some((a) => cast[a.id]?.role === "baby" || cast[a.hold]?.role === "baby")) out.push({ code: "babies", msg: "no baby on screen" });
   } else if (S === "someone") {
-    if (!actors.length) out.push({ code: "someone", msg: "nobody on screen" });
+    if (!actors.length && !(s.crowds ?? []).length) out.push({ code: "someone", msg: "nobody on screen" });
   } else if (S.startsWith("thing:")) {
     const label = S.slice(6);
     const key = keysOfShot(s).find((k) => k.label === label || k.noun === label);
@@ -1638,18 +1740,23 @@ export function checkTimeline(tl) {
   const shots = tl.shots ?? [];
   if (!shots.length) return [...out, "no shots"];
   const eps = 1e-6;
+  // EPIC fields (lib/epic.js; the director's giants / crowds / creature worlds): their own schema check too
+  const epicTl = !!(tl.giants || tl.worlds || shots.some((s) => s.giants?.length || s.crowds?.length || s.beat || isCreatureSet(s) || EPIC_CAMERAS.includes(s.camera)));
+  // (a string shot.world is the builder's world-need marker, not EPIC's { kind, creature, view }: apply.js removes it)
+  if (epicTl) out.push(...validateEpic({ ...tl, shots: shots.map((s) => (typeof s.world === "string" ? { ...s, world: undefined } : s)) }).map((p) => `epic: ${p}`));
   if (Math.abs(shots[0].start) > eps) out.push("the first shot must start at 0");
   if (Math.abs(shots.at(-1).end - tl.duration) > eps) out.push("the last shot must end at the duration");
-  if (!["wide", "insert"].includes(shots[0].camera)) out.push("the first shot must be wide or insert");
+  if (!["wide", "insert", ...(epicTl ? ["establish", "aerial"] : [])].includes(shots[0].camera)) out.push("the first shot must be wide or insert");
   shots.forEach((s, i) => {
     const at = `shot ${i}`;
     if (i > 0 && Math.abs(s.start - shots[i - 1].end) > eps) out.push(`${at}: gap/overlap with the previous shot`);
     if (!(s.end > s.start)) out.push(`${at}: empty`);
     else if (s.end - s.start < 0.5) out.push(`${at}: shorter than 0.5 s`);
     const builtWorld = /^world:/.test(s.set ?? "") && tl.assets?.[s.set.slice(6)]?.kind === "world";
-    if (!SETS.includes(s.set) && !builtWorld) out.push(`${at}: unknown set ${s.set}`);
+    const creatureWorld = isCreatureSet(s) && !!tl.worlds?.[s.set.slice(9)];
+    if (!SETS.includes(s.set) && !builtWorld && !creatureWorld) out.push(`${at}: unknown set ${s.set}`);
     if (!LIGHTS.includes(s.light)) out.push(`${at}: unknown light ${s.light}`);
-    if (!CAMERAS.includes(s.camera)) out.push(`${at}: unknown camera ${s.camera}`);
+    if (!CAMERAS.includes(s.camera) && !(epicTl && EPIC_CAMERAS.includes(s.camera))) out.push(`${at}: unknown camera ${s.camera}`);
     if (s.camera === "insert" && !s.insert) out.push(`${at}: insert camera without an insert`);
     if (i >= 2 && s.camera === shots[i - 1].camera && s.camera === shots[i - 2].camera) out.push(`${at}: the same camera 3 times in a row`);
     for (const a of s.actors ?? []) {
@@ -1679,7 +1786,7 @@ export function checkTimeline(tl) {
       if (!MONSTER_STATES.includes(s.monsterState.state) || !SPOTS.includes(s.monsterState.spot) && s.monsterState.spot !== "tower") out.push(`${at}: bad monsterState`);
     }
     if (s.focus === "monster" && !s.monsterState) out.push(`${at}: focus monster without the monster`);
-    if (s.focus !== "monster" && s.focus !== "insert" && s.focus !== "group" && s.focus !== "object" && !ids.includes(s.focus)) out.push(`${at}: focus ${s.focus} is not on screen`);
+    if (s.focus !== "monster" && s.focus !== "insert" && s.focus !== "group" && s.focus !== "object" && !(epicTl && (/^(giant:|crowd)/.test(String(s.focus)) || s.focus === "world")) && !ids.includes(s.focus)) out.push(`${at}: focus ${s.focus} is not on screen`);
     if (s.insert && !(s.insert.text && s.insert.text.split(/\s+/).length <= 6)) out.push(`${at}: insert text missing or longer than 6 words`);
   });
   if (tl.lines) {
@@ -1687,6 +1794,7 @@ export function checkTimeline(tl) {
     tl.lines.forEach((_, i) => { if (!covered.has(i)) out.push(`line ${i} has no shot`); });
     for (const m of checkVisuals(tl, { lines: tl.lines })) out.push(`line ${m.line} shows nothing for: ${m.missing.join(", ")}`);
   }
+  for (const m of checkProductionStrict(tl)) out.push(`line ${m.line} misses the production items: ${m.missing.map((x) => x.name).join(", ")}`);
   const caps = tl.captions ?? [];
   if (!caps.length) out.push("no captions");
   caps.forEach((c, i) => {

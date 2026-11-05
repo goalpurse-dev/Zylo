@@ -1,7 +1,11 @@
 // Blocky Worlds engine, end to end (free, local): script -> voice -> plan -> timeline.json -> music -> render -> mix ->
 // final.mp4 (+ a 720p web copy). Prints `PROGRESS {...}` lines and a timing report (seconds per stage).
 //   node make.mjs --example [--idea 0] [--out out/<name>] [--workers N] [--mode pages|browsers] [--secs N] [--silent]
-//                 [--stubs [list]] [--music A-E|loop.wav] [--no-sfx]
+//                 [--stubs [list]] [--music A-E|loop.wav] [--no-sfx] [--director mock|haiku|sonnet|off] [--script file.json]
+//   --director: the story director's production list (lib/director) is the planner's source of truth; default mock
+//   (free, rule-based). haiku / sonnet are PAID calls (~$0.003 / ~$0.05 a video) and run only with --paid and
+//   ANTHROPIC_KEY. It runs at the same time as the voice; production.json lands in the out folder.
+//   --script: a { title, idea, lines: [{ part, text }] } file instead of --example (dev/scripts/turtle_wolf.json)
 //   --music: an original backrooms loop (audio/backrooms.mjs options A-E) or a seamless loop file; default A (the
 //   owner's pick, 2026-11-04: the same track under every video, looped to fit, with its clean ending).
 //   Sound effects on key moments come from lib/sfx.js (sfx_cues.json in the out folder); --no-sfx turns them off.
@@ -33,7 +37,7 @@ export function normalizeScript(s) {
   return { ...s, title: s.title, lines: s.lines.map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) };
 }
 
-export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "pages", secs = null, silent = false, stubs = null, onProgress = null, voice = "free", paid = false, renderVideo = true, music = "A", sfx = true }) {
+export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "pages", secs = null, silent = false, stubs = null, onProgress = null, voice = "free", paid = false, renderVideo = true, music = "A", sfx = true, director = "mock" }) {
   const progress = (o) => { console.log(`PROGRESS ${JSON.stringify(o)}`); onProgress?.(o); };
   const T0 = Date.now(), timing = {};
   const lap = async (k, fn) => { const t = Date.now(); const r = await fn(); timing[k] = +((Date.now() - t) / 1000).toFixed(2); return r; };
@@ -46,6 +50,21 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
   // 1. voice (or the silent fallback)
   progress({ stage: "voice", pct: 2 });
   const plan = await need("plan.mjs", ["planVideo", ...(silent ? ["estimateWords"] : [])]);
+  // the story director, in parallel with the voice (it needs only the script)
+  const exists = (rel) => fs.existsSync(path.join(ENGINE, rel));
+  const directing = director && director !== "off" ? lap("director", async () => {
+    const { directStory } = await need("lib/director/index.js", ["directStory"]);
+    const { DIRECTOR_MODELS } = await import(pathToFileURL(path.join(ENGINE, "lib", "director", "design.js")).href);
+    const real = director === "haiku" || director === "sonnet";
+    if (real && !paid) throw new Error(`--director ${director} is a paid Anthropic call: add --paid (or use --director mock, free)`);
+    const apiKey = process.env.ANTHROPIC_KEY ?? process.env.ANTHROPIC_API_KEY ?? null;
+    if (real && !apiKey) throw new Error(`--director ${director} needs ANTHROPIC_KEY`);
+    const { makeGapLog, jsonlStore } = await import(pathToFileURL(path.join(ENGINE, "lib", "gaps.js")).href);
+    const d = await directStory({ script, idea, provider: real ? "anthropic" : "mock", apiKey, model: director === "sonnet" ? DIRECTOR_MODELS.strong : DIRECTOR_MODELS.fast, exists, gapLog: makeGapLog({ store: jsonlStore(path.join(out, "gaps.jsonl")) }), storyId: idea?.title ?? script.title ?? null, source: "make" });
+    fs.writeFileSync(path.join(out, "production.json"), JSON.stringify({ provider: d.provider, model: d.model, fellBack: d.fellBack, costUsd: d.costUsd, ms: d.ms, problems: d.problems, production: d.production, gaps: d.match.gaps, summary: d.match.summary }, null, 1));
+    return d;
+  }) : Promise.resolve(null);
+  directing.catch(() => {});
   const words = await lap("voice", async () => {
     if (silent) {
       const w = plan.estimateWords(script);
@@ -68,7 +87,8 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
 
   // 2. the plan -> timeline.json (next to the audio: the page server serves this folder)
   progress({ stage: "plan", pct: 8 });
-  const tl = await lap("plan", async () => plan.planVideo({ script, words, idea }));
+  const direction = await directing;
+  const tl = await lap("plan", async () => plan.planVideo({ script, words, idea, direction, exists }));
   tl.audio = { voice: "voice.wav", music: "music.wav" };
   const problems = typeof plan.checkTimeline === "function" ? plan.checkTimeline(tl) : [];
   if (problems.length) console.log(`plan: ${problems.length} problem(s): ${problems.slice(0, 8).join("; ")}`);
@@ -76,9 +96,15 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
   const missing = typeof plan.checkVisuals === "function" ? plan.checkVisuals(tl, script) : [];
   // every shot's subject (who the line is about) must be on screen and featured (plan.mjs checkSubjects)
   const subjects = typeof plan.checkSubjects === "function" ? plan.checkSubjects(tl) : [];
-  fs.writeFileSync(path.join(out, "visual-check.json"), JSON.stringify({ missing, subjects, report: tl.visualReport ?? null }, null, 1));
+  // every line's items from the production list on screen (plan.mjs checkProduction; planVideo re-planned misses already)
+  const production = typeof plan.checkProduction === "function" ? plan.checkProduction(tl) : [];
+  fs.writeFileSync(path.join(out, "visual-check.json"), JSON.stringify({ missing, subjects, production, report: tl.visualReport ?? null, direction: tl.direction ?? null }, null, 1));
   if (missing.length) throw new Error(`VISUAL_CHECK: ${missing.length} line(s) show nothing for a spoken noun: ${missing.slice(0, 5).map((m) => `#${m.line} ${(m.missing ?? []).join("/")}`).join(", ")} (see visual-check.json)`);
   if (subjects.length) throw new Error(`SUBJECT_CHECK: ${subjects.length} shot(s) don't show who the line is about: ${subjects.slice(0, 5).map((m) => `shot ${m.shot} (#${m.line}) ${m.problem}`).join(", ")} (see visual-check.json)`);
+  if (production.length) throw new Error(`PRODUCTION_CHECK: ${production.length} line(s) miss an item the story needs: ${production.slice(0, 5).map((m) => `#${m.line} ${m.missing.map((x) => x.name).join("/")}`).join(", ")} (see visual-check.json)`);
+  if (problems.length) throw new Error(`PLAN_FAILED: ${problems.slice(0, 5).join("; ")}`);
+  // no builder in the local run: its need markers go (a string shot.world would read as an EPIC world to the engine)
+  for (const s of tl.shots) { if (typeof s.world === "string") delete s.world; if (s.need) delete s.need; }
   const tlPath = path.join(out, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl, null, 1));
   const length = secs ? Math.min(Number(secs), tl.duration) : tl.duration;
@@ -132,12 +158,21 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
 }
 
 if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
-  const { opt } = parseArgs(process.argv.slice(2), ["out", "workers", "mode", "secs", "idea", "voice", "music"]);
+  const { opt } = parseArgs(process.argv.slice(2), ["out", "workers", "mode", "secs", "idea", "voice", "music", "director", "script"]);
+  if (opt.script) {
+    const f = JSON.parse(fs.readFileSync(path.resolve(opt.script), "utf8"));
+    try {
+      const r = await makeVideo({ script: { title: f.title, lines: f.lines }, idea: f.idea ?? {}, out: opt.out ?? path.join(ENGINE, "out", path.basename(opt.script, ".json")), workers: Number(opt.workers ?? 2), mode: opt.mode ?? "pages", secs: opt.secs ? Number(opt.secs) : null, silent: !!opt.silent, stubs: opt.stubs ?? null, voice: opt.voice ?? "free", paid: !!opt.paid, renderVideo: !opt["no-render"], music: opt.music ?? "A", sfx: !opt["no-sfx"], director: opt.director ?? "mock" });
+      console.log("timing (s):", JSON.stringify(r.timing));
+      console.log(r.files.final ? `final: ${r.files.final}` : `ready for RunPod: ${r.files.timeline}`);
+    } catch (e) { console.error(e.stack ?? e.message); process.exit(1); }
+    process.exit(0);
+  }
   if (!opt.example) { console.error("usage: node make.mjs --example [--idea 0] [--out out/<name>] [--workers N] [--secs N] [--silent] [--stubs] [--music A-E|loop.wav] [--no-sfx]"); process.exit(2); }
   const { EXAMPLE_SCRIPT, EXAMPLE_IDEAS } = await import(pathToFileURL(EXAMPLES).href);
   const idea = EXAMPLE_IDEAS[Number(opt.idea ?? 0)];
   try {
-    const r = await makeVideo({ script: EXAMPLE_SCRIPT, idea, out: opt.out ?? path.join(ENGINE, "out", "example"), workers: Number(opt.workers ?? 2), mode: opt.mode ?? "pages", secs: opt.secs ? Number(opt.secs) : null, silent: !!opt.silent, stubs: opt.stubs ?? null, voice: opt.voice ?? "free", paid: !!opt.paid, renderVideo: !opt["no-render"], music: opt.music ?? "A", sfx: !opt["no-sfx"] });
+    const r = await makeVideo({ script: EXAMPLE_SCRIPT, idea, out: opt.out ?? path.join(ENGINE, "out", "example"), workers: Number(opt.workers ?? 2), mode: opt.mode ?? "pages", secs: opt.secs ? Number(opt.secs) : null, silent: !!opt.silent, stubs: opt.stubs ?? null, voice: opt.voice ?? "free", paid: !!opt.paid, renderVideo: !opt["no-render"], music: opt.music ?? "A", sfx: !opt["no-sfx"], director: opt.director ?? "mock" });
     console.log("timing (s):", JSON.stringify(r.timing));
     console.log(r.files.final ? `final: ${r.files.final}` : `ready for RunPod: ${r.files.timeline}`);
   } catch (e) { console.error(e.stack ?? e.message); process.exit(1); }

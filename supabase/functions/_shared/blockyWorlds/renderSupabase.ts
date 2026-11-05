@@ -107,6 +107,32 @@ export function runpodApi(key = RENDER_CONFIG.runpodKey, endpoint = RENDER_CONFI
   };
 }
 
+/**
+ * The capability gap log (scripts/blockyWorlds/engine/lib/gaps.js; table from
+ * supabase/migrations/20261204100000_blocky_worlds_capability_gaps.sql): the prepare job's "planned" event carries the
+ * story director's gaps (the worker has no Supabase key). Inserted once per run (a retried event adds nothing).
+ * Bookkeeping: NEVER throws, so a missing table (the migration is not applied yet) or any error never breaks a run.
+ */
+export async function logCapabilityGaps(admin: any, runId: string, ev: any): Promise<number> {
+  try {
+    const gaps = Array.isArray(ev?.gaps) ? ev.gaps.slice(0, 200) : [];
+    if (!runId || !gaps.length) return 0;
+    const table = "blocky_worlds_capability_gaps";
+    const { count, error: e1 } = await admin.from(table).select("id", { count: "exact", head: true }).eq("run_id", runId);
+    if (e1) { console.log("[blocky-worlds-render] gap log skipped:", e1.message); return 0; }
+    if ((count ?? 0) > 0) return 0;
+    const s = (v: any, n: number) => String(v ?? "").slice(0, n);
+    const source = ev?.director?.provider === "anthropic" ? "anthropic" : "mock";
+    const rows = gaps.map((g: any) => ({
+      capability: s(g.capability, 60) || "unknown", detail: s(g.detail, 120), item: s(g.item, 60), item_kind: s(g.itemKind, 20), name: s(g.name, 80),
+      line: Number.isInteger(g.line) ? g.line : null, line_text: s(g.lineText, 300), story_id: runId, run_id: runId, source, title: null,
+    }));
+    const { error } = await admin.from(table).insert(rows);
+    if (error) { console.log("[blocky-worlds-render] gap log skipped:", error.message); return 0; }
+    return rows.length;
+  } catch (e: any) { console.log("[blocky-worlds-render] gap log skipped:", e?.message ?? e); return 0; }
+}
+
 export function renderRuntime(admin: any) {
   return makeRuntime({ db: supabaseDb(admin), storage: supabaseStorage(admin), runpod: runpodApi(), secret: RENDER_CONFIG.callbackSecret, callbackUrl: RENDER_CONFIG.callbackUrl });
 }

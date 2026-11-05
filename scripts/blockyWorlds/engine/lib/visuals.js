@@ -407,11 +407,14 @@ const shotMarkers = (s) => [...(s.markers ?? []), ...(s.marker && !(s.markers ??
 export function covers(key, s, cast = {}) {
   const actors = s.actors ?? [];
   const objs = (s.objects ?? []).map(objName);
-  const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0);
+  // EPIC crowds are people too (a crowd of townsfolk / soldiers / knights: lib/direction.js)
+  const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0) + (s.crowds ?? []).reduce((n, c) => n + Math.min(10, c.count ?? 0), 0);
   const insertText = s.insert?.text ?? "";
   const marks = shotMarkers(s);
-  // things built for this video (lib/builder): a built object's name + aliases, a built world's (shot.worldAliases)
-  const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? [])];
+  // things built for this video (lib/builder): a built object's name + aliases, a built world's (shot.worldAliases);
+  // EPIC things on screen (lib/direction.js): a giant's / a crowd's names (shot.giants[].aliases, shot.crowds[].aliases)
+  const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? []),
+    ...(s.giants ?? []).flatMap((g) => g.aliases ?? []), ...(s.crowds ?? []).flatMap((c) => c.aliases ?? [])];
   const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text)) || built.some((b) => wordIn(w, b));
   if (key.kind === "person") return actors.some((a) => a.id === key.id || a.hold === key.id) || textual(key.label);
   if (key.kind === "monster") return !!s.monsterState || textual(key.label);
@@ -439,6 +442,9 @@ export function covers(key, s, cast = {}) {
     if ((s.objects ?? []).some((o) => objName(o) === sh.objects[0] && o.state === sh.objectState)) return true;
   }
   if (sh.poses && actors.some((a) => sh.poses.includes(a.pose))) return true;
+  // an EPIC giant / crowd doing the action (a crowd marching is walking, a giant roaring yells)
+  const EPIC_POSE = { walk: "walk", march: "walk", run: "run", charge: "run", flee: "run", cheer: "cheer", wave: "wave", roar: "yell", swim: "swim", stomp: "stomp", fight: "fight" };
+  if (sh.poses && [...(s.giants ?? []), ...(s.crowds ?? [])].some((g) => sh.poses.includes(EPIC_POSE[g.action]))) return true;
   if (sh.exprs && actors.some((a) => sh.exprs.includes(a.expr))) return true;
   if (sh.holds && actors.some((a) => a.hold && (sh.holds.includes(a.hold) || (heldKind(a.hold) && sh.holds.some((h) => heldKind(h) === heldKind(a.hold)))))) return true;
   if (sh.anyHold && actors.some((a) => a.hold)) return true;
@@ -476,6 +482,9 @@ export function describeShot(s, cast = {}) {
     bits.push(`${who}${role} ${a.pose}${hold}/${a.expr}`);
   }
   if (s.monsterState) bits.push(`Listener ${s.monsterState.state}@${s.monsterState.spot}`.replace("Listener", "monster"));
+  for (const g of s.giants ?? []) bits.push(`giant ${g.id} ${g.action ?? "idle"}${g.role ? ` (${g.role})` : ""}`);
+  for (const c of s.crowds ?? []) bits.push(`${c.count} ${c.kind} ${c.action ?? "stand"}`);
+  if (s.beat) bits.push(`beat ${s.beat.type}`);
   for (const m of shotMarkers(s)) bits.push(`${m.kind} "${m.text}"${m.on && m.on !== "all" ? ` on ${cast[m.on]?.name ?? m.on}` : ""}`);
   if (s.insert) bits.push(`${s.insert.kind} "${s.insert.text}"`);
   const focus = s.focus && !["group", "object"].includes(s.focus) ? ` [on ${s.focus === "monster" ? "monster" : cast[s.focus]?.name ?? s.focus}]` : "";
