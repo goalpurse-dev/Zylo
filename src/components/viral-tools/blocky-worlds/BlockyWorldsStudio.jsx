@@ -74,7 +74,7 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
   const shown = peek ?? flow.picked;
   const preview = useMemo(() => {
     if (shown && !flow.draft) return { lines: [shown.opener, shown.teaser], label: shown.title };
-    if (flow.draft) return { lines: flow.draft.lines.map((l) => l.text), label: "Your script", meta: `Read by ${flow.access?.narrator?.name ?? "the narrator"} · about ${Math.round(flow.draft.check?.seconds ?? flow.lengthSec)} s` };
+    if (flow.draft) return { lines: (flow.draft.lines ?? []).map((l) => l?.text ?? ""), label: "Your script", meta: `Read by ${flow.access?.narrator?.name ?? "the narrator"} · about ${Math.round(flow.draft.check?.seconds ?? flow.lengthSec)} s` };
     return { lines: null, label: "Preview", meta: "Narrated, captioned and built in blocks. Vertical, ready to post." };
   }, [shown, flow.draft, flow.access, flow.lengthSec]);
 

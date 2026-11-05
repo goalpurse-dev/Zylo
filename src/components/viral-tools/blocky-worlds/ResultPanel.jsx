@@ -2,7 +2,7 @@ import { AlertTriangle, Check, Copy, Download, Music2, RotateCcw, ThumbsDown, Th
 import { useEffect, useRef, useState } from "react";
 import { FOCUS, cx } from "../../ui/zyvo";
 import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsApi";
-import LivePreview, { Clip } from "./LivePreview";
+import LivePreview, { Clip, PreviewBoundary } from "./LivePreview";
 import { ActionButton, CreditMark } from "./StepShell";
 import { CLIPS, useReducedMotion } from "./clips";
 import "../../onboarding/onboarding.css";
@@ -18,7 +18,9 @@ export default function ResultPanel({ run, recent, onOpen, onEvent, preview, bus
   return (
     <div className="relative flex h-full flex-col gap-4 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0E1012] p-5">
       <div key={run ? run.id : "preview"} className="bw-step-in">
-        {run ? <RunView run={run} onEvent={onEvent} retry={{ busy, price: prices?.[run.lengthSec] ?? run.credits, failures, onRetry, onRewriteRetry }} /> : <LivePreview {...preview} />}
+        <PreviewBoundary resetKey={run ? `${run.id}:${run.status}` : "preview"}>
+          {run ? <RunView run={run} onEvent={onEvent} retry={{ busy, price: prices?.[run.lengthSec] ?? run.credits, failures, onRetry, onRewriteRetry }} /> : <LivePreview {...preview} />}
+        </PreviewBoundary>
       </div>
       {recent.length > 0 && (
         <div className="relative">

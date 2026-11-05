@@ -1,7 +1,7 @@
 // The alive parts of the page: our own looping clips of the locked look (public/blocky-worlds/clips, made with
 // scripts/blockyWorlds/look/clips.mjs) and the caption player that "plays" a story over them at the narrator's pace,
 // a few words at a time, the way the finished video shows them. Asked for less motion: one still and the first line.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { EXAMPLE_IDEAS } from "../../../../supabase/functions/_shared/blockyWorlds/examples.js";
 import { cx } from "../../ui/zyvo";
 import { CLIPS, clipPoster, clipSrc, useReducedMotion } from "./clips";
@@ -12,6 +12,27 @@ const SAMPLES = EXAMPLE_IDEAS.slice(0, 4).map((i) => [i.opener, i.teaser]);
 const MS_PER_WORD = 230; // about the narrator's 260 words a minute
 const CLIP_MS = 5200;
 
+
+/**
+ * Keeps a bug in the preview side (captions, clips, the run view) inside that side: it shows a quiet placeholder
+ * instead of blanking the whole page, and tries again when what it shows changes (resetKey).
+ */
+export class PreviewBoundary extends Component {
+  constructor(props) { super(props); this.state = { failed: false, key: props.resetKey }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  static getDerivedStateFromProps(props, state) {
+    return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null;
+  }
+  componentDidCatch(error) { console.error("Blocky Worlds preview:", error); }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="mx-auto flex aspect-[9/16] w-full max-w-[330px] items-center justify-center rounded-[30px] border border-white/10 bg-black/60 p-6 text-center text-sm font-semibold text-white/55">
+        The preview hiccuped. Your script and buttons still work.
+      </div>
+    );
+  }
+}
 
 /** A muted looping clip that only plays while `playing` (so a phone plays one at a time). */
 export function Clip({ clip, playing = true, className = "" }) {
@@ -29,10 +50,17 @@ export function Clip({ clip, playing = true, className = "" }) {
   );
 }
 
+/** Whatever the preview is handed (an array, one string, null, a script still loading) as a list of text lines. */
+function linesOf(lines) {
+  if (typeof lines === "string") return [lines];
+  if (!Array.isArray(lines)) return [];
+  return lines.map((l) => (typeof l === "string" ? l : l?.text ?? "")).filter((l) => String(l).trim());
+}
+
 /** The story's words in caption-sized chunks (at most three words, a sentence end closes a chunk). */
 function chunksOf(lines) {
   const out = [];
-  for (const line of lines) {
+  for (const line of linesOf(lines)) {
     let cur = [];
     for (const w of String(line).split(/\s+/).filter(Boolean)) {
       cur.push(w);
@@ -48,16 +76,19 @@ function Captions({ lines, still }) {
   const chunks = useMemo(() => chunksOf(lines), [lines]);
   const [at, setAt] = useState(0);
   useEffect(() => { setAt(0); }, [chunks]);
+  // `at` can still point past the end for one render when a shorter story arrives: always clamp it
+  const i = Math.min(Math.max(at, 0), Math.max(chunks.length - 1, 0));
   useEffect(() => {
     if (still || !chunks.length) return undefined;
-    const last = at >= chunks.length - 1;
-    const t = setTimeout(() => setAt(last ? 0 : at + 1), chunks[at].length * MS_PER_WORD + (last ? 1400 : 60));
+    const last = i >= chunks.length - 1;
+    const t = setTimeout(() => setAt(last ? 0 : i + 1), (chunks[i]?.length ?? 1) * MS_PER_WORD + (last ? 1400 : 60));
     return () => clearTimeout(t);
-  }, [at, chunks, still]);
+  }, [i, chunks, still]);
   if (!chunks.length) return null;
-  const words = still ? String(lines[0] ?? "").split(/\s+/) : chunks[Math.min(at, chunks.length - 1)];
+  const words = (still ? String(linesOf(lines)[0] ?? "").split(/\s+/).filter(Boolean) : chunks[i]) ?? [];
+  if (!words.length) return null;
   return (
-    <p key={`${at}-${words.join(" ")}`} className="bw-caption absolute inset-x-3 top-[62%] text-center text-[30px] leading-[1.05]" aria-hidden="true">
+    <p key={`${i}-${words.join(" ")}`} className="bw-caption absolute inset-x-3 top-[62%] text-center text-[30px] leading-[1.05]" aria-hidden="true">
       {words.map((w, i) => <span key={i} className="bw-word mx-[0.2em]" style={{ animationDelay: `${i * 70}ms` }}>{w}</span>)}
     </p>
   );
@@ -78,7 +109,8 @@ export default function LivePreview({ lines = null, label = null, meta = null })
   }, [still]);
   // with no story of its own, the next sample comes up with every second clip
   useEffect(() => { if (!lines && clip % 2 === 0) setSample((s) => (s + 1) % SAMPLES.length); }, [clip, lines]);
-  const playing = lines?.length ? lines : SAMPLES[sample];
+  const own = linesOf(lines);
+  const playing = own.length ? own : SAMPLES[sample % SAMPLES.length] ?? [];
 
   return (
     <div className="mx-auto flex w-full max-w-[330px] flex-col items-center gap-3">
