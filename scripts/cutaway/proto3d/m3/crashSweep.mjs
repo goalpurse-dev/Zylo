@@ -159,6 +159,18 @@ items.forEach((it, i) => { if (it.variant === "as saved") renderSet.add(i); });
 for (const o of ALL) for (const p of (SHARD[1] > 1 ? [plans[k++ % plans.length]] : [plans[k++ % plans.length], plans[k++ % plans.length]])) { const i = items.findIndex((x) => x.plan === p.name && x.variant === o.name); if (i >= 0) renderSet.add(i); }
 items.forEach((it, i) => { if (it.variant.startsWith("combo") && renderSet.size < Math.ceil(RENDERS / SHARD[1]) + plans.length + ALL.length * (SHARD[1] > 1 ? 1 : 2)) renderSet.add(i); });
 
+// --quick (before every paid run, about 10 minutes with --jobs 4): every saved plan as saved, each option once on a
+// plan of its own, a few combinations; all rendered. The full sweep (every option on every plan) runs overnight or after
+// big changes (the owner's rule of 2026-11-05)
+if (a.quick && typeof a.combo !== "string") {
+  const keep = new Set(); let j = SHARD[0];
+  items.forEach((it, i) => { if (it.variant === "as saved") keep.add(i); });
+  for (const o of ALL) { const p = plans[j++ % plans.length]; const i = items.findIndex((x) => x.plan === p.name && x.variant === o.name); if (i >= 0) keep.add(i); }
+  const combos = items.map((it, i) => (it.variant.startsWith("combo") ? i : -1)).filter((i) => i >= 0);
+  for (let c = 0; c < Math.ceil(Number(a["quick-combos"] ?? 20) / SHARD[1]) && combos.length; c++) keep.add(combos[(c * 7) % combos.length]);
+  const kept = items.filter((_, i) => keep.has(i)); items.length = 0; items.push(...kept);
+  renderSet.clear(); items.forEach((_, i) => renderSet.add(i));
+}
 if (a["no-render"]) renderSet.clear();
 const t0 = Date.now();
 items.forEach((it, i) => {
