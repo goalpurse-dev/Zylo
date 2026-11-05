@@ -434,7 +434,7 @@ test("worker: prepare stops on a visual miss before the timeline is uploaded; th
 });
 
 test("the migration matches the code: roles, states, the once-per-try key, the ledger ref", () => {
-  const sql = fs.readFileSync(new URL("../supabase/migrations/20261202100000_blocky_worlds_render.sql", import.meta.url), "utf8");
+  const sql = fs.readFileSync(new URL("../supabase/migrations/20261202200000_blocky_worlds_render.sql", import.meta.url), "utf8");
   assert.match(sql, /NOT APPLIED/);
   assert.match(sql, new RegExp(`role IN \\(${ROLES.map((r) => `'${r}'`).join(", ")}\\)`));
   assert.match(sql, /state IN \('sent', 'running', 'done', 'failed'\)/);

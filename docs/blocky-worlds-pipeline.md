@@ -47,7 +47,7 @@ The mix needs only the voice, the music and the cues, so it is made in the prepa
 | Callbacks (worker events, RunPod webhook) + the sweeper (pg_cron every minute) | `supabase/functions/blocky-worlds-render/index.ts` |
 | Start | `supabase/functions/blocky-worlds-api/index.ts` (start -> `runtime.start`) |
 | Worker roles `prepare`, `chunk`, `finish` (+ the old staging `ranges`/`whole`) | `scripts/blockyWorlds/engine/runpod/worker.mjs`, `handler.py` |
-| Tables: `blocky_worlds_jobs`, run columns `render`, `planned_at`, `voice_ready`, ledger `ref`, the cron | `supabase/migrations/20261202100000_blocky_worlds_render.sql` (NOT applied) |
+| Tables: `blocky_worlds_jobs`, run columns `render`, `planned_at`, `voice_ready`, ledger `ref`, the cron | `supabase/migrations/20261202200000_blocky_worlds_render.sql` (NOT applied) |
 | Tests (no network) / the free end-to-end dry run | `tests/blockyWorldsRender.test.mjs` / `scripts/blockyWorlds/engine/dev/pipelineDryRun.mjs` |
 
 ## How it stays correct
