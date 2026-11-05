@@ -117,8 +117,40 @@ export function rageHookV2(R) {
   s.loop_back = 0.08;   // story.js: the creator back in the yell, the end chips gone
   return { raw: s, censored: swear >= 0 ? { ...s, bleep: { line: 0, word: swear, show: R.yell.show } } : null };
 }
+/** "My first AI video vs my latest" (owner, 2026-11-05): the creator, embarrassed, over the real first clip on a phone;
+ *  their answer; a 1 s hold (a rising tone, a countdown tag, silence just before); the real latest clip cuts in full
+ *  screen on a bass hit; the name and a share reason. Both clips are the owner's own creations, dated by month only. */
+export function firstVsLatest(R) {
+  const [first, latest] = R.clips;
+  const answerWords = R.answer.text.split(/\s+/).length;
+  const lines = [
+    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: "sad", pose: R.yell.pose ?? "shrug", shot: "rage_hook", role: "yell", visual: { kind: "none" } },
+    { who: "creator", text: R.answer.text, key: [R.answer.key], expr: "smug", pose: "pointUp", shot: "creator_close", role: "answer", voice_tags: "[proud] [confident]",
+      visual: { kind: "tag", text: R.countdown ?? "3 · 2 · 1" }, cues: [{ word: answerWords - 1, event: "countdown", sfx: "riser:1.0" }] },
+  ];
+  const clip = (c, after, extra) => ({ name: c.name, file: c.file, in: c.in, out: c.out, hq_dir: c.hq_dir, hq_ext: c.hq_ext ?? "png", stamp: c.stamp, duck_db: 7, post: 0.1, after_line: after, ...extra });
+  const s = assembleStory(R.key, {
+    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: "none", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
+    // the latest clip's first frame is the bass drop; the 0.4 s before it go silent (the freeze)
+    energy: { reveal_lines: [], reveal_clips: [latest.name], from_frame0: true, slam: false, scratch: false },
+    recipe: { angle: "FL", angle_name: "First vs latest", hook_type: "first_vs_latest", length_bucket: R.length_bucket ?? "15-20", famous_name: false, end_trigger: R.end.trigger ?? "repost" },
+    lines,
+    clips: [clip(first, 0, { frame: "phone", enter: "grow", pre: 0.3 }), clip(latest, 1, { fullscreen: true, enter: "cut", pre: 1.1 })],
+    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.cta_word, event: "cta", sfx: "pop" }] }, cta: { id: `${R.end.trigger ?? "repost"}_${R.key}`, kind: R.end.trigger ?? "repost", chip: R.end.chip } },
+    caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
+  }, { this: { hq_dir: latest.hq_dir } }, R.creation.id);
+  s.headline = { text: R.yell.text, hidden: true };
+  for (const l of s.lines) if (l.visual?.kind === "none") l.cues = l.cues.filter((x) => !x.event.startsWith("show"));
+  s.lines.at(-1).visual = { kind: "none" };
+  Object.assign(s, { lufs_target: -15, squeeze: 0.14, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook" });
+  // the camera pulls back to both of them as the first clip's phone appears (a close-up puts the phone over the face)
+  s.shots.unshift({ to: "two_shot", at: "yell.end+0.02", dur: 0.4, kind: "pull", hold: 0.5 });
+  s.lines.at(-1).shot = "end_two";
+  return { raw: s, censored: null };
+}
+
 /** A recipe's scripts, by its structure. */
-export const rageScripts = (R) => (R.structure === "v2" ? rageHookV2(R) : rageHookScript(R));
+export const rageScripts = (R) => (R.structure === "v2" ? rageHookV2(R) : R.structure === "first_vs_latest" ? firstVsLatest(R) : rageHookScript(R));
 export const RECIPES_DIR = path.join(HERE, "recipes");
 /** The one-click presets (Studio tab): the v2 recipes. */
 export function rageRecipes(dir = RECIPES_DIR) {
@@ -136,9 +168,9 @@ export function rageTakes(R, S) {
   const shout = (text) => text.toUpperCase().replace(/[.!?…]+$/, "") + "!!!";
   const creator = { voice: S.voices.eleven.creator.id, model: "eleven_v3", stability: 0 };
   const zee = { voice: S.voices.eleven.zee.id, model: null, stability: 0.6, style: 0.2, speed: 1.05 };
-  const tags = (l) => (l.role === "how" ? REACT_TAGS : l.role === "punch" ? R.punchline?.tags ?? REACT_TAGS : EXCITED_TAGS);
-  // a pain hook is said, not yelled: fed up and a little embarrassed, as written
-  const first = R.yell.mood === "pain" ? `${PAIN_TAGS} ${S.lines[0].text}` : `${YELL_TAGS} ${shout(S.lines[0].text)}`;
+  const tags = (l) => l.voice_tags ?? (l.role === "how" ? REACT_TAGS : l.role === "punch" ? R.punchline?.tags ?? REACT_TAGS : EXCITED_TAGS);
+  // a pain hook is said, not yelled: fed up and a little embarrassed, as written; a recipe may set its own tags
+  const first = R.yell.tags ? `${R.yell.tags} ${S.lines[0].text}` : R.yell.mood === "pain" ? `${PAIN_TAGS} ${S.lines[0].text}` : `${YELL_TAGS} ${shout(S.lines[0].text)}`;
   return [
     ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: first, ...creator })),
     ...S.lines.slice(1).map((l, i) => {

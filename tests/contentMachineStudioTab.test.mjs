@@ -451,3 +451,16 @@ test("a hidden headline (rage / pain hooks) is never checked and follows line 1"
   assert.equal(out.headline.hidden, true);
   assert.throws(() => applyScriptEdits({ ...s, headline: { text: "h" } }, { headline: "y".repeat(90) }), /over 80/, "a shown headline is still checked");
 });
+
+test("first vs latest: the first clip on a phone, the answer, a 1 s riser, the latest clip full screen on a bass hit", async () => {
+  const { rageScripts, rageTakes, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const R = loadRecipe("first_vs_latest"), { raw } = rageScripts(R);
+  assert.deepEqual(raw.lines.map((l) => l.who), ["creator", "creator", "zee"]);
+  assert.equal(raw.clips[0].frame, "phone");
+  assert.equal(raw.clips[1].fullscreen, true);
+  assert.deepEqual(raw.energy.reveal_clips, ["latest"]);
+  assert.ok(raw.lines[1].cues.some((c) => c.sfx === "riser:1.0"));
+  assert.match(raw.lines[2].text, /editing by hand/);
+  assert.ok(rageTakes(R, raw)[0].text.startsWith("[embarrassed]"));
+  assert.ok(!/\d/.test(raw.lines.map((l) => l.text).join(" ")), "no numbers spoken");
+});
