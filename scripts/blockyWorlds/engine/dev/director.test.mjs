@@ -46,7 +46,9 @@ test("registry: supports() is per parameter", () => {
   assert.equal(frogs.ok, false);
   assert.equal(supports("fx.fire", {}).status, "planned");
   assert.equal(supports("giant", { species: "moose", behaviour: ["walk"] }).ok, true); // any species: the generic giant
-  assert.deepEqual(supports("giant", { behaviour: "sleep" }).unsupported, ["behaviour=sleep"]);
+  assert.deepEqual(supports("giant", { behaviour: "sleep" }).unsupported, []); // GAPS 2026-11-05: giants sleep now
+  assert.deepEqual(supports("giant", { behaviour: "teleport" }).unsupported, ["behaviour=teleport"]);
+  assert.deepEqual(supports("character.action", { action: ["hug", "climb", "push", "ride"] }).unsupported, []);
   assert.equal(supports("nope").known, false);
 });
 

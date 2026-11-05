@@ -94,11 +94,15 @@ export function frameShot(type, ctx) {
       // the near head's angle off the view axis: its centre at 0.6 of the half-width (9:16 is narrow: at 0.8 the
       // person was cut off the edge; at 0.6 their head + shoulder fill one lower corner, clear of the focus' face)
       const want = Math.atan(0.6 * Math.tan(fov * DEG / 2) * aspect);
-      const B = tall ? 3.2 : 2.1, C = new THREE.Vector3();
-      for (let L = 0.15; L < 2.5; L += 0.03) {
+      const B = Math.max(tall ? 3.2 : 2.1, (Number(ctx.otherRadius) || 0) + 1.3), C = new THREE.Vector3();
+      if ((Number(ctx.otherRadius) || 0) > 0.6) camY = o.y + Math.min(oh * 0.95, 2.6);
+      // a wide "other" (a furry monster): its near EDGE, not its centre, goes to the frame edge (it filled the frame)
+      const OR = Number(ctx.otherRadius) || 0;
+      for (let L = 0.15; L < (OR > 0 ? 7 : 2.5); L += 0.03) {
         C.copy(o).addScaledVector(back, B).addScaledVector(lat, L); C.y = 0;
         const toAim = new THREE.Vector3(aim.x - C.x, 0, aim.z - C.z).normalize(), toNear = new THREE.Vector3(o.x - C.x, 0, o.z - C.z).normalize();
-        if (Math.acos(Math.min(1, toAim.dot(toNear))) >= want) break;
+        const edge = OR > 0 ? Math.atan2(OR, Math.hypot(o.x - C.x, o.z - C.z)) : 0;
+        if (Math.acos(Math.min(1, toAim.dot(toNear))) - edge * 0.6 >= want) break;
       }
       side = new THREE.Vector3(C.x - aim.x, 0, C.z - aim.z);
       dist = Math.max(0.8, side.length()); side.normalize();
@@ -145,6 +149,26 @@ export function frameShot(type, ctx) {
       if (bestB) p.copy(bestB);
     }
   }
+  // 2026-11-05 (GAPS): a set thing within ~2.5 m of the lens between it and the subject (a lamp post filling a wide):
+  // the camera moves in front of it (cached per shot), the lens widened to keep the framing
+  if (set?.root && type !== "insert" && type !== "closeup") {
+    const k2 = `near|${key}`;
+    let d2 = _ray.get(k2);
+    if (d2 === undefined) {
+      // a small fan of rays (the middle, left, right, low of the view near the lens): a thin pole beside the axis counts
+      const from = new THREE.Vector3(aim.x, camY, aim.z), L = p.distanceTo(from), ax = new THREE.Vector3().subVectors(p, from).normalize();
+      const side = new THREE.Vector3(ax.z, 0, -ax.x).normalize(), aimTo = (q) => { const dv = new THREE.Vector3().subVectors(q, from); const l = dv.length(); return [dv.normalize(), l]; };
+      let best = null;
+      for (const off of [[0, 0], [0.45, 0], [-0.45, 0], [0, -0.5], [0.3, 0.4], [-0.3, 0.4]]) {
+        const q = p.clone().addScaledVector(side, off[0] * Math.max(1, L * 0.12)).add(new THREE.Vector3(0, off[1] * Math.max(1, L * 0.12), 0));
+        const [dir, l] = aimTo(q);
+        const hit = new THREE.Raycaster(from, dir, 0.3, l).intersectObject(set.root, true).find((h) => h.object.visible !== false && h.object.isMesh && h.distance > l - 2.5 && h.distance > l * 0.45);
+        if (hit) { const d = Math.max(L * 0.45, hit.distance * (L / l) - 0.35); if (best == null || d < best) best = d; }
+      }
+      d2 = best; _ray.set(k2, d2);
+    }
+    if (d2 != null && d2 < dist) { const from = new THREE.Vector3(aim.x, camY, aim.z); const dir = new THREE.Vector3().subVectors(p, from).normalize(); p.copy(from).addScaledVector(dir, d2); dist = Math.min(dist, d2 * Math.hypot(dir.x, dir.z) || d2); }
+  }
   if (dist < want) fov = Math.min(82, 2 * Math.atan(Math.tan(fov * DEG / 2) * want / Math.max(dist, 0.3)) / DEG);
 
   // the move: push-in (3-6 %) or lateral drift, eased over the shot
@@ -158,6 +182,7 @@ export function frameShot(type, ctx) {
     p.addScaledVector(lat, (mode === 1 ? -1 : 1) * (k - 0.5) * amount * 1.2 * toAim.length());
   }
 
+  if (set?.bounds?.length && !inside(set.bounds, p)) { let bestB = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; bestB = q; } } if (bestB) p.copy(bestB); }
   camera.position.copy(p);
   camera.fov = fov; camera.far = Math.max(camera.far, 3000); camera.near = Math.min(camera.near, 0.1);
   camera.updateProjectionMatrix();

@@ -8,6 +8,7 @@
 // Never throws on a bad blueprint: what is valid is built, the rest is listed in userData.problems.
 // Shared materials and geometries (kitCommon caches), bevelled boxes, the people kit's procedural fabric, Lilita labels.
 import * as THREE from "three";
+import { bodyMotion, MOTION_STATES } from "./motion.js";
 import { cachedGeo, cachedMat, solid, fabric, boxGeo, canvasTex, loadKitFonts, kitFont, fitText, rng, hashSeed } from "./kitCommon.js";
 import { validateBlueprint } from "../../lib/builder/spec.js";
 
@@ -171,6 +172,7 @@ export function buildBlueprint(raw) {
 
 /** per frame (deterministic in t): the blueprint's animations. state "closed": "open" anims stay at rest. */
 export function animateBlueprint(obj, t, state = null) {
+  if (obj && MOTION_STATES.includes(state)) bodyMotion(obj, state, Math.max(0, Number(t) || 0)); // 2026-11-05 (GAPS): the shared body motions
   const list = obj?.userData?.anims;
   if (!list?.length) return;
   const T = Math.max(0, Number(t) || 0);

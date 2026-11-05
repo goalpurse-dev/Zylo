@@ -2,7 +2,8 @@
 // mock director and the AI prompt all read these lists, so a word means the same thing everywhere.
 
 /** page/kit/people.js POSES / EXPRS (kept in step by dev/director.test.mjs) */
-export const POSES_N = Object.freeze(["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow", "cover_mouth"]);
+export const POSES_N = Object.freeze(["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow", "cover_mouth",
+  "hug", "climb", "push", "eat", "fall", "jump", "ride", "hide", "throw", "fly", "swim", "build", "dig", "dance", "kick", "fight", "drive"]);
 export const EXPRS_N = Object.freeze(["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"]);
 
 /** the production list's closed vocabularies (the AI schema's enums) */

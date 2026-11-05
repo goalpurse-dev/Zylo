@@ -59,9 +59,21 @@ const CROWD_WORD = { knights: "knight", knight: "knight", soldiers: "soldier", s
 const SOLDIERY = /\b(army|armies|soldiers?|troops?|guards?|warriors?|legion|regiment)\b/;
 
 // verbs -> what a giant / a crowd does (first match per mention wins; "stopped walking" is idle)
+// 2026-11-05 (GAPS): sleep, reveal, reach, lurk, carry, eat, fly, climb, flee, howl, dig are giant actions now
 const GIANT_VERBS = [
-  [/^(stopped|stops|stop|halted|froze|stood|stands|waited|waits|slept|sleeps|rested|sat|did)$/, "idle"],
-  [/^(roar\w*|howl\w*|growl\w*|bellow\w*|snarl\w*)$/, "roar"],
+  [/^(slept|sleeps|sleep|sleeping|asleep|snored|snores|snoring|dozed|dozes|napped|naps|nap)$/, "sleep"],
+  [/^(woke|wakes|wake|awoke|awakes|rose|rises|appeared|appears|emerged|emerges|revealed|surfaced|surfaces|loomed|looms)$/, "reveal"],
+  [/^(stopped|stops|stop|halted|froze|stood|stands|rested|sat|did)$/, "idle"],
+  [/^(lurk\w*|waited|waits|watched|watches|watching|hid|hides|hiding|peeked|peeks|crouched|crouches|stalked|stalks)$/, "lurk"],
+  [/^(reached|reaches|reach|reaching|stretched|stretches)$/, "reach"],
+  [/^(carried|carries|carry|carrying|towed|tows|tow|towing|pulled|pulls|pull|hauled|hauls|held|holds|lifted|lifts)$/, "carry"],
+  [/^(ate|eats|eat|eating|swallowed|swallows|gobbled|gobbles|devoured|devours|chewed|chews|munched|munches|feeds|fed)$/, "eat"],
+  [/^(flew|flies|fly|flying|soared|soars|swooped|swoops|flapped|flaps|hovered|hovers|hover|glided|glides)$/, "fly"],
+  [/^(climbed|climbs|climb|climbing|scaled)$/, "climb"],
+  [/^(fled|flees|flee|fleeing|escaped|escapes|retreated)$/, "flee"],
+  [/^(dug|digs|dig|digging|burrowed|burrows)$/, "dig"],
+  [/^(howl\w*)$/, "howl"],
+  [/^(roar\w*|growl\w*|bellow\w*|snarl\w*)$/, "roar"],
   [/^(stomp\w*|smash\w*|crush\w*|trampl\w*)$/, "stomp"],
   [/^(fell|falls|fall|falling|tumbled|toppled|sank|sinks)$/, "fall"],
   [/^(swam|swim|swims|swimming|dove|dived|sailed|paddled)$/, "swim"],
@@ -222,7 +234,7 @@ export function readDirection(direction, { script, idea = {}, mood = "horror", e
     const call = calls.get(c.id);
     if (call?.route !== "epic" || call.capability !== "giant" || worldSpecies.has(c.species)) continue;
     const kind = /^(human|man|woman|person|people|giant|giants|titan|ogre)$/.test(c.species) ? "giant_human" : c.species;
-    giants[c.id] = { kind, size: Math.max(5, Math.min(200, Math.round(c.heightM || call.epic?.size || 40))), ...(GIANT_KINDS.includes(kind) ? {} : { params: {} }), ...(kind === "wolf" ? { armour: true } : {}), name: c.name || c.species, aliases: aliasesOf(c.name, c.species) };
+    giants[c.id] = { behaviours: (c.behaviours ?? []).filter((b) => !["stand", "idle"].includes(b)), kind, size: Math.max(5, Math.min(200, Math.round(c.heightM || call.epic?.size || 40))), ...(GIANT_KINDS.includes(kind) ? {} : { params: {} }), ...(kind === "wolf" ? { armour: true } : {}), name: c.name || c.species, aliases: aliasesOf(c.name, c.species) };
   }
   // crowds: EPIC kinds, sides, sizes
   const crowds = {};
@@ -399,9 +411,11 @@ export function directShots(tl, D, aux) {
         G.push({ id: "world", action: water && outsideView && st === "walk" ? "swim" : st === "run" ? "walk" : st, aliases: worldAliasesFor(wc, outsideView ? "outside" : "on", water) });
       }
       if (!insideView) giantsHere.forEach((id, n) => {
-        const act = V.giant[id] ?? (D.giants[id].kind === "wolf" ? "idle" : "walk");
+        // the line's verb, else the giant's own state (the director's behaviours: a sleeping moose sleeps), else walk
+        const own = D.giants[id].behaviours.map((b) => verbOf(GIANT_VERBS, b)).find((b) => ["sleep", "lurk", "reach", "carry", "eat", "fly", "dig", "climb"].includes(b));
+        const act = V.giant[id] ?? own ?? (D.giants[id].kind === "wolf" ? "idle" : "walk");
         const spot = outsideView ? (n === 0 ? "giant_left" : "giant_right") : onView ? "horizon" : "far";
-        G.push({ id, spot, action: act, facing: act === "walk" || act === "run" ? "right" : "camera", aliases: D.giants[id].aliases });
+        G.push({ id, spot, action: act, facing: act === "walk" || act === "run" || act === "carry" ? "right" : act === "flee" ? "away" : "camera", aliases: D.giants[id].aliases });
       });
       if (G.length) s.giants = G; else delete s.giants;
       // crowds: town crowds in the town views (and on standard sets), armies outside / on standard sets
@@ -471,7 +485,7 @@ export function directShots(tl, D, aux) {
       else if (beat?.type === "fall" || beat?.type === "stomp" || beat?.type === "roar") { const g = falling ?? stomping ?? roaring; cam = beat.type === "fall" ? "establish" : beat.type === "roar" ? "giant_close" : "hero_low"; focus = g.id === "world" ? "world" : `giant:${g.id}`; if (cam === "hero_low" && !(s.actors ?? []).length) cam = "giant_close"; }
       else if ((marching && marching.kind !== "townsfolk") || C.some((c) => c.kind !== "townsfolk" && (c.action === "charge" || c.action === "run"))) { cam = "track"; focus = "crowd"; }
       else if (wc && L.subject === wc.creatureId && G.some((g) => g.id === "world") && !(s.actors ?? []).length) { cam = "establish"; focus = "world"; }
-      else if (L.camera === "reveal" && enemy) { cam = "giant_close"; focus = `giant:${enemy.id}`; }
+      else if ((L.camera === "reveal" || enemy?.action === "reveal" || enemy?.action === "reach") && enemy) { cam = "giant_close"; focus = `giant:${enemy.id}`; }
       else if (enemy && !(s.actors ?? []).length) { cam = "establish"; focus = `giant:${enemy.id}`; }
       else if (G.some((g) => g.id === "world") && !(s.actors ?? []).length && !C.length) { cam = "establish"; focus = "world"; }
       else if (C.length && !(s.actors ?? []).some((a) => !/^town\d$/.test(a.id))) { cam = C[0].town && !onView ? (C[0].action === "cheer" || C[0].action === "fight" ? "aerial" : "wide") : onView ? "aerial" : "establish"; focus = "crowd"; }

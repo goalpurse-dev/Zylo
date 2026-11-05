@@ -18,6 +18,7 @@
 //   resolveObject(name) -> canonical name | null (aliases, spaces, plurals)
 //   partyHat(seed) -> a party hat for a person's head joint (the engine puts them on birthday guests)
 import * as THREE from "three";
+import { bodyMotion, MOTION_STATES } from "./motion.js";
 import { rng, hashSeed, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, canvasTex, loadKitFonts, kitFont, fitText, darker } from "./kitCommon.js";
 import { makePerson, posePerson, setFace, reach } from "./people.js";
 import { catalogObjects } from "../../lib/catalog.js";
@@ -623,6 +624,7 @@ export function makeObject(name, opts = {}) {
 export function animateObject(obj, state, t = 0) {
   const u = obj.userData;
   u.anim?.(t);
+  if (u.animal || u.ride || MOTION_STATES.includes(state)) bodyMotion(obj, state, t); // 2026-11-05 (GAPS): walking, flying, sleeping...
   poseExtras(obj, t);
   if (u.mime) { // miming the invisible wall: both palms on a pane in front, sliding
     const j = u.mime.userData.joints, q = (v) => Math.round(v * 50) / 50;

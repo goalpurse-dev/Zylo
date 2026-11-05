@@ -13,7 +13,9 @@
 
 // ------------------------------------------------------------------------------------------------ vocabulary
 export const GIANT_KINDS = Object.freeze(["turtle", "whale", "elephant", "snail", "wolf", "bear", "dragon", "dog", "cat", "frog", "crab", "giant_human", "generic"]);
-export const GIANT_ACTIONS = Object.freeze(["idle", "walk", "run", "stomp", "roar", "attack", "swim", "hit", "fall"]);
+export const GIANT_ACTIONS = Object.freeze(["idle", "walk", "run", "stomp", "roar", "attack", "swim", "hit", "fall",
+  // 2026-11-05 (GAPS): what the real stress run asked giants for most (page/kit/giants.js animateGiant)
+  "reach", "sleep", "lurk", "reveal", "carry", "eat", "fly", "climb", "flee", "howl", "dig"]);
 // the builder's vocabulary (lib/builder/spec.js CROWD_FORMATIONS / CROWD_ACTIONS) is a subset: both are accepted
 export const FORMATIONS = Object.freeze(["block", "line", "wedge", "scatter", "ring", "march", "column"]);
 export const CROWD_ACTIONS = Object.freeze(["stand", "march", "charge", "run", "flee", "cheer", "fight", "wave"]);

@@ -107,7 +107,9 @@ export function giantParams(spec = {}) {
   const kind = GIANT_PRESETS[spec.kind] ? spec.kind : "generic";
   let p = deepMerge(BASE, GIANT_PRESETS[kind] ?? {});
   p = deepMerge(p, spec.params ?? {});
-  if (!GIANT_PRESETS[spec.kind] && spec.kind) { // an unknown animal: a generic quadruped in a colour picked from its name
+  const fam = !GIANT_PRESETS[spec.kind] && spec.kind ? familyOf(spec.kind) : null;
+  if (fam) p = deepMerge(deepMerge(BASE, fam), spec.params ?? {});
+  else if (!GIANT_PRESETS[spec.kind] && spec.kind) { // an unknown animal: a generic quadruped in a colour picked from its name
     const R = prng([...String(spec.kind)].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7));
     const hues = ["#8a6a4a", "#6b7a8a", "#c58b4f", "#7d8590", "#a0522d", "#5e8f3c", "#8e7cc3"];
     if (!spec.params?.palette?.body) p.palette.body = hues[Math.floor(R() * hues.length)];
@@ -165,7 +167,10 @@ function materials(p) {
 function buildHead(J, p, M, at) {
   const H = p.head, s = H.size;
   const neck = pivot(J.body, at.x, at.y, at.z); J.neck = neck;
-  if (p.neck && p.neck.len > 0.05 && p.plan !== "biped") B(neck, p.neck.w ?? s * 0.7, p.neck.w ?? s * 0.7, p.neck.len + 0.6, M.body, 0, p.neck.up * p.neck.len, p.neck.len / 2);
+  if (p.neck && p.neck.len > 0.05 && p.plan !== "biped" && p.neck.up >= 0.5) { // a long, rising neck (horse, giraffe): one slanted block up to the head
+    const L = Math.hypot(p.neck.len, p.neck.up * p.neck.len), nk = pivot(neck); nk.rotation.x = -Math.atan2(p.neck.up, 1);
+    B(nk, p.neck.w ?? s * 0.7, p.neck.w ?? s * 0.7, L + 0.6, M.body, 0, 0, L / 2);
+  } else if (p.neck && p.neck.len > 0.05 && p.plan !== "biped") B(neck, p.neck.w ?? s * 0.7, p.neck.w ?? s * 0.7, p.neck.len + 0.6, M.body, 0, p.neck.up * p.neck.len, p.neck.len / 2);
   const head = pivot(neck, 0, (p.neck?.up ?? 0) * (p.neck?.len ?? 0), (p.plan === "biped" ? 0 : p.neck?.len ?? 0) + s * 0.35); J.head = head;
   if (s <= 0.01) return head;
   B(head, s * 1.05, s * 0.95, s, M.body, 0, s * 0.1, 0, { r: s * 0.18 });
@@ -174,7 +179,8 @@ function buildHead(J, p, M, at) {
     B(head, s * 0.62, s * 0.42, H.snout + 0.2, M.belly, 0, -s * 0.05, s / 2 + H.snout / 2 - 0.05, { r: s * 0.1 });
     B(head, s * 0.3, s * 0.2, s * 0.18, M.nose, 0, s * 0.1, s / 2 + H.snout + 0.1, { r: 0.05 });
   } else if (H.beak) {
-    B(head, s * 0.7, s * 0.25, s * 0.35, M.accent, 0, -s * 0.12, s * 0.55, { r: 0.08 });
+    if (p.plan === "bird") { B(head, s * 0.36, s * 0.3, s * 0.5, M.nose, 0, -s * 0.05, s * 0.62, { r: 0.06 }); B(head, s * 0.3, s * 0.12, s * 0.38, M.nose, 0, -s * 0.22, s * 0.58, { r: 0.04 }); }
+    else B(head, s * 0.7, s * 0.25, s * 0.35, M.accent, 0, -s * 0.12, s * 0.55, { r: 0.08 });
   }
   if (H.jaw) {
     const jaw = pivot(head, 0, -s * 0.28, s * 0.1); J.jaw = jaw;
@@ -194,6 +200,10 @@ function buildHead(J, p, M, at) {
     for (const side of [-1, 1]) { const st = pivot(head, side * s * 0.25, s * 0.45, s * 0.2); st.rotation.z = -side * 0.25; B(st, s * 0.14, s * 1.2, s * 0.14, M.body, 0, s * 0.6, 0); B(st, s * 0.32, s * 0.32, s * 0.32, M.white, 0, s * 1.25, 0, { r: s * 0.12 }); B(st, s * 0.16, s * 0.16, s * 0.06, M.ink, 0, s * 1.27, s * 0.16, { r: 0.03 }); J.stalks.push(st); }
   } else if (H.eyes === "bulge") {
     for (const side of [-1, 1]) { B(head, s * 0.42, s * 0.42, s * 0.42, M.body, side * s * 0.35, s * 0.6, s * 0.1, { r: s * 0.16 }); B(head, s * 0.32, s * 0.32, s * 0.08, M.white, side * s * 0.35, s * 0.62, s * 0.3, { r: s * 0.08 }); B(head, s * 0.16, s * 0.2, s * 0.05, M.ink, side * s * 0.35, s * 0.6, s * 0.35, { r: 0.02 }); }
+    J.lids = [-1, 1].map((side) => B(head, s * 0.36, s * 0.36, s * 0.1, M.body, side * s * 0.35, s * 0.62, s * 0.36, { r: s * 0.06, keep: true }));
+  } else if (H.eyes === "owl") { // big round eyes in pale discs (owls)
+    for (const side of [-1, 1]) { B(head, s * 0.46, s * 0.46, 0.06, M.belly, side * s * 0.25, s * 0.18, s / 2 + 0.01, { r: s * 0.2, cast: false }); B(head, s * 0.3, s * 0.3, 0.06, M.white, side * s * 0.25, s * 0.18, s / 2 + 0.04, { r: s * 0.13, cast: false }); B(head, s * 0.15, s * 0.17, 0.05, M.ink, side * s * 0.25, s * 0.18, s / 2 + 0.08, { r: s * 0.06, cast: false }); }
+    J.lids = [-1, 1].map((side) => B(head, s * 0.34, s * 0.34, 0.1, M.body, side * s * 0.25, s * 0.18, s / 2 + 0.1, { r: s * 0.1, keep: true }));
   } else {
     const menacing = H.eyes === "menacing";
     for (const side of [-1, 1]) {
@@ -202,7 +212,9 @@ function buildHead(J, p, M, at) {
       if (!menacing) B(head, s * 0.05, s * 0.05, 0.03, M.white, side * ex - 0.03 * s, ey + 0.06 * s, ez + 0.06, { r: 0.005, detail: true, keep: true, cast: false });
       if (H.brow || menacing) B(head, s * 0.34, s * 0.09, s * 0.12, M.accent, side * ex, ey + s * 0.18, ez - 0.02, { rz: side * -0.35, r: 0.02 });
     }
+    J.lids = [-1, 1].map((side) => B(head, s * 0.32, s * 0.34, 0.12, M.body, side * ex, ey, ez + 0.07, { r: 0.03, keep: true, cast: false }));
   }
+  for (const l of J.lids ?? []) l.visible = false;
   // ears
   J.ears = [];
   for (const side of [-1, 1]) {
@@ -210,10 +222,12 @@ function buildHead(J, p, M, at) {
     if (H.ears === "point") { const m = new THREE.Mesh(new THREE.ConeGeometry(s * 0.24, s * 0.62, 4), M.body); m.position.y = s * 0.28; m.rotation.y = Math.PI / 4; m.castShadow = true; m.userData.static = true; ear.add(m); B(ear, s * 0.14, s * 0.3, s * 0.06, M.belly, 0, s * 0.22, s * 0.12, { r: 0.02 }); ear.rotation.z = side * -0.15; }
     else if (H.ears === "round") B(ear, s * 0.4, s * 0.36, s * 0.14, M.body, 0, s * 0.1, 0, { r: s * 0.12 });
     else if (H.ears === "flop") { ear.position.y = s * 0.3; B(ear, s * 0.2, s * 0.7, s * 0.4, M.accent, side * s * 0.12, -s * 0.25, 0, { r: s * 0.06 }); }
+    else if (H.ears === "long") { ear.position.y = s * 0.45; B(ear, s * 0.22, s * 1.1, s * 0.14, M.body, 0, s * 0.5, 0, { r: s * 0.08 }); B(ear, s * 0.12, s * 0.85, s * 0.06, M.belly, 0, s * 0.5, s * 0.06, { r: 0.02 }); ear.rotation.z = side * -0.12; }
     else if (H.ears === "big") { ear.position.set(side * s * 0.5, s * 0.15, -s * 0.15); B(ear, s * 0.12, s * 1.25, s * 1.15, M.body, side * s * 0.06, -s * 0.15, -s * 0.45, { r: s * 0.1 }); B(ear, s * 0.13, s * 0.9, s * 0.8, solid("#c8a0a8", { roughness: 0.8 }), side * s * 0.02, -s * 0.15, -s * 0.4, { r: s * 0.08 }); }
   }
   // horns / tusks / trunk
   if (H.horns === "spike" || H.horns === "curl") for (const side of [-1, 1]) { const m = new THREE.Mesh(new THREE.ConeGeometry(s * 0.12, s * 0.7, 5), M.horn); m.position.set(side * s * 0.3, s * 0.75, -s * 0.15); m.rotation.set(-0.5, 0, side * -0.3); m.castShadow = true; m.userData.static = true; head.add(m); }
+  if (H.horns === "antler") for (const side of [-1, 1]) { const an = pivot(head, side * s * 0.32, s * 0.55, -s * 0.1); an.rotation.z = side * -0.6; B(an, s * 0.12, s * 0.7, s * 0.12, M.horn, 0, s * 0.35, 0); B(an, s * 0.95, s * 0.14, s * 0.7, M.horn, side * s * 0.2, s * 0.72, 0, { r: 0.04 }); for (let k = 0; k < 3; k++) B(an, s * 0.1, s * 0.38, s * 0.1, M.horn, side * s * (0.0 + k * 0.22), s * 0.95, (k - 1) * s * 0.22); }
   if (H.horns === "tusk") for (const side of [-1, 1]) { const m = new THREE.Mesh(new THREE.ConeGeometry(s * 0.1, s * 0.9, 6), M.horn); m.position.set(side * s * 0.28, -s * 0.45, s * 0.6); m.rotation.set(1.9, 0, 0); m.castShadow = true; m.userData.static = true; head.add(m); }
   if (H.trunk > 0) {
     J.trunk = []; let par = pivot(head, 0, -s * 0.2, s * 0.5); const n = 5, seg = H.trunk / n;
@@ -321,8 +335,12 @@ function buildSwimmer(J, p, M) {
   // the mouth line + eyes on the front sides
   B(body, b.w * 1.01, 0.12, b.len * 0.28, M.accent, 0, -b.h * 0.12, b.len * 0.3, { r: 0.04 });
   for (const side of [-1, 1]) { B(body, 0.08, 0.42, 0.42, M.white, side * b.w * 0.5, b.h * 0.08, b.len * 0.3, { r: 0.08, cast: false }); B(body, 0.06, 0.22, 0.22, M.ink, side * (b.w * 0.5 + 0.04), b.h * 0.06, b.len * 0.31, { r: 0.04, cast: false }); }
-  // blowhole
-  B(body, 0.5, 0.15, 0.3, M.accent, 0, b.h / 2, b.len * 0.28, { r: 0.05 });
+  // blowhole (whales), or a dorsal fin and a toothy grin (sharks, fish)
+  if (p.back.fin) {
+    const fm = new THREE.Mesh(new THREE.ConeGeometry(1.0, 2.4, 4), M.body); fm.scale.set(0.35, 1, 1.2); fm.position.set(0, b.h / 2 + 0.9, -b.len * 0.02); fm.rotation.x = -0.35; fm.castShadow = true; fm.userData.static = true; body.add(fm);
+    if (p.head.teeth) for (let k = 0; k < 7; k++) for (const sd of [-1, 1]) B(body, 0.12, 0.28, 0.16, M.white, sd * (b.w * 0.46), -b.h * 0.18, b.len * 0.2 + k * 0.28, { r: 0.02, detail: true, keep: true });
+    B(body, b.w * 0.75, b.h * 0.5, b.len * 0.2, M.body, 0, -0.1, b.len * 0.42, { r: b.h * 0.2 });
+  } else B(body, 0.5, 0.15, 0.3, M.accent, 0, b.h / 2, b.len * 0.28, { r: 0.05 });
   J.head = pivot(body, 0, 0, b.len * 0.42);
   J.fins = [];
   for (const side of [-1, 1]) { const f = pivot(body, side * b.w * 0.45, -b.h * 0.3, b.len * 0.18); B(f, 2.0, 0.22, 0.9, M.body, side * 1.0, 0, 0, { r: 0.1 }); f.rotation.z = side * -0.35; J.fins.push(f); }
@@ -380,7 +398,11 @@ function buildBiped(J, p, M) {
   }
   // legs: thigh, a backward-bent shin (digitigrade when furry), a long foot
   J.legs = []; J.knees = [];
-  for (const side of [-1, 1]) {
+  if (p.float) { // a ghost: no legs, a long sheet hanging from the body, its hem in tabs that wave
+    J.hem = [];
+    B(body, b.w * 1.02, L.len * 0.6, b.len * 1.02, M.body, 0, -L.len * 0.25, 0, { r: 0.4 });
+    for (let k = 0; k < 6; k++) { const hp = pivot(body, (k - 2.5) * b.w * 0.17, -L.len * 0.55, b.len * 0.1 * Math.sin(k)); B(hp, b.w * 0.16, L.len * 0.35, b.len * 0.85, M.body, 0, -L.len * 0.17, 0, { r: 0.2 }); J.hem.push(hp); }
+  } else for (const side of [-1, 1]) {
     const hip = pivot(body, side * b.w * 0.27, 0, 0);
     B(hip, L.thick * 1.15, L.len * 0.5, L.thick * 1.2, M.body, 0, -L.len * 0.24, 0.1, { r: 0.25 });
     const knee = pivot(hip, 0, -L.len * 0.48, 0.25);
@@ -400,6 +422,92 @@ function buildBiped(J, p, M) {
   if (J.tail.length) J.tail[0].rotation.x = 0.7;
 }
 
+/** a bird standing upright (owl, pigeon, crow, gull, duck, eagle...): an egg body, folded wings that flap, two thin legs */
+function buildBird(J, p, M) {
+  const b = p.body, L = p.legs, body = J.body;
+  const torso = pivot(body, 0, 0.2, 0); J.torso = torso; torso.rotation.x = 0.08;
+  B(torso, b.w, b.h, b.len, M.body, 0, b.h / 2, 0, { r: Math.min(b.w, b.len) * 0.42 });
+  B(torso, b.w * 0.72, b.h * 0.62, 0.3, M.belly, 0, b.h * 0.4, b.len / 2 - 0.05, { r: 0.3 });
+  J.wings = [];
+  for (const side of [-1, 1]) { const w = pivot(torso, side * b.w * 0.48, b.h * 0.85, -0.1); B(w, 0.45, b.h * 0.78, b.len * 0.85, M.accent, side * 0.22, -b.h * 0.36, 0, { r: 0.2 }); B(w, 0.3, b.h * 0.3, b.len * 0.6, M.body, side * 0.3, -b.h * 0.72, -0.2, { r: 0.12 }); J.wings.push(w); }
+  J.tail = []; const tp = pivot(torso, 0, b.h * 0.12, -b.len * 0.45); B(tp, b.w * 0.6, 0.25, 1.6, M.accent, 0, 0, -0.7, { r: 0.08 }); tp.rotation.x = 0.5; J.tail.push(tp);
+  buildHead(J, { ...p, neck: { len: 0, up: 0 } }, M, { x: 0, y: 0, z: 0 });
+  torso.add(J.neck); J.neck.position.set(0, b.h - p.head.size * (p.head.merged ? 0.45 : 0.3), b.len * 0.05); J.head.position.set(0, p.head.size * 0.45, 0.05);
+  J.legs = []; J.knees = [];
+  for (const side of [-1, 1]) {
+    const hip = pivot(body, side * b.w * 0.22, 0.3, 0);
+    B(hip, 0.32, L.len * 0.55, 0.32, M.nose, 0, -L.len * 0.27, 0, { r: 0.08 });
+    const knee = pivot(hip, 0, -L.len * 0.55, 0);
+    B(knee, 0.26, L.len * 0.5, 0.26, M.nose, 0, -L.len * 0.24, 0, { r: 0.06 });
+    const foot = pivot(knee, 0, -L.len * 0.5, 0);
+    for (const a of [-0.5, 0, 0.5]) B(foot, 0.2, 0.18, L.foot, M.nose, Math.sin(a) * 0.4, 0.05, Math.cos(a) * L.foot * 0.45, { r: 0.05, ry: a });
+    J.legs.push(hip); J.knees.push(knee);
+  }
+}
+/** an octopus / squid: a round (or tall, pointed) mantle with big eyes, eight tentacles in chains that curl */
+function buildOctopus(J, p, M) {
+  const b = p.body, body = J.body, n = 8;
+  B(body, b.w, b.h, b.len, M.body, 0, b.h * 0.45, 0, { r: Math.min(b.w, b.len) * 0.45 });
+  if (p.shell.kind === "spike") { const c = new THREE.Mesh(new THREE.ConeGeometry(b.w * 0.5, b.h * 0.9, 4), M.body); c.position.y = b.h * 1.25; c.rotation.y = Math.PI / 4; c.castShadow = true; c.userData.static = true; body.add(c); }
+  J.head = pivot(body, 0, b.h * 0.25, b.len * 0.45);
+  for (const side of [-1, 1]) { B(body, b.w * 0.26, b.w * 0.3, 0.1, M.white, side * b.w * 0.22, b.h * 0.25, b.len * 0.48, { r: b.w * 0.1, cast: false }); B(body, b.w * 0.12, b.w * 0.17, 0.08, M.ink, side * b.w * 0.22, b.h * 0.24, b.len * 0.51, { r: 0.03, cast: false }); }
+  J.lids = [-1, 1].map((side) => B(body, b.w * 0.28, b.w * 0.32, 0.12, M.body, side * b.w * 0.22, b.h * 0.25, b.len * 0.53, { r: 0.05, keep: true, cast: false }));
+  for (const l of J.lids) l.visible = false;
+  J.tents = [];
+  const segs = 5, segL = (p.legs.len || 4) / segs;
+  for (let k = 0; k < n; k++) {
+    const a = (k / n) * TAU + 0.2;
+    const root = pivot(body, Math.sin(a) * b.w * 0.36, -b.h * 0.02, Math.cos(a) * b.len * 0.36); root.rotation.y = a;
+    const chain = []; let par = root;
+    for (let q = 0; q < segs; q++) { const w = Math.max(0.25, b.w * 0.16 * (1 - q * 0.15)); const sg = pivot(par, 0, q ? -segL : 0, 0); sg.rotation.x = q ? 0.22 : 0.55; B(sg, w, segL + 0.1, w, q % 2 ? M.body : M.accent, 0, -segL / 2, 0, { r: w * 0.3 }); chain.push(sg); par = sg; }
+    J.tents.push(chain);
+  }
+}
+/** the extras every giant can show: "Z z z" over a sleeper and a cargo crate (carry), hidden until used */
+function buildExtras(J, p, M) {
+  const zm = new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#bfe6ff", emissiveIntensity: 0.6, roughness: 0.4 });
+  J.zzz = pivot(J.rig, 0, 0, 0); J.zzz.visible = false;
+  J.zs = [0, 1, 2].map((k) => { const z = pivot(J.zzz); const sc = 0.55 + k * 0.25; for (const [w, h, y, rz] of [[1, 0.22, 0.5, 0], [1, 0.22, -0.5, 0], [1.25, 0.2, 0, 0.9]]) { const m = new THREE.Mesh(rgeo(w * sc, h * sc, 0.18 * sc, 0.02), zm); m.position.set(0, y * sc, 0); m.rotation.z = rz; z.add(m); } return z; });
+  J.cargo = pivot(J.rig, 0, 0, 0); J.cargo.visible = false;
+  B(J.cargo, 2.2, 1.6, 1.6, M.wood, 0, 0, 0, { r: 0.1, keep: true });
+  for (const x of [-0.75, 0.75]) B(J.cargo, 0.18, 1.65, 1.65, solid("#5a3b24", { roughness: 0.8 }), x, 0, 0, { r: 0.03, keep: true });
+  B(J.cargo, 2.25, 0.18, 1.65, solid("#5a3b24", { roughness: 0.8 }), 0, 0, 0, { r: 0.03, keep: true });
+}
+
+// ------------------------------------------------------------------------------------------------ species families
+// Any animal or figure the director names becomes a giant: a preset when there is one, else the closest family with its
+// own look (a ghost floats, an owl stands on two legs with big eyes, a shark has a fin and teeth, a goblin is a green
+// giant with pointed ears, a moose has antlers). Unknown words stay the generic quadruped, coloured from the name.
+const HUMANOID = { plan: "biped", fur: false, town: "none", body: { len: 2.2, w: 3.0, h: 3.4, y: 4.6, round: 0.2 }, legs: { n: 2, len: 4.6, thick: 1.05, foot: 1.3, toes: false, knee: true }, tail: { kind: "none", len: 0 }, head: { size: 1.9, snout: 0, ears: "none", eyes: "friendly", jaw: false } };
+const BIRD = { plan: "bird", fur: false, town: "none", body: { len: 3.4, w: 3.6, h: 4.4, y: 2.8, round: 0.8 }, legs: { n: 2, len: 2.6, thick: 0.3, foot: 1.0, toes: false, knee: true }, tail: { kind: "none", len: 0 }, head: { size: 2.2, snout: 0, ears: "none", eyes: "friendly", beak: true, jaw: false } };
+const by1 = (k) => k.replace(/(es|s)$/, "");
+const FAMILY = [
+  [/^(ghost|ghosts|phantom|spirit|spectre|specter|wraith|shadow|shade|spook)$/, { ...HUMANOID, float: true, palette: { body: "#eef2f7", belly: "#ffffff", accent: "#cfd8e3", eye: "#1b1b1f", nose: "#cfd8e3" }, head: { size: 2.5, snout: 0, ears: "none", eyes: "friendly", jaw: true } }, (k) => (/shadow|shade/.test(k) ? { palette: { body: "#2b2d3a", belly: "#3a3d4f", accent: "#1c1d27", eye: "#ffd23a", glow: "#ffcc33" }, head: { eyes: "menacing" } } : {})],
+  [/^(goblin|goblins|imp|gremlin|elf|gnome)$/, { ...HUMANOID, palette: { body: "#6ab04c", belly: "#a3cb38", accent: "#4a3426", eye: "#ffd23a", glow: "#ffcc33", nose: "#3d7a2a" }, head: { size: 2.3, snout: 0.35, ears: "point", eyes: "menacing", jaw: true, teeth: true, brow: true } }],
+  [/^(troll|trolls|ogre|ogres)$/, { ...HUMANOID, body: { len: 2.8, w: 3.8, h: 3.6, y: 4.2, round: 0.4 }, palette: { body: "#7f8c6a", belly: "#a4a98c", accent: "#5b4a3a", eye: "#1b1b1f", nose: "#5f6b4f" }, head: { size: 2.0, snout: 0.5, ears: "round", eyes: "friendly", jaw: true, teeth: true, brow: true } }],
+  [/^(yeti|yetis|bigfoot|sasquatch|ape|apes|gorilla|gorillas|monkey|monkeys)$/, { ...HUMANOID, fur: true, palette: { body: "#eef1f5", belly: "#9fb3c8", accent: "#cfd8e3", eye: "#1b1b1f", nose: "#5d6d7e" }, head: { size: 2.1, snout: 0.3, ears: "round", eyes: "friendly", jaw: true, brow: true } }, (k) => (/ape|gorilla|monkey/.test(k) ? { palette: { body: "#4a3426", belly: "#8a6a4a", accent: "#2b1d14" } } : {})],
+  [/^(snowman|snowmen)$/, { ...HUMANOID, body: { len: 3.6, w: 4.0, h: 3.8, y: 3.6, round: 1.0 }, palette: { body: "#f5f8fc", belly: "#ffffff", accent: "#2d3436", eye: "#1b1b1f", nose: "#ff7f1a" }, head: { size: 2.4, snout: 0.6, ears: "none", eyes: "friendly", jaw: false } }],
+  [/^(robot|robots|android|machine|boxy|mech)$/, { ...HUMANOID, palette: { body: "#9aa3ad", belly: "#dfe4ea", accent: "#57606f", eye: "#7fd8ff", glow: "#7fd8ff", nose: "#57606f" }, head: { size: 2.0, snout: 0, ears: "none", eyes: "menacing", jaw: false } }],
+  [/^(alien|aliens|martian)$/, { ...HUMANOID, palette: { body: "#7bed9f", belly: "#c8f7c5", accent: "#2ed573", eye: "#1b1b1f", nose: "#2ed573" }, head: { size: 2.6, snout: 0, ears: "none", eyes: "bulge", jaw: false } }],
+  [/^(scarecrow|scarecrows|zombie|zombies|mummy|mummies|vampire|vampires|witch|wizard|king|queen|knight|pirate|human|man|woman|person|people|giant|giants|titan|lifeguard|mailman|baker|clown|mermaid|statue)$/, { ...HUMANOID }, (k) => ({ scarecrow: { palette: { body: "#c0392b", belly: "#e1c699", accent: "#d4a373", nose: "#e1c699" } }, zombie: { palette: { body: "#57606f", belly: "#9ccc65", accent: "#2f3542", nose: "#7fa65a" } }, mummy: { palette: { body: "#e8dcc0", belly: "#f5edd8", accent: "#c8b996" } }, mummie: { palette: { body: "#e8dcc0", belly: "#f5edd8", accent: "#c8b996" } }, vampire: { palette: { body: "#2d3436", belly: "#f5f6fa", accent: "#c0392b" }, head: { teeth: true, jaw: true } }, statue: { palette: { body: "#9aa3ad", belly: "#bfc6ce", accent: "#7d8590" } } }[by1(k)] ?? {})],
+  [/^(owl|owls)$/, { ...BIRD, palette: { body: "#8a6a4a", belly: "#e8d6b0", accent: "#5e4430", eye: "#1b1b1f", nose: "#f0a030" }, head: { size: 3.0, eyes: "owl", beak: true, ears: "point", merged: true } }],
+  [/^(pigeon|pigeons|dove|crow|crows|raven|ravens|gull|gulls|seagull|seagulls|bird|birds|eagle|hawk|parrot|parrots|duck|ducks|goose|geese|chicken|chickens|hen|rooster|penguin|penguins|bat|bats|puffin)$/, { ...BIRD, palette: { body: "#8d96a3", belly: "#cfd6de", accent: "#5d6a7a", eye: "#1b1b1f", nose: "#ffb400" } }, (k) => ({ crow: { palette: { body: "#26262e", belly: "#3a3a46", accent: "#16161a" } }, raven: { palette: { body: "#26262e", belly: "#3a3a46", accent: "#16161a" } }, gull: { palette: { body: "#f5f6fa", belly: "#ffffff", accent: "#9aa3ad" } }, seagull: { palette: { body: "#f5f6fa", belly: "#ffffff", accent: "#9aa3ad" } }, duck: { palette: { body: "#ffffff", belly: "#ffffff", accent: "#dfe4ea", nose: "#ff9f1a" } }, goose: { palette: { body: "#ffffff", belly: "#ffffff", accent: "#dfe4ea", nose: "#ff9f1a" } }, geese: { palette: { body: "#ffffff", belly: "#ffffff", accent: "#dfe4ea", nose: "#ff9f1a" } }, chicken: { palette: { body: "#fbfbf5", belly: "#ffffff", accent: "#e53935", nose: "#ffb400" } }, hen: { palette: { body: "#c58b4f", belly: "#f1d6b0", accent: "#e53935" } }, eagle: { palette: { body: "#5e4430", belly: "#ffffff", accent: "#3e2c1f", nose: "#ffcc00" } }, parrot: { palette: { body: "#27ae60", belly: "#f1c40f", accent: "#c0392b", nose: "#2d3436" } }, penguin: { palette: { body: "#1e1e24", belly: "#ffffff", accent: "#1e1e24", nose: "#ff9f1a" } }, bat: { palette: { body: "#3b3442", belly: "#5a4f63", accent: "#2a2430", nose: "#3b3442" } } }[by1(k)] ?? {})],
+  [/^(octopus|octopuses|octopi|squid|squids|kraken|jellyfish)$/, { plan: "octopus", fur: false, town: "none", body: { len: 4.2, w: 4.2, h: 4.4, y: 4.0, round: 1 }, legs: { n: 8, len: 4.6, thick: 0.8, foot: 0, toes: false, knee: false }, tail: { kind: "none", len: 0 }, head: { size: 0, snout: 0, ears: "none", eyes: "friendly", jaw: false }, palette: { body: "#c94f7c", belly: "#f3a6c0", accent: "#a63d63", eye: "#1b1b1f", nose: "#a63d63" } }, (k) => (/squid|kraken/.test(k) ? { body: { h: 6.0, w: 3.4, len: 3.4 }, shell: { kind: "spike" }, palette: { body: "#8e44ad", belly: "#c39bd3", accent: "#6c3483" } } : /jelly/.test(k) ? { palette: { body: "#a29bfe", belly: "#dfe6e9", accent: "#74b9ff" } } : {})],
+  [/^(shark|sharks|fish|fishes|goldfish|piranha|dolphin|dolphins|tuna|eel|eels|carp)$/, { plan: "swimmer", fur: false, town: "none", body: { len: 8.4, w: 2.6, h: 2.8, y: 1.6, round: 0.8 }, head: { size: 0, snout: 0, ears: "none", eyes: "friendly", jaw: false, teeth: true }, legs: { n: 0, len: 0, thick: 0, foot: 0 }, tail: { kind: "fluke", len: 3.0 }, back: { fin: true }, palette: { body: "#7d8a99", belly: "#eef1f5", accent: "#5d6a7a", shell: "#5d6a7a", shell2: "#7d8a99", eye: "#1b1b1f", nose: "#2d3436" } }, (k) => (/shark/.test(k) ? {} : /dolphin/.test(k) ? { head: { teeth: false }, palette: { body: "#74b9ff", belly: "#eaf6ff" } } : { head: { teeth: false }, palette: { body: "#ff9f1a", belly: "#ffd8a8", accent: "#e67e22" } })],
+  [/^(moose|elk|deer|reindeer|caribou|stag)$/, { head: { size: 2.0, snout: 1.1, ears: "point", horns: "antler" }, legs: { len: 3.6 }, body: { y: 3.6 }, tail: { kind: "stub", len: 0.5 }, palette: { body: "#6b4423", belly: "#a87a4f", accent: "#4a2e18", horn: "#e8d6b0", nose: "#2b1d14" } }, (k) => (/deer|reindeer|caribou|stag/.test(k) ? { palette: { body: "#b5733a", belly: "#f1d6b0" } } : {})],
+  [/^(cow|cows|bull|bulls|ox|oxen|goat|goats|ram|sheep|buffalo|bison|yak)$/, { head: { size: 2.0, snout: 0.7, ears: "flop", horns: "curl" }, tail: { kind: "long", len: 1.8 }, palette: { body: "#ffffff", belly: "#ffffff", accent: "#2d3436", nose: "#ffb3c1" } }, (k) => (/goat|ram/.test(k) ? { palette: { body: "#f2ede4", accent: "#8a7a5a", nose: "#2d3436" } } : /sheep/.test(k) ? { fur: true, palette: { body: "#fbfbf8", belly: "#ffffff", accent: "#2a2a2e", nose: "#2a2a2e" }, head: { horns: "none" } } : /bison|buffalo|yak/.test(k) ? { palette: { body: "#4a2e18", belly: "#6b4423", accent: "#2b1d14", nose: "#1b1b1f" } } : {})],
+  [/^(horse|horses|pony|donkey|zebra|camel|camels|giraffe|giraffes|llama|alpaca)$/, { neck: { len: 2.2, up: 1.0, w: 1.2 }, head: { size: 1.6, snout: 1.2, ears: "point" }, legs: { len: 4.0, thick: 0.8 }, body: { y: 4.2, h: 2.4 }, tail: { kind: "long", len: 2.0 }, palette: { body: "#8a5a32", belly: "#a87a4f", accent: "#3a2a1e", nose: "#2b1d14" } }, (k) => (/giraffe/.test(k) ? { neck: { len: 2.4, up: 2.2, w: 1.0 }, legs: { len: 5.0 }, body: { y: 5.2 }, palette: { body: "#f0b44c", belly: "#fbe3a8", accent: "#8a5a32" }, head: { horns: "spike" } } : /camel|llama|alpaca/.test(k) ? { palette: { body: "#d9a86c", belly: "#f1d6b0", accent: "#a87a4f" } } : /zebra/.test(k) ? { palette: { body: "#f5f6fa", accent: "#1e1e24" } } : /donkey/.test(k) ? { palette: { body: "#8e8e93", belly: "#dcdcdc" } } : {})],
+  [/^(mouse|mice|rat|rats|hamster|hamsters|gerbil|squirrel|squirrels|rabbit|rabbits|bunny|bunnies|hare)$/, { head: { size: 2.2, snout: 0.5, ears: "round" }, legs: { len: 1.6, thick: 0.8 }, body: { y: 2.0, round: 1 }, tail: { kind: "long", len: 3.0 }, palette: { body: "#9aa0a8", belly: "#e9e1d3", accent: "#6d737b", nose: "#ff8fa8" } }, (k) => (/hamster|gerbil/.test(k) ? { tail: { kind: "stub", len: 0.4 }, palette: { body: "#e0a050", belly: "#fff1d6" } } : /rabbit|bunn|hare/.test(k) ? { head: { ears: "long" }, tail: { kind: "stub", len: 0.5 }, palette: { body: "#e9e1d3", belly: "#ffffff" } } : /squirrel/.test(k) ? { tail: { kind: "bush", len: 3.0 }, palette: { body: "#c0662b", belly: "#f1d6b0" } } : {})],
+  [/^(lion|lions|tiger|tigers|leopard|cheetah|panther|fox|foxes|coyote|hyena|pig|pigs|hog|boar|rhino|hippo|lizard|crocodile|alligator|dinosaur|dino)$/, { head: { size: 2.0, snout: 0.8, ears: "point" }, palette: { body: "#e1a23a", belly: "#f6deb0", accent: "#8a5a32", nose: "#2b1d14" } }, (k) => (/tiger/.test(k) ? { palette: { body: "#f08a2c", belly: "#ffffff", accent: "#1e1e24" } } : /panther/.test(k) ? { palette: { body: "#26262e", belly: "#3a3a46" } } : /fox/.test(k) ? { tail: { kind: "bush", len: 2.6 }, palette: { body: "#e8691e", belly: "#ffffff" } } : /pig|hog|boar/.test(k) ? { fur: false, head: { snout: 0.4, ears: "flop" }, palette: { body: "#ffb3c1", belly: "#ffc8d3", nose: "#ff8fa8" } } : /hippo|rhino/.test(k) ? { fur: false, head: { horns: /rhino/.test(k) ? "spike" : "none", ears: "round" }, palette: { body: "#8e8e93", belly: "#b8b8bd" } } : /lizard|crocodile|alligator|dino/.test(k) ? { fur: false, head: { snout: 1.4, ears: "none", teeth: true }, tail: { kind: "spike", len: 4 }, back: { spikes: 6 }, palette: { body: "#4caf50", belly: "#c5e1a5", accent: "#2e7d32" } } : {})],
+  [/^(spider|spiders|ant|ants|beetle|beetles|bee|bees|bug|bugs|cockroach|scorpion)$/, { fur: false, plan: "quadruped", head: { size: 1.4, snout: 0, ears: "none", eyes: "bulge" }, legs: { n: 6, len: 2.6, thick: 0.4, foot: 0.4, toes: false, knee: true }, tail: { kind: "none", len: 0 }, body: { len: 5.0, w: 3.6, h: 2.0, y: 2.4, round: 0.9 }, palette: { body: "#2b2530", belly: "#4a4252", accent: "#1b1b1f", eye: "#1b1b1f" } }, (k) => (/bee/.test(k) ? { palette: { body: "#ffd32a", belly: "#1b1b1f", accent: "#1b1b1f" } } : /^ant/.test(k) ? { palette: { body: "#8e2b1f", belly: "#5a1a12" } } : /spider/.test(k) ? { legs: { n: 8 } } : {})],
+];
+/** the family preset + its tweaks for an unknown species word (null when none fits): "river_mouth" -> mouth, "the giant snail" -> snail */
+export function familyOf(kind) {
+  const ws = String(kind ?? "").toLowerCase().replace(/[^a-z_ ]/g, " ").split(/[_ ]+/).filter(Boolean);
+  for (const k of [...ws].reverse()) for (const [re, base, tweak] of FAMILY) if (re.test(k)) return deepMerge(base, tweak ? tweak(k) : {});
+  return null;
+}
+
 // ------------------------------------------------------------------------------------------------ makeGiant
 /** makeGiant(spec) -> Group: see the header. spec.size defaults to 60 m. */
 export function makeGiant(spec = {}) {
@@ -410,12 +518,15 @@ export function makeGiant(spec = {}) {
   const rig = pivot(root); rig.scale.setScalar(unit);
   const J = { rig };
   // the body pivot: at hip height for bipeds, at the belly-to-back centre for the rest
-  const by = p.plan === "biped" ? p.body.y : p.plan === "slider" ? 0 : p.plan === "swimmer" ? p.body.y : p.body.y + (p.shell.kind === "dome" ? 0 : p.body.h * 0.3);
+  const by = p.plan === "biped" || p.plan === "bird" || p.plan === "octopus" ? p.body.y : p.plan === "slider" ? 0 : p.plan === "swimmer" ? p.body.y : p.body.y + (p.shell.kind === "dome" ? 0 : p.body.h * 0.3);
   J.body = pivot(rig, 0, by, 0);
   if (p.plan === "biped") buildBiped(J, p, M);
+  else if (p.plan === "bird") buildBird(J, p, M);
+  else if (p.plan === "octopus") buildOctopus(J, p, M);
   else if (p.plan === "swimmer") buildSwimmer(J, p, M);
   else if (p.plan === "slider") buildSlider(J, p, M);
   else buildQuadruped(J, p, M);
+  buildExtras(J, p, M, kind);
   // merge the static blocks of every joint group
   const groups = []; rig.traverse((o) => { if (o.isGroup || o === rig) groups.push(o); });
   for (const gp of groups) mergeJoint(gp);
@@ -454,6 +565,12 @@ export function giantSurface(g) {
     const hw = (b.w * (p.plan === "swimmer" ? 0.38 : 0.5)) * unit, z0 = (p.plan === "swimmer" ? -b.len * 0.3 : -b.len * 0.38) * unit, z1 = (p.plan === "swimmer" ? b.len * 0.36 : b.len * 0.28) * unit;
     return (x, z) => (Math.abs(x) <= hw && z >= z0 && z <= z1 ? y : null);
   }
+  // 2026-11-05 (GAPS): any other four-legged body (a moose, a frog, a generic animal): the flat top of its back, so a
+  // town "on" it stands on it (it used to sit inside the body, and the camera with it)
+  if (p.plan === "quadruped") {
+    const y = (g.userData.joints.body.position.y + b.h / 2 + 0.05) * unit, hw = b.w * 0.42 * unit, hl = b.len * 0.42 * unit;
+    return (x, z) => (Math.abs(x) <= hw && Math.abs(z) <= hl ? y : null);
+  }
   return () => null;
 }
 
@@ -485,7 +602,12 @@ const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x
 export function animateGiant(g, action = "idle", t = 0, opts = {}) {
   const U = g.userData, J = U.joints, p = U.params, plan = U.plan;
   for (const [o, r] of U.rest) { o.position.copy(r.p); o.rotation.copy(r.r); }
-  const gait = gaitOf(U.kind, action === "run" ? "run" : action === "swim" ? "swim" : "walk", U.size);
+  for (const l of J.lids ?? []) l.visible = false;
+  if (J.zzz) J.zzz.visible = false; if (J.cargo) J.cargo.visible = false;
+  J.body.scale.set(1, 1, 1);
+  // the gait of the giant's own body plan (a ghost or an owl walks like a biped, an octopus like a quadruped)
+  const gk = PLAN_OF[U.kind] ? U.kind : plan === "biped" || plan === "bird" ? "giant_human" : plan === "swimmer" ? "whale" : plan === "slider" ? "snail" : "generic";
+  const gait = gaitOf(gk, action === "run" || action === "flee" ? "run" : action === "swim" ? "swim" : "walk", U.size);
   const cyc = t * gait.cadence * TAU;
   const breathe = Math.sin(t * 0.8 * TAU / 2);
   // idle life everywhere: breathing, a slow head sway, ear twitches, a tail swish
@@ -496,10 +618,15 @@ export function animateGiant(g, action = "idle", t = 0, opts = {}) {
   (J.trunk ?? []).forEach((s, i) => { s.rotation.x += 0.08 * Math.sin(t * 0.7 * TAU / 2 - i * 0.5) + 0.05 * i; });
   (J.stalks ?? []).forEach((s, i) => { s.rotation.x += 0.15 * Math.sin(t * 0.9 + i * 1.7); });
   if (J.cape) J.cape.rotation.x = -0.08 - 0.05 * Math.sin(t * 1.4);
+  // 2026-11-05 (GAPS): the new body plans' idle life: a ghost hovers and its hem waves, tentacles curl, wings settle
+  if (p.float) { J.rig.position.y += 0.35 + 0.25 * Math.sin(t * 1.3); (J.hem ?? []).forEach((h, i) => { h.rotation.x += 0.18 * Math.sin(t * 2.2 + i * 0.9); }); }
+  (J.tents ?? []).forEach((ch, i) => ch.forEach((sg, q) => { sg.rotation.x += 0.12 * Math.sin(t * 1.4 + i * 0.8 - q * 0.6); }));
+  if (plan === "bird" && J.wings) J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * 0.04 * Math.sin(t * 1.1); });
 
   const legs = J.legs ?? [], knees = J.knees ?? [];
   const walkLegs = (amp, kneeAmp) => {
-    if (plan === "biped") legs.forEach((l, i) => { const s = Math.sin(cyc + i * Math.PI); l.rotation.x += amp * s; knees[i].rotation.x += kneeAmp * Math.max(0, -Math.cos(cyc + i * Math.PI)); });
+    if (plan === "biped" || plan === "bird") legs.forEach((l, i) => { const s = Math.sin(cyc + i * Math.PI); l.rotation.x += amp * s; knees[i].rotation.x += kneeAmp * Math.max(0, -Math.cos(cyc + i * Math.PI)); });
+    else if (plan === "octopus") (J.tents ?? []).forEach((ch, i) => { const ph = cyc + (i % 2) * Math.PI; ch[0].rotation.x += amp * 0.8 * Math.sin(ph); ch[1].rotation.x += amp * 0.6 * Math.max(0, Math.cos(ph)); });
     else legs.forEach((l, i) => { const pair = Math.floor(i / 2), side = i % 2; const ph = cyc + (side ^ (pair % 2)) * Math.PI; l.rotation.x += amp * Math.sin(ph); if (knees[i] && p.legs.knee) knees[i].rotation.x += kneeAmp * Math.max(0, Math.cos(ph)); });
   };
   switch (action) {
@@ -527,17 +654,10 @@ export function animateGiant(g, action = "idle", t = 0, opts = {}) {
       if (J.jaw) J.jaw.rotation.x += 0.5 * raise;
       break;
     }
-    case "roar": {
-      const k = ease(t / 0.35) * (opts.dur ? ease((opts.dur - t) / 0.4) : 1), buzz = 0.03 * Math.sin(t * 40);
-      if (J.head) { J.head.rotation.x -= 0.45 * k + buzz; }
-      if (J.neck) J.neck.rotation.x -= 0.15 * k;
-      if (J.jaw) J.jaw.rotation.x += 0.75 * k;
-      if (J.trunk) J.trunk.forEach((s, i) => { s.rotation.x -= (0.35 + i * 0.12) * k; });
-      if (J.torso) J.torso.rotation.x -= 0.3 * k;
-      if (J.arms) J.arms.forEach((a, i) => { a.rotation.z += (i ? -1 : 1) * 0.9 * k; a.rotation.x -= 0.6 * k; J.elbows[i].rotation.x -= 0.5 * k; });
-      if (plan === "quadruped") { J.body.rotation.x -= 0.1 * k; legs.forEach((l, i) => { if (i < 2) l.rotation.x -= 0.15 * k; }); }
-      (J.ears ?? []).forEach((e, i) => { e.rotation.z += (i ? -1 : 1) * 0.3 * k; });
-      if (J.wings) J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * 0.6 * k; });
+    case "roar": case "howl": {
+      const k = ease(t / 0.35) * (opts.dur ? ease((opts.dur - t) / 0.4) : 1);
+      roarPose(J, plan, legs, k, t);
+      if (action === "howl") { if (J.head) J.head.rotation.x -= 0.45 * k; if (plan === "quadruped") { J.body.rotation.x -= 0.18 * k; J.body.position.y -= 0.3 * k; } }
       break;
     }
     case "attack": {
@@ -568,9 +688,209 @@ export function animateGiant(g, action = "idle", t = 0, opts = {}) {
       if (J.jaw) J.jaw.rotation.x += 0.5 * u;
       break;
     }
+    // ---------------- 2026-11-05 (GAPS): what the real stress run asked giants for
+    case "reach": { // leans in and reaches toward the lens / the town: arms (or the head, a front leg, two tentacles) out
+      const k = ease(t / 1.0), grab = 0.5 + 0.5 * Math.sin(t * 5);
+      reachPose(J, p, plan, legs, knees, k, grab);
+      break;
+    }
+    case "sleep": { // lies down (eyes shut, slow deep breaths) with "Z z z" rising over the head
+      const k = ease(t / 0.8);
+      sleepPose(J, p, plan, legs, knees, k);
+      J.body.scale.set(1, 1 + 0.035 * Math.sin(t * 1.3), 1);
+      for (const l of J.lids ?? []) l.visible = k > 0.3;
+      showZzz(J, t);
+      break;
+    }
+    case "lurk": { // crouched low, half hidden, head forward, swaying slowly; creeping a little
+      lurkPose(J, p, plan, legs, knees, 1, t);
+      break;
+    }
+    case "reveal": { // rises out of the crouch (1.1 s), then rears up and roars, arms spread
+      lurkPose(J, p, plan, legs, knees, 1 - ease(t / 1.1), t);
+      roarPose(J, plan, legs, ease((t - 0.8) / 0.4), t);
+      if (plan === "swimmer") { J.body.rotation.x -= 0.35 * ease((t - 0.3) / 0.8); J.body.position.y += 1.2 * ease((t - 0.3) / 0.8); }
+      break;
+    }
+    case "carry": { // walking with a crate in its arms (in its mouth, on its back, held up by tentacles)
+      walkLegs(0.3, 0.4);
+      J.body.position.y += 0.08 * Math.abs(Math.sin(cyc));
+      holdCargo(J, p, plan);
+      if (J.arms) J.arms.forEach((a, i) => { a.rotation.x -= 0.8; a.rotation.z += (i ? -1 : 1) * 0.1; J.elbows[i].rotation.x -= 0.55; });
+      if (plan === "bird" && J.wings) J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * 0.5; w.rotation.x -= 0.6; });
+      if (plan === "octopus") J.tents.forEach((ch, i) => { if (i === 0 || i === 7) { ch[0].rotation.x -= 1.4; ch[1].rotation.x -= 0.6; } });
+      if (plan === "swimmer") swim(J, t, gait);
+      break;
+    }
+    case "eat": { // the head down to the food, the jaw chomping (bipeds: a hand to the mouth; birds peck)
+      const chomp = 0.5 + 0.5 * Math.sin(t * 7), k = ease(t / 0.5);
+      if (plan === "biped") { J.arms[0].rotation.x -= 0.75 * k; J.elbows[0].rotation.x -= 2.0 * k; J.torso.rotation.x += 0.1 * k; if (J.head) J.head.rotation.x += 0.12 * k; }
+      else if (plan === "bird") { const pk = Math.max(0, Math.sin(t * 4)); J.torso.rotation.x += 0.75 * pk * k; if (J.head) J.head.rotation.x += 0.4 * pk; }
+      else if (plan === "octopus") J.tents.forEach((ch, i) => { if (i === 0 || i === 7) { ch[0].rotation.x -= 1.2 * k; ch[1].rotation.x -= 0.9 * k; } });
+      else if (plan === "swimmer") { J.body.position.z += 0.4 * chomp; J.body.rotation.x += 0.06 * chomp; }
+      else { if (J.neck) J.neck.rotation.x += 0.55 * k; if (J.head) J.head.rotation.x += 0.35 * k; J.body.rotation.x += 0.1 * k; legs.forEach((l, i) => { if (i < 2) l.rotation.x -= 0.25 * k; }); }
+      if (J.jaw) J.jaw.rotation.x += 0.15 + 0.45 * chomp * k;
+      break;
+    }
+    case "fly": { // up off the ground: wings beat (birds, dragons), the rest hover with a slow bob, legs tucked
+      const k = ease(t / 0.7);
+      J.rig.position.y += (3.2 + 0.5 * Math.sin(t * 1.6)) * k;
+      if (J.wings) J.wings.forEach((w, i) => { const s = i ? 1 : -1; w.rotation.z += s * (plan === "bird" ? 1.3 + 0.9 * Math.sin(t * 6) : 0.7 * Math.sin(t * 5)); });
+      legs.forEach((l, i) => { l.rotation.x += 0.7 * k; if (knees[i]) knees[i].rotation.x += 0.6 * k; });
+      J.body.rotation.x += 0.1 * k;
+      if (J.arms) J.arms.forEach((a, i) => { a.rotation.z += (i ? 1 : -1) * 0.5 * k; });
+      if (plan === "octopus") J.tents.forEach((ch) => ch.forEach((sg, q) => { sg.rotation.x += (0.25 - q * 0.05) * Math.sin(t * 3 - q); }));
+      break;
+    }
+    case "climb": { // reared up against something, front legs / arms reaching up in turn
+      const a = Math.sin(t * 3);
+      J.rig.rotation.x = -0.45; J.rig.position.y += 0.6;
+      if (J.arms) J.arms.forEach((arm, i) => { arm.rotation.x -= 2.5 + 0.35 * (i ? a : -a); J.elbows[i].rotation.x -= 0.4; });
+      else legs.forEach((l, i) => { if (i < 2) l.rotation.x -= 1.0 + 0.35 * (i ? a : -a); });
+      if (plan === "biped" || plan === "bird") legs.forEach((l, i) => { l.rotation.x -= 0.4 + 0.3 * (i ? -a : a); knees[i].rotation.x += 0.5; });
+      if (plan === "octopus") J.tents.forEach((ch, i) => { ch[0].rotation.x -= (i < 2 || i > 5) ? 1.2 + 0.3 * a : 0; });
+      break;
+    }
+    case "flee": { // running away (the caller faces it away from the danger)
+      walkLegs(0.6, 0.9);
+      J.body.position.y += 0.25 * Math.abs(Math.sin(cyc));
+      if (J.arms) J.arms.forEach((a, i) => { a.rotation.x += 0.7 * Math.sin(cyc + (i ? 0 : Math.PI)); a.rotation.z += (i ? 1 : -1) * 0.5; });
+      if (J.head) J.head.rotation.y += 0.3 * Math.sin(t * 1.5);
+      if (plan === "swimmer") swim(J, t, gaitOf("whale", "swim", U.size));
+      if (plan === "bird" && J.wings) J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * (0.8 + 0.6 * Math.sin(t * 7)); });
+      break;
+    }
+    case "dig": { // head down, front paws (hands) scraping in turn
+      const a = Math.max(0, Math.sin(t * 5)), b2 = Math.max(0, -Math.sin(t * 5));
+      if (plan === "biped") { J.torso.rotation.x += 0.7; J.body.position.y -= 1.0; knees.forEach((kn) => { kn.rotation.x += 0.9; }); legs.forEach((l) => { l.rotation.x -= 0.6; }); J.arms[0].rotation.x -= 0.9 + 0.8 * a; J.arms[1].rotation.x -= 0.9 + 0.8 * b2; }
+      else if (plan === "bird") { J.torso.rotation.x += 0.6; legs[0].rotation.x += 0.6 * a; legs[1].rotation.x += 0.6 * b2; }
+      else { J.body.rotation.x += 0.15; if (J.neck) J.neck.rotation.x += 0.35; if (J.head) J.head.rotation.x += 0.25; if (legs[0]) legs[0].rotation.x -= 0.9 * a; if (legs[1]) legs[1].rotation.x -= 0.9 * b2; }
+      break;
+    }
     default: break; // idle: the idle life above
   }
 }
+/** the roar: head up, jaw wide, arms / wings spread (k 0..1) */
+function roarPose(J, plan, legs, k, t) {
+  if (k <= 0) return;
+  const buzz = 0.03 * Math.sin(t * 40) * k;
+  if (J.head) { J.head.rotation.x -= 0.45 * k + buzz; }
+  if (J.neck) J.neck.rotation.x -= 0.15 * k;
+  if (J.jaw) J.jaw.rotation.x += 0.75 * k;
+  if (J.trunk) J.trunk.forEach((s, i) => { s.rotation.x -= (0.35 + i * 0.12) * k; });
+  if (J.torso) J.torso.rotation.x -= 0.3 * k;
+  // arms flung out wide and up (2026-11-05: they used to cross over the chest)
+  if (J.arms) J.arms.forEach((a, i) => { a.rotation.z += (i ? 1 : -1) * 1.0 * k; a.rotation.x -= 0.5 * k; J.elbows[i].rotation.x -= 0.4 * k; });
+  if (plan === "quadruped") { J.body.rotation.x -= 0.1 * k; legs.forEach((l, i) => { if (i < 2) l.rotation.x -= 0.15 * k; }); }
+  (J.ears ?? []).forEach((e, i) => { e.rotation.z += (i ? -1 : 1) * 0.3 * k; });
+  if (J.wings) J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * (plan === "bird" ? 1.4 : 0.6) * k; });
+  (J.tents ?? []).forEach((ch, i) => { if (i < 2 || i > 5) ch[0].rotation.x -= 1.0 * k; });
+}
+/** crouched low and hidden (k 0..1): bipeds squat, four-legged ones press down, swimmers sink to the fin */
+function lurkPose(J, p, plan, legs, knees, k, t) {
+  if (k <= 0) return;
+  const sway = Math.sin(t * 0.6);
+  if (plan === "biped") {
+    if (!p.float) { legs.forEach((l) => { l.rotation.x -= 0.75 * k; }); knees.forEach((kn) => { kn.rotation.x += 1.3 * k; }); J.body.position.y -= p.legs.len * 0.33 * k; }
+    else J.body.position.y -= 1.2 * k;
+    J.torso.rotation.x += 0.55 * k; J.torso.rotation.z += 0.05 * sway * k;
+    if (J.head) J.head.rotation.x -= 0.4 * k;
+    if (J.arms) J.arms.forEach((a, i) => { a.rotation.x -= 0.5 * k; a.rotation.z += (i ? -1 : 1) * 0.15 * k; J.elbows[i].rotation.x -= 0.5 * k; });
+  } else if (plan === "bird") {
+    J.body.position.y -= p.legs.len * 0.45 * k; knees.forEach((kn) => { kn.rotation.x += 1.0 * k; }); legs.forEach((l) => { l.rotation.x -= 0.5 * k; });
+    J.torso.rotation.x += 0.35 * k; if (J.head) J.head.rotation.y += 0.25 * sway * k;
+  } else if (plan === "swimmer") {
+    J.body.position.y -= p.body.h * 0.35 * k; J.body.rotation.z += 0.03 * sway * k;
+  } else if (plan === "octopus") {
+    J.body.position.y -= p.legs.len * 0.45 * k; J.tents.forEach((ch) => { ch[0].rotation.x += 0.6 * k; });
+  } else if (plan === "slider") {
+    if (J.head) J.head.position.y -= 0.5 * k;
+  } else {
+    J.body.position.y -= p.legs.len * 0.35 * k; J.body.rotation.x += 0.06 * k;
+    if (J.neck) J.neck.rotation.x += 0.25 * k; if (J.head) { J.head.rotation.x -= 0.25 * k; J.head.rotation.y += 0.2 * sway * k; }
+    (J.legs ?? []).forEach((l, i) => { l.rotation.x += (i < 2 ? -0.35 : 0.35) * k; });
+    if (J.knees && p.legs.knee) J.knees.forEach((kn) => { kn.rotation.x += 0.5 * k; });
+  }
+}
+/** reaching toward the lens (k 0..1; grab 0..1 = the claws / fingers working) */
+function reachPose(J, p, plan, legs, knees, k, grab) {
+  if (plan === "biped") {
+    J.torso.rotation.x += 0.55 * k; J.body.position.y -= 0.4 * k; knees.forEach((kn) => { kn.rotation.x += 0.35 * k; }); legs.forEach((l) => { l.rotation.x -= 0.2 * k; });
+    J.arms.forEach((a, i) => { a.rotation.x -= (1.55 + (i ? 0.15 : 0)) * k; a.rotation.z += (i ? 1 : -1) * 0.12 * k; J.elbows[i].rotation.x -= (0.15 + 0.35 * grab) * k; });
+    if (J.head) J.head.rotation.x -= 0.15 * k;
+    if (J.jaw) J.jaw.rotation.x += 0.3 * k;
+  } else if (plan === "bird") {
+    J.torso.rotation.x += 0.6 * k; if (J.head) J.head.rotation.x -= 0.3 * k;
+    J.wings.forEach((w, i) => { w.rotation.z += (i ? 1 : -1) * 1.1 * k; w.rotation.x -= 0.8 * k; });
+    legs[0].rotation.x -= 0.9 * k; knees[0].rotation.x += 0.4 * grab * k;
+  } else if (plan === "octopus") {
+    J.body.rotation.x += 0.15 * k;
+    J.tents.forEach((ch, i) => { if (i === 0 || i === 7 || i === 1) { ch[0].rotation.x -= 1.9 * k; ch[1].rotation.x -= (0.2 + 0.4 * grab) * k; ch[2].rotation.x -= 0.3 * grab * k; } });
+  } else if (plan === "swimmer" || plan === "slider") {
+    J.body.rotation.x += 0.12 * k; J.body.position.z += 1.2 * k;
+    if (J.head) J.head.position.z += 0.6 * k;
+    (J.stalks ?? []).forEach((s) => { s.rotation.x -= 0.6 * k; });
+  } else {
+    J.body.position.z += 0.8 * k; J.body.rotation.x += 0.12 * k;
+    if (J.neck) J.neck.rotation.x += 0.2 * k; if (J.head) J.head.rotation.x -= 0.1 * k;
+    if (J.jaw) J.jaw.rotation.x += (0.35 + 0.3 * grab) * k;
+    if (legs[0]) legs[0].rotation.x -= (1.0 + 0.15 * grab) * k; if (knees[0] && p.legs.knee) knees[0].rotation.x -= 0.3 * k;
+    if (J.trunk) J.trunk.forEach((s, i) => { s.rotation.x -= (0.45 + i * 0.1) * k; });
+  }
+}
+/** lying down asleep (k 0..1) */
+function sleepPose(J, p, plan, legs, knees, k) {
+  if (plan === "biped") {
+    if (p.float) { J.body.position.y -= 1.5 * k; J.torso.rotation.x += 0.5 * k; if (J.head) J.head.rotation.x += 0.4 * k; return; }
+    // curled up on its side
+    J.rig.rotation.z = (Math.PI / 2 - 0.08) * k; J.rig.position.y += 0.1 * k;
+    legs.forEach((l) => { l.rotation.x -= 0.9 * k; }); knees.forEach((kn) => { kn.rotation.x += 1.3 * k; });
+    J.arms.forEach((a, i) => { a.rotation.x -= 0.9 * k; J.elbows[i].rotation.x -= 1.2 * k; });
+    if (J.head) J.head.rotation.x += 0.2 * k;
+  } else if (plan === "bird") {
+    J.body.position.y -= p.legs.len * 0.8 * k; knees.forEach((kn) => { kn.rotation.x += 1.6 * k; }); legs.forEach((l) => { l.rotation.x -= 0.8 * k; });
+    if (J.head) J.head.rotation.x += 0.35 * k; J.torso.rotation.x += 0.1 * k;
+  } else if (plan === "swimmer") {
+    J.body.position.y -= 0.3 * k;
+  } else if (plan === "octopus") {
+    J.body.position.y -= p.legs.len * 0.6 * k; J.tents.forEach((ch) => { ch[0].rotation.x -= 0.5 * k; ch.forEach((sg, q) => { if (q) sg.rotation.x -= 0.15 * k; }); });
+  } else if (plan === "slider") {
+    if (J.head) { J.head.position.y -= 0.8 * k; J.head.position.z -= 0.6 * k; }
+    (J.stalks ?? []).forEach((s) => { s.rotation.x += 1.0 * k; });
+  } else {
+    const drop = (p.legs.len ?? 2) * 0.82;
+    J.body.position.y -= drop * k;
+    legs.forEach((l, i) => { l.rotation.x += (i < 2 ? -1.35 : 1.35) * k; });
+    if (J.neck) J.neck.rotation.x += 0.35 * k; if (J.head) { J.head.rotation.x += 0.25 * k; J.head.rotation.z += 0.25 * k; }
+    if (J.tail?.length) J.tail[0].rotation.y += 0.8 * k;
+    if (J.trunk) J.trunk.forEach((s) => { s.rotation.x += 0.15 * k; });
+  }
+}
+/** "Z z z": three Zs rising and growing over the head, one after the other */
+function showZzz(J, t) {
+  if (!J.zzz) return;
+  J.zzz.visible = true;
+  const h = J.head ?? J.body;
+  J.rig.updateMatrixWorld(true);
+  const at = h.getWorldPosition(new THREE.Vector3()); J.rig.worldToLocal(at);
+  J.zs.forEach((z, k) => { const ph = (t * 0.45 + k / 3) % 1; z.position.set(at.x + 0.8 + ph * 1.6, at.y + 1.6 + ph * 3.2, at.z); z.scale.setScalar(0.4 + ph * 0.9); z.visible = ph < 0.92; });
+}
+/** the cargo crate where this body plan carries things */
+function holdCargo(J, p, plan) {
+  const c = J.cargo; if (!c) return;
+  c.visible = true;
+  const b = p.body;
+  let par = J.body, pos = [0, b.h / 2 + 1.0, 0];
+  if (plan === "biped" && J.torso) { par = J.torso; pos = [0, b.h * 0.18, b.len / 2 + 1.5]; }
+  else if (plan === "bird" && J.torso) { par = J.torso; pos = [0, b.h * 0.35, b.len / 2 + 1.0]; }
+  else if (plan === "octopus") pos = [0, b.h * 0.2, b.len / 2 + 1.4];
+  else if (plan === "swimmer") pos = [0, b.h / 2 + 0.85, b.len * 0.1];
+  else if (plan === "slider") pos = [0, (J.shellTop ?? b.h * 4) + 0.8, -b.len * 0.08];
+  else if (J.head && (p.head.size ?? 0) > 0.01) { par = J.head; const s = p.head.size; pos = [0, -s * 0.35, s * 0.55 + (p.head.snout ?? 0) + 0.6]; }
+  if (c.parent !== par) par.add(c);
+  c.position.set(...pos); c.rotation.set(0, 0, 0);
+}
+
 function swim(J, t, gait) {
   const c = t * gait.cadence * TAU;
   if (J.tail) J.tail.forEach((s, i) => { s.rotation.x += 0.2 * Math.sin(c - i * 0.7) * (i + 1) * 0.5; });

@@ -14,6 +14,8 @@
 const A = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 /** Animals as scene objects (one builder, a species per name). */
+/** what an animal (or a built creature) can be doing in a shot: page/kit/motion.js bodyMotion (GAPS, 2026-11-05) */
+export const ANIMAL_STATES = Object.freeze(["walk", "run", "chase", "charge", "flee", "fly", "swim", "sleep", "eat", "howl", "roar", "carry", "climb", "dig", "lurk", "reach", "attack", "stomp"]);
 export const ANIMALS = Object.freeze({
   dog: A("dog,dogs,puppy,puppies,hound,pet,pets,snowdog,snowdogs,snow-dogs"), cat: A("cat,cats,kitten,kittens,kitty"),
   goat: A("goat,goats"), sheep: A("sheep,lamb,lambs"), cow: A("cow,cows,calf,bull,animal,animals,critter,critters,livestock"), pig: A("pig,pigs,hog,hogs,piglet"),
@@ -142,7 +144,7 @@ export function creatureFor(nameWords = [], aboutText = "") {
 export function catalogObjects() {
   const out = { item: { aliases: [], place: "floor", states: [...Object.keys(HELD), ...BASE_ITEMS], state: "box", item: true, icon: "📦" } };
   for (const [k, v] of Object.entries(THINGS)) out[k] = { ...v };
-  for (const [k, al] of Object.entries(ANIMALS)) out[k] = { aliases: al, place: "floor", states: ["on"], state: "on", animal: true, ...(ANIMAL_SETS[k] ? { sets: ANIMAL_SETS[k] } : {}) };
+  for (const [k, al] of Object.entries(ANIMALS)) out[k] = { aliases: al, place: "floor", states: ["on", ...ANIMAL_STATES], state: "on", animal: true, ...(ANIMAL_SETS[k] ? { sets: ANIMAL_SETS[k] } : {}) };
   for (const [k, al] of Object.entries(CREATURE_OBJECTS)) out[`${k}_creature`] = { aliases: al, place: "floor", states: ["on"], state: "on", creature: k };
   return out;
 }

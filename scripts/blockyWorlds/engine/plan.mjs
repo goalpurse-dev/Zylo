@@ -37,7 +37,19 @@ export const checkProduction = (tl, prod) => checkProductionStrict(tl, prod ?? t
 export const SETS = ["street", "bedroom", "school", "woods"];
 export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
 export const LIGHTS = ["day", "night", "warm"];
-export const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow"];
+export const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow",
+  // 2026-11-05 (GAPS): the actions (page/kit/people.js); hold-poses keep the thing held (eat, throw, dig, hug)
+  "hug", "climb", "push", "eat", "fall", "jump", "ride", "hide", "throw", "fly", "swim", "build", "dig", "dance", "kick", "fight", "drive"];
+/** poses that use the thing in the hand (a held thing does not turn them into "carry") */
+const HOLD_POSES = new Set(["blow", "yell", "point", "sit", "run", "walk", "eat", "throw", "dig", "hug", "build", "ride", "fly", "climb", "push", "jump", "dance", "kick", "fall", "hide", "swim", "drive", "fight"]);
+/** the actions that belong to their own line (a fragment after it does not carry them on) */
+const ONE_LINE_POSES = new Set(["hug", "climb", "push", "eat", "fall", "jump", "ride", "hide", "throw", "fly", "swim", "build", "dig", "dance", "kick", "fight", "drive"]);
+/** what such a pose was before it had its own (a fragment carries this on, as it always did) */
+const LEGACY_POSE = { climb: "walk", jump: "cheer", hide: "scared", dance: "cheer", hug: "carry" };
+/** the actions that override "carry" while keeping the thing held */
+const ACTION_HOLD = new Set(["eat", "throw", "dig", "hug", "build"]);
+/** a shot's thing a person can ride (an animal, a vehicle, a built thing): the engine seats the rider on it */
+const RIDEABLE = (o) => !!o && (!!o.asset || !!OBJECT_CATALOG[o.name]?.animal || /^(car|tractor|ice_cream_truck|pumpkin|haystack|cloud|snow_pile|rock|stump|bridge|whale|turtle)$/.test(o.name));
 export const EXPRS = ["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"];
 export const INSERT_KINDS = ["sign", "note", "card"];
 export const OBJECTS = Object.keys(OBJECT_CATALOG);
@@ -603,7 +615,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
       const gp = poseFrom(seg.toks.map((t) => t.raw), 0, world);
       // a lone fragment after a row of babies in cribs: the one in front carries on (a closer look)
       const from = prev.actors.length >= 3 && (prev.objects ?? []).some((o) => o.name === "crib") && seg.line !== prev.line ? prev.actors.filter((a) => a.spot === "center").slice(0, 1) : prev.actors;
-      actors = (from.length ? from : prev.actors.slice(0, 1)).map((a) => ({ id: a.id, pose: gp.pose !== "stand" && gp.pose !== "carry" ? gp.pose : a.pose, hold: a.hold, neg: gp.neg }));
+      actors = (from.length ? from : prev.actors.slice(0, 1)).map((a) => ({ id: a.id, pose: gp.pose !== "stand" && gp.pose !== "carry" ? gp.pose : ONE_LINE_POSES.has(a.pose) ? LEGACY_POSE[a.pose] ?? "stand" : a.pose, hold: a.hold, neg: gp.neg }));
       carryOver = { prev, ids: actors.map((a) => a.id) };
     }
     // the subject (and whoever it acts on) is in the shot: "She screamed..." is Bean, "He said..." is Grandpa; a
@@ -745,6 +757,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   if (D) {
     const split = (list, i, t) => splitShot(list, i, t, W);
     directShots(tlStub, D, { lines, W, used, recam, split, objectAliases: (n) => OBJECT_CATALOG[n]?.aliases ?? [] });
+    directActions(shots, D, lineKeys, buildCast, used); // GAPS: the line's action (hug, climb, ride...) and the animals' motions
     dropCoveredCards(shots, lineKeys, buildCast);
     fixVisuals(shots, lines, vw, buildCast, { used, names, W });
     fixSubjects(shots, subjAux);
@@ -1111,7 +1124,7 @@ function applyVisuals(d, V) {
     if (hk && d.actors.some((a) => a.hold && (heldKind(a.hold) === hk || a.hold === k.noun))) continue;
     const name = objectForNoun(k.noun) ?? objectForNoun(k.label);
     if (!name) {
-      if (hk && !ms) { const a = holder(k.k); if (a && !holdsBaby(a) && !a.hold) { a.hold = k.noun; if (!["blow", "yell", "point", "sit", "run", "walk"].includes(a.pose)) a.pose = "carry"; } }
+      if (hk && !ms) { const a = holder(k.k); if (a && !holdsBaby(a) && !a.hold) { a.hold = k.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; } }
       continue;
     }
     if (d.objects.some((o) => o.name === name) || d.objects.length >= 3) continue;
@@ -1150,13 +1163,19 @@ function applyVisuals(d, V) {
       targets = t ? [t] : [];
     }
     for (const a of targets) {
-      const keepPose = (a.hold && a.pose === "carry" && !STRONG.has(r.pose)) || holdsBaby(a) || (STRONG.has(a.pose) && !STRONG.has(r.pose)) || (a.inCrib && !STRONG.has(r.pose) && r.pose !== "sleep");
-      if (r.pose && !keepPose) { a.pose = r.pose; if (r.pose !== "carry" && r.pose !== "blow" && a.hold && !isBabyId(a.hold, world) && STRONG.has(r.pose) && r.pose !== "yell") a.hold = null; }
+      let rpose = k.pose ?? r.pose;
+      if (rpose === "ride" && !d.objects.some(RIDEABLE)) rpose = "walk"; // nothing to ride in the shot: on the way
+      const keepPose = (a.hold && a.pose === "carry" && !STRONG.has(rpose) && !ACTION_HOLD.has(rpose)) || holdsBaby(a) || (STRONG.has(a.pose) && !STRONG.has(rpose)) || (a.inCrib && !STRONG.has(rpose) && rpose !== "sleep");
+      if (rpose && !keepPose) { a.pose = rpose; if (rpose !== "carry" && rpose !== "blow" && a.hold && !isBabyId(a.hold, world) && STRONG.has(rpose) && rpose !== "yell") a.hold = null; }
       if (r.hold && !a.hold) a.hold = r.hold;
       if (r.expr && !(STRONG.has(a.expr) && !STRONG.has(r.expr))) a.expr = r.expr;
       if (a.pose === "run" || a.pose === "walk") a.facing = ms ? "monster" : V.mover;
     }
   }
+  // 4b (GAPS, 2026-11-05). A hug needs two: the hugger and the other person of the shot hug each other face to face
+  // (the engine stands them together); climbers, fliers, swimmers, kickers and drivers are seen side-on
+  pairHugs(d.actors, (id) => isBabyId(id, world));
+  for (const a of d.actors) if (["climb"].includes(a.pose)) a.facing = "away"; else if (["fly", "swim", "kick", "drive", "throw", "push"].includes(a.pose) && (a.facing === "camera" || !a.facing)) a.facing = V.mover;
 
   // 5. markers: name tags, count badges, a music note
   const looseIn = (ks) => ks.find((x) => x.kind === "name" && !x.on)?.name;
@@ -1380,7 +1399,7 @@ function forceKey(s, key, aux) {
     if (HOLDABLE.has(key.noun) || heldKind(key.noun)) {
       const free = (s.actors ?? []).filter((x) => !x.hold && !/^baby/.test(x.id) && aux.buildCast?.()[x.id]?.role !== "baby");
       const a = free.find((x) => x.id === s.subject) ?? free.find((x) => !x.id.startsWith("town")) ?? free[0];
-      if (a) { a.hold = key.noun; if (!["blow", "yell", "point", "sit", "run", "walk"].includes(a.pose)) a.pose = "carry"; return true; }
+      if (a) { a.hold = key.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; return true; }
     }
     let name = objectForNoun(key.noun) ?? objectForNoun(key.label);
     // nobody can hold it: the hand prop itself, big, on a little crate (the "item" display)
@@ -1803,4 +1822,72 @@ export function checkTimeline(tl) {
   });
   if (!tl.audio?.voice) out.push("no audio.voice");
   return out;
+}
+
+/** GAPS (2026-11-05): a hugger and the other (non-baby) person of the shot hug each other, facing each other */
+export function pairHugs(actors, isBaby = () => false) {
+  for (const h of actors) {
+    if (h.pose !== "hug" || actors.some((x) => x !== h && x.pose === "hug" && x.facing === h.id)) continue;
+    const q = actors.find((x) => x !== h && x.id === h.facing && !isBaby(x.id)) ?? actors.find((x) => x !== h && !isBaby(x.id) && x.pose !== "hug" && !x.id.startsWith("town")) ?? actors.find((x) => x !== h && !isBaby(x.id) && x.pose !== "hug");
+    if (!q) continue;
+    q.pose = "hug"; q.facing = h.id; h.facing = q.id; if (q.expr === "neutral") q.expr = "happy";
+  }
+}
+
+/**
+ * GAPS (2026-11-05): the director's action per line on the planned shots (directed plans only).
+ *   a person: the line's subject does the line's action when it has its own pose (hug, climb, push, eat, fall, jump,
+ *     ride, hide, throw, fly, swim, build, dig, dance, kick, fight, drive): a hug brings the other person of the line in
+ *     (face to face), a ride needs a thing to ride in the shot; a change that would leave one of the line's words
+ *     unshown is undone (the PERMANENT RULE: checkVisuals must still pass)
+ *   an animal / built creature on screen: its behaviour (the line's action when it is the subject, else its own:
+ *     a sleeping cat sleeps) as the object's state (page/kit/motion.js)
+ */
+function directActions(shots, D, lineKeys, buildCast, used) {
+  const ANIMAL_STATES = OBJECT_CATALOG.dog?.states?.filter((x) => x !== "on") ?? [];
+  const MAP = { stand: null, idle: null, charge: "charge", chase: "chase", attack: "attack", reveal: "lurk" };
+  const humans = new Map((D.production.cast ?? []).filter((c) => c.kind === "human").map((c) => [c.id, c]));
+  const free = (s) => { const t = new Set([...(s.actors ?? []).map((a) => a.spot), ...(s.objects ?? []).map((o) => o.spot)]); return ["center", "left", "right", "back"].find((x) => !t.has(x)) ?? null; };
+  let changed = 0;
+  for (const L of D.lines) {
+    const own = shots.filter((s) => s.line === L.i && s.camera !== "insert");
+    if (!own.length) continue;
+    // a person's action
+    const act = L.action;
+    if (humans.has(L.subject) && ONE_LINE_POSES.has(act)) {
+      for (const s of own) {
+        const a = (s.actors ?? []).find((x) => x.id === L.subject);
+        if (!a || !["stand", "talk", "look_up", "walk", "carry", "scared", "cheer"].includes(a.pose) || (a.hold && buildCast()[a.hold]?.role === "baby")) continue;
+        if (act === "ride" && !(s.objects ?? []).some(RIDEABLE)) continue;
+        const cast = buildCast(), keys = (s.lines ?? [s.line]).flatMap((i) => requiredKeys(lineKeys[i]));
+        const before = new Set(keys.filter((k) => covers(k, s, cast)).map((k) => k.label));
+        const saved = JSON.stringify(s.actors), savedUsed = new Set(used);
+        a.pose = act;
+        if (act === "climb") a.facing = "away"; else if (["fly", "swim", "kick", "drive", "throw", "push"].includes(act) && a.facing === "camera") a.facing = "right";
+        if (act === "hug" && !(s.actors ?? []).some((x) => x !== a && !/^town\d$/.test(x.id))) {
+          const other = L.who.find((id) => id !== a.id && humans.has(id)) ?? null, spot = free(s);
+          if (other && spot && s.actors.length < 4) { s.actors.push({ id: other, spot, pose: "hug", expr: "happy", facing: a.id, hold: null }); used.add(other); }
+        }
+        if (act === "hug") pairHugs(s.actors, (id) => buildCast()[id]?.role === "baby");
+        const cast2 = buildCast();
+        const after = new Set(keys.filter((k) => covers(k, s, cast2)).map((k) => k.label));
+        if ([...before].some((k) => !after.has(k))) { s.actors = JSON.parse(saved); used.clear(); for (const x of savedUsed) used.add(x); continue; }
+        changed++;
+      }
+    }
+    // an animal / built creature doing something
+    for (const r of D.match.perLine[L.i]?.required ?? []) {
+      if (!["creature.animal", "creature.built"].includes(r.capability)) continue;
+      const cr = (D.production.creatures ?? []).find((c) => c.id === r.id) ?? (D.production.cast ?? []).find((c) => c.id === r.id);
+      const asked = [L.subject === r.id ? act : null, ...(cr?.behaviours ?? [])].filter(Boolean).map((b) => (b in MAP ? MAP[b] : b));
+      const st = asked.find((b) => ANIMAL_STATES.includes(b));
+      if (!st) continue;
+      for (const s of own) for (const o of s.objects ?? []) {
+        const mine = (r.kitName && o.name === r.kitName) || (r.needId && o.needId === r.needId);
+        if (!mine) continue;
+        if (o.needId || OBJECT_CATALOG[o.name]?.states?.includes(st)) { o.state = st; changed++; }
+      }
+    }
+  }
+  return changed;
 }

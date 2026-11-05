@@ -145,6 +145,11 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     };
     if (fg && gInfo) { ctxE.focus = gInfo.pos.clone(); ctxE.focusHeight = gInfo.g.userData.height; ctxE.span = Math.max(gInfo.g.userData.length, gInfo.g.userData.width, gInfo.g.userData.height); }
     else if (fc) { const ci = f.startsWith("crowd:") ? Number(f.slice(6)) || 0 : 0; const ca = crowdAt(ci); ctxE.focus = ca?.pos ?? S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = Math.max((ca?.ext ?? 10) * 1.6, type === "aerial" ? 44 : 8); ctxE.velocity = ca?.vel; }
+    else if (fw && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "on") {
+      // 2026-11-05 (GAPS): ON the creature's back the world shot is the town on it (seen from above its back), not the
+      // whole creature from inside its own body
+      ctxE.focus = S.spots.center.clone(); ctxE.focusHeight = 12; ctxE.span = 48;
+    }
     else if (fw) { const g = worldG ?? anyGiant; ctxE.focus = g ? g.pos.clone() : S.spots.center.clone(); ctxE.focusHeight = g ? g.g.userData.height : 20; ctxE.span = g ? Math.max(g.g.userData.length, g.g.userData.height) * 1.1 : 60; }
     else if (where[f]) { ctxE.focus = where[f].clone(); ctxE.focusHeight = actorH[f] ?? 1.2; ctxE.kidHeight = actorH[f] ?? 1.2; ctxE.span = 4; }
     else { ctxE.focus = S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = 20; }
@@ -162,13 +167,29 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       // the army runs away from the lens toward its target: the attacked giant (role target / the world's creature / the first giant)
       const tgtE = (shot.giants ?? []).find((g) => g.role === "target"), tg = tgtE ? giantInfo(tgtE.id) : worldG ?? firstGiant;
       if (tg) { ctxE.other = tg.pos.clone(); ctxE.otherHeight = tg.g.userData.height; }
+      const atkE = (shot.giants ?? []).find((g) => g.id !== "world" && (g.role === "attacker" || g.action === "attack")), at = atkE ? giantInfo(atkE.id) : null;
+      if (at && at !== tg) ctxE.attacker = { pos: at.pos.clone(), h: at.g.userData.height };
       const ca = crowdAt(0); if (ca) { ctxE.focus = ca.pos; ctxE.velocity = ca.vel; ctxE.span = ca.ext * 1.6; }
     }
+    // the creature's footprint (cameraEpic keeps establish / aerial outside it or above its top)
+    { const gg = fg ? gInfo : fw ? (worldG ?? anyGiant) : null; if (gg) { ctxE.radius = Math.max(gg.g.userData.length ?? 0, gg.g.userData.width ?? 0) / 2; ctxE.top = gg.g.userData.height; ctxE.onBack = !!S.surface && fw; } }
     frameEpic(type, ctxE);
     // inside the set's camera area (the cavern), never under the ground / the creature's back
     if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(camera.position))) { const q = S.bounds[0].clampPoint(camera.position, V(0, 0, 0)); camera.position.copy(q); if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
     const gy = S.surface?.(camera.position.x, camera.position.z) ?? S.groundY ?? null;
     if (gy != null && camera.position.y < gy + 1.2) { camera.position.y = gy + 1.2; camera.updateMatrixWorld(); }
+    // 2026-11-05 (GAPS): never inside the creature's body: a ray down onto it (a furry / generic back bulges above the
+    // town's ground); the camera stays a few metres over it (more for the wide EPIC shots), still aimed where it was
+    const body = S.giant && S.giant.visible !== false ? S.giant : null;
+    if (body) {
+      const top = new THREE.Box3().setFromObject(body).max.y;
+      if (camera.position.y < top + 3) {
+        const rc = new THREE.Raycaster(V(camera.position.x, top + 5, camera.position.z), V(0, -1, 0), 0, top + 5 - camera.position.y + 0.5);
+        const hit = rc.intersectObject(body, true).find((h) => h.object.isMesh && h.object.visible !== false);
+        const margin = ["establish", "aerial"].includes(type) ? Math.max(6, (ctxE.span ?? 20) * 0.12) : 2.5;
+        if (hit && camera.position.y < hit.point.y + margin) { camera.position.y = hit.point.y + margin; if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
+      }
+    }
     return true;
   }
 

@@ -148,6 +148,7 @@ async function main() {
   const drawCaption = need(captionsM, "drawCaption");
   const holdPerson = typeof peopleM.mod.holdPerson === "function" ? peopleM.mod.holdPerson : null; // optional (babies)
   const releasePerson = typeof peopleM.mod.releasePerson === "function" ? peopleM.mod.releasePerson : null;
+  const POSE_LIFT = peopleM.mod.POSE_LIFT ?? {}, POSE_FRAME = peopleM.mod.POSE_FRAME ?? {}; // how high a pose lifts a person (fly, climb): the camera follows
   // scene objects (kit/objects.js): loaded only when the timeline uses them
   const anyObjects = tl.shots.some((s) => (s.objects ?? []).some((o) => !o.asset));
   // built objects / worlds (lib/builder -> timeline.assets): page/kit/blueprint.js, page/sets/worldspec.js
@@ -250,12 +251,13 @@ async function main() {
   if (tl.shots.some((s) => s.focus === "group")) {
     for (let i = 0; i < 4; i++) { const id = `extra${i}`; addPerson(id, { role: i % 3 === 2 ? "kid" : "adult", name: `Townsfolk ${i + 1}`, seed: 101 + i * 17 }); EXTRAS.push(id); }
   }
-  let monster = null, monsterH = 0;
+  let monster = null, monsterH = 0, monsterR = 0;
   if (tl.monster) {
     monster = makeMonster(tl.monster);
     if (!monster?.isObject3D) throw new Error("engine: makeMonster returned no Object3D");
     scene.add(monster); monster.visible = false;
     monsterH = Number(monstersM.mod.monsterHeight?.(monster)) || new THREE.Box3().setFromObject(monster).getSize(new THREE.Vector3()).y || 3;
+    { const sz = new THREE.Box3().setFromObject(monster).getSize(new THREE.Vector3()); monsterR = Math.max(0.4, Math.max(sz.x, sz.z) / 2); }
   }
   const INSERTS = new Map(), MARKERS = new Map();
   for (const s of tl.shots) {
@@ -464,6 +466,52 @@ async function main() {
         placed.push({ id: EXTRAS[i], a: { id: EXTRAS[i], pose, expr: pose === "scared" ? "scared" : r.pick(["neutral", "happy", "smirk"]), facing: "camera", phase: r.range(0, 2) }, pos });
       }
     }
+    // 2026-11-05 (GAPS): actions that place people relative to someone / something
+    //   hug: two people both posed "hug" stand face to face, close (their arms round each other), side-on to the lens
+    //   ride: the rider sits on the shot's mount (the object at their spot, else an animal / vehicle / built thing in the
+    //         shot): the saddle found by a ray down onto it, the rider along its heading (userData.ride); none -> walk
+    //   hide: half behind the nearest object of the shot (its side away from the middle), crouched
+    {
+      const huggers = placed.filter((p) => p.a?.pose === "hug" && !p.fixed && PEOPLE[p.id]);
+      for (const h of huggers) {
+        if (h.hugWith) continue;
+        const q = huggers.find((x) => x !== h && !x.hugWith && (h.a.facing === x.id || x.a.facing === h.id)) ?? huggers.find((x) => x !== h && !x.hugWith);
+        if (!q) continue;
+        const sa = PEOPLE[h.id].obj.userData.scale ?? 0.87, sb = PEOPLE[q.id].obj.userData.scale ?? 0.87;
+        const d = 0.2 + 0.32 * (sa + sb) / 2, mid = h.pos.clone().add(q.pos).multiplyScalar(0.5);
+        h.pos.copy(mid).addScaledVector(S.lateral, -d / 2); q.pos.copy(mid).addScaledVector(S.lateral, d / 2);
+        h.fixed = q.fixed = true; h.hugWith = q.id; q.hugWith = h.id;
+      }
+      for (const p of placed) {
+        if (p.a?.pose !== "ride" || p.fixed) continue;
+        const pick = shotObjs.find((x) => (x.o.spot ?? "center") === p.a.spot && !x.ridden) ?? shotObjs.find((x) => !x.ridden && (x.u.animal || x.u.ride || x.u.kind === "blueprint" || x.u.vehicle)) ?? shotObjs.find((x) => !x.ridden);
+        if (!pick) { p.noMount = true; continue; }
+        pick.ridden = true;
+        const { obj, u } = pick;
+        obj.updateMatrixWorld(true);
+        const at = u.ride?.at ? obj.localToWorld(u.ride.at.clone()) : new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
+        const box = new THREE.Box3().setFromObject(obj);
+        const rc = new THREE.Raycaster(new THREE.Vector3(at.x, box.max.y + 1, at.z), new THREE.Vector3(0, -1, 0), 0, box.max.y - box.min.y + 2);
+        const hit = rc.intersectObject(obj, true).find((x) => x.object.visible !== false && x.object.isMesh);
+        p.pos.set(at.x, hit ? hit.point.y : box.max.y, at.z);
+        p.fixed = true; p.rideYaw = obj.rotation.y + (u.ride?.yaw ?? 0); p.mount = pick;
+      }
+      for (const p of placed) { // push: right up against the thing pushed, leaning into it
+        if (p.a?.pose !== "push" || p.fixed || !shotObjs.length) continue;
+        const near = shotObjs.reduce((b, x) => (x.obj.position.distanceTo(p.pos) < b.obj.position.distanceTo(p.pos) ? x : b), shotObjs[0]);
+        const off = hz(p.pos).sub(hz(near.obj.position)).dot(S.lateral) >= 0 ? 1 : -1;
+        const c = new THREE.Box3().setFromObject(near.obj).getCenter(new THREE.Vector3());
+        p.pos.copy(c).addScaledVector(S.lateral, off * ((near.u.width ?? 1) / 2 + 0.3)).setY(near.obj.position.y);
+        p.fixed = true; p.faceAt = c.setY(near.obj.position.y);
+      }
+      for (const p of placed) {
+        if (p.a?.pose !== "hide" || p.fixed || !shotObjs.length) continue;
+        const near = shotObjs.reduce((b, x) => (x.obj.position.distanceTo(p.pos) < b.obj.position.distanceTo(p.pos) ? x : b), shotObjs[0]);
+        const off = hz(near.obj.position).sub(hz(spots.center)).dot(S.lateral) >= 0 ? 1 : -1;
+        p.pos.copy(near.obj.position).addScaledVector(S.lateral, off * ((near.u.width ?? 1) / 2 + 0.15)).addScaledVector(S.depth, Math.min(0.6, (near.u.depth ?? 1) * 0.3)).setY(near.obj.position.y);
+        p.fixed = true;
+      }
+    }
     for (let it = 0; it < 6; it++) for (let i = 0; i < placed.length; i++) for (let j = i + 1; j < placed.length; j++) {
       const A = placed[i].pos, B = placed[j].pos, d = hz(B).sub(hz(A)), L = d.length(), min = 0.85;
       if (L >= min || (placed[i].fixed && placed[j].fixed)) continue;
@@ -476,7 +524,12 @@ async function main() {
     // monster
     const ms = shot.monsterState ?? (shot.focus === "monster" ? { spot: "far", state: "lurk" } : null);
     if (monster) monster.visible = !!ms;
-    if (monster && ms) { monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far); animateMonster(monster, ms.state, lt); }
+    if (monster && ms) {
+      monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far);
+      // 2026-11-05 (GAPS): a monster lurking at the far spot stands at most ~9 m behind the centre (it read as a dot)
+      if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
+      animateMonster(monster, ms.state, lt);
+    }
     if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
 
     // insert: in front of the center spot, toward the camera side, facing it
@@ -504,7 +557,7 @@ async function main() {
       f.y = Math.min(a.y, obj.position.y) + fitH / 2 - fh / 2;
       return { focus: f, focusHeight: fh };
     }
-    let otherH;
+    let otherH, otherR;
     if (shot.focus === "monster") {
       // over the shoulder of the one it acts on ("It walked right past me"), else whoever stands in the shot
       const o = placed.find((p) => (shot.subjectWith ?? []).includes(p.id)) ?? placed.find((p) => !p.fixed) ?? placed[0];
@@ -542,20 +595,33 @@ async function main() {
       const g = placed.length ? placed : [{ pos: spots.center, id: null }];
       focus = g.reduce((s, p) => s.add(p.pos), new THREE.Vector3()).divideScalar(g.length);
       focusHeight = Math.max(...g.map((p) => PEOPLE[p.id]?.h ?? 1.7));
-    } else if (where[shot.focus] && shot.camera === "wide" && shotObjs.length) {
-      // a wide shot on an actor with an object in the shot: fit both (the "insert" framing, as for focus "object")
-      ({ focus, focusHeight } = fitPair(where[shot.focus], PEOPLE[shot.focus].h, shotObjs[0], 5)); camType = "insert";
+    } else if (where[shot.focus] && ((shot.camera === "wide" && shotObjs.length) || (shot.camera !== "closeup" && placed.find((p) => p.id === shot.focus)?.mount))) {
+      // a wide shot on an actor with an object in the shot: fit both (the "insert" framing, as for focus "object");
+      // a rider: the rider and the mount together
+      const fm = placed.find((p) => p.id === shot.focus)?.mount;
+      ({ focus, focusHeight } = fitPair(where[shot.focus], PEOPLE[shot.focus].h + (fm ? where[shot.focus].y - fm.obj.position.y : 0), fm ?? shotObjs[0], 5)); camType = "insert";
     } else if (where[shot.focus]) {
       focus = where[shot.focus].clone(); focusHeight = PEOPLE[shot.focus].h;
+      // a person off the floor (flying, up a ladder): the camera follows them up
+      const fp = placed.find((p) => p.id === shot.focus), fa = fp?.a;
+      const fr = fa && POSE_FRAME[fa.pose];
+      if (fr && ["medium", "closeup"].includes(shot.camera)) {
+        // the whole action in frame (a straight, centred view): the pair for a hug, the person + lift otherwise
+        const h = Math.max(PEOPLE[shot.focus].h, fp.hugWith ? PEOPLE[fp.hugWith]?.h ?? 0 : 0), span = fr[0] * h;
+        if (fp.hugWith && where[fp.hugWith]) focus.add(where[fp.hugWith]).multiplyScalar(0.5);
+        focusHeight = span / 2.4; focus.y += (POSE_LIFT[fa.pose] ?? 0) + fr[1] * h - focusHeight / 2;
+        camType = "insert"; other = undefined;
+      } else if (fa && POSE_LIFT[fa.pose]) focus.y += POSE_LIFT[fa.pose];
       const op = placed.find((p) => p.id !== shot.focus);
       other = shotObjs.length ? shotObjs[0].obj.localToWorld((shotObjs[0].u.focus ?? new THREE.Vector3()).clone()).setY(shotObjs[0].obj.position.y)
         : op?.pos ?? (monster?.visible ? monster.position : undefined);
-      otherH = !shotObjs.length && op ? PEOPLE[op.id]?.h : undefined;
+      if (!shotObjs.length && !op && monster?.visible) { otherH = monsterH; otherR = monsterR; }
+      otherH = !shotObjs.length && op ? PEOPLE[op.id]?.h : otherH;
     } else { // a carried baby: frame its carrier, a little tighter on the arms
       const c = carried.get(shot.focus);
       focus = where[c.id].clone(); focusHeight = PEOPLE[c.id].h * 0.85;
     }
-    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, dur, seed: shot.seed ?? si };
+    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, otherRadius: otherR, dur, seed: shot.seed ?? si };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }
@@ -577,9 +643,18 @@ async function main() {
       else if (f !== "camera" && where[f] && f !== p.id) yaw = yawTo(p.pos, where[f]);
       else if (epic?.posOf(f)) yaw = yawTo(p.pos, epic.posOf(f));
       else yaw = yawTo(p.pos, camPos);
+      let extra = null;
+      if (p.hugWith && where[p.hugWith]) { // face the partner, the face turned a little to the lens
+        yaw = yawTo(p.pos, where[p.hugWith]);
+        let dy = yawTo(p.pos, camPos) - yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+        extra = { partnerH: PEOPLE[p.hugWith].h, headYaw: Math.max(-0.6, Math.min(0.6, dy * 0.6)) };
+      }
+      if (p.rideYaw != null) { yaw = p.rideYaw; extra = { seat: 0 }; }
+      if (p.faceAt) yaw = yawTo(p.pos, p.faceAt);
       o.rotation.set(0, yaw, 0);
       const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
-      posePerson(o, a.pose ?? "stand", lt + (a.phase ?? 0), { ...(p.opts ?? {}), hold: baby ? null : a.hold ?? null });
+      const pose = p.noMount ? "walk" : a.pose ?? "stand";
+      posePerson(o, pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null });
       setFace(o, a.expr ?? "neutral");
       if (baby && holdPerson) { // the baby in the carrier's arms, posed from its own actor entry if it has one
         const B = PEOPLE[baby].obj, ba = (shot.actors ?? []).find((x) => x.id === baby);

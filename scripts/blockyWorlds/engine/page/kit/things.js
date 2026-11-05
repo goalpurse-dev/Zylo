@@ -689,6 +689,9 @@ function quadruped(g, sp) {
   const H = legH + bh + hs * (sp.tall ? 1.1 : 0.8) + (sp.antlers ? hs : 0);
   g.userData.anim = (t) => { head.rotation.z = 0.06 * Math.sin(t * 1.6); head.rotation.y = -0.5 + 0.12 * Math.sin(t * 0.9); };
   fin(g, { h: Math.max(0.5, H), w: Math.max(0.7, bl + S * 0.8), d: Math.max(0.7, bl * 0.8), detailH: Math.max(0.6, H), push: 0.6 });
+  // 2026-11-05 (GAPS): a rider sits on the back, along the body (its head toward +x of the 3/4-turned group)
+  g.userData.ride = { at: V(0, 0, -0.5), yaw: 0.97 }; g.userData.heading = 0.97;
+  g.userData.parts = { body: a, head };
 }
 function bird(g, kind) {
   const look = { pigeon: ["#8d96a3", "#5d6a7a", "#ffb400", "#5aa874"], duck: ["#ffffff", "#f2f2f2", "#ff9f1a", null], chicken: ["#fbfbf5", "#f2ece0", "#ffb400", "#e53935"] }[kind] ?? ["#8d96a3", "#5d6a7a", "#ffb400", null];
@@ -705,6 +708,7 @@ function bird(g, kind) {
   M(cone(0.08, 0.2, 4), solid(c2), { x: -0.3, y: 0.34, rz: Math.PI / 2 + 0.3, parent: b });
   g.userData.anim = (t) => { head.position.x = 0.2 + 0.03 * Math.max(0, Math.sin(t * 5)); };
   fin(g, { h: 0.95, w: 0.9, d: 0.8, detailH: 0.9, push: 0.5 });
+  g.userData.heading = 1.07; // the head toward +x of the half-turned group (page/kit/motion.js walks it that way)
 }
 const SIMPLE = {
   fish(g) { const f = new THREE.Group(); f.position.set(0, 0.9, -0.4); g.add(f); const b = M(sph(0.3, 16, 12), gloss("#ff9f1a"), { parent: f }); b.scale.set(1.5, 1, 0.55); M(cone(0.25, 0.3, 4), gloss("#ff7a1a"), { x: -0.55, rz: Math.PI / 2, parent: f }).scale.set(1, 1, 0.3); for (const s of [-1, 1]) { M(sph(0.06, 8, 6), solid("#ffffff"), { x: 0.28, y: 0.08, z: s * 0.14, parent: f }); M(sph(0.035, 6, 5), solid("#1b1b1f"), { x: 0.31, y: 0.08, z: s * 0.17, parent: f }); } for (let k = 0; k < 4; k++) M(sph(0.04, 6, 5), clear("#e6f7ff", 0.7), { x: 0.5 + k * 0.05, y: 0.25 + k * 0.18, parent: f }); rbx(0.5, 0.06, 0.4, 0.02, solid("#2e86de"), { y: -0.6, parent: f }); g.userData.anim = (t) => { f.rotation.y = -0.5 + 0.15 * Math.sin(t * 3); f.position.y = 0.9 + 0.05 * Math.sin(t * 2); }; fin(g, { h: 1.4, w: 1.2, d: 0.8, detailH: 1.0 }); },

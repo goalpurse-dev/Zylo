@@ -98,14 +98,28 @@ export function frameEpic(type, ctx) {
       fov = 56; const v = ctx.velocity ?? new THREE.Vector3(0, 0, -1);
       const along = ctx.other ? new THREE.Vector3(ctx.other.x - focus.x, 0, ctx.other.z - focus.z).normalize() : v.clone().setY(0).normalize();
       const lat = new THREE.Vector3(along.z, 0, -along.x).multiplyScalar(r(7) < 0.5 ? 1 : -1);
-      const D = Math.max(10, span * 0.75);
+      // 2026-11-05 (GAPS): a giant attacker leading the army (the wolf) stays whole: the camera further back and the
+      // aim raised toward its head (its head was cropped off the top)
+      const atk = ctx.attacker ?? null;
+      const D = Math.max(10, span * 0.75, atk ? atk.h * 0.72 : 0);
+      if (atk) fov = 70;
       pos.copy(focus).addScaledVector(along, -D * (1 - 0.06 * k)).addScaledVector(lat, D * 0.22); pos.y = focus.y + 4 + span * 0.18;
       const oh = Number(ctx.otherHeight) || 30;
       aim.copy(ctx.other ?? focus.clone().addScaledVector(along, span * 2)); aim.y = (ctx.other ? ctx.other.y : focus.y) + oh * 0.3;
       aim.lerp(new THREE.Vector3(focus.x, focus.y + 1, focus.z), 0.25);
+      if (atk) { aim.lerp(new THREE.Vector3(atk.pos.x, atk.pos.y + atk.h * 0.7, atk.pos.z), 0.3); pos.addScaledVector(lat, D * 0.15 * (lat.dot(new THREE.Vector3(atk.pos.x - focus.x, 0, atk.pos.z - focus.z)) > 0 ? -1 : 1)); }
       break;
     }
     default: throw new Error(`cameraEpic: unknown type "${type}" (${EPIC_CAMERA_TYPES.join(", ")})`);
+  }
+  if ((type === "establish" || type === "aerial") && Number(ctx.radius) > 0) {
+    const R = Number(ctx.radius), top = focus.y + (Number(ctx.top) || H);
+    const dx = pos.x - focus.x, dz = pos.z - focus.z, hd = Math.hypot(dx, dz);
+    if (hd < R + 3 && pos.y < top + 3) {
+      // over the back (an "on" view): rise above the top; otherwise step out past the flank
+      if (ctx.onBack || hd < R * 0.6) pos.y = top + Math.max(4, R * 0.25);
+      else { const k = (R + 3) / Math.max(1e-3, hd); pos.x = focus.x + dx * k; pos.z = focus.z + dz * k; }
+    }
   }
   camera.position.copy(pos); camera.fov = fov; camera.near = Math.max(0.05, Math.min(0.3, pos.distanceTo(aim) / 400)); camera.far = Math.max(camera.far, 6000);
   camera.updateProjectionMatrix(); camera.up.set(0, 1, 0); camera.lookAt(aim); camera.updateMatrixWorld();

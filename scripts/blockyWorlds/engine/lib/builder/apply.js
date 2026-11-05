@@ -12,6 +12,7 @@
 //   prepare job before any render, as always.
 // The timeline gets `assets`: { [asset id]: { kind, name, aliases, blueprint | spec } } (the engine builds from it).
 
+import { ANIMAL_STATES } from "../catalog.js";
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const FREE_SPOTS = ["center", "left", "right", "back", "door", "far"];
 const freeSpot = (s) => { const taken = new Set([...(s.actors ?? []).map((a) => a.spot), ...(s.objects ?? []).map((o) => o.spot)]); return FREE_SPOTS.find((x) => !taken.has(x)) ?? "far"; };
@@ -60,7 +61,7 @@ function applyObjectOnShot(tl, need, r) {
     if (o.needId !== need.id) continue;
     delete o.needId; any = true;
     if (r.source === "kit") o.name = r.kitName;
-    else if (r.source === "built" || r.source === "cache") { o.asset = addAsset(tl, r.asset); o.aliases = r.asset.aliases ?? []; o.name = need.name; delete o.state; }
+    else if (r.source === "built" || r.source === "cache") { o.asset = addAsset(tl, r.asset); o.aliases = r.asset.aliases ?? []; o.name = need.name; if (!ANIMAL_STATES.includes(o.state)) delete o.state; }
     else {
       s.objects = s.objects.filter((x) => x !== o);
       if (s.focus === "object" && !s.objects.length) Object.assign(s, { camera: "insert", focus: "insert", insert: r.card, actors: [], monsterState: null, marker: null });

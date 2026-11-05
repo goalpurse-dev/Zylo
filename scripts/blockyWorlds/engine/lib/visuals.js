@@ -185,24 +185,36 @@ export const RULES = [
     show: { exprs: ["shush"], insertWords: ["WHISPER", "SHH", "QUIET", "SECRET", "HUSH", "???"], marker: "tag" } },
   { id: "talk", kind: "action", label: "talk", re: W("talk\\w*|say|said|says|speak\\w*|spoke|told|tell\\w*"), pose: "talk", icon: "💬",
     show: { poses: ["talk", "yell", "wave"], exprs: ["shush", "yell"], insertWords: ["TALKING", "TALK"] } },
-  { id: "cheer", kind: "action", label: "cheer", re: W("cheer\\w*|celebrat\\w*|hooray|danc\\w*|party|clap\\w*|applau\\w*|parades?|festivals?|contests?|competitions?"), pose: "cheer", expr: "excited", icon: "🎉",
-    show: { poses: ["cheer"], exprs: ["excited", "happy"] } },
+  { id: "cheer", kind: "action", label: "cheer", re: W("cheer\\w*|celebrat\\w*|hooray|danc\\w*|party|clap\\w*|applau\\w*|parades?|festivals?|contests?|competitions?"), pose: "cheer", poseBy: [[/^danc/, "dance"]], expr: "excited", icon: "🎉",
+    show: { poses: ["cheer", "dance"], exprs: ["excited", "happy"] } },
   { id: "run", kind: "action", label: "ran", re: W("ran|run|runs|running|raced|sprinted|fled|rushed|chased|bolted"), pose: "run", icon: "🏃",
     show: { poses: ["run", "walk"], monsterMove: true } },
-  { id: "walk", kind: "action", label: "walk", re: W("walk\\w*|climb\\w*|crept|tiptoe\\w*|marched|stepped|wander\\w*|stomp\\w*|clomp\\w*|squeak\\w*|footsteps?|steppers?|sneak\\w*|stroll\\w*|hik\\w*"), pose: "walk", icon: "🚶",
-    show: { poses: ["walk", "run"], monsterMove: true } },
+  { id: "walk", kind: "action", label: "walk", re: W("walk\\w*|climb\\w*|crept|tiptoe\\w*|marched|stepped|wander\\w*|stomp\\w*|clomp\\w*|squeak\\w*|footsteps?|steppers?|sneak\\w*|stroll\\w*|hik\\w*"), pose: "walk", poseBy: [[/^climb/, "climb"]], icon: "🚶",
+    show: { poses: ["walk", "run", "climb"], monsterMove: true } },
   { id: "cry", kind: "action", label: "cry", re: W("cried|cry|cries|crying|tears|sobbed|sob\\w*"), expr: "cry", icon: "😢", show: { exprs: ["cry", "sad"] } },
   { id: "sleep", kind: "action", label: "sleep", re: W("slept|asleep|sleep\\w*|nap\\w*|bedtime|snor\\w*|dream\\w*|tuck\\w*|yawn\\w*"), pose: "sleep", expr: "sleepy", icon: "😴", show: { poses: ["sleep"], exprs: ["sleepy"] } },
-  { id: "grab", kind: "action", label: "grab", re: W("grabbed|grabs|grab|held|holds|carried|carries|hugged|hugs|hug|hugging|picked up|lifted|taped|tapes|ties|tied|tie|hands? (?:it|them|him|her)|handed"), pose: "carry", icon: "✋",
-    show: { poses: ["carry", "blow"], anyHold: true } },
+  { id: "grab", kind: "action", label: "grab", re: W("grabbed|grabs|grab|held|holds|carried|carries|hugged|hugs|hug|hugging|picked up|lifted|taped|tapes|ties|tied|tie|hands? (?:it|them|him|her)|handed"), pose: "carry", poseBy: [[/^hug/, "hug"]], icon: "✋",
+    show: { poses: ["carry", "blow", "hug"], anyHold: true } },
   { id: "wave", kind: "action", label: "wave", re: W("wav(?:ed|es|e|ing)"), pose: "wave", icon: "👋", show: { poses: ["wave"] } },
   { id: "point", kind: "action", label: "point", re: W("point(?:ed|s|ing)"), pose: "point", icon: "👉", show: { poses: ["point"] } },
-  { id: "scared", kind: "action", label: "scared", re: W("scared|afraid|terrified|froze|trembl\\w*|shaking|shook|shake|shakes|hid|hide|hiding|panick\\w*|rumbl\\w*|quak\\w*|wobbl\\w*|shiver\\w*|gasp\\w*"), pose: "scared", expr: "scared", icon: "😱",
-    show: { poses: ["scared"], exprs: ["scared", "surprised"] } },
+  { id: "scared", kind: "action", label: "scared", re: W("scared|afraid|terrified|froze|trembl\\w*|shaking|shook|shake|shakes|hid|hide|hiding|panick\\w*|rumbl\\w*|quak\\w*|wobbl\\w*|shiver\\w*|gasp\\w*"), pose: "scared", poseBy: [[/^(hid|hide|hiding)$/, "hide"]], expr: "scared", icon: "😱",
+    show: { poses: ["scared", "hide"], exprs: ["scared", "surprised"] } },
   { id: "laugh", kind: "action", label: "laugh", re: W("laugh\\w*|smil\\w*|grin\\w*|giggl\\w*"), expr: "happy", icon: "😄", show: { exprs: ["happy", "excited", "smirk"] } },
   { id: "sit", kind: "action", label: "sit", re: W("sat|sit|sits|sitting"), pose: "sit", icon: "🪑", show: { poses: ["sit"] } },
   { id: "look_up", kind: "action", label: "look up", re: W("look(?:ed|s)? up|star(?:ed|ing) up"), pose: "look_up", icon: "👀", show: { poses: ["look_up"] } },
-  { id: "jump", kind: "action", label: "jump", re: W("jump\\w*|hopp\\w*|leap\\w*|bounc\\w*"), pose: "cheer", icon: "🤸", show: { poses: ["cheer", "run"] } },
+  { id: "jump", kind: "action", label: "jump", re: W("jump\\w*|hopp\\w*|leap\\w*|bounc\\w*"), pose: "jump", icon: "🤸", show: { poses: ["jump", "cheer", "run"] } },
+  // 2026-11-05 (GAPS): actions with their own pose (page/kit/people.js), only when a PERSON does them ("doer": the
+  // clause's subject is a person / a pronoun for one: "snow fell" and "the fog eats" are not people falling / eating)
+  { id: "push", kind: "action", label: "push", doer: "person", re: W("push|pushes|pushed|pushing|shove|shoves|shoved"), pose: "push", icon: "🫸", show: { poses: ["push"] } },
+  { id: "eat", kind: "action", label: "eat", doer: "person", re: W("eat|eats|ate|eating|chewed|chews|munch\\w*|nibbl\\w*|gobbled|swallowed"), pose: "eat", icon: "🍽️", show: { poses: ["eat"] } },
+  { id: "fall", kind: "action", label: "fall", doer: "person", re: W("(?:fell|falls|fall|falling)(?! asleep| silent| quiet| still| apart| in love)|tripped|slipped|tumbled|toppled"), pose: "fall", expr: "surprised", icon: "💥", show: { poses: ["fall"] } },
+  { id: "ride", kind: "action", label: "ride", doer: "person", re: W("ride|rides|rode|riding"), pose: "ride", icon: "🏇", show: { poses: ["ride", "walk"] } },
+  { id: "throw", kind: "action", label: "throw", doer: "person", re: W("throw|throws|threw|throwing|tossed|tosses|hurled"), pose: "throw", icon: "🤾", show: { poses: ["throw"] } },
+  { id: "fly", kind: "action", label: "fly", doer: "person", re: W("fly|flies|flew|flying|soared|soars"), pose: "fly", icon: "🦸", show: { poses: ["fly"] } },
+  { id: "build", kind: "action", label: "build", doer: "person", re: W("build|builds|built|hammered|hammers"), pose: "build", icon: "🧱", show: { poses: ["build"] } },
+  { id: "dig", kind: "action", label: "dig", doer: "person", re: W("dig|digs|dug|digging|shovel(?:ed|led|s|ing)"), pose: "dig", icon: "⛏️", show: { poses: ["dig"] } },
+  { id: "swim", kind: "action", label: "swim", doer: "person", re: W("swim|swims|swam|swimming"), pose: "swim", icon: "🏊", show: { poses: ["swim"] } },
+  { id: "kick", kind: "action", label: "kick", doer: "person", re: W("kick|kicks|kicked|kicking"), pose: "kick", icon: "🦵", show: { poses: ["kick"] } },
   { id: "sing", kind: "action", label: "song", re: W("sang|sing|sings|singing|songs?|music|hum\\w*"), pose: "talk", expr: "happy", marker: { kind: "icon", text: "♪" }, icon: "🎵",
     show: { markerText: ["♪"], objects: ["ice_cream_truck", "birthday_party"] } },
 
@@ -278,6 +290,20 @@ export const iconFor = (word) => ICONS[word] ?? ICONS[singular(word)] ?? GENERIC
  *   { people: Map(id -> { name, role, baby }), alias: { sister: "bean", baby: "bean" }, narrator, monster: { key, lairWords },
  *     looseNames: Set(lowercase), prop }
  */
+// who does a verb: the first content word of its clause (after "then", "and", "every Sunday,"...) is a person?
+const DOER_SKIP = /^(then|and|but|so|now|still|just|also|even|only|once|until|when|while|after|before|every|each|the|a|an|one|night|day|morning|sunday|monday|always|never|sometimes|suddenly|finally|quickly|slowly|again|today|tonight|yesterday|later|soon|so)$/;
+const DOER_PEOPLE = /^(i|im|ive|id|ill|we|were|weve|he|hes|she|shes|they|theyre|you|youre|me|us|everyone|everybody|somebody|someone|nobody|kids?|children|people|grownups|adults|boys?|girls?|man|woman|men|women|mom|mum|dad|baby|babies|friends?|neighbou?rs?|townsfolk|villagers|students|teachers?|family|twins?)$/;
+function personDoer(toks, k, vw) {
+  let c = k - 1;
+  while (c >= 0 && !toks[c].end && !toks[c].comma) c--;
+  for (let i = c + 1; i < k; i++) {
+    const w = toks[i].c;
+    if (DOER_SKIP.test(w)) continue;
+    if ((vw.monster?.words ?? []).includes(w) || (vw.monster?.keys ?? []).some((m) => w.startsWith(m))) return false; // the monster is no person
+    return DOER_PEOPLE.test(w) || !!FAMILY[w] || TITLES.test(w) || vw.people?.has?.(w) || vw.looseNames?.has?.(w) || (vw.narrator && w === norm(vw.narrator)) || /^[a-z]+$/.test(w) && toks[i].raw && /^[A-Z]/.test(toks[i].raw) && i > c + 1;
+  }
+  return false;
+}
 const FAMILY = { mom: "mom", mum: "mom", mommy: "mom", mother: "mom", dad: "dad", daddy: "dad", father: "dad", grandma: "grandma", granny: "grandma", nana: "grandma", grandpa: "grandpa", grandad: "grandpa", grandfather: "grandpa", grandmother: "grandma", brother: "brother", sister: "sister" };
 const TITLES = /^(mr|mrs|ms|miss|dr|coach|aunt|uncle|officer|principal|sheriff|mayor|baker|farmer|postman|mailman|captain|lady|lord|king|queen|sir|dame|fisher|cook|chef|nurse|judge|professor|prince|princess|old|big|little|young|sergeant|doctor|mister|madam|janitor|teacher|count|duke|baron|grandma|grandpa|granny|nana)$/;
 
@@ -329,6 +355,7 @@ export function extractKeys(text, vw, opts = {}) {
   for (const rule of RULES) {
     for (const m of matchTokens(rule.re, toks)) {
       if (!free(m.k, m.end)) continue;
+      if (rule.doer === "person" && !personDoer(toks, m.k, vw)) continue;
       if (rule.id === "sign" && /^(language)$/.test(toks[m.end + 1]?.c ?? "")) continue;
       take(m.k, m.end);
       if (rule.kind !== "action" && rule.kind !== "marker") for (let i = m.k; i <= m.end; i++) ruleOwned[i] = true;   // a thing, not a verb
@@ -336,6 +363,7 @@ export function extractKeys(text, vw, opts = {}) {
       if (m.k > 0 && toks[m.k - 1].poss) key.phrase = `${toks[m.k - 1].raw.replace(/[^A-Za-z']/g, "").replace(/'s$/i, "")}'s ${m.text}`;
       if (rule.id === "names") key.plural = /names/.test(m.text);
       if (rule.id === "times") key.count = m.text.split(" ")[0];
+      if (rule.poseBy) { const p = rule.poseBy.find(([re]) => re.test(toks[m.k].c)); if (p) key.pose = p[1]; }
       hits.push(key);
       keys.push(key);
       for (const w of rule.also ?? []) toks.forEach((t, i) => { if (!used[i] && t.c === w) used[i] = true; });
