@@ -31,7 +31,17 @@ if (Number(a.jobs) > 1 && a.shard == null) {
   const sum = (key) => parts.reduce((s, p) => s + (p.summary[key] ?? 0), 0), bugs = new Map();
   for (const p of parts) for (const b of p.bugs) if (!bugs.has(b.bug)) bugs.set(b.bug, b.first);
   const summary = { replays: sum("replays"), replayCrashes: sum("replayCrashes"), plans: sum("plans"), options: parts[0].summary.options, variants: sum("variants"), rendered: sum("rendered"), crashes: sum("crashes"), bugsSkipped: bugs.size, seconds: Math.max(...parts.map((p) => p.summary.seconds)) };
-  const crashes = parts.flatMap((p) => p.crashes);
+  // (a render with no frames and no page error, with four Chromes starting at once on the laptop, is run again alone:
+  // only if it fails alone too is it a crash; 4 of 4 such in the sweep of 2026-11-05 rendered fine alone)
+  const crashes = [];
+  for (const c of parts.flatMap((p) => p.crashes)) {
+    const m = /^(.+?) \/ (.+)$/.exec(c.where);
+    if (m && /only 0 of 3 frames/.test(c.error)) {
+      const variant = m[2].replace(/^combo: /, ""), r = spawnSync(process.execPath, [fileURLToPath(import.meta.url), "--proto", PROTO, "--out", path.join(OUT, "alone"), "--no-replays", "--only", m[1], "--combo", variant === "as saved" ? "" : variant], { encoding: "utf8", timeout: 600000 });
+      if (/"crashes":0/.test(r.stdout ?? "")) { console.log(`[sweep] ${c.where}: rendered fine alone (a laptop start-up miss, not a crash)`); continue; }
+    }
+    crashes.push(c);
+  }
   fs.writeFileSync(path.join(OUT, "sweep.json"), JSON.stringify({ summary, crashes, bugs: [...bugs].map(([bug, first]) => ({ bug, first })), items: parts.flatMap((p) => p.items), replays: parts.flatMap((p) => p.replays) }, null, 1));
   console.log(`SWEEP ${JSON.stringify(summary)}`);
   for (const c of crashes.slice(0, 25)) console.log(`CRASH ${c.where}: ${String(c.error).slice(0, 300)}`);
