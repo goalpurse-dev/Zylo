@@ -14,13 +14,13 @@ import { trackLaunch } from "../../launch/launch";
 import showcase from "../../../data/communityShowcase.json";
 import { HIDDEN_TEMPLATES } from "../../../data/homeContent";
 import { CUTAWAY_ENABLED } from "../../../data/cutawayExplainer";
-import { showcaseTemplates, flatVideos } from "./showcaseData.js";
+import { showcaseTemplates, flatVideos, feedOrder } from "./showcaseData.js";
 import { claim, release, stopAll } from "./playerPool.js";
 import "./madeWithZyvo.css";
 
 const ShowcaseViewer = lazy(() => import("./ShowcaseViewer.jsx"));
 const BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase/community`;
-const POSTER_MS = 3200; // an "All" card shows each of its videos' posters this long while it isn't playing
+const FEED_BATCH = 20; // cards built at first and added each time the end of the grid comes near
 const LONG_FORM = "long-form";
 
 /* ─── hooks ──────────────────────────────────────────────────────────────── */
@@ -110,27 +110,17 @@ function ClipVideo({ src, play, loop = true, onEnded }) {
 
 /* ─── grid card ──────────────────────────────────────────────────────────── */
 
-// One template ("All": cycles through its videos with a crossfade and dots) or one video (a template chip).
-function ShowcaseCard({ template, videos, label, onOpen, index }) {
+// One video. Desktop: plays on hover (lifts a little). Phone: plays while on screen. Max 3 at once (pool).
+function ShowcaseCard({ video, onOpen, index }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
   const hoverDevice = useHoverDevice();
   const interacted = useFirstInteraction();
   const inView = useInView(ref);
   const [hovered, setHovered] = useState(false);
-  const [i, setI] = useState(0);
-  const cycling = videos.length > 1;
   const want = interacted && !reduced && (hoverDevice ? hovered : inView);
-  const playing = usePlaySlot(`card:${template.id}:${videos[0].id}`, want);
+  const playing = usePlaySlot(`card:${video.id}`, want);
 
-  // Not playing: the posters take turns while the card is on screen.
-  useEffect(() => {
-    if (!cycling || playing || !inView || reduced || !interacted) return undefined;
-    const t = setInterval(() => setI((n) => (n + 1) % videos.length), POSTER_MS);
-    return () => clearInterval(t);
-  }, [cycling, playing, inView, reduced, interacted, videos.length]);
-
-  const current = videos[i];
   return (
     <Motion.button
       ref={ref}
@@ -145,42 +135,22 @@ function ShowcaseCard({ template, videos, label, onOpen, index }) {
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
-      onClick={() => onOpen(current)}
-      aria-label={`Watch ${template.name} examples`}
+      onClick={() => onOpen(video)}
+      aria-label={`Watch this ${video.template.name} video`}
       className="group relative block aspect-[9/16] w-full overflow-hidden rounded-[18px] border border-white/[0.08] bg-[#0d0f10] text-left shadow-[0_18px_50px_-20px_rgba(0,0,0,.7)] transition-[transform,border-color,box-shadow] duration-300 md:hover:-translate-y-1.5 md:hover:scale-[1.02] md:hover:border-white/20 md:hover:shadow-[0_28px_60px_-18px_rgba(0,0,0,.85)]"
       data-testid="mwz-card"
     >
-      {/* posters: the new one fades in on top while the previous one stays fully visible underneath (a
-          crossfade with no dip to black); the others wait, hidden. Own layer (z-0), so the video and labels stay above. */}
-      <div className="absolute inset-0 z-0">
-      {videos.map((v, n) => (
-        (n === i || (cycling && interacted)) && (
-          <div key={v.id} className={`absolute inset-0 transition-opacity duration-700 ${n === i ? "z-[2] opacity-100" : n === (i - 1 + videos.length) % videos.length ? "z-[1] opacity-100" : "z-0 opacity-0"}`}>
-            <Poster src={v.poster} />
-          </div>
-        )
-      ))}
-      </div>
-      <ClipVideo key={current.id} src={current.src} play={playing} loop={!cycling} onEnded={() => setI((n) => (n + 1) % videos.length)} />
+      <Poster src={video.poster} />
+      <ClipVideo src={video.src} play={playing} />
 
       <div className="pointer-events-none absolute inset-0 rounded-[18px] ring-1 ring-inset ring-white/[0.06]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
       <span className="pointer-events-none absolute left-2.5 top-2.5 max-w-[calc(100%-20px)] truncate rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10.5px] font-semibold text-white/90 backdrop-blur-md">
-        {label}
+        {video.template.name}
       </span>
       {!playing && (
         <span className="pointer-events-none absolute bottom-3 right-3 grid h-8 w-8 place-items-center rounded-full bg-black/45 text-white/90 opacity-80 backdrop-blur transition group-hover:opacity-100">
           <Play className="ml-0.5 h-3.5 w-3.5" fill="currentColor" />
-        </span>
-      )}
-      {cycling && (
-        <span className="pointer-events-none absolute bottom-3.5 left-3 flex items-center gap-1">
-          {videos.map((v, n) => (
-            <span key={v.id} className={`relative h-1 overflow-hidden rounded-full bg-white/35 transition-all duration-300 ${n === i ? "w-5" : "w-1.5"}`}>
-              {n === i && !reduced && <span key={`${i}-${playing}`} className={`absolute inset-0 rounded-full bg-white ${playing ? "" : "mwz-dot-fill"}`} style={{ "--mwz-dot": `${POSTER_MS}ms` }} />}
-              {n === i && reduced && <span className="absolute inset-0 rounded-full bg-white" />}
-            </span>
-          ))}
         </span>
       )}
     </Motion.button>
@@ -281,10 +251,24 @@ export default function MadeWithZyvo({ blocky = true, longFormItems = [] }) {
   const [viewer, setViewer] = useState(null); // { items, start }
   const chipsRef = useRef(null);
 
+  // The feed: "All" = every video, templates mixed evenly; a chip = that template's videos. The cards render
+  // in batches: the next batch is added as the end of the grid comes near (so scrolling never runs dry, and a
+  // first visit only builds the first rows).
+  const feed = useMemo(() => (filter === "all" ? feedOrder(templates) : flatVideos(templates.filter((t) => t.id === filter))), [filter, templates]);
+  const [visible, setVisible] = useState(FEED_BATCH);
+  useEffect(() => setVisible(FEED_BATCH), [filter]);
+  const endRef = useRef(null);
+  useEffect(() => {
+    const el = endRef.current;
+    if (!el || visible >= feed.length || typeof IntersectionObserver === "undefined") return undefined;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible((v) => Math.min(v + FEED_BATCH, feed.length)); }, { rootMargin: "900px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible, feed.length]);
+
   if (!templates.length) return null;
   const latest = templates.slice(0, 3);
   const chips = [{ id: "all", name: "All" }, ...templates, ...(longForm.length ? [{ id: LONG_FORM, name: "Long Form" }] : [])];
-  const shown = filter === "all" ? templates : templates.filter((t) => t.id === filter);
 
   const open = (list, video) => {
     stopAll();
@@ -297,11 +281,6 @@ export default function MadeWithZyvo({ blocky = true, longFormItems = [] }) {
     el?.scrollIntoView?.({ behavior: "smooth", block: "nearest", inline: "center" });
   };
 
-  // Cards: "All" = one per template (cycling); a template = one card per video.
-  const cards = filter === "all"
-    ? shown.map((t) => ({ key: t.id, template: t, videos: t.videos, label: t.name }))
-    : shown.flatMap((t) => t.videos.map((v) => ({ key: v.id, template: t, videos: [v], label: t.name })));
-  const viewerList = flatVideos(shown);
 
   return (
     <section className="w-full px-4 md:px-[50px]" data-testid="made-with-zyvo">
@@ -351,18 +330,13 @@ export default function MadeWithZyvo({ blocky = true, longFormItems = [] }) {
         <LayoutGroup id="mwz-grid">
           <Motion.div layout className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <AnimatePresence mode="popLayout" initial={false}>
-              {cards.map((c, n) => (
-                <ShowcaseCard
-                  key={c.key}
-                  index={n}
-                  template={c.template}
-                  videos={c.videos}
-                  label={c.label}
-                  onOpen={(video) => open(viewerList, { ...video, template: c.template })}
-                />
+              {feed.slice(0, visible).map((video, n) => (
+                // the viewer gets the whole feed, so a swipe keeps going past the cards built so far
+                <ShowcaseCard key={video.id} index={n} video={video} onOpen={(v) => open(feed, v)} />
               ))}
             </AnimatePresence>
           </Motion.div>
+          {visible < feed.length && <div ref={endRef} aria-hidden="true" className="h-px" data-testid="mwz-more" />}
         </LayoutGroup>
       )}
 

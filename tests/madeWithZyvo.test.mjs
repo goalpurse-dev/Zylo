@@ -2,19 +2,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { showcaseTemplates, flatVideos } from "../src/components/home-v2/madeWithZyvo/showcaseData.js";
+import { showcaseTemplates, flatVideos, feedOrder } from "../src/components/home-v2/madeWithZyvo/showcaseData.js";
 import { claim, release, stopAll, playingCount, MAX_PLAYING } from "../src/components/home-v2/madeWithZyvo/playerPool.js";
 
 const data = JSON.parse(fs.readFileSync(new URL("../src/data/communityShowcase.json", import.meta.url), "utf8"));
 const NOW = Date.parse("2026-11-06T12:00:00Z");
 
-test("the picks file: every template has a real route, 3-4 unique videos, valid dates", () => {
+test("the picks file: every template has a real route, at least 3 unique videos, valid dates", () => {
   const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const files = new Set();
   for (const t of data.templates) {
     assert.ok(t.id && t.name && t.desc && t.path.startsWith("/workspace/"), t.id);
     assert.ok(!Number.isNaN(Date.parse(t.addedAt)), `${t.id} addedAt`);
-    assert.ok(t.videos.length >= 3 && t.videos.length <= 4, `${t.id} has ${t.videos.length} videos`);
+    assert.ok(t.videos.length >= 3, `${t.id} has ${t.videos.length} videos`);
     for (const v of t.videos) {
       assert.match(v.file, /^[a-z0-9-]+$/);
       assert.ok(!files.has(v.file), `duplicate ${v.file}`);
@@ -46,6 +46,19 @@ test("the viewer list keeps each video's template", () => {
   const flat = flatVideos(list);
   assert.equal(flat.length, list.reduce((n, t) => n + t.videos.length, 0));
   assert.equal(flat[0].template.id, list[0].id);
+});
+
+test("the All feed: every video once, first row one per template, templates spread out", () => {
+  const list = showcaseTemplates(data, { now: NOW });
+  const feed = feedOrder(list);
+  const total = list.reduce((n, t) => n + t.videos.length, 0);
+  assert.equal(feed.length, total);
+  assert.equal(new Set(feed.map((v) => v.id)).size, total);
+  assert.deepEqual(feed.slice(0, list.length).map((v) => v.template.id), list.map((t) => t.id));
+  // never three in a row from the same template
+  for (let i = 2; i < feed.length; i++) {
+    assert.ok(!(feed[i].template.id === feed[i - 1].template.id && feed[i].template.id === feed[i - 2].template.id), `run at ${i}`);
+  }
 });
 
 test("at most 3 videos play; the oldest is told to stop", () => {

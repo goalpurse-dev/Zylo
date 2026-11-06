@@ -32,3 +32,14 @@ export function showcaseTemplates(data, { base = "", hidden = [], off = [], now 
 export function flatVideos(templates) {
   return templates.flatMap((t) => t.videos.map((v) => ({ ...v, template: t })));
 }
+
+/**
+ * The "All" feed: every video, each template spread evenly over the whole feed (a template with 18 videos
+ * doesn't bunch up at the end). The first row is one video of each template, newest template first.
+ */
+export function feedOrder(templates) {
+  return templates
+    .flatMap((t, rank) => t.videos.map((v, j) => ({ video: { ...v, template: t }, at: j / t.videos.length, rank })))
+    .sort((a, b) => a.at - b.at || a.rank - b.rank)
+    .map((x) => x.video);
+}

@@ -32,16 +32,6 @@
   display: none;
 }
 
-/* The active dot fills while its video (or poster) is up. */
-@keyframes mwzDot {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-.mwz-dot-fill {
-  transform-origin: left;
-  animation: mwzDot var(--mwz-dot, 3.2s) linear both;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .mwz-skeleton, .mwz-float, .mwz-float-slow, .mwz-dot-fill { animation: none; }
+  .mwz-skeleton, .mwz-float, .mwz-float-slow { animation: none; }
 }
