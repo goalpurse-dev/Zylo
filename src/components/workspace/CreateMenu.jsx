@@ -487,8 +487,26 @@ export const WORKSPACE_TOOLS = [
   },
 ];
 
+// Desktop tools shell only (Workspace panel + pinnable). Kept out of WORKSPACE_TOOLS on purpose:
+// the mobile bottom nav's Tools menu reads WORKSPACE_TOOLS, and these are not in the bottom nav yet.
+export const SHELL_ONLY_TOOLS = [
+  {
+    id: "earnings-calculator",
+    label: "Earnings Calculator",
+    sublabel: "",
+    path: "/workspace/earnings",
+    color: "#bef264",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path d="M3 17l5-5 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 8h5v5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
 // Flagged tools can be pinned too; the shell shows a pinned one only while its flag is on.
-export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS, ...WORKSPACE_TOOLS, ...PUBLISH_TOOLS];
+export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...FLAGGED_CREATE_TOOLS, ...WORKSPACE_TOOLS, ...SHELL_ONLY_TOOLS, ...PUBLISH_TOOLS];
 
 export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
@@ -497,7 +515,7 @@ export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onToggleP
 
   return (
     <DesktopPanel open={open} onClose={onClose} title="Workspace" subtitle="Your creation tools" sectionLabel="Generators" grid>
-      {WORKSPACE_TOOLS.map((tool) => (
+      {[...WORKSPACE_TOOLS, ...SHELL_ONLY_TOOLS].map((tool) => (
         <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
       ))}
     </DesktopPanel>

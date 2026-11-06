@@ -191,6 +191,7 @@ useEffect(() => {
     "/workspace/earn/payouts":       "Earn",
     "/workspace/earn/leaderboard":   "Earn",
     "/workspace/earn/rules":         "Earn",
+    "/workspace/earnings":           "Earnings Calculator",
     "/long-form":                    "Long Form",
     "/long-form/new":                "Long Form",
   };
