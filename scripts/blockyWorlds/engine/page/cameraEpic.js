@@ -60,6 +60,14 @@ export function frameEpic(type, ctx) {
       let lat = new THREE.Vector3(along.z, 0, -along.x).multiplyScalar(r(4) < 0.5 ? 1 : -1);
       // a giant in the shot (the wolf leading his army): the camera on the other side, so the giant is behind the army
       if (ctx.other && lat.dot(new THREE.Vector3(ctx.other.x - focus.x, 0, ctx.other.z - focus.z)) > 0) lat.negate();
+      if (ctx.giantTrack) {
+        // REBUILD 2026-11-06: alongside a walking GIANT (no army): the whole animal side-on, a little ahead of it,
+        // the camera at a third of its height (the army framing aimed at its feet from too close: legs only)
+        fov = 50; const D = Math.max(H * 1.5, span * 0.95);
+        pos.copy(focus).addScaledVector(lat, D * (1 - 0.05 * k)).addScaledVector(along, D * (0.35 + 0.1 * k)); pos.y = focus.y + H * 0.35;
+        aim.copy(focus).addScaledVector(along, span * 0.1); aim.y = focus.y + H * 0.45;
+        break;
+      }
       const D = Math.max(6, span * 0.9);
       pos.copy(focus).addScaledVector(lat, D).addScaledVector(along, D * 0.55); pos.y = focus.y + 2.2 + span * 0.08;
       aim.copy(focus).addScaledVector(along, span * 0.12); aim.y = focus.y + 1.3;
@@ -74,7 +82,18 @@ export function frameEpic(type, ctx) {
       break;
     }
     case "giant_close": {
-      fov = 58; const dist = H * 0.55;
+      fov = 58;
+      if (ctx.head && ctx.faceDir) {
+        // REBUILD 2026-11-06: a giant beside the world (wolf, bear...): the camera in front of its FACE (3/4 view from
+        // the camera side), a slow push in; the old framing measured from its feet and sat inside a long body
+        const fd = ctx.faceDir.clone().setY(0).normalize();
+        const dir = fd.multiplyScalar(0.8).addScaledVector(side, 0.5).normalize().applyAxisAngle(up, (r(6) - 0.5) * 20 * DEG);
+        const dist = Math.max(H * 0.62, Number(ctx.headSize) || 0) * (1 - 0.08 * k);
+        pos.copy(ctx.head).addScaledVector(dir, dist); pos.y = ctx.head.y - H * 0.1;
+        aim.copy(ctx.head);
+        break;
+      }
+      const dist = H * 0.55;
       const dir = side.clone().applyAxisAngle(up, (r(6) - 0.5) * 30 * DEG);
       pos.copy(focus).addScaledVector(dir, dist * (1 - 0.05 * k)); pos.y = focus.y + H * 0.3;
       aim.set(focus.x, focus.y + H * 0.82, focus.z);

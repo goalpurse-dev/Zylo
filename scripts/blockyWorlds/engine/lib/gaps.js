@@ -102,3 +102,11 @@ export function formatRanked(ranked, { top = 25, totalStories = null } = {}) {
   });
   return out.join("\n");
 }
+
+// 2026-11-06 (CAPABILITIES): the old gap kinds (the turtle target's "can't express" notes, the director's gap details)
+// -> the capability that now meets them (lib/caps.js GAP_TO_CAPABILITY). nowMetBy(row) -> { capability, field } | null;
+// annotateGaps(rows) adds row.nowMetBy so the ranked list shows which logged gaps are closed.
+import { capabilityForGap } from "./caps.js";
+export { capabilityForGap };
+export const nowMetBy = (g) => capabilityForGap(`${g?.detail ?? ""} ${g?.name ?? ""} ${g?.key ?? ""} ${g?.gap ?? ""}`);
+export const annotateGaps = (rows) => (rows ?? []).map((r) => ({ ...r, nowMetBy: nowMetBy(r) }));

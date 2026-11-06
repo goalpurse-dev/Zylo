@@ -115,8 +115,11 @@ export function creatureSway(kind, size, t, amount = 1) {
 }
 
 // ------------------------------------------------------------------------------------------------ INSIDE
-function buildInside(spec, ctx) {
+function buildInside(spec0, ctx) {
   const { THREE } = ctx;
+  // the inside holds a whole town: its cavern is never smaller than a 110 m creature's (turtle run 1620fc3e: a 30 m
+  // turtle made a 6 x 4 m cavern; houses poked through the shell, the camera stood outside it in the fog)
+  const spec = { ...spec0, size: Math.max(110, spec0.size) };
   const root = new THREE.Group(); root.name = `creature:inside:${spec.kind}`;
   const world = new THREE.Group(); root.add(world); // sways
   const K = makeKit(ctx, world), { solid, pbr } = K;
@@ -346,5 +349,129 @@ export async function buildCreatureOutside(rawSpec, ctx) {
     giant, town: giant?.userData.town ?? null, mount: root, groundY: 0,
   };
   S.spots.giant_left = V(-spec.size * 0.9, 0, -dist); S.spots.giant_right = V(spec.size * 0.9, 0, -dist);
+  if (giant && !spec.water) addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath });
   return S;
+}
+
+// ------------------------------------------------------------------------------------------------ OUTSIDE: the coast stage
+/**
+ * 2026-11-06 (turtle run 1620fc3e: "spray the hill with the hose, mud, the turtle tips and slides down, splash into
+ * the sea, floating at sunrise" showed the turtle walking on flat grass). The outside view gets a coast: a big hill
+ * sloping down (left -> right) to the sea, the giant on it. shot.stage (lib/coast.js plans it, lib/epic.js checks it):
+ *   { ground: "land" | "hill" | "sea", mud?: bool, fx?: ["spray", "splash"] }
+ *   land: the plain fields (the default; no stage = land)      hill: the coast, the giant walking on the hill
+ *   mud: the hill brown and shiny                               sea: the giant floating off the shore
+ *   spray: water arcing from the first person's hand to the hill (S.stageAfter, once people stand)
+ *   splash: the giant hits the water at the shore: white water bursting up and a ring spreading
+ * The giant's action "slide" (lib/epic.js) on a hill: it slides down the slope on its belly toward the sea.
+ * S.setStage(stage, lt, dur, action) -> after S.update (moves the giant); S.stageAfter(shot, lt, where) -> the spray.
+ */
+function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath }) {
+  const { THREE } = ctx, s = spec.size, V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const shoreX = s * 0.95, topX = -s * 2.4, H = s * 0.42, zc = -dist, halfD = dist * 0.92;
+  const sm = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+  /** the hill's height at (x, z): highest at the left, down to 0 at the shore, rounded off front and back */
+  const hillY = (x, z) => H * sm((shoreX - x) / (shoreX - topX)) * sm(1.15 - Math.abs(z - zc) / halfD);
+  const coast = new THREE.Group(); coast.name = "coast"; coast.visible = false; S.root.add(coast);
+  // the hill: a displaced plane (grass, or mud)
+  const gW = shoreX - topX + s * 0.6, geo = new THREE.PlaneGeometry(gW, halfD * 2.2, 90, 60); geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position, cx = (shoreX + topX) / 2 - s * 0.3;
+  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i) + cx, z = pos.getZ(i) + zc; pos.setY(i, hillY(x, z) + 0.05); }
+  geo.computeVertexNormals();
+  const grassM = new THREE.MeshStandardMaterial({ color: "#6fae45", roughness: 0.95 });
+  const mudM = new THREE.MeshStandardMaterial({ color: "#6b4526", roughness: 0.18, metalness: 0.15 });
+  const hill = new THREE.Mesh(geo, grassM); hill.position.set(cx, 0, zc); hill.receiveShadow = true; coast.add(hill);
+  // mud streaks: darker glossy bands down the slope (only with mud)
+  const streaks = new THREE.Group(); streaks.visible = false; coast.add(streaks);
+  const wetM = new THREE.MeshStandardMaterial({ color: "#4a2e18", roughness: 0.08, metalness: 0.2 });
+  for (let k = 0; k < 7; k++) {
+    const z = zc + (k - 3) * s * 0.16, len = shoreX - topX, g2 = new THREE.PlaneGeometry(len, s * 0.05, 40, 1); g2.rotateX(-Math.PI / 2);
+    const p2 = g2.attributes.position;
+    for (let i = 0; i < p2.count; i++) { const x = p2.getX(i) + (shoreX + topX) / 2; p2.setY(i, hillY(x, p2.getZ(i) + z) + 0.3); }
+    g2.computeVertexNormals();
+    const m = new THREE.Mesh(g2, wetM); m.position.set((shoreX + topX) / 2, 0, z); streaks.add(m);
+  }
+  // the sea from the shore to the horizon, a sand strip along the shore
+  const seaM = new THREE.MeshStandardMaterial({ color: "#2f7fb8", roughness: 0.12, metalness: 0.15 });
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), seaM); sea.rotation.x = -Math.PI / 2; sea.position.set(shoreX + 3000, 0.6, 0); sea.receiveShadow = true; coast.add(sea);
+  const sand = new THREE.Mesh(new THREE.BoxGeometry(s * 0.35, 1, 6000), new THREE.MeshStandardMaterial({ color: "#e9d3a0", roughness: 1 })); sand.position.set(shoreX - s * 0.1, 0.2, 0); coast.add(sand);
+  // the grass in front of / behind the hill on the land side (the plain fields' trees would stand in the sea)
+  const flat = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: "#78b84e", roughness: 1 })); flat.rotation.x = -Math.PI / 2; flat.position.set(shoreX - 3000, 0, 0); coast.add(flat);
+  const mtnM = new THREE.MeshStandardMaterial({ color: "#6c8bb0", roughness: 1 });
+  for (let k = 0; k < 6; k++) { const h = 220 + k * 40, m = new THREE.Mesh(new THREE.ConeGeometry(h * 0.9, h, 5), mtnM); m.position.set(-900 + k * 260, h / 2 - 10, -1500 - (k % 2) * 200); coast.add(m); }
+  // the spray: droplets on a parabola from a hand toward the hill; the splash: droplets bursting up + a foam ring
+  const dropM = new THREE.MeshStandardMaterial({ color: "#cfeeff", emissive: "#9fd6ff", emissiveIntensity: 0.6, roughness: 0.2, transparent: true, opacity: 0.9 });
+  const NS = 420, spray = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 6, 4), dropM, NS); spray.visible = false; spray.frustumCulled = false; S.root.add(spray);
+  const NB = 420, splash = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#d8f0ff", emissiveIntensity: 0.35, roughness: 0.3 }), NB); splash.visible = false; splash.frustumCulled = false; S.root.add(splash);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 64), new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.visible = false; S.root.add(ring);
+  const R = prng(spec.seed * 31 + 7), seeds = Array.from({ length: Math.max(NS, NB) }, () => [R(), R(), R(), R()]);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3();
+  const sink = giant.userData.height * 0.32;
+  let cur = null;
+  /** the slope angle under x (for tipping the giant) */
+  const slopeAt = (x, z) => Math.atan2(hillY(x - 2, z) - hillY(x + 2, z), 4);
+  S.coast = { hillY, shoreX, topX };
+  S.setStage = (stage, lt = 0, dur = 1, action = null) => {
+    cur = stage && stage.ground && stage.ground !== "land" ? stage : null;
+    coast.visible = !!cur; land.visible = !cur;
+    spray.visible = false; splash.visible = false; ring.visible = false;
+    if (!cur) return;
+    hill.material = cur.mud ? mudM : grassM; streaks.visible = !!cur.mud;
+    const u = Math.min(1, Math.max(0, lt / Math.max(0.2, dur)));
+    const fx = new Set(cur.fx ?? []);
+    let x, z = zc + s * 0.05, y, pitch = 0, gy = Math.PI / 2; // the giant faces the sea (+x), side-on to the lens
+    if (cur.ground === "sea") { x = shoreX + s * 0.9 + lt * gait.speed * 0.08; y = 0.6 - sink + 0.6 * Math.sin(lt * 1.2); gy = Math.PI / 2 - 0.35; }
+    else if (fx.has("splash")) { x = shoreX + s * (0.15 + 0.45 * Math.min(1, u * 1.6)); y = Math.max(0.6 - sink, hillY(x, z)) - sink * Math.min(1, u * 2) * 0.5; pitch = 0.18 * (1 - u); }
+    else if (action === "slide") { x = -s * 0.9 + (shoreX - s * 0.25 + s * 0.9) * (u * u * 0.85 + u * 0.15); y = hillY(x, z); pitch = slopeAt(x, z); }
+    else { x = -s * 0.75 + lt * gait.speed * 0.1; y = hillY(x, z); pitch = action === "fall" ? slopeAt(x, z) + 0.2 * Math.min(1, u * 2) : slopeAt(x, z) * 0.6; }
+    giant.position.set(x, y, z); giant.rotation.set(0, gy, 0); giant.rotateX(pitch);
+    // the splash: white water flying up around the giant's front and falling back; a foam ring spreading
+    if (fx.has("splash")) {
+      const front = V(x + giant.userData.length * 0.45, 0.6, z), L = giant.userData.length;
+      for (let i = 0; i < NB; i++) {
+        const [a, b, c, d] = seeds[i], ang = a * Math.PI * 2, sp = (0.25 + b * 0.75) * L * 0.55, up = (0.5 + c) * L * 0.45, tt = Math.max(0, lt - d * 0.25);
+        p.set(front.x + Math.cos(ang) * sp * tt * 0.8, 0.6 + up * tt - 0.5 * 30 * tt * tt * 0.35, front.z + Math.sin(ang) * sp * tt * 0.8);
+        const k = p.y < 0.6 ? 0 : (0.4 + d) * L * 0.012 * (1 + c);
+        m4.compose(p, q.identity(), sc.set(k, k, k)); splash.setMatrixAt(i, m4);
+      }
+      splash.instanceMatrix.needsUpdate = true; splash.visible = true;
+      const rr = L * (0.3 + lt * 0.7); ring.scale.set(rr, rr, 1); ring.position.set(front.x, 0.75, front.z); ring.material.opacity = Math.max(0, 0.75 - lt * 0.25); ring.visible = true;
+    }
+  };
+  /** the spray from the first person's hand (where: the engine's placed people) toward the hill, cycling */
+  S.stageAfter = (shot, lt, where, camera = null) => {
+    // the camera never ends inside the hill (the EPIC cameras measure from the flat ground: a hero_low on the giant
+    // high on the slope stood inside it, a flat green frame): lifted above the slope and aimed at the giant again
+    if (cur && camera) {
+      camera.updateMatrixWorld();
+      const c = camera.getWorldPosition(new THREE.Vector3()), gy = hillY(c.x, c.z);
+      if (gy > 0.5 && c.y < gy + 1.5) { // only when it is in (or just over) the slope: people shots at its foot stay as framed
+        const onGiant = shot.focus === "world" || /^giant:/.test(String(shot.focus ?? "")) || !(shot.actors ?? []).length;
+        camera.position.y += gy + 1.5 - c.y + (onGiant ? giant.userData.height * 0.3 : 0);
+        if (onGiant) camera.lookAt(giant.position.clone().setY(giant.position.y + giant.userData.height * 0.45));
+        camera.updateMatrixWorld();
+      }
+    }
+    // the splash: filmed from the beach, side-on, the white water and the sea in frame (an EPIC camera on the giant
+    // high on the slope saw the shell close up, or stood inside the hill)
+    if (cur && camera && (cur.fx ?? []).includes("splash")) {
+      const L = giant.userData.length, gh = giant.userData.height, gp = giant.position;
+      camera.position.set(gp.x + L * 0.55, 6 + gh * 0.15, gp.z + L * 1.35);
+      camera.up.set(0, 1, 0); camera.lookAt(gp.x + L * 0.2, gh * 0.3, gp.z); camera.updateMatrixWorld();
+    }
+    if (!cur || !(cur.fx ?? []).includes("spray")) return;
+    const id = (shot.actors ?? [])[0]?.id, at = id && where?.[id];
+    if (!at) return;
+    // across the frame (screen left, a little away from the lens): straight away from the lens it hid behind the sprayer
+    const left = camera ? new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize().negate() : V(-1, 0, 0);
+    const away = camera ? new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 2).setY(0).normalize().negate() : V(0, 0, -1);
+    const dir = left.clone().multiplyScalar(0.3).addScaledVector(away, 1).normalize(), o = at.clone().add(V(0, 0.95, 0)).addScaledVector(left, 0.3).addScaledVector(away, 0.05);
+    for (let i = 0; i < NS; i++) {
+      const [a, b, c] = seeds[i], tau = ((lt * 1.3 + a) % 1) * 1.2, v = 4.5 + b * 1.2;
+      p.copy(o).addScaledVector(dir, v * tau); p.y += 4.2 * tau - 4.9 * tau * tau; p.x += (c - 0.5) * 0.25 * tau; p.z += (b - 0.5) * 0.25 * tau;
+      const k = p.y < 0 ? 0 : 0.8 + c * 0.8;
+      m4.compose(p, q.identity(), sc.set(k, k, k)); spray.setMatrixAt(i, m4);
+    }
+    spray.instanceMatrix.needsUpdate = true; spray.visible = true;
+  };
 }

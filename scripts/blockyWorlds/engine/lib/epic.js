@@ -15,7 +15,13 @@
 export const GIANT_KINDS = Object.freeze(["turtle", "whale", "elephant", "snail", "wolf", "bear", "dragon", "dog", "cat", "frog", "crab", "giant_human", "generic"]);
 export const GIANT_ACTIONS = Object.freeze(["idle", "walk", "run", "stomp", "roar", "attack", "swim", "hit", "fall",
   // 2026-11-05 (GAPS): what the real stress run asked giants for most (page/kit/giants.js animateGiant)
-  "reach", "sleep", "lurk", "reveal", "carry", "eat", "fly", "climb", "flee", "howl", "dig"]);
+  "reach", "sleep", "lurk", "reveal", "carry", "eat", "fly", "climb", "flee", "howl", "dig",
+  // 2026-11-06 (turtle run 1620fc3e ending): down a muddy hill on its belly; resting in the sea
+  "slide", "float"]);
+// the outside view's stage (page/sets/creatureWorld.js setStage; lib/coast.js plans it): what the land around the
+// creature is in a shot, and the water effects on it
+export const STAGE_GROUNDS = Object.freeze(["land", "hill", "sea"]);
+export const STAGE_FX = Object.freeze(["spray", "splash"]);
 // the builder's vocabulary (lib/builder/spec.js CROWD_FORMATIONS / CROWD_ACTIONS) is a subset: both are accepted
 export const FORMATIONS = Object.freeze(["block", "line", "wedge", "scatter", "ring", "march", "column"]);
 export const CROWD_ACTIONS = Object.freeze(["stand", "march", "charge", "run", "flee", "cheer", "fight", "wave"]);
@@ -310,6 +316,15 @@ export function validateEpicShot(s, tl = {}) {
   if (s.beat != null) {
     if (!isObj(s.beat) || !BEAT_TYPES.includes(s.beat.type)) bad.push(`${at}: unknown beat "${s.beat?.type}" (${BEAT_TYPES.join(", ")})`);
     else if (s.beat.shake != null && !SHAKES.includes(s.beat.shake)) bad.push(`${at}: unknown shake "${s.beat.shake}" (${SHAKES.join(", ")})`);
+  }
+  if (s.stage != null) {
+    if (!isObj(s.stage)) bad.push(`${at}: stage must be an object`);
+    else {
+      if (!/^creature:/.test(s.set ?? "") || tl.worlds?.[s.set.slice(9)]?.view !== "outside") bad.push(`${at}: stage needs a creature world seen from outside`);
+      if (s.stage.ground != null && !STAGE_GROUNDS.includes(s.stage.ground)) bad.push(`${at}: stage ground "${s.stage.ground}" (${STAGE_GROUNDS.join(", ")})`);
+      if (s.stage.mud != null && typeof s.stage.mud !== "boolean") bad.push(`${at}: stage mud must be true / false`);
+      for (const x of s.stage.fx ?? []) if (!STAGE_FX.includes(x)) bad.push(`${at}: stage fx "${x}" (${STAGE_FX.join(", ")})`);
+    }
   }
   if (EPIC_CAMERAS.includes(s.camera) && !(s.giants?.length || s.crowds?.length || s.world || /^creature:/.test(s.set ?? ""))) bad.push(`${at}: EPIC camera "${s.camera}" needs giants, crowds or a creature world`);
   return bad;

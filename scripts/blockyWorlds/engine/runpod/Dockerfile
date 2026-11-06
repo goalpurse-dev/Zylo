@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CHROME_PATH=/usr/bin/google-chrome
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg libvulkan1 libegl1 libgl1 libgles2 ca-certificates wget python3 python3-pip fonts-dejavu-core \
+ && apt-get install -y --no-install-recommends ffmpeg libvulkan1 libegl1 libgl1 libgles2 ca-certificates wget python3 python3-pip fonts-dejavu-core fonts-noto-color-emoji \
  && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb \
  && apt-get install -y --no-install-recommends /tmp/chrome.deb \
  && rm -f /tmp/chrome.deb && rm -rf /var/lib/apt/lists/*

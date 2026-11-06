@@ -767,6 +767,24 @@ export function animateGiant(g, action = "idle", t = 0, opts = {}) {
       else { J.body.rotation.x += 0.15; if (J.neck) J.neck.rotation.x += 0.35; if (J.head) J.head.rotation.x += 0.25; if (legs[0]) legs[0].rotation.x -= 0.9 * a; if (legs[1]) legs[1].rotation.x -= 0.9 * b2; }
       break;
     }
+    case "slide": { // 2026-11-06 (turtle run 1620fc3e): sliding down a muddy hill on its belly: legs splayed out to the
+      // sides, head up, a fast wobble (the set tilts and moves it down the slope: creatureWorld.js setStage)
+      const k = ease(t / 0.4);
+      legs.forEach((l, i) => { l.rotation.z += (i % 2 ? 1 : -1) * 0.9 * k; l.rotation.x += (i < 2 ? -0.5 : 0.6) * k; });
+      J.body.position.y -= 0.35 * k;
+      J.body.rotation.z += 0.05 * Math.sin(t * 9) * k;
+      if (J.head) J.head.rotation.x -= 0.35 * k;
+      if (J.jaw) J.jaw.rotation.x += 0.3 * k;
+      if (J.arms) J.arms.forEach((a, i) => { a.rotation.z += (i ? 1 : -1) * 1.1 * k; });
+      break;
+    }
+    case "float": { // resting in the water: a slow bob and paddle (the set lowers it into the sea)
+      J.body.position.y += 0.12 * Math.sin(t * 1.2);
+      J.body.rotation.z += 0.03 * Math.sin(t * 0.9);
+      legs.forEach((l, i) => { l.rotation.x += 0.25 * Math.sin(t * 1.4 + i * 1.3); l.rotation.z += (i % 2 ? 1 : -1) * 0.3; });
+      if (J.head) J.head.rotation.x -= 0.1;
+      break;
+    }
     default: break; // idle: the idle life above
   }
 }

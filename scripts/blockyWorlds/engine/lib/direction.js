@@ -48,7 +48,9 @@ const ADJ_SUFFIX = /(ive|ous|ful|less|ish|ible|able)$/;
 // scenery: what a creature world's views already show (page/sets/creatureWorld.js)
 export const SCENERY = Object.freeze({
   town: ["street", "streets", "road", "roads", "town", "house", "houses", "alley", "alleys", "corner", "square", "market", "lantern", "lanterns", "rooftop", "rooftops", "middle", "city", "village", "home", "homes"],
-  land: ["hill", "hills", "field", "fields", "land", "valley", "mountain", "mountains", "horizon", "forest", "trees", "tree", "meadow", "plain", "plains", "ground", "outside", "world"],
+  land: ["hill", "hills", "field", "fields", "land", "valley", "mountain", "mountains", "horizon", "forest", "trees", "tree", "meadow", "plain", "plains", "ground", "outside", "world",
+    // 2026-11-06: the outside view's coast stage (creatureWorld.js addCoastStage, lib/coast.js): the hill, its mud, the slide
+    "hillside", "slope", "mud", "muddy", "slide", "mudslide"],
   water: ["sea", "ocean", "water", "waves", "wave", "shore", "beach", "coast", "bay", "lake", "seas", "oceans"],
   body: ["shell", "ribs", "rib", "back", "belly", "skin", "scales", "edge", "top", "insides", "heartbeat", "heart"],
 });
@@ -269,6 +271,11 @@ const landedFrom = (match) => {
   return (rel) => epic && /(creatureWorld|giants|crowd|cameraEpic|blueprint|worldspec)\.js$/.test(rel);
 };
 
+/** a town-carrying creature's size (m, its length): at least 120, at most 200 (lib/epic.js giant sizes) */
+export const hostSize = (m) => Math.max(120, Math.min(200, Number(m) || 120));
+/** a giant next to a creature world stays under 45% of it (the world is the biggest thing on screen) */
+export const underHost = (size, host) => (host > 0 ? Math.min(size, Math.round(host * 0.45)) : size);
+
 export function readDirection(direction, { script, idea = {}, mood = "horror", exists = null } = {}) {
   if (!direction?.production?.lines) return null;
   const mock = direction.provider === "mock" || direction.fellBack === true || /^\(mock\)/.test(direction.production.summary ?? "");
@@ -281,16 +288,23 @@ export function readDirection(direction, { script, idea = {}, mood = "horror", e
   const worldCreature = new Map();
   for (const w of P.worlds) if (w.kind === "creature" && w.creature?.species) {
     const cr = P.creatures.find((c) => c.species === w.creature.species);
-    worldCreature.set(w.id, { species: w.creature.species, relation: w.creature.relation === "none" ? "on" : w.creature.relation, size: Math.max(30, Math.min(200, w.creature.heightM || cr?.heightM || 120)), creatureId: cr?.id ?? null });
+    worldCreature.set(w.id, { species: w.creature.species, relation: w.creature.relation === "none" ? "on" : w.creature.relation, size: hostSize(w.creature.heightM || cr?.heightM), creatureId: cr?.id ?? null });
   }
   const worldSpecies = new Set([...worldCreature.values()].map((w) => w.species));
+  // the creature a town lives in / on is the biggest thing in the story (turtle run 1620fc3e: the director's 30 m
+  // turtle under a 60 m wolf: the "giant" turtle looked like the wolf's pet and its town was one house): a giant who
+  // is not the world stays under half of it
+  // (unless the script says a giant is bigger: "He was taller than our turtle." keeps the wolf's own size)
+  const hostSpecies = [...worldCreature.values()].map((w) => w.species);
+  const saysBigger = (script?.lines ?? []).some((l) => { const t = lc(l.text ?? String(l)), m = t.match(COMPARE); return !!m && hostSpecies.some((sp) => t.slice(m.index).includes(sp)); });
+  const hostMax = saysBigger ? 0 : Math.max(0, ...[...worldCreature.values()].map((w) => w.size));
   // EPIC giants: the creatures routed to "epic" that are not a world the town lives on
   const giants = {};
   for (const c of P.creatures) {
     const call = calls.get(c.id);
     if (call?.route !== "epic" || call.capability !== "giant" || worldSpecies.has(c.species)) continue;
     const kind = /^(human|man|woman|person|people|giant|giants|titan|ogre)$/.test(c.species) ? "giant_human" : c.species;
-    giants[c.id] = { behaviours: (c.behaviours ?? []).filter((b) => !["stand", "idle"].includes(b)), kind, size: Math.max(5, Math.min(200, Math.round(c.heightM || call.epic?.size || 40))), ...(GIANT_KINDS.includes(kind) ? {} : { params: {} }), ...(kind === "wolf" ? { armour: true } : {}), name: c.name || c.species, aliases: aliasesOf(c.name, c.species) };
+    giants[c.id] = { behaviours: (c.behaviours ?? []).filter((b) => !["stand", "idle"].includes(b)), kind, size: underHost(Math.max(5, Math.min(200, Math.round(c.heightM || call.epic?.size || 40))), hostMax), ...(GIANT_KINDS.includes(kind) ? {} : { params: {} }), ...(kind === "wolf" ? { armour: true } : {}), name: c.name || c.species, aliases: aliasesOf(c.name, c.species) };
   }
   // crowds: EPIC kinds, sides, sizes
   const crowds = {};

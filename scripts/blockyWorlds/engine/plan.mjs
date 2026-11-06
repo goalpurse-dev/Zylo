@@ -28,6 +28,8 @@ import { EPIC_CAMERAS, validateEpic } from "./lib/epic.js";
 import { titleMatchOk, nameWordOk } from "./lib/names.js";
 import { openingRule, openingProblems, waivedHas, openingSec } from "./lib/opening.js";
 import { meaningPass } from "./lib/meaning.js";
+import { coastPass } from "./lib/coast.js";
+import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -302,8 +304,12 @@ function readWorld(script, idea) {
       const near = `${lines[li - 1] ?? ""} ${text}`.toLowerCase();
       const baby = /\bbaby\b/.test(near);
       const rel = (near.match(/\b(sister|brother)\b/) ?? [])[1];
-      people.set(n, { role: "kid", name: word, baby: baby || undefined });
-      if (named && rel) { alias[rel] = n; if (baby) alias.baby = n; }
+      // weak: only "a capitalized word at a sentence start doing something" ("Spears poked through the gap": a thing):
+      // a story director's cast list that does not name it drops it (mergeDirectorCast)
+      people.set(n, { role: "kid", name: word, baby: baby || undefined, ...(subject2 && !named && !subject ? { weak: true } : {}) });
+      // "my little sister Juno": the sister IS Juno (turtle run 1620fc3e cast a "Sister" and a "Juno")
+      const appos = k >= 1 && /^(sister|brother)$/i.test(norm(toks[k - 1]));
+      if ((named || appos) && rel) { alias[rel] = n; if (baby) alias.baby = n; }
     });
   });
   // loose names: said aloud mid-sentence, capitalized, owned by nobody in the cast ("Barnaby") -> name tags with that text
@@ -521,6 +527,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   const mood = idea.mood ?? "horror";
   // the story director's production list (lib/direction.js): when given, it is the source of truth for worlds, giants,
   // crowds, the line's items, its camera beat and its light; a monster the list makes an EPIC giant is that giant
+  if (direction?.production) direction = { ...direction, production: mergeDirectorCast(direction.production, world) };
   const D = direction?.production ? readDirection(direction, { script, idea, mood, exists }) : null;
   if (D && world.monster) {
     const epicWords = new Set([...Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]), ...[...D.worldCreature.values()].map((w) => w.species)]);
@@ -842,6 +849,14 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     if (tlStub.giants) tl.giants = tlStub.giants;
     tl.production = production;
     tl.direction = { provider: D.provider, mock: D.mock, notes: D.notes, fixes: prodFixes, gaps: D.match.gaps.length, summary: D.match.summary };
+    // the coast around a creature seen from outside: hill, mud, spray, slide, splash, sea (lib/coast.js; undone per
+    // line when it would add a check problem)
+    if (tl.worlds) { const c = coastPass(tl, { check: checkTimeline }); if (c.staged || c.moved) tl.direction.coast = c; }
+    // the target-video capabilities from each shot's own words (lib/caps.js: camera moves, chains / hooks / snaps,
+    // cannons, horn rings, shields, eat a tree, nuzzle, flashback, tilt): a card gets none, the opening window only a
+    // move, and a field that adds a check problem is undone
+    const k = capsPass(tl, { check: checkTimeline, openUntil: openingSec(tl.shots) });
+    if (k.added || k.reverted) tl.direction.caps = k;
   }
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   return tl;
@@ -1020,6 +1035,40 @@ function framingPass(shots, cast) {
     const carrier = (s.actors ?? []).find((a) => a.hold && cast[a.hold]?.role === "baby");
     if (carrier && s.camera === "wide" && !objs.length) { s.camera = "medium"; s.focus = carrier.id; }
   });
+}
+
+/**
+ * The director's cast ids onto the script's own people (turtle run 1620fc3e: "Mrs. Pell" was the planner's "pell"
+ * and the director's "mrs_pell": two people, the second a kid called "Mrs_pell"; the same for Mr. Dunk; the baker a
+ * kid). A director id whose words are a person's name ("mrs_pell" = "Mrs. Pell") or end in its id ("mr_dunk" ->
+ * "dunk") is that person (ids renamed through the production list); any other director person joins the people with
+ * the director's role and a readable name ("baker" -> "Baker", an adult). Returns a new production (pure on it).
+ */
+export function mergeDirectorCast(production, world) {
+  const key = (s) => String(s ?? "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
+  const rename = new Map();
+  for (const c of production.cast ?? []) {
+    if (!c?.id || c.id === "me" || world.people.has(c.id)) continue;
+    const words = key(c.id).split(" ").filter(Boolean), name = key(c.name);
+    const hit = [...world.people.entries()].find(([id, p]) => id !== "me" && ((name && key(p.name) === name) || key(p.name) === words.join(" ") || (words.length > 1 && words.at(-1) === id && key(p.name).endsWith(id))));
+    if (hit) { rename.set(c.id, hit[0]); continue; }
+    if (c.kind && c.kind !== "human") continue;
+    const nice = c.name || words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+    world.people.set(c.id, { name: nice, role: c.role === "kid" || c.role === "narrator" ? "kid" : c.role === "baby" ? "kid" : "adult", ...(c.role === "baby" ? { baby: true } : {}) });
+    // the director's "juno: tiny sister": the story's "my sister" is Juno (run 1620fc3e cast a "Sister" and a "Juno")
+    const rel = `${c.look ?? ""} ${c.job ?? ""}`.toLowerCase().match(/\b(sister|brother)\b/)?.[1];
+    if (rel && world.alias && !world.alias[rel]) world.alias[rel] = c.id;
+  }
+  // a weak name (a sentence-start word only) the director's cast does not know is a thing, not a person
+  const known = new Set((production.cast ?? []).flatMap((c) => [c.id, key(c.id), key(c.name)]).filter(Boolean));
+  if ((production.cast ?? []).length) for (const [id, p] of [...world.people]) if (p.weak && !known.has(id) && !known.has(key(p.name)) && ![...rename.values()].includes(id)) world.people.delete(id);
+  if (!rename.size) return production;
+  const swap = (v) => (typeof v === "string" && rename.has(v) ? rename.get(v) : Array.isArray(v) ? v.map(swap) : v);
+  const out = JSON.parse(JSON.stringify(production));
+  out.cast = (out.cast ?? []).filter((c) => !rename.has(c.id));
+  for (const L of out.lines ?? []) for (const k of Object.keys(L)) L[k] = swap(L[k]);
+  for (const list of ["props", "crowds", "creatures", "vehicles"]) for (const x of out[list] ?? []) for (const k of ["heldBy", "of", "owner"]) if (k in x) x[k] = swap(x[k]);
+  return out;
 }
 
 function familyPerson(id) {
@@ -1841,6 +1890,7 @@ export function checkTimeline(tl) {
   const epicTl = !!(tl.giants || tl.worlds || shots.some((s) => s.giants?.length || s.crowds?.length || s.beat || isCreatureSet(s) || EPIC_CAMERAS.includes(s.camera)));
   // (a string shot.world is the builder's world-need marker, not EPIC's { kind, creature, view }: apply.js removes it)
   if (epicTl) out.push(...validateEpic({ ...tl, shots: shots.map((s) => (typeof s.world === "string" ? { ...s, world: undefined } : s)) }).map((p) => `epic: ${p}`));
+  if (usesCapsTimeline(tl)) out.push(...validateCaps(tl).map((p) => `caps: ${p}`));
   if (Math.abs(shots[0].start) > eps) out.push("the first shot must start at 0");
   if (Math.abs(shots.at(-1).end - tl.duration) > eps) out.push("the last shot must end at the duration");
   if (!["wide", "insert", ...(epicTl ? ["establish", "aerial"] : [])].includes(shots[0].camera)) out.push("the first shot must be wide or insert");
@@ -1891,6 +1941,7 @@ export function checkTimeline(tl) {
   if (tl.lines) {
     const covered = new Set(shots.flatMap((s) => s.lines ?? [s.line]));
     tl.lines.forEach((_, i) => { if (!covered.has(i)) out.push(`line ${i} has no shot`); });
+    out.push(...lineSpanProblems(tl));
     for (const m of checkVisuals(tl, { lines: tl.lines })) out.push(`line ${m.line} shows nothing for: ${m.missing.join(", ")}`);
   }
   for (const m of checkProductionStrict(tl)) out.push(`line ${m.line} misses the production items: ${m.missing.map((x) => x.name).join(", ")}`);
@@ -1901,6 +1952,25 @@ export function checkTimeline(tl) {
     if (i && c.start < caps[i - 1].start - eps) out.push(`caption ${i} out of order`);
   });
   if (!tl.audio?.voice) out.push("no audio.voice");
+  return out;
+}
+
+/**
+ * Every line is on screen in its own time (turtle run 1620fc3e: line 15 "The full moon sat huge in the shell window."
+ * never showed; 36.4-38.2 s kept line 14's picture and its "Boom" caption): the shots of line i (shot.lines) fill at
+ * least half of the line's span [start, end], and the line's caption words are timed inside that span.
+ */
+export function lineSpanProblems(tl) {
+  const out = [], caps = tl.captions ?? [], eps = 0.05;
+  (tl.lines ?? []).forEach((L, i) => {
+    if (!(Number.isFinite(L?.start) && Number.isFinite(L?.end)) || L.end - L.start < 0.2) return;
+    const own = (tl.shots ?? []).filter((s) => (s.lines ?? [s.line]).includes(i));
+    const shown = own.reduce((n, s) => n + Math.max(0, Math.min(s.end, L.end) - Math.max(s.start, L.start)), 0);
+    if (own.length && shown < (L.end - L.start) * 0.5 - eps) out.push(`line ${i}: its shots fill only ${shown.toFixed(2)} of its ${(L.end - L.start).toFixed(2)} s`);
+    const words = String(L.text ?? "").split(/\s+/).filter(Boolean).length;
+    const inSpan = caps.filter((c) => c.start >= L.start - eps && c.end <= L.end + eps).length;
+    if (words && caps.length && inSpan === 0) out.push(`line ${i}: no caption word inside its time (${L.start.toFixed(2)}-${L.end.toFixed(2)} s)`);
+  });
   return out;
 }
 

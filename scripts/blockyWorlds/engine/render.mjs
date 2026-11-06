@@ -4,9 +4,11 @@
 //                   [--stills t1,t2,...] [--stubs [list]] [--query "a=1&b=2"]
 //   --from/--to: frame numbers [from, to) (one chunk; each chunk is a whole x264 stream, so chunks join by stream copy)
 //   --stills: JPEGs at those times (seconds) to <out without .mp4>-<t>.jpg, with the frame time printed
+//             (through the flat-frame guard, as the video; --raw: exactly what the page draws, no guard)
 //   --stubs: the engine's stand-in modules (dev/stubs); "--stubs people,captions" replaces only those
 // Env: CHROME_PATH, CHROME_ARGS (JSON flag list, GPU servers), SOFTWARE_GL=1 (SwiftShader), BW_BLANK_TEST=3,10 (force
-// a blank capture on those frames to test the guard). Prints `PROGRESS {...}` lines.
+// a blank capture on those frames to test the guard), BW_FLAT_TEST=3,10 (call those frames flat: the flat-frame guard).
+// Prints `PROGRESS {...}` lines.
 // API: renderRange({ timelinePath, from, to, out }), renderParallel({ timelinePath, out, workers }), renderStills(...)
 import http from "node:http";
 import fs from "node:fs";
@@ -15,6 +17,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer-core";
+import { isBlack, isFlat, isBad } from "./lib/frameGuard.js";
 
 export const ENGINE = path.dirname(fileURLToPath(import.meta.url));
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -83,22 +86,56 @@ function encoder(out, fps) {
  */
 async function renderFrames(page, { fps, from, to, out, onFrame = () => {}, q = 0.92 }) {
   const enc = encoder(out, fps), blankTest = new Set(String(process.env.BW_BLANK_TEST ?? "").split(",").filter(Boolean).map(Number));
-  const grab = (t, force) => page.evaluate((t, q, force) => { const r = window.renderAt(t); if (force) r.mean = 0; return { ...r, data: window.frameData(q) }; }, t, q, force);
+  const flatTest = new Set(String(process.env.BW_FLAT_TEST ?? "").split(",").filter(Boolean).map(Number));
+  const grab = (t, force, safe = 0, forceFlat = false) => page.evaluate((t, q, force, safe, forceFlat) => { const r = window.renderAt(t, { safe }); if (force) r.mean = 0; if (forceFlat && !safe) r.flat = 1; return { ...r, data: window.frameData(q) }; }, t, q, force, safe, forceFlat);
+  const guard = flatGuard(grab);
   let lastBuf = null, redone = 0, reused = 0;
   const t0 = Date.now();
   for (let f = from; f < to; f++) {
     const t = f / fps;
-    let r = await grab(t, blankTest.has(f));
-    for (let k = 0; k < 6 && r.mean < 3 && lastBuf; k++) { redone++; await new Promise((s) => setTimeout(s, 40 * (k + 1))); r = await grab(t, false); }
+    let r = await guard.frame(t, { force: blankTest.has(f), forceFlat: flatTest.has(f) });
+    for (let k = 0; k < 6 && isBlack(r) && lastBuf; k++) { redone++; await new Promise((s) => setTimeout(s, 40 * (k + 1))); r = await guard.frame(t); }
+    if (isBlack(r)) r = await guard.frame(t, { black: true }); // still black: a scene that renders black (not a GPU blank) gets the safe renders too
     let buf = Buffer.from(r.data.slice(r.data.indexOf(",") + 1), "base64");
-    if (r.mean < 3 && lastBuf) { buf = lastBuf; reused++; console.log(`frame ${f}: black after its retries, the last good frame is used`); } else lastBuf = buf;
+    if (isBad(r) && lastBuf) { buf = lastBuf; reused++; console.log(`frame ${f}: ${isBlack(r) ? "black" : "one flat colour"} after its retries, the last good frame is used`); } else lastBuf = buf;
     await enc.write(buf);
     onFrame(f);
   }
   await enc.end();
   const s = (Date.now() - t0) / 1000;
   if (redone || reused) console.log(`blank captures: ${redone} re-rendered, ${reused} replaced`);
-  return { frames: to - from, seconds: +s.toFixed(2), msPerFrame: +((s * 1000) / Math.max(1, to - from)).toFixed(1), redone, reused };
+  const flat = guard.report();
+  return { frames: to - from, seconds: +s.toFixed(2), msPerFrame: +((s * 1000) / Math.max(1, to - from)).toFixed(1), redone, reused, ...(flat.length ? { flat } : {}) };
+}
+
+/**
+ * The flat-frame guard (lib/frameGuard.js): a frame whose 3D picture is >85% one colour or has almost no detail (a
+ * fogged-out, blown-out or camera-inside-a-wall shot) is rendered again without fog (safe 1), then with a plain camera on the set's centre (safe 2); the level that
+ * worked is where the rest of that shot starts (one extra render per flat frame, not two). Every saved shot is logged loudly
+ * and returned in the result's `flat` list: [{ shot, safe, frames, left }] (left: frames no level could save).
+ */
+export function flatGuard(grab) {
+  const level = new Map(), stats = new Map();
+  const note = (shot, safe, ok) => { const s = stats.get(shot) ?? { shot, safe, frames: 0, left: 0 }; s.safe = Math.max(s.safe, safe); s.frames++; if (!ok) s.left++; stats.set(shot, s); };
+  return {
+    async frame(t, { force = false, forceFlat = false, black = false } = {}) {
+      const r = await grab(t, force, 0, forceFlat);
+      // a black frame goes to the GPU-blank retries first (renderFrames); only `black` (after them) tries safe renders
+      if (!isFlat(r) || (isBlack(r) && !black)) return r;
+      const first = level.get(r.shot) ?? 1;
+      for (let safe = first; safe <= 2; safe++) {
+        const s = await grab(t, false, safe, false);
+        if (!isBad(s)) {
+          if (!level.has(r.shot)) console.log(`flat frame guard: shot ${r.shot} at ${t.toFixed(2)} s is flat (${Math.round(r.flat * 100)}% one colour, detail ${r.detail}): re-rendered with safe ${safe} (${safe === 1 ? "no fog" : "no fog + a plain camera"})`);
+          level.set(r.shot, safe); note(r.shot, safe, true); return s;
+        }
+      }
+      if (!level.has(r.shot)) console.log(`flat frame guard: shot ${r.shot} at ${t.toFixed(2)} s is flat (${Math.round(r.flat * 100)}% one colour, detail ${r.detail}) even with a safe camera`);
+      level.set(r.shot, 2); note(r.shot, 2, false);
+      return r;
+    },
+    report: () => [...stats.values()],
+  };
 }
 
 const query = (o = {}) => [o.stubs ? `stubs=${o.stubs === true ? 1 : o.stubs}` : "", o.query ?? process.env.ENGINE_QUERY ?? ""].filter(Boolean).join("&");
@@ -164,7 +201,7 @@ export async function concat(files, out) {
 }
 
 /** JPEG stills at the given times, and the frame time (render + capture) */
-export async function renderStills({ timelinePath, times, outPrefix, stubs = null, query: q = null }) {
+export async function renderStills({ timelinePath, times, outPrefix, stubs = null, query: q = null, raw = false }) {
   const tl = readTimeline(timelinePath);
   const srv = await startServer(path.dirname(path.resolve(timelinePath))), browser = await launchBrowser();
   try {
@@ -173,14 +210,19 @@ export async function renderStills({ timelinePath, times, outPrefix, stubs = nul
     console.log(`renderer: ${info.renderer}; stubs: ${info.stubs.join(",") || "none"}; sets ${info.sets.join(",")}`);
     fs.mkdirSync(path.dirname(path.resolve(outPrefix)), { recursive: true });
     const files = [];
+    // the same flat-frame guard as the video (unless raw: the stills of what the page draws, for a probe)
+    const grab = (t, force, safe = 0) => page.evaluate((t, safe) => { const r = window.renderAt(t, { safe }); return { ...r, data: window.frameData(0.9) }; }, t, safe);
+    const guard = flatGuard(grab);
     for (const t of times) {
       const a = Date.now();
-      const r = await page.evaluate((t) => { const r = window.renderAt(t); return { ...r, data: window.frameData(0.9) }; }, t);
+      let r = raw ? await grab(t, false) : await guard.frame(t);
+      if (!raw && isBlack(r)) r = await guard.frame(t, { black: true });
       const f = `${outPrefix}-${t}.jpg`;
       fs.writeFileSync(f, Buffer.from(r.data.split(",")[1], "base64"));
-      console.log(`t=${t}: shot ${r.shot}, mean ${r.mean}, ${Date.now() - a} ms -> ${f}`);
+      console.log(`t=${t}: shot ${r.shot}, mean ${r.mean}, flat ${r.flat}, detail ${r.detail}${r.safe ? `, safe ${r.safe}` : ""}, ${Date.now() - a} ms -> ${f}`);
       files.push(f);
     }
+    files.flat = guard.report();
     return files;
   } finally { await browser.close().catch(() => {}); srv.close(); }
 }
@@ -207,7 +249,7 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   const stubs = opt.stubs ?? null, q = val("query");
   const t0 = Date.now();
   try {
-    if (flag("stills") >= 0) await renderStills({ timelinePath, times: val("stills").split(",").map(Number), outPrefix: out.replace(/\.mp4$/i, ""), stubs, query: q });
+    if (flag("stills") >= 0) await renderStills({ timelinePath, times: val("stills").split(",").map(Number), outPrefix: out.replace(/\.mp4$/i, ""), stubs, query: q, raw: !!opt.raw });
     else if (flag("from") >= 0 || flag("to") >= 0) console.log(JSON.stringify(await renderRange({ timelinePath, from: Number(val("from", 0)), to: val("to") == null ? null : Number(val("to")), out, stubs, query: q })));
     else console.log(JSON.stringify(await renderParallel({ timelinePath, out, workers: Number(val("workers", 1)), mode: val("mode", "pages"), stubs, query: q })));
     console.log(`done in ${((Date.now() - t0) / 1000).toFixed(1)} s`);

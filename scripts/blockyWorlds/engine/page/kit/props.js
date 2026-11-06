@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { rng, hashSeed, boxGeo, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, canvasTex, loadKitFonts, kitFont, fitText } from "./kitCommon.js";
 
 import { heldIndex } from "../../lib/catalog.js";
+import { cardPicture, cardWord, badgeParts } from "../../lib/cards.js";
 import { HELD_BUILD } from "./heldMore.js";
 
 await loadKitFonts(); // so the first sign/note/marker is drawn in Lilita, not a fallback
@@ -61,6 +62,23 @@ function noteTexture(text, seed) {
   p.strokeStyle = "rgba(120,100,60,0.25)"; p.lineWidth = 2; p.beginPath(); p.moveTo(0, H * 0.48); p.lineTo(W, H * 0.5); p.stroke(); // a fold
   return canvasTex(c);
 }
+const EMOJI_FONT = '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
+const EMOJI_OK = new Map();
+/** true when this browser draws the emoji in colour (drawn in black: any coloured pixel means a real emoji; a server
+ *  without a colour emoji font draws nothing or a grey box) */
+export function emojiDraws(ic) {
+  if (EMOJI_OK.has(ic)) return EMOJI_OK.get(ic);
+  let ok = false;
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 64; const p = c.getContext("2d", { willReadFrequently: true });
+    p.fillStyle = "#000"; p.font = `48px ${EMOJI_FONT}`; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, 32, 34);
+    const d = p.getImageData(0, 0, 64, 64).data;
+    for (let i = 0; i < d.length && !ok; i += 4) if (d[i + 3] > 60 && Math.abs(d[i] - d[i + 1]) + Math.abs(d[i + 1] - d[i + 2]) > 40) ok = true;
+  } catch { ok = false; }
+  EMOJI_OK.set(ic, ok);
+  if (!ok) console.log(`engine: emoji ${ic} does not draw here: the card / badge shows its word`);
+  return ok;
+}
 /** a picture card: a big emoji / icon on a coloured disc, a short caption under it, a bold rim */
 const CARD_STYLES = [{ bg: "#fff8e7", rim: "#ff6b6b", disc: "#ffe08a", ink: "#2a1d24" }, { bg: "#f0fbff", rim: "#2e86de", disc: "#bfe3ff", ink: "#1b2a4a" }, { bg: "#fff0f6", rim: "#e84393", disc: "#ffd1e6", ink: "#3a1030" }, { bg: "#f3fff0", rim: "#20bf6b", disc: "#c8f7c5", ink: "#163a22" }];
 function cardTexture(text, icon, seed) {
@@ -69,12 +87,20 @@ function cardTexture(text, icon, seed) {
   p.fillStyle = st.rim; p.fillRect(0, 0, W, H);
   p.fillStyle = st.bg; p.beginPath(); p.roundRect(34, 34, W - 68, H - 68, 40); p.fill();
   const hasText = !!String(text ?? "").trim();
+  const pic = cardPicture(text, icon, emojiDraws); // lib/cards.js: never an empty circle
+  if (pic === "title") { // no picture to draw: the word IS the picture, big over the whole board
+    const { lines, size } = fitText(p, String(text).toUpperCase(), W - 150, H - 170, { maxSize: 230, maxLines: 3, lineGap: 1.0 });
+    p.font = kitFont(size); p.textAlign = "center"; p.textBaseline = "middle"; p.lineJoin = "round";
+    const y0 = H / 2 - ((lines.length - 1) * size) / 2 + size * 0.05;
+    lines.forEach((l, i) => { p.lineWidth = size * 0.14; p.strokeStyle = st.disc; p.strokeText(l, W / 2, y0 + i * size); p.fillStyle = st.ink; p.fillText(l, W / 2, y0 + i * size); });
+    wear(p, W, H, R, { spots: 30, ink: "rgba(60,40,20,0.08)", chips: "rgba(255,255,255,0.12)" });
+    return canvasTex(c);
+  }
   const cy = hasText ? 320 : H / 2, r = hasText ? 230 : 300;
   p.fillStyle = st.disc; p.beginPath(); p.arc(W / 2, cy, r, 0, Math.PI * 2); p.fill();
   p.strokeStyle = st.ink; p.lineWidth = 10; p.stroke();
-  const ic = String(icon || "★");
-  if (/\p{Extended_Pictographic}/u.test(ic)) { p.font = `${Math.round(r * 1.25)}px "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif`; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, W / 2, cy + r * 0.08); }
-  else { const { size } = fitText(p, ic, r * 1.5, r * 1.3, { maxSize: Math.round(r * 1.2), maxLines: 1 }); p.font = kitFont(size); p.fillStyle = st.ink; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, W / 2, cy + size * 0.05); }
+  if (pic === "emoji") { p.font = `${Math.round(r * 1.25)}px ${EMOJI_FONT}`; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(String(icon).trim(), W / 2, cy + r * 0.08); }
+  else { const ic = cardWord(text, icon); const { size } = fitText(p, ic, r * 1.6, r * 1.3, { maxSize: Math.round(r * 1.2), maxLines: 1 }); p.font = kitFont(size); p.fillStyle = st.ink; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText(ic, W / 2, cy + size * 0.05); }
   if (hasText) {
     const { lines, size } = fitText(p, String(text).toUpperCase(), W - 140, 190, { maxSize: 120, maxLines: 2, lineGap: 1.0 });
     p.font = kitFont(size); p.textAlign = "center"; p.textBaseline = "middle"; p.lineJoin = "round";
@@ -155,16 +181,16 @@ function iconTexture(text) {
   p.fillStyle = "#ff4d6d"; p.beginPath(); p.arc(256, 256, 206, 0, Math.PI * 2); p.fill();
   p.fillStyle = "rgba(255,255,255,0.25)"; p.beginPath(); p.ellipse(200, 150, 120, 60, -0.5, 0, Math.PI * 2); p.fill();
   // an emoji alone fills the badge; an emoji + word ("🐕 DOG") puts the emoji on top and the word under it
-  const EMO = /(\p{Extended_Pictographic}(️|‍\p{Extended_Pictographic})*)/u;
-  const em = String(text).match(EMO)?.[0] ?? null, rest = em ? String(text).replace(em, "").trim() : String(text);
+  // an emoji this browser cannot draw in colour (a server without the font) leaves the word alone, big (lib/cards.js)
+  const { emoji: em, word: rest } = badgeParts(text, emojiDraws);
   const word = (t, y, maxW, maxH, maxSize) => {
     const { lines, size } = fitText(p, t, maxW, maxH, { maxSize, minSize: 24, maxLines: 2, lineGap: 1.0 });
     p.font = kitFont(size); p.textAlign = "center"; p.textBaseline = "middle"; p.lineJoin = "round";
     lines.forEach((l, i) => { const yy = y + (i - (lines.length - 1) / 2) * size; p.lineWidth = size * 0.14; p.strokeStyle = "#2a1d24"; p.strokeText(l, 256, yy); p.fillStyle = "#fff"; p.fillText(l, 256, yy); });
   };
   p.textAlign = "center"; p.textBaseline = "middle";
-  if (em && !rest) { p.font = `230px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`; p.fillText(em, 256, 270); }
-  else if (em) { p.font = `170px "Segoe UI Emoji", "Noto Color Emoji", sans-serif`; p.fillText(em, 256, 200); word(rest, 362, 300, 110, 110); }
+  if (em && !rest) { p.font = `230px ${EMOJI_FONT}`; p.fillText(em, 256, 270); }
+  else if (em) { p.font = `170px ${EMOJI_FONT}`; p.fillText(em, 256, 200); word(rest, 362, 300, 110, 110); }
   else word(rest, 268, 330, 300, 220);
   return canvasTex(c);
 }

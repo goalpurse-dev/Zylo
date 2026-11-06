@@ -41,21 +41,43 @@ function addAsset(tl, a) {
   return id;
 }
 
-function applyObjectOnCard(tl, need, r) {
-  const shots = tl.shots;
-  const i = shots.findIndex((s) => s.need?.id === need.id);
-  if (i < 0) return false;
-  const card = shots[i], hi = card.need.host === "next" ? i + 1 : i - 1, host = shots[hi];
-  if (!host || host.camera === "insert" || host.line !== card.line || (host.objects ?? []).length >= 3) return false;
-  const o = r.source === "kit" ? { name: r.kitName, spot: freeSpot(host), facing: "camera" }
+/** the card shots that stand for this need: its own (shot.need) and any other card with its name (a built thing is
+ *  shown as itself everywhere: turtle run 1620fc3e built the garden hose, yet two later "GARDEN HOSE" cards stayed) */
+function cardsOf(tl, need) {
+  const names = new Set([need.name, need.phrase].filter(Boolean).map((x) => String(x).toLowerCase().trim()));
+  return tl.shots.filter((s) => s.camera === "insert" && s.insert?.kind === "card" && (s.need?.id === need.id || names.has(String(s.insert.text ?? "").toLowerCase().trim())));
+}
+/** the object entry of a resolved need */
+function objectOf(tl, need, r, host) {
+  return r.source === "kit" ? { name: r.kitName, spot: freeSpot(host), facing: "camera" }
     : { name: need.name, asset: addAsset(tl, r.asset), aliases: r.asset.aliases ?? [], spot: freeSpot(host), facing: "camera" };
-  const about = host.subject === `thing:${need.phrase}` || host.subject === `thing:${need.name}`;
-  host.objects = about ? [o, ...(host.objects ?? [])] : [...(host.objects ?? []), o];
-  if ((host.focus === "group" && !(host.actors ?? []).length) || about) host.focus = "object";
-  host.start = Math.min(host.start, card.start); host.end = Math.max(host.end, card.end);
-  host.visuals = [...new Set([...(host.visuals ?? []), ...(card.visuals ?? [])])];
-  shots.splice(i, 1);
-  return true;
+}
+const SHOW_CAMS = ["closeup", "medium", "wide"];
+function applyObjectOnCard(tl, need, r) {
+  let any = false;
+  for (const card of cardsOf(tl, need)) {
+    const shots = tl.shots, i = shots.indexOf(card);
+    const hosts = (card.need?.host === "next" ? [i + 1, i - 1] : [i - 1, i + 1]).map((k) => shots[k]).filter(Boolean);
+    const host = hosts.find((h) => h.camera !== "insert" && h.line === card.line && (h.objects ?? []).length < 3);
+    if (host) { // the card gives its time back to the shot it was cut from; the thing stands in that shot
+      const o = objectOf(tl, need, r, host);
+      const about = host.subject === `thing:${need.phrase}` || host.subject === `thing:${need.name}`;
+      host.objects = about ? [o, ...(host.objects ?? [])] : [...(host.objects ?? []), o];
+      if ((host.focus === "group" && !(host.actors ?? []).length) || about) host.focus = "object";
+      host.start = Math.min(host.start, card.start); host.end = Math.max(host.end, card.end);
+      host.visuals = [...new Set([...(host.visuals ?? []), ...(card.visuals ?? [])])];
+      shots.splice(i, 1);
+    } else { // no shot of the line to stand in: the card itself becomes a shot of the built thing
+      const o = { ...objectOf(tl, need, r, { actors: [], objects: [] }), spot: "center" };
+      const prev = shots.slice(Math.max(0, i - 2), i).map((x) => x.camera);
+      const next = shots[i + 1]?.camera;
+      const camera = SHOW_CAMS.find((c) => !(prev.length === 2 && prev[0] === c && prev[1] === c) && !(prev.at(-1) === c && next === c)) ?? "medium";
+      Object.assign(card, { camera, focus: "object", insert: null, actors: [], objects: [o], marker: null, monsterState: null });
+      delete card.markers;
+    }
+    any = true;
+  }
+  return any;
 }
 function applyObjectOnShot(tl, need, r) {
   let any = false;

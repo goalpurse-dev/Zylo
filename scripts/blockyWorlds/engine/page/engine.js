@@ -4,11 +4,14 @@
 //   ...&stubs=people,captions                     only the named ones replaced (the rest real)
 //   ...&nopost=1 / &noao=1                        debug: no post chain / no ambient occlusion
 // Exposes window.ready (true when every set, person, prop and texture is loaded and the shaders are warm),
-// window.engineError (a message when loading failed), window.renderAt(t) -> { shot, mean } (mean = the 3D frame's
-// average brightness 0-255, for the blank-frame guard), window.frameData(q = 0.9) -> JPEG data URL of the output canvas.
+// window.engineError (a message when loading failed), window.renderAt(t, { safe }?) -> { shot, mean, flat, detail, safe }
+// (mean = the 3D frame's average brightness 0-255, for the blank-frame guard; flat = the share of it in one colour,
+// detail = its mean neighbour step, for the flat-frame guard, lib/frameGuard.js; safe 1 / 2 = a re-render without fog / also with a plain camera),
+// window.frameData(q = 0.9) -> JPEG data URL of the output canvas.
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { rng } from "/lib/rng.js";
+import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
 
 const Q = new URLSearchParams(location.search);
@@ -155,7 +158,7 @@ async function main() {
   const blueprintM = tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset)) ? await import("/page/kit/blueprint.js") : null;
   const worldM = tl.shots.some((s) => /^world:/.test(s.set ?? "")) ? await import("/page/sets/worldspec.js") : null;
   // EPIC stories (giants, crowds, creature worlds, scale cameras, beats): page/epicLayer.js, loaded only when used
-  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera))) ? await import("/page/epicLayer.js") : null;
+  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera) || s.move || s.tethers?.length || s.siege?.length || s.fx?.length || s.acts?.length || s.grade || s.tilt)) ? await import("/page/epicLayer.js") : null; // (+ 2026-11-06 capability fields: lib/caps.js)
   let objectsM = null;
   if (anyObjects) {
     try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
@@ -385,7 +388,7 @@ async function main() {
   }
   window.headGuard = NUDGE;
 
-  function renderAt(t) {
+  function renderAt(t, opts = null) {
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
     const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
     const S = SETS[shot.set], spots = S.spots;
@@ -398,6 +401,8 @@ async function main() {
       lightKey = key;
     }
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
+    // the outside view's coast stage (hill / mud / sea, spray / splash; page/sets/creatureWorld.js): moves the giant
+    S.setStage?.(shot.stage ?? null, lt, dur, (shot.giants ?? []).find((g) => g.id === "world")?.action ?? null);
     for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
     for (const m of MARKERS.values()) m.visible = false;
     for (const i of INSERTS.values()) i.obj.visible = false;
@@ -700,15 +705,27 @@ async function main() {
     }
 
     // EPIC: crowd poses (LOD needs the camera), giant LOD, the beat's camera shake (after all framing)
-    epic?.after(shot, lt, S, camera);
+    epic?.after(shot, lt, S, camera, where);
+    S.stageAfter?.(shot, lt, where, camera); // the hose spray from the first person's hand, across the frame
+    // the flat-frame guard's safe re-render (render.mjs): safe 1 = no fog; safe 2 = no fog + a plain camera on the
+    // set's centre from its camera side (turtle run 1620fc3e: whole shots were one fogged colour)
+    const safe = Number(opts?.safe) || 0, savedFog = scene.fog;
+    if (safe >= 1) scene.fog = null;
+    if (safe >= 2) {
+      const c = spots.center, d = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+      camera.position.copy(c).addScaledVector(d, 9); camera.position.y = c.y + 3;
+      camera.up.set(0, 1, 0); camera.lookAt(c.x - d.x * 4, c.y + 1.2, c.z - d.z * 4); camera.updateMatrixWorld();
+    }
     // render, then the caption on top in the output canvas
     post.render();
+    if (safe >= 1) scene.fog = savedFog;
     ctx2d.drawImage(renderer.domElement, 0, 0);
     probeCtx.drawImage(out, 0, 0, 16, 16);
     const px = probeCtx.getImageData(0, 0, 16, 16).data;
     let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+    const flat = flatShare(px), detail = detailOf(px, 16);
     ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
-    return { shot: si, mean: +(sum / (3 * 256)).toFixed(1) };
+    return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe };
   }
 
   // warm-up: the first frame of every (set, light) pair compiles its shaders and shadow maps (and fails here, loudly)

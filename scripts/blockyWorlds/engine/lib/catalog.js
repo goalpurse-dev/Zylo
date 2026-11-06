@@ -93,6 +93,7 @@ export const HELD = Object.freeze({
   hat: A("hat,hats,cap,caps,bonnet,beret,top hat,wig"), shoe: A("shoe,shoes,sneaker,sneakers,boot,boots,slipper,slippers,skate,skates,ice skates,sandal,sandals"),
   scarf: A("scarf,scarves,ribbon,bow tie,bowtie,tie,bow,bows,necktie"), helmet: A("helmet,helmets"), mitten: A("mitten,mittens,glove,gloves,mitt"),
   crown: A("crown,crowns,tiara"), handbell: A("handbell"), bucket: A("bucket,buckets,pail,pails"),
+  hose: A("hose,hoses,garden hose,garden hoses,water hose,hosepipe,nozzle"), // 2026-11-06 (turtle run 1620fc3e: "I sprayed the hill" with the garden hose)
   soup: A("soup,soups,bowl,bowls,broth,stew,porridge,cereal,oats,noodles,spaghetti"), pot: A("pot,pots,pan,pans,cauldron,kettle,teakettle,teapot"),
   cheese: A("cheese,cheeses,cheese wheel,butter"), pie: A("pie,pies,tart"), toast: A("toast,slice,slices,waffle,bagel,bagels,biscuit,biscuits,cracker,crackers,crumb,crumbs"),
   pancake: A("pancake,pancakes"), egg: A("egg,eggs"), basket: A("basket,baskets,egg basket,picnic basket"), potato: A("potato,potatoes,lemon,onion,turnip"),

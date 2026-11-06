@@ -15,9 +15,12 @@ import { makeCrowd, updateCrowd, crowdExtent } from "/page/kit/crowd.js";
 import { buildCreatureWorld } from "/page/sets/creatureWorld.js";
 import { frameEpic, applyShake, EPIC_CAMERA_TYPES } from "/page/cameraEpic.js";
 import { validateEpic, beatPlan, beatProgress, CROWD_MOTION, EPIC_SPOTS } from "/lib/epic.js";
+// 2026-11-06 (CAPABILITIES): tethers, siege, back towns, camera moves, fx, acts, grade, tilt (page/capsLayer.js)
+import { makeCapsLayer } from "/page/capsLayer.js";
+import { usesCaps, usesCapsTimeline } from "/lib/caps.js";
 
 /** does this timeline use EPIC fields? (the engine loads the layer only then) */
-export const usesEpic = (tl) => !!(tl.giants || tl.worlds || (tl.shots ?? []).some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || EPIC_CAMERA_TYPES.includes(s.camera)));
+export const usesEpic = (tl) => !!(tl.giants || tl.worlds || (tl.shots ?? []).some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || EPIC_CAMERA_TYPES.includes(s.camera) || usesCaps(s)) || usesCapsTimeline(tl));
 export { EPIC_CAMERA_TYPES, EPIC_SPOTS };
 
 const MAP_STD = { wide: "establish", insert: "establish", low: "giant_close", medium: "giant_close", closeup: "giant_close", over_shoulder: "hero_low" };
@@ -26,8 +29,10 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   // giants: one each (tl.giants: { id: { kind, size, params?, armour?, town? } })
   const GIANTS = {};
+  const caps = makeCapsLayer({ THREE, scene, tl, ctx });
   for (const [id, spec] of Object.entries(tl.giants ?? {})) {
     const g = makeGiant({ ...spec, id, tex: ctx.tex });
+    caps.decorateGiant(g, spec); // a town / castle-city on its back when asked
     g.visible = false; scene.add(g); GIANTS[id] = g;
   }
   // crowds: built once per (kind, count, formation, faction, seed), reused by every shot that asks for the same crowd
@@ -120,6 +125,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       grp.visible = true;
       live.crowds.push({ grp, c, action, origin, yaw, speed: c.speed });
     }
+    caps.place(shot, lt, S, live); // giant acts (nuzzle / headbutt / eat a tree), back-town lights
     return live;
   }
 
@@ -129,7 +135,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     let type = EPIC_CAMERA_TYPES.includes(shot.camera) ? shot.camera : null;
     const f = String(shot.focus ?? "");
     const fg = f.startsWith("giant:") ? f.slice(6) : null, fc = f === "crowd" || f.startsWith("crowd:"), fw = f === "world";
-    if (!type && !(fg || fc || fw)) return false;
+    if (!type && !(fg || fc || fw) && !shot.move) return false;
     if (!type) type = MAP_STD[shot.camera] ?? "establish";
     const firstGiant = [...live.giants.values()][0];
     const worldG = S.giant && S.giant.visible !== false ? { g: S.giant, pos: S.giant.position.clone() } : null;
@@ -161,8 +167,29 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       if (type === "duel" && worldG && o !== worldG && !fg) { ctxE.focus = worldG.pos.clone(); ctxE.focusHeight = worldG.g.userData.height; }
     }
     if (type === "track" && anyGiant && !fg) { ctxE.other = anyGiant.pos.clone(); ctxE.otherHeight = anyGiant.g.userData.height; }
+    // REBUILD 2026-11-06: tracking a giant (focus giant:<id> / the world from outside) with no army in focus
+    if (type === "track" && !fc && (fg ? gInfo : fw && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside" ? worldG : null)) {
+      const gi = fg ? gInfo : worldG, yaw = gi.yaw ?? gi.g.rotation.y;
+      ctxE.giantTrack = true; ctxE.velocity = V(Math.sin(yaw), 0, Math.cos(yaw)); ctxE.focus = gi.pos.clone();
+      ctxE.focusHeight = gi.g.userData.height; ctxE.span = Math.max(gi.g.userData.length, gi.g.userData.width, gi.g.userData.height); delete ctxE.other;
+    }
     if (type === "track" && !ctxE.velocity) { const ca = crowdAt(0); if (ca) { ctxE.velocity = ca.vel; if (!fc) { ctxE.focus = ca.pos; ctxE.span = ca.ext * 1.6; } } }
-    if (type === "giant_close" && (gInfo ?? anyGiant)) { const gi = gInfo ?? anyGiant; gi.g.updateMatrixWorld(true); const hj = gi.g.userData.joints.head; if (hj) ctxE.head = hj.getWorldPosition(V(0, 0, 0)); ctxE.focus = gi.pos.clone(); ctxE.focusHeight = gi.g.userData.height; }
+    if (type === "giant_close" && (gInfo ?? anyGiant)) {
+      const gi = gInfo ?? anyGiant; gi.g.updateMatrixWorld(true); const hj = gi.g.userData.joints.head; if (hj) ctxE.head = hj.getWorldPosition(V(0, 0, 0)); ctxE.focus = gi.pos.clone(); ctxE.focusHeight = gi.g.userData.height;
+      // REBUILD 2026-11-06: a giant beside the world, or the world creature seen from outside: frame its face (the old
+      // framing stood inside a long shell / body) (cameraEpic giant_close faceDir)
+      if (ctxE.head && (gi !== worldG || tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside")) { const fd = V(ctxE.head.x - gi.pos.x, 0, ctxE.head.z - gi.pos.z); if (fd.lengthSq() < 1) fd.set(Math.sin(gi.yaw ?? 0), 0, Math.cos(gi.yaw ?? 0)); ctxE.faceDir = fd.normalize(); ctxE.headSize = (gi.g.userData.height ?? 20) * 0.3; }
+    }
+    // REBUILD 2026-11-06: hero_low on a giant with no person in focus: a low camera on the ground in front of the giant's
+    // face looking up at it (the old framing stood the "kid" spot on the giant's own feet: the camera sat in its body)
+    const heroGiant = type === "hero_low" ? (fg && gInfo ? gInfo : fw && worldG && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside" ? worldG : null) : null;
+    if (heroGiant) {
+      const gi = heroGiant, R = Math.max(gi.g.userData.length ?? 0, gi.g.userData.width ?? 0) / 2, yaw = gi.yaw ?? gi.g.rotation.y;
+      const fwd = V(Math.sin(yaw), 0, Math.cos(yaw)), side = (S.camDir ?? V(0, 0, 1)).clone().setY(0).normalize();
+      const dir = fwd.multiplyScalar(0.7).addScaledVector(side, 0.6).normalize();
+      ctxE.focus = gi.pos.clone().addScaledVector(dir, R * 1.25 + 8); ctxE.focus.y = S.groundY ?? 0;
+      ctxE.other = gi.pos.clone(); ctxE.otherHeight = gi.g.userData.height; ctxE.kidHeight = 1.2;
+    }
     if (type === "behind_army") {
       // the army runs away from the lens toward its target: the attacked giant (role target / the world's creature / the first giant)
       const tgtE = (shot.giants ?? []).find((g) => g.role === "target"), tg = tgtE ? giantInfo(tgtE.id) : worldG ?? firstGiant;
@@ -173,7 +200,32 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     }
     // the creature's footprint (cameraEpic keeps establish / aerial outside it or above its top)
     { const gg = fg ? gInfo : fw ? (worldG ?? anyGiant) : null; if (gg) { ctxE.radius = Math.max(gg.g.userData.length ?? 0, gg.g.userData.width ?? 0) / 2; ctxE.top = gg.g.userData.height; ctxE.onBack = !!S.surface && fw; } }
-    frameEpic(type, ctxE);
+    // a shot's camera move (tilt_up, orbit, flyover, fpv, top_down, low_hero) replaces the EPIC framing
+    if (!caps.frame(shot, lt, S, ctxE, { giant: (fg ? gInfo?.g : fw ? (worldG ?? anyGiant)?.g : !where[f] ? anyGiant?.g : null) ?? null })) frameEpic(type, ctxE);
+    // REBUILD 2026-11-06: never inside another giant (wolf, bear, bird...): out of its bounding box, sideways from its
+    // centre, still aimed where it was (the world creature has its own ray guard below)
+    for (const [, L] of live.giants) {
+      if (!L.g.visible) continue;
+      const box = new THREE.Box3().setFromObject(L.g), m = Math.max(1.5, (box.max.y - box.min.y) * 0.04);
+      box.expandByScalar(m);
+      if (!box.containsPoint(camera.position)) continue;
+      // really inside a part (a ray straight up crosses the closed blocks an odd number of times) or pressed against
+      // one (the first thing toward the aim is closer than ~3 % of the giant's height): only then move
+      const meshes = (h) => h.object.isMesh && h.object.visible !== false;
+      const upHits = new THREE.Raycaster(camera.position.clone(), V(0, 1, 0)).intersectObject(L.g, true).filter(meshes).length;
+      const aimV = camera.userData.epicAim ? camera.userData.epicAim.clone().sub(camera.position) : V(0, 0, -1).applyQuaternion(camera.quaternion);
+      const first = new THREE.Raycaster(camera.position.clone(), aimV.normalize()).intersectObject(L.g, true).find(meshes);
+      if (!(upHits % 2 === 1 || (first && first.distance < Math.max(2, (box.max.y - box.min.y) * 0.03)))) continue;
+      const c = box.getCenter(V(0, 0, 0)), d = V(camera.position.x - c.x, 0, camera.position.z - c.z);
+      if (d.lengthSq() < 1e-4) d.copy(S.camDir ?? V(0, 0, 1));
+      d.normalize();
+      // out through the nearest side wall along d (never over the top: that looked down onto its back)
+      const tx = d.x > 1e-6 ? (box.max.x - camera.position.x) / d.x : d.x < -1e-6 ? (box.min.x - camera.position.x) / d.x : Infinity;
+      const tz = d.z > 1e-6 ? (box.max.z - camera.position.z) / d.z : d.z < -1e-6 ? (box.min.z - camera.position.z) / d.z : Infinity;
+      camera.position.addScaledVector(d, Math.min(tx, tz) + 0.5);
+      if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim);
+      camera.updateMatrixWorld();
+    }
     // inside the set's camera area (the cavern), never under the ground / the creature's back
     if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(camera.position))) { const q = S.bounds[0].clampPoint(camera.position, V(0, 0, 0)); camera.position.copy(q); if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
     const gy = S.surface?.(camera.position.x, camera.position.z) ?? S.groundY ?? null;
@@ -193,17 +245,20 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     return true;
   }
 
-  function after(shot, lt, S, camera) {
+  function after(shot, lt, S, camera, where = {}) {
     const dur = shot.end - shot.start;
     for (const L of live.crowds) updateCrowd(L.grp, lt, { action: L.action, origin: L.origin, yaw: L.yaw, camera, speed: L.speed, surface: L.c.onWorld && S.surface ? S.surface : null });
     for (const { g } of live.giants.values()) updateGiantLOD(g, camera);
     if (S.giant) updateGiantLOD(S.giant, camera);
     const preset = shot.beat?.shake ?? live.beat?.shake?.preset ?? shot.shake ?? null;
+    let shaken = null;
     if (preset && preset !== "none") {
       const at = live.beat?.shake?.at ?? (shot.beat?.at != null ? shot.beat.at * dur : 0);
-      return applyShake(camera, preset, lt, { at, seed: shot.seed ?? 1, dur });
+      shaken = applyShake(camera, preset, lt, { at, seed: shot.seed ?? 1, dur });
     }
-    return null;
+    // 2026-11-06 (CAPABILITIES): tethers, siege fire, fx, the flashback grade, the tilt (after the shake: they need the final camera)
+    const capsShake = caps.after(shot, lt, S, camera, live, where);
+    return shaken ?? capsShake ?? null;
   }
 
   return {
@@ -215,11 +270,12 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       // never a silent swap: the built world must be the asked view of the asked creature
       const want = { view: spec.view, creature: typeof spec.creature === "string" ? spec.creature : spec.creature?.species };
       if (S.giantView !== want.view || (want.creature && S.creature !== want.creature)) throw new Error(`epic: set "${name}" built ${S.creature} ${S.giantView}, asked ${want.creature} ${want.view}`);
+      caps.decorateWorld(S, spec); // the town on its back (asked, or a town-less creature seen from outside)
       return S;
     },
     buildCreatureWorld: (spec, c) => buildCreatureWorld(spec, c ?? ctx),
-    problems: () => validateEpic(tl),
-    ownsFocus: (shot) => EPIC_CAMERA_TYPES.includes(shot.camera) || /^(giant:|crowd)/.test(String(shot.focus ?? "")) || shot.focus === "world",
+    problems: () => [...validateEpic(tl), ...caps.problems()],
+    ownsFocus: (shot) => EPIC_CAMERA_TYPES.includes(shot.camera) || /^(giant:|crowd)/.test(String(shot.focus ?? "")) || shot.focus === "world" || !!shot.move,
     place, frame, after,
     posOf: (id) => live.giants.get(id)?.pos ?? null,
     hideAll: () => { for (const g of allGiants) g.visible = false; for (const c of allCrowds) c.visible = false; },

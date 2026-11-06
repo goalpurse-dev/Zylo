@@ -25,6 +25,8 @@
 import { POSES_N, EXPRS_N } from "./director/vocab.js";
 // EPIC's own vocabulary (lib/epic.js, pure): what its giants / crowds / creature worlds / cameras really do
 import { GIANT_KINDS, GIANT_ACTIONS, CROWD_ACTIONS as EPIC_CROWD_ACTIONS, CROWD_KINDS, WORLD_VIEWS, SHAKES, BEAT_TYPES, EPIC_CAMERAS } from "./epic.js";
+// the target-video capabilities (CAPABILITIES agent, 2026-11-06): lib/caps.js vocabulary, page/capsLayer.js
+import { MOVES, TETHER_KINDS, TETHER_STATES, SIEGE_KINDS, SIEGE_PLACES, PAYLOADS, FX_KINDS, ACT_KINDS, TOWN_STYLES, LANDMARKS, GRADES } from "./caps.js";
 
 const P = (ready, planned = [], partial = [], other = null) => ({ ready: [...ready], partial: [...partial], planned: [...planned], ...(other ? { other } : {}) });
 const GIANT_SPECIES = GIANT_KINDS.filter((k) => k !== "generic" && k !== "giant_human");
@@ -55,6 +57,11 @@ export const CAPABILITIES = Object.freeze(Object.fromEntries([
     module: "page/sets/creatureWorld.js (buildCreatureWorld inside | on, buildCreatureOutside) + page/kit/giants.js; landed 2026-11-05, being wired into plan.mjs", owner: "EPIC",
     params: { relation: P(WORLD_VIEWS), species: P(GIANT_SPECIES, [], [], "partial"), scaleM: { readyMax: 200, plannedMax: 200 } },
     fallback: "inside: a built enclosure (inside_creature walls); on / outside: the nearest set + a picture card of the creature", files: ["page/sets/creatureWorld.js"] },
+  { id: "world.coast", group: "world", status: "partial",
+    does: "around a creature seen from outside: a big hill sloping down to the sea (the creature on the hill), the hill turned to shiny mud, the creature sliding down it on its belly, splashing into the sea and floating there (since 2026-11-06; planned per line from the words: hill, sea, mud, spray, slid, splash, float)",
+    module: "page/sets/creatureWorld.js addCoastStage (shot.stage) + lib/coast.js coastPass + page/kit/giants.js slide / float", owner: "ENGINE",
+    params: { ground: P(["land", "hill", "sea"]), mud: P([true, false]), action: P(["slide", "float", "fall", "walk"]) },
+    fallback: "the creature walking on the plain fields + a picture card of the hill / sea", files: ["lib/coast.js"] },
   { id: "world.travel", group: "world", status: "partial",
     does: "several places in one video, each line in its own place",
     module: "plan.mjs (a set per shot); lib/builder (one built world per video today)", owner: "PLANNER + BUILDER",
@@ -146,6 +153,11 @@ export const CAPABILITIES = Object.freeze(Object.fromEntries([
     does: "an explosion, blast or burst (flash, debris blocks, a shockwave ring)",
     module: "(planned) page/fx/explosion.js + camera.shake", owner: "unassigned",
     params: { target: "text", size: P([], ["small", "big", "huge"]) }, fallback: "a picture card: BOOM 💥 (+ the target)" },
+  { id: "fx.water", group: "effects", status: "partial",
+    does: "water effects: a hose spraying water from a person's hand (the person holds a garden hose), a giant splash (white water bursting up, a foam ring) where a creature hits the sea (since 2026-11-06, outside a creature world)",
+    module: "page/sets/creatureWorld.js addCoastStage (shot.stage.fx spray | splash) + page/kit/heldMore.js hose", owner: "ENGINE",
+    params: { kind: P(["spray", "splash"], ["rain", "fountain", "wave", "flood"]) },
+    fallback: "the hose in the person's hand / the creature at the shore; else a picture card: SPLASH 💦" },
   { id: "fx.glow", group: "effects", status: "partial",
     does: "glow and magic light: glowing eyes, a halo ring, a glowing object (blueprint glow material), sparkles",
     module: "page/kit/monsters.js (glow), page/kit/props.js makeMarker ring, page/kit/blueprint.js glow material", owner: "KIT + BUILDER",
@@ -198,6 +210,81 @@ export const CAPABILITIES = Object.freeze(Object.fromEntries([
     does: "sparse sound effects on key moments (a scream, a sneeze, a growl, a crowd)",
     module: "lib/sfx.js", owner: "AUDIO",
     params: { cue: "text" }, fallback: "no sound effect" },
+
+  // ------------------------------------------------------------------ the target-video capabilities (2026-11-06)
+  // shot fields of lib/caps.js, drawn by page/capsLayer.js (loaded by the EPIC layer); examples are timeline JSON
+  { id: "tether", group: "things", status: "ready",
+    does: "chains, ropes, cables and rope bridges between any two anchors (giant to giant, a giant's leg to a ground stake, soldiers holding lines, a hook fired and catching, a bridge between two creatures' backs): taut, slack, swinging, fired (the hook flies and catches with a jolt) or SNAP (it breaks, the halves whip down, links fly, the camera shakes, SFX chain_snap)",
+    module: "page/kit/tether.js + page/capsLayer.js (shot.tethers) + lib/caps.js tetherState", owner: "CAPABILITIES",
+    params: { kind: P(TETHER_KINDS), state: P(TETHER_STATES) },
+    examples: [
+      `tethers: [{ from: "giant:wolf.leg0", to: [-100, 0, -150], kind: "chain", state: "snap", at: 0.4 }]  (the chain on his leg snapped)`,
+      `tethers: [{ from: "crowd:0", to: "giant:wolf.leg1", kind: "rope", state: "fire", at: 0.05, until: 0.5 }]  (the soldiers threw their ropes)`,
+      `tethers: [{ from: "world.back", to: "giant:elephant.back", kind: "bridge", state: "slack" }]  (a bridge joins our two towns)`,
+      `anchors: giant:<id>.<head|jaw|neck|body|back|tail|leg0-7|front|rear|left|right>, world.<part>, actor:<id>, crowd:<i>, siege:<i>, spot:<name>, [x,y,z], { at, off: [x,y,z] }`,
+    ],
+    fallback: "the two things in frame without the line", files: ["page/kit/tether.js", "page/capsLayer.js"] },
+  { id: "siege", group: "things", status: "ready",
+    does: "cannons, ballistae and catapults as kit objects (on the ground, a wall, a creature's back, or a row held by an army; count 1-12) that FIRE: recoil + muzzle flash + smoke, the projectile on its arc with a trail (a ball, a bolt, a rock, or a hook dragging a chain that catches the target), the IMPACT (debris blocks, dust, camera shake, SFX cannon_fire / impact_boom)",
+    module: "page/kit/siege.js + page/capsLayer.js (shot.siege)", owner: "CAPABILITIES",
+    params: { kind: P(SIEGE_KINDS), place: P(SIEGE_PLACES), payload: P(PAYLOADS), count: { readyMax: 12, plannedMax: 12 } },
+    examples: [
+      `siege: [{ kind: "cannon", at: [-20, 0, 2], aim: "giant:wolf.body", count: 3, fireAt: 0.15 }]  (fire the cannons!)`,
+      `siege: [{ kind: "ballista", at: "giant:wolf.back", place: "back", aim: "world.body", payload: "hook", chain: true }]  (his city fired hooks into our shell)`,
+      `siege: [{ kind: "catapult", at: "spot:back", aim: "giant:wolf.body", fireAt: 0.3 }]`,
+    ],
+    fallback: "the weapon standing in frame (no fire), else a picture card", files: ["page/kit/siege.js", "page/capsLayer.js"] },
+  { id: "world.backtown", group: "world", status: "ready",
+    does: "a town or a city on ANY creature's back, scaled to it (a turtle's shell, a wolf, a whale, an elephant, a bird...): dozens to hundreds of houses on streets (terraced down a steep shell), landmark buildings with readable signs (SCHOOL, GROCERY, a hospital cross...), and for a villain the lit castle-city (dark spired towers with window grids, a crenellated wall round the edge); windows and lamps light up at night; it rides the body so it walks with the creature. Chosen on its own for a creature world seen from outside whose kind carries no town",
+    module: "page/kit/backTown.js + page/capsLayer.js decorateGiant / decorateWorld", owner: "CAPABILITIES",
+    params: { style: P(TOWN_STYLES), landmarks: P(LANDMARKS) },
+    examples: [
+      `giants: { wolf: { kind: "wolf", size: 130, backTown: { style: "castle", lit: true } } }  (his city glows on his back)`,
+      `worlds: { turtle_out: { creature: "turtle", view: "outside", size: 120, backTown: { style: "town", landmarks: ["school", "grocery", "hospital"] } } }`,
+    ],
+    fallback: "the kind's own little town (turtle / whale / elephant / snail), else the creature alone", files: ["page/kit/backTown.js"] },
+  { id: "camera.move", group: "camera", status: "ready",
+    does: "camera moves on any subject (a giant, the world creature and its town, a crowd, a person): tilt_up (feet to head / the city on top), orbit (round it), flyover (high across it), fpv (a fast first-person flight down the street on its back), top_down (straight down on a person in bed / fallen), low_hero (worm's-eye at its feet)",
+    module: "page/cameraMoves.js applyMove (via page/epicLayer.js frame + page/capsLayer.js)", owner: "CAPABILITIES",
+    params: { move: P(MOVES) },
+    examples: [
+      `{ camera: "giant_close", focus: "giant:wolf", move: "tilt_up" }  (from his paws up to his towers)`,
+      `{ camera: "establish", focus: "world", move: "orbit" }  (every town lives on a turtle)`,
+      `{ camera: "aerial", focus: "world", move: "fpv" }  (we flew down our own street)`,
+      `{ camera: "medium", focus: "me", move: "top_down" }  (I was asleep when it began)`,
+    ],
+    fallback: "the shot's own camera (push / drift)", files: ["page/cameraMoves.js"] },
+  { id: "fx.caps", group: "effects", status: "ready",
+    does: "sound-wave rings from a horn (toward a target), a glassy hex shield dome over a shell / town (flashes when struck), a burst of leaves, debris blocks, dust or sparks at any anchor",
+    module: "page/kit/fxCaps.js + page/kit/siege.js makeBurst + page/capsLayer.js (shot.fx)", owner: "CAPABILITIES",
+    params: { kind: P(FX_KINDS) },
+    examples: [
+      `fx: [{ kind: "sound_rings", at: "actor:me", to: "giant:wolf.head", t0: 0.1 }]  (I blew the horn)`,
+      `fx: [{ kind: "shield_dome", at: "world.body", hitAt: 0.6 }]  (a shield went up over the shell)`,
+      `fx: [{ kind: "debris", at: "giant:wolf.leg0", t0: 0.5 }]`,
+    ],
+    fallback: "no effect (the cause and the target stay in frame)", files: ["page/kit/fxCaps.js"] },
+  { id: "giant.act", group: "creatures", status: "ready",
+    does: "giant interactions: eat_tree (a big tree in front of the mouth tips into the jaws, leaves burst, SFX big_chomp), nuzzle (one giant presses its head to the other's head / shell, eyes half shut), headbutt (a lunge into the other, then contact)",
+    module: "page/capsLayer.js place (shot.acts) + page/kit/fxCaps.js makeBlockTree", owner: "CAPABILITIES",
+    params: { kind: P(ACT_KINDS) },
+    examples: [
+      `acts: [{ kind: "eat_tree", giant: "deer", at: 0.5 }]  (with giants: [{ id: "deer", action: "eat" }])`,
+      `acts: [{ kind: "nuzzle", giant: "wolf", to: "world", part: "shell" }]  (he pressed his head to her shell)`,
+    ],
+    fallback: "the giant's own eat / idle action" },
+  { id: "grade.flashback", group: "light", status: "ready",
+    does: "the flashback / memory look on a shot: washed sepia colours and a soft dark vignette (the same character earlier: a young white wolf)",
+    module: "page/capsLayer.js (the post grade per shot) + page/kit/fxCaps.js makeVignette", owner: "CAPABILITIES",
+    params: { grade: P(GRADES) },
+    examples: [`{ grade: "flashback", giants: [{ id: "pup", action: "walk" }] }  (long ago, he was just a pup)`],
+    fallback: "the normal grade (day / night / warm)" },
+  { id: "world.tilt", group: "events", status: "ready",
+    does: "the world tips (the street on the shell tilts as the creature stumbles): the frame rolls in and the crowds slide downhill, with a rumble",
+    module: "page/capsLayer.js after (shot.tilt)", owner: "CAPABILITIES",
+    params: { slide: P([true, false]) },
+    examples: [`{ set: "creature:turtle_on", tilt: { deg: 16, at: 0.1, slide: true }, crowds: [{ kind: "townsfolk", action: "flee", onWorld: true }] }  (the whole street tipped, and we slid)`],
+    fallback: "a rumble shake" },
 ].map((c) => [c.id, Object.freeze(c)])));
 
 export const capability = (id) => CAPABILITIES[id] ?? null;
@@ -259,6 +346,6 @@ export function registryForPrompt() {
   return CAPABILITY_IDS.map((id) => {
     const c = CAPABILITIES[id];
     const ps = Object.entries(c.params ?? {}).map(([k, v]) => (v === "text" ? `${k}: text` : typeof v.readyMax === "number" ? `${k}: number` : `${k}: ${[...v.ready, ...(v.partial ?? []), ...(v.planned ?? [])].join("|")}`)).join("; ");
-    return `- ${id}: ${c.does}${ps ? ` [${ps}]` : ""}`;
+    return `- ${id}: ${c.does}${ps ? ` [${ps}]` : ""}${c.examples?.length ? ` e.g. ${c.examples[0]}` : ""}`;
   }).join("\n");
 }

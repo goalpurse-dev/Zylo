@@ -368,7 +368,10 @@ export async function chunk(job, dir, post) {
   await put(c.out.seg, seg, "video/mp4");
   await put(c.out.web, web, "video/mp4");
   timing.upload = +((Date.now() - t) / 1000).toFixed(2);
-  return { role: "chunk", index: c.index, from: c.from, to: c.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(seg).size, webBytes: fs.statSync(web).size, renderer: gl, timing };
+  // the frame guards' log (render.mjs): flat (one-colour) shots re-rendered with a safe camera, black frames replaced
+  const flat = (res.chunks ?? []).flatMap((x) => x.flat ?? []), replaced = (res.chunks ?? []).reduce((n, x) => n + (x.reused ?? 0), 0);
+  if (flat.length) console.log(`chunk ${c.index}: flat shots saved by the guard: ${JSON.stringify(flat)}`);
+  return { role: "chunk", index: c.index, from: c.from, to: c.to, frames: res.frames, msPerFrame: res.msPerFrame, loadS: res.loadS, bytes: fs.statSync(seg).size, webBytes: fs.statSync(web).size, renderer: gl, timing, ...(flat.length ? { flat } : {}), ...(replaced ? { replacedFrames: replaced } : {}) };
 }
 
 // ---------------------------------------------------------------- finish: join + mux + poster

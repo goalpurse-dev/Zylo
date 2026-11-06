@@ -487,3 +487,34 @@ the start (as before), the review by 70 s before the limit. Calibration (owner-a
 the human on match-or-not for 49/50 lines, caught 49/49 problems, 1 false alarm, $0.0113. Free tools: `node lib/vision/stills.mjs <timeline.json>` (timing), `node
 dev/visionDryRun.mjs --dir <run folder>` (real stills + mock judge), `node dev/visionCalibrate.mjs` (judge vs a human
 review.json; paid only with --paid --yes). Tests: `dev/vision.test.mjs`, `dev/visionPlan.test.mjs`.
+
+## Addendum 2026-11-06 (b): run 1620fc3e fixes (flat frames, empty cards, the coast ending)
+
+- **Flat-frame guard** (`lib/frameGuard.js`, `render.mjs flatGuard`): `renderAt(t, { safe })` returns `{ shot, mean,
+  flat, detail, safe }` (flat = share of the 16x16 probe in one colour bucket, detail = mean luminance step between
+  probe neighbours). A frame with flat > 0.85 or detail < 3 is re-rendered with `safe: 1` (no fog), then `safe: 2`
+  (no fog + a plain camera on the set's centre); the level that works starts the rest of the shot. Every saved shot is
+  logged and returned in the chunk result (`flat: [{ shot, safe, frames, left }]`, worker chunk report too); only
+  when no level saves it is the last good frame used. Stills (`renderStills`) use the same guard (`--raw`: none).
+  `BW_FLAT_TEST=3,10` forces flat frames to test it. The root cause of run 1620fc3e is fixed too: a creature host is
+  >= 120 m (`lib/direction.js hostSize`; a giant next to it <= 45% unless the script says it is bigger), the inside
+  cavern is never smaller than a 110 m creature's, and `lighting.js` keeps a fog's far end well past its near end.
+- **Picture cards** (`lib/cards.js`, `page/kit/props.js`): a generic icon ("✨") or an emoji the browser cannot draw in
+  colour gives the card's text big over the board (or the word on the disc) — never an empty circle; badges drop an
+  undrawable emoji for their word. The RunPod image installs `fonts-noto-color-emoji` (next image build).
+- **Built things replace every card of their name** (`lib/builder/apply.js`): the card shots of the need and any card
+  with its name; merged into a shot of the same line, else the card itself becomes a shot of the thing.
+- **Every line on screen in its own time** (`plan.mjs lineSpanProblems`, inside `checkTimeline`): a line's shots fill
+  >= half its span and its caption words are timed inside it.
+- **The coast stage** (`lib/coast.js` coastPass in planVideo; `page/sets/creatureWorld.js addCoastStage`): per shot
+  on a creature world seen from outside (not a sea world) `stage: { ground: "land" | "hill" | "sea", mud?: true,
+  fx?: ["spray" | "splash"] }` (checked by `lib/epic.js validateEpicShot`): a hill sloping to the sea, the hill as
+  shiny mud, water sprayed from the first person's hand (who holds the new `hose` prop), a splash at the shore, the
+  creature floating at sea. Giant actions `slide` (down the slope, set-driven) and `float`. The story state carries
+  forward (once muddy stays muddy, after the splash it floats); a coast line filmed only inside gets its first shot
+  moved outside. The set's camera never stays inside the hill, and the splash is filmed from the beach. Registry:
+  `world.coast`, `fx.water` (lib/capabilities.js).
+- **Cast** (`plan.mjs mergeDirectorCast`): the director's cast ids map onto the script's people ("mrs_pell" = "Mrs.
+  Pell"), other director people join with their role ("baker" an adult), "tiny sister" Juno is "my sister", and a
+  name seen only as a sentence-start word ("Spears poked") that the director's cast does not know is no person.
+Tests: `dev/run1620.test.mjs` (fixture `dev/scripts/run1620fc3e.json`).

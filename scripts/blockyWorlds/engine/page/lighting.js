@@ -112,7 +112,9 @@ export function applyLight(name, ctx) {
 
   // fog
   const fog = rig.fog?.[name] ?? (rig.indoor ? null : M.fog);
-  scene.fog = fog ? new THREE.Fog(fog[0], fog[1], fog[2]) : null;
+  // a fog whose far end is not well past its near end fogs EVERY pixel to one colour (turtle run 1620fc3e: a 30 m
+  // turtle's inside had near 45 / far 41 m: every day shot inside was a flat beige frame, every night one black)
+  scene.fog = fog ? new THREE.Fog(fog[0], fog[1], Math.max(fog[2], fog[1] * 2.5, fog[1] + 60)) : null;
 
   // the sun / the moon: the one shadow-casting light, its box fitted to the set
   const sh = rig.shadow ?? { center: [0, 0, 0], half: 25, far: 160 };
