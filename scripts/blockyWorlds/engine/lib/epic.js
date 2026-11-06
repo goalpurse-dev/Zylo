@@ -322,6 +322,13 @@ export function validateEpic(tl) {
     if (g.kind && !GIANT_KINDS.includes(g.kind) && !isObj(g.params)) bad.push(`giant "${id}": unknown kind "${g.kind}" without params (generic giants need params)`);
     if (g.size != null && !(g.size >= 5 && g.size <= 200)) bad.push(`giant "${id}": size ${g.size} m outside 5-200`);
   }
+  // the creature worlds: the page's normCreatureSpec would silently default a missing creature / view to "inside a
+  // turtle"; a world the page can't build as asked fails the chunk loudly instead (2026-11-06)
+  for (const [id, w] of Object.entries(tl.worlds ?? {})) {
+    if (!isObj(w)) { bad.push(`world "${id}" is not an object`); continue; }
+    if (!(typeof w.creature === "string" && w.creature.length)) bad.push(`world "${id}": creature missing`);
+    if (!WORLD_VIEWS.includes(w.view)) bad.push(`world "${id}": view "${w.view}" (${WORLD_VIEWS.join(", ")})`);
+  }
   for (const s of tl.shots ?? []) bad.push(...validateEpicShot(s, tl));
   return bad;
 }

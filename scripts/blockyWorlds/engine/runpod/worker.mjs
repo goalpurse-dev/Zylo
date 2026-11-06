@@ -17,6 +17,11 @@
 //   role "finish":  the segments joined by stream copy + the mix -> final.mp4; the same for web.mp4; poster.jpg. No GPU.
 //   Events go to job.callback.url ({ runId, jobId, token, event, ... }); a callback that can't be reached never fails
 //   the job (RunPod's webhook and the sweeper cover it).
+//   STALE WORKER (2026-11-06; run 7b4c0d8b's prepare ran on a worker of the image before, still alive after the
+//   endpoint switch: mock director, $0.26 of builder for nothing, mix crash): job.minBuild (the server's
+//   _shared/blockyWorlds/renderBuild.js, written by runpod/setup.mjs) vs this image's BUILD_ID (buildContext.mjs):
+//   older -> RESULT { ok: false, code: "STALE_WORKER" } before anything is downloaded or paid for; handler.py retires
+//   the worker, the server retries elsewhere (render.js retryOf, not counted as a failed try).
 //
 // STAGING (inline or { jobUrl }; runpod/dispatch.mjs): { mode, timelineUrl, pages, ranges: [{ from, to, upload }],
 //   whole: { mixUrl, upload } | null, uploads: { report } } as before.
@@ -126,8 +131,13 @@ async function stillChrome(mode) {
   try { await useGpu(); } catch (e) { console.log(`builder stills: no GPU (${String(e.message).slice(0, 120)}), SwiftShader`); useSoftware(); }
 }
 
-/** the prepare job's own time limit (render.js RENDER.runSec.prepare); the builder must end this long before it */
-const PREPARE_SEC = 300, AFTER_BUILDER_SEC = 75;
+/**
+ * The prepare job's own time limit (render.js RENDER.runSec.prepare: 420 s since 2026-11-06, the shot review's window).
+ * The builder keeps the window it had under the old 300 s limit (it ends BUILDER_END_SEC after the job's start, and
+ * never later than AFTER_BUILDER_SEC before the limit); the shot review gets its own window after the builder and must
+ * end REVIEW_AFTER_SEC before the limit (music + SFX + the mix ~40 s, the uploads and a margin).
+ */
+const PREPARE_SEC = 420, AFTER_BUILDER_SEC = 75, BUILDER_END_SEC = 225, REVIEW_AFTER_SEC = 70;
 
 export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null, builder: builderIn = null } = {}) {
   const p = job.prepare ?? {}, timing = {}, jobT0 = Date.now();
@@ -144,7 +154,9 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const { snapshotCache } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "cache.js")).href);
   const blog = [];
   const library = snapshotCache(p.builder?.library ?? [], { onSave: async (asset) => { await post("built", { asset: { ...asset, still_path: asset.still_path ? path.basename(asset.still_path) : null } }); } });
-  const until = jobT0 + (Number(p.limits?.prepareSec) || PREPARE_SEC) * 1000 - AFTER_BUILDER_SEC * 1000;
+  const prepareSec = Number(p.limits?.prepareSec) || PREPARE_SEC;
+  const until = jobT0 + Math.min(BUILDER_END_SEC, prepareSec - AFTER_BUILDER_SEC) * 1000;
+  const reviewUntil = jobT0 + (prepareSec - REVIEW_AFTER_SEC) * 1000;
   const builder = builderIn ?? B.makeBuilder({
     provider: await B.providerFromConfig({ provider: p.builder?.provider ?? process.env.BLOCKY_WORLDS_BUILDER ?? "off", idea: p.idea ?? null }),
     cache: library, budget: { ...(p.builder?.budget ?? {}), until }, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
@@ -153,7 +165,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // what the director and the builder spent, for the server's cost ledger (render.js aiLedger): "planned" reports the
   // spend so far; the job's end (done output / failed event) reports the totals and what "planned" said, so a call that
   // ends after "planned", or a job that fails before it, is still billed once
-  const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0 };
+  const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0, reviewUsd: 0, reviewModel: null, plannedReviewUsd: 0 };
   const spendNow = () => ({ ...spend, builderUsd: +Number(builder.spent ?? spend.builderUsd ?? 0).toFixed(5) });
   let builtReport = null;
   const directorOn = !(p.director === false || p.director?.provider === "off");
@@ -238,9 +250,23 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   tl.audio = { voice: "voice.wav", music: "music.wav" };
   const built = await lap("build", () => builder.buildFor(tl, { plan, kit }));
   builtReport = built.report;
+  // 2b. the shot review (lib/vision, owner 2026-11-06): a still of every shot, an AI vision check of each line against
+  //     the story (who, things, action, place, time), misses re-planned (each fix re-checked by the same checks as
+  //     below), the rest a picture card or recorded. Never fails the run; its own money cap and time window.
+  //     A prepare retry reviews again (the timeline is planned again); a resumed prepare never does (resumePrepare).
+  let review = null;
+  try {
+    const V = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "index.js")).href);
+    review = await lap("review", () => V.reviewForPrepare({
+      tl, script, premise: p.idea?.topic ?? p.idea?.premise ?? null, config: p.review ?? {}, apiKey: process.env.ANTHROPIC_KEY ?? null,
+      plan, kit, kitProblems, builder, dir, until: reviewUntil, beforeStills: () => stillChrome(job.mode ?? "gpu"), log: (m) => console.log(`review: ${m}`),
+    }));
+    spend.reviewUsd = Number(review?.costUsd) || 0; spend.reviewModel = review?.summary?.model ?? null;
+    if (review?.report && p.out?.shotReview) await put(p.out.shotReview, path.join(dir, "shot-review.json"), "application/json").catch((e) => console.log(`shot-review.json upload: ${e.message}`)); // bookkeeping never fails a run
+  } catch (e) { console.log(`review: skipped (${String(e.message).slice(0, 160)})`); }
   const checks = preRenderChecks(plan, tl, script, kit);
   const checkFile = path.join(dir, "visual-check.json");
-  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog } }, null, 1));
+  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog }, review: review?.summary ?? null }, null, 1));
   if (p.out?.visualCheck) await put(p.out.visualCheck, checkFile, "application/json");
   const bad = checkFailure(checks);
   if (bad) throw bad;
@@ -249,9 +275,10 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   await put(p.out.timeline, tlPath, "application/json");
   const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms, needs: builderLines(built.report) },
     ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, reused: !!direction.reused, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),
+    ...(review?.summary ? { review: review.summary } : {}),
     timing: { ...timing } };
   await post("planned", planned);
-  spend.plannedBuilderUsd = Number(planned.builder.costUsd) || 0; spend.plannedDirectorUsd = Number(planned.director?.costUsd) || 0;
+  spend.plannedBuilderUsd = Number(planned.builder.costUsd) || 0; spend.plannedDirectorUsd = Number(planned.director?.costUsd) || 0; spend.plannedReviewUsd = Number(planned.review?.costUsd) || 0;
 
   // 3. music A + the SFX cues + the final mix (the chunks render meanwhile)
   const musicWav = path.join(dir, "music.wav"), mixM4a = path.join(dir, "mix.m4a");
@@ -375,9 +402,27 @@ export async function finish(job, dir) {
   return { role: "finish", durationSec, bytes: fs.statSync(final).size, webBytes: fs.statSync(web).size, timing };
 }
 
+/** this image's build ("20261106T120000-1a2b3c4d5e6f", buildContext.mjs); null in a repo checkout (no BUILD_ID file) */
+export function buildOf(engine = ENGINE) {
+  try { return fs.readFileSync(path.join(engine, "BUILD_ID"), "utf8").trim() || null; } catch { return null; }
+}
+/** why this worker must not run a job that needs minBuild (null: it may). Builds compare by their time part. */
+export function staleBuild(own, minBuild) {
+  if (!minBuild || !own) return null; // no requirement, or a repo checkout (dev / dry run)
+  const a = String(own).split("-")[0], b = String(minBuild).split("-")[0];
+  return a < b ? `this worker runs build ${own}, the job needs ${minBuild} or newer` : null;
+}
+
 /** one production job -> its RESULT (never throws); the worker's own done/failed event goes to the callback too */
 export async function runJob(job, opts = {}) {
   const t0 = Date.now(), post = opts.post ?? poster(job);
+  // a stale worker stops before the temp folder, the GPU check, any download or any paid call
+  const stale = staleBuild(opts.build !== undefined ? opts.build : buildOf(), job.minBuild);
+  if (stale) {
+    const result = { ok: false, role: job.role, code: "STALE_WORKER", error: stale, totalS: +((Date.now() - t0) / 1000).toFixed(2) };
+    await post("failed", { code: result.code, message: result.error });
+    return result;
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bw-${job.role}-`));
   let result;
   try {

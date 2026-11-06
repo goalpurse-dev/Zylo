@@ -5,6 +5,7 @@
 //     a clean copy: unknown enums -> defaults, ids unique and referenced ids existing, one entry for every script line
 //     (missing lines get the main world, the narrator, no needs). problems are fed back to the AI on its one retry.
 import { WORLD_KINDS, BASE_SETS, CREATURE_RELATIONS, ROLES, CHAR_KINDS, SCALES, BEHAVIOURS, CROWD_ACTIONS, VEHICLE_MOTIONS, PROP_SIZES, EFFECT_KINDS, EVENT_KINDS, CAMERA_BEATS, LIGHTS, POSES_N, ACTION_WORDS } from "./vocab.js";
+import { cleanName } from "../names.js";
 
 /** the line actions: the people kit's poses + the verbs the registry knows (character.action) */
 export const ACTIONS = Object.freeze([...new Set([...POSES_N, ...Object.keys(ACTION_WORDS)])]);
@@ -57,7 +58,7 @@ export function validateProduction(raw, { lineCount = null, lines = null } = {})
       creature: { species: str(c.species, 40).toLowerCase(), relation: oneOf(c.relation, CREATURE_RELATIONS, kind === "creature" ? "on" : "none"), heightM: num(c.heightM, 0, 0, 200) }, light: oneOf(w.light, LIGHTS, "day") };
   });
   if (!worlds.length) { problems.push("no world"); worlds.push({ id: uid("town", "world"), name: "the town", kind: "outdoor", base: "street", description: "", creature: { species: "", relation: "none", heightM: 0 }, light: "day" }); }
-  const cast = arr("cast").map((c) => ({ id: uid(c.id, "cast"), name: str(c.name, 40), kind: oneOf(c.kind, CHAR_KINDS, "human"), role: oneOf(c.role, ROLES, "adult"), look: str(c.look, 120), job: str(c.job, 40) }));
+  const cast = arr("cast").map((c) => ({ id: uid(c.id, "cast"), name: cleanName(str(c.name, 40)), kind: oneOf(c.kind, CHAR_KINDS, "human"), role: oneOf(c.role, ROLES, "adult"), look: str(c.look, 120), job: str(c.job, 40) }));
   if (!cast.some((c) => c.role === "narrator")) {
     const me = cast.find((c) => c.id === "me");
     if (me) me.role = "narrator"; else cast.unshift({ id: ids.has("me") ? uid("narrator", "cast") : (ids.add("me"), "me"), name: "", kind: "human", role: "narrator", look: "", job: "" });

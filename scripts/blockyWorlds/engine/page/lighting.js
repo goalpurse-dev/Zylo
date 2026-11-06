@@ -93,14 +93,15 @@ export function applyLight(name, ctx) {
   });
   const dome = add(new THREE.Mesh(new THREE.SphereGeometry(1400, 48, 24), skyMat));
   dome.renderOrder = -1; dome.frustumCulled = false; disposables.push(dome.geometry, skyMat);
-  if (M.stars) {
+  // rig.enclosed: a closed shell / cave (inside a giant creature): no stars or moon, they would read as open sky
+  if (M.stars && !rig.enclosed) {
     const n = 1400, pos = new Float32Array(n * 3); let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     for (let i = 0; i < n; i++) { const th = rnd() * Math.PI * 2, ph = 0.1 + rnd() * 1.35; pos.set([Math.cos(th) * Math.cos(ph) * 900, Math.sin(ph) * 900, Math.sin(th) * Math.cos(ph) * 900], i * 3); }
     const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const sm = new THREE.PointsMaterial({ color: 0xffffff, size: 2.0, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.9 });
     const stars = add(new THREE.Points(sg, sm)); stars.frustumCulled = false; disposables.push(sg, sm);
   }
-  if (M.moon) {
+  if (M.moon && !rig.enclosed) {
     const mg = new THREE.CircleGeometry(16, 48), mm = new THREE.MeshBasicMaterial({ color: "#eef1ff", fog: false });
     const moonDisc = add(new THREE.Mesh(mg, mm));
     const md = new THREE.Vector3(...(rig.moonAt ?? [-0.32, 0.5, -0.8])).normalize();

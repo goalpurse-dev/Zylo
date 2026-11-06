@@ -101,7 +101,7 @@ test("protocol: the example script plants its prop, pays it off and calls back l
   assert.match(propProblems(listener, noPayoff).join(), /never pays off/);
   const noCallback = { ...script, lines: [...script.lines.slice(0, -2), { part: "closer", text: "The end." }, { part: "closer", text: "Goodbye." }] };
   assert.match(callbackProblem({ ...listener, closer: "x" }, noCallback), /call back/);
-  assert.deepEqual(scriptProtocolCheck(script, 90, listener).problems, []);
+  assert.deepEqual(scriptProtocolCheck(script, 100, listener).problems, []);
 });
 
 test("protocol: beat sheets and shot plans are checked against the 7 parts and the fixed vocabulary", async () => {

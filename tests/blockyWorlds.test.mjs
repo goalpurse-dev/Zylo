@@ -116,17 +116,33 @@ test("ideas: the prompts name the slots and the topic; the schema has no array l
 
 // ---------- the script: the pace (~260 words a minute from short lines) and the checks ----------
 
-test("script: the example 90 s script passes, and is sized for the target pace", () => {
-  const s = normalizeScript(EXAMPLE_SCRIPT), c = checkScript(s, 90, "written");
+test("script: the example script (340 words, ~96 s at the real pace) passes at 100 s, and is too long for 90 s", () => {
+  const s = normalizeScript(EXAMPLE_SCRIPT), c = checkScript(s, 100, "written");
   assert.deepEqual(c.problems, []);
-  assert.ok(Math.abs(c.words - targetWords(90)) / targetWords(90) < 0.08, `${c.words} words`);
+  assert.ok(Math.abs(c.words - targetWords(100)) / targetWords(100) < 0.08, `${c.words} words`);
   const lens = s.lines.slice(1).map((l) => wordCount(l.text)).sort((a, b) => a - b);
   assert.ok(lens[Math.floor(lens.length / 2)] <= 8, "median line is short");
-  assert.ok(c.seconds > 85 && c.seconds < 100, `${c.seconds} s`);
-  assert.equal(PACE.targetWpm, 220);
-  assert.equal(targetWords(60), 220);
+  assert.ok(c.seconds > 90 && c.seconds <= 100, `${c.seconds} s`);
+  assert.match(checkScript(s, 90, "written").problems.join(), /Too long: 340 words, a 90 s video fits 318 at most/);
+  assert.equal(PACE.targetWpm, 212);
+  assert.equal(targetWords(60), 212);
   assert.equal(partBudgets(120).reduce((a, b) => a + b.words, 0) >= targetWords(120) - 5, true);
   assert.ok(SCRIPT_SYSTEM.includes("Barnaby"), "the style sample is in the writer's prompt");
+  assert.ok(!SCRIPT_SYSTEM.includes("90-second script"), "the sample's length is never presented as the target");
+});
+
+test("script: a 1:30 script lands on 1:30 at the voice's measured pace (~215 wpm), never over the target", () => {
+  // 2026-11-06: 342 words (target 330, +6% allowed) ran 95.8 s
+  const MEASURED_WPM = 215;
+  for (const s of LENGTHS) {
+    const most = Math.round(targetWords(s) * 1.0);
+    assert.ok((most / MEASURED_WPM) * 60 <= s + 1, `${s} s: ${most} words would run ${((most / MEASURED_WPM) * 60).toFixed(1)} s`);
+    assert.ok(partBudgets(s).reduce((a, b) => a + b.words, 0) <= targetWords(s), `${s} s: the part budgets stay inside the band`);
+  }
+  assert.equal(targetWords(90), 318);
+  const lines = (n) => Array.from({ length: Math.ceil(n / 8) }, (_, i) => ({ part: "own", text: Array.from({ length: Math.min(8, n - i * 8) }, () => "word").join(" ") + "." }));
+  assert.match(checkScript({ lines: [{ part: "rule", text: "In this world, x." }, ...lines(330)] }, 90).problems.join(), /Too long/);
+  assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /318 words in total \(between 286 and 318, never more/);
 });
 
 test("script: pausing punctuation is cleaned out, meaning kept", () => {

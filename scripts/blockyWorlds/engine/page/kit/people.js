@@ -59,6 +59,25 @@ const ROLE = { kid: { scale: 0.62, head: 1.22 }, adult: { scale: 0.87, head: 1 }
 const ONESIE = ["#ffd1dc", "#bfe3ff", "#fff1a8", "#c8f7c5", "#e3d1ff", "#ffd8b0"];
 const wpick = (R, pairs) => { let x = R() * pairs.reduce((s, p) => s + p[1], 0); for (const [v, w] of pairs) { x -= w; if (x <= 0) return v; } return pairs[0][0]; };
 
+/** spec.gender "f" | "m" (planner): a woman never gets a beard and reads as one (longer hair / bun, a skirt or dress
+ *  half the time); a man never gets a ponytail, bun, skirt or dress. Its own rng, so nothing else about the look moves. */
+export function genderLook(o, gender, seed, kid = false, elder = false) {
+  if (gender !== "f" && gender !== "m") return o;
+  const R = rng(seed * 104729 + 5);
+  if (gender === "f") {
+    o.beard = null;
+    if (!["long", "ponytail", "bun"].includes(o.hair)) o.hair = elder ? (R() < 0.6 ? "bun" : "long") : R.pick(kid ? ["ponytail", "long", "bun"] : ["long", "ponytail", "bun"]);
+    if (!kid && o.bottom === "shorts") o.bottom = "pants";
+    if (!["skirt", "dress"].includes(o.bottom) && R() < 0.5) o.bottom = R() < 0.5 ? "skirt" : "dress";
+    if (o.bottom === "dress" && o.pattern === "pinstripe") o.pattern = "cotton";
+    o.acc = o.acc.filter((x) => x !== "tie" && x !== "briefcase");
+  } else {
+    if (["ponytail", "bun"].includes(o.hair) || (o.hair === "long" && R() < 0.7)) o.hair = elder ? (R() < 0.5 ? "bald" : "short") : "short";
+    if (["skirt", "dress"].includes(o.bottom)) o.bottom = "pants";
+  }
+  return o;
+}
+
 /** everything about a person's looks from (role, seed); spec.look overrides any field */
 export function lookFor(spec) {
   const role = ROLE[spec.role] ? spec.role : "adult";
@@ -98,6 +117,7 @@ export function lookFor(spec) {
   if (!kid && handRoll < 0.15) o.acc.push("bag"); else if (!kid && !elder && handRoll < 0.22 && o.acc.includes("tie")) o.acc.push("briefcase");
   o.packColor = R.pick(ACC); o.bagColor = R.pick(ACC); o.phonesColor = R.pick(ACC);
   o.phase = R() * 10; // so a crowd never moves in sync
+  genderLook(o, spec.gender, seed, kid, elder);
   return Object.assign(o, spec.look ?? {});
 }
 

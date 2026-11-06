@@ -10,6 +10,7 @@ import { FORMULAS, MOODS, TWISTS } from "./formulas.js";
 import { fixOpener, hasOpener, openerProblem } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_SCRIPT } from "./examples.js";
+import { topicBlock } from "./topic.js";
 
 /** The seven parts, in order, and their share of the words (ANALYSIS.md 2.2). */
 export const PARTS = Object.freeze([
@@ -25,8 +26,11 @@ export const PART_IDS = Object.freeze(PARTS.map((p) => p.id));
 
 /** The pace rules, in numbers. The opener may be longer: the references' run up to ~22 words. */
 export const LINE = Object.freeze({ maxWords: 16, softMaxWords: 12, targetMedian: 8, maxCommas: 1, openerMaxWords: 24 });
-/** How close to the target the word count must be: a generated script / the user's own script. */
-export const BAND = Object.freeze({ written: Object.freeze([0.9, 1.06]), own: Object.freeze([0.5, 1.1]) });
+/**
+ * How close to the target the word count must be: a generated script / the user's own script. A generated script never
+ * goes over the target (2026-11-06: +6% made a 90 s video 95.8 s), so the video lands on the chosen length.
+ */
+export const BAND = Object.freeze({ written: Object.freeze([0.9, 1.0]), own: Object.freeze([0.5, 1.1]) });
 
 /** Lazy writing the references' best videos never use. Each is a warning the rewrite fixes. */
 export const LAZY = Object.freeze([
@@ -69,9 +73,13 @@ export function partBudgets(lengthSec) {
   const total = targetWords(lengthSec);
   const rule = Math.max(RULE_MIN_WORDS, Math.round(total * PARTS[0].share));
   const rest = total - rule, restShare = 1 - PARTS[0].share;
-  return PARTS.map((p) => ({ id: p.id, words: p.id === "rule" ? rule : Math.max(8, Math.round((rest * p.share) / restShare)) }));
+  const out = PARTS.map((p) => ({ id: p.id, words: p.id === "rule" ? rule : Math.max(8, Math.round((rest * p.share) / restShare)) }));
+  // rounding never takes the plan over the target (the band's top): the biggest part gives the extra words back
+  for (let over = out.reduce((a, b) => a + b.words, 0) - total; over > 0; over--) out.reduce((m, b) => (b.id !== "rule" && b.words > m.words ? b : m), out[1]).words--;
+  return out;
 }
 
+const SAMPLE_WORDS = EXAMPLE_SCRIPT.lines.reduce((a, l) => a + wordCount(l.text), 0);
 export const SCRIPT_SYSTEM = `You write the narration for Blocky Worlds: 30-second to 3-minute vertical videos narrated by one kid, set in an original blocky toy-like world, for TikTok and YouTube Shorts. The narration is read by a text-to-speech voice that is already at its top speed, and the videos must sound FAST (about 260 words a minute) like the viral references. The pace comes from YOUR LINES.
 
 THE SHAPE (seven parts, in order)
@@ -105,7 +113,7 @@ STORY RULES
 POST (the upload text)
 - title: up to 70 characters, a hook, no hashtags. description: one or two sentences. hashtags: 3 to 6, lowercase, no "#roblox".
 
-A STYLE SAMPLE (a 90-second script, ${EXAMPLE_SCRIPT.lines.reduce((a, l) => a + wordCount(l.text), 0)} words). Match its line length, rhythm and voice. Never reuse its story, names or lines.
+A STYLE SAMPLE (${SAMPLE_WORDS} words, about ${Math.round((SAMPLE_WORDS / PACE.targetWpm) * 60)} seconds: its LENGTH is not your target, the LENGTH line of the request is). Match its line length, rhythm and voice. Never reuse its story, names or lines.
 ${EXAMPLE_SCRIPT.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}
 
 Return only the JSON object.`;
@@ -141,9 +149,10 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
   const total = targetWords(lengthSec);
   const budgets = partBudgets(lengthSec).map((b) => `${b.id} ~${b.words}`).join(", ");
   return [
+    ...(idea?.topic && topicBlock(idea.topic) ? [topicBlock(idea.topic)] : []),
     `THE IDEA\n${ideaText(idea)}`,
     ...(beats?.length ? [`THE BEAT SHEET (follow it part by part)\n${beats.map((b) => `[${b.part}] ${b.summary} | on screen: ${b.shows} | ~${b.words} words`).join("\n")}`] : []),
-    `LENGTH: ${lengthSec} seconds = ${total} words in total (between ${Math.round(total * BAND.written[0])} and ${Math.round(total * BAND.written[1])}). Words per part: ${budgets}. That is about ${Math.round(total / LINE.targetMedian)} lines.`,
+    `LENGTH: ${lengthSec} seconds = ${total} words in total (between ${Math.round(total * BAND.written[0])} and ${Math.round(total * BAND.written[1])}, never more: the video must not run longer than ${lengthSec} s). Words per part: ${budgets}. That is about ${Math.round(total / LINE.targetMedian)} lines.`,
     ...(previous ? [`THE PREVIOUS VERSION (write a better one, keep what works):\n${previous.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}`] : []),
     ...(note ? [`THE USER ASKS: ${String(note).slice(0, 300)}`] : []),
     ...(failed?.length ? [`THE PREVIOUS VERSION FAILED THESE CHECKS (the new one must pass every one):\n${failed.map((p) => `- ${p}`).join("\n")}`] : []),
@@ -225,6 +234,7 @@ export const PART_FIX_SYSTEM = `You fix one part of a Blocky Worlds story narrat
 - No semicolons, colons, dashes, ellipses or brackets. Contractions. First person, past tense, the same voice.
 - If the planted object must pay off, the hero wins WITH it, and the line names it (its own word, like "the tape").
 - If the ending must call back the first line, the last lines reuse a word or picture from line 1.
+- If the story drifted from the user's own idea, the new lines bring its named elements (its world, its threat, its characters) back into the action, by name.
 - Original names only, PG fear only.
 Return only the JSON object: { "lines": ["...", "..."] }.`;
 export const partFixSchema = () => ({ type: "object", additionalProperties: false, required: ["lines"], properties: { lines: { type: "array", items: { type: "string" } } } });
@@ -232,6 +242,7 @@ export function partFixPrompt({ script, indexes, reasons, card = null }) {
   const set = new Set(indexes);
   return [
     `THE SCRIPT (the lines marked >> are the ones to replace)\n${script.lines.map((l, i) => `${set.has(i) ? ">>" : "  "} ${i + 1} [${l.part}] ${l.text}`).join("\n")}`,
+    ...(card?.topic && topicBlock(card.topic) ? [topicBlock(card.topic)] : []),
     ...(card ? [`THE IDEA: planted object: ${card.prop ?? "-"} | twist: ${card.twist ?? "-"} | closer to aim for: ${card.closer ?? "-"}`] : []),
     `WHY THEY FAILED (fix every one):\n${reasons.map((r) => `- ${r}`).join("\n")}`,
     `Replace lines ${indexes.map((i) => i + 1).join(", ")} (${indexes.reduce((a, i) => a + wordCount(script.lines[i]?.text), 0)} words now).`,

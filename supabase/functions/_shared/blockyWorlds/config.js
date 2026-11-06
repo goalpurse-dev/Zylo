@@ -26,10 +26,13 @@ export const NARRATOR = Object.freeze({
 /**
  * The pace the script is sized for. The references speak at ~260 words a minute (ANALYSIS.md 2.3), but Little Dude II at
  * its top speed reads ~219 after the pauses are trimmed (first paid test, 2026-11-04: 413 words -> 113 s). Scripts are
- * sized at 220 so a 90 s video lasts ~90 s (owner, 2026-11-04: ~15% shorter scripts).
+ * sized at 220 so a 90 s video lasts ~90 s (owner, 2026-11-04: ~15% shorter scripts). 2026-11-06: the engine measured
+ * ~215 on real renders, and a 90 s script ran 95.8 s (342 words, the band then allowed +6%), so scripts are sized at
+ * 212 and may not go over the target (script.js BAND): a 1:30 video lasts <= ~90 s. Prices use their own pace
+ * (pricing.js PRICED_WPM), unchanged.
  */
 export const PACE = Object.freeze({
-  targetWpm: 220,
+  targetWpm: 212,
   // the gap left between sentences after trimming the voice's own pauses (seconds); commas are left as spoken
   sentenceGapSec: 0.1,
 });

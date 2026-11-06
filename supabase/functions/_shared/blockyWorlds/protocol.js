@@ -7,6 +7,7 @@ import { hasOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
 import { contentWords } from "./library.js";
+import { TOPIC_PREFIX } from "./topic.js";
 
 // ---------- step 1: the idea card ----------
 export const CARD_FIELDS = Object.freeze(["opener", "title", "premise", "price", "examples", "narrator", "prop", "twist", "teaser", "closer", "formula", "twistType", "mood", "setting"]);
@@ -44,6 +45,7 @@ RULES
 - rule uses "rule". tour uses "price" and all three examples. me uses "exception" and "prop_setup" (the planted object is shown and named here).
 - until escalates in three visible steps: "escalation1", "escalation2", "escalation3".
 - discovery uses "truth" (the hidden truth about the rule). climax uses "prop_payoff" (the planted object or the rule itself wins) and "twist". closer uses "closer" and calls back the first line.
+- If the card has a "topic" (the user's own idea), it is the core: its world, threat and characters appear in every part's summary and shows, the rule part states it, and the climax beats it.
 - shows: one sentence of what is on screen, concrete and filmable in a blocky toy-like world (characters, a place, a key object).
 - words: about how many spoken words the part gets (the totals are given).
 Return only the JSON object.`;
@@ -165,6 +167,12 @@ export function problemSpots(script, problems) {
     if (/never shown before the trouble starts/.test(p)) { const part = partLines("me").length ? "me" : "tour"; return spot(p, part, partLines(part)); }
     if (/never pays off/.test(p) && partLines("climax").length) return spot(p, "climax", partLines("climax"));
     if (/call back the first line/.test(p) && lines.length) { const part = lines.at(-1).part; return spot(p, part, partLines(part)); }
+    // the topic check (topic.js): the rule line and the climax can be fixed in place; drifting across the story needs a rewrite
+    if (p.startsWith(TOPIC_PREFIX)) {
+      if (/the first line never mentions/.test(p) && lines.length) { const idx = partLines("rule"); return spot(p, lines[idx[0] ?? 0].part, idx.length ? idx : [0]); }
+      if (/the climax never involves/.test(p) && partLines("climax").length) return spot(p, "climax", partLines("climax"));
+      return spot(p, null, [], "rewrite");
+    }
     const word = p.match(/^Uses "([^"]+)"/)?.[1];
     if (word) {
       const i = lines.findIndex((l) => safetyProblems(l.text).some((s) => s.includes(`"${word}"`)));

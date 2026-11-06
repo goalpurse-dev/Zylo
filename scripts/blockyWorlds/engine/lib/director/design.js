@@ -41,7 +41,10 @@ Return only the JSON object.`;
 
 /** the user message: the idea card + the numbered script (or the card's fields as lines when there is no script yet) */
 export function directorPrompt({ lines, idea = null, feedback = null }) {
-  const card = idea ? `THE IDEA CARD\n${JSON.stringify({ title: idea.title, opener: idea.opener, premise: idea.premise, setting: idea.setting, narrator: idea.narrator, prop: idea.prop, twist: idea.twist, mood: idea.mood })}\n\n` : "";
+  // the user's own typed topic (card.topic, 2026-11-06): its world, characters and villain ("a big bad wolf with an
+  // army") are what the user asked to see, so they lead the list even where the script only hints at them
+  const topic = idea?.topic ? `THE USER'S TOPIC (what they typed: its world, characters and villain must be on screen where the story is about them)\n"${String(idea.topic).replace(/\s+/g, " ").trim().slice(0, 300)}"\n\n` : "";
+  const card = idea ? `${topic}THE IDEA CARD\n${JSON.stringify({ title: idea.title, opener: idea.opener, premise: idea.premise, setting: idea.setting, narrator: idea.narrator, prop: idea.prop, twist: idea.twist, mood: idea.mood })}\n\n` : "";
   const fb = feedback?.length ? `\n\nFIX THESE PROBLEMS FROM YOUR LAST ANSWER:\n${feedback.slice(0, 20).map((p) => `- ${p}`).join("\n")}` : "";
   return `${card}THE SCRIPT (${lines.length} lines, numbered from 0)\n${lines.map((l, i) => `${i} [${l.part || "-"}] ${l.text}`).join("\n")}${fb}`;
 }

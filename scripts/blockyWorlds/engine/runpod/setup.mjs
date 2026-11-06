@@ -9,14 +9,23 @@
 //    a new image gets a new template with both;
 // 2. the endpoint: scale to zero, the 16 GB GPUs in order (Cutaway's list), 12 workers at most (a video takes K + 1:
 //    8 chunks + its prepare job for 90 s; docs/blocky-worlds-pipeline.md), FlashBoot on.
+// 3. (2026-11-06) every worker NOT on the new template + image is terminated and setup waits until none is left
+//    (runpod/retire.mjs: run 7b4c0d8b's prepare ran on a leftover worker of the image before);
+// 4. with --context <the folder buildContext.mjs made for this image>: its engine/BUILD_ID goes to
+//    supabase/functions/_shared/blockyWorlds/renderBuild.js (WORKER_BUILD): jobs then carry minBuild and a worker of an
+//    older image refuses them (STALE_WORKER) before any paid work. Redeploy blocky-worlds-render + blocky-worlds-api after.
 // Writes runpod/endpoint.json (ids only, no secrets).
-//   node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:...
+//   node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:... [--context <dir>]
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { retireStale, runpodApi } from "./retire.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), image = argv[argv.indexOf("--image") + 1];
+const ctxDir = argv.includes("--context") ? argv[argv.indexOf("--context") + 1] : null;
+const build = ctxDir ? fs.readFileSync(path.join(ctxDir, "engine", "BUILD_ID"), "utf8").trim() : null;
+if (ctxDir && !/^\d{8}T\d{6}-[0-9a-f]{12}$/.test(build ?? "")) throw new Error(`--context ${ctxDir}: engine/BUILD_ID is not a build id (${build})`);
 if (!image?.startsWith("registry.fly.io/zyvo-cutaway-render-staging@sha256:")) throw new Error("--image registry.fly.io/zyvo-cutaway-render-staging@sha256:... (pinned by digest)");
 const env = Object.fromEntries(fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_0-9]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
 const KEY = env.RUNPOD_API_KEY;
@@ -47,4 +56,13 @@ const body = { templateId: tpl.id, name: NAME, computeType: "GPU", gpuTypeIds: G
 if (!ep) ep = await rp("/endpoints", { method: "POST", body: JSON.stringify(body) });
 else ep = await rp(`/endpoints/${ep.id}`, { method: "PATCH", body: JSON.stringify({ templateId: tpl.id, gpuTypeIds: GPUS, workersMax: 4, flashboot: true, scalerType: "REQUEST_COUNT", scalerValue: 1 }) });
 console.log("endpoint", ep.id, "workersMin 0 (scales to zero)");
-fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 4, idleTimeout: 5, createdAt: new Date().toISOString() }, null, 1));
+
+// no worker of an older template / image may take a job from here on
+await retireStale({ api: runpodApi(KEY), endpointId: ep.id, templateId: tpl.id, image });
+fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: 4, idleTimeout: 5, ...(build ? { build } : {}), createdAt: new Date().toISOString() }, null, 1));
+if (build) {
+  const f = path.resolve(here, "../../../../supabase/functions/_shared/blockyWorlds/renderBuild.js");
+  const src = fs.readFileSync(f, "utf8").replace(/export const WORKER_BUILD = [^;]*;/, `export const WORKER_BUILD = "${build}";`);
+  fs.writeFileSync(f, src);
+  console.log(`renderBuild.js: WORKER_BUILD = ${build} (redeploy blocky-worlds-render and blocky-worlds-api)`);
+}

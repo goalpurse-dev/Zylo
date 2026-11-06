@@ -246,7 +246,8 @@ async function main() {
     }
     PEOPLE[id] = { obj: p, h, headC, headR };
   };
-  for (const [id, spec] of Object.entries(tl.cast ?? {})) addPerson(id, spec);
+  // the planner's gender (visualWorld.gender: Mrs. / Ms. / Grandma / she = f) shapes the look (run 7b4c0d8b: a bearded Mrs. Oddy)
+  for (const [id, spec] of Object.entries(tl.cast ?? {})) addPerson(id, { ...spec, gender: spec.gender ?? tl.visualWorld?.gender?.[id] ?? null });
   const EXTRAS = [];
   if (tl.shots.some((s) => s.focus === "group")) {
     for (let i = 0; i < 4; i++) { const id = `extra${i}`; addPerson(id, { role: i % 3 === 2 ? "kid" : "adult", name: `Townsfolk ${i + 1}`, seed: 101 + i * 17 }); EXTRAS.push(id); }
@@ -396,7 +397,7 @@ async function main() {
       post.setLight(shot.light);
       lightKey = key;
     }
-    S.update?.(t);
+    S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
     for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
     for (const m of MARKERS.values()) m.visible = false;
     for (const i of INSERTS.values()) i.obj.visible = false;

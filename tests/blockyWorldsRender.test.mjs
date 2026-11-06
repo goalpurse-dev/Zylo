@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { aiCeilingUsd, assetRow, builderSpentOf, chunkPlan, chunkProblems, costSummary, DIRECTOR_WORST_USD, estimate, NO_RETRY, onJobEvent, paths, prepareProduction, productionSettings, reconcile, RENDER, retryOf, ROLES, sameToken, snapshotRows, tokenFor } from "../supabase/functions/_shared/blockyWorlds/render.js";
+import { aiCeilingUsd, assetRow, builderSpentOf, chunkPlan, chunkProblems, costSummary, DIRECTOR_WORST_USD, estimate, NO_RETRY, onJobEvent, paths, prepareProduction, prepareReview, productionSettings, reconcile, RENDER, retryOf, ROLES, sameToken, snapshotRows, tokenFor } from "../supabase/functions/_shared/blockyWorlds/render.js";
 import { makeRuntime } from "../supabase/functions/_shared/blockyWorlds/renderRuntime.js";
 import { STATUSES } from "../supabase/functions/_shared/blockyWorlds/contract.js";
 import { fileStorage, memoryDb, scriptedRunPod } from "../scripts/blockyWorlds/engine/dev/pipelineFakes.mjs";
@@ -458,10 +458,19 @@ const PROD_ON = Object.freeze({ director: "haiku", builder: "on", builderMaxUsd:
 const ASSET = { kind: "object", name: "ladder", name_key: "ladder", aliases: ["step ladder"], keys: ["ladder", "step ladder"], blueprint: { parts: [{ shape: "box" }] }, verdict: { ok: true, confidence: 0.9 }, model: "claude-sonnet-5-5", cost_usd: 0.11, status: "live", still_path: "object-ladder-1.jpg", id: "local-x", uses: 0 };
 
 test("production settings: the function secrets and their defaults (director mock, builder off, $0.60 a video)", () => {
-  assert.deepEqual(productionSettings(() => ""), { director: "mock", builder: "off", builderMaxUsd: 0.6 });
-  assert.deepEqual(productionSettings(() => undefined), { director: "mock", builder: "off", builderMaxUsd: 0.6 });
+  assert.deepEqual(productionSettings(() => ""), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1 }, "the shot review is ON (haiku, $0.10) with no secret");
+  assert.deepEqual(productionSettings(() => undefined), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1 });
   const env = (m) => (k) => m[k];
-  assert.deepEqual(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: " Haiku ", BLOCKY_WORLDS_BUILDER: "on", BLOCKY_WORLDS_BUILDER_MAX_USD: "0.4" })), { director: "haiku", builder: "on", builderMaxUsd: 0.4 });
+  assert.deepEqual(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: " Haiku ", BLOCKY_WORLDS_BUILDER: "on", BLOCKY_WORLDS_BUILDER_MAX_USD: "0.4" })), { director: "haiku", builder: "on", builderMaxUsd: 0.4, review: "haiku", reviewMaxUsd: 0.1 });
+  assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "OFF" })).review, "off", "the secret off turns the review off");
+  assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "sonnet" })).review, "sonnet");
+  assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "gpt" })).review, "haiku", "an unknown value keeps the default");
+  assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW_MAX_USD: "5" })).reviewMaxUsd, 1, "the review cap is clamped to $1");
+  assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW_MAX_USD: "0.05" })).reviewMaxUsd, 0.05);
+  assert.deepEqual(prepareReview(productionSettings(() => "")), { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: 0.1 } });
+  assert.deepEqual(prepareReview({ review: "off", reviewMaxUsd: 0.1 }), { provider: "off" });
+  assert.deepEqual(prepareReview({ review: "haiku", reviewMaxUsd: 0 }), { provider: "off" }, "a $0 cap is off");
+  assert.deepEqual(prepareReview({ review: "mock" }), { provider: "mock", budget: { maxUsd: 0 } });
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: "opus" })).director, "mock", "an unknown director is the free mock");
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: "off" })).director, "off");
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_BUILDER: "yes please" })).builder, "off", "only a clear on turns paid builds on");
@@ -490,7 +499,8 @@ test("production settings: the job fields are exactly what worker.mjs reads; a r
 test("money: the director's worst case matches the engine's; the AI ceiling per video; two test videos fit $2.50 with Haiku", async () => {
   const { anthropicDirector } = await import("../scripts/blockyWorlds/engine/lib/director/design.js");
   for (const m of Object.keys(DIRECTOR_WORST_USD)) assert.ok(Math.abs(anthropicDirector({ apiKey: "x", model: m }).worstCase() - DIRECTOR_WORST_USD[m]) < 2e-5, m);
-  assert.deepEqual(aiCeilingUsd({ director: "mock", builder: "off", builderMaxUsd: 0.6 }), { directorMaxUsd: 0, builderMaxUsd: 0, aiMaxUsd: 0 });
+  assert.deepEqual(aiCeilingUsd({ director: "mock", builder: "off", builderMaxUsd: 0.6, review: "off" }), { directorMaxUsd: 0, builderMaxUsd: 0, reviewMaxUsd: 0, aiMaxUsd: 0 });
+  assert.deepEqual(aiCeilingUsd({ director: "mock", builder: "off", builderMaxUsd: 0.6 }), { directorMaxUsd: 0, builderMaxUsd: 0, reviewMaxUsd: 0.2, aiMaxUsd: 0.2 }, "the review (on by default): its cap per prepare try, 2 tries");
   const c = aiCeilingUsd(PROD_ON);
   assert.equal(c.builderMaxUsd, 0.6);
   assert.ok(c.directorMaxUsd > 0.028 && c.directorMaxUsd < 0.03, `${c.directorMaxUsd}`);
@@ -530,6 +540,15 @@ test("events: planned bills the director + builder once by ref; the job's end ad
   assert.deepEqual(early.ledger.map((l) => [l.ref, l.usd]), [["director_end:p1", 0.005], ["builder_end:p1", 0.2]]);
   assert.deepEqual(onJobEvent({ ...job, role: "chunk" }, { event: "planned", builder: { costUsd: 1 } }, T0).ledger, [], "only the prepare job spends on AI");
   assert.deepEqual(onJobEvent(job, { event: "planned", builder: { costUsd: 0 }, director: { provider: "mock", costUsd: 0 } }, T0).ledger, [], "the free paths write nothing");
+  // the shot review: planned bills it once (review:<job>), the end adds what came after (review_end:<job>)
+  const rp = onJobEvent(job, { event: "planned", review: { provider: "anthropic", model: "claude-haiku-5-5", costUsd: 0.0113, passes: 2, fixes: 9, cards: 1, ms: 84000, first: { match: 12, partial: 30, miss: 8, unjudged: 0, matchPct: 24 }, stopped: null } }, T0);
+  assert.deepEqual(rp.ledger.map((l) => [l.stage, l.ref, l.usd, l.model]), [["review", "review:p1", 0.0113, "claude-haiku-5-5"]]);
+  assert.equal(rp.job.output.planned.review.first.matchPct, 24);
+  assert.equal(rp.job.output.planned.review.passes, 2);
+  const rd = onJobEvent(job, { event: "done", output: { ok: true, spend: { reviewUsd: 0.0123, plannedReviewUsd: 0.0113, reviewModel: "claude-haiku-5-5" } } }, T0);
+  assert.deepEqual(rd.ledger.map((l) => [l.ref, l.usd]), [["review_end:p1", 0.001]]);
+  const rf = onJobEvent(job, { event: "failed", code: "VISUAL_CHECK", message: "x", spend: { reviewUsd: 0.01, plannedReviewUsd: 0 } }, T0);
+  assert.deepEqual(rf.ledger.map((l) => [l.ref, l.usd]), [["review_end:p1", 0.01]], "a try that failed after the review still bills it");
 });
 
 test("runtime: the prepare job carries the director, the builder, the library snapshot and the caps; built assets go to the library once", async () => {
@@ -541,8 +560,11 @@ test("runtime: the prepare job carries the director, the builder, the library sn
   assert.equal(p.builder.provider, "anthropic");
   assert.deepEqual(p.builder.budget, { maxUsd: 0.6 });
   assert.deepEqual(p.builder.library.map((a) => a.name), ["ladder"]);
-  assert.ok(p.limits.aiMaxUsd > 0.6 && p.limits.aiMaxUsd < 0.65);
+  assert.ok(p.limits.aiMaxUsd > 0.8 && p.limits.aiMaxUsd < 0.85, `${p.limits.aiMaxUsd}`);
+  assert.equal(p.limits.reviewMaxUsd, 0.2);
+  assert.deepEqual(p.review, { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: 0.1 } });
   assert.ok(p.out.production, "production.json has an upload URL");
+  assert.ok(p.out.shotReview, "shot-review.json has an upload URL");
   assert.ok(!JSON.stringify(prep).match(/service_role|SERVICE_ROLE|sk-ant|xi-api-key/), "no key in the job");
   // a built asset (the worker's "built" event): into the library once; junk is ignored; the job is untouched
   const turtle = { ...ASSET, name: "giant turtle", name_key: "giant turtle", keys: ["giant turtle"], kind: "world" };
@@ -562,7 +584,7 @@ test("runtime: the prepare job carries the director, the builder, the library sn
   assert.equal((await h.db.getJob(prep.job.jobId)).output.planned.builder.ms, 30000);
   const r = await h.db.getRun(h.run.id);
   assert.equal(r.status, "render");
-  assert.deepEqual(r.render.production, PROD_ON);
+  assert.deepEqual(r.render.production, { ...PROD_ON, review: "haiku", reviewMaxUsd: 0.1 }, "the run records the review settings too");
   assert.equal(r.cost_usd, 0.124);
   // the job's end: what the builder spent after "planned" is added once (worker event + RunPod's webhook)
   h.storage.write(h.P.mix, "m");
@@ -651,7 +673,9 @@ test("runtime: defaults (no secrets) = the free path; a broken library table nev
   await h.rt.start(h.run.id);
   const p = h.runpod.last("prepare").job.prepare;
   assert.deepEqual([p.director, p.builder, asked], [{ provider: "mock" }, { provider: "off", library: [], budget: { maxUsd: 0 } }, 0]);
-  assert.equal(p.limits.aiMaxUsd, 0);
+  // the only paid AI part by default: the shot review (owner 2026-11-06: on with Haiku, $0.10 a try)
+  assert.deepEqual(p.review, { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: 0.1 } });
+  assert.equal(p.limits.aiMaxUsd, 0.2);
   const h2 = harness({ production: PROD_ON });
   h2.db.assetLibrary = async () => { throw new Error('relation "blocky_worlds_assets" does not exist'); };
   h2.db.saveAsset = async () => { throw new Error("no table"); };

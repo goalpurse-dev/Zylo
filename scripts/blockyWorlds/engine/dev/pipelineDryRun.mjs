@@ -12,7 +12,7 @@
 // A, the SFX and the mix are the full video's.
 // Then the failure drills (a scripted RunPod, no render): a visual-check miss refunds before any render; NO_GPU retries
 // on another worker; a chunk that keeps failing fails the run and refunds once; a duplicate callback is ignored.
-//   node dev/pipelineDryRun.mjs [--frames 48] [--chunks 2] [--lines N] [--no-drills] [--drills-only] [--out out/pipeline-dry]
+//   node dev/pipelineDryRun.mjs [--frames 48] [--chunks 2] [--lines N] [--review mock|off] [--no-drills] [--drills-only] [--out out/pipeline-dry]
 //   --lines N: the script's first N lines and the take cut to them (2026-11-05: the full Listener stops at the kit check,
 //   a "ladder" on line 25 the kit can't build yet; --lines 24 runs the good path)
 import fs from "node:fs";
@@ -21,7 +21,7 @@ import path from "node:path";
 import { spawn, execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { makeRuntime } from "../../../../supabase/functions/_shared/blockyWorlds/renderRuntime.js";
-import { costSummary, paths, RENDER } from "../../../../supabase/functions/_shared/blockyWorlds/render.js";
+import { costSummary, paths, RENDER, PRODUCTION_DEFAULTS } from "../../../../supabase/functions/_shared/blockyWorlds/render.js";
 import { fileStorage, memoryDb, scriptedRunPod } from "./pipelineFakes.mjs";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -30,6 +30,9 @@ const FRAMES = Number(arg("frames", 48)), CHUNKS = Number(arg("chunks", 2)), LIN
 const OUT = path.resolve(ENGINE, arg("out", `out/pipeline-dry/${new Date().toISOString().replace(/[:.]/g, "-")}`));
 const PAID1 = path.join(ENGINE, "out", "paid1");
 const SECRET = "dry-run-secret";
+// the shot review (lib/vision): the free mock judge by default here (production default: haiku); --review off | mock
+const REVIEW = ["off", "mock"].includes(arg("review", "mock")) ? arg("review", "mock") : "mock";
+const PRODUCTION = { ...PRODUCTION_DEFAULTS, review: REVIEW };
 const say = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 
 /** RunPod: a child process per job; its RESULT comes back as the webhook */
@@ -86,7 +89,7 @@ async function realRun() {
   db.updateRun = async (id, patch, guard) => { const r = await updateRun(id, patch, guard); if (r && r.status !== seen.at(-1).status) seen.push({ status: r.status, atS: +((Date.now() - T0) / 1000).toFixed(1) }); return r; };
   let rt;
   const cb = await callbackServer(() => rt);
-  rt = makeRuntime({ db, storage, runpod, secret: SECRET, callbackUrl: cb.url, mode: "local", limitFrames: FRAMES, chunks: CHUNKS, log: (...a) => say("runtime:", ...a) });
+  rt = makeRuntime({ db, storage, runpod, secret: SECRET, callbackUrl: cb.url, mode: "local", production: PRODUCTION, limitFrames: FRAMES, chunks: CHUNKS, log: (...a) => say("runtime:", ...a) });
   // the paid take (the first paid test's), whole or cut to its first --lines N lines (the same words, the same audio up
   // to the last of them): still the real narrator, still free
   let lines = script.lines, mp3 = fs.readFileSync(path.join(PAID1, "voice.mp3")), take = JSON.parse(fs.readFileSync(path.join(PAID1, "take.json"), "utf8"));

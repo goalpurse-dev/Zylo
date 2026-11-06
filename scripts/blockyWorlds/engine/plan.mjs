@@ -20,11 +20,14 @@
 // still missing a noun first gets a catalog visual, else a picture card shot cut into its time -> timeline.visualReport.
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
-import { OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS } from "./lib/visuals.js";
+import { notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
-import { readDirection, directShots, compactProduction, checkProduction as checkProductionStrict, fixProduction, isCreatureSet, epicVariety } from "./lib/direction.js";
+import { readDirection, directShots, compactProduction, checkProduction as checkProductionStrict, fixProduction, isCreatureSet, epicVariety, onScreen as dirOnScreen } from "./lib/direction.js";
 import { EPIC_CAMERAS, validateEpic } from "./lib/epic.js";
+import { titleMatchOk, nameWordOk } from "./lib/names.js";
+import { openingRule, openingProblems, waivedHas, openingSec } from "./lib/opening.js";
+import { meaningPass } from "./lib/meaning.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -273,6 +276,8 @@ function readWorld(script, idea) {
 
   // titled neighbours (script + examples)
   for (const m of all.matchAll(TITLE_RE)) {
+    // "...with Grandpa. His wrist": a sentence end, not "Grandpa His" (lib/names.js)
+    if (!titleMatchOk(m[1], m[0].slice(m[1].length, m[0].length - m[2].length), m[2])) continue;
     const id = m[2].toLowerCase();
     if (/^(Old|Big|Little|Young)$/.test(m[1]) && !/^[A-Z][a-z]+$/.test(m[2])) continue;
     if (!people.has(id) && id !== narrator.toLowerCase() && !(monster?.words ?? []).includes(id)) people.set(id, { role: KID_TITLES.test(m[1]) ? "kid" : "adult", name: `${m[1]}${/^(Mr|Mrs|Ms|Dr)$/.test(m[1]) ? "." : ""} ${m[2]}`, elder: ELDER_TITLES.test(m[1]) || undefined });
@@ -285,9 +290,10 @@ function readWorld(script, idea) {
       const word = raw.replace(/[^A-Za-z']/g, "").replace(/'s$/, "");
       if (!/^[A-Z][a-z]+$/.test(word)) return;
       const n = word.toLowerCase();
-      if (NOT_NAMES.has(n) || FAMILY[n] || n === narrator.toLowerCase() || monster?.words?.includes(n) || people.has(n) || isPlaceName(toks, k)) return;
+      if (NOT_NAMES.has(n) || !nameWordOk(n) || FAMILY[n] || n === narrator.toLowerCase() || monster?.words?.includes(n) || people.has(n) || isPlaceName(toks, k)) return;
       const sentenceStart = k === 0 || /[.!?]["']?$/.test(toks[k - 1]);
-      const named = k >= 2 && /^(call|called|named|name's|is)$/i.test(norm(toks[k - 2])) || k >= 1 && /^(named)$/i.test(norm(toks[k - 1]));
+      // "call her Bean" / "is Bean": the same sentence only ("My wrist is silent. Totally bare." is no naming)
+      const named = k >= 2 && /^(call|called|named|name's|is)$/i.test(norm(toks[k - 2])) && !/[.!?;:,]["']?$/.test(toks[k - 1]) || k >= 1 && /^(named)$/i.test(norm(toks[k - 1]));
       const subject = !sentenceStart && !/'s$/.test(raw) && !/[.,!?]$/.test(raw) && SUBJECT_VERB.test(norm(toks[k + 1] ?? ""));
       // a sentence-start name that does something: said twice, or a word the dictionary doesn't know ("Gary has been...")
       const unknownWord = !ABSTRACT.has(n) && !ICONS[n] && !objectForNoun(n) && !heldKind(n) && !creatureFor([n]) && !/^(nobody|everyone|everybody|someone|somebody|nothing|everything|anyone|anybody|people|kids|children|grown|adults|parents|families|neighbors|neighbours|teachers|dogs|cats|babies|snow|rain|wind|night|nights|mornings|winter|summer|spring|autumn|today|tonight|yesterday|tomorrow|last|next|first|every|each|some|most|many|all|both|none|one|two|three|here|there|maybe|someday|once|still|even|soon|later|now|then|also|plus|instead|luckily|sadly|sometimes|always|never|usually|nobody's|mine)$/.test(n);
@@ -311,7 +317,7 @@ function readWorld(script, idea) {
       // mid-sentence only, never right after a comma ("You see, Say your name..."), never a day / month / a plural of a cast name
       const sentenceStart = k === 0 || /[.!?,;:]["']?$/.test(toks[k - 1]);
       const sing = n.replace(/s$/, "");
-      if (sentenceStart || isPlaceName(toks, k) || NOT_NAMES.has(n) || NOT_NAMES.has(sing) || CALENDAR.test(n) || FAMILY[n] || [n, sing].includes(narrator.toLowerCase()) || monster?.words?.includes(n) || people.has(n) || people.has(sing) || TITLE_WORDS.test(word)) return;
+      if (sentenceStart || isPlaceName(toks, k) || NOT_NAMES.has(n) || !nameWordOk(n) || NOT_NAMES.has(sing) || CALENDAR.test(n) || FAMILY[n] || [n, sing].includes(narrator.toLowerCase()) || monster?.words?.includes(n) || people.has(n) || people.has(sing) || TITLE_WORDS.test(word)) return;
       if (lines.some((l) => new RegExp(`(^|[^A-Za-z'])${n}([^A-Za-z']|$)`).test(l))) return;   // also said in lowercase: a word, not a name
       looseNames.add(n);
     });
@@ -785,6 +791,31 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     if (shots[1]?.camera === "wide" && shots[2]?.camera === "wide") shots[1].camera = recam(shots, 1, "wide");
   }
   if (D) epicVariety(shots, recam);
+  if (tlStub.worlds) { cardsInTheirWorld(shots); staysInTheWorld(shots, tlStub.worlds); }
+  // verb over noun, absent means absent, places at home stay inside (lib/meaning.js); then the checks' fixes again
+  if (meaningPass(shots, lines, { worlds: tlStub.worlds })) {
+    fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+    fixSubjects(shots, subjAux);
+    meaningPass(shots, lines, { worlds: tlStub.worlds }); // what the fixes put back against the meaning goes again
+    for (const s of shots) if (s.marker === undefined) s.marker = null;
+  }
+  // the opening shows the world and its people: no sign / card / badge in the first 10 s (lib/opening.js)
+  // (the line keys a card / sign / word badge there covered: the report names them as owner-excused, waived)
+  {
+    const c0 = buildCast(), keysOf = (s) => (s.lines ?? [s.line]).flatMap((i) => requiredKeys(lineKeys[i]));
+    const w0 = openingSec(shots);
+    for (const s of shots) {
+      if (s.start >= w0) continue;
+      // + the director's items of the line it showed (checkProduction)
+      const prodOf = (x, bare = null) => (production?.perLine ?? []).filter((L) => (x.lines ?? [x.line]).includes(L.line)).flatMap((L) => L.required ?? []).filter((r) => dirOnScreen(r, x, tlStub) && !(bare && dirOnScreen(r, bare, tlStub))).map((r) => r.name);
+      if (s.camera === "insert" || s.insert) { s.waiveKeys = [...keysOf(s).filter((k) => covers(k, s, c0)).map((k) => k.label), ...prodOf(s, { ...s, insert: null, camera: "wide" })]; continue; }
+      const ms = [s.marker, ...(s.markers ?? [])].filter(Boolean);
+      if (!ms.some((m) => m.kind === "icon")) continue;
+      const bare = { ...s, marker: ms.find((m) => m.kind !== "icon") ?? null, markers: ms.filter((m) => m.kind !== "icon") };
+      s.waiveKeys = [...keysOf(s).filter((k) => covers(k, s, c0) && !covers(k, bare, c0)).map((k) => k.label), ...prodOf(s, bare)];
+    }
+  }
+  openingRule(shots, { worlds: tlStub.worlds, minShot: PACE.minShot, starts: W.map((w) => w.start) });
   const cast = buildCast();
   // what each shot shows of its lines' key nouns / actions (for the check and the report; the engine ignores it)
   for (const s of shots) {
@@ -814,6 +845,49 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   }
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   return tl;
+}
+
+/**
+ * A picture card / sign (camera "insert") stands in its host shot's place: cards are cut before the director turns the
+ * line's shots into a creature world, so they kept the old base set (turtle run 7b4c0d8b: TICK on a school hallway,
+ * SHUTTER on a plain street between turtle shots). In a story with creature worlds an insert on a plain set takes the
+ * set of the nearest non-insert shot of its line (else the nearest one at all) when that one is a creature world.
+ */
+export function cardsInTheirWorld(shots) {
+  const plain = (s) => !/^(creature|world):/.test(s.set ?? "");
+  shots.forEach((s, i) => {
+    if (s.camera !== "insert" || !plain(s)) return;
+    const order = [];
+    for (let d = 1; d < shots.length; d++) for (const j of [i - d, i + d]) if (shots[j] && shots[j].camera !== "insert") order.push(shots[j]);
+    const host = order.find((h) => h.line === s.line) ?? order[0];
+    if (!host || plain(host)) return;
+    s.worldBase ??= s.set; s.set = host.set;
+    if (host.worldAliases) s.worldAliases = [...host.worldAliases];
+  });
+}
+
+/** a story that lives inside / on a creature (not only a giant crossing the land) */
+export const livesInCreature = (worlds) => Object.values(worlds ?? {}).some((w) => w?.view === "inside" || w?.view === "on");
+
+/**
+ * In a story that lives inside / on a creature, no shot falls back to a plain kit set (turtle run 7b4c0d8b: a park
+ * street, a school hallway and a kid's bedroom between turtle shots). A plain-set shot takes the creature set of its
+ * line (a non-insert shot), else the nearest inside / on world, else the nearest creature set; worldBase keeps the old
+ * set so place words it covered ("our bedroom") still count. A built world ("world:...") stays.
+ */
+export function staysInTheWorld(shots, worlds) {
+  if (!livesInCreature(worlds)) return;
+  const plain = (s) => !/^(creature|world):/.test(s.set ?? "");
+  const viewOf = (s) => worlds[String(s.set).slice(9)]?.view;
+  shots.forEach((s, i) => {
+    if (!plain(s)) return;
+    const near = [];
+    for (let d = 1; d < shots.length; d++) for (const j of [i - d, i + d]) if (shots[j] && !plain(shots[j]) && /^creature:/.test(shots[j].set)) near.push(shots[j]);
+    const host = near.find((h) => h.line === s.line && h.camera !== "insert") ?? near.find((h) => ["inside", "on"].includes(viewOf(h))) ?? near[0];
+    if (!host) return;
+    s.worldBase ??= s.set; s.set = host.set;
+    if (host.worldAliases) s.worldAliases = [...new Set([...(s.worldAliases ?? []), ...host.worldAliases])];
+  });
 }
 
 /** Splits shot i at the word start nearest t (both halves >= minShot). Returns true when it did. */
@@ -1124,7 +1198,7 @@ function applyVisuals(d, V) {
     if (hk && d.actors.some((a) => a.hold && (heldKind(a.hold) === hk || a.hold === k.noun))) continue;
     const name = objectForNoun(k.noun) ?? objectForNoun(k.label);
     if (!name) {
-      if (hk && !ms) { const a = holder(k.k); if (a && !holdsBaby(a) && !a.hold) { a.hold = k.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; } }
+      if (hk && !ms && !notInHand(seg.text, k.noun)) { const a = holder(k.k); if (a && !holdsBaby(a) && !a.hold) { a.hold = k.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; } }
       continue;
     }
     if (d.objects.some((o) => o.name === name) || d.objects.length >= 3) continue;
@@ -1322,7 +1396,7 @@ function lineReport(shots, lines, vw, cast) {
   return lines.map((L, i) => {
     const keys = requiredKeys(extractKeys(L.text, vw));
     const ss = shots.filter((s) => (s.lines ?? [s.line]).includes(i));
-    const missing = keys.filter((k) => !ss.some((s) => covers(k, s, cast)));
+    const missing = keys.filter((k) => !ss.some((s) => covers(k, s, cast) || waivedHas(s, k.label)));
     return { line: i, text: L.text, keys, missing, shows: ss.map((s) => describeShot(s, cast)) };
   });
 }
@@ -1392,11 +1466,15 @@ function forceKey(s, key, aux) {
     return a;
   };
   const town = () => ["town1", "town2", "town3"].find((t) => !s.actors.some((a) => a.id === t));
-  if (key.kind === "person") return !!addActor(key.id, "stand", s.monsterState ? "scared" : "neutral");
+  if (key.kind === "person") {
+    // a far EPIC shot shows people as specks: it comes in low on the person instead (the giant / army behind them)
+    if (FAR_CAMERAS.has(s.camera)) { s.camera = "hero_low"; s.focus = key.id; }
+    return !!addActor(key.id, "stand", s.monsterState ? "scared" : "neutral");
+  }
   if (key.kind === "noun") {
     if (s.camera === "insert") return false;
     // a hand prop in a free hand (the subject's first), else the kit's object for it in the shot
-    if (HOLDABLE.has(key.noun) || heldKind(key.noun)) {
+    if ((HOLDABLE.has(key.noun) || heldKind(key.noun)) && !notInHand(s.text, key.noun)) {
       const free = (s.actors ?? []).filter((x) => !x.hold && !/^baby/.test(x.id) && aux.buildCast?.()[x.id]?.role !== "baby");
       const a = free.find((x) => x.id === s.subject) ?? free.find((x) => !x.id.startsWith("town")) ?? free[0];
       if (a) { a.hold = key.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; return true; }
@@ -1599,7 +1677,7 @@ function subjectIssues(s, cast, keysOfShot, loose) {
   } else if (S.startsWith("thing:")) {
     const label = S.slice(6);
     const key = keysOfShot(s).find((k) => k.label === label || k.noun === label);
-    if (key && !covers(key, s, cast)) out.push({ code: "thing", key, msg: `the ${label} (the subject) is not on screen` });
+    if (key && !covers(key, s, cast) && !waivedHas(s, key.label ?? label)) out.push({ code: "thing", key, msg: `the ${label} (the subject) is not on screen` });
   } else if (!on(S)) out.push({ code: "person", id: S, msg: `${nm(S)} (the subject) is not on screen` });
   else if (![S, carrierOf(S)?.id, "object", "group"].includes(s.focus)) out.push({ code: "focus", id: S, msg: `focus is ${s.focus}, not ${nm(S)} (the subject)` });
   for (const w of s.subjectWith ?? []) if (!on(w)) out.push({ code: "with", id: w, msg: `${nm(w)} (acted on by the subject) is not on screen` });
@@ -1774,6 +1852,8 @@ export function checkTimeline(tl) {
     const builtWorld = /^world:/.test(s.set ?? "") && tl.assets?.[s.set.slice(6)]?.kind === "world";
     const creatureWorld = isCreatureSet(s) && !!tl.worlds?.[s.set.slice(9)];
     if (!SETS.includes(s.set) && !builtWorld && !creatureWorld) out.push(`${at}: unknown set ${s.set}`);
+    if (i === 0) out.push(...openingProblems(shots));
+    if (SETS.includes(s.set) && livesInCreature(tl.worlds)) out.push(`${at}: plain set ${s.set} in a story that lives in a creature world (staysInTheWorld)`);
     if (!LIGHTS.includes(s.light)) out.push(`${at}: unknown light ${s.light}`);
     if (!CAMERAS.includes(s.camera) && !(epicTl && EPIC_CAMERAS.includes(s.camera))) out.push(`${at}: unknown camera ${s.camera}`);
     if (s.camera === "insert" && !s.insert) out.push(`${at}: insert camera without an insert`);

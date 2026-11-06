@@ -28,6 +28,9 @@ import { matchProduction } from "./director/match.js";
 import { GIANT_KINDS, CROWD_KINDS, EPIC_CAMERAS, BEATS } from "./epic.js";
 import { hashSeed } from "./rng.js";
 import { cardLabel } from "./planText.js";
+import { nameWordOk } from "./names.js";
+import { waivedHas } from "./opening.js";
+import { notInHand } from "./visuals.js";
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const lc = (s) => ` ${String(s ?? "").toLowerCase().replace(/[“”"’]/g, (c) => (c === "’" ? "'" : " ")).replace(/\s+/g, " ")} `;
@@ -56,6 +59,9 @@ const BIG_WORDS = /^(big|giant|huge|massive|enormous|colossal|towering|gigantic|
 const COMPARE = /\b(taller|bigger|larger|higher|huger|as big as|as tall as|bigger even)\b(?: than)?/;
 const PRONOUN_LEAD = /^\s*(?:and |then |but |so )?(he|she|it|they)\b/i;
 // crowds by word (EPIC crowd kinds; anything else is asked for by name and logged as a gap by the matcher)
+// what an army on screen shows: its boots, helmets, torches, spears, shields, its march
+const ARMY_GEAR_ALIASES = "boots boot helmets helmet torches torch spears spear shields shield marching rows ranks";
+const ARMY_GEAR = new Set(["torch", "boots", "helmet", "helmets", "torches", "spears", "shields", "marching", "marched", "rows", "ranks"]);
 const CROWD_WORD = { knights: "knight", knight: "knight", soldiers: "soldier", soldier: "soldier", army: "soldier", armies: "soldier", troops: "soldier", guards: "soldier", warriors: "soldier", villagers: "townsfolk", townsfolk: "townsfolk", townspeople: "townsfolk", crowd: "townsfolk", everyone: "townsfolk", everybody: "townsfolk" };
 const SOLDIERY = /\b(army|armies|soldiers?|troops?|guards?|warriors?|legion|regiment)\b/;
 
@@ -175,10 +181,13 @@ export function refineProduction(production, { script, mock = false } = {}) {
     notes.push(`${extra.id} is the same army as ${keep.id}`);
   }
   // e. a crowd word on a line with no crowd of that kind; "hundreds of them" / "they" go on with the line before's crowd
+  // the army's gear and march (boots, helmets, torches, marching, "row after row") stand for the army once the story
+  // has one (turtle run 7b4c0d8b: "Far-off boots", "Torch beams swept", "Wolf ears on every helmet" showed no soldier)
+  const hasArmy = () => p.crowds.some((c) => ["soldier", "wolf_soldier"].includes(kindOfCrowd(c)));
   texts.forEach((t, i) => {
     const l = lineOf(i); if (!l) return;
     for (const w of toks(t)) {
-      const kind = CROWD_WORD[w];
+      const kind = CROWD_WORD[w] ?? (ARMY_GEAR.has(w) && hasArmy() ? "soldier" : null);
       if (!kind) continue;
       const have = l.needs.map((id) => p.crowds.find((c) => c.id === id)).filter(Boolean).some((c) => kindOfCrowd(c) === kind || (kind === "soldier" && kindOfCrowd(c) === "wolf_soldier"));
       if (have) continue;
@@ -195,6 +204,17 @@ export function refineProduction(production, { script, mock = false } = {}) {
       notes.push(`line ${i}: "them" is ${prevCrowd}`);
     }
   });
+  // e2. the villain who leads an army ("a wolf and his army", "the wolf's soldiers", "an army of wolves"): the premise's
+  // villain, shown big in front of it (an EPIC giant) and on every line that names it (turtle run 7b4c0d8b: the wolf
+  // leader never appeared)
+  for (const c of p.creatures) {
+    const sp = c.species || c.id, sps = `${sp}s?|${c.id}`;
+    const leads = texts.some((t) => new RegExp(`\\b(?:${sps})\\b(?:'s)? (?:and (?:his|her|their) )?(?:army|armies|soldiers|troops|knights|pack|horde|guards)\\b|\\b(?:army|soldiers|troops|horde) of (?:${sps})\\b`).test(t));
+    if (!leads || p.worlds.some((w) => w.creature?.species === sp)) continue;
+    if (!["giant", "colossal"].includes(c.scale)) { c.scale = "giant"; c.heightM = Math.max(c.heightM || 0, 25); notes.push(`${c.id} leads the army: a giant`); }
+    c.monster = c.monster || false; c.leader = true;
+    texts.forEach((t, i) => { const l = lineOf(i); if (l && new RegExp(`\\b(?:${sps})\\b`).test(t) && !l.needs.includes(c.id)) l.needs.push(c.id); });
+  }
   // f. the army's side: next to a giant (its first line or the two before), it is that giant's army
   const giants = giantIds();
   for (const cw of p.crowds) {
@@ -207,7 +227,39 @@ export function refineProduction(production, { script, mock = false } = {}) {
   }
   // the subject is always one of the line's items
   for (const l of p.lines) if (l.subject && !l.needs.includes(l.subject) && !l.who.includes(l.subject) && l.subject !== l.world && l.subject !== "me") l.needs.unshift(l.subject);
+  // the story clock carries forward (turtle run 7b4c0d8b: "one night" ... a daylight climax ... "at dawn"): after a
+  // night line, a "day" line stays night until its own words move the clock on (dawn / sunrise -> warm, morning -> day)
+  // "the baker" in the list is the script's titled "Baker Bell" (the planner's id "bell"): one person, not a second
+  // invented one (turtle run 7b4c0d8b drew a kid "Baker" next to Baker Bell)
+  const raw = (script?.lines ?? []).map((l) => String(l.text ?? l)).join(" ");
+  for (const c of p.cast) {
+    if (c.kind !== "human" || c.id === "me" || !c.job) continue;
+    const job = c.job.trim().split(/\s+/).at(-1);
+    const m = raw.match(new RegExp(`\\b${job.charAt(0).toUpperCase()}${job.slice(1).toLowerCase()}\\s+([A-Z][a-z]+)\\b`));
+    if (!m || !nameWordOk(m[1])) continue;
+    const id = m[1].toLowerCase();
+    if (id === c.id || p.cast.some((x) => x !== c && x.id === id)) continue;
+    replaceId(c.id, id); for (const pr of p.props) if (pr.heldBy === c.id) pr.heldBy = id;
+    notes.push(`"${c.name || c.id}" is ${m[0]}`); c.id = id; c.name = m[0];
+  }
+  const flips = carryClock(p.lines, texts);
+  if (flips) notes.push(`the night carries on over ${flips} line(s) the list had in daylight`);
   return { production: p, notes };
+}
+
+const CLOCK_DAWN = /\b(?<!before )(dawn|sunrise|sunup|daybreak|first light|sunset|dusk)\b/;
+const CLOCK_DAY = /\b(in the morning|next morning|that morning|next day|the day after|sun came up|sun rose|by noon|daylight)\b/;
+/** lines: production lines ({ light }), texts: their lowercase text. Mutates; returns how many lines it changed. */
+export function carryClock(lines, texts) {
+  let night = false, n = 0;
+  lines.forEach((l, i) => {
+    const t = texts[i] ?? "";
+    if (CLOCK_DAWN.test(t)) { if (night && l.light !== "warm") { l.light = "warm"; n++; } night = false; return; }
+    if (CLOCK_DAY.test(t)) { night = false; return; }
+    if (l.light === "night") { night = true; return; }
+    if (night && l.light === "day") { l.light = "night"; n++; }
+  });
+  return n;
 }
 
 // ------------------------------------------------------------------------------------------------ 2. read
@@ -249,7 +301,7 @@ export function readDirection(direction, { script, idea = {}, mood = "horror", e
     const epicKind = CROWD_KINDS.includes(kind) ? kind : null;
     const member = cw.of ? calls.get(cw.of) : null;
     const town = epicKind === "townsfolk" || epicKind === "knight";
-    crowds[cw.id] = { id: cw.id, kind: epicKind, memberGiant: !epicKind && cw.of && giants[cw.of] ? cw.of : null, memberKit: !epicKind && member?.route === "kit" ? member.kitName : null, count: Math.max(12, Math.min(town ? 160 : 400, Math.round(cw.count || 60))), town, faction: cw.faction ?? (cw.of && giants[cw.of] ? cw.of : null), name: cw.name, aliases: aliasesOf(cw.name, kind === "wolf_soldier" ? "wolf soldiers army" : epicKind === "soldier" ? "soldiers army troops" : epicKind === "knight" ? "knights" : epicKind === "townsfolk" ? "people townsfolk crowd everyone everybody town" : cw.of || "") };
+    crowds[cw.id] = { id: cw.id, kind: epicKind, memberGiant: !epicKind && cw.of && giants[cw.of] ? cw.of : null, memberKit: !epicKind && member?.route === "kit" ? member.kitName : null, count: Math.max(12, Math.min(town ? 160 : 400, Math.round(cw.count || 60))), town, faction: cw.faction ?? (cw.of && giants[cw.of] ? cw.of : null), name: cw.name, aliases: aliasesOf(cw.name, kind === "wolf_soldier" ? "wolf soldiers army "+ARMY_GEAR_ALIASES : epicKind === "soldier" ? "soldiers army troops "+ARMY_GEAR_ALIASES : epicKind === "knight" ? "knights" : epicKind === "townsfolk" ? "people townsfolk crowd everyone everybody town" : cw.of || "") };
   }
   const lines = P.lines.map((l, i) => {
     const per = match.perLine[i];
@@ -563,6 +615,7 @@ const markersOf = (s) => [...(s.markers ?? []), ...(s.marker ? [s.marker] : [])]
 
 /** is this required item on screen in shot s? (strict: a missing id never matches a missing id) */
 export function onScreen(r, s, tl = {}) {
+  if (waivedHas(s, r.name)) return true; // the opening rule (lib/opening.js) dropped its card / badge: owner-excused
   const name = NW(r.name);
   // the item's own picture card (its text), or a card / badge naming it
   const cardWords = r.card?.text ? NW(r.card.text) : [];
@@ -595,6 +648,8 @@ export function onScreen(r, s, tl = {}) {
       // insert, read above); a crowd EPIC can't stage there (an army inside the creature) is still named on screen
       return badge;
     case "prop": case "vehicle":
+      // the army's gear is shown by the army wearing it (boots, helmets, torches: crowd aliases)
+      if ((s.crowds ?? []).some((c) => (c.aliases ?? []).some((a) => name.includes(a)))) return true;
       if (String(r.kitName ?? "").startsWith("held:")) { const h = r.kitName.slice(5); return actors.some((a) => a.hold === h || NW(a.hold).some((w) => name.includes(w))) || objs.some((o) => o.name === "item" && o.state === h) || objHit || badge; }
       if (r.kitName === "bus (street set)") return s.set === "street" || badge;
       return objHit || actors.some((a) => a.hold && NW(a.hold).some((w) => name.includes(w) || name.includes(sing(w)))) || badge;
@@ -661,7 +716,7 @@ export function fixProduction(tl, D, aux) {
             if (a) { const ms = [...(host.markers ?? []), ...(host.marker ? [host.marker] : [])].filter((m, i, l) => l.findIndex((x) => x.on === m.on && x.text === m.text) === i); ms.push({ on: a.id, kind: "ring", text: "" }); if (ms.length > 1) host.markers = ms; host.marker = ms[0]; how = "ring"; }
           } else if (r.memberKit && (host.objects ?? []).length < 3) {
             host.objects = [...(host.objects ?? []), { name: r.memberKit, spot: freeSpot(), facing: "camera" }]; how = "member";
-          } else if (r.kitName && String(r.kitName).startsWith("held:")) {
+          } else if (r.kitName && String(r.kitName).startsWith("held:") && !notInHand(m.text, r.name)) {
             const a = (host.actors ?? []).find((x) => !x.hold && x.id === host.subject) ?? (host.actors ?? []).find((x) => !x.hold);
             if (a) { a.hold = r.kitName.slice(5); if (!["blow", "yell", "point", "sit", "run", "walk"].includes(a.pose)) a.pose = "carry"; how = "hold"; }
           } else if (r.kitName === "light:night") { host.light = "night"; how = "light"; }

@@ -57,7 +57,8 @@ export const THINGS = Object.freeze({
   bridge: { aliases: A("bridge,bridges,drawbridge,rope bridge,footbridge"), big: true, place: "street", states: ["on"], state: "on", icon: "🌉" },
   castle: { aliases: A("castle,castles,palace,fortress,tower window,throne room,keep,moat"), big: true, place: "street", states: ["on"], state: "on", icon: "🏰" },
   trash_can: { aliases: A("trash,trash can,trashcan,garbage,garbage can,bin,bins,dumpster,dump,rubbish,litter"), place: "street", states: ["on"], state: "on", sets: ["street"], icon: "🗑️" },
-  clock: { aliases: A("clock,clocks,clock tower,alarm clock,watch,watches,wristwatch,timer"), place: "street", states: ["on"], state: "on", icon: "🕰️" },
+  // (no "watch": a street clock is not a pocket watch / wristwatch; review of run 7b4c0d8b, 2026-11-06)
+  clock: { aliases: A("clock,clocks,clock tower,alarm clock,timer"), place: "street", states: ["on"], state: "on", icon: "🕰️" },
   lamp: { aliases: A("lamp,lamps,lamppost,lampposts,street lamp,streetlight,streetlights,light,lightbulb,bulb,bulbs,porch light,glow"), place: "floor", states: ["on", "off"], state: "on", icon: "💡" },
   bell: { aliases: A("bell,bells,big bell,church bell,school bell,doorbell,handbell,bell tower"), place: "floor", states: ["on"], state: "on", icon: "🔔" },
   // country

@@ -24,6 +24,9 @@ blocky-worlds-api start
          + checkVisuals + checkSubjects + kit check                                 status plan
          any miss -> failed (VISUAL_CHECK / SUBJECT_CHECK / PLAN_FAILED), no retry, refund. Nothing rendered.
          A thing the kit lacks never fails the run (KIT_MISSING is left only as a guard for an engine bug).
+       (2026-11-06) the SHOT REVIEW before the checks: a caption-free still of every shot, Claude Haiku compares each
+         line's frames with the story (who, things, action, place, time), misses re-planned (each fix re-checked), the
+         rest a picture card or recorded -> shot-review.json; never fails a run; $0.10 cap a try (engine lib/vision)
        upload timeline.json + visual-check.json, "planned" event
          -> the server reads the timeline, splits it into K chunks            status render
          -> K CHUNK jobs at once (they render while the prepare job goes on)
@@ -80,7 +83,7 @@ The mix needs only the voice, the music and the cues, so it is made in the prepa
 | NO_GPU (a worker without graphics) | handler.py returns `refresh_worker`, the same piece is sent again 20 s later (that worker is gone by then), up to 3 such retries on top of the normal tries |
 | A chunk fails (crash, render error, upload error) | retried up to 3 times (4 attempts); then the run fails, every live job is cancelled, refunded |
 | prepare fails (not a check) | 2 attempts; finish: 3 attempts |
-| A job waits in RunPod's queue > 4 min, or runs past its limit (prepare 5, chunk 7, finish 5 min) | cancelled and counted as a failed attempt (retried as above) |
+| A job waits in RunPod's queue > 4 min, or runs past its limit (prepare 7 (5 before the shot review, 2026-11-06), chunk 7, finish 5 min) | cancelled and counted as a failed attempt (retried as above) |
 | The whole run > 25 min | failed, refunded |
 
 ## Chunks
@@ -129,6 +132,8 @@ prepare try that failed before it (`director_end:<job>`, `builder_end:<job>`, fr
 | `BLOCKY_WORLDS_DIRECTOR` | off, **mock**, haiku, sonnet | `director: { provider: "off" \| "mock" \| "anthropic", model? }` |
 | `BLOCKY_WORLDS_BUILDER` | **off**, on | `builder: { provider: "off" \| "anthropic", library, budget: { maxUsd } }` |
 | `BLOCKY_WORLDS_BUILDER_MAX_USD` | **0.60** (clamped 0..2) | the builder's money cap per video |
+| `BLOCKY_WORLDS_REVIEW` | off, mock, **haiku** (unset = haiku: ON), sonnet | `review: { provider: "off" / "mock" / "anthropic", model, budget: { maxUsd } }`; ledger rows `review:<job>` / `review_end:<job>` |
+| `BLOCKY_WORLDS_REVIEW_MAX_USD` | **0.10** (clamped 0..1) | the shot review's money cap per prepare try (calibrated on turtle2: $0.0113, 49/50 lines agreed with a human) |
 
 Both functions dispatch jobs (api: the first prepare; render: retries) and read the same project-wide secrets. With the builder on,
 the server hands the job a snapshot of the shared library (`blocky_worlds_assets`, live, most-used first, at most 150

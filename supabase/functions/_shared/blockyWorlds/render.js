@@ -20,7 +20,9 @@ export const RENDER = Object.freeze({
   noGpuRetries: 3,              // NO_GPU tries on top (handler.py retires that worker)
   noGpuDelaySec: 20,            // ... and the piece waits until it is gone (Cutaway: sent at once, the same slice took it)
   queueSec: 240,                // waiting in RunPod's queue longer than this: cancelled, counted as a failed try
-  runSec: Object.freeze({ prepare: 300, chunk: 420, finish: 300 }),
+  // prepare 420 s since 2026-11-06 (owner, option A): the builder keeps its old window (it ends 225 s after the start),
+  // the shot review gets its own after it (worker.mjs: ends 70 s before the limit, the music + mix + uploads after it)
+  runSec: Object.freeze({ prepare: 420, chunk: 420, finish: 300 }),
   hardMin: 25,                  // the whole run
   coldStartBillSec: 15,         // RunPod bills the start-up inside delayTime: up to this much of it is counted
   gpuUsdPerSec: RATES.gpuUsdPerSec,
@@ -35,7 +37,9 @@ export const ROLES = Object.freeze(["prepare", "chunk", "finish"]);
 // (PRODUCTION_CHECK: a line misses an item the story director listed; the same plan misses it again, and a retry would
 // pay the director and the builder twice)
 export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
-const NO_GPU = new Set(["NO_GPU"]);
+// a worker that can't run the job (no graphics; an older image than the job needs: worker.mjs staleBuild) is retired by
+// handler.py and the piece is retried elsewhere: these tries don't count as failed ones (noGpuRetries caps them)
+const NO_GPU = new Set(["NO_GPU", "STALE_WORKER"]);
 const ORDER = ["queued", "voice", "plan", "render", "done"];
 const iso = (ms) => new Date(ms).toISOString();
 const ms = (t) => (t == null ? null : typeof t === "number" ? t : Date.parse(t));
@@ -113,7 +117,7 @@ export function paths(run) {
   const d = runDir(run), pad = (i) => String(i).padStart(3, "0");
   return {
     voiceMp3: `${d}/voice/voice.mp3`, take: `${d}/voice/take.json`,
-    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, direction: `${d}/direction.json`, mix: `${d}/mix.m4a`,
+    timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, direction: `${d}/direction.json`, shotReview: `${d}/shot-review.json`, mix: `${d}/mix.m4a`,
     seg: (i, a) => `${d}/chunks/seg_${pad(i)}_a${a}.mp4`, web: (i, a) => `${d}/chunks/web_${pad(i)}_a${a}.mp4`,
     final: `${d}/final.mp4`, webFinal: `${d}/web.mp4`, poster: `${d}/poster.jpg`,
   };
@@ -140,11 +144,15 @@ export function sameToken(a, b) {
  *   BLOCKY_WORLDS_DIRECTOR          off | mock | haiku | sonnet   (mock: free, the old behaviour)
  *   BLOCKY_WORLDS_BUILDER           off | on                       (off: the kit + the shared library only, never a paid call)
  *   BLOCKY_WORLDS_BUILDER_MAX_USD   the builder's money cap per video (0.60; clamped to 0..2)
+ *   BLOCKY_WORLDS_REVIEW            haiku | sonnet | mock | off    (the shot review, engine lib/vision; unset = haiku: ON)
+ *   BLOCKY_WORLDS_REVIEW_MAX_USD    the review's money cap per prepare try (0.10; clamped to 0..1)
+ * The worker reads job.prepare.review = { provider: "off" | "mock" | "anthropic", model?, budget: { maxUsd } } too.
  * The worker (engine/runpod/worker.mjs prepare) reads job.prepare.director = { provider: "off" | "mock" | "anthropic",
  * model? } and job.prepare.builder = { provider: "off" | "anthropic", library: [asset], budget: { maxUsd } }; both paid
  * paths need ANTHROPIC_KEY in the worker (the RunPod secret blocky_anthropic, runpod/setup.mjs).
  */
-export const PRODUCTION_DEFAULTS = Object.freeze({ director: "mock", builder: "off", builderMaxUsd: 0.6 });
+export const PRODUCTION_DEFAULTS = Object.freeze({ director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1 });
+export const REVIEW_MAX_USD_CEILING = 1;
 export const DIRECTOR_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
 /**
  * The most ONE director call can cost (a copy of engine/lib/director/design.js anthropicDirector().worstCase(): every
@@ -162,7 +170,19 @@ export function productionSettings(get = () => "") {
   const builder = ["on", "true", "1", "anthropic"].includes(v("BLOCKY_WORLDS_BUILDER")) ? "on" : "off";
   const raw = v("BLOCKY_WORLDS_BUILDER_MAX_USD"), n = raw === "" ? NaN : Number(raw);
   const builderMaxUsd = Number.isFinite(n) && n >= 0 ? Math.min(BUILDER_MAX_USD_CEILING, n) : PRODUCTION_DEFAULTS.builderMaxUsd;
-  return { director, builder, builderMaxUsd };
+  // the shot review is ON (haiku) unless the secret says off (owner, 2026-11-06); an unknown value keeps the default
+  const review = ["off", "mock", "haiku", "sonnet"].includes(v("BLOCKY_WORLDS_REVIEW")) ? v("BLOCKY_WORLDS_REVIEW") : PRODUCTION_DEFAULTS.review;
+  const rraw = v("BLOCKY_WORLDS_REVIEW_MAX_USD"), rn = rraw === "" ? NaN : Number(rraw);
+  const reviewMaxUsd = Number.isFinite(rn) && rn >= 0 ? Math.min(REVIEW_MAX_USD_CEILING, rn) : PRODUCTION_DEFAULTS.reviewMaxUsd;
+  return { director, builder, builderMaxUsd, review, reviewMaxUsd };
+}
+export const REVIEW_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
+/** job.prepare.review for the worker (engine lib/vision/index.js judgeFromConfig) */
+export function prepareReview(s = PRODUCTION_DEFAULTS) {
+  const r = s.review ?? PRODUCTION_DEFAULTS.review, maxUsd = Number(s.reviewMaxUsd ?? PRODUCTION_DEFAULTS.reviewMaxUsd) || 0;
+  if (r === "off" || (maxUsd <= 0 && r !== "mock")) return { provider: "off" };
+  if (r === "mock") return { provider: "mock", budget: { maxUsd: 0 } };
+  return { provider: "anthropic", model: REVIEW_MODELS[r] ?? REVIEW_MODELS.haiku, budget: { maxUsd } };
 }
 
 /**
@@ -176,7 +196,10 @@ export function aiCeilingUsd(s = PRODUCTION_DEFAULTS, cfg = RENDER) {
   const model = DIRECTOR_MODELS[s.director] ?? null;
   const directorMaxUsd = model ? +(DIRECTOR_WORST_USD[model] * 2 * cfg.attempts.prepare).toFixed(4) : 0;
   const builderMaxUsd = s.builder === "on" ? Number(s.builderMaxUsd) || 0 : 0;
-  return { directorMaxUsd, builderMaxUsd, aiMaxUsd: +(directorMaxUsd + builderMaxUsd).toFixed(4) };
+  // the shot review: its cap per prepare try (a retry plans and reviews again), RENDER.attempts.prepare tries
+  const rv = prepareReview(s);
+  const reviewMaxUsd = rv.provider === "anthropic" ? +(rv.budget.maxUsd * cfg.attempts.prepare).toFixed(4) : 0;
+  return { directorMaxUsd, builderMaxUsd, reviewMaxUsd, aiMaxUsd: +(directorMaxUsd + builderMaxUsd + reviewMaxUsd).toFixed(4) };
 }
 
 /** a prepare retry designs only when at least this much of the builder's cap is left (one design + its check) */
@@ -193,7 +216,7 @@ export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, librar
   const left = +Math.max(0, (Number(s.builderMaxUsd) || 0) - (attempt > 1 ? Math.max(0, Number(builderSpentUsd) || 0) : 0)).toFixed(5);
   const designs = s.builder === "on" && left >= (attempt > 1 ? BUILDER_MIN_LEFT_USD : 1e-9);
   const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? left : 0 } };
-  return { director, builder, limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare } };
+  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare } };
 }
 
 /** what the earlier prepare tries of a run spent on the builder (their job rows: the done output's or the failed
@@ -256,13 +279,16 @@ function aiLedger(job, ev) {
     const b = usd(ev.builder?.costUsd), d = usd(ev.director?.costUsd);
     if (d) rows.push({ stage: "director", provider: "anthropic", model: ev.director?.model ?? null, ref: `director:${job.id}`, usd: d, units: { ms: Number(ev.director?.ms) || null, fellBack: Boolean(ev.director?.fellBack), attempt: job.attempt } });
     if (b) rows.push({ stage: "builder", provider: "anthropic", model: null, ref: `builder:${job.id}`, usd: b, units: { built: Number(ev.builder?.built) || 0, cards: Number(ev.builder?.cards) || 0, ms: Number(ev.builder?.ms) || null, attempt: job.attempt } });
+    const r = usd(ev.review?.costUsd);
+    if (r) rows.push({ stage: "review", provider: "anthropic", model: ev.review?.model ?? null, ref: `review:${job.id}`, usd: r, units: { passes: Number(ev.review?.passes) || 0, fixes: Number(ev.review?.fixes) || 0, cards: Number(ev.review?.cards) || 0, ms: Number(ev.review?.ms) || null, attempt: job.attempt } });
     return rows;
   }
   const s = ev.event === "failed" ? ev.spend : ev.output?.spend;
   if (!s || typeof s !== "object") return rows;
-  const d = usd(usd(s.directorUsd) - usd(s.plannedDirectorUsd)), b = usd(usd(s.builderUsd) - usd(s.plannedBuilderUsd));
+  const d = usd(usd(s.directorUsd) - usd(s.plannedDirectorUsd)), b = usd(usd(s.builderUsd) - usd(s.plannedBuilderUsd)), r = usd(usd(s.reviewUsd) - usd(s.plannedReviewUsd));
   if (d) rows.push({ stage: "director", provider: "anthropic", model: s.directorModel ?? null, ref: `director_end:${job.id}`, usd: d, units: { totalUsd: usd(s.directorUsd), attempt: job.attempt } });
   if (b) rows.push({ stage: "builder", provider: "anthropic", model: null, ref: `builder_end:${job.id}`, usd: b, units: { totalUsd: usd(s.builderUsd), attempt: job.attempt } });
+  if (r) rows.push({ stage: "review", provider: "anthropic", model: s.reviewModel ?? null, ref: `review_end:${job.id}`, usd: r, units: { totalUsd: usd(s.reviewUsd), attempt: job.attempt } });
   return rows;
 }
 
@@ -277,6 +303,13 @@ export function needLines(list) {
   }));
 }
 
+/** the shot review's summary from "planned" (engine lib/vision/index.js reviewForPrepare summary), bounded */
+export function reviewSummary(r) {
+  const n = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
+  const counts = (c) => (c && typeof c === "object" ? { match: n(c.match), partial: n(c.partial), miss: n(c.miss), unjudged: n(c.unjudged), ...(c.matchPct != null ? { matchPct: n(c.matchPct) } : {}) } : null);
+  return { provider: String(r.provider ?? "").slice(0, 20), model: r.model == null ? null : String(r.model).slice(0, 40), first: counts(r.first), final: counts(r.final), passes: n(r.passes), fixes: n(r.fixes), reverted: n(r.reverted), cards: n(r.cards), unresolved: n(r.unresolved), costUsd: usd(r.costUsd), ms: n(r.ms), stopped: r.stopped == null ? null : String(r.stopped).slice(0, 160), ...(r.error ? { error: String(r.error).slice(0, 160) } : {}) };
+}
+
 /** what "planned" leaves on the prepare job's row (output.planned; the job's "done" output replaces it with its own) */
 export function plannedSummary(ev) {
   const n = (x) => (Number.isFinite(Number(x)) ? Number(x) : null);
@@ -284,6 +317,7 @@ export function plannedSummary(ev) {
     frames: n(ev.frames), duration: n(ev.duration), shots: n(ev.shots),
     builder: ev.builder ? { costUsd: usd(ev.builder.costUsd), built: n(ev.builder.built), cards: n(ev.builder.cards), ms: n(ev.builder.ms), needs: needLines(ev.builder.needs) } : null,
     director: ev.director ? { provider: String(ev.director.provider ?? "").slice(0, 20), model: ev.director.model ?? null, fellBack: Boolean(ev.director.fellBack), reused: Boolean(ev.director.reused), costUsd: usd(ev.director.costUsd), ms: n(ev.director.ms) } : null,
+    review: ev.review && typeof ev.review === "object" ? reviewSummary(ev.review) : null,
     timing: ev.timing && typeof ev.timing === "object" ? Object.fromEntries(Object.entries(ev.timing).filter(([, v]) => Number.isFinite(Number(v))).slice(0, 12).map(([k, v]) => [String(k).slice(0, 20), Number(v)])) : null,
     gaps: Array.isArray(ev.gaps) ? ev.gaps.length : 0,
   };

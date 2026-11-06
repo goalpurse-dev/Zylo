@@ -7,11 +7,12 @@
 //            Poly Haven model folder / Kenney model / HDRI is kept when its name appears in page/ or lib/ source (the
 //            caption font always). --all-assets copies every asset; --no-assets none (the tests).
 //   shared/  supabase/functions/_shared/blockyWorlds/*.js (the narrator config + voice code the prepare role uses)
-//   handler.py, Dockerfile at the root.
+//   handler.py, Dockerfile, fly.toml (app zyvo-cutaway-render-staging, fra) at the root; engine/BUILD_ID (buildId).
 // Then the SMOKE TEST (contextSmoke.mjs smoke): every module of the graph is imported from the context in the image's
 // layout. Any failure: the context is NOT finished (its Dockerfile is removed, so nothing can be built from it) and
 // the exit code is 1.
 //   node runpod/buildContext.mjs <outDir> [--all-assets | --no-assets]
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,7 +24,7 @@ const walk = (d) => fs.readdirSync(d).flatMap((f) => { const p = path.join(d, f)
 const cp = (src, dst) => { fs.mkdirSync(path.dirname(dst), { recursive: true }); fs.copyFileSync(src, dst); };
 
 /** the context in `out` -> { files, bytes, assetsKept, assetsBytes, skipped, smoke } (smoke.ok false: not finished) */
-export function buildContext(out, { assets = "named" } = {}) {
+export function buildContext(out, { assets = "named", now = new Date() } = {}) {
   if (path.resolve(out).startsWith(ENGINE + path.sep + "assets")) throw new Error("outDir inside assets/");
   fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });
   const E = path.join(out, "engine");
@@ -56,11 +57,37 @@ export function buildContext(out, { assets = "named" } = {}) {
     }
   } else fs.mkdirSync(path.join(E, "assets"), { recursive: true });
 
-  // the smoke test: only a context whose every module loads gets its Dockerfile
+  // the smoke test: only a context whose every module loads gets its Dockerfile (+ handler, fly.toml, BUILD_ID)
   const s = smoke(out);
-  if (s.ok) { cp(path.join(here, "Dockerfile"), path.join(out, "Dockerfile")); cp(path.join(here, "handler.py"), path.join(out, "handler.py")); }
+  let build = null;
+  if (s.ok) {
+    cp(path.join(here, "Dockerfile"), path.join(out, "Dockerfile")); cp(path.join(here, "handler.py"), path.join(out, "handler.py"));
+    fs.writeFileSync(path.join(out, "fly.toml"), FLY_TOML);
+    build = buildId(out, { now });
+    fs.writeFileSync(path.join(E, "BUILD_ID"), build + "\n");
+  }
   const all = walk(out), size = (f) => fs.statSync(f).size;
-  return { files: all.length, bytes: all.reduce((a, f) => a + size(f), 0), engineModules: graph.engine.length, assetsKept: kept.length, assetsBytes: kept.reduce((a, f) => a + size(f), 0), skipped: [...skipped].sort(), smoke: s };
+  return { files: all.length, bytes: all.reduce((a, f) => a + size(f), 0), engineModules: graph.engine.length, assetsKept: kept.length, assetsBytes: kept.reduce((a, f) => a + size(f), 0), skipped: [...skipped].sort(), smoke: s, build };
+}
+
+/** `fly deploy --build-only --push` from the context folder pushes to Cutaway's staging registry (the label setup.mjs pins) */
+export const FLY_TOML = `app = "zyvo-cutaway-render-staging"\nprimary_region = "fra"\n\n[build]\n  dockerfile = "Dockerfile"\n`;
+
+/**
+ * The image's build id: "<UTC time YYYYMMDDTHHMMSS>-<12 hex of the context's content>". The time part orders builds
+ * (a worker older than a job's minBuild refuses it: worker.mjs staleBuild); the hash names what is inside.
+ */
+export function buildId(out, { now = new Date() } = {}) {
+  const h = crypto.createHash("sha256");
+  for (const f of walk(out).map((f) => path.relative(out, f).split(path.sep).join("/")).filter((r) => r !== "engine/BUILD_ID").sort()) {
+    const abs = path.join(out, f);
+    h.update(f); h.update("\0");
+    // assets by name + size (fast); code by content
+    if (f.startsWith("engine/assets/")) h.update(String(fs.statSync(abs).size)); else h.update(fs.readFileSync(abs));
+    h.update("\0");
+  }
+  const t = new Date(now).toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "");
+  return `${t}-${h.digest("hex").slice(0, 12)}`;
 }
 
 if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
@@ -70,5 +97,6 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   console.log(`context ${out}: ${r.files} files, ${(r.bytes / 1e6).toFixed(1)} MB (engine code files ${r.engineModules}, assets kept ${r.assetsKept}, ${(r.assetsBytes / 1e6).toFixed(1)} MB)`);
   if (r.skipped.length) console.log(`folders with assets left out (not named in page/ or lib/): ${r.skipped.join(", ")}`);
   if (!r.smoke.ok) { console.error(`SMOKE TEST FAILED: the context is NOT finished (no Dockerfile in it):\n  ${r.smoke.problems.join("\n  ")}`); process.exit(1); }
+  console.log(`build ${r.build} (engine/BUILD_ID; setup.mjs --context writes it to renderBuild.js)`);
   console.log(`smoke test ok: ${r.smoke.modules} engine modules + ${r.smoke.shared} shared files load from the context in the image's layout`);
 }

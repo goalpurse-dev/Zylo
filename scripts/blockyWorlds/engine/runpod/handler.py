@@ -5,7 +5,8 @@
 #  - a staging render ({"jobUrl": ...} or an inline ranges/whole job, runpod/dispatch.mjs): a failed render raises, so
 #    RunPod marks it FAILED and the dispatcher retries it
 # NO_GPU (a worker without graphics, gpu.mjs) returns with refresh_worker, so RunPod retires that worker and the retry
-# runs elsewhere (Cutaway's fix; 2026-11-04 every retry of a Blocky test landed on the same slice).
+# runs elsewhere (Cutaway's fix; 2026-11-04 every retry of a Blocky test landed on the same slice). STALE_WORKER (worker.mjs:
+# this image is older than the job's minBuild) the same: the worker is retired, the server retries on a new one.
 import json
 import subprocess
 
@@ -30,7 +31,7 @@ def handler(job):
             return {"ok": False, "code": "JOB_TIMEOUT", "error": "the worker ran over 900 s"}
         if not result:
             return {"ok": False, "code": "WORKER_CRASHED", "error": (p.stderr or p.stdout)[-1500:]}
-        if result.get("code") == "NO_GPU":
+        if result.get("code") in ("NO_GPU", "STALE_WORKER"):
             result["refresh_worker"] = True
         return result
     p, result = run(data, 1500)

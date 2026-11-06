@@ -451,3 +451,39 @@ from the list's items and each line's words.
   `--script file.json`.
 - Files: `lib/direction.js`, `dev/integration.mjs` (+ `--stills`), `dev/integration.test.mjs`,
   `dev/integrationSheet.mjs`, `dev/scripts/turtle_wolf.json`; contact sheets in `out/integration/`.
+
+## Addendum 2026-11-06: the shot review (an AI looks at every shot before the render)
+
+Why: run turtle2 passed checkVisuals at 100% while a human frame review found 23% of the lines truly shown. The checks
+read the PLAN; the review looks at the PICTURES. Owner: "render a still of every shot and have an AI vision check
+compare it to its line (who, nouns, action, place, time). Any miss gets re-planned."
+
+Flow (prepare job, after the builder, before the pre-render checks; never fails a run):
+1. `lib/vision/requirements.js`: per line what it must show, from the STORY (production list + text + premise), never
+   from the plan; the frames: each shot's middle inside the line, two (25% / 75%) for a moving line or a single
+   shot > 3 s (turtle2: 77 frames for 64 shots / 50 lines).
+2. `lib/vision/stills.mjs`: the real engine page on a copy of the timeline with no captions at 432 x 768 (443 image
+   tokens a frame); one page load a pass; later passes load a SUB-timeline of the changed shots only.
+3. `lib/vision/judge.js`: Claude (Haiku 5.5 default, Sonnet 5.5 the strict option), ~8 lines / <= 14 frames a request,
+   4 in parallel, structured outputs: per line `shows` (described first), who / missing things / action / static /
+   place / time / emotion / card, verdict match | partial | miss, miss types, bad shots, fix. The verdict is made
+   consistent with the checks in code.
+4. `lib/vision/replan.js`: misses -> fixes in the planner's vocabulary (castFix, focusFix, actionPose, crowdAction,
+   exprFix, propHeld, needObject, needCrowd, setOverride, timeOfDay, replaceCard), applied one at a time; every fix
+   re-runs the pre-render checks and is undone if it adds a problem (the PERMANENT RULE's checks are the guard, never
+   relaxed). An object the kit lacks goes to the builder (kit -> library -> builder -> card) and is taken out again if
+   none of them makes it. Up to 2 re-plan rounds (pass 1 all lines, passes 2-3 only lines on changed shots); what is
+   still missing gets a picture card of that very thing (cut into the line's longest shot, <= 1 per 30 s), the rest
+   is recorded in `shot-review.json` (next to the timeline; dev/reviewPage.mjs can read it later).
+5. Caps: money (default $0.10 / video, each request reserves its worst case first), time (120 s and a hard `until`),
+   a pass starts only if its estimate fits. Any error = the timeline as it is, a note in the report.
+
+Entry point: `reviewForPrepare({ tl, script, premise, config, apiKey, plan, kit, kitProblems, builder, dir, until,
+beforeStills })` (lib/vision/index.js), called by runpod/worker.mjs prepare after the builder, before the pre-render
+checks (a resumed prepare never reviews). Config `job.prepare.review` (the server: render.js prepareReview; secret
+`BLOCKY_WORLDS_REVIEW` unset = haiku, ON since 2026-11-06; "off" disables; `BLOCKY_WORLDS_REVIEW_MAX_USD` 0.10), else
+env `BLOCKY_WORLDS_REVIEW` (worker-only runs: off by default). The prepare limit is 420 s: the builder ends 225 s after
+the start (as before), the review by 70 s before the limit. Calibration (owner-approved, turtle2): Haiku agreed with
+the human on match-or-not for 49/50 lines, caught 49/49 problems, 1 false alarm, $0.0113. Free tools: `node lib/vision/stills.mjs <timeline.json>` (timing), `node
+dev/visionDryRun.mjs --dir <run folder>` (real stills + mock judge), `node dev/visionCalibrate.mjs` (judge vs a human
+review.json; paid only with --paid --yes). Tests: `dev/vision.test.mjs`, `dev/visionPlan.test.mjs`.

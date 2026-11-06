@@ -5,6 +5,7 @@
 //   mockProduction({ script, idea }) -> raw production list (validateProduction cleans it like an AI answer)
 import { ANIMALS, CREATURE_OBJECTS, CREATURES, HELD } from "../catalog.js";
 import { OBJECT_CATALOG, ABSTRACT, heldKind } from "../visuals.js";
+import { titleMatchOk } from "../names.js";
 import { phraseIndex, findPhrases, ACTION_WORDS, BEHAVIOUR_WORDS, CROWD_ACTION_WORDS, CROWD_NOUNS, NUMBER_WORDS, VEHICLE_WORDS, EFFECT_WORDS, EVENT_WORDS, SCALE_WORDS, TINY_WORDS, POSES_N } from "./vocab.js";
 
 const IDX = {
@@ -30,6 +31,9 @@ const JOBS = /\b(teacher|mayor|baker|farmer|mailman|postman|doctor|dentist|nurse
 const FAMILY = { mom: "Mom", mum: "Mom", mother: "Mom", dad: "Dad", father: "Dad", grandma: "Grandma", granny: "Grandma", nana: "Grandma", grandpa: "Grandpa", brother: "my brother", sister: "my sister", baby: "the baby" };
 const TITLE_RE = /\b(Mr|Mrs|Ms|Miss|Dr|Coach|Aunt|Uncle|Officer|Principal|Sheriff|Mayor|Captain|Old|Grandma|Grandpa|Lady|Sir|King|Queen|Professor|Nurse|Chef)\.?\s+([A-Z][a-z]+)/g;
 const STOP = new Set("the a an and or but so if then than that this these those to of in on at for from with by into onto over under up down out off is are was were be been being has have had do does did not no never i me my we our you your he him his she her it its they them their there here what who when where why how all every each some any one two three just only very too also again still even now then until because while about after before".split(" "));
+// the clock moves on only when a line says it does ("at dawn", never "before dawn")
+const DAWN = /\b(?<!before )(dawn|sunrise|sunup|daybreak|first light|sunset|dusk)\b/;
+const DAY_BACK = /\b(in the morning|next morning|that morning|next day|the day after|sun came up|sun rose|by noon)\b/;
 const NIGHT = /\b(night|nights|tonight|dark|midnight|moon|moonlight|asleep|bedtime|stars)\b/;
 const ME = /\b(i|me|my|i'm|im|i've|i'd|myself|we|us|our)\b/;
 const THEY = /\b(they|them|their|it|its)\b/;
@@ -117,7 +121,7 @@ export function mockProduction({ script = null, idea = null } = {}) {
   add("cast", "c:me", { id: "me", name: narName, kind: "human", role: "narrator", look: String(card.narrator ?? "").slice(0, 100), job: "" });
   const castIn = lines.map((l, i) => {
     const found = [];
-    for (const m of l.text.matchAll(TITLE_RE)) found.push(add("cast", `c:${m[2].toLowerCase()}`, { id: m[2].toLowerCase(), name: `${m[1]} ${m[2]}`, kind: "human", role: /^(Old|Grandma|Grandpa)$/.test(m[1]) ? "elder" : "adult", look: "", job: /^(Mr|Mrs|Ms|Miss)$/.test(m[1]) ? "" : m[1].toLowerCase() }).id);
+    for (const m of l.text.matchAll(TITLE_RE)) if (titleMatchOk(m[1], m[0].slice(m[1].length, m[0].length - m[2].length), m[2])) found.push(add("cast", `c:${m[2].toLowerCase()}`, { id: m[2].toLowerCase(), name: `${m[1]} ${m[2]}`, kind: "human", role: /^(Old|Grandma|Grandpa)$/.test(m[1]) ? "elder" : "adult", look: "", job: /^(Mr|Mrs|Ms|Miss)$/.test(m[1]) ? "" : m[1].toLowerCase() }).id);
     for (const w of toks(lows[i])) if (FAMILY[w]) found.push(add("cast", `c:${w === "mum" || w === "mother" ? "mom" : w === "father" ? "dad" : w}`, { id: w === "mum" || w === "mother" ? "mom" : w === "father" ? "dad" : w, name: FAMILY[w], kind: "human", role: /grand/.test(w) || w === "nana" || w === "granny" ? "elder" : w === "baby" ? "baby" : /brother|sister/.test(w) ? "kid" : "adult", look: "", job: "" }).id);
     const rj = lows[i].match(/\b(robot|alien|ghost|zombie|skeleton|vampire)s? (teacher|mayor|baker|farmer|mailman|doctor|dentist|nurse|chef|principal|coach|sheriff|janitor|king|queen|librarian|lunch lady|bus driver|lifeguard|barber|judge)\b/);
     if (rj) found.push(add("cast", `c:${rj[1]}_${rj[2]}`, { id: `${rj[1]}_${rj[2]}`.replace(/ /g, "_"), name: `the ${rj[1]} ${rj[2]}`, kind: rj[1] === "robot" ? "robot" : "creature", role: "adult", look: rj[1], job: rj[2] }).id);
@@ -236,6 +240,7 @@ export function mockProduction({ script = null, idea = null } = {}) {
 
   // lines
   const isGiant = (id) => items.creatures.some((c) => c.id === id && ["giant", "colossal"].includes(c.scale));
+  let clock = null; // the story clock (night carries forward)
   const outLines = lines.map((l, i) => {
     const low = lows[i];
     const needs = [...needIn[i]];
@@ -248,7 +253,14 @@ export function mockProduction({ script = null, idea = null } = {}) {
     const fight = /\b(charge|charged|charges|attack|attacked|fight|fought|battle|chase|chased|stampede|swarmed|raided|invaded|stormed)\b/.test(low);
     const scale = needs.some(isGiant) || (lineWorld[i] !== main.id && /creature/.test(items.worlds.find((w) => w.id === lineWorld[i])?.kind ?? "")) || (i === 0 && main.kind === "creature");
     const camera = shake ? "shake" : fight ? "action" : scale ? "scale" : l.part === "discovery" && creatureHere ? "reveal" : "normal";
-    const light = NIGHT.test(low) || (["until", "discovery"].includes(l.part) && card.mood === "horror") ? "night" : l.part === "closer" && card.mood !== "horror" ? "warm" : "day";
+    // the story clock carries forward (turtle run 7b4c0d8b: "one night" ... the climax in daylight ... "at dawn"):
+    // night lasts until a line says the day came back; dawn / sunset are warm
+    let light;
+    if (DAWN.test(low)) light = "warm";
+    else if (DAY_BACK.test(low)) light = "day";
+    else if (NIGHT.test(low) || (["until", "discovery"].includes(l.part) && card.mood === "horror")) light = "night";
+    else light = clock ?? (l.part === "closer" && card.mood !== "horror" ? "warm" : "day");
+    if (light === "night") clock = "night"; else if (DAWN.test(low) || DAY_BACK.test(low)) clock = light === "warm" ? "day" : null;
     return { line: i, world: lineWorld[i], subject, who, action, needs, camera, light };
   });
   // every crowd / creature with a charge or attack line keeps those as actions

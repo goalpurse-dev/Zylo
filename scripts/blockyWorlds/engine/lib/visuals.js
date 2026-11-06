@@ -38,6 +38,25 @@ const BASE_HELD = { sock: "sock", socks: "sock", flashlight: "flashlight", torch
   camera: "camera", notebook: "book", diary: "book", journal: "book", string: "string", yarn: "string", thread: "string", note: "paper", notes: "paper", map: "paper", maps: "paper",
   umbrella: "umbrella", glass: "cup", shoebox: "box", shoeboxes: "box", crate: "box", crates: "box", lostandfound: "box", lantern: "lantern", lanterns: "lantern", rope: "rope", ropes: "rope", cup: "cup", cups: "cup", mug: "cup", mugs: "cup", coffee: "cup", tea: "cup" };
 export const HOLDABLE = new Set([...Object.keys(BASE_HELD), ...[...HELD_INDEX.keys()].filter((w) => !/ /.test(w))]);
+/**
+ * VERB OVER NOUN (turtle run 7b4c0d8b): a noun the line only perceives ("I hear the boots", "saw the torches") or the
+ * army's own gear ("Wolf ears on every helmet") is never a hand prop of the person in the shot: it is shown by what
+ * it belongs to (the marching army, its own object) or it is an honest miss (builder / card). A line that puts it in
+ * someone's hand ("I grabbed the torch", "put on the helmet") still can.
+ */
+const PERCEIVE = /\b(hear|hears|heard|hearing|listen|listens|listened|listening|see|sees|saw|seen|seeing|watch|watched|watching|spot|spotted|notice|noticed|smell|smelled|smelt|feel|felt)\b/;
+const IN_HAND = /\b(grab|grabbed|grabs|hold|holds|held|holding|carry|carries|carried|carrying|pick|picked|took|take|takes|lift|lifted|wave|waved|swing|swung|raise|raised|gave|give|hand|handed|put on|wore|wear|wears|crank|cranked|wind|wound|clutch|clutched|squeeze|squeezed)\b/;
+const ARMY_GEAR_WORDS = /^(boots?|helmets?|torch(es)?|spears?|shields?|armou?r|swords?)$/;
+export function notInHand(text, noun) {
+  const t = ` ${String(text ?? "").toLowerCase().replace(/[^a-z' ]+/g, " ")} `, n = String(noun ?? "").toLowerCase();
+  if (!n) return false;
+  const stem = n.replace(/[^a-z ]/g, "").replace(/(es|s)$/, "");
+  const at = t.search(new RegExp(`\\b${stem}(es|s)?\\b`));
+  if (at < 0) return false;
+  const before = t.slice(0, at).split(/\s+/).filter(Boolean).slice(-4).join(" ");
+  if (IN_HAND.test(before) || IN_HAND.test(t) && !PERCEIVE.test(before)) return false;
+  return PERCEIVE.test(before) || ARMY_GEAR_WORDS.test(n) || ARMY_GEAR_WORDS.test(`${stem}s`);
+}
 /** The hand-prop builder a word draws (kit/props.js): "boots" and "slipper" are both a shoe. */
 export function heldKind(word) {
   const w = String(word ?? "").toLowerCase();
@@ -432,6 +451,7 @@ const wordIn = (needle, hay) => {
 const shotMarkers = (s) => [...(s.markers ?? []), ...(s.marker && !(s.markers ?? []).some((m) => m === s.marker || (m.on === s.marker.on && m.text === s.marker.text)) ? [s.marker] : [])];
 
 /** Does this one shot show the key? `cast` = timeline.cast (for roles). */
+export const FAR_CAMERAS = new Set(["establish", "aerial", "track", "behind_army"]);
 export function covers(key, s, cast = {}) {
   const actors = s.actors ?? [];
   const objs = (s.objects ?? []).map(objName);
@@ -444,7 +464,9 @@ export function covers(key, s, cast = {}) {
   const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? []),
     ...(s.giants ?? []).flatMap((g) => g.aliases ?? []), ...(s.crowds ?? []).flatMap((c) => c.aliases ?? [])];
   const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text)) || built.some((b) => wordIn(w, b));
-  if (key.kind === "person") return actors.some((a) => a.id === key.id || a.hold === key.id) || textual(key.label);
+  // a person is on screen when the camera frames them: in an EPIC far shot (establish / aerial / track / behind the
+  // army) everyone but the focus is a speck (run 7b4c0d8b review: a 2%-of-frame figure counted as the person)
+  if (key.kind === "person") return (!(FAR_CAMERAS.has(s.camera) && s.focus !== key.id) && actors.some((a) => a.id === key.id || a.hold === key.id)) || textual(key.label);
   if (key.kind === "monster") return !!s.monsterState || textual(key.label);
   if (key.kind === "name") return marks.some((m) => wordIn(key.name, m.text)) || textual(key.name);
   if (key.kind === "noun") {

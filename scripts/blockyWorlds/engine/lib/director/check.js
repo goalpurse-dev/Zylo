@@ -10,10 +10,13 @@
 // "creature:..."), worldBase, world (EPIC { creature, view }), actors[].id / hold, focus, objects[].name / asset /
 // aliases / state, monsterState, insert { kind, text }, marker(s), giants[], crowds[], fx, beat.
 
+import { waivedHas } from "../opening.js";
+
 const norm = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 const shotsOfLine = (tl, i) => (tl.shots ?? []).filter((s) => (s.lines ?? [s.line]).includes(i));
 
 function onScreen(req, s, tl) {
+  if (waivedHas(s, req.name)) return true; // the opening rule (lib/opening.js) dropped its card / badge: owner-excused
   const name = norm(req.name), id = req.id;
   const cardSays = s.insert && /card|sign|note/.test(s.insert.kind ?? "") && norm(s.insert.text).split(" ").some((w) => w.length > 2 && name.includes(w));
   const badge = [...(s.markers ?? []), ...(s.marker ? [s.marker] : [])].some((m) => norm(m.text).split(" ").some((w) => w.length > 2 && name.includes(w)));

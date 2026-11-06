@@ -49,20 +49,20 @@ function landscape(K, ctx, { water = false, seed = 3, radius = 1600, treeCount =
     // a sandy shore with grass far behind (so the horizon is not empty)
     const sand = new THREE.Mesh(new THREE.BoxGeometry(radius * 3, 2, 260), K.pbr("coast_sand_01", { repeat: [120, 10], tint: "#f6e6c0" })); sand.position.set(0, -0.6, -radius * 0.55); sand.receiveShadow = true; g.add(sand);
   } else {
-    const grass = new THREE.Mesh(new THREE.PlaneGeometry(radius * 3, radius * 3), K.pbr("leafy_grass", { repeat: [radius / 6, radius / 6], tint: "#a6e070", normal: 0.6 }));
+    const grass = new THREE.Mesh(new THREE.PlaneGeometry(radius * 3, radius * 3), K.pbr("leafy_grass", { repeat: [radius / 6, radius / 6], tint: "#86c856", normal: 0.6 }));
     grass.rotation.x = -Math.PI / 2; grass.receiveShadow = true; g.add(grass);
     // a dirt road across (the giant's path) for scale
     const road = new THREE.Mesh(new THREE.PlaneGeometry(radius * 3, 14), K.pbr("brown_mud_dry", { repeat: [radius / 4, 2], tint: "#e0c9a0" }));
     road.rotation.x = -Math.PI / 2; road.position.set(0, 0.03, -10); road.receiveShadow = true; g.add(road);
   }
   // rolling hills (big soft blocks) and far mountains (cones) in the haze
-  const hillM = new THREE.MeshStandardMaterial({ color: water ? "#7fbf5a" : "#79b34e", roughness: 1 });
+  const hillM = new THREE.MeshStandardMaterial({ color: water ? "#6aae48" : "#5f9e3a", roughness: 1 });
   for (let k = 0; k < 26; k++) {
     const a = R() * TAU, d = radius * (0.35 + R() * 0.45), s = 60 + R() * 120;
     if (Math.abs(Math.sin(a)) > 0.85 && Math.cos(a) > 0 && d < radius * 0.5) continue;
     const h = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10, 0, TAU, 0, Math.PI / 2), hillM); h.scale.set(s * 1.6, s * 0.35, s); h.position.set(Math.sin(a) * d, -1, -Math.abs(Math.cos(a)) * d - 120); h.receiveShadow = true; g.add(h);
   }
-  const mtnM = new THREE.MeshStandardMaterial({ color: "#8aa6c4", roughness: 1 }), snowM = new THREE.MeshStandardMaterial({ color: "#f4f8ff", roughness: 0.9 });
+  const mtnM = new THREE.MeshStandardMaterial({ color: "#6c8bb0", roughness: 1 }), snowM = new THREE.MeshStandardMaterial({ color: "#f4f8ff", roughness: 0.9 });
   for (let k = 0; k < 14; k++) {
     const x = (k - 6.5) * radius * 0.28 + (R() - 0.5) * 120, z = -radius * (0.95 + R() * 0.3), h = 260 + R() * 360;
     const m = new THREE.Mesh(new THREE.ConeGeometry(h * 0.9, h, 5), mtnM); m.position.set(x, h / 2 - 10, z); m.rotation.y = R(); g.add(m);
@@ -123,9 +123,15 @@ function buildInside(spec, ctx) {
   const R = prng(spec.seed * 13 + 5);
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   const glow = glowList();
+  const haze = (k, toward = "#e8d8a0") => `#${new THREE.Color(pal[5]).lerp(new THREE.Color(toward), k).getHexString()}`;
   // the cavern: half-ellipsoid, length L along z, half-width A, height Hh (a big turtle: ~100 x 64 x 30 m)
-  const L = spec.size * 0.85, A = spec.size * 0.3, Hh = spec.size * 0.24, Zc = -L * 0.38;
-  const pal = { turtle: ["#4e7d2a", "#22361a", "#e8d6a0"], whale: ["#c96b7a", "#5a2430", "#f0c0b0"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8"], snail: ["#b0632e", "#4a2410", "#f0d8a8"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0"];
+  // 2026-11-06 (turtle run 7b4c0d8b): the old cavern (half-width 0.3 x size, 0.24 x size high = 36 x 29 m for a 120 m
+  // turtle) put the shell far above 8 m houses: every kid-height medium / closeup shot showed only houses and a sandy
+  // floor, i.e. "a normal street". Now the shell is low and close (it shows above the houses in every framing), the
+  // houses are low cottages, the floor is the creature's own scaly skin and the haze is the shell's colour, not sky.
+  const L = spec.size * 0.85, A = spec.size * 0.19, Hh = spec.size * 0.13, Zc = -L * 0.38;
+  // [shell plate, plate seam, bone, skin floor, skin seam, cavern haze]
+  const pal = { turtle: ["#5b8a2e", "#1f3314", "#e8d6a0", "#a39a62", "#6b6236", "#4d5a2c"], whale: ["#c96b7a", "#5a2430", "#f0c0b0", "#d98a8f", "#8a3c48", "#6a3038"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8", "#9a8e8e", "#5a4e50", "#4a4048"], snail: ["#b0632e", "#4a2410", "#f0d8a8", "#c69a6a", "#7a5030", "#5a3a20"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0", "#a08a68", "#5e4c34", "#4a3e2c"];
   // the shell: plates on the inside, a back-side half ellipsoid
   const tex = plateTexture(THREE, pal[0], pal[1], spec.seed); tex.repeat.set(10, 4);
   const shellM = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, side: THREE.BackSide, color: "#ffffff" });
@@ -145,13 +151,22 @@ function buildInside(spec, ctx) {
   }
   // the floor: the belly (warm sand-coloured), the main street (pavement) down the middle to the mouth
   // no normal map on the big belly floor: its derivative-based normal gave a NaN pixel under a camera shake (2026-11-05)
-  const sandM = new THREE.MeshStandardMaterial({ color: "#f0dcb0", map: (() => { const t = K.L.tex("coast_sand_01", "diff", true); t.repeat.set(A / 5, L / 5); return t; })(), roughness: 0.95 });
-  K.plane(A * 2.2, L * 1.1, sandM, { y: 0, z: Zc });
-  K.plane(9, L * 0.95, pbr("concrete_pavement", { repeat: [3, L / 3], tint: "#efe9df" }), { y: 0.02, z: Zc + 2 });
-  for (const sx of [-1, 1]) K.bx(0.3, 0.16, L * 0.95, pbr("concrete_pavement", { repeat: [0.2, L / 3], tint: "#d9d3c8" }), { x: sx * 4.6, y: 0.08, z: Zc + 2 });
+  // the belly floor: the creature's own skin (big scales), a worn plank road down the middle (no sand, no pavement)
+  const skin = plateTexture(THREE, pal[3], pal[4], spec.seed + 3); skin.repeat.set(A / 4, L / 4);
+  const skinM = new THREE.MeshStandardMaterial({ map: skin, roughness: 0.9, color: "#ffffff" });
+  K.plane(A * 2.2, L * 1.1, skinM, { y: 0, z: Zc });
+  K.plane(7, L * 0.95, pbr("brown_mud_dry", { repeat: [2, L / 3], tint: "#c9a477" }), { y: 0.02, z: Zc + 2 });
+  for (const sx of [-1, 1]) K.bx(0.4, 0.22, L * 0.95, solid(pal[4], { roughness: 0.9 }), { x: sx * 3.6, y: 0.1, z: Zc + 2 });
+  // fleshy ridges along the walls (where the shell meets the belly): the floor visibly curves up into the shell
+  const ridgeM = solid(pal[4], { roughness: 0.85 });
+  for (const sx of [-1, 1]) for (let k = 0; k < 14; k++) {
+    const z = Zc + L * 0.46 - k * (L * 0.92) / 13, q = 1 - ((z - Zc) / (L / 2)) ** 2; if (q <= 0.08) continue;
+    const x = sx * A * Math.sqrt(q) * 0.9;
+    K.rbx(6, 3 + (k % 3), 9, 1.2, ridgeM, { x, y: 1, z });
+  }
   // the town: houses facing the street on both sides (instanced; textured plaster), trees and lamps
   const inside = (x, z) => { const q = 1 - (x / (A * 0.86)) ** 2 - ((z - Zc) / (L / 2 * 0.9)) ** 2; return q > 0.15 ? 0 : null; };
-  const houses = townLayout({ surface: inside, region: { x0: -A, x1: A, z0: Zc - L / 2, z1: 14 }, count: 70, seed: spec.seed, street: { axis: "z", half: 5.2 }, size: [6, 9], tall: [4.5, 8], minGap: 1.0 });
+  const houses = townLayout({ surface: inside, region: { x0: -A, x1: A, z0: Zc - L / 2, z1: 14 }, count: 70, seed: spec.seed, street: { axis: "z", half: 4.2 }, size: [5, 7], tall: [3.2, 5], minGap: 1.0 });
   // keep the camera end (z > 8) and the mouth clear
   const keep = houses.filter((h) => h.z < 6 || Math.abs(h.x) > 14);
   const trees = [], lamps = [];
@@ -205,11 +220,12 @@ function buildInside(spec, ctx) {
     bounds: [new THREE.Box3(V(-A * 0.7, 0.3, Zc - L * 0.45), V(A * 0.7, Hh * 0.55, 24))],
     blockers: [],
     rig: {
+      enclosed: true,
       shadow: { center: [0, 0, -18], half: 46, far: 260, map: 4096 },
       sunDir: { day: [12, 60, -18], night: [-12, 60, -18], warm: [20, 40, -30] },
       sunScale: { day: 0.6, night: 0.15, warm: 0.5 }, envScale: { all: 0 },
       hemi: { day: ["#ffe2b8", "#5a4028", 0.85], night: ["#3a4a80", "#120c08", 0.3], warm: ["#ffcf9a", "#5a3a20", 0.5] },
-      fog: { day: ["#b89a68", 70, L * 2.4], night: ["#1a1830", 30, L * 1.2], warm: ["#c08858", 70, L * 2.2] },
+      fog: { day: [haze(0.4), 45, L * 1.6], night: ["#141a18", 25, L * 1.0], warm: [haze(0.25, "#ffb070"), 45, L * 1.5] },
       exposure: { day: 0.8, night: 0.95, warm: 0.8 },
       practicals: (mode) => {
         const out = [];
@@ -218,7 +234,7 @@ function buildInside(spec, ctx) {
         const warm = new THREE.PointLight("#ffb860", mode === "night" ? 140 : 60, 40, 1.6); warm.position.set(0, 6, -2); out.push(warm);
         return out;
       },
-      onLight: (mode) => { glow.apply(mode); town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6); skyM.emissiveIntensity = mode === "night" ? 0.6 : 3; skyM.emissive.set(mode === "night" ? "#8fa8ff" : "#fff2c8"); sM.uniforms.k.value = mode === "night" ? 0.06 : 0.2; mouth.material.color.set(mode === "night" ? "#30406a" : mode === "warm" ? "#ffb060" : "#ffe9c0"); },
+      onLight: (mode) => { glow.apply(mode); town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6); skyM.emissiveIntensity = mode === "night" ? 0.6 : 3; skyM.emissive.set(mode === "night" ? "#8fa8ff" : "#fff2c8"); sM.uniforms.k.value = mode === "night" ? 0.06 : 0.2; dust.material.opacity = mode === "night" ? 0.15 : 0.6; mouth.material.color.set(mode === "night" ? "#30406a" : mode === "warm" ? "#ffb060" : "#ffe9c0"); },
     },
     sway(t) { return creatureSway(spec.kind, spec.size, t); },
     update(t) {
@@ -310,18 +326,21 @@ export async function buildCreatureOutside(rawSpec, ctx) {
   const sink = spec.water ? spec.size * 0.12 : 0;
   // it walks across and a little toward the camera (a 3/4 view reads better than a profile); slow on screen
   const yaw = Math.PI / 2 - 0.6, dirX = Math.sin(yaw), dirZ = Math.cos(yaw);
-  const giantPath = (t) => V(-spec.size * 0.3 + dirX * gait.speed * t * 0.3, -sink, -dist + dirZ * gait.speed * t * 0.3);
+  const giantPath = (t) => V(-spec.size * 0.15 + dirX * gait.speed * t * 0.3, -sink, -dist + dirZ * gait.speed * t * 0.3);
   const S = {
     root, indoor: false, giantView: "outside", creature: spec.kind,
     spots: { center: V(0, 0, 0), left: V(-3, 0, 0.5), right: V(3, 0, 0.5), back: V(0, 0, -6), far: V(0, 0, -dist), door: V(0, 0, -dist * 0.7), horizon: V(0, 0, -1400), head: V(spec.size * 0.4, (giant?.userData.height ?? 30) * 0.6, -dist), tail: V(-spec.size * 0.5, 0, -dist) },
     camDir: V(0, 0, 1), views: {},
     bounds: [new THREE.Box3(V(-dist * 3, 0.3, -dist * 4), V(dist * 3, dist * 2, dist * 3))],
     blockers: [],
-    rig: { shadow: giant ? { center: [0, 0, -dist], half: spec.size * 0.85, far: spec.size * 6, map: 4096 } : { center: [0, 0, -40], half: 70, far: 400, map: 4096 }, fog: { day: ["#9cc6ee", 700, 6000], warm: ["#f0a06a", 700, 6000], night: ["#16244c", 200, 1500] }, sunDir: { day: [30, 40, 34], warm: [42, 11, -6], night: [-30, 50, -20] }, onLight: (mode) => giant?.userData.town?.userData.setLit(mode !== "day", mode === "night" ? 1.2 : 0.7) },
+    rig: { shadow: giant ? { center: [0, 0, -dist], half: spec.size * 0.85, far: spec.size * 6, map: 4096 } : { center: [0, 0, -40], half: 70, far: 400, map: 4096 }, // the haze starts far and the exposure is a touch lower: the opening aerial was washed out (run 7b4c0d8b stills)
+      fog: { day: ["#a9cdee", 1600, 9000], warm: ["#f0a06a", 1400, 8000], night: ["#16244c", 260, 1800] }, exposure: { day: 0.8, warm: 0.8 }, envScale: { all: 0.35 }, hemiScale: { day: 0.75 }, sunDir: { day: [30, 40, 34], warm: [42, 11, -6], night: [-30, 50, -20] }, onLight: (mode) => giant?.userData.town?.userData.setLit(mode !== "day", mode === "night" ? 1.2 : 0.7) },
     giantPath,
-    update(t) {
+    // lt (the shot's own time, engine.js): the giant starts each shot at the same place behind the group. With the
+    // video time it walked out of the frame after ~40 s (turtle run 7b4c0d8b: an empty field at 53 s and 82 s).
+    update(t, lt) {
       if (!giant) return;
-      giant.position.copy(giantPath(t)); giant.rotation.y = yaw; // walking left to right, angled toward the camera
+      giant.position.copy(giantPath(Number.isFinite(lt) ? lt : t)); giant.rotation.y = yaw; // walking left to right, angled toward the camera
       animateGiant(giant, action, t);
     },
     giant, town: giant?.userData.town ?? null, mount: root, groundY: 0,

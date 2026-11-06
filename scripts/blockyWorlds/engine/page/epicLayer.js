@@ -208,7 +208,15 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
 
   return {
     GIANTS, CROWDS,
-    buildSet: async (name) => { const id = name.slice(9); const S = await buildCreatureWorld(tl.worlds[id], ctx); S.name = name; return S; },
+    buildSet: async (name) => {
+      const id = name.slice(9), spec = tl.worlds?.[id];
+      if (!spec) throw new Error(`epic: set "${name}" is not in timeline.worlds`);
+      const S = await buildCreatureWorld(spec, ctx); S.name = name;
+      // never a silent swap: the built world must be the asked view of the asked creature
+      const want = { view: spec.view, creature: typeof spec.creature === "string" ? spec.creature : spec.creature?.species };
+      if (S.giantView !== want.view || (want.creature && S.creature !== want.creature)) throw new Error(`epic: set "${name}" built ${S.creature} ${S.giantView}, asked ${want.creature} ${want.view}`);
+      return S;
+    },
     buildCreatureWorld: (spec, c) => buildCreatureWorld(spec, c ?? ctx),
     problems: () => validateEpic(tl),
     ownsFocus: (shot) => EPIC_CAMERA_TYPES.includes(shot.camera) || /^(giant:|crowd)/.test(String(shot.focus ?? "")) || shot.focus === "world",

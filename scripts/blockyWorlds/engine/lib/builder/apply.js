@@ -14,6 +14,7 @@
 
 import { ANIMAL_STATES } from "../catalog.js";
 import { badgeWord } from "../planText.js";
+import { openingRule } from "../opening.js";
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const FREE_SPOTS = ["center", "left", "right", "back", "door", "far"];
 const freeSpot = (s) => { const taken = new Set([...(s.actors ?? []).map((a) => a.spot), ...(s.objects ?? []).map((o) => o.spot)]); return FREE_SPOTS.find((x) => !taken.has(x)) ?? "far"; };
@@ -113,5 +114,7 @@ export function applyResolved(tl, needs, results, { check = null } = {}) {
   // tidy: the planner's need markers are not engine fields
   for (const s of tl.shots) { if (s.need) delete s.need; if (s.world) delete s.world; for (const o of s.objects ?? []) delete o.needId; }
   if (tl.assets && !Object.keys(tl.assets).length) delete tl.assets;
+  // a built object / world may turn a shot into a card again: the opening stays card- and badge-free (lib/opening.js)
+  openingRule(tl.shots, { worlds: tl.worlds ?? null });
   return { applied, reverted, cards };
 }

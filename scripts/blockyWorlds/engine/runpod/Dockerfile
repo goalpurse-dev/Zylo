@@ -32,6 +32,8 @@ COPY engine/page ./page
 COPY engine/audio ./audio
 COPY engine/voice ./voice
 COPY engine/plan.mjs engine/render.mjs ./
+# the image's build id (buildContext.mjs): a worker older than a job's minBuild refuses it (STALE_WORKER)
+COPY engine/BUILD_ID ./BUILD_ID
 COPY engine/runpod ./runpod
 COPY shared /app/supabase/functions/_shared/blockyWorlds
 COPY handler.py /app/handler.py

@@ -131,16 +131,16 @@ test("fixPart: a fix that still fails is retried once with what is still wrong; 
 test("fixPart: never reaches past its own part, and the free mock fixes a blocked script", async () => {
   const listener = EXAMPLE_IDEAS[0], script = normalizeScript(EXAMPLE_SCRIPT);
   const blocked = { ...script, lines: script.lines.map((l) => (l.part === "climax" && /whistle/i.test(l.text) ? { ...l, text: "Then I did the only thing I could." } : l)) };
-  const problems = scriptProtocolCheck(blocked, 90, listener).problems;
+  const problems = scriptProtocolCheck(blocked, 100, listener).problems;
   const spot = problemSpots(blocked, problems).find((s) => s.part === "climax");
   // asked with lines from two parts, only the first part's run is rewritten
   const me = blocked.lines.findIndex((l) => l.part === "me");
-  const r = await fixPart({ provider: "mock", script: blocked, indexes: [me, ...spot.lines], reasons: [spot.problem], card: listener, lengthSec: 90 });
+  const r = await fixPart({ provider: "mock", script: blocked, indexes: [me, ...spot.lines], reasons: [spot.problem], card: listener, lengthSec: 100 });
   assert.deepEqual(r.script.lines.filter((l) => l.part === "climax").map((l) => l.text), blocked.lines.filter((l) => l.part === "climax").map((l) => l.text));
-  const m = await fixPart({ provider: "mock", script: blocked, indexes: spot.lines, reasons: [spot.problem], card: listener, lengthSec: 90 });
+  const m = await fixPart({ provider: "mock", script: blocked, indexes: spot.lines, reasons: [spot.problem], card: listener, lengthSec: 100 });
   assert.equal(m.fixed, true);
   assert.equal(m.costUsd, 0);
-  assert.deepEqual(draftCheck(m.script, 90, "written", listener).problems, []);
+  assert.deepEqual(draftCheck(m.script, 100, "written", listener).problems, []);
 });
 
 test("rewrite: the writer is told exactly which checks the current version failed", async () => {

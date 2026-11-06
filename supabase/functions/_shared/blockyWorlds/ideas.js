@@ -6,6 +6,7 @@ import { hasOpener, fixOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_IDEAS } from "./examples.js";
 import { REFERENCE_RULE } from "./references.js";
+import { topicElements } from "./topic.js";
 
 export const IDEAS_PER_BATCH = 6;
 export const TOPIC_IDEAS = 3;
@@ -47,7 +48,7 @@ RULES
 - Original worlds and names only. You may borrow the SHAPE of a famous premise (a sealed world that lies about the outside, a deal paid by the first greeting), never its title, characters, places, objects or lines, and never name it.
 - Never a real game, platform, brand, celebrity or creator. Never the words "Roblox", "Robux", "noob", "obby", "oof".
 - For a young audience: PG fear only. Danger is suggested (silhouettes, "gone by morning"). No blood, gore, weapons, romance or anything a kid could copy dangerously.
-- Each idea is a different world. No two share a rule, a creature or a setting.
+- Each idea is a different world. No two share a rule, a creature or a setting. (Not for the user's own idea: then every idea keeps the user's world.)
 - Kid logic: a ten-year-old must understand the rule from the opener alone.
 
 SETTINGS: ${SETTINGS.join("; ")}.
@@ -97,9 +98,18 @@ export function batchPrompt({ seed = 0, mood = null, avoid = [] } = {}) {
 /** The user message for "Your topic": three world rules built from the topic, from three different formulas. */
 export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
   const slots = slotsForBatch(seed + 101, TOPIC_IDEAS, mood);
+  const els = topicElements(topic), labels = els.map((e) => e.label).join(", ");
+  const setting = els.find((e) => e.setting);
+  // 2026-11-06: "we live inside a giant turtle and a big bad wolf with an army of soldiers is hunting it" came back as
+  // "everyone inside the giant turtle has a drumbeat ticking in their wrist": the slot's formula replaced the premise
   return {
     slots,
-    text: `The user's topic: "${String(topic).slice(0, 200)}"\n\nTurn the topic into ${slots.length} different world rules that a whole town lives by, with a price, then into ideas. The topic must be at the heart of each rule (not a side detail). If the topic names a real game, film, brand or person, keep the idea behind it and drop the name.\nOne idea per slot, in this order:\n${slotText(slots)}` +
+    text: `The user's idea: "${String(topic).slice(0, 200)}"\n\nTHIS IDEA IS THE STORY. Write ${slots.length} ideas that each keep ALL of its key elements${labels ? ` (${labels})` : ""} at the core: the world, the threat and the characters it names drive the plot from the first line to the last.
+- The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this world, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
+- The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.
+- The ideas differ in their angle on the SAME idea, not in their world. The usual rule against "we all live inside giant Z" reskins does not apply here: the user's own world is the point.
+- If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.
+One idea per slot, in this order:\n${slotText(slots)}` +
       (avoid.length ? `\n\nAlready used (never repeat these):\n${avoid.slice(0, 40).map((a) => `- ${a}`).join("\n")}` : ""),
   };
 }

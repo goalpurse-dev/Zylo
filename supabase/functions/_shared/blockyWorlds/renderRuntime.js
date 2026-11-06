@@ -8,18 +8,19 @@
 //            refund(runId) -> credits, alert(key, subject, text)
 //            optional (the shared library, lib/builder/cache.js; both guarded: a missing table never breaks a run):
 //            assetLibrary(limit) -> rows (blocky_worlds_assets, live), saveAsset(row) -> boolean
-//   production: { director, builder, builderMaxUsd } (render.js productionSettings: the function secrets)
+//   production: { director, builder, builderMaxUsd, review, reviewMaxUsd } (render.js productionSettings: the function secrets)
 //   storage: signPut(path) -> url, signGet(path, seconds?) -> url | null, readText(path) -> string | null
 //   runpod:  configured, run({ input, webhook, policy }) -> { id }, status(id) -> object | null, cancel(id)
 //
 // Every entry point is safe to call any number of times (duplicate callbacks, the sweeper, webhook retries).
+import { WORKER_BUILD } from "./renderBuild.js";
 import { assetRow, BUCKET, builderSpentOf, chunkPlan, LIBRARY_SNAPSHOT, onJobEvent, paths, prepareProduction, PRODUCTION_DEFAULTS, reconcile, RENDER, sameToken, snapshotRows, tokenFor } from "./render.js";
 
 export { BUCKET };
 const LIVE = ["sent", "running"];
 const MAX_UPLOAD = 48e6;
 
-export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null, production = PRODUCTION_DEFAULTS }) {
+export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null, production = PRODUCTION_DEFAULTS, minBuild = WORKER_BUILD }) {
   const iso = () => new Date(now()).toISOString();
 
   /** the shared library for the builder: a snapshot (the worker has no key); any error -> an empty library */
@@ -31,7 +32,8 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
   // ---------- the job a worker gets: signed URLs and a callback token, never a key ----------
   async function jobInput(run, row, a, jobs) {
     const P = paths(run), token = await tokenFor(secret, run.id);
-    const base = { v: 1, role: a.role, runId: run.id, jobId: row.id, attempt: a.attempt, mode, callback: { url: callbackUrl, token } };
+    // minBuild: a worker on an older image refuses the job before any paid work (STALE_WORKER, renderBuild.js)
+    const base = { v: 1, role: a.role, runId: run.id, jobId: row.id, attempt: a.attempt, mode, callback: { url: callbackUrl, token }, ...(minBuild ? { minBuild } : {}) };
     if (a.role === "prepare") {
       // the story director + the builder (render.js prepareProduction: a retry designs only with what the earlier tries
       // left of the per-video cap; limits = the caps). A retry gets the list an earlier try stored (direction.json:
@@ -44,12 +46,12 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
       return {
         ...base,
         prepare: {
-          director: { ...prod.director, ...(stored ? { stored } : {}) }, builder: prod.builder, limits: prod.limits,
+          director: { ...prod.director, ...(stored ? { stored } : {}) }, builder: prod.builder, review: prod.review, limits: prod.limits,
           ...(resume?.timeline ? { resume } : {}),
           script: { title: run.title, lines: run.lines }, idea: run.card ?? {}, lengthSec: run.length_sec, music: cfg.music, sfx: true,
           // the paid take is bought once: a retry gets it back (render.js onJobEvent "voiced" sets voice_ready)
           voice: run.voice_ready ? { get: { mp3: await storage.signGet(P.voiceMp3), take: await storage.signGet(P.take) } } : { put: { mp3: await storage.signPut(P.voiceMp3), take: await storage.signPut(P.take) } },
-          out: { timeline: await storage.signPut(P.timeline), visualCheck: await storage.signPut(P.visualCheck), production: await storage.signPut(P.production), direction: await storage.signPut(P.direction), mix: await storage.signPut(P.mix) },
+          out: { timeline: await storage.signPut(P.timeline), visualCheck: await storage.signPut(P.visualCheck), production: await storage.signPut(P.production), direction: await storage.signPut(P.direction), shotReview: await storage.signPut(P.shotReview), mix: await storage.signPut(P.mix) },
         },
       };
     }
@@ -142,7 +144,7 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     const plan = chunkPlan(tl, { cfg, limitFrames, k: chunks });
     const frames = plan.at(-1).to, fps = tl.fps ?? cfg.fps;
     const p = production ?? PRODUCTION_DEFAULTS;
-    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan, production: { director: p.director, builder: p.builder, builderMaxUsd: p.builderMaxUsd } };
+    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan, production: { director: p.director, builder: p.builder, builderMaxUsd: p.builderMaxUsd, review: p.review ?? PRODUCTION_DEFAULTS.review, reviewMaxUsd: p.reviewMaxUsd ?? PRODUCTION_DEFAULTS.reviewMaxUsd } };
     const upd = await db.updateRun(run.id, { planned_at: iso(), render }, { notTerminal: true, plannedNull: true });
     if (upd) log(`run ${run.id}: planned, ${frames} frames in ${plan.length} chunks`);
     return upd ?? (await db.getRun(run.id));

@@ -157,7 +157,16 @@ async function loadDraft(userId: string, draftId: unknown) {
   if (!/^[0-9a-f-]{36}$/i.test(String(draftId ?? ""))) throw new ApiError("BAD_INPUT");
   const { data } = await admin.from("blocky_worlds_drafts").select("*").eq("id", draftId).eq("user_id", userId).is("deleted_at", null).maybeSingle();
   if (!data) throw new ApiError("NOT_FOUND", "We couldn't find that script.");
-  return data;
+  return withTopic(data);
+}
+/**
+ * A draft from a typed topic carries the user's own words on its card (card.topic: the script's core, and the topic
+ * check). Cards written before 2026-11-06 get them from their idea row.
+ */
+async function withTopic(d: any) {
+  if (d?.source !== "topic" || !d.card || d.card.topic || !d.idea_id) return d;
+  const { data: idea } = await admin.from("blocky_worlds_ideas").select("topic").eq("id", d.idea_id).maybeSingle();
+  return idea?.topic ? { ...d, card: { ...d.card, topic: idea.topic } } : d;
 }
 const lengthOf = (v: unknown, fallback = DEFAULT_LENGTH) => {
   const n = v == null ? fallback : Number(v);
@@ -302,6 +311,8 @@ async function handle(req: Request, trace: Trace) {
     }
     // step 1: the complete idea card (a library or topic idea is one already; a user's own script is read back into one)
     let card: any = d?.card ?? ideaRow?.idea ?? null, costUsd = 0;
+    // the user's own topic is the story's core (older topic ideas kept it only on the idea row)
+    if (card && !card.topic && ideaRow?.source === "topic" && ideaRow.topic) card = { ...card, topic: ideaRow.topic };
     const libraryId = ideaRow?.library_id ?? null;
     trace.step = "card";
     if (!card || cardProblems(card).length) {
@@ -434,7 +445,8 @@ async function handle(req: Request, trace: Trace) {
     // a user's own idea (topic or pasted) that made a good video joins the library as "pending": anonymised (only the
     // idea card, no user data), and the AI judge decides on the next library tick whether anyone else sees it
     if (fresh && !run.library_id && (kind === "thumb_up" || kind === "downloaded") && run.card && !cardProblems(run.card).length) {
-      const c = run.card;
+      // only the card: the user's own typed topic stays with them
+      const { topic: _topic, ...c } = run.card;
       const { error } = await admin.from("blocky_worlds_library").insert({ idea: c, opener: c.opener, opener_key: openerKey(c.opener), formula: c.formula, twist: c.twistType, mood: c.mood, setting: c.setting, status: "pending", source: "user", source_draft: run.draft_id });
       if (error && !/duplicate key/i.test(error.message)) console.error("[blocky-worlds-api] promote:", error.message);
     }

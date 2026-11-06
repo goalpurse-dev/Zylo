@@ -10,6 +10,7 @@ import { batchPrompt, ideasSchema, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, sl
 import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeSchema, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
+import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
 import { beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
 // USD per 1M tokens (Anthropic list prices, checked 2026-11-03). Cache writes 1.25x input, reads 0.1x.
@@ -126,11 +127,11 @@ export function mockScriptFor(lengthSec) {
   }
   // the total into the middle of the band: drop or repeat climax lines (a part always keeps one)
   const climax = EXAMPLE_SCRIPT.lines.filter((l) => l.part === "climax");
-  for (let k = 0; count(lines) < target * 0.97 && k < 200; k++) {
+  for (let k = 0; count(lines) < target * 0.94 && k < 200; k++) {
     const at = lines.findLastIndex((l) => l.part === "climax");
     lines.splice(at + 1, 0, { ...climax[k % climax.length] });
   }
-  while (count(lines) > target * 1.03) {
+  while (count(lines) > target) {
     const at = lines.findLastIndex((l, i) => l.part !== "rule" && lines.filter((m) => m.part === l.part).length > 1 && i > 0);
     if (at < 0) break;
     lines.splice(at, 1);
@@ -173,7 +174,9 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
   const reply = provider === "mock"
     ? await MOCK.ideas({ seed: seed + 3, slots })
     : await callJson({ apiKey, model: MODELS.ideas, system: IDEAS_SYSTEM, user: text, schema: ideasSchema(), effort: "low" });
-  return { ideas: usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid), costUsd: reply.costUsd };
+  // the most faithful to the topic first; each card keeps the user's own words (card.topic: the script's core and its check)
+  const ideas = rankTopicIdeas(topic, usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid));
+  return { ideas: ideas.map((idea) => ({ ...idea, topic: String(topic).slice(0, 200) })), costUsd: reply.costUsd };
 }
 
 /**
@@ -273,6 +276,8 @@ export function scriptProtocolCheck(script, lengthSec, card) {
     check.problems.push(...propProblems(card, script));
     const cb = callbackProblem(card, script);
     if (cb) check.problems.push(cb);
+    // only a card from a typed topic carries card.topic (library ideas and pasted scripts have no user premise)
+    if (card.topic) check.problems.push(...topicProblems(card.topic, script));
   }
   return check;
 }
@@ -323,6 +328,12 @@ function mockFixPart({ script, indexes, reasons, card }) {
     if (/never pays off/.test(r) && card?.prop) out = [`I grabbed ${card.prop} and held it up high.`, ...out.slice(1)];
     else if (/never shown before/.test(r) && card?.prop) out = [...out, `I always carried ${card.prop}.`];
     else if (/call back the first line/.test(r)) out = [...out.slice(0, -1), `Now I smile at every ${first.toLowerCase()}.`];
+    else if (/^The story drifted from your idea/.test(r) && card?.topic) {
+      const els = topicElements(card.topic), named = els.map((e) => e.words[0]).join(", ");
+      out = /first line never mentions/.test(r)
+        ? [`In this world, ${String(card.topic).replace(/[.!?]+$/, "")}.`, ...out.slice(1)]
+        : [`It was all about the ${named}.`, ...out.slice(1)];
+    }
     else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });
     else if (/^Uses "([^"]+)"/.test(r)) { const word = r.match(/^Uses "([^"]+)"/)[1]; out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "something")); }
   }
