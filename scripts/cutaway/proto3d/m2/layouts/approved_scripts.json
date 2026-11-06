@@ -1,5 +1,5 @@
 {
- "_note": "The approved videos' scripts, sentence by sentence (the owner approved these videos). A premade run writes fresh words around the approved beats; any sentence that fails its free checks, or the preview check, falls back to the approved one here.",
+ "_note": "The approved videos' scripts, sentence by sentence (the owner approved these videos). A premade run writes fresh words around the approved beats; any sentence that fails its free checks, or the preview check, falls back to the approved one here. 2026-11-06: landfill, french_drain and car_wash shortened to 27-35 s (owner-approved); the French drain cues dumps/slopes/downhill are now pours/sloped/carries in its layout.",
  "landfill": {
   "title": "How a landfill works",
   "hero": "a landfill liner",
@@ -10,15 +10,15 @@
    },
    {
     "role": "problem",
-    "text": "But dirty trash juice leaks straight down into the groundwater you drink."
+    "text": "But trash juice leaks down into the groundwater you drink."
    },
    {
     "role": "fix1",
-    "text": "So you lay a thick clay base, but it is still not enough."
+    "text": "So you lay a clay base, but it is not enough."
    },
    {
     "role": "fix2",
-    "text": "You add a thick black plastic sheet."
+    "text": "You add a thick plastic sheet."
    },
    {
     "role": "name",
@@ -26,27 +26,27 @@
    },
    {
     "role": "how",
-    "text": "A pipe drains the collected juice into a tank beside the pit."
+    "text": "A pipe drains the juice into a tank."
    },
    {
     "role": "fact",
-    "text": "Sealed this tight, trash barely rots at all once it is buried."
+    "text": "Sealed this tight, buried trash barely rots."
    },
    {
     "role": "factProof",
-    "text": "A 1952 newspaper dug up decades later was still readable word for word."
+    "text": "A 1952 newspaper dug up decades later was still readable."
    },
    {
     "role": "problem2",
-    "text": "But trapped trash still makes gas, so a pipe carries it out."
+    "text": "But trash still makes gas, so a pipe carries it out."
    },
    {
     "role": "myth",
-    "text": "That flame is not waste burning, it is gas making electricity nearby."
+    "text": "That flame is not waste burning, it is gas making electricity."
    },
    {
     "role": "finish",
-    "text": "Add a grass cap, a fence, and a few young trees."
+    "text": "Add a grass cap, a fence, and young trees."
    },
    {
     "role": "congrats",
@@ -95,7 +95,7 @@
    },
    {
     "role": "problem",
-    "text": "But one inch of rain on a small roof dumps over 600 gallons right by your walls."
+    "text": "But an inch of rain pours over 600 gallons off the roof by your walls."
    },
    {
     "role": "flood",
@@ -103,15 +103,15 @@
    },
    {
     "role": "stakes",
-    "text": "Five feet down, that water pushes over 300 pounds on each square foot, and the wall cracks."
+    "text": "Five feet down, it pushes over 300 pounds a square foot, and the wall cracks."
    },
    {
     "role": "fix1",
-    "text": "So you fill the ditch with gravel, but the water still sits at the bottom."
+    "text": "So you fill it with gravel, but water still sits."
    },
    {
     "role": "fix2",
-    "text": "So you lay a pipe full of holes under the gravel."
+    "text": "So you lay a pipe with holes under the gravel."
    },
    {
     "role": "name",
@@ -119,11 +119,11 @@
    },
    {
     "role": "how",
-    "text": "Water seeps in through the holes, and the pipe slopes downhill to carry it away."
+    "text": "Water seeps in, and the sloped pipe carries it away."
    },
    {
     "role": "fix3",
-    "text": "Wrap the gravel in fabric so mud can't clog it."
+    "text": "Wrap the gravel in fabric to stop mud."
    },
    {
     "role": "myth",
@@ -131,7 +131,7 @@
    },
    {
     "role": "mythFact",
-    "text": "It is Henry French, a New England farmer and judge who wrote the book on drains in 1859."
+    "text": "It is Henry French, who wrote the book on drains in 1859."
    },
    {
     "role": "finish",
@@ -206,23 +206,23 @@
    },
    {
     "role": "how",
-    "text": "Sand sinks, oil rises, and clean water goes to a pump."
+    "text": "Sand sinks, oil rises, clean water goes to a pump."
    },
    {
     "role": "fact",
-    "text": "That pump sends up to 80 percent of the water back to the arch."
+    "text": "That pump sends up to 80 percent back to the arch."
    },
    {
     "role": "myth",
-    "text": "And a car wash does not waste more water than a hose."
+    "text": "And a car wash does not waste more than a hose."
    },
    {
     "role": "mythFact",
-    "text": "It uses about 15 gallons of fresh water a car, but a hose can use up to 140."
+    "text": "It uses about 15 gallons of fresh water a car; a hose uses up to 140."
    },
    {
     "role": "finish",
-    "text": "Add a pay kiosk, a vacuum station, and a canopy."
+    "text": "Add a kiosk, a vacuum, and a canopy."
    },
    {
     "role": "congrats",

@@ -840,12 +840,12 @@
     {
      "p": "puddles",
      "v": "rise",
-     "w": "dumps"
+     "w": "pours"
     },
     {
      "p": "trenchWater",
      "v": "trickle",
-     "w": "dumps",
+     "w": "pours",
      "d": 2.9
     },
     {
@@ -1041,19 +1041,19 @@
     {
      "p": "outlet",
      "v": "grow",
-     "w": "slopes",
+     "w": "sloped",
      "d": 0.85
     },
     {
      "p": "soakPit",
      "v": "grow",
-     "w": "slopes",
+     "w": "sloped",
      "d": 0.62
     },
     {
      "p": "flowOut",
      "v": "show",
-     "w": "downhill"
+     "w": "carries"
     },
     {
      "p": "soakPit",
@@ -1079,7 +1079,7 @@
    "shot": {
     "at": {
      "s": "how",
-     "w": "slopes"
+     "w": "sloped"
     },
     "focus": [
      "outlet",
@@ -1360,7 +1360,7 @@
     "lib": "water_rush",
     "at": {
      "s": "how",
-     "w": "downhill"
+     "w": "carries"
     },
     "d": 1.4
    }
