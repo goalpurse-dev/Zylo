@@ -1,7 +1,8 @@
 // M3: one kept failure's plan, replayed free (no render, no voice): the planner on the real run's recorded replies.
 // Prints RESULT {"problems": [...], "bugs": [...], "pending": key|null, "seconds": n}. Used by tests/cutawayFailures.test.mjs;
 // the whole video is m3/replayFailures.mjs (the harness).
-//   node m3/replayPlan.mjs <case folder>
+//   node m3/replayPlan.mjs <case folder> [--save plan.json]   (--save: the planned layout and narration, for the scoreboard,
+//   the look meter and m3/lookAt.mjs; used by the stand-in planner, 2026-11-06)
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -21,9 +22,13 @@ const t0 = Date.now();
 let out;
 try {
   const r = await planTopic({ topic: c.topic, lengthSec: c.lengthSec, reuse, library: [] });
-  out = { problems: r.problems, bugs: r.bugs ?? [], pending: null };
+  out = { problems: r.problems, warnings: r.warnings ?? [], bugs: r.bugs ?? [], pending: null };
+  const si = process.argv.indexOf("--save");
+  if (si > 0 && r.layout && r.script) fs.writeFileSync(path.resolve(process.argv[si + 1]), JSON.stringify({ topic: c.topic, layout: r.layout, sentences: r.script.sentences.map((x) => ({ role: x.role, text: x.text })) }));
 } catch (e) {
   out = { problems: [], bugs: [], pending: e.code === "REPLAY_PENDING" ? String(e.message).replace(/^REPLAY_PENDING /, "") : null, error: e.code === "REPLAY_PENDING" ? null : String(e.stack ?? e).slice(0, 800) };
 }
+// (the planner's requests, kept in the case folder: the stand-in planner reads a pending step's question there)
+if (fs.existsSync(path.join(work, "requests"))) fs.cpSync(path.join(work, "requests"), path.join(dir, "requests"), { recursive: true });
 fs.rmSync(work, { recursive: true, force: true });
 console.log(`RESULT ${JSON.stringify({ ...out, seconds: (Date.now() - t0) / 1000 })}`);
