@@ -1,0 +1,31 @@
+{
+  "key": "guess_how_long_fruit",
+  "structure": "guess_how_long",
+  "title": "Guess how long this took to make",
+  "search_title": "how long does it take to make an AI fruit video",
+  "template": "ai_fruit_story",
+  "world": "studio",
+  "cap_usd": 0.1,
+  "length_bucket": "12-15",
+  "out_dir": "content/studio-previews/guess-how-long",
+  "screens": "screens",
+  "creation": { "id": "96d3191f-eda8-4975-8646-de24620d6b93", "title": "Ten Years Out of Date" },
+  "hook": "*GUESS HOW LONG* THIS TOOK TO MAKE 👇",
+  "montage": {
+    "file": "video/m3/guess_montage/final.mp4",
+    "hq_dir": "video/m3/guess_montage/hq",
+    "in": 0.0,
+    "out": 10.6,
+    "cuts": [0.05, 3.5, 7.29],
+    "parts": ["0.0-3.5 'Sir, that profile photo is from 2014.'", "4.06-7.85 'That's just, um, a really good angle.'", "19.0-22.35 'Too late, she's walking in right now.' + the smirk"]
+  },
+  "freeze_secs": 0.5,
+  "time": { "seconds": 230, "label": "MADE WITH ZYVO · FIRST CLICK → VIDEO" },
+  "end": { "text": "Comment your guess before you check.", "key": ["guess"], "cta_word": 0, "chip": "COMMENT YOUR GUESS" },
+  "caption": "Guess how long this took 👇 (answer at the end) #aivideo #aifruit #faceless #fyp",
+  "hashtags": ["#aivideo", "#aifruit", "#faceless", "#fyp"],
+  "claims": [
+    "3:50 (230 s) from the first click to the final video: the measured live run that made \"Ten Years Out of Date\" (fruitRun summary.json, 2026-10-29).",
+    "The footage is that video's own moments, cut on whole sentences: 0.0-3.5, 4.06-7.85 and 19.0-22.35 s (the line naming another company is left out)."
+  ]
+}

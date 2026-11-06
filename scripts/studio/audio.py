@@ -225,7 +225,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     if tl.get("aligned") in ("whole", "matched"):
         keys = {norm(k) for k in ln.get("key", [])}
         for w in tl["words"]: w["key"] = norm(w["w"]) in keys
-        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake") if k in ln}); continue
+        tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake", "timer2d") if k in ln}); continue
     mine = [w for w, o in zip(words, owners) if o == n]
     script_words = ln["text"].split()
     # whisper hears "short-form" as two words: align on the hyphen parts, then join them back
@@ -243,7 +243,7 @@ for n, (ln, tl) in enumerate(zip(lines, timed)):
     keys = {norm(k) for k in ln.get("key", [])}
     for w in tl["words"]:
         w["key"] = norm(w["w"]) in keys
-    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake") if k in ln})
+    tl.update({k: ln[k] for k in ("text", "expr", "pose", "role", "step", "card", "chip", "badge", "visual", "screen", "stamp", "listen", "shot", "shake", "timer2d") if k in ln})
 
 # a line can say its first word starts with the line (whisper puts it late after a clip's sound)
 for ln, tl in zip(lines, timed):
@@ -279,7 +279,8 @@ for c in clips:
     for p in c.get("punch", []): events.append({"t": round(c["start"] + p, 3), "event": f"{c['name']}Punch", "sfx": "punch"})
     if c.get("freeze_end"):
         events.append({"t": c["end"], "event": f"{c['name']}Freeze", "sfx": "scratch"})
-        events.append({"t": round(c["end"] + 0.25, 3), "event": f"{c['name']}Riser", "sfx": f"riser:{c['freeze_end'] - c['end'] - 0.15:.2f}"})
+        held = (c.get("freeze") or {}).get("secs") if c.get("voice_over") is not None else None   # a voice-over keeps the frame longer: the riser stays the freeze's own
+        events.append({"t": round(c["end"] + 0.25, 3), "event": f"{c['name']}Riser", "sfx": f"riser:{max(0.1, (held if held is not None else c['freeze_end'] - c['end']) - 0.15):.2f}"})
     if c.get("open_loop"): events.append({"t": round(c["start"] + c["open_loop"]["at"], 3), "event": "loopPlant", "sfx": "pop"})
     if c.get("pays_loop"): events.append({"t": c["start"], "event": "loopPaid", "sfx": None})
     for at, kind in c.get("sfx_at", []): events.append({"t": round(c["start"] + at, 3), "event": f"{c['name']}Beat", "sfx": kind})   # a beat inside the clip (a smirk)
@@ -383,6 +384,12 @@ def sfx(kind):
     if kind == "click":  # a real click (the tap ring): a soft mouse click
         m = int(0.025 * SR); tt = np.arange(m) / SR
         return 0.45 * np.random.default_rng(7).standard_normal(m) * np.exp(-tt * 260) + 0.2 * np.sin(2 * np.pi * 1800 * tt) * np.exp(-tt * 200)
+    if kind.startswith("clock"):  # a ticking clock under footage (clock:<seconds>): tick-tock every half second
+        dur = float(kind.split(":")[1]); out = np.zeros(int(dur * SR), np.float32); m = int(0.035 * SR); tt = np.arange(m) / SR
+        for i in range(int(dur / 0.5)):
+            s0 = int(i * 0.5 * SR); f = 2600 if i % 2 == 0 else 2100
+            out[s0:s0 + m] += (0.22 * np.sin(2 * np.pi * f * tt) * np.exp(-tt * 140) + 0.06 * np.random.default_rng(i).standard_normal(m) * np.exp(-tt * 300))[: len(out[s0:s0 + m])]
+        return out
     if kind.startswith("keys"):  # soft typing across a quiet stretch (keys:<seconds>)
         dur = float(kind.split(":")[1]); out = np.zeros(int(dur * SR), np.float32); rng = np.random.default_rng(11); t0 = 0.0
         while t0 < dur - 0.03:

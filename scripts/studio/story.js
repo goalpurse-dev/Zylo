@@ -236,6 +236,8 @@ window.renderAt = async (t) => {
   if (beat?.line.stamp && !inClip) boxes.push(["stamp", ov.stamp(beat.line.stamp, t - beat.t0, shot ? shot.y1 + 34 : 898)]);
   if (inClip?.stamp) boxes.push(["stamp", ov.stamp(inClip.stamp, t - inClip.start, 1212)]);
   if (inClip?.freeze?.text && t >= inClip.end) boxes.push(["freeze text", ov.hook(inClip.freeze.text, t - inClip.end, { y: 1040, pop: true })]);
+  // a flat clock rolling to a REAL measured time, drawn on top of everything (owner, 2026-11-05: "guess how long")
+  for (const l of L) if (l.timer2d && t >= l.start - 0.1) boxes.push(["clock", ov.timer(l.timer2d.seconds, l.timer2d.label, t - l.start + 0.1, l.timer2d.roll ?? 0.9)]);
   // the website at the end, then ONE trigger (both gone once the loop goes back to frame 0)
   const looped = LOOP_BACK != null && t >= LOOP_BACK;
   if (EV.site != null && t >= EV.site && t < (EV.cta ?? END) && !quiet && !cam.moving && !looped) boxes.push(["website chip", EV.bio != null && t >= EV.bio ? ov.endChip("tryzyvo.com · link in bio", t - EV.bio) : ov.endChip("tryzyvo.com", t - EV.site)]);

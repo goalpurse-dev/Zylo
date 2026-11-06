@@ -65,12 +65,13 @@ export function rageHookScript(R) {
 export function rageHookV2(R) {
   const swear = R.yell.swear ? R.yell.text.split(/\s+/).findIndex((w) => w.toLowerCase().replace(/^\W+/, "").startsWith(R.yell.swear)) : -1;
   if (R.yell.swear && swear < 0) throw new Error(`the yell has no "${R.yell.swear}"`);
-  if (R.steps.length !== 3) throw new Error("a Rage hook has three steps");
+  if (R.steps.length < 2 || R.steps.length > 3) throw new Error("a Rage hook has two or three steps");
   const tempo = R.step_tempo ?? 1.12;   // ~3 s a step
-  // "pain" (owner, 2026-11-04: the pain hook held best on Blocky): a personal problem, said low and fed up, no yell, no slam
-  const pain = R.yell.mood === "pain", mood = pain ? "sad" : "angry";
+  // "pain" (owner, 2026-11-04: the pain hook held best on Blocky): a personal problem, said low and fed up, no yell, no slam;
+  // "confident" (2026-11-05, the "unpopular opinion" debate hook): said calmly and sure, straight to camera
+  const pain = R.yell.mood === "pain", calmHook = pain || R.yell.mood === "confident", mood = pain ? "sad" : R.yell.mood === "confident" ? "smug" : "angry";
   const lines = [
-    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: mood, pose: R.yell.pose ?? (pain ? "grabHead" : "rage"), shake: pain ? 0 : 0.8, shot: "rage_hook", role: "yell", visual: { instant: true, up: 1.32, scale: 1.05, ...(R.yell.prop ?? { kind: "none" }) } },
+    { who: "creator", text: R.yell.text, key: [R.yell.key], expr: mood, pose: R.yell.pose ?? (pain ? "grabHead" : calmHook ? "point" : "rage"), shake: calmHook ? 0 : 0.8, shot: "rage_hook", role: "yell", visual: { instant: true, up: 1.32, scale: 1.05, ...(R.yell.prop ?? { kind: "none" }) } },
     { who: "zee", text: R.calm ?? "Watch.", key: [(R.calm ?? "Watch.").split(/\s+/).at(-1)], expr: "smug", pose: "pointUp", shot: "zee_close", role: "calm", listen: mood },
     ...R.steps.map((s, i) => ({ who: "zee", text: s.text, key: [s.key], expr: "happy", role: `s${i + 1}`, tempo, ...(i === 0 ? { shot: "two_shot" } : {}),
       screen: { file: s.screen, chip: `STEP ${i + 1}`, big: true, ...(s.sticker ? { sticker: s.sticker } : {}) },
@@ -92,10 +93,12 @@ export function rageHookV2(R) {
   const s = assembleStory(R.key, {
     title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: music ? "drive" : "none", music_db_under: 12, no_lead: true, first_second: true, tail: 0.5, creation: "this",
     // "Watch." stops the beat (with music) and is followed by silence; the clip's first frame brings a bass hit; the reveal gets its own
-    energy: { reveal_lines: revealAt >= 0 ? [revealAt] : [], reveal_clips: [], from_frame0: true, slam: !pain, scratch: false, hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } },
-    recipe: { angle: "RH", angle_name: pain ? "Pain hook" : "Rage hook", hook_type: pain ? "pain" : "rage_hook", length_bucket: R.length_bucket ?? "20-25", famous_name: false, end_trigger: trigger },
+    energy: { reveal_lines: revealAt >= 0 ? [revealAt] : [], reveal_clips: [], from_frame0: true, slam: !calmHook, scratch: false, hard_stop: { line: 1, word: (R.calm ?? "Watch.").split(/\s+/).length - 1, clip: 0 } },
+    recipe: { angle: R.angle ?? "RH", angle_name: R.angle_name ?? (pain ? "Pain hook" : "Rage hook"), hook_type: R.hook_type ?? (pain ? "pain" : "rage_hook"), length_bucket: R.length_bucket ?? "20-25", famous_name: false, end_trigger: trigger },
     lines, clips: [clip],
-    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", tempo, cues: [{ word: R.end.name_word, event: "site", sfx: "sparkle" }, { word: R.end.cta_word ?? R.end.comment_word, event: "cta", sfx: "pop" }, { word: last, event: `act|creator|${mood}|3` }] }, cta: { id: `${trigger}_${R.key}`, kind: trigger, chip: R.end.chip } },
+    // the ending is Zee's by default; a recipe may give it to the creator (the debate hook asks the viewer back)
+    end: { line: { who: R.end.who ?? "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: R.end.who === "creator" ? "pointUpL" : "wave", role: "cta", tempo,
+      cues: [...(R.end.name_word != null ? [{ word: R.end.name_word, event: "site", sfx: "sparkle" }] : []), { word: R.end.cta_word ?? R.end.comment_word, event: "cta", sfx: "pop" }, ...(R.end.who === "creator" ? [] : [{ word: last, event: `act|creator|${mood}|3` }])] }, cta: { id: `${trigger}_${R.key}`, kind: trigger, chip: R.end.chip } },
     caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
   }, { this: { hq_dir: R.creation.hq_dir } }, R.creation.id);
   // no title card: the yell is the hook. The hidden headline is never drawn; it keeps the approval form (which always sends
@@ -113,9 +116,35 @@ export function rageHookV2(R) {
   // the end: up to both faces for the name, then a whip back into the raging creator (frame 0) as the video loops
   for (const m of s.shots) if (m.at.startsWith("cta.")) m.to = "end_two";
   s.lines.at(-1).shot = "end_two";
+  if (R.end.tags) s.lines.at(-1).voice_tags = R.end.tags;
   s.shots.push({ to: "rage_hook", at: "cta.end+0.08", dur: 0.3, kind: "whip", hold: 0 });
   s.loop_back = 0.08;   // story.js: the creator back in the yell, the end chips gone
   return { raw: s, censored: swear >= 0 ? { ...s, bleep: { line: 0, word: swear, show: R.yell.show } } : null };
+}
+
+/** "Guess how long this took" (owner, 2026-11-05, a comment game): no characters, no studio. Frame 0 is the real result
+ *  full screen with its own sound and the big question; quick cuts of real moments (one montage file of whole sentences)
+ *  over a ticking clock; a 0.5 s freeze; a clock rolls to the REAL measured time, "made with Zyvo"; one spoken line. */
+export function guessHowLong(R) {
+  const M = R.montage, dur = M.out - M.in, freeze = R.freeze_secs ?? 0.5;
+  const lines = [];
+  const s = assembleStory(R.key, {
+    title: R.title, template: R.template, world: R.world ?? "studio", music_bpm: 128, music_shift: 0, music_style: "none", music_db_under: 12, no_lead: true, first_second: false, tail: 0.02, creation: "this",
+    energy: { reveal_lines: [], reveal_clips: [], from_frame0: true, slam: false, scratch: false },
+    recipe: { angle: "GH", angle_name: "Guess how long", hook_type: "guess_how_long", length_bucket: R.length_bucket ?? "12-15", famous_name: false, end_trigger: "comment" },
+    lines,
+    clips: [{ name: "montage", file: M.file, in: M.in, out: M.out, hq_dir: M.hq_dir, hq_ext: "png", at: "start", fullscreen: true, enter: "cut", headline: true, duck_db: 0, post: 0,
+      punch: M.cuts ?? [], sfx_at: [[0.0, `clock:${dur.toFixed(2)}`]], freeze: { secs: freeze }, voice_over: dur + freeze, clip_gain: 1.0 }],
+    end: { line: { who: "zee", text: R.end.text, key: R.end.key, expr: "happy", pose: "wave", role: "cta", timer2d: { seconds: R.time.seconds, label: R.time.label },
+      cues: [{ word: 0, event: "timer", sfx: "tick" }, { word: R.end.cta_word ?? 0, event: "cta", sfx: "pop" }] }, cta: { id: `comment_${R.key}`, kind: "comment", chip: R.end.chip } },
+    caption: R.caption, hashtags: R.hashtags, search_title: R.search_title,
+  }, { this: { hq_dir: M.hq_dir } }, R.creation.id);
+  // the big question on frame 0, over the real footage, until the freeze
+  s.headline = { text: R.hook, secs: dur, size: R.hook_size ?? 96 };
+  s.lines.at(-1).visual = { kind: "none" };
+  s.lines.at(-1).cues = s.lines.at(-1).cues.filter((x) => !x.event.startsWith("show"));
+  Object.assign(s, { lufs_target: -15, gap_speaker: 0.12, gap_same: 0.08, voices: VOICES, claims: R.claims ?? [], preset: "rage_hook", no_yell: true });
+  return { raw: s, censored: null };
 }
 /** "My first AI video vs my latest" (owner, 2026-11-05): the creator, embarrassed, over the real first clip on a phone;
  *  their answer; a 1 s hold (a rising tone, a countdown tag, silence just before); the real latest clip cuts in full
@@ -150,7 +179,7 @@ export function firstVsLatest(R) {
 }
 
 /** A recipe's scripts, by its structure. */
-export const rageScripts = (R) => (R.structure === "v2" ? rageHookV2(R) : R.structure === "first_vs_latest" ? firstVsLatest(R) : rageHookScript(R));
+export const rageScripts = (R) => (R.structure === "v2" ? rageHookV2(R) : R.structure === "first_vs_latest" ? firstVsLatest(R) : R.structure === "guess_how_long" ? guessHowLong(R) : rageHookScript(R));
 export const RECIPES_DIR = path.join(HERE, "recipes");
 /** The one-click presets (Studio tab): the v2 recipes. */
 export function rageRecipes(dir = RECIPES_DIR) {
@@ -170,6 +199,8 @@ export function rageTakes(R, S) {
   const zee = { voice: S.voices.eleven.zee.id, model: null, stability: 0.6, style: 0.2, speed: 1.05 };
   const tags = (l) => l.voice_tags ?? (l.role === "how" ? REACT_TAGS : l.role === "punch" ? R.punchline?.tags ?? REACT_TAGS : EXCITED_TAGS);
   // a pain hook is said, not yelled: fed up and a little embarrassed, as written; a recipe may set its own tags
+  // no creator opening (the "guess how long" game: the footage opens it): every line once, Zee's voice
+  if (!R.yell) return S.lines.map((l, i) => ({ file: `line${String(i + 1).padStart(2, "0")}.mp3`, text: l.say ?? l.text, ...(l.who === "zee" ? zee : creator) }));
   const first = R.yell.tags ? `${R.yell.tags} ${S.lines[0].text}` : R.yell.mood === "pain" ? `${PAIN_TAGS} ${S.lines[0].text}` : `${YELL_TAGS} ${shout(S.lines[0].text)}`;
   return [
     ...["a", "b", "c"].map((k) => ({ file: `yell_${k}.mp3`, text: first, ...creator })),
@@ -205,6 +236,7 @@ export async function makeRageTakes({ R, S, dir, guard, cap, log = console.log }
   }
   if (jobs.length) fs.appendFileSync(path.join(dir, "cost.log"), `${new Date().toISOString()} ${jobs.length} takes $${total.toFixed(4)}\n`);
   log(`spent $${total.toFixed(4)}`);
+  if (!R.yell) return { usd: total };   // no yell takes to choose between
   // the most intense yell: loudest and highest (measureTakes.py)
   const scores = JSON.parse(execFileSync("python", [path.join(HERE, "measureTakes.py"), ...["a", "b", "c"].map((k) => path.join(dir, `yell_${k}.mp3`))], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }));
   const best = scores.sort((a, b) => b.score - a.score)[0];
