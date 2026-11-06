@@ -1,0 +1,47 @@
+/* Made with Zyvo (Home): what Tailwind classes can't do. */
+
+/* Skeleton shimmer under a poster until it has loaded. */
+@keyframes mwzShimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+.mwz-skeleton {
+  background: linear-gradient(100deg, rgba(255,255,255,0.025) 30%, rgba(255,255,255,0.075) 50%, rgba(255,255,255,0.025) 70%) #0d0f10;
+  background-size: 220% 100%;
+  animation: mwzShimmer 1.4s linear infinite;
+}
+
+/* The phone and the small thumbnail floating on a Latest arrivals card. */
+@keyframes mwzFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--mwz-rot, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--mwz-rot, 0deg)); }
+}
+.mwz-float {
+  transform: rotate(var(--mwz-rot, 0deg));
+  animation: mwzFloat 6s ease-in-out infinite;
+}
+.mwz-float-slow {
+  transform: rotate(var(--mwz-rot, 0deg));
+  animation: mwzFloat 8s ease-in-out 0.8s infinite;
+}
+
+.mwz-noscroll {
+  scrollbar-width: none;
+}
+.mwz-noscroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* The active dot fills while its video (or poster) is up. */
+@keyframes mwzDot {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.mwz-dot-fill {
+  transform-origin: left;
+  animation: mwzDot var(--mwz-dot, 3.2s) linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mwz-skeleton, .mwz-float, .mwz-float-slow, .mwz-dot-fill { animation: none; }
+}

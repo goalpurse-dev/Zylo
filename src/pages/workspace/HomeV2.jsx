@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
-import PublicGallery from "../../components/public-gallery/gallery.jsx";
+import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
-import { BLOCKY_TEMPLATE, HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE } from "../../data/homeContent";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
@@ -72,11 +72,9 @@ export default function HomeV2() {
       {/* Hidden for users without projects */}
       <JumpBackInV2 />
 
+      {/* Made with Zyvo: the owner's own videos per template (src/data/communityShowcase.json) */}
       <div className="mt-12">
-        <div className="px-4 md:px-[50px]">
-          <SectionHeader title="Community creations" subtitle="Watch how people use Zyvo to make content that performs." />
-        </div>
-        <PublicGallery hideHeader dense longFormItems={longFormCreations} excludeCategories={HIDDEN_COMMUNITY_CATEGORIES} />
+        <MadeWithZyvo blocky={blockyLive} longFormItems={longFormCreations} />
       </div>
       {/* The brand as people search for it ("zyvoai"), once, in the page's own text. */}
       <p className="mt-12 px-4 text-center text-[12px] text-white/50 md:px-[50px]" data-testid="home-brand-line">Zyvo (ZyvoAI) · AI video generator for YouTube, TikTok and Reels</p>
