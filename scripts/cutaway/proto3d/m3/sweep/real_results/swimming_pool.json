@@ -1,0 +1,120 @@
+{
+ "plan": "swimming_pool",
+ "known": false,
+ "usd": 0.03247,
+ "pass": true,
+ "failing": [
+  "stakes",
+  "problem2"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A hole is dug with soil flying to a mound, then the pit fills with blue water in a cutaway beside the house.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A water-filled pit with arrows and moist dots moving down through the soil, labelled LEAKING, toward the groundwater.",
+   "problem": ""
+  },
+  {
+   "role": "flood",
+   "ok": true,
+   "seen": "The water in the pit gets thinner across the frames, with arrows pointing down, and the last frame shows only a thin sheet left.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": false,
+   "seen": "An empty muddy pit with yellow arrows at the right edge, but the walls stay straight and no mud lumps slump into the pit.",
+   "problem": "Show wet mud lumps visibly collapsing from the walls into the pit; the yellow arrows alone do not show a slump."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The bare pit is lined with a concrete floor and walls that appear across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "The concrete shell fills with blue water, rising from a low level to nearly full.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A white pipe grows from the pool bottom through the soil and up to a grey pump box at the surface.",
+   "problem": ""
+  },
+  {
+   "role": "fix4",
+   "ok": true,
+   "seen": "A teal filter tank pops in beside the pool and pipes link it to the pool and pump.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The finished pool with water, a yellow outline tracing around it, and pipes at its side.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A yellow outline traces around the pump, filter and pipes, growing across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Arrows show water moving through the pipes toward the filter and pump and back to the pool, with a yellow outline in the first frame.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "Arrows in the pool point toward the drain side, with pipes, filter and pump beside it.",
+   "problem": ""
+  },
+  {
+   "role": "factProof",
+   "ok": true,
+   "seen": "A counter beside the pump rises from 0 to 8 while water arrows move in the pool.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "The pool water stays blue in all frames; only an ALGAE label appears.",
+   "problem": "Tint the water progressively green across the frames instead of relying on the label."
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "Rain and brown mud lumps fall into the green water, labelled MURKY.",
+   "problem": ""
+  },
+  {
+   "role": "fix5",
+   "ok": true,
+   "seen": "A chlorine feeder block appears beside the pool, the rain stops and the murky green water becomes clearer.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A white fence, round bushes and trees appear on the grass around the pool, standing on the lawn.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished pool, house, fence, bushes, trees and circulation system in view as the camera pulls back.",
+   "problem": ""
+  }
+ ]
+}

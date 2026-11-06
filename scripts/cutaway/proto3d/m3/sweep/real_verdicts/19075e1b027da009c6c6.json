@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The pool water stays blue in all frames; only an ALGAE label appears.",
+ "problem": "Tint the water progressively green across the frames instead of relying on the label.",
+ "text": "But now the filter cannot stop living algae, so in the sun the water turns green.",
+ "at": "2026-11-06T18:21:40.738Z"
+}

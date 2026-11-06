@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "A brown cone appears at the vent with a small orange blob on top, but no lava pours down its sides.",
+ "problem": "Show orange lava flowing down the cone's slopes and cooling, not just a dot at the summit.",
+ "text": "So the lava pours down and cools into a cone of rock.",
+ "at": "2026-11-06T18:25:13.148Z"
+}

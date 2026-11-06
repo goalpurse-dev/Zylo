@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": true,
+ "seen": "A yellow outline box encloses the ballast tank area on the hull at the surface. It is clear and readable.",
+ "problem": "The outline is a rectangle over the top of the hull, not tracing the glass ballast tank under it, but it is acceptable.",
+ "text": "This is a ballast tank.",
+ "at": "2026-11-06T18:20:33.715Z"
+}

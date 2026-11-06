@@ -1,0 +1,78 @@
+{
+ "plan": "road",
+ "known": false,
+ "usd": 0.02064,
+ "pass": true,
+ "failing": [
+  "problem2",
+  "fix2"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A red car sits on a brown dirt strip in front of the house with the cut ground below. The strip and car are clearly readable.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Rain falls over the stopped car on the dark muddy track. Small blue splashes appear around its wheels in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The car leaves, the strip is dug out into a trench, then fills with white crushed stone. Stones are visible in the air as they fall in.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "The stone layer sits in the cut with rain falling. Only a faint bluish tint appears at its bottom edge in the last frame, so no water visibly rises inside the stone.",
+   "problem": "Show a clear blue water level rising inside the stone layer across the frames."
+  },
+  {
+   "role": "fix2",
+   "ok": false,
+   "seen": "A blue translucent slab shows under the stone in the first frame, then small blue dots line the stone's bottom edge. No holed pipe is visible and no draining water can be seen.",
+   "problem": "Show a visible perforated pipe growing under the stone with water flowing out of it."
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "A blue car drives onto the track over the stone, and a small dust puff appears above it in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "The car leaves and a black asphalt layer appears on top of the stone, covering the dirt strip.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline traces the road's layers around the stone and asphalt, with a drain pipe at the side.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A counter sign beside the road ticks from 0 to 95 with a green bar filling next to it.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Center line dashes, a stop line and a street sign appear on the asphalt in the later frames. A small post stands on the road.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished road is fully in view with its layers, markings, sign and drain pipe. A yellow taxi drives on it, and nothing covers the build.",
+   "problem": ""
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "plan": "microwave",
+ "known": false,
+ "usd": 0.01805,
+ "pass": true,
+ "failing": [
+  "how"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Microwave on a table with purple-pink wave rays angled down onto two food pieces inside the open cabinet.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Rays hit the food; across the strip one piece turns orange hot while the other turns pale frosty white.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A glass turntable appears under the food; the frosty piece ends up orange, so both halves glow hot.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Pink rays extend out through the open front of the oven past the frame, with a LEAKING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A dark mesh door covers the front and the rays stay inside; no leaking rays outside.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A glowing yellow outline surrounds the microwave oven on its table.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "Mesh-door microwave with rays on glowing orange food; the food looks nearly static across frames and only the outline fades.",
+   "problem": "The food does not visibly shake; add a jiggle or vibration to the food so the shaking reads across frames."
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "Orange outward arrows are visible in front of the food, pointing left and right, in the oven.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "Orange inward arrows point toward the food from both sides of the mesh door.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A black control panel with a green display (timer) and keypad buttons appears on the oven front; the light is the green display on the finished microwave on the table.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "Camera pulls back to show the whole finished microwave with keypad on its table in the kitchen, fully in view.",
+   "problem": ""
+  }
+ ]
+}

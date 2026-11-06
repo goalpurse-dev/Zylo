@@ -1,0 +1,77 @@
+{
+ "plan": "real_stove_rerun",
+ "known": false,
+ "usd": 0.02093,
+ "pass": false,
+ "failing": [
+  "name"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A stove box with a gas pipe; the first frame shows no flame, then a yellow flame lights above the pipe in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A yellow flame in the stove with black soot balls rising above it across the frames, plus a SOOTY label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A yellow sooty flame in the first frame, then a burner tube with a black cap appears, and the flame turns blue in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A close-up with a yellow rectangular outline around the tube and lower part of the burner. The blue flame and burner head sit outside the outline.",
+   "problem": "The outline covers only part of the burner and misses the head and flame. Redraw it to trace the whole burner."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "White arrows and small air dots stream in toward the tube holes from both sides while the blue burner sits on top.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The blue flame is present in the first frame, then goes out; a draft arrow appears and green gas balls drift up with a GAS LEAK label.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Gas balls are present in the first frame; then a blue thermocouple wire with a red probe appears and the gas balls and flame are gone, with the valve shut.",
+   "problem": ""
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "The stove is clearly in view with its burner, and a yellow flame cluster flashes on top in the middle frame.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The stove is in view with a blue flame and a sign counting up from 1,000 to 1,950.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A grate and a pot appear over the blue flame on the stove top; the stove stands on the floor.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished stove with pot and grate is in view, and the camera pulls back with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

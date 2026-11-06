@@ -1,0 +1,81 @@
+{
+ "plan": "lighthouse",
+ "known": false,
+ "usd": 0.02387,
+ "pass": false,
+ "failing": [
+  "hook",
+  "fix2",
+  "problem3",
+  "fix3",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "Frame 1 shows only the house. Frames 2-3 show a short red-and-white striped tower with a tiny flame on top, beside the house, in bright daylight.",
+   "problem": "The tower is short, barely taller than the house, and the scene is daytime rather than night. The flame is tiny. Make the tower taller, dim the sky, and enlarge the fire."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Wind arrows sweep in from the left across the tower top. The flame shrinks and is gone in the last frame, leaving an empty black rim.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "An empty black rim in frame 1. A glass lantern room with a red cone roof then appears around the flame, and the flame relights and grows.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "A small flame inside the glass room with short orange arrows pointing out in all directions. The arrows fade and a 'TOO DIM' label is shown.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": false,
+   "seen": "The lighthouse is small in frame. A single grey beam appears in frame 3, passing through the house. No ringed lens is visible around the flame and there is no second beam.",
+   "problem": "The lens is not visible and only one beam appears, and it cuts through the house. Show a ringed lens appearing around the flame and two long bright beams going out past the house."
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline box surrounds the lantern with a ringed glass lens and flame inside, in a close-up.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The beams rotate across the frames, changing angle from frame to frame, while the lens sits on top of the tower.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "A close-up of the lens with a 'STUCK' label and one tiny spark at the base in the last frames. There is no visible shudder.",
+   "problem": "The sparks are barely visible and there is no shudder. Add bigger, clearly visible sparks at the base and a visible shake of the lens."
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "A grey square slab appears under the lens and the beam turns across the frames. It looks like a flat grey plate, not a silver liquid bath.",
+   "problem": "The base looks like a flat grey slab, not liquid mercury. Make a shiny silver pool that visibly fills under the lens."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Small grey rocks and a small brown wooden item appear around the tower base. The door is at ground level with no clear stairs.",
+   "problem": "No clear stairs lead to the door and the rocks are tiny. Add visible steps at the door and larger rocks."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished scene is in view: house, striped lighthouse with red roof, lens beams and rocks. Nothing covers it.",
+   "problem": ""
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "plan": "roof",
+ "known": false,
+ "usd": 0.02055,
+ "pass": true,
+ "failing": [],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A flat tan board resting on four wooden posts on the lawn in front of the house, clearly readable.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Rain falls on the flat board, which turns blue like a water layer in the later frames. A drip appears under it in the last frame, and a LEAKING label shows.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The flat blue-covered board swings up into two slopes forming a pitched shape, while rain keeps falling. The water layer is gone in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The pitched roof frame has white streams pouring off both eaves, blue puddles spreading on the ground, and SPLASH labels.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A dark gutter appears at the roof edge with a white downspout running down, blue water balls along it. The earlier pouring water and puddle are gone.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "Bare pitched roof with blue drips falling from under the boards in all frames, rain falling and a LEAKS label.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Red shingle rows spread over the slopes from the bottom up. The drips under the roof are still there in the first two frames and are gone in the last. Water runs down the downspout.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow rectangular outline frames the red pitched roof, with the roof, downspout and posts in view.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A gallons counter next to the roof goes from 0 to 257 with a rising green bar, blue arrows point down, and water beads run down the downspout.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A round ridge cap appears along the roof peak and a brick chimney sits on the slope in the later frames, on the finished roof.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished pitched roof with ridge cap, chimney, gutter and downspout is fully in view as the camera pulls back, with the house behind and nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

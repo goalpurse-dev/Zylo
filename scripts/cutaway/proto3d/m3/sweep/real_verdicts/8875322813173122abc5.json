@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A single frame shows the tube resting on the water surface with a 'CANT DIVE' label. It looks static, and no bobbing is visible.",
+ "problem": "The tube's bobbing can't be seen in a single frame; the image needs several frames showing it moving up and down.",
+ "text": "But it floats and bobs on the surface.",
+ "at": "2026-11-06T18:20:33.713Z"
+}

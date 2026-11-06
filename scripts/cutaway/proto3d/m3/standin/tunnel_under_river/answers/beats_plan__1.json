@@ -1,0 +1,1650 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A tunnel under a river shown in the soil face: a shaft is dug, a hand-dug hole caves in and floods, a boring machine's shield pushes under the river with concrete rings behind it, then fans clear the smoky air. The camera opens on the shaft, then holds side-on on the whole tunnel under the river so its length and the river above read together.",
+  "story": {
+   "title": "How a Tunnel Under a River Works",
+   "hero": "a tunnel boring machine",
+   "parts": [
+    "shaft",
+    "hole",
+    "river",
+    "mud",
+    "shield",
+    "concrete rings",
+    "cutting wheel",
+    "belt",
+    "fans",
+    "road",
+    "lights"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a shaft and a hole sideways under the river and you have a tunnel"
+    },
+    {
+     "role": "problem",
+     "idea": "the soft mud caves in and river water floods the hole"
+    },
+    {
+     "role": "fix1",
+     "idea": "a steel shield pushes forward and holds the mud back while you dig"
+    },
+    {
+     "role": "fix2",
+     "idea": "behind the shield, concrete rings line the walls for good"
+    },
+    {
+     "role": "name",
+     "idea": "the shield with a cutting wheel is a tunnel boring machine"
+    },
+    {
+     "role": "how",
+     "idea": "its wheel spins and cuts, and a belt carries the mud back out"
+    },
+    {
+     "role": "problem2",
+     "idea": "the long, closed tunnel fills with stale, smoky air"
+    },
+    {
+     "role": "fix3",
+     "idea": "big fans blow fresh air through and the smoke clears"
+    },
+    {
+     "role": "fact",
+     "idea": "the Holland Tunnel's 84 fans change all its air every 90 seconds"
+    },
+    {
+     "role": "finish",
+     "idea": "a road and ceiling lights complete it"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: the lit tunnel under the quiet river"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "mud falls from the roof and river water floods the hole",
+     "stakes": "the hole is buried and anyone inside is trapped",
+     "size": 4
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix2",
+     "shows": "grey smoke fills the long sealed tunnel",
+     "stakes": "drivers breathe fumes they cannot escape",
+     "size": 6
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.",
+     "role": "fact",
+     "search": "Holland Tunnel 84 fans air changed every 90 seconds"
+    },
+    {
+     "claim": "Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.",
+     "role": "fix1",
+     "search": "Thames Tunnel 1843 first tunnel under navigable river Brunel shield"
+    },
+    {
+     "claim": "A tunnel boring machine lines the tunnel with concrete rings as it goes, each ring bolted from curved segments.",
+     "role": "fix2",
+     "search": "tunnel boring machine segment lining rings bolted"
+    }
+   ]
+  },
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -11.5,
+     -9.5,
+     -2.5,
+     7
+    ],
+    "house": [
+     -6,
+     0,
+     -32
+    ],
+    "porch": true,
+    "trees": [
+     [
+      -15,
+      -12
+     ],
+     [
+      14,
+      -10,
+      0.9
+     ]
+    ],
+    "road": [
+     17,
+     0.01,
+     -57
+    ],
+    "worker": false,
+    "rocksAvoid": [
+     [
+      -12,
+      9,
+      -7.2,
+      -3
+     ]
+    ]
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {
+      "storm": false
+     }
+    },
+    {
+     "id": "dig",
+     "kind": "dig",
+     "params": {
+      "mound": {
+       "x": -14,
+       "z": -5,
+       "rx": 1.6,
+       "rz": 1.3,
+       "h": 1.1
+      },
+      "clumps": 120,
+      "dark": true
+     }
+    },
+    {
+     "id": "river",
+     "kind": "creek",
+     "params": {
+      "axis": "z",
+      "x": 1.5,
+      "z0": -26,
+      "width": 9,
+      "depth": 1.4
+     }
+    },
+    {
+     "id": "tunnel",
+     "kind": "rig",
+     "params": {
+      "name": "bored tunnel",
+      "synonyms": [
+       "tunnel",
+       "tunnel boring machine",
+       "shield",
+       "rings"
+      ],
+      "pos": [
+       -9.8,
+       -6.6,
+       0
+      ],
+      "nodes": [
+       {
+        "id": "hole",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           4,
+           3.2,
+           0.12
+          ],
+          "at": [
+           2,
+           1.6,
+           0.02
+          ],
+          "look": "paint",
+          "color": "#2b2018"
+         }
+        ],
+        "moves": [
+         {
+          "name": "hole",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "bore",
+        "parent": "hole",
+        "at": [
+         4,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           2,
+           3.2,
+           0.12
+          ],
+          "at": [
+           1,
+           1.6,
+           0.02
+          ],
+          "look": "paint",
+          "color": "#2b2018"
+         }
+        ],
+        "moves": [
+         {
+          "name": "bore",
+          "type": "extend",
+          "axis": "x",
+          "k": 6.5
+         }
+        ]
+       },
+       {
+        "id": "lining",
+        "parent": "hole",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           15.8,
+           0.3,
+           0.24
+          ],
+          "at": [
+           8.5,
+           3.05,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#bdb8ae"
+         },
+         {
+          "shape": "box",
+          "size": [
+           15.8,
+           0.3,
+           0.24
+          ],
+          "at": [
+           8.5,
+           0.15,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#bdb8ae"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           1,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           2.5,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           4,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           5.5,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           7,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           8.5,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           10,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           11.5,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           13,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           14.5,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.14,
+           2.6,
+           0.2
+          ],
+          "at": [
+           16,
+           1.6,
+           0.08
+          ],
+          "look": "concrete",
+          "color": "#8f8a80"
+         }
+        ],
+        "moves": [
+         {
+          "name": "rings",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "road",
+        "parent": "lining",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           15.6,
+           0.18,
+           0.3
+          ],
+          "at": [
+           8.5,
+           0.39,
+           0.12
+          ],
+          "look": "paint",
+          "color": "#3a3d42"
+         },
+         {
+          "shape": "box",
+          "size": [
+           15.4,
+           0.02,
+           0.32
+          ],
+          "at": [
+           8.5,
+           0.49,
+           0.12
+          ],
+          "look": "paint",
+          "color": "#f2d23a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "road",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "lamps",
+        "parent": "lining",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           2,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         },
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           4.8,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         },
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           7.6,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         },
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           10.399999999999999,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         },
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           13.2,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         },
+         {
+          "shape": "light",
+          "r": 0.16,
+          "at": [
+           16,
+           2.75,
+           0.2
+          ],
+          "color": "#fff2c0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "lights",
+          "type": "light"
+         }
+        ]
+       },
+       {
+        "id": "tbm",
+        "at": [
+         2.4,
+         1.6,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 1.45,
+          "h": 3,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#e3a21a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "shield",
+          "type": "appear"
+         },
+         {
+          "name": "push",
+          "type": "slide",
+          "to": [
+           12.5,
+           0,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "cutter",
+        "parent": "tbm",
+        "at": [
+         1.6,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "fan",
+          "r": 1.3,
+          "blades": 6,
+          "w": 0.25,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           1.55
+          ],
+          "look": "metal",
+          "color": "#59616b"
+         }
+        ],
+        "moves": [
+         {
+          "name": "spins",
+          "type": "spin",
+          "axis": "z",
+          "turns": 1
+         }
+        ]
+       },
+       {
+        "id": "belt",
+        "parent": "lining",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "belt",
+          "path": [
+           [
+            15,
+            0.75,
+            0.3
+           ],
+           [
+            1,
+            0.75,
+            0.3
+           ]
+          ],
+          "w": 0.3,
+          "look": "rubber",
+          "color": "#2a2a2a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "carries",
+          "type": "flow",
+          "path": [
+           [
+            14.5,
+            0.95,
+            0.6
+           ],
+           [
+            1,
+            0.95,
+            0.6
+           ],
+           [
+            -0.5,
+            2.5,
+            0.6
+           ],
+           [
+            -1,
+            6.6,
+            0.6
+           ]
+          ],
+          "color": "#6b4a2a"
+         }
+        ]
+       },
+       {
+        "id": "fanA",
+        "parent": "lining",
+        "at": [
+         4,
+         2.05,
+         0.3
+        ],
+        "shapes": [
+         {
+          "shape": "fan",
+          "r": 0.8,
+          "blades": 5,
+          "w": 0.15,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#cfd6de"
+         }
+        ],
+        "moves": [
+         {
+          "name": "fansOn",
+          "type": "appear"
+         },
+         {
+          "name": "fans",
+          "type": "spin",
+          "axis": "z",
+          "turns": 1.5
+         }
+        ]
+       },
+       {
+        "id": "fanB",
+        "parent": "lining",
+        "at": [
+         9,
+         2.05,
+         0.3
+        ],
+        "shapes": [
+         {
+          "shape": "fan",
+          "r": 0.8,
+          "blades": 5,
+          "w": 0.15,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#cfd6de"
+         }
+        ],
+        "moves": [
+         {
+          "name": "fansOn",
+          "type": "appear"
+         },
+         {
+          "name": "fans",
+          "type": "spin",
+          "axis": "z",
+          "turns": 1.5
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "mud",
+     "kind": "drops",
+     "params": {
+      "x0": -8.5,
+      "x1": -6,
+      "count": 26,
+      "fromY": -3.5,
+      "landY": -6.4,
+      "z": 0.2,
+      "mat": "mud"
+     }
+    },
+    {
+     "id": "leak",
+     "kind": "water",
+     "params": {
+      "box": {
+       "x0": -9.5,
+       "x1": -5.5,
+       "y0": -6.6,
+       "y1": -5.5,
+       "z0": -0.05,
+       "z1": 0.3
+      },
+      "mat": "water"
+     }
+    },
+    {
+     "id": "caveFx",
+     "kind": "fx",
+     "params": {
+      "type": "collapse",
+      "at": [
+       -7,
+       -3.6,
+       0.3
+      ],
+      "size": 1.3
+     }
+    },
+    {
+     "id": "seep",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        -6.6,
+        -1.5,
+        0.35
+       ],
+       [
+        -6.9,
+        -3.4,
+        0.35
+       ],
+       [
+        -7.2,
+        -6.2,
+        0.35
+       ]
+      ],
+      "look": "water",
+      "size": 0.25,
+      "speed": 3,
+      "count": 12
+     }
+    },
+    {
+     "id": "spoil",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        4.4,
+        -5.6,
+        0.7
+       ],
+       [
+        -8.8,
+        -5.6,
+        0.7
+       ],
+       [
+        -10.3,
+        -4.1,
+        0.7
+       ],
+       [
+        -10.6,
+        0,
+        0.7
+       ]
+      ],
+      "look": "mud",
+      "size": 0.22,
+      "speed": 3,
+      "count": 30
+     }
+    },
+    {
+     "id": "smoke",
+     "kind": "fx",
+     "params": {
+      "type": "smoke",
+      "at": [
+       0,
+       -5,
+       0.4
+      ],
+      "size": 1.5
+     }
+    },
+    {
+     "id": "air",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -6,
+         -4.3,
+         0.5
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 2,
+        "phase": 0
+       },
+       {
+        "at": [
+         -1,
+         -4.3,
+         0.5
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 2,
+        "phase": 0.33
+       },
+       {
+        "at": [
+         4,
+         -4.3,
+         0.5
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 2,
+        "phase": 0.66
+       }
+      ],
+      "opts": {
+       "scale": 1.2,
+       "color": "#ffffff"
+      }
+     }
+    },
+    {
+     "id": "tbmOutline",
+     "kind": "outline",
+     "params": {
+      "points": [
+       [
+        3.6,
+        -3.3,
+        1.7
+       ],
+       [
+        7.3,
+        -3.3,
+        1.7
+       ],
+       [
+        7.3,
+        -6.7,
+        1.7
+       ],
+       [
+        3.6,
+        -6.7,
+        1.7
+       ]
+      ],
+      "opts": {
+       "r": 0.1,
+       "closed": true
+      }
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       10,
+       0,
+       -8
+      ],
+      "rotY": -0.2,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "tunnel",
+      "does": "a shaft is dug and a short hole opens sideways under the river"
+     },
+     "do": [
+      {
+       "p": "river",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "dig",
+       "v": "dig",
+       "w": "dig",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "show",
+       "w": "hole",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "hole",
+       "w": "hole",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dig"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      },
+      {
+       "focus": [
+        "tunnel.hole"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "hole",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "mud",
+      "does": "mud caves in from the roof and river water floods the hole"
+     },
+     "state": {
+      "text": "CAVED IN",
+      "w": "caves"
+     },
+     "do": [
+      {
+       "p": "mud",
+       "v": "fall",
+       "w": "caves",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "caveFx",
+       "v": "go",
+       "w": "caves",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "seep",
+       "v": "start",
+       "w": "floods",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "leak",
+       "v": "flood",
+       "w": "floods",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tunnel.hole",
+        "river"
+       ],
+       "view": "home",
+       "width": 0.7,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "tunnel",
+      "does": "a steel shield appears and pushes forward under the river, the bore growing behind it"
+     },
+     "do": [
+      {
+       "p": "mud",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "seep",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "leak",
+       "v": "drain",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "shield",
+       "w": "shield",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "push",
+       "w": "forward",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "bore",
+       "w": "forward",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "tunnel",
+      "does": "concrete rings line the tunnel walls"
+     },
+     "do": [
+      {
+       "p": "tunnel",
+       "v": "rings",
+       "w": "rings",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "tbmOutline",
+      "does": "outline traces the boring machine"
+     },
+     "do": [
+      {
+       "p": "tbmOutline",
+       "v": "show",
+       "w": "boring",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": [
+        2.5,
+        -7,
+        -1,
+        8.5,
+        -3,
+        3.2
+       ]
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "tunnel",
+      "does": "the cutting wheel spins and mud runs back along the tunnel floor and up the shaft"
+     },
+     "do": [
+      {
+       "p": "tbmOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "spins",
+       "w": "spins",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "spoil",
+       "v": "start",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "smoke",
+      "does": "grey smoke fills the tunnel"
+     },
+     "state": {
+      "text": "NO FRESH AIR",
+      "w": "smoky"
+     },
+     "do": [
+      {
+       "p": "tunnel",
+       "v": "spinsBack",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "spoil",
+       "v": "stop",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "smoke",
+       "v": "start",
+       "w": "smoky",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "tunnel",
+      "does": "fans appear in the roof and spin, and the smoke clears"
+     },
+     "do": [
+      {
+       "p": "tunnel",
+       "v": "fansOn",
+       "w": "fans",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "fans",
+       "w": "fans",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "smoke",
+       "v": "stop",
+       "w": "fresh",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "air",
+      "does": "white arrows of fresh air run through the whole tunnel"
+     },
+     "do": [
+      {
+       "p": "air",
+       "v": "show",
+       "w": "air",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -11.5,
+        -7,
+        -1,
+        9,
+        0.5,
+        1.8
+       ]
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "tunnel",
+      "does": "a road and ceiling lights appear in the tunnel"
+     },
+     "do": [
+      {
+       "p": "air",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "road",
+       "w": "road",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tunnel",
+       "v": "lights",
+       "w": "lights",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "shows": {
+      "p": "tunnel",
+      "does": "the lit, finished tunnel under the river"
+     },
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "84 FANS",
+      "at": {
+       "s": "fact",
+       "w": "84",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "text": "90 SECONDS",
+      "at": {
+       "s": "fact",
+       "w": "90",
+       "o": 0
+      },
+      "d": 1.4
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "dirt",
+      "at": {
+       "s": "hook",
+       "w": "dig",
+       "o": 0.05
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem",
+       "w": "floods",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "how",
+       "w": "spins",
+       "o": 0
+      },
+      "d": 1.6
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "fix3",
+       "w": "fans",
+       "o": 0
+      },
+      "d": 1.4
+     }
+    ],
+    "chimes": [
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "84",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

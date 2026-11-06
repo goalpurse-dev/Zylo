@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "Three nearly identical frames show the car low with the pump and hose beside it and a TOO SLOW label. No dip or change happens across them.",
+ "problem": "The car never visibly drops after a dip across the frames; show the car dipping and staying low while the pump runs.",
+ "text": "But the little pump is slow, so after every dip the car stays low.",
+ "at": "2026-11-06T18:04:34.125Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The first frame shows the finished detector with vents, battery, button, horn and lamp. The next two frames pull back to an orange room wall, floor and a lawn, and the detector is no longer visible.",
+ "problem": "The camera leaves the detector and shows only the room. Hold on the whole finished detector in view for the whole sentence.",
+ "text": "Congratulations, you have built a smoke detector.",
+ "at": "2026-11-06T18:19:40.355Z"
+}

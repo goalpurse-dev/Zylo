@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "ee4afd04701e4d0a",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: tunnel under a river\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.\n- Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.\n- Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.\n\nThe beats, in order:\n1. hook\n   on screen: a shaft is dug and a short hole opens sideways under the river. actions: river show; dig dig (on \"dig\"); tunnel show (on \"hole\"); tunnel hole (on \"hole\")\n   idea: dig a shaft and a hole sideways under the river and you have a tunnel\n   cue words: \"dig\", \"hole\"\n2. problem\n   on screen: mud caves in from the roof and river water floods the hole. actions: mud fall (on \"caves\"); cave fx go (on \"caves\"); seep start (on \"floods\"); leak flood (on \"floods\")\n   idea: the soft mud caves in and river water floods the hole\n   cue words: \"caves\", \"floods\"\n3. fix1\n   on screen: a steel shield appears and pushes forward under the river, the bore growing behind it. actions: mud hide (on \"So\"); seep stop (on \"So\"); leak drain (on \"So\"); tunnel shield (on \"shield\"); tunnel push (on \"forward\"); tunnel bore (on \"forward\")\n   idea: a steel shield pushes forward and holds the mud back while you dig\n   cue words: \"So\", \"shield\", \"forward\"\n   its fact: Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.\n4. fix2\n   on screen: concrete rings line the tunnel walls. actions: tunnel rings (on \"rings\")\n   idea: behind the shield, concrete rings line the walls for good\n   cue words: \"rings\"\n   its fact: Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.\n5. name\n   on screen: outline traces the boring machine. actions: tbm outline show (on \"boring\")\n   idea: the shield with a cutting wheel is a tunnel boring machine\n   cue words: \"boring\"\n6. how\n   on screen: the cutting wheel spins and mud runs back along the tunnel floor and up the shaft. actions: tbm outline hide; tunnel spins (on \"spins\"); spoil start (on \"carries\")\n   idea: its wheel spins and cuts, and a belt carries the mud back out\n   cue words: \"spins\", \"carries\"\n7. problem2\n   on screen: grey smoke fills the tunnel. actions: tunnel spinsBack (on \"But\"); spoil stop (on \"But\"); smoke start (on \"smoky\")\n   idea: the long, closed tunnel fills with stale, smoky air\n   cue words: \"But\", \"smoky\"\n8. fix3\n   on screen: fans appear in the roof and spin, and the smoke clears. actions: tunnel fansOn (on \"fans\"); tunnel fans (on \"fans\"); smoke stop (on \"fresh\")\n   idea: big fans blow fresh air through and the smoke clears\n   cue words: \"fans\", \"fresh\"\n9. fact\n   on screen: white arrows of fresh air run through the whole tunnel. actions: air show (on \"air\")\n   idea: the Holland Tunnel's 84 fans change all its air every 90 seconds\n   cue words: \"air\", \"84\", \"90\"\n   its fact: The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.\n10. finish\n   on screen: a road and ceiling lights appear in the tunnel. actions: air hide (on \"Add\"); tunnel road (on \"road\"); tunnel lights (on \"lights\")\n   idea: a road and ceiling lights complete it\n   cue words: \"Add\", \"road\", \"lights\"\n11. congrats\n   on screen: the lit, finished tunnel under the river\n   idea: calm: the lit tunnel under the quiet river\n   cue words: (none)"
+}

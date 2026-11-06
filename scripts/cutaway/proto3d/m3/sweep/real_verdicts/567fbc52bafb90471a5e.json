@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The detector is fully built, but a large flat yellow square frame sits to the side and partly over it. It does not trace the alarm and it is cut off by the frame edge.",
+ "problem": "The outline is a blocky yellow square offset from the alarm. Make a glowing outline that hugs the round detector and keeps it uncovered and fully in frame.",
+ "text": "This is a photoelectric smoke detector.",
+ "at": "2026-11-06T18:19:40.352Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A counter sign shows 82 in the later frames. It sits in front of the digester and covers it, and the first frame is unreadable. The count does not clearly climb from 0 to 82.",
+ "problem": "Place the counter beside the tanks without covering the digester. Show it climbing clearly from 0 to 82.",
+ "text": "The average American sends about 82 gallons a day.",
+ "at": "2026-11-06T18:19:16.468Z"
+}

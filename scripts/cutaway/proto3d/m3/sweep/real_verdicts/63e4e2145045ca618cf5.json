@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "The detector sits low in the frame and is partly cut off in the first two frames. A black slab covers part of it in the first frame. In the last frame it has a ring of vents, a gray button and a black battery piece.",
+ "problem": "The detector is cropped and covered while the parts are added. Keep it centred and fully in view so the battery, button and vents are readable.",
+ "text": "Add a battery, a test button and vents.",
+ "at": "2026-11-06T18:19:40.354Z"
+}

@@ -1,0 +1,118 @@
+{
+ "plan": "puddle_of_mud_can_become_a_semiconductor",
+ "known": false,
+ "usd": 0.03588,
+ "pass": false,
+ "failing": [
+  "hook",
+  "problem",
+  "stakes",
+  "fix1",
+  "fix3",
+  "fix4",
+  "name2",
+  "how",
+  "fact",
+  "problem2",
+  "problem3",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "First frame shows the lawn and a cut ground edge with no pit. The other two show a glass-walled pit with a tan sand floor and a dirt mound, but the water is clear and unmuddy.",
+   "problem": "No muddy water fills the pit and no sand visibly sinks; show brown water pouring in and the sand settling to the floor."
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The pit holds sand. A sign shows 9, then 5, with a NO CURRENT caption. No meter reading is visible in the first frame, and the number never reaches zero.",
+   "problem": "The reading only drops from 9 to 5 and never reaches 0; continue it down to 0."
+  },
+  {
+   "role": "stakes",
+   "ok": false,
+   "seen": "A dark navy layer sits at the top of the pit above the sand. It is the same height in all three frames. Dots appear only in the first frame.",
+   "problem": "The dark dirt layer does not rise across the frames; animate it growing upward from the sand."
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "A chain of brown balls arcs from the pit toward a grey furnace drum. The first frame shows white specks and no furnace. The balls start at the mound and do not clearly leave the pit.",
+   "problem": "The sand stream does not visibly come from the pit and does not enter the furnace; make it rise out of the pit and pour into the furnace top."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "The furnace counter climbs from 20 to 2,000 and a flame with rising arrows glows on top. The sand stream is gone by the end.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "A thin pipe appears from the furnace to a blue tank on the right edge. The tank is partly cut off by the frame edge. No gas is visibly flowing.",
+   "problem": "The second tank is cropped at the frame edge and no gas flow is visible; reframe and show gas moving through the pipe."
+  },
+  {
+   "role": "fix4",
+   "ok": false,
+   "seen": "A puller machine appears at the right edge, cropped. No glowing melt and no crystal ingot are visible, and nothing turns.",
+   "problem": "The puller is cut off and shows no glowing melt or crystal; reframe and show the ingot rising and turning."
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline box surrounds the crystal puller, with the machine fully in view.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": false,
+   "seen": "A flat dark slab sits at the right edge. In the last frame a small stack of discs appears there, tiny and half cut off.",
+   "problem": "The wafers are tiny and cropped at the frame edge; show a clearly readable stack popping in."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "A printer machine with a wafer sits at the right edge, partly cropped. No light beam is visible.",
+   "problem": "No light beam hits the wafer and the machine is cropped; add a visible beam and reframe."
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "A counter at the right edge reads 0, then 0, then 15. It is partly cut off, and it does not reach 20 billion.",
+   "problem": "The counter is cropped and stops at 15 rather than reaching 20 billion; reframe and finish the count."
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "A DEAD CHIP caption appears. A few tiny dust specks sit near the printer at the frame edge, cropped. They are not clearly on the wafer.",
+   "problem": "The dust is tiny, near the edge and not visibly landing on the wafer; show clear lumps falling and resting on it."
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "Rain streaks and a few brown specks appear near the cropped printer on the right, with a BATCH RUINED caption.",
+   "problem": "Mud is minimal and sits at the frame edge; show clearer mud blowing into the hall, centred in view."
+  },
+  {
+   "role": "fix5",
+   "ok": true,
+   "seen": "Rain is present in the first frame. A white roof on posts then covers the puller and printer, with white down arrows showing air flowing.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Small white stepping stones appear at the ground edge and a lamp shape hangs under the roof. The roof is cropped at the right edge. The lamp is dark and not clearly in place.",
+   "problem": "The lamps and stepping stones are tiny and cropped; show them clearly and fully in view."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back from the pit to the full build: pit, furnace, tank, puller and cleanroom with the printer, all on the lawn. The last frame shows everything in view.",
+   "problem": ""
+  }
+ ]
+}

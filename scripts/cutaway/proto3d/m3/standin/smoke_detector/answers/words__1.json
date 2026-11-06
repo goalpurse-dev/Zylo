@@ -1,0 +1,10 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"How a smoke detector works","sentences":[
+{"role":"hook","text":"If you shine a light beam through a dark box, you have a smoke detector."},
+{"role":"problem","text":"But when smoke drifts up from a burning trash can, the beam just keeps shining."},
+{"role":"fix1","text":"So you add a sensor off to the side, and smoke bounces light onto it."},
+{"role":"problem2","text":"But a sensor makes no sound, and at night everyone sleeps through the fire."},
+{"role":"fix2","text":"So you add a horn that blares at least 85 decibels at 10 feet."},
+{"role":"name","text":"This is a photoelectric smoke detector."},
+{"role":"fact","text":"Fire safety experts say to replace it every 10 years."},
+{"role":"finish","text":"Add a battery, a test button and vents."},
+{"role":"congrats","text":"Congratulations, you have built a smoke detector."}]}}

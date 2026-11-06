@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Brown lumps fall through the air over the field in the first frame. In the later frames a small pipe with blue bubbles sits at the river edge. No brown sewage pours into the river.",
+ "problem": "Brown lumps float in the air, and the water coming out of the pipe is blue, not brown. Remove the airborne lumps and make brown sewage pour from the pipe into the river.",
+ "text": "If you pipe a town's toilets straight into a river, you have a sewer.",
+ "at": "2026-11-06T18:19:16.465Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The pit holds sand. A sign shows 9, then 5, with a NO CURRENT caption. No meter reading is visible in the first frame, and the number never reaches zero.",
+ "problem": "The reading only drops from 9 to 5 and never reaches 0; continue it down to 0.",
+ "text": "But sand is silicon locked to oxygen, so no current passes through it.",
+ "at": "2026-11-06T18:14:45.180Z"
+}

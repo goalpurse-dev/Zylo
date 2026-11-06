@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "Gravel with a pipe and some soil crumbs on the surface. No fabric wrap is visible around the gravel.",
+ "problem": "The fabric wrap around the gravel is not visible; show a distinct fabric sheet around the gravel.",
+ "text": "Wrap the gravel in fabric so mud can't clog it.",
+ "at": "2026-11-06T18:27:07.908Z"
+}

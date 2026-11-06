@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "Wind arrows and a small white spray streak appear at left, but the spray only shows in the last frame and does not blow across the floor.",
+ "problem": "The sideways spray is tiny and does not reach the floor. Show larger rain streaks blowing in across the paving under the roof.",
+ "text": "But now the wind blows the rain in sideways.",
+ "at": "2026-11-06T18:11:03.074Z"
+}

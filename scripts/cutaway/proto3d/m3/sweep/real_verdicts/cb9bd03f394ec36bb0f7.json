@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "The counter falls from 7,200 to 820, not to 240, and the frames are cropped tight beside the pole.",
+ "problem": "Let the counter end at 240 and show the full fall from 7,200.",
+ "text": "A common pole transformer turns 7,200 volts into 240.",
+ "at": "2026-11-06T18:07:37.889Z"
+}

@@ -1,0 +1,83 @@
+{
+ "plan": "fridge",
+ "known": false,
+ "usd": 0.02269,
+ "pass": true,
+ "failing": [
+  "problem2"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "An open white box with food (white jar, yellow block, red and green balls) on the shelf and a translucent ice block on the upper shelf. The box grows into view across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The ice block on the upper shelf gets visibly smaller across the frames while blue drops fall onto the food shelf, with a MELTING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The ice is nearly gone with drips in the first frame. A dark coil then appears on the back wall and turns pale and frosty in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "The thermometer goes from 4 to 15 and turns red, with drips near the number card. The fridge is tiny and far away, and the coil's frost melting cannot be made out.",
+   "problem": "The fridge is too small in the frame to show the frost melting off the coil. Move the camera closer or keep the fridge larger so the frost visibly melts."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A black compressor appears under the food shelf, with a brown pipe and blue liquid droplets running toward the coil. The coil is dark in frame 2 and frosted in frame 3.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The whole fridge is in view with a yellow glowing outline around it.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Orange coils appear under the food shelf beside the compressor, with orange heat arrows flowing out to the right and a glow.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "The thermometer card counts down from 15 to 4 and the bar turns from red to green.",
+   "problem": ""
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "The fridge with its coils is in view with a faint white arrow beside it on the floor. The arrow is a small cue and does not enter the fridge.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "Orange heat arrows point out to the right from the orange coils, which are in clear view.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A glass door, a glass shelf and a light at the top are added, and the door has a handle. All of it sits on the finished fridge.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished fridge with glass door, coils, compressor and food is fully in view. The camera pulls back to a kitchen scene.",
+   "problem": ""
+  }
+ ]
+}

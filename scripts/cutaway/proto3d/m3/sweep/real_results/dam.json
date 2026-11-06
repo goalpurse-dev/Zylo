@@ -1,0 +1,80 @@
+{
+ "plan": "dam",
+ "known": false,
+ "usd": 0.02258,
+ "pass": false,
+ "failing": [
+  "problem2",
+  "name",
+  "how",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Soil clods fall in the first frame, then a stepped dirt pile stands in the cut valley in the last two frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Rain falls, the lake fills behind the dirt pile, water pours over the top, and the pile shrinks across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The small dirt pile with overflow is replaced by a tall white concrete wall standing across the valley beside the lake.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "Cyan arrows push on the thin wall from the lake side and a black crack appears in the last frame, but the crack only shows as a short zigzag in the final frame.",
+   "problem": "The crack does not visibly grow up the wall face. Show it extending upward over several frames, and make the arrows larger so they read at phone size."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A small step wedge builds up behind the cracked wall and grows into a thick stepped concrete wedge wide at the bottom, which hides the crack.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A single frame shows the stepped concrete dam with a yellow highlight bar floating above it, not tracing the wedge.",
+   "problem": "The outline is a short bar floating in the air above the dam. It should trace the wedge's stepped outline on the dam."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "A yellow bar floats above the dam, then one yellow arrow points down on the top step and one on a lower step. Neither arrow reaches the rock.",
+   "problem": "The arrows only sit on the dam and do not press down into the rock. Show arrows running through the dam into the ground, and drop the floating bar."
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The storm sets in, the lake level rises, and water spills over the steps of the dam, with an OVERFLOWING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Water spills over the dam, then a tan spillway pipe appears along the steps with water running down it, and the lake drops.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "The finished dam has a lamp post and fish in the lake. Small rocks sit in a row along the ground edge, and the lamp is in the grass.",
+   "problem": "The rocks are tiny and hard to read, and they appear to hover along the cut edge. Make them larger and set them on the bank."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished dam is in view with the spillway, fish, rocks and lamp, and the camera pulls back to show the house and lawn.",
+   "problem": ""
+  }
+ ]
+}

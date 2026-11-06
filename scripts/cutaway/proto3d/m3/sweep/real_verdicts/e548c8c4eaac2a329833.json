@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The camera is zoomed in on the left bank. The car is visible only in the first frame, then it is gone. The yellow arrows are barely visible, just a thin line in frame 1 and a small fragment on the tower in the others. The cables are mostly out of frame.",
+ "problem": "The car does not drive across, and no yellow arrows run down the hangers and up the cables. Pull the camera back to show the whole bridge, keep the car on the deck, and show clear arrows.",
+ "text": "The car's weight hangs on the cables, and they carry it to the towers.",
+ "at": "2026-11-06T18:20:59.084Z"
+}

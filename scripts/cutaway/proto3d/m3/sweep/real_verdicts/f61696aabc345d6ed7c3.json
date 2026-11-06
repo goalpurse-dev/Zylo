@@ -1,0 +1,8 @@
+{
+ "role": "myth",
+ "ok": false,
+ "seen": "A controller box and a counter reading 0 then 525 with a green bar appear. No loop in the road and no scale.",
+ "problem": "There is no scale or weight reading tied to a loop; show the loop and a clear scale cue crossed out.",
+ "text": "And the loop under the road is not a scale that weighs your car.",
+ "at": "2026-11-06T18:24:03.287Z"
+}

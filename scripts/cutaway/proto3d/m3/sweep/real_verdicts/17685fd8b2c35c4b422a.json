@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "The truck sits fairly straight with the speed sign leaving the view. The rear wheels do not clearly turn the same way as the front, and the truck does not visibly straighten.",
+ "problem": "Show the rear wheels angled with the front wheels and the truck body aligning straight.",
+ "text": "So above about 37 miles per hour the rear wheels turn the same way as the front, and the truck tracks straight.",
+ "at": "2026-11-06T18:09:53.871Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A grey square slab appears under the lens and the beam turns across the frames. It looks like a flat grey plate, not a silver liquid bath.",
+ "problem": "The base looks like a flat grey slab, not liquid mercury. Make a shiny silver pool that visibly fills under the lens.",
+ "text": "So you float it on liquid mercury, and it spins easily.",
+ "at": "2026-11-06T18:12:27.582Z"
+}

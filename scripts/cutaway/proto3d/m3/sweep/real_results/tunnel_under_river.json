@@ -1,0 +1,79 @@
+{
+ "plan": "tunnel_under_river",
+ "known": false,
+ "usd": 0.02041,
+ "pass": false,
+ "failing": [
+  "hook",
+  "fact",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "A thin shaft at the left edge in frame 1, then a dark rectangular hole opening sideways in frames 2 and 3, but it sits left of the river, not under it.",
+   "problem": "The sideways hole is beside the shaft and does not reach under the river; extend the hole so it opens beneath the river."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A dark hole with a CAVED IN label, debris at the roof and a blue water column with a flood base flowing into the hole.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A yellow shield with a cutter wheel moves right through the dark bore under the river, with the bore open behind it.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Concrete ring segments line the tunnel walls behind the yellow machine, clearly visible.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "Close-up of the yellow boring machine with a yellow outline box around it and the cutter wheel visible.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The wheel sits at the front, and brown mud balls run along the tunnel floor belt toward the shaft over the frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Grey smoke puffs appear in the tunnel in frames 2 and 3 after the mud belt is gone.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Small fans appear in the tunnel roof and spin while the smoke puffs shrink and clear across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "Two fans with white arrows in the left and middle of the tunnel, but nothing at the right part near the machine.",
+   "problem": "Arrows do not run through the whole tunnel; add fresh-air arrows along the full length."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "A thin yellow road line appears on the floor in frames 2 and 3, but no lights are visible on the ceiling.",
+   "problem": "Ceiling lights are missing or unreadable; add clearly visible lights along the ceiling and a more visible road."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The full scene is in view: house, river, shaft, lined tunnel with the machine and fans, nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

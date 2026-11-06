@@ -1,0 +1,12 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"Roof","sentences":[
+{"role":"hook","text":"If you lay a flat board on four posts, you have a roof."},
+{"role":"problem","text":"But rain pools on top and drips through onto you."},
+{"role":"fix1","text":"So you tilt the board into two slopes, and the rain runs off."},
+{"role":"problem2","text":"But now it pours off the edge and splashes mud everywhere."},
+{"role":"fix2","text":"So a gutter along the edge feeds a downspout that carries it down."},
+{"role":"problem3","text":"But now rain still seeps through the gaps between the boards."},
+{"role":"fix3","text":"So you lay shingles from the bottom up, each row overlapping the one below."},
+{"role":"name","text":"This is a pitched roof."},
+{"role":"fact","text":"One inch of rain on a 1,000 square foot roof is over 600 gallons."},
+{"role":"finish","text":"Add a ridge cap and a chimney."},
+{"role":"congrats","text":"Congratulations, you have built a roof."}]}}

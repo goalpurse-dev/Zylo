@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "be041b2ebd5eb93e",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: electricity to your outlet\nLength: 30 s: 95-120 words in all, one sentence per beat (12 sentences).\nWord budget: aim for 108 words in all, about 9 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- Long-distance power lines run at 100,000 to 800,000 volts, because higher voltage needs less current and loses less power as heat\n- A common pole transformer turns 7,200 volts into the 240 and 120 volts a house uses\n- About 5 percent of the electricity is lost in transmission and distribution in America\n\nThe beats, in order:\n1. hook\n   on screen: a wire is strung from the generator over two poles to the house. actions: plant show; grid show; grid wire (on \"wire\"); grid power (on \"house\")\n   idea: run a wire from a power plant to your house and you have electricity\n   cue words: \"wire\", \"house\"\n2. problem\n   on screen: the long wire glows red hot. actions: grid hot (on \"glows\")\n   idea: a long wire wastes power as heat and glows hot\n   cue words: \"glows\"\n   its fact: About 5 percent of the electricity is lost in transmission and distribution in America\n3. fix1\n   on screen: a transformer box appears by the generator, the volts counter climbs and the wire cools. actions: grid stepUp (on \"transformer\"); stand v show (on \"transformer\"); volts show (on \"transformer\"); volts count (on \"volts\"); grid hotBack (on \"volts\")\n   idea: a transformer raises the voltage so the same power flows as a small current and the wire stays cool\n   cue words: \"transformer\", \"volts\"\n   its fact: Long-distance power lines run at 100,000 to 800,000 volts, because higher voltage needs less current and loses less power as heat\n4. problem2\n   on screen: sparks burst where the wire meets the house. actions: spark 1 start (on \"sparks\")\n   idea: that high voltage at your house would blow everything up in sparks\n   cue words: \"sparks\"\n5. fix2\n   on screen: a grey transformer can appears on the pole and the sparks stop. actions: spark 1 stop (on \"So\"); grid can (on \"pole\"); volts hide (on \"pole\")\n   idea: a transformer on the pole steps it down for the house\n   cue words: \"So\", \"pole\"\n6. name\n   on screen: a glowing outline traces the poles and the wire. actions: grid outline show (on \"grid\")\n   idea: this is the power grid\n   cue words: \"grid\"\n7. how\n   on screen: power dots run along the wire into the house and the porch light comes on. actions: grid outline hide; porch show; porch lit (on \"light\")\n   idea: power flows through the wire and the transformer and the porch light comes on\n   cue words: \"light\"\n8. problem3\n   on screen: in a storm a branch falls onto the line, sparks fly and the porch light goes out. actions: light storm (on \"But\"); rain start (on \"But\"); grid branch (on \"But\"); grid fall (on \"branch\"); spark 2 start (on \"branch\"); porch litBack (on \"out\")\n   idea: a storm drops a branch on the line and the light goes out\n   cue words: \"But\", \"branch\", \"out\"\n9. fix3\n   on screen: a trench is dug and a cable is laid in it underground. actions: spark 2 stop (on \"So\"); rain stop (on \"So\"); light clear (on \"So\"); dig dig (on \"bury\"); cable grow (on \"cable\"); cable flow show (on \"underground\"); porch lit (on \"underground\"); grid fallBack (on \"So\"); grid branchBack (on \"So\")\n   idea: bury the cable underground away from storms\n   cue words: \"So\", \"bury\", \"cable\", \"underground\"\n10. fact\n   on screen: a counter beside the pole falls from 7,200 to 240. actions: volts 2 show; volts 2 count (on \"240\")\n   idea: a pole transformer turns about 7,200 volts into 240\n   cue words: \"240\"\n   its fact: A common pole transformer turns 7,200 volts into the 240 and 120 volts a house uses\n11. finish\n   on screen: a meter appears on the house wall and its number ticks up, the soil goes back over the cable. actions: volts 2 hide (on \"Add\"); cable flow hide (on \"Add\"); dig refill (on \"Add\"); cap soil grow (on \"light\"); porch meter (on \"light\"); porch tick (on \"wall\")\n   idea: add a meter on the wall and the porch light back on\n   cue words: \"Add\", \"light\", \"wall\"\n12. congrats\n   on screen: the finished build, calm\n   idea: you have built the power grid\n   cue words: (none)"
+}

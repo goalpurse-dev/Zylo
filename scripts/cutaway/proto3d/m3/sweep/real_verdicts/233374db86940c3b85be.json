@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": true,
+ "seen": "The thermometer card counts down from 15 to 4 and the bar turns from red to green.",
+ "problem": "",
+ "text": "It holds your food at 4 degrees Celsius.",
+ "at": "2026-11-06T18:10:24.911Z"
+}

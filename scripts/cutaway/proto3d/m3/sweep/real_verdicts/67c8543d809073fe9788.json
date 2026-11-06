@@ -1,0 +1,8 @@
+{
+ "role": "fix5",
+ "ok": true,
+ "seen": "Plane starts tilted on its side, then levels out and descends to the runway, with the wing changing in the later frames.",
+ "problem": "",
+ "text": "So you add flaps on the wings that level the plane and slow it until it settles onto the runway.",
+ "at": "2026-11-06T18:03:26.760Z"
+}

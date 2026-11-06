@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The speed sign goes from 9 to 70, but the truck barely moves. The tail does not whip around.",
+ "problem": "The tail does not whip around. Swing the truck's rear sideways as the speed rises.",
+ "text": "But at highway speed, turning the rear wheels against the front makes the tail whip around.",
+ "at": "2026-11-06T18:09:53.870Z"
+}

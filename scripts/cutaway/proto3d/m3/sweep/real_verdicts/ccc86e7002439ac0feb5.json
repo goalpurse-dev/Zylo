@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "Cyan arrows push on the thin wall from the lake side and a black crack appears in the last frame, but the crack only shows as a short zigzag in the final frame.",
+ "problem": "The crack does not visibly grow up the wall face. Show it extending upward over several frames, and make the arrows larger so they read at phone size.",
+ "text": "But now the deep water pushes so hard the thin wall cracks.",
+ "at": "2026-11-06T18:07:07.287Z"
+}

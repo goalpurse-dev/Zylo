@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "All three frames are identical: a lone pier with no frame and no arch. Nothing is pulled away.",
+ "problem": "No arch or wooden frame is present, so show the frame being removed with the arch standing alone.",
+ "text": "So you pull the frame away, and the arch holds itself, as at Alcántara, where granite blocks sit without mortar.",
+ "at": "2026-11-06T18:05:04.705Z"
+}

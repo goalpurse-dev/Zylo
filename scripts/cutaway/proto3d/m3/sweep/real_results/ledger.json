@@ -1,0 +1,263 @@
+{
+ "spent": 0.99164,
+ "calls": [
+  {
+   "tag": "airplane",
+   "lines": 15,
+   "usd": 0.0318,
+   "at": "2026-11-06T18:03:26.748Z"
+  },
+  {
+   "tag": "air_conditioner",
+   "lines": 11,
+   "usd": 0.02278,
+   "at": "2026-11-06T18:03:59.489Z"
+  },
+  {
+   "tag": "air_suspension_bagged_cars_works_the_sim",
+   "lines": 14,
+   "usd": 0.02857,
+   "at": "2026-11-06T18:04:34.122Z"
+  },
+  {
+   "tag": "ancient_bridge",
+   "lines": 10,
+   "usd": 0.02075,
+   "at": "2026-11-06T18:05:04.700Z"
+  },
+  {
+   "tag": "backyard_pond",
+   "lines": 12,
+   "usd": 0.02196,
+   "at": "2026-11-06T18:05:38.388Z"
+  },
+  {
+   "tag": "car_brakes",
+   "lines": 12,
+   "usd": 0.02317,
+   "at": "2026-11-06T18:06:07.593Z"
+  },
+  {
+   "tag": "chainsaw_clutch_stops_you_from_dying",
+   "lines": 12,
+   "usd": 0.02444,
+   "at": "2026-11-06T18:06:36.546Z"
+  },
+  {
+   "tag": "dam",
+   "lines": 11,
+   "usd": 0.02258,
+   "at": "2026-11-06T18:07:07.284Z"
+  },
+  {
+   "tag": "electricity_to_outlet",
+   "lines": 12,
+   "usd": 0.02321,
+   "at": "2026-11-06T18:07:37.886Z"
+  },
+  {
+   "tag": "escalator",
+   "lines": 11,
+   "usd": 0.02185,
+   "at": "2026-11-06T18:08:12.676Z"
+  },
+  {
+   "tag": "fish",
+   "lines": 15,
+   "usd": 0.02694,
+   "at": "2026-11-06T18:09:06.848Z"
+  },
+  {
+   "tag": "four_wheel_steering_turns_a_giant_car_li",
+   "lines": 14,
+   "usd": 0.02871,
+   "at": "2026-11-06T18:09:53.863Z"
+  },
+  {
+   "tag": "fridge",
+   "lines": 12,
+   "usd": 0.02269,
+   "at": "2026-11-06T18:10:24.906Z"
+  },
+  {
+   "tag": "garden_shelter",
+   "lines": 11,
+   "usd": 0.02254,
+   "at": "2026-11-06T18:11:03.068Z"
+  },
+  {
+   "tag": "gas_station_tank",
+   "lines": 11,
+   "usd": 0.02011,
+   "at": "2026-11-06T18:11:39.341Z"
+  },
+  {
+   "tag": "hand_engine",
+   "lines": 5,
+   "usd": 0.0104,
+   "at": "2026-11-06T18:12:00.248Z"
+  },
+  {
+   "tag": "lighthouse",
+   "lines": 11,
+   "usd": 0.02387,
+   "at": "2026-11-06T18:12:27.571Z"
+  },
+  {
+   "tag": "microwave",
+   "lines": 11,
+   "usd": 0.01805,
+   "at": "2026-11-06T18:12:54.529Z"
+  },
+  {
+   "tag": "nuclear_power_plant",
+   "lines": 12,
+   "usd": 0.02177,
+   "at": "2026-11-06T18:13:27.460Z"
+  },
+  {
+   "tag": "puddle_of_mud_can_become_a_semiconductor",
+   "lines": 16,
+   "usd": 0.03588,
+   "at": "2026-11-06T18:14:45.175Z"
+  },
+  {
+   "tag": "real_bunker_rerun",
+   "lines": 8,
+   "usd": 0.01521,
+   "at": "2026-11-06T18:15:30.297Z"
+  },
+  {
+   "tag": "real_stove_rerun",
+   "lines": 11,
+   "usd": 0.02093,
+   "at": "2026-11-06T18:16:10.442Z"
+  },
+  {
+   "tag": "real_washer",
+   "lines": 11,
+   "usd": 0.02286,
+   "at": "2026-11-06T18:16:59.033Z"
+  },
+  {
+   "tag": "road",
+   "lines": 11,
+   "usd": 0.02064,
+   "at": "2026-11-06T18:17:37.998Z"
+  },
+  {
+   "tag": "roof",
+   "lines": 11,
+   "usd": 0.02055,
+   "at": "2026-11-06T18:18:10.338Z"
+  },
+  {
+   "tag": "septic_tank",
+   "lines": 11,
+   "usd": 0.02126,
+   "at": "2026-11-06T18:18:43.757Z"
+  },
+  {
+   "tag": "sewage_treatment_plant",
+   "lines": 12,
+   "usd": 0.02451,
+   "at": "2026-11-06T18:19:16.465Z"
+  },
+  {
+   "tag": "smoke_detector",
+   "lines": 9,
+   "usd": 0.02021,
+   "at": "2026-11-06T18:19:40.346Z"
+  },
+  {
+   "tag": "submarine",
+   "lines": 12,
+   "usd": 0.02366,
+   "at": "2026-11-06T18:20:33.712Z"
+  },
+  {
+   "tag": "suspension_bridge",
+   "lines": 11,
+   "usd": 0.02141,
+   "at": "2026-11-06T18:20:59.079Z"
+  },
+  {
+   "tag": "swimming_pool",
+   "lines": 18,
+   "usd": 0.03247,
+   "at": "2026-11-06T18:21:40.729Z"
+  },
+  {
+   "tag": "toilet",
+   "lines": 9,
+   "usd": 0.01721,
+   "at": "2026-11-06T18:22:03.588Z"
+  },
+  {
+   "tag": "to_build_a_skyscraper",
+   "lines": 10,
+   "usd": 0.02092,
+   "at": "2026-11-06T18:22:29.768Z"
+  },
+  {
+   "tag": "to_build_a_water_well",
+   "lines": 15,
+   "usd": 0.02872,
+   "at": "2026-11-06T18:23:07.285Z"
+  },
+  {
+   "tag": "traffic_light",
+   "lines": 18,
+   "usd": 0.0338,
+   "at": "2026-11-06T18:24:03.270Z"
+  },
+  {
+   "tag": "tunnel_under_river",
+   "lines": 11,
+   "usd": 0.02041,
+   "at": "2026-11-06T18:24:46.103Z"
+  },
+  {
+   "tag": "volcano",
+   "lines": 10,
+   "usd": 0.02038,
+   "at": "2026-11-06T18:25:13.145Z"
+  },
+  {
+   "tag": "water_heater",
+   "lines": 11,
+   "usd": 0.02083,
+   "at": "2026-11-06T18:25:39.762Z"
+  },
+  {
+   "tag": "whow_an_elevator_works",
+   "lines": 14,
+   "usd": 0.02538,
+   "at": "2026-11-06T18:26:10.719Z"
+  },
+  {
+   "tag": "known_car_wash",
+   "lines": 12,
+   "usd": 0.0227,
+   "at": "2026-11-06T18:26:39.435Z"
+  },
+  {
+   "tag": "known_french_drain",
+   "lines": 13,
+   "usd": 0.02445,
+   "at": "2026-11-06T18:27:07.903Z"
+  },
+  {
+   "tag": "known_landfill",
+   "lines": 12,
+   "usd": 0.02367,
+   "at": "2026-11-06T18:27:42.162Z"
+  },
+  {
+   "tag": "known_swimming_pool",
+   "lines": 9,
+   "usd": 0.01739,
+   "at": "2026-11-06T18:28:04.941Z"
+  }
+ ]
+}

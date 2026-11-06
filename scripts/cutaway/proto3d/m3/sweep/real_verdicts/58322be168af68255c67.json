@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "The truck with motor and spring sits by the post. There is no ceiling light, and the truck does not crab sideways into the garage.",
+ "problem": "No ceiling light is added and the truck does not crab into the garage. Add a visible light and move the truck sideways into the garage.",
+ "text": "Add a ceiling light and let the truck crab sideways into the garage.",
+ "at": "2026-11-06T18:09:53.874Z"
+}

@@ -1,0 +1,13 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"How car brakes work","sentences":[
+{"role":"hook","text":"If you press a wooden block onto a spinning tire, you have a brake."},
+{"role":"problem","text":"But the block grinds the rubber, and smoke pours off the tire."},
+{"role":"fix1","text":"So you bolt a steel disc to the hub and squeeze that instead."},
+{"role":"problem2","text":"But your hand is too weak, and the disc keeps spinning at 60."},
+{"role":"fix2","text":"So you add a pedal and a pipe, and brake fluid multiplies your push about four to five times."},
+{"role":"name","text":"This is a disc brake."},
+{"role":"how","text":"Push the pedal, the pads squeeze the disc, and the wheel stops."},
+{"role":"problem3","text":"But now every hard stop heats the disc until it glows red."},
+{"role":"fix3","text":"So you cut vents through the disc, and air cools it from inside."},
+{"role":"fact","text":"Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius."},
+{"role":"finish","text":"Add a brake light on a post that glows when you press the pedal."},
+{"role":"congrats","text":"Congratulations, you have built a disc brake."}]}}

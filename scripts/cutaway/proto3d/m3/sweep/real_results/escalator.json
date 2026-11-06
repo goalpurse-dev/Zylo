@@ -1,0 +1,81 @@
+{
+ "plan": "escalator",
+ "known": false,
+ "usd": 0.02185,
+ "pass": false,
+ "failing": [
+  "problem2",
+  "name",
+  "problem3",
+  "fix3",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "The first frame shows an empty pit, then a dark inclined belt with dots appears running up between the lower floor and the upper floor.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A box sits on the steep belt and moves down toward the bottom across the frames, with a SLIDING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Yellow flat steps appear along the belt, tilted with the slope, and are bolted on across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "Steps sit on the belt and a TILTED label shows, but the box is barely visible at the bottom and no clear slide-off is seen.",
+   "problem": "Show the box clearly on a tilted step and sliding off down the slope; make the box larger and more visible."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Red and blue tracks appear along the slope and the steps look level on them in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A yellow rectangle outline sits in the room above the escalator, not tracing the escalator itself.",
+   "problem": "Move the outline to enclose the escalator on the slope instead of the empty room area."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Yellow arrows appear at the top gear and the level steps move up the slope, with the gear at the top visible.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "The steps are on the tracks and a ROLLING BACK label appears, but the steps show little visible movement down and the gear stopping is unclear.",
+   "problem": "Show the steps clearly rolling down toward the bottom and the gear stopped, with loaded steps visible."
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "The escalator with steps and tracks is visible, but no red brake sliding into the gear can be seen and nothing appears to change across the frames.",
+   "problem": "Show a red brake clearly sliding into the gear at the top and the steps stopping."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "A black handrail and a ceiling lamp appear, but the lamp hangs in the room with no visible ceiling and the handrail is thin.",
+   "problem": "Attach the light to a visible ceiling and make the handrail thicker and anchored on the escalator."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole house with the escalator build in the cut ground, fully in view with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

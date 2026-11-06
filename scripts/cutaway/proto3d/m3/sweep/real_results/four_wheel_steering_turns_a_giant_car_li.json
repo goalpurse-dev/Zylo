@@ -1,0 +1,101 @@
+{
+ "plan": "four_wheel_steering_turns_a_giant_car_li",
+ "known": false,
+ "usd": 0.02871,
+ "pass": false,
+ "failing": [
+  "hook",
+  "problem",
+  "how",
+  "problem2",
+  "fix2",
+  "problem3",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "A flatbed truck with a red cab sits in the same pose in all three frames. The front wheels do not visibly turn.",
+   "problem": "The front wheels never visibly steer across the frames. Show them turning left or right while the long body stays straight."
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The truck is almost static, with a small orange post near the tail. The 'TAIL SWINGS' caption appears, but the tail does not move toward the post.",
+   "problem": "The tail does not visibly swing out toward the post. Rotate the truck body so the rear sweeps toward the post."
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "The orange post stands upright in frame 1 and lies flat on the ground in frames 2 and 3, with the truck edge entering at the side.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The post lies fallen in frame 1. In frames 2 and 3 an orange motor with a rod sits on the rear axle and the post is upright again.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline box is drawn around the truck, and its size and position change across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "The outline is visible in frame 1 and gone later. The truck stays in place with little change, and the rear wheels barely turn against the front.",
+   "problem": "The truck does not pivot in a tight circle and the rear wheels do not visibly counter-steer. Show clear opposite wheel angles and the truck rotating."
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A sign counter goes from 0 to 10 with a green bar rising, next to the truck.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "The speed sign goes from 9 to 70, but the truck barely moves. The tail does not whip around.",
+   "problem": "The tail does not whip around. Swing the truck's rear sideways as the speed rises."
+  },
+  {
+   "role": "fix2",
+   "ok": false,
+   "seen": "The truck sits fairly straight with the speed sign leaving the view. The rear wheels do not clearly turn the same way as the front, and the truck does not visibly straighten.",
+   "problem": "Show the rear wheels angled with the front wheels and the truck body aligning straight."
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A close-up with a yellow outline box around the rear wheel and motor.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "A highlight box sits at the rear wheel, then the 'STUCK' caption appears. No rod snap is visible and the truck does not veer.",
+   "problem": "The rod does not visibly snap and the truck does not veer. Show the rod breaking and the truck drifting off its line."
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A green spring appears at the rear axle in frames 2 and 3, and the rear wheels are straight.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "The truck with motor and spring sits by the post. There is no ceiling light, and the truck does not crab sideways into the garage.",
+   "problem": "No ceiling light is added and the truck does not crab into the garage. Add a visible light and move the truck sideways into the garage."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished truck is in view, with the camera pulling back to show the house, and nothing covers it.",
+   "problem": ""
+  }
+ ]
+}

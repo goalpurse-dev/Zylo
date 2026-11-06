@@ -1,0 +1,70 @@
+{
+ "key": "fact_check__1",
+ "label": "fact-check",
+ "model": "claude-sonnet-5-5",
+ "hash": "6796bf89201a8818",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict \"keep\" if the research notes support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.",
+ "user": "Topic: septic tank\nClaims (index: claim | suggested search):\n0: A typical household septic tank holds about 1,000 gallons | typical household septic tank size 1000 gallons\n1: In a septic tank solids settle to the bottom as sludge while fats, oil and grease float to the top as scum | EPA how septic systems work sludge scum\n2: A household septic tank is typically pumped every 3 to 5 years | EPA septic tank pumped every 3 to 5 years\n3: More than one in five US homes use a septic system | EPA one in five households septic system\n\nResearch notes (from 4 web searches):\nI searched every claim.\n\n**Claim 0: a typical household septic tank holds about 1,000 gallons. Supported in a corrected form.**\n- Encyclopedia.com (Septic Tank entry): \"an average tank holds 1,000 gal (3,790 l) of liquid.\" URL: https://www.encyclopedia.com/reference/encyclopedias-almanacs-transcripts-and-maps/septic-tank\n- Sizing guides: \"Most building codes require a minimum 1,000-gallon septic tank for a 3-bedroom home\"; others give 1,250 gallons for 3 bedrooms; codes vary. URL: https://hakaru.io/guides/septic-tank-size-calculator-guide\n- Corrected wording: \"A family tank often holds around 1,000 gallons.\"\n\n**Claim 1: solids settle as sludge, fats, oil and grease float as scum. Supported as written.**\n- EPA, How your septic system works: wastewater separates; solids settle to the bottom forming sludge, oil and grease float to the top as scum, the middle liquid goes to the drainfield. URL: https://www.epa.gov/septic/how-your-septic-system-works\n- LA County Public Health, How a septic system works: same three layers. URL: https://admin.publichealth.lacounty.gov/eh/docs/business/how-septic-system-works.pdf\n\n**Claim 2: pumped every 3 to 5 years. Supported as written.**\n- Cornell Cooperative Extension, reproducing the EPA homeowner guide: \"Generally, sludge and scum should be pumped from the septic tank every three to five years, depending on the size of the tank and the amount and composition of wastewater.\" URL: https://www.css.cornell.edu/cwmi/waterquality/septic/CCEWQ-YourSepticSystem-Print.pdf\n- EPA also says inspect about every three years. URL: https://www.epa.gov/septic/how-your-septic-system-works\n\n**Claim 3: more than one in five US homes use a septic system. Supported in a corrected form.**\n- EPA SepticSmart Homeowners: \"One in five U.S. homes have septic systems.\" URL: https://19january2021snapshot.epa.gov/septic/septicsmart-homeowners_.html\n- Corrected wording: \"About one in five US homes uses a septic system.\"\n\nExtra searches: 1,000 gallons is the usual minimum for a 3-bedroom home in most US codes (some 1,250) URL: https://www.thedonutwhole.com/how-many-bedrooms-can-a-1000-gallon-septic-tank-handle/ ; EPA blog: \"more than one-in-five households in the United States depend on septic systems ... more than 26 million homes\" URL: https://webarchive.library.unt.edu/web/20161225055203/https://blog.epa.gov/blog/tag/septic-smart-week\n\nSources found:\n"
+}

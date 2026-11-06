@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "The tower leans in the first frame. A small dark object shows near the top in the later frames, but it is tiny and barely readable, and no swing is visible.",
+ "problem": "Make the steel weight much larger and clearly visible, and show it swinging against the sway.",
+ "text": "So you hang a giant steel weight near the top that swings against the sway and calms it.",
+ "at": "2026-11-06T18:22:29.773Z"
+}

@@ -1,0 +1,70 @@
+{
+ "key": "fact_check__1",
+ "label": "fact-check",
+ "model": "claude-sonnet-5-5",
+ "hash": "2284bec911de4a39",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict \"keep\" if the research notes support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.",
+ "user": "Topic: air conditioner\nClaims (index: claim | suggested search):\n0: Willis Carrier designed the first modern air conditioning system in 1902 for a printing plant in Brooklyn | Willis Carrier 1902 Sackett-Wilhelms printing plant Brooklyn\n1: Carrier's system was built to control humidity so the paper would not swell and the colours would line up | Carrier 1902 humidity paper printing why invented\n2: An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away | air conditioner evaporator coil condensation drain pan\n\nResearch notes (from 3 web searches):\n**Claim 0: Willis Carrier designed the first modern air conditioning system in 1902 for a printing plant in Brooklyn**\n- Carrier company history: Carrier's mechanical drawings are dated July 17, 1902, for the Sackett & Wilhelms lithographing plant in Brooklyn. URL: https://www.carrier.com/us/en/history/invention-of-air-conditioning/\n- Wikipedia (Willis Carrier): same date; Carrier then worked at Buffalo Forge. URL: https://en.wikipedia.org/wiki/Willis_Carrier\n- 'First' is the company's framing. Verdict: supported in a corrected form: \"In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn.\"\n\n**Claim 1: It was built to control humidity so the paper would not swell and the colours would line up**\n- Carrier.com: humidity changes made the paper expand and contract, so the colours were misaligned and wavy edges jammed the feed; the system held about 55 percent humidity. URL: https://www.carrier.com/us/en/history/invention-of-air-conditioning/\n- Encyclopedia.com: the system held about 55 percent humidity. URL: https://www.encyclopedia.com/people/science-and-technology/technology-biographies/willis-haviland-carrier\n- WhatTheyThink (printing industry): at Sackett & Wilhelms, humidity made the paper expand and contract so colours printed one at a time misaligned; comfort cooling came later (1924). URL: https://whattheythink.com/articles/120090-love-air-conditioning-thank-printing-industry\n- Verdict: supported as written.\n\n**Claim 2: An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away**\n- US patent 6978909 (condensate drain pan): the air conditioner pulls moisture from the air, which collects on the coil and must be drained. URL: https://patents.google.com/patent/US6978909\n- High Performance HVAC: condensation drips into a pan and out through a drain line. URL: https://highperformancehvac.com/air-conditioner-condensation-water-dripping/\n- Verdict: supported as written.\n\nSources found:\n"
+}

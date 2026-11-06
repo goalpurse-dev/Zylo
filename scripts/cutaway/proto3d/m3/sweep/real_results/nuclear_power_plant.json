@@ -1,0 +1,85 @@
+{
+ "plan": "nuclear_power_plant",
+ "known": false,
+ "usd": 0.02177,
+ "pass": false,
+ "failing": [
+  "hook",
+  "name",
+  "fix3"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "A small glass tank on a slab with a blue water block appearing inside; no green uranium rods are visible, and the tank is tiny.",
+   "problem": "No green uranium rods can be seen standing in the tank; add clearly green rods and make the tank larger."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A tank of water with rods, and grey steam puffs rising from the top with a WASTED label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A pipe carries steam from the tank to a spinning blue turbine, and a generator box appears with a lamp that glows.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Fuel rods in the tank change from pale to pink and red, with an OVERHEAT label.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Dark control rods lower into the tank between the fuel rods, and the pink glow fades across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "The whole plant with a yellow rectangular outline that is offset and cuts through the plant, not tracing it.",
+   "problem": "The outline is a loose rectangle that does not trace the plant; fit the glowing outline tightly around the whole plant."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The pipe leads to the turbine, the blades are at different angles, and the generator lamp glows.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The turbine stays still while the generator lamp goes from bright to dim yellow.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "A cooling tower rises and a grey smoke cloud appears above it, but the turbine looks static and the cloud is grey and floating above the tower.",
+   "problem": "The cloud should be white and rise from the tower top, not float detached and grey; show the turbine spinning again."
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A small dark pellet grows on the slab, then a big black coal block appears beside it.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A big concrete dome sits over the reactor on the slab, with the cooling tower and other parts in place.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The full plant with dome, turbine, generator and cooling tower is in view and the camera pulls back.",
+   "problem": ""
+  }
+ ]
+}

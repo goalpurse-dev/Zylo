@@ -1,0 +1,75 @@
+{
+ "plan": "gas_station_tank",
+ "known": false,
+ "usd": 0.02011,
+ "pass": true,
+ "failing": [],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A pit is dug with dirt flying, then a steel tank with a vent pipe appears in the pit filled with amber gasoline.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Blue drips fall from the tank bottom and dark dots seep down through the soil toward the water, with a LEAKING label.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "The groundwater band turns from blue to murky yellow-green across the frames while seepage continues above.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Leak drips at the bare tank, then a green fiberglass wall wraps the tank and the drips stop.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Amber fuel is visible as a thin layer in the gap at the bottom between the green and steel walls.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A red-ball sensor appears on a pole and in the gap, with the red light flashing bright then dim.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "Dark fuel blob runs down beside the fill pipe from the sidewalk edge with a SPILL label.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "The spill is shown first, then a black bucket disc appears around the pipe and the spill is gone.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline rectangle is drawn around the top of the tank, which is shown clearly with the sensor.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A concrete slab appears over the tank with a red fuel pump and the bucket on top, resting on the slab.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished build is in view: tank, slab, pump and bucket, with the camera pulling back and nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

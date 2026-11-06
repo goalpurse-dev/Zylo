@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "A lone pier is shown with yellow arrows around it. There is no arch and no block on a crown, and the arrows do not run along a curve.",
+ "problem": "There is no arch, no load block on the crown and no arrows running down a curve into the piers, so add them.",
+ "text": "The weight squeezes the stones down the curve into the piers, so the Pons Fabricius carries walkers after more than 2000 years.",
+ "at": "2026-11-06T18:05:04.704Z"
+}

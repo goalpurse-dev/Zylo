@@ -1,0 +1,79 @@
+{
+ "plan": "garden_shelter",
+ "known": false,
+ "usd": 0.02254,
+ "pass": false,
+ "failing": [
+  "problem2",
+  "problem3",
+  "fact"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A green roof on four orange posts stands on the lawn in front of the house, fully in view and readable.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "White wind arrows appear at left and the shelter tips up on one side, with the roof raised and posts angled, across the strip.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The shelter settles back upright, a trench opens in the cut face and concrete footings show under the front posts.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "Rain falls on the shelter and only a tiny blue puddle shows in the last frame, mostly hidden at the ground edge. The grass does not visibly turn to mud.",
+   "problem": "Mud and puddles are barely visible. Make larger puddles and muddy brown patches spread across the lawn under the roof."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Puddles on the left frame are replaced by a grey paving floor under the roof in the next frames, with the sub-base visible at the edge.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "Wind arrows and a small white spray streak appear at left, but the spray only shows in the last frame and does not blow across the floor.",
+   "problem": "The sideways spray is tiny and does not reach the floor. Show larger rain streaks blowing in across the paving under the roof."
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Spray streaks enter the open side in the first frame, then a back wall and a side wall appear and the spray is gone, with arrows still outside.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline box appears around the finished shelter with walls, roof and paving, which reads clearly.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "Wind arrows at left and a sign reading 20 with a green bar appear beside the shelter. The shelter is cropped by the frame edge and the arrows do not touch the roof. The counter shows 20 already in the middle frame and does not tick up.",
+   "problem": "The shelter is cut off at the right edge, the arrows miss the roof and the counter does not count up. Pull the camera back, aim arrows at the roof and tick the counter from 0 to 20."
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Stepping stones and round bushes appear around the shelter on the lawn, and the earlier sign and rock are gone by the end, with the stones lying on the grass.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished shelter is in view with walls, paving, stones and bushes, and the camera pulls back with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

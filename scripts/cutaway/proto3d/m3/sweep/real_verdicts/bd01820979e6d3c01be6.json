@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": true,
+ "seen": "A tank appears, fills with water and particles, and solids settle on the floor while scum floats at the top. Tank is underground and in the cutaway.",
+ "problem": "",
+ "text": "So you fill a tank, where solids sink and scum floats.",
+ "at": "2026-11-06T18:19:16.466Z"
+}

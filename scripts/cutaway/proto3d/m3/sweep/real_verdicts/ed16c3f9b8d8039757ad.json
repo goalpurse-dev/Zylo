@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": true,
+ "seen": "The channel is dug and water is visible. A plank then lies across the top with a small cart beside it. The sequence goes from an open channel to a plank laid across it.",
+ "problem": "",
+ "text": "If you dig a channel and lay a plank across, you have a bridge.",
+ "at": "2026-11-06T18:05:04.701Z"
+}

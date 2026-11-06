@@ -1,0 +1,74 @@
+{
+ "plan": "to_build_a_skyscraper",
+ "known": false,
+ "usd": 0.02092,
+ "pass": false,
+ "failing": [
+  "how",
+  "fix3",
+  "finish",
+  "congrats"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A small slab on the sidewalk grows into a tall stack of six grey blocks standing on a base pad, with a taxi on the road behind.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The stack of blocks tilts and leans progressively to the right, with its base sinking into the ground and the base pad disappearing.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The leaning stack is cleared, the ground is cut open, and concrete piles appear in the pit and extend down through the soil layers into the dark rock below.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A concrete slab rises from the pit with particles falling in the first frame, then a thick tan mat covers the pit in the later frames. The piles are not visible in these frames.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow glowing outline surrounds the tan mat and the five piles that reach down to the rock, in a cutaway view.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "The steel columns and floors rise on the mat, but no weight arrows are clearly visible running down the piles. Only a tiny hint of an arrow appears at the bottom of the last frame.",
+   "problem": "Show clear arrows carrying the weight down through the piles to the rock."
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The tower stands with a SWAYING label and wind arrows. Its lean shifts slightly between frames, which shows the sway.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "The tower leans in the first frame. A small dark object shows near the top in the later frames, but it is tiny and barely readable, and no swing is visible.",
+   "problem": "Make the steel weight much larger and clearly visible, and show it swinging against the sway."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Glass walls and a small spire appear on the tower, and small steps show on the mat. The steps sit on the mat rather than at the tower base. The last frame is cropped at the top and the spire is cut off.",
+   "problem": "Place the entrance steps at the tower base, and keep the whole tower and spire inside the frame."
+  },
+  {
+   "role": "congrats",
+   "ok": false,
+   "seen": "The camera pans past the tower. The first frame shows only a sliver of it, and the second frame is cropped at the top. Only the last frame shows the tower, and it sits small with the building behind it.",
+   "problem": "Hold a wide shot where the whole finished skyscraper, with its piles and mat, is fully in view and uncovered."
+  }
+ ]
+}

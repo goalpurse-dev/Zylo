@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "A highlight box sits at the rear wheel, then the 'STUCK' caption appears. No rod snap is visible and the truck does not veer.",
+ "problem": "The rod does not visibly snap and the truck does not veer. Show the rod breaking and the truck drifting off its line.",
+ "text": "But if the motor fails, the rod can snap and leave the rear wheels stuck, so the truck veers.",
+ "at": "2026-11-06T18:09:53.872Z"
+}

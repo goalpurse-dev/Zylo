@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A counter beside the cone goes from 0 to 2,614 and a green bar fills, but it never reaches 3,776 in these frames.",
+ "problem": "Let the counter reach 3,776 by the end of the sentence.",
+ "text": "Mount Fuji is a stratovolcano 3,776 meters tall.",
+ "at": "2026-11-06T18:25:13.150Z"
+}

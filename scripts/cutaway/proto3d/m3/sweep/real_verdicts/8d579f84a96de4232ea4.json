@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "Wind arrows at left and a sign reading 20 with a green bar appear beside the shelter. The shelter is cropped by the frame edge and the arrows do not touch the roof. The counter shows 20 already in the middle frame and does not tick up.",
+ "problem": "The shelter is cut off at the right edge, the arrows miss the roof and the counter does not count up. Pull the camera back, aim arrows at the roof and tick the counter from 0 to 20.",
+ "text": "A 90 mile per hour wind gust pushes about 20 pounds on every square foot.",
+ "at": "2026-11-06T18:11:03.076Z"
+}

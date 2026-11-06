@@ -1,0 +1,101 @@
+{
+ "plan": "air_suspension_bagged_cars_works_the_sim",
+ "known": false,
+ "usd": 0.02857,
+ "pass": false,
+ "failing": [
+  "hook",
+  "stakes",
+  "fix1",
+  "problem2",
+  "fact",
+  "finish",
+  "congrats"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "Red car with a small steel spring visible by the rear wheel in all three frames. White dots float in the air near the roof. No rubber air bag ever pops in.",
+   "problem": "The spring never swaps for a rubber air bag and the dots float in the air; show the spring popping out and a bag popping in under the car."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A blue bag is visible under the car in the first frame, then gone. The car body sags down onto the tire in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": false,
+   "seen": "Three yellow arrows press down on the car, which sits low. The flat bag is hidden and not visible. The arrows are half transparent and float above the car.",
+   "problem": "The flat bag under the car is not visible; show it squashed under the car with the arrows pressing down onto it."
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "The compressor and hose appear at the right of the car. The car looks about the same height in all frames. No air flow along the hose is visible, and the bag is not visible.",
+   "problem": "The car does not visibly lift and no air moves along the hose; show air flowing into a visible bag and the car rising."
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "Three nearly identical frames show the car low with the pump and hose beside it and a TOO SLOW label. No dip or change happens across them.",
+   "problem": "The car never visibly drops after a dip across the frames; show the car dipping and staying low while the pump runs."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A small tank appears, grows into place with a 150 gauge, and the car rises by the last frame with the bag visible.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The car rises high with the blue bag extended and the wheel hanging, so it is clearly too high compared with the first frame.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A small gold valve appears by the hose, a green lamp shows on it, and the car ends lower and settled.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The close-up shows a yellow outline box around the blue air bag under the car in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A cream outline surrounds the whole set of bag, valve, pump and tank under the car.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The outline fades, then the car lifts with the bag extended and drops again, with the pump, tank and valve in place.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "Single frame of the car raised with the valve and a yellow shape near the bag. The gauge reads 150. There are no clear upward arrows on the bag.",
+   "problem": "No clear yellow arrows push up on the bag; add visible upward arrows at the bag."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "A dark blue car drives in over the build and overlaps the red car. The remote post is a thin pole and a small pressure light box appears. A height button is not clearly visible.",
+   "problem": "The parked car overlaps the red car's build, and the remote with its height button is not readable; park the car beside the build and show the remote clearly."
+  },
+  {
+   "role": "congrats",
+   "ok": false,
+   "seen": "The camera pulls back to show the finished build, but the dark blue car and a lamp post cover part of it in the later frames and the first frame crops the blue car at the edge.",
+   "problem": "The blue car and pole block the build; keep them clear of it so the full build is in view."
+  }
+ ]
+}

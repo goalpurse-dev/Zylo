@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "A thermostat box with an orange lamp appears on the base, and the flame dots fade by the last frame. The lamp is small but readable.",
+ "problem": "",
+ "text": "So you add a thermostat that shuts the flame off at 120 degrees Fahrenheit.",
+ "at": "2026-11-06T18:25:39.766Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "A blue translucent slab shows under the stone in the first frame, then small blue dots line the stone's bottom edge. No holed pipe is visible and no draining water can be seen.",
+ "problem": "Show a visible perforated pipe growing under the stone with water flowing out of it.",
+ "text": "So you lay a pipe with holes under it to carry water away.",
+ "at": "2026-11-06T18:17:38.001Z"
+}

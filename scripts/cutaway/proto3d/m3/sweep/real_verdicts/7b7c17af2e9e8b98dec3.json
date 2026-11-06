@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "Mesh-door microwave with rays on glowing orange food; the food looks nearly static across frames and only the outline fades.",
+ "problem": "The food does not visibly shake; add a jiggle or vibration to the food so the shaking reads across frames.",
+ "text": "The waves shake water in the food 2.45 billion times a second.",
+ "at": "2026-11-06T18:12:54.534Z"
+}

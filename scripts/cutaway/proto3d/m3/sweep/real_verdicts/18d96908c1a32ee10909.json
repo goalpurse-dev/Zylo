@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A single frame shows the stepped concrete dam with a yellow highlight bar floating above it, not tracing the wedge.",
+ "problem": "The outline is a short bar floating in the air above the dam. It should trace the wedge's stepped outline on the dam.",
+ "text": "This is a gravity dam.",
+ "at": "2026-11-06T18:07:07.288Z"
+}

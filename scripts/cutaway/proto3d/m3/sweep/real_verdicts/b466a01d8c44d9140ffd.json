@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The camera pulls back to show the finished build, but the dark blue car and a lamp post cover part of it in the later frames and the first frame crops the blue car at the edge.",
+ "problem": "The blue car and pole block the build; keep them clear of it so the full build is in view.",
+ "text": "Congratulations, you have built a bagged car.",
+ "at": "2026-11-06T18:04:34.130Z"
+}

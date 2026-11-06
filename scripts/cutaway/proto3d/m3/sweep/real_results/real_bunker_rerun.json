@@ -1,0 +1,59 @@
+{
+ "plan": "real_bunker_rerun",
+ "known": false,
+ "usd": 0.01521,
+ "pass": true,
+ "failing": [
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A pit is dug in the lawn beside the house, with its cut face showing brown earth walls and a floor.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Gray fallout particles and chunks drift down into the open pit across the frames, with a FALLOUT label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A floor, then walls and a roof grow over the pit, then a layer of earth covers the top. Fallout debris is still drifting in the frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Arrows press down on the earth and in on the walls, and a zigzag crack appears on the right wall by the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Gray steel plates appear on the walls, covering the cracked right wall and the left wall, across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline is drawn around the shelter across the frames, tracing the sides and bottom.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Grass returns on top and stairs appear on a block inside the shelter. No ceiling light is visible, and the stairs are small and dark.",
+   "problem": "The ceiling light is missing or unreadable at phone size; add a clearly visible light hanging from the ceiling and make the stairs larger."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished shelter is fully in view under the grass, with stairs inside and a yellow outline. The camera pulls back to show the house, and nothing covers the build.",
+   "problem": ""
+  }
+ ]
+}

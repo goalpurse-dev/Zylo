@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Soil clods fly in the first frame, then a flat tan wall face covers the ground in the next two. No ditch is visible along the house.",
+ "problem": "No dug ditch is visible, only a flat tan face; show an open trench along the wall with soil being dug out.",
+ "text": "If you dig a ditch along your house, you have a drain.",
+ "at": "2026-11-06T18:27:07.904Z"
+}

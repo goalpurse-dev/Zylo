@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": true,
+ "seen": "A loose drum cup appears around the sprocket and the shaft is visible inside it. The chain looks stationary across frames while the shaft stays exposed.",
+ "problem": "",
+ "text": "So you hang the chain on a loose drum, and the engine spins free inside it, though now the chain won't move.",
+ "at": "2026-11-06T18:06:36.548Z"
+}

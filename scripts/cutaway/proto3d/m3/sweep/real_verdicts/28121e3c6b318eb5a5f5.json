@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "The lighthouse is small in frame. A single grey beam appears in frame 3, passing through the house. No ringed lens is visible around the flame and there is no second beam.",
+ "problem": "The lens is not visible and only one beam appears, and it cuts through the house. Show a ringed lens appearing around the flame and two long bright beams going out past the house.",
+ "text": "So you add a lens, invented in 1822, that bends it into one beam.",
+ "at": "2026-11-06T18:12:27.577Z"
+}

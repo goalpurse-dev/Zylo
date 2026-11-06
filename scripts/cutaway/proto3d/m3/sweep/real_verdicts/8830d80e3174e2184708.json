@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "A chain of brown balls arcs from the pit toward a grey furnace drum. The first frame shows white specks and no furnace. The balls start at the mound and do not clearly leave the pit.",
+ "problem": "The sand stream does not visibly come from the pit and does not enter the furnace; make it rise out of the pit and pour into the furnace top.",
+ "text": "So you pour the sand into a furnace with carbon.",
+ "at": "2026-11-06T18:14:45.182Z"
+}

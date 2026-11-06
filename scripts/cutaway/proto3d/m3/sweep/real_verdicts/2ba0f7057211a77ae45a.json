@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "The gauge falls from 0 to a red 3 with LOW OXYGEN text. Only the gauge and the pond edge are visible, and no fish are shown.",
+ "problem": "Fish crowding the surface cannot be seen. Pull the camera back to show the pond and the fish at the surface.",
+ "text": "But on a hot day, warm water holds less oxygen, so the bacteria and fish compete and the fish crowd the surface.",
+ "at": "2026-11-06T18:09:06.854Z"
+}

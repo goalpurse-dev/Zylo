@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": true,
+ "seen": "The detector starts with only the beam. Then a blue sensor appears below the beam with a pale ray linking the beam to the sensor.",
+ "problem": "",
+ "text": "So you add a sensor off to the side, and smoke bounces light onto it.",
+ "at": "2026-11-06T18:19:40.349Z"
+}

@@ -1,0 +1,75 @@
+{
+ "plan": "volcano",
+ "known": false,
+ "usd": 0.02038,
+ "pass": false,
+ "failing": [
+  "problem",
+  "fix1",
+  "name",
+  "how",
+  "fact"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "The chamber turns from dark red to glowing orange and a red column of magma rises up the crack toward the surface.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The orange chamber and red crack are visible and a gauge sign appears in the last frame, but no gas bubbles show in the chamber and the gauge barely fills.",
+   "problem": "Add visible gas bubbles rising and expanding in the chamber, and make the pressure gauge fill clearly with red."
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "A blast at the vent throws ash and debris into the air, smoke puffs rise, and the cloud grows across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "A brown cone appears at the vent with a small orange blob on top, but no lava pours down its sides.",
+   "problem": "Show orange lava flowing down the cone's slopes and cooling, not just a dot at the summit."
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Another eruption with an AGAIN label; a second darker layer of rock settles on top of the first cone in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A single frame with a yellow rectangle over the volcano and a rock cone with two layers; the box does not trace the volcano's outline.",
+   "problem": "Draw an outline that follows the volcano's cone shape instead of a loose rectangle that cuts through it."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "Yellow arrows point at the cone's layers, but the view is a tight crop and the cone's layers are partly cut off by the frame edge.",
+   "problem": "Pull the camera back so the stacked layers are fully in view with arrows clearly pointing at each layer."
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "A counter beside the cone goes from 0 to 2,614 and a green bar fills, but it never reaches 3,776 in these frames.",
+   "problem": "Let the counter reach 3,776 by the end of the sentence."
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Snow cap appears on the peak and rocks are scattered around the base, all standing on the grass beside the cone.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole volcano with snow cap, rocks, vent, magma column and chamber in section, with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

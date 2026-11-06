@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "The steps are on the tracks and a ROLLING BACK label appears, but the steps show little visible movement down and the gear stopping is unclear.",
+ "problem": "Show the steps clearly rolling down toward the bottom and the gear stopped, with loaded steps visible.",
+ "text": "But if the motor fails, the loaded steps roll back down.",
+ "at": "2026-11-06T18:08:12.702Z"
+}

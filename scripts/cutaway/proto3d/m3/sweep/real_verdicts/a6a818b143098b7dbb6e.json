@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A yellow rectangular frame sits over the scene, and the wire and poles are not traced by a glowing outline. The frame also cuts across the poles and house.",
+ "problem": "Draw a glowing outline that follows the poles and the wire instead of a box.",
+ "text": "This is the power grid.",
+ "at": "2026-11-06T18:07:37.888Z"
+}

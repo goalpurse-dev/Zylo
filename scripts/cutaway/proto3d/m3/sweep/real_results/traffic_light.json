@@ -1,0 +1,122 @@
+{
+ "plan": "traffic_light",
+ "known": false,
+ "usd": 0.0338,
+ "pass": false,
+ "failing": [
+  "problem",
+  "fact",
+  "fix4",
+  "myth"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A single traffic lamp hangs from an arm over the road; the red lamp is lit, then switches to orange in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "A blue car and a yellow car are only partly in view at the bottom right, with STUCK labels. The light is orange-red, not clearly a queue.",
+   "problem": "The cars are cropped by the frame edge and do not read as a nose-to-tail queue at the red; pull the camera back to show the whole queue."
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "A timer board counts 0, 2, 5 and a bar fills from green to orange.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A gray box appears by the pole and the lamp changes from red to a lit green.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The gray controller box stands on the sidewalk and its door opens to show a panel; a glow outline is faint.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The box door is open, the lamp goes from green to red and the timer is implied.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "A counter box shows 0, not counting down from 90, and cars are barely visible at the bottom right.",
+   "problem": "The timer shows 0 and not 90 counting down, and the cars in the queue are cropped; show 90 counting down and a visible queue."
+  },
+  {
+   "role": "factProof",
+   "ok": true,
+   "seen": "Light turns green and the cars cross the stop line one after another.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "A single red car waits alone at night with an EMPTY RED label and the lamp at red.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A gold loop ring appears in the road under the car position; the car is partly cropped in the first frame and the lamp turns green at the end.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A glowing orange outline traces the loop in the lane at the stop line, with the light green.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "A car arrives at the loop, the light flips and a yellow car crashes into it with CRASH!",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "The yellow lamp is lit and the crashed car is gone.",
+   "problem": ""
+  },
+  {
+   "role": "fix4",
+   "ok": false,
+   "seen": "It darkens to night and the yellow lamp goes dark, but no red lamp is ever lit or blinking.",
+   "problem": "The red lamp never lights up; make the red lamp visibly flash on and off at night."
+  },
+  {
+   "role": "myth",
+   "ok": false,
+   "seen": "A controller box and a counter reading 0 then 525 with a green bar appear. No loop in the road and no scale.",
+   "problem": "There is no scale or weight reading tied to a loop; show the loop and a clear scale cue crossed out."
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The traffic light is clearly visible and the loop ring glows and the lamp turns green.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Crosswalk stripes and a stop line are on the road, and a green street sign stands on the sidewalk.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished intersection is in view, with the traffic light, crosswalk, sign and the cab.",
+   "problem": ""
+  }
+ ]
+}

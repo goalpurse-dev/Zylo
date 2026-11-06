@@ -1,0 +1,12 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"Garden Shelter","sentences":[
+{"role":"hook","text":"If you put up four posts and a roof, you have a garden shelter."},
+{"role":"problem","text":"But the first wind catches the roof and tips it over."},
+{"role":"fix1","text":"So you dig down and pour concrete footings under the posts."},
+{"role":"problem2","text":"But now rain turns the grass under it to mud."},
+{"role":"fix2","text":"So you lay paving slabs on a compacted sub-base."},
+{"role":"problem3","text":"But now the wind blows the rain in sideways."},
+{"role":"fix3","text":"So you add a back wall and a side wall."},
+{"role":"name","text":"This is a garden shelter."},
+{"role":"fact","text":"A 90 mile per hour wind gust pushes about 20 pounds on every square foot."},
+{"role":"finish","text":"Add stepping stones and bushes around it."},
+{"role":"congrats","text":"Congratulations, you have built a garden shelter."}]}}

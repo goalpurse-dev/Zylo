@@ -1,0 +1,95 @@
+{
+ "plan": "whow_an_elevator_works",
+ "known": false,
+ "usd": 0.02538,
+ "pass": false,
+ "failing": [
+  "name"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Car sits on the floor in the first frame, then hangs raised on the rope over the wheel in the next two.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Gauge reads 0 with green, then 'TOO HEAVY' appears and the gauge bar turns red.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "Gauge stays at 1,000 in the red while the car drops from mid-air to the floor.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Gauge falls from 1,000 red to 250 green and a counterweight appears beside the wheel on the rope.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A yellow rectangle frames the elevator, but it is a loose box that cuts across the structure rather than tracing it. The elevator is small and partly cut off at the left.",
+   "problem": "The outline is a plain box that does not trace the whole elevator and clips at the left edge; reframe the camera and fit the outline to the elevator."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The car rises from the floor to mid-height while the counterweight drops from the top to lower down, and the wheel is on top.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "Equal yellow down arrows sit on the car and the counterweight, both on the rope over the wheel.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The car tilts and the counterweight swings, with a SWAYING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A tilted car straightens as steel rails appear up the shaft.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The rope breaks and pieces fall, and the car drops from mid-height to the floor.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "The car is back up with the rope mended and orange clamps on the rails beside the car.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A highlight outline blinks around the orange safety clamp on the car's right edge, with a red light on it.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "The car descends to the floor and gets glass doors, and the orange button panel is in place. A ceiling light is hard to see, but the finished build is readable.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished elevator is in view with nothing covering it, and the camera pulls back to show the house and ground.",
+   "problem": ""
+  }
+ ]
+}

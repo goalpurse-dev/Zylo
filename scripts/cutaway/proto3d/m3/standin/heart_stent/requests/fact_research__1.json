@@ -1,0 +1,10 @@
+{
+ "key": "fact_research__1",
+ "label": "fact research",
+ "model": "claude-sonnet-5-5",
+ "hash": "8d14be0c52bf7d8a",
+ "search": 8,
+ "schema": null,
+ "system": "You research the surprise claims in a short explainer script with web search. You MUST search for every claim (one or two searches each) before you answer; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.",
+ "user": "Topic: heart stent\nClaims (index: claim | suggested search):\n0: The first stent was put into a human coronary artery in 1986, in Toulouse, France | first coronary stent implanted 1986 Puel Toulouse\n1: Drug-eluting stents release a drug that keeps scar tissue from regrowing inside the stent | drug eluting stent prevents restenosis scar tissue NHLBI\n2: A stent is put in through a thin tube from the wrist or groin, not by open heart surgery | stent placement catheter wrist groin NHLBI"
+}

@@ -1,0 +1,10 @@
+{
+ "key": "fact_research__1",
+ "label": "fact research",
+ "model": "claude-sonnet-5-5",
+ "hash": "d941f6b9e7c0f9d0",
+ "search": 8,
+ "schema": null,
+ "system": "You research the surprise claims in a short explainer script with web search. You MUST search for every claim (one or two searches each) before you answer; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.",
+ "user": "Topic: tunnel under a river\nClaims (index: claim | suggested search):\n0: The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds. | Holland Tunnel 84 fans air changed every 90 seconds\n1: Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river. | Thames Tunnel 1843 first tunnel under navigable river Brunel shield\n2: A tunnel boring machine lines the tunnel with concrete rings as it goes, each ring bolted from curved segments. | tunnel boring machine segment lining rings bolted"
+}

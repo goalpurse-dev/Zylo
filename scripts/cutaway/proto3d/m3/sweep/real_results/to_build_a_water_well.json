@@ -1,0 +1,104 @@
+{
+ "plan": "to_build_a_water_well",
+ "known": false,
+ "usd": 0.02872,
+ "pass": false,
+ "failing": [
+  "problem",
+  "flood",
+  "problem2",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A narrow black shaft cut into the ground cross-section, reaching down to the blue water table, with a small patch of water at the bottom.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "Close-up of dirt walls beside a dark shaft with a CAVE-IN label, but no soil falling or collapsing across frames.",
+   "problem": "Show wall soil breaking away and chunks tumbling down the shaft; the walls and shaft look identical across frames."
+  },
+  {
+   "role": "flood",
+   "ok": false,
+   "seen": "A flat brown box fills the shaft, with no visible water beneath it and no sign of depth. It looks like a plain block.",
+   "problem": "Show wet mud rising in the shaft over the water, with texture and a visible level change; the block looks like a pasted box."
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "A weight gauge beside the mud counts from 0 to 3,000 and the bar turns red.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The mud-filled shaft with a 3,000 gauge in the first frame, then a grey steel casing standing in the shaft down to the water.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The casing is traced by glowing yellow outline lines down both sides, in the shaft down to the water.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "Close view of the casing bottom in water with an outline in frame one; the water level does not visibly drop and the view stays at the bottom.",
+   "problem": "Show the water level dropping far down relative to the casing and ground; the water just stays around the casing bottom."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A grey pump grows at the bottom of the casing in the water and a thin pipe rises from its top.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "The pump is surrounded by a glowing outline, with the pipe on top, underwater.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Blue water dots run up the thin pipe with white up arrows, from the pump at the bottom toward the surface.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "Down arrows beside the casing, dark dirt particles and DIRTY WATER label, and the water turning murky.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Brown clay strips grow down on both sides of the casing, while the water dots keep rising up the pipe.",
+   "problem": ""
+  },
+  {
+   "role": "fix4",
+   "ok": true,
+   "seen": "A blue pressure tank pops up on the lawn beside the house with a pipe connecting to it.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Underground close-up of the casing and clay with rising water dots; no steel cap, grass cap or bushes appear.",
+   "problem": "Show the surface with the steel cap, grass cap and bushes placed around the well, not the underground pipe."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to the finished build: house, bushes, pressure tank, well with clay, pipe and pump above the water, all in view.",
+   "problem": ""
+  }
+ ]
+}

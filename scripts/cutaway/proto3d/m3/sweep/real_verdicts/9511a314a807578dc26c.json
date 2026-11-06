@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A black tyre on a stand with a small orange block sitting above the tyre top and a white marker moving around the rim. The block does not clearly touch the tyre.",
+ "problem": "The orange block hovers above the tyre rather than pressing onto it, so no braking contact is shown; lower the block until it visibly presses on the tread.",
+ "text": "If you press a block onto a spinning tire, you have a brake.",
+ "at": "2026-11-06T18:06:07.594Z"
+}

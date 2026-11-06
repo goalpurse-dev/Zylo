@@ -1,0 +1,81 @@
+{
+ "plan": "car_wash",
+ "known": true,
+ "usd": 0.0227,
+ "pass": true,
+ "failing": [],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Muddy orange car under the car wash roof; a white-bubble hose spray appears at the car's front in frames 2 and 3.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Mud blobs spread along the car's side across the frames while the hose spray fades out; the car stays muddy.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "An arch with blue and red cloth rollers appears over the car, with soap spray lines under the top bar.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Soap bubbles flow across the lot to the drain, then a pipe of blue dots runs below ground to the creek.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A floor drain grate is cut into the ground and a blue tank appears below it, with bubbles at the drain.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "Blue water rises in the tank, a yellow outline traces it, and a brown pipe enters from the drain above.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Sand settles as a yellow layer on the floor, a dark oil layer sits on top, the water clears, and a pump outlet shows at the left.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A white pipe runs from the tank's pump up the left side and along the wall toward the arch, extending across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "The arch with the car and a blue water puddle and a small spray are in view, with the reclaim tank at left.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The arch with blue and red rollers is clearly in view, with a hose beside it.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A kiosk and a yellow vacuum station appear, then black canopy posts rise on the right; the roof is not yet fully visible in the last frame.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole car wash is in view with its arch, tank, pipes, kiosk, vacuum station and green canopy, with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

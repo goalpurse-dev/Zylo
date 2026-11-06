@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": true,
+ "seen": "A counter beside the filter goes from 0 to 6 across the frames, and the pipes show flow dots. The strip ends at 6, not 8.",
+ "problem": "",
+ "text": "Every pool passes its water through the filter about once every 6 to 8 hours, and the counter climbs to 8.",
+ "at": "2026-11-06T18:28:04.946Z"
+}

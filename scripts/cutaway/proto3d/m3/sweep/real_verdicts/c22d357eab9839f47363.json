@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "First frame shows the lawn and a cut ground edge with no pit. The other two show a glass-walled pit with a tan sand floor and a dirt mound, but the water is clear and unmuddy.",
+ "problem": "No muddy water fills the pit and no sand visibly sinks; show brown water pouring in and the sand settling to the floor.",
+ "text": "If you dig a pit and let muddy water settle, you have a sandy floor.",
+ "at": "2026-11-06T18:14:45.179Z"
+}

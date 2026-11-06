@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "ed438fe13c3329b9",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: lighthouse\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- Augustin Fresnel invented his lighthouse lens in 1822.\n- The beam of a large (first-order) Fresnel lens could be seen about 20 miles out to sea.\n- Big rotating lighthouse lenses floated on a bath of liquid mercury so they turned with very little friction.\n\nThe beats, in order:\n1. hook\n   on screen: a tall striped tower stands with a fire burning on top at night. actions: light night; lighthouse show (on \"tower\"); lighthouse fire (on \"fire\")\n   idea: light a fire on top of a tall tower and you have a lighthouse\n   cue words: \"tower\", \"fire\"\n2. problem\n   on screen: wind arrows blow across the top and the flame goes out. actions: light night; wind show (on \"wind\"); lighthouse fireBack (on \"out\")\n   idea: the wind on top blows the flame out\n   cue words: \"wind\", \"out\"\n3. fix1\n   on screen: a glass lantern room with a red roof closes round the flame, which lights again. actions: light night; wind hide (on \"So\"); lighthouse glass (on \"glass\"); lighthouse fire (on \"glass\")\n   idea: a glass room round the flame keeps the wind off\n   cue words: \"So\", \"glass\"\n4. problem2\n   on screen: short orange arrows show the weak glow spreading every way and fading. actions: light night; glow show (on \"weak\")\n   idea: the bare glow is weak and spreads every way, so it fades before it reaches far\n   cue words: \"weak\"\n5. fix2\n   on screen: a ringed glass lens appears round the flame and throws two long bright beams. actions: light night; glow hide (on \"So\"); lighthouse lens (on \"lens\"); lighthouse beam (on \"beam\")\n   idea: Augustin Fresnel's 1822 lens of glass rings bends the light into one strong beam\n   cue words: \"So\", \"lens\", \"beam\", \"1822\"\n   its fact: Augustin Fresnel invented his lighthouse lens in 1822.\n6. name\n   on screen: outline traces the lens. actions: light night; lens outline show (on \"Fresnel\")\n   idea: the ringed glass is a Fresnel lens\n   cue words: \"Fresnel\"\n7. how\n   on screen: the lens turns and the beams sweep round. actions: light night; lens outline hide; lighthouse turns (on \"turns\")\n   idea: the lens turns, so the beam sweeps round and is seen as a flash about 20 miles out\n   cue words: \"turns\", \"20\"\n   its fact: The beam of a large (first-order) Fresnel lens could be seen about 20 miles out to sea.\n8. problem3\n   on screen: the heavy lens shudders and sparks fly at its base. actions: light night; lighthouse turnsBack (on \"But\"); lighthouse grinds (on \"grinds\"); grind fx start (on \"grinds\")\n   idea: the heavy lens grinds and sticks as it turns\n   cue words: \"But\", \"grinds\"\n9. fix3\n   on screen: a silver mercury bath fills under the lens and it turns smoothly again. actions: light night; grind fx stop (on \"mercury\"); lighthouse mercury (on \"mercury\"); lighthouse grindsBack (on \"mercury\"); lighthouse turns (on \"spins\")\n   idea: the lens floats on a bath of mercury, so it spins with a push\n   cue words: \"mercury\", \"spins\"\n   its fact: Big rotating lighthouse lenses floated on a bath of liquid mercury so they turned with very little friction.\n10. finish\n   on screen: stairs to the door and rocks round the base appear. actions: light night; steps show (on \"door\"); rocks show (on \"complete\")\n   idea: stairs to the door and rocks round the base complete it\n   cue words: \"door\", \"complete\"\n11. congrats\n   on screen: the finished lighthouse sweeps its beam through the night. actions: light night\n   idea: calm: the beam sweeps through the night\n   cue words: (none)"
+}

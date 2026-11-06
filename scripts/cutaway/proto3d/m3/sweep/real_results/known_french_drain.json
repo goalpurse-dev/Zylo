@@ -1,0 +1,91 @@
+{
+ "plan": "french_drain",
+ "known": true,
+ "usd": 0.02445,
+ "pass": false,
+ "failing": [
+  "hook",
+  "name",
+  "fix3"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "Soil clods fly in the first frame, then a flat tan wall face covers the ground in the next two. No ditch is visible along the house.",
+   "problem": "No dug ditch is visible, only a flat tan face; show an open trench along the wall with soil being dug out."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Rain falls harder on the house across the frames, and blue water collects along the wall base and on the lawn.",
+   "problem": ""
+  },
+  {
+   "role": "flood",
+   "ok": true,
+   "seen": "The blue water in the ditch along the wall rises and fills it while rain keeps falling.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "Arrows point up in the flooded ditch, then a close view shows a crack opening in the wall at the waterline.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The crack is shown first, then the ditch is filled with gravel up to the wall, with a bluish layer at the bottom.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A perforated white pipe appears under the gravel, and the gravel sits on top of it.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A gravel trench with a pipe under it and a thin yellow line at the bottom. The outline is faint and the trench edge is barely marked.",
+   "problem": "The trench outline is only a thin yellow line at the bottom; make it a clear outline around the whole trench."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Blue dots flow along the sloped pipe down to a gravel soakaway, with a down arrow below.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "Gravel with a pipe and some soil crumbs on the surface. No fabric wrap is visible around the gravel.",
+   "problem": "The fabric wrap around the gravel is not visible; show a distinct fabric sheet around the gravel."
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "A French flag stands on the lawn and is then crossed out with a red X.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "A red sign reading Farm Drainage, H. F. French, 1859 stands on the lawn and is readable.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "The gravel trench is capped with grass across the frames, and small bushes appear by the house.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished French drain is in view, with the house, shrubs, gravel, pipe and soakaway all clear.",
+   "problem": ""
+  }
+ ]
+}

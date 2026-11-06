@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "A DEAD CHIP caption appears. A few tiny dust specks sit near the printer at the frame edge, cropped. They are not clearly on the wafer.",
+ "problem": "The dust is tiny, near the edge and not visibly landing on the wafer; show clear lumps falling and resting on it.",
+ "text": "But a single speck of dust landing on a wafer can kill the chip.",
+ "at": "2026-11-06T18:14:45.191Z"
+}

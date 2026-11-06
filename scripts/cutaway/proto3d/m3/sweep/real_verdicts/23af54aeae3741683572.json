@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The finished build is a flat slab with side walls on one pier, shown as the camera pulls back. It is not an arch bridge.",
+ "problem": "The bridge has no arch, so show the complete arch bridge in full view.",
+ "text": "Congratulations, you have built an arch bridge.",
+ "at": "2026-11-06T18:05:04.706Z"
+}

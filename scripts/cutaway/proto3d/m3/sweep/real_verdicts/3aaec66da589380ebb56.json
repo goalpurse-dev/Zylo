@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A small glass tank on a slab with a blue water block appearing inside; no green uranium rods are visible, and the tank is tiny.",
+ "problem": "No green uranium rods can be seen standing in the tank; add clearly green rods and make the tank larger.",
+ "text": "If you stand uranium rods in a tank of water, you have a reactor.",
+ "at": "2026-11-06T18:13:27.461Z"
+}

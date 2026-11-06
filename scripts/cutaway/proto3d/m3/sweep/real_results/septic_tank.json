@@ -1,0 +1,78 @@
+{
+ "plan": "septic_tank",
+ "known": false,
+ "usd": 0.02126,
+ "pass": false,
+ "failing": [
+  "problem",
+  "name"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A pit is dug in the lawn beside the house and a white toilet pipe with blue water dots sits at the pit wall, ending at the pit.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The pit first shows blue water, then a translucent brown fill. A brown log shape and blue puddles sit on the lawn, but the pit is not clearly full of sewage and the spill is weak.",
+   "problem": "Make the pit fill visibly with opaque brown sewage that rises to the rim and flows over onto the lawn, and make the lawn spill brown rather than blue."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The sewage pit is replaced by a concrete tank that fills, then yellow-brown solids sink and pile on the tank floor.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "A dark navy scum layer sits at the top of the tank and thickens across the frames, while the solids settle at the bottom.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A white T-shaped outlet pipe grows below the scum, with blue water droplets running through it and out of the tank wall.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The pipe end is in the tank wall, with small blue puddles on the lawn beyond it and a SWAMP label. The puddles are small but readable.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A gravel bed with a holed pipe appears at the pipe end, and blue arrows point down into the soil toward the groundwater.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "The tank is shown in close-up with a yellow bar across the top edge. It does not trace the tank's outline.",
+   "problem": "Draw a full outline that traces all around the tank edges, not just a bar along the top."
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A sign with a years counter ticks from 0 to 3 beside the tank, with a bar that fills up.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A riser lid appears on the lawn and a strip of grass covers the tank top, both resting on the ground.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole build is in view: the tank with its lid and grass, the T outlet, the gravel field, the house, the tree and the groundwater, with nothing covering them.",
+   "problem": ""
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "A puller machine appears at the right edge, cropped. No glowing melt and no crystal ingot are visible, and nothing turns.",
+ "problem": "The puller is cut off and shows no glowing melt or crystal; reframe and show the ingot rising and turning.",
+ "text": "So you melt the pure silicon and pull one single crystal out of it.",
+ "at": "2026-11-06T18:14:45.186Z"
+}

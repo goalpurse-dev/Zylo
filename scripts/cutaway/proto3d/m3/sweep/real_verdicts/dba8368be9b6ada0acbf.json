@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "Small plane on the runway with only a tiny hint of tan stairs under the wing; no door or windows are readable.",
+ "problem": "Door, windows and stairs are too small to read; zoom in on the fuselage so each is visible.",
+ "text": "Add a door, windows and stairs so people can board.",
+ "at": "2026-11-06T18:03:26.761Z"
+}

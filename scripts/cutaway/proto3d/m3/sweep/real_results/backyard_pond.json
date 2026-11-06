@@ -1,0 +1,81 @@
+{
+ "plan": "backyard_pond",
+ "known": false,
+ "usd": 0.02196,
+ "pass": true,
+ "failing": [],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A rectangular hole is cut into the lawn with the soil cross-section visible, house and trees behind it.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Water fills the hole in the first frame, thins in the second, and is gone in the third, with arrows pointing down into the soil.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The bare hole gets a dark liner on its floor and walls, then blue water fills it.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The blue water turns green across the frames, and the oxygen meter reads 2 behind it.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A small cube grows into a pump and a filter box beside the pond, and a white pipe appears from the pond wall.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline traces the lined pond's walls and floor, with green water inside.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The pipe fills and carries water to the pump, which sprays a stream of droplets back into the pond, and bubbles show in the water.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "The green water turns clear blue and the meter goes from 2 to 8, with spray and bubbles in the pond.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "Rain falls and the pond fills to the brim, then water runs over the right edge onto the lawn with a puddle forming. The OVERFLOW label is shown.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Overflow water spills at the edge, then a pipe grows from the brim down to a gravel pit, the spill puddle shrinks, and the pond level drops.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Round shrubs appear behind the pond on the lawn and a planter with plants appears at the right edge, all standing on grass.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole finished build: pond with blue water, pump, shrubs, planter, overflow pipe and gravel pit, house and trees, all in view and uncovered.",
+   "problem": ""
+  }
+ ]
+}

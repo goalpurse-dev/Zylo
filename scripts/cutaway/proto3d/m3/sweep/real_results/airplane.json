@@ -1,0 +1,105 @@
+{
+ "plan": "airplane",
+ "known": false,
+ "usd": 0.0318,
+ "pass": false,
+ "failing": [
+  "fix1",
+  "fix4",
+  "name2",
+  "problem3",
+  "finish"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "White tube with wheels on the runway; the orange wing is absent in frame 1 and present in frames 2 and 3.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Plane with flat wing stays on the runway, STUCK label, small yellow weight arrows over the wing, wheels on the ground.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "Counter goes 0 to 1,100, bar fills red, yellow gravity arrows over the wing.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "Engine and blue nose appear and a propeller shows, with small white air bits near the wing, but the plane is tiny.",
+   "problem": "Air streaming past the flat wing is barely visible and the propeller spin cannot be read; zoom in and add clearer air streaks."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Wing top gains a rounded bulge, white air arrows run over it, and yellow lift arrows rise.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Tail with red fin and stabilizer is absent in frame 1 and present in frames 2 and 3, on the tail end of the tube.",
+   "problem": ""
+  },
+  {
+   "role": "fix4",
+   "ok": false,
+   "seen": "Plane with tail is small and nearly identical across all three frames.",
+   "problem": "No visible rudder or elevator swing; zoom to the tail and show the surfaces deflecting."
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "Yellow rectangle outline appears around the whole plane in frames 2 and 3.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": false,
+   "seen": "Close-up of the curved wing with a pale yellow rectangle that is offset from the wing, mostly sitting beside it.",
+   "problem": "Outline is misaligned and faint and does not trace the curved wing; fit it tightly around the wing."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Speed counter goes 4 to 100 and the plane moves along the runway and rises off it with its shadow separating.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Plane in the air tips and rolls onto its side with a down arrow at the tail and a ROLLING label.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "Speed gauge goes 0 to 100 and turns red with a TOO FAST label, but the plane is only partly visible, with the wing and wheels at the top, and is not clearly tipped or aloft.",
+   "problem": "The tipped plane is not clearly shown aloft; frame it so the tipped plane is visible above the gauge."
+  },
+  {
+   "role": "fix5",
+   "ok": true,
+   "seen": "Plane starts tilted on its side, then levels out and descends to the runway, with the wing changing in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "Small plane on the runway with only a tiny hint of tan stairs under the wing; no door or windows are readable.",
+   "problem": "Door, windows and stairs are too small to read; zoom in on the fuselage so each is visible."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "Whole finished plane fully in view on the runway, nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

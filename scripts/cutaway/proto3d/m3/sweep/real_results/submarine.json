@@ -1,0 +1,83 @@
+{
+ "plan": "submarine",
+ "known": false,
+ "usd": 0.02366,
+ "pass": true,
+ "failing": [
+  "problem"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "First frame has dirt clumps falling over an empty water pool. In the next two frames a sealed blue steel tube with a conning tower sits at the water surface in the cut-away sea.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "A single frame shows the tube resting on the water surface with a 'CANT DIVE' label. It looks static, and no bobbing is visible.",
+   "problem": "The tube's bobbing can't be seen in a single frame; the image needs several frames showing it moving up and down."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The sub starts floating at the surface, then turns translucent blue with a glass ballast tank under the hull and sits lower in the water, and it sinks across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The translucent sub with its ballast tank moves progressively lower across the frames until it rests on the sea floor.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "The sub starts on the bottom. Yellow air tanks appear on top with white bubbles at the ballast tank, and in the last frame the sub is back up at the surface and solid.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline box encloses the ballast tank area on the hull at the surface. It is clear and readable.",
+   "problem": "The outline is a rectangle over the top of the hull, not tracing the glass ballast tank under it, but it is acceptable."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The sub with the outline at the surface in the first frame, then submerged and lower in the water in the following frames, so it dives.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The sub is deep, a yellow arrow presses down on the hull in the later frames, and a pale crack mark appears in the last frame.",
+   "problem": "The crack is thin and pale rather than dark, but it is visible."
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Steel bands and rings wrap around the hull across the frames, the arrow and crack disappear, and the last frame shows a thicker ringed hull.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A depth sign behind the sea reads 0 in the first frame and 800 in the later frames while the sub sits at the bottom.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "The sub rises to the surface and a periscope appears above the grass, and a small propeller shows at the left end of the hull.",
+   "problem": "The periscope is thin and floats above the hull, and the propeller is small and half hidden."
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole finished sub with periscope and bands in the water pit, fully in view and uncovered.",
+   "problem": ""
+  }
+ ]
+}

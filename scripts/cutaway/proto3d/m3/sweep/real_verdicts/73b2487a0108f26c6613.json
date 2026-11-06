@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The outline is visible in frame 1 and gone later. The truck stays in place with little change, and the rear wheels barely turn against the front.",
+ "problem": "The truck does not pivot in a tight circle and the rear wheels do not visibly counter-steer. Show clear opposite wheel angles and the truck rotating.",
+ "text": "At a crawl, the motor turns the rear wheels against the front ones, so the truck pivots in a tight circle like a compact.",
+ "at": "2026-11-06T18:09:53.868Z"
+}

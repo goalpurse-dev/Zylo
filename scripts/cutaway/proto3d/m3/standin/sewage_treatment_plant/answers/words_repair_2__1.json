@@ -1,0 +1,58 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "title": "How a sewage treatment plant works",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you pipe a town's toilets straight into a river, you have a sewer."
+   },
+   {
+    "role": "problem",
+    "text": "But the river turns dark brown and stinks."
+   },
+   {
+    "role": "fix1",
+    "text": "So you fill a tank, where solids sink and scum floats."
+   },
+   {
+    "role": "problem2",
+    "text": "But it catches only 45 to 65 of every 100 bits of waste, so the water stays dark."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a tank and blow in air for bacteria."
+   },
+   {
+    "role": "name",
+    "text": "This is a sewage treatment plant."
+   },
+   {
+    "role": "how",
+    "text": "Bacteria eat the rest, and clear water flows to the river."
+   },
+   {
+    "role": "problem3",
+    "text": "But now sludge piles up on the floor."
+   },
+   {
+    "role": "fix3",
+    "text": "So you pump it to a digester, and its gas burns."
+   },
+   {
+    "role": "fact",
+    "text": "The average American sends about 82 gallons a day."
+   },
+   {
+    "role": "finish",
+    "text": "Add a fence and young trees around the plant."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a sewage treatment plant."
+   }
+  ]
+ }
+}

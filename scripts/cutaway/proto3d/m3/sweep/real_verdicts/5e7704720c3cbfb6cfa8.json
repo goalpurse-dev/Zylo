@@ -1,0 +1,8 @@
+{
+ "role": "stakes",
+ "ok": false,
+ "seen": "A dark navy layer sits at the top of the pit above the sand. It is the same height in all three frames. Dots appear only in the first frame.",
+ "problem": "The dark dirt layer does not rise across the frames; animate it growing upward from the sand.",
+ "text": "It is full of clay and iron, yet a chip allows only one foreign atom per billion.",
+ "at": "2026-11-06T18:14:45.181Z"
+}

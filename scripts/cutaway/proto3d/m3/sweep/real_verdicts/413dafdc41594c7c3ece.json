@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The lower orange coil appears and a duct pipe shows at the window. The window duct is mostly hidden behind the cabinet and no orange dots run up it.",
+ "problem": "No orange heat dots are visible moving up a duct to the window. Add visible orange dots running up an exposed duct.",
+ "text": "The heat goes to a hot coil and out the window.",
+ "at": "2026-11-06T18:03:59.494Z"
+}

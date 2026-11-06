@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "Speed gauge goes 0 to 100 and turns red with a TOO FAST label, but the plane is only partly visible, with the wing and wheels at the top, and is not clearly tipped or aloft.",
+ "problem": "The tipped plane is not clearly shown aloft; frame it so the tipped plane is visible above the gauge.",
+ "text": "And to land, the plane must slow down, but at 100 kilometers per hour it is far too fast.",
+ "at": "2026-11-06T18:03:26.760Z"
+}

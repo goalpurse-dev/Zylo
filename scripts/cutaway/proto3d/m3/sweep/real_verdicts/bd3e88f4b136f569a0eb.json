@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A counter at the right edge reads 0, then 0, then 15. It is partly cut off, and it does not reach 20 billion.",
+ "problem": "The counter is cropped and stops at 15 rather than reaching 20 billion; reframe and finish the count.",
+ "text": "One modern chip can hold over 20 billion of those switches.",
+ "at": "2026-11-06T18:14:45.190Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A tyre with an orange block on top and a faint grey blob in the air near the wall. No clear smoke pours from the contact point.",
+ "problem": "The smoke is a faint grey blob floating away from the tyre and block, not pouring off the contact; spawn dark smoke puffs at the block-tyre contact.",
+ "text": "But the rubber grinds and smoke pours off.",
+ "at": "2026-11-06T18:06:07.594Z"
+}

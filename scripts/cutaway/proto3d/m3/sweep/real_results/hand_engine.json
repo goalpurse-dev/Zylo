@@ -1,0 +1,42 @@
+{
+ "plan": "hand_engine",
+ "known": false,
+ "usd": 0.0104,
+ "pass": false,
+ "failing": [
+  "how",
+  "name"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A small cutaway engine box on the wooden floor shows two cylinders with pistons and a crankshaft, with spark plugs on top. It is small but readable.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Close-up of the engine cutaway with two cylinders and pistons that stay in the same place across the three frames. The spark plugs are visible on top.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Blue flame appears at the top of both cylinders above the pistons from the first frame to the later ones, so the spark and burning are visible.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "A wide shot of the house wall with a tiny engine far from the camera on the floor. The pistons and crankshaft are too small to see, and no up-and-down motion or spinning can be made out.",
+   "problem": "The engine is tiny and far away, so the pistons and crankshaft can't be seen moving. Move the camera in close on the engine cutaway."
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "The same wide shot with the engine as a tiny dark box on the floor, and the camera drifting upward. The engine can't be seen running.",
+   "problem": "The engine is too small to read as a running engine. Frame the whole engine large in the center of the shot."
+  }
+ ]
+}

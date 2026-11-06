@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "Single frame of the car raised with the valve and a yellow shape near the bag. The gauge reads 150. There are no clear upward arrows on the bag.",
+ "problem": "No clear yellow arrows push up on the bag; add visible upward arrows at the bag.",
+ "text": "The bag at about 100 psi lifts roughly 2800 pounds, though real bags give a bit less.",
+ "at": "2026-11-06T18:04:34.129Z"
+}

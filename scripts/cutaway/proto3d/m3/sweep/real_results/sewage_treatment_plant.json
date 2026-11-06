@@ -1,0 +1,86 @@
+{
+ "plan": "sewage_treatment_plant",
+ "known": false,
+ "usd": 0.02451,
+ "pass": false,
+ "failing": [
+  "hook",
+  "how",
+  "fix3",
+  "fact"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "Brown lumps fall through the air over the field in the first frame. In the later frames a small pipe with blue bubbles sits at the river edge. No brown sewage pours into the river.",
+   "problem": "Brown lumps float in the air, and the water coming out of the pipe is blue, not brown. Remove the airborne lumps and make brown sewage pour from the pipe into the river."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The creek goes from blue to grey-green to olive-brown across the three frames, with foam and a POLLUTED label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A tank appears, fills with water and particles, and solids settle on the floor while scum floats at the top. Tank is underground and in the cutaway.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The gauge falls from 100 to 65, with STILL DIRTY shown beside the tank and the cut ground.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A second tank fills with water and particles. A blower box feeds an air pipe, and a bubble line shows in the later frame.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow glowing outline traces both tanks, which are in the ground and joined by pipes.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "Blue bubbles move along the outlet into the creek, which stays murky olive and only lightens slightly. The creek is not clearly clean.",
+   "problem": "The creek stays murky olive-brown. Make it fade to clear blue and make the clear water in the outlet pipe obvious."
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "A SLUDGE label appears and brown lumps show on the first tank floor in the later frames, with a small pile starting to form.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "A round digester with a burning flame appears, and a pipe runs to it. No sludge is visibly moving up the pipe, and the digester is not clearly connected to the tank.",
+   "problem": "Show sludge running up the pipe from the tank to the digester and connect the pipe to both."
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "A counter sign shows 82 in the later frames. It sits in front of the digester and covers it, and the first frame is unreadable. The count does not clearly climb from 0 to 82.",
+   "problem": "Place the counter beside the tanks without covering the digester. Show it climbing clearly from 0 to 82."
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Trees and a white fence appear on the grass around the plant and stand on the ground.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole finished plant, with both tanks, digester flame, fence, trees and the creek in view. Nothing covers it in the last frame.",
+   "problem": ""
+  }
+ ]
+}

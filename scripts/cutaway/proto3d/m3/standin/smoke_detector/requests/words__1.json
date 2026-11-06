@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "3a5c50885abb1811",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: smoke detector\nLength: 30 s: 95-120 words in all, one sentence per beat (9 sentences).\nWord budget: aim for 108 words in all, about 12 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm\n- Smoke alarm horns sound at least 85 decibels at 10 feet\n- The NFPA says to replace smoke alarms every 10 years\n\nThe beats, in order:\n1. hook\n   on screen: a red light beam shines across the dark chamber. actions: detector show; detector beamOn (on \"beam\")\n   idea: a light beam across a dark box is already the alarm\n   cue words: \"beam\"\n2. problem\n   on screen: a trash can catches fire and smoke rises past the alarm. actions: trashcan show; fire start; smoke start (on \"smoke\")\n   idea: smoke drifts in, but nothing reacts\n   cue words: \"smoke\"\n3. fix1\n   on screen: a blue sensor appears below the beam and a pale ray bounces onto it. actions: detector sensorIn (on \"sensor\"); detector bounce (on \"bounces\")\n   idea: a sensor off to the side catches the light that smoke bounces sideways\n   cue words: \"sensor\", \"bounces\"\n   its fact: Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm\n4. problem2\n   on screen: the room goes dark while the smoke keeps rising and the alarm stays silent. actions: light night (on \"night\")\n   idea: but a sensor makes no sound, and at night everyone sleeps through it\n   cue words: \"night\"\n5. fix2\n   on screen: a horn appears and a red lamp blinks. actions: light day (on \"So\"); detector hornIn (on \"horn\"); detector alarm (on \"blares\")\n   idea: a horn blares at 85 decibels\n   cue words: \"So\", \"horn\", \"blares\", \"85\"\n   its fact: Smoke alarm horns sound at least 85 decibels at 10 feet\n6. name\n   on screen: a glowing outline traces the alarm. actions: fire stop; smoke stop; detector alarmBack (on \"smoke\"); outline show (on \"smoke\")\n   idea: this is a photoelectric smoke detector\n   cue words: \"smoke\"\n7. fact\n   on screen: a counter beside the alarm counts up to 10 years. actions: outline hide; years show; years count (on \"every\")\n   idea: replace the alarm every 10 years\n   cue words: \"every\", \"10\"\n   its fact: The NFPA says to replace smoke alarms every 10 years\n8. finish\n   on screen: a battery, a test button and vents pop on. actions: years hide (on \"Add\"); detector batteryIn (on \"battery\"); detector buttonIn (on \"button\"); detector ventsIn (on \"vents\")\n   idea: a battery, a test button and vents complete the alarm\n   cue words: \"Add\", \"battery\", \"button\", \"vents\"\n9. congrats\n   on screen: the finished build, calm\n   idea: calm end: the alarm hangs quietly on the wall\n   cue words: (none)"
+}

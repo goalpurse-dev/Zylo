@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The pit first shows blue water, then a translucent brown fill. A brown log shape and blue puddles sit on the lawn, but the pit is not clearly full of sewage and the spill is weak.",
+ "problem": "Make the pit fill visibly with opaque brown sewage that rises to the rim and flows over onto the lawn, and make the lawn spill brown rather than blue.",
+ "text": "But it fills with raw sewage that spills onto the lawn.",
+ "at": "2026-11-06T18:18:43.759Z"
+}

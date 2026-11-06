@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The stone layer sits in the cut with rain falling. Only a faint bluish tint appears at its bottom edge in the last frame, so no water visibly rises inside the stone.",
+ "problem": "Show a clear blue water level rising inside the stone layer across the frames.",
+ "text": "But now rain soaks into the stone and sits there.",
+ "at": "2026-11-06T18:17:38.000Z"
+}

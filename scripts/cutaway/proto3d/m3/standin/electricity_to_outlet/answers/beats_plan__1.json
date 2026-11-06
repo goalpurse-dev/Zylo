@@ -1,0 +1,146 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{
+"why":"A yard with a small generator on the left, two power poles and a house on the right: the wire is strung from the generator to the house, a step-up transformer and a pole transformer are added, a storm drops a branch on the line, and the cable is finally buried in a trench seen in section. The camera opens close on the wire leaving the generator, holds mid shots of the poles and the counter, and ends wide on the lit house.",
+"story":{"title":"How electricity gets to your outlet","hero":"the power grid","parts":["generator","wire","power poles","step-up transformer","pole transformer","porch light","branch","buried cable","meter"],
+"ideas":[
+{"role":"hook","idea":"run a wire from a power plant to your house and you have electricity"},
+{"role":"problem","idea":"a long wire wastes power as heat and glows hot"},
+{"role":"fix1","idea":"a transformer raises the voltage so the same power flows as a small current and the wire stays cool"},
+{"role":"problem2","idea":"that high voltage at your house would blow everything up in sparks"},
+{"role":"fix2","idea":"a transformer on the pole steps it down for the house"},
+{"role":"name","idea":"this is the power grid"},
+{"role":"how","idea":"power flows through the wire and the transformer and the porch light comes on"},
+{"role":"problem3","idea":"a storm drops a branch on the line and the light goes out"},
+{"role":"fix3","idea":"bury the cable underground away from storms"},
+{"role":"fact","idea":"a pole transformer turns about 7,200 volts into 240"},
+{"role":"finish","idea":"add a meter on the wall and the porch light back on"},
+{"role":"congrats","idea":"you have built the power grid"}],
+"chain":[
+{"problem":"problem","causedBy":"hook","shows":"the wire glows red hot","stakes":"the power is lost as heat","size":4},
+{"problem":"problem2","causedBy":"fix1","shows":"sparks burst at the house wall","stakes":"the house wiring burns","size":7},
+{"problem":"problem3","causedBy":"fix2","shows":"a branch falls on the line in a storm, sparks fly, the light goes out","stakes":"the whole street goes dark","size":8}],
+"surprises":[
+{"claim":"Long-distance power lines run at hundreds of thousands of volts, because higher voltage loses less power as heat","role":"fix1","search":"why transmission lines high voltage less loss EIA"},
+{"claim":"A pole transformer turns about 7,200 volts into the 240 and 120 volts a house uses","role":"fact","search":"pole mounted distribution transformer 7200 volts to 240 120"},
+{"claim":"About 5 percent of the electricity is lost in transmission and distribution in America","role":"problem","search":"EIA how much electricity is lost in transmission and distribution percent"}]},
+"sceneJson":{
+"world":{"cut":[-6.5,5,-1.2,1.4],"house":[9,0,-8],"porch":false,"trees":[[-14,-10],[15,-14,0.9]],"road":false,"worker":false,"moreTrees":false,
+ "rocksAvoid":[[-7,5.5,-1.6,0.2]],"roots":{"pad":0.6,"to":6}},
+"parts":[
+{"id":"light","kind":"light","params":{"storm":true}},
+{"id":"plant","kind":"machine","params":{"pos":[-6,0,-3],"rotY":0}},
+{"id":"grid","kind":"rig","main":true,"params":{"name":"power line","synonyms":["power grid","grid","wire","line","poles"],"pos":[0,0,-2.5],"nodes":[
+ {"id":"poles","at":[0,0,0],"shapes":[
+   {"shape":"box","size":[0.3,7,0.3],"at":[-3,3.5,0],"look":"wood","color":"#7a5a3a"},
+   {"shape":"box","size":[1.8,0.16,0.16],"at":[-3,6.8,0],"look":"wood","color":"#7a5a3a"},
+   {"shape":"box","size":[0.3,7,0.3],"at":[2.5,3.5,0],"look":"wood","color":"#7a5a3a"},
+   {"shape":"box","size":[1.8,0.16,0.16],"at":[2.5,6.8,0],"look":"wood","color":"#7a5a3a"},
+   {"shape":"box","size":[5.8,0.08,0.08],"at":[-0.25,0.04,0.5],"look":"concrete","color":"#9a9a9a"}]},
+ {"id":"wire","parent":"poles","at":[0,0,0],"shapes":[
+   {"shape":"cable","path":[[-6,2.0,-0.5],[-3,6.85,0],[2.5,6.85,0],[5.0,4.0,-2.2]],"r":0.07,"look":"rubber","color":"#202020"}],
+  "moves":[{"name":"wire","type":"appear"},{"name":"hot","type":"heat","color":"#ff4a1f"},{"name":"power","type":"flow","path":[[-6,2.0,-0.5],[-3,6.85,0],[2.5,6.85,0],[5.0,4.0,-2.2]],"color":"#ffe14a"}]},
+ {"id":"stepUp","parent":"poles","at":[-3.6,0,0],"shapes":[
+   {"shape":"box","size":[0.9,1.3,0.9],"at":[0,0.65,0],"look":"metal","color":"#7d8a96"},
+   {"shape":"box","size":[1.0,0.12,1.0],"at":[0,1.36,0],"look":"metal","color":"#5b6470"},
+   {"shape":"cylinder","r":0.08,"h":0.4,"axis":"y","at":[0,1.6,0],"look":"plastic","color":"#c0782a"}],
+  "moves":[{"name":"stepUp","type":"appear"}]},
+ {"id":"can","parent":"poles","at":[2.5,5.4,0.4],"shapes":[
+   {"shape":"cylinder","r":0.38,"h":0.95,"axis":"y","at":[0,0,0],"look":"metal","color":"#8c969f"},
+   {"shape":"cylinder","r":0.07,"h":0.3,"axis":"y","at":[0,0.6,0],"look":"plastic","color":"#c0782a"}],
+  "moves":[{"name":"can","type":"appear"}]},
+ {"id":"branch","parent":"poles","at":[-0.2,8.3,0],"shapes":[
+   {"shape":"box","size":[3.2,0.28,0.28],"at":[0,0,0],"rot":[0,0,-12],"look":"wood","color":"#5a3e26"},
+   {"shape":"box","size":[0.9,0.18,0.18],"at":[0.8,0.35,0],"rot":[0,0,35],"look":"wood","color":"#5a3e26"}],
+  "moves":[{"name":"branch","type":"appear"},{"name":"fall","type":"slide","to":[0,-1.35,0]}]}
+]}},
+{"id":"porch","kind":"rig","params":{"name":"porch light and meter","synonyms":["porch light","light","meter","outlet"],"pos":[5.6,1.6,-4.72],"mount":"wall","nodes":[
+ {"id":"plate","at":[0,0,0],"shapes":[
+   {"shape":"box","size":[0.5,0.5,0.12],"at":[0,0.6,0.06],"look":"metal","color":"#2e2e2e"},
+   {"shape":"light","r":0.28,"at":[0,0.6,0.35],"color":"#ffd23d"}],
+  "moves":[{"name":"lit","type":"light"}]},
+ {"id":"meter","parent":"plate","at":[1.0,0,0],"shapes":[
+   {"shape":"box","size":[0.7,0.9,0.3],"at":[0,0.3,0.15],"look":"metal","color":"#9aa0a6"},
+   {"shape":"screen","size":[0.45,0.25],"at":[0,0.45,0.32]}],
+  "moves":[{"name":"meter","type":"appear"},{"name":"tick","type":"count","from":0,"to":30}]}
+]}},
+{"id":"standV","kind":"boxPop","params":{"size":[0.25,2.2,0.25],"pos":[-0.3,1.1,-4.2],"mat":"metal"}},
+{"id":"volts","kind":"counter","params":{"pos":[-0.3,2.6,-4.2],"size":1.2,"from":10,"to":400,"color":"#ffd23d"}},
+{"id":"volts2","kind":"counter","params":{"pos":[-0.3,2.6,-4.2],"size":1.2,"from":7200,"to":240,"color":"#3ad6ff"}},
+{"id":"spark1","kind":"fx","params":{"type":"spark","at":[5.0,4.0,-4.6],"size":0.8}},
+{"id":"spark2","kind":"fx","params":{"type":"spark","at":[0.5,6.9,-2.4],"size":0.9}},
+{"id":"rain","kind":"rain","params":{"x0":-14,"x1":14,"z0":-14,"z1":-0.1,"yTop":16,"yBot":-0.2,"count":1100,"width":0.02,"opacity":0.36}},
+{"id":"dig","kind":"dig","params":{"clumps":120,"mound":{"x":-1,"z":-6.5,"rx":1.6,"rz":1.0,"h":0.8},"haul":true}},
+{"id":"cable","kind":"pipeRun","params":{"path":[[-6,-0.9,-0.06],[4.6,-0.9,-0.06]],"r":0.14,"mat":"metal"}},
+{"id":"cableFlow","kind":"pipeRunFlow","params":{"pipe":"cable","count":14,"size":0.12,"speed":3,"mat":"juice","dz":0.2}},
+{"id":"capSoil","kind":"wipe","params":{"box":{"x0":-6.48,"x1":4.98,"y0":-0.6,"y1":-0.05,"z0":-1.18,"z1":0},"mat":"soilCover","axis":"x","r":0.04}},
+{"id":"gridOutline","kind":"outline","params":{"of":"grid","opts":{"r":0.11,"closed":true}}},
+{"id":"sign","kind":"sign","params":{"at":[-9,0,-6],"rotY":0.25,"scale":1.3}}
+],
+"beats":[
+{"s":"hook","shows":{"p":"grid","does":"a wire is strung from the generator over two poles to the house"},"do":[
+ {"p":"plant","v":"show","w":"","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"show","w":"","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"wire","w":"wire","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"power","w":"house","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["plant","grid"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"problem","state":{"text":"POWER LOST","w":"glows"},"shows":{"p":"grid","does":"the long wire glows red hot"},"do":[
+ {"p":"grid","v":"hot","w":"glows","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid.wire"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"fix1","shows":{"p":"grid","does":"a transformer box appears by the generator, the volts counter climbs and the wire cools"},"do":[
+ {"p":"grid","v":"stepUp","w":"transformer","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"standV","v":"show","w":"transformer","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"volts","v":"show","w":"transformer","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"volts","v":"count","w":"volts","o":-0.8,"d":1.2,"amp":1,"ch":""},
+ {"p":"grid","v":"hotBack","w":"volts","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid.stepUp","volts"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"problem2","state":{"text":"TOO HIGH","w":"sparks"},"shows":{"p":"spark1","does":"sparks burst where the wire meets the house"},"do":[
+ {"p":"spark1","v":"start","w":"sparks","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["porch","grid.wire"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"fix2","shows":{"p":"grid","does":"a grey transformer can appears on the pole and the sparks stop"},"do":[
+ {"p":"spark1","v":"stop","w":"So","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"can","w":"pole","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"volts","v":"hide","w":"pole","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid.can"],"view":"home","width":0,"type":"close","hero":false,"word":"","box":[]}]},
+{"s":"name","shows":{"p":"gridOutline","does":"a glowing outline traces the poles and the wire"},"do":[
+ {"p":"gridOutline","v":"show","w":"grid","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid"],"view":"home","width":0.85,"type":"","hero":true,"word":"","box":[]}]},
+{"s":"how","shows":{"p":"porch","does":"power dots run along the wire into the house and the porch light comes on"},"do":[
+ {"p":"gridOutline","v":"hide","w":"","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"show","w":"","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"lit","w":"light","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid.can","porch"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"problem3","state":{"text":"BLACKOUT","w":"branch"},"shows":{"p":"grid","does":"in a storm a branch falls onto the line, sparks fly and the porch light goes out"},"do":[
+ {"p":"light","v":"storm","w":"But","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"rain","v":"start","w":"But","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"branch","w":"But","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"grid","v":"fall","w":"branch","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"spark2","v":"start","w":"branch","o":0.3,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"litBack","w":"out","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"fix3","shows":{"p":"cable","does":"a trench is dug and a cable is laid in it underground"},"do":[
+ {"p":"spark2","v":"stop","w":"So","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"rain","v":"stop","w":"So","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"light","v":"clear","w":"So","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"dig","v":"dig","w":"bury","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"cable","v":"grow","w":"cable","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"cableFlow","v":"show","w":"underground","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"lit","w":"underground","o":0,"d":0,"amp":1,"ch":""}],
+ "shots":[{"focus":["cable"],"view":"low","width":0.9,"type":"","hero":false,"word":"","box":[]}]},
+{"s":"fact","shows":{"p":"volts2","does":"a counter beside the pole falls from 7,200 to 240"},"do":[
+ {"p":"volts2","v":"show","w":"","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"volts2","v":"count","w":"240","o":-0.8,"d":1.2,"amp":1,"ch":""}],
+ "shots":[{"focus":["grid.can","volts2"],"view":"home","width":0,"type":"mid","hero":false,"word":"","box":[]}]},
+{"s":"finish","shows":{"p":"porch","does":"a meter appears on the house wall and its number ticks up, the soil goes back over the cable"},"do":[
+ {"p":"volts2","v":"hide","w":"Add","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"cableFlow","v":"hide","w":"Add","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"dig","v":"refill","w":"Add","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"capSoil","v":"grow","w":"Add","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"meter","w":"meter","o":0,"d":0,"amp":1,"ch":""},
+ {"p":"porch","v":"tick","w":"meter","o":0.3,"d":1.5,"amp":1,"ch":""}],
+ "shots":[{"focus":["home"],"view":"home","width":0,"type":"","hero":false,"word":"","box":[]}]},
+{"s":"congrats","do":[],"shots":[{"focus":["home"],"view":"home","width":0,"type":"","hero":false,"word":"","box":[]}]}
+],
+"audio":{"cards":[{"text":"400,000 VOLTS","at":{"s":"fix1","w":"volts","o":0},"d":1.6},{"text":"240 VOLTS","at":{"s":"fact","w":"240","o":0},"d":1.5}],
+ "sfx":[{"lib":"motor_hum","at":{"s":"hook","w":"","o":0.1},"d":1.8},{"lib":"flame","at":{"s":"problem","w":"glows","o":0},"d":1.2},{"lib":"dirt","at":{"s":"fix3","w":"bury","o":0},"d":1.2}],
+ "chimes":[{"s":"fix1","w":"volts","o":0},{"s":"name","w":"","o":0},{"s":"fact","w":"240","o":0},{"s":"congrats","w":"","o":0}],
+ "rain":[{"s":"problem3","w":"But","o":0},{"s":"fix3","w":"So","o":0}]}
+}}}

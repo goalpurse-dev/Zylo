@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "Plane with tail is small and nearly identical across all three frames.",
+ "problem": "No visible rudder or elevator swing; zoom to the tail and show the surfaces deflecting.",
+ "text": "Then you hinge the back of the tail, so the rudder swings the nose sideways and the elevator swings it up.",
+ "at": "2026-11-06T18:03:26.756Z"
+}

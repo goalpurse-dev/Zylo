@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The truck is almost static, with a small orange post near the tail. The 'TAIL SWINGS' caption appears, but the tail does not move toward the post.",
+ "problem": "The tail does not visibly swing out toward the post. Rotate the truck body so the rear sweeps toward the post.",
+ "text": "But the long body cannot pivot, so its tail swings out wide toward a post.",
+ "at": "2026-11-06T18:09:53.865Z"
+}

@@ -1,0 +1,1510 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A small sewage works beside a park creek, built in the ground in section: the town's sewer pipe runs under the cut to the creek, then a settling tank and an aeration tank go into the cut, clean water returns to the creek, and the sludge goes to a digester whose gas burns as a flare. The camera opens close on the pipe pouring into the creek, follows the tanks in mid shots, and ends wide on the fenced plant.",
+  "story": {
+   "title": "How a sewage treatment plant works",
+   "hero": "a sewage treatment plant",
+   "parts": [
+    "sewer pipe",
+    "creek",
+    "settling tank",
+    "sludge",
+    "scum",
+    "aeration tank",
+    "air bubbles",
+    "bacteria",
+    "outlet pipe",
+    "digester",
+    "gas flare",
+    "fence",
+    "young trees"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "pipe the town's toilets straight into the river and you have a sewer"
+    },
+    {
+     "role": "problem",
+     "idea": "the river turns brown"
+    },
+    {
+     "role": "fix1",
+     "idea": "send it into a tank where solids sink and scum floats"
+    },
+    {
+     "role": "problem2",
+     "idea": "the tank only takes out part of the waste, the gauge stops at 65 percent left"
+    },
+    {
+     "role": "fix2",
+     "idea": "a second tank where air bubbles feed bacteria that eat the dissolved waste"
+    },
+    {
+     "role": "name",
+     "idea": "this is a sewage treatment plant"
+    },
+    {
+     "role": "how",
+     "idea": "clear water flows back to the river and it turns clean"
+    },
+    {
+     "role": "problem3",
+     "idea": "now sludge piles up on the tank floors"
+    },
+    {
+     "role": "fix3",
+     "idea": "pump the sludge to a digester where bacteria turn it into gas that burns"
+    },
+    {
+     "role": "fact",
+     "idea": "each person sends tens of gallons of wastewater a day"
+    },
+    {
+     "role": "finish",
+     "idea": "add a fence and young trees round the plant"
+    },
+    {
+     "role": "congrats",
+     "idea": "you have built a sewage treatment plant"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the creek turns brown",
+     "stakes": "the river and its fish",
+     "size": 5
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the waste gauge only falls to 65",
+     "stakes": "the river is still dirty",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "sludge lumps pile up on the tank floor",
+     "stakes": "the tanks fill with sludge",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A settling tank removes about 60 percent of the solids but only about a third of the dissolved waste",
+     "role": "problem2",
+     "search": "primary treatment removes percent suspended solids BOD EPA"
+    },
+    {
+     "claim": "The average American uses about 82 gallons of water a day at home, most of it going down the drain",
+     "role": "fact",
+     "search": "EPA average American uses 82 gallons water per day home"
+    },
+    {
+     "claim": "Sludge digesters make biogas that is mostly methane, which plants burn or use for power",
+     "role": "fix3",
+     "search": "anaerobic digester wastewater sludge biogas methane percent"
+    }
+   ]
+  },
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -5,
+     3,
+     -4,
+     5
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [
+     [
+      -15,
+      -11
+     ],
+     [
+      15,
+      -10,
+      0.9
+     ]
+    ],
+    "road": false,
+    "worker": false,
+    "moreTrees": false,
+    "rocksAvoid": [
+     [
+      -5.5,
+      11,
+      -6,
+      0.2
+     ]
+    ],
+    "roots": {
+     "pad": 0.8,
+     "to": 14
+    },
+    "backdrop": {
+     "type": "park",
+     "lampX": -12,
+     "benchX": -13
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {}
+    },
+    {
+     "id": "creek",
+     "kind": "creek",
+     "params": {
+      "x0": 4.2,
+      "x1": 11,
+      "width": 2.4,
+      "depth": 0.7,
+      "y": 0,
+      "dir": 1
+     }
+    },
+    {
+     "id": "rawPipe",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        -9,
+        -5.5,
+        -0.06
+       ],
+       [
+        3.6,
+        -5.5,
+        -0.06
+       ],
+       [
+        3.6,
+        -0.45,
+        -0.06
+       ],
+       [
+        4.5,
+        -0.45,
+        -0.06
+       ]
+      ],
+      "r": 0.22,
+      "mat": "pipeWhite"
+     }
+    },
+    {
+     "id": "rawFlow",
+     "kind": "pipeRunFlow",
+     "params": {
+      "pipe": "rawPipe",
+      "count": 22,
+      "size": 0.16,
+      "speed": 3,
+      "mat": "juice",
+      "dz": 0.28
+     }
+    },
+    {
+     "id": "rawOut",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        4.5,
+        -0.45,
+        0.05
+       ],
+       [
+        5.4,
+        -0.35,
+        -0.4
+       ],
+       [
+        6.6,
+        -0.3,
+        -0.9
+       ]
+      ],
+      "look": "sludge",
+      "size": 0.2,
+      "speed": 2.4,
+      "count": 18
+     }
+    },
+    {
+     "id": "feed",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        -9,
+        -1,
+        -0.06
+       ],
+       [
+        -4.6,
+        -1,
+        -0.06
+       ]
+      ],
+      "r": 0.22,
+      "mat": "pipeWhite"
+     }
+    },
+    {
+     "id": "feedFlow",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        -4.6,
+        -1,
+        -0.3
+       ],
+       [
+        -4,
+        -1.3,
+        -0.4
+       ],
+       [
+        -3.4,
+        -2.2,
+        -0.6
+       ]
+      ],
+      "look": "sludge",
+      "size": 0.18,
+      "speed": 2.4,
+      "count": 14
+     }
+    },
+    {
+     "id": "tank1",
+     "kind": "settle",
+     "params": {
+      "box": {
+       "x0": -4.6,
+       "x1": -1.2,
+       "y0": -4.6,
+       "y1": -0.3,
+       "z0": -3.6,
+       "z1": 0
+      },
+      "lid": false,
+      "murky": true,
+      "clearColor": "#8a9a6a"
+     }
+    },
+    {
+     "id": "tank2",
+     "kind": "settle",
+     "params": {
+      "box": {
+       "x0": -0.7,
+       "x1": 2.7,
+       "y0": -4.6,
+       "y1": -0.3,
+       "z0": -3.6,
+       "z1": 0
+      },
+      "lid": false,
+      "murky": true,
+      "clearColor": "#8fd0e8"
+     }
+    },
+    {
+     "id": "link",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        -1.3,
+        -0.9,
+        -0.4
+       ],
+       [
+        -1,
+        -0.9,
+        -0.4
+       ],
+       [
+        -0.6,
+        -1.2,
+        -0.4
+       ]
+      ],
+      "look": "water",
+      "size": 0.16,
+      "speed": 2,
+      "count": 8
+     }
+    },
+    {
+     "id": "airHose",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        3.6,
+        0.2,
+        -5
+       ],
+       [
+        1,
+        0.2,
+        -5
+       ],
+       [
+        1,
+        0.2,
+        -2
+       ],
+       [
+        1,
+        -4.3,
+        -2
+       ]
+      ],
+      "r": 0.08,
+      "mat": "pipeWhite"
+     }
+    },
+    {
+     "id": "blower",
+     "kind": "machine",
+     "params": {
+      "pos": [
+       4.4,
+       0,
+       -5.4
+      ],
+      "rotY": 0
+     }
+    },
+    {
+     "id": "bubbles",
+     "kind": "bubbles",
+     "params": {
+      "x0": -0.4,
+      "x1": 2.4,
+      "y0": -4.4,
+      "y1": -0.5,
+      "z": -0.2,
+      "count": 60,
+      "speed": 1
+     }
+    },
+    {
+     "id": "outPipe",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        2.7,
+        -1,
+        -0.06
+       ],
+       [
+        3.2,
+        -1,
+        -0.06
+       ],
+       [
+        3.2,
+        -0.3,
+        -0.06
+       ],
+       [
+        4.4,
+        -0.3,
+        -0.06
+       ]
+      ],
+      "r": 0.2,
+      "mat": "pipeWhite"
+     }
+    },
+    {
+     "id": "outFlow",
+     "kind": "pipeRunFlow",
+     "params": {
+      "pipe": "outPipe",
+      "count": 12,
+      "size": 0.15,
+      "speed": 3,
+      "mat": "water",
+      "dz": 0.26
+     }
+    },
+    {
+     "id": "standW",
+     "kind": "boxPop",
+     "params": {
+      "size": [
+       0.25,
+       2.4,
+       0.25
+      ],
+      "pos": [
+       -1,
+       1.2,
+       -5.2
+      ],
+      "mat": "metal"
+     }
+    },
+    {
+     "id": "waste",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       -1,
+       2.9,
+       -5.2
+      ],
+      "size": 1.3,
+      "from": 100,
+      "to": 65,
+      "color": "#c98a3a",
+      "bar": true,
+      "danger": 0.5
+     }
+    },
+    {
+     "id": "waste2",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       -1,
+       2.9,
+       -5.2
+      ],
+      "size": 1.3,
+      "from": 65,
+      "to": 5,
+      "color": "#3ad6ff",
+      "bar": true,
+      "danger": 0.5
+     }
+    },
+    {
+     "id": "plantOutline",
+     "kind": "outline",
+     "params": {
+      "points": [
+       [
+        -4.75,
+        -0.2,
+        0.1
+       ],
+       [
+        -4.75,
+        -4.75,
+        0.1
+       ],
+       [
+        2.85,
+        -4.75,
+        0.1
+       ],
+       [
+        2.85,
+        -0.2,
+        0.1
+       ]
+      ],
+      "opts": {
+       "r": 0.11,
+       "closed": true
+      }
+     }
+    },
+    {
+     "id": "sludgeDrops",
+     "kind": "drops",
+     "params": {
+      "x0": -4.3,
+      "x1": -1.5,
+      "count": 24,
+      "fromY": -1,
+      "landY": -4.3,
+      "z": 0.15,
+      "mat": "mud"
+     }
+    },
+    {
+     "id": "sludgePipe",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        -2.9,
+        0.25,
+        -3.8
+       ],
+       [
+        -2.9,
+        0.25,
+        -6.6
+       ]
+      ],
+      "r": 0.18,
+      "mat": "metal"
+     }
+    },
+    {
+     "id": "sludgeFlow",
+     "kind": "pipeRunFlow",
+     "params": {
+      "pipe": "sludgePipe",
+      "count": 8,
+      "size": 0.14,
+      "speed": 2.4,
+      "mat": "juice",
+      "dz": 0.22
+     }
+    },
+    {
+     "id": "digester",
+     "kind": "tank",
+     "params": {
+      "pos": [
+       -2.9,
+       0,
+       -8
+      ],
+      "r": 1.6,
+      "h": 3.2,
+      "bands": [
+       1,
+       2.2
+      ],
+      "mat": "concrete"
+     }
+    },
+    {
+     "id": "flare",
+     "kind": "flare",
+     "params": {
+      "pos": [
+       -2.9,
+       3.2,
+       -8
+      ],
+      "intensity": 30
+     }
+    },
+    {
+     "id": "standG",
+     "kind": "boxPop",
+     "params": {
+      "size": [
+       0.25,
+       2.4,
+       0.25
+      ],
+      "pos": [
+       -1,
+       1.2,
+       -5.2
+      ],
+      "mat": "metal"
+     }
+    },
+    {
+     "id": "gallons",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       -1,
+       2.9,
+       -5.2
+      ],
+      "size": 1.3,
+      "from": 0,
+      "to": 82,
+      "color": "#3ad6ff"
+     }
+    },
+    {
+     "id": "fence",
+     "kind": "fence",
+     "params": {
+      "x0": -6,
+      "x1": 3.4,
+      "step": 1.6,
+      "zBack": -10,
+      "sideStart": 1.6,
+      "zFront": -4.4,
+      "railZ": -7
+     }
+    },
+    {
+     "id": "trees",
+     "kind": "youngTrees",
+     "params": {
+      "trees": [
+       [
+        -7.5,
+        -6,
+        0.7
+       ],
+       [
+        5.5,
+        -8,
+        0.8
+       ],
+       [
+        -7.5,
+        -2,
+        0.6
+       ]
+      ],
+      "stagger": 0.2
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       9,
+       0,
+       -6
+      ],
+      "rotY": -0.2,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "rawOut",
+      "does": "brown sewage pours out of the pipe into the river"
+     },
+     "do": [
+      {
+       "p": "creek",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rawPipe",
+       "v": "grow",
+       "w": "pipe",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rawFlow",
+       "v": "show",
+       "w": "toilets",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rawOut",
+       "v": "start",
+       "w": "river",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        2.4,
+        -1.6,
+        -2.6,
+        7.6,
+        0.6,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "state": {
+      "text": "POLLUTED",
+      "w": "brown"
+     },
+     "shows": {
+      "p": "creek",
+      "does": "the creek turns brown"
+     },
+     "do": [
+      {
+       "p": "creek",
+       "v": "dirty",
+       "w": "brown",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        2.4,
+        -1.6,
+        -2.6,
+        7.6,
+        0.6,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "tank1",
+      "does": "the tank fills, solids sink to the floor and scum floats up"
+     },
+     "do": [
+      {
+       "p": "rawFlow",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rawOut",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "feed",
+       "v": "grow",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank1",
+       "v": "show",
+       "w": "tank",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "feedFlow",
+       "v": "start",
+       "w": "tank",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank1",
+       "v": "fill",
+       "w": "tank",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank1",
+       "v": "sink",
+       "w": "sink",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank1",
+       "v": "float",
+       "w": "floats",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank1"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "state": {
+      "text": "STILL DIRTY",
+      "w": "waste"
+     },
+     "shows": {
+      "p": "waste",
+      "does": "the waste gauge falls only from 100 to 65"
+     },
+     "do": [
+      {
+       "p": "standW",
+       "v": "show",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "waste",
+       "v": "show",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "waste",
+       "v": "count",
+       "w": "waste",
+       "o": 0,
+       "d": 1.4,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank1",
+        "waste"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "bubbles",
+      "does": "a second tank fills and air bubbles rise through it"
+     },
+     "do": [
+      {
+       "p": "tank2",
+       "v": "show",
+       "w": "tank",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "link",
+       "v": "start",
+       "w": "tank",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank2",
+       "v": "fill",
+       "w": "tank",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "blower",
+       "v": "show",
+       "w": "air",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "airHose",
+       "v": "grow",
+       "w": "air",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "bubbles",
+       "v": "show",
+       "w": "air",
+       "o": 0.4,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank2",
+        "blower"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "plantOutline",
+      "does": "a glowing outline traces both tanks"
+     },
+     "do": [
+      {
+       "p": "plantOutline",
+       "v": "show",
+       "w": "sewage",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank1",
+        "tank2"
+       ],
+       "view": "home",
+       "width": 0.85,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "outFlow",
+      "does": "clear water runs down the outlet pipe and the creek turns clean"
+     },
+     "do": [
+      {
+       "p": "plantOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "waste",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "waste2",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "tank2",
+       "v": "clear",
+       "w": "clear",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "waste2",
+       "v": "count",
+       "w": "clear",
+       "o": 0,
+       "d": 1.4,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "outPipe",
+       "v": "grow",
+       "w": "clear",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "outFlow",
+       "v": "show",
+       "w": "flows",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "creek",
+       "v": "clean",
+       "w": "river",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0.95,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -1,
+        -4.8,
+        -3.6,
+        6.5,
+        0.5,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem3",
+     "state": {
+      "text": "SLUDGE",
+      "w": "piles"
+     },
+     "shows": {
+      "p": "sludgeDrops",
+      "does": "lumps of sludge drop and pile on the tank floor"
+     },
+     "do": [
+      {
+       "p": "waste2",
+       "v": "hide",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "standW",
+       "v": "show",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sludgeDrops",
+       "v": "fall",
+       "w": "sludge",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank1"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "flare",
+      "does": "sludge runs up a pipe to a round digester and its gas burns as a flame on top"
+     },
+     "do": [
+      {
+       "p": "sludgePipe",
+       "v": "grow",
+       "w": "pump",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sludgeFlow",
+       "v": "show",
+       "w": "pump",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sludgeDrops",
+       "v": "hide",
+       "w": "digester",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "digester",
+       "v": "show",
+       "w": "digester",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "flare",
+       "v": "show",
+       "w": "gas",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank1",
+        "digester"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "gallons",
+      "does": "a counter climbs from 0 to 82 gallons beside the tanks"
+     },
+     "do": [
+      {
+       "p": "standG",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "gallons",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "gallons",
+       "v": "count",
+       "w": "82",
+       "o": -0.6,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank2",
+        "gallons"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "fence",
+      "does": "a fence and young trees pop up round the plant"
+     },
+     "do": [
+      {
+       "p": "gallons",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sludgeFlow",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "fence",
+       "v": "show",
+       "w": "fence",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "trees",
+       "v": "show",
+       "w": "trees",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "bubbles",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "outFlow",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "65%",
+      "at": {
+       "s": "problem2",
+       "w": "65",
+       "o": 0
+      },
+      "d": 1.5
+     },
+     {
+      "text": "82 GALLONS",
+      "at": {
+       "s": "fact",
+       "w": "82",
+       "o": 0
+      },
+      "d": 1.6
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "hook",
+       "w": "river",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "fix1",
+       "w": "tank",
+       "o": 0.2
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "fix2",
+       "w": "air",
+       "o": 0
+      },
+      "d": 1.6
+     },
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem3",
+       "w": "sludge",
+       "o": 0
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "flame",
+      "at": {
+       "s": "fix3",
+       "w": "gas",
+       "o": 0
+      },
+      "d": 1.4
+     }
+    ],
+    "chimes": [
+     {
+      "s": "problem2",
+      "w": "65",
+      "o": 0
+     },
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "82",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

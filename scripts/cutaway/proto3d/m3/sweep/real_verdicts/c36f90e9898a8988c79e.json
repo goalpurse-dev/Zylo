@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A big black panel covers the alarm and shows a number counter that goes 0, 0, 6. A yellow bracket shows in frame one. It does not reach 10 and the alarm is hidden behind the panel.",
+ "problem": "The counter never reaches 10 and the panel hides the alarm. Place the counter beside the alarm, clear of it, and count up to 10.",
+ "text": "Fire safety experts say to replace it every 10 years.",
+ "at": "2026-11-06T18:19:40.353Z"
+}

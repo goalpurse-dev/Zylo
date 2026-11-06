@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "The escalator with steps and tracks is visible, but no red brake sliding into the gear can be seen and nothing appears to change across the frames.",
+ "problem": "Show a red brake clearly sliding into the gear at the top and the steps stopping.",
+ "text": "So you add a brake that stops them when the power fails.",
+ "at": "2026-11-06T18:08:12.703Z"
+}

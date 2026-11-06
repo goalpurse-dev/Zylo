@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "ffae8eb8879a5448",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: road\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- By weight, asphalt is about 95 percent stone, sand and gravel, glued by about 5 percent asphalt binder.\n- Poor drainage is one of the most common causes of road failure.\n- A road is built in layers: compacted subgrade, a crushed stone base, then an asphalt surface\n\nThe beats, in order:\n1. hook\n   on screen: a car drives along the dirt strip. actions: dirt track grow; car arrive (on \"drive\")\n   idea: you drive the same strip of dirt again and again\n   cue words: \"drive\"\n2. problem\n   on screen: rain falls, mud splashes and puddles spread round the stopped car on the dirt track. actions: light storm (on \"But\"); rain start (on \"But\"); lawn wet (on \"rain\"); puddles rise (on \"mud\"); mud splash start (on \"mud\"); mud drops fall (on \"mud\")\n   idea: rain turns the dirt into mud and the car gets stuck\n   cue words: \"But\", \"rain\", \"mud\"\n3. fix1\n   on screen: the strip is dug out and crushed stone pours in. actions: mud splash stop (on \"So\"); car leave (on \"So\"); puddles dry (on \"dig\"); dig dig (on \"dig\"); stone fill (on \"stone\"); mud drops hide (on \"So\")\n   idea: you dig out the mud and pack in crushed stone that does not turn to mud\n   cue words: \"So\", \"dig\", \"stone\"\n4. problem2\n   on screen: water rises inside the stone layer. actions: base water trickle (on \"soaks\"); base water flood (on \"sits\")\n   idea: rain soaks down into the stone and sits there with nowhere to go\n   cue words: \"soaks\", \"sits\"\n   its fact: Poor drainage is one of the most common causes of road failure.\n5. fix2\n   on screen: a holed pipe grows under the stone and the water drains out. actions: stone lift (on \"So\"); drain pipe grow (on \"pipe\"); stone lower (on \"holes\"); outlet grow (on \"away\"); drain flow show (on \"away\"); out flow show (on \"away\"); stone drain (on \"away\")\n   idea: a pipe with holes under the stone carries the water away\n   cue words: \"So\", \"pipe\", \"holes\", \"away\"\n6. problem3\n   on screen: a car drives over the loose stone and dust clouds up. actions: light clear (on \"But\"); rain stop (on \"But\"); lawn dry (on \"But\"); drain flow hide (on \"But\"); out flow hide (on \"But\"); car 2 arrive (on \"cars\"); dust start (on \"dust\")\n   idea: cars kick up the loose stone and dust\n   cue words: \"But\", \"cars\", \"dust\"\n7. fix3\n   on screen: a black asphalt layer appears on top of the stone. actions: dust stop (on \"So\"); car 2 leave (on \"So\"); asphalt grow (on \"asphalt\"); asphalt back grow (on \"asphalt\")\n   idea: a layer of asphalt seals the top and locks the stone in\n   cue words: \"So\", \"asphalt\"\n8. name\n   on screen: an outline traces the road's layers. actions: layers outline show (on \"paved\")\n   idea: this is a paved road: layers of stone under a sealed top\n   cue words: \"paved\"\n   its fact: A road is built in layers: compacted subgrade, a crushed stone base, then an asphalt surface\n9. fact\n   on screen: a percent counter beside the road ticks up to 95. actions: layers outline hide (on \"Asphalt\"); stand show (on \"Asphalt\"); stone pct show (on \"Asphalt\"); stone pct count (on \"95\")\n   idea: asphalt itself is about 95 percent stone glued with bitumen\n   cue words: \"Asphalt\", \"95\"\n   its fact: By weight, asphalt is about 95 percent stone, sand and gravel, glued by about 5 percent asphalt binder.\n10. finish\n   on screen: white center line dashes, a stop line and a street sign appear on the paved road. actions: stone pct hide (on \"Add\"); stop line show (on \"stop\"); street sign show (on \"sign\"); dig refill (on \"Add\"); dash 0 show (on \"center\"); dash 1 show (on \"center\"); dash 2 show (on \"center\"); dash 3 show (on \"center\"); dash 4 show (on \"center\")\n   idea: paint a center line, a stop line, and put up a street sign\n   cue words: \"Add\", \"stop\", \"sign\", \"center\"\n11. congrats\n   on screen: a taxi drives along the finished road. actions: car 3 arrive; car 3 leave (on \"built\")\n   idea: you have built a road\n   cue words: \"built\""
+}

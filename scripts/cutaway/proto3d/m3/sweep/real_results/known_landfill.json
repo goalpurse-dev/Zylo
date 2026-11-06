@@ -1,0 +1,86 @@
+{
+ "plan": "landfill",
+ "known": true,
+ "usd": 0.02367,
+ "pass": false,
+ "failing": [
+  "hook",
+  "fix1",
+  "name",
+  "problem2"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "Cut face of soil, a pit gets dug and trash bags pile on its floor, but no truck is visible and the top edge of the frame is cut off.",
+   "problem": "No truck arrives in any frame; show the truck driving up to the pit and keep the pit and ground fully in view."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Trash bags in a pit with arrows pointing down, a brown leachate zone spreading down and the groundwater turning yellow/polluted across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "A clay-lined pit holds the trash bags with seepage arrows still going down. The clay base is not clearly thick and the bags are not lifted in the first frame.",
+   "problem": "Show the bags lifting clearly and a distinctly thick clay base layer being laid under them."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "The pit is lined with a dark black plastic sheet that appears across the frames over the clay, with the bags sitting in it.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A pit with a dark liner and a thin yellow outline around the pit, with trash bags inside.",
+   "problem": "The yellow outline is very thin and hard to read at phone size; make the liner outline thicker and brighter."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "A white pipe grows under and beside the pit, running up to a blue tank beside the pit across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "The pit fills with stacked layers of bags separated by soil layers and is capped with soil, sealed by the liner.",
+   "problem": ""
+  },
+  {
+   "role": "factProof",
+   "ok": true,
+   "seen": "A readable newspaper, The Daily News, 'New Highway Opens', sits in the pit on soil, and the view is close up.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "A vent pipe stands on the soil cap and small bubbles are barely visible among the bags, with the newspaper fading in the first frame.",
+   "problem": "Bubbles are tiny and hard to see; make gas bubbles larger and rising toward the pipe."
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "A flare with an orange flame sits on top of the vent pipe, and a generator box beside it is connected by a pipe.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "The pit is capped with grass, a white fence appears and young trees are in place on the lawn.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole finished landfill with its grass cap, fence, flare, tank, and groundwater below, nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

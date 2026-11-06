@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": true,
+ "seen": "Gauge falls from 1,000 red to 250 green and a counterweight appears beside the wheel on the rope.",
+ "problem": "",
+ "text": "So you hang a counterweight on the other end of the rope, and the motor lifts only the difference.",
+ "at": "2026-11-06T18:26:10.722Z"
+}

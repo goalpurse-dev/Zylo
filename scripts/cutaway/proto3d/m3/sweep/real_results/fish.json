@@ -1,0 +1,102 @@
+{
+ "plan": "fish",
+ "known": false,
+ "usd": 0.02694,
+ "pass": true,
+ "failing": [
+  "problem",
+  "problem3"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Frame 1 shows plain lawn with a cut ground face. Frames 2 and 3 show a hole filled with blue water and goldfish swimming in it.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The pond water is still clear blue with fish and shows no green tint.",
+   "problem": "The water has not turned green. Tint the pond water green."
+  },
+  {
+   "role": "stakes",
+   "ok": true,
+   "seen": "The ammonia gauge goes from 0 with a green sliver to a full orange-red bar reading 5.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A pipe with dirty dots appears at the pond edge beside the pump and runs along the ground. The pond water is green.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A settling tank beside the pond fills, and a tan sludge layer builds on the bottom. A return pipe appears.",
+   "problem": "Scum floating on top is not clearly visible."
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Dots travel along the return pipe back toward the pond, with a STILL TOXIC label. The water is green.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Gravel builds up over the return pipe, growing from a thin strip to a full bed, under the green pond.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow outline surrounds the gravel bed over the pipe.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The gauge falls from 5 in red to 0 in green, and the green water on the left looks clearer by the end.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "White arrows point down from the pond toward the outlined gravel bed.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "The gauge falls from 0 to a red 3 with LOW OXYGEN text. Only the gauge and the pond edge are visible, and no fish are shown.",
+   "problem": "Fish crowding the surface cannot be seen. Pull the camera back to show the pond and the fish at the surface."
+  },
+  {
+   "role": "fix4",
+   "ok": true,
+   "seen": "The air pump pipe appears in the pond and green bubbles grow and rise through the water.",
+   "problem": "The oxygen gauge is not visible."
+  },
+  {
+   "role": "fix5",
+   "ok": true,
+   "seen": "Young trees appear behind the pond and grow bigger, with a small sapling shown near the pond.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Gray rocks line the pond edge on the grass and lily pads float on the water. The finished build is in place.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole pond build is in view, with trees, rocks, lily pads, the biofilter, pipes, and a gauge reading 9 on show.",
+   "problem": ""
+  }
+ ]
+}

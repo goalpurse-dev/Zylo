@@ -1,0 +1,70 @@
+{
+ "key": "fact_check__1",
+ "label": "fact-check",
+ "model": "claude-sonnet-5-5",
+ "hash": "b93558de91f8e7e8",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict \"keep\" if the research notes support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.",
+ "user": "Topic: smoke detector\nClaims (index: claim | suggested search):\n0: Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm | photoelectric smoke alarm light scattered onto sensor how it works\n1: Smoke alarm horns must sound at least 85 decibels at 10 feet | smoke alarm 85 decibels 10 feet UL 217 NFPA 72\n2: The NFPA says to replace smoke alarms every 10 years | NFPA replace smoke alarms every 10 years\n\nResearch notes (from 3 web searches):\n**Claim 0: Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm**\n- Orr Protection (spot smoke detection): the light source and the sensor are set at an angle so the sensor normally sees no light; smoke entering the chamber scatters light onto the sensor. URL: https://orrprotection.com/detection/spot-smoke\n- Safelincs (optical alarms overview): smoke scatters the infrared light onto the photocell and triggers the alarm. URL: https://safelincs.co.uk/smoke-alarm-types-optical-alarms-overview\n- Verdict: supported as written.\n\n**Claim 1: Smoke alarm horns must sound at least 85 decibels at 10 feet**\n- Gentex 7109CS manual: meets or exceeds 85 dBA at 10 feet for audibility under ANSI/UL 217. URL: https://manuals.online/gentex/smoke-alarm/7109cs/user-manual/23bzk\n- First Alert SM210 spec sheet: alarm sound 85 dB at 10 feet. URL: https://customer.resideo.com/resources/Techlit/TechLitDocuments/BRK-First Alert/SM210V_SpecSheet.pdf\n- Verdict: supported (at least 85 decibels at 10 feet; the UL 217 text itself was not opened).\n\n**Claim 2: The NFPA says to replace smoke alarms every 10 years**\n- CE Pro: NFPA 72 requires smoke alarms be replaced at least every 10 years, counted from the date of manufacture. URL: https://www.cepro.com/news/nfpa_smoke_alarms_need_replacement_every_10_years\n- Firehouse: 'Don't Wait - Check the Date! Replace smoke alarms every 10 years' (NFPA Fire Prevention Week 2016). URL: https://www.firehouse.com/community-risk/news/12202449/dont-waitcheck-the-date-replace-smoke-alarms-every-10-years\n- Verdict: supported as written.\n\nSources found:\n"
+}

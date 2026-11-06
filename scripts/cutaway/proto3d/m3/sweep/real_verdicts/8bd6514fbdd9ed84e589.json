@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A single frame with a yellow rectangle over the volcano and a rock cone with two layers; the box does not trace the volcano's outline.",
+ "problem": "Draw an outline that follows the volcano's cone shape instead of a loose rectangle that cuts through it.",
+ "text": "This is a stratovolcano.",
+ "at": "2026-11-06T18:25:13.149Z"
+}

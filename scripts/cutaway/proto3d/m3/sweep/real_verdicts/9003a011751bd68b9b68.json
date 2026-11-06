@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A flatbed truck with a red cab sits in the same pose in all three frames. The front wheels do not visibly turn.",
+ "problem": "The front wheels never visibly steer across the frames. Show them turning left or right while the long body stays straight.",
+ "text": "If you only steer the front wheels of a long truck, you have a truck that cannot turn tight.",
+ "at": "2026-11-06T18:09:53.864Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A yellow rectangular outline sits over the unit but is much larger than the unit and offset to the upper left. It does not trace the unit.",
+ "problem": "The outline is offset and oversized. Fit the glowing outline tightly around the unit's edges.",
+ "text": "This is an air conditioner.",
+ "at": "2026-11-06T18:03:59.493Z"
+}

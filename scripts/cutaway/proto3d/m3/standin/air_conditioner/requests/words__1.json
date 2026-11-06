@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "ca62918b66eed376",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: air conditioner\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn\n- Carrier's system was built to control humidity so the paper would not swell and the colours would line up\n- An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away\n\nThe beats, in order:\n1. hook\n   on screen: a fan spins behind a frosty cold coil. actions: ac show; ac blow (on \"fan\"); ac cold (on \"cold\"); air arrows show (on \"cold\")\n   idea: a fan blowing over a cold coil is already an air conditioner\n   cue words: \"fan\", \"cold\"\n2. problem\n   on screen: water drips from the coil and splashes on the floor. actions: drip start (on \"drips\"); splash start (on \"floor\")\n   idea: the cold coil pulls water out of the air and it drips onto the floor\n   cue words: \"drips\", \"floor\"\n   its fact: An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away\n3. fix1\n   on screen: a drip tray and a hose appear and water runs out the hose. actions: drip stop (on \"So\"); splash stop (on \"So\"); ac trayIn (on \"tray\"); ac hoseIn (on \"hose\"); ac drain (on \"drains\")\n   idea: a drip tray and a hose drain the water away\n   cue words: \"So\", \"tray\", \"hose\", \"drains\"\n4. problem2\n   on screen: the coil loses its frost and the thermometer climbs to 30. actions: ac drainBack (on \"But\"); ac coldBack (on \"coil\"); temp show; temp count (on \"coil\")\n   idea: now the coil warms up and warm air blows into the room\n   cue words: \"But\", \"coil\"\n5. fix2\n   on screen: a compressor appears and shakes, coolant runs in the pipes, the coil frosts. actions: temp hide (on \"So\"); ac compIn (on \"compressor\"); ac pipesIn (on \"compressor\"); ac run (on \"pumps\"); ac circulate (on \"pumps\"); ac cold (on \"cold\")\n   idea: a compressor pumps coolant round and keeps the coil cold\n   cue words: \"So\", \"compressor\", \"pumps\", \"cold\"\n6. name\n   on screen: a glowing outline traces the unit. actions: outline show (on \"air\")\n   idea: this machine is an air conditioner\n   cue words: \"air\"\n7. how\n   on screen: the lower coil glows hot and orange dots run up the duct to the window. actions: outline hide; ac condIn (on \"hot\"); ac hot (on \"hot\"); ac ductIn (on \"window\"); ac exhaust (on \"window\")\n   idea: the heat taken from the room goes to a hot coil and out of the window\n   cue words: \"hot\", \"window\"\n8. myth\n   on screen: a newspaper headline about comfort rises beside the unit. actions: sheet show (on \"And\")\n   idea: comfort is not why air conditioning was invented\n   cue words: \"And\"\n9. mythFact\n   on screen: a Carrier 1902 humidity book rises. actions: sheet hide (on \"Willis\"); book show (on \"Willis\")\n   idea: Willis Carrier built it in 1902 to control humidity in a printing plant\n   cue words: \"Willis\", \"1902\"\n   its fact: In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn; Carrier's system was built to control humidity so the paper would not swell and the colours would line up\n10. finish\n   on screen: louvers, a lit display and a filter pop on. actions: air arrows hide (on \"Add\"); book hide (on \"Add\"); ac louversIn (on \"louvers\"); ac displayIn (on \"display\"); ac displayOn (on \"display\"); ac filterIn (on \"filter\")\n   idea: louvers, a display and a filter complete the unit\n   cue words: \"Add\", \"louvers\", \"display\", \"filter\"\n11. congrats\n   on screen: the finished build, calm\n   idea: calm end: the unit blows cool air with its display lit\n   cue words: (none)"
+}

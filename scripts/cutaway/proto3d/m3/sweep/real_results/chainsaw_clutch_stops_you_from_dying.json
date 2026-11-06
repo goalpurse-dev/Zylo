@@ -1,0 +1,85 @@
+{
+ "plan": "chainsaw_clutch_stops_you_from_dying",
+ "known": false,
+ "usd": 0.02444,
+ "pass": false,
+ "failing": [
+  "problem3",
+  "fix5",
+  "congrats"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Orange engine on a wooden base; the chain and bar are absent in the first frame, then a sprocket and chain bar sit on the engine shaft in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Engine block with the chain sprocket and bar on the shaft, clearly visible with a NEVER STOPS caption. Spinning can't be judged from one frame but the setup is right.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A loose drum cup appears around the sprocket and the shaft is visible inside it. The chain looks stationary across frames while the shaft stays exposed.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "Three red shoes grow from small to large on the shaft and sit against the drum rim. The change is visible across frames.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A gold ring spring appears around the hub, and the shoes move inward toward the hub across the frames.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A glowing yellow square outline surrounds the clutch (drum, shoes and shaft), which is clearly in view.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The clutch is highlighted at first, then yellow arrows show the shoes flinging outward against the drum while the chain sits on the bar.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The bar tips up from horizontal to a steep angle with a KICKBACK caption, and yellow arrows show the clutch still engaged.",
+   "problem": ""
+  },
+  {
+   "role": "fix4",
+   "ok": true,
+   "seen": "The bar drops back down, a yellow hand guard tips forward and a red brake band appears around the drum.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "The rpm gauge and OVERHEATING caption cover the clutch. The shoes are hidden behind the big gauge and no red glow is visible on them.",
+   "problem": "The gauge panels hide the clutch, so the shoes can't be seen glowing red. Move the gauges aside or zoom the camera on the shoes and drum."
+  },
+  {
+   "role": "fix5",
+   "ok": false,
+   "seen": "The rpm gauge falls from 13,000 red to 2,700 green, but the gauge panels cover the clutch and the trigger. The shoes pulling back and cooling can't be seen.",
+   "problem": "The trigger is not visible, and the shoes are hidden behind the gauge. Show the trigger being squeezed and released and move the gauge off the clutch."
+  },
+  {
+   "role": "congrats",
+   "ok": false,
+   "seen": "The camera pulls back, but the gauge panel and rpm bar still cover part of the saw, and a stray black pole sits at the right edge in the last frame.",
+   "problem": "The gauges cover the engine and clutch, so the whole build is not clearly visible. Remove or move the gauges and clear the stray pole."
+  }
+ ]
+}

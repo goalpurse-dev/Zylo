@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "Gas balls are present in the first frame; then a blue thermocouple wire with a red probe appears and the gas balls and flame are gone, with the valve shut.",
+ "problem": "",
+ "text": "So you add a thermocouple that makes about 25 millivolts to hold a safety valve open, and the valve shuts when the flame dies.",
+ "at": "2026-11-06T18:16:10.450Z"
+}

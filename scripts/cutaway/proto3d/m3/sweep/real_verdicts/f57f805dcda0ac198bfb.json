@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The porch light is lit, but no power dots run along the wire into the house. The wire is mostly out of frame, and a yellow line sweeps across the frame.",
+ "problem": "Show moving power dots along the wire into the house, and frame the wire and the light together.",
+ "text": "Power flows down the wire, and the porch light comes on.",
+ "at": "2026-11-06T18:07:37.888Z"
+}

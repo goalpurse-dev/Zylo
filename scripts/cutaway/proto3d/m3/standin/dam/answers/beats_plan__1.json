@@ -1,0 +1,1476 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A dam built step by step across a valley cut open in section: a dirt pile washes away, a thin concrete wall cracks, a wedge-shaped gravity dam holds, and a spillway lets a storm's extra water past. The camera stays side-on on the cut face so the lake level, the wall and the water going over it read in section.",
+  "story": {
+   "title": "How a Dam Works",
+   "hero": "a gravity dam",
+   "parts": [
+    "dirt pile",
+    "lake",
+    "concrete wall",
+    "crack",
+    "wedge",
+    "spillway",
+    "rocks",
+    "fish",
+    "lamp"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "pile dirt across a valley and you have a dam"
+    },
+    {
+     "role": "problem",
+     "idea": "rain fills the lake behind it, water pours over the top and washes the dirt away"
+    },
+    {
+     "role": "fix1",
+     "idea": "a tall concrete wall across the valley does not wash away"
+    },
+    {
+     "role": "problem2",
+     "idea": "deep water pushes hardest at the bottom, and the thin wall cracks"
+    },
+    {
+     "role": "fix2",
+     "idea": "the wall becomes a wedge, thick at the bottom where the push is biggest"
+    },
+    {
+     "role": "name",
+     "idea": "a dam that holds the water back by its own weight is a gravity dam"
+    },
+    {
+     "role": "how",
+     "idea": "its weight presses it into the rock so the water cannot slide or tip it; Hoover Dam is 660 feet thick at its base"
+    },
+    {
+     "role": "problem3",
+     "idea": "in a storm the full lake rises and spills over the top of the dam"
+    },
+    {
+     "role": "fix3",
+     "idea": "a spillway carries the extra water safely past the dam and the lake drops"
+    },
+    {
+     "role": "finish",
+     "idea": "rocks round the lake, fish and a lamp complete it"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm: a full, quiet lake behind the finished dam"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the lake fills, water pours over the dirt and the pile washes downstream",
+     "stakes": "the dam is gone and the water floods the valley",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "blue arrows push on the thin wall and a crack grows up its face",
+     "stakes": "the wall could burst and release the whole lake",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the storm raises the lake until it spills over the top",
+     "stakes": "water pouring over the top can eat away the dam's foot",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Hoover Dam is 660 feet thick at its base and only 45 feet thick at its top.",
+     "role": "how",
+     "search": "Hoover Dam thickness base 660 feet top 45 feet"
+    },
+    {
+     "claim": "Water pressure grows with depth: at 100 m deep it is about 10 times the air pressure at the surface.",
+     "role": "problem2",
+     "search": "water pressure at 100 m depth atmospheres"
+    },
+    {
+     "claim": "Overtopping, water flowing over the top, is one of the most common causes of dam failure, about a third of failures.",
+     "role": "problem3",
+     "search": "overtopping cause of dam failures percent"
+    }
+   ]
+  },
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -10,
+     6,
+     -5,
+     6
+    ],
+    "house": [
+     -6,
+     0,
+     -30
+    ],
+    "porch": true,
+    "trees": [
+     [
+      -14,
+      -11
+     ],
+     [
+      13,
+      -9,
+      0.9
+     ]
+    ],
+    "road": [
+     16,
+     0.01,
+     -57
+    ],
+    "worker": false,
+    "rocksAvoid": [
+     [
+      -10.5,
+      6.5,
+      -6.5,
+      0.5
+     ]
+    ]
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {
+      "storm": true
+     }
+    },
+    {
+     "id": "rain",
+     "kind": "rain",
+     "params": {
+      "x0": -14,
+      "x1": 14,
+      "z0": -14,
+      "z1": -0.1,
+      "yTop": 20,
+      "yBot": -0.4,
+      "count": 1200,
+      "width": 0.02,
+      "opacity": 0.36
+     }
+    },
+    {
+     "id": "pile",
+     "kind": "rig",
+     "params": {
+      "name": "dirt pile",
+      "synonyms": [
+       "dirt",
+       "earth bank",
+       "mound"
+      ],
+      "pos": [
+       0,
+       -6,
+       -2.5
+      ],
+      "nodes": [
+       {
+        "id": "pile",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           4,
+           1.8,
+           4.9
+          ],
+          "at": [
+           0,
+           0.9,
+           0
+          ],
+          "look": "concrete",
+          "color": "#7a5a3a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3,
+           1.8,
+           4.9
+          ],
+          "at": [
+           0,
+           2.7,
+           0
+          ],
+          "look": "concrete",
+          "color": "#7f5e3c"
+         },
+         {
+          "shape": "box",
+          "size": [
+           2,
+           1.4,
+           4.9
+          ],
+          "at": [
+           0,
+           4.3,
+           0
+          ],
+          "look": "concrete",
+          "color": "#86643f"
+         }
+        ],
+        "moves": [
+         {
+          "name": "wash",
+          "type": "slide",
+          "to": [
+           4.2,
+           -1.6,
+           0
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "lake",
+     "kind": "water",
+     "params": {
+      "box": {
+       "x0": -9.98,
+       "x1": -0.62,
+       "y0": -6,
+       "y1": -1.5,
+       "z0": -4.98,
+       "z1": -0.01
+      },
+      "mat": "water"
+     }
+    },
+    {
+     "id": "lakeHigh",
+     "kind": "water",
+     "params": {
+      "box": {
+       "x0": -9.98,
+       "x1": -0.62,
+       "y0": -1.5,
+       "y1": -0.55,
+       "z0": -4.98,
+       "z1": -0.01
+      },
+      "mat": "water"
+     }
+    },
+    {
+     "id": "overflow",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        -1.5,
+        -0.7,
+        -1.2
+       ],
+       [
+        0,
+        -0.75,
+        -1.2
+       ],
+       [
+        1.6,
+        -2.5,
+        -1.2
+       ],
+       [
+        3.2,
+        -5.4,
+        -1.2
+       ],
+       [
+        8,
+        -5.7,
+        -1.2
+       ]
+      ],
+      "look": "water",
+      "size": 0.24,
+      "speed": 3,
+      "count": 20
+     }
+    },
+    {
+     "id": "dam",
+     "kind": "rig",
+     "params": {
+      "name": "gravity dam",
+      "synonyms": [
+       "dam",
+       "concrete wall",
+       "wall",
+       "wedge"
+      ],
+      "pos": [
+       0,
+       -6,
+       -2.5
+      ],
+      "nodes": [
+       {
+        "id": "wall",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           1.2,
+           5,
+           4.96
+          ],
+          "at": [
+           0,
+           2.5,
+           0
+          ],
+          "look": "concrete",
+          "color": "#b9b4aa"
+         }
+        ]
+       },
+       {
+        "id": "crack",
+        "parent": "wall",
+        "at": [
+         0,
+         0,
+         2.5
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           1,
+           0.06
+          ],
+          "at": [
+           -0.12,
+           0.6,
+           0.02
+          ],
+          "rot": [
+           0,
+           0,
+           -30
+          ],
+          "look": "paint",
+          "color": "#151515"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           1,
+           0.06
+          ],
+          "at": [
+           -0.05,
+           1.45,
+           0.02
+          ],
+          "rot": [
+           0,
+           0,
+           35
+          ],
+          "look": "paint",
+          "color": "#151515"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           1,
+           0.06
+          ],
+          "at": [
+           0,
+           2.3,
+           0.02
+          ],
+          "rot": [
+           0,
+           0,
+           -30
+          ],
+          "look": "paint",
+          "color": "#151515"
+         }
+        ],
+        "moves": [
+         {
+          "name": "cracks",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "wedge",
+        "parent": "wall",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           3.8,
+           1.3,
+           5.24
+          ],
+          "at": [
+           1.3,
+           0.65,
+           0
+          ],
+          "look": "concrete",
+          "color": "#b9b4aa"
+         },
+         {
+          "shape": "box",
+          "size": [
+           2.8,
+           1.25,
+           5.24
+          ],
+          "at": [
+           0.8,
+           1.925,
+           0
+          ],
+          "look": "concrete",
+          "color": "#b9b4aa"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.9,
+           1.25,
+           5.24
+          ],
+          "at": [
+           0.35,
+           3.175,
+           0
+          ],
+          "look": "concrete",
+          "color": "#b9b4aa"
+         }
+        ],
+        "moves": [
+         {
+          "name": "wedge",
+          "type": "appear"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "push",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -3,
+         -5.2,
+         0.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 1.2,
+        "phase": 0
+       },
+       {
+        "at": [
+         -3,
+         -4,
+         0.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 1,
+        "phase": 0.3
+       },
+       {
+        "at": [
+         -3,
+         -2.8,
+         0.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.8,
+        "phase": 0.6
+       }
+      ],
+      "opts": {
+       "scale": 1.3,
+       "color": "#3ad6ff"
+      }
+     }
+    },
+    {
+     "id": "weight",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         0.3,
+         -0.3,
+         0.3
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 1,
+        "phase": 0
+       },
+       {
+        "at": [
+         1.8,
+         -3,
+         0.3
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 1,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 1.2,
+       "color": "#ffd23d"
+      }
+     }
+    },
+    {
+     "id": "damOutline",
+     "kind": "outline",
+     "params": {
+      "points": [
+       [
+        -0.7,
+        -0.9,
+        0.2
+       ],
+       [
+        0.7,
+        -0.9,
+        0.2
+       ],
+       [
+        0.7,
+        -2.1,
+        0.2
+       ],
+       [
+        1.4,
+        -2.1,
+        0.2
+       ],
+       [
+        1.4,
+        -3.35,
+        0.2
+       ],
+       [
+        2.3,
+        -3.35,
+        0.2
+       ],
+       [
+        2.3,
+        -4.6,
+        0.2
+       ],
+       [
+        3.3,
+        -4.6,
+        0.2
+       ],
+       [
+        3.3,
+        -6.05,
+        0.2
+       ],
+       [
+        -0.7,
+        -6.05,
+        0.2
+       ],
+       [
+        -0.7,
+        -0.9,
+        0.2
+       ]
+      ],
+      "opts": {
+       "r": 0.1
+      }
+     }
+    },
+    {
+     "id": "spillway",
+     "kind": "pipeRun",
+     "params": {
+      "path": [
+       [
+        -1.5,
+        -2.2,
+        0.15
+       ],
+       [
+        0.2,
+        -2.2,
+        0.15
+       ],
+       [
+        2.6,
+        -4.6,
+        0.15
+       ],
+       [
+        5,
+        -5.6,
+        0.15
+       ]
+      ],
+      "r": 0.3,
+      "mat": "concrete"
+     }
+    },
+    {
+     "id": "spillFlow",
+     "kind": "pipeRunFlow",
+     "params": {
+      "pipe": "spillway",
+      "count": 14,
+      "size": 0.14,
+      "speed": 2.5,
+      "mat": "water"
+     }
+    },
+    {
+     "id": "rocks",
+     "kind": "prop",
+     "params": {
+      "type": "rocks",
+      "size": [
+       9,
+       4.6
+      ],
+      "pos": [
+       -5.3,
+       -1.5,
+       -2.5
+      ],
+      "open": [
+       "front"
+      ]
+     }
+    },
+    {
+     "id": "fish",
+     "kind": "prop",
+     "params": {
+      "type": "fish",
+      "size": [
+       7,
+       3.5
+      ],
+      "pos": [
+       -5.5,
+       -3.6,
+       -2.5
+      ]
+     }
+    },
+    {
+     "id": "lamp",
+     "kind": "prop",
+     "params": {
+      "type": "floodLight",
+      "pos": [
+       3.5,
+       0,
+       -6.2
+      ]
+     }
+    },
+    {
+     "id": "lawn",
+     "kind": "lawnWet",
+     "params": {}
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       8.5,
+       0,
+       -8
+      ],
+      "rotY": -0.2,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "pile",
+      "does": "a pile of dirt stands across the valley"
+     },
+     "do": [
+      {
+       "p": "pile",
+       "v": "show",
+       "w": "dirt",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "pile"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "pile",
+      "does": "rain fills the lake, water pours over the top and the dirt pile washes away"
+     },
+     "state": {
+      "text": "WASHED AWAY",
+      "w": "washes"
+     },
+     "do": [
+      {
+       "p": "light",
+       "v": "storm",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rain",
+       "v": "start",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lawn",
+       "v": "wet",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lake",
+       "v": "flood",
+       "w": "fills",
+       "o": 0,
+       "d": 1.5,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "overflow",
+       "v": "start",
+       "w": "pours",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "pile",
+       "v": "wash",
+       "w": "pours",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -10,
+        -6.2,
+        -5,
+        6,
+        0.6,
+        0.5
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "dam",
+      "does": "a tall concrete wall rises across the valley"
+     },
+     "do": [
+      {
+       "p": "rain",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "light",
+       "v": "clear",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lawn",
+       "v": "dry",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "overflow",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "pile",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "dam",
+       "v": "show",
+       "w": "wall",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dam",
+        "lake"
+       ],
+       "view": "home",
+       "width": 0.8,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "dam",
+      "does": "blue arrows push on the thin wall and a crack grows up its face"
+     },
+     "state": {
+      "text": "CRACKING",
+      "w": "cracks"
+     },
+     "do": [
+      {
+       "p": "push",
+       "v": "show",
+       "w": "pushes",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "dam",
+       "v": "cracks",
+       "w": "cracks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dam",
+        "lake"
+       ],
+       "view": "home",
+       "width": 0.8,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "dam",
+      "does": "a thick concrete wedge fills in behind the wall, wide at the bottom, covering the crack"
+     },
+     "do": [
+      {
+       "p": "dam",
+       "v": "wedge",
+       "w": "wedge",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "dam",
+       "v": "cracksBack",
+       "w": "wedge",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "push",
+       "v": "hide",
+       "w": "bottom",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dam",
+        "lake"
+       ],
+       "view": "home",
+       "width": 0.8,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "damOutline",
+      "does": "outline traces the wedge-shaped dam"
+     },
+     "do": [
+      {
+       "p": "damOutline",
+       "v": "show",
+       "w": "gravity",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dam"
+       ],
+       "view": "home",
+       "width": 0.6,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "weight",
+      "does": "yellow arrows press down through the dam into the rock"
+     },
+     "do": [
+      {
+       "p": "damOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "weight",
+       "v": "show",
+       "w": "weight",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dam"
+       ],
+       "view": "home",
+       "width": 0.6,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem3",
+     "shows": {
+      "p": "lakeHigh",
+      "does": "in the storm the lake rises and spills over the top of the dam"
+     },
+     "state": {
+      "text": "OVERFLOWING",
+      "w": "spills"
+     },
+     "do": [
+      {
+       "p": "weight",
+       "v": "hide",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "light",
+       "v": "storm",
+       "w": "storm",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rain",
+       "v": "start",
+       "w": "storm",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lawn",
+       "v": "wet",
+       "w": "storm",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lakeHigh",
+       "v": "flood",
+       "w": "lake",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "overflow",
+       "v": "start",
+       "w": "spills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -10,
+        -6.2,
+        -5,
+        6,
+        0.6,
+        0.5
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "spillway",
+      "does": "a spillway channel grows through the dam, water runs down it and the lake drops"
+     },
+     "do": [
+      {
+       "p": "overflow",
+       "v": "stop",
+       "w": "spillway",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "spillway",
+       "v": "grow",
+       "w": "spillway",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "spillFlow",
+       "v": "show",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lakeHigh",
+       "v": "drain",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rain",
+       "v": "stop",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "light",
+       "v": "clear",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lawn",
+       "v": "dry",
+       "w": "carries",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -10,
+        -6.2,
+        -5,
+        6,
+        0.6,
+        0.5
+       ]
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "rocks",
+      "does": "rocks line the lake, fish swim in it and a lamp lights the dam"
+     },
+     "do": [
+      {
+       "p": "spillFlow",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rocks",
+       "v": "show",
+       "w": "rocks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "fish",
+       "v": "show",
+       "w": "fish",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lamp",
+       "v": "show",
+       "w": "lamp",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "shows": {
+      "p": "fish",
+      "does": "calm lake with fish behind the finished dam"
+     },
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "660 FEET",
+      "at": {
+       "s": "how",
+       "w": "660",
+       "o": 0
+      },
+      "d": 1.6
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "dirt",
+      "at": {
+       "s": "hook",
+       "w": "dirt",
+       "o": 0
+      },
+      "d": 1
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem",
+       "w": "pours",
+       "o": 0
+      },
+      "d": 1.5
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem3",
+       "w": "spills",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "fix3",
+       "w": "carries",
+       "o": 0
+      },
+      "d": 1.4
+     }
+    ],
+    "chimes": [
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "how",
+      "w": "660",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": [
+     {
+      "s": "problem",
+      "w": "But",
+      "o": 0
+     },
+     {
+      "s": "fix1",
+      "w": "So",
+      "o": 0.3
+     },
+     {
+      "s": "problem3",
+      "w": "storm",
+      "o": 0
+     },
+     {
+      "s": "fix3",
+      "w": "carries",
+      "o": 0.3
+     }
+    ]
+   }
+  }
+ }
+}

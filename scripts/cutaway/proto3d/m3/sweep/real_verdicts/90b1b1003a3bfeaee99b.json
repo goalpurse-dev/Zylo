@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "The compressor and hose appear at the right of the car. The car looks about the same height in all frames. No air flow along the hose is visible, and the bag is not visible.",
+ "problem": "The car does not visibly lift and no air moves along the hose; show air flowing into a visible bag and the car rising.",
+ "text": "So you add a compressor that pumps air down a hose into the bag, and the car lifts.",
+ "at": "2026-11-06T18:04:34.124Z"
+}

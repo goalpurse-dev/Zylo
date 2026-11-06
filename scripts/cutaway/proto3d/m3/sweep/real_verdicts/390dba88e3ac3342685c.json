@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": true,
+ "seen": "Spray streaks enter the open side in the first frame, then a back wall and a side wall appear and the spray is gone, with arrows still outside.",
+ "problem": "",
+ "text": "So you add a back wall and a side wall.",
+ "at": "2026-11-06T18:11:03.074Z"
+}

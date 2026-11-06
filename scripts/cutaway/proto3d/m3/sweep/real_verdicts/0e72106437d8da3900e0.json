@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "This is a single frame with only a lone pier in the river. There is no slab and no crack.",
+ "problem": "There is no deck slab and no crack splitting it, so show a long slab across the piers with a visible crack underneath.",
+ "text": "But stone is typically about 10 to 20 times stronger in compression than in tension, so a long slab cracks underneath.",
+ "at": "2026-11-06T18:05:04.703Z"
+}

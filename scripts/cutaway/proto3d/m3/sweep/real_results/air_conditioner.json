@@ -1,0 +1,81 @@
+{
+ "plan": "air_conditioner",
+ "known": false,
+ "usd": 0.02278,
+ "pass": false,
+ "failing": [
+  "hook",
+  "problem2",
+  "name",
+  "how",
+  "congrats"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "A small white cabinet with a white coil and a blue fan, arrows above it. The coil is not frosty, and the first frame is distant with a big orange roof covering the view.",
+   "problem": "The coil shows no frost or cold look, and the fan is tiny. Make the coil frosty blue-white and keep the camera close from the start."
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "Blue water drops fall from the shelf under the coil and splash on the floor in front of the cabinet, with a LEAKING label.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A blue tray appears under the coil with a black hose running down the side. Water drops move along the hose and out. The puddle drops are gone.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "The thermometer reads 22 then 30 with a green bar turning red and a WARM AIR label. The cabinet is small at the left and the coil is hard to read.",
+   "problem": "The coil is too small to see it lose frost. Move the camera closer to the coil and show the frost fading."
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A black compressor appears under the shelf, blue coolant drops sit on the pipes, and the coil goes from dark to white frosty.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A yellow rectangular outline sits over the unit but is much larger than the unit and offset to the upper left. It does not trace the unit.",
+   "problem": "The outline is offset and oversized. Fit the glowing outline tightly around the unit's edges."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "The lower orange coil appears and a duct pipe shows at the window. The window duct is mostly hidden behind the cabinet and no orange dots run up it.",
+   "problem": "No orange heat dots are visible moving up a duct to the window. Add visible orange dots running up an exposed duct."
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "A Daily News newspaper reading COOL AIR FOR COMFORT stands on the floor by the small unit.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "A blue book titled HUMIDITY CONTROL W. CARRIER 1902 stands next to the unit and is readable.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Louvers appear on top of the cabinet and a black display with a green light appears inside. The filter is not clearly visible.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": false,
+   "seen": "The first frame shows the finished unit fully. The camera pulls back, and the unit gets tiny and partly hidden under the orange roof.",
+   "problem": "The finished build ends tiny and covered by the roof. Keep it large and fully in view."
+  }
+ ]
+}

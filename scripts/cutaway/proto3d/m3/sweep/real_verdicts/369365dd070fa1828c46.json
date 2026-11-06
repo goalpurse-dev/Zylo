@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "A yellow bar floats above the dam, then one yellow arrow points down on the top step and one on a lower step. Neither arrow reaches the rock.",
+ "problem": "The arrows only sit on the dam and do not press down into the rock. Show arrows running through the dam into the ground, and drop the floating bar.",
+ "text": "Its weight holds the water back, and Hoover Dam is 660 feet thick at its base.",
+ "at": "2026-11-06T18:07:07.289Z"
+}

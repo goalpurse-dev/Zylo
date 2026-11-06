@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "It darkens to night and the yellow lamp goes dark, but no red lamp is ever lit or blinking.",
+ "problem": "The red lamp never lights up; make the red lamp visibly flash on and off at night.",
+ "text": "And late at night, quiet corners just flash red, so you stop and go.",
+ "at": "2026-11-06T18:24:03.286Z"
+}

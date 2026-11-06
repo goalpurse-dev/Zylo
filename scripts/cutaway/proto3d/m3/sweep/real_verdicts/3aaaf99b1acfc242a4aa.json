@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Frame 1 shows only the house. Frames 2-3 show a short red-and-white striped tower with a tiny flame on top, beside the house, in bright daylight.",
+ "problem": "The tower is short, barely taller than the house, and the scene is daytime rather than night. The flame is tiny. Make the tower taller, dim the sky, and enlarge the fire.",
+ "text": "If you light a fire on a tall tower, you have a lighthouse.",
+ "at": "2026-11-06T18:12:27.572Z"
+}

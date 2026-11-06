@@ -1,0 +1,84 @@
+{
+ "plan": "car_brakes",
+ "known": false,
+ "usd": 0.02317,
+ "pass": false,
+ "failing": [
+  "hook",
+  "problem"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": false,
+   "seen": "A black tyre on a stand with a small orange block sitting above the tyre top and a white marker moving around the rim. The block does not clearly touch the tyre.",
+   "problem": "The orange block hovers above the tyre rather than pressing onto it, so no braking contact is shown; lower the block until it visibly presses on the tread."
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "A tyre with an orange block on top and a faint grey blob in the air near the wall. No clear smoke pours from the contact point.",
+   "problem": "The smoke is a faint grey blob floating away from the tyre and block, not pouring off the contact; spawn dark smoke puffs at the block-tyre contact."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "A steel disc with bolt holes appears on the hub, a red caliper sits over it, and the orange block sits above the tyre, lifted off.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The speed sign reads 60 in all frames while the disc with red caliper keeps spinning, with a TOO WEAK label.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A pedal on a base and a master cylinder appear, and an orange pipe with fluid dots runs to the red caliper on the disc.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A close-up of the disc with the red caliper surrounded by a glowing yellow outline, with the pipe visible.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The pedal swings down, the fluid pipe is present, the caliper clamps and the speed sign drops from 60 to 0.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "The disc changes from grey to a red-pink glow across the frames, with a heat gauge beside the speed sign.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Slots open in the orange-hot disc, and the colour fades from orange to pale pink while white air arrows pass the rim.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "The speed sign shows 100 then 500, and the heat gauge turns from green to orange-red.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A brake light post with a glowing red lamp appears on the base at the left of the pedal, standing on the base plate.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished disc brake with pedal, pipe, caliper and brake light is in view as the camera pulls back, with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

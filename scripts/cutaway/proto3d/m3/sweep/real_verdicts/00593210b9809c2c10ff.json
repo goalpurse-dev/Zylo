@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The whole plant with a yellow rectangular outline that is offset and cuts through the plant, not tracing it.",
+ "problem": "The outline is a loose rectangle that does not trace the plant; fit the glowing outline tightly around the whole plant.",
+ "text": "This is a nuclear power plant.",
+ "at": "2026-11-06T18:13:27.464Z"
+}

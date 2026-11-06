@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The orange chamber and red crack are visible and a gauge sign appears in the last frame, but no gas bubbles show in the chamber and the gauge barely fills.",
+ "problem": "Add visible gas bubbles rising and expanding in the chamber, and make the pressure gauge fill clearly with red.",
+ "text": "But gas bubbles in the magma expand and build up pressure.",
+ "at": "2026-11-06T18:25:13.146Z"
+}

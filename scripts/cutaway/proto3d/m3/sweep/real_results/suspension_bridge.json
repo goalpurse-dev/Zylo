@@ -1,0 +1,78 @@
+{
+ "plan": "suspension_bridge",
+ "known": false,
+ "usd": 0.02141,
+ "pass": true,
+ "failing": [
+  "how",
+  "problem3"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Plank pieces and dirt fall at the start, then an orange plank lies across the river between the banks, with the house and tree on the lawn.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A red car arrives at the bank, the plank across the river breaks and sags in two pieces into the water.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Two red towers rise on the banks, cables drape over them and the deck hangs from vertical hangers across the river.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The suspension bridge is traced with a yellow outline around the towers, cables and deck, fully in view.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "The camera is zoomed in on the left bank. The car is visible only in the first frame, then it is gone. The yellow arrows are barely visible, just a thin line in frame 1 and a small fragment on the tower in the others. The cables are mostly out of frame.",
+   "problem": "The car does not drive across, and no yellow arrows run down the hangers and up the cables. Pull the camera back to show the whole bridge, keep the car on the deck, and show clear arrows."
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Both red towers lean inward toward each other over the frames, with arrows pushing at the tower tops and cables taut.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A concrete anchor block appears on the bank and a back cable ties it to the tower top, and the tower goes from leaning to standing straight.",
+   "problem": ""
+  },
+  {
+   "role": "problem3",
+   "ok": false,
+   "seen": "White wind arrows appear and the deck stays flat and mostly straight, with only slight faint ghosting. There is no visible twist.",
+   "problem": "The deck does not visibly twist over. Show the deck rotating or tilting clearly as the wind blows."
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "Dark steel truss rails run along both sides of the deck, and the deck lies flat between the towers.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "Truss rails are in place along the deck and a tall lamp post appears on the left bank, standing on the ground by the anchor.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished suspension bridge with towers, cables, truss, lamp and anchors is fully in view as the camera pulls back, with a blue car on the right bank.",
+   "problem": ""
+  }
+ ]
+}

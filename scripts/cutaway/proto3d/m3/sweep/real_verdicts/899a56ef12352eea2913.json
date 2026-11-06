@@ -1,0 +1,8 @@
+{
+ "role": "fix5",
+ "ok": false,
+ "seen": "The rpm gauge falls from 13,000 red to 2,700 green, but the gauge panels cover the clutch and the trigger. The shoes pulling back and cooling can't be seen.",
+ "problem": "The trigger is not visible, and the shoes are hidden behind the gauge. Show the trigger being squeezed and released and move the gauge off the clutch.",
+ "text": "So you add a spring-loaded trigger that drops the engine to idle when you let go, and the shoes pull in and cool.",
+ "at": "2026-11-06T18:06:36.554Z"
+}

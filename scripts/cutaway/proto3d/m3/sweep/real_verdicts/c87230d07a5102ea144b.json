@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A yellow rectangle frames the elevator, but it is a loose box that cuts across the structure rather than tracing it. The elevator is small and partly cut off at the left.",
+ "problem": "The outline is a plain box that does not trace the whole elevator and clips at the left edge; reframe the camera and fit the outline to the elevator.",
+ "text": "This is a traction elevator.",
+ "at": "2026-11-06T18:26:10.723Z"
+}

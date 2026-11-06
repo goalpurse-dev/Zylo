@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "A dark blue car drives in over the build and overlaps the red car. The remote post is a thin pole and a small pressure light box appears. A height button is not clearly visible.",
+ "problem": "The parked car overlaps the red car's build, and the remote with its height button is not readable; park the car beside the build and show the remote clearly.",
+ "text": "Add a remote with a height button and a pressure light, then park the car rolling in.",
+ "at": "2026-11-06T18:04:34.129Z"
+}

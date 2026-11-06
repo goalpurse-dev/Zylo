@@ -1,0 +1,86 @@
+{
+ "plan": "electricity_to_outlet",
+ "known": false,
+ "usd": 0.02321,
+ "pass": false,
+ "failing": [
+  "fix2",
+  "name",
+  "how",
+  "fact"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Generator box on the left, two poles, and a wire that appears across frames from the generator over both poles to the house.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The wire from the generator over two poles to the house is glowing orange-red, so it reads as hot.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Counter climbs from 10 to 400, a dark transformer box appears by the generator, and the wire changes from orange to black.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Sparks and a puff burst at the house where the wire meets it, with the 400 sign visible.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": false,
+   "seen": "Frames are zoomed in on the pole. A blue-grey transformer can appears on the pole, but the wire and the house are barely in view, so the sparks stopping cannot be checked. The can is blue, not grey.",
+   "problem": "Pull the camera back so the pole, wire and house show, and make the can grey so the sparks visibly stop."
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A yellow rectangular frame sits over the scene, and the wire and poles are not traced by a glowing outline. The frame also cuts across the poles and house.",
+   "problem": "Draw a glowing outline that follows the poles and the wire instead of a box."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "The porch light is lit, but no power dots run along the wire into the house. The wire is mostly out of frame, and a yellow line sweeps across the frame.",
+   "problem": "Show moving power dots along the wire into the house, and frame the wire and the light together."
+  },
+  {
+   "role": "problem3",
+   "ok": true,
+   "seen": "A branch falls onto the line in the rain, sparks fly where it lands, a BLACKOUT label appears, and the porch light dims.",
+   "problem": ""
+  },
+  {
+   "role": "fix3",
+   "ok": true,
+   "seen": "A trench opens in the cut ground, soil is piled on the surface, and a cable is laid in the trench underground.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "The counter falls from 7,200 to 820, not to 240, and the frames are cropped tight beside the pole.",
+   "problem": "Let the counter end at 240 and show the full fall from 7,200."
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A small meter appears on the wall beside the porch light, standing at the house, and the trench is covered over with the cable buried.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The camera pulls back to show the whole finished build: generator, poles, wire, house, buried cable and meter, with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A yellow rectangle outline sits in the room above the escalator, not tracing the escalator itself.",
+ "problem": "Move the outline to enclose the escalator on the slope instead of the empty room area.",
+ "text": "This is a step chain.",
+ "at": "2026-11-06T18:08:12.701Z"
+}

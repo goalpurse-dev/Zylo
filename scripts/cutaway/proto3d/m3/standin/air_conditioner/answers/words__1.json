@@ -1,0 +1,12 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"How an air conditioner works","sentences":[
+{"role":"hook","text":"If you put a fan behind a cold coil, you have an air conditioner."},
+{"role":"problem","text":"But the cold coil pulls water from the air, and it drips onto the floor."},
+{"role":"fix1","text":"So you add a tray and a hose that drains the water away."},
+{"role":"problem2","text":"But now the coil warms up, and warm air blows into the room."},
+{"role":"fix2","text":"So you add a compressor that pumps coolant to keep the coil cold."},
+{"role":"name","text":"This is an air conditioner."},
+{"role":"how","text":"The heat goes to a hot coil and out the window."},
+{"role":"myth","text":"And comfort is not why air conditioning was invented."},
+{"role":"mythFact","text":"Willis Carrier designed it in 1902 so printing paper would not swell."},
+{"role":"finish","text":"Add louvers, a display and a filter."},
+{"role":"congrats","text":"Congratulations, you have built an air conditioner."}]}}

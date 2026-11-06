@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Cut face of soil, a pit gets dug and trash bags pile on its floor, but no truck is visible and the top edge of the frame is cut off.",
+ "problem": "No truck arrives in any frame; show the truck driving up to the pit and keep the pit and ground fully in view.",
+ "text": "If you dig a pit and throw your trash in, you have a landfill.",
+ "at": "2026-11-06T18:27:42.163Z"
+}

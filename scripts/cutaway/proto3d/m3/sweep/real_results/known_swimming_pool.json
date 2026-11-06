@@ -1,0 +1,63 @@
+{
+ "plan": "swimming_pool",
+ "known": true,
+ "usd": 0.01739,
+ "pass": true,
+ "failing": [],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Frame 1 shows the lawn with soil clods and no hole yet. Frames 2 and 3 show a dug hole in section filled with blue water, next to the house.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The water level falls across the frames and the hole ends up with a dry soil floor. Blue arrows point down into the soil and a LEAKING label is shown.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The dry hole gets a beige concrete floor and walls in frame 2. In frame 3 the shell is full of water, which stays inside it.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The pool water changes from clear blue in frame 1 to green in frames 2 and 3. An ALGAE label is shown.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A small pump box appears in frame 1. In frames 2 and 3 the pump has grown, the sand tank is there and pipes run underground to the pool. The pool water looks bluer.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A yellow glowing outline surrounds the pump and sand tank, which sit on the grass with pipes below. Everything is readable.",
+   "problem": ""
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "The pipes start white with a highlight outline. In frames 2 and 3 they carry blue water dots running between the pool and the filter.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": true,
+   "seen": "A counter beside the filter goes from 0 to 6 across the frames, and the pipes show flow dots. The strip ends at 6, not 8.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The whole finished pool is in view with the filter, pipes and house. The camera pulls back across the frames and nothing covers the build.",
+   "problem": ""
+  }
+ ]
+}

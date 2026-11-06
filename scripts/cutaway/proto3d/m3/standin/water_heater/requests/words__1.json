@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "fa1d56a5bde8da8d",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: water heater\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- The Department of Energy suggests setting a water heater to 120 degrees Fahrenheit\n- A dip tube carries the cold water to the bottom of the tank\n- The anode rod, usually magnesium or aluminum, corrodes instead of the steel tank\n\nThe beats, in order:\n1. hook\n   on screen: a tank fills with water and a flame lights under it. actions: heater show; heater fill (on \"tank\"); heater fire (on \"flame\")\n   idea: a tank of water over a flame is already a water heater\n   cue words: \"tank\", \"flame\"\n2. problem\n   on screen: orange heat arrows stream out of the tank walls. actions: heat loss show (on \"heat\")\n   idea: heat escapes through the thin tank walls and the water cools\n   cue words: \"heat\"\n3. fix1\n   on screen: a yellow foam jacket wraps the tank and the arrows stop. actions: heater jacketOn (on \"foam\"); heat loss hide (on \"foam\")\n   idea: a thick foam jacket keeps the heat in\n   cue words: \"foam\"\n4. problem2\n   on screen: the thermometer climbs to 200 and turns red. actions: temp show; temp count (on \"traps\")\n   idea: now the water keeps heating until it nearly boils\n   cue words: \"traps\"\n5. fix2\n   on screen: a thermostat appears, its lamp lights and the flame goes out. actions: temp hide (on \"So\"); heater thermoIn (on \"thermostat\"); heater thermoOn (on \"thermostat\"); heater fireBack (on \"off\")\n   idea: a thermostat shuts the flame off at 120 degrees Fahrenheit\n   cue words: \"So\", \"thermostat\", \"off\", \"120\"\n   its fact: The Department of Energy suggests setting a water heater to 120 degrees Fahrenheit\n6. name\n   on screen: a glowing outline traces the heater. actions: outline show (on \"water\")\n   idea: this tank with a burner and a thermostat is a water heater\n   cue words: \"water\"\n7. how\n   on screen: blue dots run down the dip tube, red dots up the hot pipe, the flame relights. actions: outline hide; heater coldIn (on \"cold\"); heater hotOut (on \"hot\"); heater fire (on \"hot\")\n   idea: cold water flows in at the bottom through a dip tube and hot water leaves from the top\n   cue words: \"cold\", \"hot\"\n   its fact: A dip tube carries the cold water to the bottom of the tank\n8. myth\n   on screen: the rod inside glows red like a heater, then the glow goes. actions: heater coldInBack (on \"And\"); heater hotOutBack (on \"And\"); heater glow (on \"rod\"); heater glowBack (on \"not\")\n   idea: the metal rod inside is not a heating element\n   cue words: \"And\", \"rod\", \"not\"\n9. mythFact\n   on screen: the rod turns rusty brown. actions: heater rust (on \"rusts\")\n   idea: it is an anode rod that rusts away so the tank does not\n   cue words: \"rusts\"\n   its fact: The anode rod, usually magnesium or aluminum, corrodes instead of the steel tank\n10. finish\n   on screen: a relief valve, a flue and a drain valve pop on. actions: heater rustBack (on \"Add\"); heater valveIn (on \"valve\"); heater flueIn (on \"flue\"); heater drainIn (on \"drain\")\n   idea: a relief valve, a flue and a drain valve complete the heater\n   cue words: \"Add\", \"valve\", \"flue\", \"drain\"\n11. congrats\n   on screen: the finished build, calm\n   idea: calm end: the finished heater stands in the kitchen\n   cue words: (none)"
+}

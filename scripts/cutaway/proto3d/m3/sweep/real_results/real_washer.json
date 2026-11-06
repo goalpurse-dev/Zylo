@@ -1,0 +1,79 @@
+{
+ "plan": "real_washer",
+ "known": false,
+ "usd": 0.02286,
+ "pass": false,
+ "failing": [
+  "problem",
+  "fact",
+  "myth"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "An open-front washer with a drum and colourful clothes inside, standing on the kitchen floor. The clothes sit at different spots in the drum.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "The washer with a few clothes in the drum and a 'STILL DIRTY' label. No dark dirt spots can be seen on the clothes, and they are tiny.",
+   "problem": "No dark dirt spots are visible on the clothes. Add clear dark spots on the clothes and make them bigger."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The first frame shows the empty drum with a pipe above it. The next two show the tub filled with blue water and white suds bubbles. The fill is visible from before to after.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "Blue water droplets spill from the open front of the washer onto the floor, with a 'FLOODED' label. The tub holds water and the floor is covered in drops.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A black ring appears around the opening. Leak droplets are on the floor in the first two frames and gone in the last, where the ring is in place and the water stays in.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "The washer with a yellow glowing frame around it. The drum is full of water and suds.",
+   "problem": ""
+  },
+  {
+   "role": "fact",
+   "ok": false,
+   "seen": "The washer is cut off at the left edge of the frame. A black '1,200' display and an orange bar stand beside it. The first frame shows no meter, and the number is already 1,200 in the later frames.",
+   "problem": "The drum is cut off by the frame edge and the counter is not seen climbing. Re-frame to show the whole drum and the meter rising to 1200."
+  },
+  {
+   "role": "myth",
+   "ok": false,
+   "seen": "The washer is at the bottom of the frame with its drum cut off by the bottom edge. A few white swirl streaks show around it, and the meter board is only partly visible.",
+   "problem": "The washer is cropped by the bottom edge and the swirl cue is weak. Move the camera so the washer is fully in view."
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The washer is fully in view inside a yellow frame. Water and suds fill the drum, and a yellow arrow shows the tumble direction.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "The washer gains a glass door ring, a soap drawer slot and a dial on the top panel. It stands on the floor in all three frames.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished washer with its door, dial and drawer is fully in view with the yellow frame. The camera pulls back to show the whole room, and the washer gets smaller but is never covered.",
+   "problem": ""
+  }
+ ]
+}

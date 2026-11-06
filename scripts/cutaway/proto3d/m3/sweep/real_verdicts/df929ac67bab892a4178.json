@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A thin shaft at the left edge in frame 1, then a dark rectangular hole opening sideways in frames 2 and 3, but it sits left of the river, not under it.",
+ "problem": "The sideways hole is beside the shaft and does not reach under the river; extend the hole so it opens beneath the river.",
+ "text": "If you dig a shaft and a hole under a river, you have a tunnel.",
+ "at": "2026-11-06T18:24:46.104Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The pond water is still clear blue with fish and shows no green tint.",
+ "problem": "The water has not turned green. Tint the pond water green.",
+ "text": "But the fish make waste that feeds algae, so the clear water turns green.",
+ "at": "2026-11-06T18:09:06.849Z"
+}

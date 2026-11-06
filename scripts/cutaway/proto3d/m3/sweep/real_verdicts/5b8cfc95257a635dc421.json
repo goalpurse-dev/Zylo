@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A cooling tower rises and a grey smoke cloud appears above it, but the turbine looks static and the cloud is grey and floating above the tower.",
+ "problem": "The cloud should be white and rise from the tower top, not float detached and grey; show the turbine spinning again.",
+ "text": "So a cooling tower turns the steam back into water.",
+ "at": "2026-11-06T18:13:27.467Z"
+}

@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "9bdcf653e435dda9",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: heart stent\nLength: 30 s: 95-120 words in all, one sentence per beat (10 sentences).\nWord budget: aim for 108 words in all, about 11 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- The first stent was put into a human coronary artery in 1986, in Toulouse, France\n- Drug-eluting stents release a drug that keeps scar tissue from regrowing inside the stent\n- A stent is put in through a thin tube from the wrist or groin, not by open heart surgery\n\nThe beats, in order:\n1. hook\n   on screen: a blue balloon in the clogged artery blows up and pushes the yellow plaque back, red blood starts to flow. actions: artery show; artery balloon (on \"balloon\"); artery inflate (on \"blow\"); artery pushUp (on \"blow\"); artery pushDown (on \"blow\"); artery blood (on \"artery\")\n   idea: blow up a tiny balloon inside a clogged artery and you have angioplasty\n   cue words: \"balloon\", \"blow\", \"artery\"\n2. problem\n   on screen: the balloon shrinks and the yellow plaque springs back in, the blood stops. actions: artery inflateBack (on \"But\"); artery pushUpBack (on \"back\"); artery pushDownBack (on \"back\"); artery bloodBack (on \"stops\")\n   idea: the balloon goes down and the plaque springs back, the blood stops again\n   cue words: \"But\", \"back\", \"stops\"\n3. fix1\n   on screen: a metal mesh tube appears round the balloon, opens the artery and stays when the balloon goes. actions: artery inflate (on \"mesh\"); artery pushUp (on \"mesh\"); artery pushDown (on \"mesh\"); artery mesh (on \"mesh\"); artery balloonBack (on \"open\"); artery blood (on \"open\")\n   idea: put a metal mesh tube on the balloon, it opens and stays open\n   cue words: \"mesh\", \"open\"\n4. problem2\n   on screen: pink scar tissue grows inside the mesh and the blood stops. actions: artery scar (on \"scar\"); artery bloodBack (on \"scar\")\n   idea: now scar tissue grows through the mesh and narrows it again\n   cue words: \"scar\"\n5. fix2\n   on screen: the mesh glows green with its drug coating and the pink scar goes away. actions: artery coat (on \"drug\"); artery scarBack (on \"scar\"); artery blood (on \"scar\")\n   idea: coat the mesh with a drug that stops the scar growing\n   cue words: \"drug\", \"scar\"\n   its fact: Drug-eluting stents release a drug that keeps scar tissue from regrowing inside the stent\n6. name\n   on screen: a glowing outline traces the mesh. actions: artery outline show (on \"stent\")\n   idea: this is a stent\n   cue words: \"stent\"\n7. how\n   on screen: red blood dots run through the open mesh. actions: artery outline hide; artery coatBack; artery blood (on \"blood\")\n   idea: blood runs freely through the open mesh\n   cue words: \"blood\"\n8. fact\n   on screen: a 1986 newspaper page rises beside the artery. actions: paper show (on \"1986\")\n   idea: the first coronary stent went into a patient in 1986\n   cue words: \"1986\"\n   its fact: The first stent was put into a human coronary artery in 1986, in Toulouse, France\n9. finish\n   on screen: a thin guide wire and a blue catheter slide in from the left. actions: paper hide (on \"Add\"); artery wire (on \"wire\")\n   idea: add the thin guide wire and the catheter that carry it in\n   cue words: \"Add\", \"wire\"\n   its fact: A stent is put in through a thin tube from the wrist or groin, not by open heart surgery\n10. congrats\n   on screen: the finished build, calm\n   idea: you have built a stent\n   cue words: (none)"
+}

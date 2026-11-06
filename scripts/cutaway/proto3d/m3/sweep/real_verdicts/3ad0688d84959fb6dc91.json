@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "A yellow rectangular outline floats above the ground over a lone pier. No arch exists, and the outline is a flat box that does not trace an arch.",
+ "problem": "There is no arch to outline, and the outline floats in the air, so build the arch and wrap the glow around it.",
+ "text": "This is an arch bridge.",
+ "at": "2026-11-06T18:05:04.704Z"
+}

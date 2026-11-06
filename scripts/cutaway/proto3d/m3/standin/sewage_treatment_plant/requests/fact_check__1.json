@@ -1,0 +1,70 @@
+{
+ "key": "fact_check__1",
+ "label": "fact-check",
+ "model": "claude-sonnet-5-5",
+ "hash": "f1373ee0018421d8",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict \"keep\" if the research notes support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.",
+ "user": "Topic: sewage treatment plant\nClaims (index: claim | suggested search):\n0: A settling tank removes about 60 percent of the solids but only about a third of the dissolved waste | primary treatment removes percent suspended solids BOD EPA\n1: The average American uses about 82 gallons of water a day at home, most of it going down the drain | EPA average American uses 82 gallons water per day home\n2: Sludge digesters make biogas that is mostly methane, which plants burn or use for power | anaerobic digester wastewater sludge biogas methane percent\n\nResearch notes (from 3 web searches):\n**Claim 0: primary settling removes about 60% of solids, about a third of the dissolved waste**\n- AIChE glossary, primary wastewater treatment: 'Primary treatment plants generally remove 25 to 35 percent of the Biological Oxygen Demand (BOD) and 45 to 65 percent of the total suspended matter.' URL: https://www.aiche.org/ifs/resources/glossary/isws-water-glossary/primary-wastewater-treatment\n- Seoul National University lecture notes: 'Primary treatment: remove ~60% of SS and ~35% of BOD.' URL: https://ocw.snu.ac.kr/sites/default/files/NOTE/11176.pdf\n- Verdict: supported in a corrected form: a settling tank removes about 45 to 65 percent of the solids and only 25 to 35 percent of the waste that uses up oxygen.\n\n**Claim 1: 82 gallons a day at home**\n- EPA WaterSense statistics and facts: 'each American uses an average of 82 gallons of water a day at home' (USGS 2015). URL: https://19january2025snapshot.epa.gov/watersense/statistics-and-facts\n- Verdict: supported as written (82 gallons a day at home; that most goes down the drain is not in the source).\n\n**Claim 2: digesters make biogas, mostly methane**\n- Suez water handbook, characteristic anaerobic digestion parameters: CH4 60 to 65% for sludge. URL: https://www.suezwaterhandbook.com/water-and-generalities/fundamental-biological-engineering-processes-applicable-to-water-treatment/anaerobic-bacterial-cultures/characteristic-anaerobic-digestion-parameters\n- Riga conference paper (Dubrovskis): 59.0% methane in biogas from fresh sludge. URL: https://iitf.lbtu.lv/conference/proceedings2010/Papers/40_Dubrovskis_Vilis_2_anaerobic.pdf\n- Verdict: supported in a corrected form: sludge digester gas is about 60 percent methane.\n\nSources found:\n"
+}

@@ -1,0 +1,77 @@
+{
+ "plan": "water_heater",
+ "known": false,
+ "usd": 0.02083,
+ "pass": false,
+ "failing": [
+  "name"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "A tank is empty in the first frame, then filled with blue water, with a small flame ring of white dots on the burner base beneath it.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "The tank has orange arrows pointing outward on both sides, with the HEAT LOSS caption. The arrows are large, though partly cut at the frame edge.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "Orange arrows are visible in the first frame, then yellow foam panels wrap the tank in the next two frames and the arrows are gone.",
+   "problem": ""
+  },
+  {
+   "role": "problem2",
+   "ok": true,
+   "seen": "The readout goes from 120 to 200 and the thermometer changes from green to full red, with the foam-wrapped tank beside it.",
+   "problem": ""
+  },
+  {
+   "role": "fix2",
+   "ok": true,
+   "seen": "A thermostat box with an orange lamp appears on the base, and the flame dots fade by the last frame. The lamp is small but readable.",
+   "problem": ""
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "The heater is shown close up with a yellow translucent outline frame around it, but the outline is a rectangle, not a trace of the heater's shape, and it is cut off by the frame edges.",
+   "problem": "The outline is a large box cropped by the frame edges. Trace the heater's silhouette so it stays fully in view."
+  },
+  {
+   "role": "how",
+   "ok": true,
+   "seen": "Blue dots move down beside the central tube, red dots sit on the hot pipe at the top, and the flame glows under the tank in the later frames.",
+   "problem": ""
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "The heater is clearly in view, and the central rod glows pink, which highlights it.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The heater is clearly in view and the rod turns a rusty pinkish-brown colour.",
+   "problem": ""
+  },
+  {
+   "role": "finish",
+   "ok": true,
+   "seen": "A flue stack on top, a relief valve with a pipe at the upper right and a drain valve at the lower left all appear on the tank, attached in place.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The finished heater with flue, valve, drain, foam and thermostat is fully visible, then the camera pulls back across the kitchen. Nothing covers it.",
+   "problem": ""
+  }
+ ]
+}

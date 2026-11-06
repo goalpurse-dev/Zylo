@@ -1,0 +1,10 @@
+{
+ "key": "fact_research_again__1",
+ "label": "fact research (again)",
+ "model": "claude-sonnet-5-5",
+ "hash": "6f781be215e36f49",
+ "search": 8,
+ "schema": null,
+ "system": "You research the surprise claims in a short explainer script with web search. You MUST search for every claim (one or two searches each) before you answer; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.",
+ "user": "Topic: air conditioner\nClaims (index: claim | suggested search):\n0: Willis Carrier designed the first modern air conditioning system in 1902 for a printing plant in Brooklyn | Willis Carrier 1902 Sackett-Wilhelms printing plant Brooklyn\n1: Carrier's system was built to control humidity so the paper would not swell and the colours would line up | Carrier 1902 humidity paper printing why invented\n2: An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away | air conditioner evaporator coil condensation drain pan\n\nSearch the web for EACH claim now; an answer without searches is refused."
+}

@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "Grass returns on top and stairs appear on a block inside the shelter. No ceiling light is visible, and the stairs are small and dark.",
+ "problem": "The ceiling light is missing or unreadable at phone size; add a clearly visible light hanging from the ceiling and make the stairs larger.",
+ "text": "Add stairs, a ceiling light and grass back on top.",
+ "at": "2026-11-06T18:15:30.306Z"
+}

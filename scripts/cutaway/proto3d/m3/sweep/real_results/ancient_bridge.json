@@ -1,0 +1,78 @@
+{
+ "plan": "ancient_bridge",
+ "known": false,
+ "usd": 0.02075,
+ "pass": false,
+ "failing": [
+  "fix1",
+  "problem2",
+  "fix2",
+  "name",
+  "how",
+  "fix3",
+  "finish",
+  "congrats"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "The channel is dug and water is visible. A plank then lies across the top with a small cart beside it. The sequence goes from an open channel to a plank laid across it.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": true,
+   "seen": "A cart with a stone block rolls onto the plank. The plank breaks in the middle and its far half tilts down into the channel.",
+   "problem": ""
+  },
+  {
+   "role": "fix1",
+   "ok": false,
+   "seen": "A stone pier rises in the river, but no slabs are laid on top in any frame. The broken plank is visible only in the first frame.",
+   "problem": "No flat slabs are laid on the pier, so add slabs resting on top of the pier."
+  },
+  {
+   "role": "problem2",
+   "ok": false,
+   "seen": "This is a single frame with only a lone pier in the river. There is no slab and no crack.",
+   "problem": "There is no deck slab and no crack splitting it, so show a long slab across the piers with a visible crack underneath."
+  },
+  {
+   "role": "fix2",
+   "ok": false,
+   "seen": "Only a single pier stands in the water in all three frames. There is no wooden frame, wedge stones or keystone, and nothing changes.",
+   "problem": "No arch construction is shown, so add a wooden frame, wedge stones curving over it and a keystone."
+  },
+  {
+   "role": "name",
+   "ok": false,
+   "seen": "A yellow rectangular outline floats above the ground over a lone pier. No arch exists, and the outline is a flat box that does not trace an arch.",
+   "problem": "There is no arch to outline, and the outline floats in the air, so build the arch and wrap the glow around it."
+  },
+  {
+   "role": "how",
+   "ok": false,
+   "seen": "A lone pier is shown with yellow arrows around it. There is no arch and no block on a crown, and the arrows do not run along a curve.",
+   "problem": "There is no arch, no load block on the crown and no arrows running down a curve into the piers, so add them."
+  },
+  {
+   "role": "fix3",
+   "ok": false,
+   "seen": "All three frames are identical: a lone pier with no frame and no arch. Nothing is pulled away.",
+   "problem": "No arch or wooden frame is present, so show the frame being removed with the arch standing alone."
+  },
+  {
+   "role": "finish",
+   "ok": false,
+   "seen": "A flat road slab with low walls appears on the single pier, but no arches support it and no cart is seen crossing.",
+   "problem": "The deck sits on a single pier with no arches and no cart, so add arches under the road and a cart rolling across."
+  },
+  {
+   "role": "congrats",
+   "ok": false,
+   "seen": "The finished build is a flat slab with side walls on one pier, shown as the camera pulls back. It is not an arch bridge.",
+   "problem": "The bridge has no arch, so show the complete arch bridge in full view."
+  }
+ ]
+}

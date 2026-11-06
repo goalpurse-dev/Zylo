@@ -1,0 +1,41 @@
+{
+ "key": "words__1",
+ "label": "words",
+ "model": "claude-sonnet-5-5",
+ "hash": "faa36f028a3b9427",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "title",
+   "sentences"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "sentences": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "role",
+      "text"
+     ],
+     "properties": {
+      "role": {
+       "type": "string"
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.\nTHE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.\nCue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.\nThe account's formula (keep it):\nHOOK      \"If you [one naive physical action], you have a [thing].\" (16 words or fewer)\nCHAIN     \"But [the visible consequence].\" then \"So you [add the part].\" Every \"But…\" after the first names the part the fix before it added, or starts with \"But now\" (checked by code).\nNAME      \"This is a [real term].\"\nMYTH-BUST \"And [the thing everyone knows] is not [what they think].\" then what it really is.\nFINISH    \"Add [the finishing touches shown].\" (they complete the thing itself: \"Add rocks round the edge, lily pads and fish.\") then \"Congratulations, you have built a [thing].\"\nFacts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.\nSpoken forms (the narration is read aloud, then checked word by word): \"cannot\", never \"can not\"; no abbreviations: never \"US\", \"U.S.\" or \"USA\" (write \"American\" or \"America\"), units in full (\"square feet\", \"pounds\", \"gallons\"); numbers as digits with a comma for thousands (\"1,500\"), years as 4 digits (\"1952\"), times as \"3 AM\" (never \"a.m.\").\nEvery fix solves the problem before it, and says how: it names the problem's own thing (\"But dirt keeps falling in, so you add a filter that catches the dirt\", never \"so you add a pump\").\nA checked fact is said as it was checked: a range stays a range (\"every 8 to 10 hours\", never \"once every 8 hours\").\nSay what is true about the thing, never what the picture or a prop does: no \"a glowing outline traces it\", no \"as the page says\".\nPlain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no \"you might think\". Each sentence ends with a full stop.",
+ "user": "Topic: escalator\nLength: 30 s: 95-120 words in all, one sentence per beat (11 sentences).\nWord budget: aim for 108 words in all, about 10 words a sentence (the hook up to 16; the name line and congrats short, so the others may run a little longer). Count before you answer: over 120 words is too long.\nVerified facts (the only numbers and claims you may use, word for word where you use them):\n- Escalators are built at a slope of no more than 30 degrees, and 30 degrees is the standard.\n- An escalator's steps ride on two sets of wheels running in two tracks, which keep each step level.\n- Safety codes require escalators to have a brake that stops them when the power fails.\n\nThe beats, in order:\n1. hook\n   on screen: a moving belt runs up the slope between the two floors. actions: dig dig; escalator show (on \"belt\"); escalator belt (on \"belt\"); escalator runs (on \"slope\")\n   idea: lay a moving belt up a slope between two floors and you have an escalator\n   cue words: \"belt\", \"slope\"\n2. problem\n   on screen: a box set on the steep belt slides back down to the bottom. actions: escalator box (on \"box\"); escalator slides (on \"slides\"); slip fx go (on \"slides\")\n   idea: anything set on the steep belt slides back down\n   cue words: \"box\", \"slides\"\n3. fix1\n   on screen: steps pop onto the belt, tilted with the slope. actions: escalator boxBack (on \"So\"); escalator steps (on \"steps\")\n   idea: flat steps on the belt give things something to stand on\n   cue words: \"So\", \"steps\"\n4. problem2\n   on screen: the box sits on a tilted step and slides off again. actions: escalator slidesBack (on \"But\"); escalator box (on \"But\"); escalator slides (on \"tilt\")\n   idea: the steps tilt with the slope, so the box still slides off\n   cue words: \"But\", \"tilt\"\n5. fix2\n   on screen: two red and blue tracks appear and every step swings level. actions: escalator boxBack (on \"So\"); escalator tracks (on \"tracks\"); escalator level (on \"level\")\n   idea: each step has two wheels in two tracks that hold it level on the slope\n   cue words: \"So\", \"tracks\", \"level\", \"30\"\n   its fact: Escalators are built at a slope of no more than 30 degrees, and 30 degrees is the standard.; An escalator's steps ride on two sets of wheels running in two tracks, which keep each step level.\n6. name\n   on screen: outline traces the escalator. actions: esc outline show (on \"chain\")\n   idea: the loop of linked steps is a step chain\n   cue words: \"chain\"\n7. how\n   on screen: the gear at the top turns and the level steps move up the slope. actions: esc outline hide; escalator turns (on \"motor\"); escalator up (on \"pulls\"); pull show (on \"pulls\")\n   idea: a motor at the top turns a gear that pulls the step chain up\n   cue words: \"motor\", \"pulls\"\n8. problem3\n   on screen: the gear stops and the steps roll back down. actions: pull hide (on \"But\"); escalator turnsBack (on \"fails\"); escalator upBack (on \"roll\"); roll fx go (on \"roll\")\n   idea: if the motor fails, the loaded steps roll back down\n   cue words: \"But\", \"fails\", \"roll\"\n9. fix3\n   on screen: a red brake slides into the gear and the steps stop. actions: escalator brakeOn (on \"brake\"); escalator brake (on \"brake\")\n   idea: a brake grips the gear the moment the power stops\n   cue words: \"brake\"\n   its fact: Safety codes require escalators to have a brake that stops them when the power fails.\n10. finish\n   on screen: a handrail appears along the steps and a ceiling light hangs over them. actions: escalator handrail (on \"handrail\"); lamp show (on \"complete\")\n   idea: a moving handrail and a ceiling light complete it\n   cue words: \"handrail\", \"complete\"\n11. congrats\n   on screen: the finished escalator stands calm between the floors\n   idea: calm: the finished escalator between the floors\n   cue words: (none)"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A blue car and a yellow car are only partly in view at the bottom right, with STUCK labels. The light is orange-red, not clearly a queue.",
+ "problem": "The cars are cropped by the frame edge and do not read as a nose-to-tail queue at the red; pull the camera back to show the whole queue.",
+ "text": "But it never changes, so cars pile up nose to tail at the red.",
+ "at": "2026-11-06T18:24:03.273Z"
+}

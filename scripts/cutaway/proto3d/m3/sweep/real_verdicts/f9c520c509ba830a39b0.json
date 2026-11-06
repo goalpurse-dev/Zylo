@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A round digester with a burning flame appears, and a pipe runs to it. No sludge is visibly moving up the pipe, and the digester is not clearly connected to the tank.",
+ "problem": "Show sludge running up the pipe from the tank to the digester and connect the pipe to both.",
+ "text": "So you pump it to a digester, and its gas burns.",
+ "at": "2026-11-06T18:19:16.468Z"
+}

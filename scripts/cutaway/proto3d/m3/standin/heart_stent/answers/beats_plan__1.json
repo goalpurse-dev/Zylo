@@ -1,0 +1,1112 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "The kit has no setting inside the body, so the story is told on a big cut-open artery model on stands in a room: red blood dots run through it, yellow plaque narrows it, a balloon pushes the plaque back, a metal mesh stent holds it open, scar tissue grows and a drug coating stops it. The camera stays close on the artery model and ends on the whole room.",
+  "story": {
+   "title": "How a heart stent works",
+   "hero": "a stent",
+   "parts": [
+    "artery",
+    "blood",
+    "plaque",
+    "balloon",
+    "metal mesh stent",
+    "scar tissue",
+    "drug coating",
+    "guide wire",
+    "catheter",
+    "newspaper"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "blow up a tiny balloon inside a clogged artery and you have angioplasty"
+    },
+    {
+     "role": "problem",
+     "idea": "the balloon goes down and the plaque springs back, the blood stops again"
+    },
+    {
+     "role": "fix1",
+     "idea": "put a metal mesh tube on the balloon, it opens and stays open"
+    },
+    {
+     "role": "problem2",
+     "idea": "now scar tissue grows through the mesh and narrows it again"
+    },
+    {
+     "role": "fix2",
+     "idea": "coat the mesh with a drug that stops the scar growing"
+    },
+    {
+     "role": "name",
+     "idea": "this is a stent"
+    },
+    {
+     "role": "how",
+     "idea": "blood runs freely through the open mesh"
+    },
+    {
+     "role": "fact",
+     "idea": "the first coronary stent went into a patient in 1986"
+    },
+    {
+     "role": "finish",
+     "idea": "add the thin guide wire and the catheter that carry it in"
+    },
+    {
+     "role": "congrats",
+     "idea": "you have built a stent"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the plaque springs back in and the red blood dots stop",
+     "stakes": "the heart muscle gets no blood",
+     "size": 7
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "pink scar tissue grows inside the mesh",
+     "stakes": "the artery narrows again",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The first stent was put into a human coronary artery in 1986, in Toulouse, France",
+     "role": "fact",
+     "search": "first coronary stent implanted 1986 Puel Toulouse"
+    },
+    {
+     "claim": "Drug-eluting stents release a drug that keeps scar tissue from regrowing inside the stent",
+     "role": "fix2",
+     "search": "drug eluting stent prevents restenosis scar tissue NHLBI"
+    },
+    {
+     "claim": "A stent is put in through a thin tube from the wrist or groin, not by open heart surgery",
+     "role": "finish",
+     "search": "stent placement catheter wrist groin NHLBI"
+    }
+   ]
+  },
+  "sceneJson": {
+   "world": {
+    "cut": [
+     9,
+     12,
+     -5,
+     1
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [],
+    "road": false,
+    "worker": false,
+    "moreTrees": false,
+    "rocksAvoid": [],
+    "backdrop": {
+     "type": "room",
+     "x0": -9,
+     "x1": 9,
+     "back": -7,
+     "h": 4.2,
+     "windowX": -6,
+     "chairX": 7
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {}
+    },
+    {
+     "id": "artery",
+     "kind": "rig",
+     "main": true,
+     "params": {
+      "name": "artery model",
+      "synonyms": [
+       "artery",
+       "stent",
+       "blood vessel"
+      ],
+      "pos": [
+       0,
+       0.12,
+       -2.5
+      ],
+      "nodes": [
+       {
+        "id": "frame",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           0.9,
+           0.3
+          ],
+          "at": [
+           -3,
+           0.45,
+           0
+          ],
+          "look": "metal",
+          "color": "#5b6470"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           0.9,
+           0.3
+          ],
+          "at": [
+           3,
+           0.45,
+           0
+          ],
+          "look": "metal",
+          "color": "#5b6470"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8,
+           0.35,
+           1.6
+          ],
+          "at": [
+           0,
+           1.07,
+           0
+          ],
+          "look": "plastic",
+          "color": "#c4453f"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8,
+           1.6,
+           0.12
+          ],
+          "at": [
+           0,
+           2.05,
+           -0.8
+          ],
+          "look": "plastic",
+          "color": "#8e2a2a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8,
+           0.35,
+           1.6
+          ],
+          "at": [
+           0,
+           3.02,
+           0
+          ],
+          "look": "plastic",
+          "color": "#c4453f"
+         }
+        ],
+        "moves": [
+         {
+          "name": "blood",
+          "type": "flow",
+          "path": [
+           [
+            -4,
+            2.05,
+            0
+           ],
+           [
+            4,
+            2.05,
+            0
+           ]
+          ],
+          "color": "#ff2a2a"
+         }
+        ]
+       },
+       {
+        "id": "plaqueTop",
+        "parent": "frame",
+        "at": [
+         0,
+         2.85,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           2,
+           0.55,
+           1.5
+          ],
+          "at": [
+           0,
+           -0.27,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2c94c"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pushUp",
+          "type": "slide",
+          "to": [
+           0,
+           0.42,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "plaqueBot",
+        "parent": "frame",
+        "at": [
+         0,
+         1.24,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           2,
+           0.55,
+           1.5
+          ],
+          "at": [
+           0,
+           0.27,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2c94c"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pushDown",
+          "type": "slide",
+          "to": [
+           0,
+           -0.42,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "balloon",
+        "parent": "frame",
+        "at": [
+         -3.9,
+         2.05,
+         0.1
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.36,
+          "h": 2,
+          "axis": "x",
+          "at": [
+           3.9,
+           0,
+           0
+          ],
+          "look": "plastic",
+          "color": "#5fb3ff"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.06,
+          "h": 3,
+          "axis": "x",
+          "at": [
+           1.5,
+           0,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f4f4f4"
+         }
+        ],
+        "moves": [
+         {
+          "name": "balloon",
+          "type": "appear"
+         },
+         {
+          "name": "inflate",
+          "type": "extend",
+          "axis": "y",
+          "k": 1.6
+         }
+        ]
+       },
+       {
+        "id": "stent",
+        "parent": "frame",
+        "at": [
+         0,
+         2.05,
+         0.1
+        ],
+        "shapes": [
+         {
+          "shape": "spring",
+          "r": 0.62,
+          "h": 2.1,
+          "turns": 12,
+          "wire": 0.06,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#d9dde2"
+         }
+        ],
+        "moves": [
+         {
+          "name": "mesh",
+          "type": "appear"
+         },
+         {
+          "name": "coat",
+          "type": "heat",
+          "color": "#3ad6a0"
+         }
+        ]
+       },
+       {
+        "id": "scar",
+        "parent": "frame",
+        "at": [
+         0,
+         2.05,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           1.8,
+           0.32,
+           1.4
+          ],
+          "at": [
+           0,
+           0.45,
+           0
+          ],
+          "look": "plastic",
+          "color": "#ff8fb0"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.8,
+           0.32,
+           1.4
+          ],
+          "at": [
+           0,
+           -0.45,
+           0
+          ],
+          "look": "plastic",
+          "color": "#ff8fb0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "scar",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "wire",
+        "parent": "frame",
+        "at": [
+         -4,
+         2.05,
+         0.1
+        ],
+        "shapes": [
+         {
+          "shape": "cable",
+          "path": [
+           [
+            -1.5,
+            -0.3,
+            0.4
+           ],
+           [
+            0,
+            0,
+            0
+           ],
+           [
+            2.6,
+            0,
+            0
+           ]
+          ],
+          "r": 0.05,
+          "look": "metal",
+          "color": "#e6e6e6"
+         },
+         {
+          "shape": "cable",
+          "path": [
+           [
+            -1.5,
+            -0.5,
+            0.5
+           ],
+           [
+            0,
+            -0.15,
+            0
+           ],
+           [
+            1.6,
+            -0.15,
+            0
+           ]
+          ],
+          "r": 0.12,
+          "look": "plastic",
+          "color": "#3d7fd9"
+         }
+        ],
+        "moves": [
+         {
+          "name": "wire",
+          "type": "appear"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "paper",
+     "kind": "sheet",
+     "params": {
+      "masthead": "MEDICAL NEWS",
+      "date": "1986",
+      "headline": "FIRST STENT IN A HEART",
+      "from": [
+       5.2,
+       -1.2,
+       -2.6
+      ],
+      "to": [
+       5.2,
+       2.2,
+       -2.6
+      ],
+      "sink": true
+     }
+    },
+    {
+     "id": "arteryOutline",
+     "kind": "outline",
+     "params": {
+      "of": "artery.stent",
+      "opts": {
+       "r": 0.06,
+       "closed": true
+      }
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       -6.5,
+       0.12,
+       -4.5
+      ],
+      "rotY": 0.25,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "artery",
+      "does": "a blue balloon in the clogged artery blows up and pushes the yellow plaque back, red blood starts to flow"
+     },
+     "do": [
+      {
+       "p": "artery",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "balloon",
+       "w": "balloon",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "inflate",
+       "w": "blow",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushUp",
+       "w": "blow",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushDown",
+       "w": "blow",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "blood",
+       "w": "artery",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [],
+       "view": "home",
+       "width": 0.95,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -4.2,
+        0.6,
+        -3.4,
+        4.2,
+        3.3,
+        -1.6
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "state": {
+      "text": "BLOCKED",
+      "w": "back"
+     },
+     "shows": {
+      "p": "artery",
+      "does": "the balloon shrinks and the yellow plaque springs back in, the blood stops"
+     },
+     "do": [
+      {
+       "p": "artery",
+       "v": "inflateBack",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushUpBack",
+       "w": "back",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushDownBack",
+       "w": "back",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "bloodBack",
+       "w": "stops",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "artery",
+      "does": "a metal mesh tube appears round the balloon, opens the artery and stays when the balloon goes"
+     },
+     "do": [
+      {
+       "p": "artery",
+       "v": "inflate",
+       "w": "mesh",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushUp",
+       "w": "mesh",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "pushDown",
+       "w": "mesh",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "mesh",
+       "w": "mesh",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "balloonBack",
+       "w": "open",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "blood",
+       "w": "open",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery.stent"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "state": {
+      "text": "NARROW AGAIN",
+      "w": "scar"
+     },
+     "shows": {
+      "p": "artery",
+      "does": "pink scar tissue grows inside the mesh and the blood stops"
+     },
+     "do": [
+      {
+       "p": "artery",
+       "v": "scar",
+       "w": "scar",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "bloodBack",
+       "w": "scar",
+       "o": 0.4,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery.stent"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "artery",
+      "does": "the mesh glows green with its drug coating and the pink scar goes away"
+     },
+     "do": [
+      {
+       "p": "artery",
+       "v": "coat",
+       "w": "drug",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "scarBack",
+       "w": "scar",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "blood",
+       "w": "scar",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery.stent"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "arteryOutline",
+      "does": "a glowing outline traces the mesh"
+     },
+     "do": [
+      {
+       "p": "arteryOutline",
+       "v": "show",
+       "w": "stent",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery.stent"
+       ],
+       "view": "home",
+       "width": 0.5,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "artery",
+      "does": "red blood dots run through the open mesh"
+     },
+     "do": [
+      {
+       "p": "arteryOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "coatBack",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "blood",
+       "w": "blood",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "artery"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "paper",
+      "does": "a 1986 newspaper page rises beside the artery"
+     },
+     "do": [
+      {
+       "p": "paper",
+       "v": "show",
+       "w": "1986",
+       "o": -0.5,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "paper"
+       ],
+       "view": "home",
+       "width": 0.5,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "artery",
+      "does": "a thin guide wire and a blue catheter slide in from the left"
+     },
+     "do": [
+      {
+       "p": "paper",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "artery",
+       "v": "wire",
+       "w": "wire",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "1986",
+      "at": {
+       "s": "fact",
+       "w": "1986",
+       "o": 0
+      },
+      "d": 1.4
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "hook",
+       "w": "artery",
+       "o": 0
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem",
+       "w": "stops",
+       "o": 0
+      },
+      "d": 1
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "how",
+       "w": "blood",
+       "o": 0
+      },
+      "d": 1.2
+     }
+    ],
+    "chimes": [
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "1986",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

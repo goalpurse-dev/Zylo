@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The tank is shown in close-up with a yellow bar across the top edge. It does not trace the tank's outline.",
+ "problem": "Draw a full outline that traces all around the tank edges, not just a bar along the top.",
+ "text": "This is a septic tank.",
+ "at": "2026-11-06T18:18:43.763Z"
+}

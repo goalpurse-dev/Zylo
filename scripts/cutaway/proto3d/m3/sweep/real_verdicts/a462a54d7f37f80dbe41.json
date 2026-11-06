@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A thin pipe appears from the furnace to a blue tank on the right edge. The tank is partly cut off by the frame edge. No gas is visibly flowing.",
+ "problem": "The second tank is cropped at the frame edge and no gas flow is visible; reframe and show gas moving through the pipe.",
+ "text": "But now that gas escapes, so you pipe it into a second tank where pure silicon forms.",
+ "at": "2026-11-06T18:14:45.185Z"
+}

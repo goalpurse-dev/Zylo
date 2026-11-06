@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The heater is shown close up with a yellow translucent outline frame around it, but the outline is a rectangle, not a trace of the heater's shape, and it is cut off by the frame edges.",
+ "problem": "The outline is a large box cropped by the frame edges. Trace the heater's silhouette so it stays fully in view.",
+ "text": "This is a water heater.",
+ "at": "2026-11-06T18:25:39.766Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The camera pulls back, but the gauge panel and rpm bar still cover part of the saw, and a stray black pole sits at the right edge in the last frame.",
+ "problem": "The gauges cover the engine and clutch, so the whole build is not clearly visible. Remove or move the gauges and clear the stray pole.",
+ "text": "Congratulations, you have built a chainsaw.",
+ "at": "2026-11-06T18:06:36.555Z"
+}

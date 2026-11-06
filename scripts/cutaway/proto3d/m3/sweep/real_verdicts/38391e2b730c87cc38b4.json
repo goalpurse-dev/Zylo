@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "A stone pier rises in the river, but no slabs are laid on top in any frame. The broken plank is visible only in the first frame.",
+ "problem": "No flat slabs are laid on the pier, so add slabs resting on top of the pier.",
+ "text": "So you build stone piers in the river and rest flat slabs on top.",
+ "at": "2026-11-06T18:05:04.703Z"
+}

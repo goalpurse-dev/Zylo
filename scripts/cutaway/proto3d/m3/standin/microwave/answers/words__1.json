@@ -1,0 +1,12 @@
+{"hash":"*","by":"stand-in planner","searches":0,"data":{"title":"How a microwave works","sentences":[
+{"role":"hook","text":"If you shine invisible waves at food, you have a microwave oven."},
+{"role":"problem","text":"But the waves heat one side, and the other side stays cold."},
+{"role":"fix1","text":"So you add a turntable that spins the food through the waves."},
+{"role":"problem2","text":"But now the waves leak out of the open front."},
+{"role":"fix2","text":"So you add a door with a metal mesh whose holes are far smaller than the waves."},
+{"role":"name","text":"This is a microwave oven."},
+{"role":"how","text":"The waves shake water in the food 2.45 billion times a second."},
+{"role":"myth","text":"And it does not cook from the inside out."},
+{"role":"mythFact","text":"The waves reach just 1 to 1.5 inches, and heat creeps inward inch by inch."},
+{"role":"finish","text":"Add a keypad, a timer and a light."},
+{"role":"congrats","text":"Congratulations, you have built a microwave oven."}]}}

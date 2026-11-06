@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The washer with a few clothes in the drum and a 'STILL DIRTY' label. No dark dirt spots can be seen on the clothes, and they are tiny.",
+ "problem": "No dark dirt spots are visible on the clothes. Add clear dark spots on the clothes and make them bigger.",
+ "text": "But dark dirt spots stay on the clothes, even while they are spinning.",
+ "at": "2026-11-06T18:16:59.035Z"
+}

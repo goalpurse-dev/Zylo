@@ -1,0 +1,70 @@
+{
+ "key": "fact_check__1",
+ "label": "fact-check",
+ "model": "claude-sonnet-5-5",
+ "hash": "4b5a454b4ee9d898",
+ "search": 0,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict \"keep\" if the research notes support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.",
+ "user": "Topic: garden shelter\nClaims (index: claim | suggested search):\n0: A 90 mph wind exerts a pressure of about 20 pounds per square foot | 90 mph wind pressure pounds per square foot 0.00256 V squared\n1: Post footings must reach below the local frost line so frost heave does not lift them | post footing depth below frost line frost heave\n2: Paving slabs are laid on a compacted sub-base so they stay flat and drain | laying paving slabs compacted sub-base\n\nResearch notes (from 3 web searches):\nI searched each claim.\n\n**Claim 0: a 90 mph wind exerts about 20 pounds per square foot. Supported in a corrected form.**\n- Penn State AE thesis appendix (wind pressure table, q = 0.00256 V^2): 20.7 psf at 90 mph. URL: https://www.engr.psu.edu/ae/Thesis/portfolios/2006/hsm117/Final%20Report/Appendix%20A.pdf\n- Eng-Tips: 0.00256 comes from standard air density. URL: https://www.eng-tips.com/viewthread.cfm?qid=4103\n- This is the basic velocity pressure; design codes then apply factors. Corrected: \"A 90 mile per hour wind pushes about 20 pounds on every square foot.\"\n\n**Claim 1: post footings must reach below the frost line so frost heave does not lift them. Supported in a corrected form.**\n- IRC R403.1.4 summary: footings must extend below the frost line, and at least 12 inches below grade. URL: https://www.jaspector.com/codes/irc-2021/ch04-foundations/footing-depth-frost-line-requirements/\n- Decks.com footing depth guide: footings below the frost line to prevent frost heave. URL: https://www.decks.com/how-to/articles/deck-footing-frost-depth-map\n- Otsego MN: footing base at least 42 inches below finished grade. URL: https://www.otsegomn.gov/DocumentCenter/View/106/Deck-PDF\n- Some freestanding structures are exempt; local codes rule. Corrected: \"Footings usually go below the frost line, so frost cannot heave them up.\"\n\n**Claim 2: paving slabs are laid on a compacted sub-base. Supported as written.**\n- Wickes, lay a patio: at least 100 mm of compacted MOT Type 1 sub-base. URL: https://www.wickes.co.uk/how-to-guides/garden-landscaping/lay-a-patio\n- Bradstone: 150 mm compacted sub-base then a mortar bed. URL: https://www.bradstone.com/homeowner/blog/how-to-lay-paving-slabs-for-your-patio\n\nSources found:\n"
+}

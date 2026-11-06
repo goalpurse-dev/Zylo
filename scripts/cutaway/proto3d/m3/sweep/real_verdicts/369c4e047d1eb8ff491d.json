@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "Glass walls and a small spire appear on the tower, and small steps show on the mat. The steps sit on the mat rather than at the tower base. The last frame is cropped at the top and the spire is cut off.",
+ "problem": "Place the entrance steps at the tower base, and keep the whole tower and spire inside the frame.",
+ "text": "Add glass walls, a spire and entrance steps.",
+ "at": "2026-11-06T18:22:29.774Z"
+}

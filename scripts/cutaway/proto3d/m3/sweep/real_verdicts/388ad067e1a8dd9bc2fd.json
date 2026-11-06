@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "A printer machine with a wafer sits at the right edge, partly cropped. No light beam is visible.",
+ "problem": "No light beam hits the wafer and the machine is cropped; add a visible beam and reframe.",
+ "text": "Machines print layer after layer of tiny switches onto each wafer with light.",
+ "at": "2026-11-06T18:14:45.189Z"
+}

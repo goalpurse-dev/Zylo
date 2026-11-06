@@ -1,0 +1,66 @@
+{
+ "plan": "toilet",
+ "known": false,
+ "usd": 0.01721,
+ "pass": true,
+ "failing": [
+  "problem",
+  "stakes"
+ ],
+ "verdict": [
+  {
+   "role": "hook",
+   "ok": true,
+   "seen": "Camera moves in on the cut floor, then a small white bowl sits on top of a vertical drain pipe that leads into the ground cut.",
+   "problem": ""
+  },
+  {
+   "role": "problem",
+   "ok": false,
+   "seen": "Brown waste lumps hover in an arc above and beside the bowl, mostly outside it, and do not clearly drop in or pile up inside the bowl.",
+   "problem": "The lumps stay in the air beside the bowl; make them fall into the bowl and rest in a pile inside it."
+  },
+  {
+   "role": "fix1",
+   "ok": true,
+   "seen": "The first frame shows waste lumps on the bowl. After that a tank with a handle appears and water balls flush through the bowl. Brown waste drops into the drain pipe below.",
+   "problem": ""
+  },
+  {
+   "role": "stakes",
+   "ok": false,
+   "seen": "A large white up arrow sits beside the toilet with blue water balls in the bowl. No green gas is rising out of the bowl.",
+   "problem": "Add green gas visibly rising from the bowl, with arrows pointing up along it."
+  },
+  {
+   "role": "name",
+   "ok": true,
+   "seen": "A glowing yellow rectangle outlines the pipe section below the bowl, which marks the trap. The toilet and drain are in view.",
+   "problem": ""
+  },
+  {
+   "role": "name2",
+   "ok": true,
+   "seen": "A tall glowing yellow outline traces a vertical vent stack rising through the wall area, with the toilet small at the left.",
+   "problem": ""
+  },
+  {
+   "role": "myth",
+   "ok": true,
+   "seen": "Up and down translucent arrows surround the toilet in all three frames, with the trap outline visible. The push arrows are clearly in view.",
+   "problem": ""
+  },
+  {
+   "role": "mythFact",
+   "ok": true,
+   "seen": "The toilet is in view in the first two frames, with a waste ball moving down the drain. The last frame is a wide view of the whole toilet and pipe running to the tank.",
+   "problem": ""
+  },
+  {
+   "role": "congrats",
+   "ok": true,
+   "seen": "The strip pulls out from the toilet, vent and pipe to a full cutaway of the house, lawn, pipe, tank and ground layers. The final frames show the whole build clearly with nothing covering it.",
+   "problem": ""
+  }
+ ]
+}

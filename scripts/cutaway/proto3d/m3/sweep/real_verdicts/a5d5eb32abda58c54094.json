@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "Engine and blue nose appear and a propeller shows, with small white air bits near the wing, but the plane is tiny.",
+ "problem": "Air streaming past the flat wing is barely visible and the propeller spin cannot be read; zoom in and add clearer air streaks.",
+ "text": "So you add an engine and a propeller that push air past the wings, but flat wings let the air slide by.",
+ "at": "2026-11-06T18:03:26.753Z"
+}

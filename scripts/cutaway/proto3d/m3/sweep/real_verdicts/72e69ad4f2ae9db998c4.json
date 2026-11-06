@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A counter box shows 0, not counting down from 90, and cars are barely visible at the bottom right.",
+ "problem": "The timer shows 0 and not 90 counting down, and the cars in the queue are cropped; show 90 counting down and a visible queue.",
+ "text": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
+ "at": "2026-11-06T18:24:03.279Z"
+}

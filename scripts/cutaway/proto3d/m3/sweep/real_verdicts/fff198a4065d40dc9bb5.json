@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "Only a single pier stands in the water in all three frames. There is no wooden frame, wedge stones or keystone, and nothing changes.",
+ "problem": "No arch construction is shown, so add a wooden frame, wedge stones curving over it and a keystone.",
+ "text": "So you set a wooden frame, curve wedge stones over it, and lock the top with a keystone.",
+ "at": "2026-11-06T18:05:04.703Z"
+}
