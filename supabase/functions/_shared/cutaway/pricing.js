@@ -41,7 +41,7 @@ export const COSTS = Object.freeze({
 });
 
 export const LENGTHS = Object.freeze([30, 60]);
-export const DEFAULT_LENGTH = 30;
+export const DEFAULT_LENGTH = 60;
 
 /** How much work one video of `lengthSec` is, as planned (beats of ~3 s). */
 export function workFor(lengthSec) {

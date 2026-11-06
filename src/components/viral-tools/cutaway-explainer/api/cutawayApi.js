@@ -9,7 +9,7 @@
 //    Nothing is charged; a production build never reaches it (import.meta.env.DEV is false there).
 
 export const LENGTHS = [30, 60];
-export const DEFAULT_LENGTH = 30;
+export const DEFAULT_LENGTH = 60;
 
 // ---------- the server (cutaway-api) ----------
 import { ERRORS, FAILED_MESSAGE, STATUSES } from "../../../../../supabase/functions/_shared/cutaway/contract.js";

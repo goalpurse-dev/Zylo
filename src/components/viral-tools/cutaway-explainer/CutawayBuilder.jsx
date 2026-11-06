@@ -44,7 +44,9 @@ export default function CutawayBuilder({ values, onValuesChange, onGenerate, onR
   const topic = values?.topic ?? "";
   // Premade topics are 30 s only for now, so only a typed custom topic is offered 60 s (the server refuses the rest).
   const lengthChoices = lengthsFor(topic.trim().length >= 3 ? quoteTopic(topic, DEFAULT_LENGTH, approved ?? []).kind : "premade");
-  const lengthSec = lengthChoices.includes(values?.lengthSec) ? values.lengthSec : DEFAULT_LENGTH;
+  // (60 s is the default since 2026-11-05, the owner's rule: every competitor video is 60-73 s; a premade topic, 30 s only,
+  // falls back to its own length)
+  const lengthSec = lengthChoices.includes(values?.lengthSec) ? values.lengthSec : lengthChoices.includes(DEFAULT_LENGTH) ? DEFAULT_LENGTH : lengthChoices[0];
   const soundEffects = values?.soundEffects !== false;
   const canRemove = canRemoveEndCard(planCode);
   const removeWatermark = canRemove && values?.removeWatermark === true;
