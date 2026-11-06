@@ -11,7 +11,7 @@ import { reviewShots } from "./shotReview.js";
 import { anthropicJudge, REVIEW_MODELS } from "./judge.js";
 import { mockJudge } from "./mock.js";
 
-export const REVIEW_DEFAULTS = Object.freeze({ provider: "off", model: REVIEW_MODELS.default, maxUsd: 0.1, maxMs: 120000, replanRounds: 2 });
+export const REVIEW_DEFAULTS = Object.freeze({ provider: "off", model: REVIEW_MODELS.default, maxUsd: 0.1, maxMs: 240000, replanRounds: 2 });
 
 /** the guard the re-plan uses: every pre-render check, flattened to strings ("" problems = clean) */
 export function checksFor(plan, script, kit = null, kitProblems = null) {

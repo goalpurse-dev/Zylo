@@ -27,11 +27,13 @@ import { suggestFixes, applyFixes, settleObjects, finalFallback } from "./replan
 
 export const DEFAULT_REVIEW_BUDGET = Object.freeze({
   maxUsd: 0.1,          // per video (Haiku 5.5: a full pass ~$0.015, worst ~$0.04)
-  maxMs: 120000,        // from the start of the review
+  maxMs: 240000,        // from the start of the review (the prepare job's `until` is the real end; run 1620fc3e skipped
+                        // its only pass at 120 s: "~122 s needed, 120 s left")
   until: null,          // epoch ms: a hard end (the prepare job's limit minus the music + mix + uploads after it)
   replanRounds: 2,      // re-plan rounds: pass 1 (all lines) -> fix -> pass 2 (the fixed lines) -> fix -> pass 3
   batchSize: 8, maxImages: 14, concurrency: 4,
-  loadMs: 40000,        // the engine page's load (estimates for "does the next pass fit": GPU ~30 s, this laptop 64 s)
+  loadMs: 20000,        // the engine page's load (estimates for "does the next pass fit": RunPod chunks measured 13.6-14.1 s
+                        // on 2026-11-06, this laptop 64 s)
   stillMs: 250,         // one still (GPU ~0.1 s, laptop median 0.15 s)
   callMs: 30000,        // one judge request (Haiku, ~12 frames, effort low)
   minPassMs: 20000,     // a pass needs at least this long
