@@ -252,3 +252,47 @@ Its numbers, from the owner: 304K views, 10K likes, 7,138 saves, 88.1% of traffi
 - **Which of this actually works.** Only post numbers can say. These videos carry the recipe tag `studio_friend_v3`, so the Studio score can compare them with `studio_v2` once enough are posted.
 - **Length.** Most references run past 2 minutes. Our buckets stop at 90 s, and that hasn't been tested.
 - **Visual pace.** Several references cut much faster (25 to 37 cuts a minute against our 5 to 16). This round changed sound and script, not camera pace.
+
+## YouTube long-form tutorial: "I Tried Making… (SnapYT)" (2026-11-06)
+
+The reference is `content/reference-videos/I-Tried-Making-SnapYT.App.mp4`: 7:20, 16:9, about 300K views in 2 days, the channel "ReachMora". It shows how to make viral animated shorts with a Claude skill.
+
+The analysis was local and cost $0: a whisper transcript (1,380 words, about 188 words a minute, one calm AI-style narrator) and a frame every 5 s. The transcript and frame sheets are in `content/reference-videos/reports/snapyt/`.
+
+### Structure, with timestamps
+
+| Time | Part | What is said and shown |
+|---|---|---|
+| 0:00–0:21 | **Hook: promise + three "no"s + disbelief** | "One of the craziest ways to create viral animated videos using nothing but Claude… No video generators, no Blender, and absolutely no CapCut editing… you're probably going to think I spent hours animating everything manually. But nope." On screen: two finished results side by side, then fast keyword cards. |
+| 0:21–0:57 | **Proof from a public channel, credited by name** | "I came across this channel called Ricky Clips… Look at this. Their most popular video has over 31 million views. The next one has 16 million… One video posted just yesterday already has 14 million views. That's not normal." On screen: the channel page, its Shorts sorted by popular, and its analytics. Then "Look closely at the animation style… you might think Blender… you can create videos like these using just Claude." |
+| 0:59–1:36 | **The search story (fair about others)** | "I couldn't find a simple tutorial… The closest thing I found was a creator called Mr. Omni… a video over 10 minutes long… way too complicated for what I wanted. I wanted something so simple that literally anyone could follow it. Even a 10-year-old. So I started experimenting… until I finally found a workflow that actually worked. And this is what I managed to create." It credits the other creator and calls his way complicated, not bad. |
+| 1:39–2:01 | **Early CTA + lead magnet** | "Before we jump into the tutorial, there's one thing you need… a special skill file… download it completely free… link in the description." Then "Smash that like button and subscribe. Seriously, it takes one second, it's free." |
+| 2:03–5:36 | **Steps 1–5** | Each opens with "Step N, <verb phrase>" ("Step one, install the Claude skill", "Step two, start creating your animated video"…) and a full-screen STEP card (a chalkboard: "STEP 2 / Start Creating Animated Videos"). Then real screen recordings with a cursor, zooms and a highlight on what to click. There are reassurance lines ("No complicated setup, no coding, and no need to build anything yourself") and fun beats ("Now comes the fun part"). Every choice is explained ("If you don't have anything prepared, simply select…"). |
+| 5:03–5:37 | **The honest snag, inside the steps** | "I won't lie, this part requires some patience… the entire process took approximately 30 minutes… don't panic… Claude rendered approximately 1,000 frames." It shows the progress panel. |
+| 5:37–6:12 | **The finished result, full screen, about 35 s** | The whole short plays with its own sound. |
+| 6:12–6:40 | **Recap as a daily loop** | "You can repeat this every single day. Just come back…, generate a new story, create your voiceover…, upload…" |
+| 6:40–7:05 | **Honest limit + a reason to comment** | "One important thing I haven't fully tested yet is whether this… works reliably with Claude's free plan… you might run out of credits… I'm going to test this properly and make another tutorial… let me know in the comments." |
+| 7:05–7:20 | **Outro + end screen** | "Hit that like button and subscribe… We're testing the craziest AI tools… so you don't have to." The end screen: "THANKS FOR WATCHING", two video slots and a subscribe button. |
+
+### How it looks
+
+- **Keyword cards between almost every sentence of the first 2 minutes.** A dark-blue gradient, one glossy 3D icon (monitor with a play button, magnifier, check mark, cloud upload, rocket, alarm clock, gear, microphone, film strip, hourglass) and the spoken phrase in 2–4 words: a thin italic serif plus a heavy sans word ("You can / **download it**", "**crazy** AI"). Each card lasts 1.5–3 s with a soft blur transition.
+- **Every screen recording sits inset on the same blue background**, never edge to edge, and is zoomed onto the part that matters.
+- **STEP cards**: a chalkboard with a yellow "STEP N" label and a two-line title in white and orange.
+- **Proof** is someone else's public numbers (credited), then their analytics screen, then the creator's own result.
+- **Pace**: a new picture every 2–4 s in the intro, 5–10 s in the steps, and the result runs long and uncut.
+
+### What we take
+
+- The exact chapter order: result first → public proof (credited) → "I searched, it was too complicated" (fair) → early CTA → numbered steps on real screens → honest snag with a real number → the finished result, uncut → a daily-loop recap → honest limit + comment question → end screen.
+- Three "no"s in the hook ("no coding, no editing, no Blender") and "you'll think I spent hours… but nope."
+- One keyword card per sentence in the first 2 minutes, in our own style: Zyvo colors, our own drawn icons, never their look.
+- Numbered steps with a full-screen STEP card and a "Step N, <verb>" line.
+- A real waiting time said honestly ("this part takes about N minutes, don't panic").
+- An honest limit and a promise of a follow-up video.
+
+### What we don't take
+
+- Unchecked numbers: we use only numbers we can show, our own analytics or credited public counts with the day we checked them.
+- "It's free" lines: Zyvo videos need a paid plan, so we never say free unless the fact sheet says it.
+- Their visual identity: no blue gradient copies, no chalkboard; our own cards.
