@@ -97,6 +97,8 @@ export function makePage(layout) {
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
   window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); composer.render(); return true; };
+  // (the look meter: the main part's real width share on screen at time t, from its meshes; measuring only)
+  window.mainWidthAt = (t) => { run.update(t, camera, t); camera.updateMatrixWorld(); const m = M2_LAYOUT.parts.find((p) => p.main), o = m && run.parts.get(m.id)?.obj?.group; if (!o) return null; const b = new THREE.Box3().setFromObject(o); if (b.isEmpty()) return null; let x0 = 1, x1 = 0; for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) { const v = new THREE.Vector3(x, y, z).project(camera); if (v.z > 1) continue; x0 = Math.min(x0, (v.x + 1) / 2); x1 = Math.max(x1, (v.x + 1) / 2); } return Math.max(0, Math.min(1, x1) - Math.max(0, x0)); };
 }
 manager.onLoad = () => { window.ready = true; };`);
   return s;

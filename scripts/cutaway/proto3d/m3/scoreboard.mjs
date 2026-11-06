@@ -25,7 +25,7 @@ export const BENCH = [
   ["Water well", "Yard, house & water", ["to_build_a_water_well"]], ["Pond", "Yard, house & water", ["backyard_pond", "garden_pond"]],
   ["Garden shelter", "Yard, house & water", []], ["Gas station tank", "Yard, house & water", []], ["Traffic light", "Yard, house & water", ["traffic_light"]],
   ["Sewage treatment plant", "Utilities & energy", []], ["Electricity to your outlet", "Utilities & energy", []], ["Nuclear power plant", "Utilities & energy", []],
-  ["Stove", "Appliances", ["real_stove_rerun", "real_stove_first", "gas_stove", "cuisiniere"]], ["Washing machine", "Appliances", ["washing_machine", "hand_washer"]],
+  ["Stove", "Appliances", ["real_stove_rerun", "real_stove_first", "gas_stove", "cuisiniere"]], ["Washing machine", "Appliances", ["real_washer", "hand_washer"]],
   ["Fridge", "Appliances", []], ["Air conditioner", "Appliances", []], ["Water heater / shower", "Appliances", []], ["Microwave", "Appliances", []],
   ["Four-wheel steering", "Vehicles & engines", ["four_wheel_steering_turns_a_giant_car_li", "kitplan_steering"]],
   ["Air suspension", "Vehicles & engines", ["air_suspension_bagged_cars_works_the_sim", "kitplan_air_saved"]],
@@ -41,14 +41,20 @@ if (BENCH.length !== 40) throw new Error(`need 40 topics, have ${BENCH.length}`)
 
 const PLANS = path.join(here, "sweep", "plans");
 const SERIOUS = /not in the frame|main subject is out of the frame|does nothing in this beat|crash/;
-function check(file) {
-  const P = JSON.parse(fs.readFileSync(path.join(PLANS, `${file}.json`), "utf8")), S = P.sentences, roles = S.map((s) => s.role);
+function check(file, dir = PLANS) {
+  const P = JSON.parse(fs.readFileSync(path.join(dir, `${file}.json`), "utf8")), S = P.sentences, roles = S.map((s) => s.role);
   let layout = { ...P.layout, roles, key: `score_${file}` };
   if (!layout.codeShots && !layout.camera) layout = layoutRules(layout).layout;
   const solved = solveLayout(layout, S), words = draftWords(S), tl = compile(layout, words, words.at(-1).e + 0.1, { roles }), tc = timelineChecks(layout, tl);
   // (the timeline checks only report in a real run, and the live swimming pool premade has some: a SERIOUS one is what the
   // vision check refuses, a thing the sentence names that is not seen or does nothing; the rest are minor)
-  const all = [...(solved.problems ?? []), ...(tc.problems ?? [])], serious = all.filter((p) => SERIOUS.test(p)), minor = all.filter((p) => !SERIOUS.test(p));
+  // (calibrated on the four live premades, 2026-11-05: "the main subject is out of the frame" fires on every line of the
+  // approved car wash, whose frames show the part each line is about; it is serious only when that line's own part is
+  // also missing or small)
+  const all = [...(solved.problems ?? []), ...(tc.problems ?? [])];
+  const roleOf = (p) => p.match(/^sentence (\w+):/)?.[1], ownBad = new Set(all.filter((p) => / is not in the frame at its moment| is only \d+% of the frame width/.test(p)).map(roleOf));
+  const isSerious = (p) => (/main subject is out of the frame/.test(p) ? ownBad.has(roleOf(p)) : SERIOUS.test(p));
+  const serious = all.filter(isSerious), minor = all.filter((p) => !isSerious(p));
   const problems = serious;
   let frames = null;
   if (!a["no-render"]) {
@@ -61,6 +67,12 @@ function check(file) {
   return { file, problems, minor, frames, pass: !problems.length && (frames == null || frames === 3), clean: !all.length };
 }
 
+// --known: the live, owner-approved premades (m3/sweep/known) first: every problem they raise is a false alarm of a check
+const KNOWN = path.join(here, "sweep", "known");
+if (a.known) {
+  for (const f of fs.readdirSync(KNOWN).filter((x) => x.endsWith(".json"))) { const r = check(f.replace(/.json$/, ""), KNOWN); console.log(`[known] ${r.file}: ${r.pass ? "pass" : "FAIL"} frames ${r.frames} | serious: ${r.problems.join("; ") || "-"} | minor: ${r.minor.join("; ").slice(0, 600) || "-"}`); }
+  if (a.known === "only") process.exit(0);
+}
 const rows = [];
 for (const t of BENCH) {
   const results = t.plans.filter((f) => fs.existsSync(path.join(PLANS, `${f}.json`))).map((f) => { try { return check(f); } catch (e) { return { file: f, problems: [`crash: ${e.message}`], frames: 0, pass: false }; } });

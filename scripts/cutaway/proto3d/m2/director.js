@@ -7,7 +7,7 @@
 //  - the end: a pull back to the calm scene until the sign pops, then a gentle push toward the sign.
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
 import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
-import { reportBug } from "./bookkeeping.js";
+import { reportBug, soft } from "./bookkeeping.js";
 import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 
 export { LENS };
@@ -20,12 +20,18 @@ export const ZONES = Object.freeze({ top: [0.06, 0.245], mid: [0.355, 0.465], bo
 // view directions (from the target toward the camera); home is the French drain's home angle
 export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34], low: [12, 4.5, 40], front: [5, 6, 50], side: [24, 9, 40], close: [12, 9, 40] });
 // minGap: a move must finish (and hold a moment) before the next; the approved videos move every 3-4 s on average
-export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: 0.97, minGap: 1.2 });
+// the look of a planned video (step A of the batch-2 look study, the owner's go of 2026-11-05): the competitors' subject
+// fills 50-90% of the frame from a low, close camera and the picture is still 19% of the time (median of 21); ours was a
+// high three-quarter view, the subject at 20-40%, still 28%. elev: the base view's elevation (degrees); shotWidth: a
+// planned shot's default width for its parts; closeMin: the part a line shows at least this share of the width;
+// drift: a hold creeps this much closer (0.9 = 10%) and turns orbitDeg degrees, so no frame sits still
+export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4 });
+export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: LOOK.drift, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
 // the narrowest field of view in world units (the approved close-ups: the holes ~4 m across, the crack ~5 m)
 export const MIN_FIELD = 4;
 // a planned video's build fills at least this share of the frame from its second line on (the owner, 2026-11-04)
-export const SUBJECT_FILL = 0.4;
+export const SUBJECT_FILL = Number(process.env.CW_FILL ?? 0.4);
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -104,8 +110,14 @@ export function frameBox(box, { view = "home", width = 0.45, zone = "auto", fit 
   return { pos: pos.map((v) => +v.toFixed(3)), tgt: tgt.map((v) => +v.toFixed(3)), rect, zone: loose ? "low" : chosen, ok: !why.length, why, bands: hits };
 }
 
-const drift = (k, f = MOVE.drift) => ({ pos: add(k.tgt, mul(sub(k.pos, k.tgt), f)).map((v) => +v.toFixed(3)), tgt: k.tgt });
-const scaleView = (k, f) => drift(k, f);
+// (a hold creeps in and turns a little, alternately left and right: the drift of the creator's camera between moves)
+let orbitSign = 1;
+const drift = (k, f = MOVE.drift) => {
+  const d = mul(sub(k.pos, k.tgt), f), a = (orbitSign = -orbitSign) * LOOK.orbitDeg * (Math.PI / 180) * Math.min(1, (1 - f) / Math.max(1e-6, 1 - LOOK.drift));
+  const r = [d[0] * Math.cos(a) - d[2] * Math.sin(a), d[1], d[0] * Math.sin(a) + d[2] * Math.cos(a)];
+  return { pos: add(k.tgt, r).map((v) => +v.toFixed(3)), tgt: k.tgt };
+};
+const scaleView = (k, f) => ({ pos: add(k.tgt, mul(sub(k.pos, k.tgt), f)).map((v) => +v.toFixed(3)), tgt: k.tgt });
 
 /** a box about something underground (a tank, a pipe in the ground; not a shallow creek): its sentence may show the cut face at any size */
 export const underground = (b) => !!b && b.max[1] <= 0.5 && b.min[1] < -1.5;
@@ -200,7 +212,7 @@ export function directCamera(layout, shots, marks) {
   // degrees still shows the cut face, and 45 showed the void under the soil block; the approved layouts keep their view
   let baseView = "home";
   if (layout.codeShots && !layout.camera?.home) {
-    const d0 = sub(home.pos, home.tgt), yaw = Math.atan2(d0[0], d0[2]), el = 30 * Math.PI / 180;
+    const d0 = sub(home.pos, home.tgt), yaw = Math.atan2(d0[0], d0[2]), el = LOOK.elev * Math.PI / 180;
     baseView = [Math.sin(yaw) * Math.cos(el), Math.sin(el), Math.cos(yaw) * Math.cos(el)];
     const f0 = frameBox(subjectBox(layout), { view: baseView, width: 0.94, zone: "center", minField: 0 });
     home = { pos: f0.pos, tgt: f0.tgt };
@@ -320,7 +332,7 @@ export function directCamera(layout, shots, marks) {
         ids = ids.filter((_, i) => boxes[i]); boxes = boxes.filter(Boolean);
         if (!boxes.length) continue;
       }
-      let box = union(boxes), f = frameBox(box, { view: s.view ?? baseView, width: s.width ?? 0.45, zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero || (layout.codeShots && ids.some((id) => ["book", "sheet", "flag"].includes(parts.get(String(id))?.kind))) ? 0 : minField });
+      let box = union(boxes), f = frameBox(box, { view: s.view ?? baseView, width: s.width ?? (layout.codeShots ? LOOK.shotWidth : 0.45), zone: s.zone ?? "auto", fit: s.hero ? "zone" : "loose", minField: s.hero || (layout.codeShots && ids.some((id) => ["book", "sheet", "flag"].includes(parts.get(String(id))?.kind))) ? 0 : minField });
       // a typed shot (and no width): at its share of the home distance, aimed at the parts' centre
       if (s.type && SHOTS[s.type] && !s.width && !s.hero) { const dir = norm(VIEWS[s.view ?? baseView] ?? VIEWS.home), tgt = boxCenter(box); f = { ...f, tgt, pos: add(tgt, mul(dir, homeD * SHOTS[s.type])).map((v) => +v.toFixed(3)), ok: true, why: [] }; }
       // a hero too tall to be 15% wide clear of the bands (a well casing): frame its top part, as much as fits
@@ -353,12 +365,32 @@ export function directCamera(layout, shots, marks) {
       if (!opening && !layout.camera?.home && !holdsMain && !planRead) k = pushToward(k, s, box);
       // last: what the sentence is about stays whole (the hook object on the opening frame)
       if (!planRead) k = fitWhole(k, opening && hookB ? hookB : subjectOf(s, box), s);
+      // then close: the part this line shows at least LOOK.closeMin of the width (a planned video; the competitors frame the
+      // part being explained at 50-90%), whole and with the soil face kept in its share
+      if (layout.codeShots && !planRead && !opening && s.at?.s !== "congrats" && s.at?.s !== "finish") {
+        const sb = subjectOf(s, box), r0 = sb && projectBox(k.pos, k.tgt, sb);
+        if (sb && !r0.behind && r0.w < LOOK.closeMin) {
+          const g = frameBox(sb, { view: sub(k.pos, k.tgt), width: LOOK.closeMin + 0.05, zone: "center", minField: 0 });
+          let q = { pos: g.pos, tgt: g.tgt }; if (!underground(sb)) q = liftSoil(layout, q, sb);
+          q = fitWhole(q, sb, s);
+          const r1 = projectBox(q.pos, q.tgt, sb);
+          if (!r1.behind && r1.w > r0.w) { notes.push(`shot at ${s.t.toFixed(2)} s: closer on ${s.at?.s ?? "its part"} (${(r0.w * 100).toFixed(0)}% -> ${(r1.w * 100).toFixed(0)}% of the width)`); k = q; }
+        }
+      }
       // from the second line on, the build fills at least 40% of a planned shot: the house may be cut off at the top (the
       // owner's review of the real bunker run, 2026-11-04: the house filled the top half, the bunker small at the bottom)
       if (layout.codeShots && !opening && s.at?.s !== "congrats" && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
+        // (the part the sentence shows, with the shot's own focus: both stay in the frame)
+        const shows = (layout.beats ?? []).find((x) => x.s === s.at?.s)?.shows, sp = shows && parts.get(String(shows.p));
+        let spBox = null; try { spBox = sp ? focusOf(sp, layout.world?.cut) : null; } catch {}
+        const keep = box && spBox ? union([box, spBox]) : box ?? spBox;
         let best = null;
         for (const w of [0.92, 1, 1.08]) {
-          const g = frameBox(subj, { view: sub(k.pos, k.tgt), width: w, zone: "center", minField: 0 }), m = measureKey(layout, g.pos, g.tgt);
+          // (the build and the part this sentence shows, together: framing the build alone pushed the pump out of the
+          // live pool premade, the scoreboard calibration of 2026-11-05)
+          const g = frameBox(keep ? union([subj, keep]) : subj, { view: sub(k.pos, k.tgt), width: w, zone: "center", minField: 0 }), m = measureKey(layout, g.pos, g.tgt);
+          const r = keep && projectBox(g.pos, g.tgt, keep), keeps = !keep || (!r.behind && r.x0 > -0.02 && r.x1 < 1.02 && r.y0 > -0.02 && r.y1 < 1.02);
+          if (!keeps) continue;
           if (!best || m.subject > best.m.subject) best = { g, m };
           if (m.subject >= SUBJECT_FILL) break;
         }
@@ -385,6 +417,22 @@ export function directCamera(layout, shots, marks) {
     push(s.t + MOVE.settle, k);
     cur = k; lastMove = start;
   } catch (e) { reportBug(`camera shot at ${Number(s?.t).toFixed?.(2)} s`, e); } }
+  // the build fills the frame (step A of the batch-2 look study): every story key after the opening moves straight in
+  // until the main build is about LOOK.mainFill of the width, never cutting it at the sides or past the top
+  if (layout.codeShots && !layout.camera?.home) soft("closer on the build", () => {
+    const mb = subjectBox(layout);
+    for (let i = 1; i < keys.length; i++) {
+      if (keys[i][0] >= marks.signPop - 0.5) break;
+      const k = { pos: keys[i][1], tgt: keys[i][2] }, r = projectBox(k.pos, k.tgt, mb);
+      if (r.behind || r.w >= LOOK.mainFill - 0.02) continue;
+      let best = null;
+      for (let f = Math.max(0.45, r.w / LOOK.mainFill); f < 0.995; f += 0.05) {
+        const q = scaleView(k, f), rq = projectBox(q.pos, q.tgt, mb);
+        if (!rq.behind && rq.x0 >= -0.02 && rq.x1 <= 1.02 && rq.y0 >= -0.06) { best = q; break; }
+      }
+      if (best) { keys[i] = [keys[i][0], best.pos, best.tgt]; notes.push(`key at ${keys[i][0].toFixed(2)} s: closer, the build ${(r.w * 100).toFixed(0)}% -> ${(projectBox(best.pos, best.tgt, mb).w * 100).toFixed(0)}% of the width`); }
+    }
+  }, null);
   // the first half second moves (the creator's openings never sit still): a gentle push-in onto the first frame
   if (!layout.camera?.home && keys.length) {
     const k0 = { pos: keys[0][1], tgt: keys[0][2] }, tIn = Math.min(1.4, (keys[1]?.[0] ?? marks.signPop) - 0.3);

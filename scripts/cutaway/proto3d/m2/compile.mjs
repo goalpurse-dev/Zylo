@@ -300,8 +300,12 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     // (and a prop to read: the caption sat on the newspaper and the book)
     const counters = layout.parts.filter((p) => ["counter", "book", "sheet"].includes(p.kind)).map((p) => ({ box: focusOf(p, layout.world?.cut), show: tracks[`${p.id}.${p.kind === "counter" ? "show" : "up"}`], gone: p.kind === "counter" ? null : tracks[`${p.id}.down`] })).filter((c) => c.box);
     const onAt = (tr, t) => { let v = tr?.base ?? 0; for (const r of tr?.ramps ?? []) if (t >= r.t1) v += r.amp; else if (t > r.t0) v += r.amp * (t - r.t0) / Math.max(0.01, r.t1 - r.t0); return v > 0.5; };
+    // (and the part the line is about: the caption sat on the washing machine; step A of the batch-2 look study, 2026-11-05)
+    const showsBox = new Map();
+    for (const b of layout.beats ?? []) { const p = b.shows && layout.parts.find((q) => q.id === b.shows.p); if (!p) continue; try { showsBox.set(b.s, focusOf(p, layout.world?.cut)); } catch {} }
     words.forEach((w, i) => {
-      const k = cameraAt(camera.end, w.s), up = counters.filter((c) => onAt(c.show, w.s) && !onAt(c.gone, w.s)).map((c) => projectBox(k.pos, k.tgt, c.box)).filter((r) => !r.behind && r.x1 > 0.2 && r.x0 < 0.8);
+      const k = cameraAt(camera.end, w.s), line = sentences.find((x) => w.s >= x.t0 - 1e-6 && w.s < x.t1 + 1e-6), own = line && showsBox.get(line.role);
+      const up = [...counters.filter((c) => onAt(c.show, w.s) && !onAt(c.gone, w.s)).map((c) => c.box), ...(own ? [own] : [])].map((b) => projectBox(k.pos, k.tgt, b)).filter((r) => !r.behind && r.x1 > 0.2 && r.x0 < 0.8);
       const hits = (y) => up.some((r) => r.y0 < y + 0.04 && r.y1 > y - 0.04);
       if (hits(0.52)) { const y = [0.68, 0.76, 0.42, 0.84].find((b) => !hits(b)); if (y) captionY[i] = y; }
     });
