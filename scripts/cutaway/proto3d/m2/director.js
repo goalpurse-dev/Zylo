@@ -25,7 +25,9 @@ export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34],
 // high three-quarter view, the subject at 20-40%, still 28%. elev: the base view's elevation (degrees); shotWidth: a
 // planned shot's default width for its parts; closeMin: the part a line shows at least this share of the width;
 // drift: a hold creeps this much closer (0.9 = 10%) and turns orbitDeg degrees, so no frame sits still
-export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4 });
+// hookMin: the hook object's width share on the opening frame (was 0.36; the real checker failed hooks for a tiny fan and
+// unreadable rods, 2026-11-06)
+export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4, hookMin: 0.5 });
 // (step B: a move takes about 0.45 s, the competitors' 0.2-0.5 s, starting just before its sentence; it was 0.85 s)
 export const MOVE = Object.freeze({ lead: 0.2, settle: 0.25, drift: LOOK.drift, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
@@ -286,10 +288,10 @@ export function directCamera(layout, shots, marks) {
     return bs.sort((a, c) => (c.max[0] - c.min[0]) * (c.max[1] - c.min[1]) - (a.max[0] - a.min[0]) * (a.max[1] - a.min[1]))[0] ?? null;
   })();
   const hookClose = (k, box, s) => {
-    if (!hookB || projectBox(k.pos, k.tgt, hookB).w >= 0.36) return k;
-    const both = union([hookB, box]), w = Math.min(0.9, Math.max(0.4, (0.38 * (both.max[0] - both.min[0])) / Math.max(0.5, hookB.max[0] - hookB.min[0])));
+    if (!hookB || projectBox(k.pos, k.tgt, hookB).w >= LOOK.hookMin) return k;
+    const both = union([hookB, box]), w = Math.min(0.9, Math.max(0.4, ((LOOK.hookMin + 0.03) * (both.max[0] - both.min[0])) / Math.max(0.5, hookB.max[0] - hookB.min[0])));
     let g = frameBox(both, { view: s.view ?? baseView, width: w, zone: "center", minField: 0 });
-    if (projectBox(g.pos, g.tgt, hookB).w < 0.36) g = frameBox(hookB, { view: s.view ?? baseView, width: 0.4, zone: "center", minField: 0 });
+    if (projectBox(g.pos, g.tgt, hookB).w < LOOK.hookMin) g = frameBox(hookB, { view: s.view ?? baseView, width: LOOK.hookMin + 0.05, zone: "center", minField: 0 });
     return { pos: g.pos, tgt: g.tgt };
   };
   // the whole subject in the frame (the creator's newer videos, 2026-10-25: every shot holds the thing it explains whole,

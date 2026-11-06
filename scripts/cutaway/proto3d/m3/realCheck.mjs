@@ -52,7 +52,7 @@ for (const x of files) {
     execFileSync(FF, ["-v", "error", "-y", ...mine.flatMap((p) => ["-i", p]), "-filter_complex", n > 1 ? `${mine.map((_, j) => `[${j}]${lab(j)}scale=270:-1[f${j}]`).join(";")};${mine.map((_, j) => `[f${j}]`).join("")}hstack=inputs=${n}` : `[0]${lab(0)}scale=360:-1`, "-q:v", "4", file], { cwd: dir });
     return { ...s, file };
   });
-  if (DRY) { console.log(`[real] ${tag}: ${frames.length} strips ready (dry)`); continue; }
+  if (DRY) { const fresh = frames.filter((fr) => !fs.existsSync(path.join(CACHE, `${lineKey(fr)}.json`))).length; console.log(`[real] ${tag}: ${frames.length} strips, ${fresh} not checked yet (dry)`); continue; }
   // the cap: the dearest real check so far was $0.036 for a 30 s plan; a longer plan costs about as many lines more
   const est = 0.004 * frames.length + 0.01;
   if (ledger.spent + est > MAX) { console.log(`[real] ${tag}: SKIPPED, the cap ($${MAX}) would be passed (spent $${ledger.spent.toFixed(3)})`); continue; }

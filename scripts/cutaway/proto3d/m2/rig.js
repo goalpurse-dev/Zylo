@@ -435,6 +435,8 @@ export function rig(ctx, p, api) {
   const clamp01 = (x) => Math.min(1, Math.max(0, x));
   return {
     group: root,
+    // (each node's group by id: the "This is a…" glow traces one piece, outline {of: "stove.head"})
+    nodes: groups,
     update(t) {
       const pp = api.ch("pop", t); body.visible = pp > 0.002; body.scale.setScalar(Math.max(0.001, pp));
       for (const { g, n, base, mats } of groups.values()) {

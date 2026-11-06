@@ -26,6 +26,8 @@ export function runLayout(ctx, layout, timeline, { endCard = true, look = null }
     // main subject is the scene itself, and its crash still stops the render)
     const make = KINDS[part.kind];
     let obj;
+    // (what the part added to the scene: the "This is a…" glow traces it, whatever kind of part it is)
+    const before = new Set(ctx.scene.children);
     try {
       if (!make) throw new Error(`unknown part kind ${part.kind}`);
       obj = make(ctx, part.params ?? {}, api);
@@ -34,7 +36,8 @@ export function runLayout(ctx, layout, timeline, { endCard = true, look = null }
       console.error(`[cutaway-bug] part ${part.id} (${part.kind}) not built, skipped: ${e?.message ?? e}`);
       continue;
     }
-    built.set(part.id, { obj, params: part.params ?? {} });
+    const added = ctx.scene.children.filter((o) => !before.has(o));
+    built.set(part.id, { obj, params: part.params ?? {}, added });
     list.push({ id: part.id, main: !!part.main, obj, dead: false });
   }
   // a part whose update crashes is hidden from then on and logged once (the main subject's crash stops the render)

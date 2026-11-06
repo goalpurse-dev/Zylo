@@ -520,7 +520,30 @@ export const KINDS = {
   arrows(ctx, p, api) { const a = arrows(ctx, p.list, p.opts ?? {}); return { update(t) { a.update(t, api.ch("on", t)); } }; },
 
   /** a glowing outline traced around a named part (kit outline); channel: on */
-  outline(ctx, p, api) { if (!Array.isArray(p.points) || p.points.length < 2) return { update() {} }; const o = outline(ctx, p.points, p.opts ?? {}); return { update(t) { o.update(t, api.ch("on", t)); } }; },
+  // (an outline that names its part, {of: "stove"} or {of: "stove.head"}: the part's own silhouette glows, the page's
+  // OutlinePass, makePage.mjs; the drawn tube only when the part cannot be found, or for an outline the plan drew by points)
+  outline(ctx, p, api) {
+    let tube = null;
+    const target = () => {
+      if (!p.of || !ctx.outlinePass) return null;
+      const [pid, nid] = String(p.of).split("."), e = api.part(pid), b = e?.obj;
+      const one = (nid ? b?.nodes?.get(nid)?.g : null) ?? b?.group ?? b?.mesh ?? null;
+      return one ? [one] : e?.added?.length ? e.added : null;
+    };
+    return {
+      update(t) {
+        const on = api.ch("on", t), os = target();
+        if (os) {
+          const sel = ctx.outlinePass.selectedObjects;
+          for (const o of os) { const i = sel.indexOf(o); if (on > 0.5 && i < 0) sel.push(o); else if (on <= 0.5 && i >= 0) sel.splice(i, 1); }
+          if (tube) tube.update(t, 0);
+          return;
+        }
+        if (!tube && Array.isArray(p.points) && p.points.length >= 2) tube = outline(ctx, p.points, p.opts ?? {});
+        tube?.update(t, on);
+      },
+    };
+  },
 
   /** murky dots seeping down the cut face and spreading in the groundwater; channel: on */
   seepFlow(ctx, p, api) {

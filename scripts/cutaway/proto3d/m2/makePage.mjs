@@ -26,7 +26,10 @@ export function makePage(layout) {
   const cut = (from, to) => { const a = s.indexOf(from), b = s.indexOf(to); if (a < 0 || b < 0 || b < a) throw new Error(`markers not found: ${from} / ${to}`); s = s.slice(0, a) + s.slice(b); };
   const n = (v) => String(v);
 
-  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";');
+  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";\nimport { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";');
+  // the "This is a…" glow: the named part's own silhouette, thick and bright, seen through what covers it (the real
+  // checker failed 13 of 40 benchmark topics on a flat rectangle beside, above or around the thing, 2026-11-06)
+  rep("composer.addPass(ao);", 'composer.addPass(ao);\nconst OUTLINE = new OutlinePass(new THREE.Vector2(W, H), scene, camera);\nObject.assign(OUTLINE, { edgeStrength: 40, edgeGlow: 2.2, edgeThickness: 9, pulsePeriod: 0 });\nOUTLINE.visibleEdgeColor.set("#ffc400"); OUTLINE.hiddenEdgeColor.set("#ffb000");\ncomposer.addPass(OUTLINE);');
   rep('const R = Number(Q.get("r") ?? 1);', `const R = 1;\nconst M2_LAYOUT = await (await fetch("/m2run/${layout.key}.layout.json")).json();\nconst M2_TL = await (await fetch("/m2run/${layout.key}.timeline.json")).json();`);
   // the video's light: a mood from its topic (m2/moods.js; step B of the batch-2 look study), over the yard's look
   const mood = MOODS[moodFor(layout)] ?? MOODS.noon, { fog: moodFog, ...moodLook } = mood;
@@ -91,7 +94,7 @@ export function makePage(layout) {
   // the animated renderAt
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{
-  const ctx = { THREE, scene, envBase: LOOK.env, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
+  const ctx = { THREE, scene, envBase: LOOK.env, outlinePass: OUTLINE, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
   // a thin-slab world (no soil cut): the ground runs on toward the camera, the lawn and the setting's floor alike, so a
   // pull-back never shows an edge over the table below (the haze band of 2026-10-25)
   if (M2_LAYOUT.world?.shallow) { const ap = new THREE.Mesh(new THREE.PlaneGeometry(2 * X, 60), grassM); ap.rotation.x = -Math.PI / 2; ap.position.set(0, -0.004, 29.6); ap.receiveShadow = true; scene.add(ap); }

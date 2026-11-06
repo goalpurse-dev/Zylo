@@ -233,14 +233,17 @@ function layoutRulesRaw(L) {
   const nameB = beats.find((b) => b.s === "name"), heroIds = (nameB?.shots ?? []).filter((s) => s.hero).flatMap((s) => [].concat(s.focus ?? []));
   for (const p of parts.filter((x) => x.kind === "outline")) {
     const shownOnName = (nameB?.do ?? []).some((a) => a.p === p.id && /^(show|draw|grow)$/.test(a.v));
-    const target = p.params?.of ?? (shownOnName ? heroIds.find((id) => byId.get(String(id).split(".")[0])?.kind === "rig") : null);
+    // (any named part, not only a designed one: the page glows its own silhouette; the septic tank, the dam and the volcano
+    // got a loose rectangle, the real checker's calibration of 2026-11-06)
+    const NOT = new Set(["outline", "arrows", "light", "sign", "rain", "lawnWet", "counter", "book", "sheet", "flag", "fx"]);
+    const target = p.params?.of ?? (shownOnName ? (heroIds.find((id) => byId.get(String(id).split(".")[0])?.kind === "rig") ?? heroIds.find((id) => byId.get(String(id).split(".")[0]) && !NOT.has(byId.get(String(id).split(".")[0]).kind))) : null);
     if (!target) continue;
     // (a designed part at rest: its swept box, every move played at once, ran the outline off the frame)
     const [tp, tn] = String(target).split("."), tpart = byId.get(tp);
     const bx = tpart?.kind === "rig" ? rigBox(tpart.params ?? {}, { swept: false, node: tn ?? null }) : focusOfId(byId, target, world.cut ?? null);
     if (!bx) continue;
     const m = Math.max(0.06, 0.035 * Math.max(bx.max[0] - bx.min[0], bx.max[1] - bx.min[1])), z = +((bx.min[2] + bx.max[2]) / 2).toFixed(3), r3 = (v) => +v.toFixed(3);
-    const [x0, x1, y0, y1] = [r3(bx.min[0] - m), r3(bx.max[0] + m), r3(Math.max(bx.min[1] - m, 0.02)), r3(bx.max[1] + m + 0.12 * (bx.max[1] - bx.min[1]))]; // (the top edge clear of what stands on it: drawn on the front, it crossed the flame ring)
+    const [x0, x1, y0, y1] = [r3(bx.min[0] - m), r3(bx.max[0] + m), r3(bx.min[1] >= -0.05 ? Math.max(bx.min[1] - m, 0.02) : bx.min[1] - m), r3(bx.max[1] + m + 0.12 * (bx.max[1] - bx.min[1]))]; // (the top edge clear of what stands on it: drawn on the front, it crossed the flame ring)
     p.params = { ...p.params, of: target, points: [[x0, y0, z], [x0, y1, z], [x1, y1, z], [x1, y0, z]], opts: { ...(p.params?.opts ?? {}), closed: true, over: true } };
     notes.push(`${p.id} traced round ${target}`);
     // the "This is a…" outline goes at the next line unless the plan hides it itself (the real washing machine run's
