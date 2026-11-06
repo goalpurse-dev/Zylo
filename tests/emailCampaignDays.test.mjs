@@ -50,7 +50,7 @@ test("day 3 only if day 2 went well: finished, 0 spam complaints, bounces under 
   const src = read("supabase/functions/campaign-sender/index.ts");
   const tick = src.slice(src.indexOf("async function tick()"), src.indexOf("async function followUpReports"));
   assert.ok(tick.indexOf("if (c.depends_on)") > 0 && tick.indexOf("if (c.depends_on)") < tick.indexOf("await sendOne(c, def)"));
-  assert.match(tick, /previousCampaignProblem\(prev, prev \? await campaignNumbers\(sb, prev\.id, prev\.starts_at\) : null\)/);
+  assert.match(tick, /const prevN = prev \? await campaignNumbers\(sb, prev\.id, prev\.starts_at\) : null;\s+const problem = previousCampaignProblem\(prev, prevN\);/);
   assert.match(tick, /await finish\(c, "stopped", why\);/, "not started: the campaign is stopped and the owner gets the email");
   assert.match(read("scripts/warmupCampaign.mjs"), /depends_on: dependsOn \?\? null/);
 });

@@ -23,7 +23,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem, realOpenCount } from "../_shared/campaigns.js";
+import { BLOCKY_URL, CAMPAIGNS, CUTAWAY_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem, realOpenCount, realOpensProblem } from "../_shared/campaigns.js";
 import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
@@ -43,7 +43,9 @@ async function finish(c: any, status: "done" | "stopped", reason: string | null)
 // The one link of a campaign that sends people to the Cutaway Explainer (linkTo "cutaway"): that page
 // while the template is switched on for users (the CUTAWAY_ENABLED secret, the server's twin of the
 // page's switch), otherwise tryzyvo.com. Decided for every email at the moment it is sent.
+// linkTo "blocky": the Blocky Stories page (live for everyone since 2026-10-09).
 function linkFor(def: any): string {
+  if (def.linkTo === "blocky") return BLOCKY_URL;
   return def.linkTo === "cutaway" && (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true" ? CUTAWAY_URL : APP_URL;
 }
 
@@ -130,18 +132,27 @@ async function tick() {
     // or this one does not start (and stops, if a complaint about the earlier one arrives later).
     if (c.depends_on) {
       const { data: prev } = await sb.from("email_campaigns").select("*").eq("id", c.depends_on).maybeSingle();
-      const problem = previousCampaignProblem(prev, prev ? await campaignNumbers(sb, prev.id, prev.starts_at) : null);
+      const prevN = prev ? await campaignNumbers(sb, prev.id, prev.starts_at) : null;
+      const problem = previousCampaignProblem(prev, prevN);
       if (problem) {
         const why = `${c.status === "approved" ? "not started" : "stopped part-way"}: ${problem}`;
         await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
       }
-      // At least this many real opens (first open over a minute after delivery) the day before, or the day does not start.
-      if (c.status === "approved" && def.minRealOpensBefore) {
-        const { data: rows, error } = await sb.from("email_events").select("resend_id, type, created_at").eq("campaign", c.depends_on).in("type", ["email.delivered", "email.opened"]).limit(5000);
-        if (error) { out[c.id] = "real opens could not be read"; continue; } // the next tick reads again
-        const real = realOpenCount(rows ?? []);
-        if (real < def.minRealOpensBefore) {
-          const why = `not started: ${c.depends_on} had ${real} real opens, under ${def.minRealOpensBefore}`;
+      // Real opens (first open over a minute after delivery) the day before: a count and/or a share of what it sent,
+      // or the day does not start (_shared/campaigns.js: realOpensProblem).
+      if (c.status === "approved" && (def.minRealOpensBefore || def.minRealOpenRateBefore)) {
+        const rows: any[] = [];
+        let failed = false;
+        for (let from = 0; from < 20000; from += 1000) { // PostgREST answers at most 1,000 rows a call
+          const { data, error } = await sb.from("email_events").select("resend_id, type, created_at").eq("campaign", c.depends_on).in("type", ["email.delivered", "email.opened"]).order("id").range(from, from + 999);
+          if (error) { failed = true; break; }
+          rows.push(...(data ?? []));
+          if ((data ?? []).length < 1000) break;
+        }
+        if (failed) { out[c.id] = "real opens could not be read"; continue; } // the next tick reads again
+        const opensProblem = realOpensProblem(c.depends_on, realOpenCount(rows), prevN?.sent ?? 0, def);
+        if (opensProblem) {
+          const why = `not started: ${opensProblem}`;
           await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;
         }
       }

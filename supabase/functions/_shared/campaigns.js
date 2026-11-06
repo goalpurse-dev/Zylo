@@ -9,6 +9,8 @@ import { OFFER_EMAIL_LINE, offerLive } from "./offer.js";
 export const CAMPAIGN_WHY = "You're getting this because product updates are turned on for your Zyvo account.";
 // The Cutaway Explainer page (src/data/cutawayExplainer.js: CUTAWAY_PATH).
 export const CUTAWAY_URL = `${APP_URL}/workspace/cutaway-explainer`;
+// The Blocky Stories template page (src/data/blockyStories.js: BLOCKY_STORIES_PATH).
+export const BLOCKY_URL = `${APP_URL}/workspace/blocky-stories`;
 
 const esc = (s = "") =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -30,15 +32,17 @@ ${footer.html}
 // offerBefore: the paragraph that the +50 bonus offer line goes in front of, only while the offer is
 // live at `opts.at` (default: now, the moment the email is rendered = sent; _shared/offer.js).
 // opts.offer === false leaves the line out even while the offer is live (a test copy without it).
-function plainEmailInlineLink(allParagraphs, signature, { offerBefore } = {}) {
+// fullLinkText: the link shows the whole address (tryzyvo.com/workspace/…), as the plain text does, not just "tryzyvo.com".
+function plainEmailInlineLink(allParagraphs, signature, { offerBefore, fullLinkText = false } = {}) {
   return (footer, opts = {}) => {
     const href = opts.link ?? APP_URL;
     const paragraphs = offerBefore && opts.offer !== false && offerLive(opts.at ?? Date.now())
       ? allParagraphs.flatMap((p) => (p === offerBefore ? [OFFER_EMAIL_LINE, p] : [p]))
       : allParagraphs;
+    const shown = fullLinkText ? href.replace(/^https:\/\/www\./, "") : "tryzyvo.com";
     const para = (p) => {
       const at = p.indexOf("tryzyvo.com");
-      const body = at < 0 ? esc(p) : `${esc(p.slice(0, at))}<a href="${esc(href)}" style="color:#1a56db;">tryzyvo.com</a>${esc(p.slice(at + "tryzyvo.com".length))}`;
+      const body = at < 0 ? esc(p) : `${esc(p.slice(0, at))}<a href="${esc(href)}" style="color:#1a56db;">${esc(shown)}</a>${esc(p.slice(at + "tryzyvo.com".length))}`;
       return `<p style="margin:0 0 16px 0;">${body}</p>`;
     };
     return {
@@ -141,6 +145,26 @@ const didYouTry = {
 export const ROOT_NIKO = "Niko <niko@tryzyvo.com>";
 const didYouTryRoot = { ...didYouTry, from: ROOT_NIKO };
 
+// The Blocky niche email (owner's text, 2026-11-06): plain, no images, one link (the Blocky Stories
+// page, shown in full), from the main domain.
+const blockyNiche = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "this niche is blowing up right now",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  linkTo: "blocky",
+  render: plainEmailInlineLink([
+    "Hey,",
+    "It's Niko from Zyvo.",
+    "Roblox-style blocky videos are one of the biggest niches on TikTok right now. Some get hundreds of thousands of likes.",
+    "You can make them with Zyvo now. Pick an idea and it makes the whole video for you.",
+    "Try it here: tryzyvo.com",
+    "If you make one, reply and send it to me. I want to see it.",
+  ], "Niko", { fullLinkText: true }),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -177,6 +201,12 @@ export const CAMPAIGNS = {
   // (depends_on) and at least 2 real opens (minRealOpensBefore).
   checkin_root2: { ...didYouTryRoot, minRealOpensBefore: 2 },
   checkin_root3: { ...didYouTryRoot, minRealOpensBefore: 2 },
+  // Mon 9 Nov 150, Tue 10 Nov 250, Wed 11 Nov 400 (owner, 2026-11-06), picked at 10:50 that morning
+  // (fill_blocky_niche). Days 2 and 3 start only if the day before had 0 complaints, not 2+ bounces over 2%
+  // (depends_on) and real opens of at least 8% of what it sent (minRealOpenRateBefore).
+  blocky_niche1: blockyNiche,
+  blocky_niche2: { ...blockyNiche, minRealOpenRateBefore: 0.08 },
+  blocky_niche3: { ...blockyNiche, minRealOpenRateBefore: 0.08 },
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
@@ -212,6 +242,17 @@ export function realOpenCount(rows = []) {
   let n = 0;
   for (const [id, opened] of first("email.opened")) if (delivered.has(id) && opened - delivered.get(id) > REAL_OPEN_AFTER_MS) n++;
   return n;
+}
+
+// The real-opens rules for starting a day (def: its CAMPAIGNS entry): at least minRealOpensBefore real opens,
+// and real opens of at least minRealOpenRateBefore of the emails the day before sent. → the problem, or null.
+export function realOpensProblem(prevId, real, sent, def = {}) {
+  if (def.minRealOpensBefore && real < def.minRealOpensBefore) return `${prevId} had ${real} real opens, under ${def.minRealOpensBefore}`;
+  if (def.minRealOpenRateBefore) {
+    const rate = sent > 0 ? real / sent : 0;
+    if (rate < def.minRealOpenRateBefore) return `${prevId} had real opens of ${(rate * 100).toFixed(1)}% (${real} of ${sent}), under ${Math.round(def.minRealOpenRateBefore * 100)}%`;
+  }
+  return null;
 }
 export function campaignStopReason({ sent = 0, bounced = 0, complained = 0, failed = 0 }) {
   if (complained > 0) return `a spam complaint (${complained})`;

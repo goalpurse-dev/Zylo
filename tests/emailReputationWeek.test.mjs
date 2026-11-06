@@ -89,8 +89,8 @@ test("checkin_root2 and 3 (owner, 2026-11-04): the same email from the main doma
   }
   assert.equal(CAMPAIGNS.checkin_root1.minRealOpensBefore, undefined);
   const src = read("supabase/functions/campaign-sender/index.ts");
-  assert.match(src, /c\.status === "approved" && def\.minRealOpensBefore/, "checked only before a day starts");
-  assert.match(src, /realOpenCount\(rows \?\? \[\]\)/);
+  assert.match(src, /c\.status === "approved" && \(def\.minRealOpensBefore \|\| def\.minRealOpenRateBefore\)/, "checked only before a day starts");
+  assert.match(src, /realOpensProblem\(c\.depends_on, realOpenCount\(rows\), prevN\?\.sent \?\? 0, def\)/);
 });
 
 test("real opens: the first open over a minute after delivery; machine opens and opens without a delivery don't count", () => {
