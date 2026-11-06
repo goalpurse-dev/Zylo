@@ -30,6 +30,7 @@ import { openingRule, openingProblems, waivedHas, openingSec } from "./lib/openi
 import { meaningPass } from "./lib/meaning.js";
 import { coastPass } from "./lib/coast.js";
 import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
+import { motionPass, styleReport } from "./lib/style.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -857,8 +858,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     // move, and a field that adds a check problem is undone
     const k = capsPass(tl, { check: checkTimeline, openUntil: openingSec(tl.shots) });
     if (k.added || k.reverted) tl.direction.caps = k;
+    // style rule R6 (lib/style.js): giants keep moving unless their shot says they stop / wait / hide
+    const mo = motionPass(tl, { check: checkTimeline });
+    if (mo.moved || mo.reverted) tl.direction.motion = mo;
   }
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
+  // the style rules measured on the plan (advisory: docs/blocky-worlds-protocol.md 8, lib/style.js)
+  tl.style = styleReport(tl);
   return tl;
 }
 

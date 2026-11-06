@@ -34,6 +34,16 @@ RULES
 - Abstract words (rules, luck, time, a promise) are not items. A thing only mentioned as absent ("no one has a dog") is not needed on that line.
 - Keep look hints visual and short. Original designs only: no brands, famous characters, game-platform words or real people.
 
+STYLE (learned from a viral video of exactly this format; docs/blocky-worlds-protocol.md section 8)
+- The creature is the subject. In a creature-world story the giant (with its town visibly ON it) is in most lines' needs; give every line that does not name a person the creature as its subject. Ask for scaleMoments often: the giant next to houses, people or trees.
+- A rival giant is the same size class as the hero creature (1.0-1.3x its heightM), never 3x.
+- Every verb is an action on screen: lunged, clamped, fired, snapped, grabbed, climbed, blew are each the line's action (camera "action"), never a sign or card.
+- The threat arrives as a reveal ladder: far and small first, then a close of its eyes (camera "reveal"), then what it carries (its city / army), then what they do. In an attack, follow every attacker line with the victim's consequence (the town shakes, houses fall, people slide).
+- "Me" is my world: the narrator is on screen in only 1-2 lines of the "me" part; the rest is a tour of the creature, its town and its routine. When the narrator is on screen later they are doing something (asleep, running, climbing, blowing), never posing.
+- Daylight is the default (light "day"), even for the crisis ("one morning"). Night only for threat lore; "warm" for the ending.
+- The climax is a reaction chain: the hero uses the planted story prop (with an effect), then one line per giant reaction, then the physical resolution, then an affection beat; end on a visual gag between the two creatures.
+- Worlds are dense: ask for the landscape the creature walks through (forest, trees it eats, rocks, dust) and the town's named places (school, grocery, hospital) as props or a landmark.
+
 WHAT THE ENGINE CAN DO TODAY (status in the matcher; ask for the story's needs either way):
 ${registryForPrompt()}
 

@@ -518,3 +518,16 @@ review.json; paid only with --paid --yes). Tests: `dev/vision.test.mjs`, `dev/vi
   Pell"), other director people join with their role ("baker" an adult), "tiny sister" Juno is "my sister", and a
   name seen only as a sentence-start word ("Spears poked") that the director's cast does not know is no person.
 Tests: `dev/run1620.test.mjs` (fixture `dev/scripts/run1620fc3e.json`).
+
+## Addendum 2026-11-06 (c): REBUILD (the turtle target rebuilt shot for shot; style rules)
+
+- **Planner wiring of the capabilities:** `lib/caps.js capsPass(tl, { check, openUntil })` runs in planVideo after the coast pass (directed plans). Each shot gets `suggestCaps` from its own spoken words; cards get nothing; the opening window gets only a `move`; a field that fails `validateCapsShot` or adds a checkTimeline problem is undone (`tl.direction.caps`). `checkTimeline` also runs `validateCaps`.
+- **Style rules** (`lib/style.js`, docs/blocky-worlds-protocol.md section 8):
+  - `motionPass`: idle giants walk unless the shot's words say stop / wait / hide / sleep / freeze (`tl.direction.motion`).
+  - `styleReport`: the advisory R1-R8 metrics + problems on every plan (`tl.style`; never fails a run).
+  - The judgement rules are in the director's STYLE prompt block.
+- **EPIC cameras** (`page/cameraEpic.js`, `page/epicLayer.js`):
+  - giant_close frames the FACE of a non-world giant and of the world creature seen from outside (`ctx.faceDir`, `headSize`).
+  - hero_low on a giant with no person: a low camera on the ground in front of it.
+  - track on a giant (no army): the whole animal side-on (`ctx.giantTrack`).
+  - A never-inside-another-giant guard: an odd ray-crossing count or a surface closer than 3% of its height moves the camera out sideways.
