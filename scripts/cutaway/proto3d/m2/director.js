@@ -26,7 +26,8 @@ export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34],
 // planned shot's default width for its parts; closeMin: the part a line shows at least this share of the width;
 // drift: a hold creeps this much closer (0.9 = 10%) and turns orbitDeg degrees, so no frame sits still
 export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4 });
-export const MOVE = Object.freeze({ lead: 0.4, settle: 0.45, drift: LOOK.drift, minGap: 1.2 });
+// (step B: a move takes about 0.45 s, the competitors' 0.2-0.5 s, starting just before its sentence; it was 0.85 s)
+export const MOVE = Object.freeze({ lead: 0.2, settle: 0.25, drift: LOOK.drift, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
 // the narrowest field of view in world units (the approved close-ups: the holes ~4 m across, the crack ~5 m)
 export const MIN_FIELD = 4;

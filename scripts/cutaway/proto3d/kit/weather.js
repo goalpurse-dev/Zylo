@@ -52,7 +52,7 @@ export function stream(ctx, { x0, x1, z, yTop, yBot, count = 70, speed = 9, colo
 }
 
 export function stormLight(ctx, { sun, hemi, scene }) {
-  const base = { sun: sun.intensity, hemi: hemi?.intensity ?? 0, env: scene.environmentIntensity ?? 1, bg: scene.backgroundIntensity ?? 1 };
+  const base = { sun: sun.intensity, hemi: hemi?.intensity ?? 0, env: ctx.envBase ?? scene.environmentIntensity ?? 1, bg: scene.backgroundIntensity ?? 1 };
   return {
     /** k = 0 clear .. 1 full storm */
     set(k) {

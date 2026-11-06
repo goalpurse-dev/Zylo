@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { MOODS, moodFor } from "./moods.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,10 @@ export function makePage(layout) {
 
   rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";');
   rep('const R = Number(Q.get("r") ?? 1);', `const R = 1;\nconst M2_LAYOUT = await (await fetch("/m2run/${layout.key}.layout.json")).json();\nconst M2_TL = await (await fetch("/m2run/${layout.key}.timeline.json")).json();`);
+  // the video's light: a mood from its topic (m2/moods.js; step B of the batch-2 look study), over the yard's look
+  const mood = MOODS[moodFor(layout)] ?? MOODS.noon, { fog: moodFog, ...moodLook } = mood;
+  rep("renderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;", `Object.assign(LOOK, ${JSON.stringify(moodLook)});\nrenderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;`);
+  if (moodFog) rep('if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);', `if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);\nscene.fog = new THREE.Fog(C(${JSON.stringify(moodFog[0])}), ${moodFog[1]}, ${moodFog[2]});`);
   // nothing dug in a thin-slab world: no pit in the ground (one of no size), its cut kept as M2_CUT for the road and the setting
   const closed = !!W.cut && !!W.shallow && !(layout.parts ?? []).some((p) => p.kind === "dig");
   const cutLit = W.cut && `{ x0: ${n(W.cut.x0)}, x1: ${n(W.cut.x1)}, z0: ${n(W.cut.z0)}, depth: ${n(W.shallow ? Math.min(W.cut.depth, 0.6) : W.cut.depth)} }`;
@@ -86,7 +91,7 @@ export function makePage(layout) {
   // the animated renderAt
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{
-  const ctx = { THREE, scene, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
+  const ctx = { THREE, scene, envBase: LOOK.env, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
   // a thin-slab world (no soil cut): the ground runs on toward the camera, the lawn and the setting's floor alike, so a
   // pull-back never shows an edge over the table below (the haze band of 2026-10-25)
   if (M2_LAYOUT.world?.shallow) { const ap = new THREE.Mesh(new THREE.PlaneGeometry(2 * X, 60), grassM); ap.rotation.x = -Math.PI / 2; ap.position.set(0, -0.004, 29.6); ap.receiveShadow = true; scene.add(ap); }

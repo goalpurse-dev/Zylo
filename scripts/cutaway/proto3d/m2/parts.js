@@ -477,7 +477,8 @@ export const KINDS = {
    *  down, the sky dark, every lamp and lens glowing against it); channels: dip, storm, night */
   light(ctx, p, api) {
     const { sun, hemi, scene } = ctx;
-    const base = { sun: sun.intensity, hemi: hemi?.intensity ?? 0, env: 1.0, bg: scene.backgroundIntensity ?? 1 };
+    // (env from the video's mood, m2/moods.js: a fixed 1.0 here undid the mood's light on every frame)
+    const base = { sun: sun.intensity, hemi: hemi?.intensity ?? 0, env: ctx.envBase ?? 1.0, bg: scene.backgroundIntensity ?? 1 };
     return {
       update(t) {
         const dip = api.ch("dip", t), k = api.ch("storm", t), nt = Math.min(1, Math.max(0, api.ch("night", t)));
