@@ -75,3 +75,12 @@ test("the group and the days are in the migration: ON, active 30 days or opened 
   assert.match(sql, /\('blocky_niche2', 'approved', 0, timestamptz '2026-11-10 09:00\+00', timestamptz '2026-11-10 11:00\+00', 'blocky_niche1'\)/);
   assert.match(sql, /\('blocky_niche3', 'approved', 0, timestamptz '2026-11-11 09:00\+00', timestamptz '2026-11-11 11:00\+00', 'blocky_niche2'\)/);
 });
+
+test("moved to Sat 7 / Sun 8 / Mon 9 Nov (owner, 2026-11-06): same window, pick at 10:50, seeds at 15:00", () => {
+  const sql = read("supabase/migrations/20261202110000_blocky_niche_weekend.sql");
+  for (const [id, day] of [["1", "7"], ["2", "8"], ["3", "9"]]) {
+    assert.match(sql, new RegExp(`starts_at = timestamptz '2026-11-0${day} 09:00\\+00', ends_at = timestamptz '2026-11-0${day} 11:00\\+00'\\s+where id = 'blocky_niche${id}' and status = 'approved' and planned = 0`));
+    assert.match(sql, new RegExp(`'50 8 ${day} 11 \\*'\\) from cron\\.job where jobname = 'blocky-niche${id}-fill'`));
+    assert.match(sql, new RegExp(`'0 13 ${day} 11 \\*'\\) from cron\\.job where jobname = 'blocky-niche${id}-seed'`));
+  }
+});
