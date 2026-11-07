@@ -38,6 +38,8 @@ export const DEFAULT_REVIEW_BUDGET = Object.freeze({
   stillMs: 250,         // one still (GPU ~0.1 s, laptop median 0.15 s)
   callMs: 30000,        // one judge request (Haiku, ~12 frames, effort low)
   minPassMs: 20000,     // a pass needs at least this long
+  minLoadMs: 3000,      // floors of the later passes' estimates (from pass 1's measured times)
+  minCallMs: 5000,
 });
 
 const withDeadline = (p, deadline, what) => {
@@ -85,17 +87,29 @@ export async function reviewShots({ tl, script = null, premise = null, judge = n
       let picks = stillPicks(tl, { lines: todo, only: onlyShots });
       // a later pass loads only its shots' sets: its load is estimated from pass 1's measured load by its share of the
       // shots (x2, at least 5 s; the laptop: 71 s for 64 shots, 9.7 s for 5)
+      // every estimate from what THIS machine measured: pass 1's load (or the warm-up's, budget.loadMs) and its per-still
+      // time. The old pass-2 estimate was capped at loadMs (20 s), so the dog run started a pass 2 whose page load alone
+      // took 89 s and lost it to the time budget.
       const p1 = report.passes[0];
-      const loadEst = pass > 1 && p1?.loadMs ? Math.min(B.loadMs || Infinity, Math.max(5000, (2 * p1.loadMs * (onlyShots?.size ?? tl.shots.length)) / tl.shots.length)) : B.loadMs;
-      const est = loadEst + picks.length * B.stillMs + Math.ceil(Math.ceil(picks.length / B.maxImages) / B.concurrency) * B.callMs;
-      if (deadline - Date.now() < Math.max(B.minPassMs, est)) { P.skipped = `time: ~${Math.round(est / 1000)} s needed, ${Math.max(0, Math.round((deadline - Date.now()) / 1000))} s left`; report.stopped = `pass ${pass}: ${P.skipped}`; break; }
+      const loadEst = pass > 1 && p1?.loadMs ? Math.max(B.minLoadMs, Math.min(1.2 * p1.loadMs, (2 * p1.loadMs * (onlyShots?.size ?? tl.shots.length)) / tl.shots.length)) : B.loadMs;
+      const stillEst = pass > 1 && p1?.stills ? Math.max(B.stillMs, p1.stillsMs / p1.stills) : B.stillMs;
+      const callEst = pass > 1 && p1?.calls ? Math.max(B.minCallMs, p1.judgeMs / Math.max(1, Math.ceil(p1.calls / B.concurrency))) : B.callMs;
+      const est = loadEst + picks.length * stillEst + Math.ceil(Math.ceil(picks.length / B.maxImages) / B.concurrency) * callEst;
+      P.estMs = Math.round(est);
+      if (deadline - Date.now() < Math.max(B.minPassMs, est)) { P.skipped = `time: ~${Math.round(est / 1000)} s needed, ${Math.max(0, Math.round((deadline - Date.now()) / 1000))} s left`; report.stopped = `pass ${pass}: ${P.skipped}`; log(`review pass ${pass} skipped: ${P.skipped}`); break; }
       if (!picks.length) { P.skipped = "nothing to look at"; break; }
-      renderer ??= typeof stills === "function" ? await stills() : stills;
+      const r0 = Date.now();
+      renderer ??= typeof stills === "function" ? await withDeadline(Promise.resolve(stills()), deadline, "the still renderer") : stills;
+      P.rendererMs = Date.now() - r0; // waiting for the warm-up / Chrome start
       if (!renderer) { report.stopped = "no still renderer"; break; }
       let rtl = tl, times = picks;
       if (onlyShots) { const sub = subTimeline(tl, [...onlyShots]); rtl = sub.tl; times = picks.map((p) => ({ ...p, t: +sub.map(p.shot, p.t).toFixed(3) })); }
       const s0 = Date.now();
-      const got = await withDeadline(renderer.renderTimeline(rtl, times.map((p) => ({ key: p.key, t: p.t, shot: p.shot, line: p.line })), { name: `pass${pass}`, onLoad: (ms) => { P.loadMs = ms; } }), deadline, "the stills");
+      let got;
+      // a pass cut by the time budget ends the review cleanly: the verdicts so far, the final fallback and the report
+      // stay (the dog run's cut pass 2 threw them all away: "error: time budget reached during the stills")
+      try { got = await withDeadline(renderer.renderTimeline(rtl, times.map((p) => ({ key: p.key, t: p.t, shot: p.shot, line: p.line })), { name: `pass${pass}`, onLoad: (ms) => { P.loadMs = ms; } }), deadline, "the stills"); }
+      catch (e) { if (!e.timeout) throw e; P.skipped = e.message; report.stopped = `pass ${pass}: ${e.message} (estimated ${Math.round(est / 1000)} s)`; log(`review pass ${pass}: ${e.message}`); break; }
       P.stillsMs = Date.now() - s0 - P.loadMs; P.stills = got.stills.filter((s) => !s.error).length;
       for (const s of got.stills) if (s.error) P.errors.push(`still ${s.key}: ${s.error}`);
       const byKey = new Map(got.stills.filter((s) => !s.error).map((s) => [s.key, s]));
@@ -134,7 +148,7 @@ export async function reviewShots({ tl, script = null, premise = null, judge = n
       }
       P.counts = counts(verdicts);
       if (pass === 1) report.first = { ...P.counts, matchPct: Math.round((100 * P.counts.match) / Math.max(1, verdicts.length)) };
-      log(`review pass ${pass}: ${verdicts.length} lines, ${P.stills} stills (load ${P.loadMs} ms, stills ${P.stillsMs} ms), ${P.calls} calls ${P.judgeMs} ms, $${P.costUsd.toFixed(4)}: ${JSON.stringify(P.counts)}`);
+      log(`review pass ${pass}: ${verdicts.length} lines, ${P.stills} stills (renderer wait ${P.rendererMs} ms, load ${P.loadMs} ms, stills ${P.stillsMs} ms; estimated ${P.estMs} ms, ${Math.round((deadline - Date.now()) / 1000)} s left), ${P.calls} calls ${P.judgeMs} ms, $${P.costUsd.toFixed(4)}: ${JSON.stringify(P.counts)}`);
       if (pass > B.replanRounds) break;
       // 4. re-plan the lines that are not a match
       const bad = [...byLine.values()].filter((v) => todo.has(v.line) && (v.verdict === "partial" || v.verdict === "miss"));
@@ -155,8 +169,11 @@ export async function reviewShots({ tl, script = null, premise = null, judge = n
       const changedRefs = res.changedShots.map((i) => tl.shots[i]).filter(Boolean);
       // a thing a fix put in that the kit can't build: the builder (kit -> library -> builder -> card), each re-checked
       if (rebuild && (res.pendingObjects?.length || (res.applied ?? []).some((f) => f.op === "replaceCard"))) {
+        const b0 = Date.now();
         try { const b = await withDeadline(Promise.resolve(rebuild(tl)), deadline, "the builder"); P.rebuild = b?.report ? { costUsd: b.report.costUsd ?? 0, built: b.applied?.length ?? 0, cards: b.cards?.length ?? 0 } : null; } catch (e) { P.errors.push(`rebuild: ${String(e.message).slice(0, 160)}`); }
+        P.rebuildMs = Date.now() - b0;
       }
+      log(`review pass ${pass}: ${P.fixes} fixes, ${P.applied} applied, ${P.reverted} reverted${P.rebuildMs != null ? `, builder ${P.rebuildMs} ms` : ""}; ${Math.round((deadline - Date.now()) / 1000)} s left`);
       // what the builder did not make is taken out again (it stays missing: the final fallback's card)
       const settled = settleObjects(tl, res.pendingObjects ?? [], { check });
       if (settled.removed.length) {

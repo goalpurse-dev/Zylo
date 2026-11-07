@@ -7,11 +7,11 @@ import os from "node:os";
 import path from "node:path";
 import { validateBlueprint, validateWorld, normName, LIMITS } from "../lib/builder/spec.js";
 import { memoryCache, fileCache, snapshotCache } from "../lib/builder/cache.js";
-import { resolveNeeds, cardOf } from "../lib/builder/resolve.js";
+import { resolveNeeds, cardOf, makePurse, buildableNeed } from "../lib/builder/resolve.js";
 import { mockProvider, MOCK_OBJECTS, MOCK_WORLDS } from "../lib/builder/mock.js";
 import { needsFromTimeline, applyResolved } from "../lib/builder/apply.js";
 import { makeBuilder } from "../lib/builder/index.js";
-import { blueprintSchema, worldSchema, objectPrompt, OBJECT_SYSTEM, WORLD_SYSTEM, EXAMPLES, worstCaseUsd, costOf } from "../lib/builder/design.js";
+import { blueprintSchema, worldSchema, objectPrompt, OBJECT_SYSTEM, WORLD_SYSTEM, EXAMPLES, worstCaseUsd, costOf, anthropicProvider, tokensFor, MAX_TOKENS } from "../lib/builder/design.js";
 import { planVideo, checkTimeline, checkSubjects, checkVisuals, worldNeedOf } from "../plan.mjs";
 
 const still = async () => ({ jpeg: Buffer.from("jpeg"), file: null, w: 768, h: 768 });
@@ -118,9 +118,9 @@ test("resolve: design + vision fail + retry with the fix + pass", async () => {
 });
 
 test("resolve: three failed designs -> a picture card (never a failed run); errors and refusals too", async () => {
-  const prov = mockProvider({ throwOn: ["broken thing"] });
-  const { results, report } = await resolveNeeds([need("kazoo"), need("broken thing"), need("inside a moon base", "world")], { provider: prov, cache: memoryCache(), render: still, kit: noKit });
-  for (const id of ["n-object-kazoo", "n-object-broken thing", "n-world-inside a moon base"]) {
+  const prov = mockProvider({ throwOn: ["broken toaster"] });
+  const { results, report } = await resolveNeeds([need("kazoo"), need("broken toaster"), need("inside a moon base", "world")], { provider: prov, cache: memoryCache(), render: still, kit: noKit });
+  for (const id of ["n-object-kazoo", "n-object-broken toaster", "n-world-inside a moon base"]) {
     assert.equal(results[id].source, "card", id); assert.equal(results[id].attempts, 3, id);
     assert.equal(results[id].card.kind, "card"); assert.ok(results[id].card.text.length > 0);
   }
@@ -134,13 +134,19 @@ test("resolve: three failed designs -> a picture card (never a failed run); erro
   assert.equal(off.results["n-object-ladder"].source, "card"); assert.match(off.results["n-object-ladder"].reason, /off/);
 });
 
-test("resolve: the money cap -> cards (a call starts only when its worst case fits); the design cap", async () => {
+test("resolve: the money cap -> cards (the worst cases in flight always fit; a need waits, then stops); the design cap", async () => {
+  // worst $0.2 a need (design 0.1 + vision 0.1), actual $0.1: under $0.25 only one fits at a time; after it, $0.1 spent
+  // + $0.2 worst > $0.25 with nothing in flight -> the rest are cards
   const prov = { ...mockProvider({ costUsd: 0.05 }), worstCase: () => 0.1 };
-  const { results, report } = await resolveNeeds([need("ladder"), need("robot dentist"), need("giant heart")], { provider: prov, cache: memoryCache(), render: still, kit: noKit, budget: { maxUsd: 0.45 } });
+  const { results, report } = await resolveNeeds([need("ladder"), need("robot dentist"), need("giant heart")], { provider: prov, cache: memoryCache(), render: still, kit: noKit, budget: { maxUsd: 0.25 } });
   const srcs = Object.values(results).map((r) => r.source).sort();
-  assert.deepEqual(srcs, ["built", "built", "card"]);
+  assert.deepEqual(srcs, ["built", "card", "card"]);
   assert.match(Object.values(results).find((r) => r.source === "card").reason, /money cap/);
-  assert.ok(report.costUsd <= 0.45);
+  assert.ok(report.costUsd <= 0.25);
+  // with $0.45 the waiting needs get their turn as the first ones settle: all three built, never over the cap
+  const more = await resolveNeeds([need("ladder"), need("robot dentist"), need("giant heart")], { provider: prov, cache: memoryCache(), render: still, kit: noKit, budget: { maxUsd: 0.45 } });
+  assert.deepEqual(Object.values(more.results).map((r) => r.source), ["built", "built", "built"]);
+  assert.ok(more.report.costUsd <= 0.45);
   const few = await resolveNeeds([need("ladder"), need("robot dentist")], { provider: mockProvider(), cache: memoryCache(), render: still, kit: noKit, budget: { maxDesigns: 1 } });
   assert.deepEqual(Object.values(few.results).map((r) => r.source).sort(), ["built", "card"]);
 });
@@ -157,6 +163,65 @@ test("resolve: needs run in parallel; the time cap -> card; one design per disti
   const slow = await resolveNeeds([need("ladder")], { provider: mockProvider({ delayMs: 400 }), cache: memoryCache(), render: still, kit: noKit, budget: { maxMs: 150 } });
   assert.equal(slow.results["n-object-ladder"].source, "card"); assert.match(slow.results["n-object-ladder"].reason, /time cap/);
   assert.ok(Date.now() - t < 350);
+});
+
+test("purse: realistic estimate + worst cases in flight; waits instead of giving up; never over the cap", async () => {
+  const p = makePurse({ maxUsd: 0.25, parallel: 3 });
+  const c = { est: 0.027, worst: 0.08, min: 0.055 };
+  const g = [p.tryAcquire(c), p.tryAcquire(c), p.tryAcquire(c)];
+  assert.ok(g.every(Boolean), "three need-sized worst cases fit under $0.25");
+  assert.equal(p.tryAcquire(c), null, "a fourth waits (parallel limit)");
+  const waiting = p.acquire(c, Date.now() + 1000);
+  p.release(g[0], 0.02);
+  const g4 = await waiting; assert.ok(g4.worst > 0, "it starts once one settles");
+  for (const x of [g[1], g[2], g4]) p.release(x, 0.025);
+  assert.ok(Math.abs(p.spent - 0.095) < 1e-9);
+  // near the end: $0.2 spent, $0.05 left -> below the smallest ceiling, nothing in flight: stop (no overspend)
+  const q = makePurse({ maxUsd: 0.25 }); const a = q.tryAcquire({ est: 0.2, worst: 0.2 }); q.release(a, 0.2);
+  assert.deepEqual(await q.acquire(c), { stop: "worst" });
+  // $0.18 spent: the realistic estimate fits and a SMALLER ceiling (>= min) is granted
+  const r = makePurse({ maxUsd: 0.25 }); r.release(r.tryAcquire({ est: 0.18, worst: 0.18 }), 0.18);
+  const s = await r.acquire(c); assert.ok(s.worst >= c.min && s.worst <= 0.07 + 1e-9, JSON.stringify(s));
+});
+
+test("resolve: the measured typical cost lets 5 needs run under $0.25 (the dog run carded 4 of 5); actual spend under the cap", async () => {
+  // the dog run's shape: worst $0.13 a need under the old ceilings; actual ~$0.027 a need
+  const m = mockProvider({ costUsd: 0.0135, delayMs: 20 });
+  const base = { ...m, vision: async () => { await new Promise((r) => setTimeout(r, 20)); return { data: { ok: true, confidence: 0.9, reads_as: "it" }, costUsd: 0.0135 }; } };
+  const prov = { ...base, worstCase: (k, s) => (s === "vision" ? 0.0155 : 0.065), typicalCase: (k, s) => (s === "vision" ? 0.005 : 0.022), minCase: (k, s) => (s === "vision" ? 0.0155 : 0.045) };
+  const names = ["ladder", "robot dentist", "giant heart", "kazoo", "garden hose"];
+  const { results, report } = await resolveNeeds(names.map((n) => need(n)), { provider: prov, cache: memoryCache(), render: still, kit: noKit, budget: { maxUsd: 0.25 } });
+  const reasons = Object.values(results).map((r) => r.reason ?? "");
+  assert.ok(!reasons.some((x) => /money cap/.test(x)), reasons.join(" | "));
+  assert.ok(report.costUsd <= 0.25);
+  // the old worst cases ($0.099 + $0.032) with a typical estimate: still never over the cap, the rest wait or stop
+  const old = { ...base, worstCase: (k, s) => (s === "vision" ? 0.032 : 0.099), typicalCase: (k, s) => (s === "vision" ? 0.005 : 0.022) };
+  const o = await resolveNeeds(names.map((n) => need(n)), { provider: old, cache: memoryCache(), render: still, kit: noKit, budget: { maxUsd: 0.25 } });
+  assert.ok(o.report.costUsd <= 0.25);
+  assert.ok(Object.values(o.results).filter((r) => r.source === "built").length >= 4, "waiting instead of giving up builds most of them");
+});
+
+test("buildableNeed: only concrete things are designed (the test runs paid for 'nos', 'bite', 'block', 'soggy', 'dusty')", async () => {
+  for (const w of ["nos", "bite", "block", "soggy", "dusty", "the town's nose", "Biscuit", "running", "something"]) assert.equal(buildableNeed({ kind: "object", name: w }).ok, false, w);
+  for (const w of ["lunchbox", "dusty plaque", "faded dog collar", "cracked bell tower", "festival lanterns on a line", "cat", "giant tooth", "garden hose", "ladder"]) assert.equal(buildableNeed({ kind: "object", name: w }).ok, true, w);
+  assert.equal(buildableNeed({ kind: "world", name: "the town" }).ok, true);
+  const prov = mockProvider();
+  const { results } = await resolveNeeds([need("bite"), need("soggy")], { provider: prov, cache: memoryCache(), render: still, kit: noKit });
+  assert.equal(prov.calls.design, 0, "no paid design for a word that is no thing");
+  assert.match(results["n-object-bite"].reason, /not a buildable thing/);
+});
+
+test("design: the ceilings fit three needs under $0.25; a grant shrinks max_tokens; costOf survives usage null", async () => {
+  const worstNeed = worstCaseUsd("claude-sonnet-5-5", "design", "object") + worstCaseUsd("claude-sonnet-5-5", "vision", "object");
+  assert.ok(3 * worstNeed <= 0.25, `worst a need $${worstNeed}`);
+  assert.equal(costOf("claude-sonnet-5-5", null), 0);
+  assert.ok(tokensFor("claude-sonnet-5-5", "design", "object", 0.045) < MAX_TOKENS.object);
+  let sent = null;
+  const fetchFn = async (url, init) => { sent = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ model: "claude-sonnet-5-5", stop_reason: "end_turn", usage: { input_tokens: 10, output_tokens: 10 }, content: [{ type: "text", text: JSON.stringify(MOCK_OBJECTS.ladder) }] }) }; };
+  const p = anthropicProvider({ apiKey: "fake", fetchFn });
+  await p.designObject({ need: need("ladder") }); assert.equal(sent.max_tokens, MAX_TOKENS.object);
+  await p.designObject({ need: need("ladder"), maxUsd: 0.045 }); assert.ok(sent.max_tokens < MAX_TOKENS.object && sent.max_tokens >= 2500, String(sent.max_tokens));
+  assert.ok(p.typicalCase("object", "design") < p.worstCase("object", "design"));
 });
 
 test("cardOf: a clear card of that very thing", () => {

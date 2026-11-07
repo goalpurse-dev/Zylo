@@ -162,6 +162,13 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     cache: library, budget: { ...(p.builder?.budget ?? {}), until }, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
     beforeStills: () => stillChrome(job.mode ?? "gpu"),
   });
+  // the shot review's still renderer, opened and WARMED early (2026-11-07): the test runs lost 87-176 s of the review's
+  // window to a cold page load; a warm reload of a similar timeline in the same Chrome measured ~5x faster. It is warmed
+  // with the first early plan (below) while the voice, the director and the builder run; off when the review is off.
+  const V = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "index.js")).href);
+  const reviewOn = Boolean(V.judgeFromConfig(p.review ?? {}, { apiKey: process.env.ANTHROPIC_KEY ?? null }));
+  const reviewStills = reviewOn ? V.makeReviewStills({ dir: path.join(dir, "review"), size: Number(p.review?.stillSize) || undefined, beforeStills: () => stillChrome(job.mode ?? "gpu"), log: (m) => console.log(`review: ${m}`) }) : null;
+  const warmReview = (early) => { if (reviewStills) { console.log(`review: warming the stills page at ${((Date.now() - jobT0) / 1000).toFixed(1)} s`); reviewStills.warm(early); } };
   // what the director and the builder spent, for the server's cost ledger (render.js aiLedger): "planned" reports the
   // spend so far; the job's end (done output / failed event) reports the totals and what "planned" said, so a call that
   // ends after "planned", or a job that fails before it, is still billed once
@@ -177,6 +184,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
       const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
       const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
       builder.prefetch(needsFromTimeline(early, { kit }), kit);
+      warmReview(early);
     } catch (e) { console.log(`builder: no early start (${e.message})`); }
   }
   // the story director runs while the voice is made (it needs only the script) and never fails a run (directStory falls
@@ -208,6 +216,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
         const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
         const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists });
         builder.prefetch(needsFromTimeline(early, { kit }), kit);
+        warmReview(early);
       } catch (e) { console.log(`builder: no directed early start (${e.message})`); }
       return d;
     } catch (e) { console.log(`director: skipped (${e.message})`); return null; }
@@ -256,14 +265,14 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   //     A prepare retry reviews again (the timeline is planned again); a resumed prepare never does (resumePrepare).
   let review = null;
   try {
-    const V = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "index.js")).href);
     review = await lap("review", () => V.reviewForPrepare({
       tl, script, premise: p.idea?.topic ?? p.idea?.premise ?? null, config: p.review ?? {}, apiKey: process.env.ANTHROPIC_KEY ?? null,
-      plan, kit, kitProblems, builder, dir, until: reviewUntil, beforeStills: () => stillChrome(job.mode ?? "gpu"), log: (m) => console.log(`review: ${m}`),
+      plan, kit, kitProblems, builder, dir, until: reviewUntil, beforeStills: () => stillChrome(job.mode ?? "gpu"), ...(reviewStills ? { stills: reviewStills } : {}), log: (m) => console.log(`review: ${m}`),
     }));
     spend.reviewUsd = Number(review?.costUsd) || 0; spend.reviewModel = review?.summary?.model ?? null;
     if (review?.report && p.out?.shotReview) await put(p.out.shotReview, path.join(dir, "shot-review.json"), "application/json").catch((e) => console.log(`shot-review.json upload: ${e.message}`)); // bookkeeping never fails a run
   } catch (e) { console.log(`review: skipped (${String(e.message).slice(0, 160)})`); }
+  finally { await reviewStills?.close().catch(() => {}); } // its Chrome is not needed after the review
   const checks = preRenderChecks(plan, tl, script, kit);
   const checkFile = path.join(dir, "visual-check.json");
   fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog }, review: review?.summary ?? null }, null, 1));
@@ -298,7 +307,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     clearTimeout(t);
     try { e.spend = spendNow(); if (builtReport) e.builder = { built: builtReport.built, cards: builtReport.cards, costUsd: builtReport.costUsd, needs: builderLines(builtReport) }; } catch { /* bookkeeping never hides the real error */ }
     throw e;
-  } finally { await builder.close().catch(() => {}); }
+  } finally { await builder.close().catch(() => {}); await reviewStills?.close().catch(() => {}); }
 }
 
 /**

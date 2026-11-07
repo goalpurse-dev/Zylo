@@ -12,20 +12,46 @@ export const PRICE = Object.freeze({
   "claude-sonnet-5-5": Object.freeze({ input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 }),
   "claude-haiku-5-5": Object.freeze({ input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 }),
 });
-export const costOf = (model, u = {}) => {
-  const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
+export const costOf = (model, usage) => {
+  const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"], u = usage ?? {}; // an error reply may carry "usage": null
   return Number((((u.input_tokens ?? 0) * p.input + (u.output_tokens ?? 0) * p.output + (u.cache_read_input_tokens ?? 0) * p.cacheRead + (u.cache_creation_input_tokens ?? 0) * p.cacheWrite) / 1e6).toFixed(6));
 };
 /** the models (the recommendation: CONTRACT.md addendum "Built on demand") */
 export const BUILDER_MODELS = Object.freeze({ design: "claude-sonnet-5-5", vision: "claude-sonnet-5-5" });
-/** output ceilings (thinking included): they bound what one call can cost */
-export const MAX_TOKENS = Object.freeze({ object: 9000, world: 12000, vision: 2500 });
-/** the most one call can cost: every output token, the whole input written to the cache, an image's tokens */
-export function worstCaseUsd(model, step, kind) {
+/**
+ * output ceilings (thinking included): they bound what one call can cost. Measured 2026-11-07 (turtle + dog test runs,
+ * Sonnet 5.5, effort low): object designs 993-2244 output tokens (no thinking), vision checks 43-182. The old ceilings
+ * (9000 / 12000 / 2500) made one design + check reserve $0.13 against a $0.25 cap: only one need could run at a time.
+ */
+export const MAX_TOKENS = Object.freeze({ object: 5000, world: 8000, vision: 1000 });
+/** the smallest ceiling worth a call (the last design of a video may run with less than MAX_TOKENS, never below this) */
+export const MIN_TOKENS = Object.freeze({ object: 3000, world: 5000, vision: 1000 });
+/** input sizes for the worst case: system ~5,000 (design) / ~1,900 (vision, one image) measured, plus a retry's fix text */
+const WORST_INPUT = Object.freeze({ design: 6000, vision: 2200 });
+/** the most one call can cost: every output token, the whole input written to the cache */
+export function worstCaseUsd(model, step, kind, maxTokens = null) {
   const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
-  const out = step === "vision" ? MAX_TOKENS.vision : MAX_TOKENS[kind];
-  const inp = step === "vision" ? 2600 : 9000;
+  const out = maxTokens ?? (step === "vision" ? MAX_TOKENS.vision : MAX_TOKENS[kind]);
+  const inp = step === "vision" ? WORST_INPUT.vision : WORST_INPUT.design;
   return Number(((out * p.output + inp * p.cacheWrite) / 1e6).toFixed(5));
+}
+/** the largest max_tokens whose worst case stays within maxUsd (null: no limit given) */
+export function tokensFor(model, step, kind, maxUsd) {
+  if (maxUsd == null || !Number.isFinite(maxUsd)) return null;
+  const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
+  const inp = step === "vision" ? WORST_INPUT.vision : WORST_INPUT.design;
+  return Math.max(0, Math.floor(((maxUsd * 1e6) - inp * p.cacheWrite) / p.output));
+}
+/**
+ * the typical cost of one call (what the purse expects to spend; the worst case still bounds it). Sonnet 5.5, measured
+ * 2026-11-07 from the test ledgers: object design $0.0114-0.0239 (mean $0.018, cached system), vision $0.0024-0.0047;
+ * world: not yet measured (no world was designed), estimated at ~2x an object. Other models scale by output price.
+ */
+export const TYPICAL_USD = Object.freeze({ object: 0.022, world: 0.04, vision: 0.005 });
+export function typicalUsd(model, step, kind) {
+  const base = step === "vision" ? TYPICAL_USD.vision : TYPICAL_USD[kind] ?? TYPICAL_USD.object;
+  const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
+  return Number((base * (p.output / PRICE["claude-sonnet-5-5"].output)).toFixed(5));
 }
 
 // ---------------------------------------------------------------------------------------------- the style guide
@@ -218,9 +244,12 @@ export async function callClaude({ apiKey, model, system, content, schema, effor
 export function anthropicProvider({ apiKey, designModel = BUILDER_MODELS.design, visionModel = BUILDER_MODELS.vision, idea = null, fetchFn = fetch, effort = "low" } = {}) {
   return {
     name: "anthropic", designModel, visionModel,
-    designObject: ({ need, feedback }) => callClaude({ apiKey, model: designModel, system: OBJECT_SYSTEM, content: objectPrompt({ need, idea, feedback }), schema: blueprintSchema(), effort, maxTokens: MAX_TOKENS.object, fetchFn }),
-    designWorld: ({ need, feedback }) => callClaude({ apiKey, model: designModel, system: WORLD_SYSTEM, content: worldPrompt({ need, idea, feedback }), schema: worldSchema(), effort, maxTokens: MAX_TOKENS.world, timeoutMs: 180000, fetchFn }),
+    // maxUsd (the purse's grant): a smaller max_tokens when the money left is less than the full ceiling's worst case
+    designObject: ({ need, feedback, maxUsd = null }) => callClaude({ apiKey, model: designModel, system: OBJECT_SYSTEM, content: objectPrompt({ need, idea, feedback }), schema: blueprintSchema(), effort, maxTokens: Math.min(MAX_TOKENS.object, tokensFor(designModel, "design", "object", maxUsd) ?? Infinity), fetchFn }),
+    designWorld: ({ need, feedback, maxUsd = null }) => callClaude({ apiKey, model: designModel, system: WORLD_SYSTEM, content: worldPrompt({ need, idea, feedback }), schema: worldSchema(), effort, maxTokens: Math.min(MAX_TOKENS.world, tokensFor(designModel, "design", "world", maxUsd) ?? Infinity), timeoutMs: 180000, fetchFn }),
     async vision(args) { const { visionCall } = await import("./vision.js"); return visionCall({ apiKey, model: visionModel, fetchFn, ...args }); },
     worstCase: (kind, step) => worstCaseUsd(step === "vision" ? visionModel : designModel, step, kind),
+    typicalCase: (kind, step) => typicalUsd(step === "vision" ? visionModel : designModel, step, kind),
+    minCase: (kind, step) => worstCaseUsd(step === "vision" ? visionModel : designModel, step, kind, step === "vision" ? MIN_TOKENS.vision : MIN_TOKENS[kind]),
   };
 }

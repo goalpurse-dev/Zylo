@@ -503,7 +503,7 @@ test("money: the director's worst case matches the engine's; the AI ceiling per 
   assert.deepEqual(aiCeilingUsd({ director: "mock", builder: "off", builderMaxUsd: 0.6 }), { directorMaxUsd: 0, builderMaxUsd: 0, reviewMaxUsd: 0.2, aiMaxUsd: 0.2 }, "the review (on by default): its cap per prepare try, 2 tries");
   const c = aiCeilingUsd(PROD_ON);
   assert.equal(c.builderMaxUsd, 0.6);
-  assert.ok(c.directorMaxUsd > 0.028 && c.directorMaxUsd < 0.03, `${c.directorMaxUsd}`);
+  assert.ok(c.directorMaxUsd > 0.037 && c.directorMaxUsd < 0.039, `${c.directorMaxUsd}`);
   const video90 = estimate(90).totalUsd; // voice + GPU + storage
   assert.ok(2 * (c.aiMaxUsd + video90) < 2.5, `two 90 s videos at most $${(2 * (c.aiMaxUsd + video90)).toFixed(2)}`);
   assert.ok(2 * (aiCeilingUsd({ ...PROD_ON, director: "sonnet" }).aiMaxUsd + video90) > 2.5, "Sonnet + builder can pass $2.50 at its worst: the test uses Haiku");

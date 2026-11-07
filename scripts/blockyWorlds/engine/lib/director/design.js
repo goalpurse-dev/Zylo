@@ -13,7 +13,7 @@ import { storyPatternsForPrompt } from "../storyPatterns.js";
 
 /** the models: Haiku 5.5 is the default (a reading + listing task); Sonnet 5.5 for the calibration sample */
 export const DIRECTOR_MODELS = Object.freeze({ fast: "claude-haiku-5-5", strong: "claude-sonnet-5-5" });
-export const DIRECTOR_MAX_TOKENS = 12000;
+export const DIRECTOR_MAX_TOKENS = 16000; // the first try's ceiling (DIRECTOR_LIMITS below)
 
 export const DIRECTOR_SYSTEM = `You are the STORY DIRECTOR of "Blocky Worlds": 1-2 minute vertical story videos, narrated by a kid, set in an original blocky toy-like 3D world (realistic game-engine look: chunky blocky people, CC0 textures, warm sun, phone-at-street-level camera). A rendering engine builds every shot from your PRODUCTION LIST, so you decide what must exist on screen.
 
@@ -78,7 +78,7 @@ export const tokensOf = (s, json = false) => Math.ceil(String(s ?? "").length / 
  */
 export function directorTokens({ lines, idea = null, outputJson = null }) {
   const schema = JSON.stringify(productionSchema());
-  const system = tokensOf(DIRECTOR_SYSTEM) + tokensOf(schema, true) + 40; // the schema is sent as the format (counted as input)
+  const system = tokensOf(DIRECTOR_SYSTEM_JSON) + 40; void schema; // the plain-JSON system prompt carries the shape (no format)
   const user = tokensOf(directorPrompt({ lines, idea }));
   const answer = outputJson ? tokensOf(typeof outputJson === "string" ? outputJson : JSON.stringify(outputJson), true) : 60 * lines.length + 600;
   return { system, user, input: system + user, output: Math.ceil(answer * 1.25), answer };
@@ -108,30 +108,68 @@ export function apiSchema(schema = productionSchema()) {
 }
 const GRAMMAR_TOO_LARGE = /compiled grammar is too large|grammar/i;
 
-export function anthropicDirector({ apiKey, model = DIRECTOR_MODELS.fast, fetchFn = fetch, effort = "low", timeoutMs = 120000 } = {}) {
+/**
+ * The production list's shape in one compact line (keys, nested lists, enum values inline as a|b|c), for the plain-JSON
+ * path: no structured output, so the model needs the shape in words. Built once from productionSchema() (byte-stable:
+ * it is part of the cached system prompt).
+ */
+export function schemaShape(schema = productionSchema(), maxEnum = 30) {
+  const shape = (x) => {
+    if (!x || typeof x !== "object") return "?";
+    if (x.enum) return `"${x.enum.length > maxEnum ? `${x.enum.slice(0, maxEnum).join("|")}|...` : x.enum.join("|")}"`;
+    if (x.type === "array") return `[${shape(x.items)}]`;
+    if (x.type === "object") return `{${Object.entries(x.properties ?? {}).map(([k, v]) => `"${k}":${shape(v)}`).join(",")}}`;
+    return x.type === "number" ? "num" : x.type === "boolean" ? "bool" : "str";
+  };
+  return shape(schema);
+}
+/** the plain-JSON system prompt: the director's prompt + the shape + "JSON only" (cached as one block) */
+export const DIRECTOR_SYSTEM_JSON = `${DIRECTOR_SYSTEM}
+
+ANSWER FORMAT: one JSON object of exactly this shape (str = text, num = number, [x] = a list of x, "a|b" = one of those words; every key present, [] or "" when empty):
+${schemaShape()}
+Return only the JSON object: no prose, no code fence.`;
+
+/**
+ * Output ceilings (thinking included). Haiku 5.5 at effort "low" measured 2026-11-07: 4,628-6,258 output tokens on a
+ * first try (1,073-1,601 thinking), but the turtle RETRY thought 7,178 tokens and hit the old 12,000 ceiling (cut off,
+ * 45 s, paid for nothing). So: a roomier first try, and the retry (a repair of a listed problem) runs WITHOUT thinking
+ * (Haiku 5.5 accepts thinking "disabled" at effort high or below), which is both faster and bounded.
+ */
+export const DIRECTOR_LIMITS = Object.freeze({ first: 16000, retry: 10000 });
+
+/**
+ * structured: false (default since 2026-11-07): every structured try answered a free 400 "compiled grammar is too large"
+ * (both test runs, every call) and was re-sent as plain JSON, so the plain-JSON path is the one that runs, straight away.
+ * structured: true keeps the old try-then-fall-back path (if a smaller schema ever fits the grammar limit).
+ */
+export function anthropicDirector({ apiKey, model = DIRECTOR_MODELS.fast, fetchFn = fetch, effort = "low", timeoutMs = 120000, structured = false } = {}) {
   if (!apiKey) throw new Error("anthropicDirector: no apiKey");
-  const sonnet = model.startsWith("claude-sonnet-5-5");
+  const sonnet = model.startsWith("claude-sonnet-5-5"), haiku = model.startsWith("claude-haiku");
+  const P = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
   return {
     model,
-    worstCase: () => Number(((DIRECTOR_MAX_TOKENS * (PRICE[model] ?? PRICE["claude-sonnet-5-5"]).output + 9000 * (PRICE[model] ?? PRICE["claude-sonnet-5-5"]).cacheWrite) / 1e6).toFixed(5)),
+    worstCase: () => Number(((DIRECTOR_LIMITS.first * P.output + 12000 * P.cacheWrite) / 1e6).toFixed(5)),
     async direct({ lines, idea = null, feedback = null }) {
       const t0 = Date.now();
-      // structured output with the enum-free schema; if the API still refuses the grammar, plain JSON (validated after)
-      const send = (structured) => fetchFn("https://api.anthropic.com/v1/messages", {
+      // a retry (feedback given) is a repair: no thinking on Haiku, a smaller ceiling
+      const repair = Boolean(feedback?.length) && haiku;
+      const send = (asStructured) => fetchFn("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(sonnet ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}) },
         body: JSON.stringify({
-          model, max_tokens: DIRECTOR_MAX_TOKENS,
-          system: [{ type: "text", text: DIRECTOR_SYSTEM + (structured ? "" : "\n\nReturn only the JSON object (the production list), no prose, no code fence."), cache_control: { type: "ephemeral" } }],
+          model, max_tokens: repair ? DIRECTOR_LIMITS.retry : DIRECTOR_LIMITS.first,
+          system: [{ type: "text", text: asStructured ? DIRECTOR_SYSTEM : DIRECTOR_SYSTEM_JSON, cache_control: { type: "ephemeral" } }],
           messages: [{ role: "user", content: directorPrompt({ lines, idea, feedback }) }],
-          output_config: structured ? { effort, format: { type: "json_schema", schema: apiSchema() } } : { effort },
+          ...(repair ? { thinking: { type: "disabled" } } : {}),
+          output_config: asStructured ? { effort, format: { type: "json_schema", schema: apiSchema() } } : { effort },
           ...(sonnet ? { fallbacks: "default" } : {}),
         }),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      let res = await send(true);
+      let res = await send(structured);
       let body = await res.json().catch(() => null);
-      if (res.status === 400 && GRAMMAR_TOO_LARGE.test(JSON.stringify(body?.error ?? ""))) { res = await send(false); body = await res.json().catch(() => null); }
+      if (structured && res.status === 400 && GRAMMAR_TOO_LARGE.test(JSON.stringify(body?.error ?? ""))) { res = await send(false); body = await res.json().catch(() => null); }
       const costUsd = costOf(body?.model ?? model, body?.usage);
       const base = { costUsd, usage: body?.usage ?? null, ms: Date.now() - t0, model: body?.model ?? model };
       if (!res.ok) throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), base, { balance: res.status === 400 && /credit balance/i.test(JSON.stringify(body?.error ?? "")) });

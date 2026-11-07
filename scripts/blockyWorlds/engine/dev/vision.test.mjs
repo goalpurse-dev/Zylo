@@ -9,6 +9,7 @@ import { normalizeVerdict, verdictsOf, batchesOf, batchContent, judgeSchema, wor
 import { suggestFixes, applyFixes, settleObjects, finalFallback, poseForVerb, exprForFeeling } from "../lib/vision/replan.js";
 import { reviewShots } from "../lib/vision/shotReview.js";
 import { mockJudge } from "../lib/vision/mock.js";
+import { makeReviewStills, reviewForPrepare } from "../lib/vision/index.js";
 
 // ------------------------------------------------------------------------------------------ a small timeline
 const shot = (i, start, end, extra = {}) => ({ start, end, line: i, lines: [i], set: "creature:turtle_inside", light: "day", camera: "medium", focus: "me", actors: [{ id: "me", spot: "center", pose: "stand", expr: "neutral", facing: "camera", hold: null }], seed: i + 1, subject: "me", ...extra });
@@ -228,4 +229,58 @@ test("never fails: judge errors, renderer errors, a throwing check, no judge", a
   assert.match(d.report.stopped, /off/);
   const e = await reviewShots({ tl: { shots: [] }, judge: mockJudge(), stills: fakeStills() });
   assert.equal(e.report.stopped, "no shots");
+});
+
+// ------------------------------------------------------------------------------------------ timing (2026-11-07)
+// a fake renderer with real-ish waits: the first page load in a Chrome is "cold", later ones "warm"
+const timedStills = ({ coldMs = 300, warmMs = 60, stillMs = 2 } = {}) => {
+  const calls = []; let loads = 0;
+  const r = { calls, opened: 0, closed: 0, async renderTimeline(tl, picks, { onLoad, name } = {}) {
+    const load = loads++ === 0 ? coldMs : warmMs; await new Promise((s) => setTimeout(s, load)); onLoad?.(load);
+    calls.push({ name, shots: tl.shots.length, picks: picks.length, load });
+    await new Promise((s) => setTimeout(s, stillMs * picks.length));
+    return { stills: picks.map((p) => ({ ...p, jpeg, w: 270, h: 480, file: null, ms: stillMs })), loadMs: load, ms: load + stillMs * picks.length };
+  }, async close() { r.closed++; } };
+  return r;
+};
+
+test("review stills warmed early: pass 1 gets the warm load; one Chrome for every pass; closed once by its owner", async () => {
+  const fake = timedStills({ coldMs: 300, warmMs: 40 });
+  let made = 0;
+  const rs = makeReviewStills({ dir: os.tmpdir(), factory: async ({ size }) => { made++; assert.equal(size, 480); return fake; } });
+  rs.warm(mkTl());                       // fire and forget, as the prepare job does after the director
+  await new Promise((s) => setTimeout(s, 20));
+  assert.equal(rs.warming, true);
+  const t0 = Date.now();
+  const rv = await reviewForPrepare({ tl: mkTl(), script: null, config: { provider: "mock" }, plan: {}, dir: fs.mkdtempSync(path.join(os.tmpdir(), "bw-warm-")), until: Date.now() + 60000, stills: rs });
+  assert.equal(made, 1, "one renderer for the warm-up and every pass");
+  assert.equal(fake.calls[0].name, "warm"); assert.equal(fake.calls[0].picks, 0);
+  assert.ok(fake.calls.slice(1).every((c) => c.load === 40), "every pass loads warm");
+  assert.ok(rv.summary.passes >= 2 && rv.summary.timing[0].load === 40, JSON.stringify(rv.summary.timing));
+  assert.ok(rv.summary.warmMs >= 300);
+  assert.equal(fake.closed, 0, "reviewShots does not close the shared renderer");
+  await rs.close(); await rs.close(); assert.equal(fake.closed, 1);
+  assert.ok(Date.now() - t0 < 3000);
+});
+
+test("pass 2 is estimated from pass 1's MEASURED load (not capped at 20 s): a pass that can't finish is not started", async () => {
+  // pass 1 loads in 600 ms; the window leaves ~250 ms after it: pass 2 (estimated from 600 ms) is skipped, not cut
+  const fake = timedStills({ coldMs: 600, warmMs: 600, stillMs: 0 });
+  const { report } = await reviewShots({ tl: mkTl(), judge: mockJudge(), stills: fake, check: () => [], budget: { until: Date.now() + 900, loadMs: 100, stillMs: 0, callMs: 0, minPassMs: 0, minLoadMs: 0, minCallMs: 0 } });
+  assert.equal(report.passes.length, 2);
+  assert.match(report.passes[1].skipped, /time/);
+  assert.equal(fake.calls.length, 1, "no pass-2 page load was started");
+  assert.ok(report.lines.length === 3 && report.lines.every((l) => l.verdict), "pass 1's verdicts are kept");
+});
+
+test("a pass cut by the time budget keeps the verdicts and the report (the dog run lost them all)", async () => {
+  // the estimate says it fits (loadMs 10), the real load takes 800 ms: cut during the stills of pass 2
+  let n = 0;
+  const fake = { async renderTimeline(tl, picks, { onLoad } = {}) { const ms = n++ === 0 ? 10 : 800; await new Promise((s) => setTimeout(s, ms)); onLoad?.(ms); return { stills: picks.map((p) => ({ ...p, jpeg, w: 270, h: 480, file: null, ms: 1 })), loadMs: ms, ms }; } };
+  const { report } = await reviewShots({ tl: mkTl(), judge: mockJudge(), stills: fake, check: () => [], budget: { until: Date.now() + 400, loadMs: 10, stillMs: 0, callMs: 0, minPassMs: 0, minLoadMs: 0, minCallMs: 0 } });
+  assert.doesNotMatch(String(report.stopped), /^error/);
+  assert.match(String(report.stopped), /pass 2: time budget reached during the stills/);
+  assert.equal(report.error, undefined);
+  assert.ok(report.lines.every((l) => l.verdict), "pass 1 verdicts kept");
+  assert.ok(report.unresolved.some((u) => u.unverified), "fixed lines are marked as not re-judged");
 });

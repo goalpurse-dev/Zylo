@@ -210,10 +210,11 @@ export const REVIEW_MAX_USD_CEILING = 1;
 export const DIRECTOR_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
 /**
  * The most ONE director call can cost (a copy of engine/lib/director/design.js anthropicDirector().worstCase(): every
- * one of its 12,000 output tokens + 9,000 input tokens written to the cache; tests keep the two equal). directStory makes
+ * one of its 16,000 first-try output tokens + 12,000 input tokens written to the cache; tests keep the two equal; 2026-11-07:
+ * the plain-JSON system prompt + a roomier first try, the turtle retry was cut off at 12,000). directStory makes
  * at most 2 calls (one retry) per prepare try.
  */
-export const DIRECTOR_WORST_USD = Object.freeze({ "claude-haiku-5-5": 0.00713, "claude-sonnet-5-5": 0.1425 });
+export const DIRECTOR_WORST_USD = Object.freeze({ "claude-haiku-5-5": 0.0095, "claude-sonnet-5-5": 0.19 });
 export const BUILDER_MAX_USD_CEILING = 2;
 export const LIBRARY_SNAPSHOT = Object.freeze({ rows: 150, bytes: 2e6 });
 

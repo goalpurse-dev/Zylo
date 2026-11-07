@@ -13,7 +13,7 @@ import { productionSchema, validateProduction, itemsOf } from "../lib/director/s
 import { matchProduction, nodeKit } from "../lib/director/match.js";
 import { mockProduction, linesOf } from "../lib/director/mock.js";
 import { directStory } from "../lib/director/index.js";
-import { DIRECTOR_SYSTEM, directorTokens, callUsd } from "../lib/director/design.js";
+import { DIRECTOR_SYSTEM, DIRECTOR_SYSTEM_JSON, DIRECTOR_LIMITS, directorTokens, callUsd, anthropicDirector } from "../lib/director/design.js";
 import { checkProduction } from "../lib/director/check.js";
 import { makeGapLog, memoryStore, jsonlStore, supabaseStore, rankGaps, gapRows } from "../lib/gaps.js";
 import { runDemo, TURTLE_SCRIPT, TURTLE_IDEA, exists } from "./directorDemo.mjs";
@@ -269,4 +269,24 @@ test("stress CLI: the paid run refuses without --yes / a cap / a key (no network
   const env = { ...process.env }; delete env.ANTHROPIC_KEY; delete env.ANTHROPIC_API_KEY;
   const r = spawnSync(process.execPath, [path.join(ROOT, "dev/stress.mjs"), "--real", "script", "--n", "3"], { env, encoding: "utf8" });
   assert.equal(r.status, 2); assert.match(r.stderr, /Not run/);
+});
+
+test("anthropicDirector: plain JSON straight away (no free 400 grammar try), roomy first ceiling, the retry without thinking", async () => {
+  const bodies = [];
+  let n = 0;
+  const fetchFn = async (url, init) => {
+    const b = JSON.parse(init.body); bodies.push(b); n++;
+    // the first answer misses lines (a structural problem -> one retry with feedback), the second is the mock's full list
+    const data = n === 1 ? { ...mockProduction({ script: TURTLE_SCRIPT, idea: TURTLE_IDEA }), lines: [] } : mockProduction({ script: TURTLE_SCRIPT, idea: TURTLE_IDEA });
+    return { ok: true, status: 200, json: async () => ({ model: "claude-haiku-5-5", stop_reason: "end_turn", usage: null, content: [{ type: "text", text: JSON.stringify(data) }] }) };
+  };
+  const d = await directStory({ script: TURTLE_SCRIPT, idea: TURTLE_IDEA, provider: anthropicDirector({ apiKey: "fake", model: "claude-haiku-5-5", fetchFn }), exists });
+  assert.equal(d.provider, "anthropic"); assert.equal(d.fellBack, false);
+  assert.equal(bodies.length, 2, "one first try + one retry, no 400 round trips");
+  assert.ok(bodies.every((b) => !b.output_config?.format), "no json_schema format sent");
+  assert.equal(bodies[0].system[0].text, DIRECTOR_SYSTEM_JSON); assert.match(DIRECTOR_SYSTEM_JSON, /"lines":\[\{"line":num/);
+  assert.equal(bodies[0].max_tokens, DIRECTOR_LIMITS.first); assert.equal(bodies[0].thinking, undefined); assert.equal(bodies[0].output_config.effort, "low");
+  assert.equal(bodies[1].max_tokens, DIRECTOR_LIMITS.retry); assert.deepEqual(bodies[1].thinking, { type: "disabled" });
+  assert.match(bodies[1].messages[0].content, /FIX THESE PROBLEMS/);
+  assert.ok(DIRECTOR_SYSTEM_JSON.startsWith(DIRECTOR_SYSTEM));
 });
