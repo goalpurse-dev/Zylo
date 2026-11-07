@@ -171,7 +171,8 @@ export function makeCapsLayer({ THREE, scene, tl, ctx }) {
     // the flashback grade: the post chain's grade for this light, washed out and warm; restored on other shots
     const post = globalThis.engineDebug?.post, gp = post?.composer?.passes?.find((p) => p.uniforms?.sat && p.uniforms?.warm);
     if (shot.grade === "flashback") {
-      if (gp) { const P = POST[shot.light] ?? POST.day; gp.uniforms.sat.value = P.sat * 0.38; gp.uniforms.con.value = P.con * 0.92; gp.uniforms.warm.value = 0.11; gradeOn = true; }
+      // capped (PLANNER-FIX 2026-11-07, dog line 18: sat x0.38 + contrast x0.92 left a flat beige frame): a memory tint, never a wash
+      if (gp) { const P = POST[shot.light] ?? POST.day; gp.uniforms.sat.value = P.sat * 0.68; gp.uniforms.con.value = Math.max(P.con, 1.04); gp.uniforms.warm.value = Math.min(0.07, Math.max(P.warm, 0.05)); gradeOn = true; }
       if (!vignette) { vignette = makeVignette(); scene.add(vignette); }
     } else if (gradeOn && gp) { const P = POST[shot.light] ?? POST.day; gp.uniforms.sat.value = P.sat; gp.uniforms.con.value = P.con; gp.uniforms.warm.value = P.warm; gradeOn = false; }
     if (vignette) vignette.visible = false;
@@ -270,7 +271,7 @@ export function makeCapsLayer({ THREE, scene, tl, ctx }) {
     // caps shakes (only when the shot's own beat / shake did not shake already)
     let s = null;
     if (shakeAt != null && !(shot.beat?.shake || shot.shake)) s = applyShake(camera, shakePreset, lt, { at: shakeAt, seed, dur });
-    if (shot.grade === "flashback" && vignette) updateVignette(vignette, camera, 1);
+    if (shot.grade === "flashback" && vignette) updateVignette(vignette, camera, 0); // off (PLANNER-FIX 2026-11-07, dog line 18: the full-frame overlay rendered as a flat beige wash; the capped grade alone marks the memory)
     return s;
   }
 

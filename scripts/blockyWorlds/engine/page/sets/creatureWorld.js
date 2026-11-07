@@ -108,6 +108,25 @@ function streetSight(S, THREE, camera, shot, subj) {
       if (worst.hit.distance > worst.L * 0.8) break; // right at the subject (a wall behind a hand): leave it
       c.addScaledVector(worst.dir, worst.hit.distance + 0.5);
     }
+    // 2b. PLANNER-FIX 2026-11-07 (turtle lines 1, 13, 27, 42: big brown shell blocks / a wall filling the frame's edge):
+    // nothing of the set within ~3 m of the lens anywhere in the frame (not only on the line to the subject): a place
+    // prop is hidden, anything else (shell plates, a house corner, the ground) moves the camera in toward the subject
+    camera.updateMatrixWorld();
+    const NDC = [[-0.85, -0.85], [0, -0.85], [0.85, -0.85], [-0.85, -0.35], [0.85, -0.35], [-0.85, 0.35], [0.85, 0.35], [0, -0.5]];
+    const dirs = NDC.map(([x, y]) => new THREE.Vector3(x, y, 0.5).unproject(camera).sub(c0).normalize());
+    for (let pass = 0; pass < 4; pass++) {
+      const toMid = mid.clone().sub(c), dm = toMid.length();
+      if (dm < 1.2) break;
+      const near = Math.min(5.5, dm * 0.5);
+      let closest = null;
+      for (const d of dirs) {
+        const hit = new THREE.Raycaster(c, d, 0.02, near).intersectObject(S.root, true).find((h) => h.object.isMesh && !h.object.isPoints && vis(h.object) && !memo.hide.includes(h.object) && h.object.material?.visible !== false && !h.object.material?.transparent);
+        if (hit && (!closest || hit.distance < closest.distance)) closest = hit;
+      }
+      if (!closest) break;
+      if (closest.object.userData.placeProp) { memo.hide.push(closest.object); continue; }
+      c.addScaledVector(toMid.normalize(), Math.min(dm - 1.2, near - closest.distance + 0.6));
+    }
     const d0 = c0.distanceTo(mid);
     memo.k = d0 > 1e-3 ? Math.min(0.75, 1 - c.distanceTo(mid) / d0) : 0;
     // 3. never skimming the ground: on a slope (the dome near its rim) the uphill ground stood a hand under the lens and
@@ -123,7 +142,8 @@ function streetSight(S, THREE, camera, shot, subj) {
     const mid = target(0.6), L0 = c0.distanceTo(mid);
     camera.position.lerp(mid, memo.k); // the camera is a child of the scene: world = local
     const L1 = camera.position.distanceTo(mid);
-    camera.fov = Math.min(78, 2 * Math.atan(Math.tan((camera.fov * Math.PI) / 360) * L0 / Math.max(L1, 0.3)) * 180 / Math.PI);
+    // capped at 60 (PLANNER-FIX 2026-11-07: at 78 the wide lens pulled the shell plates into the frame corners, turtle line 1)
+    camera.fov = Math.min(Math.max(60, camera.fov), 2 * Math.atan(Math.tan((camera.fov * Math.PI) / 360) * L0 / Math.max(L1, 0.3)) * 180 / Math.PI);
     camera.updateProjectionMatrix(); camera.updateMatrixWorld();
   }
 }

@@ -75,7 +75,7 @@ const HAIRS = ["#2a1a10", "#5a3b25", "#1e1e1e", "#8a5a2b", "#c99b5b"];
 
 function genderOfPerson(c) {
   const t = low(`${c.name} ${c.look} ${c.id}`);
-  if (/\b(mrs|ms|miss|mom|mum|mother|grandma|granny|nana|aunt|sister|queen|princess|lady|girl|woman|dress|skirt|pigtails?|her|she)\b/.test(t)) return "f";
+  if (/\b(mrs|ms|miss|mom|mum|mother|grandma|granny|nana|aunt|sister|queen|princess|lady|girl|woman|old woman|grandmother|shawl|dress|skirt|pigtails?|her|she)\b/.test(t)) return "f";
   if (/\b(mr|dad|father|grandpa|grandad|uncle|brother|king|prince|lord|sir|boy|man|beard|his|he)\b/.test(t)) return "m";
   return null;
 }
@@ -116,7 +116,7 @@ export function lookOf(c, seed) {
   const acc = [/\bbackpack\b/.test(t) ? "backpack" : null, /\b(bag|satchel|purse)\b/.test(t) ? "bag" : null, /\btie\b/.test(t) ? "tie" : null].filter(Boolean);
   if (acc.length) look.acc = acc;
   if (gender === "f") look.beard = null;
-  return { look, age, gender, words: String(c.look ?? "").slice(0, 120) };
+  return { look, age, gender, words: String(c.look ?? "").slice(0, 120), topFromWords: topSet || Boolean(cols[0] && !/hair/.test(t)) };
 }
 
 // ------------------------------------------------------------------------------------------------ the bible
@@ -258,6 +258,11 @@ export function buildWorldBible({ production = null, script = null, idea = null,
       { id: "school", name: `the school, ${town.name}`, kind: "school", view: "town", set: "school", anchor: bld("school"), onCreature: null },
       { id: "home", name: "my room at home", kind: "home", view: "town", set: "bedroom", anchor: bld("home"), onCreature: null },
       { id: "woods", name: `the woods by ${town.name}`, kind: "woods", view: "town", set: "woods", anchor: "woods_edge", onCreature: null },
+      // PLANNER-FIX 2026-11-07 (dog run: a bell festival shot in a school hallway): every town has its square (the
+      // street set's "square" place: cobbles, stalls, lantern strings, a bell tower), and a town whose story names a
+      // tower gets the top of it (the street set's "belfry" place: the great bell, the town below)
+      { id: "square", name: `the town square, ${town.name}${/\bfestival\b/.test(allText) ? " (the festival)" : ""}`, kind: "square", view: "town", set: "street", place: "square", anchor: "square", onCreature: null },
+      ...(/\b(tower|belfry|steeple|bell)\b/.test(allText) || named.some((p) => /tower|belfry|steeple/i.test(p.name)) ? [{ id: "tower", name: `the top of the bell tower, ${town.name}`, kind: "tower", view: "town", set: "street", place: "belfry", anchor: "square", onCreature: null }] : []),
     );
   }
   const sets = [...new Set(spots.map((s) => s.set))];
@@ -267,7 +272,7 @@ export function buildWorldBible({ production = null, script = null, idea = null,
   for (const c of P.cast ?? []) {
     const s = hashSeed(`${seed}:cast:${c.id}`) % 1000;
     const L = lookOf(c, s);
-    cast[c.id] = { name: c.name || "", role: c.role === "narrator" ? "kid" : c.role || "adult", kind: c.kind || "human", look: L.look, age: L.age, gender: L.gender, seed: s, words: L.words, from: "director" };
+    cast[c.id] = { name: c.name || "", role: c.role === "narrator" ? "kid" : c.role || "adult", kind: c.kind || "human", look: L.look, age: L.age, gender: L.gender, seed: s, words: L.words, from: "director", ...(L.topFromWords ? { topFromWords: true } : {}) };
   }
   if (!cast.me) { const s = hashSeed(`${seed}:cast:me`) % 1000; const L = lookOf({ id: "me", role: "narrator", look: "" }, s); cast.me = { name: "", role: "kid", kind: "human", look: L.look, age: L.age, gender: L.gender, seed: s, words: "", from: "bible" }; }
   const townsfolk = [];
@@ -286,11 +291,72 @@ export function buildWorldBible({ production = null, script = null, idea = null,
     props[p.id] = { name: p.name, size: p.size, look: { color: cols[0] ? COLOR_HEX[cols[0]] : p.size === "landmark" ? null : TOPS[hashSeed(`${seed}:prop:${p.id}`) % TOPS.length], material: t.match(MATERIAL)?.[1] ?? (/hose|tube/.test(t) ? "rubber" : /pot|pan|kettle/.test(t) ? "metal" : /bread|loaf|cake|soup/.test(t) ? "food" : "painted") }, heldBy: p.heldBy || "", storyProp: !!p.storyProp };
   }
 
-  // the clock: runs of the director's light per line
+  // the clock: the director's light per line, corrected by the script's own time words (storyClock)
+  const { lights, fixedLines } = storyClock(P.lines ?? [], script?.lines ?? []);
   const time = [];
-  for (const l of P.lines ?? []) { const last = time.at(-1); if (last && last.light === l.light && last.to === l.line - 1) last.to = l.line; else time.push({ from: l.line, to: l.line, light: l.light ?? "day" }); }
+  lights.forEach((light, line) => { const last = time.at(-1); if (last && last.light === light && last.to === line - 1) last.to = line; else time.push({ from: line, to: line, light }); });
+  // the line's place in the town (town stories): the director's world for the line -> a spot kind
+  const worldPlace = Object.fromEntries((P.worlds ?? []).map((w) => [w.id, placeKindOf(`${w.id} ${w.name ?? ""} ${w.description ?? ""}`)]));
+  const linePlace = {};
+  for (const l of P.lines ?? []) if (worldPlace[l.world]) linePlace[l.line] = worldPlace[l.world];
 
-  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time };
+  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time, lights, fixedLines, linePlace };
+}
+
+/** a director world / a line's words -> the town spot kind it is (null = no place named) */
+export function placeKindOf(text) {
+  const t = low(text);
+  if (/\b(bell tower|belfry|steeple|clock tower|tower|spire)\b/.test(t)) return "tower";
+  if (/\b(square|plaza|festival|fair|market|marketplace|fountain|parade)\b/.test(t)) return "square";
+  if (/\b(school|class|classroom|hallway)\b/.test(t)) return "school";
+  if (/\b(bedroom|kitchen|my room|attic)\b/.test(t)) return "home";
+  if (/\b(woods|forest)\b/.test(t)) return "woods";
+  return null;
+}
+
+/**
+ * The story's clock (PLANNER-FIX 2026-11-07, turtle run: daylight for "every night" / "one night"): the director's
+ * light per line, then the script's words win: "one night" / "that night" (outside the rule / tour) starts a night that
+ * lasts until morning words or the closer; "every night" / "nightly" / "tonight" make that line night; "evening" /
+ * "sunset" dusk; "at dawn" / "sunrise" dawn. -> { lights[line], fixedLines[] (the lines the words changed) }
+ */
+export function storyClock(dirLines = [], scriptLines = []) {
+  const n = Math.max(scriptLines.length, ...dirLines.map((l) => l.line + 1), 0);
+  const lights = Array.from({ length: n }, (_, i) => dirLines.find((l) => l.line === i)?.light ?? "day");
+  const dir = [...lights];
+  const text = (i) => low(scriptLines[i]?.text ?? scriptLines[i] ?? "");
+  const part = (i) => String(scriptLines[i]?.part ?? "");
+  let night = false;
+  for (let i = 0; i < n; i++) {
+    const t = text(i);
+    if (night && (/\b(morning|dawn|sunrise|sun came up|sun rose|next day|sunup)\b/.test(t) || part(i) === "closer")) night = false;
+    if (!/^(rule|tour)$/.test(part(i)) && /\b(one night|that night|until one night|at midnight|one dark night|late at night)\b/.test(t)) night = true;
+    if (night || /\b(every night|every single night|each night|nightly|tonight|at night|midnight|one night)\b/.test(t)) lights[i] = "night";
+    if (/\b(evening|sunset|dusk)\b/.test(t)) lights[i] = "dusk";
+    if (!/^(rule|tour)$/.test(part(i)) && /\b(at dawn|by dawn|sunrise|sun came up|sun rose)\b/.test(t)) lights[i] = "warm"; // the closer's / the morning's warm light (the clock test: "at dawn" is warm)
+  }
+  return { lights, fixedLines: lights.map((l, i) => (l !== dir[i] ? i : -1)).filter((i) => i >= 0) };
+}
+
+/** every named cast member a look of its own: two people with the same top colour (Nell and Mrs. Pell) differ */
+export function distinctLooks(cast) {
+  const used = new Set();
+  const sig = (l) => `${l.top}|${l.bottom}`;
+  const rank = ([id, b]) => (id === "me" ? 0 : b.from === "director" ? 1 : b.from === "townsfolk" ? 3 : 2);
+  const named = new Set();
+  for (const [id, b] of Object.entries(cast).sort((x, y) => rank(x) - rank(y))) {
+    if (!b.look) continue;
+    // townsfolk may share a colour with each other, never with a named person
+    if (b.from === "townsfolk") { if (!named.has(b.look.top)) continue; }
+    else if (!used.has(b.look.top) && !used.has(sig(b.look))) { used.add(b.look.top); used.add(sig(b.look)); named.add(b.look.top); continue; }
+    // the top colour is the first thing a viewer tells people apart by: the later of two people with one top colour
+    // (even when the director's words named it: Bo's yellow hoodie and Pea's yellow raincoat) gets a free colour
+    void id;
+    const free = TOPS.find((x) => !used.has(x)) ?? TOPS[hashSeed(id) % TOPS.length];
+    b.look.top = free; if (b.look.bottom === "dress") b.look.pants = free;
+    used.add(free); used.add(sig(b.look)); if (b.from !== "townsfolk") named.add(free);
+  }
+  return cast;
 }
 
 // ------------------------------------------------------------------------------------------------ shots -> spots
@@ -354,12 +420,42 @@ export function applyBible(tl, bible) {
     if (!b.name && spec.name) b.name = spec.name;
     bound++;
   }
+  // every named cast member a look of their own (Nell and Mrs. Pell shared one): then the shots take the bible looks
+  distinctLooks(bible.cast);
+  for (const spec of Object.values(tl.cast ?? {})) { const b = bible.cast[spec.bibleId]; if (b && !(spec.baby || spec.role === "baby")) spec.look = clone(b.look); }
   // the creature worlds: the same town (seed) in every view
   if (bible.creature) for (const w of Object.values(tl.worlds ?? {})) if (w?.creature === bible.creature.species) { w.seed = bible.town.seed; w.town = bible.town.name; }
   const count = {};
   const shots = tl.shots ?? [];
   const homed = homeShots(shots, bible);
+  // TOWN PLACES (PLANNER-FIX 2026-11-07): in a town story every shot stands in the place its line is in: the line's own
+  // place words first ("climbed the tower", "in class"), else the director's world for the line (festival square, bell
+  // tower), never a school / bedroom the line does not name; the set + the street set's place follow the spot
+  const townStory = !bible.creature?.townView;
+  const spotOfKind = (k) => bible.spots.find((x) => x.kind === k);
+  if (townStory) shots.forEach((s) => {
+    if (/^world:/.test(s.set ?? "") || s.set === "woods") return;
+    const own = placeKindOf(s.text ?? "");
+    const named = own && spotOfKind(own) ? own : null;
+    const fromDirector = (s.lines ?? [s.line]).map((li) => bible.linePlace?.[li]).find((k) => k && spotOfKind(k)) ?? null;
+    // a plain set the line does not name (the "bell" in a line once made a school hallway)
+    const unnamed = (s.set === "school" && !/\b(school|class|classroom|teacher|hallway|lockers?|desks?|recess|homework)\b/.test(low(s.text))) || (s.set === "bedroom" && !/\b(bed|bedroom|room|kitchen|at home|closet|pillow|blanket|crib|upstairs|bathroom|asleep|tucked)\b/.test(low(s.text)));
+    // a school / room the line names wins; then the director's place for the line; then the line's own tower / square words
+    const explicit = named === "school" || named === "home" ? named : null;
+    const kind = explicit ?? fromDirector ?? named ?? (unnamed ? "street" : null);
+    const sp = kind && (spotOfKind(kind) ?? (kind === "street" ? spotOfKind("street") : null));
+    if (!sp) return;
+    if (PLAIN_SETS.includes(s.set) && s.set !== sp.set) s.worldBase ??= s.set;
+    s.set = sp.set; s.worldSpot = sp.id; s._townSpot = true;
+    // the director's world for the line is this town place now (the square, the belfry): no builder world for it
+    if (typeof s.world === "string" && fromDirector && kind === fromDirector) delete s.world;
+    if (sp.place) s.place = sp.place; else delete s.place;
+  });
+  // THE CLOCK: a line the script's time words changed ("one night", "every night", "Evening, sir") takes the bible's light
+  const fixedLines = new Set(bible.fixedLines ?? []);
+  for (const s of shots) { const li = s.line; if (fixedLines.has(li) && bible.lights?.[li] && s.light !== bible.lights[li]) s.light = bible.lights[li]; }
   shots.forEach((s, i) => {
+    if (s._townSpot) { delete s._townSpot; count[s.worldSpot] = (count[s.worldSpot] ?? 0) + 1; return; }
     let sp = spotFor(bible, s);
     if (!sp && s.camera === "insert") { const host = shots.slice(0, i).reverse().find((x) => x.worldSpot && x.set === s.set); sp = host?.worldSpot ?? null; }
     if (sp) { s.worldSpot = sp; count[sp] = (count[sp] ?? 0) + 1; } else delete s.worldSpot;

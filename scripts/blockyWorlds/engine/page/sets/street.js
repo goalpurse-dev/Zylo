@@ -5,6 +5,7 @@
 // The group stands on the right-hand sidewalk; the camera looks down the street (-z), like the locked frame.
 import { makeKit, mergeStatic, glowList } from "./util.js";
 import { backdrop, waterTower } from "./backdrop.js";
+import { addTownPlaces } from "./townPlaces.js";
 
 const SIDE = 4.5, WALK = 3.0, CURB = 0.15;
 const WALLS = [["painted_plaster_wall", "#fff3d6"], ["painted_plaster_wall", "#cfe8ff"], ["brick_wall_02", "#ffffff"], ["painted_plaster_wall", "#d8f2d0"], ["painted_plaster_wall", "#ffd9cc"], ["beige_wall_001", "#ffffff"]];
@@ -215,7 +216,7 @@ export async function build(ctx) {
   applyWindows();
 
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  return {
+  const S = {
     root, indoor: false,
     spots: { center: V(6.3, CURB, 0), left: V(5.25, CURB, 0.25), right: V(7.35, CURB, 0.25), back: V(6.5, CURB, -2.6), far: V(6.4, CURB, -30), door: V(11.0, 0.35, -8), tower: towerSpot },
     // the camera side of each spot (unit, horizontal); default: +z (looking down the street)
@@ -243,4 +244,7 @@ export async function build(ctx) {
     /** show/hide the sidewalk props (bus shelter, stop sign, bin, hydrant, planter) */
     setClutter(visible) { for (const o of clutter) o.visible = !!visible; },
   };
+  // the town square + the top of the bell tower (shot.place: PLANNER-FIX 2026-11-07, ./townPlaces.js)
+  addTownPlaces(S, K, THREE, glow, onLight);
+  return S;
 }

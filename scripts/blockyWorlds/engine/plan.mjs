@@ -20,7 +20,7 @@
 // still missing a noun first gets a catalog visual, else a picture card shot cut into its time -> timeline.visualReport.
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
-import { notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS } from "./lib/visuals.js";
+import { notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
 import { readDirection, directShots, compactProduction, checkProduction as checkProductionStrict, fixProduction, isCreatureSet, epicVariety, onScreen as dirOnScreen } from "./lib/direction.js";
@@ -179,11 +179,13 @@ const NOT_NAMES = new Set(["i", "im", "id", "ive", "ill", "the", "a", "an", "and
 const SUBJECT_VERB = /^(\w+ed|is|was|has|had|says|said|ran|sat|got|took|held|made|went|came|saw|told|keeps?|kept|learned|screams?|cries|cried|laughs?|grabbed|woke|slept|threw|knew|lives?|loves?|can|could|would|will)$/;
 const MONSTER_WORDS = /\b(monster|beast|creature|yeti|ghost|troll|ogre|dragon|squid|octopus|kraken|serpent|goblin)\b/i;
 const FURRY = /\b(furry|hairy|yeti|beast|bear|shaggy|fur|fluffy|big|huge|wolf)\b/i;
+// a job title is a person, never a monster ("the Bell Keeper": an old woman in a grey shawl, PLANNER-FIX 2026-11-07)
+const JOB_TITLE = /^(Keeper|Keepers|Guard|Watchman|Warden|Ranger|Mailman|Postman|Baker|Teacher|Mayor|Captain|Sheriff|Butcher|Farmer|Miller|Smith|Doctor|Nurse|Librarian|Ringer|Lamplighter|Fisherman|Shepherd|Gardener|Janitor|Principal|Coach|Chef|Cook|Driver|Clerk|Master|Mistress|Elder|Judge|Priest|Monk|Nun|Widow|Lady|Lord)$/;
 const GLOW = { horror: "#9be8ff", funny: "#ffd84a", epic: "#ff8a3d", wholesome: "#a8ff9b" };
 
 const SET_WORDS = {
-  bedroom: /\b(bedroom|beds?|room|closet|pillows?|night light|cribs?|blankets?|kitchen|home|upstairs|bathroom|living room|tuck(ed)?)\b/,
-  school: /\b(school|class|classroom|teachers?|hallway|lockers?|bell|desks?|cafeteria|recess|principal|homework)\b/,
+  bedroom: /\b(bedroom|beds?|room|closet|pillows?|night light|cribs?|blankets?|kitchen|at home|upstairs|bathroom|living room|tuck(ed)?)\b/,
+  school: /\b(school|class|classroom|teachers?|hallway|lockers?|desks?|cafeteria|recess|principal|homework)\b/,
   woods: /\b(woods|forest|trees?|trail|hills?|creek|stump|campfire|cave|river|lake|mountain)\b/,
   street: /\b(streets?|road|sidewalk|porch|yard|bakery|truck|bus|shops?|store|outside|houses?|town square|fountain|back door|front door|lawn|driveway|neighbou?rs?)\b/,
 };
@@ -247,7 +249,7 @@ function readWorld(script, idea) {
     const ws = m[1].split(/[ -]/);
     // "the Detention Dragon takes your chair" (verb follows) / "the Boomers sit": groups and places are not monsters
     if (/s$/.test(ws.at(-1)) && !/(ss|us)$/.test(ws.at(-1))) continue;
-    if (ws.some((w) => FAMILY[w.toLowerCase()]) || PLACE_NAME.test(ws.at(-1)) || /^(Ones?|Rest|End|One|Rule|Law|Board|Cellar|Hall|Room|Wall|Line|Edge|Contest|Union|Council|Club|Book|List|Day|Festival|Cup|Fair|Show|Race|Parade|Prize|Award|Office|Shop|Store|Cafe)$/.test(ws.at(-1))) continue;
+    if (ws.some((w) => FAMILY[w.toLowerCase()]) || PLACE_NAME.test(ws.at(-1)) || JOB_TITLE.test(ws.at(-1)) || /^(Ones?|Rest|End|One|Rule|Law|Board|Cellar|Hall|Room|Wall|Line|Edge|Contest|Union|Council|Club|Book|List|Day|Festival|Cup|Fair|Show|Race|Parade|Prize|Award|Office|Shop|Store|Cafe)$/.test(ws.at(-1))) continue;
     if (ws.length === 1 && /^(Mayor|King|Queen|Lord|Lady|Captain|Sheriff|Principal|Coach|Baker|Rule|Law|Deal|Town|World|First|Last|Only|Next|Same|Other|Whole|Great|Big|Little|Old|New)$/.test(ws[0])) continue;
     theX[m[1]] = (theX[m[1]] ?? 0) + 1;
   }
@@ -538,6 +540,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   if (D && world.monster) {
     const epicWords = new Set([...Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]), ...[...D.worldCreature.values()].map((w) => w.species)]);
     if ((world.monster.keys ?? [world.monster.key]).some((k) => epicWords.has(k)) || (world.monster.species && epicWords.has(world.monster.species))) world.monster = null;
+  }
+  // a "monster" the director's cast lists as a person (its id, name or job: "keeper" = "the Bell Keeper, long grey
+  // shawl") is that person, never the tall black monster (dog run 2026-11-07, PLANNER-FIX)
+  if (D && world.monster) {
+    const human = (D.production.cast ?? []).filter((c) => !c.kind || c.kind === "human");
+    const humanWords = new Set(human.flatMap((c) => `${c.id} ${c.name ?? ""} ${c.job ?? ""}`.toLowerCase().split(/[^a-z]+/)).filter((w) => w.length > 2));
+    if ((world.monster.keys ?? [world.monster.key]).some((k) => humanWords.has(k)) && !(D.production.creatures ?? []).some((c) => (world.monster.keys ?? []).includes(String(c.species ?? "").toLowerCase()))) world.monster = null;
   }
   // the EPIC giants are characters: "he" / "she" can be the Big Bad Wolf (lib/subjects.js beings)
   if (D) world.beings = [...new Set(Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]).filter((w) => !/s$/.test(w) || w.endsWith("ss")))];
@@ -887,12 +896,86 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   }
   // every shot in the bible's world: its spot, its cast looks, its town seed, its props (checkTimeline checks it)
   if (bible) { const wb = applyBible(tl, bible); if (tl.direction) tl.direction.world = { spots: wb.spots, homed: wb.homed }; }
+  const pf = planFixPass(tl, lines);
+  if (tl.direction && (pf.cards || pf.bells || pf.filler)) tl.direction.planFix = pf;
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   // the style rules measured on the plan (advisory: docs/blocky-worlds-protocol.md 8, lib/style.js)
   tl.style = styleReport(tl);
   // the whole-video story patterns measured on the plan (advisory, never fails a run: lib/storyPatterns.js)
   try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }
   return tl;
+}
+
+/**
+ * PLANNER-FIX 2026-11-07 (dog + turtle paid runs, judged line by line):
+ * 1. one picture card per thing: a card whose text an earlier line already carded (LUNCHBOX x4, DUSTY PLAQUE x3) is
+ *    cut when its line does not say the thing (its time goes back to the line's shot next to it); a line that does say
+ *    it keeps the card only when no other shot of the video showed that card yet;
+ * 2. the size / kind of a bell: "tiny bell", "sleigh bell", "in my pocket", a bell in a hand is the hand bell, never the
+ *    giant church bell (the big bell object of that shot goes, the subject holds the hand bell).
+ * -> { cards, bells } changed
+ */
+export function planFixPass(tl, lines) {
+  const shots = tl.shots ?? [];
+  let cards = 0, bells = 0;
+  const seen = new Set();
+  const lineText = (s) => (s.lines ?? [s.line]).map((i) => lines[i]?.text ?? "").join(" ").toLowerCase();
+  for (let i = 0; i < shots.length; i++) {
+    const s = shots[i];
+    if (s.camera !== "insert" || s.insert?.kind !== "card") continue;
+    const text = String(s.insert.text ?? "").toLowerCase(), words = text.split(/[^a-z]+/).filter((w) => w.length > 2);
+    const said = words.some((w) => new RegExp(`\\b${w.replace(/s$/, "")}`).test(lineText(s)));
+    // the place itself shows it (the square's bell tower, the belfry's bell): no card
+    const nb0 = [shots[i - 1], shots[i + 1]].find((x) => x && x.camera !== "insert" && x.line === s.line);
+    const placeShows = nb0 && PLACE_SCENERY[nb0.place] && words.every((w) => PLACE_SCENERY[nb0.place].test(w) || /^(cracked|old|great|big|the)$/.test(w));
+    if (!seen.has(text) && said && !placeShows) { seen.add(text); continue; }
+    if (seen.has(text) || !said || placeShows) {
+      // give the time back to a neighbour of the same line that is a real shot
+      const nb = [shots[i - 1], shots[i + 1]].find((x) => x && x.camera !== "insert" && x.line === s.line);
+      if (!nb) { seen.add(text); continue; }
+      // cutting it must not leave the same camera three times in a row (checkTimeline): then it stays
+      const after = [...shots.slice(Math.max(0, i - 2), i), ...shots.slice(i + 1, i + 3)].map((x) => x.camera);
+      if (after.some((c, k) => k >= 2 && c === after[k - 1] && c === after[k - 2])) { seen.add(text); continue; }
+      if (nb === shots[i - 1]) nb.end = s.end; else nb.start = s.start;
+      // the item is owner-excused on that shot (a line that never says it / a card already shown once): the report
+      // names it, the checks read s.waived (lib/opening.js waivedHas)
+      nb.waived = [...new Set([...(nb.waived ?? []), s.insert.text])];
+      shots.splice(i, 1); i--; cards++;
+    }
+  }
+  const SMALL_BELL = /\b(tiny|little|small|sleigh|hand|jingle|silver|brass)\s+(\w+\s+)?bells?\b|\bbells?\b[^.]*\bpocket\b|\bpocket\b[^.]*\bbells?\b|\bhandbells?\b/;
+  for (const s of shots) {
+    if (s.camera === "insert") continue;
+    const small = SMALL_BELL.test(lineText(s)) && !/\b(great|giant|big|huge|tower|church)\s+bell\b/.test(lineText(s));
+    for (const a of s.actors ?? []) if (a.hold === "bell" || (small && /^(bells?|ring|rings)$/.test(String(a.hold ?? "")))) { a.hold = "handbell"; if (!["carry", "point", "wave"].includes(a.pose)) a.pose = "carry"; bells++; }
+    if (small && (s.objects ?? []).some((o) => o.name === "bell")) {
+      s.objects = s.objects.filter((o) => o.name !== "bell"); if (!s.objects.length) delete s.objects;
+      const who = (s.actors ?? []).find((a) => a.id === s.subject) ?? (s.actors ?? []).find((a) => a.id === "me") ?? (s.actors ?? [])[0];
+      if (who) { who.hold = "handbell"; who.pose = "carry"; }
+      if (s.focus === "object") s.focus = who?.id ?? "group";
+      bells++;
+    }
+  }
+  // 3. the filler (turtle run: one "kid from behind facing a big tree" shot on 7 unrelated lines): a low hero shot of a
+  //    kid whose line is about something else (the wolf, the soldiers) shows that thing; the same framing never runs
+  //    more than twice in a row (the next one turns to the giant the kid faces)
+  let filler = 0;
+  for (let i = 0; i < shots.length; i++) {
+    const s = shots[i];
+    if (s.camera !== "hero_low" || !/_outside/.test(String(s.set))) continue;
+    const subj = String(s.subject ?? ""), actorIds = (s.actors ?? []).map((a) => a.id);
+    const giantOf = (w) => (s.giants ?? []).find((g) => g.id !== "world" && (g.id === w || (g.aliases ?? []).includes(w) || g.id.split("_").includes(w)));
+    const thing = subj.startsWith("thing:") ? subj.slice(6) : null;
+    const g = thing ? giantOf(thing) : null;
+    const army = thing && /^(soldier|soldiers|army|armies|troop|troops|guard|guards)$/.test(thing) && (s.crowds ?? []).length;
+    const prev2 = shots.slice(Math.max(0, i - 2), i).filter((x) => x.camera === "hero_low" && x.set === s.set).length === 2;
+    // never the same camera three times in a row (checkTimeline)
+    const ok = (c) => !((shots[i - 1]?.camera === c && shots[i - 2]?.camera === c) || (shots[i - 1]?.camera === c && shots[i + 1]?.camera === c) || (shots[i + 1]?.camera === c && shots[i + 2]?.camera === c));
+    if (g && !actorIds.includes(subj) && ok("giant_close")) { s.camera = "giant_close"; s.focus = `giant:${g.id}`; filler++; }
+    else if (army && ok("behind_army")) { s.camera = "behind_army"; s.focus = "crowd"; filler++; }
+    else if (prev2 && ok("giant_close")) { const faced = (s.actors ?? []).map((a) => giantOf(a.facing)).find(Boolean); if (faced) { s.camera = "giant_close"; s.focus = `giant:${faced.id}`; filler++; } }
+  }
+  return { cards, bells, filler };
 }
 
 /**
@@ -994,6 +1077,10 @@ function collectNeeds(tl, script, idea, baseSet, mood, D = null) {
       if (c?.route !== "builder" || !c.needId) continue;
       const dn = D.match.builderNeeds.find((x) => x.id === c.needId);
       if (!dn) continue;
+      // the bible's town already has this place (the square, the bell tower's top: lib/worldBible.js) and every shot of
+      // the line stands in it: nothing to build (PLANNER-FIX 2026-11-07)
+      const lp = tl.world?.linePlace?.[L.i], ownShots = tl.shots.filter((s) => s.line === L.i && s.camera !== "insert");
+      if (lp && ownShots.length && ownShots.every((s) => tl.world.spots.find((x) => x.id === s.worldSpot)?.kind === lp)) continue;
       const n = add({ kind: "world", name: dn.name, phrase: dn.phrase, line: dn.line, lineText: dn.lineText, mood, fallbackSet: dn.fallbackSet, source: "director", item: dn.item, ...(dn.hint ? { hint: dn.hint } : {}), setting: idea?.setting ?? null });
       for (const s of tl.shots) if (s.line === L.i && (s.set === c.set || s.set === dn.fallbackSet)) s.world = n.id;
     }
@@ -1081,6 +1168,12 @@ export function mergeDirectorCast(production, world) {
   const key = (s) => String(s ?? "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
   const rename = new Map();
   for (const c of production.cast ?? []) {
+    // a person the script read as a bare capitalized word ("The Keeper sat alone" -> a kid): the director's role wins
+    if (c?.id && c.id !== "me" && world.people.has(c.id) && (!c.kind || c.kind === "human") && c.role) {
+      const p = world.people.get(c.id);
+      if (c.role === "elder" || c.role === "adult") { p.role = "adult"; if (c.role === "elder") p.elder = true; }
+      delete p.weak;
+    }
     if (!c?.id || c.id === "me" || world.people.has(c.id)) continue;
     const words = key(c.id).split(" ").filter(Boolean), name = key(c.name);
     const hit = [...world.people.entries()].find(([id, p]) => id !== "me" && ((name && key(p.name) === name) || key(p.name) === words.join(" ") || (words.length > 1 && words.at(-1) === id && key(p.name).endsWith(id))));
@@ -1098,7 +1191,10 @@ export function mergeDirectorCast(production, world) {
   if (!rename.size) return production;
   const swap = (v) => (typeof v === "string" && rename.has(v) ? rename.get(v) : Array.isArray(v) ? v.map(swap) : v);
   const out = JSON.parse(JSON.stringify(production));
-  out.cast = (out.cast ?? []).filter((c) => !rename.has(c.id));
+  // the renamed entry keeps its look / job / role under the planner's id (dropping it lost Mrs. Pell's "blue apron" and
+  // turned the lines' "pell" / "tuk" items into name cards: PLANNER-FIX 2026-11-07)
+  const seen = new Set();
+  out.cast = (out.cast ?? []).map((c) => (rename.has(c.id) ? { ...c, id: rename.get(c.id), name: c.name || world.people.get(rename.get(c.id))?.name || "" } : c)).filter((c) => (seen.has(c.id) ? false : (seen.add(c.id), true)));
   for (const L of out.lines ?? []) for (const k of Object.keys(L)) L[k] = swap(L[k]);
   for (const list of ["props", "crowds", "creatures", "vehicles"]) for (const x of out[list] ?? []) for (const k of ["heldBy", "of", "owner"]) if (k in x) x[k] = swap(x[k]);
   return out;

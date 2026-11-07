@@ -116,6 +116,8 @@ export const ABSTRACT = new Set(("time times thing things way purpose life top m
   "pair pairs row rows pile piles copy copies sunday sundays monday mondays tuesday tuesdays wednesday wednesdays thursday thursdays friday fridays saturday saturdays " +
   "dent dents throws lifts joins pinch pinches weekend weekends winter winters summer summers spring autumn fall's anthem beat beats bank banks stub stubs safe's carries " +
   "lesson lessons test's grade grades class's term terms season's moment's evening's noon midnight's dawn's sundown sunset's " +
+  // verbs as nouns ("took a bite": an action, never a card; PLANNER-FIX 2026-11-07)
+  "bite bites sip sips nibble nibbles taste tastes glance glances peek peeks sniff sniffs crunch crunches hug hugs kiss kisses kick kicks nap naps rattle wobble " +
   "everything's anything's somebody's nobody's anyone's someone's thank thanks hello sorry yes's no's okay").split(" "));
 const STOP = new Set(("the a an and or but so if then than that this these those to of in on at for from with by into onto over under " +
   "up down out off away past through toward towards around about after before behind across until till when while because as is are was " +
@@ -256,9 +258,9 @@ export const RULES = [
     show: { sets: ["street"], objects: ["house_front", "bakery", "ice_cream_truck", "car", "fountain", "mailbox"] }, stand: "house_front" },
   // ---------------- light
   { id: "night", kind: "light", label: "night", re: W("night|nights|tonight|midnight|moon\\w*|dark"), light: "night", icon: "🌙",
-    show: { light: ["night"], setStateWindows: ["dark"] } },
+    show: { light: ["night", "dusk"], setStateWindows: ["dark"] } },
   { id: "day", kind: "light", label: "morning", re: W("morning|mornings|noon|daytime|sunny|afternoon|lunchtime|sunshine|sun"), light: "day", icon: "☀️", show: { light: ["day", "warm"] } },
-  { id: "dusk", kind: "light", label: "sunset", re: W("dawn|dawns|sunrise|sunset|sunsets|sundown|dusk|evening|evenings|twilight"), light: "warm", icon: "🌅", show: { light: ["warm", "day", "night"] } },
+  { id: "dusk", kind: "light", label: "sunset", re: W("dawn|dawns|sunrise|sunset|sunsets|sundown|dusk|evening|evenings|twilight"), light: "warm", icon: "🌅", show: { light: ["warm", "day", "night", "dusk", "dawn"] } },
   // the ground under everyone: any real shot of a set shows it ("on the floor", "the cave floor")
   { id: "floor", kind: "place", label: "floor", re: W("floors?|ground|grounds|carpet|rug|rugs|tiles?|doormat|doormats|mats?|curbs?|pavement|dirt|mud|puddles?|grass|lawn|paths?|aisles?|corridors?|stripes?|circles?|squares? on the|ceilings?|cellars?|basements?"), icon: "🟫",
     show: { sets: ["street", "bedroom", "school", "woods"] } },
@@ -271,7 +273,7 @@ export const RULES = [
     + "baker|bakers|clowns?|mimes?|tourists?|visitors?|strangers|everyone else|the rest of us|rest of us|nobody else|anyone else|" +
     "kid|crew|club|band|choir|audience|line of kids"),
     icon: "👥", show: { people: 1 } },
-  { id: "body", kind: "body", label: "body", re: W("mouths?|faces?|heads?|hands?|arms?|legs?|eyes?|ears?|feet|foot|breath|pockets?|nose|teeth|fingers?|hair|shadows?|claws?|fur|lips|heartbeats?|tummy|belly|bellies|stomach|toes?|knees?|elbows?|wrists?|shoulders?|backs|necks?|chins?|cheeks?|eyebrows?|whiskers|tongues?|throat|spine"),
+  { id: "body", kind: "body", label: "body", re: W("mouths?|faces?|heads?|hands?|arms?|legs?|eyes?|ears?|feet|foot|breath|pockets?|noses?|teeth|fingers?|hair|shadows?|claws?|fur|lips|heartbeats?|tummy|belly|bellies|stomach|toes?|knees?|elbows?|wrists?|shoulders?|backs|necks?|chins?|cheeks?|eyebrows?|whiskers|tongues?|throat|spine"),
     icon: "👤", show: { body: true } },
 ];
 const RULE_BY_ID = Object.fromEntries(RULES.map((r) => [r.id, r]));
@@ -418,6 +420,8 @@ export function extractKeys(text, vw, opts = {}) {
     if (used[k]) return;
     const c = t.c;
     if (STOP.has(c) || ABSTRACT.has(c) || VERBISH.test(c) || c.length < 3 || /^\d+$/.test(c)) return;
+    // a measure, not a thing: "a hole the size of a block", "as big as a house"
+    if ((/^(size|length|height|width|weight)$/.test(toks[k - 3]?.c ?? "") && toks[k - 2]?.c === "of") || (toks[k - 3]?.c === "big" && toks[k - 2]?.c === "as")) return;
     // "a roll of tape", "a slice of toast": the thing is what comes after "of"
     if (/^(roll|rolls|slice|slices|piece|pieces|pair|pairs|bit|bits|stack|stacks|pile|piles|scrap|scraps|chunk|chunks|bunch|lot|lots|handful|crumb|crumbs|sort|kind)$/.test(c) && toks[k + 1]?.c === "of" && !t.end && !t.comma) return;
     const icon = ICONS[c] ?? ICONS[singular(c)];
@@ -474,7 +478,13 @@ const shotMarkers = (s) => [...(s.markers ?? []), ...(s.marker && !(s.markers ??
 
 /** Does this one shot show the key? `cast` = timeline.cast (for roles). */
 export const FAR_CAMERAS = new Set(["establish", "aerial", "track", "behind_army"]);
+export const PLACE_SCENERY = { square: /^(towers?|lanterns?|cobblestones?|cobbles|square|festival|festivals|stalls?|market|plaza|bunting|flags?|town)$/, belfry: /^(towers?|bells?|belfry|steps|stairs|town)$/ };
 export function covers(key, s, cast = {}) {
+  // the street set's places show their scenery (page/sets/street.js: the square's bell tower, lantern strings, stalls and
+  // cobbles; the belfry's great bell and the town below): PLANNER-FIX 2026-11-07
+  if (PLACE_SCENERY[s.place] && String(`${key.noun ?? ""} ${key.label ?? ""} ${key.rule ?? ""}`).split(/[^a-z]+/).some((w) => PLACE_SCENERY[s.place].test(w))) return true;
+  // a small bell in a hand ("tiny bell", "sleigh bell": plan.mjs planFixPass) shows the bell
+  if (/^bells?$/.test(String(key.noun ?? key.label ?? "")) && (s.actors ?? []).some((a) => a.hold === "handbell")) return true;
   const actors = s.actors ?? [];
   const objs = (s.objects ?? []).map(objName);
   // EPIC crowds are people too (a crowd of townsfolk / soldiers / knights: lib/direction.js)

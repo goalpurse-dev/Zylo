@@ -170,7 +170,8 @@ test("storyReport: a plan that follows the patterns scores 1; a flat plan gets e
 test("director prompt carries the STORY PATTERNS block; planVideo stores tl.story (advisory)", async () => {
   assert.ok(DIRECTOR_SYSTEM.includes("STORY PATTERNS (plan the WHOLE video"));
   const block = storyPatternsForPrompt();
-  assert.ok(block.length / 3.6 < 1000, "the block stays compact");
+  // ~1,325 tokens with the real 38-video patterns (2026-11-07); cached in the director's system prompt
+  assert.ok(block.length / 3.6 < 1500, "the block stays compact");
   assert.ok(!/Bramble/.test(block));
   // the committed patterns file loads and contains no reference line text
   const p = loadStoryPatterns({ fresh: true });

@@ -30,7 +30,7 @@ import { hashSeed } from "./rng.js";
 import { cardLabel } from "./planText.js";
 import { nameWordOk } from "./names.js";
 import { waivedHas } from "./opening.js";
-import { notInHand } from "./visuals.js";
+import { notInHand, PLACE_SCENERY } from "./visuals.js";
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const lc = (s) => ` ${String(s ?? "").toLowerCase().replace(/[“”"’]/g, (c) => (c === "’" ? "'" : " ")).replace(/\s+/g, " ")} `;
@@ -639,6 +639,11 @@ export function onScreen(r, s, tl = {}) {
   const objHit = objs.some((o) => (r.needId && (o.needId === r.needId)) || (r.kitName && o.name === r.kitName) || (o.asset && [o.name, ...(o.aliases ?? [])].some((a) => NW(a).some((w) => name.includes(w)))) || NW(o.name).join(" ") === name.join(" "));
   const giants = s.giants ?? [], crowds = s.crowds ?? [];
   const actors = s.actors ?? [];
+  // a hand prop in a hand (the sleigh bell as the hand bell: plan.mjs planFixPass)
+  const heldHit = r.kind === "prop" && actors.some((a) => a.hold && (name.includes(a.hold) || (a.hold === "handbell" && name.some((w) => /^bells?$/.test(w)))));
+  if (heldHit) return true;
+  // the street set's square / belfry show their tower, bell, lanterns, stalls (lib/visuals.js PLACE_SCENERY)
+  if (s.camera !== "insert" && PLACE_SCENERY[s.place] && r.kind !== "cast" && name.some((w) => PLACE_SCENERY[s.place].test(w))) return true;
   if (s.camera === "insert") return cardSays || (r.kind === "world" && r.route === "set");
   switch (r.kind) {
     case "world":
