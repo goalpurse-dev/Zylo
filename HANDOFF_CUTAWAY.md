@@ -38,7 +38,21 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
   | Buildings | 3/7 |
   | Electronics | 0/2 |
   | Body | 1/3 (heart stent stays refused) |
-- **Re-check in progress at handoff:** the 95 lines that changed after `001f0cc9`, max $0.50. Results go to `<scratchpad>/realcheck2/`.
+- **Re-check done 2026-11-07:** $0.23. The outline glow fixed the "This is a…" line on 8 topics. **21/40 customer-ready, 2/40 perfect.**
+
+  | Category | Customer-ready |
+  |---|---|
+  | Yard | 9/10 |
+  | Utilities | 1/3 |
+  | Appliances | 2/6 |
+  | Vehicles | 1/6 |
+  | Machines | 3/3 (but the escalator's salvage cuts 6 of 11 lines, so the category cannot open) |
+  | Buildings | 4/7 |
+  | Electronics | 1/2 |
+  | Body | 0/3 |
+- Results are in `<old scratchpad>/realcheck2/`. To score: copy that folder to `<dir>/realcheck`, then run readyScore on `<dir>`.
+- **The hook at half the width (0.5) backfired:** it broke the fridge, water heater, fish and septic hooks and fixed none. It is reverted to 0.36 (`director.js` LOOK.hookMin). The old frames' verdicts are cached, so expect those four back to ready for free. The blocked hooks need content fixes (frost, steering, block contact, lumps, tunnel reach, lighthouse night), not framing.
+- **Budget left:** about $4.64.
 - Every report to the owner starts with the scoreboard, in plain words, and ends with "In plain terms".
 
 ## Tools (all in m3/, run from scripts/cutaway/proto3d)
