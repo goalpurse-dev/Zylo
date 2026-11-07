@@ -25,9 +25,9 @@ export const VIEWS = Object.freeze({ home: [15.5, 10.5, 50], high: [10, 21, 34],
 // high three-quarter view, the subject at 20-40%, still 28%. elev: the base view's elevation (degrees); shotWidth: a
 // planned shot's default width for its parts; closeMin: the part a line shows at least this share of the width;
 // drift: a hold creeps this much closer (0.9 = 10%) and turns orbitDeg degrees, so no frame sits still
-// hookMin: the hook object's width share on the opening frame (was 0.36; the real checker failed hooks for a tiny fan and
-// unreadable rods, 2026-11-06)
-export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4, hookMin: 0.5 });
+// hookMin: the hook object's width share on the opening frame (0.5 tried 2026-11-07: it cut off the dig, the pipe and the
+// flame the hook is about and broke 4 passing hooks in the real re-check, fixing none: back to 0.36)
+export const LOOK = Object.freeze({ elev: 22, shotWidth: 0.6, closeMin: 0.6, mainFill: 0.85, drift: 0.9, orbitDeg: 4, hookMin: 0.36 });
 // (step B: a move takes about 0.45 s, the competitors' 0.2-0.5 s, starting just before its sentence; it was 0.85 s)
 export const MOVE = Object.freeze({ lead: 0.2, settle: 0.25, drift: LOOK.drift, minGap: 1.2 });
 export const MIN_WIDTH = 0.15;
