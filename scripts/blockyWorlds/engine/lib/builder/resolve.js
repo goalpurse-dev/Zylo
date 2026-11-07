@@ -4,8 +4,10 @@
 //   2. the library        cache.lookup(kind, [name, phrase])                             (free, instant)
 //   3. design + check     provider.designObject / designWorld -> spec.js validation -> a still (render) -> vision;
 //                         a miss is retried with the vision's fix (or the validation problems), at most 2 retries
-//   4. a picture card     { kind: "card", text, icon } when all that fails, the money or time runs out, or the
-//                         provider is off. Never a failed run: nothing here throws.
+//   4. not made           source "card" (the name is kept for the callers; NO PICTURE CARD is ever drawn: owner,
+//                         PERMANENT 2026-11-07) when all that fails, the money or time runs out, or the provider is
+//                         off: lib/builder/apply.js leaves the closest real shot and writes the thing to shot.unshown.
+//                         Never a failed run: nothing here throws.
 // Everything built and passed is saved to the library (blueprint + still + name/aliases + verdict).
 //   resolveNeeds(needs, { provider, cache, render, kit, budget: { maxUsd, maxMs, maxDesigns }, idea, log })
 //     -> { results: { [needId]: result }, report: { costUsd, ms, designs, visionCalls, cards, built, cached, kit, byNeed } }
@@ -17,7 +19,7 @@ import { cardLabel } from "../planText.js";
 export const DEFAULT_BUDGET = Object.freeze({ maxUsd: 0.6, maxMs: 120000, maxDesigns: 6, minConfidence: 0.6, retries: 2, parallel: 3 });
 
 const ICONS = { robot: "🤖", tooth: "🦷", dentist: "🦷", turtle: "🐢", moon: "🌙", space: "🚀", sea: "🌊", underwater: "🌊", cave: "🕳️", water: "💧", puddle: "💧", flood: "🌊", leak: "💧", drip: "💧", bathtub: "🛁", bath: "🛁", golf: "⛳", kazoo: "🎺", curtain: "🪟", curtains: "🪟", pumpkin: "🎃", ladder: "🪜" };
-/** the last resort: a clear picture card of that very thing */
+/** "not made": the label of the thing that stays unshown (no card is drawn from it: lib/cards.js) */
 export function cardOf(need) {
   const words = normName(need.phrase || need.name).split(" ");
   const icon = words.map((w) => ICONS[w]).find(Boolean) ?? "✨";

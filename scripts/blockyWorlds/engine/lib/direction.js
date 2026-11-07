@@ -30,6 +30,7 @@ import { hashSeed } from "./rng.js";
 import { cardLabel } from "./planText.js";
 import { nameWordOk } from "./names.js";
 import { waivedHas } from "./opening.js";
+import { addUnshown } from "./cards.js";
 import { notInHand, PLACE_SCENERY } from "./visuals.js";
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -631,10 +632,9 @@ const markersOf = (s) => [...(s.markers ?? []), ...(s.marker ? [s.marker] : [])]
 export function onScreen(r, s, tl = {}) {
   if (waivedHas(s, r.name)) return true; // the opening rule (lib/opening.js) dropped its card / badge: owner-excused
   const name = NW(r.name);
-  // the item's own picture card (its text), or a card / badge naming it
-  const cardWords = r.card?.text ? NW(r.card.text) : [];
-  const cardSays = !!s.insert && (["card", "sign", "note"].includes(s.insert.kind) && NW(s.insert.text).some((w) => name.includes(w) || name.includes(sing(w)) || name.map(sing).includes(sing(w))) || (r.card?.text && s.insert.text === r.card.text));
-  const badge = markersOf(s).some((m) => NW(m.text).some((w) => name.includes(w) || name.map(sing).includes(sing(w)) || cardWords.includes(w)));
+  // NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07: lib/cards.js): a card, sign, badge or tag never shows an
+  // item (an item nothing can show is excused through shot.unshown, read by waivedHas above)
+  const cardSays = false, badge = false;
   const objs = s.objects ?? [];
   const objHit = objs.some((o) => (r.needId && (o.needId === r.needId)) || (r.kitName && o.name === r.kitName) || (o.asset && [o.name, ...(o.aliases ?? [])].some((a) => NW(a).some((w) => name.includes(w)))) || NW(o.name).join(" ") === name.join(" "));
   const giants = s.giants ?? [], crowds = s.crowds ?? [];
@@ -747,10 +747,10 @@ export function fixProduction(tl, D, aux) {
             host.worldBase ??= host.set; host.set = `creature:${worldId(tl, wc, wc.relation === "outside" ? "outside" : wc.relation, false)}`; how = "world";
           }
         }
+        // NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07: lib/cards.js): the line's real shot stays (its
+        // character doing the line's action), the item is written to shot.unshown (excused in the check) + its builder need
         if (!how) {
-          const card = r.card ?? { kind: "card", text: cardLabel(r.name ?? r.id) || "?", icon: "✨" };
-          if (aux.card(tl.shots, m.line, card, r)) how = "card";
-          else if (aux.badge(host, card)) how = "badge";
+          if (aux.unshown ? aux.unshown(tl.shots, m.line, r) : addUnshown(host, r.name ?? r.id)) how = "unshown";
         }
         if (how) done.push({ line: m.line, id: r.id, how });
       }

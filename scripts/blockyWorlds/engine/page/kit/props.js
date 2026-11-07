@@ -122,10 +122,15 @@ function postsAndBoard(g, w, h, boardMat) {
   board.position.set(0, 1.4, 0); board.castShadow = board.receiveShadow = true; g.add(board);
   return board;
 }
+/** NO PICTURE CARDS OR BADGES, ever (owner, PERMANENT 2026-11-07) */
+export const NO_CARDS = true;
 /** a story insert: { kind: "sign" | "note" | "card", text, icon? (card: an emoji or a short word) }. Origin on the
  *  ground; board centre at userData.focus. */
 export function makeInsert({ kind = "sign", text = "", icon = "" } = {}) {
   const g = new THREE.Group(); g.name = `insert:${kind}`;
+  // NO PICTURE CARDS OR SIGNS (owner, PERMANENT 2026-11-07: lib/cards.js): a story insert draws nothing (checkTimeline
+  // already fails any; a shop sign belongs to its building in page/sets)
+  if (NO_CARDS) { g.userData.size = [1, 1]; return g; }
   const seed = hashSeed(`${kind}|${text}|${icon}`);
   if (kind === "card") { // a picture card on the same two posts, a bit taller than a sign
     const face = new THREE.MeshStandardMaterial({ map: cardTexture(text, icon, seed), roughness: 0.6, emissive: "#ffffff", emissiveIntensity: 0.06 });
@@ -198,6 +203,8 @@ function iconTexture(text) {
 export function makeMarker({ kind = "tag", text = "" } = {}) {
   const g = new THREE.Group(); g.name = `marker:${kind}`;
   const inner = new THREE.Group(); g.add(inner); g.userData.inner = inner;
+  // NO BADGES / NAME TAGS / COUNTERS (owner, PERMANENT 2026-11-07): only the ring (no word, no icon) draws
+  if (NO_CARDS && kind !== "ring") { g.userData.height = 0; g.userData.billboard = true; g.userData.kind = kind; return g; }
   if (kind === "ring") {
     const glow = new THREE.MeshStandardMaterial({ color: "#fff3b0", emissive: "#ffd34d", emissiveIntensity: 3.2, roughness: 0.3 });
     const ring = addMesh(cachedGeo("haloRing", () => new THREE.TorusGeometry(0.2, 0.032, 12, 48)), glow, { y: 0.08, rx: Math.PI / 2 - 0.42, parent: inner, shadow: false });

@@ -248,12 +248,14 @@ test("worldNeedOf: settings the 4 sets fit -> none; giant / underwater / cave / 
   assert.equal(worldNeedOf({ lines: [{ text: "In this world, we live on the moon." }] }, {}).name, "on the moon");
 });
 
-test("planner: a card for a noun and an unfitting setting become needs; the plan is clean without them", () => {
+test("planner: an unshowable noun (NO CARDS: the real shot + shot.unshown) and an unfitting setting become needs; the plan is clean without them", () => {
   const tl = planVideo({ script: SCRIPT, idea: IDEA });
   assert.deepEqual(checks(tl), []);
   const kinds = tl.needs.map((n) => `${n.kind}:${n.name}`);
   assert.ok(kinds.includes("object:kazoo") && kinds.includes("world:inside a giant turtle"), kinds.join(", "));
-  assert.ok(tl.shots.some((s) => s.need?.id) && tl.shots.some((s) => s.world));
+  assert.ok(tl.shots.some((s) => s.needs?.some((n) => n.id)) && tl.shots.some((s) => s.world));
+  assert.ok(tl.shots.some((s) => s.needs?.length && s.unshown?.includes("kazoo") && s.camera !== "insert" && !s.insert), "the need rides on a real shot that records the kazoo as unshown");
+  assert.ok(tl.shots.every((s) => s.camera !== "insert" && !s.insert), "no picture card");
 });
 
 test("apply: built object + world go in, the checks stay clean; cards / fallback when not built", async () => {
@@ -267,18 +269,18 @@ test("apply: built object + world go in, the checks stay clean; cards / fallback
   assert.deepEqual(checkVisuals(tl, SCRIPT), []);
   assert.ok(out.applied.some((a) => a.need === "kazoo") && out.applied.some((a) => a.kind === "world"), JSON.stringify(out));
   assert.ok(tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset && tl.assets[o.asset].kind === "object")), "the kazoo stands in a shot");
-  assert.ok(tl.shots.every((s) => !s.need && !s.world), "no planner markers left");
+  assert.ok(tl.shots.every((s) => !s.need && !s.needs && !s.world), "no planner markers left");
   assert.ok(tl.shots.some((s) => /^world:/.test(s.set)) && Object.values(tl.assets).some((a) => a.kind === "world"));
-  assert.ok(!tl.shots.some((s) => s.insert?.text === "KAZOO"), "the card gave its time back");
-  // the builder off: the plan stays exactly as planned (cards, the fallback set)
+  assert.ok(!tl.shots.some((s) => s.unshown?.includes("kazoo")), "the built kazoo is no longer unshown");
+  // the builder off: the plan stays exactly as planned (the real shot with the kazoo unshown, the fallback set)
   const tl2 = planVideo({ script: SCRIPT, idea: IDEA });
   const off = await makeBuilder({ provider: null, cache: memoryCache(), render: still }).buildFor(tl2, { plan: { checkTimeline, checkSubjects }, kit });
   assert.deepEqual(checks(tl2), []);
-  assert.ok(tl2.shots.some((s) => s.insert?.text === "KAZOO") && tl2.shots.every((s) => !/^world:/.test(s.set)) && !tl2.assets);
+  assert.ok(tl2.shots.some((s) => s.unshown?.includes("kazoo")) && tl2.shots.every((s) => !s.insert && !/^world:/.test(s.set)) && !tl2.assets);
   assert.equal(off.cards.length, 2);
 });
 
-test("apply: a change that would break the narration check is undone (the card stays)", async () => {
+test("apply: a change that would break the narration check is undone (the real shot stays, the thing unshown)", async () => {
   const tl = planVideo({ script: SCRIPT, idea: IDEA });
   const needs = needsFromTimeline(tl, {});
   const n = needs.find((x) => x.kind === "object");
@@ -286,16 +288,16 @@ test("apply: a change that would break the narration check is undone (the card s
   let calls = 0;
   const r = applyResolved(tl, needs, results, { check: () => (calls++ ? ["made up problem"] : []) });
   assert.equal(r.reverted.length, 1); assert.equal(r.applied.length, 0);
-  assert.ok(tl.shots.some((s) => s.insert?.text === "KAZOO") && !tl.assets);
+  assert.ok(tl.shots.some((s) => s.unshown?.includes("kazoo")) && tl.shots.every((s) => !s.insert) && !tl.assets);
 });
 
-test("apply: an object on screen the kit can't build is a need (never KIT_MISSING); unbuilt -> removed + badge / card", () => {
+test("apply: an object on screen the kit can't build is a need (never KIT_MISSING); unbuilt -> removed, unshown, never a badge / card", () => {
   const kit = { resolveObject: (x) => (x === "car" ? "car" : null) };
-  const tl = { shots: [{ line: 0, set: "street", camera: "wide", focus: "me", actors: [{ id: "me", spot: "center" }], objects: [{ name: "golf_cart", spot: "left" }] }, { line: 1, set: "street", camera: "insert", focus: "object", actors: [], objects: [{ name: "bathtub", spot: "center" }] }] };
+  const tl = { cast: { me: { role: "kid" } }, shots: [{ line: 0, set: "street", camera: "wide", focus: "me", actors: [{ id: "me", spot: "center" }], objects: [{ name: "golf_cart", spot: "left" }] }, { line: 1, set: "street", camera: "medium", focus: "object", actors: [], objects: [{ name: "bathtub", spot: "center" }] }] };
   const needs = needsFromTimeline(tl, { kit });
   assert.deepEqual(needs.map((x) => x.name), ["golf cart", "bathtub"]);
   const results = { [needs[0].id]: { source: "card", card: cardOf(needs[0]) }, [needs[1].id]: { source: "built", asset: { id: "tub", kind: "object", name: "bathtub", aliases: ["bath"], blueprint: { parts: [] } } } };
   applyResolved(tl, needs, results, {});
-  assert.equal(tl.shots[0].objects.length, 0); assert.match(tl.shots[0].marker.text, /GOLF CART|CART/);
+  assert.ok(!tl.shots[0].objects?.length); assert.ok(!tl.shots[0].marker && !tl.shots[0].markers, "no badge"); assert.deepEqual(tl.shots[0].unshown, ["golf cart"]);
   assert.equal(tl.shots[1].objects[0].asset, "tub"); assert.equal(tl.assets.tub.kind, "object");
 });

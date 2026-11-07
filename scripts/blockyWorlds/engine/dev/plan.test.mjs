@@ -49,10 +49,11 @@ test("every line is covered", () => {
   EXAMPLE_SCRIPT.lines.forEach((_, i) => assert.ok(covered.has(i), `line ${i}`));
 });
 
-test("camera variety, never 3 in a row; opens on the world (the rule sign is owner-excused: lib/opening.js)", () => {
+test("camera variety, never 3 in a row; opens on the world (NO rule sign, no card, no badge anywhere: lib/cards.js)", () => {
   assert.ok(new Set(tl.shots.map((s) => s.camera)).size >= 3);
-  assert.ok(["wide", "insert"].includes(tl.shots[0].camera));
-  assert.ok(!tl.shots[0].insert && tl.shots[0].waived?.includes("NO TALKING ABOVE A WHISPER"), JSON.stringify(tl.shots[0]));
+  assert.equal(tl.shots[0].camera, "wide");
+  assert.ok(tl.shots.every((s) => s.camera !== "insert" && !s.insert), "no card / sign");
+  assert.ok(tl.shots.every((s) => ![s.marker, ...(s.markers ?? [])].some((m) => m && m.kind !== "ring")), "no badge / name tag / counter");
 });
 
 test("the monster: The Listener, tall, reveals in the climax (low), flees at the end", () => {
@@ -158,7 +159,7 @@ for (const [name, get] of [["estimated", () => tl], ["free voice", () => free?.t
     const msg = (i) => `line ${i} (${T.lines[i].text}): ${JSON.stringify(of(i).map((s) => ({ set: s.set, actors: s.actors, objects: s.objects, insert: s.insert, markers: s.markers ?? s.marker })))}`;
     const ok = (text, pred) => row(text, (i) => assert.ok(pred(i), msg(i)));
 
-    ok("You see, it only listens for names.", (i) => marks(i).filter((m) => m.kind === "tag").length >= 2 && of(i).some((s) => s.monsterState?.spot === "tower"));   // townsfolk name tags, the tower
+    ok("You see, it only listens for names.", (i) => actors(i).length >= 2 && of(i).some((s) => s.monsterState?.spot === "tower"));   // townsfolk (no name tags: NO BADGES), the tower
     ok("Say yours too loud, and it comes down that night.", (i) => posed(i, "yell") && of(i).some((s) => s.monsterState && s.light === "night"));
     ok("So nobody here talks out loud.", (i) => actors(i).length >= 2 && actors(i).every((a) => a.expr === "shush"));
     ok("Birthday parties are all in sign language.", (i) => hasObj(i, "birthday_party") && actors(i).some((a) => a.pose === "wave" && a.expr === "shush"));
@@ -170,32 +171,32 @@ for (const [name, get] of [["estimated", () => tl], ["free voice", () => free?.t
     ok("I just have a voice like a car alarm.", (i) => hasObj(i, "car", "alarm") && posed(i, "yell", "me"));
     ok("Mom taped a sock over my mouth for my school photo.", (i) => actors(i).some((a) => a.id === "mom" && a.hold === "sock") && of(i).some((s) => s.set === "school" && s.objects?.some((o) => o.name === "photo_set") && s.actors.some((a) => a.id === "me")));
     for (const text of ["My best friend is my baby sister.", "Until one night, Bean learned to scream."]) ok(text, (i) => actors(i).some((a) => a.id === "bean" && isBaby("bean")) && hasObj(i, "crib"));
-    ok("We call her Bean. Her real name's a secret.", (i) => marks(i).some((m) => m.on === "bean" && m.text === "BEAN") && actors(i).some((a) => a.expr === "shush"));
+    ok("We call her Bean. Her real name's a secret.", (i) => actors(i).some((a) => a.id === "bean") && actors(i).some((a) => a.expr === "shush"));
     ok("And in my pocket, I keep Grandpa's old brass whistle.", (i) => actors(i).some((a) => a.id === "me" && a.hold === "whistle"));
     ok("He said it was the loudest thing in town. Until me.", (i) => actors(i).some((a) => a.id === "grandpa") && actors(i).some((a) => a.hold === "whistle"));
     ok("Until one night, Bean learned to scream.", (i) => posed(i, "yell", "bean") && of(i).every((s) => s.light === "night"));
-    ok("She screamed her own secret name.", (i) => posed(i, "yell", "bean") && marks(i).some((m) => m.on === "bean" && m.kind === "tag"));
-    ok("Three times. At the top of her lungs.", (i) => posed(i, "yell", "bean") && marks(i).some((m) => m.kind === "icon" && m.text === "x3"));
+    ok("She screamed her own secret name.", (i) => posed(i, "yell", "bean"));
+    ok("Three times. At the top of her lungs.", (i) => posed(i, "yell", "bean"));
     ok("Every window on our street went dark.", (i) => of(i).some((s) => s.setState?.windows === "dark") && hasObj(i, "house_front", "dark"));
     ok("Mom grabbed Bean. Dad grabbed the sock.", (i) => actors(i).some((a) => a.id === "mom" && a.pose === "carry" && a.hold === "bean") && actors(i).some((a) => a.id === "dad" && a.hold === "sock"));
     ok("Bean screamed her name again.", (i) => posed(i, "yell", "bean"));
-    ok("That's when I remembered Grandpa's stories.", (i) => (hasObj(i, "stories_book") || of(i).some((s) => s.insert?.kind === "card" && /STORIES/.test(s.insert.text))) && actors(i).some((a) => a.id === "grandpa"));
+    ok("That's when I remembered Grandpa's stories.", (i) => hasObj(i, "stories_book") && actors(i).some((a) => a.id === "grandpa"));
     ok("I ran out the back door and up the far hill.", (i) => of(i).some((s) => s.set === "street") && of(i).some((s) => s.set === "woods") && posed(i, "run", "me"));
     row("Past the school. Past the bakery.", (i) => {
       const s39 = of(i);
       assert.ok(s39.some((s) => s.set === "school" && posed(i, "run", "me")) && s39.some((s) => s.objects?.some((o) => o.name === "bakery") && s.actors.some((a) => a.id === "me" && a.pose === "run")), msg(i));
       assert.ok(s39.every((s) => !(s.set === "school" && s.objects?.some((o) => o.name === "bakery"))), "school and bakery are two shots");
     });
-    ok("Past the sign that just says Shh.", (i) => of(i).some((s) => s.insert?.text === "SHH"));
+    ok("Past the sign that just says Shh.", (i) => of(i).every((s) => !s.insert) && actors(i).some((a) => ["sign", "letter", "note"].includes(a.hold) || a.expr === "shush"));
     ok("At the top, I blew Grandpa's whistle.", (i) => actors(i).some((a) => a.id === "me" && a.pose === "blow" && a.hold === "whistle"));
     ok("Lights flicked on in every house.", (i) => of(i).some((s) => s.setState?.windows === "lit"));
     ok("And I yelled a name nobody owns.", (i) => posed(i, "yell", "me"));
-    ok("Barnaby!", (i) => posed(i, "yell", "me") && marks(i).some((m) => m.text === "BARNABY"));
+    ok("Barnaby!", (i) => posed(i, "yell", "me"));
     ok("Then every window in town flew open.", (i) => of(i).some((s) => s.setState?.windows === "open") && hasObj(i, "house_front", "open"));
     ok("And the whole town yelled it with me.", (i) => actors(i).filter((a) => a.pose === "yell").length >= 3);
-    ok("Now every baby here gets two names.", (i) => actors(i).filter((a) => isBaby(a.id)).length >= 2 && objs(i).filter((o) => o.name === "crib").length >= 2 && marks(i).filter((m) => m.kind === "tag").length >= 2);
+    ok("Now every baby here gets two names.", (i) => actors(i).filter((a) => isBaby(a.id)).length >= 2 && objs(i).filter((o) => o.name === "crib").length >= 2);
     ok("One for whispering.", (i) => actors(i).some((a) => isBaby(a.id) && a.expr === "shush"));
-    ok("And Barnaby, for screaming.", (i) => actors(i).some((a) => isBaby(a.id) && a.pose === "yell") && marks(i).some((m) => m.text === "BARNABY"));
+    ok("And Barnaby, for screaming.", (i) => actors(i).some((a) => isBaby(a.id) && a.pose === "yell"));
     // the owner's subject fix: the last lines are the monster's, and Barnaby is never a tag on the narrator there
     for (const text of ["It turned away from our house.", "It walked right past me, up and over the hill.", "Still looking for Barnaby."]) {
       ok(text, (i) => of(i).every((s) => s.subject === "monster" && s.monsterState && s.focus === "monster"));

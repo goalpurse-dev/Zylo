@@ -7,13 +7,21 @@
 >   about) run in `scripts/blockyWorlds/engine/plan.mjs`, and any miss stops the run before anything is rendered or
 >   charged. Never weaken, skip or bypass these checks to make a video pass.
 > - If an idea needs something the kit doesn't have, add it to the kit (`page/kit/objects.js`, `lib/visuals.js`) or
->   use a clear fallback that shows that very thing (a picture card with its name and icon). Never a random or
->   unrelated shot, never filler townsfolk standing in for a noun.
+>   build it (below). Never a random or unrelated shot, never filler townsfolk standing in for a noun.
+> - **NO PICTURE CARDS OR BADGES. Ever.** (owner, PERMANENT 2026-11-07; replaces "a picture card as last resort")
+>   No sign or board with a word or an icon, no word / icon badge on a person, no name tag, no "x3" counter, no rule
+>   sign. Only real in-world signs that are part of a building (a shop sign on the bakery) stay. If something can't be
+>   shown (not in the kit / library / builder, or the budget is spent), the shot is the **closest real shot** instead,
+>   in this order: (a) the line's character doing the line's action, (b) a reaction shot (who the line is about, or
+>   the narrator, with the fitting expression), (c) a wide of the world (the creature / town wide, or the place wide).
+>   What was not shown is recorded on the shot (`shot.unshown`) for the logs and the review, never on screen; the
+>   checks count it as excused. Everything the kit, library or builder CAN show must still be shown. `checkTimeline`
+>   fails any card, sign insert, badge, name tag or counter anywhere in the video (`lib/cards.js`).
 > - Testing focuses on it: every planner or kit change is checked against many different ideas, not just one.
 > - **A missing kit object or world never fails a run** (owner, 2026-11-05). The engine builds what a line needs in
 >   real time: the kit first, then the shared library of things built for earlier videos, then an AI-designed block
 >   blueprint (objects) or world spec (places) that the engine builds, checked by a quick still + an AI vision check
->   (up to 2 retries). Only if that fails: a clear picture card of that thing. Everything built is saved to the shared
+>   (up to 2 retries). Only if that fails: the closest real shot (above; never a card). Everything built is saved to the shared
 >   library so the kit grows with every video.
 
 > **PERMANENT RULE (owner, 2026-11-06): WORLD CONTINUITY. A story happens in ONE consistent world.**
@@ -69,6 +77,8 @@ idea card -> beat sheet (7 parts) -> script -> shot plan -> render
 | 3. Script | `writeScript`, checkScript + scriptProtocolCheck | The opener rule; the word budget for the length (sized at the voice's real ~212 wpm; 90-100% of it, never over, so a 1:30 video lasts <= ~90 s); lines under 16 words; the parts in order; the prop set up in tour/me and paid off in the climax; the last lines calling back line 1; the blocklist. For a "Your topic" card (card.topic, the user's own words): the topic check (`topic.js`): the first line states the topic (its setting plus one more key element), every key element appears after the opening, at least 20% of the lines mention one, and the climax involves the threat. Pausing punctuation is cleaned out by code |
 | 4. Shot plan | `writeShots`, shotProblems | Every line has a shot; only the fixed vocabulary (cameras, sets, light, effects, actions, expressions); line 1 opens on a wide shot or a prop insert; the blocklist on any sign text |
 | 5. Render | The renderer milestone | Built from the locked look (§6) |
+
+**The custom-topic gate (owner, 2026-11-07).** A "Your topic" script must also pass **the library's AI judge at the library's bar** (`library.js` ACCEPT, the same model, system prompt, rubric and schema), judged on the **finished script** (`judgeScriptPrompt`: the narration is scored, the card is only a summary; a story that drifts from the user's premise scores at most 2 on hook and twist). Below the bar or failing any check: one targeted rewrite with the judge's reasons and the failed checks, judged again, at most 2 rewrites; the best version is kept and reported with its score (`llm.js` topicScript / gateTopicScript). The launch recipe a story would use is named for free by `recipes.js` pickRecipe (topic keywords, the card's formula, beat features): creature_town_attack, curfew_monster, everyone_except_me, lost_pet_in_town, giant_reveal. Not wired into the `blocky-worlds-api` endpoint yet.
 
 **The seven parts** and their share of the words: rule 3%, world tour 17%, me 13%, until one night 22%, discovery 15%, climax 22%, closer 8%.
 

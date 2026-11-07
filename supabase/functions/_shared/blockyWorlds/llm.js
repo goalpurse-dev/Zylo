@@ -9,7 +9,8 @@ import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
 import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, trimScript } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
-import { judgePrompt, judgeSchema, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
+import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
+import { pickRecipe } from "./recipes.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
 import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
@@ -32,8 +33,15 @@ export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
 export const worstCaseUsd = (model, maxTokens, inputTokens = 12000) => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * p.cacheWrite) / 1e6).toFixed(4)); };
 
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
-async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000 }) {
+async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null }) {
   const sonnet = model.startsWith("claude-sonnet-5-5");
+  // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
+  // pass it; what a call cost (failed ones too) is added to the meter
+  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil((system.length + user.length) / 3) + 200), model);
+  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter }); }
+  catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
+}
+async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -53,17 +61,19 @@ async function callJson({ apiKey, model, system, user, schema, effort = "low", m
   });
   const body = await res.json().catch(() => null);
   const costUsd = costOf(body?.model ?? model, body?.usage);
+  if (meter) meter.add(costUsd);
+  const counted = Boolean(meter);
   if (!res.ok) {
     const balance = res.status === 400 && /credit balance/i.test(JSON.stringify(body?.error ?? ""));
-    throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance });
+    throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance, counted });
   }
-  if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED: the writer declined this one"), { costUsd, refused: true });
-  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd });
+  if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED: the writer declined this one"), { costUsd, refused: true, counted });
+  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted });
   const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
   try {
     return { data: JSON.parse(text), costUsd };
   } catch {
-    throw Object.assign(new Error("the reply was not JSON"), { costUsd });
+    throw Object.assign(new Error("the reply was not JSON"), { costUsd, counted });
   }
 }
 
@@ -169,11 +179,11 @@ export async function writeIdeas({ apiKey = "", provider = "anthropic", seed = 0
  * "Your topic": three complete idea cards built around the user's topic (missing pieces are filled in by the writer).
  * @param {{apiKey?: string, provider?: string, topic: string, mood?: string | null, seed?: number, avoid?: string[]}} input
  */
-export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", topic, mood = null, seed = 0, avoid = [] }) {
+export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", topic, mood = null, seed = 0, avoid = [], meter = null }) {
   const { slots, text } = topicPrompt({ topic, mood, seed, avoid });
   const reply = provider === "mock"
     ? await MOCK.ideas({ seed: seed + 3, slots })
-    : await callJson({ apiKey, model: MODELS.ideas, system: IDEAS_SYSTEM, user: text, schema: ideasSchema(), effort: "low" });
+    : await callJson({ apiKey, model: MODELS.ideas, system: IDEAS_SYSTEM, user: text, schema: ideasSchema(), effort: "low", meter });
   // the most faithful to the topic first; each card keeps the user's own words (card.topic: the script's core and its check)
   const ideas = rankTopicIdeas(topic, usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid));
   return { ideas: ideas.map((idea) => ({ ...idea, topic: String(topic).slice(0, 200) })), costUsd: reply.costUsd };
@@ -243,12 +253,12 @@ export async function cardFromScript({ apiKey = "", provider = "anthropic", line
  * The 7-part beat sheet for a card; a sheet that fails the checks is retried once (this step only).
  * @param {{apiKey?: string, provider?: string, card: object, lengthSec: number}} input
  */
-export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec }) {
+export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec, meter = null, maxTokens = 16000 }) {
   let costUsd = 0, beats = [], problems = [];
   for (let attempt = 1; attempt <= 2; attempt++) {
     const reply = provider === "mock"
       ? await MOCK.beats({ card, lengthSec })
-      : await callJson({ apiKey, model: MODELS.beats, system: BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low" });
+      : await callJson({ apiKey, model: MODELS.beats, system: BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
     costUsd += reply.costUsd;
     beats = reply.data?.beats ?? [];
     problems = beatProblems(beats);
@@ -261,10 +271,10 @@ export async function writeBeats({ apiKey = "", provider = "anthropic", card, le
 /** Rewrite only the first line so it passes the opener rule (one small call). Returns the line or null.
  * @param {{apiKey?: string, provider?: string, line: string, next?: string}} input
  */
-export async function repairOpener({ apiKey = "", provider = "anthropic", line, next = "" }) {
+export async function repairOpener({ apiKey = "", provider = "anthropic", line, next = "", meter = null }) {
   const reply = provider === "mock"
     ? await MOCK.opener({ line })
-    : await callJson({ apiKey, model: MODELS.opener, system: OPENER_SYSTEM, user: openerPrompt(line, next), schema: openerSchema(), effort: "low", maxTokens: 2000 });
+    : await callJson({ apiKey, model: MODELS.opener, system: OPENER_SYSTEM, user: openerPrompt(line, next), schema: openerSchema(), effort: "low", maxTokens: 2000, meter });
   const fixed = paceClean(String(reply.data?.line ?? ""));
   return { line: openerOk(fixed) ? fixed : null, costUsd: reply.costUsd };
 }
@@ -303,20 +313,20 @@ export function trimForLength(script, lengthSec, card = null) {
  * trimmed }. A script that still has problems comes back with them (it can't be generated until they're fixed).
  * @param {{apiKey?: string, provider?: string, idea: object, lengthSec: number, previous?: {lines: {part: string, text: string}[]} | null, note?: string, beats?: object[] | null}} input
  */
-export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
+export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000 }) {
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = note, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
     const reply = provider === "mock"
       ? await MOCK.script({ lengthSec })
-      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000 });
+      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
     costUsd += reply.costUsd;
     script = normalizeScript(reply.data);
     check = scriptProtocolCheck(script, lengthSec, provider === "mock" ? null : idea);
     if (provider === "mock") check = { ...check, warnings: [...check.warnings, ...check.problems.map((p) => `(mock) ${p}`)], problems: [] };
     const onlyOpener = check.problems.length === 1 && /^The first line must start/.test(check.problems[0]);
     if (onlyOpener) {
-      const fix = await repairOpener({ apiKey, provider, line: script.lines[0].text, next: script.lines[1]?.text ?? "" });
+      const fix = await repairOpener({ apiKey, provider, line: script.lines[0].text, next: script.lines[1]?.text ?? "", meter });
       costUsd += fix.costUsd;
       if (fix.line) {
         script.lines[0] = { ...script.lines[0], text: fix.line };
@@ -400,6 +410,114 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
     if (!why.length) why = reasons;
   }
   return { ...(best ?? { script, check: draftCheck(script, lengthSec, kind, card), fixed: false }), costUsd: Number(costUsd.toFixed(5)), attempts };
+}
+
+// ---------- the custom-topic gate (owner, 2026-11-07) ----------
+// A typed topic drifted into nonsense ("feed the wolf a sandwich" for "a giant turtle hunted by a wolf army"). Now a
+// topic script must pass the same AI judge and bar as the library ideas (library.js ACCEPT), judged on the SCRIPT, plus
+// every protocol and topic check; otherwise one targeted rewrite with the judge's reasons and the failed checks, judged
+// again, at most TOPIC_GATE.maxRewrites times. The best version is kept and reported with its score either way.
+export const TOPIC_GATE = Object.freeze({
+  maxRewrites: 2,
+  // output ceilings for this flow: they bound each call's worst case so a money meter can stop before it
+  maxTokens: Object.freeze({ beats: 6000, script: 10000, judge: LIBRARY_MAX_TOKENS.judge }),
+});
+
+/**
+ * A money meter for a run with a hard cap: check(worst) throws (code "CAP", nothing sent) when a call's worst case could
+ * take the total over maxUsd; add(usd) counts what a call cost (failed calls too).
+ */
+export function moneyMeter(maxUsd) {
+  const m = {
+    maxUsd, spent: 0, calls: 0,
+    check(worst, model = "") {
+      if (m.spent + worst > maxUsd + 1e-9) throw Object.assign(new Error(`money cap: the next ${model} call could cost up to $${worst.toFixed(4)}; $${m.spent.toFixed(4)} of $${maxUsd} is spent`), { costUsd: 0, cap: true, counted: true });
+    },
+    add(usd) { m.spent = Number((m.spent + Number(usd || 0)).toFixed(5)); m.calls++; },
+  };
+  return m;
+}
+
+/**
+ * The library's judge on a finished script (library.js judgeScriptPrompt): { verdict: {score, accepted, reason, scores,
+ * better}, costUsd }. Same model, system prompt, schema and accept line as the library.
+ */
+export async function judgeScript({ apiKey = "", provider = "anthropic", script, card = {}, meter = null }) {
+  const reply = provider === "mock"
+    ? await MOCK.judge({ ideas: [{ opener: script?.lines?.[0]?.text ?? card?.opener ?? "" }] })
+    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card), schema: judgeSchema(), effort: "medium", maxTokens: TOPIC_GATE.maxTokens.judge, meter });
+  return { verdict: scoreVerdict(reply.data?.verdicts?.[0]), costUsd: reply.costUsd };
+}
+
+/** A script passes the gate: no check problem (protocol + topic) and the judge accepts it at the library's bar. */
+export const passesGate = (v) => Boolean(v?.check && !v.check.problems.length && v.verdict?.accepted);
+/** Which of two versions is better: passing first, then fewer problems, then the higher judge score. */
+const betterThan = (a, b) => (Number(passesGate(a)) - Number(passesGate(b))) || (b.check.problems.length - a.check.problems.length) || ((a.verdict?.score ?? 0) - (b.verdict?.score ?? 0));
+
+/**
+ * The gate: judge a written script; while it fails (checks or the judge's bar), one targeted rewrite with the judge's
+ * reasons and the failed checks, then judge again (max `maxRewrites`). A failed or capped call stops the gate (never
+ * retried). Returns { best: {script, check, verdict}, passed, rewrites, rounds: [...], stopped, costUsd }.
+ * steps: the calls (tests pass fakes).
+ */
+export async function gateTopicScript({ apiKey = "", provider = "anthropic", card, beats = null, lengthSec, script, check, verdict = null, meter = null, maxRewrites = TOPIC_GATE.maxRewrites, steps = {} }) {
+  const write = steps.writeScript ?? writeScript, judge = steps.judgeScript ?? judgeScript;
+  let costUsd = 0, stopped = null, rewrites = 0;
+  const rounds = [];
+  let best = { script, check, verdict };
+  try {
+    if (!best.verdict) { const j = await judge({ apiKey, provider, script, card, meter }); costUsd += j.costUsd; best.verdict = j.verdict; }
+    rounds.push({ round: 0, score: best.verdict.score, accepted: best.verdict.accepted, problems: best.check.problems.length });
+    while (!passesGate(best) && rewrites < maxRewrites) {
+      const failed = [...best.check.problems, ...judgeReasons(best.verdict)];
+      const w = await write({ apiKey, provider, idea: card, lengthSec, previous: best.script, beats, failed, meter, maxTokens: TOPIC_GATE.maxTokens.script });
+      rewrites++; costUsd += w.costUsd;
+      const j = await judge({ apiKey, provider, script: w.script, card, meter });
+      costUsd += j.costUsd;
+      const cand = { script: w.script, check: w.check, verdict: j.verdict };
+      rounds.push({ round: rewrites, score: j.verdict.score, accepted: j.verdict.accepted, problems: w.check.problems.length, kept: betterThan(cand, best) > 0 });
+      if (betterThan(cand, best) > 0) best = cand;
+    }
+  } catch (e) {
+    costUsd += e?.costUsd ?? 0;
+    stopped = e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 200)}`;
+  }
+  return { best, passed: passesGate(best), rewrites, rounds, stopped, costUsd: Number(costUsd.toFixed(5)) };
+}
+
+/**
+ * The whole custom-topic flow: topic -> 3 topic ideas (the best-ranked kept: premise as the core) -> 7-beat sheet ->
+ * script -> protocol + topic checks -> the library's judge -> the gate (rewrites) -> the recipe it would use (free).
+ * Returns { topic, card, ideas, beats, beatProblems, script, check, verdict, passed, rewrites, rounds, recipe,
+ * topicProblems, stopped, costUsd }. A failed or capped call stops it (never retried); what was done is returned.
+ */
+export async function topicScript({ apiKey = "", provider = "anthropic", topic, lengthSec = 90, mood = null, seed = 0, meter = null, maxRewrites = TOPIC_GATE.maxRewrites, steps = {} }) {
+  const s = { writeTopicIdeas, writeBeats, writeScript, judgeScript, ...steps };
+  const out = { topic, card: null, ideas: [], beats: [], beatProblems: [], script: null, check: null, verdict: null, passed: false, rewrites: 0, rounds: [], recipe: null, topicProblems: [], stopped: null, costUsd: 0, steps: [] };
+  const spent = (what, usd) => { out.costUsd = Number((out.costUsd + Number(usd || 0)).toFixed(5)); out.steps.push({ what, usd: Number(Number(usd || 0).toFixed(5)) }); };
+  try {
+    const i = await s.writeTopicIdeas({ apiKey, provider, topic, mood, seed, meter });
+    spent("ideas", i.costUsd);
+    out.ideas = i.ideas;
+    if (!i.ideas.length) { out.stopped = "the idea writer returned no usable idea for this topic"; return out; }
+    out.card = i.ideas[0];
+    const b = await s.writeBeats({ apiKey, provider, card: out.card, lengthSec, meter, maxTokens: TOPIC_GATE.maxTokens.beats });
+    spent("beats", b.costUsd);
+    out.beats = b.beats; out.beatProblems = b.problems;
+    out.recipe = pickRecipe({ topic, card: out.card, beats: out.beats });
+    const w = await s.writeScript({ apiKey, provider, idea: out.card, lengthSec, beats: out.beats, meter, maxTokens: TOPIC_GATE.maxTokens.script });
+    spent("script", w.costUsd);
+    out.script = w.script; out.check = w.check;
+  } catch (e) {
+    spent("failed call", e?.costUsd ?? 0);
+    out.stopped = e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 200)}`;
+    return out;
+  }
+  const g = await gateTopicScript({ apiKey, provider, card: out.card, beats: out.beats, lengthSec, script: out.script, check: out.check, meter, maxRewrites, steps: { writeScript: s.writeScript, judgeScript: s.judgeScript } });
+  spent("judge + rewrites", g.costUsd);
+  Object.assign(out, { script: g.best.script, check: g.best.check, verdict: g.best.verdict, passed: g.passed, rewrites: g.rewrites, rounds: g.rounds, stopped: g.stopped });
+  out.topicProblems = topicProblems(topic, out.script);
+  return out;
 }
 
 // ---------- step 4: the shot plan ----------

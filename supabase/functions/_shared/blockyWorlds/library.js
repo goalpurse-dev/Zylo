@@ -98,6 +98,34 @@ export function judgeSchema() {
 }
 export const judgePrompt = (ideas) => ideas.map((i, k) => `IDEA ${k + 1}\n${JSON.stringify({ opener: i.opener, title: i.title, premise: i.premise, price: i.price, examples: i.examples, narrator: i.narrator, prop: i.prop, twist: i.twist, closer: i.closer, mood: i.mood, setting: i.setting })}`).join("\n\n");
 
+/**
+ * The same judge on a FINISHED SCRIPT (owner, 2026-11-07: a custom topic must pass the library's bar too, judged on the
+ * script, not only the idea). Same system prompt, rubric, schema and accept line (scoreVerdict); the user message gives
+ * the card as a summary and the narration as the thing to score. A card with the user's own topic adds one stricter
+ * line: a story that drifts from the premise scores low on hook and twist.
+ */
+export function judgeScriptPrompt(script, card = {}) {
+  const lines = (script?.lines ?? []).map((l) => `[${l.part}] ${l.text}`).join("\n");
+  return [
+    "IDEA 1 is judged by its FINISHED SCRIPT. Score what the narration below actually delivers (its first line is the opener, its last line the closer; the price, examples, narrator, planted object, escalation and twist as they are WRITTEN), not what the card promises. The card is only a summary.",
+    ...(card?.topic ? [`THE USER'S OWN PREMISE: "${String(card.topic).slice(0, 200)}". The story must be about it from the first line to the last. If the narration swaps it for another gimmick, leaves it in the background, or turns its threat into a friend or a gag (a meal, a deal, a chore) instead of ending it, score hook and twist at most 2 and say so in "better".`] : []),
+    judgePrompt([card ?? {}]),
+    `THE SCRIPT OF IDEA 1\n${lines}`,
+    "Return exactly one verdict.",
+  ].join("\n\n");
+}
+
+/** The judge's verdict as instructions for a rewrite: the score vs the bar, the weakest criteria, the judge's note. */
+export function judgeReasons(v) {
+  if (!v) return [];
+  const out = [];
+  const weak = RUBRIC.filter((c) => (v.scores?.[c.id] ?? 5) <= 2 || (ACCEPT.core.includes(c.id) && (v.scores?.[c.id] ?? 5) < ACCEPT.minCore));
+  out.push(`The AI judge scored the script ${v.score}/100; the bar is ${ACCEPT.minScore}, with hook, twist and closer at ${ACCEPT.minCore}/5 or more${v.reason ? ` (${v.reason})` : ""}.`);
+  for (const c of weak) out.push(`Weak ${c.id} (${v.scores[c.id]}/5): ${c.ask}`);
+  if (v.better) out.push(`The judge says: ${v.better}`);
+  return out;
+}
+
 /** A verdict as a 0-100 score and the accept decision. */
 export function scoreVerdict(v) {
   const s = v?.scores ?? {};

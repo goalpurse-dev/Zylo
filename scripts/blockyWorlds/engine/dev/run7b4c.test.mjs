@@ -101,7 +101,10 @@ test("the opening: the world first (the turtle from outside), no sign / card / b
     { start: 13, end: 30, line: 2, camera: "wide", set: "street" },
   ];
   openingRule(shots, { starts: [0, 2, 3, 9, 10.5, 11.8, 12.5] });
-  assert.deepEqual(shots.map((s) => [s.start, s.end, s.camera]), [[0, 2, "wide"], [2, 9, "medium"], [9, 11.8, "medium"], [11.8, 13, "insert"], [13, 30, "wide"]]);
+  // NO CARDS (owner, PERMANENT 2026-11-07): the card never moves later; its thing is unshown on the shot it went into
+  assert.deepEqual(shots.map((s) => [s.start, s.end, s.camera]), [[0, 2, "wide"], [2, 9, "medium"], [9, 13, "medium"], [13, 30, "wide"]]);
+  assert.deepEqual(shots[1].unshown, ["drum"]);
+  assert.ok(plan.checkTimeline(bad).some((p) => /NO CARDS, ever/.test(p)), "a card anywhere fails the check");
   assert.deepEqual(openingProblems(shots), []);
 });
 

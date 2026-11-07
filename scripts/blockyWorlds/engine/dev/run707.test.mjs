@@ -52,10 +52,12 @@ test("run 707609b1: the stored director list passes every check with the builder
     const named = shots.some((s) => (s.crowds ?? []).some((x) => x.item === "soldiers") || [s.marker, ...(s.markers ?? [])].some((m) => /SOLDIER/.test(m?.text ?? "")) || /SOLDIER/.test(s.insert?.text ?? ""));
     assert.ok(named, `line ${line} shows the soldiers`);
   }
-  // the scroll is named on screen on line 29 (its badge / card says SCROLL, never "A")
+  // NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07): the scroll on line 29 is held / built, else the line's
+  // real shot records it as unshown; never a card or a badge anywhere
   const l29 = tl.shots.filter((s) => (s.lines ?? [s.line]).includes(29));
-  assert.ok(l29.some((s) => [s.marker, ...(s.markers ?? [])].some((m) => /SCROLL/.test(m?.text ?? "")) || /SCROLL/.test(s.insert?.text ?? "")));
-  for (const s of tl.shots) for (const m of [s.marker, ...(s.markers ?? [])].filter(Boolean)) assert.ok(!/^\S+ (A|AN|THE|WITH|OF)$/.test(m.text), `badge "${m.text}"`);
+  assert.ok(l29.length && l29.every((s) => s.camera !== "insert" && !s.insert));
+  assert.ok(l29.some((s) => (s.actors ?? []).some((a) => /scroll|paper|letter/.test(a.hold ?? "")) || (s.objects ?? []).some((o) => /scroll/.test(o.name)) || (s.unshown ?? []).some((u) => /scroll/.test(u))), JSON.stringify(l29.map((s) => ({ a: s.actors, o: s.objects, u: s.unshown }))));
+  for (const s of tl.shots) assert.ok(![s.marker, ...(s.markers ?? [])].some((m) => m && m.kind !== "ring"), `a badge on shot ${tl.shots.indexOf(s)}`);
 });
 
 test("a crowd EPIC has no kind for (a crowd of robots, of ducks) still ends on screen: members or a card", async () => {

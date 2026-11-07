@@ -159,24 +159,26 @@ test("fixes apply one by one; a fix that adds a check problem is undone; an unkn
   assert.equal(check(tl).length, 0);
 });
 
-test("castFix puts the subject in focus; a card is the last fallback, capped, re-checked", () => {
+test("castFix puts the subject in focus; the last fallback is the closest real shot (NO cards), the thing unshown, re-checked", () => {
   const tl = mkTl();
   applyFixes(tl, [{ op: "castFix", shot: 1, id: "oddy" }]);
   assert.equal(tl.shots[1].focus, "oddy"); assert.equal(tl.shots[1].actors[0].id, "oddy"); assert.equal(tl.shots[1].subject, "oddy");
   const reqs = lineRequirements(tl);
-  const fb = finalFallback(tl, [{ line: 2, verdict: "partial", types: ["missing_object"], missing: ["the drum"] }, { line: 0, verdict: "miss", types: ["wrong_character"], missing: [] }, { line: 1, verdict: "partial", types: ["missing_object"], missing: ["army"] }], reqs, { maxCards: 1 });
-  assert.equal(fb.cards.length, 1);
-  assert.equal(fb.cards[0].text, "DRUM");
-  const card = tl.shots.find((s) => s.insert?.kind === "card");
-  assert.equal(card.set, "creature:turtle_inside");
-  assert.ok(Math.abs(card.start - 10) < 0.01 && card.end === 12);
-  assert.equal(fb.unresolved.length, 2);
+  const n0 = tl.shots.length;
+  const fb = finalFallback(tl, [{ line: 2, verdict: "partial", types: ["missing_object"], missing: ["the drum"] }, { line: 0, verdict: "miss", types: ["wrong_character"], missing: [] }, { line: 1, verdict: "partial", types: ["missing_object"], missing: ["army"] }], reqs, {});
+  assert.equal(fb.cards.length, 0);
+  assert.ok(tl.shots.every((s) => s.camera !== "insert" && !s.insert), "never a card");
+  assert.equal(tl.shots.length, n0, "nothing cut in");
+  assert.deepEqual(fb.fallbacks.map((f) => [f.line, f.unshown]), [[2, "drum"], [1, "army"]]);
+  assert.ok(tl.shots.some((s) => s.line === 2 && s.unshown?.includes("drum")));
+  assert.equal(fb.unresolved.length, 1);
   // shots still tile
   for (let i = 1; i < tl.shots.length; i++) assert.ok(Math.abs(tl.shots[i].start - tl.shots[i - 1].end) < 1e-6);
-  // a check that refuses cards: undone, recorded
+  // a check that refuses the reframing: the framing is undone, the unshown record stays
   const tl2 = mkTl();
-  const fb2 = finalFallback(tl2, [{ line: 2, verdict: "partial", types: ["missing_object"], missing: ["drum"] }], lineRequirements(tl2), { check: (t) => t.shots.filter((s) => s.insert).map(() => "shot 9: no cards") });
-  assert.equal(fb2.cards.length, 0); assert.match(fb2.unresolved[0].why, /broke the check/);
+  const fb2 = finalFallback(tl2, [{ line: 2, verdict: "partial", types: ["missing_object"], missing: ["drum"] }], lineRequirements(tl2), { check: (t) => t.shots.filter((s) => s.unshown).map((s, i) => `shot ${i}: refused`) });
+  assert.equal(fb2.cards.length, 0); assert.equal(fb2.fallbacks[0].how, "as planned");
+  assert.ok(tl2.shots.some((s) => s.unshown?.includes("drum")));
   assert.equal(tl2.shots.length, 4);
 });
 

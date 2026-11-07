@@ -105,19 +105,18 @@ test("cards: a picture card never draws an empty circle (generic or undrawable e
   assert.match(fs.readFileSync(path.join(ENGINE, "runpod", "Dockerfile"), "utf8"), /fonts-noto-color-emoji/);
 });
 
-test("builder: a built thing replaces EVERY card of its name (the garden hose left two cards in run 1620fc3e)", () => {
+test("builder: a built thing shows in EVERY shot that could not show it (the garden hose left two cards in run 1620fc3e; NO CARDS since 2026-11-07)", () => {
   const base = { set: "street", light: "day", actors: [{ id: "me", spot: "center", pose: "stand", expr: "neutral", facing: "camera", hold: null }], focus: "me", monsterState: null, marker: null, insert: null };
-  const card = (start, end, line, need) => ({ start, end, line, lines: [line], set: "street", light: "day", camera: "insert", focus: "insert", actors: [], monsterState: null, insert: { kind: "card", text: "GARDEN HOSE", icon: "✨" }, marker: null, ...(need ? { need: { id: "need1", host: "prev" } } : {}) });
   const tl = { shots: [
-    { ...base, start: 0, end: 2, line: 0, lines: [0], camera: "wide" }, card(2, 3, 0, true),
-    card(3, 4, 1, false), // a later card of the same thing, alone on its line
-    { ...base, start: 4, end: 6, line: 2, lines: [2], camera: "medium" }, card(6, 7, 2, false),
+    { ...base, start: 0, end: 3, line: 0, lines: [0], camera: "wide", needs: [{ id: "need1", host: "self" }], unshown: ["garden hose"] },
+    { ...base, start: 3, end: 4, line: 1, lines: [1], camera: "closeup", unshown: ["garden hose"] }, // a later line of the same thing
+    { ...base, start: 4, end: 7, line: 2, lines: [2], camera: "medium", unshown: ["garden hose"] },
   ] };
   const need = { id: "need1", kind: "object", name: "garden hose", phrase: "garden hose" };
   const [id, a] = Object.entries(R.built)[0];
   const r = applyResolved(tl, [need], { need1: { source: "built", asset: { id, kind: "object", ...a } } });
   assert.deepEqual(r.applied.map((x) => x.need), ["garden hose"]);
-  assert.equal(tl.shots.filter((s) => s.insert?.kind === "card").length, 0, JSON.stringify(tl.shots.map((s) => s.camera)));
+  assert.ok(tl.shots.every((s) => s.camera !== "insert" && !s.insert && !s.unshown && !s.needs));
   const showing = tl.shots.filter((s) => (s.objects ?? []).some((o) => o.asset === id));
   assert.equal(showing.length, 3);
   assert.ok(tl.shots.every((s) => s.end > s.start));

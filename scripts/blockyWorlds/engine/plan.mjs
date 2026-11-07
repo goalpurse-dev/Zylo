@@ -34,6 +34,7 @@ import { motionPass, styleReport } from "./lib/style.js";
 import { storyReport } from "./lib/storyPatterns.js";
 import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBible.js";
 import { petsOf, petPass, petProblems, ensurePet, petShows, petStateFor } from "./lib/pets.js";
+import { noCards, addUnshown, cardProblems } from "./lib/cards.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -61,6 +62,8 @@ const ACTION_HOLD = new Set(["eat", "throw", "dig", "hug", "build"]);
 const RIDEABLE = (o) => !!o && (!!o.asset || !!OBJECT_CATALOG[o.name]?.animal || /^(car|tractor|ice_cream_truck|pumpkin|haystack|cloud|snow_pile|rock|stump|bridge|whale|turtle)$/.test(o.name));
 export const EXPRS = ["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"];
 export const INSERT_KINDS = ["sign", "note", "card"];
+/** NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07: lib/cards.js): the planner makes no insert shot at all */
+const NO_INSERTS = true;
 export const OBJECTS = Object.keys(OBJECT_CATALOG);
 const TOWN_NAMES = ["Rosa", "Gus", "Edna", "Otto", "Mae", "Hank", "Ida", "Lou"];
 const BABY_NAMES = ["Mae", "Otto", "Ivy", "Rudy"];
@@ -343,7 +346,8 @@ function readWorld(script, idea) {
   // the rule's marker (something above heads)
   const rule = String(idea?.opener ?? lines[0] ?? "");
   const mk = rule.toLowerCase().match(/\b(numbers?|tags?|price|crowns?|stars?|halos?|labels?|scores?|timers?|counters?)\b/);
-  const marker = mk ? { on: "all", kind: /crown|halo|star/.test(mk[1]) ? "ring" : /price|tag|label/.test(mk[1]) ? "tag" : "icon", text: (rule.match(/\d+|[$¢€]\S*/) ?? ["?"])[0] } : null;
+  // NO BADGES (owner, PERMANENT 2026-11-07): only a ring (a crown / halo / star: no word, no icon) is a rule marker
+  const marker = mk && /crown|halo|star/.test(mk[1]) ? { on: "all", kind: "ring", text: "" } : null;
   return { narrator, people, alias, monster, propKey, marker, looseNames, sign: signText(rule), baseSet: settingToSet(idea?.setting),
     townSet: settingToSet(idea?.setting) === "school" ? "school" : "street" };
 }
@@ -604,8 +608,10 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
 
     // inserts
     let insert = null;
-    // the video opens on the rule sign, when line 1 has room for it and a real shot after it (or the sign says it all)
-    if (si === 0 && (seg.subs > 1 || keys.every((k) => world.sign.includes(String(k.label).toUpperCase())))) insert = { kind: "sign", text: world.sign };
+    // NO CARDS (owner, PERMANENT 2026-11-07): no rule sign, no sign / note / FOR SALE / CLOSED insert; a sign or a note
+    // in the line is someone holding it (lib/visuals.js rule "sign"); a shop sign is the building's own
+    if (NO_INSERTS) { /* never */ }
+    else if (si === 0 && (seg.subs > 1 || keys.every((k) => world.sign.includes(String(k.label).toUpperCase())))) insert = { kind: "sign", text: world.sign };
     else if (/\b(sign|note|letter|poster|list|notice|newspaper)\b/.test(low) && !/sign language/.test(low)) {
       const says = seg.text.match(/\b(?:says|said|reads|read)\s+["']?([^"'.!?]+)/i);
       insert = { kind: /\b(note|letter|list)\b/.test(low) ? "note" : "sign", text: (says ? says[1] : seg.text.replace(/^(past|and|then|now)\s+/i, "")).replace(/[^A-Za-z0-9' ]/g, " ").trim().split(/\s+/).slice(0, 6).join(" ").toUpperCase() };
@@ -790,7 +796,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // the director's production list over the plan (lib/direction.js): worlds, giants, crowds, beats, EPIC cameras, light;
   // then the picture cards those now show give their time back, the word + subject checks run again, and every line's
   // required item that is still missing is re-planned (its system, else a picture card of it)
-  let production = null, prodFixes = [];
+  let production = null, prodFixes = [], prodAux = null;
   const tlStub = { shots, worlds: undefined, giants: undefined };
   if (D) {
     const split = (list, i, t) => splitShot(list, i, t, W);
@@ -801,17 +807,14 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     fixSubjects(shots, subjAux);
     production = compactProduction(D);
     tlStub.production = production; tlStub.lines = lines.map((L) => ({ text: L.text }));
-    const cardFn = (list, li, card, r) => {
+    // NO CARDS (lib/cards.js): an item no system can show stays unshown on the line's real shot (+ its builder need)
+    const unshownFn = (list, li, r) => {
       const L = lines[li];
       const lineShots = list.filter((s) => (s.lines ?? [s.line]).includes(li));
       const need = r?.needId ? D.match.builderNeeds.find((n) => n.id === r.needId) : null;
-      // the middle of the line first, then its start, then its end (a word start with room for both pieces)
-      return [0.5, 0.15, 0.85].some((f) => cardShot(list, list.filter((s) => (s.lines ?? [s.line]).includes(li)), { kind: "director", label: r?.name ?? card.text }, L.start + (L.end - L.start) * f, L, card, need));
+      return cardShot(list, lineShots, { kind: "director", label: r?.name ?? r?.id }, L.start + (L.end - L.start) * 0.5, L, null, need);
     };
-    const badgeFn = (s, card) => {
-      if (!s) return false;
-      if (!s.actors?.length) { const t = ["town1", "town2", "town3"][0]; s.actors = [{ id: t, spot: "center", pose: "point", expr: "surprised", facing: "camera", hold: null }]; used.add(t); if (!["group", "object"].includes(s.focus) && !/^(giant:|crowd|world)/.test(s.focus ?? "") && s.focus !== "monster") s.focus = t; } const text = `${card.icon} ${badgeWord(card.text)}`; if (!markersList(s).some((m) => m.text === text)) setMarkers(s, [...markersList(s), { on: s.actors[0].id, kind: "icon", text }]); return true; };
-    prodFixes = fixProduction(tlStub, D, { used, card: cardFn, badge: badgeFn, isObject: (n) => !!OBJECT_CATALOG[n], stateOf: (r) => (r.kind === "event" && OBJECT_CATALOG[r.kitName]?.states?.includes(D.calls.get(r.id)?.state) ? D.calls.get(r.id).state : null) });
+    prodFixes = fixProduction(tlStub, D, prodAux = { used, unshown: unshownFn, isObject: (n) => !!OBJECT_CATALOG[n], stateOf: (r) => (r.kind === "event" && OBJECT_CATALOG[r.kitName]?.states?.includes(D.calls.get(r.id)?.state) ? D.calls.get(r.id).state : null) });
     fixSubjects(shots, subjAux);
     fixVisuals(shots, lines, vw, buildCast, { used, names, W });
     epicVariety(shots, recam);
@@ -855,7 +858,36 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     for (const s of shots) if ((s.lines ?? [s.line]).some((li) => (lineKeys[li] ?? []).some((k) => k.kind === "pet"))) for (const a of s.actors ?? []) if (a.hold && petHeld.has(heldKind(a.hold) ?? a.hold)) { a.hold = null; if (a.pose === "carry") a.pose = "stand"; }
   }
   if (Object.keys(world.pets ?? {}).length) { petPass({ shots, pets: world.pets }, { lineKeys }); fixVisuals(shots, lines, vw, buildCast, { used, names, W }); fixSubjects(shots, subjAux); for (const s of shots) if (s.marker === undefined) s.marker = null; }
+  // NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07: lib/cards.js): the safety net over every path above; the
+  // shots it turned into real ones go through the word + subject checks' fixes once more (which make no card either)
+  if (noCards(shots, { worlds: tlStub.worlds, used }).cards) {
+    fixVisuals(shots, lines, vw, buildCast, { used, names, W });
+    fixSubjects(shots, subjAux);
+    for (const s of shots) if (s.marker === undefined) s.marker = null;
+  }
+  noCards(shots, { worlds: tlStub.worlds, used });
+  // the last word: whatever the passes above moved off screen is re-planned once more (its own system first, else the
+  // closest real shot + shot.unshown), so the checks pass with no card anywhere
+  if (D && prodAux && checkProductionStrict(tlStub).length) { prodFixes.push(...fixProduction(tlStub, D, prodAux)); fixSubjects(shots, subjAux); }
+  if (lineReport(shots, lines, vw, buildCast()).some((r) => r.missing.length)) { fixVisuals(shots, lines, vw, buildCast, { used, names, W }); fixSubjects(shots, subjAux); }
+  for (const s of shots) if (s.marker === undefined) s.marker = null;
   const cast = buildCast();
+  // shot.unshown keeps only what the shot really does not show at the end (a later pass may have shown it after all)
+  for (const s of shots) {
+    if (!s.unshown?.length) continue;
+    const bare = { ...s, unshown: [], waived: [] };
+    const ks = (s.lines ?? [s.line]).flatMap((i) => lineKeys[i] ?? []);
+    const reqs = (production?.perLine ?? []).filter((L) => (s.lines ?? [s.line]).includes(L.line)).flatMap((L) => L.required ?? []);
+    const low = (x) => String(x ?? "").toLowerCase();
+    // dropped only when everything of that name (the line's words and the director's items) is on this very shot
+    // (the excuse matches loosely, as the checks read it: lib/opening.js waivedHas; "shell" excuses "shell door")
+    s.unshown = s.unshown.filter((u) => {
+      const one = { unshown: [u] };
+      const kk = ks.filter((k) => waivedHas(one, k.label)), rr = reqs.filter((r) => waivedHas(one, r.name));
+      return !(kk.length + rr.length) || kk.some((k) => !covers(k, bare, cast)) || rr.some((r) => !dirOnScreen(r, bare, tlStub));
+    });
+    if (!s.unshown.length) delete s.unshown;
+  }
   // what each shot shows of its lines' key nouns / actions (for the check and the report; the engine ignores it)
   for (const s of shots) {
     const ks = (s.lines ?? [s.line]).flatMap((i) => requiredKeys(lineKeys[i]));
@@ -1063,11 +1095,19 @@ function dropCoveredCards(shots, lineKeys, buildCast) {
 function collectNeeds(tl, script, idea, baseSet, mood, D = null) {
   const needs = [], byName = new Map();
   const add = (n) => { const k = `${n.kind}|${n.name}`; if (byName.has(k)) return byName.get(k); const id = `need${needs.length + 1}`; const x = { id, ...n }; needs.push(x); byName.set(k, x); return x; };
+  // NO CARDS: a need rides on the real shot that stays when the thing can't be shown (shot.needs, host "self")
   for (const s of tl.shots) {
-    if (!s.need || typeof s.need !== "object") continue;
-    const { name, label, host, kind, ...extra } = s.need;
-    const n = add({ kind: "object", name, phrase: label, line: s.line, lineText: script.lines[s.line]?.text ?? s.text ?? "", mood, fallbackSet: isCreatureSet(s) ? (s.worldBase ?? "street") : s.set, ...extra });
-    s.need = { id: n.id, host };
+    const list = [...(s.needs ?? []), ...(s.need && typeof s.need === "object" ? [s.need] : [])];
+    if (!list.length) continue;
+    const ids = [];
+    for (const nd of list) {
+      if (nd.id && !nd.name) { ids.push(nd); continue; }
+      const { name, label, host, kind, ...extra } = nd;
+      const n = add({ kind: "object", name, phrase: label, line: s.line, lineText: script.lines[s.line]?.text ?? s.text ?? "", mood, fallbackSet: isCreatureSet(s) ? (s.worldBase ?? "street") : s.set, ...extra });
+      if (!ids.some((x) => x.id === n.id)) ids.push({ id: n.id, host: "self", label: label ?? name });
+    }
+    delete s.need;
+    s.needs = ids;
   }
   if (D) {
     // the director decides the worlds: a world routed to the builder (a place no set or EPIC world can make) is a need
@@ -1438,7 +1478,9 @@ function applyVisuals(d, V) {
   const looseIn = (ks) => ks.find((x) => x.kind === "name" && !x.on)?.name;
   const loose = looseIn(keys) ?? looseIn(V.lineKeys[seg.line]) ?? looseIn(V.lineKeys[seg.line + 1] ?? []);
   const anyLoose = [...V.vw.looseNames][0];
-  const mark = (on, kind, text) => { if (!d.markers.some((m) => m.on === on)) d.markers.push({ on, kind, text }); };
+  // NO BADGES (owner, PERMANENT 2026-11-07): no name tag, "NAME?" badge, "x3" counter or music note is ever drawn; the
+  // people these lines bring in stay (the named person / a townsperson is on screen doing the line)
+  const mark = (on, kind, text) => { if (kind === "ring" && !d.markers.some((m) => m.on === on)) d.markers.push({ on, kind, text }); };
   for (const k of keys) {
     const isNames = k.kind === "rule" && k.rule === "names";
     if (k.kind !== "name" && !isNames) continue;
@@ -1585,7 +1627,8 @@ function lineReport(shots, lines, vw, cast) {
 }
 /** The keys a line must show: soft ones (a possessive owner, "said") are left out. */
 function requiredKeys(keys) {
-  return keys.filter((k) => !(k.kind === "person" && k.poss && k.soft) && !(k.kind === "noun" && k.neg) && !(k.kind === "pet" && k.neg) && !(k.kind === "rule" && ruleById(k.rule).soft && !k.neg) && !(k.kind === "rule" && k.rule === "talk" && !k.neg));
+  // a loose name ("Barnaby!") is a word: it was a name tag, and there are no tags (NO BADGES, lib/cards.js)
+  return keys.filter((k) => k.kind !== "name" && !(k.kind === "person" && k.poss && k.soft) && !(k.kind === "noun" && k.neg) && !(k.kind === "pet" && k.neg) && !(k.kind === "rule" && ruleById(k.rule).soft && !k.neg) && !(k.kind === "rule" && k.rule === "talk" && !k.neg));
 }
 
 /** Lines still missing a visual: first a catalog visual on the line's own shot, else a picture card cut into its time. */
@@ -1688,13 +1731,7 @@ function forceKey(s, key, aux) {
     if ((s.focus === "group" && !s.actors.length) || about) s.focus = "object";
     return true;
   }
-  if (key.kind === "name") {
-    const a = s.actors[0] ?? (town() && addActor(town()));
-    if (!a) return false;
-    s.markers = [...(s.markers ?? (s.marker ? [s.marker] : [])), { on: a.id, kind: "tag", text: key.name.toUpperCase() }];
-    s.marker = s.markers[0];
-    return true;
-  }
+  if (key.kind === "name") return false; // a name is a word, never a tag (NO BADGES: lib/cards.js)
   if (key.kind !== "rule") return false;
   const r = ruleById(key.rule);
   if (r.kind === "action" && !key.neg && (r.pose || r.expr)) {
@@ -1705,7 +1742,7 @@ function forceKey(s, key, aux) {
     if (r.pose) a.pose = r.pose;
     if (r.expr) a.expr = r.expr;
     if (r.hold) a.hold = r.hold;
-    if (r.marker && !markersList(s).some((m) => m.on === a.id)) setMarkers(s, [...markersList(s), { on: a.id, kind: r.marker.kind, text: r.marker.text }]);
+    if (r.marker?.kind === "ring" && !markersList(s).some((m) => m.on === a.id)) setMarkers(s, [...markersList(s), { on: a.id, kind: r.marker.kind, text: r.marker.text }]);
     return true;
   }
   if (r.kind === "action" && key.neg) { s.actors.forEach((a) => { a.expr = "shush"; }); if (!s.actors.length && town()) addActor(town(), "stand", "shush"); return s.actors.length > 0; }
@@ -1725,13 +1762,6 @@ function forceKey(s, key, aux) {
   if (r.kind === "light" && r.light) { s.light = r.light; return true; }
   if (r.kind === "people") { const t = town(); return !!(t && addActor(t)); }
   if (r.kind === "body" && !s.actors.length) return !!addActor("me");
-  if (r.kind === "marker" && r.id === "names") {
-    const a = s.actors[0] ?? (town() && addActor(town()));
-    if (!a) return false;
-    s.markers = [...(s.markers ?? (s.marker ? [s.marker] : [])), { on: a.id, kind: "tag", text: aux.names.tag(a.id) }];
-    s.marker = s.markers[0];
-    return true;
-  }
   if (r.object && !s.monsterState && !(s.objects ?? []).some((o) => o.name === r.object.name) && !r.babies) {
     s.objects = [...(s.objects ?? []), { name: r.object.name, spot: freeSpot(s), facing: "camera" }];
     if (s.focus === "group" && !s.actors.length) s.focus = "object";
@@ -1742,52 +1772,32 @@ function forceKey(s, key, aux) {
 }
 
 /**
- * Cuts a picture card for the key into the line's time (>= minShot, at a word start, at most 2 cards a line, never 3
- * inserts in a row). Returns false when it doesn't fit (the caller then puts a badge on someone in the shot).
+ * NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07; lib/cards.js). A key the kit can't show (forceKey failed)
+ * cuts nothing: the line's own real shot at that moment stays (the closest real shot: the line's character doing the
+ * line's action), the key is written to shot.unshown (logs / review, never on screen; the checks read it as excused),
+ * and a noun / the director's builder need rides on that shot (shot.needs): when the builder makes it, the built thing
+ * stands in this very shot (lib/builder/apply.js). The name stays for the callers.
  */
 function cardShot(shots, lineShots, key, t, L, insert = null, dirNeed = null) {
-  if (lineShots.filter((s) => s.insert?.kind === "card").length >= (insert ? 3 : 2)) return false;
-  const host = lineShots.filter((s) => s.camera !== "insert").find((s) => t >= s.start - 1e-9 && t < s.end) ?? lineShots.find((s) => s.camera !== "insert");
+  const real = lineShots.filter((s) => s.camera !== "insert" && !s.insert);
+  const host = real.find((s) => t >= s.start - 1e-9 && t < s.end) ?? real[0];
   if (!host) return false;
-  const i = shots.indexOf(host);
-  const ins = (s) => s?.camera === "insert";
-  const starts = [...new Set([...L.wordToks, ...L.toks].map((x) => x.t))].filter((c) => c >= host.start + PACE.minShot - 1e-9 && c <= host.end - PACE.minShot + 1e-9);
-  if (!starts.length) return false;
-  const c = starts.reduce((b, x) => (Math.abs(x - t) < Math.abs(b - t) ? x : b), starts[0]);
-  const cardFirst = t < c;
-  // never three inserts in a row: the card's neighbours after the cut
-  if (cardFirst ? ins(shots[i - 1]) && ins(shots[i - 2]) : ins(shots[i + 1]) && ins(shots[i + 2])) return false;
-  const card = { start: cardFirst ? host.start : r3(c), end: cardFirst ? r3(c) : host.end, line: host.line, lines: host.lines, part: host.part, set: host.set, light: host.light,
-    camera: "insert", focus: "insert", actors: [], monsterState: null, insert: insert ?? cardFor(key), marker: null, seed: host.seed, text: host.text, visuals: [key.label],
-    subject: host.subject ?? null };
-  // the builder (lib/builder): a noun the kit can't show is a "need"; when it gets built, the card gives its time back to
-  // the host shot and the built object stands in it (lib/builder/apply.js), else the card stays
-  if (key.kind === "noun") card.need = { kind: "object", name: key.noun ?? key.label, label: key.label, host: cardFirst ? "next" : "prev" };
-  // the director's builder need (an object, a static giant blueprint): the same, with its hints (giant, heightM, hint)
-  if (dirNeed?.kind === "object") card.need = { kind: "object", name: dirNeed.name, label: dirNeed.phrase ?? dirNeed.name, host: cardFirst ? "next" : "prev", source: "director", item: dirNeed.item, ...(dirNeed.giant ? { giant: true, heightM: dirNeed.heightM } : {}), ...(dirNeed.hint ? { hint: dirNeed.hint } : {}) };
-  if (insert) delete card.visuals;
-  const rest = { ...host, ...(cardFirst ? { start: r3(c) } : { end: r3(c) }) };
-  shots.splice(i, 1, ...(cardFirst ? [card, rest] : [rest, card]));
+  const need = dirNeed?.kind === "object" ? { kind: "object", name: dirNeed.name, label: dirNeed.phrase ?? dirNeed.name, source: "director", item: dirNeed.item, ...(dirNeed.giant ? { giant: true, heightM: dirNeed.heightM } : {}), ...(dirNeed.hint ? { hint: dirNeed.hint } : {}) }
+    : key.kind === "noun" ? { kind: "object", name: key.noun ?? key.label, label: key.label } : null;
+  return unshownOn(host, key.label ?? insert?.text, need);
+}
+
+/** the thing stays unshown on this real shot (+ the builder's need for it, built -> shown in this shot) */
+function unshownOn(s, label, need = null) {
+  if (!s) return false;
+  addUnshown(s, label);
+  if (need && !(s.needs ?? []).some((n) => n.name === need.name)) s.needs = [...(s.needs ?? []), { ...need, host: "self" }];
   return true;
 }
 
-/** The last resort: a round badge with the thing's icon and word over someone in the shot (or over the monster). */
-function badge(s, key, aux) {
-  if (!s) return false;
-  const c = cardFor(key);
-  const text = `${c.icon} ${badgeWord(c.text)}`;
-  s.markers = [...(s.markers ?? (s.marker ? [s.marker] : []))];
-  const has = new Set(s.markers.map((m) => m.on));
-  let on = (s.actors ?? []).find((a) => !has.has(a.id))?.id ?? (s.monsterState && !has.has("monster") ? "monster" : null);
-  if (!on && s.camera !== "insert") {
-    const t = ["town1", "town2", "town3"].find((x) => !(s.actors ?? []).some((a) => a.id === x));
-    if (t && s.actors.length < 4) { s.actors.push({ id: t, spot: freeSpot(s), pose: "point", expr: "surprised", facing: "camera", hold: null }); aux.used.add(t); on = t; }
-  }
-  if (!on) return false;
-  s.markers.push({ on, kind: "icon", text });
-  s.marker = s.markers[0];
-  if (s.markers.length === 1) delete s.markers;
-  return true;
+/** (was the badge) the key stays unshown on the shot: never a word / icon over anyone (lib/cards.js) */
+function badge(s, key) {
+  return unshownOn(s, key.label);
 }
 
 // ---------------------------------------------------------------- 6c. subjects (lib/subjects.js): who each shot is about
@@ -1982,9 +1992,7 @@ function fixSubjectIssue(shots, i, p, aux, cast) {
     case "petfocus": { const pet = aux.vw?.pets?.[p.id]; if (pet) { ensurePet(s, pet, { state: petStateFor(s.text, pet), about: true }); s.focus = "object"; if (!["low", "wide"].includes(s.camera)) s.camera = "low"; } break; }
     case "tag": {
       const list = markersList(s).filter((m) => m !== p.marker && !(m.on === p.marker.on && m.text === p.marker.text));
-      if (s.subject === "monster" && s.monsterState) list.push({ on: "monster", kind: "icon", text: `${p.marker.text}?` });
-      else if (s.actors.some((a) => a.id === s.subject)) list.push({ ...p.marker, on: s.subject });
-      setMarkers(s, list);
+      setMarkers(s, list); // NO BADGES: a misplaced tag just goes (lib/cards.js)
       break;
     }
   }
@@ -2043,7 +2051,9 @@ export function checkTimeline(tl) {
   if (usesCapsTimeline(tl)) out.push(...validateCaps(tl).map((p) => `caps: ${p}`));
   if (Math.abs(shots[0].start) > eps) out.push("the first shot must start at 0");
   if (Math.abs(shots.at(-1).end - tl.duration) > eps) out.push("the last shot must end at the duration");
-  if (!["wide", "insert", ...(epicTl ? ["establish", "aerial"] : [])].includes(shots[0].camera)) out.push("the first shot must be wide or insert");
+  if (!["wide", ...(epicTl ? ["establish", "aerial"] : [])].includes(shots[0].camera)) out.push("the first shot must be wide");
+  // NO PICTURE CARDS OR BADGES, ever (owner, PERMANENT 2026-11-07): any card / sign insert, badge, name tag or counter
+  out.push(...cardProblems(shots));
   shots.forEach((s, i) => {
     const at = `shot ${i}`;
     if (i > 0 && Math.abs(s.start - shots[i - 1].end) > eps) out.push(`${at}: gap/overlap with the previous shot`);

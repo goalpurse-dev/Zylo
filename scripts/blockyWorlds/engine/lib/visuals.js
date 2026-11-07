@@ -187,7 +187,7 @@ export const RULES = [
   { id: "whistle", kind: "hold", label: "whistle", re: W("(?:brass |old |tin )?whistles?"), hold: "whistle", icon: "📯",
     show: { holds: ["whistle"], poses: ["blow"] }, also: ["brass"] },
   { id: "sign", kind: "insert", label: "sign", re: W("signs?(?! language)|notes?|letters?|posters?|notices?|newspapers?"), icon: "🪧", hold: "letter",
-    show: { insertKinds: ["sign", "note", "card"], holds: ["sign", "note", "letter", "paper", "envelope", "clipboard", "label", "poster", "newspaper"] } },
+    show: { holds: ["sign", "note", "letter", "paper", "envelope", "clipboard", "label", "poster", "newspaper"] } },
   { id: "tower", kind: "place", label: "water tower", re: W("(?<!(?:hat|pillow|cushion|sock|book|block|pancake|box|cheese|plate|chair) )(?:water |clock |bell )?towers?|catwalk"), icon: "🗼",
     show: { monsterSpot: "tower", sets: ["street", "woods"] } },
   { id: "ladder", kind: "place", label: "ladder", re: W("(?:the )?ladders?|rungs?"), icon: "🪜", object: { name: "ladder" },
@@ -204,9 +204,9 @@ export const RULES = [
     pose: "yell", expr: "yell", icon: "📢",
     show: { poses: ["yell", "blow"], exprs: ["yell"], holds: ["whistle", "horn"], objects: ["car"] } },
   { id: "whisper", kind: "action", label: "whisper", re: W("whisper\\w*|quiet\\w*|shh+|hush\\w*|secrets?|silen\\w*|mime"), expr: "shush", icon: "🤫",
-    show: { exprs: ["shush"], insertWords: ["WHISPER", "SHH", "QUIET", "SECRET", "HUSH", "???"], marker: "tag" } },
+    show: { exprs: ["shush"] } },
   { id: "talk", kind: "action", label: "talk", re: W("talk\\w*|say|said|says|speak\\w*|spoke|told|tell\\w*"), pose: "talk", icon: "💬",
-    show: { poses: ["talk", "yell", "wave"], exprs: ["shush", "yell"], insertWords: ["TALKING", "TALK"] } },
+    show: { poses: ["talk", "yell", "wave"], exprs: ["shush", "yell"] } },
   { id: "cheer", kind: "action", label: "cheer", re: W("cheer\\w*|celebrat\\w*|hooray|danc\\w*|party|clap\\w*|applau\\w*|parades?|festivals?|contests?|competitions?"), pose: "cheer", poseBy: [[/^danc/, "dance"]], expr: "excited", icon: "🎉",
     show: { poses: ["cheer", "dance"], exprs: ["excited", "happy"] } },
   { id: "run", kind: "action", label: "ran", re: W("ran|run|runs|running|raced|sprinted|fled|rushed|chased|bolted"), pose: "run", icon: "🏃",
@@ -237,14 +237,14 @@ export const RULES = [
   { id: "dig", kind: "action", label: "dig", doer: "person", re: W("dig|digs|dug|digging|shovel(?:ed|led|s|ing)"), pose: "dig", icon: "⛏️", show: { poses: ["dig"] } },
   { id: "swim", kind: "action", label: "swim", doer: "person", re: W("swim|swims|swam|swimming"), pose: "swim", icon: "🏊", show: { poses: ["swim"] } },
   { id: "kick", kind: "action", label: "kick", doer: "person", re: W("kick|kicks|kicked|kicking"), pose: "kick", icon: "🦵", show: { poses: ["kick"] } },
-  { id: "sing", kind: "action", label: "song", re: W("sang|sing|sings|singing|songs?|music|hum\\w*"), pose: "talk", expr: "happy", marker: { kind: "icon", text: "♪" }, icon: "🎵",
-    show: { markerText: ["♪"], objects: ["ice_cream_truck", "birthday_party"] } },
+  { id: "sing", kind: "action", label: "song", re: W("sang|sing|sings|singing|songs?|music|hum\\w*"), pose: "talk", expr: "happy", icon: "🎵",
+    show: { poses: ["talk", "cheer", "dance"], exprs: ["happy", "excited"], objects: ["ice_cream_truck", "birthday_party"] } },
 
   // ---------------- markers
-  { id: "times", kind: "marker", label: "times", re: W("(?:two|three|four|five|six|ten|hundred|\\d+) times"), marker: { kind: "icon", text: "x3" }, icon: "✖️",
-    show: { marker: "icon" } },
-  { id: "names", kind: "marker", label: "names", re: W("names?|named|call (?:her|him|me|it|them|us)|called (?:her|him|me|it|them|us)"), marker: { kind: "tag" }, icon: "🏷️",
-    show: { marker: "tag" } },
+  { id: "times", kind: "marker", label: "times", re: W("(?:two|three|four|five|six|ten|hundred|\\d+) times"), icon: "✖️", soft: true,
+    show: {} },
+  { id: "names", kind: "marker", label: "names", re: W("names?|named|call (?:her|him|me|it|them|us)|called (?:her|him|me|it|them|us)"), icon: "🏷️", soft: true,
+    show: {} },
 
   // ---------------- places (sets)
   { id: "school", kind: "place", label: "school", re: W("school|schools|class(?:room)?s?|teachers?|hallways?|halls|lockers?|cafeteria|lunchroom|gym|recess|principal|homework|detention|chalkboards?|blackboards?|library|stage|lessons?"), set: "school", icon: "🏫",
@@ -489,8 +489,10 @@ export function covers(key, s, cast = {}) {
   const objs = (s.objects ?? []).map(objName);
   // EPIC crowds are people too (a crowd of townsfolk / soldiers / knights: lib/direction.js)
   const people = actors.length + (objs.includes("football_field") || objs.includes("birthday_party") ? 3 : 0) + (s.crowds ?? []).reduce((n, c) => n + Math.min(10, c.count ?? 0), 0);
-  const insertText = s.insert?.text ?? "";
-  const marks = shotMarkers(s);
+  // NO CARDS / BADGES (owner, PERMANENT 2026-11-07): a picture card, sign insert, name tag, word / icon badge or "x3"
+  // counter never shows anything (only a ring marker, a real thing on the people, counts)
+  const insertText = "";
+  const marks = shotMarkers(s).filter((m) => m.kind === "ring");
   // things built for this video (lib/builder): a built object's name + aliases, a built world's (shot.worldAliases);
   // EPIC things on screen (lib/direction.js): a giant's / a crowd's names (shot.giants[].aliases, shot.crowds[].aliases)
   const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? []),
@@ -546,9 +548,6 @@ export function covers(key, s, cast = {}) {
   if (sh.monsterMove && s.monsterState && !actors.some((a) => a.pose === "run" || a.pose === "walk")) return true;
   if (sh.monsterMove && actors.some((a) => a.pose === "run" || a.pose === "walk")) return true;
   if (sh.marker && marks.some((m) => sh.marker === "any" || m.kind === sh.marker)) return true;
-  if (sh.markerText && marks.some((m) => sh.markerText.includes(m.text))) return true;
-  if (sh.insertKinds && s.insert && sh.insertKinds.includes(s.insert.kind)) return true;
-  if (sh.insertWords && sh.insertWords.some((w) => up(insertText).includes(w))) return true;
   if (sh.roles && actors.some((a) => sh.roles.includes(cast[a.id]?.role) || cast[a.hold]?.role === "baby")) return true;
   if (sh.people && people >= sh.people) return true;
   if (sh.body && (actors.length || s.monsterState)) return true;

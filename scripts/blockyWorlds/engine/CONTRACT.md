@@ -587,3 +587,26 @@ production list); an undirected plan has no `tl.world` and is checked as before.
 - Fixes: `world_mismatch` -> `setOverride { set, spot }` to the bible's set + spot and `castFix { bibleLook: true }`;
   `clipping` / `camera_inside` / `sky_only` -> `cameraFix { camera }`; `washed_out` -> `renderFlag`.
 - The mock judge flags `world_mismatch` from the planned shots (set / look not the bible's).
+
+## Addendum 2026-11-07: NO PICTURE CARDS OR BADGES (owner, PERMANENT; replaces "a picture card as last resort")
+
+Never a sign / board with a word or an icon, a word / icon badge on a person, a name tag, an "x3" counter or a rule
+sign. Real in-world signs that are part of a building (a shop sign on the bakery, in page/sets) stay.
+- The timeline never has `camera: "insert"`, `shot.insert`, or a marker of kind `tag` / `icon`; only `ring` (no
+  text) remains. `checkTimeline` fails any of them anywhere (`lib/cards.js cardProblems`); the page draws none
+  (`page/kit/props.js NO_CARDS`: makeInsert / makeMarker return empty groups, a ring still draws).
+- When a line's thing / creature can't be shown (not in the kit, library or builder, or the budget is spent), the shot
+  is the closest REAL shot, in this order: (a) the line's character doing the line's action, (b) a reaction shot (who
+  the line is about, else the narrator, with the fitting expression), (c) a wide of the world (the creature world from
+  outside, else the place wide with its people). The planner cuts nothing in: the line's own real shot stays.
+- `shot.unshown: [label]` (new, optional): what that shot could not show, for the logs and the review, never on
+  screen. `checkVisuals` / `checkProduction` / `checkSubjects` read it as excused (`lib/opening.js waivedHas`, together
+  with the owner's `waived`); anything the kit / library / builder CAN show must still be shown.
+- `shot.needs: [{ id, host: "self" }]` (planner -> builder; was the card's `shot.need`): the builder need rides on the
+  real shot; a built / kit thing stands in that very shot (and in every other shot listing it as unshown) and leaves
+  `unshown`. Not built: the shot stays as planned. `applyResolved` tidies `needs` away; its `cards` list = needs not made.
+- Loose names (kind `name`), "names" and "N times" are words, not things: no longer required keys (no tags / counters).
+- The vision `finalFallback` cuts no card: it reframes the line's longest real shot (action -> reaction -> world) and
+  records the thing in `shot.unshown` (`{ cards: [], fallbacks, unresolved, changedShots }`).
+- The opening: with no rule sign, a creature story's establishing shot of the whole giant is line 0's first moment
+  (shot 0 split at a word start, or shot 0 when line 0 has another shot).

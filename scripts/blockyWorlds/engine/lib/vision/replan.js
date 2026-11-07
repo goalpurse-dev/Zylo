@@ -1,9 +1,10 @@
 // Blocky Worlds shot review: from the judge's misses to re-plan fixes in the PLANNER's vocabulary, a default patcher
 // that applies them to the timeline (each shot's change re-checked; a change that adds a check problem is undone), and
-// the permanent-rule fallback after the last round (a missing thing -> a picture card of that very thing). Pure.
+// the permanent-rule fallback after the last round (a missing thing -> the closest real shot: the line's character doing
+// the action, a reaction, a world wide; the thing in shot.unshown. NO PICTURE CARDS OR BADGES, ever: lib/cards.js). Pure.
 //   suggestFixes(verdict, req, tl) -> [fix]
 //   applyFixes(tl, fixes, { check }) -> { applied, reverted, unapplied, changedShots }      (tl is changed in place)
-//   finalFallback(tl, verdicts, reqs, { check, maxCards }) -> { cards, unresolved, changedShots }
+//   finalFallback(tl, verdicts, reqs, { check }) -> { cards: [], fallbacks, unresolved, changedShots }
 // fix = { op, shot, reason, ...params }; ops:
 //   castFix     { id, look? }          the line's subject in focus (added at center if absent); look: the hint the cast
 //                                       needs (age / gender) -- not applied here: the cast's look is the planner's
@@ -260,40 +261,42 @@ export function settleObjects(tl, pending, { check = null } = {}) {
 }
 
 /**
- * After the last round: what is still missing gets the permanent rule's last fallback, a clear picture card of that
- * very thing, cut into the end of the line's longest shot (>= 1.6 s, the card gets 40%), at most `maxCards` in the video
- * and one a line; each re-checked (undone if it adds a problem). Everything else is recorded, never a failure.
+ * After the last round: what is still missing gets the PERMANENT rule's fallback. NO PICTURE CARDS OR BADGES (owner,
+ * 2026-11-07: lib/cards.js): the line's longest real shot is the closest real shot, in this order: (a) the line's
+ * character doing the line's action (focus on the line's subject in the shot, a medium), (b) a reaction (the person of
+ * the shot, a closeup), (c) a wide of the world (a shot with nobody in it stays the world's wide). The missing thing is
+ * written to shot.unshown (logs / review, never on screen; the checks read it as excused). Each change is re-checked
+ * (the reframing undone if it adds a problem; the unshown record stays). Never a failure.
+ *   -> { cards: [] (always empty, kept for the callers), fallbacks: [{ line, shot, unshown, how }], unresolved, changedShots }
  */
-export function finalFallback(tl, verdicts, reqs, { check = null, maxCards = null } = {}) {
-  const cards = [], unresolved = [], changed = new Set();
-  const limit = maxCards ?? Math.max(1, Math.ceil((tl.duration ?? 60) / 30));
+export function finalFallback(tl, verdicts, reqs, { check = null } = {}) {
+  const fallbacks = [], unresolved = [], changed = new Set();
   let before = check ? problemKeys(check, tl) : null;
+  const okCam = (i, c) => { const sh = tl.shots; return !((sh[i - 1]?.camera === c && sh[i - 2]?.camera === c) || (sh[i - 1]?.camera === c && sh[i + 1]?.camera === c) || (sh[i + 1]?.camera === c && sh[i + 2]?.camera === c)); };
   for (const v of verdicts ?? []) {
     if (!v || v.verdict === "match" || v.verdict === "unjudged") continue;
     const req = (reqs ?? []).find((r) => r.line === v.line);
     const noun = (v.missing ?? [])[0];
-    if (!noun || cards.length >= limit || !req) { unresolved.push({ line: v.line, verdict: v.verdict, types: v.types, fix: v.fix, why: !noun ? "nothing a card can show" : cards.length >= limit ? `card limit (${limit}) reached` : "no requirements" }); continue; }
-    const shotIdx = (req.shots ?? []).filter((i) => tl.shots[i] && tl.shots[i].camera !== "insert").sort((a, b) => (tl.shots[b].end - tl.shots[b].start) - (tl.shots[a].end - tl.shots[a].start))[0];
+    if (!noun || !req) { unresolved.push({ line: v.line, verdict: v.verdict, types: v.types, fix: v.fix, why: !noun ? "nothing named missing" : "no requirements" }); continue; }
+    const shotIdx = (req.shots ?? []).filter((i) => tl.shots[i] && tl.shots[i].camera !== "insert" && !tl.shots[i].insert).sort((a, b) => (tl.shots[b].end - tl.shots[b].start) - (tl.shots[a].end - tl.shots[a].start))[0];
     const s = tl.shots[shotIdx];
-    if (!s || s.end - s.start < 1.6) { unresolved.push({ line: v.line, verdict: v.verdict, types: v.types, fix: v.fix, why: "no shot long enough for a card" }); continue; }
-    const cut = +(s.start + (s.end - s.start) * 0.6).toFixed(3);
-    const word = String(noun).replace(/^(a|an|the|his|her|their|my|our)\s+/i, "");
-    // a card is a fresh insert shot (the plan's card shape), in the story's world: a creature / built world's set
-    // when the host is a plain set in a story that lives in one (plan.mjs staysInTheWorld)
-    const worldSet = GENERIC_SETS.has(s.set) ? (tl.shots.map((x) => x.set).find((x) => /^(creature|world):/.test(x ?? "")) ?? s.set) : s.set;
-    const card = { start: cut, end: s.end, line: s.line, lines: clone(s.lines ?? [s.line]), part: s.part, set: worldSet, light: s.light, camera: "insert", focus: "insert", actors: [], monsterState: null,
-      insert: { kind: "card", text: cardLabel(word), icon: iconFor(word.split(" ").at(-1)) }, marker: null, seed: (s.seed ?? 1) + 101, text: s.text, visuals: [word], subject: "group",
-      ...(s.worldBase && worldSet === s.set ? { worldBase: s.worldBase, worldAliases: clone(s.worldAliases ?? []) } : {}), review: { line: v.line, noun: word } };
+    if (!s) { unresolved.push({ line: v.line, verdict: v.verdict, types: v.types, fix: v.fix, why: "no real shot of the line" }); continue; }
+    const word = String(noun).replace(/^(a|an|the|his|her|their|my|our)\s+/i, "").toLowerCase();
     const keep = clone(tl.shots);
-    s.end = cut;
-    tl.shots.splice(shotIdx + 1, 0, card);
+    const actors = s.actors ?? [];
+    const who = actors.find((a) => a.id === s.subject) ?? actors.find((a) => a.id === req.who?.id) ?? actors.find((a) => a.id === "me") ?? actors[0];
+    let how = "world";
+    if (who && actors.length > 1 && okCam(shotIdx, "medium")) { s.focus = who.id; if (!["medium", "closeup"].includes(s.camera)) s.camera = "medium"; how = "action"; }
+    else if (who && okCam(shotIdx, "closeup")) { s.focus = who.id; s.camera = "closeup"; how = "reaction"; }
+    else if (who) { s.focus = who.id; how = "action"; }
+    s.unshown = [...new Set([...(s.unshown ?? []), word])];
     if (check) {
       const after = problemKeys(check, tl), added = addedProblems(before, after);
-      if (added.length) { tl.shots = keep; unresolved.push({ line: v.line, verdict: v.verdict, types: v.types, fix: v.fix, why: `a card broke the check: ${added[0].slice(0, 120)}` }); continue; }
-      before = after;
+      if (added.length) { tl.shots = keep; tl.shots[shotIdx].unshown = [...new Set([...(tl.shots[shotIdx].unshown ?? []), word])]; how = "as planned"; }
+      before = problemKeys(check, tl);
     }
-    cards.push({ line: v.line, shot: shotIdx + 1, text: card.insert.text, icon: card.insert.icon });
+    fallbacks.push({ line: v.line, shot: shotIdx, unshown: word, how });
     changed.add(shotIdx);
   }
-  return { cards, unresolved, changedShots: [...changed] };
+  return { cards: [], fallbacks, unresolved, changedShots: [...changed] };
 }
