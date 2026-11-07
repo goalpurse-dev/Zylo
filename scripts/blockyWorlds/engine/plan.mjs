@@ -33,6 +33,7 @@ import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
 import { motionPass, styleReport } from "./lib/style.js";
 import { storyReport } from "./lib/storyPatterns.js";
 import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBible.js";
+import { petsOf, petPass, petProblems, ensurePet, petShows, petStateFor } from "./lib/pets.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -540,6 +541,16 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   }
   // the EPIC giants are characters: "he" / "she" can be the Big Bad Wolf (lib/subjects.js beings)
   if (D) world.beings = [...new Set(Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]).filter((w) => !/s$/.test(w) || w.endsWith("ss")))];
+  // PETS (2026-11-07, lib/pets.js): the director's named animals are characters with one fixed look (tl.pets); their
+  // names are beings ("He sniffed the ground" is Biscuit), never people the people kit would draw
+  world.pets = D ? petsOf(D.production, script) : {};
+  if (Object.keys(world.pets).length) {
+    const petWords = new Set(Object.values(world.pets).flatMap((p) => p.words));
+    for (const w of petWords) world.people.delete(w);
+    if (world.looseNames instanceof Set) { for (const n of [...world.looseNames]) if (petWords.has(String(n).toLowerCase())) world.looseNames.delete(n); }
+    else if (Array.isArray(world.looseNames)) world.looseNames = world.looseNames.filter((n) => !petWords.has(String(n).toLowerCase()));
+    world.beings = [...new Set([...(world.beings ?? []), ...Object.keys(world.pets)])];
+  }
 
   const partRange = {};
   script.lines.forEach((l, i) => { partRange[l.part] = partRange[l.part] ? [partRange[l.part][0], i] : [i, i]; });
@@ -828,6 +839,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     }
   }
   openingRule(shots, { worlds: tlStub.worlds, minShot: PACE.minShot, starts: W.map((w) => w.start) });
+  // PETS (lib/pets.js): every shot of a pet's line shows it with its state, a shot about it is framed at its height
+  if (Object.keys(world.pets ?? {}).length) {
+    // a pet's name that is also a hand-prop word ("Biscuit" -> a biscuit) is the pet, not something in a hand
+    const petHeld = new Set(Object.values(world.pets).flatMap((p) => p.words.map((w) => heldKind(w)).filter(Boolean)));
+    for (const s of shots) if ((s.lines ?? [s.line]).some((li) => (lineKeys[li] ?? []).some((k) => k.kind === "pet"))) for (const a of s.actors ?? []) if (a.hold && petHeld.has(heldKind(a.hold) ?? a.hold)) { a.hold = null; if (a.pose === "carry") a.pose = "stand"; }
+  }
+  if (Object.keys(world.pets ?? {}).length) { petPass({ shots, pets: world.pets }, { lineKeys }); fixVisuals(shots, lines, vw, buildCast, { used, names, W }); fixSubjects(shots, subjAux); for (const s of shots) if (s.marker === undefined) s.marker = null; }
   const cast = buildCast();
   // what each shot shows of its lines' key nouns / actions (for the check and the report; the engine ignores it)
   for (const s of shots) {
@@ -838,12 +856,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   const tl = {
     version: 1, fps: 24, width: 1080, height: 1920, duration, title, lengthSec,
     cast,
+    ...(Object.keys(world.pets ?? {}).length ? { pets: world.pets } : {}),
     monster: world.monster ? { type: world.monster.type, name: world.monster.name, glow: world.monster.glow, ...(world.monster.variant ? { variant: world.monster.variant, ...(world.monster.species ? { species: world.monster.species } : {}) } : {}), ...(world.monster.lairPhrase ? { lair: world.monster.lairPhrase } : {}) } : null,
     shots,
     captions: W.map((w) => ({ word: w.word, start: r3(w.start), end: r3(w.end) })),
     audio: { voice: "voice.wav", music: "music.wav" },
     lines: lines.map((L, i) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end), subject: lineSubj[i].id ?? null })),
-    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}) },
+    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}), ...(vw.pets ? { pets: vw.pets } : {}) },
   };
   // the report's subject column: who each of the line's shots is about (cards and signs left out)
   const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
@@ -1098,11 +1117,16 @@ function visualWorld(world) {
     alias: world.alias ?? {}, narrator: world.narrator,
     monster: world.monster ? { key: world.monster.key, keys: world.monster.keys ?? [world.monster.key], words: world.monster.words ?? [world.monster.key], name: world.monster.name } : null,
     looseNames: new Set(world.looseNames ?? []), prop: world.propKey ?? null, ...(world.beings?.length ? { beings: world.beings } : {}),
+    ...(world.pets && Object.keys(world.pets).length ? { pets: petVw(world.pets) } : {}),
   };
 }
 function visualWorldFrom(v) {
   return { people: new Map(Object.entries(v.people ?? {}).map(([id, name]) => [id, { name }])), alias: v.alias ?? {}, narrator: v.narrator ?? "Me",
-    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}) };
+    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}), ...(v.pets ? { pets: v.pets } : {}) };
+}
+/** what the dictionary needs of each pet (lib/visuals.js petAt, plan.mjs forceKey): its words, nouns, kit object */
+function petVw(pets) {
+  return Object.fromEntries(Object.values(pets).map((p) => [p.id, { id: p.id, name: p.name, words: p.words, nouns: p.nouns, kit: p.kit, species: p.species }]));
 }
 
 /** Names for the people the script doesn't name: townsfolk and extra babies get real first names (for name tags). */
@@ -1465,7 +1489,7 @@ function lineReport(shots, lines, vw, cast) {
 }
 /** The keys a line must show: soft ones (a possessive owner, "said") are left out. */
 function requiredKeys(keys) {
-  return keys.filter((k) => !(k.kind === "person" && k.poss && k.soft) && !(k.kind === "noun" && k.neg) && !(k.kind === "rule" && ruleById(k.rule).soft && !k.neg) && !(k.kind === "rule" && k.rule === "talk" && !k.neg));
+  return keys.filter((k) => !(k.kind === "person" && k.poss && k.soft) && !(k.kind === "noun" && k.neg) && !(k.kind === "pet" && k.neg) && !(k.kind === "rule" && ruleById(k.rule).soft && !k.neg) && !(k.kind === "rule" && k.rule === "talk" && !k.neg));
 }
 
 /** Lines still missing a visual: first a catalog visual on the line's own shot, else a picture card cut into its time. */
@@ -1529,6 +1553,16 @@ function forceKey(s, key, aux) {
     return a;
   };
   const town = () => ["town1", "town2", "town3"].find((t) => !s.actors.some((a) => a.id === t));
+  if (key.kind === "pet") {
+    // PETS (lib/pets.js): its own animal, first object, framed at its height (a shot about it), else low beside the people
+    const pet = aux.vw?.pets?.[key.id];
+    if (!pet || s.camera === "insert" || s.insert) return false;
+    const about = s.subject === `thing:${key.id}`;
+    ensurePet(s, pet, { state: petStateFor(s.text, pet), about });
+    if (about || !(s.actors ?? []).length) { s.focus = "object"; if (!["low", "wide"].includes(s.camera)) s.camera = "low"; }
+    else if (!petShows(s, key.id)) s.camera = "low";
+    return petShows(s, key.id);
+  }
   if (key.kind === "person") {
     // a far EPIC shot shows people as specks: it comes in low on the person instead (the giant / army behind them)
     if (FAR_CAMERAS.has(s.camera)) { s.camera = "hero_low"; s.focus = key.id; }
@@ -1670,7 +1704,7 @@ function genderMap(world) {
 }
 /** Every line's subjects, read in order with one story context. */
 function subjectsFor(lines, vw, gender) {
-  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender, ...(vw.beings?.length ? { beings: vw.beings } : {}) };
+  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender, ...(vw.beings?.length ? { beings: vw.beings } : {}), ...(vw.pets ? { pets: vw.pets } : {}) };
   return lines.map((L) => subjectOf(L.text, sctx));
 }
 /**
@@ -1714,7 +1748,7 @@ const setMarkers = (s, list) => { if (list.length > 1) s.markers = list; else de
  * featured by its carrier); whoever the subject acts on is in frame; a loose name's tag sits on the subject.
  * Inserts (signs, picture cards) are cutaways and have no subject rule.
  */
-function subjectIssues(s, cast, keysOfShot, loose) {
+function subjectIssues(s, cast, keysOfShot, loose, pets = null) {
   if (s.camera === "insert" || s.focus === "insert" || !s.subject) return [];
   const out = [];
   const actors = s.actors ?? [];
@@ -1737,6 +1771,11 @@ function subjectIssues(s, cast, keysOfShot, loose) {
     if (!actors.some((a) => cast[a.id]?.role === "baby" || cast[a.hold]?.role === "baby")) out.push({ code: "babies", msg: "no baby on screen" });
   } else if (S === "someone") {
     if (!actors.length && !(s.crowds ?? []).length) out.push({ code: "someone", msg: "nobody on screen" });
+  } else if (S.startsWith("thing:") && pets?.[S.slice(6)]) {
+    // a pet (lib/pets.js): its own animal on screen at a readable size, the shot about it (focus on it, framed at its height)
+    const id = S.slice(6);
+    if (!s.subjectAbsent && !petShows(s, id)) out.push({ code: "thing", key: { kind: "pet", id, label: id, noun: id, name: pets[id].name }, msg: `${pets[id].name} (the subject) is not on screen` });
+    else if (!s.subjectAbsent && (s.focus !== "object" || s.objects?.[0]?.pet !== id)) out.push({ code: "petfocus", id, msg: `focus is ${s.focus}, not ${pets[id].name} (the subject)` });
   } else if (S.startsWith("thing:")) {
     const label = S.slice(6);
     const key = keysOfShot(s).find((k) => k.label === label || k.noun === label);
@@ -1774,7 +1813,7 @@ function fixSubjects(shots, aux) {
     const cast = aux.buildCast();
     let any = false;
     shots.forEach((s, i) => {
-      for (const p of subjectIssues(s, cast, aux.keysOfShot, aux.loose)) { any = true; fixSubjectIssue(shots, i, p, aux, cast); }
+      for (const p of subjectIssues(s, cast, aux.keysOfShot, aux.loose, aux.vw?.pets)) { any = true; fixSubjectIssue(shots, i, p, aux, cast); }
     });
     if (!any) return;
   }
@@ -1843,7 +1882,8 @@ function fixSubjectIssue(shots, i, p, aux, cast) {
     case "closeup": s.camera = recam(shots, i, "closeup"); break;
     case "babies": addPerson(aux.vw.alias.baby ?? "baby2"); break;
     case "someone": addPerson(["town1", "town2", "town3"].find((t) => !s.actors.some((a) => a.id === t)) ?? "town1"); break;
-    case "thing": if (!forceKey(s, p.key, aux)) badge(s, p.key, aux); break;
+    case "thing": if (!forceKey(s, p.key, aux) && p.key.kind !== "pet") badge(s, p.key, aux); break;
+    case "petfocus": { const pet = aux.vw?.pets?.[p.id]; if (pet) { ensurePet(s, pet, { state: petStateFor(s.text, pet), about: true }); s.focus = "object"; if (!["low", "wide"].includes(s.camera)) s.camera = "low"; } break; }
     case "tag": {
       const list = markersList(s).filter((m) => m !== p.marker && !(m.on === p.marker.on && m.text === p.marker.text));
       if (s.subject === "monster" && s.monsterState) list.push({ on: "monster", kind: "icon", text: `${p.marker.text}?` });
@@ -1879,7 +1919,7 @@ export function checkSubjects(tl) {
       const said = (s.lines ?? [s.line]).flatMap((l) => lineSubj[l]?.sentences.map((x) => x.id) ?? []);
       if (!said.includes(s.subject)) out.push({ ...base, problem: `subject ${s.subject} is not who its line is about (${[...new Set(said)].join(", ")})` });
     }
-    for (const p of subjectIssues(s, cast, keysOfShot, loose)) out.push({ ...base, problem: p.msg });
+    for (const p of subjectIssues(s, cast, keysOfShot, loose, tl.visualWorld?.pets)) out.push({ ...base, problem: p.msg });
   });
   return out;
 }
@@ -1960,6 +2000,7 @@ export function checkTimeline(tl) {
   }
   for (const m of checkProductionStrict(tl)) out.push(`line ${m.line} misses the production items: ${m.missing.map((x) => x.name).join(", ")}`);
   if (tl.world) out.push(...worldBibleProblems(tl).map((p) => `world bible: ${p}`)); // WORLD CONTINUITY (lib/worldBible.js)
+  if (tl.pets || (tl.shots ?? []).some((s) => (s.objects ?? []).some((o) => o.pet))) out.push(...petProblems(tl)); // PETS (lib/pets.js)
   const caps = tl.captions ?? [];
   if (!caps.length) out.push("no captions");
   caps.forEach((c, i) => {

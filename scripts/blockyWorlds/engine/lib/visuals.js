@@ -13,6 +13,7 @@
 //         "noun"   any other content noun -> held prop if holdable, else a picture card
 import { norm, tokens } from "./planText.js";
 import { catalogObjects, heldIndex } from "./catalog.js";
+import { petShows, ANIMAL_POSE } from "./pets.js";
 
 // ------------------------------------------------------------------ the object catalog (mirror of page/kit/objects.js)
 /** Planner-side mirror of the OBJECTS agent's catalog (CONTRACT addendum) + the coverage kit (lib/catalog.js). */
@@ -326,6 +327,23 @@ function personDoer(toks, k, vw) {
 const FAMILY = { mom: "mom", mum: "mom", mommy: "mom", mother: "mom", dad: "dad", daddy: "dad", father: "dad", grandma: "grandma", granny: "grandma", nana: "grandma", grandpa: "grandpa", grandad: "grandpa", grandfather: "grandpa", grandmother: "grandma", brother: "brother", sister: "sister" };
 const TITLES = /^(mr|mrs|ms|miss|dr|coach|aunt|uncle|officer|principal|sheriff|mayor|baker|farmer|postman|mailman|captain|lady|lord|king|queen|sir|dame|fisher|cook|chef|nurse|judge|professor|prince|princess|old|big|little|young|sergeant|doctor|mister|madam|janitor|teacher|count|duke|baron|grandma|grandpa|granny|nana)$/;
 
+/** a pet at token k: its name, or its species noun after my / his / her / our / their / the / this / that / X's
+ * (adjectives between: "my little brown dog"); only when one pet of the story has that noun */
+const PET_DET = /^(my|his|her|our|their|your|the|this|that)$/;
+function petAt(toks, k, pets) {
+  const c = toks[k].c;
+  for (const [id, p] of Object.entries(pets)) if ((p.words ?? [id]).includes(c)) return id;
+  const owners = Object.entries(pets).filter(([, p]) => (p.nouns ?? []).includes(c));
+  if (owners.length !== 1) return null;
+  for (let i = k - 1; i >= Math.max(0, k - 4); i--) {
+    const p = toks[i];
+    if (p.end || p.comma) return null;
+    if (PET_DET.test(p.c) || p.poss) return owners[0][0];
+    if (!(ADJ.has(p.c) || /^(brown|black|white|grey|gray|golden|orange|ginger|spotted|fluffy|furry|old|good|silly|sleepy|lost|clever|brave|naughty|tabby|lazy|cute|scruffy|shaggy|loyal|faithful)$/.test(p.c))) return null;
+  }
+  return null;
+}
+
 /**
  * The key nouns / actions of a text. `opts.neg` marks negated actions ("nobody talks", "never heard a cheer").
  * Returns keys in token order. Deterministic.
@@ -349,6 +367,10 @@ export function extractKeys(text, vw, opts = {}) {
   toks.forEach((t, k) => {
     if (used[k]) return;
     const c = t.c;
+    // PETS (2026-11-07, lib/pets.js): a named animal character by its name ("Biscuit"), or by its species noun when the
+    // story points at it ("my dog", "the cat", "his little brown dog"); "every dog" / "a dog" stay the generic noun
+    const pid = vw.pets ? petAt(toks, k, vw.pets) : null;
+    if (pid) { keys.push({ kind: "pet", id: pid, label: pid, noun: pid, name: vw.pets[pid].name ?? pid, k, end: k, neg: negAt(k), poss: t.poss }); take(k, k); return; }
     if ((TITLES.test(c) || FAMILY[c]) && toks[k + 1] && vw.people.has(toks[k + 1].c)) { keys.push({ kind: "person", id: toks[k + 1].c, label: vw.people.get(toks[k + 1].c).name, k, end: k + 1, poss: toks[k + 1].poss }); take(k, k + 1); return; }
     if (vw.monster) {
       // the whole name ("the Detention Dragon"), else its head / creature word ("the dragon"), "monster", "creature"
@@ -468,6 +490,8 @@ export function covers(key, s, cast = {}) {
   // army) everyone but the focus is a speck (run 7b4c0d8b review: a 2%-of-frame figure counted as the person)
   if (key.kind === "person") return (!(FAR_CAMERAS.has(s.camera) && s.focus !== key.id) && actors.some((a) => a.id === key.id || a.hold === key.id)) || textual(key.label);
   if (key.kind === "monster") return !!s.monsterState || textual(key.label);
+  // a pet: its own animal (that species, that look: tl.pets) in frame at a readable size, never a name tag / card alone
+  if (key.kind === "pet") return petShows(s, key.id);
   if (key.kind === "name") return marks.some((m) => wordIn(key.name, m.text)) || textual(key.name);
   if (key.kind === "noun") {
     if (actors.some((a) => a.hold && singular(a.hold) === key.noun)) return true;
@@ -492,6 +516,8 @@ export function covers(key, s, cast = {}) {
     if ((s.objects ?? []).some((o) => objName(o) === sh.objects[0] && o.state === sh.objectState)) return true;
   }
   if (sh.poses && actors.some((a) => sh.poses.includes(a.pose))) return true;
+  // an animal doing the action (PETS 2026-11-07: "Biscuit was sitting" is the dog sitting, not a neighbour)
+  if (sh.poses && (s.objects ?? []).some((o) => OBJECT_CATALOG[objName(o)]?.animal && sh.poses.includes(ANIMAL_POSE[o.state]))) return true;
   // an EPIC giant / crowd doing the action (a crowd marching is walking, a giant roaring yells)
   const EPIC_POSE = { walk: "walk", march: "walk", run: "run", charge: "run", flee: "run", cheer: "cheer", wave: "wave", roar: "yell", swim: "swim", stomp: "stomp", fight: "fight" };
   if (sh.poses && [...(s.giants ?? []), ...(s.crowds ?? [])].some((g) => sh.poses.includes(EPIC_POSE[g.action]))) return true;

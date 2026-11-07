@@ -14,9 +14,9 @@
 // patterns, belly colours, expressive eyes and simple procedural textures.
 
 export const ANIMAL_ACTIONS = Object.freeze(["idle", "walk", "run", "fly", "swim", "slither", "hop", "crawl", "roar", "attack", "head_turn", "stomp",
-  "eat", "sleep", "hit", "fall", "lurk", "reach", "dig", "climb", "flee", "howl", "reveal", "carry", "slide", "float"]);
+  "eat", "sleep", "hit", "fall", "lurk", "reach", "dig", "climb", "flee", "howl", "reveal", "carry", "slide", "float", "sit", "sniff", "bark"]); // sit / sniff / bark: PETS 2026-11-07
 export const ANIMAL_EXPRS = Object.freeze(["neutral", "angry", "scared", "happy", "sleepy"]);
-const COMMON = ["idle", "head_turn", "roar", "attack", "eat", "sleep", "hit", "fall", "lurk", "reach", "howl", "reveal", "carry", "slide", "float"];
+const COMMON = ["idle", "head_turn", "roar", "attack", "eat", "sleep", "hit", "fall", "lurk", "reach", "howl", "reveal", "carry", "slide", "float", "sit", "sniff", "bark"];
 export const ANIMAL_PLANS = Object.freeze({
   quadruped: [...COMMON, "walk", "run", "stomp", "dig", "climb", "flee", "swim"],
   biped: [...COMMON, "walk", "run", "stomp", "climb", "flee", "swim"],

@@ -615,7 +615,7 @@ export function makeObject(name, opts = {}) {
   if (!def.states.includes(state)) throw new Error(`makeObject: object "${key}" has no state "${state}" (${def.states.join(", ")})`);
   const g = new THREE.Group(); g.name = `object:${key}:${state}`;
   g.userData = { kind: "object", name: key, state, actors: "front", push: 0.8 };
-  (BUILD[key] ?? THING_BUILD[key])(g, state);
+  (BUILD[key] ?? THING_BUILD[key])(g, state, opts); // opts.pet: a pet's look (lib/pets.js; things.js rigAnimal)
   g.traverse((o) => { if (o.isMesh && o.castShadow === undefined) o.castShadow = true; });
   return g;
 }

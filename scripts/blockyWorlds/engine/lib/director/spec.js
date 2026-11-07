@@ -23,7 +23,8 @@ export function productionSchema() {
     // the WORLD BIBLE's hints (lib/worldBible.js builds the full bible from them; enum-free on purpose, small)
     bible: O({ creature_look: S, town_name: S, building_style: S, palette: A(S), streets: A(S), places: A(O({ name: S, kind: S })), landmarks: A(S) }),
     worlds: A(O({ id: S, name: S, kind: E(WORLD_KINDS), base: E(BASE_SETS), description: S, creature: O({ species: S, relation: E(CREATURE_RELATIONS), heightM: N }), light: E(LIGHTS) })),
-    cast: A(O({ id: S, name: S, kind: E(CHAR_KINDS), role: E(ROLES), look: S, job: S })),
+    // species: the animal of a kind "animal" cast member (a named pet / animal character at real size: "dog", "cat"); "" for people
+    cast: A(O({ id: S, name: S, kind: E(CHAR_KINDS), role: E(ROLES), look: S, job: S, species: S })),
     creatures: A(O({ id: S, name: S, species: S, look: S, scale: E(SCALES), heightM: N, count: N, behaviours: A(E(BEHAVIOURS)), monster: B })),
     crowds: A(O({ id: S, name: S, member: E(["person", "creature", "robot", "vehicle"]), of: S, count: N, actions: A(E(CROWD_ACTIONS)) })),
     vehicles: A(O({ id: S, name: S, kind: S, motion: E(VEHICLE_MOTIONS) })),
@@ -60,10 +61,10 @@ export function validateProduction(raw, { lineCount = null, lines = null } = {})
       creature: { species: str(c.species, 40).toLowerCase(), relation: oneOf(c.relation, CREATURE_RELATIONS, kind === "creature" ? "on" : "none"), heightM: num(c.heightM, 0, 0, 200) }, light: oneOf(w.light, LIGHTS, "day") };
   });
   if (!worlds.length) { problems.push("no world"); worlds.push({ id: uid("town", "world"), name: "the town", kind: "outdoor", base: "street", description: "", creature: { species: "", relation: "none", heightM: 0 }, light: "day" }); }
-  const cast = arr("cast").map((c) => ({ id: uid(c.id, "cast"), name: cleanName(str(c.name, 40)), kind: oneOf(c.kind, CHAR_KINDS, "human"), role: oneOf(c.role, ROLES, "adult"), look: str(c.look, 120), job: str(c.job, 40) }));
+  const cast = arr("cast").map((c) => ({ id: uid(c.id, "cast"), name: cleanName(str(c.name, 40)), kind: oneOf(c.kind, CHAR_KINDS, "human"), role: oneOf(c.role, ROLES, "adult"), look: str(c.look, 120), job: str(c.job, 40), species: str(c.species, 40).toLowerCase() }));
   if (!cast.some((c) => c.role === "narrator")) {
     const me = cast.find((c) => c.id === "me");
-    if (me) me.role = "narrator"; else cast.unshift({ id: ids.has("me") ? uid("narrator", "cast") : (ids.add("me"), "me"), name: "", kind: "human", role: "narrator", look: "", job: "" });
+    if (me) me.role = "narrator"; else cast.unshift({ id: ids.has("me") ? uid("narrator", "cast") : (ids.add("me"), "me"), name: "", kind: "human", role: "narrator", look: "", job: "", species: "" });
   }
   const creatures = arr("creatures").map((c) => ({ id: uid(c.id, "creature"), name: str(c.name, 60), species: str(c.species, 40).toLowerCase() || str(c.name, 40).toLowerCase(), look: str(c.look, 120), scale: oneOf(c.scale, SCALES, "human"),
     heightM: num(c.heightM, 0, 0, 200), count: Math.round(num(c.count, 1, 1, 2000)), behaviours: strs(c.behaviours, BEHAVIOURS), monster: c.monster === true }));

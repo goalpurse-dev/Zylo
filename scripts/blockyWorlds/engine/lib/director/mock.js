@@ -130,6 +130,33 @@ export function mockProduction({ script = null, idea = null } = {}) {
     return [...new Set(found)];
   });
 
+  // PETS (2026-11-07, lib/pets.js): a named animal ("my dog Biscuit", "my cat is called Pepper", "Biscuit is a little
+  // brown dog") is a cast member of kind "animal" at real size, with its look from the line that describes it; the
+  // lines that name it, point at it ("my dog", "the cat") or go on about it with he / she are its lines
+  const pets = mockPets(lines, card, items.cast);
+  for (const p of pets) add("cast", `c:${p.id}`, { id: p.id, name: p.name, kind: "animal", role: "kid", look: p.look, job: "", species: p.species });
+  const petLine = lines.map(() => null); // the pet a line is about (its subject), by name, noun or pronoun
+  if (pets.length) {
+    let recent = null, gap = 9;
+    lows.forEach((low, i) => {
+      const t = toks(low);
+      // "No Biscuit." / "without Biscuit": named, but not there (absent means absent)
+      const hit = pets.find((p) => (t.includes(p.id) && !/^(no|without|never|not)$/.test(t[t.indexOf(p.id) - 1] ?? "")) || petNounAt(t, p) >= 0);
+      if (hit) { castIn[i].push(hit.id); recent = hit; gap = 0; }
+      else gap++;
+      const lead = stripLead(lines[i].text);
+      const leadLow = lead.toLowerCase();
+      const by = pets.find((p) => leadLow.startsWith(`${p.id} `) || leadLow.startsWith(`${p.id},`) || new RegExp(`^(?:the|my|our|his|her) (?:[a-z]+ ){0,2}(?:${p.nouns.join("|")})\\b`).test(leadLow));
+      // a sentence led by he / she / it right after the pet's lines, with no other character named since
+      const otherCast = castIn[i].some((c) => c !== "me" && !pets.some((p) => p.id === c));
+      const pron = !by && recent && gap <= 2 && !otherCast && /^(he|she|it)\b/.test(leadLow) ? recent : null;
+      // every sentence of the line: "He was never lost. He was finding his bell."
+      if (by ?? pron) { petLine[i] = (by ?? pron).id; if (!castIn[i].includes(petLine[i])) castIn[i].push(petLine[i]); recent = by ?? pron; gap = 0; }
+      else if (recent && gap <= 2 && /\b(his|her|its)\b/.test(low) && !otherCast) gap = Math.max(0, gap - 1); // "His bell was hanging..." keeps the pet in mind
+    });
+  }
+  const petWordsAt = (t, k) => pets.some((p) => p.nouns.includes(t[k]) && petNounAt(t, p) === k);
+
   // the monster: a capitalised name in the opener whose last word is a creature ("the Detention Dragon")
   const monsterName = (String(card.opener ?? lines[0]?.text ?? "").match(/\bthe ((?:[A-Z][a-z]+ )*[A-Z][a-z]+)\b/g) ?? []).map((s) => s.slice(4)).find((n) => SPECIES.has(n.split(" ").at(-1).toLowerCase()));
 
@@ -147,6 +174,7 @@ export function mockProduction({ script = null, idea = null } = {}) {
     t.forEach((w, k) => {
       const sp = SPECIES.get(w);
       if (!sp) return;
+      if (petWordsAt(t, k)) return; // "my dog" / "the cat" is the pet (a cast member), not another animal
       if (/^giants?$/.test(w) && t[k + 1] && !STOP.has(t[k + 1])) return; // "a giant turtle", "one giant eye": an adjective
       if (/^(rubber|toy|stuffed|paper|chocolate|plastic|wooden|glass|candy|teddy|robot)$/.test(t[k - 1] ?? "") && sp !== "robot") return; // "a rubber duck" is a prop
       const prev = t.slice(Math.max(0, k - 4), k);
@@ -213,7 +241,7 @@ export function mockProduction({ script = null, idea = null } = {}) {
     // props: the story prop, hand props, kit objects, and concrete nouns after a determiner the kit doesn't know
     const DET = /^(a|an|the|my|our|his|her|their|your|every|each|some|two|three|this|that|these|those)$/;
     const afterDet = (k) => DET.test(t[k - 1] ?? "") || (DET.test(t[k - 2] ?? "") && !STOP.has(t[k - 1] ?? "the"));
-    const heldHits = t.filter((w, k) => HELD_WORDS.has(w) && afterDet(k) && w !== storyHead && w !== `${storyHead}s`);
+    const heldHits = t.filter((w, k) => HELD_WORDS.has(w) && afterDet(k) && w !== storyHead && w !== `${storyHead}s` && !pets.some((p) => p.id === w)); // "my dog Biscuit" is no biscuit
     for (const w of heldHits.slice(0, 2)) needs.add(add("props", `p:${HELD_WORDS.get(w)}`, { id: HELD_WORDS.get(w), name: w, size: "hand", heldBy: "", storyProp: false }).id);
     for (const [k, w] of t.entries()) if (afterDet(k) && KNOWN_OBJECT_WORDS.has(w) && !HELD_WORDS.has(w) && !SPECIES.has(w) && !findPhrases(IDX.vehicle, ` ${w} `).length && !EVENT_WORDS_SET.has(w) && !/^(house|home|houses|window|windows|light|lights|game|team|field|shop|store)$/.test(w)) { needs.add(add("props", `p:${w.replace(/s$/, "")}`, { id: w.replace(/s$/, ""), name: w, size: "object", heldBy: "", storyProp: false }).id); break; }
     const det = low.match(/\b(?:a|an|the|my|our|his|her|their) ([a-z]{3,})(?: ([a-z]{3,}))?/g) ?? [];
@@ -247,7 +275,7 @@ export function mockProduction({ script = null, idea = null } = {}) {
     const who = castIn[i];
     const crowdHere = needs.find((id) => items.crowds.some((c) => c.id === id));
     const creatureHere = needs.find((id) => items.creatures.some((c) => c.id === id));
-    const subject = (/^ (i|i'm|my|we) /.test(low) ? "me" : null) ?? who.find((x) => x !== "me") ?? crowdHere ?? creatureHere ?? (who[0] ?? needs[0] ?? "me");
+    const subject = petLine[i] ?? (/^ (i|i'm|my|we) /.test(low) ? "me" : null) ?? who.find((x) => x !== "me" && !pets.some((p) => p.id === x)) ?? crowdHere ?? creatureHere ?? (who[0] ?? needs[0] ?? "me");
     const action = findPhrases(IDX.action, low)[0]?.key ?? "stand";
     const shake = /\b(stomp|stomped|stomps|explod|boom|blast|earthquake|quake|crash|crashed|erupt|shook|rumbl|slammed)/.test(low) || needs.some((id) => /^(explosion|earthquake|eruption)/.test(id));
     const fight = /\b(charge|charged|charges|attack|attacked|fight|fought|battle|chase|chased|stampede|swarmed|raided|invaded|stormed)\b/.test(low);
@@ -266,6 +294,54 @@ export function mockProduction({ script = null, idea = null } = {}) {
   // every crowd / creature with a charge or attack line keeps those as actions
   const scaleMoments = outLines.filter((l) => l.camera === "scale").map((l) => ({ line: l.line, big: l.needs.find(isGiant) ?? (ex?.kind === "creature" ? ex.species : l.world), small: l.subject === "me" || !l.subject ? "me" : l.subject }));
   return { summary: `(mock) ${card.title ?? script?.title ?? "a story"}: ${main.name}`, bible: mockBible({ lows, ex, items }), ...items, scaleMoments, lines: outLines };
+}
+
+// ------------------------------------------------------------------------------------------------ pets
+const PET_NAME_STOP = /^(The|A|An|My|Our|His|Her|Their|This|That|Then|When|One|Every|In|I|We|He|She|It|They|No|And|But|So|Now|Mom|Dad|Grandma|Grandpa)$/;
+const leadRe = /^\s*(?:(?:then|and|so|but|now|suddenly|later|finally|at last|soon|one (?:day|morning|night|evening|afternoon)|that (?:day|morning|night|evening)|the next (?:day|morning)|every (?:day|morning|night))[\s,]+)+/i;
+const stripLead = (text) => String(text ?? "").replace(leadRe, "").trim();
+/** where in a line's tokens the pet's species noun is pointed at ("my dog", "the little cat"): its index, else -1 */
+function petNounAt(t, p) {
+  for (let k = 0; k < t.length; k++) {
+    if (!p.nouns.includes(t[k])) continue;
+    for (let i = k - 1; i >= Math.max(0, k - 3); i--) { if (/^(my|our|his|her|their|the|this|that|your)$/.test(t[i]) || /'s$/.test(t[i])) return k; if (!/^[a-z]+$/.test(t[i]) || STOP.has(t[i])) break; }
+  }
+  return -1;
+}
+/**
+ * The script's named animals: [{ id, name, species, nouns, look }]. Patterns: "my dog Biscuit", "our cat, Pepper",
+ * "my cat is called / named Pepper", "Pepper is a grey cat", "a dog named Rex", "Rex the dog". A name that is a person
+ * of the cast (or the narrator) is not a pet.
+ */
+function mockPets(lines, card, cast) {
+  const text = [...lines.map((l) => l.text), card.premise, card.narrator].filter(Boolean).join(" \n ");
+  const people = new Set(cast.flatMap((c) => [c.id, ...String(c.name ?? "").toLowerCase().split(/\s+/)]));
+  const speciesWords = [...SPECIES.keys()].filter((w) => ANIMALS[SPECIES.get(w)] && /^[a-z]+$/.test(w) && !/s$/.test(w)).sort((a, b) => b.length - a.length).join("|");
+  const N = "([A-Z][a-z]{2,})";
+  const res = [
+    new RegExp(`\\b(?:my|our|his|her|their)\\s+(?:[a-z]+\\s+){0,2}(${speciesWords}),?\\s+(?:is\\s+)?(?:called\\s+|named\\s+)?${N}`, "g"),
+    new RegExp(`\\b(?:a|an|the)\\s+(?:[a-z]+\\s+){0,2}(${speciesWords})\\s+(?:called|named)\\s+${N}`, "g"),
+  ];
+  const resRev = [
+    new RegExp(`${N}\\s+(?:is|was)\\s+(?:a|an|my|our)\\s+(?:[a-z]+\\s+){0,3}(${speciesWords})\\b`, "g"),
+    new RegExp(`${N},?\\s+(?:the|my|our)\\s+(?:[a-z]+\\s+){0,2}(${speciesWords})\\b`, "g"),
+  ];
+  const found = new Map();
+  const put = (word, name) => {
+    if (!name || PET_NAME_STOP.test(name) || people.has(name.toLowerCase())) return;
+    const sp = SPECIES.get(word);
+    if (!sp || !ANIMALS[sp] || found.has(name.toLowerCase())) return;
+    if ([...found.values()].some((p) => p.species === sp)) return; // one pet per species (the mock is a stand-in)
+    const id = name.toLowerCase();
+    const nouns = [...new Set([sp, ...(ANIMALS[sp] ?? [])])].filter((w) => /^[a-z]+$/.test(w) && !/s$/.test(w) && !/^(animal|pet|critter|livestock|bug|bird)$/.test(w));
+    const descOk = (t) => new RegExp(`\\b${name}\\b`).test(t) && nouns.some((n) => new RegExp(`\\b${n}\\b`, "i").test(t));
+    // "Biscuit is a little brown dog" before "this is my dog Biscuit"
+    const desc = lines.map((l) => l.text).find((t) => descOk(t) && new RegExp(`\\b${name}\\s+(?:is|was)\\b`).test(t)) ?? lines.map((l) => l.text).find((t) => descOk(t) && /\b(is|was)\b/.test(t)) ?? "";
+    found.set(id, { id, name, species: sp, nouns, look: desc.replace(/[.!?]+$/, "").slice(0, 120) });
+  };
+  for (const re of res) for (const m of text.matchAll(re)) put(m[1].toLowerCase(), m[2]);
+  for (const re of resRev) for (const m of text.matchAll(re)) put(m[2].toLowerCase(), m[1]);
+  return [...found.values()];
 }
 
 /** the mock's world bible hints (lib/worldBible.js builds the full bible): the places the script names, the jobs' places */

@@ -130,7 +130,7 @@ export function animateAnimal(g, action = "idle", t = 0, opts = {}) {
   if (J.tongue) { const f = frac(t / 1.6); J.tongue.scale.z = f < 0.25 ? Math.sin(f / 0.25 * Math.PI) : 0.001; J.tongue.rotation.y = 0.2 * Math.sin(t * 30); }
   (J.wings ?? []).forEach((w, i) => { w.rotation.z += (i ? -1 : 1) * 0.02 * br; });
   const moving = ["walk", "run", "flee", "swim", "slither", "crawl", "crawl_fast", "fly"].includes(act);
-  if (J.head && !moving && !["roar", "howl", "attack", "eat", "sleep", "dig", "head_turn"].includes(act)) { J.head.rotation.y += look; J.head.rotation.x += 0.04 * Math.sin(t * TAU * 0.13); }
+  if (J.head && !moving && !["roar", "howl", "attack", "eat", "sleep", "dig", "head_turn", "sniff", "bark"].includes(act)) { J.head.rotation.y += look; J.head.rotation.x += 0.04 * Math.sin(t * TAU * 0.13); }
   const legged = U.legs.length > 0 && plan !== "pinniped";
   const side = (i) => (U.legs[i]?.side ?? (i % 2 ? -1 : 1));
 
@@ -286,6 +286,40 @@ export function animateAnimal(g, action = "idle", t = 0, opts = {}) {
       if (legged) st.targets = U.legs.map((l, i) => { const p = restTarget(l), a = t * 1.4 + i * 1.3; p.y += L * 0.15 + L * 0.08 * Math.sin(a); p.z += L * 0.15 * Math.cos(a); return p; });
       if (plan === "fish") fishSwim(U, J, t, animalGait(g, "swim"), 0.3);
       if (J.head) J.head.rotation.x -= 0.08;
+      break;
+    }
+    // PETS (2026-11-07): the normal-size animal character's own actions (a dog / cat / bird in a story)
+    case "sit": {
+      const k = ease(t / 0.5);
+      if (legged && plan === "quadruped") {
+        // rump down, chest up: the rear feet tuck forward under the body, the front legs stay straight
+        J.body.rotation.x -= 0.42 * k; J.body.position.y -= L * 0.22 * k;
+        if (J.neck) J.neck.rotation.x -= 0.1 * k; if (J.head) J.head.rotation.x += 0.28 * k;
+        st.targets = U.legs.map((l) => { const p = restTarget(l); if (!l.front) p.z += L * 0.35 * k; return p; });
+      } else if (plan === "bird") { J.body.position.y -= L * 0.45 * k; st.targets = U.legs.map((l) => { const p = restTarget(l); p.y += L * 0.3 * k; return p; }); }
+      else J.body.position.y -= H * 0.03 * k;
+      (J.tail ?? []).forEach((s, i) => { s.rotation.y += 0.35 * Math.sin(t * 9 - i * 0.5) * k; });
+      break;
+    }
+    case "sniff": {
+      const k = ease(t / 0.4), bob = 0.06 * Math.sin(t * 16);
+      if (plan === "bird") { J.body.rotation.x += 0.45 * k; if (J.neck) J.neck.rotation.x += 0.4 * k; }
+      else { if (J.neck) J.neck.rotation.x += 0.62 * k; if (J.head) { J.head.rotation.x += (0.32 + bob) * k; J.head.rotation.y += 0.3 * Math.sin(t * 1.8) * k; } J.body.rotation.x += 0.06 * k; }
+      (J.ears ?? []).forEach((e) => { e.rotation.x += 0.1 * k; });
+      (J.tail ?? []).forEach((s, i) => { s.rotation.y += 0.3 * Math.sin(t * 10 - i * 0.5) * k; s.rotation.x += 0.15 * k; });
+      break;
+    }
+    case "bark": {
+      // short bursts: the jaw snaps open, the head kicks up, the front end bounces, the tail wags
+      const ph = frac(t * 2.1), open = ph < 0.28 ? Math.sin((ph / 0.28) * Math.PI) : 0;
+      if (J.jaw) J.jaw.rotation.x += 0.6 * open;
+      if (J.beakLow) J.beakLow.rotation.x += 0.5 * open;
+      if (J.head) J.head.rotation.x -= 0.18 * open;
+      if (J.neck) J.neck.rotation.x -= 0.08 * open;
+      J.body.position.y += 0.025 * H * open; J.body.rotation.x -= 0.04 * open;
+      (J.ears ?? []).forEach((e) => { e.rotation.x -= 0.15 * open; });
+      (J.tail ?? []).forEach((s, i) => { s.rotation.y += 0.45 * Math.sin(t * 14 - i * 0.5); });
+      if (plan === "bird") st.wingsOpen = 0.25 * open;
       break;
     }
     default: break;

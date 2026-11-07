@@ -741,14 +741,18 @@ function rigAction(state, t, ra) {
   if (["run", "chase", "charge", "flee"].includes(state)) return t * ra.runSpeed >= 2.4 ? "idle" : state === "flee" ? "flee" : "run";
   return state;
 }
-function rigAnimal(g, species, variant, state) {
-  const a = makeAnimal({ species, variant });
+// opts.pet (PETS 2026-11-07, lib/pets.js): a named animal character's one look: { species, variant, params, sizeM, seed }
+function rigAnimal(g, species, variant, state, opts = {}) {
+  const pet = opts.pet ?? null;
+  if (pet?.species) { species = pet.species; variant = pet.variant ?? variant; }
+  const a = makeAnimal({ species, variant, ...(pet ? { params: pet.params ?? {}, size: pet.sizeM, seed: pet.seed } : {}) });
   const yaw = 1.0; // three-quarter view, the head toward +x (like the old builder)
   a.rotation.y = yaw; a.position.z = -0.45; g.add(a);
   a.updateMatrixWorld(true);
   const b = new THREE.Box3().setFromObject(a), s = b.getSize(V());
   const U = a.userData, big = U.length > 3;
-  fin(g, { h: Math.max(0.3, s.y), w: Math.max(0.5, s.x), d: Math.max(0.5, s.z), detailH: Math.max(0.5, Math.min(2.2, s.y)), push: big ? 0.8 : 0.6, big, focusZ: -0.45 });
+  // w with a margin: a wide / insert fit of a side-on animal in a 9:16 frame kept its nose and tail at the edges (PETS 2026-11-07)
+  fin(g, { h: Math.max(0.3, s.y), w: Math.max(0.5, s.x * 1.3), d: Math.max(0.5, s.z), detailH: Math.max(0.5, Math.min(2.2, s.y)), push: big ? 0.8 : 0.6, big, focusZ: -0.45 });
   const walk = animalGait(a, "walk"), run = animalGait(a, "run");
   const ra = { animal: a, speed: walk.speed, runSpeed: run.speed };
   Object.assign(g.userData, { heading: yaw, rigAnimal: ra, parts: { body: a, head: U.joints.head ?? null }, ride: { at: V(0, 0, -0.45), yaw }, species, variant: U.variant });
@@ -756,7 +760,8 @@ function rigAnimal(g, species, variant, state) {
 }
 for (const name of Object.keys(ANIMALS)) {
   if (THING_BUILD[name]) continue;
-  if (RIG_ANIMALS[name]) { THING_BUILD[name] = (g, state) => rigAnimal(g, ...RIG_ANIMALS[name], state); continue; }
+  // (species, variant): a one-word entry (["dog"]) has no variant (its spread used to shift the state into the variant)
+  if (RIG_ANIMALS[name]) { const [sp, v = null] = RIG_ANIMALS[name]; THING_BUILD[name] = (g, state, opts) => rigAnimal(g, sp, v, state, opts); continue; }
   if (SPECIES[name]) THING_BUILD[name] = (g) => quadruped(g, SPECIES[name]);
   else if (["pigeon", "duck", "chicken"].includes(name)) THING_BUILD[name] = (g) => bird(g, name);
   else if (SIMPLE[name]) THING_BUILD[name] = SIMPLE[name];

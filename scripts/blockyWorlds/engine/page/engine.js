@@ -288,14 +288,15 @@ async function main() {
 
   // ---------- scene objects: one instance per (name, state) per use in a shot (a shot may hold three cribs) ----------
   const OBJ = new Map(); // "name|state" -> [Group]
-  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}`; };
+  // PETS (2026-11-07, lib/pets.js): a pet object is built with its one look (tl.pets[id]: species, variant, colours, size)
+  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}${o.pet && tl.pets?.[o.pet] ? `|${o.pet}` : ""}`; };
   if (objectsM || blueprintM) {
     const counts = new Map();
     for (const s of tl.shots) { const c = new Map(); for (const o of s.objects ?? []) { const k = objKey(o); c.set(k, (c.get(k) ?? 0) + 1); } for (const [k, n] of c) counts.set(k, Math.max(counts.get(k) ?? 0, n)); }
     for (const [k, n] of counts) {
-      const [name, state] = k.split("|"), list = [];
+      const [name, state, petId] = k.split("|"), list = [];
       for (let i = 0; i < n; i++) {
-        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state });
+        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state, ...(petId ? { pet: tl.pets[petId] } : {}) });
         if (o?.userData?.problems?.length) console.warn(`engine: built object ${name}: ${o.userData.problems.slice(0, 8).join("; ")}`);
         if (!o?.isObject3D) throw new Error(`engine: makeObject("${name}", ${state}) returned no Object3D`);
         scene.add(o); o.visible = false; list.push(o);

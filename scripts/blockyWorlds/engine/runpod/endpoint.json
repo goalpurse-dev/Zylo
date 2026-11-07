@@ -10,7 +10,7 @@
   "NVIDIA RTX A4500",
   "NVIDIA RTX 2000 Ada Generation"
  ],
- "workersMax": 4,
+ "workersMax": 6,
  "idleTimeout": 5,
  "createdAt": "2026-11-06T18:08:21.511Z"
 }

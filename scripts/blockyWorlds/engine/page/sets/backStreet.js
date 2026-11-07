@@ -19,7 +19,7 @@ export function addPlaces(S, { ctx, K, world, plan, surface, toWorld, seed = 1 }
   const Y = (x, z, d = 0) => surface(x, z) ?? d;
   const plankM = new THREE.MeshStandardMaterial({ map: townTex(THREE, "planks", { color: "#a07850", seed: 11 }), roughness: 0.85 });
   const darkM = new THREE.MeshStandardMaterial({ color: "#5a3e28", roughness: 0.8 });
-  const add = (geo, mat, x, y, z, ry = 0, parent = world) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = true; parent.add(m); return m; };
+  const add = (geo, mat, x, y, z, ry = 0, parent = world) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = true; m.userData.placeProp = true; parent.add(m); return m; };
   const box = (w, h, d, mat, x, y, z, ry = 0, parent = world) => add(new THREE.BoxGeometry(w, h, d), mat, x, y, z, ry, parent);
   const base = { spots: Object.fromEntries(Object.entries(S.spots).map(([k, v]) => [k, v.clone()])), camDir: S.camDir.clone(), bounds: S.bounds.map((b) => b.clone()) };
   const P = { street: base };
@@ -71,11 +71,15 @@ export function addPlaces(S, { ctx, K, world, plan, surface, toWorld, seed = 1 }
   // SCHOOL: the yard on the street in front of the school landmark (its sign readable behind the kids)
   const L = (plan.landmarks ?? []).find((l) => l.name === "school") ?? (plan.landmarks ?? [])[0];
   if (L) {
-    const lw = toWorld(L.x, L.y, L.z), sgn = Math.sign(lw.x) || 1;
-    const c = V(lw.x * 0.15, 0, lw.z + 1.5); c.y = Y(c.x, c.z, 0);
-    const dep = V(sgn, 0, -0.35).normalize(); // toward the school
-    P.school = { spots: placeSpots(c, { lat: V(-dep.z, 0, dep.x), dep, far: Math.abs(lw.x) * 0.8 }), camDir: dep.clone().negate(), bounds: base.bounds };
-    P.school.framing = { medium: 1.2, wide: 1.0 }; // the yard is narrow: further back stood inside the houses across the street
+    // WORLD-FIX-2 2026-11-07 (owner: "school day" was a blank yellow wall, the camera inside a building): the camera
+    // looked ACROSS the narrow street (it stood in the houses opposite). Now the kids stand in the street beside the
+    // school's front, the camera stands down the street (toward the tail, the street is long and free) looking up it at
+    // a slant toward the school side: the kids in front, the SCHOOL facade + sign along the side of the frame behind them
+    const lw = toWorld(L.x, L.y, L.z), sgn = Math.sign(lw.x) || 1, half = plan.street?.half ?? 3;
+    const c = V(sgn * half * 0.25, 0, lw.z + (L.w ?? 10) * 0.35); c.y = Y(c.x, c.z, 0);
+    const dep = V(sgn * 0.12, 0, -1).normalize(); // up the street, past the school
+    P.school = { spots: placeSpots(c, { lat: V(-dep.z, 0, dep.x), dep, far: 14 }), camDir: V(-sgn * 0.42, 0, 1).normalize(), bounds: base.bounds, school: lw.clone() };
+    P.school.framing = { medium: 1.5, wide: 1.6 };
   }
   // INTERIORS: a room and a classroom (closed boxes far below the land; a warm light each, a bright window)
   const interior = (name, at, build) => {
@@ -108,6 +112,12 @@ export function addPlaces(S, { ctx, K, world, plan, surface, toWorld, seed = 1 }
     const txt = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 1.4), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 })); txt.position.set(0, 1.6, -D / 2 + 0.2); g.add(txt);
     for (const r of [0, 1]) for (const c of [-1, 0, 1]) { b(1.0, 0.06, 0.6, desk, c * 1.9, 0.72, -1.2 + r * 1.9); for (const e of [-1, 1]) b(0.06, 0.7, 0.5, desk, c * 1.9 + e * 0.45, 0.36, -1.2 + r * 1.9); }
   });
+  // WORLD-FIX-2: the town's buildings as solid boxes (world space, rest pose): the street camera never stands inside one
+  const solids = [...plan.houses, ...(plan.landmarks ?? [])].map((h) => {
+    const w = toWorld(h.x, h.y, h.z), cs = Math.abs(Math.cos(h.ry ?? 0)), sn = Math.abs(Math.sin(h.ry ?? 0));
+    return { x: w.x, z: w.z, hx: (cs * h.w + sn * h.d) / 2 + 0.25, hz: (sn * h.w + cs * h.d) / 2 + 0.25, y0: w.y - (h.sink ?? 0) - 0.5, y1: w.y + h.h * 1.6 + 0.5 };
+  });
+  S.solidAt = (p) => { if (S.indoor) return false; const q = world.worldToLocal(p.clone()); return solids.some((b) => Math.abs(q.x - b.x) < b.hx && Math.abs(q.z - b.z) < b.hz && q.y > b.y0 && q.y < b.y1); };
   for (const [k, p] of Object.entries(P)) p.name = k;
   S.places = P;
   let cur = "street";

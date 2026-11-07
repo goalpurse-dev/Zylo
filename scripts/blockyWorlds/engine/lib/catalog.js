@@ -16,7 +16,8 @@ const A = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 /** Animals as scene objects (one builder, a species per name). 2026-11-06 (BLOCKY-ANIMALS): most of them are now the
  * rigged blocky animals of page/kit/animals (things.js RIG_ANIMALS maps a name to its species + variant). */
 /** what an animal (or a built creature) can be doing in a shot: page/kit/motion.js bodyMotion (GAPS, 2026-11-05) */
-export const ANIMAL_STATES = Object.freeze(["walk", "run", "chase", "charge", "flee", "fly", "swim", "sleep", "eat", "howl", "roar", "carry", "climb", "dig", "lurk", "reach", "attack", "stomp"]);
+// sit / sniff / bark / hop: PETS 2026-11-07 (a normal-size animal character: lib/pets.js; page/kit/animals/animate.js)
+export const ANIMAL_STATES = Object.freeze(["walk", "run", "chase", "charge", "flee", "fly", "swim", "sleep", "eat", "howl", "roar", "carry", "climb", "dig", "lurk", "reach", "attack", "stomp", "sit", "sniff", "bark", "hop"]);
 export const ANIMALS = Object.freeze({
   dog: A("dog,dogs,puppy,puppies,hound,pet,pets,snowdog,snowdogs,snow-dogs"), cat: A("cat,cats,kitten,kittens,kitty"),
   goat: A("goat,goats"), sheep: A("sheep,lamb,lambs"), cow: A("cow,cows,calf,bull,animal,animals,critter,critters,livestock"), pig: A("pig,pigs,hog,hogs,piglet"),

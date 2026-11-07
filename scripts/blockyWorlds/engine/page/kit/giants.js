@@ -548,6 +548,58 @@ function backHeightfield(g) {
     return Number.isNaN(y) ? null : y + 0.05;
   };
 }
+/**
+ * WORLD-FIX-2 2026-11-07 (lead review: "the giant turtle's shell is a plain smooth light-brown dome, it does not look
+ * like the kit turtle"): at giant scale the kit's scute texture (2 repeats over a 120 m dome) read as one smooth dome
+ * under the outdoor sun. A giant shell gets the kit look built in geometry: rows of raised dark-brown scute plates over
+ * the dome (dark seams between them), moss patches on some plates, the dome itself the dark seam colour; the skin a
+ * touch darker so it keeps the kit's muted green in daylight. Houses stand above the plates (giantSurface adds 0.14).
+ */
+function dressGiantShell(g, R) {
+  const U = g.userData, S = U.spec, J = U.joints, c = S.c ?? {};
+  const a = (S.body.w ?? 5) / 2, cc = (S.body.len ?? 6) / 2, h = S.shell?.h ?? 2.5;
+  const dome = J.body.children.find((o) => o.isMesh && o.geometry?.type === "SphereGeometry");
+  const seam = new THREE.Color(c.seam ?? "#2e1e10");
+  if (dome) dome.material = new THREE.MeshStandardMaterial({ color: seam.clone().multiplyScalar(1.15), roughness: 0.95 });
+  const shades = [c.shell ?? "#6a4a2a", c.shell2 ?? "#8a6636", c.shell ?? "#6a4a2a"].map((x) => new THREE.Color(x));
+  shades.push(shades[0].clone().multiplyScalar(0.78));
+  for (const x of shades) x.multiplyScalar(0.8); // the outdoor sun lifts them: the kit's dark brown under daylight
+  const pts = [], rad = 0.46, mean = (a + cc) / 2;
+  // the rows on the sides (what the outside shots see); the top under the town stays the dark dome: a flat plate on
+  // the flatter top stood up out of the streets at its edges (the street camera saw it as a brown slab)
+  for (const ph of [0.1, 0.32, 0.55, 0.78]) {
+    const n = Math.max(3, Math.round((2 * Math.PI * Math.cos(ph) * mean) / (rad * 2.05)));
+    const off = R() * Math.PI * 2;
+    for (let k = 0; k < n; k++) pts.push({ th: off + (k / n) * Math.PI * 2, ph });
+  }
+  const geo = new THREE.CylinderGeometry(1, 1.08, 1, 6);
+  const plates = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.82 }), pts.length);
+  const mossN = Math.round(pts.length * 0.3);
+  const moss = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: c.moss ?? "#4f6e2a", roughness: 1 }), mossN);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), n = new THREE.Vector3(), s = new THREE.Vector3();
+  let mi = 0;
+  pts.forEach((o, i) => {
+    p.set(Math.sin(o.th) * Math.cos(o.ph) * a, Math.sin(o.ph) * h, Math.cos(o.th) * Math.cos(o.ph) * cc);
+    n.set(p.x / (a * a), p.y / (h * h), p.z / (cc * cc)).normalize();
+    q.setFromUnitVectors(up, n);
+    const r = rad * (0.9 + R() * 0.12);
+    m4.compose(p, q, s.set(r, 0.12, r)); plates.setMatrixAt(i, m4);
+    plates.setColorAt(i, shades[Math.floor(R() * shades.length)]);
+    if (mi < mossN && R() < 0.36) { const mp = p.clone().addScaledVector(n, 0.07); m4.compose(mp, q, s.set(r * (0.7 + R() * 0.6), 0.05, r * (0.6 + R() * 0.5))); moss.setMatrixAt(mi++, m4); }
+  });
+  moss.count = mi;
+  for (const im of [plates, moss]) { im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.instanceMatrix.needsUpdate = true; J.body.add(im); }
+  if (plates.instanceColor) plates.instanceColor.needsUpdate = true;
+  // the skin: a touch darker (cloned, the kit's cached materials stay as they are)
+  const done = new Map();
+  g.traverse((o) => {
+    if (!o.isMesh || o === dome || o === plates || o === moss || !o.material?.color) return;
+    const l = o.material.map ? 0.5 : o.material.color.getHSL({}).l;
+    if (l > 0.8 || l < 0.12) return; // eye whites, pupils, glints
+    if (!done.has(o.material)) { const m = o.material.clone(); m.color.multiplyScalar(0.78); done.set(o.material, m); }
+    o.material = done.get(o.material);
+  });
+}
 function makeAnimalGiant(spec, r) {
   const size = Math.min(200, Math.max(5, Number(spec.size) || 60));
   const g = makeAnimal({ species: r.species, variant: spec.variant ?? r.variant, size, expr: spec.expr });
@@ -557,6 +609,7 @@ function makeAnimalGiant(spec, r) {
   Object.assign(U, { kind: spec.kind ?? r.species, gait: { ...animalGait(g, "walk"), feet: U.legs.length }, town: null });
   if (r.species === "whale" || r.species === "elephant") U.params.town = "back";
   if (U.params.shell.kind === "none" && !U.params.back.deck) U.surfaceFn = backHeightfield(g);
+  if (U.params.shell.kind === "dome" && size >= 30) dressGiantShell(g, prng((spec.seed ?? 5) * 17 + 3));
   const wantTown = spec.town !== false && U.params.town !== "none";
   if (wantTown) { const town = buildGiantTown(g, U.params, spec); if (town) U.town = town; }
   return g;

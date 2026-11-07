@@ -69,17 +69,76 @@ export function fogGuard(fog, dist, base) {
   const near = Math.max(base.near, dist * 1.4), far = Math.max(base.far, near * 3);
   fog.near = near; fog.far = far; return { near, far };
 }
+/**
+ * WORLD-FIX-2 2026-11-07 (lead review: "street day / night: a plank between the camera and the person, half hidden";
+ * "school day: a blank wall, the camera inside a building"): the street-level line-of-sight rule for people shots.
+ * 1. the camera never stands inside a building of the town (S.solidAt, the plan's houses + landmarks): it steps toward
+ *    the subject until it is out;
+ * 2. nothing of the set between the lens and the subject's legs / chest / face: a place prop (deck rail, stair rail,
+ *    rooftop plank: userData.placeProp) is hidden for the shot, anything else (a house) moves the camera in front of it.
+ * Decided once per shot (rays are not cheap in a town of instanced houses), applied every frame; the lens widens to keep
+ * the framing when the camera moved in.
+ */
+const losMemo = new Map();
+function streetSight(S, THREE, camera, shot, subj) {
+  camera.updateMatrixWorld();
+  const c0 = camera.getWorldPosition(new THREE.Vector3());
+  // keyed by the shot + where the camera and the subject stand (to 0.5 m): the engine may hand a fresh shot object per frame
+  const key = `${shot.start}|${shot.place ?? ""}|${[...c0.toArray(), ...subj.pos.toArray()].map((v) => Math.round(v * 2)).join(",")}`;
+  if (S._losShot !== key) { for (const o of S._losHidden ?? []) o.visible = true; S._losHidden = []; S._losShot = key; }
+  const target = (k) => subj.pos.clone().add(new THREE.Vector3(0, subj.height * k, 0));
+  let memo = losMemo.get(key);
+  if (!memo) {
+    memo = { k: 0, hide: [] };
+    const c = c0.clone(), mid = target(0.6);
+    // 1. inside a building: step toward the subject
+    for (let i = 0; i < 40 && S.solidAt?.(c); i++) c.lerp(mid, 0.06);
+    // 2. the rays
+    const vis = (o) => { for (let p = o; p; p = p.parent) if (p.visible === false) return false; return true; };
+    for (let pass = 0; pass < 4; pass++) {
+      let worst = null;
+      for (const kk of [0.3, 0.6, 0.92]) {
+        const q = target(kk), dir = q.clone().sub(c), L = dir.length(); dir.normalize();
+        const hit = new THREE.Raycaster(c, dir, 0.05, Math.max(0.1, L - 0.45)).intersectObject(S.root, true).find((h) => h.object.isMesh && !h.object.isPoints && vis(h.object) && !memo.hide.includes(h.object) && h.object.material?.visible !== false && !h.object.material?.transparent);
+        if (hit && (!worst || hit.distance < worst.hit.distance)) worst = { hit, L, dir };
+      }
+      if (!worst) break;
+      const o = worst.hit.object;
+      if (o.userData.placeProp) { memo.hide.push(o); continue; }
+      if (worst.hit.distance > worst.L * 0.8) break; // right at the subject (a wall behind a hand): leave it
+      c.addScaledVector(worst.dir, worst.hit.distance + 0.5);
+    }
+    const d0 = c0.distanceTo(mid);
+    memo.k = d0 > 1e-3 ? Math.min(0.75, 1 - c.distanceTo(mid) / d0) : 0;
+    // 3. never skimming the ground: on a slope (the dome near its rim) the uphill ground stood a hand under the lens and
+    // filled the frame (school day: a brown slab); the camera rises to 1.5 m over the ground under it and re-aims
+    const cl = c0.clone().lerp(mid, memo.k), gy = S.surface?.(cl.x, cl.z);
+    memo.up = gy != null && cl.y < gy + 1.5 ? gy + 1.5 - cl.y : 0;
+    if (losMemo.size > 200) losMemo.clear();
+    losMemo.set(key, memo);
+  }
+  for (const o of memo.hide) if (o.visible) { o.visible = false; S._losHidden.push(o); }
+  if (memo.up > 0.05) { camera.position.y += memo.up; camera.lookAt(target(0.5)); camera.updateMatrixWorld(); }
+  if (memo.k > 0.01) {
+    const mid = target(0.6), L0 = c0.distanceTo(mid);
+    camera.position.lerp(mid, memo.k); // the camera is a child of the scene: world = local
+    const L1 = camera.position.distanceTo(mid);
+    camera.fov = Math.min(78, 2 * Math.atan(Math.tan((camera.fov * Math.PI) / 360) * L0 / Math.max(L1, 0.3)) * 180 / Math.PI);
+    camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  }
+}
 function lookHooks(S, ctx, nature) {
   let lastFog = null, base = null, baseExp = null, lastExp = null;
   S.THREE = ctx.THREE;
   S.afterCamera = (camera, shot, where, epic) => {
     const subj = sightSubject(shot, S, where, epic);
     nature?.sight(camera, subj);
+    if (S.places && subj && (shot?.actors ?? []).length) streetSight(S, ctx.THREE, camera, shot, subj);
     const fog = ctx.scene?.fog;
     if (fog !== lastFog) { lastFog = fog; base = fog ? { near: fog.near, far: fog.far } : null; }
     if (fog && base && subj) { camera.updateMatrixWorld(); fogGuard(fog, camera.getWorldPosition(new ctx.THREE.Vector3()).distanceTo(subj.pos), base); }
     // WORLD-FIX 2026-11-07: the interiors (room, classroom) under the outdoor sun rig were blown out: a lower exposure there
-    const rr = ctx.renderer; if (rr) { if (rr.toneMappingExposure !== lastExp) baseExp = rr.toneMappingExposure; lastExp = baseExp * (S.indoor ? 0.6 : 1); rr.toneMappingExposure = lastExp; }
+    const rr = ctx.renderer; if (rr) { if (rr.toneMappingExposure !== lastExp) baseExp = rr.toneMappingExposure; lastExp = baseExp * (S.indoor ? 0.6 : S.places ? 0.84 : 1); rr.toneMappingExposure = lastExp; } // WORLD-FIX-2: street level a touch lower (owner: washed out)
     return subj;
   };
 }
@@ -325,7 +384,7 @@ async function buildOn(spec, ctx) {
   land.position.y = -y0;
   root.add(land);
   const gait = gaitOf(spec.kind, spec.water ? "swim" : "walk", spec.size);
-  const spotY = (x, z) => flatEnough(x, z) ?? 0;
+  const spotY = (x, z) => (flatEnough(x, z) ?? 0) + 0.15; // WORLD-FIX-2: on the street blocks (their top is 0.15 above the surface), not in them
   const S = {
     root, indoor: false, giantView: spec.view, creature: spec.kind,
     spots: { center: V(0, spotY(0, 0), 0), left: V(-2.4, spotY(-2.4, 0.4), 0.4), right: V(2.4, spotY(2.4, 0.4), 0.4), back: V(0, spotY(0, -5), -5), far: V(0, spotY(0, -30), -30), door: V(0, spotY(0, -14), -14), horizon: V(0, -y0, -600), head: (giant.updateMatrixWorld(true), giant.localToWorld(giant.userData.focus.clone()).setX(0)), tail: V(0, spotY(0, 10), 10) },
@@ -338,6 +397,11 @@ async function buildOn(spec, ctx) {
       const s = creatureSway(spec.kind, spec.size, t, S.tiltK ?? 1); // shot.onCreature.walkTilt / tiltDeg (setPlace)
       world.rotation.set(s.pitch, 0, s.roll); world.position.y = s.bob * 0.5;
       animateGiant(giant, spec.water ? "swim" : "walk", t);
+      // WORLD-FIX-2: the walk cycle bobs the body (the town rides it) up to ~0.6 m on a 120 m turtle, while the people
+      // stand at fixed heights: they sank into the street to the knees ("street night"). The giant is held so its
+      // body stays at rest height; the gentle rock is the world's sway above
+      const bj = giant.userData.joints?.body, br = bj && giant.userData.rest?.get(bj);
+      giant.position.y = -y0 - (bj && br ? (bj.position.y - br.p.y) * (giant.userData.unit ?? 1) : 0);
       land.position.z = (t * gait.speed) % 1200; land.rotation.z = -s.roll * 0.3;
     },
     town, giant, mount: world, groundY: -y0, surface: (x, z) => flatEnough(x, z),

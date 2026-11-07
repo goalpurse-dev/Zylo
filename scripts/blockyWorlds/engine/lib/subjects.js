@@ -98,7 +98,7 @@ function normCtx(ctx) {
   people.delete("me");
   const alias = ctx.alias ?? {};
   const monster = ctx.monster ? { key: ctx.monster.key ?? norm(String(ctx.monster.name ?? "").replace(/^the\s+/i, "")), name: ctx.monster.name ?? "the monster", keys: ctx.monster.keys, words: ctx.monster.words } : null;
-  const vw = { people, alias, narrator: ctx.narrator ?? "Me", monster, looseNames: new Set(ctx.looseNames ?? []), prop: ctx.prop ?? null };
+  const vw = { people, alias, narrator: ctx.narrator ?? "Me", monster, looseNames: new Set(ctx.looseNames ?? []), prop: ctx.prop ?? null, ...(ctx.pets ? { pets: ctx.pets } : {}) }; // pets: lib/pets.js (2026-11-07)
   const gender = { ...(ctx.gender ?? {}) };
   const genderFor = (id) => {
     if (id in gender) return gender[id];
@@ -298,7 +298,7 @@ export function subjectOf(line, ctx = {}) {
     for (let j = i0; j <= i1; j++) {
       const t = toks[j], x = keys.find((y) => y.k === j);
       if (x?.kind === "person" && j > s.k0) touch(st, x.id);
-      if (x?.kind === "noun" && N.beings?.has(x.label)) touch(st, `thing:${x.label}`);
+      if ((x?.kind === "noun" || x?.kind === "pet") && N.beings?.has(x.label)) touch(st, `thing:${x.label}`);
       let id = null;
       if (/^(he|she|him|hes|shes)$/.test(t.c) || (t.c === "her" && (!toks[j + 1] || t.end || t.comma || PREP.test(toks[j + 1].c) || /^[A-Z]/.test(toks[j + 1].raw) || ADVERB.test(toks[j + 1].c)))) {
         id = r.ref && s.id === r.ref && !seenSubject && /^(he|she|hes|shes)$/.test(t.c) ? r.ref : resolveGendered(t.c.replace(/s$/, ""), N);

@@ -147,9 +147,10 @@ export function matchProduction(production, { kit = nodeKit(), exists = () => fa
     if (c.kind === "human") { put(c, "cast", name, { ...ask("character", { role: c.role }, c, "cast", name), route: "kit", kitName: "person" }); continue; }
     // a robot / creature / animal / talking object in the cast: the thing itself (robot dentist -> robot + dentist hint)
     const thing = [c.kind === "robot" ? "robot" : "", c.look, c.job, c.name].filter(Boolean).join(" ");
-    const small = kit.smallCreatureFor(`${c.kind} ${c.look} ${c.name}`) ?? (c.kind === "animal" ? kit.animalFor(`${c.look} ${c.name}`) : null);
+    // an animal character (a pet: lib/pets.js) is its species at real size, whatever its job ("a dog detective")
+    const small = c.kind === "animal" ? (kit.animalFor(c.species ?? "") ?? kit.animalFor(`${c.look} ${c.name}`) ?? kit.smallCreatureFor(`${c.look} ${c.name}`)) : kit.smallCreatureFor(`${c.kind} ${c.look} ${c.name}`);
     const full = [c.kind === "robot" ? "robot" : c.look, c.job].filter(Boolean).join(" ").trim() || name;
-    if (small && !c.job) { put(c, "cast", name, { ...ask(c.kind === "animal" ? "creature.animal" : "creature.small", {}, c, "cast", name), route: "kit", kitName: small }); continue; }
+    if (small && (!c.job || c.kind === "animal")) { put(c, "cast", name, { ...ask(c.kind === "animal" ? "creature.animal" : "creature.small", {}, c, "cast", name), route: "kit", kitName: small, ...(c.kind === "animal" ? { pet: true } : {}) }); continue; }
     asObject(c, "cast", full || thing, "object.built");
   }
 

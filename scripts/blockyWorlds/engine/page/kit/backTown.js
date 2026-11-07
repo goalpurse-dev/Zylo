@@ -134,6 +134,10 @@ export function planBackTown(region, surface, { style = "town", landmarks = [], 
  * neighbours; lamps along the streets. -> { houses, paths: [{ x, z, len, w, axis, main }], fences, lamps }
  */
 export function gridTown(region, surface, { scale: scale0 = 1, seed = 5, density = 1, street, village = false } = {}) {
+  // WORLD-FIX-2 2026-11-07 (lead review: houses only on the top of the shell, the slopes bare): a house on a steep
+  // slope is dug into it (its floor up to 40 % of the drop below the high side, at most 0.6 x its height) and its walls
+  // go down to the low side, so the dome sides are covered in stepped terraces too
+  const terrace = (lo, hi, h) => { const dig = Math.min((hi - lo) * 0.4, h * 0.6), y = hi - dig, sink = y - lo; return sink > h * 6 ? null : { y, sink }; };
   const scale = scale0 * (village ? 0.85 : 0.72); // many small houses read as a town (the target: ~300 on one shell)
   const R = prng(seed * 211 + 5);
   const sw = street.half * 2, lotD = (village ? 7 : 6) * scale, P = sw * 0.55 + 2 * lotD + 0.6 * scale, Q = (village ? 46 : 40) * scale;
@@ -145,7 +149,7 @@ export function gridTown(region, surface, { scale: scale0 = 1, seed = 5, density
   for (const sx of xs) {
     if (sx < region.x0 || sx > region.x1) continue;
     // the street strip (only where it lies on the back)
-    for (let z = region.z0; z < region.z1; z += 3) if (ok(sx, z + 1.5)) paths.push({ y: surface(sx, z + 1.5), x: sx, z: z + 1.5, len: 3.05, w: sx === 0 ? sw : sw * 0.55, axis: "z", main: sx === 0 });
+    for (let z = region.z0; z < region.z1; z += 3) if (ok(sx, z + 1.5)) paths.push({ y: surface(sx, z + 1.5), x: sx, z: z + 1.5, len: 3.05, w: sx === 0 ? sw : sw * 0.55, axis: "z", main: sx === 0, dy: (surface(sx, z + 3) ?? surface(sx, z + 1.5)) - (surface(sx, z) ?? surface(sx, z + 1.5)) });
     for (const side of [-1, 1]) {
       const hx = sx + side * ((sx === 0 ? sw / 2 : sw * 0.28) + lotD / 2 + 0.3 * scale);
       let z = region.z0 + R() * 3;
@@ -158,11 +162,11 @@ export function gridTown(region, surface, { scale: scale0 = 1, seed = 5, density
         const ys = [[-d / 2, -w / 2], [d / 2, -w / 2], [-d / 2, w / 2], [d / 2, w / 2], [0, 0]].map(([a, b]) => surface(hx + a, cz + b));
         if (ys.some((v) => v == null)) continue;
         const lo = Math.min(...ys), hi = Math.max(...ys);
-        if (hi - lo > h * 4) continue; // terraces down the dome (the walls go down to the low side; WORLD-FIX: steeper slopes too, the dome sides were bare)
+        const tr = terrace(lo, hi, h); if (!tr) continue; // terraces down the dome (WORLD-FIX-2: steep slopes too, half dug into the slope)
         const ry = side > 0 ? -Math.PI / 2 : Math.PI / 2;
         const wallK = WALLK[Math.floor(R() * WALLK.length)];
         const porch = R() < 0.35;
-        houses.push({ x: hx, y: hi, z: cz, ry, w, d, h, sink: hi - lo, kind: "house", wall: wallK, wallCol: Math.floor(R() * 8), roof: R() < 0.55 ? "tiles" : "shingles", roofCol: Math.floor(R() * 6), porch, street: sx, side });
+        houses.push({ x: hx, y: tr.y, z: cz, ry, w, d, h, sink: tr.sink, kind: "house", wall: wallK, wallCol: Math.floor(R() * 8), roof: R() < 0.55 ? "tiles" : "shingles", roofCol: Math.floor(R() * 6), porch, street: sx, side });
         // fence pieces at the front corners, toward the neighbours
         if (R() < 0.6) for (const e of [-1, 1]) fences.push({ x: hx - side * (d / 2 + 0.6 * scale), z: cz + e * (w / 2 + 0.5 * scale), y: surface(hx, cz) ?? hi, len: 1.1 * scale, axis: "z" });
       }
@@ -179,12 +183,12 @@ export function gridTown(region, surface, { scale: scale0 = 1, seed = 5, density
     const w = (5 + R() * 3) * scale, d = w * (0.75 + R() * 0.3), h = (4 + R() * 3.4) * scale;
     const ys = [[-w / 2, -d / 2], [w / 2, -d / 2], [-w / 2, d / 2], [w / 2, d / 2]].map(([p, q]) => freeAt(x + p, z + q));
     if (ys.some((v) => v == null) || freeAt(x, z) == null) continue;
-    const lo = Math.min(...ys), hi = Math.max(...ys); if (hi - lo > h * 4) continue;
+    const lo = Math.min(...ys), hi = Math.max(...ys); const tr = terrace(lo, hi, h); if (!tr) continue;
     if (houses.some((o) => Math.hypot(o.x - x, o.z - z) < Math.hypot(o.w, o.d) / 2 + Math.hypot(w, d) / 2 + 0.5 * scale)) continue;
     const near = xs.reduce((bb, sx) => (Math.abs(x - sx) < Math.abs(x - bb) ? sx : bb), 0);
-    houses.push({ x, y: hi, z, w, d, h, sink: hi - lo, ry: x > near ? -Math.PI / 2 : Math.PI / 2, kind: "house", wall: WALLK[Math.floor(R() * WALLK.length)], wallCol: Math.floor(R() * 8), roof: R() < 0.55 ? "tiles" : "shingles", roofCol: Math.floor(R() * 6), porch: false, street: null, side: 0 }); n++;
+    houses.push({ x, y: tr.y, z, w, d, h, sink: tr.sink, ry: x > near ? -Math.PI / 2 : Math.PI / 2, kind: "house", wall: WALLK[Math.floor(R() * WALLK.length)], wallCol: Math.floor(R() * 8), roof: R() < 0.55 ? "tiles" : "shingles", roofCol: Math.floor(R() * 6), porch: false, street: null, side: 0 }); n++;
   }
-  for (const z of zs) for (let x = region.x0; x < region.x1; x += 3) if (ok(x + 1.5, z)) paths.push({ y: surface(x + 1.5, z), x: x + 1.5, z, len: 3.05, w: sw * 0.8, axis: "x", main: false });
+  for (const z of zs) for (let x = region.x0; x < region.x1; x += 3) if (ok(x + 1.5, z)) paths.push({ y: surface(x + 1.5, z), x: x + 1.5, z, len: 3.05, w: sw * 0.8, axis: "x", main: false, dy: (surface(x + 3, z) ?? surface(x + 1.5, z)) - (surface(x, z) ?? surface(x + 1.5, z)) });
   return { houses, paths, fences, lamps };
 }
 
@@ -234,7 +238,9 @@ export function applyBibleTown(houses, bible, region, landmarks = []) {
 }
 
 // WORLD-LOOK: the dense town's meshes: one InstancedMesh per (part, material); textures from page/kit/townTex.js
-const WALL_COLS = { planks: ["#b08456", "#9a7046", "#c49a6a", "#7d8fa6", "#a8c0a0", "#d2a07a", "#8a6a4a", "#c8b090"], plaster: ["#f3e6c8", "#e8d2b0", "#cfe0f0", "#f0c8b8", "#e0ecd0", "#f6eedc", "#d8c8e8", "#f0dca0"], timber: ["#f4ead2", "#efe0c0", "#f6eee0", "#ead8b8", "#f0e4cc", "#f8f0e0", "#e8dcc4", "#f2e8d6"] };
+// WORLD-FIX-2 (owner: washed-out town): saturated storybook walls (planks, plaster, the infill between the timbers)
+const WALL_COLS = { planks: ["#b0683a", "#4f82b4", "#5f9e5a", "#b4503e", "#d49a3a", "#7a68b0", "#8a5a36", "#3f8f8a"], plaster: ["#f2bd48", "#e8806a", "#78b4dc", "#94cc82", "#f2a0b6", "#c4a0e0", "#f4d27e", "#ec9a58"], timber: ["#f4d898", "#f0c49a", "#d4e6a8", "#f6dcb0", "#c8dcec", "#f4c8c0", "#e8d48c", "#f2e0a8"] };
+const SHUT = ["#2f6fa8", "#3a8a4a", "#b83a2e", "#2f8a86", "#6a4aa0", "#d08a2a"], FLOW = ["#e8384a", "#f06aa8", "#f4c430", "#ff7a2a", "#b04ae0"], AWN = ["#d0342c", "#2f78c0", "#2f9a50", "#e8a020", "#8a3ab0"], PROD = ["#e84a2a", "#f4a020", "#6ab040", "#c03050", "#f0d040"];
 const ROOF_COLS = { tiles: ["#b8442c", "#c8603a", "#a83a2a", "#d07040", "#9a4a32", "#c05030"], shingles: ["#6a5a4a", "#4f5d6e", "#7a4a3a", "#5a6a5a", "#3e4a5e", "#80664a"] };
 function denseTownMesh(plan, { seed = 5 } = {}) {
   const g = new THREE.Group(); g.name = "denseTown";
@@ -252,7 +258,8 @@ function denseTownMesh(plan, { seed = 5 } = {}) {
   const fenceMat = new THREE.MeshStandardMaterial({ color: "#efe8da", roughness: 0.8 });
   const chimMat = new THREE.MeshStandardMaterial({ map: townTex(THREE, "stone", { color: "#9a6a52", seed: 4 }), roughness: 0.9 });
   const push = (b, lx, ly, lz, sx, sy, sz, h) => { q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly, lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); b.list.push(new THREE.Matrix4().compose(v.clone(), q.clone(), new THREE.Vector3(sx, sy, sz))); };
-  const wins = [], frames = [], doors = [], decks = [], posts = [], chims = [], signs = [];
+  const wins = [], frames = [], doors = [], decks = [], posts = [], chims = [], signs = [], det = [], props = [], lanterns = [], barrels = [];
+  const DR = (x) => { const t = Math.sin(x * 12.9898 + seed * 78.233) * 43758.5453; return t - Math.floor(t); };
   if (plan.trim) frameMat.color.set(plan.trim);
   for (const h of houses) {
     const sink = (h.sink ?? 0) + 0.3, H = h.h + sink, W = h.w, D = h.d;
@@ -275,22 +282,50 @@ function denseTownMesh(plan, { seed = 5 } = {}) {
     if (h.porch) { decks.push([0, 0.35 * sc, D / 2 + 1.1 * sc, W * 0.9, 0.25 * sc, 2.2 * sc, h]); for (const e of [-1, 1]) posts.push([e * W * 0.43, 1.4 * sc, D / 2 + 2.1 * sc, 0.18 * sc, 2.4 * sc, 0.18 * sc, h]); }
     chims.push([W * 0.25, -sink + H + rh * 0.5, -D * 0.15, 0.7 * sc, rh * 1.0, 0.7 * sc, h]);
     if (h.sign) signs.push(h);
+    // WORLD-FIX-2 2026-11-07 (owner: "the town scenes look EMPTY and WASHED-OUT"): street-level detail on every front:
+    // coloured shutters + flower boxes at the ground-floor windows, a wall lantern by the door, on some houses an awning,
+    // crates and barrels; on the main street a market stall now and then (counter, striped canopy, produce)
+    const hr = DR(h.x * 7.1 + h.z * 3.3), sh = SHUT[Math.floor(hr * SHUT.length) % SHUT.length];
+    for (const fx of [-0.3, 0.3]) {
+      const lx = fx * W; if (Math.abs(lx) < 1.0 * sc) continue;
+      for (const e of [-1, 1]) det.push([lx + e * 0.66 * sc, 2.0 * sc, D / 2 + 0.08, 0.36 * sc, 1.25 * sc, 0.07, h, sh]);
+      det.push([lx, 1.3 * sc, D / 2 + 0.2 * sc, 1.15 * sc, 0.26 * sc, 0.36 * sc, h, "#6a4426"]);
+      det.push([lx, 1.5 * sc, D / 2 + 0.2 * sc, 1.0 * sc, 0.22 * sc, 0.3 * sc, h, FLOW[Math.floor(DR(lx + h.x) * FLOW.length) % FLOW.length]]);
+    }
+    lanterns.push([0.85 * sc, 2.1 * sc, D / 2 + 0.16, 0.26 * sc, 0.4 * sc, 0.26 * sc, h]);
+    if (hr < 0.4 && !h.porch) { const ac = AWN[Math.floor(hr * 97) % AWN.length]; props.push([0, 2.55 * sc, D / 2 + 0.6 * sc, 2.0 * sc, 0.14 * sc, 1.2 * sc, h, ac]); props.push([0, 2.38 * sc, D / 2 + 1.18 * sc, 2.0 * sc, 0.3 * sc, 0.06, h, "#f6f0e4"]); }
+    if (hr > 0.55) { props.push([W * 0.36, 0.35 * sc, D / 2 + 0.5 * sc, 0.7 * sc, 0.7 * sc, 0.7 * sc, h, "#a8743e"]); props.push([W * 0.36 + 0.15 * sc, 0.95 * sc, D / 2 + 0.45 * sc, 0.5 * sc, 0.5 * sc, 0.5 * sc, h, "#8e5e30"]); barrels.push([-W * 0.36, 0.5 * sc, D / 2 + 0.55 * sc, 0.62 * sc, 1.0 * sc, 0.62 * sc, h]); }
+    if (h.street === 0 && !h.porch && hr > 0.2 && hr < 0.42) {
+      const z0 = D / 2 + 1.05 * sc, cc = AWN[Math.floor(hr * 53) % AWN.length];
+      props.push([0, 0.5 * sc, z0, 2.2 * sc, 1.0 * sc, 0.8 * sc, h, "#8a5a32"]);
+      for (let k = 0; k < 3; k++) props.push([(k - 1) * 0.7 * sc, 1.12 * sc, z0, 0.6 * sc, 0.24 * sc, 0.6 * sc, h, PROD[(k + Math.floor(hr * 10)) % PROD.length]]);
+      for (const e of [-1, 1]) props.push([e * 1.05 * sc, 1.25 * sc, z0 + 0.3 * sc, 0.12 * sc, 2.5 * sc, 0.12 * sc, h, "#5a3e28"]);
+      for (let k = 0; k < 4; k++) props.push([(k - 1.5) * 0.62 * sc, 2.5 * sc, z0 + 0.1 * sc, 0.62 * sc, 0.14 * sc, 1.5 * sc, h, k % 2 ? "#f6f0e4" : cc]);
+    }
   }
+  // the detail pieces: one instanced mesh with a colour per piece; the lanterns glow at night; barrels
+  for (const [list, nm] of [[det, "streetDetail"], [props, "streetProps"]]) if (list.length) { const im = new THREE.InstancedMesh(box, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.8 }), list.length), col = new THREE.Color(); im.userData.placeProp = nm === "streetProps"; list.forEach((r, i) => { const [lx, ly, lz, sx, sy, sz, h, c] = r; q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly - (h.sinkFix ?? 0), lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(i, m4); im.setColorAt(i, col.set(c)); }); im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; im.name = nm; g.add(im); }
+  const lanternMat = new THREE.MeshStandardMaterial({ color: "#ffe6a8", emissive: "#ffb347", emissiveIntensity: 0.4, roughness: 0.4 });
   const inst = (geo, mat, rows, name, cast = true) => { if (!rows.length) return null; const im = new THREE.InstancedMesh(geo, mat, rows.length); rows.forEach((r, i) => { const [lx, ly, lz, sx, sy, sz, h] = r; q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly, lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; im.castShadow = cast; im.receiveShadow = true; im.frustumCulled = false; im.name = name; g.add(im); return im; };
   for (const [k, b] of buckets) { const im = new THREE.InstancedMesh(b.geo, b.mat, b.list.length); b.list.forEach((m, i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true; im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.name = k; g.add(im); }
+  inst(box, lanternMat, lanterns, "lanterns", false); { const bar = inst(new THREE.CylinderGeometry(0.5, 0.5, 1, 10), new THREE.MeshStandardMaterial({ color: "#7a4e2a", roughness: 0.8 }), barrels, "barrels"); if (bar) bar.userData.placeProp = true; }
   inst(box, winMat, wins, "windows", false); inst(box, frameMat, frames, "frames", false); inst(box, darkWood, doors, "doors"); inst(box, deckMat, decks, "porches"); inst(box, darkWood, posts, "porchPosts"); inst(box, chimMat, chims, "chimneys");
   // fences (pickets as thin boxes) and the streets (cobbles on the main street, packed dirt on the others)
   const fr = []; for (const f of plan.fences ?? []) for (let k = 0; k < 4; k++) fr.push([0, 0.45 * sc, (k - 1.5) * f.len / 4, 0.08 * sc, 0.9 * sc, 0.1 * sc, { x: f.x, y: f.y, z: f.z, ry: 0 }]);
   inst(box, fenceMat, fr, "fences");
-  const cob = new THREE.MeshStandardMaterial({ map: townTex(THREE, "cobbles", { color: "#a49a8a", seed: 2 }), roughness: 0.95 }), dirtM = new THREE.MeshStandardMaterial({ map: townTex(THREE, "dirt", { color: "#8a7458", seed: 2 }), roughness: 1 });
+  const cob = new THREE.MeshStandardMaterial({ map: townTex(THREE, "cobbles", { color: "#8c7f6c", seed: 2 }), roughness: 0.95 }), dirtM = new THREE.MeshStandardMaterial({ map: townTex(THREE, "dirt", { color: "#8a7458", seed: 2 }), roughness: 1 });
   const pm = [], pd = [];
   for (const p of plan.paths ?? []) { const y = p.y ?? null; (p.main ? pm : pd).push(p); void y; }
   const surfY = plan.surfY ?? (() => 0);
   const pathRows = (list) => list.map((p) => [0, 0, 0, p.axis === "z" ? p.w : p.len, 0.22, p.axis === "z" ? p.len : p.w, { x: p.x, y: (p.y ?? surfY(p.x, p.z)) + 0.04, z: p.z, ry: 0 }]);
-  inst(box, cob, pathRows(pm), "mainStreet", false); inst(box, dirtM, pathRows(pd), "sideStreets", false);
+  // WORLD-FIX-2 2026-11-07 (lead review: "a plank between the camera and the person" in street day / night): the flat
+  // 3 m street blocks stepped up and down the dome, each step edge a plank across the frame at a kid's knees. Each block
+  // now follows the slope (pitched along its street) and reaches down 1 m, so the street is one smooth ramp
+  const pathMesh = (list, mat, name) => { if (!list.length) return; const im = new THREE.InstancedMesh(box, mat, list.length), e = new THREE.Euler(); list.forEach((p, i) => { const y = (p.y ?? surfY(p.x, p.z)) + 0.04, a = Math.atan2(p.dy ?? 0, p.len), t = 1.2; e.set(p.axis === "z" ? -a : 0, 0, p.axis === "x" ? a : 0); q.setFromEuler(e); const dn = new THREE.Vector3(0, -(t - 0.22) / 2, 0).applyQuaternion(q); m4.compose(v.set(p.x + dn.x, y + dn.y, p.z + dn.z), q, new THREE.Vector3(p.axis === "z" ? p.w : p.len / Math.cos(a) + 0.1, t, p.axis === "z" ? p.len / Math.cos(a) + 0.1 : p.w)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; im.receiveShadow = true; im.frustumCulled = false; im.name = name; g.add(im); };
+  pathMesh(pm, cob, "mainStreet"); pathMesh(pd, dirtM, "sideStreets"); void pathRows; void inst;
   // the bible's named places: a sign board over the door
   for (const h of signs) { const sw = Math.min(h.w * 0.9, 1.2 + h.sign.length * 0.55 * sc), sh = sw / 4; const m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshStandardMaterial({ map: signTex(h.sign, "#2c3e70"), roughness: 0.6 })); q.setFromAxisAngle(up, h.ry ?? 0); m.position.set(0, Math.min(h.h - 0.4, 3.3 * sc), h.d / 2 + 0.12).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m.quaternion.copy(q); m.castShadow = true; g.add(m); }
-  g.userData.setLit = (on, k = 1) => { winMat.emissiveIntensity = on ? 1.7 * k : 0; winMat.color.set(on ? "#ffd892" : "#2a3a4c"); };
+  g.userData.setLit = (on, k = 1) => { lanternMat.emissiveIntensity = on ? 2.4 * k : 0.4; winMat.emissiveIntensity = on ? 1.7 * k : 0; winMat.color.set(on ? "#ffd892" : "#2a3a4c"); };
   return g;
 }
 
@@ -356,7 +391,10 @@ function landmarkMesh(L, litMats) {
     for (const [a, b] of [[3.6, 1.1], [1.1, 3.6]]) { const c = new THREE.Mesh(new THREE.BoxGeometry(a, 0.3, b), cm); c.position.set(0, L.h + 1.3, 0); g.add(c); }
   }
   if (L.clock) { const c = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.2, 16), std("#fdfdf6", 0.4)); c.rotation.z = Math.PI / 2; c.position.set(L.d / 2 + 0.15, L.h * 0.86, 0); g.add(c); }
-  g.position.set(L.x, L.y, L.z); g.rotation.y = L.ry;
+  // WORLD-FIX-2 2026-11-07 (owner: "school day" a blank yellow wall): the landmark's front is its local +x, the plan's ry
+  // is the houses' convention (front +z). Turned by ry alone, the building lay across the street (its length w spanned
+  // x) and its front faced along the street; now its depth d spans x (as planned) and the door + sign face the street
+  g.position.set(L.x, L.y, L.z); g.rotation.y = L.ry - Math.PI / 2;
   g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   return g;
 }
