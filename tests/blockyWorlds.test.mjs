@@ -142,7 +142,7 @@ test("script: a 1:30 script lands on 1:30 at the voice's measured pace (~215 wpm
   assert.equal(targetWords(90), 318);
   const lines = (n) => Array.from({ length: Math.ceil(n / 8) }, (_, i) => ({ part: "own", text: Array.from({ length: Math.min(8, n - i * 8) }, () => "word").join(" ") + "." }));
   assert.match(checkScript({ lines: [{ part: "rule", text: "In this world, x." }, ...lines(330)] }, 90).problems.join(), /Too long/);
-  assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /318 words in total \(between 286 and 318, never more/);
+  assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /LENGTH: 90 seconds = 286 to 318 words in total, in about \d+ lines\. Never more than 318 words/);
 });
 
 test("script: pausing punctuation is cleaned out, meaning kept", () => {

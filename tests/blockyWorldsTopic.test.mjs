@@ -2,8 +2,8 @@
 // turtle and a big bad wolf with an army of soldiers is hunting it" and got a story about a drumbeat in everyone's wrist.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { topicElements, topicProblems, rankTopicIdeas, ruleMissing, baseWord, TOPIC_PREFIX } from "../supabase/functions/_shared/blockyWorlds/topic.js";
-import { problemSpots } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
+import { topicElements, topicProblems, rankTopicIdeas, ruleMissing, baseWord, TOPIC_PREFIX, topicConflict, droppedDescriptors, statesRelation, resolvesConflict, conflictLines } from "../supabase/functions/_shared/blockyWorlds/topic.js";
+import { beatsPrompt, problemSpots } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
 import { fixPart, scriptProtocolCheck, writeTopicIdeas } from "../supabase/functions/_shared/blockyWorlds/llm.js";
 import { partFixPrompt, scriptPrompt } from "../supabase/functions/_shared/blockyWorlds/script.js";
 import { topicPrompt } from "../supabase/functions/_shared/blockyWorlds/ideas.js";
@@ -92,8 +92,90 @@ test("topic: library drafts and pasted scripts are never topic-checked", () => {
 
 test("topic: spots: the first line is fixed in place, drifting across the story needs a rewrite", () => {
   const spots = problemSpots(drums, topicProblems(TOPIC, drums));
-  assert.deepEqual(spots.map((s) => [s.part, s.fix]), [["rule", "part"], [null, "rewrite"], [null, "rewrite"]]);
+  // the first line, the elements after the opening, the share, and the hunt that never happens after the opening
+  assert.deepEqual(spots.map((s) => [s.part, s.fix]), [["rule", "part"], [null, "rewrite"], [null, "rewrite"], [null, "rewrite"]]);
   assert.deepEqual(spots[0].lines, [0]);
+});
+
+// 2026-11-07, the second real drift (Sonnet, paid test run "turtle"): every noun is there, so the old check passed it, but
+// "giant", "big bad" and the hunt are gone: the wolf is fed a sandwich every night and the army ends up washing dishes.
+const sandwich = {
+  title: "The Wolf's Army Washes Our Dishes",
+  lines: [
+    ...L("rule", "In this world, we live inside a turtle and feed the hunting wolf every night."),
+    ...L("tour", "You see, the turtle keeps our whole town safe.", "But miss the nightly sandwich.", "The wolf's army bites the shell.", "Grandpa Tuk eats only lukewarm peas.", "Nobody hunts a man that boring.", "Mrs. Bell fed the wolf's cousin three times this week.", "He's still hungry.", "The mailman's been fed so often he delivers by hopping."),
+    ...L("me", "I'm Bo, the class clown.", "I forget the sandwich every single night.", "I have one lunchbox and zero plans.", "My little sister Pea waits for me inside the turtle.", "She says I'm her hero.", "In my lunchbox sits one soggy peanut butter sandwich."),
+    ...L("until", "Until one night, I forgot the sandwich again.", "Sniff. Sniff.", "Soldiers pressed their noses to the shell.", "Then one soldier took a bite.", "Crunch.", "A hole the size of a block opened in the wall.", "Then the whole army swarmed the shell.", "The town square rattled.", "Houses wobbled.", "Pea grabbed my sleeve.", "Everybody looked at me."),
+    ...L("discovery", "I ran to the old wall by the square.", "There's a dusty plaque nobody reads.", "It showed carved figures around a long table.", "The wolf sat right in the middle.", "Whoever sits at the table is safe.", "Feeding the wolf was never a bribe.", "It was an invitation."),
+    ...L("climax", "I walked out to the wolf.", "My knees were jelly.", "Evening, sir.", "I held out my soggy sandwich.", "Dinner's ready.", "Bring the whole army.", "The wolf sniffed the sandwich.", "It was horrible.", "He ate it anyway.", "Soldiers sat down with napkins.", "By the rule they couldn't hunt anyone at the table.", "So they stayed.", "Then they washed every dish.", "Mrs. Bell handed out sponges."),
+    ...L("closer", "The town's safe.", "The army does dishes now.", "In this world, we live inside a turtle and nobody here skips dinner twice."),
+  ],
+  post: { title: "We live inside a turtle and a wolf is hunting it", description: "", hashtags: [] },
+};
+const sandwichCard = { prop: "a soggy peanut butter sandwich", closer: "In this world we live inside a turtle, and nobody here skips dinner twice.", topic: TOPIC };
+// The same story told faithfully: still funny, the same sandwich, but the giant turtle is hunted and the hunt ends.
+const sandwichFaithful = {
+  title: "The Sandwich That Saved Our Turtle",
+  lines: [
+    ...L("rule", "In this world, we live inside a giant turtle, and a big bad wolf's army is hunting it."),
+    ...L("tour", "You see, the turtle walks all night so the soldiers can't find it.", "Stop walking, and the wolf's army catches up.", "Grandpa Tuk sleeps standing up, just in case.", "Mrs. Bell bakes bread on the turtle's back.", "The wolf's soldiers sniff for it every morning.", "The mailman delivers by hopping across the shell.", "Nobody stands still here."),
+    ...L("me", "I'm Bo, the class clown.", "I never stop snacking.", "I always carry one soggy peanut butter sandwich.", "My little sister Pea says it smells like feet.", "She says I'm her hero anyway."),
+    ...L("until", "Until one night, the giant turtle fell asleep.", "It stopped walking.", "Sniff. Sniff.", "The wolf's soldiers were hunting us again.", "Boots thudded closer across the hills.", "Then the whole army climbed onto the shell.", "Torches. Helmets. Teeth.", "The big bad wolf himself knocked on the shell.", "Pea grabbed my sleeve."),
+    ...L("discovery", "I peeked through a crack in the shell.", "The soldiers weren't sniffing for the turtle.", "They were sniffing for food.", "The wolf was hunting the turtle because it smelled like Mrs. Bell's bread.", "And nothing smells stronger than my sandwich."),
+    ...L("climax", "I climbed to the top of the shell.", "I held up my soggy peanut butter sandwich.", "Every single soldier froze.", "Every nose turned.", "I threw it as far as I could.", "It flew off the cliff into the river.", "The whole army chased after it.", "Splash. Splash. Splash.", "The big bad wolf tripped over his own tail and rolled after them.", "The giant turtle woke up and walked away."),
+    ...L("closer", "Now nobody hunts our turtle.", "In this world, we live inside a giant turtle, and I'm the kid with the sandwich."),
+  ],
+  post: { title: "The Sandwich That Saved Our Turtle", description: "", hashtags: [] },
+};
+
+test("topic: the real 'sandwich' drift (nouns kept, premise lost) now FAILS: descriptors, the hunt, the climax", () => {
+  const problems = topicProblems(TOPIC, sandwich);
+  const all = problems.join("\n");
+  assert.match(all, /the first line never says that "wolf" or "army\/soldiers" is "hunting" the "turtle"/); // "the hunting wolf" is an adjective
+  assert.match(all, /drops "giant" \(turtle\) and "big bad" \(wolf\)/);
+  assert.match(all, /the "hunting" never happens after the opening/); // "Nobody hunts", "they couldn't hunt" don't count
+  assert.match(all, /the climax never ends the "hunting".*not turn into a truce or a gag/s);
+  assert.equal(problems.length, 3);
+  assert.equal(drift(scriptProtocolCheck(sandwich, 90, sandwichCard).problems).length, 3);
+  const spots = problemSpots(sandwich, problems);
+  assert.deepEqual(spots.map((s) => [s.part, s.fix]), [["rule", "part"], [null, "rewrite"], ["climax", "part"]]);
+});
+
+test("topic: the same story told faithfully (funny, the hunt kept and ended) passes every check", () => {
+  assert.deepEqual(topicProblems(TOPIC, sandwichFaithful), []);
+  const words = sandwichFaithful.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0);
+  const len = [60, 70, 80, 90].find((s) => words <= Math.round((s * 212) / 60) && words >= Math.round((s * 212) / 60 * 0.9));
+  assert.ok(len, `${words} words fit a length`);
+  assert.deepEqual(scriptProtocolCheck(sandwichFaithful, len, { ...sandwichCard, closer: "In this world, we live inside a giant turtle, and I'm the kid with the sandwich." }).problems, []);
+});
+
+test("topic: descriptors and the conflict are read from the topic", () => {
+  const els = topicElements(TOPIC);
+  assert.deepEqual(els.find((e) => e.key === "turtle").descriptors, [["giant"]]);
+  assert.deepEqual(els.find((e) => e.key === "wolf").descriptors, [["big", "bad"]]);
+  const c = topicConflict(els);
+  assert.equal(c.relation.key, "hunt");
+  assert.deepEqual(c.agents.map((e) => e.key), ["wolf", "army"]);
+  assert.equal(c.target.key, "turtle");
+  // "huge" keeps "giant", "big, bad" keeps "big bad"
+  assert.deepEqual(droppedDescriptors(els, "a huge turtle and a big, bad wolf"), []);
+  // active vs. adjective vs. negated
+  assert.equal(statesRelation(c, "In this world, the wolf's army hunts our turtle.", { withAgent: true }), true);
+  assert.equal(statesRelation(c, "We feed the hunting wolf.", { withAgent: true }), false);
+  assert.equal(statesRelation(c, "They couldn't hunt anyone at the table."), false);
+  assert.equal(resolvesConflict(c, "The wolf never hunted our turtle again."), true);
+  assert.equal(resolvesConflict(c, "Soldiers sat down with napkins. So they stayed."), false);
+  // a topic with no conflict verb gets none of these checks (the real dog topic)
+  assert.equal(topicConflict(topicElements("my dog got lost the day of the town's bell festival")), null);
+});
+
+test("topic: the prompts make the premise's conflict the spine (ideas, beats, script)", () => {
+  const spine = /THE CONFLICT IS THE SPINE \(who: the big bad wolf and army \| does: hunting \| to whom: the giant turtle\)/;
+  assert.match(topicPrompt({ topic: TOPIC }).text, spine);
+  assert.match(beatsPrompt({ ...EXAMPLE_IDEAS[0], topic: TOPIC }, 90), spine);
+  assert.match(scriptPrompt({ idea: { ...EXAMPLE_IDEAS[0], topic: TOPIC }, lengthSec: 90 }), spine);
+  assert.match(conflictLines(TOPIC).join("\n"), /never turn the threat into a friend, a guest or a gag/);
+  assert.ok(!beatsPrompt(EXAMPLE_IDEAS[0], 90).includes("SPINE"));
 });
 
 test("topic: ideas are ranked by fidelity; a gimmick opener is dropped while a faithful one exists", () => {

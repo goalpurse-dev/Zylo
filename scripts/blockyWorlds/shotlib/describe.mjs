@@ -249,10 +249,16 @@ async function main() {
     const v = videos.find((x) => x.id === b[0].video);
     const p = path.join(v.dir, "descriptions.json");
     const cur = readJson(p) ?? { version: DESCRIBE_VERSION, model: MODEL, patternsOnly: "never copy story, characters, names, footage or exact shots", shots: {} };
-    for (const d of r.data?.shots ?? []) {
-      const it = b.find((x) => x.id === d.id);
-      if (it) cur.shots[it.n] = { ...d, frames: it.frames.map((f) => f.tag), at: new Date().toISOString() };
-    }
+    // match each answer to its shot by id; when the model rewrote the ids (whole batches were lost on 2026-11-07),
+    // fall back to the answer's position in the batch (the answers come back in the order the shots were sent)
+    const answers = r.data?.shots ?? [], used = new Set();
+    const norm = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    answers.forEach((d, i) => {
+      let it = b.find((x) => x.id === d.id) ?? b.find((x) => norm(x.id) === norm(d.id));
+      if (!it || used.has(it)) it = answers.length === b.length ? b[i] : null;
+      if (it && !used.has(it)) { used.add(it); cur.shots[it.n] = { ...d, frames: it.frames.map((f) => f.tag), at: new Date().toISOString() }; }
+    });
+    if (used.size < b.length) console.log(`  warning: ${b.length - used.size} of ${b.length} shots in this batch got no description`);
     cur.costUsd = Number(((cur.costUsd ?? 0) + r.costUsd).toFixed(6));
     fs.writeFileSync(p + ".tmp", JSON.stringify(cur, null, 1));
     fs.renameSync(p + ".tmp", p);

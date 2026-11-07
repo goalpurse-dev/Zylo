@@ -7,11 +7,11 @@
 import { MODELS, targetWords } from "./config.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
-import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM } from "./script.js";
+import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, trimScript } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeSchema, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
-import { beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
+import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
 // USD per 1M tokens (Anthropic list prices, checked 2026-11-03). Cache writes 1.25x input, reads 0.1x.
 export const PRICE = Object.freeze({
@@ -283,13 +283,28 @@ export function scriptProtocolCheck(script, lengthSec, card) {
 }
 
 /**
+ * The free length fix (script.js trimScript) with the card's protocol checks: a script over its length loses filler
+ * words, then whole filler lines, never a change that breaks a check; the climax lines that name the planted object are
+ * kept, and the card's twist, object and topic words weigh against dropping a line. Returns trimScript's result.
+ */
+export function trimForLength(script, lengthSec, card = null) {
+  const climaxProp = (l) => Boolean(card?.prop) && l.part === "climax" && propReference(card.prop, l.text) !== null;
+  return trimScript(script, lengthSec, {
+    check: (s) => scriptProtocolCheck(s, lengthSec, card),
+    keep: climaxProp,
+    anchors: [card?.twist, card?.prop, card?.topic].filter(Boolean).join(" "),
+  });
+}
+
+/**
  * The script for a card (following its beat sheet when given): write, check, and one rewrite of this step only when the
- * checks find problems; the opener is repaired on its own if that is all that's wrong. Returns { script, check, costUsd,
- * attempts }. A script that still has problems comes back with them (it can't be generated until they're fixed).
+ * checks find problems; the opener is repaired on its own if that is all that's wrong, and a script that is only too
+ * long is trimmed in code (trimForLength, free) before any paid rewrite. Returns { script, check, costUsd, attempts,
+ * trimmed }. A script that still has problems comes back with them (it can't be generated until they're fixed).
  * @param {{apiKey?: string, provider?: string, idea: object, lengthSec: number, previous?: {lines: {part: string, text: string}[]} | null, note?: string, beats?: object[] | null}} input
  */
 export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
-  let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = note;
+  let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = note, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
     const reply = provider === "mock"
@@ -308,11 +323,19 @@ export async function writeScript({ apiKey = "", provider = "anthropic", idea, l
         check = scriptProtocolCheck(script, lengthSec, idea);
       }
     }
+    // too long: the free trim first; the rewrite (paid) only for what it can't fix
+    if (provider !== "mock" && check.problems.some((p) => /^Too long:/.test(p))) {
+      const t = trimForLength(script, lengthSec, idea);
+      if (t.changes.length) {
+        const after = scriptProtocolCheck(t.script, lengthSec, idea);
+        if (after.problems.length < check.problems.length) { script = t.script; check = after; trimmed = [...trimmed, ...t.changes]; }
+      }
+    }
     if (!check.problems.length) break;
     prev = script;
     extra = `${note ? `${note}\n` : ""}FIX THESE PROBLEMS:\n${check.problems.map((p) => `- ${p}`).join("\n")}`;
   }
-  return { script, check, costUsd: Number(costUsd.toFixed(5)), attempts, words: targetWords(lengthSec) };
+  return { script, check, costUsd: Number(costUsd.toFixed(5)), attempts, words: targetWords(lengthSec), trimmed };
 }
 
 /** The checks a saved draft gets: ours (kind "written") with the protocol's, when its card is known; the user's own. */
@@ -330,7 +353,7 @@ function mockFixPart({ script, indexes, reasons, card }) {
     else if (/call back the first line/.test(r)) out = [...out.slice(0, -1), `Now I smile at every ${first.toLowerCase()}.`];
     else if (/^The story drifted from your idea/.test(r) && card?.topic) {
       const els = topicElements(card.topic), named = els.map((e) => e.words[0]).join(", ");
-      out = /first line never mentions/.test(r)
+      out = /the first line /.test(r)
         ? [`In this world, ${String(card.topic).replace(/[.!?]+$/, "")}.`, ...out.slice(1)]
         : [`It was all about the ${named}.`, ...out.slice(1)];
     }

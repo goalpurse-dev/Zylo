@@ -144,15 +144,34 @@ const ideaText = (idea) => [
   `Formula ${idea.formula} (${FORMULAS[idea.formula]?.name ?? "-"}), twist ${idea.twistType} (${TWISTS[idea.twistType]?.name ?? "-"}), mood ${idea.mood} (${MOODS[idea.mood]?.tone ?? "-"})`,
 ].join("\n");
 
+/**
+ * Lines per part for a length: its word budget at ~7.5 words a line (the rule is one line). 2026-11-07: a 60 s script
+ * came back 33 lines / 257 words for a 212-word cap (the writer wrote ~6 lines more than the words allow); a line count
+ * per part is something the writer keeps, a word count alone is not.
+ */
+export const WORDS_PER_LINE_PLAN = 7.5;
+export const partLines = (lengthSec) => partBudgets(lengthSec).map((b) => ({ ...b, lines: b.id === "rule" ? 1 : Math.max(1, Math.round(b.words / WORDS_PER_LINE_PLAN)) }));
+
+/** The LENGTH block of the script prompt: the total, the band, per-part words AND lines, and a count before answering. */
+export function lengthBlock(lengthSec) {
+  const total = targetWords(lengthSec), lo = Math.round(total * BAND.written[0]), hi = Math.round(total * BAND.written[1]);
+  const plan = partLines(lengthSec), lines = plan.reduce((a, b) => a + b.lines, 0);
+  return [
+    `LENGTH: ${lengthSec} seconds = ${lo} to ${hi} words in total, in about ${lines} lines. Never more than ${hi} words: the video must not run longer than ${lengthSec} s, and a longer script is thrown away.`,
+    `THE PLAN PER PART (keep to it; the line counts matter as much as the words):\n${plan.map((b) => `- ${b.id}: ${b.lines} line${b.lines > 1 ? "s" : ""}, about ${b.words} words`).join("\n")}`,
+    `BEFORE YOU ANSWER: count the words of every part and add them up. If the total is over ${hi}, cut whole lines from the parts that are over their plan (never the first line, the planted object, the climax win or the last line) until it is ${hi} or less.`,
+  ].join("\n");
+}
+
 /** The user message for a new script (or a rewrite: previous + the user's note). */
 export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
-  const total = targetWords(lengthSec);
-  const budgets = partBudgets(lengthSec).map((b) => `${b.id} ~${b.words}`).join(", ");
+  const lines = Object.fromEntries(partLines(lengthSec).map((b) => [b.id, b]));
   return [
     ...(idea?.topic && topicBlock(idea.topic) ? [topicBlock(idea.topic)] : []),
     `THE IDEA\n${ideaText(idea)}`,
-    ...(beats?.length ? [`THE BEAT SHEET (follow it part by part)\n${beats.map((b) => `[${b.part}] ${b.summary} | on screen: ${b.shows} | ~${b.words} words`).join("\n")}`] : []),
-    `LENGTH: ${lengthSec} seconds = ${total} words in total (between ${Math.round(total * BAND.written[0])} and ${Math.round(total * BAND.written[1])}, never more: the video must not run longer than ${lengthSec} s). Words per part: ${budgets}. That is about ${Math.round(total / LINE.targetMedian)} lines.`,
+    // the plan's numbers, not the beat writer's (2026-11-07: its words were right, the script still ran 21% over)
+    ...(beats?.length ? [`THE BEAT SHEET (follow it part by part)\n${beats.map((b) => `[${b.part}] ${b.summary} | on screen: ${b.shows} | ${lines[b.part] ? `${lines[b.part].lines} line(s), ~${lines[b.part].words} words` : `~${b.words} words`}`).join("\n")}`] : []),
+    lengthBlock(lengthSec),
     ...(previous ? [`THE PREVIOUS VERSION (write a better one, keep what works):\n${previous.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}`] : []),
     ...(note ? [`THE USER ASKS: ${String(note).slice(0, 300)}`] : []),
     ...(failed?.length ? [`THE PREVIOUS VERSION FAILED THESE CHECKS (the new one must pass every one):\n${failed.map((p) => `- ${p}`).join("\n")}`] : []),
@@ -222,6 +241,74 @@ export function checkScript(script, lengthSec, kind = "written") {
   }
   problems.push(...safetyProblems(`${script.title ?? ""}\n${narrationOf(script)}\n${script.post?.title ?? ""}\n${script.post?.description ?? ""}`));
   return { problems, warnings, words: total, seconds: estimateSeconds(lines) };
+}
+
+/**
+ * The free length fix: a script over its length is trimmed in code before any paid rewrite (2026-11-07: a 60 s script
+ * at 257 words, then 213, cost three extra Sonnet calls, $0.10). Two passes, each change kept only when the checks find
+ * nothing new (check: the caller's full check, protocol included):
+ *   1. filler words: a leading "Then" / "And then" / "So", and "really", "very", "just", "actually", "totally", "literally"
+ *   2. whole lines, from the part furthest over its budget first; never line 1 (the rule), the first line of a part (its
+ *      hook: "You see", "Until one night"), the last line (the callback), or a line `keep` protects (the climax win); a
+ *      part keeps at least two lines and 60% of its budget; the cheapest line goes first (the fewest words that other
+ *      lines share: a line nothing else refers to is filler)
+ * The trim never goes under the band. Returns { script, words, changes: [{ index, from, to }], fits }.
+ */
+const TRIM_LEAD = /^(?:and then|then|so)[,]?\s+(?=\S)/i;
+const TRIM_INNER = /\s+(?:really|very|just|actually|totally|literally)\b/gi;
+const SHARE_STOP = new Set("the and was were that this with from they them their then there into onto what when where have had has his her she him our out all one but not you your for are its it's i'm i'd didn't don't can't".split(" "));
+const keyWords = (t) => String(t ?? "").toLowerCase().replace(/[’]/g, "'").split(/[^a-z']+/).map((w) => w.replace(/'s$/, "")).filter((w) => w.length > 3 && !SHARE_STOP.has(w));
+const PRONOUN_START = /^(?:\S+\s+){0,2}(?:he|she|it|they|him|her|them|his|its|their)\b/i;
+export function trimScript(script, lengthSec, { check = (s) => checkScript(s, lengthSec, "written"), keep = () => false, anchors = "" } = {}) {
+  const anchorWords = new Set(keyWords(anchors));
+  const target = targetWords(lengthSec), hi = Math.round(target * BAND.written[1]), lo = Math.round(target * BAND.written[0]);
+  const count = (ls) => ls.reduce((a, l) => a + wordCount(l.text), 0);
+  let lines = script.lines.map((l) => ({ ...l }));
+  const changes = [];
+  if (count(lines) <= hi) return { script, words: count(lines), changes, fits: true };
+  const lengthKey = (p) => /^Too (long|short):/.test(p);
+  const norm = (p) => p.replace(/\d+/g, "#");
+  const had = new Set(check(script).problems.filter((p) => !lengthKey(p)).map(norm));
+  const ok = (ls) => check({ ...script, lines: ls }).problems.every((p) => lengthKey(p) || had.has(norm(p)));
+  // 1. filler words
+  for (let i = 1; i < lines.length - 1 && count(lines) > hi; i++) {
+    if (wordCount(lines[i].text) <= 3) continue;
+    const t = lines[i].text.replace(TRIM_LEAD, "").replace(TRIM_INNER, "").replace(/^./, (c) => c.toUpperCase());
+    if (t === lines[i].text || count(lines) - (wordCount(lines[i].text) - wordCount(t)) < lo) continue;
+    const next = lines.map((l, k) => (k === i ? { ...l, text: t } : l));
+    if (ok(next)) { changes.push({ index: i, from: lines[i].text, to: t }); lines = next; }
+  }
+  // 2. whole lines
+  const budget = Object.fromEntries(partBudgets(lengthSec).map((b) => [b.id, b.words]));
+  const tried = new Set();
+  while (count(lines) > hi) {
+    const used = {};
+    for (const l of lines) used[l.part] = (used[l.part] ?? 0) + wordCount(l.text);
+    const firstOf = new Set(PART_IDS.map((p) => lines.findIndex((l) => l.part === p)));
+    const total = count(lines);
+    // what dropping line i loses: words other lines share (set-ups, payoffs), the card's key words (twist, object) count
+    // double, and a next line that leans on it with a pronoun ("...rang right after her") counts 2 more
+    const shared = (i) => {
+      const others = new Set(lines.flatMap((l, k) => (k === i ? [] : keyWords(l.text))));
+      const own = keyWords(lines[i].text);
+      const lean = lines[i + 1]?.part === lines[i].part && PRONOUN_START.test(lines[i + 1].text) ? 2 : 0;
+      return own.filter((w) => others.has(w)).length + 2 * own.filter((w) => anchorWords.has(w)).length + lean;
+    };
+    const cands = lines.map((l, i) => ({ l, i, n: wordCount(l.text) }))
+      .filter(({ l, i, n }) => i > 0 && i < lines.length - 1 && !firstOf.has(i) && !keep(l, i) && !tried.has(l.text)
+        && lines.filter((m) => m.part === l.part).length > 2 && used[l.part] - n >= 0.6 * (budget[l.part] ?? 0) && total - n >= lo)
+      .map((c) => ({ ...c, over: (used[c.l.part] - (budget[c.l.part] ?? used[c.l.part])) / Math.max(1, budget[c.l.part] ?? 1), cost: shared(c.i) }))
+      .sort((a, b) => b.over - a.over || a.cost - b.cost || b.n - a.n);
+    let done = false;
+    for (const c of cands) {
+      tried.add(c.l.text);
+      const next = lines.filter((_, k) => k !== c.i);
+      if (ok(next)) { changes.push({ index: c.i, from: c.l.text, to: null }); lines = next; done = true; break; }
+    }
+    if (!done) break;
+  }
+  const words = count(lines);
+  return { script: { ...script, lines }, words, changes, fits: words <= hi };
 }
 
 /**
