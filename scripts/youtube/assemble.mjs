@@ -46,7 +46,10 @@ if (problems.length && !args.includes("--draft")) { console.error(problems.join(
 const own = (id) => ["wav", "m4a", "mp3"].map((e) => path.join(REC, "voice", `${id}.${e}`)).find((f) => fs.existsSync(f));
 const said = B.filter((b) => b.say);
 export const voiceCost = (lines) => lines.reduce((a, b) => a + b.say.length, 0) * PER_CHAR;
-const paid = engine === "eleven" ? said.filter((b) => !own(b.id) && !fs.existsSync(path.join(WORK, "voice", `${b.id}.eleven.wav`))) : [];
+// the episode may name its own narrator (script.json voice: {id, name}); a line with an unfilled [blank] keeps the free voice
+const VOICE = { ...NARRATOR, ...(S.voice ?? {}) }, blank = (b) => /\[[^\]]+\]/.test(b.say);
+const engineFor = (b) => (engine === "eleven" && blank(b) ? "sapi" : engine), tagFor = (b) => (engineFor(b) === "eleven" ? `eleven-${VOICE.id.slice(0, 6)}` : engineFor(b));
+const paid = engine === "eleven" ? said.filter((b) => !own(b.id) && !blank(b) && !fs.existsSync(path.join(WORK, "voice", `${b.id}.${tagFor(b)}.wav`))) : [];
 if (paid.length && voiceCost(paid) > spendOk) { console.error(`ElevenLabs would cost about $${voiceCost(paid).toFixed(2)} for ${paid.length} lines: run again with --spend-ok ${Math.ceil(voiceCost(paid) * 100) / 100} once the owner has said yes`); process.exit(2); }
 let guard = null;
 if (paid.length) {
@@ -59,17 +62,17 @@ if (paid.length) {
 // the line's own silences: none before it, none after it, and every pause inside it at most 0.18 s (no dead air)
 const TRIM = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.02:stop_periods=-1:stop_duration=0.2:stop_threshold=-45dB:stop_silence=0.18,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse";
 async function voiceOf(b) {
-  const mine = own(b.id), out = path.join(WORK, "voice", `${b.id}.${mine ? "own" : engine}.wav`);
+  const mine = own(b.id), eng = engineFor(b), out = path.join(WORK, "voice", `${b.id}.${mine ? "own" : tagFor(b)}.wav`);
   if (fs.existsSync(out)) return out;
   let src = mine;
-  if (!mine && engine === "sapi") {
+  if (!mine && eng === "sapi") {
     src = out.replace(/\.wav$/, ".raw.wav"); const text = b.say.replace(/'/g, "''").replace(/…/g, "...");
     run("powershell", ["-NoProfile", "-Command", `Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = 1; $s.SetOutputToWaveFile('${src}'); $s.Speak('${text}'); $s.Dispose()`]);
-  } else if (!mine && engine === "eleven") {
+  } else if (!mine && eng === "eleven") {
     src = out.replace(/\.wav$/, ".mp3");
     await guard.spend("other", "youtube.voice_lines", b.say.length * PER_CHAR, async () => {
-      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${NARRATOR.id}?output_format=mp3_44100_128`, { method: "POST", headers: { "xi-api-key": process.env.ELEVENLABS_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ text: b.say, model_id: "eleven_multilingual_v2", voice_settings: { stability: NARRATOR.stability, similarity_boost: 0.75, style: NARRATOR.style, use_speaker_boost: true, speed: NARRATOR.speed } }) });
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE.id}?output_format=mp3_44100_128`, { method: "POST", headers: { "xi-api-key": process.env.ELEVENLABS_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: b.say, model_id: "eleven_multilingual_v2", voice_settings: { stability: VOICE.stability, similarity_boost: 0.75, style: VOICE.style, use_speaker_boost: true, speed: VOICE.speed } }) });
       if (!res.ok) throw new Error(`${b.id}: ${res.status} ${(await res.text()).slice(0, 200)}`);
       const chars = Number(res.headers.get("character-cost")) || b.say.length;
       fs.writeFileSync(src, Buffer.from(await res.arrayBuffer()));

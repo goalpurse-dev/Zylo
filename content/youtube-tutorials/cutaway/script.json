@@ -648,5 +648,12 @@
         ]
       ]
     }
-  ]
+  ],
+  "voice": {
+    "id": "yl2ZDV1MzN4HbQJbMihG",
+    "name": "Alex - Upbeat, Energetic and Clear (male, American, entertainment)",
+    "stability": 0.4,
+    "style": 0.35,
+    "speed": 1
+  }
 }
