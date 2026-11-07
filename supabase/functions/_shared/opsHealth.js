@@ -92,8 +92,49 @@ function downAdvice(service, failure) {
   return `${service.name} answered with an error: ${status}. If it repeats for an hour, real users are likely affected.`;
 }
 
+// Why a real user's job failed, from its error code and text (owner, 2026-11-07: "3 failures for
+// 1 real user" said "top up" with $22 left; the failures were Runware's own internal errors and
+// pictures stuck on our side, and a week of "failures" were half users out of their own credits).
+//   user      the user's own limits (their Zyvo credits, free allowance, plan): not counted at all
+//   balance   the provider refused us for money: the only kind where topping up helps
+//   provider  the provider took the request and failed it (an internal error, a rejection)
+//   stuck     it never finished on our side (STUCK_TIMEOUT, refunded by the sweeper)
+//   other     anything else (our own checks, a bad reference picture)
+export const USER_SIDE_CODES = /^(INSUFFICIENT_CREDITS|FREE_LIMIT|PLAN_UPGRADE_REQUIRED|BILLING_RESERVATION_REQUIRED|INVALID_BILLING_RESERVATION|INVALID_JOB_SIGNATURE)$/;
+const MONEY_REFUSED = /insufficient (?:balance|funds)|not enough (?:balance|funds)|low balance|out of credit|payment.?required|\(402\)|\b402\b/i;
+export function failureKind(code, error) {
+  const c = String(code ?? "").toUpperCase().trim(), e = String(error ?? "");
+  if (USER_SIDE_CODES.test(c)) return "user";
+  if (MONEY_REFUSED.test(e)) return "balance";
+  if (c === "STUCK_TIMEOUT") return "stuck";
+  if (c.startsWith("PROVIDER_") || /internalError|serviceOverloaded|provider couldn't|provider rejected/i.test(e)) return "provider";
+  return "other";
+}
+// rows: [{ code, error }] → { balance, provider, stuck, other } (the user's own limits left out)
+export function countFailureKinds(rows) {
+  const out = {};
+  for (const r of rows) { const k = failureKind(r.code, r.error); if (k !== "user") out[k] = (out[k] ?? 0) + 1; }
+  return out;
+}
+const KIND_LABEL = { balance: "refused for money", provider: "errors on SERVICE's side", stuck: "stuck on our side", other: "other errors" };
+const KIND_ORDER = ["balance", "provider", "stuck", "other"];
+export function failureLabel(service, kinds) {
+  return KIND_ORDER.filter((k) => kinds[k]).map((k) => KIND_LABEL[k].replace("SERVICE", service.name)).join(", ");
+}
+// What to do, matched to why they failed. Only a money refusal says "top up".
+export function failureAdvice(service, kinds) {
+  const n = (k) => kinds[k] ?? 0;
+  const out = [];
+  if (n("balance")) out.push(service.fix);
+  if (n("provider")) out.push(`${n("provider")} failed with an error on ${service.name}'s side (for example "internal error, your request was not processed"). That is not a balance problem: topping up does not fix it. Users can simply try again; if it keeps happening for an hour, tell ${service.name} support (they can look up the job ids from /admin/ops).`);
+  if (n("stuck")) out.push(`${n("stuck")} never finished on our side and were refunded automatically (users were not charged). Nothing to top up: it is a bug on our side to look at (failed jobs on /admin/ops).`);
+  if (n("other")) out.push(`${n("other")} failed for other reasons (our own checks or the user's input): see the failed jobs on /admin/ops. Nothing to top up.`);
+  return out.join(" ");
+}
+
 // One service's state → { ok, red, info, left, todo }. s: what the function measured:
-//   { reachable, error, tries, balance, unit, perDay, perDaySource, failingUsers, failures, note, resetsInDays }
+//   { reachable, error, tries, balance, unit, perDay, perDaySource, failingUsers, failures, failureKinds, note, resetsInDays }
+//   failureKinds: { balance, provider, stuck, other } — when given, the advice follows the cause
 export function judge(service, s) {
   const red = [], todo = [];
   // Real calls failing over to Claude (OpenAI only): first, so the alert says so.
@@ -120,8 +161,13 @@ export function judge(service, s) {
   const before = red.length;
   if (runsOutFirst && left < ALERT_DAYS) red.push(`runs out in about ${left < 1 ? "less than a day" : `${left.toFixed(1)} days`}`);
   if (Number(s.balance) <= 0 && s.balance != null && service.kind === "balance") red.push("balance is empty");
-  if ((s.failingUsers ?? 0) >= 1 && (s.failures ?? 0) >= 3) red.push(`${s.failures} failures for ${s.failingUsers} real user${s.failingUsers === 1 ? "" : "s"} in the last hour`);
-  if (red.length > before) todo.push(service.fix);
+  const balanceRed = red.length > before;
+  if (balanceRed) todo.push(service.fix);
+  if ((s.failingUsers ?? 0) >= 1 && (s.failures ?? 0) >= 3) {
+    const kinds = s.failureKinds;
+    red.push(`${s.failures} failures for ${s.failingUsers} real user${s.failingUsers === 1 ? "" : "s"} in the last hour${kinds && failureLabel(service, kinds) ? ` (${failureLabel(service, kinds)})` : ""}`);
+    todo.push(kinds ? failureAdvice(service, kinds) : service.fix);
+  }
   const what = [...new Set(todo)].join(" ");
   if (service.ownerOnly) return { ok: red.length === 0, red: [], info: red, left, todo: what }; // owner-only (Cutaway): shown, never red
   return { ok: red.length === 0, red, info: [], left, todo: what };
@@ -142,8 +188,19 @@ export function serviceLine(service, s, j) {
   return `${head}\n${body}${why}`;
 }
 
-// The daily email. results: [{ service, state, judged }]
-export function dailyReport(results, nowIso) {
+// Stuck jobs in the daily email (2026-11-07: they used to be one email each, every few hours).
+// rows: the sweeper's stuck_job_refunded log rows of the last 24 h ([{ tool_key, details }]).
+export function stuckJobsLines(rows) {
+  if (!rows?.length) return ["Stuck jobs in the last 24 hours: none."];
+  const byTool = {};
+  for (const r of rows) byTool[r.tool_key ?? "?"] = (byTool[r.tool_key ?? "?"] ?? 0) + 1;
+  const credits = rows.reduce((a, r) => a + Number(r.details?.creditsRefunded ?? 0), 0);
+  return [`Stuck jobs in the last 24 hours: ${rows.length}, refunded automatically (${credits} credits went back to users). ${Object.entries(byTool).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ×${n}`).join(", ")}.`,
+    "An email comes at once only when 5 or more get stuck within an hour."];
+}
+
+// The daily email. results: [{ service, state, judged }]; extra: more lines (stuck jobs).
+export function dailyReport(results, nowIso, extra = []) {
   const red = results.filter((r) => r.judged.red.length);
   const day = new Date(nowIso).toLocaleDateString("en-GB", { timeZone: "Europe/Helsinki", weekday: "long", day: "numeric", month: "long" });
   const subject = red.length ? `Zyvo health: ${red.length} RED (${red.map((r) => r.service.name).join(", ")})` : "Zyvo health: all green";
@@ -153,6 +210,7 @@ export function dailyReport(results, nowIso) {
     ...(red.length ? ["NEEDS YOU:", ...red.map((r) => `- ${r.service.name}: ${r.judged.red.join("; ")}. ${r.judged.todo}`), ""] : ["Nothing needs you today.", ""]),
     ...results.map((r) => serviceLine(r.service, r.state, r.judged)),
     "",
+    ...(extra.length ? [...extra, ""] : []),
     "Not checked here (no balance to run out): Google/YouTube, TikTok, Instagram, Cloudflare, fal.ai (no balance reading available), Atlas Cloud (not in use).",
     "Days left are at the rate of the last days; 'estimate' means from our own cost records until enough balance readings exist.",
     "Instant alerts come only when real users are failing or a balance runs out within 3 days; your own tests never count.",

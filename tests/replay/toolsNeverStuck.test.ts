@@ -85,7 +85,8 @@ Deno.test("wiring: the sweeper runs every minute, only on new work, and reports 
   assertEquals(sw.match(/\.gte\("created_at", CREATED_AFTER\)/g)?.length, 2);
   // A cancelled job that was charged is refunded; the owner hears of stuck jobs and of a high failure rate.
   assertMatch(sw, /admin\.rpc\("refund_job_credits", \{ p_job_id: j\.id \}\)/);
-  assertMatch(sw, /await alertOnce\(admin, "stuck_jobs", 900,/);
+  // 2026-11-07: no email per stuck job; one only for a burst (5+ in an hour), else the daily health email.
+  assertMatch(sw, /await alertOnce\(admin, "stuck_jobs_burst", STUCK_BURST_WINDOW_S,/);
   assertMatch(sw, /await alertOnce\(admin, `failure_rate:\$\{name\}`, 1800,/);
   // A re-check is a status read on the video function, never a new paid submission.
   assertMatch(sw, /post\("runware-video", \{ jobId: j\.id, action: "reconcile",/);

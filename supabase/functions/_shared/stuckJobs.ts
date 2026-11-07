@@ -54,6 +54,29 @@ export function thumbnailRefreshOwed(statuses: string[]): boolean {
   return statuses.length > 0 && statuses.every((s) => s === "failed" || s === "canceled");
 }
 
+// 2026-11-07: Supabase limits how many calls one request chain may make to our own functions
+// ("RateLimitError: Rate limit exceeded for trace …. Retry after 29930ms"). Ten idea thumbnails
+// waiting their turn re-call job-worker every few seconds, all in the chain the browser started,
+// so the last pictures of a batch were refused on their way to runware-image. The refusal happens
+// before anything is sent (Runware answers taskNotFound for them), but the job was left "running"
+// and the sweeper failed it 30 minutes later: 38 jobs on 2-7 Nov, all of them this. Now such a job
+// goes back to the queue and is sent again once the limit has passed (the sweeper is the fallback).
+export const TRACE_LIMIT_MAX_WAITS = 8;
+// → how long to wait before sending again (ms), or null when the error is not this limit.
+export function traceLimitWaitMs(error: unknown): number | null {
+  const text = `${(error as any)?.name ?? ""} ${(error as any)?.message ?? error}`;
+  if (!/RateLimitError|Rate limit exceeded for trace/i.test(text)) return null;
+  const hint = Number(/Retry after (\d+)\s*ms/i.exec(text)?.[1] ?? 30_000);
+  return Math.min(Math.max(Number.isFinite(hint) ? hint : 30_000, 1_000), 90_000);
+}
+
+// The owner's email about stuck jobs (2026-11-07: "one email per stuck job" was noise). A few stuck
+// jobs go into the daily health email; an email at once only when this many were refunded as stuck
+// within the last hour, and that email at most once an hour.
+export const STUCK_BURST = 5;
+export const STUCK_BURST_WINDOW_S = 3600;
+export const stuckEmailNow = (refundedInLastHour: number) => refundedInLastHour >= STUCK_BURST;
+
 // Failures in the last window: worth an email? (enough work to mean something, and more than the share allowed)
 export const FAILURE_WINDOW_S = 600;
 export const FAILURE_SHARE = 0.2;

@@ -19,7 +19,7 @@ import { getProviderLink } from "../../../src/lib/providers.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { alertOnce } from "../_shared/adminAlert.ts";
 import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
-import { decideStuckJob, thumbnailRefreshOwed, failureRate, FAILURE_WINDOW_S, STUCK_COPY, STUCK_ERROR_CODE, SWEEP_CREATED_AFTER_DEFAULT } from "../_shared/stuckJobs.ts";
+import { decideStuckJob, thumbnailRefreshOwed, failureRate, FAILURE_WINDOW_S, STUCK_BURST_WINDOW_S, STUCK_COPY, STUCK_ERROR_CODE, SWEEP_CREATED_AFTER_DEFAULT, stuckEmailNow } from "../_shared/stuckJobs.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -145,10 +145,16 @@ Deno.serve(async (req) => {
   const thumbs = await safe("thumbnails", async () => (await post("long-form-thumbnails", { action: "sweep_all", createdAfter: CREATED_AFTER }, { ...serviceHeaders, "x-autopilot-secret": SECRET })).body);
   const rates: any = await safe("rates", () => failureRates(nowMs));
 
-  // The owner hears about it: any job that had to be refunded as stuck, and a failure rate above 20 %.
+  // The owner hears about it: stuck jobs go into the daily health email (ops-health); an email at once
+  // only when many got stuck within an hour (at most one an hour). And a failure rate above 20 %.
   if (jobs?.refunded?.length) {
-    const lines = jobs.refunded.map((r: any) => `- ${r.toolKey ?? "?"} · job ${r.jobId} · was ${r.status} · ${r.credits} credits back · ${r.why}`);
-    await alertOnce(admin, "stuck_jobs", 900, `Zyvo: ${jobs.refunded.length} stuck job${jobs.refunded.length === 1 ? "" : "s"} refunded automatically`, `These jobs did not finish within 30 minutes. Each was marked failed and its credits went back to the user, who can try again.\n\n${lines.join("\n")}\n\nIf the provider delivers one of them later, the result is dropped (the user was not charged; we still pay the provider).`);
+    const since = new Date(nowMs - STUCK_BURST_WINDOW_S * 1000).toISOString();
+    const { data: lastHour } = await admin.from("system_logs").select("job_id, tool_key, details").eq("source", "generation-sweeper").eq("event", "stuck_job_refunded").gte("created_at", since).limit(200);
+    const recent = lastHour?.length ? lastHour : jobs.refunded.map((r: any) => ({ job_id: r.jobId, tool_key: r.toolKey, details: { creditsRefunded: r.credits } }));
+    if (stuckEmailNow(recent.length)) {
+      const lines = recent.map((r: any) => `- ${r.tool_key ?? "?"} · job ${r.job_id} · ${Number(r.details?.creditsRefunded ?? 0)} credits back`);
+      await alertOnce(admin, "stuck_jobs_burst", STUCK_BURST_WINDOW_S, `Zyvo: ${recent.length} stuck jobs refunded in the last hour`, `${recent.length} jobs did not finish within 30 minutes in the last hour. Each was marked failed and any credits went back to the user, who can try again.\n\nThis many at once usually means something is broken, not a one-off. A few stuck jobs a day are listed in the daily health email instead.\n\n${lines.join("\n")}`);
+    }
   }
   for (const [name, r] of Object.entries(rates ?? {}) as [string, any][]) {
     if (!r?.alert) continue;

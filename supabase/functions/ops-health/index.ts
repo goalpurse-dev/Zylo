@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
 import { readRunwareBalance } from "../_shared/runwareBalance.ts";
-import { SERVICES, dailyReport, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, summarizeBackup } from "../_shared/opsHealth.js";
+import { SERVICES, countFailureKinds, dailyReport, failureKind, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, stuckJobsLines, summarizeBackup } from "../_shared/opsHealth.js";
 
 const SECRET = Deno.env.get("OPS_HEALTH_SECRET") ?? "";
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -106,14 +106,22 @@ async function collect() {
     const measured = ratePerDay(points);
     const perDay = measured ?? await ledgerPerDay("runware");
     const { data: covered } = await sb.from("system_logs").select("details").eq("source", "render-long-form-scene").eq("event", "scene_covered").gte("created_at", hoursAgo(1)).limit(500);
-    const { data: jobsFailed } = await sb.from("jobs").select("user_id").eq("provider", "runware").eq("status", "failed").gte("created_at", hoursAgo(1)).limit(500);
+    const { data: jobsFailed } = await sb.from("jobs").select("user_id, error_code, error").eq("provider", "runware").eq("status", "failed").gte("created_at", hoursAgo(1)).limit(500);
     const lf = (covered ?? []).filter((l: any) => real(l.details?.projectId));
-    const jf = (jobsFailed ?? []).filter((j: any) => real(null, j.user_id));
+    // A user out of their own credits (or past their free allowance) is not a Runware failure.
+    const jf = (jobsFailed ?? []).filter((j: any) => real(null, j.user_id) && failureKind(j.error_code, j.error) !== "user");
     const { data: guard } = await sb.from("provider_balance_guard").select("paused, last_error").eq("provider", "runware").maybeSingle();
+    // Why they failed, so the advice fits (only a money refusal says "top up"). A paused guard means
+    // Runware refused us for money: every failure then counts as that.
+    const failureKinds = countFailureKinds([
+      ...lf.map((l: any) => ({ code: null, error: (l.details?.failures ?? []).join(" ") })),
+      ...jf.map((j: any) => ({ code: j.error_code, error: j.error })),
+    ]);
+    if (guard?.paused) failureKinds.balance = Math.max(1, failureKinds.balance ?? 0); // the guard pauses only for money
     // One failed balance read is not an outage (it happened on the first tick, 2026-10-26): unknown, not red.
     // Real trouble shows as real users' failures or a paused guard.
     out.runware = { reachable: balance != null ? true : undefined, balance, unit: "usd", perDay, perDaySource: measured != null ? "measured" : "estimate",
-      failures: lf.length + jf.length, failingUsers: new Set([...lf.map((l: any) => l.details?.projectId), ...jf.map((j: any) => j.user_id)]).size,
+      failures: lf.length + jf.length, failureKinds, failingUsers: new Set([...lf.map((l: any) => l.details?.projectId), ...jf.map((j: any) => j.user_id)]).size,
       note: guard?.paused ? `drawing paused (${String(guard.last_error ?? "").slice(0, 60)})` : undefined };
   }
 
@@ -199,6 +207,12 @@ async function collect() {
   });
 }
 
+// Jobs the sweeper refunded as stuck in the last 24 h (they no longer get an email each).
+async function stuckLines(): Promise<string[]> {
+  const { data, error } = await sb.from("system_logs").select("tool_key, details").eq("source", "generation-sweeper").eq("event", "stuck_job_refunded").gte("created_at", hoursAgo(24)).limit(1000);
+  return error ? ["Stuck jobs in the last 24 hours: could not be read."] : stuckJobsLines(data ?? []);
+}
+
 async function tick() {
   const results = await collect();
   const alerts = instantAlerts(results);
@@ -210,7 +224,7 @@ async function tick() {
     const { data: done } = await sb.from("system_logs").select("id").eq("source", "ops-health").eq("event", "daily_report").eq("message", clock.date).limit(1);
     if (!done?.length) {
       await sb.from("system_logs").insert({ source: "ops-health", level: "info", event: "daily_report", message: clock.date, details: { red: results.filter((r) => r.judged.red.length).map((r) => r.service.id) } });
-      const rep = dailyReport(results, now);
+      const rep = dailyReport(results, now, await stuckLines());
       reportSent = await alertAdmin(`${rep.subject} — ${clock.date}`, rep.text, "ops-health");
     }
   }
@@ -224,7 +238,7 @@ Deno.serve(async (req) => {
   try {
     if (body?.action === "report") {
       const results = await collect();
-      const rep = dailyReport(results, new Date().toISOString());
+      const rep = dailyReport(results, new Date().toISOString(), await stuckLines());
       const sent = body?.send === true ? await alertAdmin(`[preview] ${rep.subject}`, rep.text, "ops-health") : false;
       return json({ sent, subject: rep.subject, text: rep.text, results: results.map((r) => ({ id: r.service.id, red: r.judged.red, left: r.judged.left, state: r.state })) });
     }

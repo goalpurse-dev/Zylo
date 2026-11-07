@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getProviderLink } from "../../../src/lib/providers.ts";
 import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
 import { checkRunwareGuard } from "../_shared/runwareBalance.ts";
-import { PAUSED_COPY } from "../_shared/stuckJobs.ts";
+import { PAUSED_COPY, TRACE_LIMIT_MAX_WAITS, traceLimitWaitMs } from "../_shared/stuckJobs.ts";
 import { OUT_OF_CREDITS, plainJobError } from "../_shared/jobErrors.ts";
 
 const FREE_IMAGE_LIMIT = 5; // the same allowance as shared/eligibility.ts
@@ -706,6 +706,37 @@ Deno.serve(async (req) => {
         });
       } catch (fetchErr) {
         logEvent("error", "handoff_fetch_threw", { jobId, userId: job.user_id, edgeFn: provider.edgeFn, message: String(fetchErr) });
+        // Supabase's limit on calls in one request chain refused the call before it was sent
+        // (_shared/stuckJobs.ts): nothing reached the provider, so the job waits in the queue
+        // and is sent again (here after the wait, else by the sweeper). Never charged twice:
+        // nothing was charged yet (images are charged when finished).
+        const traceWaitMs = traceLimitWaitMs(fetchErr);
+        if (traceWaitMs != null) {
+          const { data: row } = await sbAdmin.from("jobs").select("settings").eq("id", jobId).maybeSingle();
+          const settings: any = (row as any)?.settings ?? job.settings ?? {};
+          const waits = Number(settings?.trace_limit_waits ?? 0) + 1;
+          if (waits > TRACE_LIMIT_MAX_WAITS) {
+            logEvent("error", "handoff_trace_limited_gave_up", { jobId, userId: job.user_id, toolKey: job.tool_key, waits });
+            await failAndRefundJob(sbAdmin, jobId, "PROVIDER_BUSY", "The provider is busy and couldn't complete this generation. Please try again.").catch(() => null);
+            return;
+          }
+          const { data: requeued, error: requeueError } = await sbAdmin.from("jobs").update({
+            status: "queued", progress: 0, retry_after: new Date(Date.now() + traceWaitMs).toISOString(), lease_expires_at: null,
+            settings: { ...settings, trace_limit_waits: waits },
+          }).eq("id", jobId).eq("claimed_by", workerId).eq("status", "running").select("id");
+          logEvent(requeueError ? "error" : "warn", "handoff_trace_limited_requeued", { jobId, userId: job.user_id, toolKey: job.tool_key, waits, waitMs: traceWaitMs, requeued: (requeued ?? []).length, message: requeueError?.message ?? null });
+          if (!requeueError) {
+            if ((requeued ?? []).length && traceWaitMs <= 60_000) {
+              await new Promise((resolve) => setTimeout(resolve, traceWaitMs + 500 + Math.round(Math.random() * 2500)));
+              await fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
+                method: "POST",
+                headers: { "content-type": "application/json", "authorization": `Bearer ${SERVICE_ROLE_KEY}`, "apikey": SERVICE_ROLE_KEY },
+                body: JSON.stringify({ jobId }),
+              }).then((r) => r.body?.cancel()).catch(() => null);
+            }
+            return;
+          }
+        }
         // Mark the job failed — runware-image never received the request
         try {
           await sbAdmin.rpc("mark_generation_reconciliation_required", {

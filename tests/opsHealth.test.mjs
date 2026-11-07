@@ -58,7 +58,7 @@ test("the owner's tests never count: their accounts, their projects", () => {
   const fn = read("supabase/functions/ops-health/index.ts");
   assert.match(fn, /ownerEmails\(env\("ADMIN_EMAILS"\), env\("CUTAWAY_TEST_USERS"\)\)/);
   assert.match(fn, /filter\(\(l: any\) => real\(l\.details\?\.projectId\)\)/);
-  assert.match(fn, /filter\(\(j: any\) => real\(null, j\.user_id\)\)/);
+  assert.match(fn, /filter\(\(j: any\) => real\(null, j\.user_id\) && failureKind\(j\.error_code, j\.error\) !== "user"\)/);
   assert.match(fn, /if \(!SECRET \|\| req\.headers\.get\("x-ops-secret"\) !== SECRET\) return json\(\{ error: "Unauthorized" \}, 401\);/);
   assert.doesNotMatch(fn, /\.update\(|\.delete\(|markProviderDown|postpone/, "the health check only reads (and writes its own readings and log)");
   const narr = read("supabase/functions/generate-long-form-narration-audio/index.ts");
