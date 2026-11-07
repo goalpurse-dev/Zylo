@@ -14,14 +14,50 @@
 //
 // Every entry point is safe to call any number of times (duplicate callbacks, the sweeper, webhook retries).
 import { WORKER_BUILD } from "./renderBuild.js";
-import { assetRow, BUCKET, builderSpentOf, chunkPlan, LIBRARY_SNAPSHOT, onJobEvent, paths, prepareProduction, PRODUCTION_DEFAULTS, reconcile, RENDER, sameToken, snapshotRows, tokenFor } from "./render.js";
+import { assetRow, BUCKET, builderSpentOf, chooseChunkCount, chunkPlan, chunkRunSec, LIBRARY_SNAPSHOT, onJobEvent, paths, prepareProduction, PRODUCTION_DEFAULTS, reconcile, RENDER, sameToken, snapshotRows, tokenFor } from "./render.js";
+import { activeRenderRuns, admission } from "./renderQueue.js";
 
 export { BUCKET };
 const LIVE = ["sent", "running"];
 const MAX_UPLOAD = 48e6;
 
-export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null, production = PRODUCTION_DEFAULTS, minBuild = WORKER_BUILD }) {
+// queue (2026-11-07, renderQueue.js): true = the endpoint's workers are shared oldest run first (a piece is sent to RunPod
+// only while a worker is free; the rest waits in our line and goes out when a piece ends: pump) and the chunk count
+// follows the load (chooseChunkCount). db.jobsOfRuns(ids) (optional) reads every live run's jobs in one query;
+// runpod.health() (optional, a read-only GET) tells the K choice whether RunPod is already full.
+export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RENDER, now = () => Date.now(), log = (...a) => console.log("[blocky-worlds-render]", ...a), mode = "gpu", limitFrames = null, chunks = null, production = PRODUCTION_DEFAULTS, minBuild = WORKER_BUILD, queue = true }) {
   const iso = () => new Date(now()).toISOString();
+
+  /** every live run (oldest first) and its job rows */
+  async function snapshot() {
+    const runs = [...((await db.liveRuns(50)) ?? [])].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+    const ids = runs.map((r) => r.id), jobsByRun = new Map(ids.map((id) => [id, []]));
+    const rows = typeof db.jobsOfRuns === "function" ? await db.jobsOfRuns(ids) : (await Promise.all(ids.map((id) => db.jobs(id)))).flat();
+    for (const j of rows ?? []) jobsByRun.get(j.run_id)?.push(j);
+    return { runs, jobsByRun };
+  }
+  /** how many pieces this run may send now (oldest run first); Infinity when the queue is off or unreadable */
+  async function roomFor(run, jobs) {
+    if (!queue) return Infinity;
+    try {
+      const s = await snapshot();
+      if (!s.runs.some((r) => r.id === run.id)) s.runs.push(run);
+      s.runs = s.runs.map((r) => (r.id === run.id ? run : r));
+      s.jobsByRun.set(run.id, jobs);
+      return admission(s.runs, s.jobsByRun, now(), cfg).get(run.id) ?? Infinity;
+    } catch (e) { log(`queue read failed, sending without it: ${e?.message ?? e}`); return Infinity; }
+  }
+  /** a piece ended somewhere: the oldest runs waiting in our line send what now fits */
+  async function pump(exceptId = null) {
+    if (!queue) return 0;
+    let n = 0;
+    try {
+      const s = await snapshot();
+      const room = admission(s.runs, s.jobsByRun, now(), cfg);
+      for (const r of s.runs) if (r.id !== exceptId && (room.get(r.id) ?? 0) > 0) { await reconcileRun(r.id); n++; }
+    } catch (e) { log(`pump: ${e?.message ?? e}`); }
+    return n;
+  }
 
   /** the shared library for the builder: a snapshot (the worker has no key); any error -> an empty library */
   async function library() {
@@ -77,10 +113,12 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
       if (!runpod?.configured) throw Object.assign(new Error("RunPod is not configured for Blocky Worlds"), { code: "NOT_CONFIGURED" });
       const input = await jobInput(run, row, a, jobs);
       const token = await tokenFor(secret, run.id);
+      // a chunk's limit grows with its frames (render.js chunkRunSec; reconcile uses the same)
+      const runLim = a.role === "chunk" && a.to > a.from ? chunkRunSec(a.to - a.from, cfg) : cfg.runSec[a.role];
       const res = await runpod.run({
         input: { job: input },
         webhook: `${callbackUrl}?src=runpod&run=${run.id}&job=${row.id}&token=${token}`,
-        policy: { executionTimeout: (cfg.runSec[a.role] + 60) * 1000, ttl: (cfg.queueSec + cfg.runSec[a.role] + 120) * 1000 },
+        policy: { executionTimeout: (runLim + 60) * 1000, ttl: (cfg.queueSec + runLim + 120) * 1000 },
       });
       if (!res?.id) throw new Error(`RunPod gave no job id: ${JSON.stringify(res).slice(0, 200)}`);
       await db.updateJob(row.id, { provider_job_id: res.id, dispatched_at: iso() }, { live: true });
@@ -141,12 +179,22 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
       return null;
     }
     const tl = JSON.parse(tlText);
-    const plan = chunkPlan(tl, { cfg, limitFrames, k: chunks });
+    // the chunk count from the load (chooseChunkCount): our videos still rendering + RunPod's health; the frame ranges
+    // are fixed here once and saved, so every retry renders exactly the same frames
+    let choice = null;
+    if (queue && !chunks) {
+      const frames0 = Math.min(Math.round(Number(tl.duration) * (tl.fps ?? cfg.fps)), limitFrames ?? Infinity);
+      let activeRuns = 1, health = null;
+      try { const s = await snapshot(); if (!s.runs.some((r) => r.id === run.id)) s.runs.push(run); activeRuns = Math.max(1, activeRenderRuns(s.runs, s.jobsByRun)); } catch { /* alone */ }
+      try { health = typeof runpod?.health === "function" ? await runpod.health() : null; } catch { health = null; }
+      choice = { ...chooseChunkCount({ frames: frames0, activeRuns, health, cfg }), activeRuns, health: health ? { inQueue: health.jobs?.inQueue ?? null, inProgress: health.jobs?.inProgress ?? null } : null };
+    }
+    const plan = chunkPlan(tl, { cfg, limitFrames, k: chunks, ...(choice ? { target: choice.k, bytesTarget: cfg.queueBytesTarget ?? cfg.chunkBytesTarget } : {}) });
     const frames = plan.at(-1).to, fps = tl.fps ?? cfg.fps;
     const p = production ?? PRODUCTION_DEFAULTS;
-    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan, production: { director: p.director, builder: p.builder, builderMaxUsd: p.builderMaxUsd, review: p.review ?? PRODUCTION_DEFAULTS.review, reviewMaxUsd: p.reviewMaxUsd ?? PRODUCTION_DEFAULTS.reviewMaxUsd } };
+    const render = { frames, fps, duration: +(frames / fps).toFixed(3), fullDuration: tl.duration, shots: tl.shots?.length ?? 0, chunks: plan, production: { director: p.director, builder: p.builder, builderMaxUsd: p.builderMaxUsd, review: p.review ?? PRODUCTION_DEFAULTS.review, reviewMaxUsd: p.reviewMaxUsd ?? PRODUCTION_DEFAULTS.reviewMaxUsd }, ...(choice ? { queue: { k: choice.k, kMin: choice.kMin, kMax: choice.kMax, activeRuns: choice.activeRuns, health: choice.health, reason: choice.reason } } : {}) };
     const upd = await db.updateRun(run.id, { planned_at: iso(), render }, { notTerminal: true, plannedNull: true });
-    if (upd) log(`run ${run.id}: planned, ${frames} frames in ${plan.length} chunks`);
+    if (upd) log(`run ${run.id}: planned, ${frames} frames in ${plan.length} chunks${choice ? ` (${choice.reason})` : ""}`);
     return upd ?? (await db.getRun(run.id));
   }
 
@@ -165,8 +213,13 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     for (const j of r.jobs) await db.updateJob(j.id, j.patch, { live: true });
     if (Object.keys(r.run).length) run = (await db.updateRun(runId, r.run, { notTerminal: true })) ?? run;
     let sendFailed = false;
+    // the shared line: only as many pieces as there are free workers, the oldest run first (renderQueue.js admission);
+    // the rest stays in our line (no row, no RunPod job) until a piece ends somewhere (pump) or the next sweep
+    const wants = r.actions.filter((a) => a.type === "dispatch").length;
+    let room = wants ? await roomFor(run, jobs.map((j) => { const p = r.jobs.find((x) => x.id === j.id); return p ? { ...j, ...p.patch } : j; })) : 0;
+    if (wants > room) log(`run ${run.id}: ${wants - room} of ${wants} piece(s) wait in line for a free worker`);
     for (const a of r.actions) {
-      if (a.type === "dispatch") sendFailed = !(await dispatch(run, a, jobs)) || sendFailed;
+      if (a.type === "dispatch") { if (room <= 0) continue; room--; sendFailed = !(await dispatch(run, a, jobs)) || sendFailed; }
       else if (a.type === "cancel") await Promise.resolve(runpod?.cancel?.(a.providerJobId)).catch(() => {});
       else if (a.type === "fail") { await failRun(run, a.code, a.message); break; }
       else if (a.type === "done") await finishRun(run, a.output);
@@ -203,7 +256,10 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     if (r.job) changed = Boolean(await db.updateJob(job.id, r.job, { live: true }));
     if (r.run) await db.updateRun(runId, r.run, { notTerminal: true });
     if (!changed) return { ok: true, ignored: r.job || ["done", "failed"].includes(job.state) ? "the job had already ended" : "nothing to change" };
-    await reconcileRun(runId);
+    const after = await reconcileRun(runId);
+    // a piece ended: its worker is free for the oldest run waiting in line (and a run that just ended frees all of its)
+    if (r.job && ["done", "failed"].includes(r.job.state)) await pump(runId);
+    else if (after && ["done", "failed"].includes(after.status)) await pump(runId);
     return { ok: true };
   }
 
@@ -226,7 +282,8 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
 
   /** the sweeper (pg_cron every minute): RunPod's view of every live job, then reconcile every running run */
   async function sweep() {
-    const runs = await db.liveRuns(50);
+    // oldest first: the shared line gives free workers to the oldest run (renderQueue.js admission)
+    const runs = [...(await db.liveRuns(50))].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
     let looked = 0;
     for (const run of runs) {
       try {
@@ -249,5 +306,5 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
     return { looked, costed };
   }
 
-  return { start: (runId) => reconcileRun(runId), reconcileRun, event, handleCallback, sweep, jobInput };
+  return { start: (runId) => reconcileRun(runId), reconcileRun, event, handleCallback, sweep, jobInput, pump, snapshot };
 }

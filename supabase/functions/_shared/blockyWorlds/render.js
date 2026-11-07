@@ -27,7 +27,59 @@ export const RENDER = Object.freeze({
   coldStartBillSec: 15,         // RunPod bills the start-up inside delayTime: up to this much of it is counted
   gpuUsdPerSec: RATES.gpuUsdPerSec,
   music: "A",
+  // ---- the queue (2026-11-07; renderQueue.js): the endpoint's workers are shared by every video in flight
+  workers: 6,                   // the endpoint's workersMax (gm9eqdkuyc2ofs; function secret BLOCKY_WORLDS_WORKERS overrides)
+  queueSlack: 1,                // pieces sent beyond the free workers (renderQueue.js admission: hides the webhook round trip)
+  // queue-aware chunking (chooseChunkCount): alone a video gets up to `workers` chunks (one wave), with others the fair
+  // share, never fewer than chunkMinCount (the run limit) and raised until each chunk's expected size fits queueBytesTarget
+  // (the estimate MB_PER_FRAME runs 1.25-2x the real files: 27 chunks of 3 runs on 2026-11-05/06 came out at 0.53-0.80 of
+  // it per video; the worker still squeezes anything over 48 MB)
+  queueBytesTarget: 56e6,
+  chunkSafeSPerFrame: 0.25,     // planning rate for the biggest chunk (the measured mean is ~0.12 s a frame)
+  chunkBudgetShare: 0.7,        // ... which must fit in this share of runSec.chunk
+  chunkOverheadSafeSec: 45,     // start-up inside the job: GPU check + page load (14-33 s) + web copy + uploads
+  chunkSecPerFrameLimit: 0.45,  // a big chunk's own run limit: overhead + frames x this (never below runSec.chunk)
+  runSecChunkMax: 840,          // ... and never above this (the endpoint's executionTimeout is 900 s)
+  maxWaitMin: 30,               // a run that waited this long in our own line without starting: failed + refunded (busy)
 });
+
+// ---------------------------------------------------------------- queue-aware chunking
+/** the most frames one chunk may hold so it ends well inside its run limit even at chunkSafeSPerFrame */
+export function maxFramesPerChunk(cfg = RENDER) {
+  const share = cfg.chunkBudgetShare ?? 0.7, over = cfg.chunkOverheadSafeSec ?? 45, rate = cfg.chunkSafeSPerFrame ?? 0.25;
+  return Math.max(100, Math.floor((cfg.runSec.chunk * share - over) / rate));
+}
+/** the fewest chunks a video of `frames` frames may have (90 s ~2,250 frames -> 3; 60 s -> 2; 3 min -> 5) */
+export const chunkMinCount = (frames, cfg = RENDER) => Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(frames / maxFramesPerChunk(cfg))));
+/** a chunk job's own run limit by its frames (a bigger chunk may run longer; at least runSec.chunk) */
+export function chunkRunSec(frames, cfg = RENDER) {
+  const base = cfg.runSec.chunk, n = Number(frames);
+  if (!(n > 0)) return base;
+  return Math.min(cfg.runSecChunkMax ?? base, Math.max(base, Math.round((cfg.chunkOverheadSafeSec ?? 45) + n * (cfg.chunkSecPerFrameLimit ?? 0.45))));
+}
+
+/**
+ * How many chunks a video gets, from the load when its plan is split (render.js chunkPlan then cuts at shot boundaries
+ * and may add chunks for the size):
+ *   activeRuns: our videos in flight that still have frames to render (this one included; the DB)
+ *   health:     RunPod's GET /health ({ jobs: { inQueue, inProgress }, workers }) or null
+ * alone -> up to `workers` chunks (one wave, fastest); 2 videos -> workers/2 each; 3+ -> the fewest the limits allow
+ * (fewer page loads and start-ups: more videos per minute). RunPod already full (queued + running >= workers) -> the fewest.
+ * -> { k, kMin, kMax, share, saturated, reason }
+ */
+export function chooseChunkCount({ frames, activeRuns = 1, health = null, cfg = RENDER } = {}) {
+  const W = Math.max(1, Number(cfg.workers) || 6);
+  const fastK = Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(frames / cfg.framesPerChunk)));
+  const kMin = chunkMinCount(frames, cfg);
+  const kMax = Math.max(kMin, Math.min(W, cfg.maxChunks, fastK));
+  const n = Math.max(1, Math.floor(Number(activeRuns) || 1));
+  const q = Number(health?.jobs?.inQueue) || 0, p = Number(health?.jobs?.inProgress) || 0;
+  const saturated = Boolean(health) && q > 0 && q + p >= W;
+  const share = saturated ? kMin : Math.floor(W / n);
+  const k = Math.max(kMin, Math.min(kMax, share));
+  const reason = saturated ? `RunPod full (${q} queued + ${p} running >= ${W} workers): the fewest chunks` : n === 1 ? `alone: ${k} chunks` : `${n} videos in flight: ${k} chunks each (share ${share}, min ${kMin})`;
+  return { k, kMin, kMax, share, saturated, reason };
+}
 
 const TERMINAL = new Set(["done", "failed"]);
 const LIVE = new Set(["sent", "running"]);
@@ -62,7 +114,7 @@ export const frameCountOf = (tl) => Math.round(Number(tl.duration) * (tl.fps ?? 
  * short render). K = ceil(frames / framesPerChunk) within [minChunks, maxChunks], raised until every chunk's expected
  * size is under the target; each cut moves to the nearest shot boundary within snapShare of a chunk.
  */
-export function chunkPlan(tl, { cfg = RENDER, limitFrames = null, k: forceK = null } = {}) {
+export function chunkPlan(tl, { cfg = RENDER, limitFrames = null, k: forceK = null, target = null, bytesTarget = null } = {}) {
   const fps = tl.fps ?? cfg.fps, N = Math.min(frameCountOf(tl), limitFrames ?? Infinity);
   if (!(N > 0)) throw new Error("chunkPlan: no frames");
   // expected bytes up to each frame (prefix sums over the shots)
@@ -89,10 +141,12 @@ export function chunkPlan(tl, { cfg = RENDER, limitFrames = null, k: forceK = nu
     return b.slice(0, -1).map((from, index) => ({ index, from, to: b[index + 1], estBytes: Math.round(pre[b[index + 1]] - pre[from]) }));
   };
   if (forceK) return build(Math.max(1, Math.min(forceK, N)));
-  let K = Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(N / cfg.framesPerChunk)));
+  // target: the queue-aware count (chooseChunkCount); its size check uses bytesTarget (RENDER.queueBytesTarget)
+  let K = target ? Math.min(cfg.maxChunks, Math.max(1, Math.round(target))) : Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(N / cfg.framesPerChunk)));
+  const maxBytes = bytesTarget ?? cfg.chunkBytesTarget;
   K = Math.min(K, N);
   let plan = build(K);
-  while (plan.some((c) => c.estBytes > cfg.chunkBytesTarget) && K < Math.min(cfg.maxChunks, N)) plan = build(++K);
+  while (plan.some((c) => c.estBytes > maxBytes) && K < Math.min(cfg.maxChunks, N)) plan = build(++K);
   return plan;
 }
 
@@ -414,7 +468,12 @@ export function reconcile(run, jobsIn, now = Date.now(), cfg = RENDER) {
     return out;
   }
   const fail = (code, message) => { out.actions.push({ type: "fail", code, message: String(message ?? code).slice(0, 2000) }); return out; };
-  if (now - ms(run.created_at) > cfg.hardMin * 60000) return fail("TIMEOUT", `not done after ${cfg.hardMin} minutes`);
+  // the hard limit counts from the first prepare try (2026-11-07: a run may wait in our own line first, renderQueue.js);
+  // a run that never got a worker within maxWaitMin is failed and refunded as "busy"
+  const firstSent = jobs.filter((j) => j.role === "prepare").map((j) => ms(j.dispatched_at ?? j.created_at)).filter(Number.isFinite);
+  const since0 = firstSent.length ? Math.min(...firstSent) : null;
+  if (since0 == null && cfg.maxWaitMin && now - ms(run.created_at) > cfg.maxWaitMin * 60000) return fail("QUEUE_TIMEOUT", `waited in line over ${cfg.maxWaitMin} minutes without a free worker`);
+  if (now - (since0 ?? ms(run.created_at)) > cfg.hardMin * 60000) return fail("TIMEOUT", `not done after ${cfg.hardMin} minutes`);
 
   // 1. live jobs past their limits: cancelled, counted as a failed try
   for (const j of jobs) {
@@ -422,9 +481,11 @@ export function reconcile(run, jobsIn, now = Date.now(), cfg = RENDER) {
     const queued = j.state === "sent";
     const since = queued ? ms(j.dispatched_at ?? j.created_at) : ms(j.heartbeat_at ?? j.started_at ?? j.dispatched_at ?? j.created_at);
     const startedAt = ms(j.started_at ?? j.dispatched_at ?? j.created_at);
-    const over = queued ? now - since > cfg.queueSec * 1000 : now - startedAt > cfg.runSec[j.role] * 1000;
+    // a chunk's limit grows with its frames (queue-aware chunking makes bigger chunks when the endpoint is busy)
+    const limit = j.role === "chunk" && j.to_frame > j.from_frame ? chunkRunSec(j.to_frame - j.from_frame, cfg) : cfg.runSec[j.role];
+    const over = queued ? now - since > cfg.queueSec * 1000 : now - startedAt > limit * 1000;
     if (!over) continue;
-    const patch = { state: "failed", finished_at: iso(now), error_code: queued ? "QUEUE_TIMEOUT" : "JOB_TIMEOUT", error_message: queued ? `waited in RunPod's queue over ${cfg.queueSec} s` : `${j.role} ran over ${cfg.runSec[j.role]} s` };
+    const patch = { state: "failed", finished_at: iso(now), error_code: queued ? "QUEUE_TIMEOUT" : "JOB_TIMEOUT", error_message: queued ? `waited in RunPod's queue over ${cfg.queueSec} s` : `${j.role} ran over ${limit} s` };
     Object.assign(j, patch);
     out.jobs.push({ id: j.id, patch });
     if (j.provider_job_id) out.actions.push({ type: "cancel", jobId: j.id, providerJobId: j.provider_job_id });

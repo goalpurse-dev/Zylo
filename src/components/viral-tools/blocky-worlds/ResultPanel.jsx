@@ -5,6 +5,7 @@ import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsAp
 import LivePreview, { Clip, PreviewBoundary } from "./LivePreview";
 import { ActionButton, CreditMark } from "./StepShell";
 import { CLIPS, useReducedMotion } from "./clips";
+import { waitInfo } from "./queueText";
 import "../../onboarding/onboarding.css";
 import "./blockyWorlds.css";
 
@@ -60,9 +61,13 @@ function progressOf(run) {
 function Building({ run }) {
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 2200); return () => clearInterval(t); }, []);
+  // the ETAs count down from when this reply arrived (the tick above re-renders every 2.2 s)
+  const [seenAt, setSeenAt] = useState(() => Date.now());
+  useEffect(() => { setSeenAt(Date.now()); }, [run.etaAt, run.etaSec, run.doneEtaSec, run.queuePosition]);
+  const wait = waitInfo(run, Date.now(), seenAt);
   const at = RUN_STEPS.indexOf(run.status);
   const p = progressOf(run);
-  const line = run.status === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STATUS_LABELS[run.status];
+  const line = wait.inLine ? wait.title : run.status === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STATUS_LABELS[run.status];
   return (
     <div className="relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-2 py-6 text-center" aria-live="polite">
       {/* our clips drifting behind, dimmed, like the onboarding's "coming to life" */}
@@ -87,10 +92,11 @@ function Building({ run }) {
           <circle cx="100" cy="100" r="92" fill="none" stroke="#BEF264" strokeWidth="7" strokeLinecap="round" strokeDasharray={RING} strokeDashoffset={RING * (1 - p)} style={{ filter: "drop-shadow(0 0 8px rgba(190,242,100,0.8))", transition: "stroke-dashoffset .8s ease" }} />
         </svg>
         <div className="ob-orb absolute inset-[78px] grid place-items-center rounded-[22px] bg-[radial-gradient(circle_at_35%_30%,#F4FFD6,#BEF264_45%,#65A30D)] shadow-[0_0_60px_18px_rgba(190,242,100,0.35)]">
-          <span className="text-[24px] font-black tabular-nums text-[#11150D]">{Math.round(p * 100)}%</span>
+          {wait.inLine ? <span className="text-[30px] font-black tabular-nums text-[#11150D]" aria-hidden="true">#{wait.position}</span> : <span className="text-[24px] font-black tabular-nums text-[#11150D]">{Math.round(p * 100)}%</span>}
         </div>
       </div>
-      <p key={line} className="ob-enter relative mt-4 text-[21px] font-black leading-tight tracking-tight text-white">{line}&hellip;</p>
+      <p key={line} className="ob-enter relative mt-4 text-[21px] font-black leading-tight tracking-tight text-white" data-testid="bw-wait-title">{line}{wait.inLine ? "" : "…"}</p>
+      {wait.inLine && <p className="relative mt-1 text-[15px] font-bold text-lime-200" data-testid="bw-wait-sub">{wait.sub}</p>}
       <p className="relative mt-1 max-w-[300px] truncate text-[13px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo;</p>
       <ol className="relative mt-5 flex flex-wrap justify-center gap-1.5">
         {RUN_STEPS.map((s, i) => (
@@ -100,7 +106,8 @@ function Building({ run }) {
           </li>
         ))}
       </ol>
-      <p className="relative mt-4 text-[11px] text-white/40">About 3 to 4 minutes. You can leave this page; it keeps going.</p>
+      {wait.inLine && <p className="relative mt-4 max-w-[300px] rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[11.5px] leading-relaxed text-white/65">All our video machines are busy with other videos right now. Yours is saved in line and starts on its own.</p>}
+      <p className="relative mt-4 text-[11px] text-white/40">{wait.inLine ? "" : wait.done ? `${wait.done}.` : "About 3 to 4 minutes."} You can leave this page; it keeps going.</p>
     </div>
   );
 }

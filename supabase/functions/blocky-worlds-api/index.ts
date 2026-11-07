@@ -31,7 +31,7 @@ import { topicProblem } from "../_shared/blockyWorlds/safety.js";
 import { cardFromScript, draftCheck, fixPart, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
-import { renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
+import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -121,11 +121,15 @@ async function signed(path: string | undefined, download?: string) {
   const { data } = await admin.storage.from(BUCKET).createSignedUrl(path, 3600, download ? { download } : undefined);
   return data?.signedUrl ?? null;
 }
-async function runView(r: any, { owner = false } = {}) {
-  const done = r.status === "done", files = r.files ?? {};
+async function runView(r: any, { owner = false, queue = null }: { owner?: boolean; queue?: any } = {}) {
+  const done = r.status === "done", files = r.files ?? {}, working = !["done", "failed"].includes(r.status);
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
     status: r.status, stepAt: Date.parse(r.stage_at ?? r.created_at), pct: r.pct ?? 0, post: done ? r.post : null,
+    // the shared line (renderQueue.js): place in line + seconds until it starts while waiting, seconds until ready;
+    // etaAt = when they were computed (the page counts down between polls)
+    queuePosition: working ? queue?.queuePosition ?? null : null, etaSec: working ? queue?.etaSec ?? null : null,
+    doneEtaSec: working ? queue?.doneEtaSec ?? null : null, etaAt: working && queue ? Date.now() : null,
     // the light 720p copy plays on the page; the download is the full 1080p file
     finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
     poster: done ? await signed(files.poster) : null,
@@ -423,20 +427,22 @@ async function handle(req: Request, trace: Trace) {
     trace.step = "dispatch";
     let started: any = null;
     try { started = await renderRuntime(admin).start(run.id); } catch (e: any) { console.error("[blocky-worlds-api] start dispatch:", run.id, e?.message ?? e); }
-    return await runView({ ...run, ...(started ?? {}), library_id: ideaLib }, { owner: who.owner });
+    return await runView({ ...run, ...(started ?? {}), library_id: ideaLib }, { owner: who.owner, queue: (await queueInfo(admin, [run.id]))[run.id] ?? null });
   }
 
   // ---------- 5. results ----------
   const who = await requireUser(req, trace);
   if (action === "list") {
     const { data } = await admin.from("blocky_worlds_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
-    return { runs: await Promise.all((data ?? []).map((r: any) => runView(r, { owner: who.owner }))) };
+    const working = (data ?? []).filter((r: any) => !["done", "failed"].includes(r.status)).map((r: any) => r.id);
+    const q: Record<string, any> = working.length ? await queueInfo(admin, working) : {};
+    return { runs: await Promise.all((data ?? []).map((r: any) => runView(r, { owner: who.owner, queue: q[r.id] ?? null }))) };
   }
   const runId = String(body?.runId ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(runId)) throw new ApiError("BAD_INPUT");
   const { data: run } = await admin.from("blocky_worlds_runs").select("*").eq("id", runId).eq("user_id", who.user.id).is("deleted_at", null).maybeSingle();
   if (!run) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
-  if (action === "status") return await runView(run, { owner: who.owner });
+  if (action === "status") return await runView(run, { owner: who.owner, queue: ["done", "failed"].includes(run.status) ? null : (await queueInfo(admin, [run.id]))[run.id] ?? null });
   if (action === "event") {
     const kind = String(body?.kind ?? "");
     if (!["downloaded", "thumb_up", "thumb_down"].includes(kind)) throw new ApiError("BAD_INPUT");

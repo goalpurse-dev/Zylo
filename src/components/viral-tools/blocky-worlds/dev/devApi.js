@@ -4,6 +4,8 @@
 // Simulations: &blocked=1 (or a topic with "blocked" in it): the script comes back blocked by a real check (the climax
 // never uses the planted object), with Fix it; &fail=1 (or a topic with "fail" in it): every video fails after ~6 s with
 // a hiccup on our side (&fail=story: the builder couldn't show the story); the credits come back.
+// &queue=N: every video first waits in line as #N (all video machines busy), moving up one place every 8 s, with a
+// "starts in about X minutes" ETA (90 s a place); &eta=late: the ETA has already passed ("Almost there"). Then the normal flow.
 import { LENGTHS, DEFAULT_LENGTH, NARRATOR } from "../../../../../supabase/functions/_shared/blockyWorlds/config.js";
 import { MOODS } from "../../../../../supabase/functions/_shared/blockyWorlds/formulas.js";
 import { cardOf, IDEAS_PER_BATCH } from "../../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
@@ -21,6 +23,8 @@ const Q = new URLSearchParams(window.location.search);
 // the renderer is pretended ON by default so the whole flow can be clicked through (?renderer=0 shows the "off" state)
 const AS = Q.get("as") ?? "starter", RENDERER = Q.get("renderer") !== "0";
 const BLOCKED = Q.get("blocked") === "1", FAIL = Q.get("fail");
+const QUEUE = Math.max(0, Math.min(9, Number(Q.get("queue")) || 0)), LATE = Q.get("eta") === "late";
+const PLACE_S = 8, PLACE_ETA = 90;
 // the mock script is the example script, whose planted object is this card's (Grandpa's whistle): the real checks run on it
 const PROTO = EXAMPLE_IDEAS[0];
 const mentions = (row, word) => JSON.stringify(row ?? {}).toLowerCase().includes(word);
@@ -51,13 +55,19 @@ const fail = (code, error, extra = {}) => { throw errorFromReply({ code, error, 
 
 const draftView = (d) => ({ id: d.id, source: d.source, ideaId: d.ideaId, title: d.title, lengthSec: d.lengthSec, lines: d.lines, post: d.post, credits: PRICES[d.lengthSec], check: d.check, ready: !d.check.problems.length, updatedAt: d.updatedAt, writesLeft: 14, ...(d.notice ? { notice: d.notice } : {}) });
 const runView = (r) => {
-  const t = (Date.now() - r.startedAt) / 1000;
+  const waited = (Date.now() - r.startedAt) / 1000, lineS = r.queue * PLACE_S;
+  // the line (&queue=N): queued with a place and an ETA; the run's own clock starts when its turn comes
+  if (waited < lineS) {
+    const pos = r.queue - Math.floor(waited / PLACE_S);
+    return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: null, status: "queued", stepAt: r.startedAt, pct: 0, post: null, finalUrl: null, downloadUrl: null, poster: null, error: null, refunded: false, queuePosition: pos, etaSec: LATE ? 0 : Math.round(((lineS - waited) / PLACE_S) * PLACE_ETA), doneEtaSec: Math.round(((lineS - waited) / PLACE_S) * PLACE_ETA + 230), etaAt: Date.now() };
+  }
+  const t = waited - lineS;
   if (r.failCode && t >= 6) {
     const { kind, text } = failReason(r.failCode);
     return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: new Date(r.startedAt + 6000).toISOString(), status: "failed", stepAt: r.startedAt, pct: 0, post: null, finalUrl: null, downloadUrl: null, poster: null, error: "We couldn't make this video. It's not your fault, and your credits are back.", reason: text, failKind: kind, refunded: true };
   }
   const status = t < 3 ? "queued" : t < 7 ? "voice" : t < 12 ? "plan" : t < 22 ? "render" : "done";
-  return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, pct: status === "render" ? Math.round(((t - 12) / 10) * 100) : status === "done" ? 100 : 0, post: status === "done" ? r.post : null, finalUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, poster: status === "done" ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
+  return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, queuePosition: null, etaSec: null, doneEtaSec: status === "done" ? null : Math.max(0, Math.round((22 - t) * 10)), etaAt: Date.now(), pct: status === "render" ? Math.round(((t - 12) / 10) * 100) : status === "done" ? 100 : 0, post: status === "done" ? r.post : null, finalUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, poster: status === "done" ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
 };
 
 export async function devCall(action, body) {
@@ -134,7 +144,7 @@ export async function devCall(action, body) {
     // one video at a time per script (like the server): a double-tapped Try again never charges twice
     const active = state.runs.find((x) => x.draftId === d.id && ["queued", "voice", "plan", "render"].includes(runView(x).status));
     if (active) fail("LIMIT", "This script is already being made. Wait for it to finish.", { runId: active.id });
-    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null };
+    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null, queue: QUEUE };
     state.runs.unshift(r);
     return runView(r);
   }
