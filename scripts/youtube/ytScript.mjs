@@ -26,10 +26,11 @@ export function check(S) {
   const ids = new Set();
   for (const b of beats(S)) {
     if (ids.has(b.id)) out.push(`${b.id}: the id is used twice`); ids.add(b.id);
-    const kinds = Object.keys(b.show ?? {}).filter((k) => ["rec", "card", "step", "proof", "result", "end"].includes(k));
-    if (kinds.length !== 1) out.push(`${b.id}: show needs exactly one of rec, card, step, proof, result, end`);
+    const kinds = Object.keys(b.show ?? {}).filter((k) => ["slot", "note", "rec", "card", "step", "proof", "result", "end"].includes(k));
+    if (kinds.length !== 1) out.push(`${b.id}: show needs exactly one of slot, note, rec, card, step, proof, result, end`);
+    if (b.show?.slot && !b.show.slot.show) out.push(`${b.id}: a slot needs its "show" (what to record)`);
     // every number said has a source on the episode's fact list
-    if (/\d|\b(million|thousand|hundred)\b/i.test(b.say ?? "") && !(b.facts ?? []).length) out.push(`${b.id}: says a number without a fact ("${b.say}")`);
+    if (/\d|\b(million|thousand|hundred)\b/i.test((b.say ?? "").replace(/\b3D\b/g, "")) && !(b.facts ?? []).length) out.push(`${b.id}: says a number without a fact ("${b.say}")`);
     for (const f of b.facts ?? []) if (!facts.has(f)) out.push(`${b.id}: no fact "${f}" on the list`);
     // "free" only where a fact says exactly what is free
     if (/\bfree\b/i.test(b.say ?? "") && !(b.facts ?? []).some((f) => /free/i.test(facts.get(f)?.text ?? ""))) out.push(`${b.id}: says "free" without the fact that says what is free`);
@@ -45,12 +46,12 @@ export function check(S) {
 
 /** The script as the owner reads it. */
 export function printable(S) {
-  const all = beats(S), n = all.reduce((a, b) => a + words(b.say), 0), resultSecs = all.reduce((a, b) => a + (b.show?.result ? (b.show.to - b.show.from) : 0), 0);
+  const all = beats(S), n = all.reduce((a, b) => a + words(b.say), 0), resultSecs = all.reduce((a, b) => a + (b.show?.result ? (b.show.to - b.show.from) : b.show?.slot && !b.say ? b.show.slot.secs ?? 8 : 0), 0);
   const lines = [`# ${S.title}`, "", `About ${n} spoken words ≈ ${(n / WPS / 60).toFixed(1)} min of voice + ${Math.round(resultSecs)} s of the finished video ≈ ${((n / WPS + resultSecs) / 60).toFixed(1)} min in all.`, ""];
   for (const c of S.chapters) {
     lines.push(`## ${c.name}`, "");
     for (const b of c.beats) {
-      const sh = b.show ?? {}, what = sh.rec ? `screen: ${sh.rec}${sh.zoom ? " (zoom in)" : ""}` : sh.card ? `card: ${[sh.card.light, sh.card.bold].filter(Boolean).join(" ")} [${sh.card.icon}]` : sh.step ? `STEP ${sh.step.n}: ${sh.step.title.join(" ")}` : sh.proof ? `proof: ${sh.proof.stat} ${sh.proof.unit ?? "views"}, ${sh.proof.credit}, checked ${sh.proof.checked}` : sh.result ? `the finished video, ${Math.round(sh.to - sh.from)} s with its own sound` : sh.end ? "end screen" : "?";
+      const sh = b.show ?? {}, what = sh.slot ? `SLOT: ${sh.slot.show}${sh.slot.sound ? " (its own sound)" : ""}` : sh.note ? `keyword: ${[sh.note.light, sh.note.bold].filter(Boolean).join(" ")} [${sh.note.icon}]` : sh.rec ? `screen: ${sh.rec}${sh.zoom ? " (zoom in)" : ""}` : sh.card ? `card: ${[sh.card.light, sh.card.bold].filter(Boolean).join(" ")} [${sh.card.icon}]` : sh.step ? `STEP ${sh.step.n}: ${sh.step.title.join(" ")}` : sh.proof ? `proof: ${sh.proof.stat} ${sh.proof.unit ?? "views"}, ${sh.proof.credit}, checked ${sh.proof.checked}` : sh.result ? `the finished video, ${Math.round(sh.to - sh.from)} s with its own sound` : sh.end ? "end screen" : "?";
       lines.push(`- **${b.id}** · _${what}_${b.say ? `\n  ${b.say}` : ""}${b.facts?.length ? `\n  (source: ${b.facts.join(", ")})` : ""}`);
     }
     lines.push("");

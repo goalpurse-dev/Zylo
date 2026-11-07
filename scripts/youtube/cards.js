@@ -197,10 +197,91 @@ async function thumb(c) {
 
 function bg() { background(0); }
 
+/* ── the split view (owner, 2026-11-07): 75 % on the left for a screen recording / example video (or a keyword while
+   it explains), 25 % on the right for a live step panel: the step number, its keyword, an animated icon and the
+   tracker of all steps (done ones stamped with a check, the current one highlighted and filling) ── */
+export const LEFT = { x: 36, y: 36, w: 1404, h: 1008 }, PANEL = { x: 1468, y: 36, w: 416, h: 1008 };
+function wrap(text, font, size, max) {
+  ctx.font = `${size}px ${font}`; const out = []; let line = "";
+  for (const w of String(text).split(/\s+/)) { const t = line ? `${line} ${w}` : w; if (ctx.measureText(t).width > max && line) { out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out;
+}
+function slotLeft(L, t) {
+  const { x, y, w, h } = LEFT;
+  if (L.filled) {   // the owner's footage is laid in here by the assembly: a clean frame around a hole
+    ctx.fillStyle = "#000"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 26); ctx.fill();
+    ctx.strokeStyle = "rgba(190,242,100,0.55)"; ctx.lineWidth = 4; ctx.stroke(); return;
+  }
+  ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 26); ctx.fill();
+  ctx.setLineDash([22, 16]); ctx.lineDashOffset = -t * 40; ctx.strokeStyle = "rgba(190,242,100,0.7)"; ctx.lineWidth = 5; ctx.stroke(); ctx.setLineDash([]);
+  // a slow scan line, so a placeholder still moves
+  const sy = y + ((t * 260) % h); const g = ctx.createLinearGradient(0, sy - 60, 0, sy); g.addColorStop(0, "rgba(190,242,100,0)"); g.addColorStop(1, "rgba(190,242,100,0.10)");
+  ctx.fillStyle = g; ctx.fillRect(x + 4, Math.max(y, sy - 60), w - 8, Math.min(60, sy - y));
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = LIME; ctx.font = `46px ${SANS}`; ctx.fillText(`SLOT ${String(L.n).padStart(2, "0")}  ·  ${L.secs.toFixed(1)} s`, x + 70, y + 120);
+  ctx.fillStyle = YELLOW; ctx.font = `92px ${SANS}`; ctx.fillText("SHOW:", x + 70, y + 250);
+  const lines = wrap(L.show, SANS, 64, w - 140).slice(0, 7);
+  ctx.fillStyle = WHITE; lines.forEach((l, i) => ctx.fillText(l, x + 70, y + 350 + i * 82));
+  if (L.sound) { ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `36px "Segoe UI", Arial`; ctx.fillText("plays with its own sound", x + 70, y + h - 60); }
+}
+function noteLeft(N, t) {
+  const { x, y, w, h } = LEFT, cx = x + w / 2;
+  ctx.fillStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 26); ctx.fill();
+  icon(N.icon, cx, y + 360, 260 * back(t / 0.45), t);
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  const k = ease((t - 0.08) / 0.4);
+  ctx.globalAlpha = k;
+  if (N.light) { fit(N.light, `italic ${SERIF}`, 70, w - 160); ctx.fillStyle = "#C4B5FD"; ctx.fillText(N.light, cx + (1 - k) * 60, y + 640); }
+  if (N.bold) { fit(N.bold, SANS, 120, w - 160); ctx.fillStyle = WHITE; ctx.fillText(N.bold, cx + (1 - k) * 60, y + 790); }
+  ctx.globalAlpha = 1;
+}
+function panel(P, t, dur) {
+  const { x, y, w, h } = PANEL, cx = x + w / 2;
+  ctx.fillStyle = "rgba(10,11,14,0.75)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 26); ctx.fill();
+  ctx.strokeStyle = "rgba(139,92,246,0.45)"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const cur = P.steps.find((s) => s.n === P.current);
+  if (cur) {
+    const k = P.enter ? back(t / 0.4) : 1;
+    ctx.save(); ctx.translate(cx, y + 90); ctx.scale(k, k);
+    ctx.fillStyle = LIME; ctx.beginPath(); ctx.roundRect(-140, -46, 280, 92, 46); ctx.fill();
+    ctx.fillStyle = INK; ctx.font = `60px ${SANS}`; ctx.fillText(`STEP ${cur.n}`, 0, 4); ctx.restore();
+    icon(cur.icon ?? "sparkle", cx, y + 270, 170 * (P.enter ? back((t - 0.1) / 0.45) : 1), t);
+    fit(cur.keyword, SANS, 64, w - 50); ctx.fillStyle = WHITE; ctx.fillText(cur.keyword, cx, y + 420);
+  } else {
+    ctx.fillStyle = YELLOW; ctx.font = `46px ${SANS}`; ctx.fillText(P.title ?? "IN THIS VIDEO", cx, y + 90);
+    icon(P.icon ?? "play", cx, y + 260, 170, t);
+  }
+  // the tracker: one row per step
+  const top = y + 500, row = Math.min(70, (h - 520) / P.steps.length);
+  P.steps.forEach((s, i) => {
+    const ry = top + i * row, done = s.n < (P.current ?? 0), now = s.n === P.current;
+    if (now) {
+      ctx.fillStyle = "rgba(190,242,100,0.14)"; ctx.beginPath(); ctx.roundRect(x + 14, ry - row / 2 + 6, w - 28, row - 12, 16); ctx.fill();
+      const f = (P.fill0 ?? 0) + ((P.fill1 ?? 1) - (P.fill0 ?? 0)) * clamp(t / Math.max(0.1, dur)); ctx.fillStyle = "rgba(190,242,100,0.30)";
+      ctx.beginPath(); ctx.roundRect(x + 14, ry - row / 2 + 6, (w - 28) * f, row - 12, 16); ctx.fill();
+    }
+    // the check stamps in when its step was just finished
+    const stampK = done && s.n === (P.current ?? 0) - 1 && P.enter ? back((t - 0.05) / 0.35) : 1;
+    ctx.save(); ctx.translate(x + 50, ry); ctx.scale(done ? stampK : 1, done ? stampK : 1);
+    ctx.fillStyle = done ? LIME : now ? "rgba(190,242,100,0.25)" : "rgba(255,255,255,0.1)"; ctx.beginPath(); ctx.arc(0, 0, 20, 0, 7); ctx.fill();
+    if (done) { ctx.strokeStyle = INK; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-2, 8); ctx.lineTo(10, -8); ctx.stroke(); }
+    else { ctx.fillStyle = now ? LIME : "rgba(255,255,255,0.6)"; ctx.font = `24px ${SANS}`; ctx.fillText(String(s.n), 0, 2); }
+    ctx.restore();
+    ctx.textAlign = "left"; ctx.font = `${now ? 34 : 30}px ${SANS}`; ctx.fillStyle = done ? "rgba(255,255,255,0.55)" : now ? WHITE : "rgba(255,255,255,0.6)";
+    ctx.fillText(s.label, x + 86, ry + 2); ctx.textAlign = "center";
+  });
+}
+async function split(c, t, dur) {
+  background(t);
+  if (c.left.type === "slot") slotLeft(c.left, t); else noteLeft(c.left, t);
+  panel(c.panel, t, dur);
+}
+
 window.renderCard = async (c, t, dur) => {
   if (c.kind === "thumb") return thumb(c);
   cv.width = 1920; cv.height = 1080;
   if (c.kind === "bg") return bg();
-  await ({ keyword, step, proof, end }[c.kind] ?? keyword)(c, t, dur);
+  await ({ keyword, step, proof, end, split }[c.kind] ?? keyword)(c, t, dur);
 };
 window.ready = true;

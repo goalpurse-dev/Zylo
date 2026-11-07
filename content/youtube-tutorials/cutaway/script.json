@@ -1,0 +1,652 @@
+{
+  "slug": "cutaway-explainer-tutorial",
+  "title": "How to Make Viral 3D Cutaway Videos With AI (No Blender, No Editing)",
+  "title_options": [
+    "How These 3D \"How It Works\" Videos Are Made (Step by Step)",
+    "I Made a Viral-Style 3D Cutaway Video in Minutes, No Animation Skills"
+  ],
+  "tool": "cutaway",
+  "link": "https://tryzyvo.com/workspace/cutaway-explainer?utm_source=youtube&utm_medium=video&utm_campaign=cutaway-explainer-tutorial&utm_content=description",
+  "description": "The 3D \"see inside how it works\" videos are everywhere right now. Here is exactly how to make one with Zyvo's Cutaway Explainer, step by step: no Blender, no animator, no editing.",
+  "description_credits": [
+    "Example shown for commentary: [CREATOR] ([LINK]). Not mine."
+  ],
+  "panel_title": "IN THIS VIDEO",
+  "steps": [
+    {
+      "n": 1,
+      "label": "tryzyvo.com",
+      "keyword": "TRYZYVO.COM",
+      "icon": "play"
+    },
+    {
+      "n": 2,
+      "label": "Sign up",
+      "keyword": "STARTER PLAN",
+      "icon": "check"
+    },
+    {
+      "n": 3,
+      "label": "Cutaway",
+      "keyword": "CUTAWAY EXPLAINER",
+      "icon": "play"
+    },
+    {
+      "n": 4,
+      "label": "Your topic",
+      "keyword": "PICK A TOPIC",
+      "icon": "search"
+    },
+    {
+      "n": 5,
+      "label": "Generate",
+      "keyword": "GENERATE",
+      "icon": "rocket"
+    },
+    {
+      "n": 6,
+      "label": "The result",
+      "keyword": "YOUR VIDEO",
+      "icon": "film"
+    }
+  ],
+  "facts": [
+    {
+      "id": "proof_example",
+      "text": "A viral cutaway video by another creator and its real view count",
+      "source": "the creator's public page, with the day you checked it: fill in [CREATOR] and [VIEWS]"
+    },
+    {
+      "id": "starter",
+      "text": "Cutaway Explainer needs at least the Starter plan: €18 a month (VAT included) for 750 credits",
+      "source": "the live plan-prices endpoint (2026-11-07) + cutaway/access.js (Starter and up generate)"
+    },
+    {
+      "id": "premade_cost",
+      "text": "A 30-second video on a premade topic costs 25 credits; a custom topic costs 136 credits for 30 seconds or 195 for 60 seconds",
+      "source": "cutaway/pricing.js PRICES.video.credits (the price shown on the Cutaway page)"
+    },
+    {
+      "id": "per_month",
+      "text": "750 credits ÷ 25 = up to 30 premade 30-second videos a month on Starter",
+      "source": "worked out from the two facts above"
+    },
+    {
+      "id": "refund",
+      "text": "Charged once, when it starts; back in full if it fails",
+      "source": "the Cutaway page's price line (CutawayBuilder.jsx)"
+    },
+    {
+      "id": "premades",
+      "text": "The premade topics on the page: Landfill, French drain, Swimming pool, Car wash",
+      "source": "the Cutaway page's PREMADE TOPICS chips (as recorded on screen)"
+    },
+    {
+      "id": "lengths",
+      "text": "Premade topics are 30 seconds; custom topics 30 or 60 seconds",
+      "source": "cutaway/pricing.js lengthsFor"
+    },
+    {
+      "id": "sfx",
+      "text": "Sound effects: digging, drips, engines and a chime on each name",
+      "source": "the Cutaway page's sound effects switch"
+    },
+    {
+      "id": "how_it_works",
+      "text": "Script: a fact-checked script and an energetic voiceover. Scene: the 3D cutaway is built, and every part appears on its word. Render: one continuous vertical video with captions and sound.",
+      "source": "the Cutaway page's How it works box"
+    },
+    {
+      "id": "drain_time",
+      "text": "The French drain video took 4 min 48 s from start to finished video",
+      "source": "cutaway_runs ec0b89b3: created 2026-10-25 14:13:28, finished 14:18:16"
+    },
+    {
+      "id": "end_card",
+      "text": "Starter keeps the Zyvo end card; Pro and Generative can remove it",
+      "source": "cutaway/endCard.js + the Cutaway page's plan lines"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "intro",
+      "name": "What we're making",
+      "step": null,
+      "beats": [
+        {
+          "id": "i1",
+          "say": "These 3D videos, where you see inside how something works, are all over TikTok and YouTube right now.",
+          "show": {
+            "slot": {
+              "id": "intro_examples",
+              "show": "2–3 of YOUR finished Cutaway videos playing, quick cuts (e.g. the car wash, then the swimming pool)"
+            }
+          }
+        },
+        {
+          "id": "i2",
+          "say": "Every part pops in right as it's named, in one smooth shot.",
+          "show": {
+            "slot": {
+              "id": "intro_examples",
+              "show": "2–3 of YOUR finished Cutaway videos playing, quick cuts (e.g. the car wash, then the swimming pool)"
+            }
+          }
+        },
+        {
+          "id": "i3",
+          "say": "Making one by hand means modeling every pipe and every layer of dirt in Blender, or paying an animator. That's days of work.",
+          "show": {
+            "card": {
+              "icon": "hourglass",
+              "light": "by hand, that's",
+              "bold": "days of work"
+            }
+          }
+        },
+        {
+          "id": "i4",
+          "say": "I made mine with no coding and no editing.",
+          "show": {
+            "card": {
+              "icon": "no",
+              "light": "no coding,",
+              "bold": "no editing",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "i5",
+          "say": "And they work: this one by [CREATOR] has [VIEWS] views.",
+          "facts": [
+            "proof_example"
+          ],
+          "show": {
+            "slot": {
+              "id": "proof",
+              "show": "a viral cutaway video by another creator, with its real view count visible (their profile or the video page); you'll credit them by name"
+            }
+          }
+        },
+        {
+          "id": "i6",
+          "say": "So here's exactly how to make one, step by step.",
+          "show": {
+            "card": {
+              "icon": "check",
+              "light": "here's exactly",
+              "bold": "how"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step1",
+      "name": "Step 1: Go to tryzyvo.com",
+      "step": 1,
+      "beats": [
+        {
+          "id": "s1a",
+          "say": "Step one: head to tryzyvo.com.",
+          "show": {
+            "step": {
+              "n": 1,
+              "of": 6,
+              "title": [
+                "Head to",
+                "tryzyvo.com"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s1b",
+          "say": "Open your browser, type tryzyvo.com, and you're on the home page.",
+          "show": {
+            "slot": {
+              "id": "s1",
+              "show": "your browser: type tryzyvo.com in the address bar, press Enter, the home page loads"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step2",
+      "name": "Step 2: Sign up (Starter plan)",
+      "step": 2,
+      "beats": [
+        {
+          "id": "s2a",
+          "say": "Step two: sign up.",
+          "show": {
+            "step": {
+              "n": 2,
+              "of": 6,
+              "title": [
+                "Sign up",
+                "Starter plan or higher"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s2b",
+          "say": "Create your account. To make Cutaway videos, you need at least the Starter plan.",
+          "facts": [
+            "starter"
+          ],
+          "show": {
+            "slot": {
+              "id": "s2",
+              "show": "click Sign up, create the account, then the pricing page with the Starter plan in view"
+            }
+          }
+        },
+        {
+          "id": "s2c",
+          "say": "Starter is eighteen euros a month, and it gives you seven hundred and fifty credits.",
+          "facts": [
+            "starter"
+          ],
+          "show": {
+            "note": {
+              "icon": "chart",
+              "light": "Starter: €18 a month",
+              "bold": "750 credits"
+            }
+          }
+        },
+        {
+          "id": "s2d",
+          "say": "A thirty second video on a premade topic costs twenty five credits. That's up to thirty of them a month.",
+          "facts": [
+            "premade_cost",
+            "per_month"
+          ],
+          "show": {
+            "note": {
+              "icon": "film",
+              "light": "one premade video:",
+              "bold": "25 credits"
+            }
+          }
+        },
+        {
+          "id": "s2e",
+          "say": "You're only charged when a video starts, and if it fails, you get the credits back in full.",
+          "facts": [
+            "refund"
+          ],
+          "show": {
+            "note": {
+              "icon": "check",
+              "light": "if it fails,",
+              "bold": "credits back"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step3",
+      "name": "Step 3: Short Form → Cutaway Explainer",
+      "step": 3,
+      "beats": [
+        {
+          "id": "s3a",
+          "say": "Step three: click Short Form, then Cutaway Explainer.",
+          "show": {
+            "step": {
+              "n": 3,
+              "of": 6,
+              "title": [
+                "Short Form →",
+                "Cutaway Explainer"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s3b",
+          "say": "It's in the menu on the left. Short Form, then the Cutaway Explainer card.",
+          "show": {
+            "slot": {
+              "id": "s3",
+              "show": "from the home page: click Short Form in the left menu, then the Cutaway Explainer card; the Cutaway page opens"
+            }
+          }
+        },
+        {
+          "id": "s3c",
+          "say": "Zyvo is made for people who are tired of animating everything themselves.",
+          "show": {
+            "note": {
+              "icon": "gear",
+              "light": "tired of",
+              "bold": "animating by hand?"
+            }
+          }
+        },
+        {
+          "id": "s3d",
+          "say": "Normally, a video like this means days in Blender, or hiring an animator.",
+          "show": {
+            "note": {
+              "icon": "hourglass",
+              "light": "normally:",
+              "bold": "days in Blender"
+            }
+          }
+        },
+        {
+          "id": "s3e",
+          "say": "Its templates are built to make the same style of videos you keep seeing all over your feed.",
+          "show": {
+            "note": {
+              "icon": "sparkle",
+              "light": "the same style",
+              "bold": "you see everywhere"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step4",
+      "name": "Step 4: Pick a topic",
+      "step": 4,
+      "beats": [
+        {
+          "id": "s4a",
+          "say": "Step four: type your topic, or pick a premade one.",
+          "show": {
+            "step": {
+              "n": 4,
+              "of": 6,
+              "title": [
+                "Type your topic",
+                "or pick a premade one"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s4b",
+          "say": "Type anything that works underground or inside a building, like how a septic tank works.",
+          "show": {
+            "slot": {
+              "id": "s4",
+              "show": "the Topic box: type \"How a septic tank works\" slowly, then clear it, then click the premade chips Landfill, French drain, Swimming pool and Car wash one by one"
+            }
+          }
+        },
+        {
+          "id": "s4c",
+          "say": "Or tap one of the premade topics: Landfill, French drain, Swimming pool, or Car wash.",
+          "facts": [
+            "premades"
+          ],
+          "show": {
+            "slot": {
+              "id": "s4",
+              "show": "the Topic box: type \"How a septic tank works\" slowly, then clear it, then click the premade chips Landfill, French drain, Swimming pool and Car wash one by one"
+            }
+          }
+        },
+        {
+          "id": "s4d",
+          "say": "Premade topics cost the least, because their scene is already built and checked.",
+          "facts": [
+            "premade_cost"
+          ],
+          "show": {
+            "note": {
+              "icon": "check",
+              "light": "premade =",
+              "bold": "cheapest"
+            }
+          }
+        },
+        {
+          "id": "s4e",
+          "say": "Then pick the length. Premade topics are thirty seconds, and custom topics can be thirty or sixty.",
+          "facts": [
+            "lengths"
+          ],
+          "show": {
+            "slot": {
+              "id": "s4_settings",
+              "show": "the Length setting (point at 30 seconds), then the Sound effects switch: turn it on"
+            }
+          }
+        },
+        {
+          "id": "s4f",
+          "say": "And turn on sound effects: digging, drips, engines, and a chime on every part as it's named.",
+          "facts": [
+            "sfx"
+          ],
+          "show": {
+            "slot": {
+              "id": "s4_settings",
+              "show": "the Length setting (point at 30 seconds), then the Sound effects switch: turn it on"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step5",
+      "name": "Step 5: Generate",
+      "step": 5,
+      "beats": [
+        {
+          "id": "s5a",
+          "say": "Step five: hit Generate, and Zyvo starts cooking it.",
+          "show": {
+            "step": {
+              "n": 5,
+              "of": 6,
+              "title": [
+                "Hit Generate",
+                "and let it cook"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s5b",
+          "say": "First it writes a fact-checked script and records the voice.",
+          "facts": [
+            "how_it_works"
+          ],
+          "show": {
+            "slot": {
+              "id": "s5",
+              "show": "click Generate, then the progress screens in order: Writing the script → Building the 3D scene → Rendering one continuous shot"
+            }
+          }
+        },
+        {
+          "id": "s5c",
+          "say": "Then it builds the 3D scene, so every part appears right on its word.",
+          "facts": [
+            "how_it_works"
+          ],
+          "show": {
+            "slot": {
+              "id": "s5",
+              "show": "click Generate, then the progress screens in order: Writing the script → Building the 3D scene → Rendering one continuous shot"
+            }
+          }
+        },
+        {
+          "id": "s5d",
+          "say": "And it renders the whole thing as one continuous vertical video, with captions and sound.",
+          "facts": [
+            "how_it_works"
+          ],
+          "show": {
+            "slot": {
+              "id": "s5",
+              "show": "click Generate, then the progress screens in order: Writing the script → Building the 3D scene → Rendering one continuous shot"
+            }
+          }
+        },
+        {
+          "id": "s5e",
+          "say": "My French drain video took just under five minutes, start to finish.",
+          "facts": [
+            "drain_time"
+          ],
+          "show": {
+            "note": {
+              "icon": "clock",
+              "light": "my French drain:",
+              "bold": "under 5 minutes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step6",
+      "name": "Step 6: Your result",
+      "step": 6,
+      "beats": [
+        {
+          "id": "s6a",
+          "say": "Step six: once it's done, your result will look something like this.",
+          "show": {
+            "step": {
+              "n": 6,
+              "of": 6,
+              "title": [
+                "Your result",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "id": "s6b",
+          "say": "",
+          "show": {
+            "slot": {
+              "id": "result",
+              "show": "one of YOUR finished Cutaway videos, full length, playing with its own sound",
+              "sound": true,
+              "secs": 30
+            }
+          }
+        },
+        {
+          "id": "s6c",
+          "say": "Download it, and it's ready to post.",
+          "show": {
+            "slot": {
+              "id": "download",
+              "show": "the finished video in Zyvo: click Download"
+            }
+          }
+        },
+        {
+          "id": "s6d",
+          "say": "On Starter, the video ends with a short Zyvo end card. Pro and Generative can turn it off.",
+          "facts": [
+            "end_card"
+          ],
+          "show": {
+            "note": {
+              "icon": "eye",
+              "light": "end card:",
+              "bold": "off on Pro"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "name": "Recap",
+      "step": 7,
+      "beats": [
+        {
+          "id": "o1",
+          "say": "So that's it: go to tryzyvo.com, sign up, open Cutaway Explainer, pick your topic, and hit Generate.",
+          "show": {
+            "end": {
+              "site": "tryzyvo.com"
+            }
+          }
+        },
+        {
+          "id": "o2",
+          "say": "The link is in the description. Subscribe for more, and tell me in the comments which topic you'd make first.",
+          "show": {
+            "end": {
+              "site": "tryzyvo.com"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "thumbs": [
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "HOW IT",
+          "white",
+          140
+        ],
+        [
+          "WORKS",
+          "lime",
+          150
+        ]
+      ],
+      "badge": "NO BLENDER"
+    },
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "3D VIDEOS",
+          "white",
+          120
+        ],
+        [
+          "IN MINUTES",
+          "lime",
+          120
+        ]
+      ],
+      "badge": "NO EDITING"
+    },
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "VIRAL",
+          "yellow",
+          150
+        ],
+        [
+          "CUTAWAYS",
+          "white",
+          130
+        ],
+        [
+          "WITH AI",
+          "lime",
+          100
+        ]
+      ]
+    }
+  ]
+}
