@@ -272,6 +272,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   if (bad) throw bad;
   const tlPath = path.join(dir, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl));
+  // WORLD CONTINUITY: the story's world bible (tl.world) next to the timeline (bookkeeping: never fails the run)
+  if (tl.world) await (await import(pathToFileURL(path.join(ENGINE, "lib", "worldBible.js")).href)).saveWorldBible(dir, tl).catch(() => null);
   await put(p.out.timeline, tlPath, "application/json");
   const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms, needs: builderLines(built.report) },
     ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, reused: !!direction.reused, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),

@@ -27,7 +27,7 @@ const stubbed = (() => {
 const SPOTS = ["center", "left", "right", "back", "far", "door"];
 // extra spots some sets add (sets/*.js): a timeline may use them; a set without one uses "far" (monsters) or "center"
 const EXTRA_SPOTS = ["tower", "closet", "bed", "classroom"];
-const LIGHTS = ["day", "night", "warm"];
+const LIGHTS = ["day", "night", "warm", "dusk", "dawn"]; // dusk / dawn: WORLD-LOOK 2026-11-06 (page/lighting.js)
 const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
 const FACINGS = ["camera", "left", "right", "away", "monster"];
 const MONSTER_STATES = ["lurk", "reach", "reveal", "flee"];
@@ -400,6 +400,7 @@ async function main() {
       post.setLight(shot.light);
       lightKey = key;
     }
+    S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
     // the outside view's coast stage (hill / mud / sea, spray / splash; page/sets/creatureWorld.js): moves the giant
     S.setStage?.(shot.stage ?? null, lt, dur, (shot.giants ?? []).find((g) => g.id === "world")?.action ?? null);
@@ -707,6 +708,10 @@ async function main() {
     // EPIC: crowd poses (LOD needs the camera), giant LOD, the beat's camera shake (after all framing)
     epic?.after(shot, lt, S, camera, where);
     S.stageAfter?.(shot, lt, where, camera); // the hose spray from the first person's hand, across the frame
+    S.afterCamera?.(camera, shot, where, epic); // WORLD-LOOK: the foreground rule (nothing hides the subject) + the fog guard
+    // WORLD-LOOK: renderFlags ["washed_out"] (the shot review): a safer exposure, half the haze, for this frame only
+    const washed = (shot.renderFlags ?? []).includes("washed_out"), expo0 = renderer.toneMappingExposure, fog0 = scene.fog ? [scene.fog.near, scene.fog.far] : null;
+    if (washed) { renderer.toneMappingExposure = expo0 * 0.82; if (scene.fog) { scene.fog.near *= 2; scene.fog.far *= 2; } }
     // the flat-frame guard's safe re-render (render.mjs): safe 1 = no fog; safe 2 = no fog + a plain camera on the
     // set's centre from its camera side (turtle run 1620fc3e: whole shots were one fogged colour)
     const safe = Number(opts?.safe) || 0, savedFog = scene.fog;
@@ -718,6 +723,7 @@ async function main() {
     }
     // render, then the caption on top in the output canvas
     post.render();
+    if (washed) { renderer.toneMappingExposure = expo0; if (scene.fog && fog0) [scene.fog.near, scene.fog.far] = fog0; }
     if (safe >= 1) scene.fog = savedFog;
     ctx2d.drawImage(renderer.domElement, 0, 0);
     probeCtx.drawImage(out, 0, 0, 16, 16);

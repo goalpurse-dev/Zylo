@@ -37,6 +37,7 @@ export function makeCapsLayer({ THREE, scene, tl, ctx }) {
   }
   function decorateWorld(S, spec = {}) {
     if (!S?.giant) return null;
+    if (S.giant.userData.backTown) return S.giant.userData.backTown; // WORLD-LOOK: creatureWorld.js already built its (dense) town
     // a story that lives on a creature always shows its town on it: the asked back town, else one on its own when the
     // creature's kind carries none (a wolf, a bear, a bird...)
     const want = spec.backTown ?? (spec.view === "outside" && !S.giant.userData.town && spec.town !== false ? { style: "town" } : null);
@@ -150,10 +151,15 @@ export function makeCapsLayer({ THREE, scene, tl, ctx }) {
     const g = info.giant ?? null;
     if (g) {
       const yaw = g.rotation.y; ctxE.forward = V(Math.sin(yaw), 0, Math.cos(yaw));
-      const J = g.userData.joints; if (J.head) { g.updateMatrixWorld(true); ctxE.head = J.head.getWorldPosition(V()); }
+      const J = g.userData.joints; if (J.head) { g.updateMatrixWorld(true); ctxE.head = J.head.getWorldPosition(V()); const hb = new THREE.Box3(); J.head.traverse((o) => { if (o.isMesh && o.visible !== false) hb.expandByObject(o); }); if (!hb.isEmpty()) { ctxE.head = hb.getCenter(V()); ctxE.headTop = hb.max.y; ctxE.headR = hb.getSize(V()).length() / 2; } } // WORLD-FIX: the head's own box (the joint is the neck pivot)
       // the town on its back is the top of a tilt-up / the floor of a fly-through
       if (g.userData.backTown || g.userData.town) { const b = new THREE.Box3().setFromObject(g.userData.backTown ?? g.userData.town); if (!b.isEmpty()) ctxE.focusHeight = Math.max(ctxE.focusHeight ?? 0, b.max.y - ctxE.focus.y); }
     }
+    // WORLD-LOOK: on_back stands on the town's wall walkway (page/kit/backTown.js), in world space
+    const bt = g?.userData.backTown ?? (S.giant?.userData.backTown ?? null);
+    if (bt?.userData.walkway?.length) { bt.updateMatrixWorld(true); const nm = new THREE.Matrix3().getNormalMatrix(bt.matrixWorld); ctxE.walkway = bt.userData.walkway.map((w) => ({ p: bt.localToWorld(V(w.x, w.y, w.z)), dir: V(Math.sin(w.ry), 0, Math.cos(w.ry)).applyMatrix3(nm).normalize(), out: V(w.out[0], 0, w.out[1]).applyMatrix3(nm).normalize() })); }
+    // WORLD-FIX: what can block the on-back view (the town and the creature it stands on)
+    if (ctxE.walkway?.length) ctxE.occluders = [bt, g ?? S.giant].filter(Boolean);
     applyMove(shot.move, ctxE);
     return true;
   }

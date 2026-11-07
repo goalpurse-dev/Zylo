@@ -39,12 +39,26 @@ export function plannedSight(item) {
   const actionOk = !item.moving || actors.some((a) => a.pose && !["stand", "talk"].includes(a.pose)) || real.some((s) => (s.crowds ?? []).some((c) => c.action && c.action !== "stand") || (s.giants ?? []).some((g) => g.action && g.action !== "idle"));
   const emotionOk = !item.emotion || !castWho || actors.some((a) => a.id === who && a.expr && a.expr !== "neutral");
   const card = shots.some((s) => s.insert?.kind === "card") && !real.length;
-  const fails = [!whoOk, missing.length, !placeOk, !timeOk, !actionOk, !emotionOk, card].filter(Boolean).length;
+  const worldOk = worldMatches(item, real);
+  const fails = [!whoOk, missing.length, !placeOk, !timeOk, !actionOk, !emotionOk, card, !worldOk].filter(Boolean).length;
   return {
     line: item.line, shows: `(mock) ${real.length} shots: ${real.map((s) => `${s.set}/${s.light} focus ${s.focus}`).join("; ")}`,
-    who_ok: whoOk, missing, action_ok: actionOk, static: !actionOk, place_ok: placeOk, time_ok: timeOk, emotion_ok: emotionOk, card,
+    who_ok: whoOk, missing, action_ok: actionOk, static: !actionOk, place_ok: placeOk, time_ok: timeOk, emotion_ok: emotionOk, world_ok: worldOk, card,
     verdict: fails === 0 ? "match" : !whoOk && !placeOk ? "miss" : "partial", types: [], bad_shots: [], fix: "(mock)",
   };
+}
+
+/** WORLD CONTINUITY, as planned: every shot in a bible set, every actor in the bible's look (item.bible = tl.world) */
+export function worldMatches(item, real) {
+  const B = item.bible;
+  if (!B) return true;
+  const sets = new Set(B.sets ?? []);
+  return real.every((s) => (sets.has(s.set) || /^world:/.test(s.set ?? "")) && (s.actors ?? []).every((a) => {
+    const c = item.cast?.[a.id];
+    if (!c) return true;
+    const b = B.cast?.[c.bibleId];
+    return !!b && c.seed === b.seed && (!c.look || JSON.stringify(c.look) === JSON.stringify(b.look));
+  }));
 }
 
 export function mockJudge({ see = null, costUsd = 0, delayMs = 0, fail = 0, model = "mock" } = {}) {

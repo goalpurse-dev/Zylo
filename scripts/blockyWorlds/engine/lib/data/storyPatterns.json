@@ -1,0 +1,295 @@
+{
+ "version": 1,
+ "source": "free stats (22 videos, 0 described)",
+ "videos": 22,
+ "described": 0,
+ "updated": "2026-11-07",
+ "patternsOnly": "abstract patterns only: never a reference video's story, names, characters or exact shots",
+ "measured": {
+  "videos": 22,
+  "described": 0,
+  "beatsByWords": {
+   "rule": 22,
+   "tour": 22,
+   "me": 15,
+   "until": 17,
+   "discovery": 9,
+   "climax": 13,
+   "closer": 14
+  },
+  "perBeat": {
+   "rule": {
+    "share": {
+     "p10": 0.01,
+     "p25": 0.02,
+     "p50": 0.02,
+     "p75": 0.03,
+     "p90": 0.04,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 0.82,
+     "p25": 0.96,
+     "p50": 1.13,
+     "p75": 1.82,
+     "p90": 3.55,
+     "n": 22
+    }
+   },
+   "tour": {
+    "share": {
+     "p10": 0.1,
+     "p25": 0.14,
+     "p50": 0.19,
+     "p75": 0.22,
+     "p90": 0.33,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 1.22,
+     "p25": 1.31,
+     "p50": 1.54,
+     "p75": 1.7,
+     "p90": 1.93,
+     "n": 22
+    }
+   },
+   "me": {
+    "share": {
+     "p10": 0.06,
+     "p25": 0.07,
+     "p50": 0.13,
+     "p75": 0.16,
+     "p90": 0.2,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 1.14,
+     "p25": 1.36,
+     "p50": 1.52,
+     "p75": 1.75,
+     "p90": 1.87,
+     "n": 22
+    }
+   },
+   "until": {
+    "share": {
+     "p10": 0.13,
+     "p25": 0.15,
+     "p50": 0.23,
+     "p75": 0.27,
+     "p90": 0.36,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 1.04,
+     "p25": 1.19,
+     "p50": 1.4,
+     "p75": 1.72,
+     "p90": 2.15,
+     "n": 22
+    }
+   },
+   "discovery": {
+    "share": {
+     "p10": 0.01,
+     "p25": 0.04,
+     "p50": 0.15,
+     "p75": 0.18,
+     "p90": 0.25,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 0.91,
+     "p25": 1.17,
+     "p50": 1.38,
+     "p75": 1.73,
+     "p90": 2.21,
+     "n": 22
+    }
+   },
+   "climax": {
+    "share": {
+     "p10": 0.13,
+     "p25": 0.2,
+     "p50": 0.23,
+     "p75": 0.25,
+     "p90": 0.34,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 1.03,
+     "p25": 1.19,
+     "p50": 1.35,
+     "p75": 1.5,
+     "p90": 1.88,
+     "n": 22
+    }
+   },
+   "closer": {
+    "share": {
+     "p10": 0.01,
+     "p25": 0.04,
+     "p50": 0.07,
+     "p75": 0.07,
+     "p90": 0.14,
+     "n": 22
+    },
+    "meanShot": {
+     "p10": 1.06,
+     "p25": 1.31,
+     "p50": 1.6,
+     "p75": 1.96,
+     "p90": 2.36,
+     "n": 22
+    }
+   }
+  }
+ },
+ "patterns": {
+  "worldEstablishing": {
+   "rule": "Open on the world itself: a wide or aerial of the creature / town in the first 1-3 shots, then a closer detail that proves the rule.",
+   "firstShots": [
+    "establish",
+    "scale",
+    "explain"
+   ],
+   "support": 0
+  },
+  "recurringWide": {
+   "rule": "Come back to a wide of the creature or the town every 8-12 s so the viewer never forgets where the story stands.",
+   "everySecMax": 12,
+   "support": 0
+  },
+  "beatTemplates": [
+   {
+    "beat": "tour",
+    "sequence": [
+     "establish",
+     "life",
+     "humour"
+    ],
+    "rule": "World tour: place wide, then people living by the rule, then a funny example.",
+    "support": 0
+   },
+   {
+    "beat": "until",
+    "sequence": [
+     "threat",
+     "reveal",
+     "reaction"
+    ],
+    "rule": "Until one night: the threat far and small, its reveal, then a reaction.",
+    "support": 0
+   },
+   {
+    "beat": "climax",
+    "sequence": [
+     "cause",
+     "consequence",
+     "reaction"
+    ],
+    "rule": "Climax: the action, what it causes, who reacts.",
+    "support": 0
+   }
+  ],
+  "miniSequences": [
+   {
+    "sequence": [
+     "reveal",
+     "reaction",
+     "consequence"
+    ],
+    "rule": "Show the thing, show who sees it, show what it changes.",
+    "support": 0
+   },
+   {
+    "sequence": [
+     "cause",
+     "consequence",
+     "reaction"
+    ],
+    "rule": "Every hit is followed by its result and a reaction.",
+    "support": 0
+   }
+  ],
+  "arc": [
+   {
+    "beat": "rule",
+    "timeOfDay": null,
+    "pace": "fast",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "tour",
+    "timeOfDay": null,
+    "pace": "medium",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "me",
+    "timeOfDay": null,
+    "pace": "medium",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "until",
+    "timeOfDay": null,
+    "pace": "medium",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "discovery",
+    "timeOfDay": null,
+    "pace": "medium",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "climax",
+    "timeOfDay": null,
+    "pace": "medium",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   },
+   {
+    "beat": "closer",
+    "timeOfDay": null,
+    "pace": "slow",
+    "distance": null,
+    "focus": null,
+    "rule": "",
+    "support": 22
+   }
+  ],
+  "characters": [
+   {
+    "rule": "The narrator is on screen in 1-2 lines of the me part, then returns doing something at the crisis and the climax.",
+    "support": 0
+   }
+  ],
+  "continuity": [
+   {
+    "rule": "One world: the same town, buildings and creature in every shot; recurring places come back from the same side.",
+    "support": 0
+   }
+  ],
+  "note": "placeholder: pace per beat measured from the shot cuts; the rest are defaults until the shot descriptions exist"
+ }
+}

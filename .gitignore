@@ -32,6 +32,8 @@ content/studio-worker/
 reference/blocky-worlds/videos/
 reference/blocky-worlds/work/
 reference/blocky-worlds/voice-samples/
+# shot library study output (scripts/blockyWorlds/shotlib): third-party transcripts, keyframes, descriptions
+reference/blocky-worlds/analysis/
 # reference music stems (Demucs, from the creator videos) and our own music drafts: kept local for now
 reference/blocky-worlds/audio-only/
 reference/blocky-worlds/music-options/

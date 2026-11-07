@@ -531,3 +531,59 @@ Tests: `dev/run1620.test.mjs` (fixture `dev/scripts/run1620fc3e.json`).
   - hero_low on a giant with no person: a low camera on the ground in front of it.
   - track on a giant (no army): the whole animal side-on (`ctx.giantTrack`).
   - A never-inside-another-giant guard: an odd ray-crossing count or a surface closer than 3% of its height moves the camera out sideways.
+
+## Addendum 2026-11-06 (d): the WORLD BIBLE (permanent rule: world continuity)
+
+One world per story (docs/blocky-worlds-protocol.md, the rule at the top). Owner of the bible: WORLD-BIBLE. Owner of its
+visuals: WORLD-LOOK (page/*). Code: `lib/worldBible.js` (pure, deterministic). Built only for directed plans (a
+production list); an undirected plan has no `tl.world` and is checked as before.
+
+### Flow
+1. `buildWorldBible({ production, script, idea, title })` in planVideo right after `readDirection`, before any shot.
+   Input hints: `production.bible` (director schema, enum-free: creature_look, town_name, building_style, palette[],
+   streets[], places[{name, kind}], landmarks[]); missing hints are seeded. The mock director writes them too.
+2. The shots are planned as before; at the end `applyBible(tl, bible)` (after the coast / caps / motion passes)
+   re-homes any set that is not a bible set (`homeShots`), binds every cast member to a bible look, writes each shot's
+   `worldSpot` + `onCreature`, sets every creature world's `seed` to the bible's town seed, tags bible props.
+3. `checkTimeline` runs `worldBibleProblems(tl)` ("world bible: ..."): a set not in `tl.world.sets` (a plain kit set in
+   a creature story, another creature's world), a `worldSpot` not in the bible or not of the shot's set, an actor
+   whose `look` / `seed` is not the bible's, a creature world of another species / town seed, an unknown `propId`.
+   A built world (`world:<id>`, the builder's place for one line) is allowed.
+4. The prepare job saves `world-bible.json` next to `timeline.json` (`saveWorldBible`).
+
+### Timeline fields (new, all optional)
+- `tl.world` (the bible): `{ version: 1, seed, title, kind: "creature" | "town",
+  creature: { species, name, heightM, townView: "inside" | "on" | null, colors: { skin, back, belly }, backWord, features[] } | null,
+  town: { name, seed, style: { id, text, walls[], roofs[], trim }, palette[], streets: [{ id, name, from: [x,z], to: [x,z] }],
+          buildings: [{ id, name, kind, street, pos: [x,z], wall, roof, floors, sign?, prop? }], landmarks: [{ id, name, kind, pos: [x,z] }] },
+  spots: [{ id, name, kind, view, set, anchor, onCreature }], sets: [set],
+  cast: { id: { name, role, kind, look, age, gender, seed, words, from } }, townsfolk: [{ id, look, age, gender, seed }],
+  creatures: [{ id, species, name, heightM, colors, host }], props: { id: { name, size, look: { color, material }, heldBy, storyProp } },
+  time: [{ from, to, light }] }`.
+  Town plan coordinates are in [-1, 1]: x across the back, z along it, +z toward the head. Spot ids: `outside_wide`,
+  `outside_coast`, (`outside_on`), `main_street`, `square`, `deck` (the lookout at the shell / back edge), `stairs`,
+  `rooftop`, `school`, `market`, `home` (interior); a town story: `main_street` (street), `school`, `home` (bedroom), `woods`.
+- `shot.worldSpot`: the bible spot id the shot stands in.
+- `shot.onCreature` (street-level creature shots, not inserts): `{ view, shellEdge, headNeck, walkTilt, tiltDeg }`.
+- `tl.cast[id].look` (people kit `lookFor` overrides: top, pattern, bottom, pants, hair, hairColor, hat, hatColor,
+  glasses, acc), `tl.cast[id].seed` (= the bible's), `tl.cast[id].bibleId`, `tl.cast[id].gender` when the bible knows it.
+- `tl.worlds[id].seed` = `tl.world.town.seed`; `tl.worlds[id].town` = the town's name.
+- `objects[].propId`: the bible prop this object is.
+- `shot.renderFlags` (from the shot review): `["washed_out"]`: render that shot safer (less fog / bloom / exposure).
+
+### What WORLD-LOOK must render (page/*)
+- One town from `tl.world.town` in every creature view (inside, on, outside): the buildings at their `pos` along the
+  streets, `style.walls` / `roofs` / `trim`, the named places with their `sign`, the landmarks; the creature in
+  `creature.colors`. Outside wide shots show that same town on its back.
+- A shot's `worldSpot` frames its place in that town (main street, square, deck at the edge, stairs, rooftop, school,
+  market, home interior).
+- `onCreature`: `shellEdge` = the shell / back rim (or the shell wall and ribs inside) in frame; `headNeck` = the head or
+  neck in the background; `walkTilt` + `tiltDeg` = the ground slowly rocking as the creature walks (0 when it stops).
+- `renderFlags: ["washed_out"]` as a safer exposure for that shot.
+
+### Shot review (lib/vision)
+- The judge gets `bibleSummary(tl.world)` once per batch and `bibleLine` (the spot) per line; `world_ok` in the schema;
+  new miss types `world_mismatch`, `clipping`, `camera_inside`, `sky_only`, `washed_out` (`RENDER_TYPES`).
+- Fixes: `world_mismatch` -> `setOverride { set, spot }` to the bible's set + spot and `castFix { bibleLook: true }`;
+  `clipping` / `camera_inside` / `sky_only` -> `cameraFix { camera }`; `washed_out` -> `renderFlag`.
+- The mock judge flags `world_mismatch` from the planned shots (set / look not the bible's).

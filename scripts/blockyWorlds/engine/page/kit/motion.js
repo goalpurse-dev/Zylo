@@ -48,6 +48,18 @@ export function bodyMotion(obj, state, t = 0) {
   const travel = (sp, cap) => obj.position.addScaledVector(dir, Math.min(cap, sp * t));
   if (state === "flee") obj.rotation.y = yaw0 + Math.PI;
   const step = Math.sin(t * (fast ? 14 : 8));
+  // 2026-11-06 (BLOCKY-ANIMALS): a rigged animal (page/kit/animals) animates its own legs, wings, head and eyes; the
+  // object only travels at the animal's own gait speed (planted feet), lifts for flying and sits in its water patch
+  if (u.rigAnimal) {
+    const ra = u.rigAnimal;
+    if (["walk", "carry"].includes(state)) travel(ra.speed, 0.9);
+    else if (fast) travel(ra.runSpeed, 2.4);
+    else if (state === "fly") { const k = ease(t / 0.6); obj.position.y += (1.2 + 0.15 * Math.sin(t * 2.2)) * k; travel(0.4, 1.0); }
+    else if (state === "swim") { obj.position.y -= h * 0.12; travel(0.25, 0.7); }
+    else if (state === "sleep") X.zs.forEach((z, k) => { const ph = (t * 0.45 + k / 3) % 1; z.position.set(0.15 + ph * 0.4, h * 1.05 + ph * h * 0.7, u.focus?.z ?? 0); z.scale.setScalar(0.5 + ph); z.visible = ph < 0.92; });
+    X.crate.visible = false;
+    return true;
+  }
   switch (state) {
     case "walk": case "run": case "chase": case "charge": case "flee": case "carry":
       travel(fast ? 1.1 : 0.32, fast ? 2.4 : 0.9);

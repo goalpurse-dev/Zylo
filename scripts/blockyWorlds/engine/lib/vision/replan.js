@@ -18,10 +18,15 @@
 //   setOverride { set }                the story's place (the set the line's world uses elsewhere in the video)
 //   timeOfDay   { light }              day / night / warm from the story clock
 //   replaceCard { name }               a picture card where the thing itself was needed (the builder's need, if any)
+//   (2026-11-06, WORLD CONTINUITY) world_mismatch -> setOverride { set, spot } to the world bible's spot for that shot
+//                                       + castFix { id, bibleLook: true } (the cast member back in the bible's look)
+//   cameraFix   { camera }             clipping / camera_inside / sky_only: a safe eye-level framing (medium / wide)
+//   renderFlag  { flag }               washed_out (or a defect a camera can't fix): shot.renderFlags for the page
 import { heldKind, objectForNoun, iconFor } from "../visuals.js";
+import { spotFor, bibleSetFor } from "../worldBible.js";
 import { cardLabel } from "../planText.js";
 
-export const FIX_OPS = Object.freeze(["castFix", "focusFix", "actionPose", "crowdAction", "exprFix", "propHeld", "needObject", "needCrowd", "setOverride", "timeOfDay", "replaceCard"]);
+export const FIX_OPS = Object.freeze(["castFix", "focusFix", "actionPose", "crowdAction", "exprFix", "propHeld", "needObject", "needCrowd", "setOverride", "timeOfDay", "replaceCard", "cameraFix", "renderFlag"]);
 const POSES = new Set(["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow", "hug", "climb", "push", "eat", "fall", "jump", "ride", "hide", "throw", "fly", "swim", "build", "dig", "dance", "kick", "fight", "drive"]);
 const VERB_POSE = [
   [/^(run|runs|ran|running|chase\w*|flee\w*|fled|rush\w*|race\w*|raced|sprint\w*)$/, "run"], [/^(walk\w*|march\w*|hunt\w*|wander\w*|stroll\w*)$/, "walk"],
@@ -103,10 +108,20 @@ export function suggestFixes(v, req, tl, reqs = null) {
   }
   if (types.has("wrong_time") && req.light) for (const i of shots) if (tl.shots[i].light !== req.light) out.push({ op: "timeOfDay", shot: i, light: req.light, reason: reason("wrong_time") });
   if (types.has("wrong_emotion") && req.emotion && isCast) { const expr = exprForFeeling(req.emotion); if (expr) out.push({ op: "exprFix", shot: main, actor: who, expr, reason: reason("emotion") }); }
+  if (types.has("world_mismatch") && tl.world) {
+    for (const i of shots) {
+      const s = tl.shots[i];
+      const set = bibleSetFor(tl.world, s.set);
+      if (set && set !== s.set) out.push({ op: "setOverride", shot: i, set, spot: spotFor(tl.world, { ...s, set }), reason: reason("world_mismatch") });
+      for (const a of s.actors ?? []) { const c = tl.cast?.[a.id], b = tl.world.cast?.[c?.bibleId]; if (c && (!b || c.seed !== b.seed || JSON.stringify(c.look ?? null) !== JSON.stringify(b.look))) out.push({ op: "castFix", shot: i, id: a.id, bibleLook: true, reason: reason("world_mismatch") }); }
+    }
+  }
+  for (const t of ["clipping", "camera_inside", "sky_only"]) if (types.has(t)) for (const i of shots) if (tl.shots[i].camera !== "insert") out.push({ op: "cameraFix", shot: i, camera: t === "sky_only" ? "medium" : tl.shots[i].camera === "medium" ? "wide" : "medium", reason: reason(t) });
+  if (types.has("washed_out")) for (const i of shots) out.push({ op: "renderFlag", shot: i, flag: "washed_out", reason: reason("washed_out") });
   if (types.has("picture_card")) for (const i of shots) if (tl.shots[i].insert?.kind === "card") out.push({ op: "replaceCard", shot: i, name: tl.shots[i].visuals?.[0] ?? tl.shots[i].insert.text, reason: reason("picture_card") });
   // one fix per (op, shot, target)
   const seen = new Set();
-  return out.filter((f) => { const k = `${f.op}|${f.shot}|${f.id ?? f.actor ?? f.name ?? f.kind ?? f.set ?? f.light ?? ""}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  return out.filter((f) => { const k = `${f.op}|${f.shot}|${f.id ?? f.actor ?? f.name ?? f.kind ?? f.set ?? f.light ?? f.camera ?? f.flag ?? ""}`; if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
 const SPOTS = ["center", "left", "right", "back", "door", "far"];
@@ -118,6 +133,13 @@ function applyOne(tl, s, f) {
   switch (f.op) {
     case "castFix": {
       if (!tl.cast?.[f.id]) return "not a cast member";
+      if (f.bibleLook) {
+        // WORLD CONTINUITY: the cast member back in the world bible's look (a new bible entry is never made here)
+        const c = tl.cast[f.id], b = tl.world?.cast?.[c.bibleId];
+        if (!b) return "no look in the world bible";
+        if (c.seed === b.seed && JSON.stringify(c.look ?? null) === JSON.stringify(b.look)) return "already the bible's look";
+        c.seed = b.seed; c.look = clone(b.look); return true;
+      }
       if (s.camera === "insert") return "an insert shot";
       let a = (s.actors ?? []).find((x) => x.id === f.id);
       if (!a) { s.actors = [{ id: f.id, spot: "center", pose: "stand", expr: "neutral", facing: "camera", hold: null }, ...(s.actors ?? []).map((x) => (x.spot === "center" ? { ...x, spot: freeSpot(s) } : x))].slice(0, 4); a = s.actors[0]; }
@@ -157,7 +179,20 @@ function applyOne(tl, s, f) {
       s.crowds = [...(s.crowds ?? []), { kind: f.kind, count: f.count ?? 120, formation: f.action === "march" ? "march" : "block", action: f.action ?? "stand", spot: "back", facing: "camera", seed: (s.seed ?? 1) + 7 }];
       return true;
     }
-    case "setOverride": { if (s.set === f.set) return "already that set"; s.set = f.set; return true; }
+    case "setOverride": {
+      if (s.set === f.set) return "already that set";
+      s.set = f.set;
+      // the world bible's spot of the new set (a stale spot would fail the world check)
+      if (tl.world) { const sp = f.spot ?? spotFor(tl.world, s); if (sp) s.worldSpot = sp; else delete s.worldSpot; }
+      return true;
+    }
+    case "cameraFix": {
+      if (s.camera === "insert") return "an insert shot";
+      if (!["medium", "wide", "closeup", "low", "over_shoulder"].includes(f.camera)) return `unknown camera ${f.camera}`;
+      if (s.camera === f.camera) return "already that camera";
+      s.camera = f.camera; delete s.move; return true;
+    }
+    case "renderFlag": { const fl = new Set(s.renderFlags ?? []); if (fl.has(f.flag)) return "already flagged"; fl.add(f.flag); s.renderFlags = [...fl]; return true; }
     case "timeOfDay": { if (!["day", "night", "warm"].includes(f.light)) return `unknown light ${f.light}`; if (s.light === f.light) return "already that light"; s.light = f.light; return true; }
     case "replaceCard": return "a card is replaced by the builder (its need), not here";
     default: return `unknown op ${f.op}`;

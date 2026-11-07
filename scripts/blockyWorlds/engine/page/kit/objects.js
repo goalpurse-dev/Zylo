@@ -623,6 +623,7 @@ export function makeObject(name, opts = {}) {
 /** per frame: lights, balloons, the mime, the people of an object */
 export function animateObject(obj, state, t = 0) {
   const u = obj.userData;
+  u.curState = state; // 2026-11-06 (BLOCKY-ANIMALS): the rigged animals pose for the frame state
   u.anim?.(t);
   if (u.animal || u.ride || MOTION_STATES.includes(state)) bodyMotion(obj, state, t); // 2026-11-05 (GAPS): walking, flying, sleeping...
   poseExtras(obj, t);

@@ -23,6 +23,7 @@ import path from "node:path";
 import { lineRequirements, stillPicks, subTimeline } from "./requirements.js";
 import { batchesOf } from "./judge.js";
 import { suggestFixes, applyFixes, settleObjects, finalFallback } from "./replan.js";
+import { bibleSummary, bibleLine } from "../worldBible.js";
 
 
 export const DEFAULT_REVIEW_BUDGET = Object.freeze({
@@ -101,17 +102,20 @@ export async function reviewShots({ tl, script = null, premise = null, judge = n
       // 2. the items (a line with no frame is not judged this pass)
       const items = reqs.filter((r) => todo.has(r.line)).map((r) => {
         const st = picks.filter((p) => p.line === r.line).map((p) => byKey.get(p.key)).filter(Boolean).map((s) => ({ key: s.key, shot: picks.find((p) => p.key === s.key).shot, jpeg: s.jpeg, w: s.w, h: s.h, file: s.file }));
-        return { ...r, stills: st, castIds, plan: [...new Set(st.map((s) => s.shot))].map((i) => tl.shots[i]).filter(Boolean) };
+        const plan = [...new Set(st.map((s) => s.shot))].map((i) => tl.shots[i]).filter(Boolean);
+        // the world bible (WORLD CONTINUITY): the line's spot + the bible itself (the mock judge compares against it)
+        return { ...r, stills: st, castIds, plan, ...(tl.world ? { world: bibleLine(tl.world, plan), bible: tl.world, cast: tl.cast } : {}) };
       }).filter((it) => it.stills.length);
       // 3. the judge, batches in parallel; each request only when its worst case fits under the money cap
       const j0 = Date.now();
       const batches = batchesOf(items, { size: B.batchSize, maxImages: B.maxImages });
       const results = await pool(batches, B.concurrency, async (batch) => {
-        const worst = judge.worstCase?.(batch) ?? 0;
+        const ctx = tl.world ? { world: bibleSummary(tl.world) } : {};
+        const worst = judge.worstCase?.(batch, ctx) ?? 0;
         if (!purse.reserve(worst)) return batch.map((it) => ({ line: it.line, verdict: "unjudged", types: [], bad_shots: [], missing: [], fix: "", shows: "", reason: `money cap ($${B.maxUsd})` }));
         try {
           P.calls++;
-          const r = await withDeadline(judge.judge(batch), deadline, "the judge");
+          const r = await withDeadline(judge.judge(batch, ctx), deadline, "the judge");
           purse.settle(worst, r.costUsd); P.costUsd += r.costUsd ?? 0;
           return r.lines;
         } catch (e) {

@@ -14,6 +14,9 @@ export const POST = {
   day: { ao: 2.0, bloom: [0.22, 0.45, 1.6], sat: 1.58, con: 1.24, warm: 0.035 },
   night: { ao: 1.2, bloom: [0.5, 0.45, 0.85], sat: 1.15, con: 1.08, warm: -0.02 },
   warm: { ao: 1.8, bloom: [0.3, 0.45, 1.3], sat: 1.5, con: 1.2, warm: 0.07 },
+  // WORLD-LOOK 2026-11-06: dusk / dawn (page/lighting.js)
+  dusk: { ao: 1.5, bloom: [0.4, 0.45, 1.0], sat: 1.3, con: 1.14, warm: 0.03 },
+  dawn: { ao: 1.6, bloom: [0.3, 0.45, 1.2], sat: 1.3, con: 1.12, warm: 0.01 },
 };
 
 const GRADE = {
@@ -50,7 +53,7 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
   const plain = query.has("nopost");
   const setLight = (name) => {
     const p = POST[name];
-    if (!p) throw new Error(`post.js: unknown light "${name}" (day | night | warm)`);
+    if (!p) throw new Error(`post.js: unknown light "${name}" (${Object.keys(POST).join(" | ")})`);
     if (ao) ao.configuration.intensity = p.ao;
     [bloom.strength, bloom.radius, bloom.threshold] = p.bloom;
     grade.uniforms.sat.value = p.sat; grade.uniforms.con.value = p.con; grade.uniforms.warm.value = p.warm;

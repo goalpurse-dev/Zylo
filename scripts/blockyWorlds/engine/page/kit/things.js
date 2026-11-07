@@ -8,6 +8,7 @@ import { rng, hashSeed, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, c
 import { THINGS, ANIMALS, CREATURE_OBJECTS } from "../../lib/catalog.js";
 import { makeHeld } from "./props.js";
 import { makeMonster, animateMonster } from "./monsters.js";
+import { makeAnimal, animateAnimal, animalGait } from "./animals/index.js";
 
 const TAU = Math.PI * 2;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -725,8 +726,37 @@ const SIMPLE = {
   turtle(g) { const s = new THREE.Group(); s.position.set(0, 0, -0.4); s.scale.setScalar(1.6); g.add(s); M(hemi(0.25), solid("#4e7d2a"), { y: 0.08, parent: s }).scale.set(1.2, 0.8, 1); M(sph(0.08, 10, 8), solid("#9ccc65"), { x: 0.32, y: 0.12, parent: s }); for (const [x, z] of [[0.18, 0.18], [0.18, -0.18], [-0.18, 0.18], [-0.18, -0.18]]) bx(0.08, 0.1, 0.08, solid("#9ccc65"), { x, y: 0.05, z, parent: s }); fin(g, { h: 0.6, w: 0.9, d: 0.8, detailH: 0.6 }); },
 };
 
+// 2026-11-06 (BLOCKY-ANIMALS): the catalog animals as the rigged blocky animal kit (page/kit/animals): a clear
+// silhouette per species, colour patterns, expressive eyes, real walk / run / fly / swim / roar animation
+export const RIG_ANIMALS = {
+  dog: ["dog"], cat: ["cat"], goat: ["goat"], sheep: ["goat", "sheep"], cow: ["cow"], pig: ["pig"], bear: ["bear"], moose: ["deer", "moose"], deer: ["deer"],
+  mouse: ["mouse"], mole: ["mole"], rabbit: ["rabbit"], fox: ["wolf", "fox"], wolf: ["wolf"], chicken: ["chicken"], duck: ["duck"], pigeon: ["pigeon"],
+  parrot: ["parrot"], seagull: ["seagull"], eagle: ["eagle"], fish: ["fish"], frog: ["frog"], snail: ["snail"], worm: ["snake", "worm"], snake: ["snake"],
+  whale: ["whale"], squid: ["octopus", "squid"], octopus: ["octopus"], turtle: ["turtle"], shark: ["shark"], seal: ["seal"], elephant: ["elephant"], ant: ["ant"],
+};
+/** catalog state -> the rig action (walking stops once the shared travel cap is reached: no moonwalk) */
+function rigAction(state, t, ra) {
+  if (state === "on" || state === "stand" || !state) return "idle";
+  if (["walk", "carry"].includes(state)) return t * ra.speed >= 0.9 ? "idle" : "walk";
+  if (["run", "chase", "charge", "flee"].includes(state)) return t * ra.runSpeed >= 2.4 ? "idle" : state === "flee" ? "flee" : "run";
+  return state;
+}
+function rigAnimal(g, species, variant, state) {
+  const a = makeAnimal({ species, variant });
+  const yaw = 1.0; // three-quarter view, the head toward +x (like the old builder)
+  a.rotation.y = yaw; a.position.z = -0.45; g.add(a);
+  a.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(a), s = b.getSize(V());
+  const U = a.userData, big = U.length > 3;
+  fin(g, { h: Math.max(0.3, s.y), w: Math.max(0.5, s.x), d: Math.max(0.5, s.z), detailH: Math.max(0.5, Math.min(2.2, s.y)), push: big ? 0.8 : 0.6, big, focusZ: -0.45 });
+  const walk = animalGait(a, "walk"), run = animalGait(a, "run");
+  const ra = { animal: a, speed: walk.speed, runSpeed: run.speed };
+  Object.assign(g.userData, { heading: yaw, rigAnimal: ra, parts: { body: a, head: U.joints.head ?? null }, ride: { at: V(0, 0, -0.45), yaw }, species, variant: U.variant });
+  g.userData.anim = (t) => animateAnimal(a, rigAction(g.userData.curState ?? state, t, ra), t, { noLift: true, dur: 30 });
+}
 for (const name of Object.keys(ANIMALS)) {
   if (THING_BUILD[name]) continue;
+  if (RIG_ANIMALS[name]) { THING_BUILD[name] = (g, state) => rigAnimal(g, ...RIG_ANIMALS[name], state); continue; }
   if (SPECIES[name]) THING_BUILD[name] = (g) => quadruped(g, SPECIES[name]);
   else if (["pigeon", "duck", "chicken"].includes(name)) THING_BUILD[name] = (g) => bird(g, name);
   else if (SIMPLE[name]) THING_BUILD[name] = SIMPLE[name];
@@ -743,6 +773,10 @@ for (const [kind] of Object.entries(CREATURE_OBJECTS)) {
     fin(g, { h: h * k, w: 1.6, d: 1.2, detailH: Math.min(2, h * k) });
   };
 }
+
+// the dragon and the yeti as creatures: the blocky animal kit too (2026-11-06)
+THING_BUILD.dragon_creature = (g, state) => rigAnimal(g, "dragon", null, state);
+THING_BUILD.yeti_creature = (g, state) => rigAnimal(g, "yeti", null, state);
 
 /** sanity: every catalog name has a builder (checked by dev/coverage.test.mjs through objects.js) */
 export const THING_NAMES = Object.keys(THING_BUILD);

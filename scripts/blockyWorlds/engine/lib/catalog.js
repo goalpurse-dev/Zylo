@@ -13,24 +13,27 @@
 
 const A = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
-/** Animals as scene objects (one builder, a species per name). */
+/** Animals as scene objects (one builder, a species per name). 2026-11-06 (BLOCKY-ANIMALS): most of them are now the
+ * rigged blocky animals of page/kit/animals (things.js RIG_ANIMALS maps a name to its species + variant). */
 /** what an animal (or a built creature) can be doing in a shot: page/kit/motion.js bodyMotion (GAPS, 2026-11-05) */
 export const ANIMAL_STATES = Object.freeze(["walk", "run", "chase", "charge", "flee", "fly", "swim", "sleep", "eat", "howl", "roar", "carry", "climb", "dig", "lurk", "reach", "attack", "stomp"]);
 export const ANIMALS = Object.freeze({
   dog: A("dog,dogs,puppy,puppies,hound,pet,pets,snowdog,snowdogs,snow-dogs"), cat: A("cat,cats,kitten,kittens,kitty"),
   goat: A("goat,goats"), sheep: A("sheep,lamb,lambs"), cow: A("cow,cows,calf,bull,animal,animals,critter,critters,livestock"), pig: A("pig,pigs,hog,hogs,piglet"),
-  horse: A("horse,horses,pony,ponies"), bear: A("bear,bears,cub"), moose: A("moose,elk,deer,reindeer,antlers"),
+  horse: A("horse,horses,pony,ponies"), bear: A("bear,bears,cub,panda,pandas"), moose: A("moose,elk"), deer: A("deer,reindeer,antlers,fawn,doe,stag"),
   mouse: A("mouse,mice,rat,rats,hamster,hamsters"), squirrel: A("squirrel,squirrels,chipmunk"), mole: A("mole,moles"),
   rabbit: A("rabbit,rabbits,bunny,bunnies,hare"), skunk: A("skunk,skunks"), fox: A("fox,foxes"), wolf: A("wolf,wolves"),
   chicken: A("chicken,chickens,hen,hens,rooster,roosters,chick,chicks"), duck: A("duck,ducks,duckling,ducklings,goose,geese"),
-  pigeon: A("pigeon,pigeons,bird,birds,crow,crows,seagull,seagulls,parrot,parrots,owl,owls,dove"),
+  pigeon: A("pigeon,pigeons,bird,birds,crow,crows,dove,doves,sparrow,sparrows"), parrot: A("parrot,parrots,macaw,macaws,parakeet,parakeets,budgie,cockatoo"),
+  seagull: A("seagull,seagulls,gull,gulls,puffin,puffins"), eagle: A("eagle,eagles,hawk,hawks,falcon,falcons,owl,owls"),
   fish: A("fish,fishes,goldfish,anglerfish,lanternfish,eel,eels"), frog: A("frog,frogs,toad,toads"),
-  snail: A("snail,snails,slug,slugs"), worm: A("worm,worms,snake,snakes,serpent,caterpillar"),
+  snail: A("snail,snails,slug,slugs"), worm: A("worm,worms,caterpillar"), snake: A("snake,snakes,serpent,serpents,python,cobra,viper"),
   bat: A("bat,bats"), moth: A("moth,moths,butterfly,butterflies,bug,bugs,beetle"), firefly: A("firefly,fireflies,glowworm,glowworms"),
-  whale: A("whale,whales"), squid: A("squid,octopus,octopuses,tentacle,tentacles"), spider: A("spider,spiders"),
-  bee: A("bee,bees,wasp,wasps"), turtle: A("turtle,turtles,tortoise"),
+  whale: A("whale,whales,orca,orcas,dolphin,dolphins"), squid: A("squid,squids,tentacle,tentacles"), octopus: A("octopus,octopuses,octopi"), spider: A("spider,spiders"),
+  shark: A("shark,sharks"), seal: A("seal,seals,walrus,walruses,sea lion"), elephant: A("elephant,elephants,mammoth,mammoths"), ant: A("ant,ants,termite,termites"),
+  bee: A("bee,bees,wasp,wasps"), turtle: A("turtle,turtles,tortoise,tortoises"),
 });
-export const ANIMAL_SETS = { fish: ["street"], whale: ["street"], squid: ["street"], mole: ["woods"], worm: ["woods"], firefly: ["woods"] };
+export const ANIMAL_SETS = { fish: ["street"], whale: ["street"], squid: ["street"], octopus: ["street"], shark: ["street"], mole: ["woods"], worm: ["woods"], firefly: ["woods"] };
 
 /** Creatures as scene objects (a small one of the monster looks, for a line that names one that is not the monster). */
 export const CREATURE_OBJECTS = Object.freeze({

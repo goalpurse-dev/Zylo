@@ -7,6 +7,9 @@
 import { productionSchema } from "./spec.js";
 import { registryForPrompt } from "../capabilities.js";
 import { PRICE, costOf } from "../builder/design.js";
+// the whole-video STORY PATTERNS block (lib/storyPatterns.js; built by shotlib/story.mjs): beat sequences, recurring
+// wides, the arc, characters. Read once at load, so the cached system prompt stays byte-stable within a process.
+import { storyPatternsForPrompt } from "../storyPatterns.js";
 
 /** the models: Haiku 5.5 is the default (a reading + listing task); Sonnet 5.5 for the calibration sample */
 export const DIRECTOR_MODELS = Object.freeze({ fast: "claude-haiku-5-5", strong: "claude-sonnet-5-5" });
@@ -16,7 +19,10 @@ export const DIRECTOR_SYSTEM = `You are the STORY DIRECTOR of "Blocky Worlds": 1
 
 THE PERMANENT RULE: the scene always matches the narration. Every line's key nouns, its action and its subject (who or what the line is about) must be visible in that line's shot. Read for MEANING, not words: "the shell cracked" in a story about a town on a turtle means the giant turtle; "they" means whoever the last lines were about; "the whole town ran" is a crowd of townsfolk running.
 
+THE WORLD CONTINUITY RULE (permanent): a story feels real only in ONE consistent world. Decide that world FIRST (the "bible" field), then put every line in it. Never a different street, map or building style mid-story. Inside the town you still feel you are on the creature (the shell edge, its head or neck in the background, the ground tilting as it walks); outside, wide shots always show that same town on its back.
+
 WHAT YOU WRITE
+- bible (write it first): creature_look (the host creature's colours and back: "mossy green shell with brown plates"; "" if no creature), town_name (an original name), building_style (one look for every building: "white timber houses with red tile roofs"), palette (3-6 colour words), streets (2-3 street names), places ({ name, kind }: the named buildings the story uses, kind home | school | market | hall | shop | landmark), landmarks (the town's fixed sights: "the bell tower", "the lookout at the shell edge"). The engine builds one seeded town from it and every shot stands in it.
 - worlds: every place the story happens. kind: outdoor | indoor | enclosed (a cave, a room inside something, a fridge) | creature (the town is ON, INSIDE or right OUTSIDE a giant creature) | underwater | space | sky. base: the nearest hand-built set (street, woods, bedroom, school) used if the place cannot be built. creature: { species, relation: inside | on | outside | none, heightM }. A video may move between worlds (inside the turtle, then on the beach outside it): list each, and put every line in one.
 - cast: every person or person-like character that appears (not crowds). id "me" is the narrator (role narrator). kind human | robot | animal | creature | object (a talking object); role kid | adult | elder | baby; look: 3-10 words of visual hints (clothes, colours, one feature); job if it matters to the picture ("dentist").
 - creatures: animals and monsters that appear. scale tiny | small | human | big | giant (bigger than a house) | colossal (a town fits on it); heightM; count (1-3; more is a crowd); behaviours they visibly do; monster: true only for the story's monster.
@@ -42,7 +48,10 @@ STYLE (learned from a viral video of exactly this format; docs/blocky-worlds-pro
 - "Me" is my world: the narrator is on screen in only 1-2 lines of the "me" part; the rest is a tour of the creature, its town and its routine. When the narrator is on screen later they are doing something (asleep, running, climbing, blowing), never posing.
 - Daylight is the default (light "day"), even for the crisis ("one morning"). Night only for threat lore; "warm" for the ending.
 - The climax is a reaction chain: the hero uses the planted story prop (with an effect), then one line per giant reaction, then the physical resolution, then an affection beat; end on a visual gag between the two creatures.
+- The camera follows general rules and the engine's shot library (push, track, fly over, low hero, close on a body part), chosen for each line's meaning; never copy another video's shots one for one.
 - Worlds are dense: ask for the landscape the creature walks through (forest, trees it eats, rocks, dust) and the town's named places (school, grocery, hospital) as props or a landmark.
+
+${storyPatternsForPrompt()}
 
 WHAT THE ENGINE CAN DO TODAY (status in the matcher; ask for the story's needs either way):
 ${registryForPrompt()}

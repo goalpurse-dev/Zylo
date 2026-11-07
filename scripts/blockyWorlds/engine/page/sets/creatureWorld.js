@@ -16,7 +16,13 @@ import { makeKit, glowList, mergeStatic } from "./util.js";
 import { preloadEnv } from "../lighting.js";
 import { makeGiant, animateGiant, giantSurface } from "../kit/giants.js";
 import { makeTown, townLayout } from "../kit/town.js";
-import { gaitOf, prng } from "../../lib/epic.js";
+import { gaitOf, prng, giantFootfalls } from "../../lib/epic.js";
+// WORLD-LOOK 2026-11-06: the realistic forest world (page/kit/nature.js), the dense town on the creature
+// (page/kit/backTown.js), the street-level places in that town (page/sets/backStreet.js), the foreground rule and the
+// fog guard per frame (S.afterCamera, called by the engine once the camera is set)
+import { makeNature, makeDust } from "../kit/nature.js";
+import { addBackTown, backSurface } from "../kit/backTown.js";
+import { addPlaces } from "./backStreet.js";
 
 const TAU = Math.PI * 2;
 
@@ -26,18 +32,57 @@ export function normCreatureSpec(spec = {}) {
   const kind = typeof c === "string" ? c : c?.species ?? spec.kind_creature ?? (spec.kind && spec.kind !== "creature_world" ? spec.kind : "turtle");
   const view = spec.view ?? (c?.city === "inside" ? "inside" : c?.city === "on" ? "on" : "inside");
   const size = Number(spec.size ?? c?.scale) || 120;
-  return { kind, view, size: Math.max(30, Math.min(200, size)), seed: spec.seed ?? 11, water: spec.water ?? kind === "whale", lit: !!spec.lit, name: spec.name ?? `${view} the ${kind}` };
+  const bt = spec.backTown && typeof spec.backTown === "object" ? spec.backTown : null;
+  return { kind, view, size: Math.max(30, Math.min(200, size)), seed: spec.seed ?? 11, water: spec.water ?? kind === "whale", lit: !!spec.lit, name: spec.name ?? `${view} the ${kind}`, town: spec.town?.style ? spec.town : { style: bt?.style ?? spec.townStyle ?? "town", landmarks: bt?.landmarks ?? null, density: bt?.density ?? 1 }, bible: spec.bible?.buildings ? spec.bible : spec.bible?.town ?? null, colors: spec.colors ?? spec.bible?.creature?.colors ?? null, rig: spec.rig ?? null, villain: !!(spec.villain || spec.role === "villain" || spec.role === "threat") }; // (re-normalising keeps the town + bible)
+  // rig: "animal" asks the animal kit's realistic quadruped (page/kit/giants.js animalRigFor)
 }
 
 export async function buildCreatureWorld(rawSpec, ctx) {
   const spec = normCreatureSpec(rawSpec);
   await preloadEnv(ctx.THREE);
   if (spec.view === "outside") return buildCreatureOutside(spec, ctx);
-  if (spec.view === "on") return buildOn(spec, ctx);
+  if (spec.view === "on" || spec.view === "street") return buildOn(spec, ctx);
   return buildInside(spec, ctx);
 }
 
 // ------------------------------------------------------------------------------------------------ shared pieces
+/**
+ * WORLD-LOOK: what the camera must see clearly this frame: the focus person, the focus giant, or the world's creature.
+ * -> { pos, height, radius } | null
+ */
+export function sightSubject(shot, S, where = {}, epic = null) {
+  const f = String(shot?.focus ?? "");
+  const box = (g) => { const b = new (S.THREE.Box3)().setFromObject(g); const c = b.getCenter(new (S.THREE.Vector3)()); return { pos: new (S.THREE.Vector3)(c.x, b.min.y, c.z), height: b.max.y - b.min.y, radius: Math.max(b.max.x - b.min.x, b.max.z - b.min.z) / 2 }; };
+  if (where[f]) return { pos: where[f].clone(), height: 1.7, radius: 0.6 };
+  if (f.startsWith("giant:") && epic?.GIANTS?.[f.slice(6)]?.visible) return box(epic.GIANTS[f.slice(6)]);
+  if (S.giant && S.giant.visible !== false && S.giantView === "outside") return box(S.giant);
+  const first = (shot?.actors ?? []).map((a) => where[a.id]).find(Boolean);
+  return first ? { pos: first.clone(), height: 1.7, radius: 0.8 } : null;
+}
+/**
+ * the fog guard: the subject is never washed out by haze. The fog starts at least 1.4 x the subject's distance (and
+ * ends 3 x past its start), so a 120 m creature 300 m away keeps its colours against the ground (owner: "the wolf wide
+ * shot was too blue and foggy, the wolf a blob")
+ */
+export function fogGuard(fog, dist, base) {
+  if (!fog || !base) return null;
+  const near = Math.max(base.near, dist * 1.4), far = Math.max(base.far, near * 3);
+  fog.near = near; fog.far = far; return { near, far };
+}
+function lookHooks(S, ctx, nature) {
+  let lastFog = null, base = null, baseExp = null, lastExp = null;
+  S.THREE = ctx.THREE;
+  S.afterCamera = (camera, shot, where, epic) => {
+    const subj = sightSubject(shot, S, where, epic);
+    nature?.sight(camera, subj);
+    const fog = ctx.scene?.fog;
+    if (fog !== lastFog) { lastFog = fog; base = fog ? { near: fog.near, far: fog.far } : null; }
+    if (fog && base && subj) { camera.updateMatrixWorld(); fogGuard(fog, camera.getWorldPosition(new ctx.THREE.Vector3()).distanceTo(subj.pos), base); }
+    // WORLD-FIX 2026-11-07: the interiors (room, classroom) under the outdoor sun rig were blown out: a lower exposure there
+    const rr = ctx.renderer; if (rr) { if (rr.toneMappingExposure !== lastExp) baseExp = rr.toneMappingExposure; lastExp = baseExp * (S.indoor ? 0.6 : 1); rr.toneMappingExposure = lastExp; }
+    return subj;
+  };
+}
 /** fields, hills, trees and far mountains (or the sea) around the origin; returns the group (moves when walking) */
 function landscape(K, ctx, { water = false, seed = 3, radius = 1600, treeCount = 260, clear = null } = {}) {
   const { THREE } = ctx;
@@ -111,6 +156,7 @@ function shaftMat(THREE, color) {
 /** the walk sway of a creature: { roll, pitch, bob } at time t (pure, from its gait) */
 export function creatureSway(kind, size, t, amount = 1) {
   const g = gaitOf(kind, kind === "whale" ? "swim" : "walk", size), c = t * g.cadence * TAU;
+  if (kind === "turtle") amount *= 0.7; // WORLD-FIX 2026-11-07: the owner asked for a ~30 % calmer turtle
   return { roll: 0.022 * amount * Math.sin(c), pitch: 0.008 * amount * Math.sin(c * 2 + 0.6), bob: 0.25 * amount * Math.abs(Math.sin(c)) };
 }
 
@@ -253,56 +299,52 @@ function buildInside(spec0, ctx) {
 }
 
 // ------------------------------------------------------------------------------------------------ ON (the town on its back)
-function buildOn(spec, ctx) {
+async function buildOn(spec, ctx) {
   const { THREE } = ctx;
-  const root = new THREE.Group(); root.name = `creature:on:${spec.kind}`;
+  const root = new THREE.Group(); root.name = `creature:${spec.view}:${spec.kind}`;
   const world = new THREE.Group(); root.add(world);
   const K = makeKit(ctx, world);
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  const giant = makeGiant({ kind: spec.kind, size: spec.size, town: false, seed: spec.seed });
+  const giant = makeGiant({ kind: spec.kind, size: spec.size, town: false, seed: spec.seed, colors: spec.colors ?? undefined, rig: spec.rig ?? undefined, villain: spec.villain });
   giant.rotation.y = Math.PI; // head toward -z (ahead of the camera)
-  const surf0 = giantSurface(giant);
+  // WORLD-LOOK: the SAME dense town as every other view of this creature (page/kit/backTown.js), on its own surface
+  const town = addBackTown(giant, { style: spec.town.style, landmarks: spec.town.landmarks ?? undefined, density: spec.town.density, seed: spec.seed, tex: ctx.tex, bible: spec.bible });
+  const plan = town.userData.plan;
+  const surf0 = backSurface(giant).surf;
   const surf = (x, z) => surf0(-x, -z); // rotated 180 degrees
-  // the centre spot: a clear point on the back, a bit toward the tail (the head is ahead), on the street
-  const zc = spec.kind === "turtle" ? spec.size * 0.12 : spec.kind === "snail" ? 0 : spec.size * 0.08;
-  const y0 = surf(0, zc) ?? spec.size * 0.4;
+  // the centre spot: on the main street (x 0), a bit toward the tail (the head is ahead)
+  const reg = plan.region;
+  const zc = -(reg.z0 + reg.z1) / 2 + (reg.z1 - reg.z0) * 0.1;
+  const y0 = surf(0, zc) ?? surf0(0, 0) ?? spec.size * 0.4;
   giant.position.set(0, -y0, -zc);
   world.add(giant);
-  // our own town on the back with a street along z through the centre spot (the giant's surface, shifted)
-  const s2 = (x, z) => { const y = surf(x, z + zc); return y == null ? null : y - y0; };
-  const u = giant.userData.unit, b = giant.userData.params.body;
-  const reg = { x0: -b.w * 0.6 * u, x1: b.w * 0.6 * u, z0: -b.len * 0.6 * u - zc, z1: b.len * 0.6 * u - zc };
-  const flatEnough = spec.kind === "turtle" ? (x, z) => { const a = (b.w / 2) * u, c = (b.len / 2) * u; return (x / a) ** 2 + ((z + zc) / c) ** 2 > 0.6 ? null : s2(x, z); } : s2;
-  const houses = townLayout({ surface: flatEnough, region: reg, count: 60, seed: spec.seed + 1, street: { axis: "z", half: 4.2 }, size: [5.5, 8], tall: [4, 7], minGap: 0.8 }).filter((h) => h.z < 5 || Math.abs(h.x) > 12);
-  const lamps = [], trees = [];
-  for (let z = 4; z > reg.z0; z -= 12) { const y = flatEnough(-4.4, z); if (y != null) lamps.push({ x: -4.4, y, z }); const y2 = flatEnough(4.4, z - 6); if (y2 != null) lamps.push({ x: 4.4, y: y2, z: z - 6 }); }
-  const town = makeTown(houses, { seed: spec.seed + 1, tex: ctx.tex, lamps, trees });
-  world.add(town);
-  // a cobbled street strip that follows the shell (a few segments)
-  const streetM = K.pbr("concrete_pavement", { repeat: [3, 3], tint: "#efe9df" });
-  for (let z = 10; z > reg.z0; z -= 4) { const y = flatEnough(0, z); if (y == null) continue; const yN = flatEnough(0, z - 4) ?? y; const seg = K.bx(8, 0.3, 4.3, streetM, { y: (y + yN) / 2 - 0.1, z: z - 2, keep: true }); seg.rotation.x = Math.atan2(yN - y, 4); }
+  const flatEnough = (x, z) => { const y = surf(x, z + zc); return y == null ? null : y - y0; };
   // the land far below, sliding past as the creature walks (the landscape moves +z)
-  const land = landscape(K, ctx, { water: spec.water, seed: spec.seed, treeCount: 320 });
+  const nature = spec.water ? null : await makeNature(ctx, { seed: spec.seed, center: { x: 0, z: -200 }, flatR: 400, nearR: 260, grass: 0, ferns: 600, underR: 200, clear: (x, z) => Math.abs(x) < spec.size * 0.5 && z > -spec.size * 1.2 && z < spec.size * 0.6 });
+  const land = nature ? nature.group : landscape(K, ctx, { water: spec.water, seed: spec.seed, treeCount: 320 });
   land.position.y = -y0;
   root.add(land);
   const gait = gaitOf(spec.kind, spec.water ? "swim" : "walk", spec.size);
   const spotY = (x, z) => flatEnough(x, z) ?? 0;
   const S = {
-    root, indoor: false, giantView: "on", creature: spec.kind,
+    root, indoor: false, giantView: spec.view, creature: spec.kind,
     spots: { center: V(0, spotY(0, 0), 0), left: V(-2.4, spotY(-2.4, 0.4), 0.4), right: V(2.4, spotY(2.4, 0.4), 0.4), back: V(0, spotY(0, -5), -5), far: V(0, spotY(0, -30), -30), door: V(0, spotY(0, -14), -14), horizon: V(0, -y0, -600), head: (giant.updateMatrixWorld(true), giant.localToWorld(giant.userData.focus.clone()).setX(0)), tail: V(0, spotY(0, 10), 10) },
     camDir: V(0, 0, 1), views: {},
-    bounds: [new THREE.Box3(V(-30, -y0 + 1, -80), V(30, 60, 30))],
+    bounds: [new THREE.Box3(V(-60, -y0 + 1, -120), V(60, 80, 40))],
     blockers: [],
-    rig: { shadow: { center: [0, 0, -20], half: 60, far: 400, map: 4096 }, fog: { day: ["#9cc6ee", 200, 2600], night: ["#16244c", 60, 600], warm: ["#f0a06a", 200, 2600] }, onLight: (mode) => town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6) },
-    sway(t) { return creatureSway(spec.kind, spec.size, t); },
+    rig: { shadow: { center: [0, 0, -20], half: 60, far: 400, map: 4096 }, fogDist: { day: [260, 3200], warm: [260, 3000], dusk: [220, 2400], dawn: [220, 2600], night: [120, 1100] }, onLight: (mode) => town.userData.setLit(mode !== "day", { night: 1, dusk: 0.8, dawn: 0.5, warm: 0.6 }[mode] ?? 0) },
+    sway(t) { return creatureSway(spec.kind, spec.size, t, S.tiltK ?? 1); },
     update(t) {
-      const s = creatureSway(spec.kind, spec.size, t);
+      const s = creatureSway(spec.kind, spec.size, t, S.tiltK ?? 1); // shot.onCreature.walkTilt / tiltDeg (setPlace)
       world.rotation.set(s.pitch, 0, s.roll); world.position.y = s.bob * 0.5;
       animateGiant(giant, spec.water ? "swim" : "walk", t);
       land.position.z = (t * gait.speed) % 1200; land.rotation.z = -s.roll * 0.3;
     },
     town, giant, mount: world, groundY: -y0, surface: (x, z) => flatEnough(x, z),
   };
+  // the street-level places in the same town (deck, stairs, rooftop, school yard, a room, a classroom)
+  addPlaces(S, { ctx, K, world, giant, town, plan, surface: flatEnough, toWorld: (x, y, z) => V(-x, y - y0, -z - zc), seed: spec.seed });
+  lookHooks(S, ctx, nature);
   return S;
 }
 
@@ -319,16 +361,24 @@ export async function buildCreatureOutside(rawSpec, ctx) {
   const K = makeKit(ctx, root);
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   // creature "none": just the land (a battlefield / a giant's walk with no creature-city in it)
-  const giant = spec.kind === "none" ? null : makeGiant({ kind: spec.kind, size: spec.size, town: true, seed: spec.seed, tex: ctx.tex });
+  const giant = spec.kind === "none" ? null : makeGiant({ kind: spec.kind, size: spec.size, town: true, seed: spec.seed, tex: ctx.tex, colors: spec.colors ?? undefined, rig: spec.rig ?? undefined, villain: spec.villain });
   if (giant) root.add(giant);
+  // WORLD-LOOK: the dense town on its back (the same one the "on" / "street" views stand in)
+  if (giant) addBackTown(giant, { style: spec.town.style, landmarks: spec.town.landmarks ?? undefined, density: spec.town.density, seed: spec.seed, tex: ctx.tex, bible: spec.bible });
   const dist = spec.size * 1.1;
-  const land = landscape(K, ctx, { water: spec.water, seed: spec.seed, clear: (x, z) => (Math.abs(z + dist) < spec.size * 0.6 && Math.abs(x) < spec.size * 2.5) || (z > -dist - spec.size * 0.6 && Math.abs(x) < spec.size * 3) });
+  const yaw = Math.PI / 2 - 0.6, dirX = Math.sin(yaw), dirZ = Math.cos(yaw);
+  // the realistic forest (page/kit/nature.js): no trees in the creature's lane (its path) or where the people stand;
+  // everything else frames it, and the sight-line rule keeps the line from the camera to it clear every frame
+  const p0x = -spec.size * 0.15, p0z = -dist;
+  const lane = (x, z) => { const ux = x - p0x, uz = z - p0z, along = ux * dirX + uz * dirZ, off = Math.abs(ux * dirZ - uz * dirX); return along > -spec.size * 2.6 && along < spec.size * 3 && off < spec.size * 0.42; };
+  const people = (x, z) => Math.hypot(x, z) < 14;
+  const nature = spec.water ? null : await makeNature(ctx, { seed: spec.seed, center: { x: 0, z: -dist * 0.6 }, flatR: Math.max(300, spec.size * 2.6), nearR: Math.max(240, dist + spec.size * 1.3), farR: 1600, trees: 15000, treeScale: Math.min(1.8, Math.max(1, spec.size / 70)), groundTile: 14, ferns: 2200, clear: (x, z) => lane(x, z) || people(x, z), noGrass: (x, z) => lane(x, z) && Math.hypot(x, z) > 30, grassCenter: { x: 0, z: -10 }, grassR: 40, grass: 40000, /* WORLD-FIX 2026-11-07: a DENSE forest of big trees (the style test), the grass carpet only near the lens (far blades speckled), a larger ground tile */ dirt: (x, z) => (lane(x, z) ? 0.8 : 0) });
+  const land = nature ? nature.group : landscape(K, ctx, { water: spec.water, seed: spec.seed, clear: (x, z) => (Math.abs(z + dist) < spec.size * 0.6 && Math.abs(x) < spec.size * 2.5) || (z > -dist - spec.size * 0.6 && Math.abs(x) < spec.size * 3) });
   root.add(land);
   const action = spec.water ? "swim" : "walk";
   const gait = gaitOf(spec.kind, action, spec.size);
   const sink = spec.water ? spec.size * 0.12 : 0;
   // it walks across and a little toward the camera (a 3/4 view reads better than a profile); slow on screen
-  const yaw = Math.PI / 2 - 0.6, dirX = Math.sin(yaw), dirZ = Math.cos(yaw);
   const giantPath = (t) => V(-spec.size * 0.15 + dirX * gait.speed * t * 0.3, -sink, -dist + dirZ * gait.speed * t * 0.3);
   const S = {
     root, indoor: false, giantView: "outside", creature: spec.kind,
@@ -337,7 +387,9 @@ export async function buildCreatureOutside(rawSpec, ctx) {
     bounds: [new THREE.Box3(V(-dist * 3, 0.3, -dist * 4), V(dist * 3, dist * 2, dist * 3))],
     blockers: [],
     rig: { shadow: giant ? { center: [0, 0, -dist], half: spec.size * 0.85, far: spec.size * 6, map: 4096 } : { center: [0, 0, -40], half: 70, far: 400, map: 4096 }, // the haze starts far and the exposure is a touch lower: the opening aerial was washed out (run 7b4c0d8b stills)
-      fog: { day: ["#a9cdee", 1600, 9000], warm: ["#f0a06a", 1400, 8000], night: ["#16244c", 260, 1800] }, exposure: { day: 0.8, warm: 0.8 }, envScale: { all: 0.35 }, hemiScale: { day: 0.75 }, sunDir: { day: [30, 40, 34], warm: [42, 11, -6], night: [-30, 50, -20] }, onLight: (mode) => giant?.userData.town?.userData.setLit(mode !== "day", mode === "night" ? 1.2 : 0.7) },
+      // WORLD-LOOK: fog colour from the light (lighting.js timeLook), distances here, far enough that the creature keeps
+      // its contrast (the per-frame fog guard pushes it further when the camera backs off)
+      fogDist: { day: [700, 5200], warm: [600, 4600], dusk: [450, 3600], dawn: [500, 3800], night: [320, 2200] }, exposure: { day: 0.8, warm: 0.8 }, envScale: { all: 0.35 }, hemiScale: { day: 0.75, night: 1.6 }, sunScale: { night: 1.5 }, sunDir: { day: [30, 40, 34], warm: [42, 11, -6], night: [-30, 50, -20], dusk: [40, 8, -20], dawn: [-40, 9, 20] }, onLight: (mode) => { const k = { night: 1.2, dusk: 0.9, dawn: 0.6, warm: 0.7 }[mode] ?? 0; giant?.userData.town?.userData.setLit(k > 0, k); giant?.userData.backTown?.userData.setLit(k > 0, k); } },
     giantPath,
     // lt (the shot's own time, engine.js): the giant starts each shot at the same place behind the group. With the
     // video time it walked out of the frame after ~40 s (turtle run 7b4c0d8b: an empty field at 53 s and 82 s).
@@ -345,10 +397,28 @@ export async function buildCreatureOutside(rawSpec, ctx) {
       if (!giant) return;
       giant.position.copy(giantPath(Number.isFinite(lt) ? lt : t)); giant.rotation.y = yaw; // walking left to right, angled toward the camera
       animateGiant(giant, action, t);
+      dustAt(Number.isFinite(lt) ? lt : t);
     },
     giant, town: giant?.userData.town ?? null, mount: root, groundY: 0,
   };
   S.spots.giant_left = V(-spec.size * 0.9, 0, -dist); S.spots.giant_right = V(spec.size * 0.9, 0, -dist);
+  // WORLD-LOOK: puffy grey dust at every footfall (deterministic in the shot time: the last ~5 s of footfalls fill a
+  // fixed pool of burst slots, each at a foot)
+  const slots = giant && !spec.water ? Array.from({ length: 20 }, () => ({ t0: -99, pos: V(0, 0, 0), n: 7, spread: spec.size * 0.035, rise: spec.size * 0.012, size: spec.size * 0.07, dur: 0.4, alpha: 0.55 })) : [];
+  const dustPool = slots.length ? makeDust(THREE, slots, { seed: spec.seed }) : null;
+  if (dustPool) root.add(dustPool.group);
+  const feet = giant ? (giant.userData.joints?.legs ?? []).filter(Boolean).slice(0, 4) : [];
+  function dustAt(lt) {
+    if (!dustPool) return;
+    dustPool.group.visible = !!feet.length && !S.coast?.active;
+    if (!dustPool.group.visible) return;
+    const falls = giantFootfalls(spec.kind, action, Math.max(0, lt - 5), lt + 1e-3, { size: spec.size }).slice(-slots.length);
+    giant.updateMatrixWorld(true);
+    slots.forEach((b) => { b.t0 = -99; });
+    falls.forEach((tf, i) => { const b = slots[i], fp = feet[i % feet.length].getWorldPosition(V(0, 0, 0)); b.t0 = tf; b.pos.set(fp.x, 0, fp.z); });
+    dustPool.update(lt);
+  }
+  lookHooks(S, ctx, nature);
   if (giant && !spec.water) addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath });
   return S;
 }

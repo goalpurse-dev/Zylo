@@ -20,6 +20,8 @@ const O = (properties) => ({ type: "object", additionalProperties: false, requir
 export function productionSchema() {
   return O({
     summary: S,
+    // the WORLD BIBLE's hints (lib/worldBible.js builds the full bible from them; enum-free on purpose, small)
+    bible: O({ creature_look: S, town_name: S, building_style: S, palette: A(S), streets: A(S), places: A(O({ name: S, kind: S })), landmarks: A(S) }),
     worlds: A(O({ id: S, name: S, kind: E(WORLD_KINDS), base: E(BASE_SETS), description: S, creature: O({ species: S, relation: E(CREATURE_RELATIONS), heightM: N }), light: E(LIGHTS) })),
     cast: A(O({ id: S, name: S, kind: E(CHAR_KINDS), role: E(ROLES), look: S, job: S })),
     creatures: A(O({ id: S, name: S, species: S, look: S, scale: E(SCALES), heightM: N, count: N, behaviours: A(E(BEHAVIOURS)), monster: B })),
@@ -98,8 +100,13 @@ export function validateProduction(raw, { lineCount = null, lines = null } = {})
   // an item no line needs is still kept (the planner may use it for the establishing shot), but reported
   const used = new Set(outLines.flatMap((l) => [l.world, l.subject, ...l.who, ...l.needs]));
   for (const [id, x] of all) if (!used.has(id) && !worlds.includes(x) && x.role !== "narrator") problems.push(`item ${id} is on no line`);
+  // the world bible's hints: optional (an old stored list has none), never a retry reason
+  const b = isObj(r.bible) ? r.bible : {};
+  const sl = (v, n, len = 40) => (Array.isArray(v) ? v : []).map((x) => str(x, len)).filter(Boolean).slice(0, n);
+  const bible = { creature_look: str(b.creature_look, 120), town_name: str(b.town_name, 40), building_style: str(b.building_style, 120), palette: sl(b.palette, 8, 20), streets: sl(b.streets, 4),
+    places: (Array.isArray(b.places) ? b.places : []).filter(isObj).map((p) => ({ name: str(p.name, 40), kind: str(p.kind, 20).toLowerCase() })).filter((p) => p.name).slice(0, 10), landmarks: sl(b.landmarks, 6) };
   return {
-    production: { version: PRODUCTION_VERSION, summary: str(r.summary, 300), worlds, cast, creatures, crowds, vehicles, props, effects, events, scaleMoments, lines: outLines },
+    production: { version: PRODUCTION_VERSION, summary: str(r.summary, 300), bible, worlds, cast, creatures, crowds, vehicles, props, effects, events, scaleMoments, lines: outLines },
     problems,
   };
 }

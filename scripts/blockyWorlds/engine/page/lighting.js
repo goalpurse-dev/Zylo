@@ -27,11 +27,29 @@ const MODES = {
   },
   night: {
     env: "night", envI: 0.2, exposure: 0.9,
-    sky: { zen: "#020718", hor: "#1c3470", k: 1.0, clouds: 0, cloudLit: "#2a3a66", cloudShade: "#0c1430", sunCol: "#9fb6ff", sunGlow: 0.0 },
+    sky: { zen: "#020718", hor: "#13234a", k: 1.0, clouds: 0, cloudLit: "#2a3a66", cloudShade: "#0c1430", sunCol: "#9fb6ff", sunGlow: 0.0 },
     fog: ["#16244c", 30, 260],
     sun: { color: "#8fa8ff", intensity: 0.85, dir: [-30, 50, -20] },
     hemi: ["#2c3f78", "#07070f", 0.22],
-    stars: true, moon: true,
+    stars: 1, moon: true, windows: 1,
+  },
+  // WORLD-LOOK 2026-11-06: dusk (after sunset: deep blue zenith, orange-pink horizon, first stars, windows lit) and
+  // dawn (before sunrise: pale rose horizon, cool soft light, last stars fading)
+  dusk: {
+    env: "night", envI: 0.32, exposure: 0.95,
+    sky: { zen: "#14204e", hor: "#e07a4e", k: 1.0, clouds: 0.55, cloudLit: "#f2a07a", cloudShade: "#4a3a66", sunCol: "#ff8a4a", sunGlow: 0.8 },
+    fog: ["#6a5a7a", 220, 2600],
+    sun: { color: "#ff9a5a", intensity: 1.6, dir: [40, 6, -12] },
+    hemi: ["#8a8ac8", "#3a2a2a", 0.5],
+    stars: 0.45, windows: 0.8,
+  },
+  dawn: {
+    env: "day", envI: 0.25, exposure: 0.9,
+    sky: { zen: "#3a5aa0", hor: "#f4b0a0", k: 1.0, clouds: 0.6, cloudLit: "#ffd0c0", cloudShade: "#8a8ab0", sunCol: "#ffc090", sunGlow: 0.7 },
+    fog: ["#c8b4c0", 260, 3000],
+    sun: { color: "#ffc8a0", intensity: 2.2, dir: [-40, 8, -20] },
+    hemi: ["#c8d0f0", "#4a4048", 0.5],
+    stars: 0.2, windows: 0.5,
   },
   warm: {
     env: "day", envI: 0.32, exposure: 0.9,
@@ -39,8 +57,20 @@ const MODES = {
     fog: ["#f0a06a", 260, 3200],
     sun: { color: "#ffa04a", intensity: 4.2, dir: [42, 11, -6] },
     hemi: ["#ffd8b0", "#5e4636", 0.42],
+    windows: 0.5,
   },
 };
+/** every light the engine knows (day | night | warm | dusk | dawn) */
+export const LIGHT_MODES = Object.freeze(Object.keys(MODES));
+/**
+ * WORLD-LOOK: ONE source of truth per shot. Everything that must match the time of day (sky, fog colour, stars, moon,
+ * window glow) comes from the shot's light through this table; sets give only distances (rig.fogDist) and their own
+ * practicals. timeLook(name) -> { fog: colour, windows: 0..1 (lit windows / lamps), stars: 0..1, moon, sky }
+ */
+export function timeLook(name) {
+  const M = MODES[name] ?? MODES.day;
+  return { fog: M.fog[0], windows: M.windows ?? 0, stars: M.stars === true ? 1 : Number(M.stars) || 0, moon: !!M.moon, sky: { ...M.sky }, sunDir: M.sun.dir.slice() };
+}
 
 const SKY_VS = "varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
 const SKY_FS = `uniform vec3 zen, hor, cloudLit, cloudShade, sunDir, sunCol; uniform float k, clouds, sunGlow; varying vec3 vP;
@@ -67,7 +97,7 @@ const SKY_FS = `uniform vec3 zen, hor, cloudLit, cloudShade, sunDir, sunCol; uni
 export function applyLight(name, ctx) {
   const { THREE, scene, renderer, set } = ctx;
   const M = MODES[name];
-  if (!M) throw new Error(`applyLight: unknown light "${name}" (day | night | warm)`);
+  if (!M) throw new Error(`applyLight: unknown light "${name}" (${Object.keys(MODES).join(" | ")})`);
   const rig = set?.rig ?? {};
   const prev = { fog: scene.fog, background: scene.background, environment: scene.environment, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, envRot: scene.environmentRotation?.clone(), exposure: renderer.toneMappingExposure };
   const added = [], disposables = [];
@@ -98,7 +128,7 @@ export function applyLight(name, ctx) {
     const n = 1400, pos = new Float32Array(n * 3); let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     for (let i = 0; i < n; i++) { const th = rnd() * Math.PI * 2, ph = 0.1 + rnd() * 1.35; pos.set([Math.cos(th) * Math.cos(ph) * 900, Math.sin(ph) * 900, Math.sin(th) * Math.cos(ph) * 900], i * 3); }
     const sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const sm = new THREE.PointsMaterial({ color: 0xffffff, size: 2.0, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.9 });
+    const sm = new THREE.PointsMaterial({ color: 0xffffff, size: 2.0, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.9 * (M.stars === true ? 1 : Number(M.stars)) });
     const stars = add(new THREE.Points(sg, sm)); stars.frustumCulled = false; disposables.push(sg, sm);
   }
   if (M.moon && !rig.enclosed) {
@@ -111,7 +141,9 @@ export function applyLight(name, ctx) {
   }
 
   // fog
-  const fog = rig.fog?.[name] ?? (rig.indoor ? null : M.fog);
+  // rig.fogDist: the set gives only the distances, the colour is the light's (sky and fog always match)
+  const fd = rig.fogDist?.[name] ?? rig.fogDist?.all ?? null;
+  const fog = rig.fog?.[name] ?? (fd ? [M.fog[0], fd[0], fd[1]] : rig.indoor ? null : M.fog);
   // a fog whose far end is not well past its near end fogs EVERY pixel to one colour (turtle run 1620fc3e: a 30 m
   // turtle's inside had near 45 / far 41 m: every day shot inside was a flat beige frame, every night one black)
   scene.fog = fog ? new THREE.Fog(fog[0], fog[1], Math.max(fog[2], fog[1] * 2.5, fog[1] + 60)) : null;

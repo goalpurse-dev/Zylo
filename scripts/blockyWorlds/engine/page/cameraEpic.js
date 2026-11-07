@@ -88,8 +88,9 @@ export function frameEpic(type, ctx) {
         // the camera side), a slow push in; the old framing measured from its feet and sat inside a long body
         const fd = ctx.faceDir.clone().setY(0).normalize();
         const dir = fd.multiplyScalar(0.8).addScaledVector(side, 0.5).normalize().applyAxisAngle(up, (r(6) - 0.5) * 20 * DEG);
-        const dist = Math.max(H * 0.62, Number(ctx.headSize) || 0) * (1 - 0.08 * k);
-        pos.copy(ctx.head).addScaledVector(dir, dist); pos.y = ctx.head.y - H * 0.1;
+        // WORLD-FIX: the whole head + neck in frame (headSize = 1.25 x the head box diagonal): a calm 5 % push in
+        const dist = Math.max(H * 0.62, Number(ctx.headSize) || 0) * (1 - 0.05 * k);
+        pos.copy(ctx.head).addScaledVector(dir, dist); pos.y = ctx.head.y - Math.min(H * 0.1, dist * 0.12);
         aim.copy(ctx.head);
         break;
       }

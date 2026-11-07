@@ -21,6 +21,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { fabric, solid } from "./kitCommon.js";
 import { gaitOf, PLAN_OF, prng } from "../../lib/epic.js";
 import { makeTown, townLayout } from "./town.js";
+import { makeAnimal, animateAnimal, animalGait, resolveAnimal } from "./animals/index.js";
 
 const TAU = Math.PI * 2;
 
@@ -508,9 +509,64 @@ export function familyOf(kind) {
   return null;
 }
 
+// ------------------------------------------------------------------------------------------------ the blocky animal rigs
+// 2026-11-06 (BLOCKY-ANIMALS): a giant of a species the blocky animal kit knows (page/kit/animals: 30 species + variants,
+// any alias: "giant tortoise", "geese", "walrus") is built on that rig at giant scale; its back / shell town, surface
+// and every giant action keep working (animateAnimal). Kept on the classic builder: the armoured epic WOLF (the owner's
+// wolf + lit castle city look; spec.rig: "animal" for the blocky wolf), giant_human, crab, the humanoid families (ghost,
+// goblin, troll...), an AI blueprint with its own body plan (spec.params.plan), and spec.rig: "classic".
+// WORLD-FIX 2026-11-07 (lead review): the wolf is the blocky four-legged wolf by default too (the villain variant, red
+// eyes, when the story makes it the threat: spec.villain / spec.armour); spec.rig: "classic" keeps the armoured one
+const CLASSIC_KINDS = new Set(["giant_human", "crab", "generic"]);
+export function animalRigFor(spec = {}) {
+  if (spec.rig === "classic" || spec.params?.plan || spec.params?.body) return null;
+  const k = String(spec.kind ?? "").toLowerCase();
+  if (!k || (CLASSIC_KINDS.has(k) && spec.rig !== "animal")) return null;
+  if (familyOf(k) && /^(ghost|phantom|spirit|goblin|imp|gremlin|elf|gnome|troll|ogre|snowman|robot|android|alien|martian|scarecrow|zombie|mummy|vampire|witch|wizard|king|queen|knight|pirate|human|man|woman|person|giant|titan|statue)/.test(k.split(/[_ ]/).pop())) return null;
+  const r = resolveAnimal(k);
+  if (!r) return null;
+  if (r.species === "wolf" && (!r.variant || r.variant === "grey") && (spec.villain || spec.armour || spec.role === "villain" || spec.role === "threat")) return { ...r, variant: "villain" };
+  return r;
+}
+/** the top of the body blocks (root metres, rest pose) on a grid: (x, z) -> y | null; houses stand on the real back */
+function backHeightfield(g) {
+  const J = g.userData.joints; g.updateMatrixWorld(true);
+  const meshes = J.body.children.filter((o) => o.isMesh);
+  if (!meshes.length) return () => null;
+  const box = new THREE.Box3(); for (const m of meshes) box.expandByObject(m);
+  const N = 28, x0 = box.min.x, z0 = box.min.z, dx = (box.max.x - x0) / (N - 1), dz = (box.max.z - z0) / (N - 1);
+  const H = new Float32Array(N * N).fill(NaN), rc = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0), o = new THREE.Vector3();
+  for (let i = 0; i < N; i++) for (let k = 0; k < N; k++) {
+    rc.set(o.set(x0 + i * dx, box.max.y + 1, z0 + k * dz), down);
+    const hit = rc.intersectObjects(meshes, false)[0];
+    if (hit) H[i * N + k] = hit.point.y;
+  }
+  return (x, z) => {
+    const i = Math.round((x - x0) / dx), k = Math.round((z - z0) / dz);
+    if (i < 0 || k < 0 || i >= N || k >= N) return null;
+    const y = H[i * N + k];
+    return Number.isNaN(y) ? null : y + 0.05;
+  };
+}
+function makeAnimalGiant(spec, r) {
+  const size = Math.min(200, Math.max(5, Number(spec.size) || 60));
+  const g = makeAnimal({ species: r.species, variant: spec.variant ?? r.variant, size, expr: spec.expr });
+  g.name = `giant:${spec.id ?? spec.kind}`;
+  const U = g.userData;
+  // the giant contract (see the header): kind, plan, params, size, unit, height, length, gait, joints, focus, town
+  Object.assign(U, { kind: spec.kind ?? r.species, gait: { ...animalGait(g, "walk"), feet: U.legs.length }, town: null });
+  if (r.species === "whale" || r.species === "elephant") U.params.town = "back";
+  if (U.params.shell.kind === "none" && !U.params.back.deck) U.surfaceFn = backHeightfield(g);
+  const wantTown = spec.town !== false && U.params.town !== "none";
+  if (wantTown) { const town = buildGiantTown(g, U.params, spec); if (town) U.town = town; }
+  return g;
+}
+
 // ------------------------------------------------------------------------------------------------ makeGiant
 /** makeGiant(spec) -> Group: see the header. spec.size defaults to 60 m. */
 export function makeGiant(spec = {}) {
+  const rigged = animalRigFor(spec);
+  if (rigged) return makeAnimalGiant(spec, rigged);
   const p = giantParams(spec), kind = GIANT_PRESETS[spec.kind] ? spec.kind : spec.kind ?? "generic";
   const size = Math.min(200, Math.max(5, Number(spec.size) || 60)), unit = size / 10;
   const M = materials(p);
@@ -550,6 +606,7 @@ export function makeGiant(spec = {}) {
 
 /** the height (metres, root space) of the back / shell at (x, z) metres, or null off it; rest pose */
 export function giantSurface(g) {
+  if (g.userData.rigV2 && g.userData.surfaceFn) return g.userData.surfaceFn; // 2026-11-06: a blocky rig's back heightfield
   const { params: p, unit } = g.userData;
   const b = p.body;
   if (p.shell.kind === "dome") {
@@ -590,6 +647,7 @@ function buildGiantTown(g, p, spec) {
   const holder = new THREE.Group(); holder.scale.setScalar(1 / u);
   const by = g.userData.joints.body.position.y * u;
   holder.position.set(0, -by / u, 0); // body space -> root space offset (rest)
+  if (g.userData.rigV2) { const bp = g.userData.joints.body.position; holder.position.set(-bp.x, -bp.y, -bp.z); }
   holder.add(town);
   g.userData.joints.body.add(holder);
   g.userData.details.push(...town.userData.details);
@@ -600,6 +658,7 @@ function buildGiantTown(g, p, spec) {
 const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 /** animateGiant(g, action, t, opts) sets every joint for shot time t (resets to rest first) */
 export function animateGiant(g, action = "idle", t = 0, opts = {}) {
+  if (g.userData.rigV2) return animateAnimal(g, action, t, opts); // 2026-11-06: the blocky animal rigs
   const U = g.userData, J = U.joints, p = U.params, plan = U.plan;
   for (const [o, r] of U.rest) { o.position.copy(r.p); o.rotation.copy(r.r); }
   for (const l of J.lids ?? []) l.visible = false;

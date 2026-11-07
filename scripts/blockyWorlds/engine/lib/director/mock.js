@@ -265,6 +265,17 @@ export function mockProduction({ script = null, idea = null } = {}) {
   });
   // every crowd / creature with a charge or attack line keeps those as actions
   const scaleMoments = outLines.filter((l) => l.camera === "scale").map((l) => ({ line: l.line, big: l.needs.find(isGiant) ?? (ex?.kind === "creature" ? ex.species : l.world), small: l.subject === "me" || !l.subject ? "me" : l.subject }));
-  return { summary: `(mock) ${card.title ?? script?.title ?? "a story"}: ${main.name}`, ...items, scaleMoments, lines: outLines };
+  return { summary: `(mock) ${card.title ?? script?.title ?? "a story"}: ${main.name}`, bible: mockBible({ lows, ex, items }), ...items, scaleMoments, lines: outLines };
+}
+
+/** the mock's world bible hints (lib/worldBible.js builds the full bible): the places the script names, the jobs' places */
+function mockBible({ lows, ex, items }) {
+  const all = lows.join(" ");
+  const places = [];
+  for (const [re, kind, name] of [[/\b(school|classroom|teacher)\b/, "school", "the school"], [/\b(bakery|baker|bread)\b/, "shop", "the bakery"], [/\b(market|shop|store|grocer)\b/, "market", "the market"], [/\b(town hall|mayor)\b/, "hall", "the town hall"], [/\b(home|house|bedroom|bed)\b/, "home", "my house"]]) if (re.test(all)) places.push({ name, kind });
+  for (const c of items.cast) if (c.job && /baker|teacher|mayor|doctor/.test(c.job)) { const n = { baker: "the bakery", teacher: "the school", mayor: "the town hall", doctor: "the clinic" }[c.job.match(/baker|teacher|mayor|doctor/)[0]]; if (!places.some((p) => p.name === n)) places.push({ name: n, kind: "shop" }); }
+  const landmarks = [...new Set((all.match(/\b(?:the )?(bell tower|clock tower|lighthouse|well|fountain|statue|bridge|mill|lookout)\b/g) ?? []).map((x) => x.replace(/^the /, "the ").trim()))].slice(0, 4);
+  // the mock reads words, not meaning: no colours or names invented (the bible seeds them)
+  return { creature_look: ex?.kind === "creature" ? (all.match(/\b(?:red|green|blue|grey|gray|brown|golden|black|white|mossy)\b[^.]{0,20}\b(?:shell|skin|back|scales)\b/)?.[0] ?? "") : "", town_name: "", building_style: "", palette: [], streets: [], places, landmarks };
 }
 const EVENT_WORDS_SET = new Set(Object.values(EVENT_WORDS).flatMap((v) => v.split(",").map((x) => x.trim())));

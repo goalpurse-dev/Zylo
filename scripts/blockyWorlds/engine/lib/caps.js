@@ -20,7 +20,7 @@
 //   ANCHOR: "giant:<id>.<part>" | "world.<part>" (part: head|jaw|neck|body|back|tail|leg0-leg7|front|rear|left|right)
 //           | "actor:<id>" | "crowd:<i>" | "siege:<i>" | "spot:<name>" | [x, y, z]   (+ an offset: { at, off: [x,y,z] })
 
-export const MOVES = Object.freeze(["tilt_up", "orbit", "flyover", "fpv", "top_down", "low_hero"]);
+export const MOVES = Object.freeze(["tilt_up", "orbit", "flyover", "fpv", "top_down", "low_hero", "on_back"]); // on_back: WORLD-LOOK 2026-11-06 (standing on the city wall walkway on a creature)
 export const TETHER_KINDS = Object.freeze(["chain", "rope", "cable", "bridge"]);
 export const TETHER_STATES = Object.freeze(["taut", "slack", "swing", "snap", "fire"]);
 export const SIEGE_KINDS = Object.freeze(["cannon", "ballista", "catapult"]);
@@ -30,7 +30,7 @@ export const FX_KINDS = Object.freeze(["sound_rings", "shield_dome", "leaf_burst
 export const ACT_KINDS = Object.freeze(["eat_tree", "nuzzle", "headbutt"]);
 export const GRADES = Object.freeze(["flashback"]);
 export const TOWN_STYLES = Object.freeze(["village", "town", "city", "castle"]);
-export const LANDMARKS = Object.freeze(["school", "grocery", "hospital", "bakery", "townhall", "library", "firehouse", "tower", "castle"]);
+export const LANDMARKS = Object.freeze(["school", "grocery", "hospital", "bakery", "townhall", "library", "firehouse", "tower", "castle", "clocktower", "belltower"]);
 export const ANCHOR_PARTS = Object.freeze(["head", "jaw", "neck", "body", "back", "tail", "front", "rear", "left", "right", "leg0", "leg1", "leg2", "leg3", "leg4", "leg5", "leg6", "leg7"]);
 export const CAPS_SFX = Object.freeze({ snap: "chain_snap", fire: "cannon_fire", impact: "impact_boom", horn: "horn_blast", hook: "hook_clank", chomp: "big_chomp" });
 

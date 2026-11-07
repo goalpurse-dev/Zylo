@@ -23,13 +23,14 @@
 // matcher, the gap log and the stress report follow on their own.
 
 import { POSES_N, EXPRS_N } from "./director/vocab.js";
+import { ANIMAL_NAMES } from "../page/kit/animals/species.js";
 // EPIC's own vocabulary (lib/epic.js, pure): what its giants / crowds / creature worlds / cameras really do
 import { GIANT_KINDS, GIANT_ACTIONS, CROWD_ACTIONS as EPIC_CROWD_ACTIONS, CROWD_KINDS, WORLD_VIEWS, SHAKES, BEAT_TYPES, EPIC_CAMERAS } from "./epic.js";
 // the target-video capabilities (CAPABILITIES agent, 2026-11-06): lib/caps.js vocabulary, page/capsLayer.js
 import { MOVES, TETHER_KINDS, TETHER_STATES, SIEGE_KINDS, SIEGE_PLACES, PAYLOADS, FX_KINDS, ACT_KINDS, TOWN_STYLES, LANDMARKS, GRADES } from "./caps.js";
 
 const P = (ready, planned = [], partial = [], other = null) => ({ ready: [...ready], partial: [...partial], planned: [...planned], ...(other ? { other } : {}) });
-const GIANT_SPECIES = GIANT_KINDS.filter((k) => k !== "generic" && k !== "giant_human");
+const GIANT_SPECIES = [...new Set([...GIANT_KINDS.filter((k) => k !== "generic" && k !== "giant_human"), ...ANIMAL_NAMES])];
 
 export const STATUS = Object.freeze(["ready", "partial", "planned"]);
 const RANK = { ready: 0, partial: 1, planned: 2 };
@@ -87,8 +88,8 @@ export const CAPABILITIES = Object.freeze(Object.fromEntries([
     params: { behaviour: P(["lurk", "reach", "reveal", "flee"], ["walk", "stomp", "roar", "attack", "chase", "fly", "swim", "eat", "carry", "sleep", "howl", "run"], []), scale: P(["human", "big"], ["giant", "colossal"], []) },
     fallback: "the closest look, in its lurk / reveal state" },
   { id: "creature.animal", group: "creatures", status: "ready",
-    does: "an animal as a scene object (31 species: dog, cat, wolf, turtle, whale, bear, pigeon...) in the shot, up to 3 per shot; since 2026-11-05 moving: walking, running (chasing, charging, fleeing), flying, swimming (in water), sleeping (Z z z), eating, howling, carrying a crate, climbing, digging",
-    module: "page/kit/things.js (ANIMALS) + page/kit/motion.js (the shared body motions) + lib/catalog.js ANIMAL_STATES", owner: "COVERAGE + GAPS",
+    does: "an animal as a scene object in the shot, up to 3 per shot; since 2026-11-06 the rigged BLOCKY animal kit (30 species + ~80 variants: " + ANIMAL_NAMES.join(", ") + "; e.g. dog breeds, cat colours, duck/goose, deer/moose/reindeer, seal/walrus, mouse/rat/hamster, a red-eyed villain wolf) with clear silhouettes, colour patterns, expressive eyes (neutral/angry/scared/happy/sleepy) and real walk / run / hop / fly / swim / slither / crawl / roar / attack / stomp animation (planted feet); horse, squirrel, skunk, bat, moth, firefly, spider, bee still the older simple builders",
+    module: "page/kit/animals (makeAnimal / animateAnimal, species.js data) via page/kit/things.js RIG_ANIMALS + page/kit/motion.js (travel) + lib/catalog.js ANIMAL_STATES", owner: "BLOCKY-ANIMALS + COVERAGE + GAPS",
     params: { behaviour: P(["stand", "idle", "walk", "run", "attack", "howl", "fly", "swim", "eat", "sleep", "charge", "chase", "flee", "carry", "climb", "dig", "lurk", "reach", "stomp", "roar"], [], []), count: { readyMax: 3, plannedMax: 2000 } },
     fallback: "the animal standing (no motion) + the action named on a badge" },
   { id: "creature.small", group: "creatures", status: "ready",
@@ -103,7 +104,7 @@ export const CAPABILITIES = Object.freeze(Object.fromEntries([
     fallback: "the built creature standing in frame (+ the action named on a badge), else a picture card", via: "builder" },
   { id: "giant", group: "creatures", status: "partial",
     does: "a creature or person at giant scale (10-200 m): any animal, walking, stomping, roaring, attacking, seen from street level; since 2026-11-05 also reaching, sleeping (eyes shut, Z z z), lurking (crouched), revealing (rising + roar), carrying (a crate), eating, flying, climbing, fleeing, howling, digging; species families with their own look (ghost, goblin, troll, yeti, snowman, robot, alien, owl and other birds, shark and fish, octopus and squid, moose, horse, giraffe, mouse, rabbit...)",
-    module: "page/kit/giants.js (makeGiant / animateGiant: 12 presets, any other species as the generic giant; landed 2026-11-05, being wired into plan.mjs); a giant builder blueprint (static) otherwise", owner: "EPIC",
+    module: "page/kit/giants.js (makeGiant / animateGiant); since 2026-11-06 every species of the blocky animal kit (page/kit/animals, any alias) is built on its rig at giant scale with its shell / back town and an exact back surface for back towns; the armoured epic wolf, giant_human, crab and the humanoid families stay on the classic presets; a giant builder blueprint (static) otherwise", owner: "EPIC + BLOCKY-ANIMALS",
     params: { species: P(GIANT_SPECIES.concat(["human"]), [], [], "partial"), behaviour: P([...GIANT_ACTIONS, "stand", "charge", "chase"]), heightM: { readyMax: 200, plannedMax: 200 } },
     fallback: "a built giant blueprint standing far off (static), else the monster rig at its largest, else a picture card", via: "builder", files: ["page/kit/giants.js"] },
 

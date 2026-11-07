@@ -25,6 +25,32 @@ export { EPIC_CAMERA_TYPES, EPIC_SPOTS };
 
 const MAP_STD = { wide: "establish", insert: "establish", low: "giant_close", medium: "giant_close", closeup: "giant_close", over_shoulder: "hero_low" };
 
+/**
+ * WORLD-FIX 2026-11-07: keep the camera out of (and off) a giant's geometry. 14 rays from the lens: an odd number of
+ * crossings straight up = inside; any hit nearer than minD = touching. The camera steps away from the near hits (or back
+ * from its aim when inside), still aimed where it was, up to 10 steps. -> the number of steps taken
+ */
+export function clearGeometry(THREE, camera, obj, minD = 2, { parity = true } = {}) {
+  const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1], [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]].map((d) => new THREE.Vector3(...d).normalize());
+  const ok = (h) => h.object.isMesh && h.object.visible !== false && h.object.material?.visible !== false;
+  const box = new THREE.Box3().setFromObject(obj); if (box.isEmpty()) return 0;
+  const aim = camera.userData.epicAim?.clone() ?? camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(20).add(camera.position);
+  const rc = new THREE.Raycaster(); let steps = 0;
+  for (; steps < 10; steps++) {
+    const p = camera.position;
+    if (!box.clone().expandByScalar(minD).containsPoint(p)) break;
+    rc.set(p, DIRS[2]); rc.far = Infinity;
+    const inside = parity && rc.intersectObject(obj, true).filter(ok).length % 2 === 1;
+    rc.far = minD;
+    const push = new THREE.Vector3(); let near = Infinity;
+    for (const d of DIRS) { rc.set(p, d); const h = rc.intersectObject(obj, true).find(ok); if (h) { near = Math.min(near, h.distance); push.addScaledVector(d, -(minD - h.distance + 0.2)); } }
+    if (!inside && near >= minD) break;
+    if (inside || push.lengthSq() < 1e-6) { const back = p.clone().sub(aim); if (back.lengthSq() < 1e-6) back.set(0, 1, 0); push.copy(back.normalize().multiplyScalar(Math.max(minD, (box.max.y - box.min.y) * 0.12))); }
+    p.add(push); camera.lookAt(aim); camera.updateMatrixWorld();
+  }
+  return steps;
+}
+
 export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   // giants: one each (tl.giants: { id: { kind, size, params?, armour?, town? } })
@@ -175,10 +201,15 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     }
     if (type === "track" && !ctxE.velocity) { const ca = crowdAt(0); if (ca) { ctxE.velocity = ca.vel; if (!fc) { ctxE.focus = ca.pos; ctxE.span = ca.ext * 1.6; } } }
     if (type === "giant_close" && (gInfo ?? anyGiant)) {
-      const gi = gInfo ?? anyGiant; gi.g.updateMatrixWorld(true); const hj = gi.g.userData.joints.head; if (hj) ctxE.head = hj.getWorldPosition(V(0, 0, 0)); ctxE.focus = gi.pos.clone(); ctxE.focusHeight = gi.g.userData.height;
+      const gi = gInfo ?? anyGiant; gi.g.updateMatrixWorld(true); const hj = gi.g.userData.joints.head; ctxE.focus = gi.pos.clone(); ctxE.focusHeight = gi.g.userData.height;
+      // WORLD-FIX 2026-11-07 (lead: "turtle close = camera inside the head"): the head joint is the NECK pivot of the blocky
+      // rigs (the head reaches ~2 m x unit forward of it): frame the head's own box (centre + size), not the pivot
+      let hb = null; if (hj) { hb = new THREE.Box3(); hj.traverse((o) => { if (o.isMesh && o.visible !== false) hb.expandByObject(o); }); if (hb.isEmpty()) hb = null; }
+      if (hj) ctxE.head = hb ? hb.getCenter(V(0, 0, 0)) : hj.getWorldPosition(V(0, 0, 0));
+      if (hb) ctxE.headBox = hb.getSize(V(0, 0, 0)).length();
       // REBUILD 2026-11-06: a giant beside the world, or the world creature seen from outside: frame its face (the old
       // framing stood inside a long shell / body) (cameraEpic giant_close faceDir)
-      if (ctxE.head && (gi !== worldG || tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside")) { const fd = V(ctxE.head.x - gi.pos.x, 0, ctxE.head.z - gi.pos.z); if (fd.lengthSq() < 1) fd.set(Math.sin(gi.yaw ?? 0), 0, Math.cos(gi.yaw ?? 0)); ctxE.faceDir = fd.normalize(); ctxE.headSize = (gi.g.userData.height ?? 20) * 0.3; }
+      if (ctxE.head && (gi !== worldG || tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside")) { const fd = V(ctxE.head.x - gi.pos.x, 0, ctxE.head.z - gi.pos.z); if (fd.lengthSq() < 1) fd.set(Math.sin(gi.yaw ?? 0), 0, Math.cos(gi.yaw ?? 0)); ctxE.faceDir = fd.normalize(); ctxE.headSize = Math.max((gi.g.userData.height ?? 20) * 0.3, (ctxE.headBox ?? 0) * 1.25); }
     }
     // REBUILD 2026-11-06: hero_low on a giant with no person in focus: a low camera on the ground in front of the giant's
     // face looking up at it (the old framing stood the "kid" spot on the giant's own feet: the camera sat in its body)
@@ -232,7 +263,8 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     if (gy != null && camera.position.y < gy + 1.2) { camera.position.y = gy + 1.2; camera.updateMatrixWorld(); }
     // 2026-11-05 (GAPS): never inside the creature's body: a ray down onto it (a furry / generic back bulges above the
     // town's ground); the camera stays a few metres over it (more for the wide EPIC shots), still aimed where it was
-    const body = S.giant && S.giant.visible !== false ? S.giant : null;
+    const onBack = (typeof shot.move === "string" ? shot.move : shot.move?.type) === "on_back"; // WORLD-LOOK: stands on the walkway on purpose
+    const body = S.giant && S.giant.visible !== false && !onBack ? S.giant : null;
     if (body) {
       const top = new THREE.Box3().setFromObject(body).max.y;
       if (camera.position.y < top + 3) {
@@ -242,6 +274,10 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
         if (hit && camera.position.y < hit.point.y + margin) { camera.position.y = hit.point.y + margin; if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
       }
     }
+    // WORLD-FIX 2026-11-07: the min-distance guard for EVERY giant camera (the lead: a close inside the head, an on-back
+    // camera jammed against wall blocks): never inside, never within minD of any giant / the world creature / its town
+    const objs = [...[...live.giants.values()].map((L) => L.g), S.giant].filter((g) => g && g.visible !== false);
+    for (const g of objs) clearGeometry(THREE, camera, g, onBack ? 0.6 : Math.max(2, (g.userData.height ?? 20) * 0.05), { parity: !onBack }); // on the walkway the battlements are an arm away on purpose
     return true;
   }
 
@@ -266,7 +302,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     buildSet: async (name) => {
       const id = name.slice(9), spec = tl.worlds?.[id];
       if (!spec) throw new Error(`epic: set "${name}" is not in timeline.worlds`);
-      const S = await buildCreatureWorld(spec, ctx); S.name = name;
+      const S = await buildCreatureWorld(tl.world ? { ...spec, bible: tl.world } : spec, ctx); S.name = name; // WORLD-LOOK: the world bible's town + creature colours
       // never a silent swap: the built world must be the asked view of the asked creature
       const want = { view: spec.view, creature: typeof spec.creature === "string" ? spec.creature : spec.creature?.species };
       if (S.giantView !== want.view || (want.creature && S.creature !== want.creature)) throw new Error(`epic: set "${name}" built ${S.creature} ${S.giantView}, asked ${want.creature} ${want.view}`);

@@ -16,6 +16,20 @@
 >   (up to 2 retries). Only if that fails: a clear picture card of that thing. Everything built is saved to the shared
 >   library so the kit grows with every video.
 
+> **PERMANENT RULE (owner, 2026-11-06): WORLD CONTINUITY. A story happens in ONE consistent world.**
+> A story feels real only in one consistent world. Before any shot is planned, the engine writes a **world bible**:
+> the creature, the town on / in it (its layout, streets, exact buildings, colours, landmarks), each character's look
+> and the key props. Every shot uses this same world. It is a hard requirement for every future change:
+> - Never a different street, map or building style mid-story. **Inside** = the same town at street level, and you
+>   still feel you are on the creature (the shell edge, its head or neck in the background, the ground tilting as it
+>   walks). **Outside** = wide shots always show that same town on its back.
+> - Code: `scripts/blockyWorlds/engine/lib/worldBible.js` builds the bible (`tl.world`, saved as `world-bible.json`
+>   next to the timeline) from the director's list before the shots; the planner puts every shot in a bible spot with
+>   the bible's cast looks, props and town seed; `checkTimeline` fails any shot whose set, spot, cast look, prop or
+>   town is not the bible's (`worldBibleProblems`). Never weaken or bypass it to make a video pass.
+> - The AI shot review gets the bible and flags any shot whose buildings, layout, characters or props don't match it
+>   (`world_mismatch`); the fix moves the shot back to its bible spot / the character back to the bible look.
+
 The single rulebook for how a Blocky Worlds video is made. Code follows this file; when they disagree, fix one of them in the same commit.
 
 The research behind it is `reference/blocky-worlds/ANALYSIS.md`, a study of 19 viral videos. The code lives in `supabase/functions/_shared/blockyWorlds/`.
@@ -145,6 +159,8 @@ The plan for production:
 ## 8. Style rules (from the turtle target, 2026-11-06)
 
 **Where these come from:** a viral video of exactly our format ("In this world, every town is built on the back of a giant animal", 147.6 s, 115 shots). We rebuilt it shot for shot with our engine: 23% of shots matched, 61% partly, 17% couldn't (`scripts/blockyWorlds/engine` REBUILD; the per-shot page and the couldn't-do list are kept with the run). It was an internal learning test only, never posted.
+
+**Camera rule (owner, 2026-11-06): the camera moves in customer videos come from general rules + the shot library, never copied shot for shot.** The turtle rebuild was a learning test; its numbers became general rules (the table below) and moves in the shot library (`lib/caps.js` camera moves, `lib/direction.js` EPIC cameras), chosen per line from that line's own meaning. No customer video replays another video's shot list, timings or framings one for one. The director prompt says so too (`lib/director/design.js` STYLE).
 
 **Where each rule lives:**
 - **Code:** a planner pass, or a measured style report in `lib/style.js` that `planVideo` stores as `tl.style` and that is checked against the reference's numbers. The report is advisory: a style miss never fails a run (the PERMANENT RULE's checks still do).

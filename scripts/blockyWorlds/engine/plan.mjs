@@ -31,6 +31,8 @@ import { meaningPass } from "./lib/meaning.js";
 import { coastPass } from "./lib/coast.js";
 import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
 import { motionPass, styleReport } from "./lib/style.js";
+import { storyReport } from "./lib/storyPatterns.js";
+import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBible.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -42,7 +44,7 @@ export const checkProduction = (tl, prod) => checkProductionStrict(tl, prod ?? t
 
 export const SETS = ["street", "bedroom", "school", "woods"];
 export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
-export const LIGHTS = ["day", "night", "warm"];
+export const LIGHTS = ["day", "night", "warm", "dusk", "dawn"]; // dusk / dawn: WORLD-LOOK 2026-11-06 (page/lighting.js)
 export const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow",
   // 2026-11-05 (GAPS): the actions (page/kit/people.js); hold-poses keep the thing held (eat, throw, dig, hug)
   "hug", "climb", "push", "eat", "fall", "jump", "ride", "hide", "throw", "fly", "swim", "build", "dig", "dance", "kick", "fight", "drive"];
@@ -530,6 +532,8 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // crowds, the line's items, its camera beat and its light; a monster the list makes an EPIC giant is that giant
   if (direction?.production) direction = { ...direction, production: mergeDirectorCast(direction.production, world) };
   const D = direction?.production ? readDirection(direction, { script, idea, mood, exists }) : null;
+  // WORLD CONTINUITY (permanent rule, 2026-11-06; lib/worldBible.js): the one world of the story, fixed before any shot
+  const bible = D ? buildWorldBible({ production: D.production, script, idea, title }) : null;
   if (D && world.monster) {
     const epicWords = new Set([...Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]), ...[...D.worldCreature.values()].map((w) => w.species)]);
     if ((world.monster.keys ?? [world.monster.key]).some((k) => epicWords.has(k)) || (world.monster.species && epicWords.has(world.monster.species))) world.monster = null;
@@ -862,9 +866,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     const mo = motionPass(tl, { check: checkTimeline });
     if (mo.moved || mo.reverted) tl.direction.motion = mo;
   }
+  // every shot in the bible's world: its spot, its cast looks, its town seed, its props (checkTimeline checks it)
+  if (bible) { const wb = applyBible(tl, bible); if (tl.direction) tl.direction.world = { spots: wb.spots, homed: wb.homed }; }
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   // the style rules measured on the plan (advisory: docs/blocky-worlds-protocol.md 8, lib/style.js)
   tl.style = styleReport(tl);
+  // the whole-video story patterns measured on the plan (advisory, never fails a run: lib/storyPatterns.js)
+  try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }
   return tl;
 }
 
@@ -1951,6 +1959,7 @@ export function checkTimeline(tl) {
     for (const m of checkVisuals(tl, { lines: tl.lines })) out.push(`line ${m.line} shows nothing for: ${m.missing.join(", ")}`);
   }
   for (const m of checkProductionStrict(tl)) out.push(`line ${m.line} misses the production items: ${m.missing.map((x) => x.name).join(", ")}`);
+  if (tl.world) out.push(...worldBibleProblems(tl).map((p) => `world bible: ${p}`)); // WORLD CONTINUITY (lib/worldBible.js)
   const caps = tl.captions ?? [];
   if (!caps.length) out.push("no captions");
   caps.forEach((c, i) => {

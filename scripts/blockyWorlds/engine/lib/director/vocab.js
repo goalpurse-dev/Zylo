@@ -20,7 +20,7 @@ export const PROP_SIZES = Object.freeze(["hand", "object", "big", "landmark"]);
 export const EFFECT_KINDS = Object.freeze(["fire", "explosion", "glow", "magic", "transformation", "grow", "shrink", "vanish", "appear", "smoke", "sparkles"]);
 export const EVENT_KINDS = Object.freeze(["rain", "snow", "storm", "fog", "wind", "lightning", "flood", "earthquake", "eruption", "tornado", "falling", "eclipse", "meteor", "heatwave", "hail", "night_falls"]);
 export const CAMERA_BEATS = Object.freeze(["normal", "scale", "shake", "action", "reveal"]);
-export const LIGHTS = Object.freeze(["day", "night", "warm"]);
+export const LIGHTS = Object.freeze(["day", "night", "warm", "dusk", "dawn"]); // WORLD-FIX 2026-11-07: dusk + dawn (lighting.js has both)
 
 /** a verb in a line -> a character action (character.action params) */
 export const ACTION_WORDS = Object.freeze({

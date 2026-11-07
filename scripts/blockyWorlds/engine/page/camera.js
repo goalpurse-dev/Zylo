@@ -118,6 +118,11 @@ export function frameShot(type, ctx) {
     default: return frameShot("medium", ctx);
   }
 
+  // WORLD-FIX 2026-11-07: a set may ask for roomier framings (set.framing[type] = distance factor): the places in the
+  // creature's town show the place (deck, stairs, rooftop, school yard) with the person in it, not a face filling the frame
+  const fk = Number(set?.framing?.[type]) || 1;
+  if (fk !== 1) { dist *= fk; camY += Math.min(1.2, (fk - 1) * 0.45); if (type === "medium") fov = 46; }
+
   // the engine's head guard (page/engine.js): a per-shot nudge back / up / sideways when somebody's head would block
   const nudge = ctx.nudge ?? null;
   if (nudge) { dist += nudge.back ?? 0; camY += nudge.up ?? 0; }
