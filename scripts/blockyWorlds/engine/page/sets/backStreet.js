@@ -117,6 +117,7 @@ export function addPlaces(S, { ctx, K, world, plan, surface, toWorld, seed = 1 }
     const w = toWorld(h.x, h.y, h.z), cs = Math.abs(Math.cos(h.ry ?? 0)), sn = Math.abs(Math.sin(h.ry ?? 0));
     return { x: w.x, z: w.z, hx: (cs * h.w + sn * h.d) / 2 + 0.25, hz: (sn * h.w + cs * h.d) / 2 + 0.25, y0: w.y - (h.sink ?? 0) - 0.5, y1: w.y + h.h * 1.6 + 0.5 };
   });
+  S.inBuilding = (x, z) => solids.some((b) => Math.abs(x - b.x) < b.hx && Math.abs(z - b.z) < b.hz); // ATTACH: rest coordinates (crowds: nobody stands inside a house)
   S.solidAt = (p) => { if (S.indoor) return false; const q = world.worldToLocal(p.clone()); return solids.some((b) => Math.abs(q.x - b.x) < b.hx && Math.abs(q.z - b.z) < b.hz && q.y > b.y0 && q.y < b.y1); };
   for (const [k, p] of Object.entries(P)) p.name = k;
   S.places = P;

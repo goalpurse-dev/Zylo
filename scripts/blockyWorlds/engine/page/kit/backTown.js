@@ -486,14 +486,19 @@ export function addBackTown(g, opts = {}) {
   const st = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.25, 1), std("#8d8478", 0.95), 200); let n = 0;
   const m4 = new THREE.Matrix4(), v = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3();
   for (let z = region.z0; z < region.z1 && n < 200 && !dense; z += 2) { const y = surf(0, z); if (y == null) continue; m4.compose(v.set(0, y + 0.02, z + 1), q, s.set(plan.street.half * 2 - 0.6, 1, 2.05)); st.setMatrixAt(n++, m4); }
-  st.count = n; st.receiveShadow = true; st.frustumCulled = false; st.instanceMatrix.needsUpdate = true; town.add(st);
+  st.count = n; st.name = "backStreet"; st.receiveShadow = true; st.frustumCulled = false; st.instanceMatrix.needsUpdate = true; town.add(st);
   // ride the body joint (metres, root-space rest pose), like page/kit/giants.js buildGiantTown
-  const u = g.userData.unit, J = g.userData.joints;
-  const holder = new THREE.Group(); holder.name = "backTownHolder"; holder.scale.setScalar(1 / u);
-  holder.position.set(0, -J.body.position.y, 0);
-  // bodies offset along z / x too (bipeds): undo the body joint's rest offset fully
-  holder.position.x = -J.body.position.x; holder.position.z = -J.body.position.z;
-  holder.add(town); J.body.add(holder);
+  // ATTACH 2026-11-07 (owner: "everything on a creature must be attached to it and move with it"): the town rides the
+  // joint that carries the walkable back: the shell when it has its own joint (a snail's shell rocks and bobs on its
+  // body: the town on the body slid off it), else the body. The holder is the exact inverse of that joint's rest
+  // transform in the giant's root space (was: the body's rest position only, any rest rotation / nested pivot ignored)
+  const J = g.userData.joints, carrierJ = J.shell && J.shell !== J.body && J.shell.isObject3D ? J.shell : J.body;
+  g.updateMatrixWorld(true);
+  const restInRoot = new THREE.Matrix4().copy(g.matrixWorld).invert().multiply(carrierJ.matrixWorld);
+  const holder = new THREE.Group(); holder.name = "backTownHolder";
+  restInRoot.invert().decompose(holder.position, holder.quaternion, holder.scale);
+  holder.add(town); carrierJ.add(holder);
+  g.userData.townJoint = carrierJ;
   // an asked back town supersedes the kind's own little town (replace: false keeps both)
   if ((spec.replace ?? true) && g.userData.town) g.userData.town.visible = false;
   town.userData.plan = plan;

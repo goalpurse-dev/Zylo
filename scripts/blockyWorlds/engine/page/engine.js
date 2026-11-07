@@ -13,6 +13,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { rng } from "/lib/rng.js";
 import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
+import { measureContact, groundUnder, personFeet } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
 
 const Q = new URLSearchParams(location.search);
 const REAL = { people: "/page/kit/people.js", monsters: "/page/kit/monsters.js", props: "/page/kit/props.js", sets: "/page/sets/index.js", camera: "/page/camera.js", captions: "/page/captions.js" };
@@ -389,6 +390,10 @@ async function main() {
   }
   window.headGuard = NUDGE;
 
+  let lastSet = null;
+  const SNAP = new Map(); // ATTACH: (shot, person, planned spot) -> the walkable surface height there (mount coordinates)
+  const snapSkip = new Set([...allObjects, ...(monster ? [monster] : []), ...[...INSERTS.values()].map((i) => i.obj), ...MARKERS.values()]);
+  const OFF_GROUND = new Set(["sit", "sleep", "ride", "fly", "climb", "fall", "jump", "swim", "lie", "hug"]);
   function renderAt(t, opts = null) {
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
     const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
@@ -403,6 +408,12 @@ async function main() {
     }
     S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
+    // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE"): on a creature the people, scene objects, monster and insert ride the
+    // set's actor mount (the creature's carrier / the swaying cavern): their spots are in its rest coordinates, so they
+    // move with the town as it walks (sway, bob, pitch, roll). Every other set: the scene, as before.
+    const mount = S.actorMount?.() ?? null, holder = mount ?? scene;
+    const toScene = (v) => (mount ? mount.localToWorld(v.clone()) : v.clone());
+    S.root.updateMatrixWorld(true);
     // the outside view's coast stage (hill / mud / sea, spray / splash; page/sets/creatureWorld.js): moves the giant
     S.setStage?.(shot.stage ?? null, lt, dur, (shot.giants ?? []).find((g) => g.id === "world")?.action ?? null);
     for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
@@ -431,6 +442,7 @@ async function main() {
       // stand inside it (a car at "right" next to people at "center")
       const crowded = mode === "front" && free.some((a) => { const p = spots[a.spot] ?? spots.center; return Math.abs(hz(p).sub(hz(base)).dot(S.lateral)) < (u.width ?? 1) / 2 + 0.4 && Math.abs(hz(p).sub(hz(base)).dot(S.depth)) < (u.depth ?? 1) + 0.4; });
       if (mode === "front" && (u.big || here.length || crowded)) pos.addScaledVector(S.depth, (u.push ?? 0.8) + (crowded && !here.length && !u.big ? 0.4 : 0));
+      if (obj.parent !== holder) holder.add(obj);
       obj.position.copy(pos);
       obj.rotation.set(0, faceYaw + ({ left: -0.6, right: 0.6, away: Math.PI }[o.facing] ?? 0), 0);
       obj.visible = true; obj.updateMatrixWorld(true);
@@ -527,12 +539,26 @@ async function main() {
       const ka = placed[i].fixed ? 0 : placed[j].fixed ? 2 : 1, kb = 2 - ka;
       const push = (min - L) / 2; A.addScaledVector(dir, -push * ka); B.addScaledVector(dir, push * kb);
     }
+    // ATTACH: feet on the real walkable surface (street blocks, deck planks, the shell, a floor): a ray down at each
+    // standing person (from 1 m above, so never a roof), the surface nearest the planned height within -0.6 / +0.45 m;
+    // decided once per shot and person (pose-independent: the surface rides the same mount)
+    for (const p of placed) {
+      if (p.fixed || !PEOPLE[p.id] || POSE_LIFT[p.a?.pose] || OFF_GROUND.has(p.a?.pose)) continue;
+      const key = `${si}|${p.id}|${p.pos.toArray().map((v) => Math.round(v * 50)).join(",")}`;
+      if (!SNAP.has(key)) {
+        const hit = groundUnder(THREE, S.root, toScene(p.pos), { above: 1.0, below: 0.6, maxUp: 0.45, skip: snapSkip });
+        SNAP.set(key, hit ? (mount ? mount.worldToLocal(hit.point.clone()).y : hit.y) : null);
+        if (SNAP.size > 4000) SNAP.clear();
+      }
+      const y = SNAP.get(key); if (y != null) p.pos.y = y;
+    }
     const where = Object.fromEntries(placed.map((p) => [p.id, p.pos]));
 
     // monster
     const ms = shot.monsterState ?? (shot.focus === "monster" ? { spot: "far", state: "lurk" } : null);
     if (monster) monster.visible = !!ms;
     if (monster && ms) {
+      if (monster.parent !== holder) holder.add(monster);
       monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far);
       // 2026-11-05 (GAPS): a monster lurking at the far spot stands at most ~9 m behind the centre (it read as a dot)
       if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
@@ -545,6 +571,7 @@ async function main() {
     if (shot.insert) {
       ins = INSERTS.get(`${shot.insert.kind}|${shot.insert.text}|${shot.insert.icon ?? ""}`);
       const base = spots.center.clone().addScaledVector(S.depth, -1.4);
+      if (ins.obj.parent !== holder) holder.add(ins.obj);
       ins.obj.position.copy(base); ins.obj.position.y = base.y + (ins.minY < -0.05 ? 1.3 - (ins.minY + ins.h / 2) : -ins.minY);
       ins.obj.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0);
       ins.obj.visible = true;
@@ -641,7 +668,9 @@ async function main() {
     // people: facing, pose, face, markers
     for (const p of placed) {
       const P = PEOPLE[p.id], o = P.obj, a = p.a;
+      if (o.parent !== holder) holder.add(o);
       o.visible = true; o.position.copy(p.pos);
+      o.userData.id = p.id; o.userData.offGround = !!(p.fixed || POSE_LIFT[a.pose] || OFF_GROUND.has(a.pose));
       const f = a.facing ?? "camera";
       let yaw;
       if (f === "left") yaw = Math.atan2(-camRight.x, -camRight.z);
@@ -664,6 +693,14 @@ async function main() {
       const pose = p.noMount ? "walk" : a.pose ?? "stand";
       posePerson(o, pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null });
       setFace(o, a.expr ?? "neutral");
+      // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
+      // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
+      if (mount && S.surface && !o.userData.offGround && !baby) {
+        const feet = personFeet(THREE, o).map((f) => mount.worldToLocal(f));
+        const gaps = feet.map((f) => { const y = S.surface(f.x, f.z); return y == null ? Infinity : f.y - y; });
+        const g = Math.min(...gaps);
+        if (Number.isFinite(g) && Math.abs(g) < 0.2) { o.position.y -= g; o.updateMatrixWorld(true); }
+      }
       if (baby && holdPerson) { // the baby in the carrier's arms, posed from its own actor entry if it has one
         const B = PEOPLE[baby].obj, ba = (shot.actors ?? []).find((x) => x.id === baby);
         o.updateMatrixWorld(true);
@@ -694,10 +731,10 @@ async function main() {
         if (!m) continue;
         if (id === "monster") { // above the monster's head
           if (!monster?.visible) continue;
-          m.visible = true; m.position.copy(monster.position); m.position.y += monsterH + 0.3;
+          m.visible = true; m.position.copy(toScene(monster.position.clone().setY(monster.position.y + monsterH + 0.3)));
         } else {
           if (!where[id]) continue;
-          m.visible = true; m.position.copy(where[id]); m.position.y += PEOPLE[id].h + 0.15; // the marker's origin is its bottom (kit/props.js)
+          m.visible = true; m.position.copy(toScene(where[id].clone().setY(where[id].y + PEOPLE[id].h + 0.15))); // the marker's origin is its bottom (kit/props.js)
         }
         m.rotation.set(0, 0, 0);
         animateMarker?.(m, lt);
@@ -732,6 +769,7 @@ async function main() {
     let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
     const flat = flatShare(px), detail = detailOf(px, 16);
     ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
+    lastSet = S;
     return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe };
   }
 
@@ -744,6 +782,7 @@ async function main() {
 
   window.timeline = tl;
   window.renderAt = renderAt;
+  window.groundProbe = (opts = {}) => (lastSet ? measureContact(THREE, scene, lastSet, opts) : null); // dev: per actor gap feet -> surface (page/ground.js)
   window.engineDebug = { THREE, scene, camera, renderer, post }; // dev probes (e.g. dev/epicProbe.mjs finds non-finite pixels)
   window.frameData = (q = 0.9) => out.toDataURL("image/jpeg", q);
   window.engineInfo = { stubs: [...stubbed], sets: Object.keys(SETS), people: Object.keys(PEOPLE), renderer: (() => { const gl = renderer.getContext(), e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); })() };

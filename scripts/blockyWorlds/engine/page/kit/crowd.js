@@ -152,7 +152,10 @@ export function updateCrowd(crowd, t, opts = {}) {
   }
   const cy = Math.cos(yaw), sy = Math.sin(yaw);
   let tipI = 0, flagI = 0;
+  // ATTACH 2026-11-07: each character's ground point (x, y, z, shown) for the free ground-contact check (page/ground.js)
+  if (!C.base || C.base.length !== C.chars.length * 4) C.base = new Float32Array(C.chars.length * 4);
   C.chars.forEach((ch, i) => {
+    C.base[i * 4 + 3] = 0;
     const s = ch.slot, m = crowdMotion(action, t, s, { speed: opts.speed });
     // local (formation) -> world: rotate by yaw around the origin
     const lx = s.x + m.dx, lz = s.z + m.dz;
@@ -164,6 +167,7 @@ export function updateCrowd(crowd, t, opts = {}) {
       wy = y;
     }
     const k = ch.scale;
+    C.base[i * 4] = wx; C.base[i * 4 + 1] = wy; C.base[i * 4 + 2] = wz; C.base[i * 4 + 3] = m.jump > 0.01 ? 0 : 1;
     // the body frame: position, heading, bob/jump, then everything in unscaled figure units
     _q.setFromAxisAngle(_up, yaw + m.yaw + (s.jitter - 0.5) * (action === "stand" || action === "cheer" ? 0.5 : 0.08));
     _b.compose(_v.set(wx, wy + (m.bob + m.jump) * k, wz), _q, _s.set(k, k, k));

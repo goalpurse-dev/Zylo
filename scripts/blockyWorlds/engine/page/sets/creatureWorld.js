@@ -21,6 +21,7 @@ import { gaitOf, prng, giantFootfalls } from "../../lib/epic.js";
 // (page/kit/backTown.js), the street-level places in that town (page/sets/backStreet.js), the foreground rule and the
 // fog guard per frame (S.afterCamera, called by the engine once the camera is set)
 import { makeNature, makeDust } from "../kit/nature.js";
+import { walkable } from "../ground.js";
 import { addBackTown, backSurface } from "../kit/backTown.js";
 import { addPlaces } from "./backStreet.js";
 
@@ -372,6 +373,7 @@ function buildInside(spec0, ctx) {
       dust.rotation.y = t * 0.004;
     },
     town, giant: null, mount: world, groundY: 0,
+    actorMount: () => world, // ATTACH 2026-11-07: people + scene objects sway with the cavern floor (they stood still while it rocked)
   };
   mergeStatic(THREE, world);
   return S;
@@ -397,6 +399,16 @@ async function buildOn(spec, ctx) {
   const y0 = surf(0, zc) ?? surf0(0, 0) ?? spec.size * 0.4;
   giant.position.set(0, -y0, -zc);
   world.add(giant);
+  // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE: everything on a creature must be attached to it and move with it"):
+  // the CARRIER: a group whose transform is, every frame, where the town is now relative to where it was at rest (its
+  // holder on the creature's back joint). Everything placed in rest coordinates (the spots, people, scene objects,
+  // crowds, the street-level places' decks / stairs / rooftop) goes in it and rides the walk exactly: the world's sway,
+  // the body's bob, pitch and roll. (People used to stand in the scene at fixed heights while the town rocked under them.)
+  const carrier = new THREE.Group(); carrier.name = "creatureCarrier"; carrier.matrixAutoUpdate = false; root.add(carrier);
+  const holder = town.parent, _rootInv = new THREE.Matrix4();
+  root.updateMatrixWorld(true);
+  const holderRestInv = new THREE.Matrix4().copy(root.matrixWorld).invert().multiply(holder.matrixWorld).invert();
+  const syncCarrier = () => { root.updateMatrixWorld(true); _rootInv.copy(root.matrixWorld).invert(); carrier.matrix.copy(_rootInv).multiply(holder.matrixWorld).multiply(holderRestInv); carrier.matrixWorldNeedsUpdate = true; carrier.updateMatrixWorld(true); };
   const flatEnough = (x, z) => { const y = surf(x, z + zc); return y == null ? null : y - y0; };
   // the land far below, sliding past as the creature walks (the landscape moves +z)
   const nature = spec.water ? null : await makeNature(ctx, { seed: spec.seed, center: { x: 0, z: -200 }, flatR: 400, nearR: 260, grass: 0, ferns: 600, underR: 200, clear: (x, z) => Math.abs(x) < spec.size * 0.5 && z > -spec.size * 1.2 && z < spec.size * 0.6 });
@@ -404,7 +416,32 @@ async function buildOn(spec, ctx) {
   land.position.y = -y0;
   root.add(land);
   const gait = gaitOf(spec.kind, spec.water ? "swim" : "walk", spec.size);
-  const spotY = (x, z) => (flatEnough(x, z) ?? 0) + 0.15; // WORLD-FIX-2: on the street blocks (their top is 0.15 above the surface), not in them
+  // ATTACH: the walkable surface (carrier = rest coordinates) under (x, z): the street blocks where there is a street,
+  // else the creature's own back (never a roof or a wall top). Rays down onto those meshes, memoised on a 0.5 m grid,
+  // bilinear between the grid points; pose-independent (the meshes ride the carrier), so the same every frame
+  const groundMeshes = [];
+  giant.traverse((o) => { if (!o.isMesh) return; for (let p = o; p && p !== giant; p = p.parent) if (p === town.parent) { if (/^(mainStreet|sideStreets|backStreet|porches)$/.test(o.name)) groundMeshes.push(o); return; } if (walkable(o)) groundMeshes.push(o); }); // the same rule as the check (page/ground.js): no cut-out feathers / glass
+  const memo = new Map(), rc = new THREE.Raycaster(), GS = 0.5;
+  const rayY = (x, z) => {
+    const key = x * 100003 + z; if (memo.has(key)) return memo.get(key);
+    const top = (flatEnough(x, z) ?? 0) + 8;
+    const o = carrier.localToWorld(V(x, top, z)), d = V(0, -1, 0).transformDirection(carrier.matrixWorld);
+    rc.set(o, d); rc.far = 20;
+    const hit = rc.intersectObjects(groundMeshes, false).find((h) => { for (let p = h.object; p && p !== root; p = p.parent) if (p.visible === false) return false; return true; });
+    const y = hit ? carrier.worldToLocal(hit.point.clone()).y : null;
+    memo.set(key, y); return y;
+  };
+  // strict (crowds): only where the back is really there at all four grid points, else null (the character is left out)
+  const walkY = (x, z, strict = false) => {
+    const i = Math.floor(x / GS), k = Math.floor(z / GS), fx = x / GS - i, fz = z / GS - k;
+    const c = [rayY(i * GS, k * GS), rayY((i + 1) * GS, k * GS), rayY(i * GS, (k + 1) * GS), rayY((i + 1) * GS, (k + 1) * GS)];
+    if (c.some((v) => v == null)) return strict ? null : c.find((v) => v != null) ?? flatEnough(x, z);
+    // a step (a street block edge, a kerb) between the grid points: the nearest point, never a ramp through it
+    if (Math.max(...c) - Math.min(...c) > 0.12) return c[(fx < 0.5 ? 0 : 1) + (fz < 0.5 ? 0 : 2)];
+    return (c[0] * (1 - fx) + c[1] * fx) * (1 - fz) + (c[2] * (1 - fx) + c[3] * fx) * fz;
+  };
+  const trees = (plan.trees ?? []).map((t) => ({ x: -t.x, z: -t.z - zc, s: t.s ?? 1 })), nearTree = (x, z) => trees.some((t) => Math.hypot(t.x - x, t.z - z) < 1.3 * t.s); // plan (giant root) -> rest coordinates, as toWorld below
+  const spotY = (x, z) => walkY(x, z) ?? (flatEnough(x, z) ?? 0) + 0.15; // WORLD-FIX-2: on the street blocks (their top is 0.15 above the surface), not in them
   const S = {
     root, indoor: false, giantView: spec.view, creature: spec.kind,
     spots: { center: V(0, spotY(0, 0), 0), left: V(-2.4, spotY(-2.4, 0.4), 0.4), right: V(2.4, spotY(2.4, 0.4), 0.4), back: V(0, spotY(0, -5), -5), far: V(0, spotY(0, -30), -30), door: V(0, spotY(0, -14), -14), horizon: V(0, -y0, -600), head: (giant.updateMatrixWorld(true), giant.localToWorld(giant.userData.focus.clone()).setX(0)), tail: V(0, spotY(0, 10), 10) },
@@ -423,11 +460,15 @@ async function buildOn(spec, ctx) {
       const bj = giant.userData.joints?.body, br = bj && giant.userData.rest?.get(bj);
       giant.position.y = -y0 - (bj && br ? (bj.position.y - br.p.y) * (giant.userData.unit ?? 1) : 0);
       land.position.z = (t * gait.speed) % 1200; land.rotation.z = -s.roll * 0.3;
+      syncCarrier();
     },
-    town, giant, mount: world, groundY: -y0, surface: (x, z) => flatEnough(x, z),
+    // ATTACH: people + scene objects ride the carrier (indoors: the room, far below, stands still); crowds ride it too
+    // (epic layer: S.mount) and stand on the walkable surface under each of them; other giants stay on the land
+    town, giant, mount: carrier, giantMount: root, carrier, actorMount: () => (S.indoor ? null : carrier), crowdsOnSurface: true, groundY: -y0, surface: (x, z) => walkY(x, z),
+    crowdSurface: (x, z) => (S.inBuilding?.(x, z) || nearTree(x, z) ? null : walkY(x, z, true)), // a crowd character inside a house footprint is left out
   };
   // the street-level places in the same town (deck, stairs, rooftop, school yard, a room, a classroom)
-  addPlaces(S, { ctx, K, world, giant, town, plan, surface: flatEnough, toWorld: (x, y, z) => V(-x, y - y0, -z - zc), seed: spec.seed });
+  addPlaces(S, { ctx, K, world: carrier, giant, town, plan, surface: flatEnough, toWorld: (x, y, z) => V(-x, y - y0, -z - zc), seed: spec.seed });
   lookHooks(S, ctx, nature);
   return S;
 }

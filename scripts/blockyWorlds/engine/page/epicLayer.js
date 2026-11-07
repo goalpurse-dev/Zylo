@@ -130,7 +130,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       const yaw = e.facing != null ? yawFacing(S, pos, e.facing) : yawFacing(S, pos, "camera");
       if ((action === "walk" || action === "run") && !mv) { const sp = g.userData.gait.speed * (action === "run" ? 2 : 1) * (e.speed ?? 1); pos.x += Math.sin(yaw) * sp * lt; pos.z += Math.cos(yaw) * sp * lt; }
       g.position.copy(pos); g.rotation.set(0, yaw, 0);
-      if (g.parent !== mount) mount.add(g);
+      const gm = S.giantMount ?? mount; if (g.parent !== gm) gm.add(g); // ATTACH: other giants stand on the land, not on the creature's carrier
       animateGiant(g, action, lt, { dur, hitAt: plan?.shake?.at ?? 0.6, at: role?.at != null ? role.at * dur : plan?.shake?.at, landAt: plan?.shake?.at ?? 1.0 });
       g.visible = true;
       live.giants.set(e.id, { g, pos: pos.clone(), action, yaw });
@@ -147,7 +147,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       // a crowd at a spot stands BEHIND it (its front rank at the spot), never around the camera or the actors
       if (!c.pos && (c.spot ?? "back") !== "center") origin.addScaledVector(S.depth ?? V(0, 0, -1), crowdExtent(grp) * 0.85);
       const yaw = yawFacing(S, origin, c.facing ?? "camera");
-      if (grp.parent !== mount) mount.add(grp);
+      const cm = c.onGround && !c.onWorld ? S.giantMount ?? mount : mount; if (grp.parent !== cm) cm.add(grp); // ATTACH: an army on the land below stays on the land
       grp.visible = true;
       live.crowds.push({ grp, c, action, origin, yaw, speed: c.speed });
     }
@@ -283,7 +283,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
 
   function after(shot, lt, S, camera, where = {}) {
     const dur = shot.end - shot.start;
-    for (const L of live.crowds) updateCrowd(L.grp, lt, { action: L.action, origin: L.origin, yaw: L.yaw, camera, speed: L.speed, surface: L.c.onWorld && S.surface ? S.surface : null });
+    for (const L of live.crowds) updateCrowd(L.grp, lt, { action: L.action, origin: L.origin, yaw: L.yaw, camera, speed: L.speed, surface: (L.c.onWorld || (S.crowdsOnSurface && !L.c.onGround)) && S.surface ? S.crowdSurface ?? S.surface : null });
     for (const { g } of live.giants.values()) updateGiantLOD(g, camera);
     if (S.giant) updateGiantLOD(S.giant, camera);
     const preset = shot.beat?.shake ?? live.beat?.shake?.preset ?? shot.shake ?? null;

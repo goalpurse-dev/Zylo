@@ -251,6 +251,11 @@ const TAU = Math.PI * 2;
 const m1 = new THREE.Matrix4(), m2 = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 const vert = (h, k) => LT * Math.cos(h) + LS * Math.cos(h + k);
+// ATTACH 2026-11-07 (owner: "feet always on the ground"): the drop from the hip to the LOWEST point of the sole (its heel
+// or its toe edge, the sole runs z -0.1125 .. 0.2125 in the knee frame): a walking foot pitched by the stride dipped its
+// toe ~6-9 cm into the street when only the sole centre was planted
+export const SOLE_Z = [-0.1125, 0.2125];
+const footDrop = (h, k) => { const a = h + k; return LT * Math.cos(h) + LS * Math.cos(a) + Math.max(SOLE_Z[0] * Math.sin(a), SOLE_Z[1] * Math.sin(a)); };
 
 function rest(j, stoop) {
   j.rig.position.set(0, 0, 0); j.rig.rotation.set(0, 0, 0);
@@ -711,7 +716,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
     rig.position.y = -0.9 + 0.14; rig.position.z = 0;
   }
   // plant the lowest foot on the floor (bent knees lower the body)
-  if (plant) rig.position.y += Math.max(vert(hip[0].rotation.x, knee[0].rotation.x), vert(hip[1].rotation.x, knee[1].rotation.x)) - LEG;
+  if (plant) rig.position.y += Math.max(footDrop(hip[0].rotation.x, knee[0].rotation.x), footDrop(hip[1].rotation.x, knee[1].rotation.x)) - 0.9; // the hip (pelvis) is 0.9 up; the legs reach 0.9075: soles 7.5 mm under the floor before
   if (lift) rig.position.y += lift / s0;
   if (pose !== "throw") u.throwFly = -1;
   // the engine turns a hugger's face a little toward the lens (opts.headYaw, radians)
