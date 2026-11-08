@@ -21,7 +21,11 @@ import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, ca
 export const PRICE = Object.freeze({
   "claude-sonnet-5-5": Object.freeze({ input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 }),
   "claude-haiku-5-5": Object.freeze({ input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 }),
+  // the strongest-model test (owner, 2026-11-08): list prices from the claude-api reference (cache reads $0.20)
+  "claude-opus-5-5": Object.freeze({ input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite: 5.0 }),
 });
+/** Models that take the server-side refusal fallback (fallbacks: "default"). */
+const FALLBACK_MODELS = ["claude-sonnet-5-5", "claude-opus-5-5"];
 export const costOf = (model, u = {}) => {
   const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
   return Number((((u.input_tokens ?? 0) * p.input + (u.output_tokens ?? 0) * p.output + (u.cache_read_input_tokens ?? 0) * p.cacheRead + (u.cache_creation_input_tokens ?? 0) * p.cacheWrite) / 1e6).toFixed(5));
@@ -40,7 +44,7 @@ export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?
 
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
 async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null }) {
-  const sonnet = model.startsWith("claude-sonnet-5-5");
+  const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
   // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
   // pass it; what a call cost (failed ones too) is added to the meter
   if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200), model);
@@ -532,8 +536,11 @@ export async function topicScript({ apiKey = "", provider = "anthropic", topic, 
 export const BROAD_MAX_TOKENS = Object.freeze({ plan: 7000, script: 10000, judge: LIBRARY_MAX_TOKENS.judge });
 
 /** The plan: an idea card (with its twist clue) and the 7 beats, from the topic, recipe and angle. */
-export async function writePlan({ apiKey = "", topic, recipe = null, angle = ANGLES[0], examples = [], lengthSec = 90, meter = null }) {
-  const reply = await callJson({ apiKey, model: MODELS.beats, system: [examplesBlock(examples), PLAN_SYSTEM], user: planPrompt({ topic, recipe, angle, lengthSec }), schema: planSchema(), effort: "low", maxTokens: BROAD_MAX_TOKENS.plan, timeoutMs: 180_000, meter });
+// model/effort/maxTokens/note: overrides for a model comparison (the defaults are the production flow); note is added
+// to the user message.
+export async function writePlan({ apiKey = "", topic, recipe = null, angle = ANGLES[0], examples = [], lengthSec = 90, meter = null, model = MODELS.beats, effort = "low", maxTokens = BROAD_MAX_TOKENS.plan, note = "", timeoutMs = 180_000 }) {
+  const user = planPrompt({ topic, recipe, angle, lengthSec }) + (note ? `\n\n${note}` : "");
+  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), PLAN_SYSTEM], user, schema: planSchema(), effort, maxTokens, timeoutMs, meter });
   const raw = reply.data?.card ?? {};
   const card = { ...normalizeIdea(raw), twist_clue: String(raw.twist_clue ?? "").trim(), topic: String(topic).slice(0, 240) };
   const beats = reply.data?.beats ?? [];
@@ -541,9 +548,9 @@ export async function writePlan({ apiKey = "", topic, recipe = null, angle = ANG
 }
 
 /** The script with its skeleton map, following the plan (a fix: previous + the failed checks). */
-export async function writeBroadScript({ apiKey = "", card, beats, examples = [], lengthSec = 90, previous = null, failed = [], meter = null }) {
-  const user = `${scriptPrompt({ idea: card, lengthSec, beats, previous, failed })}\n\nTHE TWIST'S CLUE (plant it before the discovery, pay it off after): ${card.twist_clue || "(choose one)"}`;
-  const reply = await callJson({ apiKey, model: MODELS.script, system: [examplesBlock(examples), BROAD_SCRIPT_SYSTEM], user, schema: broadScriptSchema(), effort: "medium", maxTokens: BROAD_MAX_TOKENS.script, timeoutMs: 180_000, meter });
+export async function writeBroadScript({ apiKey = "", card, beats, examples = [], lengthSec = 90, previous = null, failed = [], meter = null, model = MODELS.script, effort = "medium", maxTokens = BROAD_MAX_TOKENS.script, note = "", timeoutMs = 180_000 }) {
+  const user = `${scriptPrompt({ idea: card, lengthSec, beats, previous, failed })}\n\nTHE TWIST'S CLUE (plant it before the discovery, pay it off after): ${card.twist_clue || "(choose one)"}${note ? `\n\n${note}` : ""}`;
+  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), BROAD_SCRIPT_SYSTEM], user, schema: broadScriptSchema(), effort, maxTokens, timeoutMs, meter });
   return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 

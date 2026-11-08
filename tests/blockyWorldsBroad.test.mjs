@@ -113,6 +113,23 @@ test("the script call sends the examples first and both system blocks cached", a
   assert.match(body.messages[0].content, /THE TWIST'S CLUE/);
 });
 
+test("a model comparison can override the writer's model, effort, ceiling and add a note (fallback on for Opus 5.5)", async () => {
+  const real = globalThis.fetch;
+  let body = null, headers = null;
+  globalThis.fetch = async (_u, init) => { body = JSON.parse(init.body); headers = init.headers; return { ok: true, json: async () => ({ model: "claude-opus-5-5", usage: { output_tokens: 1000 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify({ title: "t", lines: [], post: {}, skeleton: {} }) }] }) }; };
+  let r;
+  try {
+    r = await writeBroadScript({ apiKey: "x", card: { ...EXAMPLE_IDEAS[0], twist_clue: "a name" }, beats: [], examples: [REF], lengthSec: 90, model: "claude-opus-5-5", effort: "high", maxTokens: 16000, note: "OWNER NOTE: plant it in a neighbour joke" });
+  } finally { globalThis.fetch = real; }
+  assert.equal(body.model, "claude-opus-5-5");
+  assert.equal(body.output_config.effort, "high");
+  assert.equal(body.max_tokens, 16000);
+  assert.match(body.messages[0].content, /OWNER NOTE: plant it in a neighbour joke$/);
+  assert.equal(body.fallbacks, "default");
+  assert.equal(headers["anthropic-beta"], "server-side-fallback-2026-07-01");
+  assert.equal(r.costUsd, 0.02); // 1000 output tokens at $20 per million
+});
+
 test("the judge on broad topics: the premise is exempt from originality, copying is not", () => {
   const p = judgeScriptPrompt(GOOD, { title: "x" }, { exemptOriginality: true });
   assert.match(p, /THE PREMISE IS THE USER'S CHOICE/);
