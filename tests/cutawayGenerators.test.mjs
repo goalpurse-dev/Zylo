@@ -90,3 +90,32 @@ test("road: a bridge carries the deck over its span; cars ride it; car motions a
   assert.ok(KINDS.road && VERBS.road.twist && VERBS.car.brake && VERBS.car.steer && VERBS.car.stuck);
   for (const v of ["brake", "steer", "stuck"]) assert.ok(KIND_CHANNELS.car.includes(v), v);
 });
+
+test("models by keyword: recipes first, then CC0 models; each becomes a rig that passes the rig checks", async () => {
+  const { RECIPES, modelToRig, recipeFor, expandModels } = await import("../scripts/cutaway/proto3d/m2/recipes.js");
+  const { rigProblems } = await import("../scripts/cutaway/proto3d/m2/rig.js");
+  for (const k of Object.keys(RECIPES)) { const r = modelToRig({ id: "x", kind: "model", params: { keyword: k, pos: [0, 0, -3] } }); assert.equal(r.kind, "rig"); assert.deepEqual(rigProblems(r), [], k); }
+  assert.equal(recipeFor("an electricity transmission tower").name, "pylon");
+  assert.equal(modelToRig({ id: "t", kind: "model", params: { keyword: "toilet", pos: [0, 0, -2] } }).params.nodes[0].shapes[0].shape, "model");
+  const e = expandModels({ parts: [{ id: "n", kind: "model", params: { keyword: "zzqx", pos: [0, 0, 0] } }] });
+  assert.match(e.problems[0], /no recipe or CC0 model/);
+  const v = validateScene({ parts: [{ id: "w", kind: "model", params: { keyword: "wind turbine", pos: [0, 0, -3] } }], beats: [{ s: "hook", do: [{ p: "w", v: "spin" }] }] });
+  assert.deepEqual(v, []);
+});
+
+test("the plan keeps world.mood and needs no cut on a terrain world; models expand in the plan", async () => {
+  const { layoutFromScene } = await import("../scripts/cutaway/proto3d/m2/plan.js");
+  const r = layoutFromScene({ world: { mood: "night", house: false }, parts: [{ id: "light", kind: "light", params: {} }, { id: "land", kind: "terrain", main: true, params: { blocks: [{ type: "coast", at: 0, sea: "right" }] } }, { id: "lh", kind: "model", params: { keyword: "pylon", pos: [-6, 0, -4] } }], beats: [{ s: "hook", do: [], shots: [] }, { s: "congrats", do: [], shots: [] }], audio: {} }, { key: "k", title: "t", roles: ["hook", "congrats"] });
+  assert.equal(r.layout.world.mood, "night");
+  assert.ok(!r.problems.some((p) => /world\.cut/.test(p)), r.problems.join("\n"));
+  assert.equal(r.layout.parts.find((p) => p.id === "lh").kind, "rig");
+});
+
+test("wires: spans sag; a line through a part is named", async () => {
+  const { wiresSpec, spanPoint } = await import("../scripts/cutaway/proto3d/kit/wires.js");
+  const s = wiresSpec({ points: [[0, 10, -3], [10, 10, -3]], sag: 1 });
+  assert.ok(Math.abs(spanPoint(s, 0, 0.5)[1] - 9) < 1e-9);
+  const { clarityChecks } = await import("../scripts/cutaway/proto3d/m2/clarity.js");
+  const L = { world: { house: false }, parts: [{ id: "w", kind: "wires", params: { points: [[-10, 5, -3], [10, 5, -3]] } }, { id: "b", kind: "box", params: { mat: "concrete", size: [2, 10, 2], pos: [0, 5, -3] } }], beats: [] };
+  assert.ok(clarityChecks(L, []).problems.some((p) => /power line w runs through b/.test(p)));
+});

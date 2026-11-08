@@ -10,6 +10,7 @@ import { ROLES, VIEWS, SHOT_TYPES, SETTINGS } from "./plan.js";
 import { MOODS } from "./moods.js";
 
 import { FIELDS, partFieldProblems } from "./fields.js";
+import { modelMoves, resolveModel } from "./recipes.js";
 
 // (phase 1b: every kind's typed field list, m2/fields.js; a kind without one would be a gap in the kit's language)
 for (const k of Object.keys(KIND_DOCS)) if (!FIELDS[k]) throw new Error(`language.js: kind ${k} has no typed field list in fields.js`);
@@ -31,6 +32,7 @@ export function verbsOf(part) {
   // (a designed part: each move by name, and <name>Back plays it backwards; rig.js rigVerb)
   if (part.kind === "rig") return [...new Set(["show", "hide", "pop", ...k.verbs, ...rigNames(part).flatMap((n) => [n, `${n}Back`])])];
   if (part.kind === "panels") return ["grow", "pop", ...k.verbs];
+  if (part.kind === "model") return [...new Set(["show", "hide", "pop", ...modelMoves(part.params).flatMap((n) => [n, `${n}Back`])])];
   return k.verbs;
 }
 
@@ -56,6 +58,7 @@ export function validateScene(scene) {
     // (fields: typed per kind since phase 1b, m2/fields.js: unknown fields, wrong types and missing required fields)
     for (const f of Object.keys(p)) if (!PART_KEYS.has(f)) err(`${at}.${f}`, `is not a part key (a part is {id, kind, params, base?, main?}: put ${p.kind} settings in params)`);
     for (const e of partFieldProblems(p, at, near)) err(e.at, e.error);
+    if (p.kind === "model" && p.params?.keyword && !resolveModel(p.params)) err(`${at}.params.keyword`, `no recipe or CC0 model for "${p.params.keyword}": use another word or design it as a rig`);
     if (p.kind === "rig") for (const n of p.params?.nodes ?? []) {
       for (const s of n.shapes ?? []) if (s?.shape && !RIG_SHAPES.includes(s.shape)) err(`${at} node ${n.id}`, `unknown shape '${s.shape}'${near(s.shape, RIG_SHAPES)}`);
       for (const m of n.moves ?? []) if (m?.type && !RIG_MOVES.includes(m.type)) err(`${at} node ${n.id}`, `unknown move type '${m.type}'${near(m.type, RIG_MOVES)}`);

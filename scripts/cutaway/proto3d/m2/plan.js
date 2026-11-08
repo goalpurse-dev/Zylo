@@ -1,6 +1,8 @@
 // M2: the planner's reply shapes (JSON schemas for structured outputs) and their conversion to and from layouts.
 // Structured outputs need every object closed and every field listed, so free-form settings travel as JSON text
 // (paramsJson) and "not set" is an empty string or 0.
+import { expandModels } from "./recipes.js";
+import { MOODS } from "./moods.js";
 import { KIND_CHANNELS } from "./parts.js";
 import { homeView, projectBox, SHOTS } from "./director.js";
 import { liftToFloor, placeLifeProps, placeSign } from "./framing.js";
@@ -54,9 +56,13 @@ const anchor = (a) => { const o = {}; o.s = a.s; if (a.w) o.w = a.w; if (a.o) o.
 export function layoutFromScene(scene, { key, title, roles }) {
   const problems = [];
   const json = (t, what) => { if (!t) return {}; try { return JSON.parse(t); } catch (e) { problems.push(`${what}: bad JSON (${e.message.slice(0, 60)})`); return {}; } };
-  if (!scene?.world?.cut || !Array.isArray(scene.parts) || !Array.isArray(scene.beats) || !scene.audio) return { layout: { key, title, roles, world: { cut: {} }, parts: [], cues: [], beats: [], audio: {} }, problems: [`the scene needs world.cut, parts, beats and audio${scene?._bad ? ` (sceneJson is not JSON: ${scene._bad})` : ""}`] };
-  const [x0, x1, z0, depth] = scene.world.cut;
-  const world = { cut: { x0, x1, z0, depth } };
+  // (a terrain part makes its own ground: its world needs no cut, scene language v2 phase 2)
+  const hasTerrain = Array.isArray(scene?.parts) && scene.parts.some((p) => p?.kind === "terrain");
+  if ((!scene?.world?.cut && !hasTerrain) || !Array.isArray(scene.parts) || !Array.isArray(scene.beats) || !scene.audio) return { layout: { key, title, roles, world: { cut: {} }, parts: [], cues: [], beats: [], audio: {} }, problems: [`the scene needs world.cut, parts, beats and audio${scene?._bad ? ` (sceneJson is not JSON: ${scene._bad})` : ""}`] };
+  const [x0, x1, z0, depth] = scene.world.cut ?? [-4, 4, -4, 0.6];
+  const world = scene.world.cut ? { cut: { x0, x1, z0, depth } } : {};
+  // the video's light (world.mood, the handbook's THE MOOD): it was dropped here, so a planned night never reached the page
+  if (MOODS[scene.world.mood]) world.mood = scene.world.mood;
   if (scene.world.house === false) world.house = false; else if (scene.world.house?.length === 3) world.house = scene.world.house;
   // the yard's worker figure only when asked for (he stood in the frame of other topics' shots)
   if (scene.world.worker !== true) world.worker = false;
@@ -92,7 +98,9 @@ export function layoutFromScene(scene, { key, title, roles }) {
     chimes: A.chimes.map(anchor),
     ...(A.rain.length === 2 ? { rain: { from: anchor(A.rain[0]), to: anchor(A.rain[1]), underDb: 24 } } : {}),
   };
-  const raw = { key, title, template: true, roles, world, parts, cues: [], beats, audio };
+  // models by keyword (m2/recipes.js): each becomes a rig part (a saved recipe, or a CC0 model) before anything else sees it
+  const em = expandModels({ parts }); problems.push(...em.problems);
+  const raw = { key, title, template: true, roles, world, parts: em.layout.parts, cues: [], beats, audio };
   const rewrites = (Array.isArray(scene.rewrites) ? scene.rewrites : []).filter((x) => x?.role && x?.text).map((x) => ({ role: String(x.role), text: String(x.text) }));
   // the side-story props (a flag, a book, a newspaper) stand beside the action, inside the home frame
   const placed = soft("side-story props", () => placeLifeProps(raw, homeView(raw), projectBox), { layout: raw, moved: [] });

@@ -9,6 +9,7 @@
 import { focusOf as focusRaw } from "./focus.js";
 import { SETTING_PROPS, TOPIC_PROPS } from "./catalog.js";
 import { settingBoxes, settingFloor } from "./framing.js";
+import { wiresSpec, spanPoint } from "../kit/wires.js";
 
 const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return null; } };
 // verbs that only take something away: a sentence whose only action is one of these shows nothing happening
@@ -94,6 +95,20 @@ export function clarityChecks(L, sentences) {
   for (const p of L.parts.filter((x) => ["flare", "machine", "boxPop", "tank", "prop", "vendingMachine", "atm", "hydrant"].includes(x.kind))) {
     const b = focusOf(p, cut); if (!b || b.max[1] < 0) continue;
     for (const t of trees) if (t.x > b.min[0] - t.r && t.x < b.max[0] + t.r && t.z > b.min[2] - t.r && t.z < b.max[2] + t.r) { problems.push(`a tree at [${t.x}, ${t.z}] stands over ${p.id}: move the tree clear of it`); break; }
+  }
+  // 5. power lines run clear of everything but what they hang from (a test case strung its line through a cooling tower)
+  for (const w of L.parts.filter((x) => x.kind === "wires")) {
+    const s = wiresSpec(w.params), ends = s.pts;
+    for (const q of L.parts) {
+      if (q === w || ["light", "terrain", "waterBody", "sign", "fx", "rain", "arrows", "outline", "flow", "road"].includes(q.kind)) continue;
+      const b = focusOf(q, cut); if (!b) continue;
+      // (the part a line hangs from: one of its ends inside the part's box, padded)
+      const near = (pt) => pt.every((v, i) => v >= b.min[i] - 0.6 && v <= b.max[i] + 0.6);
+      if (ends.some(near)) continue;
+      let hit = false;
+      for (let i = 0; i < ends.length - 1 && !hit; i++) for (let k = 1; k < 20 && !hit; k++) { const pt = spanPoint(s, i, k / 20); hit = pt.every((v, j) => v > b.min[j] && v < b.max[j]); }
+      if (hit) problems.push(`the power line ${w.id} runs through ${q.id}: move ${q.id} or the line's points clear of it`);
+    }
   }
   return { problems, warnings };
 }

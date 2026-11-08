@@ -1,0 +1,338 @@
+{
+ "topic": "power station and power lines (generator test case)",
+ "layout": {
+  "key": "tc_power",
+  "title": "How a nuclear power plant works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "ground",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 0
+      }
+     ],
+     "trees": [
+      [
+       -20,
+       -12,
+       1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "hall",
+    "kind": "building",
+    "main": true,
+    "params": {
+     "pos": [
+      -5,
+      0,
+      -0.5
+     ],
+     "width": 14,
+     "depth": 7,
+     "use": "plant",
+     "floors": [
+      {
+       "h": 7
+      }
+     ],
+     "roof": "flat"
+    }
+   },
+   {
+    "id": "reactor",
+    "kind": "model",
+    "params": {
+     "keyword": "nuclear reactor",
+     "pos": [
+      -9,
+      0.25,
+      -3.5
+     ]
+    }
+   },
+   {
+    "id": "turbine",
+    "kind": "model",
+    "params": {
+     "keyword": "turbine generator",
+     "pos": [
+      -2,
+      0.25,
+      -3.5
+     ]
+    }
+   },
+   {
+    "id": "tower",
+    "kind": "model",
+    "params": {
+     "keyword": "cooling tower",
+     "pos": [
+      7,
+      0,
+      -11
+     ]
+    }
+   },
+   {
+    "id": "steam",
+    "kind": "fx",
+    "params": {
+     "type": "smoke",
+     "at": [
+      7,
+      10.8,
+      -11
+     ],
+     "size": 2
+    }
+   },
+   {
+    "id": "pylon",
+    "kind": "model",
+    "params": {
+     "keyword": "pylon",
+     "pos": [
+      16,
+      0,
+      -6
+     ]
+    }
+   },
+   {
+    "id": "pole",
+    "kind": "model",
+    "params": {
+     "keyword": "utility pole",
+     "pos": [
+      21,
+      0,
+      -3
+     ]
+    }
+   },
+   {
+    "id": "lines",
+    "kind": "wires",
+    "params": {
+     "points": [
+      [
+       1.5,
+       6.6,
+       -3.5
+      ],
+      [
+       16,
+       12.5,
+       -6
+      ],
+      [
+       21,
+       8.5,
+       -3
+      ]
+     ],
+     "sag": 1,
+     "count": 2,
+     "spacing": 0.8
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      -17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [
+     {
+      "p": "reactor",
+      "v": "show",
+      "w": "uranium"
+     },
+     {
+      "p": "reactor",
+      "v": "heat",
+      "w": "hot"
+     }
+    ],
+    "shows": {
+     "p": "reactor",
+     "does": "the core heats"
+    },
+    "shots": [
+     {
+      "focus": [
+       "reactor"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "turbine",
+      "v": "show",
+      "w": "steam"
+     },
+     {
+      "p": "turbine",
+      "v": "spin",
+      "w": "spins"
+     }
+    ],
+    "shows": {
+     "p": "turbine",
+     "does": "the turbine spins"
+    },
+    "shots": [
+     {
+      "focus": [
+       "turbine",
+       "reactor"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "fix1",
+    "do": [
+     {
+      "p": "tower",
+      "v": "show",
+      "w": "tower"
+     },
+     {
+      "p": "steam",
+      "v": "start",
+      "w": "tower"
+     }
+    ],
+    "shows": {
+     "p": "tower",
+     "does": "the tower steams"
+    },
+    "shots": [
+     {
+      "focus": [
+       "tower"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [
+     {
+      "p": "pylon",
+      "v": "show",
+      "w": "lines"
+     },
+     {
+      "p": "pole",
+      "v": "show",
+      "w": "lines"
+     },
+     {
+      "p": "lines",
+      "v": "show",
+      "w": "lines"
+     },
+     {
+      "p": "lines",
+      "v": "live",
+      "w": "power"
+     }
+    ],
+    "shows": {
+     "p": "lines",
+     "does": "power runs along the lines"
+    },
+    "shots": [
+     {
+      "focus": [
+       "hall",
+       "tower",
+       "pylon"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you pack uranium so tightly it gets hot, you have a reactor."
+  },
+  {
+   "role": "problem",
+   "text": "But heat alone is useless, so its steam spins a turbine."
+  },
+  {
+   "role": "fix1",
+   "text": "So you add a cooling tower to turn the steam back to water."
+  },
+  {
+   "role": "name",
+   "text": "This is a power plant, and its lines carry the power away."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a power plant."
+  }
+ ]
+}

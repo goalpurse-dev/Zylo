@@ -73,6 +73,8 @@ export const FIELDS = Object.freeze({
   outline: { f: { of: "str", points: "path", opts: { obj: { color: "color", r: "num", closed: "bool", over: "bool" } } } },
   seepFlow: { f: { count: "num", width: "num", y0: "num", fall: "num", floor: "num" } },
   fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,spark,frost,swirl,motes", at: "vec3", size: "num" }, need: ["type", "at"] },
+  wires: { f: { points: "path", sag: "num", count: "num", spacing: "num", color: "color", glow: "color" }, need: ["points"] },
+  model: { f: { keyword: "str", pos: "vec3", rotY: "num", scale: "num", size: "num" }, need: ["keyword", "pos"] },
   road: { f: { points: "points", width: "num", surface: "one:asphalt,gravel,rail,path,track", lines: "bool", y: "num", bridge: { obj: { from: "num", to: "num", height: "num", type: "one:beam,arch,suspension", tower: "num" } } }, need: ["points"] },
   building: { f: { pos: "vec3", width: "num", depth: "num", floors: { each: { h: "num", color: "color" } }, roof: "one:flat,gable,dome,none", use: "one:house,mall,station,plant,factory,tower", walls: "color", roofColor: "color", cutaway: "one:front,none", windows: "bool", shafts: { each: { type: "one:elevator,escalator,stairs,chimney", x: "num", w: "num", from: "num", to: "num", z: "num" } } }, need: ["pos"] },
   waterBody: { f: { body: "one:sea,river,lake,pool", x0: "num", x1: "num", level: "num", z0: "num", depth: "num", waves: "bool", color: "color", murky: "bool", rise: "num", flood: "num" }, need: ["x0", "x1", "level"] },
