@@ -20,7 +20,7 @@
 // still missing a noun first gets a catalog visual, else a picture card shot cut into its time -> timeline.visualReport.
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
-import { notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
+import { MUSIC_WORDS, notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
 import { readDirection, directShots, compactProduction, checkProduction as checkProductionStrict, fixProduction, isCreatureSet, epicVariety, onScreen as dirOnScreen } from "./lib/direction.js";
@@ -32,13 +32,14 @@ import { coastPass, coastWords } from "./lib/coast.js";
 import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
 import { motionPass, styleReport } from "./lib/style.js";
 import { storyReport } from "./lib/storyPatterns.js";
-import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBible.js";
+import { buildWorldBible, applyBible, worldBibleProblems, genderOfPerson } from "./lib/worldBible.js";
 import { petsOf, petPass, petProblems, ensurePet, petShows, petStateFor } from "./lib/pets.js";
 import { noCards, addUnshown, cardProblems } from "./lib/cards.js";
 import { recipeFor, recipePass } from "./lib/recipes/index.js";
 import { camMoveProblems } from "./lib/camMove.js";
 import { cameraMovePass, storyShapePass, duplicateCastProblems, kitNeedsPass } from "./lib/shotFlow.js";
-import { criticalGate, storyObjects, kitFor } from "./lib/critical.js";
+import { criticalGate, storyObjects, kitFor, worldObject, SCENERY, headNoun as critHead, kitCoversAll } from "./lib/critical.js";
+import { propSensePass } from "./lib/propSense.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -299,6 +300,7 @@ function readWorld(script, idea) {
   }
   // untitled names: capitalized mid-sentence, the subject of a verb at least once, or named ("call her Bean")
   const alias = {};
+  const nick = {};   // nickname -> cast id ("squeak" -> "me")
   lines.forEach((text, li) => {
     const toks = tokens(text);
     toks.forEach((raw, k) => {
@@ -308,12 +310,20 @@ function readWorld(script, idea) {
       if (NOT_NAMES.has(n) || !nameWordOk(n) || FAMILY[n] || n === narrator.toLowerCase() || monster?.words?.includes(n) || people.has(n) || isPlaceName(toks, k)) return;
       const sentenceStart = k === 0 || /[.!?]["']?$/.test(toks[k - 1]);
       // "call her Bean" / "is Bean": the same sentence only ("My wrist is silent. Totally bare." is no naming)
-      const named = k >= 2 && /^(call|called|named|name's|is)$/i.test(norm(toks[k - 2])) && !/[.!?;:,]["']?$/.test(toks[k - 1]) || k >= 1 && /^(named)$/i.test(norm(toks[k - 1]));
+      const named = k >= 2 && /^(call|calls|called|named|name's|is)$/i.test(norm(toks[k - 2])) && !/[.!?;:,]["']?$/.test(toks[k - 1]) || k >= 1 && /^(named)$/i.test(norm(toks[k - 1]));
       const subject = !sentenceStart && !/'s$/.test(raw) && !/[.,!?]$/.test(raw) && SUBJECT_VERB.test(norm(toks[k + 1] ?? ""));
       // a sentence-start name that does something: said twice, or a word the dictionary doesn't know ("Gary has been...")
       const unknownWord = !ABSTRACT.has(n) && !ICONS[n] && !objectForNoun(n) && !heldKind(n) && !creatureFor([n]) && !/^(nobody|everyone|everybody|someone|somebody|nothing|everything|anyone|anybody|people|kids|children|grown|adults|parents|families|neighbors|neighbours|teachers|dogs|cats|babies|snow|rain|wind|night|nights|mornings|winter|summer|spring|autumn|today|tonight|yesterday|tomorrow|last|next|first|every|each|some|most|many|all|both|none|one|two|three|here|there|maybe|someday|once|still|even|soon|later|now|then|also|plus|instead|luckily|sadly|sometimes|always|never|usually|nobody's|mine)$/.test(n);
       const subject2 = sentenceStart && SUBJECT_VERB.test(norm(toks[k + 1] ?? "")) && !/[.,!?]$/.test(raw) && (lines.join(" ").split(word).length > 2 || unknownWord);
       if (!(named || subject || subject2)) return;
+      // PLANNER-BUGS 2026-11-08 (#5 "Kids call me Squeak" cast a second kid "Squeak"): a nickname ("call me X", "everyone
+      // calls her X") is the person it names, never another cast member
+      const callee = named && k >= 2 && /^(call|calls|called)$/i.test(norm(toks[k - 2])) ? norm(toks[k - 1]) : null;
+      if (callee && /^(me|him|her|them)$/.test(callee)) {
+        let to = callee === "me" ? "me" : null;
+        if (!to) { const before = toks.slice(0, k - 2).join(" "); /* the same line only ("Tilly, everyone calls her Squeak"); "call her Bean" alone names Bean */ let at = -1; for (const [id, p] of people) { if (id === "me") continue; const nm = String(p.name).split(/\s+/).at(-1); const i = before.lastIndexOf(nm); if (nm && i > at) { at = i; to = id; } } if (!to && before.includes(narrator)) to = "me"; }
+        if (to) { nick[n] = to; return; }
+      }
       const near = `${lines[li - 1] ?? ""} ${text}`.toLowerCase();
       const baby = /\bbaby\b/.test(near);
       const rel = (near.match(/\b(sister|brother)\b/) ?? [])[1];
@@ -336,6 +346,7 @@ function readWorld(script, idea) {
       // mid-sentence only, never right after a comma ("You see, Say your name..."), never a day / month / a plural of a cast name
       const sentenceStart = k === 0 || /[.!?,;:]["']?$/.test(toks[k - 1]);
       const sing = n.replace(/s$/, "");
+      if (nick[n]) return;
       if (sentenceStart || isPlaceName(toks, k) || NOT_NAMES.has(n) || !nameWordOk(n) || NOT_NAMES.has(sing) || CALENDAR.test(n) || FAMILY[n] || [n, sing].includes(narrator.toLowerCase()) || monster?.words?.includes(n) || people.has(n) || people.has(sing) || TITLE_WORDS.test(word)) return;
       if (lines.some((l) => new RegExp(`(^|[^A-Za-z'])${n}([^A-Za-z']|$)`).test(l))) return;   // also said in lowercase: a word, not a name
       looseNames.add(n);
@@ -352,7 +363,7 @@ function readWorld(script, idea) {
   const mk = rule.toLowerCase().match(/\b(numbers?|tags?|price|crowns?|stars?|halos?|labels?|scores?|timers?|counters?)\b/);
   // NO BADGES (owner, PERMANENT 2026-11-07): only a ring (a crown / halo / star: no word, no icon) is a rule marker
   const marker = mk && /crown|halo|star/.test(mk[1]) ? { on: "all", kind: "ring", text: "" } : null;
-  return { narrator, people, alias, monster, propKey, marker, looseNames, sign: signText(rule), baseSet: settingToSet(idea?.setting),
+  return { narrator, people, alias, monster, propKey, marker, looseNames, scriptLines: lines, nick, sign: signText(rule), baseSet: settingToSet(idea?.setting),
     townSet: settingToSet(idea?.setting) === "school" ? "school" : "street" };
 }
 
@@ -384,6 +395,8 @@ function poseFrom(toks, from, world) {
       if (!noun) return { pose: "stand" };
       if (world.people.has(noun) || world.alias[noun]) { const id = world.alias[noun] ?? noun; return { pose: "carry", hold: world.people.get(id)?.baby ? id : null, carries: id }; }
       if (/^(breath|time|look|turn|step|chance|nap|seat|deep)$/.test(noun)) return { pose: "stand" };
+      // "keeps the wolf from seeing him": a giant / creature is never in anyone's hands
+      if (world.giantWords?.has(noun) || world.giantWords?.has(noun.replace(/s$/, ""))) return { pose: "stand" };
       return { pose: "carry", hold: noun };
     }
     return { pose: rule[1] };
@@ -434,7 +447,8 @@ function whoIn(seg, world, ctx, refOf = () => undefined) {
       const id = norm(toks[k + 1]).replace(/s$/, (m) => (world.people.has(norm(toks[k + 1])) ? m : ""));
       if (world.people.has(id) || world.people.has(norm(toks[k + 1]))) { push(world.people.has(id) ? id : norm(toks[k + 1]), k, /'s/.test(toks[k + 1])); k++; continue; }
     }
-    if (ME_RE.test(n) || base === norm(world.narrator)) { push("me", k, false); continue; }
+    if (ME_RE.test(n) || base === norm(world.narrator) || world.nick?.[base] === "me") { push("me", k, false); continue; }
+    if (world.nick?.[base] && world.people.has(world.nick[base])) { push(world.nick[base], k, poss); ctx.last = world.nick[base]; continue; }
     if (FAMILY[base]) {
       const prevNorm = norm(toks[k - 1] ?? "");
       if (FAMILY[prevNorm] === "baby" && /^(sister|brother)$/.test(base)) continue; // "baby sister" counted once
@@ -537,6 +551,8 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   const lines = timeLines(script, W, duration);
   const segs = mergeShort(lines.flatMap(splitLine));
   const world = readWorld(script, idea);
+  // a story about sounds (bells, humming, a tune): its "note" is a musical note, never a letter (PLANNER-BUGS 2026-11-08)
+  world.music = (script.lines.map((l) => l.text).join(" ").toLowerCase().match(new RegExp(MUSIC_WORDS.source, "g")) ?? []).length >= 4;
   const title = script.title ?? idea.title ?? "Untitled";
   const mood = idea.mood ?? "horror";
   // the story director's production list (lib/direction.js): when given, it is the source of truth for worlds, giants,
@@ -565,6 +581,10 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   }
   // the EPIC giants are characters: "he" / "she" can be the Big Bad Wolf (lib/subjects.js beings)
   if (D) world.beings = [...new Set(Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]).filter((w) => !/s$/.test(w) || w.endsWith("ss")))];
+  // PLANNER-BUGS 2026-11-08 (#3: the colossal wolf became a human kid "Wolf" whom Old Tobin carried): a director giant /
+  // creature / monster name is never a person of the cast; its words are no person, no hand prop
+  world.giantWords = new Set(D ? creatureWordsOf(D) : []);
+  for (const w of world.giantWords) if (world.people.has(w) && !(D.production.cast ?? []).some((c) => c.id === w && (!c.kind || c.kind === "human"))) world.people.delete(w);
   // PETS (2026-11-07, lib/pets.js): the director's named animals are characters with one fixed look (tl.pets); their
   // names are beings ("He sniffed the ground" is Biscuit), never people the people kit would draw
   world.pets = D ? petsOf(D.production, script) : {};
@@ -679,6 +699,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
       const need = [...(sj.kind === "person" || sj.kind === "narrator" ? [sj.id] : []), ...sj.with.filter((id) => id !== "monster")];
       for (const id of need) {
         if (actors.some((a) => a.id === id) || carried.has(id)) continue;
+        if (world.giantWords?.has(id) && !world.people.has(id)) continue; // a giant is drawn by its giant system, never as a kid
         if (carryOver && id === sj.id) { actors = []; carryOver = null; }
         const gp = poseFrom(seg.toks.map((t) => t.raw), 0, world);
         const a = { id, pose: id === sj.id && gp.pose !== "carry" ? gp.pose : "stand", hold: null, neg: id === sj.id ? gp.neg : undefined };
@@ -722,7 +743,8 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     const V = { world, vw, who, ms, seg, keys, lineKeys, lines, names, pointRule, carryOver, fallbackTown, mood, ctx, mover, family, subject: sj,
       sentSubj: (i) => { const t = seg.toks[i]; return t ? lineSubj[t.line]?.sentences.find((x) => t.k >= x.k0 && t.k <= x.k1) ?? null : null; } };
     if (!insert) applyVisuals(draft, V);
-    actors = draft.actors;
+    actors = draft.actors = draft.actors.filter((a) => !(world.giantWords?.has(a.id) && !world.people.has(a.id)));
+    for (const a of actors) if (a.hold && world.giantWords?.has(a.hold) && !world.people.has(a.hold)) { a.hold = null; if (a.pose === "carry") a.pose = "stand"; }
     actors.forEach((a) => used.add(a.id));
     for (const o of draft.objects) if (o.babies) o.babies.forEach((id) => used.add(id));
     set = draft.set;
@@ -914,7 +936,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     captions: W.map((w) => ({ word: w.word, start: r3(w.start), end: r3(w.end) })),
     audio: { voice: "voice.wav", music: "music.wav" },
     lines: lines.map((L, i) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end), subject: lineSubj[i].id ?? null })),
-    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}), ...(world.own && Object.keys(world.own).length ? { own: world.own } : {}), ...(vw.pets ? { pets: vw.pets } : {}) },
+    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}), ...(world.own && Object.keys(world.own).length ? { own: world.own } : {}), ...(vw.pets ? { pets: vw.pets } : {}), ...(vw.nick ? { nick: vw.nick } : {}), ...(world.music ? { music: true } : {}) },
   };
   // the report's subject column: who each of the line's shots is about (cards and signs left out)
   const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
@@ -953,6 +975,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // VISUAL-FIX 2026-11-08 (owner's review of step-2 #1): the story shape (mini-sequences where the beat calls for them,
   // a wide of the world / town at least every ~12 s), then a camera move on every real shot (lib/shotFlow.js)
   const kn = kitNeedsPass(tl, { check: check4, kitFor: (u) => kitFor(u, { own: world.own }) });
+  // PLANNER-BUGS 2026-11-08 (lib/propSense.js): a held thing is the line's head noun in its sense, held by its owner; a
+  // scene object only where the line names it (each change kept only when the checks are no worse)
+  tl.propSense = propSensePass(tl, { check: check4, props: D?.production?.props ?? [], giantWords: world.giantWords ?? new Set() });
+  // PLANNER-BUGS 2026-11-08 (owner, NEW RULE): the world-defining object (the rule / premise is about it) opens the story
+  if (D) { tl.openingWorld = openingWorldOf(D.production, script, world); if (tl.openingWorld) tl.openingWorld.fix = openingWorldPass(tl, { check: check4 }); }
+  // every story-critical item still to build rides on a real shot of each line that names it (built -> shown there)
+  if (D && critical?.unresolved?.length) tl.criticalHosts = criticalNeedsPass(tl, critical, D, check4);
   tl.shape = storyShapePass(tl, { check: check4 });
   tl.shape.kitShown = kn;
   tl.shape.moves = cameraMovePass(tl);
@@ -1234,12 +1263,26 @@ function framingPass(shots, cast) {
 export function mergeDirectorCast(production, world) {
   const key = (s) => String(s ?? "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
   const rename = new Map();
+  // PLANNER-BUGS 2026-11-08 (owner: "Grandma" next to Grandma Odette, "Grandpa" next to Grandpa Ozzie): the director's
+  // person carries its family role ("grandma" id, "Grandma Odette", "older sister") and its he / she (the look's beard /
+  // shawl) to the planner's person: the story's bare "Grandma" IS Odette, "He" after Old Tobin is Tobin
+  const link = (c, T) => {
+    const p = world.people.get(T);
+    if (!p || T === "me") return;
+    const g = genderOfPerson({ name: c.name ?? "", look: `${c.look ?? ""} ${c.job ?? ""}`, id: "" });
+    if (g && !p.gender) p.gender = g;
+    world.alias ??= {};
+    const own = `${c.id ?? ""} ${c.name ?? ""}`.toLowerCase().split(/[^a-z]+/);
+    const rels = [...own.map((w) => FAMILY[w]), (`${c.look ?? ""} ${c.job ?? ""}`.toLowerCase().match(/\b(sister|brother)\b/) ?? [])[1]].filter((r) => r && r !== "baby");
+    for (const r of new Set(rels)) if (!world.alias[r] && r !== T) world.alias[r] = T;
+  };
   for (const c of production.cast ?? []) {
     // a person the script read as a bare capitalized word ("The Keeper sat alone" -> a kid): the director's role wins
     if (c?.id && c.id !== "me" && world.people.has(c.id) && (!c.kind || c.kind === "human") && c.role) {
       const p = world.people.get(c.id);
       if (c.role === "elder" || c.role === "adult") { p.role = "adult"; if (c.role === "elder") p.elder = true; }
       delete p.weak;
+      link(c, c.id);
     }
     if (!c?.id || c.id === "me" || world.people.has(c.id)) continue;
     const words = key(c.id).split(" ").filter(Boolean), name = key(c.name);
@@ -1248,14 +1291,24 @@ export function mergeDirectorCast(production, world) {
     const meName = key(world.people.get("me")?.name);
     if (c.role === "narrator" || (name && meName && name === meName)) { rename.set(c.id, "me"); continue; }
     const hit = [...world.people.entries()].find(([id, p]) => id !== "me" && ((name && key(p.name) === name) || key(p.name) === words.join(" ") || (words.length > 1 && words.at(-1) === id && key(p.name).endsWith(id))));
-    if (hit) { rename.set(c.id, hit[0]); continue; }
+    if (hit) { rename.set(c.id, hit[0]); link(c, hit[0]); continue; }
+    // a bare role ("grandma" / "Grandma") when the script names that person ("Grandma Ida"): the same person
+    const fam = FAMILY[name] ?? (words.length === 1 && !name.includes(" ") ? FAMILY[words[0]] : null);
+    if (fam && fam !== "baby") {
+      const same = [...world.people.entries()].filter(([id, p]) => id !== "me" && FAMILY[String(p.name ?? "").split(/\s+/)[0].toLowerCase()] === fam && String(p.name).split(/\s+/).length > 1);
+      if (same.length === 1) { rename.set(c.id, same[0][0]); link(c, same[0][0]); continue; }
+      // the script already tied the role to a named person ("my baby sister ... We call her Bean")
+      const tiedTo = world.alias?.[fam];
+      if (tiedTo && tiedTo !== c.id && world.people.has(tiedTo)) { rename.set(c.id, tiedTo); link(c, tiedTo); continue; }
+    }
     if (c.kind && c.kind !== "human") continue;
     const nice = c.name || words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
-    world.people.set(c.id, { name: nice, role: c.role === "kid" || c.role === "narrator" ? "kid" : c.role === "baby" ? "kid" : "adult", ...(c.role === "baby" ? { baby: true } : {}) });
+    world.people.set(c.id, { name: nice, role: c.role === "kid" || c.role === "narrator" ? "kid" : c.role === "baby" ? "kid" : "adult", ...(c.role === "baby" ? { baby: true } : {}), ...(c.role === "elder" ? { elder: true } : {}) });
     // the director's "juno: tiny sister": the story's "my sister" is Juno (run 1620fc3e cast a "Sister" and a "Juno")
-    const rel = `${c.look ?? ""} ${c.job ?? ""}`.toLowerCase().match(/\b(sister|brother)\b/)?.[1];
-    if (rel && world.alias && !world.alias[rel]) world.alias[rel] = c.id;
+    link(c, c.id);
   }
+  // the people the script itself ties to a role ("My big sister Wren", "Wren, my sister", "Grandma Odette")
+  scriptRelations(world);
   // a weak name (a sentence-start word only) the director's cast does not know is a thing, not a person
   const known = new Set((production.cast ?? []).flatMap((c) => [c.id, key(c.id), key(c.name)]).filter(Boolean));
   if ((production.cast ?? []).length) for (const [id, p] of [...world.people]) if (p.weak && !known.has(id) && !known.has(key(p.name)) && ![...rename.values()].includes(id)) world.people.delete(id);
@@ -1269,6 +1322,140 @@ export function mergeDirectorCast(production, world) {
   for (const L of out.lines ?? []) for (const k of Object.keys(L)) L[k] = swap(L[k]);
   for (const list of ["props", "crowds", "creatures", "vehicles"]) for (const x of out[list] ?? []) for (const k of ["heldBy", "of", "owner"]) if (k in x) x[k] = swap(x[k]);
   return out;
+}
+
+/**
+ * The family roles the script ties to a named person (PLANNER-BUGS 2026-11-08): "my big sister Wren" / "Wren, my sister"
+ * / a "Grandma Odette" title -> world.alias.sister = "wren", alias.grandma = "odette" (only when one person fits).
+ */
+export function scriptRelations(world) {
+  world.alias ??= {};
+  const idOfName = (nm) => { const n = String(nm).toLowerCase(); const hits = [...world.people.entries()].filter(([id, p]) => id !== "me" && (id === n || String(p.name ?? "").toLowerCase().split(/[^a-z]+/).filter(Boolean).at(-1) === n)); return hits.length === 1 ? hits[0][0] : null; };
+  const FW = Object.keys(FAMILY).filter((w) => w !== "baby").join("|");
+  const ADJ = "(?:(?:big|little|older|younger|baby|twin|old|kid|great|favou?rite|only)\\s+)*";
+  const found = {};
+  const put = (rel, id) => { if (!rel || !id || rel === "baby") return; (found[rel] ??= new Set()).add(id); };
+  for (const text of world.scriptLines ?? []) {
+    for (const m of text.matchAll(new RegExp(`\\b(?:my|our|his|her)\\s+${ADJ}(${FW})\\s*,?\\s+([A-Z][a-z]+)\\b`, "gi"))) put(FAMILY[m[1].toLowerCase()], idOfName(m[2]));
+    for (const m of text.matchAll(new RegExp(`\\b([A-Z][a-z]+),\\s+(?:my|our)\\s+${ADJ}(${FW})\\b`, "gi"))) put(FAMILY[m[2].toLowerCase()], idOfName(m[1]));
+  }
+  // a family title in the name ("Grandma Odette", "Grandpa Ozzie")
+  for (const [id, p] of world.people) if (id !== "me") { const t = String(p.name ?? "").split(/\s+/)[0].toLowerCase(); if (FAMILY[t] && t !== "baby" && String(p.name).split(/\s+/).length > 1) put(FAMILY[t], id); }
+  for (const [rel, ids] of Object.entries(found)) if (ids.size === 1 && !world.alias[rel]) { const id = [...ids][0]; if (id !== rel) world.alias[rel] = id; }
+  return world.alias;
+}
+
+/**
+ * PLANNER-BUGS 2026-11-08: one person under two names. A cast member named only by a role word ("Grandma") next to a
+ * named one with that role ("Grandma Odette", alias grandma -> odette), a nickname cast as a second person ("Squeak" for
+ * Tilly), or a giant / creature cast as a person ("Wolf" for the colossal wolf) -> problems (checkTimeline fails them).
+ */
+export function roleDuplicateProblems(tl) {
+  const out = [];
+  const cast = tl?.cast ?? {}, vw = tl?.visualWorld ?? {};
+  const k = (s) => String(s ?? "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
+  // the script's own ties ("my big sister Wren", "Kids call me Squeak"), read again from the lines
+  const text = (tl?.lines ?? []).map((L) => L.text ?? L).join(" ");
+  const tied = {}, nick = { ...(vw.nick ?? {}) };
+  for (const m of text.matchAll(/\b(?:[Mm]y|[Oo]ur|[Hh]is|[Hh]er)\s+(?:(?:big|little|older|younger|twin|old|great)\s+)*(mom|mum|mother|dad|father|grandma|granny|nana|grandpa|grandad|brother|sister)\s*,?\s+([A-Z][a-z]+)/g)) tied[FAMILY[m[1].toLowerCase()]] = m[2].toLowerCase();
+  for (const m of text.matchAll(/\bcalls?\s+me\s+([A-Z][a-z]+)/g)) nick[m[1].toLowerCase()] ??= "me";
+  for (const [id, c] of Object.entries(cast)) {
+    const n = k(c?.name);
+    const rel = FAMILY[n] ?? FAMILY[id];
+    if (rel && rel !== "baby") {
+      const other = Object.entries(cast).find(([oid, o]) => oid !== id && (vw.alias?.[rel] === oid || (tied[rel] && (oid === tied[rel] || k(o.name).split(" ").at(-1) === tied[rel])) || (k(o.name).split(" ")[0] === n && k(o.name).split(" ").length > 1)));
+      if (other) out.push(`cast: "${c.name}" (${id}) is ${other[1].name} (${other[0]}): a role word is the named person, one person = one cast id`);
+    }
+    if (id !== "me" && (nick[id] || nick[n])) out.push(`cast: "${c.name}" (${id}) is a nickname of ${nick[id] ?? nick[n]}: one person = one cast id`);
+  }
+  const creatureWords = new Set();
+  for (const c of [...Object.values(tl?.world?.creatures ?? {}), ...(tl?.production?.creatures ?? [])]) for (const w of k(`${c.id ?? ""} ${c.species ?? ""} ${c.kind ?? ""}`).split(" ")) if (w.length > 2) creatureWords.add(w);
+  for (const id of Object.keys(tl?.giants ?? {})) for (const w of k(id).split(" ")) if (w.length > 2) creatureWords.add(w);
+  for (const [id, c] of Object.entries(cast)) if (!/^town\d$|^me$/.test(id) && (creatureWords.has(id) || creatureWords.has(k(c?.name)))) out.push(`cast: "${c.name}" (${id}) is a giant / creature of the story, never a person`);
+  return out;
+}
+
+// ---------------------------------------------------------------- the opening shows the world (PLANNER-BUGS 2026-11-08)
+/** the world-defining object of the story (lib/critical.js worldObject) + how the kit shows it */
+function openingWorldOf(production, script, world) {
+  const wo = worldObject({ production, script });
+  if (!wo) return null;
+  if (wo.kind === "creature") return { ...wo };
+  const head = critHead(wo.name);
+  const k = kitFor(wo.name, { own: world.own });
+  const covered = k?.kind === "object" && kitCoversAll(wo.name, k.name, OBJECT_CATALOG[k.name]?.aliases ?? []);
+  return { ...wo, kit: covered ? k.name : null, scenery: !!(head && SCENERY.has(head)) };
+}
+/** does a shot show the world object? (its kit object, the director's item, its builder need, the creature world) */
+function showsWorld(s, wo) {
+  if (!s || !wo) return false;
+  if (wo.kind === "creature") return /^creature:/.test(s.set ?? "") || (s.giants ?? []).some((g) => g.id === "world" || g.id === wo.id);
+  const nm = String(wo.name).toLowerCase();
+  if ((s.objects ?? []).some((o) => o.item === wo.id || o.needId === wo.id || o.propId === wo.id || (wo.kit && o.name === wo.kit) || (wo.scenery && o.name === "house_front"))) return true;
+  if ((s.needs ?? []).some((n) => n.item === wo.id || String(n.name ?? "").toLowerCase() === nm)) return true;
+  return (s.unshown ?? []).some((u) => String(u).toLowerCase() === nm);
+}
+const peopleShot = (s) => (s?.actors ?? []).length > 0 || (s?.crowds ?? []).length > 0;
+/** the rule: shot 1 or 2 shows the world object, and no people / crowd shot comes before it */
+export function openingWorldProblems(tl) {
+  const wo = tl?.openingWorld;
+  if (!wo) return [];
+  const shots = (tl.shots ?? []).filter((s) => s.camera !== "insert");
+  const first = shots.findIndex((s) => showsWorld(s, wo));
+  if (first < 0 || first > 1) return [`opening: the world object "${wo.name}" is not in the first two shots (the story's world first, then its people)`];
+  if (first === 1 && peopleShot(shots[0])) return [`opening: shot 0 shows people / a crowd before the world object "${wo.name}"`];
+  return [];
+}
+/** the fix: the first shot shows the world object (its kit object, else the builder's need on it), a wide camera */
+function openingWorldPass(tl, { check = null } = {}) {
+  const wo = tl.openingWorld;
+  if (!wo || !openingWorldProblems(tl).length) return null;
+  const s = (tl.shots ?? []).find((x) => x.camera !== "insert");
+  if (!s) return null;
+  const saved = JSON.stringify(s), before = check ? check(tl) : null;
+  if (wo.kind === "creature") { if (!(s.giants ?? []).some((g) => g.id === "world")) s.giants = [{ id: "world", spot: "far", action: "idle", facing: "camera" }, ...(s.giants ?? [])]; }
+  else if (wo.kit || wo.scenery) s.objects = [{ name: wo.kit ?? "house_front", spot: "back", facing: "camera", item: wo.id }, ...(s.objects ?? []).filter((o) => o.spot !== "back")];
+  else unshownOn(s, String(wo.name).toLowerCase(), { kind: "object", name: wo.name, label: wo.name, source: "director", item: wo.id, hint: "the world-defining object: the opening establishing shot" });
+  if (!["aerial", "establish", "wide"].includes(s.camera)) s.camera = "establish";
+  if (check && Object.keys(before).some((k) => (check(tl)[k] ?? 0) > (before[k] ?? 0) && k !== "timeline")) { Object.assign(s, JSON.parse(saved)); for (const k of Object.keys(s)) if (!(k in JSON.parse(saved))) delete s[k]; return { applied: false }; }
+  return { applied: true, how: wo.kind === "creature" ? "creature world" : wo.kit ? `kit ${wo.kit}` : "builder need" };
+}
+
+/**
+ * Every unresolved story-critical item (lib/critical.js) gets its builder need on a real shot of every line that names it
+ * (the director's per-line needs, else the item's head noun in the line): once built, lib/builder/apply.js shows it in
+ * those shots instead of leaving it unshown or as a lookalike. Kept only when the checks are no worse.
+ */
+function criticalNeedsPass(tl, critical, D, check = null) {
+  const added = [];
+  const lines = tl.lines ?? [];
+  for (const u of critical.unresolved ?? []) {
+    const head = critHead(u.name);
+    const nm = String(u.name).toLowerCase();
+    const named = new Set((D.production.lines ?? []).filter((L) => (L.needs ?? []).includes(u.id) || L.subject === u.id).map((L) => L.line));
+    // the head noun only when the director's lines don't place it and no other prop shares that head ("bell" is five bells)
+    const shared = (D.production.props ?? []).filter((p) => critHead(p.name) === head).length > 1;
+    if (head && !named.size && !shared) lines.forEach((L, i) => { if (new RegExp(`\\b${head}(e?s)?\\b`, "i").test(L.text ?? "")) named.add(i); });
+    for (const li of named) {
+      const own = (tl.shots ?? []).filter((s) => (s.lines ?? [s.line]).includes(li) && s.camera !== "insert");
+      if (!own.length || own.some((s) => (s.unshown ?? []).includes(nm) || (s.needs ?? []).some((n) => n.item === u.id))) continue;
+      const host = own.find((s) => s.line === li) ?? own[0];
+      const before = check ? check(tl) : null, saved = JSON.stringify({ unshown: host.unshown, needs: host.needs });
+      unshownOn(host, nm, { kind: "object", name: u.name, label: u.name, source: "director", item: u.id, hint: `story-critical (${(u.why ?? []).join("+")})` });
+      if (check) { const now = check(tl); if (Object.keys(before).some((k) => (now[k] ?? 0) > (before[k] ?? 0))) { const o = JSON.parse(saved); if (o.unshown) host.unshown = o.unshown; else delete host.unshown; if (o.needs) host.needs = o.needs; else delete host.needs; continue; } }
+      added.push(`L${li} ${u.name}`);
+    }
+  }
+  return added;
+}
+
+/** the director's giants / creatures as words (ids, species, kinds, aliases, name words): never a person, never held */
+function creatureWordsOf(D) {
+  const out = new Set();
+  const add = (s) => { for (const w of String(s ?? "").toLowerCase().split(/[^a-z]+/)) if (w.length > 2 && !/^(the|big|giant|huge|old|great|little|small|colossal)$/.test(w)) out.add(w); };
+  for (const [id, g] of Object.entries(D?.giants ?? {})) { add(id); add(g.kind); for (const a of g.aliases ?? []) add(a); }
+  for (const c of D?.production?.creatures ?? []) { add(c.id); add(c.species); add(c.name); }
+  return [...out];
 }
 
 function familyPerson(id) {
@@ -1285,12 +1472,14 @@ function visualWorld(world) {
     monster: world.monster ? { key: world.monster.key, keys: world.monster.keys ?? [world.monster.key], words: world.monster.words ?? [world.monster.key], name: world.monster.name } : null,
     looseNames: new Set(world.looseNames ?? []), prop: world.propKey ?? null, ...(world.beings?.length ? { beings: world.beings } : {}),
     ...(world.own && Object.keys(world.own).length ? { own: world.own } : {}),
+    ...(world.nick && Object.keys(world.nick).length ? { nick: world.nick } : {}),
+    ...(world.music ? { music: true } : {}),
     ...(world.pets && Object.keys(world.pets).length ? { pets: petVw(world.pets) } : {}),
   };
 }
 function visualWorldFrom(v) {
   return { people: new Map(Object.entries(v.people ?? {}).map(([id, name]) => [id, { name }])), alias: v.alias ?? {}, narrator: v.narrator ?? "Me",
-    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}), ...(v.pets ? { pets: v.pets } : {}), ...(v.own ? { own: v.own } : {}) };
+    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}), ...(v.pets ? { pets: v.pets } : {}), ...(v.own ? { own: v.own } : {}), ...(v.nick ? { nick: v.nick } : {}), ...(v.music ? { music: true } : {}) };
 }
 /** what the dictionary needs of each pet (lib/visuals.js petAt, plan.mjs forceKey): its words, nouns, kit object */
 function petVw(pets) {
@@ -1842,7 +2031,7 @@ function genderMap(world) {
 }
 /** Every line's subjects, read in order with one story context. */
 function subjectsFor(lines, vw, gender) {
-  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender, ...(vw.beings?.length ? { beings: vw.beings } : {}), ...(vw.pets ? { pets: vw.pets } : {}) };
+  const sctx = { people: vw.people, alias: vw.alias, narrator: vw.narrator, monster: vw.monster, looseNames: [...(vw.looseNames ?? [])], prop: vw.prop, gender, ...(vw.beings?.length ? { beings: vw.beings } : {}), ...(vw.pets ? { pets: vw.pets } : {}), ...(vw.nick ? { nick: vw.nick } : {}), ...(vw.music ? { music: true } : {}) };
   return lines.map((L) => subjectOf(L.text, sctx));
 }
 /**
@@ -1965,6 +2154,7 @@ function fixSubjectIssue(shots, i, p, aux, cast) {
   const addPerson = (id) => {
     const have = s.actors.find((a) => a.id === id) ?? s.actors.find((a) => a.hold === id);
     if (have) return have;
+    if (world.giantWords?.has(id) && !world.people.has(id)) return null; // a giant / creature is never a person
     if (isBaby(id)) {
       if (s.set === "bedroom" && !s.monsterState) {
         const spot = freeSpot(s);
@@ -2141,6 +2331,8 @@ export function checkTimeline(tl) {
   // VISUAL-FIX 2026-11-08: one move per shot from the known moves; one person = one cast id = one look
   out.push(...camMoveProblems(shots));
   out.push(...duplicateCastProblems(tl));
+  out.push(...roleDuplicateProblems(tl));
+  out.push(...openingWorldProblems(tl));
   if (tl.pets || (tl.shots ?? []).some((s) => (s.objects ?? []).some((o) => o.pet))) out.push(...petProblems(tl)); // PETS (lib/pets.js)
   const caps = tl.captions ?? [];
   if (!caps.length) out.push("no captions");

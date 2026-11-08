@@ -98,7 +98,7 @@ function normCtx(ctx) {
   people.delete("me");
   const alias = ctx.alias ?? {};
   const monster = ctx.monster ? { key: ctx.monster.key ?? norm(String(ctx.monster.name ?? "").replace(/^the\s+/i, "")), name: ctx.monster.name ?? "the monster", keys: ctx.monster.keys, words: ctx.monster.words } : null;
-  const vw = { people, alias, narrator: ctx.narrator ?? "Me", monster, looseNames: new Set(ctx.looseNames ?? []), prop: ctx.prop ?? null, ...(ctx.pets ? { pets: ctx.pets } : {}) }; // pets: lib/pets.js (2026-11-07)
+  const vw = { people, alias, narrator: ctx.narrator ?? "Me", monster, looseNames: new Set(ctx.looseNames ?? []), prop: ctx.prop ?? null, ...(ctx.pets ? { pets: ctx.pets } : {}), ...(ctx.nick ? { nick: ctx.nick } : {}), ...(ctx.music ? { music: true } : {}) }; // pets: lib/pets.js (2026-11-07)
   const gender = { ...(ctx.gender ?? {}) };
   const genderFor = (id) => {
     if (id in gender) return gender[id];
@@ -118,7 +118,7 @@ const touch = (st, id) => { if (!id || id === "me") return; const i = st.persons
 function resolveGendered(word, N) {
   const g = /^(she|her|hers|herself)$/.test(word) ? "f" : "m";
   const st = N.state;
-  return recentPerson(st, (id) => (N.beings?.size && id.startsWith("thing:")) || N.genderFor(id) === g) ?? recentPerson(st, (id) => N.genderFor(id) == null) ?? null;
+  return recentPerson(st, (id) => (id.startsWith("thing:") ? !!N.beings?.has(id.slice(6)) && N.genderFor(id) !== (g === "f" ? "m" : "f") : N.genderFor(id) === g)) ?? recentPerson(st, (id) => N.genderFor(id) == null) ?? null;
 }
 
 /** it -> the monster or a recent non-human thing (never a person). */
@@ -230,7 +230,10 @@ function subjectAt(toks, keys, k, i1, N, prev, keyAt) {
       const nx = toks[j + 1];
       // "the bakery's for sale": a contraction of "is"
       if (!nx || PREP.test(nx.c) || DET.test(nx.c) || ADVERB.test(nx.c) || isVerbTok(nx) || tj.end) { head = j; break; }
-      owner = x?.kind === "person" ? x.id : x?.kind === "monster" ? "monster" : tj.c;
+      // PLANNER-BUGS 2026-11-08 (#3 "the wolf's huge nose" made a human kid "Wolf"): a being / creature's own body part
+      // is that creature (a thing), never a person of that name
+      const ow = singular(tj.c.replace(/'s$/, ""));
+      owner = x?.kind === "person" ? x.id : x?.kind === "monster" ? "monster" : N.beings?.has(ow) || N.beings?.has(tj.c) ? `thing:${N.beings.has(ow) ? ow : tj.c}` : tj.c;
       det = det ?? "poss";
       continue;
     }
@@ -251,7 +254,7 @@ function subjectAt(toks, keys, k, i1, N, prev, keyAt) {
     : owner === "its" ? (N.vw.monster && st.n - st.monsterAt <= 10 ? "monster" : null) : owner === "their" ? "group" : owner === "your" ? null : owner;
   // body parts, names, voices: whoever they belong to
   if (BODY.test(h)) {
-    if (ownerId) return { id: ownerId, kind: ownerId === "me" ? "narrator" : ownerId === "monster" ? "monster" : ownerId === "group" ? "group" : "person", via: "owner", ref: owner === "his" || owner === "her" ? ownerId : undefined };
+    if (ownerId) return { id: ownerId, kind: ownerId === "me" ? "narrator" : ownerId === "monster" ? "monster" : ownerId === "group" ? "group" : /^thing:/.test(ownerId) ? "thing" : "person", via: "owner", ref: owner === "his" || owner === "her" ? ownerId : undefined };
     if (prev?.id && (prev.kind === "monster" || prev.kind === "person" || prev.kind === "narrator")) return { id: prev.id, kind: prev.kind, via: "body" };
     return N.vw.monster ? { id: "monster", kind: "monster", via: "body" } : null;
   }

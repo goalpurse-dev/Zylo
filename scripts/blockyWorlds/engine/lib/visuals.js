@@ -22,7 +22,7 @@ export const OBJECT_CATALOG = Object.freeze({
   ice_cream_truck: { aliases: ["ice cream truck", "ice cream van", "ice cream", "truck", "van"], states: ["mime"], big: true },
   football_field: { aliases: ["football", "soccer", "team", "stadium", "field", "game", "match", "crowd", "players", "bleachers"], states: [], big: true },
   birthday_party: { aliases: ["birthday", "party", "parties", "cake", "balloons", "presents", "guests"], states: [], big: false },
-  bakery: { aliases: ["bakery", "baker", "bread", "shop"], states: ["for_sale"], big: true },
+  bakery: { aliases: ["bakery", "baker", "shop"], states: ["for_sale"], big: true },
   car: { aliases: ["car", "cars", "alarm", "car alarm", "honk", "horn"], states: ["alarm"], big: false },
   photo_set: { aliases: ["photo", "photos", "picture", "pictures", "camera", "school photo", "portrait", "selfie"], states: [], big: false },
   crib: { aliases: ["crib", "cribs", "cradle", "babies"], states: [], big: false },
@@ -150,6 +150,22 @@ const VERBISH = /^(is|are|was|were|has|had|have|says|said|goes|went|gets|got|mak
 //           marker ("tag" | "icon" | "any"), insertWords, monster, people (min people on screen), body (a person or the monster)
 //   also:   words this rule's visual also shows when they're in the same line (not separate keys)
 const W = (s) => new RegExp(`\\b(?:${s})\\b`);
+
+// PLANNER-BUGS 2026-11-08 (owner: "musical note -> letter", "birthday cards -> a birthday party", "the turtle's steps ->
+// stairs"): a word in another sense, or a modifier of another noun, is not that rule's thing
+export const MUSIC_WORDS = /\b(rang|ring|rings|ringing|rung|hum|hums|hummed|humming|sing|sang|sung|song|songs|bell|bells|tune|tunes|melody|music|musical|chime|chimes|chimed|clang|whistle|played|plays|sound|sounds|sour|pitch|lullaby)\b/;
+const THING_KINDS = new Set(["object", "insert", "hold", "place", "people"]);
+function senseSkip(rule, m, toks, vw = {}) {
+  const line = toks.map((t) => t.c).join(" ");
+  const one = m.k === m.end, w = toks[m.k]?.c ?? "", next = toks[m.end + 1];
+  // a musical note: the line or the story is about sounds (bells, humming, a tune) and the line names no paper
+  if (rule.id === "letter" && /^notes?$/.test(w) && (MUSIC_WORDS.test(line) || vw?.music) && !/\b(paper|wrote|write|writes|written|read|reads|desk|envelope|pencil|pen)\b/.test(line)) return true;
+  if (/^(stairs|steps?)$/.test(rule.id) || (rule.object?.name === "stairs")) if (/^steps?$/.test(w) && m.k > 0 && toks[m.k - 1].poss) return true; // "the turtle's steps": footsteps
+  // a one-word thing right before another noun is that noun's modifier ("birthday cards", "coin bank", "music box")
+  if (one && THING_KINDS.has(rule.kind) && next && !toks[m.end].end && !toks[m.end].comma && !toks[m.end].poss && /^[a-z]{3,}$/.test(next.c) && !STOP_MOD.test(next.c) && (heldKind(next.c) || objectForNoun(next.c) || ICONS[next.c] || ICONS[singular(next.c)] || /^(cards?|bank|banks|jar|jars|box|boxes|duster|dusters|shop|shops|loaves|gauges?|slot|slots|pipe|pipes|elevator|hats?)$/.test(next.c))) return true;
+  return false;
+}
+const STOP_MOD = /^(and|or|but|the|a|an|of|in|on|at|to|for|with|from|is|was|are|were|that|this|it|its|his|her|my|our|their|then|so|too|very|all|every|each|again|now|up|down|out|off|over|away|back)$/;
 export const RULES = [
   // ---------------- objects
   { id: "ice_cream_truck", kind: "object", label: "ice cream truck", re: W("ice ?cream(?: truck| van| man)?s?|icecream(?: truck| van)?s?"),
@@ -387,6 +403,8 @@ export function extractKeys(text, vw, opts = {}) {
     if (c === norm(vw.narrator) && k > 0 && /^(im|i am|called|named)$/.test(toks[k - 1].c)) { keys.push({ kind: "name", label: vw.narrator, name: vw.narrator, on: "me", k: k - 1, end: k }); take(k, k); return; }
     if (c === norm(vw.narrator) && c !== "me") { keys.push({ kind: "person", id: "me", label: vw.narrator, k, end: k, poss: t.poss }); take(k, k); return; }
     if (vw.people.has(c) && c !== "me") { keys.push({ kind: "person", id: c, label: vw.people.get(c).name, k, end: k, poss: t.poss }); take(k, k); return; }
+    // a nickname ("Kids call me Squeak"): the person it names (PLANNER-BUGS 2026-11-08)
+    if (vw.nick?.[c] && (vw.nick[c] === "me" || vw.people.has(vw.nick[c]))) { keys.push({ kind: "person", id: vw.nick[c], label: t.raw.replace(/[^A-Za-z']/g, ""), k, end: k, poss: t.poss }); take(k, k); return; }
     if (FAMILY[c]) {
       if ((c === "sister" || c === "brother") && toks[k - 1]?.c === "baby") { const id = vw.alias.baby ?? vw.alias[c] ?? "baby"; keys.push({ kind: "person", id, label: `baby ${c}`, k: k - 1, end: k, poss: t.poss }); take(k - 1, k); return; }
       const id = vw.alias[FAMILY[c]] ?? FAMILY[c];
@@ -404,6 +422,7 @@ export function extractKeys(text, vw, opts = {}) {
       if (!free(m.k, m.end)) continue;
       if (rule.doer === "person" && !personDoer(toks, m.k, vw)) continue;
       if (rule.id === "sign" && /^(language)$/.test(toks[m.end + 1]?.c ?? "")) continue;
+      if (senseSkip(rule, m, toks, vw)) continue;
       // VISUAL-FIX 2026-11-08: the story's own thing ("the towers" = its stacked block towers) is never a generic rule's
       // lookalike (the water tower); step 3 shows it as the story object
       if (vw.own && rule.kind !== "action" && rule.kind !== "marker") { const last = toks[m.end]?.c ?? ""; const own = vw.own[last] ?? vw.own[singular(last)]; if (own && rule.object?.name !== own) continue; }
@@ -461,6 +480,9 @@ export function extractKeys(text, vw, opts = {}) {
     if (!t.end && !t.comma && nx && vw.own && (vw.own[nx.c] || vw.own[singular(nx.c)])) return;
     if (!t.end && !t.comma && nx && (ruleOwned[k + 1] || (!used[k + 1] && !STOP.has(nx.c) && !VERBISH.test(nx.c) && !ABSTRACT.has(nx.c) && (ICONS[nx.c] || ICONS[singular(nx.c)])))) return;
     const owner = k > 0 && toks[k - 1].poss ? toks[k - 1].raw.replace(/[^A-Za-z']/g, "").replace(/'s$/i, "") : null;
+    // PLANNER-BUGS 2026-11-08: "the turtle's steps" are its footsteps (its own motion), a "note" in a music story is a sound
+    if (owner && /^(steps?|footsteps?)$/.test(c)) return;
+    if (/^notes?$/.test(c) && (vw.music || MUSIC_WORDS.test(toks.map((x) => x.c).join(" ")))) return;
     const ownObj = vw.own ? vw.own[c] ?? vw.own[singular(c)] ?? null : null;
     keys.push({ kind: "noun", label: c, noun: singular(c), k, end: k, icon: icon ?? GENERIC_ICON, phrase: owner ? `${owner}'s ${c}` : c, neg: negAt(k), ...(ownObj ? { object: ownObj } : {}) });
     take(k, k);

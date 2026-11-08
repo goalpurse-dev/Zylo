@@ -75,7 +75,7 @@ export const THINGS = Object.freeze({
   barn: { aliases: A("barn,barns,barnyard,farm,farms,henhouse,coop,stable,shed,sheds,farmhouse"), big: true, place: "street", states: ["on"], state: "on", sets: ["woods"], icon: "🛖" },
   windmill: { aliases: A("windmill,windmills,mill"), big: true, place: "street", states: ["on"], state: "on", sets: ["woods"], icon: "🌬️" },
   haystack: { aliases: A("haystack,haystacks,hay,haybale,haybales,hay bale,hay-bale,bale,bales,straw"), place: "floor", states: ["on"], state: "on", sets: ["woods"], icon: "🌾" },
-  tractor: { aliases: A("tractor,tractors,wheelbarrow,wheelbarrows,cart,carts,wagon,wagons"), place: "street", states: ["on"], state: "on", icon: "🚜" },
+  tractor: { aliases: A("tractor,tractors,wheelbarrow,wheelbarrows,wagon,wagons"), place: "street", states: ["on"], state: "on", icon: "🚜" },
   garden: { aliases: A("garden,gardens,flower,flowers,tulip,tulips,vegetable,vegetables,veggies,carrot,carrots,lettuce,cabbage,cornfield,corn,crops,houseplant,houseplants,plant,plants"), place: "floor", states: ["on"], state: "on", icon: "🌷" },
   pumpkin: { aliases: A("pumpkin,pumpkins,gourd"), place: "floor", states: ["on"], state: "on", icon: "🎃" },
   // wild / underground
@@ -110,11 +110,13 @@ export const HELD = Object.freeze({
   cookie: A("cookie,cookies"), apple: A("apple,apples,fruit,pear,orange"), cake: A("cake,cakes,cupcake,cupcakes,muffin,muffins"),
   jar: A("jar,jars,jam,tin,tins,can,cans,bottle,bottles,cocoa,honey,pickle,pickles,pepper,salt,spice,spices,water,juice,milk,potion,potions,soda,lemonade,paint,paints,glue,syrup"), spoon: A("spoon,spoons,fork,forks,ladle,knife"),
   pencil: A("pencil,pencils,crayon,crayons,chalk,pen,pens,marker,paintbrush,brush"), flag: A("flag,flags,banner,pennant"),
-  ring: A("ring,rings"), star: A("star,stars,gold star,medal,medals,badge,badges,coin,coins,gold,trophy"),
+  ring: A("ring,rings"), star: A("star,stars,gold star,medal,medals,badge,badges,trophy"),
+  // PLANNER-BUGS 2026-11-08 (#1 coin -> gold star, #2 mirror held as "glass", #5 feather duster -> mop): their own props
+  coin: A("coin,coins,gold coin,gold coins,penny,pennies,token,tokens"), hand_mirror: A("mirror,mirrors,hand mirror,looking glass"), feather_duster: A("feather duster,feather dusters,duster,dusters"),
   pebble: A("acorn,acorns,nut,nuts,seed,seeds,marble,marbles,bean,beans,pea,peas"), toaster: A("toaster,toasters,radio,radios"),
   horn: A("horn,horns,bugle,trumpet,megaphone"), kite: A("kite,kites"), teddy: A("teddy,toy,toys,doll,dolls,teddy bear,stuffed animal,plush"),
   rubber_duck: A("rubber duck,rubber ducks"), feather: A("feather,feathers,quill"), shovel: A("shovel,shovels,spade,rake"),
-  mop: A("mop,mops,vacuum,duster"), broom: A("broom,brooms,broomstick,sweeping brush"), // VISUAL-FIX 2026-11-08: a broom is a broom, never a mop
+  mop: A("mop,mops,vacuum"), broom: A("broom,brooms,broomstick,sweeping brush"), // VISUAL-FIX 2026-11-08: a broom is a broom, never a mop
   drum: A("drum,drums"), lightbulb: A("lightbulb,lightbulbs"), magnet: A("magnet,magnets"),
   pillow: A("pillow,pillows,pillowcase"), blanket: A("blanket,blankets,quilt,towel"), net: A("net,nets,fishing net"),
   tape: A("tape,roll of tape,duct tape"), sandwich: A("sandwich,sandwiches,burger,lunch,lunches,meal,meals,dinner,supper,breakfast,snack,snacks,leftovers,pizza,food"),

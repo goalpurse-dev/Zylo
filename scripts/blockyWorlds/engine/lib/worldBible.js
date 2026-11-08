@@ -16,6 +16,7 @@
 //   bibleLine(bible, shots) -> string           what one line's shots must look like (place + people)
 //   saveWorldBible(dir, tl)                     world-bible.json next to timeline.json (Node only)
 import { hashSeed, rng } from "./rng.js";
+import { petsOf } from "./pets.js";
 
 export const BIBLE_VERSION = 1;
 const PLAIN_SETS = ["street", "bedroom", "school", "woods"];
@@ -73,7 +74,7 @@ const TOPS = ["#2e86de", "#e74c3c", "#20bf6b", "#f7b731", "#8854d0", "#fa8231", 
 const PANTS = ["#2f4f86", "#3b5b8f", "#4b6584", "#5d4037", "#2d3436", "#6d6875"];
 const HAIRS = ["#2a1a10", "#5a3b25", "#1e1e1e", "#8a5a2b", "#c99b5b"];
 
-function genderOfPerson(c) {
+export function genderOfPerson(c) {
   const t = low(`${c.name} ${c.look} ${c.id}`);
   if (/\b(mrs|ms|miss|mom|mum|mother|grandma|granny|nana|aunt|sister|queen|princess|lady|girl|woman|old woman|grandmother|shawl|dress|skirt|pigtails?|her|she)\b/.test(t)) return "f";
   if (/\b(mr|dad|father|grandpa|grandad|uncle|brother|king|prince|lord|sir|boy|man|beard|his|he)\b/.test(t)) return "m";
@@ -269,8 +270,16 @@ export function buildWorldBible({ production = null, script = null, idea = null,
 
   // the people: the director's cast, each with a fixed look; a pool of townsfolk for the crowd / filler shots
   const cast = {};
+  // PLANNER-BUGS 2026-11-08 (#4: Biscuit the dog got a human outfit): an animal of the cast gets an animal look (species,
+  // variant, colours, collar, size: the same as tl.pets, lib/pets.js), never a top / pants / hair
+  const pets = petsOf({ cast: (P.cast ?? []).filter((c) => c.kind === "animal") }, script);
   for (const c of P.cast ?? []) {
     const s = hashSeed(`${seed}:cast:${c.id}`) % 1000;
+    if (c.kind === "animal") {
+      const p = pets[c.id];
+      cast[c.id] = { name: c.name || "", role: "animal", kind: "animal", look: { animal: true, species: p?.species ?? (c.species || null), variant: p?.variant ?? null, kit: p?.kit ?? null, sizeM: p?.sizeM ?? null, ...(p?.params ?? {}) }, age: null, gender: null, seed: s, words: String(c.look ?? ""), from: "director" };
+      continue;
+    }
     const L = lookOf(c, s);
     cast[c.id] = { name: c.name || "", role: c.role === "narrator" ? "kid" : c.role || "adult", kind: c.kind || "human", look: L.look, age: L.age, gender: L.gender, seed: s, words: L.words, from: "director", ...(L.topFromWords ? { topFromWords: true } : {}) };
   }
@@ -345,7 +354,7 @@ export function distinctLooks(cast) {
   const rank = ([id, b]) => (id === "me" ? 0 : b.from === "director" ? 1 : b.from === "townsfolk" ? 3 : 2);
   const named = new Set();
   for (const [id, b] of Object.entries(cast).sort((x, y) => rank(x) - rank(y))) {
-    if (!b.look) continue;
+    if (!b.look || b.look.animal) continue;
     // townsfolk may share a colour with each other, never with a named person
     if (b.from === "townsfolk") { if (!named.has(b.look.top)) continue; }
     else if (!used.has(b.look.top) && !used.has(sig(b.look))) { used.add(b.look.top); used.add(sig(b.look)); named.add(b.look.top); continue; }
@@ -545,11 +554,13 @@ export function worldBibleProblems(tl) {
     if (w.creature !== B.creature.species) out.push(`world ${id}: a ${w.creature} world, but the bible's creature is the ${B.creature.species}`);
     else if (w.seed !== B.town.seed) out.push(`world ${id}: town seed ${w.seed} is not the bible's ${B.town.seed}`);
   }
+  // an animal of the cast has an animal look, never a human outfit (PLANNER-BUGS 2026-11-08, #4 Biscuit)
+  for (const [id, b] of Object.entries(B.cast ?? {})) if (b.kind === "animal" && (!b.look?.animal || b.look.top)) out.push(`cast ${id}: an animal with a human outfit in the world bible`);
   return out;
 }
 
 // ------------------------------------------------------------------------------------------------ for the vision judge
-const lookText = (b) => [b.age, b.gender === "f" ? "female" : b.gender === "m" ? "male" : "", b.words || `${b.look.bottom === "dress" ? "dress" : "top"} ${b.look.top}`, b.look.hair ? `${b.look.hair} hair` : ""].filter(Boolean).join(", ");
+const lookText = (b) => b.look?.animal ? [b.look.species, b.look.variant, b.words].filter(Boolean).join(", ") : [b.age, b.gender === "f" ? "female" : b.gender === "m" ? "male" : "", b.words || `${b.look.bottom === "dress" ? "dress" : "top"} ${b.look.top}`, b.look.hair ? `${b.look.hair} hair` : ""].filter(Boolean).join(", ");
 /** the bible in a few lines: the judge compares every frame with it */
 export function bibleSummary(bible) {
   if (!bible) return "";
