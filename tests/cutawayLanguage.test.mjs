@@ -71,6 +71,68 @@ test("nested fields: opts, panel items, one-of words, rig shapes and moves", () 
   assert.match(text, /moves\[0\] \(open\)\.angel is not a field here.*did you mean angle/);
 });
 
+test("1c: the handbook is generated from the registry and is what the planner reads", async () => {
+  const { handbookText, typeText } = await import("../scripts/cutaway/proto3d/m2/handbook.js");
+  const { SCENE_SYSTEM } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const h = handbookText();
+  for (const [k, d] of Object.entries(REGISTRY.kinds)) {
+    assert.ok(h.includes(`- ${k}: `), `kind ${k} missing`);
+    for (const f of d.need) assert.ok(h.includes(`${f}* `), `${k}: needed field ${f} not marked`);
+  }
+  for (const s of RIG_SHAPES) assert.ok(h.includes(`  ${s}: `), `rig shape ${s} missing`);
+  for (const w of [...REGISTRY.roles, ...REGISTRY.moods, ...REGISTRY.settings]) assert.ok(h.includes(w), w);
+  assert.match(h, /CAMERA SIZES[\s\S]*36% of the frame width/);
+  assert.match(h, /a model\s+shape's size is ONE number/);
+  assert.match(h, /one shape at most 16 m long, the whole part at most 18 m across/);
+  assert.ok(SCENE_SYSTEM.includes(h), "the scene planner's system prompt carries the handbook");
+  assert.equal(typeText("one:x,z"), '"x"|"z"');
+  // (every example in the handbook passes the validator)
+  const ex = JSON.parse(fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/handbookExamples.json", import.meta.url), "utf8"));
+  for (const [k, e] of Object.entries(ex)) assert.deepEqual(validateScene(scene([{ id: "x", kind: k, params: e.params }])), [], k);
+});
+
+test("1c: the contradiction list of 2026-11-07, resolved", async () => {
+  const { VISIBLE } = await import("../scripts/cutaway/proto3d/m2/chain.js");
+  const { speakable, fixStory, draftSentences } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const { clarityChecks } = await import("../scripts/cutaway/proto3d/m2/clarity.js");
+  const { moodFor } = await import("../scripts/cutaway/proto3d/m2/moods.js");
+  const { handbookText } = await import("../scripts/cutaway/proto3d/m2/handbook.js");
+  const h = handbookText();
+  // a. brown and grey are visible problems (the prompt's own example)
+  assert.ok(VISIBLE.test("the creek turning grey") && VISIBLE.test("the water goes brown"));
+  // b. a car arriving finishes a street video; a new machine still does not
+  const fin = (backdrop, kind) => clarityChecks({ world: { backdrop: { type: backdrop } }, parts: [{ id: "c", kind, params: { pos: [0, 0.12, -2] } }], beats: [{ s: "finish", do: [{ p: "c", v: "arrive" }], shows: { p: "c" } }] }, [{ role: "finish", text: "Add a car." }]).problems.filter((p) => /finishing touch/.test(p));
+  assert.deepEqual(fin("street", "car"), []);
+  assert.equal(fin("room", "car").length, 1);
+  assert.equal(fin("street", "machine").length, 1);
+  // d. agencies are said without "US"; "a US home" is "an American home"
+  assert.equal(speakable("The US Department of Energy says so."), "The Department of Energy says so.");
+  assert.equal(speakable("A US home uses 300 gallons."), "An American home uses 300 gallons.");
+  // e. the dig may be on the beat that digs
+  const { SCENE_SYSTEM } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  assert.match(SCENE_SYSTEM, /in the beat that digs/);
+  assert.doesNotMatch(SCENE_SYSTEM, /its cue is "dig" in the hook\./);
+  // f. the bookkeeping says what it changed
+  const st = fixStory({ chain: [{ problem: "problem", causedBy: "fix1", size: 1 }] }, { beats: [{ s: "hook", do: [{ p: "a", v: "show", w: "dig!" }] }, { s: "problem" }] });
+  assert.ok(st.notes.some((n) => /causedBy fix1 -> hook/.test(n)) && st.notes.some((n) => /cue word "dig!" -> "dig"/.test(n)));
+  assert.ok(!Object.keys(st).includes("notes"), "the notes do not change the story's shape");
+  const d = draftSentences({ beats: [{ s: "hook", do: [{ p: "a", v: "show", w: "pipe" }] }] }, { hook: "you dig a hole" });
+  assert.match(d.notes[0], /hook: .*"pipe"/);
+  // g. the setting props are scenery, not finishing touches
+  assert.match(h, /SETTING PROPS are the setting's scenery, never the "Add \.\.\." finishing touches/);
+  // h. the plain lawn takes young trees and is described
+  const plain = clarityChecks({ world: { house: false }, parts: [{ id: "t", kind: "youngTrees", params: { trees: [[2, -3, 1]] } }], beats: [] }, []).problems;
+  assert.ok(!plain.some((p) => /does not belong/.test(p)), plain.join("\n"));
+  assert.match(h, /The plain lawn \(world\.house false and no backdrop/);
+  // i. night stays night; a lighthouse is a night video
+  assert.match(h, /it stays night until a line turns it\s+back/);
+  assert.equal(moodFor({ title: "How a lighthouse works" }), "night");
+  // k. a water heater goes in the room only
+  assert.doesNotMatch(h, /It suits a car, a garage door, a water heater/);
+  // l. deep water is a water box, a creek is shallow
+  assert.match(h, /A creek is a SHALLOW strip/);
+});
+
 test("a clean small scene has no errors", () => {
   const e = validateScene(scene(
     [{ id: "light", kind: "light", params: { storm: false } }, { id: "t", kind: "tank", main: true, params: { pos: [0, 0, -2], r: 1, h: 2, mat: "tankBlue" } }, { id: "sign", kind: "sign", params: { at: [4, 0, 2], rotY: 0.3, scale: 1.4 } }],

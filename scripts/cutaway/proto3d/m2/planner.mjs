@@ -6,7 +6,10 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { callJSON, MODEL } from "./llm.mjs";
-import { catalogText, SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
+import { SETTING_PROPS, GENERIC_DECOR } from "./catalog.js";
+// (scene language v2, phase 1c: the kit text is the handbook generated from the registry, m2/handbook.js; catalog.js
+// catalogText is the old hand-written one)
+import { handbookText } from "./handbook.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
@@ -112,7 +115,7 @@ Two example scripts in the chain structure, sentence by sentence (| between sent
 ${CHAIN_EXAMPLES.map((e) => `${e.topic} [${e.roles.join(", ")}]:\n${e.text}\nchain: ${e.chain}`).join("\n\n")}`;
 }
 
-const RESEARCH_SYSTEM = `You research the surprise claims in a short explainer script with web search. You MUST search for every claim (one or two searches each) before you answer; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.`;
+const RESEARCH_SYSTEM = `You research the surprise claims in a short explainer script with web search. You MUST search for every claim before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. For each claim, write what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias; not forums), with the exact figures and wording they use, and the URL of each source. Then say for each claim: supported as written, supported in a corrected form (give it), or not supported.`;
 
 const FACTS_SYSTEM = `You fact-check the surprise claims in a short explainer script, with web search. For each claim:
 - search for it (one or two searches), and read what reliable sources say (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums);
@@ -146,13 +149,13 @@ const sceneSystem = (example = "french_drain", mode = "script") => `${mode === "
 
 ${STORY_RULES}` : `You plan the 3D scene and the animation of a cutaway explainer video, from its script, using ONLY the kit described below. You write a layout: the world change (the cut), the parts with their settings, and the beats: for each sentence (by its role), which kit verbs happen on which of its words, and the camera shots.`}
 
-${catalogText()}
+${handbookText()}
 
 HOW TO PLAN
 - Coordinates: the face of the cut is z = 0, facing the camera; things seen in section in the face sit at z near 0 (pipes in the face at z = -0.06, fills from z0 to z1 = 0). The ground surface is y = 0. The camera looks from +z, a little from the right and above.
 - Choose the setting first (THE SETTING above): the yard only for things around a house; a street or a park when the topic lives there. Our videos should not all look alike.
 - One cut (world.cut) holds the main build. Keep the house off the cut (move it back or aside with world.house). Pipes may run through the soil outside the cut, along the face. When nothing goes underground (a street topic) the cut is just where the build stands: the pipeline makes it a thin slab, and there is no dig.
-${mode === "beats" ? `- A part appears ON ITS CUE WORD: an action's w is the one plain word the narration will say at that moment: the thing's name ("pipe", "gravel", "tank", "loop") or the action ("dig", "cracks", "floods"); one word, no punctuation, never "" except to start with the beat. The writer must say every cue word of a beat in its sentence, so pick words a narrator would say. When there is a dig, its cue is "dig" in the hook.` : `- A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). When there is a dig, it is on "dig" in the hook.`}
+${mode === "beats" ? `- A part appears ON ITS CUE WORD: an action's w is the one plain word the narration will say at that moment: the thing's name ("pipe", "gravel", "tank", "loop") or the action ("dig", "cracks", "floods"); one word, no punctuation, never "" except to start with the beat. The writer must say every cue word of a beat in its sentence, so pick words a narrator would say. When there is a dig, its cue is the digging word ("dig") in the beat that digs: the hook when the hook line digs, else the first beat that goes underground; nothing in the cut appears before it.` : `- A part appears ON THE WORD THAT NAMES IT: put its verb on that word ("pipe", "gravel", "tank"). When there is a dig, its cue is the digging word ("dig") in the beat that digs: the hook when the hook line digs, else the first beat that goes underground; nothing in the cut appears before it.`}
 - The explainer layer: arrows show where water or gas moves; a glowing outline traces the named part on the "This is a…" sentence (verb show on the named word, hide on the next sentence); flow dots run in pipes when water flows.
 - A myth-bust ("X is not Y") must SHOW the wrong idea first, then take it away: a flag crossed out, a fake lake that drains or fades on "not", then the real mechanism appears on the next sentence. A sentence about something that is not there needs a visible stand-in for it.
 - EVERY SENTENCE SHOWS ITS OWN ACTION: the thing the sentence names is on screen and visibly does the sentence's verb. Each beat has shows: {p: the id of the part that does it, does: the visible action in a few words}. Use the part made for the verb: flow for runs / pours / flows (its path goes from where the stuff starts to where it ends, e.g. across the slab into the drain, through the pipe, down into the creek), settle for sinks / floats / separates (sand grains fall to the floor, a dark oil layer rises), creek for a creek, river or stream (it must exist as a part, not a blue box), fills for filling up, pipes growing for laying a pipe. Arrows alone never show an action: they only point at one. A creek or anything else seen in section must lie inside the cut's x range (the solid soil face hides the rest); otherwise it is seen on the surface.
@@ -191,10 +194,10 @@ export function finishPropsLine(topic) {
   const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
   const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
   // (the finish completes the thing itself: the topic props first; the setting's own props are not finishing touches)
-  if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
+  if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving (only in a garage, a street or a car wash), the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
   // (the same rule as a known setting: the garage list, a toolbox and a trash can, was offered here and then refused as
   // generic decor, 60 s free garage door run of 2026-10-30)
-  return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving, the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox). Never grass or bushes on a street, in a garage or a room.`;
+  return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving (only in a garage, a street or a car wash), the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox). Never grass or bushes on a street, in a garage or a room.`;
 }
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
@@ -334,7 +337,11 @@ const NOT_NOUN = /^(is|are|was|were|has|have|had|and|or|but|to|in|on|at|for|with
 export function speakable(text) {
   return String(text)
     .replace(/\b([Cc])an not\b/g, "$1annot")
+    // (an agency's name: "the US Department of Energy" is said "the Department of Energy"; the fact check copies the
+    // source's "US Department of ..." and the rule below made it "the American Department of ...", 2026-11-07 list)
+    .replace(/(^|\b[Tt]he\s+|\b)(?:U\.S\.A\.|U\.S\.|USA|US)\s+(?=(?:Department|Army|Navy|Air Force|Coast Guard|Geological|Environmental|Census|Forest|Fish|Bureau|National|Federal|Energy|Food|Centers|Office|Nuclear|Fire)\b)/g, (m, pre, off) => (/he\s+$/.test(pre) ? pre : off === 0 ? "The " : `${pre}the `))
     .replace(/\b([Tt]he\s+)?(U\.S\.A\.|U\.S\.|USA|US)(?!\w)(\s+([A-Za-z]+))?/g, (m, the, us, sp, next) => (next && !NOT_NOUN.test(next) ? `${the ?? ""}American${sp}` : `America${sp ?? ""}`))
+    .replace(/\b([Aa]) American\b/g, "$1n American")
     // "3 a.m.": its full stops split the line in two wherever sentences are found by their full stop (the real traffic
     // light run of 2026-10-28 failed its plan on it): "3 AM" (a full stop kept only when it ended the text)
     .replace(/\b([ap])\.\s?m\.?(?=\s|[,;!?]|$)/gi, (m, x, off, str) => `${x.toUpperCase()}M${m.endsWith(".") && !str.slice(off + m.length).trim() ? "." : ""}`)
@@ -620,7 +627,7 @@ const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, requir
     surprises: { type: "array", items: { type: "object", additionalProperties: false, required: ["claim", "role", "search"], properties: { claim: { type: "string" }, role: { type: "string" }, search: { type: "string" } } } },
   } } } };
 const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
-const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword.`;
+const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never "US", "U.S." or "USA": "American", "in America"; an agency without the country: "the Department of Energy", "the Army Corps of Engineers").`;
 
 // a card's number as said and shown: as its verified claim writes it (a year stays 1993; "SINCE 1,993" was the garage
 // door's card on the 60 s free run of 2026-10-30), else with thousands commas
@@ -661,31 +668,49 @@ export function cardsAsSaid(cards = [], sentences = []) {
 }
 /** stand-in sentences for a beat plan (its idea and its cue words), so the free checks run before the words exist */
 export function draftSentences(L, ideas) {
-  const cues = anchorWords(L);
-  return (L.beats ?? []).map((b) => {
+  const cues = anchorWords(L), notes = [];
+  const out = (L.beats ?? []).map((b) => {
     const idea = speakable(String(ideas[b.s] ?? b.shows?.does ?? b.s)).replace(/[.!?]+\s*$/, ""), have = new Set(idea.split(/\s+/).map(tok));
     const extra = (cues[b.s] ?? []).filter((w) => !have.has(tok(w)));
+    // (no silent changes, scene language v2: a cue word the idea line does not say is appended to the stand-in, and said so)
+    if (extra.length) notes.push(`${b.s}: the idea does not say the cue word${extra.length > 1 ? "s" : ""} ${extra.map((w) => `"${w}"`).join(", ")}: appended to its stand-in sentence`);
     return { role: b.s, text: `${ROLE_OPEN(b.s)}${idea}${extra.length ? ` ${extra.join(" ")}` : ""}.`.replace(/^(But|So you|This is|If you) (but|so you|this is|if you)\b/i, "$1") };
   });
+  // (the notes ride along without changing the list's shape: callers and tests read the sentences as before)
+  Object.defineProperty(out, "notes", { value: notes, enumerable: false });
+  return out;
 }
 /** the beat plan's story (free): roles in order, the chain of problems (caused by the fix before, bigger each time), the surprises */
 /** the beat plan's story bookkeeping, fixed for free (it is derived from the beats; the checks then judge the story) */
 export function fixStory(story0, scene) {
   const story = JSON.parse(JSON.stringify(story0 ?? {})), beats = scene?.beats ?? [], roles = beats.map((b) => b.s);
+  // (no silent changes, scene language v2: every fix is said in story.notes, a hidden field the plan's trace shows)
+  const notes = [];
   const ideas = new Map((story.ideas ?? []).map((x) => [x.role, x.idea]));
-  story.ideas = roles.map((r) => ({ role: r, idea: String(ideas.get(r) ?? "").trim() || String(beats.find((b) => b.s === r)?.shows?.does ?? "").trim() || r }));
+  story.ideas = roles.map((r) => {
+    const own = String(ideas.get(r) ?? "").trim();
+    if (!own) notes.push(`${r}: no idea given: its beat's shows.does is used`);
+    return { role: r, idea: own || String(beats.find((b) => b.s === r)?.shows?.does ?? "").trim() || r };
+  });
   const probs = roles.filter((r) => /^problem/.test(r)), byP = new Map((story.chain ?? []).map((c) => [c.problem, c]));
   let last = 0;
   story.chain = probs.map((r, k) => {
     const c = { ...(byP.get(r) ?? { problem: r }) }, i = roles.indexOf(r);
-    c.causedBy = k === 0 ? "hook" : roles.slice(0, i).filter((x) => /^fix/.test(x)).at(-1) ?? c.causedBy ?? "hook";
-    if (String(c.shows ?? "").split(/\s+/).filter(Boolean).length < 3) c.shows = String(beats.find((b) => b.s === r)?.shows?.does ?? ideas.get(r) ?? r);
+    const by = k === 0 ? "hook" : roles.slice(0, i).filter((x) => /^fix/.test(x)).at(-1) ?? c.causedBy ?? "hook";
+    if (c.causedBy !== by) notes.push(`chain ${r}: causedBy ${c.causedBy ?? "(none)"} -> ${by} (the fix right before it)`);
+    c.causedBy = by;
+    if (String(c.shows ?? "").split(/\s+/).filter(Boolean).length < 3) { c.shows = String(beats.find((b) => b.s === r)?.shows?.does ?? ideas.get(r) ?? r); notes.push(`chain ${r}: shows filled from its beat`); }
     if (String(c.stakes ?? "").split(/\s+/).filter(Boolean).length < 2) c.stakes = c.stakes || "the build fails";
-    c.size = Math.max(Number(c.size) || 0, last + 1); last = c.size;
+    const size = Math.max(Number(c.size) || 0, last + 1);
+    if (size !== Number(c.size)) notes.push(`chain ${r}: size ${c.size ?? "(none)"} -> ${size} (bigger than the problem before it)`);
+    c.size = size; last = c.size;
     return c;
   });
-  story.surprises = (story.surprises ?? []).filter((s) => roles.includes(s.role));
-  for (const b of beats) for (const a of b.do ?? []) if (a.w && !/^[A-Za-z0-9'-]+$/.test(a.w)) { const m = String(a.w).match(/[A-Za-z0-9'-]+/); if (m) a.w = m[0]; else delete a.w; }
+  const keep = (story.surprises ?? []).filter((s) => roles.includes(s.role));
+  for (const s of story.surprises ?? []) if (!keep.includes(s)) notes.push(`surprise "${String(s.claim).slice(0, 40)}" dropped: no beat ${s.role}`);
+  story.surprises = keep;
+  for (const b of beats) for (const a of b.do ?? []) if (a.w && !/^[A-Za-z0-9'-]+$/.test(a.w)) { const m = String(a.w).match(/[A-Za-z0-9'-]+/); notes.push(`${b.s}: cue word "${a.w}" -> ${m ? `"${m[0]}"` : "the line's start"} (one plain word)`); if (m) a.w = m[0]; else delete a.w; }
+  Object.defineProperty(story, "notes", { value: notes, enumerable: false });
   return story;
 }
 export function beatPlanProblems(L, story, lengthSec) {
@@ -761,6 +786,8 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     if (capped.dropped.length) trace.push({ label: "beats over the cap (free)", dropped: capped.dropped });
     const ideas = Object.fromEntries((story.ideas ?? []).map((x) => [x.role, x.idea]));
     const draft = draftSentences(conv.layout, ideas);
+    // (what the free bookkeeping changed, said in the trace: scene language v2, no silent changes)
+    if (story.notes?.length || draft.notes?.length) trace.push({ label: "plan bookkeeping (free)", notes: [...(story.notes ?? []), ...(draft.notes ?? [])] });
     const solved = solveLayout(conv.layout, draft);
     // (a bookkeeping slip is logged and skipped: never a paid repair, bookkeeping.js)
     const problems = splitBugs([...conv.problems, ...guard("beat plan check", () => beatPlanProblems(conv.layout, story, lengthSec), BUGS, []), ...solved.problems], BUGS);

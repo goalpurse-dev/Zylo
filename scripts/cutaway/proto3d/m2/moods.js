@@ -16,7 +16,7 @@ export const MOODS = Object.freeze({
 const RULES = [
   ["storm", /\b(tornado|hurricane|storm|typhoon|cyclone|tsunami|flood(s|ing|ed)?|lightning|blizzard)\b/],
   ["fire", /\b(fire|wildfire|lava|volcano|volcanic|furnace|forge|inferno|eruption)\b/],
-  ["night", /\b(night|midnight|nighttime|3 ?am|dark|streetlight|street light|prison|escape|alcatraz)\b/],
+  ["night", /\b(night|midnight|nighttime|3 ?am|dark|streetlight|street light|lighthouse|prison|escape|alcatraz)\b/],
   ["dusk", /\b(nuclear|fallout|bunker|apocalypse|doomsday|zombie|shelter|end of the world)\b/],
 ];
 export function moodFor(layout) {

@@ -17,6 +17,8 @@ const focusOf = (p, cut) => { try { return focusRaw(p, cut); } catch { return nu
 // empty" was refused with them here)
 const AWAY = /^(hide|stop|stopSpray|stopPulse|stopDrain|off|gone|untip|lower|refill|close|clear1|clear2|dry)$/;
 const overlapXZ = (a, b, pad = 0) => a.min[0] < b.max[0] - pad && b.min[0] < a.max[0] - pad && a.min[2] < b.max[2] - pad && b.min[2] < a.max[2] - pad;
+// the settings where a car arriving is a finishing touch (it drives on their floor)
+export const CAR_SETTINGS = new Set(["garage", "street", "carwash"]);
 export const settingOf = (W = {}) => W.backdrop?.type ?? (W.house === false ? "plain" : "yard");
 
 export function clarityChecks(L, sentences) {
@@ -32,7 +34,9 @@ export function clarityChecks(L, sentences) {
     if (!acts.length) problems.push(`sentence ${s.role}: ${b.shows.p} (${b.shows.does}) does nothing in this beat; give it the verb that shows it, or show the part that does`);
   }
   // 2. finishing touches that belong in the setting
-  const allowed = new Set(SETTING_PROPS[setting] ?? []), green = !["yard", "park"].includes(setting) ? setting : null;
+  // ("plain" is the yard's lawn with the house taken away: grass, bushes and young trees belong there too; it refused them
+  // and was described nowhere, the contradiction list of 2026-11-07)
+  const allowed = new Set(SETTING_PROPS[setting] ?? []), green = !["yard", "park", "plain"].includes(setting) ? setting : null;
   for (const p of L.parts) {
     const isGrass = p.kind === "wipe" && /grass/i.test(p.params?.mat ?? "");
     if (green && (["shrubs", "youngTrees", "lawnWet"].includes(p.kind) || isGrass)) problems.push(`part ${p.id} (${isGrass ? "grass" : p.kind}) does not belong in the ${setting} setting: use its props (${[...allowed].join(", ")})`);
@@ -42,7 +46,9 @@ export function clarityChecks(L, sentences) {
   const fin = (L.beats ?? []).find((b) => b.s === "finish"), seen = new Set((L.beats ?? []).filter((b) => b !== fin && L.beats.indexOf(b) < L.beats.indexOf(fin)).flatMap((b) => (b.do ?? []).map((a) => a.p)));
   // (a car rolling into a garage is how a garage door finishes, the planner's own rule: the 60 s free garage door run of
   // 2026-10-30 was refused for it)
-  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && !(p.kind === "car" && setting === "garage") && ["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
+  // (and a car arriving wherever cars belong, a street or a car wash too: the planner's prompt offered "a car arriving"
+  // as a finish everywhere while this refused it outside a garage, the contradiction list of 2026-11-07)
+  for (const a of fin?.do ?? []) { const p = parts.get(a.p); if (p && !seen.has(a.p) && !(p.kind === "car" && CAR_SETTINGS.has(setting)) &&["trafficLight", "carWash", "vendingMachine", "atm", "hydrant", "car", "machine", "tank", "dumpTruck"].includes(p.kind)) problems.push(`finish: ${p.id} (${p.kind}) is a machine, not a finishing touch; add something from the ${setting} list`); }
   // 2c. realistic settings: no natural water (a creek, a stream) on a paved floor; it lies beside the setting (axis "z",
   // past the floor's edge), and what runs off the floor reaches it through a storm drain and a pipe
   const F = settingFloor(W.backdrop);

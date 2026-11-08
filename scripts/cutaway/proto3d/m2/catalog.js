@@ -13,7 +13,8 @@ export const SETTING_PROPS = Object.freeze({
   workshop: [],
   garage: ["prop:toolbox", "prop:trashCan", "prop:pottedPlant", "prop:bikeRack"],
   room: ["prop:pottedPlant", "prop:trashCan"],
-  plain: ["prop:planter", "prop:trashCan"],
+  // (the yard's lawn without the house: world.house false and no backdrop)
+  plain: ["shrubs", "youngTrees", "fence", "grass", "prop:planter", "prop:trashCan", "prop:bench"],
 });
 // the topic props (2026-10-29): finishing touches that complete the thing itself, allowed in any setting
 export const TOPIC_PROPS = Object.freeze(["rocks", "lilyPads", "fish", "rinkLines", "goalNets", "floodLight", "crosswalk", "stopLine", "streetSign", "stairs", "ceilingLight", "steppingStones"]);
@@ -34,6 +35,9 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   or roots on the face in these boxes (pipe runs, pits you will build in the face).
 - THE SETTING: pick the one that fits the topic; the videos must not all look the same.
   The yard (the default: lawn, house, trees, road) suits things around a house: drains, wells, septic tanks, pools, gutters.
+  The plain lawn (world.house false and no backdrop: the yard's lawn and trees without the house) suits a thing that
+    stands on open ground and is not about a home: a well in a field, a tower, a bridge pier. It is a lawn: grass, bushes,
+    young trees and a fence belong there.
   world.backdrop {type: "street", sign: "SHOP NAME", lampX, benchX, road: {side: -1 | 1}}: a sidewalk over the cut ground with a
     two-lane road running away from the camera beside the cut (on its left, side -1, or its right, side 1): curbs, a double
     yellow centre line, a stop line in the lane going away and a crosswalk near the cross street; shop fronts on either side
@@ -43,7 +47,7 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     The world's cut is left open in the sidewalk.
   world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
   world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
-    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door, a water heater, a sump.
+    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door (a water heater or a sump pump goes in the room: the basement).
     The garage stands with its front at z = back, its opening from x - 4.05 to x + 4.05 and 3.1 tall (floor y 0.08), the wall
     over it 0.4 thick (z back - 0.2 to back + 0.2: hang a piece meant to be seen in front of it, z > back + 0.25); a video
     about the door builds its own door there as a rig named a door (the backdrop then leaves its own out).
@@ -57,14 +61,18 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     floor (top y 0.12), counters with a wood worktop (about 2 m high, 1.4 m deep) and wall cabinets along the back wall on both
     sides of an open gap, a window over the sink. The appliance the topic is about stands in front of the gap, centred near
     x 0, z -1.8 (a wider one: widen the gap, gap [-2.4, 2.4]). It suits kitchen and home appliances: a stove or oven, a fridge,
-    a dishwasher, a microwave, a kettle, a toaster, a coffee machine, a washing machine, a dryer, a water heater.
+    a dishwasher, a microwave, a kettle, a toaster, a coffee machine, a washing machine, a dryer (a water heater goes in
+    the room: the basement).
   world.backdrop {type: "workshop", x0 (-10), x1 (10), back (-8), h (5), color}: a home workshop (a garage seen from inside): a
     concrete floor (top y 0.08), a closed roll-up door in the back wall, a pegboard of tools over a workbench on the left, a
     tool chest and a shelf of boxes on the right; the floor x -3.5 to 3.5 in front is free. It suits a car (its engine,
     brakes, steering, suspension, gearbox), a lawn mower, a power tool, a generator, a compressor, a bike.
   The interior settings (room, kitchen, workshop, carwash) and the garage replace the yard: set house, worker, moreTrees and road to false.
   A car, a machine or a person stands on solid floor beside the cut, never over its open hole (the cut is the ground in section).
-- SETTING PROPS: the "Add ..." finishing touches come only from the setting's list: yard: shrubs, young trees, a fence, a grass cap, a mailbox, a planter, a bench; park: shrubs, young trees, a fence, grass, a bench, a trash can, a planter, a bike rack; street: a bench, a trash can, a planter, a bike rack, a mailbox; carwash: a payment kiosk, a vacuum station, a towel rack, a trash can, a canopy; garage: a toolbox, a trash can, a potted plant, a bike rack; room: a potted plant, a trash can. Never grass or bushes at a car wash, a street, a garage or a room.
+- SETTING PROPS are the setting's scenery, never the "Add ..." finishing touches: the "Add ..." line completes the thing
+  itself (its lid, its cover, the grass back on top, a topic prop: THE FINISH); generic decor (a trash can, a bench, a
+  planter, a potted plant, a toolbox, a bike rack, a mailbox) is refused there unless the topic is about it. A setting's
+  props, placed from the start as scenery, come only from its list: yard: shrubs, young trees, a fence, a grass cap, a mailbox, a planter, a bench; park: shrubs, young trees, a fence, grass, a bench, a trash can, a planter, a bike rack; street: a bench, a trash can, a planter, a bike rack, a mailbox; carwash: a payment kiosk, a vacuum station, a towel rack, a trash can, a canopy; garage: a toolbox, a trash can, a potted plant, a bike rack; room: a potted plant, a trash can. Never grass or bushes at a car wash, a street, a garage or a room.
 - REALISTIC SETTINGS: nothing natural where it would not be. A creek, a stream or a pond never lies on a paved floor
   (a car wash lot, a sidewalk, a garage, a room): it is a stream beside the setting on the grass (creek axis "z"), and
   water running off the floor reaches it the real way: across the floor to a storm drain grate, down a pipeRun in the cut
@@ -76,15 +84,19 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
   pipeline sets world.shallow by itself); hidden things in the road (a wire loop) are drawn on its surface.
 - THE MACHINE WORKS ON ITS WORDS: lights switch on the word that names the colour (red, yellow, green, allRed), a
   timer's number ticks while it is said (counter count), cars queue on "pile up" and pull away on "go" (traffic), a
-  night line ("at 3 a.m.", "at night") turns the light to night and the next line back to day. At "Add ..." and
+  night line ("at 3 a.m.", "at night") turns the light to night (light night) and it stays night until a line turns it
+  back (light day). At "Add ..." and
   "Congratulations" a machine is shown working as it should (a traffic light on cycle, a car passing), not frozen.
+- THE MOOD: world.mood sets the light of the whole video: noon (the default), storm (overcast), dusk, night (a dark
+  blue sky, lamps and lenses glowing), fire (a warm red glow). A story that happens at night all along (a lighthouse, a
+  street light) is world.mood "night", not a night verb on every line. Interior settings keep noon.
 - The soil shading helpers soilLeak (landfill seeps, murky groundwater), wetBand (a wet band round the cut) and soak
   (water soaking down from a soak pit) paint the face itself.`;
 
 // per kind: what it is, its params, and notes. Positions are world coordinates.
 export const KIND_DOCS = {
   settle: ["any open container seen in section (a septic tank, an oil-water separator, a sump basin, a settling pit): its walls and floor pop in, water fills it, sand or sludge grains SINK and pile up on the floor, a dark oil or scum layer RISES to the top, the water clears. Use it whenever a sentence needs a tank, a basin or a pit that holds something", "box {x0,x1,y0,y1,z0,z1} (the inside, seen at the face: z1 = 0), wallColor (a plastic basin, e.g. #2f6fb0; default concrete), lid (false: keep it open so the layers read), murky, clearColor", "verbs show (the tank walls), fill, sink (the sand falls), float (the oil rises), clear"],
-  creek: ["a creek on the ground with banks and ripples drifting downstream; it can turn dirty (soap, oil) and clean again. Use it whenever a sentence names a creek, a river or a stream", "in a yard or a park: x0, x1 (its length, along x; beside the cut, not over it), width (2.4), depth (0.7), y (the ground top), dir (1 or -1); it runs along the front edge, so the face shows it in section. Beside a paved setting (a car wash, a street, a garage): axis \"z\", x (its centre, past the paved floor: a car wash lot ends at x 13, a street at 26), z0 (its far end, -26), width (2.6), depth (0.8): a stream on the grass running toward the camera, the face shows it in section; water from the lot reaches it through a grate (storm drain) and a pipeRun in the cut face", "verbs show, dirty, clean"],
+  creek: ["a creek on the ground with banks and ripples drifting downstream; it can turn dirty (soap, oil) and clean again. Use it whenever a sentence names a creek, a river or a stream", "in a yard or a park: x0, x1 (its length, along x; beside the cut, not over it), width (2.4), depth (0.7), y (the ground top), dir (1 or -1); it runs along the front edge, so the face shows it in section. Beside a paved setting (a car wash, a street, a garage): axis \"z\", x (its centre, past the paved floor: a car wash lot ends at x 13, a street at 26), z0 (its far end, -26), width (2.6), depth (0.8): a stream on the grass running toward the camera, the face shows it in section; water from the lot reaches it through a grate (storm drain) and a pipeRun in the cut face", "verbs show, dirty, clean. A creek is a SHALLOW strip (depth at most about 1 m): deep water (a dam's reservoir, a river in a gorge, the sea at a cliff) is a water part filling a box in the cut, its section seen in the face"],
   flow: ["blobs moving along a path over a faint ribbon: water running across a slab to a drain or down to a creek, sludge pouring through a drain or a pipe, soap down a slope. Use it for every 'runs', 'pours', 'flows' action", "path [[x,y,z],...] (from where it starts to where it ends), look water|spray (a hose or nozzle jet: pale drops fanning out; water that starts in the air is a spray)|sludge|soap|oil|mud, size (0.16), speed, count", "verbs start, stop"],
   prop: ["a finishing touch that completes the thing (see THE FINISH): a topic prop, allowed in any setting, or one of the setting's own props", "type: a topic prop: rocks {size [w, d]: stones along that edge, pos its centre, open: [front] leaves the cut face side open for a pond} | lilyPads {size [w, d] of the water, pos y = the water top} | fish {size [w, d], pos y = mid-water: they swim} | rinkLines {size [w, d] of the ice, pos y = the ice top} | goalNets {size [w, d] of the rink} | floodLight (a lamp on a 4 m pole) | crosswalk {size [w, d] across the road, pos y = the road top} | stopLine {size [w]} | streetSign {text} | stairs {h (height), w (width): rising +x from pos} | ceilingLight {h (the ceiling height above pos), drop} | steppingStones {size [length]}; or the setting's list. pos [x, y, z] (y = the floor top unless said), rotY, scale (1)", "verb show"],
   grate: ["a dark slotted drain grate set into a slab or the floor (the drain the water and sludge run into)", "pos [x, y, z] (y = the slab top), width (1.6), depth (0.8)", "verb show"],
@@ -131,7 +143,7 @@ export const KIND_DOCS = {
   puddles: ["flat water patches on the lawn that spread and dry up", "list [[x, z, rx, rz]], rise [stagger], fall [stagger]", ""],
   rain: ["rain streaks over the scene, or with style \"ash\" grey ash and dust flakes drifting down slowly (fallout, ash, soot, dust: never plain rain for those)", "x0, x1, z0, z1, yTop, yBot, count, width, opacity, style (\"rain\" or \"ash\")", ""],
   stream: ["water pouring off an edge (a roof eave, a pipe outlet)", "x0, x1, z, yTop, yBot, count", ""],
-  light: ["the sun and sky: a storm (overcast), a quick 'time passes' dip, and night (the sun down, the sky dark, lamps and lenses glowing)", "storm (true if the layout has a storm)", "include one 'light' part; verbs night and day for a night line"],
+  light: ["the sun and sky: a storm (overcast), a quick 'time passes' dip, and night (the sun down, the sky dark, lamps and lenses glowing)", "storm (true if the layout has a storm)", "include one 'light' part; verb night on a night line, day on the line that brings the day back (night stays until then); a whole night story is world.mood \"night\""],
   lawnWet: ["the lawn going dark and wet in the rain", "{}", ""],
   soilLeak: ["landfill seeps painted on the face and the murky groundwater", "x1, x2, murkX", "base {y1: -6, y2: -6}"],
   wetBand: ["a dark wet band in the soil round the cut", "cx, halfW, bottom", ""],
@@ -144,7 +156,7 @@ export const KIND_DOCS = {
 };
 
 // how to design a new part: the building blocks, the moves, the rules and one worked recipe (rig.js)
-const RIG_DOC = `NEW PARTS (kind "rig"): when the topic needs a thing no kind above is (check the SAVED PARTS and CC0 MODELS lists first,
+export const RIG_DOC = `NEW PARTS (kind "rig"): when the topic needs a thing no kind above is (check the SAVED PARTS and CC0 MODELS lists first,
 when the request has them), design it as a rig: named nodes (the pieces that move separately), each a group of shapes,
 each with its own moves. Build it the way the real thing is built, simple and readable at phone size, in the toy look.
 - Shapes (metres, from the node's pivot; look: metal, plastic, wood, glass, rubber, paint, concrete; color "#rrggbb"):
@@ -170,7 +182,8 @@ each with its own moves. Build it the way the real thing is built, simple and re
   a single verb sets the whole chain moving. A beam shape (a light ray across an opening) is r 0.06 or more, and the box it comes from (a sensor, an opener) at least 0.5 m, so it reads at phone size. Sections that roll up a door's tracks: a track move on EACH section along the track's path (up, then back along the ceiling), not one swing.
 - Rules (code checks them): pos y is the floor top and the lowest shape rests on it (or the part sits in the cut); every
   node's shapes touch its parent's; at most 40 nodes and 160 shapes; sizes in real metres (a door 2.4 wide, a barrel
-  0.9 tall); every move you use is defined on a node. Give it name and synonyms: a part that passes is saved to the kit.
+  0.9 tall): one shape at most 16 m long, the whole part at most 18 m across (a bigger thing is several parts); a model
+  shape's size is ONE number (its largest side in metres), never [w, h, d]; every move you use is defined on a node. Give it name and synonyms: a part that passes is saved to the kit.
 - The beats use it like any part: {p: "door", v: "show"}, {p: "door", v: "open", w: "lifts"}; shows names it. A shot frames
   one piece (and the pieces hung on it) as "part.node": focus ["door.motor"], so a small piece is seen, not the whole thing.
   Put the pieces where the camera can see them (the front, not behind a wall).
