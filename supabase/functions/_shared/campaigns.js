@@ -254,7 +254,12 @@ export function realOpensProblem(prevId, real, sent, def = {}) {
   }
   return null;
 }
-export function campaignStopReason({ sent = 0, bounced = 0, complained = 0, failed = 0 }) {
+// Only real bounces count (owner, 2026-11-08): a "mailbox full" bounce is the reader's full inbox, not a bad address
+// or a block, so it never stops a day (the address is switched off instead). realBounced = bounced − mailbox full.
+export const realBounces = (n) => n.realBounced ?? n.bounced ?? 0;
+export function campaignStopReason(n) {
+  const { sent = 0, complained = 0, failed = 0 } = n;
+  const bounced = realBounces(n);
   if (complained > 0) return `a spam complaint (${complained})`;
   if (bounced >= 2 && bounced > sent * MAX_BOUNCE_RATE) return `bounces over 2%: ${bounced} of ${sent} sent`;
   if (failed >= 5) return `Resend refused ${failed} sends`;
@@ -271,7 +276,8 @@ export function previousCampaignProblem(prev, n) {
   if (prev.status !== "done") return `${prev.id} has not finished (it is "${prev.status}")`;
   if (!n || n.sent === 0) return `${prev.id} sent nothing`;
   if (n.complained > 0) return `${prev.id} had a spam complaint (${n.complained})`;
-  if (n.bounced >= 2 && n.bounced > n.sent * MAX_BOUNCE_RATE) return `${prev.id} had bounces over 2%: ${n.bounced} of ${n.sent}`;
+  const bounced = realBounces(n);
+  if (bounced >= 2 && bounced > n.sent * MAX_BOUNCE_RATE) return `${prev.id} had bounces over 2%: ${bounced} of ${n.sent}`;
   return null;
 }
 
@@ -370,10 +376,11 @@ export async function campaignNumbers(sb, id, startsAt, { withPurchases = false 
   const q = (status) => count("email_campaign_queue", (x) => x.eq("status", status));
   const ev = (type) => count("email_events", (x) => x.eq("type", type));
   // email_events holds one row per email and type, so "opened" counts emails opened at least once.
-  const [sent, queued, sending, skipped, failed, delivered, bounces, suppressed, complained, opened, permanent] = await Promise.all([
+  const [sent, queued, sending, skipped, failed, delivered, bounces, suppressed, complained, opened, permanent, mailboxFull] = await Promise.all([
     q("sent"), q("queued"), q("sending"), q("skipped"), q("failed"),
     ev("email.delivered"), ev("email.bounced"), ev("email.suppressed"), ev("email.complained"), ev("email.opened"),
     count("email_events", (x) => x.eq("type", "email.bounced").ilike("detail", "permanent%")),
+    count("email_events", (x) => x.eq("type", "email.bounced").ilike("detail", "%mailboxfull%")),
   ]);
   // Unsubscribes of this campaign's recipients since it started (the email-unsubscribe function logs each one; an Undo takes it back).
   const recipients = await allRows(() => sb.from("email_campaign_queue").select("profile_id, sent_at").eq("campaign", id).eq("status", "sent").order("id"));
@@ -384,7 +391,7 @@ export async function campaignNumbers(sb, id, startsAt, { withPurchases = false 
     if (!got.has(u.user_id)) continue;
     if (u.event === "email_unsubscribed") out.add(u.user_id); else out.delete(u.user_id);
   }
-  const n = { sent, queued: queued + sending, skipped, failed, delivered, bounced: bounces + suppressed, bouncedPermanent: permanent + suppressed, complained, opened, unsubscribed: out.size };
+  const n = { sent, queued: queued + sending, skipped, failed, delivered, bounced: bounces + suppressed, bouncedPermanent: permanent + suppressed, realBounced: bounces + suppressed - mailboxFull, mailboxFull, complained, opened, unsubscribed: out.size };
   if (withPurchases && recipients.length) {
     const ids = [...got];
     const grants = [];
@@ -405,7 +412,7 @@ export function campaignReportText(id, c, n) {
     `Planned: ${c.planned}`,
     `Sent: ${n.sent}`,
     `Delivered (accepted by the receiving mail server): ${n.delivered}`,
-    `Bounced: ${n.bounced}${pct(n.bounced)}${n.bounced ? ` — permanent ${n.bouncedPermanent}, temporary ${n.bounced - n.bouncedPermanent}` : ""}`,
+    `Bounced: ${n.bounced}${pct(n.bounced)}${n.bounced ? ` — permanent ${n.bouncedPermanent}, temporary ${n.bounced - n.bouncedPermanent}${n.mailboxFull ? `, mailbox full ${n.mailboxFull}` : ""}` : ""}`,
     `Spam complaints: ${n.complained}`,
     `Unsubscribes: ${n.unsubscribed}${pct(n.unsubscribed)}`,
     `Not sent: ${n.skipped} skipped by the lock or the window, ${n.failed} failed, ${n.queued} still waiting`,

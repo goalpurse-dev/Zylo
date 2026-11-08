@@ -56,13 +56,16 @@ export function emailFooter({ unsubscribeUrl, why, plain = false }) {
 //   email.complained            → the reader pressed "spam"
 //   email.bounced, permanent    → the address doesn't exist (or blocks us for good)
 //   email.suppressed            → Resend already refuses this address
-// A transient bounce (full inbox, server busy) is not a dead address: null.
+//   email.bounced, mailbox full → the inbox is full, usually abandoned: switched off too (owner, 2026-11-08),
+//                                 but it does not count toward a campaign's bounce stop rule (campaigns.js)
+// Any other transient bounce (server busy, content rejected) is not a dead address: null.
 export function stopReason(type, data) {
   if (type === "email.complained") return "complained";
   if (type === "email.suppressed") return "bounced";
   if (type === "email.bounced") {
     const kind = String(data?.bounce?.type ?? "").toLowerCase();
-    return kind === "" || kind === "permanent" ? "bounced" : null;
+    if (kind === "" || kind === "permanent") return "bounced";
+    return String(data?.bounce?.subType ?? "").toLowerCase() === "mailboxfull" ? "bounced" : null;
   }
   return null;
 }
