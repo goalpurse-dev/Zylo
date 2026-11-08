@@ -1,6 +1,6 @@
 // Blocky Worlds: the check still for a newly built object or world (lib/builder/still.mjs drives it in headless Chrome;
 // in production it runs inside the prepare job, whose GPU worker already has Chrome).
-//   window.renderStill({ kind: "object" | "world", spec, light = "day", size = 768, person = kind === "world" })
+//   window.renderStill({ kind: "object" | "world", spec, light = "day", size = 768, person = kind === "world", view = { yaw: 28, el: 16 } })
 //     -> { data: JPEG data URL, w, h, problems, ms }
 //   object: on a neutral pavement with the locked light + post, a 3/4 view framed by its size (square, size x size)
 //   world:  the wide establishing shot of the engine (camera.js "wide" on the centre spot, 9:16 at size tall), with one
@@ -20,7 +20,7 @@ LM.onStart = (u, l, t) => { pending.done = l; pending.total = t; };
 LM.onProgress = (u, l, t) => { pending.done = l; pending.total = t; };
 const settle = async () => { const t0 = performance.now(); while (pending.done < pending.total && performance.now() - t0 < 60000) await new Promise((r) => setTimeout(r, 40)); };
 
-async function renderStill({ kind, spec, light = "day", size = 768, person = kind === "world" }) {
+async function renderStill({ kind, spec, light = "day", size = 768, person = kind === "world", view = null }) {
   const t0 = performance.now();
   const W = kind === "world" ? Math.round(size * 9 / 16) : size, H = size;
   const renderer = makeRenderer(W, H);
@@ -43,7 +43,8 @@ async function renderStill({ kind, spec, light = "day", size = 768, person = kin
       root.add(o);
       const u = o.userData, r = Math.max(0.35, 0.5 * Math.hypot(u.width, u.height, u.depth));
       set = { root, rig: { shadow: { center: [0, 0, -u.depth / 2], half: Math.max(4, r * 2.5), far: 160 }, fog: { day: ["#9cc8ec", 400, 3000], night: ["#16244c", 200, 900], warm: ["#f0a06a", 400, 3000] } }, spots: { center: new THREE.Vector3() } };
-      const fov = 32, yaw = 28 * Math.PI / 180, el = 16 * Math.PI / 180;
+      // view (optional, RunPod objectStills "views"): { yaw, el } in degrees around the 3/4 default
+      const fov = 32, yaw = (Number(view?.yaw ?? 28) || 0) * Math.PI / 180, el = Math.max(-5, Math.min(80, Number(view?.el ?? 16) || 0)) * Math.PI / 180;
       const target = new THREE.Vector3(0, u.height * 0.5, -u.depth / 2);
       const dist = (r / Math.sin((fov * Math.PI) / 360)) * 1.08;
       camera.fov = fov; camera.near = Math.max(0.02, dist / 200);

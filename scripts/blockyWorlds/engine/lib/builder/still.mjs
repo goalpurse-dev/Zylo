@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startServer, launchBrowser } from "../../render.mjs";
+import { isBad, isBlack } from "../frameGuard.js";
 
 export async function makeStillRenderer({ outDir = null, size = 768 } = {}) {
   const dir = outDir ?? fs.mkdtempSync(path.join((await import("node:os")).tmpdir(), "bw-still-"));
@@ -25,15 +26,29 @@ export async function makeStillRenderer({ outDir = null, size = 768 } = {}) {
     const err = await page.evaluate(() => window.stillError ?? null);
     if (err) throw new Error(`still page failed: ${err}`);
   }
-  async function renderOne(kind, spec, { light = "day", name = null } = {}) {
+  // the pixel guard's numbers (lib/frameGuard.js, as the engine's renderAt): mean brightness, one-colour share, detail
+  const measure = (data) => page.evaluate(async (data) => {
+    const g = await import("/lib/frameGuard.js");
+    const img = new Image(); img.src = data; await img.decode();
+    const c = document.createElement("canvas"); c.width = 16; c.height = 16;
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0, 16, 16);
+    const px = x.getImageData(0, 0, 16, 16).data;
+    let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+    return { mean: +(sum / (3 * 256)).toFixed(1), flat: g.flatShare(px), detail: g.detailOf(px, 16) };
+  }, data).catch(() => ({ mean: null, flat: null, detail: null }));
+  async function renderOne(kind, spec, { light = "day", name = null, size: sz = null, view = null } = {}) {
     if (!page) await open();
     const t0 = Date.now();
     errors.length = 0;
-    const r = await page.evaluate((req) => window.renderStill(req), { kind, spec, light, size });
+    const req = { kind, spec, light, size: Number(sz) || size, ...(view ? { view } : {}) };
+    let r = await page.evaluate((req) => window.renderStill(req), req), m = await measure(r.data), retried = 0;
+    // the blank-frame guard (NVIDIA ANGLE-on-EGL sometimes hands back an empty frame): rendered again, up to twice
+    while (m.mean != null && m.mean < 3 && retried < 2) { retried++; r = await page.evaluate((req) => window.renderStill(req), req); m = await measure(r.data); }
     const jpeg = Buffer.from(r.data.slice(r.data.indexOf(",") + 1), "base64");
     const file = path.join(dir, `${name ?? `${kind}-${++n}`}.jpg`);
     fs.writeFileSync(file, jpeg);
-    return { file, jpeg, w: r.w, h: r.h, ms: Date.now() - t0, pageMs: r.ms, problems: [...(r.problems ?? []), ...errors] };
+    const flatNote = isBad(m) ? [`the still is ${isBlack(m) ? "black" : `flat (${Math.round((m.flat ?? 0) * 100)}% one colour, detail ${m.detail})`}`] : [];
+    return { file, jpeg, w: r.w, h: r.h, ms: Date.now() - t0, pageMs: r.ms, ...m, bad: isBad(m), retried, problems: [...(r.problems ?? []), ...errors, ...flatNote] };
   }
   return {
     dir,

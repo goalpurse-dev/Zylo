@@ -18,6 +18,9 @@
 //   role "chunk":   GPU check (NO_GPU -> handler.py retires this worker) -> frames [from, to) -> seg (1080p, squeezed
 //                   under the upload limit) + web (720p) up, progress events as it goes.
 //   role "finish":  the segments joined by stream copy + the mix -> final.mp4; the same for web.mp4; poster.jpg. No GPU.
+//   role "stills" / "objectStills" (2026-11-08, runpod/stillsRole.mjs): timeline stills in one page load / the builder's
+//                   object stills, through the frame guards; JPEGs to signed URLs or inline. Sent by dev/runpodStills.mjs
+//                   and runpod/stillRendererRunpod.mjs (no callback: the laptop polls RunPod).
 //   Events go to job.callback.url ({ runId, jobId, token, event, ... }); a callback that can't be reached never fails
 //   the job (RunPod's webhook and the sweeper cover it).
 //   STALE WORKER (2026-11-06; run 7b4c0d8b's prepare ran on a worker of the image before, still alive after the
@@ -38,6 +41,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { useGpu, useSoftware } from "./gpu.mjs";
 import { concat, renderParallel } from "../render.mjs";
+import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -468,6 +472,11 @@ export async function finish(job, dir) {
   return { role: "finish", durationSec, bytes: fs.statSync(final).size, webBytes: fs.statSync(web).size, timing };
 }
 
+// ---------------------------------------------------------------- stills / objectStills (runpod/stillsRole.mjs)
+// the laptop's still renders moved here (2026-11-08): timeline stills in one page load, the builder's object stills
+const stillsRole = (job, dir, _post, opts = {}) => stillsJob(job, dir, { gpuCheck: opts.gpuCheck ?? renderer, get, put });
+const objectStillsRole = (job, dir, _post, opts = {}) => objectStillsJob(job, dir, { gpuCheck: opts.gpuCheck ?? renderer, put, makeRenderer: opts.makeRenderer ?? null });
+
 /** this image's build ("20261106T120000-1a2b3c4d5e6f", buildContext.mjs); null in a repo checkout (no BUILD_ID file) */
 export function buildOf(engine = ENGINE) {
   try { return fs.readFileSync(path.join(engine, "BUILD_ID"), "utf8").trim() || null; } catch { return null; }
@@ -492,7 +501,7 @@ export async function runJob(job, opts = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bw-${job.role}-`));
   let result;
   try {
-    const fn = { prepare, chunk, finish }[job.role];
+    const fn = { prepare, chunk, finish, stills: stillsRole, objectStills: objectStillsRole }[job.role];
     if (!fn) throw coded("BAD_JOB", `unknown role ${job.role}`);
     const r = await fn(job, dir, post, opts);
     result = { ok: true, ...r, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), totalS: +((Date.now() - t0) / 1000).toFixed(2) };
@@ -556,6 +565,7 @@ async function staging(input) {
 if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   const input = process.argv[2] ? JSON.parse(process.argv[2]) : process.env.JOB_FILE ? JSON.parse(fs.readFileSync(process.env.JOB_FILE, "utf8")) : { jobUrl: process.env.JOB_URL };
   const result = input.job ? await runJob(input.job) : await staging(input);
-  console.log(`RESULT ${JSON.stringify(result)}`);
-  process.exit(result.ok ? 0 : 1);
+  // the exit waits for the line to be written: to a pipe, stdout is async and process.exit() cut a big RESULT (the
+  // inline stills, 2026-11-08: handler.py got "Unterminated string" at char 353)
+  process.stdout.write(`RESULT ${JSON.stringify(result)}\n`, () => process.exit(result.ok ? 0 : 1));
 }

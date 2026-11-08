@@ -1,5 +1,16 @@
 # Blocky Worlds render worker on RunPod
 
+## Stills on RunPod (2026-11-08: no renders on the owner's laptop)
+Roles `stills` (timeline stills, one page load, only the picked shots unless `whole`, the video's frame guards) and
+`objectStills` (the builder's still page, blank guard + flat numbers) in `stillsRole.mjs`. Laptop side:
+`node dev/runpodStills.mjs --timeline <tl.json> --shots all|0,4 | --times 0.5,3 --out <dir> [--yes]`,
+`node dev/runpodStills.mjs --objects <specs.json> --out <dir> [--yes]`; builder: `makeBuilder({ renderer: "runpod" })`
+or env `BLOCKY_WORLDS_STILLS=runpod`; drop-in module `runpod/stillRendererRunpod.mjs` (same shape as lib/builder/still.mjs).
+Measured: 3 timeline stills of a 68-shot timeline $0.0046 (28 s billed); object stills ~16 s wall cold, ~7 s warm, ~$0.001-0.002 a job.
+Rebuild: `node runpod/buildContext.mjs C:\Users\Public\bw-ctx`, then in that folder
+`fly deploy --app zyvo-cutaway-render-staging --dockerfile Dockerfile --build-only --push --image-label blocky-<label>`,
+then `node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:<digest> --context C:\Users\Public\bw-ctx --no-server-build`.
+
 ## Production (2026-11-05, docs/blocky-worlds-pipeline.md; NOT built / pushed / deployed yet)
 `worker.mjs` now also runs the production roles from `blocky-worlds-render` (`{ job: { role, ... } }`):
 `prepare` (voice with the RunPod secret `blocky_elevenlabs`, plan + checkTimeline + checkVisuals + checkSubjects + the

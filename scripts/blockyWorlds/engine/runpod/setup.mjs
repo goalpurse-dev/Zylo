@@ -15,7 +15,7 @@
 //    supabase/functions/_shared/blockyWorlds/renderBuild.js (WORKER_BUILD): jobs then carry minBuild and a worker of an
 //    older image refuses them (STALE_WORKER) before any paid work. Redeploy blocky-worlds-render + blocky-worlds-api after.
 // Writes runpod/endpoint.json (ids only, no secrets).
-//   node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:... [--context <dir>]
+//   node runpod/setup.mjs --image registry.fly.io/zyvo-cutaway-render-staging@sha256:... [--context <dir>] [--no-server-build]
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -62,7 +62,10 @@ console.log("endpoint", ep.id, "workersMin 0 (scales to zero)");
 // no worker of an older template / image may take a job from here on
 await retireStale({ api: runpodApi(KEY), endpointId: ep.id, templateId: tpl.id, image });
 fs.writeFileSync(path.join(here, "endpoint.json"), JSON.stringify({ name: NAME, image, registryAuthId: auth.id, templateId: tpl.id, endpointId: ep.id, gpus: GPUS, workersMax: WORKERS_MAX, idleTimeout: 5, ...(build ? { build } : {}), createdAt: new Date().toISOString() }, null, 1));
-if (build) {
+// --no-server-build (2026-11-08, stills-only image switches): the build goes to endpoint.json (the laptop clients send it
+// as minBuild) but renderBuild.js is left alone (no edge function redeploy needed)
+if (build && argv.includes("--no-server-build")) console.log(`endpoint.json: build ${build} (renderBuild.js untouched: --no-server-build)`);
+else if (build) {
   const f = path.resolve(here, "../../../../supabase/functions/_shared/blockyWorlds/renderBuild.js");
   const src = fs.readFileSync(f, "utf8").replace(/export const WORKER_BUILD = [^;]*;/, `export const WORKER_BUILD = "${build}";`);
   fs.writeFileSync(f, src);

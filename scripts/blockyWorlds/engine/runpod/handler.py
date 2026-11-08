@@ -8,7 +8,9 @@
 # runs elsewhere (Cutaway's fix; 2026-11-04 every retry of a Blocky test landed on the same slice). STALE_WORKER (worker.mjs:
 # this image is older than the job's minBuild) the same: the worker is retired, the server retries on a new one.
 import json
+import os
 import subprocess
+import tempfile
 
 import runpod
 
@@ -17,7 +19,18 @@ WORKER = f"{ENGINE}/runpod/worker.mjs"
 
 
 def run(payload, timeout):
-    p = subprocess.run(["node", WORKER, json.dumps(payload)], capture_output=True, text=True, timeout=timeout, cwd=ENGINE)
+    # the job goes in a file (JOB_FILE), never on the command line: one argument is capped at 128 KB on Linux and an
+    # inline timeline (role "stills") is 150-350 KB
+    fd, job_file = tempfile.mkstemp(prefix="bw-job-", suffix=".json")
+    with os.fdopen(fd, "w") as f:
+        json.dump(payload, f)
+    try:
+        p = subprocess.run(["node", WORKER], capture_output=True, text=True, timeout=timeout, cwd=ENGINE, env={**os.environ, "JOB_FILE": job_file})
+    finally:
+        try:
+            os.remove(job_file)
+        except OSError:
+            pass
     lines = [l for l in p.stdout.splitlines() if l.startswith("RESULT ")]
     return p, (json.loads(lines[-1][7:]) if lines else None)
 

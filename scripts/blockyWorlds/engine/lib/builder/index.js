@@ -1,5 +1,6 @@
 // Blocky Worlds builder: one entry point for the prepare job and local runs.
-//   const b = makeBuilder({ provider, cache, budget, stillDir, log })
+//   const b = makeBuilder({ provider, cache, budget, stillDir, log, renderer: "local" | "runpod" })
+//                                     (renderer default: env BLOCKY_WORLDS_STILLS, else "local"; "runpod" = no local GPU)
 //   b.prefetch(needs)                 start resolving early (the prepare job calls it with the needs of a plan made from
 //                                     estimated timings, so designs run while the voice is being made)
 //   await b.buildCritical(items)      the story-critical items (lib/critical.js) BEFORE planning -> { built, unbuilt, report }
@@ -21,14 +22,21 @@ export async function providerFromConfig({ provider = process.env.BLOCKY_WORLDS_
 /** the kit's view for resolveNeeds: an object the kit already builds (worlds: never; the planner already chose a set) */
 export const kitView = (kit) => ({ resolveObject: kit?.resolveObject, has: (need) => (need.kind === "object" && kit?.resolveObject ? kit.resolveObject(need.name) ?? kit.resolveObject(need.phrase ?? "") ?? null : null) });
 
-export function makeBuilder({ provider = null, cache = null, budget = {}, stillDir = null, render = null, log = () => {}, beforeStills = null } = {}) {
+export function makeBuilder({ provider = null, cache = null, budget = {}, stillDir = null, render = null, renderer = process.env.BLOCKY_WORLDS_STILLS ?? "local", log = () => {}, beforeStills = null } = {}) {
   const B = { ...DEFAULT_BUDGET, ...budget };
   // the time cap (maxMs) runs from the first resolve, not from when the builder was made: the prepare job makes it
   // before the story director, which took 88 s in run 707609b1 and left the designs 32 s
   const purse = makePurse(B), memo = new Map();
   let t0 = null, stills = null, ready = null;
+  // renderer "runpod" (2026-11-08, laptop runs): the stills go to the RunPod endpoint's objectStills role
+  // (runpod/stillRendererRunpod.mjs, batched, no local GPU); "local": this machine's Chrome (and the prepare job's own GPU)
   const openStills = async () => {
-    if (!stills) { stills = (async () => { await beforeStills?.(); return (await import("./still.mjs")).makeStillRenderer({ outDir: stillDir }); })(); }
+    if (!stills) {
+      stills = (async () => {
+        if (renderer === "runpod") return (await import("../../runpod/stillRendererRunpod.mjs")).makeStillRenderer({ outDir: stillDir, log: (m) => log(`stills: ${m}`) });
+        await beforeStills?.(); return (await import("./still.mjs")).makeStillRenderer({ outDir: stillDir });
+      })();
+    }
     return stills;
   };
   const renderFn = render ?? (async (kind, spec, opts) => (await openStills()).render(kind, spec, opts));
