@@ -64,7 +64,10 @@ test("builder.buildCritical: library first, then a design; never the kit's looka
 
 test("snapshotCache.find: the sync library view of the gate (snapshot + built this video)", async () => {
   const c = snapshotCache([{ id: "a1", kind: "object", name: "pocket watch", aliases: ["watch"] }]);
-  assert.equal(c.find("object", ["watch"])?.id, "a1");
+  assert.equal(c.find("object", ["pocket watches"])?.id, "a1");
+  // BUILDER-FIX-2 (2026-11-09): a bare "watch" no longer takes the pocket watch through its broad alias (names.js:
+  // the asset's defining noun "pocket" must be asked for; the bell tower's "tower" alias served a clock tower)
+  assert.equal(c.find("object", ["watch"]), null);
   assert.equal(c.find("object", ["lantern"]), null);
   await c.save({ kind: "object", name: "lantern", aliases: [], blueprint: { parts: [] } });
   assert.equal(c.find("object", ["lantern"])?.name, "lantern");

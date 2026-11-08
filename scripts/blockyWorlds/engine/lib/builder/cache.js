@@ -17,16 +17,25 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { normName } from "./spec.js";
+import { cleanAliases, sameThing } from "./names.js";
 
 export const keysOf = (name, aliases = []) => [...new Set([name, ...aliases].map(normName).filter(Boolean))];
 const newId = () => crypto.randomUUID();
-const matches = (asset, kind, names) => {
+/**
+ * a key hit is a match only when the asset is the same thing as the request (objects: names.js sameThing, the head
+ * noun and the defining nouns; 2026-11-09: a "clock tower" request took the bell tower through its old "clock tower"
+ * alias). Rows saved before the fix still carry broad keys: this guard covers them too.
+ */
+export const matches = (asset, kind, names) => {
   if (asset.kind !== kind || asset.status === "retired") return false;
-  const want = keysOf(names[0] ?? "", names.slice(1));
-  return want.some((k) => (asset.keys ?? keysOf(asset.name, asset.aliases)).includes(k));
+  const have = asset.keys ?? keysOf(asset.name, asset.aliases);
+  // a request name that hits a key must also be the same thing (any one of them: the need's name, a phrase)
+  return names.some((n) => n && have.includes(normName(n)) && (kind !== "object" || sameThing(n, asset.name)));
 };
+/** the names a new asset is saved under: objects keep only names of THAT thing (names.js), no long phrases */
+export const savedAliases = (a) => (a.kind === "object" ? cleanAliases(a.name, a.aliases ?? []) : (a.aliases ?? []).filter((x) => typeof x === "string" && x.length <= 40 && x.split(/\s+/).length <= 6));
 const row = (a, id) => ({
-  id, kind: a.kind, name: a.name, name_key: normName(a.name), aliases: a.aliases ?? [], keys: keysOf(a.name, a.aliases ?? []),
+  id, kind: a.kind, name: a.name, name_key: normName(a.name), aliases: savedAliases(a), keys: keysOf(a.name, savedAliases(a)),
   blueprint: a.blueprint, still_path: a.still_path ?? null, verdict: a.verdict ?? null, model: a.model ?? null,
   cost_usd: Number(a.costUsd ?? a.cost_usd ?? 0), uses: 0, status: "live", created_at: new Date().toISOString(),
 });
@@ -90,9 +99,9 @@ export function supabaseCache({ url, serviceKey, bucket = "blocky-worlds-renders
     async lookup(kind, names) {
       const keys = keysOf(names[0] ?? "", names.slice(1));
       if (!keys.length) return null;
-      const r = await fetchFn(`${rest}/blocky_worlds_assets?kind=eq.${kind}&status=eq.live&keys=ov.${encodeURIComponent(arr(keys))}&select=*&order=uses.desc&limit=1`, { headers: h });
+      const r = await fetchFn(`${rest}/blocky_worlds_assets?kind=eq.${kind}&status=eq.live&keys=ov.${encodeURIComponent(arr(keys))}&select=*&order=uses.desc&limit=10`, { headers: h });
       if (!r.ok) throw new Error(`library lookup ${r.status}`);
-      return (await r.json())[0] ?? null;
+      return (await r.json()).find((a) => matches(a, kind, names)) ?? null;
     },
     async save(a) {
       const id = newId(), rec = row(a, id);

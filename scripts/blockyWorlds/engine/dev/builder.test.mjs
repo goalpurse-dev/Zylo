@@ -73,10 +73,10 @@ test("schemas: structured-output safe (no maxItems / min / max), prompts carry t
 test("library: lookup by name, alias, singular / plural; the first save wins", async () => {
   assert.equal(normName("The Ladders"), "ladder"); assert.equal(normName("robot_dentists"), "robot dentist"); assert.equal(normName("boxes"), "box"); assert.equal(normName("glass"), "glass"); assert.equal(normName("wolves"), "wolf");
   for (const cache of [memoryCache(), fileCache(fs.mkdtempSync(path.join(os.tmpdir(), "bw-lib-")))]) {
-    const a = await cache.save({ kind: "object", name: "robot dentist", aliases: ["dentist robot", "robo dentists"], blueprint: MOCK_OBJECTS["robot dentist"], still: Buffer.from("x") });
+    const a = await cache.save({ kind: "object", name: "robot dentist", aliases: ["dentist robot", "robot dentists", "big robot dentist"], blueprint: MOCK_OBJECTS["robot dentist"], still: Buffer.from("x") });
     assert.ok(a.id);
     assert.equal((await cache.lookup("object", ["Robot Dentists"]))?.id, a.id);
-    assert.equal((await cache.lookup("object", ["robo dentist"]))?.id, a.id);
+    assert.equal((await cache.lookup("object", ["big robot dentist"]))?.id, a.id);
     assert.equal((await cache.lookup("object", ["nope", "the dentist robot"]))?.id, a.id);
     assert.equal(await cache.lookup("world", ["robot dentist"]), null, "kinds are separate");
     const b = await cache.save({ kind: "object", name: "Robot dentist", aliases: [], blueprint: {} });

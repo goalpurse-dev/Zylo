@@ -76,9 +76,20 @@ const BLUEPRINT_RULES = `BLUEPRINT RULES
 - "size" is [width x, height y, depth z]. cylinder / cone / sphere: their diameter is size x (and z), height size y.
   wedge: a ramp, low at the front, tall at the back. torus: a ring standing in the x-y plane, outer diameter size x,
   tube thickness size z.
-- "rot" is degrees [x, y, z] about the part's own centre.
-- "parent": another part's id when this part must MOVE with it (a hand with its arm), else "". Positions stay in the
-  shared frame either way. "pivot": the hinge point (shared frame) for a part that swings / opens, else [].
+- "rot" is degrees [x, y, z] about the part's own centre ("size" is measured BEFORE the turn). Signs: +x tips the
+  part's top toward the FRONT (+z); +z tips its top toward the LEFT (-x); +y turns its front toward +x (right).
+  A cylinder lying along x: rot [0, 0, 90]; lying along z (pointing at the camera): rot [90, 0, 0].
+- EVERY PART TOUCHES the body: each part overlaps its neighbour a little (a hook's bottom inside the bell's top, a
+  handle's ends inside the box). Nothing floats: the engine rejects a design with a loose part before it is looked at.
+  Work it out: a part's top is pos y + size y / 2, its bottom pos y - size y / 2.
+- "parent": another part's id when this part must MOVE with it (a hand with its arm, a hook with a swinging bell), else
+  "". Positions stay in the shared frame either way (NOT relative to the parent). "pivot": the hinge point (shared
+  frame) for a part that swings / opens, else [].
+- Anim axes are the WORLD axes through the pivot (not the part's own turned axes). A bob or swing moves the part and
+  its children only: whatever it hangs from or holds must be its child, or it comes apart.
+- "name" + "aliases": 2-6 short names of THIS thing that end in its own noun ("bell tower", "belfry" for a bell tower),
+  never a bare general word when the thing is a special kind ("tower" for a bell tower, "cart" for a pumpkin cart), never
+  another object's name ("clock tower", "window" for a curtain), never a description.
 - Materials: matte (paint, default), plastic (glossy), metal, glass (see-through), glow (lights, screens, eyes,
   magic), fabric (cloth; pattern stripes | dots | plaid | none), wood (planks), stone (blocks).
 - Labels: short words on one face of a part (front | back | left | right | top).

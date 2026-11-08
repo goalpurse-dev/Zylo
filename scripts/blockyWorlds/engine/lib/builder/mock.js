@@ -30,9 +30,11 @@ export const MOCK_OBJECTS = {
       { id: "antenna_tip", shape: "sphere", size: [0.08, 0.08, 0.08], pos: [0.2, 2.2, -0.05], color: "#ff4d5e", material: "glow", parent: "antenna" },
       { id: "arm_l", shape: "roundedBox", size: [0.16, 0.62, 0.16], pos: [-0.54, 1.06, 0.05], rot: [0, 0, -12], color: "#dfe3e8", material: "metal", pivot: [-0.5, 1.34, 0.05] },
       { id: "hand_l", shape: "sphere", size: [0.18, 0.18, 0.18], pos: [-0.6, 0.74, 0.08], color: "#9aa4ad", material: "metal", parent: "arm_l" },
-      { id: "arm_r", shape: "roundedBox", size: [0.16, 0.62, 0.16], pos: [0.6, 1.36, 0.2], rot: [-60, 0, 20], color: "#dfe3e8", material: "metal", pivot: [0.5, 1.34, 0.05] },
-      { id: "drill", shape: "cylinder", size: [0.08, 0.36, 0.08], pos: [0.72, 1.62, 0.44], rot: [-60, 0, 0], color: "#c0c8d0", material: "metal", parent: "arm_r" },
-      { id: "drill_tip", shape: "cone", size: [0.07, 0.14, 0.07], pos: [0.72, 1.8, 0.55], rot: [-60, 0, 0], color: "#ffd166", material: "metal", parent: "drill" },
+      // rot signs fixed 2026-11-09 (connect.js): +x tips the top toward the front (+z), -z toward +x; the old [-60, 0, 20]
+      // pointed the raised arm and the drill backwards, the drill and its tip floated apart
+      { id: "arm_r", shape: "roundedBox", size: [0.16, 0.62, 0.16], pos: [0.6, 1.36, 0.2], rot: [60, 0, -20], color: "#dfe3e8", material: "metal", pivot: [0.5, 1.34, 0.05] },
+      { id: "drill", shape: "cylinder", size: [0.08, 0.36, 0.08], pos: [0.72, 1.62, 0.44], rot: [60, 0, 0], color: "#c0c8d0", material: "metal", parent: "arm_r" },
+      { id: "drill_tip", shape: "cone", size: [0.07, 0.14, 0.07], pos: [0.72, 1.8, 0.55], rot: [60, 0, 0], color: "#ffd166", material: "metal", parent: "drill" },
       { id: "tooth_crown", shape: "roundedBox", size: [0.5, 0.36, 0.36], pos: [-0.62, 0.58, 0.42], color: "#fffdf5", material: "plastic" },
       { id: "tooth_root_l", shape: "cone", size: [0.16, 0.3, 0.16], pos: [-0.72, 0.28, 0.42], rot: [180, 0, 0], color: "#fffdf5", material: "plastic" },
       { id: "tooth_root_r", shape: "cone", size: [0.16, 0.3, 0.16], pos: [-0.52, 0.28, 0.42], rot: [180, 0, 0], color: "#fffdf5", material: "plastic" },

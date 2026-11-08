@@ -15,6 +15,8 @@
 //              costUsd, ms, reason?, verdicts: [] }
 import { normName, validateBlueprint, validateWorld } from "./spec.js";
 import { cardLabel } from "../planText.js";
+import { cleanAliases } from "./names.js";
+import { repairBlueprint } from "./connect.js";
 
 export const DEFAULT_BUDGET = Object.freeze({ maxUsd: 0.6, maxMs: 120000, maxDesigns: 6, minConfidence: 0.6, retries: 2, parallel: 3 });
 
@@ -95,6 +97,14 @@ const NOT_THINGS = new Set([
   // non-things and fillers
   ..."block blocks thing things stuff something nothing everything anything one ones it them way time day night moment place side part bit lot kind sort end start top bottom front middle nos yes no okay ok love fear hope idea story luck silence noise sound smell rule rules promise secret plan trouble problem reason life world everyone someone nobody people".split(" "),
 ]);
+/** -ing words that name things (nouns), never refused as verbs */
+export const ING_NOUNS = new Set(`opening openings building buildings painting paintings ceiling ceilings railing railings landing landings
+  clearing clearings offering offerings drawing drawings carving carvings crossing crossings ring rings wing wings
+  string strings spring springs swing swings sling king pudding stuffing icing frosting wedding clothing bedding
+  fencing piping tubing lining filling dumpling dumplings seedling sapling duckling ducklings earring earrings awning
+  awnings footing siding shavings sweepings covering coverings wrapping wrappings stocking stockings legging leggings
+  topping toppings dressing cutting cuttings planting plantings carpeting matting decking flooring roofing tiling
+  shelving scaffolding bunting lodging dwelling dwellings`.split(/\s+/).filter(Boolean));
 const PREPS = /\s(on|in|of|with|at|under|over|by|for|from|near|inside|behind|above|below|into|onto)\s.*$/;
 /** -> { ok: true } | { ok: false, why } : is this need a concrete object / creature the builder may design? (worlds: always ok) */
 export function buildableNeed(need) {
@@ -107,7 +117,9 @@ export function buildableNeed(need) {
   const head = words.at(-1) ?? "";
   if (!head) return { ok: false, why: "no noun" };
   if (NOT_THINGS.has(head)) return { ok: false, why: `"${head}" is not a thing (verb, describing word, body part or filler)` };
-  const stem = head.replace(/ing$/, ""), stems = head.endsWith("ing") ? [stem, stem.replace(/(.)\1$/, "$1"), `${stem}e`] : [];
+  // an -ing word is a verb unless it is a THING ("shell opening", "old building", "big painting": BUILDS run 2026-11-09
+  // refused "shell opening" because "open" is a verb)
+  const stem = head.replace(/ing$/, ""), stems = head.endsWith("ing") && !ING_NOUNS.has(head) ? [stem, stem.replace(/(.)\1$/, "$1"), `${stem}e`] : [];
   if (stems.some((x) => NOT_THINGS.has(x))) return { ok: false, why: `"${head}" is a verb` };
   if (head.length < 3 || (head.length === 3 && !SHORT_NOUNS.has(head))) return { ok: false, why: `"${head}" is too short to be a known thing` };
   if (/(ly|ous|ful|less|ness|ish)$/.test(head) && head.length > 5) return { ok: false, why: `"${head}" is not a noun of a thing` };
@@ -173,7 +185,10 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
           ({ blueprint: spec, problems } = need.kind === "world" ? (({ spec: s, problems: p }) => ({ blueprint: s, problems: p }))(validateWorld(d.data)) : validateBlueprint(d.data));
           if (d.data?.generic) spec.generic = true; // (mock) a labelled crate
           spec.name = need.name; // the library keys it by the need's name; the designer's words become aliases
-          spec.aliases = [...new Set([...(spec.aliases ?? []), d.data?.name, need.phrase].filter(Boolean))].slice(0, 12);
+          // only names of THIS thing (names.js; 2026-11-09: "tower" / "clock tower" on the bell tower, "window" on a
+          // curtain, the long look phrase as a name): never need.phrase, never another object's noun
+          const words = [...(spec.aliases ?? []), d.data?.name].filter(Boolean);
+          spec.aliases = need.kind === "world" ? words.filter((x) => x.length <= 40 && x.split(/\s+/).length <= 6).slice(0, 12) : cleanAliases(need.name, words);
         } catch (e) {
           callSpent += Number(e.costUsd) || 0; r.costUsd += e.costUsd ?? 0; settle();
           if (e.timeout) return done({ reason: e.message });
@@ -188,6 +203,25 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
           feedback = `the blueprint had problems: ${serious.slice(0, 8).join("; ")}`;
           r.verdicts.push({ attempt, problems: serious.slice(0, 8) }); continue;
         }
+        // the free connectivity check (connect.js; 2026-11-09: the croissant / glasses bells and the mock robot's arm
+        // came apart and each still + vision call only found that out): small gaps are closed and anims that pull
+        // parts apart are dropped for free; a part still loose rejects the design BEFORE the still and the vision call,
+        // and the designer gets the exact move / rot fix
+        if (need.kind === "object") {
+          const fixed = repairBlueprint(spec);
+          if (fixed.snapped.length || fixed.droppedAnims.length) {
+            log(`need "${need.name}": connectivity repaired for free (${[...fixed.snapped.map((s) => `${s.ids.join("+")} moved ${JSON.stringify(s.move)} onto ${s.near}`), ...fixed.droppedAnims.map((a) => `dropped ${a}`)].join("; ")})`);
+            spec = Object.assign(fixed.blueprint, { repaired: { snapped: fixed.snapped, droppedAnims: fixed.droppedAnims } });
+          }
+          if (!fixed.check.ok) {
+            settle();
+            feedback = `parts come apart: ${fixed.check.fix}`;
+            r.verdicts.push({ attempt, loose: fixed.check.fix.slice(0, 600) });
+            (r.failedDesigns ??= []).push({ attempt, why: "loose parts", blueprint: spec });
+            log(`need "${need.name}": design ${attempt} rejected before the still (loose parts): ${fixed.check.fix.slice(0, 300)}`);
+            continue;
+          }
+        } else if (spec.landmark) spec.landmark = repairBlueprint(spec.landmark).blueprint;
         // the still: a failure is the renderer's, not the design's, so it is tried once more with the SAME blueprint and
         // never answered with a new (paid) design; a renderer that fails twice stops every design of this video
         // (run 707609b1: Chrome could not start in the prepare job, every still failed, each failure bought a new design:
@@ -214,6 +248,7 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
           catch (e) { log(`library save failed for "${need.name}": ${e.message}`); }
           return done({ source: "built", asset });
         }
+        (r.failedDesigns ??= []).push({ attempt, why: `vision: ${String(v.data.reads_as ?? "").slice(0, 120)}`, blueprint: spec });
         feedback = v.data.fix || `it read as "${v.data.reads_as}", not as ${need.name}`;
       }
       void last;
