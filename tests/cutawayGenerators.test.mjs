@@ -66,3 +66,15 @@ test("the generator test cases validate", () => {
     assert.deepEqual(validateScene(L), [], f);
   }
 });
+
+test("building: floors stack, shafts cut their slabs, the box holds the roof", async () => {
+  const { buildingSpec, slabHoles, buildingBox } = await import("../scripts/cutaway/proto3d/kit/buildings.js");
+  const p = { pos: [0, 0, -1], width: 16, depth: 7, floors: [{ h: 4.5 }, { h: 4.5 }], roof: "gable", shafts: [{ type: "escalator", x: -2, w: 7, from: 0, to: 1, z: -3 }, { type: "elevator", x: 5.5, w: 2.2 }] };
+  const s = buildingSpec(p);
+  assert.deepEqual(s.bases, [0, 4.5]); assert.equal(s.top, 9);
+  assert.equal(s.shafts[0].z, -4, "a shaft's z is from the building's front");
+  const h = slabHoles(s);
+  assert.equal(h.length, 2); assert.ok(h.every((o) => o.floor === 1));
+  const esc = h[0]; assert.ok(esc.x1 >= -2 + 3.5 && esc.x0 > -5.5, "the escalator's opening is at its upper end (headroom)");
+  assert.ok(buildingBox(p).max[1] > 9, "a gable roof rises above the top floor");
+});

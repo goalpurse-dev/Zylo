@@ -67,6 +67,7 @@ export const VERBS = {
   soak: { show: [R("on", 0.1, 0.5), R("front", 0.2, 3.7, -4.6, "out")], hide: [R("on", 0, 5.2, -1)] },
   // an effect (kit/fx.js): a one-shot plays on "go" (blast, crash, crack, collapse); a state runs from "start" to "stop"
   waterBody: { rise: [R("rise", 0, 1.4, 1, "inOut")], fall: [R("fall", 0, 1.4, 1, "inOut")], flood: [R("flood", 0, 1.6, 1, "out")], drain: [R("flood", 0, 1.4, -1, "inOut")], dirty: [R("dirty", 0, 1.0, 1, "inOut")], clear: [R("clear", 0, 1.2, 1, "inOut")], freeze: [R("freeze", 0, 1.2, 1, "inOut")], thaw: [R("freeze", 0, 1.2, -1, "inOut")], flow: [R("flow", 0, 0.6, 1, "out")] },
+  building: { build: [R("build", 0, 1.6, 1, "out")], lights: [R("lights", 0, 0.4)], dark: [R("lights", 0, 0.4, -1)], up: [R("lift", 0, 2.0, 1, "inOut")], down: [R("lift", 0, 2.0, -1, "inOut")], run: [R("run", -0.1, 0.1, 1, "step")], stop: [R("run", 0, 0.1, -1, "step")] },
   terrain: { erupt: [R("glow", 0, 0.8, 1, "out")], calm: [R("glow", 0, 1.2, -1, "inOut")] },
   fx: { go: [R("go", 0, 1.6)], start: [R("on", -0.1, 0.3)], stop: [R("on", 0, 0.5, -1)] },
   arrows: ONOFF(), outline: { show: [R("on", -0.175, 0.075)], hide: [R("on", 0.025, 0.275, -1)] }, seepFlow: ONOFF(),

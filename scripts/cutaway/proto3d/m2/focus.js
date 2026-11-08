@@ -7,6 +7,7 @@ import { soft } from "./bookkeeping.js";
 import { fxBox } from "../kit/fx.js";
 import { terrainBox } from "../kit/terrain.js";
 import { waterBox } from "../kit/water.js";
+import { buildingBox } from "../kit/buildings.js";
 
 const fromPoints = (pts, pad = 0) => {
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -80,6 +81,7 @@ function focusOfRaw(part, cut) {
     case "fx": return fxBox(p);
     case "terrain": return terrainBox(p);
     case "waterBody": return waterBox(p);
+    case "building": return buildingBox(p);
     case "atm": { const [x, y, z] = p.pos ?? [0, 0.12, -1]; return { min: [x - 0.8, y, z - 0.6], max: [x + 0.8, y + 2.6, z + 0.7] }; }
     case "machine": return { min: [p.pos[0] - 1.5, 0, p.pos[2] - 1.2], max: [p.pos[0] + 1.5, 2.7, p.pos[2] + 1.2] };
     case "bubbles": return { min: [p.x0, p.y0, (p.z ?? -0.15) - 0.2], max: [p.x1, p.y1, (p.z ?? -0.15) + 0.2] };

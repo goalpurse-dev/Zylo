@@ -1,0 +1,230 @@
+{
+ "topic": "two-storey station (generator test case)",
+ "layout": {
+  "key": "tc_station",
+  "title": "How an escalator works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "ground",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 0
+      }
+     ],
+     "trees": [
+      [
+       -15,
+       -8,
+       1
+      ],
+      [
+       15,
+       -10,
+       1.1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "station",
+    "kind": "building",
+    "main": true,
+    "params": {
+     "pos": [
+      0,
+      0,
+      -0.5
+     ],
+     "width": 18,
+     "depth": 7,
+     "use": "station",
+     "floors": [
+      {
+       "h": 4.5
+      },
+      {
+       "h": 4.5
+      }
+     ],
+     "roof": "flat",
+     "shafts": [
+      {
+       "type": "escalator",
+       "x": -2,
+       "w": 7,
+       "from": 0,
+       "to": 1,
+       "z": -3.2
+      },
+      {
+       "type": "elevator",
+       "x": 6.4,
+       "w": 2.4,
+       "from": 0,
+       "to": 1
+      }
+     ]
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      14,
+      0,
+      -6
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [
+     {
+      "p": "station",
+      "v": "build",
+      "w": "floors"
+     }
+    ],
+    "shows": {
+     "p": "station",
+     "does": "two floors rise"
+    },
+    "shots": [
+     {
+      "focus": [
+       "station"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "station",
+      "v": "run",
+      "w": "steps"
+     },
+     {
+      "p": "station",
+      "v": "lights",
+      "w": "steps"
+     }
+    ],
+    "shows": {
+     "p": "station",
+     "does": "the steps run"
+    },
+    "shots": [
+     {
+      "focus": [
+       "station"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "fix1",
+    "do": [
+     {
+      "p": "station",
+      "v": "up",
+      "w": "lift"
+     }
+    ],
+    "shows": {
+     "p": "station",
+     "does": "the lift rises"
+    },
+    "shots": [
+     {
+      "focus": [
+       "station"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [],
+    "shows": {
+     "p": "station",
+     "does": "the escalator"
+    },
+    "shots": [
+     {
+      "focus": [
+       "station"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you stack two floors, you have a station."
+  },
+  {
+   "role": "problem",
+   "text": "But people climb, so moving steps carry them up."
+  },
+  {
+   "role": "fix1",
+   "text": "So you add a lift for wheelchairs and prams."
+  },
+  {
+   "role": "name",
+   "text": "This is an escalator."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a station."
+  }
+ ]
+}

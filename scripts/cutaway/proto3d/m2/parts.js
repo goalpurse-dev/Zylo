@@ -23,6 +23,7 @@ import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, t
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 import { rig } from "./rig.js";
 import { buildWater, waterSpec } from "../kit/water.js";
+import { buildBuilding } from "../kit/buildings.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -54,6 +55,8 @@ export const KINDS = {
   // the generated ground (kit/terrain.js), built by the page before the parts (makePage.mjs): its chambers glow on erupt
   // a sea, a river, a lake or a pool filling the ground up to its level (kit/water.js): rise, fall, flood, dirty, freeze, flow
   waterBody(ctx, p, api) { const w = buildWater(ctx, p), s = waterSpec(p); return { group: w.group, mesh: w.mesh, update(t) { w.update(t, { level: (api.ch("rise", t) - api.ch("fall", t)) * s.rise + api.ch("flood", t) * s.flood, dirty: api.ch("dirty", t) - api.ch("clear", t), freeze: api.ch("freeze", t), flow: api.ch("flow", t) }); } }; },
+  // a cut-open building (kit/buildings.js): floors, shafts (elevator, escalator, stairs, chimney), roof, lit windows
+  building(ctx, p, api) { const b = buildBuilding(ctx, p), built = !!api.cue("build"); return { group: b.group, update(t) { b.update(t, { build: built ? api.ch("build", t) : 1, lights: api.ch("lights", t), lift: api.ch("lift", t), run: api.ch("run", t) }); } }; },
   terrain(ctx, p, api) { const T = ctx.terrain; return { group: T?.group, update(t) { T?.update(t, api.ch("glow", t)); } }; },
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
@@ -578,5 +581,5 @@ export const KIND_CHANNELS = {
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
   water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
-  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
+  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], building: ["build", "lights", "lift", "run"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
 };
