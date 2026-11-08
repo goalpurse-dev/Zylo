@@ -17,6 +17,7 @@ import { normName, validateBlueprint, validateWorld } from "./spec.js";
 import { cardLabel } from "../planText.js";
 import { cleanAliases } from "./names.js";
 import { repairBlueprint } from "./connect.js";
+import { kitMatchOk } from "../critical.js";
 
 export const DEFAULT_BUDGET = Object.freeze({ maxUsd: 0.6, maxMs: 120000, maxDesigns: 6, minConfidence: 0.6, retries: 2, parallel: 3 });
 
@@ -151,12 +152,16 @@ export async function resolveNeeds(needs, { provider = null, cache = null, rende
     try {
       // 1. the kit
       const kitName = kit?.has?.(need) ?? null;
-      if (kitName) return done({ source: "kit", kitName });
+      // a kit LOOKALIKE (fails the head-noun guard, lib/critical.js: "clock" for "clock tower") loses to a library
+      // asset of the very thing (step-3 2026-11-09: the library's clock tower became the kit's small clock)
+      const lookalike = kitName && need.kind === "object" && !kitMatchOk(need.name, kitName);
+      if (kitName && !lookalike) return done({ source: "kit", kitName });
       // 2. the library
       try {
         const hit = await cache?.lookup(need.kind, [need.name, need.phrase].filter(Boolean));
         if (hit) { cache.used?.(hit.id)?.catch?.(() => {}); return done({ source: "cache", asset: hit }); }
       } catch (e) { log(`library lookup failed for "${need.name}": ${e.message}`); }
+      if (kitName) return done({ source: "kit", kitName });
       // 3. design + check
       if (!provider || !render) return done({ reason: provider ? "no still renderer" : offReason ?? "the builder is off (no provider)" });
       if (purse.stillBroken) return done({ reason: `the still renderer failed (${purse.stillBroken}): no design is bought without a way to check it` });

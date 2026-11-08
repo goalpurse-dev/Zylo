@@ -1413,6 +1413,9 @@ function showsWorld(s, wo) {
   if (wo.kind === "creature") return /^creature:/.test(s.set ?? "") || (s.giants ?? []).some((g) => g.id === "world" || g.id === wo.id);
   const nm = String(wo.name).toLowerCase();
   if ((s.objects ?? []).some((o) => o.item === wo.id || o.needId === wo.id || o.propId === wo.id || (wo.kit && o.name === wo.kit) || (wo.scenery && o.name === "house_front"))) return true;
+  // the builder put the world object in (lib/builder/apply.js: a library / built asset or a kit object named for it,
+  // its need marker removed): step-3 2026-11-09, the stilt houses / bell tower / clock tower were reverted for this
+  if ((s.objects ?? []).some((o) => String(o.name ?? "").replace(/_/g, " ").toLowerCase() === nm || (o.asset && (o.aliases ?? []).some((a) => String(a).toLowerCase() === nm)))) return true;
   if ((s.needs ?? []).some((n) => n.item === wo.id || String(n.name ?? "").toLowerCase() === nm)) return true;
   return (s.unshown ?? []).some((u) => String(u).toLowerCase() === nm);
 }
