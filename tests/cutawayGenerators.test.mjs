@@ -78,3 +78,15 @@ test("building: floors stack, shafts cut their slabs, the box holds the roof", a
   const esc = h[0]; assert.ok(esc.x1 >= -2 + 3.5 && esc.x0 > -5.5, "the escalator's opening is at its upper end (headroom)");
   assert.ok(buildingBox(p).max[1] > 9, "a gable roof rises above the top floor");
 });
+
+test("road: a bridge carries the deck over its span; cars ride it; car motions are registered", async () => {
+  const { roadSpec, deckAt, roadBox } = await import("../scripts/cutaway/proto3d/kit/roads.js");
+  const p = { points: [[-24, -3.5], [24, -3.5]], bridge: { from: -11, to: 11, height: 3.2, type: "suspension", tower: 11 } };
+  const s = roadSpec(p), terrain = { blocks: [{ type: "flat", x0: -24, x1: 24, y: 2 }, { type: "gorge", x0: -9, x1: 9, depth: 13 }] };
+  assert.ok(Math.abs(deckAt(s, 0, -3.5, terrain) - 3.26) < 0.01, "mid-span: the deck height");
+  assert.ok(Math.abs(deckAt(s, -20, -3.5, terrain) - 2.06) < 0.01, "off the bridge: the ground");
+  assert.ok(deckAt(s, -9.5, -3.5, terrain) > 2 && deckAt(s, -9.5, -3.5, terrain) < 3.26, "a ramp onto the deck");
+  assert.ok(roadBox(p).max[1] >= 14, "the box holds the towers");
+  assert.ok(KINDS.road && VERBS.road.twist && VERBS.car.brake && VERBS.car.steer && VERBS.car.stuck);
+  for (const v of ["brake", "steer", "stuck"]) assert.ok(KIND_CHANNELS.car.includes(v), v);
+});

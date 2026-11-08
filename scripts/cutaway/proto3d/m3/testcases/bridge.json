@@ -1,0 +1,255 @@
+{
+ "topic": "suspension bridge over a gorge (generator test case)",
+ "layout": {
+  "key": "tc_bridge",
+  "title": "How a suspension bridge works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "land",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 2
+      },
+      {
+       "type": "gorge",
+       "x0": -9,
+       "x1": 9,
+       "depth": 13,
+       "walls": "rock"
+      }
+     ],
+     "trees": [
+      [
+       -17,
+       -9,
+       1
+      ],
+      [
+       18,
+       -10,
+       1.1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "river",
+    "kind": "waterBody",
+    "params": {
+     "body": "river",
+     "x0": -9,
+     "x1": 9,
+     "level": -9
+    }
+   },
+   {
+    "id": "road",
+    "kind": "road",
+    "main": true,
+    "params": {
+     "points": [
+      [
+       -24,
+       -3.5
+      ],
+      [
+       24,
+       -3.5
+      ]
+     ],
+     "width": 6,
+     "surface": "asphalt",
+     "bridge": {
+      "from": -11,
+      "to": 11,
+      "height": 3.2,
+      "type": "suspension",
+      "tower": 11
+     }
+    }
+   },
+   {
+    "id": "car",
+    "kind": "car",
+    "params": {
+     "road": "road",
+     "pos": [
+      0,
+      0,
+      -3.5
+     ],
+     "from": -22,
+     "to": 22,
+     "color": "#2e62c9",
+     "model": "sedan"
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      2,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [
+     {
+      "p": "road",
+      "v": "build",
+      "w": "towers"
+     }
+    ],
+    "shows": {
+     "p": "road",
+     "does": "the towers and cables go up"
+    },
+    "shots": [
+     {
+      "focus": [
+       "road"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "car",
+      "v": "arrive",
+      "w": "car"
+     },
+     {
+      "p": "car",
+      "v": "brake",
+      "w": "stops"
+     }
+    ],
+    "shows": {
+     "p": "car",
+     "does": "a car crosses and stops"
+    },
+    "shots": [
+     {
+      "focus": [
+       "road",
+       "car"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "fix1",
+    "do": [
+     {
+      "p": "road",
+      "v": "twist",
+      "w": "twists"
+     }
+    ],
+    "shows": {
+     "p": "road",
+     "does": "the deck twists"
+    },
+    "shots": [
+     {
+      "focus": [
+       "road"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [
+     {
+      "p": "road",
+      "v": "calm",
+      "w": "suspension"
+     }
+    ],
+    "shows": {
+     "p": "road",
+     "does": "the bridge"
+    },
+    "shots": [
+     {
+      "focus": [
+       "road"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you hang a road from two towers, you have a bridge."
+  },
+  {
+   "role": "problem",
+   "text": "But a car drives on and stops halfway across."
+  },
+  {
+   "role": "fix1",
+   "text": "In strong wind the deck twists."
+  },
+  {
+   "role": "name",
+   "text": "This is a suspension bridge."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a suspension bridge."
+  }
+ ]
+}

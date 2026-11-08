@@ -73,6 +73,8 @@ export function car(ctx, p, api) {
   const shine = paint.clearcoat;
   let washed = 0;
   ctx.shared = ctx.shared ?? {}; ctx.shared[`car:${api?.id ?? "car"}`] = { root, foam, paint };
+  // brake lights, only on a car that brakes (every other car stays exactly as it was)
+  const brakeLights = api.cue("brake") ? [-0.6, 0.6].map((z) => add(root, rb(0.08, 0.2, 0.42, 0.04), glow("#ff2a1a", 0.4), -2.14, 0.9, z, false)) : [];
   return {
     update(t) {
       const dv = api.ch("drive", t), lv = api.ch("leave", t);
@@ -84,10 +86,23 @@ export function car(ctx, p, api) {
         root.position.set(px, py, z); root.visible = dv > 0.001 && lv < 0.999 && z < -0.3;
         for (const w of wheels) spin(w, z);
       } else {
-        const x = from + (px - from) * clamp(dv) + (to - px) * clamp(lv);
-        root.position.set(x, py, pz); root.visible = dv > 0.001 && lv < 0.999;
-        for (const w of wheels) spin(w, x);
+        // (stuck: the wheels spin, the car shakes in place and goes no further)
+        const st = clamp(api.ch("stuck", t)), go = (k) => clamp(k) * (1 - st) + Math.min(clamp(k), 0.5) * st;
+        const x = from + (px - from) * go(dv) + (to - px) * clamp(lv);
+        // (scene language v2: on a road part, p.road, the car rides its deck, a bridge's too; on a terrain, its surface;
+        // it pitches with the slope. Without either, the height it was given)
+        const surf = p.road ? api.part(p.road)?.obj?.deckAt : ctx.terrain ? (xx, zz) => ctx.terrain.model.h(xx, zz) + 0.02 : null;
+        const y = surf ? surf(x, pz) : py;
+        root.position.set(x, y, pz); root.visible = dv > 0.001 && lv < 0.999;
+        root.rotation.z = surf ? Math.atan2(surf(x + 1.5, pz) - surf(x - 1.5, pz), 3) : 0;
+        if (st > 0.01) { root.position.y += 0.03 * Math.sin(t * 40); root.position.x += 0.04 * Math.sin(t * 23); }
+        for (const w of wheels) spin(w, x + st * t * 6);
       }
+      // brake: the nose dips and the brake lights glow; steer: the car turns toward -z (amp < 0: toward +z)
+      const br = clamp(api.ch("brake", t)), sr = api.ch("steer", t);
+      root.rotation.z += -0.05 * br * (to >= from ? 1 : -1);
+      if (p.axis !== "z" && api.cue("steer")) root.rotation.y = 0.35 * sr;
+      for (const m of brakeLights) { m.material.emissiveIntensity = 0.4 + 2.6 * br; m.visible = true; }
       const f = ctx.shared[`car:${api?.id ?? "car"}`].foamK ?? 0;
       foam.forEach((m, i) => { const k = clamp(f * 1.6 - (i / foam.length) * 0.6); m.visible = k > 0.01; m.scale.setScalar(pop(k)); });
       paint.clearcoat = shine * (1 - 0.6 * f);
@@ -420,7 +435,7 @@ export function cabinet(ctx, p, api) {
 
 export const CITY_CHANNELS = {
   cabinet: ["pop", "open", "lights"],
-  car: ["drive", "leave"],
+  car: ["drive", "leave", "brake", "steer", "stuck"],
   carWash: ["arch", "spray", "brushes", "close", "spin", "foam", "rinse"],
   trafficLight: ["show", "red", "yellow", "green", "loop", "pulse", "cycle", "flash", "fast"],
   traffic: ["pile", "go", "bump"],

@@ -19,7 +19,7 @@ export const VERBS = {
   prop: { show: [R("pop", -0.1, 0.3, 1, "lin")] },
   grate: { show: [R("show", -0.1, 0.3, 1, "lin")] },
   canopy: { build: [R("posts", -0.05, 0.5, 1, "out"), R("roof", 0.45, 0.8, 1, "lin")], ghost: [R("ghost", -0.3, 0.2, 1, "inOut")], unghost: [R("ghost", -0.2, 0.3, -1, "inOut")] },
-  car: { arrive: [R("drive", -0.2, 1.4, 1, "inOut")], leave: [R("leave", 0, 1.4, 1, "in2")] },
+  car: { arrive: [R("drive", -0.2, 1.4, 1, "inOut")], leave: [R("leave", 0, 1.4, 1, "in2")], brake: [R("brake", 0, 0.3, 1, "out")], release: [R("brake", 0, 0.3, -1, "inOut")], steer: [R("steer", 0, 0.7, 1, "inOut")], straighten: [R("steer", 0, 0.7, -1, "inOut")], stuck: [R("stuck", -0.1, 0.1, 1, "step")], free: [R("stuck", 0, 0.1, -1, "step")] },
   traffic: { pile: [R("pile", 0, 2.4)], go: [R("go", 0, 2.2, 1, "out")], bump: [R("bump", 0, 0.3, 1, "out")], unbump: [R("bump", 0, 0.5, -1, "inOut")] },
   cabinet: { show: [R("pop", -0.1, 0.3, 1, "back")], open: [R("open", 0, 0.7, 1, "out")], close: [R("open", 0, 0.6, -1, "inOut")], lights: [R("lights", 0, 0.2)] },
   counter: { show: [R("show", -0.1, 0.3, 1, "back")], hide: [R("show", 0, 0.3, -1, "inOut")], count: [R("count", 0, 9, 1, "lin")] },
@@ -67,6 +67,7 @@ export const VERBS = {
   soak: { show: [R("on", 0.1, 0.5), R("front", 0.2, 3.7, -4.6, "out")], hide: [R("on", 0, 5.2, -1)] },
   // an effect (kit/fx.js): a one-shot plays on "go" (blast, crash, crack, collapse); a state runs from "start" to "stop"
   waterBody: { rise: [R("rise", 0, 1.4, 1, "inOut")], fall: [R("fall", 0, 1.4, 1, "inOut")], flood: [R("flood", 0, 1.6, 1, "out")], drain: [R("flood", 0, 1.4, -1, "inOut")], dirty: [R("dirty", 0, 1.0, 1, "inOut")], clear: [R("clear", 0, 1.2, 1, "inOut")], freeze: [R("freeze", 0, 1.2, 1, "inOut")], thaw: [R("freeze", 0, 1.2, -1, "inOut")], flow: [R("flow", 0, 0.6, 1, "out")] },
+  road: { pave: [R("pave", 0, 1.4, 1, "inOut")], build: [R("build", 0, 1.8, 1, "out")], twist: [R("twist", 0, 0.6, 1, "out")], calm: [R("twist", 0, 1.0, -1, "inOut"), R("sway", 0, 1.0, -1, "inOut")], sway: [R("sway", 0, 0.6, 1, "out")] },
   building: { build: [R("build", 0, 1.6, 1, "out")], lights: [R("lights", 0, 0.4)], dark: [R("lights", 0, 0.4, -1)], up: [R("lift", 0, 2.0, 1, "inOut")], down: [R("lift", 0, 2.0, -1, "inOut")], run: [R("run", -0.1, 0.1, 1, "step")], stop: [R("run", 0, 0.1, -1, "step")] },
   terrain: { erupt: [R("glow", 0, 0.8, 1, "out")], calm: [R("glow", 0, 1.2, -1, "inOut")] },
   fx: { go: [R("go", 0, 1.6)], start: [R("on", -0.1, 0.3)], stop: [R("on", 0, 0.5, -1)] },

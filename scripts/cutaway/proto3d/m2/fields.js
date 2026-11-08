@@ -22,7 +22,7 @@ export const FIELDS = Object.freeze({
   prop: { f: { type: "str", pos: "vec3", rotY: "num", scale: "num", size: "nums", h: "num", w: "num", open: "strs", drop: "num", text: "str" }, need: ["type", "pos"] },
   grate: { f: { pos: "vec3", width: "num", depth: "num" }, need: ["pos"] },
   canopy: { f: { x0: "num", x1: "num", z0: "num", z1: "num", y: "num", h: "num", color: "color", postColor: "color" }, need: ["x0", "x1", "z0", "z1"] },
-  car: { f: { pos: "vec3", from: "num", to: "num", color: "color", model: "one:sedan,suv,taxi,police,ambulance,firetruck", scale: "num", axis: "one:x,z", mud: "bool" } },
+  car: { f: { road: "id", pos: "vec3", from: "num", to: "num", color: "color", model: "one:sedan,suv,taxi,police,ambulance,firetruck", scale: "num", axis: "one:x,z", mud: "bool" } },
   traffic: { f: { lane: "vec2", dir: "num", n: "num", gap: "num", colors: "strs", y: "num" }, need: ["lane"] },
   cabinet: { f: { pos: "vec3", size: "vec3" } },
   counter: { f: { pos: "vec3", size: "num", from: "num", to: "num", color: "color", bar: "bool", danger: "num" }, need: ["pos"] },
@@ -73,6 +73,7 @@ export const FIELDS = Object.freeze({
   outline: { f: { of: "str", points: "path", opts: { obj: { color: "color", r: "num", closed: "bool", over: "bool" } } } },
   seepFlow: { f: { count: "num", width: "num", y0: "num", fall: "num", floor: "num" } },
   fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,spark,frost,swirl,motes", at: "vec3", size: "num" }, need: ["type", "at"] },
+  road: { f: { points: "points", width: "num", surface: "one:asphalt,gravel,rail,path,track", lines: "bool", y: "num", bridge: { obj: { from: "num", to: "num", height: "num", type: "one:beam,arch,suspension", tower: "num" } } }, need: ["points"] },
   building: { f: { pos: "vec3", width: "num", depth: "num", floors: { each: { h: "num", color: "color" } }, roof: "one:flat,gable,dome,none", use: "one:house,mall,station,plant,factory,tower", walls: "color", roofColor: "color", cutaway: "one:front,none", windows: "bool", shafts: { each: { type: "one:elevator,escalator,stairs,chimney", x: "num", w: "num", from: "num", to: "num", z: "num" } } }, need: ["pos"] },
   waterBody: { f: { body: "one:sea,river,lake,pool", x0: "num", x1: "num", level: "num", z0: "num", depth: "num", waves: "bool", color: "color", murky: "bool", rise: "num", flood: "num" }, need: ["x0", "x1", "level"] },
   // (one field list for every block type: each type reads its own, kit/terrain.js terrainModel)
