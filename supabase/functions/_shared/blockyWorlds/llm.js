@@ -13,6 +13,7 @@ import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM
 import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
+import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesPrompt, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes } from "./hybrid.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
 import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
@@ -43,15 +44,15 @@ export const worstCaseUsd = (model, maxTokens, inputTokens = 12000) => { const p
 export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?.cache_read_input_tokens ?? 0, cacheWrite: u?.cache_creation_input_tokens ?? 0, output: u?.output_tokens ?? 0 });
 
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
-async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null }) {
+async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
   // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
   // pass it; what a call cost (failed ones too) is added to the meter
   if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200), model);
-  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter }); }
+  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache }); }
   catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
 }
-async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter }) {
+async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -63,7 +64,8 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
       model,
       max_tokens: maxTokens,
       // a list of system texts: each block cached (the reference examples come first, so calls sharing them share the cache)
-      system: [system].flat().map((text) => ({ type: "text", text, cache_control: { type: "ephemeral" } })),
+      // cache: false for a one-off call (a cache write costs 1.25x the input and nothing would read it)
+      system: [system].flat().map((text) => (cache ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text })),
       messages: [{ role: "user", content: user }],
       output_config: { effort, format: { type: "json_schema", schema } },
       ...(sonnet ? { fallbacks: "default" } : {}),
@@ -453,10 +455,10 @@ export function moneyMeter(maxUsd) {
  * The library's judge on a finished script (library.js judgeScriptPrompt): { verdict: {score, accepted, reason, scores,
  * better}, costUsd }. Same model, system prompt, schema and accept line as the library.
  */
-export async function judgeScript({ apiKey = "", provider = "anthropic", script, card = {}, meter = null, exemptOriginality = false }) {
+export async function judgeScript({ apiKey = "", provider = "anthropic", script, card = {}, meter = null, exemptOriginality = false, maxTokens = TOPIC_GATE.maxTokens.judge }) {
   const reply = provider === "mock"
     ? await MOCK.judge({ ideas: [{ opener: script?.lines?.[0]?.text ?? card?.opener ?? "" }] })
-    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card, { exemptOriginality }), schema: judgeSchema(), effort: "medium", maxTokens: TOPIC_GATE.maxTokens.judge, meter });
+    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card, { exemptOriginality }), schema: judgeSchema(), effort: "medium", maxTokens, meter });
   return { verdict: scoreVerdict(reply.data?.verdicts?.[0]), costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
@@ -617,6 +619,89 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
   }
   const judged = out.drafts.filter((d) => d.verdict);
   out.best = judged.length ? judged.reduce((a, b) => (b.verdict.score > a.verdict.score ? b : a)) : null;
+  return out;
+}
+
+// ---------- the hybrid writer (owner, 2026-11-08): Opus plans, Sonnet writes the lines ----------
+/**
+ * The hybrid flow's models, effort and output ceilings (thinking included; each bounds its call's worst case so a money
+ * meter can stop before it). Effort, measured on the 2026-11-08 run: topic 1 at medium/medium cost $0.114 for the plan
+ * (4.5k tokens out) + $0.061 for the lines (4.1k out), over the owner's ~$0.15 target, so both run at "low" (the plan is
+ * a full decision list, the lines are craft from it); the fix only patches a hard check ("low"); the judge as before.
+ */
+export const HYBRID = Object.freeze({
+  plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 9000 }),
+  lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 8000 }),
+  fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 6000 }),
+  judge: Object.freeze({ maxTokens: 2500 }),
+});
+
+/** Opus's plan: { plan, card, notes, costUsd, usage }. One call, never retried. */
+export async function writeHybridPlan({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, model = HYBRID.plan.model, effort = HYBRID.plan.effort, maxTokens = HYBRID.plan.maxTokens, note = "", cache = false, timeoutMs = 300_000 }) {
+  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note }), schema: hybridPlanSchema(), effort, maxTokens, timeoutMs, meter, cache });
+  const plan = reply.data ?? {};
+  return { plan, card: planCard(plan, topic), notes: planNotes(plan), costUsd: reply.costUsd, usage: reply.usage ?? null };
+}
+
+/** Sonnet's lines from the plan (a fix: previous + the failed hard checks): { script, skeleton, costUsd, usage }. */
+export async function writeHybridLines({ apiKey = "", plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], meter = null, model = HYBRID.lines.model, effort = HYBRID.lines.effort, maxTokens = HYBRID.lines.maxTokens, cache = false, timeoutMs = 300_000 }) {
+  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), HYBRID_LINES_SYSTEM], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed }), schema: broadScriptSchema(), effort, maxTokens, timeoutMs, meter, cache });
+  return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
+}
+
+/**
+ * One topic, one draft: Opus plan -> Sonnet lines -> free checks (hard / advisory) -> at most ONE cheap fix, only when a
+ * hard check fails (a script only too long is trimmed in code first, free; an opener-only miss goes to the small opener
+ * call) -> the judge as FEEDBACK (score + notes; never a gate, never a rewrite). A failed or capped call stops the topic
+ * (never retried); what was done is returned. steps: the calls (tests pass fakes). examples: [{ id, text, firstLine }].
+ * Returns { topic, recipe, references, plan, card, planNotes, script, skeleton, checks, fixed, firstHard, feedback,
+ * calls: { plan, lines, fix, judge } (each { model, usd, usage }), costUsd, stopped }.
+ */
+export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, steps = {} }) {
+  const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, ...steps };
+  const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null };
+  const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
+  const check = () => hybridChecks({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec });
+  const trimmed = () => {
+    if (!out.checks.hard.some((p) => /^Too long:/.test(p))) return;
+    const t = trimScript(out.script, lengthSec, { check: (x) => { const c = hybridChecks({ script: x, skeleton: out.skeleton, card: out.card, examples, lengthSec }); return { problems: c.hard, warnings: [] }; }, keep: (l) => Boolean(out.card?.prop) && l.part === "climax" && propReference(out.card.prop, l.text) !== null, anchors: [out.card?.twist, out.card?.prop, out.card?.topic, out.card?.twist_clue].filter(Boolean).join(" ") });
+    if (t.changes.length) { const before = out.checks.hard.length; const keep = out.script; out.script = t.script; out.checks = check(); if (out.checks.hard.length >= before) { out.script = keep; out.checks = check(); } else out.trimmed = t.changes; }
+  };
+  try {
+    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter });
+    log("plan", HYBRID.plan.model, p);
+    Object.assign(out, { plan: p.plan, card: p.card, planNotes: p.notes ?? [] });
+    const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter });
+    log("lines", HYBRID.lines.model, w);
+    out.script = w.script; out.skeleton = w.skeleton;
+    out.checks = check();
+    trimmed();
+    if (out.checks.hard.length) {
+      out.firstHard = out.checks.hard;
+      const onlyOpener = out.checks.hard.every((x) => /^The first line must start/.test(x));
+      if (onlyOpener) {
+        const f = await s.repairOpener({ apiKey, line: out.script.lines[0].text, next: out.script.lines[1]?.text ?? "", meter });
+        log("fix", MODELS.opener, f);
+        if (f.line) out.script = { ...out.script, lines: [{ ...out.script.lines[0], text: f.line }, ...out.script.lines.slice(1)] };
+      } else {
+        const f = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, previous: out.script, failed: out.checks.hard, meter, model: HYBRID.fix.model, effort: HYBRID.fix.effort, maxTokens: HYBRID.fix.maxTokens });
+        log("fix", HYBRID.fix.model, f);
+        out.script = f.script; out.skeleton = f.skeleton;
+      }
+      out.checks = check();
+      trimmed();
+      out.fixed = !out.checks.hard.length;
+    }
+    // the judge: feedback only (its score swings about +-10 on the same script; the owner decides)
+    if (judge) {
+      const j = await s.judgeScript({ apiKey, script: out.script, card: out.card, meter, exemptOriginality: true, maxTokens: HYBRID.judge.maxTokens });
+      log("judge", MODELS.judge, j);
+      out.feedback = { score: j.verdict?.score ?? null, scores: j.verdict?.scores ?? {}, notes: [j.verdict?.reason, j.verdict?.better].filter(Boolean), feedbackOnly: true };
+    }
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 300)}`;
+  }
   return out;
 }
 

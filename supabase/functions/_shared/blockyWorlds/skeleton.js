@@ -83,7 +83,13 @@ function lineOfOne(lines, quote, from = 0) {
   return bestShare >= 0.8 ? best : -1;
 }
 
-const EXCEPTION = /\b(except|only (?:one|kid|person|family|house)|but me|not me|never|can't|cannot|couldn't|don't|didn't|without|no one|nobody|last|lowest|smallest|poorest|worst|weakest|bottom|tiniest|shortest|alone|different)\b/i;
+const EXCEPTION = /\b(except|only (?:one|kid|person|family|house|girl|boy)|the only|but me|not me|everyone but|everybody but|all but|the one who|never|can't|cannot|couldn't|don't|didn't|won't|without|no one|nobody|last|lowest|smallest|poorest|worst|weakest|bottom|tiniest|shortest|alone|different|unlike|instead)\b/i;
+/** Superlatives that are not ("forest", "honest"): any other "-est" word of 6+ letters marks the narrator as the extreme. */
+const NOT_SUPERLATIVE = new Set("forest honest modest interest harvest request suggest protest contest arrest digest invest manifest earnest".split(" "));
+const SUPERLATIVE = (t) => (String(t).toLowerCase().match(/\b[a-z]{3,}est\b/g) ?? []).some((w) => w.length >= 6 && !NOT_SUPERLATIVE.has(w));
+/** Whether a line says the narrator is the exception or the underdog ("the quietest sneezer in town", "everyone but me"). */
+export const isException = (text) => EXCEPTION.test(String(text ?? "")) || SUPERLATIVE(text);
+const TOUR = ["tour", "rule"];
 /** Words of new magic or power that must not first appear in the climax. */
 export const MAGIC = Object.freeze(["magic", "magical", "spell", "wizard", "witch", "potion", "enchanted", "enchant", "superpower", "power", "powers", "portal", "miracle", "teleport", "teleported", "transform", "transformed", "sparkle", "sparkled", "glow", "glowed", "glowing", "wish", "wished", "curse", "cursed", "suddenly", "zap", "zapped", "beam"]);
 const MAGIC_SET = new Set(MAGIC);
@@ -102,8 +108,9 @@ export function skeletonProblems(script, skel = {}, card = null) {
   const firstWords = contentWords(lines[0].text);
   // 1. rule + price first
   if (!hasOpener(lines[0].text)) bad('line 1 must state the rule ("In this town, ...").');
+  // the price within lines 1-3 (owner, 2026-11-08: "the price can be in line 3")
   const price = lineOf(lines, skel.price);
-  if (price < 0 || price > 1) bad(`the price of breaking the rule must be said in line 1 or 2${price > 1 ? ` (it comes in line ${price + 1})` : ""}.`);
+  if (price < 0 || price > 2) bad(`the price of breaking the rule must be said in lines 1 to 3${price > 2 ? ` (it comes in line ${price + 1})` : ""}.`);
   // 2. three named neighbours in the tour
   const names = (skel.neighbours ?? []).filter((n) => String(n?.name ?? "").trim());
   const tourHits = new Set();
@@ -115,13 +122,21 @@ export function skeletonProblems(script, skel = {}, card = null) {
     const i = lineOf(lines, n.quote);
     const nameWords = String(n.name).split(/\s+/).map((w) => w.replace(/[^A-Za-z]/g, "")).filter((w) => /^[A-Z]/.test(w) && !TITLES.has(w.toLowerCase()));
     if (i < 0 || !nameWords.length) continue;
-    const at = [i, i - 1, i - 2].find((k) => k >= 0 && ["tour", "rule"].includes(partOf(k)) && nameWords.some((w) => new RegExp(`\\b${w}\\b`).test(lines[k].text)));
-    if (at !== undefined && ["tour", "rule"].includes(partOf(i))) tourHits.add(nameWords[0].toLowerCase());
+    const at = [i, i - 1, i - 2, i + 1].find((k) => k >= 0 && TOUR.includes(partOf(k)) && nameWords.some((w) => new RegExp(`\\b${w}\\b`).test(lines[k].text)));
+    if (at !== undefined && TOUR.includes(partOf(i))) tourHits.add(nameWords[0].toLowerCase());
+  }
+  // meaning over quotes (owner, 2026-11-08): a mapped neighbour whose name is said anywhere in the tour counts, even when
+  // the map's quote of the joke is off
+  for (const n of names) {
+    const nameWords = String(n.name).split(/\s+/).map((w) => w.replace(/[^A-Za-z]/g, "")).filter((w) => /^[A-Z]/.test(w) && !TITLES.has(w.toLowerCase()));
+    if (nameWords.length && lines.some((l) => TOUR.includes(l.part) && nameWords.some((w) => new RegExp(`\\b${w}\\b`).test(l.text)))) tourHits.add(nameWords[0].toLowerCase());
   }
   if (tourHits.size < 3) bad(`the world tour needs three named neighbours, one joke each (found ${tourHits.size}).`);
   // 3. the narrator is the exception, in "Me"
+  // by meaning (owner, 2026-11-08: "the quietest sneezer in town" counts): the quoted line or any "Me" line says it
   const ex = lineOf(lines, skel.exception);
-  if (ex < 0 || partOf(ex) !== "me" || !EXCEPTION.test(lines[ex].text)) bad('"Me" must say plainly how the narrator is the exception or the underdog of the rule.');
+  const exOk = (i) => i >= 0 && ["me", "tour"].includes(partOf(i)) && isException(lines[i].text);
+  if (!exOk(ex) && !idxs("me").some(exOk)) bad('"Me" must say plainly how the narrator is the exception or the underdog of the rule.');
   // 4. the planted object, named in "Me"
   const prop = String(skel.prop || card?.prop || "");
   const me = idxs("me");
@@ -130,11 +145,12 @@ export function skeletonProblems(script, skel = {}, card = null) {
   const steps = (skel.escalation ?? []).map((q) => lineOf(lines, q));
   const inUntil = steps.filter((i) => i >= 0 && partOf(i) === "until");
   const ordered = inUntil.every((v, k) => !k || v > inUntil[k - 1]);
-  if (new Set(inUntil).size < 3 || !ordered) bad(`"Until one night" needs three escalation steps, in order (found ${new Set(inUntil).size}).`);
+  // meaning over quotes: an "until" part of three or more lines escalates even when the map's quotes are off
+  if ((new Set(inUntil).size < 3 || !ordered) && idxs("until").length < 3) bad(`"Until one night" needs three escalation steps, in order (found ${new Set(inUntil).size}).`);
   // 6. the discovery is about the rule
   const disc = lineOf(lines, skel.discovery);
   const discText = idxs("discovery").map((i) => lines[i].text).join(" ");
-  if (disc < 0 || partOf(disc) !== "discovery") bad('"Discovery" must reveal a hidden truth about the rule (quote its line).');
+  if ((disc < 0 || partOf(disc) !== "discovery") && !discText) bad('"Discovery" must reveal a hidden truth about the rule (quote its line).');
   else if (!/\brules?\b/i.test(discText) && !contentWords(discText).some((w) => firstWords.includes(w))) bad("the discovery must be about the rule of line 1 (reuse its key word).");
   // 7. the climax wins with the rule or the planted object
   const win = lineOf(lines, skel.win);

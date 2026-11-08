@@ -43,7 +43,8 @@ test("skeleton: each missing job is caught", () => {
     [(s, m) => { m.neighbours = m.neighbours.slice(0, 2); }, /three named neighbours/],
     [(s, m) => { s.lines[5].text = "I'm Wren and I like soup."; m.exception = "I like soup"; }, /exception/],
     [(s, m) => { s.lines[6].text = "I carry a sandwich everywhere."; m.prop_quote = "I carry a sandwich"; }, /must be named in "Me"/],
-    [(s, m) => { m.escalation = m.escalation.slice(0, 2); }, /three escalation steps/],
+    // meaning over quotes (2026-11-08): only an "until" part of fewer than three lines fails, whatever the map quotes
+    [(s, m) => { m.escalation = m.escalation.slice(0, 2); s.lines.splice(10, 1); }, /three escalation steps/],
     [(s, m) => { s.lines[11].text = "The cake was never about frosting."; s.lines[12].text = "Frosting is sweet."; m.discovery = "The cake was never about frosting"; }, /about the rule/],
     [(s, m) => { s.lines.at(-1).text = "Now we all eat cake."; }, /flip or echo line 1/],
     [(s, m) => { m.clue = "a golden whistle"; m.clue_quote = "The towers stand on the pipes"; }, /^Twist: the twist is not set up earlier/],

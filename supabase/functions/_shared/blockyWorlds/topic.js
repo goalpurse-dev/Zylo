@@ -51,7 +51,13 @@ export function baseWord(word) {
 }
 const keyOf = (word) => { const b = baseWord(word); return GROUP_OF.get(b) ?? GROUP_OF.get(`${b}e`) ?? b; };
 // "chasing" -> "chas" and "chase" -> "chase" are the same word
-const sameKey = (a, b) => a === b || `${a}e` === b || `${b}e` === a;
+const sameStem = (a, b) => a === b || `${a}e` === b || `${b}e` === a;
+/**
+ * A comparative or superlative counts as its plain word (owner, 2026-11-08: "poor families" is the topic's "poorer",
+ * "loud" its "loudest"): "poorer" -> "poor", "loudest" -> "loud", "bigger" -> "big". Only words of 6+ letters.
+ */
+const plainOf = (k) => (k.length >= 6 && /(?:er|est)$/.test(k) ? k.replace(/(?:est|er)$/, "").replace(/([^aeiouls])\1$/, "$1") : k);
+const sameKey = (a, b) => sameStem(a, b) || sameStem(plainOf(a), plainOf(b));
 const wordsOf = (text) => String(text ?? "").replace(/[’]/g, "'").split(/[^A-Za-z']+/).map((w) => w.replace(/^'+|'+$/g, "")).filter(Boolean);
 const SETTING_WORDS = new Set("inside in on under within beneath underneath aboard atop".split(" "));
 

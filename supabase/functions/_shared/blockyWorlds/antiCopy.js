@@ -15,12 +15,19 @@ const NOT_NAMES = new Set(`I In This That The A An And But So Then When While Un
 Mr Mrs Ms Miss Dr Doctor Mayor Grandma Grandpa Granny Gran Mom Mum Dad Mommy Daddy Mother Father Sister Brother Aunt Uncle Baby Sir Madam Officer Captain King Queen Prince Princess Chief Coach Teacher Santa
 You Your We Our My He She They It Its Their His Her Yes No Okay Ok Oh Huh Hey Well Now Apparently Honestly Suddenly Even Just Yesterday Today Tomorrow Last Next Later Why What Where How Who
 Hello Hi Goodbye Deal Main Street Road Lane Avenue Square Park School Town City World Village Girl Boy Kid Kids Everything Nothing Please Thanks Sorry Stop Wait Run Help Look Listen
-Monday Tuesday Wednesday Thursday Friday Saturday Sunday Christmas Halloween God Earth Moon Sun`.split(/\s+/));
+Monday Tuesday Wednesday Thursday Friday Saturday Sunday Christmas Halloween God Earth Moon Sun
+Let Lets Turns Turned Nope Maybe Because Since Once Twice Whoever Whatever Always Sometimes Today Tonight Bang Boom Crash Pop Thud Achoo Gross Wow Ugh Yep Yeah`.split(/\s+/));
 
 export const norm = (s) => String(s ?? "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
 const grams = (ws, n) => { const out = []; for (let i = 0; i + n <= ws.length; i++) out.push(ws.slice(i, i + n).join(" ")); return out; };
 const trivial = (gram) => gram.split(" ").filter((w) => STOP.has(w)).length >= 3;
 
+/**
+ * A contraction is never a name (2026-11-08 run: "I've" became "Ive" and was flagged as a reference's name): a word with
+ * an apostrophe inside that is not a possessive 's ("I've", "I'm", "I'll", "Don't", "We'd", "O'Neil"-style names keep
+ * a capital after the apostrophe and stay names).
+ */
+const CONTRACTION = /^[A-Za-z]+[’'](?:ve|m|ll|d|re|t|s)$/i;
 /** The names in a text: capitalised words inside a sentence that aren't common words, and the word after a title. */
 export function namesIn(text, { anyPosition = false } = {}) {
   const out = new Set();
@@ -29,8 +36,13 @@ export function namesIn(text, { anyPosition = false } = {}) {
   for (const sentence of t.split(/(?<=[.!?])\s+|\n+/)) {
     const ws = sentence.split(/\s+/).filter(Boolean);
     ws.forEach((raw, i) => {
-      const w = raw.replace(/[’']s$/, "").replace(/[^A-Za-z]/g, "");
-      if ((anyPosition || i > 0) && /^[A-Z][a-z]{2,}$/.test(w) && !NOT_NAMES.has(w)) out.add(w);
+      const bare = raw.replace(/^[^A-Za-z]+|[^A-Za-z’']+$/g, "");
+      // a possessive keeps its name ("Pell's" -> Pell); any other contraction is no name ("I've", "Don't", "We'll")
+      if (CONTRACTION.test(bare) && !/[’']s$/i.test(bare)) return;
+      if (/^[A-Za-z]+[’'](?:t)$/i.test(bare)) return;
+      const w = bare.replace(/[’']s$/, "").replace(/[^A-Za-z]/g, "");
+      // a common word capitalised at a sentence start or for emphasis is no name ("Every", "Never", "Then")
+      if ((anyPosition || i > 0) && /^[A-Z][a-z]{2,}$/.test(w) && !NOT_NAMES.has(w) && !STOP.has(w.toLowerCase())) out.add(w);
     });
   }
   return [...out];
