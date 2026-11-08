@@ -75,7 +75,7 @@ export const RUBRIC = Object.freeze([
 // strongest 67-69; scripts/blockyWorlds/calibrateJudge.mjs). 65 lets ideas as strong as the best hits in and keeps the rest out.
 export const ACCEPT = Object.freeze({ minScore: 65, minCore: 3, core: Object.freeze(["hook", "twist", "closer"]) });
 
-export const JUDGE_SYSTEM = `You are the strict judge of story ideas for Blocky Worlds: 1-2 minute narrated videos where a kid explains an absurd world rule ("In this world, ..." / "In this town, ...") and the story pushes it to its most extreme consequence. Only ideas as strong as viral hits (about 300k likes each) may pass.
+export const JUDGE_SYSTEM = `You are the strict judge of story ideas for Blocky Worlds: 1-2 minute narrated videos where a kid explains an absurd world rule ("In this town, ...") and the story pushes it to its most extreme consequence. Only ideas as strong as viral hits (about 300k likes each) may pass.
 
 Score each idea on every criterion from 1 (weak) to 5 (as strong as the best hits). Be harsh: a 5 is rare. Then say in one short sentence what would make it better.
 

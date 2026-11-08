@@ -31,7 +31,7 @@ export const EXAMPLE_IDEAS = Object.freeze([
     formula: "F2", twistType: "T3", mood: "funny", setting: "suburb street",
   },
   {
-    opener: "In this world, when you sneeze, a tiny copy of you pops out and runs away.",
+    opener: "In this town, when you sneeze, a tiny copy of you pops out and runs away.",
     title: "Bless You",
     premise: "Tiny copies of sneezers run wild all over town, and the most allergic kid alive has made thousands.",
     price: "Sneeze in public and a tiny you is loose forever.",
@@ -57,7 +57,7 @@ export const EXAMPLE_IDEAS = Object.freeze([
     formula: "F2", twistType: "T2", mood: "epic", setting: "town square",
   },
   {
-    opener: "In this world, every photo taken of you adds one minute to your life.",
+    opener: "In this town, every photo taken of you adds one minute to your life.",
     title: "Say Cheese",
     premise: "Grandmas chase babies with cameras all day, and the new kid in school has never had a single photo taken.",
     price: "No photos means your minutes run out fast.",

@@ -218,7 +218,7 @@ test("stress: topics are distinct and deterministic; the free run aggregates and
   assert.equal(a.length, 200); assert.deepEqual(a, b);
   assert.equal(new Set(a.map((t) => t.topic)).size, 200);
   assert.notDeepEqual(makeTopics(20, 12), makeTopics(20, 11));
-  assert.match(standInCard(a[0], 1).opener, /^In this world, /);
+  assert.match(standInCard(a[0], 1).opener, /^In this town, /);
   const dir = tmp();
   const r = await runFree({ n: 30, seed: 5, outDir: dir, quiet: true });
   assert.equal(r.stats.stories, 30);

@@ -86,7 +86,7 @@ THE SHAPE (seven parts, in order)
 ${PARTS.map((p, i) => `${i + 1}. ${p.id}: ${p.what}`).join("\n")}
 
 THE HARD RULE
-- The very first line MUST start with exactly "In this world, " or "In this town, " (capital I, a comma after "world" or "town"). It states the rule as plain fact.
+- The very first line MUST start with exactly "In this town, " (capital I, a comma after "town"; never "In this world"). It states the rule as plain fact.
 
 PACE (this is what makes it fast)
 - One line = one short spoken sentence or fragment. Most lines 5 to 10 words. Never more than ${LINE.maxWords} words.
@@ -337,7 +337,7 @@ export function partFixPrompt({ script, indexes, reasons, card = null }) {
 }
 
 /** The opener repair (one small call): rewrite only the first line, keeping its meaning. */
-export const OPENER_SYSTEM = `You fix the first line of a story narration. Rewrite it so it starts with exactly "In this world, " or "In this town, " and states the same world rule as plain fact, in 8 to 20 words, with no semicolons, colons, dashes or ellipses. Keep its meaning and its names. Return only the JSON object.`;
+export const OPENER_SYSTEM = `You fix the first line of a story narration. Rewrite it so it starts with exactly "In this town, " and states the same world rule as plain fact, in 8 to 20 words, with no semicolons, colons, dashes or ellipses. Keep its meaning and its names. Return only the JSON object.`;
 export const openerSchema = () => ({ type: "object", additionalProperties: false, required: ["line"], properties: { line: { type: "string" } } });
 export const openerPrompt = (line, next = "") => `The first line: ${line}\nThe line after it: ${next}`;
 export const openerOk = (line) => hasOpener(paceClean(line)) && safetyProblems(line).length === 0;

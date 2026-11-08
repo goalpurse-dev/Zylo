@@ -208,7 +208,7 @@ function OwnScript({ flow }) {
       <textarea id="bw-own" rows={12} maxLength={12000} value={flow.ownText} onChange={(e) => flow.setOwnText(e.target.value)}
         placeholder={"In this town, nobody whistles after sunset.\nYou see, if you whistle in the dark, something whistles back..."}
         className="min-h-[260px] w-full resize-y rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-lime-300/35 focus:ring-1 focus:ring-lime-300/30" />
-      <p className="mt-2 text-[11px] leading-relaxed text-white/35">It must start with &ldquo;In this world, &rdquo; or &ldquo;In this town, &rdquo;. We check it and can fix the first line for you.</p>
+      <p className="mt-2 text-[11px] leading-relaxed text-white/35">It must start with &ldquo;In this town, &rdquo;. We check it and can fix the first line for you.</p>
     </section>
   );
 }

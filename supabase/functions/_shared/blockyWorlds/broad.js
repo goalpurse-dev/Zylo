@@ -55,7 +55,7 @@ THE PARTS (in order): ${PARTS.map((p) => `${p.id} (${p.what})`).join("; ")}.
 ${SKELETON_RULES.split("\nTHE SKELETON MAP")[0]}
 
 THE CARD
-- opener: the first line, starting with exactly "In this town, " or "In this world, ", stating the user's topic as the rule, 8 to 22 words.
+- opener: the first line, starting with exactly "In this town, " (never "In this world"), stating the user's topic as the rule, 8 to 22 words.
 - price: what breaking the rule costs, concrete and seen by everyone (it goes in line 1 or 2).
 - examples: exactly three neighbour jokes, each with a NAME (new names, never from the reference examples).
 - narrator: the kid and how they're the exception. prop: the ordinary planted object (1-8 words).

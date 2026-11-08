@@ -214,7 +214,7 @@ export function topicProblems(topic, script) {
   else if (conflict && !statesRelation(conflict, ruleText, { withAgent: true })) first.push(`never says that ${list(conflict.agents.map((e) => e.label), "or")} ${conflict.agents.length ? "is " : ""}${conflict.relation.label}${conflict.target ? ` the ${conflict.target.label}` : ""} (the conflict is the premise)`);
   const dropped = droppedDescriptors(els, [ruleText, lines[openingEnd]?.text ?? ""].join(" "));
   if (dropped.length) first.push(`drops ${list(dropped.map((d) => `"${d.phrase}" (${d.of.words[0]})`))}, the words that set its scale and tone`);
-  if (first.length) out.push(`${TOPIC_PREFIX}: the first line ${first.join(", and ")}. State your idea itself as the world's rule ("In this world, ${String(topic).replace(/[.!?]+$/, "").slice(0, 120)}").`);
+  if (first.length) out.push(`${TOPIC_PREFIX}: the first line ${first.join(", and ")}. State your idea itself as the world's rule ("In this town, ${String(topic).replace(/[.!?]+$/, "").slice(0, 120)}").`);
   const later = lines.slice(openingEnd + 1).map((l) => l.text).join(" \n ");
   const absent = els.filter((e) => !mentions(later, e));
   if (absent.length) {

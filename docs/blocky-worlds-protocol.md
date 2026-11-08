@@ -44,7 +44,7 @@ The research behind it is `reference/blocky-worlds/ANALYSIS.md`, a study of 19 v
 
 ## 1. The hard rules
 
-1. **Every video starts with "In this world, " or "In this town, "**. The writer is told this, and code enforces it on every script, whether generated, rewritten or the user's own (`opener.js`). A near miss ("In my town", "In this village") is fixed by code. Anything else gets one small rewrite of the first line only; if that fails, the script is refused.
+1. **Every video starts with "In this town, "** (only this one since 2026-11-08; an older "In this world, " line is fixed by code to "In this town, "). The writer is told this, and code enforces it on every script, whether generated, rewritten or the user's own (`opener.js`). A near miss ("In my town", "In this village") is fixed by code. Anything else gets one small rewrite of the first line only; if that fails, the script is refused.
 2. **Original worlds and names only.** A famous premise may lend its shape, never its titles, names, places, objects or lines (`safety.js`).
 3. **No game-platform words.** No Roblox, Robux, noob, obby, oof or the like, anywhere: script, card, signs or upload text.
 4. **PG fear only.** Danger is suggested, never gory.

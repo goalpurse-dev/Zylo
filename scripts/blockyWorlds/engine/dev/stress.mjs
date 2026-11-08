@@ -109,7 +109,7 @@ export function standInCard(t, seed = 1) {
   const lines = [fill(R.pick(TWIST_LINES), R), fill(R.pick(TWIST_LINES), R), fill(R.pick(TWIST_LINES), R)];
   return {
     title: cap1(t.topic.split(" ").slice(0, 4).join(" ")), mood: t.mood, setting: t.setting, formula: "F2", twistType: "T1",
-    opener: `In this world, ${t.topic}.`,
+    opener: `In this town, ${t.topic}.`,
     premise: `In a town where ${t.topic}, ${nar} is the only kid who notices what is really going on.`,
     price: fill(R.pick(["If you break the rule, {weather} on your house.", "Break the rule and your {thing} turn into {food}.", "Break the rule and a {creature} moves into your room.", "Break the rule and you sleep in the {place}."]), R),
     examples: [fill(`{neighbor} keeps ${R.pick(V.thing)} in a jar by the door.`, R), fill(R.pick(["The {job} waves at {sky} at {time}.", "The {job} counts {thing} at {time}.", "The {job} hides from {sky} at {time}."]), R), fill("{neighbor}'s {animal} refuses to go outside.", R)],

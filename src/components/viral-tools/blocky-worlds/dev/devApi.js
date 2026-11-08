@@ -45,7 +45,7 @@ function topicIdeasFor(topic, mood) {
   const t = String(topic).trim().toLowerCase(), T = t.replace(/^./, (c) => c.toUpperCase());
   const rules = [
     [`In this town, ${t} is in charge, and everybody obeys.`, `${T} Is in Charge`, `Everybody obeyed. Except me.`],
-    [`In this world, if you say "${t}" out loud, it shows up at your door that night.`, `Never Say ${T}`, `I said it in my sleep.`],
+    [`In this town, if you say "${t}" out loud, it shows up at your door that night.`, `Never Say ${T}`, `I said it in my sleep.`],
     [`In this town, every night ${t} gets one wish, and the whole street pays for it.`, `${T}'s Wish`, `Then it wished for me.`],
   ];
   const bones = LIBRARY.filter((r) => !mood || r.idea.mood === mood);

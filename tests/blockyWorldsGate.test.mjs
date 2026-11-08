@@ -11,7 +11,7 @@ import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "../supabase/functions/_shared/blo
 const TOPIC = "we live inside a giant turtle and a big bad wolf with an army of soldiers is hunting it";
 const verdictOf = (n, safe = true) => scoreVerdict({ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, n])), safe, better: `make it a ${n}` });
 const clean = { problems: [], warnings: [] };
-const script = (tag) => ({ title: tag, lines: [{ part: "rule", text: `In this world, ${tag}.` }], post: {} });
+const script = (tag) => ({ title: tag, lines: [{ part: "rule", text: `In this town, ${tag}.` }], post: {} });
 
 test("the judge's bar is the library's: all 4s pass, all 3s don't", () => {
   assert.equal(verdictOf(4).accepted, true);
@@ -152,7 +152,7 @@ test("the recipe picker: the five owner topics", () => {
 
 test("the recipe picker: a hidden giant revealed, and the card's formula when the topic is vague", () => {
   assert.equal(pickRecipe({ topic: "the hill behind our school is actually a sleeping giant" }).id, "giant_reveal");
-  assert.equal(pickRecipe({ topic: "pancakes", card: { opener: "In this world, everyone has a pancake hat, except me.", premise: "", twist: "", formula: "F1" } }).id, "everyone_except_me");
+  assert.equal(pickRecipe({ topic: "pancakes", card: { opener: "In this town, everyone has a pancake hat, except me.", premise: "", twist: "", formula: "F1" } }).id, "everyone_except_me");
   assert.equal(pickRecipe({ topic: "" }).id, null);
 });
 

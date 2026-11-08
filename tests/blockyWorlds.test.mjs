@@ -42,21 +42,27 @@ test("narrator: the request body carries exactly the config", () => {
   assert.deepEqual(words.map((w) => w.w), ["Hi", "yo"]);
 });
 
-// ---------- the hard rule: "In this world, " / "In this town, " ----------
+// ---------- the hard rule: "In this town, " only (owner, 2026-11-08) ----------
 
-test("opener: only the two exact openers pass", () => {
-  assert.ok(hasOpener("In this world, everyone has wings."));
+test("opener: only the exact \"In this town, \" opener passes", () => {
+  assert.ok(hasOpener("In this town, everyone has wings."));
   assert.ok(hasOpener("In this town, every house has a chalk line."));
-  for (const bad of ["In this village, ...", "In my town, x", "in this world, x", "In this world everyone", "Everyone in this town has wings.", "In this world,"]) assert.ok(!hasOpener(bad), bad);
+  for (const bad of ["In this world, everyone has wings.", "In this village, ...", "In my town, x", "in this world, x", "in this town, x", "In this town everyone", "Everyone in this town has wings.", "In this town,"]) assert.ok(!hasOpener(bad), bad);
   assert.equal(openerProblem("In this town, yes."), null);
-  assert.match(openerProblem("Once upon a time"), /must start/);
+  assert.match(openerProblem("Once upon a time"), /must start with "In this town, "/);
+  assert.match(openerProblem("In this world, yes."), /must start/);
+});
+
+test("opener: an old \"In this world, \" line gets just those words swapped by code", () => {
+  assert.equal(fixOpener("In this world, we live in a giant turtle and a wolf army is hunting it."), "In this town, we live in a giant turtle and a wolf army is hunting it.");
+  assert.equal(fixOpener("In this world, I'm the only kid without a hat."), "In this town, I'm the only kid without a hat.");
 });
 
 test("opener: near misses are fixed by code, anything else needs a rewrite", () => {
   assert.equal(fixOpener("In my town, you have to be home early."), "In this town, you have to be home early.");
   assert.equal(fixOpener("in this village: nobody whistles."), "In this town, nobody whistles.");
   assert.equal(fixOpener("In this kingdom, the smallest rule."), "In this town, the smallest rule.");
-  assert.equal(fixOpener("In my world, Everyone gets a power."), "In this world, everyone gets a power.");
+  assert.equal(fixOpener("In my world, Everyone gets a power."), "In this town, everyone gets a power.");
   assert.equal(fixOpener("Everyone in this town whispers."), null);
   assert.equal(fixOpener("In this town,"), null);
 });
@@ -141,7 +147,7 @@ test("script: a 1:30 script lands on 1:30 at the voice's measured pace (~215 wpm
   }
   assert.equal(targetWords(90), 318);
   const lines = (n) => Array.from({ length: Math.ceil(n / 8) }, (_, i) => ({ part: "own", text: Array.from({ length: Math.min(8, n - i * 8) }, () => "word").join(" ") + "." }));
-  assert.match(checkScript({ lines: [{ part: "rule", text: "In this world, x." }, ...lines(330)] }, 90).problems.join(), /Too long/);
+  assert.match(checkScript({ lines: [{ part: "rule", text: "In this town, x." }, ...lines(330)] }, 90).problems.join(), /Too long/);
   assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /LENGTH: 90 seconds = 286 to 318 words in total, in about \d+ lines\. Never more than 318 words/);
 });
 

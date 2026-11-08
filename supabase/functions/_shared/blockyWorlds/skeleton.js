@@ -101,7 +101,7 @@ export function skeletonProblems(script, skel = {}, card = null) {
   if (!lines.length) return [`${SKELETON_PREFIX}: the script is empty.`];
   const firstWords = contentWords(lines[0].text);
   // 1. rule + price first
-  if (!hasOpener(lines[0].text)) bad('line 1 must state the rule ("In this town, ..." / "In this world, ...").');
+  if (!hasOpener(lines[0].text)) bad('line 1 must state the rule ("In this town, ...").');
   const price = lineOf(lines, skel.price);
   if (price < 0 || price > 1) bad(`the price of breaking the rule must be said in line 1 or 2${price > 1 ? ` (it comes in line ${price + 1})` : ""}.`);
   // 2. three named neighbours in the tour

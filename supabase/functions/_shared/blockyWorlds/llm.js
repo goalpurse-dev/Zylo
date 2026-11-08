@@ -371,7 +371,7 @@ function mockFixPart({ script, indexes, reasons, card }) {
     else if (/^The story drifted from your idea/.test(r) && card?.topic) {
       const els = topicElements(card.topic), named = els.map((e) => e.words[0]).join(", ");
       out = /the first line /.test(r)
-        ? [`In this world, ${String(card.topic).replace(/[.!?]+$/, "")}.`, ...out.slice(1)]
+        ? [`In this town, ${String(card.topic).replace(/[.!?]+$/, "")}.`, ...out.slice(1)]
         : [`It was all about the ${named}.`, ...out.slice(1)];
     }
     else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });

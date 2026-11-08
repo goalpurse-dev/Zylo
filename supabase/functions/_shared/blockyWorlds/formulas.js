@@ -5,7 +5,7 @@ export const FORMULAS = Object.freeze({
   F1: Object.freeze({
     name: "Everyone has X, except me",
     rule: "Everyone in the place has a visible gift, stat or marker (wings, a number over their head, their own weather). The narrator lacks it or has the worst one.",
-    example: "In this world, everyone has a price tag floating over their head, and mine says one cent.",
+    example: "In this town, everyone has a price tag floating over their head, and mine says one cent.",
   }),
   F2: Object.freeze({
     name: "Never do X, or Y comes",
@@ -25,12 +25,12 @@ export const FORMULAS = Object.freeze({
   F5: Object.freeze({
     name: "Everyone gets X when Y happens",
     rule: "A lottery of fate: a power, gift or change arrives at a set moment. The narrator's draw looks useless.",
-    example: "In this world, when you sneeze, a tiny copy of you pops out and runs away.",
+    example: "In this town, when you sneeze, a tiny copy of you pops out and runs away.",
   }),
   F6: Object.freeze({
     name: "Some are A, the rest of us are B",
     rule: "Two classes of people with a clear, visible line between them. The narrator is a B who breaks the system.",
-    example: "In this world, kids with a bike helmet rule the street, and kids without one must walk and bow.",
+    example: "In this town, kids with a bike helmet rule the street, and kids without one must walk and bow.",
   }),
 });
 

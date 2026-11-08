@@ -29,8 +29,8 @@ test("dedup: the same rule with one noun swapped, or swapped for a near-synonym,
   const piano = { ...base, title: "Piano", opener: "In this town, the old piano follows the last person who laughed." };
   const globe = { ...base, title: "Globe", opener: "In this town, the old snowglobe follows the last person who laughed." };
   assert.equal(duplicateOf(globe, [piano])?.title, "Piano");
-  const candle = { ...base, title: "Candle", opener: "In this world, kids who own a candle are Keepers who sleep upstairs, and kids without one sleep in the dark cellar halls." };
-  const nightlight = { ...base, title: "Nightlight", opener: "In this world, kids with a nightlight get the upstairs bedrooms, and the rest of us sleep in the dark basement." };
+  const candle = { ...base, title: "Candle", opener: "In this town, kids who own a candle are Keepers who sleep upstairs, and kids without one sleep in the dark cellar halls." };
+  const nightlight = { ...base, title: "Nightlight", opener: "In this town, kids with a nightlight get the upstairs bedrooms, and the rest of us sleep in the dark basement." };
   assert.ok(ruleSimilarity(candle, nightlight) >= SWAP_AT, `rule similarity ${ruleSimilarity(candle, nightlight)}`);
   assert.equal(duplicateOf(nightlight, [candle])?.title, "Candle");
   // the same formula with a different rule stays: "every family leaves..." is shared by design

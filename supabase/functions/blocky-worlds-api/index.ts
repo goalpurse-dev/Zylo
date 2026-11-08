@@ -266,7 +266,7 @@ async function handle(req: Request, trace: Trace) {
       let fix: any;
       try { fix = await repairOpener({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, line: lines[0].text, next: lines[1]?.text ?? "" }); } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
       await logCall(who.user.id, "script", fix.costUsd);
-      if (!fix.line) throw new ApiError("WRITER", 'We couldn\'t fix the first line. Start it with "In this world, " or "In this town, " yourself.');
+      if (!fix.line) throw new ApiError("WRITER", 'We couldn\'t fix the first line. Start it with "In this town, " yourself.');
       const next = { ...d, lines: [{ ...lines[0], text: fix.line }, ...lines.slice(1)] };
       const checks = recheck(next);
       const { data } = await admin.from("blocky_worlds_drafts").update({ lines: next.lines, checks, writes: d.writes + 1, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();

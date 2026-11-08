@@ -17,7 +17,7 @@ const L = (part, ...texts) => texts.map((text) => ({ part, text }));
 const real = {
   title: "The Wolf Hunts Our Turtle",
   lines: [
-    ...L("rule", "In this world, everyone inside our giant turtle has a shell-sticker, except me.", "Mine says ZERO."),
+    ...L("rule", "In this town, everyone inside our giant turtle has a shell-sticker, except me.", "Mine says ZERO."),
     ...L("tour", "You see, every sticker counts down the days.", "At zero, the wolf's soldiers carry you off to him.", "He's hunted our turtle for years.", "Mrs. Pocket sneezed in the bakery once.", "Her sticker dropped to nine.", "Now she sneezes into a pillow.", "Mr. Gorp hums on the stairs.", "He has four days left.", "Our mailman delivers by shell-slide.", "Always at a whisper.", "Last week he whispered a package into a pond."),
     ...L("me", "I'm Nell, and I'm the exception.", "My sticker's blank, so the soldiers can't count me.", "I live with Grandma.", "She fixes everything with duct tape.", "That night she handed me a fresh roll.", "Silver, with a little heart on it.", "She said, \"Save it for something big.\"", "I tucked it in my belt."),
     ...L("until", "Until one night, the whole turtle shook.", "Through the gate came the wolf's soldiers.", "Square helmets. Shiny boots. Zero smiles.", "They held up scanners. Beep. Beep.", "Mr. Gorp's sticker hit zero. He'd hummed once too often.", "They dragged him toward the dark tunnel.", "Outside, two huge yellow eyes peeked over the wall.", "Then the soldiers turned toward Grandma's house."),
@@ -75,7 +75,7 @@ test("checker: the set-up still accepts the owner's name next to the object (as 
 
 test("spots: each problem sits on its part (or line); the rest are fixed by a rewrite", () => {
   const ignores = withClimax(real, ["Then I ran.", "They picked him up like a sofa."]);
-  const problems = [...propProblems(card, ignores), "Line 3 has 18 words (keep it under 16): \"He's hunted...\"", "The first line must start with \"In this world, \" or \"In this town, \".", "Too short: 10 words, a 90 s video needs at least 300.", 'Uses "blood". Keep it PG: suggest the danger, never show or say gore.'];
+  const problems = [...propProblems(card, ignores), "Line 3 has 18 words (keep it under 16): \"He's hunted...\"", "The first line must start with \"In this town, \" or \"In this town, \".", "Too short: 10 words, a 90 s video needs at least 300.", 'Uses "blood". Keep it PG: suggest the danger, never show or say gore.'];
   const withGore = { ...ignores, lines: ignores.lines.map((l, i) => (i === 5 ? { ...l, text: "There was blood on the stairs." } : l)) };
   const spots = problemSpots(withGore, problems);
   const climax = withGore.lines.map((l, i) => (l.part === "climax" ? i : -1)).filter((i) => i >= 0);

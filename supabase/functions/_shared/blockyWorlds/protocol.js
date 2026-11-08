@@ -18,7 +18,7 @@ export function cardProblems(card) {
     const v = card?.[f];
     if (f === "examples" ? !(Array.isArray(v) && v.filter((x) => String(x).trim()).length === 3) : !String(v ?? "").trim()) out.push(`missing ${f}`);
   }
-  if (card?.opener && !hasOpener(card.opener)) out.push('opener must start with "In this world, " or "In this town, "');
+  if (card?.opener && !hasOpener(card.opener)) out.push('opener must start with "In this town, "');
   if (card?.formula && !FORMULAS[card.formula]) out.push(`unknown formula ${card.formula}`);
   if (card?.twistType && !TWISTS[card.twistType]) out.push(`unknown twist ${card.twistType}`);
   if (card?.mood && !MOODS[card.mood]) out.push(`unknown mood ${card.mood}`);
@@ -28,7 +28,7 @@ export function cardProblems(card) {
 
 /** A pasted script turned back into a card (so every video runs the same protocol). */
 export const CARD_FROM_SCRIPT_SYSTEM = `You read a short story narration and write its IDEA CARD for Blocky Worlds. Fill every field from the script; when the script lacks a piece, invent the smallest piece that fits it (never change what the script says).
-- opener: the script's first line if it states the world rule; otherwise a first line that does, starting with exactly "In this world, " or "In this town, ".
+- opener: the script's first line if it states the world rule; otherwise a first line that does, starting with exactly "In this town, ".
 - price (what breaking the rule costs), examples (exactly three short examples of the rule from the script), narrator (who tells it and how they're the exception), prop (the object that wins the climax), twist (how it ends), teaser (a card line that hints at the twist), closer (the script's last line), title.
 - formula: F1 everyone-has-X-except-me, F2 never-do-X-or-Y, F3 every-night-we-give-X-to-Y, F4 our-town-lives-inside-Z, F5 everyone-gets-X-when-Y, F6 some-are-A-the-rest-are-B.
 - twistType: T1 rule-is-the-weapon, T2 hidden-truth, T3 weakness-is-strength, T4 wording-loophole, T5 open-loop-sting, T6 wholesome-inversion.

@@ -31,7 +31,7 @@ export const IDEAS_SYSTEM = `You invent story ideas for Blocky Worlds: 1-2 minut
 ${STUDY}
 
 EACH IDEA HAS
-- opener: THE FIRST LINE OF THE VIDEO. It MUST start with exactly "In this world, " or "In this town, " and state the rule as plain fact. 8 to 20 words. This is the hook: outrageous, instantly clear, visual.
+- opener: THE FIRST LINE OF THE VIDEO. It MUST start with exactly "In this town, " (never "In this world") and state the rule as plain fact. 8 to 20 words. This is the hook: outrageous, instantly clear, visual.
 - title: 2 to 6 words, a teaser.
 - premise: one sentence, 12 to 30 words: the world, the narrator's place in it, and what goes wrong. No ending.
 - price: what breaking the rule costs, 4 to 15 words.
@@ -105,8 +105,8 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
   return {
     slots,
     text: `The user's idea: "${String(topic).slice(0, 200)}"\n\nTHIS IDEA IS THE STORY. Write ${slots.length} ideas that each keep ALL of its key elements${labels ? ` (${labels})` : ""} at the core: the world, the threat and the characters it names drive the plot from the first line to the last.
-- The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this world, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
-- The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.${conflictLines(topic).length ? `\n${conflictLines(topic).join("\n")}\n- So the opener names the threat doing the conflict ("In this world, we live inside a giant turtle, and the big bad wolf's army is hunting it" shape), and the twist ENDS that conflict.` : ""}
+- The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this town, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
+- The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.${conflictLines(topic).length ? `\n${conflictLines(topic).join("\n")}\n- So the opener names the threat doing the conflict ("In this town, we live inside a giant turtle, and the big bad wolf's army is hunting it" shape), and the twist ENDS that conflict.` : ""}
 - The ideas differ in their angle on the SAME idea, not in their world. The usual rule against "we all live inside giant Z" reskins does not apply here: the user's own world is the point.
 - If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.
 One idea per slot, in this order:\n${slotText(slots)}` +
@@ -131,7 +131,7 @@ export function normalizeIdea(raw) {
 /** The problems that make an idea unusable (empty = fine). slot: the formula/twist/mood it was asked for. */
 export function ideaProblems(idea, slot = null) {
   const out = [];
-  if (!hasOpener(idea.opener)) out.push(`opener must start with "In this world, " or "In this town, "`);
+  if (!hasOpener(idea.opener)) out.push(`opener must start with "In this town, "`);
   if (wc(idea.opener) < 6 || wc(idea.opener) > 24) out.push("opener is not 6-24 words");
   for (const k of ["title", "premise", "price", "narrator", "prop", "twist", "teaser", "closer"]) if (!idea[k]) out.push(`${k} is empty`);
   if (idea.examples.length !== 3) out.push("examples must be exactly three");
