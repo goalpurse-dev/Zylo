@@ -14,7 +14,7 @@ import { rng } from "/lib/rng.js";
 import { applyCamMove } from "/lib/camMove.js";
 import { keepOut, objectMargin } from "/page/cameraGuard.js"; // LOOK-FIX 2026-11-08: the camera never inside a scene object
 import { makeSubjectLight, boostFor } from "/page/subjectLight.js";
-import { isWinter, makeWinter } from "/page/winter.js"; // LOOK-FIX 2026-11-08: snowy worlds (bible / director / script) // LOOK-FIX 2026-11-08: night subjects read
+import { isWinter, makeWinter, snowBloom } from "/page/winter.js"; // LOOK-FIX 2026-11-08: snowy worlds (bible / director / script) // LOOK-FIX 2026-11-08: night subjects read
 import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
 import { measureContact, groundUnder, personFeet, findStandSpot } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
@@ -165,7 +165,7 @@ async function main() {
   const blueprintM = tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset)) ? await import("/page/kit/blueprint.js") : null;
   const worldM = tl.shots.some((s) => /^world:/.test(s.set ?? "")) ? await import("/page/sets/worldspec.js") : null;
   // EPIC stories (giants, crowds, creature worlds, scale cameras, beats): page/epicLayer.js, loaded only when used
-  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera) || s.move || s.tethers?.length || s.siege?.length || s.fx?.length || s.acts?.length || s.grade || s.tilt)) ? await import("/page/epicLayer.js") : null; // (+ 2026-11-06 capability fields: lib/caps.js)
+  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || (s.world && typeof s.world === "object") || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera) || s.move || s.tethers?.length || s.siege?.length || s.fx?.length || s.acts?.length || s.grade || s.tilt)) ? await import("/page/epicLayer.js") : null; // (+ 2026-11-06 capability fields: lib/caps.js)
   let objectsM = null;
   if (anyObjects) {
     try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
@@ -225,11 +225,12 @@ async function main() {
 
   // ---------- sets ----------
   const SETS = {};
+  const busNamed = [...(tl.lines ?? []).map((l) => l.text), ...tl.shots.map((s) => s.text)].some((t) => /\bbus(es)?\b/i.test(String(t ?? "")));
   const epic = epicM ? await epicM.makeEpicLayer({ THREE, scene, tl, ctx: { THREE, scene, renderer, gltf, tex } }) : null;
   if (epic) { const p = epic.problems(); if (p.length) throw new Error(`engine: the timeline has ${p.length} EPIC problem(s):\n- ${p.slice(0, 25).join("\n- ")}`); }
   for (const name of [...new Set(tl.shots.map((s) => s.set))]) {
     const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex, ...(epic ? { buildCreatureWorld: epic.buildCreatureWorld } : {}) })
-      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex });
+      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex, bus: busNamed }); // LOOK-LEFTOVERS: the town bus only when a line names one
     if (S?.problems?.length) console.warn(`engine: built world ${name}: ${S.problems.slice(0, 8).join("; ")}`);
     S.blockers ??= [];
     if (!S?.root?.isObject3D) throw new Error(`engine: buildSet("${name}") returned no root Object3D`);
@@ -417,6 +418,7 @@ async function main() {
       lightHandle = applyLight(shot.light, { THREE, scene, renderer, set: S });
       post.setLight(shot.light);
       winter?.light(scene, shot.light); // LOOK-FIX: cold moon + snow bounce
+      if (winter && post.bloom) { const B = post.bloom; [B.strength, B.radius, B.threshold] = snowBloom([B.strength, B.radius, B.threshold], shot.light); } // LOOK-LEFTOVERS: no glare blobs on snow
       lightKey = key;
     }
     S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)

@@ -26,6 +26,15 @@ export function isWinter(tl) {
   return hits.length >= 2 || (hits.length === 1 && /\b(snow|winter|blizzard|frost)/i.test(hits[0]));
 }
 
+/** LOOK-LEFTOVERS 2026-11-08: the set's practical lights over snow (night / dusk dimmed: no glare blobs)  (pure, tested) */
+export function practicalScale(mode) { return mode === "night" ? 0.4 : mode === "dusk" || mode === "warm" ? 0.6 : 1; }
+
+/** LOOK-LEFTOVERS: the bloom over a snowy frame: a higher threshold + less strength (bright snow never blooms)  (pure, tested) */
+export function snowBloom([strength, radius, threshold], mode) {
+  if (mode === "night") return [strength * 0.55, radius, Math.max(threshold, 1.25)];
+  return [strength * 0.7, radius, Math.max(threshold, 1.8)];
+}
+
 /** a flake's position in the unit box at time t: falls at its own speed, drifts sideways, wraps (deterministic) */
 export function snowFlake(i, t, seed = 1) {
   const h = (k) => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233 + seed * 3.7) * 43758.5453; return x - Math.floor(x); };
@@ -57,13 +66,15 @@ export function makeWinter(THREE, scene, { seed = 1 } = {}) {
   vSnowP = (modelMatrix * vec4(transformed, 1.0)).xyz; vSnowN = normalize(mat3(modelMatrix) * objectNormal);
 #endif`);
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <common>", "#include <common>\nvarying vec3 vSnowN; varying vec3 vSnowP; uniform float uSnowNight;")
+        .replace("#include <common>", "#include <common>\nvarying vec3 vSnowN; varying vec3 vSnowP; uniform float uSnowNight; float gSnowAmt = 0.0;")
         .replace("#include <map_fragment>", `#include <map_fragment>
 { float nz = 0.5 + 0.5 * sin(vSnowP.x * 2.3 + sin(vSnowP.z * 1.7) * 2.0) * sin(vSnowP.z * 2.9);
   float sn = smoothstep(0.38 + 0.12 * nz, 0.72, vSnowN.y);
   vec3 snowC = mix(vec3(0.74, 0.80, 0.90), vec3(0.90, 0.93, 0.97), nz);
   snowC = mix(snowC, snowC * vec3(0.48, 0.54, 0.66), uSnowNight);
-  diffuseColor.rgb = mix(diffuseColor.rgb, snowC, sn); }`);
+  diffuseColor.rgb = mix(diffuseColor.rgb, snowC, sn); gSnowAmt = sn; }`)
+        // LOOK-LEFTOVERS 2026-11-08: snow is matte (no specular hot spot under a porch light / lamp)
+        .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.97, gSnowAmt);");
       if (isGlass) {
         sh.fragmentShader = sh.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
 { vec2 fu = abs(vUv - 0.5) * 2.0; float e = max(fu.x, fu.y);
@@ -103,6 +114,14 @@ export function makeWinter(THREE, scene, { seed = 1 } = {}) {
       sc.traverse((l) => {
         if (l.isHemisphereLight) { l.groundColor.set(mode === "night" ? "#2a3658" : "#e4ecf8"); l.color.lerp(new THREE.Color(mode === "night" ? "#3a58a8" : "#dfe8ff"), 0.6); l.intensity *= mode === "night" ? 0.85 : 1.15; }
         else if (l.isDirectionalLight && mode === "night") { l.color.set("#9fb6f0"); l.intensity *= 0.8; }
+        // LOOK-LEFTOVERS 2026-11-08 (lead: "porch-light glare on the snow"): the set's lamps / porch lights / lantern
+        // strings over white snow blew out into a bloom blob; snow throws ~3x the light back of grass / asphalt, so
+        // the practicals burn at a fraction (the subject key / rim keep theirs: page/subjectLight.js aims them per frame)
+        else if ((l.isPointLight || l.isSpotLight) && !/^subject/.test(l.name ?? "") && l.intensity > 0) {
+          // idempotent: a light that kept the value set here last time (a lantern prop) scales from its own base again
+          const base = l.userData._wSet === l.intensity ? l.userData._wBase : l.intensity;
+          l.intensity = base * practicalScale(mode); l.userData._wBase = base; l.userData._wSet = l.intensity;
+        }
       });
       if (sc.fog && mode !== "night") sc.fog.color.lerp(new THREE.Color("#dfe8f4"), 0.5);
     },

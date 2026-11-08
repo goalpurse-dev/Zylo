@@ -18,8 +18,27 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   const SZ = 140;
   // LOOK-FIX 2026-11-08 (owner: "town shots are back on the OLD pastel look"): the town's own textures
   // (page/kit/townTex.js, as the dense town on a creature): grey-brown cobbles, stone, plaster / timber walls, tiled roofs
-  const TT = (kind, color, seed, rep = null) => { let t = townTex(THREE, kind, { color, seed }); if (rep) { t = t.clone(); t.repeat.set(rep[0], rep[1]); t.needsUpdate = true; } return new THREE.MeshStandardMaterial({ map: t, roughness: kind === "cobbles" ? 0.95 : 0.88 }); };
-  plane(44, 40, TT("cobbles", "#8c7f6c", 2, [11, 10]), o({ x: 0, y: 0.06, z: SZ })); // above the belfry's town lawn (it reaches x -10)
+  const TT = (kind, color, seed, rep = null) => { let t = townTex(THREE, kind, { color, seed }); if (rep) { t = t.clone(); t.repeat.set(rep[0], rep[1]); t.needsUpdate = true; } return new THREE.MeshStandardMaterial({ map: t, roughness: /^cobbles/.test(kind) ? 0.92 : 0.88 }); };
+  // LOOK-LEFTOVERS 2026-11-08 (lead: "the square's ground is pale beige cobbles"): rich warm cobbles with moss in the
+  // grout, a worn flagstone path to the bell tower, grass verges in front of the houses, rain puddles, barrels + crates
+  plane(44, 40, TT("cobblesRich", "#a0603c", 2, [9, 8]), o({ x: 0, y: 0.06, z: SZ })); // above the belfry's town lawn (it reaches x -10)
+  {
+    const flags = TT("stone", "#9c8466", 11, [1.2, 6]);
+    plane(3.0, 26, flags, o({ x: -3.2, y: 0.066, z: SZ - 2, rz: 0.12 })); // the worn path to the tower
+    const grassM = pbr("leafy_grass", { repeat: [1, 8], tint: "#7cc24e", normal: 0.6 }), verge = solid("#5d4a36", { roughness: 0.9 });
+    for (const sx of [-1, 1]) {
+      plane(1.4, 22, grassM, o({ x: sx * 10.2, y: 0.075, z: SZ - 6 }));
+      bx(0.14, 0.12, 22, verge, o({ x: sx * 9.45, y: 0.1, z: SZ - 6 })); // the kerb stones of the verge
+    }
+    plane(5.6, 5.6, pbr("leafy_grass", { repeat: [2, 2], tint: "#7cc24e", normal: 0.6 }), o({ x: -6.5, y: 0.072, z: SZ - 9 })); // round the tower foot
+    const pud = new THREE.MeshStandardMaterial({ color: "#24303c", roughness: 0.04, metalness: 0.35, envMapIntensity: 1.4, polygonOffset: true, polygonOffsetFactor: -3 });
+    for (const [x, z, rx, rz] of [[-5.5, SZ + 6, 1.3, 0.7], [6.5, SZ + 3.5, 0.9, 0.55], [-7.5, SZ - 3, 1.1, 0.6], [3.5, SZ - 15, 1.4, 0.8], [8.2, SZ + 9, 0.7, 0.45]]) {
+      const m = mesh(new THREE.CircleGeometry(1, 24), pud, o({ x, y: 0.072, z, rx: -Math.PI / 2, shadow: true, cast: false })); m.scale.set(rx, rz, 1);
+    }
+    const barrelM = solid("#7a4a28", { roughness: 0.8 }), band = solid("#2e2a26", { roughness: 0.5 }), crateM = TT("planks", "#a8784a", 6, [1, 1]);
+    for (const [x, z] of [[8.3, SZ - 4.5], [8.9, SZ - 5.6], [4.0, SZ - 13.5], [-8.8, SZ + 2]]) { cyl(0.38, 0.34, 0.95, 14, barrelM, o({ x, y: 0.55, z })); for (const by of [0.3, 0.8]) cyl(0.39, 0.39, 0.06, 14, band, o({ x, y: by, z })); }
+    for (const [x, z, s] of [[7.8, SZ - 9.6, 0.7], [8.4, SZ - 10.3, 0.55], [-1.0, SZ - 14.2, 0.6], [-8.6, SZ + 3.1, 0.6]]) bx(s, s, s, crateM, o({ x, y: 0.06 + s / 2, z, ry: x * 0.3 }));
+  }
   // the bell tower (left, behind the people): stone shaft, open belfry with the bell, a pointed red roof
   const stone = TT("stone", "#c8b89c", 5, [2, 5]);
   const TX = -6.5, TZ = SZ - 9;
@@ -54,7 +73,7 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   // a few houses closing the square at its sides
   // LOOK-FIX 2026-11-08: the houses round the square in the back-town style: textured walls in storybook colours, timber
   // corner posts, framed windows with shutters and flower boxes (lit at night), a door with a lantern, a tiled gable roof
-  const walls = [["plaster", "#f2bd48"], ["timber", "#f0c49a"], ["plaster", "#78b4dc"], ["planks", "#b4503e"], ["plaster", "#94cc82"], ["timber", "#f4d898"]];
+  const walls = [["plaster", "#f0a42a"], ["timber", "#f2a86e"], ["plaster", "#4f96d8"], ["planks", "#b8402e"], ["plaster", "#6cbf62"], ["timber", "#f4c450"]]; // LOOK-LEFTOVERS: saturated
   const shutC = ["#2f6fa8", "#3a8a4a", "#b83a2e", "#2f8a86", "#6a4aa0", "#d08a2a"], flowC = ["#e8384a", "#f06aa8", "#f4c430", "#ff7a2a"];
   const winGlow = glow.add(Object.assign(new THREE.MeshStandardMaterial({ color: "#2a3a4c", roughness: 0.2 }), { emissive: new THREE.Color("#ffc070") }), { day: 0, night: 1.7, warm: 0.3, dusk: 1.2 }, { day: "#2a3a4c", night: "#ffd892", warm: "#2a3a4c" });
   const frameM = solid("#f4efe4", { roughness: 0.7 }), beamM = solid("#5a3e28", { roughness: 0.8 });
@@ -93,7 +112,7 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   const greatBell = mesh(new THREE.LatheGeometry(bellProf.map((v) => new THREE.Vector2(v.x * 1.25, v.y * 1.25)), 28), brass, o({ x: BX, y: BY + 1.25, z: BZ - 1.4 }));
   greatBell.name = "greatBell";
   // the town far below (roof tops around the tower's foot) so the openings show where we are
-  for (let k = 0; k < 26; k++) { const a = (k / 26) * Math.PI * 2, r = 14 + (k % 4) * 5, x = BX + Math.cos(a) * r, z = BZ + Math.sin(a) * r; bx(5, 5, 5, solid(walls[k % 4]), o({ x, y: 2.5, z })); mesh(new THREE.ConeGeometry(4, 2.2, 4), solid(["#b5452c", "#a63d2a", "#c4573a"][k % 3]), o({ x, y: 6.1, z, ry: Math.PI / 4 })); }
+  for (let k = 0; k < 26; k++) { const a = (k / 26) * Math.PI * 2, r = 14 + (k % 4) * 5, x = BX + Math.cos(a) * r, z = BZ + Math.sin(a) * r; bx(5, 5, 5, solid(walls[k % 4][1]), o({ x, y: 2.5, z })); mesh(new THREE.ConeGeometry(4, 2.2, 4), solid(["#b5452c", "#a63d2a", "#c4573a"][k % 3]), o({ x, y: 6.1, z, ry: Math.PI / 4 })); }
   plane(140, 140, pbr("leafy_grass", { repeat: [30, 30], tint: "#9fe06a" }), o({ x: BX, y: 0.03, z: BZ }));
   const bl = new THREE.PointLight("#ffc77a", 0, 10, 1.6); bl.position.set(BX + 1.5, BY + 2.6, BZ + 1.5); root.add(bl); lights.push(bl);
 

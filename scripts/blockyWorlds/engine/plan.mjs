@@ -1177,6 +1177,10 @@ function collectNeeds(tl, script, idea, baseSet, mood, D = null) {
       // the line stands in it: nothing to build (PLANNER-FIX 2026-11-07)
       const lp = tl.world?.linePlace?.[L.i], ownShots = tl.shots.filter((s) => s.line === L.i && s.camera !== "insert");
       if (lp && ownShots.length && ownShots.every((s) => tl.world.spots.find((x) => x.id === s.worldSpot)?.kind === lp)) continue;
+      // LOOK-LEFTOVERS 2026-11-08 (#2: "Lantern Lane" became builder need10 and its id leaked into shot.world, which the
+      // EPIC layer rejected): a street / lane / square of the bible's own plain town is the street set itself, never a
+      // world to build
+      if (bibleTownPlace(tl.world, dn)) continue;
       const n = add({ kind: "world", name: dn.name, phrase: dn.phrase, line: dn.line, lineText: dn.lineText, mood, fallbackSet: dn.fallbackSet, source: "director", item: dn.item, ...(dn.hint ? { hint: dn.hint } : {}), setting: idea?.setting ?? null });
       for (const s of tl.shots) if (s.line === L.i && (s.set === c.set || s.set === dn.fallbackSet)) s.world = n.id;
     }
@@ -1188,6 +1192,23 @@ function collectNeeds(tl, script, idea, baseSet, mood, D = null) {
     for (const s of tl.shots) if (s.set === baseSet) s.world = n.id; // inserts too: the card / sign stands in the world
   }
   return needs;
+}
+
+/**
+ * LOOK-LEFTOVERS 2026-11-08: is a director builder-need just a street / square of the bible's own plain town (not on a
+ * creature)? Its name is one of the bible's street / place / town names, or an outdoor street-like place on the street
+ * set (a lane, a road, the square) that is no "inside a ..." / under-sea / space world.   (exported for tests)
+ */
+export function bibleTownPlace(world, need) {
+  if (!world?.town || world.creature?.townView || !need) return false;
+  const lc = (x) => String(x ?? "").toLowerCase().replace(/^(the|a|an|my|our) /, "").trim();
+  const n = lc(need.name);
+  if (!n) return false;
+  const names = [world.town.name, ...(world.town.streets ?? []).map((s) => s.name), ...(world.town.landmarks ?? []).filter((l) => l.kind === "square").map((l) => l.name)].map(lc).filter(Boolean);
+  if (names.includes(n)) return true;
+  if (need.fallbackSet !== "street" || (need.hint?.kind && need.hint.kind !== "outdoor")) return false;
+  const txt = `${need.name ?? ""} ${need.phrase ?? ""}`.toLowerCase();
+  return /\b(street|lane|road|avenue|row|alley|square|plaza|main street|sidewalk|high street)\b/.test(txt) && !WORLD_WORDS.test(txt);
 }
 
 // the settings the 4 hand-built sets show well (lib formulas' settings + common words); anything else is a built world

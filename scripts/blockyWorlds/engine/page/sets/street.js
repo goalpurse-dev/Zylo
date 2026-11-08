@@ -1,14 +1,17 @@
 // Set "street": the suburb street of the locked look (look/scene.js): asphalt road with yellow centre lines, concrete
 // sidewalks and curbs, front lawns, code-built houses with real Poly Haven materials (gables, shutters, porches,
-// garages, picket fences, mailboxes), jacaranda trees, shrubs, street lamps, parked Kenney cars, the yellow town bus,
-// the bus shelter and the BUS stop sign, mountains and a tree line at the end of the street.
+// garages, picket fences, mailboxes), jacaranda trees, shrubs, street lamps, parked Kenney cars, the yellow town bus
+// (only when a line names a bus: ctx.bus), mountains and a tree line at the end of the street.
+// LOOK-LEFTOVERS 2026-11-08 (lead: "the old bus stop with the SUMMER FAIR poster still appears on main street"): no bus
+// shelter, no SUMMER FAIR poster, no BUS stop sign, no painted bus box in any Blocky Worlds town; storybook-strength
+// house colours (the pastel tints read as the old look).
 // The group stands on the right-hand sidewalk; the camera looks down the street (-z), like the locked frame.
 import { makeKit, mergeStatic, glowList } from "./util.js";
 import { natureBackdrop, waterTower } from "./backdrop.js";
 import { addTownPlaces } from "./townPlaces.js";
 
 const SIDE = 4.5, WALK = 3.0, CURB = 0.15;
-const WALLS = [["painted_plaster_wall", "#fff3d6"], ["painted_plaster_wall", "#cfe8ff"], ["brick_wall_02", "#ffffff"], ["painted_plaster_wall", "#d8f2d0"], ["painted_plaster_wall", "#ffd9cc"], ["beige_wall_001", "#ffffff"]];
+const WALLS = [["painted_plaster_wall", "#ffc65a"], ["painted_plaster_wall", "#7fb8f0"], ["brick_wall_02", "#ffffff"], ["painted_plaster_wall", "#93d67e"], ["painted_plaster_wall", "#ff9f86"], ["beige_wall_001", "#f2c27e"]];
 const DOORS = ["#c0392b", "#1f6f8b", "#2c3e70", "#2e7d4f", "#8e44ad", "#e67e22"];
 const ROOFS = [["roof_09", "#ffffff"], ["grey_roof_01", "#ffffff"]];
 
@@ -22,8 +25,6 @@ export async function build(ctx) {
   plane(9, 320, pbr("asphalt_02", { repeat: [3, 106], tint: "#b8b8bc" }), { y: 0, z: -120 });
   for (const x of [-0.11, 0.11]) plane(0.1, 320, paint("#f2c230"), { x, y: 0.004, z: -120, shadow: false });
   for (const x of [-4.2, 4.2]) plane(0.12, 320, paint("#f4f4f0"), { x, y: 0.004, z: -120, shadow: false });
-  const busBox = plane(2.6, 3.2, new THREE.MeshStandardMaterial({ color: "#f4f4f0", roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2 }), { x: 2.2, y: 0.005, z: -6, shadow: false });
-  void busBox;
   for (const sx of [-1, 1]) {
     bx(0.3, CURB + 0.05, 320, pbr("concrete_pavement", { repeat: [0.2, 100], tint: "#e6e2dc" }), { x: sx * (SIDE + 0.15), y: (CURB + 0.05) / 2 - 0.05, z: -120 });
     bx(WALK, CURB, 320, pbr("concrete_pavement", { repeat: [1.5, 160], tint: "#f2eee8" }), { x: sx * (SIDE + 0.3 + WALK / 2), y: CURB / 2, z: -120 });
@@ -127,8 +128,8 @@ export async function build(ctx) {
   clutter.push(K.place(planterP, 7.4, CURB, -15, 0));
   K.place(sedan, -3.2, 0, -9, 0); K.place(suv, -3.2, 0, -22, 0); K.place(van, 3.25, 0, -40, Math.PI); K.place(taxi, -1.8, 0, -52, Math.PI);
 
-  // ---------- the yellow bus (parked down the street) ----------
-  {
+  // ---------- the yellow bus (parked down the street): only when a line names a bus (engine: ctx.bus) ----------
+  if (ctx.bus) {
     const g = new THREE.Group(); g.position.set(2.15, 0, -16); g.rotation.y = -0.05; root.add(g);
     const Lb = 11, Wd = 2.55, Hh = 3.05;
     const paintMat = new THREE.MeshPhysicalMaterial({ color: "#ffb30f", roughness: 0.45, clearcoat: 0.35, clearcoatRoughness: 0.35, metalness: 0, envMapIntensity: 0.55 });
@@ -163,33 +164,11 @@ export async function build(ctx) {
     mesh(new THREE.PlaneGeometry(4.6, 0.72), new THREE.MeshStandardMaterial({ map: side, transparent: true, roughness: 0.4 }), { x: Wd / 2 + 0.02, y: 0.85, z: -0.5, ry: Math.PI / 2, parent: g, shadow: false });
   }
 
-  // ---------- the bus shelter and the stop sign ----------
-  {
-    const g = new THREE.Group(); g.position.set(7.15, CURB, -6.2); root.add(g); clutter.push(g); g.userData.keep = true;
-    const alu = new THREE.MeshStandardMaterial({ color: "#c7ccd3", metalness: 0.8, roughness: 0.3 });
-    const pane = new THREE.MeshPhysicalMaterial({ color: "#d9f0ff", roughness: 0.05, transparent: true, opacity: 0.22, metalness: 0 });
-    for (const pz of [-1.8, 1.8]) for (const px of [-0.7, 0.7]) bx(0.08, 2.6, 0.08, alu, { x: px, y: 1.3, z: pz, parent: g, keep: true });
-    bx(1.7, 0.12, 4.0, alu, { y: 2.65, parent: g, keep: true });
-    bx(0.04, 2.0, 3.5, pane, { x: 0.7, y: 1.35, parent: g, shadow: false, keep: true });
-    bx(1.3, 2.0, 0.04, pane, { y: 1.35, z: -1.8, parent: g, shadow: false, keep: true });
-    const ad = K.canvas(360, 540, (p) => {
-      const gr = p.createLinearGradient(0, 0, 0, 540); gr.addColorStop(0, "#ff5e7e"); gr.addColorStop(1, "#ffb347"); p.fillStyle = gr; p.fillRect(0, 0, 360, 540);
-      p.fillStyle = "#fff"; p.font = "bold 70px sans-serif"; p.textAlign = "center"; p.fillText("SUMMER", 180, 160); p.fillText("FAIR", 180, 240);
-      p.font = "bold 34px sans-serif"; p.fillText("SAT • TOWN SQUARE", 180, 330); p.beginPath(); p.arc(180, 440, 60, 0, Math.PI * 2); p.fillStyle = "#ffe66d"; p.fill();
-    });
-    bx(1.25, 1.85, 0.06, glow.add(new THREE.MeshStandardMaterial({ map: ad, emissive: "#ffffff", emissiveMap: ad, roughness: 0.3 }), { day: 0.25, night: 0.9, warm: 0.4 }), { y: 1.35, z: 1.8, parent: g, keep: true });
-    K.place(benchP, 0.0, 0, 0, -Math.PI / 2, 1, g);
-  }
-  {
-    const x = 4.95, z = -1.6;
-    clutter.push(bx(0.08, 2.9, 0.08, new THREE.MeshStandardMaterial({ color: "#9aa1aa", metalness: 0.7, roughness: 0.35 }), { x, y: CURB + 1.45, z, keep: true }));
-    const t = K.canvas(256, 256, (p) => {
-      p.fillStyle = "#1f6fd6"; p.beginPath(); p.arc(128, 128, 124, 0, Math.PI * 2); p.fill(); p.fillStyle = "#fff"; p.beginPath(); p.arc(128, 128, 100, 0, Math.PI * 2); p.fill();
-      p.fillStyle = "#1f6fd6"; p.font = "bold 82px sans-serif"; p.textAlign = "center"; p.textBaseline = "middle"; p.fillText("BUS", 128, 132);
-    });
-    const back = t.clone(); back.wrapS = THREE.RepeatWrapping; back.repeat.set(-1, -1); back.offset.set(1, 1); back.needsUpdate = true;
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 32), [solid("#1f6fd6"), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4 }), new THREE.MeshStandardMaterial({ map: back, roughness: 0.4 })]);
-    m.position.set(x, CURB + 2.6, z); m.rotation.set(0, -Math.PI / 2 + 0.3, Math.PI / 2); m.castShadow = true; root.add(m); clutter.push(m);
+  // ---------- sidewalk detail (no bus stop, no poster): a plain bench, flower planters, a bike rack ----------
+  clutter.push(K.place(benchP, 7.6, CURB, -6.2, -Math.PI / 2));
+  for (const [x, z] of [[7.6, -9.4], [-7.6, -4], [-7.6, -18], [7.6, -27]]) {
+    const pm = bx(1.1, 0.5, 0.55, solid("#7a4a2c", { roughness: 0.85 }), { x, y: CURB + 0.25, z, keep: true }); clutter.push(pm);
+    for (let q = 0; q < 5; q++) clutter.push(mesh(new THREE.SphereGeometry(0.13, 8, 6), solid(["#e8384a", "#f4c430", "#f06aa8", "#ff7a2a", "#9b59b6"][(q + Math.abs(Math.round(z))) % 5]), { x: x - 0.4 + q * 0.2, y: CURB + 0.6, z, keep: true }));
   }
 
   mergeStatic(THREE, root);
@@ -232,7 +211,6 @@ export async function build(ctx) {
         if (mode !== "night") return [];
         const L = [];
         for (const z of LAMPZ.slice(0, 2)) { const l = new THREE.SpotLight("#ffc77a", 150, 26, 0.95, 0.6, 1.6); l.position.set(3.7, 5.9, z); l.target.position.set(5.6, 0, z + 1.2); L.push(l); }
-        const shel = new THREE.PointLight("#bfe2ff", 10, 6, 2); shel.position.set(6.6, 2.4, -6.2); L.push(shel);
         const porch = new THREE.PointLight("#ffbe6b", 14, 9, 2); porch.position.set(10.8, 2.3, -26 + 0); L.push(porch);
         const porch2 = new THREE.PointLight("#ffbe6b", 14, 9, 2); porch2.position.set(10.8, 2.3, 10); L.push(porch2);
         return L;
@@ -244,7 +222,7 @@ export async function build(ctx) {
       const s = state === "dark" || state === "lit" || state === "open" ? state : null;
       if (s !== winState) { winState = s; applyWindows(); }
     },
-    /** show/hide the sidewalk props (bus shelter, stop sign, bin, hydrant, planter) */
+    /** show/hide the sidewalk props (the near lamp, bench, planters, bin, hydrant) */
     setClutter(visible) { for (const o of clutter) o.visible = !!visible; },
   };
   // the town square + the top of the bell tower (shot.place: PLANNER-FIX 2026-11-07, ./townPlaces.js)

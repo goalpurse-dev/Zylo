@@ -2,7 +2,7 @@
 // planks (walls, decks, stairs, walkways), plaster (with half-timber beams), roof tiles and shingles, cobbles and dirt
 // paths, stone blocks (walls, castle towers). Drawn once per page and cached (no downloads: our own pixels).
 //   townTex(THREE, kind, { color }) -> CanvasTexture (sRGB, repeat-wrapped)   kind: planks | plaster | timber | tiles |
-//   shingles | cobbles | stone | dirt
+//   shingles | cobbles | cobblesRich (512 px: the town square / streets) | stone | dirt
 import { prng } from "../../lib/epic.js";
 
 const CACHE = new Map();
@@ -48,6 +48,29 @@ const DRAW = {
     x.fillStyle = shade(col, 0.5); x.fillRect(0, 0, w, h);
     for (let k = 0; k < 260; k++) { x.fillStyle = shade(col, 0.75 + R() * 0.45); x.beginPath(); x.ellipse(R() * w, R() * h, 10 + R() * 12, 8 + R() * 9, R() * 3, 0, 7); x.fill(); }
   },
+  // LOOK-LEFTOVERS 2026-11-08 (lead: "the town square ground is pale beige cobbles, still the old pastel look"): rich
+  // cobbles: rows of rounded stones in warm varied tones (rust, ochre, slate, umber), dark grout with moss in it, a lit
+  // top edge + shadowed lower edge per stone (reads as relief), worn shiny tops on some, lichen specks
+  cobblesRich(x, w, h, R, col) {
+    x.fillStyle = "#2c2a1e"; x.fillRect(0, 0, w, h);
+    for (let k = 0; k < 700; k++) { x.fillStyle = R() < 0.6 ? `rgba(70,110,40,${0.35 + R() * 0.4})` : `rgba(40,36,26,${0.4 + R() * 0.4})`; const r = 2 + R() * 5; x.fillRect(R() * w, R() * h, r, r * 0.7); }
+    const tones = [col, shade(col, 0.78), shade(col, 1.15), "#7c5a44", "#8a7a62", "#5f6670", "#9a6438", "#6e5a48"];
+    const rows = 12, rh = h / rows;
+    for (let r = 0; r < rows; r++) {
+      let xx = r % 2 ? -rh * 0.6 : 0;
+      while (xx < w) {
+        const sw = rh * (0.9 + R() * 0.7), cy = r * rh + rh / 2, cx = xx + sw / 2, base = tones[Math.floor(R() * tones.length)], k = 0.8 + R() * 0.35;
+        const rr = (ox, oy, ww, hh, fill) => { x.fillStyle = fill; x.beginPath(); x.roundRect ? x.roundRect(ox, oy, ww, hh, Math.min(ww, hh) * 0.38) : x.rect(ox, oy, ww, hh); x.fill(); };
+        rr(cx - sw / 2 + 2, cy - rh / 2 + 3, sw - 4, rh - 4, shade(base, k * 0.6)); // the shadowed lower edge
+        rr(cx - sw / 2 + 2, cy - rh / 2 + 2, sw - 5, rh - 6, shade(base, k));
+        rr(cx - sw / 2 + 5, cy - rh / 2 + 3, sw - 11, rh * 0.32, shade(base, k * 1.18)); // the lit top
+        if (R() < 0.3) { x.fillStyle = `rgba(255,240,215,${0.08 + R() * 0.1})`; x.beginPath(); x.ellipse(cx, cy, sw * 0.25, rh * 0.18, 0, 0, 7); x.fill(); } // worn shiny top
+        for (let q = 0; q < 4; q++) { x.fillStyle = `rgba(0,0,0,${0.06 + R() * 0.08})`; x.fillRect(cx - sw / 2 + 4 + R() * (sw - 8), cy - rh / 2 + 3 + R() * (rh - 8), 2 + R() * 3, 2); }
+        if (R() < 0.18) { x.fillStyle = `rgba(96,140,52,${0.45 + R() * 0.3})`; x.beginPath(); x.ellipse(cx - sw / 2 + R() * sw, cy + rh * 0.4, 4 + R() * 6, 2 + R() * 2, 0, 0, 7); x.fill(); } // moss creeping out of the grout
+        xx += sw;
+      }
+    }
+  },
   stone(x, w, h, R, col) {
     const rows = 8;
     x.fillStyle = shade(col, 0.45); x.fillRect(0, 0, w, h);
@@ -64,8 +87,9 @@ export function townTex(THREE, kind, { color = "#b08a5a", seed = 1 } = {}) {
   const k = `${kind}|${color}|${seed}`;
   if (CACHE.has(k)) return CACHE.get(k);
   const draw = DRAW[kind] ?? DRAW.plaster;
-  const c = document.createElement("canvas"); c.width = c.height = 256;
-  draw(c.getContext("2d"), 256, 256, prng(seed * 31 + kind.length), color);
+  const N = kind === "cobblesRich" ? 512 : 256;
+  const c = document.createElement("canvas"); c.width = c.height = N;
+  draw(c.getContext("2d"), N, N, prng(seed * 31 + kind.length), color);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
   CACHE.set(k, t); return t;
 }

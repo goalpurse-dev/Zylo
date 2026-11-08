@@ -17,10 +17,11 @@ import { frameEpic, applyShake, EPIC_CAMERA_TYPES } from "/page/cameraEpic.js";
 import { validateEpic, beatPlan, beatProgress, CROWD_MOTION, EPIC_SPOTS } from "/lib/epic.js";
 // 2026-11-06 (CAPABILITIES): tethers, siege, back towns, camera moves, fx, acts, grade, tilt (page/capsLayer.js)
 import { makeCapsLayer } from "/page/capsLayer.js";
+import { pickBoundsPoint, giantFitDist } from "/page/cameraGuard.js"; // LOOK-LEFTOVERS: the clamp keeps a giant whole
 import { usesCaps, usesCapsTimeline } from "/lib/caps.js";
 
 /** does this timeline use EPIC fields? (the engine loads the layer only then) */
-export const usesEpic = (tl) => !!(tl.giants || tl.worlds || (tl.shots ?? []).some((s) => s.giants?.length || s.crowds?.length || s.world || s.beat || /^creature:/.test(s.set ?? "") || EPIC_CAMERA_TYPES.includes(s.camera) || usesCaps(s)) || usesCapsTimeline(tl));
+export const usesEpic = (tl) => !!(tl.giants || tl.worlds || (tl.shots ?? []).some((s) => s.giants?.length || s.crowds?.length || (s.world && typeof s.world === "object") || s.beat || /^creature:/.test(s.set ?? "") || EPIC_CAMERA_TYPES.includes(s.camera) || usesCaps(s)) || usesCapsTimeline(tl));
 export { EPIC_CAMERA_TYPES, EPIC_SPOTS };
 
 const MAP_STD = { wide: "establish", insert: "establish", low: "giant_close", medium: "giant_close", closeup: "giant_close", over_shoulder: "hero_low" };
@@ -280,7 +281,24 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       camera.updateMatrixWorld();
     }
     // inside the set's camera area (the cavern), never under the ground / the creature's back
-    if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(camera.position))) { const q = S.bounds[0].clampPoint(camera.position, V(0, 0, 0)); camera.position.copy(q); if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld(); }
+    // LOOK-LEFTOVERS 2026-11-08 (lead: "#2 establish night is a dark blocky shape filling the frame"): the clamp went into
+    // bounds[0] only (the square's small ground box, 13 m from a 30 m Watcher) and never into the wide box behind it.
+    // Now: the box point nearest the framed spot, and for a giant in focus the nearest one far enough to fit it whole
+    // An establish / aerial on a giant in a plain set (a street, the square) that still stands too close steps back
+    // along its own side to the fit distance first (then the bounds pick below)
+    const gF = fg ? gInfo : fw ? (worldG ?? anyGiant) : null, fitD = gF ? giantFitDist(gF.g.userData, camera) : 0;
+    if (fg && gF && !S.giant && !shot.move && (type === "establish" || type === "aerial")) {
+      const away = V(camera.position.x - gF.pos.x, 0, camera.position.z - gF.pos.z), dh = away.length();
+      if (dh < fitD * 0.85) {
+        if (dh < 1e-3) away.copy(S.camDir ?? V(0, 0, 1)); away.normalize();
+        camera.position.set(gF.pos.x + away.x * fitD, Math.max(camera.position.y, (gF.g.userData.height ?? 20) * 0.35), gF.pos.z + away.z * fitD);
+        if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld();
+      }
+    }
+    if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(camera.position))) {
+      const q = pickBoundsPoint(S.bounds.map((b) => b.clampPoint(camera.position, V(0, 0, 0))), camera.position, gF ? { focus: gF.pos, minDist: fitD } : null);
+      camera.position.copy(q); if (camera.userData.epicAim) camera.lookAt(camera.userData.epicAim); camera.updateMatrixWorld();
+    }
     const gy = S.surface?.(camera.position.x, camera.position.z) ?? S.groundY ?? null;
     if (gy != null && camera.position.y < gy + 1.2) { camera.position.y = gy + 1.2; camera.updateMatrixWorld(); }
     // 2026-11-05 (GAPS): never inside the creature's body: a ray down onto it (a furry / generic back bulges above the
@@ -332,7 +350,9 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       return S;
     },
     buildCreatureWorld: (spec, c) => buildCreatureWorld(spec, c ?? ctx),
-    problems: () => [...validateEpic(tl), ...caps.problems()],
+    // LOOK-LEFTOVERS 2026-11-08: a string shot.world is the builder world-need marker (lib/builder/apply.js swaps it for
+    // a built world or removes it); an unbuilt one left in the timeline is no EPIC creature world: not a schema problem
+    problems: () => [...validateEpic({ ...tl, shots: (tl.shots ?? []).map((s) => (typeof s.world === "string" ? { ...s, world: undefined } : s)) }), ...caps.problems()],
     ownsFocus: (shot) => EPIC_CAMERA_TYPES.includes(shot.camera) || /^(giant:|crowd)/.test(String(shot.focus ?? "")) || shot.focus === "world" || !!shot.move,
     place, frame, after,
     posOf: (id) => live.giants.get(id)?.pos ?? null,

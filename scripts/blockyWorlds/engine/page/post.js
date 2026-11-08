@@ -59,5 +59,5 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
     grade.uniforms.sat.value = p.sat; grade.uniforms.con.value = p.con; grade.uniforms.warm.value = p.warm;
   };
   setLight("day");
-  return { composer, setLight, render: () => (plain ? renderer.render(scene, camera) : composer.render()) };
+  return { composer, setLight, bloom, render: () => (plain ? renderer.render(scene, camera) : composer.render()) };
 }

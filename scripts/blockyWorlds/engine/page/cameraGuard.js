@@ -55,3 +55,29 @@ export function keepOut(THREE, camera, boxes, { aim = null, maxSteps = 6 } = {})
   if (moved > 0) { camera.lookAt(target); camera.updateMatrixWorld(); }
   return moved;
 }
+
+/**
+ * LOOK-LEFTOVERS 2026-11-08 (lead: "#2 establish night: the Watcher giant fills the frame"): how far the camera must
+ * stand from a giant to see it whole (its height, or its length / width, whichever the frame's narrow side needs) with
+ * a little air. userData { height, length, width }; camera { fov (vertical, deg), aspect }   (pure, tested)
+ */
+export function giantFitDist(ud = {}, camera = {}) {
+  const h = Number(ud.height) || 20, span = Math.max(Number(ud.length) || 0, Number(ud.width) || 0, h * 0.5);
+  const vf = ((Number(camera.fov) || 50) * Math.PI) / 180, aspect = Number(camera.aspect) || 9 / 16;
+  const hf = 2 * Math.atan(Math.tan(vf / 2) * aspect);
+  return Math.max((h * 1.15) / 2 / Math.tan(vf / 2), (span * 1.1) / 2 / Math.tan(hf / 2));
+}
+
+/**
+ * The point to clamp an out-of-bounds camera to: one candidate per bounds box (each box's nearest point to the wanted
+ * camera). With a giant to frame ({ focus, minDist }): the nearest candidate at least minDist (horizontal) from it,
+ * else the one farthest from it; without one: the nearest candidate.   (pure, tested; points are {x,y,z})
+ */
+export function pickBoundsPoint(cands, want, fit = null) {
+  const d3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z), dh = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  const byNear = [...cands].sort((a, b) => d3(a, want) - d3(b, want));
+  if (!fit?.focus) return byNear[0];
+  const ok = byNear.filter((c) => dh(c, fit.focus) >= fit.minDist);
+  if (ok.length) return ok[0];
+  return [...cands].sort((a, b) => dh(b, fit.focus) - dh(a, fit.focus))[0];
+}

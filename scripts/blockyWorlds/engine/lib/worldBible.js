@@ -309,7 +309,26 @@ export function buildWorldBible({ production = null, script = null, idea = null,
   const linePlace = {};
   for (const l of P.lines ?? []) if (worldPlace[l.world]) linePlace[l.line] = worldPlace[l.world];
 
-  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time, lights, fixedLines, linePlace };
+  // LOOK-LEFTOVERS 2026-11-08 (lead: "snow must switch on from the story"): the world's weather / season from the
+  // director's list + the script (page/winter.js reads world.weather / world.season)
+  const wx = weatherOf({ production: P, script, idea });
+  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time, lights, fixedLines, linePlace, ...(wx ?? {}) };
+}
+
+const WINTER_WORDS = /\b(snow\w*|winter\w*|frost\w*|frozen|freez\w*|blizzards?|icy|icicles?|sleet|christmas|yule|ice(?! ?cream))\b/gi;
+const WINTER_STRONG = /^(snow|winter|blizzard|frost|icicle|frozen)/i;
+/**
+ * The story's weather, or null: { weather: "snow", season: "winter" } when the director's list (building style, places,
+ * worlds, events, summary, palette) names snow / winter / frost / ice / a blizzard, or the script does (two such words, or
+ * one strong one: snow, winter, blizzard, frost, frozen)   (pure, tested)
+ */
+export function weatherOf({ production = null, script = null, idea = null } = {}) {
+  const P = production ?? {}, H = P.bible ?? {};
+  const dirText = [P.summary, H.building_style, H.town_name, ...(H.palette ?? []), ...(H.landmarks ?? []), ...(H.places ?? []).map((p) => p?.name), ...(P.worlds ?? []).flatMap((w) => [w?.name, w?.description]), ...(P.events ?? []).map((e) => `${e?.kind ?? ""} ${e?.what ?? ""}`), idea?.setting].filter((x) => typeof x === "string").join(" ");
+  const dirHits = dirText.match(WINTER_WORDS) ?? [];
+  const lineHits = (script?.lines ?? []).map((l) => (typeof l === "string" ? l : l?.text ?? "")).join(" ").match(WINTER_WORDS) ?? [];
+  const winter = dirHits.length > 0 || lineHits.length >= 2 || lineHits.some((w) => WINTER_STRONG.test(w));
+  return winter ? { weather: "snow", season: "winter" } : null;
 }
 
 /** a director world / a line's words -> the town spot kind it is (null = no place named) */
