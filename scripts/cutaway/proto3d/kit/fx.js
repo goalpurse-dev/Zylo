@@ -43,9 +43,13 @@ export function fx(ctx, p, api) {
       flash.visible = fl > 0.01; flash.scale.setScalar(0.4 + (1 - fl) * (big ? 2.4 : 1.2)); flash.material.opacity = fl;
       core.visible = fl > 0.01; core.scale.setScalar(0.5 + (1 - fl) * 1.6); core.material.opacity = fl;
       const rw = big ? Math.min(1, u / 0.6) : 0; ring.visible = big && rw < 1; ring.scale.setScalar(0.3 + rw * 4 * s); ring.material.opacity = 0.8 * (1 - rw);
+      // (a blast's debris clears 1.2 s after it lands: the cubes lay on the ground to the end of the video, the owner's
+      // list of 2026-11-07; a crash's or a collapse's chunks are the damage, and damage stays)
+      const cue = api.cue("go"), fade = big && cue ? clamp01(1 - (t - cue.t1 - 1.2) / 0.6) : 1;
       for (const c of deb) {
         const k = type === "collapse" ? 0.3 : 1, x = c.d[0] * u * 2.2 * s * k, z = c.d[2] * u * 1.6 * s * k, y = type === "collapse" ? 1.2 * s * (1 - u) - 0.2 : Math.max(-0.1, c.d[1] * u * 2.8 * s - 4.5 * s * u * u);
         c.m.position.set(x, y, z); c.m.rotation.set(c.r[0] * u, c.r[1] * u, 0);
+        c.m.visible = fade > 0.01; c.m.scale.setScalar(Math.max(0.001, fade));
       }
       dust.forEach((d, i) => { const k = clamp01(u * 1.4 - 0.1); d.m.position.set(Math.cos(d.a) * k * 1.6 * s, 0.25 * s + k * 0.6 * s * d.k, Math.sin(d.a) * k * 0.8 * s + 0.3); d.m.scale.setScalar(0.4 + k * 1.3 * d.k); d.m.material.opacity = 0.55 * (1 - k * 0.85); });
     };
@@ -71,6 +75,8 @@ export function fx(ctx, p, api) {
       splash: { n: 16, col: "#6fb8ee", glow: false }, spark: { n: 12, col: "#fff27a", glow: true }, frost: { n: 26, col: "#eaf6ff", glow: false },
       swirl: { n: 3, col: "#ffffff", glow: false }, motes: { n: 30, col: "#fffbe8", glow: true },
     }[type] ?? { n: 10, col: "#ffffff" };
+    // (a colour of its own: brown sewage drips, amber fuel, black smoke; the owner's list of 2026-11-07)
+    if (typeof p.color === "string") { spec.col = p.color; spec.col2 = null; }
     const P = Array.from({ length: spec.n }, (_, i) => {
       let geo;
       if (type === "swirl") { const curve = new THREE.EllipseCurve(0, 0, 1.1 * s, 0.7 * s, i * 2.1, i * 2.1 + 1.6); geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curve.getPoints(16).map((q) => new THREE.Vector3(q.x, 0, q.y))), 24, 0.06 * s, 6); }
@@ -79,7 +85,8 @@ export function fx(ctx, p, api) {
       else if (type === "fire") geo = new THREE.SphereGeometry(0.16 * s, 12, 10);
       else geo = new THREE.SphereGeometry((type === "smoke" ? 0.28 : type === "motes" ? Math.min(0.075, 0.1 / Math.max(s, 0.01)) : 0.07) * s, 10, 8);
       const mat = spec.glow ? glowM(i % 2 && spec.col2 ? spec.col2 : spec.col, 0.9) : solid(spec.col, type === "frost" ? 0.3 : 0.6);
-      if (type === "smoke") { mat.transparent = true; mat.opacity = 0.6; mat.depthWrite = false; }
+      // (smoke with more contrast against a pale sky: darker and denser, unless it was given a colour)
+      if (type === "smoke") { mat.transparent = true; mat.opacity = 0.78; mat.depthWrite = false; if (typeof p.color !== "string") mat.color.set("#55585e"); }
       return { m: mesh(geo, mat), ph: rand(i, 1), a: rand(i, 2) * Math.PI * 2, k: rand(i, 4) };
     });
     update = (t) => {

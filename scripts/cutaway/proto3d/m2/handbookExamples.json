@@ -5,7 +5,7 @@
  "prop": {"from":"sump_pump_saves_your_basement","params":{"type":"stairs","h":4,"w":1.2,"pos":[-8.6,0.12,-4.5],"rotY":0,"scale":1}},
  "grate": {"from":"car_wash","params":{"pos":[11.2,0.1,-1],"width":1.3,"depth":0.9}},
  "canopy": {"from":"car_wash","params":{"x0":7.9,"x1":10.1,"z0":-4.2,"z1":-0.6,"y":0.1,"h":3.2,"color":"#2e9d63","postColor":"#3a4046"}},
- "car": {"from":"gas_station_tank","params":{"pos":[9.95,0,-6.6],"from":-0.4,"to":-33,"color":"#2e62c9","model":"sedan","axis":"z"}},
+ "car": {"from":"bridge","params":{"road":"road","pos":[0,0,-3.5],"from":-22,"to":22,"color":"#2e62c9","model":"sedan"}},
  "traffic": {"from":"traffic_light","params":{"lane":[9.95,-12.6],"dir":-1,"n":2,"gap":5.6,"colors":["#3d6fb0","#e8c43a"],"y":0.12}},
  "cabinet": {"from":"traffic_light","params":{"pos":[2.3,0.77,-13.4],"size":[0.9,1.3,0.6]}},
  "counter": {"from":"airplane","params":{"pos":[-3,2.7,-0.9],"size":1.4,"from":0,"to":9,"color":"#3ad6ff","bar":true,"danger":2}},
@@ -34,6 +34,7 @@
  "crack": {"from":"bridge","params":{"points":[[-0.3,-5.6,-1.17],[0.25,-4.9,-1.17],[-0.2,-4.2,-1.17],[0.3,-3.5,-1.17]],"r":0.08}},
  "drops": {"from":"nuclear_bunker","params":{"x0":-4.8,"x1":4.8,"count":26,"fromY":0.6,"landY":-0.9,"z":-1,"mat":"mud"}},
  "water": {"from":"storm_drain","params":{"box":{"x0":10,"x1":12.5,"y0":-4.2,"y1":-2.4,"z0":-3,"z1":0},"mat":"water","dirtyColor":"#6b5a33"}},
+ "gravel": {"from":"basement_stays_dry","params":{"box":{"x0":-5.58,"x1":2.55,"z0":-4.08,"z1":0,"y0":-3.6,"y1":-2.95},"faceBox":{"x0":-5.56,"x1":2.53,"y0":-3.6,"y1":-2.95,"z0":-4,"z1":0.04},"pourBox":{"x0":-5.4,"x1":2.3,"z0":-3.9,"z1":-0.25},"pourFrom":0.5,"pourCount":220,"mat":"gravel","pebbleMat":"pebbles","waterTop":-3,"waterSpan":0.5,"drainDrop":0.4}},
  "soakPit": {"from":"garden_pond","params":{"box":{"x0":10,"x1":13,"y0":-3.8,"y1":-1.6,"z0":-2.4,"z1":0.02},"faceBox":{"x0":10,"x1":13,"y0":-3.8,"y1":-1.6,"z0":-2.3,"z1":0.04},"mat":"gravelPit","pebbleMat":"pebblesPit"}},
  "wipe": {"from":"storm_drain","params":{"box":{"x0":-8,"x1":-6.2,"y0":-0.6,"y1":0.12,"z0":-3,"z1":0},"mat":"concrete","axis":"x","r":0.03,"uvScale":1}},
  "wrap": {"from":"french_drain","params":{"box":{"x0":-11.38,"x1":0.78,"y0":-3.6,"y1":-0.45,"z0":-1.97,"z1":0.01},"opts":{"thick":0.13,"sides":["back","floor","top"],"along":"x","stagger":0.14,"dur":0.45},"mat":"fabric"}},
@@ -49,5 +50,11 @@
  "arrows": {"from":"kitplan_chainsaw","params":{"list":[{"at":[3.6,1.1,-3.2],"dir":[-1,0],"travel":0.6}],"opts":{"scale":1.2}}},
  "outline": {"from":"four_wheel_steering_turns_a_giant_car_li","params":{"points":[[-3,0.02,-3],[-3,2.6,-3],[3,2.6,-3],[3,0.02,-3]],"opts":{"closed":true,"r":0.09,"over":true},"of":"giant"}},
  "seepFlow": {"from":"garden_pond","params":{"count":40,"width":8,"y0":-2.5,"fall":3,"floor":-10}},
- "fx": {"from":"gas_station_tank","params":{"type":"drip","at":[-1,-4,0.1],"size":1}}
+ "fx": {"from":"gas_station_tank","params":{"type":"drip","at":[-1,-4,0.1],"size":1}},
+ "wires": {"from":"power","params":{"points":[[1.5,6.6,-3.5],[16,12.5,-6],[21,8.5,-3]],"sag":1,"count":2,"spacing":0.8}},
+ "model": {"from":"power","params":{"keyword":"pylon","pos":[16,0,-6]}},
+ "road": {"from":"bridge","params":{"points":[[-24,-3.5],[24,-3.5]],"width":6,"surface":"asphalt","bridge":{"from":-11,"to":11,"height":3.2,"type":"suspension","tower":11}}},
+ "building": {"from":"station","params":{"pos":[0,0,-0.5],"width":18,"depth":7,"use":"station","floors":[{"h":4.5},{"h":4.5}],"roof":"flat","shafts":[{"type":"escalator","x":-2,"w":7,"from":0,"to":1,"z":-3.2},{"type":"elevator","x":6.4,"w":2.4,"from":0,"to":1}]}},
+ "waterBody": {"from":"bridge","params":{"body":"river","x0":-9,"x1":9,"level":-9}},
+ "terrain": {"from":"power","params":{"blocks":[{"type":"flat","x0":-24,"x1":24,"y":0}],"trees":[[-20,-12,1]]}}
 }

@@ -10,13 +10,16 @@ import { REGISTRY, validateScene } from "../m2/language.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PLANS = path.join(ROOT, "m3/sweep/plans"), OUT = path.join(ROOT, "m2/handbookExamples.json");
-const MAX = 220;
+const MAX = 320;
 // numbers to 2 decimals so an example reads cleanly
 const tidy = (v) => (typeof v === "number" ? Math.round(v * 100) / 100 : Array.isArray(v) ? v.map(tidy) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, tidy(x)])) : v);
 
 const best = {};
-for (const f of fs.readdirSync(PLANS).sort()) {
-  const L = JSON.parse(fs.readFileSync(path.join(PLANS, f), "utf8")).layout;
+// (the saved plans, then the generator test cases: the terrain, water, building, road, wires and model kinds)
+const TESTS = path.join(ROOT, "m3/testcases");
+const files = [...fs.readdirSync(PLANS).sort().map((f) => path.join(PLANS, f)), ...fs.readdirSync(TESTS).sort().map((f) => path.join(TESTS, f))];
+for (const file of files) {
+  const f = path.basename(file), L = JSON.parse(fs.readFileSync(file, "utf8")).layout;
   const bad = new Set(validateScene(L).map((e) => /^parts\[(\d+)\]/.exec(e.at)?.[1]).filter(Boolean).map(Number));
   L.parts.forEach((p, i) => {
     if (bad.has(i) || p.kind === "rig" || !REGISTRY.kinds[p.kind]) return;

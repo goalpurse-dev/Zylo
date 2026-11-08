@@ -66,6 +66,8 @@ export function storyFx(layout, sentences) {
   strip(layout);
   const textOf = (role) => sentences.find((s) => s.role === role)?.text ?? "";
   const kinds = new Map(layout.parts.map((p) => [p.id, p.kind]));
+  // the words of the topic's own name (its title and key: "How a smoke detector works", smoke_detector)
+  const topicWords = new Set(tokens(`${layout.title ?? ""} ${String(layout.key ?? "").replace(/_/g, " ")}`).map(clean).filter((w) => w.length > 2 && !/^(how|works?|the|and|your|you)$/.test(w)));
   let n = 0;
   // 2. the finish line first (its items name parts the events must not double)
   const fin = layout.beats.find((b) => b.s === "finish");
@@ -118,6 +120,9 @@ export function storyFx(layout, sentences) {
     low.forEach((w, i) => {
       const ev = EVENTS.find((e) => e.re.test(w));
       if (!ev || seen.has(ev.type) || hit.has(i)) return;
+      // (a word of the topic's own name is the thing, not an event: "smoke" in "smoke detector", "flood" in "flood
+      // light", "fire" in "fire hydrant"; the owner's list of 2026-11-07)
+      if (topicWords.has(w) && (topicWords.has(low[i + 1]) || topicWords.has(low[i - 1]))) return;
       // (said as not happening: "That flame is not garbage burning" in the landfill myth line)
       if (low.slice(Math.max(0, i - 3), i).some((x) => /^(not|no|never|nothing|without)$|n't$/.test(x))) return;
       // (a condition, not an event: "gas only burns when it meets air" put fire on a cold burner)

@@ -305,7 +305,10 @@ export function rig(ctx, p, api) {
       case "beam": {
         // a glowing ray: dark until a light or blink move on its node (registered with the lamps)
         const a = new THREE.Vector3(...v3(s.from)), b = new THREE.Vector3(...v3(s.to)), len = Math.max(0.01, a.distanceTo(b)), col = s.color ?? "#ff4d4d";
-        const m = new THREE.Mesh(new THREE.CylinderGeometry(num(s.r, 0.04), num(s.r, 0.04), len, 10), std({ color: C(col), emissive: C(col), emissiveIntensity: 0, roughness: 0.3, transparent: true, opacity: 0.85 }));
+        // (the owner's list of 2026-11-07: the beam was a pale stick even when off and never glowed; now light itself:
+        // additive, unlit by the scene, invisible until its node's light or blink move, widening toward its far end)
+        const r0 = num(s.r, 0.04), m = new THREE.Mesh(new THREE.CylinderGeometry(r0 * (len > 3 ? 4 : 1.6), r0, len, 16, 1, true), new THREE.MeshBasicMaterial({ color: C(col), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+        m.userData.beam = true; m.visible = false;
         m.position.copy(a).lerp(b, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); m.castShadow = false; parent.add(m);
         if (!lamps.has(nodeId)) lamps.set(nodeId, []); lamps.get(nodeId).push(m); return m;
       }
@@ -452,7 +455,11 @@ export function rig(ctx, p, api) {
           if (m.type === "spin") g.rotation["xyz"[ax]] += integral(m.name, t) * num(m.turns, 1) * Math.PI * 2;
           if (m.type === "extend") { const k = 1 + (num(m.k, 1.5) - 1) * v; g.scale.setComponent(ax, k); }
           if (m.type === "appear") { const a = api.ch(m.name, t); g.visible = a > 0.002; g.scale.multiplyScalar(Math.max(0.001, a)); }
-          if (m.type === "light" || m.type === "blink") for (const l of lamps.get(n.id) ?? []) l.material.emissiveIntensity = m.type === "light" ? 2 * v : v * (((t * num(m.rate, 2)) % 1) < 0.5 ? 2.2 : 0.15);
+          if (m.type === "light" || m.type === "blink") for (const l of lamps.get(n.id) ?? []) {
+            l.material.emissiveIntensity = m.type === "light" ? 2 * v : v * (((t * num(m.rate, 2)) % 1) < 0.5 ? 2.2 : 0.15);
+            // (a beam is light itself: invisible until lit, then a glowing additive ray)
+            if (l.userData.beam) { const k = Math.min(1, l.material.emissiveIntensity / 2); l.material.opacity = 0.7 * k; l.visible = k > 0.01; }
+          }
           if (m.type === "snap") {
             // the piece shortened to one half, pushed one way; its copy the other way: two pieces with a gap, tilted
             const sn = snaps.find((x) => x.id === n.id && x.m === m), k = 1 - 0.5 * v, off = (sn.L / 4 + num(m.gap, 0.25) / 2) * v, tilt = 0.18 * v;
