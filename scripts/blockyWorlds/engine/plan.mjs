@@ -35,6 +35,7 @@ import { storyReport } from "./lib/storyPatterns.js";
 import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBible.js";
 import { petsOf, petPass, petProblems, ensurePet, petShows, petStateFor } from "./lib/pets.js";
 import { noCards, addUnshown, cardProblems } from "./lib/cards.js";
+import { recipeFor, recipePass } from "./lib/recipes/index.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -525,7 +526,7 @@ function pickCamera(prefs, hist, seg, focus, actorsN, monster) {
 }
 
 // ---------------------------------------------------------------- 6. the plan
-export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null } = {}) {
+export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null } = {}) {
   if (!script?.lines?.length) throw new Error("planVideo: script.lines is empty");
   idea ??= {};
   const W = Array.isArray(words) && words.length ? words : estimateWords(script);
@@ -930,6 +931,10 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   if (bible) { const wb = applyBible(tl, bible); if (tl.direction) tl.direction.world = { spots: wb.spots, homed: wb.homed }; }
   const pf = planFixPass(tl, lines);
   if (tl.direction && (pf.cards || pf.bells || pf.filler)) tl.direction.planFix = pf;
+  // SHOT RECIPES (owner 2026-11-08, lib/recipes): the story type's pre-directed cuts, cameras and order over the planned
+  // content; a line's change stays only when the four pre-render checks are no worse (off unless a recipe is given)
+  const rec = recipeFor({ recipe, idea, script });
+  if (rec) tl.recipe = recipePass(tl, { recipe: rec, title, check: (t) => ({ timeline: checkTimeline(t).length, visuals: checkVisuals(t, script).length, subjects: checkSubjects(t).length, production: checkProduction(t).length }) });
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   // the style rules measured on the plan (advisory: docs/blocky-worlds-protocol.md 8, lib/style.js)
   tl.style = styleReport(tl);

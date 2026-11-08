@@ -1,0 +1,714 @@
+{
+ "version": 1,
+ "id": "absurd_rule_comedy",
+ "storyType": "absurd_rule_comedy",
+ "name": "Absurd rule comedy",
+ "what": "a town with one silly rule everyone follows",
+ "source": {
+  "video": "7704068720796208406",
+  "shots": 45,
+  "duration": 86.13,
+  "note": "internal only: camera + structure; never the story, characters, names or footage"
+ },
+ "aliases": [
+  "everyone_except_me",
+  "absurd_rule"
+ ],
+ "pace": {
+  "targetShot": 1.5,
+  "minShot": 0.8,
+  "maxShot": 2.2,
+  "maxPerLine": 4
+ },
+ "beats": {
+  "rule": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "establish",
+     "share": 0.23,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "high",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "town",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.38,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "crowd",
+     "scale": [
+      "person",
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.14,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.14,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line",
+     "causes": true
+    },
+    {
+     "role": "reaction",
+     "share": 0.11,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "reacts_surprised",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "tour": {
+   "mode": "per_line",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "establish",
+     "share": 0.33,
+     "cam": {
+      "distance": "wide",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "medium"
+     },
+     "subject": "place",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.33,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "noun"
+    },
+    {
+     "role": "reaction",
+     "share": 0.33,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "reacts_surprised",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "me": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "cause",
+     "share": 0.13,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "pan",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "scale": [
+      "trees"
+     ],
+     "action": "attacks",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.03,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "shake",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.11,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "attacks",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.28,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "reaction",
+     "share": 0.17,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "reacts_surprised",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.29,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    }
+   ]
+  },
+  "until": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "humour",
+     "share": 0.17,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.11,
+     "cam": {
+      "distance": "extreme_close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line",
+     "causes": true
+    },
+    {
+     "role": "cause",
+     "share": 0.05,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "prop",
+     "scale": [
+      "trees"
+     ],
+     "action": "attacks",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.14,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "orbit",
+      "speed": "fast"
+     },
+     "subject": "neighbour",
+     "scale": [
+      "houses",
+      "trees"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.11,
+     "cam": {
+      "distance": "close",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.19,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "pan",
+      "speed": "medium"
+     },
+     "subject": "neighbour",
+     "scale": [
+      "person"
+     ],
+     "action": "attacks",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.16,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    }
+   ]
+  },
+  "discovery": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "mood",
+     "share": 0.14,
+     "cam": {
+      "distance": "medium",
+      "height": "high",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "scale": [
+      "person"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "mood",
+     "share": 0.04,
+     "cam": {
+      "distance": "close",
+      "height": "high",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.08,
+     "cam": {
+      "distance": "close",
+      "height": "high",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "crowd",
+     "action": "line",
+     "cutOn": "line",
+     "causes": true
+    },
+    {
+     "role": "reaction",
+     "share": 0.11,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "crowd",
+     "action": "reacts_surprised",
+     "cutOn": "line"
+    },
+    {
+     "role": "establish",
+     "share": 0.1,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "tilt_up",
+      "speed": "fast"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses",
+      "trees"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "threat",
+     "share": 0.06,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "person"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.1,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.15,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "person"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.15,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    }
+   ]
+  },
+  "climax": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "reaction",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "scale": [
+      "person",
+      "houses"
+     ],
+     "action": "reacts_happy",
+     "cutOn": "line"
+    },
+    {
+     "role": "mood",
+     "share": 0.18,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "scale": [
+      "person",
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "mood",
+     "share": 0.05,
+     "cam": {
+      "distance": "extreme_close",
+      "height": "eye_level",
+      "move": "static",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.17,
+     "cam": {
+      "distance": "extreme_close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.12,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "life",
+     "share": 0.23,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "static",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.19,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "prop",
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "closer": {
+   "mode": "flow",
+   "targetShot": 1.6,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "humour",
+     "share": 0.43,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "establish",
+     "share": 0.05,
+     "cam": {
+      "distance": "wide",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "fast"
+     },
+     "subject": "place",
+     "scale": [
+      "houses",
+      "trees"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "humour",
+     "share": 0.1,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.07,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "medium"
+     },
+     "subject": "neighbour",
+     "scale": [
+      "person"
+     ],
+     "action": "line",
+     "cutOn": "line"
+    },
+    {
+     "role": "life",
+     "share": 0.09,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "line",
+     "causes": true
+    },
+    {
+     "role": "ending",
+     "share": 0.26,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "pull_out",
+      "speed": "slow"
+     },
+     "subject": "town",
+     "action": "line",
+     "cutOn": "word",
+     "scale": [
+      "houses"
+     ]
+    }
+   ]
+  }
+ }
+}
