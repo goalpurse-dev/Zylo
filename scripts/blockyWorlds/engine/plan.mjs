@@ -28,7 +28,7 @@ import { EPIC_CAMERAS, validateEpic } from "./lib/epic.js";
 import { titleMatchOk, nameWordOk } from "./lib/names.js";
 import { openingRule, openingProblems, waivedHas, openingSec } from "./lib/opening.js";
 import { meaningPass } from "./lib/meaning.js";
-import { coastPass } from "./lib/coast.js";
+import { coastPass, coastWords } from "./lib/coast.js";
 import { capsPass, validateCaps, usesCapsTimeline } from "./lib/caps.js";
 import { motionPass, styleReport } from "./lib/style.js";
 import { storyReport } from "./lib/storyPatterns.js";
@@ -917,7 +917,11 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     tl.direction = { provider: D.provider, mock: D.mock, notes: D.notes, fixes: prodFixes, gaps: D.match.gaps.length, summary: D.match.summary };
     // the coast around a creature seen from outside: hill, mud, spray, slide, splash, sea (lib/coast.js; undone per
     // line when it would add a check problem)
-    if (tl.worlds) { const c = coastPass(tl, { check: checkTimeline }); if (c.staged || c.moved) tl.direction.coast = c; }
+    // FRAMING-FIX 2026-11-08: only a story with a coast EVENT (sea, mud, spray, splash, slide, float) gets the coast; a
+    // landscape word alone ("Torches lit the whole ridge.") kept the rest of the turtle story on the bare coast hill
+    // (no forest, triangle mountains, the rival giant buried in the slope)
+    const coastEvent = (tl.lines ?? []).some((L) => { const w = coastWords(L.text ?? ""); return w.sea || w.mud || w.spray || w.splash || w.slide || w.float; });
+    if (tl.worlds && coastEvent) { const c = coastPass(tl, { check: checkTimeline }); if (c.staged || c.moved) tl.direction.coast = c; }
     // the target-video capabilities from each shot's own words (lib/caps.js: camera moves, chains / hooks / snaps,
     // cannons, horn rings, shields, eat a tree, nuzzle, flashback, tilt): a card gets none, the opening window only a
     // move, and a field that adds a check problem is undone

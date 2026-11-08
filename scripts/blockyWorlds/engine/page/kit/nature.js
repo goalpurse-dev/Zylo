@@ -49,7 +49,9 @@ export function sightBlocks(p, top, cam, subj, r0 = 1.5, r1 = 4) {
 }
 
 // ------------------------------------------------------------------------------------------------ the sight-line shader
-const SIGHT_UNIFORMS = () => ({ uCam: { value: null }, uSubj: { value: null }, uR: { value: null }, uSightOn: { value: 0 } });
+// uClip (FRAMING-FIX 2026-11-08): a region whose plants collapse (the coast stage's hill + sea stand on the forest):
+// (x > uClip.x && |z - uClip.y| < uClip.z) || x > uClip.w, while uClipOn is 1
+const SIGHT_UNIFORMS = () => ({ uCam: { value: null }, uSubj: { value: null }, uR: { value: null }, uSightOn: { value: 0 }, uClip: { value: null }, uClipOn: { value: 0 } });
 /** patch an instanced material: collapse instances that rise above the camera->subject line inside the corridor */
 function sightPatch(THREE, mat, uniforms, topH) {
   const prev = mat.onBeforeCompile;
@@ -57,8 +59,12 @@ function sightPatch(THREE, mat, uniforms, topH) {
     prev?.call(mat, sh, r);
     Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader.replace("#include <common>", `#include <common>
-uniform vec3 uCam; uniform vec3 uSubj; uniform vec2 uR; uniform float uSightOn;`).replace("#include <begin_vertex>", `#include <begin_vertex>
+uniform vec3 uCam; uniform vec3 uSubj; uniform vec2 uR; uniform float uSightOn; uniform vec4 uClip; uniform float uClipOn;`).replace("#include <begin_vertex>", `#include <begin_vertex>
 #ifdef USE_INSTANCING
+if (uClipOn > 0.5) {
+  vec4 ic = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  if ((ic.x > uClip.x && abs(ic.z - uClip.y) < uClip.z) || ic.x > uClip.w) transformed *= 0.0;
+}
 if (uSightOn > 0.5) {
   vec4 io = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
   float sy = length(vec3(instanceMatrix[1].xyz)); float sx = length(vec3(instanceMatrix[0].xyz));
@@ -160,7 +166,7 @@ export async function makeNature(ctx, opts = {}) {
   const M = await loadModels(ctx);
   if (!IMPOSTORS) IMPOSTORS = { tree: makeImpostor(THREE, renderer, M.island_tree_02.parts), fir: makeImpostor(THREE, renderer, M.fir_sapling.parts) };
   const group = new THREE.Group(); group.name = "nature";
-  const uniforms = SIGHT_UNIFORMS(); uniforms.uCam.value = new THREE.Vector3(); uniforms.uSubj.value = new THREE.Vector3(); uniforms.uR.value = new THREE.Vector2(1.5, 4);
+  const uniforms = SIGHT_UNIFORMS(); uniforms.uCam.value = new THREE.Vector3(); uniforms.uSubj.value = new THREE.Vector3(); uniforms.uR.value = new THREE.Vector2(1.5, 4); uniforms.uClip.value = new THREE.Vector4(1e9, 0, 0, 1e9);
   const hOf = (n) => M[n].bounds.max.y - M[n].bounds.min.y;
   const treeH = hOf("island_tree_02"), firH = hOf("fir_sapling");
 
@@ -271,6 +277,8 @@ export async function makeNature(ctx, opts = {}) {
       uniforms.uR.value.set(1.2 + Math.min(4, c.distanceTo(subject.pos) * 0.01), rad * 0.9 + 1.5);
       uniforms.uSightOn.value = 1;
     },
+    /** FRAMING-FIX: no plants in a region (null: all back). { xMin, zc, halfZ, seaX } */
+    clip(r) { if (!r) { uniforms.uClipOn.value = 0; return; } uniforms.uClip.value.set(r.xMin, r.zc, r.halfZ, r.seaX); uniforms.uClipOn.value = 1; },
     update() {},
   };
 }

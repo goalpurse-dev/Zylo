@@ -536,7 +536,10 @@ export async function buildCreatureOutside(rawSpec, ctx) {
   const p0x = -spec.size * 0.15, p0z = -dist;
   const lane = (x, z) => { const ux = x - p0x, uz = z - p0z, along = ux * dirX + uz * dirZ, off = Math.abs(ux * dirZ - uz * dirX); return along > -spec.size * 2.6 && along < spec.size * 3 && off < spec.size * 0.42; };
   const people = (x, z) => Math.hypot(x, z) < 14;
-  const nature = spec.water ? null : await makeNature(ctx, { seed: spec.seed, center: { x: 0, z: -dist * 0.6 }, flatR: Math.max(300, spec.size * 2.6), nearR: Math.max(240, dist + spec.size * 1.3), farR: 1600, trees: 15000, treeScale: Math.min(1.8, Math.max(1, spec.size / 70)), groundTile: 14, ferns: 2200, clear: (x, z) => lane(x, z) || people(x, z), noGrass: (x, z) => lane(x, z) && Math.hypot(x, z) > 30, grassCenter: { x: 0, z: -10 }, grassR: 40, grass: 40000, /* WORLD-FIX 2026-11-07: a DENSE forest of big trees (the style test), the grass carpet only near the lens (far blades speckled), a larger ground tile */ dirt: (x, z) => (lane(x, z) ? 0.8 : 0) });
+  // FRAMING-FIX 2026-11-08: the rival giants' spots (giant_left / giant_right, pushed back a little by the epic layer)
+  // are clearings too: the 25 m wolf beside the turtle stood among 30 m trees, hidden in every shot on it
+  const rivals = (x, z) => [-1, 1].some((k) => Math.hypot(x - k * spec.size * 0.9, z + dist + spec.size * 0.08) < Math.max(34, spec.size * 0.32));
+  const nature = spec.water ? null : await makeNature(ctx, { seed: spec.seed, center: { x: 0, z: -dist * 0.6 }, flatR: Math.max(300, spec.size * 2.6), nearR: Math.max(240, dist + spec.size * 1.3), farR: 1600, trees: 15000, treeScale: Math.min(1.8, Math.max(1, spec.size / 70)), groundTile: 14, ferns: 2200, clear: (x, z) => lane(x, z) || people(x, z) || rivals(x, z), noGrass: (x, z) => lane(x, z) && Math.hypot(x, z) > 30, grassCenter: { x: 0, z: -10 }, grassR: 40, grass: 40000, /* WORLD-FIX 2026-11-07: a DENSE forest of big trees (the style test), the grass carpet only near the lens (far blades speckled), a larger ground tile */ dirt: (x, z) => (lane(x, z) ? 0.8 : 0) });
   const land = nature ? nature.group : landscape(K, ctx, { water: spec.water, seed: spec.seed, clear: (x, z) => (Math.abs(z + dist) < spec.size * 0.6 && Math.abs(x) < spec.size * 2.5) || (z > -dist - spec.size * 0.6 && Math.abs(x) < spec.size * 3) });
   root.add(land);
   const action = spec.water ? "swim" : "walk";
@@ -583,7 +586,7 @@ export async function buildCreatureOutside(rawSpec, ctx) {
     dustPool.update(lt);
   }
   lookHooks(S, ctx, nature);
-  if (giant && !spec.water) addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath });
+  if (giant && !spec.water) addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath, nature });
   return S;
 }
 
@@ -600,7 +603,7 @@ export async function buildCreatureOutside(rawSpec, ctx) {
  * The giant's action "slide" (lib/epic.js) on a hill: it slides down the slope on its belly toward the sea.
  * S.setStage(stage, lt, dur, action) -> after S.update (moves the giant); S.stageAfter(shot, lt, where) -> the spray.
  */
-function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath }) {
+function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPath, nature = null }) {
   const { THREE } = ctx, s = spec.size, V = (x, y, z) => new THREE.Vector3(x, y, z);
   const shoreX = s * 0.95, topX = -s * 2.4, H = s * 0.42, zc = -dist, halfD = dist * 0.92;
   const sm = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
@@ -612,7 +615,7 @@ function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPat
   const pos = geo.attributes.position, cx = (shoreX + topX) / 2 - s * 0.3;
   for (let i = 0; i < pos.count; i++) { const x = pos.getX(i) + cx, z = pos.getZ(i) + zc; pos.setY(i, hillY(x, z) + 0.05); }
   geo.computeVertexNormals();
-  const grassM = new THREE.MeshStandardMaterial({ color: "#6fae45", roughness: 0.95 });
+  const grassM = nature ? K.pbr("leafy_grass", { repeat: [(shoreX - topX + s * 0.6) / 8, (halfD * 2.2) / 8], tint: "#b8d08a", normal: 0.6 }) : new THREE.MeshStandardMaterial({ color: "#6fae45", roughness: 0.95 });
   const mudM = new THREE.MeshStandardMaterial({ color: "#6b4526", roughness: 0.18, metalness: 0.15 });
   const hill = new THREE.Mesh(geo, grassM); hill.position.set(cx, 0, zc); hill.receiveShadow = true; coast.add(hill);
   // mud streaks: darker glossy bands down the slope (only with mud)
@@ -630,9 +633,12 @@ function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPat
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), seaM); sea.rotation.x = -Math.PI / 2; sea.position.set(shoreX + 3000, 0.6, 0); sea.receiveShadow = true; coast.add(sea);
   const sand = new THREE.Mesh(new THREE.BoxGeometry(s * 0.35, 1, 6000), new THREE.MeshStandardMaterial({ color: "#e9d3a0", roughness: 1 })); sand.position.set(shoreX - s * 0.1, 0.2, 0); coast.add(sand);
   // the grass in front of / behind the hill on the land side (the plain fields' trees would stand in the sea)
-  const flat = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: "#78b84e", roughness: 1 })); flat.rotation.x = -Math.PI / 2; flat.position.set(shoreX - 3000, 0, 0); coast.add(flat);
-  const mtnM = new THREE.MeshStandardMaterial({ color: "#6c8bb0", roughness: 1 });
-  for (let k = 0; k < 6; k++) { const h = 220 + k * 40, m = new THREE.Mesh(new THREE.ConeGeometry(h * 0.9, h, 5), mtnM); m.position.set(-900 + k * 260, h / 2 - 10, -1500 - (k % 2) * 200); coast.add(m); }
+  // FRAMING-FIX 2026-11-08 (lead review: "the army on a flat green field with pastel triangle mountains"): no flat
+  // pastel plane and no cone mountains here any more. The realistic forest (land = the nature group) stays visible on
+  // the coast too; its plants are clipped off the hill's footprint and the sea (nature.clip), the hill wears the grass
+  // texture. With a pastel fallback land (no nature) the old flat plane is kept, without mountains.
+  if (!nature) { const flat = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: "#78b84e", roughness: 1 })); flat.rotation.x = -Math.PI / 2; flat.position.set(shoreX - 3000, 0, 0); coast.add(flat); }
+  const clipRegion = { xMin: topX - s * 0.6 - 6, zc, halfZ: halfD * 1.1 + 6, seaX: shoreX - s * 0.05 };
   // the spray: droplets on a parabola from a hand toward the hill; the splash: droplets bursting up + a foam ring
   const dropM = new THREE.MeshStandardMaterial({ color: "#cfeeff", emissive: "#9fd6ff", emissiveIntensity: 0.6, roughness: 0.2, transparent: true, opacity: 0.9 });
   const NS = 420, spray = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 6, 4), dropM, NS); spray.visible = false; spray.frustumCulled = false; S.root.add(spray);
@@ -647,7 +653,7 @@ function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPat
   S.coast = { hillY, shoreX, topX };
   S.setStage = (stage, lt = 0, dur = 1, action = null) => {
     cur = stage && stage.ground && stage.ground !== "land" ? stage : null;
-    coast.visible = !!cur; land.visible = !cur;
+    coast.visible = !!cur; land.visible = !cur || !!nature; nature?.clip(cur ? clipRegion : null); S.coast.active = !!cur;
     spray.visible = false; splash.visible = false; ring.visible = false;
     if (!cur) return;
     hill.material = cur.mud ? mudM : grassM; streaks.visible = !!cur.mud;

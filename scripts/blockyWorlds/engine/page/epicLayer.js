@@ -129,6 +129,9 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       // walking giants advance along their heading (gait speed), so feet do not slide
       const yaw = e.facing != null ? yawFacing(S, pos, e.facing) : yawFacing(S, pos, "camera");
       if ((action === "walk" || action === "run") && !mv) { const sp = g.userData.gait.speed * (action === "run" ? 2 : 1) * (e.speed ?? 1); pos.x += Math.sin(yaw) * sp * lt; pos.z += Math.cos(yaw) * sp * lt; }
+      // FRAMING-FIX 2026-11-08: on the coast stage the other giants stand ON the hill (at the flat 0 the wolf beside the
+      // turtle stood buried in the slope: every aerial / giant_close / track on it was a blank green frame)
+      if (S.coast?.active && !e.pos) { const r = (g.userData.length ?? g.userData.size ?? 10) * 0.35; pos.y = Math.max(pos.y, ...[[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].map(([dx, dz]) => S.coast.hillY(pos.x + dx, pos.z + dz))); }
       g.position.copy(pos); g.rotation.set(0, yaw, 0);
       const gm = S.giantMount ?? mount; if (g.parent !== gm) gm.add(g); // ATTACH: other giants stand on the land, not on the creature's carrier
       animateGiant(g, action, lt, { dur, hitAt: plan?.shake?.at ?? 0.6, at: role?.at != null ? role.at * dur : plan?.shake?.at, landAt: plan?.shake?.at ?? 1.0 });
@@ -175,7 +178,20 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       const d = sp * Math.max(0, lt - 0.2);
       return { pos: L.origin.clone().add(V(Math.sin(L.yaw) * d, 0, Math.cos(L.yaw) * d)), vel: V(Math.sin(L.yaw) * sp, 0, Math.cos(L.yaw) * sp), ext: crowdExtent(L.grp) };
     };
-    if (fg && gInfo) { ctxE.focus = gInfo.pos.clone(); ctxE.focusHeight = gInfo.g.userData.height; ctxE.span = Math.max(gInfo.g.userData.length, gInfo.g.userData.width, gInfo.g.userData.height); }
+    if (fg && gInfo) {
+      ctxE.focus = gInfo.pos.clone(); ctxE.focusHeight = gInfo.g.userData.height; ctxE.span = Math.max(gInfo.g.userData.length, gInfo.g.userData.width, gInfo.g.userData.height);
+      // FRAMING-FIX 2026-11-08 (lead: "frame a rival giant beside the world creature reliably"): the establish on a rival
+      // giant beside the world's creature seen from outside is the two-shot that shows both at scale (the 25 m wolf and
+      // the 120 m turtle), aimed between them, the span covering both, from over the forest canopy
+      if (type === "establish" && worldG && gInfo.g !== worldG.g && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside") {
+        const a = gInfo.pos, b = worldG.pos, d = Math.hypot(a.x - b.x, a.z - b.z), wu = worldG.g.userData;
+        const sa = ctxE.span, sb = Math.max(wu.length ?? 0, wu.width ?? 0, wu.height ?? 0);
+        if (d < (sa + sb) * 3) {
+          ctxE.focus = a.clone().lerp(b, sb / (sa + sb) * 0.6); ctxE.focus.y = Math.min(a.y, b.y);
+          ctxE.focusHeight = Math.max(gInfo.g.userData.height, (wu.height ?? 20) * 0.75); ctxE.span = d + (sa + sb) * 0.45; ctxE.fill = 0.34; ctxE.twoShot = { aimY: Math.min(a.y, b.y) + (wu.height ?? 20) * 0.22, minY: 64 };
+        }
+      }
+    }
     else if (fc) { const ci = f.startsWith("crowd:") ? Number(f.slice(6)) || 0 : 0; const ca = crowdAt(ci); ctxE.focus = ca?.pos ?? S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = Math.max((ca?.ext ?? 10) * 1.6, type === "aerial" ? 44 : 8); ctxE.velocity = ca?.vel; }
     else if (fw && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "on") {
       // 2026-11-05 (GAPS): ON the creature's back the world shot is the town on it (seen from above its back), not the
@@ -233,6 +249,12 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     { const gg = fg ? gInfo : fw ? (worldG ?? anyGiant) : null; if (gg) { ctxE.radius = Math.max(gg.g.userData.length ?? 0, gg.g.userData.width ?? 0) / 2; ctxE.top = gg.g.userData.height; ctxE.onBack = !!S.surface && fw; } }
     // a shot's camera move (tilt_up, orbit, flyover, fpv, top_down, low_hero) replaces the EPIC framing
     if (!caps.frame(shot, lt, S, ctxE, { giant: (fg ? gInfo?.g : fw ? (worldG ?? anyGiant)?.g : !where[f] ? anyGiant?.g : null) ?? null })) frameEpic(type, ctxE);
+    // the two-shot over the forest canopy (from under it the near crowns filled the lower half of the frame)
+    if (ctxE.twoShot && !shot.move) {
+      const aim = V(ctxE.focus.x, ctxE.twoShot.aimY, ctxE.focus.z);
+      if (camera.position.y < ctxE.twoShot.minY) camera.position.y = ctxE.twoShot.minY;
+      camera.userData.epicAim = aim; camera.lookAt(aim); camera.updateMatrixWorld();
+    }
     // REBUILD 2026-11-06: never inside another giant (wolf, bear, bird...): out of its bounding box, sideways from its
     // centre, still aimed where it was (the world creature has its own ray guard below)
     for (const [, L] of live.giants) {

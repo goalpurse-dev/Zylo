@@ -673,7 +673,9 @@ export function onScreen(r, s, tl = {}) {
       if (r.kitName === "bus (street set)") return s.set === "street" || badge;
       return objHit || actors.some((a) => a.hold && NW(a.hold).some((w) => name.includes(w) || name.includes(sing(w)))) || badge;
     case "effect": case "event":
-      if (r.kitName === "light:night") return s.light === "night";
+      // FRAMING-FIX 2026-11-08: "closes his shutters at sunset" is the sunset light (the world bible lights that line
+      // dusk), not black night: a sunset / dusk / evening nightfall is shown by the dusk or warm light as well
+      if (r.kitName === "light:night") return s.light === "night" || (name.some((w) => /^(sunset|sunsets|sundown|dusk|evening|twilight)$/.test(w)) && ["dusk", "warm"].includes(s.light));
       if (r.kitName === "marker:ring") return markersOf(s).some((m) => m.kind === "ring");
       if (r.kitName && objs.some((o) => o.name === r.kitName)) return true;
       return badge || (r.kind === "event" && /shake|quake/.test(r.name) && (!!s.beat || !!s.shake));
