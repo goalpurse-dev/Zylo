@@ -9,15 +9,16 @@ import { RIG_SHAPES, RIG_MOVES } from "./rig.js";
 import { ROLES, VIEWS, SHOT_TYPES, SETTINGS } from "./plan.js";
 import { MOODS } from "./moods.js";
 
-// the fields a kind's description names (its params prose: "pos [x, y, z] (its centre), size (0.8), color"): any word
-// written there as a field. Permissive on purpose until every kind has a typed field list (phase 1b).
-const FIELD_WORD = /\b([a-z][a-zA-Z0-9]{1,24})\b(?=\s*(?:\[|\(|\{|:|,|;|\||$| \(| or |\s*=))/g;
-const fieldsOf = (k) => { const s = String(KIND_DOCS[k]?.[1] ?? ""); return new Set([...s.matchAll(FIELD_WORD)].map((m) => m[1])); };
-// fields every part may carry (the layout's own bookkeeping, not the kind's)
-const COMMON_FIELDS = new Set(["main", "base", "of", "opts", "label", "name", "synonyms", "note"]);
+import { FIELDS, partFieldProblems } from "./fields.js";
+
+// (phase 1b: every kind's typed field list, m2/fields.js; a kind without one would be a gap in the kit's language)
+for (const k of Object.keys(KIND_DOCS)) if (!FIELDS[k]) throw new Error(`language.js: kind ${k} has no typed field list in fields.js`);
+// the keys a part itself may carry, besides id, kind and params: base (its channels' starting values), main (the
+// video's subject), at/of (older plans)
+const PART_KEYS = new Set(["id", "kind", "params", "base", "main", "label", "note"]);
 
 export const REGISTRY = Object.freeze({
-  kinds: Object.freeze(Object.fromEntries(Object.entries(KIND_DOCS).map(([k, [what, params, notes]]) => [k, Object.freeze({ what, params, notes: notes ?? "", fields: fieldsOf(k), verbs: Object.keys(VERBS[k] ?? {}) })]))),
+  kinds: Object.freeze(Object.fromEntries(Object.entries(KIND_DOCS).map(([k, [what, params, notes]]) => [k, Object.freeze({ what, params, notes: notes ?? "", fields: new Set(Object.keys(FIELDS[k].f)), need: FIELDS[k].need ?? [], typed: FIELDS[k].f, verbs: Object.keys(VERBS[k] ?? {}) })]))),
   rig: Object.freeze({ shapes: RIG_SHAPES, moves: RIG_MOVES }),
   roles: ROLES, views: VIEWS, shotTypes: SHOT_TYPES, settings: SETTINGS, moods: Object.keys(MOODS),
 });
@@ -52,8 +53,9 @@ export function validateScene(scene) {
     else ids.add(p.id);
     const k = REGISTRY.kinds[p?.kind];
     if (!k) { err(at, `unknown kind '${p?.kind}'${near(p?.kind, Object.keys(REGISTRY.kinds))}`); continue; }
-    // (fields: a warning until every kind has a typed field list, phase 1b: the prose misses real fields)
-    for (const f of Object.keys(p.params ?? {})) if (!k.fields.has(f) && !COMMON_FIELDS.has(f)) warn(at, `kind ${p.kind}: field '${f}' is not in its description${near(f, k.fields)}`);
+    // (fields: typed per kind since phase 1b, m2/fields.js: unknown fields, wrong types and missing required fields)
+    for (const f of Object.keys(p)) if (!PART_KEYS.has(f)) err(`${at}.${f}`, `is not a part key (a part is {id, kind, params, base?, main?}: put ${p.kind} settings in params)`);
+    for (const e of partFieldProblems(p, at, near)) err(e.at, e.error);
     if (p.kind === "rig") for (const n of p.params?.nodes ?? []) {
       for (const s of n.shapes ?? []) if (s?.shape && !RIG_SHAPES.includes(s.shape)) err(`${at} node ${n.id}`, `unknown shape '${s.shape}'${near(s.shape, RIG_SHAPES)}`);
       for (const m of n.moves ?? []) if (m?.type && !RIG_MOVES.includes(m.type)) err(`${at} node ${n.id}`, `unknown move type '${m.type}'${near(m.type, RIG_MOVES)}`);

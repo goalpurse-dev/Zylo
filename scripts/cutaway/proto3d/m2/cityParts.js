@@ -72,7 +72,7 @@ export function car(ctx, p, api) {
   for (let i = 0; i < 26; i++) { const f = add(root, new THREE.SphereGeometry(0.28 + (i % 3) * 0.08, 10, 8), foamMat, -1.9 + (i % 9) * 0.48, fy + ((i * 7) % 5) * 0.16, -fz + ((i * 5) % 3) * fz, false); f.visible = false; foam.push(f); }
   const shine = paint.clearcoat;
   let washed = 0;
-  ctx.shared = ctx.shared ?? {}; ctx.shared[`car:${p.id ?? "car"}`] = { root, foam, paint };
+  ctx.shared = ctx.shared ?? {}; ctx.shared[`car:${api?.id ?? "car"}`] = { root, foam, paint };
   return {
     update(t) {
       const dv = api.ch("drive", t), lv = api.ch("leave", t);
@@ -88,12 +88,12 @@ export function car(ctx, p, api) {
         root.position.set(x, py, pz); root.visible = dv > 0.001 && lv < 0.999;
         for (const w of wheels) spin(w, x);
       }
-      const f = ctx.shared[`car:${p.id ?? "car"}`].foamK ?? 0;
+      const f = ctx.shared[`car:${api?.id ?? "car"}`].foamK ?? 0;
       foam.forEach((m, i) => { const k = clamp(f * 1.6 - (i / foam.length) * 0.6); m.visible = k > 0.01; m.scale.setScalar(pop(k)); });
       paint.clearcoat = shine * (1 - 0.6 * f);
       // the mud goes as the foam goes on (and stays gone): frames are rendered in any order, so it follows the foam's
       // own channel at t, never a remembered peak
-      washed = clamp((ctx.shared[`car:${p.id ?? "car"}`].washK ?? 0));
+      washed = clamp((ctx.shared[`car:${api?.id ?? "car"}`].washK ?? 0));
       mud.forEach((m, i) => { const k = clamp(1 - washed * 1.4 + (i / mud.length) * 0.3); m.visible = k > 0.02; });
     },
   };

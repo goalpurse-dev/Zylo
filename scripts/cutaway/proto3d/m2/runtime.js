@@ -13,6 +13,9 @@ export function runLayout(ctx, layout, timeline, { endCard = true, look = null }
   for (const part of layout.parts) {
     const key = (ch) => `${part.id}.${ch}`;
     const api = {
+      // (the part's own id: params never hold it, so a car that registered under params.id was always "car" and a car
+      // wash naming any other car id found nothing; found by the typed field lists, 2026-11-08)
+      id: part.id,
       ch: (name, t, shift = 0) => channelValue(T[key(name)], t, shift),
       cue: (name) => T[key(name)]?.ramps[0],
       cues: (name) => T[key(name)]?.ramps ?? [],
