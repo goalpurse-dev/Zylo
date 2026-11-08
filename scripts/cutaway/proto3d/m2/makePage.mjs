@@ -26,7 +26,7 @@ export function makePage(layout) {
   const cut = (from, to) => { const a = s.indexOf(from), b = s.indexOf(to); if (a < 0 || b < 0 || b < a) throw new Error(`markers not found: ${from} / ${to}`); s = s.slice(0, a) + s.slice(b); };
   const n = (v) => String(v);
 
-  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";\nimport { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";');
+  rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as M2R from "./m2/runtime.js";\nimport * as KB from "./kit/backdrops.js";\nimport * as KT from "./kit/terrain.js";\nimport { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";\nimport { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";');
   // the "This is a…" glow: the named part's own silhouette, thick and bright, seen through what covers it (the real
   // checker failed 13 of 40 benchmark topics on a flat rectangle beside, above or around the thing, 2026-11-06)
   rep("composer.addPass(ao);", 'composer.addPass(ao);\nconst OUTLINE = new OutlinePass(new THREE.Vector2(W, H), scene, camera);\nObject.assign(OUTLINE, { edgeStrength: 40, edgeGlow: 2.2, edgeThickness: 9, pulsePeriod: 0 });\nOUTLINE.visibleEdgeColor.set("#ffc400"); OUTLINE.hiddenEdgeColor.set("#ffb000");\ncomposer.addPass(OUTLINE);');
@@ -75,20 +75,28 @@ export function makePage(layout) {
     rep("base.position.set(0, BOTTOM - 0.6, -D / 2); scene.add(base);", "base.position.set(0, BOTTOM - 0.6, -D / 2);");
     rep('std({ map: fineNoise("#b9a58a", 0.08), roughness: 0.7 })); table.rotation.x = -Math.PI / 2; table.position.y = BOTTOM - 1.2;', 'std({ map: fineNoise("#6a655c", 0.06), roughness: 0.8 })); table.rotation.x = -Math.PI / 2; table.position.y = BOTTOM - 0.005;');
   }
+  // a terrain part (kit/terrain.js, scene language v2 phase 2): the yard's ground, its stones and roots, the groundwater
+  // film, the trees, the house, the road and the worker give way to the generated ground (built below, before the parts)
+  const terrainPart = (layout.parts ?? []).find((p) => p.kind === "terrain");
+  if (terrainPart) {
+    rep("const grassM = lawnMaterial(), soilM = soilMaterial();\n{", "const grassM = lawnMaterial(), soilM = soilMaterial();\nif (false) {");
+    rep("if (R === 1 || R === 3) {\n  const rockM", "if (false) {\n  const rockM");
+    rep("tree(-13, -11.5); tree(14, -3.4, 0.9); tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
+  }
   // the static landfill parts and the static truck + flying bags
   cut("// ---------------- the scene ----------------", "// house: R1 detailed");
   cut("// dump truck tipping, two bags in the air", "// worker");
-  if (W.house === false) cut("// house: R1 detailed", "// trees");
-  if (W.worker === false) cut("// worker", "// R3: grass tufts");
-  if (W.moreTrees === false) rep("tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
-  if (W.road === false) rep("road.receiveShadow = true; scene.add(road); }", "road.receiveShadow = true; }");
-  if (Array.isArray(W.house)) rep("const g = new THREE.Group(); g.position.set(-8, 0, -30); scene.add(g);", `const g = new THREE.Group(); g.position.set(${W.house.map(n).join(", ")}); scene.add(g);`);
-  if (W.porch === false && W.house !== false) rep("box(P.trim, 3.2, 0.18, 1.4, 0, 2.9, Dd / 2 + 0.7, g, 0.03); for (const x of [-1.4, 1.4]) cyl(P.trim, 0.09, 2.8, x, 1.4, Dd / 2 + 1.3, g); ", "");
-  if (W.trees) rep("tree(-13, -11.5); tree(14, -3.4, 0.9);", W.trees.map((a) => `tree(${a.map(n).join(", ")});`).join(" "));
+  if (W.house === false || terrainPart) cut("// house: R1 detailed", "// trees");
+  if (W.worker === false || terrainPart) cut("// worker", "// R3: grass tufts");
+  if (W.moreTrees === false && !terrainPart) rep("tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
+  if (W.road === false || terrainPart) rep("road.receiveShadow = true; scene.add(road); }", "road.receiveShadow = true; }");
+  if (Array.isArray(W.house) && !terrainPart) rep("const g = new THREE.Group(); g.position.set(-8, 0, -30); scene.add(g);", `const g = new THREE.Group(); g.position.set(${W.house.map(n).join(", ")}); scene.add(g);`);
+  if (W.porch === false && W.house !== false && !terrainPart) rep("box(P.trim, 3.2, 0.18, 1.4, 0, 2.9, Dd / 2 + 0.7, g, 0.03); for (const x of [-1.4, 1.4]) cyl(P.trim, 0.09, 2.8, x, 1.4, Dd / 2 + 1.3, g); ", "");
+  if (W.trees && !terrainPart) rep("tree(-13, -11.5); tree(14, -3.4, 0.9);", W.trees.map((a) => `tree(${a.map(n).join(", ")});`).join(" "));
   if (Array.isArray(W.road)) rep("road.position.set(0, 0.01, -D - 45 + 9.5);", `road.position.set(${W.road.map(n).join(", ")});`);
   // the groundwater film (the landfill's murk shader goes on it); saturation toward the creator's 0.41
   // (hidden where a creek is the water in the story: a blue band under it reads as the creek)
-  const gwOff = W.groundwater === false || W.shallow || (layout.parts ?? []).some((p) => p.kind === "creek");
+  const gwOff = W.groundwater === false || W.shallow || !!terrainPart || (layout.parts ?? []).some((p) => p.kind === "creek");
   rep("const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water);", "const water = new THREE.Mesh(g, wm); water.position.z = 0.03; scene.add(water); window.__water = water;" + (gwOff ? " water.visible = false;" : ""));
   rep("hemi: 0.15, sat: 1.12,", `hemi: 0.15, sat: Number(Q.get("satR1") ?? ${n(W.sat ?? 1.38)}),`);
   // the animated renderAt
@@ -101,6 +109,9 @@ export function makePage(layout) {
   // a thin slab with nothing dug (no dig part: a street topic, a barrel on the lawn) has no hole at all: the page's pit has
   // no size (M2_CUT, the layout's cut, still places the road and the setting); a turf lid showed the lawn's soil band
   const M2_CLOSED = !!M2_CUT;
+  // the terrain (kit/terrain.js), before the parts: they stand on it; the world cut is one of its pits
+  const M2_TP = M2_LAYOUT.parts.find((p) => p.kind === "terrain");
+  if (M2_TP) { const c = M2_LAYOUT.world?.cut, blocks = [...(M2_TP.params?.blocks ?? []), ...(c && !M2_LAYOUT.world?.shallow ? [{ type: "pit", ...c }] : [])]; ctx.terrain = KT.buildTerrain(ctx, { ...M2_TP.params, blocks }); }
   if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, { ...M2_LAYOUT.world.backdrop, apron: !!M2_LAYOUT.world?.shallow, closed: M2_CLOSED });
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });

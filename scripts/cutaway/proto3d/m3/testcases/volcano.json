@@ -1,0 +1,25 @@
+{
+ "topic": "volcano (generator test case)",
+ "layout": {
+  "key": "tc_volcano", "title": "How a volcano works", "template": "custom", "codeShots": true, "hold": true,
+  "world": { "house": false, "worker": false, "road": false, "moreTrees": false, "mood": "dusk" },
+  "parts": [
+   { "id": "light", "kind": "light", "params": { "storm": false } },
+   { "id": "land", "kind": "terrain", "main": true, "params": { "blocks": [ { "type": "mountain", "at": 0, "z": 0, "height": 10, "width": 26, "crater": { "r": 2.4, "depth": 1.6 }, "chamber": { "y": -9, "rx": 4.5, "ry": 2.6 } } ], "trees": [[-15, -6, 1], [16, -9, 1.1], [-19, -14, 1.2]] } },
+   { "id": "sign", "kind": "sign", "params": { "at": [17, 0, -8], "rotY": 0.2, "scale": 1.2 } }
+  ],
+  "beats": [
+   { "s": "hook", "do": [], "shows": { "p": "land", "does": "a mountain stands" }, "shots": [ { "focus": ["land"], "type": "wide" } ] },
+   { "s": "problem", "do": [ { "p": "land", "v": "erupt", "w": "magma" } ], "shows": { "p": "land", "does": "the magma glows" }, "shots": [ { "focus": ["land"], "type": "mid" } ] },
+   { "s": "name", "do": [], "shows": { "p": "land", "does": "the volcano" }, "shots": [ { "focus": ["land"], "type": "wide" } ] },
+   { "s": "congrats", "do": [ { "p": "land", "v": "calm", "w": "Congratulations" } ], "shots": [ { "focus": "home" } ] }
+  ],
+  "audio": { "cards": [], "sfx": [], "chimes": [] }
+ },
+ "sentences": [
+  { "role": "hook", "text": "If you pile rock up over a hot spot, you have a mountain." },
+  { "role": "problem", "text": "But deep inside, the magma glows and pushes upward." },
+  { "role": "name", "text": "This is a volcano." },
+  { "role": "congrats", "text": "Congratulations, you have built a volcano." }
+ ]
+}

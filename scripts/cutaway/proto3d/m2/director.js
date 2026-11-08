@@ -161,6 +161,12 @@ export function homeView(layout) {
 }
 function homeView0(layout) {
   const W = layout.world ?? {}, cut = W.cut ?? { x0: -5, x1: 5, z0: -8, depth: 6 };
+  // a terrain world (kit/terrain.js, scene language v2 phase 2): the home view frames the land in section, its water
+  // and the main part, not the yard's cut and house (a lighthouse's coast had the sea off the frame)
+  if ((layout.parts ?? []).some((p) => p.kind === "terrain")) {
+    const boxes = layout.parts.filter((p) => p.kind === "terrain" || p.kind === "waterBody" || p.main).map((p) => focusOf(p, W.cut)).filter(Boolean);
+    if (boxes.length) { const f = frameBox(union(boxes), { view: "home", width: 0.9, zone: "center" }); return { pos: f.pos, tgt: f.tgt }; }
+  }
   const h = Array.isArray(W.house) ? W.house : [-8, 0, -30];
   // what stands behind the cut: the house, or a street's shop fronts, or (a park, no house) just the lawn around the cut
   // a room or a car wash bay: its walls and ceiling frame the cut (the whole interior in view); a garage: its door

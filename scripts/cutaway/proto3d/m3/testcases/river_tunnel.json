@@ -1,0 +1,171 @@
+{
+ "topic": "How a tunnel under a river works (generator test case)",
+ "layout": {
+  "key": "tc_river_tunnel",
+  "title": "How a tunnel under a river works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "land",
+    "kind": "terrain",
+    "main": true,
+    "params": {
+     "blocks": [
+      {
+       "type": "riverbed",
+       "x0": -5,
+       "x1": 5,
+       "depth": 3
+      },
+      {
+       "type": "tunnel",
+       "x0": -14,
+       "x1": 14,
+       "y": -9,
+       "r": 1.8
+      }
+     ],
+     "trees": [
+      [
+       -12,
+       -8,
+       1
+      ],
+      [
+       13,
+       -10,
+       1.1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "river",
+    "kind": "waterBody",
+    "params": {
+     "body": "river",
+     "x0": -5,
+     "x1": 5,
+     "level": -0.6
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [],
+    "shows": {
+     "p": "land",
+     "does": "x"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "river",
+      "v": "rise",
+      "w": "rises"
+     }
+    ],
+    "shows": {
+     "p": "river",
+     "does": "the river rises"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land",
+       "river"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [],
+    "shows": {
+     "p": "land",
+     "does": "x"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you dig under a river, you have a tunnel."
+  },
+  {
+   "role": "problem",
+   "text": "But the river rises above it."
+  },
+  {
+   "role": "name",
+   "text": "This is a tunnel."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a tunnel."
+  }
+ ]
+}

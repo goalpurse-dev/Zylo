@@ -1,0 +1,171 @@
+{
+ "topic": "How a gorge bridge works (generator test case)",
+ "layout": {
+  "key": "tc_gorge",
+  "title": "How a gorge bridge works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "land",
+    "kind": "terrain",
+    "main": true,
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 2
+      },
+      {
+       "type": "gorge",
+       "x0": -7,
+       "x1": 7,
+       "depth": 12,
+       "walls": "rock"
+      }
+     ],
+     "trees": [
+      [
+       -15,
+       -8,
+       1
+      ],
+      [
+       16,
+       -10,
+       1.1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "river",
+    "kind": "waterBody",
+    "params": {
+     "body": "river",
+     "x0": -7,
+     "x1": 7,
+     "level": -8
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [],
+    "shows": {
+     "p": "land",
+     "does": "x"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "river",
+      "v": "rise",
+      "w": "rises"
+     }
+    ],
+    "shows": {
+     "p": "river",
+     "does": "the river rises"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land",
+       "river"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [],
+    "shows": {
+     "p": "land",
+     "does": "x"
+    },
+    "shots": [
+     {
+      "focus": [
+       "land"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you dig under a river, you have a gorge."
+  },
+  {
+   "role": "problem",
+   "text": "But the river rises above it."
+  },
+  {
+   "role": "name",
+   "text": "This is a gorge."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a gorge."
+  }
+ ]
+}
