@@ -231,6 +231,7 @@ export function animateMarker(m, t) {
 // Held props: origin at the grip, up = +y, front = +z (a flashlight shines along +z). Real-world sizes.
 // =====================================================================================================
 const HELD_ALIASES = [
+  [/\bbells?\b/, "handbell"], [/\bcoins?\b/, "coin"], [/mirror/, "hand_mirror"], [/duster/, "feather_duster"], [/spear|lance|pike|staff|walking stick/, "spear"], // LOOK-FIX 2026-11-08: were the purple fallback box
   [/sock/, "sock"], [/flash|torch/, "flashlight"], [/candle/, "candle"], [/book|diary|journal/, "book"], [/phone|mobile/, "phone"],
   [/bag|purse|sack/, "bag"], [/key/, "key"], [/ball/, "ball"], [/box|package|parcel|gift|present|crate|lostandfound/, "box"], [/sign|placard|poster|label|tag|notice|sticker/, "sign"],
   [/bread|loaf|loaves|roll|sandwich|food/, "bread"], [/cup|mug|coffee|tea|glass/, "cup"], [/lantern|lamp/, "lantern"], [/rope/, "rope"], [/umbrella/, "umbrella"],

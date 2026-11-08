@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { rng, hashSeed, cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh, canvasTex, kitFont, fitText, darker } from "./kitCommon.js";
 import { THINGS, ANIMALS, CREATURE_OBJECTS } from "../../lib/catalog.js";
 import { makeHeld } from "./props.js";
+import { townTex } from "./townTex.js"; // LOOK-FIX 2026-11-08: textured tower walls
 import { makeMonster, animateMonster } from "./monsters.js";
 import { makeAnimal, animateAnimal, animalGait } from "./animals/index.js";
 
@@ -56,27 +57,87 @@ const anims = (g) => (g.userData.animList ??= []);
 
 // =====================================================================================================
 /** VISUAL-FIX 2026-11-08: one pastel house block (a level of a stacked tower): walls, small square windows, a balcony */
-function houseBlock(g, { w, h, d, color, x = 0, y = 0, z = 0, seed = 1, balcony = true }) {
+// LOOK-FIX 2026-11-08 (owner: "the towers look like flat pastel boxes; give them detail: framed windows, balconies,
+// roofs, ropes and ladders between levels, laundry, signs, as rich as the reference towns"): each level now has a
+// textured wall (plaster / planks / half-timber, page/kit/townTex.js) in saturated storybook colours, framed windows with
+// shutters and sills, flower boxes, a wooden balcony with rails and a lantern, a striped awning or a hanging shop sign;
+// between the levels the tower carries ladders, a rope with a pulley bucket and a laundry line
+const WALL_TEX = ["plaster", "planks", "timber"];
+const texMat = (kind, color, seed) => cachedMat(`ttex${kind}${color}${seed}`, () => new THREE.MeshStandardMaterial({ map: townTex(THREE, kind, { color, seed }), roughness: 0.88 }));
+const SHUTTERS = ["#2f6fa8", "#3a8a4a", "#b83a2e", "#2f8a86", "#6a4aa0", "#d08a2a"], FLOWERS = ["#e8384a", "#f06aa8", "#f4c430", "#ff7a2a", "#b04ae0"];
+const AWNINGS = ["#d0342c", "#2f78c0", "#2f9a50", "#e8a020", "#8a3ab0"], LAUNDRY = ["#f6f0e4", "#e8384a", "#4f9ad8", "#f4c430", "#7ac06a", "#f29ab8"];
+function houseBlock(g, { w, h, d, color, x = 0, y = 0, z = 0, seed = 1, balcony = true, kind = null, sign = false }) {
   const R = rng(seed);
   const lvl = new THREE.Group(); lvl.position.set(x, y, z); g.add(lvl);
-  rbx(w, h, d, 0.08, matte(color), { y: h / 2, parent: lvl });
-  bx(w + 0.12, 0.14, d + 0.12, matte(darker(color, 0.2)), { y: h - 0.02, parent: lvl });   // the slab between levels
-  const win = matte("#2d3446"), frame = matte("#f4efe6");
-  const nW = Math.max(2, Math.round(w / 1.4));
+  const wk = kind ?? WALL_TEX[seed % WALL_TEX.length];
+  rbx(w, h, d, 0.06, texMat(wk, color, seed % 5), { y: h / 2, parent: lvl });
+  // the slab between levels: a dark timber beam band, with corner posts
+  const beam = matte("#5a3e28");
+  bx(w + 0.16, 0.18, d + 0.16, beam, { y: h - 0.04, parent: lvl });
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(0.16, h, 0.16, beam, { x: sx * (w / 2 + 0.01), y: h / 2, z: sz * (d / 2 + 0.01), parent: lvl });
+  const win = matte("#2a3a4c"), frame = matte("#f4efe4"), lit = glow("#ffc070", 0.9, "#ffe1a8");
+  const shut = matte(SHUTTERS[Math.floor(R() * SHUTTERS.length)]), box = matte("#6a4426");
+  const nW = Math.max(2, Math.round(w / 1.5));
   for (let k = 0; k < nW; k++) {
-    const wx = -w / 2 + (k + 0.5) * (w / nW);
-    bx(0.62, 0.62, 0.04, frame, { x: wx, y: h * 0.55, z: d / 2 + 0.02, parent: lvl });
-    bx(0.48, 0.48, 0.05, R() < 0.25 ? glow("#ffd27a", 0.6, "#ffe9b0") : win, { x: wx, y: h * 0.55, z: d / 2 + 0.035, parent: lvl });
+    const wx = -w / 2 + (k + 0.5) * (w / nW), wy = h * 0.55;
+    bx(0.74, 0.92, 0.06, frame, { x: wx, y: wy, z: d / 2 + 0.03, parent: lvl });
+    bx(0.58, 0.76, 0.06, R() < 0.3 ? lit : win, { x: wx, y: wy, z: d / 2 + 0.05, parent: lvl });
+    bx(0.04, 0.76, 0.08, frame, { x: wx, y: wy, z: d / 2 + 0.07, parent: lvl }); bx(0.58, 0.04, 0.08, frame, { x: wx, y: wy, z: d / 2 + 0.07, parent: lvl });
+    for (const e of [-1, 1]) bx(0.26, 0.86, 0.05, shut, { x: wx + e * 0.52, y: wy, z: d / 2 + 0.05, parent: lvl });
+    bx(0.82, 0.07, 0.18, frame, { x: wx, y: wy - 0.5, z: d / 2 + 0.1, parent: lvl }); // the sill
+    if (R() < 0.6) { // a flower box under it
+      bx(0.7, 0.18, 0.22, box, { x: wx, y: wy - 0.64, z: d / 2 + 0.14, parent: lvl });
+      for (let q = 0; q < 4; q++) bx(0.13, 0.13, 0.13, matte(FLOWERS[Math.floor(R() * FLOWERS.length)]), { x: wx - 0.24 + q * 0.16, y: wy - 0.5, z: d / 2 + 0.16, parent: lvl });
+    }
   }
+  // side windows (the tower reads from the side too)
+  for (const e of [-1, 1]) { bx(0.06, 0.8, 0.66, frame, { x: e * (w / 2 + 0.03), y: h * 0.55, parent: lvl }); bx(0.07, 0.64, 0.5, R() < 0.3 ? lit : win, { x: e * (w / 2 + 0.04), y: h * 0.55, parent: lvl }); }
   if (balcony) {
-    const bw = Math.min(w * 0.45, 2.2), bxp = (R() - 0.5) * (w - bw) * 0.8;
-    bx(bw, 0.1, 0.7, matte("#8a5a32"), { x: bxp, y: 0.1, z: d / 2 + 0.35, parent: lvl });
-    for (let k = 0; k <= 4; k++) bx(0.06, 0.45, 0.06, matte("#8a5a32"), { x: bxp - bw / 2 + (k / 4) * bw, y: 0.35, z: d / 2 + 0.67, parent: lvl });
-    bx(bw, 0.06, 0.06, matte("#8a5a32"), { x: bxp, y: 0.58, z: d / 2 + 0.67, parent: lvl });
+    const bw = Math.min(w * 0.5, 2.4), bxp = (R() - 0.5) * (w - bw) * 0.7, wood = matte("#8a5a32");
+    bx(bw, 0.12, 0.8, texMat("planks", "#a07850", 3), { x: bxp, y: 0.12, z: d / 2 + 0.4, parent: lvl });
+    for (let k = 0; k <= 6; k++) bx(0.06, 0.55, 0.06, wood, { x: bxp - bw / 2 + (k / 6) * bw, y: 0.45, z: d / 2 + 0.77, parent: lvl });
+    for (const e of [-1, 1]) bx(0.06, 0.55, 0.8, wood, { x: bxp + e * bw / 2, y: 0.45, z: d / 2 + 0.4, parent: lvl });
+    bx(bw + 0.06, 0.07, 0.08, wood, { x: bxp, y: 0.74, z: d / 2 + 0.77, parent: lvl });
+    for (let q = 0; q < 2; q++) M(cyl(0.12, 0.09, 0.2, 10), matte("#c0603a"), { x: bxp - bw / 2 + 0.3 + q * (bw - 0.6), y: 0.28, z: d / 2 + 0.5, parent: lvl }); // pots
+    bx(0.16, 0.24, 0.16, glow("#ffb347", 0.8, "#ffe6a8"), { x: bxp + bw / 2 - 0.1, y: 1.3, z: d / 2 + 0.12, parent: lvl }); // a wall lantern
+  } else if (R() < 0.7) { // a striped awning over the middle window
+    const ac = AWNINGS[Math.floor(R() * AWNINGS.length)];
+    for (let k = 0; k < 4; k++) bx(0.4, 0.06, 0.7, matte(k % 2 ? "#f6f0e4" : ac), { x: -0.6 + k * 0.4, y: h * 0.55 + 0.62, z: d / 2 + 0.35, rx: 0.3, parent: lvl });
+  }
+  if (sign) { // a hanging shop sign on an iron arm
+    bx(0.9, 0.05, 0.05, matte("#2d2d2d"), { x: w / 2 + 0.45, y: h * 0.8, z: d / 2 - 0.3, parent: lvl });
+    bx(0.04, 0.55, 0.62, matte(AWNINGS[seed % AWNINGS.length]), { x: w / 2 + 0.75, y: h * 0.8 - 0.35, z: d / 2 - 0.3, parent: lvl });
+    bx(0.05, 0.4, 0.46, matte("#f4e6c0"), { x: w / 2 + 0.75, y: h * 0.8 - 0.35, z: d / 2 - 0.3, parent: lvl });
   }
   return lvl;
 }
-const TOWER_COLORS = ["#f4d9a6", "#a9cdeb", "#e8a49a", "#c8e3b5", "#d8c4ea", "#f2c6a0", "#b9d7d0"];
+/** between two levels: a ladder up the side, a rope with a pulley bucket, a laundry line with clothes */
+function towerLinks(g, { y, h, w, d, z, seed }) {
+  const R = rng(seed + 77), wood = matte("#7a5232"), rope = matte("#c9b48a");
+  const side = seed % 2 ? 1 : -1, lx = side * (w / 2 + 0.25);
+  for (const e of [-1, 1]) bx(0.07, h + 0.4, 0.07, wood, { x: lx, y: y + h / 2, z: z + e * 0.3, parent: g });
+  for (let k = 0; k < Math.round(h / 0.4); k++) bx(0.06, 0.05, 0.6, wood, { x: lx, y: y + 0.2 + k * 0.4, z, parent: g });
+  // a rope + bucket hanging from a beam on the other side
+  const rx = -side * (w / 2 + 0.55);
+  bx(0.7, 0.08, 0.08, wood, { x: -side * (w / 2 + 0.3), y: y + h - 0.2, z: z + d / 2 - 0.4, parent: g });
+  bx(0.025, h * 0.7, 0.025, rope, { x: rx, y: y + h - 0.2 - h * 0.35, z: z + d / 2 - 0.4, parent: g });
+  M(cyl(0.14, 0.11, 0.22, 12), matte("#8f9aa3"), { x: rx, y: y + h * 0.25, z: z + d / 2 - 0.4, parent: g });
+  // the laundry line across the front, sagging, with shirts and socks in bright colours
+  const ly = y + h * 0.92, n = 5;
+  bx(w * 0.9, 0.02, 0.02, rope, { y: ly, z: z + d / 2 + 0.55, parent: g });
+  for (let q = 0; q < n; q++) {
+    const qx = -w * 0.38 + (q / (n - 1)) * w * 0.76, big = R() < 0.5;
+    bx(big ? 0.4 : 0.18, big ? 0.42 : 0.3, 0.03, matte(LAUNDRY[Math.floor(R() * LAUNDRY.length)]), { x: qx, y: ly - (big ? 0.22 : 0.16), z: z + d / 2 + 0.55, rz: (R() - 0.5) * 0.15, parent: g });
+  }
+}
+/** a pitched tiled roof cap with a chimney (instead of a flat box) */
+function towerRoof(g, { w, d, y, z, color = "#b8442c" }) {
+  const sh = new THREE.Shape([new THREE.Vector2(-w / 2 - 0.3, 0), new THREE.Vector2(w / 2 + 0.3, 0), new THREE.Vector2(0, 1.6)]);
+  const geo = cachedGeo(`troof${w},${d}`, () => { const ge = new THREE.ExtrudeGeometry(sh, { depth: d + 0.5, bevelEnabled: false }); ge.translate(0, 0, -(d + 0.5) / 2); return ge; });
+  M(geo, texMat("tiles", color, 9), { y, z, parent: g });
+  bx(0.45, 1.3, 0.45, texMat("stone", "#9a6a52", 4), { x: w * 0.25, y: y + 1.1, z: z - d * 0.15, parent: g });
+}
+const TOWER_COLORS = ["#f2bd48", "#4f82b4", "#e8806a", "#5f9e5a", "#c4a0e0", "#ec9a58", "#3f8f8a"];
 
 export const THING_BUILD = {
   // ---------------------------------------------------------------- VISUAL-FIX 2026-11-08: the stacked town's pieces
@@ -84,14 +145,16 @@ export const THING_BUILD = {
   block_tower(g, state) {
     const stack = new THREE.Group(); g.add(stack);
     const zc = -3.2; let y = 0;
-    rbx(5.2, 1.6, 4.4, 0.06, matte("#c9b48a"), { y: 0.8, z: zc, parent: stack });   // the ground-floor base block
+    rbx(5.2, 1.6, 4.4, 0.06, texMat("stone", "#c9b48a", 2), { y: 0.8, z: zc, parent: stack });   // the ground-floor base block (stone)
+    bx(1.1, 1.3, 0.06, matte("#5a3e28"), { y: 0.65, z: zc + 2.21, parent: stack }); // its door
     y = 1.6;
     for (let k = 0; k < 6; k++) {
       const w = 4.4 - k * 0.22, d = 3.8 - k * 0.15, h = 2.6;
-      houseBlock(stack, { w, h, d, color: TOWER_COLORS[k % TOWER_COLORS.length], x: (k % 2 ? 0.35 : -0.3) * (k ? 1 : 0), y, z: zc, seed: 11 + k, balcony: k % 2 === 0 });
+      houseBlock(stack, { w, h, d, color: TOWER_COLORS[k % TOWER_COLORS.length], x: (k % 2 ? 0.35 : -0.3) * (k ? 1 : 0), y, z: zc, seed: 11 + k, balcony: k % 2 === 0, sign: k === 1 || k === 4 });
+      if (k < 5) towerLinks(stack, { y, h, w: w - 0.2, d, z: zc, seed: 11 + k }); // LOOK-FIX: ladders, ropes, laundry between levels
       y += h;
     }
-    rbx(2.6, 0.9, 2.2, 0.08, matte("#7a8ca6"), { y: y + 0.45, z: zc, parent: stack });  // the roof cap
+    towerRoof(stack, { w: 4.4 - 5 * 0.22, d: 3.8 - 5 * 0.15, y, z: zc }); y += 1.6; // LOOK-FIX: a pitched tiled roof + chimney
     if (state === "tilt") stack.rotation.z = 0.07;
     if (state === "bow") { stack.scale.y = 0.5; stack.rotation.z = -0.04; }
     g.userData.anim = (t) => { if (state === "tilt") stack.rotation.z = 0.07 + 0.025 * Math.sin(t * 7); };
@@ -101,7 +164,7 @@ export const THING_BUILD = {
   penthouse(g, state) {
     const zc = -2.6, tower = new THREE.Group(); g.add(tower);
     let y = 0;
-    for (let k = 0; k < 3; k++) { houseBlock(tower, { w: 4 - k * 0.2, h: 2.5, d: 3.4, color: TOWER_COLORS[(k + 2) % TOWER_COLORS.length], y, z: zc, seed: 31 + k, balcony: k === 1 }); y += 2.5; }
+    for (let k = 0; k < 3; k++) { houseBlock(tower, { w: 4 - k * 0.2, h: 2.5, d: 3.4, color: TOWER_COLORS[(k + 2) % TOWER_COLORS.length], y, z: zc, seed: 31 + k, balcony: k === 1, sign: k === 0 }); if (k < 2) towerLinks(tower, { y, h: 2.5, w: 3.8 - k * 0.2, d: 3.4, z: zc, seed: 31 + k }); y += 2.5; }
     const gold = cachedMat("tpentGold", () => new THREE.MeshStandardMaterial({ color: "#f2c511", metalness: 0.65, roughness: 0.28, emissive: "#6b4c00", emissiveIntensity: 0.25 }));
     const top = new THREE.Group(); top.position.set(0, y, zc); tower.add(top);
     rbx(3.4, 2.2, 3.0, 0.1, gold, { y: 1.1, parent: top });
@@ -122,11 +185,11 @@ export const THING_BUILD = {
     for (let k = 0; k < 4; k++) bx(k === 0 ? 0.55 : 0.75 - (k % 2) * 0.12, 0.035, 0.02, dk, { y: 0.56 - k * 0.12, z: 0.065, parent: slab }); // carved lines
     if (state === "glow") bx(1.08, 0.78, 0.04, glow("#ffd65a", 1.4, "#fff2b0"), { y: 0.35, z: -0.05, parent: slab, shadow: false });
     if (state === "dusty") lumps(slab, 7, 5, { x0: -0.45, x1: 0.45, z0: 0.06, z1: 0.09, y: 0.05, s: 0.12, mat: matte("#c9b48a") });
-    fin(g, { h: 1.8, w: 1.2, d: 0.8, detailH: 0.9, focusZ: zc });
+    fin(g, { h: 1.8, w: 1.2, d: 0.8, detailH: 0.9, focusZ: zc, extra: { detail: { at: V(0, 0.75, zc), h: 1.0 } } }); // LOOK-FIX: the close-up is the slab, not the pedestal
   },
   // the ground-floor base block: a big sandstone block with mortar edges (cracked: dark zigzags)
   base_block(g, state) {
-    const sand = matte("#d2b98a"), mortar = matte("#a48d62"), zc = -1.0;
+    const sand = texMat("stone", "#d2b98a", 6), mortar = matte("#a48d62"), zc = -1.0; // LOOK-FIX: stone texture
     rbx(2.6, 1.5, 2.0, 0.06, sand, { y: 0.75, z: zc, parent: g });
     for (const y of [0.02, 1.48]) bx(2.64, 0.06, 2.04, mortar, { y, z: zc, parent: g });
     for (const x of [-0.65, 0.65]) bx(0.05, 1.46, 0.02, mortar, { x, y: 0.75, z: zc + 1.01, parent: g });

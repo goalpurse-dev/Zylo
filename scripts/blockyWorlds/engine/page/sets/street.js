@@ -4,7 +4,7 @@
 // the bus shelter and the BUS stop sign, mountains and a tree line at the end of the street.
 // The group stands on the right-hand sidewalk; the camera looks down the street (-z), like the locked frame.
 import { makeKit, mergeStatic, glowList } from "./util.js";
-import { backdrop, waterTower } from "./backdrop.js";
+import { natureBackdrop, waterTower } from "./backdrop.js";
 import { addTownPlaces } from "./townPlaces.js";
 
 const SIDE = 4.5, WALK = 3.0, CURB = 0.15;
@@ -29,7 +29,10 @@ export async function build(ctx) {
     bx(WALK, CURB, 320, pbr("concrete_pavement", { repeat: [1.5, 160], tint: "#f2eee8" }), { x: sx * (SIDE + 0.3 + WALK / 2), y: CURB / 2, z: -120 });
     bx(60, 0.1, 320, pbr("leafy_grass", { repeat: [20, 100], tint: "#9fe06a", normal: 0.6 }), { x: sx * (SIDE + 0.3 + WALK + 30), y: 0.05, z: -120 });
   }
-  backdrop(K, (f) => onLight.push(f));
+  // LOOK-FIX 2026-11-08: the style-test world around the town (forest, hills, real grass), never the pastel plane + cones
+  const SQ = { x: 0, z: 140 }, inTown = (x, z) => (Math.abs(x) < 72 && z > -295 && z < 60) || (Math.abs(x) < 26 && z > 40 && z < 205) || Math.hypot(x - 60, z - 140) < 42;
+  const nature = await natureBackdrop(K, ctx, (f) => onLight.push(f), { seed: 7, center: { x: 0, z: -60 }, flatR: 320, nearR: 380, farR: 1500, trees: 7000, ferns: 900, underR: 260, clear: inTown, grass: 30000, grassR: 34, grassCenter: SQ, noGrass: (x, z) => (Math.abs(x - SQ.x) < 23 && Math.abs(z - SQ.z) < 21) || (Math.abs(x) < 72 && z < 60) });
+  void nature;
   // the landmark: the water tower on a hill where the street ends
   const towerSpot = waterTower(K, (f) => onLight.push(f), { x: -1.5, z: -122, legH: 16, R: 3.6, hill: { r: 26, h: 5.5, d: 0.8 } });
 

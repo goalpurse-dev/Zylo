@@ -334,7 +334,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
   let plant = true, talking = false, eyesShut = false, lift = 0;
   if (u.poseProps) { const P = u.poseProps; for (const k of ["ladder", "water", "dirt", "blocks", "cart", "hammer"]) P[k].visible = false; }
   const held = ensureHeld(person, opts.hold ?? (u.baby ? null : POSE_TOOL[pose] ?? null));
-  const oneHand = !!held && SMALL.has(held.userData.kind);
+  const oneHand = !!held && SMALL.has(held.userData.kind) && !held.userData.long;
   const breathe = Math.sin(TAU * tt / 3.6);
 
   switch (pose) {
@@ -393,7 +393,9 @@ export function posePerson(person, pose, t = 0, opts = {}) {
       break;
     }
     case "carry": {
-      if (oneHand) { // a small prop held up in front in the right hand, the left arm relaxed
+      if (held?.userData.long) { // LOOK-FIX: a long prop at the side / over the shoulder (the engine picks the grip that keeps the face clear)
+        longArms(j, u.grip ?? gripOrder(held.userData.kind)[0], breathe);
+      } else if (oneHand) { // a small prop held up in front in the right hand, the left arm relaxed
         sh[0].rotation.set(-0.78, 0, 0.18); el[0].rotation.set(-1.12, 0, 0); hand[0].rotation.set(0, 0, 0);
         sh[1].rotation.x += 0.04 * breathe;
       } else for (let i = 0; i < 2; i++) {
@@ -815,11 +817,72 @@ function ensureHeld(person, name) {
     u.held = null; u.heldName = name;
     if (name) {
       let h = u.heldCache.get(name);
-      if (!h) { h = makeHeld(name); if (h) { h.scale.setScalar(1 / u.scale); h.traverse((m) => { if (m.isMesh && m.name !== "beam") m.castShadow = true; }); u.heldCache.set(name, h); } }
+      if (!h) {
+        h = makeHeld(name);
+        if (h) {
+          // LOOK-FIX 2026-11-08: a long prop (broom, sign on a stick, umbrella, spear...) is carried at the side, never
+          // straight up in front of the face (measured once, in metres, before the person's scale)
+          const b = new THREE.Box3().setFromObject(h), sz = b.getSize(new THREE.Vector3());
+          h.userData.long = LONG_HELD.has(h.userData.kind) || sz.y >= 0.6;
+          h.scale.setScalar(1 / u.scale); h.traverse((m) => { if (m.isMesh && m.name !== "beam") m.castShadow = true; }); u.heldCache.set(name, h);
+        }
+      }
       u.held = h ?? null;
     }
   }
   return u.held;
+}
+// ---------- LOOK-FIX 2026-11-08 (owner: "the broom is held straight up in front of Pip's face"): long-prop grips ----------
+const LONG_HELD = new Set(["feather_duster", "broom", "mop", "shovel", "spear", "sign", "umbrella", "flag", "net"]);
+/** the grips for a long prop, best first; the engine tries them in order until the prop leaves the face clear */
+export const LONG_GRIPS = Object.freeze(["side", "wide", "shoulder", "side_l"]);
+export function gripOrder(kind) { return kind === "umbrella" ? ["overhead", ...LONG_GRIPS] : kind === "sign" || kind === "flag" ? ["wide", "side", "side_l", "shoulder"] : [...LONG_GRIPS]; }
+/** arm angles for a grip (hand index i: 0 = the right arm at -x, 1 = the left) */
+function longArms(j, grip, breathe) {
+  const i = grip === "side_l" ? 1 : 0, s = i ? 1 : -1, o = 1 - i;
+  const A = { side: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], side_l: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], wide: [[-0.25, 0, s * 0.26], [-0.3, 0, 0]], shoulder: [[-0.2, 0, s * 0.18], [-2.05, 0, 0]], overhead: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]] }[grip] ?? [[-0.3, 0, s * 0.12], [-0.45, 0, 0]];
+  j.sh[i].rotation.set(...A[0]); j.el[i].rotation.set(...A[1]); j.hand[i].rotation.set(0, 0, 0);
+  j.sh[o].rotation.set(0.05 + 0.03 * breathe, 0, -s * 0.08); j.el[o].rotation.set(-0.15, 0, 0); j.hand[o].rotation.set(0, 0, 0);
+}
+/** the prop's orientation in the person's own frame per grip (Euler x, z): leaning out to the hand's side */
+function gripEuler(grip, s) {
+  return { side: [0.1, -s * 0.1], side_l: [0.1, -s * 0.1], wide: [0.05, -s * 0.22], shoulder: [-1.0, -s * 0.22], overhead: [0.12, -s * 0.1] }[grip] ?? [0.1, -s * 0.28];
+}
+const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _qe = new THREE.Quaternion(), _eu = new THREE.Euler();
+function holdLong(person, h, grip) {
+  const j = person.userData.joints, i = grip === "side_l" ? 1 : 0, s = i ? 1 : -1, hand = j.hand[i];
+  if (h.parent !== hand) hand.add(h);
+  h.position.set(0, -0.06, 0.03);
+  person.updateMatrixWorld(true);
+  const [ex, ez] = gripEuler(grip, s);
+  hand.getWorldQuaternion(_q1).invert(); person.getWorldQuaternion(_q2);
+  _qe.setFromEuler(_eu.set(ex, 0, ez));
+  h.quaternion.copy(_q1.multiply(_q2).multiply(_qe));
+}
+/**
+ * how much of the face a held prop hides from this camera: the share (0-1) of the head's screen box that the prop's
+ * screen box covers (0 when nothing is held). Free, no pixels: two projected boxes.
+ */
+const _b1 = new THREE.Box3(), _b2 = new THREE.Box3(), _pv = new THREE.Vector3();
+function screenBox(camera, box) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) { _pv.set(x, y, z).project(camera); x0 = Math.min(x0, _pv.x); x1 = Math.max(x1, _pv.x); y0 = Math.min(y0, _pv.y); y1 = Math.max(y1, _pv.y); }
+  return { x0, y0, x1, y1 };
+}
+export function heldFaceOverlap(camera, person) {
+  const h = person.userData.held; if (!h || !h.parent || !h.visible) return 0;
+  person.updateMatrixWorld(true);
+  const head = screenBox(camera, _b1.setFromObject(person.userData.joints.head));
+  // the prop's own parts (a box per mesh: a thin stick beside the face is not a board over it)
+  let cover = 0;
+  const area = Math.max(1e-6, (head.x1 - head.x0) * (head.y1 - head.y0));
+  h.traverse((m) => {
+    if (!m.isMesh || m.visible === false) return;
+    const r = screenBox(camera, _b2.setFromObject(m));
+    const w = Math.min(head.x1, r.x1) - Math.max(head.x0, r.x0), hh = Math.min(head.y1, r.y1) - Math.max(head.y0, r.y0);
+    if (w > 0 && hh > 0) cover = Math.max(cover, (w * hh) / area);
+  });
+  return +Math.min(1, cover).toFixed(3);
 }
 function holdProp(person, pose, oneHand) {
   const u = person.userData, j = u.joints;
@@ -841,6 +904,8 @@ function holdProp(person, pose, oneHand) {
   } else if (pose === "eat") { // the food at the fingers, toward the mouth
     if (h.parent !== j.hand[0]) j.hand[0].add(h);
     h.position.set(0, -0.09, 0.04); h.rotation.set(1.2, 0, 0);
+  } else if (pose === "carry" && h.userData.long) {
+    holdLong(person, h, u.grip ?? gripOrder(h.userData.kind)[0]);
   } else if ((pose === "carry" || pose === "hug") && oneHand) {
     if (h.parent !== j.hand[0]) j.hand[0].add(h);
     h.position.set(0, -0.08, 0.02); h.rotation.set(1.9, 0, -0.18); // upright in front of the chest

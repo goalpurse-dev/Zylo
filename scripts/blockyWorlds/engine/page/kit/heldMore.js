@@ -15,6 +15,12 @@ const gloss = (c) => solid(c, { roughness: 0.3 });
 const metal = (c) => solid(c, { metalness: 0.8, roughness: 0.3 });
 
 export const HELD_BUILD = {
+  // LOOK-FIX 2026-11-08: a spear / staff: a long wooden shaft, a steel point, a binding (carried at the side)
+  // LOOK-FIX 2026-11-08 (PLANNER-BUGS catalog entries): a gold coin, a hand mirror, a feather duster
+  coin(g) { M(cyl(0.035, 0.035, 0.012, 18), metal("#f2c511"), { y: 0.04, rx: Math.PI / 2, parent: g }); M(cyl(0.026, 0.026, 0.014, 18), metal("#d6a42f"), { y: 0.04, rx: Math.PI / 2, parent: g }); },
+  hand_mirror(g) { bx(0.03, 0.12, 0.025, solid("#7a4e2a"), { y: 0.04, parent: g }); M(cyl(0.075, 0.075, 0.02, 24), solid("#b08a3a"), { y: 0.17, rx: Math.PI / 2, parent: g }); M(cyl(0.06, 0.06, 0.022, 24), metal("#e6eef4"), { y: 0.17, rx: Math.PI / 2, parent: g }); },
+  feather_duster(g) { bx(0.03, 0.45, 0.03, solid("#8a5a32"), { y: 0.1, parent: g }); bx(0.05, 0.05, 0.05, solid("#5a3d24"), { y: 0.33, parent: g }); const cols = ["#f2a0b6", "#c4a0e0", "#f4d27e", "#ffffff"]; for (let k = 0; k < 9; k++) { const a = (k / 9) * TAU; bx(0.05, 0.18, 0.05, solid(cols[k % 4], { roughness: 0.95 }), { x: Math.cos(a) * 0.05, y: 0.43, z: Math.sin(a) * 0.05, rx: Math.sin(a) * 0.5, rz: -Math.cos(a) * 0.5, parent: g }); } rbx(0.13, 0.12, 0.13, 0.05, solid("#f6d0dc", { roughness: 0.95 }), { y: 0.47, parent: g }); },
+  spear(g) { bx(0.03, 1.5, 0.03, solid("#8a5a32"), { y: 0.25, parent: g }); M(cone(0.045, 0.22, 4), metal("#c8ced4"), { y: 1.1, ry: Math.PI / 4, parent: g }); bx(0.05, 0.06, 0.05, solid("#5a3d24"), { y: 0.97, parent: g }); },
   hat(g) { M(cyl(0.12, 0.13, 0.16, 18), solid("#2d3436"), { y: 0.08, parent: g }); M(cyl(0.21, 0.21, 0.02, 20), solid("#2d3436"), { y: 0.01, parent: g }); bx(0.26, 0.035, 0.27, solid("#c0392b"), { y: 0.03, parent: g }); },
   shoe(g) { rbx(0.12, 0.1, 0.28, 0.03, fabric("#7a4a26", "leather"), { y: -0.02, z: 0.04, parent: g }); rbx(0.11, 0.18, 0.12, 0.03, fabric("#7a4a26", "leather"), { y: 0.08, z: -0.05, parent: g }); bx(0.125, 0.025, 0.29, solid("#f2f2ee"), { y: -0.075, z: 0.04, parent: g }); for (let k = 0; k < 3; k++) bx(0.09, 0.012, 0.012, solid("#ffffff"), { y: 0.04 + k * 0.03, z: 0.02, parent: g }); },
   scarf(g) { const m = fabric("#e53935", "stripes"); rbx(0.12, 0.5, 0.03, 0.01, m, { y: -0.2, parent: g }); rbx(0.12, 0.35, 0.03, 0.01, m, { x: 0.1, y: -0.12, z: 0.02, rz: 0.2, parent: g }); for (let k = 0; k < 4; k++) bx(0.02, 0.06, 0.02, solid("#ffd32a"), { x: -0.045 + k * 0.03, y: -0.48, parent: g }); },
@@ -73,4 +79,4 @@ export const HELD_BUILD = {
   skateboard(g) { rbx(0.12, 0.02, 0.42, 0.02, solid("#ff5e57"), { parent: g }); for (const z of [-0.14, 0.14]) for (const s of [-1, 1]) M(cyl(0.025, 0.025, 0.025, 10), solid("#ffd32a"), { x: s * 0.05, y: -0.035, z, rz: Math.PI / 2, parent: g }); },
 };
 /** one-hand props (people.js holds them upright in front of the chest) */
-export const SMALL_HELD = ["hat", "shoe", "mitten", "crown", "handbell", "egg", "potato", "cookie", "apple", "cake", "jar", "spoon", "pencil", "ring", "star", "pebble", "horn", "teddy", "rubber_duck", "feather", "lightbulb", "magnet", "glasses", "toast", "cheese", "wand", "envelope", "flag", "kite"];
+export const SMALL_HELD = ["coin", "hand_mirror", "hat", "shoe", "mitten", "crown", "handbell", "egg", "potato", "cookie", "apple", "cake", "jar", "spoon", "pencil", "ring", "star", "pebble", "horn", "teddy", "rubber_duck", "feather", "lightbulb", "magnet", "glasses", "toast", "cheese", "wand", "envelope", "flag", "kite"];

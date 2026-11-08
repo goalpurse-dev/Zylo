@@ -4,7 +4,7 @@
 // town's water tower on a hill behind the trees (the "tower" spot: on its catwalk), fog that sells the depth.
 // The camera stands on the path (+z) looking into the woods (-z).
 import { makeKit, mergeStatic, glowList, lcg } from "./util.js";
-import { backdrop, waterTower } from "./backdrop.js";
+import { natureBackdrop, waterTower } from "./backdrop.js";
 
 const pathX = (z) => Math.sin(z * 0.09) * 1.2 + (z < -10 ? (z + 10) * 0.04 : 0); // the path's centre line
 
@@ -30,7 +30,8 @@ export async function build(ctx) {
     const m2 = pbr("grass_path_2", { repeat: [1, 25], tint: "#d9c9a8" }); m2.polygonOffset = true; m2.polygonOffsetFactor = -1;
     mesh(g2, m2, { keep: true, cast: false });
   }
-  backdrop(K, (f) => onLight.push(f), { treeLine: { x0: -160, x1: 160, z0: -90, z1: -170, n: 300 }, ground: "#4f7a3e" });
+  // LOOK-FIX 2026-11-08: the real forest around the clearing (page/kit/nature.js), not the cone tree line + flat plane
+  await natureBackdrop(K, ctx, (f) => onLight.push(f), { seed: 5, center: { x: 0, z: -40 }, flatR: 200, nearR: 260, trees: 6000, ferns: 800, underR: 120, grass: 0, clear: (x, z) => Math.abs(x) < 46 && z > -92 && z < 22 }, { treeLine: { x0: -160, x1: 160, z0: -90, z1: -170, n: 300 }, ground: "#4f7a3e" });
 
   // ---------- the water tower on its hill, behind the trees ----------
   const TOWER = { x: 7.5, z: -40 };

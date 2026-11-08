@@ -12,6 +12,9 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { rng } from "/lib/rng.js";
 import { applyCamMove } from "/lib/camMove.js";
+import { keepOut, objectMargin } from "/page/cameraGuard.js"; // LOOK-FIX 2026-11-08: the camera never inside a scene object
+import { makeSubjectLight, boostFor } from "/page/subjectLight.js";
+import { isWinter, makeWinter } from "/page/winter.js"; // LOOK-FIX 2026-11-08: snowy worlds (bible / director / script) // LOOK-FIX 2026-11-08: night subjects read
 import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
 import { measureContact, groundUnder, personFeet, findStandSpot } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
@@ -153,6 +156,8 @@ async function main() {
   const drawCaption = need(captionsM, "drawCaption");
   const holdPerson = typeof peopleM.mod.holdPerson === "function" ? peopleM.mod.holdPerson : null; // optional (babies)
   const releasePerson = typeof peopleM.mod.releasePerson === "function" ? peopleM.mod.releasePerson : null;
+  const heldFaceOverlap = typeof peopleM.mod.heldFaceOverlap === "function" ? peopleM.mod.heldFaceOverlap : null; // LOOK-FIX: long-prop grips
+  const gripOrder = typeof peopleM.mod.gripOrder === "function" ? peopleM.mod.gripOrder : () => [];
   const POSE_LIFT = peopleM.mod.POSE_LIFT ?? {}, POSE_FRAME = peopleM.mod.POSE_FRAME ?? {}; // how high a pose lifts a person (fly, climb): the camera follows
   // scene objects (kit/objects.js): loaded only when the timeline uses them
   const anyObjects = tl.shots.some((s) => (s.objects ?? []).some((o) => !o.asset));
@@ -184,9 +189,15 @@ async function main() {
   const ctx2d = out.getContext("2d");
   const probe = document.createElement("canvas"); probe.width = probe.height = 16;
   const probeCtx = probe.getContext("2d", { willReadFrequently: true });
+  // LOOK-FIX 2026-11-08: the night subject light + its pixel check (page/subjectLight.js)
+  const subjProbe = document.createElement("canvas"); subjProbe.width = subjProbe.height = 12;
+  const subjCtx = subjProbe.getContext("2d", { willReadFrequently: true });
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1500);
   scene.add(camera);
+  const subjLight = makeSubjectLight(THREE, scene);
+  const winter = isWinter(tl) ? makeWinter(THREE, scene, { seed: tl.world?.seed ?? 1 }) : null;
+  if (winter) console.log("engine: winter world (snow, frost, falling snow)");
   const post = makePost({ renderer, scene, camera, W, H, query: Q });
 
   // ---------- loading (tracked so ready waits for every texture and model) ----------
@@ -405,6 +416,7 @@ async function main() {
       lightHandle?.dispose?.();
       lightHandle = applyLight(shot.light, { THREE, scene, renderer, set: S });
       post.setLight(shot.light);
+      winter?.light(scene, shot.light); // LOOK-FIX: cold moon + snow bounce
       lightKey = key;
     }
     S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
@@ -630,6 +642,18 @@ async function main() {
         // somebody standing between the lens and the detail (Dobbs in front of the bakery): frame the two together
         const blocker = placed.find((p) => { if (p.fixed) return false; const v = hz(p.pos).sub(hz(d)); const f = -v.dot(S.depth); return f > -0.2 && f < 2.8 && Math.abs(v.dot(S.lateral)) < 1.6; });
         if (blocker) { ({ focus, focusHeight } = fitPair(blocker.pos, PEOPLE[blocker.id]?.h ?? 1.7, shotObjs[0], Math.max(2.6, PEOPLE[blocker.id]?.h ?? 1.7))); camType = "insert"; }
+        else if (shot.camera === "medium" || shot.camera === "closeup") {
+          // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat wall", "the base block shot is a wall"): an object is
+          // not a person: frame it straight and centred (the "insert" framing) from its FRONT face, never its middle:
+          // medium = the whole thing (a big one: its lower 9 m), closeup = its key detail (userData.detail) at full width
+          const dl = u.detail?.at ?? u.focus ?? new THREE.Vector3(), close = shot.camera === "closeup";
+          const fitH = close ? (u.detail?.h ?? Math.min(u.height ?? 2, 2)) : Math.min(u.fitH ?? u.height ?? 2, u.big ? 9 : 99);
+          const fitW = Math.min(u.fitW ?? u.width ?? 2, close ? Math.max(fitH * 1.3, 1) : 99);
+          const fr = obj.localToWorld(new THREE.Vector3(dl.x, 0, 0));
+          focusHeight = Math.max(fitH / 2.1, fitW / 1.35);
+          focus = fr; focus.y = obj.position.y + (close ? Math.max(0, dl.y ?? 0) : 0) + fitH / 2 - focusHeight / 2;
+          camType = "insert";
+        }
         else { focus = d; focusHeight = u.detail?.h ?? Math.min(u.height ?? 2, 2); }
       }
     }
@@ -669,6 +693,15 @@ async function main() {
     }
     // VISUAL-FIX 2026-11-08: the shot's camera move (lib/camMove.js) over whichever framing placed the camera
     if (shot.camMove && !shot.move) applyCamMove(camera, shot.camMove, lt, dur, shot.seed ?? si);
+    // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat maroon wall"): never inside or touching a scene object
+    // (page/cameraGuard.js): out of every visible shot object's box + margin, along the camera's own side
+    if (shotObjs.length && !shot.move) {
+      const boxes = shotObjs.filter(({ obj }) => obj.visible).map(({ obj, u }) => ({ box: new THREE.Box3().setFromObject(obj), margin: objectMargin(u) }));
+      camera.updateMatrixWorld();
+      const c0 = camera.getWorldPosition(new THREE.Vector3()), f0 = camera.getWorldDirection(new THREE.Vector3());
+      const bc = boxes[0]?.box.getCenter(new THREE.Vector3());
+      if (bc) keepOut(THREE, camera, boxes, { aim: c0.clone().addScaledVector(f0, Math.max(3, c0.distanceTo(bc))) });
+    }
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
@@ -700,7 +733,22 @@ async function main() {
       o.rotation.set(0, yaw, 0);
       const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
       const pose = p.noMount ? "walk" : a.pose ?? "stand";
-      posePerson(o, pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null });
+      const poseArgs = [pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null }];
+      o.userData.grip = null;
+      posePerson(o, ...poseArgs);
+      // LOOK-FIX 2026-11-08 (owner: "held props must never cover a face"): a long prop's grip is the first one (side,
+      // wide, over the shoulder, the other hand) whose prop leaves the face clear from THIS camera (kit/people.js)
+      if (heldFaceOverlap && o.userData.held?.userData.long && pose === "carry") {
+        let best = null;
+        for (const g of gripOrder(o.userData.held.userData.kind)) {
+          o.userData.grip = g; posePerson(o, ...poseArgs);
+          const ov = heldFaceOverlap(camera, o);
+          if (!best || ov < best.ov - 1e-3) best = { g, ov };
+          if (ov <= 0.08) break;
+        }
+        if (o.userData.grip !== best.g) { o.userData.grip = best.g; posePerson(o, ...poseArgs); }
+        o.userData.faceCover = best.ov;
+      }
       setFace(o, a.expr ?? "neutral");
       // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
       // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
@@ -773,8 +821,27 @@ async function main() {
       camera.position.copy(c).addScaledVector(d, 9); camera.position.y = c.y + 3;
       camera.up.set(0, 1, 0); camera.lookAt(c.x - d.x * 4, c.y + 1.2, c.z - d.z * 4); camera.updateMatrixWorld();
     }
+    // LOOK-FIX 2026-11-08 (owner: "the night plaque shot is dark and unreadable"): at night the subject gets its own key +
+    // rim (page/subjectLight.js); after the render its screen box is checked and the key raised once if still too dark
+    let subjBox = null;
+    if (shot.light === "night" || shot.light === "dusk") {
+      if (shot.focus === "object" && shotObjs[0]) { // small things only (a plaque, a key, a lamp): a lit house / tower has its own windows
+        const b = new THREE.Box3().setFromObject(shotObjs[0].obj), s = b.getSize(new THREE.Vector3());
+        if (!shotObjs[0].u.big && Math.max(s.x, s.y, s.z) <= 3.5) subjBox = b;
+      }
+      else if (shot.focus === "insert" && ins?.obj) subjBox = new THREE.Box3().setFromObject(ins.obj);
+      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, 0, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); }
+    }
+    winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
+    const subjLit = subjLight.aim(camera, subjBox, shot.light);
     // render, then the caption on top in the output canvas
     post.render();
+    let subj = null;
+    if (subjLit && safe < 2) {
+      subj = subjLight.measure(renderer.domElement, camera, subjBox, subjCtx);
+      const k = Math.min(shot.focus === "object" || shot.focus === "insert" ? 5 : 2, boostFor(subj)); // a face: at most twice the lantern
+      if (k > 1.05) { subjLight.boost(k); post.render(); subj = { ...subj, boost: +k.toFixed(2), after: subjLight.measure(renderer.domElement, camera, subjBox, subjCtx) }; }
+    }
     if (washed) { renderer.toneMappingExposure = expo0; if (scene.fog && fog0) [scene.fog.near, scene.fog.far] = fog0; }
     if (safe >= 1) scene.fog = savedFog;
     ctx2d.drawImage(renderer.domElement, 0, 0);
@@ -784,9 +851,11 @@ async function main() {
     const flat = flatShare(px), detail = detailOf(px, 16);
     ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
     lastSet = S;
-    return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe };
+    return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe, ...(subj ? { subj } : {}) };
   }
 
+  // LOOK-FIX 2026-11-08: a winter world: snow on every set, scene object and giant (never on the people), frosted panes
+  if (winter) { const ppl = new Set(Object.values(PEOPLE).map((p) => p.obj)); const indoor = new Set(Object.values(SETS).filter((S) => S.indoor).map((S) => S.root)); const skip = (o) => { let nat = false; for (let n = o; n; n = n.parent) { if (ppl.has(n) || n.userData?.isPerson) return true; if (n.name === "nature") nat = true; if (indoor.has(n) && !nat) return true; } return false; }; winter.dress(scene, { skip }); } // indoor rooms stay dry (their window view snows)
   // warm-up: the first frame of every (set, light) pair compiles its shaders and shadow maps (and fails here, loudly)
   const seen = new Set();
   for (const s of tl.shots) { const k = `${s.set}|${s.light}`; if (!seen.has(k)) { seen.add(k); renderAt(s.start); renderAt(s.start); } }

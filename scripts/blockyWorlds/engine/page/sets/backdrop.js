@@ -1,6 +1,25 @@
 // Blocky Worlds sets: the far backdrop of the locked look: snow-capped low-poly mountains and a rolling tree line,
 // plus the big ground plane. Used by the outdoor sets (street, woods) and seen through the bedroom / school windows.
-import { lcg } from "./util.js";
+import { lcg, defaultLoaders } from "./util.js";
+import { makeNature } from "../kit/nature.js";
+
+/**
+ * LOOK-FIX 2026-11-08 (owner: "town shots are back on the OLD pastel look: flat beige ground and triangle mountains; all
+ * stories must use the new world look, in towns too"): the plain sets' far world is now the style-test world of the
+ * creature stories (page/kit/nature.js): PBR grass + forest-dirt terrain, rolling hills on the horizon, a real forest of
+ * CC0 trees (impostors far), ferns, rocks, grass clumps. No triangle mountains, no flat coloured plane.
+ * opts: makeNature's ({ center, clear(x, z), flatR, nearR, grass, grassR, grassCenter, noGrass, ferns, trees, seed })
+ * -> the nature handle (N.group is already in the set's root); falls back to the old backdrop without a renderer
+ * (a page that cannot draw impostors).
+ */
+export async function natureBackdrop(K, ctx, register, opts = {}, fallback = {}) {
+  if (!ctx?.renderer) { backdrop(K, register, fallback); return null; }
+  const loaders = ctx.gltf ? ctx : { ...ctx, ...defaultLoaders(ctx.THREE) };
+  const N = await makeNature(loaders, { hills: true, ...opts });
+  N.group.traverse((o) => { o.userData.keep = true; }); // never merged away by mergeStatic (instanced + shader-patched)
+  K.root.add(N.group);
+  return N;
+}
 
 /**
  * The town's water tower (an original design): four splayed legs with X bracing, a ladder up the front leg, a catwalk

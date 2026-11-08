@@ -5,7 +5,7 @@
 // laptop, a bookcase full of books, a round rug, original posters, a closet and the room door (left ajar).
 // The camera stands toward the front of the room (+z) looking at the window wall; it stays inside the room.
 import { makeKit, mergeStatic, glowList, lcg } from "./util.js";
-import { backdrop } from "./backdrop.js";
+import { natureBackdrop } from "./backdrop.js";
 
 const X0 = -3.2, X1 = 3.2, ZB = -3.0, ZF = 5.2, HT = 2.8; // room box
 const WIN = { x0: -1.65, x1: 0.45, y0: 0.8, y1: 2.35 };
@@ -159,7 +159,8 @@ export async function build(ctx) {
   const fence = solid("#f4f1ea", { roughness: 0.7 });
   for (let x = -14; x <= 14; x += 0.32) bx(0.09, 1.25, 0.04, fence, { x, y: 0.62, z: -15 });
   for (const fy of [0.35, 1.0]) bx(28.2, 0.07, 0.05, fence, { y: fy, z: -15.04 });
-  backdrop(K, (f) => onLight.push(f), { treeLine: { x0: -90, x1: 90, z0: -40, z1: -70, n: 140 } });
+  // LOOK-FIX 2026-11-08: the forest and hills through the window (page/kit/nature.js), not the cone line + mountains
+  await natureBackdrop(K, ctx, (f) => onLight.push(f), { seed: 9, center: { x: 0, z: -80 }, flatR: 200, nearR: 200, trees: 4000, ferns: 0, grass: 0, clear: (x, z) => z > -38 }, { treeLine: { x0: -90, x1: 90, z0: -40, z1: -70, n: 140 } });
   const [kTree, kTreeS] = await Promise.all([K.model("/assets/kenney/suburban/tree-large.glb", { height: 7.5 }), K.model("/assets/kenney/suburban/tree-small.glb", { height: 4.5 })]);
   K.instance(kTree, [{ x: -7.5, z: -13, ry: 1, s: 1 }, { x: 6.5, z: -18, ry: 2.2, s: 1.1 }, { x: -2.5, z: -26, ry: 0.4, s: 0.95 }], { shadow: false });
   K.instance(kTreeS, [{ x: 3.2, z: -12.5, ry: 1.3 }, { x: -11, z: -17, ry: 0.2 }], { shadow: false });

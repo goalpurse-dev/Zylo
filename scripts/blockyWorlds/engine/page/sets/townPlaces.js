@@ -5,6 +5,7 @@
 //   "belfry"  the top of the bell tower: a plank floor, four posts, the great bell hanging, the town far below
 //   anything else (main_street, null): the street as it was
 // Both are built once, beside the street (never in its frame), always visible; only the spots / camera side / bounds move.
+import { townTex } from "../kit/townTex.js"; // LOOK-FIX 2026-11-08: the town's own textures
 export function addTownPlaces(S, K, THREE, glow, onLight) {
   const { bx, plane, cyl, solid, pbr, mesh } = K;
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -15,16 +16,12 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
 
   // ---------- the square (centre 0, 0, 140) ----------
   const SZ = 140;
-  plane(44, 40, pbr("gravel", { repeat: [10, 10], tint: "#b9a58c" }), o({ x: 0, y: 0.02, z: SZ }));
-  // cobble pattern: a grid of slightly raised stones in the middle
-  const cob = solid("#9d8f80", { roughness: 0.95 }), cob2 = solid("#b3a493", { roughness: 0.95 });
-  const cobGeo = new THREE.BoxGeometry(0.55, 0.06, 0.55);
-  const cobs = [new THREE.InstancedMesh(cobGeo, cob, 900), new THREE.InstancedMesh(cobGeo, cob2, 900)];
-  const n = [0, 0], m4 = new THREE.Matrix4();
-  for (let i = 0; i < 40; i++) for (let j = 0; j < 40; j++) { const k = (i + j * 3) % 2; if (n[k] >= 900) continue; m4.makeTranslation(-11.5 + i * 0.6 + (j % 2) * 0.3, 0.05, SZ - 11 + j * 0.6); cobs[k].setMatrixAt(n[k]++, m4); }
-  for (const [k, c] of cobs.entries()) { c.count = n[k]; c.receiveShadow = true; root.add(c); }
+  // LOOK-FIX 2026-11-08 (owner: "town shots are back on the OLD pastel look"): the town's own textures
+  // (page/kit/townTex.js, as the dense town on a creature): grey-brown cobbles, stone, plaster / timber walls, tiled roofs
+  const TT = (kind, color, seed, rep = null) => { let t = townTex(THREE, kind, { color, seed }); if (rep) { t = t.clone(); t.repeat.set(rep[0], rep[1]); t.needsUpdate = true; } return new THREE.MeshStandardMaterial({ map: t, roughness: kind === "cobbles" ? 0.95 : 0.88 }); };
+  plane(44, 40, TT("cobbles", "#8c7f6c", 2, [11, 10]), o({ x: 0, y: 0.06, z: SZ })); // above the belfry's town lawn (it reaches x -10)
   // the bell tower (left, behind the people): stone shaft, open belfry with the bell, a pointed red roof
-  const stone = pbr("brick_wall_02", { repeat: [2, 6], tint: "#e8d9c4" });
+  const stone = TT("stone", "#c8b89c", 5, [2, 5]);
   const TX = -6.5, TZ = SZ - 9;
   bx(3.6, 14, 3.6, stone, o({ x: TX, y: 7, z: TZ }));
   for (const [dx, dz] of [[-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5], [1.5, 1.5]]) bx(0.6, 3.2, 0.6, stone, o({ x: TX + dx, y: 15.6, z: TZ + dz }));
@@ -55,11 +52,32 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   }
   for (const [x, z] of [[-4, SZ - 6], [4, SZ - 6], [0, SZ - 10]]) { const l = new THREE.PointLight("#ffbf6b", 0, 16, 1.6); l.position.set(x, 4.2, z); root.add(l); lights.push(l); }
   // a few houses closing the square at its sides
-  const walls = ["#f5ecd7", "#f2d7b6", "#e9d2a6", "#f6efe1"];
+  // LOOK-FIX 2026-11-08: the houses round the square in the back-town style: textured walls in storybook colours, timber
+  // corner posts, framed windows with shutters and flower boxes (lit at night), a door with a lantern, a tiled gable roof
+  const walls = [["plaster", "#f2bd48"], ["timber", "#f0c49a"], ["plaster", "#78b4dc"], ["planks", "#b4503e"], ["plaster", "#94cc82"], ["timber", "#f4d898"]];
+  const shutC = ["#2f6fa8", "#3a8a4a", "#b83a2e", "#2f8a86", "#6a4aa0", "#d08a2a"], flowC = ["#e8384a", "#f06aa8", "#f4c430", "#ff7a2a"];
+  const winGlow = glow.add(Object.assign(new THREE.MeshStandardMaterial({ color: "#2a3a4c", roughness: 0.2 }), { emissive: new THREE.Color("#ffc070") }), { day: 0, night: 1.7, warm: 0.3, dusk: 1.2 }, { day: "#2a3a4c", night: "#ffd892", warm: "#2a3a4c" });
+  const frameM = solid("#f4efe4", { roughness: 0.7 }), beamM = solid("#5a3e28", { roughness: 0.8 });
+  const roofShape = (w) => { const sh = new THREE.Shape([new THREE.Vector2(-w / 2 - 0.5, 0), new THREE.Vector2(w / 2 + 0.5, 0), new THREE.Vector2(0, 3.0)]); const g = new THREE.ExtrudeGeometry(sh, { depth: 6.8, bevelEnabled: false }); g.translate(0, 0, -3.4); return g; };
   for (const [k, [x, z, w]] of [[-14, SZ - 4, 6], [-14, SZ - 12, 6], [14, SZ - 4, 6], [14, SZ - 12, 6], [-8, SZ - 19, 7], [8, SZ - 19, 7]].entries()) {
-    bx(w, 6, 6, solid(walls[k % 4]), o({ x, y: 3, z }));
-    mesh(new THREE.ConeGeometry(w * 0.75, 2.6, 4), solid(["#b5452c", "#a63d2a", "#c4573a"][k % 3]), o({ x, y: 7.3, z, ry: Math.PI / 4 }));
-    for (const dz of [-1.5, 1.5]) bx(0.05, 1.0, 0.9, glow.add(Object.assign(new THREE.MeshStandardMaterial({ color: "#20303f" }), { emissive: new THREE.Color("#ffd28a") }), { day: 0, night: 1.6, warm: 0.3 }), o({ x: x - Math.sign(x) * (w / 2 + 0.03), y: 3.6, z: z + dz }));
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = x < -10 ? Math.PI / 2 : x > 10 ? -Math.PI / 2 : 0; root.add(g); // front (+z local) faces the square
+    const [wk, wc] = walls[k % walls.length], D = 6;
+    bx(w, 6, D, TT(wk, wc, 7 + k, [w / 4, 1.5]), { parent: g, y: 3, keep: true });
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(0.2, 6, 0.2, beamM, { parent: g, x: sx * w / 2, y: 3, z: sz * D / 2, keep: true });
+    bx(w + 0.2, 0.22, D + 0.2, beamM, { parent: g, y: 3.0, keep: true });
+    mesh(roofShape(w), TT("tiles", ["#b8442c", "#c8603a", "#a83a2a"][k % 3], 9, [w / 3, 1]), { parent: g, y: 6, keep: true });
+    bx(0.6, 1.6, 0.6, TT("stone", "#9a6a52", 4), { parent: g, x: w * 0.25, y: 7.6, z: -1, keep: true });
+    const sh = solid(shutC[k % shutC.length]);
+    for (const wy of [1.8, 4.4]) for (const wx of [-w / 4 - 0.2, w / 4 + 0.2]) {
+      if (wy < 3 && Math.abs(wx) < 1.2) continue;
+      bx(1.1, 1.3, 0.08, frameM, { parent: g, x: wx, y: wy, z: D / 2 + 0.04, keep: true });
+      bx(0.9, 1.1, 0.08, winGlow, { parent: g, x: wx, y: wy, z: D / 2 + 0.07, keep: true });
+      for (const e of [-1, 1]) bx(0.4, 1.25, 0.06, sh, { parent: g, x: wx + e * 0.78, y: wy, z: D / 2 + 0.06, keep: true });
+      bx(1.0, 0.22, 0.3, solid("#6a4426"), { parent: g, x: wx, y: wy - 0.75, z: D / 2 + 0.17, keep: true });
+      for (let q = 0; q < 4; q++) bx(0.18, 0.18, 0.18, solid(flowC[(q + k) % 4]), { parent: g, x: wx - 0.33 + q * 0.22, y: wy - 0.57, z: D / 2 + 0.2, keep: true });
+    }
+    bx(1.2, 2.2, 0.1, beamM, { parent: g, x: 0, y: 1.1, z: D / 2 + 0.05, keep: true });
+    bx(0.25, 0.38, 0.25, lanternMat, { parent: g, x: 0.95, y: 2.3, z: D / 2 + 0.2, keep: true });
   }
 
   // ---------- the belfry (the top of the bell tower, floor at y 22, x 60, z 140) ----------
@@ -86,7 +104,7 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   const base = { spots: Object.fromEntries(Object.entries(S.spots).map(([k, v]) => [k, v.clone()])), camDir: S.camDir.clone(), bounds: S.bounds.map((b) => b.clone()), views: { ...(S.views ?? {}) } };
   const P = {
     street: base,
-    square: { spots: spotsAt(V(0.5, 0.08, SZ + 1), 14), camDir: V(0.12, 0, 1).normalize(), bounds: [new THREE.Box3(V(-10, 0.4, SZ - 10), V(10, 9, SZ + 16))], views: {} },
+    square: { spots: spotsAt(V(0.5, 0.08, SZ + 1), 14), camDir: V(0.12, 0, 1).normalize(), bounds: [new THREE.Box3(V(-10, 0.4, SZ - 10), V(10, 9, SZ + 16)), new THREE.Box3(V(-12, 0.4, SZ + 2), V(12, 34, SZ + 46))], views: {} }, // LOOK-FIX: room to step back and up for a wide on the tall stacked towers
     belfry: { spots: spotsAt(V(BX, BY + 0.02, BZ + 1.2), 2.4), camDir: V(0.15, 0, 1).normalize(), bounds: [new THREE.Box3(V(BX - 3.4, BY + 0.4, BZ - 3.0), V(BX + 3.4, BY + 3.3, BZ + 9))], views: {} },
   };
   P.belfry.spots.door = V(BX + 2.5, BY + 0.02, BZ - 0.5);
