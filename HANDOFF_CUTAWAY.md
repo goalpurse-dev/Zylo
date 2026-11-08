@@ -8,6 +8,15 @@
 - The kit inventory: 58 part kinds, all documented and built; verbs for 57; rig 26 shapes and 19 moves; 7 settings; 429 CC0 models in `kit/modelCatalog.json`.
 - The world today is one fixed diorama (WORLD_DOC in `m2/catalog.js`; real.js builds the lawn, the house, the flat soil face with one box cut) plus 7 backdrops (`kit/backdrops.js`). The generators replace that base.
 - The order list further down is the OLD plan. Its per-topic gap list is still valid as test material.
+- **Progress (2026-11-08):** phase 1 step 1 is done: `m2/language.js` (REGISTRY + `validateScene`).
+  - On the 62 saved plans: only 2 real errors (kitplan_chainsaw: arrows given a verb arrows do not have).
+  - The scene language is already consistent. The real "silent changes" are the post-plan camera overrides in `director.js` (pushToward, closeOn, mainFill, fitWhole, hookClose) and the cue-word rewrites in the planner. Those become handbook rules or reported notes.
+  - Next steps:
+    - 1b: typed field lists per kind. Read each kind's implementation in `m2/parts.js` and kit/*; field checks are warnings until then.
+    - 1c: the handbook generated from REGISTRY with worked examples. Replace `catalogText()` and `sceneSystem` in `m2/planner.mjs`, and resolve the 12 contradictions listed below.
+    - 1d: narration in the plan reply, and one fact call.
+    - 1e: prove it on the 22 stand-in topics (replay, free).
+    - Then phase 2: the generators.
 
 The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free. **Next step: build all the missing kit in one push, then do one check.** The owner's message of 2026-11-07 is under "The owner's current orders" below.
 
