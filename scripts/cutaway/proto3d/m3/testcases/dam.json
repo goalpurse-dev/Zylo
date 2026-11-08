@@ -1,0 +1,189 @@
+{
+ "topic": "How a dam works (generator test case)",
+ "layout": {
+  "key": "tc_dam",
+  "title": "How a dam works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "land",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 2
+      },
+      {
+       "type": "gorge",
+       "x0": -14,
+       "x1": 14,
+       "depth": 11
+      }
+     ]
+    }
+   },
+   {
+    "id": "lake",
+    "kind": "waterBody",
+    "params": {
+     "body": "lake",
+     "x0": -14,
+     "x1": -1.2,
+     "level": -0.5
+    }
+   },
+   {
+    "id": "river",
+    "kind": "waterBody",
+    "params": {
+     "body": "river",
+     "x0": 1.2,
+     "x1": 14,
+     "level": -7.5
+    }
+   },
+   {
+    "id": "dam",
+    "kind": "box",
+    "main": true,
+    "params": {
+     "mat": "concrete",
+     "size": [
+      2.4,
+      10,
+      9
+     ],
+     "pos": [
+      0,
+      -4,
+      -4.5
+     ],
+     "r": 0.1
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [],
+    "shows": {
+     "p": "dam",
+     "does": "a wall across the river"
+    },
+    "shots": [
+     {
+      "focus": [
+       "dam",
+       "lake"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "lake",
+      "v": "rise",
+      "w": "rises"
+     }
+    ],
+    "shows": {
+     "p": "lake",
+     "does": "the lake rises"
+    },
+    "shots": [
+     {
+      "focus": [
+       "dam",
+       "lake"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [],
+    "shows": {
+     "p": "dam",
+     "does": "the dam"
+    },
+    "shots": [
+     {
+      "focus": [
+       "dam",
+       "lake",
+       "river"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you wall off a river, you have a dam."
+  },
+  {
+   "role": "problem",
+   "text": "But the lake behind it rises."
+  },
+  {
+   "role": "name",
+   "text": "This is a dam."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a dam."
+  }
+ ]
+}

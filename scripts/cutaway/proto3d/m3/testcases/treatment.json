@@ -1,0 +1,289 @@
+{
+ "topic": "How a sewage treatment plant works (generator test case)",
+ "layout": {
+  "key": "tc_treatment",
+  "title": "How a sewage treatment plant works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "ground",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 0
+      },
+      {
+       "type": "riverbed",
+       "x0": 14,
+       "x1": 22,
+       "depth": 2
+      }
+     ]
+    }
+   },
+   {
+    "id": "river",
+    "kind": "waterBody",
+    "params": {
+     "body": "river",
+     "x0": 14,
+     "x1": 22,
+     "level": -0.5
+    }
+   },
+   {
+    "id": "hall",
+    "kind": "building",
+    "params": {
+     "pos": [
+      -14,
+      0,
+      -1
+     ],
+     "width": 8,
+     "depth": 6,
+     "use": "plant",
+     "floors": [
+      {
+       "h": 4.5
+      }
+     ],
+     "roof": "gable"
+    }
+   },
+   {
+    "id": "tank",
+    "kind": "settle",
+    "main": true,
+    "params": {
+     "box": {
+      "x0": -6,
+      "x1": -1,
+      "y0": -3,
+      "y1": 0,
+      "z0": -4,
+      "z1": 0
+     },
+     "murky": true,
+     "lid": false
+    }
+   },
+   {
+    "id": "clarifier",
+    "kind": "model",
+    "params": {
+     "keyword": "clarifier",
+     "pos": [
+      6,
+      0,
+      -6
+     ]
+    }
+   },
+   {
+    "id": "inflow",
+    "kind": "flow",
+    "params": {
+     "path": [
+      [
+       -10,
+       0.4,
+       -1.5
+      ],
+      [
+       -6,
+       0.2,
+       -1.5
+      ]
+     ],
+     "look": "sludge",
+     "size": 0.2,
+     "speed": 2,
+     "count": 16
+    }
+   },
+   {
+    "id": "outflow",
+    "kind": "flow",
+    "params": {
+     "path": [
+      [
+       10,
+       0.3,
+       -2
+      ],
+      [
+       15,
+       -0.3,
+       -2
+      ]
+     ],
+     "look": "water",
+     "size": 0.16,
+     "speed": 2.4,
+     "count": 14
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [
+     {
+      "p": "inflow",
+      "v": "start",
+      "w": "sewage"
+     }
+    ],
+    "shows": {
+     "p": "inflow",
+     "does": "sewage pours in"
+    },
+    "shots": [
+     {
+      "focus": [
+       "tank",
+       "inflow"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "tank",
+      "v": "sink",
+      "w": "sinks"
+     }
+    ],
+    "shows": {
+     "p": "tank",
+     "does": "sludge sinks"
+    },
+    "shots": [
+     {
+      "focus": [
+       "tank"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "fix1",
+    "do": [
+     {
+      "p": "clarifier",
+      "v": "turn",
+      "w": "arm"
+     }
+    ],
+    "shows": {
+     "p": "clarifier",
+     "does": "the arm turns"
+    },
+    "shots": [
+     {
+      "focus": [
+       "clarifier"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [
+     {
+      "p": "outflow",
+      "v": "start",
+      "w": "river"
+     }
+    ],
+    "shows": {
+     "p": "outflow",
+     "does": "clean water runs to the river"
+    },
+    "shots": [
+     {
+      "focus": [
+       "clarifier",
+       "river"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you pipe sewage into a tank, you have a treatment plant."
+  },
+  {
+   "role": "problem",
+   "text": "But the sludge sinks and piles up on the floor."
+  },
+  {
+   "role": "fix1",
+   "text": "So you add a round tank whose arm scrapes it away."
+  },
+  {
+   "role": "name",
+   "text": "This is a clarifier, and clean water runs to the river."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a treatment plant."
+  }
+ ]
+}

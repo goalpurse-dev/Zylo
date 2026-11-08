@@ -98,6 +98,24 @@ Strata, groundwater, rocks and roots are generated on whatever face results. Imp
 ## 7. Test cases (the generators must handle all of these, free)
 coast + lighthouse · gorge + suspension bridge · river + dam · river + tunnel under it · two-storey interior + escalator + elevator shaft · power station (reactor, turbine, cooling tower) · power lines to a house · treatment works · volcano (mountain, crater, chamber, lava) · road with cars that steer and brake · underwater + submarine · the 40 benchmark topics (customer-ready on the real checker, cached per line).
 
+## 7b. As built (2026-11-08)
+- **Generators are part kinds, not `world.*` blocks.** The camera, verbs, validator and handbook all work on parts, so a mountain can be framed, a river can rise, a bridge can twist. The kinds:
+  - `terrain` (kit/terrain.js): blocks flat, hill, mountain (crater, chamber, vent), cliff, gorge, coast, riverbed, pit, tunnel; trees.
+  - `waterBody` (kit/water.js): sea, river, lake, pool.
+  - `building` (kit/buildings.js): floors and shafts (elevator, escalator, stairs, chimney).
+  - `road` (kit/roads.js): asphalt, gravel, rail, path; bridges beam, arch, suspension.
+  - `wires` (kit/wires.js): power lines.
+  - `model` (m2/recipes.js): expanded into a `rig` by the plan, a recipe first, then a CC0 model.
+- A layout with a terrain part swaps the yard's ground for it. Every other layout renders as before (v1 compatibility).
+- Cars: road/terrain riding, brake, steer, stuck.
+- Effects: beam glow, topic-name words, blast debris clears, colours, smoke contrast.
+- Test cases with free stills checked: `m3/testcases/` volcano, coast, river_tunnel, gorge, station, bridge, power.
+- Not yet:
+  - test cases: treatment works, underwater + submarine, river + dam, road with steering;
+  - snow and fog;
+  - furniture in rooms;
+  - saving composed worlds by name (phase 3).
+
 ## 8. Phases (about 11 days of work)
 1. **Registry, handbook, validator, merged plan and fact calls** (2.5 days). Proven on the 22 stand-in topics: the planner replays their answers, so this is free.
 2. **Generators** (6-7 days): terrain → water → buildings → roads and vehicles → models by keyword → light. Each is proven on its test cases with free stills, then the crash sweep.

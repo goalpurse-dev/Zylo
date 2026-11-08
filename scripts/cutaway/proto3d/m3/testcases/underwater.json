@@ -1,0 +1,625 @@
+{
+ "topic": "How a submarine works (generator test case)",
+ "layout": {
+  "key": "tc_underwater",
+  "title": "How a submarine works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "land",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "coast",
+       "at": -16,
+       "sea": "right",
+       "beach": 3,
+       "depth": 14
+      }
+     ]
+    }
+   },
+   {
+    "id": "sea",
+    "kind": "waterBody",
+    "params": {
+     "body": "sea",
+     "x0": -17,
+     "x1": 24,
+     "level": 0
+    }
+   },
+   {
+    "id": "sub",
+    "kind": "rig",
+    "params": {
+     "name": "submarine",
+     "synonyms": [
+      "sub",
+      "tube",
+      "hull",
+      "ballast tank",
+      "ballast tanks"
+     ],
+     "pos": [
+      2,
+      -8,
+      -3
+     ],
+     "nodes": [
+      {
+       "id": "hull",
+       "at": [
+        0,
+        0,
+        0
+       ],
+       "shapes": [
+        {
+         "shape": "cylinder",
+         "r": 0.9,
+         "h": 5,
+         "axis": "x",
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "look": "paint",
+         "color": "#3d4f63"
+        },
+        {
+         "shape": "sphere",
+         "r": 0.9,
+         "at": [
+          2.5,
+          0,
+          0
+         ],
+         "look": "paint",
+         "color": "#3d4f63"
+        },
+        {
+         "shape": "sphere",
+         "r": 0.9,
+         "at": [
+          -2.5,
+          0,
+          0
+         ],
+         "look": "paint",
+         "color": "#3d4f63"
+        },
+        {
+         "shape": "box",
+         "size": [
+          1.2,
+          1,
+          0.6
+         ],
+         "at": [
+          0.6,
+          1.3,
+          0
+         ],
+         "look": "paint",
+         "color": "#33414f"
+        }
+       ],
+       "moves": [
+        {
+         "name": "bob",
+         "type": "pump",
+         "axis": "y",
+         "stroke": 0.25,
+         "rate": 1
+        },
+        {
+         "name": "dive",
+         "type": "slide",
+         "to": [
+          0,
+          -3.5,
+          0
+         ]
+        },
+        {
+         "name": "plunge",
+         "type": "slide",
+         "to": [
+          0,
+          -6.2,
+          0
+         ]
+        }
+       ]
+      },
+      {
+       "id": "ballast",
+       "parent": "hull",
+       "at": [
+        0,
+        -0.95,
+        0
+       ],
+       "shapes": [
+        {
+         "shape": "box",
+         "size": [
+          4.4,
+          0.6,
+          1.5
+         ],
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "look": "glass",
+         "color": "#cfe8ff"
+        }
+       ],
+       "moves": [
+        {
+         "name": "tanks",
+         "type": "appear"
+        },
+        {
+         "name": "flood",
+         "type": "fill",
+         "box": {
+          "size": [
+           4.2,
+           0.5,
+           1.3
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "color": "#2d6fb5"
+         }
+        }
+       ]
+      },
+      {
+       "id": "air",
+       "parent": "hull",
+       "at": [
+        0,
+        0.95,
+        0.35
+       ],
+       "shapes": [
+        {
+         "shape": "cylinder",
+         "r": 0.2,
+         "h": 1.6,
+         "axis": "x",
+         "at": [
+          -1.4,
+          0,
+          0
+         ],
+         "look": "paint",
+         "color": "#f2c94c"
+        },
+        {
+         "shape": "cylinder",
+         "r": 0.2,
+         "h": 1.6,
+         "axis": "x",
+         "at": [
+          1.9,
+          0,
+          0
+         ],
+         "look": "paint",
+         "color": "#f2c94c"
+        }
+       ],
+       "moves": [
+        {
+         "name": "air",
+         "type": "appear"
+        },
+        {
+         "name": "blow",
+         "type": "flow",
+         "path": [
+          [
+           -1.4,
+           0,
+           0.3
+          ],
+          [
+           -1.4,
+           -1.9,
+           0.6
+          ],
+          [
+           1.9,
+           -1.9,
+           0.6
+          ]
+         ],
+         "color": "#ffffff"
+        }
+       ]
+      },
+      {
+       "id": "cracks",
+       "parent": "hull",
+       "at": [
+        1.2,
+        0.1,
+        0.9
+       ],
+       "shapes": [
+        {
+         "shape": "box",
+         "size": [
+          0.9,
+          0.12,
+          0.08
+         ],
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "rot": [
+          0,
+          0,
+          30
+         ],
+         "look": "paint",
+         "color": "#f4f4f4"
+        },
+        {
+         "shape": "box",
+         "size": [
+          0.7,
+          0.12,
+          0.08
+         ],
+         "at": [
+          0.45,
+          0.3,
+          0
+         ],
+         "rot": [
+          0,
+          0,
+          -25
+         ],
+         "look": "paint",
+         "color": "#f4f4f4"
+        },
+        {
+         "shape": "box",
+         "size": [
+          0.6,
+          0.12,
+          0.08
+         ],
+         "at": [
+          -0.5,
+          -0.25,
+          0
+         ],
+         "rot": [
+          0,
+          0,
+          -40
+         ],
+         "look": "paint",
+         "color": "#f4f4f4"
+        }
+       ],
+       "moves": [
+        {
+         "name": "cracks",
+         "type": "appear"
+        }
+       ]
+      },
+      {
+       "id": "thick",
+       "parent": "hull",
+       "at": [
+        0,
+        0,
+        0
+       ],
+       "shapes": [
+        {
+         "shape": "cylinder",
+         "r": 0.99,
+         "h": 5.05,
+         "axis": "x",
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#8fa3b8"
+        },
+        {
+         "shape": "torus",
+         "r": 1,
+         "tube": 0.09,
+         "axis": "x",
+         "at": [
+          -1.6,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#c9d3dd"
+        },
+        {
+         "shape": "torus",
+         "r": 1,
+         "tube": 0.09,
+         "axis": "x",
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#c9d3dd"
+        },
+        {
+         "shape": "torus",
+         "r": 1,
+         "tube": 0.09,
+         "axis": "x",
+         "at": [
+          1.6,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#c9d3dd"
+        }
+       ],
+       "moves": [
+        {
+         "name": "thick",
+         "type": "appear"
+        }
+       ]
+      },
+      {
+       "id": "scope",
+       "parent": "hull",
+       "at": [
+        0.8,
+        1.8,
+        0
+       ],
+       "shapes": [
+        {
+         "shape": "cylinder",
+         "r": 0.07,
+         "h": 1,
+         "axis": "y",
+         "at": [
+          0,
+          0.5,
+          0
+         ],
+         "look": "metal",
+         "color": "#9aa0a6"
+        },
+        {
+         "shape": "box",
+         "size": [
+          0.3,
+          0.14,
+          0.14
+         ],
+         "at": [
+          0.1,
+          1,
+          0
+         ],
+         "look": "metal",
+         "color": "#9aa0a6"
+        }
+       ],
+       "moves": [
+        {
+         "name": "periscope",
+         "type": "appear"
+        },
+        {
+         "name": "raise",
+         "type": "slide",
+         "to": [
+          0,
+          0.5,
+          0
+         ]
+        }
+       ]
+      },
+      {
+       "id": "prop",
+       "parent": "hull",
+       "at": [
+        -3.55,
+        0,
+        0
+       ],
+       "shapes": [
+        {
+         "shape": "fan",
+         "r": 0.6,
+         "blades": 4,
+         "w": 0.15,
+         "axis": "x",
+         "at": [
+          0,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#c9a227"
+        },
+        {
+         "shape": "cylinder",
+         "r": 0.1,
+         "h": 0.4,
+         "axis": "x",
+         "at": [
+          0.25,
+          0,
+          0
+         ],
+         "look": "metal",
+         "color": "#9aa0a6"
+        }
+       ],
+       "moves": [
+        {
+         "name": "propeller",
+         "type": "appear"
+        },
+        {
+         "name": "spin",
+         "type": "spin",
+         "axis": "x",
+         "turns": 2
+        }
+       ]
+      }
+     ]
+    },
+    "main": true
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [],
+    "shows": {
+     "p": "sub",
+     "does": "a submarine floats"
+    },
+    "shots": [
+     {
+      "focus": [
+       "sub"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "sea",
+      "v": "flow",
+      "w": "current"
+     }
+    ],
+    "shows": {
+     "p": "sea",
+     "does": "the sea moves"
+    },
+    "shots": [
+     {
+      "focus": [
+       "sub",
+       "sea"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [],
+    "shows": {
+     "p": "sub",
+     "does": "the submarine"
+    },
+    "shots": [
+     {
+      "focus": [
+       "sub"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you seal a tube that can sink and float, you have a submarine."
+  },
+  {
+   "role": "problem",
+   "text": "But the current pushes it along."
+  },
+  {
+   "role": "name",
+   "text": "This is a submarine."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a submarine."
+  }
+ ]
+}

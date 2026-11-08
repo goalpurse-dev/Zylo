@@ -24,9 +24,22 @@
     - All 12 contradictions are resolved; see the commit message and `tests/cutawayLanguage.test.mjs`. Story bookkeeping and stand-in sentences now report their changes in the trace ("plan bookkeeping (free)"). The director already reports its camera changes as "camera: …" warnings.
     - 1e: the 22 stand-ins replay with 0 problems, and their plans are identical to the saved ones. Whether the AI plans *better* from the handbook needs a real call (not run).
     - Not done: "night barely darkens" (needs stills); the director still applies its size rules after the plan (now stated up front, and reported).
-  - Next steps:
-    - 1d: narration in the plan reply (the words call goes) and one fact call (research and check merged). The 22 stand-in answers must be rewritten in the merged format to replay it free.
-    - Then phase 2: the generators.
+  - **1d done (`8cf00a22`):** the plan reply carries `sentences`, written under the shared `WRITING_RULES`. Facts are ONE web-search call with verdicts (`FACTS_ONE_SYSTEM`); reworded numbers go into the sentences for free (`applyFactChanges`). The writer is called only for repairs. That is 2 fewer paid calls per custom video.
+    - Recorded answers were converted with `m3/convert1d.mjs`: stand-ins get sentences in the plan replies and a `facts__1`; failure cases get `facts__1` only, so they still exercise the old writer path.
+  - **Phase 2 generators done.** See SCENE_LANGUAGE_V2.md "7b. As built".
+    - Commits: `ad43eff5` terrain + water, `f0163724` building, `9e0ba710` road + car motions, `3c8544a5` models + wires + mood fix, `04eb03bd` effects.
+    - Free stills were checked for each test case in `m3/testcases/`.
+    - To see one: `node m3/lookAt.mjs --proto PROTO --plan m3/testcases/<key>.json --out DIR`. A debug camera: `node m2/stills.mjs "m2_look_<key>.html?cam=px,py,pz,tx,ty,tz" DIR t`, run inside PROTO.
+  - **Real bugs found on the way:**
+    - `layoutFromScene` dropped `world.mood`: a planned night never reached the page.
+    - A rig model shape given `size [w,h,d]` was drawn 1 m tall.
+    - A car registered under `params.id`, so a car wash only found a car named "car".
+  - Handbook is 57k characters (it was 33k before 1c).
+  - Next:
+    - the crash sweep result (it was running at the end of the session);
+    - then ask the owner for the real re-check of the changed lines (the smoke detector's lines, and every line with a beam);
+    - the remaining test cases: treatment works, underwater + submarine, river + dam, road with steering;
+    - phase 3.
 
 The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free. **Next step: build all the missing kit in one push, then do one check.** The owner's message of 2026-11-07 is under "The owner's current orders" below.
 
@@ -196,7 +209,7 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
 The full stand-in reports, with stills: `<new scratchpad>/standin/<key>/`. The old session scratchpad is `C:/Users/Huhta/AppData/Local/Temp/claude/406e5fa85684c54c/9fd93e59-a925-49a7-beab-dadbb576d507/scratchpad/standin/`.
 
 ## Other open items (owner)
-- **Premade 30 s scripts:** approved. The SQL `m3/premade30_2026-11-06.sql` is waiting for the owner to run it; it was blocked for me.
+- **Premade 30 s scripts:** LIVE. Checked read-only on 2026-11-08: the landfill, French drain, car wash and swimming pool scripts and the French drain cue fix all match `m3/premade30_2026-11-06.sql`.
 - **"Never cleaned for 10 years" pool premade:** the owner said build it after Step B. Not started.
   - It needs a time-label part ("Day 0 → Year 10"), cloudy and sludge water stages, floating leaves, algae, reeds, lily pads and frogs, and a story template with no "Congratulations".
   - The script is approved by the owner before any render.

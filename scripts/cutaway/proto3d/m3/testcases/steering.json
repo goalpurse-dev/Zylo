@@ -1,0 +1,232 @@
+{
+ "topic": "How braking works (generator test case)",
+ "layout": {
+  "key": "tc_steering",
+  "title": "How braking works",
+  "template": "custom",
+  "codeShots": true,
+  "hold": true,
+  "world": {
+   "house": false,
+   "worker": false,
+   "road": false,
+   "moreTrees": false
+  },
+  "parts": [
+   {
+    "id": "light",
+    "kind": "light",
+    "params": {
+     "storm": false
+    }
+   },
+   {
+    "id": "ground",
+    "kind": "terrain",
+    "params": {
+     "blocks": [
+      {
+       "type": "flat",
+       "x0": -24,
+       "x1": 24,
+       "y": 0
+      }
+     ],
+     "trees": [
+      [
+       -14,
+       -10,
+       1
+      ],
+      [
+       12,
+       -11,
+       1.1
+      ]
+     ]
+    }
+   },
+   {
+    "id": "road",
+    "kind": "road",
+    "params": {
+     "points": [
+      [
+       -24,
+       -4
+      ],
+      [
+       24,
+       -4
+      ]
+     ],
+     "width": 7,
+     "surface": "asphalt"
+    }
+   },
+   {
+    "id": "car",
+    "kind": "car",
+    "main": true,
+    "params": {
+     "road": "road",
+     "pos": [
+      2,
+      0,
+      -4
+     ],
+     "from": -20,
+     "to": 22,
+     "color": "#d23b2e",
+     "model": "sedan"
+    }
+   },
+   {
+    "id": "sign",
+    "kind": "sign",
+    "params": {
+     "at": [
+      17,
+      0,
+      -8
+     ],
+     "rotY": 0.2,
+     "scale": 1.2
+    }
+   }
+  ],
+  "beats": [
+   {
+    "s": "hook",
+    "do": [
+     {
+      "p": "car",
+      "v": "arrive",
+      "w": "car"
+     }
+    ],
+    "shows": {
+     "p": "car",
+     "does": "a car drives in"
+    },
+    "shots": [
+     {
+      "focus": [
+       "car",
+       "road"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "problem",
+    "do": [
+     {
+      "p": "car",
+      "v": "brake",
+      "w": "brakes"
+     }
+    ],
+    "shows": {
+     "p": "car",
+     "does": "it brakes"
+    },
+    "shots": [
+     {
+      "focus": [
+       "car"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "fix1",
+    "do": [
+     {
+      "p": "car",
+      "v": "steer",
+      "w": "steer"
+     }
+    ],
+    "shows": {
+     "p": "car",
+     "does": "it steers"
+    },
+    "shots": [
+     {
+      "focus": [
+       "car"
+      ],
+      "type": "mid"
+     }
+    ]
+   },
+   {
+    "s": "name",
+    "do": [
+     {
+      "p": "car",
+      "v": "straighten",
+      "w": "brakes"
+     },
+     {
+      "p": "car",
+      "v": "release",
+      "w": "brakes"
+     }
+    ],
+    "shows": {
+     "p": "car",
+     "does": "the car"
+    },
+    "shots": [
+     {
+      "focus": [
+       "car",
+       "road"
+      ],
+      "type": "wide"
+     }
+    ]
+   },
+   {
+    "s": "congrats",
+    "do": [],
+    "shots": [
+     {
+      "focus": "home"
+     }
+    ]
+   }
+  ],
+  "audio": {
+   "cards": [],
+   "sfx": [],
+   "chimes": []
+  }
+ },
+ "sentences": [
+  {
+   "role": "hook",
+   "text": "If you put a car on a road, you have traffic."
+  },
+  {
+   "role": "problem",
+   "text": "But it brakes hard and the nose dips."
+  },
+  {
+   "role": "fix1",
+   "text": "So you steer around the danger."
+  },
+  {
+   "role": "name",
+   "text": "These are brakes and steering."
+  },
+  {
+   "role": "congrats",
+   "text": "Congratulations, you have built a safe car."
+  }
+ ]
+}
