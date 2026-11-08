@@ -82,13 +82,16 @@ try {
         const k = list[0].kind, gaps = list.map((r) => r.gap).filter(Number.isFinite);
         const worst = gaps.length ? gaps.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a), 0) : null;
         let drift = 0; const ref = list.find((r) => r.local);
-        for (const r of list) if (r.local && ref && r.on === ref.on) drift = Math.max(drift, Math.hypot(...r.local.map((v, i) => v - ref.local[i])));
-        actors.push({ id: aid, kind: k, worst: worst == null ? null : +worst.toFixed(3), noGround: gaps.length < list.length, drift: +drift.toFixed(3), tol: list[0].tol, on: ref?.on ?? null });
+        // ATTACH-2: a person's drift is sliding ACROSS the surface (x, z of its root): the up-down of a walking stride on
+        // a slope (the lowest sole kept on the ground) is not sliding, and floating is the gap above
+        for (const r of list) if (r.local && ref && r.on === ref.on) drift = Math.max(drift, Math.hypot(...r.local.map((v, i) => (k === "person" && i === 1 ? 0 : v - ref.local[i]))));
+        const sG = list.map((r) => r.sGap).filter((v) => v != null), sWorst = sG.length ? sG.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a), 0) : null;
+        actors.push({ id: aid, kind: k, worst: worst == null ? null : +worst.toFixed(3), sWorst, noGround: gaps.length < list.length, drift: +drift.toFixed(3), tol: list[0].tol, on: ref?.on ?? null });
       }
       const of = (k) => actors.filter((a) => a.kind === k);
       const maxAbs = (l) => l.reduce((m, a) => Math.max(m, a.worst == null ? 99 : Math.abs(a.worst)), 0);
       const fails = actors.filter((a) => a.kind !== "house" && (a.noGround || Math.abs(a.worst ?? 99) > a.tol * (a.kind === "giant" ? 1 : 1)) || (a.kind !== "giant" && a.drift > (a.kind === "house" ? 0.02 : 0.05)));
-      metrics[id] = { P: +P.toFixed(2), people: +maxAbs(of("person")).toFixed(3), crowd: +maxAbs(of("crowd")).toFixed(3), giant: of("giant").length ? +maxAbs(of("giant")).toFixed(3) : null, drift: +Math.max(0, ...actors.filter((a) => a.kind !== "house").map((a) => a.drift)).toFixed(3), houseDrift: +Math.max(0, ...of("house").map((a) => a.drift)).toFixed(3), fails: fails.length, failList: fails.slice(0, 6).map((a) => `${a.id}:${a.kind} gap ${a.worst} drift ${a.drift}${a.noGround ? " NO GROUND" : ""} on ${a.on}`), secs: Math.round((Date.now() - t0) / 1000) };
+      metrics[id] = { P: +P.toFixed(2), people: +maxAbs(of("person")).toFixed(3), crowd: +maxAbs(of("crowd")).toFixed(3), giant: of("giant").length ? +maxAbs(of("giant")).toFixed(3) : null, drift: +Math.max(0, ...actors.filter((a) => a.kind !== "house").map((a) => a.drift)).toFixed(3), houseDrift: +Math.max(0, ...of("house").map((a) => a.drift)).toFixed(3), fails: fails.length, failList: fails.slice(0, 6).map((a) => `${a.id}:${a.kind} gap ${a.worst} drift ${a.drift}${a.noGround ? " NO GROUND" : ""} on ${a.on}${a.sWorst != null ? ` (set surface gap ${a.sWorst})` : ""}`), secs: Math.round((Date.now() - t0) / 1000) };
       console.log(id, JSON.stringify(metrics[id]));
       if (SHEETS) {
         const ins = [0, 1, 2].map((k) => ["-i", path.join(OUT, `${id}_${k}.jpg`)]).flat();

@@ -9,7 +9,7 @@ const THREE = await import("three");
 const { makePerson, posePerson } = await import("../page/kit/people.js");
 const { groundUnder, personFeet, measureContact } = await import("../page/ground.js");
 const { makeGiant, animateGiant } = await import("../page/kit/giants.js");
-const { addBackTown } = await import("../page/kit/backTown.js");
+const { addBackTown, backSurface } = await import("../page/kit/backTown.js");
 
 const lowestFoot = (p) => Math.min(...personFeet(THREE, p).map((v) => v.y));
 
@@ -76,3 +76,44 @@ for (const kind of ["turtle", "snail", "elephant", "wolf"]) {
     assert.ok(moved > 1e-3, `${kind}: the back does move while walking (the test means something)`);
   });
 }
+
+// ATTACH-2 (owner: "Check every creature world", "Feet always on the ground"): a lumpy back (bird, frog) gets a real
+// deck mesh; people at an edge are moved to the nearest spot whose whole footprint is on one level
+const { standY, findStandSpot } = await import("../page/ground.js");
+for (const kind of ["eagle", "frog"]) {
+  test(`ground: a ${kind}'s back town has a walkable deck: normals up, never above the town's surface, its function = the mesh`, () => {
+    const g = makeGiant({ kind, size: 90, town: false, seed: 3 });
+    const town = addBackTown(g, { seed: 3 });
+    const deck = town.userData.deck;
+    assert.ok(deck && deck.name === "backDeck", "the deck exists");
+    const pos = deck.geometry.attributes.position, nrm = deck.geometry.attributes.normal;
+    assert.ok(pos.count > 100, `a real surface (${pos.count} vertices)`);
+    for (let i = 0; i < nrm.count; i++) assert.ok(nrm.getY(i) > 0, "every normal points up");
+    const { surf } = backSurface(g);
+    for (let i = 0; i < pos.count; i++) assert.ok(pos.getY(i) <= surf(pos.getX(i), pos.getZ(i)) + 0.021, `vertex ${i} above the town's surface (the streets)`);
+    // the deck function and the mesh agree (a ray down on the deck in its own frame)
+    const scene = new THREE.Scene(); const m = new THREE.Mesh(deck.geometry, new THREE.MeshStandardMaterial()); scene.add(m); scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromBufferAttribute(pos); let n = 0;
+    for (let k = 0; k < 60; k++) {
+      const x = box.min.x + ((k * 0.37) % 1) * (box.max.x - box.min.x), z = box.min.z + ((k * 0.61) % 1) * (box.max.z - box.min.z);
+      const y = deck.userData.deckY(x, z); if (y == null) continue;
+      const rc = new THREE.Raycaster(new THREE.Vector3(x, y + 1, z), new THREE.Vector3(0, -1, 0)); rc.far = 2;
+      const hit = rc.intersectObject(m)[0];
+      assert.ok(hit && Math.abs(hit.point.y - y) < 1e-3, `deckY ${y} vs mesh ${hit?.point.y} at ${x.toFixed(1)},${z.toFixed(1)}`); n++;
+    }
+    assert.ok(n > 20, `sampled the deck (${n})`);
+  });
+}
+
+test("ground: standY refuses a wall / deck edge; findStandSpot moves the person to the nearest level spot", () => {
+  const scene = new THREE.Scene(), mat = new THREE.MeshStandardMaterial();
+  const box = (w, h, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); scene.add(m); return m; };
+  box(20, 1, 20, 0, -0.5, 0);   // the street, top at 0
+  box(2, 0.3, 4, 1, 0.15, 0);   // a deck x 0..2, top at 0.3
+  scene.updateMatrixWorld(true);
+  assert.equal(standY(THREE, scene, new THREE.Vector3(0.05, 0.3, 0)), null, "half the foot over the deck's edge");
+  assert.equal(standY(THREE, scene, new THREE.Vector3(1, 0.3, 0)).toFixed(2), "0.30", "on the deck");
+  const s = findStandSpot(THREE, scene, new THREE.Vector3(0.05, 0.3, 0));
+  assert.ok(s && standY(THREE, scene, s) != null && s.distanceTo(new THREE.Vector3(0.05, 0.3, 0)) <= 0.6, `moved to a level spot nearby (${s?.toArray()})`);
+  assert.equal(findStandSpot(THREE, scene, new THREE.Vector3(40, 0, 0), { maxR: 1 }), null, "nothing in reach: null (the engine never leaves it floating)");
+});

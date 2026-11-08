@@ -48,6 +48,38 @@ export function groundUnder(THREE, root, p, { above = 1.0, below = 4, maxUp = 0.
   return best;
 }
 
+/**
+ * ATTACH-2 (owner: "an actor without a valid surface under it is moved to the nearest valid spot, never left floating"):
+ * a person stands at p (world) only if the ground under the centre AND under its whole footprint (both soles, heel to
+ * toe: +-0.2 m across, -0.15 / +0.25 m along) is one level within tol (no wall edge, kerb, deck edge or crate corner
+ * under half a foot). -> the ground height there, or null
+ */
+export function standY(THREE, root, p, { skip = null, tol = 0.03, above = 1.0, below = 0.6, maxUp = 0.45, foot = [[-0.2, -0.15], [0.2, -0.15], [-0.2, 0.25], [0.2, 0.25]] } = {}) {
+  const c = groundUnder(THREE, root, p, { above, below, maxUp, skip });
+  if (!c) return null;
+  const q = new THREE.Vector3();
+  for (const [dx, dz] of foot) {
+    const h = groundUnder(THREE, root, q.set(p.x + dx, c.y, p.z + dz), { above, below: 0.3, maxUp: 0.3, skip });
+    if (!h || Math.abs(h.y - c.y) > tol) return null;
+  }
+  return c.y;
+}
+
+/** the nearest spot (world) within maxR of p where standY holds and ok(spot) agrees: rings of 0.25 m -> Vector3 | null */
+export function findStandSpot(THREE, root, p, { maxR = 2.5, ok = null, ...o } = {}) {
+  const y0 = standY(THREE, root, p, o);
+  if (y0 != null && (!ok || ok(new THREE.Vector3(p.x, y0, p.z)))) return new THREE.Vector3(p.x, y0, p.z);
+  for (let r = 0.25; r <= maxR + 1e-6; r += 0.25) {
+    const n = Math.max(8, Math.round((2 * Math.PI * r) / 0.25));
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2, q = new THREE.Vector3(p.x + Math.cos(a) * r, p.y, p.z + Math.sin(a) * r);
+      const y = standY(THREE, root, q, o);
+      if (y != null && (!ok || ok(q.setY(y)))) return q.setY(y);
+    }
+  }
+  return null;
+}
+
 /** the bottom of each sole (people.js: knee -> shoe at -0.43, sole at -0.47, 0.035 thick, z -0.1125 .. 0.2125), world space */
 export function personFeet(THREE, o) {
   const k = o.userData?.joints?.knee ?? [];
@@ -107,7 +139,10 @@ export function measureContact(THREE, scene, S, opts = {}) {
       const gap = hit ? f.y - hit.y : Infinity;
       if (!best || Math.abs(gap) < Math.abs(best.gap) || (gap < 0 && best.gap > 0 && Math.abs(gap) <= Math.abs(best.gap))) best = { gap, hit, f };
     }
-    rows.push({ kind: "person", id: o.userData.id ?? o.name ?? "person", gap: best.gap, tol: 0.03, local: local(best.hit, o.getWorldPosition(new THREE.Vector3())), on: best.hit?.object.name ?? null }); // drift: the person's root (a walking foot swings)
+    // the set's own surface under the same foot (mount coordinates): tells a placement miss from a surface mismatch
+    let sGap = null; const mnt = S?.actorMount?.();
+    if (mnt && S.surface) { const f = mnt.worldToLocal(best.f.clone()), y = S.surface(f.x, f.z); sGap = y == null ? null : +(f.y - y).toFixed(3); }
+    rows.push({ kind: "person", id: o.userData.id ?? o.name ?? "person", gap: best.gap, sGap, tol: 0.03, local: local(best.hit, o.getWorldPosition(new THREE.Vector3())), on: best.hit?.object.name ?? null }); // drift: the person's root (a walking foot swings)
   }
   for (const g of crowds) {
     const pts = crowdBases(THREE, g); if (!pts.length) continue;

@@ -11,6 +11,9 @@ import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPr
 import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
 import { pickRecipe } from "./recipes.js";
+import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
+import { skeletonProblems } from "./skeleton.js";
+import { copyProblems, copyReasons } from "./antiCopy.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
 import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
@@ -37,7 +40,7 @@ async function callJson({ apiKey, model, system, user, schema, effort = "low", m
   const sonnet = model.startsWith("claude-sonnet-5-5");
   // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
   // pass it; what a call cost (failed ones too) is added to the meter
-  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil((system.length + user.length) / 3) + 200), model);
+  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200), model);
   try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter }); }
   catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
 }
@@ -52,7 +55,8 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
     body: JSON.stringify({
       model,
       max_tokens: maxTokens,
-      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      // a list of system texts: each block cached (the reference examples come first, so calls sharing them share the cache)
+      system: [system].flat().map((text) => ({ type: "text", text, cache_control: { type: "ephemeral" } })),
       messages: [{ role: "user", content: user }],
       output_config: { effort, format: { type: "json_schema", schema } },
       ...(sonnet ? { fallbacks: "default" } : {}),
@@ -442,10 +446,10 @@ export function moneyMeter(maxUsd) {
  * The library's judge on a finished script (library.js judgeScriptPrompt): { verdict: {score, accepted, reason, scores,
  * better}, costUsd }. Same model, system prompt, schema and accept line as the library.
  */
-export async function judgeScript({ apiKey = "", provider = "anthropic", script, card = {}, meter = null }) {
+export async function judgeScript({ apiKey = "", provider = "anthropic", script, card = {}, meter = null, exemptOriginality = false }) {
   const reply = provider === "mock"
     ? await MOCK.judge({ ideas: [{ opener: script?.lines?.[0]?.text ?? card?.opener ?? "" }] })
-    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card), schema: judgeSchema(), effort: "medium", maxTokens: TOPIC_GATE.maxTokens.judge, meter });
+    : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card, { exemptOriginality }), schema: judgeSchema(), effort: "medium", maxTokens: TOPIC_GATE.maxTokens.judge, meter });
   return { verdict: scoreVerdict(reply.data?.verdicts?.[0]), costUsd: reply.costUsd };
 }
 
@@ -517,6 +521,92 @@ export async function topicScript({ apiKey = "", provider = "anthropic", topic, 
   spent("judge + rewrites", g.costUsd);
   Object.assign(out, { script: g.best.script, check: g.best.check, verdict: g.best.verdict, passed: g.passed, rewrites: g.rewrites, rounds: g.rounds, stopped: g.stopped });
   out.topicProblems = topicProblems(topic, out.script);
+  return out;
+}
+
+// ---------- broad topics with reference examples (owner, 2026-11-08) ----------
+/** Output ceilings of the broad flow (each call's worst case is bounded by them). */
+export const BROAD_MAX_TOKENS = Object.freeze({ plan: 7000, script: 10000, judge: LIBRARY_MAX_TOKENS.judge });
+
+/** The plan: an idea card (with its twist clue) and the 7 beats, from the topic, recipe and angle. */
+export async function writePlan({ apiKey = "", topic, recipe = null, angle = ANGLES[0], examples = [], lengthSec = 90, meter = null }) {
+  const reply = await callJson({ apiKey, model: MODELS.beats, system: [examplesBlock(examples), PLAN_SYSTEM], user: planPrompt({ topic, recipe, angle, lengthSec }), schema: planSchema(), effort: "low", maxTokens: BROAD_MAX_TOKENS.plan, timeoutMs: 180_000, meter });
+  const raw = reply.data?.card ?? {};
+  const card = { ...normalizeIdea(raw), twist_clue: String(raw.twist_clue ?? "").trim(), topic: String(topic).slice(0, 240) };
+  const beats = reply.data?.beats ?? [];
+  return { card, beats, problems: [...cardProblems(card), ...beatProblems(beats)], costUsd: reply.costUsd };
+}
+
+/** The script with its skeleton map, following the plan (a fix: previous + the failed checks). */
+export async function writeBroadScript({ apiKey = "", card, beats, examples = [], lengthSec = 90, previous = null, failed = [], meter = null }) {
+  const user = `${scriptPrompt({ idea: card, lengthSec, beats, previous, failed })}\n\nTHE TWIST'S CLUE (plant it before the discovery, pay it off after): ${card.twist_clue || "(choose one)"}`;
+  const reply = await callJson({ apiKey, model: MODELS.script, system: [examplesBlock(examples), BROAD_SCRIPT_SYSTEM], user, schema: broadScriptSchema(), effort: "medium", maxTokens: BROAD_MAX_TOKENS.script, timeoutMs: 180_000, meter });
+  return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd };
+}
+
+/**
+ * Every free check of a broad draft: the script and protocol checks (length, opener, prop, callback, topic), the
+ * skeleton and twist checks, and the anti-copy check against the examples. Returns { problems, copy, skeleton, protocol }.
+ */
+export function broadChecks({ script, skeleton = {}, card, examples = [], lengthSec = 90 }) {
+  const protocol = scriptProtocolCheck(script, lengthSec, card);
+  const skel = skeletonProblems(script, skeleton, card);
+  const copy = copyProblems({ script, twist: skeleton.twist || card?.twist || "", topic: card?.topic ?? "", examples });
+  return { problems: [...protocol.problems, ...skel, ...copyReasons(copy)], copy, skeleton: skel, protocol: protocol.problems, warnings: protocol.warnings, words: protocol.words, seconds: protocol.seconds };
+}
+
+/** Too long: the free trim (never a change that breaks any broad check), before any paid fix. */
+function trimBroad(script, skeleton, card, examples, lengthSec) {
+  const check = (s) => broadChecks({ script: s, skeleton, card, examples, lengthSec });
+  const t = trimScript(script, lengthSec, { check, keep: (l) => Boolean(card?.prop) && l.part === "climax" && propReference(card.prop, l.text) !== null, anchors: [card?.twist, card?.prop, card?.topic, card?.twist_clue].filter(Boolean).join(" ") });
+  return t.changes.length && check(t.script).problems.length < check(script).problems.length ? t.script : script;
+}
+
+/**
+ * One topic, `drafts` drafts (one per angle): plan -> script -> free checks (one targeted fix when they fail; still
+ * failing = discarded, never judged) -> the library's judge on the script (premise exempt from originality, copying
+ * is not) -> the best judged draft is kept. A failed or capped call ends the topic (never retried); what was done is
+ * returned. steps: the calls (tests pass fakes). examples: [{ id, text, firstLine }].
+ */
+export async function broadTopic({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, drafts = 3, meter = null, steps = {} }) {
+  const s = { writePlan, writeBroadScript, judgeScript, ...steps };
+  const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), drafts: [], best: null, stopped: null, costUsd: 0 };
+  const add = (d, usd) => { const u = Number(usd || 0); d.costUsd = Number((d.costUsd + u).toFixed(5)); out.costUsd = Number((out.costUsd + u).toFixed(5)); };
+  for (let k = 0; k < drafts && !out.stopped; k++) {
+    const d = { n: k + 1, angle: ANGLES[k % ANGLES.length], card: null, beats: [], planProblems: [], script: null, skeleton: {}, checks: null, fixed: false, discarded: null, verdict: null, costUsd: 0 };
+    out.drafts.push(d);
+    try {
+      const p = await s.writePlan({ apiKey, topic, recipe, angle: d.angle, examples, lengthSec, meter });
+      add(d, p.costUsd);
+      Object.assign(d, { card: p.card, beats: p.beats, planProblems: p.problems });
+      let w = await s.writeBroadScript({ apiKey, card: d.card, beats: d.beats, examples, lengthSec, meter });
+      add(d, w.costUsd);
+      d.script = w.script; d.skeleton = w.skeleton;
+      const trimmedIfLong = (c) => (c.protocol.some((x) => /^Too long:/.test(x)) ? trimBroad(d.script, d.skeleton, d.card, examples, lengthSec) : d.script);
+      d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
+      d.script = trimmedIfLong(d.checks);
+      d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
+      if (d.checks.problems.length) {
+        d.firstProblems = d.checks.problems;
+        w = await s.writeBroadScript({ apiKey, card: d.card, beats: d.beats, examples, lengthSec, previous: d.script, failed: d.checks.problems, meter });
+        add(d, w.costUsd);
+        d.fixed = true; d.script = w.script; d.skeleton = w.skeleton;
+        d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
+        d.script = trimmedIfLong(d.checks);
+        d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
+      }
+      if (d.checks.problems.length) { d.discarded = "fails the checks after one fix"; continue; }
+      const j = await s.judgeScript({ apiKey, script: d.script, card: d.card, meter, exemptOriginality: true });
+      add(d, j.costUsd);
+      d.verdict = j.verdict;
+    } catch (e) {
+      add(d, e?.costUsd);
+      d.discarded = e?.cap ? "money cap" : "a paid call failed (not retried)";
+      out.stopped = e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 200)}`;
+    }
+  }
+  const judged = out.drafts.filter((d) => d.verdict);
+  out.best = judged.length ? judged.reduce((a, b) => (b.verdict.score > a.verdict.score ? b : a)) : null;
   return out;
 }
 

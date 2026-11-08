@@ -104,11 +104,13 @@ export const judgePrompt = (ideas) => ideas.map((i, k) => `IDEA ${k + 1}\n${JSON
  * the card as a summary and the narration as the thing to score. A card with the user's own topic adds one stricter
  * line: a story that drifts from the premise scores low on hook and twist.
  */
-export function judgeScriptPrompt(script, card = {}) {
+export function judgeScriptPrompt(script, card = {}, { exemptOriginality = false } = {}) {
   const lines = (script?.lines ?? []).map((l) => `[${l.part}] ${l.text}`).join("\n");
   return [
     "IDEA 1 is judged by its FINISHED SCRIPT. Score what the narration below actually delivers (its first line is the opener, its last line the closer; the price, examples, narrator, planted object, escalation and twist as they are WRITTEN), not what the card promises. The card is only a summary.",
     ...(card?.topic ? [`THE USER'S OWN PREMISE: "${String(card.topic).slice(0, 200)}". The story must be about it from the first line to the last. If the narration swaps it for another gimmick, leaves it in the background, or turns its threat into a friend or a gag (a meal, a deal, a chore) instead of ending it, score hook and twist at most 2 and say so in "better".`] : []),
+    // broad topics may start from a reference premise (owner, 2026-11-08); copying is caught by antiCopy.js instead
+    ...(exemptOriginality ? ["THE PREMISE IS THE USER'S CHOICE and may match a reference premise: that is allowed. Score originality ONLY on the story events, the twist, the names and the lines (a reference's twist or events copied still score 1-2), never on the premise."] : []),
     judgePrompt([card ?? {}]),
     `THE SCRIPT OF IDEA 1\n${lines}`,
     "Return exactly one verdict.",

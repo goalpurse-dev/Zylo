@@ -21,7 +21,7 @@ import { gaitOf, prng, giantFootfalls } from "../../lib/epic.js";
 // (page/kit/backTown.js), the street-level places in that town (page/sets/backStreet.js), the foreground rule and the
 // fog guard per frame (S.afterCamera, called by the engine once the camera is set)
 import { makeNature, makeDust } from "../kit/nature.js";
-import { walkable } from "../ground.js";
+import { walkable, groundUnder } from "../ground.js";
 import { addBackTown, backSurface } from "../kit/backTown.js";
 import { addPlaces } from "./backStreet.js";
 
@@ -419,26 +419,59 @@ async function buildOn(spec, ctx) {
   // ATTACH: the walkable surface (carrier = rest coordinates) under (x, z): the street blocks where there is a street,
   // else the creature's own back (never a roof or a wall top). Rays down onto those meshes, memoised on a 0.5 m grid,
   // bilinear between the grid points; pose-independent (the meshes ride the carrier), so the same every frame
-  const groundMeshes = [];
-  giant.traverse((o) => { if (!o.isMesh) return; for (let p = o; p && p !== giant; p = p.parent) if (p === town.parent) { if (/^(mainStreet|sideStreets|backStreet|porches)$/.test(o.name)) groundMeshes.push(o); return; } if (walkable(o)) groundMeshes.push(o); }); // the same rule as the check (page/ground.js): no cut-out feathers / glass
-  const memo = new Map(), rc = new THREE.Raycaster(), GS = 0.5;
-  const rayY = (x, z) => {
+  // ATTACH-2: only what rides the town's own joint is ground (a mesh on the head, a wing, a leg or the tail moves under a
+  // memoised point: the eagle's crowd stood on its wings, 1-4 m in the air a frame later); a back with a deck
+  // (backTown.js backDeckMesh: a bird, a frog) stands on the deck and the streets only, never on the lumpy body
+  const townJ = giant.userData.townJoint ?? giant.userData.joints?.body, jointSet = new Set(Object.values(giant.userData.joints ?? {}).flat().filter((j) => j?.isObject3D));
+  const ridesTownJoint = (o) => { for (let p = o.parent; p && p !== giant; p = p.parent) if (jointSet.has(p)) return p === townJ; return false; };
+  const groundMeshes = [], hasDeck = !!town.userData.deck;
+  giant.traverse((o) => { if (!o.isMesh) return; for (let p = o; p && p !== giant; p = p.parent) if (p === town.parent) { if (/^(mainStreet|sideStreets|backStreet|porches|backDeck)$/.test(o.name)) groundMeshes.push(o); return; } if (!hasDeck && walkable(o) && ridesTownJoint(o)) groundMeshes.push(o); }); // the same rule as the check (page/ground.js): no cut-out feathers / glass
+  const memo = new Map(), rc = new THREE.Raycaster(), GS = 0.5, _n = new THREE.Vector3(), _m = new THREE.Matrix4();
+  const NONE = { y: null, key: null, ny: 0, prop: false };
+  // one grid point: { y (carrier = rest coordinates), key (which surface: mesh + instance), ny (its normal's up), prop }
+  const rayP = (x, z) => {
     const key = x * 100003 + z; if (memo.has(key)) return memo.get(key);
     const top = (flatEnough(x, z) ?? 0) + 8;
     const o = carrier.localToWorld(V(x, top, z)), d = V(0, -1, 0).transformDirection(carrier.matrixWorld);
     rc.set(o, d); rc.far = 20;
-    const hit = rc.intersectObjects(groundMeshes, false).find((h) => { for (let p = h.object; p && p !== root; p = p.parent) if (p.visible === false) return false; return true; });
-    const y = hit ? carrier.worldToLocal(hit.point.clone()).y : null;
-    memo.set(key, y); return y;
+    let out = NONE;
+    for (const h of rc.intersectObjects(groundMeshes, false)) {
+      let hidden = false; for (let p = h.object; p && p !== root; p = p.parent) if (p.visible === false) { hidden = true; break; }
+      if (hidden || (h.object.userData.placeProp && !walkable(h.object))) continue;
+      let ny = 1;
+      if (h.face) { _n.copy(h.face.normal); if (h.instanceId != null) { h.object.getMatrixAt(h.instanceId, _m); _n.transformDirection(_m); } _n.transformDirection(h.object.matrixWorld); ny = _n.dot(V(0, 1, 0).transformDirection(carrier.matrixWorld)); }
+      if (ny < 0.35) continue; // a wall's side / a kerb face seen edge-on: not ground (the check's rule)
+      out = { y: carrier.worldToLocal(h.point.clone()).y, key: `${h.object.id}:${h.instanceId ?? ""}`, ny, prop: !!h.object.userData.placeProp };
+      break;
+    }
+    memo.set(key, out); return out;
   };
-  // strict (crowds): only where the back is really there at all four grid points, else null (the character is left out)
+  const rayY = (x, z) => rayP(x, z).y;
+  // the check's own view of a crowd point (page/ground.js groundUnder: every walkable mesh of the creature and the
+  // places, the surface nearest the feet within 0.9 m above): the crowd character stands only where that is the same
+  // ground (no wall walkway, crate, step or tree root over / beside it). Memoised on a 0.25 m grid (rest coordinates)
+  const clearMemo = new Map();
+  const clearAt = (x0, z0) => {
+    const xk = Math.round(x0 * 4) / 4, zk = Math.round(z0 * 4) / 4, key = `${xk},${zk}`; if (clearMemo.has(key)) return clearMemo.get(key);
+    const y = walkY(xk, zk, false);
+    const hit = y == null ? null : groundUnder(THREE, [giant, carrier], carrier.localToWorld(V(xk, y, zk)), { above: 1.0, below: 0.5, maxUp: 0.9 });
+    const ok = !!hit && Math.abs(carrier.worldToLocal(hit.point.clone()).y - y) < 0.025;
+    clearMemo.set(key, ok); return ok;
+  };
+  // strict (crowds): only where the back is really there at all four grid points, one surface (no step, no prop), flat
+  // enough to stand a crowd on, and clear for the check; else null (the character is left out, never left floating)
   const walkY = (x, z, strict = false) => {
     const i = Math.floor(x / GS), k = Math.floor(z / GS), fx = x / GS - i, fz = z / GS - k;
-    const c = [rayY(i * GS, k * GS), rayY((i + 1) * GS, k * GS), rayY(i * GS, (k + 1) * GS), rayY((i + 1) * GS, (k + 1) * GS)];
+    const P4 = [rayP(i * GS, k * GS), rayP((i + 1) * GS, k * GS), rayP(i * GS, (k + 1) * GS), rayP((i + 1) * GS, (k + 1) * GS)], c = P4.map((p) => p.y);
     if (c.some((v) => v == null)) return strict ? null : c.find((v) => v != null) ?? flatEnough(x, z);
-    // a step (a street block edge, a kerb) between the grid points: the nearest point, never a ramp through it
-    if (Math.max(...c) - Math.min(...c) > 0.12) return c[(fx < 0.5 ? 0 : 1) + (fz < 0.5 ? 0 : 2)];
-    return (c[0] * (1 - fx) + c[1] * fx) * (1 - fz) + (c[2] * (1 - fx) + c[3] * fx) * fz;
+    // a step (a street block edge, a kerb) between the grid points: the nearest point, never a ramp through it. One
+    // surface (the same mesh / block) is interpolated however steep (the snail's shell)
+    const oneSurface = P4.every((p) => p.key === P4[0].key);
+    if (!oneSurface && Math.max(...c) - Math.min(...c) > 0.06) return strict ? null : c[(fx < 0.5 ? 0 : 1) + (fz < 0.5 ? 0 : 2)];
+    if (strict && P4.some((p) => p.prop || p.ny < 0.8)) return null;
+    const y = (c[0] * (1 - fx) + c[1] * fx) * (1 - fz) + (c[2] * (1 - fx) + c[3] * fx) * fz;
+    if (strict && !clearAt(x, z)) return null;
+    return y;
   };
   const trees = (plan.trees ?? []).map((t) => ({ x: -t.x, z: -t.z - zc, s: t.s ?? 1 })), nearTree = (x, z) => trees.some((t) => Math.hypot(t.x - x, t.z - z) < 1.3 * t.s); // plan (giant root) -> rest coordinates, as toWorld below
   const spotY = (x, z) => walkY(x, z) ?? (flatEnough(x, z) ?? 0) + 0.15; // WORLD-FIX-2: on the street blocks (their top is 0.15 above the surface), not in them
@@ -469,6 +502,12 @@ async function buildOn(spec, ctx) {
   };
   // the street-level places in the same town (deck, stairs, rooftop, school yard, a room, a classroom)
   addPlaces(S, { ctx, K, world: carrier, giant, town, plan, surface: flatEnough, toWorld: (x, y, z) => V(-x, y - y0, -z - zc), seed: spec.seed });
+  // ATTACH-2: the places' decks, steps, crates and rails (rest coordinates, on the carrier) are ground too: a crowd
+  // character never stands in or half on one (walkY strict leaves a prop's cells out); people may stand on a deck
+  carrier.traverse((o) => { if (o.isMesh && o.userData.placeProp) groundMeshes.push(o); }); // shown + opaque: asked per hit
+  const setPlace0 = S.setPlace; // a place shows / hides its own props: the memoised ground is measured again per place
+  let placeNow = null; // the engine calls setPlace every frame: clear only when the place really changes
+  if (setPlace0) S.setPlace = (...a) => { const r = setPlace0(...a), n = S.camDir.toArray().join() + S.spots.center.toArray().join(); if (n !== placeNow) { placeNow = n; memo.clear(); clearMemo.clear(); } return r; };
   lookHooks(S, ctx, nature);
   return S;
 }

@@ -13,7 +13,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { rng } from "/lib/rng.js";
 import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
-import { measureContact, groundUnder, personFeet } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
+import { measureContact, groundUnder, personFeet, findStandSpot } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
 
 const Q = new URLSearchParams(location.search);
 const REAL = { people: "/page/kit/people.js", monsters: "/page/kit/monsters.js", props: "/page/kit/props.js", sets: "/page/sets/index.js", camera: "/page/camera.js", captions: "/page/captions.js" };
@@ -546,11 +546,17 @@ async function main() {
       if (p.fixed || !PEOPLE[p.id] || POSE_LIFT[p.a?.pose] || OFF_GROUND.has(p.a?.pose)) continue;
       const key = `${si}|${p.id}|${p.pos.toArray().map((v) => Math.round(v * 50)).join(",")}`;
       if (!SNAP.has(key)) {
-        const hit = groundUnder(THREE, S.root, toScene(p.pos), { above: 1.0, below: 0.6, maxUp: 0.45, skip: snapSkip });
-        SNAP.set(key, hit ? (mount ? mount.worldToLocal(hit.point.clone()).y : hit.y) : null);
+        // ATTACH-2: the whole footprint on one level (never half a foot over a wall edge, a kerb or a deck edge); no
+        // such ground here -> the nearest spot within 2.5 m that has it (clear of the other people, never in a house)
+        const w0 = toScene(p.pos), others = placed.filter((q) => q !== p).map((q) => toScene(q.pos));
+        const ok = (w) => !others.some((o) => Math.hypot(o.x - w.x, o.z - w.z) < 0.7) && !S.solidAt?.(w.clone().setY(w.y + 0.5));
+        const at = findStandSpot(THREE, S.root, w0, { skip: snapSkip, maxR: 2.5, ok: (w) => w.distanceTo(w0) < 0.01 || ok(w) });
+        const hit = at ? null : groundUnder(THREE, S.root, w0, { above: 1.0, below: 0.6, maxUp: 0.45, skip: snapSkip }); // none in reach: the plain surface under it
+        const res = at ?? (hit ? w0.clone().setY(hit.y) : null);
+        SNAP.set(key, res ? (mount ? mount.worldToLocal(res) : res) : null);
         if (SNAP.size > 4000) SNAP.clear();
       }
-      const y = SNAP.get(key); if (y != null) p.pos.y = y;
+      const at = SNAP.get(key); if (at) p.pos.copy(at);
     }
     const where = Object.fromEntries(placed.map((p) => [p.id, p.pos]));
 
@@ -696,8 +702,13 @@ async function main() {
       // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
       // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
       if (mount && S.surface && !o.userData.offGround && !baby) {
-        const feet = personFeet(THREE, o).map((f) => mount.worldToLocal(f));
-        const gaps = feet.map((f) => { const y = S.surface(f.x, f.z); return y == null ? Infinity : f.y - y; });
+        // ATTACH-2: the surface NEAREST each sole (the check's own rule, page/ground.js), not the first one from above
+        // (on a steep back the street of the next terrace hangs over the deck): rays on the creature + the mount only
+        const roots = S.giant && S.giant !== mount ? [S.giant, mount] : [mount];
+        const gaps = personFeet(THREE, o).map((fw) => {
+          const hit = groundUnder(THREE, roots, fw, { above: 0.3, below: 0.3, maxUp: 0.2, skip: snapSkip });
+          return hit ? mount.worldToLocal(fw.clone()).y - mount.worldToLocal(hit.point.clone()).y : Infinity;
+        });
         const g = Math.min(...gaps);
         if (Number.isFinite(g) && Math.abs(g) < 0.2) { o.position.y -= g; o.updateMatrixWorld(true); }
       }

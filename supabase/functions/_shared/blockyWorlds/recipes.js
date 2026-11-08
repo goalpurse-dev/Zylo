@@ -8,6 +8,9 @@ export const RECIPES = Object.freeze({
   everyone_except_me: Object.freeze({ name: "Everyone except me", what: "everyone has X except the narrator" }),
   lost_pet_in_town: Object.freeze({ name: "Lost pet in town", what: "the narrator's pet is lost somewhere in the town" }),
   giant_reveal: Object.freeze({ name: "Giant reveal", what: "a hidden giant or monster is revealed" }),
+  // 2026-11-08 (the reference study, recipes/picks.json): two more shapes from the 38 references
+  rigged_system: Object.freeze({ name: "Rigged system", what: "an unfair town rule (rich up high, poor below; sizes; classes); the kid finds what really runs it" }),
+  absurd_rule_comedy: Object.freeze({ name: "Absurd rule comedy", what: "a silly rule shown through rapid gags; the kid games the rule; a punchline ending" }),
 });
 export const RECIPE_IDS = Object.freeze(Object.keys(RECIPES));
 
@@ -23,6 +26,8 @@ const KEYS = {
   curfew_monster: "curfew night dark outside after pm o'clock midnight sundown sunset streetlight home before taken take vanish gone never rule".split(" "),
   everyone_except_me: "everyone everybody except fly wing born power only".split(" "),
   lost_pet_in_town: "dog puppy cat kitten pet hamster bunny rabbit parrot lost missing ran runaway search find".split(" "),
+  rigged_system: "rich richer richest poor poorer poorest higher lower ground top bottom class born size sizes kingdom underground floor tower money wealthy unfair".split(" "),
+  absurd_rule_comedy: "silly funny sneeze sneezes laugh pancake sock socks pay paid hat hats dance tickle burp hiccup".split(" "),
   giant_reveal: "hidden secret actually really reveal sleeping giant underneath beneath true truth disguise was".split(" "),
 };
 const stems = (list) => new Set(list.map((w) => stem(w)));
@@ -37,6 +42,8 @@ const ON_CREATURE = /\b(?:on (?:the )?back of|on (?:a|the) giant|inside (?:a|the
 const LOST_PET = /\b(?:my|our|the|a) (?:dog|puppy|cat|kitten|pet|hamster|bunny|rabbit|parrot)\b[^.]*\b(?:lost|missing|ran away|run away|got away|disappeared)\b/i;
 /** a time-of-day rule */
 const CURFEW = /\b(?:after|before|past) (?:\d{1,2}|nine|ten|eleven|twelve|midnight|dark|sundown|sunset)\b|\bhome before\b|\bcurfew\b|\boutside after\b/i;
+/** rich and poor: a rigged system */
+const RIGGED = /\b(?:rich|richer|richest|wealthy)\b[^.]*\b(?:poor|poorer|poorest)\b|\b(?:poor|poorer|poorest)\b[^.]*\b(?:rich|richer|richest|wealthy)\b/i;
 /** a hidden thing revealed */
 const REVEAL = /\b(?:is|was|were) (?:actually|really|secretly)\b|\bturns? out\b|\bhidden (?:giant|monster)\b|\bsleeping giant\b/i;
 
@@ -57,6 +64,7 @@ export function pickRecipe({ topic = "", card = null, beats = null } = {}) {
   if (LOST_PET.test(t)) add("lost_pet_in_town", 8, `the topic is a lost pet ("${t.match(LOST_PET)[0]}")`);
   if (CURFEW.test(t)) add("curfew_monster", 5, `the topic sets a time rule ("${t.match(CURFEW)[0]}")`);
   if (ON_CREATURE.test(t)) add("creature_town_attack", 4, `the town is ${t.match(ON_CREATURE)[0]} a creature`);
+  if (RIGGED.test(t)) add("rigged_system", 8, "the topic splits the town into rich and poor");
   if (REVEAL.test(t)) add("giant_reveal", 5, "the topic hides something that is revealed");
   // 2. keywords: topic x3, card x1.5, beats x0.5
   const creature = (ws) => ({ c: hits(ws, STEMS.creature_town_attack.container), th: hits(ws, STEMS.creature_town_attack.threat) });
@@ -64,7 +72,7 @@ export function pickRecipe({ topic = "", card = null, beats = null } = {}) {
   if (ct.c.length && ct.th.length) add("creature_town_attack", 6, `a creature-town (${ct.c.join(", ")}) under threat (${ct.th.join(", ")})`);
   else if (ct.c.length || ct.th.length) add("creature_town_attack", 1.5 * (ct.c.length + ct.th.length));
   if (cc.c.length && cc.th.length) add("creature_town_attack", 1.5);
-  for (const id of ["curfew_monster", "everyone_except_me", "lost_pet_in_town", "giant_reveal"]) {
+  for (const id of ["curfew_monster", "everyone_except_me", "lost_pet_in_town", "giant_reveal", "rigged_system", "absurd_rule_comedy"]) {
     const h = hits(tw, STEMS[id]);
     if (h.length) add(id, 3 * h.length, `topic words: ${h.join(", ")}`);
     add(id, 1.5 * hits(cw, STEMS[id]).length);
@@ -83,6 +91,7 @@ export function pickRecipe({ topic = "", card = null, beats = null } = {}) {
 
   const ranked = RECIPE_IDS.map((id) => ({ id, score: Number(score[id].toFixed(2)) })).sort((a, b) => b.score - a.score || RECIPE_IDS.indexOf(a.id) - RECIPE_IDS.indexOf(b.id));
   const best = ranked[0];
+  if (best.score <= 0 && t.trim()) return { id: "absurd_rule_comedy", name: RECIPES.absurd_rule_comedy.name, reason: `${RECIPES.absurd_rule_comedy.what}: no other recipe fits, so the silly-rule shape`, scores: Object.fromEntries(ranked.map((r) => [r.id, r.score])) };
   if (best.score <= 0) return { id: null, name: "none fits", reason: "no recipe's keywords or features match this story", scores: Object.fromEntries(ranked.map((r) => [r.id, r.score])) };
   const reasons = why[best.id].slice(0, 2);
   return {

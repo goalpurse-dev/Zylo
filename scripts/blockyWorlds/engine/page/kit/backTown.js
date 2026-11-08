@@ -33,7 +33,12 @@ export function backSurface(g) {
   const u = g.userData.unit, p = g.userData.params, b = p.body;
   let surf = giantSurface(g);
   let region = { x0: -b.w * 0.6 * u, x1: b.w * 0.6 * u, z0: -b.len * 0.6 * u, z1: b.len * 0.6 * u };
+  // ATTACH-2: kind "shaped" = the giant's own back (dome, spiral, deck, flat quadruped top: a real mesh top); "field" = a
+  // blocky rig's raycast heightfield (a bird, a frog: a lumpy body); "box" = the body block's top. field / box get a
+  // real walkable deck mesh (addBackTown: backDeck), the one surface people and crowds stand on
+  let kind = g.userData.rigV2 && g.userData.surfaceFn && surf === g.userData.surfaceFn ? "field" : "shaped";
   if (surf(0, 0) == null) {
+    kind = "box";
     // any other body (a standing wolf, a bird, an octopus): the top of the body block, as a flat deck
     const body = g.userData.joints.body; g.updateMatrixWorld(true);
     const inv = new THREE.Matrix4().copy(g.matrixWorld).invert(), box = new THREE.Box3(), tmp = new THREE.Box3();
@@ -43,7 +48,49 @@ export function backSurface(g) {
     surf = (x, z) => (Math.abs(x - cx) <= hw && Math.abs(z - cz) <= hl ? y : null);
     region = { x0: cx - hw, x1: cx + hw, z0: cz - hl, z1: cz + hl };
   }
-  return { surf, region };
+  return { surf, region, kind };
+}
+
+/**
+ * ATTACH-2 (owner: "Feet always on the ground"): a lumpy back (a bird's egg body, a frog's rounded block) has no clean
+ * top to stand on: the heightfield the town sits on is a coarse raycast of the body, and people stood on feather /
+ * skin bumps or in the air beside them. The deck is that same surface as a real mesh: a grid over the town region,
+ * each vertex the surface smoothed over its neighbours (never above the surface itself: the streets stay on top), quads only where the back is there
+ * at all four corners. Root space (rest pose), named "backDeck" (userData.walkDeck): the one surface people stand on.
+ */
+export function backDeckMesh(surf, region, { material, step = 1.25, lift = 0.02 } = {}) {
+  const nx = Math.max(2, Math.round((region.x1 - region.x0) / step)), nz = Math.max(2, Math.round((region.z1 - region.z0) / step));
+  const dx = (region.x1 - region.x0) / nx, dz = (region.z1 - region.z0) / nz;
+  const raw = (i, k) => surf(region.x0 + i * dx, region.z0 + k * dz);
+  const H = [];
+  for (let i = 0; i <= nx; i++) for (let k = 0; k <= nz; k++) {
+    if (raw(i, k) == null) { H.push(null); continue; }
+    let s = 0, n = 0;
+    for (let a = -1; a <= 1; a++) for (let c = -1; c <= 1; c++) { const y = raw(i + a, k + c); if (y != null) { s += y; n++; } }
+    H.push(Math.min(s / n, raw(i, k)) + lift); // never above the town's own surface (the streets and house floors stand on it)
+  }
+  const at = (i, k) => H[i * (nz + 1) + k];
+  const pos = [], idx = [], vid = new Map();
+  const vert = (i, k) => { const key = i * (nz + 1) + k; if (!vid.has(key)) { vid.set(key, pos.length / 3); pos.push(region.x0 + i * dx, at(i, k), region.z0 + k * dz); } return vid.get(key); };
+  for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
+    if (at(i, k) == null || at(i + 1, k) == null || at(i, k + 1) == null || at(i + 1, k + 1) == null) continue;
+    const a = vert(i, k), b = vert(i + 1, k), c = vert(i, k + 1), d = vert(i + 1, k + 1);
+    idx.push(a, c, b, b, c, d); // counter-clockwise seen from above: the normals point up
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, material ?? std("#7a6a58", 0.95));
+  m.name = "backDeck"; m.userData.walkDeck = true; m.receiveShadow = true; m.castShadow = false;
+  // the surface as a function too (root space): bilinear over the same grid, null off the deck
+  m.userData.deckY = (x, z) => {
+    const fi = (x - region.x0) / dx, fk = (z - region.z0) / dz, i = Math.floor(fi), k = Math.floor(fk);
+    if (i < 0 || k < 0 || i >= nx || k >= nz) return null;
+    const c = [at(i, k), at(i + 1, k), at(i, k + 1), at(i + 1, k + 1)]; if (c.some((v) => v == null)) return null;
+    const u = fi - i, w = fk - k;
+    // the same triangle split as the mesh (a c b | b c d)
+    return u + w <= 1 ? c[0] + (c[1] - c[0]) * u + (c[2] - c[0]) * w : c[3] + (c[2] - c[3]) * (1 - u) + (c[1] - c[3]) * (1 - w);
+  };
+  return m;
 }
 
 /** like town.js townLayout, but a house may stand on a slope up to its own height (its walls go down to the low side) */
@@ -470,7 +517,7 @@ function wallMesh(w, surface) {
 export function addBackTown(g, opts = {}) {
   const spec = opts === true ? {} : opts;
   const style = spec.style ?? "town", seed = spec.seed ?? 5;
-  const { surf, region } = backSurface(g);
+  const { surf, region, kind: surfKind } = backSurface(g);
   const bible = spec.bible?.buildings ? spec.bible : null;
   const plan = planBackTown(region, surf, { style, landmarks: spec.landmarks ?? bibleLandmarks(bible) ?? [], seed: bible?.seed ?? seed, density: spec.density ?? 1, walls: spec.walls ?? null, bible });
   const town = new THREE.Group(); town.name = `backTown:${style}`;
@@ -487,6 +534,12 @@ export function addBackTown(g, opts = {}) {
   const m4 = new THREE.Matrix4(), v = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3();
   for (let z = region.z0; z < region.z1 && n < 200 && !dense; z += 2) { const y = surf(0, z); if (y == null) continue; m4.compose(v.set(0, y + 0.02, z + 1), q, s.set(plan.street.half * 2 - 0.6, 1, 2.05)); st.setMatrixAt(n++, m4); }
   st.count = n; st.name = "backStreet"; st.receiveShadow = true; st.frustumCulled = false; st.instanceMatrix.needsUpdate = true; town.add(st);
+  // ATTACH-2: a lumpy back (field) or a body block's top (box) gets the walkable deck, in the body's own colour
+  if (surfKind !== "shaped") {
+    const bm = g.userData.joints.body.children.find((o) => o.isMesh && o.material?.color)?.material;
+    const deck = backDeckMesh(surf, region, { material: new THREE.MeshStandardMaterial({ color: bm ? bm.color.clone() : new THREE.Color("#7a6a58"), map: bm?.map ?? null, roughness: 0.9 }), step: Math.max(1, Math.min(2, (region.x1 - region.x0) / 36)) });
+    town.add(deck); town.userData.deck = deck;
+  }
   // ride the body joint (metres, root-space rest pose), like page/kit/giants.js buildGiantTown
   // ATTACH 2026-11-07 (owner: "everything on a creature must be attached to it and move with it"): the town rides the
   // joint that carries the walkable back: the shell when it has its own joint (a snail's shell rocks and bobs on its
