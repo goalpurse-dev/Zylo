@@ -55,7 +55,84 @@ function lumps(g, n, seed, { x0 = -1, x1 = 1, z0 = -1, z1 = 0, y = 0, s = 0.25, 
 const anims = (g) => (g.userData.animList ??= []);
 
 // =====================================================================================================
+/** VISUAL-FIX 2026-11-08: one pastel house block (a level of a stacked tower): walls, small square windows, a balcony */
+function houseBlock(g, { w, h, d, color, x = 0, y = 0, z = 0, seed = 1, balcony = true }) {
+  const R = rng(seed);
+  const lvl = new THREE.Group(); lvl.position.set(x, y, z); g.add(lvl);
+  rbx(w, h, d, 0.08, matte(color), { y: h / 2, parent: lvl });
+  bx(w + 0.12, 0.14, d + 0.12, matte(darker(color, 0.2)), { y: h - 0.02, parent: lvl });   // the slab between levels
+  const win = matte("#2d3446"), frame = matte("#f4efe6");
+  const nW = Math.max(2, Math.round(w / 1.4));
+  for (let k = 0; k < nW; k++) {
+    const wx = -w / 2 + (k + 0.5) * (w / nW);
+    bx(0.62, 0.62, 0.04, frame, { x: wx, y: h * 0.55, z: d / 2 + 0.02, parent: lvl });
+    bx(0.48, 0.48, 0.05, R() < 0.25 ? glow("#ffd27a", 0.6, "#ffe9b0") : win, { x: wx, y: h * 0.55, z: d / 2 + 0.035, parent: lvl });
+  }
+  if (balcony) {
+    const bw = Math.min(w * 0.45, 2.2), bxp = (R() - 0.5) * (w - bw) * 0.8;
+    bx(bw, 0.1, 0.7, matte("#8a5a32"), { x: bxp, y: 0.1, z: d / 2 + 0.35, parent: lvl });
+    for (let k = 0; k <= 4; k++) bx(0.06, 0.45, 0.06, matte("#8a5a32"), { x: bxp - bw / 2 + (k / 4) * bw, y: 0.35, z: d / 2 + 0.67, parent: lvl });
+    bx(bw, 0.06, 0.06, matte("#8a5a32"), { x: bxp, y: 0.58, z: d / 2 + 0.67, parent: lvl });
+  }
+  return lvl;
+}
+const TOWER_COLORS = ["#f4d9a6", "#a9cdeb", "#e8a49a", "#c8e3b5", "#d8c4ea", "#f2c6a0", "#b9d7d0"];
+
 export const THING_BUILD = {
+  // ---------------------------------------------------------------- VISUAL-FIX 2026-11-08: the stacked town's pieces
+  // a tower of stacked house blocks (6 levels, each a little offset, pastel), on the ground-floor base block
+  block_tower(g, state) {
+    const stack = new THREE.Group(); g.add(stack);
+    const zc = -3.2; let y = 0;
+    rbx(5.2, 1.6, 4.4, 0.06, matte("#c9b48a"), { y: 0.8, z: zc, parent: stack });   // the ground-floor base block
+    y = 1.6;
+    for (let k = 0; k < 6; k++) {
+      const w = 4.4 - k * 0.22, d = 3.8 - k * 0.15, h = 2.6;
+      houseBlock(stack, { w, h, d, color: TOWER_COLORS[k % TOWER_COLORS.length], x: (k % 2 ? 0.35 : -0.3) * (k ? 1 : 0), y, z: zc, seed: 11 + k, balcony: k % 2 === 0 });
+      y += h;
+    }
+    rbx(2.6, 0.9, 2.2, 0.08, matte("#7a8ca6"), { y: y + 0.45, z: zc, parent: stack });  // the roof cap
+    if (state === "tilt") stack.rotation.z = 0.07;
+    if (state === "bow") { stack.scale.y = 0.5; stack.rotation.z = -0.04; }
+    g.userData.anim = (t) => { if (state === "tilt") stack.rotation.z = 0.07 + 0.025 * Math.sin(t * 7); };
+    fin(g, { h: y * stack.scale.y + 1, w: 5.4, d: 4.6, big: true, push: 2.5, detailH: 5, focusZ: zc });
+  },
+  // the gold penthouse on top of a short stack (it reads as "high above"): gold walls, a gold roof, a little flag
+  penthouse(g, state) {
+    const zc = -2.6, tower = new THREE.Group(); g.add(tower);
+    let y = 0;
+    for (let k = 0; k < 3; k++) { houseBlock(tower, { w: 4 - k * 0.2, h: 2.5, d: 3.4, color: TOWER_COLORS[(k + 2) % TOWER_COLORS.length], y, z: zc, seed: 31 + k, balcony: k === 1 }); y += 2.5; }
+    const gold = cachedMat("tpentGold", () => new THREE.MeshStandardMaterial({ color: "#f2c511", metalness: 0.65, roughness: 0.28, emissive: "#6b4c00", emissiveIntensity: 0.25 }));
+    const top = new THREE.Group(); top.position.set(0, y, zc); tower.add(top);
+    rbx(3.4, 2.2, 3.0, 0.1, gold, { y: 1.1, parent: top });
+    for (const x of [-0.9, 0.9]) bx(0.7, 0.8, 0.05, matte("#fff6d0"), { x, y: 1.2, z: 1.53, parent: top });
+    bx(0.8, 1.3, 0.05, matte("#7a4e12"), { y: 0.65, z: 1.53, parent: top });
+    const roof = M(cone(2.6, 1.4, 4), gold, { y: 2.9, ry: Math.PI / 4, parent: top }); roof.scale.set(1, 1, 0.85);
+    bx(0.05, 1.1, 0.05, matte("#6b4c00"), { y: 3.9, parent: top }); bx(0.5, 0.3, 0.03, matte("#e74c3c"), { x: 0.27, y: 4.3, parent: top });
+    if (state === "down") tower.scale.y = 0.35;
+    g.userData.anim = (t) => { if (state === "sway") top.rotation.z = 0.06 * Math.sin(t * 3.2); };
+    fin(g, { h: y * tower.scale.y + 4.6, w: 4.2, d: 3.6, big: true, push: 2.2, detailH: 3.5, focusZ: zc, extra: { detail: { at: V(0, y * tower.scale.y + 1.6, zc), h: 3.6 } } });
+  },
+  // a stone plaque on a low pedestal: carved lines (no readable words), dusty or glowing
+  stone_plaque(g, state) {
+    const stone = matte("#a9a294"), dk = matte("#7c766a"), zc = -0.5;
+    rbx(1.1, 0.9, 0.6, 0.05, dk, { y: 0.45, z: zc, parent: g });
+    const slab = new THREE.Group(); slab.position.set(0, 0.9, zc); slab.rotation.x = -0.18; g.add(slab);
+    rbx(1.0, 0.7, 0.12, 0.04, stone, { y: 0.35, parent: slab });
+    for (let k = 0; k < 4; k++) bx(k === 0 ? 0.55 : 0.75 - (k % 2) * 0.12, 0.035, 0.02, dk, { y: 0.56 - k * 0.12, z: 0.065, parent: slab }); // carved lines
+    if (state === "glow") bx(1.08, 0.78, 0.04, glow("#ffd65a", 1.4, "#fff2b0"), { y: 0.35, z: -0.05, parent: slab, shadow: false });
+    if (state === "dusty") lumps(slab, 7, 5, { x0: -0.45, x1: 0.45, z0: 0.06, z1: 0.09, y: 0.05, s: 0.12, mat: matte("#c9b48a") });
+    fin(g, { h: 1.8, w: 1.2, d: 0.8, detailH: 0.9, focusZ: zc });
+  },
+  // the ground-floor base block: a big sandstone block with mortar edges (cracked: dark zigzags)
+  base_block(g, state) {
+    const sand = matte("#d2b98a"), mortar = matte("#a48d62"), zc = -1.0;
+    rbx(2.6, 1.5, 2.0, 0.06, sand, { y: 0.75, z: zc, parent: g });
+    for (const y of [0.02, 1.48]) bx(2.64, 0.06, 2.04, mortar, { y, z: zc, parent: g });
+    for (const x of [-0.65, 0.65]) bx(0.05, 1.46, 0.02, mortar, { x, y: 0.75, z: zc + 1.01, parent: g });
+    if (state === "crack") { const c = matte("#2a1f14"); for (let k = 0; k < 5; k++) bx(0.36, 0.05, 0.03, c, { x: -0.6 + k * 0.28, y: 1.2 - k * 0.2, z: zc + 1.02, rz: k % 2 ? 0.7 : -0.7, parent: g }); }
+    fin(g, { h: 1.6, w: 2.7, d: 2.1, detailH: 1.5, focusZ: zc });
+  },
   // ---------------------------------------------------------------- weather / sky
   cloud(g, state) {
     // a fat cartoon cloud floating ~2.5 m up, with rain / snow / lightning under it

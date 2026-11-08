@@ -51,6 +51,8 @@ export const HELD_BUILD = {
   rubber_duck(g) { M(sph(0.07), gloss("#ffd32a"), { parent: g }).scale.set(1.3, 0.9, 1); M(sph(0.045), gloss("#ffd32a"), { x: 0.05, y: 0.07, parent: g }); M(cone(0.018, 0.05, 6), gloss("#ff8f1a"), { x: 0.1, y: 0.065, rz: -Math.PI / 2, parent: g }); },
   feather(g) { const f = M(sph(0.05, 10, 8), solid("#ffffff", { roughness: 0.9 }), { y: 0.12, parent: g }); f.scale.set(0.5, 2.6, 0.12); bx(0.006, 0.26, 0.006, solid("#d9d2c3"), { y: 0.1, parent: g }); },
   shovel(g) { bx(0.025, 0.6, 0.025, solid("#8a5a32"), { y: 0.1, parent: g }); rbx(0.16, 0.2, 0.02, 0.01, metal("#9aa3ad"), { y: -0.28, parent: g }); },
+  // VISUAL-FIX 2026-11-08: a real broom (straw head, bound with a band), not the mop
+  broom(g) { bx(0.025, 0.85, 0.025, solid("#b07a45"), { y: 0.12, parent: g }); bx(0.05, 0.05, 0.05, solid("#7a3b1e"), { y: -0.33, parent: g }); const h = M(cone(0.13, 0.26, 4), solid("#e2c06a", { roughness: 0.95 }), { y: -0.47, ry: Math.PI / 4, parent: g }); h.scale.set(1, 1, 0.35); for (let k = 0; k < 7; k++) bx(0.012, 0.06, 0.012, solid("#c9a24e"), { x: -0.09 + k * 0.03, y: -0.62, parent: g }); },
   mop(g) { bx(0.025, 0.8, 0.025, solid("#c48a52"), { y: 0.1, parent: g }); for (let k = 0; k < 9; k++) bx(0.02, 0.18, 0.02, solid("#e9e3d6"), { x: -0.06 + (k % 5) * 0.03, y: -0.38, z: (k > 4 ? 0.02 : -0.02), rz: (k - 4) * 0.08, parent: g }); },
   drum(g) { M(cyl(0.13, 0.13, 0.14, 18), solid("#c0392b"), { y: -0.1, parent: g }); for (const y of [-0.03, -0.17]) M(cyl(0.135, 0.135, 0.015, 18), solid("#f2ead8"), { y, parent: g }); },
   lightbulb(g) { M(sph(0.055, 14, 10), glow("#fff1b0", 2.2), { y: 0.06, parent: g, shadow: false }); M(cyl(0.025, 0.025, 0.04, 10), metal("#c8ced4"), { y: 0.0, parent: g }); },

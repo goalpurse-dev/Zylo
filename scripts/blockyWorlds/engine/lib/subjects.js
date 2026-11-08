@@ -267,6 +267,12 @@ function subjectAt(toks, keys, k, i1, N, prev, keyAt) {
     if (/s$/.test(h) && !/ss$/.test(h)) return { id: "group", kind: "group", via: "people" };
     return { id: "someone", kind: "someone", via: "person-word" };
   }
+  // VISUAL-FIX 2026-11-08 (owner, step-2 #1 "a subject is 'the whoever'"): a pronoun / relative word ("Whoever keeps
+  // the ground...", "whatever", "anyone"), a title on its own ("Mrs." split from its name) or an action word (a yell,
+  // a sneeze) is never a THING subject: whoever does it is someone, else the line has no thing subject
+  if (/^(whoever|whomever|whatever|whichever|anyone|anybody|someone|somebody|everyone|everybody|nobody|no one)$/.test(h)) return { id: "someone", kind: "someone", via: "pronoun" };
+  if (/^(mrs|mr|ms|miss|dr|sir|madam)$/.test(h)) return null;
+  if (hk?.kind === "rule" && ruleById(hk.rule)?.kind === "action") return null;
   // a thing: its label is the visual key's label when the dictionary knows it ("window" -> "windows")
   const label = hk && hk.kind !== "person" ? hk.label : singular(h);
   return { id: `thing:${label}`, kind: "thing", via: "noun", label };

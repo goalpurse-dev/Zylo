@@ -48,10 +48,10 @@ export const CREATURE_OBJECTS = Object.freeze({
 export const THINGS = Object.freeze({
   // weather / sky
   cloud: { aliases: A("cloud,clouds,rain cloud,raincloud,storm cloud,thundercloud,rain,rains,raining,drizzle,storm,storms,thunder,lightning,downpour,blizzard,snowstorm"), place: "floor", states: ["plain", "rain", "snow", "storm"], state: "rain", icon: "🌧️" },
-  snow_pile: { aliases: A("snow,snowdrift,snowdrifts,drift,drifts,snowbank,snowball,snowballs,snowflake,snowflakes,frost,ice,icicle,icicles,sled,sleds"), place: "floor", states: ["on"], state: "on", sets: ["street", "woods"], icon: "❄️" },
+  snow_pile: { aliases: A("avalanche,avalanches,snow slide,snow,snowdrift,snowdrifts,drift,drifts,snowbank,snowball,snowballs,snowflake,snowflakes,frost,ice,icicle,icicles,sled,sleds"), place: "floor", states: ["on"], state: "on", sets: ["street", "woods"], icon: "❄️" },
   snowman: { aliases: A("snowman,snowmen,snowwoman"), place: "floor", states: ["on"], state: "on", sets: ["street", "woods"], icon: "⛄" },
   wind_gust: { aliases: A("wind,winds,gust,gusts,breeze,gale,whirlwind,tornado"), place: "floor", states: ["on"], state: "on", icon: "🌬️" },
-  fog_bank: { aliases: A("fog,mist,smoke,steam,haze,cloud of dust"), place: "floor", states: ["on"], state: "on", icon: "🌫️" },
+  fog_bank: { aliases: A("fog,mist,smoke,steam,haze,cloud of dust,dust,dust cloud,dust clouds"), place: "floor", states: ["on"], state: "on", icon: "🌫️" },
   // town
   fountain: { aliases: A("fountain,fountains,town fountain,pool"), place: "street", states: ["on", "off"], state: "on", sets: ["street"], icon: "⛲" },
   statue: { aliases: A("statue,statues,monument,sculpture"), place: "street", states: ["on"], state: "on", sets: ["street"], icon: "🗿" },
@@ -59,6 +59,12 @@ export const THINGS = Object.freeze({
   fence: { aliases: A("fence,fences,fence post,fencepost,gate,gates,railing,picket fence,post,posts"), place: "street", states: ["on"], state: "on", icon: "🚧" },
   wall: { aliases: A("wall,walls,brick wall,stone wall"), place: "floor", states: ["on", "crack"], state: "on", icon: "🧱" },
   bridge: { aliases: A("bridge,bridges,drawbridge,rope bridge,footbridge"), big: true, place: "street", states: ["on"], state: "on", icon: "🌉" },
+  // VISUAL-FIX 2026-11-08 (owner's review of step-2 #1: "a story about towers with no towers can't work"): the stacked
+  // town's set pieces, hand-built procedural blocky models (page/kit/things.js). States: tilt (shaken), bow (lowered).
+  block_tower: { aliases: A("block tower,block towers,stacked tower,stacked towers,stacked block tower,stacked block towers,tower block,tower blocks,stacked houses,stacked house blocks,towers,high-rise,high-rises"), big: true, place: "street", states: ["on", "tilt", "bow"], state: "on", sets: ["street"], icon: "🏢" },
+  penthouse: { aliases: A("penthouse,penthouses,gold penthouse,golden penthouse,rooftop house,top floor house"), big: true, place: "street", states: ["on", "sway", "down"], state: "on", sets: ["street"], icon: "🏠" },
+  stone_plaque: { aliases: A("plaque,plaques,stone plaque,old plaque,dusty plaque,stone tablet,tablet,inscription,engraving"), place: "floor", states: ["on", "dusty", "glow"], state: "on", icon: "🪧" },
+  base_block: { aliases: A("base block,ground floor base block,ground block,foundation block,foundation stone,cornerstone,corner stone,cracked base block,bottom block"), place: "floor", states: ["on", "crack"], state: "on", icon: "🧱" },
   castle: { aliases: A("castle,castles,palace,fortress,tower window,throne room,keep,moat"), big: true, place: "street", states: ["on"], state: "on", icon: "🏰" },
   trash_can: { aliases: A("trash,trash can,trashcan,garbage,garbage can,bin,bins,dumpster,dump,rubbish,litter"), place: "street", states: ["on"], state: "on", sets: ["street"], icon: "🗑️" },
   // (no "watch": a street clock is not a pocket watch / wristwatch; review of run 7b4c0d8b, 2026-11-06)
@@ -108,7 +114,8 @@ export const HELD = Object.freeze({
   pebble: A("acorn,acorns,nut,nuts,seed,seeds,marble,marbles,bean,beans,pea,peas"), toaster: A("toaster,toasters,radio,radios"),
   horn: A("horn,horns,bugle,trumpet,megaphone"), kite: A("kite,kites"), teddy: A("teddy,toy,toys,doll,dolls,teddy bear,stuffed animal,plush"),
   rubber_duck: A("rubber duck,rubber ducks"), feather: A("feather,feathers,quill"), shovel: A("shovel,shovels,spade,rake"),
-  mop: A("mop,mops,broom,brooms,vacuum,duster"), drum: A("drum,drums"), lightbulb: A("lightbulb,lightbulbs"), magnet: A("magnet,magnets"),
+  mop: A("mop,mops,vacuum,duster"), broom: A("broom,brooms,broomstick,sweeping brush"), // VISUAL-FIX 2026-11-08: a broom is a broom, never a mop
+  drum: A("drum,drums"), lightbulb: A("lightbulb,lightbulbs"), magnet: A("magnet,magnets"),
   pillow: A("pillow,pillows,pillowcase"), blanket: A("blanket,blankets,quilt,towel"), net: A("net,nets,fishing net"),
   tape: A("tape,roll of tape,duct tape"), sandwich: A("sandwich,sandwiches,burger,lunch,lunches,meal,meals,dinner,supper,breakfast,snack,snacks,leftovers,pizza,food"),
   plate: A("plate,plates,dish,dishes,tray"), glasses: A("glasses,goggles,sunglasses,spectacles"), backpack: A("backpack,backpacks,schoolbag,satchel"),

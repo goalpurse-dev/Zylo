@@ -36,6 +36,9 @@ import { buildWorldBible, applyBible, worldBibleProblems } from "./lib/worldBibl
 import { petsOf, petPass, petProblems, ensurePet, petShows, petStateFor } from "./lib/pets.js";
 import { noCards, addUnshown, cardProblems } from "./lib/cards.js";
 import { recipeFor, recipePass } from "./lib/recipes/index.js";
+import { camMoveProblems } from "./lib/camMove.js";
+import { cameraMovePass, storyShapePass, duplicateCastProblems, kitNeedsPass } from "./lib/shotFlow.js";
+import { criticalGate, storyObjects, kitFor } from "./lib/critical.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -526,7 +529,7 @@ function pickCamera(prefs, hist, seg, focus, actorsN, monster) {
 }
 
 // ---------------------------------------------------------------- 6. the plan
-export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null } = {}) {
+export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null, criticalMode = null, library = null, built = null } = {}) {
   if (!script?.lines?.length) throw new Error("planVideo: script.lines is empty");
   idea ??= {};
   const W = Array.isArray(words) && words.length ? words : estimateWords(script);
@@ -542,6 +545,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   const D = direction?.production ? readDirection(direction, { script, idea, mood, exists }) : null;
   // WORLD CONTINUITY (permanent rule, 2026-11-06; lib/worldBible.js): the one world of the story, fixed before any shot
   const bible = D ? buildWorldBible({ production: D.production, script, idea, title }) : null;
+  // VISUAL-FIX 2026-11-08 (owner): every story-critical item (the rule's thing, the planted prop, the twist's thing,
+  // a set piece named twice, the creature) resolved kit -> library -> built BEFORE planning; else the plan is rejected
+  // (lib/critical.js; criticalMode "report" only reports: the free harness). The story's own things win over generic
+  // rules / lookalikes in the line reading (world.own: head word -> catalog object, the head-noun guard)
+  // criticalMode "reject" throws (the pipeline passes it once the builder's results reach `built`); default: tl.critical
+  const critical = D ? criticalGate({ production: D.production, script, library, built, mode: criticalMode ?? "report" }) : null;
+  if (D) world.own = storyObjects(D.production);
   if (D && world.monster) {
     const epicWords = new Set([...Object.values(D.giants).flatMap((g) => [g.kind, ...g.aliases]), ...[...D.worldCreature.values()].map((w) => w.species)]);
     if ((world.monster.keys ?? [world.monster.key]).some((k) => epicWords.has(k)) || (world.monster.species && epicWords.has(world.monster.species))) world.monster = null;
@@ -904,7 +914,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     captions: W.map((w) => ({ word: w.word, start: r3(w.start), end: r3(w.end) })),
     audio: { voice: "voice.wav", music: "music.wav" },
     lines: lines.map((L, i) => ({ part: L.part, text: L.text, start: r3(L.start), end: r3(L.end), subject: lineSubj[i].id ?? null })),
-    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}), ...(vw.pets ? { pets: vw.pets } : {}) },
+    visualWorld: { narrator: world.narrator, people: Object.fromEntries([...world.people].filter(([id]) => id !== "me").map(([id, p]) => [id, p.name])), alias: world.alias, monster: vw.monster, looseNames: [...world.looseNames], prop: world.propKey, gender, ...(world.beings?.length ? { beings: world.beings } : {}), ...(world.own && Object.keys(world.own).length ? { own: world.own } : {}), ...(vw.pets ? { pets: vw.pets } : {}) },
   };
   // the report's subject column: who each of the line's shots is about (cards and signs left out)
   const label = (id) => subjectLabel(id, { cast, monsterName: world.monster?.name });
@@ -938,7 +948,15 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // SHOT RECIPES (owner 2026-11-08, lib/recipes): the story type's pre-directed cuts, cameras and order over the planned
   // content; a line's change stays only when the four pre-render checks are no worse (off unless a recipe is given)
   const rec = recipeFor({ recipe, idea, script });
-  if (rec) tl.recipe = recipePass(tl, { recipe: rec, title, check: (t) => ({ timeline: checkTimeline(t).length, visuals: checkVisuals(t, script).length, subjects: checkSubjects(t).length, production: checkProduction(t).length }) });
+  const check4 = (t) => ({ timeline: checkTimeline(t).length, visuals: checkVisuals(t, script).length, subjects: checkSubjects(t).length, production: checkProduction(t).length });
+  if (rec) tl.recipe = recipePass(tl, { recipe: rec, title, check: check4 });
+  // VISUAL-FIX 2026-11-08 (owner's review of step-2 #1): the story shape (mini-sequences where the beat calls for them,
+  // a wide of the world / town at least every ~12 s), then a camera move on every real shot (lib/shotFlow.js)
+  const kn = kitNeedsPass(tl, { check: check4, kitFor: (u) => kitFor(u, { own: world.own }) });
+  tl.shape = storyShapePass(tl, { check: check4 });
+  tl.shape.kitShown = kn;
+  tl.shape.moves = cameraMovePass(tl);
+  if (critical) tl.critical = critical;
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
   // the style rules measured on the plan (advisory: docs/blocky-worlds-protocol.md 8, lib/style.js)
   tl.style = styleReport(tl);
@@ -1225,6 +1243,10 @@ export function mergeDirectorCast(production, world) {
     }
     if (!c?.id || c.id === "me" || world.people.has(c.id)) continue;
     const words = key(c.id).split(" ").filter(Boolean), name = key(c.name);
+    // VISUAL-FIX 2026-11-08 (owner, #1: "Pip exists twice"): the director's narrator entry (role narrator, or the
+    // narrator's own name) IS the planner's "me": one person = one cast id = one look (its look words stay with "me")
+    const meName = key(world.people.get("me")?.name);
+    if (c.role === "narrator" || (name && meName && name === meName)) { rename.set(c.id, "me"); continue; }
     const hit = [...world.people.entries()].find(([id, p]) => id !== "me" && ((name && key(p.name) === name) || key(p.name) === words.join(" ") || (words.length > 1 && words.at(-1) === id && key(p.name).endsWith(id))));
     if (hit) { rename.set(c.id, hit[0]); continue; }
     if (c.kind && c.kind !== "human") continue;
@@ -1262,12 +1284,13 @@ function visualWorld(world) {
     alias: world.alias ?? {}, narrator: world.narrator,
     monster: world.monster ? { key: world.monster.key, keys: world.monster.keys ?? [world.monster.key], words: world.monster.words ?? [world.monster.key], name: world.monster.name } : null,
     looseNames: new Set(world.looseNames ?? []), prop: world.propKey ?? null, ...(world.beings?.length ? { beings: world.beings } : {}),
+    ...(world.own && Object.keys(world.own).length ? { own: world.own } : {}),
     ...(world.pets && Object.keys(world.pets).length ? { pets: petVw(world.pets) } : {}),
   };
 }
 function visualWorldFrom(v) {
   return { people: new Map(Object.entries(v.people ?? {}).map(([id, name]) => [id, { name }])), alias: v.alias ?? {}, narrator: v.narrator ?? "Me",
-    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}), ...(v.pets ? { pets: v.pets } : {}) };
+    monster: v.monster ?? null, looseNames: new Set(v.looseNames ?? []), prop: v.prop ?? null, ...(v.beings?.length ? { beings: v.beings } : {}), ...(v.pets ? { pets: v.pets } : {}), ...(v.own ? { own: v.own } : {}) };
 }
 /** what the dictionary needs of each pet (lib/visuals.js petAt, plan.mjs forceKey): its words, nouns, kit object */
 function petVw(pets) {
@@ -1428,7 +1451,7 @@ function applyVisuals(d, V) {
     if (k.kind !== "noun" || k.neg) continue;
     const hk = heldKind(k.noun) ?? heldKind(k.label);
     if (hk && d.actors.some((a) => a.hold && (heldKind(a.hold) === hk || a.hold === k.noun))) continue;
-    const name = objectForNoun(k.noun) ?? objectForNoun(k.label);
+    const name = k.object ?? objectForNoun(k.noun) ?? objectForNoun(k.label);
     if (!name) {
       if (hk && !ms && !notInHand(seg.text, k.noun)) { const a = holder(k.k); if (a && !holdsBaby(a) && !a.hold) { a.hold = k.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; } }
       continue;
@@ -1724,7 +1747,7 @@ function forceKey(s, key, aux) {
       const a = free.find((x) => x.id === s.subject) ?? free.find((x) => !x.id.startsWith("town")) ?? free[0];
       if (a) { a.hold = key.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; return true; }
     }
-    let name = objectForNoun(key.noun) ?? objectForNoun(key.label);
+    let name = key.object ?? objectForNoun(key.noun) ?? objectForNoun(key.label);
     // nobody can hold it: the hand prop itself, big, on a little crate (the "item" display)
     const hk = heldKind(key.noun) ?? heldKind(key.label);
     let state = null;
@@ -2115,6 +2138,9 @@ export function checkTimeline(tl) {
   }
   for (const m of checkProductionStrict(tl)) out.push(`line ${m.line} misses the production items: ${m.missing.map((x) => x.name).join(", ")}`);
   if (tl.world) out.push(...worldBibleProblems(tl).map((p) => `world bible: ${p}`)); // WORLD CONTINUITY (lib/worldBible.js)
+  // VISUAL-FIX 2026-11-08: one move per shot from the known moves; one person = one cast id = one look
+  out.push(...camMoveProblems(shots));
+  out.push(...duplicateCastProblems(tl));
   if (tl.pets || (tl.shots ?? []).some((s) => (s.objects ?? []).some((o) => o.pet))) out.push(...petProblems(tl)); // PETS (lib/pets.js)
   const caps = tl.captions ?? [];
   if (!caps.length) out.push("no captions");

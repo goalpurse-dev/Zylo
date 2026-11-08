@@ -14,6 +14,7 @@
 //   check(tl) -> { timeline, visuals, subjects, production }   (problem COUNTS; planVideo passes the real checks)
 import { hashSeed } from "../rng.js";
 import { beatSlots } from "./schema.js";
+import { camMoveOf } from "../camMove.js";
 
 const r3 = (x) => Math.round(x * 1000) / 1000;
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -184,6 +185,9 @@ function dress(src, piece, slot, ctx, { full, timedHere, idx, beat, lineText }) 
   if (["establish", "aerial", "hero_low", "track", "giant_close", "duel", "behind_army"].includes(camera) && !epicOk) s.camera = camera === "giant_close" ? "closeup" : camera === "hero_low" ? "low" : "wide";
   else s.camera = camera;
   if (move) s.move = move; else if (s.move && (typeof s.move === "string" ? s.move : s.move.type) !== "on_back" && full) delete s.move;
+  // VISUAL-FIX 2026-11-08: the slot's move reaches EVERY shot (push in / pull out / track / pan / tilt on any framing:
+  // lib/camMove.js); a caps move above already moves the camera
+  if (s.move) delete s.camMove; else s.camMove = camMoveOf(slot.cam?.move ?? "push_in", slot.cam?.speed ?? "medium");
   // a person framed close on a reaction slot shows it on the face (only over a neutral face: the line's own feeling wins)
   const face = REACT[slot.action];
   if (face) for (const a of s.actors ?? []) if (a.id === s.focus && (!a.expr || a.expr === "neutral")) a.expr = face;

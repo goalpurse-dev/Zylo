@@ -182,13 +182,17 @@ export const RULES = [
   { id: "stories", kind: "object", label: "stories", re: W("(?:bedtime |old |fairy )?(?:stories|story|storybooks?|tales?|legends?|fairy ?tales?)"),
     object: { name: "stories_book" }, set: "bedroom", reader: true, icon: "📖",
     show: { objects: ["stories_book"], holds: ["book"] }, also: ["book", "books", "read", "reading", "remembered"] },
-  { id: "book", kind: "object", label: "book", re: W("books?|read(?:ing)?|diary|journal"), object: { name: "stories_book" }, icon: "📖",
+  { id: "book", kind: "object", label: "book", re: W("books?|diary|journal|read(?:ing)? (?:a |the |my |his |her |our |their )?(?:books?|diary|journal)"), object: { name: "stories_book" }, icon: "📖",
     hold: "book", show: { objects: ["stories_book"], holds: ["book", "notebook"] } },
   { id: "whistle", kind: "hold", label: "whistle", re: W("(?:brass |old |tin )?whistles?"), hold: "whistle", icon: "📯",
     show: { holds: ["whistle"], poses: ["blow"] }, also: ["brass"] },
-  { id: "sign", kind: "insert", label: "sign", re: W("signs?(?! language)|notes?|letters?|posters?|notices?|newspapers?"), icon: "🪧", hold: "letter",
+  // VISUAL-FIX 2026-11-08 (owner, step-2 #1 "Pip holds a letter instead of the sign"): a sign / poster / notice is the
+  // sign board in the hand (an in-world board, no word card); a note / letter / newspaper stays the letter
+  { id: "sign", kind: "insert", label: "sign", re: W("signs?(?! language)|posters?|notices?|placards?"), icon: "🪧", hold: "sign",
     show: { holds: ["sign", "note", "letter", "paper", "envelope", "clipboard", "label", "poster", "newspaper"] } },
-  { id: "tower", kind: "place", label: "water tower", re: W("(?<!(?:hat|pillow|cushion|sock|book|block|pancake|box|cheese|plate|chair) )(?:water |clock |bell )?towers?|catwalk"), icon: "🗼",
+  { id: "letter", kind: "insert", label: "letter", re: W("notes?|letters?|newspapers?"), icon: "✉️", hold: "letter",
+    show: { holds: ["sign", "note", "letter", "paper", "envelope", "clipboard", "label", "poster", "newspaper"] } },
+  { id: "tower", kind: "place", label: "tower", re: W("(?<!(?:hat|pillow|cushion|sock|book|block|pancake|box|cheese|plate|chair) )(?:water |clock |bell )?towers?|catwalk"), icon: "🗼",
     show: { monsterSpot: "tower", sets: ["street", "woods"] } },
   { id: "ladder", kind: "place", label: "ladder", re: W("(?:the )?ladders?|rungs?"), icon: "🪜", object: { name: "ladder" },
     show: { monsterSpot: "tower", holds: ["ladder"], objects: ["ladder"] } },
@@ -400,6 +404,9 @@ export function extractKeys(text, vw, opts = {}) {
       if (!free(m.k, m.end)) continue;
       if (rule.doer === "person" && !personDoer(toks, m.k, vw)) continue;
       if (rule.id === "sign" && /^(language)$/.test(toks[m.end + 1]?.c ?? "")) continue;
+      // VISUAL-FIX 2026-11-08: the story's own thing ("the towers" = its stacked block towers) is never a generic rule's
+      // lookalike (the water tower); step 3 shows it as the story object
+      if (vw.own && rule.kind !== "action" && rule.kind !== "marker") { const last = toks[m.end]?.c ?? ""; const own = vw.own[last] ?? vw.own[singular(last)]; if (own && rule.object?.name !== own) continue; }
       take(m.k, m.end);
       if (rule.kind !== "action" && rule.kind !== "marker") for (let i = m.k; i <= m.end; i++) ruleOwned[i] = true;   // a thing, not a verb
       const key = { kind: "rule", rule: rule.id, label: rule.label, k: m.k, end: m.end, text: m.text, neg: rule.kind === "action" || rule.kind === "object" ? negAt(m.k) : false };
@@ -426,6 +433,7 @@ export function extractKeys(text, vw, opts = {}) {
     if (/^(roll|rolls|slice|slices|piece|pieces|pair|pairs|bit|bits|stack|stacks|pile|piles|scrap|scraps|chunk|chunks|bunch|lot|lots|handful|crumb|crumbs|sort|kind)$/.test(c) && toks[k + 1]?.c === "of" && !t.end && !t.comma) return;
     const icon = ICONS[c] ?? ICONS[singular(c)];
     let afterDet = false, start = k;
+    const ownHere = !!(vw.own && (vw.own[c] || vw.own[singular(c)])); // VISUAL-FIX 2026-11-08: one of the story's own things
     for (let i = k - 1; i >= 0 && i >= k - 4; i--) {
       const p = toks[i];
       if (p.end || p.comma) break;
@@ -433,7 +441,7 @@ export function extractKeys(text, vw, opts = {}) {
       if ((DETS.has(p.c) && (icon || !/^(that|this|these|those)$/.test(p.c))) || p.poss) { afterDet = true; break; }
       // modifiers: adjectives; before a known thing also a singular noun / unknown adjective ("kite string", "late bus")
       // (a thing a rule already showed can be a modifier too: "a giant hollow cliff-top bell")
-      const mod = ADJ.has(p.c) || /est$/.test(p.c) || (icon && k - i <= 2 && !/s$/.test(p.c) && !STOP.has(p.c) && !VERBISH.test(p.c) && !NEG_RE.test(p.c) && (!used[i] || ruleOwned[i]));
+      const mod = ADJ.has(p.c) || /est$/.test(p.c) || ((icon || ownHere) && k - i <= 3 && !/s$/.test(p.c) && !STOP.has(p.c) && !VERBISH.test(p.c) && !NEG_RE.test(p.c) && (!used[i] || ruleOwned[i]));
       if (!mod) break;
       start = i;
     }
@@ -443,14 +451,18 @@ export function extractKeys(text, vw, opts = {}) {
     const prev = toks[start - 1];
     const nounSlot = !prev || prev.end || prev.comma || /^(in|on|at|by|with|of|from|to|into|like|for|about|than|under|over|and|or)$/.test(prev.c) ||
       /^(have|has|had|wear|wears|wore|need|needs|love|loves|hate|hates|eat|eats|ate|own|owns|keep|keeps|kept|hold|holds|held|sell|sells|buy|buys|bought|make|makes|made|got|get|gets|found|find|finds|carry|carries|bring|brings|brought|fear|fears|feed|feeds|cost|costs|lose|lost|steal|stole|chase|chased|chases)$/.test(prev.c);
-    if (!afterDet && !(icon && nounSlot)) return;
+    if (!afterDet && !((icon || ownHere) && nounSlot)) return;
     if (ADJ.has(c) || /(ly|est)$/.test(c) || (!icon && /(ed|ing)$/.test(c) && c.length > 5)) return;
     // the noun is the last of a run ("school bus": bus); a word right before a noun (or a rule's thing: "night-shift baker")
     // is its modifier
     const nx = toks[k + 1];
+    // VISUAL-FIX 2026-11-08: a word right before one of the story's own things is its modifier ("gold penthouse", "stone
+    // plaque", "base block": never a gold star, a rock, a base)
+    if (!t.end && !t.comma && nx && vw.own && (vw.own[nx.c] || vw.own[singular(nx.c)])) return;
     if (!t.end && !t.comma && nx && (ruleOwned[k + 1] || (!used[k + 1] && !STOP.has(nx.c) && !VERBISH.test(nx.c) && !ABSTRACT.has(nx.c) && (ICONS[nx.c] || ICONS[singular(nx.c)])))) return;
     const owner = k > 0 && toks[k - 1].poss ? toks[k - 1].raw.replace(/[^A-Za-z']/g, "").replace(/'s$/i, "") : null;
-    keys.push({ kind: "noun", label: c, noun: singular(c), k, end: k, icon: icon ?? GENERIC_ICON, phrase: owner ? `${owner}'s ${c}` : c, neg: negAt(k) });
+    const ownObj = vw.own ? vw.own[c] ?? vw.own[singular(c)] ?? null : null;
+    keys.push({ kind: "noun", label: c, noun: singular(c), k, end: k, icon: icon ?? GENERIC_ICON, phrase: owner ? `${owner}'s ${c}` : c, neg: negAt(k), ...(ownObj ? { object: ownObj } : {}) });
     take(k, k);
   });
   keys.sort((a, b) => a.k - b.k);

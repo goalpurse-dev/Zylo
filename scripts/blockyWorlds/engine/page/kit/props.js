@@ -293,7 +293,7 @@ const BUILD = {
   },
   sign(g) {
     bx(0.03, 0.55, 0.03, woodMat(), { y: 0.1, parent: g });
-    const t = signTexture("HELP", 3);
+    const t = signTexture("", 3); // VISUAL-FIX 2026-11-08: an in-world sign board, never a word card (the line says what it reads)
     const side = solid("#5a3d24");
     const b = new THREE.Mesh(boxGeo(0.46, 0.32, 0.02), [side, side, side, side, new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }), side]);
     b.position.y = 0.48; b.castShadow = true; g.add(b);

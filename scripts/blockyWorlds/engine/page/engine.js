@@ -11,6 +11,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { rng } from "/lib/rng.js";
+import { applyCamMove } from "/lib/camMove.js";
 import { flatShare, detailOf } from "/lib/frameGuard.js";
 import { makeRenderer, makePost } from "/page/post.js";
 import { measureContact, groundUnder, personFeet, findStandSpot } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
@@ -666,6 +667,8 @@ async function main() {
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }
+    // VISUAL-FIX 2026-11-08: the shot's camera move (lib/camMove.js) over whichever framing placed the camera
+    if (shot.camMove && !shot.move) applyCamMove(camera, shot.camMove, lt, dur, shot.seed ?? si);
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();

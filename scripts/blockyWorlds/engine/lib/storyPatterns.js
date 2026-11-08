@@ -125,6 +125,8 @@ export const isAnchorWide = (s) => !isCard(s) && WIDE_CAMERAS.has(s?.camera);
 export function roleOfShot(s, i = 1) {
   if (!s) return "other";
   if (isCard(s)) return "explain";
+  // VISUAL-FIX 2026-11-08: a shot the story-shape pass directed as a role (lib/shotFlow.js) is that role
+  if (s.seq && SEQ_ROLES.includes(s.seq)) return s.seq;
   const bt = s.beat?.type;
   if ((s.tethers ?? []).some((t) => ["snap", "fire"].includes(t.state)) || (s.siege ?? []).length || CAUSE_BEATS.has(bt) || (s.giants ?? []).some((g) => /attack|bite|stomp|charge|fire|lunge|headbutt|grab/.test(g.action ?? ""))) return "cause";
   if (CONSEQ_BEATS.has(bt) || s.shake) return "consequence";
