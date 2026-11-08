@@ -109,6 +109,112 @@ const ICONS = {
     ctx.fillStyle = YELLOW; ctx.beginPath(); ctx.moveTo(-s * 0.18, s * 0.42); ctx.lineTo(s * 0.18, s * 0.42); ctx.lineTo(0, s * 0.16); ctx.fill(); ctx.beginPath(); ctx.moveTo(-s * 0.12, -s * 0.3); ctx.lineTo(s * 0.12, -s * 0.3); ctx.lineTo(0, -s * 0.1); ctx.fill();
   },
 };
+/* ── little animated scenes (owner, 2026-11-08: "hiring an animator → an animator pops up with a contract"): drawn
+   around (0, 0), about s wide, animated by t. Used by keyword cards and notes in place of an icon. ── */
+function person(x, y, s, { hat = null, body = VIOLET, mood = "smile" } = {}) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = body; ctx.beginPath(); ctx.roundRect(-s * 0.32, s * 0.05, s * 0.64, s * 0.6, s * 0.2); ctx.fill();
+  ctx.fillStyle = "#F5D0A9"; ctx.beginPath(); ctx.arc(0, -s * 0.18, s * 0.24, 0, 7); ctx.fill();
+  ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(-s * 0.08, -s * 0.2, s * 0.03, 0, 7); ctx.arc(s * 0.08, -s * 0.2, s * 0.03, 0, 7); ctx.fill();
+  ctx.strokeStyle = INK; ctx.lineWidth = s * 0.025; ctx.beginPath();
+  if (mood === "tired") { ctx.moveTo(-s * 0.08, -s * 0.06); ctx.lineTo(s * 0.08, -s * 0.06); } else ctx.arc(0, -s * 0.12, s * 0.08, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+  if (hat === "beret") { ctx.fillStyle = "#DC2626"; ctx.beginPath(); ctx.ellipse(-s * 0.02, -s * 0.4, s * 0.24, s * 0.08, -0.2, 0, 7); ctx.fill(); ctx.fillRect(-s * 0.01, -s * 0.52, s * 0.03, s * 0.06); }
+  ctx.restore();
+}
+function paper(x, y, w, h, rot = 0) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.shadowColor = "rgba(0,0,0,0.4)"; ctx.shadowBlur = 20; ctx.fillStyle = "#F8FAFC"; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 10); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.restore();
+}
+const SCENES = {
+  // an animator pops up, a contract slides in, a pen signs it, a price tag stamps on
+  animator(s, t) {
+    const k = back(t / 0.4); ctx.save(); ctx.scale(k, k); person(-s * 0.32, 0, s * 0.62, { hat: "beret", body: "#2563EB" }); ctx.restore();
+    const c = ease((t - 0.3) / 0.45), cx = s * 0.28 + (1 - c) * s * 0.6;
+    ctx.globalAlpha = c; paper(cx, s * 0.02, s * 0.42, s * 0.56, 0.06);
+    ctx.save(); ctx.translate(cx, s * 0.02); ctx.rotate(0.06);
+    ctx.fillStyle = INK; ctx.font = `bold ${s * 0.06}px ${SANS}`; ctx.textAlign = "center"; ctx.fillText("CONTRACT", 0, -s * 0.18);
+    ctx.fillStyle = "#CBD5E1"; for (let i = 0; i < 4; i++) ctx.fillRect(-s * 0.15, -s * 0.12 + i * s * 0.05, s * 0.3, s * 0.012);
+    // the signature, drawn stroke by stroke
+    const sig = clamp((t - 0.75) / 0.6); ctx.strokeStyle = "#1D4ED8"; ctx.lineWidth = s * 0.012; ctx.beginPath();
+    for (let i = 0; i <= 40 * sig; i++) { const u = i / 40; ctx.lineTo(-s * 0.14 + u * s * 0.28, s * 0.16 + Math.sin(u * 18) * s * 0.025); } ctx.stroke();
+    ctx.restore(); ctx.globalAlpha = 1;
+    const p = back((t - 1.3) / 0.35);
+    if (t > 1.3) { ctx.save(); ctx.translate(s * 0.42, -s * 0.3); ctx.rotate(-0.25); ctx.scale(p, p); ctx.fillStyle = YELLOW; ctx.beginPath(); ctx.roundRect(-s * 0.13, -s * 0.06, s * 0.26, s * 0.12, s * 0.03); ctx.fill(); ctx.fillStyle = INK; ctx.font = `${s * 0.08}px ${SANS}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("$$$", 0, s * 0.005); ctx.restore(); }
+  },
+  // calendar days flipping by next to a slowly turning wireframe cube: days of 3D work
+  days(s, t) {
+    const day = 1 + Math.min(6, Math.floor(t * 3.2));
+    paper(-s * 0.25, 0, s * 0.4, s * 0.46, -0.04);
+    ctx.save(); ctx.translate(-s * 0.25, 0); ctx.rotate(-0.04);
+    ctx.fillStyle = "#DC2626"; ctx.fillRect(-s * 0.2, -s * 0.23, s * 0.4, s * 0.1);
+    ctx.fillStyle = WHITE; ctx.font = `${s * 0.05}px ${SANS}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("DAY", 0, -s * 0.18);
+    const flip = (t * 3.2) % 1; ctx.fillStyle = INK; ctx.font = `${s * 0.2}px ${SANS}`; ctx.save(); ctx.scale(1, day < 7 ? 1 - Math.max(0, flip - 0.8) * 4 : 1); ctx.fillText(String(day), 0, s * 0.05); ctx.restore();
+    ctx.restore();
+    const a = t * 1.2, P = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]].map(([x, y, z]) => { const X = x * Math.cos(a) - z * Math.sin(a), Z = x * Math.sin(a) + z * Math.cos(a), Y = y * Math.cos(0.5) - Z * Math.sin(0.5); return [s * 0.28 + X * s * 0.12, Y * s * 0.12]; });
+    ctx.strokeStyle = LIME; ctx.lineWidth = s * 0.012; ctx.beginPath();
+    for (const [i, j] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) { ctx.moveTo(...P[i]); ctx.lineTo(...P[j]); }
+    ctx.stroke();
+  },
+  // a code bracket and an editing timeline, each crossed out with a red stamp
+  nocode(s, t) {
+    const box = (x, draw, at) => {
+      const k = back((t - at) / 0.35); ctx.save(); ctx.translate(x, 0); ctx.scale(k, k);
+      ctx.fillStyle = "#1E1B2E"; ctx.beginPath(); ctx.roundRect(-s * 0.2, -s * 0.2, s * 0.4, s * 0.4, s * 0.05); ctx.fill(); draw(); ctx.restore();
+      const x2 = back((t - at - 0.45) / 0.3); if (t > at + 0.45) { ctx.save(); ctx.translate(x, 0); ctx.scale(x2, x2); ctx.strokeStyle = "#EF4444"; ctx.lineWidth = s * 0.05; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(-s * 0.18, -s * 0.18); ctx.lineTo(s * 0.18, s * 0.18); ctx.moveTo(s * 0.18, -s * 0.18); ctx.lineTo(-s * 0.18, s * 0.18); ctx.stroke(); ctx.restore(); }
+    };
+    box(-s * 0.25, () => { ctx.fillStyle = "#C4B5FD"; ctx.font = `${s * 0.16}px ${SANS}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("</>", 0, 0); }, 0);
+    box(s * 0.25, () => { for (let i = 0; i < 3; i++) { ctx.fillStyle = [VIOLET, LIME, YELLOW][i]; ctx.fillRect(-s * 0.15 + i * s * 0.03, -s * 0.1 + i * s * 0.08, s * 0.22, s * 0.05); } ctx.fillStyle = "#EF4444"; ctx.fillRect(s * 0.02, -s * 0.15, s * 0.01, s * 0.3); }, 0.25);
+  },
+  // a phone with a feed of cut-away videos scrolling up, hearts popping
+  feed(s, t) {
+    const w = s * 0.42, h = s * 0.78;
+    ctx.fillStyle = "#111"; ctx.beginPath(); ctx.roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 36); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 28); ctx.clip();
+    const off = (t * h * 0.45) % h;
+    for (let i = -1; i < 2; i++) {
+      const y0 = -h / 2 + i * h - off + h;
+      ctx.fillStyle = ["#7DD3FC", "#A7F3D0", "#FDE68A"][(i + 3) % 3]; ctx.fillRect(-w / 2, y0, w, h * 0.4);
+      // a cut-away: soil layers with a pipe through them
+      ["#92400E", "#78350F", "#57534E"].forEach((c, j) => { ctx.fillStyle = c; ctx.fillRect(-w / 2, y0 + h * (0.4 + j * 0.2), w, h * 0.2); });
+      ctx.fillStyle = "#E5E7EB"; ctx.fillRect(-w * 0.3, y0 + h * 0.55, w * 0.6, h * 0.05);
+    }
+    ctx.restore();
+    for (let i = 0; i < 3; i++) { const a = (t * 1.6 + i * 0.33) % 1; ctx.globalAlpha = 1 - a; ctx.fillStyle = "#F43F5E"; ctx.font = `${s * 0.09}px "Segoe UI Emoji"`; ctx.fillText("❤", w * 0.32 + i * s * 0.03, h * 0.2 - a * s * 0.4); } ctx.globalAlpha = 1;
+  },
+  // a person slumped at a desk under a growing stack of frames to draw
+  tired(s, t) {
+    ctx.fillStyle = "#3F3F46"; ctx.fillRect(-s * 0.45, s * 0.2, s * 0.9, s * 0.05);
+    person(-s * 0.1, s * 0.0 + Math.sin(t * 2) * s * 0.01, s * 0.5, { body: "#64748B", mood: "tired" });
+    const n = Math.min(9, Math.floor(t * 6)); for (let i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? "#E2E8F0" : "#CBD5E1"; ctx.fillRect(s * 0.15, s * 0.16 - i * s * 0.045, s * 0.28, s * 0.04); }
+    ctx.fillStyle = "#7DD3FC"; const d = (t * 1.5) % 1; ctx.globalAlpha = 1 - d; ctx.beginPath(); ctx.arc(s * 0.02, -s * 0.12 + d * s * 0.12, s * 0.02, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  },
+  // a clipboard: three questions ticked off one by one
+  checklist(s, t) {
+    paper(0, 0, s * 0.5, s * 0.66);
+    ctx.fillStyle = "#94A3B8"; ctx.beginPath(); ctx.roundRect(-s * 0.1, -s * 0.36, s * 0.2, s * 0.07, s * 0.02); ctx.fill();
+    for (let i = 0; i < 3; i++) {
+      const y = -s * 0.16 + i * s * 0.15; ctx.strokeStyle = "#94A3B8"; ctx.lineWidth = s * 0.01; ctx.strokeRect(-s * 0.19, y - s * 0.035, s * 0.07, s * 0.07);
+      ctx.fillStyle = "#CBD5E1"; ctx.fillRect(-s * 0.08, y - s * 0.01, s * 0.25, s * 0.02);
+      const k = back((t - 0.3 - i * 0.35) / 0.3); if (t > 0.3 + i * 0.35) { ctx.save(); ctx.translate(-s * 0.155, y); ctx.scale(k, k); ctx.strokeStyle = "#16A34A"; ctx.lineWidth = s * 0.025; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(-s * 0.03, 0); ctx.lineTo(-s * 0.005, s * 0.03); ctx.lineTo(s * 0.045, -s * 0.035); ctx.stroke(); ctx.restore(); }
+    }
+  },
+  // a stopwatch running up to a real measured time ({seconds} in the spec)
+  stopwatch(s, t, c) {
+    const v = Math.round((c.seconds ?? 288) * ease(t / 1.2));
+    ctx.fillStyle = "#E5E7EB"; ctx.fillRect(-s * 0.04, -s * 0.42, s * 0.08, s * 0.08);
+    ctx.fillStyle = WHITE; ctx.beginPath(); ctx.arc(0, 0, s * 0.34, 0, 7); ctx.fill(); ctx.strokeStyle = VIOLET; ctx.lineWidth = s * 0.03; ctx.stroke();
+    const a = (v / 60) * Math.PI * 2 - Math.PI / 2; ctx.strokeStyle = "#EF4444"; ctx.lineWidth = s * 0.02; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * s * 0.26, Math.sin(a) * s * 0.26); ctx.stroke();
+    ctx.fillStyle = INK; ctx.font = `${s * 0.1}px ${SANS}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`${Math.floor(v / 60)}:${String(v % 60).padStart(2, "0")}`, 0, s * 0.15);
+  },
+  // the same style everywhere: three phones popping in, each showing a cut-away
+  everywhere(s, t) {
+    [-0.32, 0, 0.32].forEach((x, i) => { const k = back((t - i * 0.18) / 0.35); ctx.save(); ctx.translate(x * s, (i === 1 ? -0.04 : 0.04) * s); ctx.rotate((i - 1) * 0.12); ctx.scale(k * 0.62, k * 0.62); SCENES.feed(s, t + i); ctx.restore(); });
+  },
+};
+function scene(name, x, y, s, t, c = {}) { ctx.save(); ctx.translate(x, y); (SCENES[name] ?? SCENES.checklist)(s, t, c); ctx.restore(); }
+
 function icon(name, x, y, s, t) {
   ctx.save(); ctx.translate(x, y + Math.sin(t * 2.2) * 8); ctx.shadowColor = "rgba(139,92,246,0.7)"; ctx.shadowBlur = 60;
   (ICONS[name] ?? ICONS.sparkle)(s); ctx.restore();
@@ -121,8 +227,7 @@ async function keyword(c, t, dur) {
   background(t);
   const a = fadeIO(t, dur), flip = !!c.flip, ix = flip ? 1380 : 540, tx = flip ? 900 : 1020;
   ctx.globalAlpha = a;
-  const s = 300 * back(t / 0.45);
-  icon(c.icon, ix, 540, s, t);
+  if (c.scene) scene(c.scene, ix, 540, 640, t, c); else icon(c.icon, ix, 540, 300 * back(t / 0.45), t);
   ctx.textAlign = flip ? "right" : "left"; ctx.textBaseline = "alphabetic";
   const k = ease((t - 0.08) / 0.4), dx = (1 - k) * (flip ? -60 : 60);
   ctx.globalAlpha = a * k;
@@ -169,16 +274,32 @@ async function proof(c, t, dur) {
   ctx.globalAlpha = 1;
 }
 
-async function end(c, t, dur) {
+// the end screen (owner, 2026-11-08: no empty video boxes): an animated close. The site pops in at the middle, icons
+// orbit it, a phone of cut-aways floats beside it, and a cursor clicks a subscribe button that turns to "Subscribed".
+async function end(c, t0, dur) {
+  const t = t0 + (c.t0 ?? 0);   // the end screen runs on across its lines (c.t0: where this line picks it up)
   background(t);
-  const a = clamp(t / 0.3); ctx.globalAlpha = a; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillStyle = WHITE; ctx.font = `96px ${SANS}`; ctx.fillText("WATCH NEXT", 960, 170);
-  // the end-screen elements are placed in YouTube Studio over these slots (two videos, subscribe in the middle)
-  for (const x of [210, 1110]) { ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 4; ctx.setLineDash([18, 14]); ctx.beginPath(); ctx.roundRect(x, 330, 600, 338, 24); ctx.stroke(); }
-  ctx.setLineDash([]); ctx.strokeStyle = LIME; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(960, 500, 110, 0, 7); ctx.stroke();
-  ctx.fillStyle = "#DC2626"; ctx.beginPath(); ctx.roundRect(840, 650, 240, 64, 32); ctx.fill(); ctx.fillStyle = WHITE; ctx.font = `34px ${SANS}`; ctx.fillText("SUBSCRIBE", 960, 683);
-  ctx.fillStyle = LIME; ctx.font = `60px ${SANS}`; ctx.fillText(c.site ?? "tryzyvo.com", 960, 900);
-  ctx.globalAlpha = 1;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const cx = 960, cy = 470;
+  // pulsing rings
+  for (let i = 0; i < 3; i++) { const r = ((t * 0.6 + i / 3) % 1); ctx.strokeStyle = `rgba(190,242,100,${0.35 * (1 - r)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(cx, cy, 160 + r * 320, 0, 7); ctx.stroke(); }
+  // orbiting icons
+  ["play", "check", "rocket", "sparkle", "film", "clock"].forEach((n, i) => { const a = t * 0.5 + (i / 6) * Math.PI * 2; icon(n, cx + Math.cos(a) * 470, cy + Math.sin(a) * 260, 110 * back((t - 0.1 * i) / 0.4), t + i); });
+  const k = back(t / 0.5);
+  ctx.save(); ctx.translate(cx, cy); ctx.scale(k, k);
+  ctx.fillStyle = "rgba(10,11,14,0.85)"; ctx.beginPath(); ctx.roundRect(-330, -90, 660, 180, 90); ctx.fill(); ctx.strokeStyle = LIME; ctx.lineWidth = 6; ctx.stroke();
+  ctx.fillStyle = LIME; ctx.font = `96px ${SANS}`; ctx.fillText(c.site ?? "tryzyvo.com", 0, 6); ctx.restore();
+  // the subscribe button and a cursor that clicks it
+  const bk = back((t - 0.6) / 0.4), clicked = t > 2.2, by = 790;
+  ctx.save(); ctx.translate(cx, by); ctx.scale(bk * (clicked && t < 2.35 ? 0.92 : 1), bk * (clicked && t < 2.35 ? 0.92 : 1));
+  ctx.fillStyle = clicked ? "#3F3F46" : "#DC2626"; ctx.beginPath(); ctx.roundRect(-190, -48, 380, 96, 48); ctx.fill();
+  ctx.fillStyle = WHITE; ctx.font = `46px ${SANS}`; ctx.fillText(clicked ? "SUBSCRIBED ✓" : "SUBSCRIBE", 0, 4); ctx.restore();
+  if (t > 1.0) {
+    const m = ease((t - 1.0) / 1.1), px = cx + 420 - m * 380, py = by + 160 - m * 150;
+    ctx.save(); ctx.translate(px, py); ctx.fillStyle = WHITE; ctx.strokeStyle = INK; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 60); ctx.lineTo(16, 46); ctx.lineTo(28, 72); ctx.lineTo(40, 66); ctx.lineTo(28, 41); ctx.lineTo(48, 41); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    if (clicked) { const r = clamp((t - 2.2) / 0.4); ctx.strokeStyle = `rgba(255,255,255,${1 - r})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(px, py, 20 + r * 60, 0, 7); ctx.stroke(); }
+  }
+  void dur;
 }
 
 async function thumb(c) {
@@ -217,17 +338,14 @@ function slotLeft(L, t) {
   // a slow scan line, so a placeholder still moves
   const sy = y + ((t * 260) % h); const g = ctx.createLinearGradient(0, sy - 60, 0, sy); g.addColorStop(0, "rgba(190,242,100,0)"); g.addColorStop(1, "rgba(190,242,100,0.10)");
   ctx.fillStyle = g; ctx.fillRect(x + 4, Math.max(y, sy - 60), w - 8, Math.min(60, sy - y));
-  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = LIME; ctx.font = `46px ${SANS}`; ctx.fillText(`SLOT ${String(L.n).padStart(2, "0")}  ·  ${L.secs.toFixed(1)} s`, x + 70, y + 120);
-  ctx.fillStyle = YELLOW; ctx.font = `92px ${SANS}`; ctx.fillText("SHOW:", x + 70, y + 250);
-  const lines = wrap(L.show, SANS, 64, w - 140).slice(0, 7);
-  ctx.fillStyle = WHITE; lines.forEach((l, i) => ctx.fillText(l, x + 70, y + 350 + i * 82));
-  if (L.sound) { ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `36px "Segoe UI", Arial`; ctx.fillText("plays with its own sound", x + 70, y + h - 60); }
+  // no text in the slot (owner, 2026-11-08): the footage goes here; slots.txt says what each one shows
+  if (L.label) { ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillStyle = LIME; ctx.font = `46px ${SANS}`; ctx.fillText(`SLOT ${String(L.n).padStart(2, "0")}  ·  ${L.secs.toFixed(1)} s`, x + 70, y + 120); ctx.fillStyle = WHITE; wrap(L.show, SANS, 64, w - 140).slice(0, 7).forEach((l, i) => ctx.fillText(l, x + 70, y + 250 + i * 82)); }
 }
+void wrap;
 function noteLeft(N, t) {
   const { x, y, w, h } = LEFT, cx = x + w / 2;
   ctx.fillStyle = "rgba(255,255,255,0.03)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 26); ctx.fill();
-  icon(N.icon, cx, y + 360, 260 * back(t / 0.45), t);
+  if (N.scene) scene(N.scene, cx, y + 300, 560, t, N); else icon(N.icon, cx, y + 360, 260 * back(t / 0.45), t);
   ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
   const k = ease((t - 0.08) / 0.4);
   ctx.globalAlpha = k;

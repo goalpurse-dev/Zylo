@@ -14,7 +14,9 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PROTO = process.env.PROTO_DIR ?? "C:/Users/Public/Zylo-contentmachine/content/studio-worker/proto";
 const CHROME = process.env.CHROME ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 export const FPS = 30;
-export const cardKey = (spec, secs) => crypto.createHash("sha1").update(JSON.stringify({ spec, secs, v: 1 })).digest("hex").slice(0, 12);
+// the key holds the drawing code too: a change to cards.js films every card again (never an old look from the cache)
+const CODE = crypto.createHash("sha1").update(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "cards.js"))).digest("hex").slice(0, 8);
+export const cardKey = (spec, secs) => crypto.createHash("sha1").update(JSON.stringify({ spec, secs, code: CODE })).digest("hex").slice(0, 12);
 
 function serve() {
   const server = http.createServer((req, res) => {

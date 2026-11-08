@@ -16,6 +16,7 @@
 // Voice: recordings/voice/<line id>.(wav|m4a|mp3) always wins (the owner's own voice). The rest: sapi (Windows' voice,
 // free, a preview) or eleven (ElevenLabs through the Budget Guard: refused unless --spend-ok covers the printed estimate).
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -49,7 +50,9 @@ export const voiceCost = (lines) => lines.reduce((a, b) => a + b.say.length, 0) 
 // the episode may name its own narrator (script.json voice: {id, name}); a line with an unfilled [blank] keeps the free voice
 const VOICE = { ...NARRATOR, ...(S.voice ?? {}) }, blank = (b) => /\[[^\]]+\]/.test(b.say);
 const engineFor = (b) => (engine === "eleven" && blank(b) ? "sapi" : engine), tagFor = (b) => (engineFor(b) === "eleven" ? `eleven-${VOICE.id.slice(0, 6)}` : engineFor(b));
-const paid = engine === "eleven" ? said.filter((b) => !own(b.id) && !blank(b) && !fs.existsSync(path.join(WORK, "voice", `${b.id}.${tagFor(b)}.wav`))) : [];
+// a voice file is kept per line AND per wording: a reworded line is voiced again, never played with its old audio
+const said5 = (b) => crypto.createHash("sha1").update(b.say).digest("hex").slice(0, 8);
+const paid = engine === "eleven" ? said.filter((b) => !own(b.id) && !blank(b) && !fs.existsSync(path.join(WORK, "voice", `${b.id}.${tagFor(b)}.${said5(b)}.wav`))) : [];
 if (paid.length && voiceCost(paid) > spendOk) { console.error(`ElevenLabs would cost about $${voiceCost(paid).toFixed(2)} for ${paid.length} lines: run again with --spend-ok ${Math.ceil(voiceCost(paid) * 100) / 100} once the owner has said yes`); process.exit(2); }
 let guard = null;
 if (paid.length) {
@@ -62,7 +65,7 @@ if (paid.length) {
 // the line's own silences: none before it, none after it, and every pause inside it at most 0.18 s (no dead air)
 const TRIM = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.02:stop_periods=-1:stop_duration=0.2:stop_threshold=-45dB:stop_silence=0.18,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse";
 async function voiceOf(b) {
-  const mine = own(b.id), eng = engineFor(b), out = path.join(WORK, "voice", `${b.id}.${mine ? "own" : tagFor(b)}.wav`);
+  const mine = own(b.id), eng = engineFor(b), out = path.join(WORK, "voice", `${b.id}.${mine ? "own" : `${tagFor(b)}.${said5(b)}`}.wav`);
   if (fs.existsSync(out)) return out;
   let src = mine;
   if (!mine && eng === "sapi") {
@@ -125,7 +128,7 @@ const cardSpec = (b, i) => {
   if (b.kind === "card") return { kind: "keyword", ...b.show.card };
   if (b.kind === "step") return { kind: "step", ...b.show.step };
   if (b.kind === "proof") return { kind: "proof", ...b.show.proof, image: b.show.proof.image && path.resolve(dir, b.show.proof.image) };
-  if (b.kind === "end") return { kind: "end", ...b.show.end };
+  if (b.kind === "end") { const first = B.find((x) => x.kind === "end"); return { kind: "end", ...b.show.end, t0: +(b.start - first.start).toFixed(3) }; }
   if (missing(b)) return { kind: "keyword", icon: "film", light: `to record: ${b.show.rec ?? b.show.result}`, bold: "your screen here" };
   return null;
 };
@@ -210,8 +213,9 @@ fs.writeFileSync(path.join(WORK, "captions.ass"), ["[Script Info]", "ScriptType:
   ...chunks.map((c, i) => `Dialogue: 0,${ts(c.s)},${ts(Math.min(c.e + 0.15, chunks[i + 1]?.s ?? c.e + 0.15))},${c.split ? "CapLeft" : "Cap"},,0,0,0,,${c.words.join(" ").replace(/[{}]/g, "")}`)].join("\n"));
 const tag = `${engine === "sapi" && said.some((b) => !own(b.id)) ? "_PREVIEW" : ""}${B.some(missing) || slots.some((s) => !s.file) ? "_PLACEHOLDERS" : ""}`;
 const final = path.join(OUT, `${S.slug}${tag}.mp4`);
-// the footage's sound + the voice + the effects (a little under the voice); the captions burned in
-run("ffmpeg", ["-v", "error", "-y", "-i", body, "-i", voWav, "-i", fxWav, "-filter_complex", "[0:a][1:a]amix=inputs=2:duration=first:normalize=0[m];[m][2:a]amix=inputs=2:duration=first:weights='1 0.6':normalize=0,alimiter=limit=0.95[a];[0:v]ass=captions.ass[v]",
+// the footage's sound + the voice + the effects (a little under the voice); the captions burned in unless the episode
+// turns them off (script.json captions: false, owner 2026-11-08: no text following the narration)
+run("ffmpeg", ["-v", "error", "-y", "-i", body, "-i", voWav, "-i", fxWav, "-filter_complex", `[0:a][1:a]amix=inputs=2:duration=first:normalize=0[m];[m][2:a]amix=inputs=2:duration=first:weights='1 0.6':normalize=0,alimiter=limit=0.95[a];[0:v]${S.captions === false ? "null" : "ass=captions.ass"}[v]`,
   "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", final], { cwd: WORK });
 fs.writeFileSync(path.join(OUT, "timeline.json"), JSON.stringify({ total: t, file: final, beats: B.map(({ id, chapter, kind, start, end, secs, step }) => ({ id, chapter, kind, step, start: +start.toFixed(2), end: +end.toFixed(2), secs: +secs.toFixed(2) })) }, null, 1));
 fs.writeFileSync(path.join(OUT, "slots.txt"), [`Slots for "${S.title}" (${tc(t)} in all). Drop each file into ${ASSETS} as slot_NN.mp4 and run the assembly again: it is laid in automatically.`, "",

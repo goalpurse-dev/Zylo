@@ -8,9 +8,7 @@
   "tool": "cutaway",
   "link": "https://tryzyvo.com/workspace/cutaway-explainer?utm_source=youtube&utm_medium=video&utm_campaign=cutaway-explainer-tutorial&utm_content=description",
   "description": "The 3D \"see inside how it works\" videos are everywhere right now. Here is exactly how to make one with Zyvo's Cutaway Explainer, step by step: no Blender, no animator, no editing.",
-  "description_credits": [
-    "Example shown for commentary: [CREATOR] ([LINK]). Not mine."
-  ],
+  "description_credits": [],
   "panel_title": "IN THIS VIDEO",
   "steps": [
     {
@@ -22,7 +20,7 @@
     {
       "n": 2,
       "label": "Sign up",
-      "keyword": "STARTER PLAN",
+      "keyword": "SIGN UP",
       "icon": "check"
     },
     {
@@ -52,31 +50,6 @@
   ],
   "facts": [
     {
-      "id": "proof_example",
-      "text": "A viral cutaway video by another creator and its real view count",
-      "source": "the creator's public page, with the day you checked it: fill in [CREATOR] and [VIEWS]"
-    },
-    {
-      "id": "starter",
-      "text": "Cutaway Explainer needs at least the Starter plan: €18 a month (VAT included) for 750 credits",
-      "source": "the live plan-prices endpoint (2026-11-07) + cutaway/access.js (Starter and up generate)"
-    },
-    {
-      "id": "premade_cost",
-      "text": "A 30-second video on a premade topic costs 25 credits; a custom topic costs 136 credits for 30 seconds or 195 for 60 seconds",
-      "source": "cutaway/pricing.js PRICES.video.credits (the price shown on the Cutaway page)"
-    },
-    {
-      "id": "per_month",
-      "text": "750 credits ÷ 25 = up to 30 premade 30-second videos a month on Starter",
-      "source": "worked out from the two facts above"
-    },
-    {
-      "id": "refund",
-      "text": "Charged once, when it starts; back in full if it fails",
-      "source": "the Cutaway page's price line (CutawayBuilder.jsx)"
-    },
-    {
       "id": "premades",
       "text": "The premade topics on the page: Landfill, French drain, Swimming pool, Car wash",
       "source": "the Cutaway page's PREMADE TOPICS chips (as recorded on screen)"
@@ -100,11 +73,6 @@
       "id": "drain_time",
       "text": "The French drain video took 4 min 48 s from start to finished video",
       "source": "cutaway_runs ec0b89b3: created 2026-10-25 14:13:28, finished 14:18:16"
-    },
-    {
-      "id": "end_card",
-      "text": "Starter keeps the Zyvo end card; Pro and Generative can remove it",
-      "source": "cutaway/endCard.js + the Cutaway page's plan lines"
     }
   ],
   "chapters": [
@@ -138,7 +106,7 @@
           "say": "Making one by hand means modeling every pipe and every layer of dirt in Blender, or paying an animator. That's days of work.",
           "show": {
             "card": {
-              "icon": "hourglass",
+              "scene": "days",
               "light": "by hand, that's",
               "bold": "days of work"
             }
@@ -149,7 +117,7 @@
           "say": "I made mine with no coding and no editing.",
           "show": {
             "card": {
-              "icon": "no",
+              "scene": "nocode",
               "light": "no coding,",
               "bold": "no editing",
               "flip": true
@@ -158,14 +126,11 @@
         },
         {
           "id": "i5",
-          "say": "And they work: this one by [CREATOR] has [VIEWS] views.",
-          "facts": [
-            "proof_example"
-          ],
+          "say": "And they work. You have probably scrolled past a few of these today.",
           "show": {
             "slot": {
               "id": "proof",
-              "show": "a viral cutaway video by another creator, with its real view count visible (their profile or the video page); you'll credit them by name"
+              "show": "viral cutaway videos in a feed (yours or a credited creator's), scrolling"
             }
           }
         },
@@ -215,7 +180,7 @@
     },
     {
       "id": "step2",
-      "name": "Step 2: Sign up (Starter plan)",
+      "name": "Step 2: Sign up",
       "step": 2,
       "beats": [
         {
@@ -227,64 +192,29 @@
               "of": 6,
               "title": [
                 "Sign up",
-                "Starter plan or higher"
+                "at tryzyvo.com"
               ]
             }
           }
         },
         {
           "id": "s2b",
-          "say": "Create your account. To make Cutaway videos, you need at least the Starter plan.",
-          "facts": [
-            "starter"
-          ],
+          "say": "Sign up at tryzyvo.com, and answer its quick onboarding questions.",
           "show": {
             "slot": {
               "id": "s2",
-              "show": "click Sign up, create the account, then the pricing page with the Starter plan in view"
+              "show": "click Sign up, create the account, then answer the onboarding questions one by one"
             }
           }
         },
         {
           "id": "s2c",
-          "say": "Starter is eighteen euros a month, and it gives you seven hundred and fifty credits.",
-          "facts": [
-            "starter"
-          ],
+          "say": "A few clicks, and you are in.",
           "show": {
             "note": {
-              "icon": "chart",
-              "light": "Starter: €18 a month",
-              "bold": "750 credits"
-            }
-          }
-        },
-        {
-          "id": "s2d",
-          "say": "A thirty second video on a premade topic costs twenty five credits. That's up to thirty of them a month.",
-          "facts": [
-            "premade_cost",
-            "per_month"
-          ],
-          "show": {
-            "note": {
-              "icon": "film",
-              "light": "one premade video:",
-              "bold": "25 credits"
-            }
-          }
-        },
-        {
-          "id": "s2e",
-          "say": "You're only charged when a video starts, and if it fails, you get the credits back in full.",
-          "facts": [
-            "refund"
-          ],
-          "show": {
-            "note": {
-              "icon": "check",
-              "light": "if it fails,",
-              "bold": "credits back"
+              "scene": "checklist",
+              "light": "a few clicks,",
+              "bold": "and you're in"
             }
           }
         }
@@ -324,7 +254,7 @@
           "say": "Zyvo is made for people who are tired of animating everything themselves.",
           "show": {
             "note": {
-              "icon": "gear",
+              "scene": "tired",
               "light": "tired of",
               "bold": "animating by hand?"
             }
@@ -335,9 +265,9 @@
           "say": "Normally, a video like this means days in Blender, or hiring an animator.",
           "show": {
             "note": {
-              "icon": "hourglass",
-              "light": "normally:",
-              "bold": "days in Blender"
+              "scene": "animator",
+              "light": "days in Blender, or",
+              "bold": "hiring an animator"
             }
           }
         },
@@ -346,7 +276,7 @@
           "say": "Its templates are built to make the same style of videos you keep seeing all over your feed.",
           "show": {
             "note": {
-              "icon": "sparkle",
+              "scene": "everywhere",
               "light": "the same style",
               "bold": "you see everywhere"
             }
@@ -393,20 +323,6 @@
             "slot": {
               "id": "s4",
               "show": "the Topic box: type \"How a septic tank works\" slowly, then clear it, then click the premade chips Landfill, French drain, Swimming pool and Car wash one by one"
-            }
-          }
-        },
-        {
-          "id": "s4d",
-          "say": "Premade topics cost the least, because their scene is already built and checked.",
-          "facts": [
-            "premade_cost"
-          ],
-          "show": {
-            "note": {
-              "icon": "check",
-              "light": "premade =",
-              "bold": "cheapest"
             }
           }
         },
@@ -504,7 +420,8 @@
           ],
           "show": {
             "note": {
-              "icon": "clock",
+              "scene": "stopwatch",
+              "seconds": 288,
               "light": "my French drain:",
               "bold": "under 5 minutes"
             }
@@ -550,20 +467,6 @@
             "slot": {
               "id": "download",
               "show": "the finished video in Zyvo: click Download"
-            }
-          }
-        },
-        {
-          "id": "s6d",
-          "say": "On Starter, the video ends with a short Zyvo end card. Pro and Generative can turn it off.",
-          "facts": [
-            "end_card"
-          ],
-          "show": {
-            "note": {
-              "icon": "eye",
-              "light": "end card:",
-              "bold": "off on Pro"
             }
           }
         }
@@ -655,5 +558,6 @@
     "stability": 0.4,
     "style": 0.35,
     "speed": 1
-  }
+  },
+  "captions": false
 }
