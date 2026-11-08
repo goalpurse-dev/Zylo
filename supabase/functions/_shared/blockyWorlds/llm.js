@@ -15,22 +15,39 @@ import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYS
 import { skeletonProblems } from "./skeleton.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesPrompt, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes } from "./hybrid.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
+import { examplesByIds } from "./referenceTexts.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
 import { propReference, beatProblems, beatsPrompt, beatsSchema, BEATS_SYSTEM, callbackProblem, cardFromScriptPrompt, CARD_FROM_SCRIPT_SYSTEM, cardProblems, problemSpots, propProblems, shotProblems, shotsPrompt, shotsSchema, SHOTS_SYSTEM } from "./protocol.js";
 
-// USD per 1M tokens (Anthropic list prices, checked 2026-11-03). Cache writes 1.25x input, reads 0.1x.
+// USD per 1M tokens (Anthropic list prices, checked 2026-11-03). Cache writes 1.25x input (5-minute TTL) or 2x input
+// (1-hour TTL); reads 0.1x (Opus 5.5: $0.20, 0.05x).
 export const PRICE = Object.freeze({
-  "claude-sonnet-5-5": Object.freeze({ input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 }),
-  "claude-haiku-5-5": Object.freeze({ input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 }),
+  "claude-sonnet-5-5": Object.freeze({ input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5, cacheWrite1h: 4.0 }),
+  "claude-haiku-5-5": Object.freeze({ input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125, cacheWrite1h: 0.2 }),
   // the strongest-model test (owner, 2026-11-08): list prices from the claude-api reference (cache reads $0.20)
-  "claude-opus-5-5": Object.freeze({ input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite: 5.0 }),
+  "claude-opus-5-5": Object.freeze({ input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite: 5.0, cacheWrite1h: 8.0 }),
 });
 /** Models that take the server-side refusal fallback (fallbacks: "default"). */
 const FALLBACK_MODELS = ["claude-sonnet-5-5", "claude-opus-5-5"];
+/** A reply's cost. Cache writes are split by TTL when the reply says (usage.cache_creation), else priced as 5-minute. */
 export const costOf = (model, u = {}) => {
   const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
-  return Number((((u.input_tokens ?? 0) * p.input + (u.output_tokens ?? 0) * p.output + (u.cache_read_input_tokens ?? 0) * p.cacheRead + (u.cache_creation_input_tokens ?? 0) * p.cacheWrite) / 1e6).toFixed(5));
+  const w1h = Number(u?.cache_creation?.ephemeral_1h_input_tokens ?? 0), w = Number(u?.cache_creation_input_tokens ?? 0);
+  return Number((((u?.input_tokens ?? 0) * p.input + (u?.output_tokens ?? 0) * p.output + (u?.cache_read_input_tokens ?? 0) * p.cacheRead + Math.max(0, w - w1h) * p.cacheWrite + w1h * p.cacheWrite1h) / 1e6).toFixed(5));
 };
+
+/** Cache TTLs the writer may use ("off": no cache_control at all). */
+export const CACHE_TTLS = Object.freeze(["5m", "1h", "off"]);
+/**
+ * The system blocks of a call, in order (the reference examples first, then the rules: both stable for a given call
+ * type and recipe). Each block gets a cache_control breakpoint, so a later call with the same examples and rules reads
+ * the whole prefix. The text is used exactly as given: nothing per call (topic, length, plan) may go in here, it goes
+ * in the user message after the last breakpoint. ttl "1h" adds ttl: "1h"; "5m" is the API default (no ttl field).
+ */
+export function systemBlocks(texts, { cache = true, ttl = "5m" } = {}) {
+  const cc = !cache || ttl === "off" ? null : ttl === "1h" ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" };
+  return [texts].flat().map((text) => (cc ? { type: "text", text, cache_control: { ...cc } } : { type: "text", text }));
+}
 
 /**
  * The library job's output ceilings (tokens, thinking included). They bound what one call can cost, so the job can stop
@@ -38,21 +55,36 @@ export const costOf = (model, u = {}) => {
  */
 export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
 /** The most one call can cost (USD): every output token used, plus a generous input. */
-export const worstCaseUsd = (model, maxTokens, inputTokens = 12000) => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * p.cacheWrite) / 1e6).toFixed(4)); };
+export const worstCaseUsd = (model, maxTokens, inputTokens = 12000, ttl = "5m") => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * (ttl === "1h" ? p.cacheWrite1h : p.cacheWrite)) / 1e6).toFixed(4)); };
 
 /** A call's tokens: uncached input, cache reads, cache writes, output (thinking included). */
-export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?.cache_read_input_tokens ?? 0, cacheWrite: u?.cache_creation_input_tokens ?? 0, output: u?.output_tokens ?? 0 });
+export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?.cache_read_input_tokens ?? 0, cacheWrite: u?.cache_creation_input_tokens ?? 0, output: u?.output_tokens ?? 0, ...(u?.cache_creation?.ephemeral_1h_input_tokens ? { cacheWrite1h: u.cache_creation.ephemeral_1h_input_tokens } : {}) });
+
+/** The request body of one JSON call (exported for the tests: the cached prefix must be byte-identical across calls). */
+export function requestBody({ model, system, user, schema, effort, maxTokens, cache = true, ttl = "5m" }) {
+  const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m));
+  return {
+    model,
+    max_tokens: maxTokens,
+    // a list of system texts, each a cached block (the reference examples come first); cache: false / ttl "off" for a
+    // one-off call (a cache write costs 1.25x the input and nothing would read it)
+    system: systemBlocks(system, { cache, ttl }),
+    messages: [{ role: "user", content: user }],
+    output_config: { effort, format: { type: "json_schema", schema } },
+    ...(sonnet ? { fallbacks: "default" } : {}),
+  };
+}
 
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
-async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true }) {
+async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m" }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
   // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
   // pass it; what a call cost (failed ones too) is added to the meter
-  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200), model);
-  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache }); }
+  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200, cache ? ttl : "5m"), model);
+  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache, ttl }); }
   catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
 }
-async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true }) {
+async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true, ttl = "5m" }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -60,16 +92,7 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
       // a policy decline on Sonnet 5.5 is re-run on a fallback model inside the same call (server-side)
       ...(sonnet ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}),
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      // a list of system texts: each block cached (the reference examples come first, so calls sharing them share the cache)
-      // cache: false for a one-off call (a cache write costs 1.25x the input and nothing would read it)
-      system: [system].flat().map((text) => (cache ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text })),
-      messages: [{ role: "user", content: user }],
-      output_config: { effort, format: { type: "json_schema", schema } },
-      ...(sonnet ? { fallbacks: "default" } : {}),
-    }),
+    body: JSON.stringify(requestBody({ model, system, user, schema, effort, maxTokens, cache, ttl })),
     signal: AbortSignal.timeout(timeoutMs),
   });
   const body = await res.json().catch(() => null);
@@ -363,6 +386,7 @@ export async function writeScript({ apiKey = "", provider = "anthropic", idea, l
 
 /** The checks a saved draft gets: ours (kind "written") with the protocol's, when its card is known; the user's own. */
 export function draftCheck(script, lengthSec, kind = "written", card = null) {
+  if (kind === "hybrid") return hybridDraftCheck(script, lengthSec, card);
   return kind === "written" ? scriptProtocolCheck(script, lengthSec, card) : checkScript(script, lengthSec, "own");
 }
 
@@ -628,50 +652,81 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
  * meter can stop before it). Effort, measured on the 2026-11-08 run: topic 1 at medium/medium cost $0.114 for the plan
  * (4.5k tokens out) + $0.061 for the lines (4.1k out), over the owner's ~$0.15 target, so both run at "low" (the plan is
  * a full decision list, the lines are craft from it); the fix only patches a hard check ("low"); the judge as before.
+ * The fix is the lines call again: SAME model, effort, schema and system blocks, so it reads the lines call's cache
+ * (a different effort would change the prefix and write it again).
+ * cacheTtl: "5m" (see the report of 2026-11-08: a custom-topic script is a burst of 2-3 calls within a minute or two,
+ * then nothing on that recipe for a long time; the 1-hour TTL's 2x write only pays at 2+ same-recipe scripts an hour).
+ * The app can switch it (BLOCKY_WORLDS_CACHE_TTL = 5m | 1h | off).
  */
 export const HYBRID = Object.freeze({
   plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 9000 }),
   lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 8000 }),
   fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 6000 }),
   judge: Object.freeze({ maxTokens: 2500 }),
+  cacheTtl: "5m",
 });
 
-/** Opus's plan: { plan, card, notes, costUsd, usage }. One call, never retried. */
-export async function writeHybridPlan({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, model = HYBRID.plan.model, effort = HYBRID.plan.effort, maxTokens = HYBRID.plan.maxTokens, note = "", cache = false, timeoutMs = 300_000 }) {
-  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note }), schema: hybridPlanSchema(), effort, maxTokens, timeoutMs, meter, cache });
+/** The plan call's request parts (system blocks + user message), exported so the tests can compare them byte for byte. */
+export function hybridPlanRequest({ topic, recipe = null, examples = [], lengthSec = 90, note = "", idea = null }) {
+  return { system: [examplesBlock(examples), HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
+}
+/** The lines call's request parts (the fix and a rewrite use the same system blocks: one cached prefix). */
+export function hybridLinesRequest({ plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], note = "" }) {
+  return { system: [examplesBlock(examples), HYBRID_LINES_SYSTEM], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed, note }) };
+}
+
+/** Opus's plan: { plan, card, notes, costUsd, usage }. One call, never retried. idea: the card the user picked. */
+export async function writeHybridPlan({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, model = HYBRID.plan.model, effort = HYBRID.plan.effort, maxTokens = HYBRID.plan.maxTokens, note = "", idea = null, cache = true, ttl = HYBRID.cacheTtl, timeoutMs = 300_000 }) {
+  const { system, user } = hybridPlanRequest({ topic, recipe, examples, lengthSec, note, idea });
+  const reply = await callJson({ apiKey, model, system, user, schema: hybridPlanSchema(), effort, maxTokens, timeoutMs, meter, cache, ttl });
   const plan = reply.data ?? {};
   return { plan, card: planCard(plan, topic), notes: planNotes(plan), costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /** Sonnet's lines from the plan (a fix: previous + the failed hard checks): { script, skeleton, costUsd, usage }. */
-export async function writeHybridLines({ apiKey = "", plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], meter = null, model = HYBRID.lines.model, effort = HYBRID.lines.effort, maxTokens = HYBRID.lines.maxTokens, cache = false, timeoutMs = 300_000 }) {
-  const reply = await callJson({ apiKey, model, system: [examplesBlock(examples), HYBRID_LINES_SYSTEM], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed }), schema: broadScriptSchema(), effort, maxTokens, timeoutMs, meter, cache });
+export async function writeHybridLines({ apiKey = "", plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], note = "", meter = null, model = HYBRID.lines.model, effort = HYBRID.lines.effort, maxTokens = HYBRID.lines.maxTokens, cache = true, ttl = HYBRID.cacheTtl, timeoutMs = 300_000 }) {
+  const { system, user } = hybridLinesRequest({ plan, topic, examples, lengthSec, previous, failed, note });
+  const reply = await callJson({ apiKey, model, system, user, schema: broadScriptSchema(), effort, maxTokens, timeoutMs, meter, cache, ttl });
   return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
+/** What a failed call was, for the caller (the app maps a balance failure to "paused", a cap to "busy"). */
+const failureOf = (e) => ({ balance: Boolean(e?.balance), cap: Boolean(e?.cap), refused: Boolean(e?.refused), message: String(e?.message ?? e).slice(0, 300) });
+const stoppedText = (e) => (e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 300)}`);
+
 /**
- * One topic, one draft: Opus plan -> Sonnet lines -> free checks (hard / advisory) -> at most ONE cheap fix, only when a
- * hard check fails (a script only too long is trimmed in code first, free; an opener-only miss goes to the small opener
- * call) -> the judge as FEEDBACK (score + notes; never a gate, never a rewrite). A failed or capped call stops the topic
- * (never retried); what was done is returned. steps: the calls (tests pass fakes). examples: [{ id, text, firstLine }].
- * Returns { topic, recipe, references, plan, card, planNotes, script, skeleton, checks, fixed, firstHard, feedback,
- * calls: { plan, lines, fix, judge } (each { model, usd, usage }), costUsd, stopped }.
+ * The free length fix for a hybrid draft (too long: filler words, then whole filler lines; never a change that adds a
+ * hard problem). Returns { script, checks, changes } (the input back when nothing helped).
  */
-export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, steps = {} }) {
+function trimHybrid({ script, skeleton, card, examples, lengthSec, checks }) {
+  if (!checks.hard.some((p) => /^Too long:/.test(p))) return { script, checks, changes: [] };
+  const run = (x) => hybridChecks({ script: x, skeleton, card, examples, lengthSec });
+  const t = trimScript(script, lengthSec, { check: (x) => ({ problems: run(x).hard, warnings: [] }), keep: (l) => Boolean(card?.prop) && l.part === "climax" && propReference(card.prop, l.text) !== null, anchors: [card?.twist, card?.prop, card?.topic, card?.twist_clue].filter(Boolean).join(" ") });
+  if (!t.changes.length) return { script, checks, changes: [] };
+  const after = run(t.script);
+  return after.hard.length < checks.hard.length ? { script: t.script, checks: after, changes: t.changes } : { script, checks, changes: [] };
+}
+
+/**
+ * One topic, one draft: Opus plan -> Sonnet lines -> free checks (hard / advisory; the free trim for too long, the free
+ * pad check for a little short) -> at most ONE cheap fix, only when a hard check is left (an opener-only miss goes to
+ * the small opener call) -> the judge as FEEDBACK (score + notes; never a gate, never a rewrite). A failed or capped
+ * call stops the topic (never retried); what was done is returned. steps: the calls (tests pass fakes). examples:
+ * [{ id, text, firstLine }]. idea: the card the user picked (the plan builds on it). ttl: the cache TTL of every call.
+ * Returns { topic, recipe, references, plan, card, planNotes, script, skeleton, checks, fixed, firstHard, feedback,
+ * calls: { plan, lines, fix, judge } (each { model, usd, usage }), costUsd, stopped, failure }.
+ */
+export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {} }) {
   const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, ...steps };
-  const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null };
+  const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], trimmed: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null, failure: null };
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   const check = () => hybridChecks({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec });
-  const trimmed = () => {
-    if (!out.checks.hard.some((p) => /^Too long:/.test(p))) return;
-    const t = trimScript(out.script, lengthSec, { check: (x) => { const c = hybridChecks({ script: x, skeleton: out.skeleton, card: out.card, examples, lengthSec }); return { problems: c.hard, warnings: [] }; }, keep: (l) => Boolean(out.card?.prop) && l.part === "climax" && propReference(out.card.prop, l.text) !== null, anchors: [out.card?.twist, out.card?.prop, out.card?.topic, out.card?.twist_clue].filter(Boolean).join(" ") });
-    if (t.changes.length) { const before = out.checks.hard.length; const keep = out.script; out.script = t.script; out.checks = check(); if (out.checks.hard.length >= before) { out.script = keep; out.checks = check(); } else out.trimmed = t.changes; }
-  };
+  const trimmed = () => { const t = trimHybrid({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, checks: out.checks }); out.script = t.script; out.checks = t.checks; out.trimmed.push(...t.changes); };
   try {
-    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter });
+    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl });
     log("plan", HYBRID.plan.model, p);
     Object.assign(out, { plan: p.plan, card: p.card, planNotes: p.notes ?? [] });
-    const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter });
+    const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl });
     log("lines", HYBRID.lines.model, w);
     out.script = w.script; out.skeleton = w.skeleton;
     out.checks = check();
@@ -684,7 +739,8 @@ export async function writeHybrid({ apiKey = "", topic, recipe = null, examples 
         log("fix", MODELS.opener, f);
         if (f.line) out.script = { ...out.script, lines: [{ ...out.script.lines[0], text: f.line }, ...out.script.lines.slice(1)] };
       } else {
-        const f = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, previous: out.script, failed: out.checks.hard, meter, model: HYBRID.fix.model, effort: HYBRID.fix.effort, maxTokens: HYBRID.fix.maxTokens });
+        // the lines call again with the same prefix (model, effort, schema, system blocks): a cache read, not a write
+        const f = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, previous: out.script, failed: out.checks.hard, meter, model: HYBRID.fix.model, effort: HYBRID.lines.effort, maxTokens: HYBRID.fix.maxTokens, ttl });
         log("fix", HYBRID.fix.model, f);
         out.script = f.script; out.skeleton = f.skeleton;
       }
@@ -700,9 +756,45 @@ export async function writeHybrid({ apiKey = "", topic, recipe = null, examples 
     }
   } catch (e) {
     out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
-    out.stopped = e?.cap ? `money cap: ${e.message}` : `a paid call failed (not retried): ${String(e?.message ?? e).slice(0, 300)}`;
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
   }
   return out;
+}
+
+/**
+ * A rewrite of a hybrid draft (the app's "Rewrite"): the saved plan, Sonnet's lines again with the previous version,
+ * what fails and the user's note (the same cached prefix as the lines call), then the same free checks, trim and pad
+ * check. One call; never retried. Returns { script, skeleton, checks, trimmed, calls: { lines }, costUsd, stopped,
+ * failure }.
+ */
+export async function rewriteHybrid({ apiKey = "", plan, card, examples = [], lengthSec = 90, previous = null, failed = [], note = "", meter = null, ttl = HYBRID.cacheTtl, steps = {} }) {
+  const s = { writeHybridLines, ...steps };
+  const out = { script: null, skeleton: {}, checks: null, trimmed: [], calls: { lines: null }, costUsd: 0, stopped: null, failure: null };
+  try {
+    const w = await s.writeHybridLines({ apiKey, plan, topic: card?.topic ?? "", examples, lengthSec, previous, failed, note, meter, ttl });
+    out.calls.lines = { model: HYBRID.lines.model, usd: Number(w.costUsd ?? 0), usage: w.usage ?? null };
+    out.costUsd = Number(Number(w.costUsd ?? 0).toFixed(5));
+    out.script = w.script; out.skeleton = w.skeleton;
+    out.checks = hybridChecks({ script: out.script, skeleton: out.skeleton, card, examples, lengthSec });
+    const t = trimHybrid({ script: out.script, skeleton: out.skeleton, card, examples, lengthSec, checks: out.checks });
+    Object.assign(out, { script: t.script, checks: t.checks, trimmed: t.changes });
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
+  }
+  return out;
+}
+
+/**
+ * The checks a hybrid draft gets in the app (draftCheck kind "hybrid"): the hard checks are its problems (they block a
+ * video), the advisory notes its warnings. The copy check uses the references the draft was written with (card.hybrid.refs).
+ */
+export function hybridDraftCheck(script, lengthSec, card = null) {
+  const c = hybridChecks({ script, skeleton: {}, card, examples: examplesByIds(card?.hybrid?.refs ?? []), lengthSec });
+  // the skeleton map isn't kept with a draft: its advisory notes would only say "missing" after an edit
+  return { problems: c.hard, warnings: c.advisory.filter((x) => !/^(Skeleton|Twist)/.test(x)), words: c.words, seconds: c.seconds };
 }
 
 // ---------- step 4: the shot plan ----------

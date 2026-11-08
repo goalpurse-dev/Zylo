@@ -7,6 +7,9 @@
 //                                    (ADMIN_EMAILS), in test mode: their runs are env "test")
 //   BLOCKY_WORLDS_LLM=mock           ideas and scripts from examples.js: no Anthropic call, no cost (the free flow test)
 //   BLOCKY_WORLDS_PAID_CALLS=off     a hard off switch for every paid call
+//   BLOCKY_WORLDS_HYBRID=off         a typed topic's script back on the old beats -> script path (default: the hybrid
+//                                    writer, Opus 5.5 plans + Sonnet 5.5 writes the lines, _shared/blockyWorlds/hybridApp.js)
+//   BLOCKY_WORLDS_CACHE_TTL=1h|off   the hybrid writer's prompt cache (default 5m)
 //   BLOCKY_WORLDS_RENDERER=runpod    video making on (docs/blocky-worlds-pipeline.md), and only when RunPod and the
 //                                    callback secret are configured too (renderSupabase.ts); otherwise start refuses
 //                                    BEFORE anything is charged. A tester's dryRun still runs every check and the price
@@ -28,7 +31,10 @@ import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { cardFromScript, draftCheck, fixPart, providerFrom, repairOpener, writeBeats, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { pickRecipe, RECIPES } from "../_shared/blockyWorlds/recipes.js";
+import { examplesByIds, examplesFor } from "../_shared/blockyWorlds/referenceTexts.js";
+import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, runCard, stripForLibrary } from "../_shared/blockyWorlds/hybridApp.js";
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
@@ -43,6 +49,9 @@ const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
 const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
+// the hybrid writer for typed topics (default on; the mock provider keeps the free old path)
+const HYBRID_ON = flag("BLOCKY_WORLDS_HYBRID") !== "off" && PROVIDER === "anthropic";
+const CACHE_TTL: string = (CACHE_TTLS as readonly string[]).includes(flag("BLOCKY_WORLDS_CACHE_TTL")) ? flag("BLOCKY_WORLDS_CACHE_TTL") : HYBRID.cacheTtl;
 // on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone
 const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
 const BUCKET = "blocky-worlds-renders";
@@ -114,6 +123,8 @@ function draftView(d: any) {
     credits: PRICES[d.length_sec] ?? null,
     check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
     ready: !(check.problems ?? []).length, updatedAt: d.updated_at,
+    // the hybrid writer's judge: a score and notes as feedback only (never a block)
+    feedback: check.feedback ? { score: check.feedback.score ?? null, notes: check.feedback.notes ?? [] } : null,
   };
 }
 async function signed(path: string | undefined, download?: string) {
@@ -147,8 +158,8 @@ async function countEvent(userId: string, libraryId: string | null, kind: string
   return true;
 }
 
-/** The kind of checks a draft gets: ours keep their parts; anything the user saved is checked as their own. */
-const kindOf = (d: any) => (d.checks?.kind === "written" ? "written" : "own");
+/** The kind of checks a draft gets: ours keep their parts (the hybrid writer's its hard/advisory split); anything the user saved is checked as their own. */
+const kindOf = (d: any) => (d.checks?.kind === "written" ? "written" : d.checks?.kind === "hybrid" ? "hybrid" : "own");
 /** The same checks the script was written against: ours get the protocol's too (the object pays off, the callback). */
 function recheck(d: any, lengthSec = d.length_sec) {
   const script = { title: d.title, lines: d.lines ?? [], post: d.post ?? {} };
@@ -255,7 +266,8 @@ async function handle(req: Request, trace: Trace) {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
     trace.step = "limits";
-    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : action === "fixOpener" ? 0.005 : action === "fixPart" ? 0.02 : 0.08, "writing");
+    // a write or rewrite may go to the hybrid writer (decided below, once the idea is loaded): counted at its cost
+    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : action === "fixOpener" ? 0.005 : action === "fixPart" ? 0.02 : HYBRID_ON ? APP_HYBRID.guardUsd : 0.08, "writing");
     if (Number(counts.user_scripts_today ?? 0) >= WRITING.dailyScripts) throw new ApiError("DAILY_LIMIT", `That's today's ${WRITING.dailyScripts} script writes. Edit the script yourself, or come back tomorrow.`);
 
     if (action === "fixOpener") {
@@ -318,6 +330,41 @@ async function handle(req: Request, trace: Trace) {
     // the user's own topic is the story's core (older topic ideas kept it only on the idea row)
     if (card && !card.topic && ideaRow?.source === "topic" && ideaRow.topic) card = { ...card, topic: ideaRow.topic };
     const libraryId = ideaRow?.library_id ?? null;
+
+    // the production writer for a typed topic (owner, 2026-11-08): Opus 5.5 plans, Sonnet 5.5 writes the lines, low
+    // effort, one draft, one fix only on a hard failure, the judge as feedback only; a rewrite of its draft is the lines
+    // call again from the saved plan. Library ideas and the user's own scripts keep the path below.
+    const topicText = card?.topic ?? (ideaRow?.source === "topic" ? ideaRow.topic : null);
+    const hybridWrite = action === "writeScript" && ideaRow?.source === "topic" && Boolean(topicText);
+    const hybridRewrite = action === "rewrite" && d?.checks?.kind === "hybrid" && Boolean(d?.card?.hybrid?.plan);
+    if (HYBRID_ON && (hybridWrite || hybridRewrite)) {
+      trace.step = hybridWrite ? "hybrid writer" : "hybrid rewrite";
+      const meter = moneyMeter(APP_HYBRID.capUsd);
+      let r: any, row: any;
+      if (hybridWrite) {
+        const picked = pickRecipe({ topic: topicText, card });
+        const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
+        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL });
+        if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec) };
+      } else {
+        const failed = recheck(d, lengthSec).problems;
+        r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note: String(body?.note ?? "").slice(0, 300), meter, ttl: CACHE_TTL });
+        if (r.script?.lines?.length) row = { title: r.script.title || d.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r, { flow: "hybrid rewrite", previous: d.checks }) };
+      }
+      for (const line of callLogLines({ userId: who.user.id, draftId: d?.id ?? null, action, calls: r.calls })) console.log(JSON.stringify(line));
+      if (!row) {
+        await logCall(who.user.id, "script", r.costUsd, false);
+        throw writerError(Object.assign(new Error(r.stopped ?? "the writer returned no script"), { balance: Boolean(r.failure?.balance) }));
+      }
+      await logCall(who.user.id, "script", r.costUsd);
+      row.updated_at = new Date().toISOString();
+      const saved = d
+        ? await admin.from("blocky_worlds_drafts").update({ ...row, writes: d.writes + 1 }).eq("id", d.id).select("*").single()
+        : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, idea_id: ideaRow.id, source: "topic", writes: 1 }).select("*").single();
+      if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
+      return { ...draftView(saved.data), notice: stillFailing(row.checks.problems ?? []), writesLeft: await scriptsLeft(who.user.id) };
+    }
+
     trace.step = "card";
     if (!card || cardProblems(card).length) {
       if (!d?.lines?.length) throw new ApiError("NOT_FOUND", "We couldn't find that idea. Get new ideas and pick one.");
@@ -420,7 +467,7 @@ async function handle(req: Request, trace: Trace) {
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
-    await admin.from("blocky_worlds_runs").update({ card: d.card ?? null, library_id: ideaLib }).eq("id", run.id);
+    await admin.from("blocky_worlds_runs").update({ card: runCard(d.card ?? null), library_id: ideaLib }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute
@@ -452,7 +499,7 @@ async function handle(req: Request, trace: Trace) {
     // idea card, no user data), and the AI judge decides on the next library tick whether anyone else sees it
     if (fresh && !run.library_id && (kind === "thumb_up" || kind === "downloaded") && run.card && !cardProblems(run.card).length) {
       // only the card: the user's own typed topic stays with them
-      const { topic: _topic, ...c } = run.card;
+      const c: any = stripForLibrary(run.card);
       const { error } = await admin.from("blocky_worlds_library").insert({ idea: c, opener: c.opener, opener_key: openerKey(c.opener), formula: c.formula, twist: c.twistType, mood: c.mood, setting: c.setting, status: "pending", source: "user", source_draft: run.draft_id });
       if (error && !/duplicate key/i.test(error.message)) console.error("[blocky-worlds-api] promote:", error.message);
     }

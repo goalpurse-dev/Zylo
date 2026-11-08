@@ -25,6 +25,24 @@ const GORE = [
   "pistol", "shotgun", "bomb", "terrorist",
 ];
 
+/**
+ * Every word and phrase the checks below throw a story out for, for the writers' prompts (owner, 2026-11-08: "add the
+ * blocked words to the prompt to avoid fix calls"). A fixed order, so the prompts that carry it stay byte-identical
+ * (their cached prefix). GORE is matched as a word START ("stab" also blocks "stable", "meth" blocks "method").
+ */
+export const BLOCKED_WORDS = Object.freeze({ famous: Object.freeze([...FAMOUS]), platform: Object.freeze([...PLATFORM]), gore: Object.freeze([...GORE]) });
+
+/** The prompt rule naming every blocked word (the same text every call). */
+export function blockedWordsRule() {
+  return [
+    "NEVER USE THESE WORDS, not even as an ordinary word, inside a name, in the title or in the post (the code throws the script out; this costs a rewrite):",
+    `- names of famous stories and games: ${FAMOUS.join(", ")}.`,
+    `- a game platform's terms: ${PLATFORM.join(", ")}.`,
+    `- and no word that STARTS with: ${GORE.join(", ")} (so not "stable", "method", "gunk", "bombastic", "drugstore" either).`,
+    'Everyday swaps: "coin bank" (not piggy bank), "the door" (not doors), "man" or a name (not guy), "frosted" or "icy" (not frozen), "spark" (not ember), "grain tower" (not silo), "yarn" (not wool), "steady" (not stable), "way" (not method).',
+  ].join("\n");
+}
+
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const wordsRe = (list, prefixOnly = false) => new RegExp(`(?<![\\p{L}\\p{N}])(${list.map(esc).join("|")})${prefixOnly ? "" : "(?![\\p{L}\\p{N}])"}`, "iu");
 

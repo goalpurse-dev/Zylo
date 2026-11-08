@@ -6,8 +6,14 @@ import assert from "node:assert/strict";
 import { namesIn, copyProblems } from "../supabase/functions/_shared/blockyWorlds/antiCopy.js";
 import { skeletonProblems, isException } from "../supabase/functions/_shared/blockyWorlds/skeleton.js";
 import { topicProblems, mentions, topicElements } from "../supabase/functions/_shared/blockyWorlds/topic.js";
-import { hybridChecks, hybridPlanSchema, planCard, planText, premiseLost, hybridLinesPrompt, HYBRID_LINES_SYSTEM, CLUE_SPOTS } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
-import { writeHybrid, writeHybridPlan, HYBRID } from "../supabase/functions/_shared/blockyWorlds/llm.js";
+import { hybridChecks, hybridPlanSchema, planCard, planText, premiseLost, hybridLinesPrompt, hybridPlanPrompt, HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, CLUE_SPOTS, lengthNumbers, SHORT_GRACE } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
+import { writeHybrid, writeHybridPlan, rewriteHybrid, hybridPlanRequest, hybridLinesRequest, requestBody, systemBlocks, costOf, worstCaseUsd, draftCheck, HYBRID } from "../supabase/functions/_shared/blockyWorlds/llm.js";
+import { BLOCKED_WORDS, safetyProblems } from "../supabase/functions/_shared/blockyWorlds/safety.js";
+import { examplesBlock } from "../supabase/functions/_shared/blockyWorlds/broad.js";
+import { examplesFor, examplesByIds, REFERENCE_TEXTS } from "../supabase/functions/_shared/blockyWorlds/referenceTexts.js";
+import { RECIPE_IDS } from "../supabase/functions/_shared/blockyWorlds/recipes.js";
+import { APP_HYBRID, callLogLines, hybridBeats, hybridCard, hybridChecksRow, runCard, stripForLibrary } from "../supabase/functions/_shared/blockyWorlds/hybridApp.js";
+import { readFileSync } from "node:fs";
 import { RUBRIC, scoreVerdict } from "../supabase/functions/_shared/blockyWorlds/library.js";
 
 const L = (part, ...texts) => texts.map((text) => ({ part, text }));
@@ -147,17 +153,19 @@ test("the plan: schema carries the clues with WHERE they are planted; the card a
   assert.match(HYBRID_LINES_SYSTEM, /YOU GET A PLAN/);
 });
 
-test("the plan call: Opus 5.5 at the hybrid effort, examples first, no cache write for a one-off call", async () => {
+test("the plan call: Opus 5.5 at low effort, examples first then the rules, both cached (5-minute TTL by default)", async () => {
   const real = globalThis.fetch;
   let body = null;
   globalThis.fetch = async (_u, init) => { body = JSON.parse(init.body); return { ok: true, json: async () => ({ model: "claude-opus-5-5", usage: { input_tokens: 1000, output_tokens: 2000 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(PLAN) }] }) }; };
   let r;
   try { r = await writeHybridPlan({ apiKey: "x", topic: TOPIC, examples: [{ id: "r", text: "In this town, ..." }], lengthSec: 90 }); } finally { globalThis.fetch = real; }
   assert.equal(body.model, "claude-opus-5-5");
-  assert.equal(body.output_config.effort, HYBRID.plan.effort);
+  assert.equal(body.output_config.effort, "low");
+  assert.equal(HYBRID.plan.effort, "low");
   assert.equal(body.max_tokens, HYBRID.plan.maxTokens);
   assert.match(body.system[0].text, /REFERENCE EXAMPLES/);
-  assert.ok(body.system.every((b) => !b.cache_control));
+  assert.equal(body.system[1].text, HYBRID_PLAN_SYSTEM);
+  assert.deepEqual(body.system.map((b) => b.cache_control), [{ type: "ephemeral" }, { type: "ephemeral" }]);
   assert.equal(r.costUsd, 0.044); // 1000 in at $4 + 2000 out at $20 per million
   assert.equal(r.card.twist_clue, "porch sinks");
 });
@@ -207,4 +215,178 @@ test("writeHybrid: an opener-only miss goes to the small opener call; a capped c
   const r2 = await writeHybrid({ topic: TOPIC, steps: { writeHybridPlan: async () => { throw Object.assign(new Error("cap"), { cap: true, costUsd: 0 }); } } });
   assert.match(r2.stopped, /^money cap/);
   assert.equal(r2.script, null);
+});
+
+// ---------- production (owner, 2026-11-08): the app's writer, the prompts, the cache, the pad check ----------
+const words = (s) => s.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0);
+/** SCRIPT with middle lines dropped until it is just under the band's minimum (a little short). */
+function slightlyShort(lengthSec = 90) {
+  const { lo } = lengthNumbers(lengthSec), s = clone(SCRIPT);
+  for (const part of ["until", "climax", "tour", "discovery", "me"]) {
+    while (words(s) >= lo) {
+      const i = s.lines.findLastIndex((l, k) => l.part === part && k > 0 && s.lines[k - 1].part === part && s.lines.filter((m) => m.part === part).length > 2);
+      if (i < 0) break;
+      s.lines.splice(i, 1);
+    }
+  }
+  return s;
+}
+const reply = (model, data, usage = { input_tokens: 100, output_tokens: 100 }) => ({ ok: true, json: async () => ({ model, usage, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) });
+async function withFetch(replies, fn) {
+  const real = globalThis.fetch, bodies = [];
+  globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); bodies.push(b); return replies(b, bodies.length); };
+  try { return { result: await fn(), bodies }; } finally { globalThis.fetch = real; }
+}
+const JUDGE_OK = { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "sharper closer" }] };
+
+test("production flow through the API shape: Opus plans, then Sonnet writes, both at low effort; the fix reads the lines call's exact prefix", async () => {
+  const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20), skeleton: MAP };
+  const { result: r, bodies } = await withFetch((b, n) => (n === 1 ? reply("claude-opus-5-5", PLAN) : n === 2 ? reply(b.model, short) : n === 3 ? reply(b.model, { ...clone(SCRIPT), skeleton: MAP }) : reply(b.model, JUDGE_OK)),
+    () => writeHybrid({ apiKey: "x", topic: TOPIC, examples: examplesFor("rigged_system"), lengthSec: 90 }));
+  assert.deepEqual(bodies.map((b) => b.model), ["claude-opus-5-5", "claude-sonnet-5-5", "claude-sonnet-5-5", "claude-sonnet-5-5"]);
+  assert.deepEqual(bodies.slice(0, 3).map((b) => b.output_config.effort), ["low", "low", "low"]);
+  // the fix: same model, effort, schema and system bytes as the lines call (a cache read, not a second write)
+  assert.equal(JSON.stringify(bodies[2].system), JSON.stringify(bodies[1].system));
+  assert.equal(JSON.stringify(bodies[2].output_config), JSON.stringify(bodies[1].output_config));
+  assert.match(bodies[2].messages[0].content, /IT FAILED THESE HARD CHECKS/);
+  assert.equal(r.fixed, true);
+  assert.equal(bodies.filter((b) => /IT FAILED THESE HARD CHECKS/.test(b.messages[0].content)).length, 1);
+  assert.equal(r.feedback.feedbackOnly, true);
+});
+
+test("cache: the cached prefix is byte-identical across calls (other topic, length, picked idea, plan); only the user message changes", () => {
+  const ex = examplesFor("curfew_monster");
+  const a = hybridPlanRequest({ topic: TOPIC, recipe: { id: "curfew_monster", what: "x" }, examples: ex, lengthSec: 90 });
+  const b = hybridPlanRequest({ topic: "In this town, never whistle after dark.", recipe: { id: "curfew_monster", what: "x" }, examples: examplesFor("curfew_monster"), lengthSec: 150, idea: card() });
+  const body = (q, model) => requestBody({ model, system: q.system, user: q.user, schema: {}, effort: "low", maxTokens: 9000 });
+  assert.equal(JSON.stringify(body(a, "claude-opus-5-5").system), JSON.stringify(body(b, "claude-opus-5-5").system));
+  assert.notEqual(a.user, b.user);
+  assert.ok(!a.system.join("").includes(TOPIC) && !b.system.join("").includes("whistle after dark"), "nothing per call in the system blocks");
+  assert.match(b.user, /THE IDEA THE USER PICKED/);
+  const l1 = hybridLinesRequest({ plan: PLAN, topic: TOPIC, examples: ex, lengthSec: 90 });
+  const l2 = hybridLinesRequest({ plan: { ...PLAN, title: "Other" }, topic: "x", examples: ex, lengthSec: 60, previous: SCRIPT, failed: ["Too short"], note: "funnier" });
+  assert.equal(JSON.stringify(systemBlocks(l1.system)), JSON.stringify(systemBlocks(l2.system)));
+  // examples first, then the rules; a breakpoint on each; 1 h only when asked, "off" none at all
+  assert.match(l1.system[0], /^REFERENCE EXAMPLES/);
+  assert.equal(l1.system[1], HYBRID_LINES_SYSTEM);
+  assert.deepEqual(systemBlocks(l1.system, { ttl: "1h" }).map((x) => x.cache_control), [{ type: "ephemeral", ttl: "1h" }, { type: "ephemeral", ttl: "1h" }]);
+  assert.ok(systemBlocks(l1.system, { ttl: "off" }).every((x) => !x.cache_control));
+  assert.equal(HYBRID.cacheTtl, "5m");
+  // the same recipe always gives the same examples (stable bytes), and the fix runs at the lines call's effort
+  assert.equal(examplesBlock(examplesFor("curfew_monster")), examplesBlock(ex));
+  assert.equal(HYBRID.fix.effort, HYBRID.lines.effort);
+  assert.equal(HYBRID.fix.model, HYBRID.lines.model);
+});
+
+test("cache: every cached block is over the 512-token minimum of Opus 5.5 and Sonnet 5.5 (at 4.5 characters a token)", () => {
+  const min = 512 * 4.5;
+  for (const id of RECIPE_IDS) {
+    const ex = examplesFor(id);
+    assert.ok(ex.length >= 2, id);
+    assert.ok(examplesBlock(ex).length > min, `${id}: ${examplesBlock(ex).length}`);
+  }
+  assert.ok(HYBRID_PLAN_SYSTEM.length > min, `plan rules ${HYBRID_PLAN_SYSTEM.length}`);
+  assert.ok(HYBRID_LINES_SYSTEM.length > min, `lines rules ${HYBRID_LINES_SYSTEM.length}`);
+});
+
+test("reference texts: the bundled copy matches the transcripts it was built from", () => {
+  for (const id of Object.keys(REFERENCE_TEXTS)) {
+    const t = JSON.parse(readFileSync(new URL(`../reference/blocky-worlds/analysis/${id}/transcript.json`, import.meta.url), "utf8"));
+    assert.equal(REFERENCE_TEXTS[id], (t.segments ?? []).map((s) => String(s.text ?? "").trim()).filter(Boolean).join(" "), id);
+  }
+  assert.equal(examplesByIds(["nope", Object.keys(REFERENCE_TEXTS)[0]]).length, 1);
+});
+
+test("prompts: every safety-blocked word is named in BOTH the plan and the lines system prompts", () => {
+  const all = [...BLOCKED_WORDS.famous, ...BLOCKED_WORDS.platform, ...BLOCKED_WORDS.gore];
+  assert.ok(all.length > 80);
+  for (const w of all) {
+    assert.ok(HYBRID_PLAN_SYSTEM.includes(w), `plan: ${w}`);
+    assert.ok(HYBRID_LINES_SYSTEM.includes(w), `lines: ${w}`);
+  }
+  assert.match(HYBRID_PLAN_SYSTEM, /NEVER USE THESE WORDS/);
+  assert.match(HYBRID_LINES_SYSTEM, /coin bank/);
+  // the list is the check's own: what the prompt names, the check throws out
+  for (const w of ["piggy", "doors", "blood", "stable", "roblox"]) assert.ok(safetyProblems(`I saw the ${w} today.`).length, w);
+});
+
+test("prompts: a firm length at both ends; the plan gets exact line intents per part, the writer the band, line count and a count", () => {
+  for (const len of [30, 90, 180]) {
+    const n = lengthNumbers(len);
+    const plan = hybridPlanPrompt({ topic: TOPIC, lengthSec: len });
+    assert.ok(plan.includes(`${n.lo} to ${n.hi} spoken words = ${n.lines} lines`), `${len}`);
+    for (const b of n.parts) assert.ok(plan.split("\n").includes(`- ${b.id}: ${b.lines}`), `${len} ${b.id}`);
+    assert.match(plan, /count the line intents/);
+    const lines = hybridLinesPrompt({ plan: PLAN, topic: TOPIC, lengthSec: len });
+    assert.ok(lines.includes(`AT LEAST ${n.lo} and AT MOST ${n.hi} words in total, in ${n.lines} lines`), `${len}`);
+    assert.match(lines, /BEFORE YOU ANSWER: count the words of every line/);
+    assert.equal(n.parts.reduce((a, b) => a + b.lines, 0), n.lines);
+  }
+  assert.match(HYBRID_LINES_SYSTEM, /HARD RULE AT BOTH ENDS/);
+});
+
+test("pad check: a little short (within 10% of the minimum) is only flagged, no fix call; shorter is hard (the one fix)", async () => {
+  const { lo } = lengthNumbers(90), s = slightlyShort(90);
+  assert.ok(words(s) < lo && words(s) >= Math.ceil(lo * (1 - SHORT_GRACE)), `${words(s)} words`);
+  const c = hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 });
+  assert.ok(!c.hard.some((x) => /short/i.test(x)), JSON.stringify(c.hard));
+  assert.ok(c.advisory.some((x) => /^A bit short:/.test(x)));
+  const calls = [];
+  await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s], calls) });
+  assert.deepEqual(calls, ["plan", "lines", "judge:true"]);
+  // the real 2026-11-08 case: 264 words for a 286 minimum is now flagged, not a $0.034 fix
+  assert.ok(264 >= Math.ceil(lo * (1 - SHORT_GRACE)));
+  const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
+  assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
+});
+
+test("judge never gates in the app: its score is saved as feedback, the problems are the hard checks only", async () => {
+  const calls = [];
+  const r = await writeHybrid({ topic: TOPIC, examples: [], lengthSec: 90, steps: fakes([slightlyShort(90)], calls, 1) });
+  const row = hybridChecksRow(r);
+  assert.deepEqual(row.problems, []);
+  assert.equal(row.kind, "hybrid");
+  assert.ok(row.feedback.score < 20);
+  assert.ok(row.warnings.some((x) => /^A bit short/.test(x)));
+  // the app's re-check (quote / start) of a hybrid draft: the same split, advisory notes never block
+  const c = hybridCard(r, { id: "rigged_system" });
+  assert.deepEqual(draftCheck(slightlyShort(90), 90, "hybrid", c).problems, []);
+  assert.ok(draftCheck({ ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) }, 90, "hybrid", c).problems.some((x) => /^Too short/.test(x)));
+});
+
+test("rewrite of a hybrid draft: ONE Sonnet call from the saved plan with the previous lines, the failed checks and the note", async () => {
+  const seen = [];
+  const r = await rewriteHybrid({ plan: PLAN, card: card(), lengthSec: 90, previous: SCRIPT, failed: ["Too short: 200 words"], note: "funnier", steps: { writeHybridLines: async (a) => { seen.push(a); return { script: clone(SCRIPT), skeleton: MAP, costUsd: 0.03, usage: { input: 2000, cacheRead: 5000, cacheWrite: 0, output: 1500 } }; } } });
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].note, "funnier");
+  assert.deepEqual(seen[0].failed, ["Too short: 200 words"]);
+  assert.deepEqual(r.checks.hard, []);
+  assert.equal(r.costUsd, 0.03);
+  const r2 = await rewriteHybrid({ plan: PLAN, card: card(), steps: { writeHybridLines: async () => { throw Object.assign(new Error("anthropic 400 credit balance"), { balance: true, costUsd: 0 }); } } });
+  assert.equal(r2.failure.balance, true);
+  assert.equal(r2.script, null);
+});
+
+test("cost: per-call tokens (input / cache read / cache write / output) priced per model, 1-hour writes at 2x", () => {
+  assert.equal(costOf("claude-opus-5-5", { input_tokens: 1000, cache_read_input_tokens: 10000, cache_creation_input_tokens: 0, output_tokens: 1000 }), 0.026);
+  assert.equal(costOf("claude-sonnet-5-5", { input_tokens: 0, cache_creation_input_tokens: 1000000, output_tokens: 0 }), 2.5);
+  assert.equal(costOf("claude-sonnet-5-5", { cache_creation_input_tokens: 1000000, cache_creation: { ephemeral_1h_input_tokens: 1000000 } }), 4);
+  assert.ok(worstCaseUsd("claude-opus-5-5", 9000, 8000, "1h") > worstCaseUsd("claude-opus-5-5", 9000, 8000));
+  const lines = callLogLines({ userId: "u", action: "writeScript", calls: { plan: { model: "claude-opus-5-5", usd: 0.05, usage: { input: 900, cacheRead: 5000, cacheWrite: 0, output: 2000 } }, fix: null } });
+  assert.equal(lines.length, 1);
+  assert.deepEqual([lines[0].input, lines[0].cacheRead, lines[0].cacheWrite, lines[0].output, lines[0].usd], [900, 5000, 0, 2000, 0.05]);
+});
+
+test("app: the plan stays with the draft (not on the run, not in the library); beats in the draft's shape; a cap above a full write's worst case", () => {
+  const r = { card: card(), plan: PLAN, references: [{ id: "a" }, { id: "b" }] };
+  const c = hybridCard(r, { id: "rigged_system" });
+  assert.deepEqual(c.hybrid.refs, ["a", "b"]);
+  assert.equal(runCard(c).hybrid, undefined);
+  assert.equal(runCard(c).prop, c.prop);
+  assert.equal(stripForLibrary(c).topic, undefined);
+  assert.equal(stripForLibrary(c).hybrid, undefined);
+  assert.equal(hybridBeats(PLAN, 90).length, 7);
+  const worst = worstCaseUsd(HYBRID.plan.model, HYBRID.plan.maxTokens, 8000) + worstCaseUsd(HYBRID.lines.model, HYBRID.lines.maxTokens, 10000) + worstCaseUsd(HYBRID.fix.model, HYBRID.fix.maxTokens, 12000) + worstCaseUsd("claude-sonnet-5-5", HYBRID.judge.maxTokens, 4000);
+  assert.ok(worst < APP_HYBRID.capUsd, `worst ${worst}`);
+  assert.equal(APP_HYBRID.judge, true);
 });
