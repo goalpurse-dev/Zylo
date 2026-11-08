@@ -133,6 +133,28 @@ test("1c: the contradiction list of 2026-11-07, resolved", async () => {
   assert.match(h, /A creek is a SHALLOW strip/);
 });
 
+test("1d: the plan reply carries the narration; checked numbers go into it for free", async () => {
+  const { applyFactChanges } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
+  const s = [{ role: "fact", text: "A pool holds about 20,000 gallons of water." }, { role: "myth", text: "It takes 8 hours to fill." }, { role: "hook", text: "If you dig a hole, you have a pool." }];
+  const r = applyFactChanges(s, [
+    { role: "fact", verdict: "reword", planned: "A pool holds 20,000 gallons", claim: "A pool holds 18,000 gallons" },
+    { role: "myth", verdict: "reword", planned: "8 hours", claim: "8 to 10 hours" },
+    { role: "hook", verdict: "keep", planned: "x", claim: "x" },
+  ]);
+  assert.equal(r.sentences[0].text, "A pool holds about 18,000 gallons of water.");
+  assert.equal(r.sentences[1].text, "It takes 8 hours to fill.", "a number that became a range is left to the words checks");
+  assert.ok(r.notes.some((n) => /20000 -> 18,000/.test(n)) && r.notes.some((n) => /myth: the checked claim has other numbers/.test(n)));
+  assert.equal(s[0].text, "A pool holds about 20,000 gallons of water.", "the input is not changed");
+});
+
+test("1d: the merged prompts: sentences in the plan schema and prompt, one fact call", () => {
+  const src = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/planner.mjs", import.meta.url), "utf8");
+  assert.match(src, /const BEATS_REPLY_SCHEMA = \{[^\n]*required: \["why", "story", "sentences", "sceneJson"\]/);
+  assert.match(src, /Reply also with "sentences": THE NARRATION[\s\S]{0,600}\$\{WRITING_RULES\}/);
+  assert.match(src, /step\("facts", \{ system: FACTS_ONE_SYSTEM/);
+  assert.doesNotMatch(src.slice(src.indexOf("async function planCustom"), src.indexOf("export async function rewordBeats")), /step\("fact research"/);
+});
+
 test("a clean small scene has no errors", () => {
   const e = validateScene(scene(
     [{ id: "light", kind: "light", params: { storm: false } }, { id: "t", kind: "tank", main: true, params: { pos: [0, 0, -2], r: 1, h: 2, mat: "tankBlue" } }, { id: "sign", kind: "sign", params: { at: [4, 0, 2], rotY: 0.3, scale: 1.4 } }],

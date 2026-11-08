@@ -1,0 +1,96 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 7 searches",
+ "searches": 7,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "Roughly 40–50 mph (about 65–80 km/h) at full power, depending on the saw.",
+    "why": "Manufacturer chain speeds at max power convert to about 37–49 mph (Stihl 18.6–21.7 m/s is about 42–49 mph; Husqvarna 55–62.7 ft/s is about 37–43 mph). 50 mph is the top of the range, not typical. Only the ISO test maximum on big saws reaches about 60 mph.",
+    "sources": [
+     {
+      "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-208-0121-C_ZBA_04_01.pdf",
+      "title": "MS 210, 230, 250 Instruction Manual"
+     },
+     {
+      "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-209-0121-B_ZBA_03_01.pdf",
+      "title": "MS 290, 310, 390 Instruction Manual"
+     },
+     {
+      "url": "https://www.husqvarna.com/us/chainsaws/120/",
+      "title": "Husqvarna 120"
+     },
+     {
+      "url": "https://www.husqvarna.com/ca-en/chainsaws/445/",
+      "title": "Husqvarna 445 Chainsaw"
+     },
+     {
+      "url": "https://www.husqvarna.com/us/chainsaws/545-mark-ii/",
+      "title": "545 Mark II Gas Chainsaw"
+     },
+     {
+      "url": "https://sip-protection.com/en/insights/which-chain-speed-class-do-i-need",
+      "title": "Find your class of chainsaw protection"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Idle is typically about 2,700–3,000 rpm and the clutch engages at about 3,900–4,300 rpm, depending on the saw.",
+    "why": "Manuals show these figures vary by model (Shindaiwa idle 2,700 and engagement 4,100; Husqvarna 120: 3,000/4,000; 445: 2,700/4,300; 545 Mark II engagement 3,900). They are not universal.",
+    "sources": [
+     {
+      "url": "https://www.shindaiwa-usa.com/getattachment/272cde5a-c242-45bf-a1ee-2559169ed7b0/402Ses_C37414_082715.pdf",
+      "title": "Instruction Manual"
+     },
+     {
+      "url": "https://www.husqvarna.com/us/chainsaws/120/",
+      "title": "Husqvarna 120"
+     },
+     {
+      "url": "https://www.husqvarna.com/ca-en/chainsaws/445/",
+      "title": "Husqvarna 445 Chainsaw"
+     },
+     {
+      "url": "https://www.husqvarna.com/ca-en/chainsaws/545-mark-ii/",
+      "title": "Husqvarna 545 Mark II Chainsaw"
+     },
+     {
+      "url": "https://ssc.stihl.com/tsa/techdoc-documents/DVS_STIHL/ZBA/ZBA/0458-790-8321-B_ZBA_05_01.pdf",
+      "title": "MS 462 C-M Instruction Manual"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "drop",
+    "claim": "A chainsaw engine can reach roughly 13,000 rpm at full throttle.",
+    "why": "No manufacturer or government source in the notes states a maximum engine rpm. Only blogs, Quora and forums give 12,000–14,000 rpm, which are unreliable.",
+    "sources": []
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "Standards require a chain brake to stop the chain in about 0.12 seconds on average, and no more than 0.15 seconds.",
+    "why": "CCOHS (CSA Z62.1) and the NZ gazette give an average of no more than 0.12 s and a maximum of 0.15 s; this is about a tenth of a second but is a test limit, and real-world stopping depends on brake condition.",
+    "sources": [
+     {
+      "url": "https://www.ccohs.ca/oshanswers/safety_haz/chainsaws/maintenance.html",
+      "title": "CCOHS: Chainsaws - Maintenance and Service"
+     },
+     {
+      "url": "https://gazette.govt.nz/notice/id/2012-go3557",
+      "title": "Unsafe Goods (Chainsaws Without a Chain Brake) Indefinite Prohibition Notice 2012 - 2012-go3557"
+     },
+     {
+      "url": "https://www.shindaiwa-usa.com/getattachment/272cde5a-c242-45bf-a1ee-2559169ed7b0/402Ses_C37414_082715.pdf",
+      "title": "Instruction Manual"
+     }
+    ]
+   }
+  ]
+ }
+}

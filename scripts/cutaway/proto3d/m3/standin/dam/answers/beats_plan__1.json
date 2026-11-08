@@ -105,6 +105,52 @@
     }
    ]
   },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you pile dirt across a valley, you have a dam."
+   },
+   {
+    "role": "problem",
+    "text": "But rain fills the lake, water pours over, and the dirt washes away."
+   },
+   {
+    "role": "fix1",
+    "text": "So you build a tall concrete wall across the valley."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the deep water pushes so hard the thin wall cracks."
+   },
+   {
+    "role": "fix2",
+    "text": "So you make it a thick wedge, widest at the bottom."
+   },
+   {
+    "role": "name",
+    "text": "This is a gravity dam."
+   },
+   {
+    "role": "how",
+    "text": "Its weight holds the water back, and Hoover Dam is 660 feet thick at its base."
+   },
+   {
+    "role": "problem3",
+    "text": "But now a storm raises the lake until it spills over the top."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a spillway that carries the extra water past the dam."
+   },
+   {
+    "role": "finish",
+    "text": "Add rocks round the lake, fish, and a lamp."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a dam."
+   }
+  ],
   "sceneJson": {
    "world": {
     "cut": [

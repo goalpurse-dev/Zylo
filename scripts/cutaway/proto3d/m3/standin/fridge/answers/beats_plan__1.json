@@ -1,1 +1,1630 @@
-{"hash":"*","by":"stand-in planner","searches":0,"data":{"why":"A fridge cut open in the middle of a kitchen: it starts as an icebox (food and a block of ice), the ice melts, a frosting coil replaces it, the coil runs out, and a compressor with coils underneath closes the loop. The camera opens close on the ice and the food, stays mid on the fridge and its parts for the chain, and ends on the home view with the compressor humming and the door open.","story":{"title":"How a fridge works","hero":"a refrigerator","parts":["food","block of ice","cooling coil","compressor","coils underneath","pipes","door","shelves","light"],"ideas":[{"role":"hook","idea":"put food in a box with a block of ice and you already have a fridge"},{"role":"problem","idea":"the ice melts and drips onto the food"},{"role":"fix1","idea":"replace the ice with a coil of liquid that boils at minus 26 degrees, so the coil frosts over"},{"role":"problem2","idea":"once the liquid has boiled away the frost melts and the box warms up again"},{"role":"fix2","idea":"a compressor squeezes the gas back into a liquid and pumps it round, so the coil frosts again"},{"role":"name","idea":"this box with a coil, a compressor and pipes is a refrigerator"},{"role":"how","idea":"squeezing makes the gas hot, so the coils underneath shed that heat into the kitchen"},{"role":"fact","idea":"inside it holds your food at 4 degrees, where germs grow slowly"},{"role":"myth","idea":"the cold you feel is not blown in"},{"role":"mythFact","idea":"a fridge only moves heat out of the box"},{"role":"finish","idea":"a door, shelves and a light complete the fridge"},{"role":"congrats","idea":"calm end: the fridge hums with its door open and its light on"}],"chain":[{"problem":"problem","causedBy":"hook","shows":"the ice block shrinks and water drips onto the food","stakes":"the food gets wet and warm","size":3},{"problem":"problem2","causedBy":"fix1","shows":"the frost on the coil melts away and a thermometer climbs to 15 degrees","stakes":"the food spoils","size":6}],"surprises":[{"claim":"The refrigerant R-134a boils at about minus 26 degrees Celsius at normal air pressure","role":"fix1","search":"R-134a boiling point atmospheric pressure"},{"claim":"Food safety agencies say a fridge should be at 4 degrees Celsius (40 F) or colder","role":"fact","search":"FDA refrigerator temperature 40 F 4 C"},{"claim":"A fridge does not make cold; it moves heat from inside the box to the coils outside","role":"mythFact","search":"how a refrigerator moves heat condenser coils"}]},"sceneJson":{"world":{"cut":[9.5,11,-4,0.6],"house":false,"porch":false,"trees":[],"road":false,"rocksAvoid":[],"worker":false,"moreTrees":false,"backdrop":{"type":"kitchen","x0":-12,"x1":12,"back":-7,"h":6.2,"gap":[-1.8,1.8],"color":"#e8d9bf"}},"parts":[{"id":"light","kind":"light","params":{"storm":false}},{"id":"fridge","kind":"rig","params":{"name":"refrigerator","synonyms":["fridge","icebox","refrigerator"],"main":true,"pos":[0,0.12,-1.8],"scale":1.3,"nodes":[{"id":"body","at":[0,0,0],"shapes":[{"shape":"box","size":[0.8,0.04,0.7],"at":[0,0.02,0],"look":"metal","color":"#cfd5db"},{"shape":"box","size":[0.8,1.8,0.04],"at":[0,0.9,-0.33],"look":"paint","color":"#eef1f4"},{"shape":"box","size":[0.04,1.8,0.7],"at":[-0.38,0.9,0],"look":"paint","color":"#e3e8ed"},{"shape":"box","size":[0.04,1.8,0.7],"at":[0.38,0.9,0],"look":"paint","color":"#e3e8ed"},{"shape":"box","size":[0.8,0.04,0.7],"at":[0,1.78,0],"look":"paint","color":"#eef1f4"},{"shape":"box","size":[0.72,0.04,0.66],"at":[0,0.52,0],"look":"plastic","color":"#f7f9fb"},{"shape":"box","size":[0.72,0.02,0.62],"at":[0,1.38,0],"look":"metal","color":"#b9c3cc"}]},{"id":"food","parent":"body","at":[0,0.54,0],"shapes":[{"shape":"box","size":[0.12,0.26,0.12],"at":[-0.22,0.13,0.1],"look":"paint","color":"#f4f6ff"},{"shape":"box","size":[0.18,0.08,0.13],"at":[0.02,0.04,0.12],"look":"paint","color":"#f2c53d"},{"shape":"sphere","r":0.06,"at":[0.2,0.06,0.12],"look":"paint","color":"#d8342b"},{"shape":"sphere","r":0.06,"at":[0.27,0.06,0.02],"look":"paint","color":"#7cc242"},{"shape":"cylinder","r":0.06,"h":0.16,"axis":"y","at":[-0.05,0.08,-0.12],"look":"glass","color":"#e0703a"}],"moves":[{"name":"foodIn","type":"appear"}]},{"id":"ice","parent":"body","at":[0,1.39,0.02],"shapes":[{"shape":"box","size":[0.5,0.34,0.44],"at":[0,0.17,0],"look":"glass","color":"#bfe6ff"}],"moves":[{"name":"iceIn","type":"appear"},{"name":"melt","type":"extend","axis":"y","k":0.12}]},{"id":"coil","parent":"body","at":[0,0.95,-0.29],"shapes":[{"shape":"tube","r":0.028,"path":[[-0.3,0,0],[0.3,0,0],[0.3,0.1,0],[-0.3,0.1,0],[-0.3,0.2,0],[0.3,0.2,0],[0.3,0.3,0],[-0.3,0.3,0],[-0.3,0.4,0],[0.3,0.4,0]],"look":"metal","color":"#9aa7b3"}],"moves":[{"name":"coilIn","type":"appear"},{"name":"frost","type":"chill","color":"#dff4ff"}]},{"id":"compressor","parent":"body","at":[-0.18,0.04,0.1],"shapes":[{"shape":"cylinder","r":0.13,"h":0.32,"axis":"y","at":[0,0.16,0],"look":"metal","color":"#2b2f33"},{"shape":"box","size":[0.3,0.03,0.3],"at":[0,0.015,0],"look":"rubber","color":"#222222"}],"moves":[{"name":"compIn","type":"appear"},{"name":"run","type":"shake","amp":0.012,"rate":12}]},{"id":"condenser","parent":"body","at":[0.12,0.08,0.2],"shapes":[{"shape":"tube","r":0.02,"path":[[-0.08,0,0],[0.2,0,0],[0.2,0.08,0],[-0.08,0.08,0],[-0.08,0.16,0],[0.2,0.16,0],[0.2,0.24,0],[-0.08,0.24,0],[-0.08,0.32,0],[0.2,0.32,0]],"look":"metal","color":"#3a3d40"}],"moves":[{"name":"condIn","type":"appear"},{"name":"hot","type":"heat","color":"#ff5a1a"}]},{"id":"pipes","parent":"body","at":[0,0,0],"shapes":[{"shape":"tube","r":0.022,"path":[[-0.18,0.36,0.1],[-0.18,0.46,-0.25],[-0.33,0.46,-0.27],[-0.33,0.95,-0.29],[-0.3,0.95,-0.29]],"look":"metal","color":"#b87333"},{"shape":"tube","r":0.022,"path":[[0.3,1.35,-0.29],[0.33,1.35,-0.29],[0.33,0.46,-0.27],[0.33,0.42,0.2]],"look":"metal","color":"#b87333"}],"moves":[{"name":"pipesIn","type":"appear"},{"name":"circulate","type":"flow","color":"#7fd0ff","path":[[-0.18,0.36,0.1],[-0.18,0.46,-0.25],[-0.33,0.46,-0.27],[-0.33,0.95,-0.29],[0.3,0.95,-0.29],[0.3,1.35,-0.29],[0.33,1.35,-0.29],[0.33,0.46,-0.27],[0.33,0.42,0.2]]}]},{"id":"shelves","parent":"body","at":[0,0,0],"shapes":[{"shape":"box","size":[0.72,0.02,0.6],"at":[0,0.8,0.02],"look":"glass","color":"#dff0ff"},{"shape":"box","size":[0.18,0.12,0.12],"at":[0.15,0.87,0.1],"look":"paint","color":"#3d6fb0"}],"moves":[{"name":"shelvesIn","type":"appear"}]},{"id":"lamp","parent":"body","at":[0,1.72,0.05],"shapes":[{"shape":"light","r":0.05,"at":[0,0,0],"color":"#fff3c4"}],"moves":[{"name":"lampOn","type":"light"}]},{"id":"door","parent":"body","at":[0,0,0.37],"shapes":[{"shape":"box","size":[0.8,0.05,0.04],"at":[0,1.775,0],"look":"plastic","color":"#f2f4f6"},{"shape":"box","size":[0.8,0.05,0.04],"at":[0,0.025,0],"look":"plastic","color":"#f2f4f6"},{"shape":"box","size":[0.05,1.8,0.04],"at":[-0.375,0.9,0],"look":"plastic","color":"#f2f4f6"},{"shape":"box","size":[0.05,1.8,0.04],"at":[0.375,0.9,0],"look":"plastic","color":"#f2f4f6"},{"shape":"panel","size":[0.7,1.7],"thick":0.02,"at":[0,0.9,0],"look":"glass","color":"#dff0ff"},{"shape":"box","size":[0.04,0.4,0.05],"at":[0.3,1.1,0.04],"look":"metal","color":"#9aa3ab"}],"moves":[{"name":"doorOn","type":"appear"}]}]}},{"id":"tempUp","kind":"counter","params":{"pos":[2,1.5,-1.5],"size":0.45,"from":4,"to":15,"color":"#ff8a2a","bar":true}},{"id":"tempDown","kind":"counter","params":{"pos":[2,1.5,-1.5],"size":0.45,"from":15,"to":4,"color":"#5ab4ff","bar":true}},{"id":"drip","kind":"fx","params":{"type":"drip","at":[0,1.95,-1.4],"size":0.5}},{"id":"heatArrows","kind":"arrows","params":{"list":[{"at":[0.75,0.35,-1.3],"dir":[1,0],"travel":0.8,"phase":0},{"at":[0.75,0.6,-1.3],"dir":[1,0.5],"travel":0.8,"phase":0.5}],"opts":{"scale":0.7,"color":"#ff8a2a"}}},{"id":"heatOut","kind":"arrows","params":{"list":[{"at":[0.1,1.3,-1.3],"dir":[1,0],"travel":0.9,"phase":0},{"at":[0.1,0.9,-1.3],"dir":[1,0],"travel":0.9,"phase":0.5}],"opts":{"scale":0.6,"color":"#ff8a2a"}}},{"id":"coldArrows","kind":"arrows","params":{"list":[{"at":[-1,1.6,-1.4],"dir":[1,0],"travel":0.5,"phase":0},{"at":[-1,1.1,-1.4],"dir":[1,0],"travel":0.5,"phase":0.5}],"opts":{"scale":0.5,"color":"#ffffff"}}},{"id":"outline","kind":"outline","params":{"of":"fridge","opts":{"closed":true}}},{"id":"sign","kind":"sign","params":{"at":[3,0.12,-5],"rotY":-0.25,"scale":1}}],"beats":[{"s":"hook","shows":{"p":"fridge","does":"food and a block of ice sit in the open box"},"do":[{"p":"fridge","v":"show","w":""},{"p":"fridge","v":"foodIn","w":"food"},{"p":"fridge","v":"iceIn","w":"ice"}],"shots":[{"focus":["fridge"],"type":"close"}]},{"s":"problem","shows":{"p":"fridge","does":"the ice block shrinks and water drips"},"state":{"text":"MELTING","w":"melts"},"do":[{"p":"fridge","v":"melt","w":"melts","d":2},{"p":"drip","v":"start","w":"melts"}],"shots":[{"focus":["fridge.ice","fridge.food"],"type":"mid"}]},{"s":"fix1","shows":{"p":"fridge","does":"a coil appears on the back wall and frosts over"},"do":[{"p":"drip","v":"stop","w":"So"},{"p":"fridge","v":"iceInBack","w":"So"},{"p":"fridge","v":"meltBack","w":"So"},{"p":"fridge","v":"coilIn","w":"coil"},{"p":"fridge","v":"frost","w":"frosts"}],"shots":[{"focus":["fridge"],"type":"mid"}]},{"s":"problem2","shows":{"p":"tempUp","does":"the frost melts off the coil and the thermometer climbs to 15"},"state":{"text":"WARM","w":"warms"},"do":[{"p":"fridge","v":"frostBack","w":"boils"},{"p":"tempUp","v":"show","w":""},{"p":"tempUp","v":"count","w":"boils","d":1.2}],"shots":[{"focus":["fridge","tempUp"],"type":"mid"}]},{"s":"fix2","shows":{"p":"fridge","does":"a compressor appears, shakes, and liquid runs through the pipes"},"do":[{"p":"tempUp","v":"hide","w":"So"},{"p":"fridge","v":"compIn","w":"compressor"},{"p":"fridge","v":"pipesIn","w":"compressor"},{"p":"fridge","v":"run","w":"squeezes"},{"p":"fridge","v":"circulate","w":"squeezes"},{"p":"fridge","v":"frost","w":"liquid"}],"shots":[{"focus":["fridge.compressor","fridge.pipes"],"type":"mid"}]},{"s":"name","shows":{"p":"outline","does":"a glowing outline traces the fridge"},"do":[{"p":"outline","v":"show","w":"refrigerator"}],"shots":[{"focus":["fridge"],"hero":true,"width":0.6}]},{"s":"how","shows":{"p":"fridge","does":"the coils underneath glow hot and heat arrows flow out"},"do":[{"p":"outline","v":"hide","w":""},{"p":"fridge","v":"condIn","w":"hot"},{"p":"fridge","v":"hot","w":"hot"},{"p":"heatArrows","v":"show","w":"heat"}],"shots":[{"focus":["fridge.condenser","heatArrows"],"type":"mid"}]},{"s":"fact","shows":{"p":"tempDown","does":"the thermometer counts down to 4"},"do":[{"p":"heatArrows","v":"hide","w":""},{"p":"tempDown","v":"show","w":""},{"p":"tempDown","v":"count","w":"holds","d":1.8}],"shots":[{"focus":["fridge","tempDown"],"type":"mid"}]},{"s":"myth","shows":{"p":"coldArrows","does":"white cold arrows point into the box, then vanish"},"do":[{"p":"tempDown","v":"hide","w":""},{"p":"coldArrows","v":"show","w":"cold"},{"p":"coldArrows","v":"hide","w":"not"}],"shots":[{"focus":["fridge"],"type":"mid"}]},{"s":"mythFact","shows":{"p":"heatOut","does":"orange arrows carry heat out of the box"},"do":[{"p":"heatOut","v":"show","w":"heat"},{"p":"heatArrows","v":"show","w":"heat"}],"shots":[{"focus":["fridge"],"type":"mid"}]},{"s":"finish","shows":{"p":"fridge","does":"a glass door, shelves and a light pop on"},"do":[{"p":"heatOut","v":"hide","w":"Add"},{"p":"heatArrows","v":"hide","w":"Add"},{"p":"fridge","v":"doorOn","w":"door"},{"p":"fridge","v":"shelvesIn","w":"shelves"},{"p":"fridge","v":"lampOn","w":"light"}],"shots":[{"focus":["home"]}]},{"s":"congrats","do":[],"shots":[{"focus":["fridge"],"type":"wide"}]}],"audio":{"cards":[{"text":"-26 °C","at":{"s":"fix1","w":"26","o":0},"d":1.6},{"text":"4 °C","at":{"s":"fact","w":"4","o":0},"d":1.6}],"sfx":[{"lib":"drip","at":{"s":"problem","w":"melts","o":0},"d":1.3},{"lib":"motor_hum","at":{"s":"fix2","w":"compressor","o":0},"d":1.6},{"lib":"motor_hum","at":{"s":"how","w":"hot","o":0},"d":1.3}],"chimes":[{"s":"fix1","w":"26","o":0},{"s":"name","w":"","o":0},{"s":"fact","w":"4","o":0},{"s":"congrats","w":"","o":0}],"rain":[]}}}}
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A fridge cut open in the middle of a kitchen: it starts as an icebox (food and a block of ice), the ice melts, a frosting coil replaces it, the coil runs out, and a compressor with coils underneath closes the loop. The camera opens close on the ice and the food, stays mid on the fridge and its parts for the chain, and ends on the home view with the compressor humming and the door open.",
+  "story": {
+   "title": "How a fridge works",
+   "hero": "a refrigerator",
+   "parts": [
+    "food",
+    "block of ice",
+    "cooling coil",
+    "compressor",
+    "coils underneath",
+    "pipes",
+    "door",
+    "shelves",
+    "light"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "put food in a box with a block of ice and you already have a fridge"
+    },
+    {
+     "role": "problem",
+     "idea": "the ice melts and drips onto the food"
+    },
+    {
+     "role": "fix1",
+     "idea": "replace the ice with a coil of liquid that boils at minus 26 degrees, so the coil frosts over"
+    },
+    {
+     "role": "problem2",
+     "idea": "once the liquid has boiled away the frost melts and the box warms up again"
+    },
+    {
+     "role": "fix2",
+     "idea": "a compressor squeezes the gas back into a liquid and pumps it round, so the coil frosts again"
+    },
+    {
+     "role": "name",
+     "idea": "this box with a coil, a compressor and pipes is a refrigerator"
+    },
+    {
+     "role": "how",
+     "idea": "squeezing makes the gas hot, so the coils underneath shed that heat into the kitchen"
+    },
+    {
+     "role": "fact",
+     "idea": "inside it holds your food at 4 degrees, where germs grow slowly"
+    },
+    {
+     "role": "myth",
+     "idea": "the cold you feel is not blown in"
+    },
+    {
+     "role": "mythFact",
+     "idea": "a fridge only moves heat out of the box"
+    },
+    {
+     "role": "finish",
+     "idea": "a door, shelves and a light complete the fridge"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm end: the fridge hums with its door open and its light on"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the ice block shrinks and water drips onto the food",
+     "stakes": "the food gets wet and warm",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the frost on the coil melts away and a thermometer climbs to 15 degrees",
+     "stakes": "the food spoils",
+     "size": 6
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The refrigerant R-134a boils at about minus 26 degrees Celsius at normal air pressure",
+     "role": "fix1",
+     "search": "R-134a boiling point atmospheric pressure"
+    },
+    {
+     "claim": "Food safety agencies say a fridge should be at 4 degrees Celsius (40 F) or colder",
+     "role": "fact",
+     "search": "FDA refrigerator temperature 40 F 4 C"
+    },
+    {
+     "claim": "A fridge does not make cold; it moves heat from inside the box to the coils outside",
+     "role": "mythFact",
+     "search": "how a refrigerator moves heat condenser coils"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you put food in a box with ice, you have a fridge."
+   },
+   {
+    "role": "problem",
+    "text": "But the ice melts and drips onto the food."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a coil of liquid that boils at minus 26 degrees, and it frosts."
+   },
+   {
+    "role": "problem2",
+    "text": "But the coil's liquid boils away, the frost melts and the box warms."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a compressor that squeezes the gas back into a liquid."
+   },
+   {
+    "role": "name",
+    "text": "This is a refrigerator."
+   },
+   {
+    "role": "how",
+    "text": "Squeezing makes the gas hot, so coils underneath shed that heat."
+   },
+   {
+    "role": "fact",
+    "text": "It holds your food at 4 degrees Celsius."
+   },
+   {
+    "role": "myth",
+    "text": "And the cold is not blown in."
+   },
+   {
+    "role": "mythFact",
+    "text": "A fridge only moves heat out to the coils outside."
+   },
+   {
+    "role": "finish",
+    "text": "Add a glass door, shelves and a light."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a fridge."
+   }
+  ],
+  "sceneJson": {
+   "world": {
+    "cut": [
+     9.5,
+     11,
+     -4,
+     0.6
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [],
+    "road": false,
+    "rocksAvoid": [],
+    "worker": false,
+    "moreTrees": false,
+    "backdrop": {
+     "type": "kitchen",
+     "x0": -12,
+     "x1": 12,
+     "back": -7,
+     "h": 6.2,
+     "gap": [
+      -1.8,
+      1.8
+     ],
+     "color": "#e8d9bf"
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {
+      "storm": false
+     }
+    },
+    {
+     "id": "fridge",
+     "kind": "rig",
+     "params": {
+      "name": "refrigerator",
+      "synonyms": [
+       "fridge",
+       "icebox",
+       "refrigerator"
+      ],
+      "main": true,
+      "pos": [
+       0,
+       0.12,
+       -1.8
+      ],
+      "scale": 1.3,
+      "nodes": [
+       {
+        "id": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           0.04,
+           0.7
+          ],
+          "at": [
+           0,
+           0.02,
+           0
+          ],
+          "look": "metal",
+          "color": "#cfd5db"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           1.8,
+           0.04
+          ],
+          "at": [
+           0,
+           0.9,
+           -0.33
+          ],
+          "look": "paint",
+          "color": "#eef1f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.04,
+           1.8,
+           0.7
+          ],
+          "at": [
+           -0.38,
+           0.9,
+           0
+          ],
+          "look": "paint",
+          "color": "#e3e8ed"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.04,
+           1.8,
+           0.7
+          ],
+          "at": [
+           0.38,
+           0.9,
+           0
+          ],
+          "look": "paint",
+          "color": "#e3e8ed"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           0.04,
+           0.7
+          ],
+          "at": [
+           0,
+           1.78,
+           0
+          ],
+          "look": "paint",
+          "color": "#eef1f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.72,
+           0.04,
+           0.66
+          ],
+          "at": [
+           0,
+           0.52,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f7f9fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.72,
+           0.02,
+           0.62
+          ],
+          "at": [
+           0,
+           1.38,
+           0
+          ],
+          "look": "metal",
+          "color": "#b9c3cc"
+         }
+        ]
+       },
+       {
+        "id": "food",
+        "parent": "body",
+        "at": [
+         0,
+         0.54,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           0.26,
+           0.12
+          ],
+          "at": [
+           -0.22,
+           0.13,
+           0.1
+          ],
+          "look": "paint",
+          "color": "#f4f6ff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.18,
+           0.08,
+           0.13
+          ],
+          "at": [
+           0.02,
+           0.04,
+           0.12
+          ],
+          "look": "paint",
+          "color": "#f2c53d"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.06,
+          "at": [
+           0.2,
+           0.06,
+           0.12
+          ],
+          "look": "paint",
+          "color": "#d8342b"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.06,
+          "at": [
+           0.27,
+           0.06,
+           0.02
+          ],
+          "look": "paint",
+          "color": "#7cc242"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.06,
+          "h": 0.16,
+          "axis": "y",
+          "at": [
+           -0.05,
+           0.08,
+           -0.12
+          ],
+          "look": "glass",
+          "color": "#e0703a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "foodIn",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "ice",
+        "parent": "body",
+        "at": [
+         0,
+         1.39,
+         0.02
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.5,
+           0.34,
+           0.44
+          ],
+          "at": [
+           0,
+           0.17,
+           0
+          ],
+          "look": "glass",
+          "color": "#bfe6ff"
+         }
+        ],
+        "moves": [
+         {
+          "name": "iceIn",
+          "type": "appear"
+         },
+         {
+          "name": "melt",
+          "type": "extend",
+          "axis": "y",
+          "k": 0.12
+         }
+        ]
+       },
+       {
+        "id": "coil",
+        "parent": "body",
+        "at": [
+         0,
+         0.95,
+         -0.29
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "r": 0.028,
+          "path": [
+           [
+            -0.3,
+            0,
+            0
+           ],
+           [
+            0.3,
+            0,
+            0
+           ],
+           [
+            0.3,
+            0.1,
+            0
+           ],
+           [
+            -0.3,
+            0.1,
+            0
+           ],
+           [
+            -0.3,
+            0.2,
+            0
+           ],
+           [
+            0.3,
+            0.2,
+            0
+           ],
+           [
+            0.3,
+            0.3,
+            0
+           ],
+           [
+            -0.3,
+            0.3,
+            0
+           ],
+           [
+            -0.3,
+            0.4,
+            0
+           ],
+           [
+            0.3,
+            0.4,
+            0
+           ]
+          ],
+          "look": "metal",
+          "color": "#9aa7b3"
+         }
+        ],
+        "moves": [
+         {
+          "name": "coilIn",
+          "type": "appear"
+         },
+         {
+          "name": "frost",
+          "type": "chill",
+          "color": "#dff4ff"
+         }
+        ]
+       },
+       {
+        "id": "compressor",
+        "parent": "body",
+        "at": [
+         -0.18,
+         0.04,
+         0.1
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.13,
+          "h": 0.32,
+          "axis": "y",
+          "at": [
+           0,
+           0.16,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b2f33"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           0.03,
+           0.3
+          ],
+          "at": [
+           0,
+           0.015,
+           0
+          ],
+          "look": "rubber",
+          "color": "#222222"
+         }
+        ],
+        "moves": [
+         {
+          "name": "compIn",
+          "type": "appear"
+         },
+         {
+          "name": "run",
+          "type": "shake",
+          "amp": 0.012,
+          "rate": 12
+         }
+        ]
+       },
+       {
+        "id": "condenser",
+        "parent": "body",
+        "at": [
+         0.12,
+         0.08,
+         0.2
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "r": 0.02,
+          "path": [
+           [
+            -0.08,
+            0,
+            0
+           ],
+           [
+            0.2,
+            0,
+            0
+           ],
+           [
+            0.2,
+            0.08,
+            0
+           ],
+           [
+            -0.08,
+            0.08,
+            0
+           ],
+           [
+            -0.08,
+            0.16,
+            0
+           ],
+           [
+            0.2,
+            0.16,
+            0
+           ],
+           [
+            0.2,
+            0.24,
+            0
+           ],
+           [
+            -0.08,
+            0.24,
+            0
+           ],
+           [
+            -0.08,
+            0.32,
+            0
+           ],
+           [
+            0.2,
+            0.32,
+            0
+           ]
+          ],
+          "look": "metal",
+          "color": "#3a3d40"
+         }
+        ],
+        "moves": [
+         {
+          "name": "condIn",
+          "type": "appear"
+         },
+         {
+          "name": "hot",
+          "type": "heat",
+          "color": "#ff5a1a"
+         }
+        ]
+       },
+       {
+        "id": "pipes",
+        "parent": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "r": 0.022,
+          "path": [
+           [
+            -0.18,
+            0.36,
+            0.1
+           ],
+           [
+            -0.18,
+            0.46,
+            -0.25
+           ],
+           [
+            -0.33,
+            0.46,
+            -0.27
+           ],
+           [
+            -0.33,
+            0.95,
+            -0.29
+           ],
+           [
+            -0.3,
+            0.95,
+            -0.29
+           ]
+          ],
+          "look": "metal",
+          "color": "#b87333"
+         },
+         {
+          "shape": "tube",
+          "r": 0.022,
+          "path": [
+           [
+            0.3,
+            1.35,
+            -0.29
+           ],
+           [
+            0.33,
+            1.35,
+            -0.29
+           ],
+           [
+            0.33,
+            0.46,
+            -0.27
+           ],
+           [
+            0.33,
+            0.42,
+            0.2
+           ]
+          ],
+          "look": "metal",
+          "color": "#b87333"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pipesIn",
+          "type": "appear"
+         },
+         {
+          "name": "circulate",
+          "type": "flow",
+          "color": "#7fd0ff",
+          "path": [
+           [
+            -0.18,
+            0.36,
+            0.1
+           ],
+           [
+            -0.18,
+            0.46,
+            -0.25
+           ],
+           [
+            -0.33,
+            0.46,
+            -0.27
+           ],
+           [
+            -0.33,
+            0.95,
+            -0.29
+           ],
+           [
+            0.3,
+            0.95,
+            -0.29
+           ],
+           [
+            0.3,
+            1.35,
+            -0.29
+           ],
+           [
+            0.33,
+            1.35,
+            -0.29
+           ],
+           [
+            0.33,
+            0.46,
+            -0.27
+           ],
+           [
+            0.33,
+            0.42,
+            0.2
+           ]
+          ]
+         }
+        ]
+       },
+       {
+        "id": "shelves",
+        "parent": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.72,
+           0.02,
+           0.6
+          ],
+          "at": [
+           0,
+           0.8,
+           0.02
+          ],
+          "look": "glass",
+          "color": "#dff0ff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.18,
+           0.12,
+           0.12
+          ],
+          "at": [
+           0.15,
+           0.87,
+           0.1
+          ],
+          "look": "paint",
+          "color": "#3d6fb0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "shelvesIn",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "lamp",
+        "parent": "body",
+        "at": [
+         0,
+         1.72,
+         0.05
+        ],
+        "shapes": [
+         {
+          "shape": "light",
+          "r": 0.05,
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "color": "#fff3c4"
+         }
+        ],
+        "moves": [
+         {
+          "name": "lampOn",
+          "type": "light"
+         }
+        ]
+       },
+       {
+        "id": "door",
+        "parent": "body",
+        "at": [
+         0,
+         0,
+         0.37
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           0.05,
+           0.04
+          ],
+          "at": [
+           0,
+           1.775,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2f4f6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           0.05,
+           0.04
+          ],
+          "at": [
+           0,
+           0.025,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2f4f6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.05,
+           1.8,
+           0.04
+          ],
+          "at": [
+           -0.375,
+           0.9,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2f4f6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.05,
+           1.8,
+           0.04
+          ],
+          "at": [
+           0.375,
+           0.9,
+           0
+          ],
+          "look": "plastic",
+          "color": "#f2f4f6"
+         },
+         {
+          "shape": "panel",
+          "size": [
+           0.7,
+           1.7
+          ],
+          "thick": 0.02,
+          "at": [
+           0,
+           0.9,
+           0
+          ],
+          "look": "glass",
+          "color": "#dff0ff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.04,
+           0.4,
+           0.05
+          ],
+          "at": [
+           0.3,
+           1.1,
+           0.04
+          ],
+          "look": "metal",
+          "color": "#9aa3ab"
+         }
+        ],
+        "moves": [
+         {
+          "name": "doorOn",
+          "type": "appear"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "tempUp",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       2,
+       1.5,
+       -1.5
+      ],
+      "size": 0.45,
+      "from": 4,
+      "to": 15,
+      "color": "#ff8a2a",
+      "bar": true
+     }
+    },
+    {
+     "id": "tempDown",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       2,
+       1.5,
+       -1.5
+      ],
+      "size": 0.45,
+      "from": 15,
+      "to": 4,
+      "color": "#5ab4ff",
+      "bar": true
+     }
+    },
+    {
+     "id": "drip",
+     "kind": "fx",
+     "params": {
+      "type": "drip",
+      "at": [
+       0,
+       1.95,
+       -1.4
+      ],
+      "size": 0.5
+     }
+    },
+    {
+     "id": "heatArrows",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         0.75,
+         0.35,
+         -1.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.8,
+        "phase": 0
+       },
+       {
+        "at": [
+         0.75,
+         0.6,
+         -1.3
+        ],
+        "dir": [
+         1,
+         0.5
+        ],
+        "travel": 0.8,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 0.7,
+       "color": "#ff8a2a"
+      }
+     }
+    },
+    {
+     "id": "heatOut",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         0.1,
+         1.3,
+         -1.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.9,
+        "phase": 0
+       },
+       {
+        "at": [
+         0.1,
+         0.9,
+         -1.3
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.9,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 0.6,
+       "color": "#ff8a2a"
+      }
+     }
+    },
+    {
+     "id": "coldArrows",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -1,
+         1.6,
+         -1.4
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.5,
+        "phase": 0
+       },
+       {
+        "at": [
+         -1,
+         1.1,
+         -1.4
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.5,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 0.5,
+       "color": "#ffffff"
+      }
+     }
+    },
+    {
+     "id": "outline",
+     "kind": "outline",
+     "params": {
+      "of": "fridge",
+      "opts": {
+       "closed": true
+      }
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       3,
+       0.12,
+       -5
+      ],
+      "rotY": -0.25,
+      "scale": 1
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "fridge",
+      "does": "food and a block of ice sit in the open box"
+     },
+     "do": [
+      {
+       "p": "fridge",
+       "v": "show",
+       "w": ""
+      },
+      {
+       "p": "fridge",
+       "v": "foodIn",
+       "w": "food"
+      },
+      {
+       "p": "fridge",
+       "v": "iceIn",
+       "w": "ice"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "type": "close"
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "fridge",
+      "does": "the ice block shrinks and water drips"
+     },
+     "state": {
+      "text": "MELTING",
+      "w": "melts"
+     },
+     "do": [
+      {
+       "p": "fridge",
+       "v": "melt",
+       "w": "melts",
+       "d": 2
+      },
+      {
+       "p": "drip",
+       "v": "start",
+       "w": "melts"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge.ice",
+        "fridge.food"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "fridge",
+      "does": "a coil appears on the back wall and frosts over"
+     },
+     "do": [
+      {
+       "p": "drip",
+       "v": "stop",
+       "w": "So"
+      },
+      {
+       "p": "fridge",
+       "v": "iceInBack",
+       "w": "So"
+      },
+      {
+       "p": "fridge",
+       "v": "meltBack",
+       "w": "So"
+      },
+      {
+       "p": "fridge",
+       "v": "coilIn",
+       "w": "coil"
+      },
+      {
+       "p": "fridge",
+       "v": "frost",
+       "w": "frosts"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "tempUp",
+      "does": "the frost melts off the coil and the thermometer climbs to 15"
+     },
+     "state": {
+      "text": "WARM",
+      "w": "warms"
+     },
+     "do": [
+      {
+       "p": "fridge",
+       "v": "frostBack",
+       "w": "boils"
+      },
+      {
+       "p": "tempUp",
+       "v": "show",
+       "w": ""
+      },
+      {
+       "p": "tempUp",
+       "v": "count",
+       "w": "boils",
+       "d": 1.2
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge",
+        "tempUp"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "fridge",
+      "does": "a compressor appears, shakes, and liquid runs through the pipes"
+     },
+     "do": [
+      {
+       "p": "tempUp",
+       "v": "hide",
+       "w": "So"
+      },
+      {
+       "p": "fridge",
+       "v": "compIn",
+       "w": "compressor"
+      },
+      {
+       "p": "fridge",
+       "v": "pipesIn",
+       "w": "compressor"
+      },
+      {
+       "p": "fridge",
+       "v": "run",
+       "w": "squeezes"
+      },
+      {
+       "p": "fridge",
+       "v": "circulate",
+       "w": "squeezes"
+      },
+      {
+       "p": "fridge",
+       "v": "frost",
+       "w": "liquid"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge.compressor",
+        "fridge.pipes"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "outline",
+      "does": "a glowing outline traces the fridge"
+     },
+     "do": [
+      {
+       "p": "outline",
+       "v": "show",
+       "w": "refrigerator"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "hero": true,
+       "width": 0.6
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "fridge",
+      "does": "the coils underneath glow hot and heat arrows flow out"
+     },
+     "do": [
+      {
+       "p": "outline",
+       "v": "hide",
+       "w": ""
+      },
+      {
+       "p": "fridge",
+       "v": "condIn",
+       "w": "hot"
+      },
+      {
+       "p": "fridge",
+       "v": "hot",
+       "w": "hot"
+      },
+      {
+       "p": "heatArrows",
+       "v": "show",
+       "w": "heat"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge.condenser",
+        "heatArrows"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "tempDown",
+      "does": "the thermometer counts down to 4"
+     },
+     "do": [
+      {
+       "p": "heatArrows",
+       "v": "hide",
+       "w": ""
+      },
+      {
+       "p": "tempDown",
+       "v": "show",
+       "w": ""
+      },
+      {
+       "p": "tempDown",
+       "v": "count",
+       "w": "holds",
+       "d": 1.8
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge",
+        "tempDown"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "myth",
+     "shows": {
+      "p": "coldArrows",
+      "does": "white cold arrows point into the box, then vanish"
+     },
+     "do": [
+      {
+       "p": "tempDown",
+       "v": "hide",
+       "w": ""
+      },
+      {
+       "p": "coldArrows",
+       "v": "show",
+       "w": "cold"
+      },
+      {
+       "p": "coldArrows",
+       "v": "hide",
+       "w": "not"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "mythFact",
+     "shows": {
+      "p": "heatOut",
+      "does": "orange arrows carry heat out of the box"
+     },
+     "do": [
+      {
+       "p": "heatOut",
+       "v": "show",
+       "w": "heat"
+      },
+      {
+       "p": "heatArrows",
+       "v": "show",
+       "w": "heat"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "fridge",
+      "does": "a glass door, shelves and a light pop on"
+     },
+     "do": [
+      {
+       "p": "heatOut",
+       "v": "hide",
+       "w": "Add"
+      },
+      {
+       "p": "heatArrows",
+       "v": "hide",
+       "w": "Add"
+      },
+      {
+       "p": "fridge",
+       "v": "doorOn",
+       "w": "door"
+      },
+      {
+       "p": "fridge",
+       "v": "shelvesIn",
+       "w": "shelves"
+      },
+      {
+       "p": "fridge",
+       "v": "lampOn",
+       "w": "light"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "fridge"
+       ],
+       "type": "wide"
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "-26 °C",
+      "at": {
+       "s": "fix1",
+       "w": "26",
+       "o": 0
+      },
+      "d": 1.6
+     },
+     {
+      "text": "4 °C",
+      "at": {
+       "s": "fact",
+       "w": "4",
+       "o": 0
+      },
+      "d": 1.6
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem",
+       "w": "melts",
+       "o": 0
+      },
+      "d": 1.3
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "fix2",
+       "w": "compressor",
+       "o": 0
+      },
+      "d": 1.6
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "how",
+       "w": "hot",
+       "o": 0
+      },
+      "d": 1.3
+     }
+    ],
+    "chimes": [
+     {
+      "s": "fix1",
+      "w": "26",
+      "o": 0
+     },
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "4",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

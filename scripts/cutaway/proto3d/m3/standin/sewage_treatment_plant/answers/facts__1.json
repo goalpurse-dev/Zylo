@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "A settling tank removes about 45 to 65 percent of the solids but only 25 to 35 percent of the dissolved waste",
+    "why": "AIChE gives these ranges for primary treatment (suspended matter and BOD).",
+    "sources": [
+     {
+      "url": "https://www.aiche.org/ifs/resources/glossary/isws-water-glossary/primary-wastewater-treatment",
+      "title": "Primary Wastewater Treatment | AIChE"
+     },
+     {
+      "url": "https://ocw.snu.ac.kr/sites/default/files/NOTE/11176.pdf",
+      "title": "SNU lecture notes, wastewater treatment"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "The average American uses about 82 gallons of water a day at home",
+    "why": "EPA WaterSense gives 82 gallons a day at home; the drain part is not in the source.",
+    "sources": [
+     {
+      "url": "https://19january2025snapshot.epa.gov/watersense/statistics-and-facts",
+      "title": "Statistics and Facts | WaterSense | US EPA"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "Sludge digesters make biogas that is about 60 percent methane",
+    "why": "Suez gives 60 to 65 percent methane for sludge; a field study 59 percent.",
+    "sources": [
+     {
+      "url": "https://www.suezwaterhandbook.com/water-and-generalities/fundamental-biological-engineering-processes-applicable-to-water-treatment/anaerobic-bacterial-cultures/characteristic-anaerobic-digestion-parameters",
+      "title": "Characteristic anaerobic digestion parameters | Suez"
+     }
+    ]
+   }
+  ]
+ }
+}

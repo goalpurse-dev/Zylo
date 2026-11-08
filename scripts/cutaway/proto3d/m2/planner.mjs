@@ -142,6 +142,22 @@ export function exampleFor(topic) {
   if (set === "carwash") return "car_wash";
   return /drain/i.test(topic) ? "landfill" : "french_drain";
 }
+// the writing rules of the narration: the writer's (WORDS_SYSTEM) and, since scene language v2 step 1d, the plan's own
+// (the plan reply carries the narration, written with the scene)
+const WRITING_RULES = `THE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.
+Cue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.
+The account's formula (keep it):
+HOOK      "If you [one naive physical action], you have a [thing]." (16 words or fewer)
+CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added, or starts with "But now" (checked by code).
+NAME      "This is a [real term]."
+MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
+FINISH    "Add [the finishing touches shown]." (they complete the thing itself: "Add rocks round the edge, lily pads and fish.") then "Congratulations, you have built a [thing]."
+Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
+Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
+Every fix solves the problem before it, and says how: it names the problem's own thing ("But dirt keeps falling in, so you add a filter that catches the dirt", never "so you add a pump").
+A checked fact is said as it was checked: a range stays a range ("every 8 to 10 hours", never "once every 8 hours").
+Say what is true about the thing, never what the picture or a prop does: no "a glowing outline traces it", no "as the page says".
+Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
 // mode "script": the scene for a written script (a given script, a repair); mode "beats": the beats FIRST (the owner's
 // rule of 2026-10-27, "visuals first, words second"): the planner decides what visibly happens in each moment, with cue
 // words instead of a script, and the writer then writes one sentence per beat about what is on screen
@@ -173,6 +189,8 @@ ${mode === "beats" ? `- SHOW ONLY WHAT THE KIT CAN SHOW: a beat whose idea the k
 - THE MAIN SUBJECT: every shot keeps it in view (the cut, or the part you mark main: true when the story is a machine above ground); no shot of open lawn or sky. Side-story props (a flag, a book, a newspaper) stand beside the cut, just behind its back edge and inside the home frame, never out on the lawn. world.worker true only when the topic has a worker (by default there is none).
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
 ${mode === "beats" ? `- Reply with "why", "story" and "sceneJson". story: title, hero (the named part, as the "This is a…" beat names it: "a landfill liner"), parts (plain nouns), ideas (one per beat, in beat order: {role, idea: what this beat means in the story, in one plain line, as the narrator would put it, e.g. "the box runs on a clock, so at midnight a lone car waits at an empty red"}), chain (one per problem beat: {problem: its role, causedBy: the role of the fix before it that caused it, "hook" for the first; shows: what we see happening; stakes: who or what suffers; size: 1-10, bigger every time}), surprises (3-4: {claim: a concrete checkable claim, ideally with a number; role: the beat that says it; search: a web search query}). A number card's word (audio.cards at.w) is the number as the narrator will say it ("600").
+- Reply also with "sentences": THE NARRATION, written with the scene (no separate writer): exactly one sentence per beat, in beat order, {role, text}. Each sentence says every cue word of its beat exactly as written in its do list. Its numbers and surprising claims come only from your surprises, word for word: they are fact-checked after the plan, and a changed number is changed in the sentence for you. Writing rules:
+${WRITING_RULES}
 ` : ""}- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shows: {p, does}, shots: [...]}], audio: {cards, sfx, chimes, rain}, rewrites?: [{role, text}]}. A part's base (optional) sets a channel's starting value. Numbers in world units.
 - Verbs: an action is {p: part id, v: verb, w: the word in that sentence (as written, without punctuation; "" = the sentence start), o: seconds after the word (0), d: a duration to stretch the verb (0 = default), amp: 1, ch: "" (panels only: the panel channel)}.
 - Reuse the worked example's settings when a part plays the same role (trench water, gravel with pebbles, soak pit, fabric, caps).
@@ -504,20 +522,7 @@ WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
 No people doing things, no maps, no long text on screens, no outer space or the body.`;
 
 const WORDS_SYSTEM = `You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.
-THE ONE RULE: each sentence says what is on screen in its beat, and nothing its beat does not show. Where the idea and the picture disagree, follow the picture.
-Cue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.
-The account's formula (keep it):
-HOOK      "If you [one naive physical action], you have a [thing]." (16 words or fewer)
-CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added, or starts with "But now" (checked by code).
-NAME      "This is a [real term]."
-MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
-FINISH    "Add [the finishing touches shown]." (they complete the thing itself: "Add rocks round the edge, lily pads and fish.") then "Congratulations, you have built a [thing]."
-Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
-Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
-Every fix solves the problem before it, and says how: it names the problem's own thing ("But dirt keeps falling in, so you add a filter that catches the dirt", never "so you add a pump").
-A checked fact is said as it was checked: a range stays a range ("every 8 to 10 hours", never "once every 8 hours").
-Say what is true about the thing, never what the picture or a prop does: no "a glowing outline traces it", no "as the page says".
-Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
+${WRITING_RULES}`;
 const NARRATION_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "sentences"], properties: { title: { type: "string" }, sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } } } };
 
 const prettyId = (id) => String(id).replace(/([a-z])([A-Z0-9])/g, "$1 $2").toLowerCase();
@@ -618,8 +623,10 @@ async function planPremade({ step, topic, lengthSec, saved, key, trace }) {
 }
 
 // the beat plan's reply: the scene (as JSON text) and the story
-const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, required: ["why", "story", "sceneJson"], properties: {
+// (sentences: the narration in the plan reply, scene language v2 step 1d; the separate words call goes)
+const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, required: ["why", "story", "sentences", "sceneJson"], properties: {
   why: { type: "string" }, sceneJson: { type: "string" },
+  sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } },
   story: { type: "object", additionalProperties: false, required: ["title", "hero", "parts", "ideas", "chain", "surprises"], properties: {
     title: { type: "string" }, hero: { type: "string" }, parts: { type: "array", items: { type: "string" } },
     ideas: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "idea"], properties: { role: { type: "string" }, idea: { type: "string" } } } },
@@ -628,6 +635,9 @@ const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, requir
   } } } };
 const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
 const CLAIMS_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, before its narration is written. For each claim: verdict "keep" if the research notes support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Judge ONLY from the research notes (a claim they do not support is dropped) and copy the source URLs from them (url and title) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never "US", "U.S." or "USA": "American", "in America"; an agency without the country: "the Department of Energy", "the Army Corps of Engineers").`;
+// ONE fact call (scene language v2 step 1d): the research and the verdicts together, with web search; it replaces the
+// research call and the check call (the check judged only from the research's notes; here the sources are its own)
+const FACTS_ONE_SYSTEM = `You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict "keep" if the sources support it as written; "reword" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. "over 600 gallons" for a rounded figure, "New England" instead of a wrong state); "drop" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never "US", "U.S." or "USA": "American", "in America"; an agency without the country: "the Department of Energy", "the Army Corps of Engineers").`;
 
 // a card's number as said and shown: as its verified claim writes it (a year stays 1993; "SINCE 1,993" was the garage
 // door's card on the 60 s free run of 2026-10-30), else with thousands commas
@@ -647,6 +657,32 @@ export function factDrift(text, claim) {
     if (a !== b) P.push(`the checked fact says ${m[1]} to ${m[2]}: say the whole range`);
   }
   return P;
+}
+/**
+ * The plan's own narration with its checked numbers (scene language v2 step 1d, free): where the fact check reworded a
+ * claim and a number changed ("about 600" checked as 550), the sentence of that claim's beat says the checked number.
+ * A dropped claim, or one whose numbers changed in count (a number became a range), is left to the free checks
+ * (sentenceProblems, factDrift), which send it to the paid words repair. Returns { sentences, notes }.
+ */
+export function applyFactChanges(sentences, checks = []) {
+  const notes = [];
+  const out = (sentences ?? []).map((s) => ({ role: s.role, text: String(s.text ?? "") }));
+  for (const c of checks) {
+    if (!c.role || c.verdict !== "reword") continue;
+    const was = numbersIn(c.planned ?? ""), now = numbersIn(c.claim ?? "");
+    const s = out.find((x) => x.role === c.role); if (!s) continue;
+    if (was.length !== now.length) { notes.push(`${c.role}: the checked claim has other numbers (${was.join(", ") || "none"} -> ${now.join(", ") || "none"}): left to the words checks`); continue; }
+    was.forEach((n, i) => {
+      if (n === now[i]) return;
+      const re = new RegExp(`(?<![\\d,.])${n.replace(/\B(?=(\d{3})+(?!\d))/g, ",?").replace(/\./g, "\\.")}(?![\\d,])`);
+      if (!re.test(s.text)) return;
+      const said = cardNumber(now[i], c.claim);
+      s.text = s.text.replace(re, said);
+      notes.push(`${c.role}: ${n} -> ${said} (the checked claim)`);
+    });
+  }
+  for (const c of checks) if (c.role && c.verdict === "drop") notes.push(`${c.role}: its claim was dropped ("${String(c.planned ?? "").slice(0, 50)}"): left to the words checks`);
+  return { sentences: out, notes };
 }
 /**
  * A number card says what its sentence says: its unit is the word said after the number ("20,000 gallons" never carded
@@ -772,6 +808,7 @@ async function planCustom({ step, topic, lengthSec, example, lastOpening, librar
   const saved = libraryMatches(library, text), models = modelMatches(text, 12);
   const user = `Topic: ${topic}.${settingHint(topic)}
 Length: ${lengthSec} s: ${R.beats[0]}-${R.beats[1]} beats (the narration will be ${R.words[0]}-${R.words[1]} words). Roles: ${ROLES.join(", ")}.
+Word budget of the narration (your sentences): aim for ${Math.round((R.words[0] + R.words[1]) / 2)} words in all (the hook up to 16; the name line and congrats short). Count before you answer: over ${R.words[1]} words is too long, under ${R.words[0]} too short.
 ${finishPropsLine(topic)}${lastOpening ? `\nThe previous video opened on ${lastOpening.what} (a ${lastOpening.kind}, ${lastOpening.type} shot) in the ${lastOpening.setting} setting: open this one on a different kind of object${lastOpening.setting === "yard" ? ", and in another setting if the topic allows" : ""}.` : ""}${saved.length ? `
 SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: copy its recipe, change only id, pos, rotY and scale):
 ${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
@@ -791,7 +828,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const solved = solveLayout(conv.layout, draft);
     // (a bookkeeping slip is logged and skipped: never a paid repair, bookkeeping.js)
     const problems = splitBugs([...conv.problems, ...guard("beat plan check", () => beatPlanProblems(conv.layout, story, lengthSec), BUGS, []), ...solved.problems], BUGS);
-    return { scene, story, conv, ideas, draft, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
+    // (the narration written with the scene, scene language v2 step 1d; an older reply without it: the writer call later)
+    const sentences = Array.isArray(r.data.sentences) && r.data.sentences.length ? r.data.sentences : null;
+    return { scene, story, conv, ideas, draft, sentences, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
   };
   // 1. the beat plan (120,000 tokens: the real 60 s swimming pool plan of 2026-10-29 used 45,000 of the old 64,000, and
   // a cut-off reply is a failed attempt; it costs only what is used)
@@ -799,7 +838,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   let B = plan(r);
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
-    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS }); // (medium: it fixes listed problems; at high it cost as much as the plan)
+    r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}${B.sentences ? `\nYour narration (sentences):\n${B.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS }); // (medium: it fixes listed problems; at high it cost as much as the plan)
     const B2 = plan(r);
     // a repeat opening after the repair is a warning: the video still goes on
     const opening = openingProblems(B2.conv.layout, lastOpening);
@@ -817,10 +856,13 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   let checks = [];
   if (claims.length) {
     const list = `Claims (index: claim | suggested search):\n${claims.map((c, i) => `${i}: ${c.claim} | ${c.search}`).join("\n")}`;
-    let rs = await step("fact research", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${list}`, schema: null, search: Math.min(10, 2 * claims.length + 2), effort: "medium", maxTokens: 24000 });
-    if (rs.searches < claims.length) rs = await step("fact research (again)", { system: RESEARCH_SYSTEM, user: `Topic: ${topic}\n${list}\n\nSearch the web for EACH claim now; an answer without searches is refused.`, schema: null, search: Math.min(10, 2 * claims.length + 2), effort: "medium", maxTokens: 24000 });
-    if (rs.searches < 1) throw new Error("fact-check: no web search was made; the facts are not verified");
-    const fc = await step("fact-check", { system: CLAIMS_SYSTEM, user: `Topic: ${topic}\n${list}\n\nResearch notes (from ${rs.searches} web searches):\n${rs.data.text}\n\nSources found:\n${rs.data.sources.map((s) => `- ${s.title} ${s.url}`).join("\n")}`, schema: CLAIMS_SCHEMA, effort: "medium", maxTokens: 16000 });
+    // (ONE call, scene language v2 step 1d: the web search and the verdicts together; it was a research call and a check
+    // call. Too few searches: asked once more, as before)
+    const search = Math.min(10, 2 * claims.length + 2);
+    let fc = await step("facts", { system: FACTS_ONE_SYSTEM, user: `Topic: ${topic}\n${list}`, schema: CLAIMS_SCHEMA, search, effort: "medium", maxTokens: 24000 });
+    if (fc.searches < claims.length) fc = await step("facts (again)", { system: FACTS_ONE_SYSTEM, user: `Topic: ${topic}\n${list}\n\nSearch the web for EACH claim now (at least ${claims.length} searches); an answer without them is refused.`, schema: CLAIMS_SCHEMA, search, effort: "medium", maxTokens: 24000 });
+    if (fc.searches < 1) throw new Error("fact-check: no web search was made; the facts are not verified");
+    trace.push({ label: "fact searches", searches: fc.searches, sources: (fc.sources ?? []).length });
     checks = (fc.data.checks ?? []).map((c) => ({ ...c, role: claims[c.index]?.role, planned: claims[c.index]?.claim }));
   }
   // a number card follows its claim: a reworded number moves with it, a dropped claim's card goes (free)
@@ -911,7 +953,14 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const long = n > maxW ? [`the narration is ${n} words, too long for ${lengthSec} s: write ${L.words[0]}-${L.words[1]} words (shorter sentences; keep every beat, cue word and number)`] : [];
     return { P: [...P.filter((p) => !isTarget(p) && !shown(p, script)), ...short, ...long], T, moved: rt.moved };
   };
-  let w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
+  // the narration the plan wrote with its scene (scene language v2 step 1d): its checked numbers put in for free, then the
+  // same checks; the writer is called only to repair. An older plan reply without sentences: the writer writes them.
+  let w;
+  if (B.sentences) {
+    const fixed = applyFactChanges(B.sentences, checks);
+    w = { data: { title: B.story.title, sentences: fixed.sentences } };
+    trace.push({ label: "words (in the plan, free)", ...(fixed.notes.length ? { notes: fixed.notes } : {}) });
+  } else w = await step("words", { system: WORDS_SYSTEM, user: wordsUser({ topic, lengthSec, beats, facts: kept.map((c) => c.claim) }), schema: NARRATION_SCHEMA, effort: "medium", maxTokens: 8000 });
   // the free trim first: a narration a few words over its limit loses filler words, never its cues, numbers or openings
   const maxW = Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
   const trimmed = (sc) => { const n = sc.sentences.reduce((k, s) => k + wordCount(s.text), 0); if (n <= maxW) return sc; const t = trimNarration(sc, { max: maxW, cues: cuesOf() }); if (t.cut.length) trace.push({ label: "words trim (free)", from: n, to: t.script.sentences.reduce((k, s) => k + wordCount(s.text), 0), cut: t.cut }); return t.script; };

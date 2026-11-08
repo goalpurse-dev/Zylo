@@ -1,0 +1,77 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 5 searches",
+ "searches": 5,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "Stone is typically about 10 to 20 times stronger in compression than in tension, depending on the rock.",
+    "why": "Sources give a ratio of 10 to 20 (Colorado notes), with some granites higher (about 17 to 24). 'Roughly ten times' is only the low end. The slab-versus-arch explanation is a simplification the sources don't address, though an arch does keep stone mostly in compression.",
+    "sources": [
+     {
+      "url": "https://ceae.colorado.edu/~amadei/CVEN5768/PDF/NOTES8.pdf",
+      "title": "strength properties of rocks and rock masses"
+     },
+     {
+      "url": "https://geogroup.utoronto.ca/wp-content/uploads/RockEng09/PDF/Session21/4063%20PAPER.pdf",
+      "title": "A simple method to estimate tensile strength and Hoek- ..."
+     },
+     {
+      "url": "https://www.researchgate.net/publication/270162174_Relation_between_tensile_and_compressive_engineering_properties_of_granites",
+      "title": "(PDF) Relation between tensile and compressive engineering properties of granites"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "The Pons Fabricius in Rome was built in 62 BC and still carries walkers after more than 2000 years",
+    "why": "Sources date it to 62 BCE and call it the oldest bridge in Rome still standing and in continuous use. That makes it about 2,085 years old, so 'more than 2000' is correct. One caveat: no source explicitly mentions pedestrians today, but continuous use supports the claim.",
+    "sources": [
+     {
+      "url": "https://ancientromelive.org/pons-fabricius/",
+      "title": "Ancient Rome Live"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "The Alcántara Bridge in Spain, built between AD 104 and 106, is made of granite blocks laid without mortar, though some later repairs did use mortar.",
+    "why": "Sources give the construction date as a range, AD 104 to 106, and say it was built of granite without mortar. The bridge was later repaired with mortared masonry, including in 1860.",
+    "sources": [
+     {
+      "url": "https://followinghadrianphotography.com/2018/03/04/alcantara-bridge/",
+      "title": "Alcántara Bridge"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Alc%C3%A1ntara_Bridge",
+      "title": "Alcántara Bridge"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "Mesopotamian builders were using brick arches about 4000 years ago (around 2000 BCE), long before Rome, though in drains and small structures rather than bridges.",
+    "why": "Careful sources put the earliest surviving true brick arches at about 2000 BCE, in underground drains. 'More than 4000 years' only holds with looser sources, so 'about 4000 years' is safer. Rome's arches came much later.",
+    "sources": [
+     {
+      "url": "https://www.britannica.com/technology/construction/Bronze-Age-and-early-urban-cultures",
+      "title": "Construction - Bronze Age, Urban Cultures"
+     },
+     {
+      "url": "https://www.ebsco.com/research-starters/architecture/arch-architecture/",
+      "title": "Arch (architecture)"
+     },
+     {
+      "url": "https://www.steelmasterusa.com/news/history-of-arches/",
+      "title": "The History of Arches: Connecting the Past to Modern Architecture"
+     }
+    ]
+   }
+  ]
+ }
+}

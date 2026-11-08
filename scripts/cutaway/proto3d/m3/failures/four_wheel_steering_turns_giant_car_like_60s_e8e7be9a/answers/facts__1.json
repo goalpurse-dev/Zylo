@@ -1,0 +1,81 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 6 searches",
+ "searches": 6,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "The Mercedes S-Class's optional rear-axle steering turns the rear wheels up to 10 degrees, which cuts the turning circle by up to about 2 meters (the base system is 4.5 degrees)",
+    "why": "Sources support 10 degrees and a roughly 2 m (6.5 ft) reduction, but both are 'up to' figures and 10 degrees is the optional larger system; the base system is 4.5 degrees.",
+    "sources": [
+     {
+      "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+      "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+     },
+     {
+      "url": "https://mercedesblog.com/the-new-mercedes-s-class-w223-received-rear-axle-steering-and-e-active-body-control-suspension/",
+      "title": "The new Mercedes S-Class W223 received rear axle steering and E-Active body control suspension"
+     },
+     {
+      "url": "https://m.youtube.com/watch?pp=ygUNI3dheW9mZWFycmllcg%3D%3D&v=48X-qz0B2xo",
+      "title": "Mercedes S-CLASS 2021 - REAR AXLE steering (10 degrees ..."
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "On the Mercedes S-Class, the rear wheels turn opposite the front below about 60 km/h (37 mph) and the same way above that",
+    "why": "Motor1 and Mercedesblog both state the opposite direction up to 60 km/h (37 mph) and the same direction above; CarExpert agrees.",
+    "sources": [
+     {
+      "url": "https://www.motor1.com/news/534741/2023-mercedes-glc-rear-wheel-steering/",
+      "title": "2023 Mercedes GLC Spied Putting Rear-Wheel Steering To Work"
+     },
+     {
+      "url": "https://mercedesblog.com/the-new-mercedes-s-class-w223-received-rear-axle-steering-and-e-active-body-control-suspension/",
+      "title": "The new Mercedes S-Class W223 received rear axle steering and E-Active body control suspension"
+     },
+     {
+      "url": "https://www.carexpert.com.au/car-news/rear-wheel-steering-what-is-it",
+      "title": "Rear wheel steering: What is it?"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Honda offered four-wheel steering on its Prelude from 1987",
+    "why": "Honda's tech site says it introduced 4WS in the Prelude in 1987 as an option, and a 1987 UPI road test confirms it. Avoid saying 'first ever'.",
+    "sources": [
+     {
+      "url": "https://global.honda/en/tech/serial/Honda_Super_Handling_part01/",
+      "title": "Honda Four-Wheel Steering System (Honda 4WS) Technology (1987)"
+     },
+     {
+      "url": "https://www.upi.com/Archives/1987/12/29/Honda-Prelude-Si-4WS-The-rear-wheels-steer-too/2646567752400/",
+      "title": "Honda Prelude Si 4WS -- The rear wheels steer, too - UPI Archives"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "Some rear-steer systems, such as BMW's Integral Active Steering and one DAF truck rear axle, are designed so a fault leaves the rear wheels centred or straight",
+    "why": "Evidence is limited to a DAF case study and a parts-retailer page on BMW; no general rule and no Mercedes source, so it can't be claimed for all systems or the S-Class.",
+    "sources": [
+     {
+      "url": "https://www.picoauto.com/library/case-studies/daf-rear-steering-fault",
+      "title": "DAF CF75"
+     },
+     {
+      "url": "https://www.go-parts.com/garage/steering-gear-poppet-rack-bmw-750i-bmw-alpina-b7-bmw-x7-2016-2024",
+      "title": "BMW Integral Active Steering Failure: Clunks, Warnings & Rear-Steer Fixes for 7-Series, X7 & More (2016-2024)"
+     }
+    ]
+   }
+  ]
+ }
+}

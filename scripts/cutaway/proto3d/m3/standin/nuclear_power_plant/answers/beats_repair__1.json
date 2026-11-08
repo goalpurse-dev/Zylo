@@ -111,6 +111,56 @@
     }
    ]
   },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you stand uranium rods in a tank of water, you have a reactor."
+   },
+   {
+    "role": "problem",
+    "text": "But the water boils, and the steam just escapes."
+   },
+   {
+    "role": "fix1",
+    "text": "So you pipe the steam to a turbine that spins a generator."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the reaction speeds up, and the rods glow red hot."
+   },
+   {
+    "role": "fix2",
+    "text": "So you lower control rods that soak up neutrons and slow it down."
+   },
+   {
+    "role": "name",
+    "text": "This is a nuclear power plant."
+   },
+   {
+    "role": "how",
+    "text": "Hot steam spins the turbine, and the generator makes power."
+   },
+   {
+    "role": "problem3",
+    "text": "But now used steam piles up, and the turbine stalls."
+   },
+   {
+    "role": "fix3",
+    "text": "So a cooling tower turns the steam back into water."
+   },
+   {
+    "role": "fact",
+    "text": "One fuel pellet makes about as much energy as one ton of coal."
+   },
+   {
+    "role": "finish",
+    "text": "Add a thick concrete dome over the reactor."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a nuclear power plant."
+   }
+  ],
   "sceneJson": {
    "world": {
     "cut": [

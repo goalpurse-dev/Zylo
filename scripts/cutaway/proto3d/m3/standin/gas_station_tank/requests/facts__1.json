@@ -1,0 +1,70 @@
+{
+ "key": "facts__1",
+ "label": "facts",
+ "model": "claude-sonnet-5-5",
+ "hash": "7ee0d4a9ef33de66",
+ "search": 10,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
+ "user": "Topic: gas station tank\nClaims (index: claim | suggested search):\n0: EPA has said one gallon of gasoline can make about a million gallons of groundwater unusable | EPA one gallon of gasoline contaminate million gallons groundwater\n1: Leaking underground storage tanks have been a leading source of groundwater contamination in the US | EPA leaking underground storage tanks source of groundwater contamination\n2: New or replaced US underground tanks must have secondary containment (double walls) with interstitial monitoring | EPA 2015 UST rule secondary containment interstitial monitoring\n3: US underground storage tanks must have spill prevention equipment such as a spill bucket at the fill pipe | EPA UST spill bucket requirement fill pipe"
+}

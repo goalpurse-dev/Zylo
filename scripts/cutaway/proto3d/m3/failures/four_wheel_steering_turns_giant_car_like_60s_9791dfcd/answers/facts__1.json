@@ -1,0 +1,68 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 4 searches",
+ "searches": 4,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "drop",
+    "claim": "A full-size SUV like the Chevrolet Suburban has a turning circle of about 39 feet, roughly 12 meters",
+    "why": "No source gives 39 ft. GM Authority lists 42.3 ft (12.9 m) with 18-inch wheels and 43.3 ft (13.2 m) with 20- and 22-inch wheels. KBB lists 41.5 ft on the first two trims and 43.3 ft on the rest. Only the claim as written is unsupported. If it is reused, say about 43 feet, roughly 13 meters.",
+    "sources": []
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Mercedes S-Class rear-axle steering turns the rear wheels up to 10 degrees and cuts the turning circle by up to about 2 meters",
+    "why": "Mercedes' S-Class (W223) press text, reposted on a forum, gives a maximum rear steering angle of 10° and a turning circle reduced by up to 2 m. Autoevolution confirms a reduction of 6.5 ft (2 m). The system is optional.",
+    "sources": [
+     {
+      "url": "https://www.germancarforum.com/threads/official-mercedes-benz-s-class-w223.60931/page-6",
+      "title": "S-Class (W223) - [Official] Mercedes-Benz S-Class (W223)"
+     },
+     {
+      "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+      "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "At low speeds, roughly below 50–60 km/h depending on the car, the rear wheels steer opposite the front. At higher speeds they steer the same way.",
+    "why": "The principle holds, but 60 km/h is not a universal switch point. Autoevolution describes BMW-style integral steering as opposite below 60 km/h and same-direction above 80 km/h, which is a transition band. The Taycan figure is about 50 km/h. No S-Class switch speed was found.",
+    "sources": [
+     {
+      "url": "https://www.motorauthority.com/news/1129048_mercedes-adds-improved-active-body-control-and-rear-wheel-steering-to-new-s-class",
+      "title": "Mercedes adds improved Active Body Control and rear-wheel steering to new S-Class"
+     },
+     {
+      "url": "https://www.autoevolution.com/news/integral-steering-system-explained-20848.html",
+      "title": "Integral Steering System Explained - autoevolution"
+     },
+     {
+      "url": "https://www.taycanforum.com/forum/threads/rear-axle-steering.1440/page-3",
+      "title": "Rear axle steering"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "reword",
+    "claim": "At low speed, the GMC Hummer EV's CrabWalk turns all four wheels the same way, up to 10 degrees, so the truck moves diagonally at a modest angle (not sideways).",
+    "why": "The sources support same-direction steering of all four wheels, but only at low speed and up to 10°. The result is a diagonal crawl at a modest angle.",
+    "sources": [
+     {
+      "url": "https://www.cars.com/articles/what-is-the-gmc-hummer-evs-crabwalk-feature-443574/",
+      "title": "What Is the GMC Hummer EV's CrabWalk Feature?"
+     },
+     {
+      "url": "https://www.cochranbuickgmcyoungstown.com/blog/what-is-the-hummer-ev-crab-walk/",
+      "title": "The Hummer EV Crab Walk: Everything You Need to Know"
+     }
+    ]
+   }
+  ]
+ }
+}

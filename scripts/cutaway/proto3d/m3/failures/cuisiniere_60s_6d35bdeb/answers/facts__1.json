@@ -1,0 +1,89 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 5 searches",
+ "searches": 5,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "At 400 ppm of carbon monoxide, a person gets a headache within 1 to 2 hours, and it becomes life-threatening within about 3 hours",
+    "why": "AICO, FireAngel and Kidde all give frontal headaches within 1-2 hours at 400 ppm, with life-threatening exposure after about 3 hours. The 3-hour figure comes from alarm manufacturers, so treat it as a rough guide.",
+    "sources": [
+     {
+      "url": "https://www.aico.co.uk/homeowner/articles/carbon-monoxide-levels-explained/",
+      "title": "Carbon Monoxide Levels Explained"
+     },
+     {
+      "url": "https://www.fireangel.co.uk/homeowners/support/what-symptoms-do-you-get-at-different-carbon-monoxide-co-ppm-levels/",
+      "title": "What symptoms do you get at different carbon monoxide (CO) ppm levels? - FireAngel"
+     },
+     {
+      "url": "https://www.kidde.com/support/carbon-monoxide-alarms/co-levels-info",
+      "title": "Carbon Monoxide Levels"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "A wood stove chimney must rise at least 3 feet above the roof where it passes through, and at least 2 feet higher than anything within 10 feet",
+    "why": "The 3-2-10 rule is described by flue-pipes.com as NFPA 211, and Chimney Insight says IRC R1003.9 mirrors it. These are secondary sources, and local codes may be stricter.",
+    "sources": [
+     {
+      "url": "https://www.flue-pipes.com/us/info/required-height_of_a_chimney",
+      "title": "Chimney Height Above the Roof: How High? (IRC and NFPA 211)"
+     },
+     {
+      "url": "https://www.flue-pipes.com/us/info/chimney-pipes-building-codes",
+      "title": "What Are the Building Codes for Chimney Pipes?"
+     },
+     {
+      "url": "https://chimneyinsight.com/chimney-height-calculator-roof-obstruction-rules/",
+      "title": "Chimney Height Calculator Based on Roof & Obstruction Rules"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "A wood cookstove oven can reach a hot baking temperature of around 230 °C (450 °F), though it has no thermostat and typical baking runs about 175–230 °C (350–450 °F)",
+    "why": "No source gives a typical wood cookstove oven temperature. 230 °C (450 °F) is the top of the general hot-oven range, so it is not a fixed value.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Oven_temperatures",
+      "title": "Oven temperatures"
+     },
+     {
+      "url": "https://kitchenconvert.io/convert/450-f-to-c",
+      "title": "450 °F to °C — Exact Conversion & Oven Setting"
+     },
+     {
+      "url": "https://chicagobrickoven.com/blogs/the-hangout/what-temperature-should-a-wood-fired-pizza-oven-be-a-simple-guide-for-beginners",
+      "title": "What Temperature Should a Wood-Fired Pizza Oven Be? Guide"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "In French, cuisinière means both a cooking stove and a woman who cooks (the feminine of cuisinier)",
+    "why": "Wiktionary, Dictionary.com and French Today all list both senses: female cook and stove/range.",
+    "sources": [
+     {
+      "url": "https://en.wiktionary.org/wiki/cuisini%C3%A8re",
+      "title": "cuisinière - Wiktionary, the free dictionary"
+     },
+     {
+      "url": "https://www.dictionary.com/browse/cuisiniere",
+      "title": "CUISINIÈRE Definition & Meaning"
+     },
+     {
+      "url": "https://frenchtoday.com/blog/french-vocabulary/how-to-say-to-cook-in-french-cuir-cuisiner-faire-la-cuisine",
+      "title": "How to Say \"to Cook\" in French: Cuire, Cuisiner, Faire la Cuisine?"
+     }
+    ]
+   }
+  ]
+ }
+}

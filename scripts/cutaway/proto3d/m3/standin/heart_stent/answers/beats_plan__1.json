@@ -95,6 +95,48 @@
     }
    ]
   },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you blow up a tiny balloon inside a clogged artery, you have angioplasty."
+   },
+   {
+    "role": "problem",
+    "text": "But when the balloon goes down, the plaque springs back and the blood stops."
+   },
+   {
+    "role": "fix1",
+    "text": "So you wrap the balloon in a metal mesh that holds the artery open."
+   },
+   {
+    "role": "problem2",
+    "text": "But now scar tissue grows through the mesh and blocks it again."
+   },
+   {
+    "role": "fix2",
+    "text": "So you coat the mesh with a drug that keeps the scar from growing back."
+   },
+   {
+    "role": "name",
+    "text": "This is a stent."
+   },
+   {
+    "role": "how",
+    "text": "Now blood flows freely through the open mesh to the heart muscle."
+   },
+   {
+    "role": "fact",
+    "text": "The first stent went into a human heart artery in 1986, in Toulouse, France."
+   },
+   {
+    "role": "finish",
+    "text": "Add a thin wire and a tube that carry it in from the wrist or groin."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a stent."
+   }
+  ],
   "sceneJson": {
    "world": {
     "cut": [

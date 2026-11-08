@@ -106,6 +106,52 @@
     }
    ]
   },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you run a moving belt up a slope, you have an escalator."
+   },
+   {
+    "role": "problem",
+    "text": "But a box on the steep belt slides back down."
+   },
+   {
+    "role": "fix1",
+    "text": "So you bolt flat steps onto the belt."
+   },
+   {
+    "role": "problem2",
+    "text": "But now the steps tilt with the slope, and the box slides off."
+   },
+   {
+    "role": "fix2",
+    "text": "So each step rolls on wheels in two tracks that hold it level, even at 30 degrees."
+   },
+   {
+    "role": "name",
+    "text": "This is a step chain."
+   },
+   {
+    "role": "how",
+    "text": "A motor at the top turns a gear that pulls the steps up."
+   },
+   {
+    "role": "problem3",
+    "text": "But if the motor fails, the loaded steps roll back down."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a brake that stops them when the power fails."
+   },
+   {
+    "role": "finish",
+    "text": "Add a handrail and a ceiling light to complete it."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built an escalator."
+   }
+  ],
   "sceneJson": {
    "world": {
     "cut": [

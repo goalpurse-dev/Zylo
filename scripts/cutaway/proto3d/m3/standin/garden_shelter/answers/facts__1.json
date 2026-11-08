@@ -1,0 +1,53 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "A 90 mile per hour wind pushes about 20 pounds on every square foot.",
+    "why": "q = 0.00256 x 90^2 = 20.7 psf in the wind pressure tables; it is the basic pressure before code factors.",
+    "sources": [
+     {
+      "url": "https://www.engr.psu.edu/ae/Thesis/portfolios/2006/hsm117/Final%20Report/Appendix%20A.pdf",
+      "title": "Penn State AE thesis, wind pressure appendix"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Footings usually go below the frost line, so frost cannot heave them up.",
+    "why": "IRC and deck guides require footings below the frost line to prevent heave; some freestanding structures are exempt, so 'usually'.",
+    "sources": [
+     {
+      "url": "https://www.jaspector.com/codes/irc-2021/ch04-foundations/footing-depth-frost-line-requirements/",
+      "title": "IRC 2021 footing depth and frost line"
+     },
+     {
+      "url": "https://www.decks.com/how-to/articles/deck-footing-frost-depth-map",
+      "title": "Deck Footing Depth Guide - Decks.com"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Paving slabs are laid on a compacted sub-base so they stay flat and drain",
+    "why": "Wickes and Bradstone both specify a compacted MOT Type 1 sub-base under slabs.",
+    "sources": [
+     {
+      "url": "https://www.wickes.co.uk/how-to-guides/garden-landscaping/lay-a-patio",
+      "title": "How to lay a patio - Wickes"
+     },
+     {
+      "url": "https://www.bradstone.com/homeowner/blog/how-to-lay-paving-slabs-for-your-patio",
+      "title": "How to lay paving slabs - Bradstone"
+     }
+    ]
+   }
+  ]
+ }
+}

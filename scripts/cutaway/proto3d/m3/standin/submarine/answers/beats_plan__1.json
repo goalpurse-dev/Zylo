@@ -109,6 +109,56 @@
     }
    ]
   },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you seal a steel tube and drop it in the sea, you have a submarine."
+   },
+   {
+    "role": "problem",
+    "text": "But it just floats and bobs on the surface."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add tanks that flood with sea water, and it sinks."
+   },
+   {
+    "role": "problem2",
+    "text": "But now it keeps sinking until it sits stuck on the bottom."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add tanks of air that blow the water out, and it rises."
+   },
+   {
+    "role": "name",
+    "text": "This is a ballast tank."
+   },
+   {
+    "role": "how",
+    "text": "Flood the tanks to dive, and blow them to rise."
+   },
+   {
+    "role": "problem3",
+    "text": "But deep down, the pressure squeezes the hull until it cracks."
+   },
+   {
+    "role": "fix3",
+    "text": "So you wrap it in a thick hull of strong steel."
+   },
+   {
+    "role": "fact",
+    "text": "Navy attack submarines dive deeper than 800 feet, and the exact depth is secret."
+   },
+   {
+    "role": "finish",
+    "text": "Add a periscope and a propeller."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a submarine."
+   }
+  ],
   "sceneJson": {
    "world": {
     "cut": [

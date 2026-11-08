@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Each of the Golden Gate Bridge's two anchorages weighs about 60,000 tons.",
+    "why": "The Golden Gate Bridge District lists 60,000 tons per anchorage.",
+    "sources": [
+     {
+      "url": "https://www.goldengate.org/bridge/history-research/statistics-data/design-construction-stats/",
+      "title": "Length, Width, Height, Weight (Golden Gate Bridge District)"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "The Tacoma Narrows Bridge twisted and collapsed in 1940 in a wind of only about 40 mph (64 km/h).",
+    "why": "History.com gives about 40 mph; UWO gives 38-42 mph; about 40 mph is fair.",
+    "sources": [
+     {
+      "url": "https://www.history.com/this-day-in-history/tacoma-narrows-bridge-collapses",
+      "title": "Tacoma Narrows Bridge collapses"
+     },
+     {
+      "url": "https://www.eng.uwo.ca/people/esavory/tacoma_narrows_bridge_collapse.htm",
+      "title": "The Tacoma Narrows Bridge Collapse"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Each Golden Gate main cable is made of 27,572 steel wires.",
+    "why": "The Golden Gate Bridge District main cable statistics give 27,572 wires per cable.",
+    "sources": [
+     {
+      "url": "https://goldengate.org/exhibits/cross-section-of-a-main-cable",
+      "title": "Main Cable Statistics"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "One uranium fuel pellet, about the size of a fingertip, makes about as much energy as one ton of coal",
+    "why": "NEI and the Utah energy office give one ton of coal per pellet.",
+    "sources": [
+     {
+      "url": "https://energy.utah.gov/wp-content/uploads/20260515_Nuclear-Fuel_OED-Fact-Sheet.pdf",
+      "title": "Nuclear Fuel fact sheet - Utah Office of Energy Development"
+     },
+     {
+      "url": "https://ameren.com/-/media/missouri-site/files/callaway/uraniumpelletfactsheet.ashx",
+      "title": "Uranium pellet fact sheet - Ameren"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Control rods are made of materials like boron or cadmium that soak up neutrons and slow the chain reaction",
+    "why": "Energy Education says so.",
+    "sources": [
+     {
+      "url": "https://energyeducation.ca/encyclopedia/Control_rod",
+      "title": "Control rod - Energy Education"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "The white cloud over a cooling tower is water vapor, not smoke",
+    "why": "NRC describes the plume as condensed water vapor.",
+    "sources": [
+     {
+      "url": "https://www.nrc.gov/docs/ML1027/ML102780291.pdf",
+      "title": "NRC Comanche Peak document ML102780291"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,77 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 6 searches",
+ "searches": 6,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "reword",
+    "claim": "The Burj Khalifa stands on 192 bored concrete piles about 1.5 m in diameter and roughly 43 to 50 m long, under a 3.7 m thick concrete mat.",
+    "why": "The 3.7 m mat is confirmed by the official Burj Khalifa site, and the 192 piles by Commercial Interior Design. The 43 m pile length appears in only one student Scribd document, and other sources give about 47.5 m or 50 m, so a single exact length is not established.",
+    "sources": [
+     {
+      "url": "https://www.burjkhalifa.ae/the-tower/structures/",
+      "title": "Burj Khalifa Structure: Design and Construction"
+     },
+     {
+      "url": "https://www.commercialinteriordesign.com/insight/updated-how-the-burj-khalifa-was-built-including-design-foundations-cladding-and-urban-myths",
+      "title": "How Burj Khalifa was built - Commercial Interior Design"
+     },
+     {
+      "url": "https://www.scribd.com/document/382908693/Construction-Of-Burj-Khalifa",
+      "title": "Burj Khalifa Construction Details"
+     },
+     {
+      "url": "https://www.slideshare.net/slideshow/foundation-deisgn-of-burj-khalifa/16447928",
+      "title": "Foundation Deisgn of Burj Khalifa"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Taipei 101 has a roughly 660-tonne steel sphere, suspended as a pendulum between floors 87 and 92, that reduces the building's sway from wind.",
+    "why": "The 660 tonne figure is well supported. However, the damper hangs between floors 87 and 92, which is high in the tower but not at the very top, and it is a suspended sphere that also counters earthquakes and typhoon winds.",
+    "sources": [
+     {
+      "url": "https://www.britannica.com/place/Taipei-101",
+      "title": "Taipei 101"
+     },
+     {
+      "url": "https://www.thecivilengineer.org/news/taipei-101s-impressive-tuned-mass-damper",
+      "title": "Taipei 101's impressive tuned mass damper"
+     },
+     {
+      "url": "https://www.atlasobscura.com/places/tuned-mass-damper-of-taipei-101",
+      "title": "Tuned Mass Damper of Taipei 101 in Taipei - Atlas Obscura"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "The 10-story Home Insurance Building in Chicago, completed in 1885, is often called the first skyscraper because of its iron-and-steel skeleton frame, though the title is debated.",
+    "why": "Britannica supports the 1885 completion and the 'first skyscraper' label. The frame was mostly cast-iron columns and wrought-iron beams with some steel, and the 'first' title is contested, for example by the earlier but shorter Ditherington Flax Mill.",
+    "sources": [
+     {
+      "url": "https://www.britannica.com/place/Home-Insurance-Company-Building",
+      "title": "Home Insurance Company Building"
+     },
+     {
+      "url": "https://www.guinnessworldrecords.com/world-records/first-skyscraper",
+      "title": "First skyscraper"
+     },
+     {
+      "url": "https://architectuul.com/architecture/home-insurance-building",
+      "title": "Home Insurance Building"
+     },
+     {
+      "url": "https://www.planetizen.com/features/137468-myth-first-skyscraper-how-clever-pr-campaign-duped-world",
+      "title": "The myth of the 'first skyscraper:' How a clever PR campaign duped the world"
+     }
+    ]
+   }
+  ]
+ }
+}

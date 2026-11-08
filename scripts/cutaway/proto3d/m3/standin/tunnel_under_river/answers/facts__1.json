@@ -1,0 +1,57 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.",
+    "why": "ASME and Britannica: 84 fans, air changed every 90 seconds at full speed.",
+    "sources": [
+     {
+      "url": "https://ethw.org/ASME-Landmark:Holland_Tunnel_Ventilation_System",
+      "title": "ASME Landmark: Holland Tunnel Ventilation System"
+     },
+     {
+      "url": "https://www.britannica.com/topic/Holland-Tunnel",
+      "title": "Holland Tunnel (Britannica)"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.",
+    "why": "Wikipedia and ASCE agree.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Thames_Tunnel",
+      "title": "Thames Tunnel"
+     },
+     {
+      "url": "https://www.asce.org/about-civil-engineering/history-and-heritage/historic-landmarks/thames-tunnel",
+      "title": "Thames Tunnel (ASCE)"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.",
+    "why": "Sources describe successive rings of precast segments set by an erector at the rear of the shield.",
+    "sources": [
+     {
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10472962",
+      "title": "Automated laying of tunnel lining segments (patent)"
+     },
+     {
+      "url": "https://crosscut.com/2013/07/going-deep-how-bore-tunnel-pictures",
+      "title": "How to bore a tunnel, in pictures"
+     }
+    ]
+   }
+  ]
+ }
+}
