@@ -35,6 +35,9 @@ export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
 /** The most one call can cost (USD): every output token used, plus a generous input. */
 export const worstCaseUsd = (model, maxTokens, inputTokens = 12000) => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * p.cacheWrite) / 1e6).toFixed(4)); };
 
+/** A call's tokens: uncached input, cache reads, cache writes, output (thinking included). */
+export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?.cache_read_input_tokens ?? 0, cacheWrite: u?.cache_creation_input_tokens ?? 0, output: u?.output_tokens ?? 0 });
+
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
 async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null }) {
   const sonnet = model.startsWith("claude-sonnet-5-5");
@@ -75,7 +78,7 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
   if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted });
   const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
   try {
-    return { data: JSON.parse(text), costUsd };
+    return { data: JSON.parse(text), costUsd, usage: usageOf(body?.usage) };
   } catch {
     throw Object.assign(new Error("the reply was not JSON"), { costUsd, counted });
   }
@@ -450,7 +453,7 @@ export async function judgeScript({ apiKey = "", provider = "anthropic", script,
   const reply = provider === "mock"
     ? await MOCK.judge({ ideas: [{ opener: script?.lines?.[0]?.text ?? card?.opener ?? "" }] })
     : await callJson({ apiKey, model: MODELS.judge, system: JUDGE_SYSTEM, user: judgeScriptPrompt(script, card, { exemptOriginality }), schema: judgeSchema(), effort: "medium", maxTokens: TOPIC_GATE.maxTokens.judge, meter });
-  return { verdict: scoreVerdict(reply.data?.verdicts?.[0]), costUsd: reply.costUsd };
+  return { verdict: scoreVerdict(reply.data?.verdicts?.[0]), costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /** A script passes the gate: no check problem (protocol + topic) and the judge accepts it at the library's bar. */
@@ -534,14 +537,14 @@ export async function writePlan({ apiKey = "", topic, recipe = null, angle = ANG
   const raw = reply.data?.card ?? {};
   const card = { ...normalizeIdea(raw), twist_clue: String(raw.twist_clue ?? "").trim(), topic: String(topic).slice(0, 240) };
   const beats = reply.data?.beats ?? [];
-  return { card, beats, problems: [...cardProblems(card), ...beatProblems(beats)], costUsd: reply.costUsd };
+  return { card, beats, problems: [...cardProblems(card), ...beatProblems(beats)], costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /** The script with its skeleton map, following the plan (a fix: previous + the failed checks). */
 export async function writeBroadScript({ apiKey = "", card, beats, examples = [], lengthSec = 90, previous = null, failed = [], meter = null }) {
   const user = `${scriptPrompt({ idea: card, lengthSec, beats, previous, failed })}\n\nTHE TWIST'S CLUE (plant it before the discovery, pay it off after): ${card.twist_clue || "(choose one)"}`;
   const reply = await callJson({ apiKey, model: MODELS.script, system: [examplesBlock(examples), BROAD_SCRIPT_SYSTEM], user, schema: broadScriptSchema(), effort: "medium", maxTokens: BROAD_MAX_TOKENS.script, timeoutMs: 180_000, meter });
-  return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd };
+  return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /**
@@ -573,14 +576,14 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
   const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), drafts: [], best: null, stopped: null, costUsd: 0 };
   const add = (d, usd) => { const u = Number(usd || 0); d.costUsd = Number((d.costUsd + u).toFixed(5)); out.costUsd = Number((out.costUsd + u).toFixed(5)); };
   for (let k = 0; k < drafts && !out.stopped; k++) {
-    const d = { n: k + 1, angle: ANGLES[k % ANGLES.length], card: null, beats: [], planProblems: [], script: null, skeleton: {}, checks: null, fixed: false, discarded: null, verdict: null, costUsd: 0 };
+    const d = { n: k + 1, angle: ANGLES[k % ANGLES.length], card: null, beats: [], planProblems: [], script: null, skeleton: {}, checks: null, fixed: false, discarded: null, verdict: null, costUsd: 0, usage: { plan: null, script: null, fix: null, judge: null } };
     out.drafts.push(d);
     try {
       const p = await s.writePlan({ apiKey, topic, recipe, angle: d.angle, examples, lengthSec, meter });
-      add(d, p.costUsd);
+      add(d, p.costUsd); d.usage.plan = p.usage ?? null;
       Object.assign(d, { card: p.card, beats: p.beats, planProblems: p.problems });
       let w = await s.writeBroadScript({ apiKey, card: d.card, beats: d.beats, examples, lengthSec, meter });
-      add(d, w.costUsd);
+      add(d, w.costUsd); d.usage.script = w.usage ?? null;
       d.script = w.script; d.skeleton = w.skeleton;
       const trimmedIfLong = (c) => (c.protocol.some((x) => /^Too long:/.test(x)) ? trimBroad(d.script, d.skeleton, d.card, examples, lengthSec) : d.script);
       d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
@@ -589,7 +592,7 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
       if (d.checks.problems.length) {
         d.firstProblems = d.checks.problems;
         w = await s.writeBroadScript({ apiKey, card: d.card, beats: d.beats, examples, lengthSec, previous: d.script, failed: d.checks.problems, meter });
-        add(d, w.costUsd);
+        add(d, w.costUsd); d.usage.fix = w.usage ?? null;
         d.fixed = true; d.script = w.script; d.skeleton = w.skeleton;
         d.checks = broadChecks({ script: d.script, skeleton: d.skeleton, card: d.card, examples, lengthSec });
         d.script = trimmedIfLong(d.checks);
@@ -597,7 +600,7 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
       }
       if (d.checks.problems.length) { d.discarded = "fails the checks after one fix"; continue; }
       const j = await s.judgeScript({ apiKey, script: d.script, card: d.card, meter, exemptOriginality: true });
-      add(d, j.costUsd);
+      add(d, j.costUsd); d.usage.judge = j.usage ?? null;
       d.verdict = j.verdict;
     } catch (e) {
       add(d, e?.costUsd);

@@ -57,10 +57,20 @@ test("skeleton: each missing job is caught", () => {
   }
 });
 
+test("skeleton (2026-11-08 run): a punchline quote after the named line, 'Dobbs the baker', a two-sentence quote", () => {
+  const s = clone(GOOD), m = clone(MAP);
+  s.lines.splice(4, 1, { part: "tour", text: "Dobbs the baker stacked his oven on level fourteen." }, { part: "tour", text: "His chimney's now taller than his house." });
+  m.neighbours = [{ name: "Mrs. Albery", quote: "woke up in the basement" }, { name: "Mr. Dunkle", quote: "Mr. Dunkle polishes his stilts" }, { name: "Dobbs the baker", quote: "chimney's now taller than his house" }];
+  m.discovery = "The rule was never about money. The towers stand on the pipes.";
+  assert.deepEqual(skeletonProblems(s, m), []);
+});
+
 test("lineOf finds a quote word for word or by 80% of its words", () => {
   assert.equal(lineOf(GOOD.lines, "Mr. Dunkle polishes his stilts"), 3);
   assert.equal(lineOf(GOOD.lines, "Dunkle polishes his shiny stilts"), 3);
   assert.equal(lineOf(GOOD.lines, "a line that is not there at all"), -1);
+  // a paraphrase running across two lines of one part (2026-11-08 run)
+  assert.equal(lineOf(GOOD.lines, "The rule was never about money and the towers stand on the pipes"), 11);
 });
 
 const REF = { id: "ref1", text: "In this town, the richer you are, the higher your house is. Old Mrs. Pemberton keeps a goat on floor ninety. My neighbour Bartholomew sells clouds in jars. Then the elevator fell into the lake and the mayor was a robot all along." };

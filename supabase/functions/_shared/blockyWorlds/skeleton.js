@@ -48,8 +48,28 @@ export function skeletonSchema() {
   };
 }
 
-/** The index of the line a quote comes from (-1 if none): the exact words, else a line holding 80% of them. */
+/**
+ * The index of the line a quote comes from (-1 if none): the exact words, else a line holding 80% of them. A quote that
+ * spans two lines ("Money never held up the towers. Weight did.", 2026-11-08 run) is found by its first sentence that
+ * matches a line.
+ */
 export function lineOf(lines, quote, from = 0) {
+  const one = lineOfOne(lines, quote, from);
+  if (one >= 0) return one;
+  const parts = String(quote ?? "").split(/(?<=[.!?,])\s+/).filter((p) => norm(p).length >= 2);
+  for (const p of parts) { const i = lineOfOne(lines, p, from); if (i >= 0) return i; }
+  // a quote that runs across two lines of the same part, with no stop between ("...each other and their note pulls"):
+  // two lines in a row holding 80% of its words
+  const q = norm(quote);
+  if (q.length < 6) return -1;
+  for (let i = from; i + 1 < lines.length; i++) {
+    if (lines[i].part !== lines[i + 1].part) continue;
+    const ws = new Set(norm(`${lines[i].text} ${lines[i + 1].text}`));
+    if (q.filter((w) => ws.has(w)).length / q.length >= 0.8) return i;
+  }
+  return -1;
+}
+function lineOfOne(lines, quote, from = 0) {
   const q = norm(quote);
   if (!q.length) return -1;
   const qs = q.join(" ");
@@ -87,11 +107,16 @@ export function skeletonProblems(script, skel = {}, card = null) {
   // 2. three named neighbours in the tour
   const names = (skel.neighbours ?? []).filter((n) => String(n?.name ?? "").trim());
   const tourHits = new Set();
+  // 2026-11-08 run: the writer quotes the joke's punchline ("He says ducking is a richer person's hobby.") right after the
+  // line that names the neighbour ("Captain Welk on level thirty..."), and names come as "Dobbs the baker": the name is
+  // any capitalised word of it (not a title), found in the quoted line or one of the two before it, in the tour
+  const TITLES = new Set(["mr", "mrs", "ms", "miss", "dr", "old", "the", "mayor", "captain", "coach", "officer", "grandma", "grandpa", "aunt", "uncle"]);
   for (const n of names) {
     const i = lineOf(lines, n.quote);
-    const nameWord = norm(n.name).filter((w) => !["mr", "mrs", "ms", "miss", "dr", "old", "the", "baker", "mayor"].includes(w)).at(-1) ?? "";
-    const named = i >= 0 && nameWord && norm(lines[i].text).includes(nameWord) && lines[i].text.includes(nameWord.charAt(0).toUpperCase() + nameWord.slice(1));
-    if (named && ["tour", "rule"].includes(partOf(i))) tourHits.add(nameWord);
+    const nameWords = String(n.name).split(/\s+/).map((w) => w.replace(/[^A-Za-z]/g, "")).filter((w) => /^[A-Z]/.test(w) && !TITLES.has(w.toLowerCase()));
+    if (i < 0 || !nameWords.length) continue;
+    const at = [i, i - 1, i - 2].find((k) => k >= 0 && ["tour", "rule"].includes(partOf(k)) && nameWords.some((w) => new RegExp(`\\b${w}\\b`).test(lines[k].text)));
+    if (at !== undefined && ["tour", "rule"].includes(partOf(i))) tourHits.add(nameWords[0].toLowerCase());
   }
   if (tourHits.size < 3) bad(`the world tour needs three named neighbours, one joke each (found ${tourHits.size}).`);
   // 3. the narrator is the exception, in "Me"
