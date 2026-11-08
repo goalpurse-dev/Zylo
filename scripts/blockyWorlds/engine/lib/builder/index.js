@@ -2,6 +2,7 @@
 //   const b = makeBuilder({ provider, cache, budget, stillDir, log })
 //   b.prefetch(needs)                 start resolving early (the prepare job calls it with the needs of a plan made from
 //                                     estimated timings, so designs run while the voice is being made)
+//   await b.buildCritical(items)      the story-critical items (lib/critical.js) BEFORE planning -> { built, unbuilt, report }
 //   await b.buildFor(tl, { plan, kit }) -> { report, applied, reverted, cards }   needs -> resolve -> apply + re-check
 //   await b.close()                   the still renderer's Chrome
 // Providers: "off" (kit + library only; everything else a card: the default until the owner turns on paid builds),
@@ -51,6 +52,28 @@ export function makeBuilder({ provider = null, cache = null, budget = {}, stillD
       const check = plan ? (t) => [...(plan.checkTimeline?.(t) ?? []), ...(plan.checkSubjects?.(t) ?? []).map((x) => `subject ${x.shot}: ${x.problem}`)] : null;
       const a = applyResolved(tl, needs, results, { check });
       return { report: { ...report, costUsd: Number(purse.spent.toFixed(5)), needs: needs.length }, ...a };
+    },
+    /**
+     * STORY-CRITICAL FIRST (owner 2026-11-08: "The builder must build every story-critical object BEFORE planning, or
+     * the plan must be rejected"). items = lib/critical.js's unresolved items ({ id, name, why }); the kit was already
+     * asked WITH the head-noun guard (critical.js kitFor), so the builder's own kit view (no guard: a lookalike would
+     * pass) is skipped: library -> design + check, within this video's purse (the critical ones get it first).
+     * -> { built: { [name]: asset, [id]: asset }, unbuilt: [{ id, name, why, reason }], report }  never throws
+     */
+    async buildCritical(items) {
+      const list = (items ?? []).filter((it) => it?.name);
+      if (!list.length) return { built: {}, unbuilt: [], report: null };
+      const needs = list.map((it, i) => ({ id: `critical${i + 1}`, kind: "object", name: String(it.name), phrase: String(it.name), critical: true, why: it.why ?? [] }));
+      let out;
+      try { out = await run(needs, null); }
+      catch (e) { log(`critical build failed: ${e.message}`); return { built: {}, unbuilt: list.map((it) => ({ id: it.id, name: it.name, why: it.why ?? [], reason: `builder error: ${String(e.message).slice(0, 160)}` })), report: null }; }
+      const built = {}, unbuilt = [];
+      list.forEach((it, i) => {
+        const r = out.results[needs[i].id];
+        if (r && (r.source === "built" || r.source === "cache") && r.asset) { built[it.name] = r.asset; if (it.id) built[it.id] = r.asset; }
+        else unbuilt.push({ id: it.id, name: it.name, why: it.why ?? [], reason: r?.reason ?? "not built" });
+      });
+      return { built, unbuilt, report: { ...out.report, costUsd: Number(purse.spent.toFixed(5)), needs: needs.length } };
     },
     get spent() { return purse.spent; },
     async close() { if (stills) await (await stills.catch(() => null))?.close(); },

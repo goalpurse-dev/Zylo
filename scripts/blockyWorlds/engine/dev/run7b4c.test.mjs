@@ -11,6 +11,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as plan from "../plan.mjs";
+import { planCriticalFirst } from "./criticalFakes.mjs";
 import * as kit from "../page/kit/objects.js";
 import { directStory, mockProduction, validateProduction } from "../lib/director/index.js";
 import { carryClock } from "../lib/direction.js";
@@ -36,7 +37,8 @@ let TL = null;
 async function timeline() {
   if (TL) return TL;
   const direction = await directStory({ script, idea, exists, provider: { direct: async () => ({ data: R.production, costUsd: 0 }) } });
-  TL = plan.planVideo({ script, words, idea, lengthSec: R.lengthSec, direction, exists });
+  // STORY-CRITICAL FIRST (worker prepare order 2026-11-08): the watch is built (fake) before the plan, then "reject"
+  TL = planCriticalFirst(plan, { script, words, idea, lengthSec: R.lengthSec, direction, exists }).tl;
   return TL;
 }
 

@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as plan from "../plan.mjs";
+import { planCriticalFirst } from "./criticalFakes.mjs";
 import * as kit from "../page/kit/objects.js";
 import { matchProduction, directStory } from "../lib/director/index.js";
 import { nearestCrowdKind } from "../lib/director/match.js";
@@ -29,7 +30,8 @@ const exists = (rel) => fs.existsSync(path.join(ENGINE, rel));
 
 /** the prepare job's steps with the builder off (every builder need a picture card), then the pre-render checks */
 async function prepareChecks(direction) {
-  const tl = plan.planVideo({ script, words, idea: R.card, lengthSec: R.lengthSec, direction, exists });
+  // STORY-CRITICAL FIRST (worker prepare order 2026-11-08): the critical items built (fake) before the plan, then "reject"
+  const { tl } = planCriticalFirst(plan, { script, words, idea: R.card, lengthSec: R.lengthSec, direction, exists });
   const built = await makeBuilder({ provider: null }).buildFor(tl, { plan, kit });
   const c = preRenderChecks(plan, tl, script, kit);
   return { tl, built, c, bad: checkFailure(c) };

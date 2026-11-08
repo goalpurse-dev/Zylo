@@ -79,8 +79,16 @@ export const FAIL_TEXT = Object.freeze({
   story: "Our builder couldn't show everything your story needs (something in it isn't in our block world yet).",
   paused: "Video making is paused on our side for a moment.",
 });
-export function failReason(code) {
+export function failReason(code, message = null) {
   const c = String(code ?? "").toUpperCase();
+  // CRITICAL_UNBUILT (2026-11-08): the builder couldn't make a thing the story can't be told without, so the plan was
+  // rejected before any render; the worker's message names them in quotes before " — " (runpod/worker.mjs criticalUnbuilt)
+  if (c === "CRITICAL_UNBUILT") {
+    const head = String(message ?? "").split(" — ")[0];
+    const items = [...head.matchAll(/"([^"]{1,60})"/g)].map((m) => m[1]).slice(0, 4);
+    const list = items.length <= 1 ? items[0] ?? "" : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+    return { kind: "story", text: list ? `We couldn't build ${list} for your story.` : "We couldn't build something your story needs." };
+  }
   const kind = Object.keys(FAIL_KINDS).find((k) => FAIL_KINDS[k].includes(c)) ?? "ours";
   return { kind, text: FAIL_TEXT[kind] };
 }

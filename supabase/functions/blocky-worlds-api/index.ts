@@ -134,7 +134,7 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
     finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
     poster: done ? await signed(files.poster) : null,
     error: r.status === "failed" ? FAILED_MESSAGE : null, refunded: Boolean(r.refunded_at),
-    ...(r.status === "failed" ? (({ kind, text }) => ({ reason: text, failKind: kind }))(failReason(r.error_code)) : {}),
+    ...(r.status === "failed" ? (({ kind, text }) => ({ reason: text, failKind: kind }))(failReason(r.error_code, r.error_message)) : {}),
     ...(owner && r.status === "failed" ? { debug: { code: r.error_code, message: r.error_message } } : {}),
   };
 }

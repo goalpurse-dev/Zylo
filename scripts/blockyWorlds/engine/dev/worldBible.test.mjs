@@ -9,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as plan from "../plan.mjs";
+import { planCriticalFirst } from "./criticalFakes.mjs";
 import { directStory } from "../lib/director/index.js";
 import { mockProduction } from "../lib/director/mock.js";
 import { validateProduction, productionSchema } from "../lib/director/spec.js";
@@ -29,7 +30,7 @@ async function planned(file) {
   const words = (R.words ?? []).map(([word, start, end]) => ({ word, start, end }));
   const idea = { opener: R.lines[0].text, title: R.title, topic: R.topic, setting: "inside a giant turtle" };
   const direction = await directStory({ script, idea, exists, provider: { direct: async () => ({ data: R.production, costUsd: 0 }) } });
-  const tl = plan.planVideo({ script, words: words.length ? words : undefined, idea, lengthSec: R.lengthSec, direction, exists });
+  const { tl } = planCriticalFirst(plan, { script, words: words.length ? words : undefined, idea, lengthSec: R.lengthSec, direction, exists }); // STORY-CRITICAL FIRST
   const out = { R, script, idea, direction, tl };
   cache.set(file, out);
   return out;

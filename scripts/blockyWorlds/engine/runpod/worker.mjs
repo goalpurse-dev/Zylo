@@ -3,8 +3,11 @@
 // PRODUCTION ({ job: {...} } from blocky-worlds-render; signed URLs and a callback token only, never a storage key):
 //   role "prepare": the story director (lib/director directStory: mock by default, free; "anthropic" with the job's
 //                   director.provider + ANTHROPIC_KEY) IN PARALLEL with the voice (ElevenLabs, ELEVENLABS_KEY from the
-//                   RunPod secret; or the run's earlier take, never bought twice) -> trim + word timings -> planVideo
-//                   ({ direction }: the production list is the planner's source of truth) -> checkTimeline +
+//                   RunPod secret; or the run's earlier take, never bought twice); as soon as the director answers, its
+//                   STORY-CRITICAL items (lib/critical.js) are resolved kit -> library -> builder FIRST (2026-11-08) ->
+//                   trim + word timings -> planVideo ({ direction }: the production list is the planner's source of
+//                   truth; + { built, library, criticalMode "reject" }: an item still unbuilt fails the run,
+//                   CRITICAL_UNBUILT, no retry, refunded) -> the other needs built (buildFor) -> checkTimeline +
 //                   checkVisuals + checkSubjects + checkProduction (ANY miss stops here: nothing is rendered, the run is
 //                   refunded; never skipped) -> timeline.json (+ production.json) up -> "planned" (with the capability
 //                   gaps: the worker has no Supabase key, the edge function logs them) -> music A + SFX cues + the mix
@@ -116,6 +119,21 @@ export function checkFailure(c) {
   if (c.timeline.length) return coded("PLAN_FAILED", `the timeline has ${c.timeline.length} problem(s): ${c.timeline.slice(0, 5).join("; ")}`);
   return null;
 }
+/**
+ * The plan was rejected (lib/critical.js criticalGate, mode "reject"): a story-critical item the builder could not make
+ * (failed, cap reached, builder off). CRITICAL_UNBUILT: no retry, the run is refunded (render.js NO_RETRY); the page says
+ * which things (contract.js failReason reads the quoted names before " — "). report = the gate's { unresolved }.
+ */
+/** the gate rejects only on a real (AI) director's list; the free mock's guesses are reported (tl.critical) */
+export const criticalStrict = (d) => Boolean(d?.production) && d.provider !== "mock" && !d.fellBack;
+export function criticalUnbuilt(report, crit = null) {
+  const list = report?.unresolved ?? [];
+  const why = (r) => crit?.unbuilt?.find((u) => u.name === r.name || (u.id && u.id === r.id))?.reason ?? (crit?.wanted?.some((w) => w.name === r.name) ? "not built" : "not tried before the plan");
+  const names = list.map((r) => `"${String(r.name).replace(/"/g, "'").slice(0, 60)}"`).join(", ");
+  const e = coded("CRITICAL_UNBUILT", `couldn't build the story's ${list.length === 1 ? "critical item" : `${list.length} critical items`}: ${names} — ${list.map((r) => `${r.name} [${(r.why ?? []).join("+")}]: ${why(r)}`).join("; ")}`.slice(0, 1400));
+  e.critical = { unresolved: list.map((r) => ({ id: r.id, name: r.name, why: r.why ?? [], reason: why(r) })) };
+  return e;
+}
 const normalizeScript = (s) => ({ ...s, lines: (s?.lines ?? []).map((l) => (Array.isArray(l) ? { part: l[0], text: l[1] } : typeof l === "string" ? { part: "line", text: l } : l)) });
 
 // ---------------------------------------------------------------- prepare: voice -> plan + checks -> mix
@@ -154,6 +172,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const { snapshotCache } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "cache.js")).href);
   const blog = [];
   const library = snapshotCache(p.builder?.library ?? [], { onSave: async (asset) => { await post("built", { asset: { ...asset, still_path: asset.still_path ? path.basename(asset.still_path) : null } }); } });
+  // the story-critical gate's library(name) (lib/critical.js): the snapshot + what this video built, synchronous
+  const libraryFind = (name) => library.find?.("object", [name]) ?? null;
   const prepareSec = Number(p.limits?.prepareSec) || PREPARE_SEC;
   const until = jobT0 + Math.min(BUILDER_END_SEC, prepareSec - AFTER_BUILDER_SEC) * 1000;
   const reviewUntil = jobT0 + (prepareSec - REVIEW_AFTER_SEC) * 1000;
@@ -176,16 +196,12 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const spendNow = () => ({ ...spend, builderUsd: +Number(builder.spent ?? spend.builderUsd ?? 0).toFixed(5) });
   let builtReport = null;
   const directorOn = !(p.director === false || p.director?.provider === "off");
-  // without a story director the needs of a plan made from estimated timings are resolved early (kit -> library ->
-  // design + still + vision) while the voice is made. With one, the directed plan's needs are the ones that count: an
-  // undirected early start spent run 707609b1's designs and money on things the directed plan never showed
+  // without a story director nothing is built before the plan (2026-11-08, STORY-CRITICAL FIRST): no money goes to the
+  // needs of an undirected early plan (run 707609b1 spent its designs on things the plan never showed); the plan's
+  // needs are built after planning (builder.buildFor). The early plan only warms the review's still page.
   if (!directorOn) {
-    try {
-      const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
-      const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null });
-      builder.prefetch(needsFromTimeline(early, { kit }), kit);
-      warmReview(early);
-    } catch (e) { console.log(`builder: no early start (${e.message})`); }
+    try { warmReview(plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null })); }
+    catch (e) { console.log(`review: no early plan (${e.message})`); }
   }
   // the story director runs while the voice is made (it needs only the script) and never fails a run (directStory falls
   // back to the mock's list); as soon as it answers, the builder starts on what the list needs built: the needs of a
@@ -212,15 +228,41 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
         fs.writeFileSync(f, JSON.stringify({ v: 1, provider: d.provider, model: d.model ?? null, fellBack: false, costUsd: d.costUsd ?? 0, production: d.production }));
         await put(p.out.direction, f, "application/json").catch((e) => console.log(`direction.json upload: ${e.message}`)); // bookkeeping never fails a run
       }
-      try {
-        const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
-        const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists });
-        builder.prefetch(needsFromTimeline(early, { kit }), kit);
-        warmReview(early);
-      } catch (e) { console.log(`builder: no directed early start (${e.message})`); }
       return d;
     } catch (e) { console.log(`director: skipped (${e.message})`); return null; }
   })();
+  // STORY-CRITICAL FIRST (owner 2026-11-08: "The builder must build every story-critical object BEFORE planning, or the
+  // plan must be rejected"; lib/critical.js). As soon as the director answers (the voice is still being made): an early
+  // plan from estimated timings in report mode gives the critical items (the rule's thing, the planted prop, the twist's
+  // thing, a set piece named twice, the creature) resolved kit (head-noun guard) -> library; the ones left go to the
+  // builder FIRST, within its cap. Only when every one is resolved do the early plan's other needs start (a run that is
+  // going to be rejected buys nothing more). The plan below runs with criticalMode "reject" and these results.
+  const critical = directing.then(async (d) => {
+    const c = { items: [], wanted: [], built: {}, unbuilt: [], report: null, error: null };
+    if (!d?.production) return c;
+    let early = null;
+    try { early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind }); }
+    catch (e) { c.error = `early plan failed: ${String(e.message).slice(0, 200)}`; console.log(`critical: ${c.error}`); return c; }
+    warmReview(early);
+    c.items = early.critical?.items ?? [];
+    // the free mock director's list (or a fallback to it) is a guess from the words ("think", "hunt", "strip"), not the
+    // story's critical things: it is only reported, never built or rejected on (criticalStrict below)
+    c.wanted = criticalStrict(d) ? early.critical?.unresolved ?? [] : [];
+    if (!criticalStrict(d) && early.critical?.unresolved?.length) console.log(`critical: mock director list, report only (unresolved: ${early.critical.unresolved.map((x) => x.name).join(", ")})`);
+    if (c.wanted.length) {
+      console.log(`critical: building ${c.wanted.map((x) => `"${x.name}" (${(x.why ?? []).join("+")})`).join(", ")} before the plan`);
+      const r = typeof builder.buildCritical === "function" ? await builder.buildCritical(c.wanted)
+        : { built: {}, unbuilt: c.wanted.map((x) => ({ ...x, reason: "this builder can't build before the plan" })), report: null };
+      Object.assign(c, { built: r.built, unbuilt: r.unbuilt, report: r.report });
+    }
+    if (!c.unbuilt.length) {
+      try {
+        const { needsFromTimeline } = await import(pathToFileURL(path.join(ENGINE, "lib", "builder", "apply.js")).href);
+        builder.prefetch(needsFromTimeline(early, { kit }), kit);
+      } catch (e) { console.log(`builder: no directed early start (${e.message})`); }
+    } else console.log(`critical: not built: ${c.unbuilt.map((x) => `"${x.name}" (${x.reason})`).join("; ")}`);
+    return c;
+  }).catch((e) => ({ items: [], wanted: [], built: {}, unbuilt: [], report: null, error: String(e?.message ?? e).slice(0, 200) }));
   try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
   await post("progress", { stage: "voice", pct: 2 });
@@ -250,7 +292,16 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   //    three checks + the kit check: any miss stops the run here, before any render
   await post("progress", { stage: "plan", pct: 8 });
   const direction = await directing;
-  const tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists }));
+  const crit = await lap("critical", () => critical);
+  if (crit.report) builtReport = crit.report;
+  // the plan with the critical items' results; one still unresolved REJECTS it: CRITICAL_UNBUILT (no retry, refunded)
+  let tl;
+  try {
+    tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists, built: crit.built, library: libraryFind, criticalMode: criticalStrict(direction) ? "reject" : "report" }));
+  } catch (e) {
+    if (e.critical) throw criticalUnbuilt(e.critical, crit);
+    throw e;
+  }
   if (direction) {
     const prodFile = path.join(dir, "production.json");
     fs.writeFileSync(prodFile, JSON.stringify({ provider: direction.provider, model: direction.model, fellBack: direction.fellBack, costUsd: direction.costUsd, ms: direction.ms, problems: direction.problems, production: direction.production, refined: tl.production ?? null, gaps: direction.match.gaps, summary: direction.match.summary }));
@@ -287,6 +338,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms, needs: builderLines(built.report) },
     ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, reused: !!direction.reused, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),
     ...(review?.summary ? { review: review.summary } : {}),
+    ...(tl.critical ? { critical: (tl.critical.items ?? []).slice(0, 20).map((r) => ({ name: String(r.name).slice(0, 60), why: r.why, source: r.source })) } : {}),
     timing: { ...timing } };
   await post("planned", planned);
   spend.plannedBuilderUsd = Number(planned.builder.costUsd) || 0; spend.plannedDirectorUsd = Number(planned.director?.costUsd) || 0; spend.plannedReviewUsd = Number(planned.review?.costUsd) || 0;
@@ -303,7 +355,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   } catch (e) {
     // the spend goes back with the failure (a director still answering gets up to 20 s to say what it cost)
     let t;
-    await Promise.race([directing, new Promise((s) => { t = setTimeout(s, 20000); })]).catch(() => {});
+    await Promise.race([directing.then(() => critical), new Promise((s) => { t = setTimeout(s, 20000); })]).catch(() => {});
     clearTimeout(t);
     try { e.spend = spendNow(); if (builtReport) e.builder = { built: builtReport.built, cards: builtReport.cards, costUsd: builtReport.costUsd, needs: builderLines(builtReport) }; } catch { /* bookkeeping never hides the real error */ }
     throw e;

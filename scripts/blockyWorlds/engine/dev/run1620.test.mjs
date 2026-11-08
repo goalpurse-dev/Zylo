@@ -19,6 +19,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as plan from "../plan.mjs";
+import { planCriticalFirst } from "./criticalFakes.mjs";
 import { directStory } from "../lib/director/index.js";
 import { validateEpic } from "../lib/epic.js";
 import { applyResolved } from "../lib/builder/apply.js";
@@ -38,7 +39,8 @@ let TL = null;
 async function timeline() {
   if (TL) return TL;
   const direction = await directStory({ script, idea, exists, provider: { direct: async () => ({ data: R.production, costUsd: 0 }) } });
-  TL = plan.planVideo({ script, words, idea, lengthSec: R.lengthSec, direction, exists });
+  // STORY-CRITICAL FIRST (worker prepare order 2026-11-08): critical items resolved/built before the plan, then "reject"
+  TL = planCriticalFirst(plan, { script, words, idea, lengthSec: R.lengthSec, direction, exists }).tl;
   return TL;
 }
 const shotsOf = (tl, i) => tl.shots.filter((s) => (s.lines ?? [s.line]).includes(i));

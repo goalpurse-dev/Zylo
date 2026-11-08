@@ -69,6 +69,8 @@ export function snapshotCache(rows = [], { onSave = null } = {}) {
   return {
     name: "snapshot", added, usedIds,
     lookup: base.lookup,
+    /** synchronous lookup (planVideo's library(name) for the story-critical gate): the snapshot + what this video built */
+    find(kind, names) { return base.list.find((a) => matches(a, kind, names)) ?? null; },
     async save(a) {
       const r = await base.save(a);
       if (!added.includes(r) && !rows.includes(r)) { added.push(r); try { await onSave?.(r, a.still ?? null); } catch { /* the library never fails a run */ } }

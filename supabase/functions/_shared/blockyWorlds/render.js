@@ -88,7 +88,8 @@ export const ROLES = Object.freeze(["prepare", "chunk", "finish"]);
 // (KIT_MISSING: an object the engine kit can't build; TIMELINE_INVALID: the engine page refused the timeline, on any GPU)
 // (PRODUCTION_CHECK: a line misses an item the story director listed; the same plan misses it again, and a retry would
 // pay the director and the builder twice)
-export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
+// (CRITICAL_UNBUILT: the builder couldn't make a story-critical thing before the plan; worker.mjs criticalUnbuilt)
+export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "CRITICAL_UNBUILT", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
 // a worker that can't run the job (no graphics; an older image than the job needs: worker.mjs staleBuild) is retired by
 // handler.py and the piece is retried elsewhere: these tries don't count as failed ones (noGpuRetries caps them)
 const NO_GPU = new Set(["NO_GPU", "STALE_WORKER"]);
