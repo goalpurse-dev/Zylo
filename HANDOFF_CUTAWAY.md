@@ -11,11 +11,21 @@
 - **Progress (2026-11-08):** phase 1 step 1 is done: `m2/language.js` (REGISTRY + `validateScene`).
   - On the 62 saved plans: only 2 real errors (kitplan_chainsaw: arrows given a verb arrows do not have).
   - The scene language is already consistent. The real "silent changes" are the post-plan camera overrides in `director.js` (pushToward, closeOn, mainFill, fitWhole, hookClose) and the cue-word rewrites in the planner. Those become handbook rules or reported notes.
+  - **1b done (2026-11-08, `9664db73`):** `m2/fields.js` has typed field lists for all 58 kinds plus every rig shape and move. `m3/fieldScan.mjs` reads what each builder really reads; a test keeps the two in step. `validateScene` now refuses unknown fields, wrong types, missing required fields, bad materials and keys outside params, each with a "did you mean" hint. On 62 saved plans plus 27 raw planner replies, the only errors are real ones:
+    - the bridge pier model: `size [1.6, 5.4, 1.6]` is drawn 1 m tall, because a model's size is one number;
+    - the chainsaw arrows: verbs start/stop do not exist.
+    - Also fixed: a car registered under `params.id`, which plans never set, so a car wash only found a car named "car". Runtime now gives builders `api.id`.
+  - **1c + 1e done (`3cb0fa69`, `28ad9143`):** the planner reads `m2/handbook.js`, generated from the registry. It has:
+    - typed fields per kind (* = needed), the old prose as "how", the verbs, and a validated example (`m2/handbookExamples.json`, rebuilt with `m3/handbookExamples.mjs`);
+    - the rig field lists;
+    - the allowed words (roles, shots, views, settings, moods);
+    - CAMERA SIZES with the director's numbers.
+    - It is about 47k characters against 33k before: about 3.6k more input tokens per planner call.
+    - All 12 contradictions are resolved; see the commit message and `tests/cutawayLanguage.test.mjs`. Story bookkeeping and stand-in sentences now report their changes in the trace ("plan bookkeeping (free)"). The director already reports its camera changes as "camera: …" warnings.
+    - 1e: the 22 stand-ins replay with 0 problems, and their plans are identical to the saved ones. Whether the AI plans *better* from the handbook needs a real call (not run).
+    - Not done: "night barely darkens" (needs stills); the director still applies its size rules after the plan (now stated up front, and reported).
   - Next steps:
-    - 1b: typed field lists per kind. Read each kind's implementation in `m2/parts.js` and kit/*; field checks are warnings until then.
-    - 1c: the handbook generated from REGISTRY with worked examples. Replace `catalogText()` and `sceneSystem` in `m2/planner.mjs`, and resolve the 12 contradictions listed below.
-    - 1d: narration in the plan reply, and one fact call.
-    - 1e: prove it on the 22 stand-in topics (replay, free).
+    - 1d: narration in the plan reply (the words call goes) and one fact call (research and check merged). The 22 stand-in answers must be rewritten in the merged format to replay it free.
     - Then phase 2: the generators.
 
 The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free. **Next step: build all the missing kit in one push, then do one check.** The owner's message of 2026-11-07 is under "The owner's current orders" below.
