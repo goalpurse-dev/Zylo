@@ -1,5 +1,14 @@
 # Cutaway handoff (written 2026-11-07, for a fresh session)
 
+**UPDATE 2026-11-08: the direction changed.** Read `scripts/cutaway/proto3d/SCENE_LANGUAGE_V2.md` first.
+- The new direction: one master handbook generated from the kit, one strict scene language, world GENERATORS (terrain, water, buildings, roads, models by keyword, light), self-repair with a cap, and save and reuse.
+- The 8 missing worlds are test cases, not hand-built scenes. Target: 35+/40.
+- The owner approved the cheaper start: pre-build 50 topics, about $7 on top of the $4.64 left. Ask before every real run and every deploy.
+- About 11 days of work in 4 phases. Phase 1 starts with `m2/language.js` (the registry).
+- The kit inventory: 58 part kinds, all documented and built; verbs for 57; rig 26 shapes and 19 moves; 7 settings; 429 CC0 models in `kit/modelCatalog.json`.
+- The world today is one fixed diorama (WORLD_DOC in `m2/catalog.js`; real.js builds the lawn, the house, the flat soil face with one box cut) plus 7 backdrops (`kit/backdrops.js`). The generators replace that base.
+- The order list further down is the OLD plan. Its per-topic gap list is still valid as test material.
+
 The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free. **Next step: build all the missing kit in one push, then do one check.** The owner's message of 2026-11-07 is under "The owner's current orders" below.
 
 ## Where things are
