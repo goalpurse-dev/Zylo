@@ -133,7 +133,7 @@ async function tick() {
     if (c.depends_on) {
       const { data: prev } = await sb.from("email_campaigns").select("*").eq("id", c.depends_on).maybeSingle();
       const prevN = prev ? await campaignNumbers(sb, prev.id, prev.starts_at) : null;
-      const problem = previousCampaignProblem(prev, prevN);
+      const problem = previousCampaignProblem(prev, prevN, def);
       if (problem) {
         const why = `${c.status === "approved" ? "not started" : "stopped part-way"}: ${problem}`;
         await finish(c, "stopped", why); out[c.id] = `stopped: ${why}`; continue;

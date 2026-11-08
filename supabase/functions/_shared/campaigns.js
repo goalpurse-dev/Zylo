@@ -207,6 +207,10 @@ export const CAMPAIGNS = {
   blocky_niche1: blockyNiche,
   blocky_niche2: { ...blockyNiche, minRealOpenRateBefore: 0.08 },
   blocky_niche3: { ...blockyNiche, minRealOpenRateBefore: 0.08 },
+  // Owner, 2026-11-08: Mon 9 Nov 250 (blocky_niche4), Tue 10 Nov 400 (blocky_niche5) only if Monday had 0 complaints,
+  // fewer than 2 real bounces and real opens of at least 5% by 11:00 Tuesday.
+  blocky_niche4: blockyNiche,
+  blocky_niche5: { ...blockyNiche, minRealOpenRateBefore: 0.05, maxRealBouncesBefore: 2 },
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
@@ -270,13 +274,16 @@ export function campaignStopReason(n) {
 // it finished, with 0 spam complaints, and not 2 or more bounces that are also over 2% of what it sent
 // (owner, 2026-11-05: one bounce alone never stops the next day, the same as the stop rule above). → the problem, or null.
 // prev: the earlier campaign's row (or null), n: its campaignNumbers.
-export function previousCampaignProblem(prev, n) {
+// def.maxRealBouncesBefore (owner, 2026-11-09 for blocky_niche5): that many real bounces the day before stop the next
+// day whatever their share ("fewer than 2 real bounces").
+export function previousCampaignProblem(prev, n, def = {}) {
   if (!prev) return "the campaign before it does not exist";
   if (prev.status === "stopped") return `${prev.id} was stopped (${prev.stop_reason ?? "no reason recorded"})`;
   if (prev.status !== "done") return `${prev.id} has not finished (it is "${prev.status}")`;
   if (!n || n.sent === 0) return `${prev.id} sent nothing`;
   if (n.complained > 0) return `${prev.id} had a spam complaint (${n.complained})`;
   const bounced = realBounces(n);
+  if (def.maxRealBouncesBefore && bounced >= def.maxRealBouncesBefore) return `${prev.id} had ${bounced} real bounces (the limit is under ${def.maxRealBouncesBefore})`;
   if (bounced >= 2 && bounced > n.sent * MAX_BOUNCE_RATE) return `${prev.id} had bounces over 2%: ${bounced} of ${n.sent}`;
   return null;
 }

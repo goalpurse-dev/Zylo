@@ -38,3 +38,23 @@ test("Sunday evening only, Monday cancelled", () => {
   assert.match(sql, /cron\.unschedule\(jobname\) from cron\.job where jobname in \('blocky-niche3-fill', 'blocky-niche3-seed'\)/);
   assert.match(sql, /'blocky-niche2-only-today', '5 19 8 11 \*'/);
 });
+
+test("Mon 9 Nov 250 and Tue 10 Nov 400 (owner, 2026-11-08): Tuesday needs 0 complaints, under 2 real bounces, 5% real opens", async () => {
+  const { CAMPAIGNS, realOpensProblem } = await import("../supabase/functions/_shared/campaigns.js");
+  assert.deepEqual(CAMPAIGNS.blocky_niche4.render, CAMPAIGNS.blocky_niche1.render, "the same email");
+  assert.equal(CAMPAIGNS.blocky_niche4.from, "Niko <niko@tryzyvo.com>");
+  const def = CAMPAIGNS.blocky_niche5;
+  const done = { id: "blocky_niche4", status: "done" };
+  assert.equal(previousCampaignProblem(done, { sent: 250, bounced: 1, realBounced: 1, complained: 0 }, def), null);
+  assert.match(previousCampaignProblem(done, { sent: 250, bounced: 2, realBounced: 2, complained: 0 }, def), /2 real bounces/, "2 of 250 is under 2%, still a stop");
+  assert.equal(previousCampaignProblem(done, { sent: 250, bounced: 4, realBounced: 1, complained: 0 }, def), null, "mailbox full does not count");
+  assert.match(previousCampaignProblem(done, { sent: 250, bounced: 0, complained: 1 }, def), /spam complaint/);
+  assert.equal(realOpensProblem("blocky_niche4", 13, 250, def), null, "13 of 250 = 5.2%");
+  assert.match(realOpensProblem("blocky_niche4", 12, 250, def), /4\.8%.*under 5%/);
+  const sql = read("supabase/migrations/20261204100000_blocky_niche_mon_tue.sql");
+  assert.match(sql, /e\.sent_at > c\.ends_at - interval '24 hours'/, "nobody emailed in the last 24 hours");
+  assert.match(sql, /fill_blocky_niche\('blocky_niche4', 250\)/);
+  assert.match(sql, /fill_blocky_niche\('blocky_niche5', 400\)/);
+  assert.match(sql, /'blocky_niche5', 'approved', 0, timestamptz '2026-11-10 09:00\+00', timestamptz '2026-11-10 11:00\+00', 'blocky_niche4'/);
+  assert.match(read("supabase/functions/campaign-sender/index.ts"), /previousCampaignProblem\(prev, prevN, def\)/);
+});
