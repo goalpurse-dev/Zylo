@@ -1,0 +1,37 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
+ "searches": 2,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Stone is typically about 10 to 20 times stronger in compression than in tension, depending on the rock.",
+    "why": "Sources give a ratio of 10 to 20 (Colorado notes), with some granites higher; said as the range.",
+    "sources": [
+     {
+      "url": "https://ceae.colorado.edu/~amadei/CVEN5768/PDF/NOTES8.pdf",
+      "title": "strength properties of rocks and rock masses"
+     },
+     {
+      "url": "https://www.researchgate.net/publication/270162174_Relation_between_tensile_and_compressive_engineering_properties_of_granites",
+      "title": "Relation between tensile and compressive engineering properties of granites"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "The Pons Fabricius in Rome was built in 62 BC and still carries walkers after more than 2000 years",
+    "why": "Sources date it to 62 BCE and call it the oldest bridge in Rome still standing and in continuous use.",
+    "sources": [
+     {
+      "url": "https://ancientromelive.org/pons-fabricius/",
+      "title": "Ancient Rome Live"
+     }
+    ]
+   }
+  ]
+ }
+}

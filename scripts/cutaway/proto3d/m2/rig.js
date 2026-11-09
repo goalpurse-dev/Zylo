@@ -170,7 +170,7 @@ function rigBoxRaw(p, { swept = true, node = null } = {}) {
  */
 /** the recipe checks, softly (a check that crashes is our bug, logged, and finds nothing) */
 export function rigProblems(part, opts = {}) { return soft("the designed part checks (rigProblems)", () => rigProblemsRaw(part, opts), []); }
-function rigProblemsRaw(part, { floor = 0, cut = null, supports = [] } = {}) {
+function rigProblemsRaw(part, { floor = 0, cut = null, supports = [], sunkOk = false } = {}) {
   const P = [], p = part.params ?? {}, id = part.id, nodes = nodesOf(p);
   if (!nodes.length) return [`part ${id} (rig): needs nodes, each with shapes`];
   if (nodes.length > 40) P.push(`part ${id} (rig): ${nodes.length} nodes (at most 40)`);
@@ -224,7 +224,7 @@ function rigProblemsRaw(part, { floor = 0, cut = null, supports = [] } = {}) {
     const inCut = cut && b.min[1] < -0.2 && b.min[0] < cut.x1 && b.max[0] > cut.x0 && b.max[2] > cut.z0;
     // (or standing on another rig: the cart crossing the deck of the ancient bridge run of 2026-11-04 was refused at 4.2 m)
     const onPart = supports.some((s) => Math.abs(b.min[1] - s.max[1]) <= 0.3 && b.min[0] < s.max[0] && s.min[0] < b.max[0] && b.min[2] < s.max[2] && s.min[2] < b.max[2]);
-    if (!inCut && !onPart && p.mount !== "wall" && Math.abs(b.min[1] - floor) > 0.3) P.push(`part ${id} (rig): its lowest point is at y = ${b.min[1].toFixed(2)}, not on the floor (y ${floor}): set pos y to the floor and build up from the node pivots`);
+    if (!inCut && !onPart && p.mount !== "wall" && (sunkOk ? b.min[1] - floor > 0.3 : Math.abs(b.min[1] - floor) > 0.3)) P.push(`part ${id} (rig): its lowest point is at y = ${b.min[1].toFixed(2)}, not on the floor (y ${floor}): set pos y to the floor and build up from the node pivots`);
   }
   return P;
 }

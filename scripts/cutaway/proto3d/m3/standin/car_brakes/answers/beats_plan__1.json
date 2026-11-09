@@ -1,113 +1,111 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A brake test stand in the home workshop: a car wheel on a spinning hub, cut open so the disc, the caliper, the brake pipe and the pedal all show side by side. The camera opens close on a wooden block pressed onto the spinning tyre, pulls back to the whole stand as the disc, pedal and fluid pipe arrive, goes close on the glowing disc and its vents, and ends wide on the finished wheel stopping.",
+  "why": "A cut-open disc brake on a stand in a home workshop: a block presses the spinning tyre, then a disc, caliper, pedal and fluid pipe are added one by one. Close shots on the tyre and disc for each change, wider shots when the pedal and gauges join.",
   "story": {
-   "title": "How car brakes work",
+   "title": "How Car Brakes Work",
    "hero": "a disc brake",
    "parts": [
-    "wheel",
-    "tyre",
-    "block",
-    "disc",
+    "tire",
+    "wooden block",
+    "steel disc",
     "caliper",
     "pads",
     "pedal",
-    "master cylinder",
-    "brake pipe",
-    "brake fluid",
-    "vents"
+    "brake fluid pipe",
+    "vents",
+    "brake light"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "press a block onto a spinning tyre and you have a brake"
+     "idea": "pressing a block on a spinning tire is the simplest brake"
     },
     {
      "role": "problem",
-     "idea": "the block rubs the tyre itself and smoke pours off the rubber"
+     "idea": "the rubber grinds against the block and smokes"
     },
     {
      "role": "fix1",
-     "idea": "bolt a steel disc to the hub and squeeze that instead"
+     "idea": "a steel disc on the hub is squeezed instead of the tire"
     },
     {
      "role": "problem2",
-     "idea": "a hand or foot alone is too weak, the wheel keeps spinning at 60"
+     "idea": "a hand is too weak to stop the spinning disc"
     },
     {
      "role": "fix2",
-     "idea": "a pedal pushes fluid down a pipe to a caliper that squeezes the disc with many times the force"
+     "idea": "a pedal pushes fluid down a pipe, which multiplies the push four to five times"
     },
     {
      "role": "name",
-     "idea": "this is a disc brake"
+     "idea": "the disc and its caliper are a disc brake"
     },
     {
      "role": "how",
-     "idea": "pedal down, fluid moves, pads clamp, the speed falls to zero"
+     "idea": "the pedal pushes, the pads clamp the disc and the wheel stops"
     },
     {
      "role": "problem3",
-     "idea": "hard stops make the disc glow red hot and the brakes fade"
+     "idea": "hard stops heat the disc until it glows"
     },
     {
      "role": "fix3",
-     "idea": "cut vents through the disc so air cools it"
+     "idea": "vents let air through the disc to cool it"
     },
     {
      "role": "fact",
-     "idea": "a hard stop can heat a disc to hundreds of degrees"
+     "idea": "repeated hard stops can push a disc past 500 degrees Celsius"
     },
     {
      "role": "finish",
-     "idea": "add a brake light that glows when you press the pedal"
+     "idea": "a brake light completes it"
     },
     {
      "role": "congrats",
-     "idea": "you have built a disc brake"
+     "idea": "the finished disc brake, calm"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "smoke pours off the tyre under the block",
-     "stakes": "the tyre wears bald",
-     "size": 4
+     "shows": "smoke pours off the tire under the block",
+     "stakes": "the tire wears out",
+     "size": 3
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the speed gauge stays at 60 while the disc spins on",
+     "shows": "the disc keeps spinning, the speed stays up",
      "stakes": "the car cannot stop",
-     "size": 7
+     "size": 5
     },
     {
      "problem": "problem3",
      "causedBy": "fix2",
      "shows": "the disc glows red hot",
-     "stakes": "the brakes fade on a long hill",
-     "size": 9
+     "stakes": "the brakes fade",
+     "size": 7
     }
    ],
    "surprises": [
     {
-     "claim": "Brake fluid cannot be squeezed, so the small piston at the pedal moves big caliper pistons with several times the force",
+     "claim": "Brake fluid carries your push from a small piston at the pedal to bigger pistons at the wheel, multiplying the force about four to five times",
      "role": "fix2",
-     "search": "hydraulic brake force multiplication master cylinder caliper piston ratio"
+     "search": "hydraulic brake force multiplication master cylinder caliper"
     },
     {
-     "claim": "In a hard stop a brake disc can heat to over 500 degrees Celsius",
+     "claim": "Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius",
      "role": "fact",
-     "search": "brake disc temperature hard braking degrees celsius"
+     "search": "brake disc temperature hard stops 500 C"
     },
     {
-     "claim": "Vented discs have air channels between two faces that pump cooling air",
+     "claim": "Vented discs have air channels between their two faces whose vanes pump cooling air",
      "role": "fix3",
-     "search": "vented brake rotor cooling vanes how it works"
+     "search": "vented brake disc vanes cooling air"
     }
    ]
   },
@@ -118,15 +116,15 @@
    },
    {
     "role": "problem",
-    "text": "But the rubber grinds and smoke pours off."
+    "text": "But the rubber grinds, and smoke pours off."
    },
    {
     "role": "fix1",
-    "text": "So you bolt on a steel disc and squeeze that."
+    "text": "So you bolt on a steel disc and squeeze it."
    },
    {
     "role": "problem2",
-    "text": "But your hand is weak, and the disc keeps spinning at 60."
+    "text": "But your hand is weak, and the disc keeps spinning."
    },
    {
     "role": "fix2",
@@ -154,7 +152,7 @@
    },
    {
     "role": "finish",
-    "text": "Add a brake light that glows when you press the pedal."
+    "text": "Add a brake light that glows when you brake."
    },
    {
     "role": "congrats",
@@ -167,15 +165,13 @@
      9,
      12,
      -5,
-     1
+     0.6
     ],
     "house": false,
-    "porch": false,
-    "trees": [],
-    "road": false,
-    "rocksAvoid": [],
     "worker": false,
     "moreTrees": false,
+    "road": false,
+    "porch": false,
     "backdrop": {
      "type": "workshop",
      "x0": -10,
@@ -220,14 +216,14 @@
          {
           "shape": "box",
           "size": [
-           5.2,
+           1.8,
            0.12,
-           1.4
+           1.5
           ],
           "at": [
-           -1.2,
+           0,
            0.06,
-           -0.3
+           -0.4
           ],
           "look": "metal",
           "color": "#5b6470"
@@ -236,12 +232,27 @@
           "shape": "box",
           "size": [
            0.3,
-           2.9,
+           3.2,
            0.3
           ],
           "at": [
            0,
-           1.45,
+           1.6,
+           -1.05
+          ],
+          "look": "metal",
+          "color": "#5b6470"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.24,
+           0.16,
+           0.62
+          ],
+          "at": [
+           0,
+           3.12,
            -0.85
           ],
           "look": "metal",
@@ -261,12 +272,12 @@
          {
           "shape": "cylinder",
           "r": 0.13,
-          "h": 0.9,
+          "h": 1.2,
           "axis": "z",
           "at": [
            0,
            0,
-           -0.25
+           -0.4
           ],
           "look": "metal",
           "color": "#9aa0a6"
@@ -293,7 +304,7 @@
          {
           "shape": "wheel",
           "r": 0.95,
-          "w": 0.36,
+          "w": 0.4,
           "axis": "z",
           "at": [
            0,
@@ -308,11 +319,11 @@
           "size": [
            0.12,
            0.3,
-           0.4
+           0.42
           ],
           "at": [
            0,
-           0.82,
+           -0.82,
            0
           ],
           "look": "paint",
@@ -509,39 +520,39 @@
         "parent": "stand",
         "at": [
          0,
-         2.47,
-         -0.35
+         2.66,
+         -0.75
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.4,
-           0.32,
-           0.4
-          ],
-          "at": [
-           0,
-           0.16,
-           0
-          ],
-          "look": "wood",
-          "color": "#a0703c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.12,
-           0.12,
+           0.62,
+           0.34,
            0.5
           ],
           "at": [
            0,
-           0.26,
-           -0.3
+           0.17,
+           0
+          ],
+          "look": "wood",
+          "color": "#c8873e"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.1,
+           0.6,
+           0.1
+          ],
+          "at": [
+           0,
+           0.6,
+           -0.1
           ],
           "look": "metal",
-          "color": "#5b6470"
+          "color": "#9aa0a6"
          }
         ],
         "moves": [
@@ -550,7 +561,7 @@
           "type": "slide",
           "to": [
            0,
-           -0.14,
+           -0.36,
            0
           ]
          }
@@ -585,12 +596,12 @@
           "size": [
            0.16,
            0.16,
-           0.5
+           0.62
           ],
           "at": [
            0,
            0.12,
-           -0.4
+           -0.45
           ],
           "look": "metal",
           "color": "#5b6470"
@@ -639,12 +650,57 @@
           ]
          }
         ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "pedals",
+     "kind": "rig",
+     "params": {
+      "name": "brake pedal",
+      "synonyms": [
+       "pedal",
+       "master cylinder",
+       "brake line",
+       "brake light"
+      ],
+      "pos": [
+       0.6,
+       0.08,
+       -2
+      ],
+      "nodes": [
+       {
+        "id": "deck",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           1.9,
+           0.12,
+           1.4
+          ],
+          "at": [
+           -1.85,
+           0.06,
+           -0.3
+          ],
+          "look": "metal",
+          "color": "#5b6470"
+         }
+        ]
        },
        {
         "id": "pedal",
-        "parent": "stand",
+        "parent": "deck",
         "at": [
-         -3.1,
+         -2,
          0.12,
          -0.1
         ],
@@ -697,10 +753,6 @@
         ],
         "moves": [
          {
-          "name": "pedal",
-          "type": "appear"
-         },
-         {
           "name": "step",
           "type": "swing",
           "axis": "z",
@@ -710,9 +762,9 @@
        },
        {
         "id": "master",
-        "parent": "stand",
+        "parent": "deck",
         "at": [
-         -2.2,
+         -1.4,
          0.12,
          -0.2
         ],
@@ -788,17 +840,17 @@
             0
            ],
            [
-            1.55,
+            0.75,
             0,
             0
            ],
            [
-            1.55,
+            0.75,
             1.22,
             -0.08
            ],
            [
-            1.95,
+            1.15,
             1.22,
             -0.08
            ]
@@ -823,17 +875,17 @@
             0.07
            ],
            [
-            1.55,
+            0.75,
             0,
             0.07
            ],
            [
-            1.55,
+            0.75,
             1.22,
             0
            ],
            [
-            1.95,
+            1.15,
             1.22,
             0
            ]
@@ -844,9 +896,9 @@
        },
        {
         "id": "lamp",
-        "parent": "stand",
+        "parent": "deck",
         "at": [
-         -3.5,
+         -2.5,
          0.12,
          -0.75
         ],
@@ -911,14 +963,14 @@
      "kind": "boxPop",
      "params": {
       "size": [
-       0.25,
-       2.2,
-       0.25
+       0.2,
+       2.7,
+       0.2
       ],
       "pos": [
-       3.4,
-       1.18,
-       -2.2
+       -0.9,
+       1.43,
+       -3.4
       ],
       "mat": "metal"
      }
@@ -928,9 +980,9 @@
      "kind": "counter",
      "params": {
       "pos": [
-       3.4,
-       2.75,
-       -2.2
+       -0.9,
+       3.25,
+       -3.4
       ],
       "size": 1,
       "from": 60,
@@ -943,16 +995,16 @@
      "kind": "counter",
      "params": {
       "pos": [
-       3.4,
-       2.75,
-       -2.2
+       -0.9,
+       3.25,
+       -3.4
       ],
       "size": 1,
       "from": 100,
       "to": 500,
       "color": "#ff8a2a",
       "bar": true,
-      "danger": 300
+      "danger": 0.5
      }
     },
     {
@@ -961,11 +1013,39 @@
      "params": {
       "type": "smoke",
       "at": [
-       0.6,
-       3.4,
+       0.4,
+       2.3,
        -2.4
       ],
-      "size": 0.6
+      "size": 0.8,
+      "color": "#333333"
+     }
+    },
+    {
+     "id": "smoke2",
+     "kind": "fx",
+     "params": {
+      "type": "smoke",
+      "at": [
+       0.85,
+       2.3,
+       -2.5
+      ],
+      "size": 0.7,
+      "color": "#333333"
+     }
+    },
+    {
+     "id": "rub",
+     "kind": "fx",
+     "params": {
+      "type": "spark",
+      "at": [
+       0.75,
+       2.4,
+       -2.45
+      ],
+      "size": 0.5
      }
     },
     {
@@ -975,9 +1055,9 @@
       "list": [
        {
         "at": [
-         -2.4,
+         -2.1,
          1.9,
-         0.3
+         -1.5
         ],
         "dir": [
          1,
@@ -989,6 +1069,31 @@
       ],
       "opts": {
        "scale": 0.9,
+       "color": "#ffd23d"
+      }
+     }
+    },
+    {
+     "id": "down",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         0.6,
+         3.6,
+         -2.4
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 0.5,
+        "phase": 0
+       }
+      ],
+      "opts": {
+       "scale": 0.8,
        "color": "#ffd23d"
       }
      }
@@ -1038,7 +1143,8 @@
       "of": "brake.caliper",
       "opts": {
        "r": 0.05,
-       "closed": true
+       "closed": true,
+       "over": true
       }
      }
     },
@@ -1061,7 +1167,7 @@
      "s": "hook",
      "shows": {
       "p": "brake",
-      "does": "a wooden block presses down on the spinning tyre"
+      "does": "a wooden block slides down and presses on the spinning tyre"
      },
      "do": [
       {
@@ -1083,6 +1189,15 @@
        "ch": ""
       },
       {
+       "p": "down",
+       "v": "show",
+       "w": "press",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
        "p": "brake",
        "v": "press",
        "w": "press",
@@ -1094,31 +1209,59 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake.tire"
-       ],
        "view": "home",
        "width": 0,
-       "type": "close",
+       "type": "mid",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake.tire",
+        "brake.block"
+       ]
       }
      ]
     },
     {
      "s": "problem",
-     "state": {
-      "text": "WORN OUT",
-      "w": "smoke"
-     },
      "shows": {
       "p": "smoke",
-      "does": "smoke pours off the tyre under the block"
+      "does": "dark smoke pours off the tyre where the block rubs"
+     },
+     "state": {
+      "text": "BURNING",
+      "w": "smoke"
      },
      "do": [
       {
+       "p": "down",
+       "v": "hide",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rub",
+       "v": "start",
+       "w": "grinds",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
        "p": "smoke",
+       "v": "start",
+       "w": "grinds",
+       "o": 0.1,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "smoke2",
        "v": "start",
        "w": "smoke",
        "o": 0,
@@ -1129,15 +1272,16 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake.tire"
-       ],
        "view": "home",
        "width": 0,
        "type": "mid",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake.tire",
+        "brake.block"
+       ]
       }
      ]
     },
@@ -1145,11 +1289,29 @@
      "s": "fix1",
      "shows": {
       "p": "brake",
-      "does": "a steel disc appears on the hub and the block lifts off the tyre"
+      "does": "the block lifts off, a steel disc appears on the hub and a red caliper squeezes it"
      },
      "do": [
       {
        "p": "smoke",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "smoke2",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rub",
        "v": "stop",
        "w": "So",
        "o": 0,
@@ -1187,27 +1349,27 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake.disc"
-       ],
        "view": "home",
-       "width": 0,
-       "type": "close",
+       "width": 0.55,
+       "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake.disc"
+       ]
       }
      ]
     },
     {
      "s": "problem2",
+     "shows": {
+      "p": "brake",
+      "does": "the disc keeps spinning while the speed sign stays at 60"
+     },
      "state": {
       "text": "TOO WEAK",
       "w": "weak"
-     },
-     "shows": {
-      "p": "speed",
-      "does": "the speed gauge stays at 60 as the disc keeps spinning"
      },
      "do": [
       {
@@ -1227,33 +1389,43 @@
        "d": 0,
        "amp": 1,
        "ch": ""
+      },
+      {
+       "p": "brake",
+       "v": "spin",
+       "w": "spinning",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "brake",
-        "speed"
-       ],
        "view": "home",
-       "width": 0,
-       "type": "mid",
+       "width": 0.94,
+       "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake",
+        "pedals",
+        "speed"
+       ]
       }
      ]
     },
     {
      "s": "fix2",
      "shows": {
-      "p": "brake",
-      "does": "a pedal, a master cylinder and a pipe to the caliper appear"
+      "p": "pedals",
+      "does": "a pedal, a master cylinder and a pipe to the caliper appear, orange fluid runs down it"
      },
      "do": [
       {
-       "p": "brake",
-       "v": "pedal",
+       "p": "pedals",
+       "v": "show",
        "w": "pedal",
        "o": 0,
        "d": 0,
@@ -1261,7 +1433,7 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "master",
        "w": "pedal",
        "o": 0.3,
@@ -1270,7 +1442,7 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "pipe",
        "w": "pipe",
        "o": 0,
@@ -1279,7 +1451,7 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "fluid",
        "w": "fluid",
        "o": 0,
@@ -1290,15 +1462,16 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake"
-       ],
        "view": "home",
-       "width": 0,
-       "type": "mid",
+       "width": 0.94,
+       "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake",
+        "pedals"
+       ]
       }
      ]
     },
@@ -1312,7 +1485,7 @@
       {
        "p": "brakeOutline",
        "v": "show",
-       "w": "disc",
+       "w": "",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1321,24 +1494,24 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake.disc",
-        "brake.caliper"
-       ],
        "view": "home",
        "width": 0.5,
        "type": "",
        "hero": true,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake.disc",
+        "brake.caliper"
+       ]
       }
      ]
     },
     {
      "s": "how",
      "shows": {
-      "p": "brake",
-      "does": "the pedal swings down, fluid runs down the pipe, the pads clamp and the speed counts down to zero"
+      "p": "pedals",
+      "does": "the pedal swings down, the pads clamp and the speed counts down to zero"
      },
      "do": [
       {
@@ -1351,7 +1524,7 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "step",
        "w": "pedal",
        "o": 0,
@@ -1398,28 +1571,29 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake",
-        "speed"
-       ],
        "view": "home",
-       "width": 0,
-       "type": "mid",
+       "width": 0.94,
+       "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake",
+        "pedals",
+        "speed"
+       ]
       }
      ]
     },
     {
      "s": "problem3",
+     "shows": {
+      "p": "brake",
+      "does": "the disc glows red hot"
+     },
      "state": {
       "text": "RED HOT",
       "w": "glows"
-     },
-     "shows": {
-      "p": "brake",
-      "does": "the disc glows red hot as the heat gauge climbs"
      },
      "do": [
       {
@@ -1466,29 +1640,20 @@
        "d": 0,
        "amp": 1,
        "ch": ""
-      },
-      {
-       "p": "heat",
-       "v": "count",
-       "w": "glows",
-       "o": 0,
-       "d": 1.4,
-       "amp": 1,
-       "ch": ""
       }
      ],
      "shots": [
       {
+       "view": "home",
+       "width": 0.8,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
        "focus": [
         "brake.disc",
         "heat"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
+       ]
       }
      ]
     },
@@ -1529,15 +1694,15 @@
      ],
      "shots": [
       {
-       "focus": [
-        "brake.disc"
-       ],
        "view": "home",
-       "width": 0,
-       "type": "close",
+       "width": 0.55,
+       "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake.disc"
+       ]
       }
      ]
     },
@@ -1545,7 +1710,7 @@
      "s": "fact",
      "shows": {
       "p": "heat",
-      "does": "the heat gauge reads 500"
+      "does": "the heat gauge climbs to 500 and turns red"
      },
      "do": [
       {
@@ -1556,27 +1721,36 @@
        "d": 0,
        "amp": 1,
        "ch": ""
+      },
+      {
+       "p": "heat",
+       "v": "count",
+       "w": "500",
+       "o": -0.6,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
+       "view": "home",
+       "width": 0.94,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
        "focus": [
         "brake",
         "heat"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
+       ]
       }
      ]
     },
     {
      "s": "finish",
      "shows": {
-      "p": "brake",
+      "p": "pedals",
       "does": "a red brake light appears on a post and glows as the pedal is pressed"
      },
      "do": [
@@ -1590,7 +1764,7 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "lamp",
        "w": "light",
        "o": 0,
@@ -1599,9 +1773,9 @@
        "ch": ""
       },
       {
-       "p": "brake",
+       "p": "pedals",
        "v": "lit",
-       "w": "press",
+       "w": "glows",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1610,8 +1784,8 @@
       {
        "p": "brake",
        "v": "spinBack",
-       "w": "press",
-       "o": 0.3,
+       "w": "glows",
+       "o": 0,
        "d": 0,
        "amp": 1,
        "ch": ""
@@ -1619,15 +1793,16 @@
      ],
      "shots": [
       {
-       "focus": [
-        "home"
-       ],
        "view": "home",
-       "width": 0,
+       "width": 0.85,
        "type": "",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake",
+        "pedals"
+       ]
       }
      ]
     },
@@ -1636,30 +1811,22 @@
      "do": [],
      "shots": [
       {
-       "focus": [
-        "home"
-       ],
        "view": "home",
        "width": 0,
-       "type": "",
+       "type": "mid",
        "hero": false,
        "word": "",
-       "box": []
+       "box": [],
+       "focus": [
+        "brake",
+        "pedals"
+       ]
       }
      ]
     }
    ],
    "audio": {
     "cards": [
-     {
-      "text": "60 MPH",
-      "at": {
-       "s": "problem2",
-       "w": "60",
-       "o": 0
-      },
-      "d": 1.6
-     },
      {
       "text": "500 °C",
       "at": {
@@ -1709,11 +1876,6 @@
      }
     ],
     "chimes": [
-     {
-      "s": "problem2",
-      "w": "60",
-      "o": 0
-     },
      {
       "s": "name",
       "w": "",

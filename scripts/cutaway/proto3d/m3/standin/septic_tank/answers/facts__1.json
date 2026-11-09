@@ -1,12 +1,12 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 4 searches",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
  "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "A family septic tank often holds around 1,000 gallons, the usual minimum for a three-bedroom home.",
     "why": "The encyclopedia gives an average of 1,000 gallons and sizing guides call 1,000 gallons the common minimum for 3 bedrooms; codes vary and some say 1,250, so 'often around' fits.",
     "sources": [
@@ -45,18 +45,6 @@
      {
       "url": "https://www.css.cornell.edu/cwmi/waterquality/septic/CCEWQ-YourSepticSystem-Print.pdf",
       "title": "Your Septic System - Cornell Cooperative Extension"
-     }
-    ]
-   },
-   {
-    "index": 3,
-    "verdict": "reword",
-    "claim": "About one in five US homes uses a septic system.",
-    "why": "EPA SepticSmart says one in five US homes; an EPA blog says more than one in five, over 26 million homes. 'About one in five' is safe.",
-    "sources": [
-     {
-      "url": "https://19january2021snapshot.epa.gov/septic/septicsmart-homeowners_.html",
-      "title": "SepticSmart Homeowners - US EPA"
      }
     ]
    }

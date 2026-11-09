@@ -1,6 +1,6 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
  "searches": 3,
  "data": {
   "checks": [
@@ -38,7 +38,7 @@
    },
    {
     "index": 2,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.",
     "why": "Sources describe successive rings of precast segments set by an erector at the rear of the shield.",
     "sources": [

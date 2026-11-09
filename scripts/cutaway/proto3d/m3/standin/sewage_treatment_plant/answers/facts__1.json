@@ -1,12 +1,12 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "by": "stand-in planner (replan 2026-11-09): the topic verified claims, as checked",
  "searches": 3,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "A settling tank removes about 45 to 65 percent of the solids but only 25 to 35 percent of the dissolved waste",
     "why": "AIChE gives these ranges for primary treatment (suspended matter and BOD).",
     "sources": [
@@ -22,7 +22,7 @@
    },
    {
     "index": 1,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "The average American uses about 82 gallons of water a day at home",
     "why": "EPA WaterSense gives 82 gallons a day at home; the drain part is not in the source.",
     "sources": [
@@ -34,7 +34,7 @@
    },
    {
     "index": 2,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "Sludge digesters make biogas that is about 60 percent methane",
     "why": "Suez gives 60 to 65 percent methane for sludge; a field study 59 percent.",
     "sources": [

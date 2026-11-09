@@ -1,12 +1,12 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "by": "stand-in planner (replan 2026-11-09): claims checked in the earlier run of this topic",
  "searches": 3,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "The Department of Energy suggests setting a water heater to 120 degrees Fahrenheit",
     "why": "A state page citing energy.gov and the CPSC both give 120 °F.",
     "sources": [

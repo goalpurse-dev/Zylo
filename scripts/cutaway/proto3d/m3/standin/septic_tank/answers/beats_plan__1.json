@@ -1,9 +1,9 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A septic tank in the yard: a pit is dug beside the house and the toilet pipe runs into it; it overflows, so a concrete tank in section separates sludge (sinks) and scum (floats), a T outlet sends the clear middle water out, and a gravel drain field soaks it away. The camera opens close on the dig, stays mid on the tank in section, goes hero on the name, and ends on the home view with the lid and grass back on top.",
+  "why": "A septic tank in the yard's cut: the pit is dug and the toilet pipe grows into it, raw brown sewage rises to the rim and spills onto the lawn, a concrete tank settles the solids, scum floats, a T outlet lets clear water out, a gravel drain field spreads it, and a sludge layer rises with the years counter before the riser lid and grass finish it. The camera opens on the dig and the pipe, holds the tank in section, and ends on the home view.",
   "story": {
    "title": "Septic Tank",
    "hero": "a septic tank",
@@ -89,7 +89,7 @@
    ],
    "surprises": [
     {
-     "claim": "A typical household septic tank holds about 1,000 gallons",
+     "claim": "A family septic tank often holds around 1,000 gallons, the usual minimum for a three-bedroom home.",
      "role": "fix1",
      "search": "typical household septic tank size 1000 gallons"
     },
@@ -102,11 +102,6 @@
      "claim": "A household septic tank is typically pumped every 3 to 5 years",
      "role": "fact",
      "search": "EPA septic tank pumped every 3 to 5 years"
-    },
-    {
-     "claim": "More than one in five US homes use a septic system",
-     "role": "name",
-     "search": "EPA one in five households septic system"
     }
    ]
   },
@@ -167,7 +162,7 @@
     "house": [
      -11,
      0,
-     -8
+     -14
     ],
     "porch": false,
     "trees": [
@@ -229,13 +224,18 @@
      "params": {
       "path": [
        [
-        -7,
-        -0.7,
+        -5.8,
+        -0.65,
         -0.06
        ],
        [
-        -2.9,
-        -1,
+        -3.2,
+        -0.95,
+        -0.06
+       ],
+       [
+        -1.4,
+        -1.1,
         -0.06
        ]
       ],
@@ -274,8 +274,7 @@
        "z0": -3.48,
        "z1": -0.01
       },
-      "mat": "water",
-      "dirtyColor": "#6b5a2e"
+      "mat": "mud"
      }
     },
     {
@@ -284,25 +283,25 @@
      "params": {
       "path": [
        [
-        -0.7,
+        1.5,
         0.06,
-        -3.5
+        -1.2
        ],
        [
-        -0.6,
-        0.04,
-        -5
+        2.2,
+        0.05,
+        -1.3
        ],
        [
-        -0.4,
+        3,
         0.04,
-        -6.6
+        -1.5
        ]
       ],
       "look": "sludge",
-      "size": 0.18,
+      "size": 0.22,
       "speed": 1.2,
-      "count": 24
+      "count": 26
      }
     },
     {
@@ -311,16 +310,16 @@
      "params": {
       "list": [
        [
-        -0.6,
-        -5.6,
-        2,
-        1.2
+        3.1,
+        -1.5,
+        1.2,
+        0.9
        ],
        [
-        1.6,
-        -7,
-        1.4,
-        0.9
+        3.9,
+        -2.9,
+        1,
+        0.8
        ]
       ],
       "rise": [
@@ -330,7 +329,8 @@
       "fall": [
        0.2,
        0
-      ]
+      ],
+      "mat": "mud"
      }
     },
     {
@@ -556,7 +556,7 @@
        0.2
       ],
       "pos": [
-       -4.4,
+       -4.3,
        0.6,
        -1.2
       ],
@@ -568,7 +568,7 @@
      "kind": "counter",
      "params": {
       "pos": [
-       -4.4,
+       -4.3,
        1.7,
        -1.2
       ],
@@ -577,6 +577,21 @@
       "to": 5,
       "color": "#ffd23d",
       "bar": true
+     }
+    },
+    {
+     "id": "sludge",
+     "kind": "water",
+     "params": {
+      "box": {
+       "x0": -2.88,
+       "x1": 1.48,
+       "y0": -2.8,
+       "y1": -1.75,
+       "z0": -3.18,
+       "z1": 0.01
+      },
+      "mat": "mud"
      }
     },
     {
@@ -662,41 +677,49 @@
      "s": "hook",
      "shows": {
       "p": "dig",
-      "does": "the pit is dug and the toilet pipe grows into it"
+      "does": "the pit is dug open and the toilet pipe grows through the soil into it"
      },
      "do": [
       {
        "p": "dig",
        "v": "dig",
-       "w": "dig"
+       "w": "dig",
+       "o": 0,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "inlet",
        "v": "grow",
        "w": "pipe",
-       "d": 0.9
+       "o": 0,
+       "d": 1.1,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "inletFlow",
        "v": "show",
        "w": "pipe",
-       "o": 0.6
+       "o": 0.7,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
        "focus": [
-        "dig"
-       ],
-       "type": "close"
-      },
-      {
-       "focus": [
         "dig",
         "inlet"
        ],
+       "view": "home",
+       "width": 0,
        "type": "mid",
-       "word": "pipe"
+       "hero": false,
+       "word": "",
+       "box": []
       }
      ]
     },
@@ -704,7 +727,7 @@
      "s": "problem",
      "shows": {
       "p": "sewage",
-      "does": "brown sewage fills the pit and spills onto the lawn"
+      "does": "opaque brown sewage rises to the rim and spills over onto the lawn into brown puddles"
      },
      "state": {
       "text": "OVERFLOW",
@@ -715,22 +738,28 @@
        "p": "sewage",
        "v": "flood",
        "w": "fills",
-       "d": 1.6
-      },
-      {
-       "p": "sewage",
-       "v": "dirty",
-       "w": "fills"
+       "o": 0,
+       "d": 1.4,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "spill",
        "v": "start",
-       "w": "spills"
+       "w": "spills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "puddles",
        "v": "rise",
-       "w": "spills"
+       "w": "spills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
@@ -739,8 +768,12 @@
         "sewage",
         "puddles"
        ],
+       "view": "home",
+       "width": 0,
        "type": "mid",
-       "view": "high"
+       "hero": false,
+       "word": "",
+       "box": []
       }
      ]
     },
@@ -961,35 +994,54 @@
     {
      "s": "fact",
      "shows": {
-      "p": "years",
-      "does": "a years counter ticks up beside the tank as sludge piles higher"
+      "p": "sludge",
+      "does": "a brown sludge layer rises in the tank as the years counter beside it climbs to 5"
      },
      "do": [
       {
        "p": "tankOutline",
        "v": "hide",
-       "w": "Sludge"
-      },
-      {
-       "p": "tank",
-       "v": "sink",
-       "w": "Sludge"
+       "w": "Sludge",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "stand",
        "v": "show",
-       "w": "pumped"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "years",
        "v": "show",
-       "w": "pumped"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sludge",
+       "v": "flood",
+       "w": "Sludge",
+       "o": 0,
+       "d": 2.6,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "years",
        "v": "count",
-       "w": "every",
-       "d": 2.2
+       "w": "Sludge",
+       "o": 0,
+       "d": 2.6,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
@@ -998,7 +1050,12 @@
         "tank",
         "years"
        ],
-       "type": "mid"
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
       }
      ]
     },
@@ -1009,6 +1066,15 @@
       "does": "a riser lid pops up and grass covers the tank"
      },
      "do": [
+      {
+       "p": "sludge",
+       "v": "drain",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
       {
        "p": "years",
        "v": "hide",

@@ -1,20 +1,19 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A gas tank water heater cut open (a see-through tank) in the kitchen gap: a flame heats a tank of water, the heat leaks out, a foam jacket keeps it in, the water overheats, a thermostat shuts the flame off; then the dip tube and the hot outlet, and the anode rod myth. The camera opens close on the flame and tank, stays mid on the heater, and ends on the home view.",
+  "why": "A gas water heater in a home garage (the workshop setting), cut open: a glass tank of water on a stand with a big blue burner flame under it, a foam jacket, a thermostat, a dip tube and a hot pipe. The water's colour tells the heat (blue cold, orange hot); every shot stays on the heater, the opening close on the tank and its flame.",
   "story": {
    "title": "How a water heater works",
    "hero": "a water heater",
    "parts": [
     "tank",
-    "water",
-    "gas flame",
+    "flame",
     "foam jacket",
     "thermostat",
     "dip tube",
-    "hot water pipe",
+    "hot pipe",
     "anode rod",
     "relief valve",
     "flue",
@@ -23,11 +22,11 @@
    "ideas": [
     {
      "role": "hook",
-     "idea": "a tank of water over a flame is already a water heater"
+     "idea": "heat a tank of water over a flame and you already have a water heater"
     },
     {
      "role": "problem",
-     "idea": "heat escapes through the thin tank walls and the water cools"
+     "idea": "the heat leaks out through the thin walls and the water cools again"
     },
     {
      "role": "fix1",
@@ -35,7 +34,7 @@
     },
     {
      "role": "problem2",
-     "idea": "now the water keeps heating until it nearly boils"
+     "idea": "now nothing escapes, so the water keeps heating until it steams"
     },
     {
      "role": "fix2",
@@ -43,48 +42,48 @@
     },
     {
      "role": "name",
-     "idea": "this tank with a burner and a thermostat is a water heater"
+     "idea": "this insulated tank with a burner and a thermostat is a water heater"
     },
     {
      "role": "how",
-     "idea": "cold water flows in at the bottom through a dip tube and hot water leaves from the top"
+     "idea": "cold water goes down the dip tube to the bottom, hot water leaves from the top"
     },
     {
      "role": "myth",
-     "idea": "the metal rod inside is not a heating element"
+     "idea": "the rod inside looks like a heating element, but it is not"
     },
     {
      "role": "mythFact",
-     "idea": "it is an anode rod that rusts away so the tank does not"
+     "idea": "it is an anode rod that rusts away so the steel tank does not"
     },
     {
      "role": "finish",
-     "idea": "a relief valve, a flue and a drain valve complete the heater"
+     "idea": "a relief valve, a flue and a drain complete the heater"
     },
     {
      "role": "congrats",
-     "idea": "calm end: the finished heater stands in the kitchen"
+     "idea": "calm end: the finished heater with its blue flame"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "orange heat arrows stream out of the tank sides",
-     "stakes": "gas is wasted and the shower runs cold",
+     "shows": "orange heat arrows stream out of the walls and the water turns back to blue",
+     "stakes": "the shower runs cold and the gas is wasted",
      "size": 3
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the thermometer climbs to 200 and turns red",
-     "stakes": "scalding water at the tap",
+     "shows": "the water inside the foam turns hot orange and steam pours off the top",
+     "stakes": "scalding water",
      "size": 7
     }
    ],
    "surprises": [
     {
-     "claim": "The US Department of Energy suggests setting a water heater to 120 degrees Fahrenheit",
+     "claim": "The Department of Energy suggests setting a water heater to 120 degrees Fahrenheit",
      "role": "fix2",
      "search": "energy.gov water heater temperature 120 degrees"
     },
@@ -149,10 +148,10 @@
   "sceneJson": {
    "world": {
     "cut": [
-     9.5,
-     11,
-     -4,
-     0.6
+     6,
+     7.5,
+     -3,
+     0.4
     ],
     "house": false,
     "porch": false,
@@ -162,16 +161,12 @@
     "worker": false,
     "moreTrees": false,
     "backdrop": {
-     "type": "kitchen",
-     "x0": -12,
-     "x1": 12,
-     "back": -7,
-     "h": 6.2,
-     "gap": [
-      -1.8,
-      1.8
-     ],
-     "color": "#e8d9bf"
+     "type": "workshop",
+     "x0": -10,
+     "x1": 10,
+     "back": -8,
+     "h": 5,
+     "color": "#b9c2c9"
     }
    },
    "parts": [
@@ -185,6 +180,7 @@
     {
      "id": "heater",
      "kind": "rig",
+     "main": true,
      "params": {
       "name": "water heater",
       "synonyms": [
@@ -192,10 +188,9 @@
        "hot water tank",
        "water tank heater"
       ],
-      "main": true,
       "pos": [
        0,
-       0.12,
+       0.08,
        -1.8
       ],
       "scale": 1.5,
@@ -210,29 +205,97 @@
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.32,
-          "h": 0.18,
+          "r": 0.36,
+          "h": 0.04,
           "axis": "y",
           "at": [
            0,
-           0.09,
+           0.02,
            0
           ],
           "look": "metal",
-          "color": "#5a6168"
+          "color": "#4a5056"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.38,
+           0.03
+          ],
+          "at": [
+           0,
+           0.23,
+           -0.22
+          ],
+          "look": "metal",
+          "color": "#1f2226"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.05,
+           0.38,
+           0.05
+          ],
+          "at": [
+           -0.31,
+           0.23,
+           0.05
+          ],
+          "look": "metal",
+          "color": "#4a5056"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.05,
+           0.38,
+           0.05
+          ],
+          "at": [
+           0.31,
+           0.23,
+           0.05
+          ],
+          "look": "metal",
+          "color": "#4a5056"
          },
          {
           "shape": "cylinder",
-          "r": 0.14,
-          "h": 0.03,
+          "r": 0.17,
+          "h": 0.04,
           "axis": "y",
           "at": [
            0,
-           0.195,
+           0.06,
            0
           ],
           "look": "metal",
-          "color": "#2f3235"
+          "color": "#30353a"
+         },
+         {
+          "shape": "tube",
+          "r": 0.022,
+          "path": [
+           [
+            0.17,
+            0.06,
+            0.05
+           ],
+           [
+            0.42,
+            0.06,
+            0.05
+           ],
+           [
+            0.42,
+            0.02,
+            0.05
+           ]
+          ],
+          "look": "metal",
+          "color": "#caa84a"
          }
         ]
        },
@@ -241,14 +304,14 @@
         "parent": "stand",
         "at": [
          0,
-         0.2,
+         0.08,
          0
         ],
         "shapes": [
          {
           "shape": "flame",
-          "r": 0.13,
-          "h": 0.12
+          "r": 0.19,
+          "h": 0.24
          }
         ],
         "moves": [
@@ -263,13 +326,13 @@
         "parent": "stand",
         "at": [
          0,
-         0.25,
+         0.42,
          0
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.3,
+          "r": 0.32,
           "h": 1.2,
           "axis": "y",
           "at": [
@@ -282,7 +345,7 @@
          },
          {
           "shape": "cylinder",
-          "r": 0.31,
+          "r": 0.33,
           "h": 0.04,
           "axis": "y",
           "at": [
@@ -295,7 +358,7 @@
          },
          {
           "shape": "cylinder",
-          "r": 0.31,
+          "r": 0.33,
           "h": 0.04,
           "axis": "y",
           "at": [
@@ -313,8 +376,8 @@
           "type": "fill",
           "box": {
            "size": [
-            0.46,
-            1.1,
+            0.5,
+            1.12,
             0.3
            ],
            "at": [
@@ -323,6 +386,23 @@
             0
            ],
            "color": "#4aa8e0"
+          }
+         },
+         {
+          "name": "warm",
+          "type": "fill",
+          "box": {
+           "size": [
+            0.52,
+            1.13,
+            0.32
+           ],
+           "at": [
+            0,
+            0.6,
+            0
+           ],
+           "color": "#ff6a1f"
           }
          }
         ]
@@ -339,14 +419,14 @@
          {
           "shape": "box",
           "size": [
-           0.8,
-           1.24,
-           0.07
+           0.86,
+           1.26,
+           0.08
           ],
           "at": [
            0,
            0.6,
-           -0.36
+           -0.4
           ],
           "look": "paint",
           "color": "#f2c53d"
@@ -354,12 +434,12 @@
          {
           "shape": "box",
           "size": [
-           0.07,
-           1.24,
-           0.72
+           0.08,
+           1.26,
+           0.8
           ],
           "at": [
-           -0.385,
+           -0.41,
            0.6,
            0
           ],
@@ -369,12 +449,12 @@
          {
           "shape": "box",
           "size": [
-           0.07,
-           1.24,
-           0.72
+           0.08,
+           1.26,
+           0.8
           ],
           "at": [
-           0.385,
+           0.41,
            0.6,
            0
           ],
@@ -400,22 +480,27 @@
         "shapes": [
          {
           "shape": "tube",
-          "r": 0.025,
+          "r": 0.04,
           "path": [
            [
-            -0.12,
-            1.55,
-            0.05
+            -0.32,
+            1.42,
+            0.2
            ],
            [
-            -0.12,
+            -0.15,
+            1.42,
+            0.2
+           ],
+           [
+            -0.15,
             1.2,
-            0.05
+            0.2
            ],
            [
-            -0.12,
-            0.2,
-            0.05
+            -0.15,
+            0.12,
+            0.2
            ]
           ],
           "look": "plastic",
@@ -423,17 +508,22 @@
          },
          {
           "shape": "tube",
-          "r": 0.03,
+          "r": 0.04,
           "path": [
            [
-            0.12,
-            1.1,
-            0.05
+            0.15,
+            1,
+            0.2
            ],
            [
-            0.12,
-            1.55,
-            0.05
+            0.15,
+            1.42,
+            0.2
+           ],
+           [
+            0.32,
+            1.42,
+            0.2
            ]
           ],
           "look": "metal",
@@ -444,39 +534,46 @@
          {
           "name": "coldIn",
           "type": "flow",
-          "color": "#3ad6ff",
+          "color": "#1e8bff",
+          "speed": 0.5,
           "path": [
            [
-            -0.12,
-            1.55,
-            0.08
+            -0.32,
+            1.42,
+            0.25
            ],
            [
-            -0.12,
-            1.2,
-            0.08
+            -0.15,
+            1.42,
+            0.25
            ],
            [
-            -0.12,
-            0.2,
-            0.08
+            -0.15,
+            0.14,
+            0.25
            ]
           ]
          },
          {
           "name": "hotOut",
           "type": "flow",
-          "color": "#ff5a2a",
+          "color": "#ff3a1a",
+          "speed": 0.5,
           "path": [
            [
-            0.12,
-            1.1,
-            0.08
+            0.15,
+            1,
+            0.25
            ],
            [
-            0.12,
-            1.55,
-            0.08
+            0.15,
+            1.42,
+            0.25
+           ],
+           [
+            0.32,
+            1.42,
+            0.25
            ]
           ]
          }
@@ -486,14 +583,14 @@
         "id": "anode",
         "parent": "tank",
         "at": [
-         0.02,
-         0.25,
-         0.16
+         0,
+         0.15,
+         0.22
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.05,
+          "r": 0.07,
           "h": 0.95,
           "axis": "y",
           "at": [
@@ -502,18 +599,57 @@
            0
           ],
           "look": "metal",
-          "color": "#b0b5ba"
+          "color": "#3c4248"
          }
         ],
         "moves": [
          {
           "name": "glow",
-          "type": "heat"
+          "type": "heat",
+          "color": "#ffd000"
+         }
+        ]
+       },
+       {
+        "id": "rustCoat",
+        "parent": "anode",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.078,
+          "h": 0.6,
+          "axis": "y",
+          "at": [
+           0,
+           0.62,
+           0
+          ],
+          "look": "paint",
+          "color": "#6e3414"
          },
          {
+          "shape": "cylinder",
+          "r": 0.08,
+          "h": 0.12,
+          "axis": "y",
+          "at": [
+           0,
+           0.2,
+           0
+          ],
+          "look": "paint",
+          "color": "#5c2a10"
+         }
+        ],
+        "moves": [
+         {
           "name": "rust",
-          "type": "heat",
-          "color": "#8a4b2a"
+          "type": "appear"
          }
         ]
        },
@@ -521,17 +657,17 @@
         "id": "thermostat",
         "parent": "tank",
         "at": [
-         0.24,
-         0.12,
-         0.28
+         0.2,
+         0.14,
+         0.3
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.16,
-           0.2,
-           0.08
+           0.24,
+           0.26,
+           0.1
           ],
           "at": [
            0,
@@ -542,12 +678,25 @@
           "color": "#2f3235"
          },
          {
-          "shape": "light",
-          "r": 0.025,
+          "shape": "cylinder",
+          "r": 0.05,
+          "h": 0.03,
+          "axis": "z",
           "at": [
-           0,
-           0.04,
-           0.045
+           -0.04,
+           -0.04,
+           0.06
+          ],
+          "look": "plastic",
+          "color": "#d8342b"
+         },
+         {
+          "shape": "light",
+          "r": 0.04,
+          "at": [
+           0.06,
+           0.07,
+           0.06
           ],
           "color": "#ff3a2a"
          }
@@ -567,21 +716,21 @@
         "id": "valve",
         "parent": "tank",
         "at": [
-         0.22,
+         0.24,
          1.22,
-         0
+         0.05
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.1,
-           0.1,
-           0.1
+           0.12,
+           0.12,
+           0.12
           ],
           "at": [
            0,
-           0.05,
+           0.06,
            0
           ],
           "look": "metal",
@@ -589,21 +738,21 @@
          },
          {
           "shape": "tube",
-          "r": 0.02,
+          "r": 0.025,
           "path": [
            [
-            0.05,
-            0.05,
+            0.06,
+            0.06,
             0
            ],
            [
-            0.14,
-            0.05,
+            0.2,
+            0.06,
             0
            ],
            [
-            0.14,
-            -0.6,
+            0.2,
+            -0.7,
             0
            ]
           ],
@@ -624,17 +773,17 @@
         "at": [
          0,
          1.22,
-         0
+         -0.05
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.07,
-          "h": 0.5,
+          "r": 0.08,
+          "h": 0.55,
           "axis": "y",
           "at": [
            0,
-           0.25,
+           0.275,
            0
           ],
           "look": "metal",
@@ -642,8 +791,8 @@
          },
          {
           "shape": "cone",
-          "r": 0.14,
-          "r2": 0.07,
+          "r": 0.16,
+          "r2": 0.08,
           "h": 0.1,
           "axis": "y",
           "at": [
@@ -666,15 +815,15 @@
         "id": "drainValve",
         "parent": "tank",
         "at": [
-         -0.2,
-         0.08,
-         0.28
+         -0.22,
+         0.1,
+         0.3
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.04,
-          "h": 0.12,
+          "r": 0.045,
+          "h": 0.14,
           "axis": "z",
           "at": [
            0,
@@ -687,14 +836,14 @@
          {
           "shape": "box",
           "size": [
-           0.1,
-           0.03,
-           0.03
+           0.12,
+           0.035,
+           0.035
           ],
           "at": [
            0,
            0,
-           0.07
+           0.08
           ],
           "look": "plastic",
           "color": "#d8342b"
@@ -717,9 +866,9 @@
       "list": [
        {
         "at": [
-         -0.6,
-         1.3,
-         -1.5
+         -0.62,
+         1.7,
+         -1.45
         ],
         "dir": [
          -1,
@@ -730,9 +879,9 @@
        },
        {
         "at": [
-         0.6,
-         1.3,
-         -1.5
+         0.62,
+         1.7,
+         -1.45
         ],
         "dir": [
          1,
@@ -743,9 +892,9 @@
        },
        {
         "at": [
-         -0.6,
-         0.8,
-         -1.5
+         -0.62,
+         1.1,
+         -1.45
         ],
         "dir": [
          -1,
@@ -756,9 +905,9 @@
        },
        {
         "at": [
-         0.6,
-         0.8,
-         -1.5
+         0.62,
+         1.1,
+         -1.45
         ],
         "dir": [
          1,
@@ -775,19 +924,17 @@
      }
     },
     {
-     "id": "temp",
-     "kind": "counter",
+     "id": "steam",
+     "kind": "fx",
      "params": {
-      "pos": [
-       1.9,
-       1.5,
-       -1.5
+      "type": "smoke",
+      "at": [
+       0,
+       2.61,
+       -1.6
       ],
-      "size": 0.45,
-      "from": 120,
-      "to": 200,
-      "color": "#ff8a2a",
-      "bar": true
+      "size": 0.5,
+      "color": "#f4f6f8"
      }
     },
     {
@@ -805,12 +952,12 @@
      "kind": "sign",
      "params": {
       "at": [
-       3,
-       0.12,
-       -5
+       2.6,
+       0.08,
+       -3
       ],
-      "rotY": -0.25,
-      "scale": 1
+      "rotY": -0.3,
+      "scale": 0.6
      }
     }
    ],
@@ -819,7 +966,7 @@
      "s": "hook",
      "shows": {
       "p": "heater",
-      "does": "a tank fills with water and a flame lights under it"
+      "does": "a big blue flame lights under a glass tank full of water, and the water warms orange"
      },
      "do": [
       {
@@ -830,18 +977,26 @@
       {
        "p": "heater",
        "v": "fill",
-       "w": "tank"
+       "w": "",
+       "d": 0.3
       },
       {
        "p": "heater",
        "v": "fire",
-       "w": "flame"
+       "w": ""
+      },
+      {
+       "p": "heater",
+       "v": "warm",
+       "w": "heat",
+       "d": 2.2
       }
      ],
      "shots": [
       {
        "focus": [
-        "heater"
+        "heater.tank",
+        "heater.burner"
        ],
        "type": "close"
       }
@@ -850,8 +1005,8 @@
     {
      "s": "problem",
      "shows": {
-      "p": "heatLoss",
-      "does": "orange heat arrows stream out of the tank walls"
+      "p": "heater",
+      "does": "orange heat arrows stream out of the tank walls and the water turns back to cold blue"
      },
      "state": {
       "text": "HEAT LOSS",
@@ -862,6 +1017,12 @@
        "p": "heatLoss",
        "v": "show",
        "w": "heat"
+      },
+      {
+       "p": "heater",
+       "v": "warmBack",
+       "w": "cools",
+       "d": 1.2
       }
      ],
      "shots": [
@@ -903,8 +1064,8 @@
     {
      "s": "problem2",
      "shows": {
-      "p": "temp",
-      "does": "the thermometer climbs to 200 and turns red"
+      "p": "heater",
+      "does": "the water inside the foam turns hot orange and steam pours off the top"
      },
      "state": {
       "text": "TOO HOT",
@@ -912,22 +1073,21 @@
      },
      "do": [
       {
-       "p": "temp",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "temp",
-       "v": "count",
+       "p": "heater",
+       "v": "warm",
        "w": "traps",
        "d": 1.4
+      },
+      {
+       "p": "steam",
+       "v": "start",
+       "w": "heating"
       }
      ],
      "shots": [
       {
        "focus": [
-        "heater",
-        "temp"
+        "heater"
        ],
        "type": "mid"
       }
@@ -937,12 +1097,12 @@
      "s": "fix2",
      "shows": {
       "p": "heater",
-      "does": "a thermostat appears, its lamp lights and the flame goes out"
+      "does": "a thermostat box appears, its red lamp lights and the flame goes out"
      },
      "do": [
       {
-       "p": "temp",
-       "v": "hide",
+       "p": "steam",
+       "v": "stop",
        "w": "So"
       },
       {
@@ -974,7 +1134,7 @@
      "s": "name",
      "shows": {
       "p": "outline",
-      "does": "a glowing outline traces the heater"
+      "does": "a glowing outline traces the whole heater"
      },
      "do": [
       {
@@ -997,12 +1157,17 @@
      "s": "how",
      "shows": {
       "p": "heater",
-      "does": "blue dots run down the dip tube, red dots up the hot pipe, the flame relights"
+      "does": "the flame relights, blue dots run down the dip tube and red dots run up and out of the top"
      },
      "do": [
       {
        "p": "outline",
        "v": "hide",
+       "w": ""
+      },
+      {
+       "p": "heater",
+       "v": "fire",
        "w": ""
       },
       {
@@ -1013,11 +1178,6 @@
       {
        "p": "heater",
        "v": "hotOut",
-       "w": "hot"
-      },
-      {
-       "p": "heater",
-       "v": "fire",
        "w": "hot"
       }
      ],
@@ -1050,7 +1210,7 @@
       {
        "p": "heater",
        "v": "glow",
-       "w": "rod"
+       "w": "And"
       },
       {
        "p": "heater",
@@ -1120,19 +1280,25 @@
      "shots": [
       {
        "focus": [
-        "home"
-       ]
+        "heater"
+       ],
+       "type": "wide"
       }
      ]
     },
     {
      "s": "congrats",
+     "shows": {
+      "p": "heater",
+      "does": "the finished heater with a calm blue flame"
+     },
      "do": [],
      "shots": [
       {
        "focus": [
-        "home"
-       ]
+        "heater"
+       ],
+       "type": "wide"
       }
      ]
     }
@@ -1151,19 +1317,10 @@
     ],
     "sfx": [
      {
-      "lib": "water_rush",
-      "at": {
-       "s": "hook",
-       "w": "tank",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
       "lib": "flame",
       "at": {
        "s": "hook",
-       "w": "flame",
+       "w": "",
        "o": 0
       },
       "d": 1.3
@@ -1181,10 +1338,10 @@
       "lib": "flame",
       "at": {
        "s": "how",
-       "w": "hot",
+       "w": "",
        "o": 0
       },
-      "d": 1.2
+      "d": 1
      }
     ],
     "chimes": [

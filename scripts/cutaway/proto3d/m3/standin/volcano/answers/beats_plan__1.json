@@ -1,43 +1,45 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A volcano grown in the open on a bare lawn: deep in the soil face a magma chamber glows and magma rises up a crack, gas bubbles build pressure on a gauge, it blasts ash into the sky, lava pours and cools into a cone, the next eruption adds a second layer, and the finished stratovolcano gets snow and trees. The camera opens close on the glowing chamber in section, rises to the cone mid shots, goes hero on the name and ends on the home view.",
+  "why": "A volcano in section on its own land: a terrain mountain with a crater, cut through its middle so the glowing magma chamber and the crack up to the crater read in the face. Gas bubbles and a gauge build pressure, a blast throws ash, lava pours down both slopes and cools dark, the next eruption buries it under grey ash, and lava and ash bands stack inside the cone. The camera opens on the chamber, rises to the crater for the blast, frames the whole cone for the lava and the name, and ends on the home view with snow and rocks.",
   "story": {
    "title": "Volcano",
    "hero": "a stratovolcano",
    "parts": [
+    "mountain",
     "magma chamber",
-    "crack",
+    "magma",
     "gas bubbles",
     "pressure gauge",
+    "crater",
     "ash",
     "lava",
     "rock layers",
-    "snow cap",
+    "snow",
     "rocks"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "rock melts deep underground and rises up a crack"
+     "idea": "rock melts deep under a mountain and the magma rises up a crack"
     },
     {
      "role": "problem",
-     "idea": "gas bubbles in the magma build up pressure"
+     "idea": "gas bubbles in the magma grow and the pressure climbs"
     },
     {
      "role": "stakes",
-     "idea": "it blasts out and throws ash into the sky"
+     "idea": "it blasts out of the crater and ash fills the sky"
     },
     {
      "role": "fix1",
-     "idea": "lava pours down and cools into a cone of rock"
+     "idea": "lava pours down the slopes and cools into new rock"
     },
     {
      "role": "problem2",
-     "idea": "the next eruption buries the cone under another layer"
+     "idea": "the next eruption buries that rock under ash"
     },
     {
      "role": "name",
@@ -45,15 +47,15 @@
     },
     {
      "role": "how",
-     "idea": "layers of lava and ash stack up one on another"
+     "idea": "lava and ash layers stack up, one eruption at a time"
     },
     {
      "role": "fact",
-     "idea": "Mount Fuji grew this way to 3,776 meters"
+     "idea": "Mount Fuji is one, 3,776 meters tall"
     },
     {
      "role": "finish",
-     "idea": "snow on the peak and a ring of rocks round its base"
+     "idea": "snow on the peak and rocks round the base"
     },
     {
      "role": "congrats",
@@ -64,22 +66,22 @@
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "bubbles rise in the chamber and a pressure gauge fills into the red",
-     "stakes": "the ground above is about to burst",
+     "shows": "bubbles rise in the chamber and the gauge beside it fills into the red",
+     "stakes": "the mountain is about to burst",
      "size": 5
     },
     {
      "problem": "stakes",
      "causedBy": "hook",
-     "shows": "a blast at the vent, smoke and ash falling",
+     "shows": "a blast out of the crater, smoke and falling ash",
      "stakes": "ash buries the land around",
      "size": 8
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "another blast and a second rock layer on top of the cone",
-     "stakes": "the mountain keeps growing and erupting",
+     "shows": "another blast and a grey ash layer over the new rock",
+     "stakes": "the mountain keeps erupting",
      "size": 9
     }
    ],
@@ -104,7 +106,7 @@
   "sentences": [
    {
     "role": "hook",
-    "text": "If you melt rock deep underground and let it rise, you have a volcano."
+    "text": "If you melt rock deep under a mountain and let it rise, you have a volcano."
    },
    {
     "role": "problem",
@@ -112,15 +114,15 @@
    },
    {
     "role": "stakes",
-    "text": "Then it blasts out the top and throws ash into the sky."
+    "text": "Then it blasts out of the crater and throws ash into the sky."
    },
    {
     "role": "fix1",
-    "text": "So the lava pours down and cools into a cone of rock."
+    "text": "So the lava pours down the slopes and cools into new rock."
    },
    {
     "role": "problem2",
-    "text": "But the next eruption buries that cone under another layer."
+    "text": "But now the next eruption buries that rock under a layer of ash."
    },
    {
     "role": "name",
@@ -146,33 +148,26 @@
   "sceneJson": {
    "world": {
     "cut": [
-     -1,
-     1,
-     -0.8,
+     -0.5,
+     0.5,
+     -0.4,
      0.3
     ],
     "house": false,
     "porch": false,
+    "worker": false,
+    "road": false,
+    "moreTrees": false,
+    "mood": "dusk",
     "trees": [
      [
-      -12,
-      -12
+      -17,
+      -7
      ],
      [
-      12,
-      -11,
-      0.9
-     ]
-    ],
-    "road": false,
-    "worker": false,
-    "moreTrees": true,
-    "rocksAvoid": [
-     [
-      -2.6,
-      2.6,
-      -15,
-      0.3
+      18,
+      -9,
+      1
      ]
     ]
    },
@@ -181,26 +176,90 @@
      "id": "light",
      "kind": "light",
      "params": {
-      "storm": true
+      "storm": false
+     }
+    },
+    {
+     "id": "dig",
+     "kind": "dig",
+     "params": {
+      "clumps": 4,
+      "mound": {
+       "x": 0,
+       "z": -5,
+       "rx": 0.3,
+       "rz": 0.3,
+       "h": 0.08
+      }
+     }
+    },
+    {
+     "id": "land",
+     "kind": "terrain",
+     "main": true,
+     "params": {
+      "blocks": [
+       {
+        "type": "flat",
+        "x0": -24,
+        "x1": 24,
+        "y": 0
+       },
+       {
+        "type": "mountain",
+        "at": 0,
+        "z": 0,
+        "height": 12,
+        "width": 24,
+        "crater": {
+         "r": 2,
+         "depth": 1.5
+        },
+        "chamber": {
+         "y": -8,
+         "rx": 4.6,
+         "ry": 2.4,
+         "vent": false
+        }
+       }
+      ],
+      "trees": [
+       [
+        -17,
+        -7,
+        1.1
+       ],
+       [
+        18,
+        -9,
+        1
+       ],
+       [
+        -21,
+        -13,
+        1.2
+       ]
+      ]
      }
     },
     {
      "id": "magma",
      "kind": "rig",
      "params": {
-      "name": "magma chamber",
+      "name": "magma column",
       "synonyms": [
        "magma",
-       "chamber"
+       "vent",
+       "conduit"
       ],
       "pos": [
        0,
-       -13,
+       -5.8,
        0
       ],
       "nodes": [
        {
-        "id": "chamber",
+        "id": "crack",
         "at": [
          0,
          0,
@@ -208,48 +267,19 @@
         ],
         "shapes": [
          {
-          "shape": "sphere",
-          "r": 2.2,
-          "at": [
-           0,
-           1.8,
-           -1.2
-          ],
-          "look": "paint",
-          "color": "#5a1a10"
-         }
-        ],
-        "moves": [
-         {
-          "name": "melt",
-          "type": "heat",
-          "color": "#ff5a14"
-         }
-        ]
-       },
-       {
-        "id": "crack",
-        "parent": "chamber",
-        "at": [
-         0,
-         3.6,
-         -0.1
-        ],
-        "shapes": [
-         {
           "shape": "box",
           "size": [
-           0.7,
-           9.1,
+           1.1,
+           14.13,
            0.2
           ],
           "at": [
            0,
-           4.55,
-           0
+           7.07,
+           0.04
           ],
-          "look": "paint",
-          "color": "#2b1d18"
+          "look": "concrete",
+          "color": "#2a1a14"
          }
         ],
         "moves": [
@@ -258,14 +288,14 @@
           "type": "fill",
           "box": {
            "size": [
-            0.55,
-            9.1,
+            0.9,
+            14.13,
             0.26
            ],
            "at": [
             0,
-            4.55,
-            0.02
+            7.07,
+            0.08
            ],
            "color": "#ff6a1a"
           }
@@ -279,30 +309,13 @@
      "id": "bubbles",
      "kind": "bubbles",
      "params": {
-      "x0": -1.6,
-      "x1": 1.6,
-      "y0": -12.4,
-      "y1": -9.8,
-      "z": 0.1,
-      "count": 40,
-      "speed": 1
-     }
-    },
-    {
-     "id": "stand",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       1.4,
-       0.2
-      ],
-      "pos": [
-       -5,
-       0.7,
-       -1
-      ],
-      "mat": "metal"
+      "x0": -4,
+      "x1": 4,
+      "y0": -9.6,
+      "y1": -6,
+      "z": 0.15,
+      "count": 70,
+      "speed": 0.9
      }
     },
     {
@@ -310,15 +323,66 @@
      "kind": "counter",
      "params": {
       "pos": [
-       -5,
-       1.9,
-       -1
+       -4.3,
+       -3.4,
+       0.35
       ],
-      "size": 1.3,
+      "size": 1.7,
       "from": 0,
       "to": 100,
       "color": "#ff8a2a",
       "bar": true
+     }
+    },
+    {
+     "id": "gasArrows",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -1.6,
+         -7.2,
+         0.3
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 1.2,
+        "phase": 0
+       },
+       {
+        "at": [
+         1.6,
+         -7.2,
+         0.3
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 1.2,
+        "phase": 0.5
+       },
+       {
+        "at": [
+         0,
+         -3,
+         0.3
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 1.5,
+        "phase": 0.25
+       }
+      ],
+      "opts": {
+       "color": "#ffd23d",
+       "scale": 1.3
+      }
      }
     },
     {
@@ -328,10 +392,10 @@
       "type": "blast",
       "at": [
        0,
-       0.6,
-       -3.6
+       8.83,
+       -0.6
       ],
-      "size": 2
+      "size": 3
      }
     },
     {
@@ -341,46 +405,47 @@
       "type": "smoke",
       "at": [
        0,
-       4.6,
-       -3.6
+       10.73,
+       -0.8
       ],
-      "size": 2
+      "size": 3,
+      "color": "#4a4440"
      }
     },
     {
      "id": "ash",
      "kind": "rain",
      "params": {
-      "x0": -9,
-      "x1": 9,
+      "x0": -13,
+      "x1": 13,
       "z0": -10,
-      "z1": -0.2,
-      "yTop": 14,
-      "yBot": -0.3,
-      "count": 700,
-      "width": 0.04,
-      "opacity": 0.5,
+      "z1": -0.3,
+      "yTop": 20,
+      "yBot": 0,
+      "count": 900,
+      "width": 0.05,
+      "opacity": 0.6,
       "style": "ash"
      }
     },
     {
-     "id": "volcano",
+     "id": "lava",
      "kind": "rig",
-     "main": true,
      "params": {
-      "name": "volcano",
+      "name": "volcano slopes",
       "synonyms": [
-       "volcanic cone",
-       "mountain"
+       "lava",
+       "lava flow",
+       "snow"
       ],
       "pos": [
        0,
        0,
-       -3.6
+       0
       ],
       "nodes": [
        {
-        "id": "vent",
+        "id": "flowR",
         "at": [
          0,
          0,
@@ -388,160 +453,722 @@
         ],
         "shapes": [
          {
-          "shape": "cylinder",
-          "r": 0.7,
-          "h": 0.12,
-          "axis": "y",
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.1
+          ],
           "at": [
+           3.39,
+           8.34,
+           -0.3
+          ],
+          "rot": [
            0,
-           0.06,
-           0
+           5,
+           -47.55
           ],
           "look": "concrete",
-          "color": "#3a2a24"
-         }
-        ]
-       },
-       {
-        "id": "layer1",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
+          "color": "#3b302b"
+         },
          {
-          "shape": "cone",
-          "r": 3.5,
-          "r2": 0.8,
-          "h": 2.3,
-          "axis": "y",
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.1
+          ],
           "at": [
+           3.23,
+           8.34,
+           -1.05
+          ],
+          "rot": [
            0,
-           1.15,
-           0
+           18,
+           -47.55
           ],
           "look": "concrete",
-          "color": "#5e4b40"
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.1
+          ],
+          "at": [
+           2.91,
+           8.34,
+           -1.75
+          ],
+          "rot": [
+           0,
+           31,
+           -47.55
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.1
+          ],
+          "at": [
+           5.88,
+           5.67,
+           -0.51
+          ],
+          "rot": [
+           0,
+           5,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.1
+          ],
+          "at": [
+           5.61,
+           5.67,
+           -1.82
+          ],
+          "rot": [
+           0,
+           18,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.1
+          ],
+          "at": [
+           5.06,
+           5.67,
+           -3.04
+          ],
+          "rot": [
+           0,
+           31,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.1
+          ],
+          "at": [
+           8.37,
+           3.17,
+           -0.73
+          ],
+          "rot": [
+           0,
+           5,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.1
+          ],
+          "at": [
+           7.99,
+           3.17,
+           -2.6
+          ],
+          "rot": [
+           0,
+           18,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.1
+          ],
+          "at": [
+           7.2,
+           3.17,
+           -4.33
+          ],
+          "rot": [
+           0,
+           31,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.1
+          ],
+          "at": [
+           10.66,
+           0.92,
+           -0.93
+          ],
+          "rot": [
+           0,
+           5,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.1
+          ],
+          "at": [
+           10.18,
+           0.92,
+           -3.31
+          ],
+          "rot": [
+           0,
+           18,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.1
+          ],
+          "at": [
+           9.17,
+           0.92,
+           -5.51
+          ],
+          "rot": [
+           0,
+           31,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#3b302b"
          }
         ],
         "moves": [
          {
-          "name": "cone",
+          "name": "lava",
+          "type": "heat",
+          "color": "#ff6414"
+         },
+         {
+          "name": "pours",
           "type": "appear"
          }
-        ],
-        "parent": "vent"
+        ]
        },
        {
-        "id": "lava",
-        "parent": "layer1",
+        "id": "drops",
         "at": [
          0,
-         2.3,
+         0,
          0
         ],
         "shapes": [
          {
           "shape": "sphere",
-          "r": 0.45,
+          "r": 0.05,
           "at": [
-           0,
-           0.05,
-           0
+           2.1,
+           9.92,
+           -0.6
           ],
           "look": "paint",
-          "color": "#ff6a1a"
+          "color": "#ff8a2a"
          }
         ],
         "moves": [
          {
-          "name": "pour",
+          "name": "down",
           "type": "flow",
           "path": [
            [
-            0,
-            0.1,
-            0.4
+            2.11,
+            10.06,
+            -0.61
            ],
            [
-            0.3,
-            -0.8,
-            1.6
+            3.84,
+            8.08,
+            -1.11
            ],
            [
-            0.6,
-            -1.7,
-            2.7
+            5.77,
+            5.96,
+            -1.66
            ],
            [
-            0.8,
-            -2.25,
-            3.5
+            7.69,
+            3.94,
+            -2.21
+           ],
+           [
+            9.61,
+            2.05,
+            -2.76
+           ],
+           [
+            11.34,
+            0.55,
+            -3.26
            ]
           ],
-          "color": "#ff6a1a"
-         },
-         {
-          "name": "glow",
-          "type": "heat",
-          "color": "#ff5a14"
+          "color": "#ffb030",
+          "speed": 0.5
          }
         ]
        },
        {
-        "id": "layer2",
-        "parent": "layer1",
+        "id": "ashCover",
         "at": [
          0,
-         2.2,
+         0,
          0
         ],
         "shapes": [
          {
-          "shape": "cone",
-          "r": 2.6,
-          "r2": 0.55,
-          "h": 1.9,
-          "axis": "y",
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.4
+          ],
           "at": [
+           3.39,
+           8.58,
+           -0.3
+          ],
+          "rot": [
            0,
-           0.95,
-           0
+           5,
+           -47.55
           ],
           "look": "concrete",
-          "color": "#3f3430"
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.4
+          ],
+          "at": [
+           3.23,
+           8.58,
+           -1.05
+          ],
+          "rot": [
+           0,
+           18,
+           -47.55
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.85,
+           0.22,
+           2.4
+          ],
+          "at": [
+           2.91,
+           8.58,
+           -1.75
+          ],
+          "rot": [
+           0,
+           31,
+           -47.55
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.4
+          ],
+          "at": [
+           5.88,
+           5.91,
+           -0.51
+          ],
+          "rot": [
+           0,
+           5,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.4
+          ],
+          "at": [
+           5.61,
+           5.91,
+           -1.82
+          ],
+          "rot": [
+           0,
+           18,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           4.04,
+           0.22,
+           2.4
+          ],
+          "at": [
+           5.06,
+           5.91,
+           -3.04
+          ],
+          "rot": [
+           0,
+           31,
+           -46.06
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.4
+          ],
+          "at": [
+           8.37,
+           3.41,
+           -0.73
+          ],
+          "rot": [
+           0,
+           5,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.4
+          ],
+          "at": [
+           7.99,
+           3.41,
+           -2.6
+          ],
+          "rot": [
+           0,
+           18,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.6,
+           0.22,
+           2.4
+          ],
+          "at": [
+           7.2,
+           3.41,
+           -4.33
+          ],
+          "rot": [
+           0,
+           31,
+           -43.75
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.4
+          ],
+          "at": [
+           10.66,
+           1.16,
+           -0.93
+          ],
+          "rot": [
+           0,
+           5,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.4
+          ],
+          "at": [
+           10.18,
+           1.16,
+           -3.31
+          ],
+          "rot": [
+           0,
+           18,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.11,
+           0.22,
+           2.4
+          ],
+          "at": [
+           9.17,
+           1.16,
+           -5.51
+          ],
+          "rot": [
+           0,
+           31,
+           -39.46
+          ],
+          "look": "concrete",
+          "color": "#aaa59d"
          }
         ],
         "moves": [
          {
-          "name": "layer",
+          "name": "buries",
           "type": "appear"
          }
         ]
        },
        {
-        "id": "snow",
-        "parent": "layer2",
+        "id": "cap",
         "at": [
          0,
-         1.9,
+         0,
          0
         ],
         "shapes": [
          {
-          "shape": "cone",
-          "r": 0.95,
-          "r2": 0.45,
-          "h": 0.5,
-          "axis": "y",
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
           "at": [
+           3.11,
+           8.68,
+           -0.66
+          ],
+          "rot": [
            0,
-           0.15,
-           0
+           12,
+           -47.67
           ],
           "look": "paint",
-          "color": "#f4f6f8"
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           2.5,
+           8.68,
+           -1.95
+          ],
+          "rot": [
+           0,
+           38,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           1.39,
+           8.68,
+           -2.85
+          ],
+          "rot": [
+           0,
+           64,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           0,
+           8.68,
+           -3.17
+          ],
+          "rot": [
+           0,
+           90,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           -1.39,
+           8.68,
+           -2.85
+          ],
+          "rot": [
+           0,
+           116,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           -2.5,
+           8.68,
+           -1.95
+          ],
+          "rot": [
+           0,
+           142,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.34,
+           0.4,
+           1.8
+          ],
+          "at": [
+           -3.11,
+           8.68,
+           -0.66
+          ],
+          "rot": [
+           0,
+           168,
+           -47.67
+          ],
+          "look": "paint",
+          "color": "#f4f7fb"
          }
         ],
         "moves": [
@@ -555,98 +1182,397 @@
      }
     },
     {
-     "id": "layerArrows",
-     "kind": "arrows",
+     "id": "layers",
+     "kind": "rig",
      "params": {
-      "list": [
-       {
-        "at": [
-         3.6,
-         1.2,
-         -1
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 0.8,
-        "phase": 0
-       },
-       {
-        "at": [
-         3.2,
-         3.2,
-         -1.6
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 0.8,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.9,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "volcanoOutline",
-     "kind": "outline",
-     "params": {
-      "of": "volcano"
-     }
-    },
-    {
-     "id": "rocks",
-     "kind": "prop",
-     "params": {
-      "type": "rocks",
-      "size": [
-       7.6,
-       7.6
+      "name": "rock layers",
+      "synonyms": [
+       "layers",
+       "strata"
       ],
       "pos": [
        0,
        0,
-       -3.6
+       0
+      ],
+      "nodes": [
+       {
+        "id": "l1",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           8.39,
+           0.5,
+           0.12
+          ],
+          "at": [
+           4.5,
+           3.18,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           -38.14
+          ],
+          "look": "concrete",
+          "color": "#3e302a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8.39,
+           0.5,
+           0.12
+          ],
+          "at": [
+           -4.5,
+           3.18,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           38.14
+          ],
+          "look": "concrete",
+          "color": "#3e302a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "first",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "l2",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           8.42,
+           0.5,
+           0.12
+          ],
+          "at": [
+           4.45,
+           4.04,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           -37.26
+          ],
+          "look": "concrete",
+          "color": "#d9d3c8"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8.42,
+           0.5,
+           0.12
+          ],
+          "at": [
+           -4.45,
+           4.04,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           37.26
+          ],
+          "look": "concrete",
+          "color": "#d9d3c8"
+         }
+        ],
+        "moves": [
+         {
+          "name": "second",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "l3",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           8.45,
+           0.5,
+           0.12
+          ],
+          "at": [
+           4.4,
+           4.9,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           -36.42
+          ],
+          "look": "concrete",
+          "color": "#3e302a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           8.45,
+           0.5,
+           0.12
+          ],
+          "at": [
+           -4.4,
+           4.9,
+           0.07
+          ],
+          "rot": [
+           0,
+           0,
+           36.42
+          ],
+          "look": "concrete",
+          "color": "#3e302a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "third",
+          "type": "appear"
+         }
+        ]
+       }
       ]
      }
     },
     {
-     "id": "stand2",
-     "kind": "boxPop",
+     "id": "coneOutline",
+     "kind": "outline",
      "params": {
-      "size": [
-       0.2,
-       1.4,
-       0.2
+      "points": [
+       [
+        -12,
+        0.15,
+        0.12
+       ],
+       [
+        -9,
+        2.59,
+        0.12
+       ],
+       [
+        -6,
+        5.56,
+        0.12
+       ],
+       [
+        -4,
+        7.68,
+        0.12
+       ],
+       [
+        -2,
+        9.88,
+        0.12
+       ],
+       [
+        0,
+        10.33,
+        0.12
+       ],
+       [
+        2,
+        9.88,
+        0.12
+       ],
+       [
+        4,
+        7.68,
+        0.12
+       ],
+       [
+        6,
+        5.56,
+        0.12
+       ],
+       [
+        9,
+        2.59,
+        0.12
+       ],
+       [
+        12,
+        0.15,
+        0.12
+       ]
       ],
-      "pos": [
-       5,
-       0.7,
-       -1
-      ],
-      "mat": "metal"
+      "of": "profile",
+      "opts": {
+       "closed": false,
+       "r": 0.2,
+       "over": true
+      }
      }
     },
     {
-     "id": "height",
-     "kind": "counter",
+     "id": "gauge",
+     "kind": "rig",
      "params": {
+      "name": "height gauge",
+      "synonyms": [
+       "height",
+       "gauge"
+      ],
       "pos": [
-       5,
-       1.9,
+       13.4,
+       0,
        -1
       ],
-      "size": 1.3,
-      "from": 0,
-      "to": 3776,
-      "color": "#ffd23d",
-      "bar": true,
-      "danger": 1.2
+      "nodes": [
+       {
+        "id": "pole",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           10.4,
+           0.3
+          ],
+          "at": [
+           0,
+           5.2,
+           0
+          ],
+          "look": "metal",
+          "color": "#d8dde2"
+         },
+         {
+          "shape": "tube",
+          "path": [
+           [
+            0,
+            9.83,
+            0
+           ],
+           [
+            -11.2,
+            9.83,
+            0.6
+           ]
+          ],
+          "r": 0.07,
+          "look": "paint",
+          "color": "#ffd23d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           3.4,
+           1.6,
+           0.25
+          ],
+          "at": [
+           -1.2,
+           11.2,
+           0
+          ],
+          "look": "metal",
+          "color": "#1d2329"
+         }
+        ]
+       },
+       {
+        "id": "readout",
+        "parent": "pole",
+        "at": [
+         -1.2,
+         11.2,
+         0.15
+        ],
+        "shapes": [
+         {
+          "shape": "screen",
+          "size": [
+           3.1,
+           1.3
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ]
+         }
+        ],
+        "moves": [
+         {
+          "name": "tall",
+          "type": "count",
+          "from": 0,
+          "to": 3776
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "rocksL",
+     "kind": "prop",
+     "params": {
+      "type": "rocks",
+      "size": [
+       5,
+       3
+      ],
+      "pos": [
+       -12.5,
+       0,
+       -2.5
+      ]
+     }
+    },
+    {
+     "id": "rocksR",
+     "kind": "prop",
+     "params": {
+      "type": "rocks",
+      "size": [
+       5,
+       3
+      ],
+      "pos": [
+       12.5,
+       0,
+       -2.5
+      ]
      }
     },
     {
@@ -654,12 +1580,12 @@
      "kind": "sign",
      "params": {
       "at": [
-       6,
-       0.08,
-       -8
+       -17,
+       0,
+       -4
       ],
-      "rotY": 0.2,
-      "scale": 1.4
+      "rotY": 0.25,
+      "scale": 1.3
      }
     }
    ],
@@ -667,33 +1593,63 @@
     {
      "s": "hook",
      "shows": {
-      "p": "magma",
-      "does": "the chamber glows red-hot and magma rises up the crack"
+      "p": "land",
+      "does": "deep under the mountain the chamber glows and orange magma rises up the crack"
      },
      "do": [
       {
-       "p": "magma",
-       "v": "show",
-       "w": ""
+       "p": "dig",
+       "v": "dig",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "land",
+       "v": "erupt",
+       "w": "melt",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "magma",
-       "v": "melt",
-       "w": "melt"
+       "v": "show",
+       "w": "melt",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "magma",
        "v": "rise",
        "w": "rise",
-       "d": 1.4
+       "o": 0,
+       "d": 1.6,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "magma"
-       ],
-       "type": "mid"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": [
+        -7,
+        -11,
+        -2,
+        7,
+        8.73,
+        0.3
+       ]
       }
      ]
     },
@@ -701,43 +1657,66 @@
      "s": "problem",
      "shows": {
       "p": "bubbles",
-      "does": "gas bubbles rise in the chamber and a pressure gauge fills into the red"
+      "does": "gas bubbles rise in the glowing chamber while the pressure gauge beside it fills into the red"
      },
      "state": {
-      "text": "PRESSURE",
+      "text": "PRESSURE!",
       "w": "pressure"
      },
      "do": [
       {
-       "p": "bubbles",
-       "v": "show",
-       "w": "bubbles"
-      },
-      {
-       "p": "stand",
-       "v": "show",
-       "w": "pressure"
-      },
-      {
        "p": "pressure",
        "v": "show",
-       "w": "pressure"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "bubbles",
+       "v": "show",
+       "w": "gas",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "gasArrows",
+       "v": "show",
+       "w": "expand",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "pressure",
        "v": "count",
-       "w": "pressure",
-       "o": 0.1,
-       "d": 1.4
+       "w": "gas",
+       "o": 0,
+       "d": 2.2,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "magma",
-        "pressure"
-       ],
-       "type": "wide"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -6,
+        -11,
+        -2,
+        11.5,
+        5.5,
+        1.5
+       ]
       }
      ]
     },
@@ -745,280 +1724,486 @@
      "s": "stakes",
      "shows": {
       "p": "blast",
-      "does": "a blast bursts from the vent, smoke rises and ash falls"
+      "does": "a blast bursts out of the crater, smoke climbs and ash falls"
      },
      "state": {
-      "text": "ERUPTION",
+      "text": "ERUPTION!",
       "w": "blasts"
      },
      "do": [
       {
        "p": "pressure",
        "v": "hide",
-       "w": "blasts"
+       "w": "Then",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "stand",
+       "p": "gasArrows",
        "v": "hide",
-       "w": "blasts"
-      },
-      {
-       "p": "bubbles",
-       "v": "hide",
-       "w": "blasts"
+       "w": "Then",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "blast",
        "v": "go",
-       "w": "blasts"
+       "w": "blasts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "smoke",
        "v": "start",
-       "w": "ash"
+       "w": "blasts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
        "p": "ash",
        "v": "start",
-       "w": "ash"
+       "w": "ash",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "blast",
-        "volcano"
-       ],
-       "type": "wide"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -13,
+        -1,
+        -4,
+        13,
+        19,
+        0.3
+       ]
       }
      ]
     },
     {
      "s": "fix1",
      "shows": {
-      "p": "volcano",
-      "does": "a cone of rock appears and orange lava pours down it"
+      "p": "lava",
+      "does": "glowing lava pours down both slopes, then darkens as it cools into rock"
      },
      "do": [
       {
-       "p": "volcano",
+       "p": "smoke",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ash",
+       "v": "stop",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "bubbles",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lava",
        "v": "show",
-       "w": "lava"
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "volcano",
-       "v": "cone",
-       "w": "lava"
+       "p": "lava",
+       "v": "lava",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "volcano",
-       "v": "glow",
-       "w": "lava"
+       "p": "lava",
+       "v": "pours",
+       "w": "pours",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "volcano",
-       "v": "pour",
-       "w": "pours"
+       "p": "lava",
+       "v": "down",
+       "w": "down",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lava",
+       "v": "lavaBack",
+       "w": "cools",
+       "o": 0,
+       "d": 0.9,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lava",
+       "v": "downBack",
+       "w": "cools",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "volcano"
-       ],
-       "type": "mid"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -13,
+        -0.5,
+        -4,
+        13,
+        13,
+        0.3
+       ]
       }
      ]
     },
     {
      "s": "problem2",
      "shows": {
-      "p": "volcano",
-      "does": "another blast and a second darker layer of rock on top of the cone"
+      "p": "lava",
+      "does": "another eruption: a grey layer of ash covers the dark lava rock"
      },
      "state": {
-      "text": "AGAIN",
-      "w": "eruption"
+      "text": "BURIED",
+      "w": "buries"
      },
      "do": [
       {
        "p": "blast",
        "v": "go",
-       "w": "eruption"
+       "w": "eruption",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "volcano",
-       "v": "layer",
-       "w": "layer"
+       "p": "ash",
+       "v": "start",
+       "w": "eruption",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lava",
+       "v": "buries",
+       "w": "buries",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "volcano"
-       ],
-       "type": "mid"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -13,
+        -0.5,
+        -4,
+        13,
+        15,
+        0.3
+       ]
       }
      ]
     },
     {
      "s": "name",
      "shows": {
-      "p": "volcanoOutline",
-      "does": "an outline traces the volcano"
+      "p": "coneOutline",
+      "does": "a glowing outline traces the volcano's cone"
      },
      "do": [
       {
-       "p": "volcanoOutline",
+       "p": "ash",
+       "v": "stop",
+       "w": "This",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "land",
+       "v": "calm",
+       "w": "This",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "coneOutline",
        "v": "show",
-       "w": "stratovolcano"
+       "w": "This",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
        "focus": [
-        "volcano"
+        "land"
        ],
+       "view": "home",
+       "width": 0.9,
+       "type": "",
        "hero": true,
-       "width": 0.7
+       "word": "",
+       "box": []
       }
      ]
     },
     {
      "s": "how",
      "shows": {
-      "p": "layerArrows",
-      "does": "arrows point at the stacked rock layers of the cone"
+      "p": "layers",
+      "does": "dark lava bands and pale ash bands appear one over the other inside the cone"
      },
      "do": [
       {
-       "p": "volcanoOutline",
+       "p": "coneOutline",
        "v": "hide",
-       "w": "Layers"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "layerArrows",
+       "p": "layers",
        "v": "show",
-       "w": "Layers"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "layers",
+       "v": "first",
+       "w": "Layers",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "layers",
+       "v": "second",
+       "w": "ash",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "layers",
+       "v": "third",
+       "w": "eruption",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "volcano",
-        "layerArrows"
-       ],
-       "type": "mid"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -13.5,
+        -11,
+        -4,
+        13.5,
+        13,
+        0.3
+       ]
       }
      ]
     },
     {
      "s": "fact",
      "shows": {
-      "p": "height",
-      "does": "a meters counter beside the cone ticks up to 3,776"
+      "p": "gauge",
+      "does": "a height counter beside the volcano climbs to 3,776"
      },
      "do": [
       {
-       "p": "layerArrows",
-       "v": "hide",
-       "w": "Fuji"
-      },
-      {
-       "p": "stand2",
+       "p": "gauge",
        "v": "show",
-       "w": "Fuji"
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "height",
-       "v": "show",
-       "w": "Fuji"
-      },
-      {
-       "p": "height",
-       "v": "count",
-       "w": "3776",
-       "d": 1.3
+       "p": "gauge",
+       "v": "tall",
+       "w": "Mount",
+       "o": 0,
+       "d": 1.6,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
-       "focus": [
-        "volcano",
-        "height"
-       ],
-       "type": "wide"
+       "focus": [],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [
+        -13,
+        -2,
+        -4,
+        18,
+        13,
+        0.3
+       ]
       }
      ]
     },
     {
      "s": "finish",
      "shows": {
-      "p": "volcano",
-      "does": "snow appears on the peak and a ring of rocks round the base, the ash stops"
+      "p": "lava",
+      "does": "white snow caps the peak and rocks gather round the base"
      },
      "do": [
       {
-       "p": "ash",
-       "v": "stop",
-       "w": "Add"
+       "p": "gauge",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "smoke",
-       "v": "stop",
-       "w": "Add"
-      },
-      {
-       "p": "light",
-       "v": "clear",
-       "w": "Add"
-      },
-      {
-       "p": "volcano",
-       "v": "pourBack",
-       "w": "Add"
-      },
-      {
-       "p": "volcano",
+       "p": "lava",
        "v": "snow",
-       "w": "snow"
+       "w": "snow",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "rocks",
+       "p": "rocksL",
        "v": "show",
-       "w": "rocks"
+       "w": "rocks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       },
       {
-       "p": "height",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "stand2",
-       "v": "hide",
-       "w": "Add"
+       "p": "rocksR",
+       "v": "show",
+       "w": "rocks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
        "focus": [
         "home"
-       ]
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
       }
      ]
     },
     {
      "s": "congrats",
      "shows": {
-      "p": "volcano",
-      "does": "the calm snowy volcano with trees"
+      "p": "land",
+      "does": "the finished snowy volcano stands calm in section"
      },
      "do": [],
      "shots": [
       {
        "focus": [
         "home"
-       ]
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
       }
      ]
     }
@@ -1026,12 +2211,13 @@
    "audio": {
     "cards": [
      {
-      "text": "3,776 M",
+      "text": "3,776 METERS",
       "at": {
        "s": "fact",
-       "w": "3776"
+       "w": "3,776",
+       "o": 0
       },
-      "d": 1.8
+      "d": 1.6
      }
     ],
     "sfx": [
@@ -1039,23 +2225,17 @@
       "lib": "flame",
       "at": {
        "s": "hook",
-       "w": "melt"
+       "w": "melt",
+       "o": 0
       },
-      "d": 1.2
-     },
-     {
-      "lib": "drip",
-      "at": {
-       "s": "problem",
-       "w": "bubbles"
-      },
-      "d": 1
+      "d": 1.4
      },
      {
       "lib": "dirt",
       "at": {
        "s": "stakes",
-       "w": "blasts"
+       "w": "blasts",
+       "o": 0
       },
       "d": 1.4
      },
@@ -1063,15 +2243,17 @@
       "lib": "flame",
       "at": {
        "s": "fix1",
-       "w": "pours"
+       "w": "pours",
+       "o": 0
       },
-      "d": 1.3
+      "d": 1.4
      },
      {
       "lib": "dirt",
       "at": {
        "s": "problem2",
-       "w": "eruption"
+       "w": "eruption",
+       "o": 0
       },
       "d": 1.2
      }
@@ -1079,15 +2261,18 @@
     "chimes": [
      {
       "s": "fact",
-      "w": "3776"
+      "w": "3,776",
+      "o": 0
      },
      {
       "s": "name",
-      "w": ""
+      "w": "",
+      "o": 0
      },
      {
       "s": "congrats",
-      "w": ""
+      "w": "",
+      "o": 0
      }
     ],
     "rain": []

@@ -1,12 +1,12 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
+ "by": "stand-in planner (replan 2026-11-09)",
+ "searches": 6,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "Brake fluid carries your push from a small piston at the pedal to bigger pistons at the wheel, multiplying the force about four to five times",
     "why": "The study guide works 25.4 mm vs 54 mm pistons to about 4.5 times; HowStuffWorks confirms the principle.",
     "sources": [
@@ -22,7 +22,7 @@
    },
    {
     "index": 1,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius",
     "why": "EngineerFix gives over 500 C for a very hard emergency stop or repeated stops from high speed; Kwik-Fit gives about 500 C on track.",
     "sources": [

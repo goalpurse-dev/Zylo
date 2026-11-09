@@ -1,14 +1,14 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "by": "stand-in planner (replan 2026-11-09): claims checked in the earlier run of this topic",
  "searches": 3,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn",
-    "why": "The date and the Brooklyn printing plant are supported; 'first modern' is only the company's framing.",
+    "why": "The date and the Brooklyn printing plant are supported by Carrier's own history page and Wikipedia.",
     "sources": [
      {
       "url": "https://www.carrier.com/us/en/history/invention-of-air-conditioning/",

@@ -84,7 +84,7 @@ export const KINDS = {
     return {
       update(t) {
         // haul (the street, garage, room, car wash): the dug dirt is taken away right after the dig, the pile never stays
-        const c = api.cue("dig"), r = api.cue("refill"); d.update(t, c.t0, c.t1, p.haul ? [c.t1 + 0.3, c.t1 + 1.5] : r ? [r.t0, r.t1] : null);
+        const c = api.cue("dig"), r = api.cue("refill"); if (!c) return; /* (a dig never told to dig stays closed: it crashed here) */ d.update(t, c.t0, c.t1, p.haul ? [c.t1 + 0.3, c.t1 + 1.5] : r ? [r.t0, r.t1] : null);
         if (shade) { const k = Math.min(1, Math.max(0, (t - c.t0) / Math.max(0.01, c.t1 - c.t0))); shade.visible = k > 0.01; shade.scale.y = Math.max(0.001, k * cut.depth); }
       },
     };

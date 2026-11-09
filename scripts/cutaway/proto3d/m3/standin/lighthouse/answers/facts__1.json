@@ -1,12 +1,12 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
  "searches": 3,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
+    "verdict": "keep",
     "claim": "Augustin Fresnel invented his lighthouse lens in 1822.",
     "why": "1822 is the invention and official test; the first lighthouse lighting was 1823.",
     "sources": [

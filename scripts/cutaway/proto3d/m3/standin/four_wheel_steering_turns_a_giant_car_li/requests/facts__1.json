@@ -1,0 +1,70 @@
+{
+ "key": "facts__1",
+ "label": "facts",
+ "model": "claude-sonnet-5-5",
+ "hash": "eba68300ea0e384d",
+ "search": 8,
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "checks"
+  ],
+  "properties": {
+   "checks": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "index",
+      "verdict",
+      "claim",
+      "why",
+      "sources"
+     ],
+     "properties": {
+      "index": {
+       "type": "integer"
+      },
+      "verdict": {
+       "type": "string",
+       "enum": [
+        "keep",
+        "reword",
+        "drop"
+       ]
+      },
+      "claim": {
+       "type": "string"
+      },
+      "why": {
+       "type": "string"
+      },
+      "sources": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "url",
+         "title"
+        ],
+        "properties": {
+         "url": {
+          "type": "string"
+         },
+         "title": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
+ "user": "Topic: How four-wheel steering turns a giant car like a compact\nClaims (index: claim | suggested search):\n0: Mercedes S-Class rear-axle steering turns the rear wheels up to 10 degrees and cuts the turning circle by up to about 2 meters | Mercedes S-Class rear axle steering 10 degrees turning circle 2 meters\n1: On the Mercedes S-Class, the rear wheels turn opposite the front below about 60 km/h (37 mph) and the same way above that | Mercedes S-Class rear wheel steering 60 km/h same direction\n2: Some rear-steer systems, such as BMW's Integral Active Steering and one DAF truck rear axle, are designed so a fault leaves the rear wheels centred or straight | rear wheel steering fault rear wheels centred straight"
+}

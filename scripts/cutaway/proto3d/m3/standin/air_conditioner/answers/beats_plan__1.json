@@ -1,9 +1,9 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A portable air conditioner cut open in a living room in front of the window: a fan blows over a cold coil, the coil sweats onto the floor, a tray and hose fix it, the coil warms, a compressor keeps it cold, and the heat goes out of the window through a duct. The camera opens close on the fan and coil, stays mid on the machine, and ends on the room with the unit running calmly.",
+  "why": "A portable air conditioner standing on the kitchen floor, cut open: a fan beside an icy coil above a tray, a compressor and a hot coil below, a duct to a vent in the wall. The camera stays on the unit; the opening is close on the fan and the frosting coil.",
   "story": {
    "title": "How an air conditioner works",
    "hero": "an air conditioner",
@@ -13,9 +13,10 @@
     "drip tray",
     "drain hose",
     "compressor",
-    "pipes",
+    "coolant pipes",
     "hot coil",
-    "window duct",
+    "exhaust duct",
+    "wall vent",
     "louvers",
     "display",
     "filter"
@@ -23,7 +24,7 @@
    "ideas": [
     {
      "role": "hook",
-     "idea": "a fan blowing over a cold coil is already an air conditioner"
+     "idea": "blow a fan through an icy coil and you already have an air conditioner"
     },
     {
      "role": "problem",
@@ -31,31 +32,31 @@
     },
     {
      "role": "fix1",
-     "idea": "a drip tray and a hose drain the water away"
+     "idea": "a tray under the coil and a hose drain the water away"
     },
     {
      "role": "problem2",
-     "idea": "now the coil warms up and warm air blows into the room"
+     "idea": "with nothing keeping it cold the coil warms up and blows warm air"
     },
     {
      "role": "fix2",
-     "idea": "a compressor pumps coolant round and keeps the coil cold"
+     "idea": "a compressor pumps coolant round to keep the coil cold"
     },
     {
      "role": "name",
-     "idea": "this machine is an air conditioner"
+     "idea": "this box with a fan, coils and a compressor is an air conditioner"
     },
     {
      "role": "how",
-     "idea": "the heat taken from the room goes to a hot coil and out of the window"
+     "idea": "the heat goes to a hot coil and out through the wall along a duct"
     },
     {
      "role": "myth",
-     "idea": "comfort is not why air conditioning was invented"
+     "idea": "people think air conditioning was invented for comfort"
     },
     {
      "role": "mythFact",
-     "idea": "Willis Carrier built it in 1902 to control humidity in a printing plant"
+     "idea": "Carrier designed it in 1902 to stop printing paper swelling"
     },
     {
      "role": "finish",
@@ -63,28 +64,28 @@
     },
     {
      "role": "congrats",
-     "idea": "calm end: the unit blows cool air with its display lit"
+     "idea": "calm end: the finished unit humming"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "water drips from the cold coil and splashes on the floor",
+     "shows": "water drips off the cold coil and splashes on the floor",
      "stakes": "the floor gets soaked",
      "size": 3
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the frost leaves the coil and a thermometer climbs to 30",
-     "stakes": "the room gets hot again",
+     "shows": "the coil loses its frost and warm orange air blows out",
+     "stakes": "the room heats up instead of cooling",
      "size": 6
     }
    ],
    "surprises": [
     {
-     "claim": "Willis Carrier designed the first modern air conditioning system in 1902 for a printing plant in Brooklyn",
+     "claim": "In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn",
      "role": "mythFact",
      "search": "Willis Carrier 1902 Sackett-Wilhelms printing plant Brooklyn"
     },
@@ -103,7 +104,7 @@
   "sentences": [
    {
     "role": "hook",
-    "text": "If you put a fan behind a cold coil, you have an air conditioner."
+    "text": "If you blow a fan through an icy coil, you have an air conditioner."
    },
    {
     "role": "problem",
@@ -127,7 +128,7 @@
    },
    {
     "role": "how",
-    "text": "The heat goes to a hot coil and out the window."
+    "text": "The heat goes to a hot coil and out through the wall."
    },
    {
     "role": "myth",
@@ -149,10 +150,10 @@
   "sceneJson": {
    "world": {
     "cut": [
-     6,
-     7.5,
-     -3,
-     0.4
+     9.5,
+     11,
+     -4,
+     0.6
     ],
     "house": false,
     "porch": false,
@@ -162,13 +163,16 @@
     "worker": false,
     "moreTrees": false,
     "backdrop": {
-     "type": "room",
-     "x0": -9,
-     "x1": 9,
+     "type": "kitchen",
+     "x0": -12,
+     "x1": 12,
      "back": -7,
-     "h": 4.2,
-     "windowX": 0,
-     "chairX": -5.5
+     "h": 6.2,
+     "gap": [
+      -1.8,
+      1.8
+     ],
+     "color": "#e8e0cf"
     }
    },
    "parts": [
@@ -182,6 +186,7 @@
     {
      "id": "ac",
      "kind": "rig",
+     "main": true,
      "params": {
       "name": "air conditioner",
       "synonyms": [
@@ -189,13 +194,12 @@
        "portable air conditioner",
        "air con"
       ],
-      "main": true,
       "pos": [
        0,
        0.12,
-       -5.6
+       -4.4
       ],
-      "scale": 2,
+      "scale": 2.4,
       "nodes": [
        {
         "id": "body",
@@ -218,7 +222,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#e9edf0"
+          "color": "#d9dee3"
          },
          {
           "shape": "box",
@@ -233,7 +237,7 @@
            -0.21
           ],
           "look": "plastic",
-          "color": "#f2f4f6"
+          "color": "#c9d3dc"
          },
          {
           "shape": "box",
@@ -248,22 +252,67 @@
            0
           ],
           "look": "plastic",
-          "color": "#e3e8ed"
+          "color": "#eef1f4"
          },
          {
           "shape": "box",
           "size": [
            0.03,
-           0.9,
+           0.42,
            0.45
           ],
           "at": [
            0.285,
-           0.45,
+           0.21,
            0
           ],
           "look": "plastic",
-          "color": "#e3e8ed"
+          "color": "#eef1f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.04,
+           0.45
+          ],
+          "at": [
+           0.285,
+           0.88,
+           0
+          ],
+          "look": "plastic",
+          "color": "#eef1f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.44,
+           0.03
+          ],
+          "at": [
+           0.285,
+           0.64,
+           -0.21
+          ],
+          "look": "plastic",
+          "color": "#eef1f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.44,
+           0.03
+          ],
+          "at": [
+           0.285,
+           0.64,
+           0.21
+          ],
+          "look": "plastic",
+          "color": "#eef1f4"
          },
          {
           "shape": "box",
@@ -278,7 +327,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#f2f4f6"
+          "color": "#eef1f4"
          },
          {
           "shape": "box",
@@ -289,97 +338,11 @@
           ],
           "at": [
            0,
-           0.42,
+           0.41,
            0
           ],
           "look": "metal",
-          "color": "#b9c3cc"
-         }
-        ]
-       },
-       {
-        "id": "coil",
-        "parent": "body",
-        "at": [
-         -0.13,
-         0.5,
-         0.02
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.016,
-          "path": [
-           [
-            -0.12,
-            0,
-            0
-           ],
-           [
-            0.1,
-            0,
-            0
-           ],
-           [
-            0.1,
-            0.06,
-            0
-           ],
-           [
-            -0.12,
-            0.06,
-            0
-           ],
-           [
-            -0.12,
-            0.12,
-            0
-           ],
-           [
-            0.1,
-            0.12,
-            0
-           ],
-           [
-            0.1,
-            0.18,
-            0
-           ],
-           [
-            -0.12,
-            0.18,
-            0
-           ],
-           [
-            -0.12,
-            0.24,
-            0
-           ],
-           [
-            0.1,
-            0.24,
-            0
-           ],
-           [
-            0.1,
-            0.3,
-            0
-           ],
-           [
-            -0.12,
-            0.3,
-            0
-           ]
-          ],
-          "look": "metal",
-          "color": "#9aa7b3"
-         }
-        ],
-        "moves": [
-         {
-          "name": "cold",
-          "type": "chill",
-          "color": "#dff4ff"
+          "color": "#aab4bd"
          }
         ]
        },
@@ -387,16 +350,29 @@
         "id": "fan",
         "parent": "body",
         "at": [
-         0.15,
-         0.66,
-         0
+         -0.13,
+         0.64,
+         -0.06
         ],
         "shapes": [
          {
+          "shape": "cylinder",
+          "r": 0.04,
+          "h": 0.12,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           -0.08
+          ],
+          "look": "metal",
+          "color": "#3a3f44"
+         },
+         {
           "shape": "fan",
-          "r": 0.11,
+          "r": 0.12,
           "blades": 5,
-          "w": 0.05,
+          "w": 0.04,
           "axis": "z",
           "at": [
            0,
@@ -404,7 +380,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#5a7fa8"
+          "color": "#2f6fb0"
          }
         ],
         "moves": [
@@ -417,20 +393,126 @@
         ]
        },
        {
+        "id": "coil",
+        "parent": "body",
+        "at": [
+         0.13,
+         0.48,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "r": 0.018,
+          "path": [
+           [
+            -0.1,
+            0,
+            0
+           ],
+           [
+            0.1,
+            0,
+            0
+           ],
+           [
+            0.1,
+            0.065,
+            0
+           ],
+           [
+            -0.1,
+            0.065,
+            0
+           ],
+           [
+            -0.1,
+            0.13,
+            0
+           ],
+           [
+            0.1,
+            0.13,
+            0
+           ],
+           [
+            0.1,
+            0.195,
+            0
+           ],
+           [
+            -0.1,
+            0.195,
+            0
+           ],
+           [
+            -0.1,
+            0.26,
+            0
+           ],
+           [
+            0.1,
+            0.26,
+            0
+           ],
+           [
+            0.1,
+            0.325,
+            0
+           ],
+           [
+            -0.1,
+            0.325,
+            0
+           ]
+          ],
+          "look": "metal",
+          "color": "#7d8a96"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.22,
+           0.36,
+           0.01
+          ],
+          "at": [
+           0,
+           0.165,
+           -0.03
+          ],
+          "look": "metal",
+          "color": "#9aa7b3"
+         }
+        ],
+        "moves": [
+         {
+          "name": "icy",
+          "type": "chill",
+          "color": "#bfe8ff"
+         },
+         {
+          "name": "warm",
+          "type": "heat",
+          "color": "#ffb070"
+         }
+        ]
+       },
+       {
         "id": "tray",
         "parent": "body",
         "at": [
-         -0.13,
-         0.43,
+         0,
+         0.42,
          0.02
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.26,
+           0.5,
            0.04,
-           0.3
+           0.36
           ],
           "at": [
            0,
@@ -462,29 +544,24 @@
           "r": 0.02,
           "path": [
            [
-            0.13,
+            0.24,
             0.02,
-            0.1
-           ],
-           [
-            0.3,
-            0.02,
-            0.1
-           ],
-           [
-            0.31,
-            -0.3,
-            0.12
+            0.14
            ],
            [
             0.32,
-            -0.41,
-            0.2
+            0.02,
+            0.14
            ],
            [
-            0.5,
-            -0.41,
-            0.2
+            0.32,
+            -0.4,
+            0.14
+           ],
+           [
+            0.46,
+            -0.4,
+            0.14
            ]
           ],
           "look": "rubber",
@@ -502,29 +579,24 @@
           "color": "#3ad6ff",
           "path": [
            [
-            0.13,
+            0.24,
             0.02,
-            0.1
-           ],
-           [
-            0.3,
-            0.02,
-            0.1
-           ],
-           [
-            0.31,
-            -0.3,
-            0.12
+            0.17
            ],
            [
             0.32,
-            -0.41,
-            0.2
+            0.02,
+            0.17
            ],
            [
-            0.5,
-            -0.41,
-            0.2
+            0.32,
+            -0.4,
+            0.17
+           ],
+           [
+            0.46,
+            -0.4,
+            0.17
            ]
           ]
          }
@@ -570,62 +642,62 @@
         "id": "condenser",
         "parent": "body",
         "at": [
-         0.14,
+         0.06,
          0.07,
-         0.12
+         0.1
         ],
         "shapes": [
          {
           "shape": "tube",
-          "r": 0.016,
+          "r": 0.018,
           "path": [
            [
-            -0.1,
+            -0.06,
             0,
             0
            ],
            [
-            0.1,
+            0.18,
             0,
             0
            ],
            [
-            0.1,
+            0.18,
             0.07,
             0
            ],
            [
-            -0.1,
+            -0.06,
             0.07,
             0
            ],
            [
-            -0.1,
+            -0.06,
             0.14,
             0
            ],
            [
-            0.1,
+            0.18,
             0.14,
             0
            ],
            [
-            0.1,
+            0.18,
             0.21,
             0
            ],
            [
-            -0.1,
+            -0.06,
             0.21,
             0
            ],
            [
-            -0.1,
+            -0.06,
             0.28,
             0
            ],
            [
-            0.1,
+            0.18,
             0.28,
             0
            ]
@@ -666,18 +738,23 @@
            ],
            [
             -0.13,
-            0.38,
-            -0.12
+            0.36,
+            -0.16
            ],
            [
-            -0.26,
-            0.5,
-            -0.12
+            0.24,
+            0.36,
+            -0.16
            ],
            [
-            -0.26,
-            0.5,
-            0.02
+            0.24,
+            0.48,
+            -0.16
+           ],
+           [
+            0.23,
+            0.48,
+            0
            ]
           ],
           "look": "metal",
@@ -688,24 +765,24 @@
           "r": 0.014,
           "path": [
            [
-            0.04,
-            0.35,
-            0.12
+            0.03,
+            0.81,
+            0
            ],
            [
-            0.04,
-            0.4,
-            -0.12
+            -0.26,
+            0.81,
+            -0.16
            ],
            [
-            -0.02,
-            0.8,
-            -0.12
+            -0.26,
+            0.2,
+            -0.16
            ],
            [
-            -0.02,
-            0.8,
-            0.02
+            -0.04,
+            0.2,
+            0.04
            ]
           ],
           "look": "metal",
@@ -725,42 +802,47 @@
            [
             -0.13,
             0.3,
-            0.04
+            0.06
            ],
            [
             -0.13,
-            0.38,
-            -0.12
+            0.36,
+            -0.14
+           ],
+           [
+            0.24,
+            0.36,
+            -0.14
+           ],
+           [
+            0.24,
+            0.48,
+            -0.14
+           ],
+           [
+            0.23,
+            0.48,
+            0.03
+           ],
+           [
+            0.03,
+            0.81,
+            0.03
            ],
            [
             -0.26,
-            0.5,
-            -0.12
+            0.81,
+            -0.14
            ],
            [
             -0.26,
-            0.5,
-            0.02
+            0.2,
+            -0.14
            ],
            [
-            -0.02,
-            0.8,
-            0.02
-           ],
-           [
-            -0.02,
-            0.8,
-            -0.12
-           ],
-           [
-            0.04,
-            0.4,
-            -0.12
-           ],
-           [
-            0.04,
-            0.35,
-            0.12
+            -0.04,
+            0.2,
+            0.06
            ]
           ]
          }
@@ -780,28 +862,103 @@
           "r": 0.06,
           "path": [
            [
-            0.15,
+            0.12,
             0.25,
             -0.22
            ],
            [
-            0.15,
-            0.3,
-            -0.45
+            0.12,
+            0.25,
+            -0.4
            ],
            [
-            0.15,
-            0.72,
+            0.12,
+            1.03,
             -0.6
            ],
            [
-            0.15,
-            0.74,
-            -0.67
+            0.12,
+            1.03,
+            -1.04
            ]
           ],
-          "look": "plastic",
-          "color": "#d9dde1"
+          "look": "glass",
+          "color": "#e4ecf2"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           0.3,
+           0.03
+          ],
+          "at": [
+           0.12,
+           1.03,
+           -1.05
+          ],
+          "look": "metal",
+          "color": "#5d656c"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.025,
+           0.02
+          ],
+          "at": [
+           0.12,
+           0.9400000000000001,
+           -1.03
+          ],
+          "look": "metal",
+          "color": "#2c3237"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.025,
+           0.02
+          ],
+          "at": [
+           0.12,
+           1,
+           -1.03
+          ],
+          "look": "metal",
+          "color": "#2c3237"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.025,
+           0.02
+          ],
+          "at": [
+           0.12,
+           1.06,
+           -1.03
+          ],
+          "look": "metal",
+          "color": "#2c3237"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.025,
+           0.02
+          ],
+          "at": [
+           0.12,
+           1.12,
+           -1.03
+          ],
+          "look": "metal",
+          "color": "#2c3237"
          }
         ],
         "moves": [
@@ -812,27 +969,27 @@
          {
           "name": "exhaust",
           "type": "flow",
-          "color": "#ff8a2a",
+          "color": "#ff7a1a",
           "path": [
            [
-            0.15,
+            0.12,
             0.25,
             -0.22
            ],
            [
-            0.15,
-            0.3,
-            -0.45
+            0.12,
+            0.25,
+            -0.4
            ],
            [
-            0.15,
-            0.72,
+            0.12,
+            1.03,
             -0.6
            ],
            [
-            0.15,
-            0.74,
-            -0.67
+            0.12,
+            1.03,
+            -1.04
            ]
           ]
          }
@@ -844,7 +1001,7 @@
         "at": [
          0,
          0.9,
-         0.05
+         0
         ],
         "shapes": [
          {
@@ -865,7 +1022,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#cfd5db"
+          "color": "#b8c2cb"
          },
          {
           "shape": "box",
@@ -885,7 +1042,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#cfd5db"
+          "color": "#b8c2cb"
          },
          {
           "shape": "box",
@@ -905,7 +1062,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#cfd5db"
+          "color": "#b8c2cb"
          },
          {
           "shape": "box",
@@ -925,7 +1082,7 @@
            0
           ],
           "look": "plastic",
-          "color": "#cfd5db"
+          "color": "#b8c2cb"
          }
         ],
         "moves": [
@@ -939,7 +1096,7 @@
         "id": "display",
         "parent": "body",
         "at": [
-         0.15,
+         0.13,
          0.8,
          0.23
         ],
@@ -961,7 +1118,7 @@
          },
          {
           "shape": "light",
-          "r": 0.02,
+          "r": 0.022,
           "at": [
            0.05,
            0,
@@ -986,24 +1143,114 @@
         "parent": "body",
         "at": [
          -0.13,
-         0.65,
-         0.2
+         0.64,
+         0.215
         ],
         "shapes": [
          {
           "shape": "panel",
           "size": [
            0.26,
-           0.34
+           0.38
           ],
-          "thick": 0.01,
+          "thick": 0.012,
           "at": [
            0,
            0,
            0
           ],
-          "look": "glass",
-          "color": "#d8dee3"
+          "look": "plastic",
+          "color": "#8fa3b2"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.01,
+           0.38,
+           0.016
+          ],
+          "at": [
+           -0.08,
+           0,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.01,
+           0.38,
+           0.016
+          ],
+          "at": [
+           0,
+           0,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.01,
+           0.38,
+           0.016
+          ],
+          "at": [
+           0.08,
+           0,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.01,
+           0.016
+          ],
+          "at": [
+           0,
+           -0.12,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.01,
+           0.016
+          ],
+          "at": [
+           0,
+           0,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.26,
+           0.01,
+           0.016
+          ],
+          "at": [
+           0,
+           0.12,
+           0.006
+          ],
+          "look": "plastic",
+          "color": "#5f7382"
          }
         ],
         "moves": [
@@ -1017,41 +1264,92 @@
      }
     },
     {
-     "id": "airArrows",
+     "id": "coldAir",
      "kind": "arrows",
      "params": {
       "list": [
        {
         "at": [
-         -0.3,
-         2.15,
-         -5.4
+         1.008,
+         1.848,
+         -4.16
         ],
         "dir": [
-         0,
-         1
+         1,
+         0
         ],
-        "travel": 0.6,
+        "travel": 0.5,
         "phase": 0
        },
        {
         "at": [
-         0.3,
-         2.15,
-         -5.4
+         1.008,
+         1.44,
+         -4.16
         ],
         "dir": [
-         0,
-         1
+         1,
+         0
         ],
-        "travel": 0.6,
+        "travel": 0.5,
         "phase": 0.5
        }
       ],
       "opts": {
-       "scale": 0.6,
+       "scale": 0.55,
        "color": "#ffffff"
       }
+     }
+    },
+    {
+     "id": "warmAir",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         1.008,
+         1.848,
+         -4.16
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.5,
+        "phase": 0
+       },
+       {
+        "at": [
+         1.008,
+         1.44,
+         -4.16
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.5,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 0.55,
+       "color": "#ff8a2a"
+      }
+     }
+    },
+    {
+     "id": "frost",
+     "kind": "fx",
+     "params": {
+      "type": "frost",
+      "at": [
+       0.312,
+       1.656,
+       -4.28
+      ],
+      "size": 0.3
      }
     },
     {
@@ -1060,11 +1358,11 @@
      "params": {
       "type": "drip",
       "at": [
-       -0.26,
-       1,
-       -5.1
+       0.48,
+       1.224,
+       -3.968
       ],
-      "size": 0.4
+      "size": 0.35
      }
     },
     {
@@ -1073,27 +1371,11 @@
      "params": {
       "type": "splash",
       "at": [
-       -0.3,
-       0.15,
-       -4.8
+       0.528,
+       0.144,
+       -3.68
       ],
-      "size": 0.6
-     }
-    },
-    {
-     "id": "temp",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       1.9,
-       1.3,
-       -5.2
-      ],
-      "size": 0.45,
-      "from": 22,
-      "to": 30,
-      "color": "#ff8a2a",
-      "bar": true
+      "size": 0.5
      }
     },
     {
@@ -1114,14 +1396,14 @@
       "date": "1902",
       "headline": "COOL AIR FOR COMFORT",
       "from": [
-       -2.2,
+       -1.9,
        -0.6,
-       -5.4
+       -4
       ],
       "to": [
-       -2.2,
+       -1.9,
        1.4,
-       -5.4
+       -4
       ]
      }
     },
@@ -1166,14 +1448,14 @@
        }
       ],
       "from": [
-       2.2,
+       1.9,
        0.2,
-       -5.4
+       -4
       ],
       "to": [
-       2.2,
+       1.9,
        1.5,
-       -5.4
+       -4
       ],
       "rot": [
        -0.1,
@@ -1187,12 +1469,12 @@
      "kind": "sign",
      "params": {
       "at": [
-       10.5,
+       4.3,
        0.12,
-       -2.5
+       -2
       ],
-      "rotY": -0.25,
-      "scale": 1
+      "rotY": -0.3,
+      "scale": 0.6
      }
     }
    ],
@@ -1201,7 +1483,7 @@
      "s": "hook",
      "shows": {
       "p": "ac",
-      "does": "a fan spins behind a frosty cold coil"
+      "does": "a blue fan spins beside a coil that frosts icy pale blue, white air arrows blow out through the coil"
      },
      "do": [
       {
@@ -1212,23 +1494,29 @@
       {
        "p": "ac",
        "v": "blow",
+       "w": ""
+      },
+      {
+       "p": "coldAir",
+       "v": "show",
        "w": "fan"
       },
       {
        "p": "ac",
-       "v": "cold",
-       "w": "cold"
+       "v": "icy",
+       "w": "icy"
       },
       {
-       "p": "airArrows",
-       "v": "show",
-       "w": "cold"
+       "p": "frost",
+       "v": "start",
+       "w": "icy"
       }
      ],
      "shots": [
       {
        "focus": [
-        "ac"
+        "ac.fan",
+        "ac.coil"
        ],
        "type": "close"
       }
@@ -1237,8 +1525,8 @@
     {
      "s": "problem",
      "shows": {
-      "p": "drip",
-      "does": "water drips from the coil and splashes on the floor"
+      "p": "ac",
+      "does": "water drips off the cold coil and splashes on the floor"
      },
      "state": {
       "text": "LEAKING",
@@ -1246,9 +1534,14 @@
      },
      "do": [
       {
+       "p": "ac",
+       "v": "icy",
+       "w": "cold"
+      },
+      {
        "p": "drip",
        "v": "start",
-       "w": "drips"
+       "w": "water"
       },
       {
        "p": "splash",
@@ -1269,7 +1562,7 @@
      "s": "fix1",
      "shows": {
       "p": "ac",
-      "does": "a drip tray and a hose appear and water runs out the hose"
+      "does": "a blue drip tray and a black hose appear and water runs out the hose"
      },
      "do": [
       {
@@ -1310,12 +1603,12 @@
     {
      "s": "problem2",
      "shows": {
-      "p": "temp",
-      "does": "the coil loses its frost and the thermometer climbs to 30"
+      "p": "ac",
+      "does": "the frost leaves the coil, it turns warm orange, and the air arrows turn orange"
      },
      "state": {
       "text": "WARM AIR",
-      "w": "warms"
+      "w": "warm"
      },
      "do": [
       {
@@ -1324,27 +1617,37 @@
        "w": "But"
       },
       {
-       "p": "ac",
-       "v": "coldBack",
+       "p": "frost",
+       "v": "stop",
        "w": "coil"
       },
       {
-       "p": "temp",
-       "v": "show",
-       "w": ""
+       "p": "ac",
+       "v": "icyBack",
+       "w": "coil"
       },
       {
-       "p": "temp",
-       "v": "count",
-       "w": "coil",
-       "d": 1.2
+       "p": "ac",
+       "v": "warm",
+       "w": "warms"
+      },
+      {
+       "p": "coldAir",
+       "v": "hide",
+       "w": "warms"
+      },
+      {
+       "p": "warmAir",
+       "v": "show",
+       "w": "warm"
       }
      ],
      "shots": [
       {
        "focus": [
-        "ac",
-        "temp"
+        "ac.coil",
+        "ac.fan",
+        "warmAir"
        ],
        "type": "mid"
       }
@@ -1354,11 +1657,11 @@
      "s": "fix2",
      "shows": {
       "p": "ac",
-      "does": "a compressor appears and shakes, coolant runs in the pipes, the coil frosts"
+      "does": "a compressor appears and shakes, coolant runs in the pipes, the coil frosts icy again"
      },
      "do": [
       {
-       "p": "temp",
+       "p": "warmAir",
        "v": "hide",
        "w": "So"
       },
@@ -1384,7 +1687,22 @@
       },
       {
        "p": "ac",
-       "v": "cold",
+       "v": "warmBack",
+       "w": "pumps"
+      },
+      {
+       "p": "ac",
+       "v": "icy",
+       "w": "cold"
+      },
+      {
+       "p": "frost",
+       "v": "start",
+       "w": "cold"
+      },
+      {
+       "p": "coldAir",
+       "v": "show",
        "w": "cold"
       }
      ],
@@ -1401,9 +1719,19 @@
      "s": "name",
      "shows": {
       "p": "outline",
-      "does": "a glowing outline traces the unit"
+      "does": "a glowing outline traces the whole unit standing on the floor"
      },
      "do": [
+      {
+       "p": "coldAir",
+       "v": "hide",
+       "w": ""
+      },
+      {
+       "p": "frost",
+       "v": "stop",
+       "w": ""
+      },
       {
        "p": "outline",
        "v": "show",
@@ -1424,7 +1752,7 @@
      "s": "how",
      "shows": {
       "p": "ac",
-      "does": "the lower coil glows hot and orange dots run up the duct to the window"
+      "does": "the lower coil glows hot and orange dots run up the duct and out through a vent in the wall"
      },
      "do": [
       {
@@ -1435,7 +1763,17 @@
       {
        "p": "ac",
        "v": "condIn",
-       "w": "hot"
+       "w": "heat"
+      },
+      {
+       "p": "ac",
+       "v": "ductIn",
+       "w": "heat"
+      },
+      {
+       "p": "ac",
+       "v": "exhaust",
+       "w": "heat"
       },
       {
        "p": "ac",
@@ -1444,13 +1782,8 @@
       },
       {
        "p": "ac",
-       "v": "ductIn",
-       "w": "window"
-      },
-      {
-       "p": "ac",
-       "v": "exhaust",
-       "w": "window"
+       "v": "run",
+       "w": "wall"
       }
      ],
      "shots": [
@@ -1458,7 +1791,7 @@
        "focus": [
         "ac"
        ],
-       "type": "mid"
+       "type": "wide"
       }
      ]
     },
@@ -1466,13 +1799,13 @@
      "s": "myth",
      "shows": {
       "p": "sheet",
-      "does": "a newspaper headline about comfort rises beside the unit"
+      "does": "a newspaper headline about cool air for comfort rises beside the unit"
      },
      "do": [
       {
        "p": "sheet",
        "v": "show",
-       "w": "And"
+       "w": "comfort"
       }
      ],
      "shots": [
@@ -1489,7 +1822,7 @@
      "s": "mythFact",
      "shows": {
       "p": "book",
-      "does": "a Carrier 1902 humidity book rises"
+      "does": "the newspaper sinks and a Carrier 1902 humidity book rises"
      },
      "do": [
       {
@@ -1521,11 +1854,6 @@
      },
      "do": [
       {
-       "p": "airArrows",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
        "p": "book",
        "v": "hide",
        "w": "Add"
@@ -1554,19 +1882,25 @@
      "shots": [
       {
        "focus": [
-        "home"
-       ]
+        "ac"
+       ],
+       "type": "wide"
       }
      ]
     },
     {
      "s": "congrats",
+     "shows": {
+      "p": "ac",
+      "does": "the finished unit hums, its fan turning"
+     },
      "do": [],
      "shots": [
       {
        "focus": [
-        "home"
-       ]
+        "ac"
+       ],
+       "type": "wide"
       }
      ]
     }

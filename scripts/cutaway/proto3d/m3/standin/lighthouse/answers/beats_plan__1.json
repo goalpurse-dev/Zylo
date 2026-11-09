@@ -1,18 +1,20 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A lighthouse built up at night: a fire on a striped tower blows out, a glass lantern room shelters it, a Fresnel lens turns its weak glow into sweeping beams, and a mercury bath lets the heavy lens turn. The camera stays close on the lantern at the top for each change and pulls back to the whole tower when the beams sweep.",
+  "why": "A lighthouse on its own coast at night: a rock cliff over the sea (terrain cliff and coast, a waterBody sea with waves), a tall striped tower on the cliff top. The fire, the glass room, the Fresnel lens and its beams, the grinding lens and its mercury bath all play close on the lantern; the how line pulls back to the beams sweeping over the waves, and the end shows the whole coast with stairs and rocks.",
   "story": {
-   "title": "How a Lighthouse Works",
+   "title": "Lighthouse",
    "hero": "a Fresnel lens",
    "parts": [
+    "cliff",
+    "sea",
     "tower",
     "fire",
-    "glass lantern room",
+    "glass room",
     "lens",
-    "beam",
+    "beams",
     "mercury bath",
     "stairs",
     "rocks"
@@ -20,7 +22,7 @@
    "ideas": [
     {
      "role": "hook",
-     "idea": "light a fire on top of a tall tower and you have a lighthouse"
+     "idea": "a fire on a tall tower on a cliff warns ships at night"
     },
     {
      "role": "problem",
@@ -28,67 +30,67 @@
     },
     {
      "role": "fix1",
-     "idea": "a glass room round the flame keeps the wind off"
+     "idea": "a glass room keeps the wind off the flame"
     },
     {
      "role": "problem2",
-     "idea": "the bare glow is weak and spreads every way, so it fades before it reaches far"
+     "idea": "the glow is weak and spreads every way"
     },
     {
      "role": "fix2",
-     "idea": "Augustin Fresnel's 1822 lens of glass rings bends the light into one strong beam"
+     "idea": "a lens from 1822 bends the glow into beams"
     },
     {
      "role": "name",
-     "idea": "the ringed glass is a Fresnel lens"
+     "idea": "this is a Fresnel lens"
     },
     {
      "role": "how",
-     "idea": "the lens turns, so the beam sweeps round and is seen as a flash about 20 miles out"
+     "idea": "the lens turns and the beam reaches about 20 miles out to sea"
     },
     {
      "role": "problem3",
-     "idea": "the heavy lens grinds and sticks as it turns"
+     "idea": "the heavy lens grinds as it turns"
     },
     {
      "role": "fix3",
-     "idea": "the lens floats on a bath of mercury, so it spins with a push"
+     "idea": "it floats on liquid mercury and spins easily"
     },
     {
      "role": "finish",
-     "idea": "stairs to the door and rocks round the base complete it"
+     "idea": "stairs to the door and rocks round the base"
     },
     {
      "role": "congrats",
-     "idea": "calm: the beam sweeps through the night"
+     "idea": "you have built a lighthouse"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "wind arrows blow across the top and the fire goes out",
-     "stakes": "ships see nothing and hit the rocks",
-     "size": 3
+     "shows": "wind arrows and the flame going out",
+     "stakes": "ships see nothing",
+     "size": 4
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the glow inside the glass is weak and spreads every way",
-     "stakes": "ships far out cannot see it",
-     "size": 5
+     "shows": "a weak glow fading in every direction",
+     "stakes": "ships far out miss it",
+     "size": 6
     },
     {
      "problem": "problem3",
      "causedBy": "fix2",
-     "shows": "the heavy turning lens shudders and sparks",
-     "stakes": "the beam stops sweeping and the light could break",
+     "shows": "the heavy lens shudders and sparks",
+     "stakes": "the beam stops sweeping",
      "size": 7
     }
    ],
    "surprises": [
     {
-     "claim": "Augustin Fresnel presented his lighthouse lens in 1822.",
+     "claim": "Augustin Fresnel invented his lighthouse lens in 1822.",
      "role": "fix2",
      "search": "Augustin Fresnel lens lighthouse 1822"
     },
@@ -123,7 +125,7 @@
    },
    {
     "role": "fix2",
-    "text": "So you add a lens, invented in 1822, that bends it into one beam."
+    "text": "So you add a lens, invented in 1822, that bends the glow into beams."
    },
    {
     "role": "name",
@@ -143,7 +145,7 @@
    },
    {
     "role": "finish",
-    "text": "Add stairs to the door and rocks to complete it."
+    "text": "Add stairs to the door and rocks around the base."
    },
    {
     "role": "congrats",
@@ -153,31 +155,28 @@
   "sceneJson": {
    "world": {
     "cut": [
-     -1.6,
-     1.6,
-     -4.6,
-     0.4
+     -12,
+     -11.4,
+     -0.5,
+     0.3
     ],
-    "house": [
-     -9,
-     0,
-     -14
-    ],
-    "porch": true,
+    "house": false,
+    "porch": false,
+    "worker": false,
+    "road": false,
+    "moreTrees": false,
+    "mood": "night",
     "trees": [
      [
       -14,
-      -12
+      -8
      ],
      [
-      12,
-      -10,
-      0.9
+      -19,
+      -12,
+      1.2
      ]
-    ],
-    "road": false,
-    "moreTrees": false,
-    "worker": false
+    ]
    },
    "parts": [
     {
@@ -188,8 +187,69 @@
      }
     },
     {
+     "id": "dig",
+     "kind": "dig",
+     "params": {
+      "clumps": 4,
+      "mound": {
+       "x": -11.7,
+       "z": -6,
+       "rx": 0.3,
+       "rz": 0.3,
+       "h": 0.08
+      }
+     }
+    },
+    {
+     "id": "land",
+     "kind": "terrain",
+     "params": {
+      "blocks": [
+       {
+        "type": "cliff",
+        "at": 1,
+        "top": 5,
+        "bottom": 0,
+        "high": "left",
+        "face": "rock"
+       },
+       {
+        "type": "coast",
+        "at": 3,
+        "sea": "right",
+        "beach": 4,
+        "depth": 8
+       }
+      ],
+      "trees": [
+       [
+        -14,
+        -8,
+        1
+       ],
+       [
+        -19,
+        -12,
+        1.2
+       ]
+      ]
+     }
+    },
+    {
+     "id": "sea",
+     "kind": "waterBody",
+     "params": {
+      "body": "sea",
+      "x0": 2,
+      "x1": 24,
+      "level": -0.6,
+      "waves": true
+     }
+    },
+    {
      "id": "lighthouse",
      "kind": "rig",
+     "main": true,
      "params": {
       "name": "lighthouse",
       "synonyms": [
@@ -199,13 +259,13 @@
        "lens"
       ],
       "pos": [
+       -2.2,
        0,
-       0,
-       -3
+       -5
       ],
       "nodes": [
        {
-        "id": "tower",
+        "id": "footing",
         "at": [
          0,
          0,
@@ -213,13 +273,54 @@
         ],
         "shapes": [
          {
+          "shape": "box",
+          "size": [
+           2.4,
+           5,
+           2.4
+          ],
+          "at": [
+           0,
+           2.5,
+           0
+          ],
+          "look": "concrete",
+          "color": "#8a8378"
+         }
+        ]
+       },
+       {
+        "id": "tower",
+        "parent": "footing",
+        "at": [
+         0,
+         5,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           3.4,
+           1,
+           3.4
+          ],
+          "at": [
+           0,
+           0.5,
+           0
+          ],
+          "look": "concrete",
+          "color": "#9c968c"
+         },
+         {
           "shape": "cylinder",
           "r": 1.3,
           "h": 2,
           "axis": "y",
           "at": [
            0,
-           1,
+           2,
            0
           ],
           "look": "paint",
@@ -232,7 +333,7 @@
           "axis": "y",
           "at": [
            0,
-           2.75,
+           3.75,
            0
           ],
           "look": "paint",
@@ -245,7 +346,7 @@
           "axis": "y",
           "at": [
            0,
-           4.5,
+           5.5,
            0
           ],
           "look": "paint",
@@ -258,7 +359,7 @@
           "axis": "y",
           "at": [
            0,
-           6.25,
+           7.25,
            0
           ],
           "look": "paint",
@@ -271,7 +372,7 @@
           "axis": "y",
           "at": [
            0,
-           7.6,
+           8.6,
            0
           ],
           "look": "paint",
@@ -284,7 +385,7 @@
           "axis": "y",
           "at": [
            0,
-           8.3,
+           9.3,
            0
           ],
           "look": "metal",
@@ -299,7 +400,7 @@
           ],
           "at": [
            0,
-           0.8,
+           1.8,
            1.3
           ],
           "look": "wood",
@@ -312,27 +413,27 @@
         "parent": "tower",
         "at": [
          0,
-         8.4,
+         9.4,
          0
         ],
         "shapes": [
          {
           "shape": "flame",
-          "r": 0.3,
-          "h": 0.7,
+          "r": 0.6,
+          "h": 1.5,
           "color": "#ffb020",
           "at": [
            0,
-           0.2,
+           0.25,
            0
           ]
          },
          {
           "shape": "box",
           "size": [
-           0.5,
+           0.55,
            0.15,
-           0.5
+           0.55
           ],
           "at": [
            0,
@@ -351,45 +452,56 @@
         ]
        },
        {
-        "id": "mercury",
+        "id": "bath",
         "parent": "tower",
         "at": [
          0,
-         8.4,
+         9.4,
          0
         ],
         "shapes": [
          {
           "shape": "torus",
-          "r": 0.85,
-          "tube": 0.09,
+          "r": 0.95,
+          "tube": 0.13,
           "axis": "y",
           "at": [
            0,
-           0.1,
+           0.12,
            0
           ],
           "look": "metal",
-          "color": "#6b7480"
+          "color": "#454b52"
+         }
+        ]
+       },
+       {
+        "id": "pool",
+        "parent": "bath",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.9,
+          "h": 0.24,
+          "axis": "y",
+          "at": [
+           0,
+           0.12,
+           0
+          ],
+          "look": "metal",
+          "color": "#eef2f7"
          }
         ],
         "moves": [
          {
           "name": "mercury",
-          "type": "fill",
-          "box": {
-           "size": [
-            1.9,
-            0.3,
-            1.9
-           ],
-           "at": [
-            0,
-            0.15,
-            0
-           ],
-           "color": "#e8ecf2"
-          }
+          "type": "appear"
          }
         ]
        },
@@ -398,14 +510,14 @@
         "parent": "tower",
         "at": [
          0,
-         8.4,
+         9.4,
          0
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 0.6,
-          "h": 1.3,
+          "r": 0.72,
+          "h": 1.4,
           "axis": "y",
           "at": [
            0,
@@ -413,59 +525,82 @@
            0
           ],
           "look": "glass",
-          "color": "#bfe6ff"
+          "color": "#d6f0ff"
          },
          {
           "shape": "torus",
-          "r": 0.62,
-          "tube": 0.05,
+          "r": 0.74,
+          "tube": 0.06,
           "axis": "y",
           "at": [
            0,
-           0.45,
+           0.35,
            0
           ],
           "look": "glass",
-          "color": "#d8f0ff"
+          "color": "#ffe7a0"
          },
          {
           "shape": "torus",
-          "r": 0.62,
-          "tube": 0.05,
+          "r": 0.74,
+          "tube": 0.06,
           "axis": "y",
           "at": [
            0,
-           0.75,
+           0.6,
            0
           ],
           "look": "glass",
-          "color": "#d8f0ff"
+          "color": "#ffe7a0"
          },
          {
           "shape": "torus",
-          "r": 0.62,
-          "tube": 0.05,
+          "r": 0.74,
+          "tube": 0.06,
           "axis": "y",
           "at": [
            0,
-           1.05,
+           0.85,
            0
           ],
           "look": "glass",
-          "color": "#d8f0ff"
+          "color": "#ffe7a0"
          },
          {
           "shape": "torus",
-          "r": 0.62,
-          "tube": 0.05,
+          "r": 0.74,
+          "tube": 0.06,
           "axis": "y",
           "at": [
            0,
-           1.3499999999999999,
+           1.1,
            0
           ],
           "look": "glass",
-          "color": "#d8f0ff"
+          "color": "#ffe7a0"
+         },
+         {
+          "shape": "torus",
+          "r": 0.74,
+          "tube": 0.06,
+          "axis": "y",
+          "at": [
+           0,
+           1.35,
+           0
+          ],
+          "look": "glass",
+          "color": "#ffe7a0"
+         },
+         {
+          "shape": "light",
+          "r": 0.3,
+          "at": [
+           0,
+           0.85,
+           0
+          ],
+          "color": "#fff3c0"
          }
         ],
         "moves": [
@@ -482,8 +617,12 @@
          {
           "name": "grinds",
           "type": "shake",
-          "amp": 0.06,
+          "amp": 0.12,
           "rate": 14
+         },
+         {
+          "name": "shine",
+          "type": "light"
          }
         ]
        },
@@ -492,45 +631,45 @@
         "parent": "lens",
         "at": [
          0,
-         0.75,
+         0.85,
          0
         ],
         "shapes": [
          {
           "shape": "beam",
           "from": [
-           0.6,
+           0.75,
            0,
            0
           ],
           "to": [
-           8,
+           10,
            0,
            0
           ],
-          "r": 0.4,
+          "r": 0.5,
           "color": "#fffbe6"
          },
          {
           "shape": "beam",
           "from": [
-           -0.6,
+           -0.75,
            0,
            0
           ],
           "to": [
-           -8,
+           -5,
            0,
            0
           ],
-          "r": 0.4,
+          "r": 0.5,
           "color": "#fffbe6"
          }
         ],
         "moves": [
          {
-          "name": "beam",
-          "type": "appear"
+          "name": "beams",
+          "type": "light"
          }
         ]
        },
@@ -539,18 +678,18 @@
         "parent": "tower",
         "at": [
          0,
-         8.4,
+         9.4,
          0
         ],
         "shapes": [
          {
           "shape": "cylinder",
-          "r": 1,
-          "h": 1.8,
+          "r": 1.05,
+          "h": 1.9,
           "axis": "y",
           "at": [
            0,
-           0.9,
+           0.95,
            0
           ],
           "look": "glass",
@@ -558,13 +697,13 @@
          },
          {
           "shape": "cone",
-          "r": 1.25,
+          "r": 1.3,
           "r2": 0.08,
           "h": 0.9,
           "axis": "y",
           "at": [
            0,
-           2.25,
+           2.35,
            0
           ],
           "look": "paint",
@@ -574,6 +713,192 @@
         "moves": [
          {
           "name": "glass",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "rocks",
+        "parent": "tower",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "sphere",
+          "r": 0.75,
+          "at": [
+           2.6,
+           0.3,
+           0
+          ],
+          "look": "concrete",
+          "color": "#8d8a82"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.6,
+          "at": [
+           1.76,
+           0.3,
+           -1.48
+          ],
+          "look": "concrete",
+          "color": "#a7a39a"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.85,
+          "at": [
+           -1.92,
+           0.3,
+           -1.61
+          ],
+          "look": "concrete",
+          "color": "#76736c"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.7,
+          "at": [
+           -2.7,
+           0.3,
+           0
+          ],
+          "look": "concrete",
+          "color": "#8d8a82"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.65,
+          "at": [
+           -1.84,
+           0.3,
+           1.54
+          ],
+          "look": "concrete",
+          "color": "#a7a39a"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.8,
+          "at": [
+           1.77,
+           0.3,
+           1.77
+          ],
+          "look": "concrete",
+          "color": "#76736c"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.6,
+          "at": [
+           2.36,
+           0.3,
+           1.1
+          ],
+          "look": "concrete",
+          "color": "#8d8a82"
+         }
+        ],
+        "moves": [
+         {
+          "name": "rocks",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "stairs",
+        "parent": "tower",
+        "at": [
+         0,
+         0,
+         1.7
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           1.3,
+           1,
+           0.28
+          ],
+          "at": [
+           0,
+           0.5,
+           0.14
+          ],
+          "look": "concrete",
+          "color": "#b9906a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.3,
+           0.8,
+           0.28
+          ],
+          "at": [
+           0,
+           0.4,
+           0.41
+          ],
+          "look": "concrete",
+          "color": "#b9906a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.3,
+           0.6,
+           0.28
+          ],
+          "at": [
+           0,
+           0.3,
+           0.68
+          ],
+          "look": "concrete",
+          "color": "#b9906a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.3,
+           0.4,
+           0.28
+          ],
+          "at": [
+           0,
+           0.2,
+           0.95
+          ],
+          "look": "concrete",
+          "color": "#b9906a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.3,
+           0.2,
+           0.28
+          ],
+          "at": [
+           0,
+           0.1,
+           1.22
+          ],
+          "look": "concrete",
+          "color": "#b9906a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "stairs",
           "type": "appear"
          }
         ]
@@ -588,46 +913,46 @@
       "list": [
        {
         "at": [
-         -2.6,
-         8.8,
-         -1.2
+         -5.2,
+         14.8,
+         -2.95
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 1.2,
+        "travel": 1.4,
         "phase": 0
        },
        {
         "at": [
-         -2.6,
-         9.6,
-         -1.2
+         -5.2,
+         15.5,
+         -2.95
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 1.2,
-        "phase": 0.4
+        "travel": 1.4,
+        "phase": 0.33
        },
        {
         "at": [
-         -2.6,
-         10.4,
-         -1.2
+         -5.2,
+         16.2,
+         -2.95
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 1.2,
-        "phase": 0.7
+        "travel": 1.4,
+        "phase": 0.66
        }
       ],
       "opts": {
-       "scale": 1.2,
+       "scale": 1.3,
        "color": "#ffffff"
       }
      }
@@ -639,9 +964,9 @@
       "list": [
        {
         "at": [
-         1.4,
-         8.9,
-         -1.5
+         -0.6000000000000001,
+         15.3,
+         -2.95
         ],
         "dir": [
          1,
@@ -652,9 +977,9 @@
        },
        {
         "at": [
-         -1.4,
-         8.9,
-         -1.5
+         -3.8000000000000003,
+         15.3,
+         -2.95
         ],
         "dir": [
          -1,
@@ -665,9 +990,9 @@
        },
        {
         "at": [
-         0,
-         10.2,
-         -1.5
+         -2.2,
+         16.6,
+         -2.95
         ],
         "dir": [
          0,
@@ -678,9 +1003,9 @@
        },
        {
         "at": [
-         1.1,
-         9.9,
-         -1.5
+         -0.9000000000000001,
+         16.3,
+         -2.95
         ],
         "dir": [
          1,
@@ -691,7 +1016,7 @@
        }
       ],
       "opts": {
-       "scale": 0.8,
+       "scale": 0.9,
        "color": "#ff8a2a"
       }
      }
@@ -702,48 +1027,45 @@
      "params": {
       "type": "spark",
       "at": [
-       0.6,
-       8.6,
-       -1.9
+       -1.6,
+       14.700000000000001,
+       -3.05
       ],
-      "size": 0.5
+      "size": 2.4
      }
     },
     {
      "id": "lensOutline",
      "kind": "outline",
      "params": {
-      "of": "lighthouse.lantern"
-     }
-    },
-    {
-     "id": "steps",
-     "kind": "prop",
-     "params": {
-      "type": "stairs",
-      "h": 0.6,
-      "w": 1.2,
-      "pos": [
-       -1.4,
-       0,
-       -1.2
-      ]
-     }
-    },
-    {
-     "id": "rocks",
-     "kind": "prop",
-     "params": {
-      "type": "rocks",
-      "size": [
-       4.4,
-       4.4
+      "of": "lensRing",
+      "points": [
+       [
+        -3.0500000000000003,
+        14.450000000000001,
+        -3.7
+       ],
+       [
+        -3.0500000000000003,
+        16.45,
+        -3.7
+       ],
+       [
+        -0.6500000000000001,
+        16.45,
+        -3.7
+       ],
+       [
+        -0.6500000000000001,
+        14.450000000000001,
+        -3.7
+       ]
       ],
-      "pos": [
-       0,
-       0,
-       -3
-      ]
+      "opts": {
+       "closed": true,
+       "r": 0.07,
+       "over": true
+      }
      }
     },
     {
@@ -751,11 +1073,11 @@
      "kind": "sign",
      "params": {
       "at": [
-       7,
-       0,
+       -15,
+       5,
        -6
       ],
-      "rotY": -0.2,
+      "rotY": 0.2,
       "scale": 1.3
      }
     }
@@ -765,12 +1087,12 @@
      "s": "hook",
      "shows": {
       "p": "lighthouse",
-      "does": "a tall striped tower stands with a fire burning on top at night"
+      "does": "a tall striped tower on a cliff over the night sea, a big fire lit on its top"
      },
      "do": [
       {
-       "p": "light",
-       "v": "night",
+       "p": "dig",
+       "v": "dig",
        "w": "",
        "o": 0,
        "d": 0,
@@ -780,7 +1102,7 @@
       {
        "p": "lighthouse",
        "v": "show",
-       "w": "tower",
+       "w": "",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -799,7 +1121,7 @@
      "shots": [
       {
        "focus": [
-        "lighthouse"
+        "lighthouse.tower"
        ],
        "view": "home",
        "width": 0,
@@ -821,15 +1143,6 @@
       "w": "out"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "wind",
        "v": "show",
@@ -870,15 +1183,6 @@
       "does": "a glass lantern room with a red roof closes round the flame, which lights again"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "wind",
        "v": "hide",
@@ -925,7 +1229,7 @@
      "s": "problem2",
      "shows": {
       "p": "glow",
-      "does": "short orange arrows show the weak glow spreading every way and fading"
+      "does": "short orange arrows show the weak glow spreading every way"
      },
      "state": {
       "text": "TOO DIM",
@@ -933,18 +1237,9 @@
      },
      "do": [
       {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
        "p": "glow",
        "v": "show",
-       "w": "weak",
+       "w": "glow",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -969,18 +1264,9 @@
      "s": "fix2",
      "shows": {
       "p": "lighthouse",
-      "does": "a ringed glass lens appears round the flame and throws two long bright beams"
+      "does": "a ringed glass lens appears round the flame and throws long bright beams over the sea"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "glow",
        "v": "hide",
@@ -1001,8 +1287,17 @@
       },
       {
        "p": "lighthouse",
-       "v": "beam",
-       "w": "beam",
+       "v": "shine",
+       "w": "lens",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lighthouse",
+       "v": "beams",
+       "w": "beams",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1012,11 +1307,11 @@
      "shots": [
       {
        "focus": [
-        "lighthouse"
+        "lighthouse.lantern"
        ],
        "view": "home",
-       "width": 0.95,
-       "type": "",
+       "width": 0,
+       "type": "mid",
        "hero": false,
        "word": "",
        "box": []
@@ -1027,18 +1322,9 @@
      "s": "name",
      "shows": {
       "p": "lensOutline",
-      "does": "outline traces the lens"
+      "does": "an outline glows round the lantern and its lens"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "lensOutline",
        "v": "show",
@@ -1067,18 +1353,9 @@
      "s": "how",
      "shows": {
       "p": "lighthouse",
-      "does": "the lens turns and the beams sweep round"
+      "does": "the lens turns and its beams sweep out over the waves"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "lensOutline",
        "v": "hide",
@@ -1096,16 +1373,26 @@
        "d": 0,
        "amp": 1,
        "ch": ""
+      },
+      {
+       "p": "sea",
+       "v": "flow",
+       "w": "sea",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
       }
      ],
      "shots": [
       {
        "focus": [
-        "lighthouse"
+        "lighthouse",
+        "sea"
        ],
        "view": "home",
-       "width": 0.95,
-       "type": "",
+       "width": 0,
+       "type": "wide",
        "hero": false,
        "word": "",
        "box": []
@@ -1124,9 +1411,9 @@
      },
      "do": [
       {
-       "p": "light",
-       "v": "night",
-       "w": "",
+       "p": "lighthouse",
+       "v": "turnsBack",
+       "w": "But",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1134,7 +1421,7 @@
       },
       {
        "p": "lighthouse",
-       "v": "turnsBack",
+       "v": "beamsBack",
        "w": "But",
        "o": 0,
        "d": 0,
@@ -1153,7 +1440,7 @@
       {
        "p": "grindFx",
        "v": "start",
-       "w": "grinds",
+       "w": "turns",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1178,18 +1465,9 @@
      "s": "fix3",
      "shows": {
       "p": "lighthouse",
-      "does": "a silver mercury bath fills under the lens and it turns smoothly again"
+      "does": "a shiny silver mercury bath appears under the lens and it spins smoothly again"
      },
      "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "grindFx",
        "v": "stop",
@@ -1219,6 +1497,15 @@
       },
       {
        "p": "lighthouse",
+       "v": "beams",
+       "w": "spins",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "lighthouse",
        "v": "turns",
        "w": "spins",
        "o": 0,
@@ -1238,38 +1525,40 @@
        "hero": false,
        "word": "",
        "box": []
+      },
+      {
+       "focus": [
+        "lighthouse.tower"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "spins",
+       "box": []
       }
      ]
     },
     {
      "s": "finish",
      "shows": {
-      "p": "steps",
-      "does": "stairs to the door and rocks round the base appear"
+      "p": "lighthouse",
+      "does": "stairs up to the door and big rocks round the base appear"
      },
      "do": [
       {
-       "p": "light",
-       "v": "night",
-       "w": "",
+       "p": "lighthouse",
+       "v": "stairs",
+       "w": "stairs",
        "o": 0,
        "d": 0,
        "amp": 1,
        "ch": ""
       },
       {
-       "p": "steps",
-       "v": "show",
-       "w": "door",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "rocks",
-       "v": "show",
-       "w": "complete",
+       "p": "lighthouse",
+       "v": "rocks",
+       "w": "rocks",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1279,8 +1568,7 @@
      "shots": [
       {
        "focus": [
-        "lighthouse",
-        "steps"
+        "lighthouse.tower"
        ],
        "view": "home",
        "width": 0,
@@ -1295,27 +1583,17 @@
      "s": "congrats",
      "shows": {
       "p": "lighthouse",
-      "does": "the finished lighthouse sweeps its beam through the night"
+      "does": "the finished lighthouse sweeps its beams over the night sea"
      },
-     "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
+     "do": [],
      "shots": [
       {
        "focus": [
-        "lighthouse"
+        "home"
        ],
        "view": "home",
        "width": 0,
-       "type": "mid",
+       "type": "",
        "hero": false,
        "word": "",
        "box": []
@@ -1364,24 +1642,33 @@
       "d": 1
      },
      {
-      "lib": "motor_hum",
+      "lib": "water_rush",
       "at": {
        "s": "how",
-       "w": "turns",
+       "w": "sea",
        "o": 0
       },
-      "d": 1.5
+      "d": 1.4
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "fix3",
+       "w": "spins",
+       "o": 0
+      },
+      "d": 1.3
      }
     ],
     "chimes": [
      {
-      "s": "name",
-      "w": "",
+      "s": "fix2",
+      "w": "1822",
       "o": 0
      },
      {
-      "s": "fix2",
-      "w": "1822",
+      "s": "name",
+      "w": "",
       "o": 0
      },
      {

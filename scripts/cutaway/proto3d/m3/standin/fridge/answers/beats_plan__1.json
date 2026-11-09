@@ -1,9 +1,9 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-09)",
  "searches": 0,
  "data": {
-  "why": "A fridge cut open in the middle of a kitchen: it starts as an icebox (food and a block of ice), the ice melts, a frosting coil replaces it, the coil runs out, and a compressor with coils underneath closes the loop. The camera opens close on the ice and the food, stays mid on the fridge and its parts for the chain, and ends on the home view with the compressor humming and the door open.",
+  "why": "A fridge in a kitchen, cut open with its working parts in front: food and a block of ice on one shelf, then a frosting coil on the back wall, a compressor and hot coils in the bottom compartment, a display at the top that counts the temperature. Every shot stays on the fridge; the opening is close on the food and ice.",
   "story": {
    "title": "How a fridge works",
    "hero": "a refrigerator",
@@ -25,15 +25,15 @@
     },
     {
      "role": "problem",
-     "idea": "the ice melts and drips onto the food"
+     "idea": "the ice melts and its water pools round the food"
     },
     {
      "role": "fix1",
-     "idea": "replace the ice with a coil of liquid that boils at minus 26 degrees, so the coil frosts over"
+     "idea": "a coil of liquid that boils at minus 26 degrees frosts over and keeps the box cold"
     },
     {
      "role": "problem2",
-     "idea": "once the liquid has boiled away the frost melts and the box warms up again"
+     "idea": "once the liquid has boiled away the frost melts and the box warms up to 15 degrees"
     },
     {
      "role": "fix2",
@@ -49,7 +49,7 @@
     },
     {
      "role": "fact",
-     "idea": "inside it holds your food at 4 degrees, where germs grow slowly"
+     "idea": "inside it holds your food at 4 degrees"
     },
     {
      "role": "myth",
@@ -57,7 +57,7 @@
     },
     {
      "role": "mythFact",
-     "idea": "a fridge only moves heat out of the box"
+     "idea": "a fridge only moves heat out of the box to the coils"
     },
     {
      "role": "finish",
@@ -65,21 +65,21 @@
     },
     {
      "role": "congrats",
-     "idea": "calm end: the fridge hums with its door open and its light on"
+     "idea": "calm end: the finished fridge with its light on"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "the ice block shrinks and water drips onto the food",
-     "stakes": "the food gets wet and warm",
+     "shows": "the ice block shrinks and its water pools round the food",
+     "stakes": "the food sits in water and warms",
      "size": 3
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the frost on the coil melts away and a thermometer climbs to 15 degrees",
+     "shows": "the frost melts off the coil and the display climbs to 15",
      "stakes": "the food spoils",
      "size": 6
     }
@@ -109,7 +109,7 @@
    },
    {
     "role": "problem",
-    "text": "But the ice melts and drips onto the food."
+    "text": "But the ice melts, and water pools round the food."
    },
    {
     "role": "fix1",
@@ -191,6 +191,7 @@
     {
      "id": "fridge",
      "kind": "rig",
+     "main": true,
      "params": {
       "name": "refrigerator",
       "synonyms": [
@@ -198,13 +199,12 @@
        "icebox",
        "refrigerator"
       ],
-      "main": true,
       "pos": [
        0,
        0.12,
        -1.8
       ],
-      "scale": 1.3,
+      "scale": 1.6,
       "nodes": [
        {
         "id": "body",
@@ -242,7 +242,7 @@
            -0.33
           ],
           "look": "paint",
-          "color": "#eef1f4"
+          "color": "#cddbe6"
          },
          {
           "shape": "box",
@@ -257,7 +257,7 @@
            0
           ],
           "look": "paint",
-          "color": "#e3e8ed"
+          "color": "#dfe5ea"
          },
          {
           "shape": "box",
@@ -272,7 +272,7 @@
            0
           ],
           "look": "paint",
-          "color": "#e3e8ed"
+          "color": "#dfe5ea"
          },
          {
           "shape": "box",
@@ -298,7 +298,7 @@
           ],
           "at": [
            0,
-           0.52,
+           0.62,
            0
           ],
           "look": "plastic",
@@ -307,17 +307,36 @@
          {
           "shape": "box",
           "size": [
-           0.72,
-           0.02,
-           0.62
+           0.8,
+           0.13,
+           0.05
           ],
           "at": [
            0,
-           1.38,
-           0
+           1.695,
+           0.33
           ],
-          "look": "metal",
-          "color": "#b9c3cc"
+          "look": "plastic",
+          "color": "#2c3238"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pool",
+          "type": "fill",
+          "box": {
+           "size": [
+            0.66,
+            0.03,
+            0.56
+           ],
+           "at": [
+            0,
+            0.655,
+            0.02
+           ],
+           "color": "#4fb0ec"
+          }
          }
         ]
        },
@@ -326,21 +345,21 @@
         "parent": "body",
         "at": [
          0,
-         0.54,
-         0
+         0.64,
+         0.28
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.12,
-           0.26,
-           0.12
+           0.13,
+           0.3,
+           0.13
           ],
           "at": [
-           -0.22,
-           0.13,
-           0.1
+           -0.26,
+           0.15,
+           0
           ],
           "look": "paint",
           "color": "#f4f6ff"
@@ -348,25 +367,40 @@
          {
           "shape": "box",
           "size": [
-           0.18,
+           0.135,
            0.08,
+           0.135
+          ],
+          "at": [
+           -0.26,
+           0.2,
+           0
+          ],
+          "look": "paint",
+          "color": "#3d7fd6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.16,
+           0.09,
            0.13
           ],
           "at": [
-           0.02,
-           0.04,
-           0.12
+           -0.08,
+           0.045,
+           0.02
           ],
           "look": "paint",
           "color": "#f2c53d"
          },
          {
           "shape": "sphere",
-          "r": 0.06,
+          "r": 0.065,
           "at": [
-           0.2,
-           0.06,
-           0.12
+           0.02,
+           0.065,
+           0.06
           ],
           "look": "paint",
           "color": "#d8342b"
@@ -375,31 +409,27 @@
           "shape": "sphere",
           "r": 0.06,
           "at": [
-           0.27,
+           -0.03,
            0.06,
-           0.02
+           -0.08
           ],
           "look": "paint",
           "color": "#7cc242"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.06,
-          "h": 0.16,
-          "axis": "y",
-          "at": [
-           -0.05,
-           0.08,
-           -0.12
-          ],
-          "look": "glass",
-          "color": "#e0703a"
          }
         ],
         "moves": [
          {
           "name": "foodIn",
           "type": "appear"
+         },
+         {
+          "name": "put",
+          "type": "slide",
+          "to": [
+           0,
+           0,
+           -0.26
+          ]
          }
         ]
        },
@@ -407,25 +437,55 @@
         "id": "ice",
         "parent": "body",
         "at": [
-         0,
-         1.39,
-         0.02
+         0.2,
+         0.64,
+         0.28
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.5,
-           0.34,
-           0.44
+           0.32,
+           0.32,
+           0.3
           ],
           "at": [
            0,
-           0.17,
+           0.16,
            0
           ],
-          "look": "glass",
-          "color": "#bfe6ff"
+          "look": "plastic",
+          "color": "#8fd3ff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.28,
+           0.03,
+           0.26
+          ],
+          "at": [
+           0,
+           0.325,
+           0
+          ],
+          "look": "paint",
+          "color": "#f2fbff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.26,
+           0.02
+          ],
+          "at": [
+           -0.1,
+           0.17,
+           0.155
+          ],
+          "look": "paint",
+          "color": "#e8f8ff"
          }
         ],
         "moves": [
@@ -434,10 +494,19 @@
           "type": "appear"
          },
          {
+          "name": "put",
+          "type": "slide",
+          "to": [
+           0,
+           0,
+           -0.26
+          ]
+         },
+         {
           "name": "melt",
           "type": "extend",
           "axis": "y",
-          "k": 0.12
+          "k": 0.15
          }
         ]
        },
@@ -446,13 +515,13 @@
         "parent": "body",
         "at": [
          0,
-         0.95,
+         0.98,
          -0.29
         ],
         "shapes": [
          {
           "shape": "tube",
-          "r": 0.028,
+          "r": 0.03,
           "path": [
            [
             -0.3,
@@ -466,47 +535,57 @@
            ],
            [
             0.3,
-            0.1,
+            0.11,
             0
            ],
            [
             -0.3,
-            0.1,
+            0.11,
             0
            ],
            [
             -0.3,
-            0.2,
+            0.22,
             0
            ],
            [
             0.3,
-            0.2,
+            0.22,
             0
            ],
            [
             0.3,
-            0.3,
-            0
-           ],
-           [
-            -0.3,
-            0.3,
+            0.33,
             0
            ],
            [
             -0.3,
-            0.4,
+            0.33,
+            0
+           ],
+           [
+            -0.3,
+            0.44,
             0
            ],
            [
             0.3,
-            0.4,
+            0.44,
+            0
+           ],
+           [
+            0.3,
+            0.55,
+            0
+           ],
+           [
+            -0.3,
+            0.55,
             0
            ]
           ],
           "look": "metal",
-          "color": "#9aa7b3"
+          "color": "#6f7c88"
          }
         ],
         "moves": [
@@ -517,7 +596,69 @@
          {
           "name": "frost",
           "type": "chill",
-          "color": "#dff4ff"
+          "color": "#eaf8ff"
+         }
+        ]
+       },
+       {
+        "id": "tUp",
+        "parent": "body",
+        "at": [
+         0.2,
+         1.695,
+         0.36
+        ],
+        "shapes": [
+         {
+          "shape": "screen",
+          "size": [
+           0.3,
+           0.11
+          ],
+          "color": "#ff8a2a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "tUpIn",
+          "type": "appear"
+         },
+         {
+          "name": "warm",
+          "type": "count",
+          "from": 4,
+          "to": 15
+         }
+        ]
+       },
+       {
+        "id": "tDown",
+        "parent": "body",
+        "at": [
+         0.2,
+         1.695,
+         0.365
+        ],
+        "shapes": [
+         {
+          "shape": "screen",
+          "size": [
+           0.3,
+           0.11
+          ],
+          "color": "#5ab4ff"
+         }
+        ],
+        "moves": [
+         {
+          "name": "tDownIn",
+          "type": "appear"
+         },
+         {
+          "name": "cool",
+          "type": "count",
+          "from": 15,
+          "to": 4
          }
         ]
        },
@@ -577,62 +718,62 @@
         "parent": "body",
         "at": [
          0.12,
-         0.08,
-         0.2
+         0.1,
+         0.18
         ],
         "shapes": [
          {
           "shape": "tube",
-          "r": 0.02,
+          "r": 0.022,
           "path": [
            [
-            -0.08,
+            -0.06,
             0,
             0
            ],
            [
-            0.2,
+            0.22,
             0,
             0
            ],
            [
-            0.2,
-            0.08,
+            0.22,
+            0.09,
             0
            ],
            [
-            -0.08,
-            0.08,
+            -0.06,
+            0.09,
             0
            ],
            [
-            -0.08,
-            0.16,
+            -0.06,
+            0.18,
             0
            ],
            [
-            0.2,
-            0.16,
+            0.22,
+            0.18,
             0
            ],
            [
-            0.2,
-            0.24,
+            0.22,
+            0.27,
             0
            ],
            [
-            -0.08,
-            0.24,
+            -0.06,
+            0.27,
             0
            ],
            [
-            -0.08,
-            0.32,
+            -0.06,
+            0.36,
             0
            ],
            [
-            0.2,
-            0.32,
+            0.22,
+            0.36,
             0
            ]
           ],
@@ -672,22 +813,22 @@
            ],
            [
             -0.18,
-            0.46,
+            0.5,
             -0.25
            ],
            [
             -0.33,
-            0.46,
+            0.5,
             -0.27
            ],
            [
             -0.33,
-            0.95,
+            0.98,
             -0.29
            ],
            [
             -0.3,
-            0.95,
+            0.98,
             -0.29
            ]
           ],
@@ -699,24 +840,34 @@
           "r": 0.022,
           "path": [
            [
-            0.3,
-            1.35,
+            -0.3,
+            1.53,
             -0.29
            ],
            [
-            0.33,
-            1.35,
+            -0.34,
+            1.53,
             -0.29
            ],
            [
-            0.33,
-            0.46,
-            -0.27
+            -0.34,
+            1.53,
+            -0.2
            ],
            [
-            0.33,
-            0.42,
-            0.2
+            0.34,
+            1.53,
+            -0.2
+           ],
+           [
+            0.34,
+            0.5,
+            -0.2
+           ],
+           [
+            0.34,
+            0.5,
+            0.18
            ]
           ],
           "look": "metal",
@@ -740,43 +891,43 @@
            ],
            [
             -0.18,
-            0.46,
+            0.5,
             -0.25
            ],
            [
             -0.33,
-            0.46,
+            0.5,
             -0.27
            ],
            [
             -0.33,
-            0.95,
+            0.98,
             -0.29
            ],
            [
             0.3,
-            0.95,
+            0.98,
             -0.29
            ],
            [
             0.3,
-            1.35,
+            1.53,
             -0.29
            ],
            [
-            0.33,
-            1.35,
-            -0.29
+            0.34,
+            1.53,
+            -0.2
            ],
            [
-            0.33,
-            0.46,
-            -0.27
+            0.34,
+            0.5,
+            -0.2
            ],
            [
-            0.33,
-            0.42,
-            0.2
+            0.34,
+            0.5,
+            0.18
            ]
           ]
          }
@@ -796,12 +947,12 @@
           "size": [
            0.72,
            0.02,
-           0.6
+           0.56
           ],
           "at": [
            0,
-           0.8,
-           0.02
+           1.2,
+           0.05
           ],
           "look": "glass",
           "color": "#dff0ff"
@@ -809,14 +960,14 @@
          {
           "shape": "box",
           "size": [
-           0.18,
+           0.2,
            0.12,
            0.12
           ],
           "at": [
-           0.15,
-           0.87,
-           0.1
+           0.12,
+           1.27,
+           0.12
           ],
           "look": "paint",
           "color": "#3d6fb0"
@@ -834,7 +985,7 @@
         "parent": "body",
         "at": [
          0,
-         1.72,
+         1.58,
          0.05
         ],
         "shapes": [
@@ -862,7 +1013,7 @@
         "at": [
          0,
          0,
-         0.37
+         0.375
         ],
         "shapes": [
          {
@@ -929,12 +1080,12 @@
           "shape": "panel",
           "size": [
            0.7,
-           1.7
+           1.5
           ],
           "thick": 0.02,
           "at": [
            0,
-           0.9,
+           0.85,
            0
           ],
           "look": "glass",
@@ -949,7 +1100,7 @@
           ],
           "at": [
            0.3,
-           1.1,
+           1,
            0.04
           ],
           "look": "metal",
@@ -967,46 +1118,27 @@
      }
     },
     {
-     "id": "tempUp",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2,
-       1.5,
-       -1.5
-      ],
-      "size": 0.45,
-      "from": 4,
-      "to": 15,
-      "color": "#ff8a2a",
-      "bar": true
-     }
-    },
-    {
-     "id": "tempDown",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2,
-       1.5,
-       -1.5
-      ],
-      "size": 0.45,
-      "from": 15,
-      "to": 4,
-      "color": "#5ab4ff",
-      "bar": true
-     }
-    },
-    {
      "id": "drip",
      "kind": "fx",
      "params": {
       "type": "drip",
       "at": [
+       0.32,
+       1.496,
+       -1.48
+      ],
+      "size": 0.35
+     }
+    },
+    {
+     "id": "coilDrip",
+     "kind": "fx",
+     "params": {
+      "type": "drip",
+      "at": [
        0,
-       1.95,
-       -1.4
+       1.96,
+       -2.04
       ],
       "size": 0.5
      }
@@ -1018,33 +1150,33 @@
       "list": [
        {
         "at": [
-         0.75,
-         0.35,
-         -1.3
+         0.85,
+         0.45,
+         -1.5
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 0.8,
+        "travel": 0.6,
         "phase": 0
        },
        {
         "at": [
-         0.75,
-         0.6,
-         -1.3
+         0.85,
+         0.85,
+         -1.5
         ],
         "dir": [
          1,
-         0.5
+         0.3
         ],
-        "travel": 0.8,
+        "travel": 0.6,
         "phase": 0.5
        }
       ],
       "opts": {
-       "scale": 0.7,
+       "scale": 0.6,
        "color": "#ff8a2a"
       }
      }
@@ -1056,33 +1188,33 @@
       "list": [
        {
         "at": [
-         0.1,
-         1.3,
+         0.05,
+         2.15,
          -1.3
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 0.9,
+        "travel": 0.7,
         "phase": 0
        },
        {
         "at": [
-         0.1,
-         0.9,
+         0.05,
+         1.6,
          -1.3
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 0.9,
+        "travel": 0.7,
         "phase": 0.5
        }
       ],
       "opts": {
-       "scale": 0.6,
+       "scale": 0.55,
        "color": "#ff8a2a"
       }
      }
@@ -1094,33 +1226,33 @@
       "list": [
        {
         "at": [
-         -1,
-         1.6,
-         -1.4
+         -0.5,
+         2.25,
+         -1.15
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 0.5,
+        "travel": 0.45,
         "phase": 0
        },
        {
         "at": [
-         -1,
-         1.1,
-         -1.4
+         -0.5,
+         1.75,
+         -1.15
         ],
         "dir": [
          1,
          0
         ],
-        "travel": 0.5,
+        "travel": 0.45,
         "phase": 0.5
        }
       ],
       "opts": {
-       "scale": 0.5,
+       "scale": 0.55,
        "color": "#ffffff"
       }
      }
@@ -1140,12 +1272,12 @@
      "kind": "sign",
      "params": {
       "at": [
-       3,
+       2.6,
        0.12,
-       -5
+       -3
       ],
-      "rotY": -0.25,
-      "scale": 1
+      "rotY": -0.3,
+      "scale": 0.6
      }
     }
    ],
@@ -1154,7 +1286,7 @@
      "s": "hook",
      "shows": {
       "p": "fridge",
-      "does": "food and a block of ice sit in the open box"
+      "does": "food and a big blue block of ice are pushed into the open box onto one shelf"
      },
      "do": [
       {
@@ -1165,20 +1297,26 @@
       {
        "p": "fridge",
        "v": "foodIn",
-       "w": "food"
+       "w": ""
       },
       {
        "p": "fridge",
        "v": "iceIn",
-       "w": "ice"
+       "w": ""
+      },
+      {
+       "p": "fridge",
+       "v": "put",
+       "w": "put"
       }
      ],
      "shots": [
       {
        "focus": [
-        "fridge"
+        "fridge.food",
+        "fridge.ice"
        ],
-       "type": "close"
+       "type": "mid"
       }
      ]
     },
@@ -1186,7 +1324,7 @@
      "s": "problem",
      "shows": {
       "p": "fridge",
-      "does": "the ice block shrinks and water drips"
+      "does": "the ice block shrinks, drips, and water pools round the food"
      },
      "state": {
       "text": "MELTING",
@@ -1203,13 +1341,19 @@
        "p": "drip",
        "v": "start",
        "w": "melts"
+      },
+      {
+       "p": "fridge",
+       "v": "pool",
+       "w": "water",
+       "d": 1.2
       }
      ],
      "shots": [
       {
        "focus": [
-        "fridge.ice",
-        "fridge.food"
+        "fridge.food",
+        "fridge.ice"
        ],
        "type": "mid"
       }
@@ -1219,7 +1363,7 @@
      "s": "fix1",
      "shows": {
       "p": "fridge",
-      "does": "a coil appears on the back wall and frosts over"
+      "does": "a coil appears on the back wall and frosts white"
      },
      "do": [
       {
@@ -1234,7 +1378,7 @@
       },
       {
        "p": "fridge",
-       "v": "meltBack",
+       "v": "poolBack",
        "w": "So"
       },
       {
@@ -1260,8 +1404,8 @@
     {
      "s": "problem2",
      "shows": {
-      "p": "tempUp",
-      "does": "the frost melts off the coil and the thermometer climbs to 15"
+      "p": "fridge",
+      "does": "the frost melts off the coil and drips, the fridge's display climbs from 4 to 15"
      },
      "state": {
       "text": "WARM",
@@ -1270,26 +1414,30 @@
      "do": [
       {
        "p": "fridge",
+       "v": "tUpIn",
+       "w": ""
+      },
+      {
+       "p": "fridge",
        "v": "frostBack",
        "w": "boils"
       },
       {
-       "p": "tempUp",
-       "v": "show",
-       "w": ""
+       "p": "coilDrip",
+       "v": "start",
+       "w": "frost"
       },
       {
-       "p": "tempUp",
-       "v": "count",
+       "p": "fridge",
+       "v": "warm",
        "w": "boils",
-       "d": 1.2
+       "d": 2.2
       }
      ],
      "shots": [
       {
        "focus": [
-        "fridge",
-        "tempUp"
+        "fridge"
        ],
        "type": "mid"
       }
@@ -1299,12 +1447,17 @@
      "s": "fix2",
      "shows": {
       "p": "fridge",
-      "does": "a compressor appears, shakes, and liquid runs through the pipes"
+      "does": "a compressor appears and shakes, liquid runs through the pipes and the coil frosts again"
      },
      "do": [
       {
-       "p": "tempUp",
-       "v": "hide",
+       "p": "coilDrip",
+       "v": "stop",
+       "w": "So"
+      },
+      {
+       "p": "fridge",
+       "v": "tUpInBack",
        "w": "So"
       },
       {
@@ -1347,7 +1500,7 @@
      "s": "name",
      "shows": {
       "p": "outline",
-      "does": "a glowing outline traces the fridge"
+      "does": "a glowing outline traces the whole fridge"
      },
      "do": [
       {
@@ -1370,7 +1523,7 @@
      "s": "how",
      "shows": {
       "p": "fridge",
-      "does": "the coils underneath glow hot and heat arrows flow out"
+      "does": "the coils underneath glow hot orange and heat arrows flow out"
      },
      "do": [
       {
@@ -1407,8 +1560,8 @@
     {
      "s": "fact",
      "shows": {
-      "p": "tempDown",
-      "does": "the thermometer counts down to 4"
+      "p": "fridge",
+      "does": "the fridge's display counts down from 15 to 4"
      },
      "do": [
       {
@@ -1417,22 +1570,21 @@
        "w": ""
       },
       {
-       "p": "tempDown",
-       "v": "show",
+       "p": "fridge",
+       "v": "tDownIn",
        "w": ""
       },
       {
-       "p": "tempDown",
-       "v": "count",
+       "p": "fridge",
+       "v": "cool",
        "w": "holds",
-       "d": 1.8
+       "d": 1.6
       }
      ],
      "shots": [
       {
        "focus": [
-        "fridge",
-        "tempDown"
+        "fridge"
        ],
        "type": "mid"
       }
@@ -1441,13 +1593,13 @@
     {
      "s": "myth",
      "shows": {
-      "p": "coldArrows",
+      "p": "fridge",
       "does": "white cold arrows point into the box, then vanish"
      },
      "do": [
       {
-       "p": "tempDown",
-       "v": "hide",
+       "p": "fridge",
+       "v": "tDownInBack",
        "w": ""
       },
       {
@@ -1464,7 +1616,8 @@
      "shots": [
       {
        "focus": [
-        "fridge"
+        "fridge",
+        "coldArrows"
        ],
        "type": "mid"
       }
@@ -1473,8 +1626,8 @@
     {
      "s": "mythFact",
      "shows": {
-      "p": "heatOut",
-      "does": "orange arrows carry heat out of the box"
+      "p": "fridge",
+      "does": "orange arrows carry heat out of the box to the hot coils"
      },
      "do": [
       {
@@ -1486,6 +1639,11 @@
        "p": "heatArrows",
        "v": "show",
        "w": "heat"
+      },
+      {
+       "p": "fridge",
+       "v": "run",
+       "w": "moves"
       }
      ],
      "shots": [
@@ -1501,7 +1659,7 @@
      "s": "finish",
      "shows": {
       "p": "fridge",
-      "does": "a glass door, shelves and a light pop on"
+      "does": "a glass door, a glass shelf and a light pop on"
      },
      "do": [
       {
@@ -1533,13 +1691,18 @@
      "shots": [
       {
        "focus": [
-        "home"
-       ]
+        "fridge"
+       ],
+       "type": "wide"
       }
      ]
     },
     {
      "s": "congrats",
+     "shows": {
+      "p": "fridge",
+      "does": "the finished fridge hums, its light on"
+     },
      "do": [],
      "shots": [
       {

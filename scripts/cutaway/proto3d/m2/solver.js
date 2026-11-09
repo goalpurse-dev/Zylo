@@ -1,3 +1,4 @@
+import { terrainModel } from "../kit/terrain.js";
 // M2: the layout solver: free code checks on a planned layout before anything is rendered. It returns problems
 // (the plan goes back for one repair round) and warnings (logged). Geometry in world units, see catalog.js.
 import { validateLayout } from "./format.js";
@@ -27,9 +28,11 @@ const pts = (p) => [p.path, p.points, Array.isArray(p.list) && p.list.every((a) 
 export function solveLayout(L, sentences) { return soft("the plan checks (solveLayout)", () => solveLayoutRaw(L, sentences), { problems: [], warnings: ["the plan checks were skipped (they crashed: our bug)"] }); }
 function solveLayoutRaw(L, sentences) {
   const problems = [], warnings = [];
-  const W = L.world ?? {}, cut = W.cut;
+  // (a terrain part makes its own ground and pits: its world needs no cut and no dig, scene language v2 phase 2)
+  const terrain = (L.parts ?? []).some((p) => p.kind === "terrain");
+  const W = L.world ?? {}, cut = W.cut ?? (terrain ? { x0: -0.01, x1: 0.01, z0: -0.01, depth: 0.01, none: true } : null);
   if (!cut || ![cut.x0, cut.x1, cut.z0, cut.depth].every(Number.isFinite)) return { problems: ["world.cut must be {x0, x1, z0, depth}"], warnings };
-  if (!(cut.x1 > cut.x0 && cut.z0 < 0 && cut.depth > 0)) problems.push("world.cut: needs x1 > x0, z0 < 0 (it opens on the face z = 0) and depth > 0");
+  if (!cut.none && !(cut.x1 > cut.x0 && cut.z0 < 0 && cut.depth > 0)) problems.push("world.cut: needs x1 > x0, z0 < 0 (it opens on the face z = 0) and depth > 0");
   if (Math.abs(cut.x0) > 14 || Math.abs(cut.x1) > 14 || cut.depth > 20 || cut.z0 < -10) problems.push("world.cut: keep |x| <= 14, depth <= 20, z0 >= -10");
   const cutBox = { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] };
   // no house (house: false): a box far below the world, so nothing can overlap it (its y used to be fixed at 0-9.4)
@@ -39,7 +42,8 @@ function solveLayoutRaw(L, sentences) {
   for (const p of L.parts) {
     const P = p.params ?? {};
     for (const k of REQUIRED[p.kind] ?? []) if (P[k] == null) problems.push(`part ${p.id} (${p.kind}): needs ${k}`);
-    for (const q of pts(P)) if (!Array.isArray(q) || q.length !== 3 || !q.every(Number.isFinite)) { problems.push(`part ${p.id}: every point must be [x, y, z]`); break; }
+    // (a road's points are [x, z] on the ground: the handbook's form)
+    if (p.kind !== "road") for (const q of pts(P)) if (!Array.isArray(q) || q.length !== 3 || !q.every(Number.isFinite)) { problems.push(`part ${p.id}: every point must be [x, y, z]`); break; }
     // (an area may be the array [x0, x1, z0, z1] the catalog documents for miniMachines: the vending machine plan of the
     // free harness, 2026-10-28, was refused for using the documented form)
     if (Array.isArray(P.area) && !(P.area.length === 4 && P.area.every(Number.isFinite) && P.area[0] < P.area[1] && P.area[2] < P.area[3])) problems.push(`part ${p.id}: area needs [x0, x1, z0, z1] with x0 < x1 and z0 < z1`);
@@ -58,7 +62,12 @@ function solveLayoutRaw(L, sentences) {
   // floor here, a free repair with a warning, instead of failing the plan (the owner's check fixes of 2026-11-04)
   const rigs = L.parts.filter((p) => p.kind === "rig" && p.params?.nodes?.length);
   const restBox = (p) => { try { return rigBox(p.params, { swept: false }); } catch { return null; } };
+  // (on a terrain the floor under a part is the surface there: a lighthouse on a cliff top stands at the cliff's height)
+  const tp = (L.parts ?? []).find((q) => q.kind === "terrain"), TM = tp ? terrainModel(tp.params) : null;
+  // (the highest ground under the part's footprint: a bridge stands on its banks over a riverbed, a footing may sink in)
+  const floorOf = (p) => { if (!TM) return floor; const b = restBox(p); if (!b) { const q = p.params?.pos ?? [0, 0, 0]; return TM.h(Number(q[0]) || 0, Number(q[2]) || 0); } let m = -Infinity; for (let i = 0; i <= 6; i++) for (let k = 0; k <= 3; k++) m = Math.max(m, TM.h(b.min[0] + ((b.max[0] - b.min[0]) * i) / 6, b.min[2] + ((b.max[2] - b.min[2]) * k) / 3)); return m; };
   for (const p of rigs) {
+    const floor = floorOf(p);
     const b = restBox(p), others = rigs.filter((q) => q !== p).map(restBox).filter(Boolean);
     const over = (s) => b.min[0] < s.max[0] && s.min[0] < b.max[0] && b.min[2] < s.max[2] && s.min[2] < b.max[2];
     const inCut = b && b.min[1] < -0.2 && b.min[0] < cut.x1 && b.max[0] > cut.x0 && b.max[2] > cut.z0;
@@ -68,14 +77,14 @@ function solveLayoutRaw(L, sentences) {
     p.params = { ...p.params, pos };
     warnings.push(`part ${p.id} (rig): it hung in the air (lowest point y ${b.min[1].toFixed(2)}), set down on the floor`);
   }
-  for (const p of L.parts) if (p.kind === "rig") problems.push(...rigProblems(p, { floor, cut, supports: rigs.filter((q) => q !== p).map(restBox).filter(Boolean) }));
+  for (const p of L.parts) if (p.kind === "rig") problems.push(...rigProblems(p, { floor: floorOf(p), sunkOk: !!TM, cut, supports: rigs.filter((q) => q !== p).map(restBox).filter(Boolean) }));
   for (const s of L.audio?.sfx ?? []) if (!LIBS.includes(s.lib)) problems.push(`audio.sfx: no library sound "${s.lib}" (use ${LIBS.join(", ")})`);
   if (!L.parts.some((p) => p.kind === "sign")) problems.push("no sign part (the end card)");
   if (!L.parts.some((p) => p.kind === "light")) warnings.push("no light part");
   // a dig only where there is a real cut to dig: a thin-slab world (nothing underground, set by layoutRules rule 8: a
   // street topic, its wire loop in a saw cut drawn on the road) has none (the traffic light run of 2026-10-25 was
   // refused here, and its repair was asked for a dig the rules forbid)
-  if (!W.shallow && !L.parts.some((p) => p.kind === "dig")) problems.push("no dig part (the cut is never dug)");
+  if (!W.shallow && !terrain && !L.parts.some((p) => p.kind === "dig")) problems.push("no dig part (the cut is never dug)");
   // beats: verbs exist, parts exist, every part is used, every sentence has something
   let ex = null;
   try { ex = expandBeats(L); } catch (e) { problems.push(e.message); }
