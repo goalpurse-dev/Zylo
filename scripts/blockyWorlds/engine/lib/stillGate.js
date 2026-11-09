@@ -190,7 +190,9 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
     if (isMeshLike(o) && o.material && !o.isPoints && !o.isLine && !o.isSprite) {
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       const back = mats.every((m) => m.side === THREE.BackSide);
-      const ghost = mats.every((m) => m.visible === false || (m.transparent && (m.opacity ?? 1) < 0.25) || m.colorWrite === false);
+      // (GATE 2026-11-09: light effects too: an additive or non-depth-writing see-through mesh (the turtle's sun shafts, a
+      // glow) is not a surface; a camera standing in a shaft cone read as "inside a mesh" / "blocked")
+      const ghost = mats.every((m) => m.visible === false || (m.transparent && (m.opacity ?? 1) < 0.25) || m.colorWrite === false || m.blending === THREE.AdditiveBlending || (m.transparent && m.depthWrite === false));
       // (GATE 2026-11-09: the instanced grass carpet is left out too: ground cover, collapsed on the sight line by its
       // shader, and 40 000 instances per ray were most of the gate's 17-27 s a still)
       if (!back && !ghost && !/sky/i.test(nameOf(o)) && !(o.isInstancedMesh && nameOf(o) === "grass")) meshes.push(o);
@@ -323,7 +325,9 @@ export function geoReasons(g, shot = null, T = GATE) {
   }
   const close = ["closeup", "medium"].includes(shot?.camera);
   const faces = (s.anchors ?? []).filter((a) => a.inFrame && !a.hidden && a.face != null);
-  if (close && s.mode === "one" && faces.length && faces.every((x) => x.face < -0.25)) warn.push({ code: "face_hidden", why: `${faces[0].id} faces away (${faces[0].face})` });
+  // GATE 2026-11-09 (#3: a close-up that was the back of a head): a close-up of one person turned away FAILS (re-planned;
+  // never a hard reject on its own); a medium only warns
+  if (close && s.mode === "one" && faces.length && faces.every((x) => x.face < -0.25)) (shot?.camera === "closeup" ? fail : warn).push({ code: "face_hidden", why: `${faces[0].id} faces away (${faces[0].face})` });
   return { fail, warn };
 }
 

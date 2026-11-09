@@ -62,6 +62,16 @@ function close(kind, ours, ref) {
 }
 
 // three frames of a group, spread over the video, non-blank first
+// the owner's acceptance gate (2026-11-09): key, label, test(ours, ref) -> pass, the target text
+export const TARGETS = [
+  ["readableFacePct", "shots with a readable face %", (v) => v >= 40, ">= 40%"],
+  ["over10PeoplePct", "shots with > 10 characters %", (v) => v <= 10, "<= 10%"],
+  ["distinctPlaces", "distinct places used", (v) => v >= 3, ">= 3"],
+  ["blankFlatCount", "blank / flat frames", (v) => v === 0, "0"],
+  ["satMedian", "saturation median", (v, r) => Math.abs(v - r) <= 0.1, "ref ± 0.10"],
+  ["valMedian", "brightness median", (v, r) => Math.abs(v - r) <= 0.1, "ref ± 0.10"],
+];
+
 export function pick(frames, types, n = 3) {
   const all = frames.filter((f) => types.includes(f.type));
   const good = all.filter((f) => !f.px?.blank);
@@ -162,6 +172,7 @@ figcaption{font-size:11.5px;margin-top:4px}.line{font-style:italic;color:var(--d
 </style></head><body><main>
 <h1>Blocky Worlds look gate</h1>
 <p class="sub">Reference: 2 s grid of one study video (internal patterns only, never its story or characters). Ours: step-3 stills, typed from the planner timeline. Green = within tolerance of the reference (±8 points, ±30% counts, ±15% values), red = off. Ratings come from ratings.json (filled by the gate agent).</p>
+${ours.some((o) => o.summary.blankFlatCount != null) ? `<h2>The acceptance gate</h2><div class="tablewrap"><table><tr><th>measure</th><th>target</th><th>reference</th>${ours.map((o) => `<th>${esc(o.name)}</th>`).join("")}</tr>${TARGETS.map(([k, label, ok, tgt]) => `<tr><td>${esc(label)}</td><td>${esc(tgt)}</td><td class="num">${ref.summary[k] ?? ""}</td>${ours.map((o) => { const v = o.summary[k]; const p = v == null ? null : ok(v, ref.summary[k]); return `<td class="num ${p == null ? "" : p ? "ok" : "off"}">${v ?? ""}${p == null ? "" : p ? " ✓" : " ✗"}</td>`; }).join("")}</tr>`).join("")}</table></div><p class="dim">Readable face = my look at every still (the face big enough to read eyes and mouth, toward the lens, not covered), not only the planner estimate. Blank / flat = the pixel measure (sky / wall > 45%, one colour > 60%) + the still gate's hard failures left after its re-plans + frames I judged unreadable.</p>` : ""}
 <h2>Ratings: looks like the reference (1-10)</h2><div class="tablewrap"><table>${ratingHead}${ratingBody}</table></div>
 <h2>Metrics vs reference</h2><div class="tablewrap"><table>${head}${body}</table></div>
 <div class="tablewrap"><table>${mixHead}${mixBody}</table></div>

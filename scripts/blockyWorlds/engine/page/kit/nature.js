@@ -74,6 +74,9 @@ if (uSightOn > 0.5) {
   float lineY = mix(uCam.y, uSubj.y, s);
   float top = io.y + ${topH.toFixed(3)} * sy;
   if (s > 0.0 && s < 1.0 && dist < mix(uR.x, uR.y, s) + ${(topH * 0.25).toFixed(3)} * sx && top > lineY - 0.3) transformed *= 0.0;
+  ${topH < 2.5 ? `// GATE 2026-11-09 (#3: a fern beside Tobin spread its fronds over his close-up face): a low plant whose own spread
+  // reaches the subject collapses (the corridor test above only sees a plant whose ROOT stands between lens and subject)
+  if (length(io.xz - uSubj.xz) < ${(topH * 0.6).toFixed(3)} * sx + 0.6 && top > uSubj.y - 0.2) transformed *= 0.0;` : ""}
   // WORLD-FIX: never a lens inside a crown (a track / low camera beside a giant stood in a tree)
   if (length(io.xz - uCam.xz) < ${(topH * 0.4).toFixed(3)} * sx + 2.0 && top > uCam.y - 1.0) transformed *= 0.0;
 }

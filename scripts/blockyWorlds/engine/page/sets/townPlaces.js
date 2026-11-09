@@ -116,7 +116,7 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   plane(140, 140, pbr("leafy_grass", { repeat: [30, 30], tint: "#9fe06a" }), o({ x: BX, y: 0.03, z: BZ }));
   const bl = new THREE.PointLight("#ffc77a", 0, 10, 1.6); bl.position.set(BX + 1.5, BY + 2.6, BZ + 1.5); root.add(bl); lights.push(bl);
 
-  onLight.push((mode) => { for (const l of lights) l.intensity = { day: 0, night: 26, warm: 8, dusk: 12, dawn: 4 }[mode] ?? 0; });
+  onLight.push((mode) => { for (const l of lights) l.intensity = { day: 0, night: 10, warm: 5, dusk: 7, dawn: 3 }[mode] ?? 0; }); // GATE 2026-11-09: was night 26 (#4: a white face up here)
 
   // SETS-V2 2026-11-09 (lead: "the bell tower asset reads as a dark slab"): out of the day sun the tower's front faces
   // the camera unlit against a bright sky. A wash light from the square's camera side keeps its stone, clock and bell
@@ -124,7 +124,7 @@ export function addTownPlaces(S, K, THREE, glow, onLight) {
   {
     const wash = new THREE.SpotLight("#ffe2b8", 0, 40, 0.42, 0.6, 1.2); wash.position.set(TX + 3, 3, TZ + 16); wash.target.position.set(TX, 12, TZ); root.add(wash, wash.target);
     const wash2 = new THREE.PointLight("#ffc878", 0, 9, 1.6); wash2.position.set(TX, 14.6, TZ + 2.6); root.add(wash2);
-    onLight.push((mode) => { wash.intensity = { day: 0, night: 900, warm: 500, dusk: 700, dawn: 350 }[mode] ?? 0; wash2.intensity = { day: 0, night: 18, warm: 6, dusk: 10, dawn: 4 }[mode] ?? 0; });
+    onLight.push((mode) => { wash.intensity = { day: 0, night: 320, warm: 200, dusk: 260, dawn: 140 }[mode] ?? 0; wash2.intensity = { day: 0, night: 8, warm: 4, dusk: 6, dawn: 3 }[mode] ?? 0; }); // GATE 2026-11-09: was night 900 / 18 (#4: the tower a white blob)
   }
 
   // ---------- SETS-V2: the PARK (centre -60, 0, 140) and the BACK LANE (centre 60, 0, 235) ----------

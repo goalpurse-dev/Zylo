@@ -269,7 +269,7 @@ function buildInside(spec0, ctx) {
   dome.scale.set(A, Hh, L / 2); dome.position.set(0, 0, Zc); dome.receiveShadow = true; world.add(dome);
   // ribs: blocky bone arches every ~10 m
   const ribM = solid(pal[2], { roughness: 0.6 });
-  const nRib = Math.floor(L / 11);
+  const nRib = Math.floor(L / 11), ribs = [];
   for (let k = 0; k <= nRib; k++) {
     const z = Zc + L / 2 - 6 - k * (L - 12) / nRib, q = 1 - ((z - Zc) / (L / 2)) ** 2; if (q <= 0.05) continue;
     const a = A * Math.sqrt(q) * 0.985, h = Hh * Math.sqrt(q) * 0.985;
@@ -277,6 +277,7 @@ function buildInside(spec0, ctx) {
       const th = (s / 18) * Math.PI, x = Math.cos(th) * a, y = Math.sin(th) * h;
       const m = K.rbx(2.2, 1.6, 1.8, 0.3, ribM, { x, y, z, rz: th - Math.PI / 2 });
       m.lookAt(0, 0, z); m.rotateY(Math.PI / 2);
+      m.userData.static = false; ribs.push(m); // GATE 2026-11-09: never merged, so one near the lens can hide (S.afterCamera)
     }
   }
   // the floor: the belly (warm sand-coloured), the main street (pavement) down the middle to the mouth
@@ -359,9 +360,9 @@ function buildInside(spec0, ctx) {
       exposure: { day: 0.8, night: 1.1, warm: 0.74 }, // SETS-V2: night readable, the warm ending not blown
       practicals: (mode) => {
         const out = [];
-        for (const s of spots.slice(0, 3)) { const l = new THREE.SpotLight(mode === "night" ? "#9fb6ff" : "#fff4e4", mode === "night" ? 300 : 900, 80, 0.5, 0.7, 1.4); l.position.copy(s.from); l.target.position.copy(s.to); l.castShadow = false; out.push(l); }
-        const ml = new THREE.SpotLight("#ffe0a8", mode === "night" ? 300 : 1500, L, 0.55, 0.8, 1.2); ml.position.set(0, Hh * 0.3, mouthZ - 2); ml.target.position.set(0, 0, 0); out.push(ml);
-        const warm = new THREE.PointLight("#ffb860", mode === "night" ? 140 : 60, 40, 1.6); warm.position.set(0, 6, -2); out.push(warm);
+        for (const s of spots.slice(0, 3)) { const l = new THREE.SpotLight(mode === "night" ? "#9fb6ff" : "#fff4e4", mode === "night" ? 160 : 450, 80, 0.5, 0.7, 1.4); /* GATE 2026-11-09: was 300 / 900 (#3: the shell street floor washed white) */ l.position.copy(s.from); l.target.position.copy(s.to); l.castShadow = false; out.push(l); }
+        const ml = new THREE.SpotLight("#ffe0a8", mode === "night" ? 160 : 700, L, 0.55, 0.8, 1.2); /* GATE 2026-11-09: was 300 / 1500 */ ml.position.set(0, Hh * 0.3, mouthZ - 2); ml.target.position.set(0, 0, 0); out.push(ml);
+        const warm = new THREE.PointLight("#ffb860", mode === "night" ? 45 : 40, 40, 1.6); /* GATE 2026-11-09: was 140 / 60 (#3: white faces in the shell street at night) */ warm.position.set(0, 6, -2); out.push(warm);
         return out;
       },
       onLight: (mode) => { glow.apply(mode); town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6); skyM.emissiveIntensity = mode === "night" ? 0.6 : 3; skyM.emissive.set(mode === "night" ? "#8fa8ff" : mode === "warm" ? "#ffe0c0" : "#eef4ff"); sM.uniforms.k.value = mode === "night" ? 0.06 : 0.2; dust.material.opacity = mode === "night" ? 0.15 : 0.3; mouth.material.color.set(mode === "night" ? "#30406a" : mode === "warm" ? "#ffb060" : "#ffe9c0"); },
@@ -375,6 +376,9 @@ function buildInside(spec0, ctx) {
     },
     town, giant: null, mount: world, groundY: 0,
     actorMount: () => world, // ATTACH 2026-11-07: people + scene objects sway with the cavern floor (they stood still while it rocked)
+    // GATE 2026-11-09 (#3 establish shots in the shell: a bone arch filled the foreground): rib blocks within 7 m of the
+    // lens are hidden for the frame
+    afterCamera(camera) { camera.updateMatrixWorld(); const c = camera.getWorldPosition(new THREE.Vector3()), p = new THREE.Vector3(); for (const r of ribs) r.visible = r.getWorldPosition(p).distanceTo(c) > 7; return null; },
   };
   mergeStatic(THREE, world);
   return S;

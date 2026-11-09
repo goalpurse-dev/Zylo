@@ -87,6 +87,9 @@ export function alternatives(s) {
     if (other) out.push({ how: "reaction", patch: { camera: "closeup", focus: other } });
     out.push({ how: "world", patch: { camera: "wide", focus: ids.length > 1 ? "group" : who ?? s.focus ?? "group", camMove: null } });
   }
+  // GATE 2026-11-09 (#3 "the turtle stopped mid-step": its tilt_up move stood the lens against the turtle's head and
+  // every re-plan kept the move, which replaces the framing): a re-planned framing drops the shot's camera move
+  if (s.move) for (const a of out) a.patch.move = null;
   return out.filter((a) => !sameAs(s, a.patch));
 }
 
@@ -99,7 +102,7 @@ export function borrowedFraming(tl, i, passed) {
   cands.sort((a, b) => wideish(a) - wideish(b) || Math.abs(a - i) - Math.abs(b - i));
   const d = tl.shots[cands[0]];
   const fOk = d.focus && (!ids.length || ids.includes(d.focus) || !(d.actors ?? []).some((a) => a.id === d.focus));
-  return { how: "borrowed", from: cands[0], patch: { camera: d.camera, place: d.place ?? null, worldSpot: d.worldSpot ?? null, camMove: null, focus: fOk ? d.focus : ids.length > 1 ? "group" : subjectActor(s) ?? d.focus } };
+  return { how: "borrowed", from: cands[0], patch: { ...(s.move ? { move: d.move ?? null } : {}), camera: d.camera, place: d.place ?? null, worldSpot: d.worldSpot ?? null, camMove: null, focus: fOk ? d.focus : ids.length > 1 ? "group" : subjectActor(s) ?? d.focus } };
 }
 
 function applyPatch(shot, patch) { for (const [k, v] of Object.entries(patch)) { if (v === null) delete shot[k]; else shot[k] = clone(v); } }
