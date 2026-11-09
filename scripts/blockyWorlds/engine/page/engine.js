@@ -410,6 +410,7 @@ async function main() {
   function renderAt(t, opts = null) {
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
     const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
+    if (!opts?.calib && post.needsGrade?.(si)) renderAt(shot.start, { calib: true }); // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
     const S = SETS[shot.set], spots = S.spots;
     for (const [n, s] of Object.entries(SETS)) s.root.visible = n === shot.set;
     const key = `${shot.set}|${shot.light}`;
@@ -422,6 +423,7 @@ async function main() {
       lightKey = key;
     }
     S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
+    post.setShot?.(si, shot, S, t); // SETS-V2: the shot's lighting rig (page/lighting.js makeRigLayer) + its auto grade
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
     // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE"): on a creature the people, scene objects, monster and insert ride the
     // set's actor mount (the creature's carrier / the swaying cavern): their spots are in its rest coordinates, so they
@@ -751,7 +753,7 @@ async function main() {
         if (o.userData.grip !== best.g) { o.userData.grip = best.g; posePerson(o, ...poseArgs); }
         o.userData.faceCover = best.ov;
       }
-      setFace(o, a.expr ?? "neutral");
+      setFace(o, a.face ?? a.expr ?? "neutral");
       // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
       // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
       if (mount && S.surface && !o.userData.offGround && !baby) {

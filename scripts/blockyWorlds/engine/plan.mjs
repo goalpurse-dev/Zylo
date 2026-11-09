@@ -41,6 +41,7 @@ import { cameraMovePass, storyShapePass, duplicateCastProblems, kitNeedsPass } f
 import { criticalGate, storyObjects, kitFor, worldObject, SCENERY, headNoun as critHead, kitCoversAll } from "./lib/critical.js";
 import { propSensePass } from "./lib/propSense.js";
 import { shotGrammarPass } from "./lib/shotGrammar.js";
+import { exprPass } from "./lib/expressions.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -998,6 +999,9 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   tl.style = styleReport(tl);
   // the whole-video story patterns measured on the plan (advisory, never fails a run: lib/storyPatterns.js)
   try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }
+  // CHARACTERS v2 (owner 2026-11-09): every actor's face from the line's emotion (never neutral by default);
+  // sets a.face only, a.expr stays for the checks (lib/expressions.js)
+  try { exprPass(tl, { production: tl.production ?? production, mood }); } catch (e) { tl.exprError = String(e?.message ?? e); }
   return tl;
 }
 

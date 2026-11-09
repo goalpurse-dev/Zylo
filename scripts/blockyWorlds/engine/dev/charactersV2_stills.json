@@ -1,0 +1,1977 @@
+{
+ "version": 1,
+ "fps": 24,
+ "width": 540,
+ "height": 960,
+ "duration": 64,
+ "title": "CHARACTERS-V2 stills",
+ "cast": {
+  "c_knight": {
+   "role": "adult",
+   "name": "knight",
+   "seed": 101,
+   "gender": "m",
+   "look": {
+    "outfit": "knight"
+   }
+  },
+  "c_royal": {
+   "role": "adult",
+   "name": "royal",
+   "seed": 108,
+   "gender": "f",
+   "look": {
+    "outfit": "royal"
+   }
+  },
+  "c_scientist": {
+   "role": "adult",
+   "name": "scientist",
+   "seed": 115,
+   "gender": "f",
+   "look": {
+    "outfit": "scientist"
+   }
+  },
+  "c_caveman": {
+   "role": "adult",
+   "name": "caveman",
+   "seed": 122,
+   "gender": "m",
+   "look": {
+    "outfit": "caveman"
+   }
+  },
+  "c_baker": {
+   "role": "adult",
+   "name": "baker",
+   "seed": 129,
+   "gender": "m",
+   "look": {
+    "outfit": "baker"
+   }
+  },
+  "c_mail": {
+   "role": "adult",
+   "name": "mail",
+   "seed": 136,
+   "gender": "f",
+   "look": {
+    "outfit": "mail"
+   }
+  },
+  "c_mayor": {
+   "role": "elder",
+   "name": "mayor",
+   "seed": 143,
+   "gender": "m",
+   "look": {
+    "outfit": "mayor"
+   }
+  },
+  "c_farmer": {
+   "role": "adult",
+   "name": "farmer",
+   "seed": 150,
+   "gender": "m",
+   "look": {
+    "outfit": "farmer"
+   }
+  },
+  "c_kid_casual": {
+   "role": "kid",
+   "name": "kid_casual",
+   "seed": 157,
+   "gender": "f",
+   "look": {
+    "outfit": "kid_casual"
+   }
+  },
+  "c_grandma": {
+   "role": "elder",
+   "name": "grandma",
+   "seed": 164,
+   "gender": "f",
+   "look": {
+    "outfit": "grandma"
+   }
+  },
+  "c_villain": {
+   "role": "adult",
+   "name": "villain",
+   "seed": 171,
+   "gender": "m",
+   "look": {
+    "outfit": "villain"
+   }
+  },
+  "c_wizard": {
+   "role": "elder",
+   "name": "wizard",
+   "seed": 178,
+   "gender": "m",
+   "look": {
+    "outfit": "wizard"
+   }
+  }
+ },
+ "shots": [
+  {
+   "start": 0,
+   "end": 1,
+   "line": 0,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_scientist",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 5,
+   "label": "medium_excited_0"
+  },
+  {
+   "start": 1,
+   "end": 2,
+   "line": 1,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_mail",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 6,
+   "label": "medium_excited_1"
+  },
+  {
+   "start": 2,
+   "end": 3,
+   "line": 2,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_kid_casual",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 7,
+   "label": "medium_excited_2"
+  },
+  {
+   "start": 3,
+   "end": 4,
+   "line": 3,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_wizard",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 8,
+   "label": "medium_excited_3"
+  },
+  {
+   "start": 4,
+   "end": 5,
+   "line": 4,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_scientist",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 9,
+   "label": "medium_angry_0"
+  },
+  {
+   "start": 5,
+   "end": 6,
+   "line": 5,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_mail",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 10,
+   "label": "medium_angry_1"
+  },
+  {
+   "start": 6,
+   "end": 7,
+   "line": 6,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_kid_casual",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 11,
+   "label": "medium_angry_2"
+  },
+  {
+   "start": 7,
+   "end": 8,
+   "line": 7,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_wizard",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 12,
+   "label": "medium_angry_3"
+  },
+  {
+   "start": 8,
+   "end": 9,
+   "line": 8,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_scientist",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 13,
+   "label": "medium_scared_0"
+  },
+  {
+   "start": 9,
+   "end": 10,
+   "line": 9,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_mail",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 14,
+   "label": "medium_scared_1"
+  },
+  {
+   "start": 10,
+   "end": 11,
+   "line": 10,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_kid_casual",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 15,
+   "label": "medium_scared_2"
+  },
+  {
+   "start": 11,
+   "end": 12,
+   "line": 11,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_wizard",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 16,
+   "label": "medium_scared_3"
+  },
+  {
+   "start": 12,
+   "end": 13,
+   "line": 12,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_scientist",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 17,
+   "label": "medium_sad_0"
+  },
+  {
+   "start": 13,
+   "end": 14,
+   "line": 13,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_mail",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 18,
+   "label": "medium_sad_1"
+  },
+  {
+   "start": 14,
+   "end": 15,
+   "line": 14,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_kid_casual",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 19,
+   "label": "medium_sad_2"
+  },
+  {
+   "start": 15,
+   "end": 16,
+   "line": 15,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_wizard",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 20,
+   "label": "medium_sad_3"
+  },
+  {
+   "start": 16,
+   "end": 17,
+   "line": 16,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 21,
+   "label": "close_c_knight_excited"
+  },
+  {
+   "start": 17,
+   "end": 18,
+   "line": 17,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 22,
+   "label": "close_c_knight_angry"
+  },
+  {
+   "start": 18,
+   "end": 19,
+   "line": 18,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 23,
+   "label": "close_c_knight_scared"
+  },
+  {
+   "start": 19,
+   "end": 20,
+   "line": 19,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 24,
+   "label": "close_c_knight_sad"
+  },
+  {
+   "start": 20,
+   "end": 21,
+   "line": 20,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_royal",
+   "actors": [
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 25,
+   "label": "close_c_royal_excited"
+  },
+  {
+   "start": 21,
+   "end": 22,
+   "line": 21,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_royal",
+   "actors": [
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 26,
+   "label": "close_c_royal_angry"
+  },
+  {
+   "start": 22,
+   "end": 23,
+   "line": 22,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_royal",
+   "actors": [
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 27,
+   "label": "close_c_royal_scared"
+  },
+  {
+   "start": 23,
+   "end": 24,
+   "line": 23,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_royal",
+   "actors": [
+    {
+     "id": "c_royal",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 28,
+   "label": "close_c_royal_sad"
+  },
+  {
+   "start": 24,
+   "end": 25,
+   "line": 24,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_scientist",
+   "actors": [
+    {
+     "id": "c_scientist",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 29,
+   "label": "close_c_scientist_excited"
+  },
+  {
+   "start": 25,
+   "end": 26,
+   "line": 25,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_scientist",
+   "actors": [
+    {
+     "id": "c_scientist",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 30,
+   "label": "close_c_scientist_angry"
+  },
+  {
+   "start": 26,
+   "end": 27,
+   "line": 26,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_scientist",
+   "actors": [
+    {
+     "id": "c_scientist",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 31,
+   "label": "close_c_scientist_scared"
+  },
+  {
+   "start": 27,
+   "end": 28,
+   "line": 27,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_scientist",
+   "actors": [
+    {
+     "id": "c_scientist",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 32,
+   "label": "close_c_scientist_sad"
+  },
+  {
+   "start": 28,
+   "end": 29,
+   "line": 28,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_caveman",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 33,
+   "label": "close_c_caveman_excited"
+  },
+  {
+   "start": 29,
+   "end": 30,
+   "line": 29,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_caveman",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 34,
+   "label": "close_c_caveman_angry"
+  },
+  {
+   "start": 30,
+   "end": 31,
+   "line": 30,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_caveman",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 35,
+   "label": "close_c_caveman_scared"
+  },
+  {
+   "start": 31,
+   "end": 32,
+   "line": 31,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_caveman",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 36,
+   "label": "close_c_caveman_sad"
+  },
+  {
+   "start": 32,
+   "end": 33,
+   "line": 32,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_baker",
+   "actors": [
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 37,
+   "label": "close_c_baker_excited"
+  },
+  {
+   "start": 33,
+   "end": 34,
+   "line": 33,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_baker",
+   "actors": [
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 38,
+   "label": "close_c_baker_angry"
+  },
+  {
+   "start": 34,
+   "end": 35,
+   "line": 34,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_baker",
+   "actors": [
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 39,
+   "label": "close_c_baker_scared"
+  },
+  {
+   "start": 35,
+   "end": 36,
+   "line": 35,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_baker",
+   "actors": [
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 40,
+   "label": "close_c_baker_sad"
+  },
+  {
+   "start": 36,
+   "end": 37,
+   "line": 36,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mail",
+   "actors": [
+    {
+     "id": "c_mail",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 41,
+   "label": "close_c_mail_excited"
+  },
+  {
+   "start": 37,
+   "end": 38,
+   "line": 37,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mail",
+   "actors": [
+    {
+     "id": "c_mail",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 42,
+   "label": "close_c_mail_angry"
+  },
+  {
+   "start": 38,
+   "end": 39,
+   "line": 38,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mail",
+   "actors": [
+    {
+     "id": "c_mail",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 43,
+   "label": "close_c_mail_scared"
+  },
+  {
+   "start": 39,
+   "end": 40,
+   "line": 39,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mail",
+   "actors": [
+    {
+     "id": "c_mail",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 44,
+   "label": "close_c_mail_sad"
+  },
+  {
+   "start": 40,
+   "end": 41,
+   "line": 40,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mayor",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 45,
+   "label": "close_c_mayor_excited"
+  },
+  {
+   "start": 41,
+   "end": 42,
+   "line": 41,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mayor",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 46,
+   "label": "close_c_mayor_angry"
+  },
+  {
+   "start": 42,
+   "end": 43,
+   "line": 42,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mayor",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 47,
+   "label": "close_c_mayor_scared"
+  },
+  {
+   "start": 43,
+   "end": 44,
+   "line": 43,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_mayor",
+   "actors": [
+    {
+     "id": "c_mayor",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 48,
+   "label": "close_c_mayor_sad"
+  },
+  {
+   "start": 44,
+   "end": 45,
+   "line": 44,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_farmer",
+   "actors": [
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 49,
+   "label": "close_c_farmer_excited"
+  },
+  {
+   "start": 45,
+   "end": 46,
+   "line": 45,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_farmer",
+   "actors": [
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 50,
+   "label": "close_c_farmer_angry"
+  },
+  {
+   "start": 46,
+   "end": 47,
+   "line": 46,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_farmer",
+   "actors": [
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 51,
+   "label": "close_c_farmer_scared"
+  },
+  {
+   "start": 47,
+   "end": 48,
+   "line": 47,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_farmer",
+   "actors": [
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 52,
+   "label": "close_c_farmer_sad"
+  },
+  {
+   "start": 48,
+   "end": 49,
+   "line": 48,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_kid_casual",
+   "actors": [
+    {
+     "id": "c_kid_casual",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 53,
+   "label": "close_c_kid_casual_excited"
+  },
+  {
+   "start": 49,
+   "end": 50,
+   "line": 49,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_kid_casual",
+   "actors": [
+    {
+     "id": "c_kid_casual",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 54,
+   "label": "close_c_kid_casual_angry"
+  },
+  {
+   "start": 50,
+   "end": 51,
+   "line": 50,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_kid_casual",
+   "actors": [
+    {
+     "id": "c_kid_casual",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 55,
+   "label": "close_c_kid_casual_scared"
+  },
+  {
+   "start": 51,
+   "end": 52,
+   "line": 51,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_kid_casual",
+   "actors": [
+    {
+     "id": "c_kid_casual",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 56,
+   "label": "close_c_kid_casual_sad"
+  },
+  {
+   "start": 52,
+   "end": 53,
+   "line": 52,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_grandma",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 57,
+   "label": "close_c_grandma_excited"
+  },
+  {
+   "start": 53,
+   "end": 54,
+   "line": 53,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_grandma",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 58,
+   "label": "close_c_grandma_angry"
+  },
+  {
+   "start": 54,
+   "end": 55,
+   "line": 54,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_grandma",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 59,
+   "label": "close_c_grandma_scared"
+  },
+  {
+   "start": 55,
+   "end": 56,
+   "line": 55,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_grandma",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 60,
+   "label": "close_c_grandma_sad"
+  },
+  {
+   "start": 56,
+   "end": 57,
+   "line": 56,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_villain",
+   "actors": [
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 61,
+   "label": "close_c_villain_excited"
+  },
+  {
+   "start": 57,
+   "end": 58,
+   "line": 57,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_villain",
+   "actors": [
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 62,
+   "label": "close_c_villain_angry"
+  },
+  {
+   "start": 58,
+   "end": 59,
+   "line": 58,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_villain",
+   "actors": [
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 63,
+   "label": "close_c_villain_scared"
+  },
+  {
+   "start": 59,
+   "end": 60,
+   "line": 59,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_villain",
+   "actors": [
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 64,
+   "label": "close_c_villain_sad"
+  },
+  {
+   "start": 60,
+   "end": 61,
+   "line": 60,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_wizard",
+   "actors": [
+    {
+     "id": "c_wizard",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 65,
+   "label": "close_c_wizard_excited"
+  },
+  {
+   "start": 61,
+   "end": 62,
+   "line": 61,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_wizard",
+   "actors": [
+    {
+     "id": "c_wizard",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 66,
+   "label": "close_c_wizard_angry"
+  },
+  {
+   "start": 62,
+   "end": 63,
+   "line": 62,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_wizard",
+   "actors": [
+    {
+     "id": "c_wizard",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 67,
+   "label": "close_c_wizard_scared"
+  },
+  {
+   "start": 63,
+   "end": 64,
+   "line": 63,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "camera": "closeup",
+   "focus": "c_wizard",
+   "actors": [
+    {
+     "id": "c_wizard",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "sad",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 68,
+   "label": "close_c_wizard_sad"
+  }
+ ],
+ "captions": []
+}

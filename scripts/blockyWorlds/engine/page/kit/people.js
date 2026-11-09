@@ -12,7 +12,9 @@
 // Index 0 = the person's RIGHT side (-x), index 1 = their LEFT (+x). Pointing, waving and single-hand props use the right.
 import * as THREE from "three";
 import { rng, hashSeed, cloth, fabric, skinMat, solid, darker, rbx, bx, addMesh, cachedGeo, cachedMat } from "./kitCommon.js";
-import { EXPRS as FACE_EXPRS, faceMaterial } from "./faces.js";
+import { FACES as FACE_EXPRS, faceMaterialV2, blendMaterialV2 } from "./facesV2.js";
+import { garment, dressPerson, animateOutfit } from "./outfits.js";
+import { outfitLook } from "./outfitsData.js";
 import { makeHeld } from "./props.js";
 import { SMALL_HELD } from "./heldMore.js";
 
@@ -55,7 +57,14 @@ const HAIR = ["#1b1410", "#2b1d14", "#3a2a1e", "#6b3e1f", "#b5651d", "#d9a441", 
 const GREY = ["#d8d8d8", "#bfbfbf", "#efefef", "#9a9a9a"];
 const HATS = ["#e74c3c", "#2d98da", "#6c5ce7", "#c8a96a", "#20bf6b", "#f7b731", "#2d3436", "#fd79a8"];
 const ACC = ["#e84a5f", "#2e86de", "#00b894", "#ffd32a", "#6c5ce7", "#ff9f43"];
-const ROLE = { kid: { scale: 0.62, head: 1.22 }, adult: { scale: 0.87, head: 1 }, elder: { scale: 0.85, head: 1, stoop: 0.13 }, baby: { scale: 0.36, head: 1.6, baby: true } };
+// CHARACTERS-V2 2026-11-09 (owner: "larger head, ~1/3 of body height, still blocky"; LOOK-TARGET: the head sits on the
+// collar, no visible neck): the head is ~2x and rests on the torso (HEAD_Y); the root scale keeps each role's height in
+// metres (adult ~1.80, kid ~1.30, elder ~1.72: scale = metres / (HEAD_Y_WORLD + 0.38 x head))
+const HEAD_Y = 0.52, HEAD_Y_WORLD = 0.9 + 0.17 + HEAD_Y;
+const roleOf = (metres, head, o = {}) => ({ scale: +(metres / (HEAD_Y_WORLD + 0.38 * head)).toFixed(4), head, ...o });
+const ROLE = { kid: roleOf(1.3, 2.35), adult: roleOf(1.8, 2.0), elder: roleOf(1.72, 1.95, { stoop: 0.13 }), baby: { scale: 0.33, head: 1.9, baby: true } };
+/** where the face sits on a standing person: the eyes' height / the person's height (the camera's close-up aim) */
+export const FACE_AT = 0.8;
 const ONESIE = ["#ffd1dc", "#bfe3ff", "#fff1a8", "#c8f7c5", "#e3d1ff", "#ffd8b0"];
 const wpick = (R, pairs) => { let x = R() * pairs.reduce((s, p) => s + p[1], 0); for (const [v, w] of pairs) { x -= w; if (x <= 0) return v; } return pairs[0][0]; };
 
@@ -118,7 +127,22 @@ export function lookFor(spec) {
   o.packColor = R.pick(ACC); o.bagColor = R.pick(ACC); o.phonesColor = R.pick(ACC);
   o.phase = R() * 10; // so a crowd never moves in sync
   genderLook(o, spec.gender, seed, kid, elder);
-  return Object.assign(o, spec.look ?? {});
+  Object.assign(o, spec.look ?? {});
+  return withOutfit(o, spec, seed);
+}
+/** CHARACTERS-V2: a look naming an outfit (look.outfit) without its pieces gets them (outfitsData.outfitLook, seeded) */
+function withOutfit(o, spec, seed) {
+  if (!o.outfit) return o;
+  if (!o.parts) {
+    const ol = outfitLook(o.outfit, { seed, age: o.role, gender: spec.gender ?? null, variant: o.outfitVariant ?? null });
+    for (const [k, v] of Object.entries(ol)) if (!(k in (spec.look ?? {})) || k === "parts" || k === "ohead" || k === "oc") o[k] = v;
+  }
+  if (o.top === "skin") o.top = o.skin;
+  if (o.shoes === "skin") o.shoes = o.skin;
+  if (o.pants === "skin") o.pants = o.skin;
+  if (o.ohead) o.hat = null;
+  if (o.bottom === "dress" && !o.pants) o.pants = o.top;
+  return o;
 }
 
 // ---------- build ----------
@@ -132,7 +156,7 @@ export function makePerson(spec = {}) {
   root.scale.setScalar(role.scale);
   const rig = new THREE.Group(); root.add(rig);
   const baby = !!role.baby;
-  const skin = skinMat(o.skin), top = cloth(o.top, o.pattern), pants = cloth(o.pants, o.pantsKind ?? (o.bottom === "pants" ? "denim" : "cotton")), shoe = baby ? pants : cloth(o.shoes, "leather");
+  const skin = skinMat(o.skin), top = garment(o.top, o.pattern), pants = garment(o.pants, o.pantsKind ?? (o.bottom === "pants" ? "denim" : "cotton")), shoe = baby ? pants : cloth(o.shoes, "leather");
   const sole = baby ? pants : solid("#f7f7f2", { roughness: 0.7 });
   const bare = o.bottom === "skirt" || o.bottom === "dress";
 
@@ -151,7 +175,7 @@ export function makePerson(spec = {}) {
   let skirt = null;
   if (bare) {
     skirt = new THREE.Group(); skirt.position.y = 0.12; pelvis.add(skirt);
-    rbx(0.5, 0.36, 0.3, Rv, cloth(o.bottom === "dress" ? o.top : o.pants, o.bottom === "dress" ? o.pattern : "cotton"), { y: -0.18, parent: skirt });
+    rbx(0.5, 0.36, 0.3, Rv, garment(o.bottom === "dress" ? o.top : o.pants, o.bottom === "dress" ? o.pattern : "cotton"), { y: -0.18, parent: skirt });
   }
   rbx(0.42, 0.2, 0.24, Rv, o.bottom === "dress" ? top : pants, { y: 0.09, parent: pelvis });
   if (o.bottom !== "dress" && !baby) { bx(0.43, 0.05, 0.25, solid("#2b2018", { roughness: 0.45 }), { y: 0.17, parent: pelvis }); bx(0.07, 0.05, 0.02, solid("#d8b45a", { metalness: 0.8, roughness: 0.3 }), { y: 0.17, z: 0.126, parent: pelvis }); }
@@ -183,10 +207,11 @@ export function makePerson(spec = {}) {
   }
   const finger = bx(0.04, 0.11, 0.045, skin, { y: -0.1, z: 0.035, parent: hand[0] }); finger.visible = false; // pointing finger
 
-  bx(0.13, 0.09, 0.13, skin, { y: 0.56, parent: spine });
-  const head = new THREE.Group(); head.position.y = 0.6; head.scale.setScalar(role.head); spine.add(head);
-  rbx(0.3, 0.32, 0.3, baby ? 0.045 : 0.006, skin, { y: 0.16, parent: head });
-  const face = addMesh(cachedGeo("facePlane", () => new THREE.PlaneGeometry(0.28, 0.28)), faceMaterial("neutral", "base", o), { y: 0.15, z: 0.151, parent: head, shadow: false });
+  // CHARACTERS-V2: no visible neck: a collar band, the big head resting right on it
+  if (!baby) bx(0.26, 0.04, 0.24, solid(darker(o.top === o.skin ? o.pants : o.top, 0.8)), { y: 0.52, parent: spine });
+  const head = new THREE.Group(); head.position.y = HEAD_Y; head.scale.setScalar(role.head); spine.add(head);
+  rbx(0.3, 0.32, 0.3, baby ? 0.045 : 0.014, skin, { y: 0.16, parent: head });
+  const face = addMesh(cachedGeo("facePlane", () => new THREE.PlaneGeometry(0.28, 0.28)), faceMaterialV2("neutral", "base", o), { y: 0.15, z: 0.151, parent: head, shadow: false });
   face.receiveShadow = true;
   const hm = cloth(o.hairColor, "cotton"), hair = o.hair;
   if (hair === "tuft") { // a baby's little curl on top
@@ -211,8 +236,11 @@ export function makePerson(spec = {}) {
   if (o.hat === "cap") { rbx(0.33, 0.12, 0.33, Rv, hatMat, { y: 0.37 + hatY, parent: head }); bx(0.3, 0.025, 0.16, hatMat, { y: 0.32 + hatY, z: o.capBack ? -0.22 : 0.22, parent: head }); }
   if (o.hat === "beanie") { rbx(0.34, 0.16, 0.34, Rv + 0.02, hatMat, { y: 0.38 + hatY, parent: head }); bx(0.35, 0.05, 0.35, solid(darker(o.hatColor, 0.8)), { y: 0.31 + hatY, parent: head }); }
   if (o.hat === "bucket") { rbx(0.3, 0.14, 0.3, Rv, hatMat, { y: 0.39 + hatY, parent: head }); bx(0.46, 0.025, 0.46, hatMat, { y: 0.32 + hatY, parent: head }); }
-  if (o.acc.includes("headphones")) { bx(0.36, 0.035, 0.07, solid("#202024", { roughness: 0.3 }), { y: 0.39, parent: head }); for (const s of [-1, 1]) rbx(0.06, 0.12, 0.11, 0.02, solid(o.phonesColor, { roughness: 0.3 }), { x: s * 0.175, y: 0.17, parent: head }); }
+  if ((o.acc ?? []).includes("headphones")) { bx(0.36, 0.035, 0.07, solid("#202024", { roughness: 0.3 }), { y: 0.39, parent: head }); for (const s of [-1, 1]) rbx(0.06, 0.12, 0.11, 0.02, solid(o.phonesColor, { roughness: 0.3 }), { x: s * 0.175, y: 0.17, parent: head }); }
 
+  // CHARACTERS-V2: the outfit's layers and head piece (look.parts / look.ohead; page/kit/outfits.js)
+  const joints = { rig, pelvis, spine, head, face, sh, el, hand, hip, knee, skirt, finger, handAcc, flaps: [], cape: null };
+  if (!baby && (o.parts?.length || o.ohead)) dressPerson(joints, o, { hb: hair === "afro" ? 0.43 : hair === "bald" ? 0.315 : hair === "bun" || hair === "spiky" ? 0.36 : 0.33 });
   if (baby) { for (let i = 0; i < 2; i++) { hip[i].scale.set(1.25, 0.6, 1.25); sh[i].scale.set(1.2, 0.68, 1.2); } } // short, chubby limbs
 
   root.updateMatrixWorld(true);
@@ -220,8 +248,8 @@ export function makePerson(spec = {}) {
   root.userData = {
     kind: "person", id: spec.id, name: spec.name, role: o.role, look: o, scale: role.scale, stoop: role.stoop ?? 0, baby,
     height: box.max.y, // metres, rest pose (root at the origin)
-    joints: { rig, pelvis, spine, head, face, sh, el, hand, hip, knee, skirt, finger, handAcc },
-    expr: "neutral", faceVariant: "base", held: null, heldName: null, heldCache: new Map(),
+    joints,
+    expr: "neutral", faceVariant: "base", faceFrom: "neutral", faceAt: null, faceBlend: {}, held: null, heldName: null, heldCache: new Map(),
   };
   setFace(root, "neutral");
   posePerson(root, "stand", 0);
@@ -232,18 +260,25 @@ export function makePerson(spec = {}) {
 export const personHeight = (person) => person.userData.height;
 
 // ---------- faces ----------
-function applyFace(person) {
+// CHARACTERS-V2: faces v2 (page/kit/facesV2.js). An expression change animates: the next posePerson calls blend the old
+// face into the new one over FACE_BLEND_SEC (the person's own blend canvas, redrawn per 1/8 step), then the cached sticker.
+export const FACE_BLEND_SEC = 0.3;
+function applyFace(person, k = 1) {
   const u = person.userData;
-  u.joints.face.material = faceMaterial(u.expr, u.faceVariant, u.look);
+  u.joints.face.material = k < 1 && u.faceFrom !== u.expr
+    ? blendMaterialV2(u.faceBlend, u.faceFrom, u.expr, k, u.faceVariant === "blink" ? "base" : u.faceVariant, u.look)
+    : faceMaterialV2(u.expr, u.faceVariant, u.look);
 }
-/** swaps the face sticker (cached per expression + person look) */
+/** sets the face (any facesV2 FACES name; unknown -> neutral). Called every frame by the engine: a change starts a blend */
 export function setFace(person, expr) {
   const u = person.userData;
-  if (expr === u.expr && u.faceSet) return; // called every frame by the engine: nothing to do
+  const next = EXPRS.includes(expr) ? expr : "neutral";
+  if (next === u.expr && u.faceSet) return;
+  if (u.faceSet) { u.faceFrom = u.expr; u.faceAt = null; u.faceStep = -1; } // the blend starts at the next posePerson's t
   u.faceSet = true;
-  u.expr = EXPRS.includes(expr) ? expr : "neutral";
-  faceMaterial(u.expr, "blink", u.look); faceMaterial(u.expr, "talk", u.look); // warm the variants (no hitch later)
-  applyFace(person);
+  u.expr = next;
+  for (const v of ["blink", "talk", "talkO"]) faceMaterialV2(u.expr, v, u.look); // warm the variants (no hitch later)
+  applyFace(person, u.faceFrom !== u.expr && u.faceAt == null && u.faceFrom ? 0 : 1);
 }
 
 // ---------- poses ----------
@@ -726,14 +761,27 @@ export function posePerson(person, pose, t = 0, opts = {}) {
 
   // face: blinks every few seconds, mouth flaps while talking, eyes shut while asleep; sneeze = "ah-" then "CHOO";
   // blow = puffed cheeks; yell never blinks
-  const noBlink = u.expr === "sleepy" || u.expr === "cry" || u.expr === "yell" || u.expr === "sneeze" || pose === "sneeze" || pose === "blow";
+  const noBlink = u.expr === "sleepy" || u.expr === "laugh" || u.expr === "relieved" || u.expr === "cry" || u.expr === "yell" || u.expr === "sneeze" || pose === "sneeze" || pose === "blow";
   const blink = eyesShut || (!noBlink && (tt % 3.7) < 0.12);
-  const mouth = talking && (Math.sin(TAU * 5.2 * tt) + 0.6 * Math.sin(TAU * 3.1 * tt)) > 0.15;
-  let variant = blink ? "blink" : mouth ? "talk" : "base";
+  const flapW = Math.sin(TAU * 5.2 * tt) + 0.6 * Math.sin(TAU * 3.1 * tt);
+  const mouth = talking && flapW > 0.15;
+  let variant = blink ? "blink" : mouth ? (Math.sin(TAU * 1.7 * tt) > 0.35 ? "talkO" : "talk") : "base";
   if (pose === "blow") variant = "blow";
   else if (pose === "sneeze" || u.expr === "sneeze") variant = pose === "sneeze" ? (t < 0.38 ? "talk" : "base") : "base";
-  if (variant !== u.faceVariant) { u.faceVariant = variant; applyFace(person); }
+  // the expression blend (setFace started it): k from the first frame after the change; a shot cut (t back to 0) restarts it
+  let k = 1;
+  if (u.faceFrom !== u.expr) {
+    // a change seen at a shot's start (t ~ 0: the video) blends from there; one first seen mid-shot (a still rendered
+    // straight at its time) is already done
+    if (u.faceAt == null || t < u.faceAt) u.faceAt = t < 0.15 ? 0 : t - FACE_BLEND_SEC;
+    k = (t - u.faceAt) / FACE_BLEND_SEC;
+    if (k >= 0.999) { u.faceFrom = u.expr; k = 1; }
+    k = k * k * (3 - 2 * k);
+  }
+  const step = k < 1 ? Math.round(k * 8) : 8;
+  if (variant !== u.faceVariant || step !== u.faceStep) { u.faceVariant = variant; u.faceStep = step; applyFace(person, k); }
 
+  animateOutfit(j);
   holdProp(person, pose, oneHand);
 }
 
@@ -835,22 +883,23 @@ function ensureHeld(person, name) {
 // ---------- LOOK-FIX 2026-11-08 (owner: "the broom is held straight up in front of Pip's face"): long-prop grips ----------
 const LONG_HELD = new Set(["feather_duster", "broom", "mop", "shovel", "spear", "sign", "umbrella", "flag", "net"]);
 /** the grips for a long prop, best first; the engine tries them in order until the prop leaves the face clear */
-export const LONG_GRIPS = Object.freeze(["side", "wide", "shoulder", "side_l"]);
-export function gripOrder(kind) { return kind === "umbrella" ? ["overhead", ...LONG_GRIPS] : kind === "sign" || kind === "flag" ? ["wide", "side", "side_l", "shoulder"] : [...LONG_GRIPS]; }
+// CHARACTERS-V2: "out" (the arm well out to the side, the prop leaning away) for the bigger head
+export const LONG_GRIPS = Object.freeze(["side", "wide", "shoulder", "side_l", "out", "out_l"]);
+export function gripOrder(kind) { return kind === "umbrella" ? ["overhead", "overhead_l", ...LONG_GRIPS] : kind === "sign" || kind === "flag" ? ["wide", "out", "out_l", "side", "side_l", "shoulder"] : [...LONG_GRIPS]; }
 /** arm angles for a grip (hand index i: 0 = the right arm at -x, 1 = the left) */
 function longArms(j, grip, breathe) {
-  const i = grip === "side_l" ? 1 : 0, s = i ? 1 : -1, o = 1 - i;
-  const A = { side: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], side_l: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], wide: [[-0.25, 0, s * 0.26], [-0.3, 0, 0]], shoulder: [[-0.2, 0, s * 0.18], [-2.05, 0, 0]], overhead: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]] }[grip] ?? [[-0.3, 0, s * 0.12], [-0.45, 0, 0]];
+  const i = /_l$/.test(grip) ? 1 : 0, s = i ? 1 : -1, o = 1 - i;
+  const A = { side: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], side_l: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], wide: [[-0.25, 0, s * 0.26], [-0.3, 0, 0]], out: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], out_l: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], shoulder: [[-0.2, 0, s * 0.18], [-2.05, 0, 0]], overhead: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]], overhead_l: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]] }[grip] ?? [[-0.3, 0, s * 0.12], [-0.45, 0, 0]];
   j.sh[i].rotation.set(...A[0]); j.el[i].rotation.set(...A[1]); j.hand[i].rotation.set(0, 0, 0);
   j.sh[o].rotation.set(0.05 + 0.03 * breathe, 0, -s * 0.08); j.el[o].rotation.set(-0.15, 0, 0); j.hand[o].rotation.set(0, 0, 0);
 }
 /** the prop's orientation in the person's own frame per grip (Euler x, z): leaning out to the hand's side */
 function gripEuler(grip, s) {
-  return { side: [0.1, -s * 0.1], side_l: [0.1, -s * 0.1], wide: [0.05, -s * 0.22], shoulder: [-1.0, -s * 0.22], overhead: [0.12, -s * 0.1] }[grip] ?? [0.1, -s * 0.28];
+  return { side: [0.1, -s * 0.1], side_l: [0.1, -s * 0.1], wide: [0.05, -s * 0.22], out: [0.05, s * 0.04], out_l: [0.05, s * 0.04], shoulder: [-1.0, -s * 0.22], overhead: [0.12, -s * 0.1], overhead_l: [0.12, -s * 0.1] }[grip] ?? [0.1, -s * 0.28];
 }
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _qe = new THREE.Quaternion(), _eu = new THREE.Euler();
 function holdLong(person, h, grip) {
-  const j = person.userData.joints, i = grip === "side_l" ? 1 : 0, s = i ? 1 : -1, hand = j.hand[i];
+  const j = person.userData.joints, i = /_l$/.test(grip) ? 1 : 0, s = i ? 1 : -1, hand = j.hand[i];
   if (h.parent !== hand) hand.add(h);
   h.position.set(0, -0.06, 0.03);
   person.updateMatrixWorld(true);
