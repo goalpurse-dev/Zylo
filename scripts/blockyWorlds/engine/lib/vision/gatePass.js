@@ -79,6 +79,10 @@ export function alternatives(s) {
   const out = [];
   if (epic) {
     out.push({ how: "action", patch: { camera: "establish" } });
+    // GATE 2026-11-09 (#3 "it sniffed down our street": the wolf planned inside the turtle's shell floated in the void
+    // outside the one-sided shell, a blank frame): a giant on a creature's INSIDE set is shown from the creature's outside view
+    const giantIn = /^creature:.*_inside$/.test(s.set ?? "") && (f.startsWith("giant:") || (s.giants ?? []).some((g) => g.id !== "world"));
+    if (giantIn) out.push({ how: "outside", patch: { set: s.set.replace(/_inside$/, "_outside"), worldSpot: "outside_wide", place: null, camera: "establish", focus: f.startsWith("giant:") ? f : `giant:${(s.giants ?? []).find((g) => g.id !== "world").id}`, camMove: null } });
     if (who) out.push({ how: "reaction", patch: { camera: "closeup", focus: who } });
     out.push({ how: "world", patch: { camera: "establish", focus: f === "world" || /^creature:/.test(s.set ?? "") ? "world" : f || "world", camMove: null } });
   } else {
