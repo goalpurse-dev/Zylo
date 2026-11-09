@@ -407,10 +407,13 @@ async function main() {
   const SNAP = new Map(); // ATTACH: (shot, person, planned spot) -> the walkable surface height there (mount coordinates)
   const snapSkip = new Set([...allObjects, ...(monster ? [monster] : []), ...[...INSERTS.values()].map((i) => i.obj), ...MARKERS.values()]);
   const OFF_GROUND = new Set(["sit", "sleep", "ride", "fly", "climb", "fall", "jump", "swim", "lie", "hug"]);
+  // GATE 2026-11-09: where a frame's time goes (window.__prof; the stills role reports it per still)
+  const PROF = (window.__prof = { calib: 0, post: 0, total: 0, n: 0 });
   function renderAt(t, opts = null) {
+    const P0 = performance.now();
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
     const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
-    if (!opts?.calib && post.needsGrade?.(si)) renderAt(shot.start, { calib: true }); // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
+    if (!opts?.calib && post.needsGrade?.(si)) { const c0 = performance.now(); renderAt(shot.start, { calib: true }); PROF.calib += performance.now() - c0; } // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
     const S = SETS[shot.set], spots = S.spots;
     for (const [n, s] of Object.entries(SETS)) s.root.visible = n === shot.set;
     const key = `${shot.set}|${shot.light}`;
@@ -839,7 +842,9 @@ async function main() {
     winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
     const subjLit = subjLight.aim(camera, subjBox, shot.light);
     // render, then the caption on top in the output canvas
+    const R0 = performance.now();
     post.render();
+    PROF.post += performance.now() - R0;
     let subj = null;
     if (subjLit && safe < 2) {
       subj = subjLight.measure(renderer.domElement, camera, subjBox, subjCtx);
@@ -855,6 +860,7 @@ async function main() {
     const flat = flatShare(px), detail = detailOf(px, 16);
     ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
     lastSet = S;
+    if (!opts?.calib) { PROF.total += performance.now() - P0; PROF.n++; }
     return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe, ...(subj ? { subj } : {}) };
   }
 

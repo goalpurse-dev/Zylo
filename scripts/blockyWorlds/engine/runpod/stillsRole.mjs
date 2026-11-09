@@ -91,10 +91,15 @@ export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captio
     // every frame the guard grabs is also measured by the HARD STILL GATE (lib/stillGate.js, in the page, right after its
     // render: pixels + rays from the camera), so the still the guard keeps carries its own verdict
     const grab = (t, force, safe = 0) => page.evaluate(async (t, safe, q, gate) => {
+      // GATE 2026-11-09: the time split per grab (render / still gate / jpeg; the engine's own split in window.__prof)
+      const P = window.__prof, p0 = P ? { ...P } : null, a0 = performance.now();
       const r = window.renderAt(t, { safe });
+      const a1 = performance.now();
       let g = null, gateError = null;
       if (gate) { try { g = (await import("/lib/stillGate.js")).measurePage(window, r.shot); } catch (e) { gateError = String(e?.message ?? e).slice(0, 200); } }
-      return { ...r, gate: g, gateError, data: window.frameData(q) };
+      const a2 = performance.now(), data = window.frameData(q), a3 = performance.now();
+      const prof = { render: Math.round(a1 - a0), gate: Math.round(a2 - a1), jpeg: Math.round(a3 - a2), ...(p0 ? { calib: Math.round(P.calib - p0.calib), post: Math.round(P.post - p0.post) } : {}) };
+      return { ...r, gate: g, gateError, data, prof };
     }, t, safe, quality, gate);
     const guard = flatGuard(grab), out = [];
     for (const [i, p] of list.entries()) {
@@ -107,7 +112,7 @@ export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captio
         const jpeg = Buffer.from(r.data.slice(r.data.indexOf(",") + 1), "base64"), file = path.join(dir, names[i]);
         fs.writeFileSync(file, jpeg);
         const shot = r.shot == null ? p.shot : sub ? sub.shotOf(r.shot) : r.shot;
-        out.push({ label: p.label, file: names[i], t: p.t, shot, ...(sub ? { subT: +t.toFixed(3) } : {}), w: st.width, h: st.height, bytes: jpeg.length, mean: r.mean ?? null, flat: r.flat ?? null, detail: r.detail ?? null, safe: r.safe ?? 0, bad: isBad(r),
+        out.push({ label: p.label, file: names[i], t: p.t, shot, ...(sub ? { subT: +t.toFixed(3) } : {}), w: st.width, h: st.height, bytes: jpeg.length, mean: r.mean ?? null, flat: r.flat ?? null, detail: r.detail ?? null, safe: r.safe ?? 0, bad: isBad(r), ...(r.prof ? { prof: r.prof } : {}),
           ...(gate ? { gate: r.gate ? gateSummary(r.gate) : { pass: null, error: r.gateError ?? "not measured" } } : {}), ms: Date.now() - a });
       } catch (e) { out.push({ label: p.label, file: null, t: p.t, error: String(e.message ?? e).slice(0, 200), ms: Date.now() - a }); }
     }
